@@ -36,7 +36,7 @@ get_ptr() {
   if (_global_ptr == (InterrogateDatabase *)NULL) {
     if (interrogatedb_cat->is_debug()) {
       interrogatedb_cat->debug()
-	<< "Creating interrogate database\n";
+        << "Creating interrogate database\n";
     }
     _global_ptr = new InterrogateDatabase;
   }
@@ -57,10 +57,10 @@ request_module(InterrogateModuleDef *def) {
   if (interrogatedb_cat->is_debug()) {
     if (def->library_name == (const char *)NULL) {
       interrogatedb_cat->debug()
-	<< "Got interrogate data for anonymous module\n";
+        << "Got interrogate data for anonymous module\n";
     } else {
       interrogatedb_cat->debug()
-	<< "Got interrogate data for module " << def->library_name << "\n";
+        << "Got interrogate data for module " << def->library_name << "\n";
     }
   }
 
@@ -413,8 +413,8 @@ get_wrapper_by_unique_name(const string &unique_name) {
   InterrogateModuleDef *def = (*mi).second;
   int index_offset =
     binary_search_wrapper_hash(def->unique_names,
-			       def->unique_names + def->num_unique_names,
-			       wrapper_hash_name);
+                               def->unique_names + def->num_unique_names,
+                               wrapper_hash_name);
   if (index_offset >= 0) {
     return def->first_index + index_offset;
   }
@@ -534,7 +534,7 @@ add_function(FunctionIndex index, const InterrogateFunction &function) {
 ////////////////////////////////////////////////////////////////////
 void InterrogateDatabase::
 add_wrapper(FunctionWrapperIndex index, 
-	    const InterrogateFunctionWrapper &wrapper) {
+            const InterrogateFunctionWrapper &wrapper) {
   bool inserted = 
     _wrapper_map.insert(FunctionWrapperMap::value_type(index, wrapper)).second;
   assert(inserted);
@@ -833,8 +833,8 @@ read(istream &in, InterrogateModuleDef *def) {
     int next = temp.remap_indices(def->first_index);
     if (next != def->next_index) {
       interrogatedb_cat->error()
-	<< "Module database file " << def->database_filename 
-	<< " is out of date.\n";
+        << "Module database file " << def->database_filename 
+        << " is out of date.\n";
       return false;
     }
   }
@@ -863,49 +863,49 @@ load_latest() {
       Filename filename = def->database_filename;
       Filename pathname = filename;
       if (!pathname.empty() && pathname[0] != '/') {
-	pathname = searchpath.find_file(pathname);
+        pathname = searchpath.find_file(pathname);
       }
 
       if (pathname.empty()) {
-	interrogatedb_cat->error() 
-	  << "Unable to find " << filename << " on " << searchpath << "\n";
+        interrogatedb_cat->error() 
+          << "Unable to find " << filename << " on " << searchpath << "\n";
       } else {
 
-	ifstream input;
-	pathname.set_text();
-	if (!pathname.open_read(input)) {
-	  interrogatedb_cat->error() << "Unable to read " << pathname << ".\n";
-	} else {
-	  int file_identifier;
-	  input >> file_identifier
-		>> _file_major_version >> _file_minor_version;
+        ifstream input;
+        pathname.set_text();
+        if (!pathname.open_read(input)) {
+          interrogatedb_cat->error() << "Unable to read " << pathname << ".\n";
+        } else {
+          int file_identifier;
+          input >> file_identifier
+                >> _file_major_version >> _file_minor_version;
 
-	  if (def->file_identifier != 0 &&
-	      file_identifier != def->file_identifier) {
-	    interrogatedb_cat->warning()
-	      << "Interrogate data in " << pathname
-	      << " is out of sync with the compiled-in data.\n";
-	  }
+          if (def->file_identifier != 0 &&
+              file_identifier != def->file_identifier) {
+            interrogatedb_cat->warning()
+              << "Interrogate data in " << pathname
+              << " is out of sync with the compiled-in data.\n";
+          }
 
-	  if (_file_major_version != _current_major_version ||
-	      _file_minor_version > _current_minor_version) {
-	    interrogatedb_cat->error()
-	      << "Cannot read interrogate data in " << pathname 
-	      << "; database is version " << _file_major_version << "."
-	      << _file_minor_version << " while we are expecting "
-	      << _current_major_version << "." << _current_minor_version
-	      << ".\n";
-	  } else {
-	    if (interrogatedb_cat->is_debug()) {
-	      interrogatedb_cat->debug()
-		<< "Reading " << filename << "\n";
-	    }
-	    if (!read(input, def)) {
-	      interrogatedb_cat->error()
-		<< "Error reading " << pathname << ".\n";
-	    }
-	  }
-	}
+          if (_file_major_version != _current_major_version ||
+              _file_minor_version > _current_minor_version) {
+            interrogatedb_cat->error()
+              << "Cannot read interrogate data in " << pathname 
+              << "; database is version " << _file_major_version << "."
+              << _file_minor_version << " while we are expecting "
+              << _current_major_version << "." << _current_minor_version
+              << ".\n";
+          } else {
+            if (interrogatedb_cat->is_debug()) {
+              interrogatedb_cat->debug()
+                << "Reading " << filename << "\n";
+            }
+            if (!read(input, def)) {
+              interrogatedb_cat->error()
+                << "Error reading " << pathname << ".\n";
+            }
+          }
+        }
       }
     }
   }
@@ -942,7 +942,7 @@ read_new(istream &in, InterrogateModuleDef *def) {
       InterrogateFunction function(def);
       in >> index >> function;
       if (in.fail()) {
-	return false;
+        return false;
       }
       
       add_function(index, function);
@@ -962,7 +962,7 @@ read_new(istream &in, InterrogateModuleDef *def) {
       InterrogateFunctionWrapper wrapper(def);
       in >> index >> wrapper;
       if (in.fail()) {
-	return false;
+        return false;
       }
       
       add_wrapper(index, wrapper);
@@ -982,7 +982,7 @@ read_new(istream &in, InterrogateModuleDef *def) {
       InterrogateType type(def);
       in >> index >> type;
       if (in.fail()) {
-	return false;
+        return false;
       }
       
       add_type(index, type);
@@ -1002,7 +1002,7 @@ read_new(istream &in, InterrogateModuleDef *def) {
       InterrogateManifest manifest(def);
       in >> index >> manifest;
       if (in.fail()) {
-	return false;
+        return false;
       }
       
       add_manifest(index, manifest);
@@ -1022,7 +1022,7 @@ read_new(istream &in, InterrogateModuleDef *def) {
       InterrogateElement element(def);
       in >> index >> element;
       if (in.fail()) {
-	return false;
+        return false;
       }
       
       add_element(index, element);
@@ -1067,10 +1067,10 @@ merge_from(const InterrogateDatabase &other) {
       map<string, TypeIndex>::iterator ni;
       ni = types_by_name.find(other_type.get_true_name());
       if (ni != types_by_name.end()) {
-	// Here's a type that we seem to have in common!  We'll have
-	// to merge them.
-	TypeIndex this_type_index = (*ni).second;
-	remap.add_mapping(other_type_index, this_type_index);
+        // Here's a type that we seem to have in common!  We'll have
+        // to merge them.
+        TypeIndex this_type_index = (*ni).second;
+        remap.add_mapping(other_type_index, this_type_index);
       }
     }
   }
@@ -1092,9 +1092,9 @@ merge_from(const InterrogateDatabase &other) {
 
       InterrogateType &this_type = update_type(this_type_index);
       if (!this_type.is_global() && other_type.is_global()) {
-	// If the type is about to become global, we need to add it
-	// to our global_types list.
-	_global_types.push_back(this_type_index);
+        // If the type is about to become global, we need to add it
+        // to our global_types list.
+        _global_types.push_back(this_type_index);
       }
 
       InterrogateType merge_type = other_type;
@@ -1161,7 +1161,7 @@ merge_from(const InterrogateDatabase &other) {
 ////////////////////////////////////////////////////////////////////
 bool InterrogateDatabase::
 find_module(FunctionWrapperIndex wrapper, InterrogateModuleDef *&def,
-	    int &module_index) {
+            int &module_index) {
   if (_modules.empty()) {
     return false;
   }
@@ -1205,8 +1205,8 @@ binary_search_module(int begin, int end, FunctionIndex function) {
 ////////////////////////////////////////////////////////////////////
 int InterrogateDatabase::
 binary_search_wrapper_hash(InterrogateUniqueNameDef *begin,
-			   InterrogateUniqueNameDef *end,
-			   const string &wrapper_hash_name) {
+                           InterrogateUniqueNameDef *end,
+                           const string &wrapper_hash_name) {
   if (end <= begin) {
     return -1;
   }

@@ -25,7 +25,7 @@ class RibStuffTraverser :
 public:
   RibStuffTraverser(RIBGraphicsStateGuardian *gsg) : _gsg(gsg) { }
   bool reached_node(Node *node, AllAttributesWrapper &state,
-		    NullLevelState &);
+                    NullLevelState &);
 
 public:
   RIBGraphicsStateGuardian *_gsg;

@@ -49,7 +49,7 @@ public:
   static void init_type(void) {
     GuiItem::init_type();
     register_type(_type_handle, "GuiCollection",
-		  GuiItem::get_class_type());
+                  GuiItem::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

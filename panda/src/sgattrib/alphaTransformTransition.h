@@ -13,7 +13,7 @@
 #include <onTransition.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : AlphaTransformTransition
+//       Class : AlphaTransformTransition
 // Description : This allows for scaling and offseting of current
 //               alpha values
 ////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ public:
   static void init_type() {
     OnTransition::init_type();
     register_type(_type_handle, "AlphaTransformTransition",
-		  OnTransition::get_class_type());
+                  OnTransition::get_class_type());
   }
 
 private:

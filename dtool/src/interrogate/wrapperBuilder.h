@@ -21,7 +21,7 @@ class CPPFunctionType;
 class ParameterRemap;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : WrapperBuilder
+//       Class : WrapperBuilder
 // Description : Contains all the information necessary to synthesize
 //               a wrapper around a particular function.  This
 //               includes choosing appropriate parameter types to
@@ -51,10 +51,10 @@ public:
 
   void clear();
   bool set_function(CPPInstance *function, const string &description,
-		    CPPStructType *struct_type, CPPScope *scope,
-		    const string &function_signature, Type type,
-		    const string &expression,
-		    int num_default_parameters);
+                    CPPStructType *struct_type, CPPScope *scope,
+                    const string &function_signature, Type type,
+                    const string &expression,
+                    int num_default_parameters);
 
   bool is_valid() const;
   bool return_value_needs_management() const;
@@ -103,7 +103,7 @@ public:
 protected:
   virtual ParameterRemap *make_remap(CPPType *orig_type);
   string manage_return_value(ostream &out, int indent_level,
-			     const string &return_expr) const;
+                             const string &return_expr) const;
   void output_ref(ostream &out, int indent_level, const string &varname) const;
 
   string get_parameter_name(int n) const;
@@ -111,8 +111,8 @@ protected:
 
   string get_call_str(const vector_string &pexprs = vector_string()) const;
   string call_function(ostream &out, int indent_level, 
-		       bool convert_result = true,
-		       const vector_string &pexprs = vector_string()) const;
+                       bool convert_result = true,
+                       const vector_string &pexprs = vector_string()) const;
 
   void write_spam_message(ostream &out) const;
   void write_quoted_string(ostream &out, const string &str) const;

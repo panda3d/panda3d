@@ -63,7 +63,7 @@
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PointerToArray
+//       Class : PointerToArray
 // Description : A special kind of PointerTo that stores an array of
 //               the indicated element type, instead of a single
 //               element.  This is actually implemented as an STL
@@ -170,7 +170,7 @@ private:
 };
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ConstPointerToArray
+//       Class : ConstPointerToArray
 // Description : Similar to PointerToArray, except that its contents
 //               may not be modified.
 ////////////////////////////////////////////////////////////////////

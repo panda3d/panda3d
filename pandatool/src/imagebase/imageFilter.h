@@ -12,7 +12,7 @@
 #include "imageWriter.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ImageFilter
+//       Class : ImageFilter
 // Description : This is the base class for a program that reads an
 //               image file, operates on it, and writes another image
 //               file out.

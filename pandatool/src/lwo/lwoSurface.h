@@ -11,7 +11,7 @@
 #include "lwoGroupChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurface
+//       Class : LwoSurface
 // Description : Describes the shading attributes of a surface.  This
 //               is similar to the concept usually called a "material"
 //               or "shader" in other file formats.
@@ -38,7 +38,7 @@ public:
   static void init_type() {
     LwoGroupChunk::init_type();
     register_type(_type_handle, "LwoSurface",
-		  LwoGroupChunk::get_class_type());
+                  LwoGroupChunk::get_class_type());
   }
 
 private:

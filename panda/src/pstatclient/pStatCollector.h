@@ -14,7 +14,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PStatCollector
+//       Class : PStatCollector
 // Description : A lightweight class that represents a single element
 //               that may be timed and/or counted via stats.
 //
@@ -46,9 +46,9 @@ private:
 
 public:
   INLINE PStatCollector(const string &name, 
-			PStatClient *client = NULL);
+                        PStatClient *client = NULL);
   INLINE PStatCollector(const PStatCollector &parent,
-			const string &name);
+                        const string &name);
 
   INLINE PStatCollector(const PStatCollector &copy);
   INLINE void operator = (const PStatCollector &copy);
@@ -82,13 +82,13 @@ friend class PStatClient;
 #else  // DO_PSTATS
 public:
   INLINE PStatCollector(const string &, 
-			const RGBColorf & = RGBColorf::zero(),
-			int = -1,
-			PStatClient * = NULL) { }
+                        const RGBColorf & = RGBColorf::zero(),
+                        int = -1,
+                        PStatClient * = NULL) { }
   INLINE PStatCollector(const PStatCollector &,
-			const string &,
-			const RGBColorf & = RGBColorf::zero(),
-			int = -1) { }
+                        const string &,
+                        const RGBColorf & = RGBColorf::zero(),
+                        int = -1) { }
 
   INLINE bool is_active() { return false; }
   INLINE bool is_active(const PStatThread &) { return false; }

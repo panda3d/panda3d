@@ -11,7 +11,7 @@
 #include "pStatClient.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PStatThread
+//       Class : PStatThread
 // Description : A lightweight class that represents a single thread
 //               of execution to PStats.  It doesn't have any real
 //               connection to any actual threads, but it's used to

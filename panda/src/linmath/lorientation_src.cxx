@@ -17,6 +17,6 @@ init_type() {
     string name = "LOrientation";
     name += FLOATTOKEN; 
     register_type(_type_handle, name, 
-		  FLOATNAME(LQuaternion)::get_class_type());
+                  FLOATNAME(LQuaternion)::get_class_type());
   }
 }

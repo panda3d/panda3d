@@ -32,14 +32,14 @@ public:
     return true;
   }
   bool forward_arc(NodeRelation *arc, TransitionWrapper &trans,
-		   AttributeWrapper &pre, AttributeWrapper &post,
-		   NullLevelState &) {
+                   AttributeWrapper &pre, AttributeWrapper &post,
+                   NullLevelState &) {
     _indent_level += 2;
     return true;
   }
   void backward_arc(NodeRelation *arc, TransitionWrapper &trans,
-		    AttributeWrapper &pre, AttributeWrapper &post,
-		    const NullLevelState &) {
+                    AttributeWrapper &pre, AttributeWrapper &post,
+                    const NullLevelState &) {
     _indent_level -= 2;
   }
   int _indent_level;
@@ -123,8 +123,8 @@ main(int argc, char *argv[]) {
   nout << "\n";
   PrintNodes pn;
   df_traverse(r, pn, 
-	      AllAttributesWrapper(), NullLevelState(),
-	      NodeRelation::get_class_type());
+              AllAttributesWrapper(), NullLevelState(),
+              NodeRelation::get_class_type());
   nout << "\n";
 
   CullTraverser ct(NULL, NodeRelation::get_class_type());

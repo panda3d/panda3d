@@ -10,7 +10,7 @@
 #include "datagram.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DatagramSink
+//       Class : DatagramSink
 // Description : This class defines the abstract interface to sending
 //               datagrams to any target, whether it be into a file
 //               or across the net

@@ -271,33 +271,33 @@ build_scanline(ScanLine output[], xel *row_data, xelval *alpha_data) {
   if( _num_channels <= 2 ) {
     for( col = 0; col < _x_size; col++ )
       temp[col] = (ScanElem)
-	(new_maxval * PPM_GETB(row_data[col]) / _maxval);
+        (new_maxval * PPM_GETB(row_data[col]) / _maxval);
     temp = compress(temp, output[0]);
 
     if (_num_channels == 2) {
       for( col = 0; col < _x_size; col++ )
-	temp[col] = (ScanElem)
-	  (new_maxval * alpha_data[col] / _maxval);
+        temp[col] = (ScanElem)
+          (new_maxval * alpha_data[col] / _maxval);
       temp = compress(temp, output[1]);
     }
 
   } else {
     for( col = 0; col < _x_size; col++ )
       temp[col] = (ScanElem)
-	(new_maxval * PPM_GETR(row_data[col]) / _maxval);
+        (new_maxval * PPM_GETR(row_data[col]) / _maxval);
     temp = compress(temp, output[0]);
     for( col = 0; col < _x_size; col++ )
       temp[col] = (ScanElem)
-	(new_maxval * PPM_GETG(row_data[col]) / _maxval);
+        (new_maxval * PPM_GETG(row_data[col]) / _maxval);
     temp = compress(temp, output[1]);
     for( col = 0; col < _x_size; col++ )
       temp[col] = (ScanElem)
-	(new_maxval * PPM_GETB(row_data[col]) / _maxval);
+        (new_maxval * PPM_GETB(row_data[col]) / _maxval);
     temp = compress(temp, output[2]);
     if (_num_channels == 4) {
       for( col = 0; col < _x_size; col++ )
-	temp[col] = (ScanElem)
-	  (new_maxval * alpha_data[col] / _maxval);
+        temp[col] = (ScanElem)
+          (new_maxval * alpha_data[col] / _maxval);
       temp = compress(temp, output[3]);
     }
   }
@@ -320,7 +320,7 @@ compress(ScanElem *temp, ScanLine &output) {
             len = rle_compress(temp, _x_size);    /* writes result into rletemp */
             output.length = len;
             output.data = new ScanElem[len];
-	    memcpy(output.data, rletemp, len * sizeof(ScanElem));
+            memcpy(output.data, rletemp, len * sizeof(ScanElem));
             break;
         default:
             pm_error("unknown storage type - can\'t happen");

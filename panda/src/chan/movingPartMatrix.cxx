@@ -54,20 +54,20 @@ get_blend_value(const PartBundle *root) {
       
       PartBundle::ChannelBlend::const_iterator cbi;
       for (cbi = blend.begin(); cbi != blend.end(); ++cbi) {
-	AnimControl *control = (*cbi).first;
-	float effect = (*cbi).second;
-	nassertv(effect != 0.0);
-	
-	int channel_index = control->get_channel_index();
-	nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
-	ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
-	nassertv(channel != NULL);
-	
-	ValueType v;
-	channel->get_value(control->get_frame(), v);
-	
-	_value += v * effect;
-	net += effect;
+        AnimControl *control = (*cbi).first;
+        float effect = (*cbi).second;
+        nassertv(effect != 0.0);
+
+        int channel_index = control->get_channel_index();
+        nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
+        ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
+        nassertv(channel != NULL);
+
+        ValueType v;
+        channel->get_value(control->get_frame(), v);
+
+        _value += v * effect;
+        net += effect;
       }
       
       nassertv(net != 0.0);
@@ -85,23 +85,23 @@ get_blend_value(const PartBundle *root) {
       
       PartBundle::ChannelBlend::const_iterator cbi;
       for (cbi = blend.begin(); cbi != blend.end(); ++cbi) {
-	AnimControl *control = (*cbi).first;
-	float effect = (*cbi).second;
-	nassertv(effect != 0.0);
-	
-	int channel_index = control->get_channel_index();
-	nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
-	ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
-	nassertv(channel != NULL);
-	
-	ValueType v;
-	channel->get_value_no_scale(control->get_frame(), v);
-	LVector3f s;
-	channel->get_scale(control->get_frame(), &s[0]);
-	
-	_value += v * effect;
-	scale += s * effect;
-	net += effect;
+        AnimControl *control = (*cbi).first;
+        float effect = (*cbi).second;
+        nassertv(effect != 0.0);
+
+        int channel_index = control->get_channel_index();
+        nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
+        ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
+        nassertv(channel != NULL);
+
+        ValueType v;
+        channel->get_value_no_scale(control->get_frame(), v);
+        LVector3f s;
+        channel->get_scale(control->get_frame(), &s[0]);
+
+        _value += v * effect;
+        scale += s * effect;
+        net += effect;
       }
       
       nassertv(net != 0.0);

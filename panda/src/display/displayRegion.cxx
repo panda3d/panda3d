@@ -30,7 +30,7 @@ DisplayRegion(GraphicsLayer *layer) :
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
 DisplayRegion(GraphicsLayer *layer, const float l,
-	      const float r, const float b, const float t)
+              const float r, const float b, const float t)
   : _l(l), _r(r), _b(b), _t(t),
     _layer(layer),
     _active(true)

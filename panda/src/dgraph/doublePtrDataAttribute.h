@@ -13,7 +13,7 @@
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, PointerDataAttribute<double>);
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DoublePtrDataAttribute
+//       Class : DoublePtrDataAttribute
 // Description : A PointerDataAttribute templated on double types.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DoublePtrDataAttribute :
@@ -36,7 +36,7 @@ public:
   static void init_type() {
     PointerDataAttribute<double>::init_type();
     register_type(_type_handle, "DoublePtrDataAttribute", 
-		  PointerDataAttribute<double>::get_class_type());
+                  PointerDataAttribute<double>::get_class_type());
   }
 
 private:

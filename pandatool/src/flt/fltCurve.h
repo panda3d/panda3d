@@ -14,7 +14,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltCurve
+//       Class : FltCurve
 // Description : A single curve, like a Bezier or B-Spline.
 ////////////////////////////////////////////////////////////////////
 class FltCurve : public FltBeadID {
@@ -52,7 +52,7 @@ public:
   static void init_type() {
     FltBeadID::init_type();
     register_type(_type_handle, "FltCurve",
-		  FltBeadID::get_class_type());
+                  FltBeadID::get_class_type());
   }
 
 private:

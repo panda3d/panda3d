@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LMatrix3
+//       Class : LMatrix3
 // Description : This is a 3-by-3 transform matrix.  It typically will
 //               represent either a rotation-and-scale (no
 //               translation) matrix in 3-d, or a full affine matrix
@@ -21,13 +21,13 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator = (const FLOATNAME(LMatrix3) &other);
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator = (FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LMatrix3)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
-				     FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
-				     FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22);
+                                     FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
+                                     FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22);
 
   void fill(FLOATTYPE fill_value);
   INLINE_LINMATH void set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
-			  FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
-			  FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22);
+                          FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
+                          FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22);
 
   INLINE_LINMATH void set_row(int row, const FLOATNAME(LVecBase3) &v);
   INLINE_LINMATH void set_col(int col, const FLOATNAME(LVecBase3) &v);
@@ -132,12 +132,12 @@ PUBLISHED:
   // scale/rotate transforms in 3-d coordinate space.
   static INLINE_LINMATH FLOATNAME(LMatrix3) 
     rotate_mat(FLOATTYPE angle,
-	       FLOATNAME(LVecBase3) axis,
-	       CoordinateSystem cs = CS_default);
+               FLOATNAME(LVecBase3) axis,
+               CoordinateSystem cs = CS_default);
   static INLINE_LINMATH FLOATNAME(LMatrix3)
     rotate_mat_normaxis(FLOATTYPE angle,
-			const FLOATNAME(LVecBase3) &axis,
-			CoordinateSystem cs = CS_default);
+                        const FLOATNAME(LVecBase3) &axis,
+                        CoordinateSystem cs = CS_default);
   
   static INLINE_LINMATH FLOATNAME(LMatrix3)
     scale_mat(const FLOATNAME(LVecBase3) &scale);
@@ -149,7 +149,7 @@ PUBLISHED:
   // a 3-d scale.
 
   bool almost_equal(const FLOATNAME(LMatrix3) &other, 
-		    FLOATTYPE threshold) const;
+                    FLOATTYPE threshold) const;
 
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LMatrix3) &other) const;
   
@@ -163,12 +163,12 @@ public:
 public:
   union {
         struct {
-	   FLOATTYPE  _00, _01, _02;
+           FLOATTYPE  _00, _01, _02;
            FLOATTYPE  _10, _11, _12;
            FLOATTYPE  _20, _21, _22;
         } m;
 
-		FLOATTYPE data[3 * 3];
+                FLOATTYPE data[3 * 3];
   } _m;
 
 private:

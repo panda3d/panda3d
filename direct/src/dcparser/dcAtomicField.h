@@ -13,7 +13,7 @@
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DCAtomicField
+//       Class : DCAtomicField
 // Description : A single atomic field of a Distributed Class, as read
 //               from a .dc file.  This defines an interface to the
 //               Distributed Class, and is always implemented as a

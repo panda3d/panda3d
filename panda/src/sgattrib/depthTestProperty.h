@@ -12,7 +12,7 @@ class Datagram;
 class DatagramIterator;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DepthTestProperty
+//       Class : DepthTestProperty
 // Description : This defines the types of depth testing we can
 //               enable.
 ////////////////////////////////////////////////////////////////////
@@ -21,12 +21,12 @@ PUBLISHED:
   enum Mode {
     M_none,             // No depth test; may still write to depth buffer.
     M_never,            // Never draw.
-    M_less,		// incoming < stored
-    M_equal,		// incoming == stored
-    M_less_equal, 	// incoming <= stored
-    M_greater, 		// incoming > stored
-    M_not_equal, 	// incoming != stored
-    M_greater_equal,	// incoming >= stored
+    M_less,             // incoming < stored
+    M_equal,            // incoming == stored
+    M_less_equal,       // incoming <= stored
+    M_greater,          // incoming > stored
+    M_not_equal,        // incoming != stored
+    M_greater_equal,    // incoming >= stored
     M_always            // Always draw.  Same effect as none, more expensive.
   };
 

@@ -13,7 +13,7 @@
 #include <onOffTransition.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ColorTransition
+//       Class : ColorTransition
 // Description : This is scene graph color (which is not to be
 //               confused with geometry color).  By setting a
 //               ColorTransition on the scene graph, you can override
@@ -68,7 +68,7 @@ public:
   static void init_type() {
     OnOffTransition::init_type();
     register_type(_type_handle, "ColorTransition",
-		  OnOffTransition::get_class_type());
+                  OnOffTransition::get_class_type());
   }
 
 private:

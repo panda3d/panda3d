@@ -67,7 +67,7 @@ class RIBGraphicsWindow : public GraphicsWindow {
 
   RIBGraphicsWindow(GraphicsPipe *pipe);
   RIBGraphicsWindow(GraphicsPipe *pipe,
-		    const GraphicsWindow::Properties &props);
+                    const GraphicsWindow::Properties &props);
   virtual ~RIBGraphicsWindow(void);
 
   INLINE void set_rib_filename_template(const string &str);

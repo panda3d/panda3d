@@ -14,7 +14,7 @@
 class DCAtomicField;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DCMolecularField
+//       Class : DCMolecularField
 // Description : A single molecular field of a Distributed Class, as
 //               read from a .dc file.  This represents a combination
 //               of two or more related atomic fields, that will often

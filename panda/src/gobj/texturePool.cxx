@@ -163,8 +163,8 @@ ns_garbage_collect() {
     Texture *tex = (*ti).second;
     if (tex->get_ref_count() == 1) {
       if (gobj_cat.is_debug()) {
-	gobj_cat.debug()
-	  << "Releasing " << (*ti).first << "\n";
+        gobj_cat.debug()
+          << "Releasing " << (*ti).first << "\n";
       }
       num_released++;
     } else {
@@ -187,7 +187,7 @@ ns_list_contents(ostream &out) {
   Textures::iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     out << "  " << (*ti).first
-	<< " (count = " << (*ti).second->get_ref_count() << ")\n";
+        << " (count = " << (*ti).second->get_ref_count() << ")\n";
   }
 }
 

@@ -13,7 +13,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltLightSourceDefinition
+//       Class : FltLightSourceDefinition
 // Description : Represents a single entry in the light source
 //               palette.  This completely defines the color, etc. of
 //               a single light source, which may be referenced later
@@ -63,7 +63,7 @@ public:
   static void init_type() {
     FltRecord::init_type();
     register_type(_type_handle, "FltLightSourceDefinition",
-		  FltRecord::get_class_type());
+                  FltRecord::get_class_type());
   }
 
 private:

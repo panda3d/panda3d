@@ -19,7 +19,7 @@
 class EggGroupNode;
 
 void egg_init_parser(istream &in, const string &filename,
-		     EggObject *tos, EggGroupNode *egg_top_node);
+                     EggObject *tos, EggGroupNode *egg_top_node);
 
 void egg_cleanup_parser();
 

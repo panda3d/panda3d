@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LPoint3
+//       Class : LPoint3
 // Description : This is a three-component point in space (as opposed
 //               to a three-component vector, which represents a
 //               direction and a distance).  Some of the methods are
@@ -49,9 +49,9 @@ PUBLISHED:
 
   INLINE_LINMATH static FLOATNAME(LPoint3) origin(CoordinateSystem cs = CS_default);
   INLINE_LINMATH static FLOATNAME(LPoint3) rfu(FLOATTYPE right,
-				       FLOATTYPE fwd,
-				       FLOATTYPE up,
-				       CoordinateSystem cs = CS_default);
+                                       FLOATTYPE fwd,
+                                       FLOATTYPE up,
+                                       CoordinateSystem cs = CS_default);
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

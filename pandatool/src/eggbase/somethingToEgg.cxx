@@ -17,8 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 SomethingToEgg::
 SomethingToEgg(const string &format_name, 
-	       const string &preferred_extension,
-	       bool allow_last_param, bool allow_stdout) : 
+               const string &preferred_extension,
+               bool allow_last_param, bool allow_stdout) : 
   EggConverter(format_name, preferred_extension, allow_last_param, allow_stdout)
 {
   clear_runlines();
@@ -222,7 +222,7 @@ apply_units_scale(EggData &data) {
   if (_output_units != DU_invalid && _input_units != DU_invalid &&
       _input_units != _output_units) {
     nout << "Converting from " << format_long_unit(_input_units)
-	 << " to " << format_long_unit(_output_units) << "\n";
+         << " to " << format_long_unit(_output_units) << "\n";
     double scale = convert_units(_input_units, _output_units);
     data.transform(LMatrix4d::scale_mat(scale));
   }
@@ -242,8 +242,8 @@ handle_args(Args &args) {
 
     if (!(_output_filename.get_extension() == "egg")) {
       nout << "Output filename " << _output_filename 
-	   << " does not end in .egg.  If this is really what you intended, "
-	"use the -o output_file syntax.\n";
+           << " does not end in .egg.  If this is really what you intended, "
+        "use the -o output_file syntax.\n";
       return false;
     }
 
@@ -254,14 +254,14 @@ handle_args(Args &args) {
 
   if (args.empty()) {
     nout << "You must specify the " << _format_name 
-	  << " file to read on the command line.\n";
+          << " file to read on the command line.\n";
     return false;
   }
 
   if (args.size() != 1) {
     nout << "You may only specify one " << _format_name 
-	 << " file to read on the command line.  "
-	 << "You specified: ";
+         << " file to read on the command line.  "
+         << "You specified: ";
     copy(args.begin(), args.end(), ostream_iterator<string>(nout, " "));
     nout << "\n";
     return false;

@@ -62,16 +62,16 @@ reassign(To *ptr) {
       _ptr->ref();
 #ifndef NDEBUG
       if (MemoryUsage::get_track_memory_usage()) {
-	// Make sure the MemoryUsage record knows what the TypeHandle
-	// is, if we know it ourselves.
-	TypeHandle type = get_type_handle(To);
-	if (type == TypeHandle::none()) {
-	  do_init_type(To);
-	  type = get_type_handle(To);
-	}
-	if (type != TypeHandle::none()) {
-	  MemoryUsage::update_type(_ptr, type);
-	}
+        // Make sure the MemoryUsage record knows what the TypeHandle
+        // is, if we know it ourselves.
+        TypeHandle type = get_type_handle(To);
+        if (type == TypeHandle::none()) {
+          do_init_type(To);
+          type = get_type_handle(To);
+        }
+        if (type != TypeHandle::none()) {
+          MemoryUsage::update_type(_ptr, type);
+        }
       }
 #endif
     }

@@ -158,9 +158,9 @@ end_array() {
       // prepend the array length.
       int length = _default_value.length();
       _default_value = 
-	string(1, (char)(length & 0xff)) +
-	string(1, (char)((length >> 8) & 0xff)) +
-	_default_value;
+        string(1, (char)(length & 0xff)) +
+        string(1, (char)((length >> 8) & 0xff)) +
+        _default_value;
     }
     return true;
     
@@ -242,7 +242,7 @@ format_default_value(double num, string &formatted) const {
 
       int length = str.length();
       for (size_t i = 0; i < 8; i++) {
-	str += formatted[length - 1 - i];
+        str += formatted[length - 1 - i];
       }
       formatted = str;
     }
@@ -277,9 +277,9 @@ format_default_value(const string &str, string &formatted) const {
     {
       int length = str.length();
       formatted = 
-	string(1, (char)(length & 0xff)) +
-	string(1, (char)((length >> 8) & 0xff)) +
-	str;
+        string(1, (char)(length & 0xff)) +
+        string(1, (char)((length >> 8) & 0xff)) +
+        str;
     }
     break;
 

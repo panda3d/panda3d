@@ -17,7 +17,7 @@ class Datagram;
 class DatagramIterator;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FFTCompressor
+//       Class : FFTCompressor
 // Description : This class manages a lossy compression and
 //               decompression of a stream of floating-point numbers
 //               to a datagram, based a fourier transform algorithm
@@ -68,7 +68,7 @@ private:
   };
 
   int write_run(Datagram &datagram, RunWidth run_width, 
-		const vector_double &run);
+                const vector_double &run);
   int read_run(DatagramIterator &di, vector_double &run);
   double get_scale_factor(int i, int length) const;
   static double interpolate(double t, double a, double b);

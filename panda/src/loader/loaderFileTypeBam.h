@@ -11,7 +11,7 @@
 #include "loaderFileType.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LoaderFileTypeEgg
+//       Class : LoaderFileTypeEgg
 // Description : This defines the Loader interface to read Egg files.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA LoaderFileTypeBam : public LoaderFileType {

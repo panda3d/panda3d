@@ -12,7 +12,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : BasicGtkDialog
+//       Class : BasicGtkDialog
 // Description : This looks like a wrapper around Gtk::Dialog.
 //               Actually, it doesn't inherit from Gtk::Dialog at all,
 //               but instead (indirectly) from Gtk::Window; it just

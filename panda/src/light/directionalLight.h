@@ -45,7 +45,7 @@ class EXPCL_PANDA DirectionalLight : public Light, public NamedNode
     }
 
   protected:
-	
+
     Colorf                                  _specular;
 
   public:
@@ -58,7 +58,7 @@ class EXPCL_PANDA DirectionalLight : public Light, public NamedNode
       NamedNode::init_type();
       register_type( _type_handle, "DirectionalLight",
                         Light::get_class_type(),
-			NamedNode::get_class_type() );
+                        NamedNode::get_class_type() );
     }
     virtual TypeHandle get_type( void ) const {
       return get_class_type();

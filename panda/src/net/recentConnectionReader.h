@@ -14,7 +14,7 @@
 #include <prlock.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : RecentConnectionReader
+//       Class : RecentConnectionReader
 // Description : This flavor of ConnectionReader will read from its
 //               sockets and retain only the single most recent
 //               datagram for inspection by client code.  It's useful

@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE CLwoPolygons::
 CLwoPolygons(LwoToEggConverter *converter, const LwoPolygons *polygons,
-	     CLwoPoints *points) : 
+             CLwoPoints *points) : 
   _converter(converter),
   _polygons(polygons),
   _points(points)

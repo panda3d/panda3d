@@ -36,7 +36,7 @@ LinearIntegrator::
 ////////////////////////////////////////////////////////////////////
 void LinearIntegrator::
 integrate(Physical *physical, vector< PT(LinearForce) > &forces,
-	  float dt) {
+          float dt) {
 /* <-- darren, 2000.10.06
   // cap dt so physics don't go flying off on lags
   if (dt > _max_linear_dt)

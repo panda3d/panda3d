@@ -29,7 +29,7 @@ class NamedNode;
 class EggLoader;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CharacterMaker
+//       Class : CharacterMaker
 // Description : Converts an EggGroup hierarchy, beginning with a
 //               group with <Dart> set, to a character node with
 //               joints.
@@ -54,9 +54,9 @@ private:
   void make_geometry(EggNode *egg_node);
 
   void make_static_primitive(EggPrimitive *egg_primitive,
-			     EggGroupNode *prim_home);
+                             EggGroupNode *prim_home);
   void make_dynamic_primitive(EggPrimitive *egg_primitive,
-			      EggGroupNode *prim_home);
+                              EggGroupNode *prim_home);
   EggGroupNode *determine_primitive_home(EggPrimitive *egg_primitive);
 
   typedef map<EggNode *, int> NodeMap;

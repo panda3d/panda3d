@@ -15,7 +15,7 @@ class Datagram;
 class DatagramIterator;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : IoPtaDatagramFloat
+//       Class : IoPtaDatagramFloat
 // Description : This class is used to read and write a PTA_float
 //               from a Datagram, in support of Bam.  It's not
 //               intended to be constructed; it's just a convenient

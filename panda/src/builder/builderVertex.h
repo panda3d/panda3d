@@ -48,7 +48,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, BUILDERVERTEXTEMPL_BUILDER
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, BUILDERVERTEXTEMPL_USHORT);
 
 /////////////////////////////////////////////////////////////////////
-// 	 Class : BuilderVertex
+//       Class : BuilderVertex
 // Description : The basic class for passing nonindexed vertices to
 //               the builder.  See the comments at the the head of
 //               this file, and in builder.h.
@@ -79,7 +79,7 @@ public:
 
 
 /////////////////////////////////////////////////////////////////////
-// 	 Class : BuilderVertexI
+//       Class : BuilderVertexI
 // Description : The basic class for passing indexed vertices to the
 //               builder.  See the comments at the the head of this
 //               file, and in builder.h.

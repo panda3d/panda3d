@@ -25,7 +25,7 @@
 static const int maximum_udp_datagram = 1024;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : NetDatagram
+//       Class : NetDatagram
 // Description : A specific kind of Datagram, especially for sending
 //               across or receiving from a network.  It's different
 //               only in that it knows which Connection and/or
@@ -68,7 +68,7 @@ public:
   static void init_type() {
     Datagram::init_type();
     register_type(_type_handle, "NetDatagram",
-		  Datagram::get_class_type());
+                  Datagram::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 NameUniquifier::
 NameUniquifier(const string &separator,
-	       const string &empty) :
+               const string &empty) :
   _separator(separator),
   _empty(empty)
 {

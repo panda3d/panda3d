@@ -52,7 +52,7 @@ public:
   static void init_type(void) {
     BaseForce::init_type();
     register_type(_type_handle, "LinearForce",
-		  BaseForce::get_class_type());
+                  BaseForce::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

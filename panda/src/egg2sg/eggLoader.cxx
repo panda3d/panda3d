@@ -170,28 +170,28 @@ reparent_decals() {
       node->get_num_children(RenderRelation::get_class_type());
     for (int i = 0; i < num_children; i++) {
       NodeRelation *child_arc = 
-	node->get_child(RenderRelation::get_class_type(), i);
+        node->get_child(RenderRelation::get_class_type(), i);
       nassertv(child_arc != (NodeRelation *)NULL);
       Node *child = child_arc->get_child();
       nassertv(child != (Node *)NULL);
 
       if (child->is_of_type(GeomNode::get_class_type())) {
-	if (geom != (GeomNode *)NULL) {
-	  // Oops, too many GeomNodes.
-	  egg2sg_cat.error()
-	    << "Decal onto " << node->get_name() 
-	    << " uses base geometry with multiple states.\n";
-	  _error = true;
-	}
-	DCAST_INTO_V(geom, child);
+        if (geom != (GeomNode *)NULL) {
+          // Oops, too many GeomNodes.
+          egg2sg_cat.error()
+            << "Decal onto " << node->get_name() 
+            << " uses base geometry with multiple states.\n";
+          _error = true;
+        }
+        DCAST_INTO_V(geom, child);
       }
     }
 
     if (geom == (GeomNode *)NULL) {
       // No children were GeomNodes.
       egg2sg_cat.error()
-	<< "Ignoring decal onto " << node->get_name()
-	<< "; no geometry within group.\n";
+        << "Ignoring decal onto " << node->get_name()
+        << "; no geometry within group.\n";
       _error = true;
     } else {
       // Now reparent all of the non-GeomNodes to this node.  We have
@@ -199,18 +199,18 @@ reparent_decals() {
       // list.
       int i = 0;
       while (i < num_children) {
-	NodeRelation *child_arc = 
-	  node->get_child(RenderRelation::get_class_type(), i);
-	nassertv(child_arc != (NodeRelation *)NULL);
-	Node *child = child_arc->get_child();
-	nassertv(child != (Node *)NULL);
+        NodeRelation *child_arc = 
+          node->get_child(RenderRelation::get_class_type(), i);
+        nassertv(child_arc != (NodeRelation *)NULL);
+        Node *child = child_arc->get_child();
+        nassertv(child != (Node *)NULL);
 
-	if (child->is_of_type(GeomNode::get_class_type())) {
-	  i++;
-	} else {
-	  child_arc->change_parent(geom);
-	  num_children--;
-	}
+        if (child->is_of_type(GeomNode::get_class_type())) {
+          i++;
+        } else {
+          child_arc->change_parent(geom);
+          num_children--;
+        }
       }
     }
   }
@@ -250,7 +250,7 @@ reset_directs() {
       nassertv(child != (Node *)NULL);
 
       if (child->is_of_type(GeomNode::get_class_type())) {
-	DCAST_INTO_V(geom, child);
+        DCAST_INTO_V(geom, child);
       }
     }
 
@@ -270,7 +270,7 @@ reset_directs() {
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 make_nonindexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
-			  const LMatrix4d *transform) {
+                          const LMatrix4d *transform) {
   BuilderBucket bucket;
   setup_bucket(bucket, parent, egg_prim);
 
@@ -318,9 +318,9 @@ make_nonindexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
     if (egg_vert->has_uv()) {
       TexCoordd uv = egg_vert->get_uv();
       if (egg_prim->has_texture() && 
-	  egg_prim->get_texture()->has_transform()) {
-	// If we have a texture matrix, apply it.
-	uv = uv * egg_prim->get_texture()->get_transform();
+          egg_prim->get_texture()->has_transform()) {
+        // If we have a texture matrix, apply it.
+        uv = uv * egg_prim->get_texture()->get_transform();
       }
       bvert.set_texcoord(LCAST(float, uv));
     }
@@ -344,8 +344,8 @@ make_nonindexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 make_indexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
-		       const LMatrix4d *transform,
-		       ComputedVerticesMaker &_comp_verts_maker) {
+                       const LMatrix4d *transform,
+                       ComputedVerticesMaker &_comp_verts_maker) {
   BuilderBucket bucket;
   setup_bucket(bucket, parent, egg_prim);
 
@@ -381,7 +381,7 @@ make_indexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
 
     int nindex =
       _comp_verts_maker.add_normal(egg_prim->get_normal(),
-				   egg_prim->_dnormals, mat);
+                                   egg_prim->_dnormals, mat);
 
     bprim.set_normal(nindex);
   }
@@ -389,7 +389,7 @@ make_indexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
   if (egg_prim->has_color() && !egg_false_color) {
     int cindex =
       _comp_verts_maker.add_color(egg_prim->get_color(),
-				  egg_prim->_drgbas);
+                                  egg_prim->_drgbas);
     bprim.set_color(cindex);
   }
 
@@ -406,21 +406,21 @@ make_indexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
 
     int vindex =
       _comp_verts_maker.add_vertex(egg_vert->get_pos3(), 
-				   egg_vert->_dxyzs, mat);
+                                   egg_vert->_dxyzs, mat);
     BuilderVertexI bvert(vindex);
 
     if (egg_vert->has_normal()) {
       int nindex =
-	_comp_verts_maker.add_normal(egg_vert->get_normal(),
-				     egg_vert->_dnormals,
-				     mat);
+        _comp_verts_maker.add_normal(egg_vert->get_normal(),
+                                     egg_vert->_dnormals,
+                                     mat);
       bvert.set_normal(nindex);
     }
 
     if (egg_vert->has_color() && !egg_false_color) {
       int cindex =
-	_comp_verts_maker.add_color(egg_vert->get_color(),
-				    egg_vert->_drgbas);
+        _comp_verts_maker.add_color(egg_vert->get_color(),
+                                    egg_vert->_drgbas);
       bvert.set_color(cindex);
     } else {
       // If any vertex doesn't have a color, we can't use any of the
@@ -433,15 +433,15 @@ make_indexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
       LMatrix3d mat;
 
       if (egg_prim->has_texture() && 
-	  egg_prim->get_texture()->has_transform()) {
-	// If we have a texture matrix, apply it.
-	mat = egg_prim->get_texture()->get_transform();
+          egg_prim->get_texture()->has_transform()) {
+        // If we have a texture matrix, apply it.
+        mat = egg_prim->get_texture()->get_transform();
       } else {
-	mat = LMatrix3d::ident_mat();
+        mat = LMatrix3d::ident_mat();
       }
 
       int tindex =
-	_comp_verts_maker.add_texcoord(uv, egg_vert->_duvs, mat);
+        _comp_verts_maker.add_texcoord(uv, egg_vert->_duvs, mat);
       bvert.set_texcoord(tindex);
     }
 
@@ -453,7 +453,7 @@ make_indexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
   if (!egg_prim->has_color() && !has_vert_color && !egg_false_color) {
     int cindex =
       _comp_verts_maker.add_color(Colorf(1.0, 1.0, 1.0, 1.0),
-				  EggMorphColorList());
+                                  EggMorphColorList());
     bprim.set_color(cindex);
   }
   
@@ -475,7 +475,7 @@ load_textures() {
   // differentiate by attributes?  Maybe.
   EggTextureCollection::TextureReplacement replace;
   tc.collapse_equivalent_textures(EggTexture::E_complete_filename,
-				  replace);
+                                  replace);
 
   EggTextureCollection::iterator ti;
   for (ti = tc.begin(); ti != tc.end(); ++ti) {
@@ -511,7 +511,7 @@ load_texture(TextureDef &def, const EggTexture *egg_tex) {
   Texture *tex;
   if (egg_tex->has_alpha_file()) {
     tex = TexturePool::load_texture(egg_tex->get_filename(),
-				    egg_tex->get_alpha_file());
+                                    egg_tex->get_alpha_file());
   } else {
     tex = TexturePool::load_texture(egg_tex->get_filename());
   }
@@ -558,7 +558,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
   case EggTexture::WM_clamp:
     if (egg_ignore_clamp) {
       egg2sg_cat.warning()
-	<< "Ignoring clamp request\n";
+        << "Ignoring clamp request\n";
       tex->set_wrapu(Texture::WM_repeat);
     } else {
       tex->set_wrapu(Texture::WM_clamp);
@@ -582,7 +582,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
   case EggTexture::WM_clamp:
     if (egg_ignore_clamp) {
       egg2sg_cat.warning()
-	<< "Ignoring clamp request\n";
+        << "Ignoring clamp request\n";
       tex->set_wrapv(Texture::WM_repeat);
     } else {
       tex->set_wrapv(Texture::WM_clamp);
@@ -606,7 +606,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
   case EggTexture::FT_linear:
     if (egg_ignore_filters) {
       egg2sg_cat.warning()
-	<< "Ignoring minfilter request\n";
+        << "Ignoring minfilter request\n";
       tex->set_minfilter(Texture::FT_nearest);
     } else {
       tex->set_minfilter(Texture::FT_linear);
@@ -616,11 +616,11 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
   case EggTexture::FT_nearest_mipmap_nearest:
     if (egg_ignore_filters) {
       egg2sg_cat.warning()
-	<< "Ignoring minfilter request\n";
+        << "Ignoring minfilter request\n";
       tex->set_minfilter(Texture::FT_nearest);
     } else if (egg_ignore_mipmaps) {
       egg2sg_cat.warning()
-	<< "Ignoring mipmap request\n";
+        << "Ignoring mipmap request\n";
       tex->set_minfilter(Texture::FT_nearest);
     } else {
       tex->set_minfilter(Texture::FT_nearest_mipmap_nearest);
@@ -630,11 +630,11 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
   case EggTexture::FT_linear_mipmap_nearest:
     if (egg_ignore_filters) {
       egg2sg_cat.warning()
-	<< "Ignoring minfilter request\n";
+        << "Ignoring minfilter request\n";
       tex->set_minfilter(Texture::FT_nearest);
     } else if (egg_ignore_mipmaps) {
       egg2sg_cat.warning()
-	<< "Ignoring mipmap request\n";
+        << "Ignoring mipmap request\n";
       tex->set_minfilter(Texture::FT_linear);
     } else {
       tex->set_minfilter(Texture::FT_linear_mipmap_nearest);
@@ -644,11 +644,11 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
   case EggTexture::FT_nearest_mipmap_linear:
     if (egg_ignore_filters) {
       egg2sg_cat.warning()
-	<< "Ignoring minfilter request\n";
+        << "Ignoring minfilter request\n";
       tex->set_minfilter(Texture::FT_nearest);
     } else if (egg_ignore_mipmaps) {
       egg2sg_cat.warning()
-	<< "Ignoring mipmap request\n";
+        << "Ignoring mipmap request\n";
       tex->set_minfilter(Texture::FT_nearest);
     } else {
       tex->set_minfilter(Texture::FT_nearest_mipmap_linear);
@@ -658,11 +658,11 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
   case EggTexture::FT_linear_mipmap_linear:
     if (egg_ignore_filters) {
       egg2sg_cat.warning()
-	<< "Ignoring minfilter request\n";
+        << "Ignoring minfilter request\n";
       tex->set_minfilter(Texture::FT_nearest);
     } else if (egg_ignore_mipmaps) {
       egg2sg_cat.warning()
-	<< "Ignoring mipmap request\n";
+        << "Ignoring mipmap request\n";
       tex->set_minfilter(Texture::FT_linear);
     } else {
       tex->set_minfilter(Texture::FT_linear_mipmap_linear);
@@ -690,7 +690,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
   case EggTexture::FT_linear_mipmap_linear:
     if (egg_ignore_filters) {
       egg2sg_cat.warning()
-	<< "Ignoring magfilter request\n";
+        << "Ignoring magfilter request\n";
       tex->set_magfilter(Texture::FT_nearest);
     } else {
       tex->set_magfilter(Texture::FT_linear);
@@ -733,8 +733,8 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
 
     default:
       egg2sg_cat.warning()
-	<< "Ignoring inappropriate format " << egg_tex->get_format()
-	<< " for 1-component texture " << egg_tex->get_name() << "\n";
+        << "Ignoring inappropriate format " << egg_tex->get_format()
+        << " for 1-component texture " << egg_tex->get_name() << "\n";
     }
 
   } else if (tex->_pbuffer->get_num_components() == 2) {
@@ -752,8 +752,8 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
 
     default:
       egg2sg_cat.warning()
-	<< "Ignoring inappropriate format " << egg_tex->get_format()
-	<< " for 2-component texture " << egg_tex->get_name() << "\n";
+        << "Ignoring inappropriate format " << egg_tex->get_format()
+        << " for 2-component texture " << egg_tex->get_name() << "\n";
     }
 
   } else if (tex->_pbuffer->get_num_components() == 3) {
@@ -763,12 +763,12 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       break;
     case EggTexture::F_rgb12:
       if (tex->_pbuffer->get_component_width() >= 2) {
-	// Only do this if the component width supports it.
-	tex->_pbuffer->set_format(PixelBuffer::F_rgb12);
+        // Only do this if the component width supports it.
+        tex->_pbuffer->set_format(PixelBuffer::F_rgb12);
       } else {
-	egg2sg_cat.warning()
-	  << "Ignoring inappropriate format " << egg_tex->get_format()
-	  << " for 8-bit texture " << egg_tex->get_name() << "\n";
+        egg2sg_cat.warning()
+          << "Ignoring inappropriate format " << egg_tex->get_format()
+          << " for 8-bit texture " << egg_tex->get_name() << "\n";
       }
       break;
     case EggTexture::F_rgb8:
@@ -790,8 +790,8 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
 
     default:
       egg2sg_cat.warning()
-	<< "Ignoring inappropriate format " << egg_tex->get_format()
-	<< " for 3-component texture " << egg_tex->get_name() << "\n";
+        << "Ignoring inappropriate format " << egg_tex->get_format()
+        << " for 3-component texture " << egg_tex->get_name() << "\n";
     }
 
   } else if (tex->_pbuffer->get_num_components() == 4) {
@@ -804,12 +804,12 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       break;
     case EggTexture::F_rgba12:
       if (tex->_pbuffer->get_component_width() >= 2) {
-	// Only do this if the component width supports it.
-	tex->_pbuffer->set_format(PixelBuffer::F_rgba12);
+        // Only do this if the component width supports it.
+        tex->_pbuffer->set_format(PixelBuffer::F_rgba12);
       } else {
-	egg2sg_cat.warning()
-	  << "Ignoring inappropriate format " << egg_tex->get_format()
-	  << " for 8-bit texture " << egg_tex->get_name() << "\n";
+        egg2sg_cat.warning()
+          << "Ignoring inappropriate format " << egg_tex->get_format()
+          << " for 8-bit texture " << egg_tex->get_name() << "\n";
       }
       break;
     case EggTexture::F_rgba8:
@@ -827,8 +827,8 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
 
     default:
       egg2sg_cat.warning()
-	<< "Ignoring inappropriate format " << egg_tex->get_format()
-	<< " for 4-component texture " << egg_tex->get_name() << "\n";
+        << "Ignoring inappropriate format " << egg_tex->get_format()
+        << " for 4-component texture " << egg_tex->get_name() << "\n";
     }
   }
 }
@@ -840,7 +840,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 apply_texture_apply_attributes(TextureApplyTransition *apply,
-			       const EggTexture *egg_tex) {
+                               const EggTexture *egg_tex) {
   if (egg_always_decal_textures) {
     apply->set_mode(TextureApplyProperty::M_decal);
 
@@ -859,8 +859,8 @@ apply_texture_apply_attributes(TextureApplyTransition *apply,
 
     default:
       egg2sg_cat.warning()
-	<< "Invalid texture environment "
-	<< (int)egg_tex->get_env_type() << "\n";
+        << "Invalid texture environment "
+        << (int)egg_tex->get_env_type() << "\n";
     }
   }
 }
@@ -928,7 +928,7 @@ get_material_transition(const EggMaterial *egg_mat, bool bface) {
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 setup_bucket(BuilderBucket &bucket, NamedNode *parent, 
-	     EggPrimitive *egg_prim) {
+             EggPrimitive *egg_prim) {
   bucket._node = parent;
   bucket._mesh = egg_mesh;
   bucket._retesselate_coplanar = egg_retesselate_coplanar;
@@ -1005,19 +1005,19 @@ setup_bucket(BuilderBucket &bucket, NamedNode *parent,
       // mode, assume it should be alpha'ed if the texture has an
       // alpha channel.
       if (am == EggRenderMode::AM_unspecified) {
-	Texture *tex = def._texture->get_texture();
-	nassertv(tex != (Texture *)NULL);
-	int num_components = tex->_pbuffer->get_num_components();
-	if (egg_tex->has_alpha_channel(num_components)) {
-	  implicit_alpha = true;
-	}
+        Texture *tex = def._texture->get_texture();
+        nassertv(tex != (Texture *)NULL);
+        int num_components = tex->_pbuffer->get_num_components();
+        if (egg_tex->has_alpha_channel(num_components)) {
+          implicit_alpha = true;
+        }
       }
     }
   }
 
   if (egg_prim->has_material()) {
     MaterialTransition *mt = get_material_transition(egg_prim->get_material(),
-						     egg_prim->get_bface_flag());
+                                                     egg_prim->get_bface_flag());
     bucket._trans.set_transition(mt);
   }
     
@@ -1027,17 +1027,17 @@ setup_bucket(BuilderBucket &bucket, NamedNode *parent,
   if (am == EggRenderMode::AM_unspecified) {
     if (egg_prim->has_color()) {
       if (egg_prim->get_color()[3] != 1.0) {
-	implicit_alpha = true;
+        implicit_alpha = true;
       }
     }
     EggPrimitive::const_iterator vi;
     for (vi = egg_prim->begin(); 
-	 !implicit_alpha && vi != egg_prim->end();
-	 ++vi) {
+         !implicit_alpha && vi != egg_prim->end();
+         ++vi) {
       if ((*vi)->has_color()) {
-	if ((*vi)->get_color()[3] != 1.0) {
-	  implicit_alpha = true;
-	}
+        if ((*vi)->get_color()[3] != 1.0) {
+          implicit_alpha = true;
+        }
       }
     }
     
@@ -1278,7 +1278,7 @@ make_node(EggBin *egg_bin, NamedNode *parent) {
     // All of the children should have the same center, because that's
     // how we binned them.
     assert(lod_node->_lod._center.almost_equal
-	   (LCAST(float, instance._d->_center), 0.01));
+           (LCAST(float, instance._d->_center), 0.01));
 
     instance._arc->set_sort(i);
 
@@ -1309,13 +1309,13 @@ make_node(EggGroup *egg_group, NamedNode *parent) {
     while (egg_group->has_objecttype()) {
       string objecttype = egg_group->get_objecttype();
       if (!expanded.insert(objecttype).second) {
-	egg2sg_cat.error()
-	  << "Cycle in ObjectType expansions:\n";
-	copy(expanded_history.begin(), expanded_history.end(),
-	     ostream_iterator<string>(egg2sg_cat.error(false), " -> "));
-	egg2sg_cat.error(false) << objecttype << "\n";
-	_error = true;
-	break;
+        egg2sg_cat.error()
+          << "Cycle in ObjectType expansions:\n";
+        copy(expanded_history.begin(), expanded_history.end(),
+             ostream_iterator<string>(egg2sg_cat.error(false), " -> "));
+        egg2sg_cat.error(false) << objecttype << "\n";
+        _error = true;
+        break;
       }
       expanded_history.push_back(objecttype);
 
@@ -1329,57 +1329,57 @@ make_node(EggGroup *egg_group, NamedNode *parent) {
       // shorthand for.  First, look in the config file.
 
       string egg_syntax =
-	config_egg2sg.GetString("egg-object-type-" + objecttype, "none");
+        config_egg2sg.GetString("egg-object-type-" + objecttype, "none");
       
       if (egg_syntax == "none") {
-	// It wasn't defined in a config file.  Maybe it's built in?
-	
-	if (cmp_nocase_uh(objecttype, "barrier") == 0) {
-	  egg_syntax = "<Collide> { Polyset descend }";
-	  
-	} else if (cmp_nocase_uh(objecttype, "solidpoly") == 0) {
-	  egg_syntax = "<Collide> { Polyset descend solid }";
-	  
-	} else if (cmp_nocase_uh(objecttype, "turnstile") == 0) {
-	  egg_syntax = "<Collide> { Polyset descend turnstile }";
-	  
-	} else if (cmp_nocase_uh(objecttype, "sphere") == 0) {
-	  egg_syntax = "<Collide> { Sphere descend }";
-	  
-	} else if (cmp_nocase_uh(objecttype, "trigger") == 0) {
-	  egg_syntax = "<Collide> { Polyset descend intangible }";
-	  
-	} else if (cmp_nocase_uh(objecttype, "trigger_sphere") == 0) {
-	  egg_syntax = "<Collide> { Sphere descend intangible }";
-	  
-	} else if (cmp_nocase_uh(objecttype, "eye_trigger") == 0) {
-	  egg_syntax = "<Collide> { Polyset descend intangible center }";
-	  
-	} else if (cmp_nocase_uh(objecttype, "bubble") == 0) {
-	  egg_syntax = "<Collide> { Sphere keep descend }";
-	  
-	} else if (cmp_nocase_uh(objecttype, "ghost") == 0) {
-	  egg_syntax = "<Scalar> collide-mask { 0 }";
-	  
-	} else if (cmp_nocase_uh(objecttype, "backstage") == 0) {
-	  // Ignore "backstage" geometry.
-	  return NULL;
-	  
-	} else {
-	  egg2sg_cat.error()
-	    << "Unknown ObjectType " << objecttype << "\n";
-	  _error = true;
-	  break;
-	}
+        // It wasn't defined in a config file.  Maybe it's built in?
+
+        if (cmp_nocase_uh(objecttype, "barrier") == 0) {
+          egg_syntax = "<Collide> { Polyset descend }";
+
+        } else if (cmp_nocase_uh(objecttype, "solidpoly") == 0) {
+          egg_syntax = "<Collide> { Polyset descend solid }";
+
+        } else if (cmp_nocase_uh(objecttype, "turnstile") == 0) {
+          egg_syntax = "<Collide> { Polyset descend turnstile }";
+
+        } else if (cmp_nocase_uh(objecttype, "sphere") == 0) {
+          egg_syntax = "<Collide> { Sphere descend }";
+
+        } else if (cmp_nocase_uh(objecttype, "trigger") == 0) {
+          egg_syntax = "<Collide> { Polyset descend intangible }";
+
+        } else if (cmp_nocase_uh(objecttype, "trigger_sphere") == 0) {
+          egg_syntax = "<Collide> { Sphere descend intangible }";
+
+        } else if (cmp_nocase_uh(objecttype, "eye_trigger") == 0) {
+          egg_syntax = "<Collide> { Polyset descend intangible center }";
+
+        } else if (cmp_nocase_uh(objecttype, "bubble") == 0) {
+          egg_syntax = "<Collide> { Sphere keep descend }";
+
+        } else if (cmp_nocase_uh(objecttype, "ghost") == 0) {
+          egg_syntax = "<Scalar> collide-mask { 0 }";
+
+        } else if (cmp_nocase_uh(objecttype, "backstage") == 0) {
+          // Ignore "backstage" geometry.
+          return NULL;
+
+        } else {
+          egg2sg_cat.error()
+            << "Unknown ObjectType " << objecttype << "\n";
+          _error = true;
+          break;
+        }
       }
 
       if (!egg_syntax.empty()) {
-	if (!egg_group->parse_egg(egg_syntax)) {
-	  egg2sg_cat.error()
-	    << "Error while parsing definition for ObjectType " 
-	    << objecttype << "\n";
-	  _error = true;
-	}
+        if (!egg_group->parse_egg(egg_syntax)) {
+          egg2sg_cat.error()
+            << "Error while parsing definition for ObjectType " 
+            << objecttype << "\n";
+          _error = true;
+        }
       }
     }
   }
@@ -1390,7 +1390,7 @@ make_node(EggGroup *egg_group, NamedNode *parent) {
     node = char_maker.make_node();
 
   } else if (egg_group->get_cs_type() != EggGroup::CST_none &&
-	     egg_group->get_cs_type() != EggGroup::CST_geode) {
+             egg_group->get_cs_type() != EggGroup::CST_geode) {
     // A collision group: create collision geometry.
     node = new CollisionNode;
     node->set_name(egg_group->get_name());
@@ -1401,7 +1401,7 @@ make_node(EggGroup *egg_group, NamedNode *parent) {
       // traversal.
       EggGroup::const_iterator ci;
       for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
-	make_node(*ci, parent);
+        make_node(*ci, parent);
       }
     }
 
@@ -1413,7 +1413,7 @@ make_node(EggGroup *egg_group, NamedNode *parent) {
     return arc;
 
   } else if (egg_group->get_switch_flag() && 
-	     egg_group->get_switch_fps() != 0.0) {
+             egg_group->get_switch_fps() != 0.0) {
     // Create a sequence node.
     node = new SequenceNode(1.0 / egg_group->get_switch_fps());
     node->set_name(egg_group->get_name());
@@ -1491,7 +1491,7 @@ create_group_arc(EggGroup *egg_group, NamedNode *parent, NamedNode *node) {
   if (egg_group->get_decal_flag()) {
     if (egg_ignore_decals) {
       egg2sg_cat.error() 
-	<< "Ignoring decal flag on " << egg_group->get_name() << "\n";
+        << "Ignoring decal flag on " << egg_group->get_name() << "\n";
       _error = true;
     }
 
@@ -1596,7 +1596,7 @@ make_node(EggGroupNode *egg_group, NamedNode *parent) {
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 make_collision_solids(EggGroup *start_group, EggGroup *egg_group, 
-		      CollisionNode *cnode) {
+                      CollisionNode *cnode) {
   if (egg_group->get_cs_type() != EggGroup::CST_none) {
     start_group = egg_group;
   }
@@ -1637,7 +1637,7 @@ make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
     EggGroup::const_iterator ci;
     for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
       if ((*ci)->is_of_type(EggGroup::get_class_type())) {
-	make_collision_solids(start_group, DCAST(EggGroup, *ci), cnode);
+        make_collision_solids(start_group, DCAST(EggGroup, *ci), cnode);
       }
     }
   }
@@ -1651,19 +1651,19 @@ make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,
-		     EggGroup::CollideFlags flags) {
+                     EggGroup::CollideFlags flags) {
   EggGroup *geom_group = find_collision_geometry(egg_group);
   if (geom_group != (EggGroup *)NULL) {
     EggGroup::const_iterator ci;
     for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
       if ((*ci)->is_of_type(EggPolygon::get_class_type())) {
-	CollisionPlane *csplane =
-	  create_collision_plane(DCAST(EggPolygon, *ci), egg_group);
-	if (csplane != (CollisionPlane *)NULL) {
-	  apply_collision_flags(csplane, flags);
-	  cnode->add_solid(csplane);
-	  return;
-	}
+        CollisionPlane *csplane =
+          create_collision_plane(DCAST(EggPolygon, *ci), egg_group);
+        if (csplane != (CollisionPlane *)NULL) {
+          apply_collision_flags(csplane, flags);
+          cnode->add_solid(csplane);
+          return;
+        }
       }
     }
   }
@@ -1677,15 +1677,15 @@ make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 make_collision_polygon(EggGroup *egg_group, CollisionNode *cnode,
-		       EggGroup::CollideFlags flags) {
+                       EggGroup::CollideFlags flags) {
 
   EggGroup *geom_group = find_collision_geometry(egg_group);
   if (geom_group != (EggGroup *)NULL) {
     EggGroup::const_iterator ci;
     for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
       if ((*ci)->is_of_type(EggPolygon::get_class_type())) {
-	create_collision_polygons(cnode, DCAST(EggPolygon, *ci), 
-				  egg_group, flags);
+        create_collision_polygons(cnode, DCAST(EggPolygon, *ci), 
+                                  egg_group, flags);
       }
     }
   }
@@ -1699,14 +1699,14 @@ make_collision_polygon(EggGroup *egg_group, CollisionNode *cnode,
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 make_collision_polyset(EggGroup *egg_group, CollisionNode *cnode,
-		       EggGroup::CollideFlags flags) {
+                       EggGroup::CollideFlags flags) {
   EggGroup *geom_group = find_collision_geometry(egg_group);
   if (geom_group != (EggGroup *)NULL) {
     EggGroup::const_iterator ci;
     for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
       if ((*ci)->is_of_type(EggPolygon::get_class_type())) {
-	create_collision_polygons(cnode, DCAST(EggPolygon, *ci), 
-				  egg_group, flags);
+        create_collision_polygons(cnode, DCAST(EggPolygon, *ci), 
+                                  egg_group, flags);
       }
     }
   }
@@ -1720,7 +1720,7 @@ make_collision_polyset(EggGroup *egg_group, CollisionNode *cnode,
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
-		      EggGroup::CollideFlags flags) {
+                      EggGroup::CollideFlags flags) {
   EggGroup *geom_group = find_collision_geometry(egg_group);
   if (geom_group != (EggGroup *)NULL) {
     // Collect all of the vertices.
@@ -1729,11 +1729,11 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
     EggGroup::const_iterator ci;
     for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
       if ((*ci)->is_of_type(EggPrimitive::get_class_type())) {
-	EggPrimitive *prim = DCAST(EggPrimitive, *ci);
-	EggPrimitive::const_iterator pi;
-	for (pi = prim->begin(); pi != prim->end(); ++pi) {
-	  vertices.insert(*pi);
-	}
+        EggPrimitive *prim = DCAST(EggPrimitive, *ci);
+        EggPrimitive::const_iterator pi;
+        for (pi = prim->begin(); pi != prim->end(); ++pi) {
+          vertices.insert(*pi);
+        }
       }
     }
 
@@ -1745,15 +1745,15 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
     for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
       EggVertex *vtx = (*vi);
       if (vtx->get_num_dimensions() == 3) {
-	center += vtx->get_pos3();
-	num_vertices++;
+        center += vtx->get_pos3();
+        num_vertices++;
 
       } else if (vtx->get_num_dimensions() == 4) {
-	LPoint4d p4 = vtx->get_pos4();
-	if (p4[3] != 0.0) {
-	  center += LPoint3d(p4[0], p4[1], p4[2]) / p4[3];
-	  num_vertices++;
-	}
+        LPoint4d p4 = vtx->get_pos4();
+        if (p4[3] != 0.0) {
+          center += LPoint3d(p4[0], p4[1], p4[2]) / p4[3];
+          num_vertices++;
+        }
       }
     }
 
@@ -1763,23 +1763,23 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
       // And the furthest vertex determines the radius.
       double radius2 = 0.0;
       for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
-	EggVertex *vtx = (*vi);
-	if (vtx->get_num_dimensions() == 3) {
-	  LVector3d v = vtx->get_pos3() - center;
-	  radius2 = max(radius2, v.length_squared());
-	  
-	} else if (vtx->get_num_dimensions() == 4) {
-	  LPoint4d p = vtx->get_pos4();
-	  if (p[3] != 0.0) {
-	    LVector3d v = LPoint3d(p[0], p[1], p[2]) / p[3] - center;
-	    radius2 = max(radius2, v.length_squared());
-	  }
-	}
+        EggVertex *vtx = (*vi);
+        if (vtx->get_num_dimensions() == 3) {
+          LVector3d v = vtx->get_pos3() - center;
+          radius2 = max(radius2, v.length_squared());
+
+        } else if (vtx->get_num_dimensions() == 4) {
+          LPoint4d p = vtx->get_pos4();
+          if (p[3] != 0.0) {
+            LVector3d v = LPoint3d(p[0], p[1], p[2]) / p[3] - center;
+            radius2 = max(radius2, v.length_squared());
+          }
+        }
       }
 
       float radius = sqrtf(radius2);
       CollisionSphere *cssphere = 
-	new CollisionSphere(LCAST(float, center), radius);
+        new CollisionSphere(LCAST(float, center), radius);
       apply_collision_flags(cssphere, flags);
       cnode->add_solid(cssphere);
     }
@@ -1795,7 +1795,7 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
 ////////////////////////////////////////////////////////////////////
 void EggLoader:: 
 apply_collision_flags(CollisionSolid *solid, 
-		      EggGroup::CollideFlags flags) {
+                      EggGroup::CollideFlags flags) {
   if ((flags & EggGroup::CF_intangible) != 0) {
     solid->set_tangible(false);
   }
@@ -1830,7 +1830,7 @@ find_collision_geometry(EggGroup *egg_group) {
     if ((*ci)->is_of_type(EggGroup::get_class_type())) {
       EggGroup *child_group = DCAST(EggGroup, *ci);
       if (child_group->get_cs_type() == egg_group->get_cs_type()) {
-	return child_group;
+        return child_group;
       }
     }
   }
@@ -1868,7 +1868,7 @@ create_collision_plane(EggPolygon *egg_poly, EggGroup *parent_group) {
     while (vi != egg_poly->end()) {
       vert = (*vi)->get_pos3();
       if (!vert.almost_equal(last_vert)) {
-	vertices.push_back(LCAST(float, vert));
+        vertices.push_back(LCAST(float, vert));
       }
       
       last_vert = vert;
@@ -1892,8 +1892,8 @@ create_collision_plane(EggPolygon *egg_poly, EggGroup *parent_group) {
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly, 
-			  EggGroup *parent_group, 
-			  EggGroup::CollideFlags flags) {
+                          EggGroup *parent_group, 
+                          EggGroup::CollideFlags flags) {
 
   PT(EggGroup) group = new EggGroup;
 
@@ -1927,13 +1927,13 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
       Vertexd last_vert = vert;
       ++vi;
       while (vi != poly->end()) {
-	vert = (*vi)->get_pos3();
-	if (!vert.almost_equal(last_vert)) {
-	  vertices.push_back(LCAST(float, vert));
-	}
-	
-	last_vert = vert;
-	++vi;
+        vert = (*vi)->get_pos3();
+        if (!vert.almost_equal(last_vert)) {
+          vertices.push_back(LCAST(float, vert));
+        }
+
+        last_vert = vert;
+        ++vi;
       }
     }
 
@@ -1941,7 +1941,7 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
       const Vertexf *vertices_begin = &vertices[0];
       const Vertexf *vertices_end = vertices_begin + vertices.size();
       CollisionPolygon *cspoly = 
-	new CollisionPolygon(vertices_begin, vertices_end);
+        new CollisionPolygon(vertices_begin, vertices_end);
       apply_collision_flags(cspoly, flags);
       cnode->add_solid(cspoly);
     }
@@ -1961,5 +1961,5 @@ apply_deferred_arcs(Node *root) {
   DeferredArcTraverser trav(_deferred_arcs);
 
   df_traverse(root, trav, NullAttributeWrapper(), DeferredArcProperty(),
-	      RenderRelation::get_class_type());
+              RenderRelation::get_class_type());
 }

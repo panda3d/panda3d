@@ -11,7 +11,7 @@
 #include "eggMultiBase.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggMultiFilter
+//       Class : EggMultiFilter
 // Description : This is a base class for a program that reads in a
 //               number of egg files, operates on them, and writes
 //               them out again (presumably to a different directory).

@@ -14,7 +14,7 @@
 #include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : VectorDataTransition
+//       Class : VectorDataTransition
 // Description : A VectorDataAttribute is a special data graph
 //               attribute that is used to pass around a complex
 //               number like a vector or a matrix.  The Transition
@@ -65,10 +65,10 @@ public:
     do_init_type(VecType);
     do_init_type(MatType);
     register_type(_type_handle, 
-		  string("VectorDataTransition<") + 
-		  get_type_handle(VecType).get_name() + "," +
-		  get_type_handle(MatType).get_name() + ">",
-		  NodeTransition::get_class_type());
+                  string("VectorDataTransition<") + 
+                  get_type_handle(VecType).get_name() + "," +
+                  get_type_handle(MatType).get_name() + ">",
+                  NodeTransition::get_class_type());
   }
 
 private:

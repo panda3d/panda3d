@@ -63,13 +63,13 @@ ns_store_pointer(TypeHandle type, void *ptr) {
     // There was already a pointer in the map.
     if ((*result.first).second == ptr) {
       util_cat->error()
-	<< "Invalid attempt to store pointer " << ptr
-	<< " twice for " << type << "\n";
+        << "Invalid attempt to store pointer " << ptr
+        << " twice for " << type << "\n";
     } else {
       util_cat->error()
-	<< "Invalid attempt to store additional pointer " << ptr
-	<< " for " << type << "; " << (*result.first).second
-	<< " stored previously.\n";
+        << "Invalid attempt to store additional pointer " << ptr
+        << " for " << type << "; " << (*result.first).second
+        << " stored previously.\n";
     }
   }
 }

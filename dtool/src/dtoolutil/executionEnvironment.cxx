@@ -82,20 +82,20 @@ expand_string(const string &str) {
       size_t end = start;
 
       if (str[start] == '{') {
-	// Curly braces delimit the variable name explicitly.
-	end = str.find('}', start + 1);
-	if (end != string::npos) {
-	  varname = str.substr(start + 1, end - (start + 1));
-	  end++;
-	}
+        // Curly braces delimit the variable name explicitly.
+        end = str.find('}', start + 1);
+        if (end != string::npos) {
+          varname = str.substr(start + 1, end - (start + 1));
+          end++;
+        }
       }
 
       if (end == start) {
-	// Scan for the end of the variable name.
-	while (end < str.length() && (isalnum(str[end]) || str[end] == '_')) {
-	  end++;
-	}
-	varname = str.substr(start, end - start);
+        // Scan for the end of the variable name.
+        while (end < str.length() && (isalnum(str[end]) || str[end] == '_')) {
+          end++;
+        }
+        varname = str.substr(start, end - start);
       }
 
       string subst = 
@@ -274,8 +274,8 @@ read_environment_variables() {
     if (ch == '=') {
       ch = proc.get();
       while (!proc.eof() && !proc.fail() && ch != '\0') {
-	value += (char)ch;
-	ch = proc.get();
+        value += (char)ch;
+        ch = proc.get();
       }
     }
 

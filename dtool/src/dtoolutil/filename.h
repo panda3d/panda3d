@@ -24,7 +24,7 @@
 class DSearchPath;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : Filename
+//       Class : Filename
 // Description : The name of a file, such as a texture file or an Egg
 //               file.  Stores the full pathname, and includes
 //               functions for extracting out the directory prefix
@@ -72,9 +72,9 @@ PUBLISHED:
   INLINE static Filename executable_filename(const string &filename);
 
   static Filename from_os_specific(const string &os_specific, 
-				   Type type = T_general);
+                                   Type type = T_general);
   static Filename temporary(const string &dirname, const string &prefix,
-			    Type type = T_general);
+                            Type type = T_general);
 
   // Assignment is via the = operator.
   INLINE Filename &operator = (const string &filename);
@@ -134,10 +134,10 @@ PUBLISHED:
   bool is_directory() const;
   bool is_executable() const;
   int compare_timestamps(const Filename &other,
-			 bool this_missing_is_old = true,
-			 bool other_missing_is_old = true) const;
+                         bool this_missing_is_old = true,
+                         bool other_missing_is_old = true) const;
   bool resolve_filename(const DSearchPath &searchpath,
-			const string &default_extension = string());
+                        const string &default_extension = string());
   bool make_relative_to(Filename directory, bool allow_backups = true);
   int find_on_searchpath(const DSearchPath &searchpath);
 

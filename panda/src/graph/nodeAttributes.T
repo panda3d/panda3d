@@ -17,7 +17,7 @@
 template<class Attribute>
 INLINE_GRAPH bool 
 get_attribute_into(Attribute *&ptr, const NodeAttributes &attrib,
-		   TypeHandle transition_type) {
+                   TypeHandle transition_type) {
   NodeAttribute *nt = attrib.get_attribute(transition_type);
   if (nt == (NodeAttribute *)NULL) {
     ptr = (Attribute *)NULL;

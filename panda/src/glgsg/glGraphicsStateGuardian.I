@@ -43,7 +43,7 @@ activate() {
 ////////////////////////////////////////////////////////////////////
 INLINE void GLGraphicsStateGuardian::
 call_glClearColor(GLclampf red, GLclampf green, GLclampf blue,
-		  GLclampf alpha) {
+                  GLclampf alpha) {
   if (red != _clear_color_red ||
       green != _clear_color_green ||
       blue != _clear_color_blue ||
@@ -94,7 +94,7 @@ call_glClearStencil(GLint s) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GLGraphicsStateGuardian::
 call_glClearAccum(GLclampf red, GLclampf green, GLclampf blue,
-		  GLclampf alpha) {
+                  GLclampf alpha) {
   if (red != _clear_accum_red ||
       green != _clear_accum_green ||
       blue != _clear_accum_blue ||
@@ -189,11 +189,11 @@ INLINE void GLGraphicsStateGuardian::
 call_glScissor(GLint x, GLint y, GLsizei width, GLsizei height)
 {
     if ( _scissor_x != x || _scissor_y != y ||
-	_scissor_width != width || _scissor_height != height )
+        _scissor_width != width || _scissor_height != height )
     {
-	_scissor_x = x; _scissor_y = y;
-	_scissor_width = width; _scissor_height = height;
-	glScissor( x, y, width, height );
+        _scissor_x = x; _scissor_y = y;
+        _scissor_width = width; _scissor_height = height;
+        glScissor( x, y, width, height );
     }
 }
 
@@ -242,8 +242,8 @@ call_glLightModelLocal(GLboolean local)
 {
     if ( _lmodel_local != local )
     {
-	_lmodel_local = local;
-	glLightModeli( GL_LIGHT_MODEL_LOCAL_VIEWER, local );
+        _lmodel_local = local;
+        glLightModeli( GL_LIGHT_MODEL_LOCAL_VIEWER, local );
     }
 }
 
@@ -754,14 +754,14 @@ enable_lighting(bool val) {
     if (val) {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glEnable(GL_LIGHTING)" << endl;
+        << "glEnable(GL_LIGHTING)" << endl;
 #endif
       glEnable(GL_LIGHTING);
       _lighting_enabled_this_frame = true;
     } else {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glDisable(GL_LIGHTING)" << endl;
+        << "glDisable(GL_LIGHTING)" << endl;
 #endif
       glDisable(GL_LIGHTING);
     }
@@ -780,13 +780,13 @@ enable_dither(bool val) {
     if (val) {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glEnable(GL_DITHER)" << endl;
+        << "glEnable(GL_DITHER)" << endl;
 #endif
       glEnable(GL_DITHER);
     } else {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glDisable(GL_DITHER)" << endl;
+        << "glDisable(GL_DITHER)" << endl;
 #endif
       glDisable(GL_DITHER);
     }
@@ -805,13 +805,13 @@ enable_stencil_test(bool val) {
     if (val) {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glEnable(GL_STENCIL_TEST)" << endl;
+        << "glEnable(GL_STENCIL_TEST)" << endl;
 #endif
       glEnable(GL_STENCIL_TEST);
     } else {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glDisable(GL_STENCIL_TEST)" << endl;
+        << "glDisable(GL_STENCIL_TEST)" << endl;
 #endif
       glDisable(GL_STENCIL_TEST);
     }
@@ -837,8 +837,8 @@ INLINE GLenum GLGraphicsStateGuardian::get_light_id(int index) const
         case 7: return GL_LIGHT7;
         default:
             glgsg_cat.error()
-	      << "get_light_id() - we don't currently support ids "
-	      << "> 8" << endl;
+              << "get_light_id() - we don't currently support ids "
+              << "> 8" << endl;
             break;
     }
     return GL_LIGHT0;
@@ -860,8 +860,8 @@ get_clip_plane_id(int index) const {
     case 5: return GL_CLIP_PLANE5;
     default:
       glgsg_cat.error()
-	<< "get_clip_plane_id() - we don't currently support ids "
-	<< "> 5" << endl;
+        << "get_clip_plane_id() - we don't currently support ids "
+        << "> 5" << endl;
       break;
   }
   return GL_CLIP_PLANE0;
@@ -876,23 +876,23 @@ INLINE void GLGraphicsStateGuardian::enable_light(int light, bool val)
 {
     if ( _light_info[light]._enabled != val )
     {
-	_light_info[light]._enabled = val;
-	if ( val )
+        _light_info[light]._enabled = val;
+        if ( val )
         {
 #ifdef GSG_VERBOSE
           glgsg_cat.debug()
-	    << "glEnable(GL_LIGHT" << light << ")" << endl;
+            << "glEnable(GL_LIGHT" << light << ")" << endl;
 #endif
-	    glEnable( get_light_id( light ) );
+            glEnable( get_light_id( light ) );
         }
-	else
-	{
+        else
+        {
 #ifdef GSG_VERBOSE
           glgsg_cat.debug()
-	    << "glDisable(GL_LIGHT" << light << ")" << endl;
+            << "glDisable(GL_LIGHT" << light << ")" << endl;
 #endif
-	    glDisable( get_light_id( light ) );
-	}
+            glDisable( get_light_id( light ) );
+        }
     }
 }
 
@@ -908,13 +908,13 @@ enable_texturing(bool val) {
     if (val) {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glEnable(GL_TEXTURE_2D)" << endl;
+        << "glEnable(GL_TEXTURE_2D)" << endl;
 #endif
       glEnable(GL_TEXTURE_2D);
     } else {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glDisable(GL_TEXTURE_2D)" << endl;
+        << "glDisable(GL_TEXTURE_2D)" << endl;
 #endif
       glDisable(GL_TEXTURE_2D);
     }
@@ -930,11 +930,11 @@ INLINE void GLGraphicsStateGuardian::
 enable_scissor(bool val)
 {
     if ( _scissor_enabled != val ) {
-	_scissor_enabled = val;
+        _scissor_enabled = val;
         if ( val )
-	    glEnable( GL_SCISSOR_TEST );
-	else
- 	    glDisable( GL_SCISSOR_TEST );
+            glEnable( GL_SCISSOR_TEST );
+        else
+            glDisable( GL_SCISSOR_TEST );
     }
 }
 
@@ -950,13 +950,13 @@ enable_clip_plane(int clip_plane, bool val) {
     if (val) {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glEnable(GL_CLIP_PLANE_" << clip_plane << ")" << endl;
+        << "glEnable(GL_CLIP_PLANE_" << clip_plane << ")" << endl;
 #endif
       glEnable(get_clip_plane_id(clip_plane));
     } else {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glDisable(GL_CLIP_PLANE_" << clip_plane << ")" << endl;
+        << "glDisable(GL_CLIP_PLANE_" << clip_plane << ")" << endl;
 #endif
       glDisable(get_clip_plane_id(clip_plane));
     }
@@ -976,13 +976,13 @@ enable_multisample_alpha_one(bool val) {
     if (val) {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glEnable(GL_SAMPLE_ALPHA_TO_ONE_SGIS)" << endl;
+        << "glEnable(GL_SAMPLE_ALPHA_TO_ONE_SGIS)" << endl;
 #endif
       glEnable(GL_SAMPLE_ALPHA_TO_ONE_SGIS);
     } else {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glDisable(GL_SAMPLE_ALPHA_TO_ONE_SGIS)" << endl;
+        << "glDisable(GL_SAMPLE_ALPHA_TO_ONE_SGIS)" << endl;
 #endif
       glDisable(GL_SAMPLE_ALPHA_TO_ONE_SGIS);
     }
@@ -1003,13 +1003,13 @@ enable_multisample_alpha_mask(bool val) {
     if (val) {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glEnable(GL_SAMPLE_ALPHA_TO_MASK_SGIS)" << endl;
+        << "glEnable(GL_SAMPLE_ALPHA_TO_MASK_SGIS)" << endl;
 #endif
       glEnable(GL_SAMPLE_ALPHA_TO_MASK_SGIS);
     } else {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glDisable(GL_SAMPLE_ALPHA_TO_MASK_SGIS)" << endl;
+        << "glDisable(GL_SAMPLE_ALPHA_TO_MASK_SGIS)" << endl;
 #endif
       glDisable(GL_SAMPLE_ALPHA_TO_MASK_SGIS);
     }
@@ -1029,13 +1029,13 @@ enable_blend(bool val) {
     if (val) {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glEnable(GL_BLEND)" << endl;
+        << "glEnable(GL_BLEND)" << endl;
 #endif
       glEnable(GL_BLEND);
     } else {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glDisable(GL_BLEND)" << endl;
+        << "glDisable(GL_BLEND)" << endl;
 #endif
       glDisable(GL_BLEND);
     }
@@ -1054,13 +1054,13 @@ enable_depth_test(bool val) {
     if (val) {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glEnable(GL_DEPTH_TEST)" << endl;
+        << "glEnable(GL_DEPTH_TEST)" << endl;
 #endif
       glEnable(GL_DEPTH_TEST);
     } else {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glDisable(GL_DEPTH_TEST)" << endl;
+        << "glDisable(GL_DEPTH_TEST)" << endl;
 #endif
       glDisable(GL_DEPTH_TEST);
     }
@@ -1079,13 +1079,13 @@ enable_fog(bool val) {
     if (val) {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glEnable(GL_FOG)" << endl;
+        << "glEnable(GL_FOG)" << endl;
 #endif
       glEnable(GL_FOG);
     } else {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glDisable(GL_FOG)" << endl;
+        << "glDisable(GL_FOG)" << endl;
 #endif
       glDisable(GL_FOG);
     }
@@ -1104,13 +1104,13 @@ enable_alpha_test(bool val) {
     if (val) {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glEnable(GL_ALPHA_TEST)" << endl;
+        << "glEnable(GL_ALPHA_TEST)" << endl;
 #endif
       glEnable(GL_ALPHA_TEST);
     } else {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glDisable(GL_ALPHA_TEST)" << endl;
+        << "glDisable(GL_ALPHA_TEST)" << endl;
 #endif
       glDisable(GL_ALPHA_TEST);
     }
@@ -1130,13 +1130,13 @@ enable_polygon_offset(bool val) {
     if (val) {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glEnable(GL_POLYGON_OFFSET_*)" << endl;
+        << "glEnable(GL_POLYGON_OFFSET_*)" << endl;
 #endif
       glEnable(GL_POLYGON_OFFSET_FILL);
     } else {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()
-	<< "glDisable(GL_POLYGON_OFFSET_*)" << endl;
+        << "glDisable(GL_POLYGON_OFFSET_*)" << endl;
 #endif
       glDisable(GL_POLYGON_OFFSET_FILL);
     }

@@ -30,11 +30,11 @@ ConnectionWriter(ConnectionManager *manager, int num_threads) :
   for (int i = 0; i < num_threads; i++) {
     PRThread *thread = 
       PR_CreateThread(PR_USER_THREAD,
-		      thread_start, (void *)this,
-		      PR_PRIORITY_NORMAL,
-		      PR_GLOBAL_THREAD, // Since thread will mostly do I/O.
-		      PR_JOINABLE_THREAD, 
-		      0);  // Select a suitable stack size.
+                      thread_start, (void *)this,
+                      PR_PRIORITY_NORMAL,
+                      PR_GLOBAL_THREAD, // Since thread will mostly do I/O.
+                      PR_JOINABLE_THREAD, 
+                      0);  // Select a suitable stack size.
 
     nassertv(thread != (PRThread *)NULL);
     _threads.push_back(thread);

@@ -11,7 +11,7 @@
 #include "lwoGroupChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoClip
+//       Class : LwoClip
 // Description : A single image file, or a numbered sequence of images
 //               (e.g. a texture-flip animation).
 ////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ public:
   static void init_type() {
     LwoGroupChunk::init_type();
     register_type(_type_handle, "LwoClip",
-		  LwoGroupChunk::get_class_type());
+                  LwoGroupChunk::get_class_type());
   }
 
 private:

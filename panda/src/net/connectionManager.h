@@ -21,7 +21,7 @@ class ConnectionReader;
 class ConnectionWriter;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ConnectionManager
+//       Class : ConnectionManager
 // Description : The primary interface to the low-level networking
 //               layer in this package.  A ConnectionManager is used
 //               to establish and destroy TCP and UDP connections.
@@ -44,9 +44,9 @@ PUBLISHED:
 
   PT(Connection) open_TCP_server_rendezvous(int port, int backlog);
   PT(Connection) open_TCP_client_connection(const NetAddress &address,
-					    int timeout_ms);
+                                            int timeout_ms);
   PT(Connection) open_TCP_client_connection(const string &hostname, int port,
-					    int timeout_ms);
+                                            int timeout_ms);
 
   bool close_connection(const PT(Connection) &connection);
 

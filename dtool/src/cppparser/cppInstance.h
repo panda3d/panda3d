@@ -20,7 +20,7 @@ class CPPScope;
 class CPPExpression;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPInstance
+//       Class : CPPInstance
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPInstance : public CPPDeclaration {
@@ -46,13 +46,13 @@ public:
   CPPInstance(CPPType *type, const string &name, int storage_class = 0);
   CPPInstance(CPPType *type, CPPIdentifier *ident, int storage_class = 0);
   CPPInstance(CPPType *type, CPPInstanceIdentifier *ii,
-	      int storage_class, const CPPFile &file);
+              int storage_class, const CPPFile &file);
   CPPInstance(const CPPInstance &copy);
   ~CPPInstance();
 
   static CPPInstance *
   make_typecast_function(CPPInstance *inst, CPPIdentifier *ident,
-			 CPPParameterList *parameters, int function_flags);
+                         CPPParameterList *parameters, int function_flags);
 
   bool operator == (const CPPInstance &other) const;
   bool operator != (const CPPInstance &other) const;
@@ -62,7 +62,7 @@ public:
 
   bool is_scoped() const;
   CPPScope *get_scope(CPPScope *current_scope, CPPScope *global_scope,
-		      CPPPreprocessor *error_sink = NULL) const;
+                      CPPPreprocessor *error_sink = NULL) const;
 
   string get_simple_name() const;
   string get_local_name(CPPScope *scope = NULL) const;
@@ -72,18 +72,18 @@ public:
 
   virtual CPPDeclaration *
   instantiate(const CPPTemplateParameterList *actual_params,
-	      CPPScope *current_scope, CPPScope *global_scope,
-	      CPPPreprocessor *error_sink = NULL) const;
+              CPPScope *current_scope, CPPScope *global_scope,
+              CPPPreprocessor *error_sink = NULL) const;
 
   virtual bool is_fully_specified() const;
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
-					  CPPScope *current_scope,
-					  CPPScope *global_scope);
+                                          CPPScope *current_scope,
+                                          CPPScope *global_scope);
 
   virtual void output(ostream &out, int indent_level, CPPScope *scope,
-		      bool complete) const;
+                      bool complete) const;
   void output(ostream &out, int indent_level, CPPScope *scope,
-	      bool complete, int num_default_parameters) const;
+              bool complete, int num_default_parameters) const;
   virtual SubType get_subtype() const;
 
   virtual CPPInstance *as_instance();

@@ -16,7 +16,7 @@
 #include <string>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : Datagram
+//       Class : Datagram
 // Description : An ordered list of data elements, formatted in memory
 //               for transmission over a socket or writing to a data
 //               file.
@@ -95,7 +95,7 @@ public:
   static void init_type() {
     TypedObject::init_type();
     register_type(_type_handle, "Datagram",
-		  TypedObject::get_class_type());
+                  TypedObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -41,7 +41,7 @@ is_fully_specified() const {
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPPointerType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
-		CPPScope *current_scope, CPPScope *global_scope) {
+                CPPScope *current_scope, CPPScope *global_scope) {
   SubstDecl::const_iterator si = subst.find(this);
   if (si != subst.end()) {
     return (*si).second;
@@ -142,8 +142,8 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
 ////////////////////////////////////////////////////////////////////
 void CPPPointerType::
 output_instance(ostream &out, int indent_level, CPPScope *scope,
-		bool complete, const string &prename,
-		const string &name) const {
+                bool complete, const string &prename,
+                const string &name) const {
   string star = "*";
 
   CPPFunctionType *ftype = _pointing_at->as_function_type();
@@ -155,7 +155,7 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
   }
 
   _pointing_at->output_instance(out, indent_level, scope, complete, 
-				star + prename, name);
+                                star + prename, name);
 }
 
 ////////////////////////////////////////////////////////////////////

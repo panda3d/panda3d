@@ -26,8 +26,8 @@
 class ExtractorToken : public ReferenceCount {
 public:
   INLINE ExtractorToken(uint id, const Filename &source_file, 
-	   	    	const string &event_name,
-			const Filename &rel_path) {
+                        const string &event_name,
+                        const Filename &rel_path) {
     _id = id;
     _source_file = source_file;
     _event_name = event_name;
@@ -92,7 +92,7 @@ Extractor::
 ////////////////////////////////////////////////////////////////////
 int Extractor::
 request_extract(const Filename &source_file, const string &event_name,
-		const Filename &rel_path) {
+                const Filename &rel_path) {
 
   PT(ExtractorToken) tok;
   if (_threads_enabled) {
@@ -122,7 +122,7 @@ request_extract(const Filename &source_file, const string &event_name,
       }
 
       tok = new ExtractorToken(_next_token++, source_file, event_name,
-						rel_path);
+                                                rel_path);
       _token_board->_waiting.insert(tok);
 
 #ifdef HAVE_IPC
@@ -144,7 +144,7 @@ request_extract(const Filename &source_file, const string &event_name,
     }
 
     tok = new ExtractorToken(_next_token++, source_file, event_name,
-						rel_path);
+                                                rel_path);
     _token_board->_waiting.insert(tok);
     process_request();
   }
@@ -183,7 +183,7 @@ process_request() {
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
           << "Extractor::process_request() - extract complete for " 
-	  << tok->_source_file << "\n";
+          << tok->_source_file << "\n";
       }
     }
   }
@@ -230,8 +230,8 @@ extract(Filename &source_file, const Filename &rel_path) {
       source_buffer_length = read_stream.gcount();
       total_bytes_read += source_buffer_length;
       if (read_stream.eof()) {
-	nassertr(total_bytes_read == source_file_length, false);
-	read_all_input = true;
+        nassertr(total_bytes_read == source_file_length, false);
+        read_all_input = true;
       }
     }
 

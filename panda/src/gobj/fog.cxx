@@ -69,7 +69,7 @@ void Fog::compute_density(void) {
     break;
   case M_exponential:
     // Multiplier = ln(2^bits)
-	// attempt to compute density based on full
+        // attempt to compute density based on full
     opaque_multiplier = MathNumbers::ln2 * _bits_per_color_channel;
     _density = opaque_multiplier / _opaque_distance;
     break;
@@ -93,12 +93,12 @@ void Fog::
 output(ostream &out) const {
   out << "fog:" << _mode;
   switch (_mode) {
-	  case M_linear: 
+          case M_linear: 
     break;
   case M_exponential:
   case M_exponential_squared:
     out << "(" << _bits_per_color_channel << "," << _density
-	<< "," << _opaque_distance << ")";
+        << "," << _opaque_distance << ")";
     break;
   };
 }

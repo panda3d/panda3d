@@ -190,7 +190,7 @@ write(ostream &out, int indent_level) const {
       indent(out, indent_level + 4) << "<Loop> {\n";
       Curves::const_iterator ci;
       for (ci = (*li).begin(); ci != (*li).end(); ++ci) {
-	(*ci)->write(out, indent_level + 6);
+        (*ci)->write(out, indent_level + 6);
       }
       indent(out, indent_level + 4) << "}\n";
     }
@@ -210,13 +210,13 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level + 2) 
     << "<U-Knots> {\n";
   write_long_list(out, indent_level+4, _u_knots.begin(), _u_knots.end(),
-	"", "", 72);
+        "", "", 72);
   indent(out, indent_level + 2)
     << "}\n";
   indent(out, indent_level + 2) 
     << "<V-Knots> {\n";
   write_long_list(out, indent_level+4, _v_knots.begin(), _v_knots.end(),
-	"", "", 72);
+        "", "", 72);
   indent(out, indent_level + 2)
     << "}\n";
 

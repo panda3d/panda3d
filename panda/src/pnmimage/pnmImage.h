@@ -17,7 +17,7 @@ class PNMWriter;
 class PNMFileType;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PNMImage
+//       Class : PNMImage
 // Description : Conceptually, a PNMImage is a two-dimensional array
 //               of xels, which are the PNM-defined generic pixel
 //               type.  Each xel may have a red, green, and blue
@@ -41,7 +41,7 @@ public:
   INLINE PNMImage();
   INLINE PNMImage(const Filename &filename, PNMFileType *type = NULL);
   INLINE PNMImage(int x_size, int y_size, int num_channels = 3,
-		  xelval maxval = 255, PNMFileType *type = NULL);
+                  xelval maxval = 255, PNMFileType *type = NULL);
   INLINE PNMImage(const PNMImage &copy);
   INLINE void operator = (const PNMImage &copy);
 
@@ -53,7 +53,7 @@ public:
 
   void clear();
   void clear(int x_size, int y_size, int num_channels = 3,
-	     xelval maxval = 255, PNMFileType *type = NULL);
+             xelval maxval = 255, PNMFileType *type = NULL);
 
   void copy_from(const PNMImage &copy);
   void copy_header_from(const PNMImageHeader &header);
@@ -137,9 +137,9 @@ public:
 
   INLINE double get_bright(int x, int y) const;
   INLINE double get_bright(int x, int y, double rc, double gc, 
-			   double bc) const;
+                           double bc) const;
   INLINE double get_bright(int x, int y, double rc, double gc, 
-			   double bc, double ac) const;
+                           double bc, double ac) const;
 
   INLINE void blend(int x, int y, const RGBColord &val, double alpha);
   void blend(int x, int y, double r, double g, double b, double alpha);
@@ -153,8 +153,8 @@ public:
 
   
   void copy_sub_image(const PNMImage &copy, int xto, int yto,
-		      int xfrom = 0, int yfrom = 0,
-		      int x_size = -1, int y_size = -1);
+                      int xfrom = 0, int yfrom = 0,
+                      int x_size = -1, int y_size = -1);
 
   // The bodies for the non-inline *_filter() functions can be found
   // in the file pnm-image-filter.cxx.
@@ -165,7 +165,7 @@ public:
   void box_filter_from(double radius, const PNMImage &copy);
   void gaussian_filter_from(double radius, const PNMImage &copy);
   void quick_filter_from(const PNMImage &copy, 
-			 int xborder = 0, int yborder = 0);
+                         int xborder = 0, int yborder = 0);
 
 private:
   INLINE void allocate_array();

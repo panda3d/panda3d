@@ -16,8 +16,8 @@ INLINE void GuiManager::set_next_draw_order(int v) {
 #ifndef NDEBUG
   if (v < _next_draw_order)
     gui_cat->warning() << "GuiManager::set_next_draw_order(" << v
-		       << ") is < existing (" << _next_draw_order << ")"
-		       << endl;
+                       << ") is < existing (" << _next_draw_order << ")"
+                       << endl;
 #endif /* NDEBUG */
   this->_next_draw_order = v;
 }

@@ -30,7 +30,7 @@ class NodeAttribute;
 class NullAttributeWrapper;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : NullTransitionWrapper
+//       Class : NullTransitionWrapper
 // Description : This is a wrapper around *no* transitions at all.  It
 //               does absolutely nothing.  It's pointless to pass to
 //               wrt(), but it's useful for passing to df_traverse()
@@ -68,8 +68,8 @@ public:
   INLINE_GRAPH void set_computed_verified(UpdateSeq now);
 
   INLINE_GRAPH void cached_compose(const NullTransitionWrapper &cache, 
-			     const NullTransitionWrapper &value,
-			     UpdateSeq now);
+                             const NullTransitionWrapper &value,
+                             UpdateSeq now);
 
   INLINE_GRAPH void output(ostream &out) const;
   INLINE_GRAPH void write(ostream &out, int indent_level = 0) const;

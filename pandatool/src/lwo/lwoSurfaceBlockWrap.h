@@ -11,7 +11,7 @@
 #include "lwoChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurfaceBlockWrap
+//       Class : LwoSurfaceBlockWrap
 // Description : Specifies how the texture image appears for areas
 //               outside the image.
 ////////////////////////////////////////////////////////////////////
@@ -40,7 +40,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoSurfaceBlockWrap",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

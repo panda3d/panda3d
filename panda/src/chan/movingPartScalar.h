@@ -25,7 +25,7 @@ protected:
 
 public:
   INLINE MovingPartScalar(PartGroup *parent, const string &name,
-			  const float &initial_value = 0);
+                          const float &initial_value = 0);
 
   virtual void get_blend_value(const PartBundle *root);
 
@@ -49,7 +49,7 @@ public:
     MovingPart<ACScalarSwitchType>::init_type();
     AnimChannelFixed<ACScalarSwitchType>::init_type();
     register_type(_type_handle, "MovingPartScalar",
-		  MovingPart<ACScalarSwitchType>::get_class_type());
+                  MovingPart<ACScalarSwitchType>::get_class_type());
   }
 
 private:

@@ -84,7 +84,7 @@ public:
   static void init_type(void) {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "Physical",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

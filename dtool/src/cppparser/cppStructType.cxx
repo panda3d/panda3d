@@ -35,8 +35,8 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 CPPStructType::
 CPPStructType(CPPStructType::Type type, CPPIdentifier *ident, 
-	      CPPScope *current_scope, CPPScope *scope, 
-	      const CPPFile &file) :
+              CPPScope *current_scope, CPPScope *scope, 
+              const CPPFile &file) :
   CPPExtensionType(type, ident, current_scope, file),
   _scope(scope)
 {
@@ -180,12 +180,12 @@ get_destructor() const {
   fi = _scope->_functions.lower_bound("~");
 
   while (fi != _scope->_functions.end() &&
-	 (*fi).first[0] == '~') {
+         (*fi).first[0] == '~') {
     CPPFunctionGroup *fgroup = (*fi).second;
     CPPFunctionGroup::Instances::const_iterator ii;
     for (ii = fgroup->_instances.begin();
-	 ii != fgroup->_instances.end();
-	 ++ii) {
+         ii != fgroup->_instances.end();
+         ++ii) {
       CPPInstance *inst = (*ii);
       assert(inst->_type != (CPPType *)NULL);
       
@@ -193,7 +193,7 @@ get_destructor() const {
       assert(ftype != (CPPFunctionType *)NULL);
       
       if ((ftype->_flags & CPPFunctionType::F_destructor) != 0) {
-	return inst;
+        return inst;
       }
     }
     ++fi;
@@ -209,8 +209,8 @@ get_destructor() const {
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPStructType::
 instantiate(const CPPTemplateParameterList *actual_params,
-	    CPPScope *current_scope, CPPScope *global_scope,
-	    CPPPreprocessor *error_sink) const {
+            CPPScope *current_scope, CPPScope *global_scope,
+            CPPPreprocessor *error_sink) const {
 
   // I *think* this assertion is no longer valid.  Who knows.
   //  assert(!_incomplete);
@@ -218,7 +218,7 @@ instantiate(const CPPTemplateParameterList *actual_params,
   if (_scope == NULL) {
     if (error_sink != NULL) {
       error_sink->warning("Ignoring template parameters for class " + 
-			  get_local_name());
+                          get_local_name());
     }
     return (CPPDeclaration *)this;
   }
@@ -255,7 +255,7 @@ instantiate(const CPPTemplateParameterList *actual_params,
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPStructType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
-		CPPScope *current_scope, CPPScope *global_scope) {
+                CPPScope *current_scope, CPPScope *global_scope) {
   SubstDecl::const_iterator si = subst.find(this);
   if (si != subst.end()) {
     assert((*si).second != NULL);
@@ -295,18 +295,18 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
       CPPScope *pscope = rep->_scope->get_parent_scope();
 
       if (pscope != (CPPScope *)NULL && 
-	  pscope->_name.has_templ()) {
+          pscope->_name.has_templ()) {
 
-	// If the struct name didn't have an explicit template
-	// reference before, now it does.
-	if (!_ident->_names.empty() && !_ident->_names.back().has_templ()) {
-	  if (rep->is_template()) {
-	    rep->_template_scope = (CPPTemplateScope *)NULL;
-	    CPPNameComponent nc(get_simple_name());
-	    nc.set_templ(pscope->_name.get_templ());
-	    rep->_ident = new CPPIdentifier(nc);
-	  }
-	}
+        // If the struct name didn't have an explicit template
+        // reference before, now it does.
+        if (!_ident->_names.empty() && !_ident->_names.back().has_templ()) {
+          if (rep->is_template()) {
+            rep->_template_scope = (CPPTemplateScope *)NULL;
+            CPPNameComponent nc(get_simple_name());
+            nc.set_templ(pscope->_name.get_templ());
+            rep->_ident = new CPPIdentifier(nc);
+          }
+        }
       }
     }
   }
@@ -389,8 +389,8 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
       out << ": " << *di;
       ++di;
       while (di != _derivation.end()) {
-	out << ", " << *di;
-	++di;
+        out << ", " << *di;
+        ++di;
       }
     }
 
@@ -464,10 +464,10 @@ get_virtual_funcs(VFunctions &funcs) const {
       // destructors up by name.
       CPPInstance *destructor = get_destructor();
       if (destructor != (CPPInstance *)NULL) {
-	// It's a match!  This destructor is virtual.
-	funcs.erase(vfi);
-	destructor->_storage_class |= 
-	  (CPPInstance::SC_virtual | CPPInstance::SC_inherited_virtual);
+        // It's a match!  This destructor is virtual.
+        funcs.erase(vfi);
+        destructor->_storage_class |= 
+          (CPPInstance::SC_virtual | CPPInstance::SC_inherited_virtual);
       }
 
     } else {
@@ -477,34 +477,34 @@ get_virtual_funcs(VFunctions &funcs) const {
       fi = _scope->_functions.find(fname);
 
       if (fi != _scope->_functions.end()) {
-	CPPFunctionGroup *fgroup = (*fi).second;
-	
-	// Look for a matching function amid this group.
-	bool match_found = false;
-	CPPFunctionGroup::Instances::const_iterator ii;
-	for (ii = fgroup->_instances.begin();
-	     ii != fgroup->_instances.end() && !match_found;
-	     ++ii) {
-	  CPPInstance *new_inst = (*ii);
-	  assert(new_inst->_type != (CPPType *)NULL);
-	  
-	  CPPFunctionType *new_ftype = new_inst->_type->as_function_type();
-	  assert(new_ftype != (CPPFunctionType *)NULL);
-	  
-	  if (new_ftype->is_equivalent_function(*base_ftype)) {
-	    // It's a match!  We now know it's virtual.  Erase this
-	    // function from the list, so we can add it back in below.
-	    funcs.erase(vfi);
-	    match_found = true;
+        CPPFunctionGroup *fgroup = (*fi).second;
 
-	    // In fact, it's not only definitely virtual, but it's
-	    // *inherited* virtual, which means only that the
-	    // interface is defined in some parent class.  Sometimes
-	    // this is useful to know.
-	    new_inst->_storage_class |= 
-	      (CPPInstance::SC_virtual | CPPInstance::SC_inherited_virtual);
-	  }
-	}
+        // Look for a matching function amid this group.
+        bool match_found = false;
+        CPPFunctionGroup::Instances::const_iterator ii;
+        for (ii = fgroup->_instances.begin();
+             ii != fgroup->_instances.end() && !match_found;
+             ++ii) {
+          CPPInstance *new_inst = (*ii);
+          assert(new_inst->_type != (CPPType *)NULL);
+
+          CPPFunctionType *new_ftype = new_inst->_type->as_function_type();
+          assert(new_ftype != (CPPFunctionType *)NULL);
+
+          if (new_ftype->is_equivalent_function(*base_ftype)) {
+            // It's a match!  We now know it's virtual.  Erase this
+            // function from the list, so we can add it back in below.
+            funcs.erase(vfi);
+            match_found = true;
+
+            // In fact, it's not only definitely virtual, but it's
+            // *inherited* virtual, which means only that the
+            // interface is defined in some parent class.  Sometimes
+            // this is useful to know.
+            new_inst->_storage_class |= 
+              (CPPInstance::SC_virtual | CPPInstance::SC_inherited_virtual);
+          }
+        }
       }
     }
     vfi = vfnext;
@@ -518,12 +518,12 @@ get_virtual_funcs(VFunctions &funcs) const {
     CPPFunctionGroup *fgroup = (*fi).second;
     CPPFunctionGroup::Instances::const_iterator ii;
     for (ii = fgroup->_instances.begin();
-	 ii != fgroup->_instances.end();  
-	 ++ii) {
+         ii != fgroup->_instances.end();  
+         ++ii) {
       CPPInstance *inst = (*ii);
       if ((inst->_storage_class & CPPInstance::SC_virtual) != 0) {
-	// Here's a virtual function.
-	funcs.push_back(inst);
+        // Here's a virtual function.
+        funcs.push_back(inst);
       }
     }
   }

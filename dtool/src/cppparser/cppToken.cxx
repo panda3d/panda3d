@@ -17,8 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 CPPToken::
 CPPToken(int token, int line_number, int col_number,
-	 const CPPFile &file, const string &str,
-	 const YYSTYPE &lval) :
+         const CPPFile &file, const string &str,
+         const YYSTYPE &lval) :
   _token(token), _lval(lval) 
 {
   _lval.str = str;

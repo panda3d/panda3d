@@ -15,7 +15,7 @@ class LoaderFileType;
 class Filename;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LoaderFileTypeRegistry
+//       Class : LoaderFileTypeRegistry
 // Description : This class maintains the set of all known
 //               LoaderFileTypes in the universe.
 ////////////////////////////////////////////////////////////////////

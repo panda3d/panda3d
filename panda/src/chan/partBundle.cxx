@@ -250,10 +250,10 @@ bind_anim(AnimBundle *anim, int hierarchy_match_flags) {
     // Make sure the root names match.
     if (get_name() != anim->get_name()) {
       if (chan_cat.is_error()) {
-	chan_cat.error()
-	  << "Root name of part (" << get_name() 
-	  << ") does not match that of anim (" << anim->get_name()
-	  << ")\n";
+        chan_cat.error()
+          << "Root name of part (" << get_name() 
+          << ") does not match that of anim (" << anim->get_name()
+          << ")\n";
       }
       return NULL;
     }
@@ -302,7 +302,7 @@ bind_anim(AnimBundle *anim, int hierarchy_match_flags) {
 ////////////////////////////////////////////////////////////////////
 bool PartBundle::
 bind_anim(AnimBundle *anim, const string &name,
-	  int hierarchy_match_flags) {
+          int hierarchy_match_flags) {
   PT(AnimControl) control = bind_anim(anim, hierarchy_match_flags);
   if (control == (AnimControl *)NULL) {
     return false;

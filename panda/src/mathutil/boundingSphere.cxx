@@ -23,8 +23,8 @@ get_min() const {
   nassertr(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
   nassertr(!is_infinite(), LPoint3f(0.0f, 0.0f, 0.0f));
   return LPoint3f(_center[0] - _radius,
-		  _center[1] - _radius,
-		  _center[2] - _radius);
+                  _center[1] - _radius,
+                  _center[2] - _radius);
 }
 
 LPoint3f BoundingSphere::
@@ -32,8 +32,8 @@ get_max() const {
   nassertr(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
   nassertr(!is_infinite(), LPoint3f(0.0f, 0.0f, 0.0f));
   return LPoint3f(_center[0] + _radius,
-		  _center[1] + _radius,
-		  _center[2] + _radius);
+                  _center[1] + _radius,
+                  _center[2] + _radius);
 }
 
 LPoint3f BoundingSphere::
@@ -53,28 +53,28 @@ xform(const LMatrix4f &mat) {
 
 /*
     LVector3f x,y,z;
-	mat.get_row3(x,0);
-	mat.get_row3(y,1);
-	mat.get_row3(z,2);
+        mat.get_row3(x,0);
+        mat.get_row3(y,1);
+        mat.get_row3(z,2);
 
     float xd = dot(x, x);
     float yd = dot(y, y);
     float zd = dot(z, z);
-*/	
+*/
     float xd,yd,zd,scale;
 
-	#define ROW_DOTTED(mat,ROWNUM)                        \
-	    (mat._m.m._##ROWNUM##0*mat._m.m._##ROWNUM##0 +    \
-	     mat._m.m._##ROWNUM##1*mat._m.m._##ROWNUM##1 +    \
-	     mat._m.m._##ROWNUM##2*mat._m.m._##ROWNUM##2)
+        #define ROW_DOTTED(mat,ROWNUM)                        \
+            (mat._m.m._##ROWNUM##0*mat._m.m._##ROWNUM##0 +    \
+             mat._m.m._##ROWNUM##1*mat._m.m._##ROWNUM##1 +    \
+             mat._m.m._##ROWNUM##2*mat._m.m._##ROWNUM##2)
 
     xd = ROW_DOTTED(mat,0);
     yd = ROW_DOTTED(mat,1);
     zd = ROW_DOTTED(mat,2);
 
-	scale = max(xd,yd);
-	scale = max(scale,zd);
-	scale = sqrtf(scale);
+        scale = max(xd,yd);
+        scale = max(scale,zd);
+        scale = sqrtf(scale);
 
     // Transform the radius
     _radius *= scale;
@@ -102,8 +102,8 @@ extend_other(BoundingVolume *other) const {
 
 bool BoundingSphere::
 around_other(BoundingVolume *other,
-	     const BoundingVolume **first,
-	     const BoundingVolume **last) const {
+             const BoundingVolume **first,
+             const BoundingVolume **last) const {
   return other->around_spheres(first, last);
 }
 
@@ -223,17 +223,17 @@ around_points(const LPoint3f *first, const LPoint3f *last) {
 #ifndef NDEBUG
       // Skip more NaN points.
       if ((*p).is_nan()) {
-	++skipped_nan;
+        ++skipped_nan;
       } else
 #endif
-	{
-	  min_box.set(min(min_box[0], (*p)[0]),
-		      min(min_box[1], (*p)[1]),
-		      min(min_box[2], (*p)[2]));
-	  max_box.set(max(max_box[0], (*p)[0]),
-		      max(max_box[1], (*p)[1]),
-		      max(max_box[2], (*p)[2]));
-	}
+        {
+          min_box.set(min(min_box[0], (*p)[0]),
+                      min(min_box[1], (*p)[1]),
+                      min(min_box[2], (*p)[2]));
+          max_box.set(max(max_box[0], (*p)[0]),
+                      max(max_box[1], (*p)[1]),
+                      max(max_box[2], (*p)[2]));
+        }
       ++p;
     }
 
@@ -266,19 +266,19 @@ around_points(const LPoint3f *first, const LPoint3f *last) {
 
 bool BoundingSphere::
 around_spheres(const BoundingVolume **first, 
-	       const BoundingVolume **last) {
+               const BoundingVolume **last) {
   return around_finite(first, last);
 }
 
 bool BoundingSphere::
 around_hexahedrons(const BoundingVolume **first, 
-		   const BoundingVolume **last) {
+                   const BoundingVolume **last) {
   return around_finite(first, last);
 }
 
 bool BoundingSphere::
 around_finite(const BoundingVolume **first, 
-	      const BoundingVolume **last) {
+              const BoundingVolume **last) {
   nassertr(first != last, false);
 
   // We're given a set of bounding volumes, at least the first one of
@@ -299,19 +299,19 @@ around_finite(const BoundingVolume **first,
   for (++p; p != last; ++p) {
     nassertr(!(*p)->is_infinite(), false);
     if (!(*p)->is_empty() && 
-	(*p)->is_of_type(FiniteBoundingVolume::get_class_type())) {
+        (*p)->is_of_type(FiniteBoundingVolume::get_class_type())) {
       const FiniteBoundingVolume *vol = DCAST(FiniteBoundingVolume, *p);
       LPoint3f min1 = vol->get_min();
       LPoint3f max1 = vol->get_max();
       min_box.set(min(min_box[0], min1[0]),
-		  min(min_box[1], min1[1]),
-		  min(min_box[2], min1[2]));
+                  min(min_box[1], min1[1]),
+                  min(min_box[2], min1[2]));
       max_box.set(max(max_box[0], max1[0]),
-		  max(max_box[1], max1[1]),
-		  max(max_box[2], max1[2]));
+                  max(max_box[1], max1[1]),
+                  max(max_box[2], max1[2]));
 
       if (!(*p)->is_of_type(BoundingSphere::get_class_type())) {
-	any_unknown = true;
+        any_unknown = true;
       }
     }
   }
@@ -331,16 +331,16 @@ around_finite(const BoundingVolume **first,
     _radius = 0.0f;
     for (p = first; p != last; ++p) {
       if (!(*p)->is_empty()) {
-	if ((*p)->is_of_type(BoundingSphere::get_class_type())) {
-	  const BoundingSphere *sphere = DCAST(BoundingSphere, *p);
-	  float dist = length(sphere->_center - _center);
-	  _radius = max(_radius, dist + sphere->_radius);
-	} else {
-	  // Shouldn't get here, unless we missed a type from above.
-	  mathutil_cat.error()
-	    << "Unexpected type in BoundingSphere::around_finite()\n";
-	  nassertr(false, false);
-	}
+        if ((*p)->is_of_type(BoundingSphere::get_class_type())) {
+          const BoundingSphere *sphere = DCAST(BoundingSphere, *p);
+          float dist = length(sphere->_center - _center);
+          _radius = max(_radius, dist + sphere->_radius);
+        } else {
+          // Shouldn't get here, unless we missed a type from above.
+          mathutil_cat.error()
+            << "Unexpected type in BoundingSphere::around_finite()\n";
+          nassertr(false, false);
+        }
       }
     }
   }
@@ -401,7 +401,7 @@ contains_lineseg(const LPoint3f &a, const LPoint3f &b) const {
       // Tangent.
       t1 = t2 = -B / (2.0f*A);
       return (t1 >= 0.0f && t1 <= 1.0f) ? 
-	         IF_possible | IF_some : IF_no_intersection;
+                 IF_possible | IF_some : IF_no_intersection;
     }
     
     if (radical < 0.0f) {
@@ -409,7 +409,7 @@ contains_lineseg(const LPoint3f &a, const LPoint3f &b) const {
       return IF_no_intersection;
     }
     
-	float reciprocal_2A = 1.0f/(2.0f*A);
+        float reciprocal_2A = 1.0f/(2.0f*A);
     float sqrt_radical = sqrtf(radical);
 
     t1 = ( -B - sqrt_radical ) * reciprocal_2A;

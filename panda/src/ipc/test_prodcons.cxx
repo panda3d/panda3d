@@ -54,19 +54,19 @@ static void consumer(void* arg)
 
    while (1) {
       {
-	 mutex_lock l(m);
-	 thread::get_time(s, n, 0, 500000000);  // 1/2 second from now
-	 while (empty_flag) {
-	    cerr << name << ": waiting for message" << endl;
-	    if (!full.timedwait(s, n)) {
-	       cerr << name << ": timed out, trying again" << endl;
-	       thread::get_time(s, n, 0, 500000000);
-	    } else if (empty_flag)
-	       cerr << name << ": woken but message already consumed" << endl;
-	 }
-	 cerr << name << ": got message: '" << message << "'" << endl;
-	 empty_flag = true;
-	 empty.signal();
+         mutex_lock l(m);
+         thread::get_time(s, n, 0, 500000000);  // 1/2 second from now
+         while (empty_flag) {
+            cerr << name << ": waiting for message" << endl;
+            if (!full.timedwait(s, n)) {
+               cerr << name << ": timed out, trying again" << endl;
+               thread::get_time(s, n, 0, 500000000);
+            } else if (empty_flag)
+               cerr << name << ": woken but message already consumed" << endl;
+         }
+         cerr << name << ": got message: '" << message << "'" << endl;
+         empty_flag = true;
+         empty.signal();
       }
       thread::sleep(random_l() % 2, 1000000 * (random_l() % 1000));
    }
@@ -78,15 +78,15 @@ static void producer(void* arg)
 
    while (1) {
       {
-	 mutex_lock l(m);
-	 while (!empty_flag) {
-	    cerr << name << ": having to wait for consumer" << endl;
-	    empty.wait();
-	 }
-	 message = msgs[random_l() % 4];
-	 empty_flag = false;
-	 full.signal();
-	 cerr << name << ": put message: '" << message << "'" << endl;
+         mutex_lock l(m);
+         while (!empty_flag) {
+            cerr << name << ": having to wait for consumer" << endl;
+            empty.wait();
+         }
+         message = msgs[random_l() % 4];
+         empty_flag = false;
+         full.signal();
+         cerr << name << ": put message: '" << message << "'" << endl;
       }
       thread::sleep(random_l() % 2, 1000000 * (random_l() % 500) + 500);
    }

@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 INLINE WinSample::WinSample(void) : AudioTraits::SoundClass(), _data(NULL),
-				    _len(0) {
+                                    _len(0) {
 }
 
 INLINE DWORD WinSample::get_length(void) const {
@@ -16,8 +16,8 @@ INLINE WAVEFORMATEX WinSample::get_format(void) const {
 }
 
 INLINE WinMusic::WinMusic(void) : AudioTraits::SoundClass(),
-				  _performance(NULL), _music(NULL),
-			          _buffer(NULL), _synth(NULL) {
+                                  _performance(NULL), _music(NULL),
+                                  _buffer(NULL), _synth(NULL) {
   init();
 }
 

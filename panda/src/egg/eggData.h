@@ -18,7 +18,7 @@
 
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : EggData
+//       Class : EggData
 // Description : This is the primary interface into all the egg data,
 //               and the root of the egg file structure.  An EggData
 //               structure corresponds exactly with an egg file on the
@@ -37,7 +37,7 @@ public:
   INLINE EggData &operator = (const EggData &copy);
 
   static bool resolve_egg_filename(Filename &egg_filename, 
-				   const DSearchPath &searchpath = DSearchPath());
+                                   const DSearchPath &searchpath = DSearchPath());
 
   bool read(Filename filename);
   bool read(istream &in);

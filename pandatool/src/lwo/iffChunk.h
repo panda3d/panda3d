@@ -16,7 +16,7 @@
 class IffInputFile;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : IffChunk
+//       Class : IffChunk
 // Description : The basic kind of record in an EA "IFF" file, which
 //               the LightWave object file is based on.
 ////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "IffChunk",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
 
 private:

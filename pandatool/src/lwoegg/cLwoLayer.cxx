@@ -43,7 +43,7 @@ connect_egg() {
     }
 
     nout << "No layer found with number " << _layer->_parent 
-	 << "; cannot parent layer " << _layer->_number << " properly.\n";
+         << "; cannot parent layer " << _layer->_number << " properly.\n";
   }
   
   _converter->get_egg_data().add_child(_egg_group.p());

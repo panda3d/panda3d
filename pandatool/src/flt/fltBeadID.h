@@ -11,7 +11,7 @@
 #include "fltBead.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltBeadID
+//       Class : FltBeadID
 // Description : A base class for any of a broad family of flt beads
 //               that include an ID.
 ////////////////////////////////////////////////////////////////////
@@ -45,7 +45,7 @@ public:
   static void init_type() {
     FltBead::init_type();
     register_type(_type_handle, "FltBeadID",
-		  FltBead::get_class_type());
+                  FltBead::get_class_type());
   }
 
 private:

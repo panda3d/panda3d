@@ -15,7 +15,7 @@
 #include <string>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ButtonRegistry
+//       Class : ButtonRegistry
 // Description : The ButtonRegistry class maintains all the assigned
 //               ButtonHandles in a given system.  There should be only
 //               one ButtonRegistry class during the lifetime of the
@@ -33,7 +33,7 @@ protected:
 
 public:
   bool register_button(ButtonHandle &button_handle, const string &name,
-		       char ascii_equivalent = '\0');
+                       char ascii_equivalent = '\0');
 
 PUBLISHED:
   ButtonHandle get_button(const string &name);

@@ -87,7 +87,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurveInterface::
 format_egg(ostream &out, const string &name, const string &curve_type,
-	   int indent_level) const {
+           int indent_level) const {
   indent(out, indent_level)
     << "<VertexPool> " << name << ".pool {\n";
 

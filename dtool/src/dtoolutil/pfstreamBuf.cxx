@@ -12,7 +12,7 @@ typedef int streamsize;
 #endif /* HAVE_STREAMSIZE */
 
 PipeStreamBuf::PipeStreamBuf(PipeStreamBuf::Direction dir) : _dir(dir),
-							     _pipe((FILE*)0L) {
+                                                             _pipe((FILE*)0L) {
 #ifndef WIN32_VC
   // taken from Dr. Ose.
   // These lines, which are essential on Irix and Linux, seem to be
@@ -144,6 +144,6 @@ void PipeStreamBuf::write_chars(const char* start, int length, bool flush) {
   size_t wrote = fwrite(line.c_str(), 1, line.length(), _pipe);
   if (wrote != line.length())
     cerr << "wrote only " << wrote << " of " << line.length()
-	 << " bytes to pipe" << endl;
+         << " bytes to pipe" << endl;
   fflush(_pipe);
 }

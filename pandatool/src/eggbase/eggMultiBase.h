@@ -16,7 +16,7 @@
 class Filename;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggMultiBase
+//       Class : EggMultiBase
 // Description : This specialization of ProgramBase is intended for
 //               programs that read and/or write multiple egg files.
 //

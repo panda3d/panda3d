@@ -11,7 +11,7 @@
 #include "cppType.h"
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPSimpleType
+//       Class : CPPSimpleType
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPSimpleType : public CPPType {
@@ -44,7 +44,7 @@ public:
   virtual string get_preferred_name() const;
 
   virtual void output(ostream &out, int indent_level, CPPScope *scope,
-		      bool complete) const;
+                      bool complete) const;
   virtual SubType get_subtype() const;
 
   virtual CPPSimpleType *as_simple_type();

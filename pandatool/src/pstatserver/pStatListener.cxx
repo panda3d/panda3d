@@ -27,8 +27,8 @@ PStatListener(PStatServer *manager) :
 ////////////////////////////////////////////////////////////////////
 void PStatListener::
 connection_opened(const PT(Connection) &, 
-		  const NetAddress &address,
-		  const PT(Connection) &new_connection) {
+                  const NetAddress &address,
+                  const PT(Connection) &new_connection) {
   PStatMonitor *monitor = _manager->make_monitor();
   if (monitor == (PStatMonitor *)NULL) {
     nout << "Couldn't create monitor!\n";

@@ -96,7 +96,7 @@ protected:
     static void init_type() {
       ReferenceCount::init_type();
       register_type(_type_handle, "ArcChain::ArcComponent",
-		    ReferenceCount::get_class_type());
+                    ReferenceCount::get_class_type());
     }
     
   private:

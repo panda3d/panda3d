@@ -11,7 +11,7 @@
 #include <map>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : IndexRemapper
+//       Class : IndexRemapper
 // Description : This class manages a mapping of integers to integers.
 //               It's used in this package to resequence some or all
 //               of the index numbers in the database to a different

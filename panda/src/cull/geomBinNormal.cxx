@@ -43,7 +43,7 @@ choose_bin(CullState *cs) const {
 
   TransparencyAttribute *trans_attrib;
   if (get_attribute_into(trans_attrib, cs->get_attributes(),
-			 TransparencyTransition::get_class_type())) {
+                         TransparencyTransition::get_class_type())) {
     is_transparent = 
       (trans_attrib->get_mode() != TransparencyProperty::M_none);
   }

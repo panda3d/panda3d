@@ -30,13 +30,13 @@ ConfigureFn(config_display) {
 
 const string pipe_spec_machine = config_display.GetString("pipe-machine", "");
 const string pipe_spec_filename = config_display.GetString("pipe-filename",
-							   "outfile-%03f.rib");
+                                                           "outfile-%03f.rib");
 const int pipe_spec_pipe_number = config_display.GetInt("pipe-number", -1);
 const bool pipe_spec_is_file = config_display.Defined("pipe-filename")
                                || config_display.GetBool("pipe-file", false);
 const bool pipe_spec_is_remote = config_display.Defined("pipe-machine")
                                  || config_display.GetBool("pipe-remote",
-							   false);
+                                                           false);
 
 const float gsg_clear_r = config_display.GetFloat("gsg-clear-r", 0.0);
 const float gsg_clear_g = config_display.GetFloat("gsg-clear-g", 0.0);

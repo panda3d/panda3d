@@ -26,7 +26,7 @@ class TextureReference;
 class PNMImage;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TexturePlacement
+//       Class : TexturePlacement
 // Description : This corresponds to a particular assignment of a
 //               TextureImage with a PaletteGroup, and specifically
 //               describes which PaletteImage (if any), and where on
@@ -106,7 +106,7 @@ public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
 protected:
   static TypedWritable *make_TexturePlacement(const FactoryParams &params);
@@ -124,7 +124,7 @@ public:
   static void init_type() {
     TypedWritable::init_type();
     register_type(_type_handle, "TexturePlacement",
-		  TypedWritable::get_class_type());
+                  TypedWritable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

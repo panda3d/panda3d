@@ -75,7 +75,7 @@ determine_dynamic_type() {
       // TypedReferenceCount, then we can directly downcast to get the
       // TypedObject pointer.
       if (_static_type.is_derived_from(TypedReferenceCount::get_class_type())) {
-	_typed_ptr = (TypedReferenceCount *)_ptr;
+        _typed_ptr = (TypedReferenceCount *)_ptr;
       }
     }
 
@@ -87,14 +87,14 @@ determine_dynamic_type() {
       TypeHandle got_type = _typed_ptr->get_type();
       
       if (got_type == TypeHandle::none()) {
-	express_cat.warning()
-	  << "Found an unregistered type in a " << _static_type
-	  << " pointer:\n"
-	  << "Check derived types of " << _static_type 
-	  << " and make sure that all are being initialized.\n";
-	_dynamic_type = _static_type;
-	_reconsider_dynamic_type = false;
-	return;
+        express_cat.warning()
+          << "Found an unregistered type in a " << _static_type
+          << " pointer:\n"
+          << "Check derived types of " << _static_type 
+          << " and make sure that all are being initialized.\n";
+        _dynamic_type = _static_type;
+        _reconsider_dynamic_type = false;
+        return;
       }
       
       update_type_handle(_dynamic_type, got_type);
@@ -228,7 +228,7 @@ void MemoryUsage::AgeHistogram::
 show() const {
   for (int i = 0; i < num_buckets - 1; i++) {
     nout << _cutoff[i] << " to " << _cutoff[i + 1] << " seconds old : " 
-	 << _counts[i] << " pointers.\n";
+         << _counts[i] << " pointers.\n";
   }
   nout << _cutoff[num_buckets - 1] << " seconds old and up : " 
        << _counts[num_buckets - 1] << " pointers.\n";
@@ -396,8 +396,8 @@ ns_update_type(ReferenceCount *ptr, TypeHandle type) {
     ti = _table.find(ptr);
     if (ti == _table.end()) {
       express_cat.error() 
-	<< "Attempt to update type to " << type << " for unrecorded pointer "
-	<< (void *)ptr << "!\n";
+        << "Attempt to update type to " << type << " for unrecorded pointer "
+        << (void *)ptr << "!\n";
       return;
     }
 
@@ -424,9 +424,9 @@ ns_update_type(ReferenceCount *ptr, TypedObject *typed_ptr) {
     ti = _table.find(ptr);
     if (ti == _table.end()) {
       express_cat.error() 
-	<< "Attempt to update type to " << typed_ptr->get_type()
-	<< " for unrecorded pointer "
-	<< (void *)ptr << "!\n";
+        << "Attempt to update type to " << typed_ptr->get_type()
+        << " for unrecorded pointer "
+        << (void *)ptr << "!\n";
       return;
     }
 
@@ -449,9 +449,9 @@ ns_remove_pointer(ReferenceCount *ptr) {
     ti = _table.find(ptr);
     if (ti == _table.end()) {
       express_cat.error()
-	<< "Attempt to remove pointer " << (void *)ptr
-	<< ", not in table.\n"
-	<< "Possibly a double-destruction.\n";
+        << "Attempt to remove pointer " << (void *)ptr
+        << ", not in table.\n"
+        << "Possibly a double-destruction.\n";
       nassertv(false);
       return;
     }
@@ -502,7 +502,7 @@ ns_get_pointers(MemoryUsagePointers &result) {
     MemoryInfo &info = (*ti).second;
     if (info._freeze_index == _freeze_index) {
       result.add_entry(info._ptr, info._typed_ptr, info.get_type(), 
-		       now - info._time);
+                       now - info._time);
     }
   }
 }
@@ -526,9 +526,9 @@ ns_get_pointers_of_type(MemoryUsagePointers &result, TypeHandle type) {
     if (info._freeze_index == _freeze_index) {
       TypeHandle info_type = info.get_type();
       if (info_type != TypeHandle::none() &&
-	  info_type.is_derived_from(type)) {
-	result.add_entry(info._ptr, info._typed_ptr, info_type,
-			 now - info._time);
+          info_type.is_derived_from(type)) {
+        result.add_entry(info._ptr, info._typed_ptr, info_type,
+                         now - info._time);
       }
     }
   }
@@ -543,7 +543,7 @@ ns_get_pointers_of_type(MemoryUsagePointers &result, TypeHandle type) {
 ////////////////////////////////////////////////////////////////////
 void MemoryUsage::
 ns_get_pointers_of_age(MemoryUsagePointers &result, 
-		       double from, double to) {
+                       double from, double to) {
   nassertv(_track_memory_usage);
   result.clear();
 
@@ -554,8 +554,8 @@ ns_get_pointers_of_age(MemoryUsagePointers &result,
     if (info._freeze_index == _freeze_index) {
       double age = now - info._time;
       if ((age >= from && age <= to) || 
-	  (age >= to && age <= from)) {
-	result.add_entry(info._ptr, info._typed_ptr, info.get_type(), age);
+          (age >= to && age <= from)) {
+        result.add_entry(info._ptr, info._typed_ptr, info.get_type(), age);
       }
     }
   }
@@ -595,9 +595,9 @@ ns_get_pointers_with_zero_count(MemoryUsagePointers &result) {
     MemoryInfo &info = (*ti).second;
     if (info._freeze_index == _freeze_index) {
       if ((*ti).first->get_ref_count() == 0) {
-	(*ti).first->ref();
-	result.add_entry(info._ptr, info._typed_ptr, info.get_type(),
-			 now - info._time);
+        (*ti).first->ref();
+        result.add_entry(info._ptr, info._typed_ptr, info.get_type(),
+                         now - info._time);
       }
     }
   }

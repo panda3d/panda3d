@@ -19,18 +19,18 @@ void app_service::DoIt(void* data)
    while ((ret = (*me->_service)(s, n, c)) != DONE) {
       switch (ret) {
       case RESERVICE:
-	 break;  // we're about to do this anyway
+         break;  // we're about to do this anyway
       case YIELD:
-	 thread::yield();
-	 break;
+         thread::yield();
+         break;
       case SLEEP:
-	 thread::sleep(s, n);
-	 s = n = 0;
-	 break;
+         thread::sleep(s, n);
+         s = n = 0;
+         break;
       case WAIT:
-	 c->wait();
-	 c = condition_variable::Null;
-	 break;
+         c->wait();
+         c = condition_variable::Null;
+         break;
       }
    }
    if (me->_cleanup != NULL)
@@ -40,14 +40,14 @@ void app_service::DoIt(void* data)
       me->_thread = thread::Null;
       service_list::iterator i=find(task_list->begin(), task_list->end(), me);
       if (i == task_list->end())
-	 throw thread_fatal(-1);
+         throw thread_fatal(-1);
       task_list->erase(i);
    }
    thread::exit(NULL);
 }
 
 void RegisterAppService(vv_func init, av_func service, vv_func cleanup,
-			vv_func info)
+                        vv_func info)
 {
    app_service* app = new app_service(init, service, cleanup, info);
    if (task_list == (service_list *)0L) {
@@ -64,7 +64,7 @@ void SendMainThreadMessage(main_thread_message& m)
    {
       mutex_lock l(*message_mutex);
       while (!main_thread_empty_flag)
-	 main_thread_empty->wait();
+         main_thread_empty->wait();
       message_to_main_thread = mess;
       main_thread_empty_flag = false;
       main_thread_full->signal();

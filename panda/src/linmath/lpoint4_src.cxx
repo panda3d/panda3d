@@ -18,7 +18,7 @@ init_type() {
     string name = "LPoint4";
     name += FLOATTOKEN; 
     register_type(_type_handle, name, 
-		  FLOATNAME(LVecBase4)::get_class_type());
+                  FLOATNAME(LVecBase4)::get_class_type());
   }
 }
 

@@ -13,7 +13,7 @@
 class TextureImage;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : SourceTextureImage
+//       Class : SourceTextureImage
 // Description : This is a texture image reference as it appears in an
 //               egg file: the source image of the texture.
 ////////////////////////////////////////////////////////////////////
@@ -23,7 +23,7 @@ private:
 
 public:
   SourceTextureImage(TextureImage *texture, const Filename &filename,
-		     const Filename &alpha_filename);
+                     const Filename &alpha_filename);
 
   TextureImage *get_texture() const;
 
@@ -44,7 +44,7 @@ public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
 protected:
   static TypedWritable *make_SourceTextureImage(const FactoryParams &params);
@@ -57,7 +57,7 @@ public:
   static void init_type() {
     ImageFile::init_type();
     register_type(_type_handle, "SourceTextureImage",
-		  ImageFile::get_class_type());
+                  ImageFile::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

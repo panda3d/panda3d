@@ -32,7 +32,7 @@ class EggGroupNode;
 class EggPrimitive;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltToEggConverter
+//       Class : FltToEggConverter
 // Description : This class supervises the construction of an EggData
 //               structure from the data represented by the FltHeader.
 //               Reading and writing the egg and flt structures is
@@ -66,10 +66,10 @@ private:
   void convert_bead(const FltBead *flt_bead, FltToEggLevelState &state);
   void convert_face(const FltFace *flt_face, FltToEggLevelState &state);
   void convert_ext_ref(const FltExternalReference *flt_ext, FltToEggLevelState &state);
-		    
+
   void setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
-		      EggPrimitive *egg_prim, EggVertexPool *egg_vpool,
-		      const EggVertices &vertices);
+                      EggPrimitive *egg_prim, EggVertexPool *egg_vpool,
+                      const EggVertices &vertices);
 
   void convert_subfaces(const FltRecord *flt_record, FltToEggLevelState &state);
 
@@ -78,7 +78,7 @@ private:
   bool parse_comment(const FltBead *flt_bead, EggNode *egg_node);
   bool parse_comment(const FltTexture *flt_texture, EggNode *egg_node);
   bool parse_comment(const string &comment, const string &name,
-		     EggNode *egg_node);
+                     EggNode *egg_node);
 
   PT(EggVertex) make_egg_vertex(const FltVertex *flt_vertex);
   PT(EggTexture) make_egg_texture(const FltTexture *flt_texture);

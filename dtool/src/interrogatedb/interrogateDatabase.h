@@ -21,7 +21,7 @@
 class IndexRemapper;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : InterrogateDatabase
+//       Class : InterrogateDatabase
 // Description : This stores all of the interrogate data and handles
 //               reading the data from a disk file when necessary.
 ////////////////////////////////////////////////////////////////////
@@ -78,7 +78,7 @@ public:
   void add_type(TypeIndex index, const InterrogateType &type);
   void add_function(FunctionIndex index, const InterrogateFunction &function);
   void add_wrapper(FunctionWrapperIndex index, 
-		   const InterrogateFunctionWrapper &wrapper);
+                   const InterrogateFunctionWrapper &wrapper);
   void add_manifest(ManifestIndex index, const InterrogateManifest &manifest);
   void add_element(ElementIndex index, const InterrogateElement &element);
 
@@ -102,11 +102,11 @@ private:
   void merge_from(const InterrogateDatabase &other);
 
   bool find_module(FunctionWrapperIndex wrapper,
-		   InterrogateModuleDef *&def, int &module_index);
+                   InterrogateModuleDef *&def, int &module_index);
   int binary_search_module(int begin, int end, FunctionIndex function);
   int binary_search_wrapper_hash(InterrogateUniqueNameDef *begin,
-				 InterrogateUniqueNameDef *end,
-				 const string &wrapper_hash_name);
+                                 InterrogateUniqueNameDef *end,
+                                 const string &wrapper_hash_name);
 
   // This data is loaded from the various database files.
   typedef map<TypeIndex, InterrogateType> TypeMap;
@@ -172,8 +172,8 @@ private:
   void freshen_elements_by_scoped_name();
 
   int lookup(const string &name,
-	     Lookup &lookup, LookupType type,
-	     void (InterrogateDatabase::*freshen)());
+             Lookup &lookup, LookupType type,
+             void (InterrogateDatabase::*freshen)());
 
   static InterrogateDatabase *_global_ptr;
   static int _file_major_version;

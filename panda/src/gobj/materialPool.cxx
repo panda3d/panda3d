@@ -36,8 +36,8 @@ ns_garbage_collect() {
     const Material *mat = (*mi);
     if (mat->get_ref_count() == 1) {
       if (gobj_cat.is_debug()) {
-	gobj_cat.debug()
-	  << "Releasing " << *mat << "\n";
+        gobj_cat.debug()
+          << "Releasing " << *mat << "\n";
       }
       num_released++;
     } else {
@@ -61,7 +61,7 @@ ns_list_contents(ostream &out) {
   for (mi = _materials.begin(); mi != _materials.end(); ++mi) {
     const Material *mat = (*mi);
     out << "  " << *mat
-	<< " (count = " << mat->get_ref_count() << ")\n";
+        << " (count = " << mat->get_ref_count() << ")\n";
   }
 }
 

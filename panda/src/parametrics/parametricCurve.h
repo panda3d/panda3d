@@ -76,8 +76,8 @@ PUBLISHED:
   virtual bool adjust_point(float t, float px, float py, float pz);
   virtual bool adjust_tangent(float t, float tx, float ty, float tz);
   virtual bool adjust_pt(float t,
-			 float px, float py, float pz,
-			 float tx, float ty, float tz);
+                         float px, float py, float pz,
+                         float tx, float ty, float tz);
 
   virtual bool recompute();
 
@@ -111,16 +111,16 @@ protected:
   void invalidate_all();
 
   virtual bool format_egg(ostream &out, const string &name, 
-			  const string &curve_type, int indent_level) const;
+                          const string &curve_type, int indent_level) const;
 
 private:
   float r_calc_length(float t1, float t2,
                       const LPoint3f &p1, const LPoint3f &p2,
                       float seglength) const;
   bool r_find_length(float target_length, float &found_t,
-		     float t1, float t2, 
-		     const LPoint3f &p1, const LPoint3f &p2,
-		     float &seglength) const;
+                     float t1, float t2, 
+                     const LPoint3f &p1, const LPoint3f &p2,
+                     float &seglength) const;
 
 protected:
   int _curve_type;
@@ -144,7 +144,7 @@ public:
   static void init_type() {
     NamedNode::init_type();
     register_type(_type_handle, "ParametricCurve",
-		  NamedNode::get_class_type());
+                  NamedNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

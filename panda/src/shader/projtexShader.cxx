@@ -34,7 +34,7 @@ TypeHandle ProjtexShader::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 ProjtexShader::ProjtexShader(Texture* texture,
-			     ColorBlendProperty::Mode mode) 
+                             ColorBlendProperty::Mode mode) 
   : FrustumShader(), _blend(mode)
 {
   set_texture(texture);

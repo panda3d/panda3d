@@ -55,7 +55,7 @@ write_controls(ostream &out, int indent_level) const {
       any_controls = true;
 
       indent(out, indent_level)
-	<< (int)(ai - _controls.begin()) << ". " << state._state << "\n";
+        << (int)(ai - _controls.begin()) << ". " << state._state << "\n";
     }
   }
 

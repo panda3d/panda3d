@@ -170,14 +170,14 @@ is_incomplete() const {
 ////////////////////////////////////////////////////////////////////
 void CPPTypeProxy::
 output_instance(ostream &out, int indent_level, CPPScope *scope,
-		bool complete, const string &prename,
-		const string &name) const {
+                bool complete, const string &prename,
+                const string &name) const {
   if (_actual_type == (CPPType *)NULL) {
     out << "unknown " << prename << name;
     return;
   }
   _actual_type->output_instance(out, indent_level, scope, complete,
-				prename, name);
+                                prename, name);
 }
 
 ////////////////////////////////////////////////////////////////////

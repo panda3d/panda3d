@@ -17,7 +17,7 @@ class TypedWritable;
 class Filename;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : BamFile
+//       Class : BamFile
 // Description : The principle public interface to reading and writing
 //               Bam disk files.  See also BamReader and BamWriter,
 //               the more general implementation of this class.

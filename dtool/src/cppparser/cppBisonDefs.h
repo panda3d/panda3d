@@ -37,11 +37,11 @@ class CPPIdentifier;
 
 void parse_cpp(CPPParser *cp);
 CPPExpression *parse_const_expr(CPPPreprocessor *pp,
-				CPPScope *new_current_scope,
-				CPPScope *new_global_scope);
+                                CPPScope *new_current_scope,
+                                CPPScope *new_global_scope);
 CPPType *parse_type(CPPPreprocessor *pp,
-		    CPPScope *new_current_scope,
-		    CPPScope *new_global_scope);
+                    CPPScope *new_current_scope,
+                    CPPScope *new_global_scope);
 
 extern CPPScope *current_scope;
 extern CPPScope *global_scope;

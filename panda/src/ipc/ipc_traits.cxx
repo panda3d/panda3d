@@ -33,10 +33,10 @@ ConfigureFn(ipc_trait) {
   unsigned int info_count = THREAD_SCHED_INFO_COUNT;
 
   error = thread_info(thread_self(), THREAD_SCHED_INFO, (thread_info_t)&info,
-		      &info_count);
+                      &info_count);
   if (error != KERN_SUCCESS) {
     FATAL() << "ipc_traits(mach) initialization: error determining thread_info"
-	    << nend;
+            << nend;
     ::exit(1);
   } else {
     ipc_traits::__set_normal_priority(info.base_priority);

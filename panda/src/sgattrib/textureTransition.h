@@ -12,7 +12,7 @@
 #include <texture.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TextureTransition
+//       Class : TextureTransition
 // Description : This controls the assignment of the primary texture
 //               to a piece of geometry.  If there is no
 //               TextureTransition or the transition is off, the
@@ -54,7 +54,7 @@ public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &me);  
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
 protected:
   static TypedWritable *make_TextureTransition(const FactoryParams &params);
@@ -71,7 +71,7 @@ public:
   static void init_type() {
     OnOffTransition::init_type();
     register_type(_type_handle, "TextureTransition",
-		  OnOffTransition::get_class_type());
+                  OnOffTransition::get_class_type());
   }
 
 private:

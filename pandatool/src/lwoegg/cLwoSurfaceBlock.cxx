@@ -47,12 +47,12 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
     
     if (hchunk->is_of_type(LwoSurfaceBlockChannel::get_class_type())) {
       const LwoSurfaceBlockChannel *bc = 
-	DCAST(LwoSurfaceBlockChannel, hchunk);
+        DCAST(LwoSurfaceBlockChannel, hchunk);
       _channel_id = bc->_channel_id;
       
     } else if (hchunk->is_of_type(LwoSurfaceBlockEnabled::get_class_type())) {
       const LwoSurfaceBlockEnabled *ec = 
-	DCAST(LwoSurfaceBlockEnabled, hchunk);
+        DCAST(LwoSurfaceBlockEnabled, hchunk);
       _enabled = ec->_enabled;
     }
   }
@@ -65,8 +65,8 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
     if (chunk->is_of_type(LwoSurfaceBlockTMap::get_class_type())) {
       const LwoSurfaceBlockTMap *lwo_tmap = DCAST(LwoSurfaceBlockTMap, chunk);
       if (_tmap != (CLwoSurfaceBlockTMap *)NULL) {
-	nout << "Two TMAP chunks encountered within surface block.\n";
-	delete _tmap;
+        nout << "Two TMAP chunks encountered within surface block.\n";
+        delete _tmap;
       }
       _tmap = new CLwoSurfaceBlockTMap(_converter, lwo_tmap);
 
@@ -99,9 +99,9 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
     } else if (chunk->is_of_type(LwoSurfaceBlockRepeat::get_class_type())) {
       const LwoSurfaceBlockRepeat *repeat = DCAST(LwoSurfaceBlockRepeat, chunk);
       if (repeat->get_id() == IffId("WRPW")) {
-	_w_repeat = repeat->_cycles;
+        _w_repeat = repeat->_cycles;
       } else if (repeat->get_id() == IffId("WRPH")) {
-	_h_repeat = repeat->_cycles;
+        _h_repeat = repeat->_cycles;
       }
     }
   }
@@ -116,8 +116,8 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
   switch (_axis) {
   case LwoSurfaceBlockAxis::A_x:
     _transform = LMatrix4d::rotate_mat(90.0, 
-				       LVecBase3d::unit_z(),
-				       CS_yup_left) * _transform;
+                                       LVecBase3d::unit_z(),
+                                       CS_yup_left) * _transform;
     break;
 
   case LwoSurfaceBlockAxis::A_y:
@@ -125,8 +125,8 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
 
   case LwoSurfaceBlockAxis::A_z:
     _transform = LMatrix4d::rotate_mat(-90.0, 
-				       LVecBase3d::unit_x(),
-				       CS_yup_left) * _transform;
+                                       LVecBase3d::unit_x(),
+                                       CS_yup_left) * _transform;
     break;
   }
 

@@ -268,11 +268,11 @@ find_all_matches(const string &path) const {
     if (!is_empty()) {
       FindApproxLevel level;
       for (int i = 0; i < get_num_paths(); i++) {
-	FindApproxLevelEntry start(get_path(i), approx_path);
-	level.add_entry(start);
+        FindApproxLevelEntry start(get_path(i), approx_path);
+        level.add_entry(start);
       }
       get_path(0).r_find_matches(result, level, -1, 
-				 NodePath::get_max_search_depth());
+                                 NodePath::get_max_search_depth());
     }
   }
 

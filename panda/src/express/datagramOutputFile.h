@@ -12,7 +12,7 @@
 #include "filename.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DatagramOutputFile
+//       Class : DatagramOutputFile
 // Description : This class can be used to write a binary file that
 //               consists of an arbitrary header followed by a number
 //               of datagrams.

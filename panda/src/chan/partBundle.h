@@ -100,10 +100,10 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level) const;
 
   PT(AnimControl) bind_anim(AnimBundle *anim, 
-			    int hierarchy_match_flags = 0);
+                            int hierarchy_match_flags = 0);
 
   bool bind_anim(AnimBundle *anim, const string &name,
-		 int hierarchy_match_flags = 0);
+                 int hierarchy_match_flags = 0);
 
 public:
   // The following functions aren't really part of the public
@@ -144,7 +144,7 @@ public:
   static void init_type() {
     PartGroup::init_type();
     register_type(_type_handle, "PartBundle",
-		  PartGroup::get_class_type());
+                  PartGroup::get_class_type());
   }
 
 private:

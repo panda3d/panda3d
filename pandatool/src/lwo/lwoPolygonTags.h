@@ -11,7 +11,7 @@
 #include "lwoChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoPolygonTags
+//       Class : LwoPolygonTags
 // Description : An association of polygons defined in the most recent
 //               LwoPolygons chunk to tag ids defined in the most
 //               recent LwoTags chunk.  This associated properties
@@ -43,7 +43,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoPolygonTags",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

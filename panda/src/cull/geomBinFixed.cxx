@@ -38,13 +38,13 @@ clear_current_states() {
 ////////////////////////////////////////////////////////////////////
 void GeomBinFixed::
 record_current_state(GraphicsStateGuardian *, CullState *cs,
-		     int draw_order, CullTraverser *) {
+                     int draw_order, CullTraverser *) {
   PStatTimer timer(CullTraverser::_cull_bins_fixed_pcollector);
 
   // Get the transform matrix from the state.
   TransformAttribute *trans_attrib = NULL;
   get_attribute_into(trans_attrib, cs->get_attributes(),
-		     TransformTransition::get_class_type());
+                     TransformTransition::get_class_type());
 
   CullState::geom_const_iterator gi;
   for (gi = cs->geom_begin(); gi != cs->geom_end(); ++gi) {

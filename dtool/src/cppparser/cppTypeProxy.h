@@ -12,7 +12,7 @@
 
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPTypeProxy
+//       Class : CPPTypeProxy
 // Description : This is a special kind of type that is a placeholder
 //               for some type, currently unknown, that will be filled
 //               in later.  It's used when a type that references
@@ -23,7 +23,7 @@ public:
   CPPTypeProxy();
 
   virtual CPPType *resolve_type(CPPScope *current_scope,
-				CPPScope *global_scope);
+                                CPPScope *global_scope);
 
   virtual bool is_tbd() const;
 
@@ -38,11 +38,11 @@ public:
   virtual bool is_incomplete() const;
 
   virtual void output_instance(ostream &out, int indent_level,
-			       CPPScope *scope,
-			       bool complete, const string &prename,
-			       const string &name) const;
+                               CPPScope *scope,
+                               bool complete, const string &prename,
+                               const string &name) const;
   virtual void output(ostream &out, int indent_level, CPPScope *scope,
-		      bool complete) const;
+                      bool complete) const;
 
   virtual SubType get_subtype() const;
 

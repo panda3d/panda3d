@@ -26,7 +26,7 @@ class ClientBase;
 class EXPCL_PANDA ClientDevice : public TypedReferenceCount {
 protected:
   ClientDevice(ClientBase *client, TypeHandle device_type, 
-	       const string &device_name);
+               const string &device_name);
 
 public:
   virtual ~ClientDevice();

@@ -16,7 +16,7 @@
 class CPPScope;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPTemplateParameterList
+//       Class : CPPTemplateParameterList
 // Description : This class serves to store the parameter list for a
 //               template function or class, both for the formal
 //               parameter list (given when the template is defined)
@@ -29,8 +29,8 @@ public:
 
   string get_string() const;
   void build_subst_decl(const CPPTemplateParameterList &formal_params,
-			CPPDeclaration::SubstDecl &subst,
-			CPPScope *current_scope, CPPScope *global_scope) const;
+                        CPPDeclaration::SubstDecl &subst,
+                        CPPScope *current_scope, CPPScope *global_scope) const;
 
   bool is_fully_specified() const;
   bool is_tbd() const;
@@ -40,8 +40,8 @@ public:
   bool operator < (const CPPTemplateParameterList &other) const;
 
   CPPTemplateParameterList *substitute_decl(CPPDeclaration::SubstDecl &subst,
-					    CPPScope *current_scope,
-					    CPPScope *global_scope);
+                                            CPPScope *current_scope,
+                                            CPPScope *global_scope);
 
   void output(ostream &out, CPPScope *scope) const;
   void write_formal(ostream &out, CPPScope *scope) const;
@@ -62,7 +62,7 @@ operator << (ostream &out, const CPPTemplateParameterList &plist) {
 class CPPTPLCompare {
 public:
   bool operator () (const CPPTemplateParameterList *a,
-		    const CPPTemplateParameterList *b) const {
+                    const CPPTemplateParameterList *b) const {
     return (*a) < (*b);
   }
 };

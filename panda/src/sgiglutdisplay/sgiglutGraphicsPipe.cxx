@@ -45,7 +45,7 @@ TypeHandle sgiglutGraphicsPipe::get_class_type(void) {
 void sgiglutGraphicsPipe::init_type(void) {
   sgiGraphicsPipe::init_type();
   register_type(_type_handle, "sgiglutGraphicsPipe",
-		sgiGraphicsPipe::get_class_type());
+                sgiGraphicsPipe::get_class_type());
 }
 
 TypeHandle sgiglutGraphicsPipe::get_type(void) const {

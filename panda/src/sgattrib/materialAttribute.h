@@ -13,7 +13,7 @@
 #include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : MaterialAttribute
+//       Class : MaterialAttribute
 // Description : See MaterialTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA MaterialAttribute : public OnOffAttribute {
@@ -48,7 +48,7 @@ public:
   static void init_type() {
     OnOffAttribute::init_type();
     register_type(_type_handle, "MaterialAttribute",
-		  OnOffAttribute::get_class_type());
+                  OnOffAttribute::get_class_type());
   }
 
 private:

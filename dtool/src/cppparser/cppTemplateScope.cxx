@@ -29,8 +29,8 @@ CPPTemplateScope(CPPScope *parent_scope) :
 ////////////////////////////////////////////////////////////////////
 void CPPTemplateScope::
 add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
-		CPPPreprocessor *preprocessor,
-		const cppyyltype &pos) {
+                CPPPreprocessor *preprocessor,
+                const cppyyltype &pos) {
   decl->_template_scope = this;
   assert(_parent_scope != NULL);
   _parent_scope->add_declaration(decl, global_scope, preprocessor, pos);
@@ -78,7 +78,7 @@ define_namespace(CPPNamespace *scope) {
 ////////////////////////////////////////////////////////////////////
 void CPPTemplateScope::
 add_using(CPPUsing *using_decl, CPPScope *global_scope,
-	  CPPPreprocessor *error_sink) {
+          CPPPreprocessor *error_sink) {
   assert(_parent_scope != NULL);
   _parent_scope->add_using(using_decl, global_scope, error_sink);
 }

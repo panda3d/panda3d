@@ -89,16 +89,16 @@ read_iff(IffInputFile *in, size_t stop_at) {
       PTA_float orig_value = (*ir.first).second;
 
       if (value.v() != orig_value.v()) {
-	nout << "Multiple UV values for vertex " << vertex_index
-	     << " of polygon " << polygon_index
-	     << " specified by discontinuous vertex map.\n"
-	     << "Original value = ";
-	copy(orig_value.begin(), orig_value.end(),
-	     ostream_iterator<float>(nout, " "));
-	nout << " new value = ";
-	copy(value.begin(), value.end(),
-	     ostream_iterator<float>(nout, " "));
-	nout << "\n";
+        nout << "Multiple UV values for vertex " << vertex_index
+             << " of polygon " << polygon_index
+             << " specified by discontinuous vertex map.\n"
+             << "Original value = ";
+        copy(orig_value.begin(), orig_value.end(),
+             ostream_iterator<float>(nout, " "));
+        nout << " new value = ";
+        copy(value.begin(), value.end(),
+             ostream_iterator<float>(nout, " "));
+        nout << "\n";
       }
     }
   }

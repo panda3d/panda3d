@@ -21,7 +21,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : BamWriter
+//       Class : BamWriter
 // Description : This is the fundamental interface for writing binary
 //               objects to a Bam file, to be extracted later by a
 //               BamReader.

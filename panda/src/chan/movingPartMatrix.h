@@ -25,8 +25,8 @@ protected:
 
 public:
   INLINE MovingPartMatrix(PartGroup *parent, const string &name,
-			  const LMatrix4f &initial_value =
-			  LMatrix4f::ident_mat());
+                          const LMatrix4f &initial_value =
+                          LMatrix4f::ident_mat());
 
   virtual void get_blend_value(const PartBundle *root);
 
@@ -52,7 +52,7 @@ public:
     MovingPart<ACMatrixSwitchType>::init_type();
     AnimChannelFixed<ACMatrixSwitchType>::init_type();
     register_type(_type_handle, "MovingPartMatrix",
-		  MovingPart<ACMatrixSwitchType>::get_class_type());
+                  MovingPart<ACMatrixSwitchType>::get_class_type());
   }
 
 private:

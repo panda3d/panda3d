@@ -15,7 +15,7 @@ template<class NumType>
 class NumericDataTransition;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : NumericDataAttribute
+//       Class : NumericDataAttribute
 // Description : 
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
@@ -52,9 +52,9 @@ public:
   static void init_type() {
     NodeAttribute::init_type();
     register_type(_type_handle, 
-		  string("NumericDataAttribute<") + 
-		  get_type_handle(NumType).get_name() + ">",
-		  NodeAttribute::get_class_type());
+                  string("NumericDataAttribute<") + 
+                  get_type_handle(NumType).get_name() + ">",
+                  NodeAttribute::get_class_type());
   }
 
 private:

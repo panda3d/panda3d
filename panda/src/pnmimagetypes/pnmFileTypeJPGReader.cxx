@@ -118,15 +118,15 @@ read_data(xel *array, xelval *) {
     JSAMPROW bufptr = buffer[0];
     for (int i = 0; i < row_stride; i += _cinfo.output_components) {
       if (_cinfo.output_components == 1) {
-	xelval val = (xelval)bufptr[i];
-	nassertr(x < _x_size * _y_size, 0);
-	PNM_ASSIGN1(array[x], val);
+        xelval val = (xelval)bufptr[i];
+        nassertr(x < _x_size * _y_size, 0);
+        PNM_ASSIGN1(array[x], val);
       } else {
         xelval red, grn, blu;
         red = (xelval)bufptr[i];
         grn = (xelval)bufptr[i+1];
         blu = (xelval)bufptr[i+2];
-	nassertr(x < _x_size * _y_size, 0);
+        nassertr(x < _x_size * _y_size, 0);
         PPM_ASSIGN(array[x], red, grn, blu);
       }
       x++;

@@ -108,7 +108,7 @@ void RenderRelation::
 init_type() {
   NodeRelation::init_type();
   register_type(_type_handle, "RenderRelation",
-		NodeRelation::get_class_type());
+                NodeRelation::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////

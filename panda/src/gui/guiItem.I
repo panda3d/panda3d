@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////////////
 
 INLINE GuiItem::GuiItem(void) : Namable("fubar"), _scale(1.), _scale_x(1.),
-				_scale_y(1.), _scale_z(1.), _left(-1.),
-				_right(1.), _bottom(-1.), _top(1.),
-				_pri(P_Normal) {}
+                                _scale_y(1.), _scale_z(1.), _left(-1.),
+                                _right(1.), _bottom(-1.), _top(1.),
+                                _pri(P_Normal) {}
 
 #include <get_rel_pos.h>
 

@@ -27,7 +27,7 @@ class EXPCL_PANDAGLUT glutGraphicsWindow : public GraphicsWindow
 public:
   glutGraphicsWindow( GraphicsPipe* pipe );
   glutGraphicsWindow( GraphicsPipe* pipe,
-		      const GraphicsWindow::Properties& props );
+                      const GraphicsWindow::Properties& props );
   virtual ~glutGraphicsWindow( void );
 
   virtual void config( void );
@@ -47,7 +47,7 @@ protected:
 
   // Mouse routines
   static void glut_handle_mouse_input( int button, int state, int x,
-				       int y ) {
+                                       int y ) {
     _global_window->handle_mouse_input( button, state, x, y );
   }
   void handle_mouse_input( int button, int state, int x, int y );
@@ -71,7 +71,7 @@ protected:
   void handle_special_keyboard_input( int key, int, int );
 
 protected:
-  static glutGraphicsWindow*	_global_window;
+  static glutGraphicsWindow*    _global_window;
   int                             _handle;
 
 public:

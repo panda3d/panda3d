@@ -98,14 +98,14 @@ output_buttons(ostream &out) const {
     const ButtonState &state = (*bi);
     if (state._state != S_unknown) {
       if (any_buttons) {
-	out << ", ";
+        out << ", ";
       }
       any_buttons = true;
       out << (int)(bi - _buttons.begin()) << "=";
       if (state._state == S_up) {
-	out << "up";
+        out << "up";
       } else {
-	out << "down";
+        out << "down";
       }
     }
   }
@@ -131,16 +131,16 @@ write_buttons(ostream &out, int indent_level) const {
       any_buttons = true;
 
       indent(out, indent_level)
-	<< (int)(bi - _buttons.begin()) << ". ";
+        << (int)(bi - _buttons.begin()) << ". ";
 
       if (state._handle != ButtonHandle::none()) {
-	out << "(" << state._handle << ") ";
+        out << "(" << state._handle << ") ";
       }
 
       if (state._state == S_up) {
-	out << "up";
+        out << "up";
       } else {
-	out << "down";
+        out << "down";
       }
       out << "\n";
     }

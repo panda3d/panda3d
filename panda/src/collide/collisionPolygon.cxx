@@ -95,9 +95,9 @@ verify_points(const LPoint3f *begin, const LPoint3f *end) {
       // Make sure no points are repeated.
       const LPoint3f *pj;
       for (pj = begin; pj != pi && all_ok; ++pj) {
-	if ((*pj).almost_equal(*pi)) {
-	  all_ok = false;
-	}
+        if ((*pj).almost_equal(*pi)) {
+          all_ok = false;
+        }
       }
     }
   }
@@ -112,7 +112,7 @@ verify_points(const LPoint3f *begin, const LPoint3f *end) {
 ////////////////////////////////////////////////////////////////////
 int CollisionPolygon::
 test_intersection(CollisionHandler *, const CollisionEntry &, 
-		  const CollisionSolid *into) const {
+                  const CollisionSolid *into) const {
   // Polygons cannot currently be intersected from, only into.  Do not
   // add a CollisionPolygon to a CollisionTraverser.
   nassertr(false, 0);
@@ -136,7 +136,7 @@ xform(const LMatrix4f &mat) {
     mat.write(collide_cat.debug(false), 2);
     if (_points.empty()) {
       collide_cat.debug(false)
-	<< "  (no points)\n";
+        << "  (no points)\n";
     }
   }
 
@@ -215,7 +215,7 @@ recompute_bound() {
 ////////////////////////////////////////////////////////////////////
 int CollisionPolygon::
 test_intersection_from_sphere(CollisionHandler *record,
-			      const CollisionEntry &entry) const {
+                              const CollisionEntry &entry) const {
   if (_points.size() < 3) {
     return 0;
   }
@@ -241,7 +241,7 @@ test_intersection_from_sphere(CollisionHandler *record,
   LPoint3f plane_point;
   bool really_intersects = 
     get_plane().intersects_line(plane_point,
-				from_center, from_center + get_normal());
+                                from_center, from_center + get_normal());
   nassertr(really_intersects, 0);
 
   LPoint2f p = to_2d(plane_point);
@@ -278,23 +278,23 @@ test_intersection_from_sphere(CollisionHandler *record,
       float rim_length = length(rim);
 
       if (rim_length <= from_radius) {
-	// Here's a surprise: the center of the polygon is within the
-	// circle!  Since the center is guaranteed to be interior to the
-	// polygon (the polygon is convex), it follows that the circle
-	// intersects the polygon.
+        // Here's a surprise: the center of the polygon is within the
+        // circle!  Since the center is guaranteed to be interior to the
+        // polygon (the polygon is convex), it follows that the circle
+        // intersects the polygon.
 
       } else {
-	// Now scale this vector to length radius, and get the new point.
-	rim = (rim * from_radius / rim_length) + p;
+        // Now scale this vector to length radius, and get the new point.
+        rim = (rim * from_radius / rim_length) + p;
 
-	// Is the new point within the polygon?
-	if (is_inside(rim)) {
-	  // It sure is!  The circle intersects!
+        // Is the new point within the polygon?
+        if (is_inside(rim)) {
+          // It sure is!  The circle intersects!
 
-	} else {
-	  // No intersection.
-	  return 0;
-	}
+        } else {
+          // No intersection.
+          return 0;
+        }
       }
     }
   }
@@ -323,7 +323,7 @@ test_intersection_from_sphere(CollisionHandler *record,
 ////////////////////////////////////////////////////////////////////
 int CollisionPolygon::
 test_intersection_from_ray(CollisionHandler *record,
-			   const CollisionEntry &entry) const {
+                           const CollisionEntry &entry) const {
   if (_points.size() < 3) {
     return 0;
   }
@@ -371,7 +371,7 @@ test_intersection_from_ray(CollisionHandler *record,
 ////////////////////////////////////////////////////////////////////
 int CollisionPolygon::
 test_intersection_from_segment(CollisionHandler *record,
-			       const CollisionEntry &entry) const {
+                               const CollisionEntry &entry) const {
   if (_points.size() < 3) {
     return 0;
   }
@@ -430,7 +430,7 @@ recompute_viz(Node *parent) {
   if (_points.size() < 3) {
     if (collide_cat.is_debug()) {
       collide_cat.debug()
-	<< "(Degenerate poly, ignoring.)\n";
+        << "(Degenerate poly, ignoring.)\n";
     }
     return;
   }
@@ -477,7 +477,7 @@ is_inside(const LPoint2f &p) const {
     }
   }
   if (is_right(p - _points[_points.size() - 1], 
-	       _points[0] - _points[_points.size() - 1])) {
+               _points[0] - _points[_points.size() - 1])) {
     return false; 
   }
 
@@ -552,10 +552,10 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
       collide_cat.error() << "Invalid points in CollisionPolygon:\n";
       const LPoint3f *pi;
       for (pi = begin; pi != end; ++pi) {
-	collide_cat.error(false) << "  " << (*pi) << "\n";
+        collide_cat.error(false) << "  " << (*pi) << "\n";
       }
       collide_cat.error(false) 
-	<< "  normal " << normal << " with length " << normal.length() << "\n";
+        << "  normal " << normal << " with length " << normal.length() << "\n";
       
       return;
     }
@@ -701,16 +701,16 @@ to_3d(const LPoint2f &point2d) const {
   switch (_axis) {
   case AT_x:
     return LPoint3f(-(normal[1]*point2d[0] + normal[2]*point2d[1] + D)/normal[0],
-		    point2d[0], point2d[1]);
+                    point2d[0], point2d[1]);
 
   case AT_y:
     return LPoint3f(point2d[0],
-		    -(normal[0]*point2d[0] + normal[2]*point2d[1] + D)/normal[1],
-		    point2d[1]);
+                    -(normal[0]*point2d[0] + normal[2]*point2d[1] + D)/normal[1],
+                    point2d[1]);
 
   case AT_z:
     return LPoint3f(point2d[0], point2d[1],
-		    -(normal[0]*point2d[0] + normal[1]*point2d[1] + D)/normal[2]);
+                    -(normal[0]*point2d[0] + normal[1]*point2d[1] + D)/normal[2]);
   }
 
   nassertr(false, LPoint3f(0.0f, 0.0f, 0.0f));

@@ -13,7 +13,7 @@
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, NumericDataAttribute<int>);
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : IntDataAttribute
+//       Class : IntDataAttribute
 // Description : A NumericDataAttribute templated on integer types.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA IntDataAttribute :
@@ -36,7 +36,7 @@ public:
   static void init_type() {
     NumericDataAttribute<int>::init_type();
     register_type(_type_handle, "IntDataAttribute", 
-		  NumericDataAttribute<int>::get_class_type());
+                  NumericDataAttribute<int>::get_class_type());
   }
 
 private:

@@ -13,7 +13,7 @@
 #include <map>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GlobalPointerRegistry
+//       Class : GlobalPointerRegistry
 // Description : This class maintains a one-to-one mapping from
 //               TypeHandle to a void * pointer.  Its purpose is to
 //               store a pointer to some class data for a given class.

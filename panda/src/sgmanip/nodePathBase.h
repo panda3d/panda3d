@@ -44,7 +44,7 @@ public:
   static void init_type() {
     ArcChain::init_type();
     register_type(_type_handle, "NodePathBase",
-		  ArcChain::get_class_type());
+                  ArcChain::get_class_type());
   }
   
 private:

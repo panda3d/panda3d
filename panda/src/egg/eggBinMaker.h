@@ -134,7 +134,7 @@
 //    above get_bin_number() and sorts_less() working together:
 //
 //        virtual bool sorts_less(int bin_number,
-//      			  const EggNode *a, const EggNode *b) {
+//                                const EggNode *a, const EggNode *b) {
 //          if (a->has_texture() != b->has_texture()) {
 //            return ((int)a->has_texture() < (int)b->has_texture());
 //          }
@@ -208,7 +208,7 @@ class EggBin;
 class EggBinMaker;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggBinMakerCompareNodes
+//       Class : EggBinMakerCompareNodes
 // Description : This is just an STL function object, used to sort
 //               nodes within EggBinMaker.  It's part of the private
 //               interface; ignore it.
@@ -228,7 +228,7 @@ public:
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggBinMaker
+//       Class : EggBinMaker
 // Description : This is a handy class for collecting related nodes
 //               together.  It is an abstract class; to use it you
 //               must subclass off of it.  See the somewhat lengthy
@@ -282,7 +282,7 @@ public:
   static void init_type() {
     EggObject::init_type();
     register_type(_type_handle, "EggBinMaker",
-		  EggObject::get_class_type());
+                  EggObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

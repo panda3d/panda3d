@@ -53,9 +53,9 @@ main(int argc, char *argv[]) {
       NetAddress address;
       PT(Connection) new_connection;
       if (listener.get_new_connection(rv, address, new_connection)) {
-	nout << "Got connection from " << address << "\n";
-	reader.add_connection(new_connection);
-	clients.insert(new_connection);
+        nout << "Got connection from " << address << "\n";
+        reader.add_connection(new_connection);
+        clients.insert(new_connection);
       }
     }
 
@@ -63,10 +63,10 @@ main(int argc, char *argv[]) {
     while (cm.reset_connection_available()) {
       PT(Connection) connection;
       if (cm.get_reset_connection(connection)) {
-	nout << "Lost connection from "
-	     << connection->get_address() << "\n";
-	clients.erase(connection);
-	cm.close_connection(connection);
+        nout << "Lost connection from "
+             << connection->get_address() << "\n";
+        clients.erase(connection);
+        cm.close_connection(connection);
       }
     }
 
@@ -74,33 +74,33 @@ main(int argc, char *argv[]) {
     while (reader.data_available()) {
       NetDatagram datagram;
       if (reader.get_data(datagram)) {
-	nout << "Got datagram " << datagram << "from " 
-	     << datagram.get_address() << ", sending to "
-	     << clients.size() << " clients.\n";
-	
-	Clients::iterator ci;
-	for (ci = clients.begin(); ci != clients.end(); ++ci) {
-	  writer.send(datagram, (*ci));
-	}
+        nout << "Got datagram " << datagram << "from " 
+             << datagram.get_address() << ", sending to "
+             << clients.size() << " clients.\n";
 
-	if (datagram.get_length() <= 1) {
-	  /*
-	  // An empty datagram means to close the connection.
-	  PT(Connection) connection = datagram.get_connection();
-	  if (connection.is_null()) {
-	    nout << "Empty datagram from a null connection.\n";
-	  } else {
-	    nout << "Closing connection from " 
-		 << connection->get_address() << "\n";
-	    clients.erase(connection);
-	    cm.close_connection(connection);
-	    nout << "Closed " << connection << "\n";
-	  }
-	  */
-	  
-	  // No, an empty datagram means to shut down the server.
-	  shutdown = true;
-	}
+        Clients::iterator ci;
+        for (ci = clients.begin(); ci != clients.end(); ++ci) {
+          writer.send(datagram, (*ci));
+        }
+
+        if (datagram.get_length() <= 1) {
+          /*
+          // An empty datagram means to close the connection.
+          PT(Connection) connection = datagram.get_connection();
+          if (connection.is_null()) {
+            nout << "Empty datagram from a null connection.\n";
+          } else {
+            nout << "Closing connection from " 
+                 << connection->get_address() << "\n";
+            clients.erase(connection);
+            cm.close_connection(connection);
+            nout << "Closed " << connection << "\n";
+          }
+          */
+
+          // No, an empty datagram means to shut down the server.
+          shutdown = true;
+        }
       }
     }
       

@@ -15,7 +15,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : BitMask32Transition
+//       Class : BitMask32Transition
 // Description : This is just an instantation of BitMaskTransition
 //               using BitMask32, the most common bitmask type.
 ////////////////////////////////////////////////////////////////////

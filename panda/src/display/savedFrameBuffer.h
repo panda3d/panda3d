@@ -15,7 +15,7 @@
 #include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : SavedFrameBuffer
+//       Class : SavedFrameBuffer
 // Description : Occasionally we need to save the contents of the
 //               frame buffer for restoring later, particularly when
 //               we are doing multipass effects.  The precise form in
@@ -37,7 +37,7 @@
 class EXPCL_PANDA SavedFrameBuffer : public TypedReferenceCount {
 public:
   INLINE SavedFrameBuffer(const RenderBuffer &buffer,
-			  CPT(DisplayRegion) dr);
+                          CPT(DisplayRegion) dr);
 
   RenderBuffer _buffer;
   CPT(DisplayRegion) _display_region;
@@ -50,7 +50,7 @@ public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "SavedFrameBuffer",
- 		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

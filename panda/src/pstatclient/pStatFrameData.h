@@ -17,7 +17,7 @@ class DatagramIterator;
 class PStatClientVersion;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PStatFrameData
+//       Class : PStatFrameData
 // Description : Contains the raw timing and level data for a single
 //               frame.  This is a sequence of start/stop events, as
 //               well as a table of level values, associated with a

@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool Builder::
 add_prim(const BuilderBucket &bucket, 
-	 const BuilderPrim &prim) {
+         const BuilderPrim &prim) {
   add_bucket(bucket);
   return ((BuilderBucketNode &)(*_bi)).add_prim(prim);
 }
@@ -39,7 +39,7 @@ add_prim(const BuilderBucket &bucket,
 ////////////////////////////////////////////////////////////////////
 INLINE bool Builder::
 add_prim(const BuilderBucket &bucket, 
-	 const BuilderPrimI &prim) {
+         const BuilderPrimI &prim) {
   add_bucket(bucket);
   return ((BuilderBucketNode &)(*_bi)).add_prim(prim);
 }
@@ -63,7 +63,7 @@ add_prim(const BuilderBucket &bucket,
 ////////////////////////////////////////////////////////////////////
 INLINE bool Builder::
 add_prim_nonindexed(const BuilderBucket &bucket, 
-		    const BuilderPrimI &prim) {
+                    const BuilderPrimI &prim) {
   add_bucket(bucket);
   return ((BuilderBucketNode &)(*_bi)).add_prim_nonindexed(prim);
 }

@@ -115,9 +115,9 @@ update() {
     if (!thread_data->is_empty()) {
       int frame_number = thread_data->get_latest_frame_number();
       if (frame_number != _current_frame) {
-	compute_page(thread_data->get_frame(frame_number));
-	_current_frame = frame_number;
-	force_redraw();
+        compute_page(thread_data->get_frame(frame_number));
+        _current_frame = frame_number;
+        force_redraw();
       }
     }
   }
@@ -161,8 +161,8 @@ force_redraw() {
       begin_row(i);
       ColorBars::const_iterator bi;
       for (bi = bars.begin(); bi != bars.end(); ++bi) {
-	const ColorBar &bar = (*bi);
-	draw_bar(i, timestamp_to_pixel(bar._start), timestamp_to_pixel(bar._end));
+        const ColorBar &bar = (*bi);
+        draw_bar(i, timestamp_to_pixel(bar._start), timestamp_to_pixel(bar._end));
       }
       end_row(i);
     }
@@ -298,7 +298,7 @@ compute_page(const PStatFrameData &frame_data) {
     for (pi = _page_data.begin(); pi != _page_data.end(); ++pi) {
       int collector_index = (*pi).first;
       if (client_data->has_collector(collector_index)) {
-	_labels.push_back(collector_index);
+        _labels.push_back(collector_index);
       }
     }
 

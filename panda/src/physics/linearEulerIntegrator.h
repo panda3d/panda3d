@@ -16,8 +16,8 @@
 class EXPCL_PANDAPHYSICS LinearEulerIntegrator : public LinearIntegrator {
 private:
   virtual void child_integrate(Physical *physical,
-			       vector< PT(LinearForce) >& forces,
-			       float dt);
+                               vector< PT(LinearForce) >& forces,
+                               float dt);
 
 PUBLISHED:
   LinearEulerIntegrator(void);

@@ -36,17 +36,17 @@ get_config_path(const string &config_var_name, DSearchPath *&static_ptr) {
     config_express.GetAll(config_var_name, all_defs);
     if (!all_defs.empty()) {
       Config::ConfigTable::Symbol::reverse_iterator si =
-	all_defs.rbegin();
+        all_defs.rbegin();
       (*static_ptr).append_path(ExecutionEnvironment::expand_string((*si).Val()));
       ++si;
       while (si != all_defs.rend()) {
-	(*static_ptr).append_path(ExecutionEnvironment::expand_string((*si).Val()));
-	++si;
+        (*static_ptr).append_path(ExecutionEnvironment::expand_string((*si).Val()));
+        ++si;
       }
     }
     if (express_cat.is_debug()) {
       express_cat.debug()
-	<< config_var_name << " is " << *static_ptr << "\n";
+        << config_var_name << " is " << *static_ptr << "\n";
     }
   }
 

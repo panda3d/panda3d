@@ -266,16 +266,16 @@ run(void) {
     int ret;
     if (_decompress_to_ram == false) 
       ret = _decompressor->decompress_to_stream(next_in, avail_in,
-			next_out, avail_out, dest_buffer, 
-			dest_buffer_length, _write_stream);
+                        next_out, avail_out, dest_buffer, 
+                        dest_buffer_length, _write_stream);
     else
       ret = _decompressor->decompress_to_stream(next_in, avail_in,
-			next_out, avail_out, dest_buffer, 
-			dest_buffer_length, *_write_string_stream);
+                        next_out, avail_out, dest_buffer, 
+                        dest_buffer_length, *_write_string_stream);
     if (ret == ZCompressorBase::S_error)
       return EU_error_zlib;
     if ((int)_decompressor->get_total_in() == _source_file_length &&
-	  avail_out == dest_buffer_length) {
+          avail_out == dest_buffer_length) {
       cleanup();
       return EU_success;
     }

@@ -14,14 +14,14 @@
 class GtkStatsStripChart;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GtkStatsStripWindow
+//       Class : GtkStatsStripWindow
 // Description : A window that contains your basic one-thread,
 //               one-level strip chart.
 ////////////////////////////////////////////////////////////////////
 class GtkStatsStripWindow : public GtkStatsWindow {
 public:
   GtkStatsStripWindow(GtkStatsMonitor *monitor, int thread_index, 
-		      int collector_index, bool show_level,
+                      int collector_index, bool show_level,
                       int chart_xsize, int chart_ysize);
 
   virtual void mark_dead();

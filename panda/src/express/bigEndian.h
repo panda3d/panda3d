@@ -13,7 +13,7 @@
 #include "reversedNumericData.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : BigEndian
+//       Class : BigEndian
 // Description : BigEndian is a special class that automatically
 //               reverses the byte-order of numeric values for
 //               little-endian machines, and passes them through

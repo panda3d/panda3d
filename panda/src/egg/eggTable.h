@@ -11,7 +11,7 @@
 #include "eggGroupNode.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggTable
+//       Class : EggTable
 // Description : This corresponds to a <Table> or a <Bundle> entry.
 //               As such, it doesn't actually contain a table of
 //               numbers, but it may be a parent to an EggSAnimData or

@@ -47,19 +47,19 @@ dump_hex(ostream &out) const {
     size_t p;
     for (p = line; p < line + 16; p++) {
       if (p < _message.length()) {
-	char hex[12];
-	sprintf(hex, " %02x", ((unsigned int)_message[p]) & 0xff);
-	out << hex;
+        char hex[12];
+        sprintf(hex, " %02x", ((unsigned int)_message[p]) & 0xff);
+        out << hex;
       } else {
-	out << "   ";
+        out << "   ";
       }
     }
     out << "  ";
     for (p = line; p < line + 16 && p < _message.length(); p++) {
       if (isgraph(_message[p]) || _message[p] == ' ') {
-	out << (char)_message[p];
+        out << (char)_message[p];
       } else {
-	out << ".";
+        out << ".";
       }
     }
     out << "\n";

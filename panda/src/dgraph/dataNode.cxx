@@ -75,7 +75,7 @@ get_spam_mode() const {
 ////////////////////////////////////////////////////////////////////
 void
 register_data_transition(TypeHandle &type_handle, const string &name, 
-			 TypeHandle derived_from) {
+                         TypeHandle derived_from) {
   // Make sure the user gave us a transition type as the base.
   nassertv(derived_from.is_derived_from(NodeTransition::get_class_type()));
 

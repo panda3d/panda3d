@@ -14,7 +14,7 @@
 #include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ClipPlaneAttribute
+//       Class : ClipPlaneAttribute
 // Description : See ClipPlaneTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ClipPlaneAttribute : public MultiNodeAttribute {
@@ -36,7 +36,7 @@ public:
 protected:
   virtual void output_property(ostream &out, const PT_Node &prop) const;
   virtual void write_property(ostream &out, const PT_Node &prop,
-			      int indent_level) const;
+                              int indent_level) const;
 
 public:
   virtual TypeHandle get_type() const {
@@ -49,7 +49,7 @@ public:
   static void init_type() {
     MultiNodeAttribute::init_type();
     register_type(_type_handle, "ClipPlaneAttribute",
-		  MultiNodeAttribute::get_class_type());
+                  MultiNodeAttribute::get_class_type());
   }
 
 private:

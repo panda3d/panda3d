@@ -28,12 +28,12 @@ class BamWriter;
 //       Class : Drawable
 // Description : Object that can be drawn (i.e. issues graphics
 //               commands).
-//		 NOTE: We had to change the name to dDrawable because
-//		 the stupid bastards who wrote X didn't add a prefix
-//		 to their variable names
+//               NOTE: We had to change the name to dDrawable because
+//               the stupid bastards who wrote X didn't add a prefix
+//               to their variable names
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA dDrawable : public ReferenceCount, public WritableConfigurable,
-		  public BoundedObject {
+                  public BoundedObject {
 public:
 
   dDrawable() : WritableConfigurable() { 
@@ -63,9 +63,9 @@ public:
     WritableConfigurable::init_type();
     BoundedObject::init_type();
     register_type(_type_handle, "dDrawable",
-		  ReferenceCount::get_class_type(),
-		  WritableConfigurable::get_class_type(),
-		  BoundedObject::get_class_type());
+                  ReferenceCount::get_class_type(),
+                  WritableConfigurable::get_class_type(),
+                  BoundedObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

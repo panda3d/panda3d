@@ -13,7 +13,7 @@
 #include <filename.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ImageWriter
+//       Class : ImageWriter
 // Description : This is the base class for a program that generates
 //               an image file output, but doesn't read any for input.
 ////////////////////////////////////////////////////////////////////

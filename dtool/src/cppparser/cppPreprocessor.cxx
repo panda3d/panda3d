@@ -332,75 +332,75 @@ get_next_token0() {
       // parse the template parameters.
       CPPDeclaration *decl = ident->find_template(current_scope, global_scope);
       if (decl != NULL) {
-	ident->_names.back().set_templ
-	  (nested_parse_template_instantiation(decl->get_template_scope()));
-	token = internal_get_next_token();
+        ident->_names.back().set_templ
+          (nested_parse_template_instantiation(decl->get_template_scope()));
+        token = internal_get_next_token();
       }
     }
 
     while (token._token == SCOPE || token._token == TOKENPASTE) {
       if (token._token == TOKENPASTE) {
-	// The token-pasting operator creates one continuous
-	// identifier across whitespace.
-	token = internal_get_next_token();
-	if (token._token == SIMPLE_IDENTIFIER) {
-	  name += token._lval.str;
-	  ident->_names.back().append_name(token._lval.str);
+        // The token-pasting operator creates one continuous
+        // identifier across whitespace.
+        token = internal_get_next_token();
+        if (token._token == SIMPLE_IDENTIFIER) {
+          name += token._lval.str;
+          ident->_names.back().append_name(token._lval.str);
 
-	  token = internal_get_next_token();
+          token = internal_get_next_token();
 
-	} else {
-	  // Token-paste with nothing.
-	}
+        } else {
+          // Token-paste with nothing.
+        }
 
       } else { // token._token == SCOPE
-	name += "::";
-	token = internal_get_next_token();
-	string token_prefix;
+        name += "::";
+        token = internal_get_next_token();
+        string token_prefix;
 
-	if (token._token == '~') {
-	  // A scoping operator followed by a tilde can only be the
-	  // start of a scoped destructor name.  Make the tilde be part
-	  // of the name.
-	  name += "~";
-	  token_prefix = "~";
-	  token = internal_get_next_token();
-	}
-	
-	if (token._token != SIMPLE_IDENTIFIER) {
-	  // The last useful token was a SCOPE, thus this is a scoping
-	  // token.
-	  
-	  if (token._token == KW_OPERATOR) {
-	    // Unless the last token we came across was the "operator"
-	    // keyword.  We make a special case for this, because it's
-	    // occasionally scoped in normal use.
-	    token._lval = result;
-	    return token;
-	  }
-	  _saved_tokens.push_back(token);
-	  return CPPToken(SCOPING, first_line, first_col, first_file, 
-			  name, result);
-	}
+        if (token._token == '~') {
+          // A scoping operator followed by a tilde can only be the
+          // start of a scoped destructor name.  Make the tilde be part
+          // of the name.
+          name += "~";
+          token_prefix = "~";
+          token = internal_get_next_token();
+        }
 
-	name += token._lval.str;
-	ident->_names.push_back(token_prefix + token._lval.str);
+        if (token._token != SIMPLE_IDENTIFIER) {
+          // The last useful token was a SCOPE, thus this is a scoping
+          // token.
 
-	token = internal_get_next_token();
+          if (token._token == KW_OPERATOR) {
+            // Unless the last token we came across was the "operator"
+            // keyword.  We make a special case for this, because it's
+            // occasionally scoped in normal use.
+            token._lval = result;
+            return token;
+          }
+          _saved_tokens.push_back(token);
+          return CPPToken(SCOPING, first_line, first_col, first_file, 
+                          name, result);
+        }
+
+        name += token._lval.str;
+        ident->_names.push_back(token_prefix + token._lval.str);
+
+        token = internal_get_next_token();
       }
 
       if (token._token == '<') {
-	// If the next token is an angle bracket and the current
-	// indentifier wants template instantiation, assume the angle
-	// bracket begins the instantiation and call yacc recursively to
-	// parse the template parameters.
-	CPPDeclaration *decl = 
-	  ident->find_template(current_scope, global_scope);
-	if (decl != NULL) {
-	  ident->_names.back().set_templ
-	    (nested_parse_template_instantiation(decl->get_template_scope()));
-	  token = internal_get_next_token();
-	}
+        // If the next token is an angle bracket and the current
+        // indentifier wants template instantiation, assume the angle
+        // bracket begins the instantiation and call yacc recursively to
+        // parse the template parameters.
+        CPPDeclaration *decl = 
+          ident->find_template(current_scope, global_scope);
+        if (decl != NULL) {
+          ident->_names.back().set_templ
+            (nested_parse_template_instantiation(decl->get_template_scope()));
+          token = internal_get_next_token();
+        }
       }
     }
     // The last useful token was a SIMPLE_IDENTIFIER, thus this is a
@@ -410,12 +410,12 @@ get_next_token0() {
     int token_type = IDENTIFIER;
     CPPDeclaration *decl = ident->find_symbol(current_scope, global_scope);
     if (decl != NULL && 
-	(decl->as_typedef() != NULL || decl->as_type() != NULL)) {
+        (decl->as_typedef() != NULL || decl->as_type() != NULL)) {
       token_type = TYPENAME_IDENTIFIER;
     }
 
     return CPPToken(token_type, first_line, first_col, first_file, 
-		    name, result);
+                    name, result);
   }
 
   // This is the normal case: just pass through whatever token we got.
@@ -438,8 +438,8 @@ warning(const string &message, int line, int col, CPPFile file) {
       file = get_file();
     }
     cerr << "\nWarning in " << file
-	 << " near line " << line << ", column " << col << ":\n"
-	 << message << "\n";
+         << " near line " << line << ", column " << col << ":\n"
+         << message << "\n";
   }
   _warning_count++;
 }
@@ -466,8 +466,8 @@ error(const string &message, int line, int col, CPPFile file) {
       file = get_file();
     }
     cerr << "\nError in " << file
-	 << " near line " << line << ", column " << col << ":\n"
-	 << message << "\n";
+         << " near line " << line << ", column " << col << ":\n"
+         << message << "\n";
   }
   _error_count++;
 }
@@ -510,16 +510,16 @@ get_comment_before(int line, CPPFile file) {
     if (comment->_file == file) {
       wrong_file_count = 0;
       if (comment->_last_line == line || comment->_last_line == line - 1) {
-	return comment;
+        return comment;
       }
 
       if (comment->_last_line < line) {
-	return (CPPCommentBlock *)NULL;
+        return (CPPCommentBlock *)NULL;
       }
     } else {
       wrong_file_count++;
       if (wrong_file_count > 10) {
-	return (CPPCommentBlock *)NULL;
+        return (CPPCommentBlock *)NULL;
       }
     }
 
@@ -651,7 +651,7 @@ push_string(const string &input, bool lock_position) {
 ////////////////////////////////////////////////////////////////////
 CPPExpression *CPPPreprocessor::
 parse_expr(const string &input_expr, CPPScope *current_scope, 
-	   CPPScope *global_scope) {
+           CPPScope *global_scope) {
   // Get a copy of the expression string we can modify.
   string expr = input_expr;
 
@@ -668,28 +668,28 @@ parse_expr(const string &input_expr, CPPScope *current_scope,
     size_t p = 0;
     while (p < expr.size()) {
       if (isalpha(expr[p]) || expr[p] == '_') {
-	size_t q = p;
-	while (p < expr.size() && (isalnum(expr[p]) || expr[p] == '_')) {
-	  p++;
-	}
-	string ident = expr.substr(q, p - q);
-	
-	// Here's an identifier.  Is it "defined"?
-	if (ident == "defined") {
-	  expand_defined_function(expr, q, p);
-	} else {
-	  // Is it a manifest?
-	  Manifests::const_iterator mi = _manifests.find(ident);
-	  if (mi != _manifests.end()) {
-	    const CPPManifest *manifest = (*mi).second;
-	    if (already_expanded.insert(manifest).second) {
-	      expand_manifest_inline(expr, q, p, (*mi).second);
-	      manifest_found = true;
-	    }
-	  }
-	}
+        size_t q = p;
+        while (p < expr.size() && (isalnum(expr[p]) || expr[p] == '_')) {
+          p++;
+        }
+        string ident = expr.substr(q, p - q);
+
+        // Here's an identifier.  Is it "defined"?
+        if (ident == "defined") {
+          expand_defined_function(expr, q, p);
+        } else {
+          // Is it a manifest?
+          Manifests::const_iterator mi = _manifests.find(ident);
+          if (mi != _manifests.end()) {
+            const CPPManifest *manifest = (*mi).second;
+            if (already_expanded.insert(manifest).second) {
+              expand_manifest_inline(expr, q, p, (*mi).second);
+              manifest_found = true;
+            }
+          }
+        }
       } else {
-	p++;
+        p++;
       }
     }
 
@@ -869,16 +869,16 @@ internal_get_next_token() {
 
     case ',':
       if (_paren_nesting <= 0) {
-	_state = S_end_nested;
-	return CPPToken::eof();
+        _state = S_end_nested;
+        return CPPToken::eof();
       }
       break;
 
     case '>':
       if (_paren_nesting <= 0) {
-	_angle_bracket_found = true;
-	_state = S_end_nested;
-	return CPPToken::eof();
+        _angle_bracket_found = true;
+        _state = S_end_nested;
+        return CPPToken::eof();
       }
     }
   }
@@ -958,22 +958,22 @@ skip_c_comment(int c) {
 
     while (c != EOF) {
       if (c == '*') {
-	comment->_comment += c;
-	c = get();
-	if (c == '/') {
-	  comment->_comment += c;
-	  comment->_last_line = get_line_number();
-	  return get();
-	}
+        comment->_comment += c;
+        c = get();
+        if (c == '/') {
+          comment->_comment += c;
+          comment->_last_line = get_line_number();
+          return get();
+        }
       } else {
-	comment->_comment += c;
-	c = get();
+        comment->_comment += c;
+        c = get();
       }
     }
     
     warning("Comment is unterminated", 
-	    comment->_line_number, comment->_col_number, 
-	    comment->_file);
+            comment->_line_number, comment->_col_number, 
+            comment->_file);
 
   } else {
     CPPFile first_file = get_file();
@@ -982,18 +982,18 @@ skip_c_comment(int c) {
     
     while (c != EOF) {
       if (c == '*') {
-	c = get();
-	if (c == '/') {
-	  return get();
-	}
+        c = get();
+        if (c == '/') {
+          return get();
+        }
       } else {
-	c = get();
+        c = get();
       }
     }
     
     warning("Comment is unterminated", 
-	    first_line_number, first_col_number, 
-	    first_file);
+            first_line_number, first_col_number, 
+            first_file);
   }
   
   return c;
@@ -1097,7 +1097,7 @@ process_directive(int c) {
     handle_error_directive(args, first_line, first_col, first_file);
   } else {
     warning("Ignoring unknown directive #" + command,
-	    first_line, first_col, first_file);
+            first_line, first_col, first_file);
   }
 
   _start_of_line = true;
@@ -1144,14 +1144,14 @@ get_preprocessor_args(int c, string &args) {
     if (c == '\\') {
       int next_c = get();
       if (next_c == '\n') {
-	// Here we have an escaped newline: a continuation.
-	args += '\n';
+        // Here we have an escaped newline: a continuation.
+        args += '\n';
       } else {
-	// Just a backslash followed by some non-backslash, keep both.
-	args += c;
-	if (next_c != EOF) {
-	  args += next_c;
-	}
+        // Just a backslash followed by some non-backslash, keep both.
+        args += c;
+        if (next_c != EOF) {
+          args += next_c;
+        }
       }
     } else {
       args += c;
@@ -1172,17 +1172,17 @@ get_preprocessor_args(int c, string &args) {
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 handle_define_directive(const string &args, int first_line, 
-			int first_col, const CPPFile &first_file) {
+                        int first_col, const CPPFile &first_file) {
   if (args.empty()) {
     warning("Ignoring empty #define directive",
-	    first_line, first_col, first_file);
+            first_line, first_col, first_file);
   } else {
     CPPManifest *manifest = new CPPManifest(args, first_file);
     manifest->_vis = preprocessor_vis;
     if (!manifest->_has_parameters) {
       string expr_string = manifest->expand();
       if (!expr_string.empty()) {
-	manifest->_expr = parse_expr(expr_string, global_scope, global_scope);
+        manifest->_expr = parse_expr(expr_string, global_scope, global_scope);
       }
     }
     _manifests[manifest->_name] = manifest;
@@ -1196,10 +1196,10 @@ handle_define_directive(const string &args, int first_line,
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 handle_undef_directive(const string &args, int first_line, 
-		       int first_col, const CPPFile &first_file) {
+                       int first_col, const CPPFile &first_file) {
   if (args.empty()) {
     warning("Ignoring empty #undef directive",
-	    first_line, first_col, first_file);
+            first_line, first_col, first_file);
   } else {
     Manifests::iterator mi = _manifests.find(args);
     if (mi != _manifests.end()) {
@@ -1250,7 +1250,7 @@ handle_ifndef_directive(const string &args, int, int, const CPPFile &) {
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 handle_if_directive(const string &args, int first_line, 
-		    int first_col, const CPPFile &first_file) {
+                    int first_col, const CPPFile &first_file) {
   CPPExpression *expr = parse_expr(args, global_scope, global_scope);
 
   int expression_result = 0;
@@ -1259,13 +1259,13 @@ handle_if_directive(const string &args, int first_line,
     CPPExpression::Result result = expr->evaluate();
     if (result._type == CPPExpression::RT_error) {
       warning("Ignoring invalid expression " + args,
-	      first_line, first_col, first_file);
+              first_line, first_col, first_file);
     } else {
       expression_result = result.as_integer();
     }
   } else {
     warning("Ignoring invalid expression " + args,
-	    first_line, first_col, first_file);
+            first_line, first_col, first_file);
   }
 
   if (expression_result) {
@@ -1284,7 +1284,7 @@ handle_if_directive(const string &args, int first_line,
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 handle_include_directive(const string &args, int first_line, 
-			 int first_col, const CPPFile &first_file) {
+                         int first_col, const CPPFile &first_file) {
   bool okflag = false;
   Filename filename;
   Filename filename_as_referenced;
@@ -1296,10 +1296,10 @@ handle_include_directive(const string &args, int first_line,
       okflag = true;
 
       if (_files.size() == 1) {
-	// If we're currently processing a top-level file, record the
-	// include directive.  We don't need to record includes from
-	// included files.
-	_quote_includes.insert(filename);
+        // If we're currently processing a top-level file, record the
+        // include directive.  We don't need to record includes from
+        // included files.
+        _quote_includes.insert(filename);
       }
     } else if (args[0] == '<' && args[args.size() - 1] == '>') {
       filename = args.substr(1, args.size() - 2);
@@ -1307,10 +1307,10 @@ handle_include_directive(const string &args, int first_line,
       okflag = true;
 
       if (_files.size() == 1) {
-	// If we're currently processing a top-level file, record the
-	// include directive.  We don't need to record includes from
-	// included files.
-	_angle_includes.insert(filename);
+        // If we're currently processing a top-level file, record the
+        // include directive.  We don't need to record includes from
+        // included files.
+        _angle_includes.insert(filename);
       }
     }
   }
@@ -1342,17 +1342,17 @@ handle_include_directive(const string &args, int first_line,
     
     if (!found_file) {
       warning("Cannot find " + filename.get_fullpath(),
-	      first_line, first_col, first_file);
+              first_line, first_col, first_file);
     } else {
       _last_c = '\0';
       if (!push_file(CPPFile(filename, filename_as_referenced, source))) {
-	warning("Unable to read " + filename.get_fullpath(),
-		first_line, first_col, first_file);
+        warning("Unable to read " + filename.get_fullpath(),
+                first_line, first_col, first_file);
       }
     }
   } else {
     warning("Ignoring invalid #include directive",
-	    first_line, first_col, first_file);
+            first_line, first_col, first_file);
   }
 }
   
@@ -1363,7 +1363,7 @@ handle_include_directive(const string &args, int first_line,
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 handle_error_directive(const string &args, int first_line, 
-		       int first_col, const CPPFile &first_file) {
+                       int first_col, const CPPFile &first_file) {
   error(args, first_line, first_col, first_file);
 }
 
@@ -1391,30 +1391,30 @@ skip_false_if_block(bool consider_elifs) {
       string command;
       c = get_preprocessor_command(c, command);
       if (command == "if" || command == "ifdef" || command == "ifndef") {
-	// Hmm, a nested if block.  Even more to skip.
-	level++;
+        // Hmm, a nested if block.  Even more to skip.
+        level++;
       } else if (command == "else") {
-	if (level == 0 && consider_elifs) {
-	  // This will do!
-	  _save_comments = true;
-	  return;
-	}
+        if (level == 0 && consider_elifs) {
+          // This will do!
+          _save_comments = true;
+          return;
+        }
       } else if (command == "elif") {
-	if (level == 0 && consider_elifs) {
-	  // If we pass this test, we're in.
-	  _save_comments = true;
-	  string args;
-	  c = get_preprocessor_args(c, args);
-	  handle_if_directive(args, first_line, first_col, first_file);
-	  return;
-	}
+        if (level == 0 && consider_elifs) {
+          // If we pass this test, we're in.
+          _save_comments = true;
+          string args;
+          c = get_preprocessor_args(c, args);
+          handle_if_directive(args, first_line, first_col, first_file);
+          return;
+        }
       } else if (command == "endif") {
-	if (level == 0) {
-	  // Here's the end!
-	  _save_comments = true;
-	  return;
-	}
-	level--;
+        if (level == 0) {
+          // Here's the end!
+          _save_comments = true;
+          return;
+        }
+        level--;
       }
     } else {
       c = skip_comment(get());
@@ -1506,7 +1506,7 @@ get_identifier(int c) {
   }
 
   return CPPToken(SIMPLE_IDENTIFIER, first_line, first_col, first_file,
-		  name);
+                  name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1546,7 +1546,7 @@ expand_manifest(const CPPManifest *manifest) {
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 extract_manifest_args(const string &name, int num_args, 
-		      vector_string &args) {
+                      vector_string &args) {
   CPPFile first_file = get_file();
   int first_line = get_line_number();
   int first_col = get_col_number();
@@ -1572,27 +1572,27 @@ extract_manifest_args(const string &name, int num_args,
     string arg;
     while (c != EOF && c != ')') {
       if (c == ',') {
-	args.push_back(arg);
-	arg = "";
+        args.push_back(arg);
+        arg = "";
 
       } else if (c == '(') {
-	// Nested parens.
-	int paren_level = 1;
-	while (c != EOF && paren_level > 0) {
-	  arg += c;
-	  c = get();
-	  if (c == '(') {
-	    paren_level++;
-	  } else if (c == ')') {
-	    paren_level--;
-	  }
-	}
-	if (c != EOF) {
-	  arg += c;
-	}
-	  
+        // Nested parens.
+        int paren_level = 1;
+        while (c != EOF && paren_level > 0) {
+          arg += c;
+          c = get();
+          if (c == '(') {
+            paren_level++;
+          } else if (c == ')') {
+            paren_level--;
+          }
+        }
+        if (c != EOF) {
+          arg += c;
+        }
+
       } else {
-	arg += c;
+        arg += c;
       }
       c = get();
     }
@@ -1603,7 +1603,7 @@ extract_manifest_args(const string &name, int num_args,
 
   if ((int)args.size() != num_args) {
     warning("Wrong number of arguments for manifest " + name,
-	    first_line, first_col, first_file);
+            first_line, first_col, first_file);
   }
 }
 
@@ -1641,11 +1641,11 @@ expand_defined_function(string &expr, size_t q, size_t &p) {
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 expand_manifest_inline(string &expr, size_t q, size_t &p,
-		       const CPPManifest *manifest) {
+                       const CPPManifest *manifest) {
   vector_string args;
   if (manifest->_has_parameters) {
     extract_manifest_args_inline(manifest->_name, manifest->_num_parameters,
-				 args, expr, p);
+                                 args, expr, p);
   }
   string result = manifest->expand(args);
 
@@ -1660,8 +1660,8 @@ expand_manifest_inline(string &expr, size_t q, size_t &p,
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 extract_manifest_args_inline(const string &name, int num_args, 
-			     vector_string &args,
-			     const string &expr, size_t &p) {
+                             vector_string &args,
+                             const string &expr, size_t &p) {
   // Skip whitespace till paren.
   while (p < expr.size() && isspace(expr[p])) {
     p++;
@@ -1679,20 +1679,20 @@ extract_manifest_args_inline(const string &name, int num_args,
     size_t q = p;
     while (p < expr.size() && expr[p] != ')') {
       if (expr[p] == ',') {
-	args.push_back(expr.substr(q, p - q));
-	q = p+1;
+        args.push_back(expr.substr(q, p - q));
+        q = p+1;
 
       } else if (expr[p] == '(') {
-	// Nested parens.
-	int paren_level = 1;
-	while (p+1 < expr.size() && paren_level > 0) {
-	  p++;
-	  if (expr[p] == '(') {
-	    paren_level++;
-	  } else if (expr[p] == ')') {
-	    paren_level--;
-	  }
-	}
+        // Nested parens.
+        int paren_level = 1;
+        while (p+1 < expr.size() && paren_level > 0) {
+          p++;
+          if (expr[p] == '(') {
+            paren_level++;
+          } else if (expr[p] == ')') {
+            paren_level--;
+          }
+        }
       }
       p++;
     }
@@ -1773,12 +1773,12 @@ get_number(int c, int c2) {
       num += c;
       c = get();
       if (c == '-' || c == '+') {
-	num += c;
-	c = get();
+        num += c;
+        c = get();
       }
       while (c != EOF && isdigit(c)) {
-	num += c;
-	c = get();
+        num += c;
+        c = get();
       }
     }
 
@@ -1901,31 +1901,31 @@ scan_quoted(int c) {
       c = get();
       switch (c) {
       case 'n':
-	c = '\n';
-	break;
+        c = '\n';
+        break;
 
       case 't':
-	c = '\t';
-	break;
+        c = '\t';
+        break;
 
       case 'r':
-	c = '\r';
-	break;
+        c = '\r';
+        break;
 
       case 'x':
-	// hex character.
-	c = get();
-	if (isxdigit(c)) {
-	  int val = hex_val(c);
-	  c = get();
-	  if (isxdigit(c)) {
-	    val = (val << 4) | hex_val(c);
-	  } else {
-	    unget(c);
-	  }
-	  c = val;
-	}
-	break;
+        // hex character.
+        c = get();
+        if (isxdigit(c)) {
+          int val = hex_val(c);
+          c = get();
+          if (isxdigit(c)) {
+            val = (val << 4) | hex_val(c);
+          } else {
+            unget(c);
+          }
+          c = val;
+        }
+        break;
 
       case '0':
       case '1':
@@ -1935,24 +1935,24 @@ scan_quoted(int c) {
       case '5':
       case '6':
       case '7':
-	// Octal character.
-	{
-	  int val = (c - '0');
-	  c = get();
-	  if (c >= '0' && c <= '7') {
-	    val = (val << 3) | (c - '0');
-	    c = get();
-	    if (c >= '0' && c <= '7') {
-	      val = (val << 3) | (c - '0');
-	    } else {
-	      unget(c);
-	    }
-	  } else {
-	    unget(c);
-	  }
-	  c = val;
-	}
-	break;
+        // Octal character.
+        {
+          int val = (c - '0');
+          c = get();
+          if (c >= '0' && c <= '7') {
+            val = (val << 3) | (c - '0');
+            c = get();
+            if (c >= '0' && c <= '7') {
+              val = (val << 3) | (c - '0');
+            } else {
+              unget(c);
+            }
+          } else {
+            unget(c);
+          }
+          c = val;
+        }
+        break;
       }
     }
 
@@ -2106,18 +2106,18 @@ nested_parse_template_instantiation(CPPTemplateScope *scope) {
       _saved_tokens.push_back(CPPToken(START_TYPE));
       CPPType *type = ::parse_type(this, current_scope, global_scope);
       if (type == NULL) {
-	warning("Invalid type", first_line, first_col, first_file);
-	skip_to_end_nested();
-	type = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_unknown));
+        warning("Invalid type", first_line, first_col, first_file);
+        skip_to_end_nested();
+        type = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_unknown));
       }
       actual_params->_parameters.push_back(type);
     } else {
       _saved_tokens.push_back(CPPToken(START_CONST_EXPR));
       CPPExpression *expr = parse_const_expr(this, current_scope, global_scope);
       if (expr == NULL) {
-	warning("Invalid expression", first_line, first_col, first_file);
-	skip_to_end_nested();
-	expr = new CPPExpression(0);
+        warning("Invalid expression", first_line, first_col, first_file);
+        skip_to_end_nested();
+        expr = new CPPExpression(0);
       }
       actual_params->_parameters.push_back(expr);
     }

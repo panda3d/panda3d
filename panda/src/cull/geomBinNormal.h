@@ -15,7 +15,7 @@
 #include <set>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GeomBinNormal
+//       Class : GeomBinNormal
 // Description : This is the most typical kind of GeomBin: it renders
 //               nontransparent geometry in state-sorted order,
 //               followed by transparent geometry sorted

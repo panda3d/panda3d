@@ -11,7 +11,7 @@
 #include "parameterRemap.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ParameterRemapUnchanged
+//       Class : ParameterRemapUnchanged
 // Description : A ParameterRemap class that represents no change to
 //               the parameter: the parameter type is legal as is.
 ////////////////////////////////////////////////////////////////////

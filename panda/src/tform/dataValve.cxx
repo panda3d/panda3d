@@ -243,21 +243,21 @@ write(ostream &out, int indent_level) const {
     if (has_control(i)) {
       const Child &child = _controls[i];
       indent(out, indent_level + 2)
-	<< "Child " << i << ": ";
+        << "Child " << i << ": ";
 
       if (child._control.is_null()) {
-	out << "(default)";
+        out << "(default)";
       } else {
-	out << *child._control;
+        out << *child._control;
       }
       out << "\n";
       
       FineControls::const_iterator fci;
       for (fci = child._fine_controls.begin(); 
-	   fci != child._fine_controls.end();
-	   ++fci) {
-	indent(out, indent_level + 4)
-	  << (*fci).first << " " << *(*fci).second;
+           fci != child._fine_controls.end();
+           ++fci) {
+        indent(out, indent_level + 4)
+          << (*fci).first << " " << *(*fci).second;
       }
     }
   }
@@ -333,12 +333,12 @@ transmit_data_per_child(NodeAttributes &data, int child_index) {
       // type explicitly "off" should be yanked.
       FineControls::const_iterator fci;
       for (fci = fine_controls->begin(); fci != fine_controls->end(); ++fci) {
-	TypeHandle data_type = (*fci).first;
-	Control *fcontrol = (*fci).second;
+        TypeHandle data_type = (*fci).first;
+        Control *fcontrol = (*fci).second;
 
-	if (!fcontrol->is_on(*this)) {
-	  data.clear_attribute(data_type);
-	}
+        if (!fcontrol->is_on(*this)) {
+          data.clear_attribute(data_type);
+        }
       }
     }
 
@@ -355,15 +355,15 @@ transmit_data_per_child(NodeAttributes &data, int child_index) {
 
       FineControls::const_iterator fci;
       for (fci = fine_controls->begin(); fci != fine_controls->end(); ++fci) {
-	TypeHandle data_type = (*fci).first;
-	Control *fcontrol = (*fci).second;
+        TypeHandle data_type = (*fci).first;
+        Control *fcontrol = (*fci).second;
 
-	if (fcontrol->is_on(*this)) {
-	  NodeAttribute *attrib = data.get_attribute(data_type);
-	  if (attrib != (NodeAttribute *)NULL) {
-	    temp.set_attribute(data_type, attrib);
-	  }
-	}
+        if (fcontrol->is_on(*this)) {
+          NodeAttribute *attrib = data.get_attribute(data_type);
+          if (attrib != (NodeAttribute *)NULL) {
+            temp.set_attribute(data_type, attrib);
+          }
+        }
       }
 
       data = temp;
@@ -381,9 +381,9 @@ void DataValve::
 init_type() {
   DataNode::init_type();
   register_type(_type_handle, "DataValve",
-		DataNode::get_class_type());
+                DataNode::get_class_type());
 
   ButtonEventDataTransition::init_type();
   register_data_transition(_button_events_type, "ButtonEvents",
-			   ButtonEventDataTransition::get_class_type());
+                           ButtonEventDataTransition::get_class_type());
 }

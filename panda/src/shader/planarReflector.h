@@ -31,13 +31,13 @@ class EXPCL_SHADER PlanarReflector : public CasterShader
     PlanarReflector(PlaneNode* plane_node);
     PlanarReflector(const Colorf& c);
     PlanarReflector(PlaneNode* plane_node, const Colorf& c);
-	
+
     virtual void pre_apply(Node *node, const AllAttributesWrapper &init_state,
-		       const AllTransitionsWrapper &net_trans,
-		       GraphicsStateGuardian *gsg);
+                       const AllTransitionsWrapper &net_trans,
+                       GraphicsStateGuardian *gsg);
     virtual void apply(Node *node, const AllAttributesWrapper &init_state,
-		       const AllTransitionsWrapper &net_trans,
-		       GraphicsStateGuardian *gsg);
+                       const AllTransitionsWrapper &net_trans,
+                       GraphicsStateGuardian *gsg);
 
     INLINE void set_save_color_buffer(bool val) { _save_color_buffer = val; }
     INLINE void set_save_depth_buffer(bool val) { _save_depth_buffer = val; }
@@ -51,13 +51,13 @@ class EXPCL_SHADER PlanarReflector : public CasterShader
 
   protected:
 
-    bool			_save_color_buffer;
-    bool			_save_depth_buffer;
-    bool			_clip_to_plane;
-    PT(PixelBuffer)		_color_buffer;
-    PT(PixelBuffer)		_depth_buffer;
-    PT(PlaneNode)		_plane_node;
-    Colorf			_color;
+    bool                        _save_color_buffer;
+    bool                        _save_depth_buffer;
+    bool                        _clip_to_plane;
+    PT(PixelBuffer)             _color_buffer;
+    PT(PixelBuffer)             _depth_buffer;
+    PT(PlaneNode)               _plane_node;
+    Colorf                      _color;
 
   public:
 

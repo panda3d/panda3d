@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE RenderTraverser::
 RenderTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type,
-		const ArcChain &arc_chain) :
+                const ArcChain &arc_chain) :
   _gsg(gsg),
   _graph_type(graph_type),
   _arc_chain(arc_chain)

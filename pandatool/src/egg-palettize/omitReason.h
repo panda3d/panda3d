@@ -9,7 +9,7 @@
 #include <pandatoolbase.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	  Enum : OmitReason
+//        Enum : OmitReason
 // Description : This enumerates the reasons why a texture may not
 //               have been placed in a palette image.
 ////////////////////////////////////////////////////////////////////

@@ -71,7 +71,7 @@ class Projection;
 class ProjectionNode;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GraphicsStateGuardianBase
+//       Class : GraphicsStateGuardianBase
 // Description : This is a base class for the GraphicsStateGuardian
 //               class, which is itself a base class for the various
 //               GSG's for different platforms.  This class contains
@@ -115,10 +115,10 @@ public:
 
   virtual void copy_texture(TextureContext *tc, const DisplayRegion *dr)=0;
   virtual void copy_texture(TextureContext *tc, const DisplayRegion *dr,
-			    const RenderBuffer &rb)=0;
+                            const RenderBuffer &rb)=0;
   virtual void draw_texture(TextureContext *tc, const DisplayRegion *dr)=0;
   virtual void draw_texture(TextureContext *tc, const DisplayRegion *dr,
-			    const RenderBuffer &rb)=0;
+                            const RenderBuffer &rb)=0;
 
   virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb)=0;
   virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
@@ -126,12 +126,12 @@ public:
 
   virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr)=0;
   virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-				 const RenderBuffer &rb)=0;
+                                 const RenderBuffer &rb)=0;
   virtual void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-				 const NodeAttributes& na=NodeAttributes())=0;
+                                 const NodeAttributes& na=NodeAttributes())=0;
   virtual void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-				 const RenderBuffer &rb,
-				 const NodeAttributes& na=NodeAttributes())=0;
+                                 const RenderBuffer &rb,
+                                 const NodeAttributes& na=NodeAttributes())=0;
 
   virtual void apply_material(const Material *material)=0;
   virtual void apply_fog(Fog *fog)=0;
@@ -177,7 +177,7 @@ public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "GraphicsStateGuardianBase",
- 		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

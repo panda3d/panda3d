@@ -37,11 +37,11 @@ get_projection_mat(CoordinateSystem cs) const {
 //     Function: OrthoProjection::make_geometry
 //       Access: Public, Virtual
 //  Description: Creates a GeomLine that describes the shape of the
-//		 frustum for this projection 
+//               frustum for this projection 
 ////////////////////////////////////////////////////////////////////
 Geom *OrthoProjection::
 make_geometry(const Colorf &color,
-	      CoordinateSystem cs) const {
+              CoordinateSystem cs) const {
   Vertexf rtn, ltn, lbn, rbn;
   Vertexf rtf, ltf, lbf, rbf;
   

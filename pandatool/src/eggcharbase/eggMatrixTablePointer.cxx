@@ -27,19 +27,19 @@ EggMatrixTablePointer(EggObject *object) {
     for (ci = _table->begin(); ci != _table->end() && !found; ++ci) {
       EggNode *child = (*ci);
       if (child->get_name() == "xform") {
-	if (child->is_of_type(EggXfmSAnim::get_class_type())) {
-	  _xform = DCAST(EggXfmSAnim, child);
-	  _xform->normalize();
-	  found = true;
+        if (child->is_of_type(EggXfmSAnim::get_class_type())) {
+          _xform = DCAST(EggXfmSAnim, child);
+          _xform->normalize();
+          found = true;
 
-	} else if (child->is_of_type(EggXfmAnimData::get_class_type())) {
-	  // Quietly replace old-style XfmAnim tables with new-style
-	  // XfmSAnim tables.
-	  PT(EggXfmAnimData) anim = DCAST(EggXfmAnimData, child);
-	  _xform = new EggXfmSAnim(*anim);
-	  _table->replace(ci, _xform.p());
-	  found = true;
-	}
+        } else if (child->is_of_type(EggXfmAnimData::get_class_type())) {
+          // Quietly replace old-style XfmAnim tables with new-style
+          // XfmSAnim tables.
+          PT(EggXfmAnimData) anim = DCAST(EggXfmAnimData, child);
+          _xform = new EggXfmSAnim(*anim);
+          _table->replace(ci, _xform.p());
+          found = true;
+        }
       }
     }
   }

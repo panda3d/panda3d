@@ -89,7 +89,7 @@ public:
   static void init_type() {
     TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "ComputedVertices",
-		  TypedWritableReferenceCount::get_class_type());
+                  TypedWritableReferenceCount::get_class_type());
   }
 
 private:

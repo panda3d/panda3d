@@ -29,7 +29,7 @@ PUBLISHED:
     static void init_type(void) {
       TypedReferenceCount::init_type();
       register_type(_type_handle, "GuiBehavior::BehaviorFunctor",
-		    TypedReferenceCount::get_class_type());
+                    TypedReferenceCount::get_class_type());
     }
     virtual TypeHandle get_type(void) const {
       return get_class_type();
@@ -62,7 +62,7 @@ public:
   static void init_type(void) {
     GuiItem::init_type();
     register_type(_type_handle, "GuiBehavior",
-		  GuiItem::get_class_type());
+                  GuiItem::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

@@ -45,7 +45,7 @@ class CPPTemplateScope;
 class CPPPreprocessor;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPDeclaration
+//       Class : CPPDeclaration
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPDeclaration {
@@ -89,19 +89,19 @@ public:
   virtual bool is_fully_specified() const;
   virtual CPPDeclaration *
   instantiate(const CPPTemplateParameterList *actual_params,
-	      CPPScope *current_scope, CPPScope *global_scope,
-	      CPPPreprocessor *error_sink = NULL) const;
+              CPPScope *current_scope, CPPScope *global_scope,
+              CPPPreprocessor *error_sink = NULL) const;
 
   typedef map<CPPDeclaration *, CPPDeclaration *> SubstDecl;
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
-					  CPPScope *current_scope,
-					  CPPScope *global_scope);
+                                          CPPScope *current_scope,
+                                          CPPScope *global_scope);
 
   typedef set<CPPDeclaration *> Instantiations;
   Instantiations _instantiations;
 
   virtual void output(ostream &out, int indent_level, CPPScope *scope,
-		      bool complete) const=0;
+                      bool complete) const=0;
 
   virtual SubType get_subtype() const=0;
 

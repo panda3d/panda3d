@@ -15,7 +15,7 @@
 #include <datagramIterator.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltRecordReader
+//       Class : FltRecordReader
 // Description : This class turns an istream into a sequence of
 //               FltRecords by reading a sequence of Datagrams and
 //               extracting the opcode from each one.  It remembers

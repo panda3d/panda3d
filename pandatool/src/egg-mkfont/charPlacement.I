@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE CharPlacement::
 CharPlacement(const CharBitmap *bm, int x, int y, 
-	      int width, int height) :
+              int width, int height) :
   _bm(bm), 
   _x(x),
   _y(y),

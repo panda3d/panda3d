@@ -29,10 +29,10 @@ private:
 
 PUBLISHED:
   LinearCylinderVortexForce(float radius = 1.0f,
-		      float length = 0.0f,
-		      float coef = 1.0f,
-		      float a = 1.0f,
-		      bool md = false);
+                      float length = 0.0f,
+                      float coef = 1.0f,
+                      float a = 1.0f,
+                      bool md = false);
   LinearCylinderVortexForce(const LinearCylinderVortexForce &copy);
   virtual ~LinearCylinderVortexForce(void);
 
@@ -52,7 +52,7 @@ public:
   static void init_type(void) {
     LinearForce::init_type();
     register_type(_type_handle, "LinearCylinderVortexForce",
-		  LinearForce::get_class_type());
+                  LinearForce::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

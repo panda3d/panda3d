@@ -11,9 +11,9 @@ NotifyCategoryDeclNoExport(correction);
 NotifyCategoryDef(correction, "");
 
 Correction::Correction(LPoint3f& start, LVector3f& s_vel) : _curr_p(start),
-							    _curr_v(s_vel) {
+                                                            _curr_v(s_vel) {
   correction_cat->debug() << "construction with:" << endl << "start = "
-			  << start << endl << "vel = " << s_vel << endl;
+                          << start << endl << "vel = " << s_vel << endl;
 }
 
 Correction::~Correction(void) {
@@ -131,7 +131,7 @@ void SplineCorrection::step(void) {
       correction_cat->spam() << "time >= dur, holding at current pos" << endl;
   } else
     correction_cat->spam() << "have_both is false, no point calculated"
-			   << endl;
+                           << endl;
 }
 
 void SplineCorrection::new_target(LPoint3f& target, LVector3f& v_target) {

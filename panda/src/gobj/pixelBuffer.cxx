@@ -120,16 +120,16 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     
     for (int j = _ysize-1; j >= 0; j--) {
       for (int i = 0; i < _xsize; i++) {
-	if (is_grayscale) {
-	  store_unscaled_byte(idx, pnmimage.get_gray_val(i, j));
-	} else {
-	  store_unscaled_byte(idx, pnmimage.get_red_val(i, j));
-	  store_unscaled_byte(idx, pnmimage.get_green_val(i, j));
-	  store_unscaled_byte(idx, pnmimage.get_blue_val(i, j));
-	}
-	if (has_alpha) {
-	  store_unscaled_byte(idx, pnmimage.get_alpha_val(i, j));
-	}
+        if (is_grayscale) {
+          store_unscaled_byte(idx, pnmimage.get_gray_val(i, j));
+        } else {
+          store_unscaled_byte(idx, pnmimage.get_red_val(i, j));
+          store_unscaled_byte(idx, pnmimage.get_green_val(i, j));
+          store_unscaled_byte(idx, pnmimage.get_blue_val(i, j));
+        }
+        if (has_alpha) {
+          store_unscaled_byte(idx, pnmimage.get_alpha_val(i, j));
+        }
       }
     }
 
@@ -142,16 +142,16 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     
     for (int j = _ysize-1; j >= 0; j--) {
       for (int i = 0; i < _xsize; i++) {
-	if (is_grayscale) {
-	  store_unscaled_short(idx, pnmimage.get_gray_val(i, j));
-	} else {
-	  store_unscaled_short(idx, pnmimage.get_red_val(i, j));
-	  store_unscaled_short(idx, pnmimage.get_green_val(i, j));
-	  store_unscaled_short(idx, pnmimage.get_blue_val(i, j));
-	}
-	if (has_alpha) {
-	  store_unscaled_short(idx, pnmimage.get_alpha_val(i, j));
-	}
+        if (is_grayscale) {
+          store_unscaled_short(idx, pnmimage.get_gray_val(i, j));
+        } else {
+          store_unscaled_short(idx, pnmimage.get_red_val(i, j));
+          store_unscaled_short(idx, pnmimage.get_green_val(i, j));
+          store_unscaled_short(idx, pnmimage.get_blue_val(i, j));
+        }
+        if (has_alpha) {
+          store_unscaled_short(idx, pnmimage.get_alpha_val(i, j));
+        }
       }
     }
 
@@ -166,16 +166,16 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     
     for (int j = _ysize-1; j >= 0; j--) {
       for (int i = 0; i < _xsize; i++) {
-	if (is_grayscale) {
-	  store_scaled_byte(idx, pnmimage.get_gray_val(i, j), scale);
-	} else {
-	  store_scaled_byte(idx, pnmimage.get_red_val(i, j), scale);
-	  store_scaled_byte(idx, pnmimage.get_green_val(i, j), scale);
-	  store_scaled_byte(idx, pnmimage.get_blue_val(i, j), scale);
-	}
-	if (has_alpha) {
-	  store_scaled_byte(idx, pnmimage.get_alpha_val(i, j), scale);
-	}
+        if (is_grayscale) {
+          store_scaled_byte(idx, pnmimage.get_gray_val(i, j), scale);
+        } else {
+          store_scaled_byte(idx, pnmimage.get_red_val(i, j), scale);
+          store_scaled_byte(idx, pnmimage.get_green_val(i, j), scale);
+          store_scaled_byte(idx, pnmimage.get_blue_val(i, j), scale);
+        }
+        if (has_alpha) {
+          store_scaled_byte(idx, pnmimage.get_alpha_val(i, j), scale);
+        }
       }
     }
 
@@ -190,16 +190,16 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     
     for (int j = _ysize-1; j >= 0; j--) {
       for (int i = 0; i < _xsize; i++) {
-	if (is_grayscale) {
-	  store_scaled_short(idx, pnmimage.get_gray_val(i, j), scale);
-	} else {
-	  store_scaled_short(idx, pnmimage.get_red_val(i, j), scale);
-	  store_scaled_short(idx, pnmimage.get_green_val(i, j), scale);
-	  store_scaled_short(idx, pnmimage.get_blue_val(i, j), scale);
-	}
-	if (has_alpha) {
-	  store_scaled_short(idx, pnmimage.get_alpha_val(i, j), scale);
-	}
+        if (is_grayscale) {
+          store_scaled_short(idx, pnmimage.get_gray_val(i, j), scale);
+        } else {
+          store_scaled_short(idx, pnmimage.get_red_val(i, j), scale);
+          store_scaled_short(idx, pnmimage.get_green_val(i, j), scale);
+          store_scaled_short(idx, pnmimage.get_blue_val(i, j), scale);
+        }
+        if (has_alpha) {
+          store_scaled_short(idx, pnmimage.get_alpha_val(i, j), scale);
+        }
       }
     }
   }
@@ -224,15 +224,15 @@ store(PNMImage &pnmimage) const {
     int idx = 0;
     for (int j = _ysize-1; j >= 0; j--) {
       for (int i = 0; i < _xsize; i++) {
-	if (is_grayscale) {
-	  pnmimage.set_gray(i, j, get_unsigned_byte(idx));
-	} else {
-	  pnmimage.set_red(i, j, get_unsigned_byte(idx));
-	  pnmimage.set_green(i, j, get_unsigned_byte(idx));
-	  pnmimage.set_blue(i, j, get_unsigned_byte(idx));
-	}
-	if (has_alpha)
-	  pnmimage.set_alpha(i, j, get_unsigned_byte(idx));
+        if (is_grayscale) {
+          pnmimage.set_gray(i, j, get_unsigned_byte(idx));
+        } else {
+          pnmimage.set_red(i, j, get_unsigned_byte(idx));
+          pnmimage.set_green(i, j, get_unsigned_byte(idx));
+          pnmimage.set_blue(i, j, get_unsigned_byte(idx));
+        }
+        if (has_alpha)
+          pnmimage.set_alpha(i, j, get_unsigned_byte(idx));
       }
     }
     return true;
@@ -245,15 +245,15 @@ store(PNMImage &pnmimage) const {
     int idx = 0;
     for (int j = _ysize-1; j >= 0; j--) {
       for (int i = 0; i < _xsize; i++) {
-	if (is_grayscale) {
-	  pnmimage.set_gray(i, j, get_unsigned_short(idx));
-	} else {
-	  pnmimage.set_red(i, j, get_unsigned_short(idx));
-	  pnmimage.set_green(i, j, get_unsigned_short(idx));
-	  pnmimage.set_blue(i, j, get_unsigned_short(idx));
-	}
-	if (has_alpha)
-	  pnmimage.set_alpha(i, j, get_unsigned_short(idx));
+        if (is_grayscale) {
+          pnmimage.set_gray(i, j, get_unsigned_short(idx));
+        } else {
+          pnmimage.set_red(i, j, get_unsigned_short(idx));
+          pnmimage.set_green(i, j, get_unsigned_short(idx));
+          pnmimage.set_blue(i, j, get_unsigned_short(idx));
+        }
+        if (has_alpha)
+          pnmimage.set_alpha(i, j, get_unsigned_short(idx));
       }
     }
     return true;
@@ -290,7 +290,7 @@ void PixelBuffer::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr) 
 }
 
 void PixelBuffer::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
-		       const RenderBuffer &rb) {
+                       const RenderBuffer &rb) {
   gsg->copy_pixel_buffer(this, dr, rb);
 }
 
@@ -304,7 +304,7 @@ void PixelBuffer::draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr) 
 }
 
 void PixelBuffer::draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
-			const RenderBuffer &rb) {
+                        const RenderBuffer &rb) {
   gsg->draw_pixel_buffer(this, dr, rb);
 }
 

@@ -28,10 +28,10 @@ operator << (ostream &out, StencilProperty::Mode mode) {
 
   case StencilProperty::M_not_equal:
     return out << "not_equal";
- 	
+ 
   case StencilProperty::M_greater_equal:
     return out << "greater_equal";
-	
+
   case StencilProperty::M_always:
     return out << "always";
   }

@@ -21,7 +21,7 @@ string* audio_driver_params;
 int audio_buffer_size = config_audio.GetInt("audio-buffer-size", 4096);
 string* audio_device;
 int audio_auto_update_delay = config_audio.GetInt("audio-auto-update-delay",
-						  1000000);
+                                                  1000000);
 bool audio_is_active = config_audio.GetBool("audio-is-active", true);
 bool audio_sfx_active = config_audio.GetBool("audio-sfx-active", true);
 bool audio_music_active = config_audio.GetBool("audio-music-active", true);
@@ -54,7 +54,7 @@ ConfigureFn(config_audio) {
   }
 
   audio_device = new string(config_audio.GetString("audio-device",
-						   "/dev/dsp"));
+                                                   "/dev/dsp"));
 
   string stmp = config_audio.GetString("audio-thread-priority", "NORMAL");
   for (string::iterator q=stmp.begin(); q!=stmp.end(); ++q)
@@ -79,7 +79,7 @@ void audio_load_loaders(void) {
   config_audio.GetAll("audio-loader", loaders);
   for (i=loaders.begin(); i!=loaders.end(); ++i) {
     Filename dlname = Filename::dso_filename("libaudio_load_" + (*i).Val() +
-					     ".so");
+                                             ".so");
     audio_cat->info() << "loading '" << (*i).Val() << "' loader" << endl;
     void* tmp = load_dso(dlname);
     if (tmp == (void*)0L)

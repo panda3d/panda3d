@@ -12,7 +12,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggSwitchCondition
+//       Class : EggSwitchCondition
 // Description : This corresponds to a <SwitchCondition> entry within
 //               a group.  It indicates the condition at which a
 //               level-of-detail is switched in or out.  This is
@@ -37,7 +37,7 @@ public:
   static void init_type() {
     EggObject::init_type();
     register_type(_type_handle, "EggSwitchCondition",
-		  EggObject::get_class_type());
+                  EggObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -50,14 +50,14 @@ private:
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggSwitchConditionDistance
+//       Class : EggSwitchConditionDistance
 // Description : A SwitchCondition that switches the levels-of-detail
 //               based on distance from the camera's eyepoint.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggSwitchConditionDistance : public EggSwitchCondition {
 public:
   EggSwitchConditionDistance(double switch_in, double switch_out,
-			     const LPoint3d &center, double fade = 0.0);
+                             const LPoint3d &center, double fade = 0.0);
 
   virtual EggSwitchCondition *make_copy() const;
   virtual void write(ostream &out, int indent_level) const;
@@ -75,7 +75,7 @@ public:
   static void init_type() {
     EggSwitchCondition::init_type();
     register_type(_type_handle, "EggSwitchConditionDistance",
-		  EggSwitchCondition::get_class_type());
+                  EggSwitchCondition::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

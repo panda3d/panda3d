@@ -56,7 +56,7 @@ public:
   static void init_type() {
     AnimChannelScalar::init_type();
     register_type(_type_handle, "AnimChannelScalarTable",
-		  AnimChannelScalar::get_class_type());
+                  AnimChannelScalar::get_class_type());
   }
 
 private:

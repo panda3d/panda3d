@@ -16,7 +16,7 @@ class PStatClient;
 class PStatClientVersion;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PStatCollectorDef
+//       Class : PStatCollectorDef
 // Description : Defines the details about the Collectors: the name,
 //               the suggested color, etc.
 ////////////////////////////////////////////////////////////////////

@@ -253,7 +253,7 @@ write_reals(Datagram &datagram, const float *array, int length) {
     // just for that.
     if (run_width == RW_8 && num_width == RW_0) {
       if (i + 1 >= length || half_complex[i + 1] != 0.0) {
-	num_width = RW_8;
+        num_width = RW_8;
       }
     }
 
@@ -380,9 +380,9 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
         LVecBase3f scale;
         bool d1 = decompose_matrix(mat, scale, hpr1);
         bool d2 = decompose_matrix(mat2, scale, hpr2);
-	mathutil_cat.warning()
-	  << "Converted hpr to quaternion incorrectly!\n"
-	  << "  Source hpr: " << array[i];
+        mathutil_cat.warning()
+          << "Converted hpr to quaternion incorrectly!\n"
+          << "  Source hpr: " << array[i];
         if (d1) {
           mathutil_cat.warning(false)
             << ", or " << hpr1 << "\n";
@@ -557,7 +557,7 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
     if (okflag) {
       nassertr(h.size() == p.size() && p.size() == r.size(), false);
       for (int i = 0; i < (int)h.size(); i++) {
-		  array.push_back(LVecBase3f(h[i], p[i], r[i]));
+                  array.push_back(LVecBase3f(h[i], p[i], r[i]));
       }
     }
 
@@ -635,8 +635,8 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
 
 #ifndef NDEBUG
       if (_quality >= 102) {
-	// If we have written out all four components, use them.
-	rot[0] = qr[i];
+        // If we have written out all four components, use them.
+        rot[0] = qr[i];
 
         if (!IS_THRESHOLD_EQUAL(qr[i], qr1, 0.001)) {
           mathutil_cat.warning()
@@ -700,7 +700,7 @@ free_storage() {
 ////////////////////////////////////////////////////////////////////
 int FFTCompressor::
 write_run(Datagram &datagram, FFTCompressor::RunWidth run_width,
-	  const vector_double &run) {
+          const vector_double &run) {
   if (run.empty()) {
     return 0;
   }
@@ -712,7 +712,7 @@ write_run(Datagram &datagram, FFTCompressor::RunWidth run_width,
     // run.
 
     if (run.size() <= RW_length_mask &&
-	((int)run_width | run.size()) != RW_double) {
+        ((int)run_width | run.size()) != RW_double) {
       // If there are enough bits remaining in the byte, use them to
       // indicate the length of the run.  We have to be a little
       // careful, however, not to accidentally write a byte that looks

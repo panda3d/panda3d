@@ -12,7 +12,7 @@
 #include <lmatrix.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TexMatrixAttribute
+//       Class : TexMatrixAttribute
 // Description : See TexMatrixTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TexMatrixAttribute : public LMatrix4fAttribute {
@@ -36,7 +36,7 @@ public:
   static void init_type() {
     LMatrix4fAttribute::init_type();
     register_type(_type_handle, "TexMatrixAttribute",
-		  LMatrix4fAttribute::get_class_type());
+                  LMatrix4fAttribute::get_class_type());
   }
 
 private:

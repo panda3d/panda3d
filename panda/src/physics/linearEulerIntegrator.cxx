@@ -37,8 +37,8 @@ LinearEulerIntegrator::
 ////////////////////////////////////////////////////////////////////
 void LinearEulerIntegrator::
 child_integrate(Physical *physical,
-		vector< PT(LinearForce) >& forces,
-		float dt) {
+                vector< PT(LinearForce) >& forces,
+                float dt) {
   vector< PT(PhysicsObject) >::const_iterator current_object_iter;
 
   // perform the precomputation.  Note that the vector returned by
@@ -93,7 +93,7 @@ child_integrate(Physical *physical,
 
       // make sure the force is turned on.
       if (cur_force->get_active() == false)
-	continue;
+        continue;
 
       force_node = cur_force->get_force_node();
 
@@ -102,9 +102,9 @@ child_integrate(Physical *physical,
 
       // tally it into the accum vectors.
       if (cur_force->get_mass_dependent() == true)
-	md_accum_vec += f;
+        md_accum_vec += f;
       else
-	non_md_accum_vec += f;
+        non_md_accum_vec += f;
     }
 
     // local forces
@@ -114,7 +114,7 @@ child_integrate(Physical *physical,
 
       // make sure the force is turned on.
       if (cur_force->get_active() == false)
-	continue;
+        continue;
 
       force_node = cur_force->get_force_node();
 
@@ -123,9 +123,9 @@ child_integrate(Physical *physical,
 
       // tally it into the accum vectors
       if (cur_force->get_mass_dependent() == true)
-	md_accum_vec += f;
+        md_accum_vec += f;
       else
-	non_md_accum_vec += f;
+        non_md_accum_vec += f;
     }
 
     // get this object's physical info

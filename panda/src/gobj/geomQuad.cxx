@@ -76,11 +76,11 @@ get_tris() const {
     ushort indices[4];
     if (_vindex.empty()) {
       for (int j = 0; j < 4; j++) {
-	indices[j] = k++;
+        indices[j] = k++;
       }
     } else {
       for (int j = 0; j < 4; j++) {
-	indices[j] = _vindex[k++];
+        indices[j] = _vindex[k++];
       }
     }
 

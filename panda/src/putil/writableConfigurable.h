@@ -26,9 +26,9 @@
 //               inherit from TypedObject.
 //
 //               An object that has data or parameters that are set
-//		 less frequently (at least occasionally) than every
-//		 frame.  We can cache the configuration info by
-//		 by using the "dirty" flag. 
+//               less frequently (at least occasionally) than every
+//               frame.  We can cache the configuration info by
+//               by using the "dirty" flag. 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA WritableConfigurable : public TypedWritable {
 
@@ -65,9 +65,9 @@ public:
   static void init_type() {
     TypedWritable::init_type();
     register_type(_type_handle, "WritableConfigurable",
-		  TypedWritable::get_class_type());
+                  TypedWritable::get_class_type());
     TypeRegistry::ptr()->record_alternate_name(_type_handle, 
-					       "WriteableConfigurable");
+                                               "WriteableConfigurable");
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -50,8 +50,8 @@ ParentNodes() {
 ////////////////////////////////////////////////////////////////////
 EggGroupNode *FltToEggLevelState::
 get_synthetic_group(const string &name,
-		    const LMatrix4d &transform,
-		    FltGeometry::BillboardType type) {
+                    const LMatrix4d &transform,
+                    FltGeometry::BillboardType type) {
 
   bool is_identity = transform.almost_equal(LMatrix4d::ident_mat());
   if (is_identity && type == FltGeometry::BT_none) {
@@ -79,8 +79,8 @@ get_synthetic_group(const string &name,
       _egg_parent->add_child(nodes->_axial_billboard);
       nodes->_axial_billboard->set_billboard_type(EggGroup::BT_axis);
       if (!is_identity) {
-	nodes->_axial_billboard->set_transform(transform);
-	nodes->_axial_billboard->set_group_type(EggGroup::GT_instance);
+        nodes->_axial_billboard->set_transform(transform);
+        nodes->_axial_billboard->set_group_type(EggGroup::GT_instance);
       }
     }
     return nodes->_axial_billboard;
@@ -91,8 +91,8 @@ get_synthetic_group(const string &name,
       _egg_parent->add_child(nodes->_point_billboard);
       nodes->_point_billboard->set_billboard_type(EggGroup::BT_point_world_relative);
       if (!is_identity) {
-	nodes->_point_billboard->set_transform(transform);
-	nodes->_point_billboard->set_group_type(EggGroup::GT_instance);
+        nodes->_point_billboard->set_transform(transform);
+        nodes->_point_billboard->set_group_type(EggGroup::GT_instance);
       }
     }
     return nodes->_point_billboard;
@@ -102,8 +102,8 @@ get_synthetic_group(const string &name,
       nodes->_plain = new EggGroup(name);
       _egg_parent->add_child(nodes->_plain);
       if (!is_identity) {
-	nodes->_plain->set_transform(transform);
-	nodes->_plain->set_group_type(EggGroup::GT_instance);
+        nodes->_plain->set_transform(transform);
+        nodes->_plain->set_group_type(EggGroup::GT_instance);
       }
     }
     return nodes->_plain;

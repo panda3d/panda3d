@@ -167,7 +167,7 @@ advance(bool ok_eof) {
   while (_next_error == FE_ok && _next_opcode == FO_continuation) {
     if (flt_cat.is_debug()) {
       flt_cat.debug()
-	<< "Reading continuation of length " << _next_record_length << "\n";
+        << "Reading continuation of length " << _next_record_length << "\n";
     }
 
     // Read the continuation and tack it on.

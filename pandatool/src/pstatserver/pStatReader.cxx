@@ -207,8 +207,8 @@ handle_client_control_message(const PStatClientControlMessage &message) {
   case PStatClientControlMessage::T_define_collectors:
     {
       for (int i = 0; i < (int)message._collectors.size(); i++) {
-	_client_data->add_collector(message._collectors[i]);
-	_monitor->new_collector(message._collectors[i]->_index);
+        _client_data->add_collector(message._collectors[i]);
+        _monitor->new_collector(message._collectors[i]->_index);
       }
     }
     break;
@@ -216,10 +216,10 @@ handle_client_control_message(const PStatClientControlMessage &message) {
   case PStatClientControlMessage::T_define_threads:
     {
       for (int i = 0; i < (int)message._names.size(); i++) {
-	int thread_index = message._first_thread_index + i;
-	string name = message._names[i];
-	_client_data->define_thread(thread_index, name);
-	_monitor->new_thread(thread_index);
+        int thread_index = message._first_thread_index + i;
+        string name = message._names[i];
+        _client_data->define_thread(thread_index, name);
+        _monitor->new_thread(thread_index);
       }
     }
     break;

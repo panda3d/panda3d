@@ -17,7 +17,7 @@
 class NodeTransitionCache;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : NodeAttributes
+//       Class : NodeAttributes
 // Description : This represents a set of zero or more NodeAttribute
 //               pointers, organized by the attributes' get_handle()
 //               value.
@@ -66,7 +66,7 @@ public:
   INLINE_GRAPH void apply_in_place(const NodeTransitionCache &trans);
   INLINE_GRAPH NodeAttributes *apply(const NodeTransitionCache &trans) const;
   void apply_from(const NodeAttributes &other, 
-		  const NodeTransitionCache &trans);
+                  const NodeTransitionCache &trans);
 
   void merge_from(const NodeAttributes &a, const NodeAttributes &b);
 

@@ -113,8 +113,8 @@ connect_to_server(const string &name, uint port) {
     else {
       downloader_cat.error()
         << "Downloader::connect_to_server() - gethostbyname() failed on: "
-	<< name.c_str() << " with error: "
- 	<< handle_socket_error() << endl;
+        << name.c_str() << " with error: "
+        << handle_socket_error() << endl;
       return get_network_error();
     }
   } else
@@ -143,7 +143,7 @@ connect_to_server(void) {
   }
 
   if (connect(_socket, (struct sockaddr *)&_sin, sizeof(_sin)) == 
-							SOCKET_ERROR) {
+                                                        SOCKET_ERROR) {
     downloader_cat.error()
       << "Downloader::connect_to_server() - connect() failed: "
       << handle_socket_error() << endl;
@@ -344,7 +344,7 @@ initiate(const string &file_name, Filename file_dest,
   // Create a download status to maintain download progress information
   _current_status = new DownloadStatus(_buffer->_buffer,
                                 first_byte, last_byte, total_bytes,
-				partial_content);
+                                partial_content);
 
   _tfirst = 0.0;
   _tlast = 0.0;
@@ -464,13 +464,13 @@ run(void) {
   if (_recompute_buffer == true) {
     if (downloader_cat.is_debug())
       downloader_cat.debug()
-	<< "Downloader::run() - Recomputing the buffer" << endl;
+        << "Downloader::run() - Recomputing the buffer" << endl;
 
     // Flush the current buffer if it holds any data
     if (_current_status->_bytes_in_buffer > 0) {
       write_ret = write_to_disk(_current_status);
       if (write_ret < 0)
-	return write_ret;
+        return write_ret;
 
       ret = EU_write;
     }
@@ -493,7 +493,7 @@ run(void) {
     // Flush the current buffer if the next request would overflow it
     if (downloader_cat.is_debug())
       downloader_cat.debug()
-	<< "Downloader::run() - Flushing buffer" << endl;
+        << "Downloader::run() - Flushing buffer" << endl;
     write_ret = write_to_disk(_current_status);
     if (write_ret < 0)
       return write_ret;
@@ -518,7 +518,7 @@ run(void) {
       else if (remain > 0)
         fret = fast_receive(_socket, _current_status, remain);
       if (fret == EU_eof || fret < 0) {
-	break;
+        break;
       } else if (fret == EU_success) {
         _got_any_data = true;
       }
@@ -535,25 +535,25 @@ run(void) {
   if (fret == EU_eof) {
     if (_got_any_data == true) {
       if (_current_status->_bytes_in_buffer > 0) {
-	write_ret = write_to_disk(_current_status);
- 	if (write_ret < 0)
+        write_ret = write_to_disk(_current_status);
+        if (write_ret < 0)
           return write_ret;
       }
       if (downloader_cat.is_debug())
         downloader_cat.debug()
-	  << "Downloader::run() - Got eof" << endl;
+          << "Downloader::run() - Got eof" << endl;
       cleanup();
       return EU_success;
     } else {
       if (downloader_cat.is_debug())
-	downloader_cat.debug()
-	  << "Downloader::run() - Got 0 bytes" << endl;
+        downloader_cat.debug()
+          << "Downloader::run() - Got 0 bytes" << endl;
       return ret;
     }
   } else if (fret == EU_network_no_data) {
     if (downloader_cat.is_debug())
       downloader_cat.debug()
-	<< "Downloader::run() - No data" << endl;
+        << "Downloader::run() - No data" << endl;
       return ret;
   } else if (fret < 0) {
     return fret;
@@ -584,13 +584,13 @@ run_to_ram(void) {
   if (_recompute_buffer == true) {
     if (downloader_cat.is_debug())
       downloader_cat.debug()
-	<< "Downloader::run_to_ram() - Recomputing the buffer" << endl;
+        << "Downloader::run_to_ram() - Recomputing the buffer" << endl;
 
     // Flush the current buffer if it holds any data
     if (_current_status->_bytes_in_buffer > 0) {
       write_ret = write_to_ram(_current_status);
       if (write_ret < 0)
-	return write_ret;
+        return write_ret;
       ret = EU_write_ram;
     }
 
@@ -608,12 +608,12 @@ run_to_ram(void) {
     _current_status->_total_bytes = 0;
 
   } else if (_current_status->_bytes_in_buffer + _receive_size > 
-						((unsigned int)_disk_buffer_size)) {
+                                                ((unsigned int)_disk_buffer_size)) {
 
     // Flush the current buffer if the next request would overflow it
     if (downloader_cat.is_debug())
       downloader_cat.debug()
-	<< "Downloader::run_to_ram() - Flushing buffer" << endl;
+        << "Downloader::run_to_ram() - Flushing buffer" << endl;
     write_ret = write_to_ram(_current_status);
     if (write_ret < 0)
       return write_ret;
@@ -638,7 +638,7 @@ run_to_ram(void) {
       else if (remain > 0)
         fret = fast_receive(_socket, _current_status, remain);
       if (fret == EU_eof || fret < 0) {
-	break;
+        break;
       } else if (fret == EU_success) {
         _got_any_data = true;
       }
@@ -655,25 +655,25 @@ run_to_ram(void) {
   if (fret == EU_eof) {
     if (_got_any_data == true) {
       if (_current_status->_bytes_in_buffer > 0) {
-	write_ret = write_to_ram(_current_status);
- 	if (write_ret < 0)
+        write_ret = write_to_ram(_current_status);
+        if (write_ret < 0)
           return write_ret;
       }
       if (downloader_cat.is_debug())
         downloader_cat.debug()
-	  << "Downloader::run_to_ram() - Got eof" << endl;
+          << "Downloader::run_to_ram() - Got eof" << endl;
       cleanup();
       return EU_success;
     } else {
       if (downloader_cat.is_debug())
-	downloader_cat.debug()
-	  << "Downloader::run_to_ram() - Got 0 bytes" << endl;
+        downloader_cat.debug()
+          << "Downloader::run_to_ram() - Got 0 bytes" << endl;
       return ret;
     }
   } else if (fret == EU_network_no_data) {
     if (downloader_cat.is_debug())
       downloader_cat.debug()
-	<< "Downloader::run_to_ram() - No data" << endl;
+        << "Downloader::run_to_ram() - No data" << endl;
       return ret;
   } else if (fret < 0) {
     return fret;
@@ -722,9 +722,9 @@ parse_http_response(const string &resp) {
       break;
     case 302:
       if (downloader_cat.is_debug())
-	downloader_cat.debug()
-	  << "Downloader::parse_http_response() - got a 302 redirect"
-	  << endl;
+        downloader_cat.debug()
+          << "Downloader::parse_http_response() - got a 302 redirect"
+          << endl;
       return EU_http_redirect;
       break;
     case 408:
@@ -796,8 +796,8 @@ parse_header(DownloadStatus *status) {
             << component << endl;
         status->_header_is_valid = true;
       } else if (parse_ret == EU_http_redirect) {
-	redirect = true;
-	status->_header_is_valid = true;
+        redirect = true;
+        status->_header_is_valid = true;
       } else {
         return parse_ret;
       }
@@ -823,9 +823,9 @@ parse_header(DownloadStatus *status) {
     } else if (redirect == true && tline == "Location") {
       tline = component.substr(cpos + 2, string::npos);
       if (downloader_cat.is_debug())
-	downloader_cat.debug()
-	  << "Downloader::parse_header() - file redirected to: "
-	  << tline << endl;
+        downloader_cat.debug()
+          << "Downloader::parse_header() - file redirected to: "
+          << tline << endl;
       return EU_error_abort;
     }
 
@@ -833,10 +833,10 @@ parse_header(DownloadStatus *status) {
     if (nl == p) {
       // Make sure we didn't get a redirect
       if (redirect == true) {
-	downloader_cat.error()
-	  << "Downloader::parse_header() - Got a 302 redirect but no "
-	  << "Location directive" << endl;
-	return EU_error_abort;
+        downloader_cat.error()
+          << "Downloader::parse_header() - Got a 302 redirect but no "
+          << "Location directive" << endl;
+        return EU_error_abort;
       }
       if (downloader_cat.is_debug())
         downloader_cat.debug()
@@ -976,7 +976,7 @@ get_ramfile(Ramfile &rfile) {
 ////////////////////////////////////////////////////////////////////
 Downloader::DownloadStatus::
 DownloadStatus(char *buffer, int first_byte, int last_byte, 
-				int total_bytes, bool partial_content) {
+                                int total_bytes, bool partial_content) {
   _first_line_complete = false;
   _header_is_complete = false;
   _header_is_valid = false;

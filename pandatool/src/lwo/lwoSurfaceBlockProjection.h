@@ -11,7 +11,7 @@
 #include "lwoChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurfaceBlockProjection
+//       Class : LwoSurfaceBlockProjection
 // Description : Indicates the projection mode for this particular
 //               shader.  This determines how UV coordinates should be
 //               computed based on the vertex positions.  This is a
@@ -44,7 +44,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoSurfaceBlockProjection",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

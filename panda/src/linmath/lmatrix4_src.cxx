@@ -7,21 +7,21 @@ TypeHandle FLOATNAME(LMatrix4)::_type_handle;
 
 const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_ident_mat =
   FLOATNAME(LMatrix4)(1.0f, 0.0f, 0.0f, 0.0f,
-		      0.0f, 1.0f, 0.0f, 0.0f,
-		      0.0f, 0.0f, 1.0f, 0.0f,
-		      0.0f, 0.0f, 0.0f, 1.0f);
+                      0.0f, 1.0f, 0.0f, 0.0f,
+                      0.0f, 0.0f, 1.0f, 0.0f,
+                      0.0f, 0.0f, 0.0f, 1.0f);
 
 const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_y_to_z_up_mat =
   FLOATNAME(LMatrix4)(1.0f, 0.0f, 0.0f, 0.0f,
-		      0.0f, 0.0f, 1.0f, 0.0f,
-		      0.0f,-1.0f, 0.0f, 0.0f,
-		      0.0f, 0.0f, 0.0f, 1.0f);
+                      0.0f, 0.0f, 1.0f, 0.0f,
+                      0.0f,-1.0f, 0.0f, 0.0f,
+                      0.0f, 0.0f, 0.0f, 1.0f);
 
 const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_z_to_y_up_mat =
   FLOATNAME(LMatrix4)(1.0f, 0.0f, 0.0f, 0.0f,
-		      0.0f, 0.0f,-1.0f, 0.0f,
-		      0.0f, 1.0f, 0.0f, 0.0f,
-		      0.0f, 0.0f, 0.0f, 1.0f);
+                      0.0f, 0.0f,-1.0f, 0.0f,
+                      0.0f, 1.0f, 0.0f, 0.0f,
+                      0.0f, 0.0f, 0.0f, 1.0f);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix::convert_mat
@@ -115,21 +115,21 @@ compare_to(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
 bool FLOATNAME(LMatrix4)::
 almost_equal(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
   return (IS_THRESHOLD_EQUAL((*this)(0, 0), other(0, 0), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(0, 1), other(0, 1), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(0, 2), other(0, 2), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(0, 3), other(0, 3), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(1, 0), other(1, 0), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(1, 1), other(1, 1), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(1, 2), other(1, 2), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(1, 3), other(1, 3), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(2, 0), other(2, 0), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(2, 1), other(2, 1), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(2, 2), other(2, 2), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(2, 3), other(2, 3), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(3, 0), other(3, 0), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(3, 1), other(3, 1), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(3, 2), other(3, 2), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(3, 3), other(3, 3), threshold));
+          IS_THRESHOLD_EQUAL((*this)(0, 1), other(0, 1), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(0, 2), other(0, 2), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(0, 3), other(0, 3), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(1, 0), other(1, 0), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(1, 1), other(1, 1), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(1, 2), other(1, 2), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(1, 3), other(1, 3), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(2, 0), other(2, 0), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(2, 1), other(2, 1), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(2, 2), other(2, 2), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(2, 3), other(2, 3), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(3, 0), other(3, 0), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(3, 1), other(3, 1), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(3, 2), other(3, 2), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(3, 3), other(3, 3), threshold));
 }
 
 
@@ -225,7 +225,7 @@ decompose_mat(int index[4]) {
     for (j = 0; j < 4; j++) {
       FLOATTYPE temp = fabs((*this)(i,j));
       if (temp > big) {
-	big = temp;
+        big = temp;
       }
     }
 
@@ -239,7 +239,7 @@ decompose_mat(int index[4]) {
     for (i = 0; i < j; i++) {
       FLOATTYPE sum = (*this)(i,j);
       for (k = 0; k < i; k++) {
-	sum -= (*this)(i,k) * (*this)(k,j);
+        sum -= (*this)(i,k) * (*this)(k,j);
       }
       (*this)(i,j) = sum;
     }
@@ -249,22 +249,22 @@ decompose_mat(int index[4]) {
     for (i = j; i < 4; i++) {
       FLOATTYPE sum = (*this)(i,j);
       for (k = 0; k < j; k++) {
-	sum -= (*this)(i,k) * (*this)(k,j);
+        sum -= (*this)(i,k) * (*this)(k,j);
       }
       (*this)(i,j) = sum;
 
       FLOATTYPE dum = vv[i] * fabs(sum);
       if (dum >= big) {
-	big = dum;
-	imax = i;
+        big = dum;
+        imax = i;
       }
     }
     nassertr(imax >= 0, false);
     if (j != imax) {
       for (k = 0; k < 4; k++) {
-	FLOATTYPE dum = (*this)(imax,k);
-	(*this)(imax,k) = (*this)(j,k);
-	(*this)(j,k) = dum;
+        FLOATTYPE dum = (*this)(imax,k);
+        (*this)(imax,k) = (*this)(j,k);
+        (*this)(j,k) = dum;
       }
       vv[imax] = vv[j];
     }
@@ -277,7 +277,7 @@ decompose_mat(int index[4]) {
     if (j != 4 - 1) {
       FLOATTYPE dum = 1.0f / (*this)(j,j);
       for (i = j + 1; i < 4; i++) {
-	(*this)(i,j) *= dum;
+        (*this)(i,j) *= dum;
       }
     }
   }
@@ -299,7 +299,7 @@ back_sub_mat(int index[4], FLOATNAME(LMatrix4) &inv, int row) const {
     inv(row, ip) = inv(row, i);
     if (ii >= 0) {
       for (j = ii; j <= i - 1; j++) {
-	sum -= (*this)(i,j) * inv(row, j);
+        sum -= (*this)(i,j) * inv(row, j);
       }
     } else if (sum) {
       ii = i;

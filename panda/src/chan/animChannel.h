@@ -56,7 +56,7 @@ public:
   static void init_type() {
     AnimChannelBase::init_type();
     register_type(_type_handle, SwitchType::get_channel_type_name(),
-		  AnimChannelBase::get_class_type());
+                  AnimChannelBase::get_class_type());
   }
 
 private:

@@ -16,7 +16,7 @@
 class GraphicsStateGuardianBase;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GeomIssuer
+//       Class : GeomIssuer
 // Description : This is a utility class used by the various
 //               GraphicsStateGuardians to issue the vertex/normal/etc
 //               commands to the rendering engine.  Given a geom and a
@@ -45,20 +45,20 @@ public:
 
   GeomIssuer();
   GeomIssuer(const Geom *geom,
-	     const GraphicsStateGuardianBase *gsg,
-	     IssueVertex *vertex,
-	     IssueNormal *normal,
-	     IssueTexCoord *texcoord,
-	     IssueColor *color);
+             const GraphicsStateGuardianBase *gsg,
+             IssueVertex *vertex,
+             IssueNormal *normal,
+             IssueTexCoord *texcoord,
+             IssueColor *color);
 
   INLINE void issue_vertex(GeomBindType bind,
-			   Geom::VertexIterator &i);
+                           Geom::VertexIterator &i);
   INLINE void issue_normal(GeomBindType bind,
-			   Geom::NormalIterator &i);
+                           Geom::NormalIterator &i);
   INLINE void issue_texcoord(GeomBindType bind,
-			     Geom::TexCoordIterator &i);
+                             Geom::TexCoordIterator &i);
   INLINE void issue_color(GeomBindType bind,
-			  Geom::ColorIterator &i);
+                          Geom::ColorIterator &i);
 
 protected:
   const Geom *_geom;

@@ -14,7 +14,7 @@
 #include <nurbs.hh>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : NurbsPPCurve
+//       Class : NurbsPPCurve
 // Description : A Nonuniform Rational B-Spline.
 //
 //               This class is an extension to Panda NURBS curves,
@@ -30,7 +30,7 @@ PUBLISHED:
   NurbsPPCurve();
   NurbsPPCurve(const ParametricCurve &pc);
   NurbsPPCurve(int order, int num_cvs,
-	       const float knots[], const LVecBase4f cvs[]);
+               const float knots[], const LVecBase4f cvs[]);
   virtual ~NurbsPPCurve();
 
 public:
@@ -72,7 +72,7 @@ public:
 protected:
   virtual int append_cv_impl(const LVecBase4f &v);
   virtual bool format_egg(ostream &out, const string &name, 
-			  const string &curve_type, int indent_level) const;
+                          const string &curve_type, int indent_level) const;
 
 private:
   typedef vector<LVecBase4f> Points;
@@ -84,10 +84,10 @@ private:
   void copy_arrays(Points &points, Knots &knots, int &order) const;
 
   static bool make_nurbs_from(PLib::NurbsCurvef &nurbs,
-			      const Points &points, const Knots &knots,
-			      int order);
+                              const Points &points, const Knots &knots,
+                              int order);
   static void make_arrays_from(const PLib::NurbsCurvef &nurbs,
-			       Points &points, Knots &knots, int &order);
+                               Points &points, Knots &knots, int &order);
 
   PLib::NurbsCurvef _nurbs;
 
@@ -105,7 +105,7 @@ public:
     NurbsCurveInterface::init_type();
     register_type(_type_handle, "NurbsPPCurve",
                   ParametricCurve::get_class_type(),
-		  NurbsCurveInterface::get_class_type());
+                  NurbsCurveInterface::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

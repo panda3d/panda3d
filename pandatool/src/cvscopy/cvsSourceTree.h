@@ -14,7 +14,7 @@
 class CVSSourceDirectory;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : CVSSourceTree
+//       Class : CVSSourceTree
 // Description : This represents the root of the tree of source
 //               directory files.
 ////////////////////////////////////////////////////////////////////
@@ -32,8 +32,8 @@ public:
   CVSSourceDirectory *find_dirname(const string &dirname);
 
   CVSSourceDirectory *choose_directory(const string &filename,
-				       CVSSourceDirectory *suggested_dir,
-				       bool force, bool interactive);
+                                       CVSSourceDirectory *suggested_dir,
+                                       bool force, bool interactive);
 
   string get_root_fullpath();
   string get_root_dirname() const;
@@ -49,13 +49,13 @@ private:
 
   CVSSourceDirectory *
   prompt_user(const string &filename, CVSSourceDirectory *suggested_dir,
-	      const Directories &dirs, bool force, bool interactive);
+              const Directories &dirs, bool force, bool interactive);
 
   CVSSourceDirectory *ask_existing(const string &filename, 
-				   CVSSourceDirectory *dir);
+                                   CVSSourceDirectory *dir);
   CVSSourceDirectory *ask_existing(const string &filename,
-				   const Directories &dirs,
-				   CVSSourceDirectory *suggested_dir);
+                                   const Directories &dirs,
+                                   CVSSourceDirectory *suggested_dir);
   CVSSourceDirectory *ask_new(const string &filename, CVSSourceDirectory *dir);
   CVSSourceDirectory *ask_any(const string &filename);
 

@@ -35,7 +35,7 @@ typedef Action (*av_func)(unsigned long&, unsigned long&, condition_variable*&);
 //                    expected that it will output something usefull about what
 //                    the task is and what it's doing.
 extern void RegisterAppService(vv_func, av_func, vv_func = (vv_func)0L,
-			       vv_func = (vv_func)0L);
+                               vv_func = (vv_func)0L);
 
 
 template <class str = std::string>
@@ -43,9 +43,9 @@ class main_thread_message_base {
    public:
       enum message_t { LOAD, RESCAN, INFO };
       INLINE main_thread_message_base(const message_t message, str s = "") :
-	_m(message), _lib(s) {}
+        _m(message), _lib(s) {}
       INLINE main_thread_message_base(const main_thread_message_base& m) :
-	_m(m._m), _lib(m._lib) {}
+        _m(m._m), _lib(m._lib) {}
       INLINE ~main_thread_message_base(void) {}
       INLINE message_t get_message(void) const { return _m; }
       INLINE str get_lib(void) const { return _lib; }

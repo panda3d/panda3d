@@ -15,7 +15,7 @@
 class IndexRemapper;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : InterrogateFunctionWrapper
+//       Class : InterrogateFunctionWrapper
 // Description : An internal representation of a function.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOLCONFIG InterrogateFunctionWrapper : public InterrogateComponent {

@@ -13,7 +13,7 @@
 #include <eggTexture.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TextureRequest
+//       Class : TextureRequest
 // Description : These are the things that a user might explicitly
 //               request to adjust on a texture via a line in the .txa
 //               file.

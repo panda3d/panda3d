@@ -19,7 +19,7 @@
 #include <set>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ShaderTransition
+//       Class : ShaderTransition
 // Description : A ShaderTransition holds the set of shaders that
 //               might be in effect to render a particular part of the
 //               subgraph.  These shaders can range from lightweight
@@ -68,9 +68,9 @@ public:
   virtual NodeTransition *make_copy() const;
 
   virtual bool sub_render(NodeRelation *arc,
-			  const AllAttributesWrapper &attrib,
-			  AllTransitionsWrapper &trans,
-			  RenderTraverser *trav);
+                          const AllAttributesWrapper &attrib,
+                          AllTransitionsWrapper &trans,
+                          RenderTraverser *trav);
   virtual bool has_sub_render() const;
 
 private:
@@ -90,7 +90,7 @@ public:
   static void init_type() {
     ImmediateTransition::init_type();
     register_type(_type_handle, "ShaderTransition",
-		  ImmediateTransition::get_class_type());
+                  ImmediateTransition::get_class_type());
   }
 
 private:

@@ -11,7 +11,7 @@
 #include <nodeRelation.h>
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : DataRelation
+//       Class : DataRelation
 // Description : The arc type specific to data graphs.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DataRelation : public NodeRelation {
@@ -40,7 +40,7 @@ public:
   static void init_type() {
     NodeRelation::init_type();
     register_type(_type_handle, "DataRelation",
-		 NodeRelation::get_class_type());
+                 NodeRelation::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -80,8 +80,8 @@ ProgramBase() {
   _got_option_indent = false;
 
   add_option("h", "", 100, 
-	     "Display this help page.", 
-	     &ProgramBase::handle_help_option, NULL, (void *)this);
+             "Display this help page.", 
+             &ProgramBase::handle_help_option, NULL, (void *)this);
 
   // Should we report DConfig's debugging information?
   if (dconfig_cat.is_debug()) {
@@ -175,7 +175,7 @@ show_text(const string &prefix, int indent_width, string text) {
   // nout would be cyclic, since nout is redefined to map back through
   // this function.
   format_text(cerr, _last_newline, 
-	      prefix, indent_width, text, _terminal_width);
+              prefix, indent_width, text, _terminal_width);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -226,8 +226,8 @@ parse_command_line(int argc, char *argv[]) {
 
       short_options += opt._option;
       if (!opt._parm_name.empty()) {
-	// This option takes an argument.
-	short_options += ':';
+        // This option takes an argument.
+        short_options += ':';
       }
     } else {
       // This is a "long" option; we'll assign it the next available
@@ -288,30 +288,30 @@ parse_command_line(int argc, char *argv[]) {
 
     default:
       {
-	// A normal option.  Figure out which one it is.
-	Options::const_iterator ii;
-	ii = options.find(flag);
-	if (ii == options.end()) {
-	  nout << "Internal error!  Invalid option index returned.\n";
-	  abort();
-	}
-	
-	const Option &opt = *(*ii).second;
-	bool okflag = true;
-	if (opt._option_function != (OptionDispatchFunction)NULL) {
-	  okflag = (*opt._option_function)(opt._option, arg, opt._option_data);
-	}
-	if (opt._option_method != (OptionDispatchMethod)NULL) {
-	  okflag = (*opt._option_method)(this, opt._option, arg, opt._option_data);
-	}
-	if (opt._bool_var != (bool *)NULL) {
-	  (*opt._bool_var) = true;
-	}
-	
-	if (!okflag) {
-	  show_usage();
-	  exit(1);
-	}
+        // A normal option.  Figure out which one it is.
+        Options::const_iterator ii;
+        ii = options.find(flag);
+        if (ii == options.end()) {
+          nout << "Internal error!  Invalid option index returned.\n";
+          abort();
+        }
+
+        const Option &opt = *(*ii).second;
+        bool okflag = true;
+        if (opt._option_function != (OptionDispatchFunction)NULL) {
+          okflag = (*opt._option_function)(opt._option, arg, opt._option_data);
+        }
+        if (opt._option_method != (OptionDispatchMethod)NULL) {
+          okflag = (*opt._option_method)(this, opt._option, arg, opt._option_data);
+        }
+        if (opt._bool_var != (bool *)NULL) {
+          (*opt._bool_var) = true;
+        }
+
+        if (!okflag) {
+          show_usage();
+          exit(1);
+        }
       }
     }
 
@@ -454,9 +454,9 @@ clear_options() {
 ////////////////////////////////////////////////////////////////////
 void ProgramBase::
 add_option(const string &option, const string &parm_name,
-	   int index_group, const string &description, 
-	   OptionDispatchFunction option_function,
-	   bool *bool_var, void *option_data) {
+           int index_group, const string &description, 
+           OptionDispatchFunction option_function,
+           bool *bool_var, void *option_data) {
   Option opt;
   opt._option = option;
   opt._parm_name = parm_name;
@@ -495,9 +495,9 @@ add_option(const string &option, const string &parm_name,
 ////////////////////////////////////////////////////////////////////
 void ProgramBase::
 add_option(const string &option, const string &parm_name,
-	   int index_group, const string &description, 
-	   OptionDispatchMethod option_method,
-	   bool *bool_var, void *option_data) {
+           int index_group, const string &description, 
+           OptionDispatchMethod option_method,
+           bool *bool_var, void *option_data) {
   Option opt;
   opt._option = option;
   opt._parm_name = parm_name;
@@ -633,7 +633,7 @@ dispatch_int(const string &opt, const string &arg, void *var) {
 
   if (!string_to_int(arg, *ip)) {
     nout << "Invalid integer parameter for -" << opt << ": " 
-	 << arg << "\n";
+         << arg << "\n";
     return false;
   }
 
@@ -663,7 +663,7 @@ dispatch_int_pair(const string &opt, const string &arg, void *var) {
 
   if (!okflag) {
     nout << "-" << opt
-	 << " requires a pair of integers separated by a comma.\n";
+         << " requires a pair of integers separated by a comma.\n";
     return false;
   }
 
@@ -683,7 +683,7 @@ dispatch_double(const string &opt, const string &arg, void *var) {
 
   if (!string_to_double(arg, *ip)) {
     nout << "Invalid numeric parameter for -" << opt << ": " 
-	 << arg << "\n";
+         << arg << "\n";
     return false;
   }
 
@@ -713,7 +713,7 @@ dispatch_double_pair(const string &opt, const string &arg, void *var) {
 
   if (!okflag) {
     nout << "-" << opt
-	 << " requires a pair of numbers separated by a comma.\n";
+         << " requires a pair of numbers separated by a comma.\n";
     return false;
   }
 
@@ -744,7 +744,7 @@ dispatch_double_triple(const string &opt, const string &arg, void *var) {
 
   if (!okflag) {
     nout << "-" << opt
-	 << " requires three numbers separated by commas.\n";
+         << " requires three numbers separated by commas.\n";
     return false;
   }
 
@@ -776,7 +776,7 @@ dispatch_double_quad(const string &opt, const string &arg, void *var) {
 
   if (!okflag) {
     nout << "-" << opt
-	 << " requires four numbers separated by commas.\n";
+         << " requires four numbers separated by commas.\n";
     return false;
   }
 
@@ -816,7 +816,7 @@ dispatch_color(const string &opt, const string &arg, void *var) {
 
   if (!okflag) {
     nout << "-" << opt
-	 << " requires three or four numbers separated by commas.\n";
+         << " requires three or four numbers separated by commas.\n";
     return false;
   }
 
@@ -896,7 +896,7 @@ dispatch_coordinate_system(const string &opt, const string &arg, void *var) {
 
   if ((*ip) == CS_invalid) {
     nout << "Invalid coordinate system for -" << opt << ": " << arg << "\n"
-	 << "Valid coordinate system strings are any of 'y-up', 'z-up', "
+         << "Valid coordinate system strings are any of 'y-up', 'z-up', "
       "'y-up-left', or 'z-up-left'.\n";
     return false;
   }
@@ -919,7 +919,7 @@ dispatch_units(const string &opt, const string &arg, void *var) {
 
   if ((*ip) == DU_invalid) {
     nout << "Invalid units for -" << opt << ": " << arg << "\n"
-	 << "Valid units are mm, cm, m, km, yd, ft, in, nmi, and mi.\n";
+         << "Valid units are mm, cm, m, km, yd, ft, in, nmi, and mi.\n";
     return false;
   }
 
@@ -969,8 +969,8 @@ handle_help_option(const string &, const string &, void *data) {
 ////////////////////////////////////////////////////////////////////
 void ProgramBase::
 format_text(ostream &out, bool &last_newline,
-	    const string &prefix, int indent_width,
-	    const string &text, int line_width) {
+            const string &prefix, int indent_width,
+            const string &text, int line_width) {
   indent_width = min(indent_width, line_width - 20);
   int indent_amount = indent_width;
   bool initial_break = false;
@@ -990,12 +990,12 @@ format_text(ostream &out, bool &last_newline,
   // Skip any initial whitespace and newlines.
   while (p < text.length() && isspace(text[p])) {
     if (text[p] == '\r' ||
-	(p > 0 && text[p] == '\n' && text[p - 1] == '\n') ||
- 	(p == 0 && text[p] == '\n' && last_newline)) {
+        (p > 0 && text[p] == '\n' && text[p - 1] == '\n') ||
+        (p == 0 && text[p] == '\n' && last_newline)) {
       if (!initial_break) {
-	// Here's an initial paragraph break, however.
-	out << "\n";
-	initial_break = true;
+        // Here's an initial paragraph break, however.
+        out << "\n";
+        initial_break = true;
       }
       indent_amount = indent_width;
 
@@ -1020,7 +1020,7 @@ format_text(ostream &out, bool &last_newline,
     if (par == string::npos) {
       par = text.length();
       /*
-	This shouldn't be necessary.
+        This shouldn't be necessary.
     } else {
       is_paragraph_break = (text[par] == '\r');
       */
@@ -1040,21 +1040,21 @@ format_text(ostream &out, bool &last_newline,
       size_t min_eol = max((int)p, (int)eol - 25);
       size_t q = eol;
       while (q > min_eol && !isspace(text[q])) {
-	q--;
+        q--;
       }
       // Now roll back to the last non-space before this one.
       while (q > min_eol && isspace(text[q])) {
-	q--;
+        q--;
       }
 
       if (q != min_eol) {
-	// Here's a good place to stop!
-	eol = q + 1;
+        // Here's a good place to stop!
+        eol = q + 1;
 
       } else {
-	// The line cannot be broken cleanly.  Just let it keep going;
-	// don't try to wrap it.
-	eol = par;
+        // The line cannot be broken cleanly.  Just let it keep going;
+        // don't try to wrap it.
+        eol = par;
       }
     }
     out << text.substr(p, eol - p) << "\n";
@@ -1063,8 +1063,8 @@ format_text(ostream &out, bool &last_newline,
     // Skip additional whitespace between the lines.
     while (p < text.length() && isspace(text[p])) {
       if (text[p] == '\r' ||
-	  (p > 0 && text[p] == '\n' && text[p - 1] == '\n')) {
-	is_paragraph_break = true;
+          (p > 0 && text[p] == '\n' && text[p - 1] == '\n')) {
+        is_paragraph_break = true;
       }
       p++;
     }
@@ -1073,9 +1073,9 @@ format_text(ostream &out, bool &last_newline,
       // Print the paragraph break as a blank line.
       out << "\n";
       if (p >= text.length()) {
-	// If we end on a paragraph break, don't try to insert a new
-	// one in the next pass.
-	last_newline = false;
+        // If we end on a paragraph break, don't try to insert a new
+        // one in the next pass.
+        last_newline = false;
       }
     }
 
@@ -1102,7 +1102,7 @@ sort_options() {
     }
     
     sort(_options_by_index.begin(), _options_by_index.end(),
-	 SortOptionsByIndex());
+         SortOptionsByIndex());
     _sorted_options = true;
   }
 }

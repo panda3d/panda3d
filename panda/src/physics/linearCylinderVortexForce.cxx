@@ -15,7 +15,7 @@ TypeHandle LinearCylinderVortexForce::_type_handle;
 ////////////////////////////////////////////////////////////////////
 LinearCylinderVortexForce::
 LinearCylinderVortexForce(float radius, float length, float coef, 
-		    float a, bool md) :
+                    float a, bool md) :
   LinearForce(a, md),
   _radius(radius), _length(length), _coef(coef)
 {

@@ -20,7 +20,7 @@ class EggCharacterCollection;
 class EggSliderData;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggCharacterData
+//       Class : EggCharacterData
 // Description : Represents a single character, as read and collected
 //               from several models and animation files.  This
 //               contains a hierarchy of EggJointData nodes
@@ -42,6 +42,9 @@ class EggSliderData;
 //               of single precision, (b) capable of generating
 //               modified Egg files, and (c) about a hundred times
 //               slower than the Panda Character class.
+//
+//               The data in this structure is normally filled in by
+//               the EggCharacterCollection class.
 ////////////////////////////////////////////////////////////////////
 class EggCharacterData : public Namable {
 public:

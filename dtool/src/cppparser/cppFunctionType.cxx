@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////////////
 CPPFunctionType::
 CPPFunctionType(CPPType *return_type, CPPParameterList *parameters,
-		int flags) :
+                int flags) :
   CPPType(CPPFile()),
   _return_type(return_type), 
   _parameters(parameters),
@@ -86,7 +86,7 @@ is_fully_specified() const {
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPFunctionType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
-		CPPScope *current_scope, CPPScope *global_scope) {
+                CPPScope *current_scope, CPPScope *global_scope) {
   SubstDecl::const_iterator si = subst.find(this);
   if (si != subst.end()) {
     return (*si).second;
@@ -192,8 +192,8 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete,
 ////////////////////////////////////////////////////////////////////
 void CPPFunctionType::
 output_instance(ostream &out, int indent_level, CPPScope *scope,
-		bool complete, const string &prename,
-		const string &name) const {
+                bool complete, const string &prename,
+                const string &name) const {
   output_instance(out, indent_level, scope, complete, prename, name, -1);
 }
 
@@ -209,8 +209,8 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
 ////////////////////////////////////////////////////////////////////
 void CPPFunctionType::
 output_instance(ostream &out, int indent_level, CPPScope *scope,
-		bool complete, const string &prename,
-		const string &name, int num_default_parameters) const {
+                bool complete, const string &prename,
+                const string &name, int num_default_parameters) const {
   ostringstream parm_string;
   parm_string << "(";
   _parameters->output(parm_string, scope, true, num_default_parameters);
@@ -224,10 +224,10 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
   } else {
     if (prename.empty()) {
       _return_type->output_instance(out, indent_level, scope, complete, 
-				    "", prename + name + str);
+                                    "", prename + name + str);
     } else {
       _return_type->output_instance(out, indent_level, scope, complete, 
-				    "", "(" + prename + name + ")" + str);
+                                    "", "(" + prename + name + ")" + str);
     }
   }
 

@@ -115,7 +115,7 @@ get_color() const {
   nassertr(has_color(), Colorf(0.0, 0.0, 0.0, 0.0));
 
   return _header->get_color(_color_index, (_flags & F_packed_color) != 0,
-			    _packed_color, 0);
+                            _packed_color, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,7 +130,7 @@ get_rgb() const {
   nassertr(has_color(), RGBColorf(0.0, 0.0, 0.0));
 
   return _header->get_rgb(_color_index, (_flags & F_packed_color) != 0,
-			  _packed_color);
+                          _packed_color);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -11,7 +11,7 @@
 #include "wrapperBuilder.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : WrapperBuilderPython
+//       Class : WrapperBuilderPython
 // Description : A specialization on WrapperBuilder that builds
 //               Python-style wrapper functions.
 ////////////////////////////////////////////////////////////////////

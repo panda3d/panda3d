@@ -69,7 +69,7 @@ output(ostream &out) const {
     }
     if (_retesselate_coplanar) {
       out << "Retesselate coplanar triangles when needed; threshold = "
-	  << _coplanar_threshold << "\n";
+          << _coplanar_threshold << "\n";
     }
   }
   if (_subdivide_polys) {
@@ -77,7 +77,7 @@ output(ostream &out) const {
   }
   if (_consider_fans) {
     out << "Look for possible triangle fans with max per-triangle angle of " 
-	<< _max_tfan_angle << " degrees.\n";
+        << _max_tfan_angle << " degrees.\n";
     if (_min_tfan_tris==0) {
       out << "Do not create tfans";
     } else {

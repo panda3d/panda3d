@@ -66,7 +66,7 @@ make_instance_more_general(TypeHandle handle, const FactoryParams &params) {
 template<class Type>
 INLINE Type *Factory<Type>::
 make_instance_more_general(const string &type_name, 
-			   const FactoryParams &params) {
+                           const FactoryParams &params) {
   return (Type *)FactoryBase::make_instance_more_general(type_name, params);
 }
 

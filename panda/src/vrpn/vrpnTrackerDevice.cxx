@@ -15,8 +15,8 @@ TypeHandle VrpnTrackerDevice::_type_handle;
 ////////////////////////////////////////////////////////////////////
 VrpnTrackerDevice::
 VrpnTrackerDevice(VrpnClient *client, const string &device_name,
-		  int sensor, VrpnTrackerDevice::DataType data_type,
-		  VrpnTracker *vrpn_tracker) :
+                  int sensor, VrpnTrackerDevice::DataType data_type,
+                  VrpnTracker *vrpn_tracker) :
   ClientTrackerDevice(client, device_name),
   _sensor(sensor),
   _data_type(data_type),

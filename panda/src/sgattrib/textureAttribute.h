@@ -12,7 +12,7 @@
 #include <texture.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TextureAttribute
+//       Class : TextureAttribute
 // Description : See TextureTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TextureAttribute : public OnOffAttribute {
@@ -47,7 +47,7 @@ public:
   static void init_type() {
     OnOffAttribute::init_type();
     register_type(_type_handle, "TextureAttribute",
-		  OnOffAttribute::get_class_type());
+                  OnOffAttribute::get_class_type());
   }
 
 private:

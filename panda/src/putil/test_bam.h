@@ -25,7 +25,7 @@ public:
 
   static TypedWritable *make_person(const FactoryParams &params);
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 protected:
   void fillin(Person*,DatagramIterator&,BamReader*);
 public:
@@ -60,7 +60,7 @@ public:
   static void init_type() {
     TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "Person",
-		  TypedWritableReferenceCount::get_class_type());
+                  TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -80,7 +80,7 @@ public:
 
   static TypedWritable *make_parent(const FactoryParams &params);
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 protected:
   void fillin(Parent*,DatagramIterator&,BamReader*);
 public:
@@ -106,7 +106,7 @@ public:
   static void init_type() {
     Person::init_type();
     register_type(_type_handle, "Parent",
-		  Person::get_class_type());
+                  Person::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -126,7 +126,7 @@ public:
 
   static TypedWritable *make_child(const FactoryParams &params);
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 protected:
   void fillin(Child*,DatagramIterator&,BamReader*);
 public:

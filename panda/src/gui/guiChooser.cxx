@@ -9,7 +9,7 @@ TypeHandle GuiChooser::_type_handle;
 TypeHandle GuiChooser::ChooseFunctor::_type_handle;
 
 GuiChooser::ChooseFunctor::ChooseFunctor(GuiChooser* ch,
-					 GuiBehavior::BehaviorFunctor* func)
+                                         GuiBehavior::BehaviorFunctor* func)
   : GuiBehavior::BehaviorFunctor(), _prev(func), _ch(ch) {
 }
 
@@ -195,10 +195,10 @@ void GuiChooser::manage(GuiManager* mgr, EventHandler& eh) {
     if (_curr != -1) {
       _items[_curr]->manage(mgr, eh);
       if (_curr == 0)
-	_prev_button->inactive();
+        _prev_button->inactive();
       int foo = _items.size() - 1;
       if (_curr == foo)
-	_next_button->inactive();
+        _next_button->inactive();
     } else {
       _prev_button->inactive();
       _next_button->inactive();
@@ -206,7 +206,7 @@ void GuiChooser::manage(GuiManager* mgr, EventHandler& eh) {
     GuiBehavior::manage(mgr, eh);
   } else
     gui_cat->warning() << "tried to manage chooser (0x" << (void*)this
-		       << ") that is already managed" << endl;
+                       << ") that is already managed" << endl;
 }
 
 void GuiChooser::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
@@ -216,10 +216,10 @@ void GuiChooser::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
     if (_curr != -1) {
       _items[_curr]->manage(mgr, eh, n);
       if (_curr == 0)
-	_prev_button->inactive();
+        _prev_button->inactive();
       int foo = _items.size() - 1;
       if (_curr == foo)
-	_next_button->inactive();
+        _next_button->inactive();
     } else {
       _prev_button->inactive();
       _next_button->inactive();
@@ -227,7 +227,7 @@ void GuiChooser::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
     GuiBehavior::manage(mgr, eh, n);
   } else
     gui_cat->warning() << "tried to manage chooser (0x" << (void*)this
-		       << ") that is already managed" << endl;
+                       << ") that is already managed" << endl;
 }
 
 void GuiChooser::unmanage(void) {

@@ -31,13 +31,13 @@ EXPCL_DIRECT DSearchPath &get_particle_path();
 EXPCL_DIRECT PT(GraphicsPipe) make_graphics_pipe();
 EXPCL_DIRECT PT(GraphicsWindow) 
   make_graphics_window(GraphicsPipe *pipe, 
-		       NamedNode *render,
-		       NamedNode *camera,
-		       NodeAttributes &initial_state);	
+                       NamedNode *render,
+                       NamedNode *camera,
+                       NodeAttributes &initial_state);
 
 EXPCL_DIRECT NodePath setup_panda_2d(GraphicsWindow *win, const string &name);
 EXPCL_DIRECT void add_render_layer(GraphicsWindow *win, Node *render_top,
-				   Camera *camera);
+                                   Camera *camera);
 
 EXPCL_DIRECT void toggle_wireframe(NodeAttributes &initial_state);
 EXPCL_DIRECT void toggle_texture(NodeAttributes &initial_state);

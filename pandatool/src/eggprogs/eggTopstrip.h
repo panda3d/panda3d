@@ -17,7 +17,7 @@ class EggJointData;
 class EggJointPointer;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggTopstrip
+//       Class : EggTopstrip
 // Description : Reads a character model and/or animations and strips
 //               out the animation from one of the top joints from the
 //               entire character.  Particularly useful for generating
@@ -32,9 +32,9 @@ public:
   void check_transform_channels();
 
   void strip_anim(EggJointData *joint_data, int from_model,
-		  EggJointData *top_joint);
+                  EggJointData *top_joint);
   void strip_anim_vertices(EggNode *egg_node, int into_model,
-			   int from_model, EggJointData *top_joint);
+                           int from_model, EggJointData *top_joint);
 
   void adjust_transform(LMatrix4d &mat) const;
 

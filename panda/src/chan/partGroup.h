@@ -66,11 +66,11 @@ public:
 
   void sort_descendants();
   bool check_hierarchy(const AnimGroup *anim,
-		       const PartGroup *parent,
-		       int hierarchy_match_flags = 0) const;
+                       const PartGroup *parent,
+                       int hierarchy_match_flags = 0) const;
 
   virtual void do_update(PartBundle *root, PartGroup *parent,
-			 bool parent_changed, bool anim_changed);
+                         bool parent_changed, bool anim_changed);
 
 protected:
   void write_descendants(ostream &out, int indent_level) const;
@@ -86,7 +86,7 @@ public:
   static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter* manager, Datagram &me);  
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
   static TypedWritable *make_PartGroup(const FactoryParams &params);
 
@@ -110,7 +110,7 @@ public:
   static void init_type() {
     TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "PartGroup",
-		  TypedWritableReferenceCount::get_class_type());
+                  TypedWritableReferenceCount::get_class_type());
   }
 
 private:

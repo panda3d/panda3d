@@ -11,7 +11,7 @@
 #include "fltBeadID.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltObject
+//       Class : FltObject
 // Description : The main objecting bead of the flt file.
 ////////////////////////////////////////////////////////////////////
 class FltObject : public FltBeadID {
@@ -48,7 +48,7 @@ public:
   static void init_type() {
     FltBeadID::init_type();
     register_type(_type_handle, "FltObject",
-		  FltBeadID::get_class_type());
+                  FltBeadID::get_class_type());
   }
 
 private:

@@ -14,7 +14,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3f
 get_rel_pos(const Node *node, const Node *relative_to,
-	    TypeHandle graph_type) {
+            TypeHandle graph_type) {
   NodeTransitionWrapper ntw(TransformTransition::get_class_type());
   wrt(node, relative_to, ntw, graph_type);
   const TransformTransition *tt;
@@ -36,7 +36,7 @@ get_rel_pos(const Node *node, const Node *relative_to,
 ////////////////////////////////////////////////////////////////////
 INLINE void
 get_rel_mat(const Node *node, const Node *relative_to,
-	    LMatrix4f &mat, TypeHandle graph_type) {
+            LMatrix4f &mat, TypeHandle graph_type) {
   NodeTransitionWrapper ntw(TransformTransition::get_class_type());
   wrt(node, relative_to, ntw, graph_type);
   const TransformTransition *tt;
@@ -59,7 +59,7 @@ get_rel_mat(const Node *node, const Node *relative_to,
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f 
 get_rel_up(const Node *node, const Node *relative_to,
-	   CoordinateSystem cs) {
+           CoordinateSystem cs) {
   LMatrix4f mat;
   get_rel_rot_mat(node, relative_to, mat);
   return LVector3f::up(cs) * mat;
@@ -74,7 +74,7 @@ get_rel_up(const Node *node, const Node *relative_to,
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f 
 get_rel_right(const Node *node, const Node *relative_to,
-	      CoordinateSystem cs) {
+              CoordinateSystem cs) {
   LMatrix4f mat;
   get_rel_rot_mat(node, relative_to, mat);
   return LVector3f::right(cs) * mat;
@@ -89,7 +89,7 @@ get_rel_right(const Node *node, const Node *relative_to,
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f 
 get_rel_forward(const Node *node, const Node *relative_to,
-		CoordinateSystem cs) {
+                CoordinateSystem cs) {
   LMatrix4f mat;
   get_rel_rot_mat(node, relative_to, mat);
   return LVector3f::forward(cs) * mat;
@@ -104,7 +104,7 @@ get_rel_forward(const Node *node, const Node *relative_to,
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f 
 get_rel_down(const Node *node, const Node *relative_to,
-	     CoordinateSystem cs) {
+             CoordinateSystem cs) {
   LMatrix4f mat;
   get_rel_rot_mat(node, relative_to, mat);
   return LVector3f::down(cs) * mat;
@@ -119,7 +119,7 @@ get_rel_down(const Node *node, const Node *relative_to,
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f 
 get_rel_left(const Node *node, const Node *relative_to,
-	     CoordinateSystem cs) {
+             CoordinateSystem cs) {
   LMatrix4f mat;
   get_rel_rot_mat(node, relative_to, mat);
   return LVector3f::left(cs) * mat;
@@ -134,7 +134,7 @@ get_rel_left(const Node *node, const Node *relative_to,
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f 
 get_rel_back(const Node *node, const Node *relative_to,
-	     CoordinateSystem cs) {
+             CoordinateSystem cs) {
   LMatrix4f mat;
   get_rel_rot_mat(node, relative_to, mat);
   return LVector3f::back(cs) * mat;

@@ -125,8 +125,8 @@ is_fully_specified() const {
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPDeclaration::
 instantiate(const CPPTemplateParameterList *, 
-	    CPPScope *, CPPScope *,
-	    CPPPreprocessor *error_sink) const {
+            CPPScope *, CPPScope *,
+            CPPPreprocessor *error_sink) const {
   if (error_sink != NULL) {
     error_sink->warning("Ignoring template parameters");
   }

@@ -13,7 +13,7 @@
 class GtkStatsServer;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GtkStatsMainWindow
+//       Class : GtkStatsMainWindow
 // Description : This is the main window that's opened up and stays up
 //               all the time when you run gtk-stats.  It just shows
 //               that it's running.

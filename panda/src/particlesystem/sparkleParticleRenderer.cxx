@@ -32,9 +32,9 @@ SparkleParticleRenderer(void) :
 
 SparkleParticleRenderer::
 SparkleParticleRenderer(const Colorf& center, const Colorf& edge,
-			float birth_radius, float death_radius,
-			SparkleParticleLifeScale life_scale,
-			ParticleRendererAlphaMode alpha_mode) :
+                        float birth_radius, float death_radius,
+                        SparkleParticleLifeScale life_scale,
+                        ParticleRendererAlphaMode alpha_mode) :
   BaseParticleRenderer(alpha_mode),
   _center_color(center), _edge_color(edge), _birth_radius(birth_radius),
   _death_radius(death_radius), _life_scale(life_scale)
@@ -200,14 +200,14 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     // handle alpha
 
     if (_alpha_mode != PR_ALPHA_NONE) {
-	  if(_alpha_mode == PR_ALPHA_USER) {
-		  alpha=get_user_alpha();
-	  } else {
-		  alpha = cur_particle->get_parameterized_age();
+          if(_alpha_mode == PR_ALPHA_USER) {
+                  alpha=get_user_alpha();
+          } else {
+                  alpha = cur_particle->get_parameterized_age();
 
-		  if (_alpha_mode == PR_ALPHA_OUT)
-			  alpha = 1.0f - alpha;
-	  }
+                  if (_alpha_mode == PR_ALPHA_OUT)
+                          alpha = 1.0f - alpha;
+          }
 
       center_color[3] = alpha;
       edge_color[3] = alpha;

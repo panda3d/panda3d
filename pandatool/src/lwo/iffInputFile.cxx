@@ -243,25 +243,25 @@ get_chunk() {
 
     if (chunk->read_iff(this, end_point)) {
       if (is_eof()) {
-	if (!_unexpected_eof) {
-	  nout << "Unexpected EOF on file reading " << *chunk << "\n";
-	  _unexpected_eof = true;
-	}
-	return (IffChunk *)NULL;
+        if (!_unexpected_eof) {
+          nout << "Unexpected EOF on file reading " << *chunk << "\n";
+          _unexpected_eof = true;
+        }
+        return (IffChunk *)NULL;
       }
 
       size_t num_bytes_read = get_bytes_read() - start_point;
       if (num_bytes_read > length) {
-	nout << *chunk << " read " << num_bytes_read
-	     << " instead of " << length << " bytes.\n";
-	return (IffChunk *)NULL;
+        nout << *chunk << " read " << num_bytes_read
+             << " instead of " << length << " bytes.\n";
+        return (IffChunk *)NULL;
 
       } else if (num_bytes_read < length) {
-	size_t skip_count = length - num_bytes_read;
-	nout << "Ignoring " << skip_count << " bytes at the end of "
-	     << *chunk << "\n";
-	skip_bytes(skip_count);
-      }	
+        size_t skip_count = length - num_bytes_read;
+        nout << "Ignoring " << skip_count << " bytes at the end of "
+             << *chunk << "\n";
+        skip_bytes(skip_count);
+      }
       return chunk;
     }
   }
@@ -297,25 +297,25 @@ get_subchunk(IffChunk *context) {
 
     if (chunk->read_iff(this, end_point)) {
       if (is_eof()) {
-	if (!_unexpected_eof) {
-	  nout << "Unexpected EOF on file reading " << *chunk << "\n";
-	  _unexpected_eof = true;
-	}
-	return (IffChunk *)NULL;
+        if (!_unexpected_eof) {
+          nout << "Unexpected EOF on file reading " << *chunk << "\n";
+          _unexpected_eof = true;
+        }
+        return (IffChunk *)NULL;
       }
 
       size_t num_bytes_read = get_bytes_read() - start_point;
       if (num_bytes_read > length) {
-	nout << *chunk << " read " << num_bytes_read
-	     << " instead of " << length << " bytes.\n";
-	return (IffChunk *)NULL;
+        nout << *chunk << " read " << num_bytes_read
+             << " instead of " << length << " bytes.\n";
+        return (IffChunk *)NULL;
 
       } else if (num_bytes_read < length) {
-	size_t skip_count = length - num_bytes_read;
-	nout << "Ignoring " << skip_count << " bytes at the end of "
-	     << *chunk << "\n";
-	skip_bytes(skip_count);
-      }	
+        size_t skip_count = length - num_bytes_read;
+        nout << "Ignoring " << skip_count << " bytes at the end of "
+             << *chunk << "\n";
+        skip_bytes(skip_count);
+      }
       return chunk;
     }
   }

@@ -176,9 +176,9 @@ remove_doubled_verts(bool closed) {
     ++vi;
     while (vi != _vertices.end()) {
       if ((*vi) != (*vlast)) {
-	new_vertices.push_back(*vi);
+        new_vertices.push_back(*vi);
       } else {
-	prepare_remove_vertex(*vi);
+        prepare_remove_vertex(*vi);
       }
       vlast = vi;
       ++vi;
@@ -241,7 +241,7 @@ erase(iterator first, iterator last) {
     prepare_remove_vertex(*i);
   }
   iterator result = _vertices.erase((Vertices::iterator &)first, 
-				    (Vertices::iterator &)last);
+                                    (Vertices::iterator &)last);
   test_vref_integrity();
   return result;
 }
@@ -469,13 +469,13 @@ write_body(ostream &out, int indent_level) const {
       indent(out, indent_level) << "<VertexRef> {";
       const_iterator i;
       for (i = begin(); i != end(); ++i) {
-	EggVertex *vert = *i;
-	vert->test_pref_integrity();
-	
-	// Make sure each vertex belongs to the same pool.
-	nassertv(vert->get_pool() == pool);
-	
-	out << " " << vert->get_index();
+        EggVertex *vert = *i;
+        vert->test_pref_integrity();
+
+        // Make sure each vertex belongs to the same pool.
+        nassertv(vert->get_pool() == pool);
+
+        out << " " << vert->get_index();
       }
       out << " <Ref> { ";
       enquote_string(out, pool->get_name()) << " } }\n";
@@ -487,18 +487,18 @@ write_body(ostream &out, int indent_level) const {
       vector_int indices;
       const_iterator i;
       for (i = begin(); i != end(); ++i) {
-	EggVertex *vert = *i;
-	vert->test_pref_integrity();
-	
-	// Make sure each vertex belongs to the same pool.
-	nassertv(vert->get_pool() == pool);
-	
-	indices.push_back(vert->get_index());
+        EggVertex *vert = *i;
+        vert->test_pref_integrity();
+
+        // Make sure each vertex belongs to the same pool.
+        nassertv(vert->get_pool() == pool);
+
+        indices.push_back(vert->get_index());
       }
       
       indent(out, indent_level) << "<VertexRef> {\n";
       write_long_list(out, indent_level+2, indices.begin(), indices.end(),
-		"", "", 72);
+                "", "", 72);
       indent(out, indent_level+2) << "<Ref> { ";
       enquote_string(out, pool->get_name()) << " }\n";
       indent(out, indent_level) << "}\n";
@@ -560,7 +560,7 @@ r_flatten_transforms() {
       new_vertex.transform(mat);
       EggVertex *unique = pool->create_unique_vertex(new_vertex);
       unique->copy_grefs_from(*vertex);
-	
+
       set_vertex(i, unique);
     }
   }
@@ -577,10 +577,10 @@ r_apply_texmats(EggTextureCollection &textures) {
     EggTexture *texture = get_texture();
     if (texture->has_transform()) {
       if (texture->transform_is_identity()) {
-	// Now, what's the point of a texture with an identity
-	// transform?
-	texture->clear_transform();
-	return;
+        // Now, what's the point of a texture with an identity
+        // transform?
+        texture->clear_transform();
+        return;
       }
 
       // We've got a texture with a matrix applied.  Save the matrix,
@@ -596,18 +596,18 @@ r_apply_texmats(EggTextureCollection &textures) {
       // as necessary.
       size_t num_vertices = size();
       for (size_t i = 0; i < num_vertices; i++) {
-	EggVertex *vertex = get_vertex(i);
+        EggVertex *vertex = get_vertex(i);
 
-	if (vertex->has_uv()) {
-	  EggVertexPool *pool = vertex->get_pool();
+        if (vertex->has_uv()) {
+          EggVertexPool *pool = vertex->get_pool();
 
-	  EggVertex new_vertex(*vertex);
-	  new_vertex.set_uv(vertex->get_uv() * mat);
-	  EggVertex *unique = pool->create_unique_vertex(new_vertex);
-	  unique->copy_grefs_from(*vertex);
-	
-	  set_vertex(i, unique);
-	}
+          EggVertex new_vertex(*vertex);
+          new_vertex.set_uv(vertex->get_uv() * mat);
+          EggVertex *unique = pool->create_unique_vertex(new_vertex);
+          unique->copy_grefs_from(*vertex);
+
+          set_vertex(i, unique);
+        }
       }
     }
   }

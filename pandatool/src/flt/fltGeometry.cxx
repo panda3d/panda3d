@@ -64,13 +64,13 @@ get_color() const {
     // If we have a material, that replaces the color.
     FltMaterial *material = get_material();
     color.set(material->_diffuse[0],
-	      material->_diffuse[1],
-	      material->_diffuse[2],
-	      material->_alpha);
+              material->_diffuse[1],
+              material->_diffuse[2],
+              material->_alpha);
   } else {
     RGBColorf rgb =
       _header->get_rgb(_color_index, (_flags & F_packed_color) != 0,
-		       _packed_color);
+                       _packed_color);
     color.set(rgb[0], rgb[1], rgb[2], 1.0);
   }
 
@@ -101,7 +101,7 @@ get_rgb() const {
   }
 
   return _header->get_rgb(_color_index, (_flags & F_packed_color) != 0,
-			  _packed_color);
+                          _packed_color);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -127,7 +127,7 @@ get_alt_color() const {
   nassertr(has_alt_color(), Colorf(0.0, 0.0, 0.0, 0.0));
 
   return _header->get_color(_alt_color_index, (_flags & F_packed_color) != 0,
-			    _alt_packed_color, _transparency);
+                            _alt_packed_color, _transparency);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -142,7 +142,7 @@ get_alt_rgb() const {
   nassertr(has_alt_color(), RGBColorf(0.0, 0.0, 0.0));
 
   return _header->get_rgb(_alt_color_index, (_flags & F_packed_color) != 0,
-			  _alt_packed_color);
+                          _alt_packed_color);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -117,8 +117,8 @@ convert_pathname(const string &unix_style_pathname) {
     windows_pathname = front_to_back_slash(unix_style_pathname);
 
   } else if (unix_style_pathname.length() > 3 &&
-	     isalpha(unix_style_pathname[1]) &&
-	     unix_style_pathname[2] == '/') {
+             isalpha(unix_style_pathname[1]) &&
+             unix_style_pathname[2] == '/') {
     // This is a pathname that begins with a single letter.  That must
     // be the drive letter.
     windows_pathname = 
@@ -242,7 +242,7 @@ from_os_specific(const string &os_specific, Filename::Type type) {
     for (p = 0; p < panda_root.length() && matches; p++) {
       char c = tolower(panda_root[p]);
       if (c == '\\') {
-	c = '/';
+        c = '/';
       }
       matches = (c == tolower(result[p]));
     }
@@ -253,7 +253,7 @@ from_os_specific(const string &os_specific, Filename::Type type) {
       result = result.substr(panda_root.length());
       assert(!result.empty());
       if (result[0] != '/') {
-	result = '/' + result;
+        result = '/' + result;
       }
       Filename filename(result);
       filename.set_type(type);
@@ -500,7 +500,7 @@ standardize() {
     if (component == ".") {
       // Ignore /./.
     } else if (component == ".." && !components.empty() && 
-	       !(components.back() == "..")) {
+               !(components.back() == "..")) {
       // Back up.
       components.pop_back();
     } else {
@@ -808,8 +808,8 @@ is_executable() const {
 ////////////////////////////////////////////////////////////////////
 int Filename::
 compare_timestamps(const Filename &other, 
-		   bool this_missing_is_old, 
-		   bool other_missing_is_old) const {
+                   bool this_missing_is_old, 
+                   bool other_missing_is_old) const {
   string os_specific = to_os_specific();
   string other_os_specific = other.to_os_specific();
 
@@ -883,7 +883,7 @@ compare_timestamps(const Filename &other,
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 resolve_filename(const DSearchPath &searchpath, 
-		 const string &default_extension) {
+                 const string &default_extension) {
   string found;
 
   if (is_local()) {
@@ -893,9 +893,9 @@ resolve_filename(const DSearchPath &searchpath,
       // We didn't find it with the given extension; can we try the
       // default extension?
       if (get_extension().empty() && !default_extension.empty()) {
-	Filename try_ext = *this;
-	try_ext.set_extension(default_extension);
-	found = searchpath.find_file(try_ext.get_fullpath());
+        Filename try_ext = *this;
+        try_ext.set_extension(default_extension);
+        found = searchpath.find_file(try_ext.get_fullpath());
       }
     }
 
@@ -908,11 +908,11 @@ resolve_filename(const DSearchPath &searchpath,
       // The full pathname doesn't exist with the given extension;
       // does it exist with the default extension?
       if (get_extension().empty() && !default_extension.empty()) {
-	Filename try_ext = *this;
-	try_ext.set_extension(default_extension);
-	if (try_ext.exists()) {
-	  found = try_ext;
-	}
+        Filename try_ext = *this;
+        try_ext.set_extension(default_extension);
+        if (try_ext.exists()) {
+          found = try_ext;
+        }
       }
     }
   }
@@ -1226,8 +1226,8 @@ touch() const {
       // So the file doesn't already exist; create it.
       int fd = creat(os_specific.c_str(), 0666);
       if (fd < 0) {
-	perror(os_specific.c_str());
-	return false;
+        perror(os_specific.c_str());
+        return false;
       }
       close(fd);
       return true;
@@ -1274,17 +1274,17 @@ rename_to(const Filename &other) const {
   string os_specific = to_os_specific();
   string other_os_specific = other.to_os_specific();
   return (rename(os_specific.c_str(), 
-		 other_os_specific.c_str()) == 0);
+                 other_os_specific.c_str()) == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::make_dir
 //       Access: Public
 //  Description: Creates all the directories in the path to the file
-//		 specified in the filename, except for the basename
-//		 itself.  This assumes that the Filename contains the
-//		 name of a file, not a directory name; it ensures that
-//		 the directory containing the file exists.
+//               specified in the filename, except for the basename
+//               itself.  This assumes that the Filename contains the
+//               name of a file, not a directory name; it ensures that
+//               the directory containing the file exists.
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 make_dir() const {
@@ -1343,14 +1343,14 @@ locate_basename() {
       // we want to treat them as a single slash.  The directory
       // therefore actually ends at the first of these; back up a bit.
       while (_dirname_end > 0 && _filename[_dirname_end-1] == '/') {
-	_dirname_end--;
+        _dirname_end--;
       }
       
       // Another exception: if the dirname was nothing but slashes, it
       // was the root directory, or / itself.  In this case the dirname
       // does include the terminal slash (of course).
       if (_dirname_end == 0) {
-	_dirname_end = 1;
+        _dirname_end = 1;
       }
       
     } else {
@@ -1424,7 +1424,7 @@ get_common_prefix(const string &other) const {
 
   // First, get the length of the common initial substring.
   while (len < length() && len < other.length() &&
-	 _filename[len] == other[len]) {
+         _filename[len] == other[len]) {
     len++;
   }
 
@@ -1455,11 +1455,11 @@ count_slashes(const string &str) {
       // Skip consecutive slashes.
       ++si;
       while (*si == '/') {
-	++si;
+        ++si;
       }
       if (si == str.end()) {
-	// Oops, that was a terminal slash.  Don't count it.
-	count--;
+        // Oops, that was a terminal slash.  Don't count it.
+        count--;
       }
 
     } else {

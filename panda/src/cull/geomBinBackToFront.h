@@ -15,7 +15,7 @@
 #include <set>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GeomBinBackToFront
+//       Class : GeomBinBackToFront
 // Description : This kind of GeomBin renders its GeomNodes in order
 //               according to distance from the camera plane,
 //               beginning with the farthest away.  It's particularly
@@ -30,8 +30,8 @@ PUBLISHED:
 public:
   virtual void clear_current_states();
   virtual void record_current_state(GraphicsStateGuardian *gsg,
-				    CullState *cs, int draw_order,
-				    CullTraverser *trav);
+                                    CullState *cs, int draw_order,
+                                    CullTraverser *trav);
 
   virtual void draw(CullTraverser *trav);
 
@@ -39,7 +39,7 @@ private:
   class NodeEntry {
   public:
     INLINE NodeEntry(float distance, const PT(CullState) &state, 
-		     const ArcChain &arc_chain, bool is_direct);
+                     const ArcChain &arc_chain, bool is_direct);
     INLINE NodeEntry(const NodeEntry &copy);
     INLINE void operator = (const NodeEntry &copy);
 

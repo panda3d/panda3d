@@ -60,6 +60,6 @@ output_property(ostream &out, const PT(Camera) &prop) const {
 ////////////////////////////////////////////////////////////////////
 void ShowHideTransition::
 write_property(ostream &out, const PT(Camera) &prop,
-	       int indent_level) const {
+               int indent_level) const {
   indent(out, indent_level) << *prop << "\n";
 }

@@ -152,8 +152,8 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
       // pair of ushorts or ulongs at the beginning to indicate the file
       // size.
       if (pnmimage_img_cat.is_debug()) {
-	pnmimage_img_cat.debug()
-	  << "IMG image file appears to be empty.\n";
+        pnmimage_img_cat.debug()
+          << "IMG image file appears to be empty.\n";
       }
       _is_valid = false;
       return;
@@ -174,8 +174,8 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   } else if (img_header_type == IHT_short) {
     if (!read_magic_number(_file, magic_number, 4)) {
       if (pnmimage_img_cat.is_debug()) {
-	pnmimage_img_cat.debug()
-	  << "IMG image file appears to be empty.\n";
+        pnmimage_img_cat.debug()
+          << "IMG image file appears to be empty.\n";
       }
       _is_valid = false;
       return;
@@ -199,10 +199,10 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
     _is_valid = false;
     if (img_header_type == IHT_none) {
       pnmimage_img_cat.error()
-	<< "Must specify img-xsize and img-ysize to load headerless raw files.\n";
+        << "Must specify img-xsize and img-ysize to load headerless raw files.\n";
     } else {
       pnmimage_img_cat.debug()
-	<< "IMG file does not have a valid xsize,ysize header.\n";
+        << "IMG file does not have a valid xsize,ysize header.\n";
     }
     return;
   }

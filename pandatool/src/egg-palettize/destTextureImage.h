@@ -14,7 +14,7 @@ class TexturePlacement;
 class TextureImage;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DestTextureImage
+//       Class : DestTextureImage
 // Description : This represents a texture filename as it has been
 //               resized and copied to the map directory (e.g. for an
 //               unplaced texture).
@@ -49,7 +49,7 @@ public:
   static void init_type() {
     ImageFile::init_type();
     register_type(_type_handle, "DestTextureImage",
-		  ImageFile::get_class_type());
+                  ImageFile::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -23,7 +23,7 @@ private:
   // this allows baseLinearIntegrator to censor/modify data that the
   // actual integration function receives.
   virtual void child_integrate(Physical *physical, vector< PT(LinearForce) > &forces,
-			       float dt) = 0;
+                               float dt) = 0;
 
 protected:
   LinearIntegrator(void);
@@ -32,7 +32,7 @@ public:
   virtual ~LinearIntegrator(void);
 
   void integrate(Physical *physical, vector< PT(LinearForce) > &forces,
-		 float dt);
+                 float dt);
 };
 
 #endif // LINEARINTEGRATOR_H

@@ -83,8 +83,8 @@ fork_asynchronous_thread(double poll_time) {
     _forked = true;
     if (device_cat.is_debug()) {
       device_cat.debug()
-	<< "fork_asynchronous_thread() - forking client thread"
-	<< endl;
+        << "fork_asynchronous_thread() - forking client thread"
+        << endl;
     }
     return true;
   }
@@ -154,7 +154,7 @@ get_device(TypeHandle device_type, const string &device_name) {
 ////////////////////////////////////////////////////////////////////
 bool ClientBase::
 disconnect_device(TypeHandle device_type, const string &device_name,
-		  ClientDevice *device) {
+                  ClientDevice *device) {
   DevicesByName &dbn = _devices[device_type];
 
   DevicesByName::iterator dbni;

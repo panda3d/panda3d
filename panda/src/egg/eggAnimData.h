@@ -14,7 +14,7 @@
 #include <pta_double.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggAnimData
+//       Class : EggAnimData
 // Description : A base class for EggSAnimData and EggXfmAnimData,
 //               which contain rows and columns of numbers.
 ////////////////////////////////////////////////////////////////////

@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LVector3
+//       Class : LVector3
 // Description : This is a three-component vector distance (as opposed
 //               to a three-component point, which represents a
 //               particular point in space).  Some of the methods are
@@ -54,7 +54,7 @@ PUBLISHED:
 
 //  INLINE_LINMATH static FLOATNAME(LVector3) & rfu(FLOATTYPE right,
   INLINE_LINMATH static FLOATNAME(LVector3) rfu(FLOATTYPE right,
-					FLOATTYPE fwd,FLOATTYPE up, 	CoordinateSystem cs = CS_default);
+                                        FLOATTYPE fwd,FLOATTYPE up,     CoordinateSystem cs = CS_default);
 
 public:
   static TypeHandle get_class_type() {

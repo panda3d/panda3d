@@ -251,7 +251,7 @@ find_length(float start_t, float length_offset) const {
     float result;
 
     if (r_find_length(length_offset - net, result,
-		      t1, t2, p1, p2, seglength)) {
+                      t1, t2, p1, p2, seglength)) {
       // Found it!
       return result;
     }
@@ -776,9 +776,9 @@ r_calc_length(float t1, float t2, const LPoint3f &p1, const LPoint3f &p2,
 ////////////////////////////////////////////////////////////////////
 bool ParametricCurve::
 r_find_length(float target_length, float &found_t,
-	      float t1, float t2, 
-	      const LPoint3f &p1, const LPoint3f &p2,
-	      float &seglength) const {
+              float t1, float t2, 
+              const LPoint3f &p1, const LPoint3f &p2,
+              float &seglength) const {
   static const float length_tolerance = 0.0000001;
   static const float t_tolerance = 0.000001;
 
@@ -805,8 +805,8 @@ r_find_length(float target_length, float &found_t,
     if ((left + right) - seglength < length_tolerance) {
       // No.  We're done.
       if (target_length <= seglength) {
-	found_t = t1 + (target_length / seglength) * (t2 - t1);
-	return true;
+        found_t = t1 + (target_length / seglength) * (t2 - t1);
+        return true;
       }
       return false;
 
@@ -815,12 +815,12 @@ r_find_length(float target_length, float &found_t,
 
       // Maybe the point is in the left half of the segment?
       if (r_find_length(target_length, found_t, t1, tmid, p1, pmid, left)) {
-	return true;
+        return true;
       }
 
       // Maybe it's on the right half?
       if (r_find_length(target_length - left, found_t, tmid, t2, pmid, p2, right)) {
-	return true;
+        return true;
       }
 
       // Neither.  Keep going.

@@ -30,7 +30,7 @@ class NodeAttribute;
 class NodeAttributeWrapper;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : NodeTransitionWrapper
+//       Class : NodeTransitionWrapper
 // Description : This is a wrapper around a single transition type,
 //               selected at runtime by its handle.  It is useful when
 //               computing a wrt() based on one transition type only
@@ -70,8 +70,8 @@ public:
   INLINE_GRAPH void set_computed_verified(UpdateSeq now);
 
   INLINE_GRAPH void cached_compose(const NodeTransitionWrapper &cache, 
-			     const NodeTransitionWrapper &value,
-			     UpdateSeq now);
+                             const NodeTransitionWrapper &value,
+                             UpdateSeq now);
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

@@ -17,8 +17,8 @@
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 tmap_get_interest(InputIterator1 first1, InputIterator1 last1,
-		  InputIterator2 first2, InputIterator2 last2,
-		  OutputIterator result) {
+                  InputIterator2 first2, InputIterator2 last2,
+                  OutputIterator result) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1).first < *first2) {
       ++first1;
@@ -46,8 +46,8 @@ tmap_get_interest(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 tmap_override_union(InputIterator1 first1, InputIterator1 last1,
-		    InputIterator2 first2, InputIterator2 last2,
-		    OutputIterator result) {
+                    InputIterator2 first2, InputIterator2 last2,
+                    OutputIterator result) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1).first < (*first2).first) {
       *result = *first1;
@@ -89,8 +89,8 @@ tmap_override_union(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 tmap_merge_union(InputIterator1 first1, InputIterator1 last1,
-		 InputIterator2 first2, InputIterator2 last2,
-		 OutputIterator result) {
+                 InputIterator2 first2, InputIterator2 last2,
+                 OutputIterator result) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1).first < (*first2).first) {
       *result = *first1;
@@ -132,8 +132,8 @@ tmap_merge_union(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 tmap_arc_union(InputIterator1 first1, InputIterator1 last1,
-	       InputIterator2 first2, InputIterator2 last2,
-	       NodeRelation *to_arc, OutputIterator result) {
+               InputIterator2 first2, InputIterator2 last2,
+               NodeRelation *to_arc, OutputIterator result) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1).first < (*first2).first) {
       *result = *first1;
@@ -176,8 +176,8 @@ tmap_arc_union(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 tmap_arc_compose(InputIterator1 first1, InputIterator1 last1,
-		 InputIterator2 first2, InputIterator2 last2,
-		 NodeRelation *to_arc, OutputIterator result) {
+                 InputIterator2 first2, InputIterator2 last2,
+                 NodeRelation *to_arc, OutputIterator result) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1).first < (*first2).first) {
       *result = *first1;
@@ -193,9 +193,9 @@ tmap_arc_compose(InputIterator1 first1, InputIterator1 last1,
 
       PT(NodeTransition) c = (*first1).second->compose((*first2).second);
       if (c != (NodeTransition *)NULL) {
-	c->added_to_arc(to_arc);
-	*result = pair<TypeHandle,  PT(NodeTransition) >((*first1).first, c);
-	++result;
+        c->added_to_arc(to_arc);
+        *result = pair<TypeHandle,  PT(NodeTransition) >((*first1).first, c);
+        ++result;
       }
       ++first1;
       ++first2;
@@ -224,8 +224,8 @@ tmap_arc_compose(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 tmap_arc_compose(InputIterator1 first1, InputIterator1 last1,
-		 InputIterator2 first2, InputIterator2 last2,
-		 OutputIterator result) {
+                 InputIterator2 first2, InputIterator2 last2,
+                 OutputIterator result) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1).first < (*first2).first) {
       *result = *first1;
@@ -238,9 +238,9 @@ tmap_arc_compose(InputIterator1 first1, InputIterator1 last1,
     } else {
       NodeTransition *c = (*first1).second->compose((*first2).second);
       if (c != (NodeTransition *)NULL) {
-	*result = pair<TypeHandle, NodeTransitionCacheEntry>
-	  ((*first1).first, c);
-	++result;
+        *result = pair<TypeHandle, NodeTransitionCacheEntry>
+          ((*first1).first, c);
+        ++result;
       }
       ++first1;
       ++first2;
@@ -271,8 +271,8 @@ tmap_arc_compose(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 tmap_compose(InputIterator1 first1, InputIterator1 last1,
-	     InputIterator2 first2, InputIterator2 last2,
-	     OutputIterator result) {
+             InputIterator2 first2, InputIterator2 last2,
+             OutputIterator result) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1).first < (*first2).first) {
       *result = *first1;
@@ -284,8 +284,8 @@ tmap_compose(InputIterator1 first1, InputIterator1 last1,
       ++result;
     } else {
       *result = pair<TypeHandle, NodeTransitionCacheEntry>
-	((*first1).first, 
-	 NodeTransitionCacheEntry::compose((*first1).second, (*first2).second));
+        ((*first1).first, 
+         NodeTransitionCacheEntry::compose((*first1).second, (*first2).second));
       ++first1;
       ++first2;
       ++result;
@@ -316,12 +316,12 @@ tmap_compose(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 tmap_invert_compose(InputIterator1 first1, InputIterator1 last1,
-		    InputIterator2 first2, InputIterator2 last2,
-		    OutputIterator result) {
+                    InputIterator2 first2, InputIterator2 last2,
+                    OutputIterator result) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1).first < (*first2).first) {
       *result = pair<TypeHandle, NodeTransitionCacheEntry>
-	((*first1).first, NodeTransitionCacheEntry::invert((*first1).second));
+        ((*first1).first, NodeTransitionCacheEntry::invert((*first1).second));
       ++first1;
       ++result;
     } else if ((*first2).first < (*first1).first) {
@@ -330,12 +330,12 @@ tmap_invert_compose(InputIterator1 first1, InputIterator1 last1,
       ++result;
     } else {
       NodeTransitionCacheEntry ic =
-	NodeTransitionCacheEntry::invert_compose((*first1).second,
-						 (*first2).second);
+        NodeTransitionCacheEntry::invert_compose((*first1).second,
+                                                 (*first2).second);
       if (!ic.is_identity()) {
-	// Only bother to store the result if it's not identity.
-	*result = pair<TypeHandle,  PT(NodeTransition) >((*first1).first, ic);
-	++result;
+        // Only bother to store the result if it's not identity.
+        *result = pair<TypeHandle,  PT(NodeTransition) >((*first1).first, ic);
+        ++result;
       }
       ++first1;
       ++first2;
@@ -383,7 +383,7 @@ tmap_invert_compose(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator2, class InputIterator3, class OutputIterator>
 void
 tmap_cached_compose_not_1(InputIterator2 &first2, InputIterator3 &first3,
-			  UpdateSeq now, OutputIterator &result) {
+                          UpdateSeq now, OutputIterator &result) {
   if ((*first2).first < (*first3).first) {
     // Here's an element in list 2 that is not in lists 1 or 3.
     OUTPUT_CC_ELEM("2", (*first2).first);
@@ -392,9 +392,9 @@ tmap_cached_compose_not_1(InputIterator2 &first2, InputIterator3 &first3,
       ((*first2).first, 
        NodeTransitionCacheEntry::cached_compose
        (NodeTransitionCacheEntry(),
-	(*first2).second, 
-	NodeTransitionCacheEntry(),
-	now));
+        (*first2).second, 
+        NodeTransitionCacheEntry(),
+        now));
     ++first2;
     ++result;
     
@@ -406,9 +406,9 @@ tmap_cached_compose_not_1(InputIterator2 &first2, InputIterator3 &first3,
       ((*first3).first, 
        NodeTransitionCacheEntry::cached_compose
        (NodeTransitionCacheEntry(),
-	NodeTransitionCacheEntry(),
-	(*first3).second, 
-	now));
+        NodeTransitionCacheEntry(),
+        (*first3).second, 
+        now));
     ++first3;
     ++result;
     
@@ -420,9 +420,9 @@ tmap_cached_compose_not_1(InputIterator2 &first2, InputIterator3 &first3,
       ((*first2).first, 
        NodeTransitionCacheEntry::cached_compose
        (NodeTransitionCacheEntry(),
-	(*first2).second, 
-	(*first3).second, 
-	now));
+        (*first2).second, 
+        (*first3).second, 
+        now));
     ++first2;
     ++first3;
     ++result;
@@ -441,7 +441,7 @@ tmap_cached_compose_not_1(InputIterator2 &first2, InputIterator3 &first3,
 template<class InputIterator1, class InputIterator3, class OutputIterator>
 void
 tmap_cached_compose_not_2(InputIterator1 &first1, InputIterator3 &first3,
-			  UpdateSeq now, OutputIterator &result) {
+                          UpdateSeq now, OutputIterator &result) {
   if ((*first1).first < (*first3).first) {
     // Here's an element in list 1 that is not in lists 2 or 3.
     OUTPUT_CC_ELEM("1", (*first1).first);
@@ -450,9 +450,9 @@ tmap_cached_compose_not_2(InputIterator1 &first1, InputIterator3 &first3,
       ((*first1).first, 
        NodeTransitionCacheEntry::cached_compose
        ((*first1).second, 
-	NodeTransitionCacheEntry(),
-	NodeTransitionCacheEntry(),
-	now));
+        NodeTransitionCacheEntry(),
+        NodeTransitionCacheEntry(),
+        now));
     ++first1;
     ++result;
     
@@ -464,9 +464,9 @@ tmap_cached_compose_not_2(InputIterator1 &first1, InputIterator3 &first3,
       ((*first3).first, 
        NodeTransitionCacheEntry::cached_compose
        (NodeTransitionCacheEntry(),
-	NodeTransitionCacheEntry(),
-	(*first3).second, 
-	now));
+        NodeTransitionCacheEntry(),
+        (*first3).second, 
+        now));
     ++first3;
     ++result;
     
@@ -478,9 +478,9 @@ tmap_cached_compose_not_2(InputIterator1 &first1, InputIterator3 &first3,
       ((*first1).first, 
        NodeTransitionCacheEntry::cached_compose
        ((*first1).second,
-	NodeTransitionCacheEntry(),
-	(*first3).second, 
-	now));
+        NodeTransitionCacheEntry(),
+        (*first3).second, 
+        now));
     ++first1;
     ++first3;
     ++result;
@@ -498,7 +498,7 @@ tmap_cached_compose_not_2(InputIterator1 &first1, InputIterator3 &first3,
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 void
 tmap_cached_compose_not_3(InputIterator1 &first1, InputIterator2 &first2,
-			  UpdateSeq now, OutputIterator &result) {
+                          UpdateSeq now, OutputIterator &result) {
   if ((*first1).first < (*first2).first) {
     // Here's an element in list 1 that is not in lists 2 or 3.
     OUTPUT_CC_ELEM("1", (*first1).first);
@@ -507,9 +507,9 @@ tmap_cached_compose_not_3(InputIterator1 &first1, InputIterator2 &first2,
       ((*first1).first, 
        NodeTransitionCacheEntry::cached_compose
        ((*first1).second, 
-	NodeTransitionCacheEntry(),
-	NodeTransitionCacheEntry(),
-	now));
+        NodeTransitionCacheEntry(),
+        NodeTransitionCacheEntry(),
+        now));
     ++first1;
     ++result;
     
@@ -521,9 +521,9 @@ tmap_cached_compose_not_3(InputIterator1 &first1, InputIterator2 &first2,
       ((*first2).first, 
        NodeTransitionCacheEntry::cached_compose
        (NodeTransitionCacheEntry(),
-	(*first2).second, 
-	NodeTransitionCacheEntry(),
-	now));
+        (*first2).second, 
+        NodeTransitionCacheEntry(),
+        now));
     ++first2;
     ++result;
     
@@ -535,9 +535,9 @@ tmap_cached_compose_not_3(InputIterator1 &first1, InputIterator2 &first2,
       ((*first1).first, 
        NodeTransitionCacheEntry::cached_compose
        ((*first1).second,
-	(*first2).second,
-	NodeTransitionCacheEntry(),
-	now));
+        (*first2).second,
+        NodeTransitionCacheEntry(),
+        now));
     ++first1;
     ++first2;
     ++result;
@@ -556,8 +556,8 @@ template<class InputIterator1, class InputIterator2, class InputIterator3,
   class OutputIterator>
 void
 tmap_cached_compose_12(InputIterator1 &first1, InputIterator2 &first2,
-		       InputIterator3 &first3,
-		       UpdateSeq now, OutputIterator &result) {
+                       InputIterator3 &first3,
+                       UpdateSeq now, OutputIterator &result) {
   if ((*first1).first < (*first3).first) {
     // Here's an element in lists 1 and 2 that is not in list 3.
     OUTPUT_CC_ELEM("1, 2", (*first1).first);
@@ -566,9 +566,9 @@ tmap_cached_compose_12(InputIterator1 &first1, InputIterator2 &first2,
       ((*first1).first, 
        NodeTransitionCacheEntry::cached_compose
        ((*first1).second,
-	(*first2).second,
-	NodeTransitionCacheEntry(),
-	now));
+        (*first2).second,
+        NodeTransitionCacheEntry(),
+        now));
     ++first1;
     ++first2;
     ++result;
@@ -581,9 +581,9 @@ tmap_cached_compose_12(InputIterator1 &first1, InputIterator2 &first2,
       ((*first3).first, 
        NodeTransitionCacheEntry::cached_compose
        (NodeTransitionCacheEntry(),
-	NodeTransitionCacheEntry(),
-	(*first3).second,
-	now));
+        NodeTransitionCacheEntry(),
+        (*first3).second,
+        now));
     ++first3;
     ++result;
     
@@ -595,9 +595,9 @@ tmap_cached_compose_12(InputIterator1 &first1, InputIterator2 &first2,
       ((*first1).first, 
        NodeTransitionCacheEntry::cached_compose
        ((*first1).second,
-	(*first2).second,
-	(*first3).second,
-	now));
+        (*first2).second,
+        (*first3).second,
+        now));
     ++first1;
     ++first2;
     ++first3;
@@ -622,9 +622,9 @@ template<class InputIterator1, class InputIterator2, class InputIterator3,
   class OutputIterator>
 OutputIterator
 tmap_cached_compose(InputIterator1 first1, InputIterator1 last1,
-		    InputIterator2 first2, InputIterator2 last2,
-		    InputIterator3 first3, InputIterator3 last3,
-		    UpdateSeq now, OutputIterator result) {
+                    InputIterator2 first2, InputIterator2 last2,
+                    InputIterator3 first3, InputIterator3 last3,
+                    UpdateSeq now, OutputIterator result) {
   while (first1 != last1 && first2 != last2 && first3 != last3) {
     if ((*first1).first < (*first2).first) {
       tmap_cached_compose_not_2(first1, first3, now, result);
@@ -662,9 +662,9 @@ tmap_cached_compose(InputIterator1 first1, InputIterator1 last1,
       ((*first1).first, 
        NodeTransitionCacheEntry::cached_compose
        ((*first1).second, 
-	NodeTransitionCacheEntry(),
-	NodeTransitionCacheEntry(),
-	now));
+        NodeTransitionCacheEntry(),
+        NodeTransitionCacheEntry(),
+        now));
     ++first1;
     ++result;
   }
@@ -677,9 +677,9 @@ tmap_cached_compose(InputIterator1 first1, InputIterator1 last1,
       ((*first2).first, 
        NodeTransitionCacheEntry::cached_compose
        (NodeTransitionCacheEntry(),
-	(*first2).second, 
-	NodeTransitionCacheEntry(),
-	now));
+        (*first2).second, 
+        NodeTransitionCacheEntry(),
+        now));
     ++first2;
     ++result;
   }
@@ -692,9 +692,9 @@ tmap_cached_compose(InputIterator1 first1, InputIterator1 last1,
       ((*first3).first, 
        NodeTransitionCacheEntry::cached_compose
        (NodeTransitionCacheEntry(),
-	NodeTransitionCacheEntry(),
-	(*first3).second, 
-	now));
+        NodeTransitionCacheEntry(),
+        (*first3).second, 
+        now));
     ++first3;
     ++result;
   }
@@ -713,8 +713,8 @@ tmap_cached_compose(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 tmap_apply(InputIterator1 first1, InputIterator1 last1,
-	   InputIterator2 first2, InputIterator2 last2,
-	   OutputIterator result) {
+           InputIterator2 first2, InputIterator2 last2,
+           OutputIterator result) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1).first < (*first2).first) {
       *result = *first1;
@@ -722,14 +722,14 @@ tmap_apply(InputIterator1 first1, InputIterator1 last1,
       ++result;
     } else if ((*first2).first < (*first1).first) {
       *result = pair<TypeHandle,  PT(NodeAttribute) >
-	((*first2).first, 
-	 NodeTransitionCacheEntry::apply(NULL, (*first2).second));
+        ((*first2).first, 
+         NodeTransitionCacheEntry::apply(NULL, (*first2).second));
       ++first2;
       ++result;
     } else {
       *result = pair<TypeHandle,  PT(NodeAttribute) >
-	((*first1).first, 
-	 NodeTransitionCacheEntry::apply((*first1).second, (*first2).second));
+        ((*first1).first, 
+         NodeTransitionCacheEntry::apply((*first1).second, (*first2).second));
       ++first1;
       ++first2;
       ++result;
@@ -763,7 +763,7 @@ tmap_apply(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator, class OutputIterator>
 OutputIterator
 tmap_invert(InputIterator first, InputIterator last,
-	    OutputIterator result) {
+            OutputIterator result) {
   while (first != last) {
     *result = pair<TypeHandle, NodeTransitionCacheEntry>
       ((*first).first, NodeTransitionCacheEntry::invert((*first).second));
@@ -785,21 +785,21 @@ tmap_invert(InputIterator first, InputIterator last,
 template<class InputIterator1, class InputIterator2>
 bool
 tmap_equiv_trans(InputIterator1 first1, InputIterator1 last1,
-		 InputIterator2 first2, InputIterator2 last2) {
+                 InputIterator2 first2, InputIterator2 last2) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1).first < (*first2).first) {
       if (!(*first1).second.is_identity()) {
-	return false;
+        return false;
       }
       ++first1;
     } else if ((*first2).first < (*first1).first) {
       if (!(*first2).second.is_identity()) {
-	return false;
+        return false;
       }
       ++first2;
     } else {
       if (!(*first1).second.compare_to((*first2).second) == 0) {
-	return false;
+        return false;
       }
       ++first1;
       ++first2;
@@ -834,25 +834,25 @@ tmap_equiv_trans(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator1, class InputIterator2>
 bool
 tmap_equiv_attr(InputIterator1 first1, InputIterator1 last1,
-		InputIterator2 first2, InputIterator2 last2) {
+                InputIterator2 first2, InputIterator2 last2) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1).first < (*first2).first) {
       if ((*first1).second != (NodeAttribute *)NULL) {
-	return false;
+        return false;
       }
       ++first1;
     } else if ((*first2).first < (*first1).first) {
       if ((*first2).second != (NodeAttribute *)NULL) {
-	return false;
+        return false;
       }
       ++first2;
     } else {
       if ((*first1).second != (*first2).second) {
-	if ((*first1).second == (NodeAttribute *)NULL ||
-	    (*first2).second == (NodeAttribute *)NULL ||
-	    (*first1).second->compare_to((*first2).second) != 0) {
-	  return false;
-	}
+        if ((*first1).second == (NodeAttribute *)NULL ||
+            (*first2).second == (NodeAttribute *)NULL ||
+            (*first1).second->compare_to((*first2).second) != 0) {
+          return false;
+        }
       }
       ++first1;
       ++first2;
@@ -884,23 +884,23 @@ tmap_equiv_attr(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator1, class InputIterator2>
 int
 tmap_compare_cache(InputIterator1 first1, InputIterator1 last1,
-		   InputIterator2 first2, InputIterator2 last2) {
+                   InputIterator2 first2, InputIterator2 last2) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1).first < (*first2).first) {
       if (!(*first1).second.is_identity()) {
-	return 1;
+        return 1;
       }
       ++first1;
     } else if ((*first2).first < (*first1).first) {
       if (!(*first2).second.is_identity()) {
-	return -1;
+        return -1;
       }
       ++first2;
     } else {
       int result;
       result = (*first1).second.compare_to((*first2).second);
       if (result != 0) {
-	return result;
+        return result;
       }
       ++first1;
       ++first2;
@@ -935,31 +935,31 @@ tmap_compare_cache(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator1, class InputIterator2>
 int
 tmap_compare_trans(InputIterator1 first1, InputIterator1 last1,
-		   InputIterator2 first2, InputIterator2 last2) {
+                   InputIterator2 first2, InputIterator2 last2) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1).first < (*first2).first) {
       if ((*first1).second != (NodeTransition *)NULL) {
-	return 1;
+        return 1;
       }
       ++first1;
     } else if ((*first2).first < (*first1).first) {
       if ((*first2).second != (NodeTransition *)NULL) {
-	return -1;
+        return -1;
       }
       ++first2;
     } else {
       if ((*first1).second != (*first2).second) {
-	if ((*first1).second == (NodeTransition *)NULL) {
-	  return -1;
-	} else if ((*first2).second == (NodeTransition *)NULL) {
-	  return 1;
-	} else {
-	  int result;
-	  result = (*first1).second->compare_to(*(*first2).second);
-	  if (result != 0) {
-	    return result;
-	  }
-	}
+        if ((*first1).second == (NodeTransition *)NULL) {
+          return -1;
+        } else if ((*first2).second == (NodeTransition *)NULL) {
+          return 1;
+        } else {
+          int result;
+          result = (*first1).second->compare_to(*(*first2).second);
+          if (result != 0) {
+            return result;
+          }
+        }
       }
       ++first1;
       ++first2;
@@ -994,31 +994,31 @@ tmap_compare_trans(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator1, class InputIterator2>
 int
 tmap_compare_attr(InputIterator1 first1, InputIterator1 last1,
-		  InputIterator2 first2, InputIterator2 last2) {
+                  InputIterator2 first2, InputIterator2 last2) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1).first < (*first2).first) {
       if ((*first1).second != (NodeAttribute *)NULL) {
-	return 1;
+        return 1;
       }
       ++first1;
     } else if ((*first2).first < (*first1).first) {
       if ((*first2).second != (NodeAttribute *)NULL) {
-	return -1;
+        return -1;
       }
       ++first2;
     } else {
       if ((*first1).second != (*first2).second) {
-	if ((*first1).second == (NodeAttribute *)NULL) {
-	  return -1;
-	} else if ((*first2).second == (NodeAttribute *)NULL) {
-	  return 1;
-	} else {
-	  int result;
-	  result = (*first1).second->compare_to(*(*first2).second);
-	  if (result != 0) {
-	    return result;
-	  }
-	}
+        if ((*first1).second == (NodeAttribute *)NULL) {
+          return -1;
+        } else if ((*first2).second == (NodeAttribute *)NULL) {
+          return 1;
+        } else {
+          int result;
+          result = (*first1).second->compare_to(*(*first2).second);
+          if (result != 0) {
+            return result;
+          }
+        }
       }
       ++first1;
       ++first2;

@@ -16,7 +16,7 @@
 
 
 /////////////////////////////////////////////////////////////////////
-// 	 Class : BuilderPrimTempl
+//       Class : BuilderPrimTempl
 // Description : The main body of BuilderPrim and BuilderPrimI.  This
 //               is a template class on vertex type, which must be
 //               either BuilderVertex or BuilderVertexI; these classes
@@ -133,7 +133,7 @@ protected:
 
 template <class VTX>
 INLINE ostream &operator << (ostream &out,
-			     const BuilderPrimTempl<VTX> &prim) {
+                             const BuilderPrimTempl<VTX> &prim) {
   return prim.output(out);
 }
 

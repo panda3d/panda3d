@@ -57,32 +57,32 @@ read(Filename filename) {
       vector_string words;
       extract_words(line, words);
       if (words[0] == ":group") {
-	okflag = parse_group_line(words);
+        okflag = parse_group_line(words);
 
       } else if (words[0] == ":palette") {
-	okflag = parse_palette_line(words);
+        okflag = parse_palette_line(words);
 
       } else if (words[0] == ":margin") {
-	okflag = parse_margin_line(words);
+        okflag = parse_margin_line(words);
 
       } else if (words[0] == ":coverage") {
-	okflag = parse_coverage_line(words);
+        okflag = parse_coverage_line(words);
 
       } else if (words[0] == ":imagetype") {
-	okflag = parse_imagetype_line(words);
+        okflag = parse_imagetype_line(words);
 
       } else if (words[0] == ":shadowtype") {
-	okflag = parse_shadowtype_line(words);
+        okflag = parse_shadowtype_line(words);
 
       } else if (words[0] == ":round") {
-	okflag = parse_round_line(words);
+        okflag = parse_round_line(words);
 
       } else if (words[0] == ":remap") {
-	okflag = parse_remap_line(words);
+        okflag = parse_remap_line(words);
 
       } else {
-	nout << "Invalid keyword " << words[0] << "\n";
-	okflag = false;
+        nout << "Invalid keyword " << words[0] << "\n";
+        okflag = false;
       }
 
     } else {
@@ -203,17 +203,17 @@ parse_group_line(const vector_string &words) {
     } else {
       switch (state) {
       case S_none:
-	nout << "Invalid keyword: " << word << "\n";
-	return false;
+        nout << "Invalid keyword: " << word << "\n";
+        return false;
 
       case S_with:
-	group->group_with(pal->get_palette_group(word));
-	break;
+        group->group_with(pal->get_palette_group(word));
+        break;
 
       case S_dir:
-	group->set_dirname(word);
-	state = S_none;
-	break;
+        group->set_dirname(word);
+        state = S_none;
+        break;
       }
     }
 
@@ -234,7 +234,7 @@ bool TxaFile::
 parse_palette_line(const vector_string &words) {
   if (words.size() != 3) {
     nout << "Exactly two parameters required for :palette, the x and y "
-	 << "size of the palette images to generate.\n";
+         << "size of the palette images to generate.\n";
     return false;
   }
 
@@ -246,7 +246,7 @@ parse_palette_line(const vector_string &words) {
 
   if (pal->_pal_x_size <= 0 || pal->_pal_y_size <= 0) {
     nout << "Invalid palette size: " << pal->_pal_x_size 
-	 << " " << pal->_pal_y_size << "\n";
+         << " " << pal->_pal_y_size << "\n";
     return false;
   }
 
@@ -264,7 +264,7 @@ bool TxaFile::
 parse_margin_line(const vector_string &words) {
   if (words.size() != 2) {
     nout << "Exactly one parameter required for :margin, the "
-	 << "size of the default margin to apply.\n";
+         << "size of the default margin to apply.\n";
     return false;
   }
 
@@ -292,7 +292,7 @@ bool TxaFile::
 parse_coverage_line(const vector_string &words) {
   if (words.size() != 2) {
     nout << "Exactly one parameter required for :coverage, the "
-	 << "value for the default coverage threshold.\n";
+         << "value for the default coverage threshold.\n";
     return false;
   }
 
@@ -350,7 +350,7 @@ parse_shadowtype_line(const vector_string &words) {
   }
   const string &shadowtype = words[1];
   if (!parse_image_type_request(shadowtype, pal->_shadow_color_type,
-				pal->_shadow_alpha_type)) {
+                                pal->_shadow_alpha_type)) {
     nout << "\nKnown image types are:\n";
     PNMFileTypeRegistry::get_ptr()->write_types(nout, 2);
     nout << "\n";
@@ -375,14 +375,14 @@ parse_round_line(const vector_string &words) {
       return true;
     } else {
       nout << "Invalid round keyword: " << words[1] << ".\n"
-	   << "Expected 'no', or a round fraction and fuzz factor.\n";
+           << "Expected 'no', or a round fraction and fuzz factor.\n";
       return false;
     }
   }
 
   if (words.size() != 3) {
     nout << "Exactly two parameters required for :round, the fraction "
-	 << "to round to, and the fuzz factor.\n";
+         << "to round to, and the fuzz factor.\n";
     return false;
   }
 
@@ -394,7 +394,7 @@ parse_round_line(const vector_string &words) {
 
   if (pal->_round_unit <= 0.0 || pal->_round_fuzz < 0.0) {
     nout << "Invalid rounding: " << pal->_round_unit 
-	 << " " << pal->_round_fuzz << "\n";
+         << " " << pal->_round_fuzz << "\n";
     return false;
   }
 
@@ -418,21 +418,21 @@ parse_remap_line(const vector_string &words) {
       // Defining how to remap UV's for characters.
       i++;
       if (i == (int)words.size()) {
-	nout << "Keyword expected following 'char'\n";
-	return false;
+        nout << "Keyword expected following 'char'\n";
+        return false;
       }
       pal->_remap_char_uv = Palettizer::string_remap(words[i]);
       if (pal->_remap_char_uv == Palettizer::RU_invalid) {
-	nout << "Invalid remap keyword: " << words[i] << "\n";
-	return false;
+        nout << "Invalid remap keyword: " << words[i] << "\n";
+        return false;
       }
 
     } else {
       // Defining how to remap UV's in general.
       pal->_remap_uv = Palettizer::string_remap(words[i]);
       if (pal->_remap_uv == Palettizer::RU_invalid) {
-	nout << "Invalid remap keyword: " << words[i] << "\n";
-	return false;
+        nout << "Invalid remap keyword: " << words[i] << "\n";
+        return false;
       }
 
       pal->_remap_char_uv = pal->_remap_uv;

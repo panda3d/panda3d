@@ -52,8 +52,8 @@ extend_other(BoundingVolume *other) const {
 
 bool BoundingLine::
 around_other(BoundingVolume *other,
-	     const BoundingVolume **first,
-	     const BoundingVolume **last) const {
+             const BoundingVolume **first,
+             const BoundingVolume **last) const {
   return other->around_lines(first, last);
 }
 

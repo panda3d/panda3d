@@ -193,7 +193,7 @@ NodeRelation *Node::
 get_parent(TypeHandle type, int index) const {
   const UpRelationPointers &urp = find_connection(type).get_up();
   nassertr(index >= 0 && index < (int)urp.size(),
-	   (NodeRelation *)NULL);
+           (NodeRelation *)NULL);
   return urp[index];
 }
 
@@ -221,7 +221,7 @@ NodeRelation *Node::
 get_child(TypeHandle type, int index) const {
   const DownRelationPointers &drp = find_connection(type).get_down();
   nassertr(index >= 0 && index < (int)drp.size(),
-	   (NodeRelation *)NULL);
+           (NodeRelation *)NULL);
   return drp[index];
 }
 
@@ -232,7 +232,7 @@ get_child(TypeHandle type, int index) const {
 ////////////////////////////////////////////////////////////////////
 bool Node::
 sub_render(const AllAttributesWrapper &, AllTransitionsWrapper &, 
-	   RenderTraverser *) {
+           RenderTraverser *) {
   return true;
 }
 
@@ -377,7 +377,7 @@ r_copy_subgraph(TypeHandle graph_type, Node::InstanceMap &inst_map) const {
 ////////////////////////////////////////////////////////////////////
 void Node::
 r_copy_children(const Node *from, TypeHandle graph_type, 
-		Node::InstanceMap &inst_map) {
+                Node::InstanceMap &inst_map) {
   const DownRelationPointers &drp = 
     from->find_connection(graph_type).get_down();
   DownRelationPointers::const_iterator drpi;
@@ -444,8 +444,8 @@ write_datagram(BamWriter *manager, Datagram &me) {
       me.add_uint16(drp.size());
       DownRelationPointers::const_iterator drpi;
       for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
-	NodeRelation *relation = (*drpi);
-	manager->write_pointer(me, relation);
+        NodeRelation *relation = (*drpi);
+        manager->write_pointer(me, relation);
       }
     }
   }
@@ -490,8 +490,8 @@ complete_pointers(vector_typedWritable &plist, BamReader *manager) {
 
       DownRelationPointers::iterator drpi;
       for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
-	(*drpi) = DCAST(NodeRelation, plist[count]);
-	count++;
+        (*drpi) = DCAST(NodeRelation, plist[count]);
+        count++;
       }
     }
   }
@@ -534,8 +534,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     while (num_types > 0) {
       int num_arcs = scan.get_uint16();
       while (num_arcs > 0) {
-	manager->read_pointer(scan, this);
-	num_arcs--;
+        manager->read_pointer(scan, this);
+        num_arcs--;
       }
       num_types--;
     }
@@ -551,30 +551,30 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       // Oops, too many graph types in this bam file.  We'll have to
       // discard some.
       graph_cat.error()
-	<< "Bam file specifies " << num_connections << " graph types for "
-	<< *this << "; this version of Panda can only support "
-	<< max_node_graphs << " simultaneous graph types.\n";
+        << "Bam file specifies " << num_connections << " graph types for "
+        << *this << "; this version of Panda can only support "
+        << max_node_graphs << " simultaneous graph types.\n";
     }
     for (int i = 0; i < num_connections; i++) {
       TypeHandle type = manager->read_handle(scan);
 
       if (i < max_node_graphs) {
-	_connections[i].set_graph_type(type);
+        _connections[i].set_graph_type(type);
       
-	DownRelationPointers &drp = _connections[i].get_down();
-	int num_arcs = scan.get_uint16();
-	while (num_arcs > 0) {
-	  manager->read_pointer(scan, this);
-	  drp.push_back((NodeRelation *)NULL);
-	  num_arcs--;
-	}
+        DownRelationPointers &drp = _connections[i].get_down();
+        int num_arcs = scan.get_uint16();
+        while (num_arcs > 0) {
+          manager->read_pointer(scan, this);
+          drp.push_back((NodeRelation *)NULL);
+          num_arcs--;
+        }
       } else {
-	// Read and discard.
-	int num_arcs = scan.get_uint16();
-	while (num_arcs > 0) {
-	  manager->skip_pointer(scan);
-	  num_arcs--;
-	}
+        // Read and discard.
+        int num_arcs = scan.get_uint16();
+        while (num_arcs > 0) {
+          manager->skip_pointer(scan);
+          num_arcs--;
+        }
       }
     }
   }

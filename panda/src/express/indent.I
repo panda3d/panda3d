@@ -14,9 +14,9 @@
 template<class InputIterator>
 void
 write_long_list(ostream &out, int indent_level,
-		InputIterator first, InputIterator last,
-		string first_prefix, string later_prefix,
-		int max_col) {
+                InputIterator first, InputIterator last,
+                string first_prefix, string later_prefix,
+                int max_col) {
   if (later_prefix.empty()) {
     later_prefix = first_prefix;
   }
@@ -41,12 +41,12 @@ write_long_list(ostream &out, int indent_level,
       
       col += 1 + str.length();
       if (col > max_col) {
-	out << "\n";
-	indent(out, indent_level) << later_prefix << str;
-	col = indent_level + later_prefix.length() + str.length();
+        out << "\n";
+        indent(out, indent_level) << later_prefix << str;
+        col = indent_level + later_prefix.length() + str.length();
 
       } else {
-	out << " " << str;
+        out << " " << str;
       }
 
       ++first;

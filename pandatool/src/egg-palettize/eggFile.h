@@ -22,7 +22,7 @@ class EggData;
 class TextureImage;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggFile
+//       Class : EggFile
 // Description : This represents a single egg file known to the
 //               palettizer.  It may reference a number of textures,
 //               and may also be assigned to a number of groups.  All
@@ -34,8 +34,8 @@ public:
   EggFile();
 
   void from_command_line(EggData *data,
-			 const Filename &source_filename, 
-			 const Filename &dest_filename);
+                         const Filename &source_filename, 
+                         const Filename &dest_filename);
 
   void scan_textures();
   void get_textures(set<TextureImage *> &result) const;
@@ -88,7 +88,7 @@ public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
 protected:
   static TypedWritable *make_EggFile(const FactoryParams &params);
@@ -107,8 +107,8 @@ public:
     TypedWritable::init_type();
     Namable::init_type();
     register_type(_type_handle, "EggFile",
-		  TypedWritable::get_class_type(),
-		  Namable::get_class_type());
+                  TypedWritable::get_class_type(),
+                  Namable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -13,7 +13,7 @@
 class CollisionEntry;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CollisionHandler
+//       Class : CollisionHandler
 // Description : The abstract interface to a number of classes that
 //               decide what to do what a collision is detected.  One
 //               of these must be assigned to the CollisionTraverser
@@ -36,7 +36,7 @@ public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "CollisionHandler",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -337,23 +337,23 @@ unpack_attr(const Datagram &datagram) {
       iterator.skip_bytes(4);
       
       while (num_points > 0) {
-	GeospecificControlPoint gcp;
-	gcp._uv[0] = iterator.get_be_float64();
-	gcp._uv[1] = iterator.get_be_float64();
-	gcp._real_earth[0] = iterator.get_be_float64();
-	gcp._real_earth[1] = iterator.get_be_float64();
+        GeospecificControlPoint gcp;
+        gcp._uv[0] = iterator.get_be_float64();
+        gcp._uv[1] = iterator.get_be_float64();
+        gcp._real_earth[0] = iterator.get_be_float64();
+        gcp._real_earth[1] = iterator.get_be_float64();
       }
     }
 
     if (iterator.get_remaining_size() != 0) {
       int num_defs = iterator.get_be_int32();
       while (num_defs > 0) {
-	SubtextureDef def;
-	def._name = iterator.get_fixed_string(32);
-	def._left = iterator.get_be_int32();
-	def._bottom = iterator.get_be_int32();
-	def._right = iterator.get_be_int32();
-	def._top = iterator.get_be_int32();
+        SubtextureDef def;
+        def._name = iterator.get_fixed_string(32);
+        def._left = iterator.get_be_int32();
+        def._bottom = iterator.get_be_int32();
+        def._right = iterator.get_be_int32();
+        def._top = iterator.get_be_int32();
       }
     }
   }
@@ -443,8 +443,8 @@ pack_attr(Datagram &datagram) const {
     datagram.pad_bytes(4);
     GeospecificControlPoints::const_iterator pi;
     for (pi = _geospecific_control_points.begin();
-	 pi != _geospecific_control_points.end();
-	 ++pi) {
+         pi != _geospecific_control_points.end();
+         ++pi) {
       const GeospecificControlPoint &gcp = (*pi);
       datagram.add_be_float64(gcp._uv[0]);
       datagram.add_be_float64(gcp._uv[1]);

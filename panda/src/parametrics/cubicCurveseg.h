@@ -62,8 +62,8 @@ public:
   virtual ~CubicCurveseg();
 
   void hermite_basis(const HermiteCurveCV &cv0,
-		     const HermiteCurveCV &cv1,
-		     float tlength = 1.0);
+                     const HermiteCurveCV &cv1,
+                     float tlength = 1.0);
   void bezier_basis(const BezierSeg &seg);
   void nurbs_basis(int order, const float knots[], const LVecBase4f cvs[]);
 
@@ -94,12 +94,12 @@ public:
   virtual bool get_bezier_seg(BezierSeg &seg) const;
 
   static bool compute_seg(int rtype0, float t0, const LVecBase4f &v0,
-			  int rtype1, float t1, const LVecBase4f &v1,
-			  int rtype2, float t2, const LVecBase4f &v2,
-			  int rtype3, float t3, const LVecBase4f &v3,
-			  const LMatrix4f &B,
-			  const LMatrix4f &Bi,
-			  LMatrix4f &G);
+                          int rtype1, float t1, const LVecBase4f &v1,
+                          int rtype2, float t2, const LVecBase4f &v2,
+                          int rtype3, float t3, const LVecBase4f &v3,
+                          const LMatrix4f &B,
+                          const LMatrix4f &Bi,
+                          LMatrix4f &G);
 
   LVecBase4f Bx, By, Bz, Bw;
   bool rational;

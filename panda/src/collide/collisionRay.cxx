@@ -35,7 +35,7 @@ make_copy() {
 ////////////////////////////////////////////////////////////////////
 int CollisionRay::
 test_intersection(CollisionHandler *record, const CollisionEntry &entry,
-		  const CollisionSolid *into) const {
+                  const CollisionSolid *into) const {
   return into->test_intersection_from_ray(record, entry);
 }
 
@@ -135,7 +135,7 @@ recompute_viz(Node *parent) {
   for (int i = 0; i < 100; i++) {
     verts.push_back(_origin + (double)i * _direction);
     colors.push_back(Colorf(1.0, 1.0, 1.0, 1.0) + 
-		     ((double)i / 100.0) * Colorf(0.0, 0.0, 0.0, -1.0));
+                     ((double)i / 100.0) * Colorf(0.0, 0.0, 0.0, -1.0));
   }
   ray->set_coords(verts, G_PER_VERTEX);
   ray->set_colors(colors, G_PER_VERTEX);

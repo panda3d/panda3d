@@ -13,7 +13,7 @@
 class FltInstanceDefinition;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltInstanceRef
+//       Class : FltInstanceRef
 // Description : This bead appears in the hierarchy to refer to a
 //               FltInstanceDefinition node defined elsewhere.  It
 //               indicates that the subtree beginning at the
@@ -46,7 +46,7 @@ public:
   static void init_type() {
     FltBead::init_type();
     register_type(_type_handle, "FltInstanceRef",
-		  FltBead::get_class_type());
+                  FltBead::get_class_type());
   }
 
 private:

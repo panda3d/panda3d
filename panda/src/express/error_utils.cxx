@@ -178,7 +178,7 @@ handle_socket_error(void) {
     default:
       if (express_cat.is_debug())
         express_cat.debug()
-	  << "handle_socket_error - unknown error: " << err << endl;
+          << "handle_socket_error - unknown error: " << err << endl;
       return "Unknown WSA error";
   }
 #endif
@@ -226,14 +226,14 @@ get_network_error(void) {
       return EU_error_network_remote_host_no_response;
     case 0:
       if (express_cat.is_debug())
-	express_cat.debug()
-	  << "get_network_error() - WSA error = 0 - error : "
-	  << strerror(errno) << endl;
+        express_cat.debug()
+          << "get_network_error() - WSA error = 0 - error : "
+          << strerror(errno) << endl;
       return EU_error_abort;
     default:
       if (express_cat.is_debug())
-	express_cat.debug()
-	  << "get_network_error() - unknown error: " << err << endl;
+        express_cat.debug()
+          << "get_network_error() - unknown error: " << err << endl;
       return EU_error_abort;
   }
 #endif

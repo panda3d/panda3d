@@ -13,7 +13,7 @@
 #include <set>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggMorph
+//       Class : EggMorph
 // Description : A single <Dxyz> or <Duv> or some such entry.  This
 //               simply contains the morph name and the offset value.
 //               The class EggMorph is actually a template class on

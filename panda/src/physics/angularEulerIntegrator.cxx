@@ -37,8 +37,8 @@ AngularEulerIntegrator::
 ////////////////////////////////////////////////////////////////////
 void AngularEulerIntegrator::
 child_integrate(Physical *physical, 
-		vector< PT(AngularForce) >& forces, 
-		float dt) {
+                vector< PT(AngularForce) >& forces, 
+                float dt) {
   // perform the precomputation.  Note that the vector returned by
   // get_precomputed_matrices() has the matrices loaded in order of force
   // type: first global, then local.  If you're using this as a guide to write
@@ -86,7 +86,7 @@ child_integrate(Physical *physical,
 
       // make sure the force is turned on.
       if (cur_force->get_active() == false)
-	continue;
+        continue;
 
       force_node = cur_force->get_force_node();
 
@@ -104,14 +104,14 @@ child_integrate(Physical *physical,
 
       // make sure the force is turned on.
       if (cur_force->get_active() == false)
-	continue;
+        continue;
 
       force_node = cur_force->get_force_node();
 
       // go from force space to object space
       f = cur_force->get_vector(current_object) * matrices[index++];
 
-      // tally it into the accum vectors				  
+      // tally it into the accum vectors
       accum_vec += f;
     }
 

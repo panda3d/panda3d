@@ -35,7 +35,7 @@ extern EXPCL_PANDA UpdateSeq &last_graph_update(TypeHandle graph_type);
 EXPCL_PANDA INLINE_GRAPH void remove_arc(NodeRelation *arc);
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : NodeRelation
+//       Class : NodeRelation
 // Description : The base class for all scene graph arcs.  This is the
 //               glue between Nodes that defines the scene graph.
 //               There are no arcs of type NodeRelation per se, but
@@ -112,8 +112,8 @@ PUBLISHED:
 
 public:
   bool sub_render_trans(const AllAttributesWrapper &attrib,
-			AllTransitionsWrapper &trans,
-			RenderTraverser *trav);
+                        AllTransitionsWrapper &trans,
+                        RenderTraverser *trav);
   bool has_sub_render_trans() const;
   int get_num_sub_render_trans() const;
 
@@ -179,7 +179,7 @@ public:
   static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter* manager, Datagram &me);  
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
   static TypedWritable *make_NodeRelation(const FactoryParams &params);
 

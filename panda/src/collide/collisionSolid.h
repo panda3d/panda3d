@@ -24,7 +24,7 @@ class GeomNode;
 class CollisionNode;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CollisionSolid
+//       Class : CollisionSolid
 // Description : The abstract base class for all things that can
 //               collide with other things in the world, and all the
 //               things they can collide with (except geometry).
@@ -53,8 +53,8 @@ PUBLISHED:
 public:
   virtual int
   test_intersection(CollisionHandler *record,
-		    const CollisionEntry &entry,
-		    const CollisionSolid *into) const=0;
+                    const CollisionEntry &entry,
+                    const CollisionSolid *into) const=0;
 
   virtual void xform(const LMatrix4f &mat)=0;
 
@@ -67,17 +67,17 @@ PUBLISHED:
 protected:
   virtual int
   test_intersection_from_sphere(CollisionHandler *record,
-				const CollisionEntry &entry) const;
+                                const CollisionEntry &entry) const;
   virtual int
   test_intersection_from_ray(CollisionHandler *record,
-			     const CollisionEntry &entry) const;
+                             const CollisionEntry &entry) const;
   virtual int
   test_intersection_from_segment(CollisionHandler *record,
-				 const CollisionEntry &entry) const;
+                                 const CollisionEntry &entry) const;
 
   static void
   report_undefined_intersection_test(TypeHandle from_type,
-				     TypeHandle into_type);
+                                     TypeHandle into_type);
 
   INLINE void mark_viz_stale();
   void clear_viz_arcs();
@@ -108,8 +108,8 @@ public:
     TypedWritableReferenceCount::init_type();
     BoundedObject::init_type();
     register_type(_type_handle, "CollisionSolid",
-		  TypedWritableReferenceCount::get_class_type(),
-		  BoundedObject::get_class_type());
+                  TypedWritableReferenceCount::get_class_type(),
+                  BoundedObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

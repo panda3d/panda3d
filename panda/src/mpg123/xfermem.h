@@ -19,15 +19,15 @@
 #endif
 
 typedef struct {
-	int freeindex;	/* [W] next free index */
-	int readindex;	/* [R] next index to read */
-	int fd[2];
-	int wakeme[2];
-	byte *data;
-	byte *metadata;
-	int size;
-	int metasize;
-	int buf[3];
+        int freeindex;  /* [W] next free index */
+        int readindex;  /* [R] next index to read */
+        int fd[2];
+        int wakeme[2];
+        byte *data;
+        byte *metadata;
+        int size;
+        int metasize;
+        int buf[3];
 } txfermem;
 /*
  *   [W] -- May be written to by the writing process only!

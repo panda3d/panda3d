@@ -25,7 +25,7 @@ optimize() {
     double value = get_value(0);
     for (int row = 1; row < get_num_rows(); row++) {
       if (fabs(get_value(row) - value) > egg_parameters->_table_threshold) {
-	return;
+        return;
       }
     }
 
@@ -75,11 +75,11 @@ write(ostream &out, int indent_level) const {
     
     if (has_fps()) {
       indent(out, indent_level + 2)
-	<< "<Scalar> fps { " << get_fps() << " }\n";
+        << "<Scalar> fps { " << get_fps() << " }\n";
     }
     indent(out, indent_level + 2) << "<V> {\n";
     write_long_list(out, indent_level + 4, _data.begin(), _data.end(),
-	"", "", 72);
+        "", "", 72);
     indent(out, indent_level + 2) << "}\n";
     indent(out, indent_level) << "}\n";
   }

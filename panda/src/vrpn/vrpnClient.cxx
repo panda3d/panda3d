@@ -160,7 +160,7 @@ make_device(TypeHandle device_type, const string &device_name) {
 ////////////////////////////////////////////////////////////////////
 bool VrpnClient::
 disconnect_device(TypeHandle device_type, const string &device_name,
-		  ClientDevice *device) {
+                  ClientDevice *device) {
   if (vrpn_cat.is_debug()) {
     vrpn_cat.debug()
       << "Disconnecting device " << *device << "\n";

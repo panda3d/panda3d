@@ -45,7 +45,7 @@ INLINE ostream &operator << (ostream &out, GLenum v) {
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GLGraphicsStateGuardian
+//       Class : GLGraphicsStateGuardian
 // Description : A GraphicsStateGuardian specialized for rendering
 //               into OpenGL contexts.  There should be no GL calls
 //               outside of this object.
@@ -64,15 +64,15 @@ public:
 
   virtual void render_frame(const AllAttributesWrapper &initial_state);
   virtual void render_scene(Node *root, ProjectionNode *projnode,
-			    const AllAttributesWrapper &initial_state);
+                            const AllAttributesWrapper &initial_state);
   virtual void render_subgraph(RenderTraverser *traverser, 
-			       Node *subgraph, ProjectionNode *projnode,
-			       const AllAttributesWrapper &initial_state,
-			       const AllTransitionsWrapper &net_trans);
+                               Node *subgraph, ProjectionNode *projnode,
+                               const AllAttributesWrapper &initial_state,
+                               const AllTransitionsWrapper &net_trans);
   virtual void render_subgraph(RenderTraverser *traverser,
-			       Node *subgraph,
-			       const AllAttributesWrapper &initial_state,
-			       const AllTransitionsWrapper &net_trans);
+                               Node *subgraph,
+                               const AllAttributesWrapper &initial_state,
+                               const AllTransitionsWrapper &net_trans);
 
   virtual void draw_point(const GeomPoint *geom);
   virtual void draw_line(const GeomLine *geom);
@@ -98,16 +98,16 @@ public:
 
   virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb);
   virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
-			 	const DisplayRegion *dr);
+                                const DisplayRegion *dr);
 
   virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr);
   virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                                  const RenderBuffer &rb);
   virtual void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-				 const NodeAttributes& na=NodeAttributes());
+                                 const NodeAttributes& na=NodeAttributes());
   virtual void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                                  const RenderBuffer &rb,
-				 const NodeAttributes& na=NodeAttributes());
+                                 const NodeAttributes& na=NodeAttributes());
 
   virtual void apply_material(const Material *material);
   virtual void apply_fog(Fog *fog);
@@ -164,17 +164,17 @@ public:
 protected:
   void free_pointers();
   virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
-						 CPT(DisplayRegion) dr);
+                                                 CPT(DisplayRegion) dr);
   virtual void restore_frame_buffer(SavedFrameBuffer *frame_buffer);
 
   INLINE void activate();
 
   INLINE void call_glClearColor(GLclampf red, GLclampf green, GLclampf blue,
-				GLclampf alpha);
+                                GLclampf alpha);
   INLINE void call_glClearDepth(GLclampd depth);
   INLINE void call_glClearStencil(GLint s);
   INLINE void call_glClearAccum(GLclampf red, GLclampf green, GLclampf blue,
-				GLclampf alpha);
+                                GLclampf alpha);
   INLINE void call_glDrawBuffer(GLenum mode);
   INLINE void call_glReadBuffer(GLenum mode);
   INLINE void call_glShadeModel(GLenum mode);

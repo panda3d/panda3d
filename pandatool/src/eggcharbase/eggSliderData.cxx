@@ -18,7 +18,7 @@
 ////////////////////////////////////////////////////////////////////
 EggSliderData::
 EggSliderData(EggCharacterCollection *collection, 
-	      EggCharacterData *char_data) :
+              EggCharacterData *char_data) :
   EggComponentData(collection, char_data)
 {
 }

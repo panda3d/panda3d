@@ -18,7 +18,7 @@
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, QueuedReturn<NetDatagram>);
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : QueuedConnectionReader
+//       Class : QueuedConnectionReader
 // Description : This flavor of ConnectionReader will read from its
 //               sockets and queue up all of the datagrams read for
 //               later receipt by the client code.  This class is
@@ -27,7 +27,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, QueuedReturn<NetDatagram>);
 //               convenience.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA QueuedConnectionReader : public ConnectionReader, 
-			       public QueuedReturn<NetDatagram> {
+                               public QueuedReturn<NetDatagram> {
 PUBLISHED:
   QueuedConnectionReader(ConnectionManager *manager, int num_threads);
   virtual ~QueuedConnectionReader();

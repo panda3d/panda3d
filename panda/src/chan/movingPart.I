@@ -41,7 +41,7 @@ MovingPart(const MovingPart<SwitchType> &copy) :
 template<class SwitchType>
 INLINE MovingPart<SwitchType>::
 MovingPart(PartGroup *parent, const string &name, 
-	   const ValueType &initial_value) :
+           const ValueType &initial_value) :
   MovingPartBase(parent, name),
   _value(initial_value),
   _initial_value(initial_value)

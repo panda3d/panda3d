@@ -36,7 +36,7 @@ public:
   static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter* manager, Datagram &me);  
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
   static TypedWritable *make_AnimBundleNode(const FactoryParams &params);
 
@@ -56,7 +56,7 @@ public:
   static void init_type() {
     NamedNode::init_type();
     register_type(_type_handle, "AnimBundleNode",
-		  NamedNode::get_class_type());
+                  NamedNode::get_class_type());
   }
 
 private:

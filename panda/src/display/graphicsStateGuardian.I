@@ -134,7 +134,7 @@ pop_display_region(DisplayRegionStack &node) {
 ////////////////////////////////////////////////////////////////////
 INLINE FrameBufferStack GraphicsStateGuardian::
 push_frame_buffer(const RenderBuffer &buffer,
-		  CPT(DisplayRegion) dr) {
+                  CPT(DisplayRegion) dr) {
   FrameBufferStack old;
   old._frame_buffer = save_frame_buffer(buffer, dr);
   old._stack_level = _frame_buffer_stack_level;

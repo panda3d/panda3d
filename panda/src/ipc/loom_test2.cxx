@@ -17,7 +17,7 @@ void loom_test2_init(void)
 }
 
 Action loom_test2_service(unsigned long& s, unsigned long&,
-			  condition_variable*&)
+                          condition_variable*&)
 {
    ++test2_phase;
    switch (test2_phase) {

@@ -23,7 +23,7 @@ struct ImageHeader;
 #define TGA_MAXCOLORS 256
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PNMFileTypeTGA
+//       Class : PNMFileTypeTGA
 // Description : For reading and writing Targa image files.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PNMFileTypeTGA : public PNMFileType {
@@ -37,7 +37,7 @@ public:
   virtual string get_suggested_extension() const;
 
   virtual PNMReader *make_reader(FILE *file, bool owns_file = true,
-				 const string &magic_number = string());
+                                 const string &magic_number = string());
   virtual PNMWriter *make_writer(FILE *file, bool owns_file = true);
 
 public:
@@ -51,7 +51,7 @@ public:
   private:
     void readtga ( FILE* ifp, struct ImageHeader* tgaP, const string &magic_number );
     void get_map_entry ( FILE* ifp, pixel* Value, int Size,
-			 gray* Alpha);
+                         gray* Alpha);
     void get_pixel ( FILE* ifp, pixel* dest, int Size, gray* alpha_p);
     unsigned char getbyte ( FILE* ifp );
     

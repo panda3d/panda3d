@@ -81,7 +81,7 @@ is_identity() const {
 int NodeTransitionCache::
 compare_to(const NodeTransitionCache &other) const {
    return tmap_compare_cache(_cache.begin(), _cache.end(),
-			     other._cache.begin(), other._cache.end());
+                             other._cache.begin(), other._cache.end());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -256,7 +256,7 @@ store_entry(TypeHandle handle, const NodeTransitionCacheEntry &entry) {
 ////////////////////////////////////////////////////////////////////
 void NodeTransitionCache::
 store_to(const NodeTransitionCache *a, NodeRelation *arc, 
-	 NodeTransitions &nt) {
+         NodeTransitions &nt) {
   if (a == (NodeTransitionCache *)NULL || a->_cache.empty()) {
     // a is empty: no change.
     return;
@@ -273,8 +273,8 @@ store_to(const NodeTransitionCache *a, NodeRelation *arc,
   // And now actually add them.
   NodeTransitions temp;
   tmap_override_union(nt._transitions.begin(), nt._transitions.end(),
-		      a->_cache.begin(), a->_cache.end(),
-		      inserter(temp._transitions, temp._transitions.begin()));
+                      a->_cache.begin(), a->_cache.end(),
+                      inserter(temp._transitions, temp._transitions.begin()));
   nt._transitions.swap(temp._transitions);
 }
 
@@ -302,8 +302,8 @@ c_union(const NodeTransitionCache *a, const NodeTransitionCache *b) {
     NodeTransitionCache *result = new NodeTransitionCache;
 
     tmap_override_union(a->_cache.begin(), a->_cache.end(),
-			b->_cache.begin(), b->_cache.end(),
-			inserter(result->_cache, result->_cache.begin()));
+                        b->_cache.begin(), b->_cache.end(),
+                        inserter(result->_cache, result->_cache.begin()));
 
     return result;
   }
@@ -338,8 +338,8 @@ compose(const NodeTransitionCache *a, const NodeTransitionCache *b) {
     NodeTransitionCache *result = new NodeTransitionCache;
 
     tmap_compose(a->_cache.begin(), a->_cache.end(),
-		 b->_cache.begin(), b->_cache.end(),
-		 inserter(result->_cache, result->_cache.begin()));
+                 b->_cache.begin(), b->_cache.end(),
+                 inserter(result->_cache, result->_cache.begin()));
 
     return result;
   }
@@ -365,7 +365,7 @@ invert(const NodeTransitionCache *a) {
   NodeTransitionCache *result = new NodeTransitionCache;
 
   tmap_invert(a->_cache.begin(), a->_cache.end(),
-	      inserter(result->_cache, result->_cache.begin()));
+              inserter(result->_cache, result->_cache.begin()));
   
   return result;
 }
@@ -399,8 +399,8 @@ invert_compose(const NodeTransitionCache *a, const NodeTransitionCache *b) {
     NodeTransitionCache *result = new NodeTransitionCache;
 
     tmap_invert_compose(a->_cache.begin(), a->_cache.end(),
-			b->_cache.begin(), b->_cache.end(),
-			inserter(result->_cache, result->_cache.begin()));
+                        b->_cache.begin(), b->_cache.end(),
+                        inserter(result->_cache, result->_cache.begin()));
 
     return result;
   }
@@ -418,9 +418,9 @@ invert_compose(const NodeTransitionCache *a, const NodeTransitionCache *b) {
 ////////////////////////////////////////////////////////////////////
 NodeTransitionCache *NodeTransitionCache::
 cached_compose(const NodeTransitionCache *a, 
-	       const NodeTransitionCache *cache,
-	       const NodeTransitionCache *b,
-	       UpdateSeq now) {
+               const NodeTransitionCache *cache,
+               const NodeTransitionCache *b,
+               UpdateSeq now) {
   // Since the absence of a transition from the object implies the
   // identity transition, we can make a quick special case for either
   // object being empty:
@@ -441,17 +441,17 @@ cached_compose(const NodeTransitionCache *a,
       // If the cache is NULL, we must send in an empty list for the
       // cache list.  We'll use [a.begin .. a.begin).
       tmap_cached_compose(a->_cache.begin(), a->_cache.end(),
-			  a->_cache.begin(), a->_cache.begin(),
-			  b->_cache.begin(), b->_cache.end(),
-			  now,
-			  inserter(result->_cache, result->_cache.begin()));
+                          a->_cache.begin(), a->_cache.begin(),
+                          b->_cache.begin(), b->_cache.end(),
+                          now,
+                          inserter(result->_cache, result->_cache.begin()));
 
     } else {
       tmap_cached_compose(a->_cache.begin(), a->_cache.end(),
-			  cache->_cache.begin(), cache->_cache.end(),
-			  b->_cache.begin(), b->_cache.end(),
-			  now,
-			  inserter(result->_cache, result->_cache.begin()));
+                          cache->_cache.begin(), cache->_cache.end(),
+                          b->_cache.begin(), b->_cache.end(),
+                          now,
+                          inserter(result->_cache, result->_cache.begin()));
     }
 
     return result;
@@ -498,7 +498,7 @@ output(ostream &out) const {
   for (ci = _cache.begin(); ci != _cache.end(); ++ci) {
     if (!(*ci).second.is_identity()) {
       if (written_any) {
-	out << " ";
+        out << " ";
       }
       out << (*ci).second;
       written_any = true;

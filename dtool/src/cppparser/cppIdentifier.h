@@ -21,7 +21,7 @@ class CPPPreprocessor;
 class CPPTemplateParameterList;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPIdentifier
+//       Class : CPPIdentifier
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPIdentifier {
@@ -46,30 +46,30 @@ public:
 
 
   CPPScope *get_scope(CPPScope *current_scope, CPPScope *global_scope,
-		      CPPPreprocessor *error_sink = NULL) const;
+                      CPPPreprocessor *error_sink = NULL) const;
   CPPScope *get_scope(CPPScope *current_scope, CPPScope *global_scope,
-		      CPPDeclaration::SubstDecl &subst,
-		      CPPPreprocessor *error_sink = NULL) const;
+                      CPPDeclaration::SubstDecl &subst,
+                      CPPPreprocessor *error_sink = NULL) const;
 
   CPPType *find_type(CPPScope *current_scope, CPPScope *global_scope,
-		     bool force_instantiate = false,
-		     CPPPreprocessor *error_sink = NULL) const;
+                     bool force_instantiate = false,
+                     CPPPreprocessor *error_sink = NULL) const;
   CPPType *find_type(CPPScope *current_scope, CPPScope *global_scope,
-		     CPPDeclaration::SubstDecl &subst,
-		     CPPPreprocessor *error_sink = NULL) const;
+                     CPPDeclaration::SubstDecl &subst,
+                     CPPPreprocessor *error_sink = NULL) const;
   CPPDeclaration *find_symbol(CPPScope *current_scope,
-			      CPPScope *global_scope,
-			      CPPPreprocessor *error_sink = NULL) const;
+                              CPPScope *global_scope,
+                              CPPPreprocessor *error_sink = NULL) const;
   CPPDeclaration *find_template(CPPScope *current_scope,
-				CPPScope *global_scope,
-				CPPPreprocessor *error_sink = NULL) const;
+                                CPPScope *global_scope,
+                                CPPPreprocessor *error_sink = NULL) const;
   CPPScope *find_scope(CPPScope *current_scope,
-		       CPPScope *global_scope,
-		       CPPPreprocessor *error_sink = NULL) const;
+                       CPPScope *global_scope,
+                       CPPPreprocessor *error_sink = NULL) const;
 
   CPPIdentifier *substitute_decl(CPPDeclaration::SubstDecl &subst,
-				 CPPScope *current_scope,
-				 CPPScope *global_scope);
+                                 CPPScope *current_scope,
+                                 CPPScope *global_scope);
 
   void output(ostream &out, CPPScope *scope) const;
   void output_local_name(ostream &out, CPPScope *scope) const;

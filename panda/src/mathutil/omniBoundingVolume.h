@@ -11,7 +11,7 @@
 #include "geometricBoundingVolume.h"
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : OmniBoundingVolume
+//       Class : OmniBoundingVolume
 // Description : This is a special kind of GeometricBoundingVolume
 //               that fills all of space.
 ////////////////////////////////////////////////////////////////////
@@ -30,8 +30,8 @@ public:
 protected:
   virtual bool extend_other(BoundingVolume *other) const;
   virtual bool around_other(BoundingVolume *other,
-			    const BoundingVolume **first,
-			    const BoundingVolume **last) const;
+                            const BoundingVolume **first,
+                            const BoundingVolume **last) const;
   virtual int contains_other(const BoundingVolume *other) const;
 
 
@@ -40,11 +40,11 @@ protected:
   virtual bool extend_by_hexahedron(const BoundingHexahedron *hexahedron);
 
   virtual bool around_points(const LPoint3f *first,
-			     const LPoint3f *last);
+                             const LPoint3f *last);
   virtual bool around_spheres(const BoundingVolume **first,
-			      const BoundingVolume **last);
+                              const BoundingVolume **last);
   virtual bool around_hexahedrons(const BoundingVolume **first,
-				  const BoundingVolume **last);
+                                  const BoundingVolume **last);
 
   virtual int contains_point(const LPoint3f &point) const;
   virtual int contains_lineseg(const LPoint3f &a, const LPoint3f &b) const;
@@ -58,7 +58,7 @@ public:
   static void init_type() {
     GeometricBoundingVolume::init_type();
     register_type(_type_handle, "OmniBoundingVolume",
-		  GeometricBoundingVolume::get_class_type());
+                  GeometricBoundingVolume::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

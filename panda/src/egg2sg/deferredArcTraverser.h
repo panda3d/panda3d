@@ -19,7 +19,7 @@
 class NodeRelation;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : DeferredArcTraverser
+//       Class : DeferredArcTraverser
 // Description : This class is used after all of the nodes have been
 //               built to go back and apply down all of the
 //               DeferredArcProperties that might have been built of
@@ -34,8 +34,8 @@ public:
   DeferredArcTraverser(const DeferredArcs &deferred_arcs);
 
   bool forward_arc(NodeRelation *arc, NullTransitionWrapper &,
-		   NullAttributeWrapper &, NullAttributeWrapper &,
-		   DeferredArcProperty &level_state);
+                   NullAttributeWrapper &, NullAttributeWrapper &,
+                   DeferredArcProperty &level_state);
 
   const DeferredArcs &_deferred_arcs;
 };

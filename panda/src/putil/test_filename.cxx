@@ -44,16 +44,16 @@ main(int argc, char *argv[]) {
   if (argc >= 3) {
     Filename t(argv[2]);
     nout << "f is " << f << " exists = " << f.exists() << "\n"
-	 << "t is " << t << " exists = " << t.exists() << "\n";
+         << "t is " << t << " exists = " << t.exists() << "\n";
 
     nout << "f.compare_timestamps(t, true, true) = " 
-	 << f.compare_timestamps(t, true, true) << "\n"
-	 << "f.compare_timestamps(t, true, false) = " 
-	 << f.compare_timestamps(t, true, false) << "\n"
-	 << "f.compare_timestamps(t, false, true) = " 
-	 << f.compare_timestamps(t, false, true) << "\n"
-	 << "f.compare_timestamps(t, false, false) = " 
-	 << f.compare_timestamps(t, false, false) << "\n";
+         << f.compare_timestamps(t, true, true) << "\n"
+         << "f.compare_timestamps(t, true, false) = " 
+         << f.compare_timestamps(t, true, false) << "\n"
+         << "f.compare_timestamps(t, false, true) = " 
+         << f.compare_timestamps(t, false, true) << "\n"
+         << "f.compare_timestamps(t, false, false) = " 
+         << f.compare_timestamps(t, false, false) << "\n";
   }
   /*
   if (argc >= 3) {

@@ -13,8 +13,8 @@
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 dmap_compose(InputIterator1 first1, InputIterator1 last1,
-	     InputIterator2 first2, InputIterator2 last2,
-	     OutputIterator result) {
+             InputIterator2 first2, InputIterator2 last2,
+             OutputIterator result) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1).first < (*first2).first) {
       *result = *first1;
@@ -28,9 +28,9 @@ dmap_compose(InputIterator1 first1, InputIterator1 last1,
       // If the second Transition is identity, it has no effect.
       // Otherwise, it replaces us.
       if ((*first2).second != TD_identity) {
-	*result = *first2;
+        *result = *first2;
       } else {
-	*result = *first1;
+        *result = *first1;
       }
       ++first1;
       ++first2;
@@ -61,8 +61,8 @@ dmap_compose(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 dmap_invert_compose(InputIterator1 first1, InputIterator1 last1,
-		    InputIterator2 first2, InputIterator2 last2,
-		    OutputIterator result) {
+                    InputIterator2 first2, InputIterator2 last2,
+                    OutputIterator result) {
   typedef TYPENAME InputIterator1::value_type OutputType;
 
   while (first1 != last1 && first2 != last2) {
@@ -79,17 +79,17 @@ dmap_invert_compose(InputIterator1 first1, InputIterator1 last1,
       TransitionDirection dir2 = (*first2).second;
 
       if (dir1 == dir2 &&
-	  (dir1 != TD_normal || (*first1).first == (*first2).first)) {
-	// The two transitions are equivalent, so the invert_compose
-	// will be identity.  Don't bother to store it.
+          (dir1 != TD_normal || (*first1).first == (*first2).first)) {
+        // The two transitions are equivalent, so the invert_compose
+        // will be identity.  Don't bother to store it.
 
       } else {
-	if ((*first2).second != TD_identity) {
-	  *result = *first2;
-	} else {
-	  (*result) = OutputType((*first1).first, TD_inverse);
-	}
-	++result;
+        if ((*first2).second != TD_identity) {
+          *result = *first2;
+        } else {
+          (*result) = OutputType((*first1).first, TD_inverse);
+        }
+        ++result;
       }
       ++first1;
       ++first2;
@@ -121,7 +121,7 @@ dmap_invert_compose(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator, class OutputIterator>
 OutputIterator
 dmap_invert(InputIterator first, InputIterator last,
-	    OutputIterator result) {
+            OutputIterator result) {
   typedef TYPENAME InputIterator::value_type OutputType;
 
   while (first != last) {
@@ -158,16 +158,16 @@ dmap_invert(InputIterator first, InputIterator last,
 template<class InputIterator1, class InputIterator2>
 bool
 dmap_equiv(InputIterator1 first1, InputIterator1 last1,
-	   InputIterator2 first2, InputIterator2 last2) {
+           InputIterator2 first2, InputIterator2 last2) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1).first < (*first2).first) {
       if ((*first1).second != TD_identity) {
-	return false;
+        return false;
       }
       ++first1;
     } else if ((*first2).first < (*first1).first) {
       if ((*first2).second != TD_identity) {
-	return false;
+        return false;
       }
       ++first2;
     } else {
@@ -175,7 +175,7 @@ dmap_equiv(InputIterator1 first1, InputIterator1 last1,
       TransitionDirection dir2 = (*first2).second;
 
       if (dir1 != dir2) {
-	return false;
+        return false;
       }
       ++first1;
       ++first2;
@@ -209,18 +209,18 @@ dmap_equiv(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator1, class InputIterator2>
 int
 dmap_compare(InputIterator1 first1, InputIterator1 last1,
-	     InputIterator2 first2, InputIterator2 last2) {
+             InputIterator2 first2, InputIterator2 last2) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1).first < (*first2).first) {
       if ((*first1).second != TD_identity) {
-	// list1 has the first value that does not appear in list2.
-	return 1;
+        // list1 has the first value that does not appear in list2.
+        return 1;
       }
       ++first1;
     } else if ((*first2).first < (*first1).first) {
       if ((*first2).second != TD_identity) {
-	// list2 has the first value that does not appear in list1.
-	return -1;
+        // list2 has the first value that does not appear in list1.
+        return -1;
       }
       ++first2;
     } else {
@@ -228,17 +228,17 @@ dmap_compare(InputIterator1 first1, InputIterator1 last1,
       TransitionDirection dir2 = (*first2).second;
 
       if (dir1 != dir2) {
-	if (dir1 == TD_identity) {
-	  // list1 has the first value that does not appear in list2.
-	  return 1;
-	} else if (dir2 == TD_identity) {
-	  // list2 has the first value that does not appear in list1.
-	  return -1;
-	}
-	  
-	// This value appears in both lists, but it is TD_normal in
-	// one and TD_inverse in the other.
-	return (dir1 < dir2) ? -1 : 1;
+        if (dir1 == TD_identity) {
+          // list1 has the first value that does not appear in list2.
+          return 1;
+        } else if (dir2 == TD_identity) {
+          // list2 has the first value that does not appear in list1.
+          return -1;
+        }
+
+        // This value appears in both lists, but it is TD_normal in
+        // one and TD_inverse in the other.
+        return (dir1 < dir2) ? -1 : 1;
       }
 
       ++first1;
@@ -297,7 +297,7 @@ dmap_is_identity(InputIterator first, InputIterator last) {
 template<class InputIterator1, class InputIterator2>
 bool
 bmap_equiv(InputIterator1 first1, InputIterator1 last1,
-	   InputIterator2 first2, InputIterator2 last2) {
+           InputIterator2 first2, InputIterator2 last2) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1) < (*first2)) {
       return false;
@@ -324,7 +324,7 @@ bmap_equiv(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator1, class InputIterator2>
 int
 bmap_compare(InputIterator1 first1, InputIterator1 last1,
-	   InputIterator2 first2, InputIterator2 last2) {
+           InputIterator2 first2, InputIterator2 last2) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1) < (*first2)) {
       return -1;
@@ -358,16 +358,16 @@ bmap_compare(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 bmap_apply(InputIterator1 first1, InputIterator1 last1,
-	   InputIterator2 first2, InputIterator2 last2,
-	   bool complete_transition, TransitionDirection want_dirs,
-	   OutputIterator result) {
+           InputIterator2 first2, InputIterator2 last2,
+           bool complete_transition, TransitionDirection want_dirs,
+           OutputIterator result) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1) < (*first2).first) {
       // Here's an attribute property that wasn't mentioned by the
       // transition.  It stays, unless the transition is "complete".
       if (!complete_transition) {
-	*result = *first1;
-	++result;
+        *result = *first1;
+        ++result;
       }
       ++first1;
 
@@ -377,9 +377,9 @@ bmap_apply(InputIterator1 first1, InputIterator1 last1,
       // if the transition explicitly turned it on.
 
       if ((*first2).second == want_dirs) {
-	*result = (*first2).first;
-	++result;
-	break;
+        *result = (*first2).first;
+        ++result;
+        break;
       }
       
       ++first2;
@@ -391,17 +391,17 @@ bmap_apply(InputIterator1 first1, InputIterator1 last1,
       // the attribute?
 
       if ((*first2).second == TD_identity) {
-	// Preserve.
-	*result = *first1;
-	++result;
+        // Preserve.
+        *result = *first1;
+        ++result;
 
       } else if ((*first2).second == want_dirs) {
-	// Replace.
-	*result = (*first2).first;
-	++result;
+        // Replace.
+        *result = (*first2).first;
+        ++result;
 
       } else {
-	// Omit.
+        // Omit.
       }
 
       ++first1;

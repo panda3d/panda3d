@@ -19,7 +19,7 @@
 class PStatView;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PStatGraph
+//       Class : PStatGraph
 // Description : This is an abstract base class for several different
 //               kinds of graphs that have a few things in common,
 //               like labels and guide bars.

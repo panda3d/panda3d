@@ -13,7 +13,7 @@
 #include "buttonEvent.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ModifierButtons
+//       Class : ModifierButtons
 // Description : This class monitors the state of a number of
 //               individual buttons and tracks whether each button is
 //               known to be down or up.

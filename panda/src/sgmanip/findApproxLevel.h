@@ -28,17 +28,17 @@ class NodePathCollection;
 class FindApproxLevelEntry {
 public:
   INLINE FindApproxLevelEntry(const NodePath &node_path,
-			      FindApproxPath &approx_path);
+                              FindApproxPath &approx_path);
   INLINE FindApproxLevelEntry(const FindApproxLevelEntry &copy);
   INLINE void operator = (const FindApproxLevelEntry &copy);
 
   INLINE bool next_is_stashed() const;
 
   void consider_node(NodePathCollection &result, FindApproxLevel &next_level, 
-		     int max_matches, TypeHandle graph_type) const;
+                     int max_matches, TypeHandle graph_type) const;
   void consider_next_step(NodePathCollection &result,
-			  NodeRelation *arc, FindApproxLevel &next_level, 
-			  int max_matches, TypeHandle graph_type) const;
+                          NodeRelation *arc, FindApproxLevel &next_level, 
+                          int max_matches, TypeHandle graph_type) const;
   INLINE bool is_solution() const;
 
   void output(ostream &out) const;

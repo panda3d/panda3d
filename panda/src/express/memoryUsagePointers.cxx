@@ -148,7 +148,7 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 void MemoryUsagePointers::
 add_entry(ReferenceCount *ptr, TypedObject *typed_ptr, 
-	  TypeHandle type, double age) {
+          TypeHandle type, double age) {
   // We can't safly add pointers with a zero reference count.  They
   // might be statically-allocated or something, and if we try to add
   // them they'll try to destruct when the PointerTo later goes away.

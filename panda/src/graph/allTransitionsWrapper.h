@@ -34,7 +34,7 @@ class NodeAttribute;
 class AllAttributesWrapper;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : AllTransitionsWrapper
+//       Class : AllTransitionsWrapper
 // Description : This wrapper represents all transitions that might be
 //               stored on arcs.  It is especially useful when
 //               performing a traversal or computing a wrt() and you
@@ -58,7 +58,7 @@ public:
 
   INLINE_GRAPH bool is_empty() const;
   INLINE_GRAPH PT(NodeTransition) set_transition(TypeHandle handle,
-					   NodeTransition *trans);
+                                           NodeTransition *trans);
   INLINE_GRAPH PT(NodeTransition) set_transition(NodeTransition *trans);
   INLINE_GRAPH PT(NodeTransition) clear_transition(TypeHandle handle);
   INLINE_GRAPH bool has_transition(TypeHandle handle) const;
@@ -85,8 +85,8 @@ public:
   INLINE_GRAPH void set_computed_verified(UpdateSeq now);
 
   INLINE_GRAPH void cached_compose(const AllTransitionsWrapper &cache, 
-				   const AllTransitionsWrapper &value,
-				   UpdateSeq now);
+                                   const AllTransitionsWrapper &value,
+                                   UpdateSeq now);
 
 public:
   // STL-like definitions to allow read-only traversal of the

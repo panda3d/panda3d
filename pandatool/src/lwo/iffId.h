@@ -11,7 +11,7 @@
 #include <numeric_types.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : IffId
+//       Class : IffId
 // Description : A four-byte chunk ID appearing in an "IFF" file.
 //               This is used to identify the meaning of each chunk,
 //               and can be treated either as a concrete object or as

@@ -11,7 +11,7 @@
 #include "referenceCount.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TypedWritableReferenceCount
+//       Class : TypedWritableReferenceCount
 // Description : A base class for things which need to inherit from
 //               both TypedWritable and from ReferenceCount.  It's
 //               convenient to define this intermediate base class
@@ -45,10 +45,10 @@ public:
     TypedWritable::init_type();
     ReferenceCount::init_type();
     register_type(_type_handle, "TypedWritableReferenceCount",
-		  TypedWritable::get_class_type(),
-		  ReferenceCount::get_class_type());
+                  TypedWritable::get_class_type(),
+                  ReferenceCount::get_class_type());
     TypeRegistry::ptr()->record_alternate_name(_type_handle, 
-					       "TypedWriteableReferenceCount");
+                                               "TypedWriteableReferenceCount");
   }
 
 private:

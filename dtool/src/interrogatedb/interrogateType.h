@@ -15,7 +15,7 @@
 class IndexRemapper;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : InterrogateType
+//       Class : InterrogateType
 // Description : An internal representation of a type.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOLCONFIG InterrogateType : public InterrogateComponent {

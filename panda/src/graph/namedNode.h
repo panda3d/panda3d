@@ -11,7 +11,7 @@
 #include <namable.h>
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : NamedNode
+//       Class : NamedNode
 // Description : A base class for all nodes which have names.  This
 //               will be (almost?) all of them.
 ////////////////////////////////////////////////////////////////////
@@ -46,8 +46,8 @@ public:
     Node::init_type();
     Namable::init_type();
     register_type(_type_handle, "NamedNode",
-		  Node::get_class_type(),
-		  Namable::get_class_type());
+                  Node::get_class_type(),
+                  Namable::get_class_type());
   }
 
 private:

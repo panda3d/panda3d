@@ -34,7 +34,7 @@ show_type(int type, bool verbose = false) {
   cout << interrogate_type_name(type) << " ";
   if (verbose) {
     if (strcmp(interrogate_type_name(type),
-	       interrogate_type_true_name(type)) != 0) {
+               interrogate_type_true_name(type)) != 0) {
       cout << "(" << interrogate_type_true_name(type) << ") ";
     }
   }
@@ -148,7 +148,7 @@ describe_function(int function, int indent_level) {
   }
   for (w = 0; w < num_c_wrappers; w++) {
     describe_wrapper(interrogate_function_c_wrapper(function, w), 
-		     indent_level + 4);
+                     indent_level + 4);
   }
 
   int num_python_wrappers = 
@@ -163,7 +163,7 @@ describe_function(int function, int indent_level) {
   }
   for (w = 0; w < num_python_wrappers; w++) {
     describe_wrapper(interrogate_function_python_wrapper(function, w), 
-		     indent_level + 4);
+                     indent_level + 4);
   }
 
 }
@@ -184,7 +184,7 @@ report_manifests() {
       cout << " of unknown type\n";
     }
     cout << "    definition is \"" 
-	 << interrogate_manifest_definition(manifest) << "\"\n";
+         << interrogate_manifest_definition(manifest) << "\"\n";
 
     if (interrogate_manifest_has_getter(manifest)) {
       cout << "    value getter: ";
@@ -194,8 +194,8 @@ report_manifests() {
 
     if (interrogate_manifest_has_int_value(manifest)) {
       cout << "    int value = "
-	   << interrogate_manifest_get_int_value(manifest)
-	   << "\n";
+           << interrogate_manifest_get_int_value(manifest)
+           << "\n";
     }
   }
 }
@@ -309,8 +309,8 @@ describe_type(int type, int indent_level) {
   if (num_enum_values > 0) {
     for (int i = 0; i < num_enum_values; i++) {
       indent(cout, indent_level + 4)
-	<< interrogate_type_enum_value_name(type, i)
-	<< " = " << interrogate_type_enum_value(type, i) << "\n";
+        << interrogate_type_enum_value_name(type, i)
+        << " = " << interrogate_type_enum_value(type, i) << "\n";
     }
   }
   int num_constructors = interrogate_type_number_of_constructors(type);
@@ -359,22 +359,22 @@ describe_type(int type, int indent_level) {
       indent(cout, indent_level + 4);
       show_type(derivation);
       if (interrogate_type_derivation_has_upcast(type, i)) {
-	cout << " (has upcast)";
+        cout << " (has upcast)";
       }
       if (interrogate_type_derivation_downcast_is_impossible(type, i)) {
-	cout << " (downcast is impossible)";
+        cout << " (downcast is impossible)";
       }
       if (interrogate_type_derivation_has_downcast(type, i)) {
-	cout << " (has downcast)";
+        cout << " (has downcast)";
       }
       cout << "\n";
       /*
-	if (interrogate_type_derivation_has_upcast(type, i)) {
-	describe_function(interrogate_type_get_upcast(type, i), 8);
-	}
-	if (interrogate_type_derivation_has_downcast(type, i)) {
-	describe_function(interrogate_type_get_downcast(type, i), 8);
-	}
+        if (interrogate_type_derivation_has_upcast(type, i)) {
+        describe_function(interrogate_type_get_upcast(type, i), 8);
+        }
+        if (interrogate_type_derivation_has_downcast(type, i)) {
+        describe_function(interrogate_type_get_downcast(type, i), 8);
+        }
       */
     }
   }
@@ -515,8 +515,8 @@ main(int argc, char *argv[]) {
       cerr << "Loading " << pathname << "\n";
       void *dl = load_dso(pathname);
       if (dl == NULL) {
-	cerr << "Unable to load: " << load_dso_error() << "\n";
-	return_status++;
+        cerr << "Unable to load: " << load_dso_error() << "\n";
+        return_status++;
       }
     }
   }

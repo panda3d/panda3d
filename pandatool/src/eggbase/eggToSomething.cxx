@@ -15,10 +15,10 @@
 ////////////////////////////////////////////////////////////////////
 EggToSomething::
 EggToSomething(const string &format_name, 
-	       const string &preferred_extension,
-	       bool allow_last_param, bool allow_stdout) : 
+               const string &preferred_extension,
+               bool allow_last_param, bool allow_stdout) : 
   EggConverter(format_name, preferred_extension, allow_last_param, 
-	       allow_stdout)
+               allow_stdout)
 {
   clear_runlines();
   if (_allow_last_param) {
@@ -34,29 +34,29 @@ EggToSomething(const string &format_name,
   if (_allow_stdout) {
     if (_allow_last_param) {
       o_description =
-	"Specify the filename to which the resulting " + format_name + 
-	" file will be written.  "
-	"If this option is omitted, the last parameter name is taken to be the "
-	"name of the output file, or standard output is used if there are no "
-	"other parameters.";
+        "Specify the filename to which the resulting " + format_name + 
+        " file will be written.  "
+        "If this option is omitted, the last parameter name is taken to be the "
+        "name of the output file, or standard output is used if there are no "
+        "other parameters.";
     } else {
       o_description =
-	"Specify the filename to which the resulting " + format_name +
-	" file will be written.  "
-	"If this option is omitted, the " + format_name + 
-	" file is written to standard output.";
+        "Specify the filename to which the resulting " + format_name +
+        " file will be written.  "
+        "If this option is omitted, the " + format_name + 
+        " file is written to standard output.";
     }
   } else {
     if (_allow_last_param) {
       o_description =
-	"Specify the filename to which the resulting " + format_name +
-	" file will be written.  "
-	"If this option is omitted, the last parameter name is taken to be the "
-	"name of the output file.";
+        "Specify the filename to which the resulting " + format_name +
+        " file will be written.  "
+        "If this option is omitted, the last parameter name is taken to be the "
+        "name of the output file.";
     } else {
       o_description =
-	"Specify the filename to which the resulting " + format_name + 
-	" file will be written.";
+        "Specify the filename to which the resulting " + format_name + 
+        " file will be written.";
     }
   }
 

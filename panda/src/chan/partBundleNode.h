@@ -38,7 +38,7 @@ private:
 public:
   virtual void write_datagram(BamWriter* manager, Datagram &me);  
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
 protected:
   void fillin(DatagramIterator& scan, BamReader* manager);
@@ -55,7 +55,7 @@ public:
   static void init_type() {
     NamedNode::init_type();
     register_type(_type_handle, "PartBundleNode",
-		  NamedNode::get_class_type());
+                  NamedNode::get_class_type());
   }
 
 private:

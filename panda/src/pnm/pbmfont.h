@@ -2,20 +2,20 @@
 */
 
 struct glyph {
-	int width, height;
-	int x, y;
-	int xadd;
-	char* bmap;
+        int width, height;
+        int x, y;
+        int xadd;
+        char* bmap;
 };
 
 struct font {
-	int maxwidth, maxheight;
-	int x, y;
-	struct glyph* glyph[256];
-	/* for compatibility with old pbmtext routines */
-	/* oldfont is 0 if the font is BDF derived */
-	bit** oldfont;
-	int fcols, frows;
+        int maxwidth, maxheight;
+        int x, y;
+        struct glyph* glyph[256];
+        /* for compatibility with old pbmtext routines */
+        /* oldfont is 0 if the font is BDF derived */
+        bit** oldfont;
+        int fcols, frows;
 };
 
 struct font* pbm_defaultfont ARGS(( char* which ));

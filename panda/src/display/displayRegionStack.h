@@ -13,7 +13,7 @@
 class GraphicsStateGuardian;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DisplayRegionStack
+//       Class : DisplayRegionStack
 // Description : An instance of this kind of object is returned by
 //               GraphicsStateGuardian::push_display_region().  It
 //               holds the information needed to restore the previous

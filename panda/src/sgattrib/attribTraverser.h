@@ -25,8 +25,8 @@ public:
   AttribTraverser();
   bool reached_node(Node *node, NodeAttributeWrapper &state, NullLevelState &);
   bool forward_arc(NodeRelation *arc, TransitionWrapper &trans,
-		   NodeAttributeWrapper &, NodeAttributeWrapper &,
-		   NullLevelState &);
+                   NodeAttributeWrapper &, NodeAttributeWrapper &,
+                   NullLevelState &);
 
 
   void set_attrib_type(TypeHandle type);

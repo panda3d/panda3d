@@ -13,7 +13,7 @@
 #include <onOffAttribute.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ColorAttribute
+//       Class : ColorAttribute
 // Description : See ColorTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ColorAttribute : public OnOffAttribute {
@@ -53,7 +53,7 @@ public:
   static void init_type() {
     OnOffAttribute::init_type();
     register_type(_type_handle, "ColorAttribute",
-		  OnOffAttribute::get_class_type());
+                  OnOffAttribute::get_class_type());
   }
 
 private:

@@ -14,7 +14,7 @@ class NodeAttribute;
 class NodeRelation;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : BitMaskTransition
+//       Class : BitMaskTransition
 // Description : This is an abstract template class that encapsulates
 //               transitions on a bitmask.  Each transition may add
 //               and/or remove bits from the accumulated bitmask.
@@ -66,9 +66,9 @@ public:
     NodeTransition::init_type();
     MaskType::init_type();
     register_type(_type_handle, 
-		  string("BitMaskTransition<") +
-		  MaskType::get_class_type().get_name() + ">",
-		  NodeTransition::get_class_type());
+                  string("BitMaskTransition<") +
+                  MaskType::get_class_type().get_name() + ">",
+                  NodeTransition::get_class_type());
   }
 
 private:

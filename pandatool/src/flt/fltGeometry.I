@@ -61,6 +61,6 @@ has_color() const {
   // On the other hand, if we have a material than we always have
   // color.
   return ((_flags & F_no_color) == 0 &&
-	  (_color_index != -1 || ((_flags & F_packed_color) != 0)))
+          (_color_index != -1 || ((_flags & F_packed_color) != 0)))
     || has_material();
 }

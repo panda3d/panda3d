@@ -4,23 +4,23 @@
 ////////////////////////////////////////////////////////////////////
 
 INLINE GuiLabel::GuiLabel(void) : _type(GuiLabel::NONE),
-				  _arc((RenderRelation*)0L),
-				  _tex((Texture*)0L),
-				  _internal((RenderRelation*)0L),
-				  _gset((Geom*)0L), _model_width(1.),
-				  _model_height(1.), _scale(1.),
-				  _scale_x(1.), _scale_y(1.), _scale_z(1.),
-				  _pos(0., 0., 0.),
-				  _model_pos(0., 0., 0.),
-				  _have_foreground(false),
-				  _foreground(1., 1., 1., 1.),
-				  _have_background(false),
-				  _background(0., 0., 0., 0.),
-				  _have_width(false), _width(0.),
-				  _have_height(false), _height(0.),
-				  _mirror_x(false), _mirror_y(false),
-				  _hard_pri(0), _highest_pri(false),
-				  _lowest_pri(false), _has_hard_pri(false) {
+                                  _arc((RenderRelation*)0L),
+                                  _tex((Texture*)0L),
+                                  _internal((RenderRelation*)0L),
+                                  _gset((Geom*)0L), _model_width(1.),
+                                  _model_height(1.), _scale(1.),
+                                  _scale_x(1.), _scale_y(1.), _scale_z(1.),
+                                  _pos(0., 0., 0.),
+                                  _model_pos(0., 0., 0.),
+                                  _have_foreground(false),
+                                  _foreground(1., 1., 1., 1.),
+                                  _have_background(false),
+                                  _background(0., 0., 0., 0.),
+                                  _have_width(false), _width(0.),
+                                  _have_height(false), _height(0.),
+                                  _mirror_x(false), _mirror_y(false),
+                                  _hard_pri(0), _highest_pri(false),
+                                  _lowest_pri(false), _has_hard_pri(false) {
 }
 
 INLINE Node* GuiLabel::get_geometry(void) const {
@@ -109,13 +109,13 @@ INLINE LVector3f GuiLabel::get_pos(void) const {
 }
 
 INLINE void GuiLabel::set_foreground_color(float r, float g, float b,
-					   float a) {
+                                           float a) {
   this->_have_foreground = true;
   this->set_foreground_color(Colorf(r, g, b, a));
 }
 
 INLINE void GuiLabel::set_background_color(float r, float g, float b,
-					   float a) {
+                                           float a) {
   this->set_background_color(Colorf(r, g, b, a));
 }
 

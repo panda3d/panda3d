@@ -55,7 +55,7 @@ write(ostream &out, int indent_level) const {
       << "<Scalar> diffb { " << get_diff()[2] << " }\n";
     if (get_diff()[3] != 1.0) {
       indent(out, indent_level + 2)
-	<< "<Scalar> diffa { " << get_diff()[3] << " }\n";
+        << "<Scalar> diffa { " << get_diff()[3] << " }\n";
     }
   }
 
@@ -68,7 +68,7 @@ write(ostream &out, int indent_level) const {
       << "<Scalar> ambb { " << get_amb()[2] << " }\n";
     if (get_amb()[3] != 1.0) {
       indent(out, indent_level + 2)
-	<< "<Scalar> amba { " << get_amb()[3] << " }\n";
+        << "<Scalar> amba { " << get_amb()[3] << " }\n";
     }
   }
 
@@ -81,7 +81,7 @@ write(ostream &out, int indent_level) const {
       << "<Scalar> emitb { " << get_emit()[2] << " }\n";
     if (get_emit()[3] != 1.0) {
       indent(out, indent_level + 2)
-	<< "<Scalar> emita { " << get_emit()[3] << " }\n";
+        << "<Scalar> emita { " << get_emit()[3] << " }\n";
     }
   }
 
@@ -94,7 +94,7 @@ write(ostream &out, int indent_level) const {
       << "<Scalar> specb { " << get_spec()[2] << " }\n";
     if (get_spec()[3] != 1.0) {
       indent(out, indent_level + 2)
-	<< "<Scalar> speca { " << get_spec()[3] << " }\n";
+        << "<Scalar> speca { " << get_spec()[3] << " }\n";
     }
   }
 
@@ -133,12 +133,12 @@ bool EggMaterial::
 is_equivalent_to(const EggMaterial &other, int eq) const {
   if (eq & E_attributes) {
     if (_flags != other._flags ||
-	(has_diff() && get_diff() != other.get_diff()) ||
-	(has_amb() && get_amb() != other.get_amb()) ||
-	(has_emit() && get_emit() != other.get_emit()) ||
-	(has_spec() && get_spec() != other.get_spec()) ||
-	(has_shininess() && get_shininess() != other.get_shininess()) ||
-	(has_local() && get_local() != other.get_local())) {
+        (has_diff() && get_diff() != other.get_diff()) ||
+        (has_amb() && get_amb() != other.get_amb()) ||
+        (has_emit() && get_emit() != other.get_emit()) ||
+        (has_spec() && get_spec() != other.get_spec()) ||
+        (has_shininess() && get_shininess() != other.get_shininess()) ||
+        (has_local() && get_local() != other.get_local())) {
       return false;
     }
   }

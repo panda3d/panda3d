@@ -13,7 +13,7 @@
 class ImmediateTransition;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ImmediateAttribute
+//       Class : ImmediateAttribute
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ImmediateAttribute : public NodeAttribute {
@@ -21,7 +21,7 @@ public:
 
   INLINE_GRAPH ImmediateAttribute() {};
   INLINE_GRAPH ImmediateAttribute(const ImmediateAttribute &copy) :
-	       NodeAttribute(copy){};
+               NodeAttribute(copy){};
   INLINE_GRAPH void operator = (const ImmediateAttribute &copy)
                {NodeAttribute::operator = (copy);}
 public:
@@ -43,7 +43,7 @@ public:
   static void init_type() {
     NodeAttribute::init_type();
     register_type(_type_handle, "ImmediateAttribute",
-		  NodeAttribute::get_class_type());
+                  NodeAttribute::get_class_type());
   }
 
 private:

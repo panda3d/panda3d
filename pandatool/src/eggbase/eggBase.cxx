@@ -113,7 +113,7 @@ append_command_comment(EggData &data) {
       case '"':
       case ';':
       case '$':
-	legal = false;
+        legal = false;
       }
     }
 

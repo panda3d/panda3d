@@ -9,7 +9,7 @@
 #include <pandabase.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : HashGeneratorBase
+//       Class : HashGeneratorBase
 // Description : This is the base class for a number of classes that
 //               generate arbitrary hash numbers for complex objects,
 //               based fundamentally on a sequence of integers.

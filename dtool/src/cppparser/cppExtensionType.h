@@ -15,7 +15,7 @@ class CPPScope;
 class CPPIdentifier;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPExtensionType
+//       Class : CPPExtensionType
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPExtensionType : public CPPType {
@@ -28,7 +28,7 @@ public:
   };
 
   CPPExtensionType(Type type, CPPIdentifier *ident, CPPScope *current_scope,
-		   const CPPFile &file);
+                   const CPPFile &file);
 
   virtual string get_simple_name() const;
   virtual string get_local_name(CPPScope *scope = NULL) const;
@@ -38,14 +38,14 @@ public:
   virtual bool is_tbd() const;
 
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
-					  CPPScope *current_scope,
-					  CPPScope *global_scope);
+                                          CPPScope *current_scope,
+                                          CPPScope *global_scope);
 
   virtual bool is_equivalent(const CPPType &other) const;
 
 
   virtual void output(ostream &out, int indent_level, CPPScope *scope,
-		      bool complete) const;
+                      bool complete) const;
   virtual SubType get_subtype() const;
 
   virtual CPPExtensionType *as_extension_type();

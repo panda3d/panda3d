@@ -13,7 +13,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurfaceBlockTransform
+//       Class : LwoSurfaceBlockTransform
 // Description : Specifies a center point, scale, or rotation for the
 //               texture coordinates in this shader's texture mapping.
 //               The type of transform is specified by the ID of the
@@ -40,7 +40,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoSurfaceBlockTransform",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

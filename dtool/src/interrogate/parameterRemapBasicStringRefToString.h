@@ -11,7 +11,7 @@
 #include "parameterRemapToString.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ParameterRemapBasicStringRefToString
+//       Class : ParameterRemapBasicStringRefToString
 // Description : Maps a const reference to a basic_string<char> to an
 //               atomic string.
 ////////////////////////////////////////////////////////////////////

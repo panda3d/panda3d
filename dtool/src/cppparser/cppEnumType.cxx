@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////
 CPPEnumType::
 CPPEnumType(CPPIdentifier *ident, CPPScope *current_scope,
-	    const CPPFile &file) :
+            const CPPFile &file) :
   CPPExtensionType(T_enum, ident, current_scope, file)
 {
 }
@@ -33,7 +33,7 @@ void CPPEnumType::
 add_element(const string &name, CPPScope *scope, CPPExpression *value) {
   CPPType *type = 
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_int,
-					CPPSimpleType::F_unsigned));
+                                        CPPSimpleType::F_unsigned));
   CPPIdentifier *ident = new CPPIdentifier(name);
   CPPInstance *inst = new CPPInstance(type, ident);
   inst->_initializer = value;
@@ -59,7 +59,7 @@ is_incomplete() const {
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPEnumType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
-		CPPScope *current_scope, CPPScope *global_scope) {
+                CPPScope *current_scope, CPPScope *global_scope) {
   SubstDecl::const_iterator si = subst.find(this);
   if (si != subst.end()) {
     return (*si).second;
@@ -110,7 +110,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
     for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
       indent(out, indent_level + 2) << (*ei)->get_local_name();
       if ((*ei)->_initializer != NULL) {
-	out << " = " << *(*ei)->_initializer;
+        out << " = " << *(*ei)->_initializer;
       }
       out << ",\n";
     }

@@ -364,9 +364,9 @@ is_char(CPPType *type) {
     {
       CPPSimpleType *simple_type = type->as_simple_type();
       if (simple_type != (CPPSimpleType *)NULL) {
-	return 
-	  simple_type->_type == CPPSimpleType::T_char &&
-	  simple_type->_flags == 0;
+        return 
+          simple_type->_type == CPPSimpleType::T_char &&
+          simple_type->_flags == 0;
       }
     }
 
@@ -472,8 +472,8 @@ is_bool(CPPType *type) {
     {
       CPPSimpleType *simple_type = type->as_simple_type();
       if (simple_type != (CPPSimpleType *)NULL) {
-	return 
-	  simple_type->_type == CPPSimpleType::T_bool;
+        return 
+          simple_type->_type == CPPSimpleType::T_bool;
       }
     }
 
@@ -504,10 +504,10 @@ is_integer(CPPType *type) {
     {
       CPPSimpleType *simple_type = type->as_simple_type();
       if (simple_type != (CPPSimpleType *)NULL) {
-	return 
-	  (simple_type->_type == CPPSimpleType::T_bool ||
-	   simple_type->_type == CPPSimpleType::T_char ||
-	   simple_type->_type == CPPSimpleType::T_int);
+        return 
+          (simple_type->_type == CPPSimpleType::T_bool ||
+           simple_type->_type == CPPSimpleType::T_char ||
+           simple_type->_type == CPPSimpleType::T_int);
       }
     }
 
@@ -535,9 +535,9 @@ is_float(CPPType *type) {
     {
       CPPSimpleType *simple_type = type->as_simple_type();
       if (simple_type != (CPPSimpleType *)NULL) {
-	return 
-	  (simple_type->_type == CPPSimpleType::T_float ||
-	   simple_type->_type == CPPSimpleType::T_double);
+        return 
+          (simple_type->_type == CPPSimpleType::T_float ||
+           simple_type->_type == CPPSimpleType::T_double);
       }
     }
 
@@ -589,11 +589,11 @@ is_reference_count(CPPType *type) {
       CPPStructType *stype = type->as_struct_type();
       CPPStructType::Derivation::const_iterator di;
       for (di = stype->_derivation.begin();
-	   di != stype->_derivation.end();
-	   ++di) {
-	if (is_reference_count((*di)._base)) {
-	  return true;
-	}
+           di != stype->_derivation.end();
+           ++di) {
+        if (is_reference_count((*di)._base)) {
+          return true;
+        }
       }
     }
 
@@ -651,11 +651,11 @@ is_pointer_to_base(CPPType *type) {
       CPPStructType *stype = type->as_struct_type();
       CPPStructType::Derivation::const_iterator di;
       for (di = stype->_derivation.begin();
-	   di != stype->_derivation.end();
-	   ++di) {
-	if (is_pointer_to_base((*di)._base)) {
-	  return true;
-	}
+           di != stype->_derivation.end();
+           ++di) {
+        if (is_pointer_to_base((*di)._base)) {
+          return true;
+        }
       }
     }
 
@@ -728,7 +728,7 @@ involves_unpublished(CPPType *type) {
     // unpublished.
     if (type->_declaration != (CPPTypeDeclaration *)NULL) {
       if (type->_declaration->_vis <= min_vis) {
-	return false;
+        return false;
       }
     }
     {
@@ -737,11 +737,11 @@ involves_unpublished(CPPType *type) {
       bool any_exported = false;
       CPPScope::Declarations::const_iterator di;
       for (di = scope->_declarations.begin(); 
-	   di != scope->_declarations.end() && !any_exported; 
-	   ++di) {
-	if ((*di)->_vis <= min_vis) {
-	  any_exported = true;
-	}
+           di != scope->_declarations.end() && !any_exported; 
+           ++di) {
+        if ((*di)->_vis <= min_vis) {
+          any_exported = true;
+        }
       }
 
       return !any_exported;
@@ -750,7 +750,7 @@ involves_unpublished(CPPType *type) {
   case CPPDeclaration::ST_function:
     if (type->_declaration != (CPPTypeDeclaration *)NULL) {
       if (type->_declaration->_vis <= min_vis) {
-	return false;
+        return false;
       }
     }
     return true;
@@ -758,15 +758,15 @@ involves_unpublished(CPPType *type) {
     {
       CPPFunctionType *ftype = type->as_function_type();
       if (involves_unpublished(ftype->_return_type)) {
-	return true;
+        return true;
       }
       const CPPParameterList::Parameters &params = 
-	ftype->_parameters->_parameters;
+        ftype->_parameters->_parameters;
       CPPParameterList::Parameters::const_iterator pi;
       for (pi = params.begin(); pi != params.end(); ++pi) {
-	if (involves_unpublished((*pi)->_type)) {
-	  return true;
-	}
+        if (involves_unpublished((*pi)->_type)) {
+          return true;
+        }
       }
       return false;
     }
@@ -805,15 +805,15 @@ involves_protected(CPPType *type) {
     {
       CPPFunctionType *ftype = type->as_function_type();
       if (involves_protected(ftype->_return_type)) {
-	return true;
+        return true;
       }
       const CPPParameterList::Parameters &params = 
-	ftype->_parameters->_parameters;
+        ftype->_parameters->_parameters;
       CPPParameterList::Parameters::const_iterator pi;
       for (pi = params.begin(); pi != params.end(); ++pi) {
-	if (involves_protected((*pi)->_type)) {
-	  return true;
-	}
+        if (involves_protected((*pi)->_type)) {
+          return true;
+        }
       }
       return false;
     }
@@ -945,14 +945,14 @@ get_pointer_type(CPPStructType *pt_type) {
     // takes no parameters.
     CPPFunctionGroup::Instances::iterator ii;
     for (ii = fgroup->_instances.begin();
-	 ii != fgroup->_instances.end();
-	 ++ii) {
+         ii != fgroup->_instances.end();
+         ++ii) {
       CPPInstance *function = (*ii);
       CPPFunctionType *ftype = function->_type->as_function_type();
       assert(ftype != (CPPFunctionType *)NULL);
       if (ftype->_parameters->_parameters.empty()) {
-	// Here's the function p().  What's its return type?
-	return resolve_type(ftype->_return_type);
+        // Here's the function p().  What's its return type?
+        return resolve_type(ftype->_return_type);
       }
     }
   }
@@ -1089,7 +1089,7 @@ get_int_type() {
 ////////////////////////////////////////////////////////////////////
 string TypeManager::
 get_function_signature(CPPInstance *function,
-		       int num_default_parameters) {
+                       int num_default_parameters) {
   CPPFunctionType *ftype = function->_type->as_function_type();
   assert(ftype != (CPPFunctionType *)NULL);
 
@@ -1168,13 +1168,13 @@ has_protected_destructor(CPPType *type) {
     if ((*di)->get_subtype() == CPPDeclaration::ST_instance) {
       CPPInstance *inst = (*di)->as_instance();
       if (inst->_type->get_subtype() == CPPDeclaration::ST_function) {
-	// Here's a function declaration.
-	CPPFunctionType *ftype = inst->_type->as_function_type();
-	assert(ftype != (CPPFunctionType *)NULL);
-	if ((ftype->_flags & CPPFunctionType::F_destructor) != 0) {
-	  // Here's the destructor!  Is it protected?
-	  return (inst->_vis > V_public);
-	}
+        // Here's a function declaration.
+        CPPFunctionType *ftype = inst->_type->as_function_type();
+        assert(ftype != (CPPFunctionType *)NULL);
+        if ((ftype->_flags & CPPFunctionType::F_destructor) != 0) {
+          // Here's the destructor!  Is it protected?
+          return (inst->_vis > V_public);
+        }
       }
     }
   }

@@ -75,9 +75,9 @@ verify_arc_list(Iterator begin, Iterator end) {
       int sort = (*i)->get_sort();
       ++i;
       while (i < end) {
-	nassertv(sort <= (*i)->get_sort());
-	sort = (*i)->get_sort();
-	++i;
+        nassertv(sort <= (*i)->get_sort());
+        sort = (*i)->get_sort();
+        ++i;
       }
     }
   }
@@ -171,7 +171,7 @@ find_arc(Iterator begin, Iterator end, NodeRelation *arc) {
     Iterator i = center;
     while (i < end && (*i)->get_sort() == arc->get_sort()) {
       if ((*i) == arc) {
-	return i;
+        return i;
       }
       ++i;
     }
@@ -181,7 +181,7 @@ find_arc(Iterator begin, Iterator end, NodeRelation *arc) {
     --i;
     while (i >= begin && (*i)->get_sort() == arc->get_sort()) {
       if ((*i) == arc) {
-	return i;
+        return i;
       }
       --i;
     }
@@ -210,10 +210,10 @@ internal_insert_arc(ArcList &alist, NodeRelation *arc) {
   if (graph_cat.is_debug()) {
     if (position == alist.end()) {
       graph_cat.debug()
-	<< "Inserting " << *arc << " at end\n";
+        << "Inserting " << *arc << " at end\n";
     } else {
       graph_cat.debug()
-	<< "Inserting " << *arc << " before " << *(*position) << "\n";
+        << "Inserting " << *arc << " before " << *(*position) << "\n";
     }
   }
   */
@@ -245,10 +245,10 @@ internal_remove_arc(ArcList &alist, NodeRelation *arc) {
     TYPENAME ArcList::iterator next = position + 1;
     if (next == list.end()) {
       graph_cat.debug()
-	<< "Removing " << *arc << " from end\n";
+        << "Removing " << *arc << " from end\n";
     } else {
       graph_cat.debug()
-	<< "Removing " << *arc << " from before " << *(*next) << "\n";
+        << "Removing " << *arc << " from before " << *(*next) << "\n";
     }
   }
   */
@@ -529,8 +529,8 @@ adjust_all_priorities(int adjustment) {
 ////////////////////////////////////////////////////////////////////
 bool NodeRelation::
 sub_render_trans(const AllAttributesWrapper &attrib,
-		 AllTransitionsWrapper &trans,
-		 RenderTraverser *trav) {
+                 AllTransitionsWrapper &trans,
+                 RenderTraverser *trav) {
   bool all_true = true;
   NodeTransitions::const_iterator ti;
   for (ti = _transitions.begin(); ti != _transitions.end(); ++ti) {
@@ -691,7 +691,7 @@ detach() {
   // These should never be NULL, because we're already attached, after
   // all.
   nassertr(parent_connection != (NodeConnection *)NULL &&
-	   child_connection != (NodeConnection *)NULL, result);
+           child_connection != (NodeConnection *)NULL, result);
 
   DownRelationPointers &parent_list = parent_connection->get_down();
   UpRelationPointers &child_list = child_connection->get_up();
@@ -838,7 +838,7 @@ recompute_bound() {
       << "Cannot put " << _bound->get_type() << " around:\n";
     for (int i = 0; i < (int)child_volumes.size(); i++) {
       graph_cat.error(false)
-	<< "  " << *child_volumes[i] << "\n";
+        << "  " << *child_volumes[i] << "\n";
     }
   }
 #endif
@@ -888,7 +888,7 @@ write_datagram(BamWriter *manager, Datagram &me)
 int NodeRelation::
 complete_pointers(vector_typedWritable &plist, BamReader *manager) {
   nassertr(plist[0] != TypedWritable::Null &&
-	   plist[1] != TypedWritable::Null, 0);
+           plist[1] != TypedWritable::Null, 0);
   _parent = DCAST(Node, plist[0]);
   _child = DCAST(Node, plist[1]);
 
@@ -924,8 +924,8 @@ complete_pointers(vector_typedWritable &plist, BamReader *manager) {
     if (plist[i] == TypedWritable::Null)
     {
       graph_cat->warning() 
-	<< get_type().get_name() 
-	<< ": Ignoring null Transition" << endl;
+        << get_type().get_name() 
+        << ": Ignoring null Transition" << endl;
     }
     else
     {
@@ -1004,10 +1004,10 @@ init_type() {
   TypedWritableReferenceCount::init_type();
   BoundedObject::init_type();
   register_type(_type_handle, "NodeRelation",
-		TypedWritableReferenceCount::get_class_type(),
-		BoundedObject::get_class_type());
+                TypedWritableReferenceCount::get_class_type(),
+                BoundedObject::get_class_type());
   register_type(_stashed_type_handle, "StashedNodeRelation",
-		get_class_type());
+                get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////

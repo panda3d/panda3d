@@ -18,9 +18,9 @@
 ////////////////////////////////////////////////////////////////////
 EggConverter::
 EggConverter(const string &format_name, 
-	     const string &preferred_extension,
-	     bool allow_last_param,
-	     bool allow_stdout) : 
+             const string &preferred_extension,
+             bool allow_last_param,
+             bool allow_stdout) : 
   EggFilter(allow_last_param, allow_stdout),
   _format_name(format_name)
 {

@@ -24,7 +24,7 @@ class NodeRelation;
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, MULTITRANSITION_NODE);
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : MultiNodeTransition
+//       Class : MultiNodeTransition
 // Description : This is a particular instantiation of MultiTransition
 //               on PT_Node.  It is its own class in an attempt to
 //               cut down on code bloat; if a particular transition
@@ -38,7 +38,7 @@ class EXPCL_PANDA MultiNodeTransition :
 protected:
   INLINE_GRAPH MultiNodeTransition() {};
   INLINE_GRAPH MultiNodeTransition(const MultiNodeTransition &copy) :
-	  MultiTransition<PT_Node, PointerNameClass>(copy) {};
+          MultiTransition<PT_Node, PointerNameClass>(copy) {};
 
   INLINE_GRAPH void operator = (const MultiNodeTransition &copy) 
           {MultiTransition<PT_Node, PointerNameClass>::operator = (copy);};
@@ -54,8 +54,8 @@ public:
   static void init_type() {
     MultiTransition<PT_Node, PointerNameClass>::init_type();
     register_type(_type_handle, "MultiNodeTransition",
-		  MultiTransition<PT_Node, PointerNameClass>::
-		  get_class_type());
+                  MultiTransition<PT_Node, PointerNameClass>::
+                  get_class_type());
   }
 
 private:

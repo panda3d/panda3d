@@ -60,8 +60,8 @@ void SgiGlxGraphicsPipe::init_type(void) {
   sgiGraphicsPipe::init_type();
   glxDisplay::init_type();
   register_type(_type_handle, "SgiGlxGraphicsPipe",
-		sgiGraphicsPipe::get_class_type(),
-		glxDisplay::get_class_type());
+                sgiGraphicsPipe::get_class_type(),
+                glxDisplay::get_class_type());
 }
 
 TypeHandle SgiGlxGraphicsPipe::get_type(void) const {

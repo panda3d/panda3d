@@ -13,7 +13,7 @@
 #include <filename.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltExternalReference
+//       Class : FltExternalReference
 // Description : An external reference to another flt file (possibly
 //               to a specific bead within the flt file).
 ////////////////////////////////////////////////////////////////////
@@ -53,7 +53,7 @@ public:
   static void init_type() {
     FltBead::init_type();
     register_type(_type_handle, "FltExternalReference",
-		  FltBead::get_class_type());
+                  FltBead::get_class_type());
   }
 
 private:

@@ -73,7 +73,7 @@ xform(const LMatrix4f &mat) {
   new_bounds.reserve(num_colliders);
   for (int c = 0; c < num_colliders; c++) {
     if (!has_collider(c) || 
-	get_local_bound(c) == (GeometricBoundingVolume *)NULL) {
+        get_local_bound(c) == (GeometricBoundingVolume *)NULL) {
       new_bounds.push_back((GeometricBoundingVolume *)NULL);
     } else {
       const GeometricBoundingVolume *old_bound = get_local_bound(c);

@@ -116,7 +116,7 @@ main(int argc, char *argv[]) {
   }
   if (ds_index < 0 || ds_index >= NUM_DATASETS) {
     nout << "Invalid dataset; choose a number in the range 0 to "
-	 << NUM_DATASETS - 1 << "\n";
+         << NUM_DATASETS - 1 << "\n";
     exit(1);
   }
 
@@ -177,9 +177,9 @@ main(int argc, char *argv[]) {
     for (wi = wait.begin(); wi != wait.end(); ++wi) {
       const WaitRequest &wr = (*wi);
       if (wr._start) {
-	_collectors[wr._index].start(client->get_main_thread(), wr._time);
+        _collectors[wr._index].start(client->get_main_thread(), wr._time);
       } else {
-	_collectors[wr._index].stop(client->get_main_thread(), wr._time);
+        _collectors[wr._index].stop(client->get_main_thread(), wr._time);
       }
     }
 

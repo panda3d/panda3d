@@ -71,7 +71,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 bool DrawBoundsTransition::
 sub_render(NodeRelation *arc, const AllAttributesWrapper &attrib,
-	   AllTransitionsWrapper &, RenderTraverser *trav) {
+           AllTransitionsWrapper &, RenderTraverser *trav) {
   GraphicsStateGuardian *gsg = trav->get_gsg();
 
   const BoundingVolume &vol = arc->get_bound();
@@ -117,8 +117,8 @@ sub_render(NodeRelation *arc, const AllAttributesWrapper &attrib,
 
     } else {
       sgattrib_cat.warning()
-	<< "Don't know how to draw a representation of "
-	<< vol.get_class_type() << "\n";
+        << "Don't know how to draw a representation of "
+        << vol.get_class_type() << "\n";
     }
   }
 

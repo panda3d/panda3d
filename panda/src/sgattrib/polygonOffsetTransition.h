@@ -13,7 +13,7 @@
 #include <onTransition.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PolygonOffsetTransition
+//       Class : PolygonOffsetTransition
 // Description : This controls the amount of offseting done for depth
 //               tests.  The first value is the units, this is the 
 //               fixed offseting to be used, and the second value 
@@ -51,7 +51,7 @@ public:
   static void init_type() {
     OnTransition::init_type();
     register_type(_type_handle, "PolygonOffsetTransition",
-		  OnTransition::get_class_type());
+                  OnTransition::get_class_type());
   }
 
 private:

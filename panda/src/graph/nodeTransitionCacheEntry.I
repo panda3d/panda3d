@@ -71,7 +71,7 @@ compare_to(const NodeTransitionCacheEntry &other) const {
 
   // This should be guaranteed by the above logic.
   nassertr(_trans != (NodeTransition *)NULL &&
-	   other._trans != (NodeTransition *)NULL, false);
+           other._trans != (NodeTransition *)NULL, false);
 
   return _trans->compare_to(*other._trans);
 }
@@ -244,7 +244,7 @@ invert(const NodeTransitionCacheEntry &a) {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeTransitionCacheEntry NodeTransitionCacheEntry::
 compose(const NodeTransitionCacheEntry &a, 
-	const NodeTransitionCacheEntry &b) {
+        const NodeTransitionCacheEntry &b) {
   if (a.is_identity()) {
     return b;
   }
@@ -262,7 +262,7 @@ compose(const NodeTransitionCacheEntry &a,
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeTransitionCacheEntry NodeTransitionCacheEntry::
 invert_compose(const NodeTransitionCacheEntry &a, 
-	       const NodeTransitionCacheEntry &b) {
+               const NodeTransitionCacheEntry &b) {
   if (a.is_identity()) {
     return b;
   }
@@ -298,9 +298,9 @@ invert_compose(const NodeTransitionCacheEntry &a,
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeTransitionCacheEntry NodeTransitionCacheEntry::
 cached_compose(const NodeTransitionCacheEntry &a, 
-	       const NodeTransitionCacheEntry &cache, 
-	       const NodeTransitionCacheEntry &b,
-	       UpdateSeq now) {
+               const NodeTransitionCacheEntry &cache, 
+               const NodeTransitionCacheEntry &b,
+               UpdateSeq now) {
   if (wrt_cat.is_spam()) {
     wrt_cat.spam()
       << "Composing:\n"

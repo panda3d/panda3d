@@ -23,7 +23,7 @@ class LoaderToken;
 ////////////////////////////////////////////////////////////////////
 //       Class : Loader
 // Description : Handles database loading through asynchronous
-//		 threading
+//               threading
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Loader : public AsyncUtility {
 PUBLISHED:

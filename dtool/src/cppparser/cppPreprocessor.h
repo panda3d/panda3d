@@ -27,7 +27,7 @@ class CPPExpression;
 //#define CPP_VERBOSE_LEX
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPPreprocessor
+//       Class : CPPPreprocessor
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPPreprocessor {
@@ -50,9 +50,9 @@ public:
 #endif
 
   void warning(const string &message, int line = 0, int col = 0,
-	       CPPFile file = CPPFile());
+               CPPFile file = CPPFile());
   void error(const string &message, int line = 0, int col = 0,
-	     CPPFile file = CPPFile());
+             CPPFile file = CPPFile());
 
   CPPCommentBlock *get_comment_before(int line, CPPFile file);
 
@@ -95,7 +95,7 @@ protected:
   bool push_string(const string &input, bool lock_position);
 
   CPPExpression *parse_expr(const string &expr, CPPScope *current_scope,
-			    CPPScope *global_scope);
+                            CPPScope *global_scope);
 
 private:
   CPPToken internal_get_next_token();
@@ -109,19 +109,19 @@ private:
   int get_preprocessor_args(int c, string &args);
 
   void handle_define_directive(const string &args, int first_line,
-			       int first_col, const CPPFile &first_file);
+                               int first_col, const CPPFile &first_file);
   void handle_undef_directive(const string &args, int first_line,
-			      int first_col, const CPPFile &first_file);
+                              int first_col, const CPPFile &first_file);
   void handle_ifdef_directive(const string &args, int first_line,
-			      int first_col, const CPPFile &first_file);
+                              int first_col, const CPPFile &first_file);
   void handle_ifndef_directive(const string &args, int first_line,
-			       int first_col, const CPPFile &first_file);
+                               int first_col, const CPPFile &first_file);
   void handle_if_directive(const string &args, int first_line,
-			   int first_col, const CPPFile &first_file);
+                           int first_col, const CPPFile &first_file);
   void handle_include_directive(const string &args, int first_line,
-				int first_col, const CPPFile &first_file);
+                                int first_col, const CPPFile &first_file);
   void handle_error_directive(const string &args, int first_line,
-			      int first_col, const CPPFile &first_file);
+                              int first_col, const CPPFile &first_file);
 
   void skip_false_if_block(bool consider_elifs);
 
@@ -130,13 +130,13 @@ private:
   CPPToken get_identifier(int c);
   CPPToken expand_manifest(const CPPManifest *manifest);
   void extract_manifest_args(const string &name, int num_args,
-			     vector_string &args);
+                             vector_string &args);
   void expand_defined_function(string &expr, size_t q, size_t &p);
   void expand_manifest_inline(string &expr, size_t q, size_t &p,
-			      const CPPManifest *manifest);
+                              const CPPManifest *manifest);
   void extract_manifest_args_inline(const string &name, int num_args,
-				    vector_string &args,
-				    const string &expr, size_t &p);
+                                    vector_string &args,
+                                    const string &expr, size_t &p);
 
   CPPToken get_number(int c, int c2 = 0);
   static int check_keyword(const string &name);

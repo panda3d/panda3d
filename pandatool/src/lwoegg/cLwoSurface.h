@@ -23,7 +23,7 @@ class LwoSurfaceBlock;
 class EggPrimitive;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : CLwoSurface
+//       Class : CLwoSurface
 // Description : This class is a wrapper around LwoSurface and stores
 //               additional information useful during the
 //               conversion-to-egg process.
@@ -36,8 +36,8 @@ public:
   INLINE const string &get_name() const;
 
   void apply_properties(EggPrimitive *egg_prim,
-			vector_PT_EggVertex &egg_vertices,
-			float &smooth_angle);
+                        vector_PT_EggVertex &egg_vertices,
+                        float &smooth_angle);
   bool check_texture();
   bool check_material();
 

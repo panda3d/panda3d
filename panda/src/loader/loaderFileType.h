@@ -14,7 +14,7 @@
 #include <filename.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LoaderFileType
+//       Class : LoaderFileType
 // Description : This is the base class for a family of scene-graph
 //               file types that the Loader supports.  Each kind of
 //               loader that's available should define a corresponding

@@ -34,11 +34,11 @@ CLwoSurfaceBlockTMap(LwoToEggConverter *converter, const LwoSurfaceBlockTMap *tm
     if (chunk->is_of_type(LwoSurfaceBlockTransform::get_class_type())) {
       const LwoSurfaceBlockTransform *trans = DCAST(LwoSurfaceBlockTransform, chunk);
       if (trans->get_id() == IffId("CNTR")) {
-	_center = trans->_vec;
+        _center = trans->_vec;
       } else if (trans->get_id() == IffId("SIZE")) {
-	_size = trans->_vec;
+        _size = trans->_vec;
       } else if (trans->get_id() == IffId("ROTA")) {
-	_rotation = trans->_vec;
+        _rotation = trans->_vec;
       }
 
     } else if (chunk->is_of_type(LwoSurfaceBlockRefObj::get_class_type())) {
@@ -62,8 +62,8 @@ CLwoSurfaceBlockTMap(LwoToEggConverter *converter, const LwoSurfaceBlockTMap *tm
 void CLwoSurfaceBlockTMap::
 get_transform(LMatrix4d &mat) const {
   LPoint3d hpr(rad_2_deg(_rotation[0]),
-	       rad_2_deg(-_rotation[1]),
-	       rad_2_deg(-_rotation[2]));
+               rad_2_deg(-_rotation[1]),
+               rad_2_deg(-_rotation[2]));
   compose_matrix(mat, LCAST(double, _size), hpr,
-		 LCAST(double, _center), CS_yup_left);
+                 LCAST(double, _center), CS_yup_left);
 }

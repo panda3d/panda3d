@@ -107,12 +107,12 @@ mesh() {
     Strips::iterator si;
     for (si = _quads.begin(); si != _quads.end(); ++si) {
       if ((*si)._status == MS_alive) {
-	(*si)._status = MS_done;
+        (*si)._status = MS_done;
     }
     }
     for (si = _strips.begin(); si != _strips.end(); ++si) {
       if ((*si)._status == MS_alive) {
-	(*si)._status = MS_done;
+        (*si)._status = MS_done;
       }
     }
   }
@@ -185,7 +185,7 @@ getPrim() {
     if (num_components > 0) {
       prim.get_component(0).set_color_value(&_colors[0], i1);
       for (int i = 1; i < num_components; i++) {
-	prim.get_component(i).set_color_value(&_colors[0], i2);
+        prim.get_component(i).set_color_value(&_colors[0], i2);
       }
     } else {
       prim.set_color_value(&_colors[0], i1);
@@ -208,13 +208,13 @@ getPrim() {
       ColorSheetMap::iterator ci = _color_sheets.find(strip._row_id);
       
       if (ci == _color_sheets.end()) {
-	Colorf color1;
-	make_random_color(color1);
-	i1 = _colors.size();
-	_colors.push_back(color1);
-	_color_sheets[strip._row_id] = i1;
+        Colorf color1;
+        make_random_color(color1);
+        i1 = _colors.size();
+        _colors.push_back(color1);
+        _color_sheets[strip._row_id] = i1;
       } else {
-	i1 = (*ci).second;
+        i1 = (*ci).second;
       }
     }
       
@@ -257,41 +257,41 @@ getPrim() {
     } else {
       switch (orig_type) {
       case BPT_quad:
-	i1 = 2;
-	break;
+        i1 = 2;
+        break;
 
       case BPT_quadstrip:
-	i1 = 3;
-	break;
+        i1 = 3;
+        break;
       
       case BPT_tristrip:
-	make_random_color(color1);
-	// Make it a shade of red.
-	if (color1[0] < color1[1]) {
-	  float t = color1[0];
-	  color1[0] = color1[1];
-	  color1[1] = t;
-	}
-	color1[2] = color1[1];
-	i1 = _colors.size();
-	_colors.push_back(color1);
-	break;
-	
+        make_random_color(color1);
+        // Make it a shade of red.
+        if (color1[0] < color1[1]) {
+          float t = color1[0];
+          color1[0] = color1[1];
+          color1[1] = t;
+        }
+        color1[2] = color1[1];
+        i1 = _colors.size();
+        _colors.push_back(color1);
+        break;
+
       case BPT_trifan:
-	make_random_color(color1);
-	// Make it a shade of green.
-	if (color1[0] > color1[1]) {
-	  float t = color1[0];
-	  color1[0] = color1[1];
-	  color1[1] = t;
-	}
-	color1[2] = color1[0];
-	i1 = _colors.size();
-	_colors.push_back(color1);
-	break;
+        make_random_color(color1);
+        // Make it a shade of green.
+        if (color1[0] > color1[1]) {
+          float t = color1[0];
+          color1[0] = color1[1];
+          color1[1] = t;
+        }
+        color1[2] = color1[0];
+        i1 = _colors.size();
+        _colors.push_back(color1);
+        break;
 
       default:
-	i1 = 0;
+        i1 = 0;
       }
     }
       
@@ -343,7 +343,7 @@ show(ostream &out) {
     EdgePtrs::const_iterator ei;
     for (ei = edges.begin(); ei != edges.end(); ++ei) {
       if (!(*ei)->_strips.empty() || !(*ei)->_opposite->_strips.empty()) {
-	out << "  " << **ei << "\n";
+        out << "  " << **ei << "\n";
       }
     }
   }
@@ -419,8 +419,8 @@ build_sheets() {
     // this quad.  Leave it alone.  We also need to leave it be if it
     // has no available edges.
     if ((*best)._row_id >= 0 &&
-	(*best)._status == MS_alive &&
-	!(*best)._edges.empty()) {
+        (*best)._status == MS_alive &&
+        !(*best)._edges.empty()) {
       // There are two possible sheets we could make from this quad,
       // in two different orientations.  Measure them both and figure
       // out which one is best.
@@ -432,7 +432,7 @@ build_sheets() {
       int num_rows_a = 0;
       int first_row_id_a = first_row_id;
       (*best).measure_sheet(edge_a, true, num_prims_a, num_rows_a, 
-			   first_row_id_a, 0, 0);
+                           first_row_id_a, 0, 0);
       first_row_id += num_rows_a;
       double avg_length_a = (double)num_prims_a / (double)num_rows_a;
       
@@ -441,32 +441,32 @@ build_sheets() {
       int first_row_id_b = first_row_id;
       double avg_length_b;
       if (edge_b != NULL) {
-	(*best).measure_sheet(edge_b, true, num_prims_b, num_rows_b, 
-			     first_row_id_b, 0, 0);
-	first_row_id += num_rows_b;
-	avg_length_b = (double)num_prims_b / (double)num_rows_b;
+        (*best).measure_sheet(edge_b, true, num_prims_b, num_rows_b, 
+                             first_row_id_b, 0, 0);
+        first_row_id += num_rows_b;
+        avg_length_b = (double)num_prims_b / (double)num_rows_b;
       }
 
       // Which sheet is better?
       if (edge_b != NULL && avg_length_b >= avg_length_a) {
-	// Sheet b.  That's easy.
-	(*best).cut_sheet(first_row_id_b, true, *_bucket);
+        // Sheet b.  That's easy.
+        (*best).cut_sheet(first_row_id_b, true, *_bucket);
 
       } else {
-	// Nope, sheet a is better.  This is a bit of a nuisance
-	// because we've unfortunately wiped out the information we
-	// stored when we measured sheet a.  We'll have to do it
-	// again.
+        // Nope, sheet a is better.  This is a bit of a nuisance
+        // because we've unfortunately wiped out the information we
+        // stored when we measured sheet a.  We'll have to do it
+        // again.
       
-	num_prims_a = 0;
-	num_rows_a = 0;
-	first_row_id_a = first_row_id;
-	(*best).measure_sheet(edge_a, true, num_prims_a, num_rows_a, 
-			     first_row_id_a, 0, 0);
-	first_row_id += num_rows_a;
+        num_prims_a = 0;
+        num_rows_a = 0;
+        first_row_id_a = first_row_id;
+        (*best).measure_sheet(edge_a, true, num_prims_a, num_rows_a, 
+                             first_row_id_a, 0, 0);
+        first_row_id += num_rows_a;
 
-	// Now we can cut it.
-	(*best).cut_sheet(first_row_id_a, true, *_bucket);
+        // Now we can cut it.
+        (*best).cut_sheet(first_row_id_a, true, *_bucket);
       }
     }
 
@@ -507,43 +507,43 @@ find_fans() {
       EdgePtrs::iterator ei;
       Edge::Strips::iterator si;
       for (ei = edges.begin(); ei != edges.end(); ++ei) {
-	for (si = (*ei)->_strips.begin(); 
-	     si != (*ei)->_strips.end();
-	     ++si) {
-	  Strip *strip = *si;
-	  if (strip->_type == BPT_tri) {
-	    fans.push_back(FanMaker(&v, strip, this));
-	  }
-	}
+        for (si = (*ei)->_strips.begin(); 
+             si != (*ei)->_strips.end();
+             ++si) {
+          Strip *strip = *si;
+          if (strip->_type == BPT_tri) {
+            fans.push_back(FanMaker(&v, strip, this));
+          }
+        }
       }
       
       // Sort the fans list by edge pointers, and remove duplicates.
       sort(fans.begin(), fans.end());
       fans.erase(unique(fans.begin(), fans.end()),
-		 fans.end());
+                 fans.end());
       
       FanMakers::iterator fi, fi2;
       
       // Now pull out connected edges.
       int joined_any;
       do {
-	joined_any = false;
-	for (fi = fans.begin(); fi != fans.end(); ++fi) {
-	  if (!(*fi).is_empty()) {
-	    fi2 = fi;
-	    for (++fi2; fi2 != fans.end(); ++fi2) {
-	      if (!(*fi2).is_empty()) {
-		joined_any = (*fi).join(*fi2);
-	      }
-	    }
-	  }
-	}
+        joined_any = false;
+        for (fi = fans.begin(); fi != fans.end(); ++fi) {
+          if (!(*fi).is_empty()) {
+            fi2 = fi;
+            for (++fi2; fi2 != fans.end(); ++fi2) {
+              if (!(*fi2).is_empty()) {
+                joined_any = (*fi).join(*fi2);
+              }
+            }
+          }
+        }
       } while (joined_any);
       
       for (fi = fans.begin(); fi != fans.end(); ++fi) {
-	if ((*fi).is_valid()) {
-	  (*fi).build();
-	}
+        if ((*fi).is_valid()) {
+          (*fi).build();
+        }
       }
     }
   }
@@ -588,16 +588,16 @@ make_quads() {
 
     if (tri->_status == MS_alive) {
       if (tri->find_ideal_mate(mate, common_edge, *_bucket)) {
-	// Does our chosen mate want us too?
-	if (mate->_type == BPT_tri && mate->_status == MS_alive &&
-	    mate->find_ideal_mate(mate2, common_edge2, *_bucket) &&
-	    mate2 == tri) {
-	  // Hooray!
-	  soulmates.push_back(Matched(Pair(tri, mate), common_edge));
-	  // We'll temporarily mark the two tris as paired.
-	  tri->_status = MS_paired;
-	  mate->_status = MS_paired;
-	}
+        // Does our chosen mate want us too?
+        if (mate->_type == BPT_tri && mate->_status == MS_alive &&
+            mate->find_ideal_mate(mate2, common_edge2, *_bucket) &&
+            mate2 == tri) {
+          // Hooray!
+          soulmates.push_back(Matched(Pair(tri, mate), common_edge));
+          // We'll temporarily mark the two tris as paired.
+          tri->_status = MS_paired;
+          mate->_status = MS_paired;
+        }
       }
     }
   }

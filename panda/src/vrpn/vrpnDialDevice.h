@@ -24,7 +24,7 @@ class VrpnDial;
 class VrpnDialDevice : public ClientDialDevice {
 public:
   VrpnDialDevice(VrpnClient *client, const string &device_name,
-		   VrpnDial *vrpn_dial);
+                   VrpnDial *vrpn_dial);
   virtual ~VrpnDialDevice();
 
   INLINE VrpnDial *get_vrpn_dial() const;

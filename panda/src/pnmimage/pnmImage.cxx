@@ -120,7 +120,7 @@ fill_val(xelval red, xelval green, xelval blue) {
   if (is_valid()) {
     for (int y = 0; y < get_y_size(); y++) {
       for (int x = 0; x < get_x_size(); x++) {
-	set_xel_val(x, y, red, green, blue);
+        set_xel_val(x, y, red, green, blue);
       }
     }
   }
@@ -140,7 +140,7 @@ alpha_fill_val(xelval alpha) {
 
     for (int y = 0; y < get_y_size(); y++) {
       for (int x = 0; x < get_x_size(); x++) {
-	set_alpha_val(x, y, alpha);
+        set_alpha_val(x, y, alpha);
       }
     }
   }
@@ -278,7 +278,7 @@ set_color_type(PNMImage::ColorType color_type) {
     // convert to grayscale from color
     for (int y = 0; y < get_y_size(); y++) {
       for (int x = 0; x < get_x_size(); x++) {
-	set_gray(x, y, get_bright(x, y));
+        set_gray(x, y, get_bright(x, y));
       }
     }
 
@@ -286,7 +286,7 @@ set_color_type(PNMImage::ColorType color_type) {
     // convert to color from grayscale
     for (int y = 0; y < get_y_size(); y++) {
       for (int x = 0; x<get_x_size(); x++) {
-	set_xel_val(x, y, get_gray_val(x, y));
+        set_xel_val(x, y, get_gray_val(x, y));
       }
     }
   }
@@ -347,26 +347,26 @@ set_maxval(xelval maxval) {
 
     if (is_grayscale()) {
       for (int y = 0; y < get_y_size(); y++) {
-	for (int x = 0; x < get_x_size(); x++) {
-	  set_gray_val(x, y, (xelval)((long)get_gray_val(x, y) * ratio));
-	}
+        for (int x = 0; x < get_x_size(); x++) {
+          set_gray_val(x, y, (xelval)((long)get_gray_val(x, y) * ratio));
+        }
       }
     } else {
       for (int y = 0; y < get_y_size(); y++) {
-	for (int x = 0; x < get_x_size(); x++) {
-	  set_red_val(x, y, (xelval)((long)get_red_val(x, y) * ratio));
-	  set_green_val(x, y, (xelval)((long)get_green_val(x, y) * ratio));
-	  set_blue_val(x, y, (xelval)((long)get_blue_val(x, y) * ratio));
-	}
+        for (int x = 0; x < get_x_size(); x++) {
+          set_red_val(x, y, (xelval)((long)get_red_val(x, y) * ratio));
+          set_green_val(x, y, (xelval)((long)get_green_val(x, y) * ratio));
+          set_blue_val(x, y, (xelval)((long)get_blue_val(x, y) * ratio));
+        }
       }
     }
 
     if (has_alpha()) {
       for (int y = 0; y < get_y_size(); y++) {
-	for (int x = 0; x < get_x_size(); x++) {
-	  set_alpha_val(x, y, 
-			(xelval)((long)get_alpha_val(x, y) * ratio));
-	}
+        for (int x = 0; x < get_x_size(); x++) {
+          set_alpha_val(x, y, 
+                        (xelval)((long)get_alpha_val(x, y) * ratio));
+        }
       }
     }
     _maxval = maxval;
@@ -483,7 +483,7 @@ blend(int x, int y, double r, double g, double b, double alpha) {
       alpha = prev_alpha + alpha * (1.0 - prev_alpha);
 
       if (has_alpha()) {
-	set_alpha(x, y, alpha);
+        set_alpha(x, y, alpha);
       }
       set_xel(x, y, r, g, b);
     }
@@ -503,7 +503,7 @@ blend(int x, int y, double r, double g, double b, double alpha) {
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 copy_sub_image(const PNMImage &copy, int xto, int yto, 
-	       int xfrom, int yfrom, int x_size, int y_size) {
+               int xfrom, int yfrom, int x_size, int y_size) {
   if (xfrom < 0) {
     xto += -xfrom;
     xfrom = 0;
@@ -536,7 +536,7 @@ copy_sub_image(const PNMImage &copy, int xto, int yto,
   if (has_alpha() && copy.has_alpha()) {
     for (y = ymin; y < ymax; y++) {
       for (x = xmin; x < xmax; x++) {
-	set_alpha(x, y, copy.get_alpha(x - xmin + xfrom, y - ymin + yfrom));
+        set_alpha(x, y, copy.get_alpha(x - xmin + xfrom, y - ymin + yfrom));
       }
     }
   }

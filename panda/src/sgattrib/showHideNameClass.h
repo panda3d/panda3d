@@ -9,7 +9,7 @@
 #include <pandabase.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ShowHideNameClass
+//       Class : ShowHideNameClass
 // Description : This is a stupid little class that's used by
 //               ShowHideTransition to define the name of its
 //               PT(Camera) class, so the MultiTransition it

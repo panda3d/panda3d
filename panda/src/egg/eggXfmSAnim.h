@@ -14,7 +14,7 @@
 class EggXfmAnimData;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggXfmSAnim
+//       Class : EggXfmSAnim
 // Description : This corresponds to an <Xfm$Anim_S$> entry, which is
 //               a collection of up to nine <S$Anim> entries that
 //               specify the nine components of a transformation.
@@ -24,7 +24,7 @@ class EggXfmAnimData;
 class EXPCL_PANDAEGG EggXfmSAnim : public EggGroupNode {
 public:
   INLINE EggXfmSAnim(const string &name = "",
-		     CoordinateSystem cs = CS_default);
+                     CoordinateSystem cs = CS_default);
   EggXfmSAnim(const EggXfmAnimData &convert_from);
 
   INLINE EggXfmSAnim(const EggXfmSAnim &copy);
@@ -57,15 +57,15 @@ public:
   virtual void write(ostream &out, int indent_level) const;
 
   static void compose_with_order(LMatrix4d &mat, 
-				 const LVecBase3d &scale,
-				 const LVecBase3d &hpr,
-				 const LVecBase3d &trans,
-				 const string &order,
-				 CoordinateSystem cs);
+                                 const LVecBase3d &scale,
+                                 const LVecBase3d &hpr,
+                                 const LVecBase3d &trans,
+                                 const string &order,
+                                 CoordinateSystem cs);
 
 protected:
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
-			   CoordinateSystem to_cs);
+                           CoordinateSystem to_cs);
   virtual void r_mark_coordsys(CoordinateSystem cs);
 
 private:

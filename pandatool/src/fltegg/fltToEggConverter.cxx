@@ -393,7 +393,7 @@ convert_ext_ref(const FltExternalReference *flt_ext, FltToEggLevelState &state) 
     state.get_synthetic_group("", flt_ext->get_transform());
 
   handle_external_reference(egg_parent,
-			    flt_ext->_filename, _flt_header->get_model_path());
+                            flt_ext->_filename, _flt_header->get_model_path());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -407,13 +407,13 @@ convert_ext_ref(const FltExternalReference *flt_ext, FltToEggLevelState &state) 
 ////////////////////////////////////////////////////////////////////
 void FltToEggConverter::
 setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
-	       EggPrimitive *egg_prim, EggVertexPool *egg_vpool,
-	       const FltToEggConverter::EggVertices &vertices) {
+               EggPrimitive *egg_prim, EggVertexPool *egg_vpool,
+               const FltToEggConverter::EggVertices &vertices) {
 
   // Determine what the appropriate parent will be.
   EggGroupNode *egg_parent = 
     state.get_synthetic_group(flt_geom->get_id(), flt_geom->get_transform(),
-			      flt_geom->_billboard_type);
+                              flt_geom->_billboard_type);
 
   // Create a new state to reflect the new parent.
   FltToEggLevelState next_state(state);
@@ -484,15 +484,15 @@ setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
     for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
       EggVertex *vertex = (*vi);
       if (vertex->has_color()) {
-	Colorf vertex_color = vertex->get_color();
-	vertex_color[3] = face_color[3];
-	vertex->set_color(vertex_color);
+        Colorf vertex_color = vertex->get_color();
+        vertex_color[3] = face_color[3];
+        vertex->set_color(vertex_color);
       } else {
-	if (flt_geom->has_color()) {
-	  // If a vertex doesn't have a color but the face does, set
-	  // the vertex to use the face color.
-	  vertex->set_color(face_color);
-	}
+        if (flt_geom->has_color()) {
+          // If a vertex doesn't have a color but the face does, set
+          // the vertex to use the face color.
+          vertex->set_color(face_color);
+        }
       }
     }
 
@@ -632,7 +632,7 @@ parse_comment(const FltTexture *flt_texture, EggNode *egg_node) {
 ////////////////////////////////////////////////////////////////////
 bool FltToEggConverter::
 parse_comment(const string &comment, const string &name,
-	      EggNode *egg_node) {
+              EggNode *egg_node) {
   if (comment.empty()) {
     // No comment.
     return true;
@@ -644,7 +644,7 @@ parse_comment(const string &comment, const string &name,
   size_t p;
   p = 0;
   while (p < comment.length() && 
-	 cmp_nocase(comment.substr(p, 5), egg_str) != 0) {
+         cmp_nocase(comment.substr(p, 5), egg_str) != 0) {
     p++;
   }
    
@@ -660,7 +660,7 @@ parse_comment(const string &comment, const string &name,
   }
   if (p >= comment.length() || comment[p] != '{') {
     nout << "No opening brace in comment for " 
-	 << name << "\n\n";
+         << name << "\n\n";
     _error = true;
     return false;
   }
@@ -674,7 +674,7 @@ parse_comment(const string &comment, const string &name,
   }
   if (q == p) {
     nout << "No closing brace in comment for " 
-	 << name << "\n\n";
+         << name << "\n\n";
     _error = true;
     return false;
   }
@@ -683,7 +683,7 @@ parse_comment(const string &comment, const string &name,
   
   if (!egg_node->parse_egg(egg_syntax)) {
     nout << "Syntax error in comment for "
-	 << name << "\n\n";
+         << name << "\n\n";
     _error = true;
     return false;
   }
@@ -739,8 +739,8 @@ make_egg_texture(const FltTexture *flt_texture) {
   string tref_name = format_string(flt_texture->_pattern_index);
   Filename filename = 
     convert_texture_path(flt_texture->_filename,
-			 _flt_header->get_texture_path());
-		 
+                         _flt_header->get_texture_path());
+
   PT(EggTexture) egg_texture = new EggTexture(tref_name, filename);
 
   _textures.insert(Textures::value_type(flt_texture, egg_texture));

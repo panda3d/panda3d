@@ -50,10 +50,10 @@ enum receive_status {
 class DownloaderToken : public ReferenceCount {
 public:
   INLINE DownloaderToken(uint id, const string &file_name, 
-	const Filename &file_dest, const string &event_name,
-	int first_byte, int last_byte, int total_bytes,
-	bool partial_content, bool sync) : _id(id), _first_byte(first_byte), 
-		_last_byte(last_byte), _total_bytes(total_bytes) {
+        const Filename &file_dest, const string &event_name,
+        int first_byte, int last_byte, int total_bytes,
+        bool partial_content, bool sync) : _id(id), _first_byte(first_byte), 
+                _last_byte(last_byte), _total_bytes(total_bytes) {
     _file_name = file_name;
     _event_name = event_name;
     _file_dest = file_dest;
@@ -169,8 +169,8 @@ connect_to_server(const string &name, uint port) {
       (void)memcpy(&_sin.sin_addr, hp->h_addr, (uint)hp->h_length);
     else {
       downloader_cat.error()
-	<< "Downloader::connect_to_server() - gethostbyname() failed: " 
-	<< strerror(errno) << endl;
+        << "Downloader::connect_to_server() - gethostbyname() failed: " 
+        << strerror(errno) << endl;
       return false;
     }
   } else
@@ -238,7 +238,7 @@ disconnect_from_server(void) {
 ////////////////////////////////////////////////////////////////////
 int Downloader::
 request_sync_download(const string &file_name, const Filename &file_dest,
-		const string &event_name) {
+                const string &event_name) {
   return request_download(file_name, file_dest, event_name, true);
 }
 
@@ -249,10 +249,10 @@ request_sync_download(const string &file_name, const Filename &file_dest,
 ////////////////////////////////////////////////////////////////////
 int Downloader::
 request_sync_download(const string &file_name, const Filename &file_dest,
-		const string &event_name, int first_byte,
-		int last_byte, int total_bytes, bool partial_content) {
+                const string &event_name, int first_byte,
+                int last_byte, int total_bytes, bool partial_content) {
   return request_download(file_name, file_dest, event_name, first_byte,
-			last_byte, total_bytes, partial_content, true); 
+                        last_byte, total_bytes, partial_content, true); 
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -262,9 +262,9 @@ request_sync_download(const string &file_name, const Filename &file_dest,
 ////////////////////////////////////////////////////////////////////
 int Downloader::
 request_download(const string &file_name, const Filename &file_dest,
-		const string &event_name, bool sync) {
+                const string &event_name, bool sync) {
   return request_download(file_name, file_dest, event_name, 0, 0, 0,
-				false, sync);
+                                false, sync);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -280,13 +280,13 @@ request_download(const string &file_name, const Filename &file_dest,
 //               identify this particular request later to
 //               fetch_load(), or 0 if there has been an error.
 //
-//		 Can be used to request a partial download of a file.
+//               Can be used to request a partial download of a file.
 ////////////////////////////////////////////////////////////////////
 int Downloader::
 request_download(const string &file_name, const Filename &file_dest,
-			const string &event_name, int first_byte,
-			int last_byte, int total_bytes,
-			bool partial_content, bool sync) {
+                        const string &event_name, int first_byte,
+                        int last_byte, int total_bytes,
+                        bool partial_content, bool sync) {
 
   nassertr(first_byte <= last_byte && last_byte <= total_bytes, 0);
 
@@ -318,8 +318,8 @@ request_download(const string &file_name, const Filename &file_dest,
       }
 
       tok = new DownloaderToken(_next_token++, file_name, file_dest, 
-		event_name, first_byte, last_byte, total_bytes, 
-					partial_content, sync);
+                event_name, first_byte, last_byte, total_bytes, 
+                                        partial_content, sync);
       _token_board->_waiting.insert(tok);
 
 #ifdef HAVE_IPC
@@ -341,8 +341,8 @@ request_download(const string &file_name, const Filename &file_dest,
     }
 
     tok = new DownloaderToken(_next_token++, file_name, file_dest, 
-		event_name, first_byte, last_byte, total_bytes, 
-					partial_content, sync);
+                event_name, first_byte, last_byte, total_bytes, 
+                                        partial_content, sync);
     _token_board->_waiting.insert(tok);
     process_request();
   }
@@ -369,8 +369,8 @@ process_request() {
   while (!_token_board->_waiting.is_empty()) {
     PT(DownloaderToken) tok = _token_board->_waiting.extract();
     int ret = download(tok->_file_name, tok->_file_dest, tok->_event_name,
-		 tok->_first_byte, tok->_last_byte, tok->_total_bytes,
-		 tok->_partial_content, tok->_sync, tok->_id);
+                 tok->_first_byte, tok->_last_byte, tok->_total_bytes,
+                 tok->_partial_content, tok->_sync, tok->_id);
     nassertr(tok->_event_name.empty() == false, false);
     PT_Event return_event = new Event(tok->_event_name);
     return_event->add_parameter(EventParameter((int)tok->_id));
@@ -388,7 +388,7 @@ process_request() {
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
           << "Downloader::process_request() - downloading complete for " 
-	  << tok->_file_name << "\n";
+          << tok->_file_name << "\n";
       }
     } else {
       return_event->add_parameter(EventParameter(ret));
@@ -422,12 +422,12 @@ safe_send(int socket, const char *data, int length, long timeout) {
     int sret = select(socket + 1, NULL, &wset, NULL, &tv);
     if (sret == 0) {
       downloader_cat.error()
-	<< "Downloader::safe_send() - select timed out after: "
-	<< timeout << " seconds" << endl;
+        << "Downloader::safe_send() - select timed out after: "
+        << timeout << " seconds" << endl;
       return SS_timeout;
     } else if (sret == -1) {
       downloader_cat.error()
-	<< "Downloader::safe_send() - error: " << strerror(errno) << endl;
+        << "Downloader::safe_send() - error: " << strerror(errno) << endl;
       return SS_error;
     }
     int ret = send(socket, data, length, 0);
@@ -435,7 +435,7 @@ safe_send(int socket, const char *data, int length, long timeout) {
       bytes += ret;
     else {
       downloader_cat.error()
-	<< "Downloader::safe_send() - error: " << strerror(errno) << endl;
+        << "Downloader::safe_send() - error: " << strerror(errno) << endl;
       return SS_error;
     }
   }
@@ -449,7 +449,7 @@ safe_send(int socket, const char *data, int length, long timeout) {
 ////////////////////////////////////////////////////////////////////
 int Downloader::
 safe_receive(int socket, DownloadStatus &status, int length, 
-				long timeout, int &bytes) {
+                                long timeout, int &bytes) {
   bytes = 0;
   if (length == 0) {
     downloader_cat.error()
@@ -466,37 +466,37 @@ safe_receive(int socket, DownloadStatus &status, int length,
     int sret = select(socket + 1, &rset, NULL, NULL, &tv);
     if (sret == 0) {
       downloader_cat.warning()
-	<< "Downloader::safe_receive() - select timed out after: "
-	<< timeout << " seconds" << endl;
+        << "Downloader::safe_receive() - select timed out after: "
+        << timeout << " seconds" << endl;
       return RS_timeout;
     } else if (sret == -1) {
       downloader_cat.error()
-	<< "Downloader::safe_receive() - error: " << strerror(errno) << endl;
+        << "Downloader::safe_receive() - error: " << strerror(errno) << endl;
       return RS_error;
     }
     int ret = recv(socket, status._next_in, length - bytes, 0);
     if (ret > 0) {
       if (downloader_cat.is_debug())
         downloader_cat.debug()
-	  << "Downloader::safe_receive() - recv() got: " << ret << " bytes"
-	  << endl;
+          << "Downloader::safe_receive() - recv() got: " << ret << " bytes"
+          << endl;
       bytes += ret;
       status._next_in += ret;
       status._bytes_in_buffer += ret;
       if (bytes < length) {
-	if (downloader_cat.is_debug())
-	  downloader_cat.debug()
-	    << "Downloader::safe_receive() - Download stalled" << endl;
+        if (downloader_cat.is_debug())
+          downloader_cat.debug()
+            << "Downloader::safe_receive() - Download stalled" << endl;
         _current_attempt_stalled = true;
       }
     } else if (ret == 0) {
       if (downloader_cat.is_debug())
         downloader_cat.debug()
-	  << "Downloader::safe_receive() - End of file" << endl;
+          << "Downloader::safe_receive() - End of file" << endl;
       return RS_eof;
     } else {
       downloader_cat.error()
-	<< "Downloader::safe_receive() - error: " << strerror(errno) << endl;
+        << "Downloader::safe_receive() - error: " << strerror(errno) << endl;
       return RS_error;
     }
   }
@@ -529,24 +529,24 @@ attempt_read(int length, DownloadStatus &status, int &bytes_read) {
     // Make the request for length bytes
     int bytes;
     int ans = safe_receive(_socket, status, length,
-				(long)downloader_timeout, bytes); 
+                                (long)downloader_timeout, bytes); 
     bytes_read += bytes;
 
     switch (ans) {
       case RS_error:
       case RS_eof:
-	return ans;
+        return ans;
       case RS_timeout:
-	// Try again
-	break;
+        // Try again
+        break;
       case RS_success:
-	nassertr(bytes == length, RS_error);
-	return RS_success;
+        nassertr(bytes == length, RS_error);
+        return RS_success;
       default:
-	downloader_cat.error()
-	  << "Downloader::attempt_read() - unknown return condition "
-	  << "from safe_receive() : " << ans << endl;
-	return RS_error;
+        downloader_cat.error()
+          << "Downloader::attempt_read() - unknown return condition "
+          << "from safe_receive() : " << ans << endl;
+        return RS_error;
     }
   }
   
@@ -562,13 +562,13 @@ attempt_read(int length, DownloadStatus &status, int &bytes_read) {
 ////////////////////////////////////////////////////////////////////
 int Downloader::
 download(const string &file_name, Filename file_dest, 
-		const string &event_name, int first_byte, int last_byte,
-		int total_bytes, bool partial_content, bool sync, uint id) {
+                const string &event_name, int first_byte, int last_byte,
+                int total_bytes, bool partial_content, bool sync, uint id) {
 
   if (_download_enabled == false) {
     if (downloader_cat.is_debug())
       downloader_cat.debug()
-	<< "Downloader::download() - downloading is disabled" << endl;
+        << "Downloader::download() - downloading is disabled" << endl;
     return DS_abort;
   }
 
@@ -612,13 +612,13 @@ download(const string &file_name, Filename file_dest,
     downloader_cat.debug()
       << "Downloader::download() - Sending request:\n" << request << endl;
   int send_ret = safe_send(_socket, request.c_str(), outlen, 
-			(long)downloader_timeout);
+                        (long)downloader_timeout);
 
   // Handle timeouts on the send
   if (send_ret == SS_timeout) {
     for (int sr = 0; sr < downloader_timeout_retries; sr++) {
       send_ret = safe_send(_socket, request.c_str(), outlen,
-				(long)downloader_timeout);
+                                (long)downloader_timeout);
       if (send_ret != SS_timeout)
         break;
     }
@@ -636,7 +636,7 @@ download(const string &file_name, Filename file_dest,
 
   // Create a download status to maintain download progress information
   DownloadStatus status(_buffer->_buffer, event_name, first_byte, last_byte,
-			total_bytes, partial_content, id);
+                        total_bytes, partial_content, id);
   bool got_any_data = false;
 
   // Loop at the requested frequency until the download completes
@@ -667,16 +667,16 @@ download(const string &file_name, Filename file_dest,
     if (resize_buffer == true) {
       // Flush the write buffer before resizing it
       if (status._bytes_in_buffer > 0) {
-	if (downloader_cat.is_debug())
-	  downloader_cat.debug()
-	    << "Downloader::download() - Flushing buffer" << endl;
-	
-	if (write_to_disk(status) == false) {
-	  downloader_cat.error()
-	    << "Downloader::download() - failed to flush buffer during "
-	    << "resize" << endl;
-	  return DS_abort;
-	}
+        if (downloader_cat.is_debug())
+          downloader_cat.debug()
+            << "Downloader::download() - Flushing buffer" << endl;
+
+        if (write_to_disk(status) == false) {
+          downloader_cat.error()
+            << "Downloader::download() - failed to flush buffer during "
+            << "resize" << endl;
+          return DS_abort;
+        }
       }
 
       // Resize the buffer
@@ -684,17 +684,17 @@ download(const string &file_name, Filename file_dest,
       
       if (downloader_cat.is_debug())
         downloader_cat.debug()
-	  << "Downloader::download() - resizing disk buffer to: "
-	  << _disk_buffer_size << endl;
+          << "Downloader::download() - resizing disk buffer to: "
+          << _disk_buffer_size << endl;
       _buffer.clear();
       downloader_cat.debug()
-	<< "Downloader::download() - buffer cleared" << endl;
+        << "Downloader::download() - buffer cleared" << endl;
       _buffer = new Buffer(_disk_buffer_size);
       // Update the status with the new buffer
       status._buffer = _buffer->_buffer;
       status.reset();
       downloader_cat.debug()
-	<< "Downloader::download() - new buffer created" << endl;
+        << "Downloader::download() - new buffer created" << endl;
     }
 
 #ifdef HAVE_IPC
@@ -707,8 +707,8 @@ download(const string &file_name, Filename file_dest,
     int ret = attempt_read(_read_size, status, bytes_read);
     if (downloader_cat.is_debug())
       downloader_cat.debug()
-	<< "Downloader::download() - stalled status: " << _current_attempt_stalled 
-	<< endl;
+        << "Downloader::download() - stalled status: " << _current_attempt_stalled 
+        << endl;
 
     _last_attempt_stalled = _current_attempt_stalled;
     _current_attempt_stalled = false;
@@ -721,69 +721,69 @@ download(const string &file_name, Filename file_dest,
 
         downloader_cat.error()
           << "Downloader::download() - Error reading from socket: "
-    	  << strerror(errno) << endl;
-	return DS_abort;
+          << strerror(errno) << endl;
+        return DS_abort;
 
       case RS_timeout: 
 
-	{
+        {
           // We've really timed out - throw an event
-	  downloader_cat.error()
-	    << "Downloader::download() - receive timed out after: " 
-	    << downloader_timeout_retries << " retries" << endl;
-	  if (bytes_read > 0) {
-	    if (write_to_disk(status) == false) {
-	      downloader_cat.error()
-	        << "Downloader::download() - write to disk failed after "
-	        << "timeout!" << endl;
-	      return DS_abort;
-	    }
-	  }
-	  return DS_timeout;
- 	}
+          downloader_cat.error()
+            << "Downloader::download() - receive timed out after: " 
+            << downloader_timeout_retries << " retries" << endl;
+          if (bytes_read > 0) {
+            if (write_to_disk(status) == false) {
+              downloader_cat.error()
+                << "Downloader::download() - write to disk failed after "
+                << "timeout!" << endl;
+              return DS_abort;
+            }
+          }
+          return DS_timeout;
+        }
 
       case RS_success:
 
-	if (downloader_cat.is_debug())
-	  downloader_cat.debug()
-	    << "Downloader::download() - Got: " << bytes_read << " bytes" 
-	    << endl;
-	break;
+        if (downloader_cat.is_debug())
+          downloader_cat.debug()
+            << "Downloader::download() - Got: " << bytes_read << " bytes" 
+            << endl;
+        break;
 
       case RS_eof:
 
-	{
-	  // We occasionally will get 0 bytes on the first attempt - we
-	  // don't want to treat this as end of file in any case
-	  if (got_any_data == true) {
-	    if (downloader_cat.is_debug())
-	      downloader_cat.debug()
-	        << "Download for: " << file_name << " completed" << endl;
-	    bool ret = true;
-	    if (bytes_read > 0)
-	      ret = write_to_disk(status);
-	    _dest_stream.close();
+        {
+          // We occasionally will get 0 bytes on the first attempt - we
+          // don't want to treat this as end of file in any case
+          if (got_any_data == true) {
+            if (downloader_cat.is_debug())
+              downloader_cat.debug()
+                << "Download for: " << file_name << " completed" << endl;
+            bool ret = true;
+            if (bytes_read > 0)
+              ret = write_to_disk(status);
+            _dest_stream.close();
 
-	    // The "Connection: close" line tells server to close connection
-	    // when the download is complete
-	    _connected = false;
-	    if (ret == false)
-	      return DS_abort;
-	    return DS_success;
-	  } else {
-	    if (downloader_cat.is_debug())
-	      downloader_cat.debug()
-	        << "Downloader::download() - Received 0 bytes" << endl;
-	  }
- 	}
-	break;
+            // The "Connection: close" line tells server to close connection
+            // when the download is complete
+            _connected = false;
+            if (ret == false)
+              return DS_abort;
+            return DS_success;
+          } else {
+            if (downloader_cat.is_debug())
+              downloader_cat.debug()
+                << "Downloader::download() - Received 0 bytes" << endl;
+          }
+        }
+        break;
 
       default:
 
-	downloader_cat.error()
-	  << "Downloader::download() - Unknown return value from "
-	  << "attempt_read() : " << ret << endl;
-	return DS_abort;
+        downloader_cat.error()
+          << "Downloader::download() - Unknown return value from "
+          << "attempt_read() : " << ret << endl;
+        return DS_abort;
 
     } // switch(ret)
 
@@ -824,9 +824,9 @@ parse_http_response(const string &resp) {
     case 202:
       // Accepted - server may not honor request, though
       if (downloader_cat.is_debug())
-	downloader_cat.debug()
-	  << "Downloader::parse_http_response() - got a 202 Accepted - "
-	  << "server does not guarantee to honor this request" << endl;
+        downloader_cat.debug()
+          << "Downloader::parse_http_response() - got a 202 Accepted - "
+          << "server does not guarantee to honor this request" << endl;
       return true;
     case 201:
     case 203:
@@ -846,9 +846,9 @@ parse_http_response(const string &resp) {
 //     Function: Downloader::parse_header
 //       Access: Private
 //  Description: Looks for a valid header.  If it finds one, it 
-//		 calculates the header length and strips it from
-//		 the download status structure.  Function returns false
-//		 on an error condition, otherwise true.
+//               calculates the header length and strips it from
+//               the download status structure.  Function returns false
+//               on an error condition, otherwise true.
 ////////////////////////////////////////////////////////////////////
 bool Downloader::
 parse_header(DownloadStatus &status) {
@@ -869,14 +869,14 @@ parse_header(DownloadStatus &status) {
     size_t nl = bufstr.find("\015\012", p);
     if (nl == string::npos) {
       downloader_cat.error()
-	<< "Downloader::parse_header() - No newlines in buffer of "
-	<< "length: " << status._bytes_in_buffer << endl;
+        << "Downloader::parse_header() - No newlines in buffer of "
+        << "length: " << status._bytes_in_buffer << endl;
       return false;
     } else if (p == 0 && nl == p) {
       downloader_cat.error()
         << "Downloader::parse_header() - Buffer begins with newline!"
-	<< endl;
-	return false;
+        << endl;
+        return false;
     }
 
     string component = bufstr.substr(p, nl - p);
@@ -886,13 +886,13 @@ parse_header(DownloadStatus &status) {
     if (status._first_line_complete == false) {
       status._first_line_complete = true;
       if (parse_http_response(component) == true) {
-  	if (downloader_cat.is_debug())
+        if (downloader_cat.is_debug())
           downloader_cat.debug()
-	    << "Downloader::parse_header() - Header is valid: " 
-	    << component << endl;
-	status._header_is_valid = true;
+            << "Downloader::parse_header() - Header is valid: " 
+            << component << endl;
+        status._header_is_valid = true;
       } else {
-	return false;
+        return false;
       }
     }
 
@@ -904,14 +904,14 @@ parse_header(DownloadStatus &status) {
       int server_download_bytes = atoi(tline.c_str());
       int client_download_bytes = status._last_byte - status._first_byte;
       if (status._first_byte == 0)
-	client_download_bytes += 1;
+        client_download_bytes += 1;
       if (client_download_bytes != server_download_bytes) {
-  	downloader_cat.error()
-	  << "Downloader::parse_header() - server size = " 
-	  << server_download_bytes << ", client size = " 
-	  << client_download_bytes << " ("
-	  << status._last_byte << "-" << status._first_byte << ")" << endl;
-	return false;
+        downloader_cat.error()
+          << "Downloader::parse_header() - server size = " 
+          << server_download_bytes << ", client size = " 
+          << client_download_bytes << " ("
+          << status._last_byte << "-" << status._first_byte << ")" << endl;
+        return false;
       }
     } 
 
@@ -919,7 +919,7 @@ parse_header(DownloadStatus &status) {
     if (nl == p) {
       if (downloader_cat.is_debug())
         downloader_cat.debug()
-	  << "Downloader::parse_header() - Header is complete" << endl;
+          << "Downloader::parse_header() - Header is complete" << endl;
       status._header_is_complete = true;
       
       // Strip the header out of the status buffer
@@ -929,8 +929,8 @@ parse_header(DownloadStatus &status) {
 
       if (downloader_cat.is_debug())
         downloader_cat.debug()
-	  << "Downloader::parse_header() - Stripping out header of size: "
-	  << header_length << endl;
+          << "Downloader::parse_header() - Stripping out header of size: "
+          << header_length << endl;
 
       return true;
     }
@@ -942,8 +942,8 @@ parse_header(DownloadStatus &status) {
     if (downloader_cat.is_debug())
       downloader_cat.debug()
         << "Downloader::parse_header() - Reached end of buffer without "
-	<< "successfully parsing the header - buffer size: " 
-	<< status._bytes_in_buffer << endl;
+        << "successfully parsing the header - buffer size: " 
+        << status._bytes_in_buffer << endl;
   }
 
   return true;
@@ -953,9 +953,9 @@ parse_header(DownloadStatus &status) {
 //     Function: Downloader::write_to_disk
 //       Access: Private
 //  Description: Writes a download to disk.  If there is a header,
-//		 the pointer and size are adjusted so the header
-//		 is excluded.  Function returns false on error
-//		 condition.
+//               the pointer and size are adjusted so the header
+//               is excluded.  Function returns false on error
+//               condition.
 ////////////////////////////////////////////////////////////////////
 bool Downloader::
 write_to_disk(DownloadStatus &status) {
@@ -1004,7 +1004,7 @@ write_to_disk(DownloadStatus &status) {
 ////////////////////////////////////////////////////////////////////
 Downloader::DownloadStatus::
 DownloadStatus(char *buffer, const string &event_name, int first_byte,
-	int last_byte, int total_bytes, bool partial_content, uint id) {
+        int last_byte, int total_bytes, bool partial_content, uint id) {
   _first_line_complete = false;
   _header_is_complete = false;
   _header_is_valid = false;
@@ -1022,7 +1022,7 @@ DownloadStatus(char *buffer, const string &event_name, int first_byte,
 //     Function: Downloader::DownloadStatus::reset
 //       Access: Public 
 //  Description: Resets the status buffer for more downloading after
-//		 a write.
+//               a write.
 ////////////////////////////////////////////////////////////////////
 void Downloader::DownloadStatus::
 reset(void) {

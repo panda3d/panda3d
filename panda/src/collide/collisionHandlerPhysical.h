@@ -16,7 +16,7 @@
 #include <pt_NodeRelation.h>
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CollisionHandlerPhysical
+//       Class : CollisionHandlerPhysical
 // Description : The abstract base class for a number of
 //               CollisionHandlers that have some physical effect on
 //               their moving bodies: they need to update the nodes'
@@ -69,7 +69,7 @@ public:
   static void init_type() {
     CollisionHandlerEvent::init_type();
     register_type(_type_handle, "CollisionHandlerPhysical",
-		  CollisionHandlerEvent::get_class_type());
+                  CollisionHandlerEvent::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

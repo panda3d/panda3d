@@ -96,10 +96,10 @@ static const WorkType filter_max = 255;
 
 static void 
 filter_row(StoreType dest[], int dest_len, 
-	   const StoreType source[], int source_len,
-	   double scale,                    //  == dest_len / source_len
-	   const WorkType filter[],
-	   double filter_width) {
+           const StoreType source[], int source_len,
+           double scale,                    //  == dest_len / source_len
+           const WorkType filter[],
+           double filter_width) {
   // If we are expanding the row (scale>1.0), we need to look at a fractional 
   // granularity.  Hence, we scale our filter index by scale.  If we are
   // compressing (scale<1.0), we don't need to fiddle with the filter index, so
@@ -164,11 +164,11 @@ filter_row(StoreType dest[], int dest_len,
 // corresponding to values in the range -filter_width to filter_width.
 
 typedef void FilterFunction(double scale, double width,
-			    WorkType *&filter, double &filter_width);
+                            WorkType *&filter, double &filter_width);
 
 static void
 box_filter_impl(double scale, double width,
-		WorkType *&filter, double &filter_width) {
+                WorkType *&filter, double &filter_width) {
   double fscale;
   if (scale < 1.0) {
     // If we are compressing the image, we want to expand the range of
@@ -194,7 +194,7 @@ box_filter_impl(double scale, double width,
 
 static void
 gaussian_filter_impl(double scale, double width,
-		     WorkType *&filter, double &filter_width) {
+                     WorkType *&filter, double &filter_width) {
   double fscale;
   if (scale < 1.0) {
     // If we are compressing the image, we want to expand the range of
@@ -383,7 +383,7 @@ gaussian_filter_impl(double scale, double width,
 // another.  Both images can be the same with no ill effects.
 static void
 filter_image(PNMImage &dest, const PNMImage &source, 
-	     double width, FilterFunction *make_filter) {
+             double width, FilterFunction *make_filter) {
 
   // We want to scale by the smallest destination axis first, for a
   // slight performance gain.
@@ -453,9 +453,9 @@ gaussian_filter_from(double width, const PNMImage &copy) {
 
 INLINE void
 box_filter_xel(const PNMImage &image,
-	       int x, int y, double x_contrib, double y_contrib,
-	       double &red, double &grn, double &blu, double &alpha, 
-	       double &pixel_count) {
+               int x, int y, double x_contrib, double y_contrib,
+               double &red, double &grn, double &blu, double &alpha, 
+               double &pixel_count) {
   double contrib = x_contrib * y_contrib;
   red += image.get_red_val(x, y) * contrib;
   grn += image.get_green_val(x, y) * contrib;
@@ -470,13 +470,13 @@ box_filter_xel(const PNMImage &image,
 
 INLINE void
 box_filter_line(const PNMImage &image,
-		double x0, int y, double x1, double y_contrib,
-		double &red, double &grn, double &blu, double &alpha, 
-		double &pixel_count) {
+                double x0, int y, double x1, double y_contrib,
+                double &red, double &grn, double &blu, double &alpha, 
+                double &pixel_count) {
   int x = (int)floor(x0);
   // Get the first (partial) xel
   box_filter_xel(image, x, y, (double)(x+1)-x0, y_contrib,
-		 red, grn, blu, alpha, pixel_count);
+                 red, grn, blu, alpha, pixel_count);
 
   int x_last = (int)floor(x1);
   if (x < x_last) {
@@ -484,7 +484,7 @@ box_filter_line(const PNMImage &image,
     while (x < x_last) {
       // Get each consecutive (complete) xel
       box_filter_xel(image, x, y, 1.0, y_contrib,
-		     red, grn, blu, alpha, pixel_count);
+                     red, grn, blu, alpha, pixel_count);
       x++;
     }
 
@@ -492,22 +492,22 @@ box_filter_line(const PNMImage &image,
     double x_contrib = x1 - (double)x_last;
     if (x_contrib > 0.0001) {
       box_filter_xel(image, x, y, x_contrib, y_contrib,
-		     red, grn, blu, alpha, pixel_count);
+                     red, grn, blu, alpha, pixel_count);
     }
   }
 }  
 
 static void
 box_filter_region(const PNMImage &image, 
-		  double x0, double y0, double x1, double y1, 
-		  xel &result, xelval &alpha_result) {
+                  double x0, double y0, double x1, double y1, 
+                  xel &result, xelval &alpha_result) {
   double red = 0.0, grn = 0.0, blu = 0.0, alpha = 0.0;
   double pixel_count = 0.0;
 
   int y = (int)floor(y0);
   // Get the first (partial) row
   box_filter_line(image, x0, y, x1, (double)(y+1)-y0,
-		  red, grn, blu, alpha, pixel_count);
+                  red, grn, blu, alpha, pixel_count);
 
   int y_last = (int)floor(y1);
   if (y < y_last) {
@@ -515,7 +515,7 @@ box_filter_region(const PNMImage &image,
     while (y < y_last) {
       // Get each consecutive (complete) row
       box_filter_line(image, x0, y, x1, 1.0,
-		      red, grn, blu, alpha, pixel_count);
+                      red, grn, blu, alpha, pixel_count);
       y++;
     }
 
@@ -523,14 +523,14 @@ box_filter_region(const PNMImage &image,
     double y_contrib = y1 - (double)y_last;
     if (y_contrib > 0.0001) {
       box_filter_line(image, x0, y, x1, y_contrib,
-		      red, grn, blu, alpha, pixel_count);
+                      red, grn, blu, alpha, pixel_count);
     }
   }
 
   PPM_ASSIGN(result,
-	     (xelval)(red / pixel_count),
-	     (xelval)(grn / pixel_count),
-	     (xelval)(blu / pixel_count));
+             (xelval)(red / pixel_count),
+             (xelval)(grn / pixel_count),
+             (xelval)(blu / pixel_count));
 
   alpha_result = (xelval)(alpha / pixel_count);
 }
@@ -572,19 +572,19 @@ quick_filter_from(const PNMImage &from, int xborder, int yborder) {
     
     from_x0 = max(0, -to_xoff) * x_scale;
     for (to_x = max(0, -to_xoff); 
-	 to_x < min(to_xs, get_x_size()-to_xoff); 
-	 to_x++) {
+         to_x < min(to_xs, get_x_size()-to_xoff); 
+         to_x++) {
       from_x1 = (to_x+1) * x_scale;
       
       // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
       // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
       xelval alpha_result;
       box_filter_region(from,
-			from_x0, from_y0, from_x1, from_y1,
-			(*this)[to_yoff + to_y][to_xoff + to_x],
-			alpha_result);
+                        from_x0, from_y0, from_x1, from_y1,
+                        (*this)[to_yoff + to_y][to_xoff + to_x],
+                        alpha_result);
       if (has_alpha()) {
-	set_alpha_val(to_xoff+to_x, to_yoff+to_y, alpha_result);
+        set_alpha_val(to_xoff+to_x, to_yoff+to_y, alpha_result);
       }
       
       from_x0 = from_x1;

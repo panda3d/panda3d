@@ -11,7 +11,7 @@
 #include "eggAnimData.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggSAnimData
+//       Class : EggSAnimData
 // Description : Corresponding to an <S$Anim> entry, this stores a
 //               single column of numbers, for instance for a morph
 //               target, or as one column in an EggXfmSAnim.

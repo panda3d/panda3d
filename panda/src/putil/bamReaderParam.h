@@ -14,7 +14,7 @@ class BamReader;
 class DatagramIterator;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : BamReaderParam
+//       Class : BamReaderParam
 // Description : The parameters that are passed through the Factory to
 //               any object constructing itself from a Bam file.
 ////////////////////////////////////////////////////////////////////
@@ -42,7 +42,7 @@ public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "BamReaderParam",
-		  FactoryParam::get_class_type());
+                  FactoryParam::get_class_type());
   }
 
 private:

@@ -42,13 +42,13 @@ write_datagram(BamWriter *, Datagram &me)
     filename.find_on_searchpath(get_model_path());
     if (gobj_cat.is_debug()) {
       gobj_cat.debug() 
-	<< "Texture file " << get_name() << " found as " << filename << "\n";
+        << "Texture file " << get_name() << " found as " << filename << "\n";
     }
     alpha_filename.find_on_searchpath(get_texture_path());
     alpha_filename.find_on_searchpath(get_model_path());
     if (gobj_cat.is_debug()) {
       gobj_cat.debug() 
-	<< "Alpha image " << get_alpha_name() << " found as " << alpha_filename << "\n";
+        << "Alpha image " << get_alpha_name() << " found as " << alpha_filename << "\n";
     }
     break;
 

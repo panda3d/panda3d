@@ -79,13 +79,13 @@ init() {
 
     if (_bam_minor_ver == 0) {
       bam_cat.error()
-	<< "This program can only load version " 
-	<< _bam_major_ver << ".0 bams.\n";
+        << "This program can only load version " 
+        << _bam_major_ver << ".0 bams.\n";
     } else {
       bam_cat.error()
-	<< "This program can only load version " 
-	<< _bam_major_ver << ".0 through " 
-	<< _bam_major_ver << "." << _bam_minor_ver << " bams.\n";
+        << "This program can only load version " 
+        << _bam_major_ver << ".0 through " 
+        << _bam_major_ver << "." << _bam_minor_ver << " bams.\n";
     }
       
     return false;
@@ -97,8 +97,8 @@ init() {
       << ".\n";
     if (_file_minor != _bam_minor_ver) {
       bam_cat.debug()
-	<< "(Current version is " << _bam_major_ver << "." << _bam_minor_ver
-	<< ".)\n";
+        << "(Current version is " << _bam_major_ver << "." << _bam_minor_ver
+        << ".)\n";
     }
   }
 
@@ -150,7 +150,7 @@ read_object() {
   if (object_id == 0) {
     if (bam_cat.is_spam()) {
       bam_cat.spam()
-	<< "Returning NULL\n";
+        << "Returning NULL\n";
     }
     return (TypedWritable *)NULL;
   }
@@ -167,8 +167,8 @@ read_object() {
 
     if (bam_cat.is_spam()) {
       if (object != (TypedWritable *)NULL) {
-	bam_cat.spam()
-	  << "Returning object of type " << object->get_type() << "\n";
+        bam_cat.spam()
+          << "Returning object of type " << object->get_type() << "\n";
       }
     }
     
@@ -219,20 +219,20 @@ resolve() {
       int object_id = (*pi);
 
       if (object_id == 0) {
-	// A NULL pointer is a NULL pointer.
-	references.push_back((TypedWritable *)NULL);
+        // A NULL pointer is a NULL pointer.
+        references.push_back((TypedWritable *)NULL);
 
       } else {
-	// See if we have the pointer available now.
-	CreatedObjs::const_iterator oi = _created_objs.find(object_id);
-	if (oi == _created_objs.end()) {
-	  // No, too bad.
-	  is_complete = false;
+        // See if we have the pointer available now.
+        CreatedObjs::const_iterator oi = _created_objs.find(object_id);
+        if (oi == _created_objs.end()) {
+          // No, too bad.
+          is_complete = false;
 
-	} else {
-	  // Yes, it's ready.
-	  references.push_back((*oi).second);
-	}
+        } else {
+          // Yes, it's ready.
+          references.push_back((*oi).second);
+        }
       }
     }
 
@@ -250,7 +250,7 @@ resolve() {
     } else {
       // Couldn't complete this object yet; it'll wait for next time.
       bam_cat.warning()
-	<< "Unable to complete " << whom->get_type() << "\n";
+        << "Unable to complete " << whom->get_type() << "\n";
       ++ri;
       all_completed = false;
     }
@@ -326,9 +326,9 @@ read_handle(DatagramIterator &scan) {
       TypeRegistry::ptr()->record_derivation(type, parent_type);
     } else {
       if (type.get_parent_towards(parent_type) != parent_type) {
-	bam_cat.warning()
-	  << "Bam file indicates a derivation of " << type 
-	  << " from " << parent_type << " which is no longer true.\n";
+        bam_cat.warning()
+          << "Bam file indicates a derivation of " << type 
+          << " from " << parent_type << " which is no longer true.\n";
       }
     }
   }
@@ -543,7 +543,7 @@ p_read_object() {
 
     if (bam_cat.is_debug()) {
       bam_cat.debug()
-	<< "Reached end of bam source.\n";
+        << "Reached end of bam source.\n";
     }
     return 0;
   }
@@ -597,18 +597,18 @@ p_read_object() {
     //Just some sanity checks
     if (object == (TypedWritable *)NULL) {
       bam_cat.error() 
-	<< "Unable to create an object of type " << type << endl;
+        << "Unable to create an object of type " << type << endl;
 
     } else if (object->get_type() != type) {
       bam_cat.warning()
-	<< "Attempted to create a " << type.get_name() \
-	<< " but a " << object->get_type() \
-	<< " was created instead." << endl;
+        << "Attempted to create a " << type.get_name() \
+        << " but a " << object->get_type() \
+        << " was created instead." << endl;
 
     } else {
       if (bam_cat.is_spam()) {
-	bam_cat.spam()
-	  << "Read a " << object->get_type() << "\n";
+        bam_cat.spam()
+          << "Read a " << object->get_type() << "\n";
       }
     }
   }

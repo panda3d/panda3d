@@ -18,7 +18,7 @@
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VECTORDATATRANSITION_LPOINT4F);
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : Vec4DataTransition
+//       Class : Vec4DataTransition
 // Description : A VectorDataTransition templated on LPoint4f.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Vec4DataTransition :
@@ -41,7 +41,7 @@ public:
   static void init_type() {
     VectorDataTransition<LPoint4f, LMatrix4f>::init_type();
     register_type(_type_handle, "Vec4DataTransition", 
-		  VectorDataTransition<LPoint4f, LMatrix4f>::get_class_type());
+                  VectorDataTransition<LPoint4f, LMatrix4f>::get_class_type());
   }
 
 private:

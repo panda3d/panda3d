@@ -22,8 +22,8 @@ private:
 public:
   INLINE WindowItem(void);
   INLINE WindowItem(const bool, const bool, const int, const std::string&,
-		    const SetupSyms&, const int, const int, const bool,
-		    const bool);
+                    const SetupSyms&, const int, const int, const bool,
+                    const bool);
   INLINE WindowItem(const WindowItem&);
   INLINE ~WindowItem(void);
 

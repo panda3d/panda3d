@@ -15,7 +15,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : SomethingToEgg
+//       Class : SomethingToEgg
 // Description : This is the general base class for a file-converter
 //               program that reads some model file format and
 //               generates an egg file.
@@ -23,9 +23,9 @@
 class SomethingToEgg : public EggConverter {
 public:
   SomethingToEgg(const string &format_name, 
-		 const string &preferred_extension = string(),
-		 bool allow_last_param = true,
-		 bool allow_stdout = true);
+                 const string &preferred_extension = string(),
+                 bool allow_last_param = true,
+                 bool allow_stdout = true);
 
   void add_units_options();
   void add_texture_path_options();

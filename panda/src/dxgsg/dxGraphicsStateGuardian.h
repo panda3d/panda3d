@@ -73,7 +73,7 @@ extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *p
 #endif
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DXGraphicsStateGuardian
+//   Class : DXGraphicsStateGuardian
 // Description : A GraphicsStateGuardian specialized for rendering
 //               into DX.  There should be no DX calls
 //               outside of this object.
@@ -92,15 +92,15 @@ public:
 
   virtual void render_frame(const AllAttributesWrapper &initial_state);
   virtual void render_scene(Node *root, ProjectionNode *projnode,
-			    const AllAttributesWrapper &initial_state);
+                const AllAttributesWrapper &initial_state);
   virtual void render_subgraph(RenderTraverser *traverser, 
-			       Node *subgraph, ProjectionNode *projnode,
-			       const AllAttributesWrapper &initial_state,
-			       const AllTransitionsWrapper &net_trans);
+                   Node *subgraph, ProjectionNode *projnode,
+                   const AllAttributesWrapper &initial_state,
+                   const AllTransitionsWrapper &net_trans);
   virtual void render_subgraph(RenderTraverser *traverser,
-			       Node *subgraph,
-			       const AllAttributesWrapper &initial_state,
-			       const AllTransitionsWrapper &net_trans);
+                   Node *subgraph,
+                   const AllAttributesWrapper &initial_state,
+                   const AllTransitionsWrapper &net_trans);
 
   virtual void draw_point(const GeomPoint *geom);
   virtual void draw_line(const GeomLine *geom);
@@ -126,16 +126,16 @@ public:
 
   virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb);
   virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
-			 	const DisplayRegion *dr);
+                const DisplayRegion *dr);
 
   virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr);
   virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                                  const RenderBuffer &rb);
   virtual void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-				 const NodeAttributes& na=NodeAttributes());
+                 const NodeAttributes& na=NodeAttributes());
   virtual void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                                  const RenderBuffer &rb,
-				 const NodeAttributes& na=NodeAttributes());
+                 const NodeAttributes& na=NodeAttributes());
 
   virtual void apply_material(const Material *material);
   virtual void apply_fog(Fog *fog);
@@ -181,7 +181,7 @@ public:
 protected:
   void free_pointers();
   virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
-						 CPT(DisplayRegion) dr);
+                         CPT(DisplayRegion) dr);
   virtual void restore_frame_buffer(SavedFrameBuffer *frame_buffer);
 
   INLINE void activate();
@@ -196,18 +196,18 @@ protected:
   INLINE void add_to_FVFBuf(void *data,  size_t bytes) ;
   WORD *_index_buf;  // base of malloced array
   
-  bool				    _dx_ready;
+  bool                  _dx_ready;
   bool                  _bIsTNLDevice;
   LPDIRECTDRAWSURFACE7  _back;
   LPDIRECTDRAWSURFACE7  _zbuf;
   LPDIRECT3D7           _d3d;
   LPDIRECT3DDEVICE7     _d3dDevice;
   LPDIRECTDRAWSURFACE7  _pri;
-  LPDIRECTDRAW7		    _pDD;
+  LPDIRECTDRAW7         _pDD;
 
-  RECT				  _view_rect;
-  RECT				  clip_rect;
-  HDC				_hdc;
+  RECT                _view_rect;
+  RECT                clip_rect;
+  HDC               _hdc;
   int               _cNumTexPixFmts;
   LPDDPIXELFORMAT   _pTexPixFmts;
   DXTextureContext  *_pCurTexContext;
@@ -218,10 +218,10 @@ protected:
 
   void set_clipper(RECT cliprect);
   void GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
-					void *pIndexSpace,DWORD dwIndexSpaceByteSize,
-					D3DVECTOR *pCenter, float fRadius, 
-					DWORD wNumRings, DWORD wNumSections, float sx, float sy, float sz,
-					DWORD *pNumVertices,DWORD *pNumIndices,DWORD fvfFlags,DWORD dwVertSize);
+                    void *pIndexSpace,DWORD dwIndexSpaceByteSize,
+                    D3DVECTOR *pCenter, float fRadius, 
+                    DWORD wNumRings, DWORD wNumSections, float sx, float sy, float sz,
+                    DWORD *pNumVertices,DWORD *pNumIndices,DWORD fvfFlags,DWORD dwVertSize);
   HRESULT DXGraphicsStateGuardian::RestoreAllVideoSurfaces(void);
 
   INLINE void set_pack_alignment(int alignment);
@@ -270,9 +270,9 @@ protected:
 #endif
 
   //   for drawing primitives
-  Colorf	p_color;
-  Normalf	p_normal;
-  Vertexf	p_vertex;
+  Colorf    p_color;
+  Normalf   p_normal;
+  Vertexf   p_vertex;
   TexCoordf p_texcoord;
   D3DCOLOR  p_colr;
 
@@ -321,8 +321,8 @@ protected:
 //  int _pack_alignment;
 //  int _unpack_alignment;
 
-  bool  _issued_color_enabled;		// WBD ADDED
-  D3DCOLOR _issued_color;			// WBD ADDED
+  bool  _issued_color_enabled;      // WBD ADDED
+  D3DCOLOR _issued_color;           // WBD ADDED
 
   D3DSHADEMODE _CurShadeMode;
 
@@ -408,13 +408,13 @@ public:
   void  show_frame();
   void  show_full_screen_frame();
   void  show_windowed_frame();
-  void  init_dx(  LPDIRECTDRAW7		context,
-		  LPDIRECTDRAWSURFACE7  pri,
-		  LPDIRECTDRAWSURFACE7  back,
-		  LPDIRECTDRAWSURFACE7  zbuf,
-		  LPDIRECT3D7          d3d,
-		  LPDIRECT3DDEVICE7    d3dDevice,
-		  RECT  viewrect);
+  void  init_dx(  LPDIRECTDRAW7     context,
+          LPDIRECTDRAWSURFACE7  pri,
+          LPDIRECTDRAWSURFACE7  back,
+          LPDIRECTDRAWSURFACE7  zbuf,
+          LPDIRECT3D7          d3d,
+          LPDIRECT3DDEVICE7    d3dDevice,
+          RECT  viewrect);
    friend HRESULT CALLBACK EnumTexFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param );
 private:
   static TypeHandle _type_handle;

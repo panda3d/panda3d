@@ -74,7 +74,7 @@ write_float(FILE *file, float x) {
 
 static int
 read_channel_pkt(FILE *file, 
-		 int &chained, int &size, int &type, int &channel) {
+                 int &chained, int &size, int &type, int &channel) {
   chained = read_uchar(file);
   size = read_uchar(file);
   type = read_uchar(file);
@@ -137,9 +137,9 @@ read_rgba(xel *row_data, xelval *alpha_data, FILE *file, int x, int repeat) {
 
 static int
 read_scanline(xel *row_data, xelval *alpha_data, int cols, FILE *file,
-	      void (*read_data)(xel *row_data, xelval *alpha_data, FILE *file,
-				int x, int repeat),
-	      int ctype) {
+              void (*read_data)(xel *row_data, xelval *alpha_data, FILE *file,
+                                int x, int repeat),
+              int ctype) {
   if (ctype==UNCOMPRESSED) {
     for (int x = 0; x<cols; x++) {
       read_data(row_data, alpha_data, file, x, 1);
@@ -154,34 +154,34 @@ read_scanline(xel *row_data, xelval *alpha_data, int cols, FILE *file,
       num = read_uchar(file);
 
       if (num<128) {
-	// Sequence of non-repeated values.
-	num++;
-	if (x+num > cols) {
-	  return false;
-	}
-	while (num>0) {
-	  read_data(row_data, alpha_data, file, x, 1);
-	  if (feof(file)) {
-	    return false;
-	  }
-	  x++;
-	  num--;
-	}
+        // Sequence of non-repeated values.
+        num++;
+        if (x+num > cols) {
+          return false;
+        }
+        while (num>0) {
+          read_data(row_data, alpha_data, file, x, 1);
+          if (feof(file)) {
+            return false;
+          }
+          x++;
+          num--;
+        }
       } else {
-	// Sequence of repeated values.
-	if (num==128) {
-	  num = read_ushort(file);
-	} else {
-	  num -= 127;
-	}
-	if (x+num > cols) {
-	  return false;
-	}
-	read_data(row_data, alpha_data, file, x, num);
-	if (feof(file)) {
-	  return false;
-	}
-	x += num;
+        // Sequence of repeated values.
+        if (num==128) {
+          num = read_ushort(file);
+        } else {
+          num -= 127;
+        }
+        if (x+num > cols) {
+          return false;
+        }
+        read_data(row_data, alpha_data, file, x, num);
+        if (feof(file)) {
+          return false;
+        }
+        x += num;
       }
     }
 
@@ -311,7 +311,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
     // No magic number, no image.
     if (pnmimage_soft_cat.is_debug()) {
       pnmimage_soft_cat.debug()
-	<< "SoftImage image file appears to be empty.\n";
+        << "SoftImage image file appears to be empty.\n";
     }
     _is_valid = false;
     return;
@@ -371,13 +371,13 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
     
     if (chained) {
       if (!read_channel_pkt(_file, chained, size, alpha_ctype, channel)) {
-	_is_valid = false;
-	return;
+        _is_valid = false;
+        return;
       }
       
       if (channel == ALPHA_CHANNEL) {
-	// Alpha component in the second part: RGBA.
-	soft_color = rgb_a;
+        // Alpha component in the second part: RGBA.
+        soft_color = rgb_a;
       }
     }
   }
@@ -447,25 +447,25 @@ read_row(xel *row_data, xelval *alpha_data) {
   switch (soft_color) {
   case rgb:
     if (!read_scanline(row_data, alpha_data, _x_size, _file,
-		       read_rgb, rgb_ctype)) {
+                       read_rgb, rgb_ctype)) {
       return false;
     }
     break;
     
   case rgba:
     if (!read_scanline(row_data, alpha_data, _x_size, _file,
-		       read_rgba, rgb_ctype)) {
+                       read_rgba, rgb_ctype)) {
       return false;
     }
     break;
     
   case rgb_a:
     if (!read_scanline(row_data, alpha_data, _x_size, _file,
-		       read_rgb, rgb_ctype)) {
+                       read_rgb, rgb_ctype)) {
       return false;
     }
     if (!read_scanline(row_data, alpha_data, _x_size, _file,
-		       read_alpha, alpha_ctype)) {
+                       read_alpha, alpha_ctype)) {
       return false;
     }
     break;
@@ -480,7 +480,7 @@ read_row(xel *row_data, xelval *alpha_data) {
 
 static void
 write_channel_pkt(FILE *file, 
-		 int chained, int size, int type, int channel) {
+                 int chained, int size, int type, int channel) {
   write_uchar(file, chained);
   write_uchar(file, size);
   write_uchar(file, type);
@@ -523,9 +523,9 @@ compare_alpha(xel *, xelval *alpha_data, int x1, int x2) {
 
 static void
 write_diff(xel *row_data, xelval *alpha_data, FILE *file,
-	   void (*write_data)(xel *row_data, xelval *alpha_data, FILE *file,
-			      int x),
-	   int tox, int length) {
+           void (*write_data)(xel *row_data, xelval *alpha_data, FILE *file,
+                              int x),
+           int tox, int length) {
   if (length>0) {
     nassertv(length<=128);
     
@@ -539,9 +539,9 @@ write_diff(xel *row_data, xelval *alpha_data, FILE *file,
 
 static void
 write_same(xel *row_data, xelval *alpha_data, FILE *file,
-	   void (*write_data)(xel *row_data, xelval *alpha_data, FILE *file,
-			      int x),
-	   int tox, int length) {
+           void (*write_data)(xel *row_data, xelval *alpha_data, FILE *file,
+                              int x),
+           int tox, int length) {
   if (length==1) {
     write_diff(row_data, alpha_data, file, write_data, tox, length);
     
@@ -559,10 +559,10 @@ write_same(xel *row_data, xelval *alpha_data, FILE *file,
 
 static void
 write_scanline(xel *row_data, xelval *alpha_data, int cols, FILE *file,
-	       int (*compare_data)(xel *row_data, xelval *alpha_data,
-				   int x1, int x2),
-	       void (*write_data)(xel *row_data, xelval *alpha_data,
-				  FILE *file, int x)) {
+               int (*compare_data)(xel *row_data, xelval *alpha_data,
+                                   int x1, int x2),
+               void (*write_data)(xel *row_data, xelval *alpha_data,
+                                  FILE *file, int x)) {
   int run_length = 0;
 
   int x = 0;
@@ -578,23 +578,23 @@ write_scanline(xel *row_data, xelval *alpha_data, int cols, FILE *file,
       // the run is the sequence of values from x-run_length to x-1.
 
       if (!compare_data(row_data, alpha_data, x, x-run_length)) {
-	// Oops, the end of a run.
+        // Oops, the end of a run.
 
-	if (run_length <= 1) {
-	  // If run_length is only 1, no big deal--this is actually the
-	  // beginning of a different-valued run.
-	  
-	  same = false;
-	  
-	} else {
-	  // Write out the old run and begin a new one.  We'll be optimistic
-	  // and hope the new run will also represent a sequence of identical
-	  // values (until we find otherwise).
-	  
-	  write_same(row_data, alpha_data, file, write_data, x-1, run_length);
-	  same = true;
-	  run_length = 0;
-	}
+        if (run_length <= 1) {
+          // If run_length is only 1, no big deal--this is actually the
+          // beginning of a different-valued run.
+
+          same = false;
+
+        } else {
+          // Write out the old run and begin a new one.  We'll be optimistic
+          // and hope the new run will also represent a sequence of identical
+          // values (until we find otherwise).
+
+          write_same(row_data, alpha_data, file, write_data, x-1, run_length);
+          same = true;
+          run_length = 0;
+        }
       }
 
     } else {   // !same
@@ -603,23 +603,23 @@ write_scanline(xel *row_data, xelval *alpha_data, int cols, FILE *file,
       // the run is the sequence of values from x-run_length to x-1.
 
       if (run_length>128) {
-	// We can't have different runs of more than 128 characters.  Close
-	// off the old run.
-	
-	int excess = run_length - 128;
-	write_diff(row_data, alpha_data, file, write_data, x-excess-1, 128);
-	run_length = excess;
+        // We can't have different runs of more than 128 characters.  Close
+        // off the old run.
+
+        int excess = run_length - 128;
+        write_diff(row_data, alpha_data, file, write_data, x-excess-1, 128);
+        run_length = excess;
       
       } else if (run_length > 2 &&
-		 compare_data(row_data, alpha_data, x, x-1) &&
-		 compare_data(row_data, alpha_data, x, x-2)) {
+                 compare_data(row_data, alpha_data, x, x-1) &&
+                 compare_data(row_data, alpha_data, x, x-2)) {
 
-	// If the last three values have been the same, then it's time to
-	// begin a new run of similar values.  Close off the old run.
-	
-	write_diff(row_data, alpha_data, file, write_data, x-3, run_length-2);
-	same = true;
-	run_length = 2;
+        // If the last three values have been the same, then it's time to
+        // begin a new run of similar values.  Close off the old run.
+
+        write_diff(row_data, alpha_data, file, write_data, x-3, run_length-2);
+        same = true;
+        run_length = 2;
       }
     }
 
@@ -637,9 +637,9 @@ write_scanline(xel *row_data, xelval *alpha_data, int cols, FILE *file,
       // Mighty unlikely, but we might have just run over the
       // 128-pixel limit.
       if (run_length>128) {
-	int excess = run_length - 128;
-	write_diff(row_data, alpha_data, file, write_data, cols-excess-1, 128);
-	run_length = excess;
+        int excess = run_length - 128;
+        write_diff(row_data, alpha_data, file, write_data, cols-excess-1, 128);
+        run_length = excess;
       }
 
       write_diff(row_data, alpha_data, file, write_data, cols-1, run_length);

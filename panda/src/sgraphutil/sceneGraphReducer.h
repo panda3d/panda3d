@@ -20,7 +20,7 @@
 class Geom;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : SceneGraphReducer
+//       Class : SceneGraphReducer
 // Description : A specialization on GraphReducer for reducing scene
 //               graphs.  This GraphReducer knows about special kinds
 //               of nodes like GeomNodes and can combine them
@@ -54,8 +54,8 @@ protected:
   };
 
   void r_apply_transitions(NodeRelation *arc, int transition_types,
-			   AccumulatedTransitions trans,
-			   bool duplicate);
+                           AccumulatedTransitions trans,
+                           bool duplicate);
 
   virtual Node *collapse_nodes(Node *node1, Node *node2, bool siblings);
 

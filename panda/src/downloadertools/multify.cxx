@@ -27,19 +27,19 @@ main(int argc, char *argv[]) {
   while (flag != EOF) {
     switch (flag) {
       case 'x':
-	extract = true;
+        extract = true;
         break;
       case 'c':
         break;
       case 'v':
-	verbose = true;
- 	break;
+        verbose = true;
+        break;
       case 'r':
-	rel_path = optarg;
-	break;
+        rel_path = optarg;
+        break;
       default:
-	cerr << "Unhandled switch: " << flag << endl;
-	break;
+        cerr << "Unhandled switch: " << flag << endl;
+        break;
     } 
     flag = getopt(argc, argv, "xcvr:");
   }

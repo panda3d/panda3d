@@ -108,7 +108,7 @@ ColorLerpFunctor& ColorLerpFunctor::operator=(const ColorLerpFunctor& c) {
 }
 
 void ColorLerpFunctor::operator()(float t) {
-	_node_path.set_color(interpolate(t));
+        _node_path.set_color(interpolate(t));
 }
 
 

@@ -17,7 +17,7 @@ class PNMReader;
 class PNMWriter;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PNMFileType
+//       Class : PNMFileType
 // Description : This is the base class of a family of classes that
 //               represent particular image file types that PNMImage
 //               supports.
@@ -39,7 +39,7 @@ public:
   virtual bool matches_magic_number(const string &magic_number) const;
 
   virtual PNMReader *make_reader(FILE *file, bool owns_file = true,
-				 const string &magic_number = string());
+                                 const string &magic_number = string());
   virtual PNMWriter *make_writer(FILE *file, bool owns_file = true);
 
 protected:

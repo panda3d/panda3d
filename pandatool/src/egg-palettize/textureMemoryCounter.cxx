@@ -59,7 +59,7 @@ add_placement(TexturePlacement *placement) {
     add_palette(image);
 
     int bytes = count_bytes(image, placement->get_placed_x_size(), 
-			    placement->get_placed_y_size());
+                            placement->get_placed_y_size());
     add_texture(texture, bytes);
     _num_placed++;
     
@@ -94,24 +94,24 @@ report(ostream &out, int indent_level) {
     if (_unused_bytes != 0) {
       indent(out, indent_level + 2);
       format_memory_fraction(out, _unused_bytes, _bytes)
-	<< " is wasted because of unused palette space.\n";
+        << " is wasted because of unused palette space.\n";
     }
     
     if (_coverage_bytes > 0) {
       indent(out, indent_level + 2);
       format_memory_fraction(out, _coverage_bytes, _bytes)
-	<< " is wasted for repeating textures and margins.\n";
+        << " is wasted for repeating textures and margins.\n";
 
     } else if (_coverage_bytes < 0) {
       indent(out, indent_level + 2);
       format_memory_fraction(out, -_coverage_bytes, _bytes)
-	<< " is *saved* for palettizing partial textures.\n";
+        << " is *saved* for palettizing partial textures.\n";
     }
     
     if (_duplicate_bytes != 0) {
       indent(out, indent_level + 2);
       format_memory_fraction(out, _duplicate_bytes, _bytes)
-	<< " is wasted because of a texture appearing in multiple groups.\n";
+        << " is wasted because of a texture appearing in multiple groups.\n";
     }
   }
 }

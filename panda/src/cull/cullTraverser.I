@@ -53,7 +53,7 @@ draw_geom(const ArcChain &arc_chain, const AllAttributesWrapper &initial_state) 
 ////////////////////////////////////////////////////////////////////
 INLINE void CullTraverser::
 draw_direct(const ArcChain &arc_chain, 
-	    const AllAttributesWrapper &initial_state) {
+            const AllAttributesWrapper &initial_state) {
   nassertv(!arc_chain.empty());
   Node *node = arc_chain.back()->get_child();
   if (cull_cat.is_spam()) {
@@ -78,7 +78,7 @@ draw_direct(const ArcChain &arc_chain,
 ////////////////////////////////////////////////////////////////////
 INLINE CullStateLookup *CullTraverser::
 add_instance(NodeRelation *arc, const AllTransitionsWrapper &trans,
-	     Node *top_subtree, const CullLevelState &level_state) {
+             Node *top_subtree, const CullLevelState &level_state) {
   return level_state._lookup->get_subtree
     (arc, trans, top_subtree, level_state._as_of);
 }
@@ -107,21 +107,21 @@ find_bin_state(const AllTransitionsWrapper &trans) {
       // The insert succeeded, so the CullState was not there
       // previously.
       cull_cat.spam() 
-	<< "Created CullState " << (void *)cs << " for:\n";
+        << "Created CullState " << (void *)cs << " for:\n";
       trans.write(cull_cat.spam(false), 2);
     } else {
       CullState *found_cs = *result.first;
       cull_cat.spam() 
-	<< "Found existing CullState " << (void *)found_cs
-	<< " which has:\n";
+        << "Found existing CullState " << (void *)found_cs
+        << " which has:\n";
       found_cs->get_transitions().write(cull_cat.spam(false), 2);
       cull_cat.spam(false) 
-	<< "for:\n";
+        << "for:\n";
       trans.write(cull_cat.spam(false), 2);
     }
   }
 #endif
-		       
+
   return *result.first;
 }
 
@@ -132,7 +132,7 @@ find_bin_state(const AllTransitionsWrapper &trans) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CullTraverser::
 backward_arc(NodeRelation *arc, NullTransitionWrapper &,
-	     NullAttributeWrapper &, NullAttributeWrapper &,
-	     const CullLevelState &) {
+             NullAttributeWrapper &, NullAttributeWrapper &,
+             const CullLevelState &) {
   mark_backward_arc(arc);
 }

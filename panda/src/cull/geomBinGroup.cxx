@@ -130,7 +130,7 @@ clear_current_states() {
 ////////////////////////////////////////////////////////////////////
 void GeomBinGroup::
 record_current_state(GraphicsStateGuardian *gsg, CullState *cs, 
-		     int draw_order, CullTraverser *trav) {
+                     int draw_order, CullTraverser *trav) {
   int index = choose_bin(cs);
   if (index >= 0 && index < get_num_bins()) {
     get_bin(index)->record_current_state(gsg, cs, draw_order, trav);

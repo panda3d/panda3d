@@ -72,7 +72,7 @@ set_switch(int index, float in, float out) {
 INLINE void LODNode::
 clear_switches(void) {
   _lod._switch_vector.erase(_lod._switch_vector.begin(),
-		    	    _lod._switch_vector.end());
+                            _lod._switch_vector.end());
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -20,32 +20,32 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : HardwareChannel
 // Description : Video output channels if available on the current
-//		 platform
-//		 NOTE: hardware channels belong to a pipe rather
-//		 than to a particular window
+//               platform
+//               NOTE: hardware channels belong to a pipe rather
+//               than to a particular window
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA HardwareChannel : public GraphicsChannel
 {
     public:
 
-    	HardwareChannel( GraphicsWindow* window );
-	~HardwareChannel( void );
+        HardwareChannel( GraphicsWindow* window );
+        ~HardwareChannel( void );
 
         virtual void window_resized(int x, int y);
 
-	INLINE int get_id( void ) const;
-	INLINE int get_xorg( void ) const;
-	INLINE int get_yorg( void ) const;
-	INLINE int get_xsize( void ) const;
-	INLINE int get_ysize( void ) const;
+        INLINE int get_id( void ) const;
+        INLINE int get_xorg( void ) const;
+        INLINE int get_yorg( void ) const;
+        INLINE int get_xsize( void ) const;
+        INLINE int get_ysize( void ) const;
 
     protected:
 
-	int				_id;
-	int				_xorg;
-	int				_yorg;
-	int 				_xsize;
-	int				_ysize;
+        int                             _id;
+        int                             _xorg;
+        int                             _yorg;
+        int                             _xsize;
+        int                             _ysize;
 
     public:
 

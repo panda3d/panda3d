@@ -103,7 +103,7 @@ write_types(ostream &out, int indent_level) const {
       string name = type->get_name();
       indent(out, indent_level) << name;
       indent(out, max(30 - (int)name.length(), 0)) 
-	<< "  ." << type->get_extension() << "\n";
+        << "  ." << type->get_extension() << "\n";
     }
   }
 }

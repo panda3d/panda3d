@@ -14,7 +14,7 @@
 #include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggVertexPointer
+//       Class : EggVertexPointer
 // Description : This stores a pointer back to a <Vertex>, or to a
 //               particular pritimive like a <Polygon>, representing a
 //               morph offset.
@@ -30,7 +30,7 @@ public:
   static void init_type() {
     EggBackPointer::init_type();
     register_type(_type_handle, "EggVertexPointer",
-		  EggBackPointer::get_class_type());
+                  EggBackPointer::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -20,7 +20,7 @@
 class PStatView;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PStatStripChart
+//       Class : PStatStripChart
 // Description : This is an abstract class that presents the interface
 //               for drawing a basic strip-chart, showing the relative
 //               value over an interval of time for several different
@@ -33,7 +33,7 @@ class PStatView;
 class PStatStripChart : public PStatGraph {
 public:
   PStatStripChart(PStatMonitor *monitor, PStatView &view,
-		  int collector_index, int xsize, int ysize);
+                  int collector_index, int xsize, int ysize);
   virtual ~PStatStripChart();
 
   void new_data(int frame_number);

@@ -64,7 +64,7 @@ protected:
 
 template <class VT, class NT, class TT, class CT>
 INLINE ostream &operator << (ostream &out,
-			     const BuilderAttribTempl<VT, NT, TT, CT> &attrib) {
+                             const BuilderAttribTempl<VT, NT, TT, CT> &attrib) {
   return attrib.output(out);
 }
 

@@ -14,13 +14,13 @@ class CPPIdentifier;
 class CPPScope;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPNamespace
+//       Class : CPPNamespace
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPNamespace : public CPPDeclaration {
 public:
   CPPNamespace(CPPIdentifier *ident, CPPScope *scope,
-	       const CPPFile &file);
+               const CPPFile &file);
 
   string get_simple_name() const;
   string get_local_name(CPPScope *scope = NULL) const;
@@ -28,7 +28,7 @@ public:
   CPPScope *get_scope() const;
 
   virtual void output(ostream &out, int indent_level, CPPScope *scope,
-		      bool complete) const;
+                      bool complete) const;
   virtual SubType get_subtype() const;
 
   virtual CPPNamespace *as_namespace();

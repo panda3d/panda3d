@@ -66,7 +66,7 @@ TrueClock() {
 
     if (_frequency <= 0) {
       express_cat.error()
-	<< "TrueClock::get_real_time() - frequency is negative!" << endl;
+        << "TrueClock::get_real_time() - frequency is negative!" << endl;
       _has_high_res = false;
     }
 

@@ -11,7 +11,7 @@
 #include <onOffAttribute.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DecalAttribute
+//       Class : DecalAttribute
 // Description : See DecalTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DecalAttribute : public OnOffAttribute {
@@ -33,7 +33,7 @@ public:
   static void init_type() {
     OnOffAttribute::init_type();
     register_type(_type_handle, "DecalAttribute",
-		  OnOffAttribute::get_class_type());
+                  OnOffAttribute::get_class_type());
   }
 
 private:

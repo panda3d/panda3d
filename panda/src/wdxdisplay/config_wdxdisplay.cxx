@@ -34,12 +34,12 @@ init_libwdxdisplay() {
 
   wdxGraphicsPipe::init_type();
   GraphicsPipe::get_factory().register_factory(
-			wdxGraphicsPipe::get_class_type(),
-		  	wdxGraphicsPipe::make_wdxGraphicsPipe);
+            wdxGraphicsPipe::get_class_type(),
+            wdxGraphicsPipe::make_wdxGraphicsPipe);
   wdxGraphicsWindow::init_type();
   GraphicsWindow::get_factory().register_factory(
-			wdxGraphicsWindow::get_class_type(),
-		    	wdxGraphicsWindow::make_wdxGraphicsWindow);
+            wdxGraphicsWindow::get_class_type(),
+                wdxGraphicsWindow::make_wdxGraphicsWindow);
 }
 
 // cant use global var cleanly because global var static init executed after init_libwgl(), incorrectly reiniting var

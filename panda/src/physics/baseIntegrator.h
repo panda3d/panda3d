@@ -40,9 +40,9 @@ protected:
   INLINE const vector< LMatrix4f > &get_precomputed_angular_matrices(void) const;
 
   void precompute_linear_matrices(Physical *physical,
-				  const vector< PT(LinearForce) > &forces);
+                                  const vector< PT(LinearForce) > &forces);
   void precompute_angular_matrices(Physical *physical,
-				   const vector< PT(AngularForce) > &forces);
+                                   const vector< PT(AngularForce) > &forces);
 
 public:
   virtual ~BaseIntegrator(void);

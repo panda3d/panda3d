@@ -14,7 +14,7 @@ TypeHandle LinearSourceForce::_type_handle;
 ////////////////////////////////////////////////////////////////////
 LinearSourceForce::
 LinearSourceForce(const LPoint3f& p, FalloffType f, float r, float a, 
-	  bool mass) :
+          bool mass) :
   LinearDistanceForce(p, f, r, a, mass) {
 }
 
@@ -26,7 +26,7 @@ LinearSourceForce(const LPoint3f& p, FalloffType f, float r, float a,
 LinearSourceForce::
 LinearSourceForce(void) :
   LinearDistanceForce(LPoint3f(0.0f, 0.0f, 0.0f), FT_ONE_OVER_R_SQUARED, 
-		      1.0f, 1.0f, true) {
+                      1.0f, 1.0f, true) {
 }
 
 ////////////////////////////////////////////////////////////////////

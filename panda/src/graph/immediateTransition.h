@@ -14,7 +14,7 @@ class NodeAttribute;
 class NodeRelation;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ImmediateTransition
+//       Class : ImmediateTransition
 // Description : This is a special kind of transition that doesn't
 //               accumulate state, but instead has some immediate
 //               effect when it is encountered in the scene graph.
@@ -68,7 +68,7 @@ public:
   static void init_type() {
     NodeTransition::init_type();
     register_type(_type_handle, "ImmediateTransition",
-		  NodeTransition::get_class_type());
+                  NodeTransition::get_class_type());
   }
 
 private:

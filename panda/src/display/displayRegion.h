@@ -32,8 +32,8 @@ class EXPCL_PANDA DisplayRegion : public ReferenceCount {
 public:
   DisplayRegion(GraphicsLayer *);
   DisplayRegion(GraphicsLayer *,
-		const float l, const float r,
-		const float b, const float t);
+                const float l, const float r,
+                const float b, const float t);
   DisplayRegion(int xsize, int ysize);
   virtual ~DisplayRegion();
 
@@ -62,7 +62,7 @@ PUBLISHED:
   void output(ostream &out) const;
 
 protected:
-	
+
   float _l;
   float _r;
   float _b;

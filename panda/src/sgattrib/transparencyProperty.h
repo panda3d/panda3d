@@ -12,19 +12,19 @@ class Datagram;
 class DatagramIterator;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TransparencyProperty
+//       Class : TransparencyProperty
 // Description : This defines the types of transparency that can be
 //               enabled.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TransparencyProperty {
 public:
   enum Mode {
-    M_none,		// No transparency in effect.
-    M_alpha,		// Writes to depth buffer of transp objects disabled
-    M_alpha_sorted,	// Assumes transp objects are depth sorted
-    M_multisample,	// Source alpha values modified to 1.0 before writing
-    M_multisample_mask,	// Source alpha values not modified
-    M_binary,		// Only writes pixels with alpha = 1.0
+    M_none,             // No transparency in effect.
+    M_alpha,            // Writes to depth buffer of transp objects disabled
+    M_alpha_sorted,     // Assumes transp objects are depth sorted
+    M_multisample,      // Source alpha values modified to 1.0 before writing
+    M_multisample_mask, // Source alpha values not modified
+    M_binary,           // Only writes pixels with alpha = 1.0
   };
 
 public:

@@ -13,7 +13,7 @@
 #include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : MaterialTransition
+//       Class : MaterialTransition
 // Description : Applies a material, controlling subtle lighting
 //               parameters, to geometry.
 ////////////////////////////////////////////////////////////////////
@@ -42,7 +42,7 @@ public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &me);  
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
 protected:
   static TypedWritable *make_MaterialTransition(const FactoryParams &params);
@@ -59,7 +59,7 @@ public:
   static void init_type() {
     OnOffTransition::init_type();
     register_type(_type_handle, "MaterialTransition",
-		  OnOffTransition::get_class_type());
+                  OnOffTransition::get_class_type());
   }
 
 private:

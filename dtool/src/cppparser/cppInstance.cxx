@@ -59,7 +59,7 @@ CPPInstance(CPPType *type, CPPIdentifier *ident, int storage_class) :
 ////////////////////////////////////////////////////////////////////
 CPPInstance::
 CPPInstance(CPPType *type, CPPInstanceIdentifier *ii, int storage_class,
-	    const CPPFile &file) :
+            const CPPFile &file) :
   CPPDeclaration(file)
 {
   _type = ii->unroll_type(type);
@@ -107,7 +107,7 @@ CPPInstance::
 ////////////////////////////////////////////////////////////////////
 CPPInstance *CPPInstance::
 make_typecast_function(CPPInstance *inst, CPPIdentifier *ident,
-		       CPPParameterList *parameters, int function_flags) {
+                       CPPParameterList *parameters, int function_flags) {
   CPPType *type = CPPType::new_type(inst->_type);
   delete inst;
       
@@ -252,7 +252,7 @@ is_scoped() const {
 ////////////////////////////////////////////////////////////////////
 CPPScope *CPPInstance::
 get_scope(CPPScope *current_scope, CPPScope *global_scope,
-	  CPPPreprocessor *error_sink) const {
+          CPPPreprocessor *error_sink) const {
   if (_ident == NULL) {
     return current_scope;
   } else {
@@ -323,20 +323,20 @@ check_for_constructor(CPPScope *current_scope, CPPScope *global_scope) {
 
     if (!method_name.empty() && !class_name.empty()) {
       if (method_name == class_name) {
-	CPPType *void_type = CPPType::new_type
-	  (new CPPSimpleType(CPPSimpleType::T_void));
+        CPPType *void_type = CPPType::new_type
+          (new CPPSimpleType(CPPSimpleType::T_void));
 
-	_type = CPPType::new_type
-	  (new CPPFunctionType(void_type, func->_parameters, 
-			       func->_flags | CPPFunctionType::F_constructor));
+        _type = CPPType::new_type
+          (new CPPFunctionType(void_type, func->_parameters, 
+                               func->_flags | CPPFunctionType::F_constructor));
 
       } else if (method_name == "~" + class_name) {
-	CPPType *void_type = CPPType::new_type
-	  (new CPPSimpleType(CPPSimpleType::T_void));
+        CPPType *void_type = CPPType::new_type
+          (new CPPSimpleType(CPPSimpleType::T_void));
 
-	_type = CPPType::new_type
-	  (new CPPFunctionType(void_type, func->_parameters, 
-			       func->_flags | CPPFunctionType::F_destructor));
+        _type = CPPType::new_type
+          (new CPPFunctionType(void_type, func->_parameters, 
+                               func->_flags | CPPFunctionType::F_destructor));
       }
     }
   }
@@ -349,12 +349,12 @@ check_for_constructor(CPPScope *current_scope, CPPScope *global_scope) {
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPInstance::
 instantiate(const CPPTemplateParameterList *actual_params,
-	    CPPScope *current_scope, CPPScope *global_scope,
-	    CPPPreprocessor *error_sink) const {
+            CPPScope *current_scope, CPPScope *global_scope,
+            CPPPreprocessor *error_sink) const {
   if (!is_template()) {
     if (error_sink != NULL) {
       error_sink->warning("Ignoring template parameters for instance " + 
-			  _ident->get_local_name());
+                          _ident->get_local_name());
     }
     return (CPPInstance *)this;
   }
@@ -372,7 +372,7 @@ instantiate(const CPPTemplateParameterList *actual_params,
 
   CPPDeclaration::SubstDecl subst;
   actual_params->build_subst_decl(tscope->_parameters, subst,
-				  current_scope, global_scope);
+                                  current_scope, global_scope);
 
   CPPInstance *inst = 
     ((CPPInstance *)this)->substitute_decl(subst, current_scope, global_scope)
@@ -423,7 +423,7 @@ is_fully_specified() const {
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPInstance::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
-		CPPScope *current_scope, CPPScope *global_scope) {
+                CPPScope *current_scope, CPPScope *global_scope) {
   CPPDeclaration *top = 
     CPPDeclaration::substitute_decl(subst, current_scope, global_scope);
   if (top != this) {
@@ -517,7 +517,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete,
   if (_type->as_function_type()) {
     _type->as_function_type()->
       output_instance(out, indent_level, scope, complete, "", name,
-		      num_default_parameters);
+                      num_default_parameters);
   } else {
     _type->output_instance(out, indent_level, scope, complete, "", name);
   }

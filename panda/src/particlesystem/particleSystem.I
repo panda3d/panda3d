@@ -184,7 +184,7 @@ set_render_parent(Node *node) {
 
   _render_parent = node;
   _render_arc = new RenderRelation(_render_parent,
-				   _renderer->get_render_node());
+                                   _renderer->get_render_node());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -213,7 +213,7 @@ add_spawn_template(ParticleSystem *ps) {
 INLINE void ParticleSystem::
 clear_spawn_templates(void) {
   _spawn_templates.erase(_spawn_templates.begin(),
-			 _spawn_templates.end());
+                         _spawn_templates.end());
 }
 
 ////             /////////////////////////////////////////////////////

@@ -13,7 +13,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoPoints
+//       Class : LwoPoints
 // Description : An array of points that will be referenced by later
 //               chunks.
 ////////////////////////////////////////////////////////////////////
@@ -41,7 +41,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoPoints",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

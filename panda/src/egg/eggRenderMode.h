@@ -14,7 +14,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggRenderMode
+//       Class : EggRenderMode
 // Description : This class stores miscellaneous rendering properties
 //               that is associated with geometry, and which may be
 //               set on the geometry primitive level, on the group

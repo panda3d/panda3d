@@ -26,7 +26,7 @@ class GraphicsStateGuardian;
 class GeomBin;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : CullState
+//       Class : CullState
 // Description : This is the basic grouping unit of the CullTraverser.
 //               A single CullState object represents all of the
 //               GeomNodes throughout the scene graph that share an
@@ -46,8 +46,8 @@ public:
   INLINE int compare_to(const CullState &other) const;
 
   bool check_currency(Node *node, 
-		      const AllTransitionsWrapper &trans,
-		      UpdateSeq as_of);
+                      const AllTransitionsWrapper &trans,
+                      UpdateSeq as_of);
 
   INLINE void mark_verified(Node *node, UpdateSeq now);
 

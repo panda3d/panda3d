@@ -36,7 +36,7 @@ public:
   static void init_type(void) {
     LinearForce::init_type();
     register_type(_type_handle, "LinearRandomForce",
-		  LinearForce::get_class_type());
+                  LinearForce::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

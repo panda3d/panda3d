@@ -118,16 +118,16 @@ get_child_vector(const PhysicsObject *po) {
 
   // x direction
   temp0 = vlerp(cubic_x, get_lattice_entry(p), 
-		get_lattice_entry(p[0] + 1.0f, p[1], p[2]));
+                get_lattice_entry(p[0] + 1.0f, p[1], p[2]));
 
   temp1 = vlerp(cubic_x, get_lattice_entry(p[0], p[1], p[2] + 1.0f),
-		get_lattice_entry(p[0] + 1.0f, p[1], p[2] + 1.0f));
+                get_lattice_entry(p[0] + 1.0f, p[1], p[2] + 1.0f));
 
   temp2 = vlerp(cubic_x, get_lattice_entry(p[0], p[1] + 1.0f, p[2]),
-		get_lattice_entry(p[0] + 1.0f, p[1] + 1.0f, p[2]));
+                get_lattice_entry(p[0] + 1.0f, p[1] + 1.0f, p[2]));
 
   temp3 = vlerp(cubic_x, get_lattice_entry(p[0], p[1] + 1.0f, p[2] + 1.0f),
-		get_lattice_entry(p[0] + 1.0f, p[1] + 1.0f, p[2] + 1.0f));
+                get_lattice_entry(p[0] + 1.0f, p[1] + 1.0f, p[2] + 1.0f));
 
   // y direction
   temp0 = vlerp(cubic_z, temp0, temp1);

@@ -19,7 +19,7 @@ class CullState;
 class CullStateSubtree;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : CullStateLookup
+//       Class : CullStateLookup
 // Description : This object stores a set of CullState pointers, one
 //               for each unique state encountered in the scene graph.
 //               It can combine two identical states encountered at
@@ -41,22 +41,22 @@ public:
   INLINE bool is_completely_empty() const;
 
   CullState *find_node(Node *node, 
-		       const AllTransitionsWrapper &trans,
-		       UpdateSeq now);
+                       const AllTransitionsWrapper &trans,
+                       UpdateSeq now);
   CullStateSubtree *get_subtree(const PT_NodeRelation &arc,
-				const AllTransitionsWrapper &trans,
-				Node *top_subtree,
-				UpdateSeq now);
+                                const AllTransitionsWrapper &trans,
+                                Node *top_subtree,
+                                UpdateSeq now);
 
   INLINE void record_node(Node *node, CullState *cs,
-			  UpdateSeq now);
+                          UpdateSeq now);
 
   void clean_out_old_nodes();
 
   virtual Node *get_top_subtree() const;
 
   virtual void compose_trans(const AllTransitionsWrapper &from,
-			     AllTransitionsWrapper &to) const;
+                             AllTransitionsWrapper &to) const;
 
   virtual void write(ostream &out, int indent_level = 0) const;
 

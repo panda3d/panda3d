@@ -15,36 +15,36 @@
  * indicating that the scanlines are in English text order (PIXSTANDARD).
  */
 
-			/* flags for scanline ordering */
-#define  XDECR			1
-#define  YDECR			2
-#define  YMAJOR			4
+                        /* flags for scanline ordering */
+#define  XDECR                  1
+#define  YDECR                  2
+#define  YMAJOR                 4
 
-			/* standard scanline ordering */
-#define  PIXSTANDARD		(YMAJOR|YDECR)
-#define  PIXSTDFMT		"-Y %d +X %d\n"
+                        /* standard scanline ordering */
+#define  PIXSTANDARD            (YMAJOR|YDECR)
+#define  PIXSTDFMT              "-Y %d +X %d\n"
 
-			/* structure for image dimensions */
+                        /* structure for image dimensions */
 typedef struct {
-	int	or;		/* orientation (from flags above) */
-	int	xr, yr;		/* x and y resolution */
+        int     or;             /* orientation (from flags above) */
+        int     xr, yr;         /* x and y resolution */
 } RESOLU;
 
-			/* macros to get scanline length and number */
-#define  scanlen(rs)		((rs)->or & YMAJOR ? (rs)->xr : (rs)->yr)
-#define  numscans(rs)		((rs)->or & YMAJOR ? (rs)->yr : (rs)->xr)
+                        /* macros to get scanline length and number */
+#define  scanlen(rs)            ((rs)->or & YMAJOR ? (rs)->xr : (rs)->yr)
+#define  numscans(rs)           ((rs)->or & YMAJOR ? (rs)->yr : (rs)->xr)
 
-			/* resolution string buffer and its size */
-#define  RESOLU_BUFLEN		32
+                        /* resolution string buffer and its size */
+#define  RESOLU_BUFLEN          32
 extern char  resolu_buf[RESOLU_BUFLEN];
 
-			/* macros for reading/writing resolution struct */
-#define  fputsresolu(rs,fp)	fputs(resolu2str(resolu_buf,rs),fp)
-#define  fgetsresolu(rs,fp)	str2resolu(rs, \
-					fgets(resolu_buf,RESOLU_BUFLEN,fp))
+                        /* macros for reading/writing resolution struct */
+#define  fputsresolu(rs,fp)     fputs(resolu2str(resolu_buf,rs),fp)
+#define  fgetsresolu(rs,fp)     str2resolu(rs, \
+                                        fgets(resolu_buf,RESOLU_BUFLEN,fp))
 
-			/* reading/writing of standard ordering */
-#define  fprtresolu(sl,ns,fp)	fprintf(fp,PIXSTDFMT,ns,sl)
-#define  fscnresolu(sl,ns,fp)	(fscanf(fp,PIXSTDFMT,ns,sl)==2)
+                        /* reading/writing of standard ordering */
+#define  fprtresolu(sl,ns,fp)   fprintf(fp,PIXSTDFMT,ns,sl)
+#define  fscnresolu(sl,ns,fp)   (fscanf(fp,PIXSTDFMT,ns,sl)==2)
 
 extern char  *resolu2str();

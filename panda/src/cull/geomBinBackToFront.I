@@ -12,7 +12,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE GeomBinBackToFront::NodeEntry::
 NodeEntry(float distance, const PT(CullState) &state, 
-	  const ArcChain &arc_chain, bool is_direct) :
+          const ArcChain &arc_chain, bool is_direct) :
   _distance(distance),
   _state(state),
   _arc_chain(arc_chain),

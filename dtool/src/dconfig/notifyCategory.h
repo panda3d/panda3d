@@ -14,7 +14,7 @@
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : NotifyCategory
+//       Class : NotifyCategory
 // Description : A particular category of error messages.  Typically
 //               there will be one of these per package, so that we
 //               can turn on or off error messages at least at a
@@ -25,7 +25,7 @@
 class EXPCL_DTOOLCONFIG NotifyCategory {
 private:
   NotifyCategory(const string &fullname, const string &basename, 
-		 NotifyCategory *parent);
+                 NotifyCategory *parent);
   
 PUBLISHED:
   INLINE string get_fullname() const;

@@ -28,7 +28,7 @@ class GeomNode;
 
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : BuilderBucket
+//       Class : BuilderBucket
 // Description : The main grouping tool for BuilderPrims.  See the
 //               comments at the beginning of builder.h.
 //

@@ -11,7 +11,7 @@
 #include "lwoChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurfaceBlockOpacity
+//       Class : LwoSurfaceBlockOpacity
 // Description : Indicates how transparent or opaque this particular
 //               layer is in relation to the layers beneath it.  This
 //               is a subchunk of LwoSurfaceBlockHeader.
@@ -47,7 +47,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoSurfaceBlockOpacity",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

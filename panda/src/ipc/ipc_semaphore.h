@@ -17,7 +17,7 @@ class EXPCL_PANDAEXPRESS base_semaphore {
 
       static base_semaphore* const Null;
       INLINE base_semaphore(const unsigned int initial = 1) :
-	_semaphore(traits::make_semaphore(initial)) {}
+        _semaphore(traits::make_semaphore(initial)) {}
       INLINE ~base_semaphore(void) { delete _semaphore; }
       INLINE void wait(void) { _semaphore->wait(); }
       INLINE int trywait(void) { return _semaphore->trywait(); }
@@ -31,7 +31,7 @@ class base_semaphore_lock {
    public:
       typedef base_semaphore semaphore;
       INLINE base_semaphore_lock(semaphore& s) : _semaphore(s) {
-	 _semaphore.wait();
+         _semaphore.wait();
       }
       INLINE ~base_semaphore_lock(void) { _semaphore.post(); }
    private:

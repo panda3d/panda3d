@@ -36,7 +36,7 @@ BEGIN_PUBLISH //[
 END_PUBLISH //]
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : HermiteCurveCV
+//       Class : HermiteCurveCV
 // Description : A single CV of a Hermite curve.  Hermite curve CV's
 //               include an in and out tangent, as well as a position.
 ////////////////////////////////////////////////////////////////////
@@ -53,8 +53,8 @@ public:
   void set_name(const string &name);
 
   void format_egg(ostream &out, int indent, int num_dimensions,
-	      bool show_in, bool show_out,
-	      float scale_in, float scale_out) const;
+              bool show_in, bool show_out,
+              float scale_in, float scale_out) const;
 
   void write_datagram(BamWriter *manager, Datagram &me) const;
   void fillin(DatagramIterator &scan, BamReader *manager);
@@ -65,7 +65,7 @@ public:
 };
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : HermiteCurve
+//       Class : HermiteCurve
 // Description : A parametric curve defined by a sequence of control
 //               vertices, each with an in and out tangent.
 //
@@ -131,13 +131,13 @@ public:
 
   virtual bool
   rebuild_curveseg(int rtype0, float t0, const LVecBase4f &v0,
-		   int rtype1, float t1, const LVecBase4f &v1,
-		   int rtype2, float t2, const LVecBase4f &v2,
-		   int rtype3, float t3, const LVecBase4f &v3);
+                   int rtype1, float t1, const LVecBase4f &v1,
+                   int rtype2, float t2, const LVecBase4f &v2,
+                   int rtype3, float t3, const LVecBase4f &v3);
 
 protected:
   virtual bool format_egg(ostream &out, const string &name, 
-			  const string &curve_type, int indent_level) const;
+                          const string &curve_type, int indent_level) const;
 
   void invalidate_cv(int n, bool redo_all);
   int find_cv(float t);

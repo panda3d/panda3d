@@ -13,7 +13,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggJointPointer
+//       Class : EggJointPointer
 // Description : This is a base class for EggJointNodePointer and
 //               EggMatrixTablePointer.  It stores a back pointer to
 //               either a <Joint> entry or an xform <Table> data, and
@@ -45,7 +45,7 @@ public:
   static void init_type() {
     EggBackPointer::init_type();
     register_type(_type_handle, "EggJointPointer",
-		  EggBackPointer::get_class_type());
+                  EggBackPointer::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

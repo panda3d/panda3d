@@ -38,7 +38,7 @@ bool Loader::_file_types_loaded = false;
 class LoaderToken : public ReferenceCount {
 public:
   INLINE LoaderToken(uint id, Filename path, const string &event_name,
-	PT_Node node=NULL) : _id(id), _node(node) {
+        PT_Node node=NULL) : _id(id), _node(node) {
     _path = path;
     _event_name = event_name;
   }
@@ -130,8 +130,8 @@ request_load(const Filename &filename, const string &event_name) {
     // Make sure we actually are threaded
     if (!_threaded) {
       loader_cat.info()
-	<< "Loader::request_load() - create_thread() was "
-	<< "never called!  Calling it now..." << endl;
+        << "Loader::request_load() - create_thread() was "
+        << "never called!  Calling it now..." << endl;
       create_thread();
     }
    
@@ -228,11 +228,11 @@ load_file_types() {
     for (ti = load_file_type->begin(); ti != load_file_type->end(); ++ti) {
       Filename dlname = Filename::dso_filename("lib" + (*ti).Val() + ".so");
       loader_cat.info()
-	<< "loading file type module: " << dlname.to_os_specific() << endl;
+        << "loading file type module: " << dlname.to_os_specific() << endl;
       void *tmp = load_dso(dlname);
       if (tmp == (void *)NULL) {
-	loader_cat.info()
-	  << "Unable to load: " << load_dso_error() << endl;
+        loader_cat.info()
+          << "Unable to load: " << load_dso_error() << endl;
       }
     }
     _file_types_loaded = true;
@@ -250,7 +250,7 @@ process_request() {
   if (_shutdown) {
     if (loader_cat.is_debug())
       loader_cat.debug()
-	  << "Loader shutting down...\n";
+          << "Loader shutting down...\n";
     return false;
   }
 
@@ -260,8 +260,8 @@ process_request() {
     tok->_node = load_file(tok->_path);
     if (tok->_node == NULL) {
       loader_cat.error()
-	<< "Loader::callback() - couldn't find file: "
-	<< tok->_path << "\n";	
+        << "Loader::callback() - couldn't find file: "
+        << tok->_path << "\n";
     } else {
       _token_board->_done.insert(tok);
 
@@ -275,7 +275,7 @@ process_request() {
 
     if (loader_cat.is_debug()) {
       loader_cat.debug()
-	<< "loading complete for " << tok->_path << "\n";
+        << "loading complete for " << tok->_path << "\n";
     }
   }
 
@@ -386,7 +386,7 @@ load_unknown_file_type(const Filename &filename) const {
       Filename p = filename;
       p.set_extension(reg->get_type(i)->get_extension());
       loader_cat.error(false)
-	<< "  " << p << "\n";
+        << "  " << p << "\n";
     }
     return (Node *)NULL;
   }
@@ -403,7 +403,7 @@ load_unknown_file_type(const Filename &filename) const {
       << " possible types:\n";
     for (fi = files.begin(); fi != files.end(); ++fi) {
       loader_cat.debug(false)
-	<< "  " << (*fi)._path << "\n";
+        << "  " << (*fi)._path << "\n";
     }
   }
 
@@ -415,8 +415,8 @@ load_unknown_file_type(const Filename &filename) const {
     }
     if (loader_cat.is_debug()) {
       loader_cat.debug()
-	<< "Couldn't read " << consider._type->get_name() 
-	<< " file " << consider._path << "\n";
+        << "Couldn't read " << consider._type->get_name() 
+        << " file " << consider._path << "\n";
     }
   }
 

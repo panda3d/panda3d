@@ -13,7 +13,7 @@
 #include <onAttribute.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : AlphaTransformAttribute
+//       Class : AlphaTransformAttribute
 // Description : See AlphaTransformTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA AlphaTransformAttribute : public OnAttribute {
@@ -50,7 +50,7 @@ public:
   static void init_type() {
     OnAttribute::init_type();
     register_type(_type_handle, "AlphaTransformAttribute",
-		  OnAttribute::get_class_type());
+                  OnAttribute::get_class_type());
   }
 
 private:

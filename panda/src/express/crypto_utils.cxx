@@ -68,7 +68,7 @@ md5_a_file(const Filename &name, HashVal &ret) {
 
   string fs = name.to_os_specific();
   FileSource f(fs.c_str(), true,
-	       new HashFilter(md5, new HexEncoder(new FileSink(os))));
+               new HashFilter(md5, new HexEncoder(new FileSink(os))));
 
   istringstream is(os.str());
 

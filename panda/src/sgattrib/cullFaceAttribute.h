@@ -13,7 +13,7 @@
 #include <onAttribute.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : CullFaceAttribute
+//       Class : CullFaceAttribute
 // Description : See CullFaceTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CullFaceAttribute : public OnAttribute {
@@ -48,7 +48,7 @@ public:
   static void init_type() {
     OnAttribute::init_type();
     register_type(_type_handle, "CullFaceAttribute",
-		  OnAttribute::get_class_type());
+                  OnAttribute::get_class_type());
   }
 
 private:

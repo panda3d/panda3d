@@ -37,7 +37,7 @@ add_ptags(const LwoPolygonTags *lwo_ptags, const LwoTags *tags) {
   bool inserted = _ptags.insert(PTags::value_type(type, lwo_ptags)).second;
   if (!inserted) {
     nout << "Multiple polygon tags on the same polygons of type " 
-	 << type << "\n";
+         << type << "\n";
 
   } else {
     if (type == IffId("SURF")) {
@@ -70,7 +70,7 @@ add_vmad(const LwoDiscontinuousVertexMap *lwo_vmad) {
 
   if (!inserted) {
     nout << "Multiple discontinous vertex maps on the same polygons of type " 
-	 << map_type << " named " << name << "\n";
+         << map_type << " named " << name << "\n";
   }
 }
 
@@ -137,7 +137,7 @@ get_uv(const string &uv_name, int pi, int vi, LPoint2f &uv) const {
   const LwoDiscontinuousVertexMap *vmad = (*ni).second;
   if (vmad->_dimension != 2) {
     nout << "Unexpected dimension of " << vmad->_dimension
-	 << " for discontinuous UV map " << uv_name << "\n";
+         << " for discontinuous UV map " << uv_name << "\n";
     return false;
   }
 
@@ -180,7 +180,7 @@ make_egg() {
 
   } else {
     nout << "Ignoring unknown geometry type " << _polygons->_polygon_type
-	 << ".\n";
+         << ".\n";
   }
 }
 
@@ -239,44 +239,44 @@ make_faces() {
     for (int vi = num_vertices; vi > 0; vi--) {
       int vindex = poly->_vertices[vi % num_vertices];
       if (vindex < 0 || vindex >= num_points) {
-	nout << "Invalid vertex index " << vindex << " in polygon.\n";
-	is_valid = false;
+        nout << "Invalid vertex index " << vindex << " in polygon.\n";
+        is_valid = false;
       } else {
-	PT(EggVertex) egg_vertex = new EggVertex;
-	LPoint3d pos = LCAST(double, points->get_point(vindex));
-	egg_vertex->set_pos(pos);
+        PT(EggVertex) egg_vertex = new EggVertex;
+        LPoint3d pos = LCAST(double, points->get_point(vindex));
+        egg_vertex->set_pos(pos);
 
-	// Does the vertex used named UV's?
-	if (surface != (CLwoSurface *)NULL && surface->has_named_uvs()) {
-	  string uv_name = surface->get_uv_name();
-	  LPoint2f uv;
-	  if (get_uv(uv_name, pindex, vindex, uv)) {
-	    // This UV is defined in a "discontinuous" map, that
-	    // associated a particular UV per each polygon.
-	    egg_vertex->set_uv(LCAST(double, uv));
+        // Does the vertex used named UV's?
+        if (surface != (CLwoSurface *)NULL && surface->has_named_uvs()) {
+          string uv_name = surface->get_uv_name();
+          LPoint2f uv;
+          if (get_uv(uv_name, pindex, vindex, uv)) {
+            // This UV is defined in a "discontinuous" map, that
+            // associated a particular UV per each polygon.
+            egg_vertex->set_uv(LCAST(double, uv));
 
-	  } else if (_points->get_uv(uv_name, vindex, uv)) {
-	    // The UV does not appear in a discontinuous map, but it
-	    // is defined in the points set.
-	    egg_vertex->set_uv(LCAST(double, uv));
-	  }
-	}
+          } else if (_points->get_uv(uv_name, vindex, uv)) {
+            // The UV does not appear in a discontinuous map, but it
+            // is defined in the points set.
+            egg_vertex->set_uv(LCAST(double, uv));
+          }
+        }
 
-	egg_vertices.push_back(egg_vertex);
+        egg_vertices.push_back(egg_vertex);
       }
     }
 
     if (is_valid) {
       if (surface != (CLwoSurface *)NULL) {
-	surface->apply_properties(egg_prim, egg_vertices, smooth_angle);
+        surface->apply_properties(egg_prim, egg_vertices, smooth_angle);
       }
 
       // Now add all the vertices officially to the primitive.
       vector_PT_EggVertex::const_iterator evi;
       for (evi = egg_vertices.begin(); evi != egg_vertices.end(); ++evi) {
-	EggVertex *egg_vertex = (*evi);
-	EggVertex *new_vertex = egg_vpool->create_unique_vertex(*egg_vertex);
-	egg_prim->add_vertex(new_vertex);
+        EggVertex *egg_vertex = (*evi);
+        EggVertex *new_vertex = egg_vpool->create_unique_vertex(*egg_vertex);
+        egg_prim->add_vertex(new_vertex);
       }
       
       // And add the primitive to its parent.

@@ -73,11 +73,11 @@ destruct() {
       // Now, in case the window was never completely shown, we must
       // wait for that to happen before we can hide it.
       while (!_destroyed && _state == S_setup) {
-	GtkBase::_gtk->iteration();
+        GtkBase::_gtk->iteration();
       }
       
       if (!_destroyed) {
-	hide();
+        hide();
       }
     }
     _state = S_gone;

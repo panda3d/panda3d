@@ -50,7 +50,7 @@ select_child(int index) {
   if (switchnode_cat.is_debug()) {
     if (_selected_child_index != index) {
       switchnode_cat.debug()
-	<< *this << " selecting child " << index << "\n";
+        << *this << " selecting child " << index << "\n";
     }
   }
 

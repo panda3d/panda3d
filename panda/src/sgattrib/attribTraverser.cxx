@@ -53,14 +53,14 @@ reached_node(Node *node, NodeAttributeWrapper &state, NullLevelState &) {
 
       if (attrib->is_of_type(OnOffAttribute::get_class_type()))
       {
-	if(DCAST(OnOffAttribute, attrib)->is_on())
-	{
-	  _has_attrib = true;
-	}
+        if(DCAST(OnOffAttribute, attrib)->is_on())
+        {
+          _has_attrib = true;
+        }
       }
       else
       {
-	_has_attrib = true;
+        _has_attrib = true;
       }
 
     }
@@ -78,8 +78,8 @@ reached_node(Node *node, NodeAttributeWrapper &state, NullLevelState &) {
 ////////////////////////////////////////////////////////////////////
 bool AttribTraverser::
 forward_arc(NodeRelation *, TransitionWrapper &trans,
-	    NodeAttributeWrapper &, NodeAttributeWrapper &,
-	    NullLevelState &)
+            NodeAttributeWrapper &, NodeAttributeWrapper &,
+            NullLevelState &)
 {
   //Short circuit if we aren't looking for a transition
   if (_transition_type == TypeHandle::none())
@@ -124,7 +124,7 @@ set_transition_type(TypeHandle type)
 ////////////////////////////////////////////////////////////////////
 //     Function: is_textured 
 //  Description: Recursively checks the tree of nodes from root to
-//		 see if any geometry is textured 
+//               see if any geometry is textured 
 ////////////////////////////////////////////////////////////////////
 bool
 is_textured(Node* root) {
@@ -133,8 +133,8 @@ is_textured(Node* root) {
   trav.set_attrib_type(TextureAttribute::get_class_type());
 
   df_traverse(root, trav, 
-	      NodeAttributeWrapper(TextureTransition::get_class_type()), 
-	      NullLevelState(), RenderRelation::get_class_type());
+              NodeAttributeWrapper(TextureTransition::get_class_type()), 
+              NullLevelState(), RenderRelation::get_class_type());
 
   return trav._has_attrib;
 }
@@ -142,7 +142,7 @@ is_textured(Node* root) {
 ////////////////////////////////////////////////////////////////////
 //     Function: is_textured 
 //  Description: Recursively checks the tree of nodes from root to
-//		 see if any geometry is textured 
+//               see if any geometry is textured 
 ////////////////////////////////////////////////////////////////////
 bool
 is_textured(Node* root, const AllAttributesWrapper &init_state) 
@@ -162,7 +162,7 @@ is_textured(Node* root, const AllAttributesWrapper &init_state)
 ////////////////////////////////////////////////////////////////////
 //     Function: is_shaded 
 //  Description: Recursively checks the tree of nodes from root to
-//		 see if any geometry is shaded 
+//               see if any geometry is shaded 
 ////////////////////////////////////////////////////////////////////
 bool
 is_shaded(Node* root) {
@@ -176,8 +176,8 @@ is_shaded(Node* root) {
   trav.set_transition_type(TypeRegistry::ptr()->find_type("ShaderTransition"));
 
   df_traverse(root, trav, 
-	      NodeAttributeWrapper(TypeRegistry::ptr()->find_type("ShaderTransition")), 
-	      NullLevelState(), RenderRelation::get_class_type());
+              NodeAttributeWrapper(TypeRegistry::ptr()->find_type("ShaderTransition")), 
+              NullLevelState(), RenderRelation::get_class_type());
 
   return trav._has_attrib;
 }

@@ -14,7 +14,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltVertex
+//       Class : FltVertex
 // Description : Represents a single vertex in the vertex palette.
 //               Flt files index vertices by their byte offset in the
 //               vertex palette; within this library, we map those
@@ -69,7 +69,7 @@ public:
   static void init_type() {
     FltRecord::init_type();
     register_type(_type_handle, "FltVertex",
-		  FltRecord::get_class_type());
+                  FltRecord::get_class_type());
   }
 
 private:

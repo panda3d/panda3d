@@ -14,7 +14,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggAttributes
+//       Class : EggAttributes
 // Description : The set of attributes that may be applied to vertices
 //               as well as polygons, such as surface normal and
 //               color.

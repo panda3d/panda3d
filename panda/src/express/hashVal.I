@@ -22,9 +22,9 @@ HashVal(void) {
 INLINE bool HashVal::
 operator == (const HashVal &other) const {
   return (hv[0] == other.hv[0] && 
-	  hv[1] == other.hv[1] &&
-	  hv[2] == other.hv[2] &&
-	  hv[3] == other.hv[3]);
+          hv[1] == other.hv[1] &&
+          hv[2] == other.hv[2] &&
+          hv[3] == other.hv[3]);
 }
 
 ////////////////////////////////////////////////////////////////////

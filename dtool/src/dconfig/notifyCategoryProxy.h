@@ -13,7 +13,7 @@
 #include "notify.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : NotifyCategoryProxy
+//       Class : NotifyCategoryProxy
 // Description : A handy wrapper around a NotifyCategory pointer.
 //               This wrapper pretends to be a NotifyCategory object
 //               itself, except that it is capable of initializing its

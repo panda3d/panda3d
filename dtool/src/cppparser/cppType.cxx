@@ -192,8 +192,8 @@ output_instance(ostream &out, const string &name, CPPScope *scope) const {
 ////////////////////////////////////////////////////////////////////
 void CPPType::
 output_instance(ostream &out, int indent_level, CPPScope *scope,
-		bool complete, const string &prename,
-		const string &name) const {
+                bool complete, const string &prename,
+                const string &name) const {
   output(out, indent_level, scope, complete);
   out << " " << prename << name;
 }

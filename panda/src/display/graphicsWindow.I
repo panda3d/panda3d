@@ -143,7 +143,7 @@ has_keyboard(int device) const {
 INLINE const MouseData &GraphicsWindow::
 get_mouse_data(int device) const {
   nassertr(device >= 0 && device < (int)_input_devices.size(), 
-	   *(new MouseData));
+           *(new MouseData));
   return _input_devices[device].get_mouse_data();
 }
 

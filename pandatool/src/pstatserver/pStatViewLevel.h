@@ -13,7 +13,7 @@
 class PStatClientData;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PStatViewLevel
+//       Class : PStatViewLevel
 // Description : This is a single level value, or band of color,
 //               within a View.  
 //

@@ -11,7 +11,7 @@
 #include "fontFile.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PkFontFile
+//       Class : PkFontFile
 // Description : A specialization on FontFile for reading TeX-style
 //               .pk fonts.
 ////////////////////////////////////////////////////////////////////
@@ -20,7 +20,7 @@ public:
   PkFontFile();
 
   virtual bool read(const Filename &filename,
-		    bool extract_all, const string &extract_only);
+                    bool extract_all, const string &extract_only);
 
 private:
   unsigned int fetch_nibble();

@@ -42,13 +42,13 @@ public:
   virtual ~Shader(void) { }
 
   virtual void pre_apply(Node *, const AllAttributesWrapper &, 
-			 const AllTransitionsWrapper &, 
-			 GraphicsStateGuardian *);
+                         const AllTransitionsWrapper &, 
+                         GraphicsStateGuardian *);
  
   
   virtual void apply(Node *, const AllAttributesWrapper &, 
-		     const AllTransitionsWrapper &, 
-		     GraphicsStateGuardian *);
+                     const AllTransitionsWrapper &, 
+                     GraphicsStateGuardian *);
 
   virtual void set_priority(int priority);
   virtual int get_priority(void) const;
@@ -76,8 +76,8 @@ public:
     ReferenceCount::init_type();
     Configurable::init_type();
     register_type(_type_handle, "Shader",
-		  ReferenceCount::get_class_type(),
-		  Configurable::get_class_type());
+                  ReferenceCount::get_class_type(),
+                  Configurable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -94,8 +94,8 @@ private:
 ////////////////////////////////////////////////////////////////////
 //       Class : FrustumShader
 // Description : Shader that computes effect based on a frustum
-//		 (most often a light or a camera) for a list of
-//		 receiving objects
+//               (most often a light or a camera) for a list of
+//               receiving objects
 ////////////////////////////////////////////////////////////////////
 class EXPCL_SHADER FrustumShader : public Shader
 {
@@ -115,7 +115,7 @@ public:
   
 protected:
   
-  ProjectionVector			_frusta;
+  ProjectionVector                      _frusta;
   
 public:
   
@@ -125,7 +125,7 @@ public:
   static void init_type() {
     Shader::init_type();
     register_type(_type_handle, "FrustumShader",
-		  Shader::get_class_type());
+                  Shader::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

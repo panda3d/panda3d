@@ -150,14 +150,14 @@ find_used_materials(EggNode *node) {
       EggMaterial *tex = primitive->get_material();
       Materials::iterator ti = _materials.find(tex);
       if (ti == _materials.end()) {
-	// Here's a new material!
-	num_found++;
-	_materials.insert(Materials::value_type(tex, 1));
-	_ordered_materials.push_back(tex);
+        // Here's a new material!
+        num_found++;
+        _materials.insert(Materials::value_type(tex, 1));
+        _ordered_materials.push_back(tex);
       } else {
-	// Here's a material we'd already known about.  Increment its
-	// usage count.
-	(*ti).second++;
+        // Here's a material we'd already known about.  Increment its
+        // usage count.
+        (*ti).second++;
       }
     }
 
@@ -282,7 +282,7 @@ collapse_equivalent_materials(int eq, EggMaterialCollection::MaterialReplacement
 ////////////////////////////////////////////////////////////////////
 void EggMaterialCollection::
 replace_materials(EggGroupNode *node,
-		 const EggMaterialCollection::MaterialReplacement &replace) {
+                 const EggMaterialCollection::MaterialReplacement &replace) {
   EggGroupNode::iterator ci;
   for (ci = node->begin();
        ci != node->end();
@@ -291,13 +291,13 @@ replace_materials(EggGroupNode *node,
     if (child->is_of_type(EggPrimitive::get_class_type())) {
       EggPrimitive *primitive = DCAST(EggPrimitive, child);
       if (primitive->has_material()) {
-	PT(EggMaterial) tex = primitive->get_material();
-	MaterialReplacement::const_iterator ri;
-	ri = replace.find(tex);
-	if (ri != replace.end()) {
-	  // Here's a material we want to replace.
-	  primitive->set_material((*ri).second);
-	}
+        PT(EggMaterial) tex = primitive->get_material();
+        MaterialReplacement::const_iterator ri;
+        ri = replace.find(tex);
+        if (ri != replace.end()) {
+          // Here's a material we want to replace.
+          primitive->set_material((*ri).second);
+        }
       }
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {

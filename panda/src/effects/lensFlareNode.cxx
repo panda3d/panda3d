@@ -44,7 +44,7 @@ TypeHandle LensFlareNode::_type_handle;
 ////////////////////////////////////////////////////////////////////
 void LensFlareNode::
 add_flare(PT(Texture) flare, PTA_float scales, PTA_float offsets,
-	  PTA_float angle_scales, PTA_Colorf colors)
+          PTA_float angle_scales, PTA_Colorf colors)
 {
   nassertv(scales.size() == offsets.size());
   nassertv(colors.size() == offsets.size());
@@ -98,9 +98,9 @@ add_blind(PT(Texture) blind)
 ////////////////////////////////////////////////////////////////////
 void LensFlareNode::
 set_geometry(GeomSprite *sprite, const PTA_float &geom_scales,
-	     const PTA_float &geom_offsets, const PTA_float &geom_angle_scales,
-	     const PTA_Colorf &geom_colors, const LVector3f &delta, 
-	     const LPoint3f &light, const float &angle)
+             const PTA_float &geom_offsets, const PTA_float &geom_angle_scales,
+             const PTA_Colorf &geom_colors, const LVector3f &delta, 
+             const LPoint3f &light, const float &angle)
 {
   PTA_Vertexf coords(0);
   PTA_float tex_scales(0);
@@ -161,30 +161,30 @@ prepare_flares(const LVector3f &delta, const LPoint3f &light, const float &angle
     {
       for(int i = _flare_arcs.size(); i < (int)_flares.size(); i++)
       {
-	GeomSprite *sprite = new GeomSprite();
-	GeomNode *node = new GeomNode();
+        GeomSprite *sprite = new GeomSprite();
+        GeomNode *node = new GeomNode();
 
-	//We don't want to set any geometry right now, as that will be
-	//taken care of later (and on each subsequent render), but
-	//Geoms requires a certain amount of info or else they crash,
-	//so simply give it the minimum it needs not to crash
+        //We don't want to set any geometry right now, as that will be
+        //taken care of later (and on each subsequent render), but
+        //Geoms requires a certain amount of info or else they crash,
+        //so simply give it the minimum it needs not to crash
 
-	//The lengths and number of prims will never change, so give
-	//it valid values for those, but pass it an empty array of
-	//vertices
-	PTA_Vertexf coords(0);
+        //The lengths and number of prims will never change, so give
+        //it valid values for those, but pass it an empty array of
+        //vertices
+        PTA_Vertexf coords(0);
 
-	//Sanity check
-	nassertv(_flare_offsets[i].size() == _flare_scales[i].size());
+        //Sanity check
+        nassertv(_flare_offsets[i].size() == _flare_scales[i].size());
 
-	sprite->set_coords(coords, G_PER_VERTEX);
-	sprite->set_num_prims(_flare_offsets[i].size());
+        sprite->set_coords(coords, G_PER_VERTEX);
+        sprite->set_num_prims(_flare_offsets[i].size());
 
-	node->add_geom(sprite);
+        node->add_geom(sprite);
 
-	RenderRelation *arc = new RenderRelation(this, node);
-	//arc->set_transition(new TransparencyTransition(TransparencyProperty::M_alpha));  
-	_flare_arcs.push_back(arc);
+        RenderRelation *arc = new RenderRelation(this, node);
+        //arc->set_transition(new TransparencyTransition(TransparencyProperty::M_alpha));  
+        _flare_arcs.push_back(arc);
       }
     }
 
@@ -194,8 +194,8 @@ prepare_flares(const LVector3f &delta, const LPoint3f &light, const float &angle
       GeomSprite *sprite = DCAST(GeomSprite, node->get_geom(0));
 
       set_geometry(sprite, _flare_scales[i], _flare_offsets[i], 
-		   _flare_angle_scales[i], _flare_colors[i], 
-		   delta, light, angle);
+                   _flare_angle_scales[i], _flare_colors[i], 
+                   delta, light, angle);
       sprite->set_texture(_flares[i]);
 
       //Tell them to recompute their bounding volumes
@@ -257,7 +257,7 @@ prepare_blind(const float &angle, const float &tnear)
 ////////////////////////////////////////////////////////////////////
 void LensFlareNode::
 render_child(RenderRelation *arc, const AllAttributesWrapper &attrib,
-	     AllTransitionsWrapper &trans, GraphicsStateGuardian *gsg)
+             AllTransitionsWrapper &trans, GraphicsStateGuardian *gsg)
 {
 
   AllAttributesWrapper new_attrib(attrib);
@@ -271,7 +271,7 @@ render_child(RenderRelation *arc, const AllAttributesWrapper &attrib,
   
   // Now render everything from this node and below.
   gsg->render_subgraph(gsg->get_render_traverser(), 
-		       arc->get_child(), new_attrib, new_trans);
+                       arc->get_child(), new_attrib, new_trans);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -281,7 +281,7 @@ render_child(RenderRelation *arc, const AllAttributesWrapper &attrib,
 ////////////////////////////////////////////////////////////////////
 void LensFlareNode::
 render_children(const vector_relation &arcs, const AllAttributesWrapper &attrib,
-		AllTransitionsWrapper &trans, GraphicsStateGuardian *gsg)
+                AllTransitionsWrapper &trans, GraphicsStateGuardian *gsg)
 {
   for(int i = 0; i < (int)arcs.size(); i++)
   {
@@ -296,7 +296,7 @@ render_children(const vector_relation &arcs, const AllAttributesWrapper &attrib,
 ////////////////////////////////////////////////////////////////////
 bool LensFlareNode::
 sub_render(const AllAttributesWrapper &attrib, AllTransitionsWrapper &trans,
-	   RenderTraverser *trav) {
+           RenderTraverser *trav) {
   GraphicsStateGuardian *gsg = trav->get_gsg();
 
   nassertr(_light_node != (Node*) NULL, false);
@@ -619,7 +619,7 @@ add_sparkle(PT_Node source, PT(Texture) sparkle)
 ////////////////////////////////////////////////////////////////////
 void LensFlareNode::
 set_sparkles_attributes(PT_Node source, vector_float scales, 
-			vector_float offsets, vector_Colorf colors)
+                        vector_float offsets, vector_Colorf colors)
 {
   nassertv(scales.size() == offsets.size());
   
@@ -652,9 +652,9 @@ set_light(PT_Node light)
 ////////////////////////////////////////////////////////////////////
 void LensFlareNode::
 prepare_sparkles(vector_relation &arcs, const vector_texture &sparkles,
-		 const vector_float &scales, const vector_float &offsets,
-		 const vector_Colorf &colors, const LVector3f &delta, 
-		 const LPoint3f &light, const BoundingVolume &bound, int &old_sparkle)
+                 const vector_float &scales, const vector_float &offsets,
+                 const vector_Colorf &colors, const LVector3f &delta, 
+                 const LPoint3f &light, const BoundingVolume &bound, int &old_sparkle)
 {
   //Sanity check
   nassertv(scales.size() == offsets.size());
@@ -665,25 +665,25 @@ prepare_sparkles(vector_relation &arcs, const vector_texture &sparkles,
     {
       for(int i = 0; i < scales.size(); i++)
       {
-	GeomSprite *sprite = new GeomSprite();
-	GeomNode *node = new GeomNode();
+        GeomSprite *sprite = new GeomSprite();
+        GeomNode *node = new GeomNode();
 
-	//We don't want to set any geometry right now, as that will be
-	//taken care of later (and on each subsequent render), but
-	//Geoms requires a certain amount of info or else they crash,
-	//so simply give it the minimum it needs not to crash
+        //We don't want to set any geometry right now, as that will be
+        //taken care of later (and on each subsequent render), but
+        //Geoms requires a certain amount of info or else they crash,
+        //so simply give it the minimum it needs not to crash
 
-	//The lengths and number of prims will never change, so give
-	//it valid values for those, but pass it an empty array of
-	//vertices
-	PTA_Vertexf coords(0);
-	
-	sprite->set_coords(coords, G_PER_VERTEX);
-	sprite->set_num_prims(1);
+        //The lengths and number of prims will never change, so give
+        //it valid values for those, but pass it an empty array of
+        //vertices
+        PTA_Vertexf coords(0);
 
-	node->add_geom(sprite);
+        sprite->set_coords(coords, G_PER_VERTEX);
+        sprite->set_num_prims(1);
 
-	arcs.push_back(new RenderRelation(this, node));
+        node->add_geom(sprite);
+
+        arcs.push_back(new RenderRelation(this, node));
       }
     }
 

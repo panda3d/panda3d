@@ -23,7 +23,7 @@ class EggVertex;
 class FontFile;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggMakeFont
+//       Class : EggMakeFont
 // Description : This program reads a rasterized font stored in a
 //               Metafont/TeX pk file format, and generates an egg
 //               file and texture map that can be used with TextNode

@@ -123,8 +123,8 @@ convert_file(const Filename &filename) {
   LwoHeader *header = DCAST(LwoHeader, chunk);
   if (!header->is_valid()) {
     nout << "File " << filename
-	 << " is not recognized as a Lightwave Object file.  "
-	 << "Perhaps the version is too recent.\n";
+         << " is not recognized as a Lightwave Object file.  "
+         << "Perhaps the version is too recent.\n";
     return false;
   }
 
@@ -281,7 +281,7 @@ collect_lwo() {
       slot_layer(number);
 
       if (_layers[number] != (CLwoLayer *)NULL) {
-	nout << "Warning: multiple layers with number " << number << "\n";
+        nout << "Warning: multiple layers with number " << number << "\n";
       }
       _layers[number] = layer;
       last_layer = layer;
@@ -296,13 +296,13 @@ collect_lwo() {
       slot_clip(index);
 
       if (_clips[index] != (CLwoClip *)NULL) {
-	nout << "Warning: multiple clips with index " << index << "\n";
+        nout << "Warning: multiple clips with index " << index << "\n";
       }
       _clips[index] = clip;
 
     } else if (chunk->is_of_type(LwoPoints::get_class_type())) {
       if (last_layer == (CLwoLayer *)NULL) {
-	last_layer = make_generic_layer();
+        last_layer = make_generic_layer();
       }
 
       const LwoPoints *lwo_points = DCAST(LwoPoints, chunk);
@@ -312,18 +312,18 @@ collect_lwo() {
 
     } else if (chunk->is_of_type(LwoVertexMap::get_class_type())) {
       if (last_points == (CLwoPoints *)NULL) {
-	nout << "Vertex map chunk encountered without a preceding points chunk.\n";
+        nout << "Vertex map chunk encountered without a preceding points chunk.\n";
       } else {
-	const LwoVertexMap *lwo_vmap = DCAST(LwoVertexMap, chunk);
-	last_points->add_vmap(lwo_vmap);
+        const LwoVertexMap *lwo_vmap = DCAST(LwoVertexMap, chunk);
+        last_points->add_vmap(lwo_vmap);
       }
 
     } else if (chunk->is_of_type(LwoDiscontinuousVertexMap::get_class_type())) {
       if (last_polygons == (CLwoPolygons *)NULL) {
-	nout << "Discontinous vertex map chunk encountered without a preceding polygons chunk.\n";
+        nout << "Discontinous vertex map chunk encountered without a preceding polygons chunk.\n";
       } else {
-	const LwoDiscontinuousVertexMap *lwo_vmad = DCAST(LwoDiscontinuousVertexMap, chunk);
-	last_polygons->add_vmad(lwo_vmad);
+        const LwoDiscontinuousVertexMap *lwo_vmad = DCAST(LwoDiscontinuousVertexMap, chunk);
+        last_polygons->add_vmad(lwo_vmad);
       }
 
     } else if (chunk->is_of_type(LwoTags::get_class_type())) {
@@ -331,28 +331,28 @@ collect_lwo() {
 
     } else if (chunk->is_of_type(LwoPolygons::get_class_type())) {
       if (last_points == (CLwoPoints *)NULL) {
-	nout << "Polygon chunk encountered without a preceding points chunk.\n";
+        nout << "Polygon chunk encountered without a preceding points chunk.\n";
       } else {
-	const LwoPolygons *lwo_polygons = DCAST(LwoPolygons, chunk);
-	CLwoPolygons *polygons = 
-	  new CLwoPolygons(this, lwo_polygons, last_points);
-	_polygons.push_back(polygons);
-	last_polygons = polygons;
+        const LwoPolygons *lwo_polygons = DCAST(LwoPolygons, chunk);
+        CLwoPolygons *polygons = 
+          new CLwoPolygons(this, lwo_polygons, last_points);
+        _polygons.push_back(polygons);
+        last_polygons = polygons;
       }
 
     } else if (chunk->is_of_type(LwoPolygonTags::get_class_type())) {
       if (last_polygons == (CLwoPolygons *)NULL) {
-	nout << "Polygon tags chunk encountered without a preceding polygons chunk.\n";
+        nout << "Polygon tags chunk encountered without a preceding polygons chunk.\n";
       } else if (tags == (LwoTags *)NULL) {
-	nout << "Polygon tags chunk encountered without a preceding tags chunk.\n";
+        nout << "Polygon tags chunk encountered without a preceding tags chunk.\n";
       } else {
-	const LwoPolygonTags *lwo_ptags = DCAST(LwoPolygonTags, chunk);
-	last_polygons->add_ptags(lwo_ptags, tags);
+        const LwoPolygonTags *lwo_ptags = DCAST(LwoPolygonTags, chunk);
+        last_polygons->add_ptags(lwo_ptags, tags);
       }
 
     } else if (chunk->is_of_type(LwoSurface::get_class_type())) {
       if (last_layer == (CLwoLayer *)NULL) {
-	last_layer = make_generic_layer();
+        last_layer = make_generic_layer();
       }
 
       const LwoSurface *lwo_surface = DCAST(LwoSurface, chunk);
@@ -360,8 +360,8 @@ collect_lwo() {
 
       bool inserted = _surfaces.insert(Surfaces::value_type(surface->get_name(), surface)).second;
       if (!inserted) {
-	nout << "Multiple surface definitions named " << surface->get_name() << "\n";
-	delete surface;
+        nout << "Multiple surface definitions named " << surface->get_name() << "\n";
+        delete surface;
       }
     }
   }

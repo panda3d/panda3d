@@ -23,8 +23,8 @@ MultiplexStream() : ostream(&_msb) {
 INLINE void MultiplexStream::
 add_ostream(ostream *out, bool delete_later) {
   _msb.add_output(MultiplexStreamBuf::BT_none, 
-		  MultiplexStreamBuf::OT_ostream,
-		  out, NULL, delete_later);
+                  MultiplexStreamBuf::OT_ostream,
+                  out, NULL, delete_later);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -36,8 +36,8 @@ add_ostream(ostream *out, bool delete_later) {
 INLINE bool MultiplexStream::
 add_stdio_file(FILE *fout, bool close_when_done) {
   _msb.add_output(MultiplexStreamBuf::BT_line, 
-		  MultiplexStreamBuf::OT_ostream,
-		  NULL, fout, close_when_done);
+                  MultiplexStreamBuf::OT_ostream,
+                  NULL, fout, close_when_done);
   return true;
 }
 
@@ -49,8 +49,8 @@ add_stdio_file(FILE *fout, bool close_when_done) {
 INLINE void MultiplexStream::
 add_standard_output() {
   _msb.add_output(MultiplexStreamBuf::BT_none, 
-		  MultiplexStreamBuf::OT_ostream,
-		  &cout, NULL, false);
+                  MultiplexStreamBuf::OT_ostream,
+                  &cout, NULL, false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -71,8 +71,8 @@ add_file(Filename file) {
   out->setf(ios::unitbuf);
 
   _msb.add_output(MultiplexStreamBuf::BT_line, 
-		  MultiplexStreamBuf::OT_ostream,
-		  out, NULL, true);
+                  MultiplexStreamBuf::OT_ostream,
+                  out, NULL, true);
   return true;
 }
 
@@ -90,7 +90,7 @@ add_file(Filename file) {
 INLINE void MultiplexStream::
 add_system_debug() {
   _msb.add_output(MultiplexStreamBuf::BT_line, 
-		  MultiplexStreamBuf::OT_system_debug);
+                  MultiplexStreamBuf::OT_system_debug);
 }
 
 ////////////////////////////////////////////////////////////////////

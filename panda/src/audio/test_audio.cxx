@@ -35,7 +35,7 @@ main(int argc, char* argv[]) {
   }
   AudioSound* sample = AudioPool::load_sound("test.mp3");
   audio_cat->info() << "test.wav is " << sample->length() << " sec long"
-		     << endl;
+                     << endl;
   audio_cat->info() << "Playing test.wav" << endl;
   AudioManager::play(sample);
   while (sample->status() == AudioSound::PLAYING) {

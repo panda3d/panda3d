@@ -15,7 +15,7 @@ class EggGroupNode;
 class EggGroup;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltToEggLevelState
+//       Class : FltToEggLevelState
 // Description : This keeps track of relevant things about the
 //               traversal as we walk through the flt hierarchy.
 ////////////////////////////////////////////////////////////////////
@@ -27,8 +27,8 @@ public:
   ~FltToEggLevelState();
 
   EggGroupNode *get_synthetic_group(const string &name,
-				    const LMatrix4d &transform,
-				    FltGeometry::BillboardType type = FltGeometry::BT_none);
+                                    const LMatrix4d &transform,
+                                    FltGeometry::BillboardType type = FltGeometry::BT_none);
 
   const FltObject *_flt_object;
   EggGroupNode *_egg_parent;

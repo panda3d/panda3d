@@ -8,7 +8,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : first_of_pair_iterator
+//       Class : first_of_pair_iterator
 // Description : This is an iterator adaptor that converts any
 //               iterator that returns a pair (e.g. a map iterator)
 //               into one that returns just the first component of
@@ -29,7 +29,7 @@ public:
 };
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : second_of_pair_iterator
+//       Class : second_of_pair_iterator
 // Description : This is an iterator adaptor that converts any
 //               iterator that returns a pair (e.g. a map iterator)
 //               into one that returns just the second component of
@@ -50,7 +50,7 @@ public:
 };
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : typecast_iterator
+//       Class : typecast_iterator
 // Description : This is an iterator adaptor that explicitly typecasts
 //               each value returned by the base iterator to the
 //               indicated type.

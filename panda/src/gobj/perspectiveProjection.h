@@ -25,15 +25,15 @@ public:
   virtual LMatrix4f get_projection_mat(CoordinateSystem cs = CS_default) const;
 
   virtual Geom* make_geometry(const Colorf &color = Colorf(0.0, 1.0, 0.0, 1.0),
-			      CoordinateSystem cs = CS_default) const;
+                              CoordinateSystem cs = CS_default) const;
 
   virtual BoundingVolume *make_bounds(CoordinateSystem cs = CS_default) const;
 
   virtual bool extrude(const LPoint2f &point2d,
-		       LPoint3f &origin, LVector3f &direction,
-		       CoordinateSystem cs = CS_default) const;
+                       LPoint3f &origin, LVector3f &direction,
+                       CoordinateSystem cs = CS_default) const;
   virtual bool project(const LPoint3f &point3d, LPoint2f &point2d,
-		       CoordinateSystem cs) const;
+                       CoordinateSystem cs) const;
 
   INLINE const Frustumf &get_frustum() const;
   INLINE void set_frustum(const Frustumf &frust);
@@ -52,7 +52,7 @@ public:
   static void init_type() {
     Projection::init_type();
     register_type(_type_handle, "PerspectiveProjection",
-		  Projection::get_class_type());
+                  Projection::get_class_type());
   }
 
 private:

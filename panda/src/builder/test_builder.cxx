@@ -43,7 +43,7 @@ reached_node(Node *node, const NullAttributeWrapper &, NullLevelState &) {
   if (node->is_of_type(GeomNode::get_class_type())) {
     GeomNode *geomNode = (GeomNode *)node;
     nout << "\n" << *geomNode << ", " << geomNode->get_num_geoms() 
-	 << " geoms:\n";
+         << " geoms:\n";
     int num_geoms = geomNode->get_num_geoms();
     for (int i = 0; i < num_geoms; i++) {
       dDrawable *draw = geomNode->get_geom(i);
@@ -99,7 +99,7 @@ main(void) {
 
   nout << "\nTraversing root:\n";
   df_traverse(root, rg, NullAttributeWrapper(), NullLevelState(),
-	      RenderRelation::get_class_type());
+              RenderRelation::get_class_type());
 
 #else
   Builder builder;
@@ -167,17 +167,17 @@ main(void) {
       p = y*xi + x;
       BuilderVertexI bv0(p), bv1(p+1), bv4(p+xi), bv5(p+xi+1);
       if (p==0) {
-	builder.add_prim(BuilderPrimI(bv0, bv5, bv4).set_color(1));
-	builder.add_prim(BuilderPrimI(bv1, bv5, bv0).set_color(1));
+        builder.add_prim(BuilderPrimI(bv0, bv5, bv4).set_color(1));
+        builder.add_prim(BuilderPrimI(bv1, bv5, bv0).set_color(1));
       } else if (p==5) {
-	builder.add_prim(BuilderPrimI(bv0, bv5, bv4).set_color(1));
-	builder.add_prim(BuilderPrimI(bv1, bv5, bv0).set_color(1));
+        builder.add_prim(BuilderPrimI(bv0, bv5, bv4).set_color(1));
+        builder.add_prim(BuilderPrimI(bv1, bv5, bv0).set_color(1));
       } else if (p==1 || p==4) {
-	builder.add_prim(BuilderPrimI(bv0, bv1, bv4).set_color(1));
-	builder.add_prim(BuilderPrimI(bv1, bv5, bv4).set_color(1));
+        builder.add_prim(BuilderPrimI(bv0, bv1, bv4).set_color(1));
+        builder.add_prim(BuilderPrimI(bv1, bv5, bv4).set_color(1));
       } else {
-	builder.add_prim(BuilderPrimI(bv0, bv5, bv4).set_color(0));
-	builder.add_prim(BuilderPrimI(bv1, bv5, bv0).set_color(0));
+        builder.add_prim(BuilderPrimI(bv0, bv5, bv4).set_color(0));
+        builder.add_prim(BuilderPrimI(bv1, bv5, bv0).set_color(0));
       }
 
     }

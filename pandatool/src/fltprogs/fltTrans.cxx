@@ -61,11 +61,11 @@ run() {
   if (_got_new_version) {
     int new_version = (int)floor(_new_version * 100.0 + 0.5);
     if (new_version < FltHeader::min_flt_version() ||
-	new_version > FltHeader::max_flt_version()) {
+        new_version > FltHeader::max_flt_version()) {
       nout << "Cannot write flt files of version " << new_version / 100.0
-	   << ".  This program only understands how to write flt files between version " 
-	   << FltHeader::min_flt_version() / 100.0 << " and " 
-	   << FltHeader::max_flt_version() / 100.0 << ".\n";
+           << ".  This program only understands how to write flt files between version " 
+           << FltHeader::min_flt_version() / 100.0 << " and " 
+           << FltHeader::max_flt_version() / 100.0 << ".\n";
       exit(1);
     }
   }

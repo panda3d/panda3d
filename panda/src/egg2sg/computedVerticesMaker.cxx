@@ -93,13 +93,13 @@ add_vertex_joints(EggVertex *vertex, EggNode *object) {
       egg_group = DCAST(EggGroup, egg_joint);
     }
     while (egg_group != (EggGroup *)NULL && 
-	   egg_group->get_group_type() != EggGroup::GT_joint &&
-	   egg_group->get_dart_type() == EggGroup::DT_none) {
+           egg_group->get_group_type() != EggGroup::GT_joint &&
+           egg_group->get_dart_type() == EggGroup::DT_none) {
       nassertv(egg_group->get_parent() != (EggGroupNode *)NULL);
       egg_joint = egg_group->get_parent();
       egg_group = (EggGroup *)NULL;
       if (egg_joint->is_of_type(EggGroup::get_class_type())) {
-	egg_group = DCAST(EggGroup, egg_joint);
+        egg_group = DCAST(EggGroup, egg_joint);
       }
     }
 
@@ -149,7 +149,7 @@ mark_space() {
 ////////////////////////////////////////////////////////////////////
 int ComputedVerticesMaker::
 add_vertex(const Vertexd &vertex, const EggMorphVertexList &morphs,
-	   const LMatrix4d &transform) {
+           const LMatrix4d &transform) {
   // This must be called after a call to mark_space(), and before a
   // call to begin_new_space().
   assert(_current_vc != NULL);
@@ -169,11 +169,11 @@ add_vertex(const Vertexd &vertex, const EggMorphVertexList &morphs,
       // Have we already morphed this vertex?
       VertexMorphList::iterator vmi = mlist._vmorphs.find(index);
       if (vmi != mlist._vmorphs.end()) {
-	// Yes, we have.
-	assert(offset.almost_equal(LCAST(double, (*vmi).second), 0.0001));
+        // Yes, we have.
+        assert(offset.almost_equal(LCAST(double, (*vmi).second), 0.0001));
       } else {
-	// No, we haven't yet; morph it now.
-	mlist._vmorphs[index] = LCAST(float, offset);
+        // No, we haven't yet; morph it now.
+        mlist._vmorphs[index] = LCAST(float, offset);
       }
     }
   }
@@ -190,7 +190,7 @@ add_vertex(const Vertexd &vertex, const EggMorphVertexList &morphs,
 ////////////////////////////////////////////////////////////////////
 int ComputedVerticesMaker::
 add_normal(const Normald &normal, const EggMorphNormalList &morphs,
-	   const LMatrix4d &transform) {
+           const LMatrix4d &transform) {
   // This must be called after a call to mark_space(), and before a
   // call to begin_new_space().
   assert(_current_vc != NULL);
@@ -211,11 +211,11 @@ add_normal(const Normald &normal, const EggMorphNormalList &morphs,
       // Have we already morphed this normal?
       NormalMorphList::iterator vmi = mlist._nmorphs.find(index);
       if (vmi != mlist._nmorphs.end()) {
-	// Yes, we have.
-	assert(offset.almost_equal(LCAST(double, (*vmi).second), 0.0001));
+        // Yes, we have.
+        assert(offset.almost_equal(LCAST(double, (*vmi).second), 0.0001));
       } else {
-	// No, we haven't yet; morph it now.
-	mlist._nmorphs[index] = LCAST(float, offset);
+        // No, we haven't yet; morph it now.
+        mlist._nmorphs[index] = LCAST(float, offset);
       }
     }
   }
@@ -233,7 +233,7 @@ add_normal(const Normald &normal, const EggMorphNormalList &morphs,
 ////////////////////////////////////////////////////////////////////
 int ComputedVerticesMaker::
 add_texcoord(const TexCoordd &texcoord, const EggMorphTexCoordList &morphs,
-	     const LMatrix3d &transform) {
+             const LMatrix3d &transform) {
   TexCoordf ttc = LCAST(float, texcoord * transform);
   int index = _tmap.add_value(ttc, morphs, _texcoords);
   _tindex.insert(index);
@@ -249,11 +249,11 @@ add_texcoord(const TexCoordd &texcoord, const EggMorphTexCoordList &morphs,
       // Have we already morphed this texcoord?
       TexCoordMorphList::iterator vmi = mlist._tmorphs.find(index);
       if (vmi != mlist._tmorphs.end()) {
-	// Yes, we have.
-	assert(offset.almost_equal(LCAST(double, (*vmi).second), 0.0001));
+        // Yes, we have.
+        assert(offset.almost_equal(LCAST(double, (*vmi).second), 0.0001));
       } else {
-	// No, we haven't yet; morph it now.
-	mlist._tmorphs[index] = LCAST(float, offset);
+        // No, we haven't yet; morph it now.
+        mlist._tmorphs[index] = LCAST(float, offset);
       }
     }
   }
@@ -284,11 +284,11 @@ add_color(const Colorf &color, const EggMorphColorList &morphs) {
       // Have we already morphed this color?
       ColorMorphList::iterator vmi = mlist._cmorphs.find(index);
       if (vmi != mlist._cmorphs.end()) {
-	// Yes, we have.
-	assert(offset.almost_equal((*vmi).second, 0.0001));
+        // Yes, we have.
+        assert(offset.almost_equal((*vmi).second, 0.0001));
       } else {
-	// No, we haven't yet; morph it now.
-	mlist._cmorphs[index] = offset;
+        // No, we haven't yet; morph it now.
+        mlist._cmorphs[index] = offset;
       }
     }
   }
@@ -338,13 +338,13 @@ make_computed_vertices(Character *character, CharacterMaker &char_maker) {
       // we will only be changing a part of the VertexTransform that
       // doesn't affect its sort order within the set.
       ComputedVertices::VertexTransform &insert_vt =
-	(ComputedVertices::VertexTransform &)*vti;
+        (ComputedVertices::VertexTransform &)*vti;
 
       // Now add in all the vertices and normals.
       copy(vc._vindex.begin(), vc._vindex.end(), 
-	   back_inserter(insert_vt._vindex));
+           back_inserter(insert_vt._vindex));
       copy(vc._nindex.begin(), vc._nindex.end(), 
-	   back_inserter(insert_vt._nindex));
+           back_inserter(insert_vt._nindex));
     }
   }
 
@@ -377,10 +377,10 @@ make_computed_vertices(Character *character, CharacterMaker &char_maker) {
 
       VertexMorphList::const_iterator vmi;
       for (vmi = mlist._vmorphs.begin();
-	   vmi != mlist._vmorphs.end();
-	   ++vmi) {
-	mv._morphs.push_back(ComputedVerticesMorphValue3((*vmi).first,
-							 (*vmi).second));
+           vmi != mlist._vmorphs.end();
+           ++vmi) {
+        mv._morphs.push_back(ComputedVerticesMorphValue3((*vmi).first,
+                                                         (*vmi).second));
       }
     }
 
@@ -391,10 +391,10 @@ make_computed_vertices(Character *character, CharacterMaker &char_maker) {
 
       NormalMorphList::const_iterator vmi;
       for (vmi = mlist._nmorphs.begin();
-	   vmi != mlist._nmorphs.end();
-	   ++vmi) {
-	mv._morphs.push_back(ComputedVerticesMorphValue3((*vmi).first,
-							 (*vmi).second));
+           vmi != mlist._nmorphs.end();
+           ++vmi) {
+        mv._morphs.push_back(ComputedVerticesMorphValue3((*vmi).first,
+                                                         (*vmi).second));
       }
     }
 
@@ -405,10 +405,10 @@ make_computed_vertices(Character *character, CharacterMaker &char_maker) {
 
       TexCoordMorphList::const_iterator vmi;
       for (vmi = mlist._tmorphs.begin();
-	   vmi != mlist._tmorphs.end();
-	   ++vmi) {
-	mv._morphs.push_back(ComputedVerticesMorphValue2((*vmi).first,
-							 (*vmi).second));
+           vmi != mlist._tmorphs.end();
+           ++vmi) {
+        mv._morphs.push_back(ComputedVerticesMorphValue2((*vmi).first,
+                                                         (*vmi).second));
       }
     }
 
@@ -419,10 +419,10 @@ make_computed_vertices(Character *character, CharacterMaker &char_maker) {
 
       ColorMorphList::const_iterator vmi;
       for (vmi = mlist._cmorphs.begin();
-	   vmi != mlist._cmorphs.end();
-	   ++vmi) {
-	mv._morphs.push_back(ComputedVerticesMorphValue4((*vmi).first,
-							 (*vmi).second));
+           vmi != mlist._cmorphs.end();
+           ++vmi) {
+        mv._morphs.push_back(ComputedVerticesMorphValue4((*vmi).first,
+                                                         (*vmi).second));
       }
     }
   }
@@ -450,8 +450,8 @@ write(ostream &out) const {
     const JointWeights &jw = (*tsi).first;
     const VertexCollection &vc = (*tsi).second;
     out << "  " << jw << " has "
-	<< vc._vindex.size() << " vertices and "
-	<< vc._nindex.size() << " normals\n";
+        << vc._vindex.size() << " vertices and "
+        << vc._nindex.size() << " normals\n";
   }
 
   Morphs::const_iterator mi;
@@ -459,10 +459,10 @@ write(ostream &out) const {
     const string &name = (*mi).first;
     const MorphList &mlist = (*mi).second;
     out << name << " morphs " 
-	<< mlist._vmorphs.size() << " vertices, "
-	<< mlist._nmorphs.size() << " normals, "
-	<< mlist._tmorphs.size() << " uvs, and "
-	<< mlist._cmorphs.size() << " colors.\n";
+        << mlist._vmorphs.size() << " vertices, "
+        << mlist._nmorphs.size() << " normals, "
+        << mlist._tmorphs.size() << " uvs, and "
+        << mlist._cmorphs.size() << " colors.\n";
   }
 }
 

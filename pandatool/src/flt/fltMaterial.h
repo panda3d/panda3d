@@ -15,7 +15,7 @@
 class DatagramIterator;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltMaterial
+//       Class : FltMaterial
 // Description : Represents a single material in the material palette.
 ////////////////////////////////////////////////////////////////////
 class FltMaterial : public FltRecord {
@@ -55,7 +55,7 @@ public:
   static void init_type() {
     FltRecord::init_type();
     register_type(_type_handle, "FltMaterial",
-		  FltRecord::get_class_type());
+                  FltRecord::get_class_type());
   }
 
 private:

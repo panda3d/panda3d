@@ -38,8 +38,8 @@ operator [] (int n) {
     int j = 0;
     while (maybe_prime && _primes[j] * _primes[j] <= candidate) {
       if ((_primes[j] * (candidate / _primes[j])) == candidate) {
-	// This one is not prime.
-	maybe_prime = false;
+        // This one is not prime.
+        maybe_prime = false;
       }
       j++;
       nassertr(j < (int)_primes.size(), 0);

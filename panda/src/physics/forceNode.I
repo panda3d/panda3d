@@ -19,7 +19,7 @@ clear(void) {
 INLINE BaseForce *ForceNode::
 get_force(int index) const {
   nassertr(index >= 0 && index < (int)_forces.size(),
-	   (BaseForce *) NULL);
+           (BaseForce *) NULL);
   return _forces[index];
 }
 

@@ -37,7 +37,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void FindApproxLevelEntry::
 consider_node(NodePathCollection &result, FindApproxLevel &next_level, 
-	      int max_matches, TypeHandle graph_type) const {
+              int max_matches, TypeHandle graph_type) const {
   nassertv(_i < _approx_path.get_num_components());
 
   if (_approx_path.is_component_match_many(_i)) {
@@ -54,7 +54,7 @@ consider_node(NodePathCollection &result, FindApproxLevel &next_level,
       // Does this now represent a solution?
       result.add_path(reconsider._node_path);
       if (max_matches > 0 && result.get_num_paths() >= max_matches) {
-	return;
+        return;
       }
     } else {
       reconsider.consider_node(result, next_level, max_matches, graph_type);
@@ -112,8 +112,8 @@ consider_node(NodePathCollection &result, FindApproxLevel &next_level,
 ////////////////////////////////////////////////////////////////////
 void FindApproxLevelEntry::
 consider_next_step(NodePathCollection &result,
-		   NodeRelation *arc, FindApproxLevel &next_level, 
-		   int max_matches, TypeHandle graph_type) const {
+                   NodeRelation *arc, FindApproxLevel &next_level, 
+                   int max_matches, TypeHandle graph_type) const {
   if (!_approx_path.return_hidden() && 
       arc->has_transition(PruneTransition::get_class_type())) {
     // If the approx path does not allow us to return hidden nodes,

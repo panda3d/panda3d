@@ -73,7 +73,7 @@ PUBLISHED:
   bool recompute();
 
   bool stitch(const ParametricCurveCollection *a, 
-	      const ParametricCurveCollection *b);
+              const ParametricCurveCollection *b);
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

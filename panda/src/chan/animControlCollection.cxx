@@ -207,7 +207,7 @@ which_anim_playing() const {
   for (ci = _controls.begin(); ci != _controls.end(); ++ci) {
     if ((*ci).second->is_playing()) {
       if (!result.empty()) {
-	result += " ";
+        result += " ";
       }
       result += (*ci).first;
     }

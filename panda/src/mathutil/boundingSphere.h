@@ -11,7 +11,7 @@
 #include "finiteBoundingVolume.h"
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : BoundingSphere
+//       Class : BoundingSphere
 // Description : This defines a bounding sphere, consisting of a
 //               center and a radius.  It is always a sphere, and
 //               never an ellipsoid or other quadric.
@@ -39,8 +39,8 @@ PUBLISHED:
 protected:
   virtual bool extend_other(BoundingVolume *other) const;
   virtual bool around_other(BoundingVolume *other,
-			    const BoundingVolume **first,
-			    const BoundingVolume **last) const;
+                            const BoundingVolume **first,
+                            const BoundingVolume **last) const;
   virtual int contains_other(const BoundingVolume *other) const;
 
 
@@ -50,13 +50,13 @@ protected:
   bool extend_by_finite(const FiniteBoundingVolume *volume);
 
   virtual bool around_points(const LPoint3f *first,
-			     const LPoint3f *last);
+                             const LPoint3f *last);
   virtual bool around_spheres(const BoundingVolume **first,
-			      const BoundingVolume **last);
+                              const BoundingVolume **last);
   virtual bool around_hexahedrons(const BoundingVolume **first,
-				  const BoundingVolume **last);
+                                  const BoundingVolume **last);
   bool around_finite(const BoundingVolume **first,
-		     const BoundingVolume **last);
+                     const BoundingVolume **last);
 
   virtual int contains_point(const LPoint3f &point) const;
   virtual int contains_lineseg(const LPoint3f &a, const LPoint3f &b) const;
@@ -76,7 +76,7 @@ public:
   static void init_type() {
     FiniteBoundingVolume::init_type();
     register_type(_type_handle, "BoundingSphere",
-		  FiniteBoundingVolume::get_class_type());
+                  FiniteBoundingVolume::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

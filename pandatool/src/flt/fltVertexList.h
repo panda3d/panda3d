@@ -15,7 +15,7 @@
 #include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltVertexList
+//       Class : FltVertexList
 // Description : A list of vertices, typically added as a child of a
 //               face bead.
 ////////////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ public:
   static void init_type() {
     FltRecord::init_type();
     register_type(_type_handle, "FltVertexList",
-		  FltRecord::get_class_type());
+                  FltRecord::get_class_type());
   }
 
 private:

@@ -34,11 +34,11 @@ PUBLISHED:
   SparkleParticleRenderer(void);
   SparkleParticleRenderer(const SparkleParticleRenderer& copy);
   SparkleParticleRenderer(const Colorf& center,
-			  const Colorf& edge,
-			  float birth_radius,
-			  float death_radius,
-			  SparkleParticleLifeScale life_scale,
-			  ParticleRendererAlphaMode alpha_mode);
+                          const Colorf& edge,
+                          float birth_radius,
+                          float death_radius,
+                          SparkleParticleLifeScale life_scale,
+                          ParticleRendererAlphaMode alpha_mode);
 
   virtual ~SparkleParticleRenderer(void);
 
@@ -80,7 +80,7 @@ private:
   virtual void kill_particle(int index);
   virtual void init_geoms(void);
   virtual void render(vector< PT(PhysicsObject) >& po_vector,
-		      int ttl_particles);
+                      int ttl_particles);
   virtual void resize_pool(int new_size);
 };
 

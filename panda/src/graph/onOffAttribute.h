@@ -13,7 +13,7 @@
 class OnOffTransition;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : OnOffAttribute
+//       Class : OnOffAttribute
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA OnOffAttribute : public NodeAttribute {
@@ -55,7 +55,7 @@ public:
   static void init_type() {
     NodeAttribute::init_type();
     register_type(_type_handle, "OnOffAttribute",
-		  NodeAttribute::get_class_type());
+                  NodeAttribute::get_class_type());
   }
 
 private:

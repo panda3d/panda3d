@@ -16,7 +16,7 @@
 #include <map>
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : ComputedVerticesMakerEntity
+//       Class : ComputedVerticesMakerEntity
 // Description : This represents a single vertex value, or color
 //               value, or normal value, or some such thing, added to
 //               the ComputedVerticesMaker.  This supports
@@ -28,7 +28,7 @@ template<class ValueType, class MorphType>
 class EXPCL_PANDAEGG ComputedVerticesMakerEntity {
 public:
   INLINE ComputedVerticesMakerEntity(const ValueType &value,
-				     const MorphType &morphs);
+                                     const MorphType &morphs);
   bool
   operator < (const ComputedVerticesMakerEntity<ValueType, MorphType> &other) const;
 
@@ -38,7 +38,7 @@ public:
 
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : ComputedVerticesMakerEntityMap
+//       Class : ComputedVerticesMakerEntityMap
 // Description : A map of some kind of entity, above, to an integer
 //               index number.  This collects together identical
 //               vertices into a common index number.
@@ -47,7 +47,7 @@ template<class ValueType, class MorphType>
 class EXPCL_PANDAEGG ComputedVerticesMakerEntityMap {
 public:
   int add_value(const ValueType &value, const MorphType &morphs,
-		PTA(ValueType) &table);
+                PTA(ValueType) &table);
  
   typedef map<ComputedVerticesMakerEntity<ValueType, MorphType>, int> MapType;
   MapType _map;

@@ -13,7 +13,7 @@
 class CPPInstance;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPFunctionGroup
+//       Class : CPPFunctionGroup
 // Description : This class is simply a container for one or more
 //               CPPInstances for functions of the same name.  It's
 //               handy for storing in the CPPScope, so that
@@ -29,7 +29,7 @@ public:
   CPPType *get_return_type() const;
 
   virtual void output(ostream &out, int indent_level, CPPScope *scope,
-		      bool complete) const;
+                      bool complete) const;
   virtual SubType get_subtype() const;
 
   virtual CPPFunctionGroup *as_function_group();

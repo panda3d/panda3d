@@ -9,7 +9,7 @@ TypeHandle GuiListBox::_type_handle;
 TypeHandle GuiListBox::ListFunctor::_type_handle;
 
 GuiListBox::ListFunctor::ListFunctor(GuiListBox* box,
-				     GuiBehavior::BehaviorFunctor* func)
+                                     GuiBehavior::BehaviorFunctor* func)
   : GuiBehavior::BehaviorFunctor(), _prev(func), _lb(box) {
 }
 
@@ -50,7 +50,7 @@ void GuiListBox::recompute_frame(void) {
     int lvl = (*i)->thaw();
 #ifdef _DEBUG
     gui_cat->debug() << "in recompute: freeze lvl (" << (*i)->get_name()
-		     << ") = " << lvl << endl;
+                     << ") = " << lvl << endl;
 #endif
   }
   _left = lft;
@@ -102,13 +102,13 @@ void GuiListBox::set_priority(GuiLabel* l, const GuiItem::Priority p) {
 }
 
 GuiListBox::GuiListBox(const string& name, int N, GuiButton* up,
-		       GuiButton* down)
+                       GuiButton* down)
   : GuiBehavior(name), _up_arrow(up), _down_arrow(down), _n_visible(N),
     _up_functor((GuiListBox::ListFunctor*)0L),
     _down_functor((GuiListBox::ListFunctor*)0L) {
   if (N < 4) {
     gui_cat->warning() << "ListBoxes should have at least 4 visible slots"
-		       << endl;
+                       << endl;
     _n_visible = 4;
   }
 }
@@ -182,10 +182,10 @@ void GuiListBox::add_item(GuiItem* item) {
     if (_visible.size() < _n_visible) {
       _visible.push_back(item);
       if (_mgr != (GuiManager*)0L) {
-	if (_alt_root.is_null())
-	  item->manage(_mgr, *_eh);
-	else
-	  item->manage(_mgr, *_eh, _alt_root);
+        if (_alt_root.is_null())
+          item->manage(_mgr, *_eh);
+        else
+          item->manage(_mgr, *_eh, _alt_root);
       }
     } else
       _bottom_stack.push_back(item);
@@ -250,7 +250,7 @@ void GuiListBox::manage(GuiManager* mgr, EventHandler& eh) {
     GuiBehavior::manage(mgr, eh);
   } else
     gui_cat->warning() << "tried to manage listbox (0x" << (void*)this
-		       << ") that is already managed" << endl;
+                       << ") that is already managed" << endl;
 }
 
 void GuiListBox::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
@@ -264,7 +264,7 @@ void GuiListBox::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
     GuiBehavior::manage(mgr, eh, n);
   } else
     gui_cat->warning() << "tried to manage listbox (0x" << (void*)this
-		       << ") that is already managed" << endl;
+                       << ") that is already managed" << endl;
 }
 
 void GuiListBox::unmanage(void) {

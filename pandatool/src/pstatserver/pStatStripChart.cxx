@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 PStatStripChart::
 PStatStripChart(PStatMonitor *monitor, PStatView &view,
-		int collector_index, int xsize, int ysize) :
+                int collector_index, int xsize, int ysize) :
   PStatGraph(monitor, xsize, ysize),
   _view(view),
   _collector_index(collector_index)
@@ -90,20 +90,20 @@ update() {
       int latest = thread_data->get_latest_frame_number();
       
       if (latest > _next_frame) {
-	draw_frames(_next_frame, latest);
+        draw_frames(_next_frame, latest);
       }
       _next_frame = latest;
       
       // Clean out the old data.
       float oldest_time = 
-	thread_data->get_frame(latest).get_start() - _time_width;
+        thread_data->get_frame(latest).get_start() - _time_width;
       
       Data::iterator di;
       di = _data.begin();
       while (di != _data.end() && 
-	     thread_data->get_frame((*di).first).get_start() < oldest_time) {
-	_data.erase(di);
-	di = _data.begin();
+             thread_data->get_frame((*di).first).get_start() < oldest_time) {
+        _data.erase(di);
+        di = _data.begin();
       }
     }
   }
@@ -284,19 +284,19 @@ changed_size(int xsize, int ysize) {
     
     if (!_first_data) {
       if (_scroll_mode) {
-	draw_pixels(0, _xsize);
-	
+        draw_pixels(0, _xsize);
+
       } else {
-	// Redraw the stats that were there before.
-	float old_start_time = _start_time;
-	
-	// Back up a bit to draw the stuff to the right of the cursor.
-	_start_time -= _time_width;
-	draw_pixels(_cursor_pixel, _xsize);
-	
-	// Now draw the stuff to the left of the cursor.
-	_start_time = old_start_time;
-	draw_pixels(0, _cursor_pixel);
+        // Redraw the stats that were there before.
+        float old_start_time = _start_time;
+
+        // Back up a bit to draw the stuff to the right of the cursor.
+        _start_time -= _time_width;
+        draw_pixels(_cursor_pixel, _xsize);
+
+        // Now draw the stuff to the left of the cursor.
+        _start_time = old_start_time;
+        draw_pixels(0, _cursor_pixel);
       }
     }
   }
@@ -492,7 +492,7 @@ draw_frames(int first_frame, int last_frame) {
   if (_first_data) {
     if (_scroll_mode) {
       _start_time = 
-	thread_data->get_frame(last_frame).get_start() - _time_width;
+        thread_data->get_frame(last_frame).get_start() - _time_width;
     } else {
       _start_time = thread_data->get_frame(first_frame).get_start();
       _cursor_pixel = 0;
@@ -570,9 +570,9 @@ draw_pixels(int first_pixel, int last_pixel) {
       frame_number = thread_data->get_frame_number_at_time(time, frame_number);
       
       if (thread_data->has_frame(frame_number)) {
-	draw_slice(x, frame_number);
+        draw_slice(x, frame_number);
       } else {
-	draw_empty(x);
+        draw_empty(x);
       }
     }
   }

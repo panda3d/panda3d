@@ -80,7 +80,7 @@ void GuiCollection::manage(GuiManager* mgr, EventHandler& eh) {
     GuiItem::manage(mgr, eh);
   } else
     gui_cat->warning() << "tried to manage collection (0x" << (void*)this
-		       << ") that is already managed" << endl;
+                       << ") that is already managed" << endl;
 }
 
 void GuiCollection::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
@@ -90,7 +90,7 @@ void GuiCollection::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
     GuiItem::manage(mgr, eh, n);
   } else
     gui_cat->warning() << "tried to manage collection (0x" << (void*)this
-		       << ") that is already managed" << endl;
+                       << ") that is already managed" << endl;
 }
 
 void GuiCollection::unmanage(void) {
@@ -109,8 +109,8 @@ void GuiCollection::set_scale(float f) {
 void GuiCollection::set_scale(float x, float y, float z) {
   for (Items::iterator i=_items.begin(); i!=_items.end(); ++i)
     (*i)->set_scale(x * (*i)->get_scale_x(),
-		    y * (*i)->get_scale_y(),
-		    z * (*i)->get_scale_z());
+                    y * (*i)->get_scale_y(),
+                    z * (*i)->get_scale_z());
   GuiItem::set_scale(x, y, z);
   this->recompute_frame();
 }

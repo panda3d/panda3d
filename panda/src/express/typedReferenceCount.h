@@ -11,7 +11,7 @@
 #include "referenceCount.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TypedReferenceCount
+//       Class : TypedReferenceCount
 // Description : A base class for things which need to inherit from
 //               both TypedObject and from ReferenceCount.  It's
 //               convenient to define this intermediate base class
@@ -42,8 +42,8 @@ public:
     TypedObject::init_type();
     ReferenceCount::init_type();
     register_type(_type_handle, "TypedReferenceCount",
-		  TypedObject::get_class_type(),
-		  ReferenceCount::get_class_type());
+                  TypedObject::get_class_type(),
+                  ReferenceCount::get_class_type());
   }
 
 private:

@@ -17,7 +17,7 @@
 class NodeRelation;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : NodeTransitions
+//       Class : NodeTransitions
 // Description : This represents a set of zero or more NodeTransition
 //               pointers, organized by the transitions' get_handle()
 //               value.
@@ -37,9 +37,9 @@ public:
   NodeTransition *get_transition(TypeHandle handle) const;
   void copy_transitions_from(const NodeTransitions &other);
   void copy_transitions_from(const NodeTransitions &other, 
-			     NodeRelation *to_arc);
+                             NodeRelation *to_arc);
   void compose_transitions_from(const NodeTransitions &other, 
-				NodeRelation *to_arc);
+                                NodeRelation *to_arc);
   void adjust_all_priorities(int adjustment, NodeRelation *arc);
 
   void clear();

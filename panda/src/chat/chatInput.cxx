@@ -63,24 +63,24 @@ transmit_data(NodeAttributes &data) {
       const ButtonEvent &be = (*bi);
 
       if (be._down) {
-	if (be._button == KeyboardButton::enter()) {
-	  throw_event("chat_exit");
-	  
-	} else if (be._button == KeyboardButton::backspace()) {
-	  if (!_str.empty()) {
-	    _str = _str.substr(0, _str.length()-1);
-	    _text_node->set_text(_str);
-	  }
-	  
-	} else if (be._button.has_ascii_equivalent()) {
-	  char ch = be._button.get_ascii_equivalent();
-	  
-	  if (isprint(ch)) {
-	    if (!append_character(ch)) {
-	      throw_event("chat_overflow");
-	    }
-	  }
-	}
+        if (be._button == KeyboardButton::enter()) {
+          throw_event("chat_exit");
+
+        } else if (be._button == KeyboardButton::backspace()) {
+          if (!_str.empty()) {
+            _str = _str.substr(0, _str.length()-1);
+            _text_node->set_text(_str);
+          }
+
+        } else if (be._button.has_ascii_equivalent()) {
+          char ch = be._button.get_ascii_equivalent();
+
+          if (isprint(ch)) {
+            if (!append_character(ch)) {
+              throw_event("chat_overflow");
+            }
+          }
+        }
       }
     }
   }
@@ -95,11 +95,11 @@ void ChatInput::
 init_type(void) {
   DataNode::init_type();
   register_type(_type_handle, "ChatInput",
-		DataNode::get_class_type());
+                DataNode::get_class_type());
 
   ButtonEventDataTransition::init_type();
   register_data_transition(_button_events_type, "ButtonEvents",
-			   ButtonEventDataTransition::get_class_type());
+                           ButtonEventDataTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -156,7 +156,7 @@ append_character(char ch) {
     string::const_iterator pi;
     for (pi = text.begin(); pi != text.end(); ++pi) {
       if (*pi == '\n') {
-	++num_lines;
+        ++num_lines;
       }
     }
 

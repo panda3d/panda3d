@@ -320,8 +320,8 @@ write_row(xel *row_data, xelval *) {
   for (x = 0; x < _x_size; x++) {
     if (grayscale) {
       scanout[x][RED] =
-	scanout[x][GRN] =
-	scanout[x][BLU] = (BYTE)((int)COLR_MAX * PPM_GETB(row_data[x]) / _maxval);
+        scanout[x][GRN] =
+        scanout[x][BLU] = (BYTE)((int)COLR_MAX * PPM_GETB(row_data[x]) / _maxval);
     } else {
       scanout[x][RED] = (BYTE)((int)COLR_MAX * PPM_GETR(row_data[x]) / _maxval);
       scanout[x][GRN] = (BYTE)((int)COLR_MAX * PPM_GETG(row_data[x]) / _maxval);

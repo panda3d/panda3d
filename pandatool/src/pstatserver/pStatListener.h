@@ -15,7 +15,7 @@ class PStatServer;
 class PStatMonitor;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PStatListener
+//       Class : PStatListener
 // Description : This is the TCP rendezvous socket listener.  We need
 //               one of these to listen for new connections on the
 //               socket(s) added to the PStatServer.
@@ -26,8 +26,8 @@ public:
 
 protected:
   virtual void connection_opened(const PT(Connection) &rendezvous,
-				 const NetAddress &address,
-				 const PT(Connection) &new_connection);
+                                 const NetAddress &address,
+                                 const PT(Connection) &new_connection);
 
 private:
   PStatServer *_manager;

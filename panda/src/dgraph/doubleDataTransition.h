@@ -13,7 +13,7 @@
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, NumericDataTransition<double>);
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DoubleDataTransition
+//       Class : DoubleDataTransition
 // Description : A NumericDataTransition templated on double types.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DoubleDataTransition :
@@ -36,7 +36,7 @@ public:
   static void init_type() {
     NumericDataTransition<double>::init_type();
     register_type(_type_handle, "DoubleDataTransition", 
-		  NumericDataTransition<double>::get_class_type());
+                  NumericDataTransition<double>::get_class_type());
   }
 
 private:

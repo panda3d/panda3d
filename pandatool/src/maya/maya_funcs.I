@@ -12,7 +12,7 @@
 template<class ValueType>
 bool
 get_maya_attribute(MObject &node, const string &attribute_name,
-		   ValueType &value) {
+                   ValueType &value) {
   MStatus status;
   MFnDependencyNode node_fn(node, &status);
   if (!status) {
@@ -23,14 +23,14 @@ get_maya_attribute(MObject &node, const string &attribute_name,
   MObject attr = node_fn.attribute(attribute_name.c_str(), &status);
   if (!status) {
     nout << "Object " << node_fn.name() << " does not support attribute "
-	 << attribute_name << "\n";
+         << attribute_name << "\n";
     return false;
   }
 
   MFnAttribute attr_fn(attr, &status);
   if (!status) {
     nout << "Attribute " << attribute_name << " on " << node_fn.name()
-	 << " is a " << attr.apiTypeStr() << ", not an Attribute.\n";
+         << " is a " << attr.apiTypeStr() << ", not an Attribute.\n";
     return false;
   }
   

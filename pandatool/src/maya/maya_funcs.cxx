@@ -14,10 +14,10 @@
 
 bool
 get_bool_attribute(MObject &node, const string &attribute_name,
-		   bool &value) {
+                   bool &value) {
   if (!get_maya_attribute(node, attribute_name, value)) {
     nout << "Attribute " << attribute_name 
-	 << " does not have an bool value.\n";
+         << " does not have an bool value.\n";
     describe_maya_attribute(node, attribute_name);
     return false;
   }
@@ -26,11 +26,11 @@ get_bool_attribute(MObject &node, const string &attribute_name,
 
 bool
 get_angle_attribute(MObject &node, const string &attribute_name,
-		    double &value) {
+                    double &value) {
   MAngle maya_value;
   if (!get_maya_attribute(node, attribute_name, maya_value)) {
     nout << "Attribute " << attribute_name 
-	 << " does not have an angle value.\n";
+         << " does not have an angle value.\n";
     describe_maya_attribute(node, attribute_name);
     return false;
   }
@@ -40,13 +40,13 @@ get_angle_attribute(MObject &node, const string &attribute_name,
 
 bool
 get_vec2f_attribute(MObject &node, const string &attribute_name,
-		    LVecBase2f &value) {
+                    LVecBase2f &value) {
   MStatus status;
 
   MObject vec2f_object;
   if (!get_maya_attribute(node, attribute_name, vec2f_object)) {
     nout << "Attribute " << attribute_name 
-	 << " does not have a vec2f object value.\n";
+         << " does not have a vec2f object value.\n";
     describe_maya_attribute(node, attribute_name);
     return false;
   }
@@ -54,14 +54,14 @@ get_vec2f_attribute(MObject &node, const string &attribute_name,
   MFnNumericData data(vec2f_object, &status);
   if (!status) {
     nout << "Attribute " << attribute_name << " is of type "
-	 << vec2f_object.apiTypeStr() << ", not a NumericData.\n";
+         << vec2f_object.apiTypeStr() << ", not a NumericData.\n";
     return false;
   }
 
   status = data.getData(value[0], value[1]);
   if (!status) {
     nout << "Unable to extract 2 floats from " << attribute_name
-	 << ", of type " << vec2f_object.apiTypeStr() << "\n";
+         << ", of type " << vec2f_object.apiTypeStr() << "\n";
   }
 
   return true;
@@ -69,13 +69,13 @@ get_vec2f_attribute(MObject &node, const string &attribute_name,
 
 bool
 get_vec2d_attribute(MObject &node, const string &attribute_name,
-		    LVecBase2d &value) {
+                    LVecBase2d &value) {
   MStatus status;
 
   MObject vec2d_object;
   if (!get_maya_attribute(node, attribute_name, vec2d_object)) {
     nout << "Attribute " << attribute_name 
-	 << " does not have a vec2d object value.\n";
+         << " does not have a vec2d object value.\n";
     describe_maya_attribute(node, attribute_name);
     return false;
   }
@@ -83,14 +83,14 @@ get_vec2d_attribute(MObject &node, const string &attribute_name,
   MFnNumericData data(vec2d_object, &status);
   if (!status) {
     nout << "Attribute " << attribute_name << " is of type "
-	 << vec2d_object.apiTypeStr() << ", not a NumericData.\n";
+         << vec2d_object.apiTypeStr() << ", not a NumericData.\n";
     return false;
   }
 
   status = data.getData(value[0], value[1]);
   if (!status) {
     nout << "Unable to extract 2 doubles from " << attribute_name
-	 << ", of type " << vec2d_object.apiTypeStr() << "\n";
+         << ", of type " << vec2d_object.apiTypeStr() << "\n";
   }
 
   return true;
@@ -98,13 +98,13 @@ get_vec2d_attribute(MObject &node, const string &attribute_name,
 
 bool
 get_string_attribute(MObject &node, const string &attribute_name,
-		     string &value) {
+                     string &value) {
   MStatus status;
 
   MObject string_object;
   if (!get_maya_attribute(node, attribute_name, string_object)) {
     nout << "Attribute " << attribute_name 
-	 << " does not have an string object value.\n";
+         << " does not have an string object value.\n";
     describe_maya_attribute(node, attribute_name);
     return false;
   }
@@ -112,7 +112,7 @@ get_string_attribute(MObject &node, const string &attribute_name,
   MFnStringData data(string_object, &status);
   if (!status) {
     nout << "Attribute " << attribute_name << " is of type "
-	 << string_object.apiTypeStr() << ", not a StringData.\n";
+         << string_object.apiTypeStr() << ", not a StringData.\n";
     return false;
   }
 
@@ -132,7 +132,7 @@ describe_maya_attribute(MObject &node, const string &attribute_name) {
   MObject attr = node_fn.attribute(attribute_name.c_str(), &status);
   if (!status) {
     nout << "Object " << node_fn.name() << " does not support attribute "
-	 << attribute_name << "\n";
+         << attribute_name << "\n";
     return;
   }
 

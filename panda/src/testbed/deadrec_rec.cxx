@@ -93,72 +93,72 @@ static void* internal_monitor(void*) {
       NetAddress address;
       PT(Connection) new_connection;
       if (listener->get_new_connection(rv, address, new_connection)) {
-	if (deadrec_cat->is_debug())
-	  deadrec_cat->debug() << "Got connection from " << address << endl;
-	reader->add_connection(new_connection);
-	clients.insert(new_connection);
+        if (deadrec_cat->is_debug())
+          deadrec_cat->debug() << "Got connection from " << address << endl;
+        reader->add_connection(new_connection);
+        clients.insert(new_connection);
       }
     }
     // check for reset clients
     while (cm.reset_connection_available()) {
       PT(Connection) connection;
       if (cm.get_reset_connection(connection)) {
-	if (deadrec_cat->is_debug())
-	  deadrec_cat->debug() << "Lost connection from "
-			       << connection->get_address() << endl;
-	clients.erase(connection);
-	cm.close_connection(connection);
+        if (deadrec_cat->is_debug())
+          deadrec_cat->debug() << "Lost connection from "
+                               << connection->get_address() << endl;
+        clients.erase(connection);
+        cm.close_connection(connection);
       }
     }
     // process all available datagrams
     while (reader->data_available()) {
       NetDatagram datagram;
       if (reader->get_data(datagram)) {
-	unsigned char* buff = (unsigned char*)(datagram.get_data());
-	unsigned char byte;
-	TelemetryToken t;
-	buff = get_uint8(buff, byte);
-	t = (TelemetryToken)byte;
-	while (t != T_End) {
-	  switch (t) {
-	  case T_Pos:
-	    {
-	      float x, y, z;
-	      buff = get_float64(get_float64(get_float64(buff, x), y), z);
-	      telemetry_pos = LPoint3f(x, y, z);
-	    }
-	    break;
-	  case T_Vel:
-	    if (deadrec_cat->is_debug())
-	      deadrec_cat->debug() << "got T_Num" << endl;
-	    break;
-	  case T_Num:
-	    if (deadrec_cat->is_debug())
-	      deadrec_cat->debug() << "got T_Num" << endl;
-	    break;
-	  case T_Time:
-	    {
-	      float x;
-	      buff = get_float64(buff, x);
-	      if (doing_sync) {
-		clock_skew = ClockObject::get_global_clock()->get_frame_time() - x;
-		doing_sync = false;
-		cerr << "setting clock skew to: " << clock_skew << endl;
-	      } else
-		telemetry_time = x + clock_skew;
-	    }
-	    break;
-	  case T_Sync:
-	    doing_sync = true;
-	    break;
-	  default:
-	    deadrec_cat->warning() << "got bad token in datagram (" << (int)t
-				   << ")" << endl;
-	  }
-	  buff = get_uint8(buff, byte);
-	  t = (TelemetryToken)byte;
-	}
-	new_telemetry = true;
+        unsigned char* buff = (unsigned char*)(datagram.get_data());
+        unsigned char byte;
+        TelemetryToken t;
+        buff = get_uint8(buff, byte);
+        t = (TelemetryToken)byte;
+        while (t != T_End) {
+          switch (t) {
+          case T_Pos:
+            {
+              float x, y, z;
+              buff = get_float64(get_float64(get_float64(buff, x), y), z);
+              telemetry_pos = LPoint3f(x, y, z);
+            }
+            break;
+          case T_Vel:
+            if (deadrec_cat->is_debug())
+              deadrec_cat->debug() << "got T_Num" << endl;
+            break;
+          case T_Num:
+            if (deadrec_cat->is_debug())
+              deadrec_cat->debug() << "got T_Num" << endl;
+            break;
+          case T_Time:
+            {
+              float x;
+              buff = get_float64(buff, x);
+              if (doing_sync) {
+                clock_skew = ClockObject::get_global_clock()->get_frame_time() - x;
+                doing_sync = false;
+                cerr << "setting clock skew to: " << clock_skew << endl;
+              } else
+                telemetry_time = x + clock_skew;
+            }
+            break;
+          case T_Sync:
+            doing_sync = true;
+            break;
+          default:
+            deadrec_cat->warning() << "got bad token in datagram (" << (int)t
+                                   << ")" << endl;
+          }
+          buff = get_uint8(buff, byte);
+          t = (TelemetryToken)byte;
+        }
+        new_telemetry = true;
       }
     }
     // sleep for about 100 milliseconds
@@ -192,7 +192,7 @@ static void predict_event_up(CPT_Event e) {
     break;
   default:
     deadrec_cat->error() << "switching predictor to invalid type ("
-			 << (int)curr_pred << ")" << endl;
+                         << (int)curr_pred << ")" << endl;
   }
   reinit_prediction = true;
 }
@@ -246,7 +246,7 @@ static void correct_event_up(CPT_Event e) {
     break;
   default:
     deadrec_cat->error() << "switching corrector to invalid type ("
-			 << (int)curr_corr << ")" << endl;
+                         << (int)curr_corr << ")" << endl;
   }
   reinit_correction = true;
 }
@@ -280,7 +280,7 @@ static void correct_event(CPT_Event e) {
 typedef void (*event_func)(CPT_Event);
 
 static inline GuiButton* make_button(const string& name, Node* font,
-				     EventHandler& eh, event_func func) {
+                                     EventHandler& eh, event_func func) {
   GuiLabel* l1 = GuiLabel::make_simple_text_label(name, font);
   GuiLabel* l2 = GuiLabel::make_simple_text_label(name, font);
   GuiLabel* l3 = GuiLabel::make_simple_text_label(name, font);
@@ -318,13 +318,13 @@ static void deadrec_setup(EventHandler& eh) {
   }
   if (deadrec_cat->is_debug())
     deadrec_cat->debug() << "Listening for connections on port " << hostport
-			 << endl;
+                         << endl;
   listener = new QueuedConnectionListener(&cm, 0);
   listener->add_connection(rendezvous);
   reader = new QueuedConnectionReader(&cm, 1);
   stop_monitoring = false;
   monitor = thread::create(internal_monitor, (void*)0L,
-			   thread::PRIORITY_NORMAL);
+                           thread::PRIORITY_NORMAL);
   // create an interface
   GuiManager* mgr = GuiManager::get_ptr(main_win, mak);
   PT_Node font = ModelPool::load_model("ttf-comic");
@@ -434,23 +434,23 @@ inline static void predict_linear(void) {
   case 2:
     if (new_telemetry) {
       if (telemetry_time < A_time) {
-	// before our two samples, ignore it
+        // before our two samples, ignore it
       } else if (telemetry_time > B_time) {
-	// a sample in brave new territory
-	A = B;
-	A_time = B_time;
-	B = telemetry_pos;
-	B_time = telemetry_time;
-	V = B - A;
-	V *= 1. / (B_time - A_time);
-	time = 0.;
+        // a sample in brave new territory
+        A = B;
+        A_time = B_time;
+        B = telemetry_pos;
+        B_time = telemetry_time;
+        V = B - A;
+        V *= 1. / (B_time - A_time);
+        time = 0.;
       } else {
-	// is between our two samples
-	A = telemetry_pos;
-	A_time = telemetry_time;
-	V = B - A;
-	V *= 1. / (B_time - A_time);
-	time = 0.;
+        // is between our two samples
+        A = telemetry_pos;
+        A_time = telemetry_time;
+        V = B - A;
+        V *= 1. / (B_time - A_time);
+        time = 0.;
       }
     }
     if (time <= 0.) {
@@ -463,7 +463,7 @@ inline static void predict_linear(void) {
     break;
   default:
     deadrec_cat->error() << "got in invalid state in linear predictor ("
-			 << state << ")" << endl;
+                         << state << ")" << endl;
   }
 }
 
@@ -477,7 +477,7 @@ inline static void run_predict(void) {
     break;
   default:
     deadrec_cat->error() << "bad prediction type (" << (int)curr_pred << ")"
-			 << endl;
+                         << endl;
   }
 }
 
@@ -500,24 +500,24 @@ inline static void correction_lerp(void) {
   } else {
     if (have_both) {
       if (save_pos != target_pos) {
-	time = 0.;
-	prev_pos = my_pos;
-	save_pos = target_pos;
+        time = 0.;
+        prev_pos = my_pos;
+        save_pos = target_pos;
       } else {
-	if (time < 0.5) {
-	  // half second lerp
-	  float tmp = time * 2.;
-	  LVector3f vtmp = save_pos - prev_pos;
-	  my_pos = (tmp * vtmp) + prev_pos;
-	  time += ClockObject::get_global_clock()->get_dt();
-	}
+        if (time < 0.5) {
+          // half second lerp
+          float tmp = time * 2.;
+          LVector3f vtmp = save_pos - prev_pos;
+          my_pos = (tmp * vtmp) + prev_pos;
+          time += ClockObject::get_global_clock()->get_dt();
+        }
       }
     } else {
       if (save_pos != target_pos) {
-	save_pos = target_pos;
-	my_pos = prev_pos;
-	time = 0.;
-	have_both = true;
+        save_pos = target_pos;
+        my_pos = prev_pos;
+        time = 0.;
+        have_both = true;
       }
     }
   }
@@ -540,36 +540,36 @@ inline static void correction_spline(void) {
   } else {
     if (have_both) {
       if (save_pos != target_pos) {
-	time = 0.;
-	prev_pos = my_pos;
-	prev_vel = my_vel;
-	save_pos = target_pos;
-	save_vel = target_vel;
-	A = (2. * (prev_pos - save_pos)) + prev_vel + save_vel;
-	B = (3. * (save_pos - prev_pos)) - (2. * prev_vel) - save_vel;
-	C = prev_vel;
-	D = prev_pos;
+        time = 0.;
+        prev_pos = my_pos;
+        prev_vel = my_vel;
+        save_pos = target_pos;
+        save_vel = target_vel;
+        A = (2. * (prev_pos - save_pos)) + prev_vel + save_vel;
+        B = (3. * (save_pos - prev_pos)) - (2. * prev_vel) - save_vel;
+        C = prev_vel;
+        D = prev_pos;
       } else {
-	if (time < 0.5) {
-	  // half second lerp
-	  float tmp = time * 2.;
-	  my_pos = (tmp * tmp * tmp * A) + (tmp * tmp * B) + (tmp * C) + D;
-	  my_vel = (3. * tmp * tmp * A) + (2. * tmp * B) + C;
-	  time += ClockObject::get_global_clock()->get_dt();
-	}
+        if (time < 0.5) {
+          // half second lerp
+          float tmp = time * 2.;
+          my_pos = (tmp * tmp * tmp * A) + (tmp * tmp * B) + (tmp * C) + D;
+          my_vel = (3. * tmp * tmp * A) + (2. * tmp * B) + C;
+          time += ClockObject::get_global_clock()->get_dt();
+        }
       }
     } else {
       if (save_pos != target_pos) {
-	save_pos = target_pos;
-	save_vel = target_vel;
-	my_pos = prev_pos;
-	my_vel = prev_vel;
-	time = 0.;
-	A = (2. * (prev_pos - save_pos)) + prev_vel + save_vel;
-	B = (3. * (save_pos - prev_pos)) - (2. * prev_vel) - save_vel;
-	C = prev_vel;
-	D = prev_pos;
-	have_both = true;
+        save_pos = target_pos;
+        save_vel = target_vel;
+        my_pos = prev_pos;
+        my_vel = prev_vel;
+        time = 0.;
+        A = (2. * (prev_pos - save_pos)) + prev_vel + save_vel;
+        B = (3. * (save_pos - prev_pos)) - (2. * prev_vel) - save_vel;
+        C = prev_vel;
+        D = prev_pos;
+        have_both = true;
       }
     }
   }
@@ -588,7 +588,7 @@ inline static void run_correct(void) {
     break;
   default:
     deadrec_cat->error() << "bad correction type (" << (int)curr_corr << ")"
-			 << endl;
+                         << endl;
   }
 }
 

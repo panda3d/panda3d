@@ -11,7 +11,7 @@
 #include "numeric_types.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DatagramIterator
+//       Class : DatagramIterator
 // Description : A class to retrieve the individual data elements
 //               previously stored in a Datagram.  Elements may be
 //               retrieved one at a time; it is up to the caller to

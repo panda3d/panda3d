@@ -87,9 +87,9 @@ set_attributes(EggPrimitive &primitive, MayaFile &file) {
 LMatrix3d MayaShader::
 compute_texture_matrix() {
   LVector2d scale(_repeat_uv[0] / _coverage[0],
-		  _repeat_uv[1] / _coverage[1]);
+                  _repeat_uv[1] / _coverage[1]);
   LVector2d trans(_offset[0] - _translate_frame[0] / _coverage[0],
-		  _offset[1] - _translate_frame[1] / _coverage[1]);
+                  _offset[1] - _translate_frame[1] / _coverage[1]);
 
   return
     (LMatrix3d::translate_mat(LVector2d(-0.5, -0.5)) * 
@@ -105,16 +105,16 @@ output(ostream &out) const {
   out << "Shader " << _name << ":\n";
   if (_has_texture) {
     out << "  texture is " << _texture << "\n"
-	<< "  coverage is " << _coverage << "\n"
-	<< "  translate_frame is " << _translate_frame << "\n"
-	<< "  rotate_frame is " << _rotate_frame << "\n"
-	<< "  mirror is " << _mirror << "\n"
-	<< "  stagger is " << _stagger << "\n"
-	<< "  wrap_u is " << _wrap_u << "\n"
-	<< "  wrap_v is " << _wrap_v << "\n"
-	<< "  repeat_uv is " << _repeat_uv << "\n"
-	<< "  offset is " << _offset << "\n"
-	<< "  rotate_uv is " << _rotate_uv << "\n";
+        << "  coverage is " << _coverage << "\n"
+        << "  translate_frame is " << _translate_frame << "\n"
+        << "  rotate_frame is " << _rotate_frame << "\n"
+        << "  mirror is " << _mirror << "\n"
+        << "  stagger is " << _stagger << "\n"
+        << "  wrap_u is " << _wrap_u << "\n"
+        << "  wrap_v is " << _wrap_v << "\n"
+        << "  repeat_uv is " << _repeat_uv << "\n"
+        << "  offset is " << _offset << "\n"
+        << "  rotate_uv is " << _rotate_uv << "\n";
 
   } else if (_has_color) {
     out << "  color is " << _color << "\n";
@@ -184,17 +184,17 @@ read_surface_color(MObject color) {
     // This shader wasn't understood.
     if (verbose >= 2) {
       nout << "**Don't know how to interpret color attribute type "
-	   << color.apiTypeStr() << "\n";
+           << color.apiTypeStr() << "\n";
     } else {
       // If we don't have a heavy verbose count, only report each type
       // of unsupportted shader once.
       static set<MFn::Type> bad_types;
       if (bad_types.insert(color.apiType()).second) {
-	if (verbose == 1) {
-	  nout << "\n";
-	}
-	nout << "Don't know how to interpret color attribute type "
-	     << color.apiTypeStr() << "\n";
+        if (verbose == 1) {
+          nout << "\n";
+        }
+        nout << "Don't know how to interpret color attribute type "
+             << color.apiTypeStr() << "\n";
       }
     }
   }

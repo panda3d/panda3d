@@ -164,26 +164,26 @@ throw_event_pattern(const string &pattern, CollisionEntry *entry) {
       string cmd = pattern.substr(p + 1, 2);
       p += 2;
       if (cmd == "fn") {
-	event += entry->get_from_node()->get_name();
+        event += entry->get_from_node()->get_name();
 
       } else if (cmd == "in") {
-	event += entry->get_into_node()->get_name();
+        event += entry->get_into_node()->get_name();
 
       } else if (cmd == "ft") {
-	event += 
-	  (!entry->get_from()->is_tangible() ? 'i' : 't');
+        event += 
+          (!entry->get_from()->is_tangible() ? 'i' : 't');
 
       } else if (cmd == "it") {
-	event += 
-	  (entry->has_into() && !entry->get_into()->is_tangible() ? 'i' : 't');
+        event += 
+          (entry->has_into() && !entry->get_into()->is_tangible() ? 'i' : 't');
 
       } else if (cmd == "ig") {
-	event += 
-	  (entry->has_into() ? 'c' : 'g');
+        event += 
+          (entry->has_into() ? 'c' : 'g');
 
       } else {
-	collide_cat.error()
-	  << "Invalid symbol in event_pattern: %" << cmd << "\n";
+        collide_cat.error()
+          << "Invalid symbol in event_pattern: %" << cmd << "\n";
       }
     } else {
       event += pattern[p];

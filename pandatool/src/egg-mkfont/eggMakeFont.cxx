@@ -238,7 +238,7 @@ ns_dispatch_dimensions(const string &opt, const string &arg) {
 
   if (!okflag) {
     nout << "-" << opt
-	 << " requires two or three integers separated by commas.\n";
+         << " requires two or three integers separated by commas.\n";
     return false;
   }
 
@@ -254,7 +254,7 @@ ns_dispatch_dimensions(const string &opt, const string &arg) {
 TexCoordd EggMakeFont::
 get_uv(double x, double y) {
   return TexCoordd(x / (double)_working_xsize, 
-		   ((double)_working_ysize - y) / (double)_working_ysize);
+                   ((double)_working_ysize - y) / (double)_working_ysize);
 }
 
 
@@ -279,7 +279,7 @@ EggVertex *EggMakeFont::
 make_vertex(const LPoint2d &xy) {
   return
     _vpool->make_new_vertex(LPoint3d::origin(_coordinate_system) + 
-			    LVector3d::rfu(xy[0], 0.0, xy[1], _coordinate_system));
+                            LVector3d::rfu(xy[0], 0.0, xy[1], _coordinate_system));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -306,18 +306,18 @@ copy_character(const CharPlacement &pl) {
   if (_output_image.has_alpha()) {
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
-	if (bm->_block[y][x]) {
-	  _output_image.set_xel(xp + x, yp + y, _fg[0], _fg[1], _fg[2]);
-	  _output_image.set_alpha(xp + x, yp + y, _fg[3]);
-	}
+        if (bm->_block[y][x]) {
+          _output_image.set_xel(xp + x, yp + y, _fg[0], _fg[1], _fg[2]);
+          _output_image.set_alpha(xp + x, yp + y, _fg[3]);
+        }
       }
     }
   } else {
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
-	if (bm->_block[y][x]) {
-	  _output_image.set_xel(xp + x, yp + y, _fg[0], _fg[1], _fg[2]);
-	}
+        if (bm->_block[y][x]) {
+          _output_image.set_xel(xp + x, yp + y, _fg[0], _fg[1], _fg[2]);
+        }
       }
     }
   }
@@ -438,8 +438,8 @@ consider_scale_factor(double scale_factor) {
     if (!(_small_caps && islower(bm->_character))) {
       ok = _layout.place_character(bm);
       if (!ok) {
-	// Out of room.
-	return false;
+        // Out of room.
+        return false;
       }
     }
   }
@@ -498,7 +498,7 @@ choose_scale_factor() {
       too_large = guess;
       guess = guess / 2.0;
       if (sanity_count++ > 20) {
-	return false;
+        return false;
       }
     } while (consider_scale_factor(guess));
     too_small = guess;
@@ -509,7 +509,7 @@ choose_scale_factor() {
       too_small = guess;
       guess = guess * 2.0;
       if (sanity_count++ > 20) {
-	return false;
+        return false;
       }
     } while (!consider_scale_factor(guess));
     too_large = guess;
@@ -539,9 +539,9 @@ choose_image_size() {
     // and we don't need so much image space.
     do {
       if (_output_ysize < _output_xsize) {
-	_output_xsize /= 2;
+        _output_xsize /= 2;
       } else {
-	_output_ysize /= 2;
+        _output_ysize /= 2;
       }
       sane = choose_scale_factor();
     } while (sane && _scale_factor <= 2.5);
@@ -557,9 +557,9 @@ choose_image_size() {
     // reduced and may be blurry.  We need a larger image.
     do {
       if (_output_ysize < _output_xsize) {
-	_output_ysize *= 2;
+        _output_ysize *= 2;
       } else {
-	_output_xsize *= 2;
+        _output_xsize *= 2;
       }
       sane = choose_scale_factor();
     } while (!sane || _scale_factor > 4.0);
@@ -581,7 +581,7 @@ unsmooth_rgb(PNMImage &image) {
     for (int x = 0; x < image.get_x_size(); x++) {
       double alpha = image.get_alpha(x, y);
       if (alpha != 0.0) {
-	image.set_xel(x, y, image.get_xel(x, y) / alpha);
+        image.set_xel(x, y, image.get_xel(x, y) / alpha);
       }
     }
   }
@@ -664,7 +664,7 @@ run() {
     // The user specified both; we accept the scale factor.
     if (!consider_scale_factor(_scale_factor)) {
       nout << "Ran out of room on font image; try increasing the image "
-	"size or the scale factor.\n";
+        "size or the scale factor.\n";
       exit(1);
     }
 
@@ -788,20 +788,20 @@ run() {
   if (_no_reduce) {
     // Scaling of the final image forbidden by the user.
     nout << "Image destination size is " << _output_xsize
-	 << " by " << _output_ysize << " by " << _output_zsize
-	 << "; not reducing.\n";
+         << " by " << _output_ysize << " by " << _output_zsize
+         << "; not reducing.\n";
     nout << "Generating " << _working_xsize << " by " << _working_ysize
-	 << " by " << _output_zsize << " image: "
-	 << _output_image_filename << "\n";  
+         << " by " << _output_zsize << " image: "
+         << _output_image_filename << "\n";  
 
     _output_image.write(_output_image_filename);
 
   } else if (_output_xsize == _working_xsize &&
-	     _output_ysize == _working_ysize) {
+             _output_ysize == _working_ysize) {
     // Scaling unnecessary, because the scale factor is 1.0.
     nout << "Generating " << _output_xsize << " by " << _output_ysize
-	 << " by " << _output_zsize << " image: "
-	 << _output_image_filename << "\n";  
+         << " by " << _output_zsize << " image: "
+         << _output_image_filename << "\n";  
     _output_image.write(_output_image_filename);
 
   } else {
@@ -819,8 +819,8 @@ run() {
     
     
     nout << "Generating " << _output_xsize << " by " << _output_ysize
-	 << " by " << _output_zsize << " image: "
-	 << _output_image_filename << "\n";  
+         << " by " << _output_zsize << " image: "
+         << _output_image_filename << "\n";  
     small_image.write(_output_image_filename);
   }
 

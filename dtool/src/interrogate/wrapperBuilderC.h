@@ -11,7 +11,7 @@
 #include "wrapperBuilder.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : WrapperBuilderC
+//       Class : WrapperBuilderC
 // Description : A specialization on WrapperBuilder that builds
 //               C-style wrapper functions.
 ////////////////////////////////////////////////////////////////////

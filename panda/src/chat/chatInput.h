@@ -74,7 +74,7 @@ protected:
     F_max_width   = 0x004,
   };
   int _flags;
-	
+
 public:
   virtual TypeHandle get_type() const {
     return get_class_type();

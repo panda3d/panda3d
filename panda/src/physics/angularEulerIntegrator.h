@@ -16,8 +16,8 @@
 class EXPCL_PANDAPHYSICS AngularEulerIntegrator : public AngularIntegrator {
 private:
   virtual void child_integrate(Physical *physical,
-			       vector< PT(AngularForce) >& forces,
-			       float dt);
+                               vector< PT(AngularForce) >& forces,
+                               float dt);
 
 PUBLISHED:
   AngularEulerIntegrator(void);

@@ -17,7 +17,7 @@ namespace Config {
 class EXPCL_DTOOLCONFIG SymbolEnt {
    public:
       enum SymbolEntSrc { ConfigFile, Environment, CommandEnv, Commandline,
-			  Other, Invalid };
+                          Other, Invalid };
    private:
       ConfigString _src;
       ConfigString _val;
@@ -26,8 +26,8 @@ class EXPCL_DTOOLCONFIG SymbolEnt {
    public:
       SymbolEnt() : _srctok(Invalid) {}
       SymbolEnt(enum SymbolEntSrc tok, const ConfigString& val,
-		const ConfigString& src = "", bool state = false)
-	: _src(src), _val(val), _state(state), _srctok(tok) {}
+                const ConfigString& src = "", bool state = false)
+        : _src(src), _val(val), _state(state), _srctok(tok) {}
       SymbolEnt(const SymbolEnt& c) : _src(c._src), _val(c._val),
           _state(c._state), _srctok(c._srctok) {}
       INLINE SymbolEnt& operator=(const SymbolEnt&);

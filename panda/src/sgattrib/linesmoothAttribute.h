@@ -11,7 +11,7 @@
 #include <onOffAttribute.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LinesmoothAttribute
+//       Class : LinesmoothAttribute
 // Description : See LinesmoothTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA LinesmoothAttribute : public OnOffAttribute {
@@ -35,7 +35,7 @@ public:
   static void init_type() {
     OnOffAttribute::init_type();
     register_type(_type_handle, "LinesmoothAttribute",
-		  OnOffAttribute::get_class_type());
+                  OnOffAttribute::get_class_type());
   }
 
 private:

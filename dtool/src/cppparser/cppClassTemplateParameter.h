@@ -13,17 +13,17 @@
 class CPPIdentifier;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPClassTemplateParameter
+//       Class : CPPClassTemplateParameter
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPClassTemplateParameter : public CPPType {
 public:
   CPPClassTemplateParameter(CPPIdentifier *ident,
-			    CPPType *default_type = NULL);
+                            CPPType *default_type = NULL);
 
   virtual bool is_fully_specified() const;
   virtual void output(ostream &out, int indent_level, CPPScope *scope,
-		      bool complete) const;
+                      bool complete) const;
   virtual SubType get_subtype() const;
 
   virtual CPPClassTemplateParameter *as_class_template_parameter();

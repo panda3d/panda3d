@@ -25,7 +25,7 @@ class EggPrimitive;
 class TexturePlacement;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TextureReference
+//       Class : TextureReference
 // Description : This is the particular reference of a texture
 //               filename by an egg file.  It also includes
 //               information about the way in which the egg file uses
@@ -64,13 +64,13 @@ private:
   void update_uv_range(EggGroupNode *group, Palettizer::RemapUV remap);
   
   bool get_geom_uvs(EggPrimitive *geom,
-		    TexCoordd &geom_min_uv, TexCoordd &geom_max_uv);
+                    TexCoordd &geom_min_uv, TexCoordd &geom_max_uv);
   void translate_geom_uvs(EggPrimitive *geom, const TexCoordd &trans) const;
   static void collect_uv(bool &any_uvs, TexCoordd &min_uv, TexCoordd &max_uv,
-			 const TexCoordd &got_min_uv,
-			 const TexCoordd &got_max_uv);
+                         const TexCoordd &got_min_uv,
+                         const TexCoordd &got_max_uv);
   static LVector2d translate_uv(const TexCoordd &min_uv,
-				const TexCoordd &max_uv);
+                                const TexCoordd &max_uv);
 
   EggFile *_egg_file;
   EggTexture *_egg_tex;
@@ -93,7 +93,7 @@ public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
 protected:
   static TypedWritable *make_TextureReference(const FactoryParams &params);
@@ -106,7 +106,7 @@ public:
   static void init_type() {
     TypedWritable::init_type();
     register_type(_type_handle, "TextureReference",
-		  TypedWritable::get_class_type());
+                  TypedWritable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

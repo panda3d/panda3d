@@ -44,7 +44,7 @@ public:
   static void init_type() {
     AnimChannel<SwitchType>::init_type();
     register_type(_type_handle, SwitchType::get_fixed_channel_type_name(),
-		  AnimChannel<SwitchType>::get_class_type());
+                  AnimChannel<SwitchType>::get_class_type());
   }
 
 private:

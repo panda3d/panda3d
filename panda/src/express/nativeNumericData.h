@@ -11,7 +11,7 @@
 #include <string.h>  // for memcpy()
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : NativeNumericData
+//       Class : NativeNumericData
 // Description : NativeNumericData and ReversedNumericData work
 //               together to provide a sneaky interface for
 //               automatically byte-swapping numbers, when necessary,

@@ -14,7 +14,7 @@
 #include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ClipPlaneTransition
+//       Class : ClipPlaneTransition
 // Description : This allows the definition of zero or more arbitrary
 //               clipping planes.
 ////////////////////////////////////////////////////////////////////
@@ -38,7 +38,7 @@ public:
 protected:
   virtual void output_property(ostream &out, const PT_Node &prop) const;
   virtual void write_property(ostream &out, const PT_Node &prop,
-			      int indent_level) const;
+                              int indent_level) const;
 
 public:
   virtual TypeHandle get_type() const {
@@ -51,7 +51,7 @@ public:
   static void init_type() {
     MultiNodeTransition::init_type();
     register_type(_type_handle, "ClipPlaneTransition",
-		  MultiNodeTransition::get_class_type());
+                  MultiNodeTransition::get_class_type());
   }
 
 private:

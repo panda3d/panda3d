@@ -9,7 +9,7 @@
 #include <pandabase.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ButtonHandle
+//       Class : ButtonHandle
 // Description : A ButtonHandle represents a single button from any
 //               device, including keyboard buttons and mouse buttons
 //               (but see KeyboardButton and MouseButton).

@@ -45,7 +45,7 @@ pprerror(const char *format, ...) {
   }
 
   net_cat.error() << str;
-			  
+
   PR_Free(str);
   if (get_net_error_abort()) {
     abort();

@@ -107,7 +107,7 @@ get_highest_index() const {
 EggVertexPool::iterator EggVertexPool::
 begin() const {
   nassertr(_index_vertices.size() == _unique_vertices.size(),
-	   iterator(_index_vertices.begin()));
+           iterator(_index_vertices.begin()));
   return iterator(_index_vertices.begin());
 }
  
@@ -337,13 +337,13 @@ transform(const LMatrix4d &mat) {
       int num_global_coord = vert->get_num_global_coord();
       
       if (num_global_coord != 0) {
-	// This vertex will be transformed.
-	if (num_local_coord != 0) {
-	  // It also needs to be split!  Yuck.
-	  split_vertex(vert, IsLocalVertexSplitter());
-	}
-	
-	vert->transform(mat);
+        // This vertex will be transformed.
+        if (num_local_coord != 0) {
+          // It also needs to be split!  Yuck.
+          split_vertex(vert, IsLocalVertexSplitter());
+        }
+
+        vert->transform(mat);
       }
     }
     
@@ -357,10 +357,10 @@ transform(const LMatrix4d &mat) {
       EggVertex *vert = *i;
       if (vert->get_num_local_coord() != 0) {
 
-	// This should be guaranteed by the vertex-splitting logic
-	// above.
-	nassertv(vert->get_num_global_coord() == 0);
-	vert->transform(local_mat);
+        // This should be guaranteed by the vertex-splitting logic
+        // above.
+        nassertv(vert->get_num_global_coord() == 0);
+        vert->transform(local_mat);
       }
     }
   }

@@ -20,7 +20,7 @@
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, MULTIATTRIBUTE_CAMERA);
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ShowHideAttribute
+//       Class : ShowHideAttribute
 // Description : See ShowHideTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ShowHideAttribute : public MultiAttribute<PT(Camera), ShowHideNameClass> {
@@ -34,7 +34,7 @@ public:
 protected:
   virtual void output_property(ostream &out, const PT(Camera) &prop) const;
   virtual void write_property(ostream &out, const PT(Camera) &prop,
-			      int indent_level) const;
+                              int indent_level) const;
 
 public:
   virtual TypeHandle get_type() const {
@@ -47,7 +47,7 @@ public:
   static void init_type() {
     MultiAttribute<PT(Camera), ShowHideNameClass>::init_type();
     register_type(_type_handle, "ShowHideAttribute",
-		  MultiAttribute<PT(Camera), ShowHideNameClass>::get_class_type());
+                  MultiAttribute<PT(Camera), ShowHideNameClass>::get_class_type());
   }
 
 private:

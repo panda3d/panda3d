@@ -26,22 +26,22 @@
 class EXPCL_PANDA Light : virtual public ReferenceCount
 {
     PUBLISHED:
-	
-	Light( void ) { _color.set(0.0, 0.0, 0.0, 1.0); }
-	virtual ~Light( void ) { }
 
-	INLINE Colorf get_color(void) const { return _color; }
- 	INLINE void set_color(const Colorf& color) { _color = color; }
+        Light( void ) { _color.set(0.0, 0.0, 0.0, 1.0); }
+        virtual ~Light( void ) { }
 
- 	virtual void output(ostream &out) const=0;
- 	virtual void write(ostream &out, int indent_level = 0) const=0;
+        INLINE Colorf get_color(void) const { return _color; }
+        INLINE void set_color(const Colorf& color) { _color = color; }
+
+        virtual void output(ostream &out) const=0;
+        virtual void write(ostream &out, int indent_level = 0) const=0;
 
     public:
-	virtual void apply( GraphicsStateGuardian* gsg ) = 0;
+        virtual void apply( GraphicsStateGuardian* gsg ) = 0;
 
     protected:
 
-	Colorf			_color;
+        Colorf                  _color;
 
     public:
 
@@ -49,9 +49,9 @@ class EXPCL_PANDA Light : virtual public ReferenceCount
             return _type_handle;
         }
         static void init_type( void ) {
-	    ReferenceCount::init_type();
+            ReferenceCount::init_type();
             register_type( _type_handle, "Light",
-			ReferenceCount::get_class_type() );
+                        ReferenceCount::get_class_type() );
         }
         virtual TypeHandle get_light_type( void ) const {
             return get_class_type();

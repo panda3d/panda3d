@@ -51,7 +51,7 @@ class EXPCL_PANDA AmbientLight : public Light, public NamedNode
       NamedNode::init_type();
       register_type( _type_handle, "AmbientLight",
                         Light::get_class_type(),
-			NamedNode::get_class_type() );
+                        NamedNode::get_class_type() );
     }
     virtual TypeHandle get_type( void ) const {
       return get_class_type();

@@ -134,7 +134,7 @@ loop(bool restart, int from, int to) {
     // differently.
 
     if ((to == 0 && from == get_num_frames()-1) ||
-	(to == from-1)) {
+        (to == from-1)) {
       
       // In this case, the user has specified to loop over the whole
       // range of animation.  We don't need a special jump action to
@@ -148,12 +148,12 @@ loop(bool restart, int from, int to) {
       // if the number of frames in the loop is large enough and/or the
       // frame rate is high enough.
       insert_jump_action(_actions, (to-1+get_num_frames())%get_num_frames(), 
-			 from);
+                         from);
     }
   } else {
 
     if ((from == 0 && to == get_num_frames()-1) ||
-	(from == to-1)) {
+        (from == to-1)) {
       
       // In this case, the user has specified to loop over the whole
       // range of animation.  We don't need a special jump action to
@@ -243,7 +243,7 @@ remove_event(const string &event_name) {
   for (ai = _user_actions.begin(); ai != _user_actions.end(); ++ai) {
     const Action &action = (*ai).second;
     if (action._type == AT_event &&
-	action._event->get_name() == event_name) {
+        action._event->get_name() == event_name) {
       // Remove this event by not copying it to new_actions.
       removed++;
     } else {
@@ -259,15 +259,15 @@ remove_event(const string &event_name) {
       new_actions.clear();
       int p_removed = 0;
       for (ai = _actions.begin(); ai != _actions.end(); ++ai) {
-	const Action &action = (*ai).second;
-	if (action._type == AT_event && 
-	    action._event->get_name() == event_name) {
-	  // Remove this event by not copying it to new_actions.
-	  p_removed++;
-	} else {
-	  // Preserve this event.
-	  new_actions.insert(*ai);
-	}
+        const Action &action = (*ai).second;
+        if (action._type == AT_event && 
+            action._event->get_name() == event_name) {
+          // Remove this event by not copying it to new_actions.
+          p_removed++;
+        } else {
+          // Preserve this event.
+          new_actions.insert(*ai);
+        }
       }
       nassertr(p_removed == removed, removed);
       _actions.swap(new_actions);
@@ -333,25 +333,25 @@ advance_time(double time) {
       // actions in reverse order.
 
       if (new_frame >= 0) {
-	do_actions_backward(orig_frame-1, new_frame);
+        do_actions_backward(orig_frame-1, new_frame);
       } else {
-	if (do_actions_backward(orig_frame-1, 0)) {
-	  _frame = _frame - floor(_frame / num_frames) * num_frames;
-	  new_frame = get_frame();
-	  do_actions_backward(get_num_frames(), new_frame);
-	}
+        if (do_actions_backward(orig_frame-1, 0)) {
+          _frame = _frame - floor(_frame / num_frames) * num_frames;
+          new_frame = get_frame();
+          do_actions_backward(get_num_frames(), new_frame);
+        }
       }
     } else {
       // Normally, we'll be playing the animation forward.
       
       if (new_frame < get_num_frames()) {
-	do_actions_forward(orig_frame+1, new_frame);
+        do_actions_forward(orig_frame+1, new_frame);
       } else {
-	if (do_actions_forward(orig_frame+1, get_num_frames()-1)) {
-	  _frame = _frame - floor(_frame / num_frames) * num_frames;
-	  new_frame = get_frame();
-	  do_actions_forward(0, new_frame);
-	}
+        if (do_actions_forward(orig_frame+1, get_num_frames()-1)) {
+          _frame = _frame - floor(_frame / num_frames) * num_frames;
+          new_frame = get_frame();
+          do_actions_forward(0, new_frame);
+        }
       }
     }
   }
@@ -492,12 +492,12 @@ do_actions_forward(int from, int to) {
       const Action &action = (*ai).second;
       
       if (sequence_frame != -1 && frame > sequence_frame) {
-	// We encountered an action that resequenced our frame numbers.
-	// Now that we've finished evaluating all the other actions that
-	// occurred in the same frame, evaluate this one action and
-	// exit.
-	do_sequence_action(sequence_frame, *sequence_action);
-	return false;
+        // We encountered an action that resequenced our frame numbers.
+        // Now that we've finished evaluating all the other actions that
+        // occurred in the same frame, evaluate this one action and
+        // exit.
+        do_sequence_action(sequence_frame, *sequence_action);
+        return false;
       }
       
       do_action(frame, action, sequence_frame, sequence_action);
@@ -544,12 +544,12 @@ do_actions_backward(int from, int to) {
       const Action &action = (*ai).second;
       
       if (sequence_frame != -1 && frame < sequence_frame) {
-	// We encountered an action that resequenced our frame numbers.
-	// Now that we've finished evaluating all the other actions that
-	// occurred in the same frame, evaluate this one action and
-	// exit.
-	do_sequence_action(sequence_frame, *sequence_action);
-	return false;
+        // We encountered an action that resequenced our frame numbers.
+        // Now that we've finished evaluating all the other actions that
+        // occurred in the same frame, evaluate this one action and
+        // exit.
+        do_sequence_action(sequence_frame, *sequence_action);
+        return false;
       }
       
       do_action(frame, action, sequence_frame, sequence_action);
@@ -578,7 +578,7 @@ do_actions_backward(int from, int to) {
 ////////////////////////////////////////////////////////////////////
 void AnimControl::
 do_action(int frame, const Action &action, 
-	  int &sequence_frame, const Action *&sequence_action) {
+          int &sequence_frame, const Action *&sequence_action) {
   switch (action._type) {
   case AT_stop:
   case AT_jump:

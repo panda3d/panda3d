@@ -15,7 +15,7 @@
 #include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PStatView
+//       Class : PStatView
 // Description : A View boils down the frame data to a linear list of
 //               times spent in a number of different Collectors,
 //               within a particular thread.  This automatically

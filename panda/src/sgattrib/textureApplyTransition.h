@@ -13,7 +13,7 @@
 #include <onTransition.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TextureApplyTransition
+//       Class : TextureApplyTransition
 // Description : This controls the way textures modify the colors
 //               assigned to geometry.
 ////////////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ public:
   static void init_type() {
     OnTransition::init_type();
     register_type(_type_handle, "TextureApplyTransition",
-		  OnTransition::get_class_type());
+                  OnTransition::get_class_type());
   }
 
 private:

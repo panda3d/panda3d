@@ -113,7 +113,7 @@ vrpn_position_callback(void *userdata, const vrpn_TRACKERCB info) {
   for (di = self->_devices.begin(); di != self->_devices.end(); ++di) {
     VrpnTrackerDevice *device = (*di);
     if (device->get_sensor() == info.sensor &&
-	device->get_data_type() == VrpnTrackerDevice::DT_position) {
+        device->get_data_type() == VrpnTrackerDevice::DT_position) {
       device->lock();
       device->_data.set_time(VrpnClient::convert_to_secs(info.msg_time));
       device->_data.set_pos(LPoint3f(info.pos[0], info.pos[1], info.pos[2]));
@@ -142,12 +142,12 @@ vrpn_velocity_callback(void *userdata, const vrpn_TRACKERVELCB info) {
   for (di = self->_devices.begin(); di != self->_devices.end(); ++di) {
     VrpnTrackerDevice *device = (*di);
     if (device->get_sensor() == info.sensor &&
-	device->get_data_type() == VrpnTrackerDevice::DT_velocity) {
+        device->get_data_type() == VrpnTrackerDevice::DT_velocity) {
       device->lock();
       device->_data.set_time(VrpnClient::convert_to_secs(info.msg_time));
       device->_data.set_pos(LPoint3f(info.vel[0], info.vel[1], info.vel[2]));
       device->_data.set_orient(LOrientationf(info.vel_quat[0], info.vel_quat[1], 
-					     info.vel_quat[2], info.vel_quat[3]));
+                                             info.vel_quat[2], info.vel_quat[3]));
       device->_data.set_dt(info.vel_quat_dt);
       device->unlock();
     }
@@ -173,12 +173,12 @@ vrpn_acceleration_callback(void *userdata, const vrpn_TRACKERACCCB info) {
   for (di = self->_devices.begin(); di != self->_devices.end(); ++di) {
     VrpnTrackerDevice *device = (*di);
     if (device->get_sensor() == info.sensor &&
-	device->get_data_type() == VrpnTrackerDevice::DT_acceleration) {
+        device->get_data_type() == VrpnTrackerDevice::DT_acceleration) {
       device->lock();
       device->_data.set_time(VrpnClient::convert_to_secs(info.msg_time));
       device->_data.set_pos(LPoint3f(info.acc[0], info.acc[1], info.acc[2]));
       device->_data.set_orient(LOrientationf(info.acc_quat[0], info.acc_quat[1], 
-					     info.acc_quat[2], info.acc_quat[3]));
+                                             info.acc_quat[2], info.acc_quat[3]));
       device->_data.set_dt(info.acc_quat_dt);
       device->unlock();
     }

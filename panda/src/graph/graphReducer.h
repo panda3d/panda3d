@@ -13,7 +13,7 @@
 #include <typedObject.h>
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : GraphReducer
+//       Class : GraphReducer
 // Description : A generic interface to simplify a graph in various
 //               ways, generally as a performance optimization.  This
 //               class is designed for generic graphs; also see the
@@ -34,11 +34,11 @@ protected:
 
   virtual bool consider_arc(NodeRelation *arc);
   virtual bool consider_siblings(Node *parent,
-				 NodeRelation *arc1, NodeRelation *arc2);
+                                 NodeRelation *arc1, NodeRelation *arc2);
 
   virtual bool flatten_arc(NodeRelation *arc);
   virtual NodeRelation *collapse_siblings(Node *parent, NodeRelation *arc1,
-					  NodeRelation *arc2);
+                                          NodeRelation *arc2);
 
   virtual Node *collapse_nodes(Node *node1, Node *node2, bool siblings);
   virtual void choose_name(Node *preserve, Node *source1, Node *source2);

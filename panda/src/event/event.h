@@ -15,7 +15,7 @@
 class EventReceiver;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : Event
+//       Class : Event
 // Description : A named event, possibly with parameters.  Anyone in
 //               any thread may throw an event at any time; there will
 //               be one process responsible for reading and dispacting
@@ -64,7 +64,7 @@ public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "Event",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

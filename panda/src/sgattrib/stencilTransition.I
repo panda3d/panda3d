@@ -10,7 +10,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE StencilTransition::
 StencilTransition(StencilProperty::Mode mode, 
-		  StencilProperty::Action action) :
+                  StencilProperty::Action action) :
   _value(mode, action)
 {
 }

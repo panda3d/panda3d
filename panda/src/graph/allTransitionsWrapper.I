@@ -414,10 +414,10 @@ set_computed_verified(UpdateSeq now) {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void AllTransitionsWrapper::
 cached_compose(const AllTransitionsWrapper &cache, 
-	       const AllTransitionsWrapper &value,
-	       UpdateSeq now) {
+               const AllTransitionsWrapper &value,
+               UpdateSeq now) {
   _cache = NodeTransitionCache::cached_compose(_cache, cache._cache,
-					       value._cache, now);
+                                               value._cache, now);
   _all_verified = now;
 }
 

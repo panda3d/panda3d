@@ -31,7 +31,7 @@ enum CPPInstanceIdentifierType {
 };
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPInstanceIdentifier
+//       Class : CPPInstanceIdentifier
 // Description : This class is used in parser.y to build up a variable
 //               instance definition.  An instance is something like
 //               'int *&a'; the InstanceIdentifier stores everything
@@ -50,7 +50,7 @@ public:
   void add_array_modifier(CPPExpression *expr);
 
   CPPScope *get_scope(CPPScope *current_scope, CPPScope *global_scope,
-		      CPPPreprocessor *error_sink = NULL) const;
+                      CPPPreprocessor *error_sink = NULL) const;
  
   CPPIdentifier *_ident;
 

@@ -17,7 +17,7 @@
 class EventQueue;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EventHandler
+//       Class : EventHandler
 // Description : A class to monitor events from the C++ side of
 //               things.  It maintains a set of "hooks", function
 //               pointers assigned to event names, and calls the
@@ -46,10 +46,10 @@ PUBLISHED:
 public:
   bool add_hook(const string &event_name, EventFunction *function);
   bool add_hook(const string &event_name, EventCallbackFunction *function,
-		void*);
+                void*);
   bool remove_hook(const string &event_name, EventFunction *function);
   bool remove_hook(const string &event_name, EventCallbackFunction *function,
-		   void*);
+                   void*);
 
   void remove_all_hooks();
 
@@ -77,7 +77,7 @@ public:
   static void init_type() {
     TypedObject::init_type();
     register_type(_type_handle, "EventHandler",
-		  TypedObject::get_class_type());
+                  TypedObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

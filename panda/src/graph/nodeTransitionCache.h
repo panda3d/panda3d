@@ -16,7 +16,7 @@
 #include <map>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : NodeTransitionCache
+//       Class : NodeTransitionCache
 // Description : This represents the cached values of accumulated
 //               NodeTransitions values, associated with a particular
 //               arc.
@@ -71,7 +71,7 @@ public:
 
   static void
   store_to(const NodeTransitionCache *a, NodeRelation *arc, 
-	   NodeTransitions &nt);
+           NodeTransitions &nt);
 
   static NodeTransitionCache *
   c_union(const NodeTransitionCache *a, const NodeTransitionCache *b);
@@ -87,9 +87,9 @@ public:
 
   static NodeTransitionCache *
   cached_compose(const NodeTransitionCache *a, 
-		 const NodeTransitionCache *cache,
-		 const NodeTransitionCache *b,
-		 UpdateSeq now);
+                 const NodeTransitionCache *cache,
+                 const NodeTransitionCache *b,
+                 UpdateSeq now);
 
   static NodeTransitionCache *
   set_computed_verified(const NodeTransitionCache *a, UpdateSeq now);
@@ -109,7 +109,7 @@ public:
   static void init_type() {
     ReferenceCount::init_type();
     register_type(_type_handle, "NodeTransitionCache",
-		  ReferenceCount::get_class_type());
+                  ReferenceCount::get_class_type());
   }
 
 private:

@@ -135,14 +135,14 @@ report_pi() const {
     << "  round UV area: " << yesno(_round_uvs) << "\n";
   if (_round_uvs) {
     cout << "  round UV area to nearest " << _round_unit << " with fuzz "
-	 << _round_fuzz << "\n";
+         << _round_fuzz << "\n";
   }
   cout << "  remap UV's: " << _remap_uv << "\n"
        << "  remap UV's for characters: " << _remap_char_uv << "\n";
 
   if (_color_type != (PNMFileType *)NULL) {
     cout << "  generate image files of type: " 
-	 << _color_type->get_suggested_extension();
+         << _color_type->get_suggested_extension();
     if (_alpha_type != (PNMFileType *)NULL) {
       cout << "," << _alpha_type->get_suggested_extension();
     }
@@ -151,7 +151,7 @@ report_pi() const {
 
   if (_shadow_color_type != (PNMFileType *)NULL) {
     cout << "  generate shadow palette files of type: " 
-	 << _shadow_color_type->get_suggested_extension();
+         << _shadow_color_type->get_suggested_extension();
     if (_shadow_alpha_type != (PNMFileType *)NULL) {
       cout << "," << _shadow_alpha_type->get_suggested_extension();
     }
@@ -194,9 +194,9 @@ report_pi() const {
       cout << "\n";
     }
     cout << "  " << group->get_name() << " (" 
-	 << group->get_dirname_order() << ","
-	 << group->get_dependency_order() << "): "
-	 << group->get_groups() << "\n";
+         << group->get_dirname_order() << ","
+         << group->get_dependency_order() << "): "
+         << group->get_groups() << "\n";
     group->write_image_info(cout, 4);
   }
 
@@ -263,13 +263,13 @@ report_statistics() const {
       complete.make_complete(group->get_groups());
 
       if (complete.size() > 1) {
-	Placements complete_placements;
-	group->get_complete_placements(complete_placements);
-	if (complete_placements.size() != placements.size()) {
-	  cout << "\n" << group->get_name() 
-	       << ", with dependents (" << complete << "):\n";
-	  compute_statistics(cout, 2, complete_placements);
-	}
+        Placements complete_placements;
+        group->get_complete_placements(complete_placements);
+        if (complete_placements.size() != placements.size()) {
+          cout << "\n" << group->get_name() 
+               << ", with dependents (" << complete << "):\n";
+          compute_statistics(cout, 2, complete_placements);
+        }
       }
     }
   }
@@ -307,7 +307,7 @@ read_txa_file(const Filename &txa_filename) {
 
   if (_color_type == (PNMFileType *)NULL) {
     nout << "No valid output image file type available; cannot run.\n"
-	 << "Use :imagetype command in .txa file.\n";
+         << "Use :imagetype command in .txa file.\n";
     exit(1);
   }
 
@@ -329,7 +329,7 @@ read_txa_file(const Filename &txa_filename) {
     for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
       PaletteGroup *group = (*gi).second;
       if (group->set_dependency_order()) {
-	any_changed = true;
+        any_changed = true;
       }
     }
   } while (any_changed);
@@ -604,13 +604,13 @@ read_stale_eggs(bool redo_all) {
   for (ei = _egg_files.begin(); ei != _egg_files.end(); ++ei) {
     EggFile *egg_file = (*ei).second;
     if (!egg_file->has_data() && 
-	(egg_file->is_stale() || redo_all)) {
+        (egg_file->is_stale() || redo_all)) {
       if (!egg_file->read_egg()) {
-	okflag = false;
+        okflag = false;
 
       } else {
-	egg_file->scan_textures();
-	egg_file->choose_placements();
+        egg_file->scan_textures();
+        egg_file->choose_placements();
       }
     }
   }
@@ -635,7 +635,7 @@ write_eggs() {
     if (egg_file->has_data()) {
       egg_file->update_egg();
       if (!egg_file->write_egg()) {
-	okflag = false;
+        okflag = false;
       }
     }
   }
@@ -802,7 +802,7 @@ string_remap(const string &str) {
 ////////////////////////////////////////////////////////////////////
 void Palettizer::
 compute_statistics(ostream &out, int indent_level,
-		   const Palettizer::Placements &placements) const {
+                   const Palettizer::Placements &placements) const {
   TextureMemoryCounter counter;
 
   Placements::const_iterator pi;

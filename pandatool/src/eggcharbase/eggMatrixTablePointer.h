@@ -15,7 +15,7 @@
 #include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggMatrixTablePointer
+//       Class : EggMatrixTablePointer
 // Description : This stores a pointer back to an EggXfmSAnim table
 //               (i.e. an <Xfm$Anim_S$> entry in an egg file),
 //               corresponding to the animation data from a single
@@ -45,7 +45,7 @@ public:
   static void init_type() {
     EggJointPointer::init_type();
     register_type(_type_handle, "EggMatrixTablePointer",
-		  EggJointPointer::get_class_type());
+                  EggJointPointer::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

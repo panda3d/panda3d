@@ -20,7 +20,7 @@
 class PStatCollectorDef;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PStatMonitor
+//       Class : PStatMonitor
 // Description : This is an abstract class that presents the interface
 //               to any number of different front-ends for the stats
 //               monitor.  One of these will be created by the

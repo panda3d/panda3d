@@ -28,7 +28,7 @@ apply_in_place(const AllTransitionsWrapper &trans) {
 ////////////////////////////////////////////////////////////////////
 void AllAttributesWrapper::
 apply_from(const AllAttributesWrapper &other, 
-	   const AllTransitionsWrapper &trans) {
+           const AllTransitionsWrapper &trans) {
   if (trans._cache != (NodeTransitionCache *)NULL) {
     _attrib.apply_from(other._attrib, *trans._cache);
   } else {

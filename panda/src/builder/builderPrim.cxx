@@ -22,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////
 BuilderPrim &BuilderPrim::
 nonindexed_copy(const BuilderPrimTempl<BuilderVertexI> &copy, 
-		const BuilderBucket &bucket) {
+                const BuilderBucket &bucket) {
   clear();
 
   set_type(copy.get_type());
@@ -119,10 +119,10 @@ flatten_vertex_properties() {
 ////////////////////////////////////////////////////////////////////
 void BuilderPrim::
 fill_geom(Geom *geom, const PTA_BuilderV &v_array,
-	  GeomBindType n_attr, const PTA_BuilderN &n_array,
-	  GeomBindType t_attr, const PTA_BuilderTC &t_array,
-	  GeomBindType c_attr, const PTA_BuilderC &c_array,
-	  const BuilderBucket &, int, int, int) {
+          GeomBindType n_attr, const PTA_BuilderN &n_array,
+          GeomBindType t_attr, const PTA_BuilderTC &t_array,
+          GeomBindType c_attr, const PTA_BuilderC &c_array,
+          const BuilderBucket &, int, int, int) {
 
   // WARNING!  This is questionable practice.  We have a
   // PTA_BuilderV etc.; since a BuilderV is just a proxy
@@ -168,11 +168,11 @@ flatten_vertex_properties() {
 ////////////////////////////////////////////////////////////////////
 void BuilderPrimI::
 fill_geom(Geom *geom, const PTA_ushort &v_array,
-	  GeomBindType n_attr, PTA_ushort n_array,
-	  GeomBindType t_attr, PTA_ushort t_array,
-	  GeomBindType c_attr, PTA_ushort c_array,
-	  const BuilderBucket &bucket,
-	  int num_prims, int num_components, int num_verts) {
+          GeomBindType n_attr, PTA_ushort n_array,
+          GeomBindType t_attr, PTA_ushort t_array,
+          GeomBindType c_attr, PTA_ushort c_array,
+          const BuilderBucket &bucket,
+          int num_prims, int num_components, int num_verts) {
   PTA_Vertexf v_data = bucket.get_coords();
   PTA_Normalf n_data = bucket.get_normals();
   PTA_TexCoordf t_data = bucket.get_texcoords();
@@ -217,7 +217,7 @@ fill_geom(Geom *geom, const PTA_ushort &v_array,
     if (memcmp(v_array, t_array, sizeof(ushort) * t_len)==0) {
       t_array = v_array;
     } else if (t_len <= n_len &&
-	       memcmp(n_array, t_array, sizeof(ushort) * t_len)==0) {
+               memcmp(n_array, t_array, sizeof(ushort) * t_len)==0) {
       t_array = n_array;
     }
   }
@@ -225,10 +225,10 @@ fill_geom(Geom *geom, const PTA_ushort &v_array,
     if (memcmp(v_array, c_array, sizeof(ushort) * c_len)==0) {
       c_array = v_array;
     } else if (c_len <= n_len &&
-	       memcmp(n_array, c_array, sizeof(ushort) * c_len)==0) {
+               memcmp(n_array, c_array, sizeof(ushort) * c_len)==0) {
       c_array = n_array;
     } else if (c_len <= t_len &&
-	       memcmp(t_array, c_array, sizeof(ushort) * c_len)==0) {
+               memcmp(t_array, c_array, sizeof(ushort) * c_len)==0) {
       c_array = t_array;
     }
   }

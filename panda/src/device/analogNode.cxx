@@ -88,12 +88,12 @@ transmit_data(NodeAttributes &data) {
     _analog->lock();
     for (int i = 0; i < max_outputs; i++) {
       if (_outputs[i]._index >= 0 && 
-	  _analog->is_control_known(_outputs[i]._index)) {
-	if (_outputs[i]._flip) {
-	  out[i] = -_analog->get_control_state(_outputs[i]._index);
-	} else {
-	  out[i] = _analog->get_control_state(_outputs[i]._index);
-	}
+          _analog->is_control_known(_outputs[i]._index)) {
+        if (_outputs[i]._flip) {
+          out[i] = -_analog->get_control_state(_outputs[i]._index);
+        } else {
+          out[i] = _analog->get_control_state(_outputs[i]._index);
+        }
       }
     }
     _analog->unlock();
@@ -112,10 +112,10 @@ void AnalogNode::
 init_type() {
   DataNode::init_type();
   register_type(_type_handle, "AnalogNode",
-		DataNode::get_class_type());
+                DataNode::get_class_type());
 
   Vec3DataTransition::init_type();
   register_data_transition(_xyz_type, "XYZ",
-			   Vec3DataTransition::get_class_type());
+                           Vec3DataTransition::get_class_type());
 }
 

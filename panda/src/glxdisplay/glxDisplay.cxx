@@ -46,7 +46,7 @@ glxDisplay(GraphicsPipe *pipe, const string &x_specifier) {
 //     Function: glxDisplay::find_window
 //       Access: Public
 //  Description: Find the window that has the xwindow "win" in the
-//		 window list for the pipe (if it exists)
+//               window list for the pipe (if it exists)
 ////////////////////////////////////////////////////////////////////
 glxGraphicsWindow *glxDisplay::
 find_window(Window win) const {

@@ -14,7 +14,7 @@
 
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : EggCoordinateSystem
+//       Class : EggCoordinateSystem
 // Description : The <CoordinateSystem> entry at the top of an egg
 //               file.  Don't confuse this with the enum
 //               EggData::CoordinateSystem, which is the value

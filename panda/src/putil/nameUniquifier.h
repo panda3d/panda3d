@@ -12,7 +12,7 @@
 #include <set>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : NameUniquifier
+//       Class : NameUniquifier
 // Description : A handy class for converting a list of arbitrary
 //               names (strings) so that each name is guaranteed to be
 //               unique in the list.  Useful for writing egg files
@@ -22,7 +22,7 @@
 class EXPCL_PANDA NameUniquifier {
 public:
   NameUniquifier(const string &separator = string(),
-		 const string &empty = string());
+                 const string &empty = string());
   ~NameUniquifier();
 
   INLINE string add_name(const string &name);

@@ -9,7 +9,7 @@
 #include <pandabase.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : IndirectCompareTo
+//       Class : IndirectCompareTo
 // Description : An STL function object class, this is intended to be
 //               used on any ordered collection of pointers to classes
 //               that contain a compare_to() method.  It defines the

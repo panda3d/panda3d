@@ -49,7 +49,7 @@ PStatCollector CullTraverser::_cull_bins_btf_pcollector("Cull:Bins:BTF");
 ////////////////////////////////////////////////////////////////////
 CullTraverser::
 CullTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type,
-	      const ArcChain &arc_chain) :
+              const ArcChain &arc_chain) :
   RenderTraverser(gsg, graph_type, arc_chain)
 {
   _nested_count = 0;
@@ -178,8 +178,8 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
 traverse(Node *root, 
-	 const AllAttributesWrapper &initial_state,
-	 const AllTransitionsWrapper &net_trans) {
+         const AllAttributesWrapper &initial_state,
+         const AllTransitionsWrapper &net_trans) {
   // Statistics
   PStatTimer timer(_cull_pcollector);
 
@@ -229,7 +229,7 @@ traverse(Node *root,
   }
 
   fc_traverse(_arc_chain, root, rel_from_camera, *this,
-	      NullAttributeWrapper(), level_state, _gsg, _graph_type);
+              NullAttributeWrapper(), level_state, _gsg, _graph_type);
 
   if (is_initial) {
     draw();
@@ -284,27 +284,27 @@ setup_initial_bins() {
 
     if (words.size() != 3) {
       cull_cat.error()
-	<< "Invalid cull-bin definition: " << def << "\n"
-	<< "Definition should be three words: bin_name sort type\n";
+        << "Invalid cull-bin definition: " << def << "\n"
+        << "Definition should be three words: bin_name sort type\n";
     } else {
       int sort;
       if (!string_to_int(words[1], sort)) {
-	cull_cat.error()
-	  << "Invalid cull-bin definition: " << def << "\n"
-	  << "Sort token " << words[1] << " is not an integer.\n";
+        cull_cat.error()
+          << "Invalid cull-bin definition: " << def << "\n"
+          << "Sort token " << words[1] << " is not an integer.\n";
 
       } else {
-	TypeHandle type = GeomBin::parse_bin_type(words[2]);
-	if (type == TypeHandle::none()) {
-	  cull_cat.error()
-	    << "Invalid cull-bin definition: " << def << "\n"
-	    << "Bin type " << words[2] << " is not known.\n";
-	} else {
-	  PT(GeomBin) bin = GeomBin::make_bin(type, words[0]);
-	  nassertv(bin != (GeomBin *)NULL);
-	  bin->set_sort(sort);
-	  bin->set_traverser(this);
-	}
+        TypeHandle type = GeomBin::parse_bin_type(words[2]);
+        if (type == TypeHandle::none()) {
+          cull_cat.error()
+            << "Invalid cull-bin definition: " << def << "\n"
+            << "Bin type " << words[2] << " is not known.\n";
+        } else {
+          PT(GeomBin) bin = GeomBin::make_bin(type, words[0]);
+          nassertv(bin != (GeomBin *)NULL);
+          bin->set_sort(sort);
+          bin->set_traverser(this);
+        }
       }
     }
   }
@@ -328,7 +328,7 @@ draw() {
     for (si = _states.begin(); si != _states.end(); ++si) {
       CullState *cs = (*si);
       if (!cs->is_empty()) {
-	num_states++;
+        num_states++;
       }
     }
 
@@ -383,12 +383,12 @@ draw() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
     if (cull_cat.is_debug()) {
       cull_cat.debug()
-	<< "Drawing " << _sub_bins.size() << " bins.\n";
+        << "Drawing " << _sub_bins.size() << " bins.\n";
     }
     for (sbi = _sub_bins.begin(); sbi != _sub_bins.end(); ++sbi) {
       GeomBin *bin = (*sbi).second;
       if (bin->is_active()) {
-	bin->draw(this);
+        bin->draw(this);
       }
     }
   }
@@ -433,7 +433,7 @@ clean_out_old_states() {
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
 add_geom_node(GeomNode *node, const AllTransitionsWrapper &trans,
-	      const CullLevelState &level_state) {
+              const CullLevelState &level_state) {
   // Using the PStatTimer here to start and stop the collector
   // implicitly gives VC++ a headache and an internal compiler error,
   // but explicitly starting and stopping it is ok.
@@ -459,7 +459,7 @@ add_geom_node(GeomNode *node, const AllTransitionsWrapper &trans,
   if (cs == (CullState *)NULL) {
     if (cull_cat.is_spam()) {
       cull_cat.spam()
-	<< "Finding a new bin state\n";
+        << "Finding a new bin state\n";
     }
 
     // The node didn't have a previously-associated CullState that we
@@ -485,7 +485,7 @@ add_geom_node(GeomNode *node, const AllTransitionsWrapper &trans,
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
 add_direct_node(Node *node, const AllTransitionsWrapper &trans,
-		const CullLevelState &level_state) {
+                const CullLevelState &level_state) {
   PStatTimer timer(_cull_direct_node_pcollector);
 
   nassertv(node != (Node *)NULL);
@@ -521,8 +521,8 @@ add_direct_node(Node *node, const AllTransitionsWrapper &trans,
 ////////////////////////////////////////////////////////////////////
 bool CullTraverser::
 forward_arc(NodeRelation *arc, NullTransitionWrapper &,
-	    NullAttributeWrapper &, NullAttributeWrapper &,
-	    CullLevelState &level_state) {
+            NullAttributeWrapper &, NullAttributeWrapper &,
+            CullLevelState &level_state) {
   nassertr(level_state._lookup != (CullStateLookup *)NULL, false);
 
   if (arc->has_transition(PruneTransition::get_class_type())) {
@@ -585,7 +585,7 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
 
   } else if (support_subrender == SD_hide) {
     if ((node_has_sub_render || arc_num_sub_render != 0) &&
-	!arc->has_transition(DecalTransition::get_class_type())) {
+        !arc->has_transition(DecalTransition::get_class_type())) {
       return false;
     }
     node_has_sub_render = false;
@@ -629,8 +629,8 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
     // In any of these cases, we'll need to determine the net
     // transition to this node.
     wrt_subtree(arc, level_state._lookup->get_top_subtree(), 
-		level_state._as_of, _now,
-		trans, _graph_type);
+                level_state._as_of, _now,
+                trans, _graph_type);
   }
 
   if (arc_num_sub_render != 0 || node_has_sub_render) {
@@ -643,9 +643,9 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
       AllTransitionsWrapper new_trans;
 
       if (!arc->sub_render_trans(attrib, new_trans, this) ||
-	  !node->sub_render(attrib, new_trans, this)) {
-	mark_backward_arc(arc);
-	return false;
+          !node->sub_render(attrib, new_trans, this)) {
+        mark_backward_arc(arc);
+        return false;
       }
 
       trans.compose_in_place(new_trans);
@@ -667,14 +667,14 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
     level_state._lookup = add_instance(arc, trans, node, level_state);
     if (cull_cat.is_spam()) {
       cull_cat.spam()
-	<< "Added " << *node << " as instance.\n";
+        << "Added " << *node << " as instance.\n";
     }
 
     // It might also be an instanced GeomNode.
     if (is_geom) {
       if (cull_cat.is_spam()) {
-	cull_cat.spam()
-	  << "Added " << *node << "\n";
+        cull_cat.spam()
+          << "Added " << *node << "\n";
       }
       add_geom_node(DCAST(GeomNode, node), AllTransitionsWrapper(), level_state);
     }
@@ -682,7 +682,7 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
   } else if (is_geom) {
     if (cull_cat.is_spam()) {
       cull_cat.spam()
-	<< "Added " << *node << "\n";
+        << "Added " << *node << "\n";
     }
     add_geom_node(DCAST(GeomNode, node), trans, level_state);
   }

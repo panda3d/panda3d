@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LVecBase4
+//       Class : LVecBase4
 // Description : This is the base class for all three-component
 //               vectors and points.
 ////////////////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ PUBLISHED:
 
   INLINE_LINMATH int compare_to(const FLOATNAME(LVecBase4) &other) const;
   INLINE_LINMATH int compare_to(const FLOATNAME(LVecBase4) &other,
-				FLOATTYPE threshold) const;
+                                FLOATTYPE threshold) const;
   
   INLINE_LINMATH FLOATNAME(LVecBase4) operator - () const;
 
@@ -85,7 +85,7 @@ PUBLISHED:
   INLINE_LINMATH void operator /= (FLOATTYPE scalar);
 
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase4) &other, 
-			   FLOATTYPE threshold) const;
+                           FLOATTYPE threshold) const;
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase4) &other) const;
 
   INLINE_LINMATH void output(ostream &out) const;
@@ -93,12 +93,12 @@ PUBLISHED:
 public:
   INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hash) const;
   INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hash,
-				    FLOATTYPE threshold) const;
+                                    FLOATTYPE threshold) const;
 
 public:
   union {
-	FLOATTYPE data[4];
-	struct {FLOATTYPE _0, _1, _2, _3;} v;
+        FLOATTYPE data[4];
+        struct {FLOATTYPE _0, _1, _2, _3;} v;
   } _v;
 
 private:

@@ -13,7 +13,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggXfmAnimData
+//       Class : EggXfmAnimData
 // Description : Corresponding to an <Xfm$Anim> entry, this stores a
 //               two-dimensional table with up to nine columns, one
 //               for each component of a transformation.  This is an
@@ -23,7 +23,7 @@
 class EXPCL_PANDAEGG EggXfmAnimData : public EggAnimData {
 public:
   INLINE EggXfmAnimData(const string &name = "",
-			CoordinateSystem cs = CS_default);
+                        CoordinateSystem cs = CS_default);
   EggXfmAnimData(const EggXfmSAnim &convert_from);
 
   INLINE EggXfmAnimData(const EggXfmAnimData &copy);
@@ -52,7 +52,7 @@ public:
 
 protected:
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
-			   CoordinateSystem to_cs);
+                           CoordinateSystem to_cs);
   virtual void r_mark_coordsys(CoordinateSystem cs);
 
 private:

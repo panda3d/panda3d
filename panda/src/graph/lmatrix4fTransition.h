@@ -14,7 +14,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LMatrix4fTransition
+//       Class : LMatrix4fTransition
 // Description : This is just an instantation of MatrixTransition
 //               using LMatrix4f, the most common transform matrix
 //               type.

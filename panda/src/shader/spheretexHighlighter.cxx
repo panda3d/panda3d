@@ -75,7 +75,7 @@ set_priority(int priority)
 ///////////////////////////////////////////////////////////////////
 void SpheretexHighlighter::
 pre_apply(Node *node, const AllAttributesWrapper &init_state,
-	  const AllTransitionsWrapper &, GraphicsStateGuardian *gsg)
+          const AllTransitionsWrapper &, GraphicsStateGuardian *gsg)
 {
   if (get_num_frusta() == 0) {
     shader_cat.error()
@@ -140,20 +140,20 @@ pre_apply(Node *node, const AllAttributesWrapper &init_state,
       color[0] = color[1] = color[2] = 0;
 
       if (XX_ZZ <= 1.) { // Are we on the unit sphere?
-	norm[1] = -(float)sqrt(1. - XX_ZZ); // This yields a unit vector
-	grazing = dot(norm, light_vec);
-	if (grazing > 0.) { // Does any light actually reflect off this point?
+        norm[1] = -(float)sqrt(1. - XX_ZZ); // This yields a unit vector
+        grazing = dot(norm, light_vec);
+        if (grazing > 0.) { // Does any light actually reflect off this point?
           S = norm;
           S *= 2. * grazing;
           S = S - light_vec; // the reflection vector
           intensity = -dot(S, norm_model_pos); // approximate R . V
-	  // If, relative to the viewer, the normal doesn't point towards the
-	  // light (even slightly), no reflection will be seen
-	  if (intensity > 0.) {
-	    intensity = pow(intensity, shininess);
-	    color[0] = color[1] = color[2] = (uchar)(intensity * 255.);  
-	  }
-	}
+          // If, relative to the viewer, the normal doesn't point towards the
+          // light (even slightly), no reflection will be seen
+          if (intensity > 0.) {
+            intensity = pow(intensity, shininess);
+            color[0] = color[1] = color[2] = (uchar)(intensity * 255.);  
+          }
+        }
       }
       texture->_pbuffer->set_uchar_rgb_texel(color, x, y, _size);
       texture->unprepare();

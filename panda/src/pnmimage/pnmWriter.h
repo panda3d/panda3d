@@ -11,7 +11,7 @@
 #include "pnmImageHeader.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PNMWriter
+//       Class : PNMWriter
 // Description : This is an abstract base class that defines the
 //               interface for writing image files of various types.
 //               Any particular image file type that can be written

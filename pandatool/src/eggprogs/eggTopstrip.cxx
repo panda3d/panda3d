@@ -96,7 +96,7 @@ run() {
     int channel_egg_index = _collection->add_egg(channel_egg);
     if (channel_egg_index < 0) {
       nout << _channel_filename
-	   << " does not contain a character model or animation channel.\n";
+           << " does not contain a character model or animation channel.\n";
       exit(1);
     }
 
@@ -130,16 +130,16 @@ run() {
       // The default top joint name is the alphabetically first joint
       // in the top level.
       if (root_joint->get_num_children() == 0) {
-	nout << "Character " << from_char->get_name() << " has no joints.\n";
-	exit(1);
+        nout << "Character " << from_char->get_name() << " has no joints.\n";
+        exit(1);
       }
       top_joint = root_joint->get_child(0);
     } else {
       top_joint = from_char->find_joint(_top_joint_name);
       if (top_joint == (EggJointData *)NULL) {
-	nout << "Character " << from_char->get_name()
-	     << " has no joint named " << _top_joint_name << "\n";
-	exit(1);
+        nout << "Character " << from_char->get_name()
+             << " has no joint named " << _top_joint_name << "\n";
+        exit(1);
       }
     }
 
@@ -156,8 +156,8 @@ run() {
     for (int m = 0; m < num_models; m++) {
       EggNode *node = char_data->get_model_root(m);
       if (!node->is_of_type(EggTable::get_class_type())) {
-	strip_anim_vertices(node, char_data->get_model_index(m),
-			    from_model, top_joint);
+        strip_anim_vertices(node, char_data->get_model_index(m),
+                            from_model, top_joint);
       }
     }
   }
@@ -224,9 +224,9 @@ strip_anim(EggJointData *joint_data, int from_model, EggJointData *top_joint) {
 
     if (joint_data->has_model(i)) {
       if (!top_joint->has_model(model)) {
-	nout << "Warning: Joint " << top_joint->get_name() 
-	     << " is not defined in all models.\n";
-	return;
+        nout << "Warning: Joint " << top_joint->get_name() 
+             << " is not defined in all models.\n";
+        return;
       }
 
       int num_into_frames = joint_data->get_num_frames(i);
@@ -244,19 +244,19 @@ strip_anim(EggJointData *joint_data, int from_model, EggJointData *top_joint) {
       
       int f;
       for (f = 0; f < num_frames; f++) {
-	LMatrix4d into = joint_data->get_frame(i, f % num_into_frames);
-	LMatrix4d from = top_joint->get_net_frame(model, f % num_from_frames);
-	
-	adjust_transform(from);
-	
-	if (!joint->add_rebuild_frame(into * from)) {
-	  nout <<
-	    "Cannot apply multiple frames of animation to a model file.\n"
-	    "In general, -r cannot be used when a model file is being "
-	    "adjusted, unless the named source is a one-frame animation "
-	    "file, or another model file.\n";
-	  exit(1);
-	}
+        LMatrix4d into = joint_data->get_frame(i, f % num_into_frames);
+        LMatrix4d from = top_joint->get_net_frame(model, f % num_from_frames);
+
+        adjust_transform(from);
+
+        if (!joint->add_rebuild_frame(into * from)) {
+          nout <<
+            "Cannot apply multiple frames of animation to a model file.\n"
+            "In general, -r cannot be used when a model file is being "
+            "adjusted, unless the named source is a one-frame animation "
+            "file, or another model file.\n";
+          exit(1);
+        }
       }
     }
   }
@@ -270,11 +270,11 @@ strip_anim(EggJointData *joint_data, int from_model, EggJointData *top_joint) {
 ////////////////////////////////////////////////////////////////////
 void EggTopstrip::
 strip_anim_vertices(EggNode *egg_node, int into_model, int from_model, 
-		    EggJointData *top_joint) {
+                    EggJointData *top_joint) {
   int model = (from_model < 0) ? into_model : from_model;
   if (!top_joint->has_model(model)) {
     nout << "Warning: Joint " << top_joint->get_name() 
-	 << " is not defined in all models.\n";
+         << " is not defined in all models.\n";
     return;
   }
 
@@ -308,37 +308,37 @@ adjust_transform(LMatrix4d &mat) const {
       LVecBase3d new_translate(0.0, 0.0, 0.0);
 
       for (size_t i = 0; i < _transform_channels.size(); i++) {
-	switch (_transform_channels[i]) {
-	case 'i':
-	  new_scale[0] = scale[0];
-	  break;
-	case 'j':
-	  new_scale[1] = scale[1];
-	  break;
-	case 'k':
-	  new_scale[2] = scale[2];
-	  break;
+        switch (_transform_channels[i]) {
+        case 'i':
+          new_scale[0] = scale[0];
+          break;
+        case 'j':
+          new_scale[1] = scale[1];
+          break;
+        case 'k':
+          new_scale[2] = scale[2];
+          break;
 
-	case 'h':
-	  new_hpr[0] = hpr[0];
-	  break;
-	case 'p':
-	  new_hpr[1] = hpr[1];
-	  break;
-	case 'r':
-	  new_hpr[2] = hpr[2];
-	  break;
+        case 'h':
+          new_hpr[0] = hpr[0];
+          break;
+        case 'p':
+          new_hpr[1] = hpr[1];
+          break;
+        case 'r':
+          new_hpr[2] = hpr[2];
+          break;
 
-	case 'x':
-	  new_translate[0] = translate[0];
-	  break;
-	case 'y':
-	  new_translate[1] = translate[1];
-	  break;
-	case 'z':
-	  new_translate[2] = translate[2];
-	  break;
-	}
+        case 'x':
+          new_translate[0] = translate[0];
+          break;
+        case 'y':
+          new_translate[1] = translate[1];
+          break;
+        case 'z':
+          new_translate[2] = translate[2];
+          break;
+        }
       }
 
       compose_matrix(mat, new_scale, new_hpr, new_translate, _coordinate_system);

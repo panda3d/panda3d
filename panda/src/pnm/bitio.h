@@ -15,8 +15,11 @@
  * without express or implied warranty.
  *
  * $Log$
- * Revision 1.1  2000/10/04 01:14:42  drose
- * Initial revision
+ * Revision 1.2  2001/05/25 15:59:19  drose
+ * remove tab characters
+ *
+ * Revision 1.1.1.1  2000/10/04 01:14:42  drose
+ *
  *
  * Revision 1.4  1992/11/24  19:37:02  dws
  * Added copyright
@@ -39,7 +42,7 @@
 
 #include "pbmplus.h"
 
-typedef struct bitstream	*BITSTREAM;
+typedef struct bitstream        *BITSTREAM;
 
 /*
  * pm_bitinit() - allocate and return a BITSTREAM for the given FILE*.

@@ -66,7 +66,7 @@ public:
   static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter* manager, Datagram &me);  
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
   static TypedWritable *make_CollisionNode(const FactoryParams &params);
 
@@ -80,7 +80,7 @@ public:
   static void init_type(void) {
     NamedNode::init_type();
     register_type(_type_handle, "CollisionNode",
-		  NamedNode::get_class_type());
+                  NamedNode::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

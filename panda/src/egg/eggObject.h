@@ -15,7 +15,7 @@ class ostream;
 #endif
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggObject
+//       Class : EggObject
 // Description : The highest-level base class in the egg directory.
 //               (Almost) all things egg inherit from this.
 ////////////////////////////////////////////////////////////////////
@@ -34,7 +34,7 @@ public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "EggObject",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

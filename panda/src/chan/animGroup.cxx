@@ -215,7 +215,7 @@ complete_pointers(vector_typedWritable &plist, BamReader*)
     if (plist[i] == TypedWritable::Null)
     {
       chan_cat->warning() << get_type().get_name() 
-			  << " Ignoring null child" << endl;
+                          << " Ignoring null child" << endl;
     }
     else
     {

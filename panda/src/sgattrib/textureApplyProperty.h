@@ -12,7 +12,7 @@ class Datagram;
 class DatagramIterator;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TextureApplyProperty
+//       Class : TextureApplyProperty
 // Description : Defines the way texture colors modify existing
 //               geometry colors.
 ////////////////////////////////////////////////////////////////////

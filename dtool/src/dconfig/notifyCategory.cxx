@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////////////
 NotifyCategory::
 NotifyCategory(const string &fullname, const string &basename, 
-	       NotifyCategory *parent) : 
+               NotifyCategory *parent) : 
   _fullname(fullname), 
   _basename(basename), 
   _parent(parent)
@@ -49,8 +49,8 @@ NotifyCategory(const string &fullname, const string &basename,
       _severity = Notify::string_severity(severity_name);
       
       if (_severity == NS_unspecified) {
-	nout << "Invalid severity name for " << config_name << ": "
-	     << severity_name << "\n";
+        nout << "Invalid severity name for " << config_name << ": "
+             << severity_name << "\n";
       }
     }
   }
@@ -86,19 +86,19 @@ out(NotifySeverity severity, bool prefix) const {
   if (is_on(severity)) {
     if (prefix) {
       if (get_notify_timestamp()) {
-	// Format a timestamp to include as a prefix as well.
-	time_t now = time(NULL);
-	struct tm *ptm = localtime(&now);
-	
-	char buffer[128];
-	strftime(buffer, 128, ":%m-%d-%Y %H:%M:%S ", ptm);
-	nout << buffer;
+        // Format a timestamp to include as a prefix as well.
+        time_t now = time(NULL);
+        struct tm *ptm = localtime(&now);
+
+        char buffer[128];
+        strftime(buffer, 128, ":%m-%d-%Y %H:%M:%S ", ptm);
+        nout << buffer;
       }
 
       if (severity == NS_info) {
-	return nout << *this << ": ";
+        return nout << *this << ": ";
       } else {
-	return nout << *this << "(" << severity << "): ";
+        return nout << *this << "(" << severity << "): ";
       }
     } else {
       return nout;

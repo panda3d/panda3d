@@ -17,8 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 CPPExtensionType::
 CPPExtensionType(CPPExtensionType::Type type, 
-		 CPPIdentifier *ident, CPPScope *current_scope,
-		 const CPPFile &file) :
+                 CPPIdentifier *ident, CPPScope *current_scope,
+                 const CPPFile &file) :
   CPPType(file),
   _type(type), _ident(ident)
 {
@@ -100,7 +100,7 @@ is_tbd() const {
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPExtensionType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
-		CPPScope *current_scope, CPPScope *global_scope) {
+                CPPScope *current_scope, CPPScope *global_scope) {
   SubstDecl::const_iterator si = subst.find(this);
   if (si != subst.end()) {
     return (*si).second;

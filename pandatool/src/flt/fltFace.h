@@ -11,7 +11,7 @@
 #include "fltGeometry.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltFace
+//       Class : FltFace
 // Description : A single face bead, e.g. a polygon.
 ////////////////////////////////////////////////////////////////////
 class FltFace : public FltGeometry {
@@ -34,7 +34,7 @@ public:
   static void init_type() {
     FltGeometry::init_type();
     register_type(_type_handle, "FltFace",
-		  FltGeometry::get_class_type());
+                  FltGeometry::get_class_type());
   }
 
 private:

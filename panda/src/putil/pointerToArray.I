@@ -221,7 +221,7 @@ INLINE PointerToArray<Element>::iterator PointerToArray<Element>::
 insert(iterator position, const Element &x) const {
   nassertr(_ptr != NULL, position);
   nassertr(position >= _ptr->begin() &&
-	   position <= _ptr->end(), position);
+           position <= _ptr->end(), position);
   return _ptr->insert(position, x);
 }
 
@@ -235,7 +235,7 @@ INLINE void PointerToArray<Element>::
 insert(iterator position, size_type n, const Element &x) const {
   nassertv(_ptr != NULL);
   nassertv(position >= _ptr->begin() &&
-	   position <= _ptr->end());
+           position <= _ptr->end());
   _ptr->insert(position, n, x);
 }
 
@@ -251,7 +251,7 @@ erase(iterator position) const {
     ((PointerToArray<Element> *)this)->reassign(new RefCountObj<vector<Element> >);
   }
   nassertv(position >= _ptr->begin() &&
-	   position <= _ptr->end());
+           position <= _ptr->end());
   _ptr->erase(position);
 }
 

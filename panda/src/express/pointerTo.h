@@ -65,7 +65,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PointerToBase
+//       Class : PointerToBase
 // Description : This is the base class for PointerTo and
 //               ConstPointerTo.  Don't try to use it directly; use
 //               either derived class instead.
@@ -125,7 +125,7 @@ INLINE ostream &operator <<(ostream &out, const PointerToBase<T> &pointer) {
 }
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PointerTo
+//       Class : PointerTo
 // Description : PointerTo is a template class which implements a
 //               smart pointer to an object derived from
 //               ReferenceCount.
@@ -170,7 +170,7 @@ PUBLISHED:
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ConstPointerTo
+//       Class : ConstPointerTo
 // Description : A ConstPointerTo is similar to a PointerTo, except it
 //               keeps a const pointer to the thing.
 //

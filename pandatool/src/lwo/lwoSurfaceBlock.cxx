@@ -92,7 +92,7 @@ make_new_chunk(IffInputFile *in, IffId id) {
     return new LwoSurfaceBlockWrap;
 
   } else if (id == IffId("WRPH") ||
-	     id == IffId("WRPW")) {
+             id == IffId("WRPW")) {
     return new LwoSurfaceBlockRepeat;
 
   } else if (id == IffId("VMAP")) {

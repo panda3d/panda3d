@@ -31,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void SomethingToEggConverter::
 set_texture_path_convert(PathConvert tpc,
-			 const Filename &tpc_directory) {
+                         const Filename &tpc_directory) {
   _tpc = tpc;
   _tpc_directory = tpc_directory;
 }
@@ -47,7 +47,7 @@ set_texture_path_convert(PathConvert tpc,
 ////////////////////////////////////////////////////////////////////
 INLINE void SomethingToEggConverter::
 set_model_path_convert(PathConvert mpc,
-		       const Filename &mpc_directory) {
+                       const Filename &mpc_directory) {
   _mpc = mpc;
   _mpc_directory = mpc_directory;
 }
@@ -115,7 +115,7 @@ get_egg_data() {
 ////////////////////////////////////////////////////////////////////
 bool SomethingToEggConverter::
 handle_external_reference(EggGroupNode *egg_parent,
-			  const Filename &orig_filename) {
+                          const Filename &orig_filename) {
   return handle_external_reference(egg_parent, orig_filename, get_model_path());
 }
 
@@ -141,7 +141,7 @@ convert_texture_path(const Filename &orig_filename) {
 ////////////////////////////////////////////////////////////////////
 INLINE Filename SomethingToEggConverter::
 convert_texture_path(const Filename &orig_filename,
-		     const DSearchPath &searchpath) {
+                     const DSearchPath &searchpath) {
   return convert_path(orig_filename, searchpath, _tpc_directory, _tpc);
 }
 
@@ -166,6 +166,6 @@ convert_model_path(const Filename &orig_filename) {
 ////////////////////////////////////////////////////////////////////
 INLINE Filename SomethingToEggConverter::
 convert_model_path(const Filename &orig_filename,
-		   const DSearchPath &searchpath) {
+                   const DSearchPath &searchpath) {
   return convert_path(orig_filename, searchpath, _mpc_directory, _mpc);
 }

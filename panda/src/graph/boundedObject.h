@@ -14,7 +14,7 @@
 #include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : BoundedObject
+//       Class : BoundedObject
 // Description : This is any object (particularly in a scene graph)
 //               that may have a bounding volume established for it.
 //               The user may set a fixed bounding volume, or s/he may

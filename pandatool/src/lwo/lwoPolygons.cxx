@@ -54,16 +54,16 @@ read_iff(IffInputFile *in, size_t stop_at) {
     while (lin->get_bytes_read() < stop_at && !lin->is_eof()) {
       int nf = lin->get_be_uint16();
       int num_vertices = nf & PF_numverts_mask;
-	
+
       PT(Polygon) poly = new Polygon;
       poly->_flags = nf & ~PF_numverts_mask;
       poly->_surface_index = -1;
-	
+
       for (int i = 0; i < num_vertices; i++) {
-	int vindex = lin->get_vx();
-	poly->_vertices.push_back(vindex);
+        int vindex = lin->get_vx();
+        poly->_vertices.push_back(vindex);
       }
-	
+
       _polygons.push_back(poly);
     }
 
@@ -75,27 +75,27 @@ read_iff(IffInputFile *in, size_t stop_at) {
     int num_decals = 0;
     while (lin->get_bytes_read() < stop_at && !lin->is_eof()) {
       int num_vertices = lin->get_be_uint16();
-	
+
       PT(Polygon) poly = new Polygon;
       poly->_flags = 0;
-	
+
       for (int i = 0; i < num_vertices; i++) {
-	int vindex = lin->get_vx();
-	poly->_vertices.push_back(vindex);
+        int vindex = lin->get_vx();
+        poly->_vertices.push_back(vindex);
       }
 
       int surface = lin->get_be_int16();
 
       if (num_decals > 0) {
-	// This is a decal polygon of a previous polygon.
-	num_decals--;
-	poly->_flags |= PF_decal;
+        // This is a decal polygon of a previous polygon.
+        num_decals--;
+        poly->_flags |= PF_decal;
 
       } else {
-	if (surface < 0) {
-	  num_decals = lin->get_be_int16();
-	  surface = -surface;
-	}
+        if (surface < 0) {
+          num_decals = lin->get_be_int16();
+          surface = -surface;
+        }
       }
 
       // The surface index is stored +1 to allow signedness to be

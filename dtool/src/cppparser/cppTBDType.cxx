@@ -95,7 +95,7 @@ get_fully_scoped_name() const {
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPTBDType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
-		CPPScope *current_scope, CPPScope *global_scope) {
+                CPPScope *current_scope, CPPScope *global_scope) {
   CPPDeclaration *top = 
     CPPDeclaration::substitute_decl(subst, current_scope, global_scope);
   if (top != this) {

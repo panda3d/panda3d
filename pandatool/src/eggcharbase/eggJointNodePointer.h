@@ -14,7 +14,7 @@
 #include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggJointNodePointer
+//       Class : EggJointNodePointer
 // Description : This stores a pointer back to a <Joint> node.
 ////////////////////////////////////////////////////////////////////
 class EggJointNodePointer : public EggJointPointer {
@@ -38,7 +38,7 @@ public:
   static void init_type() {
     EggJointPointer::init_type();
     register_type(_type_handle, "EggJointNodePointer",
-		  EggJointPointer::get_class_type());
+                  EggJointPointer::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

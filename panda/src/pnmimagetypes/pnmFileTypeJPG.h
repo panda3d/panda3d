@@ -18,7 +18,7 @@ extern "C" {
 }
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PNMFileTypeJPG
+//       Class : PNMFileTypeJPG
 // Description : For reading and writing Jpeg files.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PNMFileTypeJPG : public PNMFileType {
@@ -35,7 +35,7 @@ public:
   virtual bool matches_magic_number(const string &magic_number) const;
 
   virtual PNMReader *make_reader(FILE *file, bool owns_file = true,
-				 const string &magic_number = string());
+                                 const string &magic_number = string());
   virtual PNMWriter *make_writer(FILE *file, bool owns_file = true);
 
 public:
@@ -54,7 +54,7 @@ public:
     };
     typedef struct my_error_mgr *_my_error_ptr;
     struct my_error_mgr _jerr;
-    unsigned long	pos;
+    unsigned long       pos;
     
     unsigned long offBits;
     
@@ -62,9 +62,9 @@ public:
     int             indexed;
     int             classv;
     
-    pixval R[256];	/* reds */
-    pixval G[256];	/* greens */
-    pixval B[256];	/* blues */
+    pixval R[256];      /* reds */
+    pixval G[256];      /* greens */
+    pixval B[256];      /* blues */
   };
 
   class Writer : public PNMWriter {

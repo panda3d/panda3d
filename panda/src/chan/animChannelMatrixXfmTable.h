@@ -74,7 +74,7 @@ public:
   static void init_type() {
     AnimChannelMatrix::init_type();
     register_type(_type_handle, "AnimChannelMatrixXfmTable",
-		  AnimChannelMatrix::get_class_type());
+                  AnimChannelMatrix::get_class_type());
   }
 
 private:

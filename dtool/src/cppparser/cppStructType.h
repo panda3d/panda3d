@@ -18,15 +18,15 @@ class CPPScope;
 class CPPTypeProxy;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPStructType
+//       Class : CPPStructType
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPStructType : public CPPExtensionType {
 public:
   CPPStructType(Type type, CPPIdentifier *ident,
-		CPPScope *current_scope,
-		CPPScope *scope,
-		const CPPFile &file);
+                CPPScope *current_scope,
+                CPPScope *scope,
+                const CPPFile &file);
   CPPStructType(const CPPStructType &copy);
   void operator = (const CPPStructType &copy);
 
@@ -43,15 +43,15 @@ public:
 
   virtual CPPDeclaration *
   instantiate(const CPPTemplateParameterList *actual_params,
-	      CPPScope *current_scope, CPPScope *global_scope,
-	      CPPPreprocessor *error_sink = NULL) const;
+              CPPScope *current_scope, CPPScope *global_scope,
+              CPPPreprocessor *error_sink = NULL) const;
 
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
-					  CPPScope *current_scope,
-					  CPPScope *global_scope);
+                                          CPPScope *current_scope,
+                                          CPPScope *global_scope);
 
   virtual void output(ostream &out, int indent_level, CPPScope *scope,
-		      bool complete) const;
+                      bool complete) const;
   virtual SubType get_subtype() const;
 
   virtual CPPStructType *as_struct_type();

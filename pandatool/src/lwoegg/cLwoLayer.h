@@ -15,7 +15,7 @@
 class LwoToEggConverter;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : CLwoLayer
+//       Class : CLwoLayer
 // Description : This class is a wrapper around LwoLayer and stores
 //               additional information useful during the
 //               conversion-to-egg process.

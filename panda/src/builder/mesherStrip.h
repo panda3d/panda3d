@@ -45,23 +45,23 @@ public:
   Prim make_prim(const BuilderBucket &bucket);
 
   void measure_sheet(const Edge *edge, int new_row,
-		    int &num_prims, int &num_rows,
-		    int first_row_id, int this_row_id,
-		    int this_row_distance);
+                    int &num_prims, int &num_rows,
+                    int first_row_id, int this_row_id,
+                    int this_row_distance);
   void cut_sheet(int first_row_id, int do_mate,
-		 const BuilderBucket &bucket);
+                 const BuilderBucket &bucket);
 
   bool mate(const BuilderBucket &bucket);
   bool find_ideal_mate(MesherStrip *&mate, Edge *&common_edge,
-		       const BuilderBucket &bucket);
+                       const BuilderBucket &bucket);
   static bool mate_pieces(Edge *common_edge, MesherStrip &front,
-			  MesherStrip &back, const BuilderBucket &bucket);
+                          MesherStrip &back, const BuilderBucket &bucket);
   static bool mate_strips(Edge *common_edge, MesherStrip &front,
-			  MesherStrip &back, BuilderPrimType type);
+                          MesherStrip &back, BuilderPrimType type);
   static bool must_invert(const MesherStrip &front, const MesherStrip &back,
-			  bool will_reverse_back, BuilderPrimType type);
+                          bool will_reverse_back, BuilderPrimType type);
   static bool convex_quad(Edge *common_edge, MesherStrip &front,
-			  MesherStrip &back, const BuilderBucket &bucket);
+                          MesherStrip &back, const BuilderBucket &bucket);
  
   int count_neighbors() const;
   ostream &show_neighbors(ostream &out) const;
@@ -97,11 +97,11 @@ public:
   INLINE bool operator != (const MesherStrip &other) const;
 
   bool pick_mate(const MesherStrip &a_strip, const MesherStrip &b_strip,
-		 const Edge &a_edge, const Edge &b_edge,
-		 const BuilderBucket &bucket) const;
+                 const Edge &a_edge, const Edge &b_edge,
+                 const BuilderBucket &bucket) const;
 
   bool pick_sheet_mate(const MesherStrip &a_strip,
-		       const MesherStrip &b_strip) const;
+                       const MesherStrip &b_strip) const;
 
   ostream &output(ostream &out) const;
 
@@ -126,7 +126,7 @@ public:
 
 template <class PrimType>
 INLINE ostream &operator << (ostream &out,
-			     const MesherStrip<PrimType> &strip) {
+                             const MesherStrip<PrimType> &strip) {
   return strip.output(out);
 }
 

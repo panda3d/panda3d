@@ -16,7 +16,7 @@ class CPPPreprocessor;
 class CPPFunctionGroup;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPExpression
+//       Class : CPPExpression
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPExpression : public CPPDeclaration {
@@ -25,7 +25,7 @@ public:
   CPPExpression(const string &value);
   CPPExpression(double value);
   CPPExpression(CPPIdentifier *ident, CPPScope *current_scope,
-		CPPScope *global_scope, CPPPreprocessor *error_sink = NULL);
+                CPPScope *global_scope, CPPPreprocessor *error_sink = NULL);
   CPPExpression(int unary_operator, CPPExpression *op1);
   CPPExpression(int binary_operator, CPPExpression *op1, CPPExpression *op2);
   CPPExpression(int trinary_operator, CPPExpression *op1, CPPExpression *op2, CPPExpression *op3);
@@ -70,11 +70,11 @@ public:
   bool is_tbd() const;
 
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
-					  CPPScope *current_scope,
-					  CPPScope *global_scope);
+                                          CPPScope *current_scope,
+                                          CPPScope *global_scope);
 
   virtual void output(ostream &out, int indent_level, CPPScope *scope,
-		      bool complete) const;
+                      bool complete) const;
   virtual SubType get_subtype() const;
 
   virtual CPPExpression *as_expression();

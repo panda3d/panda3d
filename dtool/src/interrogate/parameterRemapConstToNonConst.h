@@ -11,7 +11,7 @@
 #include "parameterRemap.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ParameterRemapConstToNonConst
+//       Class : ParameterRemapConstToNonConst
 // Description : A ParameterRemap class that handles remapping a
 //               simple const parameter (like const int) to an
 //               ordinary parameter (line int).  It doesn't apply to

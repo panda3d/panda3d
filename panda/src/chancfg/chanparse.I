@@ -76,7 +76,7 @@ INLINE int ChanReadNextIntB(std::string& S) {
     if ((stmp.length() != 2)||(stmp[1] != 'f')) {
       // error, not #f.. #t is not allowed in this case
       nout << "error, '" << stmp << "' is not allowed, only #f or an int"
-	   << endl;
+           << endl;
       i = -1;
     }
   else {

@@ -69,12 +69,12 @@ main(int argc, char *argv[]) {
     while (cm.reset_connection_available()) {
       PT(Connection) connection;
         if (cm.get_reset_connection(connection)) {
-	nout << "Lost connection from "
-	     << connection->get_address() << "\n";
-	cm.close_connection(connection);
-	if (connection == c) {
-	  lost_connection = true;
-	}
+        nout << "Lost connection from "
+             << connection->get_address() << "\n";
+        cm.close_connection(connection);
+        if (connection == c) {
+          lost_connection = true;
+        }
       }
     }
 
@@ -82,14 +82,14 @@ main(int argc, char *argv[]) {
     if (reader.data_available()) {
       NetDatagram new_datagram;
       if (reader.get_data(new_datagram)) {
-	num_received++;
+        num_received++;
       }
     }
 
     PRIntervalTime now = PR_IntervalNow();
     if ((PRIntervalTime)(now - last_reported_time) > report_interval) {
       nout << "Sent " << num_sent << ", received "
-	   << num_received << " datagrams.\n";
+           << num_received << " datagrams.\n";
       last_reported_time = now;
     }
 

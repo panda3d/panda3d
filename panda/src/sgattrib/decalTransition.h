@@ -11,7 +11,7 @@
 #include <onOffTransition.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DecalTransition
+//       Class : DecalTransition
 // Description : When this transition is in effect, the first GeomNode
 //               encountered is rendered in a special mode, such that
 //               all of its *children* (indeed, the whole subtree
@@ -53,7 +53,7 @@ public:
   static void init_type() {
     OnOffTransition::init_type();
     register_type(_type_handle, "DecalTransition",
-		  OnOffTransition::get_class_type());
+                  OnOffTransition::get_class_type());
   }
 
 private:

@@ -22,7 +22,7 @@ class NetDatagram;
 class ConnectionManager;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ConnectionReader
+//       Class : ConnectionReader
 // Description : This is an abstract base class for a family of
 //               classes that listen for activity on a socket and
 //               respond to it, for instance by reading a datagram and
@@ -96,7 +96,7 @@ private:
   void thread_run();
 
   SocketInfo *get_next_available_socket(PRIntervalTime timeout,
-					PRInt32 current_thread_index);
+                                        PRInt32 current_thread_index);
 
   void rebuild_poll_list();
 

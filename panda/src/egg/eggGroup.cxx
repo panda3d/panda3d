@@ -226,7 +226,7 @@ write(ostream &out, int indent_level) const {
     indent(out, indent_level + 2) << "<Switch> { 1 }\n";
     if (get_switch_fps() != 0.0) {
       indent(out, indent_level + 2)
-	<< "<Scalar> fps { " << get_switch_fps() << " }\n";
+        << "<Scalar> fps { " << get_switch_fps() << " }\n";
     }
   }
 
@@ -643,25 +643,25 @@ write_vertex_ref(ostream &out, int indent_level) const {
       const Indices &indices = (*mi).second;
 
       indent(out, indent_level) 
-	<< "<VertexRef> {\n";
+        << "<VertexRef> {\n";
       write_long_list(out, indent_level+2, indices.begin(), indices.end(),
-		      "", "", 72);
+                      "", "", 72);
       
       // If all vrefs in this group have membership of 1, don't bother
       // to write out the membership scalar.
       if (!all_membership_one) {
-	indent(out, indent_level + 2) 
-	  << "<Scalar> membership { " << membership << " }\n";
+        indent(out, indent_level + 2) 
+          << "<Scalar> membership { " << membership << " }\n";
       }
       if (pool == (EggVertexPool *)NULL) {
-	indent(out, indent_level + 2)
-	  << "// Invalid NULL vertex pool.\n";
+        indent(out, indent_level + 2)
+          << "// Invalid NULL vertex pool.\n";
       } else {
-	indent(out, indent_level + 2)
-	  << "<Ref> { " << pool->get_name() << " }\n";
+        indent(out, indent_level + 2)
+          << "<Ref> { " << pool->get_name() << " }\n";
       }
       indent(out, indent_level)
-	<< "}\n";
+        << "}\n";
     }
   }
 }
@@ -747,7 +747,7 @@ adjust_under() {
 ////////////////////////////////////////////////////////////////////
 void EggGroup::
 r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
-	    CoordinateSystem to_cs) {
+            CoordinateSystem to_cs) {
   if (has_transform()) {
     // Since we want to apply this transform to all matrices,
     // including nested matrices, we can't simply premult it in and

@@ -11,7 +11,7 @@
 #include "eggFilenameNode.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggExternalReference
+//       Class : EggExternalReference
 // Description : Defines a reference to another egg file which should
 //               be inserted at this point.
 ////////////////////////////////////////////////////////////////////

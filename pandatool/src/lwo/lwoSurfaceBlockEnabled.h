@@ -11,7 +11,7 @@
 #include "lwoChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurfaceBlockEnabled
+//       Class : LwoSurfaceBlockEnabled
 // Description : Indicates whether this particular layer or shader
 //               should be rendered or not.  This is a subchunk of
 //               LwoSurfaceBlockHeader.
@@ -35,7 +35,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoSurfaceBlockEnabled",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

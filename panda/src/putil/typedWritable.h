@@ -12,7 +12,7 @@
 class BamReader;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TypedWritable
+//       Class : TypedWritable
 // Description : Convience class to not have to derive from TypedObject
 //               and writable all the time
 //
@@ -51,7 +51,7 @@ public:
   //a parent reads in a variable number of pointers, so the child
   //knows where to start reading from.
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
 
 protected:
@@ -71,8 +71,8 @@ public:
     TypedObject::init_type();
     Writable::init_type();
     register_type(_type_handle, "TypedWritable", 
-		  TypedObject::get_class_type(),
-		  Writable::get_class_type());
+                  TypedObject::get_class_type(),
+                  Writable::get_class_type());
     TypeRegistry::ptr()->record_alternate_name(_type_handle, "TypedWriteable");
   }
   virtual TypeHandle get_type() const {

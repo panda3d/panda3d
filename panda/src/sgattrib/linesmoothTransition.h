@@ -11,7 +11,7 @@
 #include <onOffTransition.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LinesmoothTransition
+//       Class : LinesmoothTransition
 // Description : This enables or disables the antialiasing of lines.
 //               It has no additional properties; it's simply an
 //               on-or-off thing.
@@ -35,7 +35,7 @@ public:
   static void init_type() {
     OnOffTransition::init_type();
     register_type(_type_handle, "LinesmoothTransition",
-		  OnOffTransition::get_class_type());
+                  OnOffTransition::get_class_type());
   }
 
 private:

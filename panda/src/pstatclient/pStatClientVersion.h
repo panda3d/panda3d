@@ -12,7 +12,7 @@
 #include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PStatClientVersion
+//       Class : PStatClientVersion
 // Description : Records the version number of a particular client.
 //               Normally this will be the same as
 //               get_current_pstat_major/minor_version().

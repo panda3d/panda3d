@@ -146,7 +146,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
     // No magic number.  No image.
     if (pnmimage_pnm_cat.is_debug()) {
       pnmimage_pnm_cat.debug()
-	<< "PNM file appears to be empty.\n";
+        << "PNM file appears to be empty.\n";
     }
     _is_valid = false;
     return;
@@ -182,23 +182,23 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   if (pnmimage_pnm_cat.is_debug()) {
     if (is_valid()) {
       pnmimage_pnm_cat.debug()
-	<< "Reading ";
+        << "Reading ";
       switch (PNM_FORMAT_TYPE(_ftype)) {
       case PPM_TYPE:
-	pnmimage_pnm_cat.debug(false) << "PPM";
-	break;
+        pnmimage_pnm_cat.debug(false) << "PPM";
+        break;
       case PGM_TYPE:
-	pnmimage_pnm_cat.debug(false) << "PGM";
-	break;
+        pnmimage_pnm_cat.debug(false) << "PGM";
+        break;
       case PBM_TYPE:
-	pnmimage_pnm_cat.debug(false) << "PBM";
-	break;
+        pnmimage_pnm_cat.debug(false) << "PBM";
+        break;
       }
       pnmimage_pnm_cat.debug(false)
-	<< " " << *this << "\n";
+        << " " << *this << "\n";
     } else {
       pnmimage_pnm_cat.debug()
-	<< "File is not a valid PNM image.\n";
+        << "File is not a valid PNM image.\n";
     }
   }
 }

@@ -15,7 +15,7 @@ class NodeAttribute;
 class NodeRelation;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : OnOffTransition
+//       Class : OnOffTransition
 // Description : This is an abstract class that encapsulates a family
 //               of transitions for states that are either on or off
 //               (and, when on, may or may not have some particular
@@ -87,7 +87,7 @@ public:
   static void init_type() {
     NodeTransition::init_type();
     register_type(_type_handle, "OnOffTransition",
-		  NodeTransition::get_class_type());
+                  NodeTransition::get_class_type());
   }
 
 private:

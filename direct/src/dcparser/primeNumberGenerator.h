@@ -9,7 +9,7 @@
 #include "dcbase.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PrimeNumberGenerator
+//       Class : PrimeNumberGenerator
 // Description : This class generates a table of prime numbers, up to
 //               the limit of an int.  For a given integer n, it will
 //               return the nth prime number.  This will involve a

@@ -15,7 +15,7 @@
 #include <vector_int.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltMeshPrimitive
+//       Class : FltMeshPrimitive
 // Description : A single primitive of a mesh, like a triangle strip
 //               or fan.
 ////////////////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@ public:
   static void init_type() {
     FltBead::init_type();
     register_type(_type_handle, "FltMeshPrimitive",
-		  FltBead::get_class_type());
+                  FltBead::get_class_type());
   }
 
 private:

@@ -39,14 +39,14 @@ r_traverse(Node *node, NodeAttributes &data, bool has_spam_mode) {
     if (data_node != (DataNode *)NULL) {
 #ifdef NOTIFY_DEBUG
       if (has_spam_mode && dgraph_cat.is_info()) {
-	dgraph_cat.info() << "Sending into " << *node << " {\n";
-	describe_data_verbose(dgraph_cat.info(false), data, 2);
-	dgraph_cat.info(false) << "}\n";
-	
+        dgraph_cat.info() << "Sending into " << *node << " {\n";
+        describe_data_verbose(dgraph_cat.info(false), data, 2);
+        dgraph_cat.info(false) << "}\n";
+
       } else if (dgraph_cat.is_spam()) {
-	dgraph_cat.spam() << "Sending into " << *node << " {\n";
-	describe_data_verbose(dgraph_cat.spam(false), data, 2);
-	dgraph_cat.spam(false) << "}\n";
+        dgraph_cat.spam() << "Sending into " << *node << " {\n";
+        describe_data_verbose(dgraph_cat.spam(false), data, 2);
+        dgraph_cat.spam(false) << "}\n";
       }
 #endif
 
@@ -85,11 +85,11 @@ r_traverse_below(Node *node, NodeAttributes &data, bool has_spam_mode) {
     for (int i = 0; i < num_children - 1; i++) {
       NodeAttributes copy = data;
       if (data_node != (DataNode *)NULL) {
-	data_node->transmit_data_per_child(copy, i);
+        data_node->transmit_data_per_child(copy, i);
       }
       
       NodeRelation *arc = 
-	node->get_child(DataRelation::get_class_type(), i);
+        node->get_child(DataRelation::get_class_type(), i);
       r_traverse(arc->get_child(), copy, has_spam_mode);
     }
     
@@ -134,9 +134,9 @@ save(Node *node, const NodeAttributes &data, bool has_spam_mode,
 
     if (dgraph_cat.is_spam()) {
       dgraph_cat.spam()
-	<< "Encountered " << *node << " with " << num_parents
-	<< " parents; " << state._num_parents_so_far
-	<< " processed so far.\n";
+        << "Encountered " << *node << " with " << num_parents
+        << " parents; " << state._num_parents_so_far
+        << " processed so far.\n";
     }
 
     nassertv(state._num_parents_so_far <= num_parents);
@@ -213,7 +213,7 @@ resume_all() {
     for (int i = 0; i < num_parents; i++) {
       NodeRelation *arc = node->get_parent(DataRelation::get_class_type(), i);
       dgraph_cat.warning(false)
-	<< "  " << *arc << "\n";
+        << "  " << *arc << "\n";
     }
 
     resume(node, state);

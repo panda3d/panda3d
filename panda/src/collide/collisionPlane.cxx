@@ -39,7 +39,7 @@ make_copy() {
 ////////////////////////////////////////////////////////////////////
 int CollisionPlane::
 test_intersection(CollisionHandler *, const CollisionEntry &,
-		  const CollisionSolid *) const {
+                  const CollisionSolid *) const {
   // Planes cannot currently be intersected from, only into.  Do not
   // add a CollisionPlane to a CollisionTraverser.
   nassertr(false, 0);
@@ -105,7 +105,7 @@ recompute_bound() {
 ////////////////////////////////////////////////////////////////////
 int CollisionPlane::
 test_intersection_from_sphere(CollisionHandler *record,
-			      const CollisionEntry &entry) const {
+                              const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), 0);
 
@@ -144,7 +144,7 @@ test_intersection_from_sphere(CollisionHandler *record,
 ////////////////////////////////////////////////////////////////////
 int CollisionPlane::
 test_intersection_from_ray(CollisionHandler *record,
-			   const CollisionEntry &entry) const {
+                           const CollisionEntry &entry) const {
   const CollisionRay *ray;
   DCAST_INTO_R(ray, entry.get_from(), 0);
 

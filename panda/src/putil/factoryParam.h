@@ -13,7 +13,7 @@
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FactoryParam
+//       Class : FactoryParam
 // Description : The base class of any number of specific pieces of
 //               parameter information that might be passed to a
 //               Factory's CreateFunc to control what kind of instance
@@ -40,7 +40,7 @@ public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "FactoryParam",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
 
 private:

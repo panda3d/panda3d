@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : SpheretexHighlighter
 // Description : Creates a highlight texture from a given light and
-//		 projects this onto the receiving object
+//               projects this onto the receiving object
 ////////////////////////////////////////////////////////////////////
 class EXPCL_SHADER SpheretexHighlighter : public FrustumShader
 {
@@ -32,11 +32,11 @@ public:
   SpheretexHighlighter(int size = 128);
   
   virtual void pre_apply(Node *node, const AllAttributesWrapper &init_state,
-			 const AllTransitionsWrapper &net_trans,
-			 GraphicsStateGuardian *gsg);
+                         const AllTransitionsWrapper &net_trans,
+                         GraphicsStateGuardian *gsg);
   virtual void apply(Node *node, const AllAttributesWrapper &init_state,
-		     const AllTransitionsWrapper &net_trans,
-		     GraphicsStateGuardian *gsg);
+                     const AllTransitionsWrapper &net_trans,
+                     GraphicsStateGuardian *gsg);
   
   // MPG - should we make this check for powers of 2?
   INLINE void set_size(int size) { _size = size; }
@@ -49,8 +49,8 @@ public:
   
 protected:
   
-  SpheretexShader		_spheretex_shader;
-  int				_size;
+  SpheretexShader               _spheretex_shader;
+  int                           _size;
   
 public:
   
@@ -60,7 +60,7 @@ public:
   static void init_type() {
     FrustumShader::init_type();
     register_type(_type_handle, "SpheretexHighlighter",
-		  FrustumShader::get_class_type());
+                  FrustumShader::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

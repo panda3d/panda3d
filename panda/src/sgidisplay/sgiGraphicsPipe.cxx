@@ -35,18 +35,18 @@ int sgiGraphicsPipe::get_num_hw_channels( void )
 {
     if ( _num_channels == -1 )
     {
-	Display* display = (Display *)_display;
-	// Is there a better way to get the display??? (I hope so)
-	display = glXGetCurrentDisplayEXT(); 
-	
-	// For now, screen is the same as display
-	_screen = DefaultScreen( display );
+        Display* display = (Display *)_display;
+        // Is there a better way to get the display??? (I hope so)
+        display = glXGetCurrentDisplayEXT(); 
 
-	XSGIvcScreenInfo server;
-	XSGIvcQueryVideoScreenInfo( display, _screen, &server );
+        // For now, screen is the same as display
+        _screen = DefaultScreen( display );
 
-	// Not all of these will be active necessarily
-	_num_channels = server.numChannels; 
+        XSGIvcScreenInfo server;
+        XSGIvcQueryVideoScreenInfo( display, _screen, &server );
+
+        // Not all of these will be active necessarily
+        _num_channels = server.numChannels; 
     }
 
     return _num_channels;
@@ -60,13 +60,13 @@ int sgiGraphicsPipe::get_num_hw_channels( void )
 HardwareChannel *sgiGraphicsPipe::
 get_hw_channel( GraphicsWindow* window, int index ) {
     if ( _num_channels == -1 )
-	get_num_hw_channels();
+        get_num_hw_channels();
 
     if ( index >= _num_channels )
     {
-	cerr << "sgiGraphicsPipe::get_hw_channel() - invalid index: " 
-		<< index << endl;
-	return NULL;
+        cerr << "sgiGraphicsPipe::get_hw_channel() - invalid index: " 
+                << index << endl;
+        return NULL;
     }
 
     Channels::iterator i;
@@ -89,7 +89,7 @@ TypeHandle sgiGraphicsPipe::get_class_type(void) {
 void sgiGraphicsPipe::init_type(void) {
   InteractiveGraphicsPipe::init_type();
   register_type(_type_handle, "sgiGraphicsPipe",
-		InteractiveGraphicsPipe::get_class_type());
+                InteractiveGraphicsPipe::get_class_type());
 }
 
 TypeHandle sgiGraphicsPipe::get_type(void) const {

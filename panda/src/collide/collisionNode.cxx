@@ -173,7 +173,7 @@ recompute_bound() {
       << "Cannot put " << _bound->get_type() << " around:\n";
     for (int i = 0; i < (int)child_volumes.size(); i++) {
       collide_cat.error(false)
-	<< "  " << *child_volumes[i] << "\n";
+        << "  " << *child_volumes[i] << "\n";
     }
   }
 #endif

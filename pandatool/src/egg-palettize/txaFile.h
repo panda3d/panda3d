@@ -16,7 +16,7 @@
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TxaFile
+//       Class : TxaFile
 // Description : This represents the .txa file (usually textures.txa)
 //               that contains the user instructions for resizing,
 //               grouping, etc. the various textures.

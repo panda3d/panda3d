@@ -17,7 +17,7 @@ class BoundingLine;
 
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : BoundingVolume
+//       Class : BoundingVolume
 // Description : This is an abstract class for any volume in any sense
 //               which can be said to define the locality of reference
 //               of a node in a graph, along with all of its
@@ -42,7 +42,7 @@ PUBLISHED:
   // could have true STL-style first/last iterators, but that's
   // impossible for virtual functions.
   bool around(const BoundingVolume **first,
-	      const BoundingVolume **last);
+              const BoundingVolume **last);
 
   // The contains() functions return the union of one or more of these
   // bits.
@@ -96,8 +96,8 @@ protected:
   // These functions are the first dispatch point.
   virtual bool extend_other(BoundingVolume *other) const=0;
   virtual bool around_other(BoundingVolume *other,
-			    const BoundingVolume **first,
-			    const BoundingVolume **last) const=0;
+                            const BoundingVolume **first,
+                            const BoundingVolume **last) const=0;
   virtual int contains_other(const BoundingVolume *other) const=0;
 
   // These functions are the second dispatch point.  They actually do
@@ -107,11 +107,11 @@ protected:
   virtual bool extend_by_line(const BoundingLine *line);
 
   virtual bool around_spheres(const BoundingVolume **first,
-			      const BoundingVolume **last);
+                              const BoundingVolume **last);
   virtual bool around_hexahedrons(const BoundingVolume **first,
-				  const BoundingVolume **last);
+                                  const BoundingVolume **last);
   virtual bool around_lines(const BoundingVolume **first,
-			    const BoundingVolume **last);
+                            const BoundingVolume **last);
 
   virtual int contains_sphere(const BoundingSphere *sphere) const;
   virtual int contains_hexahedron(const BoundingHexahedron *hexahedron) const;
@@ -125,7 +125,7 @@ public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "BoundingVolume",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

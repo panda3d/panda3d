@@ -11,7 +11,7 @@
 #include "fltTransformRecord.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltTransformPut
+//       Class : FltTransformPut
 // Description : A "put", which is a MultiGen concept of defining a
 //               transformation by mapping three arbitrary points to
 //               three new arbitrary points.
@@ -21,11 +21,11 @@ public:
   FltTransformPut(FltHeader *header);
 
   void set(const LPoint3d &from_origin, 
-	   const LPoint3d &from_align,
-	   const LPoint3d &from_track,
-	   const LPoint3d &to_origin,
-	   const LPoint3d &to_align,
-	   const LPoint3d &to_track);
+           const LPoint3d &from_align,
+           const LPoint3d &from_track,
+           const LPoint3d &to_origin,
+           const LPoint3d &to_align,
+           const LPoint3d &to_track);
 
   const LPoint3d &get_from_origin() const;
   const LPoint3d &get_from_align() const;
@@ -59,7 +59,7 @@ public:
   static void init_type() {
     FltTransformRecord::init_type();
     register_type(_type_handle, "FltTransformPut",
-		  FltTransformRecord::get_class_type());
+                  FltTransformRecord::get_class_type());
   }
 
 private:

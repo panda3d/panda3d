@@ -15,7 +15,7 @@
 #include <deque>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DatagramQueue
+//       Class : DatagramQueue
 // Description : A thread-safe, FIFO queue of NetDatagrams.  This is used
 //               by ConnectionWriter for queuing up datagrams for
 //               its various threads to write to sockets.

@@ -11,7 +11,7 @@
 #include "lwoChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurfaceBlockRepeat
+//       Class : LwoSurfaceBlockRepeat
 // Description : For cylindrical and spherical projections, this
 //               parameter controls how many times the image repeats
 //               over each full interval, in either dimension.  The
@@ -38,7 +38,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoSurfaceBlockRepeat",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

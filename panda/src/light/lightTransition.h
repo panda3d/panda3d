@@ -21,7 +21,7 @@
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, MULTITRANSITION_LIGHT);
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LightTransition
+//       Class : LightTransition
 // Description : The LightTransition allows specifying the set of
 //               lights that affect the geometry in the scene graph.
 //               If the set of lights is empty (e.g. under a
@@ -42,7 +42,7 @@ public:
 protected:
   virtual void output_property(ostream &out, const PT_Light &prop) const;
   virtual void write_property(ostream &out, const PT_Light &prop,
-			      int indent_level) const;
+                              int indent_level) const;
 
 public:
   virtual TypeHandle get_type() const {
@@ -55,7 +55,7 @@ public:
   static void init_type() {
     MultiTransition<PT_Light, LightNameClass>::init_type();
     register_type(_type_handle, "LightTransition",
-		  MultiTransition<PT_Light, LightNameClass>::get_class_type());
+                  MultiTransition<PT_Light, LightNameClass>::get_class_type());
   }
 
 private:

@@ -77,7 +77,7 @@ write_with_value(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void MovingPartBase::
 do_update(PartBundle *root, PartGroup *parent,
-	  bool parent_changed, bool anim_changed) {
+          bool parent_changed, bool anim_changed) {
   bool needs_update = anim_changed;
 
   // See if any of the channel values have changed since last time.
@@ -108,7 +108,7 @@ do_update(PartBundle *root, PartGroup *parent,
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     (*ci)->do_update(root, this, parent_changed || needs_update,
-		     anim_changed);
+                     anim_changed);
   }
 }
 
@@ -146,7 +146,7 @@ pick_channel_index(list<int> &holes, int &next) const {
     int hole = (*ii);
     nassertv(hole >= 0 && hole < next);
     if (hole < (int)_channels.size() || 
-	_channels[hole] != (AnimChannelBase *)NULL) {
+        _channels[hole] != (AnimChannelBase *)NULL) {
       // We can't accept this hole; we're using it!
       holes.erase(ii);
     }
@@ -158,8 +158,8 @@ pick_channel_index(list<int> &holes, int &next) const {
     int i;
     for (i = next; i < (int)_channels.size(); i++) {
       if (_channels[i] == (AnimChannelBase*)0L) {
-	// Here's a hole we do have.
-	holes.push_back(i);
+        // Here's a hole we do have.
+        holes.push_back(i);
       }
     }
     next = _channels.size();

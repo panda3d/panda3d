@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 void
 get_rel_rot_mat(const Node *node, const Node *relative_to,
-		LMatrix4f &mat, TypeHandle graph_type) {
+                LMatrix4f &mat, TypeHandle graph_type) {
   NodeTransitionWrapper ntw(TransformTransition::get_class_type());
   wrt(node, relative_to, ntw, graph_type);
   const TransformTransition *tt;
@@ -41,9 +41,9 @@ get_rel_rot_mat(const Node *node, const Node *relative_to,
 
   // Now build a new matrix which just represents these axes.
   mat.set(x[0], x[1], x[2], 0.0f,
-    	  y[0], y[1], y[2], 0.0f,
-    	  z[0], z[1], z[2], 0.0f,
-    	  0.0f, 0.0f, 0.0f, 1.0f);
+          y[0], y[1], y[2], 0.0f,
+          z[0], z[1], z[2], 0.0f,
+          0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 
@@ -54,7 +54,7 @@ get_rel_rot_mat(const Node *node, const Node *relative_to,
 ////////////////////////////////////////////////////////////////////
 LVecBase3f 
 get_rel_scale(const Node *node, const Node *relative_to,
-	      TypeHandle graph_type) {
+              TypeHandle graph_type) {
   NodeTransitionWrapper ntw(TransformTransition::get_class_type());
   wrt(node, relative_to, ntw, graph_type);
   const TransformTransition *tt;

@@ -11,7 +11,7 @@
 #include "fltTransformRecord.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltTransformRotateAboutPoint
+//       Class : FltTransformRotateAboutPoint
 // Description : A transformation that rotates about a particular axis
 //               in space, defined by a point and vector.
 ////////////////////////////////////////////////////////////////////
@@ -47,7 +47,7 @@ public:
   static void init_type() {
     FltTransformRecord::init_type();
     register_type(_type_handle, "FltTransformRotateAboutPoint",
-		  FltTransformRecord::get_class_type());
+                  FltTransformRecord::get_class_type());
   }
 
 private:

@@ -101,9 +101,9 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 int CollisionSolid::
 test_intersection_from_sphere(CollisionHandler *,
-			      const CollisionEntry &) const {
+                              const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionSphere::get_class_type(),
-				     get_type());
+                                     get_type());
   return 0;
 }
 
@@ -114,9 +114,9 @@ test_intersection_from_sphere(CollisionHandler *,
 ////////////////////////////////////////////////////////////////////
 int CollisionSolid::
 test_intersection_from_ray(CollisionHandler *,
-			   const CollisionEntry &) const {
+                           const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionRay::get_class_type(),
-				     get_type());
+                                     get_type());
   return 0;
 }
 
@@ -127,9 +127,9 @@ test_intersection_from_ray(CollisionHandler *,
 ////////////////////////////////////////////////////////////////////
 int CollisionSolid::
 test_intersection_from_segment(CollisionHandler *,
-			       const CollisionEntry &) const {
+                               const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionSegment::get_class_type(),
-				     get_type());
+                                     get_type());
   return 0;
 }
 

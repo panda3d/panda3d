@@ -12,7 +12,7 @@
 #include <indent.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : NumericDataTransition
+//       Class : NumericDataTransition
 // Description : A NumericDataAttribute is a special data graph
 //               attribute that is used to pass around a single
 //               number.  A NumericDataTransition isn't often used,
@@ -62,9 +62,9 @@ public:
   static void init_type() {
     NodeTransition::init_type();
     register_type(_type_handle, 
-		  string("NumericDataTransition<") + 
-		  get_type_handle(NumType).get_name() + ">",
-		  NodeTransition::get_class_type());
+                  string("NumericDataTransition<") + 
+                  get_type_handle(NumType).get_name() + ">",
+                  NodeTransition::get_class_type());
   }
 
 private:

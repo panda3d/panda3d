@@ -96,7 +96,7 @@ tracker_velocity(const string &tracker, const vrpn_TRACKERVELCB info) {
   double vtime = convert_to_secs(info.msg_time);
   LPoint3f vel(info.vel[0], info.vel[1], info.vel[2]);
   LVector4f vquat(info.vel_quat[0], info.vel_quat[1], 
-		  info.vel_quat[2], info.vel_quat[3]);
+                  info.vel_quat[2], info.vel_quat[3]);
   float dt = info.vel_quat_dt;
 
   push_tracker_velocity(tracker, info.sensor, vtime, vel, vquat, dt);
@@ -113,7 +113,7 @@ tracker_acceleration(const string &tracker, const vrpn_TRACKERACCCB info) {
   double atime = convert_to_secs(info.msg_time);
   LPoint3f acc(info.acc[0], info.acc[1], info.acc[2]);
   LVector4f aquat(info.acc_quat[0], info.acc_quat[1], 
-		  info.acc_quat[2], info.acc_quat[3]);
+                  info.acc_quat[2], info.acc_quat[3]);
   float dt = info.acc_quat_dt;
 
   push_tracker_acceleration(tracker, info.sensor, atime, acc, aquat, dt);

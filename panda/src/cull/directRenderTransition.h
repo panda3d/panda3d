@@ -11,7 +11,7 @@
 #include <immediateTransition.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DirectRenderTransition
+//       Class : DirectRenderTransition
 // Description : When this transition is attached to an arc, it
 //               indicates that the node below this arc, and all
 //               subsequent nodes below, should be treated as a single
@@ -49,7 +49,7 @@ public:
   static void init_type() {
     ImmediateTransition::init_type();
     register_type(_type_handle, "DirectRenderTransition",
-		  ImmediateTransition::get_class_type());
+                  ImmediateTransition::get_class_type());
   }
 
 private:

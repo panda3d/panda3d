@@ -37,12 +37,12 @@ init_libwgldisplay() {
 
   wglGraphicsPipe::init_type();
   GraphicsPipe::get_factory().register_factory(
-			wglGraphicsPipe::get_class_type(),
-		  	wglGraphicsPipe::make_wglGraphicsPipe);
+            wglGraphicsPipe::get_class_type(),
+            wglGraphicsPipe::make_wglGraphicsPipe);
   wglGraphicsWindow::init_type();
   GraphicsWindow::get_factory().register_factory(
-			wglGraphicsWindow::get_class_type(),
-		    	wglGraphicsWindow::make_wglGraphicsWindow);
+            wglGraphicsWindow::get_class_type(),
+                wglGraphicsWindow::make_wglGraphicsWindow);
 }
 
 // cant use global var cleanly because global var static init executed after init_libwgl(), incorrectly reiniting var

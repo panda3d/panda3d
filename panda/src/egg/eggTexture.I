@@ -320,7 +320,7 @@ get_transform() const {
 INLINE bool EggTexture::
 transform_is_identity() const {
   return (!has_transform() || 
-	  _transform.almost_equal(LMatrix3d::ident_mat(), 0.0001));
+          _transform.almost_equal(LMatrix3d::ident_mat(), 0.0001));
 }
 
 ////////////////////////////////////////////////////////////////////

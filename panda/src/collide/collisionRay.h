@@ -13,7 +13,7 @@
 class ProjectionNode;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CollisionRay
+//       Class : CollisionRay
 // Description : An infinite ray, with a specific origin and
 //               direction.  It begins at its origin and continues in
 //               one direction to infinity, and it has no radius.
@@ -25,7 +25,7 @@ PUBLISHED:
   INLINE CollisionRay();
   INLINE CollisionRay(const LPoint3f &origin, const LVector3f &direction);
   INLINE CollisionRay(float ox, float oy, float oz, 
-		      float dx, float dy, float dz);
+                      float dx, float dy, float dz);
 
 public:
   INLINE CollisionRay(const CollisionRay &copy);
@@ -33,8 +33,8 @@ public:
 
   virtual int
   test_intersection(CollisionHandler *record,
-		    const CollisionEntry &entry,
-		    const CollisionSolid *into) const;
+                    const CollisionEntry &entry,
+                    const CollisionSolid *into) const;
 
   virtual void xform(const LMatrix4f &mat);
   virtual LPoint3f get_collision_origin() const;
@@ -70,7 +70,7 @@ public:
   static void init_type() {
     CollisionSolid::init_type();
     register_type(_type_handle, "CollisionRay",
-		  CollisionSolid::get_class_type());
+                  CollisionSolid::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -20,7 +20,7 @@
 ////////////////////////////////////////////////////////////////////
 ostream &
 enquote_string(ostream &out, const string &str, int indent_level,
-	       bool always_quote) {
+               bool always_quote) {
   indent(out, indent_level);
 
   // First, see if we need to enquote it.
@@ -39,19 +39,19 @@ enquote_string(ostream &out, const string &str, int indent_level,
     for (p = str.begin(); p != str.end(); ++p) {
       switch (*p) {
       case '"':
-	// Can't output nested quote marks at all.
-	out << "'";
-	break;
-	
+        // Can't output nested quote marks at all.
+        out << "'";
+        break;
+
       case '\n':
-	// A newline necessitates ending the quotes, newlining, and
-	// beginning again.
-	out << "\"\n";
-	indent(out, indent_level) << '"';
-	break;
-	
+        // A newline necessitates ending the quotes, newlining, and
+        // beginning again.
+        out << "\"\n";
+        indent(out, indent_level) << '"';
+        break;
+
       default:
-	out << *p;
+        out << *p;
       }
     }
     out << '"';
@@ -102,19 +102,19 @@ write_transform(ostream &out, const LMatrix4d &mat, int indent_level) {
     pfVec3 s, r, t;
     if (ExtractMatrix(mat, s, r, t)) {
       if (!s.almostEqual(pfVec3(1.0, 1.0, 1.0), 0.0001)) {
-	Indent(out, indent+2) << "<Scale> { " << s << " }\n";
+        Indent(out, indent+2) << "<Scale> { " << s << " }\n";
       }
       if (fabs(r[0]) > 0.0001) {
-	Indent(out, indent+2) << "<RotX> { " << r[0] << " }\n";
+        Indent(out, indent+2) << "<RotX> { " << r[0] << " }\n";
       }
       if (fabs(r[1]) > 0.0001) {
-	Indent(out, indent+2) << "<RotY> { " << r[1] << " }\n";
+        Indent(out, indent+2) << "<RotY> { " << r[1] << " }\n";
       }
       if (fabs(r[2]) > 0.0001) {
-	Indent(out, indent+2) << "<RotZ> { " << r[2] << " }\n";
+        Indent(out, indent+2) << "<RotZ> { " << r[2] << " }\n";
       }
       if (!t.almostEqual(pfVec3(0.0, 0.0, 0.0), 0.0001)) {
-	Indent(out, indent+2) << "<Translate> { " << t << " }\n";
+        Indent(out, indent+2) << "<Translate> { " << t << " }\n";
       }
       written = true;
     }
@@ -129,7 +129,7 @@ write_transform(ostream &out, const LMatrix4d &mat, int indent_level) {
     for (int r = 0; r < 4; r++) {
       indent(out, indent_level+3);
       for (int c = 0; c < 4; c++) {
-	out << " " << mat(r, c);
+        out << " " << mat(r, c);
       }
       out << "\n";
     }

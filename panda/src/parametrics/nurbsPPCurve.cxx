@@ -48,7 +48,7 @@ NurbsPPCurve(const ParametricCurve &pc) {
 ////////////////////////////////////////////////////////////////////
 NurbsPPCurve::
 NurbsPPCurve(int order, int num_cvs,
-	     const float knots[], const LVecBase4f cvs[]) {
+             const float knots[], const LVecBase4f cvs[]) {
   _nurbs_valid = false;
   _order = order;
 
@@ -545,7 +545,7 @@ append_cv_impl(const LVecBase4f &cv) {
 ////////////////////////////////////////////////////////////////////
 bool NurbsPPCurve::
 format_egg(ostream &out, const string &name, const string &curve_type,
-	   int indent_level) const {
+           int indent_level) const {
   return NurbsCurveInterface::format_egg(out, name, curve_type, indent_level);
 }
 
@@ -613,7 +613,7 @@ copy_nurbs(PLib::NurbsCurvef &nurbs) const {
 ////////////////////////////////////////////////////////////////////
 void NurbsPPCurve::
 copy_arrays(NurbsPPCurve::Points &points, NurbsPPCurve::Knots &knots, 
-	    int &order) const {
+            int &order) const {
   if (_nurbs_valid) {
     make_arrays_from(_nurbs, points, knots, order);
   } else {
@@ -631,8 +631,8 @@ copy_arrays(NurbsPPCurve::Points &points, NurbsPPCurve::Knots &knots,
 ////////////////////////////////////////////////////////////////////
 bool NurbsPPCurve::
 make_nurbs_from(PLib::NurbsCurvef &nurbs,
-		const NurbsPPCurve::Points &points,
-		const NurbsPPCurve::Knots &knots, int order) {
+                const NurbsPPCurve::Points &points,
+                const NurbsPPCurve::Knots &knots, int order) {
   if (order < 1 || knots.size() != points.size() + order) {
     parametrics_cat.error()
       << "Invalid NURBS curve: order " << order << " with "
@@ -666,8 +666,8 @@ make_nurbs_from(PLib::NurbsCurvef &nurbs,
 ////////////////////////////////////////////////////////////////////
 void NurbsPPCurve::
 make_arrays_from(const PLib::NurbsCurvef &nurbs,
-		 NurbsPPCurve::Points &points,
-		 NurbsPPCurve::Knots &knots, int &order) {
+                 NurbsPPCurve::Points &points,
+                 NurbsPPCurve::Knots &knots, int &order) {
   const Vector_HPoint3Df &v_points = nurbs.ctrlPnts();
   const Vector_FLOAT &v_knots = nurbs.knot();
 

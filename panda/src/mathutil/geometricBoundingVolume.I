@@ -44,7 +44,7 @@ INLINE_MATHUTIL bool GeometricBoundingVolume::
 around(const GeometricBoundingVolume **first, 
        const GeometricBoundingVolume **last) {
   return BoundingVolume::around((const BoundingVolume **)first, 
-				(const BoundingVolume **)last);
+                                (const BoundingVolume **)last);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -15,7 +15,7 @@ class FltRecordReader;
 class FltRecordWriter;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltPackedColor
+//       Class : FltPackedColor
 // Description : A packed color record, A, B, G, R.  This appears, for
 //               instance, within a face bead.
 ////////////////////////////////////////////////////////////////////

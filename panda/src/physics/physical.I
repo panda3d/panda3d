@@ -13,7 +13,7 @@
 INLINE void Physical::
 clear_linear_forces(void) {
   _linear_forces.erase(_linear_forces.begin(),
-			_linear_forces.end());
+                        _linear_forces.end());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -24,7 +24,7 @@ clear_linear_forces(void) {
 INLINE void Physical::
 clear_angular_forces(void) {
   _angular_forces.erase(_angular_forces.begin(),
-			_angular_forces.end());
+                        _angular_forces.end());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -35,7 +35,7 @@ clear_angular_forces(void) {
 INLINE void Physical::
 clear_physics_objects(void) {
   _physics_objects.erase(_physics_objects.begin(),
-			 _physics_objects.end());
+                         _physics_objects.end());
 }
 
 ////////////////////////////////////////////////////////////////////

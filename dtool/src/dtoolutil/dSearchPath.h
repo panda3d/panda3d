@@ -13,7 +13,7 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : DSearchPath
+//       Class : DSearchPath
 // Description : This class stores a list of directories that can be
 //               searched, in order, to locate a particular file.  It
 //               is normally constructed by passing it a traditional
@@ -51,7 +51,7 @@ PUBLISHED:
   void append_directory(const Filename &directory);
   void prepend_directory(const Filename &directory);
   void append_path(const string &path,
-		   const string &delimiters = ": \t\n");
+                   const string &delimiters = ": \t\n");
   void append_path(const DSearchPath &path);
   void prepend_path(const DSearchPath &path);
 
@@ -64,7 +64,7 @@ PUBLISHED:
 
   INLINE static Filename 
   search_path(const Filename &filename, const string &path,
-	      const string &delimiters = ": \t\n");
+              const string &delimiters = ": \t\n");
 
   void output(ostream &out, const string &separator = ":") const;
   void write(ostream &out, int indent_level = 0) const;

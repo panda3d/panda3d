@@ -12,7 +12,7 @@
 #include <filename.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggFilenameNode
+//       Class : EggFilenameNode
 // Description : This is an egg node that contains a filename.  It
 //               references a physical file relative to the directory
 //               the egg file was loaded in.  It is a base class for

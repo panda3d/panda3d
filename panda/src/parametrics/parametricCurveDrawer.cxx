@@ -356,30 +356,30 @@ draw() {
       LVecBase3f tangent;
 
       if (xyz_curve->get_pt(t0, point, tangent)) {
-	if (_tick_geometry == (Node *)NULL) {
-	  // Draw crosses.
-	  LVecBase3f t1, t2;
-	  get_tick_marks(tangent, t1, t2);
-	  
-	  _ticks.move_to(point - t1 * _tick_scale);
-	  _ticks.draw_to(point + t1 * _tick_scale);
-	  _ticks.move_to(point - t2 * _tick_scale);
-	  _ticks.draw_to(point + t2 * _tick_scale);
+        if (_tick_geometry == (Node *)NULL) {
+          // Draw crosses.
+          LVecBase3f t1, t2;
+          get_tick_marks(tangent, t1, t2);
 
-	} else {
-	  // Instance the tick geometry.
-	  NodeRelation *arc = new RenderRelation(_geom_node, _tick_geometry);
-	  _tick_arcs.push_back(arc);
+          _ticks.move_to(point - t1 * _tick_scale);
+          _ticks.draw_to(point + t1 * _tick_scale);
+          _ticks.move_to(point - t2 * _tick_scale);
+          _ticks.draw_to(point + t2 * _tick_scale);
 
-	  LVecBase3f hpr(0.0, 0.0, 0.0);
-	  if (hpr_curve != (ParametricCurve *)NULL) {
-	    hpr_curve->get_point(t0, hpr);
-	  }
-	  LMatrix4f mat;
-	  compose_matrix(mat, LVecBase3f(_tick_scale, _tick_scale, _tick_scale),
-			 hpr, point);
-	  arc->set_transition(new TransformTransition(mat));
-	}
+        } else {
+          // Instance the tick geometry.
+          NodeRelation *arc = new RenderRelation(_geom_node, _tick_geometry);
+          _tick_arcs.push_back(arc);
+
+          LVecBase3f hpr(0.0, 0.0, 0.0);
+          if (hpr_curve != (ParametricCurve *)NULL) {
+            hpr_curve->get_point(t0, hpr);
+          }
+          LMatrix4f mat;
+          compose_matrix(mat, LVecBase3f(_tick_scale, _tick_scale, _tick_scale),
+                         hpr, point);
+          arc->set_transition(new TransformTransition(mat));
+        }
       }
     }
     _ticks.create(_geom_node, _frame_accurate);

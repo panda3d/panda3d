@@ -161,22 +161,22 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part) {
       // it to single-precision.
       LMatrix4d matd;
       if (egg_group->has_transform()) {
-	matd = egg_group->get_transform();
+        matd = egg_group->get_transform();
       } else {
-	matd = LMatrix4d::ident_mat();
+        matd = LMatrix4d::ident_mat();
       }
 
       LMatrix4f matf = LCAST(float, matd);
 
       CharacterJoint *joint =
-	new CharacterJoint(part, egg_group->get_name(), matf);
+        new CharacterJoint(part, egg_group->get_name(), matf);
       index = _parts.size();
       _parts.push_back(joint);
 
       if (egg_group->get_dcs_flag()) {
-	// If the joint requested an explicit DCS, create a node for
-	// it.
-	joint->_geom_node = new NamedNode(egg_group->get_name());
+        // If the joint requested an explicit DCS, create a node for
+        // it.
+        joint->_geom_node = new NamedNode(egg_group->get_name());
       }
 
       part = joint;
@@ -228,14 +228,14 @@ make_geometry(EggNode *egg_node) {
       EggGroupNode *prim_home = determine_primitive_home(egg_primitive);
 
       if (prim_home == NULL) {
-	// This is a totally dynamic primitive that lives under the
-	// character's node.
-	make_dynamic_primitive(egg_primitive, _egg_root);
+        // This is a totally dynamic primitive that lives under the
+        // character's node.
+        make_dynamic_primitive(egg_primitive, _egg_root);
 
       } else {
-	// This is a static primitive that lives under a particular
-	// node.
-	make_static_primitive(egg_primitive, prim_home);
+        // This is a static primitive that lives under a particular
+        // node.
+        make_static_primitive(egg_primitive, prim_home);
       }
     }
   }
@@ -282,7 +282,7 @@ make_dynamic_primitive(EggPrimitive *egg_primitive, EggGroupNode *prim_home) {
     prim_home->get_node_frame_inv();
 
   _loader.make_indexed_primitive(egg_primitive, node, &transform,
-				 _comp_verts_maker);
+                                 _comp_verts_maker);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -351,8 +351,8 @@ determine_primitive_home(EggPrimitive *egg_primitive) {
     egg_group = DCAST(EggGroup, home);
   }
   while (egg_group != (EggGroup *)NULL && 
-	 egg_group->get_group_type() != EggGroup::GT_joint &&
-	 egg_group->get_dart_type() == EggGroup::DT_none) {
+         egg_group->get_group_type() != EggGroup::GT_joint &&
+         egg_group->get_dart_type() == EggGroup::DT_none) {
     nassertr(egg_group->get_parent() != (EggGroupNode *)NULL, NULL);
     home = egg_group->get_parent();
     egg_group = (EggGroup *)NULL;

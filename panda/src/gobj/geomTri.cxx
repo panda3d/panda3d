@@ -53,15 +53,15 @@ print_draw_immediate(void) const
     // Draw overall
     if ( _color_command[G_OVERALL] != _issue_color_noop )
     {
-	nout << "Color (Overall): "; 	
-	if ( tcindex ) 
-	{
-	    nout << "idx: " << *tcindex << " ";
-	    nout << tcolors[*(tcindex++)];
-	}
-	else
-	    nout << *(tcolors++);
-	nout << endl;
+        nout << "Color (Overall): "; 
+        if ( tcindex ) 
+        {
+            nout << "idx: " << *tcindex << " ";
+            nout << tcolors[*(tcindex++)];
+        }
+        else
+            nout << *(tcolors++);
+        nout << endl;
     }
     if ( _normal_command[G_OVERALL] != _issue_normal_noop )
     {   
@@ -69,10 +69,10 @@ print_draw_immediate(void) const
         if ( tnindex )                    
         {
             nout << "idx: " << *tnindex << " ";
-	    nout << tnorms[*(tnindex++)];
+            nout << tnorms[*(tnindex++)];
         }
         else
-	    nout << *(tnorms++);
+            nout << *(tnorms++);
         nout << endl;
     }
 
@@ -81,45 +81,45 @@ print_draw_immediate(void) const
     for ( i = nprims; i > 0; i-- )
     {
         // Draw per primitive
-    	if ( _color_command[G_PER_PRIM] != _issue_color_noop )
-    	{
+        if ( _color_command[G_PER_PRIM] != _issue_color_noop )
+        {
             nout << "Color (Per Prim): ";
             if ( tcindex )
             {
-            	nout << "idx: " << *tcindex << " ";
-	        nout << tcolors[*(tcindex++)];
+                nout << "idx: " << *tcindex << " ";
+                nout << tcolors[*(tcindex++)];
             }
             else
-            	nout << *(tcolors++);
+                nout << *(tcolors++);
             nout << endl;
-    	}
-    	if ( _normal_command[G_PER_PRIM] != _issue_normal_noop )
-    	{
+        }
+        if ( _normal_command[G_PER_PRIM] != _issue_normal_noop )
+        {
             nout << "Normal (Per Prim): ";
             if ( tnindex )
             {
-            	nout << "idx: " << *tnindex << " ";
-            	nout << tnorms[*(tnindex++)];
+                nout << "idx: " << *tnindex << " ";
+                nout << tnorms[*(tnindex++)];
             }
             else
-            	nout << *(tnorms++);
+                nout << *(tnorms++);
             nout << endl;
-    	}
+        }
 
         for ( j = 0; j < 3; j++ )
         {
             // Draw per vertex
             if ( _color_command[G_PER_VERTEX] != _issue_color_noop )
             {
-            	nout << "Color (Per Vertex): ";
-            	if ( tcindex )
-            	{
+                nout << "Color (Per Vertex): ";
+                if ( tcindex )
+                {
                     nout << "idx: " << *tcindex << " ";
                     nout << tcolors[*(tcindex++)];
                 }
-            	else
+                else
                     nout << *(tcolors++);
-            	nout << endl;
+                nout << endl;
             }
             if ( _normal_command[G_PER_VERTEX] != _issue_normal_noop )
             {
@@ -200,11 +200,11 @@ get_tris() const {
   for (int i = 0; i < _numprims; i++) {
     if (_vindex.empty()) {
       for (int j = 0; j < 3; j++) {
-	tris.push_back(k++);
+        tris.push_back(k++);
       }
     } else {
       for (int j = 0; j < 3; j++) {
-	tris.push_back(_vindex[k++]);
+        tris.push_back(_vindex[k++]);
       }
     }
   }

@@ -52,21 +52,21 @@ TypeHandle PNMFileTypeTGA::_type_handle;
  
 /* Header definition. */
 struct ImageHeader {
-    unsigned char IDLength;		/* length of Identifier String */
-    unsigned char CoMapType;		/* 0 = no map */
-    unsigned char ImgType;		/* image type (see below for values) */
-    unsigned char Index_lo, Index_hi;	/* index of first color map entry */
-    unsigned char Length_lo, Length_hi;	/* number of entries in color map */
-    unsigned char CoSize;		/* size of color map entry (15,16,24,32) */
-    unsigned char X_org_lo, X_org_hi;	/* x origin of image */
-    unsigned char Y_org_lo, Y_org_hi;	/* y origin of image */
-    unsigned char Width_lo, Width_hi;	/* width of image */
-    unsigned char Height_lo, Height_hi;	/* height of image */
-    unsigned char PixelSize;		/* pixel size (8,16,24,32) */
-    unsigned char AttBits;		/* 4 bits, number of attribute bits per pixel */
-    unsigned char Rsrvd;		/* 1 bit, reserved */
-    unsigned char OrgBit;		/* 1 bit, origin: 0=lower left, 1=upper left */
-    unsigned char IntrLve;		/* 2 bits, interleaving flag */
+    unsigned char IDLength;             /* length of Identifier String */
+    unsigned char CoMapType;            /* 0 = no map */
+    unsigned char ImgType;              /* image type (see below for values) */
+    unsigned char Index_lo, Index_hi;   /* index of first color map entry */
+    unsigned char Length_lo, Length_hi; /* number of entries in color map */
+    unsigned char CoSize;               /* size of color map entry (15,16,24,32) */
+    unsigned char X_org_lo, X_org_hi;   /* x origin of image */
+    unsigned char Y_org_lo, Y_org_hi;   /* y origin of image */
+    unsigned char Width_lo, Width_hi;   /* width of image */
+    unsigned char Height_lo, Height_hi; /* height of image */
+    unsigned char PixelSize;            /* pixel size (8,16,24,32) */
+    unsigned char AttBits;              /* 4 bits, number of attribute bits per pixel */
+    unsigned char Rsrvd;                /* 1 bit, reserved */
+    unsigned char OrgBit;               /* 1 bit, origin: 0=lower left, 1=upper left */
+    unsigned char IntrLve;              /* 2 bits, interleaving flag */
     };
 
 typedef char ImageIDField[256];
@@ -185,67 +185,67 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
     /* Read the Targa file header. */
     readtga( file, tga_head, magic_number );
     /*
-	{
-	pm_message( "IDLength = %d", (int) tga_head->IDLength );
-	pm_message( "CoMapType = %d", (int) tga_head->CoMapType );
-	pm_message( "ImgType = %d", (int) tga_head->ImgType );
-	pm_message( "Index_lo = %d", (int) tga_head->Index_lo );
-	pm_message( "Index_hi = %d", (int) tga_head->Index_hi );
-	pm_message( "Length_lo = %d", (int) tga_head->Length_lo );
-	pm_message( "Length_hi = %d", (int) tga_head->Length_hi );
-	pm_message( "CoSize = %d", (int) tga_head->CoSize );
-	pm_message( "X_org_lo = %d", (int) tga_head->X_org_lo );
-	pm_message( "X_org_hi = %d", (int) tga_head->X_org_hi );
-	pm_message( "Y_org_lo = %d", (int) tga_head->Y_org_lo );
-	pm_message( "Y_org_hi = %d", (int) tga_head->Y_org_hi );
-	pm_message( "Width_lo = %d", (int) tga_head->Width_lo );
-	pm_message( "Width_hi = %d", (int) tga_head->Width_hi );
-	pm_message( "Height_lo = %d", (int) tga_head->Height_lo );
- 	pm_message( "Height_hi = %d", (int) tga_head->Height_hi );
-	pm_message( "PixelSize = %d", (int) tga_head->PixelSize );
-	pm_message( "AttBits = %d", (int) tga_head->AttBits );
-	pm_message( "Rsrvd = %d", (int) tga_head->Rsrvd );
-	pm_message( "OrgBit = %d", (int) tga_head->OrgBit );
-	pm_message( "IntrLve = %d", (int) tga_head->IntrLve );
-	}
+        {
+        pm_message( "IDLength = %d", (int) tga_head->IDLength );
+        pm_message( "CoMapType = %d", (int) tga_head->CoMapType );
+        pm_message( "ImgType = %d", (int) tga_head->ImgType );
+        pm_message( "Index_lo = %d", (int) tga_head->Index_lo );
+        pm_message( "Index_hi = %d", (int) tga_head->Index_hi );
+        pm_message( "Length_lo = %d", (int) tga_head->Length_lo );
+        pm_message( "Length_hi = %d", (int) tga_head->Length_hi );
+        pm_message( "CoSize = %d", (int) tga_head->CoSize );
+        pm_message( "X_org_lo = %d", (int) tga_head->X_org_lo );
+        pm_message( "X_org_hi = %d", (int) tga_head->X_org_hi );
+        pm_message( "Y_org_lo = %d", (int) tga_head->Y_org_lo );
+        pm_message( "Y_org_hi = %d", (int) tga_head->Y_org_hi );
+        pm_message( "Width_lo = %d", (int) tga_head->Width_lo );
+        pm_message( "Width_hi = %d", (int) tga_head->Width_hi );
+        pm_message( "Height_lo = %d", (int) tga_head->Height_lo );
+        pm_message( "Height_hi = %d", (int) tga_head->Height_hi );
+        pm_message( "PixelSize = %d", (int) tga_head->PixelSize );
+        pm_message( "AttBits = %d", (int) tga_head->AttBits );
+        pm_message( "Rsrvd = %d", (int) tga_head->Rsrvd );
+        pm_message( "OrgBit = %d", (int) tga_head->OrgBit );
+        pm_message( "IntrLve = %d", (int) tga_head->IntrLve );
+        }
     */
     rows = ( (int) tga_head->Height_lo ) + ( (int) tga_head->Height_hi ) * 256;
     cols = ( (int) tga_head->Width_lo ) + ( (int) tga_head->Width_hi ) * 256;
 
     switch ( tga_head->ImgType )
-	{
-	case TGA_Map:
-	case TGA_RGB:
-	case TGA_Mono:
-	case TGA_RLEMap:
-	case TGA_RLERGB:
-	case TGA_RLEMono:
-	break;
+        {
+        case TGA_Map:
+        case TGA_RGB:
+        case TGA_Mono:
+        case TGA_RLEMap:
+        case TGA_RLERGB:
+        case TGA_RLEMono:
+        break;
 
-	default:
-	pm_error( "unknown Targa image type %d", tga_head->ImgType );
-	}
+        default:
+        pm_error( "unknown Targa image type %d", tga_head->ImgType );
+        }
 
     int size;
 
     if ( tga_head->ImgType == TGA_Map ||
-	 tga_head->ImgType == TGA_RLEMap ||
-	 tga_head->ImgType == TGA_CompMap ||
-	 tga_head->ImgType == TGA_CompMap4 )
-	{ /* Color-mapped image */
-	if ( tga_head->CoMapType != 1 )
-	    pm_error( 
-		"mapped image (type %d) with color map type != 1",
-		tga_head->ImgType );
-	mapped = 1;
-	/* Figure maxval from CoSize. */
-	size = tga_head->CoSize;
-	}
+         tga_head->ImgType == TGA_RLEMap ||
+         tga_head->ImgType == TGA_CompMap ||
+         tga_head->ImgType == TGA_CompMap4 )
+        { /* Color-mapped image */
+        if ( tga_head->CoMapType != 1 )
+            pm_error( 
+                "mapped image (type %d) with color map type != 1",
+                tga_head->ImgType );
+        mapped = 1;
+        /* Figure maxval from CoSize. */
+        size = tga_head->CoSize;
+        }
     else
-	{ /* Not colormap, so figure maxval from PixelSize. */
-	mapped = 0;
-	size = tga_head->PixelSize;
-	}
+        { /* Not colormap, so figure maxval from PixelSize. */
+        mapped = 0;
+        size = tga_head->PixelSize;
+        }
 
     switch ( size ) {
     case 8:
@@ -275,24 +275,24 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
 
     /* If required, read the color map information. */
     if ( tga_head->CoMapType != 0 )
-	{
-	unsigned int temp1, temp2;
-	temp1 = tga_head->Index_lo + tga_head->Index_hi * 256;
-	temp2 = tga_head->Length_lo + tga_head->Length_hi * 256;
-	if ( ( temp1 + temp2 + 1 ) >= TGA_MAXCOLORS )
-	    pm_error( "too many colors - %d", ( temp1 + temp2 + 1 ) );
-	for ( unsigned int i = temp1; i < ( temp1 + temp2 ); ++i )
-	    get_map_entry( file, &ColorMap[i], (int) tga_head->CoSize,
+        {
+        unsigned int temp1, temp2;
+        temp1 = tga_head->Index_lo + tga_head->Index_hi * 256;
+        temp2 = tga_head->Length_lo + tga_head->Length_hi * 256;
+        if ( ( temp1 + temp2 + 1 ) >= TGA_MAXCOLORS )
+            pm_error( "too many colors - %d", ( temp1 + temp2 + 1 ) );
+        for ( unsigned int i = temp1; i < ( temp1 + temp2 ); ++i )
+            get_map_entry( file, &ColorMap[i], (int) tga_head->CoSize,
                        &AlphaMap[i]);
-	}
+        }
 
     /* Check run-length encoding. */
     if ( tga_head->ImgType == TGA_RLEMap ||
-	 tga_head->ImgType == TGA_RLERGB ||
-	 tga_head->ImgType == TGA_RLEMono )
-	rlencoded = 1;
+         tga_head->ImgType == TGA_RLERGB ||
+         tga_head->ImgType == TGA_RLEMono )
+        rlencoded = 1;
     else
-	rlencoded = 0;
+        rlencoded = 0;
 
     _x_size = cols;
     _y_size = rows;
@@ -328,24 +328,24 @@ read_data(xel *array, xelval *alpha) {
     int truerow = 0;
     int baserow = 0;
     for ( int row = 0; row < rows; ++row )
-	{
-	int realrow = truerow;
-	if ( tga_head->OrgBit == 0 )
-	    realrow = rows - realrow - 1;
+        {
+        int realrow = truerow;
+        if ( tga_head->OrgBit == 0 )
+            realrow = rows - realrow - 1;
 
-	for ( int col = 0; col < cols; ++col )
-	    get_pixel( _file, &(array[realrow * cols + col]), 
-		       (int) tga_head->PixelSize,
-		       &(alpha[realrow * cols + col]) );
-	if ( tga_head->IntrLve == TGA_IL_Four )
-	    truerow += 4;
-	else if ( tga_head->IntrLve == TGA_IL_Two )
-	    truerow += 2;
-	else
-	    ++truerow;
-	if ( truerow >= rows )
-	    truerow = ++baserow;
-	}
+        for ( int col = 0; col < cols; ++col )
+            get_pixel( _file, &(array[realrow * cols + col]), 
+                       (int) tga_head->PixelSize,
+                       &(alpha[realrow * cols + col]) );
+        if ( tga_head->IntrLve == TGA_IL_Four )
+            truerow += 4;
+        else if ( tga_head->IntrLve == TGA_IL_Two )
+            truerow += 2;
+        else
+            ++truerow;
+        if ( truerow >= rows )
+            truerow = ++baserow;
+        }
 
   return rows;
 }
@@ -435,15 +435,15 @@ write_data(xel *array, xelval *) {
     if (tga_colormap) {
       // It may even be colormapped if there are few enough colors.
       pnmimage_tga_cat.info()
-	<< "computing colormap...\n";
+        << "computing colormap...\n";
       chv = ppm_computecolorhist(&array, cols * rows, 1, TGA_MAXCOLORS, &ncolors );
       if ( chv == (colorhist_vector) 0 ) {
-	pnmimage_tga_cat.info()
-	  << "too many colors, writing RGB.\n";
+        pnmimage_tga_cat.info()
+          << "too many colors, writing RGB.\n";
       } else {
-	pnmimage_tga_cat.info()
-	  << ncolors << " colors found.\n";
-	tgaHeader->ImgType = TGA_Map;
+        pnmimage_tga_cat.info()
+          << ncolors << " colors found.\n";
+        tgaHeader->ImgType = TGA_Map;
       }
     }
   }
@@ -451,19 +451,19 @@ write_data(xel *array, xelval *) {
   if ( rle_flag )
     {
       switch ( tgaHeader->ImgType )
-	{
-	case TGA_Mono:
-	  tgaHeader->ImgType = TGA_RLEMono;
-	  break;
-	case TGA_Map:
-	  tgaHeader->ImgType = TGA_RLEMap;
-	  break;
-	case TGA_RGB:
-	  tgaHeader->ImgType = TGA_RLERGB;
-	  break;
-	default:
-	  pm_error( "can't happen" );
-	}
+        {
+        case TGA_Mono:
+          tgaHeader->ImgType = TGA_RLEMono;
+          break;
+        case TGA_Map:
+          tgaHeader->ImgType = TGA_RLEMap;
+          break;
+        case TGA_RGB:
+          tgaHeader->ImgType = TGA_RLERGB;
+          break;
+        default:
+          pm_error( "can't happen" );
+        }
       runlength = (int*) pm_allocrow( cols, sizeof(int) );
     }
     
@@ -509,7 +509,7 @@ write_data(xel *array, xelval *) {
     {
       /* Write out the Targa colormap. */
       for ( i = 0; i < ncolors; ++i )
-	put_map_entry( &chv[i].color, tgaHeader->CoSize, _maxval );
+        put_map_entry( &chv[i].color, tgaHeader->CoSize, _maxval );
     }
 
   /* Write out the pixels */
@@ -517,36 +517,36 @@ write_data(xel *array, xelval *) {
     {
       int realrow = row;
       if ( tgaHeader->OrgBit == 0 )
-	realrow = rows - realrow - 1;
+        realrow = rows - realrow - 1;
       if ( rle_flag )
-	{
-	  compute_runlengths( cols, &array[realrow * cols], runlength );
-	  for ( col = 0; col < cols; )
-	    {
-	      if ( runlength[col] > 0 )
-		{
-		  fputc( 0x80 + runlength[col] - 1, _file );
-		  put_pixel(&(array[realrow * cols + col]),
-			    tgaHeader->ImgType, _maxval, cht );
-		  col += runlength[col];
-		}
-	      else if ( runlength[col] < 0 )
-		{
-		  fputc( -runlength[col] - 1, _file );
-		  for ( i = 0; i < -runlength[col]; ++i )
-		    put_pixel(&(array[realrow * cols + (col + i)]),
-			      tgaHeader->ImgType, _maxval, cht );
-		  col += -runlength[col];
-		}
-	      else
-		pm_error( "can't happen" );
-	    }
-	}
+        {
+          compute_runlengths( cols, &array[realrow * cols], runlength );
+          for ( col = 0; col < cols; )
+            {
+              if ( runlength[col] > 0 )
+                {
+                  fputc( 0x80 + runlength[col] - 1, _file );
+                  put_pixel(&(array[realrow * cols + col]),
+                            tgaHeader->ImgType, _maxval, cht );
+                  col += runlength[col];
+                }
+              else if ( runlength[col] < 0 )
+                {
+                  fputc( -runlength[col] - 1, _file );
+                  for ( i = 0; i < -runlength[col]; ++i )
+                    put_pixel(&(array[realrow * cols + (col + i)]),
+                              tgaHeader->ImgType, _maxval, cht );
+                  col += -runlength[col];
+                }
+              else
+                pm_error( "can't happen" );
+            }
+        }
       else
-	{
-	  for ( col = 0, pP = &array[realrow * cols]; col < cols; ++col, ++pP )
-	    put_pixel( pP, tgaHeader->ImgType, _maxval, cht );
-	}
+        {
+          for ( col = 0, pP = &array[realrow * cols]; col < cols; ++col, ++pP )
+            put_pixel( pP, tgaHeader->ImgType, _maxval, cht );
+        }
     }
 
   return rows;
@@ -628,7 +628,7 @@ readtga( FILE *ifp, struct ImageHeader *tgaP, const string &magic_number ) {
     tgaP->IntrLve = ( flags & 0xc0 ) >> 6;
 
     if ( tgaP->IDLength != 0 )
-	fread( junk, 1, (int) tgaP->IDLength, ifp );
+        fread( junk, 1, (int) tgaP->IDLength, ifp );
     }
 
 void PNMFileTypeTGA::Reader::
@@ -637,36 +637,36 @@ get_map_entry( FILE *ifp, pixel *Value, int Size, gray *Alpha ) {
 
     /* Read appropriate number of bytes, break into rgb & put in map. */
     switch ( Size )
-	{
-	case 8:				/* Grey scale, read and triplicate. */
-	r = g = b = getbyte( ifp );
+        {
+        case 8:                         /* Grey scale, read and triplicate. */
+        r = g = b = getbyte( ifp );
     a = 0;
-	break;
+        break;
 
-	case 16:			/* 5 bits each of red green and blue. */
-	case 15:			/* Watch for byte order. */
-	j = getbyte( ifp );
-	k = getbyte( ifp );
-	r = ( k & 0x7C ) >> 2;
-	g = ( ( k & 0x03 ) << 3 ) + ( ( j & 0xE0 ) >> 5 );
-	b = j & 0x1F;
+        case 16:                        /* 5 bits each of red green and blue. */
+        case 15:                        /* Watch for byte order. */
+        j = getbyte( ifp );
+        k = getbyte( ifp );
+        r = ( k & 0x7C ) >> 2;
+        g = ( ( k & 0x03 ) << 3 ) + ( ( j & 0xE0 ) >> 5 );
+        b = j & 0x1F;
     a = 0;
-	break;
+        break;
 
-	case 32:            /* 8 bits each of blue, green, red, and alpha */
-	case 24:			/* 8 bits each of blue green and red. */
-	b = getbyte( ifp );
-	g = getbyte( ifp );
-	r = getbyte( ifp );
-	if ( Size == 32 )
-	    a = getbyte( ifp );
+        case 32:            /* 8 bits each of blue, green, red, and alpha */
+        case 24:                        /* 8 bits each of blue green and red. */
+        b = getbyte( ifp );
+        g = getbyte( ifp );
+        r = getbyte( ifp );
+        if ( Size == 32 )
+            a = getbyte( ifp );
     else 
         a = 0;
-	break;
+        break;
 
-	default:
-	pm_error( "unknown colormap pixel size (#2) - %d", Size );
-	}
+        default:
+        pm_error( "unknown colormap pixel size (#2) - %d", Size );
+        }
     PPM_ASSIGN( *Value, r, g, b );
     *Alpha = a;
     }
@@ -682,75 +682,75 @@ get_pixel( FILE *ifp, pixel *dest, int Size, gray *alpha_p) {
 
     /* Check if run length encoded. */
     if ( rlencoded )
-	{
-	if ( RLE_count == 0 )
-	    { /* Have to restart run. */
-	    unsigned char i;
-	    i = getbyte( ifp );
-	    RLE_flag = ( i & 0x80 );
-	    if ( RLE_flag == 0 )
-		/* Stream of unencoded pixels. */
-		RLE_count = i + 1;
-	    else
-		/* Single pixel replicated. */
-		RLE_count = i - 127;
-	    /* Decrement count & get pixel. */
-	    --RLE_count;
-	    }
-	else
-	    { /* Have already read count & (at least) first pixel. */
-	    --RLE_count;
-	    if ( RLE_flag != 0 )
-		/* Replicated pixels. */
-		goto PixEncode;
-	    }
-	}
+        {
+        if ( RLE_count == 0 )
+            { /* Have to restart run. */
+            unsigned char i;
+            i = getbyte( ifp );
+            RLE_flag = ( i & 0x80 );
+            if ( RLE_flag == 0 )
+                /* Stream of unencoded pixels. */
+                RLE_count = i + 1;
+            else
+                /* Single pixel replicated. */
+                RLE_count = i - 127;
+            /* Decrement count & get pixel. */
+            --RLE_count;
+            }
+        else
+            { /* Have already read count & (at least) first pixel. */
+            --RLE_count;
+            if ( RLE_flag != 0 )
+                /* Replicated pixels. */
+                goto PixEncode;
+            }
+        }
     /* Read appropriate number of bytes, break into RGB. */
     switch ( Size )
-	{
-	case 8:				/* Grey scale, read and triplicate. */
-	Red = Grn = Blu = l = getbyte( ifp );
+        {
+        case 8:                         /* Grey scale, read and triplicate. */
+        Red = Grn = Blu = l = getbyte( ifp );
     Alpha = 0;
-	break;
+        break;
 
-	case 16:			/* 5 bits each of red green and blue. */
-	case 15:			/* Watch byte order. */
-	j = getbyte( ifp );
-	k = getbyte( ifp );
-	l = ( (unsigned int) k << 8 ) + j;
-	Red = ( k & 0x7C ) >> 2;
-	Grn = ( ( k & 0x03 ) << 3 ) + ( ( j & 0xE0 ) >> 5 );
-	Blu = j & 0x1F;
+        case 16:                        /* 5 bits each of red green and blue. */
+        case 15:                        /* Watch byte order. */
+        j = getbyte( ifp );
+        k = getbyte( ifp );
+        l = ( (unsigned int) k << 8 ) + j;
+        Red = ( k & 0x7C ) >> 2;
+        Grn = ( ( k & 0x03 ) << 3 ) + ( ( j & 0xE0 ) >> 5 );
+        Blu = j & 0x1F;
     Alpha = 0;
-	break;
+        break;
 
-	case 32:            /* 8 bits each of blue, green, red, and alpha */
-	case 24:			/* 8 bits each of blue, green, and red. */
-	Blu = getbyte( ifp );
-	Grn = getbyte( ifp );
-	Red = getbyte( ifp );
-	if ( Size == 32 )
-	    Alpha = getbyte( ifp );
+        case 32:            /* 8 bits each of blue, green, red, and alpha */
+        case 24:                        /* 8 bits each of blue, green, and red. */
+        Blu = getbyte( ifp );
+        Grn = getbyte( ifp );
+        Red = getbyte( ifp );
+        if ( Size == 32 )
+            Alpha = getbyte( ifp );
     else
         Alpha = 0;
-	l = 0;
-	break;
+        l = 0;
+        break;
 
-	default:
-	pm_error( "unknown pixel size (#2) - %d", Size );
-	}
+        default:
+        pm_error( "unknown pixel size (#2) - %d", Size );
+        }
 
 PixEncode:
     if ( mapped ) {
         *dest = ColorMap[l];
-	if (has_alpha()) {
-	  *alpha_p = AlphaMap[l];
-	}
+        if (has_alpha()) {
+          *alpha_p = AlphaMap[l];
+        }
     } else {
         PPM_ASSIGN( *dest, Red, Grn, Blu );
-	if (has_alpha()) {
-	  *alpha_p = Alpha;
-	}
+        if (has_alpha()) {
+          *alpha_p = Alpha;
+        }
     }
     }
 
@@ -760,7 +760,7 @@ getbyte( FILE *ifp ) {
     unsigned char c;
 
     if ( fread( (char*) &c, 1, 1, ifp ) != 1 )
-	pm_error( "EOF / read error" );
+        pm_error( "EOF / read error" );
 
     return c;
     }
@@ -788,7 +788,7 @@ writetga( struct ImageHeader *tgaP, char *id )
     fputc( tgaP->Height_hi, _file );
     fputc( tgaP->PixelSize, _file );
     flags = ( tgaP->AttBits & 0xf ) | ( ( tgaP->Rsrvd & 0x1 ) << 4 ) |
-	    ( ( tgaP->OrgBit & 0x1 ) << 5 ) | ( ( tgaP->OrgBit & 0x3 ) << 6 );
+            ( ( tgaP->OrgBit & 0x1 ) << 5 ) | ( ( tgaP->OrgBit & 0x3 ) << 6 );
     fputc( flags, _file );
     if ( tgaP->IDLength )
         fwrite( id, 1, (int) tgaP->IDLength, _file );
@@ -801,28 +801,28 @@ put_map_entry( pixel* valueP, int size, pixval maxval )
     pixel p;
     
     switch ( size )
-	{
-	case 8:				/* Grey scale. */
-	put_mono( valueP, maxval );
-	break;
+        {
+        case 8:                         /* Grey scale. */
+        put_mono( valueP, maxval );
+        break;
 
-	case 16:			/* 5 bits each of red green and blue. */
-	case 15:			/* Watch for byte order. */
-	PPM_DEPTH( p, *valueP, maxval, 31 );
-	j = (int) PPM_GETB( p ) | ( (int) PPM_GETG( p ) << 5 ) |
-	    ( (int) PPM_GETR( p ) << 10 );
-	fputc( j % 256, _file );
-	fputc( j / 256, _file );
-	break;
+        case 16:                        /* 5 bits each of red green and blue. */
+        case 15:                        /* Watch for byte order. */
+        PPM_DEPTH( p, *valueP, maxval, 31 );
+        j = (int) PPM_GETB( p ) | ( (int) PPM_GETG( p ) << 5 ) |
+            ( (int) PPM_GETR( p ) << 10 );
+        fputc( j % 256, _file );
+        fputc( j / 256, _file );
+        break;
 
-	case 32:
-	case 24:			/* 8 bits each of blue green and red. */
-	put_rgb( valueP, maxval );
-	break;
+        case 32:
+        case 24:                        /* 8 bits each of blue green and red. */
+        put_rgb( valueP, maxval );
+        break;
 
-	default:
-	pm_error( "unknown colormap pixel size (#2) - %d", size );
-	}
+        default:
+        pm_error( "unknown colormap pixel size (#2) - %d", size );
+        }
     }
 
 void PNMFileTypeTGA::Writer::
@@ -832,61 +832,61 @@ compute_runlengths( int cols, pixel *pixelrow, int *runlength )
 
     /* Initialize all run lengths to 0.  (This is just an error check.) */
     for ( col = 0; col < cols; ++col )
-	runlength[col] = 0;
+        runlength[col] = 0;
     
     /* Find runs of identical pixels. */
     for ( col = 0; col < cols; )
-	{
-	start = col;
-	do {
-	    ++col;
-	    }
-	while ( col < cols &&
-		col - start < 128 &&
-		PPM_EQUAL( pixelrow[col], pixelrow[start] ) );
-	runlength[start] = col - start;
-	}
+        {
+        start = col;
+        do {
+            ++col;
+            }
+        while ( col < cols &&
+                col - start < 128 &&
+                PPM_EQUAL( pixelrow[col], pixelrow[start] ) );
+        runlength[start] = col - start;
+        }
     
     /* Now look for runs of length-1 runs, and turn them into negative runs. */
     for ( col = 0; col < cols; )
-	{
-	if ( runlength[col] == 1 )
-	    {
-	    start = col;
-	    while ( col < cols &&
-		    col - start < 128 &&
-		    runlength[col] == 1 )
-		{
-		runlength[col] = 0;
-		++col;
-		}
-	    runlength[start] = - ( col - start );
-	    }
-	else
-	    col += runlength[col];
-	}
+        {
+        if ( runlength[col] == 1 )
+            {
+            start = col;
+            while ( col < cols &&
+                    col - start < 128 &&
+                    runlength[col] == 1 )
+                {
+                runlength[col] = 0;
+                ++col;
+                }
+            runlength[start] = - ( col - start );
+            }
+        else
+            col += runlength[col];
+        }
     }
 
 void PNMFileTypeTGA::Writer::
 put_pixel( pixel* pP, int imgtype, pixval maxval, colorhash_table cht )
     {
     switch ( imgtype )
-	{
-	case TGA_Mono:
-	case TGA_RLEMono:
-	put_mono( pP, maxval );
-	break;
-	case TGA_Map:
-	case TGA_RLEMap:
-	put_map( pP, cht );
-	break;
-	case TGA_RGB:
-	case TGA_RLERGB:
-	put_rgb( pP, maxval );
-	break;
-	default:
-	pm_error( "can't happen" );
-	}
+        {
+        case TGA_Mono:
+        case TGA_RLEMono:
+        put_mono( pP, maxval );
+        break;
+        case TGA_Map:
+        case TGA_RLEMap:
+        put_map( pP, cht );
+        break;
+        case TGA_RGB:
+        case TGA_RLERGB:
+        put_rgb( pP, maxval );
+        break;
+        default:
+        pm_error( "can't happen" );
+        }
     }
 
 void PNMFileTypeTGA::Writer::

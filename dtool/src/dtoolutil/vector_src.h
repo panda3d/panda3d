@@ -62,7 +62,7 @@ typedef std::vector<TYPE> NAME;
 /*
 extern EXPCL void
 insert_into_vector(NAME &vec, NAME::iterator where,
-		   const TYPE *begin, const TYPE *end);
+                   const TYPE *begin, const TYPE *end);
 */
 
 

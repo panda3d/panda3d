@@ -238,8 +238,8 @@ r_make_complete(PaletteGroups::Groups &result, PaletteGroup *group) {
   if (inserted) {
     Groups::const_iterator gi;
     for (gi = group->_dependent._groups.begin();
-	 gi != group->_dependent._groups.end();
-	 ++gi) {
+         gi != group->_dependent._groups.end();
+         ++gi) {
       r_make_complete(result, *gi);
     }
   }

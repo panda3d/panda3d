@@ -16,7 +16,7 @@
 #include <list>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggNurbsSurface
+//       Class : EggNurbsSurface
 // Description : A parametric NURBS surface.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggNurbsSurface : public EggSurface {
@@ -32,7 +32,7 @@ public:
   INLINE EggNurbsSurface &operator = (const EggNurbsSurface &copy);
 
   void setup(int u_order, int v_order,
-	     int num_u_knots, int num_v_knots);
+             int num_u_knots, int num_v_knots);
 
   INLINE void set_u_order(int u_order);
   INLINE void set_v_order(int v_order);

@@ -15,7 +15,7 @@ TypeHandle VrpnDialDevice::_type_handle;
 ////////////////////////////////////////////////////////////////////
 VrpnDialDevice::
 VrpnDialDevice(VrpnClient *client, const string &device_name,
-		 VrpnDial *vrpn_dial) :
+                 VrpnDial *vrpn_dial) :
   ClientDialDevice(client, device_name),
   _vrpn_dial(vrpn_dial)
 {

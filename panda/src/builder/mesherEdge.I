@@ -63,7 +63,7 @@ template <class PrimType>
 INLINE float MesherEdge<PrimType>::
 compute_length(const BuilderBucket &bucket) const {
   LVector3f v = ((const Vertexf &)_a->get_coord_value(bucket) - 
-		 (const Vertexf &)_b->get_coord_value(bucket));
+                 (const Vertexf &)_b->get_coord_value(bucket));
   return length(v);
 }
   
@@ -71,7 +71,7 @@ template <class PrimType>
 INLINE Vertexf MesherEdge<PrimType>::
 compute_box(const BuilderBucket &bucket) const {
   LVector3f v = ((const Vertexf &)_a->get_coord_value(bucket) - 
-		 (const Vertexf &)_b->get_coord_value(bucket));
+                 (const Vertexf &)_b->get_coord_value(bucket));
   return Vertexf(fabs(v[0]), fabs(v[1]), fabs(v[2]));
 }
   
@@ -136,11 +136,11 @@ output(ostream &out) const {
 
   if (_opposite!=NULL) {
     out << " opposite "
-	<< _opposite->_strips.size() << " strips:";
+        << _opposite->_strips.size() << " strips:";
     
     for (si = _opposite->_strips.begin(); 
-	 si != _opposite->_strips.end(); 
-	 ++si) {
+         si != _opposite->_strips.end(); 
+         ++si) {
       out << " " << (*si)->_index;
     }
   }

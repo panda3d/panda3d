@@ -17,6 +17,6 @@ class NodeAttributes;
 //               data values included in the indicated state.
 ////////////////////////////////////////////////////////////////////
 void describe_data_verbose(ostream &out, const NodeAttributes &state,
-			   int indent_level = 0);
+                           int indent_level = 0);
 
 #endif

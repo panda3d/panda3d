@@ -38,7 +38,7 @@ TypeHandle RIBGraphicsPipe::get_class_type(void) {
 void RIBGraphicsPipe::init_type(void) {
   NoninteractiveGraphicsPipe::init_type();
   register_type(_type_handle, "RIBGraphicsPipe",
-		NoninteractiveGraphicsPipe::get_class_type());
+                NoninteractiveGraphicsPipe::get_class_type());
 }
 
 TypeHandle RIBGraphicsPipe::get_type(void) const {

@@ -13,7 +13,7 @@
 #include <onAttribute.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : RenderModeAttribute
+//       Class : RenderModeAttribute
 // Description : See RenderModeTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA RenderModeAttribute : public OnAttribute {
@@ -51,7 +51,7 @@ public:
   static void init_type() {
     OnAttribute::init_type();
     register_type(_type_handle, "RenderModeAttribute",
-		  OnAttribute::get_class_type());
+                  OnAttribute::get_class_type());
   }
 
 private:

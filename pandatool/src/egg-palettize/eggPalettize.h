@@ -11,7 +11,7 @@
 #include <eggMultiFilter.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggPalettize
+//       Class : EggPalettize
 // Description : This is the program wrapper for egg-palettize, but it
 //               mainly serves to read in all the command-line
 //               parameters and then invoke the Palettizer.

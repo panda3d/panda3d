@@ -62,8 +62,8 @@ void glxGraphicsPipe::init_type(void) {
   InteractiveGraphicsPipe::init_type();
   glxDisplay::init_type();
   register_type(_type_handle, "glxGraphicsPipe",
-		InteractiveGraphicsPipe::get_class_type(),
-		glxDisplay::get_class_type());
+                InteractiveGraphicsPipe::get_class_type(),
+                glxDisplay::get_class_type());
 }
 
 TypeHandle glxGraphicsPipe::get_type(void) const {

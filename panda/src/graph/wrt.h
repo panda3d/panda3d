@@ -71,29 +71,29 @@ wrt(const Node *from,
 template<class TransitionWrapper>
 INLINE_GRAPH void
 uncached_wrt(const Node *from, const Node *to,
-	     TransitionWrapper &result, TypeHandle graph_type);
+             TransitionWrapper &result, TypeHandle graph_type);
 
 template<class InputIterator, class TransitionWrapper>
 INLINE_GRAPH void
 uncached_wrt(const Node *from,
-	     InputIterator from_arcs_begin, InputIterator from_arcs_end,
-	     const Node *to,
-	     TransitionWrapper &result, TypeHandle graph_type);
+             InputIterator from_arcs_begin, InputIterator from_arcs_end,
+             const Node *to,
+             TransitionWrapper &result, TypeHandle graph_type);
 
 template<class InputIterator, class TransitionWrapper>
 INLINE_GRAPH void
 uncached_wrt(const Node *from,
-	     const Node *to,
-	     InputIterator to_arcs_begin, InputIterator to_arcs_end,
-	     TransitionWrapper &result, TypeHandle graph_type);
+             const Node *to,
+             InputIterator to_arcs_begin, InputIterator to_arcs_end,
+             TransitionWrapper &result, TypeHandle graph_type);
 
 template<class InputIterator1, class InputIterator2, class TransitionWrapper>
 INLINE_GRAPH void
 uncached_wrt(const Node *from,
-	     InputIterator1 from_arcs_begin, InputIterator1 from_arcs_end,
-	     const Node *to,
-	     InputIterator2 to_arcs_begin, InputIterator2 to_arcs_end,
-	     TransitionWrapper &result, TypeHandle graph_type);
+             InputIterator1 from_arcs_begin, InputIterator1 from_arcs_end,
+             const Node *to,
+             InputIterator2 to_arcs_begin, InputIterator2 to_arcs_end,
+             TransitionWrapper &result, TypeHandle graph_type);
 #endif
 
 
@@ -127,7 +127,7 @@ uncached_wrt(const Node *from,
 template<class TransitionWrapper>
 INLINE_GRAPH Node *
 wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
-	    TransitionWrapper &result, TypeHandle graph_type);
+            TransitionWrapper &result, TypeHandle graph_type);
 
 // This is used to count the amount of time spend in calls to wrt().
 extern EXPCL_PANDA PStatCollector _wrt_pcollector;

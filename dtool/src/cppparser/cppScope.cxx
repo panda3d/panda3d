@@ -30,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 CPPScope::
 CPPScope(CPPScope *parent_scope,
-	 const CPPNameComponent &name, CPPVisibility starting_vis) :
+         const CPPNameComponent &name, CPPVisibility starting_vis) :
   _name(name),
   _parent_scope(parent_scope),
   _current_vis(starting_vis)
@@ -113,7 +113,7 @@ get_current_vis() const {
 ////////////////////////////////////////////////////////////////////
 void CPPScope::
 add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
-		CPPPreprocessor *preprocessor, const cppyyltype &pos) {
+                CPPPreprocessor *preprocessor, const cppyyltype &pos) {
   decl->_vis = _current_vis;
 
   // Get the recent comments from the preprocessor.  These are the
@@ -215,7 +215,7 @@ define_namespace(CPPNamespace *scope) {
 ////////////////////////////////////////////////////////////////////
 void CPPScope::
 add_using(CPPUsing *using_decl, CPPScope *global_scope,
-	  CPPPreprocessor *error_sink) {
+          CPPPreprocessor *error_sink) {
   if (using_decl->_full_namespace) {
     CPPScope *scope = 
       using_decl->_ident->find_scope(this, global_scope);
@@ -223,7 +223,7 @@ add_using(CPPUsing *using_decl, CPPScope *global_scope,
       _using.insert(scope);
     } else {
       if (error_sink != NULL) {
-	error_sink->warning("Attempt to use undefined namespace: " + using_decl->_ident->get_fully_scoped_name());
+        error_sink->warning("Attempt to use undefined namespace: " + using_decl->_ident->get_fully_scoped_name());
       }
     }
   } else {
@@ -232,7 +232,7 @@ add_using(CPPUsing *using_decl, CPPScope *global_scope,
       handle_declaration(decl, global_scope);
     } else {
       if (error_sink != NULL) {
-	error_sink->warning("Attempt to use unknown symbol: " + using_decl->_ident->get_fully_scoped_name());
+        error_sink->warning("Attempt to use unknown symbol: " + using_decl->_ident->get_fully_scoped_name());
       }
     }
   }
@@ -287,15 +287,15 @@ is_fully_specified() const {
 ////////////////////////////////////////////////////////////////////
 CPPScope *CPPScope::
 instantiate(const CPPTemplateParameterList *actual_params,
-	    CPPScope *current_scope, CPPScope *global_scope,
-	    CPPPreprocessor *error_sink) const {
+            CPPScope *current_scope, CPPScope *global_scope,
+            CPPPreprocessor *error_sink) const {
   CPPScope *this_scope = (CPPScope *)this;
 
   if (_parent_scope == NULL || 
       _parent_scope->as_template_scope() == NULL) {
     if (error_sink != NULL) {
       error_sink->warning("Ignoring template parameters for scope " + 
-			  get_local_name());
+                          get_local_name());
     }
     return this_scope;
   }
@@ -314,14 +314,14 @@ instantiate(const CPPTemplateParameterList *actual_params,
 
   /*
     cerr << "Instantiating " << get_simple_name()
-	 << "<" << *actual_params << ">\n";
+         << "<" << *actual_params << ">\n";
   */
 
   // Build the mapping of formal parameters to actual parameters.
   CPPTemplateScope *tscope = _parent_scope->as_template_scope();
   CPPDeclaration::SubstDecl subst;
   actual_params->build_subst_decl(tscope->_parameters, subst,
-				  current_scope, global_scope);
+                                  current_scope, global_scope);
 
   CPPScope *scope;
   if (subst.empty()) {
@@ -338,16 +338,16 @@ instantiate(const CPPTemplateParameterList *actual_params,
     // "instantiated" this scope with another template parameter.
     CPPTemplateParameterList::Parameters::const_iterator pi;
     for (pi = actual_params->_parameters.begin();
-	 pi != actual_params->_parameters.end();
-	 ++pi) {
+         pi != actual_params->_parameters.end();
+         ++pi) {
       CPPDeclaration *decl = (*pi);
       CPPClassTemplateParameter *ctp = decl->as_class_template_parameter();
       if (ctp != NULL) {
-	CPPInstance *inst = new CPPInstance(ctp, ctp->_ident);
-	CPPTypedef *td = new CPPTypedef(inst, true);
-	scope->_typedefs.insert(Typedefs::value_type
-				(ctp->_ident->get_local_name(),
-				 td));
+        CPPInstance *inst = new CPPInstance(ctp, ctp->_ident);
+        CPPTypedef *td = new CPPTypedef(inst, true);
+        scope->_typedefs.insert(Typedefs::value_type
+                                (ctp->_ident->get_local_name(),
+                                 td));
       }
     }
   }
@@ -366,7 +366,7 @@ instantiate(const CPPTemplateParameterList *actual_params,
 ////////////////////////////////////////////////////////////////////
 CPPScope *CPPScope::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
-		CPPScope *current_scope, CPPScope *global_scope) const {
+                CPPScope *current_scope, CPPScope *global_scope) const {
   CPPScope *this_scope = (CPPScope *)this;
 
   if (is_fully_specified()) {
@@ -434,14 +434,14 @@ find_type(const string &name, bool recurse) const {
   if (_struct_type != NULL) {
     CPPStructType::Derivation::const_iterator di;
     for (di = _struct_type->_derivation.begin(); 
-	 di != _struct_type->_derivation.end(); 
-	 ++di) {
+         di != _struct_type->_derivation.end(); 
+         ++di) {
       CPPStructType *st = (*di)._base->as_struct_type();
       if (st != NULL) {
-	CPPType *type = st->_scope->find_type(name, false);
-	if (type != NULL) {
-	  return type;
-	}
+        CPPType *type = st->_scope->find_type(name, false);
+        if (type != NULL) {
+          return type;
+        }
       }
     }
   }
@@ -460,7 +460,7 @@ find_type(const string &name, bool recurse) const {
 ////////////////////////////////////////////////////////////////////
 CPPType *CPPScope::
 find_type(const string &name, CPPDeclaration::SubstDecl &subst,
-	  CPPScope *global_scope, bool recurse) const {
+          CPPScope *global_scope, bool recurse) const {
   Typedefs::const_iterator ti;
   ti = _typedefs.find(name);
   if (ti != _typedefs.end()) {
@@ -480,15 +480,15 @@ find_type(const string &name, CPPDeclaration::SubstDecl &subst,
   if (_struct_type != NULL) {
     CPPStructType::Derivation::const_iterator di;
     for (di = _struct_type->_derivation.begin(); 
-	 di != _struct_type->_derivation.end(); 
-	 ++di) {
+         di != _struct_type->_derivation.end(); 
+         ++di) {
       CPPStructType *st = (*di)._base->as_struct_type();
       if (st != NULL) {
-	CPPType *type = st->_scope->find_type(name, subst, global_scope, 
-					      false);
-	if (type != NULL) {
-	  return type;
-	}
+        CPPType *type = st->_scope->find_type(name, subst, global_scope, 
+                                              false);
+        if (type != NULL) {
+          return type;
+        }
       }
     }
   }
@@ -522,11 +522,11 @@ find_scope(const string &name, bool recurse) const {
   } else if (_struct_type != NULL) {
     CPPStructType::Derivation::const_iterator di;
     for (di = _struct_type->_derivation.begin(); 
-	 di != _struct_type->_derivation.end(); 
-	 ++di) {
+         di != _struct_type->_derivation.end(); 
+         ++di) {
       CPPStructType *st = (*di)._base->as_struct_type();
       if (st != NULL) {
-	type = st->_scope->find_type(name, false);
+        type = st->_scope->find_type(name, false);
       }
     }
   }
@@ -560,7 +560,7 @@ find_scope(const string &name, bool recurse) const {
 ////////////////////////////////////////////////////////////////////
 CPPScope *CPPScope::
 find_scope(const string &name, CPPDeclaration::SubstDecl &subst,
-	   CPPScope *global_scope, bool recurse) const {
+           CPPScope *global_scope, bool recurse) const {
   CPPType *type = find_type(name, subst, global_scope, recurse);
   if (type == NULL) {
     return NULL;
@@ -617,14 +617,14 @@ find_symbol(const string &name, bool recurse) const {
   if (_struct_type != NULL) {
     CPPStructType::Derivation::const_iterator di;
     for (di = _struct_type->_derivation.begin(); 
-	 di != _struct_type->_derivation.end(); 
-	 ++di) {
+         di != _struct_type->_derivation.end(); 
+         ++di) {
       CPPStructType *st = (*di)._base->as_struct_type();
       if (st != NULL) {
-	CPPDeclaration *decl = st->_scope->find_symbol(name, false);
-	if (decl != NULL) {
-	  return decl;
-	}
+        CPPDeclaration *decl = st->_scope->find_symbol(name, false);
+        if (decl != NULL) {
+          return decl;
+        }
       }
     }
   }
@@ -660,14 +660,14 @@ find_template(const string &name, bool recurse) const {
   if (_struct_type != NULL) {
     CPPStructType::Derivation::const_iterator di;
     for (di = _struct_type->_derivation.begin(); 
-	 di != _struct_type->_derivation.end(); 
-	 ++di) {
+         di != _struct_type->_derivation.end(); 
+         ++di) {
       CPPStructType *st = (*di)._base->as_struct_type();
       if (st != NULL) {
-	CPPDeclaration *decl = st->_scope->find_template(name, false);
-	if (decl != NULL) {
-	  return decl;
-	}
+        CPPDeclaration *decl = st->_scope->find_template(name, false);
+        if (decl != NULL) {
+          return decl;
+        }
       }
     }
   }
@@ -769,7 +769,7 @@ write(ostream &out, int indent_level, CPPScope *scope) const {
     bool complete = false;
 
     if (cd->as_typedef() != NULL || cd->as_type() != NULL ||
-	cd->as_namespace() != NULL) {
+        cd->as_namespace() != NULL) {
       complete = true;
     }
 
@@ -822,7 +822,7 @@ as_template_scope() {
 ////////////////////////////////////////////////////////////////////
 bool CPPScope::
 copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
-		     CPPScope *global_scope) const {
+                     CPPScope *global_scope) const {
   bool anything_changed = false;
 
   if (_struct_type != NULL) {
@@ -832,21 +832,21 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
     }
     to_scope->_struct_type = 
       new CPPStructType(_struct_type->_type, 
-			new CPPIdentifier(to_scope->_name),
-			native_scope, to_scope, _struct_type->_file);
+                        new CPPIdentifier(to_scope->_name),
+                        native_scope, to_scope, _struct_type->_file);
     to_scope->_struct_type->_incomplete = false;
 
     // Copy the derivation to the new type.
     CPPStructType::Derivation::const_iterator di;
     for (di = _struct_type->_derivation.begin();
-	 di != _struct_type->_derivation.end();
-	 ++di) {
+         di != _struct_type->_derivation.end();
+         ++di) {
       CPPStructType::Base b = (*di);
       b._base = 
-	(*di)._base->substitute_decl(subst, to_scope, global_scope)->as_type();
+        (*di)._base->substitute_decl(subst, to_scope, global_scope)->as_type();
       to_scope->_struct_type->_derivation.push_back(b);
       if (b._base != (*di)._base) {
-	anything_changed = true;
+        anything_changed = true;
       }
     }
   }
@@ -926,13 +926,13 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
 
     CPPFunctionGroup::Instances::const_iterator ii;
     for (ii = fgroup->_instances.begin(); 
-	 ii != fgroup->_instances.end();
-	 ++ii) {
+         ii != fgroup->_instances.end();
+         ++ii) {
       CPPInstance *inst = 
-	(*ii)->substitute_decl(subst, to_scope, global_scope)->as_instance();
+        (*ii)->substitute_decl(subst, to_scope, global_scope)->as_instance();
       to_fgroup->_instances.push_back(inst);
       if (inst != (*ii)) {
-	anything_changed = true;
+        anything_changed = true;
       }
     }
   }
@@ -994,7 +994,7 @@ handle_declaration(CPPDeclaration *decl, CPPScope *global_scope) {
       // by the same name in another scope.
       
       if (find_template(name) == NULL) {
-	_templates.insert(Templates::value_type(name, def));
+        _templates.insert(Templates::value_type(name, def));
       }
     }
     return;
@@ -1016,42 +1016,42 @@ handle_declaration(CPPDeclaration *decl, CPPScope *global_scope) {
     string name = inst->get_simple_name();
     if (!name.empty() && inst->get_scope(this, global_scope) == this) {
       if (inst->_type->as_function_type()) {
-	// This is a function declaration; hence it gets added to
-	// the _functions member.  But we must be careful to share
-	// common-named functions.
-	
-	CPPFunctionGroup *fgroup;
-	Functions::const_iterator fi;
-	fi = _functions.find(name);
-	if (fi == _functions.end()) {
-	  fgroup = new CPPFunctionGroup(name);
-	  _functions.insert(Functions::value_type(name, fgroup));
-	} else {
-	  fgroup = (*fi).second;
-	}
-	fgroup->_instances.push_back(inst);
-	
+        // This is a function declaration; hence it gets added to
+        // the _functions member.  But we must be careful to share
+        // common-named functions.
+
+        CPPFunctionGroup *fgroup;
+        Functions::const_iterator fi;
+        fi = _functions.find(name);
+        if (fi == _functions.end()) {
+          fgroup = new CPPFunctionGroup(name);
+          _functions.insert(Functions::value_type(name, fgroup));
+        } else {
+          fgroup = (*fi).second;
+        }
+        fgroup->_instances.push_back(inst);
+
       } else {
-	// This is not a function declaration; hence it gets added
-	// to the _variables member.
-	_variables[name] = inst;
+        // This is not a function declaration; hence it gets added
+        // to the _variables member.
+        _variables[name] = inst;
       }
     
       if (inst->is_template()) {
-	// Don't add a new template definition if we already had one
-	// by the same name in another scope.
+        // Don't add a new template definition if we already had one
+        // by the same name in another scope.
 
-	if (find_template(name) == NULL) {
-	  _templates.insert(Templates::value_type(name, inst));
-	}
-	
-	/*
-	if (inst->_type->as_function_type() == NULL ||
-	    (inst->_type->as_function_type()->_flags & 
-	     CPPFunctionType::F_constructor) == 0) {
-	  _templates.insert(Templates::value_type(name, inst));
-	}
-	*/
+        if (find_template(name) == NULL) {
+          _templates.insert(Templates::value_type(name, inst));
+        }
+
+        /*
+        if (inst->_type->as_function_type() == NULL ||
+            (inst->_type->as_function_type()->_flags & 
+             CPPFunctionType::F_constructor) == 0) {
+          _templates.insert(Templates::value_type(name, inst));
+        }
+        */
       }
     }
     return;

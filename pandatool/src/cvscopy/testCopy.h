@@ -11,7 +11,7 @@
 #include "cvsCopy.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TestCopy
+//       Class : TestCopy
 // Description : A program to copy ordinary files into the cvs tree.
 //               Mainly to test CVSCopy.
 ////////////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@ public:
 
 protected:
   virtual bool copy_file(const Filename &source, const Filename &dest,
-			 CVSSourceDirectory *dir, void *extra_data,
-			 bool new_file);
+                         CVSSourceDirectory *dir, void *extra_data,
+                         bool new_file);
 };
 
 #endif

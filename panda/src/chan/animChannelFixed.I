@@ -15,7 +15,7 @@ TypeHandle AnimChannelFixed<SwitchType>::_type_handle;
 template<class SwitchType>
 INLINE AnimChannelFixed<SwitchType>::
 AnimChannelFixed(AnimGroup *parent, const string &name,
-		 const ValueType &value) 
+                 const ValueType &value) 
   : AnimChannel<SwitchType>(parent, name),
     _value(value) {
 }

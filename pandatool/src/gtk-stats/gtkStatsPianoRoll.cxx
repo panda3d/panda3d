@@ -22,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////
 GtkStatsPianoRoll::
 GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index,
-		  int xsize, int ysize) :
+                  int xsize, int ysize) :
   PStatPianoRoll(monitor, thread_index, xsize, ysize)
 {
   _is_dead = false;
@@ -120,9 +120,9 @@ begin_draw() {
     if (x >= 5 && x <= get_xsize() - 5) {
       // Only draw it if it's not too close to either edge.
       if (bar._is_target) {
-	_pixmap.draw_line(_light_gc, x, text_height + 4, x, get_ysize());
+        _pixmap.draw_line(_light_gc, x, text_height + 4, x, get_ysize());
       } else {
-	_pixmap.draw_line(_dark_gc, x, text_height + 4, x, get_ysize());
+        _pixmap.draw_line(_dark_gc, x, text_height + 4, x, get_ysize());
       }
     }
   }
@@ -139,7 +139,7 @@ draw_bar(int row, int from_x, int to_x) {
   if (row >= 0 && row < (int)_y_positions.size()) {
     int y = height() - _y_positions[row];
     _pixmap.draw_rectangle(get_collector_gc(get_label_collector(row)),
-			   true, from_x, y - 6, to_x - from_x, 12);
+                           true, from_x, y - 6, to_x - from_x, 12);
   }
 }
 
@@ -168,7 +168,7 @@ end_draw() {
       // Only draw it if it's not too close to either edge.
       int width = font.string_measure(bar._label);
       _pixmap.draw_string(font, _black_gc, x - width / 2, text_ascent + 2,
-			  bar._label);
+                          bar._label);
     }
   }
 
@@ -242,9 +242,9 @@ configure_event_impl(GdkEventConfigure *) {
 gint GtkStatsPianoRoll::
 expose_event_impl(GdkEventExpose *event) {
   get_window().draw_pixmap(_white_gc, _pixmap,
-			   event->area.x, event->area.y,
-			   event->area.x, event->area.y,
-			   event->area.width, event->area.height);
+                           event->area.x, event->area.y,
+                           event->area.x, event->area.y,
+                           event->area.width, event->area.height);
 
   return false;
 }

@@ -89,8 +89,8 @@ verify_datagram(const NetDatagram &datagram) const {
       << "Invalid datagram!\n";
     if (checksum != get_datagram_checksum()) {
       net_cat.debug()
-	<< "  checksum is " << checksum << ", header reports " 
-	<< get_datagram_checksum() << "\n";
+        << "  checksum is " << checksum << ", header reports " 
+        << get_datagram_checksum() << "\n";
     }
     
     // We write the hex dump into a ostringstream first, to guarantee

@@ -13,7 +13,7 @@
 #include <onTransition.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TransparencyTransition
+//       Class : TransparencyTransition
 // Description : This controls the enabling of transparency.  Simply
 //               setting an alpha component to non-1 does not in
 //               itself make an object transparent; you must also
@@ -64,7 +64,7 @@ public:
   static void init_type() {
     OnTransition::init_type();
     register_type(_type_handle, "TransparencyTransition",
-		  OnTransition::get_class_type());
+                  OnTransition::get_class_type());
   }
 
 private:

@@ -18,7 +18,7 @@ class EggTable;
 class EggAttributes;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggCharacterCollection
+//       Class : EggCharacterCollection
 // Description : Represents a set of characters, as read and collected
 //               from possibly several model and/or animation egg
 //               files.
@@ -68,16 +68,16 @@ public:
 private:
   bool scan_hierarchy(EggNode *egg_node);
   void scan_for_top_joints(EggNode *egg_node, EggNode *model_root,
-			   const string &character_name);
+                           const string &character_name);
   void scan_for_top_tables(EggTable *bundle, EggNode *model_root,
-			   const string &character_name);
+                           const string &character_name);
   void scan_for_morphs(EggNode *egg_node, int model_index,
-		       EggCharacterData *char_data);
+                       EggCharacterData *char_data);
   void scan_for_sliders(EggNode *egg_node, int model_index,
-			EggCharacterData *char_data);
+                        EggCharacterData *char_data);
 
   void add_morph_back_pointers(EggAttributes *attrib, EggObject *egg_object,
-			       int model_index, EggCharacterData *char_data);
+                               int model_index, EggCharacterData *char_data);
 
   typedef vector<EggNode *> EggNodeList;
   typedef map<EggNode *, EggNodeList> TopEggNodes;
@@ -87,9 +87,9 @@ private:
   int _next_model_index;
 
   void match_egg_nodes(EggCharacterData *char_Data, EggJointData *joint_data,
-		       EggNodeList &egg_nodes, int egg_index, int model_index);
+                       EggNodeList &egg_nodes, int egg_index, int model_index);
   void found_egg_match(EggCharacterData *char_data, EggJointData *joint_data,
-		       EggNode *egg_node, int egg_index, int model_index);
+                       EggNode *egg_node, int egg_index, int model_index);
 };
 
 #include "eggCharacterCollection.I"

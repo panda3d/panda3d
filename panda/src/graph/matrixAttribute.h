@@ -14,7 +14,7 @@ template<class Matrix>
 class MatrixTransition;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : MatrixAttribute
+//       Class : MatrixAttribute
 // Description : 
 ////////////////////////////////////////////////////////////////////
 template<class Matrix>
@@ -49,9 +49,9 @@ public:
     NodeAttribute::init_type();
     Matrix::init_type();
     register_type(_type_handle, 
-		  string("MatrixAttribute<") +
-		  Matrix::get_class_type().get_name() + ">",
-		  NodeAttribute::get_class_type());
+                  string("MatrixAttribute<") +
+                  Matrix::get_class_type().get_name() + ">",
+                  NodeAttribute::get_class_type());
   }
 
 private:

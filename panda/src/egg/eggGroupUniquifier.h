@@ -11,7 +11,7 @@
 #include "eggNameUniquifier.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggGroupUniquifier
+//       Class : EggGroupUniquifier
 // Description : This is a specialization of EggNameUniquifier to
 //               generate unique names for EggGroup nodes.  It's not
 //               called automatically; you must invoke it yourself if
@@ -24,7 +24,7 @@ public:
   virtual string get_category(EggNode *node);
   virtual string filter_name(EggNode *node);
   virtual string generate_name(EggNode *node,
-			       const string &category, int index);
+                               const string &category, int index);
 
 public:
   static TypeHandle get_class_type() {
@@ -33,7 +33,7 @@ public:
   static void init_type() {
     EggNameUniquifier::init_type();
     register_type(_type_handle, "EggGroupUniquifier",
-		  EggNameUniquifier::get_class_type());
+                  EggNameUniquifier::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

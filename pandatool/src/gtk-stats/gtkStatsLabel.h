@@ -13,7 +13,7 @@
 class PStatMonitor;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GtkStatsLabel
+//       Class : GtkStatsLabel
 // Description : A text label that will draw in color appropriate for
 //               a particular collector, instead of referring to some
 //               dumb Gtk::Style.  It also throws a signal when the
@@ -24,7 +24,7 @@ class PStatMonitor;
 class GtkStatsLabel : public Gtk::DrawingArea {
 public:
   GtkStatsLabel(PStatMonitor *monitor, int collector_index,
-		Gdk_Font font);
+                Gdk_Font font);
 
   int get_width() const;
   int get_height() const;

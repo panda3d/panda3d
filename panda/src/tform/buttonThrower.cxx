@@ -116,23 +116,23 @@ transmit_data(NodeAttributes &data) {
       const ButtonEvent &be = (*bi);
       string event_name = _prefix + be._button.get_name();
       if (be._down) {
-	if (!_mods.button_down(be._button)) {
-	  // We only prepend modifier names on the button-down events,
-	  // and only for buttons which are not themselves modifiers.
-	  string prepend;
-	  
-	  for (int i = 0; i < _mods.get_num_buttons(); i++) {
-	    ButtonHandle modifier = _mods.get_button(i);
-	    if (_mods.is_down(modifier)) {
-	      prepend += modifier.get_name() + "-";
-	    }
-	  }
-	  event_name = prepend + event_name;
-	}
+        if (!_mods.button_down(be._button)) {
+          // We only prepend modifier names on the button-down events,
+          // and only for buttons which are not themselves modifiers.
+          string prepend;
+
+          for (int i = 0; i < _mods.get_num_buttons(); i++) {
+            ButtonHandle modifier = _mods.get_button(i);
+            if (_mods.is_down(modifier)) {
+              prepend += modifier.get_name() + "-";
+            }
+          }
+          event_name = prepend + event_name;
+        }
 
       } else {
-	_mods.button_up(be._button);
-	event_name += "-up";
+        _mods.button_up(be._button);
+        event_name += "-up";
       }
       
       throw_event(event_name);
@@ -152,9 +152,9 @@ void ButtonThrower::
 init_type() {
   DataNode::init_type();
   register_type(_type_handle, "ButtonThrower",
-		DataNode::get_class_type());
+                DataNode::get_class_type());
 
   ButtonEventDataTransition::init_type();
   register_data_transition(_button_events_type, "ButtonEvents",
-			   ButtonEventDataTransition::get_class_type());
+                           ButtonEventDataTransition::get_class_type());
 }

@@ -697,23 +697,23 @@ do_character(int flag_byte) {
       // bits stored directly in the pk file.  This kind of character
       // is quite rare, and the code is therefore untested.
       if (h > 0 && w > 0) {
-	nout 
-	  << "\nA rare bitmapped character encountered!  You are now running\n"
-	  << "untested code.  If this works, change this line in the program\n"
-	  << "to indicate that the code is actually tested!\n\n";
+        nout 
+          << "\nA rare bitmapped character encountered!  You are now running\n"
+          << "untested code.  If this works, change this line in the program\n"
+          << "to indicate that the code is actually tested!\n\n";
       }
 
       unsigned int bit = 0;
       unsigned int byte = 0;
       for (unsigned int y = 0; y < h; y++) {
-	for (unsigned int x = 0; x < w; x++) {
-	  if (bit == 0) {
-	    bit = 0x80;
-	    byte = fetch_byte();
-	  }
-	  bm->_block[y][x] = ((byte & bit)!=0);
-	  bit >>= 1;
-	}
+        for (unsigned int x = 0; x < w; x++) {
+          if (bit == 0) {
+            bit = 0x80;
+            byte = fetch_byte();
+          }
+          bm->_block[y][x] = ((byte & bit)!=0);
+          bit >>= 1;
+        }
       }
       
     } else {
@@ -725,15 +725,15 @@ do_character(int flag_byte) {
       
       int count = fetch_packed_int();
       while (bm->paint(black, count, _repeat_count)) {
-	/*
-	  if (black) {
-	  nout << count;
-	  } else {
-	  nout << "(" << count << ")";
-	  }
-	  */
-	black = !black;
-	count = fetch_packed_int();
+        /*
+          if (black) {
+          nout << count;
+          } else {
+          nout << "(" << count << ")";
+          }
+          */
+        black = !black;
+        count = fetch_packed_int();
       }
       //    nout << "\n";
     }
@@ -743,7 +743,7 @@ do_character(int flag_byte) {
     /*
     for (int y = 0; y < h; y++) {
       for (int x = 0; x < w; x++) {
-	nout << (bm->_block[y][x] ? ' ' : '*');
+        nout << (bm->_block[y][x] ? ' ' : '*');
       }
       nout << "\n";
     }
@@ -862,40 +862,40 @@ read_pk() {
     }
     if (cmd < 240) {
       if (!do_character(cmd)) {
-	return true;
+        return true;
       }
     } else {
       switch (cmd) {
       case PK_XXX1: 
-	do_xxx(1);
-	break;
-	
+        do_xxx(1);
+        break;
+
       case PK_XXX2:
-	do_xxx(2);
-	break;
-	
+        do_xxx(2);
+        break;
+
       case PK_XXX3:
-	do_xxx(3);
-	break;
-	
+        do_xxx(3);
+        break;
+
       case PK_XXX4:
-	do_xxx(4);
-	break;
-	
+        do_xxx(4);
+        break;
+
       case PK_YYY:
-	do_yyy();
-	break;
-	
+        do_yyy();
+        break;
+
       case PK_POST:
-	do_post();
-	break;
-	
+        do_post();
+        break;
+
       case PK_NO_OP:
-	break;
-	
+        break;
+
       default:
-	nout << "\nUnexpected command " << cmd << " encountered in PK file\n";
-	return false;
+        nout << "\nUnexpected command " << cmd << " encountered in PK file\n";
+        return false;
       }
     }
   }

@@ -12,7 +12,7 @@
 #include "collisionNode.h"
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CollisionHandlerFloor
+//       Class : CollisionHandlerFloor
 // Description : A specialized kind of CollisionHandler that sets the
 //               Z height of the collider to a fixed linear offset
 //               from the highest detected collision point each frame.
@@ -46,7 +46,7 @@ public:
   static void init_type() {
     CollisionHandlerPhysical::init_type();
     register_type(_type_handle, "CollisionHandlerFloor",
-		  CollisionHandlerPhysical::get_class_type());
+                  CollisionHandlerPhysical::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

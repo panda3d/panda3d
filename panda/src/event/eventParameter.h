@@ -16,7 +16,7 @@
 #include <string>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EventParameter
+//       Class : EventParameter
 // Description : An optional parameter associated with an event.  Each
 //               event may have zero or more of these.  Each parameter
 //               stores a pointer to a TypedReferenceCount object,
@@ -58,7 +58,7 @@ private:
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EventStoreValue
+//       Class : EventStoreValue
 // Description : A handy class object for storing simple values (like
 //               integers or strings) passed along with an Event.
 //               This is essentially just a wrapper around whatever
@@ -83,7 +83,7 @@ public:
   static void init_type(const string &type_name) {
     TypedReferenceCount::init_type();
     register_type(_type_handle, type_name,
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

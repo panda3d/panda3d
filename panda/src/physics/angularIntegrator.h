@@ -22,7 +22,7 @@ private:
   // this allows baseAngularIntegrator to censor/modify data that the
   // actual integration function receives.
   virtual void child_integrate(Physical *physical, vector< PT(AngularForce) > &forces,
-			       float dt) = 0;
+                               float dt) = 0;
 
 protected:
   AngularIntegrator(void);
@@ -31,7 +31,7 @@ public:
   virtual ~AngularIntegrator(void);
 
   void integrate(Physical *physical, vector< PT(AngularForce) > &forces,
-		 float dt);
+                 float dt);
 };
 
 #endif // ANGULARINTEGRATOR_H

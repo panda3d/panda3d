@@ -17,7 +17,7 @@ class CPPExpression;
 class CPPType;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPManifest
+//       Class : CPPManifest
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPManifest {
@@ -44,9 +44,9 @@ public:
 
 private:
   void parse_parameters(const string &args, size_t &p,
-			vector_string &parameter_names);
+                        vector_string &parameter_names);
   void save_expansion(const string &exp,
-		      const vector_string &parameter_names);
+                      const vector_string &parameter_names);
 
   class ExpansionNode {
   public:

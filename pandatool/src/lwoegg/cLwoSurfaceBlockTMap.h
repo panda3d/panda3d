@@ -16,7 +16,7 @@
 class LwoToEggConverter;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : CLwoSurfaceBlockTMap
+//       Class : CLwoSurfaceBlockTMap
 // Description : This class is a wrapper around LwoSurfaceBlockTMap
 //               and stores additional information useful during the
 //               conversion-to-egg process.

@@ -97,8 +97,8 @@ create_factory() {
 //               managing BamReader object 
 ////////////////////////////////////////////////////////////////////
 INLINE void
-parse_params(const FactoryParams &params,	
-	     DatagramIterator &scan, BamReader *&manager) {
+parse_params(const FactoryParams &params,
+             DatagramIterator &scan, BamReader *&manager) {
   BamReaderParam *param = DCAST(BamReaderParam, params.get_param(0));
 
   scan = param->get_iterator();

@@ -16,7 +16,7 @@
 #include <map>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : Notify
+//       Class : Notify
 // Description : An object that handles general error reporting to the
 //               user.  It contains a pointer to an ostream, initially
 //               cerr, which can be reset at will to point to
@@ -38,7 +38,7 @@ PUBLISHED:
   ostream *get_ostream_ptr() const;
 
   typedef bool AssertHandler(const char *expression, int line,
-			     const char *source_file);
+                             const char *source_file);
   
   void set_assert_handler(AssertHandler *assert_handler);
   void clear_assert_handler();
@@ -51,9 +51,9 @@ PUBLISHED:
 
   NotifyCategory *get_top_category();
   NotifyCategory *get_category(const string &basename, 
-			       NotifyCategory *parent_category);
+                               NotifyCategory *parent_category);
   NotifyCategory *get_category(const string &basename, 
-			       const string &parent_fullname);
+                               const string &parent_fullname);
   NotifyCategory *get_category(const string &fullname);
 
   static ostream &out();
@@ -65,7 +65,7 @@ public:
   static long get_literal_flag();
 
   bool assert_failure(const char *expression, int line,
-		      const char *source_file);
+                      const char *source_file);
 
   static NotifySeverity string_severity(const string &string);
 

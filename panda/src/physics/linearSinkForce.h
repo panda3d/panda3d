@@ -19,7 +19,7 @@ private:
 
 PUBLISHED:
   LinearSinkForce(const LPoint3f& p, FalloffType f, float r, float a = 1.0f, 
-	    bool m = true);
+            bool m = true);
   LinearSinkForce(void);
   LinearSinkForce(const LinearSinkForce &copy);
   virtual ~LinearSinkForce(void);
@@ -31,7 +31,7 @@ public:
   static void init_type(void) {
     LinearDistanceForce::init_type();
     register_type(_type_handle, "LinearSinkForce",
-		  LinearDistanceForce::get_class_type());
+                  LinearDistanceForce::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

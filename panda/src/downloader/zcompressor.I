@@ -59,7 +59,7 @@ reset_stream(z_stream *strm) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void ZCompressorBase::
 put_stream(z_stream *strm, char *next_in, int avail_in, char *next_out, 
-	int avail_out) const {
+        int avail_out) const {
   strm->next_in = (uchar *)next_in;
   strm->avail_in = (ulong)avail_in;
   strm->next_out = (uchar *)next_out;

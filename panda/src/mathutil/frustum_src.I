@@ -58,7 +58,7 @@ INLINE_MATHUTIL void FLOATNAME(Frustum)::make_ortho(FLOATTYPE fnear, FLOATTYPE f
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL void FLOATNAME(Frustum)::
 make_ortho(FLOATTYPE fnear, FLOATTYPE ffar, FLOATTYPE l, FLOATTYPE r,
-	   FLOATTYPE t, FLOATTYPE b) {
+           FLOATTYPE t, FLOATTYPE b) {
   _fnear = fnear;
   _ffar = ffar; 
   _l = l;
@@ -71,27 +71,27 @@ make_ortho(FLOATTYPE fnear, FLOATTYPE ffar, FLOATTYPE l, FLOATTYPE r,
 //     Function: make_perspective
 //       Access:
 //  Description: Behaves like gluPerspective (Aspect = width/height,
-//		 Yfov in degrees)
+//               Yfov in degrees)
 //       aspect
 //   +------------+
-//   |   	  |
+//   |            |
 // 1 |            | yfov
 //   |            |
 //   +------------+
 //
 //     -------+------
 //      \     |     /
-//	 \    |    /
-//	  \   |   /
-//	   \  |  /
-//	    \ | /
-//	     \|/
-//	      W yfov
+//       \    |    /
+//        \   |   /
+//         \  |  /
+//          \ | /
+//           \|/
+//            W yfov
 //
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL void FLOATNAME(Frustum)::
 make_perspective_hfov(FLOATTYPE hfov, FLOATTYPE aspect, FLOATTYPE fnear,
-		      FLOATTYPE ffar) {
+                      FLOATTYPE ffar) {
   _fnear = fnear;
   _ffar = ffar;
   _r = tan(deg_2_rad(hfov) * FLOATCONST(0.5)) * _fnear;
@@ -103,7 +103,7 @@ make_perspective_hfov(FLOATTYPE hfov, FLOATTYPE aspect, FLOATTYPE fnear,
 
 INLINE_MATHUTIL void FLOATNAME(Frustum)::
 make_perspective_vfov(FLOATTYPE yfov, FLOATTYPE aspect, FLOATTYPE fnear,
-		      FLOATTYPE ffar) {
+                      FLOATTYPE ffar) {
   _fnear = fnear;
   _ffar = ffar;
   _t = tan(deg_2_rad(yfov) * 0.5f) * _fnear;
@@ -115,7 +115,7 @@ make_perspective_vfov(FLOATTYPE yfov, FLOATTYPE aspect, FLOATTYPE fnear,
 
 INLINE_MATHUTIL void FLOATNAME(Frustum)::
 make_perspective(FLOATTYPE xfov, FLOATTYPE yfov, FLOATTYPE fnear,
-		 FLOATTYPE ffar) {
+                 FLOATTYPE ffar) {
   _fnear = fnear;
   _ffar = ffar;
   _t = tan(deg_2_rad(yfov) * 0.5f) * _fnear;
@@ -131,7 +131,7 @@ make_perspective(FLOATTYPE xfov, FLOATTYPE yfov, FLOATTYPE fnear,
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL void FLOATNAME(Frustum)::
 get_perspective_params(FLOATTYPE& yfov, FLOATTYPE& aspect,
-		       FLOATTYPE& fnear, FLOATTYPE& ffar) const {
+                       FLOATTYPE& fnear, FLOATTYPE& ffar) const {
   yfov = rad_2_deg(atan(_t / _fnear)) * 2.0f;
   aspect = _r / _t;
   fnear = _fnear;
@@ -145,7 +145,7 @@ get_perspective_params(FLOATTYPE& yfov, FLOATTYPE& aspect,
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL void FLOATNAME(Frustum)::
 get_perspective_params(FLOATTYPE& xfov, FLOATTYPE& yfov, FLOATTYPE& aspect,
-		       FLOATTYPE& fnear, FLOATTYPE& ffar) const {
+                       FLOATTYPE& fnear, FLOATTYPE& ffar) const {
   xfov = rad_2_deg(atan(_r / _fnear)) * 2.0f;
   get_perspective_params(yfov, aspect, fnear, ffar);
 }
@@ -187,15 +187,15 @@ get_perspective_projection_mat(CoordinateSystem cs) const {
   switch (cs) {
   case CS_zup_right:
     return FLOATNAME(LMatrix4)(  a, 0.0f, 0.0f, 0.0f,
-			       0.0f,  -b,   c, 1.0f,
-				 d,   e, 0.0f, 0.0f,
-			       0.0f, 0.0f,   f, 0.0f);
+                               0.0f,  -b,   c, 1.0f,
+                                 d,   e, 0.0f, 0.0f,
+                               0.0f, 0.0f,   f, 0.0f);
 
   case CS_yup_right:
     return FLOATNAME(LMatrix4)(  a, 0.0f, 0.0f, 0.0f,
-			       0.0f,   e, 0.0f, 0.0f,
-			         d,   b,  -c,-1.0f,
-			       0.0f, 0.0f,   f, 0.0f);
+                               0.0f,   e, 0.0f, 0.0f,
+                                 d,   b,  -c,-1.0f,
+                               0.0f, 0.0f,   f, 0.0f);
 
   case CS_zup_left:
     return FLOATNAME(LMatrix4)::convert_mat(CS_zup_right, CS_zup_left) *

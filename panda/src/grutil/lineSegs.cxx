@@ -151,19 +151,19 @@ create(GeomNode *previous, bool) {
       const SegmentList &segs = (*ll);
 
       if (segs.size() < 2) {
-	point_index.push_back(v);
+        point_index.push_back(v);
       } else {
-	lengths.push_back(segs.size());
+        lengths.push_back(segs.size());
       }
       
       for (sl = segs.begin(); sl != segs.end(); sl++) {
-	if (segs.size() >= 2) {
-	  line_index.push_back(v);
-	}
-	_created_verts.push_back((*sl)._point);
-	_created_colors.push_back((*sl)._color);
-	v++;
-	nassertr(v == (int)_created_verts.size(), previous);
+        if (segs.size() >= 2) {
+          line_index.push_back(v);
+        }
+        _created_verts.push_back((*sl)._point);
+        _created_colors.push_back((*sl)._color);
+        v++;
+        nassertr(v == (int)_created_verts.size(), previous);
       }
     }
       
@@ -172,20 +172,20 @@ create(GeomNode *previous, bool) {
       // Create a new Geom and add the line segments.
       Geom *geom;
       if (line_index.size() <= 2) {
-	// Here's a special case: just one line segment.
-	GeomLine *geom_line = new GeomLine;
-	geom_line->set_num_prims(1);
-	geom_line->set_width(_thick);
-	geom = geom_line;
-	
+        // Here's a special case: just one line segment.
+        GeomLine *geom_line = new GeomLine;
+        geom_line->set_num_prims(1);
+        geom_line->set_width(_thick);
+        geom = geom_line;
+
       } else {
-	// The more normal case: multiple line segments, connected
-	// end-to-end like a series of linestrips.
-	GeomLinestrip *geom_linestrip = new GeomLinestrip;
-	geom_linestrip->set_num_prims(lengths.size());
-	geom_linestrip->set_lengths(lengths);
-	geom_linestrip->set_width(_thick);
-	geom = geom_linestrip;
+        // The more normal case: multiple line segments, connected
+        // end-to-end like a series of linestrips.
+        GeomLinestrip *geom_linestrip = new GeomLinestrip;
+        geom_linestrip->set_num_prims(lengths.size());
+        geom_linestrip->set_lengths(lengths);
+        geom_linestrip->set_width(_thick);
+        geom = geom_linestrip;
       }
 
       geom->set_colors(_created_colors, G_PER_VERTEX, line_index);
@@ -198,12 +198,12 @@ create(GeomNode *previous, bool) {
     if (point_index.size() > 0) {
       // Create a new Geom and add the points.
       GeomPoint *geom = new GeomPoint;
-	
+
       geom->set_num_prims(point_index.size());
       geom->set_size(_thick);
       geom->set_colors(_created_colors, G_PER_VERTEX, point_index);
       geom->set_coords(_created_verts, G_PER_VERTEX, point_index);
-	
+
       previous->add_geom(geom);
     }
 

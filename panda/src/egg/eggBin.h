@@ -11,7 +11,7 @@
 #include "eggGroup.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggBin
+//       Class : EggBin
 // Description : A type of group node that holds related subnodes.
 //               This is a special kind of node that will never be
 //               read in from an egg file, but can only exist in the

@@ -95,10 +95,10 @@ void TrackerNode::
 init_type() {
   DataNode::init_type();
   register_type(_type_handle, "TrackerNode",
-		DataNode::get_class_type());
+                DataNode::get_class_type());
 
   MatrixDataTransition::init_type();
   register_data_transition(_transform_type, "Transform",
-			   MatrixDataTransition::get_class_type());
+                           MatrixDataTransition::get_class_type());
 }
 

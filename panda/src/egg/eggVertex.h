@@ -22,7 +22,7 @@ class EggPrimitive;
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggVertex
+//       Class : EggVertex
 // Description : Any one-, two-, three-, or four-component vertex,
 //               possibly with attributes such as a normal.
 ////////////////////////////////////////////////////////////////////
@@ -109,7 +109,7 @@ public:
     EggObject::init_type();
     EggAttributes::init_type();
     register_type(_type_handle, "EggVertex",
-		  EggObject::get_class_type(),
+                  EggObject::get_class_type(),
                   EggAttributes::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -131,7 +131,7 @@ INLINE ostream &operator << (ostream &out, const EggVertex &vert) {
 }
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : UniqueEggVertices
+//       Class : UniqueEggVertices
 // Description : An STL function object for sorting vertices into
 //               order by properties.  Returns true if the two
 //               referenced EggVertex pointers are in sorted order,

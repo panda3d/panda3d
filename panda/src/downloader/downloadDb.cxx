@@ -209,8 +209,8 @@ read_db(Filename &file, bool want_server_info) {
   if (want_server_info) {
     if (!read_version_map(read_stream)) {
       downloader_cat.error()
-	<< "DownloadDb::read() - read_version_map() failed: " 
-	<< file << endl;
+        << "DownloadDb::read() - read_version_map() failed: " 
+        << file << endl;
     }
   }
 
@@ -236,7 +236,7 @@ read_db(Ramfile &file, bool want_server_info) {
   if (want_server_info) {
     if (!read_version_map(read_stream)) {
       downloader_cat.error()
-	<< "DownloadDb::read() - read_version_map() failed" << endl; 
+        << "DownloadDb::read() - read_version_map() failed" << endl; 
     }
   }
 
@@ -321,7 +321,7 @@ server_add_file(string mfname, string fname) {
 
   // Uh-oh, did not find it
   downloader_cat.error() << "Could not find record named " 
-			 << mfname << " in database " << endl;
+                         << mfname << " in database " << endl;
   return;
 }
 
@@ -433,7 +433,7 @@ get_file_record_named(string fname) const {
   }
   // Did not find it, just return an empty version
   downloader_cat.error() << "Could not find record named " 
-			 << fname << " in multifile " << _name << endl;
+                         << fname << " in multifile " << _name << endl;
   PT(FileRecord) foo = new FileRecord;
   return foo;
 }
@@ -535,7 +535,7 @@ get_multifile_record_named(string mfname) const {
   }
   // Did not find it, just return an empty version
   downloader_cat.error() << "Could not find record named " 
-			 << mfname << " in database " << endl;
+                         << mfname << " in database " << endl;
   PT(MultifileRecord) foo = new MultifileRecord;
   return foo;
 }
@@ -732,32 +732,32 @@ read(istream &read_stream, bool want_server_info) {
 
       // Read off all the file records this multifile has
       for (int j = 0; j<mfr->_num_files; j++) {
-	// The file record header is just one int which
-	// represents the size of the record
-	int fr_header_length = sizeof(PN_int32);
+        // The file record header is just one int which
+        // represents the size of the record
+        int fr_header_length = sizeof(PN_int32);
 
-	// Make a little buffer to read the file record header into
-	header_buf = new uchar[fr_header_length];
+        // Make a little buffer to read the file record header into
+        header_buf = new uchar[fr_header_length];
 
-	// Read the header
-	read_stream.read((char *)header_buf, fr_header_length);
+        // Read the header
+        read_stream.read((char *)header_buf, fr_header_length);
 
-	// Parse the header
-	int fr_length = parse_record_header(header_buf, fr_header_length);
-	delete header_buf;
+        // Parse the header
+        int fr_length = parse_record_header(header_buf, fr_header_length);
+        delete header_buf;
       
-	// Ok, now that we know the size of the mfr, read it in
-	// Make a buffer to read the file record into
-	header_buf = new uchar[fr_length];
+        // Ok, now that we know the size of the mfr, read it in
+        // Make a buffer to read the file record into
+        header_buf = new uchar[fr_length];
 
-	// Read the file record -- do not count the header length twice
-	read_stream.read((char *)header_buf, (fr_length - fr_header_length));
+        // Read the file record -- do not count the header length twice
+        read_stream.read((char *)header_buf, (fr_length - fr_header_length));
 
-	// Parse the file recrod
-	PT(DownloadDb::FileRecord) fr = parse_fr(header_buf, fr_length);
+        // Parse the file recrod
+        PT(DownloadDb::FileRecord) fr = parse_fr(header_buf, fr_length);
 
-	// Add this file record to the current multifilerecord
-	mfr->add_file_record(fr);
+        // Add this file record to the current multifilerecord
+        mfr->add_file_record(fr);
       }
     }
 
@@ -831,28 +831,28 @@ write(ofstream &write_stream, bool want_server_info) {
       // Iterate over the multifiles writing them to the stream
       vector< PT(FileRecord) >::const_iterator j = (*i)->_file_records.begin();
       for(; j != (*i)->_file_records.end(); ++j) {
-	// Clear the datagram before we jam a bunch of stuff on it
-	_datagram.clear();
+        // Clear the datagram before we jam a bunch of stuff on it
+        _datagram.clear();
 
-	name_length = (*j)->_name.length();
+        name_length = (*j)->_name.length();
 
-	// Compute the length of this datagram
-	header_length = 
-	  sizeof(header_length) +  // Size of this header length
-	  sizeof(name_length) +    // Size of the size of the name string
-	  (*j)->_name.length();    // Size of the name string
+        // Compute the length of this datagram
+        header_length = 
+          sizeof(header_length) +  // Size of this header length
+          sizeof(name_length) +    // Size of the size of the name string
+          (*j)->_name.length();    // Size of the name string
       
-	// Add the length of this entire datagram
-	_datagram.add_int32(header_length);
+        // Add the length of this entire datagram
+        _datagram.add_int32(header_length);
 
-	// Add the length of the name
-	_datagram.add_int32(name_length);
-	// Add the name
-	_datagram.append_data((*j)->_name.c_str(), (*j)->_name.length());
+        // Add the length of the name
+        _datagram.add_int32(name_length);
+        // Add the name
+        _datagram.append_data((*j)->_name.c_str(), (*j)->_name.length());
 
-	// Now put this datagram on the write stream
-	string msg = _datagram.get_message();
-	write_stream.write(msg.data(), msg.length());
+        // Now put this datagram on the write stream
+        string msg = _datagram.get_message();
+        write_stream.write(msg.data(), msg.length());
       }
     }
   }
@@ -1144,10 +1144,10 @@ output_version_map(ostream &out) const {
     for (i = (*vmi).second.begin(); i != (*vmi).second.end(); ++i) {
       HashVal hash = *i;
       out << " [" << hash.get_value(0)
-	  << " " << hash.get_value(1)
-	  << " " << hash.get_value(2)
-	  << " " << hash.get_value(3)
-	  << "]" << endl;
+          << " " << hash.get_value(1)
+          << " " << hash.get_value(2)
+          << " " << hash.get_value(3)
+          << "]" << endl;
     }
   }
   out << endl;

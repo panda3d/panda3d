@@ -139,7 +139,7 @@ wordwrap_to(const string &text, float wordwrap_width) const {
     float width = 0.0;
     while (q < text.length() && text[q] != '\n' && width <= wordwrap_width) {
       if (isspace(text[q])) {
-	any_spaces = true;
+        any_spaces = true;
       }
 
       width += calc_width(text[q]);
@@ -151,7 +151,7 @@ wordwrap_to(const string &text, float wordwrap_width) const {
       // back up to the end of the last complete word.
 
       while (q > p && !isspace(text[q])) {
-	q--;
+        q--;
       }
     }
 
@@ -172,7 +172,7 @@ wordwrap_to(const string &text, float wordwrap_width) const {
       q++;
       next_start++;
       while (next_start < text.length() && isblank(text[next_start])) {
-	next_start++;
+        next_start++;
       }
     }
 
@@ -224,7 +224,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 bool TextFont::
 find_character_gsets(Node *root, Geom *&ch, GeomPoint *&dot,
-		     AllTransitionsWrapper &trans) {
+                     AllTransitionsWrapper &trans) {
   if (root->is_of_type(GeomNode::get_class_type())) {
     GeomNode *geode = (GeomNode *)root;
     
@@ -232,11 +232,11 @@ find_character_gsets(Node *root, Geom *&ch, GeomPoint *&dot,
     for (int i = 0; i < geode->get_num_geoms(); i++) {
       dDrawable *geom = geode->get_geom(i);
       if (geom->is_of_type(GeomPoint::get_class_type())) {
-	dot = DCAST(GeomPoint, geom);
-	
+        dot = DCAST(GeomPoint, geom);
+
       } else if (geom->is_of_type(Geom::get_class_type())) {
-	ch = DCAST(Geom, geom);
-	found = true;
+        ch = DCAST(Geom, geom);
+        found = true;
       }
     }
     return found;
@@ -247,7 +247,7 @@ find_character_gsets(Node *root, Geom *&ch, GeomPoint *&dot,
     for (int i = 0; i < num_children; i++) {
       NodeRelation *child_arc = root->get_child(graph_type, i);
       if (find_character_gsets(child_arc->get_child(), ch, dot, trans)) {
-	trans.extract_from(child_arc);
+        trans.extract_from(child_arc);
       }
     }
     return false;
@@ -294,9 +294,9 @@ find_characters(Node *root) {
       float width;
       dot->get_coords(alist, bind, ilist);
       if (ilist.empty()) {
-	width = alist[0][0];
+        width = alist[0][0];
       } else {
-	width = alist[ilist[0]][0];
+        width = alist[ilist[0]][0];
       }
 
       _defs[character] = CharDef(ch, width, trans);
@@ -318,9 +318,9 @@ find_characters(Node *root) {
       GeomBindType bind;
       dot->get_coords(alist, bind, ilist);
       if (ilist.empty()) {
-	_font_height = alist[0][2];
+        _font_height = alist[0][2];
       } else {
-	_font_height = alist[ilist[0]][2];
+        _font_height = alist[ilist[0]][2];
       }
     }
 

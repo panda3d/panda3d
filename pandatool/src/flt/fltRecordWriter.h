@@ -16,7 +16,7 @@
 class FltHeader;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltRecordWriter
+//       Class : FltRecordWriter
 // Description : This class writes a sequence of FltRecords to an
 //               ostream, handling opcode and size counts properly.
 ////////////////////////////////////////////////////////////////////
@@ -33,7 +33,7 @@ public:
   FltError advance();
 
   FltError write_record(FltOpcode opcode, 
-			const Datagram &datagram = Datagram());
+                        const Datagram &datagram = Datagram());
 
   FltError write_instance_def(FltHeader *header, int instance_index);
 

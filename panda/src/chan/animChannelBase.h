@@ -59,7 +59,7 @@ public:
   static void init_type() {
     AnimGroup::init_type();
     register_type(_type_handle, "AnimChannelBase",
-		  AnimGroup::get_class_type());
+                  AnimGroup::get_class_type());
   }
 
 private:

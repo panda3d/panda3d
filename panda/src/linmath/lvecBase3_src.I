@@ -347,8 +347,8 @@ dot(const FLOATNAME(LVecBase3) &other) const {
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 cross(const FLOATNAME(LVecBase3) &other) const {
   return FLOATNAME(LVecBase3)(_v.v._1 * other._v.v._2 - other._v.v._1 * _v.v._2,
-			      other._v.v._0 * _v.v._2 - _v.v._0 * other._v.v._2,
-			      _v.v._0 * other._v.v._1 - other._v.v._0 * _v.v._1);
+                              other._v.v._0 * _v.v._2 - _v.v._0 * other._v.v._2,
+                              _v.v._0 * other._v.v._1 - other._v.v._0 * _v.v._1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -373,8 +373,8 @@ operator < (const FLOATNAME(LVecBase3) &other) const {
 INLINE_LINMATH bool FLOATNAME(LVecBase3)::
 operator == (const FLOATNAME(LVecBase3) &other) const {
   return (_v.v._0 == other._v.v._0 &&
-	  _v.v._1 == other._v.v._1 &&
-	  _v.v._2 == other._v.v._2);
+          _v.v._1 == other._v.v._1 &&
+          _v.v._2 == other._v.v._2);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -439,8 +439,8 @@ operator - () const {
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 operator + (const FLOATNAME(LVecBase3) &other) const {
   return FLOATNAME(LVecBase3)(_v.v._0 + other._v.v._0,
-			      _v.v._1 + other._v.v._1,
-			      _v.v._2 + other._v.v._2);
+                              _v.v._1 + other._v.v._1,
+                              _v.v._2 + other._v.v._2);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -451,8 +451,8 @@ operator + (const FLOATNAME(LVecBase3) &other) const {
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 operator - (const FLOATNAME(LVecBase3) &other) const {
   return FLOATNAME(LVecBase3)(_v.v._0 - other._v.v._0,
-			      _v.v._1 - other._v.v._1,
-			      _v.v._2 - other._v.v._2);
+                              _v.v._1 - other._v.v._1,
+                              _v.v._2 - other._v.v._2);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -463,8 +463,8 @@ operator - (const FLOATNAME(LVecBase3) &other) const {
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 operator * (FLOATTYPE scalar) const {
   return FLOATNAME(LVecBase3)(_v.v._0 * scalar,
-			      _v.v._1 * scalar,
-			      _v.v._2 * scalar);
+                              _v.v._1 * scalar,
+                              _v.v._2 * scalar);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -476,8 +476,8 @@ INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 operator / (FLOATTYPE scalar) const {
   FLOATTYPE recip_scalar = 1.0f/scalar;
   return FLOATNAME(LVecBase3)(_v.v._0 * recip_scalar,
-			      _v.v._1 * recip_scalar,
-			      _v.v._2 * recip_scalar);
+                              _v.v._1 * recip_scalar,
+                              _v.v._2 * recip_scalar);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -548,8 +548,8 @@ cross_into(const FLOATNAME(LVecBase3) &other) {
 INLINE_LINMATH bool FLOATNAME(LVecBase3)::
 almost_equal(const FLOATNAME(LVecBase3) &other, FLOATTYPE threshold) const {
   return (IS_THRESHOLD_EQUAL(_v.v._0, other._v.v._0, threshold) &&
-	  IS_THRESHOLD_EQUAL(_v.v._1, other._v.v._1, threshold) &&
-	  IS_THRESHOLD_EQUAL(_v.v._2, other._v.v._2, threshold));
+          IS_THRESHOLD_EQUAL(_v.v._1, other._v.v._1, threshold) &&
+          IS_THRESHOLD_EQUAL(_v.v._2, other._v.v._2, threshold));
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -15,7 +15,7 @@
 #include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltLocalVertexPool
+//       Class : FltLocalVertexPool
 // Description : A local vertex pool, as might appear in the middle of
 //               the hierarchy, for instance for a mesh.
 ////////////////////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ public:
   static void init_type() {
     FltRecord::init_type();
     register_type(_type_handle, "FltLocalVertexPool",
-		  FltRecord::get_class_type());
+                  FltRecord::get_class_type());
   }
 
 private:

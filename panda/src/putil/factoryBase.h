@@ -15,7 +15,7 @@
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FactoryBase
+//       Class : FactoryBase
 // Description : A Factory can be used to create an instance of a
 //               particular subclass of some general base class.  Each
 //               subclass registers itself with the Factory, supplying
@@ -39,16 +39,16 @@ public:
   ~FactoryBase();
 
   TypedObject *make_instance(TypeHandle handle, 
-			     const FactoryParams &params);
+                             const FactoryParams &params);
 
   INLINE TypedObject *make_instance(const string &type_name,
-				    const FactoryParams &params);
+                                    const FactoryParams &params);
 
   TypedObject *make_instance_more_general(TypeHandle handle,
-					  const FactoryParams &params);
+                                          const FactoryParams &params);
 
   INLINE TypedObject *make_instance_more_general(const string &type_name,
-						 const FactoryParams &params);
+                                                 const FactoryParams &params);
 
   void register_factory(TypeHandle handle, BaseCreateFunc *func);
 
@@ -69,9 +69,9 @@ private:
 
   // internal utility functions
   TypedObject *make_instance_exact(TypeHandle handle, 
-				   const FactoryParams &params);
+                                   const FactoryParams &params);
   TypedObject *make_instance_more_specific(TypeHandle handle,
-					   const FactoryParams &params);
+                                           const FactoryParams &params);
 
 private:
   // internal mechanics and bookkeeping

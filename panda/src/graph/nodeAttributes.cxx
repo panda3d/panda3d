@@ -191,7 +191,7 @@ is_initial() const {
 int NodeAttributes::
 compare_to(const NodeAttributes &other) const {
   return tmap_compare_attr(_attributes.begin(), _attributes.end(),
-			   other._attributes.begin(), other._attributes.end());
+                           other._attributes.begin(), other._attributes.end());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -214,8 +214,8 @@ apply_from(const NodeAttributes &other, const NodeTransitionCache &trans) {
     Attributes temp;
 
     tmap_apply(other._attributes.begin(), other._attributes.end(),
-	       trans._cache.begin(), trans._cache.end(),
-	       inserter(temp, temp.begin()));
+               trans._cache.begin(), trans._cache.end(),
+               inserter(temp, temp.begin()));
     
     _attributes.swap(temp);
   }
@@ -243,8 +243,8 @@ merge_from(const NodeAttributes &a, const NodeAttributes &b) {
     Attributes temp;
 
     tmap_merge_union(a._attributes.begin(), a._attributes.end(),
-		     b._attributes.begin(), b._attributes.end(),
-		     inserter(temp, temp.begin()));
+                     b._attributes.begin(), b._attributes.end(),
+                     inserter(temp, temp.begin()));
     
     _attributes.swap(temp);
   }
@@ -264,7 +264,7 @@ output(ostream &out) const {
   for (ai = _attributes.begin(); ai != _attributes.end(); ++ai) {
     if ((*ai).second != (NodeAttribute *)NULL) {
       if (written_any) {
-	out << " ";
+        out << " ";
       }
       out << *(*ai).second;
       written_any = true;

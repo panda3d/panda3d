@@ -66,26 +66,26 @@ handle_args(ProgramBase::Args &args) {
 
     if (_got_output_filename && args.size() == 1) {
       if (_got_output_dirname) {
-	nout << "Cannot specify both -o and -d.\n";
-	return false;
+        nout << "Cannot specify both -o and -d.\n";
+        return false;
       } else if (_inplace) {
-	nout << "Cannot specify both -o and -inplace.\n";
-	return false;
+        nout << "Cannot specify both -o and -inplace.\n";
+        return false;
       }
 
     } else {
       if (_got_output_filename) {
-	nout << "Cannot use -o when multiple egg files are specified.\n";
-	return false;
+        nout << "Cannot use -o when multiple egg files are specified.\n";
+        return false;
       }
 
       if (_got_output_dirname && _inplace) {
-	nout << "Cannot specify both -inplace and -d.\n";
-	return false;
-	
+        nout << "Cannot specify both -inplace and -d.\n";
+        return false;
+
       } else if (!_got_output_dirname && !_inplace) {
-	nout << "You must specify either -inplace or -d.\n";
-	return false;
+        nout << "You must specify either -inplace or -d.\n";
+        return false;
       }
     }
   }

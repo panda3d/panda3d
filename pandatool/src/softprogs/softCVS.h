@@ -18,7 +18,7 @@
 #include <set>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : SoftCVS
+//       Class : SoftCVS
 // Description : This program prepares a SoftImage database for CVS by
 //               renaming everything to version 1-0, and adding new
 //               files to CVS.
@@ -47,7 +47,7 @@ private:
 
   bool cvs_add(const string &path);
   bool cvs_add_or_remove(const string &cvs_command, 
-			 const vector_string &paths);
+                         const vector_string &paths);
 
   SceneFiles _scene_files;
   ElementFiles _element_files;

@@ -107,28 +107,28 @@ setup_menu() {
 
   _file_menu->items().push_back
     (MenuElem("New strip chart", 
-	      slot(this, &GtkStatsWindow::menu_open_strip_chart)));
+              slot(this, &GtkStatsWindow::menu_open_strip_chart)));
   _file_menu->items().push_back
     (MenuElem("New piano roll", 
-	      slot(this, &GtkStatsWindow::menu_open_piano_roll)));
+              slot(this, &GtkStatsWindow::menu_open_piano_roll)));
 
   /*
   _file_menu->items().push_back
     (MenuElem("New window", 
-	      slot(this, &GtkStatsWindow::menu_new_window)));
+              slot(this, &GtkStatsWindow::menu_new_window)));
   */
 
   _file_menu->items().push_back(SeparatorElem());
 
   _file_menu->items().push_back
     (MenuElem("Disconnect from client", 
-	      slot(this, &GtkStatsWindow::menu_disconnect)));
+              slot(this, &GtkStatsWindow::menu_disconnect)));
   _file_menu->items().push_back
     (MenuElem("Close window", 
-	      slot(this, &GtkStatsWindow::menu_close_window)));
+              slot(this, &GtkStatsWindow::menu_close_window)));
   _file_menu->items().push_back
     (MenuElem("Close all windows this client", 
-	      slot(this, &GtkStatsWindow::menu_close_all_windows)));
+              slot(this, &GtkStatsWindow::menu_close_all_windows)));
 
   _menu->items().push_back(MenuElem("File", *manage(_file_menu)));
   _menu->show();

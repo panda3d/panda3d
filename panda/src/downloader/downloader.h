@@ -39,8 +39,8 @@ PUBLISHED:
 
   int initiate(const string &file_name, Filename file_dest);
   int initiate(const string &file_name, Filename file_dest,
-		int first_byte, int last_byte, int total_bytes,
-		bool partial_content = true);
+                int first_byte, int last_byte, int total_bytes,
+                bool partial_content = true);
   int initiate(const string &file_name);
   int run(void);
 
@@ -59,7 +59,7 @@ private:
   class DownloadStatus {
   public:
     DownloadStatus(char *buffer, int first_byte, int last_byte,
-			int total_bytes, bool partial_content);
+                        int total_bytes, bool partial_content);
     void reset(void);
 
   public:

@@ -31,11 +31,11 @@ public:
   ~SpheretexReflector(void);
 
   virtual void pre_apply(Node *node, const AllAttributesWrapper &init_state,
-			 const AllTransitionsWrapper &net_trans,
-			 GraphicsStateGuardian *gsg);  
+                         const AllTransitionsWrapper &net_trans,
+                         GraphicsStateGuardian *gsg);  
   virtual void apply(Node *node, const AllAttributesWrapper &init_state,
-		     const AllTransitionsWrapper &net_trans,
-		     GraphicsStateGuardian *gsg);
+                     const AllTransitionsWrapper &net_trans,
+                     GraphicsStateGuardian *gsg);
   
   // MPG - should we make this check for powers of 2?
   INLINE void set_size(int size) { _size = size; }
@@ -58,11 +58,11 @@ public:
   
 protected:
   
-  SpheretexShader		_spheretex_shader;
-  int				_size;
-  bool			_is_reflector;
-  float			_fnear;
-  float			_ffar;
+  SpheretexShader               _spheretex_shader;
+  int                           _size;
+  bool                  _is_reflector;
+  float                 _fnear;
+  float                 _ffar;
   
 public:
   
@@ -72,7 +72,7 @@ public:
   static void init_type() {
     CasterShader::init_type();
     register_type(_type_handle, "SpheretexReflector",
-		  CasterShader::get_class_type());
+                  CasterShader::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

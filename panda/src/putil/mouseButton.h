@@ -11,7 +11,7 @@
 #include "buttonHandle.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : MouseButton
+//       Class : MouseButton
 // Description : This class is just used as a convenient namespace for
 //               grouping all of these handy functions that return
 //               buttons which map to standard mouse buttons.

@@ -190,11 +190,11 @@ operator = (const Geom &copy) {
 ////////////////////////////////////////////////////////////////////
 void Geom::
 set_coords(const PTA_Vertexf &coords, GeomBindType bind, 
-	   const PTA_ushort &vindex) {
+           const PTA_ushort &vindex) {
   _coords = coords;
   assert(bind == G_PER_VERTEX);
   _bind[G_COORD] = bind;
-	
+
   if ( vindex )
     _vindex = vindex;
   
@@ -209,7 +209,7 @@ set_coords(const PTA_Vertexf &coords, GeomBindType bind,
 ////////////////////////////////////////////////////////////////////
 void Geom::
 set_normals(const PTA_Normalf &norms, GeomBindType bind, 
-	    const PTA_ushort &nindex) {
+            const PTA_ushort &nindex) {
   _norms = norms;
   _bind[G_NORMAL] = bind;
   
@@ -226,7 +226,7 @@ set_normals(const PTA_Normalf &norms, GeomBindType bind,
 ////////////////////////////////////////////////////////////////////
 void Geom::
 set_colors(const PTA_Colorf &colors, GeomBindType bind, 
-	   const PTA_ushort &cindex) {
+           const PTA_ushort &cindex) {
   _colors = colors;
   _bind[G_COLOR] = bind;
   
@@ -243,7 +243,7 @@ set_colors(const PTA_Colorf &colors, GeomBindType bind,
 ////////////////////////////////////////////////////////////////////
 void Geom::
 set_texcoords(const PTA_TexCoordf &texcoords, GeomBindType bind, 
-	      const PTA_ushort &tindex) {
+              const PTA_ushort &tindex) {
   _texcoords = texcoords;
   assert(bind == G_PER_VERTEX || bind == G_OFF);
   _bind[G_TEXCOORD] = bind;
@@ -261,7 +261,7 @@ set_texcoords(const PTA_TexCoordf &texcoords, GeomBindType bind,
 ////////////////////////////////////////////////////////////////////
 void Geom::
 get_coords(PTA_Vertexf &coords, GeomBindType &bind, 
-	   PTA_ushort &vindex) const {
+           PTA_ushort &vindex) const {
   coords = _coords;
   bind = _bind[G_COORD];
   vindex = _vindex;
@@ -274,7 +274,7 @@ get_coords(PTA_Vertexf &coords, GeomBindType &bind,
 ////////////////////////////////////////////////////////////////////
 void Geom::
 get_normals(PTA_Normalf &norms, GeomBindType &bind, 
-	    PTA_ushort &nindex) const {
+            PTA_ushort &nindex) const {
   norms = _norms;
   bind = _bind[G_NORMAL];
   nindex = _nindex;
@@ -287,7 +287,7 @@ get_normals(PTA_Normalf &norms, GeomBindType &bind,
 ////////////////////////////////////////////////////////////////////
 void Geom::
 get_colors(PTA_Colorf &colors, GeomBindType &bind, 
-	   PTA_ushort &cindex) const {
+           PTA_ushort &cindex) const {
   colors = _colors;
   bind = _bind[G_COLOR];
   cindex = _cindex;
@@ -300,7 +300,7 @@ get_colors(PTA_Colorf &colors, GeomBindType &bind,
 ////////////////////////////////////////////////////////////////////
 void Geom::
 get_texcoords(PTA_TexCoordf &texcoords, GeomBindType &bind, 
-	      PTA_ushort &tindex) const {
+              PTA_ushort &tindex) const {
   texcoords = _texcoords;
   bind = _bind[G_TEXCOORD];
   tindex = _tindex;
@@ -576,8 +576,8 @@ fillin(DatagramIterator& scan, BamReader* manager) {
 template <class VecType>
 static void
 describe_attr(ostream &out, const Geom *geom,
-	      GeomBindType bind, const PTA(VecType) &array,
-	      bool newline, int indent_level) {
+              GeomBindType bind, const PTA(VecType) &array,
+              bool newline, int indent_level) {
   PTA_int lengths = geom->get_lengths();
   int num_prims = geom->get_num_prims();
   bool components = geom->uses_components();
@@ -592,21 +592,21 @@ describe_attr(ostream &out, const Geom *geom,
     num_verts = geom->get_num_vertices_per_prim();
     for (i = 0; i < num_prims; i++) {
       if (components) {
-	num_verts = lengths[i];
+        num_verts = lengths[i];
       }
       out << "\n";
       indent(out, indent_level) << "[ ";
       if (num_verts > 0) {
-	out << array[vi++];
-	for (j = 1; j < num_verts; j++) {
-	  if (newline) {
-	    out << "\n";
-	    indent(out, indent_level + 2);
-	  } else {
-	    out << " ";
-	  }
-	  out << array[vi++];
-	}
+        out << array[vi++];
+        for (j = 1; j < num_verts; j++) {
+          if (newline) {
+            out << "\n";
+            indent(out, indent_level + 2);
+          } else {
+            out << " ";
+          }
+          out << array[vi++];
+        }
       }
       out << " ]";
     }
@@ -615,28 +615,28 @@ describe_attr(ostream &out, const Geom *geom,
   case G_PER_COMPONENT:
     if (!components) {
       indent(out, indent_level)
-	<< "Invalid per-component attribute specified!";
+        << "Invalid per-component attribute specified!";
     } else {
       indent(out, indent_level)
-	<< "Per component:";
+        << "Per component:";
       vi = 0;
       for (i = 0; i < num_prims; i++) {
-	num_verts = lengths[i] - geom->get_num_more_vertices_than_components();
-	out << "\n";
-	indent(out, indent_level) << "[ ";
-	if (num_verts > 0) {
-	  out << array[vi++];
-	  for (j = 1; j < num_verts; j++) {
-	    if (newline) {
-	      out << "\n";
-	      indent(out, indent_level + 2);
-	    } else {
-	      out << " ";
-	    }
-	    out << array[vi++];
-	  }
-	  out << " ]";
-	}
+        num_verts = lengths[i] - geom->get_num_more_vertices_than_components();
+        out << "\n";
+        indent(out, indent_level) << "[ ";
+        if (num_verts > 0) {
+          out << array[vi++];
+          for (j = 1; j < num_verts; j++) {
+            if (newline) {
+              out << "\n";
+              indent(out, indent_level + 2);
+            } else {
+              out << " ";
+            }
+            out << array[vi++];
+          }
+          out << " ]";
+        }
       }
     }
     break;
@@ -646,10 +646,10 @@ describe_attr(ostream &out, const Geom *geom,
       << "Per prim:";
     for (i = 0; i < num_prims; i++) {
       if (newline) {
-	out << "\n";
-	indent(out, indent_level + 2);
+        out << "\n";
+        indent(out, indent_level + 2);
       } else {
-	out << " ";
+        out << " ";
       }
       out << array[i];
     }
@@ -779,12 +779,12 @@ get_min_max(Vertexf& min, Vertexf& max) const {
       max[0] = _coords[i][0];
 
     if (_coords[i][1] < min[1]) 
-      min[1] = _coords[i][1];	
+      min[1] = _coords[i][1];
     else if (_coords[i][1] > max[1]) 
       max[1] = _coords[i][1];
 
     if (_coords[i][2] < min[2]) 
-      min[2] = _coords[i][2];	
+      min[2] = _coords[i][2];
     else if (_coords[i][2] > max[2])
       max[2] = _coords[i][2];
   }

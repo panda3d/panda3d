@@ -11,7 +11,7 @@
 #include "lwoChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurfaceSidedness
+//       Class : LwoSurfaceSidedness
 // Description : Records whether polygons are frontfacing only or
 //               backfacing also.  This is associated with the
 //               LwoSurface chunk.
@@ -40,7 +40,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoSurfaceSidedness",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

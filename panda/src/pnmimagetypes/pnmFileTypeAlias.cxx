@@ -142,7 +142,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
     // we have a problem.
     if (pnmimage_alias_cat.is_debug()) {
       pnmimage_alias_cat.debug()
-	<< "Alias image file appears to be empty.\n";
+        << "Alias image file appears to be empty.\n";
     }
     _is_valid = false;
     return;
@@ -237,15 +237,15 @@ read_row(xel *row_data, xelval *) {
       grn = read_uchar(_file);
       red = read_uchar(_file);
       while (num>0) {
-	PPM_ASSIGN(row_data[x], red, grn, blu);
-	x++;
-	num--;
+        PPM_ASSIGN(row_data[x], red, grn, blu);
+        x++;
+        num--;
       }
     } else {
       while (num>0) {
-	PPM_PUTB(row_data[x], blu);
-	x++;
-	num--;
+        PPM_PUTB(row_data[x], blu);
+        x++;
+        num--;
       }
     }
   }
@@ -269,7 +269,7 @@ flush_color(FILE *file) {
 
 static void 
 write_color(FILE *file, 
-	    unsigned char red, unsigned char blu, unsigned char grn) {
+            unsigned char red, unsigned char blu, unsigned char grn) {
   if (red==last_red && blu==last_blu && grn==last_grn && num_count<0377) {
     num_count++;
   } else {

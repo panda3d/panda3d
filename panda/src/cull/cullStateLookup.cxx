@@ -48,8 +48,8 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 CullState *CullStateLookup::
 find_node(Node *node,
-	  const AllTransitionsWrapper &trans,
-	  UpdateSeq now) {
+          const AllTransitionsWrapper &trans,
+          UpdateSeq now) {
   if (cull_cat.is_spam()) {
     cull_cat.spam()
       << "Looking up " << *node << " in lookup " << (void *)this << "\n";
@@ -60,7 +60,7 @@ find_node(Node *node,
     // No entry for the node.
     if (cull_cat.is_spam()) {
       cull_cat.spam()
-	<< "No entry for the node.\n";
+        << "No entry for the node.\n";
     }
     return NULL;
   }
@@ -70,7 +70,7 @@ find_node(Node *node,
     // The entry is current enough to use.
     if (cull_cat.is_spam()) {
       cull_cat.spam()
-	<< "The entry is found and current.\n";
+        << "The entry is found and current.\n";
     }
     return cs;
   }
@@ -107,9 +107,9 @@ find_node(Node *node,
 ////////////////////////////////////////////////////////////////////
 CullStateSubtree *CullStateLookup::
 get_subtree(const PT_NodeRelation &arc, 
-	    const AllTransitionsWrapper &trans,
-	    Node *top_subtree,
-	    UpdateSeq now) {
+            const AllTransitionsWrapper &trans,
+            Node *top_subtree,
+            UpdateSeq now) {
   if (cull_cat.is_spam()) {
     cull_cat.spam()
       << "Getting subtree for " << *arc << " in lookup "
@@ -121,7 +121,7 @@ get_subtree(const PT_NodeRelation &arc,
     // No entry for the arc.
     if (cull_cat.is_spam()) {
       cull_cat.spam()
-	<< "No entry for the arc; creating new one.\n";
+        << "No entry for the arc; creating new one.\n";
     }
     CullStateSubtree *subtree = 
       new CullStateSubtree(this, trans, top_subtree, now);
@@ -134,7 +134,7 @@ get_subtree(const PT_NodeRelation &arc,
     // The entry is current enough to use.
     if (cull_cat.is_spam()) {
       cull_cat.spam()
-	<< "The entry is found and current.\n";
+        << "The entry is found and current.\n";
     }
     return subtree;
   }
@@ -165,7 +165,7 @@ clean_out_old_nodes() {
 
     CullState *cs = (*csi).second;
     if (!cs->has_bin() && cs->is_empty() && 
-	cs->get_empty_frames_count() > 100) {
+        cs->get_empty_frames_count() > 100) {
       _cull_states.erase(csi);
     }
     csi = csnext;
@@ -210,7 +210,7 @@ get_top_subtree() const {
 ////////////////////////////////////////////////////////////////////
 void CullStateLookup::
 compose_trans(const AllTransitionsWrapper &from,
-	      AllTransitionsWrapper &to) const {
+              AllTransitionsWrapper &to) const {
   to = from;
 }
 

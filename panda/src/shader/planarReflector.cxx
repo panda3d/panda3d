@@ -113,7 +113,7 @@ void PlanarReflector::init(PlaneNode *plane_node, const Colorf& c)
 ////////////////////////////////////////////////////////////////////
 void PlanarReflector::
 pre_apply(Node *, const AllAttributesWrapper &,
-	  const AllTransitionsWrapper &, GraphicsStateGuardian *gsg)
+          const AllTransitionsWrapper &, GraphicsStateGuardian *gsg)
 {
   int xo, yo, w, h;
   gsg->get_current_display_region()->get_region_pixels(xo, yo, w, h);
@@ -165,24 +165,24 @@ apply(Node *node, const AllAttributesWrapper &init_state,
     int buffer_mask = RenderBuffer::T_stencil;
     if (_save_color_buffer) {
       gsg->copy_pixel_buffer(_color_buffer,
-			     gsg->get_current_display_region(),
-    			     gsg->get_render_buffer(RenderBuffer::T_back));
+                             gsg->get_current_display_region(),
+                             gsg->get_render_buffer(RenderBuffer::T_back));
       buffer_mask |= RenderBuffer::T_back;
 
       ColorMaskTransition *cm = new ColorMaskTransition(0);
       trans.set_transition(cm);
     } else {
       ColorMaskTransition *cm = 
-	new ColorMaskTransition(ColorMaskProperty::M_a);
+        new ColorMaskTransition(ColorMaskProperty::M_a);
       trans.set_transition(cm);
     }
     
     if (_save_depth_buffer)
     {
       gsg->copy_pixel_buffer(_depth_buffer,
-			     gsg->get_current_display_region(),
-			     gsg->get_render_buffer(RenderBuffer::T_depth));
-      //		     gsg->get_render_buffer(RenderBuffer::T_back));
+                             gsg->get_current_display_region(),
+                             gsg->get_render_buffer(RenderBuffer::T_depth));
+      //                     gsg->get_render_buffer(RenderBuffer::T_back));
     }
     
     // The scene has already been rendered so we need to stencil in an area
@@ -204,7 +204,7 @@ apply(Node *node, const AllAttributesWrapper &init_state,
     // Enable the stencil buffer
     StencilTransition *sa = 
       new StencilTransition(StencilProperty::M_not_equal,
-			    StencilProperty::A_replace);
+                            StencilProperty::A_replace);
     trans.set_transition(sa);
     
     // Disable texturing
@@ -231,7 +231,7 @@ apply(Node *node, const AllAttributesWrapper &init_state,
     // Adjust the stencil buffer properties
     StencilTransition *sa = 
       new StencilTransition(StencilProperty::M_equal,
-			    StencilProperty::A_keep);
+                            StencilProperty::A_keep);
     trans.set_transition(sa);
 
 
@@ -309,7 +309,7 @@ apply(Node *node, const AllAttributesWrapper &init_state,
     na.set_attribute(ColorBlendTransition::get_class_type(), cb);
     
     gsg->draw_pixel_buffer(_color_buffer, gsg->get_current_display_region(),
-			   gsg->get_render_buffer(RenderBuffer::T_back), na);
+                           gsg->get_render_buffer(RenderBuffer::T_back), na);
   } else {
     // One more pass to redraw the reflecting object (additive blending)
     // Final color is reflecting obj color + (ref. obj. color * reflectivity)
@@ -317,7 +317,7 @@ apply(Node *node, const AllAttributesWrapper &init_state,
 
     StencilTransition *sa = 
       new StencilTransition(StencilProperty::M_equal,
-			    StencilProperty::A_keep);
+                            StencilProperty::A_keep);
     trans.set_transition(sa);
 
     DepthTestTransition *dta = 
@@ -338,8 +338,8 @@ apply(Node *node, const AllAttributesWrapper &init_state,
   if (_save_depth_buffer)
   {
     gsg->draw_pixel_buffer(_depth_buffer, gsg->get_current_display_region(),
-			   gsg->get_render_buffer(RenderBuffer::T_depth));
-	      //	   gsg->get_render_buffer(RenderBuffer::T_back));
+                           gsg->get_render_buffer(RenderBuffer::T_depth));
+              //           gsg->get_render_buffer(RenderBuffer::T_back));
   }
   
 

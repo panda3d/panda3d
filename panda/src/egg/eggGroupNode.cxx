@@ -172,7 +172,7 @@ erase(iterator first, iterator last) {
     prepare_remove_child(*i);
   }
   return _children.erase((Children::iterator &)first, 
-			 (Children::iterator &)last);
+                         (Children::iterator &)last);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -278,16 +278,16 @@ resolve_filenames(const DSearchPath &searchpath) {
     if (child->is_of_type(EggTexture::get_class_type())) {
       EggTexture *tex = DCAST(EggTexture, child);
       tex->update_filename().
-	resolve_filename(searchpath, tex->get_default_extension());
+        resolve_filename(searchpath, tex->get_default_extension());
       if (tex->has_alpha_file()) {
-	tex->update_alpha_file().
-	  resolve_filename(searchpath, tex->get_default_extension());
+        tex->update_alpha_file().
+          resolve_filename(searchpath, tex->get_default_extension());
       }
 
     } else if (child->is_of_type(EggFilenameNode::get_class_type())) {
       EggFilenameNode *fnode = DCAST(EggFilenameNode, child);
       fnode->update_filename().
-	resolve_filename(searchpath, fnode->get_default_extension());
+        resolve_filename(searchpath, fnode->get_default_extension());
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       DCAST(EggGroupNode, child)->resolve_filenames(searchpath);
@@ -370,16 +370,16 @@ recompute_vertex_normals(double threshold, CoordinateSystem cs) {
       ++gi;
       
       while (gi != group.end()) {
-	const NVertexReference &ref = (*gi);
-	double dot = base_ref._normal.dot(ref._normal);
-	if (dot > cos_angle) {
-	  // These polygons are close enough to the same angle.
-	  new_group.push_back(ref);
-	} else {
-	  // These polygons are not.
-	  leftover_group.push_back(ref);
-	}
-	++gi;
+        const NVertexReference &ref = (*gi);
+        double dot = base_ref._normal.dot(ref._normal);
+        if (dot > cos_angle) {
+          // These polygons are close enough to the same angle.
+          new_group.push_back(ref);
+        } else {
+          // These polygons are not.
+          leftover_group.push_back(ref);
+        }
+        ++gi;
       }
 
       // Now new_group is a collection of connected polygons and the
@@ -425,26 +425,26 @@ recompute_polygon_normals(CoordinateSystem cs) {
       EggPolygon *polygon = DCAST(EggPolygon, child);
 
       if (!polygon->recompute_polygon_normal(cs)) {
-	// The polygon is degenerate.  Remove it.
-	prepare_remove_child(child);
-	_children.erase(ci);
+        // The polygon is degenerate.  Remove it.
+        prepare_remove_child(child);
+        _children.erase(ci);
 
       } else {
-	// Remove the normal from each polygon vertex.
-	size_t num_vertices = polygon->size();
-	for (size_t i = 0; i < num_vertices; i++) {
-	  EggVertex *vertex = polygon->get_vertex(i);
-	  EggVertexPool *pool = vertex->get_pool();
+        // Remove the normal from each polygon vertex.
+        size_t num_vertices = polygon->size();
+        for (size_t i = 0; i < num_vertices; i++) {
+          EggVertex *vertex = polygon->get_vertex(i);
+          EggVertexPool *pool = vertex->get_pool();
 
-	  if (vertex->has_normal()) {
-	    EggVertex new_vertex(*vertex);
-	    new_vertex.clear_normal();
-	    EggVertex *unique = pool->create_unique_vertex(new_vertex);
-	    unique->copy_grefs_from(*vertex);
+          if (vertex->has_normal()) {
+            EggVertex new_vertex(*vertex);
+            new_vertex.clear_normal();
+            EggVertex *unique = pool->create_unique_vertex(new_vertex);
+            unique->copy_grefs_from(*vertex);
 
-	    polygon->set_vertex(i, unique);
-	  }
-	}
+            polygon->set_vertex(i, unique);
+          }
+        }
       }
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
@@ -479,17 +479,17 @@ strip_normals() {
       // Remove the normal from each prim vertex.
       size_t num_vertices = prim->size();
       for (size_t i = 0; i < num_vertices; i++) {
-	EggVertex *vertex = prim->get_vertex(i);
-	EggVertexPool *pool = vertex->get_pool();
-	
-	if (vertex->has_normal()) {
-	  EggVertex new_vertex(*vertex);
-	  new_vertex.clear_normal();
-	  EggVertex *unique = pool->create_unique_vertex(new_vertex);
-	  unique->copy_grefs_from(*vertex);
-	  
-	  prim->set_vertex(i, unique);
-	}
+        EggVertex *vertex = prim->get_vertex(i);
+        EggVertexPool *pool = vertex->get_pool();
+
+        if (vertex->has_normal()) {
+          EggVertex new_vertex(*vertex);
+          new_vertex.clear_normal();
+          EggVertex *unique = pool->create_unique_vertex(new_vertex);
+          unique->copy_grefs_from(*vertex);
+
+          prim->set_vertex(i, unique);
+        }
       }
     
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
@@ -570,9 +570,9 @@ remove_unused_vertices() {
       num_removed += vpool->remove_unused_vertices();
 
       if (vpool->empty()) {
-	// If, after removing all the vertices, there's nothing left
-	// in the vertex pool, then remove the whole vertex pool.
-	_children.erase(ci);
+        // If, after removing all the vertices, there's nothing left
+        // in the vertex pool, then remove the whole vertex pool.
+        _children.erase(ci);
       }
     
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
@@ -607,8 +607,8 @@ remove_invalid_primitives() {
     if (child->is_of_type(EggPrimitive::get_class_type())) {
       EggPrimitive *prim = DCAST(EggPrimitive, child);
       if (!prim->cleanup()) {
-	_children.erase(ci);
-	num_removed++;
+        _children.erase(ci);
+        num_removed++;
       }
     
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
@@ -662,7 +662,7 @@ update_under(int depth_offset) {
 ////////////////////////////////////////////////////////////////////
 void EggGroupNode::
 r_transform(const LMatrix4d &mat, const LMatrix4d &inv, 
-	    CoordinateSystem to_cs) {
+            CoordinateSystem to_cs) {
   Children::iterator ci;
   for (ci = _children.begin();
        ci != _children.end();
@@ -765,29 +765,29 @@ find_coordsys_entry() {
 
     if (child->is_of_type(EggCoordinateSystem::get_class_type())) {
       CoordinateSystem new_cs = 
-	DCAST(EggCoordinateSystem, child)->get_value();
+        DCAST(EggCoordinateSystem, child)->get_value();
 
       // Now remove the CoordinateSystem entry from our child list.
       prepare_remove_child(child);
       _children.erase(ci);
 
       if (new_cs != CS_default) {
-	if (coordsys != CS_default && coordsys != new_cs) {
-	  coordsys = CS_invalid;
-	} else {
-	  coordsys = new_cs;
-	}
+        if (coordsys != CS_default && coordsys != new_cs) {
+          coordsys = CS_invalid;
+        } else {
+          coordsys = new_cs;
+        }
       }
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       CoordinateSystem new_cs = 
-	DCAST(EggGroupNode, child)->find_coordsys_entry();
+        DCAST(EggGroupNode, child)->find_coordsys_entry();
       if (new_cs != CS_default) {
-	if (coordsys != CS_default && coordsys != new_cs) {
-	  coordsys = CS_invalid;
-	} else {
-	  coordsys = new_cs;
-	}
+        if (coordsys != CS_default && coordsys != new_cs) {
+          coordsys = CS_invalid;
+        } else {
+          coordsys = new_cs;
+        }
       }
     }
 
@@ -834,7 +834,7 @@ find_textures(EggTextureCollection *collection) {
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       num_found +=
-	DCAST(EggGroupNode, child)->find_textures(collection);
+        DCAST(EggGroupNode, child)->find_textures(collection);
     }
 
     ci = cnext;
@@ -880,7 +880,7 @@ find_materials(EggMaterialCollection *collection) {
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       num_found +=
-	DCAST(EggGroupNode, child)->find_materials(collection);
+        DCAST(EggGroupNode, child)->find_materials(collection);
     }
 
     ci = cnext;
@@ -900,7 +900,7 @@ find_materials(EggMaterialCollection *collection) {
 ////////////////////////////////////////////////////////////////////
 bool EggGroupNode::
 r_resolve_externals(const DSearchPath &searchpath, 
-		    CoordinateSystem coordsys) {
+                    CoordinateSystem coordsys) {
   bool success = true;
 
   Children::iterator ci;
@@ -915,33 +915,33 @@ r_resolve_externals(const DSearchPath &searchpath,
       // the external file successfully, we'll put its contents here.
       Filename filename = ref->get_filename();
       EggGroupNode *new_node = 
-	new EggGroupNode(filename.get_basename_wo_extension());
+        new EggGroupNode(filename.get_basename_wo_extension());
       replace(ci, new_node);
       
       if (!EggData::resolve_egg_filename(filename, searchpath)) {
-	egg_cat.error()
-	  << "Could not locate " << filename << " in "
-	  << searchpath << "\n";
+        egg_cat.error()
+          << "Could not locate " << filename << " in "
+          << searchpath << "\n";
       } else {
-	// Now define a new EggData structure to hold the external
-	// reference, and load it.
-	EggData ext_data;
-	ext_data.set_coordinate_system(coordsys);
-	if (ext_data.read(filename)) {
-	  // The external file was read correctly.  Add its contents
-	  // into the tree at this point.
-	  success =
-	    ext_data.resolve_externals(searchpath)
-	    && success;
-	  new_node->steal_children(ext_data);
-	}
+        // Now define a new EggData structure to hold the external
+        // reference, and load it.
+        EggData ext_data;
+        ext_data.set_coordinate_system(coordsys);
+        if (ext_data.read(filename)) {
+          // The external file was read correctly.  Add its contents
+          // into the tree at this point.
+          success =
+            ext_data.resolve_externals(searchpath)
+            && success;
+          new_node->steal_children(ext_data);
+        }
       }
-	
+
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       EggGroupNode *group_child = DCAST(EggGroupNode, child);
       success =
-	group_child->r_resolve_externals(searchpath, coordsys)
-	&& success;
+        group_child->r_resolve_externals(searchpath, coordsys)
+        && success;
     }
   }
   return success;
@@ -1005,7 +1005,7 @@ prepare_remove_child(EggNode *node) {
 ////////////////////////////////////////////////////////////////////
 void EggGroupNode::
 r_collect_vertex_normals(EggGroupNode::NVertexCollection &collection,
-			 double threshold, CoordinateSystem cs) {
+                         double threshold, CoordinateSystem cs) {
   // We can do this ci/cnext iteration through the list as we modify
   // it, only because we know this works with an STL list type
   // container.  If this were a vector or a set, this wouldn't
@@ -1025,20 +1025,20 @@ r_collect_vertex_normals(EggGroupNode::NVertexCollection &collection,
       NVertexReference ref;
       ref._polygon = polygon;
       if (!polygon->calculate_normal(ref._normal, cs)) {
-	// The polygon is degenerate.  Remove it.
-	
-	prepare_remove_child(child);
-	_children.erase(ci);
+        // The polygon is degenerate.  Remove it.
+
+        prepare_remove_child(child);
+        _children.erase(ci);
 
       } else {
-	// Now add each vertex from the polygon separately to our
-	// collection.
-	size_t num_vertices = polygon->size();
-	for (size_t i = 0; i < num_vertices; i++) {
-	  EggVertex *vertex = polygon->get_vertex(i);
-	  ref._vertex = i;
-	  collection[vertex->get_pos3()].push_back(ref);
-	}
+        // Now add each vertex from the polygon separately to our
+        // collection.
+        size_t num_vertices = polygon->size();
+        for (size_t i = 0; i < num_vertices; i++) {
+          EggVertex *vertex = polygon->get_vertex(i);
+          ref._vertex = i;
+          collection[vertex->get_pos3()].push_back(ref);
+        }
       }
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
@@ -1047,9 +1047,9 @@ r_collect_vertex_normals(EggGroupNode::NVertexCollection &collection,
       // We can't share vertices across an Instance node.  Don't
       // even bother trying.  Instead, just restart.
       if (group->is_under_instance()) {
-	group->recompute_vertex_normals(threshold, cs);
+        group->recompute_vertex_normals(threshold, cs);
       } else {
-	group->r_collect_vertex_normals(collection, threshold, cs);
+        group->r_collect_vertex_normals(collection, threshold, cs);
       }
     }
 

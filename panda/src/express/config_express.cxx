@@ -86,13 +86,13 @@ get_use_high_res_clock() {
 }
 
 const int patchfile_window_size =
-	config_express.GetInt("patchfile-window-size", 16);
+        config_express.GetInt("patchfile-window-size", 16);
 
 const int patchfile_increment_size =
-	config_express.GetInt("patchfile-increment-size", 8);
+        config_express.GetInt("patchfile-increment-size", 8);
 
 const int patchfile_buffer_size =
-	config_express.GetInt("patchfile-buffer-size", 4096);
+        config_express.GetInt("patchfile-buffer-size", 4096);
 
 const int patchfile_zone_size =
-	config_express.GetInt("patchfile-zone-size", 10000);
+        config_express.GetInt("patchfile-zone-size", 10000);

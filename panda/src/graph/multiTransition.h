@@ -15,7 +15,7 @@
 #include <indent.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : MultiTransition
+//       Class : MultiTransition
 // Description : This is an abstract template class that encapsulates
 //               states that may have any number of subcomponents, in
 //               no particular order, any of which may be on or off at
@@ -89,7 +89,7 @@ protected:
 
   virtual void output_property(ostream &out, const Property &prop) const=0;
   virtual void write_property(ostream &out, const Property &prop,
-			      int indent_level) const=0;
+                              int indent_level) const=0;
 
 public:
   // These functions and typedefs allow one to peruse all of the
@@ -119,8 +119,8 @@ public:
   static void init_type() {
     NodeTransition::init_type();
     register_type(_type_handle, 
-		  string("MultiTransition<")+NameClass::get_class_name()+">",
-		  NodeTransition::get_class_type());
+                  string("MultiTransition<")+NameClass::get_class_name()+">",
+                  NodeTransition::get_class_type());
   }
 
 private:

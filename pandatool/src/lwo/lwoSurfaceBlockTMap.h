@@ -11,7 +11,7 @@
 #include "lwoGroupChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurfaceBlockTMap
+//       Class : LwoSurfaceBlockTMap
 // Description : The tMap chunk within a LwoSurfaceBlock chunk.
 ////////////////////////////////////////////////////////////////////
 class LwoSurfaceBlockTMap : public LwoGroupChunk {
@@ -32,7 +32,7 @@ public:
   static void init_type() {
     LwoGroupChunk::init_type();
     register_type(_type_handle, "LwoSurfaceBlockTMap",
-		  LwoGroupChunk::get_class_type());
+                  LwoGroupChunk::get_class_type());
   }
 
 private:

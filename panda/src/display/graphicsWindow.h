@@ -117,7 +117,7 @@ public:
   INLINE void call_idle_callback();
  
   PT(DisplayRegion) make_scratch_display_region(int xsize,
-						int ysize) const;
+                                                int ysize) const;
 
   virtual TypeHandle get_gsg_type() const=0;
 
@@ -257,8 +257,8 @@ public:
     Configurable::init_type();
     ReferenceCount::init_type();
     register_type(_type_handle, "GraphicsWindow",
- 		  Configurable::get_class_type(),
- 		  ReferenceCount::get_class_type());
+                  Configurable::get_class_type(),
+                  ReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -89,7 +89,7 @@ transform_changed(NodeRelation *arc) {
   // extract the position
 
   LPoint3f pos;
-	  
+
   tt->get_matrix().get_row3(pos,3);
 
   // extract the orientation

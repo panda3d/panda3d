@@ -105,7 +105,7 @@ void herc_display_func(void) {
 
 void herc_overrides_func(ChanCfgOverrides &override, std::string&) {
   override.setField(ChanCfgOverrides::Mask,
-	((unsigned int)(W_DOUBLE|W_DEPTH|W_MULTISAMPLE|W_STENCIL)));
+        ((unsigned int)(W_DOUBLE|W_DEPTH|W_MULTISAMPLE|W_STENCIL)));
   override.setField(ChanCfgOverrides::Title, "Lighting Demo");
 }
 
@@ -124,19 +124,19 @@ void herc_idle() {
 
       float stride = walk_speed * ClockObject::get_global_clock()->get_dt();
       if (dist > stride) {
-	LVector2f step = bv2 / dist * stride;
+        LVector2f step = bv2 / dist * stride;
 
-	const TransformTransition *tt;
-	if (!get_transition_into(tt, herc_arc)) {
-	  herc_arc->set_transition
-	    (new TransformTransition
-	     (LMatrix4f::translate_mat(step[0], step[1], 0.0)));
-	} else {
-	  LMatrix4f mat = tt->get_matrix();
-	  mat(3, 0) += step[0];
-	  mat(3, 1) += step[1];
-	  herc_arc->set_transition(new TransformTransition(mat));
-	}
+        const TransformTransition *tt;
+        if (!get_transition_into(tt, herc_arc)) {
+          herc_arc->set_transition
+            (new TransformTransition
+             (LMatrix4f::translate_mat(step[0], step[1], 0.0)));
+        } else {
+          LMatrix4f mat = tt->get_matrix();
+          mat(3, 0) += step[0];
+          mat(3, 1) += step[1];
+          herc_arc->set_transition(new TransformTransition(mat));
+        }
       }
     }
   }
@@ -321,7 +321,7 @@ void herc_keys(EventHandler &eh) {
   PT_NamedNode herc_model = loader.load_sync("herc-6000.egg");
   PT_NamedNode herc_anim = loader.load_sync("HB_1_HE1.egg");
   assert(herc_model != (NamedNode *)NULL && 
-	 herc_anim != (NamedNode *)NULL);
+         herc_anim != (NamedNode *)NULL);
   PT_NamedNode herc_parent = new NamedNode("herc_parent");
   new RenderRelation(herc_parent, herc_model);
   new RenderRelation(herc_parent, herc_anim);
@@ -354,7 +354,7 @@ void herc_keys(EventHandler &eh) {
   // Control the ball using a PlanarSlider tform.
   ball_slider = new PlanarSlider("ball_slider");
   ball_slider->set_transform(LMatrix4f::translate_mat(0.0, 0.0, 1.0) * 
-			     LMatrix4f::scale_mat(7.0, -7.0, 1.0));
+                             LMatrix4f::scale_mat(7.0, -7.0, 1.0));
   ball_slider->set_mouse_pos(LPoint2f(4.0 / 7.0, 2.0 / -7.0));
   Transform2SG *slider2ball = new Transform2SG("slider2ball");
   slider2ball->set_arc(ball_arc);
@@ -413,7 +413,7 @@ void herc_keys(EventHandler &eh) {
 
   // Create a wireframe representation of the texture projector frustum
   GeomLine* proj_geom = 
-	(GeomLine *)tex_proj->get_projection()->make_geometry();
+        (GeomLine *)tex_proj->get_projection()->make_geometry();
   proj_geom_node = new GeomNode("proj_geometry");
   proj_geom_node->add_geom(proj_geom);
 

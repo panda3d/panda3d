@@ -378,7 +378,7 @@ ptr() {
 ////////////////////////////////////////////////////////////////////
 bool Notify::
 assert_failure(const char *expression, int line,
-	       const char *source_file) {
+               const char *source_file) {
   ostringstream message_str;
   message_str 
     << expression << " at line " << line << " of " << source_file;
@@ -471,23 +471,23 @@ config_initialized() {
     string notify_output = config_notify.GetString("notify-output", "");
     if (!notify_output.empty()) {
       if (notify_output == "stdout") {
-	cout.setf(ios::unitbuf);
-	set_ostream_ptr(&cout, false);
+        cout.setf(ios::unitbuf);
+        set_ostream_ptr(&cout, false);
 
       } else if (notify_output == "stderr") {
-	set_ostream_ptr(&cerr, false);
+        set_ostream_ptr(&cerr, false);
 
       } else {
-	Filename filename = notify_output;
-	filename.set_text();
-	ofstream *out = new ofstream;
-	if (!filename.open_write(*out)) {
-	  nout << "Unable to open file " << filename << " for output.\n";
-	  delete out;
-	} else {
-	  out->setf(ios::unitbuf);
-	  set_ostream_ptr(out, true);
-	}
+        Filename filename = notify_output;
+        filename.set_text();
+        ofstream *out = new ofstream;
+        if (!filename.open_write(*out)) {
+          nout << "Unable to open file " << filename << " for output.\n";
+          delete out;
+        } else {
+          out->setf(ios::unitbuf);
+          set_ostream_ptr(out, true);
+        }
       }
     }
   }

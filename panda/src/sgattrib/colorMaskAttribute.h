@@ -13,7 +13,7 @@
 #include <onAttribute.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ColorMaskAttribute
+//       Class : ColorMaskAttribute
 // Description : See ColorMaskTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ColorMaskAttribute : public OnAttribute {
@@ -53,7 +53,7 @@ public:
   static void init_type() {
     OnAttribute::init_type();
     register_type(_type_handle, "ColorMaskAttribute",
-		  OnAttribute::get_class_type());
+                  OnAttribute::get_class_type());
   }
 
 private:

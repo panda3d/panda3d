@@ -27,7 +27,7 @@ public:
     static mutex_class* const Null;
     INLINE mutex_class(void) : _mutex(PR_NewLock()) {
       if (_mutex == (PRLock*)0L)
-	cerr << "COULD NOT GET A MUTEX!" << endl;
+        cerr << "COULD NOT GET A MUTEX!" << endl;
     }
     INLINE ~mutex_class(void) {
       PR_DestroyLock(_mutex);
@@ -60,7 +60,7 @@ public:
       unsigned long s, n;
       ipc_traits::get_time(s, n);
       PRIntervalTime i = PR_SecondsToInterval(secs - s) +
-	PR_MicrosecondsToInterval((nsecs - n) / 1000);
+        PR_MicrosecondsToInterval((nsecs - n) / 1000);
       PR_WaitCondVar(_condition, i);
       return 1;
     }
@@ -79,10 +79,10 @@ public:
     class EXPCL_PANDAEXPRESS mutex_class_lock {
     public:
       INLINE mutex_class_lock(mutex_class& m) : _mutex(m) {
-	_mutex.lock();
+        _mutex.lock();
       }
       INLINE ~mutex_class_lock(void) {
-	_mutex.unlock();
+        _mutex.unlock();
       }
     private:
       mutex_class& _mutex;
@@ -95,20 +95,20 @@ public:
     INLINE void wait(void) {
       mutex_class_lock l(_mutex);
       while (_value == 0)
-	_condition.wait();
+        _condition.wait();
       --_value;
     }
     INLINE int trywait(void) {
       mutex_class_lock l(_mutex);
       if (_value == 0)
-	return 0;
+        return 0;
       --_value;
       return 1;
     }
     INLINE void post(void) {
       mutex_class_lock l(_mutex);
       if (_value == 0)
-	_condition.signal();
+        _condition.signal();
       ++_value;
     }
   };
@@ -123,11 +123,11 @@ public:
     INLINE PRThreadPriority priority_map(const int pri) {
       switch (pri) {
       case 0:
-	return PR_PRIORITY_LOW;
+        return PR_PRIORITY_LOW;
       case 1:
-	return PR_PRIORITY_NORMAL;
+        return PR_PRIORITY_NORMAL;
       case 2:
-	return PR_PRIORITY_HIGH;
+        return PR_PRIORITY_HIGH;
       }
       return PR_PRIORITY_NORMAL;
     }
@@ -144,9 +144,9 @@ public:
       // create the thread, decide it's priority, if it's detached, and if it's
       // a kernel thread, etc
       _thread = PR_CreateThread(PR_SYSTEM_THREAD, thread_wrapper, this,
-				priority_map(pri), PR_GLOBAL_BOUND_THREAD,
-				det?PR_UNJOINABLE_THREAD:PR_JOINABLE_THREAD,
-				256*1024);
+                                priority_map(pri), PR_GLOBAL_BOUND_THREAD,
+                                det?PR_UNJOINABLE_THREAD:PR_JOINABLE_THREAD,
+                                256*1024);
     }
     INLINE void start_in(void) {
       PR_SetThreadPrivate(__get_data_index(), this);
@@ -155,7 +155,7 @@ public:
     INLINE void join(void** status) {
       PR_JoinThread(_thread);
       if (status)
-	*status = _return_value;
+        *status = _return_value;
     }
     INLINE void set_priority(const int pri) {
       PR_SetThreadPriority(_thread, priority_map(pri));
@@ -164,7 +164,7 @@ public:
     static INLINE void exit(void* return_value) {
       thread_class* me = self();
       if (me != thread_class::Null)
-	me->_return_value = return_value;
+        me->_return_value = return_value;
       // This gives us a seg fault upon exit - NSPR wants us to return from
       // the callback function rather than exit()
       //exit(0);  // assuming that this is really a kernel thread.  NSPR offers
@@ -185,20 +185,20 @@ public:
     INLINE library_class(const std::string& lib) {
       _lib = PR_LoadLibrary(lib.c_str());
       if (_lib == (PRLibrary*)0L) {
-	nout << "failed to load library '" << lib << "'" << endl;
+        nout << "failed to load library '" << lib << "'" << endl;
       }
     }
     INLINE ~library_class(void) {
       if (_lib != (PRLibrary*)0L) {
-	PRStatus stat = PR_UnloadLibrary(_lib);
-	if (stat == PR_FAILURE)
-	  nout << "failed to unload library" << endl;
+        PRStatus stat = PR_UnloadLibrary(_lib);
+        if (stat == PR_FAILURE)
+          nout << "failed to unload library" << endl;
       }
     }
     INLINE void* get_symbol(const std::string& sym) {
       if (_lib == (PRLibrary*)0L) {
-	nout << "library not correctly loaded" << endl;
-	return (void *)0L;
+        nout << "library not correctly loaded" << endl;
+        return (void *)0L;
       }
       return PR_FindSymbol(_lib, sym.c_str());
     }
@@ -211,20 +211,20 @@ public:
         INLINE void setFile(const std::string& file) { _filename = file; close(); }
         INLINE bool open(const int mode) {
           close();
-	  switch(mode){
-	  case 0: _fhandle = PR_Open(_filename.c_str(), PR_RDONLY, 00666); break;
-	  case 1: _fhandle = PR_Open(_filename.c_str(), 
-				     PR_WRONLY | PR_CREATE_FILE | PR_TRUNCATE, 00666); break;
-	  case 2: _fhandle = PR_Open(_filename.c_str(), 
-				     PR_RDWR | PR_CREATE_FILE | PR_TRUNCATE, 00666); break;
-	  case 3: _fhandle = PR_Open(_filename.c_str(), PR_APPEND | PR_CREATE_FILE, 00666); break;
-	  default: _fhandle = PR_Open(_filename.c_str(), PR_RDONLY, 00666); break;
-	  }
-	  return (_fhandle != (PRFileDesc *)NULL);
-	}
-	INLINE void close(void) {
-	  if (_fhandle != (PRFileDesc *)NULL) { PR_Close(_fhandle); _fhandle = (PRFileDesc *)NULL; }
-	}
+          switch(mode){
+          case 0: _fhandle = PR_Open(_filename.c_str(), PR_RDONLY, 00666); break;
+          case 1: _fhandle = PR_Open(_filename.c_str(), 
+                                     PR_WRONLY | PR_CREATE_FILE | PR_TRUNCATE, 00666); break;
+          case 2: _fhandle = PR_Open(_filename.c_str(), 
+                                     PR_RDWR | PR_CREATE_FILE | PR_TRUNCATE, 00666); break;
+          case 3: _fhandle = PR_Open(_filename.c_str(), PR_APPEND | PR_CREATE_FILE, 00666); break;
+          default: _fhandle = PR_Open(_filename.c_str(), PR_RDONLY, 00666); break;
+          }
+          return (_fhandle != (PRFileDesc *)NULL);
+        }
+        INLINE void close(void) {
+          if (_fhandle != (PRFileDesc *)NULL) { PR_Close(_fhandle); _fhandle = (PRFileDesc *)NULL; }
+        }
     INLINE bool empty(void){ return (PR_Available(_fhandle) <= 0); }
 
     INLINE int readin(string &block, int numBytes) {
@@ -246,18 +246,18 @@ public:
            return numRead;
     }
 
-  	INLINE int writeout(const string &block) {
+        INLINE int writeout(const string &block) {
         nassertr(block.size() > 0, 0);      //Make sure there is something to write out
         nassertr(block.data() != NULL, 0);
 
         if (_fhandle == (PRFileDesc *)NULL)
            return 0;
-  	    return PR_Write(_fhandle, (void*)block.data(), block.size());
-	}
+            return PR_Write(_fhandle, (void*)block.data(), block.size());
+        }
 
   private:
     string _filename;
-	PRFileDesc* _fhandle;
+        PRFileDesc* _fhandle;
   };
 
   static INLINE mutex_class* make_mutex(void) {
@@ -279,15 +279,15 @@ public:
     return new file_class(file);
   }
   static INLINE void sleep(const unsigned long secs,
-			   const unsigned long nsecs = 0) {
+                           const unsigned long nsecs = 0) {
     PRIntervalTime i = PR_SecondsToInterval(secs) +
       PR_MicrosecondsToInterval(nsecs / 1000);
     PR_Sleep(i);
   }
   static INLINE void get_time(unsigned long& abs_secs,
-			      unsigned long& abs_nsecs,
-			      const unsigned long rel_secs = 0,
-			      const unsigned long rel_nsecs = 0) {
+                              unsigned long& abs_nsecs,
+                              const unsigned long rel_secs = 0,
+                              const unsigned long rel_nsecs = 0) {
     PRTime t = PR_Now();
     PRTime t_offset;
     PRTime usec_convert;

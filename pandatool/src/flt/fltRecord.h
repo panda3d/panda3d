@@ -21,7 +21,7 @@ class FltRecordWriter;
 class DatagramIterator;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltRecord
+//       Class : FltRecord
 // Description : The base class for all kinds of records in a MultiGen
 //               OpenFlight file.  A flt file consists of a hierarchy
 //               of "beads" of various kinds, each of which may be
@@ -101,7 +101,7 @@ public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "FltRecord",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
 
 private:

@@ -23,7 +23,7 @@ class CLwoSurface;
 class LwoClip;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoToEggConverter
+//       Class : LwoToEggConverter
 // Description : This class supervises the construction of an EggData
 //               structure from the data represented by the LwoHeader.
 //               Reading and writing the egg and lwo structures is

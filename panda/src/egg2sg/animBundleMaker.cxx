@@ -97,11 +97,11 @@ inspect_tree(EggNode *egg_node) {
     EggAnimData *egg_anim = DCAST(EggAnimData, egg_node);
     if (egg_anim->has_fps()) {
       if (_fps == 0.0) {
-	_fps = egg_anim->get_fps();
+        _fps = egg_anim->get_fps();
       } else if (_fps != egg_anim->get_fps()) {
-	// Whoops!  This table differs in opinion from the other tables.
-	_fps = min(_fps, (float)egg_anim->get_fps());
-	_ok_fps = false;
+        // Whoops!  This table differs in opinion from the other tables.
+        _fps = min(_fps, (float)egg_anim->get_fps());
+        _ok_fps = false;
       }
     }
   }
@@ -111,11 +111,11 @@ inspect_tree(EggNode *egg_node) {
     EggXfmSAnim *egg_anim = DCAST(EggXfmSAnim, egg_node);
     if (egg_anim->has_fps()) {
       if (_fps == 0.0) {
-	_fps = egg_anim->get_fps();
+        _fps = egg_anim->get_fps();
       } else if (_fps != egg_anim->get_fps()) {
-	// Whoops!  This table differs in opinion from the other tables.
-	_fps = min(_fps, (float)egg_anim->get_fps());
-	_ok_fps = false;
+        // Whoops!  This table differs in opinion from the other tables.
+        _fps = min(_fps, (float)egg_anim->get_fps());
+        _ok_fps = false;
       }
     }
   }
@@ -127,11 +127,11 @@ inspect_tree(EggNode *egg_node) {
 
     if (num_frames > 1) {
       if (_num_frames == 1) {
-	_num_frames = num_frames;
+        _num_frames = num_frames;
       } else if (_num_frames != num_frames) {
-	// Whoops!  Another disagreement.
-	_num_frames = min(_num_frames, num_frames);
-	_ok_num_frames = false;
+        // Whoops!  Another disagreement.
+        _num_frames = min(_num_frames, num_frames);
+        _ok_num_frames = false;
       }
     }
   }
@@ -143,11 +143,11 @@ inspect_tree(EggNode *egg_node) {
 
     if (num_frames > 1) {
       if (_num_frames == 1) {
-	_num_frames = num_frames;
+        _num_frames = num_frames;
       } else if (_num_frames != num_frames) {
-	// Whoops!  Another disagreement.
-	_num_frames = min(_num_frames, num_frames);
-	_ok_num_frames = false;
+        // Whoops!  Another disagreement.
+        _num_frames = min(_num_frames, num_frames);
+        _ok_num_frames = false;
       }
     }
   }
@@ -181,11 +181,11 @@ build_hierarchy(EggTable *egg_table, AnimGroup *parent) {
   for (ci = egg_table->begin(); ci != egg_table->end(); ++ci) {
     if ((*ci)->get_name() == "xform") {
       if (this_node == NULL) {
-	this_node = create_xfm_channel((*ci), egg_table->get_name(), parent);
+        this_node = create_xfm_channel((*ci), egg_table->get_name(), parent);
       } else {
-	egg2sg_cat.warning()
-	  << "Duplicate xform table under node " 
-	  << egg_table->get_name() << "\n";
+        egg2sg_cat.warning()
+          << "Duplicate xform table under node " 
+          << egg_table->get_name() << "\n";
       }
     }
   }
@@ -221,7 +221,7 @@ build_hierarchy(EggTable *egg_table, AnimGroup *parent) {
 ////////////////////////////////////////////////////////////////////
 AnimChannelScalarTable *AnimBundleMaker::
 create_s_channel(EggSAnimData *egg_anim, const string &name,
-		 AnimGroup *parent) {
+                 AnimGroup *parent) {
   AnimChannelScalarTable *table 
     = new AnimChannelScalarTable(parent, name);
 
@@ -247,7 +247,7 @@ create_s_channel(EggSAnimData *egg_anim, const string &name,
 ////////////////////////////////////////////////////////////////////
 AnimChannelMatrixXfmTable *AnimBundleMaker::
 create_xfm_channel(EggNode *egg_node, const string &name,
-		   AnimGroup *parent) {
+                   AnimGroup *parent) {
   if (egg_node->is_of_type(EggXfmAnimData::get_class_type())) {
     EggXfmAnimData *egg_anim = DCAST(EggXfmAnimData, egg_node);
     EggXfmSAnim new_anim(*egg_anim);
@@ -273,7 +273,7 @@ create_xfm_channel(EggNode *egg_node, const string &name,
 ////////////////////////////////////////////////////////////////////
 AnimChannelMatrixXfmTable *AnimBundleMaker::
 create_xfm_channel(EggXfmSAnim *egg_anim, const string &name,
-		   AnimGroup *parent) {
+                   AnimGroup *parent) {
   // Ensure that the anim table is optimal and that it is standard
   // order.
   egg_anim->optimize_to_standard_order();
@@ -291,35 +291,35 @@ create_xfm_channel(EggXfmSAnim *egg_anim, const string &name,
       EggSAnimData *child = DCAST(EggSAnimData, *ci);
 
       if (child->get_name().empty()) {
-	egg2sg_cat.warning()
-	  << "Unnamed subtable of <Xfm$Anim_S$> " << name
-	  << "\n";
+        egg2sg_cat.warning()
+          << "Unnamed subtable of <Xfm$Anim_S$> " << name
+          << "\n";
       } else {
-	char table_id = child->get_name()[0];
+        char table_id = child->get_name()[0];
 
-	if (child->get_name().length() > 1 ||
-	    !table->is_valid_id(table_id)) {
-	  egg2sg_cat.warning()
-	    << "Unexpected table name " << child->get_name()
-	    << ", child of " << name << "\n";
+        if (child->get_name().length() > 1 ||
+            !table->is_valid_id(table_id)) {
+          egg2sg_cat.warning()
+            << "Unexpected table name " << child->get_name()
+            << ", child of " << name << "\n";
 
-	} else if (table->has_table(table_id)) {
-	  egg2sg_cat.warning()
-	    << "Duplicate table definition for " << table_id
-	    << " under " << name << "\n";
+        } else if (table->has_table(table_id)) {
+          egg2sg_cat.warning()
+            << "Duplicate table definition for " << table_id
+            << " under " << name << "\n";
 
-	} else {
-	
-	  // Now we have to copy the table data from PTA_double to
-	  // PTA_float.
-	  PTA_float new_data(child->get_num_rows());
-	  for (int i = 0; i < child->get_num_rows(); i++) {
-	    new_data[i] = (float)child->get_value(i);
-	  }
-	
-	  // Now we can assign the table.
-	  table->set_table(table_id, new_data);
-	}
+        } else {
+
+          // Now we have to copy the table data from PTA_double to
+          // PTA_float.
+          PTA_float new_data(child->get_num_rows());
+          for (int i = 0; i < child->get_num_rows(); i++) {
+            new_data[i] = (float)child->get_value(i);
+          }
+
+          // Now we can assign the table.
+          table->set_table(table_id, new_data);
+        }
       }
     }
   }

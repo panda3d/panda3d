@@ -42,7 +42,7 @@ void TestFromString()
    intlist ides1 = intdes1;
    for (intlist::iterator i=ides1.begin(); i!=ides1.end(); ++i) {
       if (i != ides1.begin())
-	 cout << ", ";
+         cout << ", ";
       cout << (*i);
    }
    cout << endl;
@@ -52,7 +52,7 @@ void TestFromString()
    floatvec fdes1 = floatdes1;
    for (floatvec::iterator j=fdes1.begin(); j!=fdes1.end(); ++j) {
       if (j != fdes1.begin())
-	 cout << ", ";
+         cout << ", ";
       cout << (*j);
    }
    cout << endl;

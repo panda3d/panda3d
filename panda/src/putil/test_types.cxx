@@ -25,7 +25,7 @@ public:
     TypedObject::init_type();
     ReferenceCount::init_type();
     register_type(_type_handle, "ThatThingie",
-		  ReferenceCount::get_class_type());
+                  ReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -116,8 +116,8 @@ public:
     ThatThingie::init_type();
     TheOtherThingie::init_type();
     register_type(_type_handle, "WhatAThingie", 
-		  ThatThingie::get_class_type(),
-		  TheOtherThingie::get_class_type());
+                  ThatThingie::get_class_type(),
+                  TheOtherThingie::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -214,7 +214,7 @@ main() {
   {
     ConstPointerTo<ThatThingie> dup_thing_1 = thing_1;
     nout << "thing_1 is " << thing_1 << " and dup_thing_1 is "
-	 << dup_thing_1 << "\n";
+         << dup_thing_1 << "\n";
   }
   nout << "thing_1 is now " << thing_1 << "\n";
 

@@ -21,7 +21,7 @@ TypeHandle HardwareChannel::_type_handle;
 ////////////////////////////////////////////////////////////////////
 HardwareChannel::
 HardwareChannel( GraphicsWindow* window ) :
-	GraphicsChannel( window ) {
+        GraphicsChannel( window ) {
   _id = 0;
   _xorg = 0;
   _yorg = 0;

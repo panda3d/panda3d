@@ -14,7 +14,7 @@ class CPPIdentifier;
 class CPPScope;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPUsing
+//       Class : CPPUsing
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPUsing : public CPPDeclaration {
@@ -22,7 +22,7 @@ public:
   CPPUsing(CPPIdentifier *ident, bool full_namespace, const CPPFile &file);
 
   virtual void output(ostream &out, int indent_level, CPPScope *scope,
-		      bool complete) const;
+                      bool complete) const;
   virtual SubType get_subtype() const;
 
   virtual CPPUsing *as_using();

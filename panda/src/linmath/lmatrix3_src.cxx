@@ -7,8 +7,8 @@ TypeHandle FLOATNAME(LMatrix3)::_type_handle;
 
 FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::_ident_mat =
   FLOATNAME(LMatrix3)(1.0f, 0.0f, 0.0f,
-		      0.0f, 1.0f, 0.0f,
-		      0.0f, 0.0f, 1.0f);
+                      0.0f, 1.0f, 0.0f,
+                      0.0f, 0.0f, 1.0f);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::fill
@@ -52,14 +52,14 @@ compare_to(const FLOATNAME(LMatrix3) &other, FLOATTYPE threshold) const {
 bool FLOATNAME(LMatrix3)::
 almost_equal(const FLOATNAME(LMatrix3) &other, FLOATTYPE threshold) const {
   return (IS_THRESHOLD_EQUAL((*this)(0, 0), other(0, 0), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(0, 1), other(0, 1), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(0, 2), other(0, 2), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(1, 0), other(1, 0), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(1, 1), other(1, 1), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(1, 2), other(1, 2), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(2, 0), other(2, 0), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(2, 1), other(2, 1), threshold) &&
-	  IS_THRESHOLD_EQUAL((*this)(2, 2), other(2, 2), threshold));
+          IS_THRESHOLD_EQUAL((*this)(0, 1), other(0, 1), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(0, 2), other(0, 2), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(1, 0), other(1, 0), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(1, 1), other(1, 1), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(1, 2), other(1, 2), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(2, 0), other(2, 0), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(2, 1), other(2, 1), threshold) &&
+          IS_THRESHOLD_EQUAL((*this)(2, 2), other(2, 2), threshold));
 }
 
 

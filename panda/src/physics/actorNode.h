@@ -48,7 +48,7 @@ public:
   static void init_type(void) {
     PhysicalNode::init_type();
     register_type(_type_handle, "ActorNode",
-		  PhysicalNode::get_class_type());
+                  PhysicalNode::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

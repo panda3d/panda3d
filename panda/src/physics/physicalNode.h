@@ -49,7 +49,7 @@ public:
   static void init_type(void) {
     NamedNode::init_type();
     register_type(_type_handle, "PhysicalNode",
-		  NamedNode::get_class_type());
+                  NamedNode::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

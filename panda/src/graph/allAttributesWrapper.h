@@ -16,7 +16,7 @@
 class AllTransitionsWrapper;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : AllAttributesWrapper
+//       Class : AllAttributesWrapper
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA AllAttributesWrapper {
@@ -34,7 +34,7 @@ public:
 
   INLINE_GRAPH bool is_empty() const;
   INLINE_GRAPH PT(NodeAttribute) set_attribute(TypeHandle handle,
-					 NodeAttribute *trans);
+                                         NodeAttribute *trans);
   INLINE_GRAPH PT(NodeAttribute) set_attribute(NodeAttribute *trans);
   INLINE_GRAPH PT(NodeAttribute) clear_attribute(TypeHandle handle);
   INLINE_GRAPH bool has_attribute(TypeHandle handle) const;
@@ -49,7 +49,7 @@ public:
   INLINE_GRAPH void make_initial();
   void apply_in_place(const AllTransitionsWrapper &trans);
   void apply_from(const AllAttributesWrapper &other, 
-		  const AllTransitionsWrapper &trans);
+                  const AllTransitionsWrapper &trans);
   NodeAttributes *apply(const AllTransitionsWrapper &trans) const;
 
   void output(ostream &out) const;

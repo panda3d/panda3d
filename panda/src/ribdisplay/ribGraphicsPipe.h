@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 class RIBGraphicsPipe : public NoninteractiveGraphicsPipe {
 public:
-	
+
   INLINE RIBGraphicsPipe(const PipeSpecifier&);
 
   virtual TypeHandle get_window_type() const;

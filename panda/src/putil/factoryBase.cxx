@@ -50,7 +50,7 @@ make_instance(TypeHandle handle, const FactoryParams &params) {
       << (void *)instance;
     if (instance != (TypedObject *)NULL) {
       util_cat.debug(false)
-	<< ", of type " << instance->get_type();
+        << ", of type " << instance->get_type();
     }
     util_cat.debug(false) << "\n";
   }
@@ -84,7 +84,7 @@ make_instance_more_general(TypeHandle handle, const FactoryParams &params) {
       << (void *)object;
     if (object != (TypedObject *)NULL) {
       util_cat.debug(false)
-	<< ", of type " << object->get_type();
+        << ", of type " << object->get_type();
     }
     util_cat.debug(false) << "\n";
   }
@@ -262,7 +262,7 @@ make_instance_more_specific(TypeHandle handle, const FactoryParams &params) {
     if (ptype.is_derived_from(handle)) {
       TypedObject *object = make_instance_exact(ptype, params);
       if (object != (TypedObject *)NULL) {
-	return object;
+        return object;
       }
     }
   }
@@ -278,7 +278,7 @@ make_instance_more_specific(TypeHandle handle, const FactoryParams &params) {
       nassertr(func != (BaseCreateFunc *)NULL, NULL);
       TypedObject *object = (*func)(params);
       if (object != (TypedObject *)NULL) {
-	return object;
+        return object;
       }
     }      
   }

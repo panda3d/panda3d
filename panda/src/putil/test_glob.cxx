@@ -34,9 +34,9 @@ main(int argc, char *argv[]) {
   if (dp != 0) {
     do {
       if (pattern.matches(fd.name)) {
-	cout << "Matches: " << fd.name << "\n";
+        cout << "Matches: " << fd.name << "\n";
       } else {
-	cout << "Fails: " << fd.name << "\n";
+        cout << "Fails: " << fd.name << "\n";
       }
     } while (_findnext(dp, &fd) == 0);
   }

@@ -16,7 +16,7 @@
 class CharBitmap;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FontFile
+//       Class : FontFile
 // Description : This is an abstract base class that provides the
 //               interface to reading and/or rasterizing a particular
 //               font file.
@@ -27,7 +27,7 @@ public:
   virtual ~FontFile();
 
   virtual bool read(const Filename &filename, 
-		    bool extract_all, const string &extract_only)=0;
+                    bool extract_all, const string &extract_only)=0;
 
   INLINE double get_ds() const;
   INLINE double get_dpi() const;

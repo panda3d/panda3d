@@ -30,8 +30,8 @@ class AllTransitionsWrapper;
 class EXPCL_PANDA RenderTraverser : public TypedReferenceCount {
 public:
   INLINE RenderTraverser(GraphicsStateGuardian *gsg, 
-			 TypeHandle graph_type,
-			 const ArcChain &arc_chain);
+                         TypeHandle graph_type,
+                         const ArcChain &arc_chain);
   INLINE ~RenderTraverser();
 
   typedef ArcChain::iterator iterator;
@@ -48,8 +48,8 @@ PUBLISHED:
 
 public:  
   virtual void traverse(Node *root, 
-			const AllAttributesWrapper &initial_state,
-			const AllTransitionsWrapper &net_trans)=0;
+                        const AllAttributesWrapper &initial_state,
+                        const AllTransitionsWrapper &net_trans)=0;
 
 PUBLISHED:
   virtual void output(ostream &out) const;

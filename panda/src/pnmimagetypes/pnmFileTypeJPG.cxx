@@ -93,7 +93,7 @@ bool PNMFileTypeJPG::
 matches_magic_number(const string &magic_number) const {
   nassertr(magic_number.size() >= 2, false);
   return ((char)magic_number[0] == (char)0xff && 
-	  (char)magic_number[1] == (char)0xd8);
+          (char)magic_number[1] == (char)0xd8);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -9,7 +9,7 @@
 #include <pandatoolbase.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	  Enum : DistanceUnit
+//        Enum : DistanceUnit
 // Description : This enumerated type lists all the kinds of units
 //               we're likely to come across in model conversion
 //               programs.

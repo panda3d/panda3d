@@ -25,11 +25,11 @@ class sgiHardwareChannel : public HardwareChannel
 {
     public:
 
-    	sgiHardwareChannel( GraphicsWindow* window, int id );
+        sgiHardwareChannel( GraphicsWindow* window, int id );
 
     protected:
 
-	void 			*_channel_info;
+        void                    *_channel_info;
 
     public:
 

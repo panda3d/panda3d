@@ -48,7 +48,7 @@ public:
   static void init_type(void) {
     LinearRandomForce::init_type();
     register_type(_type_handle, "LinearNoiseForce",
-		  LinearRandomForce::get_class_type());
+                  LinearRandomForce::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

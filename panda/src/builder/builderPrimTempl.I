@@ -869,13 +869,13 @@ update_overall_attrib() {
       has_vertex_normal = true;
 
       for (i = 1; i < num_verts; i++) {
-	Vertex &vertex = get_vertex(i);
-	has_vertex_normal = 
-	  (has_vertex_normal && vertex.has_normal());
-	if (!vertex.has_normal() ||
-	    !(vertex.get_normal() == common_normal)) {
-	  has_common_normal = false;
-	}
+        Vertex &vertex = get_vertex(i);
+        has_vertex_normal = 
+          (has_vertex_normal && vertex.has_normal());
+        if (!vertex.has_normal() ||
+            !(vertex.get_normal() == common_normal)) {
+          has_common_normal = false;
+        }
       }
     }
     if (get_vertex(0).has_color()) {
@@ -884,13 +884,13 @@ update_overall_attrib() {
       has_vertex_color = true;
 
       for (i = 1; i < num_verts; i++) {
-	Vertex &vertex = get_vertex(i);
-	has_vertex_color = 
-	  (has_vertex_color && vertex.has_color());
-	if (!vertex.has_color() ||
-	    !(vertex.get_color() == common_color)) {
-	  has_common_color = false;
-	}
+        Vertex &vertex = get_vertex(i);
+        has_vertex_color = 
+          (has_vertex_color && vertex.has_color());
+        if (!vertex.has_color() ||
+            !(vertex.get_color() == common_color)) {
+          has_common_color = false;
+        }
       }
     }
     if (get_vertex(0).has_pixel_size()) {
@@ -899,13 +899,13 @@ update_overall_attrib() {
       has_vertex_pixel_size = true;
 
       for (i = 1; i < num_verts; i++) {
-	Vertex &vertex = get_vertex(i);
-	has_vertex_pixel_size = 
-	  (has_vertex_pixel_size && vertex.has_pixel_size());
-	if (!vertex.has_pixel_size() || 
-	    !(vertex.get_pixel_size() == common_pixel_size)) {
-	  has_common_pixel_size = false;
-	}
+        Vertex &vertex = get_vertex(i);
+        has_vertex_pixel_size = 
+          (has_vertex_pixel_size && vertex.has_pixel_size());
+        if (!vertex.has_pixel_size() || 
+            !(vertex.get_pixel_size() == common_pixel_size)) {
+          has_common_pixel_size = false;
+        }
       }
     }
   }
@@ -917,13 +917,13 @@ update_overall_attrib() {
       has_component_normal = true;
 
       for (i = 1; i < num_components; i++) {
-	DAttrib &component = get_component(i);
-	has_component_normal = 
-	  (has_component_normal && component.has_normal());
-	if (!component.has_normal() ||
-	    !(component.get_normal() == common_normal)) {
-	  has_common_normal = false;
-	}
+        DAttrib &component = get_component(i);
+        has_component_normal = 
+          (has_component_normal && component.has_normal());
+        if (!component.has_normal() ||
+            !(component.get_normal() == common_normal)) {
+          has_common_normal = false;
+        }
       }
     }
     if (!has_vertex_color && get_component(0).has_color()) {
@@ -932,13 +932,13 @@ update_overall_attrib() {
       has_component_color = true;
 
       for (i = 1; i < num_components; i++) {
-	DAttrib &component = get_component(i);
-	has_component_color = 
-	  (has_component_color && component.has_color());
-	if (!component.has_color() ||
-	    !(component.get_color() == common_color)) {
-	  has_common_color = false;
-	}
+        DAttrib &component = get_component(i);
+        has_component_color = 
+          (has_component_color && component.has_color());
+        if (!component.has_color() ||
+            !(component.get_color() == common_color)) {
+          has_common_color = false;
+        }
       }
     }
     if (!has_vertex_pixel_size && get_component(0).has_pixel_size()) {
@@ -947,13 +947,13 @@ update_overall_attrib() {
       has_component_pixel_size = true;
 
       for (i = 1; i < num_components; i++) {
-	DAttrib &component = get_component(i);
-	has_component_pixel_size = 
-	  (has_component_pixel_size && component.has_pixel_size());
-	if (!component.has_pixel_size() ||
-	    !(component.get_pixel_size() == common_pixel_size)) {
-	  has_common_pixel_size = false;
-	}
+        DAttrib &component = get_component(i);
+        has_component_pixel_size = 
+          (has_component_pixel_size && component.has_pixel_size());
+        if (!component.has_pixel_size() ||
+            !(component.get_pixel_size() == common_pixel_size)) {
+          has_common_pixel_size = false;
+        }
       }
     }
   }

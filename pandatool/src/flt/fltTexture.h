@@ -14,7 +14,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltTexture
+//       Class : FltTexture
 // Description : Represents a single texture in the texture palette.
 ////////////////////////////////////////////////////////////////////
 class FltTexture : public FltRecord {
@@ -229,7 +229,7 @@ public:
   static void init_type() {
     FltRecord::init_type();
     register_type(_type_handle, "FltTexture",
-		  FltRecord::get_class_type());
+                  FltRecord::get_class_type());
   }
 
 private:

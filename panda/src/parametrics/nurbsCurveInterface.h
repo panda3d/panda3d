@@ -14,7 +14,7 @@
 class ParametricCurve;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : NurbsCurveInterface
+//       Class : NurbsCurveInterface
 // Description : This abstract class defines the interface only for a
 //               Nurbs-style curve, with knots and coordinates in
 //               homogeneous space.
@@ -60,7 +60,7 @@ protected:
 
   void write(ostream &out, int indent_level) const;
   bool format_egg(ostream &out, const string &name,
-		  const string &curve_type, int indent_level) const;
+                  const string &curve_type, int indent_level) const;
 
   bool convert_to_nurbs(ParametricCurve *nc) const;
 

@@ -9,7 +9,7 @@
 #include <pandabase.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : UpdateSeq
+//       Class : UpdateSeq
 // Description : This is a sequence number that increments
 //               monotonically.  It can be used to track cache
 //               updates, or serve as a kind of timestamp for any

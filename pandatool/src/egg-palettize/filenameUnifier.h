@@ -13,7 +13,7 @@
 #include <map>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FilenameUnifier
+//       Class : FilenameUnifier
 // Description : This static class does the job of converting
 //               filenames from relative to absolute to canonical or
 //               whatever is appropriate.  Its main purpose is to

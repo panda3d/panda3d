@@ -290,8 +290,8 @@ check_version() const {
 
   if (version < min_flt_version()) {
     nout << "Warning!  The version number of this file appears to be "
-	 << version << ", which is older than " << min_flt_version() / 100.0
-	 << ", the oldest OpenFlight version understood by this program.  "
+         << version << ", which is older than " << min_flt_version() / 100.0
+         << ", the oldest OpenFlight version understood by this program.  "
       "It is unlikely that this program will be able to read the file "
       "correctly.\n";
     return false;
@@ -299,8 +299,8 @@ check_version() const {
   
   if (version > max_flt_version()) {
     nout << "Warning!  The version number of this file appears to be "
-	 << version << ", which is newer than " << max_flt_version() / 100.0
-	 << ", the newest OpenFlight version understood by this program.  "
+         << version << ", which is newer than " << max_flt_version() / 100.0
+         << ", the newest OpenFlight version understood by this program.  "
       "Chances are good that the program will still be able to read it "
       "correctly, but any features in the file that are specific to "
       "the latest version of OpenFlight will not be understood.\n";
@@ -528,13 +528,13 @@ get_num_colors() const {
 Colorf FltHeader::
 get_color(int color_index) const {
   nassertr(color_index >= 0 && color_index < get_num_colors(), 
-	   Colorf(0.0, 0.0, 0.0, 0.0));
+           Colorf(0.0, 0.0, 0.0, 0.0));
   int num_color_shades = get_num_color_shades();
 
   int index = (color_index / num_color_shades);
   int level = (color_index % num_color_shades);
   nassertr(index >= 0 && index < (int)_colors.size(),
-	   Colorf(0.0, 0.0, 0.0, 0.0));  
+           Colorf(0.0, 0.0, 0.0, 0.0));  
 
   Colorf color = _colors[index].get_color();
   return color * ((double)level / (double)(num_color_shades - 1));
@@ -550,13 +550,13 @@ get_color(int color_index) const {
 RGBColorf FltHeader::
 get_rgb(int color_index) const {
   nassertr(color_index >= 0 && color_index < get_num_colors(), 
-	   RGBColorf(0.0, 0.0, 0.0));
+           RGBColorf(0.0, 0.0, 0.0));
   int num_color_shades = get_num_color_shades();
 
   int index = (color_index / num_color_shades);
   int level = (color_index % num_color_shades);
   nassertr(index >= 0 && index < (int)_colors.size(),
-	   RGBColorf(0.0, 0.0, 0.0));  
+           RGBColorf(0.0, 0.0, 0.0));  
 
   RGBColorf color = _colors[index].get_rgb();
   return color * ((double)level / (double)(num_color_shades - 1));
@@ -751,8 +751,8 @@ get_num_color_shades() const {
 ////////////////////////////////////////////////////////////////////
 Colorf FltHeader::
 get_color(int color_index, bool use_packed_color,
-	  const FltPackedColor &packed_color,
-	  int transparency) {
+          const FltPackedColor &packed_color,
+          int transparency) {
   if (!use_packed_color) {
     return get_color(color_index);
   }
@@ -778,7 +778,7 @@ get_color(int color_index, bool use_packed_color,
 ////////////////////////////////////////////////////////////////////
 RGBColorf FltHeader::
 get_rgb(int color_index, bool use_packed_color,
-	const FltPackedColor &packed_color) {
+        const FltPackedColor &packed_color) {
   if (!use_packed_color) {
     return get_rgb(color_index);
   }
@@ -1217,13 +1217,13 @@ extract_record(FltRecordReader &reader) {
       iterator.skip_bytes(4);
       
       if (get_flt_version() >= 1570 && iterator.get_remaining_size() > 0) {
-	_delta_z = iterator.get_be_float64();
-	_radius = iterator.get_be_float64();
-	_next_mesh_id = iterator.get_be_int16();
-	iterator.skip_bytes(2);
-	
-	// Undocumented padding.
-	iterator.skip_bytes(4);
+        _delta_z = iterator.get_be_float64();
+        _radius = iterator.get_be_float64();
+        _next_mesh_id = iterator.get_be_int16();
+        iterator.skip_bytes(2);
+
+        // Undocumented padding.
+        iterator.skip_bytes(4);
       }
     }
   }
@@ -1356,12 +1356,12 @@ build_record(FltRecordWriter &writer) const {
       datagram.pad_bytes(4);
       
       if (get_flt_version() >= 1570) {
-	// New with 15.7
-	datagram.add_be_float64(_delta_z);
-	datagram.add_be_float64(_radius);
-	datagram.add_be_int16(_next_mesh_id);
-	datagram.pad_bytes(2);
-	datagram.pad_bytes(4);
+        // New with 15.7
+        datagram.add_be_float64(_delta_z);
+        datagram.add_be_float64(_radius);
+        datagram.add_be_int16(_next_mesh_id);
+        datagram.pad_bytes(2);
+        datagram.pad_bytes(4);
       }
     }
   }
@@ -1685,8 +1685,8 @@ write_color_palette(FltRecordWriter &writer) const {
     FltPackedColor empty;
     while (num_colors > 0) {
       if (!empty.build_record(writer)) {
-	assert(!flt_error_abort);
-	return FE_invalid_record;
+        assert(!flt_error_abort);
+        return FE_invalid_record;
       }
       num_colors--;
     }
@@ -1725,7 +1725,7 @@ write_material_palette(FltRecordWriter &writer) const {
 
       result = writer.advance();
       if (result != FE_ok) {
-	return result;
+        return result;
       }
     }
 
@@ -1745,12 +1745,12 @@ write_material_palette(FltRecordWriter &writer) const {
     static const int expected_material_entries = 64;
     for (index = 0; index < expected_material_entries; index++) {
       if (mi == _materials.end() || index < (*mi).first) {
-	dummy_material->build_14_record(datagram);
+        dummy_material->build_14_record(datagram);
       } else {
-	nassertr(index == (*mi).first, FE_internal);
-	FltMaterial *material = (*mi).second;
-	material->build_14_record(datagram);
-	++mi;
+        nassertr(index == (*mi).first, FE_internal);
+        FltMaterial *material = (*mi).second;
+        material->build_14_record(datagram);
+        ++mi;
       }
     }
 

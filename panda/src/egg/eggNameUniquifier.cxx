@@ -60,9 +60,9 @@ uniquify(EggNode *node) {
     inserted = names.insert(UsedNames::value_type(name, node)).second;
     if (!inserted) {
       while (!inserted) {
-	_index++;
-	name = generate_name(node, category, _index);
-	inserted = names.insert(UsedNames::value_type(name, node)).second;
+        _index++;
+        name = generate_name(node, category, _index);
+        inserted = names.insert(UsedNames::value_type(name, node)).second;
       }
     }
 

@@ -300,7 +300,7 @@ get_transform() const {
 INLINE bool EggGroup::
 transform_is_identity() const {
   return (!has_transform() || 
-	  _transform.almost_equal(LMatrix4d::ident_mat(), 0.0001));
+          _transform.almost_equal(LMatrix4d::ident_mat(), 0.0001));
 }
 
 ////////////////////////////////////////////////////////////////////

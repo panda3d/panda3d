@@ -15,7 +15,7 @@ template<class PtrType>
 class PointerDataTransition;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PointerDataTransition
+//       Class : PointerDataTransition
 // Description : 
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
@@ -52,9 +52,9 @@ public:
   static void init_type() {
     NodeAttribute::init_type();
     register_type(_type_handle, 
-		  string("PointerDataAttribute<") + 
-		  get_type_handle(PtrType).get_name() + ">",
-		  NodeAttribute::get_class_type());
+                  string("PointerDataAttribute<") + 
+                  get_type_handle(PtrType).get_name() + ">",
+                  NodeAttribute::get_class_type());
   }
 
 private:

@@ -13,7 +13,7 @@
 #include <onAttribute.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DepthTestAttribute
+//       Class : DepthTestAttribute
 // Description : See DepthTestTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DepthTestAttribute : public OnAttribute {
@@ -48,7 +48,7 @@ public:
   static void init_type() {
     OnAttribute::init_type();
     register_type(_type_handle, "DepthTestAttribute",
-		  OnAttribute::get_class_type());
+                  OnAttribute::get_class_type());
   }
 
 private:

@@ -75,9 +75,9 @@ private:
 
 PUBLISHED:
   AutonomousLerp(LerpFunctor* func, float endt, LerpBlendType* blend,
-		 EventHandler* handler);
+                 EventHandler* handler);
   AutonomousLerp(LerpFunctor* func, float startt, float endt,
-		 LerpBlendType* blend, EventHandler* handler);
+                 LerpBlendType* blend, EventHandler* handler);
   AutonomousLerp(const AutonomousLerp&);
   virtual ~AutonomousLerp(void);
   AutonomousLerp& operator=(const AutonomousLerp&);
@@ -99,7 +99,7 @@ public:
   static void init_type(void) {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "AutonomousLerp",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

@@ -68,7 +68,7 @@ protected:
 ////////////////////////////////////////////////////////////////////
 //       Class : LOD
 // Description : Computes whether a level-of-detail should be rendered
-//		 or not based on distance from the rendering camera.
+//               or not based on distance from the rendering camera.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA LOD : public TypedReferenceCount {
 public:
@@ -79,7 +79,7 @@ public:
   void xform(const LMatrix4f &mat);
 
   int compute_child(const LPoint3f &cam_pos,
-		    const LPoint3f &center) const;
+                    const LPoint3f &center) const;
 
   void write_datagram(Datagram &destination) const;
   void read_datagram(DatagramIterator &source);
@@ -88,8 +88,8 @@ public:
   void write(ostream &out, int indent_level = 0) const;
 
 public:
-  LPoint3f		_center;
-  LODSwitchVector	_switch_vector;
+  LPoint3f              _center;
+  LODSwitchVector       _switch_vector;
 
 public:
   static TypeHandle get_class_type() {
@@ -98,7 +98,7 @@ public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "LOD",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -10,7 +10,7 @@
 
 BEGIN_PUBLISH
 ////////////////////////////////////////////////////////////////////
-// 	  Enum : DCSubatomicType
+//        Enum : DCSubatomicType
 // Description : This defines the numeric type of each element of a
 //               DCAtomicField; that is, the particular values that
 //               will get added to the message when the atomic field

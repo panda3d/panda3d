@@ -26,12 +26,12 @@ protected:
 
 public:
   CharacterJoint(PartGroup *parent, const string &name,
-		 const LMatrix4f &initial_value);
+                 const LMatrix4f &initial_value);
 
   virtual PartGroup *make_copy() const;
 
   virtual void update_internals(PartGroup *parent, bool self_changed,
-				bool parent_changed);
+                                bool parent_changed);
 
 PUBLISHED:
   bool add_net_transform(NodeRelation *arc);
@@ -53,7 +53,7 @@ public:
   static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter* manager, Datagram &me);  
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
   static TypedWritable *make_CharacterJoint(const FactoryParams &params);
 
@@ -85,7 +85,7 @@ public:
   static void init_type() {
     MovingPartMatrix::init_type();
     register_type(_type_handle, "CharacterJoint",
-		  MovingPartMatrix::get_class_type());
+                  MovingPartMatrix::get_class_type());
   }
 
 private:

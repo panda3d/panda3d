@@ -11,7 +11,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TexGenProperty
+//       Class : TexGenProperty
 // Description : This defines the kinds of texture coordinates that
 //               may be automatically generated at render time.
 ////////////////////////////////////////////////////////////////////

@@ -12,7 +12,7 @@
 #include <filename.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : WithOutputFile
+//       Class : WithOutputFile
 // Description : This is the bare functionality (intended to be
 //               inherited from along with ProgramBase or some
 //               derivative) for a program that might generate an
@@ -24,7 +24,7 @@
 class WithOutputFile {
 public:
   WithOutputFile(bool allow_last_param, bool allow_stdout,
-		 bool binary_output);
+                 bool binary_output);
   virtual ~WithOutputFile();
 
   ostream &get_output();

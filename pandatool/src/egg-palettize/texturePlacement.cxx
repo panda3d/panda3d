@@ -239,12 +239,12 @@ determine_size() {
       const TexCoordd &x = reference->get_max_uv();
     
       if (_has_uvs) {
-	min_uv.set(min(min_uv[0], n[0]), min(min_uv[1], n[1]));
-	max_uv.set(max(max_uv[0], x[0]), max(max_uv[1], x[1]));
+        min_uv.set(min(min_uv[0], n[0]), min(min_uv[1], n[1]));
+        max_uv.set(max(max_uv[0], x[0]), max(max_uv[1], x[1]));
       } else {
-	min_uv = n;
-	max_uv = x;
-	_has_uvs = true;
+        min_uv = n;
+        max_uv = x;
+        _has_uvs = true;
       }
     }
 
@@ -297,9 +297,9 @@ determine_size() {
     _omit_reason = OR_coverage;
 
   } else if ((_position._x_size > pal->_pal_x_size || 
-	      _position._y_size > pal->_pal_y_size) ||
-	     (_position._x_size == pal->_pal_x_size && 
-	      _position._y_size == pal->_pal_y_size)) {
+              _position._y_size > pal->_pal_y_size) ||
+             (_position._x_size == pal->_pal_x_size && 
+              _position._y_size == pal->_pal_y_size)) {
     // If the texture exceeds the size of an empty palette image in
     // either dimension, or if it exactly equals the size of an empty
     // palette image in both dimensions, we can't place it because
@@ -308,9 +308,9 @@ determine_size() {
     _omit_reason = OR_size;
 
   } else if (_omit_reason == OR_omitted ||
-	     _omit_reason == OR_size ||
-	     _omit_reason == OR_coverage ||
-	     _omit_reason == OR_unknown) {
+             _omit_reason == OR_size ||
+             _omit_reason == OR_coverage ||
+             _omit_reason == OR_unknown) {
     // On the other hand, if the texture was previously omitted
     // explicitly, or because of its size or coverage, now it seems to
     // fit.
@@ -322,11 +322,11 @@ determine_size() {
     // we leave it where it is?
 
     if (_position._x_size != _placed._x_size || 
-	_position._y_size != _placed._y_size ||
-	_position._min_uv[0] < _placed._min_uv[0] ||
-	_position._min_uv[1] < _placed._min_uv[1] ||
-	_position._max_uv[0] > _placed._max_uv[0] ||
-	_position._max_uv[1] > _placed._max_uv[1]) {
+        _position._y_size != _placed._y_size ||
+        _position._min_uv[0] < _placed._min_uv[0] ||
+        _position._min_uv[1] < _placed._min_uv[1] ||
+        _position._max_uv[0] > _placed._max_uv[0] ||
+        _position._max_uv[1] > _placed._max_uv[1]) {
       // If the texture was previously placed but is now the wrong
       // size, or if the area we need to cover is different, we need
       // to re-place it.
@@ -335,26 +335,26 @@ determine_size() {
       // without rounding up the UV's, then screw rounding it up and
       // just leave it alone.
       if (pal->_round_uvs) {
-	compute_size_from_uvs(min_uv, max_uv);
-	if (_position._x_size <= _placed._x_size &&
-	    _position._y_size <= _placed._y_size &&
-	    _position._min_uv[0] >= _placed._min_uv[0] &&
-	    _position._min_uv[1] >= _placed._min_uv[1] &&
-	    _position._max_uv[0] <= _placed._max_uv[0] &&
-	    _position._max_uv[1] <= _placed._max_uv[1]) {
-	  // No problem!  It fits here, so leave well enough alone.
-	} else {
-	  // That's not good enough either, so go back to rounding.
-	  compute_size_from_uvs(rounded_min_uv, rounded_max_uv);
-	  force_replace();
-	}
+        compute_size_from_uvs(min_uv, max_uv);
+        if (_position._x_size <= _placed._x_size &&
+            _position._y_size <= _placed._y_size &&
+            _position._min_uv[0] >= _placed._min_uv[0] &&
+            _position._min_uv[1] >= _placed._min_uv[1] &&
+            _position._max_uv[0] <= _placed._max_uv[0] &&
+            _position._max_uv[1] <= _placed._max_uv[1]) {
+          // No problem!  It fits here, so leave well enough alone.
+        } else {
+          // That's not good enough either, so go back to rounding.
+          compute_size_from_uvs(rounded_min_uv, rounded_max_uv);
+          force_replace();
+        }
       } else {
-	force_replace();
+        force_replace();
       }
     }
 
     if (_position._wrap_u != _placed._wrap_u ||
-	_position._wrap_v != _placed._wrap_v) {
+        _position._wrap_v != _placed._wrap_v) {
       // The wrap mode properties have changed slightly.  We may or
       // may not need to re-place it, but we will need to update it.
       _is_filled = false;
@@ -620,7 +620,7 @@ intersects(int x, int y, int x_size, int y_size) {
   int mbot = _placed._y + _placed._y_size;
   
   return !(x >= mright || hright <= _placed._x || 
-	   y >= mbot || hbot <= _placed._y);
+           y >= mbot || hbot <= _placed._y);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -653,9 +653,9 @@ compute_tex_matrix(LMatrix3d &transform) {
   int pal_y_size = _image->get_y_size();
 
   LVecBase2d t((double)left / (double)pal_x_size,
-	       (double)(pal_y_size - bottom) / (double)pal_y_size);
+               (double)(pal_y_size - bottom) / (double)pal_y_size);
   LVecBase2d s((double)x_size / (double)pal_x_size,
-	       (double)y_size / (double)pal_y_size);
+               (double)y_size / (double)pal_y_size);
 
   LMatrix3d dest_uvs
     (s[0],  0.0,  0.0,
@@ -678,10 +678,10 @@ write_placed(ostream &out, int indent_level) {
 
   if (is_placed()) {
     out << " at "
-	<< get_placed_x() << " " << get_placed_y() << " to "
-	<< get_placed_x() + get_placed_x_size() << " "
-	<< get_placed_y() + get_placed_y_size() << " (coverage "
-	<< get_placed_uv_area() << ")";
+        << get_placed_x() << " " << get_placed_y() << " to "
+        << get_placed_x() + get_placed_x_size() << " "
+        << get_placed_y() + get_placed_y_size() << " (coverage "
+        << get_placed_uv_area() << ")";
 
     if (_placed._wrap_u != EggTexture::WM_unspecified ||
         _placed._wrap_v != EggTexture::WM_unspecified) {
@@ -769,7 +769,7 @@ fill_image(PNMImage &image) {
   }
 
   PNMImage source(x_size, y_size, source_full.get_num_channels(),
-		  source_full.get_maxval());
+                  source_full.get_maxval());
   source.quick_filter_from(source_full);
 
   bool alpha = image.has_alpha();
@@ -797,21 +797,21 @@ fill_image(PNMImage &image) {
       int sx = x - left;
 
       if (_placed._wrap_u == EggTexture::WM_clamp) {
-	// Clamp at [0, x_size).
-	sx = max(min(sx, x_size - 1), 0);
-	
+        // Clamp at [0, x_size).
+        sx = max(min(sx, x_size - 1), 0);
+
       } else {
-	// Wrap: sign-independent modulo.
-	sx = (sx < 0) ? x_size - 1 - ((-sx - 1) % x_size) : sx % x_size;
+        // Wrap: sign-independent modulo.
+        sx = (sx < 0) ? x_size - 1 - ((-sx - 1) % x_size) : sx % x_size;
       }
 
       image.set_xel(x, y, source.get_xel(sx, sy));
       if (alpha) {
-	if (source_alpha) {
-	  image.set_alpha(x, y, source.get_alpha(sx, sy));
-	} else {
-	  image.set_alpha(x, y, 1.0);
-	}
+        if (source_alpha) {
+          image.set_alpha(x, y, source.get_alpha(sx, sy));
+        } else {
+          image.set_alpha(x, y, 1.0);
+        }
       }
     }
   }
@@ -835,7 +835,7 @@ flag_error_image(PNMImage &image) {
   if (image.has_alpha()) {
     for (int y = _placed._y; y < _placed._y + _placed._y_size; y++) {
       for (int x = _placed._x; x < _placed._x + _placed._x_size; x++) {
-	image.set_alpha_val(x, y, 1);
+        image.set_alpha_val(x, y, 1);
       }
     }
   }

@@ -10,7 +10,7 @@
 
 static void
 FUNCTION_NAME(PNMImage &dest, const PNMImage &source, 
-	      double width, FilterFunction *make_filter) {
+              double width, FilterFunction *make_filter) {
   if (!dest.is_valid() || !source.is_valid()) {
     return;
   }
@@ -45,9 +45,9 @@ FUNCTION_NAME(PNMImage &dest, const PNMImage &source,
     }
 
     filter_row(temp_dest, dest.ASIZE(),
-	       temp_source, source.ASIZE(),
-	       scale,
-	       filter, filter_width);
+               temp_source, source.ASIZE(),
+               scale,
+               filter, filter_width);
 
     for (a=0; a<dest.ASIZE(); a++) {
       matrix[a][b] = temp_dest[a];
@@ -68,9 +68,9 @@ FUNCTION_NAME(PNMImage &dest, const PNMImage &source,
   for (a=0; a<dest.ASIZE(); a++) {
 
     filter_row(temp_dest, dest.BSIZE(),
-	       matrix[a], source.BSIZE(),
-	       scale,
-	       filter, filter_width);
+               matrix[a], source.BSIZE(),
+               scale,
+               filter, filter_width);
 
     for (b=0; b<dest.BSIZE(); b++) {
       dest.SETVAL(a, b, (double)temp_dest[b]/(double)source_max);

@@ -24,8 +24,8 @@
 ////////////////////////////////////////////////////////////////////
 class wdxGraphicsPipe;
 
-const int WDXWIN_CONFIGURE =	4;
-const int WDXWIN_EVENT =	8;
+const int WDXWIN_CONFIGURE =    4;
+const int WDXWIN_EVENT =    8;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : wdxGraphicsWindow
@@ -38,7 +38,7 @@ friend class DXGraphicsStateGuardian;
 public:
   wdxGraphicsWindow(GraphicsPipe* pipe);
   wdxGraphicsWindow(GraphicsPipe* pipe,
-		     const GraphicsWindow::Properties& props);
+             const GraphicsWindow::Properties& props);
   virtual ~wdxGraphicsWindow(void);
 
   virtual bool supports_update() const;
@@ -49,7 +49,7 @@ public:
   static GraphicsWindow* make_wdxGraphicsWindow(const FactoryParams &params);
 
   static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam,
-	LPARAM lparam);
+    LPARAM lparam);
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   void process_events(void);
 
@@ -79,22 +79,22 @@ protected:
   void enable_mouse_entry(bool val);
 
 public:
-  HWND				_mwindow;
+  HWND              _mwindow;
   HWND              _hParentWindow;
 
 private:
-  HDC				_hdc;
-  HPALETTE			_colormap;
+  HDC               _hdc;
+  HPALETTE          _colormap;
   typedef enum { NotAdjusting,MovingOrResizing,Resizing } WindowAdjustType;
   WindowAdjustType _WindowAdjustingType;
   HCURSOR _hMouseCrossIcon;
   bool    _bSizeIsMaximized;
-  bool				_mouse_input_enabled;
-  bool				_mouse_motion_enabled;
-  bool				_mouse_passive_motion_enabled;
-  bool				_mouse_entry_enabled;
-  int				_entry_state;
-  bool				_ignore_key_repeat;
+  bool              _mouse_input_enabled;
+  bool              _mouse_motion_enabled;
+  bool              _mouse_passive_motion_enabled;
+  bool              _mouse_entry_enabled;
+  int               _entry_state;
+  bool              _ignore_key_repeat;
 
 public:
   static TypeHandle get_class_type(void);

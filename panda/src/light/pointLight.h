@@ -55,7 +55,7 @@ class EXPCL_PANDA PointLight : public Light, public NamedNode
 
   protected:
 
-    Colorf				_specular;
+    Colorf                              _specular;
     float                               _constant_attenuation;
     float                               _linear_attenuation;
     float                               _quadratic_attenuation;
@@ -70,7 +70,7 @@ class EXPCL_PANDA PointLight : public Light, public NamedNode
       NamedNode::init_type();
       register_type( _type_handle, "PointLight",
                         Light::get_class_type(),
-			NamedNode::get_class_type() );
+                        NamedNode::get_class_type() );
     }
     virtual TypeHandle get_type( void ) const {
       return get_class_type();

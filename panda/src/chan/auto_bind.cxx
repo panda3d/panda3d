@@ -33,7 +33,7 @@ class CollectNodes :
   public TraverserVisitor<NullTransitionWrapper, NullLevelState> {
 public:
   bool reached_node(Node *node, const NullAttributeWrapper &,
-		    NullLevelState &) {
+                    NullLevelState &) {
     if (node->is_of_type(AnimBundleNode::get_class_type())) {
       AnimBundleNode *bn = DCAST(AnimBundleNode, node);
       _anims[bn->get_bundle()->get_name()].insert(bn);
@@ -60,8 +60,8 @@ public:
 ////////////////////////////////////////////////////////////////////
 static void
 bind_anims(const PartNodes &parts, const AnimNodes &anims,
-	   AnimControlCollection &controls, 
-	   int hierarchy_match_flags) {
+           AnimControlCollection &controls, 
+           int hierarchy_match_flags) {
 
   PartNodes::const_iterator pni;
 
@@ -73,38 +73,38 @@ bind_anims(const PartNodes &parts, const AnimNodes &anims,
       AnimBundle *anim = (*ani)->get_bundle();
 
       if (chan_cat.is_info()) {
-	chan_cat.info()
-	  << "Attempting to bind " << *part << " to " << *anim << "\n";
+        chan_cat.info()
+          << "Attempting to bind " << *part << " to " << *anim << "\n";
       }
 
       PT(AnimControl) control = 
-	part->bind_anim(anim, hierarchy_match_flags);
+        part->bind_anim(anim, hierarchy_match_flags);
       string name = anim->get_name();
       if (control != (AnimControl *)NULL) {
-	if (controls.find_anim(name) != (AnimControl *)NULL) {
-	  // That name's already used; synthesize another one.
-	  int index = 0;
-	  string new_name;
-	  do {
-	    index++;
-	    new_name = name + '.' + format_string(index);
-	  } while (controls.find_anim(new_name) != (AnimControl *)NULL);
-	  name = new_name;
-	}
+        if (controls.find_anim(name) != (AnimControl *)NULL) {
+          // That name's already used; synthesize another one.
+          int index = 0;
+          string new_name;
+          do {
+            index++;
+            new_name = name + '.' + format_string(index);
+          } while (controls.find_anim(new_name) != (AnimControl *)NULL);
+          name = new_name;
+        }
 
-	controls.store_anim(control, name);
+        controls.store_anim(control, name);
       }
 
       if (chan_cat.is_info()) {
-	if (control == NULL) {
-	  chan_cat.info()
-	    << "Bind failed.\n";
-	} else {
-	  chan_cat.info()
-	    << "Bind succeeded, index "
-	    << control->get_channel_index() << "; accessible as " 
-	    << name << "\n";
-	}
+        if (control == NULL) {
+          chan_cat.info()
+            << "Bind failed.\n";
+        } else {
+          chan_cat.info()
+            << "Bind succeeded, index "
+            << control->get_channel_index() << "; accessible as " 
+            << name << "\n";
+        }
       }
     }
   }
@@ -121,12 +121,12 @@ bind_anims(const PartNodes &parts, const AnimNodes &anims,
 //               filled into controls.
 ////////////////////////////////////////////////////////////////////
 void auto_bind(Node *root_node, AnimControlCollection &controls,
-	       int hierarchy_match_flags) {
+               int hierarchy_match_flags) {
 
   // First, locate all the bundles in the subgraph.
   CollectNodes cn;
   df_traverse(root_node, cn, NullAttributeWrapper(), NullLevelState(),
-	      RenderRelation::get_class_type());
+              RenderRelation::get_class_type());
 
   // Now, match up the bundles by name.
 
@@ -145,7 +145,7 @@ void auto_bind(Node *root_node, AnimControlCollection &controls,
     } else {
       // But here we have (at least one) match!
       bind_anims((*pi).second, (*ai).second, controls, 
-		 hierarchy_match_flags);
+                 hierarchy_match_flags);
       ++pi;
 
       // We don't increment the anim counter yet.  That way, the same
@@ -155,4 +155,4 @@ void auto_bind(Node *root_node, AnimControlCollection &controls,
   }
 }
 
-							  
+

@@ -14,7 +14,7 @@ class EggCharacterData;
 class EggCharacterCollection;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggCharacterFilter
+//       Class : EggCharacterFilter
 // Description : This is the base class for a family of programs that
 //               operate on a number of character models and their
 //               associated animation files together.  It reads in a

@@ -25,7 +25,7 @@ class TexturePlacement;
 class EggFile;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TextureImage
+//       Class : TextureImage
 // Description : This represents a single source texture that is
 //               referenced by one or more egg files.  It may be
 //               assigned to multiple PaletteGroups, and thus placed
@@ -60,7 +60,7 @@ public:
   bool is_used() const;
 
   SourceTextureImage *get_source(const Filename &filename, 
-				 const Filename &alpha_filename);
+                                 const Filename &alpha_filename);
 
   SourceTextureImage *get_preferred_source();
 
@@ -79,7 +79,7 @@ private:
   typedef map<string, DestTextureImage *> Dests;
 
   static int compute_egg_count(PaletteGroup *group, 
-			       const WorkingEggs &egg_files);
+                               const WorkingEggs &egg_files);
 
   void assign_to_groups(const PaletteGroups &groups);
   void consider_grayscale();
@@ -89,7 +89,7 @@ private:
   void copy_new_dests(const Dests &a, const Dests &b);
 
   string get_source_key(const Filename &filename, 
-			const Filename &alpha_filename);
+                        const Filename &alpha_filename);
 
 private:
   TextureRequest _request;
@@ -121,7 +121,7 @@ public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
 protected:
   static TypedWritable *make_TextureImage(const FactoryParams &params);
@@ -142,8 +142,8 @@ public:
     ImageFile::init_type();
     Namable::init_type();
     register_type(_type_handle, "TextureImage",
-		  ImageFile::get_class_type(),
-		  Namable::get_class_type());
+                  ImageFile::get_class_type(),
+                  Namable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -24,7 +24,7 @@ PUBLISHED:
   LinearVectorForce(const LVector3f& vec, float a = 1.0f, bool mass = false);
   LinearVectorForce(const LinearVectorForce &copy);
   LinearVectorForce(float x = 0.0f, float y = 0.0f, float z = 0.0f, 
- 	      float a = 1.0f, bool mass = false);
+              float a = 1.0f, bool mass = false);
   virtual ~LinearVectorForce(void);
 
   INLINE void set_vector(const LVector3f& v);
@@ -39,7 +39,7 @@ public:
   static void init_type(void) {
     LinearForce::init_type();
     register_type(_type_handle, "LinearVectorForce",
-		  LinearForce::get_class_type());
+                  LinearForce::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

@@ -38,7 +38,7 @@ make_copy() {
 ////////////////////////////////////////////////////////////////////
 int CollisionSphere::
 test_intersection(CollisionHandler *record, const CollisionEntry &entry,
-		  const CollisionSolid *into) const {
+                  const CollisionSolid *into) const {
   return into->test_intersection_from_sphere(record, entry);
 }
 
@@ -104,7 +104,7 @@ recompute_bound() {
 ////////////////////////////////////////////////////////////////////
 int CollisionSphere::
 test_intersection_from_sphere(CollisionHandler *record,
-			      const CollisionEntry &entry) const {
+                              const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), 0);
 
@@ -150,7 +150,7 @@ test_intersection_from_sphere(CollisionHandler *record,
 ////////////////////////////////////////////////////////////////////
 int CollisionSphere::
 test_intersection_from_ray(CollisionHandler *record,
-			   const CollisionEntry &entry) const {
+                           const CollisionEntry &entry) const {
   const CollisionRay *ray;
   DCAST_INTO_R(ray, entry.get_from(), 0);
 
@@ -194,7 +194,7 @@ test_intersection_from_ray(CollisionHandler *record,
 ////////////////////////////////////////////////////////////////////
 int CollisionSphere::
 test_intersection_from_segment(CollisionHandler *record,
-			       const CollisionEntry &entry) const {
+                               const CollisionEntry &entry) const {
   const CollisionSegment *segment;
   DCAST_INTO_R(segment, entry.get_from(), 0);
 
@@ -278,7 +278,7 @@ recompute_viz(Node *parent) {
 ////////////////////////////////////////////////////////////////////
 bool CollisionSphere::
 intersects_line(double &t1, double &t2,
-		const LPoint3f &from, const LVector3f &delta) const {
+                const LPoint3f &from, const LVector3f &delta) const {
   // Solve the equation for the intersection of a line with a sphere
   // using the quadratic formula.
 

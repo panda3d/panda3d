@@ -180,13 +180,13 @@ sort_descendants() {
 ////////////////////////////////////////////////////////////////////
 bool PartGroup::
 check_hierarchy(const AnimGroup *anim, const PartGroup *,
-		int hierarchy_match_flags) const {
+                int hierarchy_match_flags) const {
   if (anim->get_value_type() != get_value_type()) {
     if (chan_cat.is_error()) {
       chan_cat.error()
-	<< "Part " << get_name() << " expects type " << get_value_type()
-	<< " while matching anim node has type " << anim->get_value_type()
-	<< ".\n";
+        << "Part " << get_name() << " expects type " << get_value_type()
+        << " while matching anim node has type " << anim->get_value_type()
+        << ".\n";
     }
     return false;
   }
@@ -199,88 +199,88 @@ check_hierarchy(const AnimGroup *anim, const PartGroup *,
     bool match = true;
     if (anim->get_num_children() != get_num_children()) {
       chan_cat.info()
-	<< "Part " << get_name() << " has " << get_num_children()
-	<< " children, while matching anim node has " 
-	<< anim->get_num_children() << ":\n";
+        << "Part " << get_name() << " has " << get_num_children()
+        << " children, while matching anim node has " 
+        << anim->get_num_children() << ":\n";
       match = false;
 
     } else {
       for (int i = 0; match && i < get_num_children(); i++) {
-	PartGroup *pc = get_child(i);
-	AnimGroup *ac = anim->get_child(i);
-	
-	match = (pc->get_name() == ac->get_name());
+        PartGroup *pc = get_child(i);
+        AnimGroup *ac = anim->get_child(i);
+
+        match = (pc->get_name() == ac->get_name());
       }
       if (!match) {
-	chan_cat.info()
-	  << "Part " << get_name() << " has a different set of children "
-	  << " than matching anim node:\n";
+        chan_cat.info()
+          << "Part " << get_name() << " has a different set of children "
+          << " than matching anim node:\n";
       }
     }
     if (!match) {
       int i = 0, j = 0;
       while (i < get_num_children() &&
-	     j < anim->get_num_children()) {
-	PartGroup *pc = get_child(i);
-	AnimGroup *ac = anim->get_child(j);
-	
-	if (pc->get_name() < ac->get_name()) {
-	  chan_cat.info()
-	    << "  part has " << pc->get_name()
-	    << ", not in anim.\n";
-	  i++;
-	} else if (ac->get_name() < pc->get_name()) {
-	  chan_cat.info()
-	    << "  anim has " << ac->get_name()
-	    << ", not in part.\n";
-	  j++;
-	} else {
-	  //	  chan_cat.info() << "  part and anim both have " << ac->get_name() << "\n";
-	  i++;
-	  j++;
-	}
+             j < anim->get_num_children()) {
+        PartGroup *pc = get_child(i);
+        AnimGroup *ac = anim->get_child(j);
+
+        if (pc->get_name() < ac->get_name()) {
+          chan_cat.info()
+            << "  part has " << pc->get_name()
+            << ", not in anim.\n";
+          i++;
+        } else if (ac->get_name() < pc->get_name()) {
+          chan_cat.info()
+            << "  anim has " << ac->get_name()
+            << ", not in part.\n";
+          j++;
+        } else {
+          //      chan_cat.info() << "  part and anim both have " << ac->get_name() << "\n";
+          i++;
+          j++;
+        }
       }
       
       while (i < get_num_children()) {
-	PartGroup *pc = get_child(i);
-	chan_cat.info()
-	  << "  part has " << pc->get_name()
-	  << ", not in anim.\n";
-	i++;
+        PartGroup *pc = get_child(i);
+        chan_cat.info()
+          << "  part has " << pc->get_name()
+          << ", not in anim.\n";
+        i++;
       }
       
       while (j < anim->get_num_children()) {
-	AnimGroup *ac = anim->get_child(j);
-	chan_cat.info()
-	  << "  anim has " << ac->get_name()
-	  << ", not in part.\n";
-	j++;
+        AnimGroup *ac = anim->get_child(j);
+        chan_cat.info()
+          << "  anim has " << ac->get_name()
+          << ", not in part.\n";
+        j++;
       }
     }
   }
 
   // Now walk the list of children and check the matching
   // sub-hierarchies only.
-	
+
   int i = 0, j = 0;
   while (i < get_num_children() &&
-	 j < anim->get_num_children()) {
+         j < anim->get_num_children()) {
     PartGroup *pc = get_child(i);
     AnimGroup *ac = anim->get_child(j);
-	
+
     if (pc->get_name() < ac->get_name()) {
       if ((hierarchy_match_flags & HMF_ok_part_extra) == 0) {
-	return false;
+        return false;
       }
       i++;
     } else if (ac->get_name() < pc->get_name()) {
       if ((hierarchy_match_flags & HMF_ok_anim_extra) == 0) {
-	return false;
+        return false;
       }
       j++;
     } else {
       if (!pc->check_hierarchy(ac, this, hierarchy_match_flags)) {
-	return false;
+        return false;
       }
       i++;
       j++;
@@ -340,7 +340,7 @@ write_with_value(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void PartGroup::
 do_update(PartBundle *root, PartGroup *,
-	  bool parent_changed, bool anim_changed) {
+          bool parent_changed, bool anim_changed) {
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     (*ci)->do_update(root, this, parent_changed, anim_changed);
@@ -413,7 +413,7 @@ bind_hierarchy(AnimGroup *anim, int channel_index) {
   while (i < part_num_children && j < anim_num_children) {
     PartGroup *pc = get_child(i);
     AnimGroup *ac = anim->get_child(j);
-	
+
     if (pc->get_name() < ac->get_name()) {
       // Here's a part, not in the anim.  Bind it to the special NULL
       // anim.
@@ -490,7 +490,7 @@ complete_pointers(vector_typedWritable &plist, BamReader*)
     if (plist[i] == TypedWritable::Null)
     {
       chan_cat->warning() << get_type().get_name()
-			  << " Ignoring null PartGroup" << endl;
+                          << " Ignoring null PartGroup" << endl;
     }
     else
     {

@@ -13,7 +13,7 @@
 class NetAddress;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ConnectionListener
+//       Class : ConnectionListener
 // Description : This is a special kind of ConnectionReader that waits
 //               for activity on a rendezvous port and accepts a TCP
 //               connection (instead of attempting to read a datagram
@@ -30,8 +30,8 @@ PUBLISHED:
 protected:
   virtual void receive_datagram(const NetDatagram &datagram);
   virtual void connection_opened(const PT(Connection) &rendezvous,
-				 const NetAddress &address,
-				 const PT(Connection) &new_connection)=0;
+                                 const NetAddress &address,
+                                 const PT(Connection) &new_connection)=0;
 
   virtual void process_incoming_data(SocketInfo *sinfo);
 

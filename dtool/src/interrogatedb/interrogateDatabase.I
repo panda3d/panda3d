@@ -28,7 +28,7 @@ INLINE TypeIndex InterrogateDatabase::
 lookup_type_by_name(const string &name) {
   check_latest();
   return lookup(name, _types_by_name, LT_type_name, 
-		&InterrogateDatabase::freshen_types_by_name);
+                &InterrogateDatabase::freshen_types_by_name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -42,7 +42,7 @@ INLINE TypeIndex InterrogateDatabase::
 lookup_type_by_scoped_name(const string &name) {
   check_latest();
   return lookup(name, _types_by_scoped_name, LT_type_scoped_name, 
-		&InterrogateDatabase::freshen_types_by_scoped_name);
+                &InterrogateDatabase::freshen_types_by_scoped_name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ INLINE TypeIndex InterrogateDatabase::
 lookup_type_by_true_name(const string &name) {
   check_latest();
   return lookup(name, _types_by_true_name, LT_type_true_name, 
-		&InterrogateDatabase::freshen_types_by_true_name);
+                &InterrogateDatabase::freshen_types_by_true_name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -70,7 +70,7 @@ INLINE ManifestIndex InterrogateDatabase::
 lookup_manifest_by_name(const string &name) {
   check_latest();
   return lookup(name, _manifests_by_name, LT_manifest_name, 
-		&InterrogateDatabase::freshen_manifests_by_name);
+                &InterrogateDatabase::freshen_manifests_by_name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -84,7 +84,7 @@ INLINE ElementIndex InterrogateDatabase::
 lookup_element_by_name(const string &name) {
   check_latest();
   return lookup(name, _elements_by_name, LT_element_name, 
-		&InterrogateDatabase::freshen_elements_by_name);
+                &InterrogateDatabase::freshen_elements_by_name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -98,5 +98,5 @@ INLINE ElementIndex InterrogateDatabase::
 lookup_element_by_scoped_name(const string &name) {
   check_latest();
   return lookup(name, _elements_by_scoped_name, LT_element_scoped_name, 
-		&InterrogateDatabase::freshen_elements_by_scoped_name);
+                &InterrogateDatabase::freshen_elements_by_scoped_name);
 }

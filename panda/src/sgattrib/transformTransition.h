@@ -12,7 +12,7 @@
 #include <lmatrix.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TransformTransition
+//       Class : TransformTransition
 // Description : This defines a new coordinate system.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TransformTransition : public LMatrix4fTransition {
@@ -45,7 +45,7 @@ public:
   static void init_type() {
     LMatrix4fTransition::init_type();
     register_type(_type_handle, "TransformTransition",
-		  LMatrix4fTransition::get_class_type());
+                  LMatrix4fTransition::get_class_type());
   }
 
 private:

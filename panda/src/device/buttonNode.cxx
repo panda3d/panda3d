@@ -127,10 +127,10 @@ void ButtonNode::
 init_type() {
   DataNode::init_type();
   register_type(_type_handle, "ButtonNode",
-		DataNode::get_class_type());
+                DataNode::get_class_type());
 
   ButtonEventDataTransition::init_type();
   register_data_transition(_button_events_type, "ButtonEvents",
-			   ButtonEventDataTransition::get_class_type());
+                           ButtonEventDataTransition::get_class_type());
 }
 

@@ -11,7 +11,7 @@
 #include <typedObject.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EventReceiver
+//       Class : EventReceiver
 // Description : An abstract base class for anything that might care
 //               about receiving events.  An object that might receive
 //               an event should inherit from this class; each event

@@ -96,7 +96,7 @@ EggVertex::
 
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : GroupRefEntry
+//       Class : GroupRefEntry
 // Description : A temporary class used in EggVertex::write(), below,
 //               to hold the groups that reference each vertex prior
 //               to outputting them as a formatted list.
@@ -161,7 +161,7 @@ write(ostream &out, int indent_level) const {
 
     // Now output the list.
     write_long_list(out, indent_level + 2, gre.begin(), gre.end(), "// ",
-		    "", 72);
+                    "", 72);
   }
 
   indent(out, indent_level)

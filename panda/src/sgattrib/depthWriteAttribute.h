@@ -11,7 +11,7 @@
 #include <onOffAttribute.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DepthWriteAttribute
+//       Class : DepthWriteAttribute
 // Description : See DepthWriteTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DepthWriteAttribute : public OnOffAttribute {
@@ -35,7 +35,7 @@ public:
   static void init_type() {
     OnOffAttribute::init_type();
     register_type(_type_handle, "DepthWriteAttribute",
-		  OnOffAttribute::get_class_type());
+                  OnOffAttribute::get_class_type());
   }
 
 private:

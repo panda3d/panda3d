@@ -18,7 +18,7 @@
 class PStatReader;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PStatServer
+//       Class : PStatServer
 // Description : The overall manager of the network connections.  This
 //               class gets the ball rolling; to use this package, you
 //               need to derive from this and define make_monitor() to

@@ -175,8 +175,8 @@ set_computed_verified(UpdateSeq) {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NullTransitionWrapper::
 cached_compose(const NullTransitionWrapper &, 
-	       const NullTransitionWrapper &,
-	       UpdateSeq) {
+               const NullTransitionWrapper &,
+               UpdateSeq) {
 }
 
 ////////////////////////////////////////////////////////////////////

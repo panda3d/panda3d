@@ -27,7 +27,7 @@ public:
     }
   }
   INLINE LerpChannelRange(const LerpChannelRange& c) : _low(c._low),
-						       _high(c._high) {}
+                                                       _high(c._high) {}
   INLINE ~LerpChannelRange(void) {}
   INLINE float GetLow(void) { return _low; }
   INLINE float GetHigh(void) { return _high; }

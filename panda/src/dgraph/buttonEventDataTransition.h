@@ -11,7 +11,7 @@
 #include <nodeTransition.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ButtonEventDataTransition
+//       Class : ButtonEventDataTransition
 // Description : A ButtonEventDataAttribute is a collection of buttons
 //               that have been pressed recently, in the order they
 //               were pressed.  The ButtonEventDataTransition does
@@ -46,7 +46,7 @@ public:
   static void init_type() {
     NodeTransition::init_type();
     register_type(_type_handle, "ButtonEventDataTransition",
-		  NodeTransition::get_class_type());
+                  NodeTransition::get_class_type());
   }
 
 private:

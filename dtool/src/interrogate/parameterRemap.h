@@ -14,7 +14,7 @@ class CPPType;
 class CPPExpression;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ParameterRemap
+//       Class : ParameterRemap
 // Description : An abstract base class for a number of different
 //               kinds of ways to remap parameters for passing to
 //               wrapper functions.
@@ -46,7 +46,7 @@ public:
 
   virtual void pass_parameter(ostream &out, const string &variable_name);
   virtual string prepare_return_expr(ostream &out, int indent_level, 
-				     const string &expression);
+                                     const string &expression);
   virtual string get_return_expr(const string &expression);
   virtual string temporary_to_return(const string &temporary);
   virtual bool return_value_needs_management();

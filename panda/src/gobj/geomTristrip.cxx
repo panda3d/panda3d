@@ -114,15 +114,15 @@ void GeomTristrip::print_draw_immediate( void ) const
             // Draw per component
             if ( _color_command[G_PER_COMPONENT] != _issue_color_noop )
             {
-            	nout << "Color (Per Component): ";
-            	if ( tcindex )
-            	{
+                nout << "Color (Per Component): ";
+                if ( tcindex )
+                {
                     nout << "idx: " << *tcindex << " ";
                     nout << tcolors[*(tcindex++)];
-            	}
-            	else
+                }
+                else
                     nout << *(tcolors++);
-            	nout << endl;
+                nout << endl;
             }
             if ( _normal_command[G_PER_COMPONENT] != _issue_normal_noop )
             {
@@ -192,7 +192,7 @@ void GeomTristrip::print_draw_immediate( void ) const
         }
         if ( !j )
         {
-	    nout << "EndGfx()" << endl;
+            nout << "EndGfx()" << endl;
             continue;
         }
         else
@@ -247,7 +247,7 @@ void GeomTristrip::print_draw_immediate( void ) const
                 nout << endl;
             }
 
-	    nout << "EndGfx()" << endl;
+            nout << "EndGfx()" << endl;
             continue;
         }
     }
@@ -334,16 +334,16 @@ explode() const {
     int v;
     for (v = 0; v <= 2; v += 2) {
       if (get_binding(G_COORD) == G_PER_VERTEX) {
-	f3vertex[v] = get_next_vertex(vi);
+        f3vertex[v] = get_next_vertex(vi);
       }
       if (get_binding(G_NORMAL) == G_PER_VERTEX) {
-	f3normal[v] = get_next_normal(ni);
+        f3normal[v] = get_next_normal(ni);
       }
       if (get_binding(G_TEXCOORD) == G_PER_VERTEX) {
-	f3texcoord[v] = get_next_texcoord(ti);
+        f3texcoord[v] = get_next_texcoord(ti);
       }
       if (get_binding(G_COLOR) == G_PER_VERTEX) {
-	f3color[v] = get_next_color(ci);
+        f3color[v] = get_next_color(ci);
       }
     }
     
@@ -353,55 +353,55 @@ explode() const {
       num_tris++;
 
       if (get_binding(G_COLOR) == G_PER_PRIM) {
-	colors.push_back(per_tristrip_color);
+        colors.push_back(per_tristrip_color);
       } else if (get_binding(G_COLOR) == G_PER_COMPONENT) {
-	colors.push_back(get_next_color(ci));
+        colors.push_back(get_next_color(ci));
       }
 
       if (get_binding(G_NORMAL) == G_PER_PRIM) {
-	normals.push_back(per_tristrip_normal);
+        normals.push_back(per_tristrip_normal);
       } else if (get_binding(G_NORMAL) == G_PER_COMPONENT) {
-	normals.push_back(get_next_normal(ni));
+        normals.push_back(get_next_normal(ni));
       }
 
       if ((v & 1) == 0) {
-	// Even.  The triangle is counter-clockwise.
-	f3vertex[1] = f3vertex[2];
-	f3normal[1] = f3normal[2];
-	f3texcoord[1] = f3texcoord[2];
-	f3color[1] = f3color[2];
+        // Even.  The triangle is counter-clockwise.
+        f3vertex[1] = f3vertex[2];
+        f3normal[1] = f3normal[2];
+        f3texcoord[1] = f3texcoord[2];
+        f3color[1] = f3color[2];
       } else {
-	// Odd.  The triangle is clockwise.
-  	f3vertex[0] = f3vertex[2];
-	f3normal[0] = f3normal[2];
-	f3texcoord[0] = f3texcoord[2];
-	f3color[0] = f3color[2];
+        // Odd.  The triangle is clockwise.
+        f3vertex[0] = f3vertex[2];
+        f3normal[0] = f3normal[2];
+        f3texcoord[0] = f3texcoord[2];
+        f3color[0] = f3color[2];
       }
       
       // Per-vertex attributes.
       if (get_binding(G_COORD) == G_PER_VERTEX) {
-	f3vertex[2] = get_next_vertex(vi);
-	coords.push_back(f3vertex[0]);
-	coords.push_back(f3vertex[1]);
-	coords.push_back(f3vertex[2]);
+        f3vertex[2] = get_next_vertex(vi);
+        coords.push_back(f3vertex[0]);
+        coords.push_back(f3vertex[1]);
+        coords.push_back(f3vertex[2]);
       }
       if (get_binding(G_NORMAL) == G_PER_VERTEX) {
-	f3normal[2] = get_next_normal(ni);
-	normals.push_back(f3normal[0]);
-	normals.push_back(f3normal[1]);
-	normals.push_back(f3normal[2]);
+        f3normal[2] = get_next_normal(ni);
+        normals.push_back(f3normal[0]);
+        normals.push_back(f3normal[1]);
+        normals.push_back(f3normal[2]);
       }
       if (get_binding(G_TEXCOORD) == G_PER_VERTEX) {
-	f3texcoord[2] = get_next_texcoord(ti);
-	texcoords.push_back(f3texcoord[0]);
-	texcoords.push_back(f3texcoord[1]);
-	texcoords.push_back(f3texcoord[2]);
+        f3texcoord[2] = get_next_texcoord(ti);
+        texcoords.push_back(f3texcoord[0]);
+        texcoords.push_back(f3texcoord[1]);
+        texcoords.push_back(f3texcoord[2]);
       }
       if (get_binding(G_COLOR) == G_PER_VERTEX) {
-	f3color[2] = get_next_color(ci);
-	colors.push_back(f3color[0]);
-	colors.push_back(f3color[1]);
-	colors.push_back(f3color[2]);
+        f3color[2] = get_next_color(ci);
+        colors.push_back(f3color[0]);
+        colors.push_back(f3color[1]);
+        colors.push_back(f3color[2]);
       }
     }
   }
@@ -409,12 +409,12 @@ explode() const {
   Geom *tris = new GeomTri;
   tris->set_coords(coords, get_binding(G_COORD));
   tris->set_normals(normals, 
-		    get_binding(G_NORMAL) == G_PER_COMPONENT ?
-		    G_PER_PRIM : get_binding(G_NORMAL));
+                    get_binding(G_NORMAL) == G_PER_COMPONENT ?
+                    G_PER_PRIM : get_binding(G_NORMAL));
   tris->set_texcoords(texcoords, get_binding(G_TEXCOORD));
   tris->set_colors(colors, 
-		   get_binding(G_COLOR) == G_PER_COMPONENT ?
-		   G_PER_PRIM : get_binding(G_COLOR));
+                   get_binding(G_COLOR) == G_PER_COMPONENT ?
+                   G_PER_PRIM : get_binding(G_COLOR));
   tris->set_num_prims(num_tris);
 
   return tris;
@@ -458,17 +458,17 @@ get_tris() const {
 
     for (int j = 2; j < len; j++) {
       if (_vindex.empty()) {
-	v2 = k++;
+        v2 = k++;
       } else {
-	v2 = _vindex[k++];
+        v2 = _vindex[k++];
       }
 
       even = !even;
 
       if (even) {
-	ushort vtmp = v1;
-	v1 = v2;
-	v2 = vtmp;
+        ushort vtmp = v1;
+        v1 = v2;
+        v2 = vtmp;
       }
 
       tris.push_back(v0);
@@ -476,10 +476,10 @@ get_tris() const {
       tris.push_back(v2);
       
       if (even) {
-	v0 = v2;
+        v0 = v2;
       } else {
-	v0 = v1;
-	v1 = v2;
+        v0 = v1;
+        v1 = v2;
       }
     }
   }

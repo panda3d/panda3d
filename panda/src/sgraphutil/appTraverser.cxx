@@ -17,7 +17,7 @@ void AppTraverser::
 traverse(Node *root) {
   if (!implicit_app_traversal) {
     df_traverse(root, *this, NullAttributeWrapper(), NullLevelState(), 
-		_graph_type);
+                _graph_type);
   }
 }
 

@@ -24,7 +24,7 @@ class VrpnAnalog;
 class VrpnAnalogDevice : public ClientAnalogDevice {
 public:
   VrpnAnalogDevice(VrpnClient *client, const string &device_name,
-		   VrpnAnalog *vrpn_analog);
+                   VrpnAnalog *vrpn_analog);
   virtual ~VrpnAnalogDevice();
 
   INLINE VrpnAnalog *get_vrpn_analog() const;

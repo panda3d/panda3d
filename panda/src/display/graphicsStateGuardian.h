@@ -26,7 +26,7 @@ class AllAttributesWrapper;
 class AllTransitionsWrapper;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GraphicsStateGuardian
+//       Class : GraphicsStateGuardian
 // Description : Encapsulates all the communication with a particular
 //               instance of a given rendering backend.  Tries to
 //               guarantee that redundant state-change requests are
@@ -76,15 +76,15 @@ public:
 
   virtual void render_frame(const AllAttributesWrapper &initial_state)=0;
   virtual void render_scene(Node *root, ProjectionNode *projnode,
-			    const AllAttributesWrapper &initial_state)=0;
+                            const AllAttributesWrapper &initial_state)=0;
   virtual void render_subgraph(RenderTraverser *traverser, 
-			       Node *subgraph, ProjectionNode *projnode,
-			       const AllAttributesWrapper &initial_state,
-			       const AllTransitionsWrapper &net_trans)=0;
+                               Node *subgraph, ProjectionNode *projnode,
+                               const AllAttributesWrapper &initial_state,
+                               const AllTransitionsWrapper &net_trans)=0;
   virtual void render_subgraph(RenderTraverser *traverser,
-			       Node *subgraph,
-			       const AllAttributesWrapper &initial_state,
-			       const AllTransitionsWrapper &net_trans)=0;
+                               Node *subgraph,
+                               const AllAttributesWrapper &initial_state,
+                               const AllTransitionsWrapper &net_trans)=0;
 
   INLINE void enable_normals(bool val) { _normals_enabled = val; }
 
@@ -114,7 +114,7 @@ public:
   INLINE DisplayRegionStack push_display_region(CPT(DisplayRegion) dr);
   INLINE void pop_display_region(DisplayRegionStack &node);
   INLINE FrameBufferStack push_frame_buffer(const RenderBuffer &buffer,
-					    CPT(DisplayRegion) dr);
+                                            CPT(DisplayRegion) dr);
   INLINE void pop_frame_buffer(FrameBufferStack &node);
 
   INLINE void set_coordinate_system(CoordinateSystem cs);
@@ -129,7 +129,7 @@ public:
   
 protected:
   virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
-						 CPT(DisplayRegion) dr)=0;
+                                                 CPT(DisplayRegion) dr)=0;
   virtual void restore_frame_buffer(SavedFrameBuffer *frame_buffer)=0;
 
   bool mark_prepared_texture(TextureContext *tc);
@@ -242,7 +242,7 @@ public:
   static void init_type() {
     GraphicsStateGuardianBase::init_type();
     register_type(_type_handle, "GraphicsStateGuardian",
- 		  GraphicsStateGuardianBase::get_class_type());
+                  GraphicsStateGuardianBase::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

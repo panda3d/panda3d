@@ -105,8 +105,8 @@ ns_garbage_collect() {
     Node *node = (*ti).second;
     if (node->get_ref_count() == 1) {
       if (loader_cat.is_debug()) {
-	loader_cat.debug()
-	  << "Releasing " << (*ti).first << "\n";
+        loader_cat.debug()
+          << "Releasing " << (*ti).first << "\n";
       }
       num_released++;
     } else {
@@ -129,7 +129,7 @@ ns_list_contents(ostream &out) {
   Models::iterator ti;
   for (ti = _models.begin(); ti != _models.end(); ++ti) {
     out << "  " << (*ti).first
-	<< " (count = " << (*ti).second->get_ref_count() << ")\n";
+        << " (count = " << (*ti).second->get_ref_count() << ")\n";
   }
 }
 

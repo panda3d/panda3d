@@ -34,7 +34,7 @@ PNMImage(const Filename &filename, PNMFileType *type) {
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImage::
 PNMImage(int x_size, int y_size, int num_channels, xelval maxval,
-	 PNMFileType *type) {
+         PNMFileType *type) {
   _array = NULL;
   _alpha = NULL;
 
@@ -119,8 +119,8 @@ from_val(xelval input_value) const {
 INLINE void PNMImage::
 fill(double red, double green, double blue) {
   fill_val((xelval)(red * get_maxval()),
-	   (xelval)(green * get_maxval()),
-	   (xelval)(blue * get_maxval()));
+           (xelval)(green * get_maxval()),
+           (xelval)(blue * get_maxval()));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -407,8 +407,8 @@ set_alpha_val(int x, int y, xelval a) {
 INLINE RGBColord PNMImage::
 get_xel(int x, int y) const {
   return RGBColord(from_val(get_red_val(x, y)),
-		   from_val(get_green_val(x, y)),
-		   from_val(get_blue_val(x, y)));
+                   from_val(get_green_val(x, y)),
+                   from_val(get_blue_val(x, y)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -631,8 +631,8 @@ get_bright(int x, int y) const {
 INLINE double PNMImage::
 get_bright(int x, int y, double rc, double gc, double bc) const {
   return from_val(rc * get_red_val(x, y) + 
-		  gc * get_green_val(x, y) + 
-		  bc * get_blue_val(x, y));
+                  gc * get_green_val(x, y) + 
+                  bc * get_blue_val(x, y));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -646,9 +646,9 @@ get_bright(int x, int y, double rc, double gc, double bc) const {
 INLINE double PNMImage::
 get_bright(int x, int y, double rc, double gc, double bc, double ac) const {
   return from_val(rc * get_red_val(x, y) + 
-		  gc * get_green_val(x, y) + 
-		  bc * get_blue_val(x, y) +
-		  ac * get_alpha_val(x, y));
+                  gc * get_green_val(x, y) + 
+                  bc * get_blue_val(x, y) +
+                  ac * get_alpha_val(x, y));
 }
 
 ////////////////////////////////////////////////////////////////////

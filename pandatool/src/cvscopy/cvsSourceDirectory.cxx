@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////
 CVSSourceDirectory::
 CVSSourceDirectory(CVSSourceTree *tree, CVSSourceDirectory *parent,
-		   const string &dirname) :
+                   const string &dirname) :
   _tree(tree),
   _parent(parent),
   _dirname(dirname)
@@ -236,11 +236,11 @@ scan(const Filename &directory, const string &key_filename) {
     Filename key(next_path, key_filename);
     if (key.exists()) {
       CVSSourceDirectory *subdir = 
-	new CVSSourceDirectory(_tree, this, filename);
+        new CVSSourceDirectory(_tree, this, filename);
       _children.push_back(subdir);
       
       if (!subdir->scan(next_path, key_filename)) {
-	return false;
+        return false;
       }
       
     } else {

@@ -68,7 +68,7 @@ public:
   static void init_type(void) {
     GuiItem::init_type();
     register_type(_type_handle, "GuiRollover",
-		  GuiBehavior::get_class_type());
+                  GuiBehavior::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

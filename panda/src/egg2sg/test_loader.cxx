@@ -38,33 +38,33 @@ public:
     if (node->is_of_type(GeomNode::get_class_type())) {
       GeomNode *geomNode = (GeomNode *)node;
       indent(nout, _indent_level) 
-	<< *geomNode << ", " << geomNode->get_num_geoms()
-	<< " geoms:\n";
+        << *geomNode << ", " << geomNode->get_num_geoms()
+        << " geoms:\n";
       int num_geoms = geomNode->get_num_geoms();
       for (int i = 0; i < num_geoms; i++) {
-	dDrawable *draw = geomNode->get_geom(i);
-	if (draw->is_of_type(Geom::get_class_type())) {
-	  Geom *geom = DCAST(Geom, draw);
-	  //	  geom->output_verbose(nout);
-	  indent(nout, _indent_level + 2) << *geom << "\n";
-	} else {
-	  indent(nout, _indent_level + 2) << draw->get_type() << "\n";
-	}
+        dDrawable *draw = geomNode->get_geom(i);
+        if (draw->is_of_type(Geom::get_class_type())) {
+          Geom *geom = DCAST(Geom, draw);
+          //      geom->output_verbose(nout);
+          indent(nout, _indent_level + 2) << *geom << "\n";
+        } else {
+          indent(nout, _indent_level + 2) << draw->get_type() << "\n";
+        }
       }
     }
     return true;
   }
   bool forward_arc(NodeRelation *arc, TransitionWrapper &trans,
-		   AttributeWrapper &pre, AttributeWrapper &post,
-		   NullLevelState &) {
+                   AttributeWrapper &pre, AttributeWrapper &post,
+                   NullLevelState &) {
     indent(nout, _indent_level) << *arc << " has:\n";
     trans.write(nout, _indent_level + 4);
     _indent_level += 2;
     return true;
   }
   void backward_arc(NodeRelation *arc, TransitionWrapper &trans,
-		    AttributeWrapper &pre, AttributeWrapper &post,
-		    const NullLevelState &) {
+                    AttributeWrapper &pre, AttributeWrapper &post,
+                    const NullLevelState &) {
     _indent_level -= 2;
   }
   int _indent_level;
@@ -93,7 +93,7 @@ main(int argc, char *argv[]) {
   
   PrintNodes pn;
   df_traverse(root, pn, AllAttributesWrapper(), NullLevelState(),
-	      RenderRelation::get_class_type());
+              RenderRelation::get_class_type());
   
   return(0);
 }

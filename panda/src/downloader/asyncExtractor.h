@@ -29,7 +29,7 @@ PUBLISHED:
   virtual ~Extractor(void);
 
   int request_extract(const Filename &source_file,
-		      const string &event_name, const Filename &rel_path = "");
+                      const string &event_name, const Filename &rel_path = "");
 
   bool extract(Filename &source_file, const Filename &rel_path);
 

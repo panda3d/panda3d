@@ -16,7 +16,7 @@ class PalettePage;
 class TexturePlacement;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PaletteImage
+//       Class : PaletteImage
 // Description : This is a single palette image, one of several within
 //               a PalettePage, which is in turn one of several pages
 //               within a PaletteGroup.  Each palette image is a
@@ -94,7 +94,7 @@ public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
 protected:
   static TypedWritable *make_PaletteImage(const FactoryParams &params);
@@ -112,7 +112,7 @@ public:
   static void init_type() {
     ImageFile::init_type();
     register_type(_type_handle, "PaletteImage",
-		  ImageFile::get_class_type());
+                  ImageFile::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

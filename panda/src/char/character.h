@@ -57,9 +57,9 @@ private:
 
   typedef map<NodeRelation *, NodeRelation *> ArcMap;
   virtual Node *r_copy_subgraph(TypeHandle graph_type, 
-				InstanceMap &inst_map) const;
+                                InstanceMap &inst_map) const;
   void r_copy_char(Node *dest, const Node *source, TypeHandle graph_type, 
-		   const Character *from, ArcMap &arc_map);
+                   const Character *from, ArcMap &arc_map);
   PT(Geom) copy_geom(Geom *source, const Character *from);
   void copy_arc_pointers(const Character *from, const ArcMap &arc_map);
 
@@ -87,7 +87,7 @@ public:
   static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter* manager, Datagram &me);  
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
   static TypedWritable *make_Character(const FactoryParams &params);
 
@@ -106,7 +106,7 @@ public:
   static void init_type() {
     PartBundleNode::init_type();
     register_type(_type_handle, "Character",
-		  PartBundleNode::get_class_type());
+                  PartBundleNode::get_class_type());
   }
 
 private:

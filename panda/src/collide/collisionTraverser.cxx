@@ -76,14 +76,14 @@ add_collider(CollisionNode *node, CollisionHandler *handler) {
       (*hi).second--;
       nassertv((*hi).second >= 0);
       if ((*hi).second == 0) {
-	_handlers.erase(hi);
+        _handlers.erase(hi);
       }
 
       hi = _handlers.find(handler);
       if (hi == _handlers.end()) {
-	_handlers.insert(Handlers::value_type(handler, 1));
+        _handlers.insert(Handlers::value_type(handler, 1));
       } else {
-	(*hi).second++;
+        (*hi).second++;
       }
     }
 
@@ -240,7 +240,7 @@ traverse(const NodePath &root) {
   }
 
   df_traverse(root.node(), *this, NullAttributeWrapper(), 
-	      level_state, _graph_type);
+              level_state, _graph_type);
 
   for (hi = _handlers.begin(); hi != _handlers.end(); ++hi) {
     (*hi).first->end_group();
@@ -307,21 +307,21 @@ prepare_colliders(CollisionLevelState &level_state) {
 #ifndef NDEBUG
     if (def._space.is_nan()) {
       collide_cat.error()
-	<< "Collider " << *cnode
-	<< " has become NaN.  Dropping from traverser.\n";
+        << "Collider " << *cnode
+        << " has become NaN.  Dropping from traverser.\n";
       // This is safe to do while traversing the list of colliders,
       // because we do not increment i in this case.
       remove_collider(cnode);
     } else
 #endif
       {
-	int num_solids = cnode->get_num_solids();
-	for (int s = 0; s < num_solids; s++) {
-	  CollisionSolid *collider = cnode->get_solid(s);
-	  def._collider = collider;
-	  level_state.prepare_collider(def);
-	}
-	i++;
+        int num_solids = cnode->get_num_solids();
+        for (int s = 0; s < num_solids; s++) {
+          CollisionSolid *collider = cnode->get_solid(s);
+          def._collider = collider;
+          level_state.prepare_collider(def);
+        }
+        i++;
       }
   }
 }
@@ -333,7 +333,7 @@ prepare_colliders(CollisionLevelState &level_state) {
 ////////////////////////////////////////////////////////////////////
 bool CollisionTraverser::
 reached_node(Node *node, NullAttributeWrapper &, 
-	     CollisionLevelState &level_state) {
+             CollisionLevelState &level_state) {
   if (node->is_of_type(CollisionNode::get_class_type())) {
     level_state.reached_collision_node();
 
@@ -353,29 +353,29 @@ reached_node(Node *node, NullAttributeWrapper &,
     int num_colliders = level_state.get_num_colliders();
     for (int c = 0; c < num_colliders; c++) {
       if (level_state.has_collider(c)) {
-	entry._from_node = level_state.get_node(c);
+        entry._from_node = level_state.get_node(c);
 
-	if ((entry._from_node->get_from_collide_mask() &
-	     cnode->get_into_collide_mask()) != 0) {
-	  entry._from = level_state.get_collider(c);
-	  entry._from_space = level_state.get_space(c);
-	  
+        if ((entry._from_node->get_from_collide_mask() &
+             cnode->get_into_collide_mask()) != 0) {
+          entry._from = level_state.get_collider(c);
+          entry._from_space = level_state.get_space(c);
+
           NodePath root;
-	  LMatrix4f into_space_inv = root.get_mat(entry._into_node_path);
-	  entry._wrt_space = entry._from_space * into_space_inv;
-	  entry._inv_wrt_space = 
-	    entry._into_space * level_state.get_inv_space(c);
-	  
-	  const GeometricBoundingVolume *col_gbv = 
-	    level_state.get_local_bound(c);
-	  
-	  compare_collider_to_node(entry, col_gbv, node_gbv);
-	}
+          LMatrix4f into_space_inv = root.get_mat(entry._into_node_path);
+          entry._wrt_space = entry._from_space * into_space_inv;
+          entry._inv_wrt_space = 
+            entry._into_space * level_state.get_inv_space(c);
+
+          const GeometricBoundingVolume *col_gbv = 
+            level_state.get_local_bound(c);
+
+          compare_collider_to_node(entry, col_gbv, node_gbv);
+        }
       }
     }
 
   } else if (node->is_of_type(GeomNode::get_class_type()) &&
-	     level_state.has_any_collide_geom()) {
+             level_state.has_any_collide_geom()) {
     GeomNode *gnode;
     DCAST_INTO_R(gnode, node, false);
     const BoundingVolume &node_bv = gnode->get_bound();
@@ -391,21 +391,21 @@ reached_node(Node *node, NullAttributeWrapper &,
     int num_colliders = level_state.get_num_colliders();
     for (int c = 0; c < num_colliders; c++) {
       if (level_state.has_collider_with_geom(c)) {
-	entry._from_node = level_state.get_node(c);
+        entry._from_node = level_state.get_node(c);
 
-	entry._from = level_state.get_collider(c);
-	entry._from_space = level_state.get_space(c);
-	  
-	LMatrix4f into_space_inv;
-	get_rel_mat(NULL, node, into_space_inv, _graph_type);
-	entry._wrt_space = entry._from_space * into_space_inv;
-	entry._inv_wrt_space = 
-	  entry._into_space * level_state.get_inv_space(c);
-	  
-	const GeometricBoundingVolume *col_gbv = 
-	  level_state.get_local_bound(c);
-	  
-	compare_collider_to_geom_node(entry, col_gbv, node_gbv);
+        entry._from = level_state.get_collider(c);
+        entry._from_space = level_state.get_space(c);
+
+        LMatrix4f into_space_inv;
+        get_rel_mat(NULL, node, into_space_inv, _graph_type);
+        entry._wrt_space = entry._from_space * into_space_inv;
+        entry._inv_wrt_space = 
+          entry._into_space * level_state.get_inv_space(c);
+
+        const GeometricBoundingVolume *col_gbv = 
+          level_state.get_local_bound(c);
+
+        compare_collider_to_geom_node(entry, col_gbv, node_gbv);
       }
     }
   }
@@ -420,8 +420,8 @@ reached_node(Node *node, NullAttributeWrapper &,
 ////////////////////////////////////////////////////////////////////
 bool CollisionTraverser::
 forward_arc(NodeRelation *arc, NullTransitionWrapper &,
-	    NullAttributeWrapper &, NullAttributeWrapper &,
-	    CollisionLevelState &level_state) {
+            NullAttributeWrapper &, NullAttributeWrapper &,
+            CollisionLevelState &level_state) {
   // Check the bounding volume on the arc against each of our
   // colliders.
   const BoundingVolume &arc_bv = arc->get_bound();
@@ -432,15 +432,15 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
     int num_colliders = level_state.get_num_colliders();
     for (int c = 0; c < num_colliders; c++) {
       if (level_state.has_collider(c)) {
-	const GeometricBoundingVolume *col_gbv = 
-	  level_state.get_local_bound(c);
-	if (col_gbv != (GeometricBoundingVolume *)NULL) {
-	  if (arc_gbv->contains(col_gbv) == 0) {
-	    // This collider certainly does not intersect with any
-	    // geometry at this arc or below.
-	    level_state.omit_collider(c);
-	  }
-	}
+        const GeometricBoundingVolume *col_gbv = 
+          level_state.get_local_bound(c);
+        if (col_gbv != (GeometricBoundingVolume *)NULL) {
+          if (arc_gbv->contains(col_gbv) == 0) {
+            // This collider certainly does not intersect with any
+            // geometry at this arc or below.
+            level_state.omit_collider(c);
+          }
+        }
       }
     }
   }
@@ -472,14 +472,14 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
 compare_collider_to_node(CollisionEntry &entry,
-			 const GeometricBoundingVolume *from_node_gbv,
-			 const GeometricBoundingVolume *into_node_gbv) {
+                         const GeometricBoundingVolume *from_node_gbv,
+                         const GeometricBoundingVolume *into_node_gbv) {
   bool within_node_bounds = true;
   if (from_node_gbv != (GeometricBoundingVolume *)NULL &&
       into_node_gbv != (GeometricBoundingVolume *)NULL) {
     within_node_bounds = (into_node_gbv->contains(from_node_gbv) != 0);
   }
-	  
+
   if (within_node_bounds) {
     CollisionNode *cnode;
     DCAST_INTO_V(cnode, entry._into_node);
@@ -487,19 +487,19 @@ compare_collider_to_node(CollisionEntry &entry,
     for (int s = 0; s < num_solids; s++) {
       entry._into = cnode->get_solid(s);
       if (entry._from != entry._into) {
-	const BoundingVolume &solid_bv = entry._into->get_bound();
-	const GeometricBoundingVolume *solid_gbv = NULL;
-	if (num_solids > 1 &&
-	    solid_bv.is_of_type(GeometricBoundingVolume::get_class_type())) {
-	  // Only bother to test against each solid's bounding
-	  // volume if we have more than one solid in the node, as a
-	  // slight optimization.  (If the node contains just one
-	  // solid, then the node's bounding volume, which we just
-	  // tested, is the same as the solid's bounding volume.)
-	  DCAST_INTO_V(solid_gbv, &solid_bv);
-	}
-	
-	compare_collider_to_solid(entry, from_node_gbv, solid_gbv);
+        const BoundingVolume &solid_bv = entry._into->get_bound();
+        const GeometricBoundingVolume *solid_gbv = NULL;
+        if (num_solids > 1 &&
+            solid_bv.is_of_type(GeometricBoundingVolume::get_class_type())) {
+          // Only bother to test against each solid's bounding
+          // volume if we have more than one solid in the node, as a
+          // slight optimization.  (If the node contains just one
+          // solid, then the node's bounding volume, which we just
+          // tested, is the same as the solid's bounding volume.)
+          DCAST_INTO_V(solid_gbv, &solid_bv);
+        }
+
+        compare_collider_to_solid(entry, from_node_gbv, solid_gbv);
       }
     }
   }
@@ -512,14 +512,14 @@ compare_collider_to_node(CollisionEntry &entry,
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
 compare_collider_to_geom_node(CollisionEntry &entry,
-			      const GeometricBoundingVolume *from_node_gbv,
-			      const GeometricBoundingVolume *into_node_gbv) {
+                              const GeometricBoundingVolume *from_node_gbv,
+                              const GeometricBoundingVolume *into_node_gbv) {
   bool within_node_bounds = true;
   if (from_node_gbv != (GeometricBoundingVolume *)NULL &&
       into_node_gbv != (GeometricBoundingVolume *)NULL) {
     within_node_bounds = (into_node_gbv->contains(from_node_gbv) != 0);
   }
-	  
+
   if (within_node_bounds) {
     GeomNode *gnode;
     DCAST_INTO_V(gnode, entry._into_node);
@@ -528,19 +528,19 @@ compare_collider_to_geom_node(CollisionEntry &entry,
       entry._into = (CollisionSolid *)NULL;
       Geom *geom = DCAST(Geom, gnode->get_geom(s));
       if (geom != (Geom *)NULL) {
-	const BoundingVolume &geom_bv = geom->get_bound();
-	const GeometricBoundingVolume *geom_gbv = NULL;
-	if (num_geoms > 1 &&
-	    geom_bv.is_of_type(GeometricBoundingVolume::get_class_type())) {
-	  // Only bother to test against each geom's bounding
-	  // volume if we have more than one geom in the node, as a
-	  // slight optimization.  (If the node contains just one
-	  // geom, then the node's bounding volume, which we just
-	  // tested, is the same as the geom's bounding volume.)
-	  DCAST_INTO_V(geom_gbv, &geom_bv);
-	}
-	
-	compare_collider_to_geom(entry, geom, from_node_gbv, geom_gbv);
+        const BoundingVolume &geom_bv = geom->get_bound();
+        const GeometricBoundingVolume *geom_gbv = NULL;
+        if (num_geoms > 1 &&
+            geom_bv.is_of_type(GeometricBoundingVolume::get_class_type())) {
+          // Only bother to test against each geom's bounding
+          // volume if we have more than one geom in the node, as a
+          // slight optimization.  (If the node contains just one
+          // geom, then the node's bounding volume, which we just
+          // tested, is the same as the geom's bounding volume.)
+          DCAST_INTO_V(geom_gbv, &geom_bv);
+        }
+
+        compare_collider_to_geom(entry, geom, from_node_gbv, geom_gbv);
       }
     }
   }
@@ -553,8 +553,8 @@ compare_collider_to_geom_node(CollisionEntry &entry,
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
 compare_collider_to_solid(CollisionEntry &entry,
-			  const GeometricBoundingVolume *from_node_gbv,
-			  const GeometricBoundingVolume *solid_gbv) {
+                          const GeometricBoundingVolume *from_node_gbv,
+                          const GeometricBoundingVolume *solid_gbv) {
   bool within_solid_bounds = true;
   if (from_node_gbv != (GeometricBoundingVolume *)NULL &&
       solid_gbv != (GeometricBoundingVolume *)NULL) {
@@ -575,8 +575,8 @@ compare_collider_to_solid(CollisionEntry &entry,
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
 compare_collider_to_geom(CollisionEntry &entry, Geom *geom,
-			 const GeometricBoundingVolume *from_node_gbv,
-			 const GeometricBoundingVolume *geom_gbv) {
+                         const GeometricBoundingVolume *from_node_gbv,
+                         const GeometricBoundingVolume *geom_gbv) {
   bool within_geom_bounds = true;
   if (from_node_gbv != (GeometricBoundingVolume *)NULL &&
       geom_gbv != (GeometricBoundingVolume *)NULL) {
@@ -595,15 +595,15 @@ compare_collider_to_geom(CollisionEntry &entry, Geom *geom,
     
     for (int i = 0; i < (int)tris.size(); i += 3) {
       if (CollisionPolygon::verify_points(coords[tris[i]],
-					  coords[tris[i + 1]],
-					  coords[tris[i + 2]])) {
-	// Generate a temporary CollisionPolygon on the fly for each
-	// triangle in the Geom.
-	CollisionPolygon poly(coords[tris[i]], coords[tris[i + 1]],
-			      coords[tris[i + 2]]);
-	if (entry.get_from()->test_intersection((*ci).second, entry, &poly) != 0) {
-	  return;
-	}
+                                          coords[tris[i + 1]],
+                                          coords[tris[i + 2]])) {
+        // Generate a temporary CollisionPolygon on the fly for each
+        // triangle in the Geom.
+        CollisionPolygon poly(coords[tris[i]], coords[tris[i + 1]],
+                              coords[tris[i + 2]]);
+        if (entry.get_from()->test_intersection((*ci).second, entry, &poly) != 0) {
+          return;
+        }
       }
     }
   }

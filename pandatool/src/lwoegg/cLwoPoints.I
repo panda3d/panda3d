@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE CLwoPoints::
 CLwoPoints(LwoToEggConverter *converter, const LwoPoints *points,
-	   CLwoLayer *layer) : 
+           CLwoLayer *layer) : 
   _converter(converter),
   _points(points),
   _layer(layer)

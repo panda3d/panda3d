@@ -24,7 +24,7 @@
  */
 
 #ifndef _TIFFCONF_
-#define	_TIFFCONF_
+#define _TIFFCONF_
 /*
  * Library Configuration Definitions.
  *
@@ -39,56 +39,56 @@
 /*
  * General portability-related defines:
  *
- * HAVE_IEEEFP		define as 0 or 1 according to the floating point
- *			format suported by the machine
- * BSDTYPES		define this if your system does NOT define the
- *			usual 4BSD typedefs
+ * HAVE_IEEEFP          define as 0 or 1 according to the floating point
+ *                      format suported by the machine
+ * BSDTYPES             define this if your system does NOT define the
+ *                      usual 4BSD typedefs
  */
 #ifndef HAVE_IEEEFP
-#define	HAVE_IEEEFP	1
+#define HAVE_IEEEFP     1
 #endif
 
 #ifndef FEATURE_SUPPORT
 /*
  * Feature support definitions:
  *
- *    MMAP_SUPPORT	enable support for memory mapping read-only files
+ *    MMAP_SUPPORT      enable support for memory mapping read-only files
  *    COLORIMETRY_SUPPORT enable support for 6.0 colorimetry tags
- *    JPEG_SUPPORT	enable support for 6.0 JPEG tags & JPEG algorithms
- *    YCBCR_SUPPORT	enable support for 6.0 YCbCr tags
- *    CMYK_SUPPORT	enable support for 6.0 CMYK tags
+ *    JPEG_SUPPORT      enable support for 6.0 JPEG tags & JPEG algorithms
+ *    YCBCR_SUPPORT     enable support for 6.0 YCbCr tags
+ *    CMYK_SUPPORT      enable support for 6.0 CMYK tags
  */
-#define	COLORIMETRY_SUPPORT
-#define	JPEG_SUPPORT
-#define	YCBCR_SUPPORT
-#define	CMYK_SUPPORT
+#define COLORIMETRY_SUPPORT
+#define JPEG_SUPPORT
+#define YCBCR_SUPPORT
+#define CMYK_SUPPORT
 #endif
 
 #ifndef COMPRESSION_SUPPORT
 /*
  * Compression support defines:
  *
- *    CCITT_SUPPORT	enable support for CCITT Group 3 & 4 algorithms
- *    PACKBITS_SUPPORT	enable support for Macintosh PackBits algorithm
- *    LZW_SUPPORT	enable support for LZW algorithm
- *    THUNDER_SUPPORT	enable support for ThunderScan 4-bit RLE algorithm
- *    NEXT_SUPPORT	enable support for NeXT 2-bit RLE algorithm
- *    JPEG_SUPPORT	enable support for JPEG DCT algorithm
+ *    CCITT_SUPPORT     enable support for CCITT Group 3 & 4 algorithms
+ *    PACKBITS_SUPPORT  enable support for Macintosh PackBits algorithm
+ *    LZW_SUPPORT       enable support for LZW algorithm
+ *    THUNDER_SUPPORT   enable support for ThunderScan 4-bit RLE algorithm
+ *    NEXT_SUPPORT      enable support for NeXT 2-bit RLE algorithm
+ *    JPEG_SUPPORT      enable support for JPEG DCT algorithm
  */
-#define	CCITT_SUPPORT
-#define	PACKBITS_SUPPORT
-#define	LZW_SUPPORT
-#define	THUNDER_SUPPORT
-#define	NEXT_SUPPORT
+#define CCITT_SUPPORT
+#define PACKBITS_SUPPORT
+#define LZW_SUPPORT
+#define THUNDER_SUPPORT
+#define NEXT_SUPPORT
 #endif
 
 /*
  * ``Orthogonal Features''
  *
- * STRIPCHOP_SUPPORT	automatically convert single-strip uncompressed images
- *			to mutiple strips of ~8Kb (for reducing memory use)
+ * STRIPCHOP_SUPPORT    automatically convert single-strip uncompressed images
+ *                      to mutiple strips of ~8Kb (for reducing memory use)
  */
 #ifndef STRIPCHOP_SUPPORT
-#define	STRIPCHOP_SUPPORT		/* enable strip chopping */
+#define STRIPCHOP_SUPPORT               /* enable strip chopping */
 #endif
 #endif /* _TIFFCONF_ */

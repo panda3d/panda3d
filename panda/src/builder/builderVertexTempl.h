@@ -15,7 +15,7 @@
 
 
 /////////////////////////////////////////////////////////////////////
-// 	 Class : BuilderVertexTempl
+//       Class : BuilderVertexTempl
 // Description : The main body of BuilderVertex and BuilderVertexI.
 //               This is a template class on each of the four
 //               attribute types: vertex coordinates, normal, texture
@@ -68,7 +68,7 @@ protected:
 
 template <class VT, class NT, class TT, class CT>
 INLINE ostream &operator << (ostream &out,
-			     const BuilderVertexTempl<VT, NT, TT, CT> &vertex) {
+                             const BuilderVertexTempl<VT, NT, TT, CT> &vertex) {
   return vertex.output(out);
 }
 

@@ -246,16 +246,16 @@ explode() const {
     int v;
     for (v = 0; v <= 2; v += 2) {
       if (get_binding(G_COORD) == G_PER_VERTEX) {
-	f3vertex[v] = get_next_vertex(vi);
+        f3vertex[v] = get_next_vertex(vi);
       }
       if (get_binding(G_NORMAL) == G_PER_VERTEX) {
-	f3normal[v] = get_next_normal(ni);
+        f3normal[v] = get_next_normal(ni);
       }
       if (get_binding(G_TEXCOORD) == G_PER_VERTEX) {
-	f3texcoord[v] = get_next_texcoord(ti);
+        f3texcoord[v] = get_next_texcoord(ti);
       }
       if (get_binding(G_COLOR) == G_PER_VERTEX) {
-	f3color[v] = get_next_color(ci);
+        f3color[v] = get_next_color(ci);
       }
     }
     
@@ -270,41 +270,41 @@ explode() const {
       f3color[1] = f3color[2];
 
       if (get_binding(G_COLOR) == G_PER_PRIM) {
-	colors.push_back(per_trifan_color);
+        colors.push_back(per_trifan_color);
       } else if (get_binding(G_COLOR) == G_PER_COMPONENT) {
-	colors.push_back(get_next_color(ci));
+        colors.push_back(get_next_color(ci));
       }
 
       if (get_binding(G_NORMAL) == G_PER_PRIM) {
-	normals.push_back(per_trifan_normal);
+        normals.push_back(per_trifan_normal);
       } else if (get_binding(G_NORMAL) == G_PER_COMPONENT) {
-	normals.push_back(get_next_normal(ni));
+        normals.push_back(get_next_normal(ni));
       }
       
       // Per-vertex attributes.
       if (get_binding(G_COORD) == G_PER_VERTEX) {
-	f3vertex[2] = get_next_vertex(vi);
-	coords.push_back(f3vertex[0]);
-	coords.push_back(f3vertex[1]);
-	coords.push_back(f3vertex[2]);
+        f3vertex[2] = get_next_vertex(vi);
+        coords.push_back(f3vertex[0]);
+        coords.push_back(f3vertex[1]);
+        coords.push_back(f3vertex[2]);
       }
       if (get_binding(G_NORMAL) == G_PER_VERTEX) {
-	f3normal[2] = get_next_normal(ni);
-	normals.push_back(f3normal[0]);
-	normals.push_back(f3normal[1]);
-	normals.push_back(f3normal[2]);
+        f3normal[2] = get_next_normal(ni);
+        normals.push_back(f3normal[0]);
+        normals.push_back(f3normal[1]);
+        normals.push_back(f3normal[2]);
       }
       if (get_binding(G_TEXCOORD) == G_PER_VERTEX) {
-	f3texcoord[2] = get_next_texcoord(ti);
-	texcoords.push_back(f3texcoord[0]);
-	texcoords.push_back(f3texcoord[1]);
-	texcoords.push_back(f3texcoord[2]);
+        f3texcoord[2] = get_next_texcoord(ti);
+        texcoords.push_back(f3texcoord[0]);
+        texcoords.push_back(f3texcoord[1]);
+        texcoords.push_back(f3texcoord[2]);
       }
       if (get_binding(G_COLOR) == G_PER_VERTEX) {
-	f3color[2] = get_next_color(ci);
-	colors.push_back(f3color[0]);
-	colors.push_back(f3color[1]);
-	colors.push_back(f3color[2]);
+        f3color[2] = get_next_color(ci);
+        colors.push_back(f3color[0]);
+        colors.push_back(f3color[1]);
+        colors.push_back(f3color[2]);
       }
     }
   }
@@ -312,12 +312,12 @@ explode() const {
   Geom *tris = new GeomTri;
   tris->set_coords(coords, get_binding(G_COORD));
   tris->set_normals(normals, 
-		    get_binding(G_NORMAL) == G_PER_COMPONENT ?
-		    G_PER_PRIM : get_binding(G_NORMAL));
+                    get_binding(G_NORMAL) == G_PER_COMPONENT ?
+                    G_PER_PRIM : get_binding(G_NORMAL));
   tris->set_texcoords(texcoords, get_binding(G_TEXCOORD));
   tris->set_colors(colors, 
-		   get_binding(G_COLOR) == G_PER_COMPONENT ?
-		   G_PER_PRIM : get_binding(G_COLOR));
+                   get_binding(G_COLOR) == G_PER_COMPONENT ?
+                   G_PER_PRIM : get_binding(G_COLOR));
   tris->set_num_prims(num_tris);
 
   return tris;
@@ -360,9 +360,9 @@ get_tris() const {
 
     for (int j = 0; j < len; j++) {
       if (_vindex.empty()) {
-	v2 = k++;
+        v2 = k++;
       } else {
-	v2 = _vindex[k++];
+        v2 = _vindex[k++];
       }
 
       tris.push_back(v0);

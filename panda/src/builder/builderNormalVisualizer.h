@@ -20,7 +20,7 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : BuilderNormalVisualizer
+//       Class : BuilderNormalVisualizer
 // Description : A useful class for collecting information about
 //               vertices and their associated normals as geometry is
 //               built, so that its normals may be visualized via

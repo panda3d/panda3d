@@ -13,7 +13,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurfaceColor
+//       Class : LwoSurfaceColor
 // Description : Records the base color of a surface, as an entry
 //               within a LwoSurface chunk.
 ////////////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoSurfaceColor",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

@@ -18,7 +18,7 @@ init_type() {
     string name = "LVector2";
     name += FLOATTOKEN; 
     register_type(_type_handle, name, 
-		  FLOATNAME(LVecBase2)::get_class_type());
+                  FLOATNAME(LVecBase2)::get_class_type());
   }
 }
 

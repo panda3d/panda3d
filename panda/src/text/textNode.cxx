@@ -126,15 +126,15 @@ write(ostream &out, int indent_level) const {
       << get_frame_as_set() << " line width " << _frame_width << "\n";
     if (get_frame_corners()) {
       indent(out, indent_level + 2)
-	<< "frame corners are enabled\n";
+        << "frame corners are enabled\n";
     }
     if (is_frame_as_margin()) {
       indent(out, indent_level + 2)
-	<< "frame coordinates are specified as margin; actual frame is:\n"
-	<< get_frame_actual() << "\n";
+        << "frame coordinates are specified as margin; actual frame is:\n"
+        << get_frame_actual() << "\n";
     } else {
       indent(out, indent_level + 2)
-	<< "frame coordinates are actual\n";
+        << "frame coordinates are actual\n";
     }
   }
   if (has_card()) {
@@ -143,11 +143,11 @@ write(ostream &out, int indent_level) const {
       << get_card_as_set() << "\n";
     if (is_card_as_margin()) {
       indent(out, indent_level + 2)
-	<< "card coordinates are specified as margin; actual card is:\n"
-	<< get_card_actual() << "\n";
+        << "card coordinates are specified as margin; actual card is:\n"
+        << get_card_actual() << "\n";
     } else {
       indent(out, indent_level + 2)
-	<< "card coordinates are actual\n";
+        << "card coordinates are actual\n";
     }
   }
   if (has_shadow()) {
@@ -246,7 +246,7 @@ generate() {
     text_arc->set_transition(new ColorTransition(_text_color));
     if (_text_color[3] != 1.0) {
       text_arc->set_transition
-	(new TransparencyTransition(TransparencyProperty::M_alpha));
+        (new TransparencyTransition(TransparencyProperty::M_alpha));
     }
   }
 
@@ -285,12 +285,12 @@ generate() {
 
     if (_shadow_color[3] != 1.0) {
       shadow_arc->set_transition
-	(new TransparencyTransition(TransparencyProperty::M_alpha));
+        (new TransparencyTransition(TransparencyProperty::M_alpha));
     }
 
     if (has_bin()) {
       shadow_arc->set_transition
-	(new GeomBinTransition(_bin, _draw_order + 1));
+        (new GeomBinTransition(_bin, _draw_order + 1));
     }
   }
 
@@ -301,12 +301,12 @@ generate() {
     frame_arc->set_transition(new ColorTransition(_frame_color));
     if (_frame_color[3] != 1.0) {
       frame_arc->set_transition
-	(new TransparencyTransition(TransparencyProperty::M_alpha));
+        (new TransparencyTransition(TransparencyProperty::M_alpha));
     }
 
     if (has_bin()) {
       frame_arc->set_transition
-	(new GeomBinTransition(_bin, _draw_order + 1));
+        (new GeomBinTransition(_bin, _draw_order + 1));
     }
   }
 
@@ -321,7 +321,7 @@ generate() {
     card_arc->set_transition(new ColorTransition(_card_color));
     if (_card_color[3] != 1.0) {
       card_arc->set_transition
-	(new TransparencyTransition(TransparencyProperty::M_alpha));
+        (new TransparencyTransition(TransparencyProperty::M_alpha));
     }
     if (has_card_texture()) {
       card_arc->set_transition(new TextureTransition(_card_texture));
@@ -329,7 +329,7 @@ generate() {
 
     if (has_bin()) {
       card_arc->set_transition
-	(new GeomBinTransition(_bin, _draw_order));
+        (new GeomBinTransition(_bin, _draw_order));
     }
   }
   
@@ -440,26 +440,26 @@ assemble_row(const char *&source, Node *dest) {
 
       const TextFont::CharDef *def = _font->get_char(character);
       if (def == (const TextFont::CharDef *)NULL) {
-	text_cat.warning()
-	  << "No definition for character " << character << endl;
+        text_cat.warning()
+          << "No definition for character " << character << endl;
   
       } else {
-	Geom *char_geom = def->_geom;
-	float char_width = def->_width;
-	const AllTransitionsWrapper &trans = def->_trans;
-	
-	LMatrix4f mat = LMatrix4f::ident_mat();
+        Geom *char_geom = def->_geom;
+        float char_width = def->_width;
+        const AllTransitionsWrapper &trans = def->_trans;
+
+        LMatrix4f mat = LMatrix4f::ident_mat();
         mat.set_row(3, LVector3f(xpos, 0, 0)); 
-	if (char_geom != NULL) {
-	  string ch(1, (char)character);
-	  GeomNode *geode = new GeomNode(ch);
-	  geode->add_geom(char_geom);
-	  RenderRelation* rel = new RenderRelation(dest, geode);
-	  rel->set_transition(new TransformTransition(mat));
-	  trans.store_to(rel);
-	}
-	
-	xpos += char_width;
+        if (char_geom != NULL) {
+          string ch(1, (char)character);
+          GeomNode *geode = new GeomNode(ch);
+          geode->add_geom(char_geom);
+          RenderRelation* rel = new RenderRelation(dest, geode);
+          rel->set_transition(new TransformTransition(mat));
+          trans.store_to(rel);
+        }
+
+        xpos += char_width;
       }
     }
     source++;
@@ -477,7 +477,7 @@ assemble_row(const char *&source, Node *dest) {
 ////////////////////////////////////////////////////////////////////
 Node *TextNode::
 assemble_text(const char *source, LVector2f &ul, LVector2f &lr,
-	      int &num_rows) {
+              int &num_rows) {
   nassertr(_font != (TextFont *)NULL, (Node *)NULL);
   float line_height = get_line_height();
 
@@ -520,9 +520,9 @@ assemble_text(const char *source, LVector2f &ul, LVector2f &lr,
     // row.  This is an X shear.
     if (_slant != 0.0) {
       LMatrix4f shear(1, 0, 0, 0,
-		      0, 1, 0, 0,
-		      _slant, 0, 1, 0,
-		      0, 0, 0, 1);
+                      0, 1, 0, 0,
+                      _slant, 0, 1, 0,
+                      0, 0, 0, 1);
       mat = shear * mat;
     }
 
@@ -560,12 +560,12 @@ measure_row(const char *&source) {
 
       const TextFont::CharDef *def = _font->get_char(character);
       if (def == (const TextFont::CharDef *)NULL) {
-	text_cat.warning()
-	  << "No definition for character " << character << endl;
+        text_cat.warning()
+          << "No definition for character " << character << endl;
   
       } else {
-	float char_width = def->_width;
-	xpos += char_width;
+        float char_width = def->_width;
+        xpos += char_width;
       }
     }
     source++;
@@ -582,7 +582,7 @@ measure_row(const char *&source) {
 ////////////////////////////////////////////////////////////////////
 void TextNode::
 measure_text(const char *source, LVector2f &ul, LVector2f &lr,
-	     int &num_rows) {
+             int &num_rows) {
   nassertv(_font != (TextFont *)NULL);
   float line_height = get_line_height();
 
@@ -741,22 +741,22 @@ make_card_with_border() {
   verts.push_back(Vertexf::rfu(left, 0.02, top - _card_border_size));
   verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02, top));
   verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02, 
-			       top - _card_border_size));
+                               top - _card_border_size));
   // verts 5,6,7,8 
   verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02, top));
   verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02, 
-			       top - _card_border_size));
+                               top - _card_border_size));
   verts.push_back(Vertexf::rfu(right, 0.02, top));
   verts.push_back(Vertexf::rfu(right, 0.02, top - _card_border_size));
   // verts 9,10,11,12 
   verts.push_back(Vertexf::rfu(left, 0.02, bottom + _card_border_size));
   verts.push_back(Vertexf::rfu(left, 0.02, bottom));
   verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02, 
-			       bottom + _card_border_size));
+                               bottom + _card_border_size));
   verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02, bottom));
   // verts 13,14,15,16
   verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02, 
-			       bottom + _card_border_size));
+                               bottom + _card_border_size));
   verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02, bottom));
   verts.push_back(Vertexf::rfu(right, 0.02, bottom + _card_border_size));
   verts.push_back(Vertexf::rfu(right, 0.02, bottom));

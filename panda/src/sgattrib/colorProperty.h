@@ -14,7 +14,7 @@ class Datagram;
 class DatagramIterator;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ColorProperty
+//       Class : ColorProperty
 // Description : This class defines the scene graph color property
 //               that we may set on a transition.  It makes a
 //               distinction between a real color and the uncolor.

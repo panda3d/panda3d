@@ -216,14 +216,14 @@ set_dependency_order() {
     if (_dirname == group->get_dirname()) {
       // The dirname orders should be equal.
       if (_dirname_order < group->get_dirname_order()) {
-	_dirname_order = group->get_dirname_order();
-	any_changed = true;
+        _dirname_order = group->get_dirname_order();
+        any_changed = true;
       }
     } else {
       // The dirname orders should be different.
       if (_dirname_order <= group->get_dirname_order()) {
-	_dirname_order = group->get_dirname_order() + 1;
-	any_changed = true;
+        _dirname_order = group->get_dirname_order() + 1;
+        any_changed = true;
       }
     }
   }
@@ -451,20 +451,20 @@ write_image_info(ostream &out, int indent_level) const {
     TexturePlacement *placement = (*pli);
     if (placement->get_omit_reason() != OR_none) {
       indent(out, indent_level) 
-	<< placement->get_texture()->get_name()
-	<< " unplaced because ";
+        << placement->get_texture()->get_name()
+        << " unplaced because ";
       switch (placement->get_omit_reason()) {
       case OR_coverage:
-	out << "coverage (" << placement->get_uv_area() << ")";
-	break;
+        out << "coverage (" << placement->get_uv_area() << ")";
+        break;
 
       case OR_size:
-	out << "size (" << placement->get_x_size() << " " 
-	    << placement->get_y_size() << ")";
-	break;
+        out << "size (" << placement->get_x_size() << " " 
+            << placement->get_y_size() << ")";
+        break;
 
       default:
-	out << placement->get_omit_reason();
+        out << placement->get_omit_reason();
       }
       out << "\n";
     }

@@ -13,13 +13,13 @@
 #include <onTransition.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : RenderModeTransition
+//       Class : RenderModeTransition
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA RenderModeTransition : public OnTransition {
 public:
   INLINE RenderModeTransition(RenderModeProperty::Mode mode, 
-			      double line_width = 1.0);
+                              double line_width = 1.0);
 
   INLINE void set_mode(RenderModeProperty::Mode mode);
   INLINE RenderModeProperty::Mode get_mode() const;
@@ -49,7 +49,7 @@ public:
   static void init_type() {
     OnTransition::init_type();
     register_type(_type_handle, "RenderModeTransition",
-		  OnTransition::get_class_type());
+                  OnTransition::get_class_type());
   }
 
 private:

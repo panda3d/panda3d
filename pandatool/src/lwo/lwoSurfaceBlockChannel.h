@@ -11,7 +11,7 @@
 #include "lwoChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurfaceBlockChannel
+//       Class : LwoSurfaceBlockChannel
 // Description : Indicates which channel the texture in this
 //               LwoSurfaceBlock is applied to.  This is a subchunk of
 //               LwoSurfaceBlockHeader.
@@ -35,7 +35,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoSurfaceBlockChannel",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

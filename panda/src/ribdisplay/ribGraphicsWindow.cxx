@@ -29,7 +29,7 @@ RIBGraphicsWindow(GraphicsPipe *pipe) : GraphicsWindow(pipe) {
 ////////////////////////////////////////////////////////////////////
 RIBGraphicsWindow::
 RIBGraphicsWindow(GraphicsPipe *pipe,
-		  const GraphicsWindow::Properties &props) :
+                  const GraphicsWindow::Properties &props) :
   GraphicsWindow(pipe, props) 
 {
   setup_window(pipe);
@@ -79,7 +79,7 @@ begin_frame() {
     // If we're writing out an image file for each frame, specify it
     // here, inside the Frame control group.
     _file << "  Display \"" << get_image_filename() 
-	  << "\" \"file\" \"rgba\"\n";
+          << "\" \"file\" \"rgba\"\n";
   }
 }
 
@@ -166,7 +166,7 @@ begin_file() {
     // renderer will be able to generate a multi-frame output file
     // somehow.
     _file << "Display \"" << get_image_filename() 
-	  << "\" \"file\" \"rgb\"\n";
+          << "\" \"file\" \"rgb\"\n";
   }
 
 }
@@ -208,35 +208,35 @@ format_name(const string &name_template) const {
       ++ci;
       string::const_iterator pi = ci;
       while (ci != name_template.end() && isdigit(*ci)) {
-	++ci;
+        ++ci;
       }
       string format_spec(pi, ci);
 
       if (ci != name_template.end()) {
-	switch (*ci) {
-	case 'f':
-	  // %f : insert frame number
-	  name += format_integer(format_spec, _frame_number);
-	  break;
+        switch (*ci) {
+        case 'f':
+          // %f : insert frame number
+          name += format_integer(format_spec, _frame_number);
+          break;
 
-	case 't':
-	  // %t : insert window title
-	  name += format_string(format_spec, _props._title);
-	  break;
+        case 't':
+          // %t : insert window title
+          name += format_string(format_spec, _props._title);
+          break;
 
-	case '%':
-	  // %% : insert percent sign
-	  name += '%';
-	  break;
+        case '%':
+          // %% : insert percent sign
+          name += '%';
+          break;
 
-	default:
-	  cerr << "Invalid filename template specification: %" 
-	       << format_spec << *ci << "\n";
-	}
-	++ci;
+        default:
+          cerr << "Invalid filename template specification: %" 
+               << format_spec << *ci << "\n";
+        }
+        ++ci;
       } else {
-	cerr << "Incomplete filename template specification: %"
-	     << format_spec << "\n";
+        cerr << "Incomplete filename template specification: %"
+             << format_spec << "\n";
       }
     } else {
       name += *ci;
@@ -330,14 +330,14 @@ check_per_frame(const string &name_template) {
       ++ci;
       string::const_iterator pi = ci;
       while (ci != name_template.end() && isdigit(*ci)) {
-	++ci;
+        ++ci;
       }
 
       if (ci != name_template.end()) {
-	if ((*ci) == 'f') {
-	  return true;
-	}
-	++ci;
+        if ((*ci) == 'f') {
+          return true;
+        }
+        ++ci;
       }
     } else {
       ++ci;
@@ -390,7 +390,7 @@ TypeHandle RIBGraphicsWindow::get_class_type(void) {
 void RIBGraphicsWindow::init_type(void) {
   GraphicsWindow::init_type();
   register_type(_type_handle, "RIBGraphicsWindow",
-		GraphicsWindow::get_class_type());
+                GraphicsWindow::get_class_type());
 }
 
 TypeHandle RIBGraphicsWindow::get_type(void) const {

@@ -26,7 +26,7 @@ class Datagram;
 class DatagramIterator;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : NodeTransition
+//       Class : NodeTransition
 // Description : This is an abstract class defining the basic
 //               interface to a Transition--the type of state change
 //               request that is stored on the arcs of the scene
@@ -70,9 +70,9 @@ public:
   virtual NodeAttribute *apply(const NodeAttribute *attrib) const=0;
 
   virtual bool sub_render(NodeRelation *arc,
-			  const AllAttributesWrapper &attrib,
-			  AllTransitionsWrapper &trans,
-			  RenderTraverser *trav);
+                          const AllAttributesWrapper &attrib,
+                          AllTransitionsWrapper &trans,
+                          RenderTraverser *trav);
   virtual bool has_sub_render() const;
 
   virtual void output(ostream &out) const;
@@ -120,7 +120,7 @@ public:
   static void init_type() {
     TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "NodeTransition",
-		  TypedWritableReferenceCount::get_class_type());
+                  TypedWritableReferenceCount::get_class_type());
   }
 
 private:

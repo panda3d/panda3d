@@ -16,7 +16,7 @@
 class EXPCL_PANDA GeomSprite : public Geom {
 public:
   GeomSprite(Texture *tex = (Texture *) NULL,
-	     bool alpha_disable = false);
+             bool alpha_disable = false);
 
   virtual Geom *make_copy() const;
   virtual void print_draw_immediate() const;
@@ -81,7 +81,7 @@ public:
   static void init_type() {
     Geom::init_type();
     register_type(_type_handle, "GeomSprite",
-		  Geom::get_class_type());
+                  Geom::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

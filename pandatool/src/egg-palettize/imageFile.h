@@ -18,7 +18,7 @@ class EggTexture;
 class PaletteGroup;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ImageFile
+//       Class : ImageFile
 // Description : This is the base class of both TextureImage and
 //               PaletteImage.  It encapsulates all the information
 //               specific to an image file that can be assigned as a
@@ -75,7 +75,7 @@ public:
   static void init_type() {
     TypedWritable::init_type();
     register_type(_type_handle, "ImageFile",
-		  TypedWritable::get_class_type());
+                  TypedWritable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

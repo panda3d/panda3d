@@ -37,7 +37,7 @@ BaseIntegrator::
 ////////////////////////////////////////////////////////////////////
 void BaseIntegrator::
 precompute_linear_matrices(Physical *physical, 
-			   const vector< PT(LinearForce) > &forces) {
+                           const vector< PT(LinearForce) > &forces) {
   // make sure the physical's in the scene graph, somewhere.
   PhysicalNode *physical_node = physical->get_physical_node();
   nassertv(physical_node != NULL);
@@ -88,7 +88,7 @@ precompute_linear_matrices(Physical *physical,
 ////////////////////////////////////////////////////////////////////
 void BaseIntegrator::
 precompute_angular_matrices(Physical *physical, 
-			    const vector< PT(AngularForce) > &forces) {
+                            const vector< PT(AngularForce) > &forces) {
   // make sure the physical's in the scene graph, somewhere.
   PhysicalNode *physical_node = physical->get_physical_node();
   nassertv(physical_node != NULL);

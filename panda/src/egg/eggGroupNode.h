@@ -24,7 +24,7 @@ class EggVertex;
 class DSearchPath;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggGroupNode
+//       Class : EggGroupNode
 // Description : A base class for nodes in the hierarchy that are not
 //               leaf nodes.  (See also EggGroup, which is
 //               specifically the "<Group>" node in egg.)
@@ -112,7 +112,7 @@ protected:
   virtual void update_under(int depth_offset);
 
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
-			   CoordinateSystem to_cs);
+                           CoordinateSystem to_cs);
   virtual void r_transform_vertices(const LMatrix4d &mat);
   virtual void r_mark_coordsys(CoordinateSystem cs);
   virtual void r_flatten_transforms();
@@ -123,7 +123,7 @@ protected:
   int find_textures(EggTextureCollection *collection);
   int find_materials(EggMaterialCollection *collection);
   bool r_resolve_externals(const DSearchPath &searchpath,
-			   CoordinateSystem coordsys);
+                           CoordinateSystem coordsys);
 
 private:
   Children _children;
@@ -145,7 +145,7 @@ private:
   typedef map<Vertexd, NVertexGroup> NVertexCollection;
 
   void r_collect_vertex_normals(NVertexCollection &collection,
-				double threshold, CoordinateSystem cs);
+                                double threshold, CoordinateSystem cs);
   void do_compute_vertex_normals(const NVertexGroup &group);
 
 public:

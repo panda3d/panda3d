@@ -134,9 +134,9 @@ int main(int argc, char *argv[]) {
       LMatrix4f mat;
       compose_matrix(mat, scale, hpr, xyz);
       if (decompose_matrix(mat, scale, hpr, xyz)) {
-	nout << "> hpr = " << hpr << " xyz = " << xyz << "\n";
+        nout << "> hpr = " << hpr << " xyz = " << xyz << "\n";
       } else {
-	nout << "Cannot decompose\n";
+        nout << "Cannot decompose\n";
       }
     }
   }

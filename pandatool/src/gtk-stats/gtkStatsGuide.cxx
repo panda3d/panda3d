@@ -68,7 +68,7 @@ expose_event_impl(GdkEventExpose *event) {
     if (y >= 5) {
       // Only draw it if it's not too close to the top.
       window.draw_string(font, fg_gc, 0, y + text_ascent / 2,
-			 bar._label);
+                         bar._label);
     }
   }
 

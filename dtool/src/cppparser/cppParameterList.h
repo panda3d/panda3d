@@ -16,7 +16,7 @@ class CPPInstance;
 class CPPScope;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPParameterList
+//       Class : CPPParameterList
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPParameterList {
@@ -33,11 +33,11 @@ public:
 
   bool is_fully_specified() const;
   CPPParameterList *substitute_decl(CPPDeclaration::SubstDecl &subst,
-				    CPPScope *current_scope,
-				    CPPScope *global_scope);
+                                    CPPScope *current_scope,
+                                    CPPScope *global_scope);
 
   CPPParameterList *resolve_type(CPPScope *current_scope,
-				 CPPScope *global_scope);
+                                 CPPScope *global_scope);
 
   // This vector contains a list of formal parameters, in order.  A
   // parameter may have an empty identifer name.
@@ -46,7 +46,7 @@ public:
   bool _includes_ellipsis;
 
   void output(ostream &out, CPPScope *scope, bool parameter_names,
-	      int num_default_parameters = -1) const;
+              int num_default_parameters = -1) const;
 };
 
 inline ostream &

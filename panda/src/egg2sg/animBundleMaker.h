@@ -24,7 +24,7 @@ class AnimChannelScalarTable;
 class AnimChannelMatrixXfmTable;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : AnimBundleMaker
+//       Class : AnimBundleMaker
 // Description : Converts an EggTable hierarchy, beginning with a
 //               <Bundle> entry, into an AnimBundle hierarchy.
 ////////////////////////////////////////////////////////////////////
@@ -42,13 +42,13 @@ private:
 
   AnimChannelScalarTable *
   create_s_channel(EggSAnimData *egg_anim, const string &name,
-		   AnimGroup *parent);
+                   AnimGroup *parent);
   AnimChannelMatrixXfmTable *
   create_xfm_channel(EggNode *egg_node, const string &name,
-		     AnimGroup *parent);
+                     AnimGroup *parent);
   AnimChannelMatrixXfmTable *
   create_xfm_channel(EggXfmSAnim *egg_anim, const string &name,
-		     AnimGroup *parent);
+                     AnimGroup *parent);
 
   float _fps;
   int _num_frames;

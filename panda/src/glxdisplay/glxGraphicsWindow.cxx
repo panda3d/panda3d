@@ -40,7 +40,7 @@ const char* glxGraphicsWindow::_glx_extensions = NULL;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 glxGraphicsWindow::glxGraphicsWindow( GraphicsPipe* pipe ) : 
-	GraphicsWindow( pipe )
+        GraphicsWindow( pipe )
 {
   config();
 }
@@ -51,7 +51,7 @@ glxGraphicsWindow::glxGraphicsWindow( GraphicsPipe* pipe ) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 glxGraphicsWindow::glxGraphicsWindow( GraphicsPipe* pipe, const 
-	GraphicsWindow::Properties& props ) : GraphicsWindow( pipe, props )
+        GraphicsWindow::Properties& props ) : GraphicsWindow( pipe, props )
 {
   config();
 }
@@ -96,7 +96,7 @@ bool glxGraphicsWindow::glx_supports(const char* extension)
   if ((major == 1 && minor >= 1) || (major > 1)) {
     if (!_glx_extensions) {
       _glx_extensions = 
-	glXQueryExtensionsString(_display, glx->get_screen());
+        glXQueryExtensionsString(_display, glx->get_screen());
     }
     start = _glx_extensions;
     for (;;) {
@@ -105,10 +105,10 @@ bool glxGraphicsWindow::glx_supports(const char* extension)
         return false;
       terminator = where + strlen(extension);
       if (where == start || *(where - 1) == ' ') {
-	if (*terminator == ' ' || *terminator == '\0') {
-	  return true;
-	}
-      }	
+        if (*terminator == ' ' || *terminator == '\0') {
+          return true;
+        }
+      }
       start = terminator;
     }
   }
@@ -127,7 +127,7 @@ bool glxGraphicsWindow::glx_supports(const char* extension)
 ////////////////////////////////////////////////////////////////////
 static XVisualInfo *
 try_for_visual(glxDisplay *glx, int mask,
-	       int want_depth_bits = 1, int want_color_bits = 1) {
+               int want_depth_bits = 1, int want_color_bits = 1) {
   static const int max_attrib_list = 32;
   int attrib_list[max_attrib_list];
   int n=0;
@@ -232,8 +232,8 @@ void glxGraphicsWindow::choose_visual(void)
   if (mask & W_MULTISAMPLE) {
     if (!glx_supports("GLX_SGIS_multisample")) {
       glxdisplay_cat.info()
-	<< "glxGraphicsWindow::config() - multisample not supported"
-	<< endl;
+        << "glxGraphicsWindow::config() - multisample not supported"
+        << endl;
       mask &= ~W_MULTISAMPLE;
     }
   }
@@ -280,32 +280,32 @@ void glxGraphicsWindow::choose_visual(void)
       // the requested mask, in order.
       
       static const int strip_properties[] = { 
-	// One esoteric option removed.
-	W_MULTISAMPLE,
-	W_STENCIL,
-	W_ACCUM,
-	W_ALPHA,
-	W_STEREO,
-	
-	// Two esoteric options removed.
-	W_STENCIL | W_MULTISAMPLE,
-	W_ACCUM | W_MULTISAMPLE,
-	W_ALPHA | W_MULTISAMPLE,
-	W_STEREO | W_MULTISAMPLE,
-	W_STENCIL | W_ACCUM,
-	W_ALPHA | W_STEREO,
-	W_STENCIL | W_ACCUM | W_MULTISAMPLE,
-	W_ALPHA | W_STEREO | W_MULTISAMPLE,
-	
-	// All esoteric options removed.
-	W_STENCIL | W_ACCUM | W_ALPHA | W_STEREO | W_MULTISAMPLE,
+        // One esoteric option removed.
+        W_MULTISAMPLE,
+        W_STENCIL,
+        W_ACCUM,
+        W_ALPHA,
+        W_STEREO,
 
-	// All esoteric options, plus some we'd really really prefer,
-	// removed.
-	W_STENCIL | W_ACCUM | W_ALPHA | W_STEREO | W_MULTISAMPLE | W_DOUBLE,
-	
-	// A zero marks the end of the array.
-	0
+        // Two esoteric options removed.
+        W_STENCIL | W_MULTISAMPLE,
+        W_ACCUM | W_MULTISAMPLE,
+        W_ALPHA | W_MULTISAMPLE,
+        W_STEREO | W_MULTISAMPLE,
+        W_STENCIL | W_ACCUM,
+        W_ALPHA | W_STEREO,
+        W_STENCIL | W_ACCUM | W_MULTISAMPLE,
+        W_ALPHA | W_STEREO | W_MULTISAMPLE,
+
+        // All esoteric options removed.
+        W_STENCIL | W_ACCUM | W_ALPHA | W_STEREO | W_MULTISAMPLE,
+
+        // All esoteric options, plus some we'd really really prefer,
+        // removed.
+        W_STENCIL | W_ACCUM | W_ALPHA | W_STEREO | W_MULTISAMPLE | W_DOUBLE,
+
+        // A zero marks the end of the array.
+        0
       };
 
       set<int> tried_masks;
@@ -313,40 +313,40 @@ void glxGraphicsWindow::choose_visual(void)
 
       int i;
       for (i = 0; _visual == NULL && strip_properties[i] != 0; i++) {
-	int new_mask = mask & ~strip_properties[i];
-	if (tried_masks.insert(new_mask).second) {
-	  _visual = try_for_visual(glx, new_mask, want_depth_bits,
-				   want_color_bits);
-	}
+        int new_mask = mask & ~strip_properties[i];
+        if (tried_masks.insert(new_mask).second) {
+          _visual = try_for_visual(glx, new_mask, want_depth_bits,
+                                   want_color_bits);
+        }
       }
 
       if (special_size_request) {
-	tried_masks.clear();
-	tried_masks.insert(mask);
-	
-	if (_visual == NULL) {
-	  // Try once more, this time eliminating all of the size
-	  // requests.
-	  for (i = 0; _visual == NULL && strip_properties[i] != 0; i++) {
-	    int new_mask = mask & ~strip_properties[i];
-	    if (tried_masks.insert(new_mask).second) {
-	      _visual = try_for_visual(glx, new_mask);
-	    }
-	  }
-	}
+        tried_masks.clear();
+        tried_masks.insert(mask);
+
+        if (_visual == NULL) {
+          // Try once more, this time eliminating all of the size
+          // requests.
+          for (i = 0; _visual == NULL && strip_properties[i] != 0; i++) {
+            int new_mask = mask & ~strip_properties[i];
+            if (tried_masks.insert(new_mask).second) {
+              _visual = try_for_visual(glx, new_mask);
+            }
+          }
+        }
       }
-	
+
       if (_visual == NULL) {
-	// Here's our last-ditch desparation attempt: give us any GLX
-	// visual at all!
-	_visual = try_for_visual(glx, 0);
+        // Here's our last-ditch desparation attempt: give us any GLX
+        // visual at all!
+        _visual = try_for_visual(glx, 0);
       }
-	
+
       if (_visual == NULL) {
-	glxdisplay_cat.fatal()
-	  << "glxGraphicsWindow::choose_visual() - could not get any "
-	  "GLX visual." << endl;
-	exit(1);
+        glxdisplay_cat.fatal()
+          << "glxGraphicsWindow::choose_visual() - could not get any "
+          "GLX visual." << endl;
+        exit(1);
       }
     }
   }
@@ -421,8 +421,8 @@ void glxGraphicsWindow::config( void )
   wa.do_not_propagate_mask = 0;
 
   _xwindow = XCreateWindow(_display, glx->get_root(),
-	_props._xorg, _props._yorg, _props._xsize, _props._ysize, 0,
-	_visual->depth, InputOutput, _visual->visual, attrib_mask, &wa); 
+        _props._xorg, _props._yorg, _props._xsize, _props._ysize, 0,
+        _visual->depth, InputOutput, _visual->visual, attrib_mask, &wa); 
   if (!_xwindow) {
     glxdisplay_cat.fatal()
       << "glxGraphicsWindow::config() - failed to create Xwindow" << endl;
@@ -517,30 +517,30 @@ void glxGraphicsWindow::setup_colormap(void)
       rc = glXGetConfig(_display, _visual, GLX_RGBA, &is_rgb);
       if (rc == 0 && is_rgb) {
         glxdisplay_cat.info()
-	  << "glxGraphicsWindow::setup_colormap() - mesa pseudocolor "
-	  << "not supported" << endl;
-	// this is a terrible terrible hack, that seems to work
+          << "glxGraphicsWindow::setup_colormap() - mesa pseudocolor "
+          << "not supported" << endl;
+        // this is a terrible terrible hack, that seems to work
         _colormap = (Colormap)0;
       } else {
         _colormap = XCreateColormap(_display, glx->get_root(),
-	  _visual->visual, AllocAll);	
+          _visual->visual, AllocAll);
       }
       break;
     case TrueColor:
     case DirectColor:
       _colormap = XCreateColormap(_display, glx->get_root(),
-	_visual->visual, AllocNone); 
+        _visual->visual, AllocNone); 
       break;
     case StaticColor:
     case StaticGray:
     case GrayScale:
       _colormap = XCreateColormap(_display, glx->get_root(),
-	_visual->visual, AllocNone); 
+        _visual->visual, AllocNone); 
       break;
     default:
       glxdisplay_cat.error()
-	<< "glxGraphicsWindow::setup_colormap() - could not allocate a "
-	<< "colormap for visual type: " << visual_class << endl;
+        << "glxGraphicsWindow::setup_colormap() - could not allocate a "
+        << "colormap for visual type: " << visual_class << endl;
       break;
   }
 }
@@ -558,8 +558,8 @@ void glxGraphicsWindow::setup_properties(void)
     char *name = (char *)_props._title.c_str();
     if (XStringListToTextProperty(&name, 1, &window_name) == 0) {
       glxdisplay_cat.error()
-	<< "glxGraphicsWindow::config() - failed to allocate window name "
-	<< "structure" << endl;
+        << "glxGraphicsWindow::config() - failed to allocate window name "
+        << "structure" << endl;
     }
   }
 
@@ -640,8 +640,8 @@ void glxGraphicsWindow::end_frame( void )
     glLoadMatrixf(LMatrix4f::ident_mat().get_data());
 
     glOrtho(_props._xorg,_props._xorg+_props._xsize,
-	    _props._yorg,_props._yorg+_props._ysize,-1.0,1.0);
-					
+            _props._yorg,_props._yorg+_props._ysize,-1.0,1.0);
+
     // these seem to be good for default font
     glRasterPos2f(_props._xsize-75,_props._ysize-20);
 
@@ -1072,7 +1072,7 @@ void glxGraphicsWindow::process_event(XEvent event)
     break;
   case ConfigureNotify:
     if (_props._xsize != event.xconfigure.width ||
-	_props._ysize != event.xconfigure.height) {
+        _props._ysize != event.xconfigure.height) {
       _props._xsize = event.xconfigure.width;
       _props._ysize = event.xconfigure.height;
       make_current();
@@ -1089,23 +1089,23 @@ void glxGraphicsWindow::process_event(XEvent event)
   case ButtonPress:
     make_current();
     handle_keypress(MouseButton::button(event.xbutton.button - 1),
-		    event.xkey.x, event.xkey.y);
+                    event.xkey.x, event.xkey.y);
     break;
 
   case ButtonRelease:
     make_current();
     handle_keyrelease(MouseButton::button(event.xbutton.button - 1),
-		      event.xkey.x, event.xkey.y);
+                      event.xkey.x, event.xkey.y);
     break;
 
   case MotionNotify:
     if (_mouse_motion_enabled && event.xmotion.state &
-	(Button1Mask | Button2Mask | Button3Mask)) {
+        (Button1Mask | Button2Mask | Button3Mask)) {
       make_current();
       handle_mouse_motion(event.xmotion.x, event.xmotion.y);
     } else if (_mouse_passive_motion_enabled &&
-	       ((event.xmotion.state &
-		 (Button1Mask | Button2Mask | Button3Mask)) == 0)) {
+               ((event.xmotion.state &
+                 (Button1Mask | Button2Mask | Button3Mask)) == 0)) {
       make_current();
       handle_mouse_motion(event.xmotion.x, event.xmotion.y);
     }
@@ -1125,21 +1125,21 @@ void glxGraphicsWindow::process_event(XEvent event)
   case LeaveNotify:
     if (_mouse_entry_enabled) {
       if (event.type == EnterNotify) {
-	// Overlays can generate multiple enter events
-	if (_entry_state != EnterNotify) {
-	  _entry_state = EnterNotify;
-	  make_current();
-	  handle_mouse_entry(MOUSE_ENTERED);
-	  if (_mouse_passive_motion_enabled) {
-	    handle_mouse_motion(event.xcrossing.x, event.xcrossing.y);
-	  }
-	}
+        // Overlays can generate multiple enter events
+        if (_entry_state != EnterNotify) {
+          _entry_state = EnterNotify;
+          make_current();
+          handle_mouse_entry(MOUSE_ENTERED);
+          if (_mouse_passive_motion_enabled) {
+            handle_mouse_motion(event.xcrossing.x, event.xcrossing.y);
+          }
+        }
       } else { // event.type == LeaveNotify
-	if (_entry_state != LeaveNotify) {
-	  _entry_state = LeaveNotify;
-	  make_current();
-	  handle_mouse_entry(MOUSE_EXITED);
-	}
+        if (_entry_state != LeaveNotify) {
+          _entry_state = LeaveNotify;
+          make_current();
+          handle_mouse_entry(MOUSE_EXITED);
+        }
       }
     } else if (_mouse_passive_motion_enabled) {
       make_current();
@@ -1179,61 +1179,61 @@ void glxGraphicsWindow::process_events(void)
     if (got_event) {
       switch (event.type) {
         case MappingNotify:
-	  XRefreshKeyboardMapping((XMappingEvent *) &event);
-	  break;
+          XRefreshKeyboardMapping((XMappingEvent *) &event);
+          break;
         case ConfigureNotify:
-	  if ((window = glx->find_window(event.xconfigure.window)) != NULL)
-	    window->process_event(event);
-	  break;
+          if ((window = glx->find_window(event.xconfigure.window)) != NULL)
+            window->process_event(event);
+          break;
         case Expose:
-	  XEvent ahead;
-	  while (XEventsQueued(_display, QueuedAfterReading) > 0) {
-	    XPeekEvent(_display, &ahead);
-	    if (ahead.type != Expose || 
-		ahead.xexpose.window != event.xexpose.window) {
-	      break;
-	    }
-	    XNextEvent(_display, &event);
-	  }
+          XEvent ahead;
+          while (XEventsQueued(_display, QueuedAfterReading) > 0) {
+            XPeekEvent(_display, &ahead);
+            if (ahead.type != Expose || 
+                ahead.xexpose.window != event.xexpose.window) {
+              break;
+            }
+            XNextEvent(_display, &event);
+          }
           break;
         case ButtonPress:
         case ButtonRelease:
-	  if ((window = glx->find_window(event.xbutton.window)) != NULL)
-	    window->process_event(event);
-	  break;
+          if ((window = glx->find_window(event.xbutton.window)) != NULL)
+            window->process_event(event);
+          break;
         case MotionNotify:
-	  if ((window = glx->find_window(event.xmotion.window)) != NULL)
-	    window->process_event(event);
+          if ((window = glx->find_window(event.xmotion.window)) != NULL)
+            window->process_event(event);
           break;
         case KeyPress:
         case KeyRelease:
-	  if ((window = glx->find_window(event.xmotion.window)) != NULL)
-	    window->process_event(event);
-	  break;
+          if ((window = glx->find_window(event.xmotion.window)) != NULL)
+            window->process_event(event);
+          break;
         case EnterNotify:
         case LeaveNotify:
-	  if (event.xcrossing.mode != NotifyNormal ||
-	      event.xcrossing.mode == NotifyNonlinearVirtual ||
-	      event.xcrossing.mode == NotifyVirtual) {
-	    // Ignore "virtual" window enter/leave events
-	    break;
-	  }
-  	  if ((window = glx->find_window(event.xcrossing.window)) != NULL)
-	    window->process_event(event);
-	  break;
+          if (event.xcrossing.mode != NotifyNormal ||
+              event.xcrossing.mode == NotifyNonlinearVirtual ||
+              event.xcrossing.mode == NotifyVirtual) {
+            // Ignore "virtual" window enter/leave events
+            break;
+          }
+          if ((window = glx->find_window(event.xcrossing.window)) != NULL)
+            window->process_event(event);
+          break;
         case UnmapNotify:
         case VisibilityNotify:
-	  break;
+          break;
         case ClientMessage:
-	  break;
+          break;
         case DestroyNotify:
         case CirculateNotify:
         case CreateNotify:
         case GravityNotify:
         case ReparentNotify:
-	  break;
+          break;
         default:
-	  break;
+          break;
       }
     }
   }
@@ -1431,7 +1431,7 @@ TypeHandle glxGraphicsWindow::get_class_type(void) {
 void glxGraphicsWindow::init_type(void) {
   GraphicsWindow::init_type();
   register_type(_type_handle, "glxGraphicsWindow",
-		GraphicsWindow::get_class_type());
+                GraphicsWindow::get_class_type());
 }
 
 TypeHandle glxGraphicsWindow::get_type(void) const {

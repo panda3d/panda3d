@@ -85,7 +85,7 @@ get_num_collectors() const {
 bool PStatClientData::
 has_collector(int index) const {
   return (index >= 0 && index < (int)_collectors.size() &&
-	  _collectors[index]._def != (PStatCollectorDef *)NULL);
+          _collectors[index]._def != (PStatCollectorDef *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -162,7 +162,7 @@ set_collector_has_level(int index, bool flag) {
 bool PStatClientData::
 get_collector_has_level(int index) const {
   return (index >= 0 && index < (int)_collectors.size() &&
-	  _collectors[index]._is_level);
+          _collectors[index]._is_level);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -187,7 +187,7 @@ get_num_threads() const {
 bool PStatClientData::
 has_thread(int index) const {
   return (index >= 0 && index < (int)_threads.size() &&
-	  !_threads[index]._name.empty());
+          !_threads[index]._name.empty());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -306,7 +306,7 @@ define_thread(int thread_index, const string &name) {
 ////////////////////////////////////////////////////////////////////
 void PStatClientData::
 record_new_frame(int thread_index, int frame_number,
-		 PStatFrameData *frame_data) {
+                 PStatFrameData *frame_data) {
   define_thread(thread_index);
   nassertv(thread_index >= 0 && thread_index < (int)_threads.size());
   _threads[thread_index]._data->record_new_frame(frame_number, frame_data);

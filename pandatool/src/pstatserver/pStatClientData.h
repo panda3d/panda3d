@@ -19,7 +19,7 @@
 class PStatReader;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PStatClientData
+//       Class : PStatClientData
 // Description : The data associated with a particular client, but not
 //               with any one particular frame or thread: the list of
 //               collectors and threads, for instance.
@@ -52,7 +52,7 @@ public:
   void define_thread(int thread_index, const string &name = string());
 
   void record_new_frame(int thread_index, int frame_number,
-			PStatFrameData *frame_data);
+                        PStatFrameData *frame_data);
 private:
   void slot_collector(int collector_index);
 

@@ -33,27 +33,27 @@ public:
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, QueuedReturn<ConnectionListenerData>);
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : QueuedConnectionListener
+//       Class : QueuedConnectionListener
 // Description : This flavor of ConnectionListener will queue up all
 //               of the TCP connections it established for later
 //               detection by the client code.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA QueuedConnectionListener : public ConnectionListener,
-				 public QueuedReturn<ConnectionListenerData> {
+                                 public QueuedReturn<ConnectionListenerData> {
 PUBLISHED:
   QueuedConnectionListener(ConnectionManager *manager, int num_threads);
   virtual ~QueuedConnectionListener();
 
   bool new_connection_available();
   bool get_new_connection(PT(Connection) &rendezvous,
-			  NetAddress &address,
-			  PT(Connection) &new_connection);
+                          NetAddress &address,
+                          PT(Connection) &new_connection);
   bool get_new_connection(PT(Connection) &new_connection);
  
 protected:
   virtual void connection_opened(const PT(Connection) &rendezvous,
-				 const NetAddress &address,
-				 const PT(Connection) &new_connection);
+                                 const NetAddress &address,
+                                 const PT(Connection) &new_connection);
 };
 
 #include "queuedConnectionListener.I"

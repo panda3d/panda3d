@@ -23,7 +23,7 @@ find_in_rollovers_map(const MouseWatcherRegion* rgn) {
 }
 
 inline void GetExtents(GuiLabel* x, GuiLabel* y, float& l, float& r, float& b,
-		       float& t) {
+                       float& t) {
   float l1, l2, r1, r2, b1, b2, t1, t2;
   x->get_extents(l1, r1, b1, t1);
   y->get_extents(l2, r2, b2, t2);
@@ -73,7 +73,7 @@ GuiRollover::GuiRollover(const string& name, GuiLabel* off, GuiLabel* on)
     _on_scale(on->get_scale()), _state(false) {
   GetExtents(off, on, _left, _right, _bottom, _top);
   _rgn = new MouseWatcherRegion("rollover-" + name, _left, _right, _bottom,
-				_top);
+                                _top);
   _rgn->set_suppress_below(false);
   rollovers[this->_rgn.p()] = this;
 }
@@ -107,7 +107,7 @@ void GuiRollover::manage(GuiManager* mgr, EventHandler& eh) {
     GuiBehavior::manage(mgr, eh);
   } else
     gui_cat->warning() << "tried to manage rollover (0x" << (void*)this
-		       << ") that is already managed" << endl;
+                       << ") that is already managed" << endl;
 }
 
 void GuiRollover::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
@@ -123,7 +123,7 @@ void GuiRollover::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
     GuiBehavior::manage(mgr, eh, n);
   } else
     gui_cat->warning() << "tried to manage rollover (0x" << (void*)this
-		       << ") that is already managed" << endl;
+                       << ") that is already managed" << endl;
 }
 
 void GuiRollover::unmanage(void) {

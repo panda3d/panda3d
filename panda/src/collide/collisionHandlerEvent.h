@@ -15,7 +15,7 @@
 #include <pointerTo.h>
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CollisionHandlerEvent
+//       Class : CollisionHandlerEvent
 // Description : A specialized kind of CollisionHandler that throws an
 //               event for each collision detected.  The event thrown
 //               may be based on the name of the moving object or the
@@ -55,7 +55,7 @@ private:
   public:
     INLINE bool 
     operator () (const PT(CollisionEntry) &a, 
-		 const PT(CollisionEntry) &b) const;
+                 const PT(CollisionEntry) &b) const;
     INLINE void operator = (const SortEntries &other);
   };
 
@@ -70,7 +70,7 @@ public:
   static void init_type() {
     CollisionHandler::init_type();
     register_type(_type_handle, "CollisionHandlerEvent",
-		  CollisionHandler::get_class_type());
+                  CollisionHandler::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

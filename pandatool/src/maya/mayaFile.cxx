@@ -101,7 +101,7 @@ traverse(EggData &data) {
     nout << "Traversing scene graph.\n";
   }
 
-  //	Scan the entire DAG and output the name and depth of each node
+  //    Scan the entire DAG and output the name and depth of each node
   while (!dag_iterator.isDone()) {
     MDagPath dag_path;
     status = dag_iterator.getPath(dag_path);
@@ -135,7 +135,7 @@ process_node(const MDagPath &dag_path, EggData &data) {
     nout << "." << flush;
   } else if (verbose >= 2) {
     nout << dag_node.name() << ": " << dag_node.typeName() << "\n"
-	 << "  dag_path: " << dag_path.fullPathName() << "\n";
+         << "  dag_path: " << dag_path.fullPathName() << "\n";
   }
 
   if (dag_path.hasFn(MFn::kCamera)) {
@@ -160,12 +160,12 @@ process_node(const MDagPath &dag_path, EggData &data) {
 
       MFnNurbsSurface surface(dag_path, &status);
       if (!status) {
-	if (verbose >= 2) {
-	  nout << "Error in node " << dag_path.fullPathName() << ":\n"
-	       << "  it appears to have a NURBS surface, but does not.\n";
-	}
+        if (verbose >= 2) {
+          nout << "Error in node " << dag_path.fullPathName() << ":\n"
+               << "  it appears to have a NURBS surface, but does not.\n";
+        }
       } else {
-	make_nurbs_surface(dag_path, surface, egg_group);
+        make_nurbs_surface(dag_path, surface, egg_group);
       }
     }
     
@@ -181,12 +181,12 @@ process_node(const MDagPath &dag_path, EggData &data) {
 
       MFnNurbsCurve curve(dag_path, &status);
       if (!status) {
-	if (verbose >= 2) {
-	  nout << "Error in node " << dag_path.fullPathName() << ":\n"
-	       << "  it appears to have a NURBS curve, but does not.\n";
-	}
+        if (verbose >= 2) {
+          nout << "Error in node " << dag_path.fullPathName() << ":\n"
+               << "  it appears to have a NURBS curve, but does not.\n";
+        }
       } else {
-	make_nurbs_curve(dag_path, curve, egg_group);
+        make_nurbs_curve(dag_path, curve, egg_group);
       }
     }
 
@@ -202,12 +202,12 @@ process_node(const MDagPath &dag_path, EggData &data) {
 
       MFnMesh mesh(dag_path, &status);
       if (!status) {
-	if (verbose >= 2) {
-	  nout << "Error in node " << dag_path.fullPathName() << ":\n"
-	       << "  it appears to have a polygon mesh, but does not.\n";
-	}
+        if (verbose >= 2) {
+          nout << "Error in node " << dag_path.fullPathName() << ":\n"
+               << "  it appears to have a polygon mesh, but does not.\n";
+        }
       } else {
-	make_polyset(dag_path, mesh, egg_group);
+        make_polyset(dag_path, mesh, egg_group);
       }
     }
     
@@ -242,24 +242,24 @@ get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
     return;
   }
 
-  MTransformationMatrix	matrix(transform.transformationMatrix());
+  MTransformationMatrix matrix(transform.transformationMatrix());
 
   if (verbose >= 3) {
     nout << "  translation: " << matrix.translation(MSpace::kWorld)
-	 << "\n";
+         << "\n";
     double d[3];
     MTransformationMatrix::RotationOrder rOrder;
     
     matrix.getRotation(d, rOrder, MSpace::kWorld);
     nout << "  rotation: ["
-	 << d[0] << ", "
-	 << d[1] << ", "
-	 << d[2] << "]\n";
+         << d[0] << ", "
+         << d[1] << ", "
+         << d[2] << "]\n";
     matrix.getScale(d, MSpace::kWorld);
     nout << "  scale: ["
-	 << d[0] << ", "
-	 << d[1] << ", "
-	 << d[2] << "]\n";
+         << d[0] << ", "
+         << d[1] << ", "
+         << d[2] << "]\n";
   }
 
   MMatrix mat = matrix.asMatrix();
@@ -269,34 +269,34 @@ get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
   if (!mat.isEquivalent(ident_mat, 0.0001)) {
     egg_group->set_transform
       (LMatrix4d(mat[0][0], mat[0][1], mat[0][2], mat[0][3],
-		 mat[1][0], mat[1][1], mat[1][2], mat[1][3],
-		 mat[2][0], mat[2][1], mat[2][2], mat[2][3],
-		 mat[3][0], mat[3][1], mat[3][2], mat[3][3]));
+                 mat[1][0], mat[1][1], mat[1][2], mat[1][3],
+                 mat[2][0], mat[2][1], mat[2][2], mat[2][3],
+                 mat[3][0], mat[3][1], mat[3][2], mat[3][3]));
   }
 }
 
 void MayaFile::
 make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface surface,
-		   EggGroup *egg_group) {
+                   EggGroup *egg_group) {
   MStatus status;
   string name = surface.name().asChar();
 
   if (verbose >= 3) {
     nout << "  numCVs: "
-	 << surface.numCVsInU()
-	 << " * "
-	 << surface.numCVsInV()
-	 << "\n";
+         << surface.numCVsInU()
+         << " * "
+         << surface.numCVsInV()
+         << "\n";
     nout << "  numKnots: "
-	 << surface.numKnotsInU()
-	 << " * "
-	 << surface.numKnotsInV()
-	 << "\n";
+         << surface.numKnotsInU()
+         << " * "
+         << surface.numKnotsInV()
+         << "\n";
     nout << "  numSpans: "
-	 << surface.numSpansInU()
-	 << " * "
-	 << surface.numSpansInV()
-	 << "\n";
+         << surface.numSpansInU()
+         << " * "
+         << surface.numSpansInV()
+         << "\n";
   }
 
   MayaShader *shader = _shaders.find_shader_for_node(surface.object());
@@ -374,7 +374,7 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface surface,
 
   EggNurbsSurface *egg_nurbs = new EggNurbsSurface(name);
   egg_nurbs->setup(u_degree + 1, v_degree + 1,
-		   u_knots + 2, v_knots + 2);
+                   u_knots + 2, v_knots + 2);
   
   int i;
 
@@ -418,45 +418,45 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface surface,
       EggNurbsSurface::Loop &egg_loop = egg_trim.back();
 
       MFnNurbsSurface::BoundaryType type = 
-	surface.boundaryType(ti, li, &status);
+        surface.boundaryType(ti, li, &status);
       bool keep_loop = false;
 
       if (!status) {
-	status.perror("MFnNurbsSurface::BoundaryType");
+        status.perror("MFnNurbsSurface::BoundaryType");
       } else {
-	keep_loop = (type == MFnNurbsSurface::kInner ||
-		     type == MFnNurbsSurface::kOuter);
+        keep_loop = (type == MFnNurbsSurface::kInner ||
+                     type == MFnNurbsSurface::kOuter);
       }
 
       if (keep_loop) {
-	unsigned num_edges = surface.numEdges(ti, li);
-	for (unsigned ei = 0; ei < num_edges; ei++) {
-	  MObjectArray edge = surface.edge(ti, li, ei, true, &status);
-	  if (!status) {
-	    status.perror("MFnNurbsSurface::edge");
-	  } else {
-	    unsigned num_segs = edge.length();
-	    for (unsigned si = 0; si < num_segs; si++) {
-	      MObject segment = edge[si];
-	      if (segment.hasFn(MFn::kNurbsCurve)) {
-		MFnNurbsCurve curve(segment, &status);
-		if (!status) {
-		  nout << "Trim curve appears to be a nurbs curve, but isn't.\n";
-		} else {
-		  // Finally, we have a valid curve!
-		  EggNurbsCurve *egg_curve = 
-		    make_trim_curve(curve, name, egg_group, trim_curve_index);
-		  trim_curve_index++;
-		  if (egg_curve != (EggNurbsCurve *)NULL) {
-		    egg_loop.push_back(egg_curve);
-		  }
-		}
-	      } else {
-		nout << "Trim curve segment is not a nurbs curve.\n";
-	      }
-	    }
-	  }
-	}
+        unsigned num_edges = surface.numEdges(ti, li);
+        for (unsigned ei = 0; ei < num_edges; ei++) {
+          MObjectArray edge = surface.edge(ti, li, ei, true, &status);
+          if (!status) {
+            status.perror("MFnNurbsSurface::edge");
+          } else {
+            unsigned num_segs = edge.length();
+            for (unsigned si = 0; si < num_segs; si++) {
+              MObject segment = edge[si];
+              if (segment.hasFn(MFn::kNurbsCurve)) {
+                MFnNurbsCurve curve(segment, &status);
+                if (!status) {
+                  nout << "Trim curve appears to be a nurbs curve, but isn't.\n";
+                } else {
+                  // Finally, we have a valid curve!
+                  EggNurbsCurve *egg_curve = 
+                    make_trim_curve(curve, name, egg_group, trim_curve_index);
+                  trim_curve_index++;
+                  if (egg_curve != (EggNurbsCurve *)NULL) {
+                    egg_loop.push_back(egg_curve);
+                  }
+                }
+              } else {
+                nout << "Trim curve segment is not a nurbs curve.\n";
+              }
+            }
+          }
+        }
       }
     }
   }
@@ -472,18 +472,18 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface surface,
 
 EggNurbsCurve *MayaFile::
 make_trim_curve(MFnNurbsCurve curve, const string &nurbs_name, 
-		EggGroupNode *egg_group, int trim_curve_index) {
+                EggGroupNode *egg_group, int trim_curve_index) {
   if (verbose >= 3) {
     nout << "Trim curve:\n";
     nout << "  numCVs: "
-	 << curve.numCVs()
-	 << "\n";
+         << curve.numCVs()
+         << "\n";
     nout << "  numKnots: "
-	 << curve.numKnots()
-	 << "\n";
+         << curve.numKnots()
+         << "\n";
     nout << "  numSpans: "
-	 << curve.numSpans()
-	 << "\n";
+         << curve.numSpans()
+         << "\n";
   }
 
   MStatus status;
@@ -546,20 +546,20 @@ make_trim_curve(MFnNurbsCurve curve, const string &nurbs_name,
 
 void MayaFile::
 make_nurbs_curve(const MDagPath &, MFnNurbsCurve curve,
-		 EggGroup *egg_group) {
+                 EggGroup *egg_group) {
   MStatus status;
   string name = curve.name().asChar();
 
   if (verbose >= 3) {
     nout << "  numCVs: "
-	 << curve.numCVs()
-	 << "\n";
+         << curve.numCVs()
+         << "\n";
     nout << "  numKnots: "
-	 << curve.numKnots()
-	 << "\n";
+         << curve.numKnots()
+         << "\n";
     nout << "  numSpans: "
-	 << curve.numSpans()
-	 << "\n";
+         << curve.numSpans()
+         << "\n";
   }
 
   MPointArray cv_array;
@@ -619,17 +619,17 @@ make_nurbs_curve(const MDagPath &, MFnNurbsCurve curve,
 
 void MayaFile::
 make_polyset(const MDagPath &dag_path, MFnMesh mesh,
-	     EggGroup *egg_group, MayaShader *default_shader) {
+             EggGroup *egg_group, MayaShader *default_shader) {
   MStatus status;
   string name = mesh.name().asChar();
 
   if (verbose >= 3) {
     nout << "  numPolygons: "
-	 << mesh.numPolygons()
-	 << "\n";
+         << mesh.numPolygons()
+         << "\n";
     nout << "  numVertices: "
-	 << mesh.numVertices()
-	 << "\n";
+         << mesh.numVertices()
+         << "\n";
   }
 
   if (mesh.numPolygons() == 0) {
@@ -662,7 +662,7 @@ make_polyset(const MDagPath &dag_path, MFnMesh mesh,
   MIntArray poly_shader_indices;
 
   status = mesh.getConnectedShaders(dag_path.instanceNumber(),
-				    shaders, poly_shader_indices);
+                                    shaders, poly_shader_indices);
   if (!status) {
     status.perror("MFnMesh::getConnectedShaders");
   }
@@ -681,29 +681,29 @@ make_polyset(const MDagPath &dag_path, MFnMesh mesh,
       MVector n;
       status = pi.getNormal(i, n, MSpace::kWorld);
       if (!status) {
-	status.perror("MItMeshPolygon::getNormal");
+        status.perror("MItMeshPolygon::getNormal");
       } else {
-	vert.set_normal(LVector3d(n[0], n[1], n[2]));
+        vert.set_normal(LVector3d(n[0], n[1], n[2]));
       }
 
       if (pi.hasUVs()) {
-	float2 uvs;
-	status = pi.getUV(i, uvs);
-	if (!status) {
-	  status.perror("MItMeshPolygon::getUV");
-	} else {
-	  vert.set_uv(TexCoordd(uvs[0], uvs[1]));
-	}
+        float2 uvs;
+        status = pi.getUV(i, uvs);
+        if (!status) {
+          status.perror("MItMeshPolygon::getUV");
+        } else {
+          vert.set_uv(TexCoordd(uvs[0], uvs[1]));
+        }
       }
 
       if (pi.hasColor()) {
-	MColor c;
-	status = pi.getColor(c, i);
-	if (!status) {
-	  status.perror("MItMeshPolygon::getColor");
-	} else {
-	  vert.set_color(Colorf(c.r, c.g, c.b, 1.0));
-	}
+        MColor c;
+        status = pi.getColor(c, i);
+        if (!status) {
+          status.perror("MItMeshPolygon::getColor");
+        } else {
+          vert.set_color(Colorf(c.r, c.g, c.b, 1.0));
+        }
       }
 
       egg_poly->add_vertex(vpool->create_unique_vertex(vert));
@@ -717,9 +717,9 @@ make_polyset(const MDagPath &dag_path, MFnMesh mesh,
       assert(shader_index >= 0 && shader_index < shaders.length());
       MObject engine = shaders[shader_index];
       MayaShader *shader = 
-	_shaders.find_shader_for_shading_engine(engine);
+        _shaders.find_shader_for_shading_engine(engine);
       if (shader != (MayaShader *)NULL) {
-	shader->set_attributes(*egg_poly, *this);
+        shader->set_attributes(*egg_poly, *this);
       }
 
     } else if (default_shader != (MayaShader *)NULL) {

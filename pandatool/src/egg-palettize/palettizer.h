@@ -23,7 +23,7 @@ class TextureImage;
 class TexturePlacement;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : Palettizer
+//       Class : Palettizer
 // Description : This is the main engine behind egg-palettize.  It
 //               contains all of the program parameters, from the
 //               command line or saved from a previous session, and
@@ -101,7 +101,7 @@ public:
 private:
   typedef vector<TexturePlacement *> Placements;
   void compute_statistics(ostream &out, int indent_level,
-			  const Placements &placements) const;
+                          const Placements &placements) const;
 
   typedef map<string, EggFile *> EggFiles;
   EggFiles _egg_files;
@@ -124,7 +124,7 @@ public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
 protected:
   static TypedWritable *make_Palettizer(const FactoryParams &params);
@@ -144,7 +144,7 @@ public:
   static void init_type() {
     TypedWritable::init_type();
     register_type(_type_handle, "Palettizer",
-		  TypedWritable::get_class_type());
+                  TypedWritable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

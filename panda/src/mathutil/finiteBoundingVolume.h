@@ -12,7 +12,7 @@
 
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : FiniteBoundingVolume
+//       Class : FiniteBoundingVolume
 // Description : A special kind of GeometricBoundingVolume that is
 //               known to be finite.  It is possible to query this
 //               kind of volume for its minimum and maximum extents.
@@ -30,7 +30,7 @@ public:
   static void init_type() {
     GeometricBoundingVolume::init_type();
     register_type(_type_handle, "FiniteBoundingVolume",
-		  GeometricBoundingVolume::get_class_type());
+                  GeometricBoundingVolume::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

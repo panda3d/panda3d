@@ -11,7 +11,7 @@
 #include "lwoChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurfaceBlockRefObj
+//       Class : LwoSurfaceBlockRefObj
 // Description : Specifies a reference object that the texture UV's
 //               are to be computed relative to.
 ////////////////////////////////////////////////////////////////////
@@ -34,7 +34,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoSurfaceBlockRefObj",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

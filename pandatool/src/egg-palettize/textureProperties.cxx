@@ -95,7 +95,7 @@ get_num_channels() const {
 bool TextureProperties::
 uses_alpha() const {
   return (_num_channels == 2 || _num_channels == 4 ||
-	  _format == EggTexture::F_alpha);
+          _format == EggTexture::F_alpha);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -330,11 +330,11 @@ operator < (const TextureProperties &other) const {
 bool TextureProperties::
 operator == (const TextureProperties &other) const {
   return (_format == other._format &&
-	  _minfilter == other._minfilter &&
-	  _magfilter == other._magfilter &&
-	  _color_type == other._color_type &&
-	  (_color_type == (PNMFileType *)NULL ||
-	   _alpha_type == other._alpha_type));
+          _minfilter == other._minfilter &&
+          _magfilter == other._magfilter &&
+          _color_type == other._color_type &&
+          (_color_type == (PNMFileType *)NULL ||
+           _alpha_type == other._alpha_type));
 }
 
 ////////////////////////////////////////////////////////////////////

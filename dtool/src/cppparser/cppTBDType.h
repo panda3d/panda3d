@@ -13,7 +13,7 @@
 class CPPIdentifier;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPTBDType
+//       Class : CPPTBDType
 // Description : This represents a type whose exact meaning is still
 //               to-be-determined.  It happens when a typename is
 //               referenced in a template class (especially using the
@@ -25,7 +25,7 @@ public:
   CPPTBDType(CPPIdentifier *ident);
 
   virtual CPPType *resolve_type(CPPScope *current_scope,
-				CPPScope *global_scope);
+                                CPPScope *global_scope);
 
   virtual bool is_tbd() const;
 
@@ -34,11 +34,11 @@ public:
   virtual string get_fully_scoped_name() const;
 
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
-					  CPPScope *current_scope,
-					  CPPScope *global_scope);
+                                          CPPScope *current_scope,
+                                          CPPScope *global_scope);
 
   virtual void output(ostream &out, int indent_level, CPPScope *scope,
-		      bool complete) const;
+                      bool complete) const;
   virtual SubType get_subtype() const;
 
   virtual CPPTBDType *as_tbd_type();

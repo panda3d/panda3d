@@ -13,7 +13,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoBoundingBox
+//       Class : LwoBoundingBox
 // Description : Stores the bounding box for the vertex data in a
 //               layer.  Optional.
 ////////////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoBoundingBox",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

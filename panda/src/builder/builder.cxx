@@ -134,14 +134,14 @@ build(const string &default_name) {
       // The node is not a GeomNode, so look it up in the map.
       GeomNodeMap::iterator f = geom_nodes.find(NodeMap(node, bucket));
       if (f != geom_nodes.end()) {
-	geom_node = (*f).second;
-	
+        geom_node = (*f).second;
+
       } else {
-	// No such node/name combination.  Create a new one.
-	geom_node = bucket->make_geom_node();
-	if (geom_node != NULL) {
-	  geom_nodes[NodeMap(node, bucket)] = geom_node;
-	}
+        // No such node/name combination.  Create a new one.
+        geom_node = bucket->make_geom_node();
+        if (geom_node != NULL) {
+          geom_nodes[NodeMap(node, bucket)] = geom_node;
+        }
       }
     }
 
@@ -171,10 +171,10 @@ build(const string &default_name) {
     // Assign the name to the geom, if it doesn't have one already.
     if (!geom_node->has_name()) {
       if (!name.empty()) {
-	geom_node->set_name(name);
-	
+        geom_node->set_name(name);
+
       } else if (!default_name.empty()) {
-	geom_node->set_name(default_name);
+        geom_node->set_name(default_name);
       }
     }
 
@@ -183,20 +183,20 @@ build(const string &default_name) {
       geom_node->get_num_parents(RenderRelation::get_class_type());
     if (num_parents == 0) {
       if (geom_node->get_num_geoms() == 0) {
-	// If there was nothing added, never mind.
-	delete geom_node;
-	
+        // If there was nothing added, never mind.
+        delete geom_node;
+
       } else if (node==NULL) {
-	nassertr(base_geom_node == NULL, NULL);
-	base_geom_node = geom_node;
-	
+        nassertr(base_geom_node == NULL, NULL);
+        base_geom_node = geom_node;
+
       } else {
-	RenderRelation *arc = new RenderRelation(node, geom_node);
-	// Now, this is our only opportunity to apply the scene-graph
-	// state specified in the bucket to the node: we have created
-	// our own geom_node for these buckets, and we have parented
-	// it to the scene graph.
-	arc->copy_transitions_from(trans);
+        RenderRelation *arc = new RenderRelation(node, geom_node);
+        // Now, this is our only opportunity to apply the scene-graph
+        // state specified in the bucket to the node: we have created
+        // our own geom_node for these buckets, and we have parented
+        // it to the scene graph.
+        arc->copy_transitions_from(trans);
       }
     }
   }

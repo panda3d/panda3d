@@ -77,9 +77,9 @@ reset(void) {
 //     Function: Multifile::Memfile::parse_header_length
 //       Access: Public
 //  Description: Fills up _datagram until it has sizeof(_header_length)
-//		 bytes and then extracts _header_length from _datagram.
-//		 Returns true when this has been accomplished.
-//		 Advances start to end of header_length.
+//               bytes and then extracts _header_length from _datagram.
+//               Returns true when this has been accomplished.
+//               Advances start to end of header_length.
 ////////////////////////////////////////////////////////////////////
 bool Multifile::Memfile::
 parse_header_length(char *&start, int &size) {
@@ -121,7 +121,7 @@ parse_header_length(char *&start, int &size) {
 //     Function: Multifile::Memfile::parse_header
 //       Access: Public
 //  Description: Returns true when a complete header has been parsed. 
-//		 Advances the start pointer to the end of the header.
+//               Advances the start pointer to the end of the header.
 ////////////////////////////////////////////////////////////////////
 bool Multifile::Memfile::
 parse_header(char *&start, int& size) {
@@ -152,7 +152,7 @@ parse_header(char *&start, int& size) {
     PN_int32 header_length = di.get_int32();
     nassertr(header_length == _header_length, false);
     _name = di.extract_bytes(_header_length - _header_length_buf_length -
-			     sizeof(_buffer_length));
+                             sizeof(_buffer_length));
     _buffer_length = di.get_int32();
     nassertr(_buffer_length >= 0, false);
 
@@ -191,7 +191,7 @@ read(const Filename &name) {
       << "Multifile::Memfile::read() - Reading file: " << name << endl;
 
   _header_length = name.length() + sizeof(_header_length) +
-	sizeof(_buffer_length);
+        sizeof(_buffer_length);
   _name = name;
 
   // Determine the length of the file  
@@ -298,8 +298,8 @@ write_to_multifile(ofstream &write_stream) {
 //     Function: Multifile::Memfile::write
 //       Access: Public
 //  Description: Returns true when the memfile has been parsed and
-//		 written to disk. 
-//		 Advances the start pointer as it writes.
+//               written to disk. 
+//               Advances the start pointer as it writes.
 ////////////////////////////////////////////////////////////////////
 int Multifile::Memfile::
 write(char *&start, int &size, const Filename &rel_path) {
@@ -380,7 +380,7 @@ Multifile::
 //     Function: Multifile::evaluate
 //       Access: Public
 //  Description: Checks for a valid compressed or uncompressed
-//		 Multifile.
+//               Multifile.
 ////////////////////////////////////////////////////////////////////
 int Multifile::
 evaluate(const char *start, int size) {
@@ -434,15 +434,15 @@ parse_header(char *&start, int &size) {
     PN_uint32 magic_number = di.get_uint32();
     if (magic_number != _magic_number) {
       express_cat.error()
-	<< "Multifile::parse_header() - Invalid magic number: " 
-	<< magic_number << " (" << _magic_number << ")" << endl;
+        << "Multifile::parse_header() - Invalid magic number: " 
+        << magic_number << " (" << _magic_number << ")" << endl;
       return EU_error_abort;
     }
     _num_mfiles = di.get_int32();
     if (_num_mfiles <= 0) {
       express_cat.debug()
-	<< "Multifile::parse_header() - No memfiles in multifile"
-	<< endl;
+        << "Multifile::parse_header() - No memfiles in multifile"
+        << endl;
       return EU_error_file_empty;
     }
 
@@ -588,8 +588,8 @@ write(Filename name) {
 //     Function: Multifile::write
 //       Access: Public
 //  Description: Returns true when all the memfiles have been 
-//		 written.
-//		 Advances the start pointer as it writes.
+//               written.
+//               Advances the start pointer as it writes.
 ////////////////////////////////////////////////////////////////////
 int Multifile::
 write(char *&start, int &size, const Filename &rel_path) {
@@ -612,8 +612,8 @@ write(char *&start, int &size, const Filename &rel_path) {
       _current_mfile = NULL;
     } else {
       if (write_ret < 0) {
-	express_cat.error()
-	  << "Multifile::write() - bad write: " << write_ret << endl;
+        express_cat.error()
+          << "Multifile::write() - bad write: " << write_ret << endl;
       }
       return write_ret;
     }
@@ -626,7 +626,7 @@ write(char *&start, int &size, const Filename &rel_path) {
 //     Function: Multifile::write_extract
 //       Access: Public
 //  Description: Returns true when entire Multifile has been 
-//		 extracted to disk files.
+//               extracted to disk files.
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
 write_extract(char *&start, int &size, const Filename &rel_path) {

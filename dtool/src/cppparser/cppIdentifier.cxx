@@ -151,7 +151,7 @@ get_local_name(CPPScope *scope) const {
     } else {
       result = my_scope->get_local_name(scope);
       if (!result.empty()) {
-	result += "::";
+        result += "::";
       }
       result += _names.back().get_name_with_templ(scope);
     }
@@ -223,7 +223,7 @@ is_tbd() const {
 ////////////////////////////////////////////////////////////////////
 CPPScope *CPPIdentifier::
 get_scope(CPPScope *current_scope, CPPScope *global_scope,
-	  CPPPreprocessor *error_sink) const {
+          CPPPreprocessor *error_sink) const {
   assert(!_names.empty());
 
   CPPScope *scope = _native_scope;
@@ -243,15 +243,15 @@ get_scope(CPPScope *current_scope, CPPScope *global_scope,
     CPPScope *next_scope = scope->find_scope(_names[i].get_name());
     if (next_scope == (CPPScope *)NULL) {
       if (error_sink != NULL) {
-	error_sink->error("Symbol " + _names[i].get_name() +
-			  " is not a known scope in " +
-			  scope->get_fully_scoped_name());
+        error_sink->error("Symbol " + _names[i].get_name() +
+                          " is not a known scope in " +
+                          scope->get_fully_scoped_name());
       }
       return (CPPScope *)NULL;
     }
     if (_names[i].has_templ()) {
       next_scope = next_scope->instantiate(_names[i].get_templ(),
-					   current_scope, global_scope);
+                                           current_scope, global_scope);
     }
     scope = next_scope;
     i++;
@@ -267,8 +267,8 @@ get_scope(CPPScope *current_scope, CPPScope *global_scope,
 ////////////////////////////////////////////////////////////////////
 CPPScope *CPPIdentifier::
 get_scope(CPPScope *current_scope, CPPScope *global_scope,
-	  CPPDeclaration::SubstDecl &subst,
-	  CPPPreprocessor *error_sink) const {
+          CPPDeclaration::SubstDecl &subst,
+          CPPPreprocessor *error_sink) const {
   assert(!_names.empty());
 
   CPPScope *scope = _native_scope;
@@ -286,18 +286,18 @@ get_scope(CPPScope *current_scope, CPPScope *global_scope,
 
   while (i + 1 < (int)_names.size() && scope != NULL) {
     CPPScope *next_scope = scope->find_scope(_names[i].get_name(), subst,
-					     global_scope);
+                                             global_scope);
     if (next_scope == (CPPScope *)NULL) {
       if (error_sink != NULL) {
-	error_sink->error("Symbol " + _names[i].get_name() +
-			  " is not a known scope in " +
-			  scope->get_fully_scoped_name());
+        error_sink->error("Symbol " + _names[i].get_name() +
+                          " is not a known scope in " +
+                          scope->get_fully_scoped_name());
       }
       return (CPPScope *)NULL;
     }
     if (_names[i].has_templ()) {
       next_scope = next_scope->instantiate(_names[i].get_templ(),
-					   current_scope, global_scope);
+                                           current_scope, global_scope);
     }
     scope = next_scope;
     i++;
@@ -321,8 +321,8 @@ get_scope(CPPScope *current_scope, CPPScope *global_scope,
 ////////////////////////////////////////////////////////////////////
 CPPType *CPPIdentifier::
 find_type(CPPScope *current_scope, CPPScope *global_scope,
-	  bool force_instantiate,
-	  CPPPreprocessor *error_sink) const {
+          bool force_instantiate,
+          CPPPreprocessor *error_sink) const {
   CPPScope *scope = get_scope(current_scope, global_scope, error_sink);
   if (scope == NULL) {
     return NULL;
@@ -338,18 +338,18 @@ find_type(CPPScope *current_scope, CPPScope *global_scope,
     /*
     if (type != NULL) {
       if (!type->is_incomplete() || force_instantiate) {
-	type = type->instantiate(_names.back().get_templ(),
-				 current_scope, global_scope, 
-				 error_sink)->as_type();
-	
-	// If we ended up with another template, instantiate later.
-	if (type->is_template() && !force_instantiate) {
-	  type = CPPType::new_type(new CPPTBDType((CPPIdentifier *)this));
-	}
-	
+        type = type->instantiate(_names.back().get_templ(),
+                                 current_scope, global_scope, 
+                                 error_sink)->as_type();
+
+        // If we ended up with another template, instantiate later.
+        if (type->is_template() && !force_instantiate) {
+          type = CPPType::new_type(new CPPTBDType((CPPIdentifier *)this));
+        }
+
       } else {
-	// Otherwise, we'll have to instantiate the type later.
-	type = CPPType::new_type(new CPPTBDType((CPPIdentifier *)this));
+        // Otherwise, we'll have to instantiate the type later.
+        type = CPPType::new_type(new CPPTBDType((CPPIdentifier *)this));
       }
       //    type->_file.replace_nearer(_file);
     }
@@ -367,8 +367,8 @@ find_type(CPPScope *current_scope, CPPScope *global_scope,
 ////////////////////////////////////////////////////////////////////
 CPPType *CPPIdentifier::
 find_type(CPPScope *current_scope, CPPScope *global_scope,
-	  CPPDeclaration::SubstDecl &subst,
-	  CPPPreprocessor *error_sink) const {
+          CPPDeclaration::SubstDecl &subst,
+          CPPPreprocessor *error_sink) const {
   CPPScope *scope = get_scope(current_scope, global_scope, subst, error_sink);
   if (scope == NULL) {
     return NULL;
@@ -381,17 +381,17 @@ find_type(CPPScope *current_scope, CPPScope *global_scope,
       // If our identifier fully specifies the instantiation, then
       // apply it.
       CPPDeclaration *decl = 
-	type->instantiate(_names.back().get_templ(),
-			  current_scope, global_scope, 
-			  error_sink);
+        type->instantiate(_names.back().get_templ(),
+                          current_scope, global_scope, 
+                          error_sink);
       assert(decl != NULL);
       CPPType *new_type = decl->as_type();
       assert(new_type != NULL);
-      if (new_type == type) {	
-	type = CPPType::new_type(new CPPTBDType((CPPIdentifier *)this));
-	//	type = new_type;
+      if (new_type == type) {
+        type = CPPType::new_type(new CPPTBDType((CPPIdentifier *)this));
+        //      type = new_type;
       } else {
-	type = new_type;
+        type = new_type;
       }
     } else {
       // Otherwise, we'll have to instantiate the type later.
@@ -410,7 +410,7 @@ find_type(CPPScope *current_scope, CPPScope *global_scope,
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPIdentifier::
 find_symbol(CPPScope *current_scope, CPPScope *global_scope,
-	    CPPPreprocessor *error_sink) const {
+            CPPPreprocessor *error_sink) const {
   CPPScope *scope = get_scope(current_scope, global_scope, error_sink);
   if (scope == NULL) {
     return NULL;
@@ -424,12 +424,12 @@ find_symbol(CPPScope *current_scope, CPPScope *global_scope,
     if (sym != NULL) {
       CPPType *type = sym->as_type();
       if (type != NULL && type->is_incomplete()) {
-	// We can't instantiate an incomplete type.
-	sym = CPPType::new_type(new CPPTBDType((CPPIdentifier *)this));
+        // We can't instantiate an incomplete type.
+        sym = CPPType::new_type(new CPPTBDType((CPPIdentifier *)this));
       } else {
-	// Instantiate the symbol.
-	sym = sym->instantiate(_names.back().get_templ(), current_scope, 
-			       global_scope, error_sink);
+        // Instantiate the symbol.
+        sym = sym->instantiate(_names.back().get_templ(), current_scope, 
+                               global_scope, error_sink);
       }
     }
   }
@@ -444,7 +444,7 @@ find_symbol(CPPScope *current_scope, CPPScope *global_scope,
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPIdentifier::
 find_template(CPPScope *current_scope, CPPScope *global_scope,
-	      CPPPreprocessor *error_sink) const {
+              CPPPreprocessor *error_sink) const {
   CPPScope *scope = get_scope(current_scope, global_scope, error_sink);
   if (scope == NULL) {
     return NULL;
@@ -459,7 +459,7 @@ find_template(CPPScope *current_scope, CPPScope *global_scope,
 ////////////////////////////////////////////////////////////////////
 CPPScope *CPPIdentifier::
 find_scope(CPPScope *current_scope, CPPScope *global_scope,
-	   CPPPreprocessor *error_sink) const {
+           CPPPreprocessor *error_sink) const {
   CPPScope *scope = get_scope(current_scope, global_scope, error_sink);
   if (scope == NULL) {
     return NULL;
@@ -475,16 +475,16 @@ find_scope(CPPScope *current_scope, CPPScope *global_scope,
 ////////////////////////////////////////////////////////////////////
 CPPIdentifier *CPPIdentifier::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
-		CPPScope *current_scope, CPPScope *global_scope) {
+                CPPScope *current_scope, CPPScope *global_scope) {
   CPPIdentifier *rep = new CPPIdentifier(*this);
 
   bool anything_changed = false;
   for (int i = 0; i < (int)rep->_names.size(); i++) {
     if (_names[i].has_templ()) {
       rep->_names[i].set_templ
-	(_names[i].get_templ()->substitute_decl(subst, current_scope, global_scope));
+        (_names[i].get_templ()->substitute_decl(subst, current_scope, global_scope));
       if (rep->_names[i].get_templ() != _names[i].get_templ()) {
-	anything_changed = true;
+        anything_changed = true;
       }
     }
   }

@@ -78,8 +78,8 @@ get_projection() {
 //     Function: ProjectionNode::is_in_view
 //       Access: Public
 //  Description: Returns true if the given point is within the bounds
-//		 of the projection of the ProjectionNode (i.e. if the
-//		 camera can see the point).
+//               of the projection of the ProjectionNode (i.e. if the
+//               camera can see the point).
 ////////////////////////////////////////////////////////////////////
 bool ProjectionNode::
 is_in_view(const LPoint3f &pos) {
@@ -100,7 +100,7 @@ is_in_view(const LPoint3f &pos) {
 ////////////////////////////////////////////////////////////////////
 void ProjectionNode::
 get_perspective_params(float &yfov, float &aspect, float &cnear, 
-		       float &cfar) const {
+                       float &cfar) const {
   if (_projection->get_type() == PerspectiveProjection::get_class_type()) {
     PerspectiveProjection *proj = DCAST(PerspectiveProjection, _projection);
     proj->get_frustum().get_perspective_params(yfov, aspect, cnear, cfar);
@@ -115,11 +115,11 @@ get_perspective_params(float &yfov, float &aspect, float &cnear,
 ////////////////////////////////////////////////////////////////////
 void ProjectionNode::
 get_perspective_params(float &xfov, float &yfov, float &aspect, float &cnear, 
-		       float &cfar) const {
+                       float &cfar) const {
   if (_projection->get_type() == PerspectiveProjection::get_class_type()) {
     PerspectiveProjection *proj = DCAST(PerspectiveProjection, _projection);
     proj->get_frustum().get_perspective_params(xfov, yfov, aspect, cnear,
-					       cfar);
+                                               cfar);
   }
 }
 

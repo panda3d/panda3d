@@ -13,7 +13,7 @@
 #include <onTransition.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : CullFaceTransition
+//       Class : CullFaceTransition
 // Description : This controls how polygons are culled according to
 //               the ordering of their vertices after projection (and,
 //               hence, according to their facing relative to the
@@ -58,7 +58,7 @@ public:
   static void init_type() {
     OnTransition::init_type();
     register_type(_type_handle, "CullFaceTransition",
-		  OnTransition::get_class_type());
+                  OnTransition::get_class_type());
   }
 
 private:

@@ -20,7 +20,7 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : CasterShader
 // Description : Frustum Shader that computes effect based on a list
-//		 of "casting" objects
+//               of "casting" objects
 ////////////////////////////////////////////////////////////////////
 class EXPCL_SHADER CasterShader : public FrustumShader
 {
@@ -40,7 +40,7 @@ class EXPCL_SHADER CasterShader : public FrustumShader
 
   protected:
 
-    NamedNodeVector			_casters;
+    NamedNodeVector                     _casters;
 
   public:
 

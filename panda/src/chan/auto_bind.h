@@ -25,7 +25,7 @@ BEGIN_PUBLISH
 ////////////////////////////////////////////////////////////////////
 EXPCL_PANDA void
 auto_bind(Node *root_node, AnimControlCollection &controls,
-	  int hierarchy_match_flags = 0);
+          int hierarchy_match_flags = 0);
 END_PUBLISH
 
 #endif

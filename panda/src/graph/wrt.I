@@ -13,9 +13,9 @@
 template<class InputIterator>
 void
 describe_ambiguous_wrt(const Node *node,
-		       InputIterator arc_list_begin, 
-		       InputIterator arc_list_end,
-		       TypeHandle graph_type) {
+                       InputIterator arc_list_begin, 
+                       InputIterator arc_list_end,
+                       TypeHandle graph_type) {
   if (wrt_cat.is_warning()) {
     const UpRelationPointers &urp = node->find_connection(graph_type).get_up();
     int num_parents = urp.size();
@@ -29,35 +29,35 @@ describe_ambiguous_wrt(const Node *node,
     for (int i = 1; i < num_parents; i++) {
       parent_arc = urp[i];
       wrt_cat.warning(false) 
-	<< ", " << *parent_arc->get_parent();
+        << ", " << *parent_arc->get_parent();
     }
     wrt_cat.warning(false) << "\n";
     
     // Show the chain of arcs specified.
     if (arc_list_begin == arc_list_end) {
       wrt_cat.warning(false)
-	<< "  no arcs specified.\n";
+        << "  no arcs specified.\n";
     } else {
       wrt_cat.warning(false)
-	<< "  arcs specified:\n";
+        << "  arcs specified:\n";
       InputIterator ri = arc_list_begin;
       wrt_cat.warning(false)
-	<< "    " << *(*ri)->get_parent() << "/"
-	<< *(*ri)->get_child();
+        << "    " << *(*ri)->get_parent() << "/"
+        << *(*ri)->get_child();
       
       InputIterator ri_last = ri;
       ++ri;
       while (ri != arc_list_end) {
-	if ((*ri)->get_parent() == (*ri_last)->get_child()) {
-	  wrt_cat.warning(false)
-	    << "/" << *(*ri)->get_child();
-	} else {
-	  wrt_cat.warning(false)
-	    << "\n    " << *(*ri)->get_parent() << "/"
-	    << *(*ri)->get_child();
-	}
-	ri_last = ri;
-	++ri;
+        if ((*ri)->get_parent() == (*ri_last)->get_child()) {
+          wrt_cat.warning(false)
+            << "/" << *(*ri)->get_child();
+        } else {
+          wrt_cat.warning(false)
+            << "\n    " << *(*ri)->get_parent() << "/"
+            << *(*ri)->get_child();
+        }
+        ri_last = ri;
+        ++ri;
       } 
       wrt_cat.warning(false) << "\n";
     }
@@ -95,8 +95,8 @@ describe_ambiguous_wrt(const Node *node,
 template<class TransitionWrapper>
 void
 get_cached_net_transition(NodeRelation *arc, Node *&root, 
-			  UpdateSeq as_of, UpdateSeq now,
-			  TransitionWrapper &net, TypeHandle graph_type) {
+                          UpdateSeq as_of, UpdateSeq now,
+                          TransitionWrapper &net, TypeHandle graph_type) {
   TransitionWrapper cur_cache = TransitionWrapper::init_from(net);
   Node *top_subtree = cur_cache.extract_from_cache(arc);
 
@@ -108,18 +108,18 @@ get_cached_net_transition(NodeRelation *arc, Node *&root,
 
     if (wrt_cat.is_debug()) {
       wrt_cat.debug()
-	<< "get_cached_net_transition(" << *arc->get_child() << ", ";
+        << "get_cached_net_transition(" << *arc->get_child() << ", ";
       if (root == (Node *)NULL) {
-	wrt_cat.debug(false) << "(top)";
+        wrt_cat.debug(false) << "(top)";
       } else {
-	wrt_cat.debug(false) << *root;
+        wrt_cat.debug(false) << *root;
       }
       wrt_cat.debug(false)
-	<< ") is current as of " << as_of << " (now is " 
-	<< now << ")\n";
+        << ") is current as of " << as_of << " (now is " 
+        << now << ")\n";
       if (wrt_cat.is_spam()) {
-	wrt_cat.spam() << "result of " << *arc << " is " << net << "\n";
-      }	
+        wrt_cat.spam() << "result of " << *arc << " is " << net << "\n";
+      }
     }
 
   } else {
@@ -140,11 +140,11 @@ get_cached_net_transition(NodeRelation *arc, Node *&root,
       // the caching.  Stop here.
 
       if (num_parents == 0) {
-	// The node is the very top of the scene graph.  We'll treat
-	// this as a special case by setting the node to NULL.  This
-	// will tell our calling function that there's no need to look
-	// further.
-	node = NULL;
+        // The node is the very top of the scene graph.  We'll treat
+        // this as a special case by setting the node to NULL.  This
+        // will tell our calling function that there's no need to look
+        // further.
+        node = NULL;
       }
 
       root = node;
@@ -168,18 +168,18 @@ get_cached_net_transition(NodeRelation *arc, Node *&root,
 
     if (wrt_cat.is_debug()) {
       wrt_cat.debug()
-	<< "get_cached_net_transition(" << *arc->get_child() << ", ";
+        << "get_cached_net_transition(" << *arc->get_child() << ", ";
       if (root == (Node *)NULL) {
-	wrt_cat.debug(false) << "(top)";
+        wrt_cat.debug(false) << "(top)";
       } else {
-	wrt_cat.debug(false) << *root;
+        wrt_cat.debug(false) << *root;
       }
       wrt_cat.debug(false)
-	<< ") is recomputed as of " << as_of << " (now is " 
-	<< now << ")\n";
+        << ") is recomputed as of " << as_of << " (now is " 
+        << now << ")\n";
       if (wrt_cat.is_spam()) {
-	wrt_cat.spam() << "result of " << *arc << " is " << net << "\n";
-      }	
+        wrt_cat.spam() << "result of " << *arc << " is " << net << "\n";
+      }
     }
   }
 }    
@@ -203,18 +203,18 @@ get_cached_net_transition(NodeRelation *arc, Node *&root,
 template<class InputIterator, class TransitionWrapper>
 void
 get_cached_net_transition(const Node *node, 
-			  InputIterator arc_list_begin, 
-			  InputIterator arc_list_end,
-			  UpdateSeq as_of, UpdateSeq now,
-			  TransitionWrapper &result,
-			  TypeHandle graph_type) {
+                          InputIterator arc_list_begin, 
+                          InputIterator arc_list_end,
+                          UpdateSeq as_of, UpdateSeq now,
+                          TransitionWrapper &result,
+                          TypeHandle graph_type) {
   if (node == NULL) {
     // the NULL node is by convention equivalent to the root.
     result.make_identity();
 
     if (wrt_cat.is_debug()) {
       wrt_cat.debug()
-	<< "get_cached_net_transition((top))\n";
+        << "get_cached_net_transition((top))\n";
     }
     return;
   }
@@ -235,7 +235,7 @@ get_cached_net_transition(const Node *node,
     
     if (wrt_cat.is_debug()) {
       wrt_cat.debug()
-	<< "get_cached_net_transition(" << *node << ") has no parents.\n";
+        << "get_cached_net_transition(" << *node << ") has no parents.\n";
     }
     return;
 
@@ -244,10 +244,10 @@ get_cached_net_transition(const Node *node,
     // arc_list_begin .. arc_list_end.  If any of the parents is
     // mentioned in the list, we must choose that parent.
     for (InputIterator ri = arc_list_begin; 
-	 parent_arc == (NodeRelation *)NULL && ri != arc_list_end; 
-	 ++ri) {
+         parent_arc == (NodeRelation *)NULL && ri != arc_list_end; 
+         ++ri) {
       if ((*ri)->get_child() == node) {
-	parent_arc = (*ri);
+        parent_arc = (*ri);
       }
     }
 
@@ -264,14 +264,14 @@ get_cached_net_transition(const Node *node,
   // Get the net transition leading into this node.
   Node *root;
   get_cached_net_transition((NodeRelation *)parent_arc, root, 
-			    as_of, now, result, graph_type);
+                            as_of, now, result, graph_type);
 
   if (root != NULL) {
     // There's more to get.  The above function call was forced to
     // stop at a node with multiple parents.
     TransitionWrapper more = TransitionWrapper::init_from(result);
     get_cached_net_transition(root, arc_list_begin, arc_list_end, 
-			      as_of, now, more, graph_type);
+                              as_of, now, more, graph_type);
     more.compose_in_place(result);
     result = more;
   }
@@ -298,15 +298,15 @@ get_cached_net_transition(const Node *node,
 template<class InputIterator, class TransitionWrapper>
 void
 get_uncached_net_transition(const Node *node, 
-			    InputIterator arc_list_begin, 
-			    InputIterator arc_list_end,
-			    TransitionWrapper &result,
-			    TypeHandle graph_type) {
+                            InputIterator arc_list_begin, 
+                            InputIterator arc_list_end,
+                            TransitionWrapper &result,
+                            TypeHandle graph_type) {
   if (node == NULL) {
     // the NULL node is by convention equivalent to the root.
     if (wrt_cat.is_spam()) {
       wrt_cat.spam()
-	<< "get_uncached_net_transition(top)" << *node;
+        << "get_uncached_net_transition(top)" << *node;
     }
     result.make_identity();
     return;
@@ -326,7 +326,7 @@ get_uncached_net_transition(const Node *node,
     // This node has no parents.  Stop here.
     if (wrt_cat.is_spam()) {
       wrt_cat.spam()
-	<< "get_uncached_net_transition(" << *node << ") has no parents.\n";
+        << "get_uncached_net_transition(" << *node << ") has no parents.\n";
     }
     result.make_identity();
     return;
@@ -336,10 +336,10 @@ get_uncached_net_transition(const Node *node,
     // arc_list_begin .. arc_list_end.  If any of the parents is
     // mentioned in the list, we must choose that parent.
     for (InputIterator ri = arc_list_begin; 
-	 parent_arc == (NodeRelation *)NULL && ri != arc_list_end; 
-	 ++ri) {
+         parent_arc == (NodeRelation *)NULL && ri != arc_list_end; 
+         ++ri) {
       if ((*ri)->get_child() == node) {
-	parent_arc = (*ri);
+        parent_arc = (*ri);
       }
     }
 
@@ -354,9 +354,9 @@ get_uncached_net_transition(const Node *node,
   }
 
   get_uncached_net_transition(parent_arc->get_parent(),
-			      arc_list_begin, arc_list_end,
-			      result,
-			      graph_type);
+                              arc_list_begin, arc_list_end,
+                              result,
+                              graph_type);
 
   TransitionWrapper next = TransitionWrapper::init_from(result);
   next.extract_from(parent_arc);
@@ -387,11 +387,11 @@ get_uncached_net_transition(const Node *node,
 template<class InputIterator1, class InputIterator2, class TransitionWrapper>
 void
 cached_wrt_base(const Node *from,
-		InputIterator1 from_arcs_begin, InputIterator1 from_arcs_end,
-		const Node *to, 
-		InputIterator2 to_arcs_begin, InputIterator2 to_arcs_end,
-		TransitionWrapper &result,
-		TypeHandle graph_type) {
+                InputIterator1 from_arcs_begin, InputIterator1 from_arcs_end,
+                const Node *to, 
+                InputIterator2 to_arcs_begin, InputIterator2 to_arcs_end,
+                TransitionWrapper &result,
+                TypeHandle graph_type) {
   UpdateSeq now = last_graph_update(graph_type);
 
   TransitionWrapper net_from_trans = TransitionWrapper::init_from(result);
@@ -415,9 +415,9 @@ cached_wrt_base(const Node *from,
   }
 
   get_cached_net_transition(from, from_arcs_begin, from_arcs_end, 
-			    now, now, net_from_trans, graph_type);
+                            now, now, net_from_trans, graph_type);
   get_cached_net_transition(to, to_arcs_begin, to_arcs_end, 
-			    now, now, result, graph_type);
+                            now, now, result, graph_type);
   
 #ifndef NDEBUG
   if (paranoid_wrt) {
@@ -428,27 +428,27 @@ cached_wrt_base(const Node *from,
     TransitionWrapper check_to_trans = 
       TransitionWrapper::init_from(result);
     get_uncached_net_transition(from, from_arcs_begin, from_arcs_end,
-				check_from_trans, graph_type);
+                                check_from_trans, graph_type);
     if (check_from_trans.compare_to(net_from_trans) != 0) {
       wrt_cat.warning()
-	<< "WRT cache from " << *from << " is invalid!\n"
-	<< "  cached value is:\n";
+        << "WRT cache from " << *from << " is invalid!\n"
+        << "  cached value is:\n";
       net_from_trans.write(wrt_cat.warning(false), 4);
       wrt_cat.warning(false)
-	<< "  should be:\n";
+        << "  should be:\n";
       check_from_trans.write(wrt_cat.warning(false), 4);
       net_from_trans = check_from_trans;
     }
     
     get_uncached_net_transition(to, to_arcs_begin, to_arcs_end,
-				check_to_trans, graph_type);
+                                check_to_trans, graph_type);
     if (check_to_trans.compare_to(result) != 0) {
       wrt_cat.warning()
-	<< "WRT cache to " << *to << " is invalid!\n"
-	<< "  cached value is:\n";
+        << "WRT cache to " << *to << " is invalid!\n"
+        << "  cached value is:\n";
       result.write(wrt_cat.warning(false), 4);
       wrt_cat.warning(false)
-	<< "  should be:\n";
+        << "  should be:\n";
       check_to_trans.write(wrt_cat.warning(false), 4);
       result = check_to_trans;
     }
@@ -467,16 +467,16 @@ cached_wrt_base(const Node *from,
 template<class InputIterator1, class InputIterator2, class TransitionWrapper>
 void
 uncached_wrt_base(const Node *from,
-		  InputIterator1 from_arcs_begin, InputIterator1 from_arcs_end,
-		  const Node *to, 
-		  InputIterator2 to_arcs_begin, InputIterator2 to_arcs_end,
-		  TransitionWrapper &result,
-		  TypeHandle graph_type) {
+                  InputIterator1 from_arcs_begin, InputIterator1 from_arcs_end,
+                  const Node *to, 
+                  InputIterator2 to_arcs_begin, InputIterator2 to_arcs_end,
+                  TransitionWrapper &result,
+                  TypeHandle graph_type) {
   TransitionWrapper net_from_trans = TransitionWrapper::init_from(result);
   get_uncached_net_transition(from, from_arcs_begin, from_arcs_end,
-			      net_from_trans, graph_type);
+                              net_from_trans, graph_type);
   get_uncached_net_transition(to, to_arcs_begin, to_arcs_end,
-			      result, graph_type);
+                              result, graph_type);
   result.invert_compose_in_place(net_from_trans);
 }
 #endif
@@ -500,24 +500,24 @@ uncached_wrt_base(const Node *from,
 template<class InputIterator1, class InputIterator2, class TransitionWrapper>
 INLINE_GRAPH void
 wrt_base(const Node *from,
-	 InputIterator1 from_arcs_begin, InputIterator1 from_arcs_end,
-	 const Node *to, 
-	 InputIterator2 to_arcs_begin, InputIterator2 to_arcs_end,
-	 TransitionWrapper &result,
-	 TypeHandle graph_type) {
+         InputIterator1 from_arcs_begin, InputIterator1 from_arcs_end,
+         const Node *to, 
+         InputIterator2 to_arcs_begin, InputIterator2 to_arcs_end,
+         TransitionWrapper &result,
+         TypeHandle graph_type) {
   PStatTimer timer(_wrt_pcollector);
 
 #ifndef NDEBUG
   if (!cache_wrt) {
     uncached_wrt_base(from, from_arcs_begin, from_arcs_end,
-		      to, to_arcs_begin, to_arcs_end,
-		      result, graph_type);
+                      to, to_arcs_begin, to_arcs_end,
+                      result, graph_type);
     return;
   }
 #endif
   cached_wrt_base(from, from_arcs_begin, from_arcs_end,
-		  to, to_arcs_begin, to_arcs_end,
-		  result, graph_type);
+                  to, to_arcs_begin, to_arcs_end,
+                  result, graph_type);
 }
 
 template<class TransitionWrapper>
@@ -538,7 +538,7 @@ wrt(const Node *from,
     TransitionWrapper &result, TypeHandle graph_type) {
   const NodeRelation *arc = NULL;
   wrt_base(from, from_arcs_begin, from_arcs_end, to, &arc, &arc,
-	   result, graph_type);
+           result, graph_type);
 }
 
 template<class InputIterator, class TransitionWrapper>
@@ -549,7 +549,7 @@ wrt(const Node *from,
     TransitionWrapper &result, TypeHandle graph_type) {
   const NodeRelation *arc = NULL;
   wrt_base(from, &arc, &arc, to, to_arcs_begin, to_arcs_end,
-	   result, graph_type);
+           result, graph_type);
 }
 
 template<class InputIterator1, class InputIterator2, class TransitionWrapper>
@@ -560,15 +560,15 @@ wrt(const Node *from,
     InputIterator2 to_arcs_begin, InputIterator2 to_arcs_end,
     TransitionWrapper &result, TypeHandle graph_type) {
   wrt_base(from, from_arcs_begin, from_arcs_end,
-	   to, to_arcs_begin, to_arcs_end,
-	   result, graph_type);
+           to, to_arcs_begin, to_arcs_end,
+           result, graph_type);
 }
 
 #ifndef NDEBUG
 template<class TransitionWrapper>
 INLINE_GRAPH void
 uncached_wrt(const Node *from, const Node *to,
-	     TransitionWrapper &result, TypeHandle graph_type) {
+             TransitionWrapper &result, TypeHandle graph_type) {
   const NodeRelation *arc = NULL;
   uncached_wrt_base(from, &arc, &arc, to, &arc, &arc, result, graph_type);
 }
@@ -576,35 +576,35 @@ uncached_wrt(const Node *from, const Node *to,
 template<class InputIterator, class TransitionWrapper>
 INLINE_GRAPH void
 uncached_wrt(const Node *from,
-	     InputIterator from_arcs_begin, InputIterator from_arcs_end,
-	     const Node *to, 
-	     TransitionWrapper &result, TypeHandle graph_type) {
+             InputIterator from_arcs_begin, InputIterator from_arcs_end,
+             const Node *to, 
+             TransitionWrapper &result, TypeHandle graph_type) {
   const NodeRelation *arc = NULL;
   uncached_wrt_base(from, from_arcs_begin, from_arcs_end, to, &arc, &arc,
-		    result, graph_type);
+                    result, graph_type);
 }
 
 template<class InputIterator, class TransitionWrapper>
 INLINE_GRAPH void
 uncached_wrt(const Node *from,
-	     const Node *to,  
-	     InputIterator to_arcs_begin, InputIterator to_arcs_end,
-	     TransitionWrapper &result, TypeHandle graph_type) {
+             const Node *to,  
+             InputIterator to_arcs_begin, InputIterator to_arcs_end,
+             TransitionWrapper &result, TypeHandle graph_type) {
   const NodeRelation *arc = NULL;
   uncached_wrt_base(from, &arc, &arc, to, to_arcs_begin, to_arcs_end,
-		    result, graph_type);
+                    result, graph_type);
 }
 
 template<class InputIterator1, class InputIterator2, class TransitionWrapper>
 INLINE_GRAPH void
 uncached_wrt(const Node *from,
-	     InputIterator1 from_arcs_begin, InputIterator1 from_arcs_end,
-	     const Node *to, 
-	     InputIterator2 to_arcs_begin, InputIterator2 to_arcs_end,
-	     TransitionWrapper &result, TypeHandle graph_type) {
+             InputIterator1 from_arcs_begin, InputIterator1 from_arcs_end,
+             const Node *to, 
+             InputIterator2 to_arcs_begin, InputIterator2 to_arcs_end,
+             TransitionWrapper &result, TypeHandle graph_type) {
   uncached_wrt_base(from, from_arcs_begin, from_arcs_end,
-		    to, to_arcs_begin, to_arcs_end,
-		    result, graph_type);
+                    to, to_arcs_begin, to_arcs_end,
+                    result, graph_type);
 }
 #endif
 
@@ -612,7 +612,7 @@ uncached_wrt(const Node *from,
 template<class TransitionWrapper>
 Node *
 get_uncached_wrt_subtree(Node *node, Node *to, TransitionWrapper &result, 
-			 TypeHandle graph_type) {
+                         TypeHandle graph_type) {
   nassertr(node != (Node *)NULL, to);
 
   const UpRelationPointers &urp = node->find_connection(graph_type).get_up();
@@ -622,7 +622,7 @@ get_uncached_wrt_subtree(Node *node, Node *to, TransitionWrapper &result,
     // This node has no parents.  Stop here.
     if (wrt_cat.is_spam()) {
       wrt_cat.spam()
-	<< "get_uncached_wrt_subtree(" << *node << ") has no parents.\n";
+        << "get_uncached_wrt_subtree(" << *node << ") has no parents.\n";
     }
     result.make_identity();
     return (Node *)NULL;
@@ -632,8 +632,8 @@ get_uncached_wrt_subtree(Node *node, Node *to, TransitionWrapper &result,
     // There are multiple parents, so stop here.
     if (wrt_cat.is_spam()) {
       wrt_cat.spam()
-	<< "get_uncached_wrt_subtree(" << *node << ") has " << num_parents
-	<< " parents.\n";
+        << "get_uncached_wrt_subtree(" << *node << ") has " << num_parents
+        << " parents.\n";
     }
     result.make_identity();
     return node;
@@ -643,7 +643,7 @@ get_uncached_wrt_subtree(Node *node, Node *to, TransitionWrapper &result,
     // We've reached our stopping point.  Stop here.
     if (wrt_cat.is_spam()) {
       wrt_cat.spam()
-	<< "get_uncached_wrt_subtree(" << *node << ") is at stopping point.\n";
+        << "get_uncached_wrt_subtree(" << *node << ") is at stopping point.\n";
     }
     result.make_identity();
 
@@ -667,7 +667,7 @@ get_uncached_wrt_subtree(Node *node, Node *to, TransitionWrapper &result,
 
   Node *stop = 
     get_uncached_wrt_subtree(parent_arc->get_parent(), to,
-			     result, graph_type);
+                             result, graph_type);
 
   TransitionWrapper next = TransitionWrapper::init_from(result);
   next.extract_from(parent_arc);
@@ -693,10 +693,10 @@ get_uncached_wrt_subtree(Node *node, Node *to, TransitionWrapper &result,
 template<class TransitionWrapper>
 INLINE_GRAPH Node *
 uncached_wrt_subtree(NodeRelation *arc, Node *to,
-		     TransitionWrapper &result, TypeHandle graph_type) {
+                     TransitionWrapper &result, TypeHandle graph_type) {
   Node *stop = 
     get_uncached_wrt_subtree(arc->get_parent(), to,
-			     result, graph_type);
+                             result, graph_type);
 
   TransitionWrapper next = TransitionWrapper::init_from(result);
   next.extract_from(arc);
@@ -724,7 +724,7 @@ uncached_wrt_subtree(NodeRelation *arc, Node *to,
 template<class TransitionWrapper>
 Node *
 cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
-		   TransitionWrapper &result, TypeHandle graph_type) {
+                   TransitionWrapper &result, TypeHandle graph_type) {
   // First, determine the net transition up to the top of the current
   // subtree.
   Node *top_subtree;
@@ -736,11 +736,11 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
 
     if (wrt_cat.is_spam()) {
       wrt_cat.spam()
-	<< "cached_wrt_subtree(" << *arc << ", ";
+        << "cached_wrt_subtree(" << *arc << ", ";
       if (to == (Node *)NULL) {
-	wrt_cat.spam(false) << "(top)";
+        wrt_cat.spam(false) << "(top)";
       } else {
-	wrt_cat.spam(false) << *to;
+        wrt_cat.spam(false) << *to;
       }
       wrt_cat.spam(false) << ") stops at top, result is:\n";
       result.write(wrt_cat.spam(false), 2);
@@ -754,11 +754,11 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
 
     if (wrt_cat.is_spam()) {
       wrt_cat.spam()
-	<< "cached_wrt_subtree(" << *arc << ", " << *to << ") stops at ";
+        << "cached_wrt_subtree(" << *arc << ", " << *to << ") stops at ";
       if (top_subtree == (Node *)NULL) {
-	wrt_cat.spam(false) << "(top)";
+        wrt_cat.spam(false) << "(top)";
       } else {
-	wrt_cat.spam(false) << *top_subtree;
+        wrt_cat.spam(false) << *top_subtree;
       }
       wrt_cat.spam(false) << ", first result is:\n";
       result.write(wrt_cat.spam(false), 2);
@@ -773,13 +773,13 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
       // This, of course, assumes we haven't just asked for the wrt()
       // from the very latest timestamp.
       if (wrt_cat.is_warning()) {
-	wrt_cat.warning()
-	  << "Recovering from stale cache.\n";
+        wrt_cat.warning()
+          << "Recovering from stale cache.\n";
       }
 
       nassertr(as_of != UpdateSeq::fresh(), NULL);
       return cached_wrt_subtree(arc, to, UpdateSeq::fresh(), now,
-				result, graph_type);
+                                result, graph_type);
     }
     
     nassertr(to->get_num_parents(graph_type) == 1, NULL);
@@ -792,7 +792,7 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
     // this arc.  It had better be the same subtree!
     Node *top_subtree_2;
     get_cached_net_transition(to_arc, top_subtree_2, as_of, now,
-			      result, graph_type);
+                              result, graph_type);
     nassertr(top_subtree == top_subtree_2, NULL);
     
     // And now compute the actual wrt.
@@ -800,11 +800,11 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
 
     if (wrt_cat.is_spam()) {
       wrt_cat.spam()
-	<< "cached_wrt_subtree(" << *arc << ", " << *to << ") stops at ";
+        << "cached_wrt_subtree(" << *arc << ", " << *to << ") stops at ";
       if (top_subtree == (Node *)NULL) {
-	wrt_cat.spam(false) << "(top)";
+        wrt_cat.spam(false) << "(top)";
       } else {
-	wrt_cat.spam(false) << *top_subtree;
+        wrt_cat.spam(false) << *top_subtree;
       }
       wrt_cat.spam() << ", second result is:\n";
       net_from_trans.write(wrt_cat.spam(false), 2);
@@ -823,26 +823,26 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
 
     if (top_subtree_3 != top_subtree) {
       wrt_cat.warning()
-	<< "WRT subtree cache from " << *arc->get_child() << " to ";
+        << "WRT subtree cache from " << *arc->get_child() << " to ";
       if (to == (Node *)NULL) {
-	wrt_cat.warning(false) << "(top)";
+        wrt_cat.warning(false) << "(top)";
       } else {
-	wrt_cat.warning(false) << *to;
+        wrt_cat.warning(false) << *to;
       }
       wrt_cat.warning(false)
-	<< " computes incorrect top_subtree!\n"
-	<< "  computed ";
+        << " computes incorrect top_subtree!\n"
+        << "  computed ";
       if (top_subtree == (Node *)NULL) {
-	wrt_cat.warning(false) << "(top)\n";
+        wrt_cat.warning(false) << "(top)\n";
       } else {
-	wrt_cat.warning(false) << *top_subtree << "\n";
+        wrt_cat.warning(false) << *top_subtree << "\n";
       }
       wrt_cat.warning(false)
-	<< "  should be ";
+        << "  should be ";
       if (top_subtree_3 == (Node *)NULL) {
-	wrt_cat.warning(false) << "(top)\n";
+        wrt_cat.warning(false) << "(top)\n";
       } else {
-	wrt_cat.warning(false) << *top_subtree_3 << "\n";
+        wrt_cat.warning(false) << *top_subtree_3 << "\n";
       }
       top_subtree = top_subtree_3;
     }
@@ -850,18 +850,18 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
     int compare = check_trans.compare_to(result);
     if (compare != 0) {
       wrt_cat.warning()
-	<< "WRT subtree cache from " << *arc->get_child() << " to ";
+        << "WRT subtree cache from " << *arc->get_child() << " to ";
       if (to == (Node *)NULL) {
-	wrt_cat.warning(false) << "(top)";
+        wrt_cat.warning(false) << "(top)";
       } else {
-	wrt_cat.warning(false) << *to;
+        wrt_cat.warning(false) << *to;
       }
       wrt_cat.warning(false)
-	<< " is invalid!\n"
-	<< "  cached value is:\n";
+        << " is invalid!\n"
+        << "  cached value is:\n";
       result.write(wrt_cat.warning(false), 4);
       wrt_cat.warning(false)
-	<< "  should be:\n";
+        << "  should be:\n";
       check_trans.write(wrt_cat.warning(false), 4);
       result = check_trans;
     }
@@ -874,7 +874,7 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
 template<class TransitionWrapper>
 INLINE_GRAPH Node *
 wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
-	    TransitionWrapper &result, TypeHandle graph_type) {
+            TransitionWrapper &result, TypeHandle graph_type) {
   PStatTimer timer(_wrt_subtree_pcollector);
 
 #ifndef NDEBUG

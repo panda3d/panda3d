@@ -13,15 +13,15 @@
 #include <vector_LPoint2f.h>
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CollisionPolygon
+//       Class : CollisionPolygon
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CollisionPolygon : public CollisionPlane {
 PUBLISHED:
   INLINE CollisionPolygon(const LPoint3f &a, const LPoint3f &b,
-			  const LPoint3f &c);
+                          const LPoint3f &c);
   INLINE CollisionPolygon(const LPoint3f &a, const LPoint3f &b,
-			  const LPoint3f &c, const LPoint3f &d);
+                          const LPoint3f &c, const LPoint3f &d);
   INLINE CollisionPolygon(const LPoint3f *begin, const LPoint3f *end);
 
 public:
@@ -30,16 +30,16 @@ public:
   virtual CollisionSolid *make_copy();
 
   INLINE static bool verify_points(const LPoint3f &a, const LPoint3f &b,
-				   const LPoint3f &c);
+                                   const LPoint3f &c);
   INLINE static bool verify_points(const LPoint3f &a, const LPoint3f &b,
-				   const LPoint3f &c, const LPoint3f &d);
+                                   const LPoint3f &c, const LPoint3f &d);
   static bool verify_points(const LPoint3f *begin, const LPoint3f *end);
 
 
   virtual int
   test_intersection(CollisionHandler *record,
-		    const CollisionEntry &entry,
-		    const CollisionSolid *into) const;
+                    const CollisionEntry &entry,
+                    const CollisionSolid *into) const;
 
   virtual void xform(const LMatrix4f &mat);
   virtual LPoint3f get_collision_origin() const;
@@ -53,13 +53,13 @@ protected:
 protected:
   virtual int
   test_intersection_from_sphere(CollisionHandler *record,
-				const CollisionEntry &entry) const;
+                                const CollisionEntry &entry) const;
   virtual int
   test_intersection_from_ray(CollisionHandler *record,
-			     const CollisionEntry &entry) const;
+                             const CollisionEntry &entry) const;
   virtual int
   test_intersection_from_segment(CollisionHandler *record,
-				 const CollisionEntry &entry) const;
+                                 const CollisionEntry &entry) const;
 
   virtual void recompute_viz(Node *parent);
 
@@ -98,7 +98,7 @@ public:
   static void init_type() {
     CollisionPlane::init_type();
     register_type(_type_handle, "CollisionPolygon",
-		  CollisionPlane::get_class_type());
+                  CollisionPlane::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

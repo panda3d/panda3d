@@ -11,7 +11,7 @@
 #include "hashGeneratorBase.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ChecksumHashGenerator
+//       Class : ChecksumHashGenerator
 // Description : This is a specific kind of HashGenerator that simply
 //               adds up all of the ints.  Nothing fancy, and pretty
 //               quick.

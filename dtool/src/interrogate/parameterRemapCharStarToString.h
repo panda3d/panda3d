@@ -11,7 +11,7 @@
 #include "parameterRemapToString.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ParameterRemapCharStarToString
+//       Class : ParameterRemapCharStarToString
 // Description : Maps from (char *) or (const char *) to the atomic
 //               string type.
 ////////////////////////////////////////////////////////////////////

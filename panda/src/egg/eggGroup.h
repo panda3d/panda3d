@@ -18,7 +18,7 @@
 #include <collideMask.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggGroup
+//       Class : EggGroup
 // Description : The main glue of the egg hierarchy, this corresponds
 //               to the <Group>, <Instance>, and <Joint> type nodes.
 ////////////////////////////////////////////////////////////////////
@@ -188,7 +188,7 @@ protected:
   virtual bool egg_start_parse_body();
   virtual void adjust_under();
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
-			   CoordinateSystem to_cs);
+                           CoordinateSystem to_cs);
   virtual void r_flatten_transforms();
 
 private:
@@ -237,7 +237,7 @@ public:
     EggRenderMode::init_type();
     register_type(_type_handle, "EggGroup",
                   EggGroupNode::get_class_type(),
-		  EggRenderMode::get_class_type());
+                  EggRenderMode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

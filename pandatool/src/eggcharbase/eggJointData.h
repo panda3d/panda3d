@@ -13,7 +13,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggJointData
+//       Class : EggJointData
 // Description : This is one node of a hierarchy of EggJointData
 //               nodes, each of which represents a single joint of the
 //               character hierarchy across all loaded files: the
@@ -23,7 +23,7 @@
 class EggJointData : public EggComponentData {
 public:
   EggJointData(EggCharacterCollection *collection,
-	       EggCharacterData *char_data);
+               EggCharacterData *char_data);
 
   INLINE int get_num_children() const;
   INLINE EggJointData *get_child(int n) const;

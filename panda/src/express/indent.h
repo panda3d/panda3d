@@ -30,10 +30,10 @@ indent(ostream &out, int indent_level);
 template<class InputIterator>
 void
 write_long_list(ostream &out, int indent_level,
-		InputIterator ifirst, InputIterator ilast,
-		string first_prefix = "",
-		string later_prefix = "",
-		int max_col = 72);
+                InputIterator ifirst, InputIterator ilast,
+                string first_prefix = "",
+                string later_prefix = "",
+                int max_col = 72);
 
 #include "indent.I"
 

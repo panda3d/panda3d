@@ -12,7 +12,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggSliderData
+//       Class : EggSliderData
 // Description : This corresponds to a single morph slider control.
 //               It contains back pointers to all the vertices and
 //               primitives that reference this slider across all
@@ -22,7 +22,7 @@
 class EggSliderData : public EggComponentData {
 public:
   EggSliderData(EggCharacterCollection *collection,
-		EggCharacterData *char_data);
+                EggCharacterData *char_data);
 
   virtual void add_back_pointer(int model_index, EggObject *egg_object);
   virtual void write(ostream &out, int indent_level = 0) const;

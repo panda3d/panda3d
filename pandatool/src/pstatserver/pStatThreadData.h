@@ -17,7 +17,7 @@ class PStatFrameData;
 class PStatClientData;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PStatThreadData
+//       Class : PStatThreadData
 // Description : A collection of FrameData structures for
 //               recently-received frames within a particular thread.
 //               This holds the raw data as reported by the client,

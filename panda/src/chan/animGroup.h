@@ -57,7 +57,7 @@ public:
   static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter* manager, Datagram &me);  
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
   static TypedWritable *make_AnimGroup(const FactoryParams &params);
 
@@ -79,7 +79,7 @@ public:
   static void init_type() {
     TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "AnimGroup",
-		  TypedWritableReferenceCount::get_class_type());
+                  TypedWritableReferenceCount::get_class_type());
   }
 
 private:

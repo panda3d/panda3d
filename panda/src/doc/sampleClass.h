@@ -22,7 +22,7 @@
 #include <systemHeaderFile.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : SampleClass
+//       Class : SampleClass
 // Description : A basic description of the function and purpose of
 //               SampleClass.  Note that class names are generally
 //               mixed case, no underscore, beginning with a capital

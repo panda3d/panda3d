@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 GtkStatsLabel::
 GtkStatsLabel(PStatMonitor *monitor, int collector_index,
-	      Gdk_Font font) :
+              Gdk_Font font) :
   _collector_index(collector_index),
   _font(font)
 {
@@ -109,8 +109,8 @@ expose_event_impl(GdkEventExpose *event) {
 
   window.draw_rectangle(_reverse_gc, true, 0, 0, width(), height());
   window.draw_string(_font, _gc, width() - text_width - 2, 
-		      height() - (height() - text_height) / 2 - _font.descent(),
-		      _text);
+                      height() - (height() - text_height) / 2 - _font.descent(),
+                      _text);
   return false;
 }
 

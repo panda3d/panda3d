@@ -44,12 +44,12 @@ queue_event(CPT_Event event) {
     _queue.insert(event);
     if (event_cat.is_spam() || event_cat.is_debug()) {
       if (event->get_name() == "NewFrame") {
-	// Don't bother us with this particularly spammy event.
-	event_cat.spam()
-	  << "Throwing event " << *event << "\n";
+        // Don't bother us with this particularly spammy event.
+        event_cat.spam()
+          << "Throwing event " << *event << "\n";
       } else {
-	event_cat.debug()
-	  << "Throwing event " << *event << "\n";
+        event_cat.debug()
+          << "Throwing event " << *event << "\n";
       }
     }
   }

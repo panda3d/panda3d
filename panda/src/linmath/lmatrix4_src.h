@@ -5,7 +5,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LMatrix4
+//       Class : LMatrix4
 // Description : This is a 4-by-4 transform matrix.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA FLOATNAME(LMatrix4) {
@@ -19,9 +19,9 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator = (FLOATTYPE fill_value);
 
   INLINE_LINMATH FLOATNAME(LMatrix4)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
-				     FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
-				     FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,
-				     FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33);
+                                     FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
+                                     FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,
+                                     FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33);
   
   // Construct a 4x4 matrix given a 3x3 rotation matrix and an optional
   // translation component.
@@ -30,9 +30,9 @@ PUBLISHED:
 
   INLINE_LINMATH void fill(FLOATTYPE fill_value);
   INLINE_LINMATH void set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
-		  FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
-		  FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,
-		  FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33);
+                  FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
+                  FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,
+                  FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33);
  
   // Get and set the upper 3x3 rotation matrix.
   INLINE_LINMATH void set_upper_3(const FLOATNAME(LMatrix3) &upper3);
@@ -91,7 +91,7 @@ PUBLISHED:
   // this = other1 * other2
   INLINE_LINMATH void multiply(const FLOATNAME(LMatrix4) &other1, const FLOATNAME(LMatrix4) &other2);
 
-	// this = scale_mat(scale_vector) * other_mat, efficiently
+        // this = scale_mat(scale_vector) * other_mat, efficiently
   INLINE_LINMATH void scale_multiply(const FLOATNAME(LVecBase3) &scale_vector,const FLOATNAME(LMatrix4) &other_mat);
 
   INLINE_LINMATH FLOATNAME(LMatrix4) operator * (const FLOATNAME(LMatrix4) &other) const;
@@ -121,17 +121,17 @@ PUBLISHED:
     translate_mat(FLOATTYPE tx, FLOATTYPE ty, FLOATTYPE tz);
   INLINE_LINMATH static FLOATNAME(LMatrix4)
     rotate_mat(FLOATTYPE angle,
-	       FLOATNAME(LVecBase3) axis,
-	       CoordinateSystem cs = CS_default);
+               FLOATNAME(LVecBase3) axis,
+               CoordinateSystem cs = CS_default);
   INLINE_LINMATH static FLOATNAME(LMatrix4) 
     rotate_mat_normaxis(FLOATTYPE angle,
-			const FLOATNAME(LVecBase3) &axis,
-			CoordinateSystem cs = CS_default);
+                        const FLOATNAME(LVecBase3) &axis,
+                        CoordinateSystem cs = CS_default);
   INLINE_LINMATH static void
     rotate_mat_normaxis(FLOATTYPE angle,
-			const FLOATNAME(LVecBase3) &axis,
-			FLOATNAME(LMatrix4) &result_mat,
-			CoordinateSystem cs = CS_default);
+                        const FLOATNAME(LVecBase3) &axis,
+                        FLOATNAME(LMatrix4) &result_mat,
+                        CoordinateSystem cs = CS_default);
   INLINE_LINMATH static FLOATNAME(LMatrix4)
     scale_mat(const FLOATNAME(LVecBase3) &scale);
   INLINE_LINMATH static FLOATNAME(LMatrix4)
@@ -143,10 +143,10 @@ PUBLISHED:
   INLINE_LINMATH static const FLOATNAME(LMatrix4) &z_to_y_up_mat();
 
   static FLOATNAME(LMatrix4) convert_mat(CoordinateSystem from,
-					 CoordinateSystem to);
+                                         CoordinateSystem to);
 
   bool almost_equal(const FLOATNAME(LMatrix4) &other, 
-		    FLOATTYPE threshold) const;
+                    FLOATTYPE threshold) const;
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LMatrix4) &other) const;
   
   void output(ostream &out) const;
@@ -159,13 +159,13 @@ public:
 public:
   union {
         struct {
-		   FLOATTYPE  _00, _01, _02, _03;
+                   FLOATTYPE  _00, _01, _02, _03;
            FLOATTYPE  _10, _11, _12, _13;
            FLOATTYPE  _20, _21, _22, _23;
            FLOATTYPE  _30, _31, _32, _33;
         } m;
 
-	FLOATTYPE data[4 * 4];
+        FLOATTYPE data[4 * 4];
   } _m;
   
 private:

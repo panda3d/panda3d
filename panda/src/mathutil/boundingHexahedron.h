@@ -16,7 +16,7 @@
 
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : BoundingHexahedron
+//       Class : BoundingHexahedron
 // Description : This defines a bounding convex hexahedron.  It is
 //               typically used to represent a frustum, but may
 //               represent any enclosing convex hexahedron.
@@ -29,7 +29,7 @@ class EXPCL_PANDA BoundingHexahedron : public FiniteBoundingVolume {
 public:
   INLINE_MATHUTIL BoundingHexahedron();
   BoundingHexahedron(const Frustumf &frustum, bool is_ortho,
-		     CoordinateSystem cs = CS_default);
+                     CoordinateSystem cs = CS_default);
   virtual BoundingVolume *make_copy() const;
 
   virtual LPoint3f get_min() const;
@@ -49,8 +49,8 @@ public:
 protected:
   virtual bool extend_other(BoundingVolume *other) const;
   virtual bool around_other(BoundingVolume *other,
-			    const BoundingVolume **first,
-			    const BoundingVolume **last) const;
+                            const BoundingVolume **first,
+                            const BoundingVolume **last) const;
   virtual int contains_other(const BoundingVolume *other) const;
 
 
@@ -59,11 +59,11 @@ protected:
   virtual bool extend_by_hexahedron(const BoundingHexahedron *hexahedron);
 
   virtual bool around_points(const LPoint3f *first,
-			     const LPoint3f *last);
+                             const LPoint3f *last);
   virtual bool around_spheres(const BoundingVolume **first,
-			      const BoundingVolume **last);
+                              const BoundingVolume **last);
   virtual bool around_hexahedrons(const BoundingVolume **first,
-				  const BoundingVolume **last);
+                                  const BoundingVolume **last);
 
   virtual int contains_point(const LPoint3f &point) const;
   virtual int contains_lineseg(const LPoint3f &a, const LPoint3f &b) const;
@@ -91,7 +91,7 @@ public:
   static void init_type() {
     FiniteBoundingVolume::init_type();
     register_type(_type_handle, "BoundingHexahedron",
-		  FiniteBoundingVolume::get_class_type());
+                  FiniteBoundingVolume::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

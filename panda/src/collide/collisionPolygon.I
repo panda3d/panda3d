@@ -10,7 +10,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionPolygon::
 CollisionPolygon(const LPoint3f &a, const LPoint3f &b,
-		 const LPoint3f &c) {
+                 const LPoint3f &c) {
   LPoint3f array[3];
   array[0] = a;
   array[1] = b;
@@ -25,7 +25,7 @@ CollisionPolygon(const LPoint3f &a, const LPoint3f &b,
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionPolygon::
 CollisionPolygon(const LPoint3f &a, const LPoint3f &b,
-		 const LPoint3f &c, const LPoint3f &d) {
+                 const LPoint3f &c, const LPoint3f &d) {
   LPoint3f array[4];
   array[0] = a;
   array[1] = b;
@@ -63,7 +63,7 @@ CollisionPolygon(void) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionPolygon::
 verify_points(const LPoint3f &a, const LPoint3f &b,
-	      const LPoint3f &c) {
+              const LPoint3f &c) {
   LPoint3f array[3];
   array[0] = a;
   array[1] = b;
@@ -80,7 +80,7 @@ verify_points(const LPoint3f &a, const LPoint3f &b,
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionPolygon::
 verify_points(const LPoint3f &a, const LPoint3f &b,
-	      const LPoint3f &c, const LPoint3f &d) {
+              const LPoint3f &c, const LPoint3f &d) {
   LPoint3f array[4];
   array[0] = a;
   array[1] = b;

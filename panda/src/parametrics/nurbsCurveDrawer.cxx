@@ -122,11 +122,11 @@ draw() {
     for (i = 0; i < _num_cvs; i++) {
       float t = nurbs->get_knot(i);
       if (t != lt) {
-	lt = t;
-	LVecBase3f knot_pos;
-	curve->get_point(nurbs->get_knot(i), knot_pos);
-	_knots.move_to(knot_pos);
-	ki++;
+        lt = t;
+        LVecBase3f knot_pos;
+        curve->get_point(nurbs->get_knot(i), knot_pos);
+        _knots.move_to(knot_pos);
+        ki++;
       }
       _knotnums.push_back(ki);
     }
@@ -275,7 +275,7 @@ unhilight(int n) {
   if (_show_knots) {
     nassertr(_knotnums[n] >= 0 && _knotnums[n] < _knots.get_num_vertices(), false);
     _knots.set_vertex_color(_knotnums[n],
-			    _knot_color[0], _knot_color[1], _knot_color[2]);
+                            _knot_color[0], _knot_color[1], _knot_color[2]);
   }
 
   return true;

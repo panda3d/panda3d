@@ -12,10 +12,10 @@
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void
 compose_matrix(FLOATNAME(LMatrix4) &mat,
-	       const FLOATNAME(LVecBase3) &scale,
-	       const FLOATNAME(LVecBase3) &hpr,
-	       const FLOATNAME(LVecBase3) &translate,
-	       CoordinateSystem cs) {
+               const FLOATNAME(LVecBase3) &scale,
+               const FLOATNAME(LVecBase3) &hpr,
+               const FLOATNAME(LVecBase3) &translate,
+               CoordinateSystem cs) {
   FLOATNAME(LMatrix3) upper3;
   compose_matrix(upper3, scale, hpr, cs);
   mat = FLOATNAME(LMatrix4)(upper3, translate);
@@ -23,17 +23,17 @@ compose_matrix(FLOATNAME(LMatrix4) &mat,
 
 INLINE_LINMATH void
 compose_matrix(FLOATNAME(LMatrix4) &mat,
-	       const FLOATTYPE components[9],
-	       CoordinateSystem cs) {
+               const FLOATTYPE components[9],
+               CoordinateSystem cs) {
   FLOATNAME(LVector3) scale(components[0],
-			    components[1],
-			    components[2]);
+                            components[1],
+                            components[2]);
   FLOATNAME(LVector3) hpr(components[3],
-			  components[4],
-			  components[5]);
+                          components[4],
+                          components[5]);
   FLOATNAME(LVector3) translate(components[6],
-				components[7],
-				components[8]);
+                                components[7],
+                                components[8]);
   compose_matrix(mat, scale, hpr, translate, cs);
 }
 
@@ -48,10 +48,10 @@ compose_matrix(FLOATNAME(LMatrix4) &mat,
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool
 decompose_matrix(const FLOATNAME(LMatrix4) &mat,
-		 FLOATNAME(LVecBase3) &scale,
-		 FLOATNAME(LVecBase3) &hpr,
-		 FLOATNAME(LVecBase3) &translate,
-		 CoordinateSystem cs) {
+                 FLOATNAME(LVecBase3) &scale,
+                 FLOATNAME(LVecBase3) &hpr,
+                 FLOATNAME(LVecBase3) &translate,
+                 CoordinateSystem cs) {
   // Get the translation first.
   mat.get_row3(translate,3);
   return decompose_matrix(mat.get_upper_3(), scale, hpr, cs);
@@ -73,11 +73,11 @@ decompose_matrix(const FLOATNAME(LMatrix4) &mat,
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool
 decompose_matrix(const FLOATNAME(LMatrix4) &mat,
-		 FLOATNAME(LVecBase3) &scale,
-		 FLOATNAME(LVecBase3) &hpr,
-		 FLOATNAME(LVecBase3) &translate,
-		 FLOATTYPE roll,
-		 CoordinateSystem cs) {
+                 FLOATNAME(LVecBase3) &scale,
+                 FLOATNAME(LVecBase3) &hpr,
+                 FLOATNAME(LVecBase3) &translate,
+                 FLOATTYPE roll,
+                 CoordinateSystem cs) {
   // Get the translation first.
   mat.get_row3(translate,3);
   return decompose_matrix(mat.get_upper_3(), scale, hpr, roll, cs);
@@ -85,8 +85,8 @@ decompose_matrix(const FLOATNAME(LMatrix4) &mat,
 
 INLINE_LINMATH bool
 decompose_matrix(const FLOATNAME(LMatrix4) &mat,
-		 FLOATTYPE components[9],
-		 CoordinateSystem cs) {
+                 FLOATTYPE components[9],
+                 CoordinateSystem cs) {
   FLOATNAME(LVector3) scale, hpr, translate;
   if (!decompose_matrix(mat, scale, hpr, translate, cs)) {
     return false;

@@ -13,7 +13,7 @@
 #include <pnmWriter.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PNMFileTypeSGI
+//       Class : PNMFileTypeSGI
 // Description : For reading and writing SGI RGB files.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PNMFileTypeSGI : public PNMFileType {
@@ -30,7 +30,7 @@ public:
   virtual bool matches_magic_number(const string &magic_number) const;
 
   virtual PNMReader *make_reader(FILE *file, bool owns_file = true,
-				 const string &magic_number = string());
+                                 const string &magic_number = string());
   virtual PNMWriter *make_writer(FILE *file, bool owns_file = true);
 
 public:

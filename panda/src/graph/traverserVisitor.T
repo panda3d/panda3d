@@ -14,8 +14,8 @@
 template<class TW, class LevelState>
 INLINE_GRAPH bool TraverserVisitor<TW, LevelState>::
 reached_node(Node *, 
-	     TraverserVisitor<TW, LevelState>::AttributeWrapper &,
-	     LevelState &) {
+             TraverserVisitor<TW, LevelState>::AttributeWrapper &,
+             LevelState &) {
   return true;
 }
 
@@ -30,10 +30,10 @@ reached_node(Node *,
 template<class TW, class LevelState>
 INLINE_GRAPH bool TraverserVisitor<TW, LevelState>:: 
 forward_arc(NodeRelation *, 
-	    TraverserVisitor<TW, LevelState>::TransitionWrapper &,
-	    TraverserVisitor<TW, LevelState>::AttributeWrapper &, 
-	    TraverserVisitor<TW, LevelState>::AttributeWrapper &,
-	    LevelState &) {
+            TraverserVisitor<TW, LevelState>::TransitionWrapper &,
+            TraverserVisitor<TW, LevelState>::AttributeWrapper &, 
+            TraverserVisitor<TW, LevelState>::AttributeWrapper &,
+            LevelState &) {
   return true;
 }
 
@@ -50,8 +50,8 @@ forward_arc(NodeRelation *,
 template<class TW, class LevelState>
 INLINE_GRAPH void TraverserVisitor<TW, LevelState>::
 backward_arc(NodeRelation *, 
-	     TraverserVisitor<TW, LevelState>::TransitionWrapper &,
-	     TraverserVisitor<TW, LevelState>::AttributeWrapper &, 
-	     TraverserVisitor<TW, LevelState>::AttributeWrapper &,
-	     const LevelState &) {
+             TraverserVisitor<TW, LevelState>::TransitionWrapper &,
+             TraverserVisitor<TW, LevelState>::AttributeWrapper &, 
+             TraverserVisitor<TW, LevelState>::AttributeWrapper &,
+             const LevelState &) {
 }

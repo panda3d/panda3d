@@ -15,7 +15,7 @@
 static const int max_numeric_size = 8;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ReversedNumericData
+//       Class : ReversedNumericData
 // Description : NativeNumericData and ReversedNumericData work
 //               together to provide a sneaky interface for
 //               automatically byte-swapping numbers, when necessary,

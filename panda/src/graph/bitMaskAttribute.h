@@ -14,7 +14,7 @@ template<class MaskType>
 class BitMaskTransition;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : BitMaskAttribute
+//       Class : BitMaskAttribute
 // Description : 
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
@@ -49,9 +49,9 @@ public:
     NodeAttribute::init_type();
     MaskType::init_type();
     register_type(_type_handle, 
-		  string("BitMaskAttribute<") +
-		  MaskType::get_class_type().get_name() + ">",
-		  NodeAttribute::get_class_type());
+                  string("BitMaskAttribute<") +
+                  MaskType::get_class_type().get_name() + ">",
+                  NodeAttribute::get_class_type());
   }
 
 private:

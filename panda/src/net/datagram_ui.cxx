@@ -36,49 +36,49 @@ operator >> (istream &in, NetDatagram &datagram) {
     // What have we got?
     if (p < line.length()) {
       if (isdigit(line[p]) || line[p] == '-') {
-	// A number.
-	size_t start = p;
-	p++;
-	while (p < line.length() && isdigit(line[p])) {
-	  p++;
-	}
-	if (p < line.length() && line[p] == '.') {
-	  // A floating-point number.
-	  p++;
-	  while (p < line.length() && isdigit(line[p])) {
-	    p++;
-	  }
-	  double num = atof(line.substr(start, p - start).c_str());
-	  datagram.add_int8(DE_float64);
-	  datagram.add_float64(num);
-	} else {
-	  // An integer.
-	  int num = atoi(line.substr(start, p - start).c_str());
-	  datagram.add_int8(DE_int32);
-	  datagram.add_int32(num);
-	}
+        // A number.
+        size_t start = p;
+        p++;
+        while (p < line.length() && isdigit(line[p])) {
+          p++;
+        }
+        if (p < line.length() && line[p] == '.') {
+          // A floating-point number.
+          p++;
+          while (p < line.length() && isdigit(line[p])) {
+            p++;
+          }
+          double num = atof(line.substr(start, p - start).c_str());
+          datagram.add_int8(DE_float64);
+          datagram.add_float64(num);
+        } else {
+          // An integer.
+          int num = atoi(line.substr(start, p - start).c_str());
+          datagram.add_int8(DE_int32);
+          datagram.add_int32(num);
+        }
 
       } else if (line[p] == '"') {
-	// A quoted string.
-	p++;
-	size_t start = p;
-	while (p < line.length() && line[p] != '"') {
-	  p++;
-	}
-	string str = line.substr(start, p - start);
-	datagram.add_int8(DE_string);
-	datagram.add_string(str);
-	p++;
+        // A quoted string.
+        p++;
+        size_t start = p;
+        while (p < line.length() && line[p] != '"') {
+          p++;
+        }
+        string str = line.substr(start, p - start);
+        datagram.add_int8(DE_string);
+        datagram.add_string(str);
+        p++;
 
       } else {
-	// An unquoted string.
-	size_t start = p;
-	while (p < line.length() && !isspace(line[p])) {
-	  p++;
-	}
-	string str = line.substr(start, p - start);
-	datagram.add_int8(DE_string);
-	datagram.add_string(str);
+        // An unquoted string.
+        size_t start = p;
+        while (p < line.length() && !isspace(line[p])) {
+          p++;
+        }
+        string str = line.substr(start, p - start);
+        datagram.add_int8(DE_string);
+        datagram.add_string(str);
       }
     }
   }

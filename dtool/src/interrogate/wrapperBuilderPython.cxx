@@ -76,19 +76,19 @@ write_wrapper(ostream &out, const string &wrapper_name) const {
 
     if (_parameters[pn]._remap->new_type_is_atomic_string()) {
       if (TypeManager::is_char_pointer(orig_type)) {
-	out << "char *" << get_parameter_name(pn);
-	format_specifiers += "s";
-	parameter_list += ", &" + get_parameter_name(pn);
+        out << "char *" << get_parameter_name(pn);
+        format_specifiers += "s";
+        parameter_list += ", &" + get_parameter_name(pn);
 
       } else {
-	out << "char *" << get_parameter_name(pn)
-	    << "_str; int " << get_parameter_name(pn) << "_len";
-	format_specifiers += "s#";
-	parameter_list += ", &" + get_parameter_name(pn)
-	  + "_str, &" + get_parameter_name(pn) + "_len";
-	pexpr_string = "basic_string<char>(" +
-	  get_parameter_name(pn) + "_str, " + 
-	  get_parameter_name(pn) + "_len)";
+        out << "char *" << get_parameter_name(pn)
+            << "_str; int " << get_parameter_name(pn) << "_len";
+        format_specifiers += "s#";
+        parameter_list += ", &" + get_parameter_name(pn)
+          + "_str, &" + get_parameter_name(pn) + "_len";
+        pexpr_string = "basic_string<char>(" +
+          get_parameter_name(pn) + "_str, " + 
+          get_parameter_name(pn) + "_len)";
       }
       
     } else if (TypeManager::is_bool(type)) {
@@ -247,7 +247,7 @@ pack_return_value(ostream &out, string return_expr) const {
       
     } else {
       out << "\"s#\", " << return_expr << ".data(), " 
-	  << return_expr << ".length()";
+          << return_expr << ".length()";
     }
 
   } else if (TypeManager::is_integer(type)) {

@@ -306,7 +306,7 @@ check_remaining_size(const DatagramIterator &di) const {
 
   if (_header->get_flt_version() <= _header->max_flt_version()) {
     nout << "Warning!  Ignoring extra " << di.get_remaining_size()
-	 << " bytes at the end of a " << get_type() << " record.\n";
+         << " bytes at the end of a " << get_type() << " record.\n";
   }
 }
 
@@ -558,70 +558,70 @@ read_record_and_children(FltRecordReader &reader) {
       // A push begins a new list of children.
       result = reader.advance();
       if (result != FE_ok) {
-	return result;
+        return result;
       }
       
       while (reader.get_opcode() != FO_pop) {
-	PT(FltRecord) child = create_new_record(reader.get_opcode());
-	FltError result = child->read_record_and_children(reader);
-	if (result != FE_ok) {
-	  return result;
-	}
+        PT(FltRecord) child = create_new_record(reader.get_opcode());
+        FltError result = child->read_record_and_children(reader);
+        if (result != FE_ok) {
+          return result;
+        }
 
-	if (child->is_of_type(FltInstanceDefinition::get_class_type())) {
-	  // A special case for an instance definition.  These
-	  // shouldn't appear in the hierarchy, but should instead be
-	  // added directly to the header.
-	  _header->add_instance(DCAST(FltInstanceDefinition, child));
+        if (child->is_of_type(FltInstanceDefinition::get_class_type())) {
+          // A special case for an instance definition.  These
+          // shouldn't appear in the hierarchy, but should instead be
+          // added directly to the header.
+          _header->add_instance(DCAST(FltInstanceDefinition, child));
 
-	} else {
-	  add_child(child);
-	}
+        } else {
+          add_child(child);
+        }
 
-	if (reader.eof() || reader.error()) {
-	  assert(!flt_error_abort);
-	  return FE_end_of_file;
-	}
+        if (reader.eof() || reader.error()) {
+          assert(!flt_error_abort);
+          return FE_end_of_file;
+        }
       }
 
     } else if (reader.get_opcode() == FO_push_face) {
       // A push subface begins a new list of subfaces.
       result = reader.advance();
       if (result != FE_ok) {
-	return result;
+        return result;
       }
       
       while (reader.get_opcode() != FO_pop_face) {
-	PT(FltRecord) subface = create_new_record(reader.get_opcode());
-	FltError result = subface->read_record_and_children(reader);
-	if (result != FE_ok) {
-	  return result;
-	}
-	add_subface(subface);
-	if (reader.eof() || reader.error()) {
-	  assert(!flt_error_abort);
-	  return FE_end_of_file;
-	}
+        PT(FltRecord) subface = create_new_record(reader.get_opcode());
+        FltError result = subface->read_record_and_children(reader);
+        if (result != FE_ok) {
+          return result;
+        }
+        add_subface(subface);
+        if (reader.eof() || reader.error()) {
+          assert(!flt_error_abort);
+          return FE_end_of_file;
+        }
       }
 
     } else if (reader.get_opcode() == FO_push_extension) {
       // A push extension begins a new list of extensions.
       result = reader.advance();
       if (result != FE_ok) {
-	return result;
+        return result;
       }
       
       while (reader.get_opcode() != FO_pop_extension) {
-	PT(FltRecord) extension = create_new_record(reader.get_opcode());
-	FltError result = extension->read_record_and_children(reader);
-	if (result != FE_ok) {
-	  return result;
-	}
-	add_extension(extension);
-	if (reader.eof() || reader.error()) {
-	  assert(!flt_error_abort);
-	  return FE_end_of_file;
-	}
+        PT(FltRecord) extension = create_new_record(reader.get_opcode());
+        FltError result = extension->read_record_and_children(reader);
+        if (result != FE_ok) {
+          return result;
+        }
+        add_extension(extension);
+        if (reader.eof() || reader.error()) {
+          assert(!flt_error_abort);
+          return FE_end_of_file;
+        }
       }
 
     } else if (is_ancillary(reader.get_opcode())) {

@@ -13,7 +13,7 @@
 #include <pta_float.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoDiscontinuousVertexMap
+//       Class : LwoDiscontinuousVertexMap
 // Description : A mapping of floating-point values per integer index.
 //               The meaning of these values is determined by the
 //               mapping type code and/or its name.
@@ -47,7 +47,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoDiscontinuousVertexMap",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

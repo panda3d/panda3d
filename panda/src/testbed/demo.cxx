@@ -262,13 +262,13 @@ event_left(CPT_Event) {
 
     for (int i = 0; i < num_children; i++) {
       if (parent.get_child(i) == selected_node) {
-	// We've currently got child i; now select child i-1.
-	if (i - 1 >=  0) {
-	  clear_highlight();
-	  selected_node = parent.get_child(i - 1);
-	  set_highlight();
-	}
-	return;
+        // We've currently got child i; now select child i-1.
+        if (i - 1 >=  0) {
+          clear_highlight();
+          selected_node = parent.get_child(i - 1);
+          set_highlight();
+        }
+        return;
       }
     }
   }
@@ -284,13 +284,13 @@ event_right(CPT_Event) {
 
     for (int i = 0; i < num_children; i++) {
       if (parent.get_child(i) == selected_node) {
-	// We've currently got child i; now select child i + 11.
-	if (i + 1 < num_children) {
-	  clear_highlight();
-	  selected_node = parent.get_child(i + 1);
-	  set_highlight();
-	}
-	return;
+        // We've currently got child i; now select child i + 11.
+        if (i + 1 < num_children) {
+          clear_highlight();
+          selected_node = parent.get_child(i + 1);
+          set_highlight();
+        }
+        return;
       }
     }
   }
@@ -311,21 +311,21 @@ event_fkey(CPT_Event event) {
     } else {
       Colorf color;
       if (event->get_name() == "f1") {
-	color.set(0.0, 0.0, 1.0, 1.0);
+        color.set(0.0, 0.0, 1.0, 1.0);
       } else if (event->get_name() == "f2") {
-	color.set(0.0, 1.0, 0.0, 1.0);
+        color.set(0.0, 1.0, 0.0, 1.0);
       } else if (event->get_name() == "f3") {
-	color.set(0.0, 1.0, 1.0, 1.0);
+        color.set(0.0, 1.0, 1.0, 1.0);
       } else if (event->get_name() == "f4") {
-	color.set(1.0, 0.0, 0.0, 1.0);
+        color.set(1.0, 0.0, 0.0, 1.0);
       } else if (event->get_name() == "f5") {
-	color.set(1.0, 0.0, 1.0, 1.0);
+        color.set(1.0, 0.0, 1.0, 1.0);
       } else if (event->get_name() == "f6") {
-	color.set(1.0, 1.0, 0.0, 1.0);
+        color.set(1.0, 1.0, 0.0, 1.0);
       } else if (event->get_name() == "f7") {
-	color.set(1.0, 1.0, 1.0, 1.0);
+        color.set(1.0, 1.0, 1.0, 1.0);
       } else if (event->get_name() == "f8") {
-	color.set(0.0, 0.0, 0.0, 1.0);
+        color.set(0.0, 0.0, 0.0, 1.0);
       }
       arc->set_transition(new ColorTransition(color));
       cerr << "Setting color on " << *arc << " to " << color << "\n";

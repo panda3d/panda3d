@@ -14,7 +14,7 @@
 class Node;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : DeferredArcProperty
+//       Class : DeferredArcProperty
 // Description : This class keeps track of all the state we must make
 //               note of during the graph traversal, but cannot apply
 //               immediately.  An instance of this class may be

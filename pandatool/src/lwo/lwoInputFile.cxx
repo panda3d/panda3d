@@ -121,7 +121,7 @@ make_new_chunk(IffId id) {
     return new LwoPolygons;
 
   } else if (id == IffId("TAGS") || 
-	     id == IffId("SRFS")) {
+             id == IffId("SRFS")) {
     return new LwoTags;
 
   } else if (id == IffId("PTAG")) {

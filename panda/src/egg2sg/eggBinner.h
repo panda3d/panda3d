@@ -11,7 +11,7 @@
 #include <eggBinMaker.h>
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : EggBinner
+//       Class : EggBinner
 // Description : A special binner used only within this package to
 //               pre-process the egg tree for the loader and group
 //               things together as appropriate.

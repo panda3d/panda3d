@@ -111,8 +111,8 @@ apply_transitions(NodeRelation *arc, int transition_types) {
 ////////////////////////////////////////////////////////////////////
 void SceneGraphReducer::
 r_apply_transitions(NodeRelation *arc, int transition_types,
-		    SceneGraphReducer::AccumulatedTransitions trans,
-		    bool duplicate) {
+                    SceneGraphReducer::AccumulatedTransitions trans,
+                    bool duplicate) {
   if (sgraphutil_cat.is_debug()) {
     sgraphutil_cat.debug()
       << "r_apply_transitions(" << *arc << "), arc's transitions are:\n";
@@ -124,7 +124,7 @@ r_apply_transitions(NodeRelation *arc, int transition_types,
     TransformTransition *tt;
     if (get_transition_into(tt, arc)) {
       trans._transform =
-	DCAST(TransformTransition, trans._transform->compose(tt));
+        DCAST(TransformTransition, trans._transform->compose(tt));
       arc->clear_transition(TransformTransition::get_class_type());
     }
   }
@@ -134,7 +134,7 @@ r_apply_transitions(NodeRelation *arc, int transition_types,
     ColorTransition *ct;
     if (get_transition_into(ct, arc)) {
       trans._color =
-	DCAST(ColorTransition, trans._color->compose(ct));
+        DCAST(ColorTransition, trans._color->compose(ct));
       arc->clear_transition(ColorTransition::get_class_type());
     }
   }
@@ -144,7 +144,7 @@ r_apply_transitions(NodeRelation *arc, int transition_types,
     TexMatrixTransition *tmt;
     if (get_transition_into(tmt, arc)) {
       trans._texture_matrix = 
-	DCAST(TexMatrixTransition, trans._texture_matrix->compose(tmt));
+        DCAST(TexMatrixTransition, trans._texture_matrix->compose(tmt));
       arc->clear_transition(TexMatrixTransition::get_class_type());
     }
   }
@@ -174,9 +174,9 @@ r_apply_transitions(NodeRelation *arc, int transition_types,
       // here.  Drop transitions onto this arc to reflect what's been
       // accumulated so far.
       if (sgraphutil_cat.is_debug()) {
-	sgraphutil_cat.debug()
-	  << "Cannot duplicate nodes of type " << node->get_type()
-	  << "; dropping transitions here and stopping.\n";
+        sgraphutil_cat.debug()
+          << "Cannot duplicate nodes of type " << node->get_type()
+          << "; dropping transitions here and stopping.\n";
       }
 
       trans.apply_to_arc(arc, transition_types);
@@ -186,8 +186,8 @@ r_apply_transitions(NodeRelation *arc, int transition_types,
     PT(Node) new_node = node->make_copy();
     if (new_node->get_type() != node->get_type()) {
       sgraphutil_cat.error()
-	<< "Cannot apply transitions to " << *node 
-	<< "; don't know how to copy nodes of this type.\n";
+        << "Cannot apply transitions to " << *node 
+        << "; don't know how to copy nodes of this type.\n";
 
       trans.apply_to_arc(arc, transition_types);
       return;
@@ -195,7 +195,7 @@ r_apply_transitions(NodeRelation *arc, int transition_types,
 
     if (sgraphutil_cat.is_debug()) {
       sgraphutil_cat.debug()
-	<< "Duplicated " << *node << "\n";
+        << "Duplicated " << *node << "\n";
     }
 
     copy_children(new_node, node);
@@ -211,16 +211,16 @@ r_apply_transitions(NodeRelation *arc, int transition_types,
   if (arc->has_transition(BillboardTransition::get_class_type())) {
     if (sgraphutil_cat.is_debug()) {
       sgraphutil_cat.debug()
-	<< "Arc " << *arc 
-	<< " contains a BillboardTransition; leaving transform here.\n";
+        << "Arc " << *arc 
+        << " contains a BillboardTransition; leaving transform here.\n";
     }
     apply_types |= TT_transform;
   }
   if (!node->safe_to_transform()) {
     if (sgraphutil_cat.is_debug()) {
       sgraphutil_cat.debug()
-	<< "Cannot safely transform nodes of type " << node->get_type()
-	<< "; leaving a transform here but carrying on otherwise.\n";
+        << "Cannot safely transform nodes of type " << node->get_type()
+        << "; leaving a transform here but carrying on otherwise.\n";
     }
     apply_types |= TT_transform;
   }    
@@ -230,7 +230,7 @@ r_apply_transitions(NodeRelation *arc, int transition_types,
   if (node->is_of_type(GeomNode::get_class_type())) {
     if (sgraphutil_cat.is_debug()) {
       sgraphutil_cat.debug()
-	<< "Transforming geometry.\n";
+        << "Transforming geometry.\n";
     }
 
     // We treat GeomNodes as a special case, since we can apply more
@@ -239,18 +239,18 @@ r_apply_transitions(NodeRelation *arc, int transition_types,
     GeomNode *gnode = DCAST(GeomNode, node);
     if ((transition_types & TT_transform) != 0) {
       if (trans._transform->get_matrix() != LMatrix4f::ident_mat()) {
-	_transformer.transform_vertices(gnode, trans._transform->get_matrix());
+        _transformer.transform_vertices(gnode, trans._transform->get_matrix());
       }
     }
     if ((transition_types & TT_color) != 0) {
       if (trans._color->is_on() && trans._color->is_real()) {
-	_transformer.set_color(gnode, trans._color->get_color());
+        _transformer.set_color(gnode, trans._color->get_color());
       }
     }
     if ((transition_types & TT_texture_matrix) != 0) {
       if (trans._texture_matrix->get_matrix() != LMatrix4f::ident_mat()) {
-	_transformer.transform_texcoords(gnode, 
-					 trans._texture_matrix->get_matrix());
+        _transformer.transform_texcoords(gnode, 
+                                         trans._texture_matrix->get_matrix());
       }
     }
     

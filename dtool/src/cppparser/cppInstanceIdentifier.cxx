@@ -132,7 +132,7 @@ add_array_modifier(CPPExpression *expr) {
 ////////////////////////////////////////////////////////////////////
 CPPScope *CPPInstanceIdentifier::
 get_scope(CPPScope *current_scope, CPPScope *global_scope,
-	  CPPPreprocessor *error_sink) const {
+          CPPPreprocessor *error_sink) const {
   if (_ident == NULL) {
     return current_scope;
   } else {
@@ -147,7 +147,7 @@ get_scope(CPPScope *current_scope, CPPScope *global_scope,
 ////////////////////////////////////////////////////////////////////
 CPPType *CPPInstanceIdentifier::
 r_unroll_type(CPPType *start_type,
-	      CPPInstanceIdentifier::Modifiers::const_iterator mi) {
+              CPPInstanceIdentifier::Modifiers::const_iterator mi) {
   start_type = CPPType::new_type(start_type);
 
   if (mi == _modifiers.end()) {
@@ -173,10 +173,10 @@ r_unroll_type(CPPType *start_type,
       CPPType *type = r_unroll_type(start_type, mi);
       CPPFunctionType *ftype = type->as_function_type();
       if (ftype != NULL) {
-	ftype = new CPPFunctionType(*ftype);
-	ftype->_class_owner = mod._scoping;
-	ftype->_flags |= CPPFunctionType::F_method_pointer;
-	type = ftype;
+        ftype = new CPPFunctionType(*ftype);
+        ftype->_class_owner = mod._scoping;
+        ftype->_flags |= CPPFunctionType::F_method_pointer;
+        type = ftype;
       }
       result = new CPPPointerType(type);
     }
@@ -184,7 +184,7 @@ r_unroll_type(CPPType *start_type,
 
   case IIT_array:
     result = new CPPArrayType(r_unroll_type(start_type, mi),
-			      mod._expr);
+                              mod._expr);
     break;
 
   case IIT_const:
@@ -199,7 +199,7 @@ r_unroll_type(CPPType *start_type,
     {
       CPPType *return_type = r_unroll_type(start_type, mi);
       result = new CPPFunctionType(return_type, mod._func_params,
-				   mod._func_flags);
+                                   mod._func_flags);
     }
     break;
 

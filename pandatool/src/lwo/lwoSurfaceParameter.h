@@ -11,7 +11,7 @@
 #include "lwoChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurfaceParameter
+//       Class : LwoSurfaceParameter
 // Description : Records some parameter value of a surface material,
 //               as an entry within a LwoSurface chunk.  The meaning
 //               of the value is determined by the id of this chunk.
@@ -36,7 +36,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoSurfaceParameter",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

@@ -40,8 +40,8 @@ around(const BoundingVolume **first, const BoundingVolume **last) {
     const BoundingVolume **bvi;
     for (bvi = first; bvi != last; ++bvi) {
       if ((*bvi)->is_infinite()) {
-	_flags = F_infinite;
-	return true;
+        _flags = F_infinite;
+        return true;
       }
     }
 

@@ -12,7 +12,7 @@
 #include "eggWriter.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggFilter
+//       Class : EggFilter
 // Description : This is the base class for a program that reads an
 //               egg file, operates on it, and writes another egg file
 //               out.

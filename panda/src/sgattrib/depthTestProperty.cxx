@@ -30,10 +30,10 @@ operator << (ostream &out, DepthTestProperty::Mode mode) {
 
   case DepthTestProperty::M_not_equal:
     return out << "not_equal";
- 	
+ 
   case DepthTestProperty::M_greater_equal:
     return out << "greater_equal";
-	
+
   case DepthTestProperty::M_always:
     return out << "always";
   }

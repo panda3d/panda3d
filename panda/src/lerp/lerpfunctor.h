@@ -26,7 +26,7 @@ public:
   static void init_type(void) {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "LerpFunctor",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();
@@ -48,7 +48,7 @@ protected:
 
   value interpolate(float);
   SimpleLerpFunctor(value start, value end) : LerpFunctor(), _start(start),
-					      _end(end), _diff_cache(end-start)
+                                              _end(end), _diff_cache(end-start)
     {}
   SimpleLerpFunctor(const SimpleLerpFunctor<value>&);
 public:
@@ -110,7 +110,7 @@ public:
     os << "SimpleQueryLerpFunctor<" << get_type_handle(value).get_name()
        << ">";
     register_type(_type_handle, os.str(),
-		  SimpleLerpFunctor<value>::get_class_type());
+                  SimpleLerpFunctor<value>::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();
@@ -201,7 +201,7 @@ public:
   static void init_type(void) {
     LerpFunctor::init_type();
     register_type(_type_handle, "MultiLerpFunctor",
-		  LerpFunctor::get_class_type());
+                  LerpFunctor::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

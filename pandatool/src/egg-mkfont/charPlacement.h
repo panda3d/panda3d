@@ -11,7 +11,7 @@
 #include "charBitmap.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : CharPlacement
+//       Class : CharPlacement
 // Description : This specifies where a particular character will be
 //               placed on the working bitmap.  An array of these is
 //               built up to lay out all the characters in the bitmap,
@@ -21,7 +21,7 @@
 class CharPlacement {
 public:
   INLINE CharPlacement(const CharBitmap *bm, int x, int y,
-		       int width, int height);
+                       int width, int height);
 
   bool intersects(int x, int y, int x_size, int y_size) const;
 

@@ -23,8 +23,8 @@ DeferredArcTraverser(const DeferredArcs &deferred_arcs) :
 ////////////////////////////////////////////////////////////////////
 bool DeferredArcTraverser::
 forward_arc(NodeRelation *arc, NullTransitionWrapper &,
-	    NullAttributeWrapper &, NullAttributeWrapper &,
-	    DeferredArcProperty &level_state) {
+            NullAttributeWrapper &, NullAttributeWrapper &,
+            DeferredArcProperty &level_state) {
 
   // Do we have a DeferredArcProperty associated with this arc?
   DeferredArcs::const_iterator dai;

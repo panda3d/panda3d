@@ -39,7 +39,7 @@ TypeHandle NoninteractiveGraphicsPipe::get_class_type(void) {
 void NoninteractiveGraphicsPipe::init_type(void) {
   GraphicsPipe::init_type();
   register_type(_type_handle, "NoninteractiveGraphicsPipe",
-		GraphicsPipe::get_class_type());
+                GraphicsPipe::get_class_type());
 }
 
 TypeHandle NoninteractiveGraphicsPipe::get_type(void) const {

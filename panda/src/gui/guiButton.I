@@ -58,7 +58,7 @@ INLINE void GuiButton::up(void) {
     break;
   default:
     gui_cat->warning() << "got up from invalid state (" << (int)_state << "),"
-		       << " button '" << this->get_name() << "'" << endl;
+                       << " button '" << this->get_name() << "'" << endl;
   }
 }
 
@@ -78,7 +78,7 @@ INLINE void GuiButton::down(void) {
     break;
   default:
     gui_cat->warning() << "got down from invalid state (" << (int)_state
-		       << "), button '" << this->get_name() << "'" << endl;
+                       << "), button '" << this->get_name() << "'" << endl;
   }
 }
 
@@ -98,7 +98,7 @@ INLINE void GuiButton::inactive(void) {
     break;
   default:
     gui_cat->warning() << "got inactive from invalid state (" << (int)_state
-		       << "), button '" << this->get_name() << "'" << endl;
+                       << "), button '" << this->get_name() << "'" << endl;
   }
   this->stop_behavior();
 }
@@ -119,7 +119,7 @@ INLINE void GuiButton::click(void) {
     break;
   default:
     gui_cat->warning() << "got click from invalid state (" << (int)_state
-		       << "), button '" << this->get_name() << "'" << endl;
+                       << "), button '" << this->get_name() << "'" << endl;
   }
 }
 

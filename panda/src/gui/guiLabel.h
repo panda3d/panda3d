@@ -72,7 +72,7 @@ PUBLISHED:
 
   static GuiLabel* make_simple_texture_label(Texture*);
   static GuiLabel* make_simple_text_label(const string&, TextFont*,
-					  Texture* = (Texture*)0L);
+                                          Texture* = (Texture*)0L);
   static GuiLabel* make_simple_card_label(void);
   static GuiLabel* make_null_label(void);
   static GuiLabel* make_model_label(Node*, float, float);
@@ -134,7 +134,7 @@ public:
   static void init_type(void) {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "GuiLabel",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

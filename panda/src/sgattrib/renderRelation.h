@@ -11,7 +11,7 @@
 #include <luse.h>
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : RenderRelation
+//       Class : RenderRelation
 // Description : The arc type specific to renderable scene graphs.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA RenderRelation : public NodeRelation {

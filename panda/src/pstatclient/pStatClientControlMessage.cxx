@@ -41,7 +41,7 @@ encode(Datagram &datagram) const {
     {
       datagram.add_uint16(_collectors.size());
       for (int i = 0; i < (int)_collectors.size(); i++) {
-	_collectors[i]->write_datagram(datagram);
+        _collectors[i]->write_datagram(datagram);
       }
     }
     break;
@@ -51,7 +51,7 @@ encode(Datagram &datagram) const {
       datagram.add_uint16(_first_thread_index);
       datagram.add_uint16(_names.size());
       for (int i = 0; i < (int)_names.size(); i++) {
-	datagram.add_string(_names[i]);
+        datagram.add_string(_names[i]);
       }
     }
     break;
@@ -91,9 +91,9 @@ decode(const Datagram &datagram, PStatClientVersion *version) {
       int num = source.get_uint16();
       _collectors.clear();
       for (int i = 0; i < num; i++) {
-	PStatCollectorDef *def = new PStatCollectorDef;
-	def->read_datagram(source, version);
-	_collectors.push_back(def);
+        PStatCollectorDef *def = new PStatCollectorDef;
+        def->read_datagram(source, version);
+        _collectors.push_back(def);
       }
     }
     break;
@@ -104,7 +104,7 @@ decode(const Datagram &datagram, PStatClientVersion *version) {
       int num = source.get_uint16();
       _names.clear();
       for (int i = 0; i < num; i++) {
-	_names.push_back(source.get_string());
+        _names.push_back(source.get_string());
       }
     }
     break;

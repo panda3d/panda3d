@@ -58,7 +58,7 @@ transform_vertices(Geom *geom, const LMatrix4f &mat) {
       new_coords.reserve(coords.size());
       PTA_Vertexf::const_iterator vi;
       for (vi = coords.begin(); vi != coords.end(); ++vi) {
-	new_coords.push_back((*vi) * mat);
+        new_coords.push_back((*vi) * mat);
       }
       nassertr(new_coords.size() == coords.size(), false);
     }
@@ -84,9 +84,9 @@ transform_vertices(Geom *geom, const LMatrix4f &mat) {
       new_norms.reserve(norms.size());
       PTA_Normalf::const_iterator ni;
       for (ni = norms.begin(); ni != norms.end(); ++ni) {
-	Normalf new_norm = (*ni) * mat;
-	new_norm.normalize();
-	new_norms.push_back(new_norm);
+        Normalf new_norm = (*ni) * mat;
+        new_norm.normalize();
+        new_norms.push_back(new_norm);
       }
       nassertr(new_norms.size() == norms.size(), false);
     }
@@ -123,10 +123,10 @@ transform_vertices(GeomNode *node, const LMatrix4f &mat) {
       Geom *geom = DCAST(Geom, drawable);
       PT(Geom) new_geom = geom->make_copy();
       if (transform_vertices(new_geom, mat)) {
-	new_geoms.push_back(new_geom.p());
-	any_changed = true;
+        new_geoms.push_back(new_geom.p());
+        any_changed = true;
       } else {
-	new_geoms.push_back(geom);
+        new_geoms.push_back(geom);
       }
     } else {
       new_geoms.push_back(drawable);
@@ -176,10 +176,10 @@ transform_texcoords(Geom *geom, const LMatrix4f &mat) {
       new_texcoords.reserve(texcoords.size());
       PTA_TexCoordf::const_iterator tci;
       for (tci = texcoords.begin(); tci != texcoords.end(); ++tci) {
-	const TexCoordf &tc = (*tci);
-	LVecBase4f v4(tc[0], tc[1], 0.0, 1.0);
-	v4 = v4 * mat;
-	new_texcoords.push_back(TexCoordf(v4[0] / v4[3], v4[1] / v4[3]));
+        const TexCoordf &tc = (*tci);
+        LVecBase4f v4(tc[0], tc[1], 0.0, 1.0);
+        v4 = v4 * mat;
+        new_texcoords.push_back(TexCoordf(v4[0] / v4[3], v4[1] / v4[3]));
       }
       nassertr(new_texcoords.size() == texcoords.size(), false);
     }
@@ -216,10 +216,10 @@ transform_texcoords(GeomNode *node, const LMatrix4f &mat) {
       Geom *geom = DCAST(Geom, drawable);
       PT(Geom) new_geom = geom->make_copy();
       if (transform_texcoords(new_geom, mat)) {
-	new_geoms.push_back(new_geom.p());
-	any_changed = true;
+        new_geoms.push_back(new_geom.p());
+        any_changed = true;
       } else {
-	new_geoms.push_back(geom);
+        new_geoms.push_back(geom);
       }
     } else {
       new_geoms.push_back(drawable);
@@ -281,10 +281,10 @@ set_color(GeomNode *node, const Colorf &color) {
       Geom *geom = DCAST(Geom, drawable);
       PT(Geom) new_geom = geom->make_copy();
       if (set_color(new_geom, color)) {
-	new_geoms.push_back(new_geom.p());
-	any_changed = true;
+        new_geoms.push_back(new_geom.p());
+        any_changed = true;
       } else {
-	new_geoms.push_back(geom);
+        new_geoms.push_back(geom);
       }
     } else {
       new_geoms.push_back(drawable);

@@ -14,7 +14,7 @@ TypeHandle BoundingHexahedron::_type_handle;
 
 BoundingHexahedron::
 BoundingHexahedron(const Frustumf &frustum, bool is_ortho,
-		   CoordinateSystem cs) {
+                   CoordinateSystem cs) {
   if (cs == CS_default) {
     cs = default_coordinate_system;
   }
@@ -60,8 +60,8 @@ get_min() const {
   LPoint3f m = _points[0];
   for (i = 1; i < num_points; i++) {
     m.set(min(m[0], _points[i][0]),
-	  min(m[1], _points[i][1]),
-	  min(m[2], _points[i][2]));
+          min(m[1], _points[i][1]),
+          min(m[2], _points[i][2]));
   }
   return m;
 }
@@ -74,8 +74,8 @@ get_max() const {
   LPoint3f m = _points[0];
   for (i = 1; i < num_points; i++) {
     m.set(max(m[0], _points[i][0]),
-	  max(m[1], _points[i][1]),
-	  max(m[2], _points[i][2]));
+          max(m[1], _points[i][1]),
+          max(m[2], _points[i][2]));
   }
   return m;
 }
@@ -133,8 +133,8 @@ extend_other(BoundingVolume *other) const {
 
 bool BoundingHexahedron::
 around_other(BoundingVolume *other,
-	     const BoundingVolume **first,
-	     const BoundingVolume **last) const {
+             const BoundingVolume **first,
+             const BoundingVolume **last) const {
   return other->around_hexahedrons(first, last);
 }
 
@@ -174,7 +174,7 @@ around_points(const LPoint3f *, const LPoint3f *) {
 
 bool BoundingHexahedron::
 around_spheres(const BoundingVolume **, 
-	       const BoundingVolume **) {
+               const BoundingVolume **) {
   mathutil_cat.error()
     << "BoundingHexahedron::around_spheres() called\n";
   return false;
@@ -182,7 +182,7 @@ around_spheres(const BoundingVolume **,
 
 bool BoundingHexahedron::
 around_hexahedrons(const BoundingVolume **, 
-		   const BoundingVolume **) {
+                   const BoundingVolume **) {
   mathutil_cat.error()
     << "BoundingHexahedron::around_hexahedrons() called\n";
   return false;
@@ -202,7 +202,7 @@ contains_point(const LPoint3f &point) const {
     for (int i = 0; i < num_planes; i++) {
       const Planef &p = _planes[i];
       if (p.dist_to_plane(point) > 0.0f) {
-	return IF_no_intersection;
+        return IF_no_intersection;
       }
     }
     return IF_possible | IF_some | IF_all;
@@ -223,8 +223,8 @@ contains_lineseg(const LPoint3f &a, const LPoint3f &b) const {
     for (int i = 0; i < num_planes; i++) {
       const Planef &p = _planes[i];
       if (p.dist_to_plane(a) > 0.0f ||
-	  p.dist_to_plane(b) > 0.0f) {
-	return IF_no_intersection;
+          p.dist_to_plane(b) > 0.0f) {
+        return IF_no_intersection;
       }
     }
     

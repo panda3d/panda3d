@@ -35,7 +35,7 @@ void GuiSign::manage(GuiManager* mgr, EventHandler& eh) {
     GuiItem::manage(mgr, eh);
   } else
     gui_cat->warning() << "tried to manage sign (0x" << (void*)this
-		       << ") that is already managed" << endl;
+                       << ") that is already managed" << endl;
 }
 
 void GuiSign::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
@@ -44,7 +44,7 @@ void GuiSign::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
     GuiItem::manage(mgr, eh, n);
   } else
     gui_cat->warning() << "tried to manage sign (0x" << (void*)this
-		       << ") that is already managed" << endl;
+                       << ") that is already managed" << endl;
 }
 
 void GuiSign::unmanage(void) {

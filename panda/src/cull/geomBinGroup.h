@@ -15,7 +15,7 @@
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GeomBinGroup
+//       Class : GeomBinGroup
 // Description : A special kind of abstract GeomBin that assigns its
 //               CullState objects to any of a number of sub-bins.
 //               This class is abstract because it does not define the
@@ -39,8 +39,8 @@ public:
 
   virtual void clear_current_states();
   virtual void record_current_state(GraphicsStateGuardian *gsg,
-				    CullState *cs, int draw_order,
-				    CullTraverser *trav);
+                                    CullState *cs, int draw_order,
+                                    CullTraverser *trav);
 
   virtual void draw(CullTraverser *trav);
 

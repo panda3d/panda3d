@@ -21,7 +21,7 @@ class PixelBuffer;
 class Fog;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : RIBGraphicsStateGuardian
+//       Class : RIBGraphicsStateGuardian
 // Description : A GraphicsStateGuardian specialized for creating RIB
 //               files, suitable for shipping off to a
 //               Renderman-friendly non-real-time renderer.
@@ -41,15 +41,15 @@ public:
 
   virtual void render_frame(const AllAttributesWrapper &initial_state);
   virtual void render_scene(Node *root, ProjectionNode *projnode,
-			    const AllAttributesWrapper &initial_state);
+                            const AllAttributesWrapper &initial_state);
   virtual void render_subgraph(RenderTraverser *traverser, 
-			       Node *subgraph, ProjectionNode *projnode,
-			       const AllAttributesWrapper &initial_state,
-			       const AllTransitionsWrapper &net_trans);
+                               Node *subgraph, ProjectionNode *projnode,
+                               const AllAttributesWrapper &initial_state,
+                               const AllTransitionsWrapper &net_trans);
   virtual void render_subgraph(RenderTraverser *traverser,
-			       Node *subgraph,
-			       const AllAttributesWrapper &initial_state,
-			       const AllTransitionsWrapper &net_trans);
+                               Node *subgraph,
+                               const AllAttributesWrapper &initial_state,
+                               const AllTransitionsWrapper &net_trans);
 
   virtual bool wants_normals(void) const;
   virtual bool wants_texcoords(void) const;
@@ -81,16 +81,16 @@ public:
 
   virtual void texture_to_pixel_buffer(TextureContext *, PixelBuffer *) { }
   virtual void texture_to_pixel_buffer(TextureContext *, PixelBuffer *,
-				const DisplayRegion *) { }
+                                const DisplayRegion *) { }
 
   virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr);
   virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                                  const RenderBuffer &rb);
   virtual void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-				 const NodeAttributes& na=NodeAttributes());
+                                 const NodeAttributes& na=NodeAttributes());
   virtual void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                                  const RenderBuffer &rb,
-				 const NodeAttributes& na=NodeAttributes());
+                                 const NodeAttributes& na=NodeAttributes());
 
   virtual void apply_material(Material*) { }
   virtual void apply_fog(Fog*) { }
@@ -113,7 +113,7 @@ public:
 
 protected:
   virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
-						 CPT(DisplayRegion) dr);
+                                                 CPT(DisplayRegion) dr);
   virtual void restore_frame_buffer(SavedFrameBuffer *frame_buffer);
 
   void set_color(const RGBColorf &color);
@@ -133,8 +133,8 @@ protected:
   void write_polygon(int num_verts);
  
   static void get_color_and_intensity(const RGBColorf &input,
-				      RGBColorf &output,
-				      float &intensity);
+                                      RGBColorf &output,
+                                      float &intensity);
 
   RGBColorf _current_color;
  

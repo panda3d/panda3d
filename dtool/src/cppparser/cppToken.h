@@ -11,15 +11,15 @@
 #include "cppBisonDefs.h"
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPToken
+//       Class : CPPToken
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPToken {
 public:
   CPPToken(int token, int line_number = 0, int col_number = 0,
-	   const CPPFile &file = CPPFile(""),
-	   const string &str = string(),
-	   const YYSTYPE &lval = YYSTYPE());
+           const CPPFile &file = CPPFile(""),
+           const string &str = string(),
+           const YYSTYPE &lval = YYSTYPE());
   CPPToken(const CPPToken &copy);
   void operator = (const CPPToken &copy);
 

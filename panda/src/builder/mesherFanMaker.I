@@ -52,7 +52,7 @@ INLINE bool MesherFanMaker<PrimType>::
 is_coplanar_with(const MesherFanMaker &other) const {
   return _planar && other._planar &&
     _strips.front()->is_coplanar_with(*other._strips.front(),
-				    _bucket->_coplanar_threshold);
+                                    _bucket->_coplanar_threshold);
 }
 
 template <class PrimType>
@@ -181,11 +181,11 @@ build() {
     for (++si, ++ei; si != _strips.end() && !found_seam; ++si, ++ei) {
       nassertr(ei != _edges.end(), 0);
       if ( !((*si)->_prims.front() == (*last_si)->_prims.front()) ||
-	   !(*si)->is_coplanar_with(*(*last_si), _bucket->_coplanar_threshold)) {
-	// Here's a seam.  Break the fan here.
-	found_seam = true;
-	_edges.splice(_edges.begin(), _edges, ei, _edges.end());
-	_strips.splice(_strips.begin(), _strips, si, _strips.end());
+           !(*si)->is_coplanar_with(*(*last_si), _bucket->_coplanar_threshold)) {
+        // Here's a seam.  Break the fan here.
+        found_seam = true;
+        _edges.splice(_edges.begin(), _edges, ei, _edges.end());
+        _strips.splice(_strips.begin(), _strips, si, _strips.end());
       }
     }
 
@@ -200,11 +200,11 @@ build() {
     for (++si, ++ei; si != _strips.end(); ++si, ++ei) {
       nassertr(ei != _edges.end(), 0);
       if ( !((*si)->_prims.front() == (*last_si)->_prims.front()) ||
-	   !(*si)->is_coplanar_with(*(*last_si), _bucket->_coplanar_threshold)) {
-	// Here's the end of a run of matching pieces.
-	count += unroll(last_si, si, last_ei, ei);
-	last_si = si;
-	last_ei = ei;
+           !(*si)->is_coplanar_with(*(*last_si), _bucket->_coplanar_threshold)) {
+        // Here's the end of a run of matching pieces.
+        count += unroll(last_si, si, last_ei, ei);
+        last_si = si;
+        last_ei = ei;
       }
     }
     count += unroll(last_si, si, last_ei, ei);
@@ -299,7 +299,7 @@ unroll(Strips::iterator strip_begin, Strips::iterator strip_end,
       vector<Prim>::iterator ti;
       
       for (ti = tris.begin(); ti != tris.end(); ++ti) {
-	_mesher->add_prim(*ti);
+        _mesher->add_prim(*ti);
       }
     }
   }

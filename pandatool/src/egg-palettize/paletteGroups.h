@@ -15,7 +15,7 @@
 class PaletteGroup;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PaletteGroups
+//       Class : PaletteGroups
 // Description : A set of PaletteGroups.  This presents an interface
 //               very like an STL set, with a few additional
 //               functions.
@@ -65,7 +65,7 @@ public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
 protected:
   static TypedWritable *make_PaletteGroups(const FactoryParams &params);
@@ -85,7 +85,7 @@ public:
   static void init_type() {
     TypedWritable::init_type();
     register_type(_type_handle, "PaletteGroups",
-		  TypedWritable::get_class_type());
+                  TypedWritable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -11,7 +11,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : AlphaTransformProperty
+//       Class : AlphaTransformProperty
 // Description : This class defines the set state for polygon offseting
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA AlphaTransformProperty {

@@ -13,7 +13,7 @@
 #include <datagram.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltUnsupportedRecord
+//       Class : FltUnsupportedRecord
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class FltUnsupportedRecord : public FltRecord {
@@ -41,7 +41,7 @@ public:
   static void init_type() {
     FltRecord::init_type();
     register_type(_type_handle, "FltUnsupportedRecord",
-		  FltRecord::get_class_type());
+                  FltRecord::get_class_type());
   }
 
 private:

@@ -109,10 +109,10 @@ vrpn_analog_callback(void *userdata, const vrpn_ANALOGCB info) {
     device->lock();
     for (int i = 0; i < info.num_channel; i++) {
       if (vrpn_cat.is_debug()) {
-	if (device->get_control_state(i) != info.channel[i]) {
-	  vrpn_cat.debug()
-	    << *self << " got analog " << i << " = " << info.channel[i] << "\n";
-	}
+        if (device->get_control_state(i) != info.channel[i]) {
+          vrpn_cat.debug()
+            << *self << " got analog " << i << " = " << info.channel[i] << "\n";
+        }
       }
       device->set_control_state(i, info.channel[i]);
     }

@@ -50,7 +50,7 @@ clear_current_states() {
 ////////////////////////////////////////////////////////////////////
 void GeomBinUnsorted::
 record_current_state(GraphicsStateGuardian *, CullState *cs, int,
-		     CullTraverser *) {
+                     CullTraverser *) {
   PStatTimer timer(CullTraverser::_cull_bins_unsorted_pcollector);
 
   // This shouldn't be called twice for a particular CullState on this
@@ -82,9 +82,9 @@ draw(CullTraverser *trav) {
     const CullState *cs = (*csi);
     if (cull_cat.is_spam()) {
       cull_cat.spam()
-	<< "GeomBinUnsorted state with " << cs->geom_size() << " geoms and "
-	<< cs->direct_size() << " direct nodes.\n"
-	<< "setting state " << cs->get_attributes() << "\n";
+        << "GeomBinUnsorted state with " << cs->geom_size() << " geoms and "
+        << cs->direct_size() << " direct nodes.\n"
+        << "setting state " << cs->get_attributes() << "\n";
     }
 
     if (cs->geom_size() != 0) {
@@ -93,15 +93,15 @@ draw(CullTraverser *trav) {
 
       CullState::geom_iterator gi;
       for (gi = cs->geom_begin(); gi != cs->geom_end(); ++gi) {
-	const ArcChain &arc_chain = (*gi);
-	nassertv(!arc_chain.empty());
-	GeomNode *geom_node;
-	DCAST_INTO_V(geom_node, arc_chain.back()->get_child());
-	if (cull_cat.is_spam()) {
-	  cull_cat.spam()
-	    << "Drawing " << *geom_node << "\n";
-	}
-	geom_node->draw(gsg);
+        const ArcChain &arc_chain = (*gi);
+        nassertv(!arc_chain.empty());
+        GeomNode *geom_node;
+        DCAST_INTO_V(geom_node, arc_chain.back()->get_child());
+        if (cull_cat.is_spam()) {
+          cull_cat.spam()
+            << "Drawing " << *geom_node << "\n";
+        }
+        geom_node->draw(gsg);
       }
     }
 
@@ -109,7 +109,7 @@ draw(CullTraverser *trav) {
     for (di = cs->direct_begin(); di != cs->direct_end(); ++di) {
       const ArcChain &arc_chain = (*di);
       nassertv(!arc_chain.empty());
-	  
+
       trav->draw_direct(arc_chain, cs->get_attributes());
     }
   }

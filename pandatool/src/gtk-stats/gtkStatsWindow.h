@@ -15,7 +15,7 @@
 #include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GtkStatsWindow
+//       Class : GtkStatsWindow
 // Description : This is the base class for a family of windows that
 //               are associated with one particular stats client.
 //               Each window keeps a pointer back to the

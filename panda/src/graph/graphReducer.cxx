@@ -120,7 +120,7 @@ r_flatten(Node *root, bool combine_siblings) {
     NodeRelation *arc = *drp.begin();
     if (consider_arc(arc)) {
       if (flatten_arc(arc)) {
-	num_nodes++;
+        num_nodes++;
       }
     }
   }
@@ -176,22 +176,22 @@ flatten_siblings(Node *root) {
       ++ai1;
       list<NodeRelation *>::iterator ai2 = ai1;
       while (ai2 != arcs.end()) {
-	list<NodeRelation *>::iterator ai2_hold = ai2;
-	NodeRelation *arc2 = (*ai2);
-	++ai2;
-	
-	if (consider_siblings(root, arc1, arc2)) {
-	  NodeRelation *new_arc = collapse_siblings(root, arc1, arc2);
-	  if (new_arc != (NodeRelation *)NULL) {
-	    // We successfully collapsed an arc.
-	    arcs.erase(ai2_hold);
-	    arcs.erase(ai1_hold);
-	    arcs.push_back(new_arc);
-	    ai1 = arcs.begin();
-	    ai2 = arcs.end();
-	    num_nodes++;
-	  }
-	}
+        list<NodeRelation *>::iterator ai2_hold = ai2;
+        NodeRelation *arc2 = (*ai2);
+        ++ai2;
+
+        if (consider_siblings(root, arc1, arc2)) {
+          NodeRelation *new_arc = collapse_siblings(root, arc1, arc2);
+          if (new_arc != (NodeRelation *)NULL) {
+            // We successfully collapsed an arc.
+            arcs.erase(ai2_hold);
+            arcs.erase(ai1_hold);
+            arcs.push_back(new_arc);
+            ai1 = arcs.begin();
+            ai2 = arcs.end();
+            num_nodes++;
+          }
+        }
       }
     }
   }
@@ -213,8 +213,8 @@ consider_arc(NodeRelation *arc) {
   if (arc->has_sub_render_trans()) {
     if (graph_cat.is_debug()) {
       graph_cat.debug()
-	<< "Not removing " << *arc
-	<< " because it contains a sub_render transition.\n";
+        << "Not removing " << *arc
+        << " because it contains a sub_render transition.\n";
     }
     return false;
   }
@@ -261,7 +261,7 @@ flatten_arc(NodeRelation *arc) {
   if (new_parent == (Node *)NULL) {
     if (graph_cat.is_debug()) {
       graph_cat.debug()
-	<< "Decided not to remove " << *arc << "\n";
+        << "Decided not to remove " << *arc << "\n";
     }
     return false;
   }
@@ -343,7 +343,7 @@ collapse_nodes(Node *node1, Node *node2, bool) {
     return node1;
     
   } else if (node1->is_exact_type(Node::get_class_type()) ||
-	     node1->is_exact_type(NamedNode::get_class_type())) {
+             node1->is_exact_type(NamedNode::get_class_type())) {
     // Node1 isn't anything special, so preserve node2.
     return node2;
 
@@ -404,7 +404,7 @@ move_children(Node *to, Node *from) {
     int num_children = from->get_num_children(_graph_type);
     while (num_children > 0) {
       NodeRelation *arc = 
-	from->get_child(_graph_type, 0);
+        from->get_child(_graph_type, 0);
       arc->change_parent(to);
       num_children--;
       nassertv(num_children == from->get_num_children(_graph_type));
@@ -426,7 +426,7 @@ copy_children(Node *to, Node *from) {
     for (int i = 0; i < num_children; i++) {
       NodeRelation *arc = from->get_child(_graph_type, i);
       NodeRelation *new_arc = NodeRelation::create_typed_arc
-	(_graph_type, to, arc->get_child());
+        (_graph_type, to, arc->get_child());
       nassertv(new_arc != (NodeRelation *)NULL);
       nassertv(new_arc->is_exact_type(_graph_type));
       new_arc->copy_transitions_from(arc);

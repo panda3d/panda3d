@@ -11,7 +11,7 @@
 #include "fltTransformRecord.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltTransformRotateScale
+//       Class : FltTransformRotateScale
 // Description : A combination rotation and scale.  This is sometimes
 //               called "Rotate To Point" within MultiGen.
 ////////////////////////////////////////////////////////////////////
@@ -20,7 +20,7 @@ public:
   FltTransformRotateScale(FltHeader *header);
 
   void set(const LPoint3d &center, const LPoint3d &reference_point,
-	   const LPoint3d &to_point, bool axis_scale);
+           const LPoint3d &to_point, bool axis_scale);
 
   const LPoint3d &get_center() const;
   const LPoint3d &get_reference_point() const;
@@ -54,7 +54,7 @@ public:
   static void init_type() {
     FltTransformRecord::init_type();
     register_type(_type_handle, "FltTransformRotateScale",
-		  FltTransformRecord::get_class_type());
+                  FltTransformRecord::get_class_type());
   }
 
 private:

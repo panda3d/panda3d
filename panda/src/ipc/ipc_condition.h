@@ -19,12 +19,12 @@ class EXPCL_PANDAEXPRESS base_condition_variable {
 
       static base_condition_variable* const Null;
       INLINE base_condition_variable(mutex& m) : _mutex(m),
-	_condition(traits::make_condition(m.get_mutex())) {}
+        _condition(traits::make_condition(m.get_mutex())) {}
       INLINE ~base_condition_variable(void) { delete _condition; }
       INLINE void wait(void) { _condition->wait(); }
       INLINE int timedwait(const unsigned long secs,
-			   const unsigned long nsecs = 0) {
-	 return _condition->timedwait(secs, nsecs);
+                           const unsigned long nsecs = 0) {
+         return _condition->timedwait(secs, nsecs);
       }
       INLINE void signal(void) { _condition->signal(); }
       INLINE void broadcast(void) { _condition->broadcast(); }

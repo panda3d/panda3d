@@ -30,7 +30,7 @@ static const LVecBase3f zero = LVecBase3f(0.0, 0.0, 0.0);
 ////////////////////////////////////////////////////////////////////
 static ostream &
 show_vec3(ostream &out, int indent_level, const LVecBase3f &v, 
-	  int num_dimensions) {
+          int num_dimensions) {
   indent(out, indent_level) << v[0];
   for (int i = 1; i<num_dimensions; i++) {
     out << " " << v[i];
@@ -177,7 +177,7 @@ format_egg(ostream &out, int indent_level, int num_dimensions,
   if (show_in) {
     indent(out, indent_level) << "<Vertex> {\n";
     show_vec3(out, indent_level + 2, _p - scale_in * _in / 3.0, 
-	      num_dimensions) << "\n";
+              num_dimensions) << "\n";
     indent(out, indent_level) << "}\n";
   }
 
@@ -209,7 +209,7 @@ format_egg(ostream &out, int indent_level, int num_dimensions,
   if (show_out) {
     indent(out, indent_level) << "<Vertex> {\n";
     show_vec3(out, indent_level + 2, _p + scale_out * _out / 3.0, 
-	      num_dimensions) << "\n";
+              num_dimensions) << "\n";
     indent(out, indent_level) << "}\n";
   }
 }
@@ -720,9 +720,9 @@ write_cv(ostream &out, int n) const {
 ////////////////////////////////////////////////////////////////////
 bool HermiteCurve::
 rebuild_curveseg(int, float, const LVecBase4f &,
-		 int, float, const LVecBase4f &,
-		 int, float, const LVecBase4f &,
-		 int, float, const LVecBase4f &) {
+                 int, float, const LVecBase4f &,
+                 int, float, const LVecBase4f &,
+                 int, float, const LVecBase4f &) {
   cerr << "rebuild_curveseg not implemented for this curve type.\n";
   return false;
 }
@@ -734,7 +734,7 @@ rebuild_curveseg(int, float, const LVecBase4f &,
 ////////////////////////////////////////////////////////////////////
 bool HermiteCurve::
 format_egg(ostream &out, const string &name, const string &curve_type,
-	   int indent_level) const {
+           int indent_level) const {
   indent(out, indent_level)
     << "<VertexPool> " << name << ".pool {\n";
 
@@ -743,9 +743,9 @@ format_egg(ostream &out, const string &name, const string &curve_type,
     bool show_in = (i != 0);
     bool show_out = (i != (int)_points.size()-1);
     _points[i].format_egg(out, indent_level + 2, _num_dimensions, 
-			  show_in, show_out,
-			  show_in ? get_tlength(i-1) : 0.0,
-			  show_out ? get_tlength(i) : 0.0);
+                          show_in, show_out,
+                          show_in ? get_tlength(i-1) : 0.0,
+                          show_out ? get_tlength(i) : 0.0);
   }
   indent(out, indent_level) << "}\n";
     
@@ -760,8 +760,8 @@ format_egg(ostream &out, const string &name, const string &curve_type,
   if (_points.size() > 1) {
     for (i = 0; i < (int)_segs.size(); i++) {
       if (i%10 == 1) {
-	out << "\n";
-	indent(out, indent_level+3);
+        out << "\n";
+        indent(out, indent_level+3);
       }
       out << " " << get_tlength(i);
     }
@@ -828,7 +828,7 @@ invalidate_cv(int n, bool redo_all) {
       const HermiteCurveCV &p1 = _points[n];
       HermiteCurveCV p2(_points[n+1]);
       if (_curve_type == PCT_HPR) {
-	wrap_hpr(p1._p, p2._p);
+        wrap_hpr(p1._p, p2._p);
       }
       get_curveseg(n)->hermite_basis(p1, p2, get_tlength(n));
       t2 = get_cv_tstart(n+2);
@@ -887,7 +887,7 @@ recompute_basis() {
       const HermiteCurveCV &p1 = _points[n];
       HermiteCurveCV p2(_points[n+1]);
       if (_curve_type == PCT_HPR) {
-	wrap_hpr(p1._p, p2._p);
+        wrap_hpr(p1._p, p2._p);
       }
       get_curveseg(n)->hermite_basis(p1, p2, get_tlength(n));
     }

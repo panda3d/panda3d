@@ -25,7 +25,7 @@
  */
 
 #ifndef _COMPAT_
-#define	_COMPAT_
+#define _COMPAT_
 /*
  * This file contains a hodgepodge of definitions and
  * declarations that are needed to provide compatibility
@@ -60,7 +60,7 @@
 #endif
 #if defined(THINK_C) || defined(applec)
 #include <stdlib.h>
-#define	BSDTYPES
+#define BSDTYPES
 #endif
 
 /*
@@ -70,14 +70,14 @@
 #if defined(SYSV)
 #include <unistd.h>
 #endif
-#define	L_SET	SEEK_SET
-#define	L_INCR	SEEK_CUR
-#define	L_XTND	SEEK_END
+#define L_SET   SEEK_SET
+#define L_INCR  SEEK_CUR
+#define L_XTND  SEEK_END
 #endif /* defined(SYSV) || defined(VMS) */
 #ifndef L_SET
-#define L_SET	0
-#define L_INCR	1
-#define L_XTND	2
+#define L_SET   0
+#define L_INCR  1
+#define L_XTND  2
 #endif
 
 /*
@@ -92,10 +92,10 @@
  * then define BSDTYPES in your Makefile.
  */
 #ifdef BSDTYPES
-typedef	unsigned char u_char;
-typedef	unsigned short u_short;
-typedef	unsigned int u_int;
-typedef	unsigned long u_long;
+typedef unsigned char u_char;
+typedef unsigned short u_short;
+typedef unsigned int u_int;
+typedef unsigned long u_long;
 #endif
 
 /*

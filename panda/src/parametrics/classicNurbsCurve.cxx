@@ -58,7 +58,7 @@ ClassicNurbsCurve(const ParametricCurve &pc) {
 ////////////////////////////////////////////////////////////////////
 ClassicNurbsCurve::
 ClassicNurbsCurve(int order, int num_cvs,
-		  const float knots[], const LVecBase4f cvs[]) {
+                  const float knots[], const LVecBase4f cvs[]) {
   _order = order;
 
   int i;
@@ -305,19 +305,19 @@ recompute() {
   if ((int)_cvs.size() > _order-1) {
     for (int cv = 0; cv < (int)_cvs.size()-(_order-1); cv++) {
       if (get_knot(cv+_order-1) < get_knot(cv+_order)) {
-	// There are _order consecutive CV's that define each segment,
-	// beginning at cv.  Collect the CV's and knot values that define
-	// this segment.
-	int c;
-	for (c = 0; c < _order; c++) {
-	  cvs[c] = _cvs[c+cv]._p;
-	}
-	for (c = 0; c < _order+_order; c++) {
-	  knots[c] = get_knot(c+cv);
-	}
-	
-	insert_curveseg(_segs.size(), new CubicCurveseg(_order, knots, cvs),
-			knots[_order] - knots[_order-1]);
+        // There are _order consecutive CV's that define each segment,
+        // beginning at cv.  Collect the CV's and knot values that define
+        // this segment.
+        int c;
+        for (c = 0; c < _order; c++) {
+          cvs[c] = _cvs[c+cv]._p;
+        }
+        for (c = 0; c < _order+_order; c++) {
+          knots[c] = get_knot(c+cv);
+        }
+
+        insert_curveseg(_segs.size(), new CubicCurveseg(_order, knots, cvs),
+                        knots[_order] - knots[_order-1]);
       }
     }
   }
@@ -336,9 +336,9 @@ recompute() {
 ////////////////////////////////////////////////////////////////////
 bool ClassicNurbsCurve::
 rebuild_curveseg(int rtype0, float t0, const LVecBase4f &v0,
-		 int rtype1, float t1, const LVecBase4f &v1,
-		 int rtype2, float t2, const LVecBase4f &v2,
-		 int rtype3, float t3, const LVecBase4f &v3) {
+                 int rtype1, float t1, const LVecBase4f &v1,
+                 int rtype2, float t2, const LVecBase4f &v2,
+                 int rtype3, float t3, const LVecBase4f &v3) {
   // Figure out which CV's contributed to this segment.
   int seg = 0;
 
@@ -348,7 +348,7 @@ rebuild_curveseg(int rtype0, float t0, const LVecBase4f &v0,
   for (cv = 0; cv < (int)_cvs.size()-(_order-1); cv++) {
     if (get_knot(cv+_order-1) < get_knot(cv+_order)) {
       if (seg == _last_ti) {
-	break;
+        break;
       }
       seg++;
     }
@@ -383,10 +383,10 @@ rebuild_curveseg(int rtype0, float t0, const LVecBase4f &v0,
   Bi = invert(B);
 
   if (!CubicCurveseg::compute_seg(rtype0, t0, v0,
-				  rtype1, t1, v1,
-				  rtype2, t2, v2,
-				  rtype3, t3, v3,
-				  B, Bi, G)) {
+                                  rtype1, t1, v1,
+                                  rtype2, t2, v2,
+                                  rtype3, t3, v3,
+                                  B, Bi, G)) {
     return false;
   }
 
@@ -514,7 +514,7 @@ append_cv_impl(const LVecBase4f &v) {
 ////////////////////////////////////////////////////////////////////
 bool ClassicNurbsCurve::
 format_egg(ostream &out, const string &name, const string &curve_type,
-	   int indent_level) const {
+           int indent_level) const {
   return NurbsCurveInterface::format_egg(out, name, curve_type, indent_level);
 }
 

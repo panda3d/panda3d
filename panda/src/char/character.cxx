@@ -211,7 +211,7 @@ r_copy_subgraph(TypeHandle graph_type, Node::InstanceMap &) const {
 ////////////////////////////////////////////////////////////////////
 void Character::
 r_copy_char(Node *dest, const Node *source, TypeHandle graph_type, 
-	    const Character *from, Character::ArcMap &arc_map) {
+            const Character *from, Character::ArcMap &arc_map) {
   if (source->is_of_type(GeomNode::get_class_type())) {
     const GeomNode *source_gnode;
     GeomNode *dest_gnode;
@@ -223,9 +223,9 @@ r_copy_char(Node *dest, const Node *source, TypeHandle graph_type,
     for (int i = 0; i < num_geoms; i++) {
       dDrawable *d = source_gnode->get_geom(i);
       if (d->is_of_type(Geom::get_class_type())) {
-	dest_gnode->add_geom(copy_geom(DCAST(Geom, d), from));
+        dest_gnode->add_geom(copy_geom(DCAST(Geom, d), from));
       } else {
-	dest_gnode->add_geom(d);
+        dest_gnode->add_geom(d);
       }
     }
   }
@@ -338,37 +338,37 @@ copy_arc_pointers(const Character *from, const Character::ArcMap &arc_map) {
 
       CharacterJoint::ArcList::const_iterator ai;
       for (ai = source_joint->_net_transform_arcs.begin();
-	   ai != source_joint->_net_transform_arcs.end();
-	   ++ai) {
-	NodeRelation *source_arc = (*ai);
+           ai != source_joint->_net_transform_arcs.end();
+           ++ai) {
+        NodeRelation *source_arc = (*ai);
 
-	ArcMap::const_iterator mi;
-	mi = arc_map.find(source_arc);
-	if (mi != arc_map.end()) {
-	  NodeRelation *dest_arc = (*mi).second;
+        ArcMap::const_iterator mi;
+        mi = arc_map.find(source_arc);
+        if (mi != arc_map.end()) {
+          NodeRelation *dest_arc = (*mi).second;
 
-	  // Here's an internal joint that the source Character was
-	  // animating directly.  We'll animate our corresponding
-	  // joint the same way.
-	  dest_joint->add_net_transform(dest_arc);
-	}
+          // Here's an internal joint that the source Character was
+          // animating directly.  We'll animate our corresponding
+          // joint the same way.
+          dest_joint->add_net_transform(dest_arc);
+        }
       }
 
       for (ai = source_joint->_local_transform_arcs.begin();
-	   ai != source_joint->_local_transform_arcs.end();
-	   ++ai) {
-	NodeRelation *source_arc = (*ai);
+           ai != source_joint->_local_transform_arcs.end();
+           ++ai) {
+        NodeRelation *source_arc = (*ai);
 
-	ArcMap::const_iterator mi;
-	mi = arc_map.find(source_arc);
-	if (mi != arc_map.end()) {
-	  NodeRelation *dest_arc = (*mi).second;
+        ArcMap::const_iterator mi;
+        mi = arc_map.find(source_arc);
+        if (mi != arc_map.end()) {
+          NodeRelation *dest_arc = (*mi).second;
 
-	  // Here's an internal joint that the source Character was
-	  // animating directly.  We'll animate our corresponding
-	  // joint the same way.
-	  dest_joint->add_local_transform(dest_arc);
-	}
+          // Here's an internal joint that the source Character was
+          // animating directly.  We'll animate our corresponding
+          // joint the same way.
+          dest_joint->add_local_transform(dest_arc);
+        }
       }
     }
   }

@@ -12,7 +12,7 @@
 #include <lmatrix.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TexMatrixTransition
+//       Class : TexMatrixTransition
 // Description : If present, this modifies the texture coordinates on
 //               geometry as it is rendered.
 ////////////////////////////////////////////////////////////////////
@@ -39,7 +39,7 @@ public:
   static void init_type() {
     LMatrix4fTransition::init_type();
     register_type(_type_handle, "TexMatrixTransition",
-		  LMatrix4fTransition::get_class_type());
+                  LMatrix4fTransition::get_class_type());
   }
 
 private:

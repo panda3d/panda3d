@@ -556,9 +556,9 @@ get_frame_actual() const {
   nassertr(has_frame(), LVecBase4f(0.0, 0.0, 0.0, 0.0));
   if (is_frame_as_margin()) {
     return LVecBase4f(get_left() - _frame_ul[0], 
-		      get_right() + _frame_lr[0],
-		      get_bottom() - _frame_lr[1],
-		      get_top() + _frame_ul[1]);
+                      get_right() + _frame_lr[0],
+                      get_bottom() - _frame_lr[1],
+                      get_top() + _frame_ul[1]);
   } else {
     return get_frame_as_set();
   }
@@ -725,9 +725,9 @@ get_card_actual() const {
 
   } else if (is_card_as_margin()) {
     return LVecBase4f(get_left() - _card_ul[0], 
-		      get_right() + _card_lr[0],
-		      get_bottom() - _card_lr[1],
-		      get_top() + _card_ul[1]);
+                      get_right() + _card_lr[0],
+                      get_bottom() - _card_lr[1],
+                      get_top() + _card_ul[1]);
   } else {
     return get_card_as_set();
   }

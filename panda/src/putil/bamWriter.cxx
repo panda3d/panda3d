@@ -133,7 +133,7 @@ write_object(TypedWritable *object) {
 
     if (!_target->put_datagram(dg)) {
       util_cat.error() 
-	<< "Unable to write datagram to file.\n";
+        << "Unable to write datagram to file.\n";
       return false;
     }
   }
@@ -283,7 +283,7 @@ write_handle(Datagram &packet, TypeHandle type) {
       nassertv(num_parent_classes <= 255);  // Good grief!
       packet.add_uint8(num_parent_classes);
       for (int i = 0; i < num_parent_classes; i++) {
-	write_handle(packet, type.get_parent_class(i));
+        write_handle(packet, type.get_parent_class(i));
       }
     }
   }

@@ -16,7 +16,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggWriter
+//       Class : EggWriter
 // Description : This is the base class for a program that generates
 //               an egg file output, but doesn't read any for input.
 ////////////////////////////////////////////////////////////////////

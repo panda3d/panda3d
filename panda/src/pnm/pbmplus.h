@@ -244,9 +244,9 @@ EXPCL_PANDA int pm_bitstomaxval( int bits );
 /* Error handling definitions. */
 
 EXPCL_PANDA void pm_message( char*, ... );
-EXPCL_PANDA void pm_error( char*, ... );			/* doesn't return */
-void pm_perror ARGS(( char* reason ));			/* doesn't return */
-void pm_usage ARGS(( char* usage ));			/* doesn't return */
+EXPCL_PANDA void pm_error( char*, ... );                        /* doesn't return */
+void pm_perror ARGS(( char* reason ));                  /* doesn't return */
+void pm_usage ARGS(( char* usage ));                    /* doesn't return */
 
 
 /* File open/close that handles "-" as stdin and checks errors. */

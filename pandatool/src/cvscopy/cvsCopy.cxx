@@ -183,7 +183,7 @@ post_command_line() {
   if (_model_dir == (CVSSourceDirectory *)NULL) {
     if (_got_model_dirname) {
       nout << "Warning: model directory " << _model_dirname
-	   << " is not within the source hierarchy.\n";
+           << " is not within the source hierarchy.\n";
     }
   }
 
@@ -192,7 +192,7 @@ post_command_line() {
 
     if (_map_dir == (CVSSourceDirectory *)NULL) {
       nout << "Warning: map directory " << _map_dirname
-	   << " is not within the source hierarchy.\n";
+           << " is not within the source hierarchy.\n";
     }
 
   } else {
@@ -200,7 +200,7 @@ post_command_line() {
 
     if (_map_dir == (CVSSourceDirectory *)NULL) {
       nout << "Warning: no directory " << _tree.get_root_dirname()
-	   << "/src/maps.\n";
+           << "/src/maps.\n";
       _map_dir = _model_dir;
     }
   }
@@ -218,7 +218,7 @@ post_command_line() {
 ////////////////////////////////////////////////////////////////////
 bool CVSCopy::
 verify_file(const Filename &, const Filename &,
-	    CVSSourceDirectory *, void *) {
+            CVSSourceDirectory *, void *) {
   return false;
 }
 

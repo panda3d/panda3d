@@ -35,8 +35,8 @@ public:
   };
 
   VrpnTrackerDevice(VrpnClient *client, const string &device_name,
-		    int sensor, DataType data_type,
-		    VrpnTracker *vrpn_tracker);
+                    int sensor, DataType data_type,
+                    VrpnTracker *vrpn_tracker);
   virtual ~VrpnTrackerDevice();
 
   INLINE int get_sensor() const;

@@ -13,7 +13,7 @@
 class PStatStripChart;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GtkStatsGuide
+//       Class : GtkStatsGuide
 // Description : A widget designed to be drawn next to a
 //               GtkStatsStripChart that shows the labels associated
 //               with the strip chart's guide bars.

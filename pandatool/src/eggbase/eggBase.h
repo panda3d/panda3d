@@ -16,7 +16,7 @@ class EggReader;
 class EggWriter;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggBase
+//       Class : EggBase
 // Description : This specialization of ProgramBase is intended for
 //               programs that read and/or write a single egg file.
 //               (See EggMultiBase for programs that operate on

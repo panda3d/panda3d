@@ -13,7 +13,7 @@
 #include <onTransition.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ColorBlendTransition
+//       Class : ColorBlendTransition
 // Description : This controls the kinds of blending between colors
 //               being rendered and the existing frame buffer.
 ////////////////////////////////////////////////////////////////////
@@ -46,7 +46,7 @@ public:
   static void init_type() {
     OnTransition::init_type();
     register_type(_type_handle, "ColorBlendTransition",
-		  OnTransition::get_class_type());
+                  OnTransition::get_class_type());
   }
 
 private:

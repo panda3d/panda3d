@@ -39,13 +39,13 @@ SoftFilename(const string &dirname, const string &filename) :
       m = (endptr - fstr) + 1;
       int minor = strtol(fstr + m, &endptr, 10);
       if (endptr != fstr + m && (*endptr == '.' || *endptr == '\0')) {
-	// We got a minor number too!
-	_has_version = true;
-	_base = _filename.substr(0, dot + 1);
-	_major = major;
-	_minor = minor;
-	_ext = endptr;
-	return;
+        // We got a minor number too!
+        _has_version = true;
+        _base = _filename.substr(0, dot + 1);
+        _major = major;
+        _minor = minor;
+        _ext = endptr;
+        return;
       }
     }
 

@@ -73,21 +73,21 @@ optimize() {
       sanim->optimize();
 
       if (sanim->get_num_rows() == 1) {
-	// If we've optimized down to one value, check to see if it is
-	// a default value.
-	double value = sanim->get_value(0);
-	double default_value;
-	if (sanim->has_name() && strchr("ijk", sanim->get_name()[0]) != NULL) {
-	  default_value = 1.0;
-	} else {
-	  default_value = 0.0;
-	}
+        // If we've optimized down to one value, check to see if it is
+        // a default value.
+        double value = sanim->get_value(0);
+        double default_value;
+        if (sanim->has_name() && strchr("ijk", sanim->get_name()[0]) != NULL) {
+          default_value = 1.0;
+        } else {
+          default_value = 0.0;
+        }
 
-	if (fabs(value - default_value) < egg_parameters->_table_threshold) {
-	  // It's a default-valued table, and therefore redundant:
-	  // remove it.
-	  erase(ci);
-	}
+        if (fabs(value - default_value) < egg_parameters->_table_threshold) {
+          // It's a default-valued table, and therefore redundant:
+          // remove it.
+          erase(ci);
+        }
       }
     }
 
@@ -173,11 +173,11 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void EggXfmSAnim::
 compose_with_order(LMatrix4d &mat, 
-		   const LVecBase3d &scale,
-		   const LVecBase3d &hpr,
-		   const LVecBase3d &trans,
-		   const string &order,
-		   CoordinateSystem cs) {
+                   const LVecBase3d &scale,
+                   const LVecBase3d &hpr,
+                   const LVecBase3d &trans,
+                   const string &order,
+                   CoordinateSystem cs) {
 
   mat = LMatrix4d::ident_mat();
 
@@ -207,9 +207,9 @@ compose_with_order(LMatrix4d &mat,
       
     case 'r':
       if (reverse_roll) {
-	mat = mat * LMatrix4d::rotate_mat_normaxis(-hpr[2], LVector3d::forward(cs), cs);
+        mat = mat * LMatrix4d::rotate_mat_normaxis(-hpr[2], LVector3d::forward(cs), cs);
       } else {
-	mat = mat * LMatrix4d::rotate_mat_normaxis(hpr[2], LVector3d::forward(cs), cs);
+        mat = mat * LMatrix4d::rotate_mat_normaxis(hpr[2], LVector3d::forward(cs), cs);
       }
       break;
       
@@ -219,7 +219,7 @@ compose_with_order(LMatrix4d &mat,
       
     default:
       egg_cat.warning()
-	<< "Invalid letter in order string: " << *pi << "\n";
+        << "Invalid letter in order string: " << *pi << "\n";
     }
   }
 }
@@ -243,12 +243,12 @@ get_num_rows() const {
     if ((*ci)->is_of_type(EggSAnimData::get_class_type())) {
       EggSAnimData *sanim = DCAST(EggSAnimData, *ci);
       if (sanim->get_num_rows() > 1) {
-	if (!found_any) {
-	  min_rows = sanim->get_num_rows();
+        if (!found_any) {
+          min_rows = sanim->get_num_rows();
 
-	} else {
-	  min_rows = min(min_rows, sanim->get_num_rows());
-	}
+        } else {
+          min_rows = min(min_rows, sanim->get_num_rows());
+        }
       }
     }
   }
@@ -279,17 +279,17 @@ get_value(int row, LMatrix4d &mat) const {
       EggSAnimData *sanim = DCAST(EggSAnimData, *ci);
 
       if (sanim->get_num_rows() == 0) {
-	// If the table is totally empty, let's keep the default
-	// value.
-	break;
+        // If the table is totally empty, let's keep the default
+        // value.
+        break;
       }
 
       double value;
       if (sanim->get_num_rows() == 1) {
-	value = sanim->get_value(0);
+        value = sanim->get_value(0);
       } else {
-	nassertv(row < sanim->get_num_rows());
-	value = sanim->get_value(row);
+        nassertv(row < sanim->get_num_rows());
+        value = sanim->get_value(row);
       }
 
       // Each child SAnimData table should have a one-letter name.
@@ -297,44 +297,44 @@ get_value(int row, LMatrix4d &mat) const {
 
       switch (sanim->get_name()[0]) {
       case 'i':
-	scale[0] = value;
-	break;
+        scale[0] = value;
+        break;
 
       case 'j':
-	scale[1] = value;
-	break;
+        scale[1] = value;
+        break;
 
       case 'k':
-	scale[2] = value;
-	break;
+        scale[2] = value;
+        break;
 
       case 'h':
-	hpr[0] = value;
-	break;
+        hpr[0] = value;
+        break;
 
       case 'p':
-	hpr[1] = value;
-	break;
+        hpr[1] = value;
+        break;
 
       case 'r':
-	hpr[2] = value;
-	break;
+        hpr[2] = value;
+        break;
 
       case 'x':
-	translate[0] = value;
-	break;
+        translate[0] = value;
+        break;
      
       case 'y':
-	translate[1] = value;
-	break;
+        translate[1] = value;
+        break;
 
       case 'z':
-	translate[2] = value;
-	break;
+        translate[2] = value;
+        break;
 
       default:
-	// One of the child tables had an invalid name.
-	nassertv(false);
+        // One of the child tables had an invalid name.
+        nassertv(false);
       }
     }
   }
@@ -383,9 +383,9 @@ set_value(int row, const LMatrix4d &mat) {
 
       // Each table must have the same length.
       if (table_length < 0) {
-	table_length = sanim->get_num_rows();
+        table_length = sanim->get_num_rows();
       } else {
-	nassertr(sanim->get_num_rows() == table_length, false);
+        nassertr(sanim->get_num_rows() == table_length, false);
       }
 #endif
 
@@ -394,44 +394,44 @@ set_value(int row, const LMatrix4d &mat) {
 
       switch (sanim->get_name()[0]) {
       case 'i':
-	sanim->set_value(row, scale[0]);
-	break;
+        sanim->set_value(row, scale[0]);
+        break;
 
       case 'j':
-	sanim->set_value(row, scale[1]);
-	break;
+        sanim->set_value(row, scale[1]);
+        break;
 
       case 'k':
-	sanim->set_value(row, scale[2]);
-	break;
+        sanim->set_value(row, scale[2]);
+        break;
 
       case 'h':
-	sanim->set_value(row, hpr[0]);
-	break;
+        sanim->set_value(row, hpr[0]);
+        break;
 
       case 'p':
-	sanim->set_value(row, hpr[1]);
-	break;
+        sanim->set_value(row, hpr[1]);
+        break;
 
       case 'r':
-	sanim->set_value(row, hpr[2]);
-	break;
+        sanim->set_value(row, hpr[2]);
+        break;
 
       case 'x':
-	sanim->set_value(row, translate[0]);
-	break;
+        sanim->set_value(row, translate[0]);
+        break;
      
       case 'y':
-	sanim->set_value(row, translate[1]);
-	break;
+        sanim->set_value(row, translate[1]);
+        break;
 
       case 'z':
-	sanim->set_value(row, translate[2]);
-	break;
+        sanim->set_value(row, translate[2]);
+        break;
 
       default:
-	// One of the child tables had an invalid name.
-	nassertr(false, false);
+        // One of the child tables had an invalid name.
+        nassertr(false, false);
       }
     }
   }
@@ -509,9 +509,9 @@ add_data(const LMatrix4d &mat) {
 
       // Each table must have the same length.
       if (table_length < 0) {
-	table_length = sanim->get_num_rows();
+        table_length = sanim->get_num_rows();
       } else {
-	nassertr(sanim->get_num_rows() == table_length, false);
+        nassertr(sanim->get_num_rows() == table_length, false);
       }
 #endif
 
@@ -520,44 +520,44 @@ add_data(const LMatrix4d &mat) {
 
       switch (sanim->get_name()[0]) {
       case 'i':
-	sanim->add_data(scale[0]);
-	break;
+        sanim->add_data(scale[0]);
+        break;
 
       case 'j':
-	sanim->add_data(scale[1]);
-	break;
+        sanim->add_data(scale[1]);
+        break;
 
       case 'k':
-	sanim->add_data(scale[2]);
-	break;
+        sanim->add_data(scale[2]);
+        break;
 
       case 'h':
-	sanim->add_data(hpr[0]);
-	break;
+        sanim->add_data(hpr[0]);
+        break;
 
       case 'p':
-	sanim->add_data(hpr[1]);
-	break;
+        sanim->add_data(hpr[1]);
+        break;
 
       case 'r':
-	sanim->add_data(hpr[2]);
-	break;
+        sanim->add_data(hpr[2]);
+        break;
 
       case 'x':
-	sanim->add_data(translate[0]);
-	break;
+        sanim->add_data(translate[0]);
+        break;
      
       case 'y':
-	sanim->add_data(translate[1]);
-	break;
+        sanim->add_data(translate[1]);
+        break;
 
       case 'z':
-	sanim->add_data(translate[2]);
-	break;
+        sanim->add_data(translate[2]);
+        break;
 
       default:
-	// One of the child tables had an invalid name.
-	nassertr(false, false);
+        // One of the child tables had an invalid name.
+        nassertr(false, false);
       }
     }
   }
@@ -576,7 +576,7 @@ add_data(const LMatrix4d &mat) {
 ////////////////////////////////////////////////////////////////////
 void EggXfmSAnim::
 r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
-	    CoordinateSystem to_cs) {
+            CoordinateSystem to_cs) {
   // We need to build an inverse matrix that doesn't reflect the
   // translation component.
   LMatrix4d inv1 = inv;
@@ -685,11 +685,11 @@ normalize_by_expanding() {
       
       num_tables++;
       if (sanim->get_num_rows() > 1) {
-	if (table_length == 1) {
-	  table_length = sanim->get_num_rows();
-	} else {
-	  nassertv(sanim->get_num_rows() == table_length);
-	}
+        if (table_length == 1) {
+          table_length = sanim->get_num_rows();
+        } else {
+          nassertv(sanim->get_num_rows() == table_length);
+        }
       }
     }
   }
@@ -698,22 +698,22 @@ normalize_by_expanding() {
     // Create new, default, children for each table we lack.
     for (size_t p = 0; p < remaining_tables.length(); p++) {
       if (remaining_tables[p] != ' ') {
-	double default_value;
-	switch (remaining_tables[p]) {
-	case 'i':
-	case 'j':
-	case 'k':
-	  default_value = 1.0;
-	  break;
-	  
-	default:
-	  default_value = 0.0;
-	}
-	
-	string name(1, remaining_tables[p]);
-	EggSAnimData *sanim = new EggSAnimData(name);
-	add_child(sanim);
-	sanim->add_data(default_value);
+        double default_value;
+        switch (remaining_tables[p]) {
+        case 'i':
+        case 'j':
+        case 'k':
+          default_value = 1.0;
+          break;
+
+        default:
+          default_value = 0.0;
+        }
+
+        string name(1, remaining_tables[p]);
+        EggSAnimData *sanim = new EggSAnimData(name);
+        add_child(sanim);
+        sanim->add_data(default_value);
       }
     }
   }
@@ -723,10 +723,10 @@ normalize_by_expanding() {
     if ((*ci)->is_of_type(EggSAnimData::get_class_type())) {
       EggSAnimData *sanim = DCAST(EggSAnimData, *ci);
       if (sanim->get_num_rows() == 1) {
-	double value = sanim->get_value(0);
-	for (int i = 1; i < table_length; i++) {
-	  sanim->add_data(value);
-	}
+        double value = sanim->get_value(0);
+        for (int i = 1; i < table_length; i++) {
+          sanim->add_data(value);
+        }
       }
       nassertv(sanim->get_num_rows() == table_length);
     }

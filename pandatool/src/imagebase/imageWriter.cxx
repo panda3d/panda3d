@@ -53,7 +53,7 @@ handle_args(ProgramBase::Args &args) {
   if (!_got_output_filename) {
     if (args.size() != 1) {
       nout << "You must specify the filename to write with -o, or as "
-	   << "the last parameter on the command line.\n";
+           << "the last parameter on the command line.\n";
       return false;
     }
     _output_filename = args[0];

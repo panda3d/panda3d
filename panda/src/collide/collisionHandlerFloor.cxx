@@ -54,8 +54,8 @@ handle_entries() {
       // it this CollisionHandler pointer--but they didn't tell us
       // about the node.
       collide_cat.error()
-	<< "CollisionHandlerFloor doesn't know about " 
-	<< *from_node << "\n";
+        << "CollisionHandlerFloor doesn't know about " 
+        << *from_node << "\n";
 
     } else {
       const ColliderDef &def = (*ci).second;
@@ -66,48 +66,48 @@ handle_entries() {
 
       Entries::const_iterator ei;
       for (ei = entries.begin(); ei != entries.end(); ++ei) {
-	CollisionEntry *entry = (*ei);
-	nassertv(entry != (CollisionEntry *)NULL);
-	nassertv(from_node == entry->get_from_node());
+        CollisionEntry *entry = (*ei);
+        nassertv(entry != (CollisionEntry *)NULL);
+        nassertv(from_node == entry->get_from_node());
 
-	if (entry->has_from_intersection_point()) {
-	  LPoint3f point = entry->get_from_intersection_point();
-	  if (collide_cat.is_debug()) {
-	    collide_cat.debug()
-	      << "Intersection point detected at " << point << "\n";
-	  }
+        if (entry->has_from_intersection_point()) {
+          LPoint3f point = entry->get_from_intersection_point();
+          if (collide_cat.is_debug()) {
+            collide_cat.debug()
+              << "Intersection point detected at " << point << "\n";
+          }
 
-	  float height = point[2];
-	  if (!got_max || height > max_height) {
-	    got_max = true;
-	    max_height = height;
-	  }
-	}
+          float height = point[2];
+          if (!got_max || height > max_height) {
+            got_max = true;
+            max_height = height;
+          }
+        }
       }
 
       // Now set our height accordingly.
       float adjust = max_height + _offset;
       if (!IS_THRESHOLD_ZERO(adjust, 0.001)) {
-	if (collide_cat.is_debug()) {
-	  collide_cat.debug()
-	    << "Adjusting height by " << adjust << "\n";
-	}
+        if (collide_cat.is_debug()) {
+          collide_cat.debug()
+            << "Adjusting height by " << adjust << "\n";
+        }
 
-	if (adjust < 0.0 && _max_velocity != 0.0) {
-	  float max_adjust = 
-	    _max_velocity * ClockObject::get_global_clock()->get_dt();
-	  adjust = max(adjust, -max_adjust);
-	}
+        if (adjust < 0.0 && _max_velocity != 0.0) {
+          float max_adjust = 
+            _max_velocity * ClockObject::get_global_clock()->get_dt();
+          adjust = max(adjust, -max_adjust);
+        }
 
-	LMatrix4f mat;
-	def.get_mat(mat);
-	mat(3, 2) += adjust;
-	def.set_mat(mat);
+        LMatrix4f mat;
+        def.get_mat(mat);
+        mat(3, 2) += adjust;
+        def.set_mat(mat);
       } else {
-	if (collide_cat.is_spam()) {
-	  collide_cat.spam()
-	    << "Leaving height unchanged.\n";
-	}
+        if (collide_cat.is_spam()) {
+          collide_cat.spam()
+            << "Leaving height unchanged.\n";
+        }
       }
     }
   }

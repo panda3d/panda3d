@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////
 static void
 _rotate_to(FLOATNAME(LMatrix3) &mat, 
-	   const FLOATNAME(LVector3) &a, const FLOATNAME(LVector3) &b) {
+           const FLOATNAME(LVector3) &a, const FLOATNAME(LVector3) &b) {
   FLOATTYPE cos_theta = a.dot(b);
 
   FLOATNAME(LVector3) axis = a.cross(b);
@@ -27,7 +27,7 @@ _rotate_to(FLOATNAME(LMatrix3) &mat,
       FLOATNAME(LVector3) absa(fabs(a[0]), fabs(a[1]), fabs(a[2]));
       FLOATNAME(LVector3) lca(0., 0., 0.);
       lca[absa[0]<=absa[1] ? absa[0]<=absa[2] ? 0 : 2
-	 : absa[1]<=absa[2] ? 1 : 2] = 1.0f;
+         : absa[1]<=absa[2] ? 1 : 2] = 1.0f;
       
       axis = normalize(a.cross(lca));
     } else {

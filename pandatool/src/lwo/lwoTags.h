@@ -14,7 +14,7 @@
 #include <vector_string.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoTags
+//       Class : LwoTags
 // Description : An array of tag strings that will be referenced by
 //               later chunks.
 //
@@ -47,7 +47,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoTags",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

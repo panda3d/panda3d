@@ -11,7 +11,7 @@
 #include "lwoGroupChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoHeader
+//       Class : LwoHeader
 // Description : The first chunk in a Lightwave Object file.
 ////////////////////////////////////////////////////////////////////
 class LwoHeader : public LwoGroupChunk {
@@ -42,7 +42,7 @@ public:
   static void init_type() {
     LwoGroupChunk::init_type();
     register_type(_type_handle, "LwoHeader",
-		  LwoGroupChunk::get_class_type());
+                  LwoGroupChunk::get_class_type());
   }
 
 private:

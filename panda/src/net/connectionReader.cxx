@@ -90,11 +90,11 @@ ConnectionReader(ConnectionManager *manager, int num_threads) :
   for (int i = 0; i < num_threads; i++) {
     PRThread *thread = 
       PR_CreateThread(PR_USER_THREAD,
-		      thread_start, (void *)this,
-		      PR_PRIORITY_NORMAL,
-		      PR_GLOBAL_THREAD, // Since thread will mostly do I/O.
-		      PR_JOINABLE_THREAD, 
-		      0);  // Select a suitable stack size.
+                      thread_start, (void *)this,
+                      PR_PRIORITY_NORMAL,
+                      PR_GLOBAL_THREAD, // Since thread will mostly do I/O.
+                      PR_JOINABLE_THREAD, 
+                      0);  // Select a suitable stack size.
     
     nassertv(thread != (PRThread *)NULL);
     _threads.push_back(thread);
@@ -129,8 +129,8 @@ ConnectionReader::
       delete sinfo;
     } else {
       net_cat.error()
-	<< "Reentrant deletion of ConnectionReader--don't delete these\n"
-	<< "in response to connection_reset().\n";
+        << "Reentrant deletion of ConnectionReader--don't delete these\n"
+        << "in response to connection_reset().\n";
 
       // We'll have to do the best we can to recover.
       sinfo->_connection.clear();
@@ -421,7 +421,7 @@ process_incoming_udp_data(SocketInfo *sinfo) {
   PRInt32 bytes_read;
 
   bytes_read = PR_RecvFrom(socket, buffer, read_buffer_size, 0,
-			   &addr, PR_INTERVAL_NO_TIMEOUT);
+                           &addr, PR_INTERVAL_NO_TIMEOUT);
 
   if (bytes_read < 0) {
     PRErrorCode errcode = PR_GetError();
@@ -499,24 +499,24 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
   while (header_bytes_read < datagram_tcp_header_size) {
     PRInt32 bytes_read =
       PR_Recv(socket, buffer + header_bytes_read, 
-	      datagram_tcp_header_size - header_bytes_read, 0,
-	      PR_INTERVAL_NO_TIMEOUT);
+              datagram_tcp_header_size - header_bytes_read, 0,
+              PR_INTERVAL_NO_TIMEOUT);
 
     if (bytes_read < 0) {
       PRErrorCode errcode = PR_GetError();
       if (errcode == PR_CONNECT_RESET_ERROR
 #ifdef PR_SOCKET_SHUTDOWN_ERROR
-	  || errcode == PR_SOCKET_SHUTDOWN_ERROR
-	  || errcode == PR_CONNECT_ABORTED_ERROR
+          || errcode == PR_SOCKET_SHUTDOWN_ERROR
+          || errcode == PR_CONNECT_ABORTED_ERROR
 #endif
-	  ) {
-	// The socket was closed.
-	if (_manager != (ConnectionManager *)NULL) {
-	  _manager->connection_reset(sinfo->_connection);
-	}
-	
+          ) {
+        // The socket was closed.
+        if (_manager != (ConnectionManager *)NULL) {
+          _manager->connection_reset(sinfo->_connection);
+        }
+
       } else if (errcode != PR_PENDING_INTERRUPT_ERROR) {
-	pprerror("PR_Recv");
+        pprerror("PR_Recv");
       }
       finish_socket(sinfo);
       return;
@@ -524,7 +524,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
     } else if (bytes_read == 0) {
       // The socket was closed.  Report that and return.
       if (_manager != (ConnectionManager *)NULL) {
-	_manager->connection_reset(sinfo->_connection);
+        _manager->connection_reset(sinfo->_connection);
       }
       finish_socket(sinfo);
       return;
@@ -555,26 +555,26 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
     
     bytes_read =
       PR_Recv(socket, buffer, 
-	      min((PRInt32)read_buffer_size, 
-		  (PRInt32)(size - datagram.get_length())),
-	      0, PR_INTERVAL_NO_TIMEOUT);
+              min((PRInt32)read_buffer_size, 
+                  (PRInt32)(size - datagram.get_length())),
+              0, PR_INTERVAL_NO_TIMEOUT);
     PRInt8 *dp = buffer;
     
     if (bytes_read < 0) {
       PRErrorCode errcode = PR_GetError();
       if (errcode == PR_CONNECT_RESET_ERROR 
 #ifdef PR_SOCKET_SHUTDOWN_ERROR
-	  || errcode == PR_SOCKET_SHUTDOWN_ERROR
-	  || errcode == PR_CONNECT_ABORTED_ERROR
+          || errcode == PR_SOCKET_SHUTDOWN_ERROR
+          || errcode == PR_CONNECT_ABORTED_ERROR
 #endif
-	  ) {
-	// The socket was closed.
-	if (_manager != (ConnectionManager *)NULL) {
-	  _manager->connection_reset(sinfo->_connection);
-	}
-	
+          ) {
+        // The socket was closed.
+        if (_manager != (ConnectionManager *)NULL) {
+          _manager->connection_reset(sinfo->_connection);
+        }
+
       } else if (errcode != PR_PENDING_INTERRUPT_ERROR) {
-	pprerror("PR_Recv");
+        pprerror("PR_Recv");
       }
       finish_socket(sinfo);
       return;
@@ -582,7 +582,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
     } else if (bytes_read == 0) {
       // The socket was closed.  Report that and return.
       if (_manager != (ConnectionManager *)NULL) {
-	_manager->connection_reset(sinfo->_connection);
+        _manager->connection_reset(sinfo->_connection);
       }
       finish_socket(sinfo);
       return;
@@ -596,8 +596,8 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
       // There were some extra bytes at the end of the datagram.  Maybe
       // the beginning of the next datagram?  Huh.
       net_cat.error()
-	<< "Discarding " << bytes_read - datagram_bytes
-	<< " bytes following TCP datagram.\n";
+        << "Discarding " << bytes_read - datagram_bytes
+        << " bytes following TCP datagram.\n";
     }
   }
 
@@ -659,7 +659,7 @@ thread_run() {
   while (!_shutdown) {
     SocketInfo *sinfo = 
       get_next_available_socket(PR_INTERVAL_NO_TIMEOUT,
-				current_thread_index);
+                                current_thread_index);
     if (sinfo != (SocketInfo *)NULL) {
       process_incoming_data(sinfo);
     }
@@ -681,7 +681,7 @@ thread_run() {
 ////////////////////////////////////////////////////////////////////
 ConnectionReader::SocketInfo *ConnectionReader::
 get_next_available_socket(PRIntervalTime timeout, 
-			  PRInt32 current_thread_index) {
+                          PRInt32 current_thread_index) {
   // Go to sleep on the select() mutex.  This guarantees that only one
   // thread is in this function at a time.
   PR_Lock(_select_mutex);
@@ -698,27 +698,27 @@ get_next_available_socket(PRIntervalTime timeout,
       _next_index++;
       
       if (_poll[i].out_flags != 0) {
-	_num_results--;
-	SocketInfo *sinfo = _polled_sockets[i];
-	
-	if ((_poll[i].out_flags & PR_POLL_READ) != 0) {
-	  // Some genuine noise on the port.
-	  sinfo->_busy = true;
-	  _reexamine_sockets = true;
-	  PR_Unlock(_select_mutex);
-	  PR_Sleep(PR_INTERVAL_NO_WAIT);
-	  return sinfo;
+        _num_results--;
+        SocketInfo *sinfo = _polled_sockets[i];
 
-	} else if ((_poll[i].out_flags & 
-		    (PR_POLL_ERR | PR_POLL_NVAL | PR_POLL_HUP)) != 0) {
-	  // Something bad happened to this socket.  Tell the
-	  // ConnectionManager to drop it.
-	  if (_manager != (ConnectionManager *)NULL) {
-	    _manager->connection_reset(sinfo->_connection);
-	  }
-	  sinfo->_error = true;
-	  _reexamine_sockets = true;
-	}
+        if ((_poll[i].out_flags & PR_POLL_READ) != 0) {
+          // Some genuine noise on the port.
+          sinfo->_busy = true;
+          _reexamine_sockets = true;
+          PR_Unlock(_select_mutex);
+          PR_Sleep(PR_INTERVAL_NO_WAIT);
+          return sinfo;
+
+        } else if ((_poll[i].out_flags & 
+                    (PR_POLL_ERR | PR_POLL_NVAL | PR_POLL_HUP)) != 0) {
+          // Something bad happened to this socket.  Tell the
+          // ConnectionManager to drop it.
+          if (_manager != (ConnectionManager *)NULL) {
+            _manager->connection_reset(sinfo->_connection);
+          }
+          sinfo->_error = true;
+          _reexamine_sockets = true;
+        }
       }
     }
 
@@ -735,10 +735,10 @@ get_next_available_socket(PRIntervalTime timeout,
       PR_AtomicSet(&_currently_polling_thread, current_thread_index);
 
       if (_reexamine_sockets) {
-	_reexamine_sockets = false;
-	rebuild_poll_list();
-	num_sockets = _polled_sockets.size();
-	nassertr(num_sockets == (int)_poll.size(), NULL);
+        _reexamine_sockets = false;
+        rebuild_poll_list();
+        num_sockets = _polled_sockets.size();
+        nassertr(num_sockets == (int)_poll.size(), NULL);
       }
 
       // Now we can execute PR_Poll().  This basically maps to a Unix
@@ -747,31 +747,31 @@ get_next_available_socket(PRIntervalTime timeout,
       _next_index = 0;
 
       if (!_shutdown) {
-	PRIntervalTime poll_timeout = 
-	  PR_MillisecondsToInterval(max_timeout_ms);
-	if (timeout != PR_INTERVAL_NO_TIMEOUT) {
-	  poll_timeout = min(timeout, poll_timeout);
-	}
+        PRIntervalTime poll_timeout = 
+          PR_MillisecondsToInterval(max_timeout_ms);
+        if (timeout != PR_INTERVAL_NO_TIMEOUT) {
+          poll_timeout = min(timeout, poll_timeout);
+        }
 
-	_num_results = PR_Poll(&_poll[0], num_sockets, poll_timeout);
+        _num_results = PR_Poll(&_poll[0], num_sockets, poll_timeout);
       }
 
       if (_num_results == 0 && timeout == PR_INTERVAL_NO_TIMEOUT) {
-	// If we reached max_timeout_ms, but the caller didn't request
-	// a timeout, consider that an interrupt: go back and
-	// reconsider.  (This is a kludge around the fact that
-	// PR_Poll() appears to be non-interruptible.)
-	interrupted = true;
+        // If we reached max_timeout_ms, but the caller didn't request
+        // a timeout, consider that an interrupt: go back and
+        // reconsider.  (This is a kludge around the fact that
+        // PR_Poll() appears to be non-interruptible.)
+        interrupted = true;
 
       } else if (_num_results < 0) {
-	// If our poll was interrupted by another thread, rebuild the
-	// list and poll again.
-	PRErrorCode errcode = PR_GetError();
-	if (errcode == PR_PENDING_INTERRUPT_ERROR) {
-	  interrupted = true;
-	} else {
-	  pprerror("PR_Poll");
-	}
+        // If our poll was interrupted by another thread, rebuild the
+        // list and poll again.
+        PRErrorCode errcode = PR_GetError();
+        if (errcode == PR_PENDING_INTERRUPT_ERROR) {
+          interrupted = true;
+        } else {
+          pprerror("PR_Poll");
+        }
       }
     } while (!_shutdown && interrupted);
 
@@ -823,9 +823,9 @@ rebuild_poll_list() {
     for (si = _removed_sockets.begin(); si != _removed_sockets.end(); ++si) {
       SocketInfo *sinfo = (*si);
       if (sinfo->_busy) {
-	still_busy_sockets.push_back(sinfo);
+        still_busy_sockets.push_back(sinfo);
       } else {
-	delete sinfo;
+        delete sinfo;
       }
     }
     _removed_sockets.swap(still_busy_sockets);

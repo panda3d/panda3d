@@ -20,7 +20,7 @@
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, MULTITRANSITION_CAMERA);
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ShowHideTransition
+//       Class : ShowHideTransition
 // Description : This transition controls which cameras can view the
 //               geometry.  By default, all cameras see everything;
 //               you can restrict the visibility of a particular
@@ -40,7 +40,7 @@ public:
 protected:
   virtual void output_property(ostream &out, const PT(Camera) &prop) const;
   virtual void write_property(ostream &out, const PT(Camera) &prop,
-			      int indent_level) const;
+                              int indent_level) const;
 
 public:
   virtual TypeHandle get_type() const {
@@ -53,7 +53,7 @@ public:
   static void init_type() {
     MultiTransition<PT(Camera), ShowHideNameClass>::init_type();
     register_type(_type_handle, "ShowHideTransition",
-		  MultiTransition<PT(Camera), ShowHideNameClass>::get_class_type());
+                  MultiTransition<PT(Camera), ShowHideNameClass>::get_class_type());
   }
 
 private:

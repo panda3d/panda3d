@@ -81,7 +81,7 @@ xform(const LMatrix4f &mat) {
 //       Access: Public
 //  Description: Computes the distance between two points and returns
 //               the index for the child of the LOD by testing against
-//		 the corresponding list of switching distances. 
+//               the corresponding list of switching distances. 
 ////////////////////////////////////////////////////////////////////
 int LOD::
 compute_child(const LPoint3f &cam_pos, const LPoint3f &center) const {

@@ -15,7 +15,7 @@
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GeomBinUnsorted
+//       Class : GeomBinUnsorted
 // Description : This kind of GeomBin will group the GeomNodes
 //               together by state (since that's how they come from
 //               the CullTraverser, anyway), but won't attempt to
@@ -30,8 +30,8 @@ PUBLISHED:
 public:
   virtual void clear_current_states();
   virtual void record_current_state(GraphicsStateGuardian *gsg,
-				    CullState *cs, int draw_order,
-				    CullTraverser *trav);
+                                    CullState *cs, int draw_order,
+                                    CullTraverser *trav);
 
   virtual void draw(CullTraverser *trav);
 

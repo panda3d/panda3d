@@ -21,9 +21,9 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : Configurable
 // Description : An object that has data or parameters that are set
-//		 less frequently (at least occasionally) than every
-//		 frame.  We can cache the configuration info by
-//		 by using the "dirty" flag.
+//               less frequently (at least occasionally) than every
+//               frame.  We can cache the configuration info by
+//               by using the "dirty" flag.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Configurable : public TypedObject {
 public:
@@ -57,7 +57,7 @@ public:
   static void init_type() {
     TypedObject::init_type();
     register_type(_type_handle, "Configurable",
-		  TypedObject::get_class_type());
+                  TypedObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

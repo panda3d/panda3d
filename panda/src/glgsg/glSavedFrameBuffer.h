@@ -15,13 +15,13 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GLSavedFrameBuffer
+//       Class : GLSavedFrameBuffer
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAGL GLSavedFrameBuffer : public SavedFrameBuffer {
 public:
   INLINE GLSavedFrameBuffer(const RenderBuffer &buffer,
-			    CPT(DisplayRegion) dr);
+                            CPT(DisplayRegion) dr);
   INLINE ~GLSavedFrameBuffer();
 
   PT(Texture) _back_rgba;
@@ -34,7 +34,7 @@ public:
   static void init_type() {
     SavedFrameBuffer::init_type();
     register_type(_type_handle, "GLSavedFrameBuffer",
- 		  SavedFrameBuffer::get_class_type());
+                  SavedFrameBuffer::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

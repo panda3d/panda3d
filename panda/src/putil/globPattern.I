@@ -63,7 +63,7 @@ get_pattern() const {
 INLINE bool GlobPattern::
 matches(const string &candidate) const {
   return matches_substr(_pattern.begin(), _pattern.end(),
-			candidate.begin(), candidate.end());
+                        candidate.begin(), candidate.end());
 }
 
 ////////////////////////////////////////////////////////////////////

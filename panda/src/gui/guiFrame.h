@@ -13,7 +13,7 @@
 class EXPCL_PANDA GuiFrame : public GuiItem {
 PUBLISHED:
   enum Packing { NONE, ABOVE, UNDER, LEFT, RIGHT, ALIGN_ABOVE, ALIGN_UNDER,
-		 ALIGN_LEFT, ALIGN_RIGHT };
+                 ALIGN_LEFT, ALIGN_RIGHT };
 private:
   class Connection {
   private:
@@ -23,10 +23,10 @@ private:
   public:
     inline Connection(void) : _how(NONE), _who((GuiItem*)0L), _gap(0.) {}
     inline Connection(Packing how, GuiItem* who, float gap) : _how(how),
-							      _who(who),
-							      _gap(gap) {}
+                                                              _who(who),
+                                                              _gap(gap) {}
     inline Connection(const Connection& c) : _how(c._how), _who(c._who),
-					     _gap(c._gap) {}
+                                             _gap(c._gap) {}
     ~Connection(void) {}
 
     inline void set_how(Packing how) { _how = how; }
@@ -47,7 +47,7 @@ private:
     inline Box(void) : _thing((GuiItem*)0L), _scale(1.) {}
     inline Box(GuiItem* i) : _thing(i), _scale(i->get_scale()) {}
     inline Box(const Box& c) : _thing(c._thing), _scale(c._scale),
-			       _links(c._links) {}
+                               _links(c._links) {}
     ~Box(void) {}
 
     inline void set_item(GuiItem* i) { _thing = i; }
@@ -135,7 +135,7 @@ public:
   static void init_type(void) {
     GuiItem::init_type();
     register_type(_type_handle, "GuiFrame",
-		  GuiItem::get_class_type());
+                  GuiItem::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

@@ -70,7 +70,7 @@
 class EggNode;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggNameUniquifier
+//       Class : EggNameUniquifier
 // Description : This is a handy class for guaranteeing unique node
 //               names in an egg hierarchy.  It is an abstract class;
 //               to use it you must subclass off of it.  See the
@@ -88,12 +88,12 @@ public:
   EggNode *get_node(const string &category, const string &name) const;
   bool has_name(const string &category, const string &name) const;
   bool add_name(const string &category, const string &name,
-		EggNode *node = NULL);
+                EggNode *node = NULL);
 
   virtual string get_category(EggNode *node)=0;
   virtual string filter_name(EggNode *node);
   virtual string generate_name(EggNode *node,
-			       const string &category, int index);
+                               const string &category, int index);
 
 private:
   typedef map<string, EggNode *> UsedNames;
@@ -110,7 +110,7 @@ public:
   static void init_type() {
     EggObject::init_type();
     register_type(_type_handle, "EggNameUniquifier",
-		  EggObject::get_class_type());
+                  EggObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

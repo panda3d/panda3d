@@ -19,7 +19,7 @@
 #include <textureContext.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GLTextureContext
+//       Class : GLTextureContext
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAGL GLTextureContext : public TextureContext {
@@ -39,7 +39,7 @@ public:
   static void init_type() {
     TextureContext::init_type();
     register_type(_type_handle, "GLTextureContext",
- 		  TextureContext::get_class_type());
+                  TextureContext::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

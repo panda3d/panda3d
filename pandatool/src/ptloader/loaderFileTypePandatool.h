@@ -13,7 +13,7 @@
 class SomethingToEggConverter;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LoaderFileTypePandatool
+//       Class : LoaderFileTypePandatool
 // Description : This defines the Loader interface to files whose
 //               converters are defined within the Pandatool package
 //               and inherit from SomethingToEggConverter, like

@@ -50,7 +50,7 @@ private:
   virtual void kill_particle(int index);
   virtual void init_geoms(void);
   virtual void render(vector< PT(PhysicsObject) > &po_vector,
-		      int ttl_particles);
+                      int ttl_particles);
   virtual void resize_pool(int new_size);
 
 PUBLISHED:

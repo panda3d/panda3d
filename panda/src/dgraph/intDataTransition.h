@@ -13,7 +13,7 @@
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, NumericDataTransition<int>);
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : IntDataTransition
+//       Class : IntDataTransition
 // Description : A NumericDataTransition templated on integer types.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA IntDataTransition :
@@ -36,7 +36,7 @@ public:
   static void init_type() {
     NumericDataTransition<int>::init_type();
     register_type(_type_handle, "IntDataTransition", 
-		  NumericDataTransition<int>::get_class_type());
+                  NumericDataTransition<int>::get_class_type());
   }
 
 private:

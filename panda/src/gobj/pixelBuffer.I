@@ -31,7 +31,7 @@ PixelBuffer(void) : ImageBuffer()
 ////////////////////////////////////////////////////////////////////
 INLINE PixelBuffer::
 PixelBuffer(int xsize, int ysize, int components, int component_width,
-	    Type type, Format format) : 
+            Type type, Format format) : 
   ImageBuffer() 
 {
   _xsize = xsize;
@@ -93,7 +93,7 @@ operator = (const PixelBuffer &copy) {
 INLINE PixelBuffer PixelBuffer::
 rgb_buffer(int xsize, int ysize) {
   return PixelBuffer(xsize, ysize, 3, sizeof(uchar), T_unsigned_byte, 
-		     F_rgb);
+                     F_rgb);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -104,7 +104,7 @@ rgb_buffer(int xsize, int ysize) {
 INLINE PixelBuffer PixelBuffer::
 rgba_buffer(int xsize, int ysize) {
   return PixelBuffer(xsize, ysize, 4, sizeof(uchar), T_unsigned_byte, 
-		     F_rgba);
+                     F_rgba);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -115,7 +115,7 @@ rgba_buffer(int xsize, int ysize) {
 INLINE PixelBuffer PixelBuffer::
 depth_buffer(int xsize, int ysize) {
   return PixelBuffer(xsize, ysize, 1, sizeof(float), T_float, 
-		     F_depth_component);
+                     F_depth_component);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -126,7 +126,7 @@ depth_buffer(int xsize, int ysize) {
 INLINE PixelBuffer PixelBuffer::
 stencil_buffer(int xsize, int ysize) {
   return PixelBuffer(xsize, ysize, 1, sizeof(uchar), T_unsigned_byte, 
-		     F_stencil_index);
+                     F_stencil_index);
 }
 
 ////////////////////////////////////////////////////////////////////

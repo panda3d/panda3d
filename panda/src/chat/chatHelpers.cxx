@@ -11,8 +11,8 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: add_line_wraps 
 //  Description: Take an input string and format it so that lines
-//		 will wrap before they reach line_length (unless
-//		 there is no whitespace).
+//               will wrap before they reach line_length (unless
+//               there is no whitespace).
 ////////////////////////////////////////////////////////////////////
 string add_line_wraps(const string& str, int line_length) {
   string new_str;

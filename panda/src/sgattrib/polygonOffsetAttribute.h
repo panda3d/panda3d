@@ -13,7 +13,7 @@
 #include <onAttribute.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PolygonOffsetAttribute
+//       Class : PolygonOffsetAttribute
 // Description : See PolygonOffsetTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PolygonOffsetAttribute : public OnAttribute {
@@ -50,7 +50,7 @@ public:
   static void init_type() {
     OnAttribute::init_type();
     register_type(_type_handle, "PolygonOffsetAttribute",
-		  OnAttribute::get_class_type());
+                  OnAttribute::get_class_type());
   }
 
 private:

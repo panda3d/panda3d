@@ -17,7 +17,7 @@ TypeHandle ClientDevice::_type_handle;
 ////////////////////////////////////////////////////////////////////
 ClientDevice::
 ClientDevice(ClientBase *client, TypeHandle device_type, 
-	     const string &device_name) :
+             const string &device_name) :
   _client(client),
   _device_type(device_type),
   _device_name(device_name)

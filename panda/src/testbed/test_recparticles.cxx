@@ -69,7 +69,7 @@ event_add_particles(CPT_Event) {
   fireworks_factory->set_lifespan_base(1.5f);
   fireworks_factory->set_lifespan_delta(0.5f);
   fireworks_emitter->set_endpoints(LPoint3f(-2.0f, 0.0f, 0.0f),
-				   LPoint3f(2.0f, 0.0f, 0.0f));
+                                   LPoint3f(2.0f, 0.0f, 0.0f));
   fireworks_emitter->set_launch_vec(LVector3f(0.0f, 0.0f, 1.0f));
   fireworks_renderer->set_point_size(4.0f);
   fireworks_renderer->set_color1(Colorf(1, 1, 1, 1));

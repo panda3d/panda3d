@@ -12,7 +12,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PNMReader
+//       Class : PNMReader
 // Description : This is an abstract base class that defines the
 //               interface for reading image files of various types.
 //               Any particular image file type that can be read must

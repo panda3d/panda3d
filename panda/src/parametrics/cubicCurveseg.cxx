@@ -141,11 +141,11 @@ hermite_basis(const HermiteCurveCV &cv0,
        1, -1, 0, 0);
 
   LVecBase4f Gx(cv0._p[0], cv1._p[0],
-		cv0._out[0]*tlength, cv1._in[0]*tlength);
+                cv0._out[0]*tlength, cv1._in[0]*tlength);
   LVecBase4f Gy(cv0._p[1], cv1._p[1],
-		cv0._out[1]*tlength, cv1._in[1]*tlength);
+                cv0._out[1]*tlength, cv1._in[1]*tlength);
   LVecBase4f Gz(cv0._p[2], cv1._p[2], 
-		cv0._out[2]*tlength, cv1._in[2]*tlength);
+                cv0._out[2]*tlength, cv1._in[2]*tlength);
 
   Bx = Gx * Mh;
   By = Gy * Mh;
@@ -383,8 +383,8 @@ compute_seg_col(int c,
       LVecBase4f vec(t*t*t, t*t, t, 1.0);
       LVecBase4f ov = col_mult(GB, vec);
       if (parametrics_cat.is_debug()) {
-	parametrics_cat.debug()
-	  << "orig point = " << ov << "\n";
+        parametrics_cat.debug()
+          << "orig point = " << ov << "\n";
       }
       P.set_col(c, ov);
     } else {
@@ -400,12 +400,12 @@ compute_seg_col(int c,
       LVecBase4f vec(3.0*t*t, 2.0*t, 1.0, 0.0);
       LVecBase4f ov = col_mult(GB, vec);
       if (parametrics_cat.is_debug()) {
-	parametrics_cat.debug()
-	  << "Matrix is:\n";
-	GB.write(parametrics_cat.debug(false), 2);
-	parametrics_cat.debug(false)
-	  << "vector is " << vec << "\n"
-	  << "orig tangent = " << ov << "\n";
+        parametrics_cat.debug()
+          << "Matrix is:\n";
+        GB.write(parametrics_cat.debug(false), 2);
+        parametrics_cat.debug(false)
+          << "vector is " << vec << "\n"
+          << "orig tangent = " << ov << "\n";
       }
       P.set_col(c, ov);
     } else {
@@ -419,8 +419,8 @@ compute_seg_col(int c,
     T.set_col(c, Bi.get_col(c));
     if (keep_orig) {
       if (parametrics_cat.is_debug()) {
-	parametrics_cat.debug()
-	  << "orig CV = " << G.get_col(c) << "\n";
+        parametrics_cat.debug()
+          << "orig CV = " << G.get_col(c) << "\n";
       }
       P.set_col(c, G.get_col(c));
     } else {

@@ -24,7 +24,7 @@ class CPPNameComponent;
 class CPPManifest;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TypeManager
+//       Class : TypeManager
 // Description : This is just a collection of static methods that
 //               perform useful operations on CPPTypes for
 //               interrogate.  The class is really just a namespace
@@ -85,7 +85,7 @@ public:
   static CPPType *get_int_type();
 
   static string get_function_signature(CPPInstance *function,
-				       int num_default_parameters = 0);
+                                       int num_default_parameters = 0);
 
   static bool has_protected_destructor(CPPType *type);
 };

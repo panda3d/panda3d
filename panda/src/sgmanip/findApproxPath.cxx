@@ -202,7 +202,7 @@ add_component(string str_component) {
   } else if (str_component == "**") {
     if ((flags & CF_stashed) != 0) {
       sgmanip_cat.error()
-	<< "@@** is undefined; use @@*/** or **/@@* instead.\n";
+        << "@@** is undefined; use @@*/** or **/@@* instead.\n";
       return false;
     }
     add_match_many(flags);
@@ -213,7 +213,7 @@ add_component(string str_component) {
 
     if (handle == TypeHandle::none()) {
       sgmanip_cat.error()
-	<< "Invalid type name: " + type_name;
+        << "Invalid type name: " + type_name;
       return false;
 
     } else {
@@ -226,7 +226,7 @@ add_component(string str_component) {
 
     if (handle == TypeHandle::none()) {
       sgmanip_cat.error()
-	<< "Invalid type name: " + type_name;
+        << "Invalid type name: " + type_name;
       return false;
 
     } else {

@@ -32,37 +32,37 @@ class app_service {
       static void DoIt(void*);
    public:
       INLINE app_service(vv_func init, av_func service, vv_func cleanup,
-			 vv_func info) : _init(init), _service(service),
-	                 _cleanup(cleanup), _info(info), _thread(thread::Null)
+                         vv_func info) : _init(init), _service(service),
+                         _cleanup(cleanup), _info(info), _thread(thread::Null)
          {}
       INLINE bool started() {
-	 return (_thread != thread::Null);
+         return (_thread != thread::Null);
       }
       INLINE void start(void) {
-	 if (!this->started())
-	    thread::create(DoIt, (void*)this);
+         if (!this->started())
+            thread::create(DoIt, (void*)this);
       }
       INLINE void info(void) {
-	 // this probably should mutex lock the task_list while checking things
-	 if (_info != (vv_func)0L)
-	    (*_info)();
-	 if (_thread != thread::Null) {
-	    cerr << "thread is currently running.  Id = " << _thread->get_id()
-		 << ".  Current state = ";
-	    switch (_thread->get_state()) {
-	    case thread::STATE_NEW:
-	       cerr << "New.";
-	       break;
-	    case thread::STATE_RUNNING:
-	       cerr << "Running.";
-	       break;
-	    case thread::STATE_TERMINATED:
-	       cerr << "Terminated";
-	       break;
-	    }
-	    cerr << endl;
-	 } else
-	    cerr << "thread not started or created yet." << endl;
+         // this probably should mutex lock the task_list while checking things
+         if (_info != (vv_func)0L)
+            (*_info)();
+         if (_thread != thread::Null) {
+            cerr << "thread is currently running.  Id = " << _thread->get_id()
+                 << ".  Current state = ";
+            switch (_thread->get_state()) {
+            case thread::STATE_NEW:
+               cerr << "New.";
+               break;
+            case thread::STATE_RUNNING:
+               cerr << "Running.";
+               break;
+            case thread::STATE_TERMINATED:
+               cerr << "Terminated";
+               break;
+            }
+            cerr << endl;
+         } else
+            cerr << "thread not started or created yet." << endl;
       }
 };
 

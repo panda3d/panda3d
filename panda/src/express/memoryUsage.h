@@ -16,7 +16,7 @@ class ReferenceCount;
 class MemoryUsagePointers;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : MemoryUsage
+//       Class : MemoryUsage
 // Description : This class is used strictly for debugging purposes,
 //               specifically for tracking memory leaks of
 //               reference-counted objects: it keeps a record of every
@@ -53,9 +53,9 @@ PUBLISHED:
   INLINE static int get_num_pointers();
   INLINE static void get_pointers(MemoryUsagePointers &result);
   INLINE static void get_pointers_of_type(MemoryUsagePointers &result, 
-					  TypeHandle type);
+                                          TypeHandle type);
   INLINE static void get_pointers_of_age(MemoryUsagePointers &result, 
-					 double from, double to);
+                                         double from, double to);
   INLINE static void get_pointers_with_zero_count(MemoryUsagePointers &result);
 
   INLINE static void freeze();
@@ -77,9 +77,9 @@ private:
   int ns_get_num_pointers();
   void ns_get_pointers(MemoryUsagePointers &result);
   void ns_get_pointers_of_type(MemoryUsagePointers &result, 
-			       TypeHandle type);
+                               TypeHandle type);
   void ns_get_pointers_of_age(MemoryUsagePointers &result, 
-			      double from, double to);
+                              double from, double to);
   void ns_get_pointers_with_zero_count(MemoryUsagePointers &result);
   void ns_freeze();
 

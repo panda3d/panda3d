@@ -89,8 +89,8 @@ public:
 private:
   void set_current_region(MouseWatcherRegion *region);
   void throw_event_pattern(const string &pattern,
-			   const MouseWatcherRegion *region,
-			   const string &button_name = string());
+                           const MouseWatcherRegion *region,
+                           const string &button_name = string());
 
   typedef set< PT(MouseWatcherRegion) > Regions;
   Regions _regions;

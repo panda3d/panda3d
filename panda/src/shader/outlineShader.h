@@ -29,13 +29,13 @@ public:
 
   virtual void config(void);
   virtual void apply(Node *node, const AllAttributesWrapper &init_state,
-		     const AllTransitionsWrapper &net_trans,
-		     GraphicsStateGuardian *gsg);
+                     const AllTransitionsWrapper &net_trans,
+                     GraphicsStateGuardian *gsg);
 
   INLINE void set_color(const Colorf &color) { _color = color; }
 
 protected:
-  Colorf		_color;
+  Colorf                _color;
 
 public:
   static TypeHandle get_class_type() {

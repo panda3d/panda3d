@@ -13,7 +13,7 @@
 class Datagram;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PStatServerControlMessage
+//       Class : PStatServerControlMessage
 // Description : This kind of message is sent from the server to the
 //               client on the TCP socket to establish critical
 //               control information.

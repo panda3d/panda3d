@@ -47,7 +47,7 @@ expand(const PrimType &prim, BuilderBucket &bucket,
 template<class InputIterator>
 int
 mesh_and_build(InputIterator first, InputIterator last,
-	       BuilderBucket &bucket, GeomNode *geom_node);
+               BuilderBucket &bucket, GeomNode *geom_node);
 
 
 
@@ -58,8 +58,8 @@ mesh_and_build(InputIterator first, InputIterator last,
 ////////////////////////////////////////////////////////////////////
 template <class InputIterator, class OutputIterator, class Predicate>
 OutputIterator split(InputIterator first, InputIterator last,
-		     OutputIterator true_result, OutputIterator false_result,
-		     Predicate pred);
+                     OutputIterator true_result, OutputIterator false_result,
+                     Predicate pred);
 
 #include "builderFuncs.I"
 

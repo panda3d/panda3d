@@ -71,7 +71,7 @@ PT(OutlineShader) outline_shader;
 
 void panda_overrides_func(ChanCfgOverrides& override, std::string&) {
   override.setField(ChanCfgOverrides::Mask,
-		   ((unsigned int)(W_DOUBLE|W_DEPTH|W_MULTISAMPLE|W_STENCIL)));
+                   ((unsigned int)(W_DOUBLE|W_DEPTH|W_MULTISAMPLE|W_STENCIL)));
   override.setField(ChanCfgOverrides::Title, "Panda Demo");
 }
 
@@ -88,18 +88,18 @@ void panda_idle(void) {
 
       float stride = walk_speed * ClockObject::get_global_clock()->get_dt();
       if (dist > stride) {
-	LVector2f step = bv2 / dist * stride;
-	const TransformTransition *tt;
-	if (!get_transition_into(tt, panda_arc)) {
-	  panda_arc->set_transition
-	    (new TransformTransition
-	     (LMatrix4f::translate_mat(step[0], step[1], 0.)));
-	} else {
-	  LMatrix4f mat = tt->get_matrix();
-	  mat(3, 0) += step[0];
-	  mat(3, 1) += step[1];
-	  panda_arc->set_transition(new TransformTransition(mat));
-	}
+        LVector2f step = bv2 / dist * stride;
+        const TransformTransition *tt;
+        if (!get_transition_into(tt, panda_arc)) {
+          panda_arc->set_transition
+            (new TransformTransition
+             (LMatrix4f::translate_mat(step[0], step[1], 0.)));
+        } else {
+          LMatrix4f mat = tt->get_matrix();
+          mat(3, 0) += step[0];
+          mat(3, 1) += step[1];
+          panda_arc->set_transition(new TransformTransition(mat));
+        }
       }
     }
   }
@@ -299,7 +299,7 @@ void load_our_models(void) {
   // control the ball using a PlanarSlider tform
   ball_slider = new PlanarSlider("ball_slider");
   ball_slider->set_transform(LMatrix4f::translate_mat(0., 0., 1.) *
-			     LMatrix4f::scale_mat(7., -7., 1.));
+                             LMatrix4f::scale_mat(7., -7., 1.));
   ball_slider->set_mouse_pos(LPoint2f(4. / 7., 2. / -7.));
   Transform2SG* slider2ball = new Transform2SG("slider2ball");
   slider2ball->set_arc(ball_arc);

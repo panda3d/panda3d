@@ -25,7 +25,7 @@ public:
 };
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPType
+//       Class : CPPType
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPType : public CPPDeclaration {
@@ -36,7 +36,7 @@ public:
   CPPType(const CPPFile &file);
 
   virtual CPPType *resolve_type(CPPScope *current_scope,
-				CPPScope *global_scope);
+                                CPPScope *global_scope);
 
   virtual bool is_tbd() const;
 
@@ -52,11 +52,11 @@ public:
   virtual bool is_equivalent(const CPPType &other) const;
 
   void output_instance(ostream &out, const string &name, 
-		       CPPScope *scope) const;
+                       CPPScope *scope) const;
   virtual void output_instance(ostream &out, int indent_level,
-			       CPPScope *scope,
-			       bool complete, const string &prename,
-			       const string &name) const;
+                               CPPScope *scope,
+                               bool complete, const string &prename,
+                               const string &name) const;
 
   virtual CPPType *as_type();
 

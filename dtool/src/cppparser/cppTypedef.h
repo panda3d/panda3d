@@ -11,7 +11,7 @@
 #include "cppInstance.h"
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPTypedef
+//       Class : CPPTypedef
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPTypedef : public CPPInstance {
@@ -19,11 +19,11 @@ public:
   CPPTypedef(CPPInstance *instance, bool global);
 
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
-					  CPPScope *current_scope,
-					  CPPScope *global_scope);
+                                          CPPScope *current_scope,
+                                          CPPScope *global_scope);
 
   virtual void output(ostream &out, int indent_level, CPPScope *scope,
-		      bool complete) const;
+                      bool complete) const;
   virtual SubType get_subtype() const;
 
   virtual CPPTypedef *as_typedef();

@@ -37,7 +37,7 @@ add_vmap(const LwoVertexMap *lwo_vmap) {
 
   if (!inserted) {
     nout << "Multiple vertex maps on the same points of type " 
-	 << map_type << " named " << name << "\n";
+         << map_type << " named " << name << "\n";
   }
 }
 
@@ -58,7 +58,7 @@ get_uv(const string &uv_name, int n, LPoint2f &uv) const {
   const LwoVertexMap *vmap = (*ni).second;
   if (vmap->_dimension != 2) {
     nout << "Unexpected dimension of " << vmap->_dimension
-	 << " for UV map " << uv_name << "\n";
+         << " for UV map " << uv_name << "\n";
     return false;
   }
 

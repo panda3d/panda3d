@@ -27,44 +27,44 @@
 #ifndef _RAST_H_
 #define _RAST_H_
 
-#define PIX_ERR		-1
+#define PIX_ERR         -1
 
 struct rasterfile {
     long ras_magic;
-#define	RAS_MAGIC	0x59a66a95
+#define RAS_MAGIC       0x59a66a95
     long ras_width;
     long ras_height;
     long ras_depth;
     long ras_length;
     long ras_type;
-#define RT_OLD		0	/* Raw pixrect image in 68000 byte order */
-#define RT_STANDARD	1	/* Raw pixrect image in 68000 byte order */
-#define RT_BYTE_ENCODED	2	/* Run-length compression of bytes */
-#define RT_FORMAT_RGB	3	/* XRGB or RGB instead of XBGR or BGR */
-#define RT_FORMAT_TIFF	4	/* tiff <-> standard rasterfile */
-#define RT_FORMAT_IFF	5	/* iff (TAAC format) <-> standard rasterfile */
-#define RT_EXPERIMENTAL 0xffff	/* Reserved for testing */
+#define RT_OLD          0       /* Raw pixrect image in 68000 byte order */
+#define RT_STANDARD     1       /* Raw pixrect image in 68000 byte order */
+#define RT_BYTE_ENCODED 2       /* Run-length compression of bytes */
+#define RT_FORMAT_RGB   3       /* XRGB or RGB instead of XBGR or BGR */
+#define RT_FORMAT_TIFF  4       /* tiff <-> standard rasterfile */
+#define RT_FORMAT_IFF   5       /* iff (TAAC format) <-> standard rasterfile */
+#define RT_EXPERIMENTAL 0xffff  /* Reserved for testing */
     long ras_maptype;
-#define RMT_NONE	0
-#define RMT_EQUAL_RGB	1
-#define RMT_RAW		2
+#define RMT_NONE        0
+#define RMT_EQUAL_RGB   1
+#define RMT_RAW         2
     long ras_maplength;
     };
 
 struct pixrectops {
-    int	(*pro_rop)();
-    int	(*pro_stencil)();
-    int	(*pro_batchrop)();
-    int	(*pro_nop)();
-    int	(*pro_destroy)();
-    int	(*pro_get)();
-    int	(*pro_put)();
-    int	(*pro_vector)();
+    int (*pro_rop)();
+    int (*pro_stencil)();
+    int (*pro_batchrop)();
+    int (*pro_nop)();
+    int (*pro_destroy)();
+    int (*pro_get)();
+    int (*pro_put)();
+    int (*pro_vector)();
     struct pixrect* (*pro_region)();
-    int	(*pro_putcolormap)();
-    int	(*pro_getcolormap)();
-    int	(*pro_putattributes)();
-    int	(*pro_getattributes)();
+    int (*pro_putcolormap)();
+    int (*pro_getcolormap)();
+    int (*pro_putattributes)();
+    int (*pro_getattributes)();
     };
 
 struct pr_size {
@@ -78,12 +78,12 @@ struct pixrect {
     struct pixrectops* pr_ops;
     struct pr_size pr_size;
     int pr_depth;
-    struct mpr_data* pr_data;	/* work-alike only handles memory pixrects */
+    struct mpr_data* pr_data;   /* work-alike only handles memory pixrects */
     };
 
 struct mpr_data {
     int md_linebytes;
-    unsigned char* md_image;	/* note, byte not short -- avoid pr_flip() */
+    unsigned char* md_image;    /* note, byte not short -- avoid pr_flip() */
     struct pr_pos md_offset;
     short md_primary;
     short md_flags;

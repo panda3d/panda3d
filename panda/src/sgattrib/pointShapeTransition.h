@@ -13,7 +13,7 @@
 #include <onTransition.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PointShapeTransition
+//       Class : PointShapeTransition
 // Description : An arc that determines the shape of point primitives
 //               drawn beneath.
 ////////////////////////////////////////////////////////////////////
@@ -46,7 +46,7 @@ public:
   static void init_type() {
     OnTransition::init_type();
     register_type(_type_handle, "PointShapeTransition",
-		  OnTransition::get_class_type());
+                  OnTransition::get_class_type());
   }
 
 private:

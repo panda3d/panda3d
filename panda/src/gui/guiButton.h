@@ -30,7 +30,7 @@ private:
   float _inactive_scale;
 
   enum States { NONE, UP, UP_ROLLOVER, DOWN, DOWN_ROLLOVER, INACTIVE,
-		INACTIVE_ROLLOVER };
+                INACTIVE_ROLLOVER };
   States _state;
 
   string _behavior_event;
@@ -52,7 +52,7 @@ PUBLISHED:
   GuiButton(const string&, GuiLabel*, GuiLabel*);
   GuiButton(const string&, GuiLabel*, GuiLabel*, GuiLabel*);
   GuiButton(const string&, GuiLabel*, GuiLabel*, GuiLabel*, GuiLabel*,
-	    GuiLabel*);
+            GuiLabel*);
   virtual ~GuiButton(void);
 
 public:
@@ -137,7 +137,7 @@ public:
   static void init_type(void) {
     GuiBehavior::init_type();
     register_type(_type_handle, "GuiButton",
-		  GuiBehavior::get_class_type());
+                  GuiBehavior::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

@@ -64,7 +64,7 @@ end() const {
 template<class Transition>
 INLINE_GRAPH bool 
 get_transition_into(Transition *&ptr, const NodeTransitions &trans,
-		    TypeHandle transition_type) {
+                    TypeHandle transition_type) {
   NodeTransition *nt = trans.get_transition(transition_type);
   if (nt == (NodeTransition *)NULL) {
     ptr = (Transition *)NULL;

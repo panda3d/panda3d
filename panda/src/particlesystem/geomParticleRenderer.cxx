@@ -151,12 +151,12 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
       if ((_alpha_mode != PR_ALPHA_NONE)) {
         float alpha_scalar;
 
-	    if(_alpha_mode == PR_ALPHA_USER) {
-			alpha_scalar=get_user_alpha();
-		} else {
-			alpha_scalar = cur_particle->get_parameterized_age();
-			if (_alpha_mode == PR_ALPHA_OUT) 
-				alpha_scalar = 1.0f - alpha_scalar;
+            if(_alpha_mode == PR_ALPHA_USER) {
+                        alpha_scalar=get_user_alpha();
+                } else {
+                        alpha_scalar = cur_particle->get_parameterized_age();
+                        if (_alpha_mode == PR_ALPHA_OUT) 
+                                alpha_scalar = 1.0f - alpha_scalar;
         }
 
         alpha = new ColorTransition(1.0f, 1.0f, 1.0f, alpha_scalar);

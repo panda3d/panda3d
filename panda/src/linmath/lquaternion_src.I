@@ -109,9 +109,9 @@ operator *(const FLOATNAME(LMatrix4) &m) {
 INLINE_LINMATH bool FLOATNAME(LQuaternion)::
 almost_equal(const FLOATNAME(LQuaternion)& c, FLOATTYPE threshold) const {
   return (IS_THRESHOLD_EQUAL(_v.data[0], c._v.data[0], threshold) &&
-	  IS_THRESHOLD_EQUAL(_v.data[1], c._v.data[1], threshold) &&
-	  IS_THRESHOLD_EQUAL(_v.data[2], c._v.data[2], threshold) &&
-	  IS_THRESHOLD_EQUAL(_v.data[3], c._v.data[3], threshold));
+          IS_THRESHOLD_EQUAL(_v.data[1], c._v.data[1], threshold) &&
+          IS_THRESHOLD_EQUAL(_v.data[2], c._v.data[2], threshold) &&
+          IS_THRESHOLD_EQUAL(_v.data[3], c._v.data[3], threshold));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -253,7 +253,7 @@ set_from_matrix(const FLOATNAME(LMatrix4) &m) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) operator *(const FLOATNAME(LMatrix3) &m,
-			     const FLOATNAME(LQuaternion) &q) {
+                             const FLOATNAME(LQuaternion) &q) {
   FLOATNAME(LMatrix3) q_matrix;
   q.extract_to_matrix(q_matrix);
 
@@ -266,7 +266,7 @@ INLINE_LINMATH FLOATNAME(LMatrix3) operator *(const FLOATNAME(LMatrix3) &m,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) operator *(const FLOATNAME(LMatrix4) &m,
-			     const FLOATNAME(LQuaternion) &q) {
+                             const FLOATNAME(LQuaternion) &q) {
   FLOATNAME(LMatrix4) q_matrix;
   q.extract_to_matrix(q_matrix);
 

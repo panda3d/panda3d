@@ -22,7 +22,7 @@ static const int data_indent_level = 12;
 ////////////////////////////////////////////////////////////////////
 void
 describe_data_verbose(ostream &out, const NodeAttributes &state,
-		      int indent_level) {
+                      int indent_level) {
   NodeAttributes::const_iterator nai;
 
   for (nai = state.begin(); nai != state.end(); ++nai) {
@@ -34,22 +34,22 @@ describe_data_verbose(ostream &out, const NodeAttributes &state,
       string::size_type underscore = actual_name.rfind('_');
       string name;
       if (underscore == string::npos) {
-	// There was no underscore, so this name wasn't created via
-	// register_data_transition().  Huh.  Well, that's legitimate
-	// (if unexpected), so just print the whole name.
-	name = actual_name;
+        // There was no underscore, so this name wasn't created via
+        // register_data_transition().  Huh.  Well, that's legitimate
+        // (if unexpected), so just print the whole name.
+        name = actual_name;
       } else {
-	// Assume that, if the name was created via
-	// register_data_transition(), the original name was the part
-	// before the last underscore.
-	name = actual_name.substr(0, underscore);
+        // Assume that, if the name was created via
+        // register_data_transition(), the original name was the part
+        // before the last underscore.
+        name = actual_name.substr(0, underscore);
       }
       
       indent(out, indent_level) << name;
       if ((int)name.length() < data_indent_level) {
-	indent(out, data_indent_level - name.length());
+        indent(out, data_indent_level - name.length());
       } else {
-	out << "  ";
+        out << "  ";
       }
       out << *attrib << "\n";
     }

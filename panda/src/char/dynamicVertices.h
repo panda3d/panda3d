@@ -49,7 +49,7 @@ public:
   static void init_type() {
     TypedWritable::init_type();
     register_type(_type_handle, "DynamicVertices",
-		  TypedWritable::get_class_type());
+                  TypedWritable::get_class_type());
   }
 
 private:

@@ -12,7 +12,7 @@
 #include "collisionEntry.h"
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CollisionHandlerQueue
+//       Class : CollisionHandlerQueue
 // Description : A special kind of CollisionHandler that does nothing
 //               except remember the CollisionEntries detected the
 //               last pass.  This set of CollisionEntries may then be
@@ -46,7 +46,7 @@ public:
   static void init_type() {
     CollisionHandler::init_type();
     register_type(_type_handle, "CollisionHandlerQueue",
-		  CollisionHandler::get_class_type());
+                  CollisionHandler::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

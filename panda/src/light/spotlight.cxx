@@ -79,7 +79,7 @@ float Spotlight::get_cutoff_angle(void) const
   Frustumf frustum;
   float cutoff = 0;
   if (proj->get_type() == PerspectiveProjection::get_class_type()) {
-    frustum = ((PerspectiveProjection *)proj)->get_frustum();		
+    frustum = ((PerspectiveProjection *)proj)->get_frustum();
     cutoff = rad_2_deg(atan(frustum._t / frustum._fnear));
   }
   else
@@ -134,9 +134,9 @@ bool Spotlight::make_image(Texture* texture, float radius)
       float D = dist_from_center;
       if (D <= radius)
         intensity = 1.0f;
-	  else if (D < 1.0f)
+          else if (D < 1.0f)
         intensity = pow(cos((D-radius) / 
-		(1.0f-radius) * (MathNumbers::pi_f*0.5f)), _exponent);
+                (1.0f-radius) * (MathNumbers::pi_f*0.5f)), _exponent);
       else
         intensity = 0;
 
@@ -205,8 +205,8 @@ make_geometry(float intensity, float length, int num_facets)
 
   int i;
   for (i = 2; i < num_indices-1; i++) {
-	float sine,cosine;
-	csincos(ang,&sine,&cosine);
+        float sine,cosine;
+        csincos(ang,&sine,&cosine);
     t = cosine * radius;
     dx = x_axis * t;
     t = sine * radius;

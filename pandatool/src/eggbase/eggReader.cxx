@@ -79,7 +79,7 @@ handle_args(ProgramBase::Args &args) {
 
     if (_force_complete) {
       if (!_data.resolve_externals()) {
-	exit(1);
+        exit(1);
       }
     }
   }

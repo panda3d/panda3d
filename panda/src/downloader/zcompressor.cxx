@@ -70,9 +70,9 @@ compress(char *&next_in, int &avail_in, char *&next_out, int &avail_out,
 ////////////////////////////////////////////////////////////////////
 int ZCompressor::
 compress_to_stream(char *&next_in, int &avail_in, char *&next_out,
-		int &avail_out, char *out_buffer, 
-		int out_buffer_length, ofstream &write_stream, 
-		bool finish) {
+                int &avail_out, char *out_buffer, 
+                int out_buffer_length, ofstream &write_stream, 
+                bool finish) {
   int ret = compress(next_in, avail_in, next_out, avail_out, finish);
   if (ret == S_error)
     return ret;
@@ -119,11 +119,11 @@ ZDecompressor::
 //     Function: ZDecompressor::decompress
 //       Access: Public
 //  Description: Decompress from next_in into next_out until avail_in 
-//		 is 0 or avail_out is 0 or an error occurs.
+//               is 0 or avail_out is 0 or an error occurs.
 ////////////////////////////////////////////////////////////////////
 int ZDecompressor::
 decompress(char *&next_in, int &avail_in, char *&next_out, int &avail_out,
-					bool finish) {
+                                        bool finish) {
 
   int fin_flag = (finish == true) ? Z_FINISH : Z_NO_FLUSH;
 

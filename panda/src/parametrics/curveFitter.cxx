@@ -304,15 +304,15 @@ compute_tangents(float scale) {
   if (_got_xyz) {
     for (i = 1; i < len-1; i++) {
       _data[i]._tangent = 
-	(_data[i+1]._xyz - _data[i-1]._xyz) * scale /
-	(_data[i+1]._t - _data[i-1]._t);
+        (_data[i+1]._xyz - _data[i-1]._xyz) * scale /
+        (_data[i+1]._t - _data[i-1]._t);
     }
   }
   if (_got_hpr) {
     for (i = 1; i < len-1; i++) {
       _data[i]._hpr_tangent = 
-	(_data[i+1]._hpr - _data[i-1]._hpr) * scale /
-	(_data[i+1]._t - _data[i-1]._t);
+        (_data[i+1]._hpr - _data[i-1]._hpr) * scale /
+        (_data[i+1]._t - _data[i-1]._t);
     }
   }
 
@@ -320,31 +320,31 @@ compute_tangents(float scale) {
   if (closed) {
     if (_got_xyz) {
       _data[0]._tangent = _data[len-1]._tangent =
-	(_data[1]._xyz - _data[len-2]._xyz) * scale /
-	((_data[1]._t - _data[0]._t) + (_data[len-1]._t - _data[len-2]._t));
+        (_data[1]._xyz - _data[len-2]._xyz) * scale /
+        ((_data[1]._t - _data[0]._t) + (_data[len-1]._t - _data[len-2]._t));
     }
     if (_got_hpr) {
       _data[0]._tangent = _data[len-1]._tangent =
-	(_data[1]._hpr - _data[len-2]._hpr) * scale /
-	((_data[1]._t - _data[0]._t) + (_data[len-1]._t - _data[len-2]._t));
+        (_data[1]._hpr - _data[len-2]._hpr) * scale /
+        ((_data[1]._t - _data[0]._t) + (_data[len-1]._t - _data[len-2]._t));
     }
       
   } else {
     if (_got_xyz) {
       _data[0]._tangent =
-	(_data[1]._xyz - _data[0]._xyz) * scale /
-	((_data[1]._t - _data[0]._t) * 2.0);
+        (_data[1]._xyz - _data[0]._xyz) * scale /
+        ((_data[1]._t - _data[0]._t) * 2.0);
       _data[len-1]._tangent =
-	(_data[len-1]._xyz - _data[len-2]._xyz) * scale /
-	((_data[len-1]._t - _data[len-2]._t) * 2.0);
+        (_data[len-1]._xyz - _data[len-2]._xyz) * scale /
+        ((_data[len-1]._t - _data[len-2]._t) * 2.0);
     }
     if (_got_hpr) {
       _data[0]._tangent =
-	(_data[1]._hpr - _data[0]._hpr) * scale /
-	((_data[1]._t - _data[0]._t) * 2.0);
+        (_data[1]._hpr - _data[0]._hpr) * scale /
+        ((_data[1]._t - _data[0]._t) * 2.0);
       _data[len-1]._tangent =
-	(_data[len-1]._hpr - _data[len-2]._hpr) * scale /
-	((_data[len-1]._t - _data[len-2]._t) * 2.0);
+        (_data[len-1]._hpr - _data[len-2]._hpr) * scale /
+        ((_data[len-1]._t - _data[len-2]._t) * 2.0);
     }
   }
 }

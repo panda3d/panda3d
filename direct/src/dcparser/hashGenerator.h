@@ -10,7 +10,7 @@
 #include "primeNumberGenerator.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : HashGenerator
+//       Class : HashGenerator
 // Description : This class generates an arbitrary hash number from a
 //               sequence of ints.
 ////////////////////////////////////////////////////////////////////

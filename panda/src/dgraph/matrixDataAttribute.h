@@ -18,7 +18,7 @@
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VECTORDATAATTRIBUTE_LMATRIX4F);
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : MatrixDataAttribute
+//       Class : MatrixDataAttribute
 // Description : A VectorDataAttribute templated on LMatrix4f.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA MatrixDataAttribute :
@@ -41,7 +41,7 @@ public:
   static void init_type() {
     VectorDataAttribute<LMatrix4f, LMatrix4f>::init_type();
     register_type(_type_handle, "MatrixDataAttribute", 
-		  VectorDataAttribute<LMatrix4f, LMatrix4f>::get_class_type());
+                  VectorDataAttribute<LMatrix4f, LMatrix4f>::get_class_type());
   }
 
 private:

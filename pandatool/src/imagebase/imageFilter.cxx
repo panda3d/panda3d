@@ -30,7 +30,7 @@ handle_args(ProgramBase::Args &args) {
   if (!_got_output_filename) {
     if (args.size() != 2) {
       nout << "You must specify the input and output filenames on the "
-	   << "command line, or use -o to specify the output filename.\n";
+           << "command line, or use -o to specify the output filename.\n";
       return false;
     }
 

@@ -14,7 +14,7 @@ class NodeAttribute;
 class NodeRelation;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : MatrixTransition
+//       Class : MatrixTransition
 // Description : This is an abstract template class that encapsulates
 //               all transitions that involve some kind of matrix,
 //               either a 4x4 or a 3x3, either float or double.  It
@@ -74,9 +74,9 @@ public:
     NodeTransition::init_type();
     Matrix::init_type();
     register_type(_type_handle, 
-		  string("MatrixTransition<") +
-		  Matrix::get_class_type().get_name() + ">",
-		  NodeTransition::get_class_type());
+                  string("MatrixTransition<") +
+                  Matrix::get_class_type().get_name() + ">",
+                  NodeTransition::get_class_type());
   }
 
 private:

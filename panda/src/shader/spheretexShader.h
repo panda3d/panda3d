@@ -26,14 +26,14 @@
 class EXPCL_SHADER SpheretexShader : public Shader
 {
   public:
-	
+
     SpheretexShader(Texture* texture = NULL);
     ~SpheretexShader() { }
 
     virtual void config(void);
     virtual void apply(Node *node, const AllAttributesWrapper &init_state,
-		       const AllTransitionsWrapper &net_trans,
-		       GraphicsStateGuardian *gsg);
+                       const AllTransitionsWrapper &net_trans,
+                       GraphicsStateGuardian *gsg);
 
     INLINE void set_texture(Texture* texture) {
       _texture = texture;
@@ -45,9 +45,9 @@ class EXPCL_SHADER SpheretexShader : public Shader
     }
 
   protected:
-	
-    PT(Texture)			_texture;
-    ColorBlendProperty::Mode	_blend_mode;
+
+    PT(Texture)                 _texture;
+    ColorBlendProperty::Mode    _blend_mode;
 
   public:
 

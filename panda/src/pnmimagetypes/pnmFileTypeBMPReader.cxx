@@ -31,6 +31,9 @@ extern "C" {
  * without express or implied warranty.
  * 
  * $Log$
+ * Revision 1.3  2001/05/25 15:59:19  drose
+ * remove tab characters
+ *
  * Revision 1.2  2000/11/09 21:14:02  drose
  * *** empty log message ***
  *
@@ -94,40 +97,40 @@ static char     er_read[] = "%s: read error";
 static int
 GetByte(FILE *fp)
 {
-	int             v;
+        int             v;
 
-	if ((v = getc(fp)) == EOF)
-	{
-		pm_error(er_read, ifname);
-	}
+        if ((v = getc(fp)) == EOF)
+        {
+                pm_error(er_read, ifname);
+        }
 
-	return v;
+        return v;
 }
 
 static short
 GetShort(FILE *fp)
 {
-	short           v;
+        short           v;
 
-	if (pm_readlittleshort(fp, &v) == -1)
-	{
-		pm_error(er_read, ifname);
-	}
+        if (pm_readlittleshort(fp, &v) == -1)
+        {
+                pm_error(er_read, ifname);
+        }
 
-	return v;
+        return v;
 }
 
 static long
 GetLong(FILE *fp)
 {
-	long            v;
+        long            v;
 
-	if (pm_readlittlelong(fp, &v) == -1)
-	{
-		pm_error(er_read, ifname);
-	}
+        if (pm_readlittlelong(fp, &v) == -1)
+        {
+                pm_error(er_read, ifname);
+        }
 
-	return v;
+        return v;
 }
 
 /*
@@ -137,28 +140,28 @@ GetLong(FILE *fp)
 
 static void
 readto(FILE           *fp,
-	unsigned long  *ppos,	/* pointer to number of bytes read from fp */
-	unsigned long   dst)
+        unsigned long  *ppos,   /* pointer to number of bytes read from fp */
+        unsigned long   dst)
 {
-	unsigned long   pos;
+        unsigned long   pos;
 
-	if(!fp || !ppos)
-		return;
+        if(!fp || !ppos)
+                return;
 
-	pos = *ppos;
+        pos = *ppos;
 
-	if(pos > dst)
-		pm_error("%s: internal error in readto()", ifname);
+        if(pos > dst)
+                pm_error("%s: internal error in readto()", ifname);
 
-	for(; pos < dst; pos++)
-	{
-		if (getc(fp) == EOF)
-		{
-			pm_error(er_read, ifname);
-		}
-	}
+        for(; pos < dst; pos++)
+        {
+                if (getc(fp) == EOF)
+                {
+                        pm_error(er_read, ifname);
+                }
+        }
 
-	*ppos = pos;
+        *ppos = pos;
 }
 
 
@@ -168,132 +171,132 @@ readto(FILE           *fp,
 
 static void
 BMPreadfileheader(
-	FILE           *fp,
-	unsigned long  *ppos,	/* number of bytes read from fp */
-	unsigned long  *poffBits)
+        FILE           *fp,
+        unsigned long  *ppos,   /* number of bytes read from fp */
+        unsigned long  *poffBits)
 {
         /*
         unsigned long   cbSize;
-	unsigned short  xHotSpot;
-	unsigned short  yHotSpot;
-	*/
-	unsigned long   offBits;
+        unsigned short  xHotSpot;
+        unsigned short  yHotSpot;
+        */
+        unsigned long   offBits;
 
-	/*
-	  We've already read the magic number.
-	if (GetByte(fp) != 'B')
-	{
-		pm_error("%s is not a BMP file", ifname);
-	}
-	if (GetByte(fp) != 'M')
-	{
-		pm_error("%s is not a BMP file", ifname);
-	}
-	*/
+        /*
+          We've already read the magic number.
+        if (GetByte(fp) != 'B')
+        {
+                pm_error("%s is not a BMP file", ifname);
+        }
+        if (GetByte(fp) != 'M')
+        {
+                pm_error("%s is not a BMP file", ifname);
+        }
+        */
 
-	/* cbSize = */ GetLong(fp);
-	/* xHotSpot = */ GetShort(fp);
-	/* yHotSpot = */ GetShort(fp);
-	offBits = GetLong(fp);
+        /* cbSize = */ GetLong(fp);
+        /* xHotSpot = */ GetShort(fp);
+        /* yHotSpot = */ GetShort(fp);
+        offBits = GetLong(fp);
 
-	*poffBits = offBits;
+        *poffBits = offBits;
 
-	*ppos += 14;
+        *ppos += 14;
 }
 
 static void
 BMPreadinfoheader(
-	FILE           *fp,
-	unsigned long  *ppos,	/* number of bytes read from fp */
-	unsigned long  *pcx,
-	unsigned long  *pcy,
-	unsigned short *pcBitCount,
-	int            *pclassv)
+        FILE           *fp,
+        unsigned long  *ppos,   /* number of bytes read from fp */
+        unsigned long  *pcx,
+        unsigned long  *pcy,
+        unsigned short *pcBitCount,
+        int            *pclassv)
 {
-	unsigned long   cbFix;
-	unsigned short  cPlanes;
+        unsigned long   cbFix;
+        unsigned short  cPlanes;
 
-	unsigned long   cx;
-	unsigned long   cy;
-	unsigned short  cBitCount;
-	int             classv;
+        unsigned long   cx;
+        unsigned long   cy;
+        unsigned short  cBitCount;
+        int             classv;
 
-	cbFix = GetLong(fp);
+        cbFix = GetLong(fp);
 
-	switch (cbFix)
-	{
-	case 12:
-		classv = C_OS2;
+        switch (cbFix)
+        {
+        case 12:
+                classv = C_OS2;
 
-		cx = GetShort(fp);
-		cy = GetShort(fp);
-		cPlanes = GetShort(fp);
-		cBitCount = GetShort(fp);
+                cx = GetShort(fp);
+                cy = GetShort(fp);
+                cPlanes = GetShort(fp);
+                cBitCount = GetShort(fp);
 
-		break;
-	case 40:
-		classv = C_WIN;
+                break;
+        case 40:
+                classv = C_WIN;
 
-		cx = GetLong(fp);
-		cy = GetLong(fp);
-		cPlanes = GetShort(fp);
-		cBitCount = GetShort(fp);
+                cx = GetLong(fp);
+                cy = GetLong(fp);
+                cPlanes = GetShort(fp);
+                cBitCount = GetShort(fp);
 
-		/*
-		 * We've read 16 bytes so far, need to read 24 more
-		 * for the required total of 40.
-		 */
+                /*
+                 * We've read 16 bytes so far, need to read 24 more
+                 * for the required total of 40.
+                 */
 
-		GetLong(fp);
-		GetLong(fp);
-		GetLong(fp);
-		GetLong(fp);
-		GetLong(fp);
-		GetLong(fp);
+                GetLong(fp);
+                GetLong(fp);
+                GetLong(fp);
+                GetLong(fp);
+                GetLong(fp);
+                GetLong(fp);
 
-		break;
-	default:
-		pm_error("%s: unknown cbFix: %d", ifname, cbFix);
-		break;
-	}
+                break;
+        default:
+                pm_error("%s: unknown cbFix: %d", ifname, cbFix);
+                break;
+        }
 
-	if (cPlanes != 1)
-	{
-		pm_error("%s: don't know how to handle cPlanes = %d"
-			 ,ifname
-			 ,cPlanes);
-	}
+        if (cPlanes != 1)
+        {
+                pm_error("%s: don't know how to handle cPlanes = %d"
+                         ,ifname
+                         ,cPlanes);
+        }
 
-	switch (classv)
-	{
-	case C_WIN:
-		pm_message("Windows BMP, %dx%dx%d"
-			   ,cx
-			   ,cy
-			   ,cBitCount);
-		break;
-	case C_OS2:
-		pm_message("OS/2 BMP, %dx%dx%d"
-			   ,cx
-			   ,cy
-			   ,cBitCount);
-		break;
-	}
+        switch (classv)
+        {
+        case C_WIN:
+                pm_message("Windows BMP, %dx%dx%d"
+                           ,cx
+                           ,cy
+                           ,cBitCount);
+                break;
+        case C_OS2:
+                pm_message("OS/2 BMP, %dx%dx%d"
+                           ,cx
+                           ,cy
+                           ,cBitCount);
+                break;
+        }
 
 #ifdef DEBUG
-	pm_message("cbFix: %d", cbFix);
-	pm_message("cx: %d", cx);
-	pm_message("cy: %d", cy);
-	pm_message("cPlanes: %d", cPlanes);
-	pm_message("cBitCount: %d", cBitCount);
+        pm_message("cbFix: %d", cbFix);
+        pm_message("cx: %d", cx);
+        pm_message("cy: %d", cy);
+        pm_message("cPlanes: %d", cPlanes);
+        pm_message("cBitCount: %d", cBitCount);
 #endif
 
-	*pcx = cx;
-	*pcy = cy;
-	*pcBitCount = cBitCount;
-	*pclassv = classv;
+        *pcx = cx;
+        *pcy = cy;
+        *pcBitCount = cBitCount;
+        *pclassv = classv;
 
-	*ppos += cbFix;
+        *ppos += cbFix;
 }
 
 /*
@@ -301,35 +304,35 @@ BMPreadinfoheader(
  */
 static int
 BMPreadrgbtable(
-	FILE           *fp,
-	unsigned long  *ppos,	/* number of bytes read from fp */
-	unsigned short  cBitCount,
-	int             classv,
-	pixval         *R,
-	pixval         *G,
-	pixval         *B)
+        FILE           *fp,
+        unsigned long  *ppos,   /* number of bytes read from fp */
+        unsigned short  cBitCount,
+        int             classv,
+        pixval         *R,
+        pixval         *G,
+        pixval         *B)
 {
-	int             i;
-	int		nbyte = 0;
+        int             i;
+        int             nbyte = 0;
 
-	long            ncolors = (1 << cBitCount);
+        long            ncolors = (1 << cBitCount);
 
-	for (i = 0; i < ncolors; i++)
-	{
-		B[i] = (pixval) GetByte(fp);
-		G[i] = (pixval) GetByte(fp);
-		R[i] = (pixval) GetByte(fp);
-		nbyte += 3;
+        for (i = 0; i < ncolors; i++)
+        {
+                B[i] = (pixval) GetByte(fp);
+                G[i] = (pixval) GetByte(fp);
+                R[i] = (pixval) GetByte(fp);
+                nbyte += 3;
 
-		if (classv == C_WIN)
-		{
-			(void) GetByte(fp);
-			nbyte++;
-		}
-	}
+                if (classv == C_WIN)
+                {
+                        (void) GetByte(fp);
+                        nbyte++;
+                }
+        }
 
-	*ppos += nbyte;
-	return nbyte;
+        *ppos += nbyte;
+        return nbyte;
 }
 
 /*
@@ -337,116 +340,116 @@ BMPreadrgbtable(
  */
 static int
 BMPreadrow(
-	FILE           *fp,
-	unsigned long  *ppos,	/* number of bytes read from fp */
-	pixel          *row,
-	unsigned long   cx,
-	unsigned short  cBitCount,
-	int             indexed,
-	pixval         *R,
-	pixval         *G,
-	pixval         *B)
+        FILE           *fp,
+        unsigned long  *ppos,   /* number of bytes read from fp */
+        pixel          *row,
+        unsigned long   cx,
+        unsigned short  cBitCount,
+        int             indexed,
+        pixval         *R,
+        pixval         *G,
+        pixval         *B)
 {
-	BITSTREAM       b;
-	unsigned        nbyte = 0;
-	int             rc;
-	unsigned        x;
+        BITSTREAM       b;
+        unsigned        nbyte = 0;
+        int             rc;
+        unsigned        x;
 
-	if (indexed) {
-	  if ((b = pm_bitinit(fp, "r")) == (BITSTREAM) 0)
-	    {
-	      return -1;
-	    }
-	}
+        if (indexed) {
+          if ((b = pm_bitinit(fp, "r")) == (BITSTREAM) 0)
+            {
+              return -1;
+            }
+        }
 
-	for (x = 0; x < cx; x++, row++)
-	{
-		unsigned long   v;
+        for (x = 0; x < cx; x++, row++)
+        {
+                unsigned long   v;
 
-		if (!indexed) {
-		  int r, g, b;
-		  b = GetByte(fp);
-		  g = GetByte(fp);
-		  r = GetByte(fp);
-		  nbyte += 3;
-		  PPM_ASSIGN(*row, r, g, b);
-		} else {
-		  if ((rc = pm_bitread(b, cBitCount, &v)) == -1)
-		    {
-		      return -1;
-		    }
-		  nbyte += rc;
-		  
-		  PPM_ASSIGN(*row, R[v], G[v], B[v]);
-		}
-	}
+                if (!indexed) {
+                  int r, g, b;
+                  b = GetByte(fp);
+                  g = GetByte(fp);
+                  r = GetByte(fp);
+                  nbyte += 3;
+                  PPM_ASSIGN(*row, r, g, b);
+                } else {
+                  if ((rc = pm_bitread(b, cBitCount, &v)) == -1)
+                    {
+                      return -1;
+                    }
+                  nbyte += rc;
 
-	if (indexed) {
-	  if ((rc = pm_bitfini(b)) != 0)
-	    {
-	      return -1;
-	    }
-	}
+                  PPM_ASSIGN(*row, R[v], G[v], B[v]);
+                }
+        }
 
-	/*
-	 * Make sure we read a multiple of 4 bytes.
-	 */
-	while (nbyte % 4)
-	{
-		GetByte(fp);
-		nbyte++;
-	}
+        if (indexed) {
+          if ((rc = pm_bitfini(b)) != 0)
+            {
+              return -1;
+            }
+        }
 
-	*ppos += nbyte;
-	return nbyte;
+        /*
+         * Make sure we read a multiple of 4 bytes.
+         */
+        while (nbyte % 4)
+        {
+                GetByte(fp);
+                nbyte++;
+        }
+
+        *ppos += nbyte;
+        return nbyte;
 }
 
 static void
 BMPreadbits(xel *array,
-	FILE           *fp,
-	unsigned long  *ppos,	/* number of bytes read from fp */
-	unsigned long   offBits,
-	unsigned long   cx,
-	unsigned long   cy,
-	unsigned short  cBitCount,
-	int             /* classv */,
-	int             indexed,
-	pixval         *R,
-	pixval         *G,
-	pixval         *B)
+        FILE           *fp,
+        unsigned long  *ppos,   /* number of bytes read from fp */
+        unsigned long   offBits,
+        unsigned long   cx,
+        unsigned long   cy,
+        unsigned short  cBitCount,
+        int             /* classv */,
+        int             indexed,
+        pixval         *R,
+        pixval         *G,
+        pixval         *B)
 {
-	long            y;
+        long            y;
 
-	readto(fp, ppos, offBits);
+        readto(fp, ppos, offBits);
 
-	if(cBitCount > 24)
-	{
-		pm_error("%s: cannot handle cBitCount: %d"
-			 ,ifname
-			 ,cBitCount);
-	}
+        if(cBitCount > 24)
+        {
+                pm_error("%s: cannot handle cBitCount: %d"
+                         ,ifname
+                         ,cBitCount);
+        }
 
-	/*
-	 * The picture is stored bottom line first, top line last
-	 */
+        /*
+         * The picture is stored bottom line first, top line last
+         */
 
-	for (y = (long)cy - 1; y >= 0; y--)
-	{
-		int rc;
-		rc = BMPreadrow(fp, ppos, array + y*cx, cx, cBitCount, indexed, R, G, B);
-		if(rc == -1)
-		{
-			pm_error("%s: couldn't read row %d"
-				 ,ifname
-				 ,y);
-		}
-		if(rc%4)
-		{
-			pm_error("%s: row had bad number of bytes: %d"
-				 ,ifname
-				 ,rc);
-		}
-	}
+        for (y = (long)cy - 1; y >= 0; y--)
+        {
+                int rc;
+                rc = BMPreadrow(fp, ppos, array + y*cx, cx, cBitCount, indexed, R, G, B);
+                if(rc == -1)
+                {
+                        pm_error("%s: couldn't read row %d"
+                                 ,ifname
+                                 ,y);
+                }
+                if(rc%4)
+                {
+                        pm_error("%s: row had bad number of bytes: %d"
+                                 ,ifname
+                                 ,rc);
+                }
+        }
 
 }
 
@@ -463,7 +466,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
     // No magic number, no image.
     if (pnmimage_bmp_cat.is_debug()) {
       pnmimage_bmp_cat.debug()
-	<< "BMP image file appears to be empty.\n";
+        << "BMP image file appears to be empty.\n";
     }
     _is_valid = false;
     return;
@@ -500,8 +503,8 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
     
     if (rc != (int)BMPlenrgbtable(classv, cBitCount)) {
       pnmimage_bmp_cat.warning()
-	<< rc << "-byte RGB table, expected "
-	<< BMPlenrgbtable(classv, cBitCount) << " bytes\n";
+        << rc << "-byte RGB table, expected "
+        << BMPlenrgbtable(classv, cBitCount) << " bytes\n";
     }
   }
 
@@ -533,7 +536,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
 int PNMFileTypeBMP::Reader::
 read_data(xel *array, xelval *) {
   BMPreadbits(array, _file, &pos, offBits, _x_size, _y_size,
-	      cBitCount, classv, indexed, R, G, B);
+              cBitCount, classv, indexed, R, G, B);
 
   if (pos != BMPlenfile(classv, cBitCount, _x_size, _y_size)) {
     pnmimage_bmp_cat.warning()

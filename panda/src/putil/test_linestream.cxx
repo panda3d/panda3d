@@ -15,11 +15,11 @@ main(int argc, char *argv[]) {
   while (ls) {
     if ((i % 5) == 0) {
       if (ls.is_text_available()) {
-	nout << "Got line: '" << ls.get_line() << "'";
-	if (ls.has_newline()) {
-	  nout << " (nl)";
-	}
-	nout << "\n";
+        nout << "Got line: '" << ls.get_line() << "'";
+        if (ls.has_newline()) {
+          nout << " (nl)";
+        }
+        nout << "\n";
       }
     }
 

@@ -41,8 +41,8 @@ get_string() const {
 ////////////////////////////////////////////////////////////////////
 void CPPTemplateParameterList::
 build_subst_decl(const CPPTemplateParameterList &formal_params,
-		 CPPDeclaration::SubstDecl &subst,
-		 CPPScope *current_scope, CPPScope *global_scope) const {
+                 CPPDeclaration::SubstDecl &subst,
+                 CPPScope *current_scope, CPPScope *global_scope) const {
   Parameters::const_iterator pfi, pai;
   for (pfi = formal_params._parameters.begin(), pai = _parameters.begin();
        pfi != formal_params._parameters.end() && pai != _parameters.end();
@@ -66,25 +66,25 @@ build_subst_decl(const CPPTemplateParameterList &formal_params,
       // A value template parameter.  Its default is an expression.
       CPPInstance *inst = decl->as_instance();
       if (inst->_initializer != NULL) {
-	CPPDeclaration *decl = 
-	  inst->_initializer->substitute_decl(subst, current_scope,
-					      global_scope);
-	if (!(*decl == *inst)) {
-	  subst.insert(CPPDeclaration::SubstDecl::value_type
-		       (inst, decl));
-	}
+        CPPDeclaration *decl = 
+          inst->_initializer->substitute_decl(subst, current_scope,
+                                              global_scope);
+        if (!(*decl == *inst)) {
+          subst.insert(CPPDeclaration::SubstDecl::value_type
+                       (inst, decl));
+        }
       }
     } else if (decl->as_class_template_parameter()) {
       // A class template parameter.
       CPPClassTemplateParameter *cparam = decl->as_class_template_parameter();
       if (cparam->_default_type != NULL) {
-	CPPDeclaration *decl =
-	  cparam->_default_type->substitute_decl(subst, current_scope,
-						 global_scope);
-	if (!(*cparam == *decl)) {
-	  subst.insert(CPPDeclaration::SubstDecl::value_type
-		       (cparam, decl));
-	}
+        CPPDeclaration *decl =
+          cparam->_default_type->substitute_decl(subst, current_scope,
+                                                 global_scope);
+        if (!(*cparam == *decl)) {
+          subst.insert(CPPDeclaration::SubstDecl::value_type
+                       (cparam, decl));
+        }
       }
     }
     ++pfi;
@@ -124,7 +124,7 @@ is_tbd() const {
   for (int i = 0; i < (int)_parameters.size(); i++) {
     CPPType *type = _parameters[i]->as_type();
     if (type != (CPPType *)NULL && 
-	(type->is_tbd() || type->as_class_template_parameter() != NULL)) {
+        (type->is_tbd() || type->as_class_template_parameter() != NULL)) {
       return true;
     }
     CPPExpression *expr = _parameters[i]->as_expression();
@@ -188,7 +188,7 @@ operator < (const CPPTemplateParameterList &other) const {
 ////////////////////////////////////////////////////////////////////
 CPPTemplateParameterList *CPPTemplateParameterList::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
-		CPPScope *current_scope, CPPScope *global_scope) {
+                CPPScope *current_scope, CPPScope *global_scope) {
   CPPTemplateParameterList *rep = new CPPTemplateParameterList(*this);
 
   bool anything_changed = false;
@@ -221,7 +221,7 @@ output(ostream &out, CPPScope *scope) const {
 
     ++pi;
     while (pi != _parameters.end()) {
-      out << ", ";	
+      out << ", ";
       (*pi)->output(out, 0, scope, false);
       ++pi;
     }
@@ -244,7 +244,7 @@ write_formal(ostream &out, CPPScope *scope) const {
 
     ++pi;
     while (pi != _parameters.end()) {
-      out << ", ";	
+      out << ", ";
       (*pi)->output(out, 0, scope, true);
       ++pi;
     }

@@ -120,8 +120,8 @@ public:
     TypedReferenceCount::init_type();
     Namable::init_type();
     register_type(_type_handle, "GraphicsPipe",
-		  TypedReferenceCount::get_class_type(),
-		  Namable::get_class_type());
+                  TypedReferenceCount::get_class_type(),
+                  Namable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

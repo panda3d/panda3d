@@ -131,13 +131,13 @@ string_distance_unit(const string &str) {
     return DU_inches;
   
   } else if (cmp_nocase(str, "nmi") == 0 || 
-	     cmp_nocase(str, "nm") == 0 || 
-	     cmp_nocase_uh(str, "nautical_miles") == 0) {
+             cmp_nocase(str, "nm") == 0 || 
+             cmp_nocase_uh(str, "nautical_miles") == 0) {
     return DU_nautical_miles;
   
   } else if (cmp_nocase(str, "mi") == 0 || 
-	     cmp_nocase(str, "miles") == 0 ||
-	     cmp_nocase_uh(str, "statute_miles") == 0) {
+             cmp_nocase(str, "miles") == 0 ||
+             cmp_nocase_uh(str, "statute_miles") == 0) {
     return DU_statute_miles;
 
   } else {

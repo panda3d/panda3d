@@ -59,7 +59,7 @@ operator = (const ButtonEvent &copy) {
 INLINE bool ButtonEvent::
 operator == (const ButtonEvent &other) const {
   return (_button == other._button &&
-	  _down == other._down);
+          _down == other._down);
 }
 
 ////////////////////////////////////////////////////////////////////

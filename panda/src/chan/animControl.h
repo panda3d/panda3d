@@ -107,7 +107,7 @@ private:
   bool do_actions_backward(int from, int to);
 
   void do_action(int frame, const Action &action,
-		 int &sequence_frame, const Action *&sequence_action);
+                 int &sequence_frame, const Action *&sequence_action);
   void do_sequence_action(int frame, const Action &action);
 
   Actions _actions;
@@ -141,7 +141,7 @@ public:
   static void init_type() {
     ReferenceCount::init_type();
     register_type(_type_handle, "AnimControl",
-		  ReferenceCount::get_class_type());
+                  ReferenceCount::get_class_type());
   }
 
 private:

@@ -17,7 +17,7 @@
 class Datagram;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : IffInputFile
+//       Class : IffInputFile
 // Description : A wrapper around an istream used for reading an IFF
 //               file.
 ////////////////////////////////////////////////////////////////////
@@ -78,7 +78,7 @@ public:
   static void init_type() {
     TypedObject::init_type();
     register_type(_type_handle, "IffInputFile",
-		  TypedObject::get_class_type());
+                  TypedObject::get_class_type());
   }
 
 private:

@@ -18,7 +18,7 @@ void GuiBehavior::BehaviorFunctor::doit(GuiBehavior*) {
 }
 
 GuiBehavior::GuiBehavior(const string& name) : GuiItem(name),
-					       _eh((EventHandler*)0L),
+                                               _eh((EventHandler*)0L),
                                                _behavior_running(false) {
 }
 

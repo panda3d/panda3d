@@ -222,15 +222,15 @@ spawn_child_system(BaseParticle *bp) {
   PhysicalNode *this_pn = get_physical_node();
   if (!this_pn) {
     physics_cat.error() << "ParticleSystem::spawn_child_system: "
-			<< "Spawning system is not in the scene graph,"
-			<< " aborting." << endl;
+                        << "Spawning system is not in the scene graph,"
+                        << " aborting." << endl;
     return;
   }
 
   if (this_pn->get_num_parents(RenderRelation::get_class_type()) == 0) {
     physics_cat.error() << "ParticleSystem::spawn_child_system: "
-			<< "PhysicalNode this system is contained in "
-			<< "has no parent, aborting." << endl;
+                        << "PhysicalNode this system is contained in "
+                        << "has no parent, aborting." << endl;
     return;
   }
 
@@ -250,7 +250,7 @@ spawn_child_system(BaseParticle *bp) {
   // first, set up the render node info.
   new_ps->_render_parent = _spawn_render_node;
   new_ps->_render_arc = new RenderRelation(new_ps->_render_parent,
-					   new_ps->_renderer->get_render_node());
+                                           new_ps->_renderer->get_render_node());
 
   // now set up the new system's PhysicalNode.
   PT(PhysicalNode) new_pn = new PhysicalNode;
@@ -323,13 +323,13 @@ resize_pool(int size) {
 
   if (_factory.is_null()) {
     particlesystem_cat.error() << "ParticleSystem::resize_pool"
-			       << " called with null _factory." << endl;
+                               << " called with null _factory." << endl;
     return;
   }
 
   if (_renderer.is_null()) {
     particlesystem_cat.error() << "ParticleSystem::resize_pool"
-			       << " called with null _renderer." << endl;
+                               << " called with null _renderer." << endl;
     return;
   }
 
@@ -340,7 +340,7 @@ resize_pool(int size) {
     if (po_delta > 0) {
       for (i = 0; i < po_delta; i++)
       {
-	//        int free_index = _physics_objects.size();
+        //        int free_index = _physics_objects.size();
 
         BaseParticle *new_particle = _factory->alloc_particle();
         if (new_particle) {

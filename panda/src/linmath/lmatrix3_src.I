@@ -32,7 +32,7 @@ FLOATNAME(LMatrix3)() {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3):: 
 FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &copy) {
-	memcpy(_m.data,copy._m.data,sizeof(_m.data));
+        memcpy(_m.data,copy._m.data,sizeof(_m.data));
 //  (*this) = copy;
 }
 
@@ -68,8 +68,8 @@ operator = (FLOATTYPE fill_value) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3):: 
 FLOATNAME(LMatrix3)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
-		    FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
-		    FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22) {
+                    FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
+                    FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22) {
   _m.m._00 = e00;
   _m.m._01 = e01;
   _m.m._02 = e02;
@@ -408,17 +408,17 @@ INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix3)::
 xform(const FLOATNAME(LVecBase3) &v) const {
     FLOATNAME(LVecBase3) v_res;
 
-	
-	
-	VECTOR3_MATRIX3_PRODUCT(v_res, v,(*this));
+
+
+        VECTOR3_MATRIX3_PRODUCT(v_res, v,(*this));
 
 
 
-	return v_res; 
+        return v_res; 
 
 //  return FLOATNAME(LVecBase3)(v.dot(get_col(0)),
-//			    v.dot(get_col(1)),
-//			    v.dot(get_col(2)));
+//                          v.dot(get_col(1)),
+//                          v.dot(get_col(2)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -431,17 +431,17 @@ xform(const FLOATNAME(LVecBase3) &v) const {
 INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LMatrix3)::
 xform_point(const FLOATNAME(LVecBase2) &v) const {
 
-	FLOATNAME(LVecBase2) v_res;
+        FLOATNAME(LVecBase2) v_res;
 
-	// v._v.v._2 == 1.0f for this case
+        // v._v.v._2 == 1.0f for this case
 
-	v_res._v.v._0 = v._v.v._0*_m.m._00 + v._v.v._1*_m.m._10 + _m.m._20;
-   	v_res._v.v._1 = v._v.v._0*_m.m._01 + v._v.v._1*_m.m._11 + _m.m._21;
+        v_res._v.v._0 = v._v.v._0*_m.m._00 + v._v.v._1*_m.m._10 + _m.m._20;
+        v_res._v.v._1 = v._v.v._0*_m.m._01 + v._v.v._1*_m.m._11 + _m.m._21;
 
-	return v_res;
+        return v_res;
 
 //  return FLOATNAME(LVecBase2)(v.dot(get_col2(0)) + _m.m._20,
-//			    v.dot(get_col2(1)) + _m.m._21);
+//                          v.dot(get_col2(1)) + _m.m._21);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -454,17 +454,17 @@ xform_point(const FLOATNAME(LVecBase2) &v) const {
 INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LMatrix3)::
 xform_vec(const FLOATNAME(LVecBase2) &v) const {
 
-	FLOATNAME(LVecBase2) v_res;
+        FLOATNAME(LVecBase2) v_res;
 
-	// v._v.v._2 == 0.0f for this case
+        // v._v.v._2 == 0.0f for this case
 
-	v_res._v.v._0 = v._v.v._0*_m.m._00 + v._v.v._1*_m.m._10;
-   	v_res._v.v._1 = v._v.v._0*_m.m._01 + v._v.v._1*_m.m._11;
+        v_res._v.v._0 = v._v.v._0*_m.m._00 + v._v.v._1*_m.m._10;
+        v_res._v.v._1 = v._v.v._0*_m.m._01 + v._v.v._1*_m.m._11;
 
-	return v_res;
+        return v_res;
 
 //  return FLOATNAME(LVecBase2)(v.dot(get_col2(0)),
-//			    v.dot(get_col2(1)));
+//                          v.dot(get_col2(1)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -498,9 +498,9 @@ res._m.m._22 = a._m.m._20*b._m.m._02 + a._m.m._21*b._m.m._12 + a._m.m._22*b._m.m
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 operator * (const FLOATNAME(LMatrix3) &other) const {
-	FLOATNAME(LMatrix3) t;
+        FLOATNAME(LMatrix3) t;
 
-	MATRIX3_PRODUCT(t,(*this),other);
+        MATRIX3_PRODUCT(t,(*this),other);
 /*
 typedef union {
         struct {
@@ -509,16 +509,16 @@ typedef union {
             FLOATTYPE     _m.m._31, _m.m._32, _m.m._33;
         };
 
-		FLOATTYPE m[3][3];
+                FLOATTYPE m[3][3];
     } MYMATRIX3;
 
-	FLOATNAME(LMatrix3) t;
+        FLOATNAME(LMatrix3) t;
 
-	MYMATRIX3 *result_ptr=(MYMATRIX3 *)t.get_m.data();
-	MYMATRIX3 *mat1_ptr=(MYMATRIX3 *)this->get_m.data();
-	MYMATRIX3 *mat2_ptr=(MYMATRIX3 *)other.get_m.data();
+        MYMATRIX3 *result_ptr=(MYMATRIX3 *)t.get_m.data();
+        MYMATRIX3 *mat1_ptr=(MYMATRIX3 *)this->get_m.data();
+        MYMATRIX3 *mat2_ptr=(MYMATRIX3 *)other.get_m.data();
 
-	MATRIX3_PRODUCT(result_ptr,mat1_ptr,mat2_ptr);
+        MATRIX3_PRODUCT(result_ptr,mat1_ptr,mat2_ptr);
 */
 /*
   t(0, 0) = mult_cel(other, 0, 0);
@@ -764,7 +764,7 @@ transpose_in_place() {
 INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix3)::
 det2(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e10, FLOATTYPE e11) const {
 //  return (e00 * e11 - e10 * e01);
-	return DET2(e00,e01,e10,e11);
+        return DET2(e00,e01,e10,e11);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -851,8 +851,8 @@ invert_in_place() {
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 translate_mat(const FLOATNAME(LVecBase2) &trans) {
   return FLOATNAME(LMatrix3)(1.0f, 0.0f, 0.0f,
-			   0.0f, 1.0f, 0.0f,
-			   trans._v.v._0, trans._v.v._1, 1.0f);
+                           0.0f, 1.0f, 0.0f,
+                           trans._v.v._0, trans._v.v._1, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -864,8 +864,8 @@ translate_mat(const FLOATNAME(LVecBase2) &trans) {
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 translate_mat(FLOATTYPE tx, FLOATTYPE ty) {
   return FLOATNAME(LMatrix3)(1.0f, 0.0f, 0.0f,
-			   0.0f, 1.0f, 0.0f,
-			   tx, ty, 1.0f);
+                           0.0f, 1.0f, 0.0f,
+                           tx, ty, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -880,8 +880,8 @@ rotate_mat(FLOATTYPE angle) {
   FLOATTYPE s,c;
   csincos(angle_rad,&s,&c);
   return FLOATNAME(LMatrix3)(  c,    s,  0.0f,
-			      -s,    c,  0.0f,
-			     0.0f,  0.0f,  1.0f);
+                              -s,    c,  0.0f,
+                             0.0f,  0.0f,  1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -893,8 +893,8 @@ rotate_mat(FLOATTYPE angle) {
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 scale_mat(const FLOATNAME(LVecBase2) &scale) {
   return FLOATNAME(LMatrix3)(scale._v.v._0, 0.0f, 0.0f,
-			     0.0f, scale._v.v._1, 0.0f,
-			     0.0f, 0.0f, 1.0f);
+                             0.0f, scale._v.v._1, 0.0f,
+                             0.0f, 0.0f, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -906,8 +906,8 @@ scale_mat(const FLOATNAME(LVecBase2) &scale) {
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 scale_mat(FLOATTYPE sx, FLOATTYPE sy) {
   return FLOATNAME(LMatrix3)(sx, 0.0f, 0.0f,
-			     0.0f, sy, 0.0f,
-			     0.0f, 0.0f, 1.0f);
+                             0.0f, sy, 0.0f,
+                             0.0f, 0.0f, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -918,7 +918,7 @@ scale_mat(FLOATTYPE sx, FLOATTYPE sy) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
-	   CoordinateSystem cs) {
+           CoordinateSystem cs) {
   if (cs == CS_default) {
     cs = default_coordinate_system;
   }
@@ -997,7 +997,7 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
-	   CoordinateSystem cs) {
+           CoordinateSystem cs) {
   if (cs == CS_default) {
     cs = default_coordinate_system;
   }
@@ -1065,8 +1065,8 @@ rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 scale_mat(const FLOATNAME(LVecBase3) &scale) {
   return FLOATNAME(LMatrix3)(scale[0], 0.0f, 0.0f,
-			     0.0f, scale._v.v._1, 0.0f,
-			     0.0f, 0.0f, scale._v.v._2);
+                             0.0f, scale._v.v._1, 0.0f,
+                             0.0f, 0.0f, scale._v.v._2);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1078,8 +1078,8 @@ scale_mat(const FLOATNAME(LVecBase3) &scale) {
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz) {
   return FLOATNAME(LMatrix3)(sx, 0.0f, 0.0f,
-			     0.0f, sy, 0.0f,
-			     0.0f, 0.0f, sz);
+                             0.0f, sy, 0.0f,
+                             0.0f, 0.0f, sz);
 }
 
 ////////////////////////////////////////////////////////////////////

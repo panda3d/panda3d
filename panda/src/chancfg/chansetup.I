@@ -81,8 +81,8 @@ INLINE void SetupItem::AddRecurse(std::string& l, std::string& s) {
 }
 
 INLINE void SetupItem::setState(const bool st, const bool hw, const int pvc,
-				const ChanViewport& v, const SetupFOV& f,
-				const Orientation& o) {
+                                const ChanViewport& v, const SetupFOV& f,
+                                const Orientation& o) {
   _stereo = st;
   _hw_chan = hw;
   _chan = pvc;

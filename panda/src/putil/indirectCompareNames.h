@@ -9,7 +9,7 @@
 #include <pandabase.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : IndirectCompareNames
+//       Class : IndirectCompareNames
 // Description : An STL function object class, this is intended to be
 //               used on any ordered collection of pointers to classes
 //               that define a get_name() method, particularly for

@@ -18,7 +18,7 @@
 #include <map>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ProgramBase
+//       Class : ProgramBase
 // Description : This is intended to be the base class for most
 //               general-purpose utility programs in the PANDATOOL
 //               tree.  It automatically handles things like
@@ -54,15 +54,15 @@ protected:
   void add_runline(const string &runline);
   void clear_options();
   void add_option(const string &option, const string &parm_name,
-		  int index_group, const string &description, 
-		  OptionDispatchFunction option_function,
-		  bool *bool_var = (bool *)NULL,
-		  void *option_data = (void *)NULL);
+                  int index_group, const string &description, 
+                  OptionDispatchFunction option_function,
+                  bool *bool_var = (bool *)NULL,
+                  void *option_data = (void *)NULL);
   void add_option(const string &option, const string &parm_name,
-		  int index_group, const string &description, 
-		  OptionDispatchMethod option_method,
-		  bool *bool_var = (bool *)NULL,
-		  void *option_data = (void *)NULL);
+                  int index_group, const string &description, 
+                  OptionDispatchMethod option_method,
+                  bool *bool_var = (bool *)NULL,
+                  void *option_data = (void *)NULL);
   bool redescribe_option(const string &option, const string &description);
   bool remove_option(const string &option);
 
@@ -86,8 +86,8 @@ protected:
   static bool handle_help_option(const string &opt, const string &arg, void *);
 
   static void format_text(ostream &out, bool &last_newline,
-			  const string &prefix, int indent_width,
-			  const string &text, int line_width);
+                          const string &prefix, int indent_width,
+                          const string &text, int line_width);
 
 private:
   void sort_options();

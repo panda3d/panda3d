@@ -20,7 +20,7 @@
 class EXPCL_PANDA MouseWatcherRegion : public TypedReferenceCount, public Namable {
 PUBLISHED:
   INLINE MouseWatcherRegion(const string &name, float left, float right,
-			    float bottom, float top);
+                            float bottom, float top);
   INLINE MouseWatcherRegion(const string &name, const LVecBase4f &frame);
 
   INLINE void set_frame(float left, float right, float bottom, float top);
@@ -59,8 +59,8 @@ public:
     TypedReferenceCount::init_type();
     Namable::init_type();
     register_type(_type_handle, "MouseWatcherRegion",
-		  TypedReferenceCount::get_class_type(),
-		  Namable::get_class_type());
+                  TypedReferenceCount::get_class_type(),
+                  Namable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -12,7 +12,7 @@
 #include "collisionNode.h"
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CollisionHandlerPusher
+//       Class : CollisionHandlerPusher
 // Description : A specialized kind of CollisionHandler that simply
 //               pushes back on things that attempt to move into solid
 //               walls.  This is the simplest kind of "real-world"
@@ -40,7 +40,7 @@ public:
   static void init_type() {
     CollisionHandlerPhysical::init_type();
     register_type(_type_handle, "CollisionHandlerPusher",
-		  CollisionHandlerPhysical::get_class_type());
+                  CollisionHandlerPhysical::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

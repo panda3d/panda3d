@@ -6,7 +6,7 @@
 INLINE EggMaterialCollection::iterator EggMaterialCollection::
 begin() const {
   nassertr(_ordered_materials.size() == _materials.size(),
-	   _ordered_materials.begin());
+           _ordered_materials.begin());
   return _ordered_materials.begin();
 }
  

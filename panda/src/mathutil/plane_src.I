@@ -42,7 +42,7 @@ FLOATNAME(Plane)(const FLOATNAME(Plane) &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATNAME(Plane)::
 FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a, const FLOATNAME(LPoint3) &b, 
-		 const FLOATNAME(LPoint3) &c) {
+                 const FLOATNAME(LPoint3) &c) {
   FLOATNAME(LVector3) u = b - a;
   FLOATNAME(LVector3) v = c - a;
   FLOATNAME(LVector3) p = normalize(cross(u, v));
@@ -144,8 +144,8 @@ dist_to_plane(const FLOATNAME(LPoint3) &point) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL bool FLOATNAME(Plane)::
 intersects_line(FLOATNAME(LPoint3) &intersection_point,
-		const FLOATNAME(LPoint3) &p1,
-		const FLOATNAME(LPoint3) &p2) const {
+                const FLOATNAME(LPoint3) &p1,
+                const FLOATNAME(LPoint3) &p2) const {
   FLOATTYPE t;
   if (!intersects_line(t, p1, p2 - p1)) {
     return false;
@@ -173,8 +173,8 @@ intersects_line(FLOATNAME(LPoint3) &intersection_point,
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL bool FLOATNAME(Plane)::
 intersects_line(FLOATTYPE &t, 
-		const FLOATNAME(LPoint3) &from, 
-		const FLOATNAME(LVector3) &delta) const {
+                const FLOATNAME(LPoint3) &from, 
+                const FLOATNAME(LVector3) &delta) const {
   FLOATTYPE denom = dot(get_normal(), delta);
   if (IS_NEARLY_ZERO(denom)) {
     return false;

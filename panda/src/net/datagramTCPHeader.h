@@ -17,7 +17,7 @@ static const int datagram_tcp_header_size = sizeof(PRUint16);
 class NetDatagram;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DatagramTCPHeader
+//       Class : DatagramTCPHeader
 // Description : A class that encapsulates the extra bytes that are
 //               sent in front of each datagram to identify it when it
 //               is sent on TCP.  This is similar to

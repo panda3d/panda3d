@@ -16,7 +16,7 @@
 
 #ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
-// 	 Class : MemoryUsagePointers
+//       Class : MemoryUsagePointers
 // Description : This is a list of pointers returned by a MemoryUsage
 //               object in response to some query.  
 //
@@ -52,12 +52,12 @@ PUBLISHED:
 
 private:
   void add_entry(ReferenceCount *ptr, TypedObject *typed_ptr,
-		 TypeHandle type, double age);
+                 TypeHandle type, double age);
 
   class Entry {
   public:
     INLINE Entry(ReferenceCount *ptr, TypedObject *typed_ptr,
-		 TypeHandle type, double age);
+                 TypeHandle type, double age);
     INLINE Entry(const Entry &copy);
     INLINE void operator = (const Entry &copy);
     INLINE ~Entry();

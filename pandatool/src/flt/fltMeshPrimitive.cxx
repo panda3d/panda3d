@@ -60,7 +60,7 @@ extract_record(FltRecordReader &reader) {
 
   } else {
     nout << "Invalid vertex width in mesh primitive: " << vertex_width
-	 << "\n";
+         << "\n";
     return false;
   }
 

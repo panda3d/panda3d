@@ -93,9 +93,9 @@ PUBLISHED:
   INLINE Colorf get_shadow_color() const;
  
   INLINE void set_frame_as_margin(float left, float right, 
-				  float bottom, float top);
+                                  float bottom, float top);
   INLINE void set_frame_actual(float left, float right,
-			       float bottom, float top);
+                               float bottom, float top);
   INLINE void clear_frame();
   INLINE bool has_frame() const;
   INLINE bool is_frame_as_margin() const;
@@ -108,9 +108,9 @@ PUBLISHED:
   INLINE bool get_frame_corners() const;
 
   INLINE void set_card_as_margin(float left, float right, 
-				 float bottom, float top);
+                                 float bottom, float top);
   INLINE void set_card_actual(float left, float right, 
-			      float bottom, float top);
+                              float bottom, float top);
   INLINE void clear_card();
   INLINE bool has_card() const;
   INLINE bool is_card_as_margin() const;
@@ -173,10 +173,10 @@ private:
 
   float assemble_row(const char *&source, Node *dest);
   Node *assemble_text(const char *source, LVector2f &ul, LVector2f &lr,
-		      int &num_rows);
+                      int &num_rows);
   float measure_row(const char *&source);
   void measure_text(const char *source, LVector2f &ul, LVector2f &lr,
-		    int &num_rows);
+                    int &num_rows);
 
   Node *make_frame();
   Node *make_card();
@@ -238,7 +238,7 @@ public:
   static void init_type() {
     NamedNode::init_type();
     register_type(_type_handle, "TextNode",
-		  NamedNode::get_class_type());
+                  NamedNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -53,7 +53,7 @@ INLINE static signed short read_buffer(byte* buf, int idx) {
     break;
   default:
     audio_cat->debug() << "unknown sample size (" << sample_size << ")"
-		       << endl;
+                       << endl;
     break;
   }
   return ret;
@@ -69,7 +69,7 @@ INLINE static void write_buffer(byte* buf, int idx, signed short val) {
     break;
   default:
     audio_cat->debug() << "unknown sample size (" << sample_size << ")"
-		       << endl;
+                       << endl;
     break;
   }
 }
@@ -85,7 +85,7 @@ INLINE static signed short sound_clamp(signed int value) {
     break;
   default:
     audio_cat->debug() << "unknown sample size (" << sample_size << ")"
-		       << endl;
+                       << endl;
     break;
   }
   return ret;
@@ -200,10 +200,10 @@ static void* internal_update(void*) {
     } else {
       write(output_fd, current_buffer, audio_buffer_size);
       {
-	mutex_lock m(buffer_mutex);
-	swap_buffers();
-	--have_buffers;
-	++want_buffers;
+        mutex_lock m(buffer_mutex);
+        swap_buffers();
+        --have_buffers;
+        ++want_buffers;
       }
     }
   }
@@ -248,7 +248,7 @@ static void initialize(void) {
 
   audio_cat->info() << "spawning internal update thread" << endl;
   update_thread = thread::create(internal_update, (void*)0L,
-				 thread::PRIORITY_NORMAL);
+                                 thread::PRIORITY_NORMAL);
 
   AudioManager::set_update_func(update_linux);
   AudioManager::set_shutdown_func(shutdown_linux);
@@ -330,8 +330,8 @@ LinuxSamplePlayer::~LinuxSamplePlayer(void) {
 }
 
 void LinuxSamplePlayer::play_sound(AudioTraits::SoundClass*,
-				   AudioTraits::PlayingClass* playing,
-				   float start_time) {
+                                   AudioTraits::PlayingClass* playing,
+                                   float start_time) {
   initialize();
   LinuxSamplePlaying* lplaying = (LinuxSamplePlaying*)playing;
   if (!AudioManager::get_sfx_active())
@@ -348,7 +348,7 @@ void LinuxSamplePlayer::play_sound(AudioTraits::SoundClass*,
 }
 
 void LinuxSamplePlayer::stop_sound(AudioTraits::SoundClass*,
-				   AudioTraits::PlayingClass* playing) {
+                                   AudioTraits::PlayingClass* playing) {
   initialize();
   LinuxSamplePlaying* lplaying = (LinuxSamplePlaying*)playing;
   if (!AudioManager::get_sfx_active())
@@ -377,12 +377,12 @@ LinuxMusicPlayer::~LinuxMusicPlayer(void) {
 }
 
 void LinuxMusicPlayer::play_sound(AudioTraits::SoundClass*,
-				  AudioTraits::PlayingClass*, float) {
+                                  AudioTraits::PlayingClass*, float) {
   initialize();
 }
 
 void LinuxMusicPlayer::stop_sound(AudioTraits::SoundClass*,
-				  AudioTraits::PlayingClass*) {
+                                  AudioTraits::PlayingClass*) {
   initialize();
 }
 

@@ -102,7 +102,7 @@ from_egg(EggFile *egg_file, EggData *data, EggTexture *egg_tex) {
   if (alpha_mode == EggRenderMode::AM_unspecified) {
     if (_source_texture->get_size()) {
       _uses_alpha = 
-	_egg_tex->has_alpha_channel(_source_texture->get_num_channels());
+        _egg_tex->has_alpha_channel(_source_texture->get_num_channels());
     }
 
   } else if (alpha_mode == EggRenderMode::AM_off) {
@@ -408,7 +408,7 @@ get_uv_range(EggGroupNode *group, Palettizer::RemapUV remap) {
     EggGroup *egg_group;
     DCAST_INTO_V(egg_group, group);
     if (egg_group->has_objecttype() &&
-	cmp_nocase_uh(egg_group->get_objecttype(), "backstage") == 0) {
+        cmp_nocase_uh(egg_group->get_objecttype(), "backstage") == 0) {
       // If we reach a <Group> node with the "backstage" flag set,
       // ignore it and everything under it.
       return;
@@ -430,49 +430,49 @@ get_uv_range(EggGroupNode *group, Palettizer::RemapUV remap) {
     if (child->is_of_type(EggNurbsSurface::get_class_type())) {
       EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, child);
       if (nurbs->has_texture() && nurbs->get_texture() == _egg_tex) {
-	// Here's a NURBS surface that references the texture.  Unlike
-	// other kinds of geometries, NURBS don't store UV's; they're
-	// implicit in the surface.  NURBS UV's will always run in the
-	// range (0,0) - (1,1).  However, we do need to apply the
-	// texture matrix.
+        // Here's a NURBS surface that references the texture.  Unlike
+        // other kinds of geometries, NURBS don't store UV's; they're
+        // implicit in the surface.  NURBS UV's will always run in the
+        // range (0,0) - (1,1).  However, we do need to apply the
+        // texture matrix.
 
-	// We also don't count the NURBS surfaces in with the group's
-	// UV's, because we can't adjust the UV's on a NURBS, so
-	// counting them up would be misleading (the reason we count
-	// up the group UV's is so we can consider adjusting them
-	// later).  Instead, we just accumulate the NURBS UV's
-	// directly into our total.
+        // We also don't count the NURBS surfaces in with the group's
+        // UV's, because we can't adjust the UV's on a NURBS, so
+        // counting them up would be misleading (the reason we count
+        // up the group UV's is so we can consider adjusting them
+        // later).  Instead, we just accumulate the NURBS UV's
+        // directly into our total.
 
-	static const int num_nurbs_uvs = 4;
-	static TexCoordd nurbs_uvs[num_nurbs_uvs] = {
-	  TexCoordd(0.0, 0.0),
-	  TexCoordd(0.0, 1.0),
-	  TexCoordd(1.0, 1.0),
-	  TexCoordd(1.0, 0.0)
-	};
+        static const int num_nurbs_uvs = 4;
+        static TexCoordd nurbs_uvs[num_nurbs_uvs] = {
+          TexCoordd(0.0, 0.0),
+          TexCoordd(0.0, 1.0),
+          TexCoordd(1.0, 1.0),
+          TexCoordd(1.0, 0.0)
+        };
 
-	for (int i = 0; i < num_nurbs_uvs; i++) {
-	  TexCoordd uv = nurbs_uvs[i] * _tex_mat;
-	  collect_uv(_any_uvs, _min_uv, _max_uv, uv, uv);
-	}
+        for (int i = 0; i < num_nurbs_uvs; i++) {
+          TexCoordd uv = nurbs_uvs[i] * _tex_mat;
+          collect_uv(_any_uvs, _min_uv, _max_uv, uv, uv);
+        }
       }
 
     } else if (child->is_of_type(EggPrimitive::get_class_type())) {
       EggPrimitive *geom = DCAST(EggPrimitive, child);
       if (geom->has_texture() && geom->get_texture() == _egg_tex) {
-	// Here's a piece of geometry that references this texture.
-	// Walk through its vertices and get its UV's.
-	TexCoordd geom_min_uv, geom_max_uv;
+        // Here's a piece of geometry that references this texture.
+        // Walk through its vertices and get its UV's.
+        TexCoordd geom_min_uv, geom_max_uv;
 
-	if (get_geom_uvs(geom, geom_min_uv, geom_max_uv)) {
-	  if (remap == Palettizer::RU_poly) {
-	    LVector2d trans = translate_uv(geom_min_uv, geom_max_uv);
-	    geom_min_uv += trans;
-	    geom_max_uv += trans;
-	  }
-	  collect_uv(group_any_uvs, group_min_uv, group_max_uv, 
-		     geom_min_uv, geom_max_uv);
-	}
+        if (get_geom_uvs(geom, geom_min_uv, geom_max_uv)) {
+          if (remap == Palettizer::RU_poly) {
+            LVector2d trans = translate_uv(geom_min_uv, geom_max_uv);
+            geom_min_uv += trans;
+            geom_max_uv += trans;
+          }
+          collect_uv(group_any_uvs, group_min_uv, group_max_uv, 
+                     geom_min_uv, geom_max_uv);
+        }
       }
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
@@ -489,7 +489,7 @@ get_uv_range(EggGroupNode *group, Palettizer::RemapUV remap) {
     }
     collect_uv(_any_uvs, _min_uv, _max_uv, group_min_uv, group_max_uv);
   }
-}	
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureReference::update_uv_range
@@ -503,7 +503,7 @@ update_uv_range(EggGroupNode *group, Palettizer::RemapUV remap) {
     EggGroup *egg_group;
     DCAST_INTO_V(egg_group, group);
     if (egg_group->has_objecttype() &&
-	cmp_nocase_uh(egg_group->get_objecttype(), "backstage") == 0) {
+        cmp_nocase_uh(egg_group->get_objecttype(), "backstage") == 0) {
       // If we reach a <Group> node with the "backstage" flag set,
       // ignore it and everything under it.
       return;
@@ -528,23 +528,23 @@ update_uv_range(EggGroupNode *group, Palettizer::RemapUV remap) {
 
     } else if (child->is_of_type(EggPrimitive::get_class_type())) {
       if (remap != Palettizer::RU_never) {
-	EggPrimitive *geom = DCAST(EggPrimitive, child);
-	if (geom->has_texture() && geom->get_texture() == _egg_tex) {
-	  TexCoordd geom_min_uv, geom_max_uv;
-	  
-	  if (get_geom_uvs(geom, geom_min_uv, geom_max_uv)) {
-	    if (remap == Palettizer::RU_poly) {
-	      LVector2d trans = translate_uv(geom_min_uv, geom_max_uv);
-	      trans = trans * _inv_tex_mat;
-	      if (!trans.almost_equal(LVector2d::zero())) {
-		translate_geom_uvs(geom, trans);
-	      }
-	    } else {
-	      collect_uv(group_any_uvs, group_min_uv, group_max_uv,
-			 geom_min_uv, geom_max_uv);
-	    }
-	  }
-	}
+        EggPrimitive *geom = DCAST(EggPrimitive, child);
+        if (geom->has_texture() && geom->get_texture() == _egg_tex) {
+          TexCoordd geom_min_uv, geom_max_uv;
+
+          if (get_geom_uvs(geom, geom_min_uv, geom_max_uv)) {
+            if (remap == Palettizer::RU_poly) {
+              LVector2d trans = translate_uv(geom_min_uv, geom_max_uv);
+              trans = trans * _inv_tex_mat;
+              if (!trans.almost_equal(LVector2d::zero())) {
+                translate_geom_uvs(geom, trans);
+              }
+            } else {
+              collect_uv(group_any_uvs, group_min_uv, group_max_uv,
+                         geom_min_uv, geom_max_uv);
+            }
+          }
+        }
       }
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
@@ -558,17 +558,17 @@ update_uv_range(EggGroupNode *group, Palettizer::RemapUV remap) {
     trans = trans * _inv_tex_mat;
     if (!trans.almost_equal(LVector2d::zero())) {
       for (ci = group->begin(); ci != group->end(); ci++) {
-	EggNode *child = (*ci);
-	if (child->is_of_type(EggPrimitive::get_class_type())) {
-	  EggPrimitive *geom = DCAST(EggPrimitive, child);
-	  if (geom->has_texture() && geom->get_texture() == _egg_tex) {
-	    translate_geom_uvs(geom, trans);
-	  }
-	}
+        EggNode *child = (*ci);
+        if (child->is_of_type(EggPrimitive::get_class_type())) {
+          EggPrimitive *geom = DCAST(EggPrimitive, child);
+          if (geom->has_texture() && geom->get_texture() == _egg_tex) {
+            translate_geom_uvs(geom, trans);
+          }
+        }
       }
     }
   }
-}	
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureReference::get_geom_uvs
@@ -579,7 +579,7 @@ update_uv_range(EggGroupNode *group, Palettizer::RemapUV remap) {
 ////////////////////////////////////////////////////////////////////
 bool TextureReference::
 get_geom_uvs(EggPrimitive *geom,
-	     TexCoordd &geom_min_uv, TexCoordd &geom_max_uv) {
+             TexCoordd &geom_min_uv, TexCoordd &geom_max_uv) {
   bool geom_any_uvs = false;
 
   EggPrimitive::iterator pi;
@@ -611,7 +611,7 @@ translate_geom_uvs(EggPrimitive *geom, const TexCoordd &trans) const {
       EggVertex *new_vtx = vtx->get_pool()->create_unique_vertex(vtx_copy);
 
       if (new_vtx->gref_size() != vtx->gref_size()) {
-	new_vtx->copy_grefs_from(*vtx);
+        new_vtx->copy_grefs_from(*vtx);
       }
 
       geom->replace(pi, new_vtx);
@@ -627,12 +627,12 @@ translate_geom_uvs(EggPrimitive *geom, const TexCoordd &trans) const {
 ////////////////////////////////////////////////////////////////////
 void TextureReference::
 collect_uv(bool &any_uvs, TexCoordd &min_uv, TexCoordd &max_uv,
-	   const TexCoordd &got_min_uv, const TexCoordd &got_max_uv) {
+           const TexCoordd &got_min_uv, const TexCoordd &got_max_uv) {
   if (any_uvs) {
     min_uv.set(min(min_uv[0], got_min_uv[0]), 
-	       min(min_uv[1], got_min_uv[1]));
+               min(min_uv[1], got_min_uv[1]));
     max_uv.set(max(max_uv[0], got_max_uv[0]), 
-	       max(max_uv[1], got_max_uv[1]));
+               max(max_uv[1], got_max_uv[1]));
   } else {
     // The first UV.
     min_uv = got_min_uv;

@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////
 EggJointData::
 EggJointData(EggCharacterCollection *collection, 
-	     EggCharacterData *char_data) :
+             EggCharacterData *char_data) :
   EggComponentData(collection, char_data)
 {
   _parent = (EggJointData *)NULL;
@@ -121,7 +121,7 @@ do_rebuild() {
       EggJointPointer *joint;
       DCAST_INTO_R(joint, back, false);
       if (!joint->do_rebuild()) {
-	all_ok = false;
+        all_ok = false;
       }
     }
   }

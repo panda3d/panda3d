@@ -16,7 +16,7 @@
 #include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoPolygons
+//       Class : LwoPolygons
 // Description : An array of polygons that will be referenced by later
 //               chunks.
 ////////////////////////////////////////////////////////////////////
@@ -69,7 +69,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoPolygons",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

@@ -13,7 +13,7 @@
 #include <pnmWriter.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PNMFileTypeAlias
+//       Class : PNMFileTypeAlias
 // Description : For reading and Alias native image files.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PNMFileTypeAlias : public PNMFileType {
@@ -27,7 +27,7 @@ public:
   virtual string get_suggested_extension() const;
 
   virtual PNMReader *make_reader(FILE *file, bool owns_file = true,
-				 const string &magic_number = string());
+                                 const string &magic_number = string());
   virtual PNMWriter *make_writer(FILE *file, bool owns_file = true);
 
 public:

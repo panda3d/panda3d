@@ -98,11 +98,11 @@ destroy_thread(void) {
 //  Description: This is a static wrapper around the callback()
 //               method, below.  It's static just so we can pass it to
 //               the thread-creation function.  In addition, the
-//		 function has a void* return type even though we 
-//		 don't actually return anything.  This is necessary
-//		 because ipc assumes a function that does not return
-//		 anything indicates that the associated thread should 
-//		 be created as unjoinable (detached).
+//               function has a void* return type even though we 
+//               don't actually return anything.  This is necessary
+//               because ipc assumes a function that does not return
+//               anything indicates that the associated thread should 
+//               be created as unjoinable (detached).
 ////////////////////////////////////////////////////////////////////
 void* AsyncUtility::
 st_callback(void *arg) {

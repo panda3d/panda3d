@@ -18,7 +18,7 @@ class PaletteImage;
 class TexturePlacement;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PalettePage
+//       Class : PalettePage
 // Description : This is a particular collection of textures, within a
 //               PaletteGroup, that all share the same
 //               TextureProperties.  The textures on the same page may
@@ -61,7 +61,7 @@ public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
 protected:
   static TypedWritable *make_PalettePage(const FactoryParams &params);
@@ -80,8 +80,8 @@ public:
     TypedWritable::init_type();
     Namable::init_type();
     register_type(_type_handle, "PalettePage",
-		  TypedWritable::get_class_type(),
-		  Namable::get_class_type());
+                  TypedWritable::get_class_type(),
+                  Namable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -29,7 +29,7 @@ class EggNode;
 class EggVertex;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : ComputedVerticesMaker
+//       Class : ComputedVerticesMaker
 // Description : An object to collect together all the vertices of a
 //               character, indicate what the transform space of each
 //               vertex is (which may be a soft-skinned combination of
@@ -57,16 +57,16 @@ public:
   void mark_space();
 
   int add_vertex(const Vertexd &vertex, const EggMorphVertexList &morphs,
-		 const LMatrix4d &transform);
+                 const LMatrix4d &transform);
   int add_normal(const Normald &normal, const EggMorphNormalList &morphs,
-		 const LMatrix4d &transform);
+                 const LMatrix4d &transform);
   int add_texcoord(const TexCoordd &texcoord,
-		   const EggMorphTexCoordList &morphs,
-		   const LMatrix3d &transform);
+                   const EggMorphTexCoordList &morphs,
+                   const LMatrix3d &transform);
   int add_color(const Colorf &color, const EggMorphColorList &morphs);
 
   ComputedVertices *make_computed_vertices(Character *character,
-					   CharacterMaker &char_maker);
+                                           CharacterMaker &char_maker);
 
   void write(ostream &out) const;
 

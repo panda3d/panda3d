@@ -352,11 +352,11 @@ clear(const RenderBuffer &buffer) {
 
   if (buffer_type & RenderBuffer::T_color) {
     call_glClearColor(_color_clear_value[0],
-		      _color_clear_value[1],
-		      _color_clear_value[2],
-		      _color_clear_value[3]);
+                      _color_clear_value[1],
+                      _color_clear_value[2],
+                      _color_clear_value[3]);
     state.set_attribute(ColorMaskTransition::get_class_type(),
-			new ColorMaskAttribute);
+                        new ColorMaskAttribute);
     mask |= GL_COLOR_BUFFER_BIT;
 
     set_draw_buffer(buffer);
@@ -370,7 +370,7 @@ clear(const RenderBuffer &buffer) {
     // writing to the depth buffer.
     if (!_depth_mask) {
       state.set_attribute(DepthWriteTransition::get_class_type(),
-			  new DepthWriteAttribute);
+                          new DepthWriteAttribute);
     }
   }
 
@@ -381,9 +381,9 @@ clear(const RenderBuffer &buffer) {
 
   if (buffer_type & RenderBuffer::T_accum) {
     call_glClearAccum(_accum_clear_value[0],
-		      _accum_clear_value[1],
-		      _accum_clear_value[2],
-		      _accum_clear_value[3]);
+                      _accum_clear_value[1],
+                      _accum_clear_value[2],
+                      _accum_clear_value[3]);
     mask |= GL_ACCUM_BUFFER_BIT;
   }
 
@@ -504,27 +504,27 @@ render_frame(const AllAttributesWrapper &initial_state) {
     if (_win->is_channel_defined(c)) {
       GraphicsChannel *chan = _win->get_channel(c);
       if (chan->is_active()) {
-	int num_layers = chan->get_num_layers();
-	for (int l = 0; l < num_layers; l++) {
-	  GraphicsLayer *layer = chan->get_layer(l);
-	  if (layer->is_active()) {
-	    int num_drs = layer->get_num_drs();
-	    for (int d = 0; d < num_drs; d++) {
-	      DisplayRegion *dr = layer->get_dr(d);
-	      nassertv(dr != (DisplayRegion *)NULL);
-	      Camera *cam = dr->get_camera();
-	      
-	      // For each display region, render from the camera's view.
-	      if (dr->is_active() && cam != (Camera *)NULL && 
-		  cam->is_active() && cam->get_scene() != (Node *)NULL) {
-		DisplayRegionStack old_dr = push_display_region(dr);
-		prepare_display_region();
-		render_scene(cam->get_scene(), cam, initial_state);
-		pop_display_region(old_dr);
-	      }
-	    }
-	  }
-	}
+        int num_layers = chan->get_num_layers();
+        for (int l = 0; l < num_layers; l++) {
+          GraphicsLayer *layer = chan->get_layer(l);
+          if (layer->is_active()) {
+            int num_drs = layer->get_num_drs();
+            for (int d = 0; d < num_drs; d++) {
+              DisplayRegion *dr = layer->get_dr(d);
+              nassertv(dr != (DisplayRegion *)NULL);
+              Camera *cam = dr->get_camera();
+
+              // For each display region, render from the camera's view.
+              if (dr->is_active() && cam != (Camera *)NULL && 
+                  cam->is_active() && cam->get_scene() != (Node *)NULL) {
+                DisplayRegionStack old_dr = push_display_region(dr);
+                prepare_display_region();
+                render_scene(cam->get_scene(), cam, initial_state);
+                pop_display_region(old_dr);
+              }
+            }
+          }
+        }
       }
     }
   }
@@ -578,7 +578,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 render_scene(Node *root, ProjectionNode *projnode,
-	     const AllAttributesWrapper &initial_state) {
+             const AllAttributesWrapper &initial_state) {
 #ifdef GSG_VERBOSE
   _pass_number = 0;
   glgsg_cat.debug()
@@ -607,9 +607,9 @@ render_scene(Node *root, ProjectionNode *projnode,
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 render_subgraph(RenderTraverser *traverser,
-		Node *subgraph, ProjectionNode *projnode,
-		const AllAttributesWrapper &initial_state,
-		const AllTransitionsWrapper &net_trans) {
+                Node *subgraph, ProjectionNode *projnode,
+                const AllAttributesWrapper &initial_state,
+                const AllTransitionsWrapper &net_trans) {
   // Calling activate() frequently seems to be intolerably expensive
   // on some platforms.  We'll limit ourselves for now to calling it
   // only during the clear().
@@ -685,8 +685,8 @@ render_subgraph(RenderTraverser *traverser,
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 render_subgraph(RenderTraverser *traverser, Node *subgraph, 
-		const AllAttributesWrapper &initial_state,
-		const AllTransitionsWrapper &net_trans) {
+                const AllAttributesWrapper &initial_state,
+                const AllTransitionsWrapper &net_trans) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
     << "begin subgraph (pass " << ++_pass_number 
@@ -977,31 +977,31 @@ draw_sprite(const GeomSprite *geom) {
   // will be apparent, which is what this special projection was supposed to correct
 
   #ifdef DO_CHARLES_PROJECTION_MAT
-	  // to assure that the scale between the two frustra stays the same
-	  // (if they are different, sprites move at different speeds than the world),
-	  // we have to apply the frustum inverse to the point, then render it in our
-	  // own frustum.  Since the z values are identical and 1:1, we only need
-	  // concern ourselves with the x and y mappings, which are conveniently linear.
-	
-	  float x_frustum_scale, y_frustum_scale;
-	  float recip_x_frustum_scale, recip_y_frustum_scale;
-	  float tnear, tfar, hfov;
+          // to assure that the scale between the two frustra stays the same
+          // (if they are different, sprites move at different speeds than the world),
+          // we have to apply the frustum inverse to the point, then render it in our
+          // own frustum.  Since the z values are identical and 1:1, we only need
+          // concern ourselves with the x and y mappings, which are conveniently linear.
 
-	  // get the camera information
-	  tnear = _actual_display_region->get_camera()->get_near();
-	  tfar = _actual_display_region->get_camera()->get_far();
-	  hfov = _actual_display_region->get_camera()->get_hfov();
-	
-	  // extract the left and top bounds of the current camera
-	  x_frustum_scale = tanf(hfov * 0.5f * (3.1415926f / 180.0f)) * tnear;
-	  recip_x_frustum_scale = 1.0f / x_frustum_scale;
-	  y_frustum_scale = x_frustum_scale / aspect_ratio;
-	  recip_y_frustum_scale = 1.0f / y_frustum_scale;
+          float x_frustum_scale, y_frustum_scale;
+          float recip_x_frustum_scale, recip_y_frustum_scale;
+          float tnear, tfar, hfov;
 
-	  // load up our own matrices
-	  glMatrixMode(GL_PROJECTION);
-	  glLoadIdentity();
-	  glFrustum(-1.0f, 1.0f, -1.0f, 1.0f, tnear, tfar);
+          // get the camera information
+          tnear = _actual_display_region->get_camera()->get_near();
+          tfar = _actual_display_region->get_camera()->get_far();
+          hfov = _actual_display_region->get_camera()->get_hfov();
+
+          // extract the left and top bounds of the current camera
+          x_frustum_scale = tanf(hfov * 0.5f * (3.1415926f / 180.0f)) * tnear;
+          recip_x_frustum_scale = 1.0f / x_frustum_scale;
+          y_frustum_scale = x_frustum_scale / aspect_ratio;
+          recip_y_frustum_scale = 1.0f / y_frustum_scale;
+
+          // load up our own matrices
+          glMatrixMode(GL_PROJECTION);
+          glLoadIdentity();
+          glFrustum(-1.0f, 1.0f, -1.0f, 1.0f, tnear, tfar);
   #endif
   
   // load up our own matrices
@@ -1169,10 +1169,10 @@ draw_sprite(const GeomSprite *geom) {
       // create the rotated points
       LMatrix3f xform_mat = LMatrix3f::rotate_mat(theta) * LMatrix3f::scale_mat(scaled_width, scaled_height);
 
-	  ur = (LVector3f( 1,  1, 0) * xform_mat) + cur_image._v;
-	  ul = (LVector3f(-1,  1, 0) * xform_mat) + cur_image._v;
-	  lr = (LVector3f( 1, -1, 0) * xform_mat) + cur_image._v;
-	  ll = (LVector3f(-1, -1, 0) * xform_mat) + cur_image._v;
+          ur = (LVector3f( 1,  1, 0) * xform_mat) + cur_image._v;
+          ul = (LVector3f(-1,  1, 0) * xform_mat) + cur_image._v;
+          lr = (LVector3f( 1, -1, 0) * xform_mat) + cur_image._v;
+          ll = (LVector3f(-1, -1, 0) * xform_mat) + cur_image._v;
     }
     else {
       // create the normal points
@@ -2034,10 +2034,10 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   // pixelbuffer "origin" represents upper left screen point at which
   // pixelbuffer should be drawn using draw_pixel_buffer
   glReadPixels(pb->get_xorg() + xo, pb->get_yorg() + yo,  
-			   pb->get_xsize(), pb->get_ysize(), 
-			   get_external_image_format(pb->get_format()),
-			   get_image_type(pb->get_image_type()),
-			   pb->_image.p() );
+                           pb->get_xsize(), pb->get_ysize(), 
+                           get_external_image_format(pb->get_format()),
+                           get_image_type(pb->get_image_type()),
+                           pb->_image.p() );
 
   nassertv(!pb->_image.empty());
   report_errors();
@@ -2250,10 +2250,10 @@ apply_fog(Fog *fog) {
   call_glFogMode(get_fog_mode_type(fmode));
   switch(fmode) {
     case Fog::M_linear:
-		float fog_start,fog_end;
-		fog->get_range(fog_start,fog_end);
-		call_glFogStart(fog_start);
-		call_glFogEnd(fog_end);
+                float fog_start,fog_end;
+                fog->get_range(fog_start,fog_end);
+                call_glFogStart(fog_start);
+                call_glFogEnd(fog_end);
       break;
     case Fog::M_exponential:
     case Fog::M_exponential_squared:
@@ -2735,48 +2735,48 @@ void GLGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
       // Check to see if this light has already been bound to an id
       _cur_light_id = -1;
       for (i = 0; i < _max_lights; i++) {
-	if (_light_info[i]._light == light) {
-	  // Light has already been bound to an id, we only need
-	  // to enable the light, not apply it
-	  _cur_light_id = -2;
-	  enable_light(i, true);
-	  _light_info[i]._next_enabled = true;
-	  break;
-	}
+        if (_light_info[i]._light == light) {
+          // Light has already been bound to an id, we only need
+          // to enable the light, not apply it
+          _cur_light_id = -2;
+          enable_light(i, true);
+          _light_info[i]._next_enabled = true;
+          break;
+        }
       }
     
       // See if there are any unbound light ids 
       if (_cur_light_id == -1) {
-	for (i = 0; i < _max_lights; i++) {
-	  if (_light_info[i]._light == (Light *)NULL) {
-	    _light_info[i]._light = light;
-	    _cur_light_id = i;
-	    break;
-	  }
-	}
+        for (i = 0; i < _max_lights; i++) {
+          if (_light_info[i]._light == (Light *)NULL) {
+            _light_info[i]._light = light;
+            _cur_light_id = i;
+            break;
+          }
+        }
       }
     
       // If there were no unbound light ids, see if we can replace
       // a currently unused but previously bound id 
       if (_cur_light_id == -1) {
-	for (i = 0; i < _max_lights; i++) {
-	  if (attrib->is_off(_light_info[i]._light)) {
-	    _light_info[i]._light = light;
-	    _cur_light_id = i;
-	    break;
-	  } 
-	}
+        for (i = 0; i < _max_lights; i++) {
+          if (attrib->is_off(_light_info[i]._light)) {
+            _light_info[i]._light = light;
+            _cur_light_id = i;
+            break;
+          } 
+        }
       }
 
       if (_cur_light_id >= 0) {
-	enable_light(_cur_light_id, true);
-	_light_info[i]._next_enabled = true;
-	
-	// We need to do something different for each type of light
-	light->apply(this);
+        enable_light(_cur_light_id, true);
+        _light_info[i]._next_enabled = true;
+
+        // We need to do something different for each type of light
+        light->apply(this);
       } else if (_cur_light_id == -1) {
-	glgsg_cat.error()
-	  << "issue_light() - failed to bind light to id" << endl;
+        glgsg_cat.error()
+          << "issue_light() - failed to bind light to id" << endl;
       }
     }
   }
@@ -2856,9 +2856,9 @@ void GLGraphicsStateGuardian::
 issue_color_mask(const ColorMaskAttribute *attrib) {
   //  activate();
   glColorMask(attrib->is_write_r(),
-	      attrib->is_write_g(),
-	      attrib->is_write_b(),
-	      attrib->is_write_a());
+              attrib->is_write_g(),
+              attrib->is_write_b(),
+              attrib->is_write_a());
   report_errors();
 }
 

@@ -105,55 +105,55 @@ static void test3(GuiManager* mgr, Node* font) {
 
 static void test4(GuiManager* mgr, Node* font) {
   GuiRollover* r1 = new GuiRollover("r1",
-				    GuiLabel::make_simple_text_label("1",
-								     font),
-				    GuiLabel::make_simple_text_label("!",
-								     font));
+                                    GuiLabel::make_simple_text_label("1",
+                                                                     font),
+                                    GuiLabel::make_simple_text_label("!",
+                                                                     font));
   GuiRollover* r2 = new GuiRollover("r2",
-				    GuiLabel::make_simple_text_label("2",
-								     font),
-				    GuiLabel::make_simple_text_label("@",
-								     font));
+                                    GuiLabel::make_simple_text_label("2",
+                                                                     font),
+                                    GuiLabel::make_simple_text_label("@",
+                                                                     font));
   GuiRollover* r3 = new GuiRollover("r3",
-				    GuiLabel::make_simple_text_label("3",
-								     font),
-				    GuiLabel::make_simple_text_label("#",
-								     font));
+                                    GuiLabel::make_simple_text_label("3",
+                                                                     font),
+                                    GuiLabel::make_simple_text_label("#",
+                                                                     font));
   GuiRollover* r4 = new GuiRollover("r4",
-				    GuiLabel::make_simple_text_label("4",
-								     font),
-				    GuiLabel::make_simple_text_label("$",
-								     font));
+                                    GuiLabel::make_simple_text_label("4",
+                                                                     font),
+                                    GuiLabel::make_simple_text_label("$",
+                                                                     font));
   GuiRollover* r5 = new GuiRollover("r5",
-				    GuiLabel::make_simple_text_label("5",
-								     font),
-				    GuiLabel::make_simple_text_label("%",
-								     font));
+                                    GuiLabel::make_simple_text_label("5",
+                                                                     font),
+                                    GuiLabel::make_simple_text_label("%",
+                                                                     font));
   GuiRollover* r6 = new GuiRollover("r6",
-				    GuiLabel::make_simple_text_label("6",
-								     font),
-				    GuiLabel::make_simple_text_label("^",
-								     font));
+                                    GuiLabel::make_simple_text_label("6",
+                                                                     font),
+                                    GuiLabel::make_simple_text_label("^",
+                                                                     font));
   GuiRollover* r7 = new GuiRollover("r7",
-				    GuiLabel::make_simple_text_label("7",
-								     font),
-				    GuiLabel::make_simple_text_label("&",
-								     font));
+                                    GuiLabel::make_simple_text_label("7",
+                                                                     font),
+                                    GuiLabel::make_simple_text_label("&",
+                                                                     font));
   GuiRollover* r8 = new GuiRollover("r8",
-				    GuiLabel::make_simple_text_label("8",
-								     font),
-				    GuiLabel::make_simple_text_label("*",
-								     font));
+                                    GuiLabel::make_simple_text_label("8",
+                                                                     font),
+                                    GuiLabel::make_simple_text_label("*",
+                                                                     font));
   GuiRollover* r9 = new GuiRollover("r9",
-				    GuiLabel::make_simple_text_label("9",
-								     font),
-				    GuiLabel::make_simple_text_label("(",
-								     font));
+                                    GuiLabel::make_simple_text_label("9",
+                                                                     font),
+                                    GuiLabel::make_simple_text_label("(",
+                                                                     font));
   GuiRollover* r0 = new GuiRollover("r0",
-				    GuiLabel::make_simple_text_label("0",
-								     font),
-				    GuiLabel::make_simple_text_label(")",
-								     font));
+                                    GuiLabel::make_simple_text_label("0",
+                                                                     font),
+                                    GuiLabel::make_simple_text_label(")",
+                                                                     font));
   GuiFrame* f1 = new GuiFrame("test4");
   f1->add_item(r1);
   f1->add_item(r2);

@@ -190,15 +190,15 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
     if (_alpha_mode != PR_ALPHA_NONE) {
 
-	  float alpha;
+          float alpha;
 
       if (_alpha_mode == PR_ALPHA_USER) {
-		  alpha = get_user_alpha();
-	  } else {
-		  alpha = cur_particle->get_parameterized_age();
-		  if (_alpha_mode == PR_ALPHA_OUT)
-			  alpha = 1.0f - alpha;
-	  }
+                  alpha = get_user_alpha();
+          } else {
+                  alpha = cur_particle->get_parameterized_age();
+                  if (_alpha_mode == PR_ALPHA_OUT)
+                          alpha = 1.0f - alpha;
+          }
 
       head_color[3] = alpha;
       tail_color[3] = alpha;

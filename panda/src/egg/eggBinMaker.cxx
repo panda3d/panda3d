@@ -125,17 +125,17 @@ collect_nodes(EggGroupNode *group) {
       // Ok, here's a node to be binned.  Add it to the appropriate
       // bin.
       if (first_in_group) {
-	// If this is the first time this group has been encountered,
-	// we need to create a new entry in _group_nodes for it.
+        // If this is the first time this group has been encountered,
+        // we need to create a new entry in _group_nodes for it.
 
-	pair<GroupNodes::iterator, bool> result;
-	result = _group_nodes.insert
-	  (GroupNodes::value_type
-	   (group, SortedNodes(EggBinMakerCompareNodes(this))));
+        pair<GroupNodes::iterator, bool> result;
+        result = _group_nodes.insert
+          (GroupNodes::value_type
+           (group, SortedNodes(EggBinMakerCompareNodes(this))));
 
-	nassertv(result.second);
-	gni = result.first;
-	first_in_group = false;
+        nassertv(result.second);
+        gni = result.first;
+        first_in_group = false;
       }
 
       // Add this node to the set of all nodes being binned for the

@@ -91,8 +91,8 @@ advance() {
   do {
     if (flt_cat.is_debug()) {
       flt_cat.debug()
-	<< "Writing " << opcode << " of length "
-	<< write_length + header_size << "\n";
+        << "Writing " << opcode << " of length "
+        << write_length + header_size << "\n";
     }
 
     // Build a mini-datagram to write the header.

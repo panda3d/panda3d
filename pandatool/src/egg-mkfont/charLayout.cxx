@@ -71,8 +71,8 @@ find_hole(int &x, int &y, int x_size, int y_size) const {
       const CharPlacement *overlap = find_overlap(x, y, x_size, y_size);
 
       if (overlap == (const CharPlacement *)NULL) {
-	// Hooray!
-	return true;
+        // Hooray!
+        return true;
       }
 
       next_x = overlap->_x + overlap->_width;

@@ -18,7 +18,7 @@ class FltTexture;
 class FltMaterial;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltGeometry
+//       Class : FltGeometry
 // Description : This is a base class for both FltFace and FltMesh,
 //               which are two different kinds of geometric primitives
 //               that might be encountered in a MultiGen file.  They
@@ -117,7 +117,7 @@ public:
   static void init_type() {
     FltBeadID::init_type();
     register_type(_type_handle, "FltGeometry",
-		  FltBeadID::get_class_type());
+                  FltBeadID::get_class_type());
   }
 
 private:

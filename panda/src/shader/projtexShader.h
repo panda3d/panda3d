@@ -28,13 +28,13 @@ class EXPCL_SHADER ProjtexShader : public FrustumShader
 public:
   
   ProjtexShader(Texture* texture = NULL,
-		ColorBlendProperty::Mode mode = ColorBlendProperty::M_multiply);
+                ColorBlendProperty::Mode mode = ColorBlendProperty::M_multiply);
   ~ProjtexShader() { }
   
   virtual void config(void);
   virtual void apply(Node *node, const AllAttributesWrapper &init_state,
-		     const AllTransitionsWrapper &net_trans,
-		     GraphicsStateGuardian *gsg);
+                     const AllTransitionsWrapper &net_trans,
+                     GraphicsStateGuardian *gsg);
   
   INLINE void set_texture(Texture* texture) {
     _texture = texture;
@@ -56,7 +56,7 @@ public:
   static void init_type() {
     FrustumShader::init_type();
     register_type(_type_handle, "ProjtexShader",
-		  FrustumShader::get_class_type());
+                  FrustumShader::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

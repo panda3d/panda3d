@@ -47,7 +47,7 @@ bool AnimChannelScalarTable::
 has_changed(int last_frame, int this_frame) {
   if (_table.size() > 1) {
     if (_table[last_frame % _table.size()] !=
-	_table[this_frame % _table.size()]) {
+        _table[this_frame % _table.size()]) {
       return true;
     }
   }
@@ -147,8 +147,8 @@ write_datagram(BamWriter *manager, Datagram &me)
     map<int, int> index;
     int i;
     for (i = 0; 
-	 i < (int)_table.size() && (int)index.size() <= max_values;
-	 i++) {
+         i < (int)_table.size() && (int)index.size() <= max_values;
+         i++) {
       int value = (int)floor(_table[i] * scale + 0.5);
       index.insert(map<int, int>::value_type(value, index.size()));
     }
@@ -160,48 +160,48 @@ write_datagram(BamWriter *manager, Datagram &me)
       me.add_uint8(index_length);
 
       if (index_length > 0) {
-	// We need to write the index in order by its index number; for
-	// this, we need to invert the index.
-	vector_float reverse_index(index_length);
-	map<int, int>::iterator mi;
-	for (mi = index.begin(); mi != index.end(); ++mi) {
-	  float f = (float)(*mi).first / scale;
-	  int i = (*mi).second;
-	  nassertv(i >= 0 && i < (int)reverse_index.size());
-	  reverse_index[i] = f;
-	}
-	
-	for (i = 0; i < index_length; i++) {
-	  me.add_float32(reverse_index[i]);
-	}
-	
-	// Now write out the actual channels.  We write these two at a
-	// time, in the high and low nibbles of each byte.
-	int table_length = _table.size();
-	me.add_uint16(table_length);
-	
-	if (index_length == 1) {
-	  // In fact, we don't even need to write the channels at all,
-	  // if there weren't at least two different values.
+        // We need to write the index in order by its index number; for
+        // this, we need to invert the index.
+        vector_float reverse_index(index_length);
+        map<int, int>::iterator mi;
+        for (mi = index.begin(); mi != index.end(); ++mi) {
+          float f = (float)(*mi).first / scale;
+          int i = (*mi).second;
+          nassertv(i >= 0 && i < (int)reverse_index.size());
+          reverse_index[i] = f;
+        }
 
-	} else {
-	  for (i = 0; i < table_length - 1; i+= 2) {
-	    int value1 = (int)floor(_table[i] * scale + 0.5);
-	    int value2 = (int)floor(_table[i + 1] * scale + 0.5);
-	    int i1 = index[value1];
-	    int i2 = index[value2];
-	    
-	    me.add_uint8((i1 << 4) | i2);
-	  }
-	  
-	  // There might be one odd value.
-	  if (i < table_length) {
-	    int value1 = (int)floor(_table[i] * scale + 0.5);
-	    int i1 = index[value1];
-	    
-	    me.add_uint8(i1 << 4);
-	  }
-	}
+        for (i = 0; i < index_length; i++) {
+          me.add_float32(reverse_index[i]);
+        }
+
+        // Now write out the actual channels.  We write these two at a
+        // time, in the high and low nibbles of each byte.
+        int table_length = _table.size();
+        me.add_uint16(table_length);
+
+        if (index_length == 1) {
+          // In fact, we don't even need to write the channels at all,
+          // if there weren't at least two different values.
+
+        } else {
+          for (i = 0; i < table_length - 1; i+= 2) {
+            int value1 = (int)floor(_table[i] * scale + 0.5);
+            int value2 = (int)floor(_table[i + 1] * scale + 0.5);
+            int i1 = index[value1];
+            int i2 = index[value2];
+
+            me.add_uint8((i1 << 4) | i2);
+          }
+
+          // There might be one odd value.
+          if (i < table_length) {
+            int value1 = (int)floor(_table[i] * scale + 0.5);
+            int i1 = index[value1];
+
+            me.add_uint8(i1 << 4);
+          }
+        }
       }
 
     } else {
@@ -246,7 +246,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
     // Compressed channels.
     if (manager->get_file_minor_ver() < 1) {
       chan_cat.error()
-	<< "Cannot read old-style quantized channels.\n";
+        << "Cannot read old-style quantized channels.\n";
       return;
     }
 
@@ -256,36 +256,36 @@ fillin(DatagramIterator& scan, BamReader* manager)
     if (index_length < 0xff) {
       // Discrete.  Read in the index.
       if (index_length > 0) {
-	float *index = (float *)alloca(index_length * sizeof(float));
+        float *index = (float *)alloca(index_length * sizeof(float));
 
-	int i;
-	for (i = 0; i < index_length; i++) {
-	  index[i] = scan.get_float32();
-	}
-	
-	// Now read in the channel values.
-	int table_length = scan.get_uint16();
-	if (index_length == 1) {
-	  // With only one index value, we can infer the table.
-	  for (i = 0; i < table_length; i++) {
-	    temp_table.push_back(index[0]);
-	  }
-	} else {
-	  // Otherwise, we must read it.
-	  for (i = 0; i < table_length - 1; i+= 2) {
-	    int num = scan.get_uint8();
-	    int i1 = (num >> 4) & 0xf;
-	    int i2 = num & 0xf;
-	    temp_table.push_back(index[i1]);
-	    temp_table.push_back(index[i2]);
-	  }
-	  // There might be one odd value.
-	  if (i < table_length) {
-	    int num = scan.get_uint8();
-	    int i1 = (num >> 4) & 0xf;
-	    temp_table.push_back(index[i1]);
-	  }
-	}
+        int i;
+        for (i = 0; i < index_length; i++) {
+          index[i] = scan.get_float32();
+        }
+
+        // Now read in the channel values.
+        int table_length = scan.get_uint16();
+        if (index_length == 1) {
+          // With only one index value, we can infer the table.
+          for (i = 0; i < table_length; i++) {
+            temp_table.push_back(index[0]);
+          }
+        } else {
+          // Otherwise, we must read it.
+          for (i = 0; i < table_length - 1; i+= 2) {
+            int num = scan.get_uint8();
+            int i1 = (num >> 4) & 0xf;
+            int i2 = num & 0xf;
+            temp_table.push_back(index[i1]);
+            temp_table.push_back(index[i2]);
+          }
+          // There might be one odd value.
+          if (i < table_length) {
+            int num = scan.get_uint8();
+            int i1 = (num >> 4) & 0xf;
+            temp_table.push_back(index[i1]);
+          }
+        }
       }
     } else {
       // Continuous channels.

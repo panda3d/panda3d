@@ -18,7 +18,7 @@
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VECTORDATAATTRIBUTE_LPOINT4F);
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : Vec4DataAttribute
+//       Class : Vec4DataAttribute
 // Description : A VectorDataAttribute templated on LPoint4f.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Vec4DataAttribute :
@@ -41,7 +41,7 @@ public:
   static void init_type() {
     VectorDataAttribute<LPoint4f, LMatrix4f>::init_type();
     register_type(_type_handle, "Vec4DataAttribute", 
-		  VectorDataAttribute<LPoint4f, LMatrix4f>::get_class_type());
+                  VectorDataAttribute<LPoint4f, LMatrix4f>::get_class_type());
   }
 
 private:

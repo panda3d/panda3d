@@ -135,7 +135,7 @@ get_type_from_magic_number(const string &magic_number) const {
   for (ti = _types.begin(); ti != _types.end(); ++ti) {
     PNMFileType *type = (*ti);
     if (type->has_magic_number() &&
-	type->matches_magic_number(magic_number)) {
+        type->matches_magic_number(magic_number)) {
       return type;
     }
   }
@@ -182,12 +182,12 @@ write_types(ostream &out, int indent_level) const {
 
       int num_extensions = type->get_num_extensions();
       if (num_extensions == 1) {
-	out << "." << type->get_extension(0);
+        out << "." << type->get_extension(0);
       } else if (num_extensions > 1) {
-	out << "." << type->get_extension(0);
-	for (int i = 1; i < num_extensions; i++) {
-	  out << ", ." << type->get_extension(i);
-	}
+        out << "." << type->get_extension(0);
+        for (int i = 1; i < num_extensions; i++) {
+          out << ", ." << type->get_extension(i);
+        }
       }
       out << "\n";
     }
@@ -221,9 +221,9 @@ register_type(PNMFileType *type) {
     
     if (!unique_extensions.insert(extension).second) {
       pnmimage_cat.warning()
-	<< "PNMFileType " << type->get_name()
-	<< " (" << type->get_type() << ") defined extension "
-	<< extension << " more than once.\n";
+        << "PNMFileType " << type->get_name()
+        << " (" << type->get_type() << ") defined extension "
+        << extension << " more than once.\n";
     }
   }
 

@@ -47,7 +47,7 @@ public:
   static void init_type() {
     PartBundle::init_type();
     register_type(_type_handle, "CharacterJointBundle",
-		  PartBundle::get_class_type());
+                  PartBundle::get_class_type());
   }
 
 private:

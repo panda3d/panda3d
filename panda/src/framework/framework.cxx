@@ -185,7 +185,7 @@ public:
   static void init_type(void) {
     GeomLine::init_type();
     register_type(_type_handle, "GeomNorms",
-		  GeomLine::get_class_type());
+                  GeomLine::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();
@@ -222,43 +222,43 @@ reached_node(Node *node, NullAttributeWrapper &, NullLevelState &) {
     for (i = 0; i < geom->get_num_geoms(); i++) {
       dDrawable *d = geom->get_geom(i);
       if (d->is_of_type(Geom::get_class_type())) {
-	Geom *g = DCAST(Geom, d);
-	for (int j=0; j<g->get_num_prims(); ++j)
-	  vert_count += g->get_length(j);
+        Geom *g = DCAST(Geom, d);
+        for (int j=0; j<g->get_num_prims(); ++j)
+          vert_count += g->get_length(j);
       }
     }
     if (vert_count > 0) {
       PTA_Vertexf verts(2 * vert_count);
       for (i = 0; i < geom->get_num_geoms(); i++) {
-	dDrawable *d = geom->get_geom(i);
-	if (d->is_of_type(Geom::get_class_type())) {
-	  PTA_Vertexf lverts;
-	  PTA_ushort iverts;
-	  GeomBindType vbond;
-	  Geom *g = DCAST(Geom, d);
-	  g->get_coords(lverts, vbond, iverts);
-	  int vert_idx = 0;
-	  if (g->get_binding(G_NORMAL) == G_OFF) {
-	    for (int j=0; j<g->get_num_prims(); ++j) {
-	      for (int k=0; k<g->get_length(j); ++k, ++vert_idx) {
-		verts[2 * vert_idx] = lverts[vert_idx];
-		verts[(2 * vert_idx) + 1] = lverts[vert_idx];
-	      }
-	    }
-	  } else {
-	    PTA_Normalf lnorms;
-	    PTA_ushort inorms;
-	    GeomBindType nbond;
-	    g->get_normals(lnorms, nbond, inorms);
-	    for (int j=0; j<g->get_num_prims(); ++j) {
-	      for (int k=0; k<g->get_length(j); ++k, ++vert_idx) {
-		verts[2 * vert_idx] = lverts[vert_idx];
-		verts[(2 * vert_idx) + 1] = lverts[vert_idx]
-		  + lnorms[vert_idx];
-	      }
-	    }
-	  }
-	}
+        dDrawable *d = geom->get_geom(i);
+        if (d->is_of_type(Geom::get_class_type())) {
+          PTA_Vertexf lverts;
+          PTA_ushort iverts;
+          GeomBindType vbond;
+          Geom *g = DCAST(Geom, d);
+          g->get_coords(lverts, vbond, iverts);
+          int vert_idx = 0;
+          if (g->get_binding(G_NORMAL) == G_OFF) {
+            for (int j=0; j<g->get_num_prims(); ++j) {
+              for (int k=0; k<g->get_length(j); ++k, ++vert_idx) {
+                verts[2 * vert_idx] = lverts[vert_idx];
+                verts[(2 * vert_idx) + 1] = lverts[vert_idx];
+              }
+            }
+          } else {
+            PTA_Normalf lnorms;
+            PTA_ushort inorms;
+            GeomBindType nbond;
+            g->get_normals(lnorms, nbond, inorms);
+            for (int j=0; j<g->get_num_prims(); ++j) {
+              for (int k=0; k<g->get_length(j); ++k, ++vert_idx) {
+                verts[2 * vert_idx] = lverts[vert_idx];
+                verts[(2 * vert_idx) + 1] = lverts[vert_idx]
+                  + lnorms[vert_idx];
+              }
+            }
+          }
+        }
       }
       gn->set_num_prims(vert_count);
       gn->set_coords(verts, G_PER_VERTEX);
@@ -284,14 +284,14 @@ reached_node(Node *node, NullAttributeWrapper &, NullLevelState &) {
     int i, j;
     do {
       for (i = 0, j = -1;
-	   i < geom->get_num_geoms();
-	   ++i) {
-	if (geom->get_geom(i)->is_of_type(GeomNorms::get_class_type())) {
-	  j = i;
-	}
+           i < geom->get_num_geoms();
+           ++i) {
+        if (geom->get_geom(i)->is_of_type(GeomNorms::get_class_type())) {
+          j = i;
+        }
       }
       if (j != -1) {
-	geom->remove_geom(j);
+        geom->remove_geom(j);
       }
     } while (j != -1);
   }
@@ -354,14 +354,14 @@ class IdleCallback : public GraphicsWindow::Callback {
       // Perform the collision traversal, if we have a collision
       // traverser standing by.
       if (col_trans != (CollisionTraverser *)NULL) {
-	col_trans->traverse(render);
+        col_trans->traverse(render);
       }
 
       // Throw any events generated recently.
       event_handler.process_events();
 
       if (additional_idle != NULL) {
-	(*additional_idle)();
+        (*additional_idle)();
       }
     }
 };
@@ -692,7 +692,7 @@ void event_grave(CPT_Event) {
   int height = dr->get_pixel_height();
 
   PixelBuffer p(width, height, 3, 1, PixelBuffer::T_unsigned_byte, 
-		PixelBuffer::F_rgb);
+                PixelBuffer::F_rgb);
 
   nout << "Capturing frame.\n";
 
@@ -712,11 +712,11 @@ void event_n(CPT_Event) {
   if (normals_on) {
     NormalAddTraverser trav(main_win->get_gsg());
     df_traverse(render, trav, NullAttributeWrapper(), NullLevelState(),
-		RenderRelation::get_class_type());
+                RenderRelation::get_class_type());
   } else {
     NormalDelTraverser trav(main_win->get_gsg());
     df_traverse(render, trav, NullAttributeWrapper(), NullLevelState(),
-		RenderRelation::get_class_type());
+                RenderRelation::get_class_type());
   }
 }
 
@@ -751,7 +751,7 @@ static void
 switch_trackball(Node *trackball) {
   if (current_trackball != NULL) {
     remove_child(mouse_watcher, current_trackball, 
-		 DataRelation::get_class_type());
+                 DataRelation::get_class_type());
   }
   current_trackball = trackball;
   if (current_trackball != NULL) {
@@ -797,7 +797,7 @@ start_drive() {
     NodeRelation *arc = new RenderRelation(cameras, ray_node);
 
     ray_node->add_solid(new CollisionRay(LPoint3f(0.0, 0.0, 0.0),
-					 LVector3f::down()));
+                                         LVector3f::down()));
     arc->set_transition(new PruneTransition);
 
     col_trans = new CollisionTraverser;
@@ -854,11 +854,11 @@ void event_p(CPT_Event) {
   LPoint3f hpr;
 
   if (current_trackball == trackball) {
-	  xyz = trackball->get_pos();
-	  hpr = trackball->get_hpr();
+          xyz = trackball->get_pos();
+          hpr = trackball->get_hpr();
   } else if (current_trackball == drive_interface) {
-		xyz = drive_interface->get_pos();
-		hpr = drive_interface->get_hpr();
+                xyz = drive_interface->get_pos();
+                hpr = drive_interface->get_hpr();
   }
 
   printf("current pos, hpr:  %f %f %f    %f %f %f\n",xyz[0],xyz[1],xyz[2],hpr[0],hpr[1],hpr[2]);
@@ -873,11 +873,11 @@ void event_P(CPT_Event) {
   scanf("%f %f %f %f %f %f",&xyz[0],&xyz[1],&xyz[2],&hpr[0],&hpr[1],&hpr[2]);
 
   if (current_trackball == trackball) {
-	  trackball->set_pos(xyz);
-	  trackball->set_hpr(hpr);
+          trackball->set_pos(xyz);
+          trackball->set_hpr(hpr);
   } else if (current_trackball == drive_interface) {
-		drive_interface->set_pos(xyz);
-		drive_interface->set_hpr(hpr);
+                drive_interface->set_pos(xyz);
+                drive_interface->set_hpr(hpr);
 
   }
 }
@@ -937,21 +937,21 @@ void event_x(CPT_Event) {
 #define RANDFRAC (rand()/(float)(RAND_MAX))
 
 typedef struct {
-	// for rot moving
-	float xcenter,ycenter;
-	float xoffset,yoffset;
-	float ang1,ang1_vel;
-	float ang2,ang2_vel;
-	
-	float radius;
+        // for rot moving
+        float xcenter,ycenter;
+        float xoffset,yoffset;
+        float ang1,ang1_vel;
+        float ang2,ang2_vel;
 
-	// for moving
-	float xstart,ystart;
-	float xend,yend;
-	float xdel,ydel,timedel;
-	double starttime,endtime;
+        float radius;
+
+        // for moving
+        float xstart,ystart;
+        float xend,yend;
+        float xdel,ydel,timedel;
+        double starttime,endtime;
     double vel;
-	LMatrix4f rotmat;
+        LMatrix4f rotmat;
 } gridded_file_info;
 
 typedef enum {None,Rotation,LinearMotion} GriddedMotionType;
@@ -972,70 +972,70 @@ static void move_gridded_stuff(GriddedMotionType gridmotiontype,gridded_file_inf
   LMatrix4f tmat1,tmat2,xfm_mat;
 
   for(int i = 0; i < size; i++) {
-	double time_delta = (now-InfoArr[i].starttime);
+        double time_delta = (now-InfoArr[i].starttime);
 
-	#define DO_FP_MODULUS(VAL,MAXVAL)  \
-	  {if(VAL > MAXVAL) {int idivresult = VAL / (float)MAXVAL;  VAL=VAL-idivresult*MAXVAL;} else  \
-	  if(VAL < -MAXVAL) {int idivresult = VAL / (float)MAXVAL;  VAL=VAL+idivresult*MAXVAL;}}
-	
-	// probably should use panda lerps for this stuff, but I dont understand how
+        #define DO_FP_MODULUS(VAL,MAXVAL)  \
+          {if(VAL > MAXVAL) {int idivresult = VAL / (float)MAXVAL;  VAL=VAL-idivresult*MAXVAL;} else  \
+          if(VAL < -MAXVAL) {int idivresult = VAL / (float)MAXVAL;  VAL=VAL+idivresult*MAXVAL;}}
+
+        // probably should use panda lerps for this stuff, but I dont understand how
 
     if(gridmotiontype==Rotation) {
-	
-		InfoArr[i].ang1=time_delta*InfoArr[i].ang1_vel;
-		DO_FP_MODULUS(InfoArr[i].ang1,360.0);
-		InfoArr[i].ang2=time_delta*InfoArr[i].ang2_vel;
-		DO_FP_MODULUS(InfoArr[i].ang2,360.0);
-		
-		// xforms happen left to right
-		LVector2f new_center = LVector2f(InfoArr[i].radius,0.0) * 
-		  LMatrix3f::rotate_mat(InfoArr[i].ang1);
-	
-		LVector3f translate_vec(InfoArr[i].xcenter+new_center._v.v._0,
-								InfoArr[i].ycenter+new_center._v.v._1,
-								0.0);
-	
-		const LVector3f rotation_axis(0.0, 0.0, 1.0);
-	
-		tmat1 = LMatrix4f::rotate_mat_normaxis(InfoArr[i].ang2,rotation_axis);
-		tmat2 = LMatrix4f::translate_mat(translate_vec);
-		xfm_mat = tmat1 * tmat2;
-	} else {
-		  
-		  float xpos,ypos;
 
-		  if(now>InfoArr[i].endtime) {
-			  InfoArr[i].starttime = now;
+                InfoArr[i].ang1=time_delta*InfoArr[i].ang1_vel;
+                DO_FP_MODULUS(InfoArr[i].ang1,360.0);
+                InfoArr[i].ang2=time_delta*InfoArr[i].ang2_vel;
+                DO_FP_MODULUS(InfoArr[i].ang2,360.0);
 
-			  xpos = InfoArr[i].xstart = InfoArr[i].xend;
-			  ypos = InfoArr[i].ystart = InfoArr[i].yend;
+                // xforms happen left to right
+                LVector2f new_center = LVector2f(InfoArr[i].radius,0.0) * 
+                  LMatrix3f::rotate_mat(InfoArr[i].ang1);
 
-			  InfoArr[i].xend = RANDFRAC*fabs(2.0*wander_area_pos_offset) + wander_area_pos_offset;
-			  InfoArr[i].yend = RANDFRAC*fabs(2.0*wander_area_pos_offset) + wander_area_pos_offset;
+                LVector3f translate_vec(InfoArr[i].xcenter+new_center._v.v._0,
+                                                                InfoArr[i].ycenter+new_center._v.v._1,
+                                                                0.0);
 
-			  float xdel = InfoArr[i].xdel = InfoArr[i].xend-InfoArr[i].xstart;
-			  float ydel = InfoArr[i].ydel = InfoArr[i].yend-InfoArr[i].ystart;
+                const LVector3f rotation_axis(0.0, 0.0, 1.0);
 
-			  InfoArr[i].endtime = now + csqrt(xdel*xdel+ydel*ydel)/InfoArr[i].vel;
-			  InfoArr[i].timedel = InfoArr[i].endtime - InfoArr[i].starttime;
+                tmat1 = LMatrix4f::rotate_mat_normaxis(InfoArr[i].ang2,rotation_axis);
+                tmat2 = LMatrix4f::translate_mat(translate_vec);
+                xfm_mat = tmat1 * tmat2;
+        } else {
 
-			  const LVector3f rotate_axis(0.0, 0.0, 1.0);
+                  float xpos,ypos;
 
-			  float ang = rad_2_deg(atan2(-xdel,ydel));
+                  if(now>InfoArr[i].endtime) {
+                          InfoArr[i].starttime = now;
+
+                          xpos = InfoArr[i].xstart = InfoArr[i].xend;
+                          ypos = InfoArr[i].ystart = InfoArr[i].yend;
+
+                          InfoArr[i].xend = RANDFRAC*fabs(2.0*wander_area_pos_offset) + wander_area_pos_offset;
+                          InfoArr[i].yend = RANDFRAC*fabs(2.0*wander_area_pos_offset) + wander_area_pos_offset;
+
+                          float xdel = InfoArr[i].xdel = InfoArr[i].xend-InfoArr[i].xstart;
+                          float ydel = InfoArr[i].ydel = InfoArr[i].yend-InfoArr[i].ystart;
+
+                          InfoArr[i].endtime = now + csqrt(xdel*xdel+ydel*ydel)/InfoArr[i].vel;
+                          InfoArr[i].timedel = InfoArr[i].endtime - InfoArr[i].starttime;
+
+                          const LVector3f rotate_axis(0.0, 0.0, 1.0);
+
+                          float ang = rad_2_deg(atan2(-xdel,ydel));
 
               InfoArr[i].rotmat= LMatrix4f::rotate_mat_normaxis(ang,rotate_axis);
-		  } else {
-			  float timefrac= time_delta/InfoArr[i].timedel;
+                  } else {
+                          float timefrac= time_delta/InfoArr[i].timedel;
 
-			  xpos = InfoArr[i].xdel*timefrac+InfoArr[i].xstart;
-			  ypos = InfoArr[i].ydel*timefrac+InfoArr[i].ystart;
-		  }
+                          xpos = InfoArr[i].xdel*timefrac+InfoArr[i].xstart;
+                          ypos = InfoArr[i].ydel*timefrac+InfoArr[i].ystart;
+                  }
 
-		  LVector3f translate_vec(xpos, ypos, 0.0);
-		  LMatrix4f tmat2 = LMatrix4f::translate_mat(translate_vec);
+                  LVector3f translate_vec(xpos, ypos, 0.0);
+                  LMatrix4f tmat2 = LMatrix4f::translate_mat(translate_vec);
 
-		  xfm_mat = InfoArr[i].rotmat * tmat2;
-	}
+                  xfm_mat = InfoArr[i].rotmat * tmat2;
+        }
     pRRptrArr[i]->set_transition(new TransformTransition(xfm_mat));
   }
 }
@@ -1054,10 +1054,10 @@ int framework_main(int argc, char *argv[]) {
   if (!framework_notify_output.empty()) {
     if (!mstream->add_file(framework_notify_output)) {
       framework_cat.error()
-	<< "Unable to open " << framework_notify_output << " for output.\n";
+        << "Unable to open " << framework_notify_output << " for output.\n";
     } else {
       framework_cat.info() 
-	<< "Sending Notify output to " << framework_notify_output << "\n";
+        << "Sending Notify output to " << framework_notify_output << "\n";
     }
   }
   */
@@ -1095,30 +1095,30 @@ int framework_main(int argc, char *argv[]) {
 
   for (int a = 1; a < argc; a++) {
     if ((argv[a] != (char*)0L) && ((argv[a])[0] != '-') &&
-	((argv[a])[0] != '+') && ((argv[a])[0] != '#'))
+        ((argv[a])[0] != '+') && ((argv[a])[0] != '#'))
       pFileCollection->push_back(Filename::from_os_specific(argv[a]));
-	else switch((argv[a])[1]) {
-			 case 'r': 
-				 gridmotiontype = Rotation;
-				 break;
+        else switch((argv[a])[1]) {
+                         case 'r': 
+                                 gridmotiontype = Rotation;
+                                 break;
 
-			 case 'm': 
-				 gridmotiontype = LinearMotion;
-				 break;
+                         case 'm': 
+                                 gridmotiontype = LinearMotion;
+                                 break;
 
-			  case 'g': {
-				 pFileCollection = &gridded_files;
-	
-				 char *pStr=(argv[a])+2;
-				 if (*pStr != '\0') {
-					 gridrepeats=atoi(pStr);
-					 if(gridrepeats<1)
-						 gridrepeats=1;
-	
-				 }
-				 break;
-			  }
-	}
+                          case 'g': {
+                                 pFileCollection = &gridded_files;
+
+                                 char *pStr=(argv[a])+2;
+                                 if (*pStr != '\0') {
+                                         gridrepeats=atoi(pStr);
+                                         if(gridrepeats<1)
+                                                 gridrepeats=1;
+
+                                 }
+                                 break;
+                          }
+        }
   }
 
   // load display modules
@@ -1157,7 +1157,7 @@ int framework_main(int argc, char *argv[]) {
 
   // need to find a better way to differentiate unsigned int from regular
   override.setField(ChanCfgOverrides::Mask,
-		    ((unsigned int)(W_DOUBLE|W_DEPTH|W_MULTISAMPLE)));
+                    ((unsigned int)(W_DOUBLE|W_DEPTH|W_MULTISAMPLE)));
   override.setField(ChanCfgOverrides::Title, "Demo");
 
   std::string conf = framework.GetString("chan-config", chan_config);
@@ -1324,162 +1324,162 @@ int framework_main(int argc, char *argv[]) {
       PT_Node node = loader.load_sync(filename);
 
       if (node == (Node *)NULL) {
-		  framework_cat.error() << "Unable to load file " << filename << "\n";
-		  continue;
-	  }
+                  framework_cat.error() << "Unable to load file " << filename << "\n";
+                  continue;
+          }
 
-	  RenderRelation *pArc = new RenderRelation(root, node);
-	}
+          RenderRelation *pArc = new RenderRelation(root, node);
+        }
 
-	if(!gridded_files.empty()) {
+        if(!gridded_files.empty()) {
 
-		typedef RenderRelation *RenderRelationPtr;
+                typedef RenderRelation *RenderRelationPtr;
 
-		gridded_files_size= gridded_files.size();
-		pNodeArr = new PT_Node[gridded_files.size()*gridrepeats];
-		pRRptrArr = new RenderRelationPtr[gridded_files.size()*gridrepeats];
-		InfoArr = new gridded_file_info[gridded_files.size()*gridrepeats];
+                gridded_files_size= gridded_files.size();
+                pNodeArr = new PT_Node[gridded_files.size()*gridrepeats];
+                pRRptrArr = new RenderRelationPtr[gridded_files.size()*gridrepeats];
+                InfoArr = new gridded_file_info[gridded_files.size()*gridrepeats];
 
 
-		int j=0;
+                int j=0;
 
-		for (fi = gridded_files.begin(); fi != gridded_files.end(); (++fi),j++) {
-			  Filename filename = (*fi);
-		
-			  filename.resolve_filename(local_path);
-		
-			  pNodeArr[j] = loader.load_sync(filename);
-		
-			  if (pNodeArr[j] == (Node *)NULL) {
-				  framework_cat.error() << "Unable to load file " << filename << "\n";
-				  j--;
-				  gridded_files_size--;
-				  continue;
-			  }
-		}
-	
-		gridwidth=1;
-		while(gridwidth*gridwidth < gridded_files_size*gridrepeats) {
-			gridwidth++;
-		}
+                for (fi = gridded_files.begin(); fi != gridded_files.end(); (++fi),j++) {
+                          Filename filename = (*fi);
 
-		grid_pos_offset = -gridwidth*GRIDCELLSIZE/2.0;
-		wander_area_pos_offset = -max(fabs(grid_pos_offset),MIN_WANDERAREA_DIMENSION/2.0);
+                          filename.resolve_filename(local_path);
 
-		float xpos = grid_pos_offset;
-		float ypos = grid_pos_offset;
-		int filenum=0;
+                          pNodeArr[j] = loader.load_sync(filename);
 
-		srand( (unsigned)time( NULL ) );
+                          if (pNodeArr[j] == (Node *)NULL) {
+                                  framework_cat.error() << "Unable to load file " << filename << "\n";
+                                  j--;
+                                  gridded_files_size--;
+                                  continue;
+                          }
+                }
 
-		double now = ClockObject::get_global_clock()->get_frame_time();
-	
-		for(int passnum=0;passnum<gridrepeats;passnum++) {
-  		  for (j = 0; j < gridded_files_size; j++,filenum++) {
+                gridwidth=1;
+                while(gridwidth*gridwidth < gridded_files_size*gridrepeats) {
+                        gridwidth++;
+                }
 
-			  if(passnum>0) {
-				// cant directly instance characters due to LOD problems,
-				// must copy using copy_subgraph for now
+                grid_pos_offset = -gridwidth*GRIDCELLSIZE/2.0;
+                wander_area_pos_offset = -max(fabs(grid_pos_offset),MIN_WANDERAREA_DIMENSION/2.0);
 
-				  pNodeArr[filenum] = pNodeArr[j]->copy_subgraph(RenderRelation::get_class_type());
-			  }
+                float xpos = grid_pos_offset;
+                float ypos = grid_pos_offset;
+                int filenum=0;
 
-			  pRRptrArr[filenum] = new RenderRelation(root, pNodeArr[filenum]);
+                srand( (unsigned)time( NULL ) );
 
-			  LMatrix4f xfm_mat,tmat1,tmat2;
+                double now = ClockObject::get_global_clock()->get_frame_time();
 
-			  if(gridmotiontype==Rotation) {
+                for(int passnum=0;passnum<gridrepeats;passnum++) {
+                  for (j = 0; j < gridded_files_size; j++,filenum++) {
 
-				  #define MIN_REVOLUTION_ANGVEL 30
-				  #define MAX_REVOLUTION_ANGVEL 60
+                          if(passnum>0) {
+                                // cant directly instance characters due to LOD problems,
+                                // must copy using copy_subgraph for now
 
-				  #define MIN_ROTATION_ANGVEL 30
-				  #define MAX_ROTATION_ANGVEL 600
+                                  pNodeArr[filenum] = pNodeArr[j]->copy_subgraph(RenderRelation::get_class_type());
+                          }
 
-				  #define MAX_RADIUS 4.0*GRIDCELLSIZE
-				  #define MIN_RADIUS 0.1*GRIDCELLSIZE		
-				  
-				  InfoArr[filenum].starttime = now;
+                          pRRptrArr[filenum] = new RenderRelation(root, pNodeArr[filenum]);
 
-				  InfoArr[filenum].xcenter=xpos;
-				  InfoArr[filenum].ycenter=ypos;
-				  InfoArr[filenum].ang1=RANDFRAC * 360.0;
-				  InfoArr[filenum].ang1_vel=((MAX_REVOLUTION_ANGVEL-MIN_REVOLUTION_ANGVEL) * RANDFRAC) + MIN_REVOLUTION_ANGVEL;
-				  
-				  InfoArr[filenum].ang2=RANDFRAC * 360.0;
-				  InfoArr[filenum].ang2_vel=((MAX_ROTATION_ANGVEL-MIN_ROTATION_ANGVEL) * RANDFRAC) + MIN_ROTATION_ANGVEL;
-	
-				  InfoArr[filenum].radius = (RANDFRAC * (MAX_RADIUS-MIN_RADIUS)) + MIN_RADIUS;
-	
-				  if(RANDFRAC>0.5) {
-					  InfoArr[filenum].ang1_vel=-InfoArr[filenum].ang1_vel;
-				  }
+                          LMatrix4f xfm_mat,tmat1,tmat2;
 
-				  if(RANDFRAC>0.5) {
-					  InfoArr[filenum].ang2_vel=-InfoArr[filenum].ang2_vel;
-				  }
-				  
-				  // xforms happen left to right
-				  LVector2f new_center = LVector2f(InfoArr[filenum].radius,0.0) * 
-					           LMatrix3f::rotate_mat(InfoArr[filenum].ang1);
+                          if(gridmotiontype==Rotation) {
 
-				  const LVector3f rotate_axis(0.0, 0.0, 1.0);
+                                  #define MIN_REVOLUTION_ANGVEL 30
+                                  #define MAX_REVOLUTION_ANGVEL 60
 
-				  LVector3f translate_vec(xpos+new_center._v.v._0, 
-										  ypos+new_center._v.v._1,
-										  0.0);
+                                  #define MIN_ROTATION_ANGVEL 30
+                                  #define MAX_ROTATION_ANGVEL 600
 
-				  LMatrix4f::rotate_mat_normaxis(InfoArr[filenum].ang2,rotate_axis,tmat1);
-				  tmat2 = LMatrix4f::translate_mat(translate_vec);
-				  xfm_mat = tmat1 * tmat2;
-			  } else if(gridmotiontype==LinearMotion) {
+                                  #define MAX_RADIUS 4.0*GRIDCELLSIZE
+                                  #define MIN_RADIUS 0.1*GRIDCELLSIZE
 
-				      #define MIN_VEL 2.0
-				      #define MAX_VEL (fabs(wander_area_pos_offset))
-	
-					  InfoArr[filenum].vel=((MAX_VEL-MIN_VEL) * RANDFRAC) + MIN_VEL;
-	
-					  InfoArr[filenum].xstart=xpos;
-					  InfoArr[filenum].ystart=ypos;
+                                  InfoArr[filenum].starttime = now;
 
-					  InfoArr[filenum].xend = RANDFRAC*fabs(2.0*wander_area_pos_offset) + wander_area_pos_offset;
-					  InfoArr[filenum].yend = RANDFRAC*fabs(2.0*wander_area_pos_offset) + wander_area_pos_offset;
+                                  InfoArr[filenum].xcenter=xpos;
+                                  InfoArr[filenum].ycenter=ypos;
+                                  InfoArr[filenum].ang1=RANDFRAC * 360.0;
+                                  InfoArr[filenum].ang1_vel=((MAX_REVOLUTION_ANGVEL-MIN_REVOLUTION_ANGVEL) * RANDFRAC) + MIN_REVOLUTION_ANGVEL;
 
-					  InfoArr[filenum].starttime = now;
-	
-					  float xdel = InfoArr[filenum].xdel = InfoArr[filenum].xend-InfoArr[filenum].xstart;
-					  float ydel = InfoArr[filenum].ydel = InfoArr[filenum].yend-InfoArr[filenum].ystart;
+                                  InfoArr[filenum].ang2=RANDFRAC * 360.0;
+                                  InfoArr[filenum].ang2_vel=((MAX_ROTATION_ANGVEL-MIN_ROTATION_ANGVEL) * RANDFRAC) + MIN_ROTATION_ANGVEL;
 
-					  InfoArr[filenum].endtime = csqrt(xdel*xdel+ydel*ydel)/InfoArr[filenum].vel;
-	
-					  InfoArr[filenum].timedel = InfoArr[filenum].endtime - InfoArr[filenum].starttime;
+                                  InfoArr[filenum].radius = (RANDFRAC * (MAX_RADIUS-MIN_RADIUS)) + MIN_RADIUS;
 
-					  const LVector3f rotate_axis(0.0, 0.0, 1.0);
-					  float ang = rad_2_deg(atan2(-xdel,ydel));
+                                  if(RANDFRAC>0.5) {
+                                          InfoArr[filenum].ang1_vel=-InfoArr[filenum].ang1_vel;
+                                  }
 
-					  LMatrix4f::rotate_mat_normaxis(ang,rotate_axis,InfoArr[filenum].rotmat);
+                                  if(RANDFRAC>0.5) {
+                                          InfoArr[filenum].ang2_vel=-InfoArr[filenum].ang2_vel;
+                                  }
 
-					  LVector3f translate_vec(xpos, ypos, 0.0);
-					  LMatrix4f tmat2 = LMatrix4f::translate_mat(translate_vec);
+                                  // xforms happen left to right
+                                  LVector2f new_center = LVector2f(InfoArr[filenum].radius,0.0) * 
+                                                   LMatrix3f::rotate_mat(InfoArr[filenum].ang1);
 
-					  xfm_mat = InfoArr[filenum].rotmat * tmat2;
-			  } else {
-				  LVector3f translate_vec(xpos, ypos, 0.0);
-				  xfm_mat = LMatrix4f::translate_mat(translate_vec);
-			  }
+                                  const LVector3f rotate_axis(0.0, 0.0, 1.0);
 
-			  pRRptrArr[filenum]->set_transition(new TransformTransition(xfm_mat));
-		
-			  if(((filenum+1) % gridwidth) == 0) {
-				  xpos= -gridwidth*GRIDCELLSIZE/2.0;
-				  ypos+=GRIDCELLSIZE;
-			  } else {
-				  xpos+=GRIDCELLSIZE;
-			  }
-			}
-		}
+                                  LVector3f translate_vec(xpos+new_center._v.v._0, 
+                                                                                  ypos+new_center._v.v._1,
+                                                                                  0.0);
 
-	}
+                                  LMatrix4f::rotate_mat_normaxis(InfoArr[filenum].ang2,rotate_axis,tmat1);
+                                  tmat2 = LMatrix4f::translate_mat(translate_vec);
+                                  xfm_mat = tmat1 * tmat2;
+                          } else if(gridmotiontype==LinearMotion) {
+
+                                      #define MIN_VEL 2.0
+                                      #define MAX_VEL (fabs(wander_area_pos_offset))
+
+                                          InfoArr[filenum].vel=((MAX_VEL-MIN_VEL) * RANDFRAC) + MIN_VEL;
+
+                                          InfoArr[filenum].xstart=xpos;
+                                          InfoArr[filenum].ystart=ypos;
+
+                                          InfoArr[filenum].xend = RANDFRAC*fabs(2.0*wander_area_pos_offset) + wander_area_pos_offset;
+                                          InfoArr[filenum].yend = RANDFRAC*fabs(2.0*wander_area_pos_offset) + wander_area_pos_offset;
+
+                                          InfoArr[filenum].starttime = now;
+
+                                          float xdel = InfoArr[filenum].xdel = InfoArr[filenum].xend-InfoArr[filenum].xstart;
+                                          float ydel = InfoArr[filenum].ydel = InfoArr[filenum].yend-InfoArr[filenum].ystart;
+
+                                          InfoArr[filenum].endtime = csqrt(xdel*xdel+ydel*ydel)/InfoArr[filenum].vel;
+
+                                          InfoArr[filenum].timedel = InfoArr[filenum].endtime - InfoArr[filenum].starttime;
+
+                                          const LVector3f rotate_axis(0.0, 0.0, 1.0);
+                                          float ang = rad_2_deg(atan2(-xdel,ydel));
+
+                                          LMatrix4f::rotate_mat_normaxis(ang,rotate_axis,InfoArr[filenum].rotmat);
+
+                                          LVector3f translate_vec(xpos, ypos, 0.0);
+                                          LMatrix4f tmat2 = LMatrix4f::translate_mat(translate_vec);
+
+                                          xfm_mat = InfoArr[filenum].rotmat * tmat2;
+                          } else {
+                                  LVector3f translate_vec(xpos, ypos, 0.0);
+                                  xfm_mat = LMatrix4f::translate_mat(translate_vec);
+                          }
+
+                          pRRptrArr[filenum]->set_transition(new TransformTransition(xfm_mat));
+
+                          if(((filenum+1) % gridwidth) == 0) {
+                                  xpos= -gridwidth*GRIDCELLSIZE/2.0;
+                                  ypos+=GRIDCELLSIZE;
+                          } else {
+                                  xpos+=GRIDCELLSIZE;
+                          }
+                        }
+                }
+
+        }
 
     // If we happened to load up both a character file and its
     // matching animation file, attempt to bind them together now.
@@ -1557,7 +1557,7 @@ int framework_main(int argc, char *argv[]) {
       framework_cat.info() << "forking draw thread" << endl;
       draw_thread = thread::create(draw_loop);
       for (;;)
-	icb.idle();
+        icb.idle();
     } else 
 #endif
      {

@@ -47,7 +47,7 @@ public:
 PUBLISHED:
   DisplayRegion *make_display_region();
   DisplayRegion *make_display_region(float l, float r,
-				     float b, float t);
+                                     float b, float t);
   
   int get_num_drs() const;
   DisplayRegion *get_dr(int index) const;
@@ -85,7 +85,7 @@ public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "GraphicsLayer",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

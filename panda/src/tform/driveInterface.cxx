@@ -238,15 +238,15 @@ apply(double x, double y, bool any_button) {
       // Motion is forward.  Compute the throttle value: the ratio of
       // the mouse pointer within the range of vertical movement.
       float throttle = 
-	(min(y, 1.0) - dead_zone_top) / 
-	(1.0 - dead_zone_top);
+        (min(y, 1.0) - dead_zone_top) / 
+        (1.0 - dead_zone_top);
       _speed = throttle * _forward_speed;
       
     } else if (y <= dead_zone_bottom) {
       // Motion is backward.
       float throttle = 
-	(max(y, -1.0) - dead_zone_bottom) / 
-	(-1.0 - dead_zone_bottom);
+        (max(y, -1.0) - dead_zone_bottom) / 
+        (-1.0 - dead_zone_bottom);
       _speed = -throttle * _reverse_speed;
     }
     
@@ -261,15 +261,15 @@ apply(double x, double y, bool any_button) {
       // ratio of the mouse pointer within the range of horizontal
       // movement.
       float throttle = 
-	(min(x, 1.0) - dead_zone_right) / 
-	(1.0 - dead_zone_right);
+        (min(x, 1.0) - dead_zone_right) / 
+        (1.0 - dead_zone_right);
       _rot_speed = throttle * _rotate_speed;
       
     } else if (x <= dead_zone_left) {
       // Rotation is to the left.
       float throttle = 
-	(max(x, -1.0) - dead_zone_left) / 
-	(-1.0 - dead_zone_left);
+        (max(x, -1.0) - dead_zone_left) / 
+        (-1.0 - dead_zone_left);
       _rot_speed = -throttle * _rotate_speed;
     }
 
@@ -282,13 +282,13 @@ apply(double x, double y, bool any_button) {
 
     if (_up_arrow < _down_arrow) {
       throttle = _up_arrow.get_effect(_vertical_ramp_up_time,
-				      _vertical_ramp_down_time);
+                                      _vertical_ramp_down_time);
       _speed = throttle * _forward_speed;
       _down_arrow._effect = 0.0;
 
     } else {
       throttle = _down_arrow.get_effect(_vertical_ramp_up_time,
-					_vertical_ramp_down_time);
+                                        _vertical_ramp_down_time);
       _speed = -throttle * _reverse_speed;
       _up_arrow._effect = 0.0;
     }
@@ -296,13 +296,13 @@ apply(double x, double y, bool any_button) {
     // Which horizontal arrow key changed state more recently?
     if (_right_arrow < _left_arrow) {
       throttle = _right_arrow.get_effect(_horizontal_ramp_up_time,
-					 _horizontal_ramp_down_time);
+                                         _horizontal_ramp_down_time);
       _rot_speed = throttle * _rotate_speed;
       _left_arrow._effect = 0.0;
 
     } else {
       throttle = _left_arrow.get_effect(_horizontal_ramp_up_time,
-					_horizontal_ramp_down_time);
+                                        _horizontal_ramp_down_time);
       _rot_speed = -throttle * _rotate_speed;
       _right_arrow._effect = 0.0;
     }
@@ -419,26 +419,26 @@ transmit_data(NodeAttributes &data) {
     for (bi = b->begin(); bi != b->end(); ++bi) {
       const ButtonEvent &be = (*bi);
       if (be._down) {
-	// We only trap button down events if (a) the mouse is in the
-	// window, and (b) we aren't set to ignore the mouse.
-	if (got_mouse && !_ignore_mouse) {
-	  _mods.add_event(be);
-	}
+        // We only trap button down events if (a) the mouse is in the
+        // window, and (b) we aren't set to ignore the mouse.
+        if (got_mouse && !_ignore_mouse) {
+          _mods.add_event(be);
+        }
       } else {
-	// However, we always trap button up events, so we don't get
-	// confused and believe a button is still being held down when
-	// it is not.
-	_mods.add_event(be);
+        // However, we always trap button up events, so we don't get
+        // confused and believe a button is still being held down when
+        // it is not.
+        _mods.add_event(be);
       }
 
       if (be._button == KeyboardButton::up()) {
-	_up_arrow.set_key(be._down);
+        _up_arrow.set_key(be._down);
       } else if (be._button == KeyboardButton::down()) {
-	_down_arrow.set_key(be._down);
+        _down_arrow.set_key(be._down);
       } else if (be._button == KeyboardButton::left()) {
-	_left_arrow.set_key(be._down);
+        _left_arrow.set_key(be._down);
       } else if (be._button == KeyboardButton::right()) {
-	_right_arrow.set_key(be._down);
+        _right_arrow.set_key(be._down);
       }
     }
   }
@@ -460,15 +460,15 @@ void DriveInterface::
 init_type() {
   DataNode::init_type();
   register_type(_type_handle, "DriveInterface",
-		DataNode::get_class_type());
+                DataNode::get_class_type());
 
   Vec3DataTransition::init_type();
   register_data_transition(_xyz_type, "XYZ",
-			   Vec3DataTransition::get_class_type());
+                           Vec3DataTransition::get_class_type());
   MatrixDataTransition::init_type();
   register_data_transition(_transform_type, "Transform",
-			   MatrixDataTransition::get_class_type());
+                           MatrixDataTransition::get_class_type());
   ButtonEventDataTransition::init_type();
   register_data_transition(_button_events_type, "ButtonEvents",
-			   ButtonEventDataTransition::get_class_type());
+                           ButtonEventDataTransition::get_class_type());
 }

@@ -16,7 +16,7 @@ using Gtk::Menu_Helpers::SeparatorElem;
 ////////////////////////////////////////////////////////////////////
 GtkStatsPianoWindow::
 GtkStatsPianoWindow(GtkStatsMonitor *monitor, int thread_index, 
-		    int chart_xsize, int chart_ysize) :
+                    int chart_xsize, int chart_ysize) :
   GtkStatsWindow(monitor),
   _thread_index(thread_index)
 {
@@ -63,28 +63,28 @@ setup_menu() {
 
   scale_menu->items().push_back
     (MenuElem("0.1 Hz",
-	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 0.1f)));
+              bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 0.1f)));
   scale_menu->items().push_back
     (MenuElem("1 Hz",
-	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 1.0f)));
+              bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 1.0f)));
   scale_menu->items().push_back
     (MenuElem("5 Hz",
-	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 5.0f)));
+              bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 5.0f)));
   scale_menu->items().push_back
     (MenuElem("10 Hz",
-	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 10.0f)));
+              bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 10.0f)));
   scale_menu->items().push_back
     (MenuElem("20 Hz",
-	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 20.0f)));
+              bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 20.0f)));
   scale_menu->items().push_back
     (MenuElem("30 Hz",
-	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 30.0f)));
+              bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 30.0f)));
   scale_menu->items().push_back
     (MenuElem("60 Hz",
-	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 60.0f)));
+              bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 60.0f)));
   scale_menu->items().push_back
     (MenuElem("120 Hz",
-	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 120.0f)));
+              bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 120.0f)));
 
   _menu->items().push_back(MenuElem("Scale", *manage(scale_menu)));
 }
@@ -97,7 +97,7 @@ setup_menu() {
 void GtkStatsPianoWindow::
 menu_new_window() {
   new GtkStatsPianoWindow(_monitor, _thread_index,
-			  _chart->get_xsize(), _chart->get_ysize());
+                          _chart->get_xsize(), _chart->get_ysize());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -135,7 +135,7 @@ layout_window(int chart_xsize, int chart_ysize) {
   chart_table->attach(*manage(frame), 1, 2, 0, 1);
 
   _chart = new GtkStatsPianoRoll(_monitor, _thread_index,
-				  chart_xsize, chart_ysize);
+                                  chart_xsize, chart_ysize);
   frame->add(*manage(_chart));
 
   // We put the labels in a frame, too, so they'll line up vertically.
@@ -145,7 +145,7 @@ layout_window(int chart_xsize, int chart_ysize) {
   label_frame->add(*manage(_chart->get_labels()));
 
   chart_table->attach(*manage(label_frame), 0, 1, 0, 1,
-		      0, (GTK_FILL|GTK_EXPAND), 4, 0);
+                      0, (GTK_FILL|GTK_EXPAND), 4, 0);
 
   _chart->show();
 }

@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE MouseWatcherRegion::
 MouseWatcherRegion(const string &name, float left, float right,
-		   float bottom, float top) :
+                   float bottom, float top) :
   Namable(name),
   _frame(left, right, bottom, top)
 {

@@ -12,7 +12,7 @@
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : CharBitmap
+//       Class : CharBitmap
 // Description : This defines a single character read from the PK
 //               file.  It stores the kerning information as well as
 //               the character's decoded bitmap.
@@ -23,8 +23,8 @@ public:
   typedef vector<Row> Block;
 
   CharBitmap(int character, int width, int height,
-	     int hoff, int voff, double dx, double dy);
-	     
+             int hoff, int voff, double dx, double dy);
+
   bool paint(bool black, int num_pixels, int &repeat);
 
   INLINE int get_width() const;

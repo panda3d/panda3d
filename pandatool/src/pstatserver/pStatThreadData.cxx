@@ -82,7 +82,7 @@ has_frame(int frame_number) const {
   int rel_frame = frame_number - _first_frame_number;
   
   return (rel_frame >= 0 && rel_frame < (int)_frames.size() &&
-	  _frames[rel_frame] != (PStatFrameData *)NULL);
+          _frames[rel_frame] != (PStatFrameData *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,7 +109,7 @@ get_frame(int frame_number) const {
     // No frame data that old.  Return the oldest frame we've got.
     rel_frame = 0;
     while (rel_frame < (int)_frames.size() && 
-	   _frames[rel_frame] == (PStatFrameData *)NULL) {
+           _frames[rel_frame] == (PStatFrameData *)NULL) {
       rel_frame++;
     }
     return (rel_frame < (int)_frames.size()) ? *_frames[rel_frame] : _null_frame;
@@ -166,16 +166,16 @@ get_frame_number_at_time(float time, int hint) const {
   hint -= _first_frame_number;
   if (hint >= 0 && hint < (int)_frames.size()) {
     if (_frames[hint] != (PStatFrameData *)NULL &&
-	_frames[hint]->get_start() <= time) {
+        _frames[hint]->get_start() <= time) {
       // The hint might be right.  Scan forward from there.
       int i = hint + 1;
       while (i < (int)_frames.size() &&
-	     (_frames[i] == (PStatFrameData *)NULL ||
-	      _frames[i]->get_start() <= time)) {
-	if (_frames[i] != (PStatFrameData *)NULL) {
-	  hint = i;
-	}
-	++i;
+             (_frames[i] == (PStatFrameData *)NULL ||
+              _frames[i]->get_start() <= time)) {
+        if (_frames[i] != (PStatFrameData *)NULL) {
+          hint = i;
+        }
+        ++i;
       }
       return _first_frame_number + hint;
     }
@@ -186,7 +186,7 @@ get_frame_number_at_time(float time, int hint) const {
 
   int i = _frames.size() - 1;
   while (i >= 0 && (_frames[i] == (PStatFrameData *)NULL ||
-		    _frames[i]->get_start() > time)) {
+                    _frames[i]->get_start() > time)) {
     --i;
   }
   return _first_frame_number + i;
@@ -298,9 +298,9 @@ record_new_frame(int frame_number, PStatFrameData *frame_data) {
   // history window.
   float oldest_allowable_time = time - _history;
   while (!_frames.empty() && 
-	 (_frames.front() == (PStatFrameData *)NULL ||
-	  _frames.front()->is_empty() ||
-	  _frames.front()->get_start() < oldest_allowable_time)) {
+         (_frames.front() == (PStatFrameData *)NULL ||
+          _frames.front()->is_empty() ||
+          _frames.front()->get_start() < oldest_allowable_time)) {
     if (_frames.front() != (PStatFrameData *)NULL) {
       delete _frames.front();
     }

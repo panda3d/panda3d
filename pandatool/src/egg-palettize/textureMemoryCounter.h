@@ -18,7 +18,7 @@ class TexturePlacement;
 #include <set>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TextureMemoryCounter
+//       Class : TextureMemoryCounter
 // Description : This class is used to gather statistics on texture
 //               memory usage, etc.  It adds up the total texture
 //               memory required by a number of image files, and
@@ -35,7 +35,7 @@ public:
 
 private:
   static ostream &format_memory_fraction(ostream &out, int fraction_bytes,
-					 int palette_bytes);
+                                         int palette_bytes);
   void add_palette(PaletteImage *image);
   void add_texture(TextureImage *texture, int bytes);
   int count_bytes(ImageFile *image);

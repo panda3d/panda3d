@@ -76,7 +76,7 @@ output_property(ostream &out, const PT_Node &prop) const {
 ////////////////////////////////////////////////////////////////////
 void ClipPlaneAttribute::
 write_property(ostream &out, const PT_Node &prop,
-	       int indent_level) const {
+               int indent_level) const {
   const PlaneNode *node;
   DCAST_INTO_V(node, prop);
   indent(out, indent_level)

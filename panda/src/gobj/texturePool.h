@@ -31,7 +31,7 @@ PUBLISHED:
   INLINE static bool verify_texture(const string &filename);
   INLINE static Texture *load_texture(const string &filename);
   INLINE static Texture *load_texture(const string &filename,
-				      const string &grayfilename);
+                                      const string &grayfilename);
   INLINE static void add_texture(Texture *texture);
   INLINE static void release_texture(Texture *texture);
   INLINE static void release_all_textures();

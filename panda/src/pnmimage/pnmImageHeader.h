@@ -18,7 +18,7 @@ class PNMReader;
 class PNMWriter;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PNMImageHeader
+//       Class : PNMImageHeader
 // Description : This is the base class of PNMImage, PNMReader, and
 //               PNMWriter.  It encapsulates all the information
 //               associated with an image that describes its size,
@@ -66,20 +66,20 @@ public:
   bool read_header(const Filename &filename, PNMFileType *type = NULL);
 
   PNMReader *make_reader(const Filename &filename,
-			 PNMFileType *type = NULL) const;
+                         PNMFileType *type = NULL) const;
   PNMReader *make_reader(FILE *file, bool owns_file = true,
-			 const Filename &filename = Filename(),
-			 string magic_number = string(),
-			 PNMFileType *type = NULL) const;
+                         const Filename &filename = Filename(),
+                         string magic_number = string(),
+                         PNMFileType *type = NULL) const;
 
   PNMWriter *make_writer(const Filename &filename, 
-			 PNMFileType *type = NULL) const;
+                         PNMFileType *type = NULL) const;
   PNMWriter *make_writer(FILE *file, bool owns_file = true,
-			 const Filename &filename = Filename(),
-			 PNMFileType *type = NULL) const;
+                         const Filename &filename = Filename(),
+                         PNMFileType *type = NULL) const;
 
   static bool read_magic_number(FILE *file, string &magic_number, 
-				int num_bytes);
+                                int num_bytes);
 
   void output(ostream &out) const;
 

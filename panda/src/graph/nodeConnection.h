@@ -18,7 +18,7 @@ typedef vector_NodeRelation_star UpRelationPointers;
 
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : NodeConnection
+//       Class : NodeConnection
 // Description : This class represents the table, stored within each
 //               Node, of all the connected NodeRelations (arcs) of a
 //               particular graph type.

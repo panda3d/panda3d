@@ -10,6 +10,10 @@
 //       Access: Public
 //  Description: Returns the total number of models associated with
 //               this character.
+//
+//               A "model" here is either a character model (or one
+//               LOD of a character model), or a character animation
+//               file: in either case, a hierarchy of joints.
 ////////////////////////////////////////////////////////////////////
 INLINE int EggCharacterData::
 get_num_models() const {
@@ -24,6 +28,10 @@ get_num_models() const {
 //               ask questions about the particular model from the
 //               EggCharacterCollection object, or from the individual
 //               EggJointData and EggSliderData objects.
+//
+//               A "model" here is either a character model (or one
+//               LOD of a character model), or a character animation
+//               file: in either case, a hierarchy of joints.
 ////////////////////////////////////////////////////////////////////
 INLINE int EggCharacterData::
 get_model_index(int n) const {

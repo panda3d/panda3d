@@ -41,10 +41,10 @@ public:
 //        int num_geoms = geomNode->get_num_geoms();
 //        for (int i = 0; i < num_geoms; i++) 
 //        {
-//  	dDrawable *draw = geomNode->get_geom(i);
-//  	Geom *geom = DCAST(Geom, draw);
-//  	indent(nout, _indent_level+1) << *geom << ":\n";
-//  	geom->output_verbose(nout);
+//      dDrawable *draw = geomNode->get_geom(i);
+//      Geom *geom = DCAST(Geom, draw);
+//      indent(nout, _indent_level+1) << *geom << ":\n";
+//      geom->output_verbose(nout);
 //        }
 //      }
     return true;
@@ -83,9 +83,9 @@ int main(int argc, char* argv[]) {
   nout << "\n";
   PrintNodes<NodeTransitionWrapper> pn;
   df_traverse(smiley, pn, 
-	      NodeAttributeWrapper(TransformTransition::get_class_type()),
-	      NullLevelState(),
-	      RenderRelation::get_class_type());
+              NodeAttributeWrapper(TransformTransition::get_class_type()),
+              NullLevelState(),
+              RenderRelation::get_class_type());
   nout << "\n";
   
   stream.open(file::FILE_WRITE, _bam_header);

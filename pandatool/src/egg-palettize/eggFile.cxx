@@ -45,8 +45,8 @@ EggFile() {
 ////////////////////////////////////////////////////////////////////
 void EggFile::
 from_command_line(EggData *data,
-		  const Filename &source_filename, 
-		  const Filename &dest_filename) {
+                  const Filename &source_filename, 
+                  const Filename &dest_filename) {
   _data = data;
 
   // We save the current directory at the time the egg file appeared
@@ -315,7 +315,7 @@ choose_placements() {
     TextureImage *texture = reference->get_texture();
 
     if (reference->get_placement() != (TexturePlacement *)NULL &&
-	texture->get_groups().count(reference->get_placement()->get_group()) != 0) {
+        texture->get_groups().count(reference->get_placement()->get_group()) != 0) {
       // The egg file is already using a TexturePlacement that is
       // suitable.  Don't bother changing it.
 
@@ -328,24 +328,24 @@ choose_placements() {
       // which also happen to include the texture.  It better not be
       // empty.
       if (groups.empty()) {
-	nout << "Warning!  Egg file " << get_name() << " and texture "
-	     << *reference << " do not have any groups in common.\n"
-	     << "Egg groups:\n";
-	get_complete_groups().write(nout, 2);
-	nout << "Texture groups:\n";
-	texture->get_groups().write(nout, 2);
+        nout << "Warning!  Egg file " << get_name() << " and texture "
+             << *reference << " do not have any groups in common.\n"
+             << "Egg groups:\n";
+        get_complete_groups().write(nout, 2);
+        nout << "Texture groups:\n";
+        texture->get_groups().write(nout, 2);
 
       } else {
-	// It doesn't really matter which group in the set we choose, so
-	// we arbitrarily choose the first one.
-	PaletteGroup *group = (*groups.begin());
+        // It doesn't really matter which group in the set we choose, so
+        // we arbitrarily choose the first one.
+        PaletteGroup *group = (*groups.begin());
 
-	// Now get the TexturePlacement object that corresponds to the
-	// placement of this texture into this group.
-	TexturePlacement *placement = texture->get_placement(group);
-	nassertv(placement != (TexturePlacement *)NULL);
-	
-	reference->set_placement(placement);
+        // Now get the TexturePlacement object that corresponds to the
+        // placement of this texture into this group.
+        TexturePlacement *placement = texture->get_placement(group);
+        nassertv(placement != (TexturePlacement *)NULL);
+
+        reference->set_placement(placement);
       }
     }
   }

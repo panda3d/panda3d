@@ -28,10 +28,10 @@ make_random_color(Colorf &color) {
 
 #ifdef WIN32_VC
   color.set(rgb[0], rgb[1], rgb[2], 
-	    0.25 + 0.75 * (double)rand() / (double)RAND_MAX);
+            0.25 + 0.75 * (double)rand() / (double)RAND_MAX);
 #else
   color.set(rgb[0], rgb[1], rgb[2], 
-	    0.25 + 0.75 * (double)random() / (double)RAND_MAX);
+            0.25 + 0.75 * (double)random() / (double)RAND_MAX);
 #endif
 }
 

@@ -17,8 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : SgiGlxGraphicsPipe
 // Description : This kind of pipe can create glx windows but
-//		 supports the functionality of an sgi pipe with
-//		 hardware channels
+//               supports the functionality of an sgi pipe with
+//               hardware channels
 ////////////////////////////////////////////////////////////////////
 class SgiGlxGraphicsPipe : public sgiGraphicsPipe, public glxDisplay {
 public:

@@ -13,7 +13,7 @@
 #include <eggTexture.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TexturePosition
+//       Class : TexturePosition
 // Description : This represents a particular position of a texture
 //               within a PaletteImage.  There is only one of these
 //               per TexturePlacement, but it exists as a separate
@@ -54,7 +54,7 @@ public:
   static void init_type() {
     TypedWritable::init_type();
     register_type(_type_handle, "TexturePosition",
-		  TypedWritable::get_class_type());
+                  TypedWritable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -12,7 +12,7 @@
 #include "cppTemplateParameterList.h"
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPTemplateScope
+//       Class : CPPTemplateScope
 // Description : This is an implicit scope that is created following
 //               the appearance of a "template<class x, class y>" or
 //               some such line in a C++ file.  It simply defines the
@@ -25,13 +25,13 @@ public:
   void add_template_parameter(CPPDeclaration *param);
  
   virtual void add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
-			       CPPPreprocessor *preprocessor,
-			       const cppyyltype &pos);
+                               CPPPreprocessor *preprocessor,
+                               const cppyyltype &pos);
   virtual void add_enum_value(CPPInstance *inst);
   virtual void define_extension_type(CPPExtensionType *type);
   virtual void define_namespace(CPPNamespace *scope);
   virtual void add_using(CPPUsing *using_decl, CPPScope *global_scope,
-			 CPPPreprocessor *error_sink = NULL);
+                         CPPPreprocessor *error_sink = NULL);
 
   virtual bool is_fully_specified() const;
 

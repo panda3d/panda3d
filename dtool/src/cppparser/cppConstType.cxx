@@ -39,7 +39,7 @@ is_fully_specified() const {
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPConstType::
 substitute_decl(CPPDeclaration::SubstDecl &subst, 
-		CPPScope *current_scope, CPPScope *global_scope) {
+                CPPScope *current_scope, CPPScope *global_scope) {
   SubstDecl::const_iterator si = subst.find(this);
   if (si != subst.end()) {
     return (*si).second;
@@ -132,10 +132,10 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
 ////////////////////////////////////////////////////////////////////
 void CPPConstType::
 output_instance(ostream &out, int indent_level, CPPScope *scope,
-		bool complete, const string &prename,
-		const string &name) const {
+                bool complete, const string &prename,
+                const string &name) const {
   _wrapped_around->output_instance(out, indent_level, scope, complete, 
-				   "const " + prename, name);
+                                   "const " + prename, name);
 }
 
 ////////////////////////////////////////////////////////////////////

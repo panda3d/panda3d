@@ -16,19 +16,19 @@ PUBLISHED:
 
   INLINE_MATHUTIL void make_ortho(FLOATTYPE fnear, FLOATTYPE ffar);
   INLINE_MATHUTIL void make_ortho(FLOATTYPE fnear, FLOATTYPE ffar,
-			 FLOATTYPE l, FLOATTYPE r, FLOATTYPE t, FLOATTYPE b);
+                         FLOATTYPE l, FLOATTYPE r, FLOATTYPE t, FLOATTYPE b);
   
   INLINE_MATHUTIL void make_perspective_hfov(FLOATTYPE xfov, FLOATTYPE aspect,
-				    FLOATTYPE fnear, FLOATTYPE ffar);
+                                    FLOATTYPE fnear, FLOATTYPE ffar);
   INLINE_MATHUTIL void make_perspective_vfov(FLOATTYPE yfov, FLOATTYPE aspect,
-				    FLOATTYPE fnear, FLOATTYPE ffar);
+                                    FLOATTYPE fnear, FLOATTYPE ffar);
   INLINE_MATHUTIL void make_perspective(FLOATTYPE xfov, FLOATTYPE yfov, FLOATTYPE fnear,
-			       FLOATTYPE ffar);
+                               FLOATTYPE ffar);
   INLINE_MATHUTIL void get_perspective_params(FLOATTYPE &yfov, FLOATTYPE &aspect,
-				     FLOATTYPE &fnear, FLOATTYPE &ffar) const;
+                                     FLOATTYPE &fnear, FLOATTYPE &ffar) const;
   INLINE_MATHUTIL void get_perspective_params(FLOATTYPE &xfov, FLOATTYPE &yfov,
-				     FLOATTYPE &aspect, FLOATTYPE &fnear,
-				     FLOATTYPE &ffar) const;
+                                     FLOATTYPE &aspect, FLOATTYPE &fnear,
+                                     FLOATTYPE &ffar) const;
   
 public: 
   INLINE_MATHUTIL FLOATNAME(LMatrix4)

@@ -21,8 +21,8 @@
 ////////////////////////////////////////////////////////////////////
 class wglGraphicsPipe;
 
-const int WGLWIN_CONFIGURE =	4;
-const int WGLWIN_EVENT =	8;
+const int WGLWIN_CONFIGURE =    4;
+const int WGLWIN_EVENT =    8;
 
 #define GLX_USE_GL              1       /* support GLX rendering */
 #define GLX_BUFFER_SIZE         2       /* depth of the color buffer */
@@ -51,7 +51,7 @@ class EXPCL_PANDAGL wglGraphicsWindow : public GraphicsWindow {
 public:
   wglGraphicsWindow(GraphicsPipe* pipe);
   wglGraphicsWindow(GraphicsPipe* pipe,
-		     const GraphicsWindow::Properties& props);
+             const GraphicsWindow::Properties& props);
   virtual ~wglGraphicsWindow(void);
 
   virtual bool supports_update() const;
@@ -78,7 +78,7 @@ public:
 
 protected:
   PIXELFORMATDESCRIPTOR* try_for_visual(wglGraphicsPipe *pipe,
-	int mask, int want_depth_bits = 1, int want_color_bits = 1);
+    int mask, int want_depth_bits = 1, int want_color_bits = 1);
   int choose_visual(void);
   static void get_config(PIXELFORMATDESCRIPTOR* visual, int attrib, int *value);
   virtual void config( void );
@@ -96,21 +96,21 @@ protected:
   void adjust_coords(int &xorg, int &yorg, int &xsize, int &ysize);
 
 public:
-  uint				_change_mask;
-  HWND				_mwindow;
+  uint              _change_mask;
+  HWND              _mwindow;
 
 private:
-  HGLRC				_context;
-  HDC				_hdc;
-  PIXELFORMATDESCRIPTOR*	_visual;
-  HPALETTE			_colormap;
+  HGLRC             _context;
+  HDC               _hdc;
+  PIXELFORMATDESCRIPTOR*    _visual;
+  HPALETTE          _colormap;
 
-  bool				_mouse_input_enabled;
-  bool				_mouse_motion_enabled;
-  bool				_mouse_passive_motion_enabled;
-  bool				_mouse_entry_enabled;
-  int				_entry_state;
-  bool				_ignore_key_repeat;
+  bool              _mouse_input_enabled;
+  bool              _mouse_motion_enabled;
+  bool              _mouse_passive_motion_enabled;
+  bool              _mouse_entry_enabled;
+  int               _entry_state;
+  bool              _ignore_key_repeat;
   int                           _full_height, _full_width;
 
   // vars for frames/sec meter

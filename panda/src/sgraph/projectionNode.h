@@ -29,7 +29,7 @@ PUBLISHED:
 public:
   INLINE ProjectionNode(const ProjectionNode &copy);
   INLINE void operator = (const ProjectionNode &copy);
-	
+
   virtual Node *make_copy() const;
 
 PUBLISHED:  
@@ -40,9 +40,9 @@ PUBLISHED:
   bool is_in_view(const LPoint3f &pos);
 
   void get_perspective_params(float &yfov, float &aspect, float &cnear, 
-			      float &cfar) const;
+                              float &cfar) const;
   void get_perspective_params(float &xfov, float &yfov, float &aspect,
-			      float &cnear, float &cfar) const;
+                              float &cnear, float &cfar) const;
   float get_hfov(void) const;
   float get_vfov(void) const;
   void set_fov(float hfov);
@@ -69,7 +69,7 @@ public:
   static void init_type( void ) {
     NamedNode::init_type();
     register_type( _type_handle, "ProjectionNode",
-		   NamedNode::get_class_type() );
+                   NamedNode::get_class_type() );
   }
   virtual TypeHandle get_type( void ) const {
     return get_class_type();

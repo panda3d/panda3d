@@ -29,15 +29,15 @@ struct DecompVtx {
 template <class PrimType, class OutputIterator>
 static bool
 decomp_concave(const PrimType &prim, BuilderBucket &bucket, 
-	       OutputIterator result,
-	       int asum, int x, int y) {
+               OutputIterator result,
+               int asum, int x, int y) {
 #define VX(p, c)    p->coord[c]
 
   vector<PrimType> output_prims;
 
   DecompVtx *p0, *p1, *p2, *t0, *vert;
   DecompVtx *m[3];
-  float	xmin, xmax, ymin, ymax;
+  float xmin, xmax, ymin, ymax;
   int i, init, csum, chek;
   float a[3], b[3], c[3], s[3];
 
@@ -74,9 +74,9 @@ decomp_concave(const PrimType &prim, BuilderBucket &bucket,
   while (p0 != p2->next) {
     /* Polygon is self-intersecting so punt */
     if (chek && 
-	m[0] == p0 && 
-	m[1] == p1 && 
-	m[2] == p2) {
+        m[0] == p0 && 
+        m[1] == p1 && 
+        m[2] == p2) {
 
       //      builder_cat.info() << "Could not decompose concave polygon!";
       return false;
@@ -101,67 +101,67 @@ decomp_concave(const PrimType &prim, BuilderBucket &bucket,
       /* current angle is convex */
       xmin = (VX(p0, x) < VX(p1, x)) ? VX(p0, x) : VX(p1, x);
       if (xmin > VX(p2, x))
-	xmin = VX(p2, x);
+        xmin = VX(p2, x);
       
       xmax = (VX(p0, x) > VX(p1, x)) ? VX(p0, x) : VX(p1, x);
       if (xmax < VX(p2, x))
-	xmax = VX(p2, x);
+        xmax = VX(p2, x);
       
       ymin = (VX(p0, y) < VX(p1, y)) ? VX(p0, y) : VX(p1, y);
       if (ymin > VX(p2, y))
-	ymin = VX(p2, y);
+        ymin = VX(p2, y);
       
       ymax = (VX(p0, y) > VX(p1, y)) ? VX(p0, y) : VX(p1, y);
       if (ymax < VX(p2, y))
-	ymax = VX(p2, y);
+        ymax = VX(p2, y);
       
       for (init = 1, t0 = p2->next; t0 != p0; t0 = t0->next) {
-	if (VX(t0, x) >= xmin && VX(t0, x) <= xmax &&
-	    VX(t0, y) >= ymin && VX(t0, y) <= ymax) {
-	  if (init) {
-	    a[1] = VX(p2, y) - VX(p0, y);
-	    b[1] = VX(p0, x) - VX(p2, x);
-	    init = 0;
-	    c[0] = VX(p1, x) * VX(p2, y) - VX(p2, x) * VX(p1, y);
-	    c[1] = VX(p2, x) * VX(p0, y) - VX(p0, x) * VX(p2, y);
-	    c[2] = VX(p0, x) * VX(p1, y) - VX(p1, x) * VX(p0, y);
-	  }
-	  
-	  s[0] = a[0] * VX(t0, x) + b[0] * VX(t0, y) + c[0];
-	  s[1] = a[1] * VX(t0, x) + b[1] * VX(t0, y) + c[1];
-	  s[2] = a[2] * VX(t0, x) + b[2] * VX(t0, y) + c[2];
-	  
-	  if (asum) {
-	    if (s[0] >= 0.0 && s[1] >= 0.0 && s[2] >= 0.0)
-	      break;
-	  } else {
-	    if (s[0] <= 0.0 && s[1] <= 0.0 && s[2] <= 0.0)
-	      break;
-	  }
-	}
+        if (VX(t0, x) >= xmin && VX(t0, x) <= xmax &&
+            VX(t0, y) >= ymin && VX(t0, y) <= ymax) {
+          if (init) {
+            a[1] = VX(p2, y) - VX(p0, y);
+            b[1] = VX(p0, x) - VX(p2, x);
+            init = 0;
+            c[0] = VX(p1, x) * VX(p2, y) - VX(p2, x) * VX(p1, y);
+            c[1] = VX(p2, x) * VX(p0, y) - VX(p0, x) * VX(p2, y);
+            c[2] = VX(p0, x) * VX(p1, y) - VX(p1, x) * VX(p0, y);
+          }
+
+          s[0] = a[0] * VX(t0, x) + b[0] * VX(t0, y) + c[0];
+          s[1] = a[1] * VX(t0, x) + b[1] * VX(t0, y) + c[1];
+          s[2] = a[2] * VX(t0, x) + b[2] * VX(t0, y) + c[2];
+
+          if (asum) {
+            if (s[0] >= 0.0 && s[1] >= 0.0 && s[2] >= 0.0)
+              break;
+          } else {
+            if (s[0] <= 0.0 && s[1] <= 0.0 && s[2] <= 0.0)
+              break;
+          }
+        }
       }
       
       if (t0 != p0) {
-	p0 = p1;
-	p1 = p2;
-	p2 = p2->next;
+        p0 = p1;
+        p1 = p2;
+        p2 = p2->next;
       } else {
-	PrimType new_prim(prim);
-	new_prim.set_type(BPT_tri);
-	new_prim.clear_vertices();
-	new_prim.add_vertex(prim.get_vertex(p0->index));
-	new_prim.add_vertex(prim.get_vertex(p1->index));
-	new_prim.add_vertex(prim.get_vertex(p2->index));
-	output_prims.push_back(new_prim);
-	
-	p0->next = p1->next;
-	p1 = p2;
-	p2 = p2->next;
-	
-	m[0] = p0;
-	m[1] = p1;
-	m[2] = p2;
-	chek = 0;
+        PrimType new_prim(prim);
+        new_prim.set_type(BPT_tri);
+        new_prim.clear_vertices();
+        new_prim.add_vertex(prim.get_vertex(p0->index));
+        new_prim.add_vertex(prim.get_vertex(p1->index));
+        new_prim.add_vertex(prim.get_vertex(p2->index));
+        output_prims.push_back(new_prim);
+
+        p0->next = p1->next;
+        p1 = p2;
+        p2 = p2->next;
+
+        m[0] = p0;
+        m[1] = p1;
+        m[2] = p2;
+        chek = 0;
       }
     }
   }
@@ -187,7 +187,7 @@ decomp_concave(const PrimType &prim, BuilderBucket &bucket,
 template <class PrimType, class OutputIterator>
 static bool
 triangulate_poly(const PrimType &prim, BuilderBucket &bucket, 
-		 OutputIterator result) {
+                 OutputIterator result) {
   BuilderV p0, p1, as;
   float dx1, dy1, dx2, dy2, max;
   int i, flag, asum, csum, index, x, y, v0, v1, v, even;
@@ -225,16 +225,16 @@ triangulate_poly(const PrimType &prim, BuilderBucket &bucket,
   for (i = 0; i < 3; i++) {
     if (as[i] >= 0.0) {
       if (as[i] > max) {
-	max = as[i];
-	index = i;
-	flag = 1;
+        max = as[i];
+        index = i;
+        flag = 1;
       }
     } else {
       as[i] = -as[i];
       if (as[i] > max) {
-	max = as[i];
-	index = i;
-	flag = 0;
+        max = as[i];
+        index = i;
+        flag = 0;
       }
     }
   }
@@ -335,7 +335,7 @@ triangulate_poly(const PrimType &prim, BuilderBucket &bucket,
 template <class PrimType, class OutputIterator>
 static bool
 expand_polys(PrimType &prim, BuilderBucket &, 
-	     OutputIterator result) {
+             OutputIterator result) {
   switch (prim.get_num_verts()) {
   case 0:
   case 1:
@@ -367,7 +367,7 @@ expand_polys(PrimType &prim, BuilderBucket &,
 template <class PrimType, class OutputIterator>
 static bool
 expand_points(const PrimType &prim, BuilderBucket &, 
-	      OutputIterator result) {
+              OutputIterator result) {
   // Each vertex goes in its own primitive.
 
   int num_verts = prim.get_num_verts();
@@ -389,7 +389,7 @@ expand_points(const PrimType &prim, BuilderBucket &,
 template <class PrimType, class OutputIterator>
 static bool
 expand_lines(const PrimType &prim, BuilderBucket &, 
-	     OutputIterator result) {
+             OutputIterator result) {
   // Each line segment goes in its own primitive.  This breaks up the
   // linestrips already defined; we'll re-strip them later if the
   // generate-tstrips flag is enabled.
@@ -439,7 +439,7 @@ expand(const PrimType &prim, BuilderBucket &bucket, OutputIterator result) {
     new_prim.remove_doubled_verts(true);
 
     if (!bucket._subdivide_polys ||
-	(bucket._mesh && new_prim.get_num_verts() <= 4)) {
+        (bucket._mesh && new_prim.get_num_verts() <= 4)) {
       // If we're meshing, we'd like to send quads through without
       // subdividing.  The mesher can take advantage of the extra
       // information (and will eventually produce tris anyway).
@@ -474,8 +474,8 @@ expand(const PrimType &prim, BuilderBucket &bucket, OutputIterator result) {
 template<class InputIterator, class PrimType>
 static int
 build_geoms(InputIterator first, InputIterator last,
-	    BuilderBucket &bucket, GeomNode *geom_node,
-	    PrimType *) {
+            BuilderBucket &bucket, GeomNode *geom_node,
+            PrimType *) {
   if (first==last) {
     return 0;
   }
@@ -542,21 +542,21 @@ build_geoms(InputIterator first, InputIterator last,
     } else if (bind_normals != G_OFF) {
       // Test rule 2.
       if ((*i).has_vertex_normal()) {
-	bind_normals = G_PER_VERTEX;
+        bind_normals = G_PER_VERTEX;
       } else if (bind_normals != G_PER_VERTEX) {
-	// Test rule 3.
-	if ((*i).has_component_normal()) {
-	  bind_normals = G_PER_COMPONENT;
-	} else if (bind_normals != G_PER_COMPONENT) {
-	  // Test rule 4.
-	  nassertr((*i).has_overall_normal(), 0);
-	  if (first_normal) {
-	    overall_normal = (*i).get_normal();
-	    first_normal = false;
-	  } else if ( !((*i).get_normal() == overall_normal)) {
-	    bind_normals = G_PER_PRIM;
-	  }
-	}
+        // Test rule 3.
+        if ((*i).has_component_normal()) {
+          bind_normals = G_PER_COMPONENT;
+        } else if (bind_normals != G_PER_COMPONENT) {
+          // Test rule 4.
+          nassertr((*i).has_overall_normal(), 0);
+          if (first_normal) {
+            overall_normal = (*i).get_normal();
+            first_normal = false;
+          } else if ( !((*i).get_normal() == overall_normal)) {
+            bind_normals = G_PER_PRIM;
+          }
+        }
       }
     }
 
@@ -568,21 +568,21 @@ build_geoms(InputIterator first, InputIterator last,
     } else if (bind_colors != G_OFF) {
       // Test rule 2.
       if ((*i).has_vertex_color()) {
-	bind_colors = G_PER_VERTEX;
+        bind_colors = G_PER_VERTEX;
       } else if (bind_colors != G_PER_VERTEX) {
-	// Test rule 3.
-	if ((*i).has_component_color()) {
-	  bind_colors = G_PER_COMPONENT;
-	} else if (bind_colors != G_PER_COMPONENT) {
-	  // Test rule 4.
-	  nassertr((*i).has_overall_color(), 0);
-	  if (first_color) {
-	    overall_color = (*i).get_color();
-	    first_color = false;
-	  } else if ( !((*i).get_color() == overall_color)) {
-	    bind_colors = G_PER_PRIM;
-	  }
-	}
+        // Test rule 3.
+        if ((*i).has_component_color()) {
+          bind_colors = G_PER_COMPONENT;
+        } else if (bind_colors != G_PER_COMPONENT) {
+          // Test rule 4.
+          nassertr((*i).has_overall_color(), 0);
+          if (first_color) {
+            overall_color = (*i).get_color();
+            first_color = false;
+          } else if ( !((*i).get_color() == overall_color)) {
+            bind_colors = G_PER_PRIM;
+          }
+        }
       }
     }
 
@@ -661,7 +661,7 @@ build_geoms(InputIterator first, InputIterator last,
     j = 0;
     for (i = first; i != last; ++i) {
       if ((*i).is_valid()) {
-	lengths[j++] = (*i).get_num_verts();
+        lengths[j++] = (*i).get_num_verts();
       }
     }
     nassertr(j == num_prims, 0);
@@ -683,35 +683,35 @@ build_geoms(InputIterator first, InputIterator last,
       num_verts = (*i).get_num_verts();
       total_verts += num_verts;
       for (v = 0; v < num_verts; v++) {
-	coords.push_back((*i).get_vertex(v).get_coord());
-	
-	if (bind_normals == G_PER_VERTEX) {
-	  normals.push_back((*i).get_vertex(v).get_normal());
-	}
-	if (bind_texcoords == G_PER_VERTEX) {
-	  texcoords.push_back((*i).get_vertex(v).get_texcoord());
-	}
-	if (bind_colors == G_PER_VERTEX) {
-	  colors.push_back((*i).get_vertex(v).get_color());
-	}
+        coords.push_back((*i).get_vertex(v).get_coord());
+
+        if (bind_normals == G_PER_VERTEX) {
+          normals.push_back((*i).get_vertex(v).get_normal());
+        }
+        if (bind_texcoords == G_PER_VERTEX) {
+          texcoords.push_back((*i).get_vertex(v).get_texcoord());
+        }
+        if (bind_colors == G_PER_VERTEX) {
+          colors.push_back((*i).get_vertex(v).get_color());
+        }
       }
 
       num_components = (*i).get_num_components();
       total_components += num_components;
       for (c = 0; c < num_components; c++) {
-	if (bind_normals == G_PER_COMPONENT) {
-	  normals.push_back((*i).get_component(c).get_normal());
-	}
-	if (bind_colors == G_PER_COMPONENT) {
-	  colors.push_back((*i).get_component(c).get_color());
-	}
+        if (bind_normals == G_PER_COMPONENT) {
+          normals.push_back((*i).get_component(c).get_normal());
+        }
+        if (bind_colors == G_PER_COMPONENT) {
+          colors.push_back((*i).get_component(c).get_color());
+        }
       }
       
       if (bind_normals == G_PER_PRIM) {
-	normals.push_back((*i).get_normal());
+        normals.push_back((*i).get_normal());
       }
       if (bind_colors == G_PER_PRIM) {
-	colors.push_back((*i).get_color());
+        colors.push_back((*i).get_color());
       }
     }
   }
@@ -732,11 +732,11 @@ build_geoms(InputIterator first, InputIterator last,
   }
   
   PrimType::fill_geom(geom, coords,
-		      bind_normals, normals,
-		      bind_texcoords, texcoords,
-		      bind_colors, colors,
-		      bucket, num_prims,
-		      total_components, total_verts);
+                      bind_normals, normals,
+                      bind_texcoords, texcoords,
+                      bind_colors, colors,
+                      bucket, num_prims,
+                      total_components, total_verts);
 
     /*
   if ((*first).has_pixel_size()) {
@@ -762,7 +762,7 @@ build_geoms(InputIterator first, InputIterator last,
 
 
 /////////////////////////////////////////////////////////////////////
-// 	 Class : PrimByType
+//       Class : PrimByType
 // Description : An STL function object to sort primitives in order by
 //               type.
 ////////////////////////////////////////////////////////////////////
@@ -785,8 +785,8 @@ public:
 template<class InputIterator, class PrimType>
 static int
 __mesh_and_build(InputIterator first, InputIterator last,
-		 BuilderBucket &bucket, GeomNode *geom_node,
-		 PrimType *) {
+                 BuilderBucket &bucket, GeomNode *geom_node,
+                 PrimType *) {
   if (first==last) {
     return 0;
   }
@@ -831,8 +831,8 @@ __mesh_and_build(InputIterator first, InputIterator last,
     last_pi = pi;
     for (++pi; pi != prims.end(); ++pi) {
       if ((*pi).get_type() != (*last_pi).get_type()) {
-	count += build_geoms(last_pi, pi, *bucket_ptr, geom_node, (PrimType*)0);
-	last_pi = pi;
+        count += build_geoms(last_pi, pi, *bucket_ptr, geom_node, (PrimType*)0);
+        last_pi = pi;
       }
     }
     count += build_geoms(last_pi, pi, *bucket_ptr, geom_node, (PrimType*)0);
@@ -868,7 +868,7 @@ __mesh_and_build(InputIterator first, InputIterator last,
 template<class InputIterator, class value_type>
 int
 mesh_and_build(InputIterator first, InputIterator last,
-	       BuilderBucket &bucket, GeomNode *geom_node,
+               BuilderBucket &bucket, GeomNode *geom_node,
                value_type *value_type_ptr) {
   return __mesh_and_build(first, last, bucket, geom_node, value_type_ptr);
 }
@@ -881,8 +881,8 @@ mesh_and_build(InputIterator first, InputIterator last,
 ////////////////////////////////////////////////////////////////////
 template <class InputIterator, class OutputIterator, class Predicate>
 OutputIterator split(InputIterator first, InputIterator last,
-		     OutputIterator true_result, OutputIterator false_result,
-		     Predicate pred) {
+                     OutputIterator true_result, OutputIterator false_result,
+                     Predicate pred) {
   while (first != last) {
     if (pred(*first)) {
       *true_result++ = *first++;

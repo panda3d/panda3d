@@ -69,7 +69,7 @@ add_physicals_from(const PhysicalNode &other) {
   vector< PT(Physical) >::iterator last = _physicals.end() - 1;
 
   _physicals.insert(_physicals.end(), 
-		    other._physicals.begin(), other._physicals.end());
+                    other._physicals.begin(), other._physicals.end());
 
   for (; last != _physicals.end(); last++)
     (*last)->_physical_node = this;

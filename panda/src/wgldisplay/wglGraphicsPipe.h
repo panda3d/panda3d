@@ -49,9 +49,9 @@ private:
 
   static TypeHandle _type_handle;
 
-  int				_width;
-  int				_height;
-  bool				_shift;
+  int               _width;
+  int               _height;
+  bool              _shift;
 
 protected:
 
@@ -60,7 +60,7 @@ protected:
   wglGraphicsPipe& operator=(const wglGraphicsPipe&);
 
   static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam,
-	LPARAM lparam);
+    LPARAM lparam);
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 };
 

@@ -33,7 +33,7 @@ EXPCL_MISC AudioTraits::SoundClass* AudioLoadWav(Filename filename) {
 
 AudioTraits::SoundClass* AudioLoadWav(Filename) {
   audio_cat->error() << "Linux driver does not natively support WAV."
-		     << "  Try the 'st' loader." << endl;
+                     << "  Try the 'st' loader." << endl;
   return (AudioTraits::SoundClass*)0L;
 }
 

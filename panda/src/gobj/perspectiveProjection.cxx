@@ -38,11 +38,11 @@ get_projection_mat(CoordinateSystem cs) const {
 //     Function: PerspectiveProjection::make_geometry
 //       Access: Public, Virtual
 //  Description: Creates a GeomLine that describes the shape of the
-//		 frustum for this projection 
+//               frustum for this projection 
 ////////////////////////////////////////////////////////////////////
 Geom *PerspectiveProjection::
 make_geometry(const Colorf &color,
-	      CoordinateSystem cs) const {
+              CoordinateSystem cs) const {
   Vertexf rtn, ltn, lbn, rbn;
   Vertexf rtf, ltf, lbf, rbf;
   
@@ -143,7 +143,7 @@ make_bounds(CoordinateSystem cs) const {
 ////////////////////////////////////////////////////////////////////
 bool PerspectiveProjection::
 extrude(const LPoint2f &point2d, LPoint3f &origin, LVector3f &direction,
-	CoordinateSystem cs) const {
+        CoordinateSystem cs) const {
   if (point2d[0] < -1 || point2d[0] > 1 ||
       point2d[1] < -1 || point2d[1] > 1) {
     // The point is off the near plane.
@@ -153,9 +153,9 @@ extrude(const LPoint2f &point2d, LPoint3f &origin, LVector3f &direction,
   // Scale the point from (-1,1) to the range of the frustum.
 
   LPoint2f scaled(_frustum._l + 0.5 * (point2d[0] + 1.0) * 
-		  (_frustum._r - _frustum._l),
-		  _frustum._b + 0.5 * (point2d[1] + 1.0) * 
-		  (_frustum._t - _frustum._b));
+                  (_frustum._r - _frustum._l),
+                  _frustum._b + 0.5 * (point2d[1] + 1.0) * 
+                  (_frustum._t - _frustum._b));
 
   LVector3f near_vector =
     LVector3f::rfu(scaled[0], _frustum._fnear, scaled[1], cs);
@@ -180,7 +180,7 @@ extrude(const LPoint2f &point2d, LPoint3f &origin, LVector3f &direction,
 ////////////////////////////////////////////////////////////////////
 bool PerspectiveProjection::
 project(const LPoint3f &point3d, LPoint2f &point2d,
-	CoordinateSystem cs) const {
+        CoordinateSystem cs) const {
   float f = point3d.dot(LVector3f::forward(cs));
   if (f < _frustum._fnear || f > _frustum._ffar) {
     // The point is outside the near or far clipping planes.
@@ -199,8 +199,8 @@ project(const LPoint3f &point3d, LPoint2f &point2d,
   }
 
   point2d.set((scaled[0] - _frustum._l) * 2.0 / 
-	      (_frustum._r - _frustum._l) - 1.0,
-	      (scaled[1] - _frustum._b) * 2.0 / 
-	      (_frustum._t - _frustum._b) - 1.0);
+              (_frustum._r - _frustum._l) - 1.0,
+              (scaled[1] - _frustum._b) * 2.0 / 
+              (_frustum._t - _frustum._b) - 1.0);
   return true;
 }

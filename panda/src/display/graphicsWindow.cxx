@@ -83,7 +83,7 @@ TypeHandle GraphicsWindow::WindowProps::get_class_type(void) {
 void GraphicsWindow::WindowProps::init_type(void) {
   WindowParam::init_type();
   register_type(_type_handle, "GraphicsWindow::WindowProps",
-		WindowParam::get_class_type());
+                WindowParam::get_class_type());
 }
 
 TypeHandle GraphicsWindow::WindowProps::get_type(void) const {
@@ -104,7 +104,7 @@ TypeHandle GraphicsWindow::WindowPipe::get_class_type(void) {
 void GraphicsWindow::WindowPipe::init_type(void) {
   WindowParam::init_type();
   register_type(_type_handle, "GraphicsWindow::WindowPipe",
-		WindowParam::get_class_type());
+                WindowParam::get_class_type());
 }
 
 TypeHandle GraphicsWindow::WindowPipe::get_type(void) const {
@@ -139,7 +139,7 @@ GraphicsWindow(GraphicsPipe *pipe) : Configurable() {
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow::
 GraphicsWindow(GraphicsPipe *pipe,
-	       const GraphicsWindow::Properties& props) : Configurable() {
+               const GraphicsWindow::Properties& props) : Configurable() {
   MemoryUsage::update_type(this, this);
   _pipe = pipe;
   _props = props;
@@ -231,10 +231,10 @@ get_channel(int index) {
     chan = _pipe->get_hw_channel(this, index);
     if (chan == NULL) {
       display_cat.error()
-	<< "GraphicsWindow::get_channel() - got a NULL channel" << endl;
+        << "GraphicsWindow::get_channel() - got a NULL channel" << endl;
     } else {
       if (chan->get_window() != this) {
-	chan = NULL;
+        chan = NULL;
       }
     }
   }
@@ -527,13 +527,13 @@ void GraphicsWindow::read_priorities(void) {
       ConfigString type_name = (*i).Val();
       TypeHandle type = TypeRegistry::ptr()->find_type(type_name);
       if (type == TypeHandle::none()) {
-	display_cat.warning()
-	  << "Unknown type requested for window preference: " << type_name
-	  << "\n";
+        display_cat.warning()
+          << "Unknown type requested for window preference: " << type_name
+          << "\n";
       } else {
-	display_cat.debug()
-	  << "Specifying type " << type << " for window preference.\n";
-	factory.add_preferred(type);
+        display_cat.debug()
+          << "Specifying type " << type << " for window preference.\n";
+        factory.add_preferred(type);
       }
     }
   }

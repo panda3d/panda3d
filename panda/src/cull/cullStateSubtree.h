@@ -17,7 +17,7 @@
 class CullStateLookup;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : CullStateSubtree
+//       Class : CullStateSubtree
 // Description : A specialization of CullStateLookup for tracking the
 //               state at and below an instanced node in the scene
 //               graph.
@@ -25,22 +25,22 @@ class CullStateLookup;
 class EXPCL_PANDA CullStateSubtree : public CullStateLookup {
 public:
   INLINE CullStateSubtree(CullStateLookup *parent,
-			  const AllTransitionsWrapper &trans, 
-			  Node *top_subtree,
-			  UpdateSeq now);
+                          const AllTransitionsWrapper &trans, 
+                          Node *top_subtree,
+                          UpdateSeq now);
   virtual ~CullStateSubtree();
 
   bool check_currency(const AllTransitionsWrapper &trans, 
-		      Node *top_subtree,
-		      UpdateSeq as_of);
+                      Node *top_subtree,
+                      UpdateSeq as_of);
   INLINE void update(const AllTransitionsWrapper &trans,
-		     Node *top_subtree,
-		     UpdateSeq now);
+                     Node *top_subtree,
+                     UpdateSeq now);
 
   virtual Node *get_top_subtree() const;
 
   virtual void compose_trans(const AllTransitionsWrapper &from,
-			     AllTransitionsWrapper &to) const;
+                             AllTransitionsWrapper &to) const;
 
 private:
   CullStateLookup *_parent;

@@ -16,7 +16,7 @@
 #include <map>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggTextureCollection
+//       Class : EggTextureCollection
 // Description : This is a collection of textures by TRef name.  It
 //               can extract the textures from an egg file and sort
 //               them all together; it can also manage the creation of
@@ -60,7 +60,7 @@ public:
   int collapse_equivalent_textures(int eq, EggGroupNode *node);
   int collapse_equivalent_textures(int eq, TextureReplacement &removed);
   static void replace_textures(EggGroupNode *node,
-			       const TextureReplacement &replace);
+                               const TextureReplacement &replace);
 
   void uniquify_trefs();
   void sort_by_tref();

@@ -38,9 +38,9 @@ public:
   };
 
   void add_output(BufferType buffer_type, OutputType output_type,
-		  ostream *out = (ostream *)NULL, 
-		  FILE *fout = (FILE *)NULL, 
-		  bool owns_obj = false);
+                  ostream *out = (ostream *)NULL, 
+                  FILE *fout = (FILE *)NULL, 
+                  bool owns_obj = false);
 
   void flush();
 

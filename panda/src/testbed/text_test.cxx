@@ -59,9 +59,9 @@ void text_keys(EventHandler& eh) {
 
 int main(int argc, char *argv[]) {
   define_keys = &text_keys;
-	if (argc > 1)
-		textStr = argv[1];
-	else
-		textStr = argv[0];
+        if (argc > 1)
+                textStr = argv[1];
+        else
+                textStr = argv[0];
   return framework_main(argc, argv);
 }

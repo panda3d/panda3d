@@ -289,15 +289,15 @@ PUBLISHED:
   INLINE float get_sz() const;
 
   INLINE void set_pos_hpr(float x, float y, float z, 
-			  float h, float p, float r);
+                          float h, float p, float r);
   void set_pos_hpr(const LVecBase3f &pos, 
-		   const LVecBase3f &hpr);
+                   const LVecBase3f &hpr);
   INLINE void set_pos_hpr_scale(float x, float y, float z, 
-				float h, float p, float r,
-				float sx, float sy, float sz);
+                                float h, float p, float r,
+                                float sx, float sy, float sz);
   void set_pos_hpr_scale(const LVecBase3f &pos, 
-			 const LVecBase3f &hpr,
-			 const LVecBase3f &scale);
+                         const LVecBase3f &hpr,
+                         const LVecBase3f &scale);
 
   void set_mat(const LMatrix4f &mat);
   INLINE void clear_mat();
@@ -372,44 +372,44 @@ PUBLISHED:
   INLINE float get_sz(const NodePath &other) const;
 
   INLINE void set_pos_hpr(const NodePath &other, 
-			  float x, float y, float z, 
-			  float h, float p, float r);
+                          float x, float y, float z, 
+                          float h, float p, float r);
   void set_pos_hpr(const NodePath &other, 
-		   const LVecBase3f &pos, 
-		   const LVecBase3f &hpr);
+                   const LVecBase3f &pos, 
+                   const LVecBase3f &hpr);
   INLINE void set_pos_hpr_scale(const NodePath &other, 
-				float x, float y, float z, 
-				float h, float p, float r,
-				float sx, float sy, float sz);
+                                float x, float y, float z, 
+                                float h, float p, float r,
+                                float sx, float sy, float sz);
   void set_pos_hpr_scale(const NodePath &other, 
-			 const LVecBase3f &pos, 
-			 const LVecBase3f &hpr,
-			 const LVecBase3f &scale);
+                         const LVecBase3f &pos, 
+                         const LVecBase3f &hpr,
+                         const LVecBase3f &scale);
 
   void set_mat(const NodePath &other, const LMatrix4f &mat);
   LMatrix4f get_mat(const NodePath &other) const;
 
   INLINE void look_at(const NodePath &other, 
-		      float x, float y, float z);
+                      float x, float y, float z);
   void look_at(const NodePath &other, 
-	       const LPoint3f &point = LPoint3f(0.0, 0.0, 0.0),
-	       const LVector3f &up = LVector3f::up());
+               const LPoint3f &point = LPoint3f(0.0, 0.0, 0.0),
+               const LVector3f &up = LVector3f::up());
   INLINE void heads_up(const NodePath &other, 
-		       float x, float y, float z);
+                       float x, float y, float z);
   void heads_up(const NodePath &other, 
-		const LPoint3f &point = LPoint3f(0.0, 0.0, 0.0),
-		const LVector3f &up = LVector3f::up());
+                const LPoint3f &point = LPoint3f(0.0, 0.0, 0.0),
+                const LVector3f &up = LVector3f::up());
 
   INLINE void look_at_preserve_scale(const NodePath &other, 
-				     float x, float y, float z);
+                                     float x, float y, float z);
   void look_at_preserve_scale(const NodePath &other, 
-			      const LPoint3f &point = LPoint3f(0.0, 0.0, 0.0),
-			      const LVector3f &up = LVector3f::up());
+                              const LPoint3f &point = LPoint3f(0.0, 0.0, 0.0),
+                              const LVector3f &up = LVector3f::up());
   INLINE void heads_up_preserve_scale(const NodePath &other, 
-				      float x, float y, float z);
+                                      float x, float y, float z);
   void heads_up_preserve_scale(const NodePath &other, 
-			       const LPoint3f &point = LPoint3f(0.0, 0.0, 0.0),
-			       const LVector3f &up = LVector3f::up());
+                               const LPoint3f &point = LPoint3f(0.0, 0.0, 0.0),
+                               const LVector3f &up = LVector3f::up());
 
   INLINE void print_pos(const NodePath &other) const;
   INLINE void print_hpr(const NodePath &other) const;
@@ -425,7 +425,7 @@ PUBLISHED:
   // These affect the state at the bottom level only.
 
   INLINE void set_color(float r, float g, float b, float a = 1.0,
-			int priority = 0);
+                        int priority = 0);
   void set_color(const Colorf &color, int priority = 0);
   void set_color_off(int priority = 0);
   INLINE void clear_color();
@@ -506,23 +506,23 @@ PUBLISHED:
 private:
   bool r_extend_by(const ArcComponent *other);
   int r_as_string(const ArcComponent *comp, string &result, 
-		  int skip_nodes) const;
+                  int skip_nodes) const;
   void r_write_transitions(const ArcComponent *comp,
-			   ostream &out, int indent_level) const;
+                           ostream &out, int indent_level) const;
   void r_get_net_transitions(const ArcComponent *comp, 
-			     AllTransitionsWrapper &trans) const;
+                             AllTransitionsWrapper &trans) const;
   string format_node_name(Node *dnode) const;
   string format_arc_name(NodeRelation *arc) const;
 
   void find_matches(NodePathCollection &result, 
-		    const string &approx_path_str,
-		    int max_matches) const;
+                    const string &approx_path_str,
+                    int max_matches) const;
   void find_matches(NodePathCollection &result, 
-		    FindApproxPath &approx_path,
-		    int max_matches) const;
+                    FindApproxPath &approx_path,
+                    int max_matches) const;
   void r_find_matches(NodePathCollection &result,
-		      const FindApproxLevel &level, 
-		      int max_matches, int num_levels_remaining) const;
+                      const FindApproxLevel &level, 
+                      int max_matches, int num_levels_remaining) const;
 
   void r_list_descendants(ostream &out, int indent_level) const;
   void r_list_transitions(ostream &out, int indent_level) const;
@@ -539,7 +539,7 @@ public:
   static void init_type() {
     NodePathBase::init_type();
     register_type(_type_handle, "NodePath",
-		  NodePathBase::get_class_type());
+                  NodePathBase::get_class_type());
   }
   
 private:

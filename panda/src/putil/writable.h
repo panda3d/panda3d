@@ -14,7 +14,7 @@ class DatagramIterator;
 class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : Writable
+//       Class : Writable
 // Description : This is an abstract class that all classes which
 //               need to write themselves in binary form to some
 //               media should inherit from

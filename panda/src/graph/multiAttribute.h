@@ -18,7 +18,7 @@ template<class Property, class NameClass>
 class MultiTransition;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : MultiAttribute
+//       Class : MultiAttribute
 // Description : 
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
@@ -49,7 +49,7 @@ protected:
 
   virtual void output_property(ostream &out, const Property &prop) const=0;
   virtual void write_property(ostream &out, const Property &prop,
-			      int indent_level) const=0;
+                              int indent_level) const=0;
 
 private:
   INLINE_GRAPH void set_property(const Property &prop);
@@ -61,7 +61,7 @@ private:
 
   Properties::iterator
   binary_search_property(Properties::iterator begin, Properties::iterator end,
-			 const Property &prop, bool &found_flag);
+                         const Property &prop, bool &found_flag);
 
 public:
   // These functions and typedefs allow one to peruse all of the
@@ -96,8 +96,8 @@ public:
   static void init_type() {
     NodeAttribute::init_type();
     register_type(_type_handle, 
-		  string("MultiAttribute<")+NameClass::get_class_name()+">",
-		  NodeAttribute::get_class_type());
+                  string("MultiAttribute<")+NameClass::get_class_name()+">",
+                  NodeAttribute::get_class_type());
   }
 
 private:

@@ -6,7 +6,7 @@
 INLINE EggTextureCollection::iterator EggTextureCollection::
 begin() const {
   nassertr(_ordered_textures.size() == _textures.size(),
-	   _ordered_textures.begin());
+           _ordered_textures.begin());
   return _ordered_textures.begin();
 }
  

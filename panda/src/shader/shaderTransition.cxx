@@ -122,7 +122,7 @@ insert(Shader *shader) {
     {
       if (order < _overrides[(*si)])
       {
-	break;
+        break;
       }
     }
     else if (order < (*_shader_order)[(*si)->get_type()])
@@ -245,7 +245,7 @@ must_blend()
 ////////////////////////////////////////////////////////////////////
 bool ShaderTransition::
 sub_render(NodeRelation *arc, const AllAttributesWrapper &attrib,
-	   AllTransitionsWrapper &trans, RenderTraverser *trav) {
+           AllTransitionsWrapper &trans, RenderTraverser *trav) {
   Node *node = arc->get_child();
   GraphicsStateGuardian *gsg = trav->get_gsg();
   bool multipass_on = false;

@@ -20,7 +20,7 @@ void loom_test1_init2(void)
 }
 
 Action loom_test1_service2(unsigned long& s, unsigned long& n,
-			   condition_variable*&)
+                           condition_variable*&)
 {
    if (test1_phase2 == 0) {
       test1_phase2 = 1;
@@ -43,16 +43,16 @@ Action loom_test1_service2(unsigned long& s, unsigned long& n,
       return RESERVICE;
    } else if (test1_phase2 == 3) {
       if (test1_phase < 19) {
-	 PRINT(cerr << "loom_test1_service2: returning RESERVICE" << endl);
-	 return RESERVICE;
+         PRINT(cerr << "loom_test1_service2: returning RESERVICE" << endl);
+         return RESERVICE;
       } else {
-	 test1_phase2 = 4;
-	 PRINT(cerr << "loom_test1_service2: sending INFO message to main thread" << endl);
+         test1_phase2 = 4;
+         PRINT(cerr << "loom_test1_service2: sending INFO message to main thread" << endl);
          main_thread_message m(main_thread_message::INFO);
-	 SendMainThreadMessage(m);
-	 PRINT(cerr << "loom_test1_service2: sleeping for 3/4 second" << endl);
-	 n = 750000000;
-	 return SLEEP;
+         SendMainThreadMessage(m);
+         PRINT(cerr << "loom_test1_service2: sleeping for 3/4 second" << endl);
+         n = 750000000;
+         return SLEEP;
       }
    } else {
       PRINT(cerr << "loom_test1_service2: returning DONE" << endl);
@@ -72,7 +72,7 @@ void loom_test1_init(void)
 }
 
 Action loom_test1_service(unsigned long& s, unsigned long& n,
-			  condition_variable*& c)
+                          condition_variable*& c)
 {
    ++test1_phase;
    switch (test1_phase) {
@@ -89,10 +89,10 @@ Action loom_test1_service(unsigned long& s, unsigned long& n,
       return YIELD;
    case 11:
       {
-	 PRINT(cerr << "loom_test1_service: sending RESCAN message to main thread, returning YIELD" << endl);
-	 main_thread_message m(main_thread_message::RESCAN);
-	 SendMainThreadMessage(m);
-	 return YIELD;
+         PRINT(cerr << "loom_test1_service: sending RESCAN message to main thread, returning YIELD" << endl);
+         main_thread_message m(main_thread_message::RESCAN);
+         SendMainThreadMessage(m);
+         return YIELD;
       }
    case 13:
       PRINT(cerr << "loom_test1_service: returning WAIT to service manager" << endl);
@@ -105,21 +105,21 @@ Action loom_test1_service(unsigned long& s, unsigned long& n,
       return SLEEP;
    case 17:
       {
-	 PRINT(cerr << "loom_test1_service: sending LOAD message to main thread (libloom_test2.so)" << endl);
-	 main_thread_message m(main_thread_message::LOAD, "libloom_test2.so");
-	 SendMainThreadMessage(m);
-	 s = 3;
-	 PRINT(cerr << "loom_test1_service: returning SLEEP (s=3)" << endl);
-	 return SLEEP;
+         PRINT(cerr << "loom_test1_service: sending LOAD message to main thread (libloom_test2.so)" << endl);
+         main_thread_message m(main_thread_message::LOAD, "libloom_test2.so");
+         SendMainThreadMessage(m);
+         s = 3;
+         PRINT(cerr << "loom_test1_service: returning SLEEP (s=3)" << endl);
+         return SLEEP;
       }
    case 19:
       {
-	 PRINT(cerr << "loom_test1_service: sending INFO message to main thread" << endl);
-	 main_thread_message m(main_thread_message::INFO);
-	 SendMainThreadMessage(m);
-	 n = 500000000;
-	 PRINT(cerr << "loom_test1_service: returning SLEEP (s=3)" << endl);
-	 return SLEEP;
+         PRINT(cerr << "loom_test1_service: sending INFO message to main thread" << endl);
+         main_thread_message m(main_thread_message::INFO);
+         SendMainThreadMessage(m);
+         n = 500000000;
+         PRINT(cerr << "loom_test1_service: returning SLEEP (s=3)" << endl);
+         return SLEEP;
       }
    case 23:
       PRINT(cerr << "loom_test1_service: returning DONE to service manager" << endl);
@@ -146,5 +146,5 @@ Configure(loom_test1);
 ConfigureFn(loom_test1)
 {
    RegisterAppService(loom_test1_init, loom_test1_service, loom_test1_cleanup,
-		      loom_test1_info);
+                      loom_test1_info);
 }

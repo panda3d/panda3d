@@ -22,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////
 GtkStatsStripChart::
 GtkStatsStripChart(GtkStatsMonitor *monitor, PStatView &view, 
-		   int collector_index, int xsize, int ysize) :
+                   int collector_index, int xsize, int ysize) :
   PStatStripChart(monitor, view, collector_index, xsize, ysize)
 {
   _is_dead = false;
@@ -137,8 +137,8 @@ clear_region() {
 void GtkStatsStripChart::
 copy_region(int start_x, int end_x, int dest_x) {
   _pixmap.copy_area(_white_gc, 0, 0, 
-		    _pixmap, start_x, 0,
-		    end_x - start_x + 1, get_ysize());
+                    _pixmap, start_x, 0,
+                    end_x - start_x + 1, get_ysize());
 
   // We could make a window-to-window copy to implement scrolling in
   // the window.  But this leads to trouble if the scrolling window
@@ -148,8 +148,8 @@ copy_region(int start_x, int end_x, int dest_x) {
   /*
   Gdk_Window window = get_window();
   window.copy_area(_white_gc, 0, 0, 
-		   window, start_x, 0,
-		   end_x - start_x + 1, get_ysize());
+                   window, start_x, 0,
+                   end_x - start_x + 1, get_ysize());
   */
 
   GdkRectangle update_rect;
@@ -235,9 +235,9 @@ end_draw(int from_x, int to_x) {
     if (y >= 5) {
       // Only draw it if it's not too close to the top.
       if (bar._is_target) {
-	_pixmap.draw_line(_light_gc, from_x, y, to_x, y);
+        _pixmap.draw_line(_light_gc, from_x, y, to_x, y);
       } else {
-	_pixmap.draw_line(_dark_gc, from_x, y, to_x, y);
+        _pixmap.draw_line(_dark_gc, from_x, y, to_x, y);
       }
     }
   }
@@ -323,9 +323,9 @@ configure_event_impl(GdkEventConfigure *) {
 gint GtkStatsStripChart::
 expose_event_impl(GdkEventExpose *event) {
   get_window().draw_pixmap(_white_gc, _pixmap,
-			   event->area.x, event->area.y,
-			   event->area.x, event->area.y,
-			   event->area.width, event->area.height);
+                           event->area.x, event->area.y,
+                           event->area.x, event->area.y,
+                           event->area.width, event->area.height);
 
   return false;
 }

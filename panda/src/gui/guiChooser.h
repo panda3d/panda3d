@@ -34,7 +34,7 @@ private:
     static void init_type(void) {
       GuiBehavior::BehaviorFunctor::init_type();
       register_type(_type_handle, "ChooseFunctor",
-		    GuiBehavior::BehaviorFunctor::get_class_type());
+                    GuiBehavior::BehaviorFunctor::get_class_type());
     }
     virtual TypeHandle get_type(void) const {
       return get_class_type();
@@ -103,7 +103,7 @@ public:
   static void init_type(void) {
     GuiBehavior::init_type();
     register_type(_type_handle, "GuiChooser",
-		  GuiBehavior::get_class_type());
+                  GuiBehavior::get_class_type());
     ChooseFunctor::init_type();
   }
   virtual TypeHandle get_type(void) const {

@@ -17,7 +17,7 @@
 template<class Transition>
 INLINE_GRAPH bool 
 get_transition_into(Transition *&ptr, const NodeRelation *arc,
-		    TypeHandle transition_type) {
+                    TypeHandle transition_type) {
   NodeTransition *nt = arc->get_transition(transition_type);
   if (nt == (NodeTransition *)NULL) {
     ptr = (Transition *)NULL;

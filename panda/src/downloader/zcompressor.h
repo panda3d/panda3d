@@ -31,9 +31,9 @@ public:
   INLINE void reset_stream(z_stream *strm) const;
 #ifndef CPPPARSER
   INLINE void put_stream(z_stream *strm, char *next_in, int avail_in,
-			char *next_out, int avail_out) const;  
+                        char *next_out, int avail_out) const;  
   INLINE void get_stream(z_stream *strm, char *&next_in, int &avail_in,
-			char *&next_out, int &avail_out) const;  
+                        char *&next_out, int &avail_out) const;  
 #endif
   int handle_zerror(int code, const z_stream *strm = NULL) const;
 
@@ -51,10 +51,10 @@ public:
   ~ZCompressor(void);
 
   int compress(char *&next_in, int &avail_in, char *&next_out,
-				int &avail_out, bool finish = false);
+                                int &avail_out, bool finish = false);
   int compress_to_stream(char *&next_in, int &avail_in, char *&next_out,
-		int &avail_out, char *out_buffer, int out_buffer_length,
-		ofstream &write_stream, bool finish = false);
+                int &avail_out, char *out_buffer, int out_buffer_length,
+                ofstream &write_stream, bool finish = false);
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ public:
   ~ZDecompressor(void);
 
   int decompress(char *&next_in, int &avail_in, char *&next_out, 
-		 		int &avail_out, bool finish = false);
+                                int &avail_out, bool finish = false);
   int decompress_to_stream(char *&next_in, int &avail_in, char *&next_out,
                 int &avail_out, char *out_buffer, int out_buffer_length,
                 ostream &write_stream, bool finish = false);

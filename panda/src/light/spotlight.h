@@ -62,15 +62,15 @@ class EXPCL_PANDA Spotlight : public Light, public ProjectionNode
 
     bool make_image(Texture* texture, float radius = 0.7);
     NamedNode* make_geometry(float intensity = 0.05, float length = 20.0,
-	int num_facets = 36);
+        int num_facets = 36);
 
   protected:
 
     float                               _exponent;
     Colorf                              _specular;
-    float				_constant_attenuation;
-    float				_linear_attenuation;
-    float				_quadratic_attenuation;
+    float                               _constant_attenuation;
+    float                               _linear_attenuation;
+    float                               _quadratic_attenuation;
 
   public:
 
@@ -81,8 +81,8 @@ class EXPCL_PANDA Spotlight : public Light, public ProjectionNode
       Light::init_type();
       ProjectionNode::init_type();
       register_type( _type_handle, "Spotlight",
-			   Light::get_class_type(),
-			   ProjectionNode::get_class_type() );
+                           Light::get_class_type(),
+                           ProjectionNode::get_class_type() );
     }
     virtual TypeHandle get_type( void ) const {
       return get_class_type();

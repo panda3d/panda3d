@@ -40,7 +40,7 @@ make_instance(const string &type_name, const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 INLINE TypedObject *FactoryBase::
 make_instance_more_general(const string &type_name, 
-			   const FactoryParams &params) {
+                           const FactoryParams &params) {
   TypeHandle handle = TypeRegistry::ptr()->find_type(type_name);
   nassertr(handle != TypeHandle::none(), NULL);
 

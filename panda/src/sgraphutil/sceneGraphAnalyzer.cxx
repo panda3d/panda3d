@@ -107,7 +107,7 @@ write(ostream &out, int indent_level) const {
 
   if (_num_arcs != 0) {
     out << "; " << 100 * _num_arcs_with_transitions / _num_arcs 
-	<< "% of arcs have some transition.";
+        << "% of arcs have some transition.";
   }
   out << "\n";
 
@@ -136,8 +136,8 @@ write(ostream &out, int indent_level) const {
     << " of these are on " << _num_tristrips << " tristrips";
   if (_num_tristrips != 0) {
     out << " ("
-	<< (double)_num_triangles_in_strips / (double)_num_tristrips
-	<< " average tris per strip)";
+        << (double)_num_triangles_in_strips / (double)_num_tristrips
+        << " average tris per strip)";
   }
   out << ".\n";
 
@@ -146,8 +146,8 @@ write(ostream &out, int indent_level) const {
     << " of these are on " << _num_trifans << " trifans";
   if (_num_trifans != 0) {
     out << " ("
-	<< (double)_num_triangles_in_fans / (double)_num_trifans
-	<< " average tris per fan)";
+        << (double)_num_triangles_in_fans / (double)_num_trifans
+        << " average tris per fan)";
   }
   out << ".\n";
 
@@ -368,8 +368,8 @@ collect_statistics(Texture *texture) {
     PixelBuffer *pb = texture->_pbuffer;
     if (pb != (PixelBuffer *)NULL) {
       int bytes =
-	pb->get_xsize() * pb->get_ysize() * pb->get_num_components() * 
-	pb->get_component_width();
+        pb->get_xsize() * pb->get_ysize() * pb->get_num_components() * 
+        pb->get_component_width();
       
       bool is_mipmapped = false;
       switch (texture->get_minfilter()) {
@@ -377,15 +377,15 @@ collect_statistics(Texture *texture) {
       case Texture::FT_linear_mipmap_nearest:
       case Texture::FT_nearest_mipmap_linear:
       case Texture::FT_linear_mipmap_linear:
-	is_mipmapped = true;
-	break;
+        is_mipmapped = true;
+        break;
 
       default:
-	break;
+        break;
       }
       
       if (is_mipmapped) {
-	bytes *= 4/3;
+        bytes *= 4/3;
       }
 
       _texture_bytes += bytes;
@@ -412,11 +412,11 @@ consider_normals(const Normalf *norms, const ushort *nindex, int num) {
       const Normalf &norm = norms[nindex[i]];
       float l = norm.length();
       if (IS_THRESHOLD_EQUAL(l, 1.0, 0.01)) {
-	// This normal is close enough to unit length to be ok.
+        // This normal is close enough to unit length to be ok.
       } else if (l > 1.0) {
-	_num_long_normals++;
+        _num_long_normals++;
       } else { // l < 1.0
-	_num_short_normals++;
+        _num_short_normals++;
       }
       _total_normal_length += l;
     }
@@ -426,11 +426,11 @@ consider_normals(const Normalf *norms, const ushort *nindex, int num) {
       const Normalf &norm = norms[i];
       float l = norm.length();
       if (IS_THRESHOLD_EQUAL(l, 1.0, 0.01)) {
-	// This normal is close enough to unit length to be ok.
+        // This normal is close enough to unit length to be ok.
       } else if (l > 1.0) {
-	_num_long_normals++;
+        _num_long_normals++;
       } else { // l < 1.0
-	_num_short_normals++;
+        _num_short_normals++;
       }
       _total_normal_length += l;
     }

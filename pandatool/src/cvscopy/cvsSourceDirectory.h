@@ -14,7 +14,7 @@
 class CVSSourceTree;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : CVSSourceDirectory
+//       Class : CVSSourceDirectory
 // Description : This represents one particular directory in the
 //               hierarchy of source directory files.  We must scan
 //               the source directory to identify where the related
@@ -23,7 +23,7 @@ class CVSSourceTree;
 class CVSSourceDirectory {
 public:
   CVSSourceDirectory(CVSSourceTree *tree, CVSSourceDirectory *parent,
-		     const string &dirname);
+                     const string &dirname);
   ~CVSSourceDirectory();
 
   string get_dirname() const;

@@ -7,11 +7,11 @@
 #define AUDIO_OUT_LINE_OUT         0x04
 
 enum { DECODE_TEST, DECODE_AUDIO, DECODE_FILE, DECODE_BUFFER, DECODE_WAV,
-	DECODE_AU,DECODE_CDR,DECODE_AUDIOFILE };
+        DECODE_AU,DECODE_CDR,DECODE_AUDIOFILE };
 
-#define AUDIO_FORMAT_MASK	  0x100
-#define AUDIO_FORMAT_16		  0x100
-#define AUDIO_FORMAT_8		  0x000
+#define AUDIO_FORMAT_MASK         0x100
+#define AUDIO_FORMAT_16           0x100
+#define AUDIO_FORMAT_8            0x000
 
 #define AUDIO_FORMAT_SIGNED_16    0x110
 #define AUDIO_FORMAT_UNSIGNED_16  0x120
@@ -21,7 +21,7 @@ enum { DECODE_TEST, DECODE_AUDIO, DECODE_FILE, DECODE_BUFFER, DECODE_WAV,
 #define AUDIO_FORMAT_ALAW_8       0x8
 
 /* 3% rate tolerance */
-#define AUDIO_RATE_TOLERANCE	  3
+#define AUDIO_RATE_TOLERANCE      3
 
 #if 0
 #if defined(HPUX) || defined(SUNOS) || defined(SOLARIS) || defined(OSS) || defined(__NetBSD__) || defined(SPARCLINUX) || defined(__FreeBSD__)

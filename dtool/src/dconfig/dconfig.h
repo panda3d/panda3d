@@ -63,14 +63,14 @@ class Config {
       static bool         Defined(const ConfigString& sym);
       static ConfigString Get(const ConfigString sym);
       static ConfigTable::Symbol& GetAll(const ConfigString,
-					 ConfigTable::Symbol&);
+                                         ConfigTable::Symbol&);
    PUBLISHED:
       static bool         GetBool(const ConfigString sym, bool def = false);
       static int          GetInt(const ConfigString sym, int def = 0);
       static float        GetFloat(const ConfigString sym, float def = 0.);
       static double       GetDouble(const ConfigString sym, double def = 0.);
       static ConfigString GetString(const ConfigString sym,
-				    const ConfigString def = "");
+                                    const ConfigString def = "");
 };
 
 // Implementation follows
@@ -121,11 +121,11 @@ void Config<GetConfig>::Init(void)
       ConfigString s = Get("notify-level-config");
       NotifySeverity sev = Notify::string_severity(s);
       if (sev != NS_unspecified) {
-	 microconfig_cat->set_severity(sev);
-	 dconfig_cat->set_severity(sev);
+         microconfig_cat->set_severity(sev);
+         dconfig_cat->set_severity(sev);
       } else {
-	 microconfig_cat->set_severity(NS_info);
-	 dconfig_cat->set_severity(NS_info);
+         microconfig_cat->set_severity(NS_info);
+         dconfig_cat->set_severity(NS_info);
       }
    } else {
       microconfig_cat->set_severity(NS_info);
@@ -137,11 +137,11 @@ void Config<GetConfig>::Init(void)
 
    if (dconfig_cat->is_spam())
       dconfig_cat->spam() << "calling ConfigFunc for '" << Name() << "'"
-			 << endl;
+                         << endl;
    ConfigFunc();
    if (dconfig_cat->is_spam())
       dconfig_cat->spam() << "back from ConfigFunc for '" << Name() << "'"
-			 << endl;
+                         << endl;
    total_time_external_init += clock();
 }
 
@@ -187,7 +187,7 @@ ConfigString Config<GetConfig>::Get(ConfigString sym)
 
 template<class GetConfig>
 ConfigTable::Symbol& Config<GetConfig>::GetAll(const ConfigString sym,
-						ConfigTable::Symbol& s)
+                                                ConfigTable::Symbol& s)
 {
    Init();
    ConfigTable* tab = ConfigTable::Instance();
@@ -214,15 +214,15 @@ bool Config<GetConfig>::GetBool(const ConfigString sym, bool def)
       ConfigString s = Get(sym);
       bool ret = ConfigTable::TrueOrFalse(s, def);
       if (dconfig_cat->is_spam())
-	 dconfig_cat->spam() << "symbol '" << sym << "' defined, returning: "
-			    << (ret?"true":"false") << endl;
+         dconfig_cat->spam() << "symbol '" << sym << "' defined, returning: "
+                            << (ret?"true":"false") << endl;
       return ret;
    } else {
       if (dconfig_cat->is_spam())
-	 dconfig_cat->spam()
-	    << "symbol '" << sym
-	    << "' is not defined, returning provided default: "
-	    << (def?"true":"false") << endl;
+         dconfig_cat->spam()
+            << "symbol '" << sym
+            << "' is not defined, returning provided default: "
+            << (def?"true":"false") << endl;
       return def;
    }
 }
@@ -237,14 +237,14 @@ int Config<GetConfig>::GetInt(const ConfigString sym, int def)
       int i;
       s >> i;
       if (dconfig_cat->is_spam())
-	 dconfig_cat->spam() << "symbol '" << sym << "' defined, returning: "
-			    << i << endl;
+         dconfig_cat->spam() << "symbol '" << sym << "' defined, returning: "
+                            << i << endl;
       return i;
    } else {
       if (dconfig_cat->is_spam())
-	 dconfig_cat->spam()
-	    << "symbol '" << sym
-	    << "' is not defined, returning provided default: " << def << endl;
+         dconfig_cat->spam()
+            << "symbol '" << sym
+            << "' is not defined, returning provided default: " << def << endl;
       return def;
    }
 }
@@ -259,14 +259,14 @@ float Config<GetConfig>::GetFloat(const ConfigString sym, float def)
       float f;
       s >> f;
       if (dconfig_cat->is_spam())
-	 dconfig_cat->spam() << "symbol '" << sym << "' defined, returning: "
-			    << f << endl;
+         dconfig_cat->spam() << "symbol '" << sym << "' defined, returning: "
+                            << f << endl;
       return f;
    } else {
       if (dconfig_cat->is_spam())
-	 dconfig_cat->spam()
-	    << "symbol '" << sym
-	    << "' is not defined, returning provided default: " << def << endl;
+         dconfig_cat->spam()
+            << "symbol '" << sym
+            << "' is not defined, returning provided default: " << def << endl;
       return def;
    }
 }
@@ -281,35 +281,35 @@ double Config<GetConfig>::GetDouble(const ConfigString sym, double def)
       double d;
       s >> d;
       if (dconfig_cat->is_spam())
-	 dconfig_cat->spam() << "symbol '" << sym << "' defined, returning: "
-			    << d << endl;
+         dconfig_cat->spam() << "symbol '" << sym << "' defined, returning: "
+                            << d << endl;
       return d;
    } else {
       if (dconfig_cat->is_spam())
-	 dconfig_cat->spam()
-	    << "symbol '" << sym
-	    << "' is not defined, returning provided default: " << def << endl;
+         dconfig_cat->spam()
+            << "symbol '" << sym
+            << "' is not defined, returning provided default: " << def << endl;
       return def;
    }
 }
 
 template<class GetConfig>
 ConfigString Config<GetConfig>::GetString(const ConfigString sym,
-					   const ConfigString def)
+                                           const ConfigString def)
 {
    Init();
    if (Defined(sym)) {
       ConfigString ret = Get(sym);
       if (dconfig_cat->is_spam())
-	 dconfig_cat->spam() << "symbol '" << sym << "' defined, returning: '"
-			    << ret << "'" << endl;
+         dconfig_cat->spam() << "symbol '" << sym << "' defined, returning: '"
+                            << ret << "'" << endl;
       return ret;
    } else {
       if (dconfig_cat->is_spam())
-	 dconfig_cat->spam()
-	    << "symbol '" << sym
-	    << "' is not defined, returning provided default: '" << def
-	    << "'" << endl;
+         dconfig_cat->spam()
+            << "symbol '" << sym
+            << "' is not defined, returning provided default: '" << def
+            << "'" << endl;
       return def;
    }
 }

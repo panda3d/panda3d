@@ -116,8 +116,8 @@ MultiplexStreamBuf::
 ////////////////////////////////////////////////////////////////////
 void MultiplexStreamBuf::
 add_output(MultiplexStreamBuf::BufferType buffer_type,
-	   MultiplexStreamBuf::OutputType output_type,
-	   ostream *out, FILE *fout, bool owns_obj) {
+           MultiplexStreamBuf::OutputType output_type,
+           ostream *out, FILE *fout, bool owns_obj) {
 #ifdef HAVE_IPC
   // Ensure that we have the mutex while we fiddle with the list of
   // outputs.
@@ -243,7 +243,7 @@ write_chars(const char *start, int length, bool flush) {
     case BT_none:
       // No buffering: send all new characters directly to the ostream.
       if (!latest.empty()) {
-	out.write_string(latest);
+        out.write_string(latest);
       }
       break;
 
@@ -251,7 +251,7 @@ write_chars(const char *start, int length, bool flush) {
       // Line buffering: send only when a complete line has been
       // received.
       if (!line.empty()) {
-	out.write_string(line);
+        out.write_string(line);
       }
       break;
     }

@@ -171,8 +171,8 @@ void NodeTransitions::
 copy_transitions_from(const NodeTransitions &other) {
   Transitions temp;
   tmap_override_union(_transitions.begin(), _transitions.end(),
-		      other._transitions.begin(), other._transitions.end(),
-		      inserter(temp, temp.begin()));
+                      other._transitions.begin(), other._transitions.end(),
+                      inserter(temp, temp.begin()));
   _transitions.swap(temp);
 }
 
@@ -187,11 +187,11 @@ copy_transitions_from(const NodeTransitions &other) {
 ////////////////////////////////////////////////////////////////////
 void NodeTransitions::
 copy_transitions_from(const NodeTransitions &other,
-		      NodeRelation *to_arc) {
+                      NodeRelation *to_arc) {
   Transitions temp;
   tmap_arc_union(_transitions.begin(), _transitions.end(),
-		 other._transitions.begin(), other._transitions.end(),
-		 to_arc, inserter(temp, temp.begin()));
+                 other._transitions.begin(), other._transitions.end(),
+                 to_arc, inserter(temp, temp.begin()));
   _transitions.swap(temp);
 }
 
@@ -207,11 +207,11 @@ copy_transitions_from(const NodeTransitions &other,
 ////////////////////////////////////////////////////////////////////
 void NodeTransitions::
 compose_transitions_from(const NodeTransitions &other,
-			 NodeRelation *to_arc) {
+                         NodeRelation *to_arc) {
   Transitions temp;
   tmap_arc_compose(_transitions.begin(), _transitions.end(),
-		   other._transitions.begin(), other._transitions.end(),
-		   to_arc, inserter(temp, temp.begin()));
+                   other._transitions.begin(), other._transitions.end(),
+                   to_arc, inserter(temp, temp.begin()));
   _transitions.swap(temp);
 }
 
@@ -223,7 +223,7 @@ compose_transitions_from(const NodeTransitions &other,
 int NodeTransitions::
 compare_to(const NodeTransitions &other) const {
   return tmap_compare_trans(_transitions.begin(), _transitions.end(),
-			    other._transitions.begin(), other._transitions.end());
+                            other._transitions.begin(), other._transitions.end());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -244,10 +244,10 @@ adjust_all_priorities(int adjustment, NodeRelation *arc) {
 
     if (trans->_priority != new_priority) {
       if (trans->get_ref_count() > 1) {
-	// Copy-on-write.
-	trans->removed_from_arc(arc);
-	trans = trans->make_copy();
-	trans->added_to_arc(arc);
+        // Copy-on-write.
+        trans->removed_from_arc(arc);
+        trans = trans->make_copy();
+        trans->added_to_arc(arc);
       }
       trans->_priority = new_priority;
       arc->changed_transition((*ti).first);
@@ -283,7 +283,7 @@ output(ostream &out) const {
   for (ti = _transitions.begin(); ti != _transitions.end(); ++ti) {
     if ((*ti).second != (NodeTransition *)NULL) {
       if (written_any) {
-	out << " ";
+        out << " ";
       }
       out << *(*ti).second;
       written_any = true;
@@ -302,7 +302,7 @@ write(ostream &out, int indent_level) const {
   for (ti = _transitions.begin(); ti != _transitions.end(); ++ti) {
     if ((*ti).second != (NodeTransition *)NULL) {
       indent(out, indent_level)
-	<< (*ti).first << " = " << *(*ti).second << "\n";
+        << (*ti).first << " = " << *(*ti).second << "\n";
       //      (*ti).second->write(out, indent_level + 2);
     }
   }

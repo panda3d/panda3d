@@ -88,8 +88,8 @@ set_egg_data(EggData *egg_data, bool owns_egg_data) {
 ////////////////////////////////////////////////////////////////////
 bool SomethingToEggConverter::
 handle_external_reference(EggGroupNode *egg_parent,
-			  const Filename &orig_filename,
-			  const DSearchPath &searchpath) {
+                          const Filename &orig_filename,
+                          const DSearchPath &searchpath) {
   if (_merge_externals) {
     SomethingToEggConverter *ext = make_copy();
     EggData egg_data;
@@ -104,7 +104,7 @@ handle_external_reference(EggGroupNode *egg_parent,
       // filename.
       Filename truncated = orig_filename.get_basename();
       if (truncated.resolve_filename(searchpath)) {
-	as_found = truncated;
+        as_found = truncated;
       }
     }
 
@@ -148,7 +148,7 @@ handle_external_reference(EggGroupNode *egg_parent,
 ////////////////////////////////////////////////////////////////////
 Filename SomethingToEggConverter::
 convert_path(const Filename &orig_filename, const DSearchPath &searchpath,
-	     const Filename &rel_dir, PathConvert path_convert) {
+             const Filename &rel_dir, PathConvert path_convert) {
   // Try to look up the filename along the search path.
   Filename as_found = orig_filename;
   if (!as_found.resolve_filename(searchpath)) {

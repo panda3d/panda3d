@@ -13,7 +13,7 @@
 class PNMFileType;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PNMFileTypeRegistry
+//       Class : PNMFileTypeRegistry
 // Description : This class maintains the set of all known
 //               PNMFileTypes in the universe.
 ////////////////////////////////////////////////////////////////////

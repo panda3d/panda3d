@@ -211,7 +211,7 @@ CPPExpression(const string &value) :
 ////////////////////////////////////////////////////////////////////
 CPPExpression::
 CPPExpression(CPPIdentifier *ident, CPPScope *current_scope, 
-	      CPPScope *global_scope, CPPPreprocessor *error_sink) :
+              CPPScope *global_scope, CPPPreprocessor *error_sink) :
   CPPDeclaration(CPPFile()) 
 {
   CPPDeclaration *decl = 
@@ -275,7 +275,7 @@ CPPExpression(int binary_operator, CPPExpression *op1, CPPExpression *op2) :
 ////////////////////////////////////////////////////////////////////
 CPPExpression::
 CPPExpression(int trinary_operator, CPPExpression *op1, CPPExpression *op2, 
-	      CPPExpression *op3) :
+              CPPExpression *op3) :
   CPPDeclaration(CPPFile()) 
 {
   _type = T_trinary_operation;
@@ -401,15 +401,15 @@ evaluate() const {
     if (r1._type != RT_error) {
       CPPSimpleType *stype = _u._typecast._to->as_simple_type();
       if (stype != NULL) {
-	if (stype->_type == CPPSimpleType::T_int) {
-	  return Result(r1.as_integer());
-	} else if (stype->_type == CPPSimpleType::T_float ||
-		   stype->_type == CPPSimpleType::T_double) {
-	  return Result(r1.as_real());
-	}
+        if (stype->_type == CPPSimpleType::T_int) {
+          return Result(r1.as_integer());
+        } else if (stype->_type == CPPSimpleType::T_float ||
+                   stype->_type == CPPSimpleType::T_double) {
+          return Result(r1.as_real());
+        }
       }
       if (_u._typecast._to->as_pointer_type()) {
-	return Result(r1.as_pointer());
+        return Result(r1.as_pointer());
       }
     }
     return Result();
@@ -433,7 +433,7 @@ evaluate() const {
     // In all other cases, both operands must be valid in order for
     // the operation to be valid.
     if (r2._type == RT_error && 
-	(_u._op._operator != OROR && _u._op._operator != ANDAND)) {
+        (_u._op._operator != OROR && _u._op._operator != ANDAND)) {
       return r2;
     }
     // Fall through
@@ -469,16 +469,16 @@ evaluate() const {
 
     case '*':
       if (r1._type == RT_real || r2._type == RT_real) {
-	return Result(r1.as_real() * r2.as_real());
+        return Result(r1.as_real() * r2.as_real());
       } else {
-	return Result(r1.as_integer() * r2.as_integer());
+        return Result(r1.as_integer() * r2.as_integer());
       }
 
     case '/':
       if (r1._type == RT_real || r2._type == RT_real) {
-	return Result(r1.as_real() / r2.as_real());
+        return Result(r1.as_real() / r2.as_real());
       } else {
-	return Result(r1.as_integer() / r2.as_integer());
+        return Result(r1.as_integer() / r2.as_integer());
       }
 
     case '%':
@@ -486,16 +486,16 @@ evaluate() const {
 
     case '+':
       if (r1._type == RT_real || r2._type == RT_real) {
-	return Result(r1.as_real() + r2.as_real());
+        return Result(r1.as_real() + r2.as_real());
       } else {
-	return Result(r1.as_integer() + r2.as_integer());
+        return Result(r1.as_integer() + r2.as_integer());
       }
 
     case '-':
       if (r1._type == RT_real || r2._type == RT_real) {
-	return Result(r1.as_real() - r2.as_real());
+        return Result(r1.as_real() - r2.as_real());
       } else {
-	return Result(r1.as_integer() - r2.as_integer());
+        return Result(r1.as_integer() - r2.as_integer());
       }
 
     case '|':
@@ -506,58 +506,58 @@ evaluate() const {
 
     case OROR:
       if (r1.as_integer()) {
-	return r1;
+        return r1;
       } else {
-	return r2;
+        return r2;
       }
 
     case ANDAND:
       if (r1.as_integer()) {
-	return r2;
+        return r2;
       } else {
-	return r1;
+        return r1;
       }
 
     case EQCOMPARE:
       if (r1._type == RT_real || r2._type == RT_real) {
-	return Result(r1.as_real() == r2.as_real());
+        return Result(r1.as_real() == r2.as_real());
       } else {
-	return Result(r1.as_integer() == r2.as_integer());
+        return Result(r1.as_integer() == r2.as_integer());
       }
 
     case NECOMPARE:
       if (r1._type == RT_real || r2._type == RT_real) {
-	return Result(r1.as_real() != r2.as_real());
+        return Result(r1.as_real() != r2.as_real());
       } else {
-	return Result(r1.as_integer() != r2.as_integer());
+        return Result(r1.as_integer() != r2.as_integer());
       }
 
     case LECOMPARE:
       if (r1._type == RT_real || r2._type == RT_real) {
-	return Result(r1.as_real() <= r2.as_real());
+        return Result(r1.as_real() <= r2.as_real());
       } else {
-	return Result(r1.as_integer() <= r2.as_integer());
+        return Result(r1.as_integer() <= r2.as_integer());
       }
 
     case GECOMPARE:
       if (r1._type == RT_real || r2._type == RT_real) {
-	return Result(r1.as_real() >= r2.as_real());
+        return Result(r1.as_real() >= r2.as_real());
       } else {
-	return Result(r1.as_integer() >= r2.as_integer());
+        return Result(r1.as_integer() >= r2.as_integer());
       }
 
     case '<':
       if (r1._type == RT_real || r2._type == RT_real) {
-	return Result(r1.as_real() < r2.as_real());
+        return Result(r1.as_real() < r2.as_real());
       } else {
-	return Result(r1.as_integer() < r2.as_integer());
+        return Result(r1.as_integer() < r2.as_integer());
       }
 
     case '>':
       if (r1._type == RT_real || r2._type == RT_real) {
-	return Result(r1.as_real() > r2.as_real());
+        return Result(r1.as_real() > r2.as_real());
       } else {
-	return Result(r1.as_integer() > r2.as_integer());
+        return Result(r1.as_integer() > r2.as_integer());
       }
 
     case LSHIFT:
@@ -568,7 +568,7 @@ evaluate() const {
 
     case '?':
       return r1.as_integer() ? 
-	_u._op._op2->evaluate() : _u._op._op3->evaluate();
+        _u._op._op2->evaluate() : _u._op._op3->evaluate();
 
     case '.':
     case POINTSAT:
@@ -633,10 +633,10 @@ determine_type() const {
 
   case T_string:
     return char_star_type;
-			
+
   case T_variable:
     return _u._variable->_type;
-			
+
   case T_function:
     if (_u._fgroup->get_return_type() == (CPPType *)NULL) {
       // There are multiple functions by this name that have different
@@ -685,12 +685,12 @@ determine_type() const {
     case UNARY_STAR:
     case '[': // Array element reference
       if (t1 != NULL) {
-	if (t1->as_pointer_type()) {
-	  return t1->as_pointer_type()->_pointing_at;
-	}
-	if (t1->as_array_type()) {
-	  return t1->as_array_type()->_element_type;
-	}
+        if (t1->as_pointer_type()) {
+          return t1->as_pointer_type()->_pointing_at;
+        }
+        if (t1->as_array_type()) {
+          return t1->as_array_type()->_element_type;
+        }
       }
       return NULL;
 
@@ -702,14 +702,14 @@ determine_type() const {
     case '+':
     case '-':
       if (t1 == NULL) {
-	return t2;
+        return t2;
       } else if (t2 == NULL) {
-	return t1;
+        return t1;
       } else if (t1->as_pointer_type()) {
-	if (t2->as_pointer_type()) {
-	  return int_type;
-	}
-	return t1;
+        if (t2->as_pointer_type()) {
+          return int_type;
+        }
+        return t1;
       }
       return elevate_type(t1, t2);
 
@@ -739,10 +739,10 @@ determine_type() const {
 
     case 'f': // Function evaluation
       if (t1 != NULL) {
-	CPPFunctionType *ftype = t1->as_function_type();
-	if (ftype != (CPPFunctionType *)NULL) {
-	  return ftype->_return_type;
-	}
+        CPPFunctionType *ftype = t1->as_function_type();
+        if (ftype != (CPPFunctionType *)NULL) {
+          return ftype->_return_type;
+        }
       }
       return NULL;
 
@@ -769,7 +769,7 @@ determine_type() const {
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPExpression::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
-		CPPScope *current_scope, CPPScope *global_scope) {
+                CPPScope *current_scope, CPPScope *global_scope) {
   CPPDeclaration *top = 
     CPPDeclaration::substitute_decl(subst, current_scope, global_scope);
   if (top != this) {
@@ -785,14 +785,14 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
     decl = _u._variable->substitute_decl(subst, current_scope, global_scope);
     if (decl != rep->_u._variable) {
       if (decl->as_instance()) {
-	// Replacing the variable reference with another variable reference.
-	rep->_u._variable = decl->as_instance();
-	any_changed = true;
+        // Replacing the variable reference with another variable reference.
+        rep->_u._variable = decl->as_instance();
+        any_changed = true;
       } else if (decl->as_expression()) {
-	// Replacing the variable reference with an expression.
-	delete rep;
-	rep = decl->as_expression();
-	any_changed = true;
+        // Replacing the variable reference with an expression.
+        delete rep;
+        rep = decl->as_expression();
+        any_changed = true;
       }
     }
     break;
@@ -914,35 +914,35 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     {
       string::const_iterator si;
       for (si = _str.begin(); si != _str.end(); ++si) {
-	switch (*si) {
-	case '\n':
-	  out << "\\n";
-	  break;
-	  
-	case '\t':
-	  out << "\\t";
-	  break;
-	  
-	case '\r':
-	  out << "\\r";
-	  break;
-	  
-	case '\a':
-	  out << "\\a";
-	  break;
-	  
-	case '"':
-	  out << "\\\"";
-	  break;
+        switch (*si) {
+        case '\n':
+          out << "\\n";
+          break;
 
-	default:
-	  if (isprint(*si)) {
-	    out << *si;
-	  } else {
-	    out << '\\' << oct << setw(3) << setfill('0') << (int)(*si)
-		<< dec << setw(0);
-	  }
-	}
+        case '\t':
+          out << "\\t";
+          break;
+
+        case '\r':
+          out << "\\r";
+          break;
+
+        case '\a':
+          out << "\\a";
+          break;
+
+        case '"':
+          out << "\\\"";
+          break;
+
+        default:
+          if (isprint(*si)) {
+            out << *si;
+          } else {
+            out << '\\' << oct << setw(3) << setfill('0') << (int)(*si)
+                << dec << setw(0);
+          }
+        }
       }
     }
     out << '"';
@@ -968,7 +968,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
 
   case T_construct:
     out << "(" << _u._typecast._to->get_typedef_name(scope) 
-	<< "(" << *_u._typecast._op1 << "))";
+        << "(" << *_u._typecast._op1 << "))";
     break;
 
   case T_default_construct:
@@ -977,7 +977,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
 
   case T_new:
     out << "(new " << *_u._typecast._to
-	<< "(" << *_u._typecast._op1 << "))";
+        << "(" << *_u._typecast._op1 << "))";
     break;
 
   case T_default_new:
@@ -1078,13 +1078,13 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
       
     default:
       out << "(" << *_u._op._op1 << " " << (char)_u._op._operator
-	  << " " << *_u._op._op2 << ")";
+          << " " << *_u._op._op2 << ")";
     }
     break;
 
   case T_trinary_operation:
     out << "(" << *_u._op._op1 << " ? " << *_u._op._op2
-	<< " : " << *_u._op._op3 << ")";
+        << " : " << *_u._op._op3 << ")";
     break;
 
   default:
@@ -1151,7 +1151,7 @@ elevate_type(CPPType *t1, CPPType *t2) {
       st1->_type == CPPSimpleType::T_double) {
     return st1;
   } else if (st2->_type == CPPSimpleType::T_float ||
-	     st2->_type == CPPSimpleType::T_double) {
+             st2->_type == CPPSimpleType::T_double) {
     return st2;
   } else if (st1->_type == CPPSimpleType::T_int) {
     return st1;

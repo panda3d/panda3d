@@ -11,7 +11,7 @@
 #include "eggNameUniquifier.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggPoolUniquifier
+//       Class : EggPoolUniquifier
 // Description : This is a specialization of EggNameUniquifier to
 //               generate unique names for textures, materials, and
 //               vertex pools prior to writing out an egg file.  It's
@@ -31,7 +31,7 @@ public:
   static void init_type() {
     EggNameUniquifier::init_type();
     register_type(_type_handle, "EggPoolUniquifier",
-		  EggNameUniquifier::get_class_type());
+                  EggNameUniquifier::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

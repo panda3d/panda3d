@@ -14,7 +14,7 @@ class CPPParameterList;
 class CPPIdentifier;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPFunctionType
+//       Class : CPPFunctionType
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPFunctionType : public CPPType {
@@ -28,7 +28,7 @@ public:
   };
 
   CPPFunctionType(CPPType *return_type, CPPParameterList *parameters,
-		  int flags);
+                  int flags);
   CPPFunctionType(const CPPFunctionType &copy);
   void operator = (const CPPFunctionType &copy);
 
@@ -38,27 +38,27 @@ public:
 
   virtual bool is_fully_specified() const;
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
-					  CPPScope *current_scope,
-					  CPPScope *global_scope);
+                                          CPPScope *current_scope,
+                                          CPPScope *global_scope);
 
   virtual CPPType *resolve_type(CPPScope *current_scope,
-				CPPScope *global_scope);
+                                CPPScope *global_scope);
 
   virtual bool is_tbd() const;
 
   virtual void output(ostream &out, int indent_level, CPPScope *scope,
-		      bool complete) const;
+                      bool complete) const;
   void output(ostream &out, int indent_level, CPPScope *scope,
-	      bool complete, int num_default_parameters) const;
+              bool complete, int num_default_parameters) const;
   virtual void output_instance(ostream &out, int indent_level,
-			       CPPScope *scope,
-			       bool complete, const string &prename,
-			       const string &name) const;
+                               CPPScope *scope,
+                               bool complete, const string &prename,
+                               const string &name) const;
   void output_instance(ostream &out, int indent_level,
-		       CPPScope *scope,
-		       bool complete, const string &prename,
-		       const string &name,
-		       int num_default_parameters) const;
+                       CPPScope *scope,
+                       bool complete, const string &prename,
+                       const string &name,
+                       int num_default_parameters) const;
   int get_num_default_parameters() const;
 
   virtual SubType get_subtype() const;

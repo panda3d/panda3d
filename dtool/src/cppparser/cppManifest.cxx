@@ -103,9 +103,9 @@ expand(const vector_string &args) const {
     if ((*ei)._parm_number >= 0) {
       int i = (*ei)._parm_number;
       if (i < (int)args.size()) {
-	result += " " + args[i] + " ";
+        result += " " + args[i] + " ";
       } else {
-	result += " ";
+        result += " ";
       }
     }
     if (!(*ei)._str.empty()) {
@@ -144,7 +144,7 @@ output(ostream &out) const {
     if (_num_parameters > 0) {
       out << "$1";
       for (int i = 1; i < _num_parameters; i++) {
-	out << ", $" << i + 1;
+        out << ", $" << i + 1;
       }
     }
     out << ")";
@@ -172,7 +172,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void CPPManifest::
 parse_parameters(const string &args, size_t &p, 
-		 vector_string &parameter_names) {
+                 vector_string &parameter_names) {
   assert(p < args.size());
   assert(args[p] == '(');
 
@@ -185,7 +185,7 @@ parse_parameters(const string &args, size_t &p,
     // Here's the beginning of a parm.
     size_t q = p;
     while (p < args.size() && !isspace(args[p]) && 
-	   args[p] != ')' && args[p] != ',') {
+           args[p] != ')' && args[p] != ',') {
       p++;
     }
     parameter_names.push_back(args.substr(q, p - q));
@@ -199,7 +199,7 @@ parse_parameters(const string &args, size_t &p,
       p++;
       // Skip whitespace after a comma.
       while (p < args.size() && isspace(args[p])) {
-	p++;
+        p++;
       }
     }
   }
@@ -228,7 +228,7 @@ save_expansion(const string &exp, const vector_string &parameter_names) {
       size_t q = p;
       p++;
       while (p < exp.size() && isalnum(exp[p]) || exp[p] == '_') {
-	p++;
+        p++;
       }
 
       string ident = exp.substr(q, p - q);
@@ -236,18 +236,18 @@ save_expansion(const string &exp, const vector_string &parameter_names) {
       // Is this identifier one of our parameters?
       int pnum = -1;
       for (int i = 0; pnum == -1 && i < (int)parameter_names.size(); i++) {
-	if (parameter_names[i] == ident) {
-	  pnum = i;
-	}
+        if (parameter_names[i] == ident) {
+          pnum = i;
+        }
       }
       
       if (pnum != -1) {
-	// Yep!
-	if (last != q) {
-	  _expansion.push_back(ExpansionNode(exp.substr(last, q - last)));
-	}
-	_expansion.push_back(pnum);
-	last = p;
+        // Yep!
+        if (last != q) {
+          _expansion.push_back(ExpansionNode(exp.substr(last, q - last)));
+        }
+        _expansion.push_back(pnum);
+        last = p;
       }
     } else {
       p++;

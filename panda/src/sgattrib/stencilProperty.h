@@ -9,7 +9,7 @@
 #include <pandabase.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : StencilProperty
+//       Class : StencilProperty
 // Description : Defines how we can write to and stencil via the
 //               stencil buffer.
 ////////////////////////////////////////////////////////////////////
@@ -18,12 +18,12 @@ public:
   enum Mode {
     M_none,             // No stencil test, and no write to stencil buffer.
     M_never,            // Never draw.
-    M_less,		// incoming < stored
-    M_equal,		// incoming == stored
-    M_less_equal, 	// incoming <= stored
-    M_greater, 		// incoming > stored
-    M_not_equal, 	// incoming != stored
-    M_greater_equal,	// incoming >= stored
+    M_less,             // incoming < stored
+    M_equal,            // incoming == stored
+    M_less_equal,       // incoming <= stored
+    M_greater,          // incoming > stored
+    M_not_equal,        // incoming != stored
+    M_greater_equal,    // incoming >= stored
     M_always            // Always draw.
   };
 

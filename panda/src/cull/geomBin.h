@@ -24,7 +24,7 @@ class GeomNode;
 class CullTraverser;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GeomBin
+//       Class : GeomBin
 // Description : This is an abstract class that defines the interface
 //               for a number of different kinds of bins that may be
 //               assigned to a CullTraverser.  The traverser will
@@ -64,8 +64,8 @@ public:
 
   virtual void clear_current_states()=0;
   virtual void record_current_state(GraphicsStateGuardian *gsg,
-				    CullState *cs, int draw_order,
-				    CullTraverser *trav)=0;
+                                    CullState *cs, int draw_order,
+                                    CullTraverser *trav)=0;
   virtual void remove_state(CullState *cs);
 
   virtual void draw(CullTraverser *trav)=0;
@@ -95,7 +95,7 @@ public:
     Namable::init_type();
     register_type(_type_handle, "GeomBin",
                   TypedReferenceCount::get_class_type(),
-		  Namable::get_class_type());
+                  Namable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

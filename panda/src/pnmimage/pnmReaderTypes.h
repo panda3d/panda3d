@@ -141,7 +141,7 @@ public:
     return false;
   }
 
-  unsigned long	pos;
+  unsigned long pos;
  
   unsigned long offBits;
  
@@ -149,9 +149,9 @@ public:
   int             indexed;
   int             classv;
 
-  pixval R[256];	/* reds */
-  pixval G[256];	/* greens */
-  pixval B[256];	/* blues */
+  pixval R[256];        /* reds */
+  pixval G[256];        /* greens */
+  pixval B[256];        /* blues */
 };
 
 #endif

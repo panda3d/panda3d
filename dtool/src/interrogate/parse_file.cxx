@@ -58,40 +58,40 @@ show_type_or_expression(const string &str) {
     CPPType *type = parser.parse_type(str);
     if (type != NULL) {
       cout << "\nType: " << *type << "\n"
-	   << "Defined in: " << type->_file << "\n\n";
+           << "Defined in: " << type->_file << "\n\n";
 
       CPPStructType *stype = type->as_struct_type();
       if (stype != (CPPStructType *)NULL) {
-	stype->check_virtual();
+        stype->check_virtual();
       }
 
       type->output(cout, 0, &parser, true);
       cout << "\n\n"
-	   << "is_template = " << type->is_template() << "\n"
-	   << "is_fully_specified = " << type->is_fully_specified() << "\n"
-	   << "is_tbd = " << type->is_tbd() << "\n";
+           << "is_template = " << type->is_template() << "\n"
+           << "is_fully_specified = " << type->is_fully_specified() << "\n"
+           << "is_tbd = " << type->is_tbd() << "\n";
       if (type->has_typedef_name()) {
-	cout << "get_typedef_name = " << type->get_typedef_name() << "\n";
+        cout << "get_typedef_name = " << type->get_typedef_name() << "\n";
       }
       cout << "get_simple_name = " << type->get_simple_name() << "\n"
-	   << "get_local_name = " << type->get_local_name() << "\n"
-	   << "get_fully_scoped_name = " << type->get_fully_scoped_name() << "\n"
-	   << "get_preferred_name = " << type->get_preferred_name() << "\n"
-	   << "is_incomplete = " << type->is_incomplete() << "\n";
+           << "get_local_name = " << type->get_local_name() << "\n"
+           << "get_fully_scoped_name = " << type->get_fully_scoped_name() << "\n"
+           << "get_preferred_name = " << type->get_preferred_name() << "\n"
+           << "is_incomplete = " << type->is_incomplete() << "\n";
       
       if (stype != (CPPStructType *)NULL) {
-	cout << "scope = " << stype->get_scope()->get_fully_scoped_name() << "\n";
-	bool is_abstract = stype->is_abstract();
-	cout << "is_abstract = " << is_abstract << "\n";
-	if (is_abstract) {
-	  cout << "pure virtual functions:\n";
-	  CPPStructType::VFunctions vf;
-	  stype->get_pure_virtual_funcs(vf);
-	  CPPStructType::VFunctions::const_iterator fi;
-	  for (fi = vf.begin(); fi != vf.end(); ++fi) {
-	    cout << "  " << *(*fi) << "\n";
-	  }
-	}
+        cout << "scope = " << stype->get_scope()->get_fully_scoped_name() << "\n";
+        bool is_abstract = stype->is_abstract();
+        cout << "is_abstract = " << is_abstract << "\n";
+        if (is_abstract) {
+          cout << "pure virtual functions:\n";
+          CPPStructType::VFunctions vf;
+          stype->get_pure_virtual_funcs(vf);
+          CPPStructType::VFunctions::const_iterator fi;
+          for (fi = vf.begin(); fi != vf.end(); ++fi) {
+            cout << "  " << *(*fi) << "\n";
+          }
+        }
       }
 
       cout << "\n";
@@ -126,8 +126,8 @@ show_methods(const string &str) {
 
     CPPFunctionGroup::Instances::const_iterator ii;
     for (ii = fgroup->_instances.begin();
-	 ii != fgroup->_instances.end();
-	 ++ii) {
+         ii != fgroup->_instances.end();
+         ++ii) {
       CPPInstance *inst = (*ii);
       cerr << "  " << *inst << "\n";
     }
@@ -240,14 +240,14 @@ main(int argc, char *argv[]) {
 
   if (argc < 2) {
     cerr << "parse-file [opts] file1.h [file2.h ... ]\n"
-	 << "\nOptions:\n\n"
-	 << "  -I include_path\n" 
-	 << "  -S system_include_path\n" 
-	 << "  -D manifest_name\n" 
-	 << "  -D manifest_name=manifest_definition\n"
-	 << "  -o output_file (ignored)\n"
-	 << "  -v             (increase verbosity)\n"
-	 << "  -p             (prompt for expression instead of dumping output)\n";
+         << "\nOptions:\n\n"
+         << "  -I include_path\n" 
+         << "  -S system_include_path\n" 
+         << "  -D manifest_name\n" 
+         << "  -D manifest_name=manifest_definition\n"
+         << "  -o output_file (ignored)\n"
+         << "  -v             (increase verbosity)\n"
+         << "  -p             (prompt for expression instead of dumping output)\n";
   
     exit(1);
   }
@@ -268,23 +268,23 @@ main(int argc, char *argv[]) {
       getline(cin, str);
       if (!str.empty()) {
 
-	size_t space = str.find(' ');
-	if (space != string::npos) {
-	  string first_word = str.substr(0, space);
-	  string remainder = str.substr(space + 1);
+        size_t space = str.find(' ');
+        if (space != string::npos) {
+          string first_word = str.substr(0, space);
+          string remainder = str.substr(space + 1);
 
-	  if (first_word == "methods") {
-	    show_methods(remainder);
-	  } else if (first_word == "members") {
-	    show_data_members(remainder);
-	  } else if (first_word == "typedefs") {
-	    show_typedefs(remainder);
-	  } else {
-	    show_type_or_expression(str);
-	  }
-	} else {
-	  show_type_or_expression(str);
-	}
+          if (first_word == "methods") {
+            show_methods(remainder);
+          } else if (first_word == "members") {
+            show_data_members(remainder);
+          } else if (first_word == "typedefs") {
+            show_typedefs(remainder);
+          } else {
+            show_type_or_expression(str);
+          }
+        } else {
+          show_type_or_expression(str);
+        }
       }
     }
   } else {
@@ -323,7 +323,7 @@ main(int argc, char *argv[]) {
   for (ci = parser._comments.begin(); ci != parser._comments.end(); ++ci) {
     const CPPParser::CommentBlock &c = (*ci);
     cout << "Comment in file " << c._file << " at line " << c._line_number
-	 << ":\n" << c._comment << "\n\n";
+         << ":\n" << c._comment << "\n\n";
   }
   */
 

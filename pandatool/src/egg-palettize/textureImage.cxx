@@ -89,20 +89,20 @@ assign_groups() {
       PaletteGroups intersect;
       intersect.make_intersection(_explicitly_assigned_groups, (*ei)->get_complete_groups());
       if (!intersect.empty()) {
-	// This egg file is satisfied by one of the texture's explicit
-	// assignments.
+        // This egg file is satisfied by one of the texture's explicit
+        // assignments.
 
-	// We must use at least one of the explicitly-assigned groups
-	// that satisfied the egg file.  We don't need to use all of
-	// them, however, and we choose the first one arbitrarily.
-	definitely_in.insert(*intersect.begin());
+        // We must use at least one of the explicitly-assigned groups
+        // that satisfied the egg file.  We don't need to use all of
+        // them, however, and we choose the first one arbitrarily.
+        definitely_in.insert(*intersect.begin());
 
       } else {
-	// This egg file was not satisfied by any of the texture's
-	// explicit assignments.  Therefore, we'll need to choose some
-	// additional group to assign the texture to, to make the egg
-	// file happy.  Defer this a bit.
-	needed_eggs.push_back(*ei);
+        // This egg file was not satisfied by any of the texture's
+        // explicit assignments.  Therefore, we'll need to choose some
+        // additional group to assign the texture to, to make the egg
+        // file happy.  Defer this a bit.
+        needed_eggs.push_back(*ei);
       }
     }
   }
@@ -134,15 +134,15 @@ assign_groups() {
       bool prefer_group = false;
       int group_egg_count = compute_egg_count(group, needed_eggs);
       if (group_egg_count != best_egg_count) {
-	prefer_group = (group_egg_count > best_egg_count);
+        prefer_group = (group_egg_count > best_egg_count);
 
       } else {
-	prefer_group = group->is_preferred_over(*best);
+        prefer_group = group->is_preferred_over(*best);
       }
 
       if (prefer_group) {
-	best = group;
-	best_egg_count = group_egg_count;
+        best = group;
+        best_egg_count = group_egg_count;
       }
       ++gi;
     }
@@ -154,8 +154,8 @@ assign_groups() {
     WorkingEggs next_needed_eggs;
     for (ei = needed_eggs.begin(); ei != needed_eggs.end(); ++ei) {
       if ((*ei)->get_complete_groups().count(best) == 0) {
-	// This one wasn't eliminated.
-	next_needed_eggs.push_back(*ei);
+        // This one wasn't eliminated.
+        next_needed_eggs.push_back(*ei);
       }
     }
     needed_eggs.swap(next_needed_eggs);
@@ -474,22 +474,22 @@ get_preferred_source() {
       // Rule (1) passes.
 
       if (source->exists() && source->get_size()) {
-	int source_size = source->get_x_size() * source->get_y_size();
-	if (best == (SourceTextureImage *)NULL) {
-	  best = source;
-	  best_size = source_size;
+        int source_size = source->get_x_size() * source->get_y_size();
+        if (best == (SourceTextureImage *)NULL) {
+          best = source;
+          best_size = source_size;
 
-	} else if (source_size > best_size) {
-	  // Rule (2) passes.
-	  best = source;
-	  best_size = source_size;
+        } else if (source_size > best_size) {
+          // Rule (2) passes.
+          best = source;
+          best_size = source_size;
 
-	} else if (source_size == best_size && 
-		   source->get_filename().compare_timestamps(best->get_filename()) > 0) {
-	  // Rule (3) passes.
-	  best = source;
-	  best_size = source_size;
-	}
+        } else if (source_size == best_size && 
+                   source->get_filename().compare_timestamps(best->get_filename()) > 0) {
+          // Rule (3) passes.
+          best = source;
+          best_size = source_size;
+        }
       }
     }
   }
@@ -536,12 +536,12 @@ copy_unplaced(bool redo_all) {
       filename.make_canonical();
 
       pair<Dests::iterator, bool> insert_result = generate.insert
-	(Dests::value_type(filename, dest));
+        (Dests::value_type(filename, dest));
       if (!insert_result.second) {
-	// At least two DestTextureImages map to the same filename, no
-	// sweat.
-	delete dest;
-	dest = (*insert_result.first).second;
+        // At least two DestTextureImages map to the same filename, no
+        // sweat.
+        delete dest;
+        dest = (*insert_result.first).second;
       }
 
       placement->set_dest(dest);
@@ -628,15 +628,15 @@ write_source_pathnames(ostream &out, int indent_level) const {
       indent(out, indent_level);
       source->output_filename(out);
       if (!source->is_size_known()) {
-	out << " (unknown size)";
-	
+        out << " (unknown size)";
+
       } else {
-	out << " " << source->get_x_size() << " " 
-	    << source->get_y_size();
-	
-	if (source->get_properties().has_num_channels()) {
-	  out << " " << source->get_properties().get_num_channels();
-	}
+        out << " " << source->get_x_size() << " " 
+            << source->get_y_size();
+
+        if (source->get_properties().has_num_channels()) {
+          out << " " << source->get_properties().get_num_channels();
+        }
       }
       out << "\n";
     }
@@ -650,7 +650,7 @@ write_source_pathnames(ostream &out, int indent_level) const {
     for (ei = _egg_files.begin(); ei != _egg_files.end(); ++ei) {
       EggFile *egg = (*ei);
       indent(out, indent_level + 2)
-	<< egg->get_name() << " (";
+        << egg->get_name() << " (";
       if (egg->get_explicit_groups().empty()) {
         out << *egg->get_default_group();
       } else {
@@ -707,18 +707,18 @@ write_scale_info(ostream &out, int indent_level) {
     out << "unknown";
   } else {
     out << source->get_x_size() << " " << source->get_y_size()
-	<< " " << source->get_num_channels();
+        << " " << source->get_num_channels();
   }
 
   if (!_placement.empty()) {
     out << " new " << get_x_size() << " " << get_y_size()
-	<< " " << get_num_channels();
+        << " " << get_num_channels();
 
     if (source != (SourceTextureImage *)NULL &&
-	source->is_size_known()) {
+        source->is_size_known()) {
       double scale = 
-	100.0 * (((double)get_x_size() / (double)source->get_x_size()) +
-		 ((double)get_y_size() / (double)source->get_y_size())) / 2.0;
+        100.0 * (((double)get_x_size() / (double)source->get_x_size()) +
+                 ((double)get_y_size() / (double)source->get_y_size())) / 2.0;
       out << " scale " << scale << "%";
     }
   }
@@ -732,26 +732,26 @@ write_scale_info(ostream &out, int indent_level) {
       PaletteImage *image = placement->get_image();
       nassertv(image != (PaletteImage *)NULL);
       indent(out, indent_level + 2)
-	<< "placed on " 
-	<< FilenameUnifier::make_user_filename(image->get_filename())
-	<< "\n";
+        << "placed on " 
+        << FilenameUnifier::make_user_filename(image->get_filename())
+        << "\n";
     } else {
       DestTextureImage *image = placement->get_dest();
       nassertv(image != (DestTextureImage *)NULL);
       indent(out, indent_level + 2)
-	<< "copied to "
-	<< FilenameUnifier::make_user_filename(image->get_filename());
+        << "copied to "
+        << FilenameUnifier::make_user_filename(image->get_filename());
       if (image->get_x_size() != get_x_size() ||
-	  image->get_y_size() != get_y_size()) {
-	out << " at size " << image->get_x_size() << " " 
-	    << image->get_y_size();
-	if (source != (SourceTextureImage *)NULL &&
-	    source->is_size_known()) {
-	  double scale = 
-	    100.0 * (((double)image->get_x_size() / (double)source->get_x_size()) +
-		     ((double)image->get_y_size() / (double)source->get_y_size())) / 2.0;
-	  out << " scale " << scale << "%";
-	}
+          image->get_y_size() != get_y_size()) {
+        out << " at size " << image->get_x_size() << " " 
+            << image->get_y_size();
+        if (source != (SourceTextureImage *)NULL &&
+            source->is_size_known()) {
+          double scale = 
+            100.0 * (((double)image->get_x_size() / (double)source->get_x_size()) +
+                     ((double)image->get_y_size() / (double)source->get_y_size())) / 2.0;
+          out << " scale " << scale << "%";
+        }
       }
       out << "\n";
     }
@@ -767,7 +767,7 @@ write_scale_info(ostream &out, int indent_level) {
 ////////////////////////////////////////////////////////////////////
 int TextureImage::
 compute_egg_count(PaletteGroup *group, 
-		  const TextureImage::WorkingEggs &egg_files) {
+                  const TextureImage::WorkingEggs &egg_files) {
   int count = 0;
 
   WorkingEggs::const_iterator ei;
@@ -809,7 +809,7 @@ assign_to_groups(const PaletteGroups &groups) {
       // to previously.
       TexturePlacement *place = a->prepare(this);
       new_placement.insert
-	(new_placement.end(), Placement::value_type(a, place));
+        (new_placement.end(), Placement::value_type(a, place));
       ++gi;
 
     } else if (b < a) {
@@ -822,7 +822,7 @@ assign_to_groups(const PaletteGroups &groups) {
       // Here's a group we're still assigned to.
       TexturePlacement *place = (*pi).second;
       new_placement.insert
-	(new_placement.end(), Placement::value_type(a, place));
+        (new_placement.end(), Placement::value_type(a, place));
       ++gi;
       ++pi;
     }
@@ -881,9 +881,9 @@ consider_grayscale() {
     for (int x = 0; x < source.get_x_size(); x++) {
       const xel &v = source.get_xel_val(x, y);
       if (PPM_GETR(v) != PPM_GETG(v) || PPM_GETR(v) != PPM_GETB(v)) {
-	// Here's a colored pixel.  We can't go grayscale.
-	_forced_grayscale = false;
-	return;
+        // Here's a colored pixel.  We can't go grayscale.
+        _forced_grayscale = false;
+        return;
       }
     }
   }
@@ -924,9 +924,9 @@ consider_unalpha() {
   for (int y = 0; y < source.get_y_size(); y++) {
     for (int x = 0; x < source.get_x_size(); x++) {
       if (source.get_alpha_val(x, y) != source.get_maxval()) {
-	// Here's a non-white pixel; the alpha channel is meaningful.
-	_forced_unalpha = false;
-	return;
+        // Here's a non-white pixel; the alpha channel is meaningful.
+        _forced_unalpha = false;
+        return;
       }
     }
   }
@@ -1125,7 +1125,7 @@ complete_pointers(vector_typedWritable &plist, BamReader *manager) {
     SourceTextureImage *source;
     DCAST_INTO_R(source, plist[index], index);
     string key = get_source_key(source->get_filename(), 
-				source->get_alpha_filename());
+                                source->get_alpha_filename());
 
     bool inserted = _sources.insert(Sources::value_type(key, source)).second;
     index++;

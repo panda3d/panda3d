@@ -16,7 +16,7 @@
 #include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : NodeTransitionCacheEntry
+//       Class : NodeTransitionCacheEntry
 // Description : This is a single cached accumulated NodeTransition
 //               value, representing the net Transition for one
 //               particular transition type on an arc.
@@ -60,17 +60,17 @@ public:
 
   INLINE_GRAPH static NodeTransitionCacheEntry
   compose(const NodeTransitionCacheEntry &a, 
-	  const NodeTransitionCacheEntry &b);
+          const NodeTransitionCacheEntry &b);
 
   INLINE_GRAPH static NodeTransitionCacheEntry
   invert_compose(const NodeTransitionCacheEntry &a, 
-		 const NodeTransitionCacheEntry &b);
+                 const NodeTransitionCacheEntry &b);
 
   INLINE_GRAPH static NodeTransitionCacheEntry
   cached_compose(const NodeTransitionCacheEntry &a, 
-		 const NodeTransitionCacheEntry &cache, 
-		 const NodeTransitionCacheEntry &b,
-		 UpdateSeq now);
+                 const NodeTransitionCacheEntry &cache, 
+                 const NodeTransitionCacheEntry &b,
+                 UpdateSeq now);
 
   INLINE_GRAPH static NodeAttribute *
   apply(const NodeAttribute *a, const NodeTransitionCacheEntry &b);

@@ -161,7 +161,7 @@ open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
   }
 
   PRStatus result = PR_Connect(socket, address.get_addr(), 
-			       PR_MillisecondsToInterval(timeout_ms));
+                               PR_MillisecondsToInterval(timeout_ms));
   if (result != PR_SUCCESS) {
     if (PR_GetError() != PR_CONNECT_RESET_ERROR) {
       pprerror("PR_Connect");
@@ -191,7 +191,7 @@ open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
 ////////////////////////////////////////////////////////////////////
 PT(Connection) ConnectionManager::
 open_TCP_client_connection(const string &hostname, int port,
-			   int timeout_ms) {
+                           int timeout_ms) {
   NetAddress address;
   if (!address.set_host(hostname, port)) {
     return PT(Connection)();
@@ -248,7 +248,7 @@ close_connection(const PT(Connection) &connection) {
     if (result != PR_SUCCESS) {
       PRErrorCode errcode = PR_GetError();
       if (errcode != PR_NOT_CONNECTED_ERROR) {
-	pprerror("PR_Shutdown");
+        pprerror("PR_Shutdown");
       }
     }
   }

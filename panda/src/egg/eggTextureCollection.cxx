@@ -150,14 +150,14 @@ find_used_textures(EggNode *node) {
       EggTexture *tex = primitive->get_texture();
       Textures::iterator ti = _textures.find(tex);
       if (ti == _textures.end()) {
-	// Here's a new texture!
-	num_found++;
-	_textures.insert(Textures::value_type(tex, 1));
-	_ordered_textures.push_back(tex);
+        // Here's a new texture!
+        num_found++;
+        _textures.insert(Textures::value_type(tex, 1));
+        _ordered_textures.push_back(tex);
       } else {
-	// Here's a texture we'd already known about.  Increment its
-	// usage count.
-	(*ti).second++;
+        // Here's a texture we'd already known about.  Increment its
+        // usage count.
+        (*ti).second++;
       }
     }
 
@@ -282,7 +282,7 @@ collapse_equivalent_textures(int eq, EggTextureCollection::TextureReplacement &r
 ////////////////////////////////////////////////////////////////////
 void EggTextureCollection::
 replace_textures(EggGroupNode *node,
-		 const EggTextureCollection::TextureReplacement &replace) {
+                 const EggTextureCollection::TextureReplacement &replace) {
   EggGroupNode::iterator ci;
   for (ci = node->begin();
        ci != node->end();
@@ -291,13 +291,13 @@ replace_textures(EggGroupNode *node,
     if (child->is_of_type(EggPrimitive::get_class_type())) {
       EggPrimitive *primitive = DCAST(EggPrimitive, child);
       if (primitive->has_texture()) {
-	PT(EggTexture) tex = primitive->get_texture();
-	TextureReplacement::const_iterator ri;
-	ri = replace.find(tex);
-	if (ri != replace.end()) {
-	  // Here's a texture we want to replace.
-	  primitive->set_texture((*ri).second);
-	}
+        PT(EggTexture) tex = primitive->get_texture();
+        TextureReplacement::const_iterator ri;
+        ri = replace.find(tex);
+        if (ri != replace.end()) {
+          // Here's a texture we want to replace.
+          primitive->set_texture((*ri).second);
+        }
       }
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {

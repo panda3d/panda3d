@@ -14,7 +14,7 @@
 #include <lmatrix.h>
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : GeometricBoundingVolume
+//       Class : GeometricBoundingVolume
 // Description : This is another abstract class, for a general class
 //               of bounding volumes that actually enclose points in
 //               3-d space, such as BSP's and bounding spheres.
@@ -31,9 +31,9 @@ PUBLISHED:
   // could have true STL-style first/last iterators, but that's
   // impossible for virtual functions.
   INLINE_MATHUTIL bool around(const GeometricBoundingVolume **first,
-		     const GeometricBoundingVolume **last);
+                     const GeometricBoundingVolume **last);
   INLINE_MATHUTIL bool around(const LPoint3f *first,
-		     const LPoint3f *last);
+                     const LPoint3f *last);
 
   INLINE_MATHUTIL int contains(const GeometricBoundingVolume *vol) const;
   INLINE_MATHUTIL int contains(const LPoint3f &point) const;
@@ -48,7 +48,7 @@ protected:
 
   virtual bool extend_by_point(const LPoint3f &point);
   virtual bool around_points(const LPoint3f *first,
-			     const LPoint3f *last);
+                             const LPoint3f *last);
   virtual int contains_point(const LPoint3f &point) const;
   virtual int contains_lineseg(const LPoint3f &a, const LPoint3f &b) const;
 
@@ -60,7 +60,7 @@ public:
   static void init_type() {
     BoundingVolume::init_type();
     register_type(_type_handle, "GeometricBoundingVolume",
-		  BoundingVolume::get_class_type());
+                  BoundingVolume::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

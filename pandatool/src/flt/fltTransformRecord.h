@@ -13,7 +13,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltTransformRecord
+//       Class : FltTransformRecord
 // Description : A base class for a number of types of ancillary
 //               records that follow beads and indicate some kind of a
 //               transformation.  Pointers of this type are collected
@@ -39,7 +39,7 @@ public:
   static void init_type() {
     FltRecord::init_type();
     register_type(_type_handle, "FltTransformRecord",
-		  FltRecord::get_class_type());
+                  FltRecord::get_class_type());
   }
 
 private:

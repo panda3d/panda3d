@@ -102,9 +102,9 @@ public:
   virtual ~MikModSamplePlayer(void);
 
   virtual void play_sound(AudioTraits::SoundClass*,
-			  AudioTraits::PlayingClass*, float);
+                          AudioTraits::PlayingClass*, float);
   virtual void stop_sound(AudioTraits::SoundClass*,
-			  AudioTraits::PlayingClass*);
+                          AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, float);
   virtual bool adjust_volume(AudioTraits::PlayingClass*);
 public:
@@ -120,9 +120,9 @@ public:
   virtual ~MikModFmsynthPlayer(void);
 
   virtual void play_sound(AudioTraits::SoundClass*,
-			  AudioTraits::PlayingClass*, float);
+                          AudioTraits::PlayingClass*, float);
   virtual void stop_sound(AudioTraits::SoundClass*,
-			  AudioTraits::PlayingClass*);
+                          AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, float);
   virtual bool adjust_volume(AudioTraits::PlayingClass*);
 public:
@@ -138,9 +138,9 @@ public:
   virtual ~MikModMidiPlayer(void);
 
   virtual void play_sound(AudioTraits::SoundClass*,
-			  AudioTraits::PlayingClass*, float);
+                          AudioTraits::PlayingClass*, float);
   virtual void stop_sound(AudioTraits::SoundClass*,
-			  AudioTraits::PlayingClass*);
+                          AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, float);
   virtual bool adjust_volume(AudioTraits::PlayingClass*);
 public:

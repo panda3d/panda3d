@@ -26,7 +26,7 @@ public:
   static void init_type(void) {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "LerpBlendType",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();
@@ -56,7 +56,7 @@ public:
   static void init_type(void) {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "EaseInBlendType",
-		  LerpBlendType::get_class_type());
+                  LerpBlendType::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();
@@ -86,7 +86,7 @@ public:
   static void init_type(void) {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "EaseOutBlendType",
-		  LerpBlendType::get_class_type());
+                  LerpBlendType::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();
@@ -115,7 +115,7 @@ public:
   static void init_type(void) {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "EaseInOutBlendType",
-		  LerpBlendType::get_class_type());
+                  LerpBlendType::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();
@@ -144,7 +144,7 @@ public:
   static void init_type(void) {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "NoBlendType",
-		  LerpBlendType::get_class_type());
+                  LerpBlendType::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

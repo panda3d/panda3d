@@ -43,7 +43,7 @@ private:
 
 protected:
   LinearDistanceForce(const LPoint3f& p, FalloffType ft, float r, float a, 
-		bool m);
+                bool m);
   LinearDistanceForce(const LinearDistanceForce &copy);
   virtual ~LinearDistanceForce(void);
 
@@ -54,7 +54,7 @@ public:
   static void init_type(void) {
     LinearForce::init_type();
     register_type(_type_handle, "LinearDistanceForce",
-		  LinearForce::get_class_type());
+                  LinearForce::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

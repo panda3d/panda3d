@@ -23,10 +23,10 @@ output_value(ostream &out, const ACMatrixSwitchType::ValueType &value) {
   if (decompose_matrix(value, scale, hpr, translate)) {
     if (!scale.almost_equal(LVecBase3f(1.0, 1.0, 1.0))) {
       if (IS_NEARLY_EQUAL(scale[0], scale[1]) &&
-	  IS_NEARLY_EQUAL(scale[1], scale[2])) {
-	out << " scale " << scale[0];
+          IS_NEARLY_EQUAL(scale[1], scale[2])) {
+        out << " scale " << scale[0];
       } else {
-	out << " scale " << scale;
+        out << " scale " << scale;
       }
     }
 

@@ -327,7 +327,7 @@ operator < (const FLOATNAME(LVecBase2) &other) const {
 INLINE_LINMATH bool FLOATNAME(LVecBase2)::
 operator == (const FLOATNAME(LVecBase2) &other) const {
   return (_v.v._0 == other._v.v._0 &&
-	  _v.v._1 == other._v.v._1);
+          _v.v._1 == other._v.v._1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -389,7 +389,7 @@ operator - () const {
 INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LVecBase2)::
 operator + (const FLOATNAME(LVecBase2) &other) const {
   return FLOATNAME(LVecBase2)(_v.v._0 + other._v.v._0,
-			      _v.v._1 + other._v.v._1);
+                              _v.v._1 + other._v.v._1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -400,7 +400,7 @@ operator + (const FLOATNAME(LVecBase2) &other) const {
 INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LVecBase2)::
 operator - (const FLOATNAME(LVecBase2) &other) const {
   return FLOATNAME(LVecBase2)(_v.v._0 - other._v.v._0,
-			      _v.v._1 - other._v.v._1);
+                              _v.v._1 - other._v.v._1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -411,7 +411,7 @@ operator - (const FLOATNAME(LVecBase2) &other) const {
 INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LVecBase2)::
 operator * (FLOATTYPE scalar) const {
   return FLOATNAME(LVecBase2)(_v.v._0 * scalar,
-			      _v.v._1 * scalar);
+                              _v.v._1 * scalar);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -423,7 +423,7 @@ INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LVecBase2)::
 operator / (FLOATTYPE scalar) const {
   FLOATTYPE recip_scalar = 1.0f/scalar;
   return FLOATNAME(LVecBase2)(_v.v._0 * recip_scalar,
-			      _v.v._1 * recip_scalar);
+                              _v.v._1 * recip_scalar);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -480,7 +480,7 @@ operator /= (FLOATTYPE scalar) {
 INLINE_LINMATH bool FLOATNAME(LVecBase2)::
 almost_equal(const FLOATNAME(LVecBase2) &other, FLOATTYPE threshold) const {
   return (IS_THRESHOLD_EQUAL(_v.v._0, other._v.v._0, threshold) &&
-	  IS_THRESHOLD_EQUAL(_v.v._1, other._v.v._1, threshold));
+          IS_THRESHOLD_EQUAL(_v.v._1, other._v.v._1, threshold));
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -20,7 +20,7 @@ output(ostream &out) const {
     out << _id._c[0] << _id._c[1] << _id._c[2] << _id._c[3];
 
   } else if (isprint(_id._c[0]) && isprint(_id._c[1]) &&
-	     isprint(_id._c[2]) && _id._c[3] == '\0') {
+             isprint(_id._c[2]) && _id._c[3] == '\0') {
     // If the last character is 0, output a 3-letter ID.
     out << _id._c[0] << _id._c[1] << _id._c[2];
 

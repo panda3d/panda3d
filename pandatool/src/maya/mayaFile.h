@@ -37,16 +37,16 @@ private:
   bool process_node(const MDagPath &dag_path, EggData &data);
   void get_transform(const MDagPath &dag_path, EggGroup *egg_group);
   void make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface surface,
-			  EggGroup *group);
+                          EggGroup *group);
   EggNurbsCurve *make_trim_curve(MFnNurbsCurve curve,
-				 const string &nurbs_name, 
-				 EggGroupNode *egg_group,
-				 int trim_curve_index);
+                                 const string &nurbs_name, 
+                                 EggGroupNode *egg_group,
+                                 int trim_curve_index);
   void make_nurbs_curve(const MDagPath &dag_path, MFnNurbsCurve curve,
-			EggGroup *group);
+                        EggGroup *group);
   void make_polyset(const MDagPath &dag_path, MFnMesh mesh,
-		    EggGroup *egg_group,
-		    MayaShader *default_shader = NULL);
+                    EggGroup *egg_group,
+                    MayaShader *default_shader = NULL);
 
   EggGroup *get_egg_group(const string &name, EggData &data);
 

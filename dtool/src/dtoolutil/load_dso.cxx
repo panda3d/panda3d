@@ -83,7 +83,7 @@ load_dso(const Filename &filename) {
   cerr << "_dyld_image_count() = " << _dyld_image_count() << endl;
   for (unsigned long i=0; i<_dyld_image_count(); ++i)
     cerr << "_dyld_get_image_name(" << i << ") = '" << _dyld_get_image_name(i)
-	 << "'" << endl;
+         << "'" << endl;
   string stmp = filename;
   cerr << "filename = '" << filename << "'" << endl;
   int i = stmp.rfind(".dylib");

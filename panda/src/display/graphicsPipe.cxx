@@ -33,7 +33,7 @@ TypeHandle GraphicsPipe::PipeSpec::get_class_type(void) {
 void GraphicsPipe::PipeSpec::init_type(void) {
   PipeParam::init_type();
   register_type(_type_handle, "GraphicsPipe::PipeSpec",
-		PipeParam::get_class_type());
+                PipeParam::get_class_type());
 }
 
 TypeHandle GraphicsPipe::PipeSpec::get_type(void) const {
@@ -300,13 +300,13 @@ void GraphicsPipe::read_priorities(void) {
       ConfigString type_name = (*i).Val();
       TypeHandle type = TypeRegistry::ptr()->find_type(type_name);
       if (type == TypeHandle::none()) {
-	display_cat.warning()
-	  << "Unknown type requested for pipe preference: " << type_name
-	  << "\n";
+        display_cat.warning()
+          << "Unknown type requested for pipe preference: " << type_name
+          << "\n";
       } else {
-	display_cat.debug()
-	  << "Specifying type " << type << " for pipe preference.\n";
-	factory.add_preferred(type);
+        display_cat.debug()
+          << "Specifying type " << type << " for pipe preference.\n";
+        factory.add_preferred(type);
       }
     }
   }
@@ -337,7 +337,7 @@ void GraphicsPipe::resolve_modules(void) {
     void *tmp = load_dso(dlname);
     if (tmp == (void*)0L) {
       display_cat.info()
-	<< "Unable to load: " << load_dso_error() << endl;
+        << "Unable to load: " << load_dso_error() << endl;
     }
   }
   for (i=gsg_modules_begin(); i!=gsg_modules_end(); ++i) {
@@ -347,7 +347,7 @@ void GraphicsPipe::resolve_modules(void) {
     void *tmp = load_dso(dlname);
     if (tmp == (void*)0L) {
       display_cat.info()
-	<< "Unable to load: " << load_dso_error() << endl;
+        << "Unable to load: " << load_dso_error() << endl;
     }
   }
 

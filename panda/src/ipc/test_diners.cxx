@@ -52,44 +52,44 @@ static class philosopher* phils[N_DINERS];
 class philosopher : public thread {
    private:
       void run(void* arg) {
-	 int id = *(int*)arg;
-	 delete (int*)arg;
+         int id = *(int*)arg;
+         delete (int*)arg;
 #ifdef WIN32_VC
-	 rand_mutex.lock();
-	 srand(last_rand);
-	 rand_mutex.unlock();
+         rand_mutex.lock();
+         srand(last_rand);
+         rand_mutex.unlock();
 #endif /* __WIN32__ */
-	 int l = id;
-	 int r = l+1;
-	 if (r == N_DINERS)
-	    r = 0;
-	 if (l & 1) {
-	    int t = l;
-	    l = r;
-	    r = t;
-	 }
-	 PRINTMSG(cerr << "Philosopher #" << id << " has entered the room."
-		  << endl);
-	 int count = random_l() % 10 + 1;
-	 while (--count) {
-	    chopsticks[l].lock();
-	    chopsticks[r].lock();
-	    PRINTMSG(cerr << "Philosopher #" << id
-		     << " is eating spaghetti now." << endl);
-	    thread::sleep(random_l()%2, random_l()%1000000000);
-	    chopsticks[l].unlock();
-	    chopsticks[r].unlock();
-	    PRINTMSG(cerr << "Philosopher #" << id
-		     << " is pondering about life." << endl);
-	    thread::sleep(random_l()%2, random_l()%1000000000);
-	 }
-	 room_mutex.lock();
-	 --room_occupancy;
-	 phils[id] = (philosopher*)0L;
-	 room_mutex.unlock();
-	 room_condition.signal();
-	 PRINTMSG(cerr << "Philosopher #" << id << " has left the room ("
-		  << room_occupancy << " left)." << endl);
+         int l = id;
+         int r = l+1;
+         if (r == N_DINERS)
+            r = 0;
+         if (l & 1) {
+            int t = l;
+            l = r;
+            r = t;
+         }
+         PRINTMSG(cerr << "Philosopher #" << id << " has entered the room."
+                  << endl);
+         int count = random_l() % 10 + 1;
+         while (--count) {
+            chopsticks[l].lock();
+            chopsticks[r].lock();
+            PRINTMSG(cerr << "Philosopher #" << id
+                     << " is eating spaghetti now." << endl);
+            thread::sleep(random_l()%2, random_l()%1000000000);
+            chopsticks[l].unlock();
+            chopsticks[r].unlock();
+            PRINTMSG(cerr << "Philosopher #" << id
+                     << " is pondering about life." << endl);
+            thread::sleep(random_l()%2, random_l()%1000000000);
+         }
+         room_mutex.lock();
+         --room_occupancy;
+         phils[id] = (philosopher*)0L;
+         room_mutex.unlock();
+         room_condition.signal();
+         PRINTMSG(cerr << "Philosopher #" << id << " has left the room ("
+                  << room_occupancy << " left)." << endl);
       }
 
       // the destructor of a class that inherits from thread should never be
@@ -99,7 +99,7 @@ class philosopher : public thread {
       inline void* make_arg(const int i) { return (void*)new int(i); }
    public:
       philosopher(const int id) : thread(make_arg(id)) {
-	 start();
+         start();
       }
 };
 
@@ -112,9 +112,9 @@ int main(int, char**)
    room_occupancy = N_DINERS;
    while (1) {
       while (room_occupancy == N_DINERS) {
-	 PRINTMSG(cerr << "main thread about to block " << room_occupancy
-		  << endl);
-	 room_condition.wait();
+         PRINTMSG(cerr << "main thread about to block " << room_occupancy
+                  << endl);
+         room_condition.wait();
       }
       // hmm.. someone left the room.
       room_mutex.unlock();
@@ -124,14 +124,14 @@ int main(int, char**)
       PRINTMSG(cerr << "main thread wake up" << endl);
       room_mutex.lock();
       for (i=0; i<N_DINERS; ++i)
-	 if (phils[i] == (philosopher*)0L)
-	    break;
+         if (phils[i] == (philosopher*)0L)
+            break;
       if (i == N_DINERS) {
-	 PRINTMSG(cerr
-		  << "Contrary to what I was tolk, no one has left the room!!!"
-		  << endl);
-	 PRINTMSG(cerr << "I give up!" << endl);
-	 exit(1);
+         PRINTMSG(cerr
+                  << "Contrary to what I was tolk, no one has left the room!!!"
+                  << endl);
+         PRINTMSG(cerr << "I give up!" << endl);
+         exit(1);
       }
       phils[i] = new philosopher(i);
       ++room_occupancy;

@@ -301,9 +301,9 @@ unref_delete(RefCountType *ptr) {
       // freeing up the memory it uses.
 
       if (!get_never_destruct()) {
-	// Furthermore, if we have never-destruct set, we don't even
-	// call the destructor.
-	ptr->~RefCountType();
+        // Furthermore, if we have never-destruct set, we don't even
+        // call the destructor.
+        ptr->~RefCountType();
       }
       return;
     }
@@ -365,8 +365,8 @@ void RefCountProxy<Base>::
 init_type() {
   do_init_type(Base);
   register_type(_type_handle, 
-		"RefCountProxy<" + get_type_handle(Base).get_name() + ">",
-		get_type_handle(Base));
+                "RefCountProxy<" + get_type_handle(Base).get_name() + ">",
+                get_type_handle(Base));
 }
 
 
@@ -411,5 +411,5 @@ init_type() {
   ReferenceCount::init_type();
   _type_handle =
     register_dynamic_type("RefCountObj<" + base_name + ">",
-			  base_type, ReferenceCount::get_class_type());
+                          base_type, ReferenceCount::get_class_type());
 }

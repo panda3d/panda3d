@@ -78,97 +78,97 @@ void GuiFrame::recompute_frame(void) {
       LVector4f ext_h = (*ui).second.get_frame();
       LVector3f pos_h = (*ui).second.get_pos();
       for (int j=0; j<n; ++j) {
-	Packing pack = (*i).get_nth_packing(j);
-	if (pack == NONE)
-	  continue;
-	GuiItem* to = (*i).get_nth_to(j);
-	LVector4f ext_t = _map[to].get_frame();
-	float gap = (*i).get_nth_gap(j);
-	switch (pack) {
-	case ABOVE:
-	  {
-	    // to(top) - here(bottom)
-	    float diff = ext_t[3] - ext_h[2] + gap;
-	    LVector3f move = LVector3f::rfu(0., 0., diff);
-	    (*ui).second.set_pos(pos_h + move);
-	    ext_h = (*ui).second.get_frame();
-	    pos_h = (*ui).second.get_pos();
-	  }
-	  break;
-	case UNDER:
-	  {
-	    // to(bottom) - here(top)
-	    float diff = ext_t[2] - ext_h[3] - gap;
-	    LVector3f move = LVector3f::rfu(0., 0., diff);
-	    (*ui).second.set_pos(pos_h + move);
-	    ext_h = (*ui).second.get_frame();
-	    pos_h = (*ui).second.get_pos();
-	  }
-	  break;
-	case LEFT:
-	  {
-	    // to(left) - here(right)
-	    float diff = ext_t[0] - ext_h[1] - gap;
-	    LVector3f move = LVector3f::rfu(diff, 0., 0.);
-	    (*ui).second.set_pos(pos_h + move);
-	    ext_h = (*ui).second.get_frame();
-	    pos_h = (*ui).second.get_pos();
-	  }
-	  break;
-	case RIGHT:
-	  {
-	    // to(right) - here(left)
-	    float diff = ext_t[1] - ext_h[0] + gap;
-	    LVector3f move = LVector3f::rfu(diff, 0., 0.);
-	    (*ui).second.set_pos(pos_h + move);
-	    ext_h = (*ui).second.get_frame();
-	    pos_h = (*ui).second.get_pos();
-	  }
-	  break;
-	case ALIGN_ABOVE:
-	  {
-	    // to(top) - here(top)
-	    float diff = ext_t[3] - ext_h[3];
-	    LVector3f move = LVector3f::rfu(0., 0., diff);
-	    (*ui).second.set_pos(pos_h + move);
-	    ext_h = (*ui).second.get_frame();
-	    pos_h = (*ui).second.get_pos();
-	  }
-	  break;
-	case ALIGN_UNDER:
-	  {
-	    // to(bottom) - here(bottom)
-	    float diff = ext_t[2] - ext_h[2];
-	    LVector3f move = LVector3f::rfu(0., 0., diff);
-	    (*ui).second.set_pos(pos_h + move);
-	    ext_h = (*ui).second.get_frame();
-	    pos_h = (*ui).second.get_pos();
-	  }
-	  break;
-	case ALIGN_LEFT:
-	  {
-	    // to(left) - here(left)
-	    float diff = ext_t[0] - ext_h[0];
-	    LVector3f move = LVector3f::rfu(diff, 0., 0.);
-	    (*ui).second.set_pos(pos_h + move);
-	    ext_h = (*ui).second.get_frame();
-	    pos_h = (*ui).second.get_pos();
-	  }
-	  break;
-	case ALIGN_RIGHT:
-	  {
-	    // to(right) - here(right)
-	    float diff = ext_t[1] - ext_h[1];
-	    LVector3f move = LVector3f::rfu(diff, 0., 0.);
-	    (*ui).second.set_pos(pos_h + move);
-	    ext_h = (*ui).second.get_frame();
-	    pos_h = (*ui).second.get_pos();
-	  }
-	  break;
-	default:
-	  gui_cat->warning() << "unknown packing type (" << (int)pack << ")"
-			     << endl;
-	}
+        Packing pack = (*i).get_nth_packing(j);
+        if (pack == NONE)
+          continue;
+        GuiItem* to = (*i).get_nth_to(j);
+        LVector4f ext_t = _map[to].get_frame();
+        float gap = (*i).get_nth_gap(j);
+        switch (pack) {
+        case ABOVE:
+          {
+            // to(top) - here(bottom)
+            float diff = ext_t[3] - ext_h[2] + gap;
+            LVector3f move = LVector3f::rfu(0., 0., diff);
+            (*ui).second.set_pos(pos_h + move);
+            ext_h = (*ui).second.get_frame();
+            pos_h = (*ui).second.get_pos();
+          }
+          break;
+        case UNDER:
+          {
+            // to(bottom) - here(top)
+            float diff = ext_t[2] - ext_h[3] - gap;
+            LVector3f move = LVector3f::rfu(0., 0., diff);
+            (*ui).second.set_pos(pos_h + move);
+            ext_h = (*ui).second.get_frame();
+            pos_h = (*ui).second.get_pos();
+          }
+          break;
+        case LEFT:
+          {
+            // to(left) - here(right)
+            float diff = ext_t[0] - ext_h[1] - gap;
+            LVector3f move = LVector3f::rfu(diff, 0., 0.);
+            (*ui).second.set_pos(pos_h + move);
+            ext_h = (*ui).second.get_frame();
+            pos_h = (*ui).second.get_pos();
+          }
+          break;
+        case RIGHT:
+          {
+            // to(right) - here(left)
+            float diff = ext_t[1] - ext_h[0] + gap;
+            LVector3f move = LVector3f::rfu(diff, 0., 0.);
+            (*ui).second.set_pos(pos_h + move);
+            ext_h = (*ui).second.get_frame();
+            pos_h = (*ui).second.get_pos();
+          }
+          break;
+        case ALIGN_ABOVE:
+          {
+            // to(top) - here(top)
+            float diff = ext_t[3] - ext_h[3];
+            LVector3f move = LVector3f::rfu(0., 0., diff);
+            (*ui).second.set_pos(pos_h + move);
+            ext_h = (*ui).second.get_frame();
+            pos_h = (*ui).second.get_pos();
+          }
+          break;
+        case ALIGN_UNDER:
+          {
+            // to(bottom) - here(bottom)
+            float diff = ext_t[2] - ext_h[2];
+            LVector3f move = LVector3f::rfu(0., 0., diff);
+            (*ui).second.set_pos(pos_h + move);
+            ext_h = (*ui).second.get_frame();
+            pos_h = (*ui).second.get_pos();
+          }
+          break;
+        case ALIGN_LEFT:
+          {
+            // to(left) - here(left)
+            float diff = ext_t[0] - ext_h[0];
+            LVector3f move = LVector3f::rfu(diff, 0., 0.);
+            (*ui).second.set_pos(pos_h + move);
+            ext_h = (*ui).second.get_frame();
+            pos_h = (*ui).second.get_pos();
+          }
+          break;
+        case ALIGN_RIGHT:
+          {
+            // to(right) - here(right)
+            float diff = ext_t[1] - ext_h[1];
+            LVector3f move = LVector3f::rfu(diff, 0., 0.);
+            (*ui).second.set_pos(pos_h + move);
+            ext_h = (*ui).second.get_frame();
+            pos_h = (*ui).second.get_pos();
+          }
+          break;
+        default:
+          gui_cat->warning() << "unknown packing type (" << (int)pack << ")"
+                             << endl;
+        }
       }
     }
   }
@@ -268,9 +268,9 @@ void GuiFrame::set_priority(GuiLabel* l, const GuiItem::Priority p) {
 }
 
 GuiFrame::GuiFrame(const string& name) : GuiItem(name), _align_to_left(false),
-					 _align_to_right(false),
-					 _align_to_top(false),
-					 _align_to_bottom(false) {
+                                         _align_to_right(false),
+                                         _align_to_top(false),
+                                         _align_to_bottom(false) {
 }
 
 GuiFrame::~GuiFrame(void) {
@@ -327,11 +327,11 @@ void GuiFrame::remove_item(GuiItem* item) {
     do {
       done = true;
       for (int k=0; k<(*j).get_num_links(); ++k)
-	if ((*j).get_nth_to(k) == item) {
-	  done = false;
-	  (*j).erase_nth_link(k);
-	  break;
-	}
+        if ((*j).get_nth_to(k) == item) {
+          done = false;
+          (*j).erase_nth_link(k);
+          break;
+        }
     } while (!done);
   }
   // now get rid of the thing itself
@@ -374,7 +374,7 @@ void GuiFrame::manage(GuiManager* mgr, EventHandler& eh) {
     GuiItem::manage(mgr, eh);
   } else
     gui_cat->warning() << "tried to manage frame (0x" << (void*)this
-		       << ") that is already managed" << endl;
+                       << ") that is already managed" << endl;
 }
 
 void GuiFrame::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
@@ -384,7 +384,7 @@ void GuiFrame::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
     GuiItem::manage(mgr, eh, n);
   } else
     gui_cat->warning() << "tried to manage frame (0x" << (void*)this
-		       << ") that is already managed" << endl;
+                       << ") that is already managed" << endl;
 }
 
 void GuiFrame::unmanage(void) {
@@ -403,8 +403,8 @@ void GuiFrame::set_scale(float f) {
 void GuiFrame::set_scale(float x, float y, float z) {
   for (Boxes::iterator i=_items.begin(); i!=_items.end(); ++i)
     (*i).get_item()->set_scale(x * (*i).get_item()->get_scale_x(),
-			       y * (*i).get_item()->get_scale_y(),
-			       z * (*i).get_item()->get_scale_z());
+                               y * (*i).get_item()->get_scale_y(),
+                               z * (*i).get_item()->get_scale_z());
   GuiItem::set_scale(x, y, z);
 }
 
@@ -445,8 +445,8 @@ void GuiFrame::output(ostream& os) const {
     int n = (*i).get_num_links();
     if (n > 0) {
       for (int j=0; j<n; ++j)
-	os << "      linked by " << (int)((*i).get_nth_packing(j)) << " to 0x"
-	   << (void*)((*i).get_nth_to(j)) << endl;
+        os << "      linked by " << (int)((*i).get_nth_packing(j)) << " to 0x"
+           << (void*)((*i).get_nth_to(j)) << endl;
     }
   }
   for (i=_items.begin(); i!=_items.end(); ++i) {

@@ -14,7 +14,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltBead
+//       Class : FltBead
 // Description : A base class for any of a broad family of flt records
 //               that represent particular beads in the hierarchy.
 //               These are things like group beads and object beads,
@@ -71,7 +71,7 @@ public:
   static void init_type() {
     FltRecord::init_type();
     register_type(_type_handle, "FltBead",
-		  FltRecord::get_class_type());
+                  FltRecord::get_class_type());
   }
 
 private:

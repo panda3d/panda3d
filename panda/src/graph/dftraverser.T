@@ -15,8 +15,8 @@
 template<class Visitor, class LevelState>
 INLINE_GRAPH DFTraverser<Visitor, LevelState>::
 DFTraverser(Visitor &visitor,
-	    const AttributeWrapper &initial_render_state,
-	    TypeHandle graph_type) :
+            const AttributeWrapper &initial_render_state,
+            TypeHandle graph_type) :
   _visitor(visitor),
   _initial_render_state(initial_render_state),
   _graph_type(graph_type)
@@ -99,9 +99,9 @@ traverse(Node *node, AttributeWrapper &state, LevelState &level_state) {
 template<class Visitor, class AttributeWrapper, class LevelState>
 INLINE void
 df_traverse(NodeRelation *arc, Visitor &visitor, 
-	    const AttributeWrapper &initial_render_state,
-	    const LevelState &initial_level_state,
-	    TypeHandle graph_type) {
+            const AttributeWrapper &initial_render_state,
+            const LevelState &initial_level_state,
+            TypeHandle graph_type) {
   DFTraverser<Visitor, LevelState> 
     dft(visitor, initial_render_state, graph_type);
   dft.start(arc, initial_level_state);
@@ -110,9 +110,9 @@ df_traverse(NodeRelation *arc, Visitor &visitor,
 template<class Visitor, class AttributeWrapper, class LevelState>
 INLINE void
 df_traverse(Node *root, Visitor &visitor,
-	    const AttributeWrapper &initial_render_state,
-	    const LevelState &initial_level_state,
-	    TypeHandle graph_type) {
+            const AttributeWrapper &initial_render_state,
+            const LevelState &initial_level_state,
+            TypeHandle graph_type) {
   DFTraverser<Visitor, LevelState> 
     dft(visitor, initial_render_state, graph_type);
   dft.start(root, initial_level_state);

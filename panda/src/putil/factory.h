@@ -11,7 +11,7 @@
 #include "factoryBase.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : Factory
+//       Class : Factory
 // Description : A Factory can be used to create an instance of a
 //               particular subclass of some general base class.  Each
 //               subclass registers itself with the Factory, supplying
@@ -34,18 +34,18 @@ public:
   typedef Type *CreateFunc(const FactoryParams &params);
 
   INLINE Type *make_instance(TypeHandle handle, 
-			     const FactoryParams &params = FactoryParams());
+                             const FactoryParams &params = FactoryParams());
 
   INLINE Type *make_instance(const string &type_name,
-			     const FactoryParams &params = FactoryParams());
+                             const FactoryParams &params = FactoryParams());
 
   INLINE Type *
   make_instance_more_general(TypeHandle handle, 
-			     const FactoryParams &params = FactoryParams());
+                             const FactoryParams &params = FactoryParams());
 
   INLINE Type *
   make_instance_more_general(const string &type_name,
-			     const FactoryParams &params = FactoryParams());
+                             const FactoryParams &params = FactoryParams());
 
   INLINE void register_factory(TypeHandle handle, CreateFunc *func);
 };

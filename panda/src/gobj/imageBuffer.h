@@ -41,11 +41,11 @@ public:
   
   virtual void copy(GraphicsStateGuardianBase *, const DisplayRegion *)=0;
   virtual void copy(GraphicsStateGuardianBase *, const DisplayRegion *,
-		    const RenderBuffer &rb)=0;
+                    const RenderBuffer &rb)=0;
   virtual void draw(GraphicsStateGuardianBase *)=0;
   virtual void draw(GraphicsStateGuardianBase *, const DisplayRegion *)=0;
   virtual void draw(GraphicsStateGuardianBase *, const DisplayRegion *,
-		    const RenderBuffer &rb)=0;
+                    const RenderBuffer &rb)=0;
 
   INLINE void set_alpha_name(const string &alpha_name);
   INLINE void clear_alpha_name();
@@ -71,8 +71,8 @@ public:
     dDrawable::init_type();
     Namable::init_type();
     register_type(_type_handle, "ImageBuffer",
-		  dDrawable::get_class_type(),
-		  Namable::get_class_type());
+                  dDrawable::get_class_type(),
+                  Namable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -11,7 +11,7 @@
 #include "geometricBoundingVolume.h"
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : BoundingLine
+//       Class : BoundingLine
 // Description : This funny bounding volume is an infinite line with
 //               no thickness and extending to infinity in both
 //               directions.
@@ -41,8 +41,8 @@ PUBLISHED:
 protected:
   virtual bool extend_other(BoundingVolume *other) const;
   virtual bool around_other(BoundingVolume *other,
-			    const BoundingVolume **first,
-			    const BoundingVolume **last) const;
+                            const BoundingVolume **first,
+                            const BoundingVolume **last) const;
   virtual int contains_other(const BoundingVolume *other) const;
 
   virtual bool extend_by_line(const BoundingLine *line);
@@ -63,7 +63,7 @@ public:
   static void init_type() {
     GeometricBoundingVolume::init_type();
     register_type(_type_handle, "BoundingLine",
-		  GeometricBoundingVolume::get_class_type());
+                  GeometricBoundingVolume::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -12,7 +12,7 @@ class Datagram;
 class DatagramIterator;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : CullFaceProperty
+//       Class : CullFaceProperty
 // Description : This defines the ways we can cull faces according to
 //               their vertex ordering (and hence orientation relative
 //               to the camera).
@@ -21,9 +21,9 @@ class EXPCL_PANDA CullFaceProperty {
 public:
   enum Mode {
     M_cull_none,                // Cull no polygons
-    M_cull_clockwise, 		// Cull clockwise-oriented polygons
-    M_cull_counter_clockwise,  	// Cull counter-clockwise-oriented polygons
-    M_cull_all, 	// Cull all polygons (other primitives are still drawn)
+    M_cull_clockwise,           // Cull clockwise-oriented polygons
+    M_cull_counter_clockwise,   // Cull counter-clockwise-oriented polygons
+    M_cull_all,         // Cull all polygons (other primitives are still drawn)
   };
 
 public:

@@ -25,7 +25,7 @@ public:
   virtual LMatrix4f get_projection_mat(CoordinateSystem cs = CS_default) const;
 
   virtual Geom* make_geometry(const Colorf &color = Colorf(0.0, 1.0, 0.0, 1.0),
-			      CoordinateSystem cs = CS_default) const;
+                              CoordinateSystem cs = CS_default) const;
 
   virtual BoundingVolume *make_bounds(CoordinateSystem cs = CS_default) const;
 
@@ -46,7 +46,7 @@ public:
   static void init_type() {
     Projection::init_type();
     register_type(_type_handle, "OrthoProjection",
-		  Projection::get_class_type());
+                  Projection::get_class_type());
   }
 
 private:

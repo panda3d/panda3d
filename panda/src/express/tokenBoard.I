@@ -17,7 +17,7 @@
 //     Function: TokenBoard::is_done_token() 
 //       Access: Public
 //  Description: Returns true if the indicated token id is on the 
-//		 done queue, false otherwise.
+//               done queue, false otherwise.
 ////////////////////////////////////////////////////////////////////
 template<class TokenType>
 bool TokenBoard<TokenType>::

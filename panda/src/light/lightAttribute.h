@@ -22,7 +22,7 @@
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, MULTIATTRIBUTE_LIGHT);
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LightAttribute
+//       Class : LightAttribute
 // Description : See LightTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA LightAttribute : public MultiAttribute<PT_Light, LightNameClass> {
@@ -39,7 +39,7 @@ public:
 protected:
   virtual void output_property(ostream &out, const PT_Light &prop) const;
   virtual void write_property(ostream &out, const PT_Light &prop,
-			      int indent_level) const;
+                              int indent_level) const;
 
 public:
   virtual TypeHandle get_type() const {
@@ -52,7 +52,7 @@ public:
   static void init_type() {
     MultiAttribute<PT_Light, LightNameClass>::init_type();
     register_type(_type_handle, "LightAttribute",
-		  MultiAttribute<PT_Light, LightNameClass>::get_class_type());
+                  MultiAttribute<PT_Light, LightNameClass>::get_class_type());
   }
 
 private:

@@ -16,7 +16,7 @@
 #include <map>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggMaterialCollection
+//       Class : EggMaterialCollection
 // Description : This is a collection of materials by MRef name.  It
 //               can extract the materials from an egg file and sort
 //               them all together; it can also manage the creation of
@@ -60,7 +60,7 @@ public:
   int collapse_equivalent_materials(int eq, EggGroupNode *node);
   int collapse_equivalent_materials(int eq, MaterialReplacement &removed);
   static void replace_materials(EggGroupNode *node,
-			       const MaterialReplacement &replace);
+                               const MaterialReplacement &replace);
 
   void uniquify_mrefs();
   void sort_by_mref();

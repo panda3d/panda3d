@@ -9,7 +9,7 @@
 #include <pandabase.h>
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : NullLevelState
+//       Class : NullLevelState
 // Description : This is an empty class designed to be passed to a
 //               traverser that doesn't care about tracking states
 //               between levels.

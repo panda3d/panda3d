@@ -32,7 +32,7 @@ private:
   }
 public:
   INLINE Buffer(byte* data, unsigned long size) : _data(data), _size(size),
-						  _pos(0), _done(false) {}
+                                                  _pos(0), _done(false) {}
   INLINE byte* get_buffer(byte* buf) {
     unsigned long copy_size = buffer_min(_size-_pos, audio_buffer_size);
     unsigned long residue = audio_buffer_size - copy_size;
@@ -117,9 +117,9 @@ public:
   virtual ~LinuxSamplePlayer(void);
 
   virtual void play_sound(AudioTraits::SoundClass*,
-			  AudioTraits::PlayingClass*, float);
+                          AudioTraits::PlayingClass*, float);
   virtual void stop_sound(AudioTraits::SoundClass*,
-			  AudioTraits::PlayingClass*);
+                          AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, float);
   virtual bool adjust_volume(AudioTraits::PlayingClass*);
 public:
@@ -135,9 +135,9 @@ public:
   virtual ~LinuxMusicPlayer(void);
 
   virtual void play_sound(AudioTraits::SoundClass*,
-			  AudioTraits::PlayingClass*, float);
+                          AudioTraits::PlayingClass*, float);
   virtual void stop_sound(AudioTraits::SoundClass*,
-			  AudioTraits::PlayingClass*);
+                          AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, float);
   virtual bool adjust_volume(AudioTraits::PlayingClass*);
 public:

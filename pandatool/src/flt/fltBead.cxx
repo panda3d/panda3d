@@ -110,7 +110,7 @@ get_num_transform_steps() const {
 FltTransformRecord *FltBead::
 get_transform_step(int n) {
   nassertr(n >= 0 && n < (int)_transform_steps.size(), 
-	   (FltTransformRecord *)NULL);
+           (FltTransformRecord *)NULL);
   return _transform_steps[n];
 }
 

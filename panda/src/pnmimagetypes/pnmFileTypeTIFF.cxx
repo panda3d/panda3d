@@ -34,12 +34,12 @@ unsigned short tiff_compression = COMPRESSION_LZW;
    COMPRESSION_CCITTRLE
    COMPRESSION_CCITTFAX3
    COMPRESSION_CCITTFAX4
-   COMPRESSION_LZW		
-   COMPRESSION_JPEG		
-   COMPRESSION_NEXT		
-   COMPRESSION_CCITTRLEW	
-   COMPRESSION_PACKBITS	
-   COMPRESSION_THUNDERSCAN	
+   COMPRESSION_LZW
+   COMPRESSION_JPEG
+   COMPRESSION_NEXT
+   COMPRESSION_CCITTRLEW
+   COMPRESSION_PACKBITS
+   COMPRESSION_THUNDERSCAN
    */
 
 long tiff_g3options = 0;
@@ -248,11 +248,11 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   }
 
   tif = TIFFClientOpen("TIFF file", "r",
-		       (thandle_t) _file,
-		       StdioReadProc, StdioWriteProc,
-		       (TIFFSeekProc)StdioSeekProc, 
-		       StdioCloseProc, StdioSizeProc,
-		       StdioMapProc, StdioUnmapProc);
+                       (thandle_t) _file,
+                       StdioReadProc, StdioWriteProc,
+                       (TIFFSeekProc)StdioSeekProc, 
+                       StdioCloseProc, StdioSizeProc,
+                       StdioMapProc, StdioUnmapProc);
 
   if ( tif == NULL ) {
     _is_valid = false;
@@ -266,7 +266,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
 
     if ( ! TIFFGetField( tif, TIFFTAG_PHOTOMETRIC, &photomet ) ) {
       pnmimage_tiff_cat.error()
-	<< "Error getting photometric from TIFF file.\n";
+        << "Error getting photometric from TIFF file.\n";
       _is_valid = false;
     }
   }
@@ -276,7 +276,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
       _num_channels = spp;
     } else {
       pnmimage_tiff_cat.error()
-	<< "Cannot handle " << spp << "-channel image.\n";
+        << "Cannot handle " << spp << "-channel image.\n";
       _is_valid = false;
     }
   }
@@ -287,90 +287,90 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
 
     if (pnmimage_tiff_cat.is_debug()) {
       pnmimage_tiff_cat.debug()
-	<< "Reading TIFF image: " << _x_size << " x " << _y_size << "\n"
-	<< bps << " bits/sample, " << spp << " samples/pixel\n";
+        << "Reading TIFF image: " << _x_size << " x " << _y_size << "\n"
+        << bps << " bits/sample, " << spp << " samples/pixel\n";
     }
 
     _maxval = ( 1 << bps ) - 1;
     if ( _maxval == 1 && spp == 1 ) {
-	if (pnmimage_tiff_cat.is_debug()) {
-	  pnmimage_tiff_cat.debug(false)
-	    << "monochrome\n";
-	}
-	grayscale = true;
+        if (pnmimage_tiff_cat.is_debug()) {
+          pnmimage_tiff_cat.debug(false)
+            << "monochrome\n";
+        }
+        grayscale = true;
     } else {
       switch ( photomet ) {
       case PHOTOMETRIC_MINISBLACK:
-	if (pnmimage_tiff_cat.is_debug()) {
-	  pnmimage_tiff_cat.debug(false)
-	    << _maxval + 1 << " graylevels (min is black)\n";
-	}
-	grayscale = true;
-	break;
-	    
+        if (pnmimage_tiff_cat.is_debug()) {
+          pnmimage_tiff_cat.debug(false)
+            << _maxval + 1 << " graylevels (min is black)\n";
+        }
+        grayscale = true;
+        break;
+
       case PHOTOMETRIC_MINISWHITE:
-	if (pnmimage_tiff_cat.is_debug()) {
-	  pnmimage_tiff_cat.debug(false)
-	    << _maxval + 1 << " graylevels (min is white)\n";
-	}
-	grayscale = true;
-	break;
-	    
+        if (pnmimage_tiff_cat.is_debug()) {
+          pnmimage_tiff_cat.debug(false)
+            << _maxval + 1 << " graylevels (min is white)\n";
+        }
+        grayscale = true;
+        break;
+
       case PHOTOMETRIC_PALETTE:
-	if (pnmimage_tiff_cat.is_debug()) {
-	  pnmimage_tiff_cat.debug(false)
-	    << " colormapped\n";
-	}
-	if ( ! TIFFGetField( tif, TIFFTAG_COLORMAP, &redcolormap, &greencolormap, &bluecolormap ) ) {
-	  pnmimage_tiff_cat.error()
-	    << "Error getting colormap from TIFF file.\n";
-	  _is_valid = false;
-	} else {
-	  numcolors = _maxval + 1;
-	  if ( numcolors > TIFF_COLORMAP_MAXCOLORS ) {
-	    pnmimage_tiff_cat.error()
-	      << "Cannot read TIFF file with " << numcolors 
-	      << " in colormap; max supported is " << TIFF_COLORMAP_MAXCOLORS << "\n";
-	    _is_valid = false;
-	  } else {
-	    _maxval = PNM_MAXMAXVAL;
-	    grayscale = false;
-	    for ( i = 0; i < numcolors; ++i ) {
-	      xelval r, g, b;
-	      r = (xelval)(_maxval * (double)(redcolormap[i] / 65535.0));
-	      g = (xelval)(_maxval * (double)(greencolormap[i] / 65535.0));
-	      b = (xelval)(_maxval * (double)(bluecolormap[i] / 65535.0));
-	      PPM_ASSIGN( colormap[i], r, g, b );
-	    }
-	  }
-	}
-	break;
-	
+        if (pnmimage_tiff_cat.is_debug()) {
+          pnmimage_tiff_cat.debug(false)
+            << " colormapped\n";
+        }
+        if ( ! TIFFGetField( tif, TIFFTAG_COLORMAP, &redcolormap, &greencolormap, &bluecolormap ) ) {
+          pnmimage_tiff_cat.error()
+            << "Error getting colormap from TIFF file.\n";
+          _is_valid = false;
+        } else {
+          numcolors = _maxval + 1;
+          if ( numcolors > TIFF_COLORMAP_MAXCOLORS ) {
+            pnmimage_tiff_cat.error()
+              << "Cannot read TIFF file with " << numcolors 
+              << " in colormap; max supported is " << TIFF_COLORMAP_MAXCOLORS << "\n";
+            _is_valid = false;
+          } else {
+            _maxval = PNM_MAXMAXVAL;
+            grayscale = false;
+            for ( i = 0; i < numcolors; ++i ) {
+              xelval r, g, b;
+              r = (xelval)(_maxval * (double)(redcolormap[i] / 65535.0));
+              g = (xelval)(_maxval * (double)(greencolormap[i] / 65535.0));
+              b = (xelval)(_maxval * (double)(bluecolormap[i] / 65535.0));
+              PPM_ASSIGN( colormap[i], r, g, b );
+            }
+          }
+        }
+        break;
+
       case PHOTOMETRIC_RGB:
-	if (pnmimage_tiff_cat.is_debug()) {
-	  pnmimage_tiff_cat.debug(false)
-	    << "truecolor\n";
-	}
-	grayscale = false;
-	break;
-	    
+        if (pnmimage_tiff_cat.is_debug()) {
+          pnmimage_tiff_cat.debug(false)
+            << "truecolor\n";
+        }
+        grayscale = false;
+        break;
+
       case PHOTOMETRIC_MASK:
-	pnmimage_tiff_cat.error()
-	  << "Don't know how to handle TIFF image with PHOTOMETRIC_MASK.\n";
-	_is_valid = false;
-	break;
-	    
+        pnmimage_tiff_cat.error()
+          << "Don't know how to handle TIFF image with PHOTOMETRIC_MASK.\n";
+        _is_valid = false;
+        break;
+
       case PHOTOMETRIC_DEPTH:
-	pnmimage_tiff_cat.error()
-	  << "Don't know how to handle TIFF image with PHOTOMETRIC_DEPTH.\n";
-	_is_valid = false;
-	break;
-	    
+        pnmimage_tiff_cat.error()
+          << "Don't know how to handle TIFF image with PHOTOMETRIC_DEPTH.\n";
+        _is_valid = false;
+        break;
+
       default:
-	pnmimage_tiff_cat.error()
-	  << "Unknown photometric " << photomet << " in TIFF image.\n";
-	_is_valid = false;
-	break;
+        pnmimage_tiff_cat.error()
+          << "Unknown photometric " << photomet << " in TIFF image.\n";
+        _is_valid = false;
+        break;
       }
     }
   }
@@ -378,7 +378,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   if (_is_valid ) {
     if ( _maxval > PNM_MAXMAXVAL ) {
       pnmimage_tiff_cat.error()
-	<< "Cannot read TIFF file with maxval of " << _maxval << "\n";
+        << "Cannot read TIFF file with maxval of " << _maxval << "\n";
       _is_valid = false;
     }
   }
@@ -462,37 +462,37 @@ read_row(xel *row_data, xelval *alpha_data) {
   case PHOTOMETRIC_MINISBLACK:
     for ( col = 0; col < _x_size; ++col )
       {
-	NEXTSAMPLE;
-	PPM_PUTB(row_data[col], sample);
-	if ( spp == 2 ) {
-	  NEXTSAMPLE;  // Alpha channel
-	  alpha_data[col] = sample;
-	}
+        NEXTSAMPLE;
+        PPM_PUTB(row_data[col], sample);
+        if ( spp == 2 ) {
+          NEXTSAMPLE;  // Alpha channel
+          alpha_data[col] = sample;
+        }
       }
     break;
     
   case PHOTOMETRIC_MINISWHITE:
     for ( col = 0; col < _x_size; ++col )
       {
-	NEXTSAMPLE;
-	sample = _maxval - sample;
-	PPM_PUTB(row_data[col], sample);
-	if ( spp == 2 ) {
-	  NEXTSAMPLE;  // Alpha channel
-	  alpha_data[col] = sample;
-	}
+        NEXTSAMPLE;
+        sample = _maxval - sample;
+        PPM_PUTB(row_data[col], sample);
+        if ( spp == 2 ) {
+          NEXTSAMPLE;  // Alpha channel
+          alpha_data[col] = sample;
+        }
       }
     break;
     
   case PHOTOMETRIC_PALETTE:
     for ( col = 0; col < _x_size; ++col )
       {
-	NEXTSAMPLE;
-	row_data[col] = colormap[sample];
-	if ( spp == 2 ) {
-	  NEXTSAMPLE;  // Alpha channel
-	  alpha_data[col] = sample;
-	}
+        NEXTSAMPLE;
+        row_data[col] = colormap[sample];
+        if ( spp == 2 ) {
+          NEXTSAMPLE;  // Alpha channel
+          alpha_data[col] = sample;
+        }
       }
     break;
     
@@ -508,8 +508,8 @@ read_row(xel *row_data, xelval *alpha_data) {
       b = sample;
       PPM_ASSIGN(row_data[col], r, g, b);
       if ( spp == 4 ) {
-	NEXTSAMPLE;  // Alpha channel
-	alpha_data[col] = sample;
+        NEXTSAMPLE;  // Alpha channel
+        alpha_data[col] = sample;
       }  
     }
     break;
@@ -583,26 +583,26 @@ write_data(xel *array, xelval *alpha) {
     // xels to an indirect 2-d array of pixels.  We make it look like a
     // single row of _x_size * _y_size pixels.
     chv = ppm_computecolorhist( (pixel **)&array, _x_size * _y_size, 1,
-				TIFF_COLORMAP_MAXCOLORS, &colors );
+                                TIFF_COLORMAP_MAXCOLORS, &colors );
     if ( chv == (colorhist_vector) 0 ) {
       pnmimage_tiff_cat.debug()
-	<< colors << " colors found; too many for a palette.\n"
-	<< "Writing a 24-bit RGB file.\n";
+        << colors << " colors found; too many for a palette.\n"
+        << "Writing a 24-bit RGB file.\n";
       grayscale = false;
     } else {
       pnmimage_tiff_cat.debug()
-	<< colors << " colors found; writing an 8-bit palette file.\n";
+        << colors << " colors found; writing an 8-bit palette file.\n";
       grayscale = true;
       for ( i = 0; i < colors; ++i ) {
-	register xelval r, g, b;
-	
-	r = PPM_GETR( chv[i].color );
-	g = PPM_GETG( chv[i].color );
-	b = PPM_GETB( chv[i].color );
-	if ( r != g || g != b ) {
-	  grayscale = false;
-	  break;
-	}
+        register xelval r, g, b;
+
+        r = PPM_GETR( chv[i].color );
+        g = PPM_GETG( chv[i].color );
+        b = PPM_GETB( chv[i].color );
+        if ( r != g || g != b ) {
+          grayscale = false;
+          break;
+        }
       }
     }
     break;
@@ -624,11 +624,11 @@ write_data(xel *array, xelval *alpha) {
 
   /* Open output file. */
   tif = TIFFClientOpen("TIFF file", "w",
-		       (thandle_t) _file,
-		       StdioReadProc, StdioWriteProc,
-		       (TIFFSeekProc)StdioSeekProc, 
-		       StdioCloseProc, StdioSizeProc,
-		       StdioMapProc, StdioUnmapProc);
+                       (thandle_t) _file,
+                       StdioReadProc, StdioWriteProc,
+                       (TIFFSeekProc)StdioSeekProc, 
+                       StdioCloseProc, StdioSizeProc,
+                       StdioMapProc, StdioUnmapProc);
   if ( tif == NULL ) {
     return false;
   }
@@ -691,7 +691,7 @@ write_data(xel *array, xelval *alpha) {
   TIFFSetField( tif, TIFFTAG_FILLORDER, tiff_fillorder );
   //TIFFSetField( tif, TIFFTAG_DOCUMENTNAME, "TIFF Image File");
   TIFFSetField( tif, TIFFTAG_IMAGEDESCRIPTION, 
-		"Generated via pnmimage.\n" );
+                "Generated via pnmimage.\n" );
   TIFFSetField( tif, TIFFTAG_SAMPLESPERPIXEL, samplesperpixel );
   TIFFSetField( tif, TIFFTAG_ROWSPERSTRIP, tiff_rowsperstrip );
   /* TIFFSetField( tif, TIFFTAG_STRIPBYTECOUNTS, _y_size / tiff_rowsperstrip ); */
@@ -720,32 +720,32 @@ write_data(xel *array, xelval *alpha) {
 
     if ( !is_grayscale() && ! grayscale ) {
       if ( cht == (colorhash_table) 0 ) {
-	tP = buf;
-	for ( col = 0; col < _x_size; ++col ) {
-	  *tP++ = (unsigned char)(255 * PPM_GETR(row_data[col]) / _maxval);
-	  *tP++ = (unsigned char)(255 * PPM_GETG(row_data[col]) / _maxval);
-	  *tP++ = (unsigned char)(255 * PPM_GETB(row_data[col]) / _maxval);
-	  if (samplesperpixel==4) {
-	    *tP++ = (unsigned char)(255 * alpha_data[col] / _maxval);
-	  }
-	}
+        tP = buf;
+        for ( col = 0; col < _x_size; ++col ) {
+          *tP++ = (unsigned char)(255 * PPM_GETR(row_data[col]) / _maxval);
+          *tP++ = (unsigned char)(255 * PPM_GETG(row_data[col]) / _maxval);
+          *tP++ = (unsigned char)(255 * PPM_GETB(row_data[col]) / _maxval);
+          if (samplesperpixel==4) {
+            *tP++ = (unsigned char)(255 * alpha_data[col] / _maxval);
+          }
+        }
       } else {
-	tP = buf;
-	for ( col = 0; col < _x_size; ++col ) {
-	  register int s;
-	    
-	  s = ppm_lookupcolor( cht, (pixel *)(&row_data[col]) );
-	  if ( s == -1 ) {
-	    pnmimage_tiff_cat.error()
-	      << "Internal error: color not found?!?  row=" << row
-	      << " col=" << col << "\n";
-	    return 0;
-	  }
-	  *tP++ = (unsigned char) s;
-	  if (samplesperpixel==2) {
-	    *tP++ = (unsigned char)(255 * alpha_data[col] / _maxval);
-	  }
-	}
+        tP = buf;
+        for ( col = 0; col < _x_size; ++col ) {
+          register int s;
+
+          s = ppm_lookupcolor( cht, (pixel *)(&row_data[col]) );
+          if ( s == -1 ) {
+            pnmimage_tiff_cat.error()
+              << "Internal error: color not found?!?  row=" << row
+              << " col=" << col << "\n";
+            return 0;
+          }
+          *tP++ = (unsigned char) s;
+          if (samplesperpixel==2) {
+            *tP++ = (unsigned char)(255 * alpha_data[col] / _maxval);
+          }
+        }
       }
     } else {
       register xelval bigger_maxval;
@@ -758,24 +758,24 @@ write_data(xel *array, xelval *alpha) {
       byte = 0;
       tP = buf;
       for ( col = 0; col < _x_size; ++col ) {
-	s = PPM_GETB(row_data[col]);
-	if ( _maxval != bigger_maxval )
-	  s = (xelval)((long) s * bigger_maxval / _maxval);
-	byte |= s << bitshift;
-	bitshift -= bitspersample;
-	if ( bitshift < 0 ) {
-	  *tP++ = byte;
-	  bitshift = 8 - bitspersample;
-	  byte = 0;
-	}
+        s = PPM_GETB(row_data[col]);
+        if ( _maxval != bigger_maxval )
+          s = (xelval)((long) s * bigger_maxval / _maxval);
+        byte |= s << bitshift;
+        bitshift -= bitspersample;
+        if ( bitshift < 0 ) {
+          *tP++ = byte;
+          bitshift = 8 - bitspersample;
+          byte = 0;
+        }
       }
       if ( bitshift != 8 - bitspersample )
-	*tP++ = byte;
+        *tP++ = byte;
     }
 
     if ( TIFFWriteScanline( tif, buf, row, 0 ) < 0 ) {
       pnmimage_tiff_cat.error()
-	<< "failed a scanline write on row " << row << "\n";
+        << "failed a scanline write on row " << row << "\n";
       return row;
     }
   }

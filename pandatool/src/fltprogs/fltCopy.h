@@ -20,7 +20,7 @@ class FltTexture;
 class FltExternalReference;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltCopy
+//       Class : FltCopy
 // Description : A program to copy Multigen .flt files into the cvs
 //               tree.  It copies the base file plus all externally
 //               referenced files as well as all textures.
@@ -33,8 +33,8 @@ public:
 
 protected:
   virtual bool copy_file(const Filename &source, const Filename &dest,
-			 CVSSourceDirectory *dir, void *extra_data, 
-			 bool new_file);
+                         CVSSourceDirectory *dir, void *extra_data, 
+                         bool new_file);
 
 private:
   enum FileType {
@@ -49,10 +49,10 @@ private:
   };
 
   bool copy_flt_file(const Filename &source, const Filename &dest,
-		     CVSSourceDirectory *dir);
+                     CVSSourceDirectory *dir);
   bool copy_texture(const Filename &source, const Filename &dest, 
-		    CVSSourceDirectory *dir, FltTexture *tex,
-		    bool new_file);
+                    CVSSourceDirectory *dir, FltTexture *tex,
+                    bool new_file);
 
 
   typedef set<PT(FltExternalReference)> Refs;

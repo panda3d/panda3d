@@ -62,7 +62,7 @@ public:
   INLINE void AddRecurse(std::string&, std::string&);
 
   INLINE void setState(const bool, const bool, const int, const ChanViewport&,
-		       const SetupFOV&, const Orientation&);
+                       const SetupFOV&, const Orientation&);
 
   INLINE bool getRecurse(void) const;
   INLINE SetupSyms getLayouts(void) const;

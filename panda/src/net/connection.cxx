@@ -109,10 +109,10 @@ send_datagram(const NetDatagram &datagram) {
     string data = header.get_header() + datagram.get_message();
     bytes_sent = data.length();
     result = PR_SendTo(_socket,
-		       data.data(), bytes_sent,
-		       0,
-		       datagram.get_address().get_addr(),
-		       PR_INTERVAL_NO_TIMEOUT);
+                       data.data(), bytes_sent,
+                       0,
+                       datagram.get_address().get_addr(),
+                       PR_INTERVAL_NO_TIMEOUT);
 
     if (net_cat.is_debug()) {
       header.verify_datagram(datagram);
@@ -122,9 +122,9 @@ send_datagram(const NetDatagram &datagram) {
     string data = header.get_header() + datagram.get_message();
     bytes_sent = data.length();
     result = PR_Send(_socket,
-		     data.data(), bytes_sent,
-		     0,
-		     PR_INTERVAL_NO_TIMEOUT);
+                     data.data(), bytes_sent,
+                     0,
+                     PR_INTERVAL_NO_TIMEOUT);
 
     if (net_cat.is_debug()) {
       header.verify_datagram(datagram);
@@ -138,14 +138,14 @@ send_datagram(const NetDatagram &datagram) {
   if (result < 0) {
     if (errcode == PR_CONNECT_RESET_ERROR
 #ifdef PR_SOCKET_SHUTDOWN_ERROR
-	|| errcode == PR_SOCKET_SHUTDOWN_ERROR
-	|| errcode == PR_CONNECT_ABORTED_ERROR
+        || errcode == PR_SOCKET_SHUTDOWN_ERROR
+        || errcode == PR_CONNECT_ABORTED_ERROR
 #endif
-	) {
+        ) {
       // The connection has been reset; tell our manager about it
       // and ignore it.
       if (_manager != (ConnectionManager *)NULL) {
-	_manager->connection_reset(this);
+        _manager->connection_reset(this);
       }
       
     } else if (errcode != PR_PENDING_INTERRUPT_ERROR) {

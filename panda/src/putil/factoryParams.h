@@ -16,7 +16,7 @@
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FactoryParams
+//       Class : FactoryParams
 // Description : An instance of this class is passed to the Factory
 //               when requesting it to do its business and construct a
 //               new something.  It can be filled with optional

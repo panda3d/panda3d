@@ -22,8 +22,8 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : sgiglutGraphicsPipe
 // Description : This kind of pipe can create glut windows but
-//		 supports the functionality of an sgi pipe with
-//		 hardware channels
+//               supports the functionality of an sgi pipe with
+//               hardware channels
 ////////////////////////////////////////////////////////////////////
 class sgiglutGraphicsPipe : public sgiGraphicsPipe
 {

@@ -13,7 +13,7 @@
 #include <onOffAttribute.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GeomBinAttribute
+//       Class : GeomBinAttribute
 // Description : See GeomBinTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomBinAttribute : public OnOffAttribute {
@@ -49,7 +49,7 @@ public:
   static void init_type() {
     OnOffAttribute::init_type();
     register_type(_type_handle, "GeomBinAttribute",
-		  OnOffAttribute::get_class_type());
+                  OnOffAttribute::get_class_type());
   }
 
 private:

@@ -20,15 +20,15 @@ class PStatView;
 class GtkStatsGuide;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GtkStatsStripChart
+//       Class : GtkStatsStripChart
 // Description : A special widget that draws a strip chart, given a
 //               view.
 ////////////////////////////////////////////////////////////////////
 class GtkStatsStripChart : public Gtk::DrawingArea, public PStatStripChart {
 public:
   GtkStatsStripChart(GtkStatsMonitor *monitor,
-		     PStatView &view, int collector_index,
-		     int xsize, int ysize);
+                     PStatView &view, int collector_index,
+                     int xsize, int ysize);
 
   void mark_dead();
 

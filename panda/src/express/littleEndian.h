@@ -13,7 +13,7 @@
 #include "reversedNumericData.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LittleEndian
+//       Class : LittleEndian
 // Description : LittleEndian is a special class that automatically
 //               reverses the byte-order of numeric values for
 //               big-endian machines, and passes them through

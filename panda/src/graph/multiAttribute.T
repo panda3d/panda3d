@@ -167,7 +167,7 @@ internal_compare_to(const NodeAttribute *other) const {
   DCAST_INTO_R(ot, other, false);
 
   return bmap_compare(_properties.begin(), _properties.end(),
-		      ot->_properties.begin(), ot->_properties.end());
+                      ot->_properties.begin(), ot->_properties.end());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -255,7 +255,7 @@ template<class Property, class NameClass>
 INLINE_GRAPH MultiAttribute<Property, NameClass>::Properties::iterator MultiAttribute<Property, NameClass>::
 find_property(const Property &prop, bool &found_flag) {
   return binary_search_property(_properties.begin(), _properties.end(),
-				prop, found_flag);
+                                prop, found_flag);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -271,7 +271,7 @@ find_property(const Property &prop, bool &found_flag) {
 template<class Property, class NameClass>
 MultiAttribute<Property, NameClass>::Properties::iterator MultiAttribute<Property, NameClass>::
 binary_search_property(Properties::iterator begin, Properties::iterator end,
-		       const Property &prop, bool &found_flag) {
+                       const Property &prop, bool &found_flag) {
   if (begin == end) {
     return begin;
   }

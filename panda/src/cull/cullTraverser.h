@@ -27,7 +27,7 @@ class CullState;
 class AllTransitionsWrapper;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : CullTraverser
+//       Class : CullTraverser
 // Description : A special kind of RenderTraverser that makes a
 //               complete "cull" pass over the scene graph, grouping
 //               the geometry by state and adding it to individual
@@ -38,7 +38,7 @@ class EXPCL_PANDA CullTraverser :
   public TraverserVisitor<NullTransitionWrapper, CullLevelState> {
 public:
   CullTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type,
-		const ArcChain &arc_chain = ArcChain());
+                const ArcChain &arc_chain = ArcChain());
   virtual ~CullTraverser();
 
 PUBLISHED:
@@ -52,15 +52,15 @@ PUBLISHED:
 public:
 
   virtual void traverse(Node *root, 
-			const AllAttributesWrapper &initial_state,
-			const AllTransitionsWrapper &net_trans);
+                        const AllAttributesWrapper &initial_state,
+                        const AllTransitionsWrapper &net_trans);
 
   INLINE void draw_geom(GeomNode *geom_node,
-			const AllAttributesWrapper &initial_state);
+                        const AllAttributesWrapper &initial_state);
   INLINE void draw_geom(const ArcChain &arc_chain,
-			const AllAttributesWrapper &initial_state);
+                        const AllAttributesWrapper &initial_state);
   INLINE void draw_direct(const ArcChain &arc_chain,
-			  const AllAttributesWrapper &initial_state);
+                          const AllAttributesWrapper &initial_state);
 
 private:
   void setup_initial_bins();
@@ -69,16 +69,16 @@ private:
   void clean_out_old_states();
 
   void add_geom_node(GeomNode *node, 
-		     const AllTransitionsWrapper &trans,
-		     const CullLevelState &level_state);
+                     const AllTransitionsWrapper &trans,
+                     const CullLevelState &level_state);
   void add_direct_node(Node *node, 
-		       const AllTransitionsWrapper &trans,
-		       const CullLevelState &level_state);
-		     
+                       const AllTransitionsWrapper &trans,
+                       const CullLevelState &level_state);
+
   INLINE CullStateLookup *add_instance(NodeRelation *arc, 
-				       const AllTransitionsWrapper &trans,
-				       Node *top_subtree,
-				       const CullLevelState &level_state);
+                                       const AllTransitionsWrapper &trans,
+                                       Node *top_subtree,
+                                       const CullLevelState &level_state);
 
   INLINE CullState *find_bin_state(const AllTransitionsWrapper &trans);
 
@@ -88,13 +88,13 @@ public:
   // behavior of the RenderTraverser as it traverses the graph.
   // Normally you would never call these directly.
   bool forward_arc(NodeRelation *arc, NullTransitionWrapper &trans,
-		   NullAttributeWrapper &pre, NullAttributeWrapper &post,
-		   CullLevelState &level_state);
+                   NullAttributeWrapper &pre, NullAttributeWrapper &post,
+                   CullLevelState &level_state);
 
   INLINE void 
   backward_arc(NodeRelation *arc, NullTransitionWrapper &trans,
-	       NullAttributeWrapper &pre, NullAttributeWrapper &post,
-	       const CullLevelState &level_state);
+               NullAttributeWrapper &pre, NullAttributeWrapper &post,
+               const CullLevelState &level_state);
 
 private:
   void attach_toplevel_bin(GeomBin *bin);

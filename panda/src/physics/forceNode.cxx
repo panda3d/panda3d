@@ -69,7 +69,7 @@ add_forces_from(const ForceNode &other) {
   vector< PT(BaseForce) >::iterator last = _forces.end() - 1;
 
   _forces.insert(_forces.end(), 
-		 other._forces.begin(), other._forces.end());
+                 other._forces.begin(), other._forces.end());
 
   for (; last != _forces.end(); last++)
     (*last)->_force_node = this;

@@ -29,10 +29,10 @@ PUBLISHED:
   virtual ~Decompressor(void);
 
   int request_decompress(const Filename &source_file,
-			 const string &event_name);
+                         const string &event_name);
   int request_decompress(const Filename &source_file, 
-			 const Filename &dest_file,
-			 const string &event_name);
+                         const Filename &dest_file,
+                         const string &event_name);
 
   bool decompress(Filename &source_file);
   bool decompress(Filename &source_file, Filename &dest_file);

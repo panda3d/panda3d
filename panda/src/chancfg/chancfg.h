@@ -90,7 +90,7 @@ extern ChanCfgOverrides ChanOverrideNone;
 
 PT(GraphicsWindow) EXPCL_PANDA 
 ChanConfig(GraphicsPipe*, std::string, Node *camera_node, Node *render,
-	   ChanCfgOverrides& = ChanOverrideNone);
+           ChanCfgOverrides& = ChanOverrideNone);
 
 #include "chancfg.I"
 

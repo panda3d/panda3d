@@ -12,7 +12,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TypedObject
+//       Class : TypedObject
 // Description : This is an abstract class that all classes which
 //               use TypeHandle, and also provide virtual functions to
 //               support polymorphism, should inherit from.  Each

@@ -13,7 +13,7 @@
 class IndexRemapper;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : InterrogateManifest
+//       Class : InterrogateManifest
 // Description : An internal representation of a manifest constant.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOLCONFIG InterrogateManifest : public InterrogateComponent {

@@ -39,7 +39,7 @@ PUBLISHED:
 
 protected:
 
-  Planef    		_plane;
+  Planef                _plane;
 
 public:
 

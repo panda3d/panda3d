@@ -36,11 +36,11 @@ public:
   virtual void output_value(ostream &out) const=0;
 
   virtual void do_update(PartBundle *root, PartGroup *parent,
-			 bool parent_changed, bool anim_changed);
+                         bool parent_changed, bool anim_changed);
 
   virtual void get_blend_value(const PartBundle *root)=0;
   virtual void update_internals(PartGroup *parent, bool self_changed,
-				bool parent_changed);
+                                bool parent_changed);
 
 protected:
   MovingPartBase(void);
@@ -65,7 +65,7 @@ public:
   static void init_type() {
     PartGroup::init_type();
     register_type(_type_handle, "MovingPartBase",
-		  PartGroup::get_class_type());
+                  PartGroup::get_class_type());
   }
 
 private:

@@ -11,7 +11,7 @@
 #include "fltTransformRecord.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltTransformRotateAboutEdge
+//       Class : FltTransformRotateAboutEdge
 // Description : A transformation that rotates about a particular axis
 //               in space, defined by two endpoints.
 ////////////////////////////////////////////////////////////////////
@@ -47,7 +47,7 @@ public:
   static void init_type() {
     FltTransformRecord::init_type();
     register_type(_type_handle, "FltTransformRotateAboutEdge",
-		  FltTransformRecord::get_class_type());
+                  FltTransformRecord::get_class_type());
   }
 
 private:

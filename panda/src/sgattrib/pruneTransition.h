@@ -12,7 +12,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PruneTransition
+//       Class : PruneTransition
 // Description : This transition, when encountered in the scene graph,
 //               causes rendering to stop at this point and not
 //               traverse anything below.  In effect, it causes all
@@ -27,9 +27,9 @@ public:
   virtual NodeTransition *make_copy() const;
 
   virtual bool sub_render(NodeRelation *arc,
-			  const AllAttributesWrapper &attrib,
-			  AllTransitionsWrapper &trans,
-			  RenderTraverser *trav);
+                          const AllAttributesWrapper &attrib,
+                          AllTransitionsWrapper &trans,
+                          RenderTraverser *trav);
   virtual bool has_sub_render() const;
 
 public:
@@ -47,7 +47,7 @@ public:
   static void init_type() {
     ImmediateTransition::init_type();
     register_type(_type_handle, "PruneTransition",
-		  ImmediateTransition::get_class_type());
+                  ImmediateTransition::get_class_type());
   }
 
 private:

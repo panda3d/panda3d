@@ -11,7 +11,7 @@
 #include "lwoChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurfaceBlockVMapName
+//       Class : LwoSurfaceBlockVMapName
 // Description : Specifies the name of a set of UV's defined on the
 //               polygons that use this model.
 ////////////////////////////////////////////////////////////////////
@@ -34,7 +34,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoSurfaceBlockVMapName",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

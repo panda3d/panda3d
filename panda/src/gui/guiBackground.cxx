@@ -13,7 +13,7 @@ void GuiBackground::recompute_frame(void) {
   _bg->set_width(_item->get_width());
   _bg->set_height(_item->get_height());
   _bg->set_pos(LVector3f::rfu((_item->get_left() + _item->get_right())*0.5, 0.,
-			      (_item->get_bottom() + _item->get_top())*0.5));
+                              (_item->get_bottom() + _item->get_top())*0.5));
   _bg->recompute();
   GuiItem::recompute_frame();
   this->adjust_region();
@@ -29,7 +29,7 @@ GuiBackground::GuiBackground(const string& name, GuiItem* item)
   _bg->set_width(_item->get_width());
   _bg->set_height(_item->get_height());
   _bg->set_pos(LVector3f::rfu((_item->get_left() + _item->get_right())*0.5, 0.,
-			      (_item->get_bottom() + _item->get_top())*0.5));
+                              (_item->get_bottom() + _item->get_top())*0.5));
   item->set_priority(_bg, P_High);
 }
 
@@ -39,7 +39,7 @@ GuiBackground::GuiBackground(const string& name, GuiItem* item, Texture* tex)
   _bg->set_width(_item->get_width());
   _bg->set_height(_item->get_height());
   _bg->set_pos(LVector3f::rfu((_item->get_left() + _item->get_right())*0.5, 0.,
-			      (_item->get_bottom() + _item->get_top())*0.5));
+                              (_item->get_bottom() + _item->get_top())*0.5));
   item->set_priority(_bg, P_High);
 }
 
@@ -48,7 +48,7 @@ GuiBackground::GuiBackground(const string& name, GuiItem* item, GuiLabel* l)
   _bg->set_width(_item->get_width());
   _bg->set_height(_item->get_height());
   _bg->set_pos(LVector3f::rfu((_item->get_left() + _item->get_right())*0.5, 0.,
-			      (_item->get_bottom() + _item->get_top())*0.5));
+                              (_item->get_bottom() + _item->get_top())*0.5));
   item->set_priority(_bg, P_High);
 }
 
@@ -63,7 +63,7 @@ void GuiBackground::manage(GuiManager* mgr, EventHandler& eh) {
     GuiItem::manage(mgr, eh);
   } else
     gui_cat->warning() << "tried to manage background (0x" << (void*)this
-		       << ") thta is already managed" << endl;
+                       << ") thta is already managed" << endl;
 }
 
 void GuiBackground::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
@@ -73,7 +73,7 @@ void GuiBackground::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
     GuiItem::manage(mgr, eh, n);
   } else
     gui_cat->warning() << "tried to manage background (0x" << (void*)this
-		       << ") thta is already managed" << endl;
+                       << ") thta is already managed" << endl;
 }
 
 void GuiBackground::unmanage(void) {

@@ -28,7 +28,7 @@ protected:
 
 public:
   INLINE MovingPart(PartGroup *parent, const string &name,
-		    const ValueType &_initial_value);
+                    const ValueType &_initial_value);
 
   virtual TypeHandle get_value_type() const;
   virtual AnimChannelBase *make_initial_channel() const;
@@ -57,7 +57,7 @@ public:
   static void init_type() {
     MovingPartBase::init_type();
     register_type(_type_handle, SwitchType::get_part_type_name(),
-		  MovingPartBase::get_class_type());
+                  MovingPartBase::get_class_type());
   }
 
 private:

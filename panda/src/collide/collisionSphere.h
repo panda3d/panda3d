@@ -11,7 +11,7 @@
 #include "collisionSolid.h"
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CollisionSphere
+//       Class : CollisionSphere
 // Description : A spherical collision volume or object.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CollisionSphere : public CollisionSolid {
@@ -25,8 +25,8 @@ public:
 
   virtual int
   test_intersection(CollisionHandler *record,
-		    const CollisionEntry &entry,
-		    const CollisionSolid *into) const;
+                    const CollisionEntry &entry,
+                    const CollisionSolid *into) const;
 
   virtual void xform(const LMatrix4f &mat);
   virtual LPoint3f get_collision_origin() const;
@@ -48,18 +48,18 @@ protected:
 protected:
   virtual int
   test_intersection_from_sphere(CollisionHandler *record,
-				const CollisionEntry &entry) const;
+                                const CollisionEntry &entry) const;
   virtual int
   test_intersection_from_ray(CollisionHandler *record,
-			     const CollisionEntry &entry) const;
+                             const CollisionEntry &entry) const;
   virtual int
   test_intersection_from_segment(CollisionHandler *record,
-				 const CollisionEntry &entry) const;
+                                 const CollisionEntry &entry) const;
 
   virtual void recompute_viz(Node *parent);
 
   bool intersects_line(double &t1, double &t2,
-		       const LPoint3f &from, const LVector3f &delta) const;
+                       const LPoint3f &from, const LVector3f &delta) const;
 
 private:
   LPoint3f _center;
@@ -80,7 +80,7 @@ public:
   static void init_type() {
     CollisionSolid::init_type();
     register_type(_type_handle, "CollisionSphere",
-		  CollisionSolid::get_class_type());
+                  CollisionSolid::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

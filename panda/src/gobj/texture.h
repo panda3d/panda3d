@@ -57,7 +57,7 @@ PUBLISHED:
     WM_clamp,
     WM_repeat,
   };
-	
+
 PUBLISHED:
   Texture();
   ~Texture();
@@ -79,11 +79,11 @@ public:
 
   virtual void copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr);
   virtual void copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
-			const RenderBuffer &rb);
+                        const RenderBuffer &rb);
   virtual void draw(GraphicsStateGuardianBase *gsg);
   virtual void draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr);
   virtual void draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
-			const RenderBuffer &rb);
+                        const RenderBuffer &rb);
 
   INLINE bool has_ram_image(void) const {
     return !_pbuffer->_image.empty();
@@ -121,7 +121,7 @@ public:
   static void init_type() {
     ImageBuffer::init_type();
     register_type(_type_handle, "Texture",
-		  ImageBuffer::get_class_type());
+                  ImageBuffer::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -133,7 +133,7 @@ private:
   static TypeHandle _type_handle;
 
   ////////////////////////////////////////////////////////////////////
-	
+
 protected:
 
   int _level;

@@ -57,20 +57,20 @@ main(int argc, char *argv[]) {
     while (cm.reset_connection_available()) {
       PT(Connection) connection;
       if (cm.get_reset_connection(connection)) {
-	nout << "Lost connection from "
-	     << connection->get_address() << "\n";
-	cm.close_connection(connection);
-	if (connection == c) {
-	  lost_connection = true;
-	}
+        nout << "Lost connection from "
+             << connection->get_address() << "\n";
+        cm.close_connection(connection);
+        if (connection == c) {
+          lost_connection = true;
+        }
       }
     }
 
     // Now poll for new datagrams on the socket.
     while (reader.data_available()) {
       if (reader.get_data(datagram)) {
-	nout << "Got datagram " << datagram << "from " 
-	     << datagram.get_address() << "\n";
+        nout << "Got datagram " << datagram << "from " 
+             << datagram.get_address() << "\n";
       }
     }
 

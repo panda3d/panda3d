@@ -664,9 +664,9 @@ set_pos_hpr(float x, float y, float z, float h, float p, float r) {
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 set_pos_hpr_scale(float x, float y, float z, float h, float p, float r,
-		  float sx, float sy, float sz) {
+                  float sx, float sy, float sz) {
   set_pos_hpr_scale(LVecBase3f(x, y, z), LVecBase3f(h, p, r),
-		    LVecBase3f(sx, sy, sz));
+                    LVecBase3f(sx, sy, sz));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -960,8 +960,8 @@ get_sz(const NodePath &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 set_pos_hpr(const NodePath &other, 
-	    float x, float y, float z, 
-	    float h, float p, float r) {
+            float x, float y, float z, 
+            float h, float p, float r) {
   set_pos_hpr(other, LVecBase3f(x, y, z), LVecBase3f(h, p, r));
 }
 
@@ -974,11 +974,11 @@ set_pos_hpr(const NodePath &other,
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 set_pos_hpr_scale(const NodePath &other,
-		  float x, float y, float z,
-		  float h, float p, float r,
-		  float sx, float sy, float sz) {
+                  float x, float y, float z,
+                  float h, float p, float r,
+                  float sx, float sy, float sz) {
   set_pos_hpr_scale(other, LVecBase3f(x, y, z), LVecBase3f(h, p, r),
-		    LVecBase3f(sx, sy, sz));
+                    LVecBase3f(sx, sy, sz));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1119,7 +1119,7 @@ get_distance(const NodePath &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 set_color(float r, float g, float b, float a,
-	  int priority) {
+          int priority) {
   set_color(Colorf(r, g, b, a), priority);
 }
 

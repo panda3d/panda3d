@@ -118,14 +118,14 @@ get_transform() const {
 void PlanarSlider::
 set_mouse_pos(const LPoint2f &mouse_pos) {
   _mouse_pos.set(max(min(mouse_pos[0], 1.0f), -1.0f),
-		 max(min(mouse_pos[1], 1.0f), -1.0f));
+                 max(min(mouse_pos[1], 1.0f), -1.0f));
 
   LMatrix4f mat = 
     _inverse_mat *
     LMatrix4f::translate_mat(LVector3f::rfu(_mouse_pos[0],
-					    _mouse_pos[1],
-					    0.0,
-					    _cs)) *
+                                            _mouse_pos[1],
+                                            0.0,
+                                            _cs)) *
     _transform_mat;
 
   _transform->set_value(mat);
@@ -179,15 +179,15 @@ void PlanarSlider::
 init_type() {
   DataNode::init_type();
   register_type(_type_handle, "PlanarSlider",
-		DataNode::get_class_type());
+                DataNode::get_class_type());
 
   Vec3DataTransition::init_type();
   register_data_transition(_xyz_type, "XYZ",
-			   Vec3DataTransition::get_class_type());
+                           Vec3DataTransition::get_class_type());
   MatrixDataTransition::init_type();
   register_data_transition(_transform_type, "Transform",
-			   MatrixDataTransition::get_class_type());
+                           MatrixDataTransition::get_class_type());
   ButtonEventDataTransition::init_type();
   register_data_transition(_button_events_type, "ButtonEvents",
-			   ButtonEventDataTransition::get_class_type());
+                           ButtonEventDataTransition::get_class_type());
 }

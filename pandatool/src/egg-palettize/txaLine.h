@@ -20,7 +20,7 @@ class EggFile;
 class TextureImage;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TxaLine
+//       Class : TxaLine
 // Description : This is a single matching line in the .txa file.  It
 //               consists of a list of names (texture names or egg
 //               file names), followed by a colon and an optional size

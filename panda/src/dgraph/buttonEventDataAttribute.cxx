@@ -85,7 +85,7 @@ merge(const NodeAttribute *other) const {
       new ButtonEventDataAttribute(*this);
 
     new_attrib->_buttons.insert(new_attrib->_buttons.end(),
-				oa->_buttons.begin(), oa->_buttons.end());
+                                oa->_buttons.begin(), oa->_buttons.end());
     return new_attrib;
   }
 }
@@ -130,12 +130,12 @@ internal_compare_to(const NodeAttribute *other) const {
   if (ot->_buttons == _buttons)
     return 0;
   else if (lexicographical_compare(_buttons.begin(), _buttons.end(),
-				ot->_buttons.begin(), ot->_buttons.end()))
+                                ot->_buttons.begin(), ot->_buttons.end()))
     return -1;
   else 
     return 1;
 #else
   return lexicographical_compare_3way(_buttons.begin(), _buttons.end(),
-				      ot->_buttons.begin(), ot->_buttons.end());
+                                      ot->_buttons.begin(), ot->_buttons.end());
 #endif
 }

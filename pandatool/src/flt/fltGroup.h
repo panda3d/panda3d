@@ -11,7 +11,7 @@
 #include "fltBeadID.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltGroup
+//       Class : FltGroup
 // Description : The main grouping bead of the flt file.
 ////////////////////////////////////////////////////////////////////
 class FltGroup : public FltBeadID {
@@ -47,7 +47,7 @@ public:
   static void init_type() {
     FltBeadID::init_type();
     register_type(_type_handle, "FltGroup",
-		  FltBeadID::get_class_type());
+                  FltBeadID::get_class_type());
   }
 
 private:

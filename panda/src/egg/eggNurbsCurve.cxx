@@ -136,7 +136,7 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level + 2) 
     << "<Knots> {\n";
   write_long_list(out, indent_level+4, _knots.begin(), _knots.end(), "",
-	"", 72);
+        "", 72);
   indent(out, indent_level + 2)
     << "}\n";
 

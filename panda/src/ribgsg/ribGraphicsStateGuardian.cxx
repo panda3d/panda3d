@@ -70,14 +70,14 @@ issue_texcoord_rib(const Geom *geom, Geom::TexCoordIterator &ti) {
   // We need to reverse the V coordinate for RIB.
   static LMatrix3f 
     texmat(1.0, 0.0, 0.0,
-	   0.0, -1.0, 0.0,
-	   0.0, 1.0, 1.0);
+           0.0, -1.0, 0.0,
+           0.0, 1.0, 1.0);
   rib_texcoords.push_back(geom->get_next_texcoord(ti) * texmat);
 }
 
 static void
 issue_color_rib(const Geom *geom, Geom::ColorIterator &ci, 
-		const GraphicsStateGuardianBase *) {
+                const GraphicsStateGuardianBase *) {
   // RIB only cares about three-component color, so we have to convert
   // the four-component color attribute to three-component color here.
   rib_colors.push_back((const RGBColorf &)geom->get_next_color(ci));
@@ -177,7 +177,7 @@ clear(const RenderBuffer &, const DisplayRegion* ) {
 //     Function: RIBGraphicsStateGuardian::prepare_display_region
 //       Access: Public 
 //  Description: Prepare a display region for rendering (set up
-//		 scissor region and viewport)
+//               scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 prepare_display_region() {
@@ -202,26 +202,26 @@ render_frame(const AllAttributesWrapper &initial_state) {
     if (_win->is_channel_defined(c)) {
       GraphicsChannel *chan = _win->get_channel(c);
       if (chan->is_active()) {
-	int num_layers = chan->get_num_layers();
-	for (int l = 0; l < num_layers; l++) {
-	  GraphicsLayer *layer = chan->get_layer(l);
-	  if (layer->is_active()) {
-	    int num_drs = layer->get_num_drs();
-	    for (int d = 0; d < num_drs; d++) {
-	      DisplayRegion *dr = layer->get_dr(d);
-	      Camera *cam = dr->get_camera();
-	    
-	      // For each display region, render from the camera's view.
-	      if (dr->is_active() && cam != (Camera *)NULL && 
-		  cam->is_active() && cam->get_scene() != (Node *)NULL) {
-		DisplayRegionStack old_dr = push_display_region(dr);
-		prepare_display_region();
-		render_scene(cam->get_scene(), cam, initial_state);
-		pop_display_region(old_dr);
-	      }
-	    }
-	  }
-	}
+        int num_layers = chan->get_num_layers();
+        for (int l = 0; l < num_layers; l++) {
+          GraphicsLayer *layer = chan->get_layer(l);
+          if (layer->is_active()) {
+            int num_drs = layer->get_num_drs();
+            for (int d = 0; d < num_drs; d++) {
+              DisplayRegion *dr = layer->get_dr(d);
+              Camera *cam = dr->get_camera();
+
+              // For each display region, render from the camera's view.
+              if (dr->is_active() && cam != (Camera *)NULL && 
+                  cam->is_active() && cam->get_scene() != (Node *)NULL) {
+                DisplayRegionStack old_dr = push_display_region(dr);
+                prepare_display_region();
+                render_scene(cam->get_scene(), cam, initial_state);
+                pop_display_region(old_dr);
+              }
+            }
+          }
+        }
       }
     }
   }
@@ -243,11 +243,11 @@ render_frame(const AllAttributesWrapper &initial_state) {
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 render_scene(Node *root, ProjectionNode *projnode,
-	     const AllAttributesWrapper &initial_state) {
+             const AllAttributesWrapper &initial_state) {
   _current_root_node = root;
 
   render_subgraph(_render_traverser, root, projnode, 
-		  initial_state, AllTransitionsWrapper());
+                  initial_state, AllTransitionsWrapper());
 }
 
 
@@ -261,9 +261,9 @@ render_scene(Node *root, ProjectionNode *projnode,
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 render_subgraph(RenderTraverser *traverser, 
-		Node *subgraph, ProjectionNode *projnode,
-		const AllAttributesWrapper &initial_state,
-		const AllTransitionsWrapper &net_trans) {
+                Node *subgraph, ProjectionNode *projnode,
+                const AllAttributesWrapper &initial_state,
+                const AllTransitionsWrapper &net_trans) {
   ProjectionNode *old_projection_node = _current_projection_node;
   _current_projection_node = projnode;
 
@@ -320,7 +320,7 @@ render_subgraph(RenderTraverser *traverser,
   }
 
   new_line() << "Format " << width << " " << height << " "
-	     << (float)height * frame_aspect / (float)width << "\n";
+             << (float)height * frame_aspect / (float)width << "\n";
   new_line() << "FrameAspectRatio " << frame_aspect << "\n";
   
   new_line() << "Sides 1\n";
@@ -361,9 +361,9 @@ render_subgraph(RenderTraverser *traverser,
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 render_subgraph(RenderTraverser *traverser, 
-		Node *subgraph,
-		const AllAttributesWrapper &initial_state,
-		const AllTransitionsWrapper &net_trans) {
+                Node *subgraph,
+                const AllAttributesWrapper &initial_state,
+                const AllTransitionsWrapper &net_trans) {
   nassertv(traverser != (RenderTraverser *)NULL);
   traverser->traverse(subgraph, initial_state, net_trans);
 }
@@ -628,7 +628,7 @@ copy_pixel_buffer(PixelBuffer *, const DisplayRegion *, const RenderBuffer &) {
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 draw_pixel_buffer(PixelBuffer *, const DisplayRegion *,
-	const NodeAttributes &) {
+        const NodeAttributes &) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -638,7 +638,7 @@ draw_pixel_buffer(PixelBuffer *, const DisplayRegion *,
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 draw_pixel_buffer(PixelBuffer *, const DisplayRegion *, const RenderBuffer &,
-	const NodeAttributes &) {
+        const NodeAttributes &) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -713,10 +713,10 @@ issue_light(const LightAttribute *attrib) {
     // else is already off and won't bother to run the list.)
     if (!_enabled_lights[0]) {
       for (int i = 1; i < _enabled_lights.size(); i++) {
-	if (_enabled_lights[i]) {
-	  new_line() << "Illuminate " << i << " 0\n";
-	  _enabled_lights[i] = false;
-	}
+        if (_enabled_lights[i]) {
+          new_line() << "Illuminate " << i << " 0\n";
+          _enabled_lights[i] = false;
+        }
       }
 
       // And turn on the default light, which illuminates the scene in
@@ -737,7 +737,7 @@ issue_light(const LightAttribute *attrib) {
       int id = (*ii).second;
       
       if (!_enabled_lights[id]) {
-	new_line() << "Illuminate " << id << " 1\n";
+        new_line() << "Illuminate " << id << " 1\n";
       }
       
       // We'll temporarily set the enabled flag to false, even
@@ -749,8 +749,8 @@ issue_light(const LightAttribute *attrib) {
     // Now turn off all the lights that are still marked "on".
     for (int i = 0; i < _enabled_lights.size(); i++) {
       if (_enabled_lights[i]) {
-	new_line() << "Illuminate " << i << " 0\n";
-	_enabled_lights[i] = false;
+        new_line() << "Illuminate " << i << " 0\n";
+        _enabled_lights[i] = false;
       }
     }
 
@@ -824,7 +824,7 @@ get_texture_extension() const {
 ////////////////////////////////////////////////////////////////////
 PT(SavedFrameBuffer) RIBGraphicsStateGuardian::
 save_frame_buffer(const RenderBuffer &buffer,
-		  CPT(DisplayRegion) dr) {
+                  CPT(DisplayRegion) dr) {
   return new SavedFrameBuffer(buffer, dr);
 }
 
@@ -863,7 +863,7 @@ void RIBGraphicsStateGuardian::
 get_rib_stuff(Node *root, const AllAttributesWrapper &initial_state) {
   RibStuffTraverser trav(this);
   df_traverse(root, trav, initial_state, NullLevelState(),
-	      RenderRelation::get_class_type());
+              RenderRelation::get_class_type());
 }
 
 
@@ -948,8 +948,8 @@ define_light(const Light *light) {
       write_light_from(slight);
       write_light_to(slight);
       (*_output) 
-	<< " \"coneangle\" " << deg_2_rad(slight->get_cutoff_angle())
-	<< "\n";
+        << " \"coneangle\" " << deg_2_rad(slight->get_cutoff_angle())
+        << "\n";
 
     } else if (light->get_light_type() == AmbientLight::get_class_type()) {
       const AmbientLight *alight = (const AmbientLight *)light;
@@ -976,7 +976,7 @@ write_light_color(const Colorf &color) const {
 
   get_color_and_intensity((const RGBColorf &)color, output_color, intensity);
   (*_output) << " \"lightcolor\" [ " << output_color << " ] \"intensity\" "
-	     << intensity;
+             << intensity;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1029,13 +1029,13 @@ new_line(int extra_indent) const {
 void RIBGraphicsStateGuardian::
 reset_transform(const LMatrix4f &mat) const {
   new_line() << "Transform [ " << mat(0,0) << " " << mat(0,1) << " "
-	     << mat(0,2) << " " << mat(0,3) << "\n";
+             << mat(0,2) << " " << mat(0,3) << "\n";
   new_line(12) << mat(1,0) << " " << mat(1,1) << " " 
-	       << mat(1,2) << " " << mat(1,3) << "\n";
+               << mat(1,2) << " " << mat(1,3) << "\n";
   new_line(12) << mat(2,0) << " " << mat(2,1) << " " 
-	       << mat(2,2) << " " << mat(2,3) << "\n";
+               << mat(2,2) << " " << mat(2,3) << "\n";
   new_line(12) << mat(3,0) << " " << mat(3,1) << " " 
-	       << mat(3,2) << " " << mat(3,3) << " ]\n";
+               << mat(3,2) << " " << mat(3,3) << " ]\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1048,13 +1048,13 @@ reset_transform(const LMatrix4f &mat) const {
 void RIBGraphicsStateGuardian::
 concat_transform(const LMatrix4f &mat) const {
   new_line() << "ConcatTransform [ " << mat(0,0) << " " << mat(0,1) << " "
-	     << mat(0,2) << " " << mat(0,3) << "\n";
+             << mat(0,2) << " " << mat(0,3) << "\n";
   new_line(18) << mat(1,0) << " " << mat(1,1) << " " 
-	       << mat(1,2) << " " << mat(1,3) << "\n";
+               << mat(1,2) << " " << mat(1,3) << "\n";
   new_line(18) << mat(2,0) << " " << mat(2,1) << " " 
-	       << mat(2,2) << " " << mat(2,3) << "\n";
+               << mat(2,2) << " " << mat(2,3) << "\n";
   new_line(18) << mat(3,0) << " " << mat(3,1) << " " 
-	       << mat(3,2) << " " << mat(3,3) << " ]\n";
+               << mat(3,2) << " " << mat(3,3) << " ]\n";
 }
 
 
@@ -1077,10 +1077,10 @@ draw_simple_poly(const Geom *geom) {
   Geom::ColorIterator ci = geom->make_color_iterator();
 
   GeomIssuer issuer(geom, this,
-		    issue_vertex_rib,
-		    issue_normal_rib,
-		    issue_texcoord_rib,
-		    issue_color_rib);
+                    issue_vertex_rib,
+                    issue_normal_rib,
+                    issue_texcoord_rib,
+                    issue_color_rib);
   
   for (int i = 0; i < nprims; i++) {
     // First, for each primitive, we build up the various polygon
@@ -1143,36 +1143,36 @@ write_polygon(int num_verts) {
 
   // Vertices are always per-vertex.
   write_long_list(*_output, _indent_level,
-		  rib_vertices.rbegin(), rib_vertices.rend(),
-		  "Polygon \"P\" ", "            ", 72);
+                  rib_vertices.rbegin(), rib_vertices.rend(),
+                  "Polygon \"P\" ", "            ", 72);
 
   if (rib_normals.size() == 1) {
     // A single polygon normal.
     write_long_list(*_output, _indent_level,
-		    rib_normals.rbegin(), rib_normals.rend(),
-		    "       \"Np\" ", "            ", 72);
+                    rib_normals.rbegin(), rib_normals.rend(),
+                    "       \"Np\" ", "            ", 72);
   } else if (!rib_normals.empty()) {
     // Multiple per-vertex normals.
     assert(rib_normals.size() == num_verts);
     write_long_list(*_output, _indent_level,
-		    rib_normals.rbegin(), rib_normals.rend(),
-		    "        \"N\" ", "            ", 72);
+                    rib_normals.rbegin(), rib_normals.rend(),
+                    "        \"N\" ", "            ", 72);
   }
 
   if (!rib_texcoords.empty()) {
     // Per-vertex texcoords.
     assert(rib_texcoords.size() == num_verts);
     write_long_list(*_output, _indent_level,
-		    rib_texcoords.rbegin(), rib_texcoords.rend(),
-		    "       \"st\" ", "            ", 72);
+                    rib_texcoords.rbegin(), rib_texcoords.rend(),
+                    "       \"st\" ", "            ", 72);
   }
 
   if (!rib_colors.empty()) {
     assert(rib_colors.size() == num_verts);
     
     write_long_list(*_output, _indent_level,
-		    rib_colors.rbegin(), rib_colors.rend(),
-		    "       \"Cs\" ", "            ", 72);
+                    rib_colors.rbegin(), rib_colors.rend(),
+                    "       \"Cs\" ", "            ", 72);
   }
 
   // Clear the arrays for the next primitive.
@@ -1193,8 +1193,8 @@ write_polygon(int num_verts) {
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 get_color_and_intensity(const RGBColorf &input,
-			RGBColorf &output,
-			float &intensity) {
+                        RGBColorf &output,
+                        float &intensity) {
   intensity = max(max(input[0], input[1]), input[2]);
   if (intensity == 0.0) {
     output.set(1.0, 1.0, 1.0);
@@ -1229,5 +1229,5 @@ TypeHandle RIBGraphicsStateGuardian::get_class_type(void) {
 void RIBGraphicsStateGuardian::init_type(void) {
   GraphicsStateGuardian::init_type();
   register_type(_type_handle, "RIBGraphicsStateGuardian",
-		GraphicsStateGuardian::get_class_type());
+                GraphicsStateGuardian::get_class_type());
 }

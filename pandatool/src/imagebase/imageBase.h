@@ -13,7 +13,7 @@
 #include <pnmImage.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ImageBase
+//       Class : ImageBase
 // Description : This specialization of ProgramBase is intended for
 //               programs that read and/or write a single image file.
 //               (See ImageMultiBase for programs that operate on

@@ -13,7 +13,7 @@
 class GtkStatsMainWindow;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GtkStats
+//       Class : GtkStats
 // Description : A fancy graphical pstats server written using gtk+
 //               (actually, Gtk--, the C++ layer over gtk+).
 ////////////////////////////////////////////////////////////////////

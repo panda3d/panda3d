@@ -26,7 +26,7 @@ class Geom;
 class NodePath;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : CollisionTraverser
+//       Class : CollisionTraverser
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CollisionTraverser : 
@@ -57,25 +57,25 @@ public:
   // behavior of the CollisionTraverser as it traverses the graph.
   // Normally you would never call these directly.
   bool reached_node(Node *node, NullAttributeWrapper &render_state,
-		    CollisionLevelState &level_state);
+                    CollisionLevelState &level_state);
 
   bool forward_arc(NodeRelation *arc, NullTransitionWrapper &trans,
-		   NullAttributeWrapper &pre, NullAttributeWrapper &post,
-		   CollisionLevelState &level_state);
+                   NullAttributeWrapper &pre, NullAttributeWrapper &post,
+                   CollisionLevelState &level_state);
 
 private:
   void compare_collider_to_node(CollisionEntry &entry,
-				const GeometricBoundingVolume *from_node_gbv,
-				const GeometricBoundingVolume *into_node_gbv);
+                                const GeometricBoundingVolume *from_node_gbv,
+                                const GeometricBoundingVolume *into_node_gbv);
   void compare_collider_to_geom_node(CollisionEntry &entry,
-				     const GeometricBoundingVolume *from_node_gbv,
-				     const GeometricBoundingVolume *into_node_gbv);
+                                     const GeometricBoundingVolume *from_node_gbv,
+                                     const GeometricBoundingVolume *into_node_gbv);
   void compare_collider_to_solid(CollisionEntry &entry,
-				 const GeometricBoundingVolume *from_node_gbv,
-				 const GeometricBoundingVolume *solid_gbv);
+                                 const GeometricBoundingVolume *from_node_gbv,
+                                 const GeometricBoundingVolume *solid_gbv);
   void compare_collider_to_geom(CollisionEntry &entry, Geom *geom,
-				const GeometricBoundingVolume *from_node_gbv,
-				const GeometricBoundingVolume *solid_gbv);
+                                const GeometricBoundingVolume *from_node_gbv,
+                                const GeometricBoundingVolume *solid_gbv);
 
 private:
   PT(CollisionHandler) _default_handler;

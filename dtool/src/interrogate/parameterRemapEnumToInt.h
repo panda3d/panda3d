@@ -11,7 +11,7 @@
 #include "parameterRemap.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ParameterRemapEnumToInt
+//       Class : ParameterRemapEnumToInt
 // Description : A ParameterRemap class that handles remapping an
 //               enumerated type to an integer parameter.
 ////////////////////////////////////////////////////////////////////

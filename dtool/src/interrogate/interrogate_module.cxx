@@ -82,23 +82,23 @@ write_python_table(ostream &out) {
 
     // Consider only those that belong in the module we asked for.
     if (interrogate_function_has_module_name(function_index) &&
-	module_name == interrogate_function_module_name(function_index)) {
+        module_name == interrogate_function_module_name(function_index)) {
 
       // For each function, get all of the python wrappers.
       int num_wrappers = 
-	interrogate_function_number_of_python_wrappers(function_index);
+        interrogate_function_number_of_python_wrappers(function_index);
 
       for (int wi = 0; wi < num_wrappers; wi++) {
-	FunctionWrapperIndex wrapper_index = 
-	  interrogate_function_python_wrapper(function_index, wi);
+        FunctionWrapperIndex wrapper_index = 
+          interrogate_function_python_wrapper(function_index, wi);
 
-	if (interrogate_wrapper_is_callable_by_name(wrapper_index)) {
-	  count++;
-	  const char *wrapper_name = 
-	    interrogate_wrapper_name(wrapper_index);
-	  out << "  PyObject *" << wrapper_name
-	      << "(PyObject *self, PyObject *args);\n";
-	}
+        if (interrogate_wrapper_is_callable_by_name(wrapper_index)) {
+          count++;
+          const char *wrapper_name = 
+            interrogate_wrapper_name(wrapper_index);
+          out << "  PyObject *" << wrapper_name
+              << "(PyObject *self, PyObject *args);\n";
+        }
       }
     }
   }
@@ -114,22 +114,22 @@ write_python_table(ostream &out) {
 
     // Consider only those that belong in the module we asked for.
     if (interrogate_function_has_module_name(function_index) &&
-	module_name == interrogate_function_module_name(function_index)) {
+        module_name == interrogate_function_module_name(function_index)) {
 
       // For each function, get all of the python wrappers.
       int num_wrappers = 
-	interrogate_function_number_of_python_wrappers(function_index);
+        interrogate_function_number_of_python_wrappers(function_index);
       for (int wi = 0; wi < num_wrappers; wi++) {
-	FunctionWrapperIndex wrapper_index = 
-	  interrogate_function_python_wrapper(function_index, wi);
+        FunctionWrapperIndex wrapper_index = 
+          interrogate_function_python_wrapper(function_index, wi);
 
-	if (interrogate_wrapper_is_callable_by_name(wrapper_index)) {
-	  const char *wrapper_name = 
-	    interrogate_wrapper_name(wrapper_index);
-	  out << "  { \""
-	      << wrapper_name << "\", &"
-	      << wrapper_name << ", METH_VARARGS },\n";
-	}
+        if (interrogate_wrapper_is_callable_by_name(wrapper_index)) {
+          const char *wrapper_name = 
+            interrogate_wrapper_name(wrapper_index);
+          out << "  { \""
+              << wrapper_name << "\", &"
+              << wrapper_name << ", METH_VARARGS },\n";
+        }
       }
     }
   }
@@ -221,8 +221,8 @@ main(int argc, char *argv[]) {
       nout << "Loading " << pathname << "\n";
       void *dl = load_dso(pathname);
       if (dl == NULL) {
-	nout << "Unable to load: " << load_dso_error() << "\n";
-	exit(1);
+        nout << "Unable to load: " << load_dso_error() << "\n";
+        exit(1);
       }
     }
   }
@@ -235,8 +235,8 @@ main(int argc, char *argv[]) {
       nout << "Unable to write to " << output_code_filename << "\n";
     } else {
       if (build_python_wrappers) {
-	int count = write_python_table(output_code);
-	nout << count << " python function wrappers exported.\n";
+        int count = write_python_table(output_code);
+        nout << count << " python function wrappers exported.\n";
       }
     }
   }

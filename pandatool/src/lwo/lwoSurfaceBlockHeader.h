@@ -11,7 +11,7 @@
 #include "lwoGroupChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurfaceBlockHeader
+//       Class : LwoSurfaceBlockHeader
 // Description : The header chunk within a LwoSurfaceBlock chunk.
 ////////////////////////////////////////////////////////////////////
 class LwoSurfaceBlockHeader : public LwoGroupChunk {
@@ -35,7 +35,7 @@ public:
   static void init_type() {
     LwoGroupChunk::init_type();
     register_type(_type_handle, "LwoSurfaceBlockHeader",
-		  LwoGroupChunk::get_class_type());
+                  LwoGroupChunk::get_class_type());
   }
 
 private:

@@ -15,7 +15,7 @@
 #define TIFF_COLORMAP_MAXCOLORS 1024
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PNMFileTypeTIFF
+//       Class : PNMFileTypeTIFF
 // Description : For reading and writing TIFF files.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PNMFileTypeTIFF : public PNMFileType {
@@ -32,7 +32,7 @@ public:
   virtual bool matches_magic_number(const string &magic_number) const;
 
   virtual PNMReader *make_reader(FILE *file, bool owns_file = true,
-				 const string &magic_number = string());
+                                 const string &magic_number = string());
   virtual PNMWriter *make_writer(FILE *file, bool owns_file = true);
 
 public:

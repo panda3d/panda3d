@@ -17,7 +17,7 @@ class GeomNode;
 
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : BuilderBucketNode
+//       Class : BuilderBucketNode
 // Description : This is a wrapper class around BuilderBucket, used by
 //               the Builder class.  It stores a pointer to a
 //               BuilderBucket object, as well as lists of the

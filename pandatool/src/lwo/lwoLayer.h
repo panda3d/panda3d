@@ -13,7 +13,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoLayer
+//       Class : LwoLayer
 // Description : Signals the start of a new layer.  All the data
 //               chunks which follow will be included in this layer
 //               until another layer chunk is encountered.  If data is
@@ -49,7 +49,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoLayer",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

@@ -11,7 +11,7 @@
 #include <string>
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : Namable
+//       Class : Namable
 // Description : A base class for all things which can have a name.
 //               The name is either empty or nonempty, but it is never
 //               NULL.
@@ -49,7 +49,7 @@ private:
 INLINE ostream &operator << (ostream &out, const Namable &n);
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : NamableOrderByName
+//       Class : NamableOrderByName
 // Description : An STL function object for sorting an array of
 //               pointers to Namables into order by name.  Returns
 //               true if the objects are in sorted order, false

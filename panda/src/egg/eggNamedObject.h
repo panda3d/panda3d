@@ -17,7 +17,7 @@ class ostream;
 #endif
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggNamedObject
+//       Class : EggNamedObject
 // Description : This is a fairly high-level base class--any egg
 //               object that has a name.
 ////////////////////////////////////////////////////////////////////
@@ -28,7 +28,7 @@ public:
   INLINE EggNamedObject &operator = (const EggNamedObject &copy);
 
   void write_header(ostream &out, int indent_level,
-		    const char *egg_keyword) const;
+                    const char *egg_keyword) const;
 
 
   static TypeHandle get_class_type() {
@@ -38,7 +38,7 @@ public:
     EggObject::init_type();
     Namable::init_type();
     register_type(_type_handle, "EggNamedObject",
-		  EggObject::get_class_type(),
+                  EggObject::get_class_type(),
                   Namable::get_class_type());
   }
   virtual TypeHandle get_type() const {

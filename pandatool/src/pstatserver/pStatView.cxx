@@ -15,7 +15,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FrameSample
+//       Class : FrameSample
 // Description : This class is used within this module only--in fact,
 //               within PStatView::set_to_frame() only--to help
 //               collect event data out of the PStatFrameData object
@@ -74,7 +74,7 @@ public:
     if (!_pushed) {
       _pushed = true;
       if (_is_started) {
-	_net_time += time;
+        _net_time += time;
       }
     }
   }
@@ -82,7 +82,7 @@ public:
     if (_pushed) {
       _pushed = false;
       if (_is_started) {
-	_net_time -= time;
+        _net_time -= time;
       }
     }
   }
@@ -98,8 +98,8 @@ public:
     Started::reverse_iterator si;
     for (si = started.rbegin(); si != started.rend(); ++si) {
       if ((*si)->_pushed) {
-	(*si)->pop(time);
-	return;
+        (*si)->pop(time);
+        return;
       }
     }
   }
@@ -334,10 +334,10 @@ update_time_data(const PStatFrameData &frame_data) {
       nassertv(collector_index >= 0 && collector_index < (int)samples.size());
       
       if (_client_data->get_child_distance(_constraint, collector_index) >= 0) {
-	// Here's a data point we care about: anything at constraint
-	// level or below.
-	samples[collector_index].data_point(frame_data.get_time(i), is_start, started);
-	got_samples.insert(collector_index);
+        // Here's a data point we care about: anything at constraint
+        // level or below.
+        samples[collector_index].data_point(frame_data.get_time(i), is_start, started);
+        got_samples.insert(collector_index);
       }
     }
   }
@@ -348,7 +348,7 @@ update_time_data(const PStatFrameData &frame_data) {
   for (i = 0, si = samples.begin(); si != samples.end(); ++i, ++si) {
     if ((*si)._is_started) {
       nout << _client_data->get_collector_fullname(i)
-	   << " was not stopped at frame end!\n";
+           << " was not stopped at frame end!\n";
       (*si).data_point(frame_data.get_end(), false, started);
     }
   }
@@ -562,19 +562,19 @@ reset_level(PStatViewLevel *level) {
       nassertr(old_parent_level != level, true);
 
       if (parent_index != 0) {
-	PStatViewLevel *new_parent_level = get_level(parent_index);
-	nassertr(new_parent_level != level, true);
-	level->_parent = new_parent_level;
-	new_parent_level->_children.push_back(level);
-	new_parent_level->sort_children(_client_data);
+        PStatViewLevel *new_parent_level = get_level(parent_index);
+        nassertr(new_parent_level != level, true);
+        level->_parent = new_parent_level;
+        new_parent_level->_children.push_back(level);
+        new_parent_level->sort_children(_client_data);
       } else {
-	level->_parent = NULL;
+        level->_parent = NULL;
       }
 
       PStatViewLevel::Children::iterator ci = 
-	find(old_parent_level->_children.begin(),
-	     old_parent_level->_children.end(),
-	     level);
+        find(old_parent_level->_children.begin(),
+             old_parent_level->_children.end(),
+             level);
 
       nassertr(ci != old_parent_level->_children.end(), true);
       old_parent_level->_children.erase(ci);

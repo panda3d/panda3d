@@ -12,7 +12,7 @@
 #include <lmatrix.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ColorMatrixAttribute
+//       Class : ColorMatrixAttribute
 // Description : See ColorMatrixTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ColorMatrixAttribute : public LMatrix4fAttribute {
@@ -36,7 +36,7 @@ public:
   static void init_type() {
     LMatrix4fAttribute::init_type();
     register_type(_type_handle, "ColorMatrixAttribute",
-		  LMatrix4fAttribute::get_class_type());
+                  LMatrix4fAttribute::get_class_type());
   }
 
 private:

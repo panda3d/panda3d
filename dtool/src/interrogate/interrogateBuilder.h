@@ -33,7 +33,7 @@ class CPPManifest;
 class InterrogateType;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : InterrogateBuilder
+//       Class : InterrogateBuilder
 // Description : This class builds up the InterrogateDatabase based on
 //               the data indicated by CPPParser after reading the
 //               source code.
@@ -57,7 +57,7 @@ private:
   typedef set<string> Commands;
   typedef map<string, string> CommandParams;
   void insert_param_list(InterrogateBuilder::Commands &commands, 
-			 const string &params);
+                         const string &params);
 
   bool in_forcetype(const string &name) const;
   string in_renametype(const string &name) const;
@@ -76,29 +76,29 @@ private:
   void scan_enum_type(CPPEnumType *type);
   void scan_manifest(CPPManifest *manifest);
   ElementIndex scan_element(CPPInstance *element, CPPStructType *struct_type, 
-			    CPPScope *scope);
+                            CPPScope *scope);
 
   FunctionIndex get_getter(CPPType *expr_type, string expression,
-			   CPPStructType *struct_type, CPPScope *scope,
-			   CPPInstance *element);
+                           CPPStructType *struct_type, CPPScope *scope,
+                           CPPInstance *element);
   FunctionIndex get_setter(CPPType *expr_type, string expression,
-			   CPPStructType *struct_type, CPPScope *scope,
-			   CPPInstance *element);
+                           CPPStructType *struct_type, CPPScope *scope,
+                           CPPInstance *element);
   FunctionIndex get_cast_function(CPPType *to_type, CPPType *from_type,
-				  const string &prefix);
+                                  const string &prefix);
   FunctionIndex
   get_function(CPPInstance *function, string description,
-	       CPPStructType *struct_type, CPPScope *scope,
-	       bool global, WrapperBuilder::Type wtype,
-	       const string &expression = string());
+               CPPStructType *struct_type, CPPScope *scope,
+               bool global, WrapperBuilder::Type wtype,
+               const string &expression = string());
 
   void make_wrappers();
   FunctionWrapperIndex 
   get_wrapper(FunctionIndex function_index, 
-	      WrapperBuilder *wbuilder, CPPInstance *function, 
-	      string description, CPPStructType *struct_type, CPPScope *scope,
-	      WrapperBuilder::Type wtype, const string &expression,
-	      int num_default_parameters);
+              WrapperBuilder *wbuilder, CPPInstance *function, 
+              string description, CPPStructType *struct_type, CPPScope *scope,
+              WrapperBuilder::Type wtype, const string &expression,
+              int num_default_parameters);
 
   TypeIndex get_atomic_string_type();
   TypeIndex get_type(CPPType *type, bool global);
@@ -107,21 +107,21 @@ private:
   void define_wrapped_type(InterrogateType &itype, CPPPointerType *cpptype);
   void define_wrapped_type(InterrogateType &itype, CPPConstType *cpptype);
   void define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
-			  bool forced);
+                          bool forced);
   void update_method_comment(CPPInstance *function, CPPStructType *struct_type,
-			     CPPScope *scope);
+                             CPPScope *scope);
   void define_method(CPPFunctionGroup *fgroup, InterrogateType &itype,
-		     CPPStructType *struct_type, CPPScope *scope);
+                     CPPStructType *struct_type, CPPScope *scope);
   void define_method(CPPInstance *function, InterrogateType &itype, 
-		     CPPStructType *struct_type, CPPScope *scope);
+                     CPPStructType *struct_type, CPPScope *scope);
   void define_enum_type(InterrogateType &itype, CPPEnumType *cpptype);
   void define_extension_type(InterrogateType &itype, 
                              CPPExtensionType *cpptype);
 
   void hash_function_signature(WrapperBuilder *wbuilder);
   string hash_string(const string &name, 
-		     int additional_number = 0,
-		     int shift_offset = 5);
+                     int additional_number = 0,
+                     int shift_offset = 5);
 
   static string trim_blanks(const string &str);
 

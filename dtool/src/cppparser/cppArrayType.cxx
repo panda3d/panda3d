@@ -93,7 +93,7 @@ is_equivalent(const CPPType &other) const {
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPArrayType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
-		CPPScope *current_scope, CPPScope *global_scope) {
+                CPPScope *current_scope, CPPScope *global_scope) {
   SubstDecl::const_iterator si = subst.find(this);
   if (si != subst.end()) {
     return (*si).second;
@@ -145,8 +145,8 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
 ////////////////////////////////////////////////////////////////////
 void CPPArrayType::
 output_instance(ostream &out, int indent_level, CPPScope *scope,
-		bool complete, const string &prename,
-		const string &name) const {
+                bool complete, const string &prename,
+                const string &name) const {
   ostringstream brackets;
   brackets << "[";
   if (_bounds != NULL) {
@@ -156,7 +156,7 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
   string bracketsstr = brackets.str();
 
   _element_type->output_instance(out, indent_level, scope, complete, 
-				 prename, name + bracketsstr);
+                                 prename, name + bracketsstr);
 }
 
 ////////////////////////////////////////////////////////////////////

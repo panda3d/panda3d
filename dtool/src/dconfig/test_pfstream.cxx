@@ -12,7 +12,7 @@ void ReadIt(istream& ifs) {
    while (!ifs.eof()) {
       std::getline(ifs, line);
       if (line.length() != 0)
-	 cout << line << endl;
+         cout << line << endl;
    }
 }
 

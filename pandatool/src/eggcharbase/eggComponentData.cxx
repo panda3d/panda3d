@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////////////
 EggComponentData::
 EggComponentData(EggCharacterCollection *collection, 
-		 EggCharacterData *char_data) :
+                 EggCharacterData *char_data) :
   _collection(collection),
   _char_data(char_data)
 {

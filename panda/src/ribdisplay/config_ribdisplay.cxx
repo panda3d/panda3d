@@ -15,8 +15,8 @@ NotifyCategoryDef(ribdisplay, "display");
 ConfigureFn(config_ribdisplay) {
   RIBGraphicsPipe::init_type();
   GraphicsPipe::get_factory().register_factory(RIBGraphicsPipe::get_class_type(),
-					  RIBGraphicsPipe::make_RIBGraphicsPipe);
+                                          RIBGraphicsPipe::make_RIBGraphicsPipe);
   RIBGraphicsWindow::init_type();
   GraphicsWindow::get_factory().register_factory(RIBGraphicsWindow::get_class_type(),
-					     RIBGraphicsWindow::make_RibGraphicsWindow);
+                                             RIBGraphicsWindow::make_RibGraphicsWindow);
 }

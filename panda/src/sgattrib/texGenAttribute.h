@@ -13,7 +13,7 @@
 #include <onAttribute.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TexGenAttribute
+//       Class : TexGenAttribute
 // Description : See TexGenTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TexGenAttribute : public OnAttribute {
@@ -52,7 +52,7 @@ public:
   static void init_type() {
     OnAttribute::init_type();
     register_type(_type_handle, "TexGenAttribute",
-		  OnAttribute::get_class_type());
+                  OnAttribute::get_class_type());
   }
 
 private:

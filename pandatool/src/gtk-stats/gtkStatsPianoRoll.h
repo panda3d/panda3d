@@ -20,7 +20,7 @@ class PStatView;
 class GtkStatsGuide;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GtkStatsPianoRoll
+//       Class : GtkStatsPianoRoll
 // Description : A special widget that draws a piano-roll style chart,
 //               which shows the collectors explicitly stopping and
 //               starting, one frame at a time.
@@ -28,7 +28,7 @@ class GtkStatsGuide;
 class GtkStatsPianoRoll : public Gtk::DrawingArea, public PStatPianoRoll {
 public:
   GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index,
-		    int xsize, int ysize);
+                    int xsize, int ysize);
 
   void mark_dead();
 

@@ -53,7 +53,7 @@ private:
 
 private:
   bool find_character_gsets(Node *root, Geom *&ch, GeomPoint *&dot,
-			    AllTransitionsWrapper &trans);
+                            AllTransitionsWrapper &trans);
   void find_characters(Node *root);
 
   typedef map<int, CharDef> CharDefs;
@@ -68,7 +68,7 @@ public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "TextFont",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

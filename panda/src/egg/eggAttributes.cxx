@@ -72,7 +72,7 @@ write(ostream &out, int indent_level) const {
   if (has_normal()) {
     if (_dnormals.empty()) {
       indent(out, indent_level) 
-	<< "<Normal> { " << get_normal() << " }\n";
+        << "<Normal> { " << get_normal() << " }\n";
     } else {
       indent(out, indent_level) << "<Normal> {\n";
       indent(out, indent_level+2) << get_normal() << "\n";
@@ -83,7 +83,7 @@ write(ostream &out, int indent_level) const {
   if (has_uv()) {
     if (_duvs.empty()) {
       indent(out, indent_level) 
-	<< "<UV> { " << get_uv() << " }\n";
+        << "<UV> { " << get_uv() << " }\n";
     } else {
       indent(out, indent_level) << "<UV> {\n";
       indent(out, indent_level+2) << get_uv() << "\n";
@@ -94,7 +94,7 @@ write(ostream &out, int indent_level) const {
   if (has_color()) {
     if (_drgbas.empty()) {
       indent(out, indent_level) 
-	<< "<RGBA> { " << get_color() << " }\n";
+        << "<RGBA> { " << get_color() << " }\n";
     } else {
       indent(out, indent_level) << "<RGBA> {\n";
       indent(out, indent_level+2) << get_color() << "\n";

@@ -13,7 +13,7 @@
 #include <onTransition.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : StencilTransition
+//       Class : StencilTransition
 // Description : This is scene graph stencil (which is not to be
 //               confused with geometry stencil).  By setting a
 //               StencilTransition on the scene graph, you can override
@@ -25,7 +25,7 @@
 class EXPCL_PANDA StencilTransition : public OnTransition {
 public:
   INLINE StencilTransition(StencilProperty::Mode mode,
-			   StencilProperty::Action action = StencilProperty::A_keep);
+                           StencilProperty::Action action = StencilProperty::A_keep);
 
   INLINE void set_mode(StencilProperty::Mode mode);
   INLINE StencilProperty::Mode get_mode() const;
@@ -55,7 +55,7 @@ public:
   static void init_type() {
     OnTransition::init_type();
     register_type(_type_handle, "StencilTransition",
-		  OnTransition::get_class_type());
+                  OnTransition::get_class_type());
   }
 
 private:

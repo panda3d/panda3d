@@ -60,14 +60,14 @@ make_reader(const Filename &filename, PNMFileType *type) const {
 
     if (pnmimage_cat.is_debug()) {
       pnmimage_cat.debug()
-	<< "(reading standard input)\n";
+        << "(reading standard input)\n";
     }
 
   } else {
     if (!actual_name.exists()) {
       if (pnmimage_cat.is_debug()) {
-	pnmimage_cat.debug()
-	  << "File " << filename << " does not exist.\n";
+        pnmimage_cat.debug()
+          << "File " << filename << " does not exist.\n";
       }
       // The file doesn't exist.  Don't pass it through libpnm, which
       // will abort.
@@ -80,7 +80,7 @@ make_reader(const Filename &filename, PNMFileType *type) const {
   if (file == (FILE *)NULL) {
     if (pnmimage_cat.is_debug()) {
       pnmimage_cat.debug()
-	<< "Unable to open file.\n";
+        << "Unable to open file.\n";
     }
     return NULL;
   }
@@ -120,16 +120,16 @@ make_reader(const Filename &filename, PNMFileType *type) const {
 ////////////////////////////////////////////////////////////////////
 PNMReader *PNMImageHeader::
 make_reader(FILE *file, bool owns_file, const Filename &filename,
-	    string magic_number, PNMFileType *type) const {
+            string magic_number, PNMFileType *type) const {
   if (type == (PNMFileType *)NULL) {
     if (!read_magic_number(file, magic_number, 2)) {
       // No magic number.  No image.
       if (pnmimage_cat.is_debug()) {
-	pnmimage_cat.debug()
-	  << "Image file appears to be empty.\n";
+        pnmimage_cat.debug()
+          << "Image file appears to be empty.\n";
       }
       if (owns_file) {
-	pm_close(file);
+        pm_close(file);
       }
       return NULL;
     }
@@ -139,12 +139,12 @@ make_reader(FILE *file, bool owns_file, const Filename &filename,
 
     if (pnmimage_cat.is_debug()) {
       if (type != (PNMFileType *)NULL) {
-	pnmimage_cat.debug()
-	  << "By magic number, image file appears to be type "
-	  << type->get_name() << ".\n";
+        pnmimage_cat.debug()
+          << "By magic number, image file appears to be type "
+          << type->get_name() << ".\n";
       } else {
-	pnmimage_cat.debug()
-	  << "Unable to determine image file type from magic number.\n";
+        pnmimage_cat.debug()
+          << "Unable to determine image file type from magic number.\n";
       }
     }
   }    
@@ -156,12 +156,12 @@ make_reader(FILE *file, bool owns_file, const Filename &filename,
 
     if (pnmimage_cat.is_debug()) {
       if (type != (PNMFileType *)NULL) {
-	pnmimage_cat.debug()
-	  << "From its extension, image file is probably type "
-	  << type->get_name() << ".\n";
+        pnmimage_cat.debug()
+          << "From its extension, image file is probably type "
+          << type->get_name() << ".\n";
       } else {
-	pnmimage_cat.debug()
-	  << "Unable to guess image file type from its extension.\n";
+        pnmimage_cat.debug()
+          << "Unable to guess image file type from its extension.\n";
       }
     }
   }
@@ -172,7 +172,7 @@ make_reader(FILE *file, bool owns_file, const Filename &filename,
 
     if (pnmimage_cat.is_debug() && type != (PNMFileType *)NULL) {
       pnmimage_cat.debug()
-	<< "Assuming image file type is " << type->get_name() << ".\n";
+        << "Assuming image file type is " << type->get_name() << ".\n";
     }
   }
 
@@ -180,10 +180,10 @@ make_reader(FILE *file, bool owns_file, const Filename &filename,
     // We can't figure out what type the file is; give up.
     if (pnmimage_cat.is_error()) {
       pnmimage_cat.error()
-	<< "Cannot determine type of image file " << filename << ".\n"
-	<< "Currently supported image types:\n";
+        << "Cannot determine type of image file " << filename << ".\n"
+        << "Currently supported image types:\n";
       PNMFileTypeRegistry::get_ptr()->
-	write_types(pnmimage_cat.error(false), 2);
+        write_types(pnmimage_cat.error(false), 2);
     }
     if (owns_file) {
       pm_close(file);
@@ -233,7 +233,7 @@ make_writer(const Filename &filename, PNMFileType *type) const {
 
     if (pnmimage_cat.is_debug()) {
       pnmimage_cat.debug()
-	<< "(writing to standard output)\n";
+        << "(writing to standard output)\n";
     }
 
   } else {
@@ -244,7 +244,7 @@ make_writer(const Filename &filename, PNMFileType *type) const {
   if (file == (FILE *)NULL) {
     if (pnmimage_cat.is_debug()) {
       pnmimage_cat.debug()
-	<< "Unable to write to file.\n";
+        << "Unable to write to file.\n";
     }
     return NULL;
   }
@@ -278,7 +278,7 @@ make_writer(const Filename &filename, PNMFileType *type) const {
 ////////////////////////////////////////////////////////////////////
 PNMWriter *PNMImageHeader::
 make_writer(FILE *file, bool owns_file, const Filename &filename,
-	    PNMFileType *type) const {
+            PNMFileType *type) const {
   if (type == (PNMFileType *)NULL && !filename.empty()) {
     // We don't know the type; attempt to guess it from the filename
     // extension.
@@ -286,12 +286,12 @@ make_writer(FILE *file, bool owns_file, const Filename &filename,
 
     if (pnmimage_cat.is_debug()) {
       if (type != (PNMFileType *)NULL) {
-	pnmimage_cat.debug()
-	  << "From its extension, image file is intended to be type "
-	  << type->get_name() << ".\n";
+        pnmimage_cat.debug()
+          << "From its extension, image file is intended to be type "
+          << type->get_name() << ".\n";
       } else {
-	pnmimage_cat.debug()
-	  << "Unable to guess image file type from its extension.\n";
+        pnmimage_cat.debug()
+          << "Unable to guess image file type from its extension.\n";
       }
     }
   }
@@ -302,7 +302,7 @@ make_writer(FILE *file, bool owns_file, const Filename &filename,
 
     if (pnmimage_cat.is_debug() && type != (PNMFileType *)NULL) {
       pnmimage_cat.debug()
-	<< "Assuming image file type is " << type->get_name() << ".\n";
+        << "Assuming image file type is " << type->get_name() << ".\n";
     }
   }
 
@@ -310,7 +310,7 @@ make_writer(FILE *file, bool owns_file, const Filename &filename,
     // We can't figure out what type the file is; give up.
     if (pnmimage_cat.is_debug()) {
       pnmimage_cat.debug()
-	<< "Cannot determine type of image file " << filename << ".\n";
+        << "Cannot determine type of image file " << filename << ".\n";
     }
     if (owns_file) {
       pm_close(file);

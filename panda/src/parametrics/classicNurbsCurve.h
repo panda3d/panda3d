@@ -13,7 +13,7 @@
 #include "cubicCurveseg.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ClassicNurbsCurve
+//       Class : ClassicNurbsCurve
 // Description : A Nonuniform Rational B-Spline.
 //
 //               This class is actually implemented as a
@@ -40,7 +40,7 @@ PUBLISHED:
   ClassicNurbsCurve();
   ClassicNurbsCurve(const ParametricCurve &pc);
   ClassicNurbsCurve(int order, int num_cvs,
-		    const float knots[], const LVecBase4f cvs[]);
+                    const float knots[], const LVecBase4f cvs[]);
   virtual ~ClassicNurbsCurve();
 
 public:
@@ -68,9 +68,9 @@ public:
 public:
   virtual bool
   rebuild_curveseg(int rtype0, float t0, const LVecBase4f &v0,
-		   int rtype1, float t1, const LVecBase4f &v1,
-		   int rtype2, float t2, const LVecBase4f &v2,
-		   int rtype3, float t3, const LVecBase4f &v3);
+                   int rtype1, float t1, const LVecBase4f &v1,
+                   int rtype2, float t2, const LVecBase4f &v2,
+                   int rtype3, float t3, const LVecBase4f &v3);
 
   virtual bool stitch(const ParametricCurve *a, const ParametricCurve *b);
 
@@ -83,7 +83,7 @@ public:
 protected:
   virtual int append_cv_impl(const LVecBase4f &v);
   virtual bool format_egg(ostream &out, const string &name, 
-			  const string &curve_type, int indent_level) const;
+                          const string &curve_type, int indent_level) const;
 
   int find_cv(float t);
 
@@ -118,10 +118,10 @@ public:
     NurbsCurveInterface::init_type();
     register_type(_type_handle, "ClassicNurbsCurve",
                   PiecewiseCurve::get_class_type(),
-		  NurbsCurveInterface::get_class_type());
+                  NurbsCurveInterface::get_class_type());
     register_type(_orig_type_handle, "NurbsCurve",
                   PiecewiseCurve::get_class_type(),
-		  NurbsCurveInterface::get_class_type());
+                  NurbsCurveInterface::get_class_type());
  }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -144,7 +144,7 @@ is_fully_specified() const {
 ////////////////////////////////////////////////////////////////////
 CPPParameterList *CPPParameterList::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
-		CPPScope *current_scope, CPPScope *global_scope) {
+                CPPScope *current_scope, CPPScope *global_scope) {
   CPPParameterList *rep = new CPPParameterList;
   bool any_changed = false;
   for (int i = 0; i < (int)_parameters.size(); i++) {
@@ -212,7 +212,7 @@ output(ostream &out, CPPScope *scope, bool parameter_names,
   if (!_parameters.empty()) {
     for (int i = 0; i < (int)_parameters.size(); i++) {
       if (i != 0) {
-	out << ", ";
+        out << ", ";
       }
 
       // Save the default value expression; we might be about to
@@ -220,15 +220,15 @@ output(ostream &out, CPPScope *scope, bool parameter_names,
       CPPExpression *expr = _parameters[i]->_initializer;
 
       if (num_default_parameters >= 0 &&
-	  i < (int)_parameters.size() - num_default_parameters) {
-	// Don't show the default value for this parameter.
-	_parameters[i]->_initializer = (CPPExpression *)NULL;
+          i < (int)_parameters.size() - num_default_parameters) {
+        // Don't show the default value for this parameter.
+        _parameters[i]->_initializer = (CPPExpression *)NULL;
       }
 
       if (parameter_names) {
-	_parameters[i]->output(out, 0, scope, false);
+        _parameters[i]->output(out, 0, scope, false);
       } else {
-	_parameters[i]->_type->output(out, 0, scope, false);
+        _parameters[i]->_type->output(out, 0, scope, false);
       }
 
       // Restore the default value expression.

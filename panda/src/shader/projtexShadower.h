@@ -23,8 +23,8 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : ProjtexShadower
 // Description : Creates the shadow of a casting object(s) and projects
-//		 it onto a receiving object(s) from a given light
-//		 frustum
+//               it onto a receiving object(s) from a given light
+//               frustum
 ////////////////////////////////////////////////////////////////////
 class EXPCL_SHADER ProjtexShadower : public CasterShader
 {
@@ -33,11 +33,11 @@ public:
   ProjtexShadower(int size = 256);
   
   virtual void pre_apply(Node *node, const AllAttributesWrapper &init_state,
-			 const AllTransitionsWrapper &net_trans,
-			 GraphicsStateGuardian *gsg);
+                         const AllTransitionsWrapper &net_trans,
+                         GraphicsStateGuardian *gsg);
   virtual void apply(Node *node, const AllAttributesWrapper &init_state,
-		     const AllTransitionsWrapper &net_trans,
-		     GraphicsStateGuardian *gsg);
+                     const AllTransitionsWrapper &net_trans,
+                     GraphicsStateGuardian *gsg);
   
   // MPG - should we make this check for powers of 2?
   INLINE void set_size(int size) { _size = size; }
@@ -51,8 +51,8 @@ public:
   
 protected:
   
-  PT(ProjtexShader)		_projtex_shader;
-  int				_size;
+  PT(ProjtexShader)             _projtex_shader;
+  int                           _size;
   
 public:
   
@@ -62,7 +62,7 @@ public:
   static void init_type() {
     CasterShader::init_type();
     register_type(_type_handle, "ProjtexShadower",
-		  CasterShader::get_class_type());
+                  CasterShader::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

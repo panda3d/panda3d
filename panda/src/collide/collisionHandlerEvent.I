@@ -12,7 +12,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionHandlerEvent::SortEntries::
 operator () (const PT(CollisionEntry) &a, 
-	     const PT(CollisionEntry) &b) const {
+             const PT(CollisionEntry) &b) const {
   if (a->get_from_node() != b->get_from_node()) {
     return a->get_from_node() < b->get_from_node();
   }

@@ -63,7 +63,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, BuilderPrimTempl<BuilderVe
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, BuilderPrimTempl<BuilderVertexI>);
 
 /////////////////////////////////////////////////////////////////////
-// 	 Class : BuilderPrim
+//       Class : BuilderPrim
 // Description : The basic class for passing nonindexed primitives
 //               to the builder.  See the comments at the the head of
 //               this file, and in builder.h.
@@ -78,21 +78,21 @@ public:
   INLINE BuilderPrim &operator = (const BuilderPrim &copy);
  
   BuilderPrim &nonindexed_copy(const BuilderPrimTempl<BuilderVertexI> &copy,
-			       const BuilderBucket &bucket);
+                               const BuilderBucket &bucket);
 
   void flatten_vertex_properties();
 
   static void fill_geom(Geom *geom, const PTA_BuilderV &v_array,
-			GeomBindType n_attr, const PTA_BuilderN &n_array,
-			GeomBindType t_attr, const PTA_BuilderTC &t_array,
-			GeomBindType c_attr, const PTA_BuilderC &c_array,
-			const BuilderBucket &bucket,
-			int num_prims, int num_components, int num_verts);
+                        GeomBindType n_attr, const PTA_BuilderN &n_array,
+                        GeomBindType t_attr, const PTA_BuilderTC &t_array,
+                        GeomBindType c_attr, const PTA_BuilderC &c_array,
+                        const BuilderBucket &bucket,
+                        int num_prims, int num_components, int num_verts);
 };
 
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : BuilderPrimI
+//       Class : BuilderPrimI
 // Description : The basic class for passing indexed primitives
 //               to the builder.
 //
@@ -108,11 +108,11 @@ public:
   void flatten_vertex_properties();
 
   static void fill_geom(Geom *geom, const PTA_ushort &v_array,
-			GeomBindType n_attr, PTA_ushort n_array,
-			GeomBindType t_attr, PTA_ushort t_array,
-			GeomBindType c_attr, PTA_ushort c_array,
-			const BuilderBucket &bucket,
-			int num_prims, int num_components, int num_verts);
+                        GeomBindType n_attr, PTA_ushort n_array,
+                        GeomBindType t_attr, PTA_ushort t_array,
+                        GeomBindType c_attr, PTA_ushort c_array,
+                        const BuilderBucket &bucket,
+                        int num_prims, int num_components, int num_verts);
 };
 
 #include "builderPrim.I"

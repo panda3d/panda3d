@@ -62,16 +62,16 @@ make_new_chunk(IffInputFile *in, IffId id) {
     return new LwoSurfaceColor;
   
   } else if (id == IffId("DIFF") ||
-	     id == IffId("LUMI") ||
-	     id == IffId("SPEC") ||
-	     id == IffId("REFL") ||
-	     id == IffId("TRAN") ||
-	     id == IffId("TRNL") ||
-	     id == IffId("GLOS") ||
-	     id == IffId("SHRP") ||
-	     id == IffId("BUMP") ||
-	     id == IffId("RSAN") ||
-	     id == IffId("RIND")) {
+             id == IffId("LUMI") ||
+             id == IffId("SPEC") ||
+             id == IffId("REFL") ||
+             id == IffId("TRAN") ||
+             id == IffId("TRNL") ||
+             id == IffId("GLOS") ||
+             id == IffId("SHRP") ||
+             id == IffId("BUMP") ||
+             id == IffId("RSAN") ||
+             id == IffId("RIND")) {
     return new LwoSurfaceParameter;
 
   } else if (id == IffId("SIDE")) {

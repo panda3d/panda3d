@@ -13,7 +13,7 @@
 #include <onAttribute.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TextureApplyAttribute
+//       Class : TextureApplyAttribute
 // Description : See TextureApplyTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TextureApplyAttribute : public OnAttribute {
@@ -48,7 +48,7 @@ public:
   static void init_type() {
     OnAttribute::init_type();
     register_type(_type_handle, "TextureApplyAttribute",
-		  OnAttribute::get_class_type());
+                  OnAttribute::get_class_type());
   }
 
 private:

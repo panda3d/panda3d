@@ -68,8 +68,8 @@ extend_other(BoundingVolume *other) const {
 ////////////////////////////////////////////////////////////////////
 bool OmniBoundingVolume::
 around_other(BoundingVolume *other,
-	     const BoundingVolume **,
-	     const BoundingVolume **) const {
+             const BoundingVolume **,
+             const BoundingVolume **) const {
   other->set_infinite();
   return true;
 }
@@ -131,7 +131,7 @@ around_points(const LPoint3f *, const LPoint3f *) {
 ////////////////////////////////////////////////////////////////////
 bool OmniBoundingVolume::
 around_spheres(const BoundingVolume **, 
-	       const BoundingVolume **) {
+               const BoundingVolume **) {
   return true;
 }
 
@@ -142,7 +142,7 @@ around_spheres(const BoundingVolume **,
 ////////////////////////////////////////////////////////////////////
 bool OmniBoundingVolume::
 around_hexahedrons(const BoundingVolume **, 
-		   const BoundingVolume **) {
+                   const BoundingVolume **) {
   return true;
 }
 

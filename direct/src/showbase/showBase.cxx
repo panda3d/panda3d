@@ -53,7 +53,7 @@ std::string chan_config = "single";
 std::string window_title = "Panda3D";
 
 void render_frame(GraphicsPipe *pipe,
-		  NodeAttributes &initial_state) {
+                  NodeAttributes &initial_state) {
   int num_windows = pipe->get_num_windows();
   for (int w = 0; w < num_windows; w++) {
     GraphicsWindow *win = pipe->get_window(w);
@@ -66,7 +66,7 @@ void render_frame(GraphicsPipe *pipe,
 class WindowCallback : public GraphicsWindow::Callback {
 public:
   WindowCallback(GraphicsPipe *pipe, Node *render,
-		 NodeAttributes *initial_state) :
+                 NodeAttributes *initial_state) :
     _pipe(pipe),
     _render(render),
     _initial_state(initial_state),
@@ -112,9 +112,9 @@ PT(GraphicsPipe) make_graphics_pipe() {
 }
 
 PT(GraphicsWindow) make_graphics_window(GraphicsPipe *pipe, 
-					NamedNode *render,
-					NamedNode *camera,
-					NodeAttributes &initial_state) {
+                                        NamedNode *render,
+                                        NamedNode *camera,
+                                        NodeAttributes &initial_state) {
   PT(GraphicsWindow) main_win;
   ChanCfgOverrides override;
 
@@ -128,7 +128,7 @@ PT(GraphicsWindow) make_graphics_window(GraphicsPipe *pipe,
   initial_state.set_attribute(DepthWriteTransition::get_class_type(), dwa);
 
   override.setField(ChanCfgOverrides::Mask,
-		    ((unsigned int)(W_DOUBLE|W_DEPTH|W_MULTISAMPLE)));
+                    ((unsigned int)(W_DOUBLE|W_DEPTH|W_MULTISAMPLE)));
 
   std::string title = config_showbase.GetString("window-title", window_title);
   override.setField(ChanCfgOverrides::Title, title);
@@ -278,7 +278,7 @@ void take_snapshot(GraphicsWindow *win, const string &name) {
   int height = dr->get_pixel_height();
   
   PixelBuffer p(width, height, 3, 1, PixelBuffer::T_unsigned_byte, 
-		PixelBuffer::F_rgb);
+                PixelBuffer::F_rgb);
 
   p.copy(gsg, dr, rb);
   p.write(name);

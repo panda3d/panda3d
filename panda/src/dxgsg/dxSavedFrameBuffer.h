@@ -15,13 +15,13 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DXSavedFrameBuffer
+//   Class : DXSavedFrameBuffer
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXSavedFrameBuffer : public SavedFrameBuffer {
 public:
   INLINE DXSavedFrameBuffer(const RenderBuffer &buffer,
-			    CPT(DisplayRegion) dr);
+                CPT(DisplayRegion) dr);
   INLINE ~DXSavedFrameBuffer();
 
   PT(Texture) _back_rgba;
@@ -34,7 +34,7 @@ public:
   static void init_type() {
     SavedFrameBuffer::init_type();
     register_type(_type_handle, "DXSavedFrameBuffer",
- 		  SavedFrameBuffer::get_class_type());
+          SavedFrameBuffer::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -74,6 +74,6 @@ output_property(ostream &out, const PT_Light &prop) const {
 ////////////////////////////////////////////////////////////////////
 void LightAttribute::
 write_property(ostream &out, const PT_Light &prop,
-	       int indent_level) const {
+               int indent_level) const {
   prop->write(out, indent_level);
 }

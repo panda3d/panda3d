@@ -19,7 +19,7 @@ private:
 
 PUBLISHED:
   LinearSourceForce(const LPoint3f& p, FalloffType f, float r, float a = 1.0f, 
-	      bool mass = true);
+              bool mass = true);
   LinearSourceForce(void);
   LinearSourceForce(const LinearSourceForce &copy);
   virtual ~LinearSourceForce(void);
@@ -31,7 +31,7 @@ public:
   static void init_type(void) {
     LinearDistanceForce::init_type();
     register_type(_type_handle, "LinearSourceForce",
-		  LinearDistanceForce::get_class_type());
+                  LinearDistanceForce::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

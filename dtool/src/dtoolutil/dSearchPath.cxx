@@ -202,7 +202,7 @@ prepend_path(const DSearchPath &path) {
   if (!path._directories.empty()) {
     Directories new_directories = path._directories;
     copy(_directories.begin(), _directories.end(),
-	 back_inserter(new_directories));
+         back_inserter(new_directories));
     _directories.swap(new_directories);
   }
 }
@@ -270,7 +270,7 @@ find_file(const Filename &filename) const {
 ////////////////////////////////////////////////////////////////////
 int DSearchPath::
 find_all_files(const Filename &filename, 
-	       DSearchPath::Results &results) const {
+               DSearchPath::Results &results) const {
   results._files.clear();
 
   Directories::const_iterator di;

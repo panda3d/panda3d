@@ -14,7 +14,7 @@
 #include <dSearchPath.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltTrans
+//       Class : FltTrans
 // Description : A program to read a flt file and write an equivalent
 //               flt file, possibly performing some minor operations
 //               along the way.

@@ -55,7 +55,7 @@ extract_record(FltRecordReader &reader) {
 
     } else if ((attributes & AM_has_packed_color) != 0) {
       if (!vertex->_packed_color.extract_record(reader)) {
-	return false;
+        return false;
       }
       vertex->_flags |= FltVertex::F_packed_color;
 
@@ -182,11 +182,11 @@ build_record(FltRecordWriter &writer) const {
 
     if ((attributes & AM_has_color_index) != 0) {
       if ((vertex->_flags & (FltVertex::F_no_color | FltVertex::F_packed_color)) != 0) {
-	// This particular vertex does not have a color index.
-	// Make it white.
-	datagram.add_be_int32(_header->get_closest_rgb(RGBColorf(1.0, 1.0, 1.0)));
+        // This particular vertex does not have a color index.
+        // Make it white.
+        datagram.add_be_int32(_header->get_closest_rgb(RGBColorf(1.0, 1.0, 1.0)));
       } else {
-	datagram.add_be_int32(vertex->_color_index);
+        datagram.add_be_int32(vertex->_color_index);
       }
 
     } else if ((attributes & AM_has_packed_color) != 0) {
@@ -197,36 +197,36 @@ build_record(FltRecordWriter &writer) const {
 
       FltPackedColor color;
       if (vertex->has_color()) {
-	color.set_color(vertex->get_color());
+        color.set_color(vertex->get_color());
       } else {
-	// An uncolored vertex.  Make it white.
-	color.set_color(Colorf(1.0, 1.0, 1.0, 1.0));
+        // An uncolored vertex.  Make it white.
+        color.set_color(Colorf(1.0, 1.0, 1.0, 1.0));
       }
 
       if (!color.build_record(writer)) {
-	return false;
+        return false;
       }
     }
 
     if ((attributes & AM_has_normal) != 0) {
       if (!vertex->_has_normal) {
-	datagram.add_be_float32(0.0);
-	datagram.add_be_float32(0.0);
-	datagram.add_be_float32(0.0);
+        datagram.add_be_float32(0.0);
+        datagram.add_be_float32(0.0);
+        datagram.add_be_float32(0.0);
       } else {
-	datagram.add_be_float32(vertex->_normal[0]);
-	datagram.add_be_float32(vertex->_normal[1]);
-	datagram.add_be_float32(vertex->_normal[2]);
+        datagram.add_be_float32(vertex->_normal[0]);
+        datagram.add_be_float32(vertex->_normal[1]);
+        datagram.add_be_float32(vertex->_normal[2]);
       }
     }
 
     if ((attributes & AM_has_base_uv) != 0) {
       if (!vertex->_has_uv) {
-	datagram.add_be_float32(0.0);
-	datagram.add_be_float32(0.0);
+        datagram.add_be_float32(0.0);
+        datagram.add_be_float32(0.0);
       } else {
-	datagram.add_be_float32(vertex->_uv[0]);
-	datagram.add_be_float32(vertex->_uv[1]);
+        datagram.add_be_float32(vertex->_uv[0]);
+        datagram.add_be_float32(vertex->_uv[1]);
       }
     }
   }

@@ -12,7 +12,7 @@
 #include <fog.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FogTransition
+//       Class : FogTransition
 // Description : This controls the enabling of fog.  This typically
 //               attenuates the colors based on the distance from the
 //               observer (e.g. the z depth).
@@ -49,7 +49,7 @@ public:
   static void init_type() {
     OnOffTransition::init_type();
     register_type(_type_handle, "FogTransition",
-		  OnOffTransition::get_class_type());
+                  OnOffTransition::get_class_type());
   }
 
 private:

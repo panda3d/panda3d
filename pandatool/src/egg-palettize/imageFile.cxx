@@ -149,14 +149,14 @@ set_filename(PaletteGroup *group, const string &basename) {
       ++pi;
       switch (*pi) {
       case '%':
-	dirname += '%';
-	break;
+        dirname += '%';
+        break;
 
       case 'g':
-	if (group != (PaletteGroup *)NULL) {
-	  dirname += group->get_dirname();
-	}
-	break;
+        if (group != (PaletteGroup *)NULL) {
+          dirname += group->get_dirname();
+        }
+        break;
       }
     } else {
       dirname += *pi;
@@ -265,14 +265,14 @@ read(PNMImage &image) const {
       return false;
     }
     if (image.get_x_size() != alpha_image.get_x_size() ||
-	image.get_y_size() != alpha_image.get_y_size()) {
+        image.get_y_size() != alpha_image.get_y_size()) {
       return false;
     }
 
     image.add_alpha();
     for (int y = 0; y < image.get_y_size(); y++) {
       for (int x = 0; x < image.get_x_size(); x++) {
-	image.set_alpha(x, y, alpha_image.get_gray(x, y));
+        image.set_alpha(x, y, alpha_image.get_gray(x, y));
       }
     }
   }
@@ -308,7 +308,7 @@ write(const PNMImage &image) const {
 
   // Write out a separate color image and an alpha channel image.
   PNMImage alpha_image(image.get_x_size(), image.get_y_size(), 1,
-		       image.get_maxval());
+                       image.get_maxval());
   for (int y = 0; y < image.get_y_size(); y++) {
     for (int x = 0; x < image.get_x_size(); x++) {
       alpha_image.set_gray_val(x, y, image.get_alpha_val(x, y));

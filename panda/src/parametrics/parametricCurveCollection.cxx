@@ -160,17 +160,17 @@ clear_timewarps() {
     switch (curve->get_curve_type()) {
     case PCT_XYZ:
       if (xyz_curve == (ParametricCurve *)NULL) {
-	xyz_curve = curve;
+        xyz_curve = curve;
       } else {
-	prepare_remove_curve(curve);
+        prepare_remove_curve(curve);
       }
       break;
 
     case PCT_HPR:
       if (hpr_curve == (ParametricCurve *)NULL) {
-	hpr_curve = curve;
+        hpr_curve = curve;
       } else {
-	prepare_remove_curve(curve);
+        prepare_remove_curve(curve);
       }
       break;
 
@@ -283,7 +283,7 @@ get_timewarp_curve(int n) const {
     ParametricCurve *curve = (*ci);
     if (curve->get_curve_type() == PCT_T) {
       if (n == 0) {
-	return curve;
+        return curve;
       }
       n--;
     }
@@ -346,11 +346,11 @@ make_even(float max_t, float segments_per_unit) {
   for (int i = 0; i < num_segments; i++) {
     float next_t = xyz_curve->find_length(last_t, segment_length);
     fitter.add_xyz((float)(i + 1) / num_segments * max_t,
-		   LVecBase3f(next_t, 0.0, 0.0));
+                   LVecBase3f(next_t, 0.0, 0.0));
 
     if (parametrics_cat.is_spam()) {
       parametrics_cat.spam()
-	<< "Point " << i << " is at " << next_t << "\n";
+        << "Point " << i << " is at " << next_t << "\n";
     }
 
     last_t = next_t;
@@ -398,7 +398,7 @@ face_forward(float segments_per_unit) {
       prepare_remove_curve(curve);
     } else {
       if (curve->get_curve_type() == PCT_XYZ && xyz_index == -1) {
-	xyz_index = (ci - _curves.begin());
+        xyz_index = (ci - _curves.begin());
       }
       new_curves.push_back(curve);
     }
@@ -503,7 +503,7 @@ evaluate(float t, LVecBase3f &xyz, LVecBase3f &hpr) const {
 
     case PCT_T:
       if (!curve->get_point(t0, point)) {
-	return false;
+        return false;
       }
       t0 = point[0];
     }
@@ -577,7 +577,7 @@ evaluate_t(float t) const {
 
     if (curve->get_curve_type() == PCT_T) {
       if (!curve->get_point(t0, point)) {
-	return -1.0;
+        return -1.0;
       }
       t0 = point[0];
     }
@@ -796,28 +796,28 @@ write_egg(ostream &out, const Filename &filename, CoordinateSystem cs) {
 
       switch (curve->get_curve_type()) {
       case PCT_XYZ:
-	name += "_xyz";
-	if (xyz_count > 0) {
-	  name += format_string(xyz_count);
-	}
-	xyz_count++;
-	break;
+        name += "_xyz";
+        if (xyz_count > 0) {
+          name += format_string(xyz_count);
+        }
+        xyz_count++;
+        break;
 
       case PCT_HPR:
-	name += "_hpr";
-	if (hpr_count > 0) {
-	  name += format_string(hpr_count);
-	}
-	hpr_count++;
-	break;
+        name += "_hpr";
+        if (hpr_count > 0) {
+          name += format_string(hpr_count);
+        }
+        hpr_count++;
+        break;
 
       case PCT_T:
-	name += "_t";
-	if (t_count > 0) {
-	  name += format_string(t_count);
-	}
-	t_count++;
-	break;
+        name += "_t";
+        if (t_count > 0) {
+          name += format_string(t_count);
+        }
+        t_count++;
+        break;
       }
       
       curve->set_name(name);

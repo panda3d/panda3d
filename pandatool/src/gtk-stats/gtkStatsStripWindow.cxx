@@ -23,7 +23,7 @@ using Gtk::Menu_Helpers::SeparatorElem;
 ////////////////////////////////////////////////////////////////////
 GtkStatsStripWindow::
 GtkStatsStripWindow(GtkStatsMonitor *monitor, int thread_index, 
-		    int collector_index, bool show_level,
+                    int collector_index, bool show_level,
                     int chart_xsize, int chart_ysize) :
   GtkStatsWindow(monitor),
   _thread_index(thread_index),
@@ -144,19 +144,19 @@ setup_menu() {
     
   speed_menu->items().push_back
     (MenuElem("1",  // 1 chart width scrolls by per minute.
-	      bind(slot(this, &GtkStatsStripWindow::menu_hscale), 1.0f)));
+              bind(slot(this, &GtkStatsStripWindow::menu_hscale), 1.0f)));
   speed_menu->items().push_back
     (MenuElem("2",  // 2 chart widths scroll by per minute.
-	      bind(slot(this, &GtkStatsStripWindow::menu_hscale), 2.0f)));
+              bind(slot(this, &GtkStatsStripWindow::menu_hscale), 2.0f)));
   speed_menu->items().push_back
     (MenuElem("3", 
-	      bind(slot(this, &GtkStatsStripWindow::menu_hscale), 3.0f)));
+              bind(slot(this, &GtkStatsStripWindow::menu_hscale), 3.0f)));
   speed_menu->items().push_back
     (MenuElem("6", 
-	      bind(slot(this, &GtkStatsStripWindow::menu_hscale), 6.0f)));
+              bind(slot(this, &GtkStatsStripWindow::menu_hscale), 6.0f)));
   speed_menu->items().push_back
     (MenuElem("12", 
-	      bind(slot(this, &GtkStatsStripWindow::menu_hscale), 12.0f)));
+              bind(slot(this, &GtkStatsStripWindow::menu_hscale), 12.0f)));
 
   _menu->items().push_back(MenuElem("Speed", *manage(speed_menu)));
 
@@ -164,7 +164,7 @@ setup_menu() {
   _scale_menu = new Gtk::Menu;
   _scale_menu->items().push_back
     (MenuElem("Auto scale",
-	      slot(this, &GtkStatsStripWindow::menu_auto_vscale)));
+              slot(this, &GtkStatsStripWindow::menu_auto_vscale)));
 
   _menu->items().push_back(MenuElem("Scale", *manage(_scale_menu)));
 
@@ -304,7 +304,7 @@ void GtkStatsStripWindow::
 menu_show_levels(int collector_index) {
   new GtkStatsStripWindow(_monitor, _thread_index, collector_index, 
                           true,
-			  _chart->get_xsize(), _chart->get_ysize());
+                          _chart->get_xsize(), _chart->get_ysize());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -321,7 +321,7 @@ void GtkStatsStripWindow::
 open_subchart(int collector_index) {
   new GtkStatsStripWindow(_monitor, _thread_index, collector_index, 
                           _show_level,
-			  _chart->get_xsize(), _chart->get_ysize());
+                          _chart->get_xsize(), _chart->get_ysize());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -343,7 +343,7 @@ layout_window(int chart_xsize, int chart_ysize) {
   Gtk::HBox *title_hbox = new Gtk::HBox;
   title_hbox->show();
   chart_table->attach(*manage(title_hbox), 1, 2, 0, 1, 
-		      (GTK_FILL|GTK_EXPAND), 0);
+                      (GTK_FILL|GTK_EXPAND), 0);
 
   _title_label = new Gtk::Label(get_title_text());
   if (_collector_index != 0 || _thread_index != 0) {
@@ -381,9 +381,9 @@ layout_window(int chart_xsize, int chart_ysize) {
   frame->add(*manage(_chart));
 
   chart_table->attach(*_chart->get_labels(), 0, 1, 1, 2,
-		      0, (GTK_FILL|GTK_EXPAND), 4, 0);
+                      0, (GTK_FILL|GTK_EXPAND), 4, 0);
   chart_table->attach(*_chart->get_guide(), 2, 3, 1, 2,
-		      0, (GTK_FILL|GTK_EXPAND), 4, 0);
+                      0, (GTK_FILL|GTK_EXPAND), 4, 0);
   _chart->show();
 }
 

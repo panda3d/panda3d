@@ -81,8 +81,8 @@ load_file(const Filename &path, bool report_errors) const
   } else if (!object->is_of_type(Node::get_class_type())) {
     if (report_errors) {
       loader_cat.error() 
-	<< "Bam file " << path 
-	<< " contains a " << object->get_type() << ", not a Node.\n";
+        << "Bam file " << path 
+        << " contains a " << object->get_type() << ", not a Node.\n";
     }
     
   } else {
@@ -91,8 +91,8 @@ load_file(const Filename &path, bool report_errors) const
     if (report_errors) {
       bam_file.read_object();
       if (!bam_file.is_eof()) {
-	loader_cat.warning()
-	  << "Ignoring extra objects in " << path << "\n";
+        loader_cat.warning()
+          << "Ignoring extra objects in " << path << "\n";
       }
     }
   }
@@ -100,7 +100,7 @@ load_file(const Filename &path, bool report_errors) const
   if (!bam_file.resolve()) {
     if (report_errors) {
       loader_cat.error() 
-	<< "Unable to resolve Bam file.\n";
+        << "Unable to resolve Bam file.\n";
       result = (Node *)NULL;
     }
   }    

@@ -10,7 +10,7 @@
 #include <filename.h>
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPFile
+//       Class : CPPFile
 // Description : This defines a source file (typically a C++ header
 //               file) that is parsed by the CPPParser.  Each
 //               declaration indicates the source file where it
@@ -26,8 +26,8 @@ public:
   };
 
   CPPFile(const Filename &filename = "", 
-	  const Filename &filename_as_referenced = "", 
-	  Source source = S_none);
+          const Filename &filename_as_referenced = "", 
+          Source source = S_none);
   CPPFile(const CPPFile &copy);
   void operator = (const CPPFile &copy);
   ~CPPFile();

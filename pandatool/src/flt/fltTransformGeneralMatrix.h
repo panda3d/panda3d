@@ -11,7 +11,7 @@
 #include "fltTransformRecord.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltTransformGeneralMatrix
+//       Class : FltTransformGeneralMatrix
 // Description : A general 4x4 matrix.  This appears in the flt file
 //               when there is no record of the composition of the
 //               transform.
@@ -38,7 +38,7 @@ public:
   static void init_type() {
     FltTransformRecord::init_type();
     register_type(_type_handle, "FltTransformGeneralMatrix",
-		  FltTransformRecord::get_class_type());
+                  FltTransformRecord::get_class_type());
   }
 
 private:

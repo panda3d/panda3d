@@ -14,7 +14,7 @@
 #include <typedObject.h>
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : DFTraverser
+//       Class : DFTraverser
 // Description : Implements a depth-first traversal of the graph
 //               beginning at the indicated node or arc.  DFTraverser
 //               will also call visitor.forward_arc() and
@@ -28,19 +28,19 @@ public:
   typedef TYPENAME Visitor::AttributeWrapper AttributeWrapper;
 
   INLINE_GRAPH DFTraverser(Visitor &visitor,
-		     const AttributeWrapper &initial_render_state,
-		     TypeHandle graph_type);
+                     const AttributeWrapper &initial_render_state,
+                     TypeHandle graph_type);
 
   INLINE_GRAPH void start(NodeRelation *arc, const LevelState &initial_level_state);
   INLINE_GRAPH void start(Node *root, const LevelState &initial_level_state);
 
 protected:
   void traverse(NodeRelation *arc, 
-		AttributeWrapper render_state,
-		LevelState level_state);
+                AttributeWrapper render_state,
+                LevelState level_state);
   void traverse(Node *node,
-		AttributeWrapper &render_state,
-		LevelState &level_state);
+                AttributeWrapper &render_state,
+                LevelState &level_state);
 
   Visitor &_visitor;
   AttributeWrapper _initial_render_state;

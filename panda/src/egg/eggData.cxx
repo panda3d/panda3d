@@ -217,8 +217,8 @@ set_coordinate_system(CoordinateSystem new_coordsys) {
       (_coordsys != CS_default && _coordsys != CS_invalid)) {
     // Time to convert the data.
     r_transform(LMatrix4d::convert_mat(_coordsys, new_coordsys),
-		LMatrix4d::convert_mat(new_coordsys, _coordsys),
-		new_coordsys);
+                LMatrix4d::convert_mat(new_coordsys, _coordsys),
+                new_coordsys);
   }
 
   _coordsys = new_coordsys;

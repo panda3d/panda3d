@@ -52,7 +52,7 @@ post_command_line() {
     
     if (_collection->add_egg(data) < 0) {
       nout << data->get_egg_filename().get_basename()
-	   << " does not contain a character model or animation channel.\n";
+           << " does not contain a character model or animation channel.\n";
       return false;
     }
   }

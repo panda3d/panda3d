@@ -52,7 +52,7 @@ public:
 
   int build();
   int unroll(Strips::iterator strip_begin, Strips::iterator strip_end,
-	     Edges::iterator edge_begin, Edges::iterator edge_end);
+             Edges::iterator edge_begin, Edges::iterator edge_end);
 
   ostream &output(ostream &out) const;
  

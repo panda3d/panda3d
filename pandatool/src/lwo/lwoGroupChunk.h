@@ -16,7 +16,7 @@
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoGroupChunk
+//       Class : LwoGroupChunk
 // Description : A particular kind of LwoChunk that is expected to
 //               contain an arbitrary number of child chunks.
 ////////////////////////////////////////////////////////////////////
@@ -44,7 +44,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoGroupChunk",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

@@ -22,7 +22,7 @@
 #include <distanceUnit.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltHeader
+//       Class : FltHeader
 // Description : This is the first bead in the file, the top of the
 //               bead hierarchy, and the primary interface to reading
 //               and writing a Flt file.  You always read a Flt file
@@ -171,10 +171,10 @@ public:
   // These functions are mainly used behind-the-scenes to decode the
   // strange forest of color options defined for faces and vertices.
   Colorf get_color(int color_index, bool use_packed_color,
-		   const FltPackedColor &packed_color, 
-		   int transparency);
+                   const FltPackedColor &packed_color, 
+                   int transparency);
   RGBColorf get_rgb(int color_index, bool use_packed_color,
-		    const FltPackedColor &packed_color);
+                    const FltPackedColor &packed_color);
 
   // Accessors into the material palette.
   bool has_material(int material_index) const;
@@ -318,7 +318,7 @@ public:
   static void init_type() {
     FltBeadID::init_type();
     register_type(_type_handle, "FltHeader",
-		  FltBeadID::get_class_type());
+                  FltBeadID::get_class_type());
   }
 
 private:

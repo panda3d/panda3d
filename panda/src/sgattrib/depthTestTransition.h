@@ -13,7 +13,7 @@
 #include <onTransition.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DepthTestTransition
+//       Class : DepthTestTransition
 // Description : This transition controls the nature of the test
 //               against the depth buffer.  It does not affect whether
 //               the depth buffer will be written to or not; that is
@@ -60,7 +60,7 @@ public:
   static void init_type() {
     OnTransition::init_type();
     register_type(_type_handle, "DepthTestTransition",
-		  OnTransition::get_class_type());
+                  OnTransition::get_class_type());
   }
 
 private:

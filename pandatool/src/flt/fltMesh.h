@@ -14,7 +14,7 @@
 #include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltMesh
+//       Class : FltMesh
 // Description : A mesh of connected polygons and tristrips, etc.,
 //               with a local vertex pool.
 ////////////////////////////////////////////////////////////////////
@@ -42,7 +42,7 @@ public:
   static void init_type() {
     FltGeometry::init_type();
     register_type(_type_handle, "FltMesh",
-		  FltGeometry::get_class_type());
+                  FltGeometry::get_class_type());
   }
 
 private:

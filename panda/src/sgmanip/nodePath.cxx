@@ -38,12 +38,12 @@ TypeHandle NodePath::_type_handle;
 class ScenePrepareVisitor : public TraverserVisitor<NodeTransitionWrapper, NullLevelState> {
 public:
   bool forward_arc(NodeRelation *, NodeTransitionWrapper &trans,
-		   NodeAttributeWrapper &, NodeAttributeWrapper &,
-		   NullLevelState &) {
+                   NodeAttributeWrapper &, NodeAttributeWrapper &,
+                   NullLevelState &) {
     TextureTransition *tt;
     if (get_transition_into(tt, trans)) {
       if (tt->is_on()) {
-	tt->get_texture()->prepare(_gsg);
+        tt->get_texture()->prepare(_gsg);
       }
     }
     return true;
@@ -84,8 +84,8 @@ extend_by(Node *dnode) {
   if (arc == (NodeRelation *)NULL) {
     if (sgmanip_cat.is_debug()) {
       sgmanip_cat.debug()
-	<< "Cannot extend " << *this << " by "
-	<< *dnode << "; no connection.\n";
+        << "Cannot extend " << *this << " by "
+        << *dnode << "; no connection.\n";
     }
     return false;
   }
@@ -117,8 +117,8 @@ extend_by(NodeRelation *darc) {
   if (darc->get_parent() != node()) {
     if (sgmanip_cat.is_debug()) {
       sgmanip_cat.debug()
-	<< "Cannot extend " << *this << " by arc " << *darc 
-	<< "; no connection.\n";
+        << "Cannot extend " << *this << " by arc " << *darc 
+        << "; no connection.\n";
     }
     return false;
   }
@@ -127,8 +127,8 @@ extend_by(NodeRelation *darc) {
       darc->get_type() != NodeRelation::get_stashed_type()) {
     if (sgmanip_cat.is_debug()) {
       sgmanip_cat.debug()
-	<< "Cannot extend " << *this << " by arc " << *darc 
-	<< "; wrong graph type.\n";
+        << "Cannot extend " << *this << " by arc " << *darc 
+        << "; wrong graph type.\n";
     }
     return false;
   }
@@ -178,8 +178,8 @@ extend_by(const string &path) {
   if (col.is_empty()) {
     if (sgmanip_cat.is_debug()) {
       sgmanip_cat.debug()
-	<< "Could not extend " << *this << " by "
-	<< path << "; no match found.\n";
+        << "Could not extend " << *this << " by "
+        << path << "; no match found.\n";
     }
     return false;
   }
@@ -214,8 +214,8 @@ extend_down_to(Node *dnode) {
   if (col.is_empty()) {
     if (sgmanip_cat.is_debug()) {
       sgmanip_cat.debug()
-	<< "Could not extend " << *this << " down to "
-	<< *dnode << "; no connection found.\n";
+        << "Could not extend " << *this << " down to "
+        << *dnode << "; no connection found.\n";
     }
     return false;
   }
@@ -270,15 +270,15 @@ get_mat(const NodePath &other) const {
 
   } else if (is_empty()) {
     wrt(NULL, other.node(), other.begin(), other.end(),
-	ntw, _graph_type);
+        ntw, _graph_type);
 
   } else if (other.is_empty()) {
     wrt(node(), begin(), end(), (Node *)NULL, ntw, _graph_type);
 
   } else {
     wrt(node(), begin(), end(),
-	other.node(), other.begin(), other.end(),
-	ntw, _graph_type);
+        other.node(), other.begin(), other.end(),
+        ntw, _graph_type);
   }
 
   const TransformTransition *tt;
@@ -321,8 +321,8 @@ set_mat(const NodePath &other, const LMatrix4f &mat) {
     wrt(NULL, darc->get_parent(), from, end(), ntw, _graph_type);
   } else {
     wrt(other.node(), other.begin(), other.end(),
-	darc->get_parent(), from, end(),
-	ntw, _graph_type);
+        darc->get_parent(), from, end(),
+        ntw, _graph_type);
   }
 
   LMatrix4f new_mat,*new_mat_ptr;
@@ -330,10 +330,10 @@ set_mat(const NodePath &other, const LMatrix4f &mat) {
 
   if (!get_transition_into(tt, ntw)) {
     // No relative transform.
-	  new_mat_ptr = (LMatrix4f*)&mat;
+          new_mat_ptr = (LMatrix4f*)&mat;
   } else {
-	  new_mat.multiply(mat,tt->get_matrix());
-	  new_mat_ptr = &new_mat;
+          new_mat.multiply(mat,tt->get_matrix());
+          new_mat_ptr = &new_mat;
   }
 
   darc->set_transition(new TransformTransition(*new_mat_ptr));
@@ -614,8 +614,8 @@ share_with(const NodePath &other) {
   }
   // The remaining components are arcs.
   while (oi != other_comps.end() && 
-	 ti != this_comps.end() && 
-	 (*oi)->get_arc() == (*ti)->get_arc()) {
+         ti != this_comps.end() && 
+         (*oi)->get_arc() == (*ti)->get_arc()) {
     ++oi;
     ++ti;
     ++in_common;
@@ -868,7 +868,7 @@ instance_to(const NodePath &other, int sort) const {
   Node *bottom_node = node();
   NodeRelation *darc = 
     NodeRelation::create_typed_arc(_graph_type, other.node(), 
-				   bottom_node, sort);
+                                   bottom_node, sort);
   nassertr(darc != (NodeRelation *)NULL, NodePath());
   nassertr(darc->is_exact_type(_graph_type), NodePath());
 
@@ -910,7 +910,7 @@ copy_to(const NodePath &other, int sort) const {
 
   NodeRelation *darc = 
     NodeRelation::create_typed_arc(_graph_type, other.node(), 
-				   copy_node, sort);
+                                   copy_node, sort);
   nassertr(darc != (NodeRelation *)NULL, NodePath());
   nassertr(darc->is_exact_type(_graph_type), NodePath());
 
@@ -1488,7 +1488,7 @@ set_pos_hpr(const LVecBase3f &pos, const LVecBase3f &hpr) {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_pos_hpr_scale(const LVecBase3f &pos, const LVecBase3f &hpr,
-		  const LVecBase3f &scale) {
+                  const LVecBase3f &scale) {
   nassertv(has_arcs());
   LMatrix4f mat;
   compose_matrix(mat, scale, hpr, pos);
@@ -1820,7 +1820,7 @@ get_scale(const NodePath &other) const {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_pos_hpr(const NodePath &other, const LVecBase3f &pos, 
-	    const LVecBase3f &hpr) {
+            const LVecBase3f &hpr) {
   nassertv(has_arcs());
   LMatrix4f mat = get_mat(other);
   LVecBase3f scale, old_hpr, old_pos;
@@ -1838,8 +1838,8 @@ set_pos_hpr(const NodePath &other, const LVecBase3f &pos,
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_pos_hpr_scale(const NodePath &other, 
-		  const LVecBase3f &pos, const LVecBase3f &hpr,
-		  const LVecBase3f &scale) {
+                  const LVecBase3f &pos, const LVecBase3f &hpr,
+                  const LVecBase3f &scale) {
   nassertv(has_arcs());
   LMatrix4f mat;
   compose_matrix(mat, scale, hpr, pos);
@@ -1905,7 +1905,7 @@ heads_up(const NodePath &other, const LPoint3f &point, const LVector3f &up) {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 look_at_preserve_scale(const NodePath &other, const LPoint3f &point,
-		       const LVector3f &up) {
+                       const LVector3f &up) {
   nassertv(has_arcs());
 
   LMatrix4f mat = get_mat();
@@ -1958,7 +1958,7 @@ look_at_preserve_scale(const NodePath &other, const LPoint3f &point,
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 heads_up_preserve_scale(const NodePath &other, const LPoint3f &point,
-			const LVector3f &up) {
+                        const LVector3f &up) {
   nassertv(has_arcs());
 
   LMatrix4f mat = get_mat();
@@ -2701,7 +2701,7 @@ prepare_scene(GraphicsStateGuardianBase *gsg) {
 
   NodeAttributeWrapper initial(TextureTransition::get_class_type());
   df_traverse(node(), visitor, initial, NullLevelState(), 
-	      RenderRelation::get_class_type());
+              RenderRelation::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2817,23 +2817,23 @@ r_as_string(const ArcComponent *comp, string &result, int skip_nodes) const {
     int nodes_before = r_as_string(comp->get_next(), result, skip_nodes);
     if (skip_nodes <= nodes_before) {
       if (skip_nodes != nodes_before) {
-	// This is not the first node, so format a slash between the
-	// previous node and this node.
+        // This is not the first node, so format a slash between the
+        // previous node and this node.
 
-	NodeRelation *darc = comp->get_arc();
-	if (darc->get_child() == (Node *)NULL &&
-	    darc->get_parent() == (Node *)NULL) {
-	  // Here's a deleted arc.  Indicate this.
-	  result += "/(...deleted...)";
-	} else {
-	  if (darc->get_parent() != comp->get_next()->get_node() &&
-	      comp->get_next()->get_node() != (Node *)NULL) {
-	    // It's not a deleted arc, but something's broken.
-	    result += "/.../" + format_node_name(darc->get_parent());
-	  }
-	  result += format_arc_name(darc);
-	  result += format_node_name(darc->get_child());
-	}
+        NodeRelation *darc = comp->get_arc();
+        if (darc->get_child() == (Node *)NULL &&
+            darc->get_parent() == (Node *)NULL) {
+          // Here's a deleted arc.  Indicate this.
+          result += "/(...deleted...)";
+        } else {
+          if (darc->get_parent() != comp->get_next()->get_node() &&
+              comp->get_next()->get_node() != (Node *)NULL) {
+            // It's not a deleted arc, but something's broken.
+            result += "/.../" + format_node_name(darc->get_parent());
+          }
+          result += format_arc_name(darc);
+          result += format_node_name(darc->get_child());
+        }
       }
     }
     return nodes_before + 1;
@@ -2847,7 +2847,7 @@ r_as_string(const ArcComponent *comp, string &result, int skip_nodes) const {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 r_write_transitions(const ArcComponent *comp,
-		    ostream &out, int indent_level) const {
+                    ostream &out, int indent_level) const {
   nassertv(comp != (const ArcComponent *)NULL);
   nassertv(comp->has_arc());
 
@@ -2867,7 +2867,7 @@ r_write_transitions(const ArcComponent *comp,
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 r_get_net_transitions(const ArcComponent *comp, 
-		      AllTransitionsWrapper &trans) const {
+                      AllTransitionsWrapper &trans) const {
   nassertv(comp != (const ArcComponent *)NULL);
   nassertv(comp->has_arc());
 
@@ -2901,7 +2901,7 @@ format_node_name(Node *dnode) const {
     // NamedNode), use the type name instead, since it's likely to be
     // more unique.
     if (!dnode->is_of_type(Node::get_class_type()) &&
-	!dnode->is_of_type(NamedNode::get_class_type())) {
+        !dnode->is_of_type(NamedNode::get_class_type())) {
       return "-" + dnode->get_type().get_name();
     }
   }
@@ -2943,7 +2943,7 @@ format_arc_name(NodeRelation *arc) const {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 find_matches(NodePathCollection &result, const string &path,
-	     int max_matches) const {
+             int max_matches) const {
   if (is_empty()) {
     sgmanip_cat.warning()
       << "Attempt to extend an empty NodePath by '" << path
@@ -2967,7 +2967,7 @@ find_matches(NodePathCollection &result, const string &path,
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 find_matches(NodePathCollection &result, FindApproxPath &approx_path,
-	     int max_matches) const {
+             int max_matches) const {
   if (is_empty()) {
     sgmanip_cat.warning()
       << "Attempt to extend an empty NodePath by: " << approx_path << ".\n";
@@ -2986,8 +2986,8 @@ find_matches(NodePathCollection &result, FindApproxPath &approx_path,
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 r_find_matches(NodePathCollection &result,
-	       const FindApproxLevel &level, 
-	       int max_matches, int num_levels_remaining) const {
+               const FindApproxLevel &level, 
+               int max_matches, int num_levels_remaining) const {
   // Go on to the next level.  If we exceeded the requested maximum
   // depth, stop.
   if (num_levels_remaining <= 0) {

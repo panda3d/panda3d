@@ -196,17 +196,17 @@ is_equivalent_to(const EggTexture &other, int eq) const {
 
     if (eq & E_basename) {
       if (a.get_basename_wo_extension() != b.get_basename_wo_extension()) {
-	return false;
+        return false;
       }
     }
     if (eq & E_extension) {
       if (a.get_extension() != b.get_extension()) {
-	return false;
+        return false;
       }
     }
     if (eq & E_dirname) {
       if (a.get_dirname() != b.get_dirname()) {
-	return false;
+        return false;
       }
     }
   }
@@ -218,21 +218,21 @@ is_equivalent_to(const EggTexture &other, int eq) const {
     
     if (has_transform() && other.has_transform()) {
       if (!_transform.almost_equal(other._transform, 0.0001)) {
-	return false;
+        return false;
       }
     }
   }
 
   if (eq & E_attributes) {
     if (_format != other._format ||
-	_wrap_mode != other._wrap_mode ||
-	_wrap_u != other._wrap_u ||
-	_wrap_v != other._wrap_v ||
-	_minfilter != other._minfilter ||
-	_magfilter != other._magfilter ||
-	_magfilteralpha != other._magfilteralpha ||
-	_magfiltercolor != other._magfiltercolor ||
-	_env_type != other._env_type) {
+        _wrap_mode != other._wrap_mode ||
+        _wrap_u != other._wrap_u ||
+        _wrap_v != other._wrap_v ||
+        _minfilter != other._minfilter ||
+        _magfilter != other._magfilter ||
+        _magfilteralpha != other._magfilteralpha ||
+        _magfiltercolor != other._magfiltercolor ||
+        _env_type != other._env_type) {
       return false;
     }
     if (EggRenderMode::operator != (other)) {
@@ -270,17 +270,17 @@ sorts_less_than(const EggTexture &other, int eq) const {
 
     if (eq & E_basename) {
       if (a.get_basename_wo_extension() != b.get_basename_wo_extension()) {
-	return a.get_basename_wo_extension() < b.get_basename_wo_extension();
+        return a.get_basename_wo_extension() < b.get_basename_wo_extension();
       }
     }
     if (eq & E_extension) {
       if (a.get_extension() != b.get_extension()) {
-	return a.get_extension() < b.get_extension();
+        return a.get_extension() < b.get_extension();
       }
     }
     if (eq & E_dirname) {
       if (a.get_dirname() != b.get_dirname()) {
-	return a.get_dirname() < b.get_dirname();
+        return a.get_dirname() < b.get_dirname();
       }
     }
   }

@@ -11,7 +11,7 @@
 #include "imageBase.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ImageReader
+//       Class : ImageReader
 // Description : This is the base class for a program that reads an
 //               image file, but doesn't write an image file.
 ////////////////////////////////////////////////////////////////////

@@ -13,7 +13,7 @@
 #include <onTransition.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ColorMaskTransition
+//       Class : ColorMaskTransition
 // Description : This is scene graph colorMask (which is not to be
 //               confused with geometry colorMask).  By setting a
 //               ColorMaskTransition on the scene graph, you can override
@@ -52,7 +52,7 @@ public:
   static void init_type() {
     OnTransition::init_type();
     register_type(_type_handle, "ColorMaskTransition",
-		  OnTransition::get_class_type());
+                  OnTransition::get_class_type());
   }
 
 private:

@@ -36,7 +36,7 @@ CollisionRay(const LPoint3f &origin, const LVector3f &direction) :
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionRay::
 CollisionRay(float ox, float oy, float oz,
-	     float dx, float dy, float dz) :
+             float dx, float dy, float dz) :
   _origin(ox, oy, oz), _direction(dx, dy, dz)
 {
 }

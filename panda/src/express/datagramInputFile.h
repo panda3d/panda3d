@@ -12,7 +12,7 @@
 #include "filename.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DatagramInputFile
+//       Class : DatagramInputFile
 // Description : This class can be used to read a binary file that
 //               consists of an arbitrary header followed by a number
 //               of datagrams.

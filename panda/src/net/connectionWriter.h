@@ -20,7 +20,7 @@ class ConnectionManager;
 class NetAddress;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ConnectionWriter
+//       Class : ConnectionWriter
 // Description : This class handles threaded delivery of datagrams to
 //               various TCP or UDP sockets.
 //
@@ -35,11 +35,11 @@ PUBLISHED:
   ~ConnectionWriter();
 
   bool send(const Datagram &datagram,
-	    const PT(Connection) &connection);
+            const PT(Connection) &connection);
 
   bool send(const Datagram &datagram,
-	    const PT(Connection) &connection,
-	    const NetAddress &address);
+            const PT(Connection) &connection,
+            const NetAddress &address);
 
   bool is_valid_for_udp(const Datagram &datagram) const;
 

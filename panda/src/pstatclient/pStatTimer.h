@@ -11,7 +11,7 @@
 #include "pStatCollector.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PStatTimer
+//       Class : PStatTimer
 // Description : A lightweight class that can be used to automatically
 //               start and stop a PStatCollector around a section of
 //               code.  It's intended to be used in the following way:

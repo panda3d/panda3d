@@ -29,13 +29,13 @@ class DatagramIterator;
 static const int max_node_graphs = 2;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : Node
+//       Class : Node
 // Description : The base class for all scene graph nodes.  A Node may
 //               be joined to any number of other nodes, as a parent
 //               or as a child, with any kind of relation arcs.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Node : public TypedWritable, public BoundedObject,
-	     virtual public ReferenceCount {
+             virtual public ReferenceCount {
   // We can't simply inherit from TypedWritableReferenceCount, because we need
   // to inherit virtually from ReferenceCount.
 public:
@@ -74,8 +74,8 @@ public:
   // This function is similar to another function in NodeTransition.
   // It may or may not intercept the render traversal.
   virtual bool sub_render(const AllAttributesWrapper &attrib,
-			  AllTransitionsWrapper &trans,
-			  RenderTraverser *trav);
+                          AllTransitionsWrapper &trans,
+                          RenderTraverser *trav);
   virtual bool has_sub_render() const;
 
 PUBLISHED:
@@ -103,15 +103,15 @@ protected:
 
   typedef map<Node *, Node *> InstanceMap;
   virtual Node *r_copy_subgraph(TypeHandle graph_type, 
-				InstanceMap &inst_map) const;
+                                InstanceMap &inst_map) const;
   virtual void r_copy_children(const Node *from, TypeHandle graph_type,
-			       InstanceMap &inst_map);
+                               InstanceMap &inst_map);
 
 public:
   static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter* manager, Datagram &me);  
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
   static TypedWritable *make_Node(const FactoryParams &params);
 
@@ -127,9 +127,9 @@ public:
     BoundedObject::init_type();
     ReferenceCount::init_type();
     register_type(_type_handle, "Node",
-		  TypedWritable::get_class_type(),
-		  BoundedObject::get_class_type(),
-		  ReferenceCount::get_class_type());
+                  TypedWritable::get_class_type(),
+                  BoundedObject::get_class_type(),
+                  ReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

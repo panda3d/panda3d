@@ -14,13 +14,13 @@
 class GtkStatsPianoRoll;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GtkStatsPianoWindow
+//       Class : GtkStatsPianoWindow
 // Description : A window that contains a GtkStatsPianoRoll.
 ////////////////////////////////////////////////////////////////////
 class GtkStatsPianoWindow : public GtkStatsWindow {
 public:
   GtkStatsPianoWindow(GtkStatsMonitor *monitor, int thread_index, 
-		      int chart_xsize, int chart_ysize);
+                      int chart_xsize, int chart_ysize);
 
   virtual void mark_dead();
   virtual void idle();

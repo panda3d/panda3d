@@ -12,7 +12,7 @@
 #include <lmatrix.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ColorMatrixTransition
+//       Class : ColorMatrixTransition
 // Description : This defines a transformation for color. I.E. to
 //               make something blue, or rotate the colors, or whatever
 ////////////////////////////////////////////////////////////////////
@@ -46,7 +46,7 @@ public:
   static void init_type() {
     LMatrix4fTransition::init_type();
     register_type(_type_handle, "ColorMatrixTransition",
-		  LMatrix4fTransition::get_class_type());
+                  LMatrix4fTransition::get_class_type());
   }
 
 private:

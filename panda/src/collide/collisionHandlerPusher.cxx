@@ -9,7 +9,7 @@
 TypeHandle CollisionHandlerPusher::_type_handle;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : ShoveData
+//       Class : ShoveData
 // Description : The ShoveData class is used within
 //               CollisionHandlerPusher::handle_entries(), to track
 //               multiple shoves onto a given collider.  It's not
@@ -64,8 +64,8 @@ handle_entries() {
       // it this CollisionHandler pointer--but they didn't tell us
       // about the node.
       collide_cat.error()
-	<< "CollisionHandlerPusher doesn't know about " 
-	<< *from_node << "\n";
+        << "CollisionHandlerPusher doesn't know about " 
+        << *from_node << "\n";
 
     } else {
       const ColliderDef &def = (*ci).second;
@@ -83,94 +83,94 @@ handle_entries() {
 
       Entries::const_iterator ei;
       for (ei = entries.begin(); ei != entries.end(); ++ei) {
-	CollisionEntry *entry = (*ei);
-	nassertv(entry != (CollisionEntry *)NULL);
-	nassertv(from_node == entry->get_from_node());
+        CollisionEntry *entry = (*ei);
+        nassertv(entry != (CollisionEntry *)NULL);
+        nassertv(from_node == entry->get_from_node());
 
-	if (!entry->has_into_surface_normal() ||
-	    !entry->has_into_depth()) {
-	  if (collide_cat.is_debug()) {
-	    collide_cat.debug()
-	      << "Cannot shove on " << *from_node << " for collision into "
-	      << *entry->get_into_node() << "; no normal/depth information.\n";
-	  }
+        if (!entry->has_into_surface_normal() ||
+            !entry->has_into_depth()) {
+          if (collide_cat.is_debug()) {
+            collide_cat.debug()
+              << "Cannot shove on " << *from_node << " for collision into "
+              << *entry->get_into_node() << "; no normal/depth information.\n";
+          }
 
-	} else {
-	  // Shove it just enough to clear the volume.
-	  if (entry->get_into_depth() != 0.0) {
-	    ShoveData sd;
-	    sd._shove = 
-	      entry->get_into_surface_normal() *
-	      entry->get_into_depth();
-	    
-	    if (collide_cat.is_debug()) {
-	      collide_cat.debug()
-		<< "Shove on " << *from_node << " from " 
-		<< *entry->get_into_node() << ": " << sd._shove << "\n";
-	    }
+        } else {
+          // Shove it just enough to clear the volume.
+          if (entry->get_into_depth() != 0.0) {
+            ShoveData sd;
+            sd._shove = 
+              entry->get_into_surface_normal() *
+              entry->get_into_depth();
 
-	    sd._length = sd._shove.length();
-	    sd._normalized_shove = sd._shove / sd._length;
-	    sd._valid = true;
-	    
-	    shoves.push_back(sd);
-	  }
-	}
+            if (collide_cat.is_debug()) {
+              collide_cat.debug()
+                << "Shove on " << *from_node << " from " 
+                << *entry->get_into_node() << ": " << sd._shove << "\n";
+            }
+
+            sd._length = sd._shove.length();
+            sd._normalized_shove = sd._shove / sd._length;
+            sd._valid = true;
+
+            shoves.push_back(sd);
+          }
+        }
       }
 
       if (!shoves.empty()) {
-	// Now we combine any two shoves that shove in largely the
-	// same direction.  Hacky.
+        // Now we combine any two shoves that shove in largely the
+        // same direction.  Hacky.
 
-	Shoves::iterator si;
-	for (si = shoves.begin(); si != shoves.end(); ++si) {
-	  ShoveData &sd = (*si);
-	  Shoves::iterator sj;
-	  for (sj = shoves.begin(); sj != si; ++sj) {
-	    ShoveData &sd2 = (*sj);
-	    if (sd2._valid) {
+        Shoves::iterator si;
+        for (si = shoves.begin(); si != shoves.end(); ++si) {
+          ShoveData &sd = (*si);
+          Shoves::iterator sj;
+          for (sj = shoves.begin(); sj != si; ++sj) {
+            ShoveData &sd2 = (*sj);
+            if (sd2._valid) {
 
-	      float d = sd._normalized_shove.dot(sd2._normalized_shove);
-	      if (collide_cat.is_debug()) {
-		collide_cat.debug()
-		  << "Considering dot product " << d << "\n";
-	      }
+              float d = sd._normalized_shove.dot(sd2._normalized_shove);
+              if (collide_cat.is_debug()) {
+                collide_cat.debug()
+                  << "Considering dot product " << d << "\n";
+              }
 
-	      if (d > 0.9) {
-		// These two shoves are largely in the same direction;
-		// save the larger of the two.
-		if (sd2._length < sd._length) {
-		  sd2._valid = false;
-		} else {
-		  sd._valid = false;
-		}
-	      }
-	    }
-	  }
-	}
+              if (d > 0.9) {
+                // These two shoves are largely in the same direction;
+                // save the larger of the two.
+                if (sd2._length < sd._length) {
+                  sd2._valid = false;
+                } else {
+                  sd._valid = false;
+                }
+              }
+            }
+          }
+        }
 
-	// Now we can determine the net shove.
-	LVector3f net_shove(0.0, 0.0, 0.0);
-	for (si = shoves.begin(); si != shoves.end(); ++si) {
-	  const ShoveData &sd = (*si);
-	  if (sd._valid) {
-	    net_shove += sd._shove;
-	  }
-	}
-	  
-	if (_horizontal) {
-	  net_shove[2] = 0.0;
-	}
+        // Now we can determine the net shove.
+        LVector3f net_shove(0.0, 0.0, 0.0);
+        for (si = shoves.begin(); si != shoves.end(); ++si) {
+          const ShoveData &sd = (*si);
+          if (sd._valid) {
+            net_shove += sd._shove;
+          }
+        }
+
+        if (_horizontal) {
+          net_shove[2] = 0.0;
+        }
       
-	if (collide_cat.is_debug()) {
-	  collide_cat.debug()
-	    << "Net shove on " << *from_node << " is: " 
-	    << net_shove << "\n";
-	}
-	  
-	LMatrix4f mat;
-	def.get_mat(mat);
-	def.set_mat(LMatrix4f::translate_mat(net_shove) * mat);
+        if (collide_cat.is_debug()) {
+          collide_cat.debug()
+            << "Net shove on " << *from_node << " is: " 
+            << net_shove << "\n";
+        }
+
+        LMatrix4f mat;
+        def.get_mat(mat);
+        def.set_mat(LMatrix4f::translate_mat(net_shove) * mat);
       }
     }
   }

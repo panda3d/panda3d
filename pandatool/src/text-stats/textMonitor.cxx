@@ -82,14 +82,14 @@ new_data(int thread_index, int frame_number) {
     
     if (view.all_collectors_known()) {
       nout << "\rThread " 
-	   << get_client_data()->get_thread_name(thread_index)
-	   << " frame " << frame_number << ", "
-	   << view.get_net_value() * 1000.0 << " ms ("
-	   << thread_data->get_frame_rate() << " Hz):\n";
+           << get_client_data()->get_thread_name(thread_index)
+           << " frame " << frame_number << ", "
+           << view.get_net_value() * 1000.0 << " ms ("
+           << thread_data->get_frame_rate() << " Hz):\n";
       const PStatViewLevel *level = view.get_top_level();
       int num_children = level->get_num_children();
       for (int i = 0; i < num_children; i++) {
-	show_level(level->get_child(i), 2);
+        show_level(level->get_child(i), 2);
       }
     }
   }

@@ -35,7 +35,7 @@ make_copy() {
 ////////////////////////////////////////////////////////////////////
 int CollisionSegment::
 test_intersection(CollisionHandler *record, const CollisionEntry &entry,
-		  const CollisionSolid *into) const {
+                  const CollisionSolid *into) const {
   return into->test_intersection_from_segment(record, entry);
 }
 

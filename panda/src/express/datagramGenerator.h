@@ -10,7 +10,7 @@
 #include "datagram.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DatagramGenerator
+//       Class : DatagramGenerator
 // Description : This class defines the abstract interace to any
 //               source of datagrams, whether it be from a file or
 //               from the net

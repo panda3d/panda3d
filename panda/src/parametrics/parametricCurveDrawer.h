@@ -15,7 +15,7 @@
 #include <typedObject.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ParametricCurveDrawer
+//       Class : ParametricCurveDrawer
 // Description : Draws a 3-d parametric curve in the scene by creating
 //               a series of line segments to approximate the curve.
 ////////////////////////////////////////////////////////////////////
@@ -81,7 +81,7 @@ public:
   }
   static void init_type() {
     register_type(_type_handle, "ParametricCurveDrawer",
-		  TypedObject::get_class_type());
+                  TypedObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

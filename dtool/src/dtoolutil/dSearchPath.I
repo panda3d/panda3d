@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE Filename DSearchPath::
 search_path(const Filename &filename, const string &path, 
-	    const string &delimiters) {
+            const string &delimiters) {
   DSearchPath search(path, delimiters);
   return search.find_file(filename);
 }

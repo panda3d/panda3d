@@ -14,7 +14,7 @@
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : WritableParam
+//       Class : WritableParam
 // Description : The specific derivation of FactoryParam that 
 //               contains the information needed by a TypedWritable
 //               object.  Simply contains a Datagram for the object
@@ -47,7 +47,7 @@ public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "WritableParam",
-		  FactoryParam::get_class_type());
+                  FactoryParam::get_class_type());
   }
 
 private:

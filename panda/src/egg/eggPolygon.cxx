@@ -62,30 +62,30 @@ calculate_normal(Normald &result, CoordinateSystem cs) const {
 
     if (is_unique) {
       if (i < 2) {
-	i++;
+        i++;
 
       } else {
-	// Ok, we have three vertices.  Do they determine a plane?
-	LVector3d a = v[1] - v[0];
-	LVector3d b = v[2] - v[0];
-	LVector3d normal = a.cross(b);
+        // Ok, we have three vertices.  Do they determine a plane?
+        LVector3d a = v[1] - v[0];
+        LVector3d b = v[2] - v[0];
+        LVector3d normal = a.cross(b);
 
-	if (normal.normalize()) {
-	  // If we are in a left-handed coordinate system, we must
-	  // reverse the normal.
-	  if (cs == CS_default) {
-	    cs = default_coordinate_system;
-	  }
-	  if (cs == CS_zup_left || cs == CS_yup_left) {
-	    normal = -normal;
-	  }
+        if (normal.normalize()) {
+          // If we are in a left-handed coordinate system, we must
+          // reverse the normal.
+          if (cs == CS_default) {
+            cs = default_coordinate_system;
+          }
+          if (cs == CS_zup_left || cs == CS_yup_left) {
+            normal = -normal;
+          }
 
-	  result = normal;
-	  return true;
-	}
+          result = normal;
+          return true;
+        }
 
-	// No, the three vertices must have been collinear.  Carry on
-	// and get another vertex.
+        // No, the three vertices must have been collinear.  Carry on
+        // and get another vertex.
       }
     }
     ++vi;
@@ -191,9 +191,9 @@ decomp_concave(EggGroupNode *container, int asum, int x, int y) const {
   while (p0 != p2->next) {
     /* Polygon is self-intersecting so punt */
     if (chek && 
-	m[0] == p0 && 
-	m[1] == p1 && 
-	m[2] == p2) {
+        m[0] == p0 && 
+        m[1] == p1 && 
+        m[2] == p2) {
 
       return false;
     }
@@ -217,71 +217,71 @@ decomp_concave(EggGroupNode *container, int asum, int x, int y) const {
       /* current angle is convex */
       xmin = (VX(p0, x) < VX(p1, x)) ? VX(p0, x) : VX(p1, x);
       if (xmin > VX(p2, x))
-	xmin = VX(p2, x);
+        xmin = VX(p2, x);
       
       xmax = (VX(p0, x) > VX(p1, x)) ? VX(p0, x) : VX(p1, x);
       if (xmax < VX(p2, x))
-	xmax = VX(p2, x);
+        xmax = VX(p2, x);
       
       ymin = (VX(p0, y) < VX(p1, y)) ? VX(p0, y) : VX(p1, y);
       if (ymin > VX(p2, y))
-	ymin = VX(p2, y);
+        ymin = VX(p2, y);
       
       ymax = (VX(p0, y) > VX(p1, y)) ? VX(p0, y) : VX(p1, y);
       if (ymax < VX(p2, y))
-	ymax = VX(p2, y);
+        ymax = VX(p2, y);
       
       for (init = 1, t0 = p2->next; t0 != p0; t0 = t0->next) {
-	if (VX(t0, x) >= xmin && VX(t0, x) <= xmax &&
-	    VX(t0, y) >= ymin && VX(t0, y) <= ymax) {
-	  if (init) {
-	    a[1] = VX(p2, y) - VX(p0, y);
-	    b[1] = VX(p0, x) - VX(p2, x);
-	    init = 0;
-	    c[0] = VX(p1, x) * VX(p2, y) - VX(p2, x) * VX(p1, y);
-	    c[1] = VX(p2, x) * VX(p0, y) - VX(p0, x) * VX(p2, y);
-	    c[2] = VX(p0, x) * VX(p1, y) - VX(p1, x) * VX(p0, y);
-	  }
-	  
-	  s[0] = a[0] * VX(t0, x) + b[0] * VX(t0, y) + c[0];
-	  s[1] = a[1] * VX(t0, x) + b[1] * VX(t0, y) + c[1];
-	  s[2] = a[2] * VX(t0, x) + b[2] * VX(t0, y) + c[2];
-	  
-	  if (asum) {
-	    if (s[0] >= 0.0 && s[1] >= 0.0 && s[2] >= 0.0)
-	      break;
-	  } else {
-	    if (s[0] <= 0.0 && s[1] <= 0.0 && s[2] <= 0.0)
-	      break;
-	  }
-	}
+        if (VX(t0, x) >= xmin && VX(t0, x) <= xmax &&
+            VX(t0, y) >= ymin && VX(t0, y) <= ymax) {
+          if (init) {
+            a[1] = VX(p2, y) - VX(p0, y);
+            b[1] = VX(p0, x) - VX(p2, x);
+            init = 0;
+            c[0] = VX(p1, x) * VX(p2, y) - VX(p2, x) * VX(p1, y);
+            c[1] = VX(p2, x) * VX(p0, y) - VX(p0, x) * VX(p2, y);
+            c[2] = VX(p0, x) * VX(p1, y) - VX(p1, x) * VX(p0, y);
+          }
+
+          s[0] = a[0] * VX(t0, x) + b[0] * VX(t0, y) + c[0];
+          s[1] = a[1] * VX(t0, x) + b[1] * VX(t0, y) + c[1];
+          s[2] = a[2] * VX(t0, x) + b[2] * VX(t0, y) + c[2];
+
+          if (asum) {
+            if (s[0] >= 0.0 && s[1] >= 0.0 && s[2] >= 0.0)
+              break;
+          } else {
+            if (s[0] <= 0.0 && s[1] <= 0.0 && s[2] <= 0.0)
+              break;
+          }
+        }
       }
       
       if (t0 != p0) {
-	p0 = p1;
-	p1 = p2;
-	p2 = p2->next;
+        p0 = p1;
+        p1 = p2;
+        p2 = p2->next;
       } else {
 
-	// Here's a triangle to output.
-	PT(EggPolygon) triangle = new EggPolygon(*this);
-	triangle->clear();
-	triangle->add_vertex(get_vertex(p0->index));
-	triangle->add_vertex(get_vertex(p1->index));
-	triangle->add_vertex(get_vertex(p2->index));
-	
-	if (triangle->cleanup()) {
-	  container->add_child(triangle.p());
-	}
-	
-	p0->next = p1->next;
-	p1 = p2;
-	p2 = p2->next;
-	
-	m[0] = p0;
-	m[1] = p1;
-	m[2] = p2;
-	chek = 0;
+        // Here's a triangle to output.
+        PT(EggPolygon) triangle = new EggPolygon(*this);
+        triangle->clear();
+        triangle->add_vertex(get_vertex(p0->index));
+        triangle->add_vertex(get_vertex(p1->index));
+        triangle->add_vertex(get_vertex(p2->index));
+
+        if (triangle->cleanup()) {
+          container->add_child(triangle.p());
+        }
+
+        p0->next = p1->next;
+        p1 = p2;
+        p2 = p2->next;
+
+        m[0] = p0;
+        m[1] = p1;
+        m[2] = p2;
+        chek = 0;
       }
     }
   }
@@ -361,16 +361,16 @@ triangulate_poly(EggGroupNode *container, bool convex_also) {
   for (i = 0; i < 3; i++) {
     if (as[i] >= 0.0) {
       if (as[i] > max) {
-	max = as[i];
-	index = i;
-	flag = 1;
+        max = as[i];
+        index = i;
+        flag = 1;
       }
     } else {
       as[i] = -as[i];
       if (as[i] > max) {
-	max = as[i];
-	index = i;
-	flag = 0;
+        max = as[i];
+        index = i;
+        flag = 0;
       }
     }
   }
@@ -447,7 +447,7 @@ triangulate_poly(EggGroupNode *container, bool convex_also) {
       triangle->add_vertex(get_vertex(v));
 
       if (triangle->cleanup()) {
-	container->add_child(triangle.p());
+        container->add_child(triangle.p());
       }
 
       v0 = v1;
@@ -461,7 +461,7 @@ triangulate_poly(EggGroupNode *container, bool convex_also) {
       triangle->add_vertex(get_vertex(v));
 
       if (triangle->cleanup()) {
-	container->add_child(triangle.p());
+        container->add_child(triangle.p());
       }
 
       v0 = v1;

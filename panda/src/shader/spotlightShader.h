@@ -30,7 +30,7 @@ public:
   // SpotlightShader uses ProjtexShader::apply()
 
 protected:
-  float			_radius;
+  float                 _radius;
   
 public:
 

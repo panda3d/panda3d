@@ -8,7 +8,7 @@
 TypeHandle AudioGuiFunctor::_type_handle;
 
 AudioGuiFunctor::AudioGuiFunctor(AudioSound* sound,
-				 GuiBehavior::BehaviorFunctor* prev)
+                                 GuiBehavior::BehaviorFunctor* prev)
   : GuiBehavior::BehaviorFunctor(), _prev(prev), _sound(sound) {}
 
 AudioGuiFunctor::~AudioGuiFunctor(void) {

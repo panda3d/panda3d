@@ -20,7 +20,7 @@
 ////////////////////////////////////////////////////////////////////
 bool CullState::
 check_currency(Node *node, const AllTransitionsWrapper &,
-	       UpdateSeq as_of) {
+               UpdateSeq as_of) {
   // First, check the verified time stamp.
   Verified::iterator vi;
   vi = _verified.find(node);

@@ -127,13 +127,13 @@ get_over_region(const LPoint2f &pos) const {
     const LVecBase4f &frame = region->get_frame();
 
     if (region->get_active() &&
-	pos[0] >= frame[0] && pos[0] <= frame[1] &&
-	pos[1] >= frame[2] && pos[1] <= frame[3]) {
+        pos[0] >= frame[0] && pos[0] <= frame[1] &&
+        pos[1] >= frame[2] && pos[1] <= frame[3]) {
 
       // We're over this region.  Is it preferred to the other one?
       if (over_region == (MouseWatcherRegion *)NULL ||
-	  *region < *over_region) {
-	over_region = region;
+          *region < *over_region) {
+        over_region = region;
       }
     }
   }
@@ -202,7 +202,7 @@ set_current_region(MouseWatcherRegion *region) {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 throw_event_pattern(const string &pattern, const MouseWatcherRegion *region, 
-		    const string &button_name) {
+                    const string &button_name) {
   if (pattern.empty()) {
     return;
   }
@@ -216,16 +216,16 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
       string cmd = pattern.substr(p + 1, 1);
       p++;
       if (cmd == "r") {
-	if (region != (MouseWatcherRegion *)NULL) {
-	  event += region->get_name();
-	}
+        if (region != (MouseWatcherRegion *)NULL) {
+          event += region->get_name();
+        }
 
       } else if (cmd == "b") {
-	event += button_name;
+        event += button_name;
 
       } else {
-	tform_cat.error()
-	  << "Invalid symbol in event_pattern: %" << cmd << "\n";
+        tform_cat.error()
+          << "Invalid symbol in event_pattern: %" << cmd << "\n";
       }
     } else {
       event += pattern[p];
@@ -236,7 +236,7 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
     throw_event(event, EventParameter(region), EventParameter(button_name));
     if (_eh != (EventHandler*)0L)
       throw_event_directly(*_eh, event, EventParameter(region),
-			   EventParameter(button_name));
+                           EventParameter(button_name));
   }
 }
 
@@ -253,7 +253,7 @@ transmit_data(NodeAttributes &data) {
     if (_has_mouse) {
       // Hide the mouse pointer.
       if (!_geometry.is_null()) {
-	_geometry->set_transition(new PruneTransition);
+        _geometry->set_transition(new PruneTransition);
       }
     }
 
@@ -304,35 +304,35 @@ transmit_data(NodeAttributes &data) {
       const ButtonEvent &be = (*bi);
 
       if (!be._down) {
-	// Button up.  Send the up event associated with the region we
-	// were over when the button went down.
+        // Button up.  Send the up event associated with the region we
+        // were over when the button went down.
 
-	// There is some danger of losing button-up events here.  If
-	// more than one button goes down together, we won't detect
-	// both of the button-up events properly.
+        // There is some danger of losing button-up events here.  If
+        // more than one button goes down together, we won't detect
+        // both of the button-up events properly.
 
-	// We should probably throw a different button_up event based
-	// on whether the _current_region is NULL or not, so the
-	// calling code can differentiate between button_up within the
-	// starting region, and button_up outside the region.
-	// Presently, changing this will break the GUI code.
-	if (_button_down_region != (MouseWatcherRegion *)NULL) {
-	  throw_event_pattern(_button_up_pattern, _button_down_region,
-			      be._button.get_name());
-	}
-	_button_down = false;
-	
+        // We should probably throw a different button_up event based
+        // on whether the _current_region is NULL or not, so the
+        // calling code can differentiate between button_up within the
+        // starting region, and button_up outside the region.
+        // Presently, changing this will break the GUI code.
+        if (_button_down_region != (MouseWatcherRegion *)NULL) {
+          throw_event_pattern(_button_up_pattern, _button_down_region,
+                              be._button.get_name());
+        }
+        _button_down = false;
+
       } else {
-	// Button down.
+        // Button down.
 
-	if (!_button_down) {
-	  _button_down_region = _current_region;
-	}
-	_button_down = true;
-	if (_button_down_region != (MouseWatcherRegion *)NULL) {
-	  throw_event_pattern(_button_down_pattern, _button_down_region,
-			      be._button.get_name());
-	}
+        if (!_button_down) {
+          _button_down_region = _current_region;
+        }
+        _button_down = true;
+        if (_button_down_region != (MouseWatcherRegion *)NULL) {
+          throw_event_pattern(_button_down_pattern, _button_down_region,
+                              be._button.get_name());
+        }
       }
     }
   }
@@ -362,14 +362,14 @@ void MouseWatcher::
 init_type() {
   DataNode::init_type();
   register_type(_type_handle, "MouseWatcher",
-		DataNode::get_class_type());
+                DataNode::get_class_type());
 
   Vec3DataTransition::init_type();
   register_data_transition(_xyz_type, "XYZ",
-			   Vec3DataTransition::get_class_type());
+                           Vec3DataTransition::get_class_type());
   register_data_transition(_pixel_xyz_type, "PixelXYZ",
-			   Vec3DataTransition::get_class_type());
+                           Vec3DataTransition::get_class_type());
   ButtonEventDataTransition::init_type();
   register_data_transition(_button_events_type, "ButtonEvents",
-			   ButtonEventDataTransition::get_class_type());
+                           ButtonEventDataTransition::get_class_type());
 }

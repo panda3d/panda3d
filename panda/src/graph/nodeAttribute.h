@@ -14,7 +14,7 @@ class NodeTransition;
 class GraphicsStateGuardianBase;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : NodeAttribute
+//       Class : NodeAttribute
 // Description : This is an abstract class defining a single
 //               Attribute, a state property such as color or texture
 //               that may be in effect when rendering nodes of the
@@ -92,7 +92,7 @@ public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "NodeAttribute",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
 
 private:

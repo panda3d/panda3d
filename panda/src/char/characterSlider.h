@@ -42,7 +42,7 @@ public:
   static void init_type() {
     MovingPartScalar::init_type();
     register_type(_type_handle, "CharacterSlider",
-		  MovingPartScalar::get_class_type());
+                  MovingPartScalar::get_class_type());
   }
 
 private:

@@ -60,11 +60,11 @@ GeomIssuer() {
 ////////////////////////////////////////////////////////////////////
 GeomIssuer::
 GeomIssuer(const Geom *geom,
-	   const GraphicsStateGuardianBase *gsg,
-	   IssueVertex *vertex,
-	   IssueNormal *normal,
-	   IssueTexCoord *texcoord,
-	   IssueColor *color) {
+           const GraphicsStateGuardianBase *gsg,
+           IssueVertex *vertex,
+           IssueNormal *normal,
+           IssueTexCoord *texcoord,
+           IssueColor *color) {
   memcpy(this, &noop_issuer, sizeof(GeomIssuer));
   _geom = geom;
   _gsg = gsg;

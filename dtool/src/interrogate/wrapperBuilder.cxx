@@ -97,11 +97,11 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 bool WrapperBuilder::
 set_function(CPPInstance *function, const string &description,
-	     CPPStructType *struct_type,
-	     CPPScope *scope, const string &function_signature,
-	     WrapperBuilder::Type type, 
-	     const string &expression,
-	     int num_default_parameters) {
+             CPPStructType *struct_type,
+             CPPScope *scope, const string &function_signature,
+             WrapperBuilder::Type type, 
+             const string &expression,
+             int num_default_parameters) {
   clear();
 
   _function = function;
@@ -150,16 +150,16 @@ set_function(CPPInstance *function, const string &description,
     // assignment-style operators, flag it as such.
     string fname = _function->get_simple_name();
     if (fname == "operator =" ||
-	fname == "operator *=" ||
-	fname == "operator /=" ||
-	fname == "operator %=" ||
-	fname == "operator +=" ||
-	fname == "operator -=" ||
-	fname == "operator |=" ||
-	fname == "operator &=" ||
-	fname == "operator ^=" ||
-	fname == "operator <<=" ||
-	fname == "operator >>=") {
+        fname == "operator *=" ||
+        fname == "operator /=" ||
+        fname == "operator %=" ||
+        fname == "operator +=" ||
+        fname == "operator -=" ||
+        fname == "operator |=" ||
+        fname == "operator &=" ||
+        fname == "operator ^=" ||
+        fname == "operator <<=" ||
+        fname == "operator >>=") {
       _type = T_assignment_method;
     }
   }
@@ -310,26 +310,26 @@ make_remap(CPPType *orig_type) {
     // convert basic_string<char>'s to atomic strings.
 
     if (_struct_type == (CPPStructType *)NULL ||
-	!TypeManager::is_basic_string_char(_struct_type)) {
+        !TypeManager::is_basic_string_char(_struct_type)) {
       if (TypeManager::is_basic_string_char(orig_type)) {
-	return new ParameterRemapBasicStringToString(orig_type);
-	
+        return new ParameterRemapBasicStringToString(orig_type);
+
       } else if (TypeManager::is_const_ref_to_basic_string_char(orig_type)) {
-	return new ParameterRemapBasicStringRefToString(orig_type);
+        return new ParameterRemapBasicStringRefToString(orig_type);
       }
     }
   }
 
   if (manage_reference_counts) {
     if (TypeManager::is_pointer_to_base(orig_type) || 
-	TypeManager::is_const_ref_to_pointer_to_base(orig_type)) {
+        TypeManager::is_const_ref_to_pointer_to_base(orig_type)) {
       CPPType *pt_type = TypeManager::unwrap_reference(orig_type);
 
       // Don't convert PointerTo<>'s to pointers for methods of the
       // PointerTo itself!
       if (_struct_type == (CPPStructType *)NULL ||
-	  !(pt_type->get_local_name(&parser) == _struct_type->get_local_name(&parser))) {
-	return new ParameterRemapPTToPointer(orig_type);
+          !(pt_type->get_local_name(&parser) == _struct_type->get_local_name(&parser))) {
+        return new ParameterRemapPTToPointer(orig_type);
       }
     }
   }
@@ -371,7 +371,7 @@ make_remap(CPPType *orig_type) {
 ////////////////////////////////////////////////////////////////////
 string WrapperBuilder::
 manage_return_value(ostream &out, int indent_level,
-		    const string &return_expr) const {
+                    const string &return_expr) const {
   if (_manage_reference_count) {
     // If we're managing reference counts, and we're about to return a
     // reference countable object, then increment its count.
@@ -390,12 +390,12 @@ manage_return_value(ostream &out, int indent_level,
       out << " = " << return_expr << ";\n";
 
       indent(out, indent_level)
-	<< "if (" << return_expr << " != ("
-	<< _return_type->get_new_type()->get_local_name(&parser) << ")0) {\n";
+        << "if (" << return_expr << " != ("
+        << _return_type->get_new_type()->get_local_name(&parser) << ")0) {\n";
       indent(out, indent_level + 2)
-	<< return_expr << "->ref();\n";
+        << return_expr << "->ref();\n";
       indent(out, indent_level)
-	<< "}\n";
+        << "}\n";
       output_ref(out, indent_level, "refcount");
       return _return_type->temporary_to_return("refcount");
     }
@@ -489,7 +489,7 @@ get_call_str(const vector_string &pexprs) const {
   if (_type == T_getter) {
     if (_has_this) {
       call << "(" << get_parameter_expr(pn, pexprs) << ")->"
-	   << _expression;
+           << _expression;
     } else {
       call << _expression;
     }
@@ -497,7 +497,7 @@ get_call_str(const vector_string &pexprs) const {
   } else if (_type == T_setter) {
     if (_has_this) {
       call << "(" << get_parameter_expr(pn, pexprs) << ")->"
-	   << _expression;
+           << _expression;
       pn++;
     } else {
       call << _expression;
@@ -512,7 +512,7 @@ get_call_str(const vector_string &pexprs) const {
       // If we have a synthesized "this" parameter, the calling
       // convention is a bit different.
       call << "(" << get_parameter_expr(pn, pexprs) << ")->"
-	   << _function->get_local_name();
+           << _function->get_local_name();
       pn++;
       
     } else if (_type == T_constructor) {
@@ -528,9 +528,9 @@ get_call_str(const vector_string &pexprs) const {
       _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
       pn++;
       while (pn < (int)_parameters.size()) {
-	call << ", ";
-	_parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
-	pn++;
+        call << ", ";
+        _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
+        pn++;
       }
     }
     call << ")";
@@ -555,7 +555,7 @@ get_call_str(const vector_string &pexprs) const {
 ////////////////////////////////////////////////////////////////////
 string WrapperBuilder::
 call_function(ostream &out, int indent_level, bool convert_result,
-	      const vector_string &pexprs) const {
+              const vector_string &pexprs) const {
   string return_expr;
 
   if (_type == T_destructor) {
@@ -568,10 +568,10 @@ call_function(ostream &out, int indent_level, bool convert_result,
       // Except for a reference-count type object, in which case the
       // destructor is a wrapper around unref_delete().
       indent(out, indent_level)
-	<< "unref_delete(" << get_parameter_expr(0, pexprs) << ");\n";
+        << "unref_delete(" << get_parameter_expr(0, pexprs) << ");\n";
     } else {
       indent(out, indent_level)
-	<< "delete " << get_parameter_expr(0, pexprs) << ";\n";
+        << "delete " << get_parameter_expr(0, pexprs) << ";\n";
     }
 
   } else if (_type == T_typecast_method) {
@@ -585,7 +585,7 @@ call_function(ostream &out, int indent_level, bool convert_result,
       return_expr = cast_expr;
     } else {
       string new_str =
-	_return_type->prepare_return_expr(out, indent_level, cast_expr);
+        _return_type->prepare_return_expr(out, indent_level, cast_expr);
       return_expr = _return_type->get_return_expr(new_str);
     }
 
@@ -603,7 +603,7 @@ call_function(ostream &out, int indent_level, bool convert_result,
       return_expr = cast_expr;
     } else {
       string new_str =
-	_return_type->prepare_return_expr(out, indent_level, cast_expr);
+        _return_type->prepare_return_expr(out, indent_level, cast_expr);
       return_expr = _return_type->get_return_expr(new_str);
     }
 
@@ -623,7 +623,7 @@ call_function(ostream &out, int indent_level, bool convert_result,
       return_expr = ref_expr;
     } else {
       string new_str =
-	_return_type->prepare_return_expr(out, indent_level, ref_expr);
+        _return_type->prepare_return_expr(out, indent_level, ref_expr);
       return_expr = _return_type->get_return_expr(new_str);
 
       // Now a simple special-case test.  Often, we will have converted
@@ -638,8 +638,8 @@ call_function(ostream &out, int indent_level, bool convert_result,
       // like "&(*this)", though.
       
       if (return_expr == "&(" + ref_expr + ")" ||
-	  return_expr == "&" + ref_expr) {
-	return_expr = this_expr;
+          return_expr == "&" + ref_expr) {
+        return_expr = this_expr;
       }
     }
           
@@ -655,22 +655,22 @@ call_function(ostream &out, int indent_level, bool convert_result,
       
     } else {
       if (_return_type->return_value_should_be_simple()) {
-	// We have to assign the result to a temporary first; this makes
-	// it a bit easier on poor old VC++.
-	indent(out, indent_level);
-	_return_type->get_orig_type()->output_instance(out, "result",
-						       &parser);
-	out << " = " << call << ";\n";
-	
-	string new_str =
-	  _return_type->prepare_return_expr(out, indent_level, "result");
-	return_expr = _return_type->get_return_expr(new_str);
-	
+        // We have to assign the result to a temporary first; this makes
+        // it a bit easier on poor old VC++.
+        indent(out, indent_level);
+        _return_type->get_orig_type()->output_instance(out, "result",
+                                                       &parser);
+        out << " = " << call << ";\n";
+
+        string new_str =
+          _return_type->prepare_return_expr(out, indent_level, "result");
+        return_expr = _return_type->get_return_expr(new_str);
+
       } else {
-	// This should be simple enough that we can return it directly.
-	string new_str = 
-	  _return_type->prepare_return_expr(out, indent_level, call);
-	return_expr = _return_type->get_return_expr(new_str);
+        // This should be simple enough that we can return it directly.
+        string new_str = 
+          _return_type->prepare_return_expr(out, indent_level, call);
+        return_expr = _return_type->get_return_expr(new_str);
       }
     }
   }
@@ -690,13 +690,13 @@ void WrapperBuilder::
 write_spam_message(ostream &out) const {
   if (generate_spam) {
     out << "#ifndef NDEBUG\n"
-	<< "  if (in_" << library_name << "_cat.is_spam()) {\n"
-	<< "    in_" << library_name << "_cat.spam()\n"
-	<< "      << \"";
+        << "  if (in_" << library_name << "_cat.is_spam()) {\n"
+        << "    in_" << library_name << "_cat.spam()\n"
+        << "      << \"";
     write_quoted_string(out, _description);
     out << "\\n\";\n"
-	<< "  }\n"
-	<< "#endif\n";
+        << "  }\n"
+        << "#endif\n";
   }
 }
 

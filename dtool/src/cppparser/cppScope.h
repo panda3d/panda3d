@@ -35,13 +35,13 @@ class CPPNameComponent;
 struct cppyyltype;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CPPScope
+//       Class : CPPScope
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPScope {
 public:
   CPPScope(CPPScope *parent_scope,
-	   const CPPNameComponent &name, CPPVisibility starting_vis);
+           const CPPNameComponent &name, CPPVisibility starting_vis);
   virtual ~CPPScope();
 
   void set_current_vis(CPPVisibility current_vis);
@@ -52,40 +52,40 @@ public:
   CPPScope *get_parent_scope() const;
 
   virtual void add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
-			       CPPPreprocessor *preprocessor, 
-			       const cppyyltype &pos);
+                               CPPPreprocessor *preprocessor, 
+                               const cppyyltype &pos);
   virtual void add_enum_value(CPPInstance *inst);
   virtual void define_extension_type(CPPExtensionType *type);
   virtual void define_namespace(CPPNamespace *scope);
   virtual void add_using(CPPUsing *using_decl, CPPScope *global_scope,
-			 CPPPreprocessor *error_sink = NULL);
+                         CPPPreprocessor *error_sink = NULL);
 
   virtual bool is_fully_specified() const;
 
   CPPScope *
   instantiate(const CPPTemplateParameterList *actual_params,
-	      CPPScope *current_scope, CPPScope *global_scope,
-	      CPPPreprocessor *error_sink = NULL) const;
+              CPPScope *current_scope, CPPScope *global_scope,
+              CPPPreprocessor *error_sink = NULL) const;
 
   CPPScope *
   substitute_decl(CPPDeclaration::SubstDecl &subst,
-		  CPPScope *current_scope,
-		  CPPScope *global_scope) const;
+                  CPPScope *current_scope,
+                  CPPScope *global_scope) const;
 
   CPPType *find_type(const string &name, bool recurse = true) const;
   CPPType *find_type(const string &name,
-		     CPPDeclaration::SubstDecl &subst,
-		     CPPScope *global_scope,
-		     bool recurse = true) const;
+                     CPPDeclaration::SubstDecl &subst,
+                     CPPScope *global_scope,
+                     bool recurse = true) const;
   CPPScope *find_scope(const string &name, bool recurse = true) const;
   CPPScope *find_scope(const string &name,
-		       CPPDeclaration::SubstDecl &subst,
-		       CPPScope *global_scope,
-		       bool recurse = true) const;
+                       CPPDeclaration::SubstDecl &subst,
+                       CPPScope *global_scope,
+                       bool recurse = true) const;
   CPPDeclaration *find_symbol(const string &name,
-			      bool recurse = true) const;
+                              bool recurse = true) const;
   CPPDeclaration *find_template(const string &name,
-				bool recurse = true) const;
+                                bool recurse = true) const;
 
   virtual string get_simple_name() const;
   virtual string get_local_name(CPPScope *scope = NULL) const;
@@ -100,7 +100,7 @@ public:
 private:
   bool
   copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
-		       CPPScope *global_scope) const;
+                       CPPScope *global_scope) const;
 
   void handle_declaration(CPPDeclaration *decl, CPPScope *global_scope);
 

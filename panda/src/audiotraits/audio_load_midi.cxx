@@ -32,7 +32,7 @@ EXPCL_MISC AudioTraits::SoundClass* AudioLoadMidi(Filename filename) {
 
 AudioTraits::SoundClass* AudioLoadMidi(Filename) {
   audio_cat->warning() << "linux doesn't support reading midi data yet"
-		       << endl;
+                       << endl;
   return (AudioTraits::SoundClass*)0L;
 }
 

@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////
 bool GlobPattern::
 matches_substr(string::const_iterator pi, string::const_iterator pend,
-	       string::const_iterator ci, string::const_iterator cend) const {
+               string::const_iterator ci, string::const_iterator cend) const {
   // If we run out of pattern or candidate string, it's a match only
   // if they both ran out at the same time.
   if (pi == pend || ci == cend) {
@@ -51,11 +51,11 @@ matches_substr(string::const_iterator pi, string::const_iterator pend,
     if ((*pi) == '!') {
       ++pi;
       if (matches_set(pi, pend, *ci)) {
-	return false;
+        return false;
       }
     } else {
       if (!matches_set(pi, pend, *ci)) {
-	return false;
+        return false;
       }
     }
     if (pi == pend) {
@@ -94,7 +94,7 @@ matches_substr(string::const_iterator pi, string::const_iterator pend,
 ////////////////////////////////////////////////////////////////////
 bool GlobPattern::
 matches_set(string::const_iterator &pi, string::const_iterator pend,
-	    char ch) const {
+            char ch) const {
   bool matched = false;
 
   while (pi != pend && (*pi) != ']') {
@@ -102,7 +102,7 @@ matches_set(string::const_iterator &pi, string::const_iterator pend,
       // Backslash escapes the next character.
       ++pi;
       if (pi == pend) {
-	return false;
+        return false;
       }
     }
 
@@ -116,33 +116,33 @@ matches_set(string::const_iterator &pi, string::const_iterator pend,
     if (pi != pend && (*pi) == '-') {
       ++pi;
       if (pi != pend && (*pi) != ']') {
-	// Yes, we have a range: start-end.
+        // Yes, we have a range: start-end.
 
-	if ((*pi) == '\\') {
-	  // Backslash escapes.
-	  ++pi;
-	  if (pi == pend) {
-	    return false;
-	  }
-	}
+        if ((*pi) == '\\') {
+          // Backslash escapes.
+          ++pi;
+          if (pi == pend) {
+            return false;
+          }
+        }
 
-	char end = (*pi);
-	++pi;
+        char end = (*pi);
+        ++pi;
 
-	if (ch >= start && ch <= end) {
-	  matched = true;
-	}
+        if (ch >= start && ch <= end) {
+          matched = true;
+        }
       } else {
-	// This was a - at the end of the string.
-	if (ch == '-') {
-	  matched = true;
-	}
+        // This was a - at the end of the string.
+        if (ch == '-') {
+          matched = true;
+        }
       }
     }
   }
 
   return matched;
 }
-	
+
 
   

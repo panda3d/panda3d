@@ -62,7 +62,7 @@
 class TypedObject;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TypeHandle
+//       Class : TypeHandle
 // Description : TypeHandle is the identifier used to differentiate
 //               C++ class types.  Any C++ classes that inherit from
 //               some base class, and must be differentiated at run
@@ -90,7 +90,7 @@ PUBLISHED:
 
   INLINE string get_name(TypedObject *object = (TypedObject *)NULL) const;
   INLINE bool is_derived_from(TypeHandle parent,
-			      TypedObject *object = (TypedObject *)NULL) const;
+                              TypedObject *object = (TypedObject *)NULL) const;
 
   INLINE int get_num_parent_classes(TypedObject *object = (TypedObject *)NULL) const;
   INLINE TypeHandle get_parent_class(int index) const;
@@ -99,7 +99,7 @@ PUBLISHED:
   INLINE TypeHandle get_child_class(int index) const;
 
   INLINE TypeHandle get_parent_towards(TypeHandle ancestor,
-				       TypedObject *object = (TypedObject *)NULL) const;
+                                       TypedObject *object = (TypedObject *)NULL) const;
 
   INLINE int get_index() const;
 
@@ -120,7 +120,7 @@ INLINE ostream &operator << (ostream &out, TypeHandle type) {
 }
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TypeRegistry
+//       Class : TypeRegistry
 // Description : The TypeRegistry class maintains all the assigned
 //               TypeHandles in a given system.  There should be only
 //               one TypeRegistry class during the lifetime of the
@@ -160,21 +160,21 @@ PUBLISHED:
 
   string get_name(TypeHandle type, TypedObject *object) const;
   bool is_derived_from(TypeHandle child, TypeHandle parent,
-		       TypedObject *child_object) const;
+                       TypedObject *child_object) const;
 
   int get_num_root_classes();
   TypeHandle get_root_class(int n);
 
   int get_num_parent_classes(TypeHandle child,
-			     TypedObject *child_object) const;
+                             TypedObject *child_object) const;
   TypeHandle get_parent_class(TypeHandle child, int index) const;
 
   int get_num_child_classes(TypeHandle child,
-			    TypedObject *child_object) const;
+                            TypedObject *child_object) const;
   TypeHandle get_child_class(TypeHandle child, int index) const;
   
   TypeHandle get_parent_towards(TypeHandle child, TypeHandle ancestor,
-				TypedObject *child_object) const;
+                                TypedObject *child_object) const;
   
   static void reregister_types();
 
@@ -194,7 +194,7 @@ private:
 
   void freshen_root_classes();
   void write_node(ostream &out, int indent_level,
-		  const RegistryNode *node) const;
+                  const RegistryNode *node) const;
 
   typedef vector<RegistryNode *> HandleRegistry;
   HandleRegistry _handle_registry;
@@ -224,21 +224,21 @@ register_type(TypeHandle &type_handle, const string &name);
 
 INLINE void
 register_type(TypeHandle &type_handle, const string &name,
-	      TypeHandle parent1);
+              TypeHandle parent1);
 
 INLINE void
 register_type(TypeHandle &type_handle, const string &name,
-	      TypeHandle parent1, TypeHandle parent2);
+              TypeHandle parent1, TypeHandle parent2);
 
 INLINE void
 register_type(TypeHandle &type_handle, const string &name,
-	      TypeHandle parent1, TypeHandle parent2,
-	      TypeHandle parent3);
+              TypeHandle parent1, TypeHandle parent2,
+              TypeHandle parent3);
 
 INLINE void
 register_type(TypeHandle &type_handle, const string &name,
-	      TypeHandle parent1, TypeHandle parent2,
-	      TypeHandle parent3, TypeHandle parent4);
+              TypeHandle parent1, TypeHandle parent2,
+              TypeHandle parent3, TypeHandle parent4);
 
 
 ////////////////////////////////////////////////////////////////////
@@ -257,17 +257,17 @@ register_dynamic_type(const string &name, TypeHandle parent1);
 
 INLINE TypeHandle
 register_dynamic_type(const string &name,
-		      TypeHandle parent1, TypeHandle parent2);
+                      TypeHandle parent1, TypeHandle parent2);
 
 INLINE TypeHandle
 register_dynamic_type(const string &name,
-		      TypeHandle parent1, TypeHandle parent2,
-		      TypeHandle parent3);
+                      TypeHandle parent1, TypeHandle parent2,
+                      TypeHandle parent3);
 
 INLINE TypeHandle
 register_dynamic_type(const string &name,
-		      TypeHandle parent1, TypeHandle parent2,
-		      TypeHandle parent3, TypeHandle parent4);
+                      TypeHandle parent1, TypeHandle parent2,
+                      TypeHandle parent3, TypeHandle parent4);
 
 
 // A few system-wide TypeHandles are defined for some basic types.

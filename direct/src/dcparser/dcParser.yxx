@@ -82,13 +82,13 @@ dc_cleanup_parser() {
 %%
 
 dc:
-	empty
-	| dc ';'
-	| dc dclass
-	;
+        empty
+        | dc ';'
+        | dc dclass
+        ;
 
 dclass:
-	KW_DCLASS IDENTIFIER 
+        KW_DCLASS IDENTIFIER 
 {
   current_class = new DCClass;
   current_class->_name = $2;
@@ -96,11 +96,11 @@ dclass:
     yyerror("Duplicate class name: " + current_class->_name);
   }
 }
-	dclass_derivation '{' dclass_fields '}'
-	;
+        dclass_derivation '{' dclass_fields '}'
+        ;
 
 dclass_name:
-	IDENTIFIER
+        IDENTIFIER
 {
   DCFile::ClassesByName::const_iterator ni;
   ni = dc_file->_classes_by_name.find($1);
@@ -113,34 +113,34 @@ dclass_name:
 }
 
 dclass_derivation:
-	empty
-	| ':' base_list
-	;
+        empty
+        | ':' base_list
+        ;
 
 base_list:
-	dclass_name
+        dclass_name
 {
   if ($1 != (DCClass *)NULL) {
     current_class->_parents.push_back($1);
   }
 }
-	| base_list ',' dclass_name
+        | base_list ',' dclass_name
 {
   if ($3 != (DCClass *)NULL) {
     current_class->_parents.push_back($3);
   }
 }
-	;
+        ;
 
 dclass_fields:
-	empty
-	| dclass_fields ';'
-	| dclass_fields atomic_field
-	| dclass_fields molecular_field
-	;
+        empty
+        | dclass_fields ';'
+        | dclass_fields atomic_field
+        | dclass_fields molecular_field
+        ;
 
 atomic_field:
-	IDENTIFIER '('
+        IDENTIFIER '('
 {
   current_atomic = new DCAtomicField;
   current_atomic->_name = $1;
@@ -148,11 +148,11 @@ atomic_field:
     yyerror("Duplicate field name: " + current_atomic->_name);
   }
 }
-	parameter_list ')' atomic_flags
-	;
+        parameter_list ')' atomic_flags
+        ;
 
 atomic_name:
-	IDENTIFIER
+        IDENTIFIER
 {
   DCField *field = current_class->get_field_by_name($1);
   $$ = (DCAtomicField *)NULL;
@@ -167,60 +167,60 @@ atomic_name:
 }
 
 parameter_list:
-	empty
-	| nonempty_parameter_list
-	;
+        empty
+        | nonempty_parameter_list
+        ;
 
 nonempty_parameter_list:
-	atomic_element
-	| nonempty_parameter_list ',' atomic_element
-	;
+        atomic_element
+        | nonempty_parameter_list ',' atomic_element
+        ;
 
 atomic_element:
-	type_token 
+        type_token 
 {
   atomic_element = DCAtomicField::ElementType();
   atomic_element._type = $1;
 }
-	atomic_element_definition
+        atomic_element_definition
 {
   current_atomic->_elements.push_back(atomic_element)
 }
-	;
+        ;
 
 atomic_element_definition:
-	empty
-	| atomic_element_definition '/' INTEGER
+        empty
+        | atomic_element_definition '/' INTEGER
 {
   atomic_element._divisor = $3;
 }
-	| atomic_element_definition IDENTIFIER
+        | atomic_element_definition IDENTIFIER
 {
   atomic_element._name = $2;
 }
-	| atomic_element_definition '=' INTEGER
+        | atomic_element_definition '=' INTEGER
 {
   if (!atomic_element.set_default_value($3)) {
     yyerror("Invalid default value: " + $<str>3);
   }
 }
-	| atomic_element_definition '=' REAL
+        | atomic_element_definition '=' REAL
 {
   if (!atomic_element.set_default_value($3)) {
     yyerror("Invalid default value: " + $<str>3);
   }
 }
-	| atomic_element_definition '=' STRING
+        | atomic_element_definition '=' STRING
 {
   if (!atomic_element.set_default_value($3)) {
     yyerror("Invalid default value: \"" + $3 + "\"");
   }
 }
-	| atomic_element_definition '=' HEX_STRING
+        | atomic_element_definition '=' HEX_STRING
 {
   atomic_element.set_default_value($3);
 }
-	| atomic_element_definition '=' '{' default_array '}'
+        | atomic_element_definition '=' '{' default_array '}'
 {
   if (!atomic_element.end_array()) {
     yyerror("Array default value inappropriate");
@@ -228,37 +228,37 @@ atomic_element_definition:
     atomic_element._has_default_value = true;
   }
 }
-	;
+        ;
 
 default_array:
-	empty
-	| default_array_def maybe_comma
-	;
+        empty
+        | default_array_def maybe_comma
+        ;
 
 maybe_comma:
-	empty
-	| ','
-	;
+        empty
+        | ','
+        ;
 
 default_array_def:
-	default_array_element
-	| default_array_def ',' default_array_element
-	;
+        default_array_element
+        | default_array_def ',' default_array_element
+        ;
 
 default_array_element:
-	INTEGER
+        INTEGER
 {
   if (!atomic_element.add_default_value($1)) {
     yyerror("Invalid default value: " + $<str>1);
   }
 }
-	| REAL
+        | REAL
 {
   if (!atomic_element.add_default_value($1)) {
     yyerror("Invalid default value: " + $<str>1);
   }
 }
-	| INTEGER '*' INTEGER
+        | INTEGER '*' INTEGER
 {
   for (int i = 0; i < $3; i++) {
     if (!atomic_element.add_default_value($1)) {
@@ -267,7 +267,7 @@ default_array_element:
     }
   }
 }
-	| REAL '*' INTEGER
+        | REAL '*' INTEGER
 {
   for (int i = 0; i < $3; i++) {
     if (!atomic_element.add_default_value($1)) {
@@ -276,109 +276,109 @@ default_array_element:
     }
   }
 }
-	;  
+        ;  
 
 type_token:
-	KW_INT8
+        KW_INT8
 {
   $$ = ST_int8;
 }
-	| KW_INT16
+        | KW_INT16
 {
   $$ = ST_int16;
 }
-	| KW_INT32
+        | KW_INT32
 {
   $$ = ST_int32;
 }
-	| KW_INT64
+        | KW_INT64
 {
   $$ = ST_int64;
 }
-	| KW_UINT8
+        | KW_UINT8
 {
   $$ = ST_uint8;
 }
-	| KW_UINT16
+        | KW_UINT16
 {
   $$ = ST_uint16;
 }
-	| KW_UINT32
+        | KW_UINT32
 {
   $$ = ST_uint32;
 }
-	| KW_UINT64
+        | KW_UINT64
 {
   $$ = ST_uint64;
 }
-	| KW_FLOAT64
+        | KW_FLOAT64
 {
   $$ = ST_float64;
 }
-	| KW_STRING
+        | KW_STRING
 {
   $$ = ST_string;
 }
-	| KW_BLOB
+        | KW_BLOB
 {
   $$ = ST_blob;
 }
-	| KW_INT16ARRAY
+        | KW_INT16ARRAY
 {
   $$ = ST_int16array;
 }
-	| KW_INT32ARRAY
+        | KW_INT32ARRAY
 {
   $$ = ST_int32array;
 }
-	| KW_UINT16ARRAY
+        | KW_UINT16ARRAY
 {
   $$ = ST_uint16array;
 }
-	| KW_UINT32ARRAY
+        | KW_UINT32ARRAY
 {
   $$ = ST_uint32array;
 }
-	;
+        ;
 
 atomic_flags:
-	empty
-	| atomic_flags KW_REQUIRED
+        empty
+        | atomic_flags KW_REQUIRED
 {
   current_atomic->_flags |= DCAtomicField::F_required;
 }
-	| atomic_flags KW_BROADCAST
+        | atomic_flags KW_BROADCAST
 {
   current_atomic->_flags |= DCAtomicField::F_broadcast;
 }
-	| atomic_flags KW_P2P
+        | atomic_flags KW_P2P
 {
   current_atomic->_flags |= DCAtomicField::F_p2p;
 }
-	| atomic_flags KW_RAM
+        | atomic_flags KW_RAM
 {
   current_atomic->_flags |= DCAtomicField::F_ram;
 }
-	| atomic_flags KW_DB
+        | atomic_flags KW_DB
 {
   current_atomic->_flags |= DCAtomicField::F_db;
 }
-	| atomic_flags KW_CLSEND
+        | atomic_flags KW_CLSEND
 {
   current_atomic->_flags |= DCAtomicField::F_clsend;
 }
-	| atomic_flags KW_CLRECV
+        | atomic_flags KW_CLRECV
 {
   current_atomic->_flags |= DCAtomicField::F_clrecv;
 }
-	| atomic_flags KW_OWNSEND
+        | atomic_flags KW_OWNSEND
 {
   current_atomic->_flags |= DCAtomicField::F_ownsend;
 }
-	;
+        ;
 
 molecular_field:
-	IDENTIFIER ':'
+        IDENTIFIER ':'
 {
   current_molecular = new DCMolecularField;
   current_molecular->_name = $1;
@@ -386,28 +386,28 @@ molecular_field:
     yyerror("Duplicate field name: " + current_molecular->_name);
   }
 }
-	molecular_atom_list
-	;
+        molecular_atom_list
+        ;
 
 molecular_atom_list:
-	atomic_name
+        atomic_name
 {
   if ($1 != (DCAtomicField *)NULL) {
     current_molecular->_fields.push_back($1);
   }
 }
-	| molecular_atom_list ',' atomic_name
+        | molecular_atom_list ',' atomic_name
 {
   if ($3 != (DCAtomicField *)NULL) {
     current_molecular->_fields.push_back($3);
     if (current_molecular->_fields[0]->_flags != $3->_flags) {
       yyerror("Mismatched flags in molecule between " + 
-	      current_molecular->_fields[0]->_name + " and " +
-	      $3->_name);
+              current_molecular->_fields[0]->_name + " and " +
+              $3->_name);
     }
   }
 }
-	;
+        ;
 
 empty:
-	;
+        ;

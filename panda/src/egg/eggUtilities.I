@@ -73,32 +73,32 @@ split_vertex(EggVertex *vert, const FunctionObject &sequence) {
       Sequences::const_iterator si = _sequences.find(seq);
 
       if (si != _sequences.end()) {
-	// Yes, we've seen this sequence number before.  Use the same
-	// vertex.
-	new_vert = (*si).second;
+        // Yes, we've seen this sequence number before.  Use the same
+        // vertex.
+        new_vert = (*si).second;
 
       } else {
-	// No, this is the first time we've encountered this sequence.
-	// Split the vertex.
-	new_vert = new EggVertex(*vert);
-	pool->add_vertex(new_vert);
-	_sequences[seq] = new_vert;
+        // No, this is the first time we've encountered this sequence.
+        // Split the vertex.
+        new_vert = new EggVertex(*vert);
+        pool->add_vertex(new_vert);
+        _sequences[seq] = new_vert;
 
-	// The new vertex gets all the same group memberships as the
-	// old one.
-	EggVertex::GroupRef::const_iterator gri;
-	for (gri = vert->gref_begin(); gri != vert->gref_end(); ++gri) {
-	  EggGroup *group = *gri;
-	  group->ref_vertex(new_vert, group->get_vertex_membership(vert));
-	}
+        // The new vertex gets all the same group memberships as the
+        // old one.
+        EggVertex::GroupRef::const_iterator gri;
+        for (gri = vert->gref_begin(); gri != vert->gref_end(); ++gri) {
+          EggGroup *group = *gri;
+          group->ref_vertex(new_vert, group->get_vertex_membership(vert));
+        }
       }
 
       // Now replace the vertex in the primitive.
       EggPrimitive::iterator pi;
       for (pi = prim->begin(); pi != prim->end(); ++pi) {
-	if (*pi == vert) {
-	  prim->replace(pi, new_vert);
-	}
+        if (*pi == vert) {
+          prim->replace(pi, new_vert);
+        }
       }
     }
   }

@@ -20,7 +20,7 @@ class PStatMonitor;
 class PStatClientControlMessage;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PStatReader
+//       Class : PStatReader
 // Description : This is the class that does all the work for handling
 //               communications from a single Panda client.  It reads
 //               sockets received from the client and boils them down

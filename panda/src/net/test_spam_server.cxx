@@ -63,9 +63,9 @@ main(int argc, char *argv[]) {
       NetAddress address;
       PT(Connection) new_connection;
       if (listener.get_new_connection(rv, address, new_connection)) {
-	nout << "Got connection from " << address << "\n";
-	reader.add_connection(new_connection);
-	clients.insert(new_connection);
+        nout << "Got connection from " << address << "\n";
+        reader.add_connection(new_connection);
+        clients.insert(new_connection);
       }
     }
 
@@ -73,10 +73,10 @@ main(int argc, char *argv[]) {
     while (cm.reset_connection_available()) {
       PT(Connection) connection;
       if (cm.get_reset_connection(connection)) {
-	nout << "Lost connection from "
-	     << connection->get_address() << "\n";
-	clients.erase(connection);
-	cm.close_connection(connection);
+        nout << "Lost connection from "
+             << connection->get_address() << "\n";
+        clients.erase(connection);
+        cm.close_connection(connection);
       }
     }
 
@@ -84,20 +84,20 @@ main(int argc, char *argv[]) {
     while (reader.data_available()) {
       NetDatagram datagram;
       if (reader.get_data(datagram)) {
-	num_received++;
-	Clients::iterator ci;
-	for (ci = clients.begin(); ci != clients.end(); ++ci) {
-	  if (writer.send(datagram, (*ci))) {
-	    num_sent++;
-	  }
-	}
+        num_received++;
+        Clients::iterator ci;
+        for (ci = clients.begin(); ci != clients.end(); ++ci) {
+          if (writer.send(datagram, (*ci))) {
+            num_sent++;
+          }
+        }
       }
     }
 
     PRIntervalTime now = PR_IntervalNow();
     if ((PRIntervalTime)(now - last_reported_time) > report_interval) {
       nout << "Sent " << num_sent << ", received "
-	   << num_received << " datagrams.\n";
+           << num_received << " datagrams.\n";
       last_reported_time = now;
     }
 

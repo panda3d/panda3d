@@ -20,7 +20,7 @@ class EggRenderMode;
 class EggTextureCollection;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggNode
+//       Class : EggNode
 // Description : A base class for things that may be directly added
 //               into the egg hierarchy.  This includes groups,
 //               joints, polygons, vertex pools, etc., but does not
@@ -78,7 +78,7 @@ protected:
   virtual void adjust_under();
 
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
-			   CoordinateSystem to_cs);
+                           CoordinateSystem to_cs);
   virtual void r_transform_vertices(const LMatrix4d &mat);
   virtual void r_mark_coordsys(CoordinateSystem cs);
   virtual void r_flatten_transforms();
@@ -109,7 +109,7 @@ public:
   static void init_type() {
     EggNamedObject::init_type();
     register_type(_type_handle, "EggNode",
-		  EggNamedObject::get_class_type());
+                  EggNamedObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

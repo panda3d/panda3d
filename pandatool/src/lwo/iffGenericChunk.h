@@ -14,7 +14,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : IffGenericChunk
+//       Class : IffGenericChunk
 // Description : A class for a generic kind of IffChunk that is not
 //               understood by a particular IffReader.  It remembers
 //               its entire contents.
@@ -43,7 +43,7 @@ public:
   static void init_type() {
     IffChunk::init_type();
     register_type(_type_handle, "IffGenericChunk",
-		  IffChunk::get_class_type());
+                  IffChunk::get_class_type());
   }
 
 private:

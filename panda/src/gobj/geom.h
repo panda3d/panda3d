@@ -99,7 +99,7 @@ public:
   typedef const TexCoordf &GetNextTexCoord(TexCoordIterator &);
   typedef const Colorf &GetNextColor(ColorIterator &);
 
-	
+
   Geom( void );
   Geom( const Geom& copy );
   ~Geom( void );
@@ -131,34 +131,34 @@ public:
   
  
   void set_coords( const PTA_Vertexf &coords,
-		   GeomBindType bind,
-		   const PTA_ushort &vindex =
-		   PTA_ushort() );
+                   GeomBindType bind,
+                   const PTA_ushort &vindex =
+                   PTA_ushort() );
   void set_normals( const PTA_Normalf &norms,
-		    GeomBindType bind,
-		    const PTA_ushort &nindex =
-		    PTA_ushort() );
+                    GeomBindType bind,
+                    const PTA_ushort &nindex =
+                    PTA_ushort() );
   void set_colors( const PTA_Colorf &colors,
-		   GeomBindType bind,
-		   const PTA_ushort &cindex =
-		   PTA_ushort() );
+                   GeomBindType bind,
+                   const PTA_ushort &cindex =
+                   PTA_ushort() );
   void set_texcoords( const PTA_TexCoordf &texcoords,
-		      GeomBindType bind,
-		      const PTA_ushort &tindex =
-		      PTA_ushort() );
+                      GeomBindType bind,
+                      const PTA_ushort &tindex =
+                      PTA_ushort() );
  
   void get_coords( PTA_Vertexf &coords,
-		   GeomBindType &bind,
-		   PTA_ushort &vindex) const;
+                   GeomBindType &bind,
+                   PTA_ushort &vindex) const;
   void get_normals( PTA_Normalf &norms,
-		    GeomBindType &bind,
-		    PTA_ushort &nindex) const;
+                    GeomBindType &bind,
+                    PTA_ushort &nindex) const;
   void get_colors( PTA_Colorf &colors,
-		   GeomBindType &bind,
-		   PTA_ushort &cindex) const;
+                   GeomBindType &bind,
+                   PTA_ushort &cindex) const;
   void get_texcoords( PTA_TexCoordf &texcoords,
-		      GeomBindType &bind,
-		      PTA_ushort &tindex) const;
+                      GeomBindType &bind,
+                      PTA_ushort &tindex) const;
 
 PUBLISHED: 
   INLINE GeomBindType get_binding(int attr) const;
@@ -250,7 +250,7 @@ public:
   static void init_type() {
     dDrawable::init_type();
     register_type(_type_handle, "Geom",
-		  dDrawable::get_class_type());
+                  dDrawable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

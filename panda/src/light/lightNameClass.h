@@ -9,7 +9,7 @@
 #include <pandabase.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LightNameClass
+//       Class : LightNameClass
 // Description : This is a stupid little class that's used by
 //               LightTransition to define the name of its
 //               PT(Light) class, so the MultiTransition it

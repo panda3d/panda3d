@@ -24,5 +24,5 @@ intersects(int x, int y, int x_size, int y_size) const {
   int mbot = _y + _height;
   
   return !(x >= mright || hright <= _x || 
-	   y >= mbot || hbot <= _y);
+           y >= mbot || hbot <= _y);
 }

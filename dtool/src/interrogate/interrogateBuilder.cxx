@@ -96,19 +96,19 @@ read_command_file(istream &in) {
       // Get the first word.
       size_t q = p;
       while (q < line.length() && !isspace(line[q])) {
-	q++;
+        q++;
       }
       string command = line.substr(p, q - p);
 
       // Get the rest.
       p = q;
       while (p < line.length() && isspace(line[p])) {
-	p++;
+        p++;
       }
       // Except for the trailing whitespace.
       q = line.length();
       while (q > p && isspace(line[q - 1])) {
-	q--;
+        q--;
       }
       string params = line.substr(p, q - p);
 
@@ -149,10 +149,10 @@ do_command(const string &command, const string &params) {
 
       CPPType *type = parser.parse_type(orig_name);
       if (type == (CPPType *)NULL) {
-	nout << "Unknown type: renametype " << orig_name << "\n";
+        nout << "Unknown type: renametype " << orig_name << "\n";
       } else {
-	type = type->resolve_type(&parser, &parser);
-	_renametype[type->get_local_name(&parser)] = new_name;
+        type = type->resolve_type(&parser, &parser);
+        _renametype[type->get_local_name(&parser)] = new_name;
       }
     }
 
@@ -226,22 +226,22 @@ build() {
     if ((*di)->get_subtype() == CPPDeclaration::ST_instance) {
       CPPInstance *inst = (*di)->as_instance();
       if (inst->_type->get_subtype() == CPPDeclaration::ST_function) {
-	// Here's a function declaration.
-	scan_function(inst);
+        // Here's a function declaration.
+        scan_function(inst);
 
       } else {
-	// Here's a data element declaration.
-	scan_element(inst, (CPPStructType *)NULL, &parser);
+        // Here's a data element declaration.
+        scan_element(inst, (CPPStructType *)NULL, &parser);
       }
 
     } else if ((*di)->get_subtype() == CPPDeclaration::ST_typedef) {
       CPPTypedef *tdef = (*di)->as_typedef();
       if (tdef->_type->get_subtype() == CPPDeclaration::ST_struct) {
-	// A typedef counts as a declaration.  This lets us pick up
-	// most template instantiations.
-	CPPStructType *struct_type = 
-	  tdef->_type->resolve_type(&parser, &parser)->as_struct_type();
-	scan_struct_type(struct_type);
+        // A typedef counts as a declaration.  This lets us pick up
+        // most template instantiations.
+        CPPStructType *struct_type = 
+          tdef->_type->resolve_type(&parser, &parser)->as_struct_type();
+        scan_struct_type(struct_type);
       }
 
     } else if ((*di)->get_subtype() == CPPDeclaration::ST_type_declaration) {
@@ -249,14 +249,14 @@ build() {
       type->_vis = (*di)->_vis;
 
       if (type->get_subtype() == CPPDeclaration::ST_struct) {
-	CPPStructType *struct_type = 
-	  type->as_type()->resolve_type(&parser, &parser)->as_struct_type();
-	scan_struct_type(struct_type);
-	
+        CPPStructType *struct_type = 
+          type->as_type()->resolve_type(&parser, &parser)->as_struct_type();
+        scan_struct_type(struct_type);
+
       } else if (type->get_subtype() == CPPDeclaration::ST_enum) {
-	CPPEnumType *enum_type = 
-	  type->as_type()->resolve_type(&parser, &parser)->as_enum_type();
-	scan_enum_type(enum_type);
+        CPPEnumType *enum_type = 
+          type->as_type()->resolve_type(&parser, &parser)->as_enum_type();
+        scan_enum_type(enum_type);
       }
     }
   }
@@ -304,8 +304,8 @@ write_code(ostream &out, InterrogateModuleDef *def) {
   // #include lines.
   if (!no_database) {
     out << "#include <dtoolbase.h>\n"
-	<< "#include <interrogate_request.h>\n"
-	<< "#include <dconfig.h>\n";
+        << "#include <interrogate_request.h>\n"
+        << "#include <dconfig.h>\n";
   }
   if (watch_asserts) {
     out << "#include <notify.h>\n";
@@ -320,9 +320,9 @@ write_code(ostream &out, InterrogateModuleDef *def) {
     char delimiter = (*ifi).second;
     if (should_include(filename)) {
       if (delimiter == '"') {
-	out << "#include \"" << filename << "\"\n";
+        out << "#include \"" << filename << "\"\n";
       } else {
-	out << "#include <" << filename << ">\n";
+        out << "#include <" << filename << ">\n";
       }
     }
   }
@@ -335,9 +335,9 @@ write_code(ostream &out, InterrogateModuleDef *def) {
 
   if (generate_spam) {
     out << "#include <config_interrogatedb.h>\n"
-	<< "#include <notifyCategoryProxy.h>\n\n"
-	<< "NotifyCategoryDeclNoExport(in_" << library_name << ");\n"
-	<< "NotifyCategoryDef(in_" << library_name << ", interrogatedb_cat);\n\n";
+        << "#include <notifyCategoryProxy.h>\n\n"
+        << "NotifyCategoryDeclNoExport(in_" << library_name << ");\n"
+        << "NotifyCategoryDef(in_" << library_name << ", interrogatedb_cat);\n\n";
   }
 
   // Now, define all of our wrappers.
@@ -350,8 +350,8 @@ write_code(ostream &out, InterrogateModuleDef *def) {
   {
     map<int, WrapperBuilder *>::iterator ii;
     for (ii = wrappers_by_index.begin(); 
-	 ii != wrappers_by_index.end(); 
-	 ++ii) {
+         ii != wrappers_by_index.end(); 
+         ++ii) {
       WrapperBuilder *wbuilder = (*ii).second;
 
       string wrapper_name = wbuilder->get_wrapper_name(_library_hash_name);
@@ -359,24 +359,24 @@ write_code(ostream &out, InterrogateModuleDef *def) {
 
       // Record the wrapper's name in the database.
       InterrogateFunctionWrapper &iwrapper = InterrogateDatabase::get_ptr()->
-	update_wrapper(wbuilder->_wrapper_index);
+        update_wrapper(wbuilder->_wrapper_index);
 
       if (true_wrapper_names) {
-	// If we're reporting "true" names, it means we set the
-	// wrapper's name to the name of the function it wraps.  That
-	// means we need to look up the function.
-	const InterrogateFunction &ifunction = InterrogateDatabase::get_ptr()->
-	  get_function(iwrapper.get_function());
+        // If we're reporting "true" names, it means we set the
+        // wrapper's name to the name of the function it wraps.  That
+        // means we need to look up the function.
+        const InterrogateFunction &ifunction = InterrogateDatabase::get_ptr()->
+          get_function(iwrapper.get_function());
 
-	iwrapper._name = clean_identifier(ifunction.get_scoped_name());
+        iwrapper._name = clean_identifier(ifunction.get_scoped_name());
       } else {
-	iwrapper._name = wrapper_name;
+        iwrapper._name = wrapper_name;
       }
 
       if (output_function_names) {
-	// If we're keeping the function names, record that the
-	// wrapper is callable.
-	iwrapper._flags |= InterrogateFunctionWrapper::F_callable_by_name;
+        // If we're keeping the function names, record that the
+        // wrapper is callable.
+        iwrapper._flags |= InterrogateFunctionWrapper::F_callable_by_name;
       }
     }
   }
@@ -389,18 +389,18 @@ write_code(ostream &out, InterrogateModuleDef *def) {
     map<int, WrapperBuilder *>::iterator ii;
     int next_index = 1;
     for (ii = wrappers_by_index.begin(); 
-	 ii != wrappers_by_index.end(); 
-	 ++ii) {
+         ii != wrappers_by_index.end(); 
+         ++ii) {
       int this_index = (*ii).first;
       while (next_index < this_index) {
-	out << "  (void *)0,\n";
-	next_index++;
+        out << "  (void *)0,\n";
+        next_index++;
       }
       assert(next_index == this_index);
       WrapperBuilder *wbuilder = (*ii).second;
 
       out << "  (void *)&" << wbuilder->get_wrapper_name(_library_hash_name)
-	  << ",\n";
+          << ",\n";
       next_index++;
     }
     while (next_index < num_wrappers + 1) {
@@ -413,15 +413,15 @@ write_code(ostream &out, InterrogateModuleDef *def) {
   if (save_unique_names) {
     // Write out the table of unique names, in alphabetical order by name.
     out << "static InterrogateUniqueNameDef _in_unique_names["
-	<< num_wrappers << "] = {\n";
+        << num_wrappers << "] = {\n";
     for (hi = _wrappers_by_hash.begin();
-	 hi != _wrappers_by_hash.end();
-	 ++hi) {
+         hi != _wrappers_by_hash.end();
+         ++hi) {
       WrapperBuilder *wbuilder = (*hi).second;
       if (wbuilder != (WrapperBuilder *)NULL) {
-	out << "  { \""
-	    << (*hi).first << "\", "
-	    << wbuilder->_wrapper_index - 1 << " },\n";
+        out << "  { \""
+            << (*hi).first << "\", "
+            << wbuilder->_wrapper_index - 1 << " },\n";
       }
     }
     out << "};\n\n";
@@ -434,32 +434,32 @@ write_code(ostream &out, InterrogateModuleDef *def) {
       out << "static PyMethodDef python_methods[] = {\n";
       
       for (hi = _wrappers_by_hash.begin();
-	   hi != _wrappers_by_hash.end();
-	   ++hi) {
-	WrapperBuilder *wbuilder = (*hi).second;
-	string wrapper_name = wbuilder->get_wrapper_name(_library_hash_name);
-	string true_name = wrapper_name;
-	if (true_wrapper_names) {
-	  true_name = wbuilder->_function->get_simple_name();
-	}
-	out << "  { \""
-	    << true_name << "\", &"
-	    << wrapper_name << ", METH_VARARGS },\n";
+           hi != _wrappers_by_hash.end();
+           ++hi) {
+        WrapperBuilder *wbuilder = (*hi).second;
+        string wrapper_name = wbuilder->get_wrapper_name(_library_hash_name);
+        string true_name = wrapper_name;
+        if (true_wrapper_names) {
+          true_name = wbuilder->_function->get_simple_name();
+        }
+        out << "  { \""
+            << true_name << "\", &"
+            << wrapper_name << ", METH_VARARGS },\n";
       }
 
       out << "  { NULL, NULL }\n"
-	  << "};\n\n"
+          << "};\n\n"
 
-	  << "#ifdef _WIN32\n"
-	  << "extern \"C\" __declspec(dllexport) void init" << def->library_name << "();\n"
-	  << "#else\n"
-	  << "extern \"C\" void init" << def->library_name << "();\n"
-	  << "#endif\n\n"
+          << "#ifdef _WIN32\n"
+          << "extern \"C\" __declspec(dllexport) void init" << def->library_name << "();\n"
+          << "#else\n"
+          << "extern \"C\" void init" << def->library_name << "();\n"
+          << "#endif\n\n"
 
-	  << "void init" << def->library_name << "() {\n"
-	  << "  Py_InitModule(\"" << def->library_name
-	  << "\", python_methods);\n"
-	  << "}\n\n";
+          << "void init" << def->library_name << "() {\n"
+          << "  Py_InitModule(\"" << def->library_name
+          << "\", python_methods);\n"
+          << "}\n\n";
     }
   }
 
@@ -467,44 +467,44 @@ write_code(ostream &out, InterrogateModuleDef *def) {
     // Now build the module definition structure to add ourselves to
     // the global interrogate database.
     out << "static InterrogateModuleDef _in_module_def = {\n"
-	<< "  " << def->file_identifier << ",  /* file_identifier */\n"
-	<< "  \"" << def->library_name << "\",  /* library_name */\n"
-	<< "  \"" << def->library_hash_name << "\",  /* library_hash_name */\n"
-	<< "  \"" << def->module_name << "\",  /* module_name */\n";
+        << "  " << def->file_identifier << ",  /* file_identifier */\n"
+        << "  \"" << def->library_name << "\",  /* library_name */\n"
+        << "  \"" << def->library_hash_name << "\",  /* library_hash_name */\n"
+        << "  \"" << def->module_name << "\",  /* module_name */\n";
     if (def->database_filename != (const char *)NULL) {
       out << "  \"" << def->database_filename
-	  << "\",  /* database_filename */\n";
+          << "\",  /* database_filename */\n";
     } else {
       out << "  (const char *)0,  /* database_filename */\n";
     }    
     
     if (save_unique_names) {
       out << "  _in_unique_names,\n"
-	  << "  " << num_wrappers << ",  /* num_unique_names */\n";
+          << "  " << num_wrappers << ",  /* num_unique_names */\n";
     } else {
       out << "  (InterrogateUniqueNameDef *)0,  /* unique_names */\n"
-	  << "  0,  /* num_unique_names */\n";
+          << "  0,  /* num_unique_names */\n";
     }
 
     if (output_function_pointers) {
       out << "  _in_fptrs,\n"
-	  << "  " << num_wrappers << ",  /* num_fptrs */\n";
+          << "  " << num_wrappers << ",  /* num_fptrs */\n";
     } else {
       out << "  (void **)0,  /* fptrs */\n"
-	  << "  0,  /* num_fptrs */\n";
+          << "  0,  /* num_fptrs */\n";
     }
     
     out << "  1,  /* first_index */\n"
-	<< "  " << InterrogateDatabase::get_ptr()->get_next_index()
-	<< "  /* next_index */\n"
-	<< "};\n\n";
+        << "  " << InterrogateDatabase::get_ptr()->get_next_index()
+        << "  /* next_index */\n"
+        << "};\n\n";
     
     // And now write the static-init code that tells the interrogate
     // database to load up this module.
     out << "Configure(_in_configure_" << library_name << ");\n"
-	<< "ConfigureFn(_in_configure_" << library_name << ") {\n"
-	<< "  interrogate_request_module(&_in_module_def);\n"
-	<< "}\n\n";
+        << "ConfigureFn(_in_configure_" << library_name << ") {\n"
+        << "  interrogate_request_module(&_in_module_def);\n"
+        << "}\n\n";
   }
 }
 
@@ -557,8 +557,8 @@ clean_identifier(const string &name) {
   for (ni = name.begin(); ni != name.end(); ++ni) {
     if (isalnum(*ni)) {
       if (last_invalid) {
-	result += '_';
-	last_invalid = false;
+        result += '_';
+        last_invalid = false;
       }
       result += (*ni);
     } else {
@@ -629,7 +629,7 @@ get_preferred_name(CPPType *type) {
 ////////////////////////////////////////////////////////////////////
 void InterrogateBuilder::
 insert_param_list(InterrogateBuilder::Commands &commands, 
-		  const string &params) {
+                  const string &params) {
   size_t p = 0;
   while (p < params.length()) {
     while (p < params.length() && isspace(params[p])) {
@@ -733,15 +733,15 @@ in_ignoreinvolved(CPPType *type) const {
     {
       CPPFunctionType *ftype = type->as_function_type();
       if (in_ignoreinvolved(ftype->_return_type)) {
-	return true;
+        return true;
       }
       const CPPParameterList::Parameters &params = 
-	ftype->_parameters->_parameters;
+        ftype->_parameters->_parameters;
       CPPParameterList::Parameters::const_iterator pi;
       for (pi = params.begin(); pi != params.end(); ++pi) {
-	if (in_ignoreinvolved((*pi)->_type)) {
-	  return true;
-	}
+        if (in_ignoreinvolved((*pi)->_type)) {
+          return true;
+        }
       }
       return false;
     }
@@ -876,7 +876,7 @@ void InterrogateBuilder::
 scan_function(CPPInstance *function) {
   assert(function != (CPPInstance *)NULL);
   assert(function->_type != (CPPType *)NULL &&
-	 function->_type->as_function_type() != (CPPFunctionType *)NULL);
+         function->_type->as_function_type() != (CPPFunctionType *)NULL);
   CPPFunctionType *ftype = 
     function->_type->resolve_type(&parser, &parser)->as_function_type();
   assert(ftype != (CPPFunctionType *)NULL);
@@ -910,7 +910,7 @@ scan_function(CPPInstance *function) {
     // export functions whose prototypes appear in an .h file.
     return;
   }
-	
+
   if (function->_file._source != CPPFile::S_local ||
       in_ignorefile(function->_file._filename_as_referenced)) {
     // The function is defined in some other package or in an
@@ -941,8 +941,8 @@ scan_function(CPPInstance *function) {
   }
 
   get_function(function, "",
-	       (CPPStructType *)NULL, scope, true, 
-	       WrapperBuilder::T_normal);
+               (CPPStructType *)NULL, scope, true, 
+               WrapperBuilder::T_normal);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -983,10 +983,10 @@ scan_struct_type(CPPStructType *type) {
     bool any_exported = false;
     CPPScope::Declarations::const_iterator di;
     for (di = scope->_declarations.begin(); 
-	 di != scope->_declarations.end() && !any_exported; 
-	 ++di) {
+         di != scope->_declarations.end() && !any_exported; 
+         ++di) {
       if ((*di)->_vis <= min_vis) {
-	any_exported = true;
+        any_exported = true;
       }
     }
 
@@ -1091,12 +1091,12 @@ scan_manifest(CPPManifest *manifest) {
       // We have a more complex expression.  Generate a getter
       // function.
       FunctionIndex getter =
-	get_getter(type, manifest->_name, (CPPStructType *)NULL, &parser,
-		   (CPPInstance *)NULL);
-		  
+        get_getter(type, manifest->_name, (CPPStructType *)NULL, &parser,
+                   (CPPInstance *)NULL);
+
       if (getter != 0) {
-	imanifest._flags |= InterrogateManifest::F_has_getter;
-	imanifest._getter = getter;
+        imanifest._flags |= InterrogateManifest::F_has_getter;
+        imanifest._getter = getter;
       }
     }
   }
@@ -1114,7 +1114,7 @@ scan_manifest(CPPManifest *manifest) {
 ////////////////////////////////////////////////////////////////////
 ElementIndex InterrogateBuilder::
 scan_element(CPPInstance *element, CPPStructType *struct_type, 
-	     CPPScope *scope) {
+             CPPScope *scope) {
   if (element == (CPPInstance *)NULL) {
     return 0;
   }
@@ -1187,7 +1187,7 @@ scan_element(CPPInstance *element, CPPStructType *struct_type,
     // Generate a getter and setter function for the element.
     FunctionIndex getter =
       get_getter(parameter_type, element->get_local_name(scope), 
-		 struct_type, scope, element);
+                 struct_type, scope, element);
     if (getter != 0) {
       ielement._flags |= InterrogateElement::F_has_getter;
       ielement._getter = getter;
@@ -1195,11 +1195,11 @@ scan_element(CPPInstance *element, CPPStructType *struct_type,
 
     if (TypeManager::is_assignable(element_type)) {
       FunctionIndex setter =
-	get_setter(parameter_type, element->get_local_name(scope), 
-		   struct_type, scope, element);
+        get_setter(parameter_type, element->get_local_name(scope), 
+                   struct_type, scope, element);
       if (setter != 0) {
-	ielement._flags |= InterrogateElement::F_has_setter;
-	ielement._setter = setter;
+        ielement._flags |= InterrogateElement::F_has_setter;
+        ielement._setter = setter;
       }
     }
   }
@@ -1224,8 +1224,8 @@ scan_element(CPPInstance *element, CPPStructType *struct_type,
 ////////////////////////////////////////////////////////////////////
 FunctionIndex InterrogateBuilder::
 get_getter(CPPType *expr_type, string expression,
-	   CPPStructType *struct_type, CPPScope *scope,
-	   CPPInstance *element) {
+           CPPStructType *struct_type, CPPScope *scope,
+           CPPInstance *element) {
   // Make up a name for the function.
   string function_name = clean_identifier("get_" + expression);
 
@@ -1289,8 +1289,8 @@ get_getter(CPPType *expr_type, string expression,
   // It's clear; make a getter.
   FunctionIndex index =
     get_function(function, description,
-		 struct_type, scope, false, 
-		 WrapperBuilder::T_getter, expression);
+                 struct_type, scope, false, 
+                 WrapperBuilder::T_getter, expression);
 
   InterrogateDatabase::get_ptr()->update_function(index)._comment = description;
   return index;
@@ -1304,8 +1304,8 @@ get_getter(CPPType *expr_type, string expression,
 ////////////////////////////////////////////////////////////////////
 FunctionIndex InterrogateBuilder::
 get_setter(CPPType *expr_type, string expression,
-	   CPPStructType *struct_type, CPPScope *scope,
-	   CPPInstance *element) {
+           CPPStructType *struct_type, CPPScope *scope,
+           CPPInstance *element) {
   // Make up a name for the function.
   string function_name = clean_identifier("set_" + expression);
     
@@ -1362,8 +1362,8 @@ get_setter(CPPType *expr_type, string expression,
   // It's clear; make a setter.
   FunctionIndex index =
     get_function(function, description,
-		 struct_type, scope, false, 
-		 WrapperBuilder::T_setter, expression);
+                 struct_type, scope, false, 
+                 WrapperBuilder::T_setter, expression);
 
   InterrogateDatabase::get_ptr()->update_function(index)._comment = description;
   return index;
@@ -1378,7 +1378,7 @@ get_setter(CPPType *expr_type, string expression,
 ////////////////////////////////////////////////////////////////////
 FunctionIndex InterrogateBuilder::
 get_cast_function(CPPType *to_type, CPPType *from_type, 
-		  const string &prefix) {
+                  const string &prefix) {
   CPPInstance *function;
   CPPStructType *struct_type = from_type->as_struct_type();
   CPPScope *scope = &parser;
@@ -1407,7 +1407,7 @@ get_cast_function(CPPType *to_type, CPPType *from_type,
     // Make up a name for the function.
     string function_name = 
       clean_identifier(prefix + "_" + get_preferred_name(from_type) +
-		       "_to_" + get_preferred_name(to_type));
+                       "_to_" + get_preferred_name(to_type));
     
     // Make up a CPPFunctionType.
     CPPType *from_ptr_type = CPPType::new_type(new CPPPointerType(from_type));
@@ -1428,8 +1428,8 @@ get_cast_function(CPPType *to_type, CPPType *from_type,
     
   FunctionIndex index =
     get_function(function, description,
-		 struct_type, scope, false, 
-		 WrapperBuilder::T_typecast);
+                 struct_type, scope, false, 
+                 WrapperBuilder::T_typecast);
 
   InterrogateDatabase::get_ptr()->update_function(index)._comment = description;
   return index;
@@ -1444,9 +1444,9 @@ get_cast_function(CPPType *to_type, CPPType *from_type,
 ////////////////////////////////////////////////////////////////////
 FunctionIndex InterrogateBuilder::
 get_function(CPPInstance *function, string description,
-	     CPPStructType *struct_type, 
-	     CPPScope *scope, bool global, WrapperBuilder::Type wtype,
-	     const string &expression) {
+             CPPStructType *struct_type, 
+             CPPScope *scope, bool global, WrapperBuilder::Type wtype,
+             const string &expression) {
   // Get a unique function signature.  Make sure we tell the function
   // where its native scope is, so we get a fully-scoped signature.
 
@@ -1485,7 +1485,7 @@ get_function(CPPInstance *function, string description,
     if (function->_leading_comment != (CPPCommentBlock *)NULL) {
       string comment = trim_blanks(function->_leading_comment->_comment);
       if (!ifunction._comment.empty()) {
-	ifunction._comment += "\n\n";
+        ifunction._comment += "\n\n";
       }
       ifunction._comment += comment;
     }
@@ -1565,34 +1565,34 @@ make_wrappers() {
       int num_default_parameters = nf._ftype->get_num_default_parameters();
 
       InterrogateFunction &ifunction = 
-	InterrogateDatabase::get_ptr()->update_function(nf._function_index);
+        InterrogateDatabase::get_ptr()->update_function(nf._function_index);
 
       if (build_c_wrappers) {
-	// Make the C wrapper(s).
-	for (int dp = 0; dp <= num_default_parameters; dp++) {
-	  FunctionWrapperIndex wrapper =
-	    get_wrapper(nf._function_index, new WrapperBuilderC,
-			nf._function, nf._description,
-			nf._struct_type, nf._scope,
-			nf._wtype, nf._expression, dp);
-	  if (wrapper != 0) {
-	    ifunction._c_wrappers.push_back(wrapper);
-	  }
-	}
+        // Make the C wrapper(s).
+        for (int dp = 0; dp <= num_default_parameters; dp++) {
+          FunctionWrapperIndex wrapper =
+            get_wrapper(nf._function_index, new WrapperBuilderC,
+                        nf._function, nf._description,
+                        nf._struct_type, nf._scope,
+                        nf._wtype, nf._expression, dp);
+          if (wrapper != 0) {
+            ifunction._c_wrappers.push_back(wrapper);
+          }
+        }
       }
 
       if (build_python_wrappers) {
-	// Make the Python wrapper.
-	for (int dp = 0; dp <= num_default_parameters; dp++) {
-	  FunctionWrapperIndex wrapper =
-	    get_wrapper(nf._function_index, new WrapperBuilderPython,
-			nf._function, nf._description,
-			nf._struct_type, nf._scope, 
-			nf._wtype, nf._expression, dp);
-	  if (wrapper != 0) {
-	    ifunction._python_wrappers.push_back(wrapper);
-	  }
-	}
+        // Make the Python wrapper.
+        for (int dp = 0; dp <= num_default_parameters; dp++) {
+          FunctionWrapperIndex wrapper =
+            get_wrapper(nf._function_index, new WrapperBuilderPython,
+                        nf._function, nf._description,
+                        nf._struct_type, nf._scope, 
+                        nf._wtype, nf._expression, dp);
+          if (wrapper != 0) {
+            ifunction._python_wrappers.push_back(wrapper);
+          }
+        }
       }
     }
   }
@@ -1607,11 +1607,11 @@ make_wrappers() {
 ////////////////////////////////////////////////////////////////////
 FunctionWrapperIndex InterrogateBuilder::
 get_wrapper(FunctionIndex function_index, WrapperBuilder *wbuilder,
-	    CPPInstance *function, string description,
-	    CPPStructType *struct_type, 
-	    CPPScope *scope, WrapperBuilder::Type wtype,
-	    const string &expression,
-	    int num_default_parameters) {
+            CPPInstance *function, string description,
+            CPPStructType *struct_type, 
+            CPPScope *scope, WrapperBuilder::Type wtype,
+            const string &expression,
+            int num_default_parameters) {
 
   string function_signature = 
     TypeManager::get_function_signature(function, num_default_parameters);
@@ -1625,8 +1625,8 @@ get_wrapper(FunctionIndex function_index, WrapperBuilder *wbuilder,
   }
 
   if (!wbuilder->set_function(function, description, struct_type, scope, 
-			      function_signature, wtype,
-			      expression, num_default_parameters)) {
+                              function_signature, wtype,
+                              expression, num_default_parameters)) {
     // This function can't be exported for some reason.
     delete wbuilder;
     return 0;
@@ -1687,7 +1687,7 @@ get_wrapper(FunctionIndex function_index, WrapperBuilder *wbuilder,
     if (wbuilder->return_value_needs_management()) {
       iwrapper._flags |= InterrogateFunctionWrapper::F_caller_manages;
       iwrapper._return_value_destructor = 
-	wbuilder->get_return_value_destructor();
+        wbuilder->get_return_value_destructor();
     }
   }
 
@@ -1804,21 +1804,21 @@ get_type(CPPType *type, bool global) {
     if (ext_type->_ident != (CPPIdentifier *)NULL) {
       CPPScope *scope = ext_type->_ident->get_scope(&parser, &parser);
       while (scope->as_template_scope() != (CPPTemplateScope *)NULL) {
-	assert(scope->get_parent_scope() != scope);
-	scope = scope->get_parent_scope();
-	assert(scope != (CPPScope *)NULL);
+        assert(scope->get_parent_scope() != scope);
+        scope = scope->get_parent_scope();
+        assert(scope != (CPPScope *)NULL);
       }
 
       if (scope != &parser) {
-	// We're scoped!
-	itype._scoped_name = 
-	  descope(scope->get_local_name(&parser) + "::" + itype._name);
-	CPPStructType *struct_type = scope->get_struct_type();
-	
-	if (struct_type != (CPPStructType *)NULL) {
-	  itype._flags |= InterrogateType::F_nested;
-	  itype._outer_class = get_type(struct_type, false);
-	}
+        // We're scoped!
+        itype._scoped_name = 
+          descope(scope->get_local_name(&parser) + "::" + itype._name);
+        CPPStructType *struct_type = scope->get_struct_type();
+
+        if (struct_type != (CPPStructType *)NULL) {
+          itype._flags |= InterrogateType::F_nested;
+          itype._outer_class = get_type(struct_type, false);
+        }
       }
     }
   }
@@ -2022,35 +2022,35 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
       // Do we need to synthesize upcast and downcast functions?
       bool generate_casts = false;
       if (base._is_virtual) {
-	// We do in the presence of virtual inheritance.
-	generate_casts = true;
+        // We do in the presence of virtual inheritance.
+        generate_casts = true;
 
       } else if (bi != cpptype->_derivation.begin()) {
-	// Or if we're not talking about the leftmost fork of multiple
-	// inheritance.
-	generate_casts = true;
+        // Or if we're not talking about the leftmost fork of multiple
+        // inheritance.
+        generate_casts = true;
 
       } else if (cpptype->_derivation.size() != 1 &&
-		 left_inheritance_requires_upcast) {
-	// Or even if we are the leftmost fork of multiple
-	// inheritance, if the flag is set indicating that this
-	// requires a pointer change.  (For most compilers, this does
-	// not require a pointer change.)
-	generate_casts = true;
+                 left_inheritance_requires_upcast) {
+        // Or even if we are the leftmost fork of multiple
+        // inheritance, if the flag is set indicating that this
+        // requires a pointer change.  (For most compilers, this does
+        // not require a pointer change.)
+        generate_casts = true;
       }
       
       if (generate_casts) {
-	d._upcast = get_cast_function(base_type, cpptype, "upcast");
-	d._flags |= InterrogateType::DF_upcast;
+        d._upcast = get_cast_function(base_type, cpptype, "upcast");
+        d._flags |= InterrogateType::DF_upcast;
 
-	if (base._is_virtual) {
-	  // If this is a virtual inheritance, we can't write a
-	  // downcast.
-	  d._flags |= InterrogateType::DF_downcast_impossible;
-	} else {
-	  d._downcast = get_cast_function(cpptype, base_type, "downcast");
-	  d._flags |= InterrogateType::DF_downcast;
-	}
+        if (base._is_virtual) {
+          // If this is a virtual inheritance, we can't write a
+          // downcast.
+          d._flags |= InterrogateType::DF_downcast_impossible;
+        } else {
+          d._downcast = get_cast_function(cpptype, base_type, "downcast");
+          d._flags |= InterrogateType::DF_downcast;
+        }
       }
 
       itype._derivations.push_back(d);
@@ -2064,35 +2064,35 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
     if ((*di)->get_subtype() == CPPDeclaration::ST_instance) {
       CPPInstance *inst = (*di)->as_instance();
       if (inst->_type->get_subtype() == CPPDeclaration::ST_function) {
-	// Here's a method declaration.
-	define_method(inst, itype, cpptype, scope);
-	
+        // Here's a method declaration.
+        define_method(inst, itype, cpptype, scope);
+
       } else {
-	// Here's a data member declaration.
-	ElementIndex data_member = scan_element(inst, cpptype, scope);
-	if (data_member != 0) {
-	  itype._elements.push_back(data_member);
-	}
+        // Here's a data member declaration.
+        ElementIndex data_member = scan_element(inst, cpptype, scope);
+        if (data_member != 0) {
+          itype._elements.push_back(data_member);
+        }
       }
 
     } else if ((*di)->get_subtype() == CPPDeclaration::ST_type_declaration) {
       CPPType *type = (*di)->as_type_declaration()->_type;
 
       if ((*di)->_vis <= min_vis) {
-	if (type->as_struct_type() != (CPPStructType *)NULL ||
-	    type->as_enum_type() != (CPPEnumType *)NULL) {
-	  // Here's a nested class or enum definition.
-	  type->_vis = (*di)->_vis;
-	  
-	  CPPExtensionType *nested_type = type->as_extension_type();
-	  assert(nested_type != (CPPExtensionType *)NULL);
-	  
-	  // Only try to export named types.
-	  if (nested_type->_ident != (CPPIdentifier *)NULL) {
-	    TypeIndex nested_index = get_type(nested_type, false);
-	    itype._nested_types.push_back(nested_index);
-	  }
-	}
+        if (type->as_struct_type() != (CPPStructType *)NULL ||
+            type->as_enum_type() != (CPPEnumType *)NULL) {
+          // Here's a nested class or enum definition.
+          type->_vis = (*di)->_vis;
+
+          CPPExtensionType *nested_type = type->as_extension_type();
+          assert(nested_type != (CPPExtensionType *)NULL);
+
+          // Only try to export named types.
+          if (nested_type->_ident != (CPPIdentifier *)NULL) {
+            TypeIndex nested_index = get_type(nested_type, false);
+            itype._nested_types.push_back(nested_index);
+          }
+        }
       }
     }
   }
@@ -2108,10 +2108,10 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
     itype._destructor = base_type._destructor;
 
   } else if ((itype._flags &
-	      (InterrogateType::F_true_destructor |
-	       InterrogateType::F_private_destructor |
-	       InterrogateType::F_inherited_destructor |
-	       InterrogateType::F_implicit_destructor)) == 0) {
+              (InterrogateType::F_true_destructor |
+               InterrogateType::F_private_destructor |
+               InterrogateType::F_inherited_destructor |
+               InterrogateType::F_implicit_destructor)) == 0) {
     // If we didn't get a destructor at all, we should make a wrapper
     // for one anyway.
     string function_name = "~" + cpptype->get_simple_name();
@@ -2126,8 +2126,8 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
     CPPInstance *function = new CPPInstance(ftype, function_name);
     
     itype._destructor = get_function(function, "",
-				     cpptype, cpptype->get_scope(), 
-				     false, WrapperBuilder::T_normal);
+                                     cpptype, cpptype->get_scope(), 
+                                     false, WrapperBuilder::T_normal);
     itype._flags |= InterrogateType::F_implicit_destructor;
   }
 }
@@ -2144,7 +2144,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
 ////////////////////////////////////////////////////////////////////
 void InterrogateBuilder::
 update_method_comment(CPPInstance *function, CPPStructType *struct_type,
-		      CPPScope *scope) {
+                      CPPScope *scope) {
   if (function->_leading_comment == (CPPCommentBlock *)NULL) {
     // No comment anyway.  Forget it.
     return;
@@ -2194,7 +2194,7 @@ update_method_comment(CPPInstance *function, CPPStructType *struct_type,
 ////////////////////////////////////////////////////////////////////
 void InterrogateBuilder::
 define_method(CPPFunctionGroup *fgroup, InterrogateType &itype,
-	      CPPStructType *struct_type, CPPScope *scope) {
+              CPPStructType *struct_type, CPPScope *scope) {
   CPPFunctionGroup::Instances::const_iterator fi;
   for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
     CPPInstance *function = (*fi);
@@ -2209,10 +2209,10 @@ define_method(CPPFunctionGroup *fgroup, InterrogateType &itype,
 ////////////////////////////////////////////////////////////////////
 void InterrogateBuilder::
 define_method(CPPInstance *function, InterrogateType &itype, 
-	      CPPStructType *struct_type, CPPScope *scope) {
+              CPPStructType *struct_type, CPPScope *scope) {
   assert(function != (CPPInstance *)NULL);
   assert(function->_type != (CPPType *)NULL &&
-	 function->_type->as_function_type() != (CPPFunctionType *)NULL);
+         function->_type->as_function_type() != (CPPFunctionType *)NULL);
   CPPFunctionType *ftype = 
     function->_type->resolve_type(scope, &parser)->as_function_type();
 
@@ -2290,12 +2290,12 @@ define_method(CPPInstance *function, InterrogateType &itype,
       
 
   FunctionIndex index = get_function(function, "", struct_type, scope, 
-				     false, WrapperBuilder::T_normal);
+                                     false, WrapperBuilder::T_normal);
   if (index != 0) {
     if ((ftype->_flags & CPPFunctionType::F_constructor) != 0) {
       if (find(itype._constructors.begin(), itype._constructors.end(),
-	       index) == itype._constructors.end()) {
-	itype._constructors.push_back(index);
+               index) == itype._constructors.end()) {
+        itype._constructors.push_back(index);
       }
       
     } else if ((ftype->_flags & CPPFunctionType::F_destructor) != 0) {
@@ -2304,14 +2304,14 @@ define_method(CPPInstance *function, InterrogateType &itype,
       
     } else if ((ftype->_flags & CPPFunctionType::F_operator_typecast) != 0) {
       if (find(itype._casts.begin(), itype._casts.end(),
-	       index) == itype._casts.end()) {
-	itype._casts.push_back(index);
+               index) == itype._casts.end()) {
+        itype._casts.push_back(index);
       }
       
     } else {
       if (find(itype._methods.begin(), itype._methods.end(),
-	       index) == itype._methods.end()) {
-	itype._methods.push_back(index);
+               index) == itype._methods.end()) {
+        itype._methods.push_back(index);
       }
     }
   }
@@ -2414,7 +2414,7 @@ define_extension_type(InterrogateType &itype, CPPExtensionType *cpptype) {
 void InterrogateBuilder::
 hash_function_signature(WrapperBuilder *wbuilder) {
   string hash = hash_string(wbuilder->_function_signature, 
-			    wbuilder->get_calling_convention());
+                            wbuilder->get_calling_convention());
 
   // Now make sure we don't have another function with the same hash.
   WrappersByHash::iterator hi;
@@ -2431,7 +2431,7 @@ hash_function_signature(WrapperBuilder *wbuilder) {
     // The same function signature has already appeared.  This
     // shouldn't happen.
     nout << "Internal error!  Function signature " 
-	 << wbuilder->_function_signature << " repeated!\n";
+         << wbuilder->_function_signature << " repeated!\n";
     wbuilder->_hash = hash;
     return;
   }
@@ -2447,20 +2447,20 @@ hash_function_signature(WrapperBuilder *wbuilder) {
     (*hi).second = (WrapperBuilder *)NULL;
     other_wbuilder->_hash += 
       hash_string(other_wbuilder->_function_signature, 
-		  other_wbuilder->get_calling_convention(),
-		  11);
+                  other_wbuilder->get_calling_convention(),
+                  11);
     bool inserted = _wrappers_by_hash.insert
       (WrappersByHash::value_type(other_wbuilder->_hash, other_wbuilder)).second;
     if (!inserted) {
       nout << "Internal error!  Hash " << other_wbuilder->_hash
-	   << " already appears!\n";
+           << " already appears!\n";
     }
     cerr << "first to " << other_wbuilder->_hash << "\n";
   }
 
   hash += hash_string(wbuilder->_function_signature,
-		      wbuilder->get_calling_convention(),
-		      11);
+                      wbuilder->get_calling_convention(),
+                      11);
   bool inserted = _wrappers_by_hash.insert
     (WrappersByHash::value_type(hash, wbuilder)).second;
 
@@ -2473,12 +2473,12 @@ hash_function_signature(WrapperBuilder *wbuilder) {
     for (char ch = 'a'; ch <= 'z' && !inserted; ch++) {
       hash = old_hash + ch;
       inserted = _wrappers_by_hash.insert
-	(WrappersByHash::value_type(hash, wbuilder)).second;
+        (WrappersByHash::value_type(hash, wbuilder)).second;
     }
     cerr << "New hash is " << hash << "\n";
     if (!inserted) {
       nout << "Internal error!  Too many conflicts with hash " 
-	   << hash << "\n";
+           << hash << "\n";
     }
   }
 

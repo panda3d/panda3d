@@ -12,7 +12,7 @@
 #include <nodeAttributes.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DrawBoundsTransition
+//       Class : DrawBoundsTransition
 // Description : This is a special transition that does not change
 //               rendering state, but instead causes a representation
 //               of the arc's bounding volume to be rendered
@@ -27,9 +27,9 @@ public:
   virtual NodeTransition *make_copy() const;
 
   virtual bool sub_render(NodeRelation *arc,
-			  const AllAttributesWrapper &attrib,
-			  AllTransitionsWrapper &trans,
-			  RenderTraverser *trav);
+                          const AllAttributesWrapper &attrib,
+                          AllTransitionsWrapper &trans,
+                          RenderTraverser *trav);
   virtual bool has_sub_render() const;
 
   NodeAttributes _outside_attrib;
@@ -46,7 +46,7 @@ public:
   static void init_type() {
     ImmediateTransition::init_type();
     register_type(_type_handle, "DrawBoundsTransition",
-		  ImmediateTransition::get_class_type());
+                  ImmediateTransition::get_class_type());
   }
 
 private:

@@ -395,7 +395,7 @@ apply(double x, double y, int button) {
     
     _rotation *= 
       LMatrix4f::rotate_mat_normaxis((x - y) * _rotscale, 
-			    LVector3f::forward(_cs), _cs);
+                            LVector3f::forward(_cs), _cs);
     
   } else if ((button == B2_MASK) || (button == (B1_MASK | B3_MASK))) {
     // Button 2, or buttons 1 + 3: rotate about the right and up
@@ -519,15 +519,15 @@ void Trackball::
 init_type() {
   DataNode::init_type();
   register_type(_type_handle, "Trackball",
-		DataNode::get_class_type());
+                DataNode::get_class_type());
 
   Vec3DataTransition::init_type();
   register_data_transition(_pixel_xyz_type, "PixelXYZ",
-			   Vec3DataTransition::get_class_type());
+                           Vec3DataTransition::get_class_type());
   ButtonEventDataTransition::init_type();
   register_data_transition(_button_events_type, "ButtonEvents",
-			   ButtonEventDataTransition::get_class_type());
+                           ButtonEventDataTransition::get_class_type());
   MatrixDataTransition::init_type();
   register_data_transition(_transform_type, "Transform",
-			   MatrixDataTransition::get_class_type());
+                           MatrixDataTransition::get_class_type());
 }

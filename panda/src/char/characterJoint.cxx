@@ -45,7 +45,7 @@ CharacterJoint(const CharacterJoint &copy) :
 ////////////////////////////////////////////////////////////////////
 CharacterJoint::
 CharacterJoint(PartGroup *parent, const string &name, 
-	       const LMatrix4f &initial_value) 
+               const LMatrix4f &initial_value) 
   : MovingPartMatrix(parent, name, initial_value) 
 {
   // Now that we've constructed and we're in the tree, let's call
@@ -97,14 +97,14 @@ update_internals(PartGroup *parent, bool self_changed, bool) {
     while (ai != _net_transform_arcs.end()) {
       NodeRelation *arc = *ai;
       if (arc->is_attached()) {
-	arc->set_transition(t);
-	++ai;
+        arc->set_transition(t);
+        ++ai;
       } else {
-	// The arc is now invalid; its geometry must have been
-	// removed.  Remove the arc from our set.
-	ArcList::iterator invalid = ai;
-	++ai;
-	_net_transform_arcs.erase(invalid);
+        // The arc is now invalid; its geometry must have been
+        // removed.  Remove the arc from our set.
+        ArcList::iterator invalid = ai;
+        ++ai;
+        _net_transform_arcs.erase(invalid);
       }
     }
   }
@@ -117,14 +117,14 @@ update_internals(PartGroup *parent, bool self_changed, bool) {
     while (ai != _local_transform_arcs.end()) {
       NodeRelation *arc = *ai;
       if (arc->is_attached()) {
-	arc->set_transition(t);
-	++ai;
+        arc->set_transition(t);
+        ++ai;
       } else {
-	// The arc is now invalid; its geometry must have been
-	// removed.  Remove the arc from our set.
-	ArcList::iterator invalid = ai;
-	++ai;
-	_local_transform_arcs.erase(invalid);
+        // The arc is now invalid; its geometry must have been
+        // removed.  Remove the arc from our set.
+        ArcList::iterator invalid = ai;
+        ++ai;
+        _local_transform_arcs.erase(invalid);
       }
     }
   }
@@ -338,7 +338,7 @@ complete_pointers(vector_typedWritable &plist, BamReader* manager)
     if (plist[i] == TypedWritable::Null)
     {
       char_cat->warning() << get_name() 
-			  << " Ignoring null Net NodeRelation" << endl;
+                          << " Ignoring null Net NodeRelation" << endl;
     }
     else
     {
@@ -351,7 +351,7 @@ complete_pointers(vector_typedWritable &plist, BamReader* manager)
     if (plist[i] == TypedWritable::Null)
     {
       char_cat->warning() << get_name() 
-			  << " Ignoring null Local NodeRelation" << endl;
+                          << " Ignoring null Local NodeRelation" << endl;
     }
     else
     {

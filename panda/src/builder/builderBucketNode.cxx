@@ -53,12 +53,12 @@ build(GeomNode *geom_node) const {
     last_pi = _prims.begin();
     
     for (pi = _prims.begin();
-	 pi != _prims.end();
-	 ++pi) {
+         pi != _prims.end();
+         ++pi) {
       if ((*last_pi) < (*pi)) {
-	count += mesh_and_build(last_pi, pi, *_bucket, geom_node, 
-			        (BuilderPrim *)0);
-	last_pi = pi;
+        count += mesh_and_build(last_pi, pi, *_bucket, geom_node, 
+                                (BuilderPrim *)0);
+        last_pi = pi;
       }
     }
     count += mesh_and_build(last_pi, pi, *_bucket, geom_node,
@@ -71,12 +71,12 @@ build(GeomNode *geom_node) const {
     last_pi = _iprims.begin();
     
     for (pi = _iprims.begin();
-	 pi != _iprims.end();
-	 ++pi) {
+         pi != _iprims.end();
+         ++pi) {
       if ((*last_pi) < (*pi)) {
-	count += mesh_and_build(last_pi, pi, *_bucket, geom_node,
-				(BuilderPrimI *)0);
-	last_pi = pi;
+        count += mesh_and_build(last_pi, pi, *_bucket, geom_node,
+                                (BuilderPrimI *)0);
+        last_pi = pi;
       }
     }
     count += mesh_and_build(last_pi, pi, *_bucket, geom_node,

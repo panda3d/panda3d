@@ -15,7 +15,7 @@ template<class VecType, class MatType>
 class VectorDataTransition;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : VectorDataAttribute
+//       Class : VectorDataAttribute
 // Description : 
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
@@ -52,10 +52,10 @@ public:
   static void init_type() {
     NodeAttribute::init_type();
     register_type(_type_handle, 
-		  string("VectorDataAttribute<") + 
-		  get_type_handle(VecType).get_name() + "," +
-		  get_type_handle(MatType).get_name() + ">",
-		  NodeAttribute::get_class_type());
+                  string("VectorDataAttribute<") + 
+                  get_type_handle(VecType).get_name() + "," +
+                  get_type_handle(MatType).get_name() + ">",
+                  NodeAttribute::get_class_type());
   }
 
 private:

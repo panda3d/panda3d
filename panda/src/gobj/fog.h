@@ -57,12 +57,12 @@ protected:
   void compute_density(void);
 
 protected:
-  Mode			_mode;
-  int			_bits_per_color_channel;
-  Colorf		_color;
-  float			_onset_distance;
-  float			_opaque_distance;
-  float 		_density;
+  Mode                  _mode;
+  int                   _bits_per_color_channel;
+  Colorf                _color;
+  float                 _onset_distance;
+  float                 _opaque_distance;
+  float                 _density;
 
 public:
 
@@ -72,7 +72,7 @@ public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "Fog",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

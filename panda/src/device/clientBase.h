@@ -48,15 +48,15 @@ PUBLISHED:
 
 public:
   PT(ClientDevice) get_device(TypeHandle device_type,
-			      const string &device_name);
+                              const string &device_name);
   
 protected:
   virtual PT(ClientDevice) make_device(TypeHandle device_type,
-				       const string &device_name)=0;
+                                       const string &device_name)=0;
 
   virtual bool disconnect_device(TypeHandle device_type, 
-				 const string &device_name,
-				 ClientDevice *device);
+                                 const string &device_name,
+                                 ClientDevice *device);
 
   virtual void do_poll();
 

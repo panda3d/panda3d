@@ -9,7 +9,7 @@
 #include <pandatoolbase.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : SoftFilename
+//       Class : SoftFilename
 // Description : This encapsulates a SoftImage versioned filename, of
 //               the form base.v-v.ext: it consists of a directory
 //               name, a base, a major and minor version number, and

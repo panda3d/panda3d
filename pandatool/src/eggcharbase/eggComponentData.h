@@ -16,7 +16,7 @@ class EggBackPointer;
 class EggObject;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggComponentData
+//       Class : EggComponentData
 // Description : This is the base class of both EggJointData and
 //               EggSliderData.  It represents a single component of a
 //               character, either a joint or a slider, along with
@@ -26,7 +26,7 @@ class EggObject;
 class EggComponentData : public Namable {
 public:
   EggComponentData(EggCharacterCollection *collection,
-		   EggCharacterData *char_data);
+                   EggCharacterData *char_data);
   virtual ~EggComponentData();
 
   void add_name(const string &name);

@@ -12,7 +12,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE GeomBinFixed::NodeEntry::
 NodeEntry(int draw_order, const PT(CullState) &state, 
-	  const ArcChain &arc_chain, bool is_direct) :
+          const ArcChain &arc_chain, bool is_direct) :
   _draw_order(draw_order),
   _state(state),
   _arc_chain(arc_chain),

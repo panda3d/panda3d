@@ -271,17 +271,17 @@ make_prim(const BuilderBucket &bucket) {
     pi = _prims.begin();
     int count = 0;
     for (vi = _verts.begin();
-	 vi != _verts.end() && pi != _prims.end();
-	 ++vi) {
+         vi != _verts.end() && pi != _prims.end();
+         ++vi) {
       const Vertex *v = *vi;
       nassertr(v != (Vertex *)NULL, p);
       
       if (++count >= 3) {
-	// Beginning with the third vertex, we increment pi.  Thus, the
-	// first two vertices stand alone, then each vertex beginning
-	// with the third completes a triangle.
-	p.add_component(*pi);
-	++pi;
+        // Beginning with the third vertex, we increment pi.  Thus, the
+        // first two vertices stand alone, then each vertex beginning
+        // with the third completes a triangle.
+        p.add_component(*pi);
+        ++pi;
       }
       p.add_vertex(*v);
     }
@@ -305,7 +305,7 @@ make_prim(const BuilderBucket &bucket) {
 template <class PrimType>
 void MesherStrip<PrimType>::
 measure_sheet(const Edge *edge, int new_row, int &num_prims, int &num_rows,
-	     int first_row_id, int this_row_id, int this_row_distance) {
+             int first_row_id, int this_row_id, int this_row_distance) {
   if (new_row) {
     // If we would create a new row by stepping here, we won't stay if
     // there was any other row already defined here.
@@ -367,36 +367,36 @@ measure_sheet(const Edge *edge, int new_row, int &num_prims, int &num_rows,
       
       int want_count;
       if (secondary) {
-	want_count = new_row ? 0 : 1;
+        want_count = new_row ? 0 : 1;
       } else {
-	want_count = new_row ? 1 : 0;
+        want_count = new_row ? 1 : 0;
       }
 
       for (ei = _edges.begin(); ei != _edges.end(); ++ei) {
-	int common_verts =
-	  ((*ei)->_a == a || (*ei)->_a == b) +
-	  ((*ei)->_b == a || (*ei)->_b == b);
-	
-	if (common_verts == want_count) {
-	  // Here's the edge.  Look at all its connections.  Hopefully,
-	  // there will only be one besides ourselves, but there may be
-	  // more.  Pick the best.
-	  
-	  Edge::Strips &strips = (*ei)->_strips;
-	  MesherStrip *mate = NULL;
-	  for (si = strips.begin(); si != strips.end(); ++si) {
-	    if ((*si)->_row_id < first_row_id) {
-	      if (mate==NULL || pick_sheet_mate(**si, *mate)) {
-		mate = *si;
-	      }
-	    }
-	  }
-	  if (mate!=NULL) {
-	    mate->measure_sheet(*ei, secondary, num_prims, num_rows, 
-			       first_row_id, this_row_id, 
-			       this_row_distance + secondary);
-	  }
-	}
+        int common_verts =
+          ((*ei)->_a == a || (*ei)->_a == b) +
+          ((*ei)->_b == a || (*ei)->_b == b);
+
+        if (common_verts == want_count) {
+          // Here's the edge.  Look at all its connections.  Hopefully,
+          // there will only be one besides ourselves, but there may be
+          // more.  Pick the best.
+
+          Edge::Strips &strips = (*ei)->_strips;
+          MesherStrip *mate = NULL;
+          for (si = strips.begin(); si != strips.end(); ++si) {
+            if ((*si)->_row_id < first_row_id) {
+              if (mate==NULL || pick_sheet_mate(**si, *mate)) {
+                mate = *si;
+              }
+            }
+          }
+          if (mate!=NULL) {
+            mate->measure_sheet(*ei, secondary, num_prims, num_rows, 
+                               first_row_id, this_row_id, 
+                               this_row_distance + secondary);
+          }
+        }
       }
     }
 
@@ -413,21 +413,21 @@ measure_sheet(const Edge *edge, int new_row, int &num_prims, int &num_rows,
 
     for (ei = _edges.begin(); ei != _edges.end(); ++ei) {
       if (!(*ei)->matches(*edge)) {
-	// Here's the edge.  Same drill as above.
-	  
-	Edge::Strips &strips = (*ei)->_strips;
-	MesherStrip *mate = NULL;
-	for (si = strips.begin(); si != strips.end(); ++si) {
-	  if ((*si)->_row_id < first_row_id) {
-	    if (mate==NULL || pick_sheet_mate(**si, *mate)) {
-	      mate = *si;
-	    }
-	  }
-	}
-	if (mate!=NULL) {
-	  mate->measure_sheet(*ei, false, num_prims, num_rows, 
-			     first_row_id, this_row_id, this_row_distance);
-	}
+        // Here's the edge.  Same drill as above.
+
+        Edge::Strips &strips = (*ei)->_strips;
+        MesherStrip *mate = NULL;
+        for (si = strips.begin(); si != strips.end(); ++si) {
+          if ((*si)->_row_id < first_row_id) {
+            if (mate==NULL || pick_sheet_mate(**si, *mate)) {
+              mate = *si;
+            }
+          }
+        }
+        if (mate!=NULL) {
+          mate->measure_sheet(*ei, false, num_prims, num_rows, 
+                             first_row_id, this_row_id, this_row_distance);
+        }
       }
     }
   }
@@ -460,8 +460,8 @@ cut_sheet(int first_row_id, int do_mate, const BuilderBucket &bucket) {
     Edge::Strips &strips = (*ei)->_strips;
     for (si = strips.begin(); si != strips.end(); ++si) {
       if ((*si)->_row_id > _row_id) {
-	// Here's a different row in the sheet!
-	strip_ptrs.push_back(*si);
+        // Here's a different row in the sheet!
+        strip_ptrs.push_back(*si);
       }
     }
   }
@@ -485,37 +485,37 @@ cut_sheet(int first_row_id, int do_mate, const BuilderBucket &bucket) {
       
       ei = _edges.begin();
       while (ei != _edges.end() && not_any) {
-	Edge::Strips &strips = (*ei)->_strips;
-	si = strips.begin();
-	while (si != strips.end() && not_any) {
-	  if (*si != this && (*si)->_row_id == _row_id) {
-	    // Here's one!
-	    not_any = false;
-	    MesherStrip *mate = *si;
+        Edge::Strips &strips = (*ei)->_strips;
+        si = strips.begin();
+        while (si != strips.end() && not_any) {
+          if (*si != this && (*si)->_row_id == _row_id) {
+            // Here's one!
+            not_any = false;
+            MesherStrip *mate = *si;
 
-	    // We also recurse on these guys so they can spread the
-	    // word to their own neighbors.  This time we don't need
-	    // to build a temporary list, because we'll be restarting
-	    // from the beginning of our edge list after we do this.
-	    // We also pass do_mate = false to these guys because
-	    // we're the ones doing the mating here.
-	    mate->cut_sheet(first_row_id, false, bucket);
+            // We also recurse on these guys so they can spread the
+            // word to their own neighbors.  This time we don't need
+            // to build a temporary list, because we'll be restarting
+            // from the beginning of our edge list after we do this.
+            // We also pass do_mate = false to these guys because
+            // we're the ones doing the mating here.
+            mate->cut_sheet(first_row_id, false, bucket);
 
-	    if (_status == MS_alive && mate->_status == MS_alive) {
-	      // Now mate.  This will either succeed or fail.  It ought
-	      // to succeed, but if it doesn't, no harm done; it will
-	      // simply remove the common edge and return.  We'll go
-	      // around again and not encounter this neighbor next time.
-	      mate_pieces(*ei, *this, *mate, bucket);
-	    }
-	  }
-	  if (not_any) {
-	    ++si;
-	  }
-	}
-	if (not_any) {
-	  ++ei;
-	}
+            if (_status == MS_alive && mate->_status == MS_alive) {
+              // Now mate.  This will either succeed or fail.  It ought
+              // to succeed, but if it doesn't, no harm done; it will
+              // simply remove the common edge and return.  We'll go
+              // around again and not encounter this neighbor next time.
+              mate_pieces(*ei, *this, *mate, bucket);
+            }
+          }
+          if (not_any) {
+            ++si;
+          }
+        }
+        if (not_any) {
+          ++ei;
+        }
       }
     } while (!not_any);
 
@@ -523,7 +523,7 @@ cut_sheet(int first_row_id, int do_mate, const BuilderBucket &bucket) {
     _row_id = -first_row_id;
   }
 }
-	
+
 
     
 
@@ -572,7 +572,7 @@ mate(const BuilderBucket &bucket) {
 template <class PrimType>
 bool MesherStrip<PrimType>::
 find_ideal_mate(MesherStrip *&mate, Edge *&common_edge, 
-	      const BuilderBucket &bucket) {
+              const BuilderBucket &bucket) {
   Edges::iterator ei;
 
   mate = NULL;
@@ -583,11 +583,11 @@ find_ideal_mate(MesherStrip *&mate, Edge *&common_edge,
     Edge::Strips::iterator si;
     for (si = strips.begin(); si != strips.end(); ++si) {
       if (*si != this) {
-	if (mate==NULL || pick_mate(**si, *mate, **ei, *common_edge,
-				   bucket)) {
-	  mate = *si;
-	  common_edge = *ei;
-	}
+        if (mate==NULL || pick_mate(**si, *mate, **ei, *common_edge,
+                                   bucket)) {
+          mate = *si;
+          common_edge = *ei;
+        }
       }
     }
   }
@@ -607,7 +607,7 @@ find_ideal_mate(MesherStrip *&mate, Edge *&common_edge,
 template <class PrimType>
 bool MesherStrip<PrimType>::
 mate_pieces(Edge *common_edge, MesherStrip &front, MesherStrip &back,
-	    const BuilderBucket &bucket) {
+            const BuilderBucket &bucket) {
   nassertr(front._status == MS_alive, false);
   nassertr(back._status == MS_alive, false);
   nassertr(&front != &back, false);
@@ -622,8 +622,8 @@ mate_pieces(Edge *common_edge, MesherStrip &front, MesherStrip &back,
   if (front._type==BPT_tri && back._type==BPT_tri) {
 
     if (is_coplanar && bucket._retesselate_coplanar &&
-	front._prims.front() == back._prims.front() &&
-	convex_quad(common_edge, front, back, bucket)) {
+        front._prims.front() == back._prims.front() &&
+        convex_quad(common_edge, front, back, bucket)) {
       
       // If we're joining two equivalent coplanar triangles, call it a
       // quad.
@@ -641,17 +641,17 @@ mate_pieces(Edge *common_edge, MesherStrip &front, MesherStrip &back,
       ++b;
       
       if (common_edge->contains_vertex(*a)) {
-	if (common_edge->contains_vertex(*b)) {
-	  // It goes between a and b.
-	  front._verts.insert(b, new_vert);
-	} else {
-	  // It goes at the end.
-	  front._verts.push_back(new_vert);
-	}
+        if (common_edge->contains_vertex(*b)) {
+          // It goes between a and b.
+          front._verts.insert(b, new_vert);
+        } else {
+          // It goes at the end.
+          front._verts.push_back(new_vert);
+        }
       } else {
-	// It goes between b and c.
-	++b;
-	front._verts.insert(b, new_vert);
+        // It goes between b and c.
+        ++b;
+        front._verts.insert(b, new_vert);
       }
       
       front._prims.splice(front._prims.end(), back._prims);
@@ -674,7 +674,7 @@ mate_pieces(Edge *common_edge, MesherStrip &front, MesherStrip &back,
     }
       
   } else if ((front._type==BPT_quad || front._type==BPT_quadstrip) && 
-	     (back._type==BPT_quad || back._type==BPT_quadstrip)) {
+             (back._type==BPT_quad || back._type==BPT_quadstrip)) {
     // Joining two quads, two quadstrips, or a quad and a quadstrip.
     // This makes another quadstrip.
 
@@ -708,14 +708,14 @@ mate_pieces(Edge *common_edge, MesherStrip &front, MesherStrip &back,
       success = mate_strips(common_edge, back, front, BPT_tristrip);
 
       if (success) {
-	// Yay!  Now return all the stuff to front.
-	front._verts.splice(front._verts.end(), back._verts);
-	front._prims.splice(front._prims.end(), back._prims);
+        // Yay!  Now return all the stuff to front.
+        front._verts.splice(front._verts.end(), back._verts);
+        front._prims.splice(front._prims.end(), back._prims);
       } else {
-	// A miserable failure.  Never try to join these two again.
+        // A miserable failure.  Never try to join these two again.
 
-	common_edge->remove(&front);
-	common_edge->remove(&back);
+        common_edge->remove(&front);
+        common_edge->remove(&back);
       }
     }
   }
@@ -760,7 +760,7 @@ mate_pieces(Edge *common_edge, MesherStrip &front, MesherStrip &back,
 template <class PrimType>
 bool MesherStrip<PrimType>::
 mate_strips(Edge *common_edge, MesherStrip &front, MesherStrip &back,
-	    BuilderPrimType type) {
+            BuilderPrimType type) {
   // If we start with a quad or tri, rotate the vertices around so we
   // start with the common edge.
   if (front._type==BPT_tri || front._type==BPT_quad) {
@@ -837,11 +837,11 @@ mate_strips(Edge *common_edge, MesherStrip &front, MesherStrip &back,
   if (! (front.get_tail_edge() == back.get_head_edge()) ) {
     builder_cat.error()
          << "\nFailure, trying to connect " << front
-	 << "\nto " << back
-	 << "\nreverse_front = " << reverse_front
-	 << " reverse_back = " << reverse_back
-	 << " invert_front = " << invert_front
-	 << "\n";
+         << "\nto " << back
+         << "\nreverse_front = " << reverse_front
+         << " reverse_back = " << reverse_back
+         << " invert_front = " << invert_front
+         << "\n";
     Edges::iterator ei;
 
     nout << "\nFront edges:\n";
@@ -880,7 +880,7 @@ mate_strips(Edge *common_edge, MesherStrip &front, MesherStrip &back,
 template <class PrimType>
 bool MesherStrip<PrimType>::
 must_invert(const MesherStrip &front, const MesherStrip &back,
-	    bool will_reverse_back, BuilderPrimType type) {
+            bool will_reverse_back, BuilderPrimType type) {
   bool invert = false;
 
   if ((front._type == BPT_quad || front._type == BPT_quadstrip) &&
@@ -917,7 +917,7 @@ must_invert(const MesherStrip &front, const MesherStrip &back,
 template <class PrimType>
 bool MesherStrip<PrimType>::
 convex_quad(Edge *common_edge, MesherStrip &front, MesherStrip &back,
-	    const BuilderBucket &bucket) {
+            const BuilderBucket &bucket) {
   // Find the edge from the apex of one triangle to the apex of the
   // other.  This is the "other" diagonal of the quad-to-be, other
   // than the common_edge.
@@ -1018,8 +1018,8 @@ show_neighbors(ostream &out) const {
 
   for (ei = _edges.begin(); ei != _edges.end(); ++ei) {
     for (si = (*ei)->_strips.begin();
-	 si != (*ei)->_strips.end();
-	 ++si) {
+         si != (*ei)->_strips.end();
+         ++si) {
       out << " " << (*si)->_index;
     }
   }
@@ -1353,21 +1353,21 @@ convert_to_type(BuilderPrimType wantType) {
       vi = _verts.begin();
       even = 0;
       while (vi != _verts.end()) {
-	vi2 = vi;
-	++vi2;
-	nassertv(vi2 != _verts.end());
+        vi2 = vi;
+        ++vi2;
+        nassertv(vi2 != _verts.end());
 
-	// vi and vi2 are a pair.  Should we reverse them?
-	if (even) {
-	  const Vertex *t = *vi2;
-	  *vi2 = *vi;
-	  *vi = t;
-	}
-	
-	// Increment
-	vi = vi2;
-	++vi;
-	even = !even;
+        // vi and vi2 are a pair.  Should we reverse them?
+        if (even) {
+          const Vertex *t = *vi2;
+          *vi2 = *vi;
+          *vi = t;
+        }
+
+        // Increment
+        vi = vi2;
+        ++vi;
+        even = !even;
       }
       break;
       
@@ -1434,10 +1434,10 @@ combine_edges(MesherStrip<PrimType> &other, int removeSides) {
 
       // Is this edge to be saved or is it fodder?
       if (!(**ei == head) && !(**ei == tail)) {
-	// Fodder!  But we can't remove it right away, because this
-	// will upset the current list; instead, we'll splice it to
-	// junk_edges.
-	junk_edges.splice(junk_edges.end(), _edges, ei);
+        // Fodder!  But we can't remove it right away, because this
+        // will upset the current list; instead, we'll splice it to
+        // junk_edges.
+        junk_edges.splice(junk_edges.end(), _edges, ei);
       }
       ei = next_ei;
     }
@@ -1483,8 +1483,8 @@ remove_all_edges() {
 template <class PrimType>
 bool MesherStrip<PrimType>::
 pick_mate(const MesherStrip &a_strip, const MesherStrip &b_strip,
-	 const Edge &a_edge, const Edge &b_edge,
-	 const BuilderBucket &bucket) const {
+         const Edge &a_edge, const Edge &b_edge,
+         const BuilderBucket &bucket) const {
   // First, try to avoid polluting quads, quadstrips, and tristrips
   // with arbitrary triangles.  When we mate a tri or tristrip to a
   // quadstrip, we end up with a tristrip that may be less versatile

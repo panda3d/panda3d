@@ -9,14 +9,14 @@
 //  Description: initialize a new sound
 ////////////////////////////////////////////////////////////////////
 INLINE AudioSound::AudioSound(AudioTraits::SoundClass* sound,
-			      AudioTraits::PlayingClass* state,
-			      AudioTraits::PlayerClass* player,
-			      AudioTraits::DeletePlayingFunc* destroy,
-			      const string& filename) : Namable(filename),
-							_sound(sound),
-							_state(state),
-							_player(player),
-							_delstate(destroy) {}
+                              AudioTraits::PlayingClass* state,
+                              AudioTraits::PlayerClass* player,
+                              AudioTraits::DeletePlayingFunc* destroy,
+                              const string& filename) : Namable(filename),
+                                                        _sound(sound),
+                                                        _state(state),
+                                                        _player(player),
+                                                        _delstate(destroy) {}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AudioSound::copy constructor
@@ -24,10 +24,10 @@ INLINE AudioSound::AudioSound(AudioTraits::SoundClass* sound,
 //  Description: copy a sound, but we don't really want to allow this
 ////////////////////////////////////////////////////////////////////
 INLINE AudioSound::AudioSound(const AudioSound& c) : Namable(c.get_name()),
-						     _sound(c._sound),
-						     _state(c._state),
-						     _player(c._player),
-						     _delstate(c._delstate) {}
+                                                     _sound(c._sound),
+                                                     _state(c._state),
+                                                     _player(c._player),
+                                                     _delstate(c._delstate) {}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AudioSound::assignment operator

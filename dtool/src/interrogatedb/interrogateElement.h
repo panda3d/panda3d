@@ -13,7 +13,7 @@
 class IndexRemapper;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : InterrogateElement
+//       Class : InterrogateElement
 // Description : An internal representation of a data element, like a
 //               data member or a global variable.
 ////////////////////////////////////////////////////////////////////

@@ -79,7 +79,7 @@ next_element()
 {
   double current_time = _global_clock->get_real_time();
   unsigned int increment = (unsigned int) ((current_time - _next_switch) 
-					   * _inv_cycle_time);
+                                           * _inv_cycle_time);
 
   _next_switch += _cycle_time * increment;
   _current_child = (_current_child + increment) % _element_count;

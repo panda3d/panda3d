@@ -18,7 +18,7 @@
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VECTORDATATRANSITION_LPOINT3F);
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : Vec3DataTransition
+//       Class : Vec3DataTransition
 // Description : A VectorDataTransition templated on LPoint3f.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Vec3DataTransition :
@@ -41,7 +41,7 @@ public:
   static void init_type() {
     VectorDataTransition<LPoint3f, LMatrix4f>::init_type();
     register_type(_type_handle, "Vec3DataTransition", 
-		  VectorDataTransition<LPoint3f, LMatrix4f>::get_class_type());
+                  VectorDataTransition<LPoint3f, LMatrix4f>::get_class_type());
   }
 
 private:

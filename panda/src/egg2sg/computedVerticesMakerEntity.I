@@ -51,7 +51,7 @@ operator < (const ComputedVerticesMakerEntity<ValueType, MorphType> &other) cons
 template<class ValueType, class MorphType>
 int ComputedVerticesMakerEntityMap<ValueType, MorphType>::
 add_value(const ValueType &value, const MorphType &morphs,
-	  PTA(ValueType) &table) {
+          PTA(ValueType) &table) {
   // First, see if we have such an entity already.
   ComputedVerticesMakerEntity<ValueType, MorphType> entity(value, morphs);
   MapType::const_iterator mi = _map.find(entity);

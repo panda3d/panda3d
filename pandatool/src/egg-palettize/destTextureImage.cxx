@@ -58,7 +58,7 @@ void DestTextureImage::
 copy(TextureImage *texture) {
   const PNMImage &source_image = texture->read_source_image();
   PNMImage dest_image(_x_size, _y_size, texture->get_num_channels(),
-		      source_image.get_maxval());
+                      source_image.get_maxval());
   dest_image.quick_filter_from(source_image);
   write(dest_image);
 }
@@ -83,7 +83,7 @@ copy_if_stale(const DestTextureImage *other, TextureImage *texture) {
     SourceTextureImage *source = texture->get_preferred_source();
 
     if (source != (SourceTextureImage *)NULL &&
-	source->get_filename().compare_timestamps(get_filename()) > 0) {
+        source->get_filename().compare_timestamps(get_filename()) > 0) {
       copy(texture);
     }
   }

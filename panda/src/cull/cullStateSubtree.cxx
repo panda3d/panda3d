@@ -25,7 +25,7 @@ CullStateSubtree::
 ////////////////////////////////////////////////////////////////////
 bool CullStateSubtree::
 check_currency(const AllTransitionsWrapper &, Node *top_subtree, 
-	       UpdateSeq as_of) {
+               UpdateSeq as_of) {
   if (cull_cat.is_spam()) {
     cull_cat.spam()
       << "Checking currency for subtree " << (void *)this
@@ -70,7 +70,7 @@ get_top_subtree() const {
 ////////////////////////////////////////////////////////////////////
 void CullStateSubtree::
 compose_trans(const AllTransitionsWrapper &from,
-	      AllTransitionsWrapper &to) const {
+              AllTransitionsWrapper &to) const {
   to = _trans_from_root;
   to.compose_in_place(from);
 }

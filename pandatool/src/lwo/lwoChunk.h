@@ -11,7 +11,7 @@
 #include "iffChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoChunk
+//       Class : LwoChunk
 // Description : A specialization of IffChunk for Lightwave Object
 //               files.  Each kind of chunk that is specific to a
 //               Lightwave file should inherit directly or indirectly
@@ -32,7 +32,7 @@ public:
   static void init_type() {
     IffChunk::init_type();
     register_type(_type_handle, "LwoChunk",
-		  IffChunk::get_class_type());
+                  IffChunk::get_class_type());
   }
 
 private:

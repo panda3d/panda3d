@@ -9,7 +9,7 @@
 #include <pandabase.h>
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : EggParameters
+//       Class : EggParameters
 // Description : The values stored in this structure are global
 //               parameters that control some aspects of the egg
 //               library.  User code may adjust these parameters by

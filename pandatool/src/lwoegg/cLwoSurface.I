@@ -27,7 +27,7 @@ get_name() const {
 INLINE bool CLwoSurface::
 has_named_uvs() const {
   return (_block != (CLwoSurfaceBlock *)NULL && 
-	  _block->_projection_mode == LwoSurfaceBlockProjection::M_uv);
+          _block->_projection_mode == LwoSurfaceBlockProjection::M_uv);
 }
 
 ////////////////////////////////////////////////////////////////////

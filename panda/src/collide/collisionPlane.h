@@ -14,7 +14,7 @@
 #include <plane.h>
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CollisionPlane
+//       Class : CollisionPlane
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CollisionPlane : public CollisionSolid {
@@ -30,8 +30,8 @@ public:
 
   virtual int
   test_intersection(CollisionHandler *record,
-		    const CollisionEntry &entry,
-		    const CollisionSolid *into) const;
+                    const CollisionEntry &entry,
+                    const CollisionSolid *into) const;
 
   virtual void xform(const LMatrix4f &mat);
   virtual LPoint3f get_collision_origin() const;
@@ -51,10 +51,10 @@ protected:
 protected:
   virtual int
   test_intersection_from_sphere(CollisionHandler *record,
-				const CollisionEntry &entry) const;
+                                const CollisionEntry &entry) const;
   virtual int
   test_intersection_from_ray(CollisionHandler *record,
-			     const CollisionEntry &entry) const;
+                             const CollisionEntry &entry) const;
 
   virtual void recompute_viz(Node *parent);
 
@@ -77,7 +77,7 @@ public:
   static void init_type() {
     CollisionSolid::init_type();
     register_type(_type_handle, "CollisionPlane",
-		  CollisionSolid::get_class_type());
+                  CollisionSolid::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

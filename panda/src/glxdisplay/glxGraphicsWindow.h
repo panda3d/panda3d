@@ -22,10 +22,10 @@
 ////////////////////////////////////////////////////////////////////
 class glxGraphicsPipe;
 
-const int GLXWIN_PROCESSING = 	1;
-const int GLXWIN_REDISPLAY = 	2;
-const int GLXWIN_CONFIGURE = 	4;
-const int GLXWIN_EVENT = 	8;
+const int GLXWIN_PROCESSING =   1;
+const int GLXWIN_REDISPLAY =    2;
+const int GLXWIN_CONFIGURE =    4;
+const int GLXWIN_EVENT =        8;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : glxGraphicsWindow
@@ -36,7 +36,7 @@ class glxGraphicsWindow : public GraphicsWindow
 public:
   glxGraphicsWindow( GraphicsPipe* pipe );
   glxGraphicsWindow( GraphicsPipe* pipe,
-		     const GraphicsWindow::Properties& props );
+                     const GraphicsWindow::Properties& props );
   virtual ~glxGraphicsWindow( void );
 
   virtual bool supports_update() const;
@@ -82,23 +82,23 @@ protected:
   INLINE void remove_event_mask(long event_mask);
 
 private:
-  Display*			_display;
-  Window				_xwindow;
-  GLXContext			_context;
-  XVisualInfo*			_visual;
-  Colormap			_colormap;
-  int				_connection_fd;
-  uint				_change_mask;
-  int				_configure_mask;
-  long				_event_mask;
+  Display*                      _display;
+  Window                                _xwindow;
+  GLXContext                    _context;
+  XVisualInfo*                  _visual;
+  Colormap                      _colormap;
+  int                           _connection_fd;
+  uint                          _change_mask;
+  int                           _configure_mask;
+  long                          _event_mask;
 
-  static const char*		_glx_extensions;
-  bool				_mouse_input_enabled;
-  bool				_mouse_motion_enabled;
-  bool				_mouse_passive_motion_enabled;
-  bool				_mouse_entry_enabled;
-  int				_entry_state;
-  bool				_ignore_key_repeat;
+  static const char*            _glx_extensions;
+  bool                          _mouse_input_enabled;
+  bool                          _mouse_motion_enabled;
+  bool                          _mouse_passive_motion_enabled;
+  bool                          _mouse_entry_enabled;
+  int                           _entry_state;
+  bool                          _ignore_key_repeat;
 
   // fps meter stuff
   double _start_time;

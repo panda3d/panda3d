@@ -35,7 +35,7 @@
 /*
 void 
 insert_into_vector(NAME &vec, NAME::iterator where,
-		   NAME::const_pointer begin, NAME::const_pointer end) {
+                   NAME::const_pointer begin, NAME::const_pointer end) {
   vec.insert(where, begin, end);
 }
 */

@@ -24,7 +24,7 @@ class MultiNodeTransition;
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, MULTIATTRIBUTE_NODE);
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : MultiNodeAttribute
+//       Class : MultiNodeAttribute
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA MultiNodeAttribute : 
@@ -32,7 +32,7 @@ class EXPCL_PANDA MultiNodeAttribute :
 protected:
   INLINE_GRAPH MultiNodeAttribute() {};
   INLINE_GRAPH MultiNodeAttribute(const MultiNodeAttribute &copy) :
-	  MultiAttribute<PT_Node, PointerNameClass>(copy) {};
+          MultiAttribute<PT_Node, PointerNameClass>(copy) {};
 
   INLINE_GRAPH void operator = (const MultiNodeAttribute &copy) 
           {MultiAttribute<PT_Node, PointerNameClass>::operator = (copy);}
@@ -48,8 +48,8 @@ public:
   static void init_type() {
     MultiAttribute<PT_Node, PointerNameClass>::init_type();
     register_type(_type_handle, "MultiNodeAttribute",
-		  MultiAttribute<PT_Node, PointerNameClass>::
-		  get_class_type());
+                  MultiAttribute<PT_Node, PointerNameClass>::
+                  get_class_type());
   }
 
 private:

@@ -12,7 +12,7 @@
 #include <prio.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : NetAddress
+//       Class : NetAddress
 // Description : Represents a network address to which UDP packets may
 //               be sent or to which a TCP socket may be bound.
 ////////////////////////////////////////////////////////////////////

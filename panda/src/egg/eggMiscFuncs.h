@@ -37,8 +37,8 @@ class ostream;
 ////////////////////////////////////////////////////////////////////
 ostream &
 enquote_string(ostream &out, const string &str,
-	       int indent_level = 0,
-	       bool always_quote = false);
+               int indent_level = 0,
+               bool always_quote = false);
 
 
 

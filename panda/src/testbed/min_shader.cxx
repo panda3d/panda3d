@@ -199,7 +199,7 @@ void Viztex::Flush(void) {
       ChanCfgOverrides override;
 
       override.setField(ChanCfgOverrides::Mask,
-			((unsigned int)(W_SINGLE)));
+                        ((unsigned int)(W_SINGLE)));
       override.setField(ChanCfgOverrides::Title, "Multipass partial");
       override.setField(ChanCfgOverrides::SizeX, 256);
       override.setField(ChanCfgOverrides::SizeY, 256);
@@ -215,7 +215,7 @@ void Viztex::Flush(void) {
     GraphicsStateGuardian* g = w->get_gsg();
     const RenderBuffer& r = g->get_render_buffer(RenderBuffer::T_front);
     PT(DisplayRegion) d(w->make_scratch_display_region(w->get_width(),
-						       w->get_height()));
+                                                       w->get_height()));
     // g->prepare_display_region(d);
     (*i)->draw(g, d, r);
   }
@@ -226,7 +226,7 @@ void Viztex::Flush(void) {
       ChanCfgOverrides override;
 
       override.setField(ChanCfgOverrides::Mask,
-			((unsigned int)(W_SINGLE)));
+                        ((unsigned int)(W_SINGLE)));
       override.setField(ChanCfgOverrides::Title, "Multipass partial");
       override.setField(ChanCfgOverrides::SizeX, 256);
       override.setField(ChanCfgOverrides::SizeY, 256);
@@ -240,7 +240,7 @@ void Viztex::Flush(void) {
     GraphicsStateGuardian* g = w->get_gsg();
     const RenderBuffer& r = g->get_render_buffer(RenderBuffer::T_front);
     PT(DisplayRegion) d(w->make_scratch_display_region(w->get_width(),
-						       w->get_height()));
+                                                       w->get_height()));
     // g->prepare_display_region(d);
     (*j)->draw(g, d, r);
   }
@@ -272,7 +272,7 @@ void Tiledviz::Flush(void) {
       ChanCfgOverrides override;
 
       override.setField(ChanCfgOverrides::Mask,
-			((unsigned int)(W_SINGLE)));
+                        ((unsigned int)(W_SINGLE)));
       override.setField(ChanCfgOverrides::Title, "Multipass partial");
       override.setField(ChanCfgOverrides::SizeX, main_win->get_width());
       override.setField(ChanCfgOverrides::SizeY, main_win->get_height());
@@ -313,7 +313,7 @@ void Tiledviz::Flush(void) {
       ChanCfgOverrides override;
 
       override.setField(ChanCfgOverrides::Mask,
-			((unsigned int)(W_SINGLE)));
+                        ((unsigned int)(W_SINGLE)));
       override.setField(ChanCfgOverrides::Title, "Multipass partial");
       override.setField(ChanCfgOverrides::SizeX, main_win->get_width());
       override.setField(ChanCfgOverrides::SizeY, main_win->get_height());
@@ -567,7 +567,7 @@ void setup_projtex(void)
 #ifdef DISPLAY_TEXPROJFRUST
   // Display a wireframe representation of the texture projector frustum
   GeomLine* proj_geom = 
-	(GeomLine *)tex_proj->get_projection()->make_geometry();
+        (GeomLine *)tex_proj->get_projection()->make_geometry();
   GeomNode* proj_geom_node = new GeomNode("proj_geometry");
   proj_geom_node->add_geom(proj_geom);
   RenderRelation *prr = new RenderRelation(tex_proj, proj_geom_node);
@@ -620,7 +620,7 @@ void setup_spotlight(void)
   // Display a wireframe representation of the spotlight frustum
   Colorf color_red(1., 0., 0., 1.);
   GeomLine* frust_geom = 
-	(GeomLine *)tex_proj_spot->get_projection()->make_geometry(color_red);
+        (GeomLine *)tex_proj_spot->get_projection()->make_geometry(color_red);
   GeomNode* frust_geom_node = new GeomNode("frustum_geometry");
   frust_geom_node->add_geom(frust_geom);
   RenderRelation *rr = new RenderRelation(tex_proj_spot, frust_geom_node);

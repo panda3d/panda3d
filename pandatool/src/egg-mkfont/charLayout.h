@@ -15,7 +15,7 @@
 class CharPlacement;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : CharLayout
+//       Class : CharLayout
 // Description : This represents the arrangement of all characters on
 //               a working bitmap of a given size.  Either all
 //               characters fit or they don't.
@@ -23,7 +23,7 @@ class CharPlacement;
 class CharLayout {
 public:
   void reset(int working_xsize, int working_ysize, 
-	     int working_buffer_pixels);
+             int working_buffer_pixels);
 
   bool place_character(const CharBitmap *bm);
 

@@ -11,7 +11,7 @@
 #include "fltBeadID.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltLOD
+//       Class : FltLOD
 // Description : A Level-of-Detail record.
 ////////////////////////////////////////////////////////////////////
 class FltLOD : public FltBeadID {
@@ -47,7 +47,7 @@ public:
   static void init_type() {
     FltBeadID::init_type();
     register_type(_type_handle, "FltLOD",
-		  FltBeadID::get_class_type());
+                  FltBeadID::get_class_type());
   }
 
 private:

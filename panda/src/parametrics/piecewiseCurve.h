@@ -36,8 +36,8 @@ public:
   virtual bool adjust_point(float t, float px, float py, float pz);
   virtual bool adjust_tangent(float t, float tx, float ty, float tz);
   virtual bool adjust_pt(float t,
-			 float px, float py, float pz,
-			 float tx, float ty, float tz);
+                         float px, float py, float pz,
+                         float tx, float ty, float tz);
 
 public:
   int get_num_segs() const;
@@ -86,7 +86,7 @@ protected:
   virtual void write_datagram(BamWriter *manager, Datagram &me);  
   void fillin(DatagramIterator &scan, BamReader *manager);
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

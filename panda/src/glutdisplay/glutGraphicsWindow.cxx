@@ -35,7 +35,7 @@ glutGraphicsWindow* glutGraphicsWindow::_global_window;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 glutGraphicsWindow::glutGraphicsWindow( GraphicsPipe* pipe ) : 
-	GraphicsWindow( pipe )
+        GraphicsWindow( pipe )
 {
     _global_window = this;
     config();
@@ -47,7 +47,7 @@ glutGraphicsWindow::glutGraphicsWindow( GraphicsPipe* pipe ) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 glutGraphicsWindow::glutGraphicsWindow( GraphicsPipe* pipe, const 
-	GraphicsWindow::Properties& props ) : GraphicsWindow( pipe, props )
+        GraphicsWindow::Properties& props ) : GraphicsWindow( pipe, props )
 {
     _global_window = this;
     config();
@@ -124,7 +124,7 @@ void glutGraphicsWindow::handle_reshape( int w, int h )
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void glutGraphicsWindow::handle_mouse_input( int button, int state, 
-	int x, int y )
+        int x, int y )
 {
   _input_devices[0].set_pointer_in_window(x, y);
 
@@ -300,7 +300,7 @@ TypeHandle glutGraphicsWindow::get_class_type(void) {
 void glutGraphicsWindow::init_type(void) {
   GraphicsWindow::init_type();
   register_type(_type_handle, "glutGraphicsWindow",
-		GraphicsWindow::get_class_type());
+                GraphicsWindow::get_class_type());
 }
 
 TypeHandle glutGraphicsWindow::get_type(void) const {

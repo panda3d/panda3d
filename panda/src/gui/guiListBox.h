@@ -34,7 +34,7 @@ private:
     static void init_type(void) {
       GuiBehavior::BehaviorFunctor::init_type();
       register_type(_type_handle, "ListFunctor",
-		    GuiBehavior::BehaviorFunctor::get_class_type());
+                    GuiBehavior::BehaviorFunctor::get_class_type());
     }
     virtual TypeHandle get_type(void) const {
       return get_class_type();
@@ -98,7 +98,7 @@ public:
   static void init_type(void) {
     GuiBehavior::init_type();
     register_type(_type_handle, "GuiListBox",
-		  GuiBehavior::get_class_type());
+                  GuiBehavior::get_class_type());
     ListFunctor::init_type();
   }
   virtual TypeHandle get_type(void) const {

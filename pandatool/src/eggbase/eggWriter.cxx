@@ -49,24 +49,24 @@ EggWriter(bool allow_last_param, bool allow_stdout) :
   if (_allow_stdout) {
     if (_allow_last_param) {
       o_description =
-	"Specify the filename to which the resulting egg file will be written.  "
-	"If this option is omitted, the last parameter name is taken to be the "
-	"name of the output file, or standard output is used if there are no "
-	"other parameters.";
+        "Specify the filename to which the resulting egg file will be written.  "
+        "If this option is omitted, the last parameter name is taken to be the "
+        "name of the output file, or standard output is used if there are no "
+        "other parameters.";
     } else {
       o_description =
-	"Specify the filename to which the resulting egg file will be written.  "
-	"If this option is omitted, the egg file is written to standard output.";
+        "Specify the filename to which the resulting egg file will be written.  "
+        "If this option is omitted, the egg file is written to standard output.";
     }
   } else {
     if (_allow_last_param) {
       o_description =
-	"Specify the filename to which the resulting egg file will be written.  "
-	"If this option is omitted, the last parameter name is taken to be the "
-	"name of the output file.";
+        "Specify the filename to which the resulting egg file will be written.  "
+        "If this option is omitted, the last parameter name is taken to be the "
+        "name of the output file.";
     } else {
       o_description =
-	"Specify the filename to which the resulting egg file will be written.";
+        "Specify the filename to which the resulting egg file will be written.";
     }
   }
 
@@ -198,9 +198,9 @@ post_process_egg_file() {
     _transform.write(nout, 2);
     LVecBase3d scale, hpr, translate;
     if (decompose_matrix(_transform, scale, hpr, translate, 
-			 _data.get_coordinate_system())) {
+                         _data.get_coordinate_system())) {
       nout << "(scale " << scale << ", hpr " << hpr << ", translate "
-	   << translate << ")\n";
+           << translate << ")\n";
     }
     _data.transform(_transform);
   }
@@ -316,7 +316,7 @@ ns_dispatch_normals(const string &opt, const string &arg, void *mode) {
   if (_normals_mode == NM_vertex) {
     if (!string_to_double(arg, _normals_threshold)) {
       nout << "Invalid numeric parameter for -" << opt << ": " 
-	   << arg << "\n";
+           << arg << "\n";
       return false;
     }
   }
@@ -354,7 +354,7 @@ dispatch_scale(const string &opt, const string &arg, void *var) {
 
   if (!okflag) {
     nout << "-" << opt
-	 << " requires one or three numbers separated by commas.\n";
+         << " requires one or three numbers separated by commas.\n";
     return false;
   }
 
@@ -401,7 +401,7 @@ ns_dispatch_rotate_xyz(const string &opt, const string &arg, void *var) {
 
   if (!okflag) {
     nout << "-" << opt
-	 << " requires three numbers separated by commas.\n";
+         << " requires three numbers separated by commas.\n";
     return false;
   }
 
@@ -455,7 +455,7 @@ ns_dispatch_rotate_axis(const string &opt, const string &arg, void *var) {
 
   if (!okflag) {
     nout << "-" << opt
-	 << " requires four numbers separated by commas.\n";
+         << " requires four numbers separated by commas.\n";
     return false;
   }
 
@@ -489,7 +489,7 @@ dispatch_translate(const string &opt, const string &arg, void *var) {
 
   if (!okflag) {
     nout << "-" << opt
-	 << " requires three numbers separated by commas.\n";
+         << " requires three numbers separated by commas.\n";
     return false;
   }
 

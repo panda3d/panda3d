@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////
 CharBitmap::
 CharBitmap(int character, int width, int height, 
-	   int hoff, int voff, double dx, double dy) {
+           int hoff, int voff, double dx, double dy) {
   _character = character;
   _hoff = hoff;
   _voff = voff;
@@ -46,14 +46,14 @@ paint(bool black, int num_pixels, int &repeat) {
       _block[_y][_x] = black;
       _x++;
       if (_x >= _block[_y].size()) {
-	// End of a row.
-	_x = 0;
-	_y++;
-	while (repeat > 0 && _y < _block.size()) {
-	  _block[_y] = _block[_y-1];
-	  _y++;
-	  repeat--;
-	}
+        // End of a row.
+        _x = 0;
+        _y++;
+        while (repeat > 0 && _y < _block.size()) {
+          _block[_y] = _block[_y-1];
+          _y++;
+          repeat--;
+        }
       }
       num_pixels--;
     }

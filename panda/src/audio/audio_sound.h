@@ -27,8 +27,8 @@ private:
   AudioTraits::DeletePlayingFunc *_delstate;
 protected:
   INLINE AudioSound(AudioTraits::SoundClass*, AudioTraits::PlayingClass*,
-		    AudioTraits::PlayerClass*, AudioTraits::DeletePlayingFunc*,
-		    const string&);
+                    AudioTraits::PlayerClass*, AudioTraits::DeletePlayingFunc*,
+                    const string&);
   INLINE AudioSound(const AudioSound&);
   INLINE AudioSound& operator=(const AudioSound&);
 
@@ -56,11 +56,11 @@ public:
     /*
     TypedObject::init_type();
     register_type(_type_handle, "AudioSound",
-		  TypedObject::get_class_type());
+                  TypedObject::get_class_type());
     */
     TypedReferenceCount::init_type();
     register_type(_type_handle, "AudioSound",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

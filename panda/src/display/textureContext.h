@@ -13,7 +13,7 @@
 class Texture;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TextureContext
+//       Class : TextureContext
 // Description : This is a special class object that holds all the
 //               information returned by a particular GSG to indicate
 //               the texture's internal context identifier.
@@ -43,7 +43,7 @@ public:
   static void init_type() {
     TypedObject::init_type();
     register_type(_type_handle, "TextureContext",
- 		  TypedObject::get_class_type());
+                  TypedObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

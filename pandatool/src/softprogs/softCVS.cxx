@@ -171,25 +171,25 @@ traverse_subdir(const Filename &directory) {
       // This special filename should not be considered, except to add
       // it to CVS.
       if (in_cvs && cvs_elements.count(filename) == 0) {
-	_cvs_add.push_back(Filename(directory, filename));
+        _cvs_add.push_back(Filename(directory, filename));
       }
 
     } else {
       SoftFilename soft(directory, filename);
 
       if (in_cvs && cvs_elements.count(filename) != 0) {
-	// This file is known to be in CVS.
-	soft.set_in_cvs(true);
+        // This file is known to be in CVS.
+        soft.set_in_cvs(true);
       }
 
       if (keep_all) {
-	soft.increment_use_count();
+        soft.increment_use_count();
       }
 
       if (is_scenes && soft.has_version() && soft.get_extension() == ".dsc") {
-	_scene_files.push_back(soft);
+        _scene_files.push_back(soft);
       } else {
-	_element_files.insert(soft);
+        _element_files.insert(soft);
       }
     }
   }
@@ -225,7 +225,7 @@ collapse_scene_files() {
       SceneFiles::iterator start_vi;
       start_vi = vi;
       while (vi != versions.end() && (*vi).is_same_file(file)) {
-	++vi;
+        ++vi;
       }
       
       rename_file(start_vi, vi);
@@ -286,10 +286,10 @@ remove_unused_elements() {
       nout << file << " is unused.\n";
 
       if (!file.unlink()) {
-	nout << "Unable to remove " << file << ".\n";
+        nout << "Unable to remove " << file << ".\n";
 
       } else if (sf.get_in_cvs()) {
-	_cvs_remove.push_back(file);
+        _cvs_remove.push_back(file);
       }
 
     } else if (!sf.get_in_cvs()) {
@@ -309,7 +309,7 @@ remove_unused_elements() {
 ////////////////////////////////////////////////////////////////////
 bool SoftCVS::
 rename_file(SoftCVS::SceneFiles::iterator begin, 
-	    SoftCVS::SceneFiles::iterator end) {
+            SoftCVS::SceneFiles::iterator end) {
   int length = end - begin;
   nassertr(length > 0, false);
 
@@ -328,7 +328,7 @@ rename_file(SoftCVS::SceneFiles::iterator begin,
 
   } else if (length == 2) {
     nout << source_filename << " supercedes " 
-	 << (*(begin + 1)).get_filename() << ".\n";
+         << (*(begin + 1)).get_filename() << ".\n";
 
   } else {
     nout << source_filename << " renamed.\n";
@@ -345,12 +345,12 @@ rename_file(SoftCVS::SceneFiles::iterator begin,
       nout << "Unable to remove " << file << ".\n";
     } else {
       if ((*p).get_in_cvs()) {
-	if ((*p).is_1_0()) {
-	  // We don't cvs remove the 1.0 version.
-	  cvs_has_1_0 = true;
-	} else {
-	  _cvs_remove.push_back(file);
-	}
+        if ((*p).is_1_0()) {
+          // We don't cvs remove the 1.0 version.
+          cvs_has_1_0 = true;
+        } else {
+          _cvs_remove.push_back(file);
+        }
       }
     }
   }
@@ -410,15 +410,15 @@ scan_cvs(const string &dirname, set<string> &cvs_elements) {
     if (!line.empty() && line[0] == '/') {
       size_t slash = line.find('/', 1);
       if (slash != string::npos) {
-	string filename = line.substr(1, slash - 1);
+        string filename = line.substr(1, slash - 1);
 
-	if (line.substr(slash + 1, 2) == "-1") {
-	  // If the first number after the slash is -1, the file used
-	  // to be here but was recently cvs removed.  It counts as no
-	  // longer being an element.
-	} else {
-	  cvs_elements.insert(filename);
-	}
+        if (line.substr(slash + 1, 2) == "-1") {
+          // If the first number after the slash is -1, the file used
+          // to be here but was recently cvs removed.  It counts as no
+          // longer being an element.
+        } else {
+          cvs_elements.insert(filename);
+        }
       }
     }
 
@@ -461,11 +461,11 @@ scan_scene_file(istream &in) {
 
       ElementFiles::iterator ei;
       for (ei = range.first; ei != range.second; ++ei) {
-	// We cheat and get a non-const reference to the filename out
-	// of the set.  We can safely do this because incrementing the
-	// use count won't change its position in the set.
-	SoftFilename &file = (SoftFilename &)(*ei);
-	file.increment_use_count();
+        // We cheat and get a non-const reference to the filename out
+        // of the set.  We can safely do this because incrementing the
+        // use count won't change its position in the set.
+        SoftFilename &file = (SoftFilename &)(*ei);
+        file.increment_use_count();
       }
     }
   }
@@ -510,16 +510,16 @@ cvs_add_or_remove(const string &cvs_command, const vector_string &paths) {
       const string &path = (*pi);
 
       if ((int)command.length() + 1 + (int)path.length() >= max_command) {
-	// Fire off the command now.
-	nout << command << "\n";
-	int result = system(command.c_str());
+        // Fire off the command now.
+        nout << command << "\n";
+        int result = system(command.c_str());
     
-	if (result != 0) {
-	  nout << "Failure invoking cvs.\n";
-	  return false;
-	}
+        if (result != 0) {
+          nout << "Failure invoking cvs.\n";
+          return false;
+        }
 
-	command = _cvs_binary + " " + cvs_command;
+        command = _cvs_binary + " " + cvs_command;
       }
 
       command += ' ';

@@ -13,7 +13,7 @@
 class ProjectionNode;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CollisionSegment
+//       Class : CollisionSegment
 // Description : A finite line segment, with two specific endpoints
 //               but no thickness.  It's similar to a CollisionRay,
 //               except it does not continue to infinity.
@@ -28,7 +28,7 @@ PUBLISHED:
   INLINE CollisionSegment();
   INLINE CollisionSegment(const LPoint3f &a, const LPoint3f &db);
   INLINE CollisionSegment(float ax, float ay, float az, 
-			  float bx, float by, float bz);
+                          float bx, float by, float bz);
 
 public:
   INLINE CollisionSegment(const CollisionSegment &copy);
@@ -36,8 +36,8 @@ public:
 
   virtual int
   test_intersection(CollisionHandler *record,
-		    const CollisionEntry &entry,
-		    const CollisionSolid *into) const;
+                    const CollisionEntry &entry,
+                    const CollisionSolid *into) const;
 
   virtual void xform(const LMatrix4f &mat);
   virtual LPoint3f get_collision_origin() const;
@@ -72,7 +72,7 @@ public:
   static void init_type() {
     CollisionSolid::init_type();
     register_type(_type_handle, "CollisionSegment",
-		  CollisionSolid::get_class_type());
+                  CollisionSolid::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

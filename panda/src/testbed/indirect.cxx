@@ -52,83 +52,83 @@ void indirect_display_func( void ) {
     if (t == (Texture*)0L) {
       t = new Texture;
       if (use_canned_texture)
-	t->read( "smiley.rgba" );
+        t->read( "smiley.rgba" );
       else if (full_region) {
-	int a, b, w, h;
-	dr1->get_region_pixels(a, b, w, h);
-	t->_pbuffer->set_xsize(binary_log_cap(w));
-	t->_pbuffer->set_ysize(binary_log_cap(h));
+        int a, b, w, h;
+        dr1->get_region_pixels(a, b, w, h);
+        t->_pbuffer->set_xsize(binary_log_cap(w));
+        t->_pbuffer->set_ysize(binary_log_cap(h));
       } else {
-	t->_pbuffer->set_xsize( 512 );
-	t->_pbuffer->set_ysize( 512 );
+        t->_pbuffer->set_xsize( 512 );
+        t->_pbuffer->set_ysize( 512 );
       }
     }
     if (side_by_side) {
       if (right_to_left)
-	g->prepare_display_region(dr2);
+        g->prepare_display_region(dr2);
       else
-	g->prepare_display_region(dr1);
+        g->prepare_display_region(dr1);
     }
     if (!use_canned_texture) {
       if (full_region) {
-	if (side_by_side) {
-	  if (right_to_left)
-	    t->copy_from( rb, dr2 );
-	  else
-	    t->copy_from( rb, dr1 );
-	} else
-	  t->copy_from( rb, dr1 );
+        if (side_by_side) {
+          if (right_to_left)
+            t->copy_from( rb, dr2 );
+          else
+            t->copy_from( rb, dr1 );
+        } else
+          t->copy_from( rb, dr1 );
       } else
-	t->copy_from( rb );
+        t->copy_from( rb );
     }
     if (side_by_side) {
       if (right_to_left)
-	g->prepare_display_region(dr1);
+        g->prepare_display_region(dr1);
       else
-	g->prepare_display_region(dr2);
+        g->prepare_display_region(dr2);
     }
     if (full_region) {
       if (side_by_side) {
-	if (right_to_left)
-	  t->draw_to( rf, dr1 );
-	else
-	  t->draw_to( rf, dr2 );
+        if (right_to_left)
+          t->draw_to( rf, dr1 );
+        else
+          t->draw_to( rf, dr2 );
       } else
-	t->draw_to( rf, dr1 );
+        t->draw_to( rf, dr1 );
     } else
       t->draw_to( rf );
   } else {
     if (pb == (PixelBuffer*)0L) {
       pb = new PixelBuffer;
       if (use_canned_texture)
-	pb->read( "smiley.rgba" );
+        pb->read( "smiley.rgba" );
       else if (full_region) {
-	int a, b, w, h;
-	dr1->get_region_pixels(a, b, w, h);
-	w = binary_log_cap(w);
-	h = binary_log_cap(h);
-	pb->set_xsize(w);
-	pb->set_ysize(h);
-	pb->_image = PTA_uchar(w * h * 3);
+        int a, b, w, h;
+        dr1->get_region_pixels(a, b, w, h);
+        w = binary_log_cap(w);
+        h = binary_log_cap(h);
+        pb->set_xsize(w);
+        pb->set_ysize(h);
+        pb->_image = PTA_uchar(w * h * 3);
       } else {
-	pb->set_xsize(512);
-	pb->set_ysize(512);
-	pb->_image = PTA_uchar(512 * 512 * 3);
+        pb->set_xsize(512);
+        pb->set_ysize(512);
+        pb->_image = PTA_uchar(512 * 512 * 3);
       }
     }
     if (side_by_side) {
       if (right_to_left)
-	g->prepare_display_region(dr2);
+        g->prepare_display_region(dr2);
       else
-	g->prepare_display_region(dr1);
+        g->prepare_display_region(dr1);
     }
     if (!use_canned_texture)
       pb->copy_from( rf );
     if (side_by_side) {
       if (right_to_left)
-	g->prepare_display_region(dr1);
+        g->prepare_display_region(dr1);
       else
-	g->prepare_display_region(dr2);
+        g->prepare_display_region(dr2);
     }
     pb->draw_to( rf );
   }

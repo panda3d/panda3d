@@ -11,7 +11,7 @@
 #include "fltTransformRecord.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltTransformTranslate
+//       Class : FltTransformTranslate
 // Description : A transformation that applies a (possibly nonuniform)
 //               scale.
 ////////////////////////////////////////////////////////////////////
@@ -45,7 +45,7 @@ public:
   static void init_type() {
     FltTransformRecord::init_type();
     register_type(_type_handle, "FltTransformTranslate",
-		  FltTransformRecord::get_class_type());
+                  FltTransformRecord::get_class_type());
   }
 
 private:

@@ -10,9 +10,9 @@
 ////////////////////////////////////////////////////////////////////
 INLINE CullStateSubtree::
 CullStateSubtree(CullStateLookup *parent,
-		 const AllTransitionsWrapper &trans, 
-		 Node *top_subtree,
-		 UpdateSeq now) :
+                 const AllTransitionsWrapper &trans, 
+                 Node *top_subtree,
+                 UpdateSeq now) :
   _parent(parent),
   _trans(trans),
   _top_subtree(top_subtree),

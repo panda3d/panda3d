@@ -82,20 +82,20 @@ void ChanParse(istream& is, ChanParseFunctor* p) {
     int i;
     while (true) {
       if ((!S.empty()) && (S[0] != '(')) {
-	// error, should have leading paren
-	nout << "error, no leading paren in '" << S << "'" << endl;
-	S.erase(0, S.find_first_of("("));
+        // error, should have leading paren
+        nout << "error, no leading paren in '" << S << "'" << endl;
+        S.erase(0, S.find_first_of("("));
       }
       while ((S.empty())||(i = ChanMatchingParen(S)) == -1) {
-	S += " ";
-	S += ChanReadLine(is);
-	if (file_done) {
-	  if (!S.empty() && (!(S == " ")))
-	    // error, trailing text usually indicates an error in the file
-	    nout << "error, trailing text in file S = '" << S << "'" << endl;
-	  return;
-	}
-	ChanEatFrontWhite(S);
+        S += " ";
+        S += ChanReadLine(is);
+        if (file_done) {
+          if (!S.empty() && (!(S == " ")))
+            // error, trailing text usually indicates an error in the file
+            nout << "error, trailing text in file S = '" << S << "'" << endl;
+          return;
+        }
+        ChanEatFrontWhite(S);
       }
       (*p)(S.substr(1, i-2));
       S.erase(0, i);
@@ -107,14 +107,14 @@ void ChanParse(istream& is, ChanParseFunctor* p) {
     int i;
     while (true) {
       if ((!S.empty()) && (S[0] != '(')) {
-	// error, should have leading paren
-	nout << "error, no leading paren in '" << S << "'" << endl;
-	S.erase(0, S.find_first_of("("));
+        // error, should have leading paren
+        nout << "error, no leading paren in '" << S << "'" << endl;
+        S.erase(0, S.find_first_of("("));
       }
       while ((S.empty())||(i = ChanMatchingParen(S)) == -1) {
-	S += " ";
-	S += ChanReadLine(is);
-	ChanEatFrontWhite(S);
+        S += " ";
+        S += ChanReadLine(is);
+        ChanEatFrontWhite(S);
       }
       (*p)(S.substr(1, i-2));
       S.erase(0, i);

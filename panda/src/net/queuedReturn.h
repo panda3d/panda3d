@@ -16,7 +16,7 @@
 #include <deque>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : QueuedReturn
+//       Class : QueuedReturn
 // Description : This is the implementation of a family of things that
 //               queue up their return values for later retrieval by
 //               client code, like QueuedConnectionReader,

@@ -13,7 +13,7 @@
 class OnTransition;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : OnAttribute
+//       Class : OnAttribute
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA OnAttribute : public NodeAttribute {
@@ -45,7 +45,7 @@ public:
   static void init_type() {
     NodeAttribute::init_type();
     register_type(_type_handle, "OnAttribute",
-		  NodeAttribute::get_class_type());
+                  NodeAttribute::get_class_type());
   }
 
 private:

@@ -24,7 +24,7 @@
 class EggVertexPool;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggPrimitive
+//       Class : EggPrimitive
 // Description : A base class for any of a number of kinds of geometry
 //               primitives: polygons, point lights, nurbs patches,
 //               parametrics curves, etc.  Things with a set of
@@ -37,7 +37,7 @@ class EggVertexPool;
 //               the same vertex pool.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggPrimitive : public EggNode, public EggAttributes,
-		     public EggRenderMode
+                     public EggRenderMode
 {
 
   // This is a bit of private interface stuff that must be here as a
@@ -148,7 +148,7 @@ protected:
 
   virtual bool egg_start_parse_body();
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
-			   CoordinateSystem to_cs);
+                           CoordinateSystem to_cs);
   virtual void r_flatten_transforms();
   virtual void r_apply_texmats(EggTextureCollection &textures);
 
@@ -170,7 +170,7 @@ public:
     register_type(_type_handle, "EggPrimitive",
                   EggNode::get_class_type(),
                   EggAttributes::get_class_type(),
-		  EggRenderMode::get_class_type());
+                  EggRenderMode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

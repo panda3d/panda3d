@@ -18,7 +18,7 @@ TypeHandle EggSwitchConditionDistance::_type_handle;
 ////////////////////////////////////////////////////////////////////
 EggSwitchConditionDistance::
 EggSwitchConditionDistance(double switch_in, double switch_out,
-			   const LPoint3d &center, double fade) {
+                           const LPoint3d &center, double fade) {
   _switch_in = switch_in;
   _switch_out = switch_out;
   _center = center;

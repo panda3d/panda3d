@@ -15,7 +15,7 @@ class Datagram;
 class DatagramIterator;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : IoPtaDatagramShort
+//       Class : IoPtaDatagramShort
 // Description : This class is used to read and write a PTA_ushort
 //               from a Datagram, in support of Bam.  It's not
 //               intended to be constructed; it's just a convenient

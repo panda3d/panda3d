@@ -77,15 +77,15 @@ static bool verify_connection(void) {
     if (time <= 0.) {
       NetAddress host;
       if (!host.set_host(hostname, hostport)) {
-	deadrec_cat->warning() << "unknown host: " << hostname << endl;
-	time = 100.;
-	return false;
+        deadrec_cat->warning() << "unknown host: " << hostname << endl;
+        time = 100.;
+        return false;
       }
       PT(Connection) local_conn = cm.open_TCP_client_connection(host, 5000);
       if (local_conn.is_null()) {
-	deadrec_cat->warning() << "no connection" << endl;
-	time = 5.;
-	return false;
+        deadrec_cat->warning() << "no connection" << endl;
+        time = 5.;
+        return false;
       }
       conn = local_conn;
       // sync clock
@@ -99,17 +99,17 @@ static bool verify_connection(void) {
     PT(Connection) local_conn;
     if (cm.get_reset_connection(local_conn)) {
       if (local_conn == conn) {
-	cm.close_connection(conn);
-	conn = (Connection*)0L;
-	time = 5.;
-	return false;
+        cm.close_connection(conn);
+        conn = (Connection*)0L;
+        time = 5.;
+        return false;
       } else
-	deadrec_cat->error()
-	  << "got a report of a closed connection that I've never heard of"
-	  << endl;
+        deadrec_cat->error()
+          << "got a report of a closed connection that I've never heard of"
+          << endl;
     } else
       deadrec_cat->error()
-	<< "a closed connection was reported, but none was listed" << endl;
+        << "a closed connection was reported, but none was listed" << endl;
   }
   return true;
 }
@@ -145,7 +145,7 @@ void update_smiley(void) {
 class MyPosFunctor : public LPoint3fLerpFunctor {
 public:
   MyPosFunctor(LPoint3f start, LPoint3f end) : LPoint3fLerpFunctor(start,
-								   end) {}
+                                                                   end) {}
   MyPosFunctor(const MyPosFunctor& p) : LPoint3fLerpFunctor(p) {}
   virtual ~MyPosFunctor(void) {}
   virtual void operator()(float t) {
@@ -160,7 +160,7 @@ public:
   static void init_type(void) {
     LPoint3fLerpFunctor::init_type();
     register_type(_type_handle, "MyPosFunctor",
-		  LPoint3fLerpFunctor::get_class_type());
+                  LPoint3fLerpFunctor::get_class_type());
   }
   virtual TypeHandle get_type(void) const { return get_class_type(); }
   virtual TypeHandle force_init_type(void) {
@@ -193,7 +193,7 @@ public:
   static void init_type(void) {
     FloatLerpFunctor::init_type();
     register_type(_type_handle, "MyRotFunctor",
-		  FloatLerpFunctor::get_class_type());
+                  FloatLerpFunctor::get_class_type());
   }
   virtual TypeHandle get_type(void) const { return get_class_type(); }
   virtual TypeHandle force_init_type(void) {
@@ -230,13 +230,13 @@ static void run_line(bool smooth) {
   if (where) {
     curr_lerp =
       new AutonomousLerp(new MyPosFunctor(my_pos, LPoint3f::rfu(10., 0., 0.)),
-			 5., blend, &event_handler);
+                         5., blend, &event_handler);
     curr_lerp->set_end_event("lerp_done");
     curr_lerp->start();
   } else {
     curr_lerp =
       new AutonomousLerp(new MyPosFunctor(my_pos, LPoint3f::rfu(-10., 0., 0.)),
-			 5., blend, &event_handler);
+                         5., blend, &event_handler);
     curr_lerp->set_end_event("lerp_done");
     curr_lerp->start();
   }
@@ -256,33 +256,33 @@ static void run_box(bool smooth) {
   case 0:
     curr_lerp =
       new AutonomousLerp(new MyPosFunctor(my_pos,
-					  LPoint3f::rfu(-10., 0., 10.)),
-			 5., blend, &event_handler);
+                                          LPoint3f::rfu(-10., 0., 10.)),
+                         5., blend, &event_handler);
     where = 1;
     break;
   case 1:
     curr_lerp =
       new AutonomousLerp(new MyPosFunctor(my_pos, LPoint3f::rfu(10., 0., 10.)),
-			 5., blend, &event_handler);
+                         5., blend, &event_handler);
     where = 2;
     break;
   case 2:
     curr_lerp =
       new AutonomousLerp(new MyPosFunctor(my_pos,
-					  LPoint3f::rfu(10., 0., -10.)),
-			 5., blend, &event_handler);
+                                          LPoint3f::rfu(10., 0., -10.)),
+                         5., blend, &event_handler);
     where = 3;
     break;
   case 3:
     curr_lerp =
       new AutonomousLerp(new MyPosFunctor(my_pos,
-					  LPoint3f::rfu(-10., 0., -10.)),
-			 5., blend, &event_handler);
+                                          LPoint3f::rfu(-10., 0., -10.)),
+                         5., blend, &event_handler);
     where = 0;
     break;
   default:
     deadrec_cat->error() << "I'm a tard and box::where got out of range ("
-			 << where << ")" << endl;
+                         << where << ")" << endl;
     where = 0;
     run_box(smooth);
   }
@@ -299,7 +299,7 @@ static void run_circle(bool smooth) {
   else
     blend = new NoBlendType();
   curr_lerp = new AutonomousLerp(new MyRotFunctor(0., 6.283185), 5., blend,
-				 &event_handler);
+                                 &event_handler);
   curr_lerp->set_end_event("lerp_done");
   curr_lerp->start();
 }
@@ -316,7 +316,7 @@ static void run_random(bool smooth) {
   float y = (20. * unit_rand()) - 10.;
   LVector3f p = LVector3f::rfu(x, 0., y);
   curr_lerp = new AutonomousLerp(new MyPosFunctor(my_pos, p), 5., blend,
-				 &event_handler);
+                                 &event_handler);
   curr_lerp->set_end_event("lerp_done");
   curr_lerp->start();
 }
@@ -354,7 +354,7 @@ static void handle_lerp(void) {
     break;
   default:
     deadrec_cat->error() << "unknown motion type (" << (int)curr_type << ")"
-			 << endl;
+                         << endl;
   }
 }
 
@@ -388,7 +388,7 @@ static void make_active(void) {
     break;
   default:
     deadrec_cat->error() <<" unknown motion type (" << (int)curr_type << ")"
-			 << endl;
+                         << endl;
   }
 }
 
@@ -425,7 +425,7 @@ static void event_button_up(CPT_Event e) {
     break;
   default:
     deadrec_cat->error() << "switching to invalid motion type ("
-			 << (int)switching_to << ")" << endl;
+                         << (int)switching_to << ")" << endl;
   }
   curr_type = switching_to;
   handle_lerp();
@@ -488,7 +488,7 @@ static void event_button_down(CPT_Event e) {
 }
 
 static inline GuiButton* make_button(const string& name, Node* font,
-				     EventHandler& eh) {
+                                     EventHandler& eh) {
   GuiLabel* l1 = GuiLabel::make_simple_text_label(name, font);
   GuiLabel* l2 = GuiLabel::make_simple_text_label(name, font);
   GuiLabel* l3 = GuiLabel::make_simple_text_label(name, font);

@@ -87,7 +87,7 @@ static LMatrix3d matrix_2d;
 
 void
 egg_init_parser(istream &in, const string &filename,
-		EggObject *tos, EggGroupNode *top_node) {
+                EggObject *tos, EggGroupNode *top_node) {
   egg_init_lexer(in, filename);
 
   egg_stack.clear();
@@ -177,11 +177,11 @@ egg_cleanup_parser() {
 
 
 grammar:
-	START_EGG egg
-	| START_GROUP_BODY group_body
-	| START_TEXTURE_BODY texture_body
-	| START_PRIMITIVE_BODY primitive_body
-	;
+        START_EGG egg
+        | START_GROUP_BODY group_body
+        | START_TEXTURE_BODY texture_body
+        | START_PRIMITIVE_BODY primitive_body
+        ;
 
 /*
  * egg
@@ -191,12 +191,12 @@ grammar:
  *
  */
 egg:
-	empty
-	| egg node
+        empty
+        | egg node
 {
   DCAST(EggData, egg_stack.back())->add_child(DCAST(EggNode, $2));
 }
-	;
+        ;
 
 
 /*
@@ -207,21 +207,21 @@ egg:
  *
  */
 node:
-	coordsystem
-	| comment
-	| texture
-	| material
-	| external_reference
-	| vertex_pool
-	| group
-	| joint 
-	| instance
-	| polygon
-	| point_light
-	| nurbs_surface
-	| nurbs_curve
-	| table
-	;
+        coordsystem
+        | comment
+        | texture
+        | material
+        | external_reference
+        | vertex_pool
+        | group
+        | joint 
+        | instance
+        | polygon
+        | point_light
+        | nurbs_surface
+        | nurbs_curve
+        | table
+        ;
 
 /*
  * coordsystem
@@ -231,7 +231,7 @@ node:
  *
  */
 coordsystem:
-	COORDSYSTEM '{' required_string '}'
+        COORDSYSTEM '{' required_string '}'
 {
   string strval = $3;
   EggCoordinateSystem *cs = new EggCoordinateSystem;
@@ -244,7 +244,7 @@ coordsystem:
   }
   $$ = cs;
 }
-	;
+        ;
 
 /*
  * comment
@@ -254,11 +254,11 @@ coordsystem:
  *
  */
 comment:
-	COMMENT optional_name '{' repeated_string '}'
+        COMMENT optional_name '{' repeated_string '}'
 {
   $$ = new EggComment($2, $4);
 }
-	;
+        ;
 
 /*
  * texture
@@ -268,7 +268,7 @@ comment:
  *
  */
 texture:
-	TEXTURE required_name '{' required_string
+        TEXTURE required_name '{' required_string
 {
   string tref_name = $2;
   Filename filename = $4;
@@ -281,12 +281,12 @@ texture:
 
   egg_stack.push_back(texture);
 }
-	texture_body '}'
+        texture_body '}'
 {
   $$ = egg_stack.back();
   egg_stack.pop_back();
 }
-	;
+        ;
 
 /*
  * texture_body
@@ -296,8 +296,8 @@ texture:
  *
  */
 texture_body:
-	empty
-	| texture_body SCALAR required_name '{' real_or_string '}'
+        empty
+        | texture_body SCALAR required_name '{' real_or_string '}'
 {
   EggTexture *texture = DCAST(EggTexture, egg_stack.back());
   string name = $3;
@@ -418,8 +418,8 @@ texture_body:
     eggyywarning("Unsupported texture scalar: " + name);
   }
 }
-	| texture_body transform_2d
-	;
+        | texture_body transform_2d
+        ;
 
 /*
  * material
@@ -429,7 +429,7 @@ texture_body:
  *
  */
 material:
-	MATERIAL required_name '{'
+        MATERIAL required_name '{'
 {
   string mref_name = $2;
   EggMaterial *material = new EggMaterial(mref_name);
@@ -441,12 +441,12 @@ material:
 
   egg_stack.push_back(material);
 }
-	material_body '}'
+        material_body '}'
 {
   $$ = egg_stack.back();
   egg_stack.pop_back();
 }
-	;
+        ;
 
 /*
  * material_body
@@ -456,8 +456,8 @@ material:
  *
  */
 material_body:
-	empty
-	| material_body SCALAR required_name '{' real_or_string '}'
+        empty
+        | material_body SCALAR required_name '{' real_or_string '}'
 {
   EggMaterial *material = DCAST(EggMaterial, egg_stack.back());
   string name = $3;
@@ -541,7 +541,7 @@ material_body:
     eggyywarning("Unsupported material scalar: " + name);
   }
 }
-	;
+        ;
   
 
 /*
@@ -552,14 +552,14 @@ material_body:
  *
  */
 external_reference:
-	EXTERNAL_FILE optional_name '{' required_string '}'
+        EXTERNAL_FILE optional_name '{' required_string '}'
 {
   string node_name = $2;
   Filename filename = $4;
   EggExternalReference *ref = new EggExternalReference(node_name, filename);
   $$ = ref;
 }
-	| string EXTERNAL_FILE optional_name '{' required_string '}'
+        | string EXTERNAL_FILE optional_name '{' required_string '}'
 {
   if (cmp_nocase_uh($1, "group") != 0) {
     eggyyerror("keyword 'group' expected");
@@ -569,7 +569,7 @@ external_reference:
   EggExternalReference *ref = new EggExternalReference(node_name, filename);
   $$ = ref;
 }
-	;
+        ;
 
 /*
  * vertex_pool
@@ -579,7 +579,7 @@ external_reference:
  *
  */
 vertex_pool:
-	VERTEXPOOL required_name
+        VERTEXPOOL required_name
 {
   string name = $2;
   EggVertexPool *pool = new EggVertexPool(name);
@@ -591,12 +591,12 @@ vertex_pool:
 
   egg_stack.push_back(pool);
 }
-	'{' vertex_pool_body '}'
+        '{' vertex_pool_body '}'
 {
   $$ = egg_stack.back();
   egg_stack.pop_back();
 }
-	;
+        ;
 
 
 /*
@@ -607,9 +607,9 @@ vertex_pool:
  *
  */
 vertex_pool_body:
-	empty
-	| vertex_pool_body vertex
-	;
+        empty
+        | vertex_pool_body vertex
+        ;
 
 /*
  * vertex
@@ -619,18 +619,18 @@ vertex_pool_body:
  *
  */
 vertex:
-	VERTEX
+        VERTEX
 {
   egg_stack.push_back(new EggVertex);
 }
-	'{' vertex_body '}'
+        '{' vertex_body '}'
 {
   PT(EggVertex) vtx = DCAST(EggVertex, egg_stack.back());
   egg_stack.pop_back();
 
   DCAST(EggVertexPool, egg_stack.back())->add_vertex(vtx);
 }
-	| VERTEX integer
+        | VERTEX integer
 {
   vertex_index = (int)$2;
   EggVertexPool *pool = DCAST(EggVertexPool, egg_stack.back());
@@ -638,14 +638,14 @@ vertex:
   if (vertex_index < 0) {
     ostringstream errmsg;
     errmsg << "Ignoring invalid vertex index " << vertex_index
-	   << " in vertex pool " << pool->get_name() << ends;
+           << " in vertex pool " << pool->get_name() << ends;
     eggyywarning(errmsg);
     vertex_index = -1;
 
   } else if (pool->get_vertex(vertex_index) != NULL) {
     ostringstream errmsg;
     errmsg << "Ignoring duplicate vertex index " << vertex_index
-	   << " in vertex pool " << pool->get_name() << ends;
+           << " in vertex pool " << pool->get_name() << ends;
     eggyywarning(errmsg);
     vertex_index = -1;
   }
@@ -655,7 +655,7 @@ vertex:
 
   egg_stack.push_back(new EggVertex);
 }
-	'{' vertex_body '}'
+        '{' vertex_body '}'
 {
   PT(EggVertex) vtx = DCAST(EggVertex, egg_stack.back());
   egg_stack.pop_back();
@@ -665,7 +665,7 @@ vertex:
     pool->add_vertex(vtx, vertex_index);
   }
 }
-	;
+        ;
 
 
 /*
@@ -676,26 +676,26 @@ vertex:
  *
  */
 vertex_body:
-	real
+        real
 {
   DCAST(EggVertex, egg_stack.back())->set_pos($1);
 }
-	| real real
+        | real real
 {
   DCAST(EggVertex, egg_stack.back())->set_pos(LPoint2d($1, $2));
 }
-	| real real real
+        | real real real
 {
   DCAST(EggVertex, egg_stack.back())->set_pos(LPoint3d($1, $2, $3));
 }
-	| real real real real
+        | real real real real
 {
   DCAST(EggVertex, egg_stack.back())->set_pos(LPoint4d($1, $2, $3, $4));
 }
-	| vertex_body UV '{' vertex_uv_body '}'
-	| vertex_body NORMAL '{' vertex_normal_body '}'
-	| vertex_body RGBA '{' vertex_color_body '}'
-	| vertex_body DXYZ string '{' real real real '}'
+        | vertex_body UV '{' vertex_uv_body '}'
+        | vertex_body NORMAL '{' vertex_normal_body '}'
+        | vertex_body RGBA '{' vertex_color_body '}'
+        | vertex_body DXYZ string '{' real real real '}'
 {
   bool inserted = DCAST(EggVertex, egg_stack.back())->_dxyzs.
     insert(EggMorphVertex($3, LVector3d($5, $6, $7))).second;
@@ -703,7 +703,7 @@ vertex_body:
     eggyywarning("Ignoring repeated morph name " + $3);
   }
 }
-	| vertex_body DXYZ '{' string real real real '}'
+        | vertex_body DXYZ '{' string real real real '}'
 {
   bool inserted = DCAST(EggVertex, egg_stack.back())->_dxyzs.
     insert(EggMorphVertex($4, LVector3d($5, $6, $7))).second;
@@ -711,7 +711,7 @@ vertex_body:
     eggyywarning("Ignoring repeated morph name " + $4);
   }
 }
-	;
+        ;
 
 
 /*
@@ -722,11 +722,11 @@ vertex_body:
  *
  */
 vertex_uv_body:
-	real real
+        real real
 {
   DCAST(EggVertex, egg_stack.back())->set_uv(TexCoordd($1, $2));
 }
-	| vertex_uv_body DUV string '{' real real '}'
+        | vertex_uv_body DUV string '{' real real '}'
 {
   bool inserted = DCAST(EggVertex, egg_stack.back())->_duvs.
     insert(EggMorphTexCoord($3, LVector2d($5, $6))).second;
@@ -734,7 +734,7 @@ vertex_uv_body:
     eggyywarning("Ignoring repeated morph name " + $3);
   }
 }
-	| vertex_uv_body DUV '{' string real real '}'
+        | vertex_uv_body DUV '{' string real real '}'
 {
   bool inserted = DCAST(EggVertex, egg_stack.back())->_duvs.
     insert(EggMorphTexCoord($4, LVector2d($5, $6))).second;
@@ -742,7 +742,7 @@ vertex_uv_body:
     eggyywarning("Ignoring repeated morph name " + $4);
   }
 }
-	;
+        ;
 
 /*
  * vertex_normal_body
@@ -752,11 +752,11 @@ vertex_uv_body:
  *
  */
 vertex_normal_body:
-	real real real
+        real real real
 {
   DCAST(EggVertex, egg_stack.back())->set_normal(Normald($1, $2, $3));
 }
-	| vertex_normal_body DNORMAL string '{' real real real '}'
+        | vertex_normal_body DNORMAL string '{' real real real '}'
 {
   bool inserted = DCAST(EggVertex, egg_stack.back())->_dnormals.
     insert(EggMorphNormal($3, LVector3d($5, $6, $7))).second;
@@ -764,7 +764,7 @@ vertex_normal_body:
     eggyywarning("Ignoring repeated morph name " + $3);
   }
 }
-	| vertex_normal_body DNORMAL '{' string real real real '}'
+        | vertex_normal_body DNORMAL '{' string real real real '}'
 {
   bool inserted = DCAST(EggVertex, egg_stack.back())->_dnormals.
     insert(EggMorphNormal($4, LVector3d($5, $6, $7))).second;
@@ -772,7 +772,7 @@ vertex_normal_body:
     eggyywarning("Ignoring repeated morph name " + $4);
   }
 }
-	;
+        ;
 
 /*
  * vertex_color_body
@@ -782,11 +782,11 @@ vertex_normal_body:
  *
  */
 vertex_color_body:
-	real real real real
+        real real real real
 {
   DCAST(EggVertex, egg_stack.back())->set_color(Colorf($1, $2, $3, $4));
 }
-	| vertex_color_body DRGBA string '{' real real real real '}'
+        | vertex_color_body DRGBA string '{' real real real real '}'
 {
   bool inserted = DCAST(EggVertex, egg_stack.back())->_drgbas.
     insert(EggMorphColor($3, LVector4f($5, $6, $7, $8))).second;
@@ -794,7 +794,7 @@ vertex_color_body:
     eggyywarning("Ignoring repeated morph name " + $3);
   }
 }
-	| vertex_color_body DRGBA '{' string real real real real '}'
+        | vertex_color_body DRGBA '{' string real real real real '}'
 {
   bool inserted = DCAST(EggVertex, egg_stack.back())->_drgbas.
     insert(EggMorphColor($4, LVector4f($5, $6, $7, $8))).second;
@@ -802,7 +802,7 @@ vertex_color_body:
     eggyywarning("Ignoring repeated morph name " + $4);
   }
 }
-	;
+        ;
 
 /*
  * group
@@ -812,17 +812,17 @@ vertex_color_body:
  *
  */
 group:
-	GROUP optional_name
+        GROUP optional_name
 {
   EggGroup *group = new EggGroup($2);
   egg_stack.push_back(group);
 }
-	'{' group_body '}'
+        '{' group_body '}'
 {
   $$ = egg_stack.back();
   egg_stack.pop_back();
 }
-	;
+        ;
 
 /*
  * joint
@@ -832,18 +832,18 @@ group:
  *
  */
 joint:
-	JOINT optional_name
+        JOINT optional_name
 {
   EggGroup *group = new EggGroup($2);
   group->set_group_type(EggGroup::GT_joint);
   egg_stack.push_back(group);
 }
-	'{' group_body '}'
+        '{' group_body '}'
 {
   $$ = egg_stack.back();
   egg_stack.pop_back();
 }
-	;
+        ;
 
 /*
  * instance
@@ -853,18 +853,18 @@ joint:
  *
  */
 instance:
-	INSTANCE optional_name
+        INSTANCE optional_name
 {
   EggGroup *group = new EggGroup($2);
   group->set_group_type(EggGroup::GT_instance);
   egg_stack.push_back(group);
 }
-	'{' group_body '}'
+        '{' group_body '}'
 {
   $$ = egg_stack.back();
   egg_stack.pop_back();
 }
-	;
+        ;
 
 /*
  * group_body
@@ -874,8 +874,8 @@ instance:
  *
  */
 group_body:
-	empty
-	| group_body SCALAR required_name '{' real_or_string '}'
+        empty
+        | group_body SCALAR required_name '{' real_or_string '}'
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   string name = $3;
@@ -928,7 +928,7 @@ group_body:
     eggyywarning("Unknown group scalar " + name);
   }
 }
-	| group_body BILLBOARD '{' string '}'
+        | group_body BILLBOARD '{' string '}'
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   string strval = $4;
@@ -940,32 +940,32 @@ group_body:
     group->set_billboard_type(f);
   }
 }
-	| group_body BILLBOARDCENTER '{' real real real '}'
+        | group_body BILLBOARDCENTER '{' real real real '}'
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   group->set_billboard_center(LPoint3d($4, $5, $6));
 }
-	| group_body COLLIDE optional_name '{' cs_type collide_flags '}'
+        | group_body COLLIDE optional_name '{' cs_type collide_flags '}'
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   string name = $3;
 
   group->set_collision_name(name);
 }
-	| group_body DCS '{' integer '}'
+        | group_body DCS '{' integer '}'
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   int value = (int)$4;
   group->set_dcs_flag(value!=0);
 }
-	| group_body DART '{' integer '}'
+        | group_body DART '{' integer '}'
 {
   // The traditional flavor of DART, with { 0 } or { 1 }.
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   int value = (int)$4;
   group->set_dart_type(value!=0 ? EggGroup::DT_default : EggGroup::DT_none);
 }
-	| group_body DART '{' STRING '}'
+        | group_body DART '{' STRING '}'
 {
   // The special flavor of DART, with { sync } or { nosync }.
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
@@ -978,38 +978,38 @@ group_body:
     group->set_dart_type(f);
   }
 }
-	| group_body SWITCH '{' integer '}'
+        | group_body SWITCH '{' integer '}'
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   int value = (int)$4;
   group->set_switch_flag(value!=0);
 }
-	| group_body OBJECTTYPE '{' required_string '}'
+        | group_body OBJECTTYPE '{' required_string '}'
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   string type = $4;
   group->set_objecttype(type);
 }
-	| group_body MODEL '{' integer '}'
+        | group_body MODEL '{' integer '}'
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   int value = (int)$4;
   group->set_model_flag(value!=0);
 }
-	| group_body TEXLIST '{' integer '}'
+        | group_body TEXLIST '{' integer '}'
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   int value = (int)$4;
   group->set_texlist_flag(value!=0);
 }
-	| group_body transform_3d
-	| group_body group_vertex_ref
-	| group_body switchcondition
-	| group_body node
+        | group_body transform_3d
+        | group_body group_vertex_ref
+        | group_body switchcondition
+        | group_body node
 {
   DCAST(EggGroup, egg_stack.back())->add_child(DCAST(EggNode, $2));
 }
-	;
+        ;
 
 /*
  * cs_type
@@ -1019,7 +1019,7 @@ group_body:
  *
  */
 cs_type:
-	string
+        string
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   string strval = $1;
@@ -1031,7 +1031,7 @@ cs_type:
     group->set_cs_type(f);
   }
 }
-	;
+        ;
 
 /*
  * collide_flags
@@ -1041,8 +1041,8 @@ cs_type:
  *
  */
 collide_flags:
-	empty
-	| collide_flags string
+        empty
+        | collide_flags string
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   string strval = $2;
@@ -1054,7 +1054,7 @@ collide_flags:
     group->set_collide_flags(group->get_collide_flags() | f);
   }
 }
-	;
+        ;
 
 /*
  * transform_3d
@@ -1064,15 +1064,15 @@ collide_flags:
  *
  */
 transform_3d:
-	TRANSFORM
+        TRANSFORM
 {
   matrix_3d = LMatrix4d::ident_mat();
 }
-	'{' transform_3d_body '}'
+        '{' transform_3d_body '}'
 {
   DCAST(EggGroup, egg_stack.back())->set_transform(matrix_3d);
 }
-	;
+        ;
 
 
 /*
@@ -1083,85 +1083,85 @@ transform_3d:
  *
  */
 transform_3d_body:
-	  empty
-	| transform_3d_body matrix3_3d
-	| transform_3d_body matrix4_3d
-	| transform_3d_body translate_3d
-	| transform_3d_body rotx_3d
-	| transform_3d_body roty_3d
-	| transform_3d_body rotz_3d
-	| transform_3d_body rotate_3d
-	| transform_3d_body scale_3d
-	;
+          empty
+        | transform_3d_body matrix3_3d
+        | transform_3d_body matrix4_3d
+        | transform_3d_body translate_3d
+        | transform_3d_body rotx_3d
+        | transform_3d_body roty_3d
+        | transform_3d_body rotz_3d
+        | transform_3d_body rotate_3d
+        | transform_3d_body scale_3d
+        ;
 
 translate_3d: TRANSLATE '{' real real real '}'
 {
   matrix_3d *= LMatrix4d::translate_mat($3, $4, $5);
 }
-	;
+        ;
 
 rotx_3d: ROTX '{' real '}'
 {
   matrix_3d *= LMatrix4d::rotate_mat_normaxis($3, LVector3d(1.0, 0.0, 0.0));
 }
-	;
+        ;
 
 roty_3d: ROTY '{' real '}'
 {
   matrix_3d *= LMatrix4d::rotate_mat_normaxis($3, LVector3d(0.0, 1.0, 0.0));
 }
-	;
+        ;
 
 rotz_3d: ROTZ '{' real '}'
 {
   matrix_3d *= LMatrix4d::rotate_mat_normaxis($3, LVector3d(0.0, 0.0, 1.0));
 }
-	;
+        ;
 
 rotate_3d: ROTATE '{' real real real real '}'
 {
   matrix_3d *= LMatrix4d::rotate_mat($3, LVector3d($4, $5, $6));
 }
-	;
+        ;
 
 scale_3d: SCALE '{' real real real '}'
 {
   matrix_3d *= LMatrix4d::scale_mat($3, $4, $5);
 }
-	;
+        ;
 
 matrix4_3d:
-	MATRIX4 '{' matrix4_3d_body '}'
-	;
+        MATRIX4 '{' matrix4_3d_body '}'
+        ;
 
 matrix4_3d_body: 
-   	  empty
-	| real real real real
-	  real real real real 
-	  real real real real 
-	  real real real real 
+          empty
+        | real real real real
+          real real real real 
+          real real real real 
+          real real real real 
 {
   matrix_3d *= LMatrix4d($1, $2, $3, $4,
-			 $5, $6, $7, $8,
-			 $9, $10, $11, $12,
-			 $13, $14, $15, $16);
+                         $5, $6, $7, $8,
+                         $9, $10, $11, $12,
+                         $13, $14, $15, $16);
 }
-	;
+        ;
 
 matrix3_3d: MATRIX3 '{' matrix3_3d_body '}'
-	;
+        ;
 
 matrix3_3d_body: 
-   	  empty
-	| real real real
-	  real real real
-	  real real real
+          empty
+        | real real real
+          real real real
+          real real real
 {
   matrix_3d *= LMatrix4d(LMatrix3d($1, $2, $3,
-				   $4, $5, $6,
-				   $7, $8, $9));
+                                   $4, $5, $6,
+                                   $7, $8, $9));
 }
-	;
+        ;
 
 
 /*
@@ -1172,15 +1172,15 @@ matrix3_3d_body:
  *
  */
 transform_2d:
-	TRANSFORM
+        TRANSFORM
 {
   matrix_2d = LMatrix3d::ident_mat();
 }
-	'{' transform_2d_body '}'
+        '{' transform_2d_body '}'
 {
   DCAST(EggTexture, egg_stack.back())->set_transform(matrix_2d);
 }
-	;
+        ;
 
 
 /*
@@ -1191,45 +1191,45 @@ transform_2d:
  *
  */
 transform_2d_body:
-	  empty
-	| transform_2d_body matrix3_2d
-	| transform_2d_body translate_2d
-	| transform_2d_body rotate_2d
-	| transform_2d_body scale_2d
-	;
+          empty
+        | transform_2d_body matrix3_2d
+        | transform_2d_body translate_2d
+        | transform_2d_body rotate_2d
+        | transform_2d_body scale_2d
+        ;
 
 translate_2d: TRANSLATE '{' real real '}'
 {
   matrix_2d *= LMatrix3d::translate_mat($3, $4);
 }
-	;
+        ;
 
 rotate_2d: ROTATE '{' real '}'
 {
   matrix_2d *= LMatrix3d::rotate_mat($3);
 }
-	;
+        ;
 
 scale_2d: SCALE '{' real real '}'
 {
   matrix_2d *= LMatrix3d::scale_mat($3, $4);
 }
-	;
+        ;
 
 matrix3_2d: MATRIX3 '{' matrix3_2d_body '}'
-	;
+        ;
 
 matrix3_2d_body: 
-   	  empty
-	| real real real
-	  real real real
-	  real real real
+          empty
+        | real real real
+          real real real
+          real real real
 {
   matrix_2d *= LMatrix3d($1, $2, $3,
-			 $4, $5, $6,
-			 $7, $8, $9);
+                         $4, $5, $6,
+                         $7, $8, $9);
 }
-	;
+        ;
 
 
 /*
@@ -1240,7 +1240,7 @@ matrix3_2d_body:
  *
  */
 group_vertex_ref:
-	VERTEXREF '{' integer_list group_vertex_membership REF '{' vertex_pool_name '}' '}'
+        VERTEXREF '{' integer_list group_vertex_membership REF '{' vertex_pool_name '}' '}'
 {
   if ($7 != (EggVertexPool *)NULL) {
     EggVertexPool *pool = DCAST(EggVertexPool, $7);
@@ -1252,17 +1252,17 @@ group_vertex_ref:
       int index = (int)nums[i];
       EggVertex *vertex = pool->get_vertex(index);
       if (vertex == NULL) {
-	ostringstream errmsg;
-	errmsg << "No vertex " << index << " in pool " << pool->get_name() 
-	       << ends;
-	eggyyerror(errmsg);
+        ostringstream errmsg;
+        errmsg << "No vertex " << index << " in pool " << pool->get_name() 
+               << ends;
+        eggyyerror(errmsg);
       } else {
-	group->ref_vertex(vertex, membership);
+        group->ref_vertex(vertex, membership);
       }
     }
   }
 }
-	;
+        ;
 
 
 /*
@@ -1273,11 +1273,11 @@ group_vertex_ref:
  *
  */
 group_vertex_membership:
-	empty
+        empty
 {
   $$ = 1.0;
 }
-	| group_vertex_membership SCALAR required_name '{' real_or_string '}'
+        | group_vertex_membership SCALAR required_name '{' real_or_string '}'
 {
   string name = $3;
   double value = $<_number>5;
@@ -1291,7 +1291,7 @@ group_vertex_membership:
 
   $$ = result;
 }
-	;
+        ;
 
 
 /*
@@ -1302,8 +1302,8 @@ group_vertex_membership:
  *
  */
 switchcondition:
-	SWITCHCONDITION '{' switchcondition_body '}'
-	;
+        SWITCHCONDITION '{' switchcondition_body '}'
+        ;
 
 
 /*
@@ -1314,17 +1314,17 @@ switchcondition:
  *
  */
 switchcondition_body:
-	DISTANCE '{' real real VERTEX '{' real real real '}' '}' 
+        DISTANCE '{' real real VERTEX '{' real real real '}' '}' 
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   group->set_lod(EggSwitchConditionDistance($3, $4, LPoint3d($7, $8, $9)));
 }
-	| DISTANCE '{' real real real VERTEX '{' real real real '}' '}' 
+        | DISTANCE '{' real real real VERTEX '{' real real real '}' '}' 
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   group->set_lod(EggSwitchConditionDistance($3, $4, LPoint3d($8, $9, $10), $5));
 }
-	;
+        ;
 
 
 
@@ -1336,16 +1336,16 @@ switchcondition_body:
  *
  */
 polygon:
-	POLYGON optional_name
+        POLYGON optional_name
 {
   egg_stack.push_back(new EggPolygon($2));
 }
-	'{' primitive_body '}'
+        '{' primitive_body '}'
 {
   $$ = egg_stack.back();
   egg_stack.pop_back();
 }
-	;
+        ;
 
 /*
  * point_light
@@ -1355,16 +1355,16 @@ polygon:
  *
  */
 point_light:
-	POINTLIGHT optional_name
+        POINTLIGHT optional_name
 {
   egg_stack.push_back(new EggPoint($2));
 }
-	'{' primitive_body '}'
+        '{' primitive_body '}'
 {
   $$ = egg_stack.back();
   egg_stack.pop_back();
 }
-	;
+        ;
 
 /*
  * nurbs_surface
@@ -1374,16 +1374,16 @@ point_light:
  *
  */
 nurbs_surface:
-	NURBSSURFACE optional_name
+        NURBSSURFACE optional_name
 {
   egg_stack.push_back(new EggNurbsSurface($2));
 }
-	'{' nurbs_surface_body '}'
+        '{' nurbs_surface_body '}'
 {
   $$ = egg_stack.back();
   egg_stack.pop_back();
 }
-	;
+        ;
 
 /*
  * nurbs_curve
@@ -1393,16 +1393,16 @@ nurbs_surface:
  *
  */
 nurbs_curve:
-	NURBSCURVE optional_name
+        NURBSCURVE optional_name
 {
   egg_stack.push_back(new EggNurbsCurve($2));
 }
-	'{' nurbs_curve_body '}'
+        '{' nurbs_curve_body '}'
 {
   $$ = egg_stack.back();
   egg_stack.pop_back();
 }
-	;
+        ;
 
 
 /*
@@ -1413,15 +1413,15 @@ nurbs_curve:
  *
  */
 primitive_body:
-	empty
-	| primitive_body TREF '{' primitive_tref_body '}'
-	| primitive_body TEXTURE '{' primitive_texture_body '}'
-	| primitive_body MREF '{' primitive_material_body '}'
-	| primitive_body primitive_vertex_ref
-	| primitive_body NORMAL '{' primitive_normal_body '}'
-	| primitive_body RGBA '{' primitive_color_body '}'
-	| primitive_body BFACE '{' primitive_bface_body '}'
-	| primitive_body SCALAR required_name '{' real_or_string '}'
+        empty
+        | primitive_body TREF '{' primitive_tref_body '}'
+        | primitive_body TEXTURE '{' primitive_texture_body '}'
+        | primitive_body MREF '{' primitive_material_body '}'
+        | primitive_body primitive_vertex_ref
+        | primitive_body NORMAL '{' primitive_normal_body '}'
+        | primitive_body RGBA '{' primitive_color_body '}'
+        | primitive_body BFACE '{' primitive_bface_body '}'
+        | primitive_body SCALAR required_name '{' real_or_string '}'
 {
   EggPrimitive *primitive = DCAST(EggPrimitive, egg_stack.back());
   string name = $3;
@@ -1460,7 +1460,7 @@ primitive_body:
     eggyywarning("Unknown scalar " + name);
   }
 }
-	;
+        ;
 
 /*
  * nurbs_surface_body
@@ -1470,25 +1470,25 @@ primitive_body:
  *
  */
 nurbs_surface_body:
-	empty
-	| nurbs_surface_body TREF '{' primitive_tref_body '}'
-	| nurbs_surface_body TEXTURE '{' primitive_texture_body '}'
-	| nurbs_surface_body MREF '{' primitive_material_body '}'
-	| nurbs_surface_body primitive_vertex_ref
-	| nurbs_surface_body NORMAL '{' primitive_normal_body '}'
-	| nurbs_surface_body RGBA '{' primitive_color_body '}'
-	| nurbs_surface_body BFACE '{' primitive_bface_body '}'
-	| nurbs_surface_body ORDER '{' nurbs_surface_order_body '}'
-	| nurbs_surface_body UKNOTS '{' nurbs_surface_uknots_body '}'
-	| nurbs_surface_body VKNOTS '{' nurbs_surface_vknots_body '}'
-	| nurbs_surface_body nurbs_curve
+        empty
+        | nurbs_surface_body TREF '{' primitive_tref_body '}'
+        | nurbs_surface_body TEXTURE '{' primitive_texture_body '}'
+        | nurbs_surface_body MREF '{' primitive_material_body '}'
+        | nurbs_surface_body primitive_vertex_ref
+        | nurbs_surface_body NORMAL '{' primitive_normal_body '}'
+        | nurbs_surface_body RGBA '{' primitive_color_body '}'
+        | nurbs_surface_body BFACE '{' primitive_bface_body '}'
+        | nurbs_surface_body ORDER '{' nurbs_surface_order_body '}'
+        | nurbs_surface_body UKNOTS '{' nurbs_surface_uknots_body '}'
+        | nurbs_surface_body VKNOTS '{' nurbs_surface_vknots_body '}'
+        | nurbs_surface_body nurbs_curve
 {
   EggNurbsCurve *curve = DCAST(EggNurbsCurve, $2);
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
   nurbs->_curves_on_surface.push_back(curve);
 }
-	| nurbs_surface_body TRIM '{' nurbs_surface_trim_body '}'
-	| nurbs_surface_body SCALAR required_name '{' real_or_string '}'
+        | nurbs_surface_body TRIM '{' nurbs_surface_trim_body '}'
+        | nurbs_surface_body SCALAR required_name '{' real_or_string '}'
 {
   EggNurbsSurface *primitive = DCAST(EggNurbsSurface, egg_stack.back());
   string name = $3;
@@ -1531,7 +1531,7 @@ nurbs_surface_body:
     eggyywarning("Unknown scalar " + name);
   }
 }
-	;
+        ;
 
 
 /*
@@ -1542,17 +1542,17 @@ nurbs_surface_body:
  *
  */
 nurbs_curve_body:
-	empty
-	| nurbs_curve_body TREF '{' primitive_tref_body '}'
-	| nurbs_curve_body TEXTURE '{' primitive_texture_body '}'
-	| nurbs_curve_body MREF '{' primitive_material_body '}'
-	| nurbs_curve_body primitive_vertex_ref
-	| nurbs_curve_body NORMAL '{' primitive_normal_body '}'
-	| nurbs_curve_body RGBA '{' primitive_color_body '}'
-	| nurbs_curve_body BFACE '{' primitive_bface_body '}'
-	| nurbs_curve_body ORDER '{' nurbs_curve_order_body '}'
-	| nurbs_curve_body KNOTS '{' nurbs_curve_knots_body '}'
-	| nurbs_curve_body SCALAR required_name '{' real_or_string '}'
+        empty
+        | nurbs_curve_body TREF '{' primitive_tref_body '}'
+        | nurbs_curve_body TEXTURE '{' primitive_texture_body '}'
+        | nurbs_curve_body MREF '{' primitive_material_body '}'
+        | nurbs_curve_body primitive_vertex_ref
+        | nurbs_curve_body NORMAL '{' primitive_normal_body '}'
+        | nurbs_curve_body RGBA '{' primitive_color_body '}'
+        | nurbs_curve_body BFACE '{' primitive_bface_body '}'
+        | nurbs_curve_body ORDER '{' nurbs_curve_order_body '}'
+        | nurbs_curve_body KNOTS '{' nurbs_curve_knots_body '}'
+        | nurbs_curve_body SCALAR required_name '{' real_or_string '}'
 {
   EggNurbsCurve *primitive = DCAST(EggNurbsCurve, egg_stack.back());
   string name = $3;
@@ -1601,7 +1601,7 @@ nurbs_curve_body:
     eggyywarning("Unknown scalar " + name);
   }
 }
-	;
+        ;
 
 /*
  * primitive_tref_body
@@ -1611,14 +1611,14 @@ nurbs_curve_body:
  *
  */
 primitive_tref_body:
-	texture_name
+        texture_name
 {
   if ($1 != (EggTexture *)NULL) {
     EggTexture *texture = DCAST(EggTexture, $1);
     DCAST(EggPrimitive, egg_stack.back())->set_texture(texture);
   }
 }
-	;
+        ;
 
 /*
  * primitive_texture_body
@@ -1628,7 +1628,7 @@ primitive_tref_body:
  *
  */
 primitive_texture_body:
-	required_name
+        required_name
 {
   EggTexture *texture = NULL;
 
@@ -1651,14 +1651,14 @@ primitive_texture_body:
     texture = (*vpi).second;
     if (filename != texture->get_filename()) {
       eggyywarning(string("Using previous path: ") + 
-		   texture->get_filename().get_fullpath());
+                   texture->get_filename().get_fullpath());
     }
   }
 
   nassertr(texture != NULL, 0);
   DCAST(EggPrimitive, egg_stack.back())->set_texture(texture);
 }
-	;
+        ;
 
 /*
  * primitive_material_body
@@ -1668,14 +1668,14 @@ primitive_texture_body:
  *
  */
 primitive_material_body:
-	material_name
+        material_name
 {
   if ($1 != (EggMaterial *)NULL) {
     EggMaterial *material = DCAST(EggMaterial, $1);
     DCAST(EggPrimitive, egg_stack.back())->set_material(material);
   }
 }
-	;
+        ;
 
 /*
  * primitive_normal_body
@@ -1685,11 +1685,11 @@ primitive_material_body:
  *
  */
 primitive_normal_body:
-	real real real
+        real real real
 {
   DCAST(EggPrimitive, egg_stack.back())->set_normal(Normald($1, $2, $3));
 }
-	| primitive_normal_body DNORMAL string '{' real real real '}'
+        | primitive_normal_body DNORMAL string '{' real real real '}'
 {
   bool inserted = DCAST(EggPrimitive, egg_stack.back())->_dnormals.
     insert(EggMorphNormal($3, LVector3d($5, $6, $7))).second;
@@ -1697,7 +1697,7 @@ primitive_normal_body:
     eggyywarning("Ignoring repeated morph name " + $3);
   }
 }
-	| primitive_normal_body DNORMAL '{' string real real real '}'
+        | primitive_normal_body DNORMAL '{' string real real real '}'
 {
   bool inserted = DCAST(EggPrimitive, egg_stack.back())->_dnormals.
     insert(EggMorphNormal($4, LVector3d($5, $6, $7))).second;
@@ -1705,7 +1705,7 @@ primitive_normal_body:
     eggyywarning("Ignoring repeated morph name " + $4);
   }
 }
-	;
+        ;
 
 /*
  * primitive_color_body
@@ -1715,11 +1715,11 @@ primitive_normal_body:
  *
  */
 primitive_color_body:
-	real real real real
+        real real real real
 {
   DCAST(EggPrimitive, egg_stack.back())->set_color(Colorf($1, $2, $3, $4));
 }
-	| primitive_color_body DRGBA string '{' real real real real '}'
+        | primitive_color_body DRGBA string '{' real real real real '}'
 {
   bool inserted = DCAST(EggPrimitive, egg_stack.back())->_drgbas.
     insert(EggMorphColor($3, LVector4f($5, $6, $7, $8))).second;
@@ -1727,7 +1727,7 @@ primitive_color_body:
     eggyywarning("Ignoring repeated morph name " + $3);
   }
 }
-	| primitive_color_body DRGBA '{' string real real real real '}'
+        | primitive_color_body DRGBA '{' string real real real real '}'
 {
   bool inserted = DCAST(EggPrimitive, egg_stack.back())->_drgbas.
     insert(EggMorphColor($4, LVector4f($5, $6, $7, $8))).second;
@@ -1735,7 +1735,7 @@ primitive_color_body:
     eggyywarning("Ignoring repeated morph name " + $4);
   }
 }
-	;
+        ;
 
 /*
  * primitive_bface_body
@@ -1745,13 +1745,13 @@ primitive_color_body:
  *
  */
 primitive_bface_body:
-	integer
+        integer
 {
   EggPrimitive *primitive = DCAST(EggPrimitive, egg_stack.back());
   int value = (int)$1;
   primitive->set_bface_flag(value!=0);
 }
-	;
+        ;
 
 /*
  * primitive_vertex_ref
@@ -1761,7 +1761,7 @@ primitive_bface_body:
  *
  */
 primitive_vertex_ref:
-	VERTEXREF '{' integer_list REF '{' vertex_pool_name '}' '}'
+        VERTEXREF '{' integer_list REF '{' vertex_pool_name '}' '}'
 {
   if ($6 != (EggVertexPool *)NULL) {
     EggVertexPool *pool = DCAST(EggVertexPool, $6);
@@ -1772,17 +1772,17 @@ primitive_vertex_ref:
       int index = (int)nums[i];
       EggVertex *vertex = pool->get_vertex(index);
       if (vertex == NULL) {
-	ostringstream errmsg;
-	errmsg << "No vertex " << index << " in pool " << pool->get_name() 
-	       << ends;
-	eggyyerror(errmsg);
+        ostringstream errmsg;
+        errmsg << "No vertex " << index << " in pool " << pool->get_name() 
+               << ends;
+        eggyyerror(errmsg);
       } else {
-	prim->add_vertex(vertex);
+        prim->add_vertex(vertex);
       }
     }
   }
 }
-	;
+        ;
 
 /*
  * nurbs_surface_order_body
@@ -1792,7 +1792,7 @@ primitive_vertex_ref:
  *
  */
 nurbs_surface_order_body:
-	integer integer
+        integer integer
 {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
   int u_order = (int)$1;
@@ -1800,7 +1800,7 @@ nurbs_surface_order_body:
   nurbs->set_u_order(u_order);
   nurbs->set_v_order(v_order);
 }
-	;
+        ;
 
 /*
  * nurbs_surface_uknots_body
@@ -1810,7 +1810,7 @@ nurbs_surface_order_body:
  *
  */
 nurbs_surface_uknots_body:
-	real_list
+        real_list
 {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
   PTA_double nums = $1;
@@ -1820,7 +1820,7 @@ nurbs_surface_uknots_body:
     nurbs->set_u_knot(i, nums[i]);
   }
 }
-	;
+        ;
 
 /*
  * nurbs_surface_vknots_body
@@ -1830,7 +1830,7 @@ nurbs_surface_uknots_body:
  *
  */
 nurbs_surface_vknots_body:
-	real_list
+        real_list
 {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
   PTA_double nums = $1;
@@ -1840,7 +1840,7 @@ nurbs_surface_vknots_body:
     nurbs->set_v_knot(i, nums[i]);
   }
 }
-	;
+        ;
 
 /*
  * nurbs_surface_trim_body
@@ -1850,13 +1850,13 @@ nurbs_surface_vknots_body:
  *
  */
 nurbs_surface_trim_body:
-	empty
+        empty
 {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
   nurbs->_trims.push_back(EggNurbsSurface::Trim());
 }
-	| nurbs_surface_trim_body LOOP '{' nurbs_surface_trim_loop_body '}'
-	;
+        | nurbs_surface_trim_body LOOP '{' nurbs_surface_trim_loop_body '}'
+        ;
 
 /*
  * nurbs_surface_trim_loop_body
@@ -1866,13 +1866,13 @@ nurbs_surface_trim_body:
  *
  */
 nurbs_surface_trim_loop_body:
-	empty
+        empty
 {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
   nassertr(!nurbs->_trims.empty(), 0);
   nurbs->_trims.back().push_back(EggNurbsSurface::Loop());
 }
-	| nurbs_surface_trim_loop_body nurbs_curve
+        | nurbs_surface_trim_loop_body nurbs_curve
 {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
   nassertr(!nurbs->_trims.empty(), 0);
@@ -1880,7 +1880,7 @@ nurbs_surface_trim_loop_body:
   EggNurbsCurve *curve = DCAST(EggNurbsCurve, $2); 
   nurbs->_trims.back().back().push_back(curve);
 }
-	;
+        ;
 
 
 /*
@@ -1891,13 +1891,13 @@ nurbs_surface_trim_loop_body:
  *
  */
 nurbs_curve_order_body:
-	integer
+        integer
 {
   EggNurbsCurve *nurbs = DCAST(EggNurbsCurve, egg_stack.back());
   int order = (int)$1;
   nurbs->set_order(order);
 }
-	;
+        ;
 
 /*
  * nurbs_curve_knots_body
@@ -1907,7 +1907,7 @@ nurbs_curve_order_body:
  *
  */
 nurbs_curve_knots_body:
-	real_list
+        real_list
 {
   EggNurbsCurve *nurbs = DCAST(EggNurbsCurve, egg_stack.back());
   PTA_double nums = $1;
@@ -1917,7 +1917,7 @@ nurbs_curve_knots_body:
     nurbs->set_knot(i, nums[i]);
   }
 }
-	;
+        ;
 
 
 /*
@@ -1928,18 +1928,18 @@ nurbs_curve_knots_body:
  *
  */
 table:
-	TABLE optional_name
+        TABLE optional_name
 {
   EggTable *table = new EggTable($2);
   table->set_table_type(EggTable::TT_table);
   egg_stack.push_back(table);
 }
-	'{' table_body '}'
+        '{' table_body '}'
 {
   $$ = egg_stack.back();
   egg_stack.pop_back();
 }
-	;
+        ;
 
 
 /*
@@ -1950,18 +1950,18 @@ table:
  *
  */
 bundle:
-	BUNDLE optional_name
+        BUNDLE optional_name
 {
   EggTable *table = new EggTable($2);
   table->set_table_type(EggTable::TT_bundle);
   egg_stack.push_back(table);
 }
-	'{' table_body '}'
+        '{' table_body '}'
 {
   $$ = egg_stack.back();
   egg_stack.pop_back();
 }
-	;
+        ;
 
 
 /*
@@ -1972,28 +1972,28 @@ bundle:
  *
  */
 table_body:
-	empty
-	| table_body table
+        empty
+        | table_body table
 {
   DCAST(EggTable, egg_stack.back())->add_child(DCAST(EggNode, $2));
 }
-	| table_body bundle
+        | table_body bundle
 {
   DCAST(EggTable, egg_stack.back())->add_child(DCAST(EggNode, $2));
 }
-	| table_body sanim
+        | table_body sanim
 {
   DCAST(EggTable, egg_stack.back())->add_child(DCAST(EggNode, $2));
 }
-	| table_body xfmanim
+        | table_body xfmanim
 {
   DCAST(EggTable, egg_stack.back())->add_child(DCAST(EggNode, $2));
 }
-	| table_body xfm_s_anim
+        | table_body xfm_s_anim
 {
   DCAST(EggTable, egg_stack.back())->add_child(DCAST(EggNode, $2));
 }
-	;
+        ;
 
 
 /*
@@ -2004,17 +2004,17 @@ table_body:
  *
  */
 sanim:
-	SANIM optional_name
+        SANIM optional_name
 {
   EggSAnimData *anim_data = new EggSAnimData($2);
   egg_stack.push_back(anim_data);
 }
-	'{' sanim_body '}'
+        '{' sanim_body '}'
 {
   $$ = egg_stack.back();
   egg_stack.pop_back();
 }
-	;
+        ;
 
 
 /*
@@ -2025,8 +2025,8 @@ sanim:
  *
  */
 sanim_body:
-	empty
-	| sanim_body SCALAR required_name '{' real_or_string '}'
+        empty
+        | sanim_body SCALAR required_name '{' real_or_string '}'
 {
   EggSAnimData *anim_data = DCAST(EggSAnimData, egg_stack.back());
   string name = $3;
@@ -2038,11 +2038,11 @@ sanim_body:
     eggyywarning("Unsupported S$Anim scalar: " + name);
   }
 }
-	| sanim_body TABLE_V '{' real_list '}'
+        | sanim_body TABLE_V '{' real_list '}'
 {
   DCAST(EggSAnimData, egg_stack.back())->set_data($4);
 }  
-	;
+        ;
 
 /*
  * xfmanim
@@ -2052,17 +2052,17 @@ sanim_body:
  *
  */
 xfmanim:
-	XFMANIM optional_name
+        XFMANIM optional_name
 {
   EggXfmAnimData *anim_data = new EggXfmAnimData($2);
   egg_stack.push_back(anim_data);
 }
-	'{' xfmanim_body '}'
+        '{' xfmanim_body '}'
 {
   $$ = egg_stack.back();
   egg_stack.pop_back();
 }
-	;
+        ;
 
 
 /*
@@ -2073,8 +2073,8 @@ xfmanim:
  *
  */
 xfmanim_body:
-	empty
-	| xfmanim_body SCALAR required_name '{' real_or_string '}'
+        empty
+        | xfmanim_body SCALAR required_name '{' real_or_string '}'
 {
   EggXfmAnimData *anim_data = DCAST(EggXfmAnimData, egg_stack.back());
   string name = $3;
@@ -2091,11 +2091,11 @@ xfmanim_body:
     eggyywarning("Unsupported Xfm$Anim scalar: " + name);
   }
 }
-	| xfmanim_body TABLE_V '{' real_list '}'
+        | xfmanim_body TABLE_V '{' real_list '}'
 {
   DCAST(EggXfmAnimData, egg_stack.back())->set_data($4);
 }  
-	;
+        ;
 
 /*
  * xfm_s_anim
@@ -2105,17 +2105,17 @@ xfmanim_body:
  *
  */
 xfm_s_anim:
-	XFMSANIM optional_name
+        XFMSANIM optional_name
 {
   EggXfmSAnim *anim_group = new EggXfmSAnim($2);
   egg_stack.push_back(anim_group);
 }
-	'{' xfm_s_anim_body '}'
+        '{' xfm_s_anim_body '}'
 {
   $$ = egg_stack.back();
   egg_stack.pop_back();
 }
-	;
+        ;
 
 
 /*
@@ -2126,8 +2126,8 @@ xfm_s_anim:
  *
  */
 xfm_s_anim_body:
-	empty
-	| xfm_s_anim_body SCALAR required_name '{' real_or_string '}'
+        empty
+        | xfm_s_anim_body SCALAR required_name '{' real_or_string '}'
 {
   EggXfmSAnim *anim_group = DCAST(EggXfmSAnim, egg_stack.back());
   string name = $3;
@@ -2142,11 +2142,11 @@ xfm_s_anim_body:
     eggyywarning("Unsupported Xfm$Anim_S$ scalar: " + name);
   }
 }
-	| xfm_s_anim_body sanim
+        | xfm_s_anim_body sanim
 {
   DCAST(EggXfmSAnim, egg_stack.back())->add_child(DCAST(EggNode, $2));
 }
-	;
+        ;
 
 
 /*
@@ -2157,15 +2157,15 @@ xfm_s_anim_body:
  *
  */
 integer_list:
-	empty
+        empty
 {
   $$ = PTA_double(0);
 }
-	| integer_list integer
+        | integer_list integer
 {
   $$.push_back((double)$2);
 }
-	;
+        ;
 
 /*
  * real_list
@@ -2175,15 +2175,15 @@ integer_list:
  *
  */
 real_list:
-	empty
+        empty
 {
   $$ = PTA_double(0);
 }
-	| real_list real
+        | real_list real
 {
   $$.push_back($2);
 }
-	;
+        ;
 
 /*
  * texture_name
@@ -2193,7 +2193,7 @@ real_list:
  *
  */
 texture_name:
-	required_name
+        required_name
 {
   string name = $1;
   Textures::iterator vpi = textures.find(name);
@@ -2204,7 +2204,7 @@ texture_name:
     $$ = (*vpi).second;
   }
 }
-	;
+        ;
 
 /*
  * material_name
@@ -2214,7 +2214,7 @@ texture_name:
  *
  */
 material_name:
-	required_name
+        required_name
 {
   string name = $1;
   Materials::iterator vpi = materials.find(name);
@@ -2225,7 +2225,7 @@ material_name:
     $$ = (*vpi).second;
   }
 }
-	;
+        ;
 
 /*
  * vertex_pool_name
@@ -2235,7 +2235,7 @@ material_name:
  *
  */
 vertex_pool_name:
-	required_name
+        required_name
 {
   string name = $1;
   VertexPools::iterator vpi = vertex_pools.find(name);
@@ -2246,7 +2246,7 @@ vertex_pool_name:
     $$ = (*vpi).second;
   }
 }
-	;
+        ;
 
 
 /*
@@ -2257,13 +2257,13 @@ vertex_pool_name:
  *
  */
 required_name:
-	empty
+        empty
 {
   eggyyerror("Name required.");
   $$ = "";
 }
-	| string
-	;
+        | string
+        ;
 
 
 /*
@@ -2274,8 +2274,8 @@ required_name:
  *
  */
 optional_name:
-	optional_string
-	;
+        optional_string
+        ;
 
 
 /*
@@ -2286,13 +2286,13 @@ optional_name:
  *
  */
 required_string:
-	empty
+        empty
 {
   eggyyerror("String required.");
   $$ = "";
 }
-	| string
-	;
+        | string
+        ;
 
 /*
  * optional_string
@@ -2302,12 +2302,12 @@ required_string:
  *
  */
 optional_string:
-	empty
+        empty
 {
   $$ = "";
 }
-	| string
-	;
+        | string
+        ;
 
 /*
  * string
@@ -2320,12 +2320,12 @@ optional_string:
  *
  */
 string:
-	NUMBER
+        NUMBER
 {
   $$ = $<_string>1;
 }
-	| STRING
-	;
+        | STRING
+        ;
 
 /*
  * repeated_string
@@ -2337,15 +2337,15 @@ string:
  *
  */
 repeated_string:
-	empty
+        empty
 {
   $$ = "";
 }
-	| repeated_string_body
+        | repeated_string_body
 {
   $$ = $1;
 }
-	;
+        ;
 
 /*
  * repeated_string_body
@@ -2357,15 +2357,15 @@ repeated_string:
  *
  */
 repeated_string_body:
-	string
+        string
 {
   $$ = $1;
 }
-	| repeated_string_body string
+        | repeated_string_body string
 {
   $$ = $1 + "\n" + $2;
 }
-	;
+        ;
 
 /*
  * real
@@ -2375,8 +2375,8 @@ repeated_string_body:
  *
  */
 real:
-	NUMBER
-	;
+        NUMBER
+        ;
 
 /*
  * real_or_string
@@ -2386,17 +2386,17 @@ real:
  *
  */
 real_or_string:
-	NUMBER
+        NUMBER
 {
   $<_number>$ = $1;
   $<_string>$ = $<_string>1;
 }
-	| STRING
+        | STRING
 {
   $<_number>$ = 0.0;
   $<_string>$ = $1;
 }
-	;
+        ;
 
 
 /*
@@ -2407,7 +2407,7 @@ real_or_string:
  *
  */
 integer:
-	NUMBER
+        NUMBER
 {
   int i = (int)$1;
   if ((double)i != $1) {
@@ -2415,7 +2415,7 @@ integer:
     $$ = (double)i;
   }
 }
-	;
+        ;
 
 empty:
-	;
+        ;

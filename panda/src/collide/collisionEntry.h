@@ -18,7 +18,7 @@
 #include <nodePath.h>
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : CollisionEntry
+//       Class : CollisionEntry
 // Description : Defines a single collision event.  One of these is
 //               created for each collision detected by a
 //               CollisionTraverser, to be dealt with by the
@@ -99,7 +99,7 @@ public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "CollisionEntry",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

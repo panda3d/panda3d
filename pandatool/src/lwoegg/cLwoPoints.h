@@ -19,7 +19,7 @@ class LwoVertexMap;
 class CLwoLayer;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : CLwoPoints
+//       Class : CLwoPoints
 // Description : This class is a wrapper around LwoPoints and stores
 //               additional information useful during the
 //               conversion-to-egg process.
@@ -27,7 +27,7 @@ class CLwoLayer;
 class CLwoPoints {
 public:
   INLINE CLwoPoints(LwoToEggConverter *converter, const LwoPoints *points,
-		    CLwoLayer *layer);
+                    CLwoLayer *layer);
 
   void add_vmap(const LwoVertexMap *lwo_vmap);
   bool get_uv(const string &uv_name, int n, LPoint2f &uv) const;

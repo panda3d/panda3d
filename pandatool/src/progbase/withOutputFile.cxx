@@ -14,7 +14,7 @@
 ////////////////////////////////////////////////////////////////////
 WithOutputFile::
 WithOutputFile(bool allow_last_param, bool allow_stdout,
-	       bool binary_output) {
+               bool binary_output) {
   _allow_last_param = allow_last_param;
   _allow_stdout = allow_stdout;
   _binary_output = binary_output;
@@ -52,14 +52,14 @@ get_output() {
       _output_filename.make_dir();
 
       if (_binary_output) {
-	_output_filename.set_binary();
+        _output_filename.set_binary();
       } else {
-	_output_filename.set_text();
+        _output_filename.set_text();
       }
 
       if (!_output_filename.open_write(_output_stream)) {
-	nout << "Unable to write to " << _output_filename << "\n";
-	exit(1);
+        nout << "Unable to write to " << _output_filename << "\n";
+        exit(1);
       }
       nout << "Writing " << _output_filename << "\n";
       _output_ptr = &_output_stream;
@@ -115,14 +115,14 @@ check_last_arg(ProgramBase::Args &args, int minimum_args) {
     Filename filename = args.back();
 
     if (!_preferred_extension.empty() && 
-	("." + filename.get_extension()) != _preferred_extension) {
+        ("." + filename.get_extension()) != _preferred_extension) {
       // This argument must not be an output filename.
       if (!_allow_stdout) {
-	nout << "Output filename " << filename 
-	     << " does not end in " << _preferred_extension 
-	     << ".  If this is really what you intended, "
-	  "use the -o output_file syntax.\n";
-	return false;
+        nout << "Output filename " << filename 
+             << " does not end in " << _preferred_extension 
+             << ".  If this is really what you intended, "
+          "use the -o output_file syntax.\n";
+        return false;
       }
 
     } else {
@@ -132,7 +132,7 @@ check_last_arg(ProgramBase::Args &args, int minimum_args) {
       args.pop_back();
 
       if (!verify_output_file_safe()) {
-	return false;
+        return false;
       }
     }
   }

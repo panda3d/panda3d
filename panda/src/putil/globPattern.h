@@ -9,7 +9,7 @@
 #include <pandabase.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GlobPattern
+//       Class : GlobPattern
 // Description : This class can be used to test for string matches
 //               against standard Unix-shell filename globbing
 //               conventions.  It serves as a portable standin for the
@@ -38,13 +38,13 @@ public:
 
 private:
   bool matches_substr(string::const_iterator pi,
-		      string::const_iterator pend,
-		      string::const_iterator ci,
-		      string::const_iterator cend) const;
+                      string::const_iterator pend,
+                      string::const_iterator ci,
+                      string::const_iterator cend) const;
 
   bool matches_set(string::const_iterator &pi, 
-		   string::const_iterator pend,
-		   char ch) const;
+                   string::const_iterator pend,
+                   char ch) const;
 
   string _pattern;
 };

@@ -55,7 +55,7 @@
 class NodeAttributes;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DataNode
+//       Class : DataNode
 // Description : The main node of the data graph.  This could
 //               represent a device that produces data, or an object
 //               that operates on data received from a device.
@@ -93,7 +93,7 @@ public:
   static void init_type() {
     NamedNode::init_type();
     register_type(_type_handle, "DataNode",
-		  NamedNode::get_class_type());
+                  NamedNode::get_class_type());
   }
 
 private:
@@ -115,7 +115,7 @@ private:
 ////////////////////////////////////////////////////////////////////
 void EXPCL_PANDA 
 register_data_transition(TypeHandle &type_handle, const string &name,
-			 TypeHandle derived_from);
+                         TypeHandle derived_from);
 
 #endif
 

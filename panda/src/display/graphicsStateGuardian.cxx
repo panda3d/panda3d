@@ -47,7 +47,7 @@ TypeHandle GraphicsStateGuardian::GsgWindow::get_class_type(void) {
 void GraphicsStateGuardian::GsgWindow::init_type(void) {
   GsgParam::init_type();
   register_type(_type_handle, "GraphicsStateGuardian::GsgWindow",
-		GsgParam::get_class_type());
+                GsgParam::get_class_type());
 }
 
 TypeHandle GraphicsStateGuardian::GsgWindow::get_type(void) const {
@@ -167,16 +167,16 @@ set_state(const NodeAttributes &new_state, bool complete) {
       // before.  Issue the command.
 
       if ((*new_i).second != (NodeAttribute *)NULL) {
-	if (gsg_cat.is_debug()) {
-	  gsg_cat.debug()
-	    << "Issuing new attrib " << *(*new_i).second << "\n";
-	}
+        if (gsg_cat.is_debug()) {
+          gsg_cat.debug()
+            << "Issuing new attrib " << *(*new_i).second << "\n";
+        }
         record_state_change((*new_i).first);
-	(*new_i).second->issue(this);
-	
-	// And store the new value.
-	current_i = _state.insert(current_i, *new_i);
-	++current_i;
+        (*new_i).second->issue(this);
+
+        // And store the new value.
+        current_i = _state.insert(current_i, *new_i);
+        ++current_i;
       }
 
       ++new_i;
@@ -186,81 +186,81 @@ set_state(const NodeAttributes &new_state, bool complete) {
       // didn't specify this time.
 
       if (complete) {
-	// If we're in the "complete state" model, that means this
-	// attribute should now get the default initial value.
+        // If we're in the "complete state" model, that means this
+        // attribute should now get the default initial value.
 
-	if (gsg_cat.is_debug()) {
-	  gsg_cat.debug()
-	    << "Unissuing attrib " << *(*current_i).second 
-	    << " (previously set, not now)\n";
-	}
+        if (gsg_cat.is_debug()) {
+          gsg_cat.debug()
+            << "Unissuing attrib " << *(*current_i).second 
+            << " (previously set, not now)\n";
+        }
         record_state_change((*current_i).first);
 
-	PT(NodeAttribute) initial = (*current_i).second->make_initial();
-	initial->issue(this);
+        PT(NodeAttribute) initial = (*current_i).second->make_initial();
+        initial->issue(this);
 
-	NodeAttributes::iterator erase_i = current_i;
-	++current_i;
-	
-	_state.erase(erase_i);
+        NodeAttributes::iterator erase_i = current_i;
+        ++current_i;
+
+        _state.erase(erase_i);
 
       } else {
-	++current_i;
+        ++current_i;
       }
 
     } else {  // (*current_i).first == (*new_i).first)
 
       if ((*new_i).second == (NodeAttribute *)NULL) {
-	// Here's an attribute that we've set previously, which
-	// appears in the new list, but is NULL indicating it should
-	// be removed.
+        // Here's an attribute that we've set previously, which
+        // appears in the new list, but is NULL indicating it should
+        // be removed.
 
-	if (complete) {
-	  // Only remove it if we're in the "complete state" model.
+        if (complete) {
+          // Only remove it if we're in the "complete state" model.
 
-	  if (gsg_cat.is_debug()) {
-	    gsg_cat.debug()
-	      << "Unissuing attrib " << *(*current_i).second 
-	      << " (previously set, now NULL)\n";
-	  }
+          if (gsg_cat.is_debug()) {
+            gsg_cat.debug()
+              << "Unissuing attrib " << *(*current_i).second 
+              << " (previously set, now NULL)\n";
+          }
           record_state_change((*current_i).first);
 
-	  // Issue the initial attribute before clearing the state.
-	  PT(NodeAttribute) initial = (*current_i).second->make_initial();
-	  initial->issue(this);
+          // Issue the initial attribute before clearing the state.
+          PT(NodeAttribute) initial = (*current_i).second->make_initial();
+          initial->issue(this);
 
-	  NodeAttributes::iterator erase_i = current_i;
-	  ++current_i;
-	  
-	  _state.erase(erase_i);
+          NodeAttributes::iterator erase_i = current_i;
+          ++current_i;
 
-	} else {
-	  ++current_i;
-	}
-	++new_i;
+          _state.erase(erase_i);
+
+        } else {
+          ++current_i;
+        }
+        ++new_i;
 
       } else {
-	// Here's an attribute that we've set previously, and the user
-	// asked us to set it again.  Issue the command only if the new
-	// attribute is different from that which we'd set before.
-	if ((*new_i).second->compare_to(*(*current_i).second) != 0) {
-	  if (gsg_cat.is_debug()) {
-	    gsg_cat.debug()
-	      << "Reissuing attrib " << *(*new_i).second << "\n";
-	  }
+        // Here's an attribute that we've set previously, and the user
+        // asked us to set it again.  Issue the command only if the new
+        // attribute is different from that which we'd set before.
+        if ((*new_i).second->compare_to(*(*current_i).second) != 0) {
+          if (gsg_cat.is_debug()) {
+            gsg_cat.debug()
+              << "Reissuing attrib " << *(*new_i).second << "\n";
+          }
           record_state_change((*new_i).first);
-	  (*new_i).second->issue(this);
+          (*new_i).second->issue(this);
 
-	  // And store the new value.
-	  (*current_i).second = (*new_i).second;
+          // And store the new value.
+          (*current_i).second = (*new_i).second;
 
-	} else if (gsg_cat.is_debug()) {
-	  gsg_cat.debug()
-	    << "Not reissuing unchanged attrib " << *(*new_i).second << "\n";
-	}
+        } else if (gsg_cat.is_debug()) {
+          gsg_cat.debug()
+            << "Not reissuing unchanged attrib " << *(*new_i).second << "\n";
+        }
 
-	++current_i;
-	++new_i;
+        ++current_i;
+        ++new_i;
       }
     }
   }
@@ -271,8 +271,8 @@ set_state(const NodeAttributes &new_state, bool complete) {
 
     if ((*new_i).second != (NodeAttribute *)NULL) {
       if (gsg_cat.is_debug()) {
-	gsg_cat.debug()
-	  << "Issuing new attrib " << *(*new_i).second << "\n";
+        gsg_cat.debug()
+          << "Issuing new attrib " << *(*new_i).second << "\n";
       }
       record_state_change((*new_i).first);
       
@@ -290,9 +290,9 @@ set_state(const NodeAttributes &new_state, bool complete) {
       // didn't specify this time.
 
       if (gsg_cat.is_debug()) {
-	gsg_cat.debug()
-	  << "Unissuing attrib " << *(*current_i).second 
-	  << " (previously set, end of list)\n";
+        gsg_cat.debug()
+          << "Unissuing attrib " << *(*current_i).second 
+          << " (previously set, end of list)\n";
       }
       record_state_change((*current_i).first);
       
@@ -326,7 +326,7 @@ get_render_buffer(int buffer_type) {
 //     Function: GraphicsStateGuardian::set_color_clear_value
 //       Access: Public
 //  Description: Sets the color that the next clear() command will set
-//		 the color buffer to
+//               the color buffer to
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 set_color_clear_value(const Colorf& value) {
@@ -582,13 +582,13 @@ read_priorities(void) {
       ConfigString type_name = (*i).Val();
       TypeHandle type = TypeRegistry::ptr()->find_type(type_name);
       if (type == TypeHandle::none()) {
-	display_cat.warning()
-	  << "Unknown type requested for GSG preference: " << type_name
-	  << "\n";
+        display_cat.warning()
+          << "Unknown type requested for GSG preference: " << type_name
+          << "\n";
       } else {
-	display_cat.debug()
-	  << "Specifying type " << type << " for GSG preference.\n";
-	factory.add_preferred(type);
+        display_cat.debug()
+          << "Specifying type " << type << " for GSG preference.\n";
+        factory.add_preferred(type);
       }
     }
   }

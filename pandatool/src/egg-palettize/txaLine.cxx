@@ -89,127 +89,127 @@ parse(const string &line) {
     if (isdigit(word[0])) {
       // This is either a new size or a scale percentage.
       if (_size_type != ST_none) {
-	nout << "Invalid repeated size request: " << word << "\n";
-	return false;
+        nout << "Invalid repeated size request: " << word << "\n";
+        return false;
       }
       if (word[word.length() - 1] == '%') {
-	// It's a scale percentage!
-	_size_type = ST_scale;
+        // It's a scale percentage!
+        _size_type = ST_scale;
 
-	string tail;
-	_scale = string_to_double(word, tail);
-	if (!(tail == "%")) {
-	  // This is an invalid number.
-	  return false;
-	}
-	++wi;
+        string tail;
+        _scale = string_to_double(word, tail);
+        if (!(tail == "%")) {
+          // This is an invalid number.
+          return false;
+        }
+        ++wi;
 
       } else {
-	// Collect a number of consecutive numeric fields.
-	vector<int> numbers;
-	while (wi != words.end() && isdigit((*wi)[0])) {
-	  const string &word = *wi;
-	  int num;
-	  if (!string_to_int(word, num)) {
-	    nout << "Invalid size: " << word << "\n";
-	    return false;
-	  }
-	  numbers.push_back(num);
-	  ++wi;
-	}
-	if (numbers.size() < 2) {
-	  nout << "At least two size numbers must be given, or a percent sign used to indicate scaling.\n";
-	  return false;
+        // Collect a number of consecutive numeric fields.
+        vector<int> numbers;
+        while (wi != words.end() && isdigit((*wi)[0])) {
+          const string &word = *wi;
+          int num;
+          if (!string_to_int(word, num)) {
+            nout << "Invalid size: " << word << "\n";
+            return false;
+          }
+          numbers.push_back(num);
+          ++wi;
+        }
+        if (numbers.size() < 2) {
+          nout << "At least two size numbers must be given, or a percent sign used to indicate scaling.\n";
+          return false;
 
-	} else if (numbers.size() == 2) {
-	  _size_type = ST_explicit_2;
-	  _x_size = numbers[0];
-	  _y_size = numbers[1];
+        } else if (numbers.size() == 2) {
+          _size_type = ST_explicit_2;
+          _x_size = numbers[0];
+          _y_size = numbers[1];
 
-	} else if (numbers.size() == 3) {
-	  _size_type = ST_explicit_3;
-	  _x_size = numbers[0];
-	  _y_size = numbers[1];
-	  _num_channels = numbers[2];
+        } else if (numbers.size() == 3) {
+          _size_type = ST_explicit_3;
+          _x_size = numbers[0];
+          _y_size = numbers[1];
+          _num_channels = numbers[2];
 
-	} else {
-	  nout << "Too many size numbers given.\n";
-	  return false;
-	}
+        } else {
+          nout << "Too many size numbers given.\n";
+          return false;
+        }
       }
 
     } else {
       // The word does not begin with a digit; therefore it's either a
       // keyword or an image file type request.
       if (word == "omit") {
-	_keywords.push_back(KW_omit);
+        _keywords.push_back(KW_omit);
 
       } else if (word == "nearest") {
-	_keywords.push_back(KW_nearest);
+        _keywords.push_back(KW_nearest);
 
       } else if (word == "linear") {
-	_keywords.push_back(KW_linear);
+        _keywords.push_back(KW_linear);
 
       } else if (word == "mipmap") {
-	_keywords.push_back(KW_mipmap);
+        _keywords.push_back(KW_mipmap);
 
       } else if (word == "cont") {
-	_keywords.push_back(KW_cont);
+        _keywords.push_back(KW_cont);
 
       } else if (word == "margin") {
-	++wi;
-	if (wi == words.end()) {
-	  nout << "Argument required for 'margin'.\n";
-	  return false;
-	} 
-	  
-	const string &arg = (*wi);
-	if (!string_to_int(arg, _margin)) {
-	  nout << "Not an integer: " << arg << "\n";
-	  return false;
-	}
-	if (_margin < 0) {
-	  nout << "Invalid margin: " << _margin << "\n";
-	  return false;
-	}
-	_got_margin = true;
+        ++wi;
+        if (wi == words.end()) {
+          nout << "Argument required for 'margin'.\n";
+          return false;
+        } 
+
+        const string &arg = (*wi);
+        if (!string_to_int(arg, _margin)) {
+          nout << "Not an integer: " << arg << "\n";
+          return false;
+        }
+        if (_margin < 0) {
+          nout << "Invalid margin: " << _margin << "\n";
+          return false;
+        }
+        _got_margin = true;
 
       } else if (word == "coverage") {
-	++wi;
-	if (wi == words.end()) {
-	  nout << "Argument required for 'coverage'.\n";
-	  return false;
-	}
-	 
-	const string &arg = (*wi);
-	if (!string_to_double(arg, _coverage_threshold)) {
-	  nout << "Not a number: " << arg << "\n";
-	  return false;
-	}
-	if (_coverage_threshold <= 0.0) {
-	  nout << "Invalid coverage threshold: " << _coverage_threshold << "\n";
-	  return false;
-	}
-	_got_coverage_threshold = true;
+        ++wi;
+        if (wi == words.end()) {
+          nout << "Argument required for 'coverage'.\n";
+          return false;
+        }
+
+        const string &arg = (*wi);
+        if (!string_to_double(arg, _coverage_threshold)) {
+          nout << "Not a number: " << arg << "\n";
+          return false;
+        }
+        if (_coverage_threshold <= 0.0) {
+          nout << "Invalid coverage threshold: " << _coverage_threshold << "\n";
+          return false;
+        }
+        _got_coverage_threshold = true;
 
       } else {
-	// Maybe it's a format name.
-	EggTexture::Format format = EggTexture::string_format(word);
-	if (format != EggTexture::F_unspecified) {
-	  _format = format;
-	} else {
-	  // Maybe it's a group name.
-	  PaletteGroup *group = pal->test_palette_group(word);
-	  if (group != (PaletteGroup *)NULL) {
-	    _palette_groups.insert(group);
-	    
-	  } else {
-	    // Maybe it's an image file request.
-	    if (!parse_image_type_request(word, _color_type, _alpha_type)) {
-	      return false;
-	    }
-	  }
-	}
+        // Maybe it's a format name.
+        EggTexture::Format format = EggTexture::string_format(word);
+        if (format != EggTexture::F_unspecified) {
+          _format = format;
+        } else {
+          // Maybe it's a group name.
+          PaletteGroup *group = pal->test_palette_group(word);
+          if (group != (PaletteGroup *)NULL) {
+            _palette_groups.insert(group);
+
+          } else {
+            // Maybe it's an image file request.
+            if (!parse_image_type_request(word, _color_type, _alpha_type)) {
+              return false;
+            }
+          }
+        }
       }
       ++wi;
     }
@@ -318,9 +318,9 @@ match_texture(TextureImage *texture) const {
 
     case ST_scale:
       if (source != (SourceTextureImage *)NULL && source->get_size()) {
-	request._got_size = true;
-	request._x_size = (int)(source->get_x_size() * _scale / 100.0);
-	request._y_size = (int)(source->get_y_size() * _scale / 100.0);
+        request._got_size = true;
+        request._x_size = (int)(source->get_x_size() * _scale / 100.0);
+        request._y_size = (int)(source->get_y_size() * _scale / 100.0);
       }
       break;
 

@@ -17,7 +17,7 @@
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, QueuedReturn< PT(Connection) >);
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : QueuedConnectionManager
+//       Class : QueuedConnectionManager
 // Description : This flavor of ConnectionManager will queue up all of
 //               the reset-connection messages from the
 //               ConnectionReaders and ConnectionWriters and report
@@ -30,7 +30,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, QueuedReturn< PT(Connection) >);
 //               resources.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA QueuedConnectionManager : public ConnectionManager,
-				public QueuedReturn< PT(Connection) > {
+                                public QueuedReturn< PT(Connection) > {
 PUBLISHED:
   QueuedConnectionManager();
   ~QueuedConnectionManager();

@@ -47,7 +47,7 @@ const int MIN_MOVE = 2;
 class EXPCL_PANDA MouseAndKeyboard : public DataNode {
 PUBLISHED:
   MouseAndKeyboard(GraphicsWindow *window, int device,
-		   const string& name = "");
+                   const string& name = "");
 
 public:
   virtual void transmit_data(NodeAttributes &data);

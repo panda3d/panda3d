@@ -12,7 +12,7 @@
 #include <fog.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FogAttribute
+//       Class : FogAttribute
 // Description : See FogTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA FogAttribute : public OnOffAttribute {
@@ -48,7 +48,7 @@ public:
   static void init_type() {
     OnOffAttribute::init_type();
     register_type(_type_handle, "FogAttribute",
-		  OnOffAttribute::get_class_type());
+                  OnOffAttribute::get_class_type());
   }
 
 private:

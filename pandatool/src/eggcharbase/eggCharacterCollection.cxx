@@ -88,7 +88,7 @@ add_egg(EggData *egg) {
       
       int model_index = _next_model_index++;
       if (egg_info._models.empty()) {
-	egg_info._first_model_index = model_index;
+        egg_info._first_model_index = model_index;
       }
       egg_info._models.push_back(model_root);
 
@@ -97,7 +97,7 @@ add_egg(EggData *egg) {
       _characters_by_model_index.push_back(char_data);
 
       match_egg_nodes(char_data, root_joint, egg_nodes,
-		      egg_index, model_index);
+                      egg_index, model_index);
 
       scan_for_morphs(model_root, model_index, char_data);
       scan_for_sliders(model_root, model_index, char_data);
@@ -232,7 +232,7 @@ scan_hierarchy(EggNode *egg_node) {
     EggGroupNode::iterator gi;
     for (gi = group->begin(); gi != group->end(); ++gi) {
       if (scan_hierarchy(*gi)) {
-	character_found = true;
+        character_found = true;
       }
     }
   }
@@ -249,7 +249,7 @@ scan_hierarchy(EggNode *egg_node) {
 ////////////////////////////////////////////////////////////////////
 void EggCharacterCollection::
 scan_for_top_joints(EggNode *egg_node, EggNode *model_root, 
-		    const string &character_name) {
+                    const string &character_name) {
   if (egg_node->is_of_type(EggGroup::get_class_type())) {
     EggGroup *group = DCAST(EggGroup, egg_node);
 
@@ -282,7 +282,7 @@ scan_for_top_joints(EggNode *egg_node, EggNode *model_root,
 ////////////////////////////////////////////////////////////////////
 void EggCharacterCollection::
 scan_for_top_tables(EggTable *bundle, EggNode *model_root,
-		    const string &character_name) {
+                    const string &character_name) {
   // We really only need to check the immediate children of the bundle
   // for a table node called "<skeleton>".
   EggGroupNode::iterator gi;
@@ -291,16 +291,16 @@ scan_for_top_tables(EggTable *bundle, EggNode *model_root,
     if (child->is_of_type(EggTable::get_class_type())) {
       EggTable *table = DCAST(EggTable, child);
       if (table->get_name() == "<skeleton>") {
-	// Here it is!  Now the immediate children of this node are
-	// the top tables.
+        // Here it is!  Now the immediate children of this node are
+        // the top tables.
 
-	EggGroupNode::iterator cgi;
-	for (cgi = table->begin(); cgi != table->end(); ++cgi) {
-	  EggNode *grandchild = (*cgi);
-	  if (grandchild->is_of_type(EggTable::get_class_type())) {
-	    _top_egg_nodes[character_name][model_root].push_back(grandchild);
-	  }
-	}
+        EggGroupNode::iterator cgi;
+        for (cgi = table->begin(); cgi != table->end(); ++cgi) {
+          EggNode *grandchild = (*cgi);
+          if (grandchild->is_of_type(EggTable::get_class_type())) {
+            _top_egg_nodes[character_name][model_root].push_back(grandchild);
+          }
+        }
       }
     }
   }
@@ -314,7 +314,7 @@ scan_for_top_tables(EggTable *bundle, EggNode *model_root,
 ////////////////////////////////////////////////////////////////////
 void EggCharacterCollection::
 scan_for_morphs(EggNode *egg_node, int model_index,
-		EggCharacterData *char_data) {
+                EggCharacterData *char_data) {
   if (egg_node->is_of_type(EggPrimitive::get_class_type())) {
     EggPrimitive *prim = DCAST(EggPrimitive, egg_node);
     // Check for morphs on the primitive.
@@ -329,10 +329,10 @@ scan_for_morphs(EggNode *egg_node, int model_index,
 
       EggMorphVertexList::const_iterator mvi;
       for (mvi = vertex->_dxyzs.begin(); 
-	   mvi != vertex->_dxyzs.end();
-	   ++mvi) {
-	const EggMorphVertex &morph = (*mvi);
-	char_data->make_slider(morph.get_name())->add_back_pointer(model_index, vertex);
+           mvi != vertex->_dxyzs.end();
+           ++mvi) {
+        const EggMorphVertex &morph = (*mvi);
+        char_data->make_slider(morph.get_name())->add_back_pointer(model_index, vertex);
       }
     }
   }
@@ -354,7 +354,7 @@ scan_for_morphs(EggNode *egg_node, int model_index,
 ////////////////////////////////////////////////////////////////////
 void EggCharacterCollection::
 scan_for_sliders(EggNode *egg_node, int model_index,
-		 EggCharacterData *char_data) {
+                 EggCharacterData *char_data) {
   if (egg_node->is_of_type(EggTable::get_class_type())) {
     EggTable *bundle = DCAST(EggTable, egg_node);
 
@@ -368,19 +368,19 @@ scan_for_sliders(EggNode *egg_node, int model_index,
     for (gi = bundle->begin(); gi != bundle->end(); ++gi) {
       EggNode *child = (*gi);
       if (child->is_of_type(EggTable::get_class_type())) {
-	EggTable *table = DCAST(EggTable, child);
-	if (table->get_name() == "morph") {
-	  // Here it is!  Now the immediate children of this node are
-	  // all the slider channels.
+        EggTable *table = DCAST(EggTable, child);
+        if (table->get_name() == "morph") {
+          // Here it is!  Now the immediate children of this node are
+          // all the slider channels.
 
-	  EggGroupNode::iterator cgi;
-	  for (cgi = table->begin(); cgi != table->end(); ++cgi) {
-	    EggNode *grandchild = (*cgi);
-	    if (grandchild->is_of_type(EggSAnimData::get_class_type())) {
-	      char_data->make_slider(grandchild->get_name())->add_back_pointer(model_index, grandchild);
-	    }
-	  }
-	}
+          EggGroupNode::iterator cgi;
+          for (cgi = table->begin(); cgi != table->end(); ++cgi) {
+            EggNode *grandchild = (*cgi);
+            if (grandchild->is_of_type(EggSAnimData::get_class_type())) {
+              char_data->make_slider(grandchild->get_name())->add_back_pointer(model_index, grandchild);
+            }
+          }
+        }
       }
     }
   }
@@ -394,7 +394,7 @@ scan_for_sliders(EggNode *egg_node, int model_index,
 ////////////////////////////////////////////////////////////////////
 void EggCharacterCollection::
 add_morph_back_pointers(EggAttributes *attrib, EggObject *egg_object,
-			int model_index, EggCharacterData *char_data) {
+                        int model_index, EggCharacterData *char_data) {
   EggMorphNormalList::const_iterator mni;
   for (mni = attrib->_dnormals.begin(); 
        mni != attrib->_dnormals.end();
@@ -432,7 +432,7 @@ add_morph_back_pointers(EggAttributes *attrib, EggObject *egg_object,
 ////////////////////////////////////////////////////////////////////
 void EggCharacterCollection::
 match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
-		EggNodeList &egg_nodes, int egg_index, int model_index) {
+                EggNodeList &egg_nodes, int egg_index, int model_index) {
   // Sort the list of egg_nodes in order by name.  This will make the
   // matching up by names easier and more reliable.
   sort(egg_nodes.begin(), egg_nodes.end(), IndirectCompareNames<Namable>());
@@ -467,21 +467,21 @@ match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
       EggJointData *data = (*di);
 
       if (egg_node->get_name() < data->get_name()) {
-	// Here's a joint in the egg file, unmatched in the data.
-	extra_egg_nodes.push_back(egg_node);
-	++ei;
+        // Here's a joint in the egg file, unmatched in the data.
+        extra_egg_nodes.push_back(egg_node);
+        ++ei;
 
       } else if (data->get_name() < egg_node->get_name()) {
-	// Here's a joint in the data, umatched by the egg file.
-	extra_data.push_back(data);
-	++di;
+        // Here's a joint in the data, umatched by the egg file.
+        extra_data.push_back(data);
+        ++di;
 
       } else {
-	// Hey, these two match!  Hooray!
-	found_egg_match(char_data, data, egg_node, egg_index, model_index);
-	++ei;
-	++di;
-      }	
+        // Hey, these two match!  Hooray!
+        found_egg_match(char_data, data, egg_node, egg_index, model_index);
+        ++ei;
+        ++di;
+      }
     }
 
     while (ei != egg_nodes.end()) {
@@ -510,23 +510,23 @@ match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
       EggNodeList more_egg_nodes;
 
       for (ei = extra_egg_nodes.begin(); ei != extra_egg_nodes.end(); ++ei) {
-	EggNode *egg_node = (*ei);
-	bool matched = false;
-	for (di = extra_data.begin(); 
-	     di != extra_data.end() && !matched; 
-	     ++di) {
-	  EggJointData *data = (*di);
-	  if (data->matches_name(egg_node->get_name())) {
-	    matched = true;
-	    found_egg_match(char_data, data, egg_node, egg_index, model_index);
-	    extra_data.erase(di);
-	  }
-	}
+        EggNode *egg_node = (*ei);
+        bool matched = false;
+        for (di = extra_data.begin(); 
+             di != extra_data.end() && !matched; 
+             ++di) {
+          EggJointData *data = (*di);
+          if (data->matches_name(egg_node->get_name())) {
+            matched = true;
+            found_egg_match(char_data, data, egg_node, egg_index, model_index);
+            extra_data.erase(di);
+          }
+        }
 
-	if (!matched) {
-	  // This joint name was never seen before.
-	  more_egg_nodes.push_back(egg_node);
-	}
+        if (!matched) {
+          // This joint name was never seen before.
+          more_egg_nodes.push_back(egg_node);
+        }
       }
       extra_egg_nodes.swap(more_egg_nodes);
     }
@@ -535,24 +535,24 @@ match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
       // Ok, we've still got to find a home for these remaining
       // egg_nodes.
       if (extra_egg_nodes.size() == extra_data.size()) {
-	// Match 'em up one-for-one.
-	size_t i;
-	for (i = 0; i < extra_egg_nodes.size(); i++) {
-	  EggNode *egg_node = extra_egg_nodes[i];
-	  EggJointData *data = extra_data[i];
-	  found_egg_match(char_data, data, egg_node, egg_index, model_index);
-	}
+        // Match 'em up one-for-one.
+        size_t i;
+        for (i = 0; i < extra_egg_nodes.size(); i++) {
+          EggNode *egg_node = extra_egg_nodes[i];
+          EggJointData *data = extra_data[i];
+          found_egg_match(char_data, data, egg_node, egg_index, model_index);
+        }
 
       } else {
-	// Just tack 'em on the end.
-	EggNodeList::iterator ei;
-	for (ei = extra_egg_nodes.begin(); ei != extra_egg_nodes.end(); ++ei) {
-	  EggNode *egg_node = (*ei);
-	  EggJointData *data = make_joint_data(char_data);
-	  joint_data->_children.push_back(data);
-	  data->_parent = joint_data;
-	  found_egg_match(char_data, data, egg_node, egg_index, model_index);
-	}
+        // Just tack 'em on the end.
+        EggNodeList::iterator ei;
+        for (ei = extra_egg_nodes.begin(); ei != extra_egg_nodes.end(); ++ei) {
+          EggNode *egg_node = (*ei);
+          EggJointData *data = make_joint_data(char_data);
+          joint_data->_children.push_back(data);
+          data->_parent = joint_data;
+          found_egg_match(char_data, data, egg_node, egg_index, model_index);
+        }
       }
     }
   }
@@ -572,7 +572,7 @@ match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
 ////////////////////////////////////////////////////////////////////
 void EggCharacterCollection::
 found_egg_match(EggCharacterData *char_data, EggJointData *joint_data,
-		EggNode *egg_node, int egg_index, int model_index) {
+                EggNode *egg_node, int egg_index, int model_index) {
   if (egg_node->has_name()) {
     joint_data->add_name(egg_node->get_name());
   }
@@ -592,32 +592,32 @@ found_egg_match(EggCharacterData *char_data, EggJointData *joint_data,
       // A model with joints.
       EggGroupNode::iterator gi;
       for (gi = group_node->begin(); gi != group_node->end(); ++gi) {
-	EggNode *child = (*gi);
-	if (child->is_of_type(EggGroup::get_class_type())) {
-	  EggGroup *group = DCAST(EggGroup, child);
-	  if (group->get_group_type() == EggGroup::GT_joint) {
-	    egg_nodes.push_back(group);
-	  }
-	}
+        EggNode *child = (*gi);
+        if (child->is_of_type(EggGroup::get_class_type())) {
+          EggGroup *group = DCAST(EggGroup, child);
+          if (group->get_group_type() == EggGroup::GT_joint) {
+            egg_nodes.push_back(group);
+          }
+        }
       }
 
     } else {
       // An animation bundle with tables.
       EggGroupNode::iterator gi;
       for (gi = group_node->begin(); gi != group_node->end(); ++gi) {
-	EggNode *child = (*gi);
-	if (child->is_of_type(EggTable::get_class_type())) {
-	  EggTable *table = DCAST(EggTable, child);
-	  if (!(table->get_name() == "xform")) {
-	    egg_nodes.push_back(table);
-	  }
-	}
+        EggNode *child = (*gi);
+        if (child->is_of_type(EggTable::get_class_type())) {
+          EggTable *table = DCAST(EggTable, child);
+          if (!(table->get_name() == "xform")) {
+            egg_nodes.push_back(table);
+          }
+        }
       }
     }
 
     if (!egg_nodes.empty()) {
       match_egg_nodes(char_data, joint_data, egg_nodes, 
-		      egg_index, model_index);
+                      egg_index, model_index);
     }
   }
 }

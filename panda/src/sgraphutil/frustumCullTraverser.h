@@ -25,7 +25,7 @@
 
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : FrustumCullTraverser
+//       Class : FrustumCullTraverser
 // Description : A special kind of depth-first traverser that can
 //               prune the graph based on a lack of intersection with
 //               a given bounding volume; i.e. it performs
@@ -38,23 +38,23 @@ public:
   typedef TYPENAME Visitor::AttributeWrapper AttributeWrapper;
 
   FrustumCullTraverser(ArcChain &arc_chain, Node *root, 
-		       const LMatrix4f &rel_from_camera, Visitor &visitor,
-		       const AttributeWrapper &initial_render_state,
-		       const LevelState &initial_level_state,
-		       GraphicsStateGuardian *gsg, 
-		       TypeHandle graph_type);
+                       const LMatrix4f &rel_from_camera, Visitor &visitor,
+                       const AttributeWrapper &initial_render_state,
+                       const LevelState &initial_level_state,
+                       GraphicsStateGuardian *gsg, 
+                       TypeHandle graph_type);
 
 protected:
   void traverse(NodeRelation *arc, 
-		AttributeWrapper render_state,
-		LevelState level_state,
-		PT(GeometricBoundingVolume) local_frustum, 
-		bool all_in);
+                AttributeWrapper render_state,
+                LevelState level_state,
+                PT(GeometricBoundingVolume) local_frustum, 
+                bool all_in);
   void traverse(Node *node, 
-		AttributeWrapper &render_state,
-		LevelState &level_state,
-		GeometricBoundingVolume *local_frustum, 
-		bool all_in);
+                AttributeWrapper &render_state,
+                LevelState &level_state,
+                GeometricBoundingVolume *local_frustum, 
+                bool all_in);
 
   ArcChain &_arc_chain;
   Visitor &_visitor;
@@ -73,13 +73,13 @@ protected:
 template<class Visitor, class AttributeWrapper, class LevelState>
 INLINE void
 fc_traverse(ArcChain &arc_chain, Node *root, 
-	    const LMatrix4f &rel_from_camera, Visitor &visitor,
-	    const AttributeWrapper &initial_render_state, 
-	    const LevelState &initial_level_state,
-	    GraphicsStateGuardian *gsg, TypeHandle graph_type) {
+            const LMatrix4f &rel_from_camera, Visitor &visitor,
+            const AttributeWrapper &initial_render_state, 
+            const LevelState &initial_level_state,
+            GraphicsStateGuardian *gsg, TypeHandle graph_type) {
   FrustumCullTraverser<Visitor, LevelState> 
     fct(arc_chain, root, rel_from_camera, visitor, initial_render_state, 
-	initial_level_state, gsg, graph_type);
+        initial_level_state, gsg, graph_type);
 }
 
 #include "frustumCullTraverser.I"

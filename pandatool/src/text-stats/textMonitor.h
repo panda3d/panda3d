@@ -11,7 +11,7 @@
 #include <pStatMonitor.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TextMonitor
+//       Class : TextMonitor
 // Description : A simple, scrolling-text stats monitor.  Guaranteed
 //               to compile on every platform.
 ////////////////////////////////////////////////////////////////////

@@ -43,8 +43,8 @@ Physical(int ttl_objects, bool pre_alloc) {
       PhysicsObject *po;
 
       for (i = 0; i < ttl_objects; i++) {
-	po = new PhysicsObject;
-	add_physics_object(po);
+        po = new PhysicsObject;
+        add_physics_object(po);
       }
     }
   }

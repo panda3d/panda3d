@@ -13,7 +13,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoInputFile
+//       Class : LwoInputFile
 // Description : A specialization of IffInputFile to handle reading a
 //               Lightwave Object file.
 ////////////////////////////////////////////////////////////////////
@@ -46,7 +46,7 @@ public:
   static void init_type() {
     IffInputFile::init_type();
     register_type(_type_handle, "LwoInputFile",
-		  IffInputFile::get_class_type());
+                  IffInputFile::get_class_type());
   }
 
 private:

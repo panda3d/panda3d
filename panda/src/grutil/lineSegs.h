@@ -18,7 +18,7 @@
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LineSegs
+//       Class : LineSegs
 // Description : Encapsulates creation of a series of connected or
 //               disconnected line segments or points, for drawing
 //               paths or rays.  This class doesn't attempt to be the

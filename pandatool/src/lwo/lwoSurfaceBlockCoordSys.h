@@ -11,7 +11,7 @@
 #include "lwoChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurfaceBlockCoordSys
+//       Class : LwoSurfaceBlockCoordSys
 // Description : Specifies whether texture coordinates are computed
 //               based on the vertices' world coordinates or local
 //               coordinates.
@@ -40,7 +40,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoSurfaceBlockCoordSys",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

@@ -37,27 +37,27 @@ class EXPCL_PANDA DirectRenderTraverser :
   public TraverserVisitor<AllTransitionsWrapper, DirectRenderLevelState> {
 public:
   DirectRenderTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type,
-			const ArcChain &arc_chain = ArcChain());
+                        const ArcChain &arc_chain = ArcChain());
   virtual ~DirectRenderTraverser();
 
   virtual void traverse(Node *root, 
-			const AllAttributesWrapper &initial_state,
-			const AllTransitionsWrapper &net_trans);
+                        const AllAttributesWrapper &initial_state,
+                        const AllTransitionsWrapper &net_trans);
 
 public:  
   // These methods, from parent class TraverserVisitor, define the
   // behavior of the DirectRenderTraverser as it traverses the graph.
   // Normally you would never call these directly.
   bool reached_node(Node *node, AllAttributesWrapper &render_state,
-		    DirectRenderLevelState &level_state);
+                    DirectRenderLevelState &level_state);
   
   bool forward_arc(NodeRelation *arc, AllTransitionsWrapper &trans,
-		   AllAttributesWrapper &pre, AllAttributesWrapper &post,
-		   DirectRenderLevelState &level_state);
+                   AllAttributesWrapper &pre, AllAttributesWrapper &post,
+                   DirectRenderLevelState &level_state);
 
   void backward_arc(NodeRelation *arc, AllTransitionsWrapper &trans,
-		    AllAttributesWrapper &pre, AllAttributesWrapper &post,
-		    const DirectRenderLevelState &level_state);
+                    AllAttributesWrapper &pre, AllAttributesWrapper &post,
+                    const DirectRenderLevelState &level_state);
 
 private:
   // Statistics

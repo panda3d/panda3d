@@ -10,7 +10,7 @@
 class GraphicsStateGuardian;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : RenderBuffer
+//       Class : RenderBuffer
 // Description : A RenderBuffer is an arbitrary subset of the various
 //               layers (depth buffer, color buffer, etc.) of a
 //               drawing region.  It consists of a

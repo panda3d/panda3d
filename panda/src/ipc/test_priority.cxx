@@ -43,8 +43,8 @@ int main(int argc, char** argv)
    }
    sprintf(buf, "%d.%03d", s2, n2/1000000);
    cout << argv[0] << ": doing " << loop_iterations
-	<< " loop itterations (approx " << buf << " seconds per loop)"
-	<< endl;
+        << " loop itterations (approx " << buf << " seconds per loop)"
+        << endl;
    PRINTMSG(cout << "main: creating h1" << endl);
    thread::create(func, (void*)"h1", thread::PRIORITY_HIGH);
    PRINTMSG(cout << "main: creating m1" << endl);
@@ -75,7 +75,7 @@ static void func(void* arg)
       PRINTMSG(cout << name << ": entering 2nd compute-bound loop" << endl);
       for (i=0; i<loop_iterations; ++i);
       PRINTMSG(cout << name
-	       << ": left compute-bound loop; sleeping for 2 seconds" << endl);
+               << ": left compute-bound loop; sleeping for 2 seconds" << endl);
       thread::sleep(2);
    }
 }

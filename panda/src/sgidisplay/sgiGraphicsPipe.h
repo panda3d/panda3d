@@ -26,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////
 class sgiGraphicsPipe : public InteractiveGraphicsPipe {
 public:
-	
+
   sgiGraphicsPipe(const PipeSpecifier&);
   virtual ~sgiGraphicsPipe() = 0;
 
@@ -40,7 +40,7 @@ protected:
 
   virtual int get_num_hw_channels();
   virtual HardwareChannel *get_hw_channel(GraphicsWindow* window,
-					  int index);
+                                          int index);
 
 public:
 
@@ -50,7 +50,7 @@ public:
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
 protected:
-	
+
   void *_display;
   int _screen;
   int _num_channels;

@@ -36,7 +36,7 @@ CollisionSegment(const LPoint3f &a, const LPoint3f &b) :
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionSegment::
 CollisionSegment(float ax, float ay, float az,
-		 float bx, float by, float bz) :
+                 float bx, float by, float bz) :
   _a(ax, ay, az), _b(bx, by, bz)
 {
 }

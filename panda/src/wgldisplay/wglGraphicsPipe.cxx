@@ -30,28 +30,28 @@ wglGraphicsPipe::wglGraphicsPipe(const PipeSpecifier& spec)
 
   // Clear before filling in window structure!
   memset(&wc, 0, sizeof(WNDCLASS));
-  wc.style		    = CS_OWNDC;
-  wc.lpfnWndProc	= (WNDPROC)static_window_proc;
-  wc.hInstance	    = hinstance;
-  wc.hCursor		= LoadCursor(NULL, IDC_ARROW);
-  wc.hbrBackground	= NULL;
-  wc.lpszMenuName	= NULL;
-  wc.lpszClassName	= "wglStandard";
+  wc.style          = CS_OWNDC;
+  wc.lpfnWndProc    = (WNDPROC)static_window_proc;
+  wc.hInstance      = hinstance;
+  wc.hCursor        = LoadCursor(NULL, IDC_ARROW);
+  wc.hbrBackground  = NULL;
+  wc.lpszMenuName   = NULL;
+  wc.lpszClassName  = "wglStandard";
 
   string windows_icon_filename = get_icon_filename_().to_os_specific();
 
   if(!windows_icon_filename.empty()) {
     // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings) 
-	// if icon is more than 8bpp
-	wc.hIcon = (HICON) LoadImage(NULL, windows_icon_filename.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
+    // if icon is more than 8bpp
+    wc.hIcon = (HICON) LoadImage(NULL, windows_icon_filename.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
   } else {
-	  wc.hIcon = NULL; // use default app icon
+      wc.hIcon = NULL; // use default app icon
   }
 
   if (!RegisterClass(&wc)) {
     wgldisplay_cat.fatal()
       << "wglGraphicsPipe::construct(): could not register standard window "
-	<< "class" << endl;
+    << "class" << endl;
     exit(0);
   }
 
@@ -101,7 +101,7 @@ TypeHandle wglGraphicsPipe::get_class_type(void) {
 void wglGraphicsPipe::init_type(void) {
   InteractiveGraphicsPipe::init_type();
   register_type(_type_handle, "wglGraphicsPipe",
-		InteractiveGraphicsPipe::get_class_type());
+        InteractiveGraphicsPipe::get_class_type());
 }
 
 TypeHandle wglGraphicsPipe::get_type(void) const {
@@ -129,7 +129,7 @@ wglGraphicsPipe& wglGraphicsPipe::operator=(const wglGraphicsPipe&) {
 //     Function: find_window
 //       Access:
 //  Description: Find the window that has the xwindow "win" in the
-//		 window list for the pipe (if it exists)
+//       window list for the pipe (if it exists)
 ////////////////////////////////////////////////////////////////////
 wglGraphicsWindow *wglGraphicsPipe::
 find_window(HWND win) {
@@ -187,22 +187,22 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     case WM_KEYDOWN:
       window = find_window(hwnd);
       if (window) {
-	POINT point;
-	window->make_current();
-	GetCursorPos(&point);
-	ScreenToClient(hwnd, &point);
-	window->handle_keypress(lookup_key(wparam), point.x, point.y);
+    POINT point;
+    window->make_current();
+    GetCursorPos(&point);
+    ScreenToClient(hwnd, &point);
+    window->handle_keypress(lookup_key(wparam), point.x, point.y);
       }
       return 0;
     case WM_SYSKEYUP:
     case WM_KEYUP:
       window = find_window(hwnd);
       if (window) {
- 	POINT point;
-	window->make_current();
-	GetCursorPos(&point);
-	ScreenToClient(hwnd, &point);
-	window->handle_keyrelease(lookup_key(wparam), point.x, point.y);
+    POINT point;
+    window->make_current();
+    GetCursorPos(&point);
+    ScreenToClient(hwnd, &point);
+    window->handle_keyrelease(lookup_key(wparam), point.x, point.y);
       }
       return 0;
     case WM_LBUTTONDOWN:
@@ -212,7 +212,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         button = 1;
     case WM_RBUTTONDOWN:
       if (button < 0)
-	button = 2;
+    button = 2;
       SetCapture(hwnd);
       // Win32 doesn't return the same numbers as X does when the mouse
       // goes beyond the upper or left side of the window
@@ -222,53 +222,53 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       if (y & 1 << 15) y -= (1 << 16);
       window = find_window(hwnd);
       if (window) {
-	window->make_current();
-	window->handle_keypress(MouseButton::button(button), x, y);
+    window->make_current();
+    window->handle_keypress(MouseButton::button(button), x, y);
       }
       return 0;
     case WM_LBUTTONUP:
       button = 0;
     case WM_MBUTTONUP:
       if (button < 0)
-	button = 1;
+    button = 1;
     case WM_RBUTTONUP:
       if (button < 0)
-	button = 2;
+    button = 2;
       ReleaseCapture();
       window = find_window(hwnd);
       if (window) {
-	x = LOWORD(lparam);
-     	y = HIWORD(lparam);
-	if (x & 1 << 15) x -= (1 << 16);
-	if (y & 1 << 15) y -= (1 << 16);
-	window->make_current();
-	window->handle_keyrelease(MouseButton::button(button), x, y);
+    x = LOWORD(lparam);
+        y = HIWORD(lparam);
+    if (x & 1 << 15) x -= (1 << 16);
+    if (y & 1 << 15) y -= (1 << 16);
+    window->make_current();
+    window->handle_keyrelease(MouseButton::button(button), x, y);
       }
       return 0;
     case WM_MOUSEMOVE:
       window = find_window(hwnd);
       if (window) {
-	x = LOWORD(lparam);
-    	y = HIWORD(lparam);
-	if (x & 1 << 15) x -= (1 << 16);
-	if (y & 1 << 15) y -= (1 << 16);
-	if (window->mouse_motion_enabled() 
-		&& wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) {
-	  window->make_current();
-	  window->handle_mouse_motion(x, y);
-	} else if (window->mouse_passive_motion_enabled() && 
-		((wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) == 0)) {
-	  window->make_current();
-	  window->handle_mouse_motion(x, y);
-	}
+    x = LOWORD(lparam);
+        y = HIWORD(lparam);
+    if (x & 1 << 15) x -= (1 << 16);
+    if (y & 1 << 15) y -= (1 << 16);
+    if (window->mouse_motion_enabled() 
+        && wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) {
+      window->make_current();
+      window->handle_mouse_motion(x, y);
+    } else if (window->mouse_passive_motion_enabled() && 
+        ((wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) == 0)) {
+      window->make_current();
+      window->handle_mouse_motion(x, y);
+    }
       }
       return 0;
     case WM_SIZE:
       window = find_window(hwnd);
       if (window) {
-	width = LOWORD(lparam);
- 	height = HIWORD(lparam);
-	window->handle_reshape(width, height);
+    width = LOWORD(lparam);
+    height = HIWORD(lparam);
+    window->handle_reshape(width, height);
       }
       return 0;
 
@@ -288,19 +288,19 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       SetCursor(hMouseCrossIcon);  
       window = find_window(hwnd);
       if (window) {
-	if (window->mouse_entry_enabled()) {
-	  window->make_current();
-	  window->handle_mouse_entry(MOUSE_ENTERED);
-	}
+    if (window->mouse_entry_enabled()) {
+      window->make_current();
+      window->handle_mouse_entry(MOUSE_ENTERED);
+    }
       }
       return 0;
     case WM_KILLFOCUS:
       window = find_window(hwnd);
       if (window) {
-	if (window->mouse_entry_enabled()) {
-	  window->make_current();
-	  window->handle_mouse_entry(MOUSE_EXITED);
-	}
+    if (window->mouse_entry_enabled()) {
+      window->make_current();
+      window->handle_mouse_entry(MOUSE_EXITED);
+    }
       }
       return 0;
     default:
@@ -362,31 +362,31 @@ wglGraphicsPipe::lookup_key(WPARAM wparam) const {
     int key = MapVirtualKey(wparam, 2);
     if (isascii(key) && key != 0) {
       if (GetKeyState(VK_SHIFT) >= 0)
-	key = tolower(key); 
+    key = tolower(key); 
       else {
-	switch (key) {
-	case '1': key = '!'; break;
-	case '2': key = '@'; break;
-	case '3': key = '#'; break;
-	case '4': key = '$'; break;
-	case '5': key = '%'; break;
-	case '6': key = '^'; break;
-	case '7': key = '&'; break;
-	case '8': key = '*'; break;
-	case '9': key = '('; break;
-	case '0': key = ')'; break;
-	case '-': key = '_'; break;
-	case '=': key = '+'; break;
-	case ',': key = '<'; break;
-	case '.': key = '>'; break;
-	case '/': key = '?'; break;
-	case ';': key = ':'; break;
-	case '\'': key = '"'; break;
-	case '[': key = '{'; break;
-	case ']': key = '}'; break;
-	case '\\': key = '|'; break;
-	case '`': key = '~'; break;
-	}
+    switch (key) {
+    case '1': key = '!'; break;
+    case '2': key = '@'; break;
+    case '3': key = '#'; break;
+    case '4': key = '$'; break;
+    case '5': key = '%'; break;
+    case '6': key = '^'; break;
+    case '7': key = '&'; break;
+    case '8': key = '*'; break;
+    case '9': key = '('; break;
+    case '0': key = ')'; break;
+    case '-': key = '_'; break;
+    case '=': key = '+'; break;
+    case ',': key = '<'; break;
+    case '.': key = '>'; break;
+    case '/': key = '?'; break;
+    case ';': key = ':'; break;
+    case '\'': key = '"'; break;
+    case '[': key = '{'; break;
+    case ']': key = '}'; break;
+    case '\\': key = '|'; break;
+    case '`': key = '~'; break;
+    }
       }
       return KeyboardButton::ascii_key((uchar)key);
     }

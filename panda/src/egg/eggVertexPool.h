@@ -19,7 +19,7 @@
 #include <iterator_types.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggVertexPool
+//       Class : EggVertexPool
 // Description : A collection of vertices.  There may be any number of
 //               vertex pools in a single egg structure.  The vertices
 //               in a single pool need not necessarily have any
@@ -103,7 +103,7 @@ public:
 
 protected:
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
-			   CoordinateSystem to_cs);
+                           CoordinateSystem to_cs);
   virtual void r_transform_vertices(const LMatrix4d &mat);
 
 private:

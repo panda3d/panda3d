@@ -9,19 +9,19 @@
 #include <pandabase.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ColorBlendProperty
+//       Class : ColorBlendProperty
 // Description : This defines the types of color blending we can
 //               perform.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ColorBlendProperty {
 public:
   enum Mode {
-    M_none,		// Blending is disabled
-    M_multiply, 	// color already in fbuffer * incoming color
-    M_add, 	 	// color already in fbuffer + incoming color
-    M_multiply_add, 	// color already in fbuffer * incoming color +
-		     	//   color already in fbuffer
-    M_alpha,		// ????
+    M_none,             // Blending is disabled
+    M_multiply,         // color already in fbuffer * incoming color
+    M_add,              // color already in fbuffer + incoming color
+    M_multiply_add,     // color already in fbuffer * incoming color +
+                        //   color already in fbuffer
+    M_alpha,            // ????
   };
 
 public:

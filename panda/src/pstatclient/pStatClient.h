@@ -27,7 +27,7 @@ class PStatCollectorDef;
 class PStatThread;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PStatClient
+//       Class : PStatClient
 // Description : Manages the communications to report statistics via a
 //               network connection to a remote PStatServer.
 //

@@ -55,8 +55,8 @@ has_changed(int last_frame, int this_frame) {
   for (int i = 0; i < num_tables; i++) {
     if (_tables[i].size() > 1) {
       if (_tables[i][last_frame % _tables[i].size()] !=
-	  _tables[i][this_frame % _tables[i].size()]) {
-	return true;
+          _tables[i][this_frame % _tables[i].size()]) {
+        return true;
       }
     }
   }
@@ -239,7 +239,7 @@ write_datagram(BamWriter *manager, Datagram &me)
     for(int i = 0; i < num_tables; i++) {
       me.add_uint16(_tables[i].size());
       for(int j = 0; j < (int)_tables[i].size(); j++) {
-	me.add_float32(_tables[i][j]);
+        me.add_float32(_tables[i][j]);
       }
     }
 
@@ -298,7 +298,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
       int size = scan.get_uint16();
       PTA_float ind_table;
       for(int j = 0; j < size; j++) {
-	ind_table.push_back(scan.get_float32());
+        ind_table.push_back(scan.get_float32());
       }
       _tables[i] = ind_table;
     }
@@ -307,14 +307,14 @@ fillin(DatagramIterator& scan, BamReader* manager)
     // Compressed channels.
     if (manager->get_file_minor_ver() < 1) {
       chan_cat.error()
-	<< "Cannot read old-style quantized channels.\n";
+        << "Cannot read old-style quantized channels.\n";
       clear_all_tables();
       return;
     }
 
     if (!read_compressed_channels) {
       chan_cat.info()
-	<< "Not reading compressed animation channels.\n";
+        << "Not reading compressed animation channels.\n";
       clear_all_tables();
       return;
     }

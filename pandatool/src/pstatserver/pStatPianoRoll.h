@@ -20,7 +20,7 @@
 class PStatFrameData;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PStatPianoRoll
+//       Class : PStatPianoRoll
 // Description : This is an abstract class that presents the interface
 //               for drawing a piano-roll type chart: it shows the
 //               time spent in each of a number of collectors as a
@@ -34,7 +34,7 @@ class PStatFrameData;
 class PStatPianoRoll : public PStatGraph {
 public:
   PStatPianoRoll(PStatMonitor *monitor, int thread_index,
-		 int xsize, int ysize);
+                 int xsize, int ysize);
   virtual ~PStatPianoRoll();
 
   void update();

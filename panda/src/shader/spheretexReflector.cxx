@@ -93,7 +93,7 @@ set_multipass(bool on)
 ////////////////////////////////////////////////////////////////////
 void SpheretexReflector::
 pre_apply(Node *node, const AllAttributesWrapper &init_state,
-	  const AllTransitionsWrapper &net_trans, GraphicsStateGuardian *gsg) 
+          const AllTransitionsWrapper &net_trans, GraphicsStateGuardian *gsg) 
 {
   if (get_num_casters() == 0) {
     shader_cat.error()

@@ -61,7 +61,7 @@ write_wrapper(ostream &out, const string &wrapper_name) const {
     while (pn < (int)_parameters.size()) {
       out << ", ";
       _parameters[pn]._remap->get_new_type()->
-	output_instance(out, get_parameter_name(pn), &parser);
+        output_instance(out, get_parameter_name(pn), &parser);
       pn++;
     }
   }

@@ -45,7 +45,7 @@ TypeHandle glutGraphicsPipe::get_class_type(void) {
 void glutGraphicsPipe::init_type(void) {
   InteractiveGraphicsPipe::init_type();
   register_type(_type_handle, "glutGraphicsPipe",
-		InteractiveGraphicsPipe::get_class_type());
+                InteractiveGraphicsPipe::get_class_type());
 }
 
 TypeHandle glutGraphicsPipe::get_type(void) const {

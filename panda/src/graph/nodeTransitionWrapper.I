@@ -237,11 +237,11 @@ set_computed_verified(UpdateSeq now) {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeTransitionWrapper::
 cached_compose(const NodeTransitionWrapper &cache, 
-	       const NodeTransitionWrapper &value,
-	       UpdateSeq now) {
+               const NodeTransitionWrapper &value,
+               UpdateSeq now) {
   _entry = 
     NodeTransitionCacheEntry::cached_compose(_entry, cache._entry,
-					     value._entry, now);
+                                             value._entry, now);
 }
 
 INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransitionWrapper &ntw) {

@@ -31,82 +31,82 @@
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 tmap_get_interest(InputIterator1 first1, InputIterator1 last1,
-		  InputIterator2 first2, InputIterator2 last2,
-		  OutputIterator result);
+                  InputIterator2 first2, InputIterator2 last2,
+                  OutputIterator result);
 
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 tmap_union(InputIterator1 first1, InputIterator1 last1,
-	   InputIterator2 first2, InputIterator2 last2,
-	   OutputIterator result);
+           InputIterator2 first2, InputIterator2 last2,
+           OutputIterator result);
 
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 tmap_arc_union(InputIterator1 first1, InputIterator1 last1,
-	       InputIterator2 first2, InputIterator2 last2,
-	       NodeRelation *to_arc, OutputIterator result);
+               InputIterator2 first2, InputIterator2 last2,
+               NodeRelation *to_arc, OutputIterator result);
 
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 tmap_arc_compose(InputIterator1 first1, InputIterator1 last1,
-		 InputIterator2 first2, InputIterator2 last2,
-		 NodeRelation *to_arc, OutputIterator result);
+                 InputIterator2 first2, InputIterator2 last2,
+                 NodeRelation *to_arc, OutputIterator result);
 
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 tmap_compose(InputIterator1 first1, InputIterator1 last1,
-	     InputIterator2 first2, InputIterator2 last2,
-	     OutputIterator result);
+             InputIterator2 first2, InputIterator2 last2,
+             OutputIterator result);
 
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 tmap_invert_compose(InputIterator1 first1, InputIterator1 last1,
-		    InputIterator2 first2, InputIterator2 last2,
-		    OutputIterator result);
+                    InputIterator2 first2, InputIterator2 last2,
+                    OutputIterator result);
 
 template<class InputIterator1, class InputIterator2, class InputIterator3,
   class OutputIterator>
 OutputIterator
 tmap_cached_compose(InputIterator1 first1, InputIterator1 last1,
-		    InputIterator2 cached_first, InputIterator2 cached_last,
-		    InputIterator3 value_first, InputIterator3 value_last,
-		    UpdateSeq now, OutputIterator result);
+                    InputIterator2 cached_first, InputIterator2 cached_last,
+                    InputIterator3 value_first, InputIterator3 value_last,
+                    UpdateSeq now, OutputIterator result);
 
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 tmap_apply(InputIterator1 first1, InputIterator1 last1,
-	   InputIterator2 first2, InputIterator2 last2,
-	   OutputIterator result);
+           InputIterator2 first2, InputIterator2 last2,
+           OutputIterator result);
 
 template<class InputIterator, class OutputIterator>
 OutputIterator
 tmap_invert(InputIterator first, InputIterator last,
-	    OutputIterator result);
+            OutputIterator result);
 
 template<class InputIterator1, class InputIterator2>
 bool
 tmap_equiv_trans(InputIterator1 first1, InputIterator1 last1,
-		 InputIterator2 first2, InputIterator2 last2);
+                 InputIterator2 first2, InputIterator2 last2);
 
 template<class InputIterator1, class InputIterator2>
 bool
 tmap_equiv_attr(InputIterator1 first1, InputIterator1 last1,
-		InputIterator2 first2, InputIterator2 last2);
+                InputIterator2 first2, InputIterator2 last2);
 
 template<class InputIterator1, class InputIterator2>
 int
 tmap_compare_cache(InputIterator1 first1, InputIterator1 last1,
-		   InputIterator2 first2, InputIterator2 last2);
+                   InputIterator2 first2, InputIterator2 last2);
 
 template<class InputIterator1, class InputIterator2>
 int
 tmap_compare_trans(InputIterator1 first1, InputIterator1 last1,
-		   InputIterator2 first2, InputIterator2 last2);
+                   InputIterator2 first2, InputIterator2 last2);
 
 template<class InputIterator1, class InputIterator2>
 int
 tmap_compare_attr(InputIterator1 first1, InputIterator1 last1,
-		  InputIterator2 first2, InputIterator2 last2);
+                  InputIterator2 first2, InputIterator2 last2);
 
 template<class InputIterator>
 bool

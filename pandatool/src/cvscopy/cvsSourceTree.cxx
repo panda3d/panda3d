@@ -165,7 +165,7 @@ find_dirname(const string &dirname) {
 ////////////////////////////////////////////////////////////////////
 CVSSourceDirectory *CVSSourceTree::
 choose_directory(const string &filename, CVSSourceDirectory *suggested_dir,
-		 bool force, bool interactive) {
+                 bool force, bool interactive) {
   static Directories empty_dirs;
 
   Filenames::const_iterator fi;
@@ -175,12 +175,12 @@ choose_directory(const string &filename, CVSSourceDirectory *suggested_dir,
     const Directories &dirs = (*fi).second;
 
     return prompt_user(filename, suggested_dir, dirs,
-		       force, interactive);
+                       force, interactive);
   }
 
   // Now we have to prompt the user for a suitable place to put it.
   return prompt_user(filename, suggested_dir, empty_dirs,
-		     force, interactive);
+                     force, interactive);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -270,8 +270,8 @@ restore_cwd() {
 ////////////////////////////////////////////////////////////////////
 CVSSourceDirectory *CVSSourceTree::
 prompt_user(const string &filename, CVSSourceDirectory *suggested_dir,
-	    const CVSSourceTree::Directories &dirs,
-	    bool force, bool interactive) {
+            const CVSSourceTree::Directories &dirs,
+            bool force, bool interactive) {
   if (dirs.size() == 1) {
     // The file already exists in exactly one place.
     if (!interactive) {
@@ -320,14 +320,14 @@ CVSSourceDirectory *CVSSourceTree::
 ask_existing(const string &filename, CVSSourceDirectory *dir) {
   while (true) {
     nout << filename << " found in tree at " 
-	 << dir->get_path() + "/" + filename << ".\n";
+         << dir->get_path() + "/" + filename << ".\n";
     string result = prompt("Overwrite this file (y/n)? ");
     nassertr(!result.empty(), (CVSSourceDirectory *)NULL);
     if (result.size() == 1) {
       if (tolower(result[0]) == 'y') {
-	return dir;
+        return dir;
       } else if (tolower(result[0]) == 'n') {
-	return NULL;
+        return NULL;
       }
     }
 
@@ -343,16 +343,16 @@ ask_existing(const string &filename, CVSSourceDirectory *dir) {
 ////////////////////////////////////////////////////////////////////
 CVSSourceDirectory *CVSSourceTree::
 ask_existing(const string &filename, const CVSSourceTree::Directories &dirs,
-	     CVSSourceDirectory *suggested_dir) {
+             CVSSourceDirectory *suggested_dir) {
   while (true) {
     nout << filename << " found in tree at more than one place:\n";
 
     bool any_suggested = false;
     for (int i = 0; i < (int)dirs.size(); i++) {
       nout << "  " << (i + 1) << ". " 
-	   << dirs[i]->get_path() + "/" + filename << "\n";
+           << dirs[i]->get_path() + "/" + filename << "\n";
       if (dirs[i] == suggested_dir) {
-	any_suggested = true;
+        any_suggested = true;
       }
     }
 
@@ -363,9 +363,9 @@ ask_existing(const string &filename, const CVSSourceTree::Directories &dirs,
       suggested_option = next_option;
       next_option++;
       nout << "\n" << suggested_option
-	   << ". create " 
-	   << suggested_dir->get_path() + "/" + filename
-	   << "\n";
+           << ". create " 
+           << suggested_dir->get_path() + "/" + filename
+           << "\n";
     }
 
     int other_option = next_option;
@@ -378,13 +378,13 @@ ask_existing(const string &filename, const CVSSourceTree::Directories &dirs,
     int option = strtol(nptr, &endptr, 10);
     if (*endptr == '\0') {
       if (option >= 1 && option <= (int)dirs.size()) {
-	return dirs[option - 1];
+        return dirs[option - 1];
 
       } else if (option == suggested_option) {
-	return suggested_dir;
+        return suggested_dir;
 
       } else if (option == other_option) {
-	return NULL;
+        return NULL;
       }
     }
 
@@ -402,14 +402,14 @@ CVSSourceDirectory *CVSSourceTree::
 ask_new(const string &filename, CVSSourceDirectory *dir) {
   while (true) {
     nout << filename << " will be created in "
-	 << dir->get_path() << ".\n";
+         << dir->get_path() << ".\n";
     string result = prompt("Create this file (y/n)? ");
     nassertr(!result.empty(), (CVSSourceDirectory *)NULL);
     if (result.size() == 1) {
       if (tolower(result[0]) == 'y') {
-	return dir;
+        return dir;
       } else if (tolower(result[0]) == 'n') {
-	return NULL;
+        return NULL;
       }
     }
 

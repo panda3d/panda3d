@@ -23,7 +23,7 @@ MovingPartMatrix(const MovingPartMatrix &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE MovingPartMatrix::
 MovingPartMatrix(PartGroup *parent, const string &name,
-		 const LMatrix4f &initial_value) 
+                 const LMatrix4f &initial_value) 
   : MovingPart<ACMatrixSwitchType>(parent, name, initial_value) {
 }
 

@@ -17,7 +17,7 @@ static const int datagram_udp_header_size = sizeof(PRUint16);
 class NetDatagram;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DatagramUDPHeader
+//       Class : DatagramUDPHeader
 // Description : A class that encapsulates the extra bytes that are
 //               sent in front of each datagram to identify it when it
 //               is sent on UDP.  Like NetDatagram, this class

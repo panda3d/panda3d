@@ -24,15 +24,15 @@ Lerp::Lerp(LerpFunctor* func, float endt, LerpBlendType* blend)
     _delta(1.), _t(0.) {}
 
 Lerp::Lerp(LerpFunctor* func, float startt, float endt,
-	   LerpBlendType* blend) : _blend(blend), _func(func),
-				   _startt(startt),
-				   _endt(endt),
-				   _delta(1.),
-				   _t(startt) {}
+           LerpBlendType* blend) : _blend(blend), _func(func),
+                                   _startt(startt),
+                                   _endt(endt),
+                                   _delta(1.),
+                                   _t(startt) {}
 
 Lerp::Lerp(const Lerp& c) : _blend(c._blend), _func(c._func), _event(c._event),
-			    _startt(c._startt), _endt(c._endt),
-			    _delta(c._delta), _t(c._t) {}
+                            _startt(c._startt), _endt(c._endt),
+                            _delta(c._delta), _t(c._t) {}
 
 Lerp::~Lerp(void) {}
 
@@ -94,22 +94,22 @@ std::string Lerp::get_end_event(void) const {
 }
 
 AutonomousLerp::AutonomousLerp(LerpFunctor* func, float endt,
-			       LerpBlendType* blend, EventHandler* handler)
+                               LerpBlendType* blend, EventHandler* handler)
   : _blend(blend), _func(func), _handler(handler),
     _startt(0.), _endt(endt), _t(0.) {}
 
 AutonomousLerp::AutonomousLerp(LerpFunctor* func, float startt, float endt,
-			       LerpBlendType* blend, EventHandler* handler)
+                               LerpBlendType* blend, EventHandler* handler)
   : _blend(blend), _func(func), _handler(handler),
     _startt(startt), _endt(endt), _t(startt) {}
 
 AutonomousLerp::AutonomousLerp(const AutonomousLerp& c) : _blend(c._blend),
-							  _func(c._func),
-							  _handler(c._handler),
-							  _event(c._event),
-							  _startt(c._startt),
-							  _endt(c._endt),
-							  _t(c._t) {}
+                                                          _func(c._func),
+                                                          _handler(c._handler),
+                                                          _event(c._event),
+                                                          _startt(c._startt),
+                                                          _endt(c._endt),
+                                                          _t(c._t) {}
 
 AutonomousLerp::~AutonomousLerp(void) {}
 

@@ -9,7 +9,7 @@
 #include <pandabase.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PointerNameClass
+//       Class : PointerNameClass
 // Description : This is a stupid little class that's used by
 //               MultiNodeTransition to define the name of its
 //               PT(Node) class, so the MultiTransition it

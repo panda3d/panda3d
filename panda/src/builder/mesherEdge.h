@@ -55,7 +55,7 @@ public:
 
 template <class PrimType>
 INLINE ostream &operator << (ostream &out,
-			     const MesherEdge<PrimType> &edge) {
+                             const MesherEdge<PrimType> &edge) {
   return edge.output(out);
 }
 

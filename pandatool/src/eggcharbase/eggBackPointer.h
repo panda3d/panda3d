@@ -11,7 +11,7 @@
 #include <typedObject.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggBackPointer
+//       Class : EggBackPointer
 // Description : This stores a pointer from an EggJointData or
 //               EggSlider object back to the referencing data in an
 //               egg file.  One of these objects corresponds to each
@@ -35,7 +35,7 @@ public:
   static void init_type() {
     TypedObject::init_type();
     register_type(_type_handle, "EggBackPointer",
-		  TypedObject::get_class_type());
+                  TypedObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

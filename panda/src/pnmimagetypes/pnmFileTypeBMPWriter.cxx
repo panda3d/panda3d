@@ -35,6 +35,9 @@ extern "C" {
  * without express or implied warranty.
  *
  * $Log$
+ * Revision 1.3  2001/05/25 15:59:19  drose
+ * remove tab characters
+ *
  * Revision 1.2  2000/11/09 21:14:02  drose
  * *** empty log message ***
  *
@@ -292,7 +295,7 @@ BMPwriterow(
         pixel          *row,
         unsigned long   cx,
         unsigned short  bpp,
-	int             indexed,
+        int             indexed,
         colorhash_table cht)
 {
         BITSTREAM       b;
@@ -300,36 +303,36 @@ BMPwriterow(
         int             rc;
         unsigned        x;
 
-	if (indexed) {
-	  if ((b = pm_bitinit(fp, "w")) == (BITSTREAM) 0)
-	    {
-	      return -1;
-	    }
+        if (indexed) {
+          if ((b = pm_bitinit(fp, "w")) == (BITSTREAM) 0)
+            {
+              return -1;
+            }
 
-	  for (x = 0; x < cx; x++, row++)
-	    {
-	      if ((rc = pm_bitwrite(b, bpp, ppm_lookupcolor(cht, row))) == -1)
+          for (x = 0; x < cx; x++, row++)
+            {
+              if ((rc = pm_bitwrite(b, bpp, ppm_lookupcolor(cht, row))) == -1)
                 {
-		  return -1;
+                  return -1;
                 }
-	      nbyte += rc;
-	    }
-	  
-	  if ((rc = pm_bitfini(b)) == -1)
-	    {
-	      return -1;
-	    }
-	  nbyte += rc;
-	} else {
+              nbyte += rc;
+            }
 
-	  for (x = 0; x < cx; x++, row++)
-	    {
-	      PutByte(fp, PPM_GETB(*row));
-	      PutByte(fp, PPM_GETG(*row));
-	      PutByte(fp, PPM_GETR(*row));
-	      nbyte += 3;
-	    }
-	}
+          if ((rc = pm_bitfini(b)) == -1)
+            {
+              return -1;
+            }
+          nbyte += rc;
+        } else {
+
+          for (x = 0; x < cx; x++, row++)
+            {
+              PutByte(fp, PPM_GETB(*row));
+              PutByte(fp, PPM_GETG(*row));
+              PutByte(fp, PPM_GETR(*row));
+              nbyte += 3;
+            }
+        }
 
         /*
          * Make sure we write a multiple of 4 bytes.
@@ -353,7 +356,7 @@ BMPwritebits(
         unsigned long   cy,
         unsigned short  cBitCount,
         pixel         **pixels,
-	int             indexed,
+        int             indexed,
         colorhash_table cht)
 {
         int             nbyte = 0;
@@ -572,14 +575,14 @@ write_data(xel *array, xelval *) {
     switch (classv)
       {
       case C_WIN:
-	name = "a Windows";
-	break;
+        name = "a Windows";
+        break;
       case C_OS2:
-	name = "an OS/2";
-	break;
+        name = "an OS/2";
+        break;
       default:
-	pm_error(er_internal, "report");
-	break;
+        pm_error(er_internal, "report");
+        break;
       }
     pm_message("generating %s BMP file", name);
   }
@@ -608,18 +611,18 @@ write_data(xel *array, xelval *) {
      */
     if (_maxval > 255) {
       pnmimage_bmp_cat.debug()
-	<< "maxval is not 255 - automatically rescaling colors\n";
+        << "maxval is not 255 - automatically rescaling colors\n";
     }
 
     for (i = 0; i < colors; ++i) {
       if (_maxval == 255) {
-	Red[i] = PPM_GETR(chv[i].color);
-	Green[i] = PPM_GETG(chv[i].color);
-	Blue[i] = PPM_GETB(chv[i].color);
+        Red[i] = PPM_GETR(chv[i].color);
+        Green[i] = PPM_GETG(chv[i].color);
+        Blue[i] = PPM_GETB(chv[i].color);
       } else {
-	Red[i] = (pixval) PPM_GETR(chv[i].color) * 255 / _maxval;
-	Green[i] = (pixval) PPM_GETG(chv[i].color) * 255 / _maxval;
-	Blue[i] = (pixval) PPM_GETB(chv[i].color) * 255 / _maxval;
+        Red[i] = (pixval) PPM_GETR(chv[i].color) * 255 / _maxval;
+        Green[i] = (pixval) PPM_GETG(chv[i].color) * 255 / _maxval;
+        Blue[i] = (pixval) PPM_GETB(chv[i].color) * 255 / _maxval;
       }
     }
     
@@ -628,7 +631,7 @@ write_data(xel *array, xelval *) {
     ppm_freecolorhist(chv);
     
     BMPEncode(_file, classv, _x_size, _y_size, pixels, colors, cht,
-	      Red, Green, Blue);
+              Red, Green, Blue);
   }
     
   return _y_size;

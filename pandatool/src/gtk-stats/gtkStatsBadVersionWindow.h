@@ -13,7 +13,7 @@
 class GtkStatsMonitor;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : GtkStatsBadVersionWindow
+//       Class : GtkStatsBadVersionWindow
 // Description : This window is popped up to indicated an attempted
 //               connection from an invalid client.
 ////////////////////////////////////////////////////////////////////

@@ -14,7 +14,7 @@
 class GeomNode;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : GeomTransformer
+//       Class : GeomTransformer
 // Description : An object specifically designed to transform the
 //               vertices of a Geom without disturbing indexing or
 //               affecting any other Geoms that may share the same

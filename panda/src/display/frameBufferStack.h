@@ -13,7 +13,7 @@
 class GraphicsStateGuardian;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FrameBufferStack
+//       Class : FrameBufferStack
 // Description : An instance of this kind of object is returned by
 //               GraphicsStateGuardian::push_frame_buffer().  It
 //               holds the information needed to restore the previous

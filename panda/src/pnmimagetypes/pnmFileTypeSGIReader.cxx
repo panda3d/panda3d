@@ -51,9 +51,9 @@ static void       read_bytes (FILE *ifp, int n, char *buf);
 static bool read_header(FILE *ifp, Header *head, const string &magic_number);
 static TabEntry * read_table (FILE *ifp, int tablen);
 static void       read_channel (FILE *ifp, int xsize, int ysize, 
-				     int zsize, int bpc, TabEntry *table,
-				     ScanElem *channel_data, long table_start,
-				     int channel, int row);
+                                     int zsize, int bpc, TabEntry *table,
+                                     ScanElem *channel_data, long table_start,
+                                     int channel, int row);
 static void       rle_decompress (ScanElem *src, long srclen, ScanElem *dest, long destlen);
 
 #define WORSTCOMPR(x)   (2*(x) + 2)
@@ -83,7 +83,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
     // No magic number.  No image.
     if (pnmimage_sgi_cat.is_debug()) {
       pnmimage_sgi_cat.debug()
-	<< "RGB file appears to be empty.\n";
+        << "RGB file appears to be empty.\n";
     }
     _is_valid = false;
     return;
@@ -181,18 +181,18 @@ read_row(xel *row_data, xelval *alpha_data) {
   ScanElem *alpha = (ScanElem *)alloca(_x_size * sizeof(ScanElem));
 
   read_channel(_file, _x_size, _y_size, _num_channels, bpc, table, red, 
-	       table_start, 0, current_row);
+               table_start, 0, current_row);
 
   if (!is_grayscale()) {
     read_channel(_file, _x_size, _y_size, _num_channels, bpc, table, grn, 
-		 table_start, 1, current_row);
+                 table_start, 1, current_row);
     read_channel(_file, _x_size, _y_size, _num_channels, bpc, table, blu, 
-		 table_start, 2, current_row);
+                 table_start, 2, current_row);
   }
 
   if (has_alpha()) {
     read_channel(_file, _x_size, _y_size, _num_channels, bpc, table, alpha, 
-		 table_start, _num_channels - 1, current_row);
+                 table_start, _num_channels - 1, current_row);
   }
 
   for (int x = 0; x < _x_size; x++) {
@@ -237,25 +237,25 @@ read_header(FILE *ifp, Header *head, const string &magic_number) {
 
     if (head->magic != SGI_MAGIC) {
       pnmimage_sgi_cat.error()
-	<< "Invalid magic number: not an SGI image file.\n";
+        << "Invalid magic number: not an SGI image file.\n";
       return false;
     }
 
     if (head->storage != 0 && head->storage != 1) {
       pnmimage_sgi_cat.error()
-	<< "Unknown compression type.\n";
+        << "Unknown compression type.\n";
       return false;
     }
 
     if (head->bpc < 1 || head->bpc > 2) {
       pnmimage_sgi_cat.error()
-	<< "Illegal precision value " << head->bpc << " (only 1-2 allowed)\n";
+        << "Illegal precision value " << head->bpc << " (only 1-2 allowed)\n";
       return false;
     }
 
     if (head->colormap != CMAP_NORMAL) {
       pnmimage_sgi_cat.error()
-	<< "Unsupported non-normal pixel data (" << head->colormap << ")\n";
+        << "Unsupported non-normal pixel data (" << head->colormap << ")\n";
       return false;
     }
 
@@ -278,24 +278,24 @@ read_header(FILE *ifp, Header *head, const string &magic_number) {
       switch( head->zsize ) {
       case 1:
       case 2:
-	head->dimension = 2;
-	break;
+        head->dimension = 2;
+        break;
       case 3:
       case 4:
-	break;
-	
+        break;
+
       default:
-	pnmimage_sgi_cat.warning()
-	  << "Using only first 4 channels of " << head->zsize
-	  << "-channel image.\n";
-	head->zsize = 4;
-	break;
+        pnmimage_sgi_cat.warning()
+          << "Using only first 4 channels of " << head->zsize
+          << "-channel image.\n";
+        head->zsize = 4;
+        break;
       }
       break;
     default:
       pnmimage_sgi_cat.error()
-	<< "Illegal dimension value " << head->dimension 
-	<< " (only 1-3 allowed)\n";
+        << "Illegal dimension value " << head->dimension 
+        << " (only 1-3 allowed)\n";
       return false;
     }
     */
@@ -325,10 +325,10 @@ read_table(FILE *ifp, int tablen) {
 
 static void
 read_channel(FILE *ifp,
-	     int xsize, int ysize, int, int bpc,
-	     TabEntry *table,
-	     ScanElem *channel_data, long table_start,
-	     int channel, int row) {
+             int xsize, int ysize, int, int bpc,
+             TabEntry *table,
+             ScanElem *channel_data, long table_start,
+             int channel, int row) {
     ScanElem *temp;
     int sgi_index, i;
     long offset, length;
@@ -345,22 +345,22 @@ read_channel(FILE *ifp,
       offset = table[sgi_index].start;
       length = table[sgi_index].length;
       if( bpc == 2 )
-	length /= 2;   /* doc says length is in bytes, we are reading words */
+        length /= 2;   /* doc says length is in bytes, we are reading words */
       if( fseek(ifp, offset, SEEK_SET) != 0 )
-	pm_error("seek error for offset %ld", offset);
+        pm_error("seek error for offset %ld", offset);
 
       nassertv(length <= WORSTCOMPR(xsize));
       for( i = 0; i < length; i++ )
-	temp[i] = (*func)(ifp);
+        temp[i] = (*func)(ifp);
       
       rle_decompress(temp, length, channel_data, xsize);
     }
     else {
       offset = sgi_index * xsize + table_start;
       if( fseek(ifp, offset, SEEK_SET) != 0 )
-	pm_error("seek error for offset %ld", offset);
+        pm_error("seek error for offset %ld", offset);
       for( i = 0; i < xsize; i++ )
-	channel_data[i] = (*func)(ifp);
+        channel_data[i] = (*func)(ifp);
     }
 }
 
@@ -368,9 +368,9 @@ read_channel(FILE *ifp,
 
 static void
 rle_decompress(ScanElem *src,
-	       long srcleft,
-	       ScanElem *dest,
-	       long destleft) {
+               long srcleft,
+               ScanElem *dest,
+               long destleft) {
     int count;
     unsigned char el;
 
@@ -455,8 +455,8 @@ readerr(FILE *f) {
 
 static void
 read_bytes(FILE *ifp,
-	   int n,
-	   char *buf) {
+           int n,
+           char *buf) {
     int r;
 
     r = fread((void *)buf, 1, n, ifp);

@@ -259,7 +259,7 @@ make_collector_with_relname(int parent_index, string relname) {
 PStatCollector PStatClient::
 make_collector_with_name(int parent_index, const string &name) {
   nassertr(parent_index >= 0 && parent_index < (int)_collectors.size(),
-	   PStatCollector());
+           PStatCollector());
 
   Collector &parent = _collectors[parent_index];
 
@@ -444,7 +444,7 @@ client_disconnect() {
     PerThread::iterator ii;
     for (ii = (*ci)._per_thread.begin(); 
          ii != (*ci)._per_thread.end(); 
-	 ++ii) {
+         ++ii) {
       (*ii)._nested_count = 0;
     }
   }
@@ -519,9 +519,9 @@ stop(int collector_index, int thread_index, float as_of) {
       _threads[thread_index]._is_active) {
     if (_collectors[collector_index]._per_thread[thread_index]._nested_count == 0) {
       pstats_cat.warning()
-	<< "Collector " << get_collector_fullname(collector_index)
-	<< " was already stopped in thread " << get_thread_name(thread_index)
-	<< "!\n";
+        << "Collector " << get_collector_fullname(collector_index)
+        << " was already stopped in thread " << get_thread_name(thread_index)
+        << "!\n";
       return;
     }
     
@@ -712,11 +712,11 @@ transmit_control_data() {
     if (_reader.get_data(datagram)) {
       PStatServerControlMessage message;
       if (message.decode(datagram)) {
-	handle_server_control_message(message);
+        handle_server_control_message(message);
 
       } else {
-	pstats_cat.error()
-	  << "Got unexpected message from server.\n";
+        pstats_cat.error()
+          << "Got unexpected message from server.\n";
       }
     }
   }

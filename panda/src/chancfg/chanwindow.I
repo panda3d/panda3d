@@ -6,23 +6,23 @@
 INLINE WindowItem::WindowItem(void) {}
 
 INLINE WindowItem::WindowItem(const bool h, const bool d, const int o,
-			      const std::string& l, const SetupSyms& s,
-			      const int x, const int y, const bool b,
-			      const bool c) : _hw_chans(h), _dvr(d),
+                              const std::string& l, const SetupSyms& s,
+                              const int x, const int y, const bool b,
+                              const bool c) : _hw_chans(h), _dvr(d),
                                               _border(b), _cursor(c),
                                               _chan_offset(o), _sizeX(x),
                                               _sizeY(y), _layout(l),
                                               _setups(s) {}
 
 INLINE WindowItem::WindowItem(const WindowItem& c) : _hw_chans(c._hw_chans),
-						     _dvr(c._dvr),
-						     _border(c._border),
-						     _cursor(c._cursor),
-						     _chan_offset(c._chan_offset),
-						     _sizeX(c._sizeX),
-						     _sizeY(c._sizeY),
-						     _layout(c._layout),
-						     _setups(c._setups) {}
+                                                     _dvr(c._dvr),
+                                                     _border(c._border),
+                                                     _cursor(c._cursor),
+                                                     _chan_offset(c._chan_offset),
+                                                     _sizeX(c._sizeX),
+                                                     _sizeY(c._sizeY),
+                                                     _layout(c._layout),
+                                                     _setups(c._setups) {}
 
 INLINE WindowItem::~WindowItem(void) {}
 

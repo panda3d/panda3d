@@ -14,7 +14,7 @@ class CPPType;
 class CPPStructType;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ParameterRemapPTToPointer
+//       Class : ParameterRemapPTToPointer
 // Description : A ParameterRemap class that handles remapping a
 //               PT(Type) or PointerTo<Type> to a Type *.
 ////////////////////////////////////////////////////////////////////

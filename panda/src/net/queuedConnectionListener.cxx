@@ -65,8 +65,8 @@ new_connection_available() {
 ////////////////////////////////////////////////////////////////////
 bool QueuedConnectionListener::
 get_new_connection(PT(Connection) &rendezvous, 
-		   NetAddress &address,
-		   PT(Connection) &new_connection) {
+                   NetAddress &address,
+                   PT(Connection) &new_connection) {
   ConnectionListenerData result;
   if (!get_thing(result)) {
     return false;
@@ -104,8 +104,8 @@ get_new_connection(PT(Connection) &new_connection) {
 ////////////////////////////////////////////////////////////////////
 void QueuedConnectionListener::
 connection_opened(const PT(Connection) &rendezvous, 
-		  const NetAddress &address,
-		  const PT(Connection) &new_connection) {
+                  const NetAddress &address,
+                  const PT(Connection) &new_connection) {
   ConnectionListenerData nc;
   nc._rendezvous = rendezvous;
   nc._address = address;

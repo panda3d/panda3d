@@ -29,7 +29,7 @@
 class DecompressorToken : public ReferenceCount {
 public:
   INLINE DecompressorToken(uint id, const Filename &source_file, 
-	   	    const Filename &dest_file, const string &event_name) {
+                    const Filename &dest_file, const string &event_name) {
     _id = id;
     _source_file = source_file;
     _dest_file = dest_file;
@@ -120,7 +120,7 @@ request_decompress(const Filename &source_file, const string &event_name) {
 ////////////////////////////////////////////////////////////////////
 int Decompressor::
 request_decompress(const Filename &source_file, const Filename &dest_file,
-		   const string &event_name) {
+                   const string &event_name) {
 
   PT(DecompressorToken) tok;
   if (_threads_enabled) {
@@ -150,7 +150,7 @@ request_decompress(const Filename &source_file, const Filename &dest_file,
       }
 
       tok = new DecompressorToken(_next_token++, source_file, dest_file,
-					event_name);
+                                        event_name);
       _token_board->_waiting.insert(tok);
 
 #ifdef HAVE_IPC
@@ -172,7 +172,7 @@ request_decompress(const Filename &source_file, const Filename &dest_file,
     }
 
     tok = new DecompressorToken(_next_token++, source_file, dest_file,
-					event_name); 
+                                        event_name); 
     _token_board->_waiting.insert(tok);
     process_request();
   }
@@ -211,7 +211,7 @@ process_request() {
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
           << "Decompressor::process_request() - decompress complete for " 
-	  << tok->_source_file << "\n";
+          << tok->_source_file << "\n";
       }
     }
   }
@@ -295,8 +295,8 @@ decompress(Filename &source_file, Filename &dest_file) {
       source_buffer_length = read_stream.gcount();
       total_bytes_read += source_buffer_length;
       if (read_stream.eof()) {
-	nassertr(total_bytes_read == source_file_length, false);
-	read_all_input = true;
+        nassertr(total_bytes_read == source_file_length, false);
+        read_all_input = true;
       }
     }
 
@@ -310,13 +310,13 @@ decompress(Filename &source_file, Filename &dest_file) {
 
     while (avail_in > 0) {
       int ret = decompressor.decompress_to_stream(next_in, avail_in,
-			next_out, avail_out, dest_buffer, 
-			dest_buffer_length, write_stream);
+                        next_out, avail_out, dest_buffer, 
+                        dest_buffer_length, write_stream);
       if (ret == ZCompressorBase::S_error)
-	return false;
+        return false;
       if ((int)decompressor.get_total_in() == source_file_length &&
-	  avail_out == dest_buffer_length)
-	handled_all_input = true;
+          avail_out == dest_buffer_length)
+        handled_all_input = true;
     }
 
     nap();

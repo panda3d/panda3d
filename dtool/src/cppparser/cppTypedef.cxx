@@ -39,7 +39,7 @@ CPPTypedef(CPPInstance *inst, bool global) : CPPInstance(*inst)
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPTypedef::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
-		CPPScope *current_scope, CPPScope *global_scope) {
+                CPPScope *current_scope, CPPScope *global_scope) {
   CPPDeclaration *decl = 
     CPPInstance::substitute_decl(subst, current_scope, global_scope);
   assert(decl != NULL);

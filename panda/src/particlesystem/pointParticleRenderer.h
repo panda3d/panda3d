@@ -32,11 +32,11 @@ PUBLISHED:
 
   PointParticleRenderer(const PointParticleRenderer& copy);
   PointParticleRenderer(ParticleRendererAlphaMode ad = PR_ALPHA_NONE,
-			float point_size = 1.0f,
-			PointParticleBlendType bt = PP_ONE_COLOR,
-			ParticleRendererBlendMethod bm = PP_NO_BLEND,
-			const Colorf& sc = Colorf(1.0f, 1.0f, 1.0f, 1.0f),
-			const Colorf& ec = Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+                        float point_size = 1.0f,
+                        PointParticleBlendType bt = PP_ONE_COLOR,
+                        ParticleRendererBlendMethod bm = PP_NO_BLEND,
+                        const Colorf& sc = Colorf(1.0f, 1.0f, 1.0f, 1.0f),
+                        const Colorf& ec = Colorf(1.0f, 1.0f, 1.0f, 1.0f));
 
   virtual ~PointParticleRenderer(void);
 
@@ -76,7 +76,7 @@ private:
   virtual void kill_particle(int index);
   virtual void init_geoms(void);
   virtual void render(vector< PT(PhysicsObject) >& po_vector, 
-		      int ttl_particles);
+                      int ttl_particles);
   virtual void resize_pool(int new_size);
 };
 

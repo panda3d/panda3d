@@ -48,8 +48,8 @@ EggXfmAnimData(const EggXfmSAnim &convert_from)
       nassertv(sanim->get_name().length() == 1);
 
       if (sanim->get_num_rows() > 0) {
-	subtables.push_back(sanim);
-	_contents += sanim->get_name()[0];
+        subtables.push_back(sanim);
+        _contents += sanim->get_name()[0];
       }
     }
   }
@@ -60,10 +60,10 @@ EggXfmAnimData(const EggXfmSAnim &convert_from)
     for (int col = 0; col < (int)subtables.size(); col++) {
       EggSAnimData *sanim = subtables[col];
       if (sanim->get_num_rows() == 1) {
-	add_data(sanim->get_value(0));
+        add_data(sanim->get_value(0));
       } else {
-	nassertv(row < sanim->get_num_rows());
-	add_data(sanim->get_value(row));
+        nassertv(row < sanim->get_num_rows());
+        add_data(sanim->get_value(row));
       }
     }
   }
@@ -132,7 +132,7 @@ get_value(int row, LMatrix4d &mat) const {
 
   // So now we've got the nine components; build a matrix.
   EggXfmSAnim::compose_with_order(mat, scale, hpr, translate, get_order(),
-				  _coordsys);
+                                  _coordsys);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -162,7 +162,7 @@ write(ostream &out, int indent_level) const {
 
   indent(out, indent_level + 2) << "<V> {\n";
   write_long_list(out, indent_level + 4, _data.begin(), _data.end(),
-	"", "", 72);
+        "", "", 72);
   indent(out, indent_level + 2) << "}\n";
   indent(out, indent_level) << "}\n";
 }
@@ -176,7 +176,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void EggXfmAnimData::
 r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
-	    CoordinateSystem to_cs) {
+            CoordinateSystem to_cs) {
   // We need to build an inverse matrix that doesn't reflect the
   // translation component.
   LMatrix4d inv1 = inv;
@@ -206,25 +206,25 @@ r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
 
     if (!result) {
       egg_cat.error()
-	<< "Transform from " << _coordsys << " to " << to_cs 
-	<< " failed!\n";
+        << "Transform from " << _coordsys << " to " << to_cs 
+        << " failed!\n";
       LVector3d scale, hpr, trans;
       bool d = decompose_matrix(orig_mat, scale, hpr, trans, _coordsys);
       egg_cat.error(false)
-	<< "orig:\n" << orig_mat
-	<< "d = " << d
-	<< "\n  scale: " << scale
-	<< "\n  hpr: " << hpr
-	<< "\n  trans: " << trans << "\n";
+        << "orig:\n" << orig_mat
+        << "d = " << d
+        << "\n  scale: " << scale
+        << "\n  hpr: " << hpr
+        << "\n  trans: " << trans << "\n";
 
       LMatrix4d new_mat = inv1 * orig_mat * mat;
       d = decompose_matrix(new_mat, scale, hpr, trans, to_cs);
       egg_cat.error(false)
-	<< "new:\n" << new_mat
-	<< "d = " << d
-	<< "\n  scale: " << scale
-	<< "\n  hpr: " << hpr
-	<< "\n  trans: " << trans << "\n";
+        << "new:\n" << new_mat
+        << "d = " << d
+        << "\n  scale: " << scale
+        << "\n  hpr: " << hpr
+        << "\n  trans: " << trans << "\n";
     }
 
     // If this assertion fails, we attempted to transform by a skew

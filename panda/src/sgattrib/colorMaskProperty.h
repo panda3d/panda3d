@@ -9,7 +9,7 @@
 #include <pandabase.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ColorMaskProperty
+//       Class : ColorMaskProperty
 // Description : This defines the set of color planes that may be
 //               active for writing to the color buffer.
 ////////////////////////////////////////////////////////////////////

@@ -71,7 +71,7 @@ public:
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
 private:
-  static TypeHandle		_type_handle;
+  static TypeHandle             _type_handle;
 };
 
 #include "LODNode.I"

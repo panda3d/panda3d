@@ -23,7 +23,7 @@ operator = (const ModifierButtons &copy) {
 INLINE bool ModifierButtons::
 operator == (const ModifierButtons &other) const {
   return (_button_list == other._button_list &&
-	  _state == other._state);
+          _state == other._state);
 }
 
 ////////////////////////////////////////////////////////////////////

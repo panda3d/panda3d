@@ -91,7 +91,7 @@ clear(PNMImage &image) {
   if (image.has_alpha()) {
     for (int y = _y; y < _y + _y_size; y++) {
       for (int x = _x; x < _x + _x_size; x++) {
-	image.set_alpha_val(x, y, 0);
+        image.set_alpha_val(x, y, 0);
       }
     }
   }
@@ -326,7 +326,7 @@ check_solitary() {
     // How sad, only one.
     TexturePlacement *placement = *_placements.begin();
     nassertv(placement->get_omit_reason() == OR_none ||
-	     placement->get_omit_reason() == OR_solitary);
+             placement->get_omit_reason() == OR_solitary);
 
     if (pal->_omit_solitary || placement->get_omit_reason() == OR_solitary) {
       // We only omit the solitary texture if (a) we have
@@ -342,7 +342,7 @@ check_solitary() {
     for (pi = _placements.begin(); pi != _placements.end(); ++pi) {
       TexturePlacement *placement = (*pi);
       nassertv(placement->get_omit_reason() == OR_none ||
-	       placement->get_omit_reason() == OR_solitary);
+               placement->get_omit_reason() == OR_solitary);
       placement->not_solitary();
     }
   }
@@ -379,8 +379,8 @@ optimal_resize() {
 
   if (resized_any) {
     nout << "Resizing " 
-	 << FilenameUnifier::make_user_filename(get_filename()) << " to "
-	 << _x_size << " " << _y_size << "\n";
+         << FilenameUnifier::make_user_filename(get_filename()) << " to "
+         << _x_size << " " << _y_size << "\n";
   } 
 }
 
@@ -445,7 +445,7 @@ resize_image(int x_size, int y_size) {
     bool all_packed = true;
     for (pi = saved.begin(); pi != saved.end(); ++pi) {
       if (!place(*pi)) {
-	all_packed = false;
+        all_packed = false;
       }
     }
     nassertr(all_packed, false);
@@ -542,14 +542,14 @@ update_image(bool redo_all) {
 
     } else {
       SourceTextureImage *source =
-	placement->get_texture()->get_preferred_source();
+        placement->get_texture()->get_preferred_source();
 
       if (source != (SourceTextureImage *)NULL &&
-	  source->get_filename().compare_timestamps(get_filename()) > 0) {
-	// The source image is newer than the palette image; we need to
-	// regenerate.
-	placement->mark_unfilled();
-	needs_update = true;
+          source->get_filename().compare_timestamps(get_filename()) > 0) {
+        // The source image is newer than the palette image; we need to
+        // regenerate.
+        placement->mark_unfilled();
+        needs_update = true;
       }
     }
   }
@@ -607,8 +607,8 @@ find_hole(int &x, int &y, int x_size, int y_size) const {
       TexturePlacement *overlap = find_overlap(x, y, x_size, y_size);
 
       if (overlap == (TexturePlacement *)NULL) {
-	// Hooray!
-	return true;
+        // Hooray!
+        return true;
       }
 
       next_x = overlap->get_placed_x() + overlap->get_placed_x_size();
@@ -642,7 +642,7 @@ find_overlap(int x, int y, int x_size, int y_size) const {
   for (pi = _placements.begin(); pi != _placements.end(); ++pi) {
     TexturePlacement *placement = (*pi);
     if (placement->is_placed() && 
-	placement->intersects(x, y, x_size, y_size)) {
+        placement->intersects(x, y, x_size, y_size)) {
       return placement;
     }
   }
@@ -665,13 +665,13 @@ get_image() {
   if (!_new_image) {
     if (pal->_shadow_color_type != (PNMFileType *)NULL) {
       if (_shadow_image.read(_image)) {
-	_got_image = true;
-	return;
+        _got_image = true;
+        return;
       }
     } else {
       if (read(_image)) {
-	_got_image = true;
-	return;
+        _got_image = true;
+        return;
       }
     }
   }

@@ -13,7 +13,7 @@
 #include <onAttribute.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ColorBlendAttribute
+//       Class : ColorBlendAttribute
 // Description : See ColorBlendTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ColorBlendAttribute : public OnAttribute {
@@ -48,7 +48,7 @@ public:
   static void init_type() {
     OnAttribute::init_type();
     register_type(_type_handle, "ColorBlendAttribute",
-		  OnAttribute::get_class_type());
+                  OnAttribute::get_class_type());
   }
 
 private:

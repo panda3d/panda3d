@@ -11,7 +11,7 @@
 #include "lwoChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurfaceBlockAxis
+//       Class : LwoSurfaceBlockAxis
 // Description : Indicates the axis for this particular shader's
 //               projection.  This works in conjunction with
 //               LwoSurfaceBlockProjection.  This is a subchunk of
@@ -41,7 +41,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoSurfaceBlockAxis",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

@@ -50,32 +50,32 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
       IffId type = param->get_id();
 
       if (type == IffId("DIFF")) {
-	_flags |= F_diffuse;
-	_diffuse = param->_value;
+        _flags |= F_diffuse;
+        _diffuse = param->_value;
 
       } else if (type == IffId("LUMI")) {
-	_flags |= F_luminosity;
-	_luminosity = param->_value;
+        _flags |= F_luminosity;
+        _luminosity = param->_value;
 
       } else if (type == IffId("SPEC")) {
-	_flags |= F_specular;
-	_specular = param->_value;
+        _flags |= F_specular;
+        _specular = param->_value;
 
       } else if (type == IffId("REFL")) {
-	_flags |= F_reflection;
-	_reflection = param->_value;
+        _flags |= F_reflection;
+        _reflection = param->_value;
 
       } else if (type == IffId("TRAN")) {
-	_flags |= F_transparency;
-	_transparency = param->_value;
+        _flags |= F_transparency;
+        _transparency = param->_value;
 
       } else if (type == IffId("GLOS")) {
-	_flags |= F_gloss;
-	_gloss = param->_value;
+        _flags |= F_gloss;
+        _gloss = param->_value;
 
       } else if (type == IffId("TRNL")) {
-	_flags |= F_translucency;
-	_translucency = param->_value;
+        _flags |= F_translucency;
+        _translucency = param->_value;
       }
 
     } else if (chunk->is_of_type(LwoSurfaceSmoothingAngle::get_class_type())) {
@@ -97,22 +97,22 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
 
       // We only consider enabled "IMAP" type blocks that affect "COLR".
       if (block->_block_type == IffId("IMAP") &&
-	  block->_channel_id == IffId("COLR") &&
-	  block->_enabled) {
-	// Now save the block with the lowest ordinal.
-	if (_block == (CLwoSurfaceBlock *)NULL) {
-	  _block = block;
+          block->_channel_id == IffId("COLR") &&
+          block->_enabled) {
+        // Now save the block with the lowest ordinal.
+        if (_block == (CLwoSurfaceBlock *)NULL) {
+          _block = block;
 
-	} else if (block->_ordinal < _block->_ordinal) {
-	  delete _block;
-	  _block = block;
+        } else if (block->_ordinal < _block->_ordinal) {
+          delete _block;
+          _block = block;
 
-	} else {
-	  delete block;
-	}
+        } else {
+          delete block;
+        }
 
       } else {
-	delete block;
+        delete block;
       }
     }      
   }
@@ -158,7 +158,7 @@ CLwoSurface::
 ////////////////////////////////////////////////////////////////////
 void CLwoSurface::
 apply_properties(EggPrimitive *egg_prim, vector_PT_EggVertex &egg_vertices,
-		 float &smooth_angle) {
+                 float &smooth_angle) {
   if (!_surface->_source.empty()) {
     // This surface is derived from another surface; apply that one
     // first.
@@ -300,9 +300,9 @@ check_material() {
 
   if ((_flags & F_diffuse) != 0) {
     _diffuse_color.set(_color[0] * _diffuse,
-		       _color[1] * _diffuse,
-		       _color[2] * _diffuse,
-		       _color[3]);
+                       _color[1] * _diffuse,
+                       _color[2] * _diffuse,
+                       _color[3]);
     // We want to avoid setting the diffuse color on the material.
     // We're already setting the color explicitly on the object, so
     // there's no need to also set a diffuse color on the material,
@@ -314,17 +314,17 @@ check_material() {
 
   if ((_flags & F_luminosity) != 0) {
     Colorf luminosity(_color[0] * _luminosity,
-		      _color[1] * _luminosity,
-		      _color[2] * _luminosity,
-		      1.0);
+                      _color[1] * _luminosity,
+                      _color[2] * _luminosity,
+                      1.0);
     _egg_material->set_emit(luminosity);
   }
 
   if ((_flags & F_specular) != 0) {
     Colorf specular(_color[0] * _specular,
-		    _color[1] * _specular,
-		    _color[2] * _specular,
-		    1.0);
+                    _color[1] * _specular,
+                    _color[2] * _specular,
+                    1.0);
     _egg_material->set_spec(specular);
   }
 

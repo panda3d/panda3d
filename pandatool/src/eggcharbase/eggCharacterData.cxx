@@ -42,7 +42,13 @@ EggCharacterData::
 //       Access: Public
 //  Description: Indicates that the given model_index (with the
 //               indicated model_root) is associated with this
-//               character.
+//               character.  This is normally called by the
+//               EggCharacterCollection class as new models are
+//               discovered.
+//
+//               A "model" here is either a character model (or one
+//               LOD of a character model), or a character animation
+//               file: in either case, a hierarchy of joints.
 ////////////////////////////////////////////////////////////////////
 void EggCharacterData::
 add_model(int model_index, EggNode *model_root) {

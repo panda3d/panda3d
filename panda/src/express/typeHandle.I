@@ -229,14 +229,14 @@ register_type(TypeHandle &type_handle, const string &name) {
 }
 INLINE void
 register_type(TypeHandle &type_handle, const string &name,
-	      TypeHandle parent1) {
+              TypeHandle parent1) {
   if (TypeRegistry::ptr()->register_type(type_handle, name)) {
     TypeRegistry::ptr()->record_derivation(type_handle, parent1);
   }
 }
 INLINE void
 register_type(TypeHandle &type_handle, const string &name,
-	      TypeHandle parent1, TypeHandle parent2) {
+              TypeHandle parent1, TypeHandle parent2) {
   if (TypeRegistry::ptr()->register_type(type_handle, name)) {
     TypeRegistry::ptr()->record_derivation(type_handle, parent1);
     TypeRegistry::ptr()->record_derivation(type_handle, parent2);
@@ -244,8 +244,8 @@ register_type(TypeHandle &type_handle, const string &name,
 }
 INLINE void
 register_type(TypeHandle &type_handle, const string &name,
-	      TypeHandle parent1, TypeHandle parent2,
-	      TypeHandle parent3) {
+              TypeHandle parent1, TypeHandle parent2,
+              TypeHandle parent3) {
   if (TypeRegistry::ptr()->register_type(type_handle, name)) {
     TypeRegistry::ptr()->record_derivation(type_handle, parent1);
     TypeRegistry::ptr()->record_derivation(type_handle, parent2);
@@ -254,8 +254,8 @@ register_type(TypeHandle &type_handle, const string &name,
 }
 INLINE void
 register_type(TypeHandle &type_handle, const string &name,
-	      TypeHandle parent1, TypeHandle parent2,
-	      TypeHandle parent3, TypeHandle parent4) {
+              TypeHandle parent1, TypeHandle parent2,
+              TypeHandle parent3, TypeHandle parent4) {
   if (TypeRegistry::ptr()->register_type(type_handle, name)) {
     TypeRegistry::ptr()->record_derivation(type_handle, parent1);
     TypeRegistry::ptr()->record_derivation(type_handle, parent2);
@@ -285,7 +285,7 @@ register_dynamic_type(const string &name, TypeHandle parent1) {
 }
 INLINE TypeHandle
 register_dynamic_type(const string &name,
-		      TypeHandle parent1, TypeHandle parent2) {
+                      TypeHandle parent1, TypeHandle parent2) {
   TypeHandle type_handle = 
     TypeRegistry::ptr()->register_dynamic_type(name);
   TypeRegistry::ptr()->record_derivation(type_handle, parent1);
@@ -294,8 +294,8 @@ register_dynamic_type(const string &name,
 }
 INLINE TypeHandle
 register_dynamic_type(const string &name,
-		      TypeHandle parent1, TypeHandle parent2,
-		      TypeHandle parent3) {
+                      TypeHandle parent1, TypeHandle parent2,
+                      TypeHandle parent3) {
   TypeHandle type_handle = 
     TypeRegistry::ptr()->register_dynamic_type(name);
   TypeRegistry::ptr()->record_derivation(type_handle, parent1);
@@ -305,8 +305,8 @@ register_dynamic_type(const string &name,
 }
 INLINE TypeHandle
 register_dynamic_type(const string &name,
-		      TypeHandle parent1, TypeHandle parent2,
-		      TypeHandle parent3, TypeHandle parent4) {
+                      TypeHandle parent1, TypeHandle parent2,
+                      TypeHandle parent3, TypeHandle parent4) {
   TypeHandle type_handle = 
     TypeRegistry::ptr()->register_dynamic_type(name);
   TypeRegistry::ptr()->record_derivation(type_handle, parent1);
@@ -367,7 +367,7 @@ _dcast(WantType *, TypedObject *ptr) {
       << " to " << want_handle << "\n";
     if (ptr->get_type() == TypedObject::get_class_type()) {
       express_cat->error(false)
-	<< "Perhaps pointer was inadvertently deleted?\n";
+        << "Perhaps pointer was inadvertently deleted?\n";
     }
     return (WantType *)NULL;
   }
@@ -400,7 +400,7 @@ _dcast(WantType *, const TypedObject *ptr) {
       << " to " << want_handle << "\n";
     if (ptr->get_type() == TypedObject::get_class_type()) {
       express_cat->error(false)
-	<< "Perhaps pointer was inadvertently deleted?\n";
+        << "Perhaps pointer was inadvertently deleted?\n";
     }
     return (const WantType *)NULL;
   }

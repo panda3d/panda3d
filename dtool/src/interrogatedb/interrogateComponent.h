@@ -16,7 +16,7 @@
 class IndexRemapper;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : InterrogateComponent
+//       Class : InterrogateComponent
 // Description : The base class for things that are part of the
 //               interrogate database.  This includes types,
 //               functions, and function wrappers.

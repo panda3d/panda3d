@@ -30,7 +30,7 @@ AngularIntegrator::
 ////////////////////////////////////////////////////////////////////
 void AngularIntegrator::
 integrate(Physical *physical, vector< PT(AngularForce) >& forces,
-	  float dt) {
+          float dt) {
   // intercept in case we want to censor/adjust values
   if (dt > _max_angular_dt)
     dt = _max_angular_dt;

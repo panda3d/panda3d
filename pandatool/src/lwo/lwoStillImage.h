@@ -13,7 +13,7 @@
 #include <filename.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoStillImage
+//       Class : LwoStillImage
 // Description : A single still image associated with a LwoClip chunk.
 ////////////////////////////////////////////////////////////////////
 class LwoStillImage : public LwoChunk {
@@ -35,7 +35,7 @@ public:
   static void init_type() {
     LwoChunk::init_type();
     register_type(_type_handle, "LwoStillImage",
-		  LwoChunk::get_class_type());
+                  LwoChunk::get_class_type());
   }
 
 private:

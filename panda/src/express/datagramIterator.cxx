@@ -19,7 +19,7 @@ get_string() {
   PN_uint16 s_len = get_uint16();
 
   nassertr(_datagram != (const Datagram *)NULL &&
-	   _current_index + s_len <= _datagram->get_length(), "");
+           _current_index + s_len <= _datagram->get_length(), "");
 
   string s = 
     _datagram->get_message().substr(_current_index, s_len);
@@ -40,7 +40,7 @@ get_string() {
 string DatagramIterator::
 get_fixed_string(size_t size) {
   nassertr(_datagram != (const Datagram *)NULL &&
-	   _current_index + size <= _datagram->get_length(), "");
+           _current_index + size <= _datagram->get_length(), "");
 
   string s = 
     _datagram->get_message().substr(_current_index, size);
@@ -60,7 +60,7 @@ string DatagramIterator::
 extract_bytes(size_t size) {
   nassertr((int)size >= 0, "");
   nassertr(_datagram != (const Datagram *)NULL &&
-	   _current_index + size <= _datagram->get_length(), "");
+           _current_index + size <= _datagram->get_length(), "");
   int start = _current_index;
 
   _current_index += size;

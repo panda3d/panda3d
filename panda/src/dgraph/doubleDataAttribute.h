@@ -13,7 +13,7 @@
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, NumericDataAttribute<double>);
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DoubleDataAttribute
+//       Class : DoubleDataAttribute
 // Description : A NumericDataAttribute templated on double types.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DoubleDataAttribute :
@@ -36,7 +36,7 @@ public:
   static void init_type() {
     NumericDataAttribute<double>::init_type();
     register_type(_type_handle, "DoubleDataAttribute", 
-		  NumericDataAttribute<double>::get_class_type());
+                  NumericDataAttribute<double>::get_class_type());
   }
 
 private:

@@ -25,7 +25,7 @@ PUBLISHED:
   INLINE LensFlareNode(void);
   
   void add_flare(PT(Texture) flare, PTA_float scales, PTA_float offsets, 
-		 PTA_float angle_scales, PTA_Colorf colors);
+                 PTA_float angle_scales, PTA_Colorf colors);
   void add_blind(PT(Texture) blind);
 
   INLINE void set_angle_scale(float scale);
@@ -39,8 +39,8 @@ PUBLISHED:
 
 public:
   virtual bool sub_render(const AllAttributesWrapper &attrib,
-			  AllTransitionsWrapper &trans, 
-			  RenderTraverser *trav);
+                          AllTransitionsWrapper &trans, 
+                          RenderTraverser *trav);
   virtual bool has_sub_render() const;
   
 private:
@@ -79,21 +79,21 @@ private:
   //the set of Sparkle textures to create an animation
 
   void set_geometry(GeomSprite *sprite, const PTA_float &geom_scales,
-		    const PTA_float &geom_offsets, const PTA_float &geom_angle_scales,
-		    const PTA_Colorf &geom_colors, const LVector3f &delta, 
-		    const LPoint3f &light, const float &angle);
+                    const PTA_float &geom_offsets, const PTA_float &geom_angle_scales,
+                    const PTA_Colorf &geom_colors, const LVector3f &delta, 
+                    const LPoint3f &light, const float &angle);
 
 
   void render_child(RenderRelation *arc, const AllAttributesWrapper &attrib,
-		    AllTransitionsWrapper &trans, GraphicsStateGuardian *gsg);
+                    AllTransitionsWrapper &trans, GraphicsStateGuardian *gsg);
   void render_children(const vector_relation &arcs, const AllAttributesWrapper &attrib,
-		       AllTransitionsWrapper &trans, GraphicsStateGuardian *gsg);
+                       AllTransitionsWrapper &trans, GraphicsStateGuardian *gsg);
 
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &me);  
   virtual int complete_pointers(vector_typedWritable &plist, 
-				BamReader *manager);
+                                BamReader *manager);
 
   static TypedWritable *make_LensFlareNode(const FactoryParams &params);
 
@@ -118,7 +118,7 @@ public:
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
 private:
-  static TypeHandle		_type_handle;
+  static TypeHandle             _type_handle;
 };
 
 #include "lensFlareNode.I"
@@ -129,7 +129,7 @@ private:
 public:
   void add_sparkle(PT_Node source, PT(Texture) sparkle); 
   void set_sparkles_attributes(PT_Node source, float angle_scale, vector_float scales, 
-			       vector_float offsets, vector_Colorf colors);
+                               vector_float offsets, vector_Colorf colors);
   void set_sparkle_fps(float fps);
 
 private:
@@ -154,9 +154,9 @@ private:
   map<PT_Node, int> _current_sparkles;
 
   void prepare_sparkles(vector_relation &arcs, const vector_texture &sparkles,
-			const vector_float &scales, const vector_float &offsets,
-			const vector_Colorf &colors, const LVector3f &delta,
-			const LPoint3f &light, const BoundingVolume &bound, int &old_sparkle); 
+                        const vector_float &scales, const vector_float &offsets,
+                        const vector_Colorf &colors, const LVector3f &delta,
+                        const LPoint3f &light, const BoundingVolume &bound, int &old_sparkle); 
 
   //Timing function to control sparkle animation
   int compute_current(int &current_sparkle, vector_texture sparkles);

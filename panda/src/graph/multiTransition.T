@@ -277,8 +277,8 @@ compose(const NodeTransition *other) const {
     result->_default_dir = _default_dir;
 
     dmap_compose(_properties.begin(), _properties.end(),
-		 ot->_properties.begin(), ot->_properties.end(),
-		 inserter(result->_properties, result->_properties.begin()));
+                 ot->_properties.begin(), ot->_properties.end(),
+                 inserter(result->_properties, result->_properties.begin()));
 
     return result;
   }
@@ -302,7 +302,7 @@ invert() const {
   result->_default_dir = TD_identity;
 
   dmap_invert(_properties.begin(), _properties.end(),
-	      inserter(result->_properties, result->_properties.begin()));
+              inserter(result->_properties, result->_properties.begin()));
 
   return result;
 }
@@ -345,9 +345,9 @@ apply(const NodeAttribute *attrib) const {
     // In this case, the normal case, the transition does not specify
     // completely what the attributes should be.
     bmap_apply(result->_properties.begin(), result->_properties.end(),
-	       _properties.begin(), _properties.end(),
-	       false, TD_on,
-	       inserter(temp, temp.begin()));
+               _properties.begin(), _properties.end(),
+               false, TD_on,
+               inserter(temp, temp.begin()));
     result->_properties_is_on = true;
 
   } else if (_default_dir == TD_off) {
@@ -355,9 +355,9 @@ apply(const NodeAttribute *attrib) const {
     // attributes should be; any property not explicitly mentioned by
     // the transition should be turned off.
     bmap_apply(result->_properties.begin(), result->_properties.end(),
-	       _properties.begin(), _properties.end(),
-	       true, TD_on,
-	       inserter(temp, temp.begin()));
+               _properties.begin(), _properties.end(),
+               true, TD_on,
+               inserter(temp, temp.begin()));
     result->_properties_is_on = true;
 
   } else { // _default_dir == TD_on
@@ -365,9 +365,9 @@ apply(const NodeAttribute *attrib) const {
     // attributes should be; any property not explicitly mentioned by
     // the transition should be turned on.
     bmap_apply(result->_properties.begin(), result->_properties.end(),
-	       _properties.begin(), _properties.end(),
-	       true, TD_off,
-	       inserter(temp, temp.begin()));
+               _properties.begin(), _properties.end(),
+               true, TD_off,
+               inserter(temp, temp.begin()));
     result->_properties_is_on = false;
   }
 
@@ -390,10 +390,10 @@ output(ostream &out) const {
   for (pi = _properties.begin(); pi != _properties.end(); ++pi) {
     if ((*pi).second == TD_identity) {
       if (!any_identity) {
-	out << " identity(";
-	any_identity = true;
+        out << " identity(";
+        any_identity = true;
       } else {
-	out << ", ";
+        out << ", ";
       }
       output_property(out, (*pi).first);
     }
@@ -406,10 +406,10 @@ output(ostream &out) const {
   for (pi = _properties.begin(); pi != _properties.end(); ++pi) {
     if ((*pi).second == TD_on) {
       if (!any_on) {
-	out << " on(";
-	any_on = true;
+        out << " on(";
+        any_on = true;
       } else {
-	out << ", ";
+        out << ", ";
       }
       output_property(out, (*pi).first);
     }
@@ -422,10 +422,10 @@ output(ostream &out) const {
   for (pi = _properties.begin(); pi != _properties.end(); ++pi) {
     if ((*pi).second == TD_off) {
       if (!any_off) {
-	out << " off(";
-	any_off = true;
+        out << " off(";
+        any_off = true;
       } else {
-	out << ", ";
+        out << ", ";
       }
       output_property(out, (*pi).first);
     }
@@ -449,8 +449,8 @@ write(ostream &out, int indent_level) const {
   for (pi = _properties.begin(); pi != _properties.end(); ++pi) {
     if ((*pi).second == TD_identity) {
       if (!any_identity) {
-	indent(out, indent_level) << "identity:\n";
-	any_identity = true;
+        indent(out, indent_level) << "identity:\n";
+        any_identity = true;
       }
       write_property(out, (*pi).first, indent_level + 2);
     }
@@ -460,8 +460,8 @@ write(ostream &out, int indent_level) const {
   for (pi = _properties.begin(); pi != _properties.end(); ++pi) {
     if ((*pi).second == TD_on) {
       if (!any_on) {
-	indent(out, indent_level) << "on:\n";
-	any_on = true;
+        indent(out, indent_level) << "on:\n";
+        any_on = true;
       }
       write_property(out, (*pi).first, indent_level + 2);
     }
@@ -471,8 +471,8 @@ write(ostream &out, int indent_level) const {
   for (pi = _properties.begin(); pi != _properties.end(); ++pi) {
     if ((*pi).second == TD_off) {
       if (!any_off) {
-	indent(out, indent_level) << "off:\n";
-	any_off = true;
+        indent(out, indent_level) << "off:\n";
+        any_off = true;
       }
       write_property(out, (*pi).first, indent_level + 2);
     }
@@ -495,7 +495,7 @@ internal_compare_to(const NodeTransition *other) const {
   }
 
   return dmap_compare(_properties.begin(), _properties.end(),
-		      ot->_properties.begin(), ot->_properties.end());
+                      ot->_properties.begin(), ot->_properties.end());
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -166,7 +166,7 @@ class GeomNode;
 
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : Builder
+//       Class : Builder
 // Description : The main driver class to the builder package.  See
 //               the comments above.
 ////////////////////////////////////////////////////////////////////
@@ -176,11 +176,11 @@ public:
   ~Builder();
 
   INLINE bool add_prim(const BuilderBucket &bucket,
-		       const BuilderPrim &prim);
+                       const BuilderPrim &prim);
   INLINE bool add_prim(const BuilderBucket &bucket,
-		       const BuilderPrimI &prim);
+                       const BuilderPrimI &prim);
   INLINE bool add_prim_nonindexed(const BuilderBucket &bucket,
-				  const BuilderPrimI &prim);
+                                  const BuilderPrimI &prim);
 
   GeomNode *build(const string &default_name = "");
 

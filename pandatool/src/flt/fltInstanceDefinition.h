@@ -11,7 +11,7 @@
 #include "fltBead.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltInstanceDefinition
+//       Class : FltInstanceDefinition
 // Description : This special kind of record marks the top node of an
 //               instance subtree.  This subtree lives outside of the
 //               normal hierarchy, and is MultiGen's way of supporting
@@ -41,7 +41,7 @@ public:
   static void init_type() {
     FltBead::init_type();
     register_type(_type_handle, "FltInstanceDefinition",
-		  FltBead::get_class_type());
+                  FltBead::get_class_type());
   }
 
 private:

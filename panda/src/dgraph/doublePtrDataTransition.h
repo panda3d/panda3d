@@ -13,7 +13,7 @@
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, PointerDataTransition<double>);
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DoublePtrDataTransition
+//       Class : DoublePtrDataTransition
 // Description : A PointerDataTransition templated on double types.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DoublePtrDataTransition :
@@ -36,7 +36,7 @@ public:
   static void init_type() {
     PointerDataTransition<double>::init_type();
     register_type(_type_handle, "DoublePtrDataTransition", 
-		  PointerDataTransition<double>::get_class_type());
+                  PointerDataTransition<double>::get_class_type());
   }
 
 private:

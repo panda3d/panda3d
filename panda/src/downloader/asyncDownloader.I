@@ -9,7 +9,7 @@
 //     Function: Downloader::set_byte_rate
 //       Access: Public
 //  Description: Note: modem speeds are reported in bits, so you 
-//		 need to convert! 
+//               need to convert! 
 ////////////////////////////////////////////////////////////////////
 INLINE void Downloader::
 set_byte_rate(float bytes) {

@@ -17,7 +17,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : Producer
+//       Class : Producer
 // Description : Simulates some data-generating device, such as a
 //               mouse.
 ////////////////////////////////////////////////////////////////////
@@ -47,14 +47,14 @@ public:
   static void init_type() {
     DataNode::init_type();
     register_type(_type_handle, "Producer",
-		  DataNode::get_class_type());
+                  DataNode::get_class_type());
 
     DoubleDataTransition::init_type();
     register_data_transition(_t_type, "t",
-			     DoubleDataTransition::get_class_type());
+                             DoubleDataTransition::get_class_type());
     Vec3DataTransition::init_type();
     register_data_transition(_xyz_type, "xyz",
-			     Vec3DataTransition::get_class_type());
+                             Vec3DataTransition::get_class_type());
   }
 
 private:
@@ -89,7 +89,7 @@ transmit_data(NodeAttributes &data) {
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : Consumer
+//       Class : Consumer
 // Description : Simulates some data-consuming object, such as a mouse
 //               Tformer.
 ////////////////////////////////////////////////////////////////////
@@ -117,16 +117,16 @@ public:
   static void init_type() {
     DataNode::init_type();
     register_type(_type_handle, "Consumer",
-		  DataNode::get_class_type());
+                  DataNode::get_class_type());
 
     DoubleDataTransition::init_type();
     register_data_transition(_s_type, "s",
-			     DoubleDataTransition::get_class_type());
+                             DoubleDataTransition::get_class_type());
     register_data_transition(_t_type, "t",
-			     DoubleDataTransition::get_class_type());
+                             DoubleDataTransition::get_class_type());
     Vec3DataTransition::init_type();
     register_data_transition(_xyz_type, "xyz",
-			     Vec3DataTransition::get_class_type());
+                             Vec3DataTransition::get_class_type());
   }
 
 private:
@@ -150,7 +150,7 @@ transmit_data(NodeAttributes &data) {
       get_attribute_into(t, data, _t_type) &&
       get_attribute_into(xyz, data, _xyz_type)) {
     nout << get_name() << " got xyz " << *xyz << " s " << *s 
-	 << " t " << *t << "\n";
+         << " t " << *t << "\n";
   } else {
     nout << get_name() << " didn't get all data.\n";
   }
@@ -176,7 +176,7 @@ main() {
   producer->_xyz->set_value(LPoint3f(1.0, 2.0, 3.0));
 
   arc1->set_transition(Producer::_xyz_type,
-		       new Vec3DataTransition(LMatrix4f::scale_mat(2.0)));
+                       new Vec3DataTransition(LMatrix4f::scale_mat(2.0)));
 
   producer->set_spam_mode(true);
 

@@ -131,7 +131,7 @@ pre_apply(Node *node, const AllAttributesWrapper &init_state,
   // Make a display region of the proper size and clear it to prepare for
   // rendering the shadow map
   PT(DisplayRegion) disp_region = 
-  	gsg->get_window()->make_scratch_display_region(_size, _size);
+        gsg->get_window()->make_scratch_display_region(_size, _size);
   DisplayRegionStack old_dr = gsg->push_display_region(disp_region);
 
   // Save scratch region before clearing it to be non-destructive
@@ -141,7 +141,7 @@ pre_apply(Node *node, const AllAttributesWrapper &init_state,
 
   gsg->set_color_clear_value(Colorf(1., 1., 1., 1.));
   gsg->clear(gsg->get_render_buffer(RenderBuffer::T_back |
-				      RenderBuffer::T_depth), disp_region);
+                                      RenderBuffer::T_depth), disp_region);
 
   // Copy the transition wrapper so we can modify it freely.
   AllTransitionsWrapper trans(net_trans);

@@ -94,14 +94,14 @@ set_host(const string &hostname, int port) {
       ni++;
 
       if (num >= 256 || ni >= 4) {
-	is_ip = false;
+        is_ip = false;
       }
 
     } else if (isdigit(hostname[p])) {
       num = 10 * num + (unsigned int)(hostname[p] - '0');
       p++;
       if (num >= 256) {
-	is_ip = false;
+        is_ip = false;
       }
     } else {
       is_ip = false;
@@ -138,7 +138,7 @@ set_host(const string &hostname, int port) {
     if (result != PR_SUCCESS) {
       pprerror("PR_GetHostByName");
       net_cat.error()
-	<< "Unable to look up hostname " << hostname << ".\n";
+        << "Unable to look up hostname " << hostname << ".\n";
       return false;
     }
     
@@ -149,7 +149,7 @@ set_host(const string &hostname, int port) {
       return false;
     } else if (next == 0) {
       net_cat.error()
-	<< "No addresses available for " << hostname << ".\n";
+        << "No addresses available for " << hostname << ".\n";
       return false;
     }
   }

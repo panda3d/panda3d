@@ -37,13 +37,13 @@ clear_current_states() {
 ////////////////////////////////////////////////////////////////////
 void GeomBinBackToFront::
 record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
-		     CullTraverser *trav) {
+                     CullTraverser *trav) {
   PStatTimer timer(CullTraverser::_cull_bins_btf_pcollector);
 
   // Get the transform matrix from the state.
   TransformAttribute *trans_attrib = NULL;
   get_attribute_into(trans_attrib, cs->get_attributes(),
-		     TransformTransition::get_class_type());
+                     TransformTransition::get_class_type());
 
   CullState::geom_const_iterator gi;
   for (gi = cs->geom_begin(); gi != cs->geom_end(); ++gi) {
@@ -55,13 +55,13 @@ record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
     const BoundingVolume &volume = node->get_bound();
 
     if (!volume.is_empty() && 
-	volume.is_of_type(GeometricBoundingVolume::get_class_type())) {
+        volume.is_of_type(GeometricBoundingVolume::get_class_type())) {
       const GeometricBoundingVolume *gbv;
       DCAST_INTO_V(gbv, &volume);
 
       LPoint3f center = gbv->get_approx_center();
       if (trans_attrib != (TransformAttribute *)NULL) {
-	center = center * trans_attrib->get_matrix();
+        center = center * trans_attrib->get_matrix();
       }
 
       float distance = gsg->compute_distance_to(center);
@@ -81,13 +81,13 @@ record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
     bool got_distance = false;
 
     if (!volume.is_empty() && 
-	volume.is_of_type(GeometricBoundingVolume::get_class_type())) {
+        volume.is_of_type(GeometricBoundingVolume::get_class_type())) {
       const GeometricBoundingVolume *gbv;
       DCAST_INTO_V(gbv, &volume);
 
       LPoint3f center = gbv->get_approx_center();
       if (trans_attrib != (TransformAttribute *)NULL) {
-	center = center * trans_attrib->get_matrix();
+        center = center * trans_attrib->get_matrix();
       }
 
       distance = gsg->compute_distance_to(center);
@@ -102,27 +102,27 @@ record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
       TypeHandle graph_type = trav->get_graph_type();
       int num_children = node->get_num_children(graph_type);
       for (int i = 0; i < num_children; i++) {
-	NodeRelation *arc = node->get_child(graph_type, i);
+        NodeRelation *arc = node->get_child(graph_type, i);
 
-	const BoundingVolume &volume = arc->get_bound();
-	if (!volume.is_empty() && 
-	    volume.is_of_type(GeometricBoundingVolume::get_class_type())) {
-	  const GeometricBoundingVolume *gbv;
-	  DCAST_INTO_V(gbv, &volume);
-	  
-	  LPoint3f center = gbv->get_approx_center();
-	  avg += center;
-	  num_points++;
-	}
+        const BoundingVolume &volume = arc->get_bound();
+        if (!volume.is_empty() && 
+            volume.is_of_type(GeometricBoundingVolume::get_class_type())) {
+          const GeometricBoundingVolume *gbv;
+          DCAST_INTO_V(gbv, &volume);
+
+          LPoint3f center = gbv->get_approx_center();
+          avg += center;
+          num_points++;
+        }
       }
 
       if (num_points > 0) {
-	avg /= (float)num_points;
-	if (trans_attrib != (TransformAttribute *)NULL) {
-	  avg = avg * trans_attrib->get_matrix();
-	}	
-	distance = gsg->compute_distance_to(avg);
-	got_distance = true;
+        avg /= (float)num_points;
+        if (trans_attrib != (TransformAttribute *)NULL) {
+          avg = avg * trans_attrib->get_matrix();
+        }
+        distance = gsg->compute_distance_to(avg);
+        got_distance = true;
       }
     }
 

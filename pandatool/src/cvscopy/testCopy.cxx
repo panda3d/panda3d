@@ -50,7 +50,7 @@ run() {
 ////////////////////////////////////////////////////////////////////
 bool TestCopy::
 copy_file(const Filename &source, const Filename &dest,
-	  CVSSourceDirectory *, void *, bool) {
+          CVSSourceDirectory *, void *, bool) {
   return copy_binary_file(source, dest);
 }
 

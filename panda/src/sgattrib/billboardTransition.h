@@ -12,7 +12,7 @@
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : BillboardTransition
+//       Class : BillboardTransition
 // Description : This transition, when applied to an arc, causes that
 //               arc and everything below it to be rendered so that it
 //               always faces the camera.  There are all kinds of ways
@@ -46,9 +46,9 @@ public:
   virtual NodeTransition *make_copy() const;
 
   virtual bool sub_render(NodeRelation *arc,
-			  const AllAttributesWrapper &attrib,
-			  AllTransitionsWrapper &trans,
-			  RenderTraverser *trav);
+                          const AllAttributesWrapper &attrib,
+                          AllTransitionsWrapper &trans,
+                          RenderTraverser *trav);
   virtual bool has_sub_render() const;
 
   virtual void output(ostream &out) const;
@@ -83,7 +83,7 @@ public:
   static void init_type() {
     ImmediateTransition::init_type();
     register_type(_type_handle, "BillboardTransition",
-		  ImmediateTransition::get_class_type());
+                  ImmediateTransition::get_class_type());
   }
 
 private:

@@ -23,8 +23,8 @@
 class glxGraphicsPipe : public InteractiveGraphicsPipe, public glxDisplay
 {
     public:
-	
-    	glxGraphicsPipe( const PipeSpecifier& );
+
+        glxGraphicsPipe( const PipeSpecifier& );
 
         virtual TypeHandle get_window_type() const;
 

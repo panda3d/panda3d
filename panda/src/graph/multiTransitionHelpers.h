@@ -19,8 +19,8 @@
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 dmap_compose(InputIterator1 first1, InputIterator1 last1,
-	     InputIterator2 first2, InputIterator2 last2,
-	     OutputIterator result);
+             InputIterator2 first2, InputIterator2 last2,
+             OutputIterator result);
 
 
 ////////////////////////////////////////////////////////////////////
@@ -32,8 +32,8 @@ dmap_compose(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 dmap_invert_compose(InputIterator1 first1, InputIterator1 last1,
-		    InputIterator2 first2, InputIterator2 last2,
-		    OutputIterator result);
+                    InputIterator2 first2, InputIterator2 last2,
+                    OutputIterator result);
 
 
 ////////////////////////////////////////////////////////////////////
@@ -46,7 +46,7 @@ dmap_invert_compose(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator, class OutputIterator>
 OutputIterator
 dmap_invert(InputIterator first, InputIterator last,
-	    OutputIterator result);
+            OutputIterator result);
 
 
 ////////////////////////////////////////////////////////////////////
@@ -60,7 +60,7 @@ dmap_invert(InputIterator first, InputIterator last,
 template<class InputIterator1, class InputIterator2>
 bool
 dmap_equiv(InputIterator1 first1, InputIterator1 last1,
-	   InputIterator2 first2, InputIterator2 last2);
+           InputIterator2 first2, InputIterator2 last2);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: dmap_compare
@@ -72,7 +72,7 @@ dmap_equiv(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator1, class InputIterator2>
 int
 dmap_compare(InputIterator1 first1, InputIterator1 last1,
-	     InputIterator2 first2, InputIterator2 last2);
+             InputIterator2 first2, InputIterator2 last2);
 
 
 ////////////////////////////////////////////////////////////////////
@@ -97,7 +97,7 @@ dmap_is_identity(InputIterator first, InputIterator last);
 template<class InputIterator1, class InputIterator2>
 bool
 bmap_equiv(InputIterator1 first1, InputIterator1 last1,
-	   InputIterator2 first2, InputIterator2 last2);
+           InputIterator2 first2, InputIterator2 last2);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: bmap_compare
@@ -108,7 +108,7 @@ bmap_equiv(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator1, class InputIterator2>
 int
 bmap_compare(InputIterator1 first1, InputIterator1 last1,
-	     InputIterator2 first2, InputIterator2 last2);
+             InputIterator2 first2, InputIterator2 last2);
 
 
 ////////////////////////////////////////////////////////////////////
@@ -120,9 +120,9 @@ bmap_compare(InputIterator1 first1, InputIterator1 last1,
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
 bmap_apply(InputIterator1 first1, InputIterator1 last1,
-	   InputIterator2 first2, InputIterator2 last2,
-	   bool complete_transition, TransitionDirection want_dirs,
-	   OutputIterator result);
+           InputIterator2 first2, InputIterator2 last2,
+           bool complete_transition, TransitionDirection want_dirs,
+           OutputIterator result);
 
 #ifndef DONT_INLINE_GRAPH
 #include "multiTransitionHelpers.I"
