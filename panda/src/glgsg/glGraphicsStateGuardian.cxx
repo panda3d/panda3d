@@ -816,7 +816,10 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_linestrip()" << endl;
 #endif
-  PStatTimer timer(_draw_primitive_pcollector);
+  //  PStatTimer timer(_draw_primitive_pcollector);
+  // Using PStatTimer may cause a compiler crash.
+  _draw_primitive_pcollector.start();
+
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
   call_glLineWidth(geom->get_width());
@@ -883,6 +886,7 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *) {
     glEnd();
   }
   report_errors();
+  _draw_primitive_pcollector.stop();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -929,7 +933,9 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_sprite()" << endl;
 #endif
-  PStatTimer timer(_draw_primitive_pcollector);
+  //  PStatTimer timer(_draw_primitive_pcollector);
+  // Using PStatTimer may cause a compiler crash.
+  _draw_primitive_pcollector.start();
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
   Texture *tex = geom->get_texture();
@@ -998,7 +1004,8 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 
   float half_width = 0.5f * (float) tex->_pbuffer->get_xsize() * fabs(tex_right - tex_left);
   float half_height = 0.5f * (float) tex->_pbuffer->get_ysize() * fabs(tex_top - tex_bottom);
-  float scaled_width, scaled_height;
+  float scaled_width = 0.0f;
+  float scaled_height = 0.0f;
 
   // set up the texture-rendering state
   NodeTransitions state;
@@ -1030,8 +1037,10 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   // inner loop vars
   int i;
   Vertexf source_vert, cameraspace_vert;
-  float *x_walk, *y_walk, *theta_walk;
-  float theta;
+  float *x_walk = (float *)NULL;
+  float *y_walk = (float *)NULL;
+  float *theta_walk = (float *)NULL;
+  float theta = 0.0f;
 
   nassertv(geom->get_x_bind_type() != G_PER_VERTEX);
   nassertv(geom->get_y_bind_type() != G_PER_VERTEX);
@@ -1195,7 +1204,9 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   glLoadMatrixf(_current_projection_mat.get_data());
 #endif
   report_errors();
+  _draw_primitive_pcollector.stop();
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::draw_polygon
@@ -1209,7 +1220,9 @@ draw_polygon(GeomPolygon *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_polygon()" << endl;
 #endif
-  PStatTimer timer(_draw_primitive_pcollector);
+  //  PStatTimer timer(_draw_primitive_pcollector);
+  // Using PStatTimer may cause a compiler crash.
+  _draw_primitive_pcollector.start();
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
   issue_scene_graph_color();
@@ -1271,6 +1284,7 @@ draw_polygon(GeomPolygon *geom, GeomContext *) {
     glEnd();
   }
   report_errors();
+  _draw_primitive_pcollector.stop();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1285,7 +1299,9 @@ draw_tri(GeomTri *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_tri()" << endl;
 #endif
-  PStatTimer timer(_draw_primitive_pcollector);
+  //  PStatTimer timer(_draw_primitive_pcollector);
+  // Using PStatTimer may cause a compiler crash.
+  _draw_primitive_pcollector.start();
   _vertices_tri_pcollector.add_level(geom->get_num_vertices());
 
   issue_scene_graph_color();
@@ -1342,6 +1358,7 @@ draw_tri(GeomTri *geom, GeomContext *) {
 
   glEnd();
   report_errors();
+  _draw_primitive_pcollector.stop();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1356,7 +1373,9 @@ draw_quad(GeomQuad *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_quad()" << endl;
 #endif
-  PStatTimer timer(_draw_primitive_pcollector);
+  //  PStatTimer timer(_draw_primitive_pcollector);
+  // Using PStatTimer may cause a compiler crash.
+  _draw_primitive_pcollector.start();
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
   issue_scene_graph_color();
@@ -1413,6 +1432,7 @@ draw_quad(GeomQuad *geom, GeomContext *) {
 
   glEnd();
   report_errors();
+  _draw_primitive_pcollector.stop();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1427,7 +1447,9 @@ draw_tristrip(GeomTristrip *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_tristrip()" << endl;
 #endif
-  PStatTimer timer(_draw_primitive_pcollector);
+  //  PStatTimer timer(_draw_primitive_pcollector);
+  // Using PStatTimer may cause a compiler crash.
+  _draw_primitive_pcollector.start();
   _vertices_tristrip_pcollector.add_level(geom->get_num_vertices());
 
   issue_scene_graph_color();
@@ -1506,6 +1528,7 @@ draw_tristrip(GeomTristrip *geom, GeomContext *) {
     glEnd();
   }
   report_errors();
+  _draw_primitive_pcollector.stop();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1520,7 +1543,9 @@ draw_trifan(GeomTrifan *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_trifan()" << endl;
 #endif
-  PStatTimer timer(_draw_primitive_pcollector);
+  //  PStatTimer timer(_draw_primitive_pcollector);
+  // Using PStatTimer may cause a compiler crash.
+  _draw_primitive_pcollector.start();
   _vertices_trifan_pcollector.add_level(geom->get_num_vertices());
 
   issue_scene_graph_color();
@@ -1599,6 +1624,7 @@ draw_trifan(GeomTrifan *geom, GeomContext *) {
     glEnd();
   }
   report_errors();
+  _draw_primitive_pcollector.stop();
 }
 
 
@@ -1614,7 +1640,9 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_sphere()" << endl;
 #endif
-  PStatTimer timer(_draw_primitive_pcollector);
+  //  PStatTimer timer(_draw_primitive_pcollector);
+  // Using PStatTimer may cause a compiler crash.
+  _draw_primitive_pcollector.start();
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
   issue_scene_graph_color();
@@ -1683,8 +1711,8 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
 
   gluDeleteQuadric(sph);
   report_errors();
+  _draw_primitive_pcollector.stop();
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::prepare_texture
