@@ -1,0 +1,23 @@
+COLLISION FLAGS
+
+floor: for things that avatars can stand on
+barrier: for things that avatars should collide against that are not floors
+camera-collide: for things that the camera should avoid
+trigger: for things (usually not barriers or floors) that should trigger an
+         event when avatars intersect with them
+sphere: for things that should have a collision sphere around them
+tube: for things that should have a collision tube (cylinder) around them
+
+NOTES
+
+The barrier & camera-collide flags are typically used together.
+
+Currently, the camera automatically pulls itself in front of anything
+marked with the camera-collide flag, so that the view of the avatar isn't
+blocked.
+
+The trigger flag implies that avatars will not collide with the object;
+they can move freely through it.
+
+The sphere & tube flags create a collision object that is as small as
+possible while completely containing the original flagged geometry.
