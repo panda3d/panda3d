@@ -150,6 +150,7 @@ read(Filename filename) {
     // function; instead apparently calling the system delete
     // function.  So we call the delete function by hand instead.
 #ifndef NDEBUG
+    in->~istream();
     (*global_operator_delete)(in);
 #else
     delete in;
