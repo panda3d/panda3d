@@ -291,8 +291,6 @@ reset() {
   GLint max_lights;
   glGetIntegerv(GL_MAX_LIGHTS, &max_lights);
   init_lights(max_lights);
-  glgsg_cat.debug()
-    << "max_lights = " << max_lights << "\n";
 
   // Set up the clip plane id map
   GLint max_clip_planes;
@@ -3321,10 +3319,6 @@ issue_depth_offset(const DepthOffsetAttrib *attrib) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 bind_light(PointLight *light, int light_id) {
-  if (glgsg_cat.is_debug()) {
-    glgsg_cat.debug()
-      << "bind_light(PointLight, " << light_id << ")\n";
-  }
   GLenum id = get_light_id(light_id);
   static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
   glLightfv(id, GL_AMBIENT, black.get_data());
@@ -3366,10 +3360,6 @@ bind_light(PointLight *light, int light_id) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 bind_light(DirectionalLight *light, int light_id) {
-  if (glgsg_cat.is_debug()) {
-    glgsg_cat.debug()
-      << "bind_light(DirectionalLight, " << light_id << ")\n";
-  }
   GLenum id = get_light_id( light_id );
   static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
   glLightfv(id, GL_AMBIENT, black.get_data());
@@ -3412,10 +3402,6 @@ bind_light(DirectionalLight *light, int light_id) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 bind_light(Spotlight *light, int light_id) {
-  if (glgsg_cat.is_debug()) {
-    glgsg_cat.debug()
-      << "bind_light(Spotlight, " << light_id << ")\n";
-  }
   Lens *lens = light->get_lens();
   nassertv(lens != (Lens *)NULL);
 
