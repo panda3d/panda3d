@@ -95,6 +95,22 @@
   #define EXPTP_SHADER extern
 #endif
 
+#ifdef BUILDING_MILES_AUDIO
+  #define EXPCL_MILES_AUDIO __declspec(dllexport)
+  #define EXPTP_MILES_AUDIO
+#else
+  #define EXPCL_MILES_AUDIO __declspec(dllimport)
+  #define EXPTP_MILES_AUDIO extern
+#endif
+
+#ifdef BUILDING_LINUX_AUDIO
+  #define EXPCL_LINUX_AUDIO __declspec(dllexport)
+  #define EXPTP_LINUX_AUDIO
+#else
+  #define EXPCL_LINUX_AUDIO __declspec(dllimport)
+  #define EXPTP_LINUX_AUDIO extern
+#endif
+
 #else   /* !WIN32_VC */
 
 #define EXPCL_PANDA
@@ -123,6 +139,12 @@
 
 #define EXPCL_SHADER
 #define EXPTP_SHADER
+
+#define EXPCL_MILES_AUDIO
+#define EXPTP_MILES_AUDIO
+
+#define EXPCL_LINUX_AUDIO
+#define EXPTP_LINUX_AUDIO
 
 #define EXPCL_FRAMEWORK
 #define EXPTP_FRAMEWORK
