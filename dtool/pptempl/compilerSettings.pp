@@ -6,6 +6,7 @@
   #define COMMONFLAGS /Gi-
   #define OPTFLAGS /O2 /Ob1 /G6
   #define OPT1FLAGS /GZ 
+  #define WARNING_LEVEL_FLAG /W3  
 
   // Note: Zi cannot be used on multiproc builds with precomp hdrs, Z7 must be used instead
   #defer DEBUGPDBFLAGS /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"  
@@ -26,7 +27,43 @@
   
 // in case we have mixed intel/msvc build
   #define EXTRA_LIBPATH /ia32/lib
-  #define EXTRA_INCPATH /ia32/include    
+  #define EXTRA_INCPATH /ia32/include
+  
+#elif $[eq $[USE_COMPILER], MSVC7]
+
+  #define COMPILER cl
+  #define LINKER link
+  #define LIBBER lib
+  
+  // this is too late it must be
+  #define UNKNOWN_ALLOCATOR 1  
+
+  #define COMMONFLAGS /DHAVE_DINKUM 
+  #define OPTFLAGS /O2 /Ob1 /G6
+  #define OPT1FLAGS /GZ /GS
+  
+//  #define WARNING_LEVEL_FLAG /Wall  //this is scary
+  #define WARNING_LEVEL_FLAG /W3   // WL
+
+  // Note: Zi cannot be used on multiproc builds with precomp hdrs, Z7 must be used instead
+  #defer DEBUGPDBFLAGS /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"  
+  #defer DEBUGFLAGS /MDd $[BROWSEINFO_FLAG] $[DEBUGINFOFLAGS] $[DEBUGPDBFLAGS]
+  #define RELEASEFLAGS /MD
+  
+  #define MAPINFOFLAGS /MAPINFO:EXPORTS /MAPINFO:LINES
+  
+  #if $[ENABLE_PROFILING]
+    #define PROFILE_FLAG /FIXED:NO
+  #else
+    #define PROFILE_FLAG 
+  #endif
+ 
+  // Note: all Opts will link w/debug info now 
+  #define LINKER_FLAGS /DEBUG $[PROFILE_FLAG] /MAP $[MAPINFOFLAGS] /fixed:no /incremental:no 
+  
+// in case we have mixed intel/msvc build
+  #define EXTRA_LIBPATH /ia32/lib
+  #define EXTRA_INCPATH /ia32/include      
 #elif $[eq $[USE_COMPILER], BOUNDS] // NuMega BoundsChecker
   #define COMPILER nmcl
   #define LINKER nmlink
@@ -70,6 +107,8 @@
   #define DEBUGFLAGS /MDd /Zi /Qinline_debug_info /Oy-
   #define OPT1FLAGS /GZ /Od
   #define RELEASEFLAGS /MD
+  #define WARNING_LEVEL_FLAG /W3  
+
   // We assume the Intel compiler installation dir is mounted as /ia32.
   #define EXTRA_LIBPATH /ia32/lib
   #define EXTRA_INCPATH /ia32/include  

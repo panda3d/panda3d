@@ -88,8 +88,6 @@
 
 #include $[THISDIRPREFIX]compilerSettings.pp
 
-#define WARNING_LEVEL_FLAG /W3
-
 #if $[TEST_INLINING]
 // /W4 will make MSVC spit out if it inlined a fn or not, but also cause a lot of other spam warnings
 #define WARNING_LEVEL_FLAG /W4
