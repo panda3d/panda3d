@@ -760,7 +760,8 @@ CreateTexture( HDC PrimaryDC, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, 
           delete pnmi;
     }
 
-#if 1
+#if 0
+//#ifdef _DEBUG
 // use dxcapsviewer
     { static BOOL bPrinted=FALSE;
        if(!bPrinted) {
@@ -921,7 +922,11 @@ CreateTexture( HDC PrimaryDC, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, 
 
        if(ddsd.ddpfPixelFormat.dwFlags & DDPF_LUMINANCE) {
            // look for native lum fmt
-         if(!dx_force_16bpptextures) {
+       #ifdef _DEBUG
+         if(!dx_force_16bpptextures) 
+       #endif
+          {
+
            for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
                if((pCurPixFmt->dwRGBBitCount==16) && (pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS) &&
                   (pCurPixFmt->dwFlags & DDPF_LUMINANCE)) {
@@ -1021,8 +1026,10 @@ CreateTexture( HDC PrimaryDC, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, 
               // look for native lum fmt
 
               assert(cNumAlphaBits==0);  // dont handle those other 8bit lum fmts like 4-4, since 16 8-8 is usually supported too
-
-             if(!dx_force_16bpptextures) {
+            #ifdef _DEBUG
+             if(!dx_force_16bpptextures) 
+            #endif
+             {
               for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
                   if((pCurPixFmt->dwRGBBitCount==8) && (pCurPixFmt->dwFlags & DDPF_LUMINANCE) &&
                      (pCurPixFmt->dwLuminanceBitMask=0xFF)) {
@@ -1165,8 +1172,9 @@ CreateTexture( HDC PrimaryDC, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, 
         aniso_degree=_tex->get_anisotropic_degree();
         if((aniso_degree>devDesc.dwMaxAnisotropy) 
 #ifdef _DEBUG
-           || dx_force_anisotropic_filtering) 
+           || dx_force_anisotropic_filtering
 #endif
+          )
              aniso_degree=devDesc.dwMaxAnisotropy;
     } 
     _tex->set_anisotropic_degree(aniso_degree);
