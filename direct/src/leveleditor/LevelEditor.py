@@ -1946,9 +1946,17 @@ class LevelEditor(NodePath, PandaObject):
         self.reset(fDeleteToplevel = 1, fCreateToplevel = 0)
         # Now load in new file
         node = loadDNAFile(DNASTORE, filename, CSDefault, 1)
-        newNPToplevel = hidden.attachNewNode(node)
+        # Make sure the node only has one parent
+        assert(node.getNumParents(RenderRelation.getClassType()) == 1)
+        # Make a new level editor node path using the arc that is already on this node
+        newNPToplevel = NodePath()
+        newNPToplevel.extendBy(node.getParent(RenderRelation.getClassType(), 0))
+        newNPToplevel.reparentTo(hidden)
         # Make sure the topmost file DNA object gets put under DNARoot
         newDNAToplevel = self.findDNANode(newNPToplevel)
+        
+        #import pdb
+        #pdb.set_trace()
         
         # reset the landmark block number:
         (self.landmarkBlock, needTraverse)=self.findHighestLandmarkBlock(
