@@ -47,11 +47,6 @@ PPScope::MapVariableDefinition PPScope::_null_map_def;
 
 PPScope::ScopeStack PPScope::_scope_stack;
 
-#ifdef PLATFORM_CYGWIN
-extern "C" void cygwin_conv_to_win32_path(const char *path, char *win32);
-extern "C" void cygwin_conv_to_posix_path(const char *path, char *posix);
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PPScope::Constructor
 //       Access: Public
@@ -895,9 +890,11 @@ r_expand_variable(const string &str, size_t &vp,
     } else if (funcname == "unixfilename") {
       return expand_unixfilename(params);
     } else if (funcname == "cygpath_w") {
-      return expand_cygpath_w(params);
+      // This maps to osfilename for historical reasons.
+      return expand_osfilename(params);
     } else if (funcname == "cygpath_p") {
-      return expand_cygpath_p(params);
+      // This maps to unixfilename for historical reasons.
+      return expand_unixfilename(params);
     } else if (funcname == "wildcard") {
       return expand_wildcard(params);
     } else if (funcname == "isdir") {
@@ -1203,70 +1200,6 @@ expand_unixfilename(const string &params) {
 
   string result = repaste(words, " ");
   return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PPScope::expand_cygpath_w
-//       Access: Private
-//  Description: Expands the "cygpath_w" function variable.  
-//
-//               This converts the Unix-style filename to a Windows
-//               filename using the Cygwin rules when ppremake has
-//               been compiled with Cygwin; it is thus equivalent to
-//               the result of the cygpath -w command.
-//
-//               When Cygwin is not available, this returns the same
-//               as the "osfilename" variable.
-////////////////////////////////////////////////////////////////////
-string PPScope::
-expand_cygpath_w(const string &params) {
-  string filename = trim_blanks(expand_string(params));
-
-#ifdef PLATFORM_CYGWIN
-  char result[4096];
-
-  // In Win32, we're either running Cygwin, in which case this
-  // function is statically linked in and definitely non-NULL, or
-  // we're running native Win32, in which case this function may or
-  // may not have been dynamically linked in.  In either case, use it
-  // if we've got it.
-  cygwin_conv_to_win32_path(filename.c_str(), result);
-  filename = result;
-#else
-  Filename fn(filename);
-  filename = fn.to_os_specific();
-#endif  // PLATFORM_CYGWIN
-
-  return filename;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PPScope::expand_cygpath_p
-//       Access: Private
-//  Description: Expands the "cygpath_p" function variable.
-//
-//               This converts the Windows filename to a Unix-style
-//               filename using the Cygwin rules when ppremake has
-//               been compiled with Cygwin; it is thus equivalent to
-//               the result of the cygpath -p command.
-//
-//               When Cygwin is not available, this returns the same
-//               as the "unixfilename" variable.
-////////////////////////////////////////////////////////////////////
-string PPScope::
-expand_cygpath_p(const string &params) {
-  string filename = trim_blanks(expand_string(params));
-
-#ifdef PLATFORM_CYGWIN
-  char result[4096];
-
-  cygwin_conv_to_posix_path(filename.c_str(), result);
-  filename = result;
-#else
-  filename = Filename::from_os_specific(filename);
-#endif  // PLATFORM_CYGWIN
-
-  return filename;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -27,7 +27,7 @@
 #include <strstream.h>
 #endif
 
-#if defined(PLATFORM_CYGWIN) || defined(WIN32_VC)
+#if defined(HAVE_CYGWIN) || defined(WIN32_VC)
 // Either Cygwin or Visual C++ is a Win32 environment.
 #define WIN32
 #endif

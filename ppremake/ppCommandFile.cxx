@@ -1694,7 +1694,7 @@ compare_output(const string &new_contents, Filename filename,
         diff_ok = true;
       }
       out_b.close();
-      string command = "diff -u '" + filename.get_fullpath() + "' '" + 
+      string command = "diff -ub '" + filename.get_fullpath() + "' '" + 
         temp_filename.get_fullpath() + "'";
       int sys_result = system(command.c_str());
       if (sys_result < 0) {

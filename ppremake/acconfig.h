@@ -20,8 +20,8 @@
 /* Define if the C++ iostream library supports ios::binary.  */
 #undef HAVE_IOS_BINARY
 
-/* Define if we're compiling for Cygwin. */
-#undef PLATFORM_CYGWIN
+/* Define if we're compiling with Cygwin. */
+#undef HAVE_CYGWIN
 
 /* Define if we're compiling using Windows Microsoft Visual C++. */
 #undef WIN32_VC
