@@ -10,5 +10,6 @@ render = base.render
 hidden = base.hidden
 camera = base.camera
 loader = base.loader
+ostream = Notify.out()
 run = base.run
 tkroot = base.tkroot

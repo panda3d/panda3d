@@ -27,6 +27,9 @@ class ShowBase:
         import Loader
 
         self.initialState = NodeAttributes()
+        # Set a default "off color" (i.e. use poly color) for color transitions
+        self.initialState.setAttribute(ColorTransition.getClassType(),
+                                       ColorAttribute())
         self.renderTop = NodePath(NamedNode('renderTop'))
         self.render = self.renderTop.attachNewNode('render')
         self.hidden = NodePath(NamedNode('hidden'))

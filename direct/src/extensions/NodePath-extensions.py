@@ -51,12 +51,31 @@
         self.hideSiblings()
 
     def remove(self):
-	# Send message in case anyone needs to do something
+        from PandaObject import *
+        # Send message in case anyone needs to do something
         # before node is deleted
-	messenger.send('preRemoveNodePath', [self])
-	# Remove nodePath
-	self.reparentTo(hidden)
-	self.removeNode()
+        messenger.send('preRemoveNodePath', [self])
+        # Remove nodePath
+        self.reparentTo(hidden)
+        self.removeNode()
+
+    def reversels(self):
+        ancestry = self.getAncestry()
+        indentString = ""
+        for nodePath in ancestry:
+            type = nodePath.node().getType().getName()
+            name = nodePath.getNodePathName()
+            print indentString + type + "  " + name
+            indentString = indentString + " "
+
+    def getAncestry(self):
+        from PandaObject import *
+        if self.node() != render.node():
+            ancestry = self.getParent().getAncestry()
+            ancestry.append(self)
+            return ancestry
+        else:
+            return [self]
 
     # private methods
     

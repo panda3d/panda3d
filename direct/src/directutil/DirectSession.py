@@ -14,31 +14,30 @@ class DirectSession(PandaObject):
         for camera in base.cameraList:
             self.contextList.append(DisplayRegionContext(base.win, camera))
             self.iRayList.append(SelectionRay(camera))
-        self.chanCenter = self.getChanData(0)
+        self.chan = self.getChanData(0)
+        self.camera = base.cameraList[0]
 
-        self.cameraControls = DirectCameraControl(self)
-        self.manipulationControls = DirectManipulationControl(self)
+        self.cameraControl = DirectCameraControl(self)
+        self.manipulationControl = DirectManipulationControl(self)
+        self.useObjectHandles()
 
         # Initialize the collection of selected nodePaths
-        self.selected = SelectedNodePaths()
+        self.selected = SelectedNodePaths(self)
 
         self.readout = OnscreenText.OnscreenText( '', 0.1, -0.95 )
         # self.readout.textNode.setCardColor(0.5, 0.5, 0.5, 0.5)
         self.readout.reparentTo( hidden )
 
-        self.createObjectHandles()
-        self.useObjectHandles()
-        
         self.fControl = 0
         self.fAlt = 0
         self.fShift = 0
         self.in2DWidget = 0
 
+        self.pos = VBase3()
+        self.hpr = VBase3()
+        self.scale = VBase3()
+
         self.iRay = self.iRayList[0]
-        self.iRay.rayCollisionNodePath.node().setFromCollideMask(
-            BitMask32().allOff())
-        self.iRay.rayCollisionNodePath.node().setIntoCollideMask(
-            BitMask32().allOff())
         self.hitPt = Point3(0.0)
 
         self.actionEvents = [('select', self.select),
@@ -52,7 +51,6 @@ class DirectSession(PandaObject):
                           'shift', 'shift-up', 'alt', 'alt-up',
                           'control', 'control-up',
                           'b', 'c', 'f', 'l', 't', 'v', 'w']
-
         self.mouseEvents = ['mouse1', 'mouse1-up',
                             'mouse2', 'mouse2-up',
                             'mouse3', 'mouse3-up']
@@ -64,36 +62,38 @@ class DirectSession(PandaObject):
             self.readout.reparentTo(render2d)
             self.readout.setText(dnp.name)
             # Show the manipulation widget
-            self.objectHandles.reparentTo(render)
-            # Adjust its size
-            self.objectHandles.setScale(dnp.getRadius())
+            self.widget.reparentTo(render)
 
-            # TBD Compute widget COA
-            
             # Update camera controls coa to this point
-            wrtMat = dnp.getMat(base.camera)
-            self.cameraControls.updateCoa(
-                wrtMat.xformPoint(dnp.getCenter()))
+            # Coa2Camera = Coa2Dnp * Dnp2Camera
+            mCoa2Camera = dnp.mCoa2Dnp * dnp.getMat(base.camera)
+            row = mCoa2Camera.getRow(3)
+            coa = Vec3(row[0], row[1], row[2])
+            self.cameraControl.updateCoa(coa)
+
+            # Adjust widgets size
+            self.widget.setScale(dnp.getRadius())
             
             # Spawn task to have object handles follow the selected object
             taskMgr.removeTasksNamed('followSelectedNodePath')
             t = Task.Task(self.followSelectedNodePathTask)
-            t.nodePath = dnp
+            t.dnp = dnp
             taskMgr.spawnTaskNamed(t, 'followSelectedNodePath')
             # Send an message marking the event
             messenger.send('selectedNodePath', [dnp])
 
     def followSelectedNodePathTask(self, state):
-        nodePath = state.nodePath
-        pos = nodePath.getPos(render)
-        self.objectHandles.setPos(pos)
+        mCoa2Render = state.dnp.mCoa2Dnp * state.dnp.getMat(render)
+        mCoa2Render.decomposeMatrix(
+            self.scale,self.hpr,self.pos,getDefaultCoordinateSystem())
+        self.widget.setPosHpr(self.pos,self.hpr)
         return Task.cont
 
     def deselect(self, nodePath):
-        dnp = self.snp.deselect(nodePath)
+        dnp = self.selected.deselect(nodePath)
         if dnp:
             # Hide the manipulation widget
-            self.objectHandles.reparentTo(hidden)
+            self.widget.reparentTo(hidden)
             self.readout.reparentTo(hidden)
             self.readout.setText(' ')
             taskMgr.removeTasksNamed('followSelectedNodePath')
@@ -103,7 +103,7 @@ class DirectSession(PandaObject):
     def deselectAll(self):
         self.selected.deselectAll()
         # Hide the manipulation widget
-        self.objectHandles.reparentTo(hidden)
+        self.widget.reparentTo(hidden)
         self.readout.reparentTo(hidden)
         self.readout.setText(' ')
         taskMgr.removeTasksNamed('followSelectedNodePath')
@@ -116,9 +116,9 @@ class DirectSession(PandaObject):
         for context in self.contextList:
             context.spawnContextTask()
 	# Turn on mouse Flying
-	self.cameraControls.enableMouseFly()
+	self.cameraControl.enableMouseFly()
         # Turn on object manipulation
-        self.manipulationControls.enableManipulation()
+        self.manipulationControl.enableManipulation()
 	# Accept appropriate hooks
 	self.enableKeyEvents()
 	self.enableMouseEvents()
@@ -129,9 +129,9 @@ class DirectSession(PandaObject):
         for context in self.contextList:
             context.removeContextTask()
 	# Turn off camera fly
-	self.cameraControls.disableMouseFly()
+	self.cameraControl.disableMouseFly()
         # Turn off object manipulation
-        self.manipulationControls.disableManipulation()
+        self.manipulationControl.disableManipulation()
 	self.disableKeyEvents()
 	self.disableMouseEvents()
 	self.disableActionEvents()
@@ -141,7 +141,7 @@ class DirectSession(PandaObject):
 	for context in self.contextList:
             context.removeContextTask()
 	# Turn off camera fly
-	self.cameraControls.disableMouseFly()
+	self.cameraControl.disableMouseFly()
 	# Ignore keyboard and action events
 	self.disableKeyEvents()
 	self.disableActionEvents()
@@ -167,7 +167,7 @@ class DirectSession(PandaObject):
             self.accept(event, self.inputHandler, [event])
 
     def disableActionEvents(self):
-        for event in self.actionEvents:
+        for event, method in self.actionEvents:
             self.ignore(event)
 
     def disableKeyEvents(self):
@@ -179,7 +179,7 @@ class DirectSession(PandaObject):
             self.ignore(event)
 
     def useObjectHandles(self):
-        self.widget = self.objectHandles
+        self.widget = self.manipulationControl.objectHandles
 
     def hideReadout(self):
 	self.readout.reparentTo(hidden)
@@ -236,32 +236,6 @@ class DirectSession(PandaObject):
             base.toggleTexture()
         elif input == 'w':
             base.toggleWireframe()
-
-    def createObjectHandles(self):
-	oh = self.objectHandles = hidden.attachNewNode(
-            NamedNode('objectHandles') )
-	ohLines = LineNodePath( oh )
-	ohLines.setColor( VBase4( 1.0, 0.0, 1.0, 1.0) )
-	ohLines.setThickness( 3.0 )
-
-	# InnerRing
-	ohLines.moveTo( 0.8, 0.0, 0.0 )
-        for ang in range(10, 360, 10):
-            ohLines.drawTo( (0.8 * math.cos(deg2Rad(ang))),
-                            (0.8 * math.sin(deg2Rad(ang))),
-                            0.0 )
-
-	# Outer Ring 
-	ohLines.moveTo( 1.2, 0.0, 0.0 )
-        for ang in range(0, 360, 10):
-            ohLines.drawTo( (1.2 * math.cos(deg2Rad(ang))),
-                            (1.2 * math.sin(deg2Rad(ang))),
-                            0.0 )
-
-	ohLines.moveTo( 0.0, 0.0, 0.0 )
-	ohLines.drawTo( 0.0, 0.0, 1.5 )
-        # Create the line segments
-	ohLines.create()
         
 class DisplayRegionContext(PandaObject):
     def __init__(self, win, camera):
@@ -270,6 +244,7 @@ class DisplayRegionContext(PandaObject):
         self.cam = camera.getChild(0)
         self.camNode = self.cam.getNode(0)
         self.mouseData = win.getMouseData(0)
+        self.nearVec = Vec3(0)
         self.mouseX = 0.0
         self.mouseY = 0.0
 
@@ -303,17 +278,27 @@ class DisplayRegionContext(PandaObject):
         self.fovV = self.camNode.getVfov()
         self.nearWidth = math.tan(deg2Rad(self.fovH / 2.0)) * self.near * 2.0
         self.nearHeight = math.tan(deg2Rad(self.fovV / 2.0)) * self.near * 2.0
+        self.left = -self.nearWidth/2.0
+        self.right = self.nearWidth/2.0
+        self.top = self.nearHeight/2.0
+        self.bottom = -self.nearHeight/2.0
         # Mouse Data
         # Last frame
         self.mouseLastX = self.mouseX
         self.mouseLastY = self.mouseY
-        # This frame
+        # Values for this frame
+        # Pixel coordinates of the mouse
         self.mousePixelX = self.mouseData.getX()
         self.mousePixelY = self.mouseData.getY()
+        # This ranges from -1 to 1
         self.mouseX = ((self.mousePixelX / float(self.width)) * 2.0) - 1.0
         self.mouseY = ((self.mousePixelY / float(self.height)) * -2.0) + 1.0
+        # Delta percent of window the mouse moved
         self.mouseDeltaX = self.mouseX - self.mouseLastX
         self.mouseDeltaY = self.mouseY - self.mouseLastY
+        self.nearVec.set((self.nearWidth/2.0) * self.mouseX,
+                         self.near,
+                         (self.nearHeight/2.0) * self.mouseY)
         # Continue the task
         return Task.cont
 

@@ -3,46 +3,184 @@ from DirectGeometry import *
 from DirectSelection import *
 
 
-class SelectionRay:
-    def __init__(self, camera, fGeom = 1):
-        # Record the camera associated with this selection ray
-        self.camera = camera
-        # Create a collision node
-        self.rayCollisionNodePath = camera.attachNewNode( CollisionNode() )
-        # Don't pay the penalty of drawing this collision ray
-        self.rayCollisionNodePath.hide()
-        rayCollisionNode = self.rayCollisionNodePath.node()
-        # Specify if this ray collides with geometry
-        rayCollisionNode.setCollideGeom(fGeom)
-        # Create a collision ray
-        self.ray = CollisionRay()
-        # Add the ray to the collision Node
-        rayCollisionNode.addSolid( self.ray )
-        # Create a queue to hold the collision results
-        self.cq = CollisionHandlerQueue()
-        self.numEntries = 0
-        # And a traverser to do the actual collision tests
-        self.ct = CollisionTraverser( RenderRelation.getClassType() )
-        # Let the traverser know about the queue and the collision node
-        self.ct.addCollider(rayCollisionNode, self.cq )
+class DirectNodePath(NodePath):
+    # A node path augmented with info, bounding box, and utility methods
+    def __init__(self, nodePath):
+        # Initialize the superclass
+        NodePath.__init__(self)
+        self.assign(nodePath)
+        # Get a reasonable name
+        self.name = self.getNodePathName()
+        # Create a bounding box
+        self.bbox = DirectBoundingBox(self)
+        center = self.bbox.getCenter()
+        # Create matrix to hold the offset between the nodepath
+        # and its center of action (COA)
+        self.mCoa2Dnp = Mat4()
+        self.mCoa2Dnp.assign(Mat4.identMat())
+        self.mCoa2Dnp.setRow(3, Vec4(center[0], center[1], center[2], 1))
+        # Transform from nodePath to widget
+        self.mDnp2Widget = Mat4()
+        self.mDnp2Widget.assign(Mat4.identMat())
+        # Use value of this pointer as unique ID
+        self.id = self.node().this
 
-    def pick(self, targetNodePath, mouseX, mouseY):
-        # Determine ray direction based upon the mouse coordinates
-        # Note! This has to be a cam object (of type ProjectionNode)
-        self.ray.setProjection( base.cam.node(), mouseX, mouseY )
-        self.ct.traverse( targetNodePath.node() )
-        self.numEntries = self.cq.getNumEntries()
-        return self.numEntries
+    def highlight(self):
+        self.bbox.show()
 
-    def objectToHitPt(self, index):
-        return self.cq.getEntry(index).getIntoIntersectionPoint()
+    def dehighlight(self):
+        self.bbox.hide()
 
-    def camToHitPt(self, index):
-        # Get the specified entry
-        entry = self.cq.getEntry(index)
-        hitPt = entry.getIntoIntersectionPoint()
-        # Convert point from object local space to camera space
-        return entry.getInvWrtSpace().xformPoint(hitPt)
+    def getCenter(self):
+        return self.bbox.getCenter()
+
+    def getRadius(self):
+        return self.bbox.getRadius()
+
+    def getMin(self):
+        return self.bbox.getMin()
+
+    def getMax(self):
+        return self.bbox.getMax()
+
+    def __repr__(self):
+        return ('NodePath:\t%s\n' % self.name)
+
+
+class SelectedNodePaths(PandaObject):
+    def __init__(self,direct):
+        self.direct = direct
+        self.selectedDict = {}
+        self.deselectedDict = {}
+        self.last = None
+
+    def select(self, nodePath, fMultiSelect = 0):
+	# Do nothing if nothing selected
+        if not nodePath:
+            print 'Nothing selected!!'
+            return None
+        
+	# Reset selected objects and highlight if multiSelect is false
+        if not fMultiSelect:
+            self.deselectAll()
+
+        # Get this pointer
+        id = nodePath.node().this
+        # First see if its already in the selected dictionary
+        dnp = self.selectedDict.get(id, None)
+        # If so, we're done
+        if not dnp:
+            # See if it is in the deselected dictionary
+            dnp = self.deselectedDict.get(id, None)
+            if dnp:
+                # It has been previously selected:
+                # Show its bounding box
+                dnp.highlight()
+                # Remove it from the deselected dictionary
+                del(self.deselectedDict[id])
+            else:
+                # Didn't find it, create a new selectedNodePath instance
+                dnp = DirectNodePath(nodePath)
+                # Show its bounding box
+                dnp.highlight()
+            # Add it to the selected dictionary
+            self.selectedDict[dnp.id] = dnp
+        # And update last
+        self.last = dnp
+        return dnp
+
+    def deselect(self, nodePath):
+        # Get this pointer
+        id = nodePath.node().this
+        # See if it is in the selected dictionary
+        dnp = self.selectedDict.get(id, None)
+        if dnp:
+            # It was selected:
+            # Hide its bounding box
+            dnp.dehighlight()
+            # Remove it from the selected dictionary
+            del(self.selectedDict[id])
+            # And keep track of it in the deselected dictionary
+            self.deselectedDict[id] = dnp
+        return dnp
+
+    def selectedAsList(self):
+        list = []
+        for key in self.selectedDict.keys():
+            list.append(self.selectedDict[key])
+
+    def deselectedAsList(self):
+        list = []
+        for key in self.deselectedDict.keys():
+            list.append(self.deselectedDict[key])
+
+    def forEachSelectedNodePathDo(self, func):
+        duplicateKeys = self.selectedDict.keys()[:]
+        for key in duplicateKeys:
+            func(self.selectedDict[key])
+
+    def forEachDeselectedNodePathDo(self, func):
+        duplicateKeys = self.deselectedDict.keys()[:]
+        for key in duplicateKeys:
+            func(self.deselectedDict[key])
+
+    def getWrtAll(self):
+        self.forEachSelectedNodePathDo(self.getWrt)
+
+    def getWrt(self, nodePath):
+        nodePath.mDnp2Widget.assign(nodePath.getMat(self.direct.widget))
+
+    def moveWrtWidgetAll(self):
+        self.forEachSelectedNodePathDo(self.moveWrtWidget)
+
+    def moveWrtWidget(self, nodePath):
+        nodePath.setMat(self.direct.widget, nodePath.mDnp2Widget)
+
+    def deselectAll(self):
+        self.forEachSelectedNodePathDo(self.deselect)
+
+    def highlightAll(self):
+        self.forEachSelectedNodePathDo(DirectNodePath.highlight)
+
+    def dehighlightAll(self):
+        self.forEachSelectedNodePathDo(DirectNodePath.dehighlight)
+
+    def removeSelected(self):
+	selected = self.dnp.last
+        if selected:
+            selected.remove()
+        
+    def removeAll(self):
+	# Remove all selected nodePaths from the Scene Graph
+        self.forEachSelectedNodePathDo(NodePath.remove)
+
+    def toggleVizSelected(self):
+	selected = self.dnp.last
+        # Toggle visibility of selected node paths
+        if selected:
+            selected.toggleViz()
+
+    def toggleVizAll(self):
+        # Toggle viz for all selected node paths
+        self.forEachSelectedNodePathDo(NodePath.toggleViz)
+
+    def isolateSelected(self):
+	selected = self.dnp.last
+        if selected:
+            selected.isolate()
+
+    def getDirectNodePath(self, nodePath):
+        # Get this pointer
+        id = nodePath.node().this
+        # First check selected dict
+        dnp = self.selectedDict.get(id, None)
+        if dnp:
+            return dnp
+        # Otherwise return result of deselected search
+        return self.selectedDict.get(id, None)
+
+    def getNumSelected(self):
+        return len(self.selectedDict.keys())
 
 
 class DirectBoundingBox:
@@ -163,7 +301,7 @@ class DirectBoundingBox:
 
     def __repr__(self):
         return (`self.__class__` + 
-                '\nNodePath:\t%s\n' % self.name +
+                '\nNodePath:\t%s\n' % self.nodePath.getNodePathName() +
                 'Min:\t\t%s\n' % self.vecAsString(self.min) +
                 'Max:\t\t%s\n' % self.vecAsString(self.max) +
                 'Center:\t\t%s\n' % self.vecAsString(self.center) +
@@ -171,178 +309,64 @@ class DirectBoundingBox:
                 )
 
 
-class DirectNodePath(NodePath):
-    # A node path augmented with info, bounding box, and utility methods
-    def __init__(self, nodePath):
-        # Initialize the superclass
-        NodePath.__init__(self)
-        self.assign(nodePath)
-        # Get a reasonable name
-        self.name = self.getNodePathName()
-        # Create a bounding box
-        self.bbox = DirectBoundingBox(self)
-        # Use value of this pointer as unique ID
-        self.id = self.node().this
-        # Show bounding box
-        self.highlight()
+class SelectionRay:
+    def __init__(self, camera):
+        # Record the camera associated with this selection ray
+        self.camera = camera
+        # Create a collision node
+        self.rayCollisionNodePath = camera.attachNewNode( CollisionNode() )
+        # Don't pay the penalty of drawing this collision ray
+        self.rayCollisionNodePath.hide()
+        self.rayCollisionNode = self.rayCollisionNodePath.node()
+        # Intersect with geometry to begin with
+        self.collideWithGeom()
+        # Create a collision ray
+        self.ray = CollisionRay()
+        # Add the ray to the collision Node
+        self.rayCollisionNode.addSolid( self.ray )
+        # Create a queue to hold the collision results
+        self.cq = CollisionHandlerQueue()
+        self.numEntries = 0
+        # And a traverser to do the actual collision tests
+        self.ct = CollisionTraverser( RenderRelation.getClassType() )
+        # Let the traverser know about the queue and the collision node
+        self.ct.addCollider(self.rayCollisionNode, self.cq )
 
-    def highlight(self):
-        self.bbox.show()
+    def pickGeom(self, targetNodePath, mouseX, mouseY):
+        self.collideWithGeom()
+        return self.pick(targetNodePath, mouseX, mouseY)
 
-    def dehighlight(self):
-        self.bbox.hide()
+    def pickWidget(self, targetNodePath, mouseX, mouseY):
+        self.collideWithWidget()
+        return self.pick(targetNodePath, mouseX, mouseY)
 
-    def getCenter(self):
-        return self.bbox.getCenter()
+    def pick(self, targetNodePath, mouseX, mouseY):
+        # Determine ray direction based upon the mouse coordinates
+        # Note! This has to be a cam object (of type ProjectionNode)
+        self.ray.setProjection( base.cam.node(), mouseX, mouseY )
+        self.ct.traverse( targetNodePath.node() )
+        self.numEntries = self.cq.getNumEntries()
+        return self.numEntries
 
-    def getRadius(self):
-        return self.bbox.getRadius()
+    def collideWithGeom(self):
+        self.rayCollisionNode.setIntoCollideMask(BitMask32().allOff())
+        self.rayCollisionNode.setFromCollideMask(BitMask32().allOff())
+        self.rayCollisionNode.setCollideGeom(1)
 
-    def getMin(self):
-        return self.bbox.getMin()
+    def collideWithWidget(self):
+        self.rayCollisionNode.setIntoCollideMask(BitMask32().allOff())
+        mask = BitMask32()
+        mask.setWord(0x80000000)
+        self.rayCollisionNode.setFromCollideMask(mask)
+        self.rayCollisionNode.setCollideGeom(0)
 
-    def getMax(self):
-        return self.bbox.getMax()
+    def objectToHitPt(self, index):
+        return self.cq.getEntry(index).getIntoIntersectionPoint()
 
-    def __repr__(self):
-        return ('NodePath:\t%s\n' % self.name)
+    def camToHitPt(self, index):
+        # Get the specified entry
+        entry = self.cq.getEntry(index)
+        hitPt = entry.getIntoIntersectionPoint()
+        # Convert point from object local space to camera space
+        return entry.getInvWrtSpace().xformPoint(hitPt)
 
-class SelectedNodePaths(PandaObject):
-    def __init__(self):
-        self.selectedDict = {}
-        self.deselectedDict = {}
-        self.last = None
-
-    def select(self, nodePath, fMultiSelect = 0):
-	# Do nothing if nothing selected
-        if not nodePath:
-            print 'Nothing selected!!'
-            return None
-        
-	# Reset selected objects and highlight if multiSelect is false
-        if not fMultiSelect:
-            self.deselectAll()
-
-        # Get this pointer
-        id = nodePath.node().this
-        # First see if its already in the selected dictionary
-        dnp = self.selectedDict.get(id, None)
-        # If so, we're done
-        if not dnp:
-            # See if it is in the deselected dictionary
-            dnp = self.deselectedDict.get(id, None)
-            if dnp:
-                # It has been previously selected:
-                # Show its bounding box
-                dnp.highlight()
-                # Remove it from the deselected dictionary
-                del(self.deselectedDict[id])
-            else:
-                # Didn't find it, create a new selectedNodePath instance
-                dnp = DirectNodePath(nodePath)
-            # Add it to the selected dictionary
-            self.selectedDict[dnp.id] = dnp
-        # And update last
-        self.last = dnp
-        return dnp
-
-    def deselect(self, nodePath):
-        # Get this pointer
-        id = nodePath.node().this
-        # See if it is in the selected dictionary
-        dnp = self.selectedDict.get(id, None)
-        if dnp:
-            # It was selected:
-            # Hide its bounding box
-            dnp.dehighlight()
-            # Remove it from the selected dictionary
-            del(self.selectedDict[id])
-            # And keep track of it in the deselected dictionary
-            self.deselectedDict[id] = dnp
-        return dnp
-
-    def selectedAsList(self):
-        list = []
-        for key in self.selectedDict.keys():
-            list.append(self.selectedDict[key])
-
-    def deselectedAsList(self):
-        list = []
-        for key in self.deselectedDict.keys():
-            list.append(self.deselectedDict[key])
-
-    def forEachSelectedNodePathDo(self, func):
-        duplicateKeys = self.selectedDict.keys()[:]
-        for key in duplicateKeys:
-            func(self.selectedDict[key])
-
-    def forEachDeselectedNodePathDo(self, func):
-        duplicateKeys = self.deselectedDict.keys()[:]
-        for key in duplicateKeys:
-            func(self.deselectedDict[key])
-
-    def deselectAll(self):
-        self.forEachSelectedNodePathDo(self.deselect)
-
-    def highlightAll(self):
-        self.forEachSelectedNodePathDo(DirectNodePath.highlight)
-
-    def dehighlightAll(self):
-        self.forEachSelectedNodePathDo(DirectNodePath.dehighlight)
-
-    def removeSelected(self):
-	selected = self.dnp.last
-        if selected:
-            selected.remove()
-        
-    def removeAll(self):
-	# Remove all selected nodePaths from the Scene Graph
-        self.forEachSelectedNodePathDo(NodePath.remove)
-
-    def toggleVizSelected(self):
-	selected = self.dnp.last
-        # Toggle visibility of selected node paths
-        if selected:
-            selected.toggleViz()
-
-    def toggleVizAll(self):
-        # Toggle viz for all selected node paths
-        self.forEachSelectedNodePathDo(NodePath.toggleViz)
-
-    def isolateSelected(self):
-	selected = self.dnp.last
-        if selected:
-            selected.isolate()
-
-    def getDirectNodePath(self, nodePath):
-        # Get this pointer
-        id = nodePath.node().this
-        # First check selected dict
-        dnp = self.selectedDict.get(id, None)
-        if dnp:
-            return dnp
-        # Otherwise return result of deselected search
-        return self.selectedDict.get(id, None)
-
-    def getNumSelected(self):
-        return len(self.selectedDict.keys())
-
-"""
-dd = loader.loadModel(r"I:\beta\toons\install\neighborhoods\donalds_dock")
-dd.reparentTo(render)
-
-# Operations on cq
-cq.getNumEntries()
-cq.getEntry(0).getIntoNode()
-cq.getEntry(0).getIntoNode().getName()
-print cq.getEntry(i).getIntoIntersectionPoint()
-
-for i in range(0,bobo.cq.getNumEntries()):
-    name = bobo.cq.getEntry(i).getIntoNode().getName()
-    if not name:
-        name = "<noname>"
-    print name
-    print bobo.cq.getEntry(i).getIntoIntersectionPoint()[0],
-    print bobo.cq.getEntry(i).getIntoIntersectionPoint()[1],
-    print bobo.cq.getEntry(i).getIntoIntersectionPoint()[2]
-"""

@@ -56,3 +56,15 @@ class LineNodePath(NodePath):
 
     def getVertexColor( self ):
         return self.lineSegs.getVertexColor()
+
+
+##
+## Given a point in space, and a direction, find the point of intersection
+## of that ray with a plane at the specified origin, with the specified normal
+def planeIntersect (lineOrigin, lineDir, planeOrigin, normal):
+    t = 0
+    offset = planeOrigin - lineOrigin
+    t = offset.dot(normal) / lineDir.dot(normal)
+    hitPt = lineDir * t
+    return hitPt + lineOrigin
+

@@ -6,7 +6,7 @@ class DirectCameraControl(PandaObject):
     def __init__(self, direct):
         # Create the grid
         self.direct = direct
-        self.chan = direct.chanCenter
+        self.chan = direct.chan
         self.camera = self.chan.camera
 	self.orthoViewRoll = 0.0
 	self.lastView = 0
@@ -27,13 +27,17 @@ class DirectCameraControl(PandaObject):
 	# Where are we in the channel?
         if ((abs(self.initMouseX) < 0.9) & (abs(self.initMouseY) < 0.9)):
             # MOUSE IS IN CENTRAL REGION
+            # Hide the marker for this kind of motion
+            self.coaMarker.hide()
+            # See if the shift key is pressed
             if (self.direct.fShift):
                 # If shift key is pressed, just perform horiz and vert pan:
                 self.spawnHPPan()
             else:
                 # Otherwise, check for a hit point based on current mouse position
                 # And then spawn task to determine mouse mode
-                numEntries = self.direct.iRay.pick(render,chan.mouseX,chan.mouseY)
+                numEntries = self.direct.iRay.pickGeom(
+                    render,chan.mouseX,chan.mouseY)
                 coa = Point3(0)
                 if(numEntries):
                     # Start off with first point
@@ -77,6 +81,10 @@ class DirectCameraControl(PandaObject):
     def mouseFlyStop(self):
 	taskMgr.removeTasksNamed('determineMouseFlyMode')
 	taskMgr.removeTasksNamed('manipulateCamera')
+        # Show the marker
+        self.coaMarker.show()
+        # Resize it
+        self.updateCoaMarkerSize()
 
     def determineMouseFlyMode(self):
         # Otherwise, determine mouse fly mode
@@ -103,8 +111,16 @@ class DirectCameraControl(PandaObject):
             self.coaDist = Vec3(self.coa - self.zeroPoint).length()
         # Place the marker in render space
         self.coaMarker.setPos(self.camera,self.coa)
+        # Resize it
+        self.updateCoaMarkerSize(coaDist)
         # Record marker pos in render space
-        self.coaMarkerPos = self.coaMarker.getPos()
+        self.coaMarkerPos.assign(self.coaMarker.getPos())
+
+    def updateCoaMarkerSize(self, coaDist = None):
+        if not coaDist:
+            coaDist = Vec3(self.coaMarker.getPos( self.chan.camera )).length()
+        self.coaMarker.setScale(0.01 * coaDist *
+                                math.tan(deg2Rad(self.chan.fovV)))
 
     def homeCam(self, chan):
         chan.camera.setMat(Mat4.identMat())
@@ -155,16 +171,17 @@ class DirectCameraControl(PandaObject):
         
     def SpawnMoveToView(self, chan, view):
         # Kill any existing tasks
-	taskMgr.removeTasksNamed('manipulateCamera')
+        taskMgr.removeTasksNamed('manipulateCamera')
         # Calc hprOffset
-	hprOffset = VBase3()
-
+        hprOffset = VBase3()
         if view == 8:
             # Try the next roll angle
             self.orthoViewRoll = (self.orthoViewRoll + 90.0) % 360.0
             # but use the last view
             view = self.lastView
-        
+        else:
+            self.orthoViewRoll = 0.0
+        # Adjust offset based on specified view
         if view == 1:
             hprOffset.set(180., 0., 0.)
         elif view == 2:
@@ -180,30 +197,25 @@ class DirectCameraControl(PandaObject):
         elif view == 7:
             hprOffset.set(135., -35.264, 0.)
         # Position target
-	self.relNodePath.setPosHpr(self.coaMarker, self.zeroBaseVec,
+        self.relNodePath.setPosHpr(self.coaMarker, self.zeroBaseVec,
                                    hprOffset)
-	# Scale center vec by current distance to target
-	offsetDistance = Vec3(chan.camera.getPos(self.relNodePath) - 
+        # Scale center vec by current distance to target
+        offsetDistance = Vec3(chan.camera.getPos(self.relNodePath) - 
                               self.zeroPoint).length()
-	scaledCenterVec = self.centerVec * (-1.0 * offsetDistance)
-
-   	# Now put the relNodePath at that point
-	self.relNodePath.setPosHpr(self.relNodePath,
+        scaledCenterVec = self.centerVec * (-1.0 * offsetDistance)
+        # Now put the relNodePath at that point
+        self.relNodePath.setPosHpr(self.relNodePath,
                                    scaledCenterVec,
                                    self.zeroBaseVec)
-
-        # Store this view for next time
-        # Reset orthoViewRoll if you change views
-        if view != self.lastView:
-            self.orthoViewRoll = 0.0
-            
+        # Record view for next time around
         self.lastView = view
-	chan.camera.lerpPosHpr(self.zeroPoint,
+        chan.camera.lerpPosHpr(self.zeroPoint,
                                VBase3(0,0,self.orthoViewRoll),
                                CAM_MOVE_DURATION,
                                other = self.relNodePath,
                                blendType = 'easeInOut',
                                task = 'manipulateCamera')
+
         
     def swingCamAboutWidget(self, chan, degrees, t):
         # Remove existing camera manipulation task
@@ -231,6 +243,8 @@ class DirectCameraControl(PandaObject):
     def spawnHPanYZoom(self):
         # Kill any existing tasks
 	taskMgr.removeTasksNamed('manipulateCamera')
+        # hide the marker
+        self.coaMarker.hide()
         # Negate vec to give it the correct sense for mouse motion below
         targetVector = self.coa * -1
         t = Task.Task(self.HPanYZoomTask)
@@ -253,6 +267,8 @@ class DirectCameraControl(PandaObject):
     def spawnXZTranslateOrHPPan(self):
         # Kill any existing tasks
 	taskMgr.removeTasksNamed('manipulateCamera')
+        # Hide the marker
+        self.coaMarker.hide()
         t = Task.Task(self.XZTranslateOrHPPanTask)
         t.scaleFactor = (self.coaDist / self.chan.near)
         taskMgr.spawnTaskNamed(t, 'manipulateCamera')
@@ -279,6 +295,8 @@ class DirectCameraControl(PandaObject):
     def spawnXZTranslate(self):
         # Kill any existing tasks
 	taskMgr.removeTasksNamed('manipulateCamera')
+        # Hide the marker
+        self.coaMarker.hide()
         t = Task.Task(self.XZTranslateTask)
         t.scaleFactor = (self.coaDist / self.chan.near)
         taskMgr.spawnTaskNamed(t, 'manipulateCamera')
@@ -316,6 +334,8 @@ class DirectCameraControl(PandaObject):
     def spawnHPPan(self):
         # Kill any existing tasks
 	taskMgr.removeTasksNamed('manipulateCamera')
+        # Hide the marker
+        self.coaMarker.hide()
         t = Task.Task(self.HPPanTask)
         taskMgr.spawnTaskNamed(t, 'manipulateCamera')
 
