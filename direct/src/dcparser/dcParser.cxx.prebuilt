@@ -1359,7 +1359,7 @@ case 24:
 #line 277 "dcParser.yxx"
 {
   yyval.u.dclass = current_class;
-  current_class = new DCClass(yyvsp[0].str, false, false);
+  current_class = new DCClass(dc_file, yyvsp[0].str, false, false);
 }
     break;
 case 25:
@@ -1380,7 +1380,7 @@ case 26:
     DCClass *dclass = dc_file->get_class_by_name(yyvsp[0].str);
     if (dclass == (DCClass *)NULL) {
       // Create a bogus class as a forward reference.
-      dclass = new DCClass(yyvsp[0].str, false, true);
+      dclass = new DCClass(dc_file, yyvsp[0].str, false, true);
       dc_file->add_class(dclass);
     }
     if (dclass->is_struct()) {
@@ -1459,7 +1459,7 @@ case 38:
 #line 382 "dcParser.yxx"
 {
   yyval.u.dclass = current_class;
-  current_class = new DCClass(yyvsp[0].str, true, false);
+  current_class = new DCClass(dc_file, yyvsp[0].str, true, false);
 }
     break;
 case 39:
@@ -1480,7 +1480,7 @@ case 40:
     DCClass *dstruct = dc_file->get_class_by_name(yyvsp[0].str);
     if (dstruct == (DCClass *)NULL) {
       // Create a bogus class as a forward reference.
-      dstruct = new DCClass(yyvsp[0].str, false, true);
+      dstruct = new DCClass(dc_file, yyvsp[0].str, false, true);
       dc_file->add_class(dstruct);
     }
     if (!dstruct->is_struct()) {
