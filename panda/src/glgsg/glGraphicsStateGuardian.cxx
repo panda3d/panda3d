@@ -66,10 +66,13 @@
 #include "pointShapeTransition.h"
 #include "polygonOffsetTransition.h"
 #include "clockObject.h"
-#include "pStatTimer.h"
 #include "string_utils.h"
 #include "dcast.h"
 #include "pvector.h"
+
+#ifdef DO_PSTATS
+#include "pStatTimer.h"
+#endif
 
 #include <algorithm>
 
@@ -83,7 +86,7 @@
 
 TypeHandle GLGraphicsStateGuardian::_type_handle;
 
-#ifndef CPPPARSER
+#if !defined(CPPPARSER) && defined(DO_PSTATS)
 PStatCollector GLGraphicsStateGuardian::_vertices_display_list_pcollector("Vertices:Display lists");
 #endif
 
@@ -343,7 +346,7 @@ reset() {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 clear(const RenderBuffer &buffer) {
-  PStatTimer timer(_win->_clear_pcollector);
+  DO_PSTATS_STUFF(PStatTimer timer(_win->_clear_pcollector);)
   //  activate();
 
   nassertv(buffer._gsg == this);
@@ -720,8 +723,10 @@ draw_point(GeomPoint *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_point()" << endl;
 #endif
+#ifdef DO_PSTATS
   PStatTimer timer(_draw_primitive_pcollector);
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
+#endif
 
   call_glPointSize(geom->get_size());
   issue_scene_graph_color();
@@ -781,8 +786,10 @@ draw_line(GeomLine *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_line()" << endl;
 #endif
+#ifdef DO_PSTATS
   PStatTimer timer(_draw_primitive_pcollector);
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
+#endif
 
   call_glLineWidth(geom->get_width());
   issue_scene_graph_color();
@@ -844,11 +851,13 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_linestrip()" << endl;
 #endif
+
+#ifdef DO_PSTATS
   //  PStatTimer timer(_draw_primitive_pcollector);
   // Using PStatTimer may cause a compiler crash.
   _draw_primitive_pcollector.start();
-
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
+#endif
 
   call_glLineWidth(geom->get_width());
   issue_scene_graph_color();
@@ -914,7 +923,7 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *) {
     glEnd();
   }
   report_errors();
-  _draw_primitive_pcollector.stop();
+  DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -968,10 +977,12 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
       return;
   }
 
+#ifdef DO_PSTATS
   //  PStatTimer timer(_draw_primitive_pcollector);
   // Using PStatTimer may cause a compiler crash.
   _draw_primitive_pcollector.start();
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
+#endif
 
   Geom::VertexIterator vi = geom->make_vertex_iterator();
   Geom::ColorIterator ci = geom->make_color_iterator();
@@ -1200,7 +1211,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
      glEnable(GL_DITHER);
 
   report_errors();
-  _draw_primitive_pcollector.stop();
+  DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
 
@@ -1216,10 +1227,13 @@ draw_polygon(GeomPolygon *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_polygon()" << endl;
 #endif
+
+#ifdef DO_PSTATS
   //  PStatTimer timer(_draw_primitive_pcollector);
   // Using PStatTimer may cause a compiler crash.
   _draw_primitive_pcollector.start();
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
+#endif
 
   issue_scene_graph_color();
 
@@ -1280,7 +1294,7 @@ draw_polygon(GeomPolygon *geom, GeomContext *) {
     glEnd();
   }
   report_errors();
-  _draw_primitive_pcollector.stop();
+  DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1295,10 +1309,13 @@ draw_tri(GeomTri *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_tri()" << endl;
 #endif
+
+#ifdef DO_PSTATS
   //  PStatTimer timer(_draw_primitive_pcollector);
   // Using PStatTimer may cause a compiler crash.
   _draw_primitive_pcollector.start();
   _vertices_tri_pcollector.add_level(geom->get_num_vertices());
+#endif
 
   issue_scene_graph_color();
 
@@ -1354,7 +1371,9 @@ draw_tri(GeomTri *geom, GeomContext *) {
 
   glEnd();
   report_errors();
+#ifdef DO_PSTATS
   _draw_primitive_pcollector.stop();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1369,10 +1388,13 @@ draw_quad(GeomQuad *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_quad()" << endl;
 #endif
+
+#ifdef DO_PSTATS
   //  PStatTimer timer(_draw_primitive_pcollector);
   // Using PStatTimer may cause a compiler crash.
   _draw_primitive_pcollector.start();
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
+#endif
 
   issue_scene_graph_color();
 
@@ -1428,7 +1450,7 @@ draw_quad(GeomQuad *geom, GeomContext *) {
 
   glEnd();
   report_errors();
-  _draw_primitive_pcollector.stop();
+  DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1443,10 +1465,13 @@ draw_tristrip(GeomTristrip *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_tristrip()" << endl;
 #endif
+
+#ifdef DO_PSTATS
   //  PStatTimer timer(_draw_primitive_pcollector);
   // Using PStatTimer may cause a compiler crash.
   _draw_primitive_pcollector.start();
   _vertices_tristrip_pcollector.add_level(geom->get_num_vertices());
+#endif
 
   issue_scene_graph_color();
 
@@ -1524,7 +1549,7 @@ draw_tristrip(GeomTristrip *geom, GeomContext *) {
     glEnd();
   }
   report_errors();
-  _draw_primitive_pcollector.stop();
+  DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1539,10 +1564,13 @@ draw_trifan(GeomTrifan *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_trifan()" << endl;
 #endif
+
+#ifdef DO_PSTATS
   //  PStatTimer timer(_draw_primitive_pcollector);
   // Using PStatTimer may cause a compiler crash.
   _draw_primitive_pcollector.start();
   _vertices_trifan_pcollector.add_level(geom->get_num_vertices());
+#endif
 
   issue_scene_graph_color();
 
@@ -1620,7 +1648,7 @@ draw_trifan(GeomTrifan *geom, GeomContext *) {
     glEnd();
   }
   report_errors();
-  _draw_primitive_pcollector.stop();
+  DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
 
@@ -1636,10 +1664,13 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_sphere()" << endl;
 #endif
+
+#ifdef DO_PSTATS
   //  PStatTimer timer(_draw_primitive_pcollector);
   // Using PStatTimer may cause a compiler crash.
   _draw_primitive_pcollector.start();
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
+#endif
 
   issue_scene_graph_color();
 
@@ -1707,7 +1738,7 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
 
   gluDeleteQuadric(sph);
   report_errors();
-  _draw_primitive_pcollector.stop();
+  DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -50,11 +50,9 @@ public:
   typedef pvector<PT(dDrawable) > Geoms;
   Geoms _dynamic_geoms;
 
-#ifdef DO_PSTATS
   // The number of vertices represented by the display list.  This is
   // strictly for the benefit of PStats reporting.
-  int _num_verts;
-#endif
+  DO_PSTATS_STUFF(int _num_verts;)
 
 public:
   static TypeHandle get_class_type() {

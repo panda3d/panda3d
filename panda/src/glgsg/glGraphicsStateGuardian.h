@@ -379,6 +379,12 @@ private:
   static TypeHandle _type_handle;
 };
 
+#ifdef DO_PSTATS
+#define DO_PSTATS_STUFF(XX) XX;
+#else
+#define DO_PSTATS_STUFF(XX)
+#endif
+
 #include "glGraphicsStateGuardian.I"
 
 #endif

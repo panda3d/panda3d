@@ -25,7 +25,6 @@
 #include <errno.h>
 #include <time.h>
 #include <mmsystem.h>
-#include <pStatTimer.h>
 #include <ddraw.h>
 #include <tchar.h>
 #include <map>
@@ -33,6 +32,10 @@
 //#include <eventQueue.h>
 #include <string.h>
 #include "Win32Defs.h"
+
+#ifdef DO_PSTATS
+#include <pStatTimer.h>
+#endif
 
 #define WGL_WGLEXT_PROTOTYPES
 #include "wglext.h"
@@ -981,7 +984,7 @@ void wglGraphicsWindow::setup_colormap(void) {
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::end_frame(void) {
   if (gl_show_fps_meter) {
-    PStatTimer timer(_show_fps_pcollector);
+    DO_PSTATS_STUFF(PStatTimer timer(_show_fps_pcollector);)
     DWORD now = timeGetTime();  // this is win32 fn
 
     float time_delta = (now - _start_time) * 0.001f;
@@ -1043,7 +1046,7 @@ void wglGraphicsWindow::end_frame(void) {
   }
 
   {
-    PStatTimer timer(_swap_pcollector);
+     DO_PSTATS_STUFF(PStatTimer timer(_swap_pcollector);)
      if(_is_synced) 
         glFinish();
      else SwapBuffers(_hdc);
@@ -1347,7 +1350,7 @@ void wglGraphicsWindow::make_current(void) {
       return;  // we're only allow unmake_current() to set this to NULL
   }
 
-  PStatTimer timer(_make_current_pcollector);
+  DO_PSTATS_STUFF(PStatTimer timer(_make_current_pcollector);)
   HGLRC current_context = wglGetCurrentContext();
   HDC current_dc = wglGetCurrentDC();
 
