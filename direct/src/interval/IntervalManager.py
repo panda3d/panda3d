@@ -3,6 +3,7 @@ from DirectNotifyGlobal import *
 import EventManager
 import Interval
 import types
+import fnmatch
 
 class IntervalManager(CIntervalManager):
 
@@ -51,6 +52,27 @@ class IntervalManager(CIntervalManager):
         if index >= 0:
             return self.ivals[index]
         return None
+
+    def finishIntervalsMatching(self, pattern):
+        count = 0
+        
+        maxIndex = self.getMaxIndex()
+        for index in range(maxIndex):
+            ival = self.getCInterval(index)
+            if ival and \
+               fnmatch.fnmatchcase(ival.getName(), pattern):
+                # Finish and remove this interval.  Finishing it
+                # automatically removes it.
+                count += 1
+                if self.ivals[index]:
+                    # Finish the python version if we have it
+                    self.ivals[index].finish()
+                else:
+                    # Otherwise, it's a C-only interval.
+                    ival.finish()
+
+        return count
+            
 
     def step(self):
         # This method should be called once per frame to perform all

@@ -59,6 +59,7 @@ PUBLISHED:
 
   int interrupt();
   int get_num_intervals() const;
+  int get_max_index() const;
 
   void step();
   int get_next_event();

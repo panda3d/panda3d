@@ -245,6 +245,21 @@ get_num_intervals() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CIntervalManager::get_max_index
+//       Access: Published
+//  Description: Returns one more than the largest interval index
+//               number in the manager.  If you walk through all the
+//               values between (0, get_max_index()] and call
+//               get_c_interval() on each number, you will retrieve
+//               all of the managed intervals (and possibly a number
+//               of NULL pointers as well).
+////////////////////////////////////////////////////////////////////
+int CIntervalManager::
+get_max_index() const {
+  return _intervals.size();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CIntervalManager::step
 //       Access: Published
 //  Description: This should be called every frame to do the
