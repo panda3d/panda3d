@@ -67,6 +67,15 @@ class TaskManagerWidget(PandaObject):
             items = [],
             selectioncommand = self.setCurrentTask)
         self.taskListBox.pack(expand = 1, fill = BOTH)
+
+        self._popupMenu = Menu(self.taskListBox.component('listbox'),
+                               tearoff = 0)
+        self._popupMenu.add_command(
+            label = 'Remove Task',
+            command = self.removeCurrentTask)
+        self._popupMenu.add_command(
+            label = 'Remove Matching Tasks',
+            command = self.removeMatchingTasks)
                                            
         # Controls Frame
         controlsFrame = Frame(parent)
@@ -109,10 +118,24 @@ class TaskManagerWidget(PandaObject):
         # Bind updates to arrow buttons
         listbox.bind('<KeyRelease-Up>', self.setCurrentTask)
         listbox.bind('<KeyRelease-Down>', self.setCurrentTask)
+        listbox.bind('<ButtonPress-3>', self.popupMenu)
         # And grab focus (to allow keyboard navigation)
         listbox.focus_set()
         # Update listbox values
         self.updateTaskListBox()
+
+    def popupMenu(self, event):
+        """
+        listbox = self.taskListBox.component('listbox')
+        index = listbox.nearest(event.y)
+        listbox.selection_clear(0)
+        listbox.activate(index)
+        self.taskListBox.select_set(index)
+        self.setCurrentTask()
+        """
+        self._popupMenu.post(event.widget.winfo_pointerx(),
+                             event.widget.winfo_pointery())
+        return "break"
 
     def setCurrentTask(self, event = None):
         index = int(self.taskListBox.curselection()[0])
