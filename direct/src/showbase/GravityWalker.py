@@ -167,21 +167,21 @@ class GravityWalker(DirectObject.DirectObject):
         #assert(self.debugPrint("getSpeeds()"))
         return (self.speed, self.rotationSpeed)
 
-    def setupRay(self, floorBitmask, floorOffset):
+    def setupRay(self, bitmask, floorOffset):
         # This is a ray cast from your head down to detect floor polygons
         # A toon is about 4.0 feet high, so start it there
         cRay = CollisionRay(0.0, 0.0, 4.0, 0.0, 0.0, -1.0)
         cRayNode = CollisionNode('GW.cRayNode')
         cRayNode.addSolid(cRay)
         self.cRayNodePath = self.avatarNodePath.attachNewNode(cRayNode)
-        cRayNode.setFromCollideMask(floorBitmask)
+        cRayNode.setFromCollideMask(bitmask)
         cRayNode.setIntoCollideMask(BitMask32.allOff())
 
         # set up floor collision mechanism
         self.lifter = CollisionHandlerGravity()
         self.lifter.setGravity(32.174 * 2.0)
-        #self.lifter.setInPattern("enterRay-%in")
-        #self.lifter.setOutPattern("exitRay-%in")
+        self.lifter.addInPattern("enter%in")
+        self.lifter.addOutPattern("exit%in")
         self.lifter.setOffset(floorOffset)
 
         # Limit our rate-of-fall with the lifter.
@@ -235,8 +235,8 @@ class GravityWalker(DirectObject.DirectObject):
 
         # set up collision mechanism
         handler = CollisionHandlerEvent()
-        handler.setInPattern("enter%in")
-        handler.setOutPattern("exit%in")
+        handler.addInPattern("enter%in")
+        handler.addOutPattern("exit%in")
 
         self.event = handler
         self.cEventSphereNodePath = cSphereNodePath
@@ -281,7 +281,7 @@ class GravityWalker(DirectObject.DirectObject):
 
         self.setupRay(floorBitmask, self.floorOffset)
         self.setupWallSphere(wallBitmask, avatarRadius)
-        self.setupEventSphere(wallBitmask|floorBitmask, avatarRadius)
+        self.setupEventSphere(wallBitmask, avatarRadius)
         # self.setupFloorSphere(floorBitmask, avatarRadius)
 
         self.setCollisionsActive(1)
