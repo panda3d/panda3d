@@ -23,6 +23,25 @@
 #include "patchfile.h"
 #include "crypto_utils.h" // MD5 stuff
 
+//#define PROFILE_PATCH_BUILD
+#ifdef PROFILE_PATCH_BUILD
+
+#include "clockObject.h"
+
+ClockObject *globalClock = ClockObject::get_global_clock();
+
+#define GET_PROFILE_TIME() globalClock->get_real_time()
+
+#define START_PROFILE(var) double var = GET_PROFILE_TIME()
+
+#define END_PROFILE(startTime, name) \
+  cout << name << " took " << (GET_PROFILE_TIME() - (startTime)) << " seconds" << endl
+
+#else
+#define START_PROFILE(var)
+#define END_PROFILE(startTime, name)
+#endif
+
 // this actually slows things down...
 //#define USE_MD5_FOR_HASHTABLE_INDEX_VALUES
 
@@ -401,7 +420,8 @@ calc_hash(const char *buffer) {
   PN_uint16 hash_value = 0;
 
   for(int i = 0; i < (int)_footprint_length; i++) {
-    // this is probably not such a good hash. to be replaced --> TRIED MD5, was not worth it for the execution-time hit on 800Mhz PC
+    // this is probably not such a good hash. to be replaced
+    /// --> TRIED MD5, was not worth it for the execution-time hit on 800Mhz PC
     hash_value ^= (*buffer) << (i % 8);
     buffer++;
   }
@@ -440,6 +460,8 @@ build_hash_link_tables(const char *buffer_orig, PN_uint32 length_orig,
 
   PN_uint32 i;
 
+  START_PROFILE(clearTables);
+
   // clear hash table
   for(i = 0; i < _HASHTABLESIZE; i++) {
     hash_table[i] = _NULL_VALUE;
@@ -450,23 +472,77 @@ build_hash_link_tables(const char *buffer_orig, PN_uint32 length_orig,
     link_table[i] = _NULL_VALUE;
   }
 
+  END_PROFILE(clearTables, "clearing hash and link tables");
+
   if(length_orig < _footprint_length) return;
+
+  START_PROFILE(hashingFootprints);
+#ifdef PROFILE_PATCH_BUILD
+  double hashCalc = 0.0;
+  double linkSearch = 0.0;
+#endif
 
   // run through original file and hash each footprint
   for(i = 0; i < (length_orig - _footprint_length); i++) {
+
+#ifdef PROFILE_PATCH_BUILD
+    double t = GET_PROFILE_TIME();
+#endif
+
     PN_uint16 hash_value = calc_hash(&buffer_orig[i]);
+
+#ifdef PROFILE_PATCH_BUILD
+    hashCalc += GET_PROFILE_TIME() - t;
+#endif
+
+    // we must now store this file index in the hash table
+    // at the offset of the hash value
+
+    // to account for multiple file offsets with identical
+    // hash values, there is a link table with an entry for
+    // every footprint in the file. We create linked lists
+    // of offsets in the link table.
+
+    // first, set the value in the link table for the current
+    // offset to whatever the current list head is (the
+    // value in the hash table) (note that this only works
+    // because the hash and link tables both use
+    // _NULL_VALUE to indicate a null index)
+    link_table[i] = hash_table[hash_value];
+
+    // set the new list head; store the current offset in the
+    // hash table at the offset of the footprint's hash value
+    hash_table[hash_value] = i;
+
+    /*
     if (_NULL_VALUE == hash_table[hash_value]) {
       // hash entry is empty, store this offset
       hash_table[hash_value] = i;
     } else {
       // hash entry is taken, go to the link table
       PN_uint32 link_offset = hash_table[hash_value];
+
+#ifdef PROFILE_PATCH_BUILD
+      double t = GET_PROFILE_TIME();
+#endif
       while (_NULL_VALUE != link_table[link_offset]) {
         link_offset = link_table[link_offset];
       }
+#ifdef PROFILE_PATCH_BUILD
+      linkSearch += GET_PROFILE_TIME() - t;
+#endif
+
       link_table[link_offset] = i;
     }
+    */
   }
+
+#ifdef PROFILE_PATCH_BUILD
+  cout << "time spent calculating footprint hashes: " << hashCalc << endl;
+  cout << "time spent traversing the link table: " << linkSearch << endl;
+#endif
+
+  END_PROFILE(hashingFootprints, "hashing footprints");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -598,6 +674,10 @@ build(Filename &file_orig, Filename &file_new) {
   Filename patch_name;
   patch_name.set_binary();
 
+  START_PROFILE(overall);
+
+  START_PROFILE(readFiles);
+
   // Open the original file for read
   ifstream stream_orig;
   file_orig.set_binary();
@@ -643,14 +723,26 @@ build(Filename &file_orig, Filename &file_new) {
   stream_orig.close();
   stream_new.close();
 
+  END_PROFILE(readFiles, "reading files");
+
+  START_PROFILE(allocTables);
+
   // allocate hash/link tables
   PN_uint32* hash_table = new PN_uint32[_HASHTABLESIZE];
   PN_uint32* link_table = new PN_uint32[length_orig];
 
+  END_PROFILE(allocTables, "allocating hash and link tables");
+
+  START_PROFILE(buildTables);
+
   // build hash and link tables for original file
   build_hash_link_tables(buffer_orig, length_orig, hash_table, link_table);
 
+  END_PROFILE(buildTables, "building hash and link tables");
+
   // prepare to write the patch file header
+
+  START_PROFILE(writeHeader);
 
   // write the patch file header
   _datagram.clear();
@@ -669,7 +761,11 @@ build(Filename &file_orig, Filename &file_new) {
   string msg = _datagram.get_message();
   write_stream.write((char *)msg.data(), msg.length());
 
+  END_PROFILE(writeHeader, "writing patch file header");
+
   // run through new file
+  START_PROFILE(buildPatchfile);
+
   PN_uint32 new_pos = 0;
   PN_uint32 ADD_offset = new_pos; // this is the offset for the start of ADD operations
 
@@ -711,9 +807,13 @@ build(Filename &file_orig, Filename &file_new) {
     emit_COPY(write_stream, 0, 0);
   }
 
+  END_PROFILE(buildPatchfile, "building patch file");
+
   // write terminator (null ADD, null COPY)
   emit_ADD(write_stream, 0, NULL);
   emit_COPY(write_stream, 0, 0);
+
+  END_PROFILE(overall, "total patch building operation");
 
   return true;
 }
