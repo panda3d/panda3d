@@ -24,7 +24,11 @@ INLINE bool AudioPool::has_sound(const string& filename) {
 //               return a valid AudioSound pointer.
 ////////////////////////////////////////////////////////////////////
 INLINE bool AudioPool::verify_sound(const string& filename) {
-  return load_sound(filename) != (AudioSound*)0L;
+  AudioSound* foo = load_sound(filename);
+  bool ret = foo != (AudioSound*)0L;
+  if (ret)
+    delete foo;
+  return ret;
 }
 
 ////////////////////////////////////////////////////////////////////
