@@ -1559,7 +1559,7 @@ get_function(CPPInstance *function, string description,
     }
 
     // Also, make sure this particular signature is defined.
-    ifunction._instances.insert(InterrogateFunction::Instances::value_type(function_signature, function));
+    ifunction._instances->insert(InterrogateFunction::Instances::value_type(function_signature, function));
 
     return index;
   }
@@ -1572,6 +1572,7 @@ get_function(CPPInstance *function, string description,
   InterrogateFunction *ifunction = new InterrogateFunction;
   ifunction->_name = function->get_local_name(scope);
   ifunction->_scoped_name = descope(function->get_local_name(&parser));
+  ifunction->_instances = new InterrogateFunction::Instances;
 
   if (function->_leading_comment != (CPPCommentBlock *)NULL) {
     ifunction->_comment = trim_blanks(function->_leading_comment->_comment);
@@ -1589,7 +1590,7 @@ get_function(CPPInstance *function, string description,
   }
 
   ifunction->_flags |= flags;
-  ifunction->_instances.insert(InterrogateFunction::Instances::value_type(function_signature, function));
+  ifunction->_instances->insert(InterrogateFunction::Instances::value_type(function_signature, function));
   ifunction->_expression = expression;
 
   InterrogateDatabase::get_ptr()->add_function(index, ifunction);

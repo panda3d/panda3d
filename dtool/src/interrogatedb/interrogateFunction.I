@@ -28,6 +28,7 @@ InterrogateFunction(InterrogateModuleDef *def) :
 {
   _flags = 0;
   _class = 0;
+  _instances = (Instances *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

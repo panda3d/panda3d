@@ -450,58 +450,60 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
   _functions.push_back(func);
 
   // Now get all the valid FunctionRemaps for the function.
-  InterrogateFunction::Instances::const_iterator ii;
-  for (ii = ifunc._instances.begin();
-       ii != ifunc._instances.end();
-       ++ii) {
-    CPPInstance *cppfunc = (*ii).second;
-    CPPFunctionType *ftype = cppfunc->_type->as_function_type();
-    int max_default_parameters = 0;
-
-    if (separate_overloading()) {
-      // Count up the number of default parameters this function might
-      // take.
-      CPPParameterList *parameters = ftype->_parameters;
-      CPPParameterList::Parameters::reverse_iterator pi;
-      for (pi = parameters->_parameters.rbegin(); 
-           pi != parameters->_parameters.rend();
-           ++pi) {
-        CPPInstance *param = (*pi);
-        if (param->_initializer != (CPPExpression *)NULL) {
-          // This parameter has a default value.
-          max_default_parameters++;
-        } else {
-          // The first parameter without a default value ends the search.
-          break;
+  if (ifunc._instances != (InterrogateFunction::Instances *)NULL) {
+    InterrogateFunction::Instances::const_iterator ii;
+    for (ii = ifunc._instances->begin();
+         ii != ifunc._instances->end();
+         ++ii) {
+      CPPInstance *cppfunc = (*ii).second;
+      CPPFunctionType *ftype = cppfunc->_type->as_function_type();
+      int max_default_parameters = 0;
+      
+      if (separate_overloading()) {
+        // Count up the number of default parameters this function might
+        // take.
+        CPPParameterList *parameters = ftype->_parameters;
+        CPPParameterList::Parameters::reverse_iterator pi;
+        for (pi = parameters->_parameters.rbegin(); 
+             pi != parameters->_parameters.rend();
+             ++pi) {
+          CPPInstance *param = (*pi);
+          if (param->_initializer != (CPPExpression *)NULL) {
+            // This parameter has a default value.
+            max_default_parameters++;
+          } else {
+            // The first parameter without a default value ends the search.
+            break;
+          }
         }
       }
-    }
-
-    // Now make a different wrapper for each combination of default
-    // parameters.  This will happen only if separate_overloading(),
-    // tested above, returned true; otherwise, max_default_parameters
-    // will be 0 and the loop will only be traversed once.
-    for (int num_default_parameters = 0; 
-         num_default_parameters <= max_default_parameters;
-         num_default_parameters++) {
-      FunctionRemap *remap = 
-        make_function_remap(itype, ifunc, cppfunc, num_default_parameters);
-      if (remap != (FunctionRemap *)NULL) {
-        func->_remaps.push_back(remap);
-        
-        // If *any* of the variants of this function has a "this"
-        // pointer, the entire set of functions is deemed to have a
-        // "this" pointer.
-        if (remap->_has_this) {
-          func->_has_this = true;
-        }
-        
-        // Make a wrapper for the function.
-        FunctionWrapperIndex wrapper_index = 
-          remap->make_wrapper_entry(func_index);
-        if (wrapper_index != 0) {
-          InterrogateFunction &mod_ifunc = idb->update_function(func_index);
-          record_function_wrapper(mod_ifunc, wrapper_index);
+      
+      // Now make a different wrapper for each combination of default
+      // parameters.  This will happen only if separate_overloading(),
+      // tested above, returned true; otherwise, max_default_parameters
+      // will be 0 and the loop will only be traversed once.
+      for (int num_default_parameters = 0; 
+           num_default_parameters <= max_default_parameters;
+           num_default_parameters++) {
+        FunctionRemap *remap = 
+          make_function_remap(itype, ifunc, cppfunc, num_default_parameters);
+        if (remap != (FunctionRemap *)NULL) {
+          func->_remaps.push_back(remap);
+          
+          // If *any* of the variants of this function has a "this"
+          // pointer, the entire set of functions is deemed to have a
+          // "this" pointer.
+          if (remap->_has_this) {
+            func->_has_this = true;
+          }
+          
+          // Make a wrapper for the function.
+          FunctionWrapperIndex wrapper_index = 
+            remap->make_wrapper_entry(func_index);
+          if (wrapper_index != 0) {
+            InterrogateFunction &mod_ifunc = idb->update_function(func_index);
+            record_function_wrapper(mod_ifunc, wrapper_index);
+          }
         }
       }
     }

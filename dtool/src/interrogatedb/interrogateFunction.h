@@ -91,8 +91,11 @@ public:
   // session of interrogate that generates the database, and will not
   // be filled in when the database is reloaded from disk.
 
+  // This must be a pointer, rather than a concrete map, so we don't
+  // risk trying to create a map in one DLL and access it in another.
+  // Silly Windows.
   typedef map<string, CPPInstance *> Instances;
-  Instances _instances;
+  Instances *_instances;
   string _expression;
 
   friend class InterrogateBuilder;
