@@ -175,7 +175,7 @@ class DistributedObject(PandaObject):
             self.DistributedObject_deleted
         except:
             self.DistributedObject_deleted = 1
-            del self.cr
+            self.cr = None
 
     def generate(self):
         """
@@ -216,7 +216,8 @@ class DistributedObject(PandaObject):
         dclass.receiveUpdateOther(self, di)
 
     def sendUpdate(self, fieldName, args = [], sendToId = None):
-        self.cr.sendUpdate(self, fieldName, args, sendToId)
+        if self.cr:
+            self.cr.sendUpdate(self, fieldName, args, sendToId)
 
     def taskName(self, taskString):
         return (taskString + "-" + str(self.getDoId()))
