@@ -552,7 +552,8 @@ class ClientRepository(DirectObject.DirectObject):
 
     def handleServerHeartbeat(self, di):
         # Got a heartbeat message from the server.
-        ClientRepository.notify.info("Server heartbeat.")
+        if base.config.GetBool('server-heartbeat-info', 1):
+            ClientRepository.notify.info("Server heartbeat.")
         
 
     def handleUnexpectedMsgType(self, msgType, di):
