@@ -69,6 +69,10 @@ if [ "$PARALLAX" ]; then
     PARALLAX=`cygpath -w $PARALLAX`
     export PARALLAX
 fi
+if [ "$MRM" ]; then
+    MRM=`cygpath -w $MRM`
+    export MRM
+fi
 if [ "$TTMODELS" ]; then
     TTMODELS=`cygpath -w $TTMODELS`
     export TTMODELS

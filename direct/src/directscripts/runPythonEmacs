@@ -75,6 +75,11 @@ if [ "$PARALLAX" ]; then
     PARALLAX=`cygpath -w $PARALLAX`
     export PARALLAX
 fi
+if [ "$MRM" ]; then
+    if [ "$debug" ]; then echo "MRM   $MRM"; fi
+    MRM=`cygpath -w $MRM`
+    export MRM
+fi
 if [ "$WINTOOLS" ]; then
     if [ "$debug" ]; then echo "WINTOOLS  $WINTOOLS"; fi
     WINTOOLS=`cygpath -w $WINTOOLS`
