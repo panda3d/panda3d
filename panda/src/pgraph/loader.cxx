@@ -109,12 +109,13 @@ find_all_files(const Filename &filename, Loader::Results &results) const {
 
       } else {
         // Local filename, search along the path.
+        const DSearchPath &model_path = get_model_path();
         DSearchPath::Results files;
         if (use_vfs) {
           VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-          num_added = vfs->find_all_files(filename, get_model_path(), files);
+          num_added = vfs->find_all_files(filename, model_path, files);
         } else {
-          num_added = get_model_path().find_all_files(filename, files);
+          num_added = model_path.find_all_files(filename, files);
         }
         
         for (int i = 0; i < num_added; i++) {
