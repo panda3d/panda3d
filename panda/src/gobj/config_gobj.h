@@ -49,6 +49,10 @@ extern EXPCL_PANDA const int select_LOD_number;
 extern EXPCL_PANDA const int minimum_LOD_number;
 extern EXPCL_PANDA const bool debug_LOD_mode;
 
+extern const float default_near;
+extern const float default_far;
+extern const float default_fov;
+
 #endif
 
 

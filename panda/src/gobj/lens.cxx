@@ -28,8 +28,6 @@
 
 TypeHandle Lens::_type_handle;
 
-const float Lens::_default_fov = 40.0f;
-
 ////////////////////////////////////////////////////////////////////
 //     Function: Lens::Constructor
 //       Access: Public
@@ -99,7 +97,7 @@ clear() {
   _film_size.set(1.0f, 1.0f);
   _film_offset.set(0.0f, 0.0f);
   _focal_length = 1.0f;
-  _fov.set(_default_fov, _default_fov);
+  _fov.set(default_fov, default_fov);
   _aspect_ratio = 1.0f;
   _near_distance = default_near;
   _far_distance = default_far;
@@ -1228,7 +1226,7 @@ compute_fov() {
     if ((_user_flags & UF_focal_length) != 0) {
       _fov[0] = film_to_fov(film_size[0], _focal_length, true);
     } else {
-      _fov[0] = _default_fov;
+      _fov[0] = default_fov;
     }
   }
 
@@ -1431,7 +1429,7 @@ fov_to_focal_length(float, float, bool) const {
 ////////////////////////////////////////////////////////////////////
 float Lens::
 film_to_fov(float, float, bool) const {
-  return _default_fov;
+  return default_fov;
 }
 
 ////////////////////////////////////////////////////////////////////

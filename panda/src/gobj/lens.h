@@ -242,8 +242,6 @@ protected:
 
   PTA_Vertexf _geom_coords;
 
-  static const float _default_fov;
-
 public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
 

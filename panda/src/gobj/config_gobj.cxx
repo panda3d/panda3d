@@ -123,6 +123,9 @@ const float lod_stress_factor = config_gobj.GetFloat("lod-stress-factor", 1.0f);
 const float default_near = config_gobj.GetFloat("default-near", 1.0f);
 const float default_far = config_gobj.GetFloat("default-far", 1000.0f);
 
+// The default camera FOV.
+const float default_fov = config_gobj.GetFloat("default-fov", 40.0f);
+
 static BamTextureMode
 parse_texture_mode(const string &mode) {
   if (cmp_nocase(mode, "unchanged") == 0) {
