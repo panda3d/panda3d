@@ -113,6 +113,8 @@ private:
   void set_portal_polygon(EggGroup *egg_group, PortalNode *pnode);
   EggPolygon *find_first_polygon(EggGroup *egg_group);
 
+  bool make_sphere(EggGroup *start_group, LPoint3f &center, float &radius);
+
   void make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
                              CollisionNode *cnode);
   void make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,

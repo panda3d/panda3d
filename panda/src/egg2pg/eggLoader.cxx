@@ -1824,6 +1824,67 @@ find_first_polygon(EggGroup *egg_group) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::make_sphere
+//       Access: Private
+//  Description: Creates a single generic Sphere corresponding
+//               to the polygons associated with this group.
+//               This sphere is used by make_collision_sphere and
+//               Polylight sphere. It could be used for other spheres.
+////////////////////////////////////////////////////////////////////
+bool EggLoader::
+make_sphere(EggGroup *egg_group, LPoint3f &center, float &radius) {
+  bool success=false;
+  EggGroup *geom_group = find_collision_geometry(egg_group);
+  if (geom_group != (EggGroup *)NULL) {
+    // Collect all of the vertices.
+    pset<EggVertex *> vertices;
+
+    EggGroup::const_iterator ci;
+    for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
+      if ((*ci)->is_of_type(EggPrimitive::get_class_type())) {
+        EggPrimitive *prim = DCAST(EggPrimitive, *ci);
+        EggPrimitive::const_iterator pi;
+        for (pi = prim->begin(); pi != prim->end(); ++pi) {
+          vertices.insert(*pi);
+        }
+      }
+    }
+
+    // Now average together all of the vertices to get a center.
+    int num_vertices = 0;
+    LPoint3d d_center(0.0, 0.0, 0.0);
+    pset<EggVertex *>::const_iterator vi;
+
+    for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
+      EggVertex *vtx = (*vi);
+      d_center += vtx->get_pos3();
+      num_vertices++;
+    }
+
+    if (num_vertices > 0) {
+      d_center /= (double)num_vertices;
+
+      LMatrix4d mat = egg_group->get_vertex_to_node();
+      d_center = d_center * mat;
+
+      // And the furthest vertex determines the radius.
+      double radius2 = 0.0;
+      for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
+        EggVertex *vtx = (*vi);
+        LPoint3d p3 = vtx->get_pos3();
+        LVector3d v = p3 * mat - d_center;
+        radius2 = max(radius2, v.length_squared());
+      }
+
+      center = LCAST(float,d_center);
+      float radius = sqrtf(radius2);
+      success = true;
+    }
+  }
+  return success;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::make_collision_solids
 //       Access: Private
 //  Description: Creates CollisionSolids corresponding to the
@@ -1952,54 +2013,13 @@ make_collision_polyset(EggGroup *egg_group, CollisionNode *cnode,
 void EggLoader::
 make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
                       EggGroup::CollideFlags flags) {
-  EggGroup *geom_group = find_collision_geometry(egg_group);
-  if (geom_group != (EggGroup *)NULL) {
-    // Collect all of the vertices.
-    pset<EggVertex *> vertices;
-
-    EggGroup::const_iterator ci;
-    for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
-      if ((*ci)->is_of_type(EggPrimitive::get_class_type())) {
-        EggPrimitive *prim = DCAST(EggPrimitive, *ci);
-        EggPrimitive::const_iterator pi;
-        for (pi = prim->begin(); pi != prim->end(); ++pi) {
-          vertices.insert(*pi);
-        }
-      }
-    }
-
-    // Now average together all of the vertices to get a center.
-    int num_vertices = 0;
-    LPoint3d center(0.0, 0.0, 0.0);
-    pset<EggVertex *>::const_iterator vi;
-
-    for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
-      EggVertex *vtx = (*vi);
-      center += vtx->get_pos3();
-      num_vertices++;
-    }
-
-    if (num_vertices > 0) {
-      center /= (double)num_vertices;
-
-      LMatrix4d mat = egg_group->get_vertex_to_node();
-      center = center * mat;
-
-      // And the furthest vertex determines the radius.
-      double radius2 = 0.0;
-      for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
-        EggVertex *vtx = (*vi);
-        LPoint3d p3 = vtx->get_pos3();
-        LVector3d v = p3 * mat - center;
-        radius2 = max(radius2, v.length_squared());
-      }
-
-      float radius = sqrtf(radius2);
-      CollisionSphere *cssphere =
-        new CollisionSphere(LCAST(float, center), radius);
-      apply_collision_flags(cssphere, flags);
-      cnode->add_solid(cssphere);
-    }
+  LPoint3f center;
+  float radius;
+  if (make_sphere(egg_group, center, radius)) {
+    CollisionSphere *cssphere =
+      new CollisionSphere(center, radius);
+    apply_collision_flags(cssphere, flags);
+    cnode->add_solid(cssphere);
   }
 }
 
