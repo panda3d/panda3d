@@ -245,6 +245,8 @@ protected:
   INLINE void add_to_texture_record(TextureContext *) { }
   INLINE void add_to_geom_record(GeomContext *) { }
   INLINE void record_state_change(TypeHandle) { }
+  INLINE void add_to_vertex_buffer_record(VertexBufferContext *) { }
+  INLINE void add_to_index_buffer_record(IndexBufferContext *i) { }
 #endif
 
   static CPT(RenderState) get_unlit_state();
