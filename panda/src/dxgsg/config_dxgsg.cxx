@@ -82,6 +82,10 @@ bool dx_force_16bpptextures = config_dxgsg.GetBool("dx-force-16bpptextures", fal
 bool dx_force_anisotropic_filtering = config_dxgsg.GetBool("dx-force-anisotropic-filtering", false);
 #endif
 
+// set 'retained-mode #t' and this to have prepare_geom concatenate all tristrips within a geom 
+// together using degenerate tris
+const bool link_tristrips = config_dxgsg.GetBool("link-tristrips", false);
+
 // note:  offset currently disabled since it wasnt working properly
 DXDecalType dx_decal_type = GDT_offset;
 

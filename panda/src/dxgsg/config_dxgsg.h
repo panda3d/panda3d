@@ -33,6 +33,8 @@ extern bool dx_full_screen_antialiasing;
 extern float dx_fps_meter_update_interval;
 extern bool dx_auto_normalize_lighting;
 
+extern const bool link_tristrips;
+
 // debug flags
 extern bool dx_ignore_mipmaps;
 extern bool dx_mipmap_everything;

@@ -5033,9 +5033,6 @@ begin_decal(GeomNode *base_geom, AllAttributesWrapper &attrib) {
             // First turn off writing the depth buffer to render the base geometry.
             _d3dDevice->GetRenderState(D3DRENDERSTATE_ZWRITEENABLE, (DWORD *)&_depth_write_enabled);  //save cur val
             _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
-            DepthWriteAttribute *dwa = new DepthWriteAttribute;
-            dwa->set_off();
-            attrib.set_attribute(DepthWriteTransition::get_class_type(), dwa);
 
             // Now render the base geometry.
             base_geom->draw(this);
@@ -5461,15 +5458,27 @@ void DXGraphicsStateGuardian::init_type(void) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
+  static bool bAtExitFnEverCalled=false;
 
-    release_all_textures();
-    release_all_geoms();
+    bAtExitFnEverCalled = (bAtExitFnEverCalled || bAtExitFnCalled);
+
+    // for now, I can't trust any of the ddraw/d3d releases during atexit(),
+    // so just return directly.  maybe revisit this later, if have problems
+    // restarting d3d/ddraw after one of these uncleaned-up exits
+    if(bAtExitFnEverCalled)
+      return;
 
     ULONG refcnt;
 
     // unsafe to do the D3D releases after exit() called, since DLL_PROCESS_DETACH
     // msg already delivered to d3d.dll and it's unloaded itself
-    if(!bAtExitFnCalled) {
+    if(!bAtExitFnEverCalled) {
+
+        // these 2 calls release ddraw surfaces and vbuffers.  unsafe unless not on exit
+        release_all_textures();
+        release_all_geoms();
+
+
         // Do a safe check for releasing the D3DDEVICE. RefCount should be zero.
         // if we're called from exit(), _d3dDevice may already have been released
         if (_d3dDevice!=NULL) {
@@ -5505,7 +5514,8 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
 
         if(bAtExitFnCalled) {
             // refcnt may be > 1
-           while (refcnt>0) {
+
+           while (refcnt>1) {
                refcnt = _pDD->Release();
            }
         } else {
@@ -6001,9 +6011,287 @@ HRESULT SetViewMatrix( D3DMATRIX& mat, D3DVECTOR& vFrom, D3DVECTOR& vAt,
 ////////////////////////////////////////////////////////////////////
 GeomNodeContext *DXGraphicsStateGuardian::
 prepare_geom_node(GeomNode *node) {
-#if 1
-  return NULL;
-#else
+
+  if(!link_tristrips)
+    return NULL;
+    
+  for(int iGeom=0;iGeom<node->get_num_geoms();iGeom++) {
+    dDrawable *drawable1 = node->get_geom(iGeom);
+    
+    if(!drawable1->is_of_type(Geom::get_class_type()))
+      continue;
+    
+    Geom *geomptr=DCAST(Geom, drawable1);
+    assert(geomptr!=NULL);
+    
+    if(!geomptr->is_of_type(GeomTristrip::get_class_type()))
+      continue;
+    
+    GeomTristrip *me = DCAST(GeomTristrip, geomptr);
+    assert(me!=NULL);
+    
+    int nPrims=me->get_num_prims();
+    if(nPrims==1)
+      continue;
+    
+    if(dxgsg_cat.is_debug()) {
+    static bool bPrintedMsg=false;
+    if(!bPrintedMsg) {
+        dxgsg_cat.debug() << "linking tristrips together with degenerate tris\n";
+        bPrintedMsg=true;
+    }
+    }
+
+    bool bStripReversalNeeded;
+    unsigned int nOrigTotalVerts=0;
+    PTA_int new_lengths;
+    int p;
+
+    // sum things up so can reserve space for new vecs
+    for(p=0;p<nPrims;p++) {
+      nOrigTotalVerts+=me->get_length(p);
+    }
+
+    // could compute it exactly if I wanted to reproduce all the cTotalVertsOutputSoFar logic in the loop below
+    // might save on memory reallocations. try to overestimate using *3.
+    int cEstimatedTotalVerts=nOrigTotalVerts+nPrims*3-2;
+
+    #define INIT_ATTRVARS(ATTRNAME,PTA_TYPENAME)                                                 \
+       PTA_##PTA_TYPENAME old_##ATTRNAME##s,new_##ATTRNAME##s;                                   \
+       PTA_ushort old_##ATTRNAME##_indices,new_##ATTRNAME##_indices;                             \
+       GeomBindType ATTRNAME##binding;                                                           \
+       me->get_##ATTRNAME##s(old_##ATTRNAME##s, ATTRNAME##binding, old_##ATTRNAME##_indices);    \
+                                                                                                 \
+       PTA_##PTA_TYPENAME::iterator old_##ATTRNAME##_iter=old_##ATTRNAME##s.begin();             \
+       PTA_ushort::iterator old_##ATTRNAME##index_iter;                                          \
+                                                                                                 \
+       if((ATTRNAME##binding!=G_OFF)&&(ATTRNAME##binding!=G_OVERALL)) {                          \
+         if(old_##ATTRNAME##_indices!=NULL) {                                                    \
+             old_##ATTRNAME##index_iter=old_##ATTRNAME##_indices.begin();                        \
+             new_##ATTRNAME##_indices.reserve(cEstimatedTotalVerts);                             \
+         } else {                                                                                \
+             new_##ATTRNAME##s.reserve(cEstimatedTotalVerts);                                    \
+         }                                                                                       \
+       }
+
+    INIT_ATTRVARS(coord,Vertexf);
+    INIT_ATTRVARS(color,Colorf);
+    INIT_ATTRVARS(normal,Normalf);
+    INIT_ATTRVARS(texcoord,TexCoordf);
+
+#define IsOdd(X) (((X) & 0x1)!=0)
+
+    int cTotalVertsOutputSoFar=0;
+    int nVerts;
+    bool bAddExtraStartVert;
+
+    for(p=0;p<nPrims;p++) {
+      nVerts=me->get_length(p);
+
+         // if bStripStateStartsBackfacing, then if the current strip
+         // ends frontfacing, we can fix the problem by just reversing
+         // the current strip order.  But if the current strip ends
+         // backfacing, this will not work, since last tri is encoded for backfacing slot
+         // so it will be incorrectly backfacing when you put it in a backfacing
+         // slot AND reverse the vtx order.
+      
+         // insert an extra pad vertex at the beginning to force the
+         // strip backface-state parity to change (more expensive, since
+         // we make 1 more degen tri).  We always want the first tri
+         // to start in a front-facing slot (unless it's a reversed end
+
+         bStripReversalNeeded = false;      
+         bAddExtraStartVert=false;
+
+         if(p==0) {
+           cTotalVertsOutputSoFar+=nVerts+1;
+         } else {
+            if(!IsOdd(cTotalVertsOutputSoFar)) {
+               // we're starting on a backfacing slot
+               if(IsOdd(nVerts)) {
+                  bStripReversalNeeded = true;
+               } else {
+                bAddExtraStartVert=true;
+                cTotalVertsOutputSoFar++;
+               }
+            }
+
+            cTotalVertsOutputSoFar+=nVerts+2;
+            if(p==nPrims-1)
+              cTotalVertsOutputSoFar--;
+         }
+                
+#define PERVERTEX_ATTRLOOP(OLDVERT_ITERATOR,NEWVERT_VECTOR,VECLENGTH,NUMSTARTPADDINGATTRS,NUMENDPADDINGATTRS)    \
+          if(bStripReversalNeeded) {                                                        \
+              /* to preserve normal-direction property for backface-cull purposes, */       \
+              /* vtx order must be reversed*/                                               \
+                                                                                            \
+              OLDVERT_ITERATOR+=((VECLENGTH)-1);  /* start at last vert, and go back*/      \
+              /*dxgsg_cat.debug() << "doing reversal on strip " << p << " of length " << nVerts << endl;*/ \
+                                                                                            \
+              if(p!=0) {                                                                    \
+                 /* copy first vert twice to link with last strip*/                         \
+                 for(int i=0;i<NUMSTARTPADDINGATTRS;i++)                                    \
+                      NEWVERT_VECTOR.push_back(*OLDVERT_ITERATOR);                          \
+              }                                                                             \
+                                                                                            \
+              for(int v=0;v<(VECLENGTH);v++,OLDVERT_ITERATOR--) {                           \
+                  NEWVERT_VECTOR.push_back(*OLDVERT_ITERATOR);                              \
+              }                                                                             \
+                                                                                            \
+              OLDVERT_ITERATOR++;                                                           \
+                                                                                            \
+              if(p!=(nPrims-1)) {                                                           \
+                  /* copy last vert twice to link to next strip  */                         \
+                 for(int i=0;i<NUMENDPADDINGATTRS;i++)                                      \
+                    NEWVERT_VECTOR.push_back(*OLDVERT_ITERATOR);                            \
+              }                                                                             \
+                                                                                            \
+              OLDVERT_ITERATOR+=(VECLENGTH);                                                \
+                                                                                            \
+          } else {                                                                          \
+              if(p!=0) {                                                                    \
+                 /* copy first vert twice to link with last strip*/                         \
+                 for(int i=0;i<NUMSTARTPADDINGATTRS;i++)                                    \
+                      NEWVERT_VECTOR.push_back(*OLDVERT_ITERATOR);                          \
+              }                                                                             \
+                                                                                            \
+              for(int v=0;v<(VECLENGTH);v++,OLDVERT_ITERATOR++)                             \
+                  NEWVERT_VECTOR.push_back(*OLDVERT_ITERATOR);                              \
+                                                                                            \
+              if(p!=(nPrims-1)) {                                                           \
+                  /* copy last vert twice to link to next strip  */                         \
+                 for(int i=0;i<NUMENDPADDINGATTRS;i++)                                      \
+                    NEWVERT_VECTOR.push_back(*(OLDVERT_ITERATOR-1));                        \
+              }                                                                             \
+          }
+
+
+#define CONVERT_ATTR_VECTOR(ATTRNAME)                                                          \
+      switch(ATTRNAME##binding) {                                                              \
+            case G_OFF:                                                                        \
+            case G_OVERALL:                                                                    \
+                break;                                                                         \
+                                                                                               \
+            case G_PER_PRIM: {                                                                 \
+              /* must convert to per-component*/                                               \
+              /* nPrims*2+origTotalVerts-2 components  */                                      \
+                int veclength=nVerts+2;                                                        \
+                if((p==0)||(p==(nPrims-1)))                                                    \
+                    veclength--;                                                               \
+                if(bAddExtraStartVert)                                                         \
+                   veclength++;                                                                \
+                                                                                               \
+                if(old_##ATTRNAME##_indices!=NULL) {                                           \
+                    for(int v=0;v<veclength;v++)                                               \
+                       new_##ATTRNAME##_indices.push_back(*old_##ATTRNAME##index_iter);        \
+                                                                                               \
+                    old_##ATTRNAME##index_iter++; /* move on to val for next strip*/           \
+                 } else {                                                                      \
+                      for(int v=0;v<veclength;v++)                                             \
+                         new_##ATTRNAME##s.push_back(*old_##ATTRNAME##_iter);                  \
+                                                                                               \
+                      old_##ATTRNAME##_iter++; /* move on to val for next strip*/              \
+                 }                                                                             \
+                 break;                                                                        \
+             }                                                                                 \
+                                                                                               \
+            case G_PER_COMPONENT:                                                              \
+            case G_PER_VERTEX: {                                                               \
+                int veclength,numstartcopies,numendcopies;                                     \
+                                                                                               \
+                if(ATTRNAME##binding==G_PER_VERTEX) {                                          \
+                    veclength=nVerts;                                                          \
+                    numstartcopies=numendcopies=1;                                             \
+                } else {                                                                       \
+                    veclength=nVerts-2;                                                        \
+                    numstartcopies=numendcopies=2;                                             \
+                }                                                                              \
+                if(bAddExtraStartVert)                                                         \
+                   numstartcopies++;                                                           \
+                                                                                               \
+                if(old_##ATTRNAME##_indices!=NULL) {                                           \
+                    PERVERTEX_ATTRLOOP(old_##ATTRNAME##index_iter,new_##ATTRNAME##_indices,veclength,numstartcopies,numendcopies); \
+                } else {                                                                       \
+                    /* non-indexed case */                                                     \
+                    PERVERTEX_ATTRLOOP(old_##ATTRNAME##_iter,new_##ATTRNAME##s,veclength,numstartcopies,numendcopies); \
+                }                                                                              \
+            }                                                                                  \
+            break;                                                                             \
+      }                                                                                        \
+
+      
+      CONVERT_ATTR_VECTOR(coord);
+
+      #ifdef _DEBUG
+         if(old_coord_indices==NULL)
+           assert(cTotalVertsOutputSoFar==new_coords.size());
+         else 
+           assert(cTotalVertsOutputSoFar==new_coord_indices.size());
+      #endif
+
+      CONVERT_ATTR_VECTOR(color);
+      CONVERT_ATTR_VECTOR(normal);
+      CONVERT_ATTR_VECTOR(texcoord);
+
+    }  // end per-Prim (strip) loop
+
+    if(old_coord_indices!=NULL)  {
+        me->set_coords(old_coords, coordbinding, new_coord_indices);
+        new_lengths.push_back(new_coord_indices.size());
+    } else {
+        me->set_coords(new_coords, coordbinding, NULL);
+        new_lengths.push_back(new_coords.size());
+    }
+
+    me->set_lengths(new_lengths);
+    me->set_num_prims(1);
+
+    #define SET_NEW_ATTRIBS(ATTRNAME)                                                                 \
+    if((ATTRNAME##binding!=G_OFF) && (ATTRNAME##binding!=G_OVERALL)) {                                \
+        if(ATTRNAME##binding==G_PER_PRIM)                                                             \
+           ATTRNAME##binding=G_PER_COMPONENT;                                                         \
+        if(old_##ATTRNAME##_indices==NULL) {                                                          \
+           me->set_##ATTRNAME##s(new_##ATTRNAME##s, ATTRNAME##binding, NULL);                         \
+        } else {                                                                                      \
+           me->set_##ATTRNAME##s(old_##ATTRNAME##s, ATTRNAME##binding, new_##ATTRNAME##_indices);     \
+        }                                                                                             \
+    }
+/*    
+int ii;
+for( ii=0;ii<old_coords.size();ii++) 
+    dxgsg_cat.debug() << "old coord[" << ii <<"] " << old_coords[ii] << endl;
+dxgsg_cat.debug() << "=================\n";
+for(ii=0;ii<new_coords.size();ii++) 
+    dxgsg_cat.debug() << "new coord[" << ii <<"] " << new_coords[ii] << endl;
+dxgsg_cat.debug() << "=================\n";
+
+for( ii=0;ii<old_normals.size();ii++) 
+    dxgsg_cat.debug() << "old norm[" << ii <<"] " << old_normals[ii] << endl;
+dxgsg_cat.debug() << "=================\n";
+for(ii=0;ii<new_normals.size();ii++) 
+    dxgsg_cat.debug() << "new norm[" << ii <<"] " << new_normals[ii] << endl;
+
+if(old_color_indices!=NULL) {
+
+for( ii=0;ii<old_color_indices.size();ii++) 
+    dxgsg_cat.debug() << "old colorindex[" << ii <<"] " << old_color_indices[ii] << endl;
+dxgsg_cat.debug() << "=================\n";
+for( ii=0;ii<new_color_indices.size();ii++) 
+    dxgsg_cat.debug() << "new colorindex[" << ii <<"] " << new_color_indices[ii] << endl;
+}
+*/
+
+  SET_NEW_ATTRIBS(color);
+  SET_NEW_ATTRIBS(normal);
+  SET_NEW_ATTRIBS(texcoord);
+
+  me->make_dirty();
+ }
+
+ return NULL;
+
+#if 0
   // Make sure we have at least some static Geoms in the GeomNode;
   // otherwise there's no point in building a display list.
   int num_geoms = node->get_num_geoms();
