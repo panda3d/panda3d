@@ -1483,7 +1483,7 @@ tack_on_accent(char accent_mark, TextNode::CheesyPlacement placement,
                TextFont *font, GeomNode *dest, 
                Geom *geom_array[], int &num_geoms) {
   
-  TextGlyph *accent_glyph;
+  const TextGlyph *accent_glyph;
   if (font->get_glyph(accent_mark, accent_glyph)) {
     PT(Geom) accent_geom = accent_glyph->get_geom();
     if (accent_geom != (Geom *)NULL) {
