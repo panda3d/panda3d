@@ -64,7 +64,49 @@ class ClientRepository(DirectObject.DirectObject):
             self.startReaderPollTask()
             return self.tcpConn
 
+    def startRawReaderPollTask(self):
+        # Stop any tasks we are running now
+        self.stopRawReaderPollTask()
+        self.stopReaderPollTask()
+        task = Task.Task(self.rawReaderPollUntilEmpty)
+        # Start with empty string
+        task.currentRawString = ""
+        taskMgr.spawnTaskNamed(task, "rawReaderPollTask")
+        return None
+
+    def stopRawReaderPollTask(self):
+        taskMgr.removeTasksNamed("rawReaderPollTask")
+        return None
+
+    def rawReaderPollUntilEmpty(self, task):
+        while self.rawReaderPollOnce():
+            pass
+        return Task.cont
+
+    def rawReaderPollOnce(self):
+        self.notify.debug("rawReaderPollOnce")
+        self.ensureValidConnection()
+        availGetVal = self.qcr.dataAvailable()
+        if availGetVal:
+            datagram = NetDatagram()
+            readRetVal = self.qcr.getData(datagram)
+            if readRetVal:
+                str = datagram.getMessage()
+                self.notify.debug("rawReaderPollOnce: found str: " + str)
+                self.handleRawString(str)
+            else:
+                ClientRepository.notify.warning("getData returned false")
+        return availGetVal
+
+    def handleRawString(self, str):
+        # This method is meant to be pure virtual, and any classes that
+        # inherit from it need to make their own handleRawString method
+        pass
+
     def startReaderPollTask(self):
+        # Stop any tasks we are running now
+        self.stopRawReaderPollTask()
+        self.stopReaderPollTask()
         task = Task.Task(self.readerPollUntilEmpty)
         taskMgr.spawnTaskNamed(task, "readerPollTask")
         return None

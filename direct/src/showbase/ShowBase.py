@@ -244,6 +244,8 @@ class ShowBase:
         # temporary try..except for old pandas.
         try:
             self.win.closeWindow()
+            del self.win
+            del self.pipe
         except:
             pass
 
