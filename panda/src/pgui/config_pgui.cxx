@@ -35,7 +35,7 @@ ConfigureFn(config_pgui) {
   init_libpgui();
 }
 
-const bool pgui_quick = config_pgui.GetBool("pgui-quick", false);
+const bool pgui_quick = config_pgui.GetBool("pgui-quick", true);
 
 
 ////////////////////////////////////////////////////////////////////
