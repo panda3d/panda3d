@@ -41,7 +41,7 @@ public:
 
   LMatrix3d compute_texture_matrix() const;
   bool has_projection() const;
-  TexCoordd project_uv(const LPoint3d &point) const;
+  TexCoordd project_uv(const LPoint3d &point, const LPoint3d &ref_point) const;
 
   void output(ostream &out) const;
   bool reset_maya_texture(const Filename &texture);

@@ -131,16 +131,39 @@ has_projection() const {
 //       Access: Public
 //  Description: If the shader has a projection (has_projection()
 //               returns true), this computes the appropriate UV
-//               corresponding to the indicated 3-d point.
+//               corresponding to the indicated 3-d point.  Seams that
+//               might be introduced on polygons that cross quadrants
+//               are closed up by ensuring the point is in the same
+//               quadrant as the indicated reference point.
 ////////////////////////////////////////////////////////////////////
 TexCoordd MayaShader::
-project_uv(const LPoint3d &point) const {
+project_uv(const LPoint3d &point, const LPoint3d &ref_point) const {
+  LPoint3d p = point * _projection_matrix;
+
   switch (_projection_type) {
   case PT_planar:
+    return TexCoordd(p[0], p[1]);
+
+  case PT_cylindrical:
     {
-      LPoint3d p2d = point * _projection_matrix;
-      return TexCoordd(p2d[0], p2d[1]);
-      //return TexCoordd((p2d[0] + 1.0) / 2.0, (p2d[1] + 1.0) / 2.0);
+      LPoint3d rp = ref_point * _projection_matrix;
+
+      TexCoordd uv
+        (// The u position is the angle about the Y axis, scaled to 0 .. 1.
+         catan2(p[0], p[2]) / (2.0 * MathNumbers::pi) + 0.5,
+         // The v position is the Y height.
+         p[1]);
+
+      // Also convert the reference point, so we can adjust the
+      // quadrant if necessary; each single polygon should only go the
+      // short way around the cylinder.
+      double ref_u = catan2(rp[0], rp[1]) / (2.0 * MathNumbers::pi) + 0.5;
+      if (uv[0] - ref_u > 0.5) {
+        uv[0] -= 1.0;
+      } else if (uv[0] - ref_u < -0.5) {
+        uv[0] += 1.0;
+      }
+      return uv;
     }
 
   default:
@@ -351,8 +374,18 @@ set_projection_type(const string &type) {
     // both axes.  Scale this into our UV range of (0, 1).
     _projection_matrix = _projection_matrix * LMatrix4d(0.5, 0.0, 0.0, 0.0,
                                                         0.0, 0.5, 0.0, 0.0,
-                                                        0.0, 0.0, 0.5, 0.0,
+                                                        0.0, 0.0, 1.0, 0.0,
                                                         0.5, 0.5, 0.0, 1.0);
+
+  } else if (cmp_nocase(type, "cylindrical") == 0) {
+    _projection_type = PT_cylindrical;
+
+    // The cylindrical projection is orthographic in the Y axis; scale
+    // the range (-1, 1) in this axis into our UV range (0, 1).
+    _projection_matrix = _projection_matrix * LMatrix4d(1.0, 0.0, 0.0, 0.0,
+                                                        0.0, 0.5, 0.0, 0.0,
+                                                        0.0, 0.0, 1.0, 0.0,
+                                                        0.0, 0.5, 0.0, 1.0);
 
   } else {
     // Other projection types are currently unimplemented by the

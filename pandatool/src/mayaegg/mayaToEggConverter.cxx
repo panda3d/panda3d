@@ -1309,11 +1309,20 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
 
     // Get the vertices for the polygon.
     long num_verts = pi.polygonVertexCount();
+    LPoint3d ref_p3d;
     for (long i = 0; i < num_verts; i++) {
       EggVertex vert;
 
       MPoint p = pi.point(i, MSpace::kWorld);
       LPoint3d p3d(p[0], p[1], p[2]);
+      if (i == 0) {
+        // Save the first vertex of the polygon as a reference point
+        // for sealing up seams that might be introduced by a UV
+        // projection, so we can ensure that all the vertices are
+        // projected into the same quadrant.
+        ref_p3d = p3d;
+      }
+
       vert.set_pos(p3d);
 
       MVector n;
@@ -1327,7 +1336,7 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
       if (shader != (MayaShader *)NULL && shader->has_projection()) {
         // If the shader has a projection, use it instead of the
         // polygon's built-in UV's.
-        vert.set_uv(shader->project_uv(p3d));
+        vert.set_uv(shader->project_uv(p3d, ref_p3d));
 
       } else if (pi.hasUVs()) {
         // Get the UV's from the polygon.
