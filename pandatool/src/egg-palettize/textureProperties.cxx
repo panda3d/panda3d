@@ -189,7 +189,7 @@ update_properties(const TextureProperties &other) {
   _magfilter = union_filter(_magfilter, other._magfilter);
 
   _anisotropic_degree = other._anisotropic_degree;
-  printf("set aniso degree to %d\n",_anisotropic_degree);
+  // printf("set aniso degree to %d\n",_anisotropic_degree);
 
   if (_color_type == (PNMFileType *)NULL) {
     _color_type = other._color_type;
