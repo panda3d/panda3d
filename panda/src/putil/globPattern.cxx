@@ -67,18 +67,25 @@ has_glob_characters() const {
 ////////////////////////////////////////////////////////////////////
 int GlobPattern::
 match_files(vector_string &results, const Filename &cwd) {
-  string next_pattern, next_suffix;
+  string prefix, pattern, suffix;
 
-  size_t slash = _pattern.find('/');
+  string source = _pattern;
+  if (!source.empty() && source[0] == '/') {
+    // If the first character is a slash, that becomes the prefix.
+    prefix = "/";
+    source = source.substr(1);
+  }
+
+  size_t slash = source.find('/');
   if (slash == string::npos) {
-    next_pattern = _pattern;
+    pattern = source;
   } else {
-    next_pattern = _pattern.substr(0, slash);
-    next_suffix = _pattern.substr(slash + 1);
+    pattern = source.substr(0, slash);
+    suffix = source.substr(slash + 1);
   }
   
-  GlobPattern next_glob(next_pattern);
-  return next_glob.r_match_files(Filename(), next_suffix, results, cwd);
+  GlobPattern glob(pattern);
+  return glob.r_match_files(prefix, suffix, results, cwd);
 }
 
 ////////////////////////////////////////////////////////////////////
