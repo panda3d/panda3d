@@ -25,7 +25,7 @@
         elif subatomicType == STBlob:
             self.addString(arg)
         elif subatomicType == STInt8array:
-            self.addUint8(len(arg))
+            self.addUint16(len(arg))
             for i in arg:
                 self.addInt8(int(i*divisor))
         elif subatomicType == STInt16array:
@@ -37,7 +37,7 @@
             for i in arg:
                 self.addInt32(int(i*divisor))
         elif subatomicType == STUint8array:
-            self.addUint8(len(arg))
+            self.addUint16(len(arg))
             for i in arg:
                 self.addUint8(int(i*divisor))
         elif subatomicType == STUint16array:
