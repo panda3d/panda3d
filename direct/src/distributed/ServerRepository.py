@@ -40,12 +40,11 @@ class ServerRepository:
         self.ClientObjects = {}
         self.DOIDnext = 1
         self.DOIDrange = 1000000
-        self.DOIDtoClients = {}
+        self.DOIDtoClient = {}
         self.DOIDtoZones = {}
         self.DOIDtoDClass = {}
         self.ZonesToClients = {}
         self.ZonetoDOIDs = {}
-        self.RemovedDOIDs = []
         self.dcFile = DCFile()
         self.dcSuffix = ''
         self.readDCFile()
@@ -278,7 +277,8 @@ class ServerRepository:
           else:
             self.sendToZoneExcept(self.DOIDtoZones[doid], datagram, connection)
         elif (dcfield.isP2p()):
-          self.cw.send(datagram, self.DOIDtoClients[doid])
+          doidbase = (doid / self.DOIDrange) * self.DOIDrange
+          self.cw.send(datagram, self.DOIDtoClient[doidbase])
         else:
           self.notify.warning(
                 "Message is not broadcast, p2p, or broadcast+p2p")
@@ -321,13 +321,9 @@ class ServerRepository:
 
     def sendDOIDrange(self, connection):
         # reuse DOID assignments if we can
-        if len(self.RemovedDOIDs) > 0:
-                id = self.RemovedDOIDs[0]
-                self.RemovedDOIDs.remove(id)
-        else:
-                id = self.DOIDnext + self.DOIDrange
-                self.DOIDnext = self.DOIDnext + self.DOIDrange
-        self.DOIDtoClients[id] = connection
+        id = self.DOIDnext + self.DOIDrange
+        self.DOIDnext = self.DOIDnext + self.DOIDrange
+        self.DOIDtoClient[id] = connection
         self.ClientDOIDbase[connection] = id
         datagram = NetDatagram()
         datagram.addUint16(CLIENT_SET_DOID_RANGE)
@@ -341,8 +337,7 @@ class ServerRepository:
     # the disconnected clients objects
     def handleClientDisconnect(self, connection):
         if (self.ClientIP.has_key(connection)):
-                self.RemovedDOIDs.append(self.ClientDOIDbase[connection])
-                del self.DOIDtoClients[self.ClientDOIDbase[connection]]
+                del self.DOIDtoClient[self.ClientDOIDbase[connection]]
                 for zone in self.ClientZones[connection]:
                         if len(self.ZonesToClients[zone]) == 1:
                                 del self.ZonesToClients[zone]
@@ -361,7 +356,6 @@ class ServerRepository:
                 del self.ClientZones[connection]
                 del self.ClientDOIDbase[connection]
                 del self.ClientObjects[connection]
-        self.RemovedDOIDs.sort()
         return None
 
     #  client told us it's zone(s), store information
