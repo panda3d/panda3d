@@ -34,6 +34,7 @@
     graphicsWindowInputDevice.I  \
     graphicsWindowInputDevice.h \
     graphicsDevice.h graphicsDevice.I \
+    parasiteBuffer.I parasiteBuffer.h \
     windowProperties.I windowProperties.h \
     hardwareChannel.I  \
     hardwareChannel.h \
@@ -56,6 +57,7 @@
     graphicsThreadingModel.cxx \
     graphicsWindow.cxx graphicsWindowInputDevice.cxx  \
     graphicsDevice.cxx \
+    parasiteBuffer.cxx \
     windowProperties.cxx \
     hardwareChannel.cxx \
     savedFrameBuffer.cxx
@@ -81,6 +83,7 @@
     graphicsThreadingModel.I graphicsThreadingModel.h \
     graphicsWindowInputDevice.I graphicsWindowInputDevice.h \
     graphicsDevice.I graphicsDevice.h \
+    parasiteBuffer.I parasiteBuffer.h \
     windowProperties.I windowProperties.h \
     hardwareChannel.I hardwareChannel.h \
     lensStack.I lensStack.h \

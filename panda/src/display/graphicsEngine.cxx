@@ -18,6 +18,7 @@
 
 #include "graphicsEngine.h"
 #include "graphicsPipe.h"
+#include "parasiteBuffer.h"
 #include "config_display.h"
 #include "pipeline.h"
 #include "drawCullHandler.h"
@@ -271,6 +272,54 @@ make_buffer(GraphicsStateGuardian *gsg, const string &name,
     buffer->_sort = sort;
     do_add_window(buffer, gsg, threading_model);
   }
+  return buffer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::make_parasite
+//       Access: Published
+//  Description: Creates a new offscreen parasite buffer based on the
+//               indicated host.  See parasiteBuffer.h.  The
+//               GraphicsEngine becomes the owner of the buffer; it
+//               will persist at least until remove_window() is called
+//               later.
+//
+//               This usually returns a ParasiteBuffer object, but it
+//               may actually return a GraphicsWindow if show-buffers
+//               is configured true.
+////////////////////////////////////////////////////////////////////
+GraphicsOutput *GraphicsEngine::
+make_parasite(GraphicsOutput *host, const string &name, 
+              int sort, int x_size, int y_size) {
+  GraphicsStateGuardian *gsg = host->get_gsg();
+
+  if (show_buffers) {
+    GraphicsWindow *window = make_window(gsg, name, sort);
+    if (window != (GraphicsWindow *)NULL) {
+      WindowProperties props;
+      props.set_size(x_size, y_size);
+      props.set_fixed_size(true);
+      props.set_title(name);
+      window->request_properties(props);
+
+      window->_texture = new Texture();
+      window->_texture->set_name(name);
+      window->_copy_texture = true;
+
+      return window;
+    }
+  }
+
+  GraphicsThreadingModel threading_model = get_threading_model();
+  nassertr(gsg != (GraphicsStateGuardian *)NULL, NULL);
+  nassertr(this == gsg->get_engine(), NULL);
+  nassertr(threading_model.get_draw_name() ==
+           gsg->get_threading_model().get_draw_name(), NULL);
+
+  ParasiteBuffer *buffer = new ParasiteBuffer(host, name, x_size, y_size);
+  buffer->_sort = sort;
+  do_add_window(buffer, gsg, threading_model);
+
   return buffer;
 }
 

@@ -1,0 +1,90 @@
+// Filename: parasiteBuffer.cxx
+// Created by:  drose (27Feb04)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+
+#include "parasiteBuffer.h"
+
+TypeHandle ParasiteBuffer::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParasiteBuffer::Constructor
+//       Access: Public
+//  Description: Normally, the ParasiteBuffer constructor is not
+//               called directly; these are created instead via the
+//               GraphicsEngine::make_parasite() function.
+////////////////////////////////////////////////////////////////////
+ParasiteBuffer::
+ParasiteBuffer(GraphicsOutput *host, const string &name,
+               int x_size, int y_size) :
+  GraphicsOutput(host->get_pipe(), host->get_gsg(), name),
+  _host(host)
+{
+#ifdef DO_MEMORY_USAGE
+  MemoryUsage::update_type(this, this);
+#endif
+  
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "Creating new parasite buffer " << get_name()
+      << " on " << _host->get_name() << "\n";
+  }
+
+  _texture = new Texture();
+  _texture->set_name(_name);
+  _copy_texture = true;
+
+  _x_size = x_size;
+  _y_size = y_size;
+  _has_size = true;
+
+  _is_valid = true;
+
+  nassertv(_x_size < host->get_x_size() && _y_size < host->get_y_size());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParasiteBuffer::Destructor
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+ParasiteBuffer::
+~ParasiteBuffer() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParasiteBuffer::is_active
+//       Access: Published, Virtual
+//  Description: Returns true if the window is ready to be rendered
+//               into, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool ParasiteBuffer::
+is_active() const {
+  return _host->is_active();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParasiteBuffer::make_current
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               during begin_frame() to ensure the graphics context
+//               is ready for drawing.
+////////////////////////////////////////////////////////////////////
+void ParasiteBuffer::
+make_current() {
+  _host->make_current();
+}

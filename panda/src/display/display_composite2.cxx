@@ -9,3 +9,4 @@
 #include "graphicsWindow.cxx"
 #include "graphicsBuffer.cxx"
 #include "graphicsOutput.cxx"
+#include "parasiteBuffer.cxx"

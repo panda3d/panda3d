@@ -79,6 +79,8 @@ PUBLISHED:
   GraphicsOutput *make_buffer(GraphicsStateGuardian *gsg, const string &name,
                               int sort,
                               int x_size, int y_size, bool want_texture);
+  GraphicsOutput *make_parasite(GraphicsOutput *host, const string &name,
+                                int sort, int x_size, int y_size);
 
   bool remove_window(GraphicsOutput *window);
   void remove_all_windows();

@@ -26,6 +26,7 @@
 #include "graphicsWindow.h"
 #include "graphicsChannel.h"
 #include "graphicsLayer.h"
+#include "parasiteBuffer.h"
 #include "hardwareChannel.h"
 #include "textureContext.h"
 #include "geomNodeContext.h"
@@ -116,6 +117,7 @@ init_libdisplay() {
   GraphicsChannel::init_type();
   GraphicsLayer::init_type();
   HardwareChannel::init_type();
+  ParasiteBuffer::init_type();
   TextureContext::init_type();
   GeomNodeContext::init_type();
   GeomContext::init_type();

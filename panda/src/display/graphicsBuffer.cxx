@@ -38,7 +38,8 @@ GraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
 
   if (display_cat.is_debug()) {
     display_cat.debug()
-      << "Creating new offscreen buffer using GSG " << (void *)gsg << "\n";
+      << "Creating new offscreen buffer " << get_name()
+      << " using GSG " << (void *)gsg << "\n";
   }
 
   if (want_texture) {
