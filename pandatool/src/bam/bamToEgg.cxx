@@ -521,15 +521,15 @@ recurse_nodes(Node *node, ArcChain &chain, EggGroupNode *egg_parent) {
 void BamToEgg::
 apply_texture(EggPrimitive *egg_prim, Texture *tex) {
   if (tex != (Texture *)NULL) {
-    if (tex->has_name()) {
+    if (tex->has_filename()) {
       Filename filename = SomethingToEggConverter::convert_path
-        (tex->get_name(), get_texture_path(), _make_rel_dir, 
+        (tex->get_filename(), get_texture_path(), _make_rel_dir, 
          _texture_path_convert);
 
       EggTexture temp("", filename);
-      if (tex->has_alpha_name()) {
+      if (tex->has_alpha_filename()) {
         Filename alpha = SomethingToEggConverter::convert_path
-          (tex->get_alpha_name(), get_texture_path(), _make_rel_dir, 
+          (tex->get_alpha_filename(), get_texture_path(), _make_rel_dir, 
            _texture_path_convert);
         temp.set_alpha_file(alpha);
       }
