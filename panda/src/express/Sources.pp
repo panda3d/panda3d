@@ -18,7 +18,9 @@
     indent.I indent.cxx indent.h littleEndian.I				\
     littleEndian.cxx littleEndian.h memoryUsage.I memoryUsage.cxx	\
     memoryUsage.h memoryUsagePointers.I memoryUsagePointers.cxx		\
-    memoryUsagePointers.h multifile.I multifile.cxx multifile.h		\
+    memoryUsagePointers.h multifile.I multifile.cxx multifile.h \
+    multiplexStream.I multiplexStream.cxx multiplexStream.h \
+    multiplexStreamBuf.I multiplexStreamBuf.cxx multiplexStreamBuf.h \
     namable.I namable.cxx namable.h numeric_types.h patchfile.I		\
     patchfile.cxx patchfile.h pointerTo.I pointerTo.h referenceCount.I	\
     referenceCount.cxx referenceCount.h tokenBoard.I tokenBoard.h	\
@@ -35,7 +37,10 @@
     datagramGenerator.h get_config_path.h				\
     indent.I indent.h littleEndian.I littleEndian.h			\
     memoryUsage.I memoryUsage.h memoryUsagePointers.I			\
-    memoryUsagePointers.h multifile.I multifile.h numeric_types.h	\
+    memoryUsagePointers.h multifile.I multifile.h \
+    multiplexStream.I multiplexStream.h \
+    multiplexStreamBuf.I multiplexStreamBuf.I \
+    numeric_types.h	\
     pointerTo.I pointerTo.h referenceCount.I referenceCount.h		\
     tokenBoard.h trueClock.I trueClock.h typeHandle.I typeHandle.h	\
     typedReferenceCount.I typedReferenceCount.h typedef.h		\
