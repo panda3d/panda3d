@@ -7,6 +7,36 @@
 
 TypeHandle GuiFrame::_type_handle;
 
+class PosFrame {
+private:
+  LVector3f _pos;
+  LVector4f _frame;
+public:
+  PosFrame(GuiItem* i) : _pos(i->get_pos()), _frame(i->get_frame()) {}
+  PosFrame(void) {}
+  PosFrame(const PosFrame& c) : _pos(c._pos), _frame(c._frame) {}
+  inline PosFrame& operator=(const PosFrame& c) {
+    _pos = c._pos;
+    _frame = c._frame;
+    return *this;
+  }
+  inline void write(GuiItem* i) { i->set_pos(_pos); }
+  inline LVector3f get_pos(void) const { return _pos; }
+  inline LVector4f get_frame(void) const { return _frame; }
+  inline void set_pos(LVector3f p) {
+    LVector3f d = p - _pos;
+    float du = d.dot(LVector3f::up());
+    float dr = d.dot(LVector3f::right());
+    _frame[0] += dr;
+    _frame[1] += dr;
+    _frame[2] += du;
+    _frame[3] += du;
+    _pos = p;
+  }
+};
+
+typedef map<GuiItem*, PosFrame> UtilMap;
+
 GuiFrame::Boxes::iterator GuiFrame::find_box(GuiItem* item) {
   bool found = false;
   Boxes::iterator ret = _items.end();
@@ -21,29 +51,38 @@ GuiFrame::Boxes::iterator GuiFrame::find_box(GuiItem* item) {
   return ret;
 }
 
+#include <map>
+
 void GuiFrame::recompute_frame(void) {
   GuiItem::recompute_frame();
 
   freeze();
 
   Boxes::iterator i;
+  UtilMap _map;
 
   // go thru and make sure everything is packed correctly.  This is a stupid
   // and brute-force algorithm.  Hopefully it will be replaced with something
   // more ellegant later
-    for (i=_items.begin(); i!=_items.end(); ++i) {
+  for (i=_items.begin(); i!=_items.end(); ++i) {
     GuiItem* here = (*i).get_item();
     here->recompute();
+    _map[here] = PosFrame(here);
+  }
+  for (i=_items.begin(); i!=_items.end(); ++i) {
+    GuiItem* here = (*i).get_item();
+    // here->recompute();
     int n = (*i).get_num_links();
     if (n > 0) {
-      LVector4f ext_h = here->get_frame();
-      LVector3f pos_h = here->get_pos();
+      UtilMap::iterator ui = _map.find(here);
+      LVector4f ext_h = (*ui).second.get_frame();
+      LVector3f pos_h = (*ui).second.get_pos();
       for (int j=0; j<n; ++j) {
 	Packing pack = (*i).get_nth_packing(j);
 	if (pack == NONE)
 	  continue;
 	GuiItem* to = (*i).get_nth_to(j);
-	LVector4f ext_t = to->get_frame();
+	LVector4f ext_t = _map[to].get_frame();
 	float gap = (*i).get_nth_gap(j);
 	switch (pack) {
 	case ABOVE:
@@ -51,9 +90,9 @@ void GuiFrame::recompute_frame(void) {
 	    // to(top) - here(bottom)
 	    float diff = ext_t[3] - ext_h[2] + gap;
 	    LVector3f move = LVector3f::rfu(0., 0., diff);
-	    here->set_pos(pos_h + move);
-	    ext_h = here->get_frame();
-	    pos_h = here->get_pos();
+	    (*ui).second.set_pos(pos_h + move);
+	    ext_h = (*ui).second.get_frame();
+	    pos_h = (*ui).second.get_pos();
 	  }
 	  break;
 	case UNDER:
@@ -61,9 +100,9 @@ void GuiFrame::recompute_frame(void) {
 	    // to(bottom) - here(top)
 	    float diff = ext_t[2] - ext_h[3] - gap;
 	    LVector3f move = LVector3f::rfu(0., 0., diff);
-	    here->set_pos(pos_h + move);
-	    ext_h = here->get_frame();
-	    pos_h = here->get_pos();
+	    (*ui).second.set_pos(pos_h + move);
+	    ext_h = (*ui).second.get_frame();
+	    pos_h = (*ui).second.get_pos();
 	  }
 	  break;
 	case LEFT:
@@ -71,9 +110,9 @@ void GuiFrame::recompute_frame(void) {
 	    // to(left) - here(right)
 	    float diff = ext_t[0] - ext_h[1] - gap;
 	    LVector3f move = LVector3f::rfu(diff, 0., 0.);
-	    here->set_pos(pos_h + move);
-	    ext_h = here->get_frame();
-	    pos_h = here->get_pos();
+	    (*ui).second.set_pos(pos_h + move);
+	    ext_h = (*ui).second.get_frame();
+	    pos_h = (*ui).second.get_pos();
 	  }
 	  break;
 	case RIGHT:
@@ -81,9 +120,9 @@ void GuiFrame::recompute_frame(void) {
 	    // to(right) - here(left)
 	    float diff = ext_t[1] - ext_h[0] + gap;
 	    LVector3f move = LVector3f::rfu(diff, 0., 0.);
-	    here->set_pos(pos_h + move);
-	    ext_h = here->get_frame();
-	    pos_h = here->get_pos();
+	    (*ui).second.set_pos(pos_h + move);
+	    ext_h = (*ui).second.get_frame();
+	    pos_h = (*ui).second.get_pos();
 	  }
 	  break;
 	case ALIGN_ABOVE:
@@ -91,9 +130,9 @@ void GuiFrame::recompute_frame(void) {
 	    // to(top) - here(top)
 	    float diff = ext_t[3] - ext_h[3];
 	    LVector3f move = LVector3f::rfu(0., 0., diff);
-	    here->set_pos(pos_h + move);
-	    ext_h = here->get_frame();
-	    pos_h = here->get_pos();
+	    (*ui).second.set_pos(pos_h + move);
+	    ext_h = (*ui).second.get_frame();
+	    pos_h = (*ui).second.get_pos();
 	  }
 	  break;
 	case ALIGN_UNDER:
@@ -101,9 +140,9 @@ void GuiFrame::recompute_frame(void) {
 	    // to(bottom) - here(bottom)
 	    float diff = ext_t[2] - ext_h[2];
 	    LVector3f move = LVector3f::rfu(0., 0., diff);
-	    here->set_pos(pos_h + move);
-	    ext_h = here->get_frame();
-	    pos_h = here->get_pos();
+	    (*ui).second.set_pos(pos_h + move);
+	    ext_h = (*ui).second.get_frame();
+	    pos_h = (*ui).second.get_pos();
 	  }
 	  break;
 	case ALIGN_LEFT:
@@ -111,9 +150,9 @@ void GuiFrame::recompute_frame(void) {
 	    // to(left) - here(left)
 	    float diff = ext_t[0] - ext_h[0];
 	    LVector3f move = LVector3f::rfu(diff, 0., 0.);
-	    here->set_pos(pos_h + move);
-	    ext_h = here->get_frame();
-	    pos_h = here->get_pos();
+	    (*ui).second.set_pos(pos_h + move);
+	    ext_h = (*ui).second.get_frame();
+	    pos_h = (*ui).second.get_pos();
 	  }
 	  break;
 	case ALIGN_RIGHT:
@@ -121,9 +160,9 @@ void GuiFrame::recompute_frame(void) {
 	    // to(right) - here(right)
 	    float diff = ext_t[1] - ext_h[1];
 	    LVector3f move = LVector3f::rfu(diff, 0., 0.);
-	    here->set_pos(pos_h + move);
-	    ext_h = here->get_frame();
-	    pos_h = here->get_pos();
+	    (*ui).second.set_pos(pos_h + move);
+	    ext_h = (*ui).second.get_frame();
+	    pos_h = (*ui).second.get_pos();
 	  }
 	  break;
 	default:
@@ -138,13 +177,14 @@ void GuiFrame::recompute_frame(void) {
   _left = _bottom = 10000000.;
   _right = _top = -10000000.;
   for (i=_items.begin(); i!=_items.end(); ++i) {
-    float tmp = (*i).get_item()->get_left();
+    UtilMap::iterator ui = _map.find((*i).get_item());
+    float tmp = ((*ui).second.get_frame())[0];
     _left = (_left<tmp)?_left:tmp;
-    tmp = (*i).get_item()->get_right();
+    tmp = ((*ui).second.get_frame())[1];
     _right = (_right<tmp)?tmp:_right;
-    tmp = (*i).get_item()->get_bottom();
+    tmp = ((*ui).second.get_frame())[2];
     _bottom = (_bottom<tmp)?_bottom:tmp;
-    tmp = (*i).get_item()->get_top();
+    tmp = ((*ui).second.get_frame())[3];
     _top = (_top<tmp)?tmp:_top;
   }
   // now put it at the position it is supposed to be
@@ -154,19 +194,21 @@ void GuiFrame::recompute_frame(void) {
   LVector3f delta = _pos - pos;
   for (i=_items.begin(); i!=_items.end(); ++i) {
     GuiItem* foo = (*i).get_item();
-    foo->set_pos(foo->get_pos() + delta);
+    UtilMap::iterator ui = _map.find(foo);
+    (*ui).second.set_pos((*ui).second.get_pos() + delta);
   }
   // get the bounds again
   _left = _bottom = 10000000.;
   _right = _top = -10000000.;
   for (i=_items.begin(); i!=_items.end(); ++i) {
-    float tmp = (*i).get_item()->get_left();
+    UtilMap::iterator ui = _map.find((*i).get_item());
+    float tmp = ((*ui).second.get_frame())[0];
     _left = (_left<tmp)?_left:tmp;
-    tmp = (*i).get_item()->get_right();
+    tmp = ((*ui).second.get_frame())[1];
     _right = (_right<tmp)?tmp:_right;
-    tmp = (*i).get_item()->get_bottom();
+    tmp = ((*ui).second.get_frame())[2];
     _bottom = (_bottom<tmp)?_bottom:tmp;
-    tmp = (*i).get_item()->get_top();
+    tmp = ((*ui).second.get_frame())[3];
     _top = (_top<tmp)?tmp:_top;
   }
   // check for alignment to the DisplayRegion
@@ -191,22 +233,27 @@ void GuiFrame::recompute_frame(void) {
   LVector3f move = move_left + move_right + move_top + move_bottom;
   for (i=_items.begin(); i!=_items.end(); ++i) {
     GuiItem* foo = (*i).get_item();
-    foo->set_pos(foo->get_pos() + move);
+    UtilMap::iterator ui = _map.find(foo);
+    (*ui).second.set_pos((*ui).second.get_pos() + move);
   }
   // lastly, get the finial bounds
   _left = _bottom = 10000000.;
   _right = _top = -10000000.;
   for (i=_items.begin(); i!=_items.end(); ++i) {
-    float tmp = (*i).get_item()->get_left();
+    UtilMap::iterator ui = _map.find((*i).get_item());
+    float tmp = ((*ui).second.get_frame())[0];
     _left = (_left<tmp)?_left:tmp;
-    tmp = (*i).get_item()->get_right();
+    tmp = ((*ui).second.get_frame())[1];
     _right = (_right<tmp)?tmp:_right;
-    tmp = (*i).get_item()->get_bottom();
+    tmp = ((*ui).second.get_frame())[2];
     _bottom = (_bottom<tmp)?_bottom:tmp;
-    tmp = (*i).get_item()->get_top();
+    tmp = ((*ui).second.get_frame())[3];
     _top = (_top<tmp)?tmp:_top;
   }
-
+  for (i=_items.begin(); i!= _items.end(); ++i) {
+    GuiItem* foo = (*i).get_item();
+    _map[foo].write(foo);
+  }
   this->adjust_region();
   thaw();
 }
@@ -362,8 +409,8 @@ void GuiFrame::set_scale(float x, float y, float z) {
 }
 
 void GuiFrame::set_pos(const LVector3f& p) {
-  for (Boxes::iterator i=_items.begin(); i!=_items.end(); ++i)
-    (*i).get_item()->set_pos(p);
+  //  for (Boxes::iterator i=_items.begin(); i!=_items.end(); ++i)
+  //    (*i).get_item()->set_pos(p);
   GuiItem::set_pos(p);
   //  this->recompute_frame();
 }

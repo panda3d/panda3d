@@ -61,6 +61,7 @@ PUBLISHED:
   INLINE int get_start_draw_order(void) const;
   INLINE void set_start_draw_order(int);
 
+  bool is_sane(void) const;
   void sanity_check(void) const;
 };
 

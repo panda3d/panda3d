@@ -219,7 +219,7 @@ void GuiManager::recompute_priorities(void) {
 }
 
 INLINE bool in_range(float x, float a, float b) {
-  return ((x >= a) && (x <= b));
+  return ((x > a) && (x < b));
 }
 
 INLINE bool overlap(MouseWatcherRegion* a, MouseWatcherRegion* b) {
@@ -230,6 +230,17 @@ INLINE bool overlap(MouseWatcherRegion* a, MouseWatcherRegion* b) {
       (in_range(av[2], bv[2], bv[3]) || in_range(av[3], bv[2], bv[3])))
     return true;
   return false;
+}
+
+bool GuiManager::is_sane(void) const {
+  for (RegionSet::const_iterator i=_regions.begin(); i!=_regions.end(); ++i)
+    for (RegionSet::const_iterator j=_regions.begin(); j!=_regions.end(); ++j) {
+      if ((*i) == (*j))
+	continue;
+      if (overlap((*i), (*j)))
+	return false;
+    }
+  return true;
 }
 
 void GuiManager::sanity_check(void) const {
