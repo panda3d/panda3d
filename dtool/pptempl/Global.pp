@@ -193,12 +193,6 @@
   $[all_libs $[if $[and $[build_directory],$[build_target]],$[TARGET]],$[COMPONENT_LIBS]]
 #defer active_libs $[active_local_libs] $[active_component_libs]
 
-// This variable is true if we are building on some flavor of Unix.
-#define unix_platform $[ne $[PLATFORM],Win32]
-
-// This variable is true if we are building on some flavor of Windows.
-#define windows_platform $[eq $[PLATFORM],Win32]
-
 
 // This subroutine will set up the sources variable to reflect the
 // complete set of sources for this target, and also set the
@@ -384,7 +378,7 @@
   #if $[ne $[USE_MAYA] $[components $[USE_MAYA],$[COMPONENT_LIBS]],]
     #set alt_libs $[alt_libs] $[maya_libs]
   #endif
-  #if $[unix_platform]
+  #if $[UNIX_PLATFORM]
     #set alt_libs $[alt_libs] $[UNIX_SYS_LIBS] $[components $[UNIX_SYS_LIBS],$[COMPONENT_LIBS]]
   #endif
 
