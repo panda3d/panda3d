@@ -35,6 +35,10 @@
 #define D3D_OVERLOADS   //  get D3DVECTOR '+' operator, etc from d3dtypes.h
 #include <d3d.h>
 
+#if DIRECT3D_VERSION != 0x0700
+#error DX7 headers not available, you need to install MS Platform SDK!
+#endif
+
 typedef struct {
      DWORD nVerts;
      D3DPRIMITIVETYPE primtype;

@@ -12,11 +12,14 @@
     putil linmath sgraph mathutil pnmimage event
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
-  
+
+  // need to install these due to external projects that link directly with libpandadx (bartop)  
   #define INSTALL_HEADERS \
     config_dxgsg.h dxGraphicsStateGuardian.I dxGraphicsStateGuardian.h \
     dxTextureContext.h dxGeomNodeContext.h dxGeomNodeContext.I
 
+  // build dxGraphicsStateGuardian separately since its so big
+  
   #define SOURCES \
     dxGraphicsStateGuardian.cxx dxSavedFrameBuffer.I dxSavedFrameBuffer.h $[INSTALL_HEADERS]
     
