@@ -1289,7 +1289,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
                     CHECK_FOR_FMT(A8R8G8B8,ConvAlpha8to32);
                 }
 
-                CHECK_FOR_FMT(A8L8,ConvAlpha8to16_4444);
+                CHECK_FOR_FMT(A4R4G4B4,ConvAlpha8to16_4444);
             }
             break;
 
