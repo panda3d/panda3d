@@ -97,7 +97,7 @@ class ClientRepository(DirectObject.DirectObject):
             self.name2cdc[dcClass.getName()]=clientDistClass
         return None
 
-    def connect(self, serverList,
+    def connect(self, serverList, allowProxy,
                 successCallback = None, successArgs = [],
                 failureCallback = None, failureArgs = []):
         """
@@ -110,8 +110,13 @@ class ClientRepository(DirectObject.DirectObject):
         known.
         """
 
-        if self.hasProxy:
-            self.notify.info("Connecting to gameserver via proxy: %s" % (self.proxy.cStr()))
+        hasProxy = 0
+        if allowProxy:
+            proxies = self.http.getProxiesForUrl(serverList[0])
+            hasProxy = (proxies != '')
+
+        if hasProxy:
+            self.notify.info("Connecting to gameserver via proxy: %s" % (proxies))
         else:
             self.notify.info("Connecting to gameserver directly (no proxy).");
 
@@ -120,7 +125,7 @@ class ClientRepository(DirectObject.DirectObject):
         elif self.connectMethod == 'nspr':
             self.connectHttp = 0
         else:
-            self.connectHttp = (self.hasProxy or serverList[0].getScheme() == 'https')
+            self.connectHttp = (hasProxy or serverList[0].isSsl())
 
         self.bootedIndex = None
         self.bootedText = None
@@ -134,7 +139,7 @@ class ClientRepository(DirectObject.DirectObject):
             # run out of servers).
             
             ch = self.http.makeChannel(0)
-            self.httpConnectCallback(ch, serverList, 0,
+            self.httpConnectCallback(ch, serverList, 0, hasProxy,
                                      successCallback, successArgs,
                                      failureCallback, failureArgs)
 
@@ -169,7 +174,7 @@ class ClientRepository(DirectObject.DirectObject):
 
             # Failed to connect.
             if failureCallback:
-                failureCallback(0, *failureArgs)
+                failureCallback(hasProxy, 0, *failureArgs)
 
     def disconnect(self):
         """Closes the previously-established connection.
@@ -183,7 +188,7 @@ class ClientRepository(DirectObject.DirectObject):
             self.tcpConn = None
         self.stopReaderPollTask()
                     
-    def httpConnectCallback(self, ch, serverList, serverIndex,
+    def httpConnectCallback(self, ch, serverList, serverIndex, hasProxy,
                             successCallback, successArgs,
                             failureCallback, failureArgs):
         if ch.isConnectionReady():
@@ -202,12 +207,13 @@ class ClientRepository(DirectObject.DirectObject):
             ch.spawnTask(name = 'connect-to-server',
                          callback = self.httpConnectCallback,
                          extraArgs = [ch, serverList, serverIndex + 1,
+                                      hasProxy,
                                       successCallback, successArgs,
                                       failureCallback, failureArgs])
         else:
             # No more servers to try; we have to give up now.
             if failureCallback:
-                failureCallback(ch.getStatusCode(), *failureArgs)
+                failureCallback(hasProxy, ch.getStatusCode(), *failureArgs)
 
     def startReaderPollTask(self):
         # Stop any tasks we are running now
