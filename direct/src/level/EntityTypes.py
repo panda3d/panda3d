@@ -119,6 +119,12 @@ class VisibilityExtender(Entity):
         ('newZones', [], 'visZoneList'),
         )
 
+class AmbientSound(Entity):
+    type = 'ambientSound'
+    attribs = (
+        ('soundPath', '', 'bamfilename'),
+        )
+
 class PropSpinner(Entity):
     type = 'propSpinner'
 

@@ -44,6 +44,7 @@ class EntityCreatorAI(EntityCreatorBase.EntityCreatorBase):
         cLE = createLocalEntity
 
         self.privRegisterTypes({
+            'ambientSound': nothing,
             'cutScene': nothing,
             'editMgr': Functor(cLE, EditMgrAI.EditMgrAI),
             'entityGroup': nothing,

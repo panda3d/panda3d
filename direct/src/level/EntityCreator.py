@@ -13,6 +13,7 @@ import ModelEntity
 import PathEntity
 import VisibilityExtender
 import PropSpinner
+import AmbientSound
 
 # some useful constructor functions
 # ctor functions must take (level, entId)
@@ -32,6 +33,7 @@ class EntityCreator(EntityCreatorBase.EntityCreatorBase):
         EntityCreatorBase.EntityCreatorBase.__init__(self, level)
         self.level = level
         self.privRegisterTypes({
+            'ambientSound': AmbientSound.AmbientSound,
             'cutScene': CutScene.CutScene,
             'editMgr': EditMgr.EditMgr,
             'entityGroup': nothing,
