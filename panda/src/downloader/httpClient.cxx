@@ -626,32 +626,60 @@ establish_https_proxy(const URLSpec &url) {
   proxy_server << _proxy.get_server() << ":" << _proxy.get_port();
   string proxy_server_str = proxy_server.str();
 
-  BIO *bio = BIO_new_connect((char *)proxy_server_str.c_str());
-
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
       << "connecting to proxy " << proxy_server_str << "\n";
-  }
-  if (BIO_do_connect(bio) <= 0) {
-    downloader_cat.info()
-      << "Could not contact proxy " << proxy_server_str << "\n";
-#ifdef REPORT_SSL_ERRORS
-    ERR_print_errors_fp(stderr);
-#endif
-    return NULL;
   }
 
   ostringstream request;
   request 
     << "CONNECT " << url.get_server() << ":" << url.get_port()
     << " " << get_http_version_string() << "\r\n";
+  if (_http_version > HV_10) {
+    request 
+      << "Host: " << url.get_server() << "\r\n";
+  }
   string connect_header = request.str();
+
+  BIO *bio = BIO_new_connect((char *)proxy_server_str.c_str());
+  if (BIO_do_connect(bio) <= 0) {
+    downloader_cat.info()
+      << "Could not contact proxy " << proxy_server_str << ".\n";
+#ifdef REPORT_SSL_ERRORS
+    ERR_print_errors_fp(stderr);
+#endif
+    return NULL;
+  }
 
   // Create a temporary HTTPDocument to issue the request and read the
   // response from the proxy.
   {
+    string old_proxy_authorization = _proxy_authorization;
     PT(HTTPDocument) doc = new HTTPDocument(this, bio);
-    if (!doc->send_request(connect_header, string())) {
+    bool connected = doc->send_request(connect_header, string());
+    if (!connected && doc->get_status_code() == 407 &&
+        _proxy_authorization != old_proxy_authorization) {
+      // 407: Proxy Authentication Required.  If this happened, maybe
+      // we got the authentication already (but the HTTPDocument was
+      // not allowed to try to reconnect automatically).  Try it
+      // again, once.
+      BIO_free_all(bio);
+      BIO *bio = BIO_new_connect((char *)proxy_server_str.c_str());
+      if (BIO_do_connect(bio) <= 0) {
+        downloader_cat.info()
+          << "Could not contact proxy " << proxy_server_str 
+          << " a second time.\n";
+#ifdef REPORT_SSL_ERRORS
+        ERR_print_errors_fp(stderr);
+#endif
+        return NULL;
+      }
+
+      doc = new HTTPDocument(this, bio);
+      connected = doc->send_request(connect_header, string());
+    }
+
+    if (!connected) {
       downloader_cat.info()
         << "proxy would not open connection to " << url.get_authority()
         << ": " << doc->get_status_code() << " "
@@ -712,7 +740,9 @@ make_https_connection(BIO *bio, const URLSpec &url) const {
 #ifdef REPORT_SSL_ERRORS
     ERR_print_errors_fp(stderr);
 #endif
-    BIO_free_all(sbio);
+    // It seems to be an error to free sbio at this point; perhaps
+    // it's already been freed?
+    BIO_free(bio);
     return NULL;
   }
 

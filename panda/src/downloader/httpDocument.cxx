@@ -127,19 +127,31 @@ send_request(const string &method, const URLSpec &url, const string &body) {
 bool HTTPDocument::
 send_request(const string &header, const string &body) {
   if (prepare_for_next()) {
-    issue_request(header, body);
+    // Tack on a proxy authorization if it is called for.  Assume we
+    // can use the same authorization we used last time.
+    string proxy_auth_header = header;
+    if (!_proxy.empty() && !_client->_proxy_authorization.empty()) {
+      proxy_auth_header += "Proxy-Authorization: ";
+      proxy_auth_header += _client->_proxy_authorization;
+      proxy_auth_header += "\r\n";
+    }
+    issue_request(proxy_auth_header, body);
 
     if (get_status_code() == 407 && !_proxy.empty()) {
       // 407: not authorized to proxy.  Try to get the authorization.
       string authenticate_request = get_header_value("Proxy-Authenticate");
       string authorization;
       if (get_authorization(authorization, authenticate_request, _proxy, true)) {
-        string new_header = header;
-        new_header += "Proxy-Authorization: ";
-        new_header += authorization;
-        new_header += "\r\n";
-        if (prepare_for_next()) {
-          issue_request(new_header, body);
+        if (_client->_proxy_authorization != authorization) {
+          // Change the authorization.
+          _client->_proxy_authorization = authorization;
+          proxy_auth_header = header;
+          proxy_auth_header += "Proxy-Authorization: ";
+          proxy_auth_header += _client->_proxy_authorization;
+          proxy_auth_header += "\r\n";
+          if (prepare_for_next()) {
+            issue_request(proxy_auth_header, body);
+          }
         }
       }
     }
@@ -149,12 +161,12 @@ send_request(const string &header, const string &body) {
       string authenticate_request = get_header_value("WWW-Authenticate");
       string authorization;
       if (get_authorization(authorization, authenticate_request, _url, false)) {
-        string new_header = header;
-        new_header += "Authorization: ";
-        new_header += authorization;
-        new_header += "\r\n";
+        string web_auth_header = proxy_auth_header;
+        web_auth_header += "Authorization: ";
+        web_auth_header += authorization;
+        web_auth_header += "\r\n";
         if (prepare_for_next()) {
-          issue_request(new_header, body);
+          issue_request(web_auth_header, body);
         }
       }
     }
@@ -966,8 +978,9 @@ get_basic_authorization(string &authorization, const HTTPDocument::Tokens &token
 
   // Look in several places in order to find the matching username.
 
-  // Fist, if there's a username on the URL, that always wins.
-  if (url.has_username()) {
+  // Fist, if there's a username on the URL, that always wins (except
+  // when we are looking for a proxy username).
+  if (url.has_username() && !is_proxy) {
     username = url.get_username();
   }
 

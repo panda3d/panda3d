@@ -118,6 +118,7 @@ private:
 #endif
 
   URLSpec _proxy;
+  string _proxy_authorization;
   HTTPVersion _http_version;
   VerifySSL _verify_ssl;
 

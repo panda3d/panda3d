@@ -26,6 +26,7 @@
 INLINE void HTTPClient::
 set_proxy(const URLSpec &proxy) {
   _proxy = proxy;
+  _proxy_authorization = string();
 }
 
 ////////////////////////////////////////////////////////////////////
