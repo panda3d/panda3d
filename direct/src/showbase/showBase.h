@@ -50,9 +50,9 @@ EXPCL_DIRECT ConfigShowbase &get_config_showbase();
 
 
 // klunky interface since we cant pass array from python->C++
-EXPCL_DIRECT void add_fullscreen_testsize(unsigned int xsize,unsigned int ysize);
+EXPCL_DIRECT void add_fullscreen_testsize(int xsize, int ysize);
 EXPCL_DIRECT void runtest_fullscreen_sizes(GraphicsWindow *win);
-EXPCL_DIRECT bool query_fullscreen_testresult(unsigned int xsize,unsigned int ysize);
+EXPCL_DIRECT bool query_fullscreen_testresult(int xsize, int ysize);
 
 END_PUBLISH
 
