@@ -904,20 +904,6 @@ set_hpr(const NodePath &other, float h, float p, float r) {
   set_hpr(other, LPoint3f(h, p, r));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_hpr
-//       Access: Public
-//  Description: Returns the relative orientation of the bottom node
-//               as seen from the other node.
-////////////////////////////////////////////////////////////////////
-INLINE LVecBase3f NodePath::
-get_hpr(const NodePath &other) const {
-  LMatrix4f mat = get_mat(other);
-  LVector3f scale, hpr, pos;
-  decompose_matrix(mat, scale, hpr, pos);
-  return hpr;
-}
-
 INLINE float NodePath::
 get_h(const NodePath &other) const {
   return get_hpr(other)[0];

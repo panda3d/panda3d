@@ -285,6 +285,7 @@ PUBLISHED:
   void set_p(float p);
   void set_r(float r);
   LVecBase3f get_hpr() const;
+  LVecBase3f get_hpr(float roll) const;
   INLINE float get_h() const;
   INLINE float get_p() const;
   INLINE float get_r() const;
@@ -368,7 +369,8 @@ PUBLISHED:
   void set_h(const NodePath &other, float h);
   void set_p(const NodePath &other, float p);
   void set_r(const NodePath &other, float r);
-  INLINE LVecBase3f get_hpr(const NodePath &other) const;
+  LVecBase3f get_hpr(const NodePath &other) const;
+  LVecBase3f get_hpr(const NodePath &other, float roll) const;
   INLINE float get_h(const NodePath &other) const;
   INLINE float get_p(const NodePath &other) const;
   INLINE float get_r(const NodePath &other) const;

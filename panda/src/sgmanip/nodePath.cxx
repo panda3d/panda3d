@@ -1328,6 +1328,20 @@ get_hpr() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_hpr
+//       Access: Public
+//  Description: Retrieves the rotation component of the transform.
+////////////////////////////////////////////////////////////////////
+LVecBase3f NodePath::
+get_hpr(float roll) const {
+  nassertr(has_arcs(), LVecBase3f(0.0, 0.0, 0.0));
+  LMatrix4f mat = get_mat();
+  LVecBase3f scale, hpr, pos;
+  decompose_matrix(mat, scale, hpr, pos, roll);
+  return hpr;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_scale
 //       Access: Public
 //  Description: Sets the scale component of the transform,
@@ -1750,6 +1764,34 @@ set_r(const NodePath &other, float r) {
   old_hpr[2] = r;
   compose_matrix(mat, scale, old_hpr, pos);
   set_mat(other, mat);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_hpr
+//       Access: Public
+//  Description: Returns the relative orientation of the bottom node
+//               as seen from the other node.
+////////////////////////////////////////////////////////////////////
+LVecBase3f NodePath::
+get_hpr(const NodePath &other) const {
+  LMatrix4f mat = get_mat(other);
+  LVector3f scale, hpr, pos;
+  decompose_matrix(mat, scale, hpr, pos);
+  return hpr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_hpr
+//       Access: Public
+//  Description: Returns the relative orientation of the bottom node
+//               as seen from the other node.
+////////////////////////////////////////////////////////////////////
+LVecBase3f NodePath::
+get_hpr(const NodePath &other, float roll) const {
+  LMatrix4f mat = get_mat(other);
+  LVector3f scale, hpr, pos;
+  decompose_matrix(mat, scale, hpr, pos, roll);
+  return hpr;
 }
 
 ////////////////////////////////////////////////////////////////////
