@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 #include "textNode.h"
 #include "textGlyph.h"
+#include "stringDecoder.h"
 #include "config_text.h"
 
 #include "compose_matrix.h"
@@ -45,10 +46,11 @@ TypeHandle TextNode::_type_handle;
 ////////////////////////////////////////////////////////////////////
 TextNode::
 TextNode(const string &name) : NamedNode(name) {
+  _encoding = E_iso8859;
   _slant = 0.0f;
 
   _flags = 0;
-  _align = TM_ALIGN_LEFT;
+  _align = A_left;
   _wordwrap_width = 1.0f;
 
   _text_color.set(1.0f, 1.0f, 1.0f, 1.0f);
@@ -112,16 +114,16 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level + 2)
     << "alignment is ";
   switch (_align) {
-  case TM_ALIGN_LEFT:
-    out << "TM_ALIGN_LEFT\n";
+  case A_left:
+    out << "A_left\n";
     break;
 
-  case TM_ALIGN_RIGHT:
-    out << "TM_ALIGN_RIGHT\n";
+  case A_right:
+    out << "A_right\n";
     break;
 
-  case TM_ALIGN_CENTER:
-    out << "TM_ALIGN_CENTER\n";
+  case A_center:
+    out << "A_center\n";
     break;
   }
 
@@ -245,12 +247,16 @@ generate() {
     text = wordwrap_to(text, _wordwrap_width, false);
   }
 
+  StringDecoder *decoder = make_decoder(text);
+
   // Assemble the text.
   LVector2f ul, lr;
   int num_rows = 0;
-  PT_Node text_root = assemble_text(text.c_str(), ul, lr, num_rows);
+  PT_Node text_root = assemble_text(decoder, ul, lr, num_rows);
   RenderRelation *text_arc =
     new RenderRelation(sub_root, text_root, _draw_order + 2);
+
+  delete decoder;
 
   if (has_text_color()) {
     text_arc->set_transition(new ColorTransition(_text_color));
@@ -410,9 +416,13 @@ do_measure() {
     text = wordwrap_to(text, _wordwrap_width, false);
   }
 
+  StringDecoder *decoder = make_decoder(text);
+
   LVector2f ul, lr;
   int num_rows = 0;
-  measure_text(text.c_str(), ul, lr, num_rows);
+  measure_text(decoder, ul, lr, num_rows);
+
+  delete decoder;
 
   _num_rows = num_rows;
   _ul2d = ul;
@@ -425,6 +435,29 @@ do_measure() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextNode::make_decoder
+//       Access: Private
+//  Description: Creates and returns a new StringDecoder suitable for
+//               decoding the given input text, and corresponding to
+//               our input encoding type.  The decoder must be freed
+//               via delete later.
+////////////////////////////////////////////////////////////////////
+StringDecoder *TextNode::
+make_decoder(const string &text) {
+  switch (_encoding) {
+  case E_utf8:
+    return new StringUtf8Decoder(text);
+
+  case E_unicode:
+    return new StringUnicodeDecoder(text);
+
+  case E_iso8859:
+  default:
+    return new StringDecoder(text);
+  };
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextNode::assemble_row
 //       Access: Private
 //  Description: Assembles the letters in the source string, up until
@@ -434,12 +467,21 @@ do_measure() {
 //               to the terminating character.
 ////////////////////////////////////////////////////////////////////
 float TextNode::
-assemble_row(const char *&source, Node *dest) {
+assemble_row(StringDecoder *decoder, Node *dest) {
   nassertr(_font != (TextFont *)NULL, 0.0f);
 
   float xpos = 0.0f;
-  while (*source != '\0' && *source != '\n') {
-    int character = (unsigned char)*source;
+  bool expand_amp = get_expand_amp();
+  if (decoder->is_eof()) {
+    return xpos;
+  }
+  int character = decoder->get_next_character();
+  while (character != '\n') {
+    if (character == '&' && expand_amp) {
+      // An ampersand in expand_amp mode is treated as an escape
+      // character.
+      character = expand_amp_sequence(decoder);
+    }
 
     if (character == ' ') {
       // A space is a special case.
@@ -481,7 +523,10 @@ assemble_row(const char *&source, Node *dest) {
         xpos += glyph->get_advance() * glyph_scale;
       }
     }
-    source++;
+    if (decoder->is_eof()) {
+      return xpos;
+    }
+    character = decoder->get_next_character();
   }
 
   return xpos;
@@ -495,7 +540,7 @@ assemble_row(const char *&source, Node *dest) {
 //               returns it.  Also sets the ul, lr corners.
 ////////////////////////////////////////////////////////////////////
 Node *TextNode::
-assemble_text(const char *source, LVector2f &ul, LVector2f &lr,
+assemble_text(StringDecoder *decoder, LVector2f &ul, LVector2f &lr,
               int &num_rows) {
   nassertr(_font != (TextFont *)NULL, (Node *)NULL);
   float line_height = get_line_height();
@@ -508,24 +553,20 @@ assemble_text(const char *source, LVector2f &ul, LVector2f &lr,
 
   float posy = 0.0f;
   int row_index = 0;
-  while (*source != '\0') {
+  while (!decoder->is_eof()) {
     char numstr[20];
     sprintf(numstr, "row%d", row_index);
     nassertr(strlen(numstr) < 20, root_node);
 
     Node *row = new NamedNode(numstr);
-    float row_width = assemble_row(source, row);
-    if (*source != '\0') {
-      // Skip past the newline.
-      source++;
-    }
+    float row_width = assemble_row(decoder, row);
 
     LMatrix4f mat = LMatrix4f::ident_mat();
-    if (_align == TM_ALIGN_LEFT) {
+    if (_align == A_left) {
       mat.set_row(3, LVector3f(0.0f, 0.0f, posy));
       lr[0] = max(lr[0], row_width);
 
-    } else if (_align == TM_ALIGN_RIGHT) {
+    } else if (_align == A_right) {
       mat.set_row(3, LVector3f(-row_width, 0.0f, posy));
       ul[0] = min(ul[0], -row_width);
 
@@ -566,10 +607,21 @@ assemble_text(const char *source, LVector2f &ul, LVector2f &lr,
 //               it.
 ////////////////////////////////////////////////////////////////////
 float TextNode::
-measure_row(const char *&source) {
+measure_row(StringDecoder *decoder) {
+  nassertr(_font != (TextFont *)NULL, 0.0f);
+
   float xpos = 0.0f;
-  while (*source != '\0' && *source != '\n') {
-    int character = (unsigned char)*source;
+  bool expand_amp = get_expand_amp();
+  if (decoder->is_eof()) {
+    return xpos;
+  }
+  int character = decoder->get_next_character();
+  while (character != '\n') {
+    if (character == '&' && expand_amp) {
+      // An ampersand in expand_amp mode is treated as an escape
+      // character.
+      character = expand_amp_sequence(decoder);
+    }
 
     if (character == ' ') {
       // A space is a special case.
@@ -584,7 +636,10 @@ measure_row(const char *&source) {
         xpos += glyph->get_advance() * glyph_scale;
       }
     }
-    source++;
+    if (decoder->is_eof()) {
+      return xpos;
+    }
+    character = decoder->get_next_character();
   }
 
   return xpos;
@@ -597,7 +652,7 @@ measure_row(const char *&source) {
 //               actually assembling it.
 ////////////////////////////////////////////////////////////////////
 void TextNode::
-measure_text(const char *source, LVector2f &ul, LVector2f &lr,
+measure_text(StringDecoder *decoder, LVector2f &ul, LVector2f &lr,
              int &num_rows) {
   nassertv(_font != (TextFont *)NULL);
   float line_height = get_line_height();
@@ -606,17 +661,13 @@ measure_text(const char *source, LVector2f &ul, LVector2f &lr,
   lr.set(0.0f, 0.0f);
 
   float posy = 0.0f;
-  while (*source != '\0') {
-    float row_width = measure_row(source);
-    if (*source != '\0') {
-      // Skip past the newline.
-      source++;
-    }
+  while (!decoder->is_eof()) {
+    float row_width = measure_row(decoder);
 
-    if (_align == TM_ALIGN_LEFT) {
+    if (_align == A_left) {
       lr[0] = max(lr[0], row_width);
 
-    } else if (_align == TM_ALIGN_RIGHT) {
+    } else if (_align == A_right) {
       ul[0] = min(ul[0], -row_width);
 
     } else {
@@ -631,6 +682,95 @@ measure_text(const char *source, LVector2f &ul, LVector2f &lr,
   }
 
   lr[1] = posy + 0.8f * line_height;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::expand_amp_sequence
+//       Access: Private
+//  Description: Given that we have just read an ampersand from the
+//               StringDecoder, and that we have expand_amp in effect
+//               and are therefore expected to expand the sequence
+//               that this ampersand begins into a single unicode
+//               character, do the expansion and return the character.
+////////////////////////////////////////////////////////////////////
+int TextNode::
+expand_amp_sequence(StringDecoder *decoder) {
+  int result = 0;
+
+  int character = decoder->get_next_character();
+  if (character == '#') {
+    // An explicit numeric sequence: &#nnn;
+    result = 0;
+    character = decoder->get_next_character();
+    while (!decoder->is_eof() && character < 128 && isdigit(character)) {
+      result = (result * 10) + (character - '0');
+      character = decoder->get_next_character();
+    }
+    if (character != ';') {
+      // Invalid sequence.
+      return 0;
+    }
+
+    return result;
+  }
+
+  string sequence;
+  
+  // Some non-numeric sequence.
+  while (!decoder->is_eof() && character < 128 && isalpha(character)) {
+    sequence += character;
+    character = decoder->get_next_character();
+  }
+  if (character != ';') {
+    // Invalid sequence.
+    return 0;
+  }
+
+  static const struct {
+    const char *name;
+    int code;
+  } tokens[] = {
+    { "amp", '&' }, { "lt", '<' }, { "gt", '>' }, { "quot", '"' },
+    { "nbsp", ' ' /* 160 */ },
+
+    { "iexcl", 161 }, { "cent", 162 }, { "pound", 163 }, { "curren", 164 },
+    { "yen", 165 }, { "brvbar", 166 }, { "brkbar", 166 }, { "sect", 167 },
+    { "uml", 168 }, { "die", 168 }, { "copy", 169 }, { "ordf", 170 },
+    { "laquo", 171 }, { "not", 172 }, { "shy", 173 }, { "reg", 174 },
+    { "macr", 175 }, { "hibar", 175 }, { "deg", 176 }, { "plusmn", 177 },
+    { "sup2", 178 }, { "sup3", 179 }, { "acute", 180 }, { "micro", 181 },
+    { "para", 182 }, { "middot", 183 }, { "cedil", 184 }, { "sup1", 185 },
+    { "ordm", 186 }, { "raquo", 187 }, { "frac14", 188 }, { "frac12", 189 },
+    { "frac34", 190 }, { "iquest", 191 }, { "Agrave", 192 }, { "Aacute", 193 },
+    { "Acirc", 194 }, { "Atilde", 195 }, { "Auml", 196 }, { "Aring", 197 },
+    { "AElig", 198 }, { "Ccedil", 199 }, { "Egrave", 200 }, { "Eacute", 201 },
+    { "Ecirc", 202 }, { "Euml", 203 }, { "Igrave", 204 }, { "Iacute", 205 },
+    { "Icirc", 206 }, { "Iuml", 207 }, { "ETH", 208 }, { "Dstrok", 208 },
+    { "Ntilde", 209 }, { "Ograve", 210 }, { "Oacute", 211 }, { "Ocirc", 212 },
+    { "Otilde", 213 }, { "Ouml", 214 }, { "times", 215 }, { "Oslash", 216 },
+    { "Ugrave", 217 }, { "Uacute", 218 }, { "Ucirc", 219 }, { "Uuml", 220 },
+    { "Yacute", 221 }, { "THORN", 222 }, { "szlig", 223 }, { "agrave", 224 },
+    { "aacute", 225 }, { "acirc", 226 }, { "atilde", 227 }, { "auml", 228 },
+    { "aring", 229 }, { "aelig", 230 }, { "ccedil", 231 }, { "egrave", 232 },
+    { "eacute", 233 }, { "ecirc", 234 }, { "euml", 235 }, { "igrave", 236 },
+    { "iacute", 237 }, { "icirc", 238 }, { "iuml", 239 }, { "eth", 240 },
+    { "ntilde", 241 }, { "ograve", 242 }, { "oacute", 243 }, { "ocirc", 244 },
+    { "otilde", 245 }, { "ouml", 246 }, { "divide", 247 }, { "oslash", 248 },
+    { "ugrave", 249 }, { "uacute", 250 }, { "ucirc", 251 }, { "uuml", 252 },
+    { "yacute", 253 }, { "thorn", 254 }, { "yuml", 255 },
+
+    { NULL, 0 },
+  };
+
+  for (int i = 0; tokens[i].name != NULL; i++) {
+    if (sequence == tokens[i].name) {
+      // Here's a match.
+      return tokens[i].code;
+    }
+  }
+
+  // Some unrecognized sequence.
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////

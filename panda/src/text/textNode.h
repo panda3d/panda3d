@@ -15,35 +15,33 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
 #ifndef TEXTNODE_H
 #define TEXTNODE_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
+
+#include "pandabase.h"
 
 #include "config_text.h"
 #include "textFont.h"
 
-#include <pt_Node.h>
-#include <namedNode.h>
-#include <luse.h>
-#include <geom.h>
-#include <geomNode.h>
-#include <renderRelation.h>
-#include <textureTransition.h>
-#include <transparencyTransition.h>
-#include <allTransitionsWrapper.h>
+#include "pt_Node.h"
+#include "namedNode.h"
+#include "luse.h"
+#include "geom.h"
+#include "geomNode.h"
+#include "renderRelation.h"
+#include "textureTransition.h"
+#include "transparencyTransition.h"
+#include "allTransitionsWrapper.h"
 
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
+// These are deprecated.  Use TextNode::Alignment instead.
 BEGIN_PUBLISH
 #define TM_ALIGN_LEFT         1
 #define TM_ALIGN_RIGHT        2
 #define TM_ALIGN_CENTER       3
 END_PUBLISH
+
+class StringDecoder;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextNode
@@ -76,21 +74,38 @@ PUBLISHED:
   TextNode(const string &name = "");
   ~TextNode();
 
+  enum Alignment {
+    A_left = TM_ALIGN_LEFT,
+    A_right = TM_ALIGN_RIGHT,
+    A_center = TM_ALIGN_CENTER,
+  };
+
+  enum Encoding {
+    E_iso8859,
+    E_utf8,
+    E_unicode
+  };
+
   INLINE int freeze();
   INLINE int get_freeze_level() const;
   INLINE int thaw();
 
-  //  INLINE void set_font(Node *font_node);
   INLINE void set_font(TextFont *font);
   INLINE TextFont *get_font() const;
+
+  INLINE void set_encoding(Encoding encoding);
+  INLINE Encoding get_encoding() const;
+
+  INLINE void set_expand_amp(bool expand_amp);
+  INLINE bool get_expand_amp() const;
 
   INLINE float get_line_height() const;
 
   INLINE void set_slant(float slant);
   INLINE float get_slant() const;
 
-  INLINE void set_align(int align_type);
-  INLINE int get_align() const;
+  INLINE void set_align(Alignment align_type);
+  INLINE Alignment get_align() const;
 
   INLINE void set_wordwrap(float width);
   INLINE void clear_wordwrap();
@@ -206,12 +221,16 @@ private:
   void do_rebuild();
   void do_measure();
 
-  float assemble_row(const char *&source, Node *dest);
-  Node *assemble_text(const char *source, LVector2f &ul, LVector2f &lr,
+  StringDecoder *make_decoder(const string &text);
+
+  float assemble_row(StringDecoder *decoder, Node *dest);
+  Node *assemble_text(StringDecoder *decoder, LVector2f &ul, LVector2f &lr,
                       int &num_rows);
-  float measure_row(const char *&source);
-  void measure_text(const char *source, LVector2f &ul, LVector2f &lr,
+  float measure_row(StringDecoder *decoder);
+  void measure_text(StringDecoder *decoder, LVector2f &ul, LVector2f &lr,
                     int &num_rows);
+
+  int expand_amp_sequence(StringDecoder *decoder);
 
   Node *make_frame();
   Node *make_card();
@@ -219,6 +238,7 @@ private:
 
   PT(TextFont) _font;
 
+  Encoding _encoding;
   float _slant;
 
   PT(Texture) _card_texture;
@@ -239,10 +259,11 @@ private:
     F_frame_corners    =  0x0100,
     F_card_transp      =  0x0200,
     F_has_card_border  =  0x0400,
+    F_expand_amp       =  0x0800,
   };
 
   int _flags;
-  int _align;
+  Alignment _align;
   float _wordwrap_width;
   float _frame_width;
   float _card_border_size;

@@ -98,10 +98,20 @@ DynamicTextFont(const Filename &font_filename, int face_index) {
       }
       set_name(name);
 
-      text_cat.info()
-        << "Loaded font " << get_name() << "\n";
-      _is_valid = true;
-      reset_scale();
+      if (!FT_IS_SCALABLE(_face)) {
+        text_cat.error()
+          << "Unable to read font " << get_name()
+          << ": non-scalable fonts not supported.\n";
+        // Although we could support these if we wanted to, just
+        // haven't bothered to write the few lines of glue code that
+        // would do it.
+
+      } else {
+        text_cat.info()
+          << "Loaded font " << get_name() << "\n";
+        _is_valid = true;
+        reset_scale();
+      }
     }
   }
 }

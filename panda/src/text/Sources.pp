@@ -18,6 +18,7 @@
     dynamicTextPage.I dynamicTextPage.h \
     geomTextGlyph.I geomTextGlyph.h \
     staticTextFont.I staticTextFont.h \
+    stringDecoder.I stringDecoder.h \
     textFont.I textFont.h \
     textGlyph.I textGlyph.h \
     textNode.I textNode.h textNode.cxx
@@ -28,6 +29,7 @@
     dynamicTextGlyph.cxx \
     dynamicTextPage.cxx \
     geomTextGlyph.cxx \
+    stringDecoder.cxx \
     staticTextFont.cxx \
     textFont.cxx textGlyph.cxx
 
@@ -38,6 +40,7 @@
     dynamicTextPage.I dynamicTextPage.h \
     geomTextGlyph.I geomTextGlyph.h \
     staticTextFont.I staticTextFont.h \
+    stringDecoder.I stringDecoder.h \
     textFont.I textFont.h \
     textGlyph.I textGlyph.h \
     textNode.I textNode.h

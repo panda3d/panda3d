@@ -86,22 +86,6 @@ thaw() {
   return _freeze_level;
 }
 
-/*
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_font
-//       Access: Published
-//  Description: Sets the font that will be used when making text.
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-set_font(Node *font_node) {
-  if (font_node == (Node *)NULL) {
-    set_font((TextFont *)NULL);
-  } else {
-    set_font(new TextFont(font_node));
-  }
-}
-*/
-
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_font
 //       Access: Published
@@ -123,6 +107,67 @@ set_font(TextFont *font) {
 INLINE TextFont *TextNode::
 get_font() const {
   return _font;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_encoding
+//       Access: Published
+//  Description: Specifies how the string set via set_text() is to be
+//               interpreted.  The default, E_iso8859, means a
+//               standard string with one-byte characters
+//               (i.e. ASCII).  Other encodings are possible to take
+//               advantage of character sets with more than 256
+//               characters.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_encoding(TextNode::Encoding encoding) {
+  if (_encoding != encoding) {
+    _encoding = encoding;
+    rebuild(true);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_encoding
+//       Access: Published
+//  Description: Returns the encoding by which the string set via
+//               set_text() is to be interpreted.  See set_encoding().
+////////////////////////////////////////////////////////////////////
+INLINE TextNode::Encoding TextNode::
+get_encoding() const {
+  return _encoding;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_expand_amp
+//       Access: Published
+//  Description: Sets the state of the expand_amp flag.  When this is
+//               true, embedded ampersands in the text string are
+//               expanded to special characters according to a subset
+//               of the HTML conventions.  When this is false,
+//               ampersands are treated as ordinary characters.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_expand_amp(bool expand_amp) {
+  bool current_expand_amp = get_expand_amp();
+  if (expand_amp && !current_expand_amp) {
+    _flags |= F_expand_amp;
+    rebuild(true);
+  } else {
+    _flags &= ~F_expand_amp;
+    rebuild(true);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_expand_amp
+//       Access: Published
+//  Description: Returns the state of the expand_amp flag.  See
+//               set_expand_amp().
+////////////////////////////////////////////////////////////////////
+INLINE bool TextNode::
+get_expand_amp() const {
+  return (_flags & F_expand_amp) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -165,7 +210,7 @@ get_slant() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_align(int align_type) {
+set_align(TextNode::Alignment align_type) {
   if (_align != align_type) {
     _align = align_type;
     rebuild(true);
@@ -177,7 +222,7 @@ set_align(int align_type) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE int TextNode::
+INLINE TextNode::Alignment TextNode::
 get_align() const {
   return _align;
 }
