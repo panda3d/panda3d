@@ -9,10 +9,8 @@ load-display pandagl
 
 
 # These control the placement and size of the default rendering window.
-win-origin-x 100
-win-origin-y 0
-win-width 800
-win-height 600
+win-origin 100 0
+win-size 800 600
 
 # Uncomment this line if you want to run Panda fullscreen instead of
 # in a window.
@@ -23,9 +21,12 @@ dc-file sample.dc
 
 # Windows ships with a software OpenGL driver; if you have not
 # installed an OpenGL driver for your graphics card you may be able to
-# run OpenGL in software only.  If you don't object to running OpenGL
-# in software leave this variable set true.
-gl-allow-software-renderer #t
+# run OpenGL in software only.
+
+# If you don't object to running OpenGL in software leave the keyword
+# "software" in the following line, otherwise remove it to force
+# hardware only.
+framebuffer-mode rgba double-buffer depth multisample hardware software
 
 
 # These control the amount of output Panda gives for some various
