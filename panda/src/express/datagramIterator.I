@@ -449,7 +449,7 @@ get_remaining_size() const {
 //       Access: Public
 //  Description: Return the datagram of this iterator.
 ////////////////////////////////////////////////////////////////////
-const Datagram &DatagramIterator::
+INLINE const Datagram &DatagramIterator::
 get_datagram() const {
   return *_datagram;
 }
