@@ -35,8 +35,8 @@ class ShadowCaster:
         self.buffer.setClearColor(clearColor)
         self.tex = self.buffer.getTexture()
         self.tex.setBorderColor(clearColor)
-        self.tex.setWrapu(Texture.WMBorderColor)
-        self.tex.setWrapv(Texture.WMBorderColor)
+        self.tex.setWrapU(Texture.WMBorderColor)
+        self.tex.setWrapV(Texture.WMBorderColor)
 
         # Set up a display region on this buffer, and create a camera.
         dr = self.buffer.makeDisplayRegion()
