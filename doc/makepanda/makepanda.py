@@ -1822,7 +1822,8 @@ framebuffer-mode rgba double-buffer depth multisample hardware software
 # one (or define a new one for the particular category you wish to
 # change) to control this output.
 
-notify-level   warning
+notify-level warning
+default-directnotify-level warning
 
 # These specify where model files may be loaded from.  You probably
 # want to set this to a sensible path for yourself.  $THIS_PRC_DIR is
