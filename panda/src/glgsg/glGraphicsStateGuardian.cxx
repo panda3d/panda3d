@@ -275,6 +275,11 @@ reset() {
   enable_line_smooth(false);
   enable_multisample(true);
 
+  // Should we normalize lighting normals?
+  if (gl_auto_normalize_lighting) {
+    glEnable(GL_NORMALIZE);
+  }
+
   // Set up the light id map
   glGetIntegerv( GL_MAX_LIGHTS, &_max_lights );
   _available_light_ids = PTA(Light*)(_max_lights);
@@ -2649,23 +2654,23 @@ void GLGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
     // Check to see if this light has already been bound to an id
     for (i = 0; i < _max_lights; i++) {
       if (_available_light_ids[i] == light) {
-    // Light has already been bound to an id, we only need
-    // to enable the light, not apply it
-    _cur_light_id = -2;
-    enable_light(i, true);
-    _cur_light_enabled[i] = true;
-    break;
+	// Light has already been bound to an id, we only need
+	// to enable the light, not apply it
+	_cur_light_id = -2;
+	enable_light(i, true);
+	_cur_light_enabled[i] = true;
+	break;
       }
     }
     
     // See if there are any unbound light ids 
     if (_cur_light_id == -1) {
       for (i = 0; i < _max_lights; i++) {
-    if (_available_light_ids[i] == NULL) {
-      _available_light_ids[i] = light;
-      _cur_light_id = i;
-      break;
-    }
+	if (_available_light_ids[i] == NULL) {
+	  _available_light_ids[i] = light;
+	  _cur_light_id = i;
+	  break;
+	}
       }
     } 
     
@@ -2673,11 +2678,11 @@ void GLGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
     // a currently unused but previously bound id 
     if (_cur_light_id == -1) {
       for (i = 0; i < _max_lights; i++) {
-    if (attrib->is_off(_available_light_ids[i])) {
-      _available_light_ids[i] = light;
-      _cur_light_id = i;
-      break;
-    } 
+	if (attrib->is_off(_available_light_ids[i])) {
+	  _available_light_ids[i] = light;
+	  _cur_light_id = i;
+	  break;
+	} 
       }
     }
 
@@ -2689,7 +2694,7 @@ void GLGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
       light->apply(this);
     } else if (_cur_light_id == -1) {
       glgsg_cat.error()
-    << "issue_light() - failed to bind light to id" << endl;
+	<< "issue_light() - failed to bind light to id" << endl;
     }
   }
 

@@ -39,6 +39,14 @@ bool gl_force_mipmaps = config_glgsg.GetBool("gl-force-mipmaps", false);
 // colors, using mipmap_level_*.rgb if they are available.
 bool gl_show_mipmaps = config_glgsg.GetBool("gl-show-mipmaps", false);
 
+// Configure this true to cause all lighting normals to automatically
+// be normalized by the graphics hardware before rendering.  This is
+// necessary if you intend to render things under scale transforms and
+// expect lighting to work correctly.  Maybe one day there will be
+// another way to set this at runtime, instead of only as a configure
+// variable.
+bool gl_auto_normalize_lighting = config_glgsg.GetBool("auto-normalize-lighting", false);
+
 GLDecalType gl_decal_type = GDT_offset;
 
 static GLDecalType
