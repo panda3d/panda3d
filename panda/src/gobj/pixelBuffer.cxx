@@ -236,6 +236,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
   _xsize = pnmimage.get_x_size();
   _ysize = pnmimage.get_y_size();
   _num_components = num_components;
+  _component_width = 1;
   _loaded = true;
 
   // Now copy the pixel data from the PNMImage into our internal
@@ -270,7 +271,8 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     // Another possible case: two bytes per pixel, and the source
     // image shows a maxval of 65535.  Again, no scaling is necessary.
     _type = T_unsigned_short;
-//    _image = PTA_uchar::empty_array(_xsize * _ysize * _num_components * 2);
+    _image = PTA_uchar::empty_array(_xsize * _ysize * _num_components * 2);
+    _component_width = 2;
     int idx = 0;
     
     for (int j = _ysize-1; j >= 0; j--) {
@@ -318,6 +320,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     // values.
     _type = T_unsigned_short;
     _image = PTA_uchar::empty_array(_xsize * _ysize * _num_components * 2);
+    _component_width = 2;
     int idx = 0;
     double scale = 65535.0 / (double)maxval;
     
