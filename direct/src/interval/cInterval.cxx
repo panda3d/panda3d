@@ -66,7 +66,11 @@ CInterval(const string &name, double duration, bool open_ended) :
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 set_t(double t) {
-  t = min(max(t, 0.0), get_duration());
+  // There doesn't seem to be any reason to clamp this, and it
+  // breaks looping intervals.  The interval code should properly
+  // handle t values outside the proper range.
+  //t = min(max(t, 0.0), get_duration());
+
   switch (get_state()) {
   case S_initial:
     priv_initialize(t);

@@ -58,7 +58,11 @@ class Interval(DirectObject):
                 self.getState() == CInterval.SFinal)
 
     def setT(self, t):
-        t = min(max(t, 0.0), self.getDuration())
+        # There doesn't seem to be any reason to clamp this, and it
+        # breaks looping intervals.  The interval code should properly
+        # handle t values outside the proper range.
+        #t = min(max(t, 0.0), self.getDuration())
+        
         state = self.getState()
         if state == CInterval.SInitial:
             self.privInitialize(t)
