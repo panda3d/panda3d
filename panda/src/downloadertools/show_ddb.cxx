@@ -31,7 +31,7 @@ main(int argc, char *argv[]) {
   Filename client_ddb = Filename::from_os_specific(argv[2]);
 
   DownloadDb db(server_ddb, client_ddb);
-  db.output_version_map(cout);
+  db.write(cout);
 
   return 0;
 }
