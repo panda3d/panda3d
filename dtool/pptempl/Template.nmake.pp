@@ -39,7 +39,7 @@
 // All of the Sources.pp files in the current source hierarchy
 // $DTOOL/pptempl/Global.pp
 // $DTOOL/pptempl/Global.nmake.pp
-// $DTOOL/pptempl/Depends.pp, once for each Sources.pp filem
+// $DTOOL/pptempl/Depends.pp, once for each Sources.pp file
 // Template.nmake.pp (this file), once for each Sources.pp file
 
 #if $[ne $[CTPROJS],]
@@ -106,6 +106,14 @@
   #define lxx_st_sources $[sort $[lxx_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
   #define dep_sources_1  $[sort $[get_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
 
+  // If there is an __init__.py in the directory, then all Python
+  // files in the directory just get installed without having to be
+  // named.
+  #if $[and $[INSTALL_PYTHON_SOURCE],$[wildcard $[TOPDIR]/$[DIRPREFIX]__init__.py]]
+    #define py_sources $[wildcard $[TOPDIR]/$[DIRPREFIX]*.py]
+  #endif
+  #define install_py $[py_sources:$[TOPDIR]/$[DIRPREFIX]%=%]
+
   // These are the source files that our dependency cache file will
   // depend on.  If it's an empty list, we won't bother writing rules to
   // freshen the cache file.
@@ -171,6 +179,7 @@
     $[if $[install_data],$[install_data_dir]] \
     $[if $[install_config],$[install_config_dir]] \
     $[if $[install_igatedb],$[install_igatedb_dir]] \
+    $[if $[install_py],$[install_py_dir] $[install_py_package_dir]] \
     ]
 
 // Similarly, we need to ensure that $[ODIR] exists.  Trying to make
@@ -285,7 +294,8 @@ $[TAB] if exist $[file] del /f $[file]
      $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
      $[INSTALL_PARSER_INC:%=$[install_parser_inc_dir]/%] \
      $[INSTALL_DATA:%=$[install_data_dir]/%] \
-     $[INSTALL_CONFIG:%=$[install_config_dir]/%]
+     $[INSTALL_CONFIG:%=$[install_config_dir]/%] \
+     $[if $[install_py],$[install_py:%=$[install_py_dir]/%] $[install_py_package_dir]/__init__.py]
 
 #define installed_igate_files \
      $[get_igatedb(metalib_target lib_target ss_lib_target):$[ODIR]/%=$[install_igatedb_dir]/%]
@@ -922,6 +932,18 @@ $[osfilename $[install_config_dir]/$[file]] : $[patsubst %,$[osfilename %],$[fil
 #define dest $[install_config_dir]
 $[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]]
 #end file
+
+#foreach file $[install_py]
+$[osfilename $[install_py_dir]/$[file]] : $[patsubst %,$[osfilename %],$[file]]
+#define local $[file]
+#define dest $[install_py_dir]
+$[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]]
+#end file
+   
+#if $[install_py]
+$[osfilename $[install_py_package_dir]/__init__.py] :
+$[TAB] echo. > $[osfilename $[install_py_package_dir]/__init__.py]
+#endif
 
 // Finally, all the special targets.  These are commands that just need
 // to be invoked; we don't pretend to know what they are.

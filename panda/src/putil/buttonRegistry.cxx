@@ -38,13 +38,21 @@ ButtonRegistry *ButtonRegistry::_global_pointer = NULL;
 //               it was already registered; in either case, the new
 //               ButtonHandle is loaded into the first parameter.
 //
+//               If the alias is not ButtonHandle::none(), it
+//               indicates an alias (alternate name) for the same
+//               button.  Each button is allowed to have one alias,
+//               and multiple different buttons can refer to the same
+//               alias.  The alias should be the more general name for
+//               the button, for instance, shift is an alias for
+//               lshift, but not vice-versa.
+//
 //               This defines a new kind of button matching the
 //               indicated name.  The ButtonHandle can then be passed
 //               around to devices as a button in its own right.
 ////////////////////////////////////////////////////////////////////
 bool ButtonRegistry::
 register_button(ButtonHandle &button_handle, const string &name,
-                char ascii_equivalent) {
+                ButtonHandle alias, char ascii_equivalent) {
   NameRegistry::iterator ri;
   ri = _name_registry.find(name);
 
@@ -81,7 +89,7 @@ register_button(ButtonHandle &button_handle, const string &name,
     ButtonHandle new_handle;
     new_handle._index = index;
 
-    RegistryNode *rnode = new RegistryNode(new_handle, name);
+    RegistryNode *rnode = new RegistryNode(new_handle, alias, name);
     _handle_registry[index] = rnode;
     _name_registry[name] = rnode;
 
@@ -108,7 +116,7 @@ register_button(ButtonHandle &button_handle, const string &name,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonRegistry::get_button
-//       Access: Public
+//       Access: Published
 //  Description: Finds a ButtonHandle in the registry matching the
 //               indicated name.  If there is no such ButtonHandle,
 //               registers a new one and returns it.
@@ -129,7 +137,7 @@ get_button(const string &name) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonRegistry::find_ascii_button
-//       Access: Public
+//       Access: Published
 //  Description: Finds a ButtonHandle in the registry matching the
 //               indicated ASCII equivalent character.  If there is no
 //               such ButtonHandle, returns ButtonHandle::none().
@@ -142,10 +150,9 @@ find_ascii_button(char ascii_equivalent) const {
   return _handle_registry[ascii_equivalent]->_handle;
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonRegistry::write
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void ButtonRegistry::
@@ -165,10 +172,15 @@ write(ostream &out) const {
   NameRegistry::const_iterator ri;
   for (ri = _name_registry.begin(); ri != _name_registry.end(); ++ri) {
     if (!(*ri).second->_handle.has_ascii_equivalent()) {
-      out << "  " << (*ri).second->_name << "\n";
+      out << "  " << (*ri).second->_name;
+      if ((*ri).second->_alias != ButtonHandle::none()) {
+        out << " (alias " << (*ri).second->_alias << ")";
+      }
+      out << "\n";
     }
   }
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonRegistry::Constructor

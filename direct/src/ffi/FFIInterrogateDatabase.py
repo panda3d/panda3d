@@ -733,7 +733,7 @@ class FFIInterrogateDatabase:
         file = open(init, 'w')
         file.close()
 
-    def squeezeGeneratedCode(self, outputDir):
+    def squeezeGeneratedCode(self, outputDir, deleteSource=True):
 
         # Since we will be squeezing the importModuleName file, rename
         # the original to something we can import from within the
@@ -762,9 +762,10 @@ class FFIInterrogateDatabase:
         pandaSqueezeTool.squeeze(squeezedName, unsqueezedName,
                                  files, outputDir)
 
-        # Remove the now-squeezed source files.
-        for file in files:
-            os.remove(file)
+        if( deleteSource ):
+            # Remove the now-squeezed source files.
+            for file in files:
+                os.remove(file)
         
 
     def generateCodeLib(self, codeDir, extensionsDir, CModuleName):

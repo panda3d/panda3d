@@ -235,7 +235,7 @@ bool ModifierButtons::
 has_button(ButtonHandle button) const {
   PTA(ButtonHandle)::const_iterator bi;
   for (bi = _button_list.begin(); bi != _button_list.end(); ++bi) {
-    if (button == (*bi)) {
+    if (button.matches(*bi)) {
       return true;
     }
   }
@@ -250,6 +250,10 @@ has_button(ButtonHandle button) const {
 //               being monitored.  Returns true if the button was
 //               removed, false if it was not being monitored in the
 //               first place.
+//
+//               Unlike the other methods, you cannot remove a button
+//               by removing its alias; you have to remove exactly the
+//               button itself.
 ////////////////////////////////////////////////////////////////////
 bool ModifierButtons::
 remove_button(ButtonHandle button) {
@@ -289,7 +293,7 @@ remove_button(ButtonHandle button) {
 bool ModifierButtons::
 button_down(ButtonHandle button) {
   for (int i = 0; i < (int)_button_list.size(); i++) {
-    if (button == _button_list[i]) {
+    if (button.matches(_button_list[i])) {
       _state |= ((BitmaskType)1 << i);
       return true;
     }
@@ -311,7 +315,7 @@ button_down(ButtonHandle button) {
 bool ModifierButtons::
 button_up(ButtonHandle button) {
   for (int i = 0; i < (int)_button_list.size(); i++) {
-    if (button == _button_list[i]) {
+    if (button.matches(_button_list[i])) {
       _state &= ~((BitmaskType)1 << i);
       return true;
     }
@@ -330,7 +334,7 @@ button_up(ButtonHandle button) {
 bool ModifierButtons::
 is_down(ButtonHandle button) const {
   for (int i = 0; i < (int)_button_list.size(); i++) {
-    if (button == _button_list[i]) {
+    if (button.matches(_button_list[i])) {
       return ((_state & ((BitmaskType)1 << i)) != 0);
     }
   }

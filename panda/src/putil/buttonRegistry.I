@@ -24,13 +24,14 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ButtonRegistry::RegistryNode::
-RegistryNode(ButtonHandle handle, const string &name) :
-  _handle(handle), _name(name) {
+RegistryNode(ButtonHandle handle, ButtonHandle alias, const string &name) :
+  _handle(handle), _alias(alias), _name(name) 
+{
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonRegistry::ptr
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns the pointer to the global ButtonRegistry
 //               object.
 ////////////////////////////////////////////////////////////////////
@@ -52,4 +53,18 @@ get_name(ButtonHandle button) const {
   RegistryNode *rnode = look_up(button);
   nassertr(rnode != (RegistryNode *)NULL, "");
   return rnode->_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonRegistry::get_alias
+//       Access: Public
+//  Description: Returns the alias for the indicated button, or
+//               ButtonHandle::none() if the button has no specified
+//               alias.
+////////////////////////////////////////////////////////////////////
+INLINE ButtonHandle ButtonRegistry::
+get_alias(ButtonHandle button) const {
+  RegistryNode *rnode = look_up(button);
+  nassertr(rnode != (RegistryNode *)NULL, ButtonHandle::none());
+  return rnode->_alias;
 }

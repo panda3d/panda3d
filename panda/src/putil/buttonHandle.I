@@ -93,6 +93,23 @@ get_ascii_equivalent() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ButtonHandle::matches
+//       Access: Published
+//  Description: Returns true if this ButtonHandle is the same as the
+//               other one, or if the other one is an alias for this
+//               one.  (Does not return true if this button is an
+//               alias for the other one, however.)
+//
+//               This is a more general comparison than operator ==.
+////////////////////////////////////////////////////////////////////
+INLINE bool ButtonHandle::
+matches(const ButtonHandle &other) const {
+  return ((*this) == other ||
+          (other != ButtonHandle::none() &&
+           get_alias() == other));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ButtonHandle::get_index
 //       Access: Published
 //  Description: Returns the integer index associated with this

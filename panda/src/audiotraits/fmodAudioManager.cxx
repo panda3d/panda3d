@@ -66,6 +66,17 @@ FmodAudioManager() {
   _cache_limit = audio_cache_limit;
   _concurrent_sound_limit = 0;
 
+  // RobCode
+  // Fill list of supported types
+  // Order of this list (first is most important) determines
+  // the search order for sound files without an extension.
+  _supported_types.push_back("wav");
+  _supported_types.push_back("ogg");
+  _supported_types.push_back("mp3");
+  _supported_types.push_back("mid");
+  _supported_types.push_back("midi");
+  _supported_types.push_back("rmi");
+
   // Initialize FMOD, if this is the first manager created.
   _is_valid = true;
   if (_active_managers == 0) {
@@ -168,11 +179,55 @@ get_sound(const string &file_name, bool positional) {
   nassertr(is_valid(), NULL);
   Filename path = file_name;
 
-  if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    vfs->resolve_filename(path, get_sound_path());
-  } else {
-    path.resolve_filename(get_sound_path());
+  // RobCode
+  // test for an invalid suffix type
+  string suffix = downcase(path.get_extension());
+  if (!suffix.empty()) {
+    SupportedTypes::iterator type_i=find(_supported_types.begin(), _supported_types.end(), suffix);
+    // if suffix not found in list of supported types
+    if (type_i == _supported_types.end()) {
+        // print error and return
+        audio_error("FmodAudioManager::get_sound: \""<<path<<"\" is not a supported sound file format.");
+        audio_error("Supported formats are: WAV, OGG, MP3, MID, MIDI, RMI");
+        return get_null_sound();
+    } else { // the suffix is of a supported type
+      audio_debug("FmodAudioManager::get_sound: \""<<path<<"\" is a supported sound file format.");
+      // resolve the path normally
+      if (use_vfs) {
+        VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+        vfs->resolve_filename(path, get_sound_path());
+      } else {
+        path.resolve_filename(get_sound_path());
+      }
+    }
+  } else { // no suffix given. Search for supported file types of the same name.
+    audio_debug("FmodAudioManager::get_sound: \""<<path<<"\" has no extension. Searching for supported files with the same name.");
+    // look for each type of file 
+    SupportedTypes::const_iterator type_i; 
+    for (type_i = _supported_types.begin(); type_i != _supported_types.end(); ++type_i) { 
+      path.set_extension(*type_i); // set extension as supported type
+      
+      if (use_vfs) { // check virtual file system
+        VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+        if (vfs->resolve_filename(path, get_sound_path())) {
+          break; // break out of loop with a valid type_i value and path with correct extension
+        }
+      } else { // check regular file system
+        if (path.resolve_filename(get_sound_path())) {
+          break; // break out of loop with a valid type_i value and path with correct extension
+        }
+      }
+    } // end for loop
+    // if no valid file found
+    if (type_i == _supported_types.end() ) {
+      // just print a warning for now
+      audio_debug("FmodAudioManager::get_sound: \""<<file_name<<"\" does not exist, even with default sound extensions.");
+      // reset path to no extension
+      path.set_extension("");
+    } else {
+        audio_debug("FmodAudioManager::get_sound: \""<<path<<"\" found using default sound extensions.");
+        suffix = downcase(path.get_extension()); // update suffix (used below when loading file)
+    }
   }
 
   audio_debug("  resolved file_name is '"<<path<<"'");
@@ -241,7 +296,7 @@ get_sound(const string &file_name, bool positional) {
   }
 
   string os_path = path.to_os_specific();
-  string suffix = downcase(path.get_extension());
+  //string suffix = downcase(path.get_extension()); // declared above by RobCode
   
   if (suffix == "mid" || suffix == "rmi" || suffix == "midi") {
     stream = FSOUND_Stream_Open(os_path.c_str(), 0, 0, 0);

@@ -136,6 +136,11 @@ private:
   typedef pdeque<string> LRU;
   LRU _lru;
 
+  // RobCode
+  // List of supported sound formats
+  typedef pvector<string> SupportedTypes;
+  SupportedTypes _supported_types;
+
   void release_sound(FmodAudioSound *audioSound);
 
   int _cache_limit;

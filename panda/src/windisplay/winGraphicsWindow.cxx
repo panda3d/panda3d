@@ -93,6 +93,12 @@ WinGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _cursor = 0;
   memset(_keyboard_state, 0, sizeof(BYTE) * num_virtual_keys);
   _lost_keypresses = false;
+  _lshift_down = false;
+  _rshift_down = false;
+  _lcontrol_down = false;
+  _rcontrol_down = false;
+  _lalt_down = false;
+  _ralt_down = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1406,6 +1412,27 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           ScreenToClient(hwnd, &point);
           handle_keypress(lookup_key(wparam), point.x, point.y, 
                           get_message_time());
+
+          // wparam does not contain left/right information for SHIFT,
+          // CONTROL, or ALT, so we have to track their status and do
+          // the right thing.  We'll send the left/right specific key
+          // event along with the general key event.
+          //
+          // Key repeating is not being handled consistently for LALT
+          // and RALT, but from comments below, it's only being handled
+          // the way it is for backspace, so we'll leave it as is.
+          if (wparam == VK_MENU) {
+            if ((GetKeyState(VK_LMENU) & 0x8000) != 0 && ! _lalt_down) {
+              handle_keypress(KeyboardButton::lalt(), point.x, point.y,
+                              get_message_time());
+              _lalt_down = true;
+            }
+            if ((GetKeyState(VK_RMENU) & 0x8000) != 0 && ! _ralt_down) {
+              handle_keypress(KeyboardButton::ralt(), point.x, point.y,
+                              get_message_time());
+              _ralt_down = true;
+            }
+          }
           if (wparam == VK_F10) {
             // bypass default windproc F10 behavior (it activates the main
             // menu, but we have none)
@@ -1446,7 +1473,35 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           ScreenToClient(hwnd, &point);
           handle_keypress(lookup_key(wparam), point.x, point.y,
                           get_message_time());
-    
+
+          // wparam does not contain left/right information for SHIFT,
+          // CONTROL, or ALT, so we have to track their status and do
+          // the right thing.  We'll send the left/right specific key
+          // event along with the general key event.
+          if (wparam == VK_SHIFT) {
+            if ((GetKeyState(VK_LSHIFT) & 0x8000) != 0 && ! _lshift_down) {
+              handle_keypress(KeyboardButton::lshift(), point.x, point.y,
+                              get_message_time());
+              _lshift_down = true;
+            }
+            if ((GetKeyState(VK_RSHIFT) & 0x8000) != 0 && ! _rshift_down) {
+              handle_keypress(KeyboardButton::rshift(), point.x, point.y,
+                              get_message_time());
+              _rshift_down = true;
+            }
+          } else if(wparam == VK_CONTROL) {
+            if ((GetKeyState(VK_LCONTROL) & 0x8000) != 0 && ! _lcontrol_down) {
+              handle_keypress(KeyboardButton::lcontrol(), point.x, point.y,
+                              get_message_time());
+              _lcontrol_down = true;
+            }
+            if ((GetKeyState(VK_RCONTROL) & 0x8000) != 0 && ! _rcontrol_down) {
+              handle_keypress(KeyboardButton::rcontrol(), point.x, point.y,
+                              get_message_time());
+              _rcontrol_down = true;
+            }
+          }
+
           // Handle Cntrl-V paste from clipboard.  Is there a better way
           // to detect this hotkey?
           if ((wparam=='V') && (GetKeyState(VK_CONTROL) < 0) &&
@@ -1471,7 +1526,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
               CloseClipboard();
             }
           }
-
         } else {
           // Actually, for now we'll respect the repeat anyway, just
           // so we support backspace properly.  Rethink later.
@@ -1480,6 +1534,58 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           ScreenToClient(hwnd, &point);
           handle_keypress(lookup_key(wparam), point.x, point.y,
                           get_message_time());
+
+          // wparam does not contain left/right information for SHIFT,
+          // CONTROL, or ALT, so we have to track their status and do
+          // the right thing.  We'll send the left/right specific key
+          // event along with the general key event.
+          //
+          // If the user presses LSHIFT and then RSHIFT, the RSHIFT event
+          // will come in with the keyrepeat flag on (i.e. it will end up
+          // in this block).  The logic below should detect this correctly
+          // and only send the RSHIFT event.  Note that the CONTROL event
+          // will be sent twice, once for each keypress.  Since keyrepeats
+          // are currently being sent simply as additional keypress events,
+          // that should be okay for now.
+          if (wparam == VK_SHIFT) {
+            if (((GetKeyState(VK_LSHIFT) & 0x8000) != 0) && ! _lshift_down ) {
+              handle_keypress(KeyboardButton::lshift(), point.x, point.y,
+                              get_message_time());
+              _lshift_down = true;
+            } else if (((GetKeyState(VK_RSHIFT) & 0x8000) != 0) && ! _rshift_down ) {
+              handle_keypress(KeyboardButton::rshift(), point.x, point.y,
+                              get_message_time());
+              _rshift_down = true;
+            } else {
+              if ((GetKeyState(VK_LSHIFT) & 0x8000) != 0) {
+                handle_keypress(KeyboardButton::lshift(), point.x, point.y,
+                                get_message_time());
+              }
+              if ((GetKeyState(VK_RSHIFT) & 0x8000) != 0) {
+                handle_keypress(KeyboardButton::rshift(), point.x, point.y,
+                                get_message_time());
+              }
+            }
+          } else if(wparam == VK_CONTROL) {
+            if (((GetKeyState(VK_LCONTROL) & 0x8000) != 0) && ! _lcontrol_down ) {
+              handle_keypress(KeyboardButton::lcontrol(), point.x, point.y,
+                              get_message_time());
+              _lcontrol_down = true;
+            } else if (((GetKeyState(VK_RCONTROL) & 0x8000) != 0) && ! _rcontrol_down ) {
+              handle_keypress(KeyboardButton::rcontrol(), point.x, point.y,
+                              get_message_time());
+              _rcontrol_down = true;
+            } else {
+              if ((GetKeyState(VK_LCONTROL) & 0x8000) != 0) {
+                handle_keypress(KeyboardButton::lcontrol(), point.x, point.y,
+                                get_message_time());
+              }
+              if ((GetKeyState(VK_RCONTROL) & 0x8000) != 0) {
+                handle_keypress(KeyboardButton::rcontrol(), point.x, point.y,
+                                get_message_time());
+              }
+            }
+          }
         }
         break;
     
@@ -1493,6 +1599,39 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             << "keyup: " << wparam << " (" << lookup_key(wparam) << ")\n";
         }
         handle_keyrelease(lookup_key(wparam), get_message_time());
+
+        // wparam does not contain left/right information for SHIFT,
+        // CONTROL, or ALT, so we have to track their status and do
+        // the right thing.  We'll send the left/right specific key
+        // event along with the general key event.
+        if (wparam == VK_SHIFT) {
+          if ((GetKeyState(VK_LSHIFT) & 0x8000) == 0 && _lshift_down) {
+            handle_keyrelease(KeyboardButton::lshift(), get_message_time());
+            _lshift_down = false;
+          }
+          if ((GetKeyState(VK_RSHIFT) & 0x8000) == 0 && _rshift_down) {
+            handle_keyrelease(KeyboardButton::rshift(), get_message_time());
+            _rshift_down = false;
+          }
+        } else if(wparam == VK_CONTROL) {
+          if ((GetKeyState(VK_LCONTROL) & 0x8000) == 0 && _lcontrol_down) {
+            handle_keyrelease(KeyboardButton::lcontrol(), get_message_time());
+            _lcontrol_down = false;
+          }
+          if ((GetKeyState(VK_RCONTROL) & 0x8000) == 0 && _rcontrol_down) {
+            handle_keyrelease(KeyboardButton::rcontrol(), get_message_time());
+            _rcontrol_down = false;
+          }
+        } else if(wparam == VK_MENU) {
+          if ((GetKeyState(VK_LMENU) & 0x8000) == 0 && _lalt_down) {
+            handle_keyrelease(KeyboardButton::lalt(), get_message_time());
+            _lalt_down = false;
+          }
+          if ((GetKeyState(VK_RMENU) & 0x8000) == 0 && _ralt_down) {
+            handle_keyrelease(KeyboardButton::ralt(), get_message_time());
+            _ralt_down = false;
+          }
+        }
         break;
     
       case WM_KILLFOCUS: 
@@ -1870,20 +2009,17 @@ lookup_key(WPARAM wparam) const {
   case VK_SCROLL: return KeyboardButton::scroll_lock();
   case VK_SNAPSHOT: return KeyboardButton::print_screen();
 
-  case VK_SHIFT:
-  case VK_LSHIFT:
-  case VK_RSHIFT:
-    return KeyboardButton::shift();
+  case VK_SHIFT: return KeyboardButton::shift();
+  case VK_LSHIFT: return KeyboardButton::lshift();
+  case VK_RSHIFT: return KeyboardButton::rshift();
 
-  case VK_CONTROL:
-  case VK_LCONTROL:
-  case VK_RCONTROL:
-    return KeyboardButton::control();
+  case VK_CONTROL: return KeyboardButton::control();
+  case VK_LCONTROL: return KeyboardButton::lcontrol();
+  case VK_RCONTROL: return KeyboardButton::rcontrol();
 
-  case VK_MENU:
-  case VK_LMENU:
-  case VK_RMENU:
-    return KeyboardButton::alt();
+  case VK_MENU: return KeyboardButton::alt();
+  case VK_LMENU: return KeyboardButton::lalt();
+  case VK_RMENU: return KeyboardButton::ralt();
 
   default:
     int key = MapVirtualKey(wparam, 2);

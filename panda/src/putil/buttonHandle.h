@@ -43,6 +43,10 @@ PUBLISHED:
   INLINE bool has_ascii_equivalent() const;
   INLINE char get_ascii_equivalent() const;
 
+  ButtonHandle get_alias() const;
+
+  INLINE bool matches(const ButtonHandle &other) const;
+
   INLINE int get_index() const;
   INLINE void output(ostream &out) const;
   INLINE static ButtonHandle none();

@@ -38,6 +38,7 @@ Options:
   -r          remove the default library list; instrument only named libraries
   -O          no C++ comments or assertion statements
   -n          Don't use squeezeTool to squeeze the result into one .pyz file
+  -s          Don't delete source files after squeezing
 
 Any additional names listed on the command line are taken to be names
 of libraries that are to be instrumented.
@@ -50,7 +51,8 @@ extensionsDir = ''
 interrogateLib = ''
 codeLibs = []
 etcPath = []
-doSqueeze = 1
+doSqueeze = True
+deleteSourceAfterSqueeze = True
 
 def doGetopts():
     global outputDir
@@ -58,6 +60,7 @@ def doGetopts():
     global interrogateLib
     global codeLibs
     global doSqueeze
+    global deleteSourceAfterSqueeze
     global etcPath
 
     # These options are allowed but are flagged as warnings (they are
@@ -73,7 +76,7 @@ def doGetopts():
 
     # Extract the args the user passed in
     try:
-        opts, pargs = getopt.getopt(sys.argv[1:], 'hvOd:x:i:e:rngtpo')
+        opts, pargs = getopt.getopt(sys.argv[1:], 'hvOd:x:i:e:rnsgtpo')
     except Exception, e:
         # User passed in a bad option, print the error and the help, then exit
         print e
@@ -105,7 +108,9 @@ def doGetopts():
             FFIConstants.wantComments = 0
             FFIConstants.wantTypeChecking = 0
         elif (flag == '-n'):
-            doSqueeze = 0
+            doSqueeze = False
+        elif (flag == '-s'):
+            deleteSourceAfterSqueeze = False
         elif (flag in ['-g', '-t', '-p', '-o']):
             FFIConstants.notify.warning("option is deprecated: %s" % (flag))
             
@@ -191,4 +196,4 @@ def run():
     db.generateCode(outputDir, extensionsDir)
 
     if doSqueeze:
-        db.squeezeGeneratedCode(outputDir)
+        db.squeezeGeneratedCode(outputDir, deleteSourceAfterSqueeze)

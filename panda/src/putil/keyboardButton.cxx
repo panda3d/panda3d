@@ -91,6 +91,12 @@ DEFINE_KEYBD_BUTTON_HANDLE(print_screen)
 DEFINE_KEYBD_BUTTON_HANDLE(shift)
 DEFINE_KEYBD_BUTTON_HANDLE(control)
 DEFINE_KEYBD_BUTTON_HANDLE(alt)
+DEFINE_KEYBD_BUTTON_HANDLE(lshift)
+DEFINE_KEYBD_BUTTON_HANDLE(rshift)
+DEFINE_KEYBD_BUTTON_HANDLE(lcontrol)
+DEFINE_KEYBD_BUTTON_HANDLE(rcontrol)
+DEFINE_KEYBD_BUTTON_HANDLE(lalt)
+DEFINE_KEYBD_BUTTON_HANDLE(ralt)
 
 
 ////////////////////////////////////////////////////////////////////
@@ -101,12 +107,18 @@ DEFINE_KEYBD_BUTTON_HANDLE(alt)
 ////////////////////////////////////////////////////////////////////
 void KeyboardButton::
 init_keyboard_buttons() {
-  ButtonRegistry::ptr()->register_button(_space, "space", ' ');
-  ButtonRegistry::ptr()->register_button(_backspace, "backspace", '\x08');
-  ButtonRegistry::ptr()->register_button(_tab, "tab", '\x09');
-  ButtonRegistry::ptr()->register_button(_enter, "enter", '\x0d');
-  ButtonRegistry::ptr()->register_button(_escape, "escape", '\x1b');
-  ButtonRegistry::ptr()->register_button(_del, "delete", '\x7f');
+  ButtonRegistry::ptr()->register_button(_space, "space", 
+                                         ButtonHandle::none(), ' ');
+  ButtonRegistry::ptr()->register_button(_backspace, "backspace", 
+                                         ButtonHandle::none(), '\x08');
+  ButtonRegistry::ptr()->register_button(_tab, "tab", 
+                                         ButtonHandle::none(), '\x09');
+  ButtonRegistry::ptr()->register_button(_enter, "enter", 
+                                         ButtonHandle::none(), '\x0d');
+  ButtonRegistry::ptr()->register_button(_escape, "escape", 
+                                         ButtonHandle::none(), '\x1b');
+  ButtonRegistry::ptr()->register_button(_del, "delete", 
+                                         ButtonHandle::none(), '\x7f');
 
   ButtonRegistry::ptr()->register_button(_f1, "f1");
   ButtonRegistry::ptr()->register_button(_f2, "f2");
@@ -141,11 +153,19 @@ init_keyboard_buttons() {
   ButtonRegistry::ptr()->register_button(_scroll_lock, "scroll_lock");
   ButtonRegistry::ptr()->register_button(_print_screen, "print_screen");
 
+  ButtonRegistry::ptr()->register_button(_lshift, "lshift", _shift);
+  ButtonRegistry::ptr()->register_button(_rshift, "rshift", _shift);
+  ButtonRegistry::ptr()->register_button(_lcontrol, "lcontrol", _control);
+  ButtonRegistry::ptr()->register_button(_rcontrol, "rcontrol", _control);
+  ButtonRegistry::ptr()->register_button(_lalt, "lalt", _alt);
+  ButtonRegistry::ptr()->register_button(_ralt, "ralt", _alt);
+
   // Also register all of the visible ASCII characters.
   for (int i = 32; i < 127; i++) {
     if (isgraph(i)) {
       ButtonHandle key;
-      ButtonRegistry::ptr()->register_button(key, string(1, (char)i), i);
+      ButtonRegistry::ptr()->register_button(key, string(1, (char)i), 
+                                             ButtonHandle::none(), i);
     }
   }
 }

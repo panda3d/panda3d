@@ -37,27 +37,31 @@ class EXPCL_PANDA ButtonRegistry {
 protected:
   class EXPCL_PANDA RegistryNode {
   public:
-    INLINE RegistryNode(ButtonHandle handle, const string &name);
+    INLINE RegistryNode(ButtonHandle handle, ButtonHandle alias,
+                        const string &name);
 
     ButtonHandle _handle;
+    ButtonHandle _alias;
     string _name;
   };
 
 public:
   bool register_button(ButtonHandle &button_handle, const string &name,
+                       ButtonHandle alias = ButtonHandle::none(),
                        char ascii_equivalent = '\0');
 
 PUBLISHED:
   ButtonHandle get_button(const string &name);
   ButtonHandle find_ascii_button(char ascii_equivalent) const;
 
+  void write(ostream &out) const;
+
   // ptr() returns the pointer to the global ButtonRegistry object.
   INLINE static ButtonRegistry *ptr();
 
 public:
   INLINE string get_name(ButtonHandle button) const;
-
-  void write(ostream &out) const;
+  INLINE ButtonHandle get_alias(ButtonHandle button) const;
 
 private:
   // The ButtonRegistry class should never be constructed by user code.

@@ -139,6 +139,18 @@ private:
   BYTE _keyboard_state[num_virtual_keys];
   bool _lost_keypresses;
 
+  // These are used to store the status of the individual left and right
+  // shift, control, and alt keys.  Keyboard events are not sent for
+  // these individual keys, but for each pair as a whole.  The status
+  // of each key must be checked as keypress and keyrelease events are
+  // received.
+  bool _lshift_down;
+  bool _rshift_down;
+  bool _lcontrol_down;
+  bool _rcontrol_down;
+  bool _lalt_down;
+  bool _ralt_down;
+
 private:
   // We need this map to support per-window calls to window_proc().
   typedef map<HWND, WinGraphicsWindow *> WindowHandles;

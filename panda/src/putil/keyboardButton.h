@@ -74,6 +74,13 @@ PUBLISHED:
   static ButtonHandle scroll_lock();
   static ButtonHandle print_screen();
 
+  static ButtonHandle lshift();
+  static ButtonHandle rshift();
+  static ButtonHandle lcontrol();
+  static ButtonHandle rcontrol();
+  static ButtonHandle lalt();
+  static ButtonHandle ralt();
+
 public:
   static void init_keyboard_buttons();
 };
