@@ -28,7 +28,6 @@
 //////////////////////////////////////////////////////////////////////
 #if $[or $[eq $[DIR_TYPE], src],$[eq $[DIR_TYPE], metalib]]
 //////////////////////////////////////////////////////////////////////
-
 // For a source directory, build a single Makefile with rules to build
 // each target.
 
@@ -47,7 +46,6 @@
   #endif
 #end lib_target
 
-
 // We need to know the various targets we'll be building.
 // $[lib_targets] will be the list of dynamic libraries,
 // $[static_lib_targets] the list of static libraries, and
@@ -56,8 +54,10 @@
 // for.
 #define lib_targets $[patsubst %,$[so_dir]/lib%.dll,$[TARGET(metalib_target noinst_lib_target)] $[real_lib_targets]]
 #define static_lib_targets $[TARGET(static_lib_target):%=$[st_dir]/lib%.lib]
-#define bin_targets $[TARGET(bin_target noinst_bin_target sed_bin_target):%=$[st_dir]/%]
-#define test_bin_targets $[TARGET(test_bin_target):%=$[st_dir]/%]
+#define bin_targets \
+    $[TARGET(bin_target noinst_bin_target):%=$[st_dir]/%.exe] \
+    $[TARGET(sed_bin_target):%=$[st_dir]/%]
+#define test_bin_targets $[TARGET(test_bin_target):%=$[st_dir]/%.exe]
 
 // And these variables will define the various things we need to
 // install.
@@ -147,7 +147,6 @@
 // And $[libs] is the set of libraries we will link with.
 #defer libs $[unique $[actual_local_libs] $[patsubst %:m,,%:c %,%,$[OTHER_LIBS]] $[get_libs]]
 
-
 // Okay, we're ready.  Start outputting the Makefile now.
 #output Makefile
 #format makefile
@@ -211,7 +210,9 @@ cleanall : clean
        $[if $[install_config],$[install_config_dir]] \
        $[if $[install_igatedb],$[install_igatedb_dir]] \
      ] \
-     $[TARGET(metalib_target lib_target static_lib_target):%=install-lib%] $[TARGET(bin_target):%=install-%] \
+     $[TARGET(metalib_target static_lib_target):%=install-lib%] \
+     $[real_lib_targets:%=install-lib%] \
+     $[TARGET(bin_target):%=install-%] \
      $[installed_files]
 install : all $[install_targets]
 
@@ -284,7 +285,10 @@ $[directory] :
 
 // Now output the rule to actually link the library from all of its
 // various .obj files.
-lib_$[TARGET]_so = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources] $[igateoutput] $[igatemout]]]
+#define sources \
+ $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources] $[igateoutput] $[igatemout]]] \
+ $[components $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[RELDIR]/$[so_dir]/%.obj,%,,$[get_sources] $[igateoutput] $[igatemout]]],$[COMPONENT_LIBS]]
+lib_$[TARGET]_so = $[sources]
 #define target $[so_dir]/lib$[TARGET].dll
 #define sources $(lib_$[TARGET]_so)
 $[target] : $[sources]
@@ -313,7 +317,7 @@ uninstall-lib$[TARGET] :
 #endif
 
 $[install_lib_dir]/lib$[TARGET].dll : $[so_dir]/lib$[TARGET].dll
-#define local lib$[TARGET].lib
+#define local lib$[TARGET].dll
 #define dest $[install_lib_dir]
 	cd ./$[so_dir]; $[INSTALL]
 
@@ -483,7 +487,7 @@ $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
 
 #forscopes bin_target
 bin_$[TARGET] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[get_sources]]]
-#define target $[st_dir]/$[TARGET]
+#define target $[st_dir]/$[TARGET].exe
 #define sources $(bin_$[TARGET])
 #define ld $[get_ld]
 $[target] : $[sources]
@@ -500,7 +504,7 @@ $[target] : $[sources]
 #endif
 
 #define installed_files \
-    $[install_bin_dir]/$[TARGET] \
+    $[install_bin_dir]/$[TARGET].exe \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
@@ -513,8 +517,8 @@ uninstall-$[TARGET] :
 	rm -f $[sort $[installed_files]]
 #endif
 
-$[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
-#define local $[TARGET]
+$[install_bin_dir]/$[TARGET].exe : $[st_dir]/$[TARGET].exe
+#define local $[TARGET].exe
 #define dest $[install_bin_dir]
 	cd ./$[st_dir]; $[INSTALL_PROG]
 
@@ -599,7 +603,9 @@ $[target] : $[source] $[dependencies $[source]]
 #define target $[patsubst %.cxx %.lxx %.yxx,$[so_dir]/%.obj,$[file]]
 #define ipath $[file_ipath]
 #define flags $[c++flags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=-D%],$[file]]
-$[target] : $[source] $[dependencies $[file]]
+// Yacc must run before some files can be compiled, so all files
+// depend on yacc having run.
+$[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx]
 	$[COMPILE_C++]
 
 #end file
@@ -611,7 +617,7 @@ $[target] : $[source] $[dependencies $[file]]
 #define target $[patsubst %.cxx %.lxx %.yxx,$[st_dir]/%.obj,$[file]]
 #define ipath $[file_ipath]
 #define flags $[c++flags] $[all_sources $[building_var:%=-D%],$[file]]
-$[target] : $[source] $[dependencies $[file]]
+$[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx]
 	$[COMPILE_C++]
 
 #end file
