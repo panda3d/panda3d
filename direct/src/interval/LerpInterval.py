@@ -7,12 +7,11 @@ class LerpInterval(Interval.Interval):
 
     # special methods
     
-    def __init__(self, name, node, duration, functor, t0=0.0, 
+    def __init__(self, name, duration, functor, t0=0.0, 
 			type=Interval.PREVIOUS_END, blendType='noBlend'):
-        """__init__(name, node, duration, functor, t0, type, blendType)
+        """__init__(name, duration, functor, t0, type, blendType)
         """
 	self.name = name
-	self.node = node	
 	self.duration = duration
 	self.startTime = t0
 	self.type = type
@@ -54,24 +53,22 @@ class LerpPosHprInterval(LerpInterval):
 	"""
         import PosHprLerpFunctor
 
-	self.node = node
-	self.pos = pos
-	self.hpr = hpr
+	assert(not node.isEmpty())
         if (other != None):
             # lerp wrt other
-            startPos = self.node.getPos(other)
-            startHpr = self.node.getHpr(other)
+            startPos = node.getPos(other)
+            startHpr = node.getHpr(other)
             functor = PosHprLerpFunctor.PosHprLerpFunctor(
-                    self.node, startPos, pos,
+                    node, startPos, pos,
                     startHpr, hpr, other)
         else:
-            startPos = self.node.getPos()
-            startHpr = self.node.getHpr()
+            startPos = node.getPos()
+            startHpr = node.getHpr()
             functor = PosHprLerpFunctor.PosHprLerpFunctor(
-                    self.node, startPos, pos,
+                    node, startPos, pos,
                     startHpr, hpr)
 
-	LerpInterval.__init__(self, name, node, duration, functor, t0, 
+	LerpInterval.__init__(self, name, duration, functor, t0, 
 						type, blendType)
 
 
@@ -83,19 +80,18 @@ class LerpPosInterval(LerpInterval):
 	"""
         import PosLerpFunctor
 
-	self.node = node
-	self.pos = pos
+	assert(not node.isEmpty())
         if (other != None):
             # lerp wrt other
-            startPos = self.node.getPos(other)
+            startPos = node.getPos(other)
             functor = PosLerpFunctor.PosLerpFunctor(
-                    self.node, startPos, pos, other)
+                    node, startPos, pos, other)
         else:
-            startPos = self.node.getPos()
+            startPos = node.getPos()
             functor = PosLerpFunctor.PosLerpFunctor(
-                    self.node, startPos, pos)
+                    node, startPos, pos)
 
-	LerpInterval.__init__(self, name, node, duration, functor, t0, 
+	LerpInterval.__init__(self, name, duration, functor, t0, 
 							type, blendType)
 
 class LerpHprInterval(LerpInterval):
@@ -106,17 +102,16 @@ class LerpHprInterval(LerpInterval):
 	"""
         import HprLerpFunctor
 
-	self.node = node
-	self.hpr = hpr
+	assert(not node.isEmpty())
         if (other != None):
             # lerp wrt other
-            startHpr = self.node.getHpr(other)
+            startHpr = node.getHpr(other)
             functor = HprLerpFunctor.HprLerpFunctor(
-                    self.node, startHpr, hpr, other)
+                    node, startHpr, hpr, other)
         else:
-            startHpr = self.node.getHpr()
+            startHpr = node.getHpr()
             functor = HprLerpFunctor.HprLerpFunctor(
-                    self.node, startHpr, hpr)
+                    node, startHpr, hpr)
 
-	LerpInterval.__init__(self, name, node, duration, functor, t0, 
+	LerpInterval.__init__(self, name, duration, functor, t0, 
 							type, blendType)
