@@ -28,9 +28,11 @@
 
 #ifdef MESA_MGL
   #define GLP(name) mgl##name
+  #define GLUP(name) mglu##name
   #define USE_MGL_NAMESPACE 1
 #else
   #define GLP(name) gl##name
+  #define GLUP(name) glu##name
 #endif
 #define CLP(name) Mesa##name
 #define CLASSPREFIX_QUOTED "Mesa"

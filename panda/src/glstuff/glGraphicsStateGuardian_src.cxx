@@ -1589,12 +1589,12 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
 
-  GLUquadricObj *sph = GLP(uNewQuadric)();
-  GLP(uQuadricNormals)(sph, wants_normals() ? (GLenum)GLU_SMOOTH : (GLenum)GLU_NONE);
-  GLP(uQuadricTexture)(sph, wants_texcoords() ? (GLenum)GL_TRUE : (GLenum)GL_FALSE);
-  GLP(uQuadricOrientation)(sph, (GLenum)GLU_OUTSIDE);
-  GLP(uQuadricDrawStyle)(sph, (GLenum)GLU_FILL);
-  //GLP(uQuadricDrawStyle)(sph, (GLenum)GLU_LINE);
+  GLUquadricObj *sph = GLUP(NewQuadric)();
+  GLUP(QuadricNormals)(sph, wants_normals() ? (GLenum)GLU_SMOOTH : (GLenum)GLU_NONE);
+  GLUP(QuadricTexture)(sph, wants_texcoords() ? (GLenum)GL_TRUE : (GLenum)GL_FALSE);
+  GLUP(QuadricOrientation)(sph, (GLenum)GLU_OUTSIDE);
+  GLUP(QuadricDrawStyle)(sph, (GLenum)GLU_FILL);
+  //GLUP(QuadricDrawStyle)(sph, (GLenum)GLU_LINE);
 
   for (int i = 0; i < nprims; i++) {
     // Draw per primitive
@@ -1609,7 +1609,7 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
     LVector3f v = edge - center;
     float r = sqrt(dot(v, v));
 
-    // Since GLP(uSphere) doesn't have a center parameter, we have to use
+    // Since GLUP(Sphere) doesn't have a center parameter, we have to use
     // a matrix transform.
 
     GLP(MatrixMode)(GL_MODELVIEW);
@@ -1617,13 +1617,13 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
     GLP(MultMatrixf)(LMatrix4f::translate_mat(center).get_data());
 
     // Now render the sphere using GLU calls.
-    GLP(uSphere)(sph, r, 16, 10);
+    GLUP(Sphere)(sph, r, 16, 10);
 
     GLP(MatrixMode)(GL_MODELVIEW);
     GLP(PopMatrix)();
   }
 
-  GLP(uDeleteQuadric)(sph);
+  GLUP(DeleteQuadric)(sph);
   report_gl_errors();
   DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
@@ -2631,7 +2631,7 @@ report_errors_loop(int line, const char *source_file, GLenum error_code) {
   static const int max_gl_errors_reported = 20;
   int count = 0;
   while ((count < max_gl_errors_reported) && (error_code != GL_NO_ERROR)) {
-    const GLubyte *error_string = GLP(uErrorString)(error_code);
+    const GLubyte *error_string = GLUP(ErrorString)(error_code);
     if (error_string != (const GLubyte *)NULL) {
       GLCAT.error()
         << "at " << line << " of " << source_file << ": " 
@@ -2994,7 +2994,7 @@ apply_texture_immediate(Texture *tex) {
       } else 
 #endif
         {
-          GLP(uBuild2DMipmaps)(GL_TEXTURE_2D, internal_format,
+          GLUP(Build2DMipmaps)(GL_TEXTURE_2D, internal_format,
                             xsize, ysize,
                             external_format, type, image);
 #ifndef NDEBUG
@@ -3018,7 +3018,7 @@ apply_texture_immediate(Texture *tex) {
   // want to give explict error for texture creation failure
   GLenum error_code = GLP(GetError)();
   if(error_code != GL_NO_ERROR) {
-    const GLubyte *error_string = GLP(uErrorString)(error_code);
+    const GLubyte *error_string = GLUP(ErrorString)(error_code);
     GLCAT.error() << "GL texture creation failed for " << tex->get_name() << 
                         ((error_string != (const GLubyte *)NULL) ? " : " : "") << endl;
   }
@@ -3070,7 +3070,7 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
   GLP(MatrixMode)(GL_PROJECTION);
   GLP(PushMatrix)();
   GLP(LoadIdentity)();
-  GLP(uOrtho2D)(0, 1, 0, 1);
+  GLUP(Ortho2D)(0, 1, 0, 1);
 
   float txl, txr, tyt, tyb;
   txl = tyb = 0.0f;
@@ -3178,7 +3178,7 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   GLP(MatrixMode)( GL_PROJECTION );
   GLP(PushMatrix)();
   GLP(LoadIdentity)();
-  GLP(uOrtho2D)(0, props.get_x_size(),
+  GLUP(Ortho2D)(0, props.get_x_size(),
                 0, props.get_y_size());
 
 #ifdef GSG_VERBOSE
