@@ -86,7 +86,7 @@ class Actor(PandaObject, NodePath):
         self.__LODNode = None
 
         if (other == None):
-            # act like a normal contructor
+            # act like a normal constructor
 
             # create base hierarchy
             self.gotName = 0
@@ -237,7 +237,7 @@ class Actor(PandaObject, NodePath):
 
     def getActorInfo(self):
         """
-        Utility function to create a list of information about a actor.
+        Utility function to create a list of information about an actor.
         Useful for iterating over details of an actor.
         """
         lodInfo = []
@@ -510,7 +510,8 @@ class Actor(PandaObject, NodePath):
         for control in self.getAnimControls(animName, partName):
             control.setPlayRate(rate)
 
-    def getDuration(self, animName=None, partName=None):
+    def getDuration(self, animName=None, partName=None,
+                    fromFrame=None, toFrame=None):
         """
         Return duration of given anim name and given part.
         If no anim specified, use the currently playing anim.
@@ -523,7 +524,11 @@ class Actor(PandaObject, NodePath):
             return None
 
         animControl = controls[0]
-        return animControl.getNumFrames() / animControl.getFrameRate()
+        if fromFrame is None:
+            fromFrame = 0
+        if toFrame is None:
+            toFrame = animControl.getNumFrames()-1
+        return ((toFrame+1)-fromFrame) / animControl.getFrameRate()
 
     def getNumFrames(self, animName=None, partName=None):
         lodName = self.__animControlDict.keys()[0]
@@ -1413,3 +1418,57 @@ class Actor(PandaObject, NodePath):
         from direct.interval import ActorInterval
         return ActorInterval.ActorInterval(self, *args, **kw)
 
+    def printAnimBlends(self, animName=None, partName=None, lodName=None):
+        out = ''
+        first = True
+        if animName is None:
+            animNames = self.getAnimNames()
+        else:
+            animNames = [animName]
+        for animName in animNames:
+            if animName is 'nothing':
+                continue
+            thisAnim = '%s: ' % animName
+            totalEffect = 0.
+            controls = self.getAnimControls(animName, partName, lodName)
+            for control in controls:
+                part = control.getPart()
+                name = part.getName()
+                effect = part.getControlEffect(control)
+                if effect > 0.:
+                    totalEffect += effect
+                    thisAnim += ('%s:%.3f, ' % (name, effect))
+            # don't print anything if this animation is not being played
+            if totalEffect > 0.:
+                if not first:
+                    out += '\n'
+                first = False
+                out += thisAnim
+        print out
+
+    def osdAnimBlends(self, animName=None, partName=None, lodName=None):
+        # puts anim blending info into the on-screen debug panel
+        if animName is None:
+            animNames = self.getAnimNames()
+        else:
+            animNames = [animName]
+        for animName in animNames:
+            if animName is 'nothing':
+                continue
+            thisAnim = ''
+            totalEffect = 0.
+            controls = self.getAnimControls(animName, partName, lodName)
+            for control in controls:
+                part = control.getPart()
+                name = part.getName()
+                effect = part.getControlEffect(control)
+                if effect > 0.:
+                    totalEffect += effect
+                    thisAnim += ('%s:%.3f, ' % (name, effect))
+            # don't display anything if this animation is not being played
+            itemName = 'anim %s' % animName
+            if totalEffect > 0.:
+                onScreenDebug.add(itemName, thisAnim)
+            else:
+                if onScreenDebug.has(itemName):
+                    onScreenDebug.remove(itemName)
