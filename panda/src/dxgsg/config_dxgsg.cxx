@@ -29,8 +29,8 @@ bool dx_ignore_mipmaps = config_dxgsg.GetBool("dx-ignore-mipmaps", false);
 float dx_global_miplevel_bias = config_dxgsg.GetFloat("dx-global-miplevel-bias", 0.0);
 
 bool dx_force_16bpp_screenbuffers = config_dxgsg.GetBool("dx-force-16bpp-screenbuffers", false);
-bool dx_show_fps_meter = config_dxgsg.GetBool("dx-show-fps-meter", false);
-float dx_fps_meter_update_interval = config_dxgsg.GetFloat("dx-fps-meter-update-interval", 1.7);
+bool dx_show_fps_meter = config_dxgsg.GetBool("show-fps-meter", false);
+float dx_fps_meter_update_interval = config_dxgsg.GetFloat("fps-meter-update-interval", 1.7);
 
 #ifdef _DEBUG
 bool dx_debug_view_mipmaps = config_dxgsg.GetBool("dx-debug-view-mipmaps", false);
