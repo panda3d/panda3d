@@ -3049,6 +3049,10 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                             label = 'Reload Colors',
                             command = self.levelEditor.recreateColorMenus)
         menuBar.addmenuitem('Level Editor', 'command',
+                            'Reload Style Palettes',
+                            label = 'Reload Styles',
+                            command = self.levelEditor.recreateStyleMenus)
+        menuBar.addmenuitem('Level Editor', 'command',
                             'Exit Level Editor Panel',
                             label = 'Exit',
                             command = self.destroy)
