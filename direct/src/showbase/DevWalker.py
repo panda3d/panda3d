@@ -48,7 +48,7 @@ class DevWalker(DirectObject.DirectObject):
 
     def initializeCollisions(self, collisionTraverser, avatarNodePath, 
             wallCollideMask, floorCollideMask,
-            avatarRadius = 1.4, floorOffset = 1.0):
+            avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0):
         assert not avatarNodePath.isEmpty()
 
         self.cTrav = collisionTraverser

@@ -194,30 +194,30 @@ class ControlManager:
         return self.currentControls.getSpeeds()
     
     def initializeCollisions(self, cTrav,
-            wallBitmask, floorBitmask, ghostBitmask, avatarRadius, floorOffset):
+            wallBitmask, floorBitmask, ghostBitmask, avatarRadius, floorOffset, reach = 4.0):
         assert(self.debugPrint("initializeCollisions()"))
         
         self.walkControls.initializeCollisions(cTrav, self.avatar,
-                wallBitmask, floorBitmask, avatarRadius, floorOffset)
+                wallBitmask, floorBitmask, avatarRadius, floorOffset, reach)
         self.walkControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
         self.walkControls.disableAvatarControls()
         self.walkControls.setCollisionsActive(0)
         
         self.swimControls.initializeCollisions(cTrav, self.avatar,
-                wallBitmask, floorBitmask, avatarRadius, floorOffset)
+                wallBitmask, floorBitmask, avatarRadius, floorOffset, reach)
         self.swimControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
         self.swimControls.disableAvatarControls()
         self.swimControls.setCollisionsActive(0)
         
         self.ghostControls.initializeCollisions(cTrav, self.avatar,
-                ghostBitmask, floorBitmask, avatarRadius, floorOffset)
+                ghostBitmask, floorBitmask, avatarRadius, floorOffset, reach)
         self.ghostControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
         self.ghostControls.disableAvatarControls()
         self.ghostControls.setCollisionsActive(0)
         
         if __debug__:
             self.devControls.initializeCollisions(cTrav, self.avatar,
-                    wallBitmask, floorBitmask, avatarRadius, floorOffset)
+                    wallBitmask, floorBitmask, avatarRadius, floorOffset, reach)
             self.devControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
             self.devControls.disableAvatarControls()
             self.devControls.setCollisionsActive(0)

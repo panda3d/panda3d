@@ -170,7 +170,7 @@ class GravityWalker(DirectObject.DirectObject):
         #assert(self.debugPrint("getSpeeds()"))
         return (self.speed, self.rotationSpeed)
 
-    def setupRay(self, bitmask, floorOffset):
+    def setupRay(self, bitmask, floorOffset, reach):
         # This is a ray cast from your head down to detect floor polygons.
         # This ray start is arbitrarily high in the air.  Feel free to use
         # a higher or lower value depending on whether you want an avatar
@@ -189,6 +189,7 @@ class GravityWalker(DirectObject.DirectObject):
         self.lifter.addInPattern("enter%in")
         self.lifter.addOutPattern("exit%in")
         self.lifter.setOffset(floorOffset)
+        self.lifter.setReach(reach)
 
         # Limit our rate-of-fall with the lifter.
         # If this is too low, we actually "fall" off steep stairs
@@ -273,7 +274,7 @@ class GravityWalker(DirectObject.DirectObject):
 
     def initializeCollisions(self, collisionTraverser, avatarNodePath, 
             wallBitmask, floorBitmask, 
-            avatarRadius = 1.4, floorOffset = 1.0):
+            avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0):
         """
         floorOffset is how high the avatar can reach.  I.e. if the avatar
             walks under a ledge that is <= floorOffset above the ground (a
@@ -289,7 +290,7 @@ class GravityWalker(DirectObject.DirectObject):
         
         self.cTrav = collisionTraverser
 
-        self.setupRay(floorBitmask, floorOffset)
+        self.setupRay(floorBitmask, floorOffset, reach )
         self.setupWallSphere(wallBitmask, avatarRadius)
         self.setupEventSphere(wallBitmask, avatarRadius)
         if self.wantFloorSphere:

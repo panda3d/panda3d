@@ -48,7 +48,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
 
     def initializeCollisions(self, collisionTraverser, avatarNodePath, 
             wallCollideMask, floorCollideMask,
-            avatarRadius = 1.4, floorOffset = 1.0):
+            avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0):
         """
         Set up the avatar for collisions
         """
@@ -69,9 +69,12 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         cSphereNode.setIntoCollideMask(BitMask32.allOff())
 
         # Set up the collison ray
-        # This is a ray cast from your head down to detect floor polygons
-        # A toon is about 4.0 feet high, so start it there
-        self.cRay = CollisionRay(0.0, 0.0, 4.0, 0.0, 0.0, -1.0)
+        # This is a ray cast from your head down to detect floor polygons.
+        # This ray start is arbitrarily high in the air.  Feel free to use
+        # a higher or lower value depending on whether you want an avatar
+        # that is outside of the world to step up to the floor when they
+        # get under valid floor:
+        self.cRay = CollisionRay(0.0, 0.0, 400000.0, 0.0, 0.0, -1.0)
         cRayNode = CollisionNode('NPW.cRayNode')
         cRayNode.addSolid(self.cRay)
         self.cRayNodePath = avatarNodePath.attachNewNode(cRayNode)
@@ -89,6 +92,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         self.lifter.setInPattern("on-floor")
         self.lifter.setOutPattern("off-floor")
         self.lifter.setOffset(floorOffset)
+        self.lifter.setReach(reach)
 
         # Limit our rate-of-fall with the lifter.
         # If this is too low, we actually "fall" off steep stairs
