@@ -415,7 +415,7 @@ move_children(Node *to, Node *from) {
     int num_children = from->get_num_children(_graph_type);
     while (num_children > 0) {
       NodeRelation *arc = 
-	from->get_child(_graph_type, num_children - 1);
+	from->get_child(_graph_type, 0);
       arc->change_parent(to);
       num_children--;
       nassertv(num_children == from->get_num_children(_graph_type));

@@ -382,35 +382,27 @@ r_copy_children(const Node *from, TypeHandle graph_type,
 //               the particular object to a Datagram
 ////////////////////////////////////////////////////////////////////
 void Node::
-write_datagram(BamWriter *manager, Datagram &me)
-{
-
-  //A node should not write out it's UpRelations,
-  //the rationale for this restriction is that if a
-  //a node is choosen in the middle of the graph, then
-  //most likely we only want to write it and it's children.
-  //if we did write out all of the UpRelations then, writing
-  //any node in a graph would cause the entire graph to be written
-  //out
+write_datagram(BamWriter *manager, Datagram &me) {
+  // A node should not write out its UpRelations.  This is because if
+  // a node is written out from the middle of the graph, then most
+  // likely we only want to write it and its children.  If we did
+  // write out all of the UpRelations then writing any node in a graph
+  // would cause the entire graph to be written out.
 
   me.add_uint16(_children.size());
 
   DownRelations::iterator dri;
-  for (dri = _children.begin(); dri != _children.end(); ++dri) 
-  {
+  for (dri = _children.begin(); dri != _children.end(); ++dri) {
+    manager->write_handle(me, (*dri).first);
+
     DownRelationPointers &drp = (*dri).second;
     me.add_uint16(drp.size());
-
     DownRelationPointers::iterator drpi;
-    for (drpi = drp.begin(); drpi != drp.end(); ++drpi) 
-    {
-      PT(NodeRelation) relation = (*drpi);
-
-      //Ask manager to write out the pointer for me
+    for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
+      NodeRelation *relation = (*drpi);
       manager->write_pointer(me, relation);
     }
   }
-
 }
 
 
@@ -422,13 +414,33 @@ write_datagram(BamWriter *manager, Datagram &me)
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int Node::
-complete_pointers(vector_typedWriteable &, BamReader*)
-{
-  //Dummy function that BamReader expects if there are
-  //any read_pointer requests made by an object. But Node is
-  //a special case that only calls read_pointer to force its
-  //NodeRelations to be read.  Those NodeRelations will add themselves
-  //into the Node, so don't attempt to do that as well here.
+complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
+  if (manager->get_file_minor_ver() < 3) {
+    // In bam versions before 3.3, this function does nothing (since
+    // the arcs are completely responsible for adding themselves to
+    // our list); we only need to return the number of pointers we
+    // expected to receive.
+    return _num_pointers;
+  }
+
+  // Beginning at bam version 3.3, we are responsible for adding our
+  // child arcs directly.
+
+  int i = 0;
+
+  DownRelations::iterator dri;
+  for (dri = _children.begin(); dri != _children.end(); ++dri) {
+    DownRelationPointers &drp = (*dri).second;
+
+    DownRelationPointers::iterator drpi;
+    for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
+      nassertr(i < _num_pointers, _num_pointers);
+      (*drpi) = DCAST(NodeRelation, plist[i]);
+      i++;
+    }
+  }
+
+  nassertr(i == _num_pointers, _num_pointers);
   return _num_pointers;
 }
 
@@ -460,23 +472,47 @@ make_Node(const FactoryParams &params)
 //               place
 ////////////////////////////////////////////////////////////////////
 void Node::
-fillin(DatagramIterator& scan, BamReader* manager)
-{
-  PN_uint16 numRelations = scan.get_uint16();
-  PN_uint16 numRelationPointers;
-  _num_pointers = 0;
-  
+fillin(DatagramIterator &scan, BamReader *manager) {
+  if (manager->get_file_minor_ver() < 3) {
+    // In bam versions before 3.3, we only need to count up the total
+    // number of arcs across all types, because we don't add the arc
+    // pointers explicitly here.
+    _num_pointers = 0;
+    int num_types = scan.get_uint16();
 
-  while(numRelations > 0)
-  {
-    numRelationPointers = scan.get_uint16();
-    while(numRelationPointers > 0)
-    {
-      manager->read_pointer(scan, this);
-      numRelationPointers--;
-      _num_pointers++;
+    while (num_types > 0) {
+      int num_arcs = scan.get_uint16();
+      while (num_arcs > 0) {
+	manager->read_pointer(scan, this);
+	_num_pointers++;
+	num_arcs--;
+      }
+      num_types--;
     }
-    numRelations--;
+
+  } else {
+    // Beginning at bam version 3.3, we do all the reading of our
+    // children arcs of all types, which means we need to record the
+    // numbers of each type of children.  We do this by recording a
+    // series of NULL pointers, rather than depending on
+    // _num_pointers.
+
+    _num_pointers = 0;
+    int num_types = scan.get_uint16();
+
+    while (num_types > 0) {
+      TypeHandle type = manager->read_handle(scan);
+      
+      DownRelationPointers &drp = _children[type];
+      int num_arcs = scan.get_uint16();
+      while (num_arcs > 0) {
+	manager->read_pointer(scan, this);
+	drp.push_back((NodeRelation *)NULL);
+	_num_pointers++;
+	num_arcs--;
+      }
+      num_types--;
+    }
   }
 }
 

@@ -175,10 +175,10 @@ reparent_decals() {
       if (child->is_of_type(GeomNode::get_class_type())) {
 	if (geom != (GeomNode *)NULL) {
 	  // Oops, too many GeomNodes.
-	  egg2sg_cat.warning()
+	  egg2sg_cat.error()
 	    << "Decal onto " << node->get_name() 
 	    << " uses base geometry with multiple states.\n";
-	  break;
+	  _error = true;
 	}
 	DCAST_INTO_V(geom, child);
       }
@@ -186,9 +186,10 @@ reparent_decals() {
 
     if (geom == (GeomNode *)NULL) {
       // No children were GeomNodes.
-      egg2sg_cat.warning()
+      egg2sg_cat.error()
 	<< "Ignoring decal onto " << node->get_name()
 	<< "; no geometry within group.\n";
+      _error = true;
     } else {
       // Now reparent all of the non-GeomNodes to this node.  We have
       // to be careful so we don't get lost as we self-modify this
@@ -724,7 +725,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       break;
 
     default:
-      egg2sg_cat.error()
+      egg2sg_cat.warning()
 	<< "Ignoring inappropriate format " << egg_tex->get_format()
 	<< " for 1-component texture " << egg_tex->get_name() << "\n";
     }
@@ -743,7 +744,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       break;
 
     default:
-      egg2sg_cat.error()
+      egg2sg_cat.warning()
 	<< "Ignoring inappropriate format " << egg_tex->get_format()
 	<< " for 2-component texture " << egg_tex->get_name() << "\n";
     }
@@ -758,7 +759,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
 	// Only do this if the component width supports it.
 	tex->_pbuffer->set_format(PixelBuffer::F_rgb12);
       } else {
-	egg2sg_cat.error()
+	egg2sg_cat.warning()
 	  << "Ignoring inappropriate format " << egg_tex->get_format()
 	  << " for 8-bit texture " << egg_tex->get_name() << "\n";
       }
@@ -781,7 +782,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       break;
 
     default:
-      egg2sg_cat.error()
+      egg2sg_cat.warning()
 	<< "Ignoring inappropriate format " << egg_tex->get_format()
 	<< " for 3-component texture " << egg_tex->get_name() << "\n";
     }
@@ -799,7 +800,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
 	// Only do this if the component width supports it.
 	tex->_pbuffer->set_format(PixelBuffer::F_rgba12);
       } else {
-	egg2sg_cat.error()
+	egg2sg_cat.warning()
 	  << "Ignoring inappropriate format " << egg_tex->get_format()
 	  << " for 8-bit texture " << egg_tex->get_name() << "\n";
       }
@@ -818,7 +819,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       break;
 
     default:
-      egg2sg_cat.error()
+      egg2sg_cat.warning()
 	<< "Ignoring inappropriate format " << egg_tex->get_format()
 	<< " for 4-component texture " << egg_tex->get_name() << "\n";
     }
@@ -852,7 +853,7 @@ apply_texture_apply_attributes(TextureApplyTransition *apply,
     default:
       egg2sg_cat.warning()
 	<< "Invalid texture environment "
-	   << (int)egg_tex->get_env_type() << "\n";
+	<< (int)egg_tex->get_env_type() << "\n";
     }
   }
 }
@@ -1097,6 +1098,7 @@ make_node(EggNurbsCurve *egg_curve, NamedNode *parent) {
     egg2sg_cat.error()
       << "Invalid NURBSCurve order for " << egg_curve->get_name() << ": "
       << egg_curve->get_order() << "\n";
+    _error = true;
     return (RenderRelation *)NULL;
   }
 
@@ -1113,6 +1115,7 @@ make_node(EggNurbsCurve *egg_curve, NamedNode *parent) {
       << "Invalid NURBSCurve number of knots for "
       << egg_curve->get_name() << ": got " << num_knots
       << " knots, expected " << nurbs->get_num_knots() << "\n";
+    _error = true;
     return (RenderRelation *)NULL;
   }
     
@@ -1141,6 +1144,7 @@ make_node(EggNurbsCurve *egg_curve, NamedNode *parent) {
   if (!curve->recompute()) {
     egg2sg_cat.error()
       << "Invalid NURBSCurve " << egg_curve->get_name() << "\n";
+    _error = true;
     return (RenderRelation *)NULL;
   }
 
@@ -1241,6 +1245,7 @@ make_node(EggGroup *egg_group, NamedNode *parent) {
 	copy(expanded_history.begin(), expanded_history.end(),
 	     ostream_iterator<string>(egg2sg_cat.error(false), " -> "));
 	egg2sg_cat.error(false) << objecttype << "\n";
+	_error = true;
 	break;
       }
       expanded_history.push_back(objecttype);
@@ -1292,8 +1297,9 @@ make_node(EggGroup *egg_group, NamedNode *parent) {
 	  return NULL;
 	  
 	} else {
-	  egg2sg_cat.warning()
-	    << "Ignoring unknown ObjectType " << objecttype << "\n";
+	  egg2sg_cat.error()
+	    << "Unknown ObjectType " << objecttype << "\n";
+	  _error = true;
 	  break;
 	}
       }
@@ -1303,6 +1309,7 @@ make_node(EggGroup *egg_group, NamedNode *parent) {
 	  egg2sg_cat.error()
 	    << "Error while parsing definition for ObjectType " 
 	    << objecttype << "\n";
+	  _error = true;
 	}
       }
     }
@@ -1387,7 +1394,7 @@ make_node(EggGroup *egg_group, NamedNode *parent) {
 RenderRelation *EggLoader::
 create_group_arc(EggGroup *egg_group, NamedNode *parent, NamedNode *node) {
   RenderRelation *arc = new RenderRelation(parent, node);
-  
+
   // If the group had a transform, apply it to the arc.
   if (egg_group->has_transform()) {
     LMatrix4f matf = LCAST(float, egg_group->get_transform());
@@ -1414,8 +1421,9 @@ create_group_arc(EggGroup *egg_group, NamedNode *parent, NamedNode *node) {
 
   if (egg_group->get_decal_flag()) {
     if (egg_ignore_decals) {
-      egg2sg_cat.warning() 
+      egg2sg_cat.error() 
 	<< "Ignoring decal flag on " << egg_group->get_name() << "\n";
+      _error = true;
     }
 
     // If the group has the "decal" flag set, it means that all of the
@@ -1532,9 +1540,10 @@ make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
 
   case EggGroup::CST_inverse_sphere:
     // These aren't presently supported.
-    egg2sg_cat.warning() 
+    egg2sg_cat.error() 
       << "Not presently supported: <Collide> { " 
       << egg_group->get_cs_type() << " }\n";
+    _error = true;
     break;
 
   case EggGroup::CST_plane:
@@ -1770,7 +1779,7 @@ find_collision_geometry(EggGroup *egg_group) {
 CollisionPlane *EggLoader::
 create_collision_plane(EggPolygon *egg_poly, EggGroup *parent_group) {
   if (!egg_poly->cleanup()) {
-    egg2sg_cat.warning()
+    egg2sg_cat.error()
       << "Degenerate collision plane in " << parent_group->get_name()
       << "\n";
     _error = true;
@@ -1820,7 +1829,7 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
   PT(EggGroup) group = new EggGroup;
 
   if (!egg_poly->triangulate_into(group, false)) {
-    egg2sg_cat.warning()
+    egg2sg_cat.error()
       << "Degenerate collision polygon in " << parent_group->get_name()
       << "\n";
     _error = true;
@@ -1828,7 +1837,7 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
   }
 
   if (group->size() != 1) {
-    egg2sg_cat.warning()
+    egg2sg_cat.error()
       << "Concave collision polygon in " << parent_group->get_name()
       << "\n";
     _error = true;

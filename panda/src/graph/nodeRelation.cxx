@@ -750,17 +750,30 @@ write_datagram(BamWriter *manager, Datagram &me)
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int NodeRelation::
-complete_pointers(vector_typedWriteable &plist, BamReader*)
+complete_pointers(vector_typedWriteable &plist, BamReader *manager)
 {
   nassertr(plist[0] != TypedWriteable::Null &&
 	   plist[1] != TypedWriteable::Null, 0);
   _parent = DCAST(Node, plist[0]);
   _child = DCAST(Node, plist[1]);
-  
-  //Let attach do the work of connecting to the
-  //parent and child nodes, and telling them about
-  //myself
-  attach();
+
+  if (manager->get_file_minor_ver() < 3) {
+    // In bam versions before 3.3, we let the NodeRelation completely
+    // handle its attachment to its parents.
+    attach();
+
+  } else {
+    // Beginning in bam version 3.3, we let the parent Node handle the
+    // attachment of its children arcs, so we can guarantee correct
+    // ordering of children.
+
+    // We must explicitly add the arc to its child node, but not to
+    // its parent node.
+    UpRelationPointers &child_list = _child->_parents[_type];
+    bool inserted = internal_insert_arc(child_list, this);
+    nassertr(inserted, _num_transitions + 2);
+    _attached = true;
+  }
 
   //The rest of this is the list of Transitions
   for(int i = 2; i < _num_transitions + 2; i++)
