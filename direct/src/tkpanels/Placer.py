@@ -43,9 +43,11 @@ class Placer(Pmw.MegaToplevel):
         self.nodePathNames = ['selected', 'camera']
 
         self.refNodePathDict = {}
+        self.refNodePathDict['parent'] = self['nodePath'].getParent()
         self.refNodePathDict['render'] = render
         self.refNodePathDict['camera'] = camera
-        self.refNodePathNames = ['self', 'render', 'camera', 'selected', 'coa']
+        self.refNodePathNames = ['self', 'parent', 'render',
+                                 'camera', 'selected', 'coa']
 
         # Initial state
         self.initPos = Vec3(0)
@@ -107,7 +109,7 @@ class Placer(Pmw.MegaToplevel):
         self.nodePathMenu.pack(side = 'left', expand = 0)
 
         modeMenu = Pmw.OptionMenu(menuFrame,
-                                  items = ('Absolute', 'Relative To:',
+                                  items = ('Relative To:',
                                            'Orbit:'),
                                   initialitem = 'Relative To:',
                                   command = self.setMovementMode,
@@ -342,25 +344,16 @@ class Placer(Pmw.MegaToplevel):
         # Set prefix
         namePrefix = ''
         self.movementMode = movementMode
-        if (movementMode == 'Absolute'):
-            namePrefix = 'Absolute '
-        elif (movementMode == 'Relative To:'):
+        if (movementMode == 'Relative To:'):
             namePrefix = 'Relative '
-        elif (movementMode == 'Orbit'):
-            namePrefix = 'Orbit'
-        # Enable/disable wrt menu
-        if (movementMode == 'Absolute'):
-            self.refNodePathMenu.configure(entry_foreground = 'gray50')
-            self.refNodePathMenu.configure(entry_background = '#E0E0E0')
-        else:
-            self.refNodePathMenu.configure(entry_foreground = 'Black')
-            self.refNodePathMenu.configure(entry_background = 'SystemWindow')
+        elif (movementMode == 'Orbit:'):
+            namePrefix = 'Orbit '
         # Update pos widgets
         self.posX['text'] = namePrefix + 'X'
         self.posY['text'] = namePrefix + 'Y'
         self.posZ['text'] = namePrefix + 'Z'
         # Update hpr widgets
-        if (movementMode == 'Orbit'):
+        if (movementMode == 'Orbit:'):
             namePrefix = 'Orbit delta '
         self.hprH['text'] = namePrefix + 'H'
         self.hprP['text'] = namePrefix + 'P'
@@ -468,7 +461,7 @@ class Placer(Pmw.MegaToplevel):
             return
         # Get node path's name
         name = nodePath.getName()
-        if((name == 'render') | (name == 'camera')):
+        if name in ['parent', 'render', 'camera']:
             dictName = name
         else:
             # Generate a unique name for the dict
@@ -491,18 +484,14 @@ class Placer(Pmw.MegaToplevel):
             # Update temp CS
             self.updateAuxiliaryCoordinateSystems()
             # Update widgets
-            if self.movementMode == 'Absolute':
-                pos.assign(np.getPos())
-                hpr.assign(np.getHpr())
-                scale.assign(np.getScale())
-            elif self.movementMode == 'Orbit:':
+            if self.movementMode == 'Orbit:':
                 pos.assign(self.posOffset)
                 hpr.assign(ZERO_VEC)
                 scale.assign(np.getScale())
             elif self.refCS:
                 pos.assign(np.getPos(self.refCS))
                 hpr.assign(np.getHpr(self.refCS))
-                scale.assign(np.getScale(self.refCS))
+                scale.assign(np.getScale())
         self.updatePosWidgets(pos)
         self.updateHprWidgets(hpr)
         self.updateScaleWidgets(scale)
@@ -531,8 +520,6 @@ class Placer(Pmw.MegaToplevel):
     def xform(self, value, axis):
         if axis in ['sx', 'sy', 'sz']:
             self.xformScale(value,axis)
-        elif self.movementMode == 'Absolute':
-            self.xformAbsolute(value, axis)
         elif self.movementMode == 'Relative To:':
             self.xformRelative(value, axis)
         elif self.movementMode == 'Orbit:':
@@ -550,24 +537,7 @@ class Placer(Pmw.MegaToplevel):
         messenger.send('manipulateObjectCleanup')
         # Update placer to reflect new state
         self.updatePlacer()
-        
 
-    def xformAbsolute(self, value, axis):
-        nodePath = self['nodePath']
-        if nodePath != None:
-            if axis == 'x':
-                nodePath.setX(value)
-            elif axis == 'y':
-                nodePath.setY(value)
-            elif axis == 'z':
-                nodePath.setZ(value)
-            elif axis == 'h':
-                nodePath.setH(value)
-            elif axis == 'p':
-                nodePath.setP(value)
-            elif axis == 'r':
-                nodePath.setR(value)
-                
     def xformRelative(self, value, axis):
         nodePath = self['nodePath']
         if (nodePath != None) & (self.refCS != None):
