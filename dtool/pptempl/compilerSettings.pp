@@ -30,6 +30,20 @@
     #define COMPILER $[COMPILER] /NMttOn
     #define LINKER $[LINKER] /NMttOn
   #endif 
+#elif $[eq $[USE_COMPILER], TRUETIME] // NuMega TrueTime Profiler
+  // This may look like a bad thing (to extend the compiler 
+  // and linker with a switch), but I think it's the right 
+  // thing to do in this case -- skyler.
+  #define COMPILER nmcl /NMttOn
+  #define LINKER nmlink /NMttOn
+  #define LIBBER lib
+  #define COMMONFLAGS
+  #define OPTFLAGS /O2 /Ogity /G6
+  #define OPT1FLAGS /GZ   
+  #defer DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
+  #define RELEASEFLAGS /MD
+  #define EXTRA_LIBPATH
+  #define EXTRA_INCPATH
 #elif $[eq $[USE_COMPILER], INTEL]
   #define COMPILER icl
   #define LINKER xilink
