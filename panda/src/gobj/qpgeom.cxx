@@ -239,27 +239,36 @@ munge_geom(const qpGeomMunger *munger,
            CPT(qpGeom) &result, CPT(qpGeomVertexData) &data) const {
   // Look up the munger in our cache--maybe we've recently applied it.
   {
-    // Use read() and release_read() instead of CDReader, because the
-    // call to record_geom() might recursively call back into this
-    // object, and require a write.
-    const CData *cdata = _cycler.read();
+    CDReader cdata(_cycler);
     CacheEntry temp_entry(munger);
     temp_entry.ref();  // big ugly hack to allow a stack-allocated ReferenceCount object.
     Cache::const_iterator ci = cdata->_cache.find(&temp_entry);
     if (ci != cdata->_cache.end()) {
-      _cycler.release_read(cdata);
       CacheEntry *entry = (*ci);
 
-      // Record a cache hit, so this element will stay in the cache a
-      // while longer.
-      entry->refresh();
-      result = entry->_geom_result;
-      data = entry->_data_result;
-      temp_entry.unref();
-      return;
+      if (get_modified() <= entry->_geom_result->get_modified() &&
+          get_vertex_data()->get_modified() <= entry->_data_result->get_modified()) {
+        // The cache entry is still good; use it.
+
+        // Record a cache hit, so this element will stay in the cache a
+        // while longer.
+        entry->refresh();
+        result = entry->_geom_result;
+        data = entry->_data_result;
+        temp_entry.unref();
+        return;
+      }
+
+      // The cache entry is stale, remove it.
+      if (gobj_cat.is_debug()) {
+        gobj_cat.debug()
+          << "Cache entry " << *entry << " is stale, removing.\n";
+      }
+      entry->erase();
+      CDWriter cdataw(((qpGeom *)this)->_cycler, cdata);
+      cdataw->_cache.erase(entry);
     }
     temp_entry.unref();
-    _cycler.release_read(cdata);
   }
 
   // Ok, invoke the munger.

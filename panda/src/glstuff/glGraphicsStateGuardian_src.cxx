@@ -2537,14 +2537,16 @@ record_deleted_display_list(GLuint index) {
 ////////////////////////////////////////////////////////////////////
 VertexBufferContext *CLP(GraphicsStateGuardian)::
 prepare_vertex_buffer(qpGeomVertexArrayData *data) {
-  if (GLCAT.is_debug()) {
-    GLCAT.debug()
-      << "prepare_vertex_buffer(" << (void *)data << ")\n";
-  }
-
   if (_supports_buffers) {
     CLP(VertexBufferContext) *gvbc = new CLP(VertexBufferContext)(data);
     _glGenBuffers(1, &gvbc->_index);
+
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "creating vertex buffer " << gvbc->_index << ": "
+        << data->get_num_vertices() << " vertices " 
+        << *data->get_array_format() << "\n";
+    }
     
     report_my_gl_errors();
     return gvbc;
@@ -2571,7 +2573,8 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
   if (gvbc->was_modified()) {
     if (GLCAT.is_debug()) {
       GLCAT.debug()
-        << "apply_vertex_buffer(" << (void *)vbc->get_data() << ")\n";
+        << "copying " << gvbc->get_data()->get_data_size_bytes()
+        << " bytes into vertex buffer " << gvbc->_index << "\n";
     }
     if (gvbc->changed_size()) {
       _glBufferData(GL_ARRAY_BUFFER, gvbc->get_data()->get_data_size_bytes(),
@@ -2599,15 +2602,14 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 release_vertex_buffer(VertexBufferContext *vbc) {
-  if (GLCAT.is_debug()) {
-    GLCAT.debug()
-      << "release_vertex_buffer(" << (void *)vbc->get_data() << ")\n";
-  }
-
   nassertv(_supports_buffers);
   
   CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext), vbc);
 
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "deleting vertex buffer " << gvbc->_index << "\n";
+  }
   _glDeleteBuffers(1, &gvbc->_index);
   report_my_gl_errors();
 
@@ -2668,14 +2670,14 @@ setup_array_data(const qpGeomVertexArrayData *data) {
 ////////////////////////////////////////////////////////////////////
 IndexBufferContext *CLP(GraphicsStateGuardian)::
 prepare_index_buffer(qpGeomPrimitive *data) {
-  if (GLCAT.is_debug()) {
-    GLCAT.debug()
-      << "prepare_index_buffer(" << (void *)data << ")\n";
-  }
-
   if (_supports_buffers) {
     CLP(IndexBufferContext) *gibc = new CLP(IndexBufferContext)(data);
     _glGenBuffers(1, &gibc->_index);
+
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "creating vertex buffer " << gibc->_index << "\n";
+    }
     
     report_my_gl_errors();
     return gibc;
@@ -2702,7 +2704,8 @@ apply_index_buffer(IndexBufferContext *ibc) {
   if (gibc->was_modified()) {
     if (GLCAT.is_debug()) {
       GLCAT.debug()
-        << "apply_index_buffer(" << (void *)ibc->get_data() << ")\n";
+        << "copying " << gibc->get_data()->get_data_size_bytes()
+        << " bytes into index buffer " << gibc->_index << "\n";
     }
     if (gibc->changed_size()) {
       _glBufferData(GL_ELEMENT_ARRAY_BUFFER, gibc->get_data()->get_data_size_bytes(),
@@ -2730,15 +2733,14 @@ apply_index_buffer(IndexBufferContext *ibc) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 release_index_buffer(IndexBufferContext *ibc) {
-  if (GLCAT.is_debug()) {
-    GLCAT.debug()
-      << "release_index_buffer(" << (void *)ibc->get_data() << ")\n";
-  }
-
   nassertv(_supports_buffers);
   
   CLP(IndexBufferContext) *gibc = DCAST(CLP(IndexBufferContext), ibc);
 
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "deleting index buffer " << gibc->_index << "\n";
+  }
   _glDeleteBuffers(1, &gibc->_index);
   report_my_gl_errors();
 
