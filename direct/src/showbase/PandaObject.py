@@ -1,6 +1,5 @@
 from DirectObject import *
 from PandaModules import *
-from ShowBaseGlobal import *
 
 class PandaObject(DirectObject):
     """

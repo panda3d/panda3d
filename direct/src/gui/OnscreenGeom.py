@@ -9,7 +9,7 @@ class OnscreenGeom(PandaObject, NodePath):
                  hpr = None,
                  scale = None,
                  color = None,
-                 parent = aspect2d,
+                 parent = None,
                  sort = 0):
         """__init__(self, ...)
 
@@ -40,6 +40,8 @@ class OnscreenGeom(PandaObject, NodePath):
         """
         # We ARE a node path.  Initially, we're an empty node path.
         NodePath.__init__(self)
+        if parent == None:
+            parent = aspect2d
         self.parent = parent
         # Assign geometry
         self.sort = sort

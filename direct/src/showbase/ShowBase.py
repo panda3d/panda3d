@@ -22,11 +22,15 @@ import Loader
 import time
 import FSM
 import State
+import DirectObject
 
 __builtins__["FADE_SORT_INDEX"] = 1000
 __builtins__["NO_FADE_SORT_INDEX"] = 2000
 
-class ShowBase:
+# Now ShowBase is a DirectObject.  We need this so ShowBase can hang
+# hooks on messages, particularly on window-event.  This doesn't
+# *seem* to cause anyone any problems.
+class ShowBase(DirectObject.DirectObject):
 
     notify = directNotify.newCategory("ShowBase")
 
@@ -93,6 +97,7 @@ class ShowBase:
         # base.win is the main, or only window; base.winList is a list of
         # *all* windows.  Similarly with base.pipeList and base.camList.
         self.win = None
+        self.mainWinMinimized = 0
         self.winList = []
         self.pipe = None
         self.pipeList = []
@@ -153,6 +158,11 @@ class ShowBase:
         __builtins__["directNotify"] = directNotify
         __builtins__["globalClock"] = ClockObject.getGlobalClock()
         __builtins__["vfs"] = vfs
+
+        # Now hang a hook on the window-event from Panda.  This allows
+        # us to detect when the user resizes, minimizes, or closes the
+        # main window.
+        self.accept('window-event', self.__windowEvent)
 
         # Transition effects (fade, iris, etc)
         import Transitions
@@ -967,7 +977,28 @@ class ShowBase:
             state.frameIndex += 1
             return Task.cont
 
+    def __windowEvent(self, win):
+        properties = win.getProperties()
+        if win == self.win:
+            if not properties.getOpen():
+                # If the user closes the main window, we should exit.
+                self.notify.info("User closed main window, exiting.")
+                sys.exit()
+
+            if properties.getMinimized() and not self.mainWinMinimized:
+                # If the main window is minimized, throw an event to
+                # stop the music.
+                self.mainWinMinimized = 1
+                messenger.send('PandaPaused')
+
+            elif not properties.getMinimized() and self.mainWinMinimized:
+                # If the main window is restored, throw an event to
+                # restart the music.
+                self.mainWinMinimized = 0
+                messenger.send('PandaRestarted')
+                
 
     def run(self):
         self.taskMgr.run()
+
 

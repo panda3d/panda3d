@@ -94,12 +94,39 @@ class FFIExternalObject:
                     #    % (downcastFuncName, globmod.__name__))
                     downcastFunctionList.append(func)
         return downcastFunctionList
+
+    def lookUpNewType(self, typeHandle, rootType):
+        # We tried to downcast to an unknown type.  Try to figure out
+        # the lowest type we *do* know, so we can downcast to that
+        # type instead.
+        if typeHandle.getNumParentClasses() == 0:
+            # This type has no parents!  That shouldn't happen.
+            FFIConstants.notify.warning("Unknown class type: %s has no parents!" % (typeHandle.getName()))            
+            return None
+
+        parentType = typeHandle.getParentTowards(rootType, self)
+        parentIndex = parentType.getIndex()
+        parentWrapperClass = WrapperClassMap.get(parentIndex)
+        if parentWrapperClass == None:
+            parentWrapperClass = self.lookUpNewType(parentType, rootType)
+
+        if parentWrapperClass != None:
+            # If the parent class is known, then record that this
+            # class is a derivation of that parent class.
+            WrapperClassMap[typeHandle.getIndex()] = parentWrapperClass
+
+        return parentWrapperClass
         
     def setPointer(self):
         # See what type it really is and downcast to that type (if necessary)
         # Look up the TypeHandle in the dict. get() returns None if it is not there
         index = self.getTypeIndex()
         exactWrapperClass = WrapperClassMap.get(index)
+        if exactWrapperClass == None:
+            # This is an unknown class type.  Perhaps it derives from
+            # a class type we know.
+            exactWrapperClass = self.lookUpNewType(self.getType(), self.getClassType())
+            
         # We do not need to downcast if we already have the same class
         if (exactWrapperClass and (exactWrapperClass != self.__class__)):
             # Create a new wrapper class instance

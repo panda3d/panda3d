@@ -29,7 +29,7 @@ class OnscreenText(PandaObject, NodePath):
                  wordwrap = None,
                  drawOrder = None,
                  font = None,
-                 parent = aspect2d,
+                 parent = None,
                  sort = 0,
                  mayChange = 0):
         """__init__(self, ...)
@@ -90,6 +90,8 @@ class OnscreenText(PandaObject, NodePath):
               created (which leads to better memory optimization).
         
         """
+        if parent == None:
+            parent = aspect2d
 
         # make a text node
         textNode = TextNode('')
