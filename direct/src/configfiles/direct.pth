@@ -9,6 +9,7 @@ src/distributed
 src/ffi
 src/fsm
 src/gui
+src/interval
 src/leveleditor
 src/net
 src/particles
