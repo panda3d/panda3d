@@ -85,8 +85,9 @@ update_transform(void) {
 void ActorNode::
 transform_changed() {
   // this callback could be triggered by update_transform, BAD.
-  if (_ok_to_callback == false)
+  if (_ok_to_callback == false) {
     return;
+  }
 
   // get the transform
   CPT(TransformState) transform = get_transform();
