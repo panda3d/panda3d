@@ -188,7 +188,14 @@ int TxaFile::
 get_line_or_semicolon(istream &in, string &line) {
   line = string();
   int ch = in.get();
-  while (ch != EOF && ch != '\n' && ch != ';') {
+  char semicolon = ';';
+
+  while (ch != EOF && ch != '\n' && ch != semicolon) {
+    if (ch == '#') {
+      // We don't consider a semicolon within a comment to be a line
+      // break.
+      semicolon = EOF;
+    }
     line += ch;
     ch = in.get();
   }
