@@ -178,15 +178,7 @@ class Notifier:
     def __print(self, string):
         """__print(self, string)
         Prints the string to standard output followed by a newline.
+        If we ever need to do something else than Python print, you
+        could put it here.
         """
-        # We could use the print command, but that seems to stop
-        # working when Python is in the program-level exception
-        # handler for some reason (!).  So we use C++-level output
-        # instead, as soon as we have the DirectNotify level
-        # streamWriter available.
-
-        import DirectNotifyGlobal
-        if DirectNotifyGlobal.directNotify.streamWriter:
-            DirectNotifyGlobal.directNotify.streamWriter.appendData(string + '\n')
-        else:
-            print string
+        print string
