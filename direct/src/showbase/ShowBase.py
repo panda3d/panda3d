@@ -2,7 +2,7 @@
 # This module redefines the builtin import function with one
 # that prints out every import it does in a hierarchical form
 # Annoying and very noisy, but sometimes useful
-# import VerboseImport
+#import VerboseImport
 
 from PandaModules import *
 from DirectNotifyGlobal import *

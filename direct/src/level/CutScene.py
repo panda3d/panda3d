@@ -15,7 +15,6 @@ import DirectNotifyGlobal
 import ClassicFSM
 #import DistributedInteractiveEntity
 import DelayDelete
-import Localizer
 
 # effects #
 
