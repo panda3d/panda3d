@@ -31,6 +31,7 @@
 #endif
 
 // Patch File Format ///////////////////////////////////////////////
+///// IF THIS CHANGES, UPDATE installerApplyPatch.cxx IN THE INSTALLER
 ////////////////////////////////////////////////////////////////////
 // [ HEADER ]
 //   4 bytes  0xfeebfaab ("magic number")
@@ -325,7 +326,7 @@ run(void) {
       PN_uint32 bytes_left = (PN_uint32)COPY_length;
 
       while (bytes_left > 0) {
-        PN_uint32 bytes_this_time = ((int)bytes_left < buflen) ? bytes_left : buflen;
+        PN_uint32 bytes_this_time = (int)min(bytes_left, buflen);
         _origfile_stream.read(_buffer->_buffer, bytes_this_time);
         _write_stream.write(_buffer->_buffer, bytes_this_time);
         bytes_left -= bytes_this_time;
