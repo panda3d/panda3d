@@ -1,5 +1,6 @@
 from Tkinter import *
 import Pmw
+import Valuator
 import Floater
 import EntryScale
 import string
@@ -232,10 +233,8 @@ class VectorEntry(Pmw.MegaWidget):
             self.configure(Entry_entry_state = 'disabled')
             self.configure(Entry_entry_background = '#C0C0C0')
             # Disable floater Group scale
-            """
             self.component('fGroup').configure(
-                Valuator_scale_state = 'disabled')
-            """
+                Valuator_state = 'disabled')
             # Disable floater group entry
             self.component('fGroup').configure(
                 Valuator_entry_state = 'disabled')
@@ -246,10 +245,8 @@ class VectorEntry(Pmw.MegaWidget):
             self.configure(Entry_entry_state = 'normal')
             self.configure(Entry_entry_background = self.entryBackground)
             # Disable floater Group scale
-            """
             self.component('fGroup').configure(
-                Valuator_scale_state = 'normal')
-            """
+                Valuator_state = 'normal')
             # Disable floater group entry
             self.component('fGroup').configure(
                 Valuator_entry_state = 'normal')

@@ -4,80 +4,88 @@ Floater Class: Velocity style controller for floating point values with
 """
 from PandaObject import *
 from Tkinter import *
+from Valuator import *
 import Pmw
-import WidgetPropertiesDialog
+import Task
+import math
 import string
 
 globalClock = ClockObject.getGlobalClock()
 
+FLOATER_WIDTH = 22
+FLOATER_HEIGHT = 18
 
-FLOATER_FULL = 'full'
-FLOATER_MINI = 'mini'
+class Floater(Valuator):
+    def __init__(self, parent = None, **kw):
+        optiondefs = ()
+        self.defineoptions(kw, optiondefs)
+        # Initialize the superclass
+        Valuator.__init__(self, parent)
+        self.initialiseoptions(Floater)
+        
+    def createValuator(self):
+        self._valuator = self.createcomponent('valuator',
+                                              (('floater', 'valuator'),),
+                                              None,
+                                              FloaterWidget,
+                                              (self.interior(),),
+                                              command = self.setEntry,
+                                              value = self['value'])
+        self._valuator._canvas.bind('<Double-ButtonPress-1>', self.mouseReset)
 
-FLOATER_WIDTH = 25
-FLOATER_HEIGHT = 20
+    def packValuator(self):
+        # Position components
+        if self._label:
+            self._label.grid(row=0,col=0, sticky = EW)
+        self._entry.grid(row=0,col=1, sticky = EW)
+        self._valuator.grid(row=0,col=2, padx = 2, pady = 2)
+        self.interior().columnconfigure(0, weight = 1)
+
 
 class FloaterWidget(Pmw.MegaWidget):
-    sfBase = 3.0
-    sfDist = 15
-    deadband = 10
     def __init__(self, parent = None, **kw):
         #define the megawidget options
         INITOPT = Pmw.INITOPT
         optiondefs = (
-            ## Appearance
-            # Edge size of the floater
+            # Appearance
             ('width',           FLOATER_WIDTH,  INITOPT),
             ('height',          FLOATER_HEIGHT, INITOPT),
-            # Color
-            ('background',      'white',        INITOPT),
-            # Widget relief
             ('relief',          SUNKEN,         self.setRelief),
-            # Widget borderwidth
             ('borderwidth',     2,              self.setBorderwidth),
-            ## Values
+            ('background',      'white',        self.setBackground),
+            # Behavior
             # Initial value of floater, use self.set to change value
             ('value',           0.0,            INITOPT),
-            ('min',             None,           None),
-            ('max',             None,           None),
-            ('resolution',      None,           None),
             ('numDigits',       2,              self.setNumDigits),
-            # Value floater jumps to on reset
-            ('resetValue',      0.0,            None),
-            ## Behavior
-            # Able to adjust max/min
-            ('fAdjustable',     1,              None),
             # Command to execute on floater updates
             ('command',         None,           None),
             # Extra data to be passed to command function
             ('commandData',     [],             None),
             # Callback's to execute during mouse interaction
-            ('preCallback',   None,           None),
-            ('postCallback', None,           None),
+            ('preCallback',     None,           None),
+            ('postCallback',    None,           None),
             # Extra data to be passed to callback function, needs to be a list
             ('callbackData',    [],             None),
             )
         self.defineoptions(kw, optiondefs)
 
-        #print 'FLOATER WIDGET', self['resetValue']
-        
         # Initialize the superclass
         Pmw.MegaWidget.__init__(self, parent)
 
         # Set up some local and instance variables        
-        # Current value
-        self.value = self['value']
-
         # Create the components
         interior = self.interior()
+
+        # Current value
+        self.value = self['value']
 
         # The canvas
         width = self['width']
         height = self['height']
         self._canvas = self.createcomponent('canvas', (), None,
                                             Canvas, (interior,),
-                                            width = self['width'],
-                                            height = self['height'],
+                                            width = width,
+                                            height = height,
                                             background = self['background'],
                                             highlightthickness = 0,
                                             scrollregion = (-width/2.0,
@@ -96,46 +104,12 @@ class FloaterWidget(Pmw.MegaWidget):
                                     fill = '#A0A0A0',
                                     tags = ('floater',))
 
-        # A Dictionary of dictionaries for the popup property dialog
-        self.propertyDict = {
-            'min' : { 'widget' : self,
-                      'type' : 'real',
-                      'fNone' : 1,
-                      'help' : 'Minimum allowable floater value, Enter None for no minimum'},
-            'max' : { 'widget' : self,
-                      'type' : 'real',
-                      'fNone' : 1,
-                      'help' : 'Maximum allowable floater value, Enter None for no maximum'},
-            'resetValue' : { 'widget' : self,
-                             'type' : 'real',
-                             'help' : 'Enter value to set floater to on reset.'}
-            }
-        self.propertyList = ['min', 'max', 'resetValue']
-
-        # The popup menu
-        self._popupMenu = Menu(interior, tearoff = 0)
-
-        if self['fAdjustable']:
-            self._popupMenu.add_command(
-                label = 'Properties...',
-                command = self.popupPropertiesDialog)
-        self._popupMenu.add_command(label = 'Zero Floater',
-                                    command = self.zero)
-        self._popupMenu.add_command(label = 'Reset Floater',
-                                    command = self.reset)
-
         # Add event bindings
         self._canvas.bind('<ButtonPress-1>', self.mouseDown)
-        self._canvas.bind('<B1-Motion>', self.mouseMotion)
+        self._canvas.bind('<B1-Motion>', self.updateFloaterSF)
         self._canvas.bind('<ButtonRelease-1>', self.mouseUp)
-        self._canvas.bind('<ButtonPress-3>', self.popupFloaterMenu)
-        self._canvas.bind('<Double-ButtonPress-1>', self.mouseReset)
-        self._canvas.bind('<ButtonPress-3>', self.popupFloaterMenu)
-        self._canvas.bind('<Enter>', self.highlightIcon)
-        self._canvas.bind('<Leave>', self.restoreIcon)
-        self._canvas.tag_bind('floater', '<ButtonPress-1>', self.mouseDown)
-        self._canvas.tag_bind('floater', '<B1-Motion>', self.mouseMotion)
-        self._canvas.tag_bind('floater', '<ButtonRelease-1>', self.mouseUp)
+        self._canvas.bind('<Enter>', self.highlightWidget)
+        self._canvas.bind('<Leave>', self.restoreWidget)
 
         # Make sure input variables processed 
         self.initialiseoptions(FloaterWidget)
@@ -145,44 +119,16 @@ class FloaterWidget(Pmw.MegaWidget):
         self.set(value, fCommand = 1)
         Set floater to new value, execute command if fCommand == 1
         """
-        # Clamp value
-        if self['min'] is not None:
-            if value < self['min']:
-                value = self['min']
-        if self['max'] is not None:
-            if value > self['max']:
-                value = self['max']
-        # Round by resolution
-        if self['resolution'] is not None:
-            value = round(value / self['resolution']) * self['resolution']
-
         # Send command if any
         if fCommand and (self['command'] != None):
             apply(self['command'], [value] + self['commandData'])
         # Record value
         self.value = value
+
+    def updateIndicator(self, value):
+        # Nothing visible to update on this type of widget
+        pass
     
-    # Set floater to zero
-    def zero(self):
-        """
-        self.reset()
-        Set floater to zero
-        """
-        self.set(0.0)
-
-    # Reset floater to reset value
-    def reset(self):
-        """
-        self.reset()
-        Reset floater to reset value
-        """
-        self.set(self['resetValue'])
-
-    def mouseReset(self,event):
-        # If not over any canvas item
-        #if not self._canvas.find_withtag(CURRENT):
-        self.reset()
-        
     def get(self):
         """
         self.get()
@@ -193,46 +139,56 @@ class FloaterWidget(Pmw.MegaWidget):
     ## Canvas callback functions
     # Floater velocity controller
     def mouseDown(self,event):
-        self._onButtonPress()
+        """ Begin mouse interaction """
+        # Exectute user redefinable callback function (if any)
+        if self['preCallback']:
+            apply(self['preCallback'], self['callbackData'])
         self.velocitySF = 0.0
-        t = taskMgr.add(self.computeVelocity, 'cv')
-        t.lastTime = globalClock.getFrameTime()
+        self.updateTask = taskMgr.add(self.updateFloaterTask,
+                                        'updateFloater')
+        self.updateTask.lastTime = globalClock.getFrameTime()
 
-    def computeVelocity(self, state):
-        # Update value
+    def updateFloaterTask(self, state):
+        """
+        Update floaterWidget value based on current scaleFactor
+        Adjust for time to compensate for fluctuating frame rates
+        """
         currT = globalClock.getFrameTime()
         dt = currT - state.lastTime
         self.set(self.value + self.velocitySF * dt)
         state.lastTime = currT
         return Task.cont
 
-    def mouseMotion(self, event):
-        # What is the current knob angle
-        self.velocitySF = self.computeVelocitySF(event)
-
-    def computeVelocitySF(self, event):
+    def updateFloaterSF(self, event):
+        """
+        Update velocity scale factor based of mouse distance from origin
+        """
         x = self._canvas.canvasx(event.x)
         y = self._canvas.canvasy(event.y)
-        offset = max(0, abs(x) - FloaterWidget.deadband)
+        offset = max(0, abs(x) - Valuator.deadband)
         if offset == 0:
             return 0
-        sf = math.pow(FloaterWidget.sfBase,
-                      self.minExp + offset/FloaterWidget.sfDist)
+        sf = math.pow(Valuator.sfBase,
+                      self.minExp + offset/Valuator.sfDist)
         if x > 0:
-            return sf
+            self.velocitySF = sf
         else:
-            return -sf
+            self.velocitySF = -sf
 
     def mouseUp(self, event):
-        taskMgr.remove('cv')
+        taskMgr.remove(self.updateTask)
         self.velocitySF = 0.0
-        self._onButtonRelease()
+        # Execute user redefinable callback function (if any)
+        if self['postCallback']:
+            apply(self['postCallback'], self['callbackData'])
 
-    def highlightIcon(self, event):
-        self._canvas.itemconfigure('floater', fill = 'black')
-
-    def restoreIcon(self, event):
-        self._canvas.itemconfigure('floater', fill = '#A0A0A0')
+    def setNumDigits(self):
+        """
+        Adjust minimum exponent to use in velocity task based
+        upon the number of digits to be displayed in the result
+        """
+        self.minExp = math.floor(-self['numDigits']/
+                                 math.log10(Valuator.sfBase))        
 
     # Methods to modify floater characteristics    
     def setRelief(self):
@@ -241,194 +197,14 @@ class FloaterWidget(Pmw.MegaWidget):
     def setBorderwidth(self):
         self.interior()['borderwidth'] = self['borderwidth']
 
-    def setNumDigits(self):
-        # Set minimum exponent to use in velocity task
-        self.minExp = math.floor(-self['numDigits']/
-                                 math.log10(FloaterWidget.sfBase))        
+    def setBackground(self):
+        self._canvas['background'] = self['background']
 
-    # The following methods are used to handle the popup menu
-    def popupFloaterMenu(self,event):
-        self._popupMenu.post(event.widget.winfo_pointerx(),
-                             event.widget.winfo_pointery())
+    def highlightWidget(self, event):
+        self._canvas.itemconfigure('floater', fill = 'black')
 
-    # Popup dialog to adjust widget properties
-    def popupPropertiesDialog(self):
-        WidgetPropertiesDialog.WidgetPropertiesDialog(
-            self.propertyDict,
-            propertyList = self.propertyList,
-            title = 'Floater Widget Properties',
-            parent = self._canvas)
-
-    def addPropertyToDialog(self, property, pDict):
-        self.propertyDict[property] = pDict
-        self.propertyList.append(property)
-            
-    # User callbacks
-    def _onButtonPress(self, *args):
-        """ User redefinable callback executed on button press """
-        if self['preCallback']:
-            apply(self['preCallback'], self['callbackData'])
-
-    def _onButtonRelease(self, *args):
-        """ User redefinable callback executed on button release """
-        if self['postCallback']:
-            apply(self['postCallback'], self['callbackData'])
-
-
-class Floater(Pmw.MegaWidget):
-    def __init__(self, parent = None, **kw):
-        #define the megawidget options
-        INITOPT = Pmw.INITOPT
-        optiondefs = (
-            # Widget relief
-            ('relief',            GROOVE,         None),
-            # Widget borderwidth
-            ('borderwidth',       2,              None),
-            ('value',             0.0,            INITOPT),
-            ('resetValue',        0.0,            self.setResetValue),
-            ('text',              'Floater',      self.setLabel),
-            ('numDigits',         2,              self.setEntryFormat),
-            ('command',           None,           None),
-            ('commandData',       [],             None),
-            ('min',               None,           self.setMin),
-            ('max',               None,           self.setMax),
-            # Callbacks to execute when updating widget's value
-            ('preCallback',     None,           self.setButtonPressCmd),
-            ('postCallback',   None,           self.setButtonReleaseCmd),
-            # Extra data to be passed to callback function, needs to be a list
-            ('callbackData',      [],             self.setCallbackData),
-            )
-        self.defineoptions(kw, optiondefs)
-        
-        # Initialize the superclass
-        Pmw.MegaWidget.__init__(self, parent)
-
-        # Create the components
-        interior = self.interior()
-        interior.configure(relief = self['relief'], bd = self['borderwidth'])
-        
-        # The Floater
-        #print self['text'], self['value'], self['resetValue']
-        self._floater = self.createcomponent('floater', (), None,
-                                             FloaterWidget, (interior,),
-                                             command = self.setEntry,
-                                             resetValue = self['value'],
-                                             value = self['value'])
-
-        if not kw.has_key('resetValue'):
-            self['resetValue'] = self['value']
-        self._floater.addPropertyToDialog(
-            'text',
-            {'widget' : self,
-             'type' : 'string',
-             'help' : 'Enter label text for Floater.'
-             }
-            )
-        self._floater.addPropertyToDialog(
-            'numDigits',
-            {'widget' : self,
-             'type' : 'integer',
-             'help' : 'Enter number of digits after decimal point.'
-             }
-            )
-
-        # The Label
-        self._label = self.createcomponent('label', (), None,
-                                           Label, (interior,),
-                                           text = self['text'],
-                                           font = ('MS Sans Serif',12,'bold'),
-                                           anchor = CENTER)
-        self._label.bind('<ButtonPress-3>', self._floater.popupFloaterMenu)
-
-        # The entry
-        self._entryVal = StringVar()
-        self._entry = self.createcomponent('entry', (), None,
-                                           Entry, (interior,),
-                                           justify = RIGHT,
-                                           width = 12,
-                                           textvariable = self._entryVal)
-        self._entry.bind('<Return>', self.validateEntryInput)
-        self._entry.bind('<ButtonPress-3>', self._floater.popupFloaterMenu)
-        self._entryBackground = self._entry.cget('background')
-
-        # Position components
-        self._label.grid(row=0,col=0, sticky = EW)
-        self._entry.grid(row=0,col=1, sticky = EW)
-        self._floater.grid(row=0,col=2, padx = 2, pady = 2)
-        interior.columnconfigure(0, weight = 1)
-
-        # Make sure input variables processed
-        self.fInit = 0
-        self.initialiseoptions(Floater)
-        self.fInit = 1
-
-    def set(self, value, fCommand = 1):
-        # Pass fCommand to user specified data (to control if command
-        # is executed or not) to floater which will return it to self.setEntry
-        self._floater['commandData'] = [fCommand]
-        self._floater.set(value)
-        # Restore commandData to 1 so that interaction via floater widget
-        # will result in command being executed, otherwise a set with
-        # commandData == 0 will stick and commands will not be executed
-        self._floater['commandData'] = [1]
-        
-    def get(self):
-        return self._floater.get()
-
-    def setEntry(self, value, fCommand = 1):
-        self._entryVal.set(self.entryFormat % value)
-        # Execute command
-        if self.fInit and fCommand and (self['command'] != None):
-            apply(self['command'], [value] + self['commandData'])
-
-    def setEntryFormat(self):
-        self.entryFormat = "%." + "%df" % self['numDigits']
-        self.setEntry(self.get())
-        self._floater['numDigits'] = self['numDigits']
-
-    def validateEntryInput(self, event):
-        input = self._entryVal.get()
-        try:
-            self._onReturnPress()
-            self._entry.configure(background = self._entryBackground)
-            newValue = string.atof(input)
-            self.set(newValue)
-            self._onReturnRelease()
-        except ValueError:
-            self._entry.configure(background = 'Pink')
-
-    def _onReturnPress(self, *args):
-        """ User redefinable callback executed on <Return> in entry """
-        if self['preCallback']:
-            apply(self['preCallback'], self['callbackData'])
-
-    def _onReturnRelease(self, *args):
-        """ User redefinable callback executed on <Return> release in entry """
-        if self['postCallback']:
-            apply(self['postCallback'], self['callbackData'])
-
-    # Pass settings down to floater
-    def setCallbackData(self):
-        # Pass callback data down to floater
-        self._floater['callbackData'] = self['callbackData']
-
-    def setResetValue(self):
-        self._floater['resetValue'] = self['resetValue']
-
-    def setMin(self):
-        self._floater['min'] = self['min']
-
-    def setMax(self):
-        self._floater['max'] = self['max']
-
-    def setLabel(self):
-        self._label['text'] = self['text']
-
-    def setButtonPressCmd(self):
-        self._floater['preCallback'] = self['preCallback']
-
-    def setButtonReleaseCmd(self):
-        self._floater['postCallback'] = self['postCallback']
+    def restoreWidget(self, event):
+        self._canvas.itemconfigure('floater', fill = '#A0A0A0')
 
 
 class FloaterGroup(Pmw.MegaToplevel):
@@ -568,9 +344,6 @@ if __name__ == '__main__':
     # Starting value for floater    
     mega1['value'] = 123.456
     mega1['text'] = 'Drive delta X'
-    mega1['min'] = 0.0
-    mega1['max'] = 1000.0
-    mega1['resolution'] = 1.0
     # To change the color of the label:
     mega1.label['foreground'] = 'Red'
     # Max change/update, default is 100

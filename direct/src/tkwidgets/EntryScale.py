@@ -19,6 +19,7 @@ class EntryScale(Pmw.MegaWidget):
 
         # Define the megawidget options.
         optiondefs = (
+            ('state',        None,          None),
             ('value',        0.0,           Pmw.INITOPT),
             ('resolution',          0.001,         None),
             ('command',             None,          None),
