@@ -454,13 +454,6 @@ get_transform(SAA_Scene *scene, EggGroup *egg_group, bool global) {
   // Get the model's matrix
   int scale_joint = 0;
 
-  /*
-  if ( _parentJoint && strstr( _parentJoint->get_name().c_str(), "scale" ) != NULL ) {
-    scale_joint = 1;
-    softegg_cat.spam() << "scale joint flag set!\n";
-  }
-  */
-
   if (!global && _parentJoint && !stec.flatten && !scale_joint) {
 
     SAA_modelGetMatrix( scene, get_model(), SAA_COORDSYS_LOCAL,  matrix );
@@ -520,13 +513,6 @@ get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim, b
     float h,p,r;
     float x,y,z;
     int scale_joint = 0;
-
-    /*    
-    if ( _parentJoint && strstr( _parentJoint->get_name().c_str(), "scale" ) != NULL ) {
-      scale_joint = 1;    
-      softegg_cat.spam() << "scale joint flag set!\n";
-    }
-    */
 
     softegg_cat.spam() << "\n\nanimating child " << name << endl;
 

@@ -223,13 +223,6 @@ build_complete_hierarchy(SAA_Scene &scene, SAA_Database &database) {
   // find _parentJoint for each node
   _root->set_parentJoint(&scene, NULL);
 
-  /*
-  if (stec.flatten) {
-    softegg_cat.spam() << "rprprprprprprprprprprprprprprprprprprprprprprprprprprprpr\n";
-    reparent_flatten(_root);
-  }
-  */
-
   return all_ok;
 }
 #if 0
@@ -600,25 +593,13 @@ r_build_node(SoftNodeDesc *parent_node, const string &name) {
   if (ni != _nodes_by_name.end()) {
     softegg_cat.spam() << "  already built node " << (*ni).first;
     node_desc = (*ni).second;
-
-    /*    
-    if (stec.flatten)
-      node_desc->set_parent(_root);
-    else
-    */
-      node_desc->set_parent(parent_node);
-
+    node_desc->set_parent(parent_node);
     return node_desc;
   }
 
   // Otherwise, we have to create it.  Do this recursively, so we
   // create each node along the path.
-  /*
-  if (stec.flatten)
-    node_desc = new SoftNodeDesc(_root, name);
-  else
-  */
-    node_desc = new SoftNodeDesc(parent_node, name);
+  node_desc = new SoftNodeDesc(parent_node, name);
 
   softegg_cat.spam() << " node name : " << name << endl;
   _nodes.push_back(node_desc);
@@ -628,30 +609,6 @@ r_build_node(SoftNodeDesc *parent_node, const string &name) {
   return node_desc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeTree::reparent_flatten
-//       Access: Private
-//  Description: recursively, reparent all nodes to root
-////////////////////////////////////////////////////////////////////
-void SoftNodeTree::
-reparent_flatten(SoftNodeDesc *node) {
-  // get a copy of the current childrens
-  SoftNodeDesc::Children old_children = node->_children;
-  // clear the _children to make room for new ones
-  node->_children.clear();
-
-  if (node != _root) {
-    softegg_cat.spam() << "reparenting " << node << ":" << node->get_name();
-    node->force_set_parent(_root);
-  }
-
-  SoftNodeDesc::Children::const_iterator ci;
-  for (ci = old_children.begin(); ci != old_children.end(); ++ci) {
-    SoftNodeDesc *child = (*ci);
-    reparent_flatten(child);
-  }
-
-}
 //
 //
 //

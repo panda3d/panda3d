@@ -73,7 +73,6 @@ private:
   EggGroupNode *_skeleton_node;
 
   SoftNodeDesc *r_build_node(SoftNodeDesc *parent_node, const string &path);
-  void reparent_flatten(SoftNodeDesc *node);
 
   typedef pmap<string, SoftNodeDesc *> NodesByName;
   NodesByName _nodes_by_name;
