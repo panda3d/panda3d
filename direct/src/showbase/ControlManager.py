@@ -22,7 +22,7 @@ class ControlManager:
 
     def __init__(self, avatar):
         self.avatar = avatar
-        assert(self.debugPrint("ControlManager()"))
+        assert self.notify.debugCall(id(self))
         
         self.enableJumpCounter = 1
         
@@ -89,6 +89,7 @@ class ControlManager:
 
 
     def add(self, controls, name="basic"):
+        assert self.notify.debugCall(id(self))
         controls = self.controls.get(name)
         if controls is not None:
             print "Replacing controls:", name
@@ -96,6 +97,7 @@ class ControlManager:
         self.controls[name] = controls
 
     def use(self, name="basic"):
+        assert self.notify.debugCall(id(self))
         controls = self.controls.get(name)
         if controls is not None:
             if controls is not self.currentControls:
@@ -108,10 +110,7 @@ class ControlManager:
     
     def setSpeeds_new(self, toonForwardSpeed, toonJumpForce,
             toonReverseSpeed, toonRotateSpeed):
-        assert(self.debugPrint(
-            "setSpeeds(toonForwardSpeed=%s, toonJumpForce=%s, toonReverseSpeed=%s, toonRotateSpeed=%s)"%(
-            toonForwardSpeed, toonJumpForce,
-            toonReverseSpeed, toonRotateSpeed)))
+        assert self.notify.debugCall(id(self))
         for controls in self.controls.values():
             controls.setWalkSpeed(
                 toonForwardSpeed,
@@ -121,7 +120,7 @@ class ControlManager:
 
 
     def useSwimControls(self):
-        assert(self.debugPrint("useSwimControls()"))
+        assert self.notify.debugCall(id(self))
         if self.currentControls is not self.swimControls:
             self.currentControls.disableAvatarControls()
             self.currentControls.setCollisionsActive(0)
@@ -131,7 +130,7 @@ class ControlManager:
                 self.currentControls.enableAvatarControls()
 
     def useGhostControls(self):
-        assert(self.debugPrint("useGhostControls()"))
+        assert self.notify.debugCall(id(self))
         if self.currentControls is not self.ghostControls:
             self.currentControls.disableAvatarControls()
             self.currentControls.setCollisionsActive(0)
@@ -141,7 +140,7 @@ class ControlManager:
                 self.currentControls.enableAvatarControls()
 
     def useWalkControls(self):
-        assert(self.debugPrint("useWalkControls()"))
+        assert self.notify.debugCall(id(self))
         if self.currentControls is not self.walkControls:
             self.currentControls.disableAvatarControls()
             self.currentControls.setCollisionsActive(0)
@@ -152,7 +151,7 @@ class ControlManager:
 
     if __debug__:
         def useDevControls(self):
-            assert(self.debugPrint("useDevControls()"))
+            assert self.notify.debugCall(id(self))
             if self.currentControls is not self.devControls:
                 self.currentControls.disableAvatarControls()
                 self.currentControls.setCollisionsActive(0)
@@ -162,15 +161,13 @@ class ControlManager:
                     self.currentControls.enableAvatarControls()
 
     def delete(self):
+        assert self.notify.debugCall(id(self))
         self.disable()
         #self.monitorTask.remove()
     
     def setSpeeds(self, toonForwardSpeed, toonJumpForce,
             toonReverseSpeed, toonRotateSpeed):
-        assert(self.debugPrint(
-            "setSpeeds(toonForwardSpeed=%s, toonJumpForce=%s, toonReverseSpeed=%s, toonRotateSpeed=%s)"%(
-            toonForwardSpeed, toonJumpForce,
-            toonReverseSpeed, toonRotateSpeed)))
+        assert self.notify.debugCall(id(self))
         self.swimControls.setWalkSpeed(
             toonForwardSpeed,
             toonJumpForce,
@@ -198,7 +195,7 @@ class ControlManager:
     
     def initializeCollisions(self, cTrav,
             wallBitmask, floorBitmask, ghostBitmask, avatarRadius, floorOffset, reach = 4.0):
-        assert(self.debugPrint("initializeCollisions()"))
+        assert self.notify.debugCall(id(self))
         
         self.walkControls.initializeCollisions(cTrav, self.avatar,
                 wallBitmask, floorBitmask, avatarRadius, floorOffset, reach)
@@ -229,7 +226,7 @@ class ControlManager:
         #self.walkControls.enableAvatarControls()
 
     def deleteCollisions(self):
-        assert(self.debugPrint("deleteCollisions()"))
+        assert self.notify.debugCall(id(self))
         self.walkControls.deleteCollisions()
         self.swimControls.deleteCollisions()
         self.ghostControls.deleteCollisions()
@@ -237,23 +234,24 @@ class ControlManager:
             self.devControls.deleteCollisions()
 
     def collisionsOn(self):
-        assert(self.debugPrint("collisionsOn()"))
+        assert self.notify.debugCall(id(self))
         self.currentControls.setCollisionsActive(1)
 
     def collisionsOff(self):
-        assert(self.debugPrint("collisionsOff()"))
+        assert self.notify.debugCall(id(self))
         self.currentControls.setCollisionsActive(0)
 
     def placeOnFloor(self):
+        assert self.notify.debugCall(id(self))
         self.currentControls.placeOnFloor()
 
     def enable(self):
-        assert(self.debugPrint("enable()"))
+        assert self.notify.debugCall(id(self))
         self.isEnabled = 1
         self.currentControls.enableAvatarControls()
     
     def disable(self):
-        assert(self.debugPrint("disable()"))
+        assert self.notify.debugCall(id(self))
         self.isEnabled = 0
         self.currentControls.disableAvatarControls()
 
@@ -261,6 +259,7 @@ class ControlManager:
         """
         Stop forcing the ctrl key to return 0's
         """
+        assert self.notify.debugCall(id(self))
         self.enableJumpCounter+=1
         if self.enableJumpCounter:
             assert self.enableJumpCounter == 1
@@ -271,6 +270,7 @@ class ControlManager:
         """
         Force the ctrl key to return 0's
         """
+        assert self.notify.debugCall(id(self))
         self.enableJumpCounter-=1
         if self.enableJumpCounter <= 0:
             inputState.force("jump", 0)
@@ -286,9 +286,3 @@ class ControlManager:
             onScreenDebug.add("InputState turnLeft", "%d"%(inputState.isSet("turnLeft")))
             onScreenDebug.add("InputState turnRight", "%d"%(inputState.isSet("turnRight")))
         return Task.cont
-
-    if __debug__:
-        def debugPrint(self, message):
-            """for debugging"""
-            return self.notify.debug(
-                    str(id(self))+' '+message)
