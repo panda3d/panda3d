@@ -333,6 +333,19 @@ null() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Notify::write_string
+//       Access: Public, Static
+//  Description: A convenient way for scripting languages, which may
+//               know nothing about ostreams, to write to Notify.
+//               This writes a single string, followed by an implicit
+//               newline, to the Notify output stream.
+////////////////////////////////////////////////////////////////////
+void Notify::
+write_string(const string &str) {
+  out() << str << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Notify::ptr
 //       Access: Public, Static
 //  Description: Returns the pointer to the global Notify object.

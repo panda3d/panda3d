@@ -58,6 +58,7 @@ PUBLISHED:
 
   static ostream &out();
   static ostream &null();
+  static void write_string(const string &str);
   static Notify *ptr();
 
   static long get_literal_flag();
