@@ -25,8 +25,10 @@
 
 #include <dconfig.h>
 
+
 Configure(config_eggcharbase);
-NotifyCategoryDef(eggcharbase, "");
+
+// NotifyCategoryDef(eggcharbase, "");
 
 ConfigureFn(config_eggcharbase) {
   init_libeggcharbase();

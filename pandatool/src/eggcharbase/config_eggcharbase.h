@@ -20,9 +20,10 @@
 #define CONFIG_EGGCHARBASE_H
 
 #include <pandabase.h>
-#include <notifyCategoryProxy.h>
 
-NotifyCategoryDecl(eggcharbase, EXPCL_MISC, EXPTP_MISC);
+// Commented out to resolve link problem
+// #include <notifyCategoryProxy.h>
+// NotifyCategoryDecl(eggcharbase, EXPCL_MISC, EXPTP_MISC);
 
 extern void init_libeggcharbase();
 
