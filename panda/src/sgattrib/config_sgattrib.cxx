@@ -192,6 +192,7 @@ ConfigureFn(config_sgattrib) {
   DecalTransition::register_with_read_factory();
   DepthTestTransition::register_with_read_factory();
   DepthWriteTransition::register_with_read_factory();
+  MaterialTransition::register_with_read_factory();
   PruneTransition::register_with_read_factory();
   RenderRelation::register_with_read_factory();
   TextureApplyTransition::register_with_read_factory();
