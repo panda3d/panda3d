@@ -97,6 +97,8 @@ OBJECT_SNAP_POINTS = {
                            (Vec3(0), Vec3(0))],
     'street_tight_corner': [(Vec3(40.0,0,0), Vec3(0)),
                            (Vec3(0), Vec3(0))],
+    'street_tight_corner_mirror': [(Vec3(40.0,0,0), Vec3(0)),
+                           (Vec3(0), Vec3(0))],
     'street_double_corner': [(Vec3(40.0,0,0), Vec3(0)),
                            (Vec3(0), Vec3(0))],
     'street_curved_corner': [(Vec3(40.0,0,0), Vec3(0)),
