@@ -568,26 +568,26 @@ static void test10(GuiManager* mgr, Node* font) {
   l1->set_background_color(1., 0., 0., 1.);
   s1 = new GuiSign("A", l1);
   s1->set_scale(0.1);
-  s1->set_priority(GuiItem::P_Low);
-  s1->thaw();
-  s1->manage(mgr, event_handler);
   GuiLabel* l2 = GuiLabel::make_simple_text_label("B", font);
   l2->set_foreground_color(0., 0., 0., 1.);
   l2->set_background_color(0., 1., 0., 1.);
   s2 = new GuiSign("B", l2);
   s2->set_scale(0.1);
   s2->set_pos(LVector3f::rfu(0.05, 0., 0.05));
-  s2->set_priority(GuiItem::P_Normal);
-  s2->thaw();
-  s2->manage(mgr, event_handler);
   GuiLabel* l3 = GuiLabel::make_simple_text_label("C", font);
   l3->set_foreground_color(0., 0., 0., 1.);
   l3->set_background_color(0., 0., 1., 1.);
   s3 = new GuiSign("C", l3);
   s3->set_scale(0.1);
   s3->set_pos(LVector3f::rfu(0.1, 0., 0.1));
-  s3->set_priority(GuiItem::P_High);
+  s1->set_priority(s2, GuiItem::P_Low);
+  s1->thaw();
+  s2->set_priority(s3, GuiItem::P_Low);
+  s2->thaw();
+  //  s3->set_priority(GuiItem::P_High);
   s3->thaw();
+  s1->manage(mgr, event_handler);
+  s2->manage(mgr, event_handler);
   s3->manage(mgr, event_handler);
 }
 */
@@ -907,7 +907,7 @@ static void setup_gui(void) {
   //  test9(mgr, font);
   //  g_mgr = mgr;
   // test 10
-  //  test10(mgr, font);
+  test10(mgr, font);
   // test 11
   //  test11(mgr, font);
   // test 12
@@ -917,7 +917,7 @@ static void setup_gui(void) {
   // test 14
   //  test14(mgr, font);
   // test 15
-  test15(mgr, font);
+  //  test15(mgr, font);
 }
 
 static void event_2(CPT_Event) {
@@ -987,11 +987,11 @@ static void event_3(CPT_Event) {
 // for test 10
 static void event_3(CPT_Event) {
   if (prior_state) {
-    s1->set_priority(GuiItem::P_High);
-    s3->set_priority(GuiItem::P_Low);
+    s1->set_priority(s2, GuiItem::P_High);
+    s2->set_priority(s3, GuiItem::P_High);
   } else {
-    s1->set_priority(GuiItem::P_Low);
-    s3->set_priority(GuiItem::P_High);
+    s1->set_priority(s2, GuiItem::P_Low);
+    s2->set_priority(s3, GuiItem::P_Low);
   }
   prior_state = !prior_state;
 }

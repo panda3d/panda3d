@@ -21,13 +21,13 @@ void GuiBackground::set_priority(GuiLabel* l, const GuiItem::Priority p) {
 GuiBackground::GuiBackground(const string& name, GuiItem* item)
   : GuiItem(name), _item(item) {
   _bg = GuiLabel::make_simple_card_label();
-  _bg->set_depth(0.1);
+  item->set_priority(_bg, P_High);
 }
 
 GuiBackground::GuiBackground(const string& name, GuiItem* item, Texture* tex)
   : GuiItem(name), _item(item) {
   _bg = GuiLabel::make_simple_texture_label(tex);
-  _bg->set_depth(0.1);
+  item->set_priority(_bg, P_High);
 }
 
 GuiBackground::~GuiBackground(void) {
