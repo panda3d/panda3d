@@ -42,6 +42,14 @@ class Entity(DirectObject):
         """returns entId of zone that contains this entity"""
         return self.level.getEntityZoneEntId(self.entId)
 
+    def getZoneEntity(self):
+        """returns zone entity for zone that contains this entity"""
+        return self.level.getEntity(self.getZoneEntId())
+
+    def getZoneNode(self):
+        """returns zoneNode for zone that contains this entity"""
+        return self.getZoneEntity().getNodePath()
+
     def privGetSetter(self, attrib):
         setFuncName = 'set%s%s' % (string.upper(attrib[0]), attrib[1:])
         if hasattr(self, setFuncName):
