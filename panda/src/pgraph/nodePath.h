@@ -181,6 +181,8 @@ PUBLISHED:
   INLINE ErrorType get_error_type() const;
 
   PandaNode *get_top_node() const;
+  NodePath get_top() const;
+
   INLINE PandaNode *node() const;
 
   INLINE int get_key() const;

@@ -96,15 +96,15 @@ get_node(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_top_node
+//     Function: NodePath::get_top
 //       Access: Published
-//  Description: Returns the top node of the path, or NULL if the path
-//               is empty.  This requires iterating through the path.
+//  Description: Returns a singleton NodePath that represents the top
+//               of the path, or empty NodePath if this path is empty.
 ////////////////////////////////////////////////////////////////////
-PandaNode *NodePath::
-get_top_node() const {
+NodePath NodePath::
+get_top() const {
   if (is_empty()) {
-    return (PandaNode *)NULL;
+    return *this;
   }
 
   NodePathComponent *comp = _head;
@@ -113,7 +113,9 @@ get_top_node() const {
     nassertr(comp != (NodePathComponent *)NULL, NULL);
   }
 
-  return comp->get_node();
+  NodePath top;
+  top._head = comp;
+  return top;
 }
 
 

@@ -241,6 +241,21 @@ get_error_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_top_node
+//       Access: Published
+//  Description: Returns the top node of the path, or NULL if the path
+//               is empty.  This requires iterating through the path.
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode *NodePath::
+get_top_node() const {
+  if (is_empty()) {
+    return (PandaNode *)NULL;
+  }
+
+  return get_top().node();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::node
 //       Access: Published
 //  Description: Returns the referenced node of the path.
@@ -282,17 +297,21 @@ get_key() const {
 //  Description: Returns true if the node represented by this NodePath
 //               is parented within the same graph as that of the
 //               other NodePath.  This is essentially the same thing
-//               as asking whether the top node of both NodePaths is
-//               the same (e.g., both "render").
+//               as asking whether get_top() of both NodePaths is the
+//               same (e.g., both "render").
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodePath::
 is_same_graph(const NodePath &other) const {
   // Actually, it's possible for the top nodes to be the same, but the
-  // NodePaths still to be considered in different graphs.  This will
-  // happen if one of the top nodes is considered a different
-  // instance--for instance, render.instance_to(NodePath()) returns a
-  // different instance of render that appears to have the same top
-  // node.  But this is a very rare thing to do.
+  // NodePaths still to be considered in different graphs.  But even
+  // in this case, get_top() will be different for each one.  (They'll
+  // be different singleton NodePaths that happen to reference the
+  // same node).
+
+  // This will happen if one of the top nodes is considered a
+  // different instance--for instance, render.instance_to(NodePath())
+  // returns a different instance of render that appears to have the
+  // same top node.  But this is a very rare thing to do.
   int a_count, b_count;
   return (find_common_ancestor(*this, other, a_count, b_count) != (NodePathComponent *)NULL);
 }
