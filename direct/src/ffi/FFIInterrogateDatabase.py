@@ -5,7 +5,7 @@
 
 import string
 import os
-import compileall
+import glob
 
 import FFIEnvironment
 import FFITypes
@@ -15,8 +15,8 @@ import FFIConstants
 import FFIOverload
 from direct.showbase.PythonUtil import *
 
-# FFIConstants.notify.setDebug(1)
 FFIConstants.notify.info('Importing interrogate library: ' + FFIConstants.InterrogateModuleName)
+
 # Note: we do a from lib import * here because we do not want
 # to be dependent on the name of the interrogate library in this code
 exec('from ' + FFIConstants.InterrogateModuleName + ' import *')
@@ -220,7 +220,14 @@ def getTypeName(typeIndex, scoped=0):
 
 class FFIInterrogateDatabase:
 
-    def __init__(self):
+    def __init__(self, etcPath = []):
+        # Temporary try..except for old Panda.
+        try:
+            for dir in etcPath:
+                interrogate_add_search_directory(dir)
+        except:
+            pass
+        
         self.typeIndexMap = {}
         self.environment = FFIEnvironment.FFIEnvironment()
 
@@ -230,7 +237,7 @@ class FFIInterrogateDatabase:
     def constructDescriptor(self, typeIndex):
         if interrogate_type_is_atomic(typeIndex):
             return self.constructPrimitiveTypeDescriptor(typeIndex)
-        
+
         elif interrogate_type_is_enum(typeIndex):
             return self.constructEnumTypeDescriptor(typeIndex)
         
@@ -377,7 +384,6 @@ class FFIInterrogateDatabase:
         descriptor.foreignTypeName = typeName
 
         if (typeName == "TypedObject"):
-            print "Found typed object descriptor"
             FFITypes.TypedObjectDescriptor = descriptor
         
         descriptor.isNested = interrogate_type_is_nested(typeIndex)
@@ -586,9 +592,11 @@ class FFIInterrogateDatabase:
             funcSpec.index = funcIndex
             return funcSpec
     
-    def addTypes(self):
+    def addTypes(self, CModuleName):
         for i in range(interrogate_number_of_global_types()):
-            self.constructDescriptor(interrogate_get_global_type(i))
+            typeIndex = interrogate_get_global_type(i)
+            if self.typeInCModule(typeIndex, CModuleName):
+                self.constructDescriptor(typeIndex)
 
     def addEnvironmentTypes(self):
         for descriptor in self.typeIndexMap.values():
@@ -597,6 +605,11 @@ class FFIInterrogateDatabase:
     def functionInCModule(self, funcIndex, CModuleName):
         if interrogate_function_has_module_name(funcIndex):
             moduleName = 'lib' + interrogate_function_module_name(funcIndex)
+            return (moduleName == CModuleName)
+
+    def typeInCModule(self, typeIndex, CModuleName):
+        if interrogate_type_has_module_name(typeIndex):
+            moduleName = 'lib' + interrogate_type_module_name(typeIndex)
             return (moduleName == CModuleName)
 
     
@@ -724,17 +737,56 @@ class FFIInterrogateDatabase:
         file = open(init, 'w')
         file.close()
 
-        # Commented out based upon assumption that squeeze will do the compile
-        #FFIConstants.notify.info( 'Compiling code...')
-        #compileall.compile_dir(codeDir)
+    def squeezeGeneratedCode(self, outputDir):
+
+        # Since we will be squeezing the importModuleName file, rename
+        # the original to something we can import from within the
+        # squeezed version.
+        squeezedName = FFIConstants.importModuleName
+        unsqueezedName = FFIConstants.importModuleName + 'Unsqueezed'
+
+        os.rename(os.path.join(outputDir, squeezedName + '.py'),
+                  os.path.join(outputDir, unsqueezedName + '.py'))
+
+        # Get the list of files to squeeze.  This is all of the .py
+        # files in the output directory except for the __init__.py
+        # file.
+        
+        files = glob.glob(os.path.join(outputDir, '*.py'))
+        init = os.path.join(outputDir, '__init__.py')
+        try:
+            files.remove(init)
+        except:
+            pass
+
+        print "Squeezing %s files." % (len(files))
+
+        from direct.showbase import pandaSqueezeTool
+        
+        pandaSqueezeTool.squeeze(squeezedName, unsqueezedName,
+                                 files, outputDir)
+
+        # Remove the now-squeezed source files.
+        for file in files:
+            os.remove(file)
+        
 
     def generateCodeLib(self, codeDir, extensionsDir, CModuleName):
         # Reset the environment so we are clean from any old modules
         self.environment.reset()
 
         FFIConstants.notify.info('='*50)
-        FFIConstants.notify.info('Importing code library: ' + CModuleName)
+        FFIConstants.notify.warning('Importing code library: ' + CModuleName)
         exec('import ' + CModuleName)
+
+        # Temporary try..except for old Panda.
+        try:
+            errorFlag = interrogate_error_flag()
+        except:
+            errorFlag = False
+
+        if errorFlag:
+            FFIConstants.notify.error("Error reading interrogate database; can't continue.")
 
         self.updateBindings(CModuleName)
         
@@ -803,7 +855,7 @@ class FFIInterrogateDatabase:
     def updateBindings(self, CModuleName):
         FFIConstants.notify.info( 'Updating Bindings')
         FFIConstants.notify.info( 'Adding Types...')
-        self.addTypes()
+        self.addTypes(CModuleName)
         FFIConstants.notify.info( 'Adding global values...')
         self.addGlobalValues(CModuleName)
         FFIConstants.notify.info( 'Adding global functions...')

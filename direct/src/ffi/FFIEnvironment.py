@@ -13,7 +13,7 @@ class FFIEnvironment:
     
     def addType(self, typeDescriptor, name):
         if self.types.has_key(name):
-            FFIConstants.notify.warning('Redefining type named: ' + name)
+            FFIConstants.notify.info('Redefining type named: ' + name)
         self.types[name] = typeDescriptor
     
     def getTypeNamed(self, name):
