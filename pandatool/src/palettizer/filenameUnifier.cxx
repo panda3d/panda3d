@@ -151,6 +151,9 @@ make_canonical(Filename &filename) {
   }
 
   Filename new_dirname = orig_dirname;
+  if (new_dirname.empty()) {
+    new_dirname = ".";
+  }
   new_dirname.make_canonical();
   filename.set_dirname(new_dirname);
 
