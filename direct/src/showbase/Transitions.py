@@ -100,7 +100,6 @@ class Transitions:
             # Spawn the sequence
             taskMgr.spawnTaskNamed(task, self.irisTaskName)
 
-
     def irisOutLerpDone(self, task):
         # This is a helper function to the fadeIn sequence
         self.iris.reparentTo(hidden)

@@ -4,6 +4,7 @@ from DirectNotify import *
 from PythonUtil import *
 import time
 import fnmatch
+import string
 
 exit = -1
 done = 0
@@ -28,8 +29,11 @@ def getTimeFrame():
 class Task:
     def __init__(self, callback, priority = 0):
         self.__call__ = callback
-        self.__priority__ = priority
+        self._priority = priority
         self.uponDeath = None
+
+    def getPriority(self):
+        return self._priority
 
     def setStartTimeFrame(self, startTime, startFrame):
         self.starttime = startTime
@@ -258,7 +262,7 @@ class TaskManager:
         while (1):
             if (index < 0):
                 break
-            if (self.taskList[index].__priority__ <= task.__priority__):
+            if (self.taskList[index].getPriority() <= task.getPriority()):
                 break
             index = index - 1
         index = index + 1
@@ -330,7 +334,12 @@ class TaskManager:
         for task in self.taskList:
             task.setCurrentTimeFrame(self.currentTime, self.currentFrame)
             # Run the task and check the return value
+            # Record the dt
+            startTime = globalClock.getTime()
             ret = task(task)
+            endTime = globalClock.getTime()
+            dt = endTime - startTime
+            task.dt = dt
             if (ret == cont):
                 continue
             elif (ret == done):
@@ -384,11 +393,19 @@ class TaskManager:
         return 0
 
     def __repr__(self):
-        str = ''
-        str = str + 'taskList\n'
-        str = str + '--------------------\n'
+        taskNameWidth = 32
+        dtWidth = 6
+        priorityWidth = 10
+        str = ('taskList'.ljust(taskNameWidth)
+               + 'dt(ms)'.rjust(dtWidth)
+               + 'priority'.rjust(priorityWidth)
+               + '\n')
+        str = str + '------------------------------------------------\n'
         for task in self.taskList:
-            str = str + ' ' + task.name + '\n'
+            str = str + (task.name.ljust(taskNameWidth)
+                         + `int(round(task.dt * 1000))`.rjust(dtWidth)
+                         + `task.getPriority()`.rjust(priorityWidth)
+                         + '\n')
         return str
 
 
