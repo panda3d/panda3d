@@ -151,7 +151,7 @@ mode buffer is visited during an Emacs session.  After that, use
   :type '(repeat string)
   :group 'python)
 
-(defcustom pyd-python-command-args '("-d -i")
+(defcustom pyd-python-command-args '("-u" "-i")
   "*List of string arguments to be used when starting a Python shell."
   :type '(repeat string)
   :group 'python)
