@@ -180,8 +180,8 @@ class GravityWalker(DirectObject.DirectObject):
         # set up floor collision mechanism
         self.lifter = CollisionHandlerGravity()
         self.lifter.setGravity(32.174 * 2.0)
-        self.lifter.setInPattern("enterRay-%in")
-        self.lifter.setOutPattern("exitRay-%in")
+        #self.lifter.setInPattern("enterRay-%in")
+        #self.lifter.setOutPattern("exitRay-%in")
         self.lifter.setOffset(floorOffset)
 
         # Limit our rate-of-fall with the lifter.
@@ -196,11 +196,12 @@ class GravityWalker(DirectObject.DirectObject):
         """
         Set up the collision sphere
         """
-        # This is a sphere on the ground to detect barrier collisions
+        # This is a sphere on the ground to detect collisions with
+        # walls, but not the floor.
         self.avatarRadius = avatarRadius
-        self.cSphere = CollisionSphere(0.0, 0.0, avatarRadius, avatarRadius)
+        cSphere = CollisionSphere(0.0, 0.0, avatarRadius, avatarRadius)
         cSphereNode = CollisionNode('GW.cWallSphereNode')
-        cSphereNode.addSolid(self.cSphere)
+        cSphereNode.addSolid(cSphere)
         cSphereNodePath = self.avatarNodePath.attachNewNode(cSphereNode)
 
         cSphereNode.setFromCollideMask(bitmask)
@@ -208,8 +209,8 @@ class GravityWalker(DirectObject.DirectObject):
 
         # set up collision mechanism
         handler = CollisionHandlerPusher()
-        handler.setInPattern("pusher_enter%in")
-        handler.setOutPattern("pusher_exit%in")
+        #handler.setInPattern("pusher_enter%in")
+        #handler.setOutPattern("pusher_exit%in")
 
         handler.addCollider(cSphereNodePath, self.avatarNodePath)
         self.pusher = handler
@@ -219,11 +220,14 @@ class GravityWalker(DirectObject.DirectObject):
         """
         Set up the collision sphere
         """
-        # This is a sphere on the ground to detect barrier collisions
+        # This is a sphere a little larger than the wall sphere to
+        # trigger events.
         self.avatarRadius = avatarRadius
-        self.cSphere = CollisionSphere(0.0, 0.0, avatarRadius-0.1, avatarRadius*1.04)
+        cSphere = CollisionSphere(0.0, 0.0, avatarRadius-0.1, avatarRadius*1.04)
+        # Mark it intangible just to emphasize its non-physical purpose.
+        cSphere.setTangible(0)
         cSphereNode = CollisionNode('GW.cEventSphereNode')
-        cSphereNode.addSolid(self.cSphere)
+        cSphereNode.addSolid(cSphere)
         cSphereNodePath = self.avatarNodePath.attachNewNode(cSphereNode)
 
         cSphereNode.setFromCollideMask(bitmask)
@@ -241,11 +245,12 @@ class GravityWalker(DirectObject.DirectObject):
         """
         Set up the collision sphere
         """
-        # This is a sphere on the ground to detect barrier collisions
+        # This is a tiny sphere concentric with the wallSphere to keep
+        # us from slipping through floors.
         self.avatarRadius = avatarRadius
-        self.cSphere = CollisionSphere(0.0, 0.0, avatarRadius, 0.01)
+        cSphere = CollisionSphere(0.0, 0.0, avatarRadius, 0.01)
         cSphereNode = CollisionNode('GW.cFloorSphereNode')
-        cSphereNode.addSolid(self.cSphere)
+        cSphereNode.addSolid(cSphere)
         cSphereNodePath = self.avatarNodePath.attachNewNode(cSphereNode)
 
         cSphereNode.setFromCollideMask(bitmask)
@@ -253,8 +258,8 @@ class GravityWalker(DirectObject.DirectObject):
 
         # set up collision mechanism
         handler = CollisionHandlerPusher()
-        handler.setInPattern("pusherFloor_enter%in")
-        handler.setOutPattern("pusherFloor_exit%in")
+        #handler.setInPattern("pusherFloor_enter%in")
+        #handler.setOutPattern("pusherFloor_exit%in")
 
         handler.addCollider(cSphereNodePath, self.avatarNodePath)
         self.pusherFloor = handler
@@ -298,7 +303,6 @@ class GravityWalker(DirectObject.DirectObject):
         assert(self.debugPrint("deleteCollisions()"))
         del self.cTrav
 
-        del self.cSphere
         self.cWallSphereNodePath.removeNode()
         del self.cWallSphereNodePath
         # self.cFloorSphereNodePath.removeNode()
