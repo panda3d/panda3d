@@ -36,7 +36,7 @@ SERVER_STARTUP_STRING = (
     '__builtin__.clusterSyncFlag = %d;' +
     '__builtin__.clusterDaemonClient = \'%s\';' +
     '__builtin__.clusterDaemonPort = %d;'
-    'from DirectStart import *; run()"')
+    'from direct.directbase.DirectStart import *; run()"')
 
 class ClusterMsgHandler:
     """ClusterMsgHandler: wrapper for PC clusters/multi-piping networking"""
