@@ -463,6 +463,28 @@ class Actor(PandaObject, NodePath):
         else:
             Actor.notify.warning("no part named %s" % (partName))
         return None
+    
+    def getBaseFrameRate(self, animName=None, partName=None):
+        """getBaseFrameRate(self, string, string=None)
+        Return duration of given anim name and given part, unmodified
+        by any play rate in effect.
+        """
+        lodName = self.__animControlDict.keys()[0]
+
+        if (partName == None):
+            partName = self.__animControlDict[lodName].keys()[0]
+    
+        if (animName==None):
+            animName = self.getCurrentAnim(partName)
+
+        # get duration for named part only
+        if (self.__animControlDict[lodName].has_key(partName)):        
+            animControl = self.getAnimControl(animName, partName, lodName)
+            if (animControl != None):
+                return animControl.getAnim().getBaseFrameRate()
+        else:
+            Actor.notify.warning("no part named %s" % (partName))
+        return None
 
     def getPlayRate(self, animName=None, partName=None):
         """getPlayRate(self, string=None, string=None)
@@ -967,7 +989,8 @@ class Actor(PandaObject, NodePath):
                         animControl.play(fromFrame, toFrame)
 
 
-    def loop(self, animName, restart=1, partName=None):
+    def loop(self, animName, restart=1, partName=None,
+             fromFrame=None, toFrame=None):
         """loop(self, string, int=1, string=None)
         Loop the given animation on the given part of the actor,
         restarting at zero frame if requested. If no part name
@@ -979,15 +1002,21 @@ class Actor(PandaObject, NodePath):
                 # loop all parts
                 for thisPart in animControlDict.keys():
                     animControl = self.getAnimControl(animName, thisPart,
-                                                        thisLod)
+                                                      thisLod)
                     if (animControl != None):
-                        animControl.loop(restart)
+                        if (fromFrame == None):
+                            animControl.loop(restart)
+                        else:
+                            animControl.loop(restart, fromFrame, toFrame)
             else:
                 # loop a specific part
                 animControl = self.getAnimControl(animName, partName,
-                                                    thisLod)
+                                                  thisLod)
                 if (animControl != None):
-                    animControl.loop(restart)
+                    if (fromFrame == None):
+                        animControl.loop(restart)
+                    else:
+                        animControl.loop(restart, fromFrame, toFrame)
 
     def pingpong(self, animName, fromFrame, toFrame, restart=1, partName=None):
         """pingpong(self, string, fromFrame, toFrame, int=1, string=None)

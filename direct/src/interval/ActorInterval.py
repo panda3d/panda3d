@@ -33,7 +33,7 @@ class ActorInterval(Interval.Interval):
         self.actor = actor
         self.animName = animName
         self.loopAnim = loop
-        self.frameRate = self.actor.getFrameRate(self.animName) * playRate
+        self.frameRate = self.actor.getBaseFrameRate(self.animName) * playRate
         self.numFrames = self.actor.getNumFrames(self.animName)
         # Compute start time
         self.startTime = startTime
