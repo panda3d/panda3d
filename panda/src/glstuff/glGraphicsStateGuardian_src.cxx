@@ -616,6 +616,13 @@ begin_frame() {
 void CLP(GraphicsStateGuardian)::
 end_frame() {
   GraphicsStateGuardian::end_frame();
+
+  // Calling glFlush() at the end of the frame is particularly
+  // necessary if this is a single-buffered visual, so that the frame
+  // will be finished drawing before we return to the application.
+  // It's not clear what effect this has on our total frame time.
+  GLP(Flush)();
+
   report_my_gl_errors();
 }
 
