@@ -1,0 +1,7 @@
+// Filename: guiBehavior.I
+// Created by:  cary (07Feb01)
+// 
+////////////////////////////////////////////////////////////////////
+
+GuiBehavior::GuiBehavior(void) {
+}
