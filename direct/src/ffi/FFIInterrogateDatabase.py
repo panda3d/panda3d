@@ -221,12 +221,8 @@ def getTypeName(typeIndex, scoped=0):
 class FFIInterrogateDatabase:
 
     def __init__(self, etcPath = []):
-        # Temporary try..except for old Panda.
-        try:
-            for dir in etcPath:
-                interrogate_add_search_directory(dir)
-        except:
-            pass
+        for dir in etcPath:
+            interrogate_add_search_directory(dir)
         
         self.typeIndexMap = {}
         self.environment = FFIEnvironment.FFIEnvironment()
@@ -779,13 +775,7 @@ class FFIInterrogateDatabase:
         FFIConstants.notify.warning('Importing code library: ' + CModuleName)
         exec('import ' + CModuleName)
 
-        # Temporary try..except for old Panda.
-        try:
-            errorFlag = interrogate_error_flag()
-        except:
-            errorFlag = False
-
-        if errorFlag:
+        if interrogate_error_flag():
             FFIConstants.notify.error("Error reading interrogate database; can't continue.")
 
         self.updateBindings(CModuleName)
