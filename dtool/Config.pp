@@ -65,9 +65,9 @@
 //              distributed make.  It's a tiny bit slower if you're
 //              not taking advantage of distributed make, because of
 //              the overhead associated with Cygwin fork() calls.
-//
+
 #if $[eq $[PLATFORM],Win32]
-  #define BUILD_TYPE msvc
+  #define BUILD_TYPE gmsvc
 #else
   #define BUILD_TYPE unix
 #endif
@@ -229,9 +229,9 @@
 // Is OpenGL installed, and where?  This should include libGL as well
 // as libGLU, if they are in different places.
 
-#define GL_IPATH
-#define GL_LPATH /usr/X11R6/lib
-#define GL_LIBS GL GLU
+#defer GL_IPATH
+#defer GL_LPATH /usr/X11R6/lib
+#defer GL_LIBS GL GLU
 #defer HAVE_GL $[libtest $[GL_LPATH],$[GL_LIBS]]
 
 // How about GLX?
