@@ -782,6 +782,17 @@ class ShowBase(DirectObject.DirectObject):
         # Finally, render the frame.
         self.graphicsEngine.renderFrame()
 
+        if self.mainWinMinimized:
+            # If the main window is minimized, slow down the app a bit
+            # by sleeping here in igloop so we don't use all available
+            # CPU needlessly.
+
+            # Note: this isn't quite right if multiple windows are
+            # open.  We should base this on whether *all* windows are
+            # minimized, not just the main window.  But it will do for
+            # now until someone complains.
+            time.sleep(0.1)
+
         # Lerp stuff needs this event, and it must be generated in
         # C++, not in Python.
         throwNewFrame()
