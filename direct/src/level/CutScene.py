@@ -137,7 +137,7 @@ class CutScene(Entity.Entity, DirectObject.DirectObject):
         trackName = "cutSceneTrack-%d" % (id(self),)
         if start:
             if self.track:
-                self.track.pause()
+                self.track.finish()
                 self.track = None
             track = Parallel(name = trackName)
             track = self.getEffect(self, track, self.subjectNodePath, self.duration)
@@ -146,7 +146,7 @@ class CutScene(Entity.Entity, DirectObject.DirectObject):
             self.track = track
         else:
             if self.track:
-                self.track.pause()
+                self.track.finish()
                 self.track = None
     
     def setStartStop(self, event):
