@@ -24,7 +24,6 @@
 #include <typedef.h>
 #include <list>
 #include <vector>
-using namespace std;
 
 #include "typedWriteableReferenceCount.h"
 #include "namable.h"

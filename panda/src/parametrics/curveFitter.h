@@ -15,13 +15,13 @@
 #ifndef CURVEFITTER_H
 #define CURVEFITTER_H
 
+#include <pandabase.h>
+
 #include <typedef.h>
 ////#include <linMathOutput.h>
 #include "luse.h"
 #include <vector>
 ////#include <Performer/pr/pfLinMath.h>
-#include <iostream>
-using namespace std;
 
 class HermiteCurve;
 class NurbsCurve;
