@@ -414,13 +414,13 @@ encode_wchar(wchar_t ch) const {
       return string(1, (char)ch);
     } else if (ch < 0x800) {
       return 
-        string(1, (char)(ch >> 6) | 0xc0) +
-        string(1, (char)(ch & 0x3f) | 0x80);
+        string(1, (char)((ch >> 6) | 0xc0)) +
+        string(1, (char)((ch & 0x3f) | 0x80));
     } else {
       return 
-        string(1, (char)(ch >> 12) | 0xe0) +
-        string(1, (char)((ch >> 6) & 0x3f) | 0x80) +
-        string(1, (char)(ch & 0x3f) | 0x80);
+        string(1, (char)((ch >> 12) | 0xe0)) +
+        string(1, (char)(((ch >> 6) & 0x3f) | 0x80)) +
+        string(1, (char)((ch & 0x3f) | 0x80));
     }
 
   case E_unicode:
@@ -428,6 +428,8 @@ encode_wchar(wchar_t ch) const {
       string(1, (char)(ch >> 8)) + 
       string(1, (char)(ch & 0xff));
   }
+
+  return "";
 }
 
 ////////////////////////////////////////////////////////////////////
