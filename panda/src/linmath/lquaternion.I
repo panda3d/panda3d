@@ -489,16 +489,19 @@ set_hpr(const LVecBase3<NumType> &hpr) {
 
   LVector3<NumType> v = LVector3<NumType>::up();
   NumType a = deg_2_rad(hpr[0] * 0.5);
-  NumType s = csin(a);
-  quat_h.set(ccos(a), v[0] * s, v[1] * s, v[2] * s);
+  NumType s,c;
+
+  csincos(a,&s,&c);
+  quat_h.set(c, v[0] * s, v[1] * s, v[2] * s);
   v = LVector3<NumType>::right();
   a = deg_2_rad(hpr[1] * 0.5);
+  csincos(a,&s,&c);
   s = csin(a);
-  quat_p.set(ccos(a), v[0] * s, v[1] * s, v[2] * s);
+  quat_p.set(c, v[0] * s, v[1] * s, v[2] * s);
   v = LVector3<NumType>::forward();
   a = deg_2_rad(hpr[2] * 0.5);
-  s = csin(a);
-  quat_r.set(ccos(a), v[0] * s, v[1] * s, v[2] * s);
+  csincos(a,&s,&c);
+  quat_r.set(c, v[0] * s, v[1] * s, v[2] * s);
 
   (*this) = quat_h * quat_p * quat_r;
 }
@@ -542,8 +545,7 @@ get_hpr() const {
   } else {
     // this should work all the time, but the above saves some trig operations
     roll = catan2(-c1, c2);
-    sr = csin(roll);
-    cr = ccos(roll);
+	csincos(roll,&sr,&cr);
     roll = rad_2_deg(roll);
     ch = (cr * c3) + (sr * (xz + wy));
     sh = (cr * c4) + (sr * (yz - wx));

@@ -822,9 +822,9 @@ translate_mat(NumType tx, NumType ty) {
 template<class NumType>
 LMatrix3<NumType> LMatrix3<NumType>::
 rotate_mat(NumType angle) {
-  double s = sin(deg_2_rad(angle));
-  double c = cos(deg_2_rad(angle));
-
+  double angle_rad=deg_2_rad(angle);
+  double s,c;
+  csincos(angle_rad,&s,&c);
   return LMatrix3<NumType>(  c,    s,  0.0,
 			    -s,    c,  0.0,
 			   0.0,  0.0,  1.0);
@@ -884,10 +884,12 @@ rotate_mat(NumType angle, LVecBase3<NumType> axis,
   // Normalize the axis.
   NumType length = axis.dot(axis);
   nassertr(length != 0.0, ident_mat());
-  axis /= length;
-    
-  double s = sin(deg_2_rad(angle));
-  double c = cos(deg_2_rad(angle));
+  NumType recip_length=1.0f/length;
+  axis *= recip_length;
+
+  double angle_rad=deg_2_rad(angle);
+  double s,c;
+  csincos(angle_rad,&s,&c);
   double t = 1.0 - c;
 
   mat(0, 0) = t * axis[0] * axis[0] + c;

@@ -206,9 +206,11 @@ make_geometry(float intensity, float length, int num_facets)
 
   int i;
   for (i = 2; i < num_indices-1; i++) {
-    t = (float)cos(ang) * radius;
+	float sine,cosine;
+	csincos(ang,&sine,&cosine);
+    t = cosine * radius;
     dx = x_axis * t;
-    t = (float)sin(ang) * radius;
+    t = sine * radius;
     dz = z_axis * t;
     coords[i] = dx + dz + offset;
     ang += ang_inc;

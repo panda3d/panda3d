@@ -1030,10 +1030,12 @@ rotate_mat(NumType angle, LVecBase3<NumType> axis,
   NumType length2 = axis.dot(axis);
   // Cannot rotate about a zero-length axis.
   nassertr(length2 != 0.0, ident_mat());
-  axis /= csqrt(length2);
-    
-  double s = sin(deg_2_rad(angle));
-  double c = cos(deg_2_rad(angle));
+  NumType recip_sqrt_length2=1.0f/csqrt(length2);
+  axis *= recip_sqrt_length2;
+
+  double angle_rad=deg_2_rad(angle);
+  double s,c;
+  csincos(angle_rad,&s,&c);
   double t = 1.0 - c;
 
   mat(0, 0) = t * axis[0] * axis[0] + c;
