@@ -156,6 +156,7 @@ public:
   virtual void issue_point_shape(const PointShapeTransition *attrib);
   virtual void issue_polygon_offset(const PolygonOffsetTransition *attrib);
 
+  virtual void issue_transform(const TransformState *transform);
   virtual void issue_texture(const TextureAttrib *attrib);
 
   virtual bool wants_normals(void) const;

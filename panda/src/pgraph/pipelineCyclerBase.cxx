@@ -29,7 +29,8 @@ PipelineCyclerBase(CycleData *initial_data, Pipeline *pipeline) :
   _data(initial_data),
   _pipeline(pipeline),
   _read_count(0),
-  _write_count(0)
+  _write_count(0),
+  _stage_count(0)
 {
   if (_pipeline == (Pipeline *)NULL) {
     _pipeline = Pipeline::get_render_pipeline();
@@ -43,6 +44,6 @@ PipelineCyclerBase(CycleData *initial_data, Pipeline *pipeline) :
 ////////////////////////////////////////////////////////////////////
 PipelineCyclerBase::
 ~PipelineCyclerBase() {
-  nassertv(_read_count == 0 && _write_count == 0);
+  nassertv(_read_count == 0 && _write_count == 0 && _stage_count == 0);
 }
 

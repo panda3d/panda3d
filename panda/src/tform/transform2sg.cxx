@@ -20,6 +20,7 @@
 
 #include "nodeRelation.h"
 #include "transformTransition.h"
+#include "transformState.h"
 #include "matrixDataTransition.h"
 #include "allTransitionsWrapper.h"
 
@@ -36,6 +37,7 @@ TypeHandle Transform2SG::_transform_type;
 Transform2SG::
 Transform2SG(const string &name) : DataNode(name) {
   _arc = NULL;
+  _node = NULL;
 }
 
 
@@ -60,6 +62,27 @@ get_arc() const {
   return _arc;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Transform2SG::set_node
+//       Access: Public
+//  Description: Sets the node that this node will adjust.
+////////////////////////////////////////////////////////////////////
+void Transform2SG::
+set_node(PandaNode *node) {
+  _node = node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Transform2SG::get_node
+//       Access: Public
+//  Description: Returns the node that this node will adjust, or NULL
+//               if the node has not yet been set.
+////////////////////////////////////////////////////////////////////
+PandaNode *Transform2SG::
+get_node() const {
+  return _node;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Transform2SG::transmit_data
@@ -70,9 +93,14 @@ void Transform2SG::
 transmit_data(AllTransitionsWrapper &data) {
   const NodeTransition *transform = data.get_transition(_transform_type);
 
-  if (transform != (NodeTransition *)NULL && _arc != (NodeRelation *)NULL) {
+  if (transform != (NodeTransition *)NULL) {
     const LMatrix4f &mat = DCAST(MatrixDataTransition, transform)->get_value();
-    _arc->set_transition(new TransformTransition(mat));
+    if (_arc != (NodeRelation *)NULL) {
+      _arc->set_transition(new TransformTransition(mat));
+    }
+    if (_node != (PandaNode *)NULL) {
+      _node->set_transform(TransformState::make_mat(mat));
+    }
   }
 
   // Clear the data below us.

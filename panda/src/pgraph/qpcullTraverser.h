@@ -22,7 +22,7 @@
 #include "pandabase.h"
 
 #include "renderState.h"
-#include "transformAttrib.h"
+#include "transformState.h"
 #include "pointerTo.h"
 
 class PandaNode;
@@ -41,16 +41,17 @@ public:
   qpCullTraverser();
 
   void set_initial_state(const RenderState *initial_state);
-  void set_world_transform(const TransformAttrib *world_transform);
+  void set_world_transform(const TransformState *world_transform);
   void set_cull_handler(CullHandler *cull_handler);
 
   void traverse(PandaNode *root);
 
 private:
-  void r_traverse(PandaNode *node, const RenderState *state, int flags);
+  void r_traverse(PandaNode *node, const TransformState *transform,
+                  const RenderState *state, int flags);
 
   CPT(RenderState) _initial_state;
-  CPT(TransformAttrib) _world_transform;
+  CPT(TransformState) _world_transform;
   CullHandler *_cull_handler;
 };
 

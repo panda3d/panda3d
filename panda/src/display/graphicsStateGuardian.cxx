@@ -880,6 +880,16 @@ end_decal(GeomNode *) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::issue_transform
+//       Access: Public, Virtual
+//  Description: Sends the indicated transform matrix to the graphics
+//               API to be applied to future vertices.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+issue_transform(const TransformState *) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::issue_color
 //       Access: Public, Virtual
 //  Description: This method is defined in the base class because it

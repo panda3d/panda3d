@@ -126,7 +126,8 @@ private:
   // should be).
   const RenderState *_self_compose;
 
-  // This is the actual set of data within the RenderState: a set of
+private:
+  // This is the actual data within the RenderState: a set of
   // RenderAttribs.
   class Attribute {
   public:

@@ -18,6 +18,7 @@
 
 #include "cullHandler.h"
 #include "geom.h"
+#include "transformState.h"
 #include "renderState.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -31,6 +32,7 @@
 //               it's not intended to be used except for debugging.
 ////////////////////////////////////////////////////////////////////
 void CullHandler::
-record_geom(Geom *geom, const RenderState *state) {
-  cerr << *geom << " " << *state << "\n";
+record_geom(Geom *geom, const TransformState *transform,
+            const RenderState *state) {
+  cerr << *geom << " " << *transform << " " << *state << "\n";
 }

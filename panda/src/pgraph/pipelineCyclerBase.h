@@ -43,10 +43,15 @@ public:
   INLINE void increment_write(CycleData *pointer);
   INLINE void release_write(CycleData *pointer);
 
+  INLINE int get_num_stages();
+  INLINE bool is_stage_unique(int n) const;
+  INLINE CycleData *write_stage(int n);
+  INLINE void release_write_stage(int n, CycleData *pointer);
+
 private:
   PT(CycleData) _data;
   Pipeline *_pipeline;
-  short _read_count, _write_count;
+  short _read_count, _write_count, _stage_count;
 };
 
 #include "pipelineCyclerBase.I"

@@ -107,3 +107,56 @@ release_write(CycleData *pointer) {
   nassertv(_write_count > 0);
   _write_count--;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::get_num_stages
+//       Access: Public
+//  Description: Returns the number of stages in the pipeline.
+////////////////////////////////////////////////////////////////////
+INLINE int PipelineCyclerBase::
+get_num_stages() {
+  return 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::is_stage_unique
+//       Access: Public
+//  Description: Returns true if the nth stage is a different pointer
+//               than the previous stage, or false if its pointer is
+//               shared with the previous one.
+////////////////////////////////////////////////////////////////////
+INLINE bool PipelineCyclerBase::
+is_stage_unique(int n) const {
+  nassertr(n == 0, false);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::write_stage
+//       Access: Public
+//  Description: Returns a pointer suitable for writing to the nth
+//               stage of the pipeline.  This is for special
+//               applications that need to update the entire pipeline
+//               at once (for instance, to remove an invalid pointer).
+//               This pointer should later be released with
+//               release_write_stage().
+////////////////////////////////////////////////////////////////////
+INLINE CycleData *PipelineCyclerBase::
+write_stage(int n) {
+  nassertr(n == 0, (CycleData *)NULL);
+  _stage_count++;
+  return _data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::release_write_stage
+//       Access: Public
+//  Description: Releases a pointer previously obtained via a call to
+//               write_stage().
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerBase::
+release_write_stage(int n, CycleData *pointer) {
+  nassertv(n == 0 && pointer == _data);
+  nassertv(_stage_count > 0);
+  _stage_count--;
+}

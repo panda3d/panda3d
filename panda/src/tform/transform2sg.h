@@ -22,6 +22,7 @@
 #include "pandabase.h"
 
 #include "dataNode.h"
+#include "pandaNode.h"
 
 class NodeRelation;
 
@@ -39,8 +40,12 @@ PUBLISHED:
   void set_arc(NodeRelation *arc);
   NodeRelation *get_arc() const;
 
+  void set_node(PandaNode *node);
+  PandaNode *get_node() const;
+
 private:
   NodeRelation *_arc;
+  PandaNode *_node;
 
 ////////////////////////////////////////////////////////////////////
 // From parent class DataNode

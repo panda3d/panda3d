@@ -18,6 +18,7 @@
 
 #include "drawCullHandler.h"
 #include "geom.h"
+#include "transformState.h"
 #include "renderState.h"
 #include "graphicsStateGuardian.h"
 
@@ -30,7 +31,9 @@
 //               discovered by the CullTraverser.
 ////////////////////////////////////////////////////////////////////
 void DrawCullHandler::
-record_geom(Geom *geom, const RenderState *state) {
+record_geom(Geom *geom, const TransformState *transform,
+            const RenderState *state) {
+  _gsg->set_transform(transform);
   _gsg->set_state(state);
   geom->draw(_gsg);
 }

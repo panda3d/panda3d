@@ -35,6 +35,7 @@
 #include "renderTraverser.h"
 #include "pStatCollector.h"
 #include "allTransitionsWrapper.h"
+#include "transformState.h"
 #include "renderState.h"
 
 #include "notify.h"
@@ -142,6 +143,7 @@ public:
 
   INLINE void modify_state(const RenderState *state);
   INLINE void set_state(const RenderState *state);
+  INLINE void set_transform(const TransformState *transform);
 
   RenderBuffer get_render_buffer(int buffer_type);
 
@@ -173,6 +175,7 @@ public:
 
   INLINE void clear_cached_state(void) { _state.clear(); };  
 
+  virtual void issue_transform(const TransformState *transform);
   virtual void issue_color(const ColorAttrib *attrib);
 
 protected:
@@ -224,6 +227,7 @@ protected:
   State _state;
 
   CPT(RenderState) _qpstate;
+  CPT(TransformState) _transform;
 
   int _buffer_mask;
   Colorf _color_clear_value;

@@ -63,13 +63,50 @@ get_sort() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::UpConnection::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode::UpConnection::
+UpConnection(PandaNode *parent) :
+  _parent(parent)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::UpConnection::operator <
+//       Access: Public
+//  Description: Sorts the up connections of a node by pointer.  This
+//               is different from the down connections of a node,
+//               which are sorted by the specified _sort number.  This
+//               makes it easy to locate a particular parent of a node
+//               by pointer, or to test for a parent-child
+//               relationship given two node pointers.
+////////////////////////////////////////////////////////////////////
+INLINE bool PandaNode::UpConnection::
+operator < (const UpConnection &other) const {
+  return _parent < other._parent;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::UpConnection::get_parent
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode *PandaNode::UpConnection::
+get_parent() const {
+  return _parent;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::CData::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode::CData::
 CData() {
-  _state_changes = RenderState::make_empty();
+  _state = RenderState::make_empty();
+  _transform = TransformState::make_identity();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -140,7 +177,7 @@ INLINE PandaNode *PandaNode::
 get_parent(int n) const {
   CDReader cdata(_cycler);
   nassertr(n >= 0 && n < (int)cdata->_up.size(), NULL);
-  return cdata->_up[n];
+  return cdata->_up[n].get_parent();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -152,7 +189,7 @@ get_parent(int n) const {
 INLINE int PandaNode::
 find_parent(PandaNode *node) const {
   CDReader cdata(_cycler);
-  Up::const_iterator ui = cdata->_up.find(node);
+  Up::const_iterator ui = cdata->_up.find(UpConnection(node));
   if (ui == cdata->_up.end()) {
     return -1;
   }
@@ -212,7 +249,7 @@ get_child_sort(int n) const {
 INLINE void PandaNode::
 set_attrib(const RenderAttrib *attrib, int override) {
   CDWriter cdata(_cycler);
-  cdata->_state_changes = cdata->_state_changes->add(attrib, override);
+  cdata->_state = cdata->_state->add(attrib, override);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -227,9 +264,9 @@ set_attrib(const RenderAttrib *attrib, int override) {
 INLINE const RenderAttrib *PandaNode::
 get_attrib(TypeHandle type) const {
   CDReader cdata(_cycler);
-  int index = cdata->_state_changes->find_attrib(type);
+  int index = cdata->_state->find_attrib(type);
   if (index >= 0) {
-    return cdata->_state_changes->get_attrib(index);
+    return cdata->_state->get_attrib(index);
   }
   return NULL;
 }
@@ -245,7 +282,7 @@ get_attrib(TypeHandle type) const {
 INLINE void PandaNode::
 clear_attrib(TypeHandle type) {
   CDWriter cdata(_cycler);
-  cdata->_state_changes = cdata->_state_changes->remove(type);
+  cdata->_state = cdata->_state->remove(type);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -261,7 +298,7 @@ clear_attrib(TypeHandle type) {
 INLINE void PandaNode::
 set_state(const RenderState *state) {
   CDWriter cdata(_cycler);
-  cdata->_state_changes = state;
+  cdata->_state = state;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -276,7 +313,7 @@ set_state(const RenderState *state) {
 INLINE const RenderState *PandaNode::
 get_state() const {
   CDReader cdata(_cycler);
-  return cdata->_state_changes;
+  return cdata->_state;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -290,7 +327,46 @@ get_state() const {
 INLINE void PandaNode::
 clear_state() {
   CDWriter cdata(_cycler);
-  cdata->_state_changes = RenderState::make_empty();
+  cdata->_state = RenderState::make_empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_transform
+//       Access: Published
+//  Description: Sets the transform that will be applied to this node
+//               and below.  This defines a new coordinate space at
+//               this point in the scene graph and below.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+set_transform(const TransformState *transform) {
+  CDWriter cdata(_cycler);
+  cdata->_transform = transform;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_transform
+//       Access: Published
+//  Description: Returns the transform that has been set on this
+//               particular node.  This is not the net transform from
+//               the root, but simply the transform on this particular
+//               node.
+////////////////////////////////////////////////////////////////////
+INLINE const TransformState *PandaNode::
+get_transform() const {
+  CDReader cdata(_cycler);
+  return cdata->_transform;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::clear_transform
+//       Access: Published
+//  Description: Resets the transform on this node to the identity
+//               transform.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+clear_transform() {
+  CDWriter cdata(_cycler);
+  cdata->_transform = TransformState::make_identity();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -103,6 +103,17 @@ get_camera() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_qpcamera
+//       Access: Public
+//  Description: Returns the camera associated with this
+//               DisplayRegion, or NULL if no camera is associated.
+////////////////////////////////////////////////////////////////////
+INLINE const NodeChain &DisplayRegion::
+get_qpcamera() const {
+  return _qpcamera;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::set_cull_frustum
 //       Access: Public
 //  Description: Sets the LensNode that will be used to perform

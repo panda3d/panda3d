@@ -23,7 +23,7 @@
 #include "graphicsPipe.h"
 #include "interactiveGraphicsPipe.h"
 #include "displayRegion.h"
-#include "camera.h"
+#include "qpcamera.h"
 #include "perspectiveLens.h"
 #include "pandaNode.h"
 #include "textureAttrib.h"
@@ -32,6 +32,32 @@
 #include "geomTri.h"
 #include "texture.h"
 #include "texturePool.h"
+
+// These are in support of legacy data graph operations.
+#include "namedNode.h"
+#include "mouse.h"
+#include "mouseWatcher.h"
+#include "trackball.h"
+#include "transform2sg.h"
+#include "dataRelation.h"
+#include "dataGraphTraversal.h"
+#include "buttonThrower.h"
+#include "modifierButtons.h"
+#include "keyboardButton.h"
+#include "event.h"
+#include "eventQueue.h"
+#include "eventHandler.h"
+
+// Use dconfig to read a few Configrc variables.
+Configure(config_pview);
+ConfigureFn(config_pview) {
+}
+
+static const int win_width = config_pview.GetInt("win-width", 640);
+static const int win_height = config_pview.GetInt("win-height", 480);
+
+// As long as this is true, the main loop will continue running.
+bool run_flag = true;
 
 PT(GraphicsPipe)
 make_pipe() {
@@ -59,20 +85,25 @@ make_pipe() {
   return pipe;
 }
 
-PT(Camera)
-setup_window(GraphicsPipe *pipe, GraphicsEngine *engine) {
+PT(GraphicsWindow)
+make_window(GraphicsPipe *pipe, GraphicsEngine *engine) {
   // Now create a window on that pipe.
   GraphicsWindow::Properties window_prop;
   window_prop._xorg = 0;
   window_prop._yorg = 0;
-  window_prop._xsize = 640;
-  window_prop._ysize = 480;
+  window_prop._xsize = win_width;
+  window_prop._ysize = win_height;
   window_prop._title = "Panda Viewer";
   //  window_prop._fullscreen = true;
 
   PT(GraphicsWindow) window = pipe->make_window(window_prop);
   engine->add_window(window);
+  
+  return window;
+}
 
+PT(qpCamera)
+make_camera(GraphicsWindow *window) {
   // Get the first channel on the window.  This will be the only
   // channel on non-SGI hardware.
   PT(GraphicsChannel) channel = window->get_channel(0);
@@ -84,11 +115,11 @@ setup_window(GraphicsPipe *pipe, GraphicsEngine *engine) {
   PT(DisplayRegion) dr = layer->make_display_region();
 
   // Finally, we need a camera to associate with the display region.
-  PT(Camera) camera = new Camera;
+  PT(qpCamera) camera = new qpCamera("camera");
   PT(Lens) lens = new PerspectiveLens;
-  lens->set_film_size(640, 480);
+  lens->set_film_size(win_width, win_height);
   camera->set_lens(lens);
-  dr->set_camera(camera);
+  dr->set_qpcamera(NodeChain(camera));
 
   return camera;
 }
@@ -102,9 +133,9 @@ make_default_geometry(PandaNode *parent) {
   PTA_Colorf colors;
   PTA_ushort cindex;
   
-  coords.push_back(Vertexf::rfu(0.0, 20.0, 0.0));
-  coords.push_back(Vertexf::rfu(1.0, 20.0, 0.0));
-  coords.push_back(Vertexf::rfu(0.0, 20.0, 1.0));
+  coords.push_back(Vertexf::rfu(0.0, 0.0, 0.0));
+  coords.push_back(Vertexf::rfu(1.0, 0.0, 0.0));
+  coords.push_back(Vertexf::rfu(0.0, 0.0, 1.0));
   uvs.push_back(TexCoordf(0.0, 0.0));
   uvs.push_back(TexCoordf(1.0, 0.0));
   uvs.push_back(TexCoordf(0.0, 1.0));
@@ -153,6 +184,39 @@ get_models(PandaNode *parent, int argc, char *argv[]) {
   */
 }
 
+NamedNode * 
+setup_mouse(NamedNode *data_root, GraphicsWindow *window) {
+  MouseAndKeyboard *mouse = new MouseAndKeyboard(window, 0);
+  new DataRelation(data_root, mouse);
+
+  // Create a ButtonThrower to throw events from the keyboard.
+  PT(ButtonThrower) bt = new ButtonThrower("kb-events");
+  ModifierButtons mods;
+  mods.add_button(KeyboardButton::shift());
+  mods.add_button(KeyboardButton::control());
+  mods.add_button(KeyboardButton::alt());
+  bt->set_modifier_buttons(mods);
+  new DataRelation(mouse, bt);
+
+  return mouse;
+}
+
+void 
+setup_trackball(NamedNode *mouse, qpCamera *camera) {
+  PT(Trackball) trackball = new Trackball("trackball");
+  trackball->set_pos(LVector3f::forward() * 50.0);
+  new DataRelation(mouse, trackball);
+
+  PT(Transform2SG) tball2cam = new Transform2SG("tball2cam");
+  tball2cam->set_node(camera);
+  new DataRelation(trackball, tball2cam);
+}
+
+void
+event_esc(CPT_Event) {
+  // The Escape or q key was pressed.  Exit the application.
+  run_flag = false;
+}
 
 int
 main(int argc, char *argv[]) {
@@ -163,33 +227,40 @@ main(int argc, char *argv[]) {
   GraphicsEngine *engine = new GraphicsEngine;
 
   // Now open a window and get a camera.
-  PT(Camera) camera = setup_window(pipe, engine);
+  PT(GraphicsWindow) window = make_window(pipe, engine);
+  PT(qpCamera) camera = make_camera(window);
 
   // Now we just need to make a scene graph for the camera to render.
   PT(PandaNode) render = new PandaNode("render");
-  camera->set_qpscene(render);
+  render->add_child(camera);
+  camera->set_scene(render);
+
+  // Set up a data graph for tracking user input.  For now, this uses
+  // the old-style graph interface.
+  PT(NamedNode) data_root = new NamedNode("data_root");
+  NamedNode *mouse = setup_mouse(data_root, window);
+  setup_trackball(mouse, camera);
+
+  // Use an event handler to manage keyboard events.
+  EventHandler event_handler(EventQueue::get_global_event_queue());
+  event_handler.add_hook("escape", event_esc);
+  event_handler.add_hook("q", event_esc);
+
 
   // Put something in the scene graph to look at.
   get_models(render, argc, argv);
 
-  /*
-  // Put the scene a distance in front of our face so we can see it.
-  LMatrix4f mat = LMatrix4f::translate_mat(0, 20, 0);
-  TransformTransition *tt = new TransformTransition(mat);
-  render_arc->set_transition(tt);
-  */
 
-
-  // This is our main update loop.  Run for 5 seconds, then shut down.
+  // This is our main update loop.  Loop here until someone
+  // (e.g. event_esc) sets run_flag to false.
   ClockObject *clock = ClockObject::get_global_clock();
-  clock->tick();
-  double now = clock->get_frame_time();
-  while (clock->get_frame_time() - now < 5.0) {
+  while (run_flag) {
     clock->tick();
+    traverse_data_graph(data_root);
+    event_handler.process_events();
     engine->render_frame();
   } 
 
-  cerr << "Exiting.\n";
   delete engine;
   return (0);
 }

@@ -99,6 +99,7 @@ cull_and_draw_together() {
       cull_and_draw_together(win, dr);
     }
     win->flip();
+    win->process_events();
   }
 }
 
@@ -111,19 +112,27 @@ cull_and_draw_together() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 cull_and_draw_together(GraphicsWindow *win, DisplayRegion *dr) {
-  Camera *camera = dr->get_camera();
-  if (camera == (Camera *)NULL || !camera->is_active()) {
+  const NodeChain &camera = dr->get_qpcamera();
+  if (camera.is_empty()) {
     // No camera, no draw.
     return;
   }
 
-  Lens *lens = camera->get_lens();
+  qpCamera *camera_node;
+  DCAST_INTO_V(camera_node, camera.node());
+
+  if (!camera_node->is_active()) {
+    // Camera inactive, no draw.
+    return;
+  }
+
+  Lens *lens = camera_node->get_lens();
   if (lens == (Lens *)NULL) {
     // No lens, no draw.
     return;
   }
 
-  PandaNode *scene = camera->get_qpscene();
+  PandaNode *scene = camera_node->get_scene();
   if (scene == (PandaNode *)NULL) {
     // No scene, no draw.
     return;
@@ -143,9 +152,7 @@ cull_and_draw_together(GraphicsWindow *win, DisplayRegion *dr) {
   DrawCullHandler cull_handler(gsg);
   qpCullTraverser trav;
   trav.set_cull_handler(&cull_handler);
-  
-  // Here we should figure out the world transform: the camera's
-  // inverse transform.
+  trav.set_world_transform(camera.get_rel_transform(NodeChain()));
   
   DisplayRegionStack old_dr = gsg->push_display_region(dr);
   gsg->prepare_display_region();

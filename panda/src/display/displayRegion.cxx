@@ -22,6 +22,7 @@
 #include "graphicsWindow.h"
 #include "config_display.h"
 #include "displayRegion.h"
+#include "qpcamera.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -33,6 +34,7 @@ DisplayRegion::
 DisplayRegion(GraphicsLayer *layer) :
   _l(0.), _r(1.), _b(0.), _t(1.),
   _layer(layer),
+  _camera_node((qpCamera *)NULL),
   _active(true)
 {
 }
@@ -44,10 +46,11 @@ DisplayRegion(GraphicsLayer *layer) :
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
 DisplayRegion(GraphicsLayer *layer, const float l,
-              const float r, const float b, const float t)
-  : _l(l), _r(r), _b(b), _t(t),
-    _layer(layer),
-    _active(true)
+              const float r, const float b, const float t) :
+  _l(l), _r(r), _b(b), _t(t),
+  _layer(layer),
+  _camera_node((qpCamera *)NULL),
+  _active(true)
 {
 }
 
@@ -62,7 +65,8 @@ DisplayRegion::
 DisplayRegion(int xsize, int ysize) :
   _l(0.), _r(1.), _b(0.), _t(1.),
   _pl(0), _pr(xsize), _pb(0), _pt(ysize),
-  _layer((GraphicsLayer *)0L),
+  _layer((GraphicsLayer *)NULL),
+  _camera_node((qpCamera *)NULL),
   _active(true)
 {
 }
@@ -74,8 +78,7 @@ DisplayRegion(int xsize, int ysize) :
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
 DisplayRegion(const DisplayRegion&) {
-  display_cat.error()
-    << "DisplayRegions should not be copied" << endl;
+  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -83,11 +86,9 @@ DisplayRegion(const DisplayRegion&) {
 //       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
-DisplayRegion &DisplayRegion::
-operator=(const DisplayRegion&) {
-  display_cat.error()
-  << "DisplayRegions should not be assigned" << endl;
-  return *this;
+void DisplayRegion::
+operator = (const DisplayRegion&) {
+  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,6 +98,7 @@ operator=(const DisplayRegion&) {
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
 ~DisplayRegion() {
+  set_qpcamera(NodeChain());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -180,6 +182,41 @@ set_camera(Camera *camera) {
     }
   }
   set_cull_frustum(camera);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_qpcamera
+//       Access: Public
+//  Description: Sets the camera that is associated with this
+//               DisplayRegion.  There is a one-to-one association
+//               between cameras and DisplayRegions; if this camera
+//               was already associated with a different
+//               DisplayRegion, that association is removed.
+//
+//               The camera is actually set via a NodeChain, which
+//               clarifies which instance of the camera (if there
+//               happen to be multiple instances) we should use.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+set_qpcamera(const NodeChain &camera) {
+  qpCamera *camera_node = (qpCamera *)NULL;
+  if (!camera.is_empty()) {
+    DCAST_INTO_V(camera_node, camera.node());
+  }
+
+  if (camera_node != _camera_node) {
+    if (_camera_node != (qpCamera *)NULL) {
+      // We need to tell the old camera we're not using him anymore.
+      _camera_node->remove_display_region(this);
+    }
+    _camera_node = camera_node;
+    if (_camera_node != (qpCamera *)NULL) {
+      // Now tell the new camera we are using him.
+      _camera_node->add_display_region(this);
+    }
+  }
+
+  _qpcamera = camera;
 }
 
 ////////////////////////////////////////////////////////////////////

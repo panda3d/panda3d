@@ -18,13 +18,18 @@
 
 #include "config_pgraph.h"
 
+#include "qpcamera.h"
 #include "colorAttrib.h"
 #include "qpgeomNode.h"
+#include "qplensNode.h"
+#include "nodeChain.h"
+#include "nodeChainComponent.h"
 #include "pandaNode.h"
 #include "renderAttrib.h"
 #include "renderState.h"
 #include "textureAttrib.h"
-#include "transformAttrib.h"
+#include "colorAttrib.h"
+#include "transformState.h"
 
 #include "dconfig.h"
 
@@ -52,18 +57,24 @@ init_libpgraph() {
   }
   initialized = true;
 
+  qpCamera::init_type();
   ColorAttrib::init_type();
   qpGeomNode::init_type();
+  qpLensNode::init_type();
+  NodeChain::init_type();
+  NodeChainComponent::init_type();
   PandaNode::init_type();
   RenderAttrib::init_type();
   RenderState::init_type();
   TextureAttrib::init_type();
-  TransformAttrib::init_type();
+  ColorAttrib::init_type();
+  TransformState::init_type();
 
   ColorAttrib::register_with_read_factory();
   qpGeomNode::register_with_read_factory();
   PandaNode::register_with_read_factory();
   RenderState::register_with_read_factory();
   TextureAttrib::register_with_read_factory();
-  TransformAttrib::register_with_read_factory();
+  ColorAttrib::register_with_read_factory();
+  TransformState::register_with_read_factory();
 }

@@ -27,7 +27,7 @@ INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &cycler) :
   _cycler(cycler)
 {
-  _pointer = (CycleDataType *)_cycler.write();
+  _pointer = _cycler.write();
 }
 
 ////////////////////////////////////////////////////////////////////

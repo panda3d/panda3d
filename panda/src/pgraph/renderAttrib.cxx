@@ -173,7 +173,8 @@ compare_to_impl(const RenderAttrib *other) const {
 //               RenderAttrib (that is, a subsequent RenderAttrib
 //               completely replaces the preceding one).  On the other
 //               hand, some kinds of RenderAttrib (for instance,
-//               TransformAttrib) might combine in meaningful ways.
+//               ColorTransformAttrib) might combine in meaningful
+//               ways.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) RenderAttrib::
 compose_impl(const RenderAttrib *other) const {

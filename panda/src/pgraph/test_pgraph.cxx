@@ -17,9 +17,10 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pandaNode.h"
+#include "nodeChain.h"
 #include "textureAttrib.h"
 #include "colorAttrib.h"
-#include "transformAttrib.h"
+#include "transformState.h"
 #include "texture.h"
 #include "qpgeomNode.h"
 #include "geomTristrip.h"
@@ -68,19 +69,25 @@ main(int argc, char *argv[]) {
   qpGeomNode *g2 = new qpGeomNode("g2");
   b->add_child(g2);
   g2->add_geom(geom1, b->get_state());
-  g2->set_attrib(TransformAttrib::make_mat(LMatrix4f::translate_mat(10, 0, 0)));
+  g2->set_transform(TransformState::make_mat(LMatrix4f::translate_mat(10, 0, 0)));
 
   cerr << "\n";
   list_hierarchy(root, 0);
 
-  qpCullTraverser trav;
-  CullHandler cull_handler;
-  trav.set_cull_handler(&cull_handler);
-  cerr << "\n";
-  trav.traverse(root);
+  NodeChain ch_g1(g1);
+  cerr << ch_g1 << "\n";
 
-  cerr << "\n";
-  trav.traverse(root);
+  NodeChain ch_g2(g2);
+  cerr << ch_g2 << "\n";
+
+  cerr << *ch_g1.get_rel_transform(ch_g2) << "\n";
+  cerr << *ch_g2.get_rel_transform(ch_g1) << "\n";
+
+  cerr << *ch_g1.get_rel_state(ch_g2) << "\n";
+  cerr << *ch_g2.get_rel_state(ch_g1) << "\n";
+
+  cerr << *ch_g2.get_rel_transform(ch_g2) << "\n";
+  cerr << *ch_g2.get_rel_state(ch_g2) << "\n";
 
   cerr << "\n";
   return 0;

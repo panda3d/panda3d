@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "qpcullTraverser.h"
+#include "transformState.h"
 #include "renderState.h"
 #include "cullHandler.h"
 #include "dcast.h"
@@ -30,7 +31,7 @@
 qpCullTraverser::
 qpCullTraverser() {
   _initial_state = RenderState::make_empty();
-  _world_transform = DCAST(TransformAttrib, TransformAttrib::make_identity());
+  _world_transform = DCAST(TransformState, TransformState::make_identity());
   _cull_handler = (CullHandler *)NULL;
 }
 
@@ -49,17 +50,11 @@ set_initial_state(const RenderState *initial_state) {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpCullTraverser::set_world_transform
 //       Access: Public
-//  Description: Specifies the net inverse transform of the camera
-//               viewing the scene.  Normally, this is the same as the
-//               transform specified in the initial state, but it
-//               might be different if we are culling a subgraph,
-//               for instance.
-//
-//               This is used to evaluate camera-dependent attributes
-//               like billboards and LOD nodes.
+//  Description: Specifies the position of the world relative to the
+//               camera.
 ////////////////////////////////////////////////////////////////////
 void qpCullTraverser::
-set_world_transform(const TransformAttrib *world_transform) {
+set_world_transform(const TransformState *world_transform) {
   _world_transform = world_transform;
 }
 
@@ -67,7 +62,7 @@ set_world_transform(const TransformAttrib *world_transform) {
 //     Function: qpCullTraverser::set_cull_handler
 //       Access: Public
 //  Description: Specifies the object that will receive the culled
-//               Geoms.  This must be called before traverse().
+//               Geoms.  This must be set before calling traverse().
 ////////////////////////////////////////////////////////////////////
 void qpCullTraverser::
 set_cull_handler(CullHandler *cull_handler) {
@@ -83,7 +78,7 @@ void qpCullTraverser::
 traverse(PandaNode *root) {
   nassertv(_cull_handler != (CullHandler *)NULL);
 
-  r_traverse(root, _initial_state, 0);
+  r_traverse(root, _world_transform, _initial_state, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -92,7 +87,9 @@ traverse(PandaNode *root) {
 //  Description: The recursive traversal implementation.
 ////////////////////////////////////////////////////////////////////
 void qpCullTraverser::
-r_traverse(PandaNode *node, const RenderState *state, int flags) {
+r_traverse(PandaNode *node, const TransformState *transform,
+           const RenderState *state, int flags) {
+  CPT(TransformState) next_transform = transform->compose(node->get_transform());
   CPT(RenderState) next_state = state->compose(node->get_state());
 
   if (node->is_geom_node()) {
@@ -104,7 +101,7 @@ r_traverse(PandaNode *node, const RenderState *state, int flags) {
       Geom *geom = geom_node->get_geom(i);
       CPT(RenderState) geom_state = 
         next_state->compose(geom_node->get_geom_state(i));
-      _cull_handler->record_geom(geom, geom_state);
+      _cull_handler->record_geom(geom, next_transform, geom_state);
     }
   }
 
@@ -112,6 +109,6 @@ r_traverse(PandaNode *node, const RenderState *state, int flags) {
   PandaNode::Children cr = node->get_children();
   int num_children = cr.get_num_children();
   for (int i = 0; i < num_children; i++) {
-    r_traverse(cr.get_child(i), next_state, flags);
+    r_traverse(cr.get_child(i), next_transform, next_state, flags);
   }
 }

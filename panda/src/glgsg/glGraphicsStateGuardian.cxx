@@ -3416,6 +3416,24 @@ issue_polygon_offset(const PolygonOffsetTransition *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::issue_transform
+//       Access: Public, Virtual
+//  Description: Sends the indicated transform matrix to the graphics
+//               API to be applied to future vertices.
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+issue_transform(const TransformState *transform) {
+#ifdef GSG_VERBOSE
+  glgsg_cat.debug()
+    << "glLoadMatrix(GL_MODELVIEW): " << transform->get_mat() << endl;
+#endif
+  glMatrixMode(GL_MODELVIEW);
+  glLoadMatrixf(transform->get_mat().get_data());
+
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::issue_texture
 //       Access: Public, Virtual
 //  Description:

@@ -27,7 +27,7 @@ INLINE CycleDataReader<CycleDataType>::
 CycleDataReader(const PipelineCycler<CycleDataType> &cycler) :
   _cycler(cycler)
 {
-  _pointer = (const CycleDataType *)_cycler.read();
+  _pointer = _cycler.read();
 }
 
 ////////////////////////////////////////////////////////////////////

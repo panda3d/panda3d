@@ -28,3 +28,36 @@ PipelineCycler(Pipeline *pipeline) :
   PipelineCyclerBase(new CycleDataType, pipeline)
 {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::read
+//       Access: Public
+//  Description: See PipelineCyclerBase::read().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE const CycleDataType *PipelineCycler<CycleDataType>::
+read() const {
+  return (const CycleDataType *)PipelineCyclerBase::read();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::write
+//       Access: Public
+//  Description: See PipelineCyclerBase::write().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+write() {
+  return (CycleDataType *)PipelineCyclerBase::write();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::write_stage
+//       Access: Public
+//  Description: See PipelineCyclerBase::write_stage().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+write_stage(int n) {
+  return (CycleDataType *)PipelineCyclerBase::write_stage(n);
+}

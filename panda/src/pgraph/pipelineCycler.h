@@ -53,6 +53,10 @@ template<class CycleDataType>
 class PipelineCycler : public PipelineCyclerBase {
 public:
   INLINE PipelineCycler(Pipeline *pipeline = NULL);
+
+  INLINE const CycleDataType *read() const;
+  INLINE CycleDataType *write();
+  INLINE CycleDataType *write_stage(int n);
 };
 
 #include "pipelineCycler.I"

@@ -144,6 +144,22 @@ set_state(const RenderState *state) {
   _qpstate = _qpstate->issue_delta_set(state, this);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_transform
+//       Access: Public
+//  Description: Sets the world transform that will be applied to
+//               subsequent geometry.  This is normally called only
+//               during the draw process, immediately before issuing
+//               geometry commands.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+set_transform(const TransformState *transform) {
+  if (transform != _transform) {
+    _transform = transform;
+    issue_transform(transform);
+  }
+}
+
 /*
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_state

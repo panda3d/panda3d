@@ -1217,6 +1217,9 @@ void glxGraphicsWindow::process_events(void)
   int got_event;
   glxGraphicsWindow* window;
 
+  if (_change_mask)
+    handle_changes();
+
   glxDisplay *glx = _pipe->get_glx_display();
   nassertv(glx != (glxDisplay *)NULL);
 

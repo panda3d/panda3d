@@ -22,6 +22,7 @@
 #include "pandabase.h"
 
 class Geom;
+class TransformState;
 class RenderState;
 
 ////////////////////////////////////////////////////////////////////
@@ -34,7 +35,8 @@ class RenderState;
 class EXPCL_PANDA CullHandler {
 public:
   //  virtual void begin_decal();
-  virtual void record_geom(Geom *geom, const RenderState *state);
+  virtual void record_geom(Geom *geom, const TransformState *transform,
+                           const RenderState *state);
   //  virtual void push_decal();
   //  virtual void pop_decal();
 };

@@ -26,6 +26,7 @@
 #include "cycleDataWriter.h"
 #include "pipelineCycler.h"
 #include "renderState.h"
+#include "transformState.h"
 
 #include "typedWritable.h"
 #include "boundedObject.h"
@@ -34,6 +35,8 @@
 #include "luse.h"
 #include "ordered_vector.h"
 #include "pointerTo.h"
+
+class NodeChainComponent;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PandaNode
@@ -58,9 +61,9 @@ PUBLISHED:
   INLINE int get_child_sort(int n) const;
   int find_child(PandaNode *node) const;
 
-  int add_child(PandaNode *child, int sort = 0);
+  void add_child(PandaNode *child_node, int sort = 0);
   void remove_child(int n);
-  bool remove_child(PandaNode *child);
+  bool remove_child(PandaNode *child_node);
 
   /*
   bool stash_child(PandaNode *child);
@@ -80,11 +83,30 @@ PUBLISHED:
   INLINE const RenderState *get_state() const;
   INLINE void clear_state();
 
+  INLINE void set_transform(const TransformState *transform);
+  INLINE const TransformState *get_transform() const;
+  INLINE void clear_transform();
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 
 public:
   virtual bool is_geom_node() const;
+
+private:
+  // parent-child manipulation for NodeChain support.  Don't try to
+  // call these directly.
+  static PT(NodeChainComponent) attach(NodeChainComponent *parent, 
+                                       PandaNode *child, int sort);
+  static void detach(NodeChainComponent *child);
+  static void reparent(NodeChainComponent *new_parent,
+                       NodeChainComponent *child, int sort);
+  static PT(NodeChainComponent) get_component(NodeChainComponent *parent,
+                                              PandaNode *child);
+  static PT(NodeChainComponent) get_top_component(PandaNode *child);
+  PT(NodeChainComponent) get_generic_component();
+  void delete_component(NodeChainComponent *component);
+  void fix_chain_lengths();
 
 private:
   class EXPCL_PANDA DownConnection {
@@ -102,13 +124,27 @@ private:
     int _sort;
   };
   typedef ov_multiset<DownConnection> Down;
-  // Parent pointers are not reference counted.  That way, parents and
-  // children do not circularly reference each other.  In fact, parent
-  // pointers are just simple pointers, with no additional data.  We
-  // don't really need to keep the parent pointers around, but it's
-  // nice to be able to walk up the graph.
-  typedef ov_set<PandaNode *> Up;
 
+  class EXPCL_PANDA UpConnection {
+  public:
+    INLINE UpConnection(PandaNode *child);
+    INLINE bool operator < (const UpConnection &other) const;
+    INLINE PandaNode *get_parent() const;
+
+  private:
+    // Parent pointers are not reference counted.  That way, parents and
+    // children do not circularly reference each other.
+    PandaNode *_parent;
+  };
+  typedef ov_set<UpConnection> Up;
+
+  // We also maintain a set of NodeChainComponents in the node.  This
+  // represents the set of instances of this node that we have
+  // requested a NodeChain for.  We don't keep reference counts; when
+  // each NodeChainComponent destructs, it removes itself from this
+  // set.
+  typedef pset<NodeChainComponent *> Chains;
+  
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
   public:
@@ -118,10 +154,12 @@ private:
 
     Down _down;
     Up _up;
+    Chains _chains;
 
     BoundedObject _node_bounds;
     BoundedObject _subgraph_bounds;
-    CPT(RenderState) _state_changes;
+    CPT(RenderState) _state;
+    CPT(TransformState) _transform;
   };
 
   PipelineCycler<CData> _cycler;
@@ -175,6 +213,8 @@ private:
   static TypeHandle _type_handle;
 
   friend class PandaNode::Children;
+  friend class NodeChain;
+  friend class NodeChainComponent;
 };
 
 INLINE ostream &operator << (ostream &out, const PandaNode &node) {

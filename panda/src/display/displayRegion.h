@@ -17,25 +17,21 @@
 ////////////////////////////////////////////////////////////////////
 #ifndef DISPLAYREGION_H
 #define DISPLAYREGION_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
 
-#include <referenceCount.h>
-#include <camera.h>
+#include "pandabase.h"
+
+#include "referenceCount.h"
+#include "camera.h"
+#include "nodeChain.h"
 
 #include "plist.h"
 
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
 class GraphicsLayer;
 class GraphicsChannel;
 class GraphicsWindow;
 class GraphicsPipe;
 class CullHandler;
+class qpCamera;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DisplayRegion
@@ -48,7 +44,12 @@ public:
                 const float l, const float r,
                 const float b, const float t);
   DisplayRegion(int xsize, int ysize);
-  virtual ~DisplayRegion();
+private:
+  DisplayRegion(const DisplayRegion &);
+  void operator = (const DisplayRegion &);
+
+public:
+  ~DisplayRegion();
 
 PUBLISHED:
   INLINE void get_dimensions(float &l, float &r, float &b, float &t) const;
@@ -65,6 +66,9 @@ PUBLISHED:
 
   void set_camera(Camera *camera);
   INLINE Camera *get_camera() const;
+
+  void set_qpcamera(const NodeChain &camera);
+  INLINE const NodeChain &get_qpcamera() const;
 
   INLINE void set_cull_frustum(LensNode *cull_frustum);
   INLINE LensNode *get_cull_frustum() const;
@@ -98,13 +102,11 @@ protected:
 
   GraphicsLayer *_layer;
   PT(Camera) _camera;
+  NodeChain _qpcamera;
+  qpCamera *_camera_node;
   PT(LensNode) _cull_frustum;
 
   bool _active;
-
-private:
-  DisplayRegion(const DisplayRegion &);
-  DisplayRegion& operator=(const DisplayRegion &);
 
   friend class GraphicsLayer;
 };

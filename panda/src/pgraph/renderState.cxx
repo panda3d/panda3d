@@ -72,9 +72,6 @@ RenderState::
   if (_saved_entry != _states.end()) {
     _states.erase(_saved_entry);
     _saved_entry = _states.end();
-    
-    cerr << "Removing " << (void *)this << ", " << _states.size()
-         << " remaining.\n";
   }
 
   // Now make sure we clean up all other floating pointers to the
@@ -359,8 +356,6 @@ invert_compose(const RenderState *other) const {
   // but we pretend that it is because it's only a cache which is
   // transparent to the rest of the interface.
 
-  cerr << "invert composing " << *this << " with " << *other << "\n";
-
   // We handle empty state (identity) as a trivial special case.
   if (is_empty()) {
     return other;
@@ -384,7 +379,6 @@ invert_compose(const RenderState *other) const {
       ((Composition &)comp)._result = do_invert_compose(other);
     }
     // Here's the cache!
-    cerr << "  returning cached result " << (void *)comp._result.p() << "\n";
     return comp._result;
   }
 
@@ -401,7 +395,6 @@ invert_compose(const RenderState *other) const {
   ((RenderState *)other)->_invert_composition_cache[this]._result = NULL;
   ((RenderState *)this)->_invert_composition_cache[other]._result = result;
 
-  cerr << "  returning new result " << (void *)result.p() << "\n";
   return result;
 }
 
@@ -472,17 +465,19 @@ remove(TypeHandle type) const {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 output(ostream &out) const {
+  out << get_type() << ":";
   if (_attributes.empty()) {
-    out << "empty";
+    out << "(empty)";
 
   } else {
     Attributes::const_iterator ai = _attributes.begin();
-    out << (*ai)._type;
+    out << "(" << (*ai)._type;
     ++ai;
     while (ai != _attributes.end()) {
       out << " " << (*ai)._type;
       ++ai;
     }
+    out << ")";
   }
 }
 
