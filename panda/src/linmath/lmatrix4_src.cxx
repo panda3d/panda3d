@@ -216,10 +216,10 @@ write(ostream &out, int indent_level) const {
 //  Description: Adds the vector to the indicated hash generator.
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LMatrix4)::
-generate_hash(ChecksumHashGenerator &hash, FLOATTYPE threshold) const {
+generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE threshold) const {
   for(int i = 0; i < 4; i++) {
     for(int j = 0; j < 4; j++) {
-      hash.add_fp(get_cell(i,j), threshold);
+      hashgen.add_fp(get_cell(i,j), threshold);
     }
   }
 }

@@ -47,7 +47,7 @@ public:
 
   bool is_identity() const;
   int compare_to(const NodeTransitionCache &other) const;
-  void generate_hash(GraphHashGenerator &hash) const;
+  void generate_hash(GraphHashGenerator &hashgen) const;
 
   bool is_empty() const;
   PT(NodeTransition) set_transition(TypeHandle handle, NodeTransition *trans);

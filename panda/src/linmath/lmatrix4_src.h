@@ -166,8 +166,8 @@ PUBLISHED:
   void write(ostream &out, int indent_level = 0) const;
 
 public:
-  INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hash) const;
-  void generate_hash(ChecksumHashGenerator &hash, FLOATTYPE scale) const;
+  INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hashgen) const;
+  void generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE scale) const;
 
 public:
   union {

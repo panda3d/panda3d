@@ -95,9 +95,9 @@ compare_to(const NodeTransitionCacheEntry &other) const {
 //  Description: Adds the transition to the indicated hash generator.
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeTransitionCacheEntry::
-generate_hash(GraphHashGenerator &hash) const {
+generate_hash(GraphHashGenerator &hashgen) const {
   if (_trans != (NodeTransition *)NULL) {
-    _trans->generate_hash(hash);
+    _trans->generate_hash(hashgen);
   }
 }
 

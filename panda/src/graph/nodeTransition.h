@@ -75,7 +75,7 @@ public:
 
   int compare_to(const NodeTransition &other) const;
   int compare_to_ignore_priority(const NodeTransition &other) const;
-  INLINE_GRAPH void generate_hash(GraphHashGenerator &hash) const;
+  INLINE_GRAPH void generate_hash(GraphHashGenerator &hashgen) const;
 
 PUBLISHED:
   INLINE_GRAPH void set_priority(int priority);
@@ -105,7 +105,7 @@ public:
 
 protected:
   virtual int internal_compare_to(const NodeTransition *other) const=0;
-  virtual void internal_generate_hash(GraphHashGenerator &hash) const;
+  virtual void internal_generate_hash(GraphHashGenerator &hashgen) const;
 
   // And this is the internal function we'll call whenever our value
   // changes.

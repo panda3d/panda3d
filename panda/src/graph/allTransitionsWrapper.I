@@ -200,9 +200,9 @@ compare_to(const AllTransitionsWrapper &other) const {
 //  Description: Adds the transitions to the indicated hash generator.
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void AllTransitionsWrapper::
-generate_hash(GraphHashGenerator &hash) const {
+generate_hash(GraphHashGenerator &hashgen) const {
   if (_cache != (NodeTransitionCache *)NULL) {
-    _cache->generate_hash(hash);
+    _cache->generate_hash(hashgen);
   }
 }
 

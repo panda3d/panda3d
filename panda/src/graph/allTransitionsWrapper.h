@@ -77,7 +77,7 @@ public:
 
   INLINE_GRAPH bool is_identity() const;
   INLINE_GRAPH int compare_to(const AllTransitionsWrapper &other) const;
-  INLINE_GRAPH void generate_hash(GraphHashGenerator &hash) const;
+  INLINE_GRAPH void generate_hash(GraphHashGenerator &hashgen) const;
 
   INLINE_GRAPH void make_identity();
   INLINE_GRAPH void extract_from(const NodeRelation *arc);

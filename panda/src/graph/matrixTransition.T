@@ -182,8 +182,8 @@ internal_compare_to(const NodeTransition *other) const {
 ////////////////////////////////////////////////////////////////////
 template<class Matrix>
 void MatrixTransition<Matrix>::
-internal_generate_hash(GraphHashGenerator &hash) const {
-  _matrix.generate_hash(hash, 0.00001f);
+internal_generate_hash(GraphHashGenerator &hashgen) const {
+  _matrix.generate_hash(hashgen, 0.00001f);
 }
 
 ////////////////////////////////////////////////////////////////////

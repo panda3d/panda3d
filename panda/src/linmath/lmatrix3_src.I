@@ -1116,8 +1116,8 @@ almost_equal(const FLOATNAME(LMatrix3) &other) const {
 //  Description: Adds the vector to the indicated hash generator.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LMatrix3)::
-generate_hash(ChecksumHashGenerator &hash) const {
-  generate_hash(hash, NEARLY_ZERO(FLOATTYPE));
+generate_hash(ChecksumHashGenerator &hashgen) const {
+  generate_hash(hashgen, NEARLY_ZERO(FLOATTYPE));
 }
 
 

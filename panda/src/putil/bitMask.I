@@ -543,8 +543,8 @@ operator >>= (int shift) {
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 INLINE void BitMask<WordType, num_bits>::
-generate_hash(ChecksumHashGenerator &hash) const {
-  hash.add_int(_word);
+generate_hash(ChecksumHashGenerator &hashgen) const {
+  hashgen.add_int(_word);
 }
 
 ////////////////////////////////////////////////////////////////////

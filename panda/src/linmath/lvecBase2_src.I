@@ -524,8 +524,8 @@ output(ostream &out) const {
 //  Description: Adds the vector to the indicated hash generator.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase2)::
-generate_hash(ChecksumHashGenerator &hash) const {
-  generate_hash(hash, NEARLY_ZERO(FLOATTYPE));
+generate_hash(ChecksumHashGenerator &hashgen) const {
+  generate_hash(hashgen, NEARLY_ZERO(FLOATTYPE));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -534,9 +534,9 @@ generate_hash(ChecksumHashGenerator &hash) const {
 //  Description: Adds the vector to the indicated hash generator.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase2)::
-generate_hash(ChecksumHashGenerator &hash, FLOATTYPE threshold) const {
-  hash.add_fp(_v.v._0, threshold);
-  hash.add_fp(_v.v._1, threshold);
+generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE threshold) const {
+  hashgen.add_fp(_v.v._0, threshold);
+  hashgen.add_fp(_v.v._1, threshold);
 }
 
 ////////////////////////////////////////////////////////////////////

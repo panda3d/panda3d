@@ -127,10 +127,10 @@ compare_to(const NodeTransitionCache &other) const {
 //  Description: Adds the transitions to the indicated hash generator.
 ////////////////////////////////////////////////////////////////////
 void NodeTransitionCache::
-generate_hash(GraphHashGenerator &hash) const {
+generate_hash(GraphHashGenerator &hashgen) const {
   Cache::const_iterator ci;
   for (ci = _cache.begin(); ci != _cache.end(); ++ci) {
-    (*ci).second.generate_hash(hash);
+    (*ci).second.generate_hash(hashgen);
   }
 }
 

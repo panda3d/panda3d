@@ -58,7 +58,7 @@ public:
 
 protected:
   virtual int internal_compare_to(const NodeTransition *other) const;
-  virtual void internal_generate_hash(GraphHashGenerator &hash) const;
+  virtual void internal_generate_hash(GraphHashGenerator &hashgen) const;
 
 protected:
   virtual MatrixTransition<Matrix> *

@@ -44,7 +44,7 @@ public:
 
   INLINE_GRAPH bool is_identity() const;
   INLINE_GRAPH int compare_to(const NodeTransitionCacheEntry &other) const;
-  INLINE_GRAPH void generate_hash(GraphHashGenerator &hash) const;
+  INLINE_GRAPH void generate_hash(GraphHashGenerator &hashgen) const;
 
   INLINE_GRAPH void clear();
 

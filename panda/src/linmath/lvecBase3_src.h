@@ -104,8 +104,8 @@ PUBLISHED:
   INLINE_LINMATH void output(ostream &out) const;
 
 public:
-  INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hash) const;
-  INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hash,
+  INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hashgen) const;
+  INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hashgen,
                                     FLOATTYPE threshold) const;
 
 public:

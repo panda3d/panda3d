@@ -58,9 +58,9 @@ get_value(int val) const {
 //  Description: Sets the hash value at index val
 ////////////////////////////////////////////////////////////////////
 INLINE void HashVal::
-set_value(int val, uint hash) {
+set_value(int val, uint hashval) {
   nassertv(val >= 0 && val < 4);
-  hv[val] = hash;
+  hv[val] = hashval;
 }
 
 

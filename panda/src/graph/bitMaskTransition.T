@@ -196,9 +196,9 @@ internal_compare_to(const NodeTransition *other) const {
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
 void BitMaskTransition<MaskType>::
-internal_generate_hash(GraphHashGenerator &hash) const {
-  _and.generate_hash(hash);
-  _or.generate_hash(hash);
+internal_generate_hash(GraphHashGenerator &hashgen) const {
+  _and.generate_hash(hashgen);
+  _or.generate_hash(hashgen);
 }
 
 ////////////////////////////////////////////////////////////////////

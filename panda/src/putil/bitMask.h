@@ -98,7 +98,7 @@ PUBLISHED:
   INLINE void operator >>= (int shift);
 
 public:
-  INLINE void generate_hash(ChecksumHashGenerator &hash) const;
+  INLINE void generate_hash(ChecksumHashGenerator &hashgen) const;
 
 private:
   WordType _word;

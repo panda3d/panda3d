@@ -117,9 +117,9 @@ operator >= (const NodeTransition &other) const {
 //  Description: Adds the transition to the indicated hash generator.
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeTransition::
-generate_hash(GraphHashGenerator &hash) const {
-  hash.add_int(get_handle().get_index());
-  internal_generate_hash(hash);
+generate_hash(GraphHashGenerator &hashgen) const {
+  hashgen.add_int(get_handle().get_index());
+  internal_generate_hash(hashgen);
 }
 
 ////////////////////////////////////////////////////////////////////
