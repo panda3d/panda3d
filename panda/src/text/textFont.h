@@ -53,6 +53,10 @@ PUBLISHED:
 
   INLINE bool is_valid() const;
   INLINE float get_line_height() const;
+  INLINE void set_line_height(float line_height);
+
+  INLINE float get_space_advance() const;
+  INLINE void set_space_advance(float space_advance);
 
   float calc_width(int character);
   float calc_width(const string &line);
@@ -66,7 +70,6 @@ public:
   wstring wordwrap_to(const wstring &text, float wordwrap_width,
                      bool preserve_trailing_whitespace);
 
-  INLINE float get_space_advance() const;
   virtual bool get_glyph(int character, const TextGlyph *&glyph,
                          float &glyph_scale)=0;
 

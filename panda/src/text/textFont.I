@@ -40,11 +40,32 @@ get_line_height() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextFont::set_line_height
+//       Access: Published
+//  Description: Changes the number of units high each line of text
+//               is.
+////////////////////////////////////////////////////////////////////
+INLINE void TextFont::
+set_line_height(float line_height) {
+  _line_height = line_height;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextFont::get_space_advance
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of units wide a space is.
 ////////////////////////////////////////////////////////////////////
 INLINE float TextFont::
 get_space_advance() const {
   return _space_advance;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextFont::set_space_advance
+//       Access: Published
+//  Description: Changes the number of units wide a space is.
+////////////////////////////////////////////////////////////////////
+INLINE void TextFont::
+set_space_advance(float space_advance) {
+  _space_advance = space_advance;
 }
