@@ -422,46 +422,38 @@ read_body() {
 //               error will have left a partial file, so
 //               is_download_complete() may be called to test this.
 //
-//               If first_byte is nonzero, it specifies the first byte
-//               within the file (zero-based) at which to start
-//               writing the downloaded data.  This can work well in
-//               conjunction with get_subdocument() to restart a
-//               previously-interrupted download.
+//               If subdocument_resumes is true and the document in
+//               question was previously requested as a subdocument
+//               (i.e. get_subdocument() with a first_byte value
+//               greater than zero), this will automatically seek to
+//               the appropriate byte within the file for writing the
+//               output.  In this case, the file must already exist
+//               and must have at least first_byte bytes in it.  If
+//               subdocument_resumes is false, a subdocument will
+//               always be downloaded beginning at the first byte of
+//               the file.
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
-download_to_file(const Filename &filename, size_t first_byte) {
+download_to_file(const Filename &filename, bool subdocument_resumes) {
   reset_download_to();
   _download_to_filename = filename;
   _download_to_filename.set_binary();
   _download_to_file.close();
   _download_to_file.clear();
-  
-  bool truncate = (first_byte == 0);
 
-  if (!_download_to_filename.open_write(_download_to_file, truncate)) {
+  _subdocument_resumes = (subdocument_resumes && _first_byte != 0);
+
+  if (!_download_to_filename.open_write(_download_to_file, !_subdocument_resumes)) {
     downloader_cat.info()
       << "Could not open " << _download_to_filename << " for writing.\n";
     return false;
   }
 
-  if (first_byte != 0) {
-    // Windows doesn't complain if you try to seek past the end of
-    // file--it happily appends enough zero bytes to make the
-    // difference.  Blecch.  That means we need to get the file size
-    // first to check it ourselves.
-    _download_to_file.seekp(0, ios::end);
-    if (first_byte > (size_t)_download_to_file.tellp()) {
-      downloader_cat.info()
-        << "Invalid starting position of byte " << first_byte << " within "
-        << _download_to_filename << " (which has " 
-        << _download_to_file.tellp() << " bytes)\n";
-      _download_to_file.close();
-      return false;
-    }
-    _download_to_file.seekp(first_byte);
-  }
-
   _download_dest = DD_file;
+  if (!reset_download_position()) {
+    reset_download_to();
+    return false;
+  }
 
   if (_nonblocking) {
     // In nonblocking mode, we can't start the download yet; that will
@@ -496,15 +488,28 @@ download_to_file(const Filename &filename, size_t first_byte) {
 //               At this time, it is possible that a communications
 //               error will have left a partial file, so
 //               is_download_complete() may be called to test this.
+//
+//               If subdocument_resumes is true and the document in
+//               question was previously requested as a subdocument
+//               (i.e. get_subdocument() with a first_byte value
+//               greater than zero), this will automatically seek to
+//               the appropriate byte within the Ramfile for writing
+//               the output.  In this case, the Ramfile must already
+//               have at least first_byte bytes in it.
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
-download_to_ram(Ramfile *ramfile) {
+download_to_ram(Ramfile *ramfile, bool subdocument_resumes) {
   nassertr(ramfile != (Ramfile *)NULL, false);
   reset_download_to();
   ramfile->_pos = 0;
-  ramfile->_data = string();
   _download_to_ramfile = ramfile;
   _download_dest = DD_ram;
+  _subdocument_resumes = (subdocument_resumes && _first_byte != 0);
+
+  if (!reset_download_position()) {
+    reset_download_to();
+    return false;
+  }
 
   if (_nonblocking) {
     // In nonblocking mode, we can't start the download yet; that will
@@ -1048,9 +1053,31 @@ run_reading_header() {
   // Look for key properties in the header fields.
   if (get_status_code() == 206) {
     string content_range = get_header_value("Content-Range");
-    if (!content_range.empty()) {
-      parse_content_range(content_range);
+    if (content_range.empty()) {
+      downloader_cat.warning()
+        << "Got 206 response without Content-Range header!\n";
+      _state = S_failure;
+      return false;
+
+    } else {
+      if (!parse_content_range(content_range)) {
+        downloader_cat.warning()
+          << "Couldn't parse Content-Range: " << content_range << "\n";
+        _state = S_failure;
+        return false;
+      }
     }
+
+  } else {
+    _first_byte = 0;
+    _last_byte = 0;
+  }
+
+  // In case we've got a download in effect, reset the download
+  // position to match our starting byte.
+  if (!reset_download_position()) {
+    _state = S_failure;
+    return false;
   }
 
   _file_size = 0;
@@ -1058,9 +1085,9 @@ run_reading_header() {
   if (!content_length.empty()) {
     _file_size = atoi(content_length.c_str());
 
-  } else if (get_status_code() == 206 && _last_byte != 0) {
+  } else if (get_status_code() == 206) {
     // Well, we didn't get a content-length from the server, but we
-    // can infer the number of bytes based on the range we requested.
+    // can infer the number of bytes based on the range we're given.
     _file_size = _last_byte - _first_byte + 1;
   }
   _redirect = get_header_value("Location");
@@ -1530,6 +1557,67 @@ finished_body(bool has_trailer) {
     }
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::reset_download_position
+//       Access: Private
+//  Description: If a download has been requested, seeks within the
+//               download file to the appropriate first_byte position,
+//               so that downloaded bytes will be written to the
+//               appropriate point within the file.  Returns true if
+//               the starting position is valid, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+reset_download_position() {
+  if (_subdocument_resumes) {
+    if (_download_dest == DD_file) {
+      // Windows doesn't complain if you try to seek past the end of
+      // file--it happily appends enough zero bytes to make the
+      // difference.  Blecch.  That means we need to get the file size
+      // first to check it ourselves.
+      _download_to_file.seekp(0, ios::end);
+      if (_first_byte > (size_t)_download_to_file.tellp()) {
+        downloader_cat.info()
+          << "Invalid starting position of byte " << _first_byte << " within "
+          << _download_to_filename << " (which has " 
+          << _download_to_file.tellp() << " bytes)\n";
+        _download_to_file.close();
+        return false;
+      }
+      
+      _download_to_file.seekp(_first_byte);
+      
+    } else if (_download_dest == DD_ram) {
+      if (_first_byte > _download_to_ramfile->_data.length()) {
+        downloader_cat.info()
+          << "Invalid starting position of byte " << _first_byte 
+          << " within Ramfile (which has " 
+          << _download_to_ramfile->_data.length() << " bytes)\n";
+        return false;
+      }
+
+      if (_first_byte == 0) {
+        _download_to_ramfile->_data = string();
+      } else {
+        _download_to_ramfile->_data = 
+          _download_to_ramfile->_data.substr(0, _first_byte);
+      }
+    }
+
+  } else {
+    // If _subdocument_resumes is false, we should be sure to reset to
+    // the beginning of the file, regardless of the value of
+    // _first_byte.
+    if (_download_dest == DD_file) {
+      _download_to_file.seekp(0);
+    } else if (_download_dest == DD_ram) {
+      _download_to_ramfile->_data = string();
+    }
+  }
+
+  return true;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::http_getline

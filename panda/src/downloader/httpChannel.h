@@ -128,8 +128,8 @@ PUBLISHED:
   INLINE void begin_connect_to(const URLSpec &url);
 
   ISocketStream *read_body();
-  bool download_to_file(const Filename &filename, size_t first_byte = 0);
-  bool download_to_ram(Ramfile *ramfile);
+  bool download_to_file(const Filename &filename, bool subdocument_resumes = true);
+  bool download_to_ram(Ramfile *ramfile, bool subdocument_resumes = true);
   SocketStream *get_connection();
 
   INLINE size_t get_bytes_downloaded() const;
@@ -166,6 +166,7 @@ private:
   void reset_for_new_request();
 
   void finished_body(bool has_trailer);
+  bool reset_download_position();
 
   bool http_getline(string &str);
   bool http_send(const string &str);
@@ -225,6 +226,7 @@ private:
     DD_ram,
   };
   DownloadDest _download_dest;
+  bool _subdocument_resumes;
   Filename _download_to_filename;
   ofstream _download_to_file;
   Ramfile *_download_to_ramfile;
