@@ -236,13 +236,12 @@ class DirectCameraControl(PandaObject):
             self.camManipRef.setPos(self.coaMarkerPos)
             self.camManipRef.setHpr(direct.camera, ZERO_POINT)
         else:
-            wrtMat = Mat4()
-            wrtMat.assign(direct.camera.getMat( self.camManipRef ))
+            wrt = direct.camera.getTransform( self.camManipRef )
             self.camManipRef.setHpr(self.camManipRef,
                                     (-1 * deltaX * 180.0),
                                     (deltaY * 180.0),
                                     0.0)
-            direct.camera.setMat(self.camManipRef, wrtMat)
+            direct.camera.setTransform(self.camManipRef, wrt)
         return Task.cont
 
     def spawnMouseRollTask(self):
@@ -254,12 +253,12 @@ class DirectCameraControl(PandaObject):
         t = Task.Task(self.mouseRollTask)
         t.coaCenter = getScreenXY(self.coaMarker)
         t.lastAngle = getCrankAngle(t.coaCenter)
-        # Get a copy of the camera/manipRef offset matrix
-        t.wrtMat = Mat4(direct.camera.getMat( self.camManipRef ))
+        # Store the camera/manipRef offset transform
+        t.wrt = direct.camera.getTransform( self.camManipRef )
         taskMgr.add(t, 'manipulateCamera')
 
     def mouseRollTask(self, state):
-        wrtMat = state.wrtMat
+        wrt = state.wrt
         angle = getCrankAngle(state.coaCenter)
         deltaAngle = angle - state.lastAngle
         state.lastAngle = angle
@@ -267,7 +266,7 @@ class DirectCameraControl(PandaObject):
             self.camManipRef.setHpr(self.camManipRef, 0, 0, deltaAngle)
         else:
             self.camManipRef.setHpr(self.camManipRef, 0, 0, -deltaAngle)
-        direct.camera.setMat(self.camManipRef, wrtMat)
+        direct.camera.setTransform(self.camManipRef, wrt)
         return Task.cont
 
     def lockCOA(self):
@@ -383,7 +382,7 @@ class DirectCameraControl(PandaObject):
         # Record undo point
         direct.pushUndo([direct.camera])
         direct.camera.reparentTo(render)
-        direct.camera.setMat(Mat4.identMat())
+        direct.camera.clearMat()
         # Resize coa marker
         self.updateCoaMarkerSize()
 

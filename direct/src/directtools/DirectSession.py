@@ -642,9 +642,8 @@ class DirectSession(PandaObject):
         # Assemble group of changes
         undoGroup = []
         for nodePath in nodePathList:
-            m = Mat4()
-            m.assign(nodePath.getMat())
-            undoGroup.append([nodePath, m])
+            t = nodePath.getTransform()
+            undoGroup.append([nodePath, t])
         # Now record group
         self.undoList.append(undoGroup)
         # Truncate list
@@ -670,9 +669,8 @@ class DirectSession(PandaObject):
         # Assemble group of changes
         redoGroup = []
         for nodePath in nodePathList:
-            m = Mat4()
-            m.assign(nodePath.getMat())
-            redoGroup.append([nodePath, m])
+            t = nodePath.getTransform()
+            redoGroup.append([nodePath, t])
         # Now record redo group
         self.redoList.append(redoGroup)
         # Truncate list
@@ -701,7 +699,7 @@ class DirectSession(PandaObject):
             # Now undo xform for group
             for pose in undoGroup:
                 # Undo xform
-                pose[0].setMat(pose[1])
+                pose[0].setTransform(pose[1])
             # Alert anyone who cares
             messenger.send('DIRECT_undo')
 
@@ -714,7 +712,7 @@ class DirectSession(PandaObject):
             self.pushUndo(nodePathList, fResetRedo = 0)
             # Redo xform
             for pose in redoGroup:
-                pose[0].setMat(pose[1])
+                pose[0].setTransform(pose[1])
             # Alert anyone who cares
             messenger.send('DIRECT_redo')
 

@@ -21,8 +21,7 @@ class DirectNodePath(NodePath):
         self.mCoa2Dnp.assign(Mat4.identMat())
         #self.mCoa2Dnp.setRow(3, Vec4(center[0], center[1], center[2], 1))
         # Transform from nodePath to widget
-        self.mDnp2Widget = Mat4()
-        self.mDnp2Widget.assign(Mat4.identMat())
+        self.tDnp2Widget = TransformState.makeIdentity()
 
     def highlight(self):
         self.bbox.show()
@@ -168,13 +167,13 @@ class SelectedNodePaths(PandaObject):
         self.forEachSelectedNodePathDo(self.getWrt)
 
     def getWrt(self, nodePath):
-        nodePath.mDnp2Widget.assign(nodePath.getMat(direct.widget))
+        nodePath.tDnp2Widget = nodePath.getTransform(direct.widget)
 
     def moveWrtWidgetAll(self):
         self.forEachSelectedNodePathDo(self.moveWrtWidget)
 
     def moveWrtWidget(self, nodePath):
-        nodePath.setMat(direct.widget, nodePath.mDnp2Widget)
+        nodePath.setTransform(direct.widget, nodePath.tDnp2Widget)
 
     def deselectAll(self):
         self.forEachSelectedNodePathDo(self.deselect)
