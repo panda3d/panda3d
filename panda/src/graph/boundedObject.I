@@ -19,21 +19,15 @@
 #include <notify.h>
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BoundedObject::is_bound_stale
-//       Access: Published
-//  Description: Returns true if the bound is currently marked stale
-//               and will be recomputed the next time get_bound() is
-//               called.
-//
-//               This function is defined up at the top of this file,
-//               because several of the inline functions below
-//               reference it.
+//     Function: BoundedObject::CData::Constructor
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH bool BoundedObject::
-is_bound_stale() const {
-  return (_flags & F_bound_stale) != 0;
+INLINE_GRAPH BoundedObject::CData::
+CData() {
+  _bound_type = BoundedObject::BVT_dynamic_sphere;
+  _flags = F_bound_stale;
 }
-
 
 
 ////////////////////////////////////////////////////////////////////
@@ -43,8 +37,6 @@ is_bound_stale() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH BoundedObject::
 BoundedObject() {
-  _bound_type = BVT_dynamic_sphere;
-  _flags = F_bound_stale;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,8 +49,9 @@ BoundedObject() {
 INLINE_GRAPH void BoundedObject::
 set_bound(BoundedObject::BoundingVolumeType type) {
   nassertv(type != BVT_static);
+  CDWriter cdata(_cycler);
   mark_bound_stale();
-  _bound_type = type;
+  cdata->_bound_type = type;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -70,10 +63,11 @@ set_bound(BoundedObject::BoundingVolumeType type) {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void BoundedObject::
 set_bound(const BoundingVolume &bound) {
+  CDWriter cdata(_cycler);
   mark_bound_stale();
-  _bound_type = BVT_static;
-  _flags &= ~F_bound_stale;  
-  _bound = bound.make_copy();
+  cdata->_bound_type = BVT_static;
+  cdata->_flags &= ~F_bound_stale;  
+  cdata->_bound = bound.make_copy();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -88,12 +82,14 @@ set_bound(const BoundingVolume &bound) {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH const BoundingVolume &BoundedObject::
 get_bound() const {
-  if (_bound_type == BVT_static) {
-    ((BoundedObject *)this)->_flags &= ~F_bound_stale;
-  } else if (is_bound_stale() || _bound == (BoundingVolume *)NULL) {
+  CDReader cdata(_cycler);
+  if (cdata->_bound_type == BVT_static) {
+    CDWriter cdata_w(((BoundedObject *)this)->_cycler);
+    cdata_w->_flags &= ~F_bound_stale;
+  } else if (is_bound_stale() || cdata->_bound == (BoundingVolume *)NULL) {
     ((BoundedObject *)this)->recompute_bound();
   }
-  return *_bound;
+  return *cdata->_bound;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -111,7 +107,8 @@ mark_bound_stale() {
   if (is_bound_stale()) {
     return false;
   }
-  _flags |= F_bound_stale;
+  CDWriter cdata(_cycler);
+  cdata->_flags |= F_bound_stale;
   propagate_stale_bound();
 
   return true;
@@ -126,9 +123,28 @@ mark_bound_stale() {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void BoundedObject::
 force_bound_stale() {
-  _flags |= F_bound_stale;
+  CDWriter cdata(_cycler);
+  cdata->_flags |= F_bound_stale;
   propagate_stale_bound();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundedObject::is_bound_stale
+//       Access: Published
+//  Description: Returns true if the bound is currently marked stale
+//               and will be recomputed the next time get_bound() is
+//               called.
+//
+//               This function is defined up at the top of this file,
+//               because several of the inline functions below
+//               reference it.
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH bool BoundedObject::
+is_bound_stale() const {
+  CDReader cdata(_cycler);
+  return (cdata->_flags & F_bound_stale) != 0;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BoundedObject::set_final
@@ -149,10 +165,11 @@ force_bound_stale() {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void BoundedObject::
 set_final(bool flag) {
+  CDWriter cdata(_cycler);
   if (flag) {
-    _flags |= F_final;
+    cdata->_flags |= F_final;
   } else {
-    _flags &= ~F_final;
+    cdata->_flags &= ~F_final;
   }
 }
 
@@ -166,5 +183,45 @@ set_final(bool flag) {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool BoundedObject::
 is_final() const {
-  return (_flags & F_final) != 0;
+  CDReader cdata(_cycler);
+  return (cdata->_flags & F_final) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundedObject::get_bound_ptr
+//       Access: Protected
+//  Description: Returns the state of the _bound pointer.  To be used
+//               only internally by derived classes.
+//
+//               This returns a const pointer only; the bounding
+//               volume should not be modified directly, because that
+//               might interfere with pipelining.  Instead, create a
+//               new copy with make_copy(), modify the copy, and
+//               set_bound_ptr() with the copy.
+//
+//               Alternatively, if you have just called
+//               recompute_bound(), which is guaranteed to reset the
+//               pointer, just use the return value from that as a
+//               non-const BoundingVolume pointer.
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH const BoundingVolume *BoundedObject::
+get_bound_ptr() const {
+  CDReader cdata(_cycler);
+  return cdata->_bound;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundedObject::set_bound_ptr
+//       Access: Protected
+//  Description: Changes the _bound pointer.  To be used only
+//               internally by derived classes, usually in
+//               recompute_bound().  The return value is the same
+//               pointer passed in, as a convenience (it will now be
+//               reference counted).
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH BoundingVolume *BoundedObject::
+set_bound_ptr(BoundingVolume *bound) {
+  CDWriter cdata(_cycler);
+  cdata->_bound = bound;
+  return bound;
 }

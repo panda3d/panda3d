@@ -817,18 +817,18 @@ propagate_stale_bound() {
 //  Description: Recomputes the dynamic bounding volume for this arc
 //               (and all of its descendants).
 ////////////////////////////////////////////////////////////////////
-void NodeRelation::
+BoundingVolume *NodeRelation::
 recompute_bound() {
   // First, get ourselves a fresh, empty bounding volume.
-  BoundedObject::recompute_bound();
-  nassertv(_bound != (BoundingVolume*)NULL);
+  BoundingVolume *bound = BoundedObject::recompute_bound();
+  nassertr(bound != (BoundingVolume*)NULL, bound);
 
   // Now actually compute the bounding volume by putting it around all
   // of our child bounding volumes.
   pvector<const BoundingVolume *> child_volumes;
 
   Node *node = _child;
-  nassertv(node != (Node*)NULL);
+  nassertr(node != (Node*)NULL, bound);
 
   child_volumes.push_back(&node->get_bound());
 
@@ -841,21 +841,23 @@ recompute_bound() {
 
   const BoundingVolume **child_begin = &child_volumes[0];
   const BoundingVolume **child_end = child_begin + child_volumes.size();
-  bool success =
-    _bound->around(child_begin, child_end);
 
+  bool success =
+    bound->around(child_begin, child_end);
 
 #ifndef NDEBUG
   if (!success) {
     graph_cat.error()
       << "Unable to recompute bounding volume for " << *this << ":\n"
-      << "Cannot put " << _bound->get_type() << " around:\n";
+      << "Cannot put " << bound->get_type() << " around:\n";
     for (int i = 0; i < (int)child_volumes.size(); i++) {
       graph_cat.error(false)
         << "  " << *child_volumes[i] << "\n";
     }
   }
 #endif
+
+  return bound;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -104,13 +104,13 @@ output(ostream &out) const {
 //       Access: Protected, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void CollisionPlane::
+BoundingVolume *CollisionPlane::
 recompute_bound() {
-  // Planes have an infinite bounding volume.
+  // Planes always have an infinite bounding volume.
   BoundedObject::recompute_bound();
   // Less than ideal: we throw away whatever we just allocated in
   // BoundedObject.
-  _bound = new OmniBoundingVolume;
+  return set_bound_ptr(new OmniBoundingVolume);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -61,7 +61,7 @@ public:
 
 protected:
   INLINE CollisionPolygon(void);
-  virtual void recompute_bound();
+  virtual BoundingVolume *recompute_bound();
 
 protected:
   virtual int

@@ -103,13 +103,15 @@ output(ostream &out) const {
 //       Access: Protected, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void CollisionSphere::
+BoundingVolume *CollisionSphere::
 recompute_bound() {
-  BoundedObject::recompute_bound();
-  nassertv(_bound != (BoundingVolume*)0L);
-  nassertv(!_center.is_nan() && !cnan(_radius));
+  BoundingVolume *bound = BoundedObject::recompute_bound();
+  nassertr(bound != (BoundingVolume*)0L, bound);
+  nassertr(!_center.is_nan() && !cnan(_radius), bound);
   BoundingSphere sphere(_center, _radius);
-  _bound->extend_by(&sphere);
+  bound->extend_by(&sphere);
+
+  return bound;
 }
 
 ////////////////////////////////////////////////////////////////////

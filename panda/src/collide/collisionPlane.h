@@ -59,7 +59,7 @@ PUBLISHED:
   INLINE const Planef &get_plane() const;
 
 protected:
-  virtual void recompute_bound();
+  virtual BoundingVolume *recompute_bound();
 
 protected:
   virtual int

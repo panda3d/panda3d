@@ -202,13 +202,13 @@ output(ostream &out) const {
 //       Access: Protected, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void CollisionPolygon::
+BoundingVolume *CollisionPolygon::
 recompute_bound() {
   // First, get ourselves a fresh, empty bounding volume.
-  BoundedObject::recompute_bound();
-  assert(_bound != (BoundingVolume*)0L);
+  BoundingVolume *bound = BoundedObject::recompute_bound();
+  nassertr(bound != (BoundingVolume*)0L, bound);
 
-  GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, _bound);
+  GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bound);
 
   // Now actually compute the bounding volume by putting it around all
   // of our vertices.
@@ -221,6 +221,8 @@ recompute_bound() {
   const LPoint3f *vertices_begin = &vertices[0];
   const LPoint3f *vertices_end = vertices_begin + vertices.size();
   gbv->around(vertices_begin, vertices_end);
+
+  return bound;
 }
 
 ////////////////////////////////////////////////////////////////////

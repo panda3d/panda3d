@@ -24,12 +24,35 @@
 TypeHandle BoundedObject::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BoundedObject::CData::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+BoundedObject::CData::
+CData(const BoundedObject::CData &copy) :
+  _flags(copy._flags),
+  _bound_type(copy._bound_type),
+  _bound(copy._bound)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BoundedObject::Destructor
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BoundedObject::
 ~BoundedObject() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundedObject::CData::make_copy
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+CycleData *BoundedObject::CData::
+make_copy() const {
+  return new CData(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,22 +72,29 @@ propagate_stale_bound() {
 //  Description: Recomputes the dynamic bounding volume for this
 //               object.  The default behavior is the compute an empty
 //               bounding volume; this may be overridden to extend it
-//               to create a nonempty bounding volume.
+//               to create a nonempty bounding volume.  However, after
+//               calling this function, it is guaranteed that the
+//               _bound pointer will not be shared with any other
+//               stage of the pipeline, and this new pointer is
+//               returned.
 ////////////////////////////////////////////////////////////////////
-void BoundedObject::
+BoundingVolume *BoundedObject::
 recompute_bound() {
-  switch (_bound_type) {
+  CDWriter cdata(_cycler);
+  switch (cdata->_bound_type) {
   case BVT_dynamic_sphere:
-    _bound = new BoundingSphere;
+    cdata->_bound = new BoundingSphere;
     break;
 
   default:
     graph_cat.error()
-      << "Unexpected _bound_type: " << (int)_bound_type
+      << "Unexpected _bound_type: " << (int)cdata->_bound_type
       << " in BoundedObject::recompute_bound()\n";
-    _bound = NULL;
+    cdata->_bound = new BoundingSphere;
   }
 
-  _flags &= ~F_bound_stale;
-  // By default, the bound is empty.
+  cdata->_flags &= ~F_bound_stale;
+
+  // Now the _bound is new and empty.
+  return cdata->_bound;
 }

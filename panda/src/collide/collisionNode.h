@@ -67,7 +67,7 @@ public:
   virtual void output(ostream &out) const;
 
 protected:
-  virtual void recompute_bound();
+  virtual BoundingVolume *recompute_bound();
 
 private:
   CollideMask _from_collide_mask;

@@ -232,7 +232,7 @@ public:
 
 protected:
   void init();
-  virtual void recompute_bound();
+  virtual BoundingVolume *recompute_bound();
 
 protected:
 

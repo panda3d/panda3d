@@ -211,7 +211,7 @@ public:
 
 protected:
   virtual void propagate_stale_bound();
-  virtual void recompute_bound();
+  virtual BoundingVolume *recompute_bound();
 
 PUBLISHED:
   INLINE_GRAPH static TypeHandle get_class_type();

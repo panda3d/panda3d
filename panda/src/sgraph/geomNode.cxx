@@ -414,11 +414,11 @@ add_geoms_from(const GeomNode *other) {
 //       Access: Protected, Virtual
 //  Description: Recomputes the dynamic bounding volume for this node.
 ////////////////////////////////////////////////////////////////////
-void GeomNode::
+BoundingVolume *GeomNode::
 recompute_bound() {
   // First, get ourselves a fresh, empty bounding volume.
-  BoundedObject::recompute_bound();
-  assert(_bound != (BoundingVolume *)NULL);
+  BoundingVolume *bound = BoundedObject::recompute_bound();
+  nassertr(bound != (BoundingVolume *)NULL, bound);
 
   // Now actually compute the bounding volume by putting it around all
   // of our drawable's bounding volumes.
@@ -431,7 +431,9 @@ recompute_bound() {
 
   const BoundingVolume **child_begin = &child_volumes[0];
   const BoundingVolume **child_end = child_begin + child_volumes.size();
-  _bound->around(child_begin, child_end);
+
+  bound->around(child_begin, child_end);
+  return bound;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -19,12 +19,15 @@
 #ifndef BOUNDEDOBJECT_H
 #define BOUNDEDOBJECT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "boundingVolume.h"
-
-#include <typedObject.h>
-#include <pointerTo.h>
+#include "cycleData.h"
+#include "cycleDataReader.h"
+#include "cycleDataWriter.h"
+#include "pipelineCycler.h"
+#include "typedObject.h"
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BoundedObject
@@ -58,18 +61,32 @@ PUBLISHED:
 
 protected:
   virtual void propagate_stale_bound();
-  virtual void recompute_bound();
+  virtual BoundingVolume *recompute_bound();
+
+  INLINE_GRAPH const BoundingVolume *get_bound_ptr() const;
+  INLINE_GRAPH BoundingVolume *set_bound_ptr(BoundingVolume *bound);
 
 private:
   enum Flags {
     F_bound_stale  = 0x0001,
     F_final        = 0x0002,
   };
-  int _flags;
-  BoundingVolumeType _bound_type;
 
-protected:
-  PT(BoundingVolume) _bound;
+  // This is the data that must be cycled between pipeline stages.
+  class EXPCL_PANDA CData : public CycleData {
+  public:
+    INLINE_GRAPH CData();
+    CData(const CData &copy);
+    virtual CycleData *make_copy() const;
+
+    int _flags;
+    BoundingVolumeType _bound_type;
+    PT(BoundingVolume) _bound;
+  };
+
+  PipelineCycler<CData> _cycler;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
 
 public:
   static TypeHandle get_class_type() {

@@ -124,20 +124,22 @@ set_from_lens(LensNode *camera, const LPoint2f &point) {
 //       Access: Protected, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void CollisionSegment::
+BoundingVolume *CollisionSegment::
 recompute_bound() {
-  BoundedObject::recompute_bound();
+  BoundingVolume *bound = BoundedObject::recompute_bound();
 
-  if (_bound->is_of_type(GeometricBoundingVolume::get_class_type())) {
+  if (bound->is_of_type(GeometricBoundingVolume::get_class_type())) {
     GeometricBoundingVolume *gbound;
-    DCAST_INTO_V(gbound, _bound);
+    DCAST_INTO_R(gbound, bound, bound);
 
     // This makes the assumption that _a and _b are laid out
     // sequentially in memory.  It works because that's they way
     // they're defined in the class.
-    nassertv(&_a + 1 == &_b);
+    nassertr(&_a + 1 == &_b, bound);
     gbound->around(&_a, &_b + 1);
   }
+
+  return bound;
 }
 
 ////////////////////////////////////////////////////////////////////

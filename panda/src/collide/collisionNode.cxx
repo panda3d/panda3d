@@ -209,11 +209,11 @@ output(ostream &out) const {
 //       Access: Protected, Virtual
 //  Description: Recomputes the dynamic bounding volume for this node.
 ////////////////////////////////////////////////////////////////////
-void CollisionNode::
+BoundingVolume *CollisionNode::
 recompute_bound() {
   // First, get ourselves a fresh, empty bounding volume.
-  BoundedObject::recompute_bound();
-  nassertv(_bound != (BoundingVolume *)NULL);
+  BoundingVolume *bound = BoundedObject::recompute_bound();
+  nassertr(bound != (BoundingVolume *)NULL, bound);
 
   // Now actually compute the bounding volume by putting it around all
   // of our solids' bounding volumes.
@@ -226,20 +226,23 @@ recompute_bound() {
 
   const BoundingVolume **child_begin = &child_volumes[0];
   const BoundingVolume **child_end = child_begin + child_volumes.size();
+
   bool success =
-    _bound->around(child_begin, child_end);
+    bound->around(child_begin, child_end);
 
 #ifdef NOTIFY_DEBUG
   if (!success) {
     collide_cat.error()
       << "Unable to generate bounding volume for " << *this << ":\n"
-      << "Cannot put " << _bound->get_type() << " around:\n";
+      << "Cannot put " << bound->get_type() << " around:\n";
     for (int i = 0; i < (int)child_volumes.size(); i++) {
       collide_cat.error(false)
         << "  " << *child_volumes[i] << "\n";
     }
   }
 #endif
+
+  return bound;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -56,7 +56,7 @@ PUBLISHED:
 
 protected:
   INLINE CollisionSphere(void);
-  virtual void recompute_bound();
+  virtual BoundingVolume *recompute_bound();
 
 protected:
   virtual int

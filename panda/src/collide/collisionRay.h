@@ -67,7 +67,7 @@ PUBLISHED:
   INLINE bool set_from_lens(LensNode *camera, float px, float py);
 
 protected:
-  virtual void recompute_bound();
+  virtual BoundingVolume *recompute_bound();
 
 protected:
   virtual void recompute_viz(Node *parent);

@@ -125,12 +125,12 @@ set_from_lens(LensNode *camera, const LPoint2f &point) {
 //       Access: Protected, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void CollisionRay::
+BoundingVolume *CollisionRay::
 recompute_bound() {
   BoundedObject::recompute_bound();
   // Less than ideal: we throw away whatever we just allocated in
   // BoundedObject.
-  _bound = new BoundingLine(_origin, _origin + _direction);
+  return set_bound_ptr(new BoundingLine(_origin, _origin + _direction));
 }
 
 ////////////////////////////////////////////////////////////////////

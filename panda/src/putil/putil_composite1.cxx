@@ -1,4 +1,3 @@
-
 #include "bamReader.cxx"
 #include "bamReaderParam.cxx"
 #include "bamWriter.cxx"
@@ -8,6 +7,9 @@
 #include "buttonRegistry.cxx"
 #include "config_util.cxx"
 #include "configurable.cxx"
+#include "cycleData.cxx"
+#include "cycleDataReader.cxx"
+#include "cycleDataWriter.cxx"
 #include "factoryBase.cxx"
 #include "factoryParam.cxx"
 #include "factoryParams.cxx"

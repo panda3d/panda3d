@@ -73,7 +73,7 @@ PUBLISHED:
   void add_geoms_from(const GeomNode *other);
 
 protected:
-  virtual void recompute_bound();
+  virtual BoundingVolume *recompute_bound();
 
 private:
   typedef PTA(PT(dDrawable)) Geoms;

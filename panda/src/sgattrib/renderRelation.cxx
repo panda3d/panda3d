@@ -54,21 +54,23 @@ changed_transition(TypeHandle trans_type) {
 //  Description: Recomputes the dynamic bounding volume for this arc
 //               (and all of its descendants).
 ////////////////////////////////////////////////////////////////////
-void RenderRelation::
+BoundingVolume *RenderRelation::
 recompute_bound() {
   // First, compute the bounding volume around all of our children.
-  NodeRelation::recompute_bound();
-  nassertv(_bound != (BoundingVolume *)NULL);
+  BoundingVolume *bound = NodeRelation::recompute_bound();
+  nassertr(bound != (BoundingVolume *)NULL, bound);
 
   // Now, if we have a transform transition on the arc, apply it to
   // the bounding volume.
   GeometricBoundingVolume *gbv;
-  DCAST_INTO_V(gbv, _bound);
+  DCAST_INTO_R(gbv, bound, bound);
 
   const TransformTransition *tt;
   if (get_transition_into(tt, this)) {
     gbv->xform(tt->get_matrix());
   }
+
+  return bound;
 }
 
 ////////////////////////////////////////////////////////////////////

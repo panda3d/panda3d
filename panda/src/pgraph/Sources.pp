@@ -20,17 +20,11 @@
     cullHandler.h \
     cullResult.h \
     qpcullTraverser.h qpcullTraverser.I \
-    cycleData.h cycleData.I \
-    cycleDataReader.h cycleDataReader.I \
-    cycleDataWriter.h cycleDataWriter.I \
     qpgeomNode.h qpgeomNode.I \
     qplensNode.h qplensNode.I \
     nodeChain.h nodeChain.I \
     nodeChainComponent.h nodeChainComponent.I \
     pandaNode.h pandaNode.I \
-    pipeline.h pipeline.I \
-    pipelineCycler.h pipelineCycler.I \
-    pipelineCyclerBase.h pipelineCyclerBase.I \
     renderAttrib.h renderAttrib.I \
     renderState.h renderState.I \
     textureAttrib.h textureAttrib.I \
@@ -53,17 +47,11 @@
     cullHandler.cxx \
     cullResult.cxx \
     qpcullTraverser.cxx \
-    cycleData.cxx \
-    cycleDataReader.cxx \
-    cycleDataWriter.cxx \
     qpgeomNode.cxx \
     qplensNode.cxx \
     nodeChain.cxx \
     nodeChainComponent.cxx \
     pandaNode.cxx \
-    pipeline.cxx \
-    pipelineCycler.cxx \
-    pipelineCyclerBase.cxx \
     renderAttrib.cxx \
     renderState.cxx \
     textureAttrib.cxx \
@@ -91,17 +79,11 @@
     cullHandler.h \
     cullResult.h \
     qpcullTraverser.h qpcullTraverser.I \
-    cycleData.h cycleData.I \
-    cycleDataReader.h cycleDataReader.I \
-    cycleDataWriter.h cycleDataWriter.I \
     qpgeomNode.h qpgeomNode.I \
     qplensNode.h qplensNode.I \
     nodeChain.h nodeChain.I \
     nodeChainComponent.h nodeChainComponent.I \
     pandaNode.h pandaNode.I \
-    pipeline.h pipeline.I \
-    pipelineCycler.h pipelineCycler.I \
-    pipelineCyclerBase.h pipelineCyclerBase.I \
     renderAttrib.h renderAttrib.I \
     renderState.h renderState.I \
     textureAttrib.h textureAttrib.I \

@@ -41,7 +41,7 @@ public:
   virtual void changed_transition(TypeHandle transition_type);
 
 protected:
-  virtual void recompute_bound();
+  virtual BoundingVolume *recompute_bound();
 
 public:
   // This is just to be called at initialization time; don't try to
