@@ -536,6 +536,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void EggFile::
 write_datagram(BamWriter *writer, Datagram &datagram) {
+  TypedWritable::write_datagram(writer, datagram);
   datagram.add_string(get_name());
 
   // We don't write out _data; that needs to be reread each session.
@@ -570,9 +571,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int EggFile::
-complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
-  nassertr((int)p_list.size() >= _num_textures + 1, 0);
-  int index = 0;
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int index = TypedWritable::complete_pointers(p_list, manager);
 
   int i;
   _textures.reserve(_num_textures);
@@ -619,6 +619,7 @@ make_EggFile(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void EggFile::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  TypedWritable::fillin(scan, manager);
   set_name(scan.get_string());
   _current_directory = FilenameUnifier::get_bam_filename(scan.get_string());
   _source_filename = FilenameUnifier::get_bam_filename(scan.get_string());

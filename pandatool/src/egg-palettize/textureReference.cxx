@@ -688,6 +688,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void TextureReference::
 write_datagram(BamWriter *writer, Datagram &datagram) {
+  TypedWritable::write_datagram(writer, datagram);
   writer->write_pointer(datagram, _egg_file);
 
   // We don't write _egg_tex or _egg_data; that's specific to the
@@ -720,9 +721,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int TextureReference::
-complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
-  nassertr((int)p_list.size() >= 3, 0);
-  int index = 0;
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int index = TypedWritable::complete_pointers(p_list, manager);
 
   if (p_list[index] != (TypedWritable *)NULL) {
     DCAST_INTO_R(_egg_file, p_list[index], index);
@@ -770,6 +770,7 @@ make_TextureReference(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void TextureReference::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  TypedWritable::fillin(scan, manager);
   manager->read_pointer(scan, this);  // _egg_file
 
   _tex_mat.read_datagram(scan);

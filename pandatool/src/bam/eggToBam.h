@@ -19,9 +19,9 @@
 #ifndef EGGTOBAM_H
 #define EGGTOBAM_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <eggToSomething.h>
+#include "eggToSomething.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggToBam
@@ -33,6 +33,7 @@ public:
 
   void run();
 
+  bool _pgraph_style;
   bool _keep_paths;
   bool _has_egg_flatten;
   int _egg_flatten;

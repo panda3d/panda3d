@@ -931,6 +931,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void TexturePlacement::
 write_datagram(BamWriter *writer, Datagram &datagram) {
+  TypedWritable::write_datagram(writer, datagram);
   writer->write_pointer(datagram, _texture);
   writer->write_pointer(datagram, _group);
   writer->write_pointer(datagram, _image);
@@ -962,13 +963,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int TexturePlacement::
-complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
-  nassertr((int)p_list.size() >= 3 + _num_references, 0);
-  if (Palettizer::_read_pi_version >= 2) {
-    nassertr((int)p_list.size() >= 4 + _num_references, 0);
-  }
-
-  int index = 0;
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int index = TypedWritable::complete_pointers(p_list, manager);
 
   if (p_list[index] != (TypedWritable *)NULL) {
     DCAST_INTO_R(_texture, p_list[index], index);
@@ -1031,6 +1027,8 @@ make_TexturePlacement(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void TexturePlacement::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  TypedWritable::fillin(scan, manager);
+
   manager->read_pointer(scan, this);  // _texture
   manager->read_pointer(scan, this);  // _group
   manager->read_pointer(scan, this);  // _image

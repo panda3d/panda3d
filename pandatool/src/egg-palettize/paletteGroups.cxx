@@ -279,6 +279,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void PaletteGroups::
 write_datagram(BamWriter *writer, Datagram &datagram) {
+  TypedWritable::write_datagram(writer, datagram);
   datagram.add_uint32(_groups.size());
 
   Groups::const_iterator gi;
@@ -297,14 +298,14 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int PaletteGroups::
-complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
-  nassertr(_num_groups == (int)p_list.size(), 0);
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = TypedWritable::complete_pointers(p_list, manager);
   for (int i = 0; i < _num_groups; i++) {
     PaletteGroup *group;
-    DCAST_INTO_R(group, p_list[i], i);
+    DCAST_INTO_R(group, p_list[pi++], i);
     _groups.insert(group);
   }
-  return 0;
+  return pi;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -335,6 +336,7 @@ make_PaletteGroups(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void PaletteGroups::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  TypedWritable::fillin(scan, manager);
   _num_groups = scan.get_int32();
   manager->read_pointers(scan, this, _num_groups);
 }

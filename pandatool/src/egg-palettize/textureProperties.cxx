@@ -605,6 +605,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void TextureProperties::
 write_datagram(BamWriter *writer, Datagram &datagram) {
+  TypedWritable::write_datagram(writer, datagram);
   datagram.add_bool(_got_num_channels);
   datagram.add_int32(_num_channels);
   datagram.add_int32((int)_format);
@@ -625,9 +626,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int TextureProperties::
-complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
-  nassertr(p_list.size() >= 2, 0);
-  int index = 0;
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int index = TypedWritable::complete_pointers(p_list, manager);
 
   if (p_list[index] != (TypedWritable *)NULL) {
     DCAST_INTO_R(_color_type, p_list[index], index);
@@ -670,6 +670,7 @@ make_TextureProperties(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void TextureProperties::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  TypedWritable::fillin(scan, manager);
   _got_num_channels = scan.get_bool();
   _num_channels = scan.get_int32();
   _format = (EggTexture::Format)scan.get_int32();

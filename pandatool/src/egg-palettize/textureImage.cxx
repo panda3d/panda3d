@@ -1172,9 +1172,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int TextureImage::
-complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
-  nassertr((int)p_list.size() >= _num_placement * 2 + _num_sources + _num_dests, 0);
-  int index = 0;
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int index = ImageFile::complete_pointers(p_list, manager);
 
   int i;
   for (i = 0; i < _num_placement; i++) {

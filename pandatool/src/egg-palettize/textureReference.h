@@ -105,7 +105,7 @@ private:
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram);
-  virtual int complete_pointers(vector_typedWritable &p_list,
+  virtual int complete_pointers(TypedWritable **p_list,
                                 BamReader *manager);
 
 protected:

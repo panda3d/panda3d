@@ -270,6 +270,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void PalettePage::
 write_datagram(BamWriter *writer, Datagram &datagram) {
+  TypedWritable::write_datagram(writer, datagram);
   datagram.add_string(get_name());
 
   writer->write_pointer(datagram, _group);
@@ -294,9 +295,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int PalettePage::
-complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
-  nassertr((int)p_list.size() >= 1 + _num_images, 0);
-  int index = 0;
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int index = TypedWritable::complete_pointers(p_list, manager);
 
   if (p_list[index] != (TypedWritable *)NULL) {
     DCAST_INTO_R(_group, p_list[index], index);
@@ -343,6 +343,7 @@ make_PalettePage(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void PalettePage::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  TypedWritable::fillin(scan, manager);
   set_name(scan.get_string());
 
   manager->read_pointer(scan, this);  // _group

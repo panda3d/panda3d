@@ -600,6 +600,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void PaletteGroup::
 write_datagram(BamWriter *writer, Datagram &datagram) {
+  TypedWritable::write_datagram(writer, datagram);
   datagram.add_string(get_name());
   datagram.add_string(_dirname);
   _dependent.write_datagram(writer, datagram);
@@ -631,9 +632,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int PaletteGroup::
-complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
-  nassertr((int)p_list.size() >= _num_placements + _num_pages, 0);
-  int index = 0;
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int index = TypedWritable::complete_pointers(p_list, manager);
 
   int i;
   for (i = 0; i < _num_placements; i++) {
@@ -711,6 +711,7 @@ make_PaletteGroup(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void PaletteGroup::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  TypedWritable::fillin(scan, manager);
   set_name(scan.get_string());
   _dirname = scan.get_string();
   _dependent.fillin(scan, manager);

@@ -101,6 +101,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void TexturePosition::
 write_datagram(BamWriter *writer, Datagram &datagram) {
+  TypedWritable::write_datagram(writer, datagram);
   datagram.add_int32(_margin);
   datagram.add_int32(_x);
   datagram.add_int32(_y);
@@ -142,6 +143,7 @@ make_TexturePosition(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void TexturePosition::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  TypedWritable::fillin(scan, manager);
   _margin = scan.get_int32();
   _x = scan.get_int32();
   _y = scan.get_int32();

@@ -410,6 +410,7 @@ output_filename(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void ImageFile::
 write_datagram(BamWriter *writer, Datagram &datagram) {
+  TypedWritable::write_datagram(writer, datagram);
   _properties.write_datagram(writer, datagram);
   datagram.add_string(FilenameUnifier::make_bam_filename(_filename));
   datagram.add_string(FilenameUnifier::make_bam_filename(_alpha_filename));
@@ -427,6 +428,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 ////////////////////////////////////////////////////////////////////
 void ImageFile::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  TypedWritable::fillin(scan, manager);
   _properties.fillin(scan, manager);
   _filename = FilenameUnifier::get_bam_filename(scan.get_string());
   _alpha_filename = FilenameUnifier::get_bam_filename(scan.get_string());

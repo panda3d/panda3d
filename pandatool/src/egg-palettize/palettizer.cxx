@@ -862,6 +862,8 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void Palettizer::
 write_datagram(BamWriter *writer, Datagram &datagram) {
+  TypedWritable::write_datagram(writer, datagram);
+
   datagram.add_int32(_pi_version);
   datagram.add_string(_map_dirname);
   datagram.add_string(FilenameUnifier::make_bam_filename(_shadow_dirname));
@@ -916,9 +918,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int Palettizer::
-complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
-  nassertr((int)p_list.size() >= 4 + _num_egg_files + _num_groups + _num_textures, 0);
-  int index = 0;
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int index = TypedWritable::complete_pointers(p_list, manager);
 
   if (p_list[index] != (TypedWritable *)NULL) {
     DCAST_INTO_R(_color_type, p_list[index], index);
@@ -993,6 +994,8 @@ make_Palettizer(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void Palettizer::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  TypedWritable::fillin(scan, manager);
+
   _read_pi_version = scan.get_int32();
   _map_dirname = scan.get_string();
   _shadow_dirname = FilenameUnifier::get_bam_filename(scan.get_string());

@@ -201,11 +201,11 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int SourceTextureImage::
-complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
-  nassertr(p_list.size() >= 1, 0);
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = ImageFile::complete_pointers(p_list, manager);
 
-  DCAST_INTO_R(_texture, p_list[0], 0);
-  return 1;
+  DCAST_INTO_R(_texture, p_list[pi++], pi);
+  return pi;
 }
 
 ////////////////////////////////////////////////////////////////////
