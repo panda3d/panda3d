@@ -6,7 +6,6 @@
 #begin lib_target
   #define USE_AUDIO yes
   #define USE_MIKMOD yes
-  #define USE_RAD_MSS yes
 
   #define TARGET audio
   #define LOCAL_LIBS putil ipc gui
@@ -20,21 +19,20 @@
     audio_mikmod_traits.cxx audio_mikmod_traits.h \
     audio_win_traits.I audio_win_traits.cxx audio_win_traits.h \
     audio_null_traits.I audio_null_traits.cxx audio_null_traits.h \
-    audio_rad_mss_traits.I audio_rad_mss_traits.cxx audio_rad_mss_traits.h \
     audio_linux_traits.I audio_linux_traits.cxx audio_linux_traits.h \
     audio_sound.I audio_sound.cxx audio_sound.h \
-    audio_gui_functor.h audio_gui_functor.cxx
+    audio_gui_functor.h audio_gui_functor.cxx \
+    $[if $[USE_RAD_MSS], audio_rad_mss_traits.I audio_rad_mss_traits.cxx audio_rad_mss_traits.h,]
 
   #define INSTALL_HEADERS \
     audio.h audio_manager.h \
     audio_pool.I audio_pool.h \
     audio_trait.h audio_mikmod_traits.h \
     audio_win_traits.I audio_win_traits.h \
-    audio_rad_mss_traits.I audio_rad_mss_traits.h \
     audio_null_traits.I audio_null_traits.h \
     audio_linux_traits.I audio_linux_traits.h \
-    config_audio.h audio_manager.I audio_sound.h audio_sound.I \
-    audio_gui_functor.h
+    config_audio.h audio_manager.I audio_sound.h audio_sound.I audio_gui_functor.h \
+    $[if $[USE_RAD_MSS], audio_rad_mss_traits.I audio_rad_mss_traits.h,]
 
   #define IGATESCAN audio.h
 #end lib_target

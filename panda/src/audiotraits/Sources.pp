@@ -2,7 +2,6 @@
 #define DIRECTORY_IF_AUDIO yes
 #define DIRECTORY_IF_IPC yes
 #define USE_AUDIO yes
-#define USE_RAD_MSS yes
 
 #begin lib_target
   #define TARGET audio_load_midi
@@ -42,7 +41,7 @@
   #define TARGET audio_load_mp3
   #define BUILDING_DLL BUILDING_MISC
   #define LOCAL_LIBS \
-    audio mpg123 express
+    audio express $[if $[ne $[USE_RAD_MSS],] , mpg123]
   #define C++FLAGS -DGENERIC -DNOXFERMEM
 
   #define SOURCES \

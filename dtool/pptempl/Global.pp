@@ -80,13 +80,6 @@
   #define python_lpath $[wildcard $[PYTHON_LPATH]]
 #endif
 
-#if $[HAVE_RAD_MSS]
-  #define rad_mss_ipath $[wildcard $[RAD_MSS_IPATH]]
-  #define rad_mss_lpath $[wildcard $[RAD_MSS_LPATH]]
-  #define rad_mss_cflags $[RAD_MSS_CFLAGS]
-  #define rad_mss_libs $[RAD_MSS_LIBS]
-#endif
-
 #if $[HAVE_NSPR]
   #define nspr_ipath $[wildcard $[NSPR_IPATH]]
   #define nspr_lpath $[wildcard $[NSPR_LPATH]]
@@ -210,12 +203,18 @@
   #define net_libs $[NET_LIBS]
 #endif
 
-#if $[HAVE_AUDIO]
-  #define audio_ipath $[wildcard $[AUDIO_IPATH]]
-  #define audio_lpath $[wildcard $[AUDIO_LPATH]]
-  #define audio_libs $[AUDIO_LIBS]
-#endif
+#if $[and $[eq $[PLATFORM],Win32], $[ne $[USE_RAD_MSS],]]
+     // Info for the RAD game tools, Miles Sound System  
+     #define AUDIO_IPATH $[RAD_MSS_IPATH]
+     #define AUDIO_LPATH $[RAD_MSS_LPATH]
+     #define AUDIO_LIBS $[RAD_MSS_LIBS]
+#endif   
 
+#if $[HAVE_AUDIO]
+    #define audio_ipath $[wildcard $[AUDIO_IPATH]]
+    #define audio_lpath $[wildcard $[AUDIO_LPATH]]
+    #define audio_libs $[AUDIO_LIBS]  
+#endif
 
 // This variable, when evaluated in the scope of a particular directory,
 // will indicate true (i.e. nonempty) when the directory is truly built,
@@ -415,9 +414,6 @@
   #if $[ne $[USE_VRPN] $[components $[USE_VRPN],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[vrpn_cflags]
   #endif 
-  #if $[ne $[USE_RAD_MSS] $[components $[USE_RAD_MSS],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[rad_mss_cflags]
-  #endif
   #if $[ne $[USE_AUDIO] $[components $[USE_AUDIO],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[audio_cflags]
   #endif
@@ -482,9 +478,6 @@
   #endif
   #if $[ne $[USE_VRPN] $[components $[USE_VRPN],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[vrpn_ipath]
-  #endif
-  #if $[ne $[USE_RAD_MSS] $[components $[USE_RAD_MSS],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[rad_mss_ipath]
   #endif
   #if $[ne $[USE_AUDIO] $[components $[USE_AUDIO],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[audio_ipath]
@@ -551,9 +544,6 @@
   #if $[ne $[USE_VRPN] $[components $[USE_VRPN],$[active_component_libs] $[transitive_link]],]
     #set alt_lpath $[alt_lpath] $[vrpn_lpath]
   #endif
-  #if $[ne $[USE_RAD_MSS] $[components $[USE_RAD_MSS],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[rad_mss_lpath]
-  #endif
   #if $[ne $[USE_AUDIO] $[components $[USE_AUDIO],$[active_component_libs] $[transitive_link]],]
     #set alt_lpath $[alt_lpath] $[audio_lpath]
   #endif
@@ -619,9 +609,6 @@
   #endif
   #if $[ne $[USE_VRPN] $[components $[USE_VRPN],$[active_component_libs] $[transitive_link]],]
     #set alt_libs $[alt_libs] $[vrpn_libs]
-  #endif
-  #if $[ne $[USE_RAD_MSS] $[components $[USE_RAD_MSS],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[rad_mss_libs]
   #endif
   #if $[ne $[USE_AUDIO] $[components $[USE_AUDIO],$[active_component_libs] $[transitive_link]],]
     #set alt_libs $[alt_libs] $[audio_libs]

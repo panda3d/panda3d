@@ -147,13 +147,6 @@
 // to enable it only for optimize levels 1 and 2.
 #defer TRACK_IN_INTERPRETER $[<= $[OPTIMIZE], 2]
 
-
-// Info for the RAD game tools, Miles Sound System
-#define RAD_MSS_IPATH /usr/include/Miles6/include
-#define RAD_MSS_LPATH /usr/lib/Miles6/lib/win
-#define RAD_MSS_LIBS Mss32
-#defer HAVE_RAD_MSS $[libtest $[RAD_MSS_LPATH],$[RAD_MSS_LIBS]]
-
 // Is NSPR installed, and where?  This is the Netscape Portable
 // Runtime library, downloadable as part of the Mozilla package from
 // mozilla.org.  It provides portable threading and networking
@@ -310,15 +303,24 @@
 
 // Do you want to build the audio interface?  What additional
 // libraries are required?
-#define AUDIO_IPATH /mspsdk/Include
-#define AUDIO_LPATH /mspsdk/Lib
+
+#define HAVE_AUDIO 1     
+
 #if $[eq $[PLATFORM],Win32]
+  // vars for older directsound-based audio interface, maybe be overwritten later in Global.pp
+  #define AUDIO_IPATH /mspsdk/Include
+  #define AUDIO_LPATH /mspsdk/Lib  
   #define AUDIO_LIBS winmm.lib dsound.lib user32.lib ole32.lib dxguid.lib
 #else
   #define AUDIO_LIBS
 #endif
-#define HAVE_AUDIO 1
 
+// Info for the RAD game tools, Miles Sound System 
+// note this may be overwritten in wintools Config.pp
+#define RAD_MSS_IPATH /usr/include/Miles6/include
+#define RAD_MSS_LPATH /usr/lib/Miles6/lib/win
+#define RAD_MSS_LIBS Mss32
+#defer HAVE_RAD_MSS $[libtest $[RAD_MSS_LPATH],$[RAD_MSS_LIBS]]
 
 // Is Gtk-- installed?  How should we run the gtkmm-config program?
 // This matters only to programs in PANDATOOL.
