@@ -38,6 +38,8 @@ extern EXPCL_PANDA int audio_output_rate;
 extern EXPCL_PANDA int audio_output_bits;
 extern EXPCL_PANDA int audio_output_channels;
 
+extern EXPCL_PANDA string* audio_library_name;
+
 #ifndef NDEBUG //[
   // Non-release build:
   #define audio_debug(msg) \

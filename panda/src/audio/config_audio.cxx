@@ -56,14 +56,18 @@ int audio_output_channels
 
 string* audio_dls_file;
 
+string* audio_library_name;
+
 
 ConfigureFn(config_audio) {
   AudioSound::init_type();
   AudioGuiFunctor::init_type();
 
   audio_dls_file = new string(
-    config_audio.GetString("audio-dls-file", "GM.DLS")
-  );
+      config_audio.GetString("audio-dls-file", "GM.DLS"));
+
+  audio_library_name = new string(
+      config_audio.GetString("audio-library-name", "miles_audio"));
 }
 
 
