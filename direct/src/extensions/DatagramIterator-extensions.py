@@ -26,6 +26,8 @@
                 retVal = self.getString()
             elif subatomicType == DCSubatomicType.STBlob:
                 retVal = self.getString()
+            elif subatomicType == DCSubatomicType.STBlob32:
+                retVal = self.getString32()
             elif subatomicType == DCSubatomicType.STInt8array:
                 len = self.getUint16()
                 retVal = []

@@ -101,7 +101,7 @@ set_default_value(double num) {
 ////////////////////////////////////////////////////////////////////
 bool DCAtomicField::ElementType::
 set_default_value(const string &str) {
-  if (_type != ST_string && _type != ST_blob) {
+  if (_type != ST_string && _type != ST_blob && _type != ST_blob32) {
     // Only fields of type string or blob accept quoted strings.
     return false;
   }
@@ -175,7 +175,7 @@ add_default_value(const string &str) {
 ////////////////////////////////////////////////////////////////////
 bool DCAtomicField::ElementType::
 add_default_value_literal(const string &str) {
-  if (_type != ST_blob) {
+  if (_type != ST_blob && _type != ST_blob32) {
     // Only blobs can have literal hex strings nested within arrays.
     return false;
   }
@@ -201,6 +201,7 @@ end_array() {
   case ST_uint16array:
   case ST_uint32array:
   case ST_blob:
+  case ST_blob32:
     // These types accept arrays.
     return true;
 
@@ -248,6 +249,7 @@ format_default_value(double num, string &formatted) const {
   case ST_int8array:
   case ST_uint8array:
   case ST_blob:
+  case ST_blob32:
     formatted = string(1, (char)(int_value & 0xff));
     break;
 
@@ -337,6 +339,7 @@ format_default_value(const string &str, string &formatted) const {
   switch (_type) {
   case ST_string:
   case ST_blob:
+  case ST_blob32:
     {
       int length = str.length();
       formatted =
@@ -446,6 +449,7 @@ get_element_default(int n) const {
   case ST_uint32array:
   case ST_uint32uint8array:
   case ST_blob:
+  case ST_blob32:
   case ST_string:
     // These array types also want an implicit length.
     {

@@ -59,6 +59,7 @@ dc_cleanup_parser() {
 %token KW_FLOAT64
 %token KW_STRING
 %token KW_BLOB
+%token KW_BLOB32
 %token KW_INT8ARRAY
 %token KW_INT16ARRAY
 %token KW_INT32ARRAY
@@ -350,6 +351,10 @@ type_token:
         | KW_BLOB
 {
   $$ = ST_blob;
+}
+        | KW_BLOB32
+{
+  $$ = ST_blob32;
 }
         | KW_INT8ARRAY
 {

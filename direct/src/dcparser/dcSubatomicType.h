@@ -44,6 +44,7 @@ enum DCSubatomicType {
 
   ST_string,      // a human-printable string
   ST_blob,        // any variable length message, stored as a string
+  ST_blob32,      // a blob with a 32-bit length, up to 4.2 GB long
   ST_int16array,
   ST_int32array,
   ST_uint16array,
