@@ -310,8 +310,9 @@ class Particles(ParticleSystem.ParticleSystem):
 	elif (self.emitterType == "DiscEmitter"):
 	    print "# Disc parameters"
 	    print 'emitter.setRadius(%f)' % self.emitter.getRadius()
-	    print 'emitter.setOuterAngle(%f)' % self.emitter.getOuterAngle()
-	    print 'emitter.setInnerAngle(%f)' % self.emitter.getInnerAngle()
+	    if (eType == "ET_CUSTOM"):
+	    	print 'emitter.setOuterAngle(%f)' % self.emitter.getOuterAngle()
+	    	print 'emitter.setInnerAngle(%f)' % self.emitter.getInnerAngle()
 	    print 'emitter.setOuterMagnitude(%f)' % self.emitter.getOuterMagnitude()
 	    print 'emitter.setInnerMagnitude(%f)' % self.emitter.getInnerMagnitude()
 	    print 'emitter.setCubicLerping(%d)' % self.emitter.getCubicLerping()
@@ -335,7 +336,8 @@ class Particles(ParticleSystem.ParticleSystem):
 	elif (self.emitterType == "RingEmitter"):
 	    print "# Ring parameters"
 	    print 'emitter.setRadius(%f)' % self.emitter.getRadius()
-	    print 'emitter.setAngle(%f)' % self.emitter.getAngle()
+	    if (eType == "ET_CUSTOM"):
+	    	print 'emitter.setAngle(%f)' % self.emitter.getAngle()
 	elif (self.emitterType == "SphereSurfaceEmitter"):
 	    print "# Sphere Surface parameters"
 	    print 'emitter.setRadius(%f)' % self.emitter.getRadius()
