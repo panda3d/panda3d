@@ -2003,21 +2003,6 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
   itype._flags |= InterrogateType::F_global;
 
   CPPScope *scope = cpptype->_scope;
-      
-  // Record the derivation of this class.  Do we need to synthesize
-  // upcast/downcast functions?
-  bool generate_casts = false;
-  if (cpptype->_derivation.size() > 1) {
-    // If we have multiple inheritance, we need explicit cast operators.
-    generate_casts = true;
-  }
-  if (cpptype->_derivation.size() == 1) {
-    // If we have single inheritance, but it's a virtual inheritance,
-    // we also need explicit cast operators.
-    if (cpptype->_derivation.front()._is_virtual) {
-      generate_casts = true;
-    }
-  }
 
   CPPStructType::Derivation::const_iterator bi;
   for (bi = cpptype->_derivation.begin();
@@ -2033,12 +2018,32 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
       d._base = base_index;
       d._upcast = 0;
       d._downcast = 0;
+
+      // Do we need to synthesize upcast and downcast functions?
+      bool generate_casts = false;
+      if (base._is_virtual) {
+	// We do in the presence of virtual inheritance.
+	generate_casts = true;
+
+      } else if (bi != cpptype->_derivation.begin()) {
+	// Or if we're not talking about the leftmost fork of multiple
+	// inheritance.
+	generate_casts = true;
+
+      } else if (cpptype->_derivation.size() != 1 &&
+		 left_inheritance_requires_upcast) {
+	// Or even if we are the leftmost fork of multiple
+	// inheritance, if the flag is set indicating that this
+	// requires a pointer change.  (For most compilers, this does
+	// not require a pointer change.)
+	generate_casts = true;
+      }
       
       if (generate_casts) {
 	d._upcast = get_cast_function(base_type, cpptype, "upcast");
 	d._flags |= InterrogateType::DF_upcast;
 
-	if ((*bi)._is_virtual) {
+	if (base._is_virtual) {
 	  // If this is a virtual inheritance, we can't write a
 	  // downcast.
 	  d._flags |= InterrogateType::DF_downcast_impossible;

@@ -30,6 +30,7 @@ extern bool build_python_wrappers;
 extern bool save_unique_names;
 extern bool no_database;
 extern bool generate_spam;
+extern bool left_inheritance_requires_upcast;
 extern CPPVisibility min_vis;
 extern string library_name;
 extern string module_name;
