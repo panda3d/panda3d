@@ -52,6 +52,8 @@ PUBLISHED:
   string format_data(const string &packed_data);
   string parse_string(const string &formatted_string);
 
+  bool validate_ranges(const string &packed_data) const;
+
 #ifdef HAVE_PYTHON
   bool pack_args(Datagram &datagram, PyObject *sequence) const;
   PyObject *unpack_args(DatagramIterator &iterator) const;
@@ -66,7 +68,7 @@ public:
   DCField(const string &name);
   virtual ~DCField();
   virtual void write(ostream &out, bool brief, int indent_level) const=0;
-  virtual void generate_hash(HashGenerator &hash) const;
+  virtual void generate_hash(HashGenerator &hashgen) const;
 
   void set_number(int number);
 

@@ -371,7 +371,9 @@ type_name:
         | type_token '(' double_range ')'
 {
   DCSimpleParameter *simple_param = new DCSimpleParameter($1);
-  simple_param->set_range(double_range);
+  if (!simple_param->set_range(double_range)) {
+    yyerror("Inappropriate range for type");
+  }
   $$ = simple_param;
 }
         | type_token '/' INTEGER
@@ -394,7 +396,9 @@ type_name:
   } else if (!simple_param->set_divisor($3)) {
     yyerror("A divisor is only valid on a numeric type.");
   }
-  simple_param->set_range(double_range);
+  if (!simple_param->set_range(double_range)) {
+    yyerror("Inappropriate range for type");
+  }
   $$ = simple_param;
 }
 	| type_token '(' double_range ')' '/' INTEGER
@@ -406,7 +410,9 @@ type_name:
   } else if (!simple_param->set_divisor($6)) {
     yyerror("A divisor is only valid on a numeric type.");
   }
-  simple_param->set_range(double_range);
+  if (!simple_param->set_range(double_range)) {
+    yyerror("Inappropriate range for type");
+  }
   $$ = simple_param;
 }
 	| IDENTIFIER

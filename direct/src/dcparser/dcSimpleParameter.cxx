@@ -290,17 +290,43 @@ set_divisor(int divisor) {
 //  Description: Sets the parameter with the indicated range.  A
 //               DCDoubleRange is used for specification, since this
 //               is the most generic type; but it is converted to the
-//               appropriate type internally.
+//               appropriate type internally.  The return value is
+//               true if successful, or false if the range is
+//               inappropriate for the type.
 ////////////////////////////////////////////////////////////////////
-void DCSimpleParameter::
+bool DCSimpleParameter::
 set_range(const DCDoubleRange &range) {
+  bool range_error = false;
   int num_ranges = range.get_num_ranges();
   int i;
 
   switch (_type) {
   case ST_int8:
+  case ST_int8array:
+    _int_range.clear();
+    for (i = 0; i < num_ranges; i++) {
+      int min = (int)floor(range.get_min(i) * _divisor + 0.5);
+      int max = (int)floor(range.get_max(i) * _divisor + 0.5);
+      validate_int_limits(min, 8, range_error);
+      validate_int_limits(max, 8, range_error);
+      _int_range.add_range(min, max);
+    }
+    break;
+    
   case ST_int16:
+  case ST_int16array:
+    _int_range.clear();
+    for (i = 0; i < num_ranges; i++) {
+      int min = (int)floor(range.get_min(i) * _divisor + 0.5);
+      int max = (int)floor(range.get_max(i) * _divisor + 0.5);
+      validate_int_limits(min, 16, range_error);
+      validate_int_limits(max, 16, range_error);
+      _int_range.add_range(min, max);
+    }
+    break;
+    
   case ST_int32:
+  case ST_int32array:
     _int_range.clear();
     for (i = 0; i < num_ranges; i++) {
       int min = (int)floor(range.get_min(i) * _divisor + 0.5);
@@ -319,8 +345,34 @@ set_range(const DCDoubleRange &range) {
     break;
     
   case ST_uint8:
+  case ST_uint8array:
+    _uint_range.clear();
+    for (i = 0; i < num_ranges; i++) {
+      unsigned int min = (unsigned int)floor(range.get_min(i) * _divisor + 0.5);
+      unsigned int max = (unsigned int)floor(range.get_max(i) * _divisor + 0.5);
+      validate_uint_limits(min, 8, range_error);
+      validate_uint_limits(max, 8, range_error);
+      _uint_range.add_range(min, max);
+    }
+    break;
+    
   case ST_uint16:
+  case ST_uint16array:
+  case ST_string:
+  case ST_blob:
+    _uint_range.clear();
+    for (i = 0; i < num_ranges; i++) {
+      unsigned int min = (unsigned int)floor(range.get_min(i) * _divisor + 0.5);
+      unsigned int max = (unsigned int)floor(range.get_max(i) * _divisor + 0.5);
+      validate_uint_limits(min, 16, range_error);
+      validate_uint_limits(max, 16, range_error);
+      _uint_range.add_range(min, max);
+    }
+    break;
+    
   case ST_uint32:
+  case ST_uint32array:
+  case ST_blob32:
     _uint_range.clear();
     for (i = 0; i < num_ranges; i++) {
       unsigned int min = (unsigned int)floor(range.get_min(i) * _divisor + 0.5);
@@ -348,8 +400,10 @@ set_range(const DCDoubleRange &range) {
     break;
 
   default:
-    break;
+    return false;
   }
+
+  return !range_error;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -387,854 +441,1059 @@ get_nested_field(int) const {
 //     Function: DCSimpleParameter::pack_double
 //       Access: Published, Virtual
 //  Description: Packs the indicated numeric or string value into the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleParameter::
-pack_double(DCPackData &pack_data, double value) const {
-  bool pack_error = false;
+void DCSimpleParameter::
+pack_double(DCPackData &pack_data, double value,
+            bool &pack_error, bool &range_error) const {
   double real_value = value * _divisor;
 
   switch (_type) {
   case ST_int8:
     {
       int int_value = (int)floor(real_value + 0.5);
-      _int_range.validate(int_value, pack_error);
-      do_pack_int8(pack_data.get_write_pointer(1), int_value, pack_error);
+      _int_range.validate(int_value, range_error);
+      validate_int_limits(int_value, 8, range_error);
+      do_pack_int8(pack_data.get_write_pointer(1), int_value);
     }
     break;
 
   case ST_int16:
     {
       int int_value = (int)floor(real_value + 0.5);
-      _int_range.validate(int_value, pack_error);
-      do_pack_int16(pack_data.get_write_pointer(2), int_value, pack_error);
+      _int_range.validate(int_value, range_error);
+      validate_int_limits(int_value, 16, range_error);
+      do_pack_int16(pack_data.get_write_pointer(2), int_value);
     }
     break;
     
   case ST_int32:
     {
       int int_value = (int)floor(real_value + 0.5);
-      _int_range.validate(int_value, pack_error);
-      do_pack_int32(pack_data.get_write_pointer(4), int_value, pack_error);
+      _int_range.validate(int_value, range_error);
+      do_pack_int32(pack_data.get_write_pointer(4), int_value);
     }
     break;
     
   case ST_int64:
     {
       PN_int64 int64_value = (PN_int64)floor(real_value + 0.5);
-      _int64_range.validate(int64_value, pack_error);
-      do_pack_int64(pack_data.get_write_pointer(8), int64_value, pack_error);
+      _int64_range.validate(int64_value, range_error);
+      do_pack_int64(pack_data.get_write_pointer(8), int64_value);
     }
     break;
     
   case ST_uint8:
     {
       unsigned int int_value = (unsigned int)floor(real_value + 0.5);
-      _uint_range.validate(int_value, pack_error);
-      do_pack_uint8(pack_data.get_write_pointer(1), int_value, pack_error);
+      _uint_range.validate(int_value, range_error);
+      validate_uint_limits(int_value, 8, range_error);
+      do_pack_uint8(pack_data.get_write_pointer(1), int_value);
     }
     break;
     
   case ST_uint16:
     {
       unsigned int int_value = (unsigned int)floor(real_value + 0.5);
-      _uint_range.validate(int_value, pack_error);
-      do_pack_uint16(pack_data.get_write_pointer(2), int_value, pack_error);
+      _uint_range.validate(int_value, range_error);
+      validate_uint_limits(int_value, 16, range_error);
+      do_pack_uint16(pack_data.get_write_pointer(2), int_value);
     }
     break;
     
   case ST_uint32:
     {
       unsigned int int_value = (unsigned int)floor(real_value + 0.5);
-      _uint_range.validate(int_value, pack_error);
-      do_pack_uint32(pack_data.get_write_pointer(4), int_value, pack_error);
+      _uint_range.validate(int_value, range_error);
+      do_pack_uint32(pack_data.get_write_pointer(4), int_value);
     }
     break;
     
   case ST_uint64:
     {
       PN_uint64 int64_value = (PN_uint64)floor(real_value + 0.5);
-      _uint64_range.validate(int64_value, pack_error);
-      do_pack_uint64(pack_data.get_write_pointer(8), int64_value, pack_error);
+      _uint64_range.validate(int64_value, range_error);
+      do_pack_uint64(pack_data.get_write_pointer(8), int64_value);
     }
     break;
 
   case ST_float64:
-    _double_range.validate(real_value, pack_error);
-    do_pack_float64(pack_data.get_write_pointer(8), real_value, pack_error);
+    _double_range.validate(real_value, range_error);
+    do_pack_float64(pack_data.get_write_pointer(8), real_value);
     break;
 
   default:
-    return false;
+    pack_error = true;
   }
-
-  return !pack_error;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleParameter::pack_int
 //       Access: Published, Virtual
 //  Description: Packs the indicated numeric or string value into the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleParameter::
-pack_int(DCPackData &pack_data, int value) const {
-  bool pack_error = false;
+void DCSimpleParameter::
+pack_int(DCPackData &pack_data, int value,
+         bool &pack_error, bool &range_error) const {
   int int_value = value * _divisor;
 
   switch (_type) {
   case ST_int8:
-    _int_range.validate(int_value, pack_error);
-    do_pack_int8(pack_data.get_write_pointer(1), int_value, pack_error);
+    _int_range.validate(int_value, range_error);
+    validate_int_limits(int_value, 8, range_error);
+    do_pack_int8(pack_data.get_write_pointer(1), int_value);
     break;
 
   case ST_int16:
-    _int_range.validate(int_value, pack_error);
-    do_pack_int16(pack_data.get_write_pointer(2), int_value, pack_error);
+    _int_range.validate(int_value, range_error);
+    validate_int_limits(int_value, 16, range_error);
+    do_pack_int16(pack_data.get_write_pointer(2), int_value);
     break;
 
   case ST_int32:
-    _int_range.validate(int_value, pack_error);
-    do_pack_int32(pack_data.get_write_pointer(4), int_value, pack_error);
+    _int_range.validate(int_value, range_error);
+    do_pack_int32(pack_data.get_write_pointer(4), int_value);
     break;
 
   case ST_int64:
-    _int64_range.validate(int_value, pack_error);
-    do_pack_int64(pack_data.get_write_pointer(8), int_value, pack_error);
+    _int64_range.validate(int_value, range_error);
+    do_pack_int64(pack_data.get_write_pointer(8), int_value);
     break;
 
   case ST_uint8:
-    _uint_range.validate((unsigned int)int_value, pack_error);
-    do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)int_value, pack_error);
+    _uint_range.validate((unsigned int)int_value, range_error);
+    validate_uint_limits((unsigned int)int_value, 8, range_error);
+    do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)int_value);
     break;
 
   case ST_uint16:
-    _uint_range.validate((unsigned int)int_value, pack_error);
-    do_pack_uint16(pack_data.get_write_pointer(2), (unsigned int)int_value, pack_error);
+    _uint_range.validate((unsigned int)int_value, range_error);
+    validate_uint_limits((unsigned int)int_value, 16, range_error);
+    do_pack_uint16(pack_data.get_write_pointer(2), (unsigned int)int_value);
     break;
 
   case ST_uint32:
-    _uint_range.validate((unsigned int)int_value, pack_error);
-    do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)int_value, pack_error);
+    _uint_range.validate((unsigned int)int_value, range_error);
+    do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)int_value);
     break;
 
   case ST_uint64:
-    _uint64_range.validate((unsigned int)int_value, pack_error);
-    do_pack_uint64(pack_data.get_write_pointer(8), (unsigned int)int_value, pack_error);
+    _uint64_range.validate((unsigned int)int_value, range_error);
+    do_pack_uint64(pack_data.get_write_pointer(8), (unsigned int)int_value);
     break;
 
   case ST_float64:
-    _double_range.validate(int_value, pack_error);
-    do_pack_float64(pack_data.get_write_pointer(8), int_value, pack_error);
+    _double_range.validate(int_value, range_error);
+    do_pack_float64(pack_data.get_write_pointer(8), int_value);
     break;
 
   default:
-    return false;
+    pack_error = true;
   }
-
-  return !pack_error;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleParameter::pack_uint
 //       Access: Published, Virtual
 //  Description: Packs the indicated numeric or string value into the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleParameter::
-pack_uint(DCPackData &pack_data, unsigned int value) const {
-  bool pack_error = false;
+void DCSimpleParameter::
+pack_uint(DCPackData &pack_data, unsigned int value,
+            bool &pack_error, bool &range_error) const {
   unsigned int int_value = value * _divisor;
 
   switch (_type) {
   case ST_int8:
-    _int_range.validate((int)int_value, pack_error);
-    do_pack_int8(pack_data.get_write_pointer(1), (int)int_value, pack_error);
+    _int_range.validate((int)int_value, range_error);
+    validate_int_limits((int)int_value, 8, range_error);
+    do_pack_int8(pack_data.get_write_pointer(1), (int)int_value);
     break;
 
   case ST_int16:
-    _int_range.validate((int)int_value, pack_error);
-    do_pack_int16(pack_data.get_write_pointer(2), (int)int_value, pack_error);
+    _int_range.validate((int)int_value, range_error);
+    validate_int_limits((int)int_value, 16, range_error);
+    do_pack_int16(pack_data.get_write_pointer(2), (int)int_value);
     break;
 
   case ST_int32:
-    _int_range.validate((int)int_value, pack_error);
-    do_pack_int32(pack_data.get_write_pointer(4), (int)int_value, pack_error);
+    _int_range.validate((int)int_value, range_error);
+    do_pack_int32(pack_data.get_write_pointer(4), (int)int_value);
     break;
 
   case ST_int64:
-    _int64_range.validate((int)int_value, pack_error);
-    do_pack_int64(pack_data.get_write_pointer(8), (int)int_value, pack_error);
+    _int64_range.validate((int)int_value, range_error);
+    do_pack_int64(pack_data.get_write_pointer(8), (int)int_value);
     break;
 
   case ST_uint8:
-    _uint_range.validate(int_value, pack_error);
-    do_pack_uint8(pack_data.get_write_pointer(1), int_value, pack_error);
+    _uint_range.validate(int_value, range_error);
+    validate_uint_limits(int_value, 8, range_error);
+    do_pack_uint8(pack_data.get_write_pointer(1), int_value);
     break;
 
   case ST_uint16:
-    _uint_range.validate(int_value, pack_error);
-    do_pack_uint16(pack_data.get_write_pointer(2), int_value, pack_error);
+    _uint_range.validate(int_value, range_error);
+    validate_uint_limits(int_value, 16, range_error);
+    do_pack_uint16(pack_data.get_write_pointer(2), int_value);
     break;
 
   case ST_uint32:
-    _uint_range.validate(int_value, pack_error);
-    do_pack_uint32(pack_data.get_write_pointer(4), int_value, pack_error);
+    _uint_range.validate(int_value, range_error);
+    do_pack_uint32(pack_data.get_write_pointer(4), int_value);
     break;
 
   case ST_uint64:
-    _uint64_range.validate(int_value, pack_error);
-    do_pack_uint64(pack_data.get_write_pointer(8), int_value, pack_error);
+    _uint64_range.validate(int_value, range_error);
+    do_pack_uint64(pack_data.get_write_pointer(8), int_value);
     break;
 
   case ST_float64:
-    _double_range.validate(int_value, pack_error);
-    do_pack_float64(pack_data.get_write_pointer(8), int_value, pack_error);
+    _double_range.validate(int_value, range_error);
+    do_pack_float64(pack_data.get_write_pointer(8), int_value);
     break;
 
   default:
-    return false;
+    pack_error = true;
   }
-
-  return !pack_error;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleParameter::pack_int64
 //       Access: Published, Virtual
 //  Description: Packs the indicated numeric or string value into the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleParameter::
-pack_int64(DCPackData &pack_data, PN_int64 value) const {
-  bool pack_error = false;
+void DCSimpleParameter::
+pack_int64(DCPackData &pack_data, PN_int64 value,
+            bool &pack_error, bool &range_error) const {
   PN_int64 int_value = value * _divisor;
 
   switch (_type) {
   case ST_int8:
-    _int_range.validate((int)int_value, pack_error);
-    do_pack_int8(pack_data.get_write_pointer(1), (int)int_value, pack_error);
+    _int_range.validate((int)int_value, range_error);
+    validate_int64_limits(int_value, 8, range_error);
+    do_pack_int8(pack_data.get_write_pointer(1), (int)int_value);
     break;
 
   case ST_int16:
-    _int_range.validate((int)int_value, pack_error);
-    do_pack_int16(pack_data.get_write_pointer(2), (int)int_value, pack_error);
+    _int_range.validate((int)int_value, range_error);
+    validate_int64_limits(int_value, 16, range_error);
+    do_pack_int16(pack_data.get_write_pointer(2), (int)int_value);
     break;
 
   case ST_int32:
-    _int_range.validate((int)int_value, pack_error);
-    do_pack_int32(pack_data.get_write_pointer(4), (int)int_value, pack_error);
+    _int_range.validate((int)int_value, range_error);
+    validate_int64_limits(int_value, 32, range_error);
+    do_pack_int32(pack_data.get_write_pointer(4), (int)int_value);
     break;
 
   case ST_int64:
-    _int64_range.validate(int_value, pack_error);
-    do_pack_int64(pack_data.get_write_pointer(8), int_value, pack_error);
+    _int64_range.validate(int_value, range_error);
+    do_pack_int64(pack_data.get_write_pointer(8), int_value);
     break;
 
   case ST_uint8:
-    _uint_range.validate((unsigned int)(PN_uint64)int_value, pack_error);
-    do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)(PN_uint64)int_value, pack_error);
+    _uint_range.validate((unsigned int)(PN_uint64)int_value, range_error);
+    validate_uint64_limits((PN_uint64)int_value, 8, range_error);
+    do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)(PN_uint64)int_value);
     break;
 
   case ST_uint16:
-    _uint_range.validate((unsigned int)(PN_uint64)int_value, pack_error);
-    do_pack_uint16(pack_data.get_write_pointer(2), (unsigned int)(PN_uint64)int_value, pack_error);
+    _uint_range.validate((unsigned int)(PN_uint64)int_value, range_error);
+    validate_uint64_limits((PN_uint64)int_value, 16, range_error);
+    do_pack_uint16(pack_data.get_write_pointer(2), (unsigned int)(PN_uint64)int_value);
     break;
 
   case ST_uint32:
-    _uint_range.validate((unsigned int)(PN_uint64)int_value, pack_error);
-    do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)(PN_uint64)int_value, pack_error);
+    _uint_range.validate((unsigned int)(PN_uint64)int_value, range_error);
+    validate_uint64_limits((PN_uint64)int_value, 32, range_error);
+    do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)(PN_uint64)int_value);
     break;
 
   case ST_uint64:
-    _uint64_range.validate((PN_uint64)int_value, pack_error);
-    do_pack_uint64(pack_data.get_write_pointer(8), (PN_uint64)int_value, pack_error);
+    _uint64_range.validate((PN_uint64)int_value, range_error);
+    do_pack_uint64(pack_data.get_write_pointer(8), (PN_uint64)int_value);
     break;
 
   case ST_float64:
-    _double_range.validate((double)int_value, pack_error);
-    do_pack_float64(pack_data.get_write_pointer(8), (double)int_value, pack_error);
+    _double_range.validate((double)int_value, range_error);
+    do_pack_float64(pack_data.get_write_pointer(8), (double)int_value);
     break;
 
   default:
-    return false;
+    pack_error = true;
   }
-
-  return !pack_error;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleParameter::pack_uint64
 //       Access: Published, Virtual
 //  Description: Packs the indicated numeric or string value into the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleParameter::
-pack_uint64(DCPackData &pack_data, PN_uint64 value) const {
-  bool pack_error = false;
+void DCSimpleParameter::
+pack_uint64(DCPackData &pack_data, PN_uint64 value,
+            bool &pack_error, bool &range_error) const {
   PN_uint64 int_value = value * _divisor;
 
   switch (_type) {
   case ST_int8:
-    _int_range.validate((int)(PN_int64)int_value, pack_error);
-    do_pack_int8(pack_data.get_write_pointer(1), (int)(PN_int64)int_value, pack_error);
+    _int_range.validate((int)(PN_int64)int_value, range_error);
+    validate_int64_limits((PN_int64)int_value, 8, range_error);
+    do_pack_int8(pack_data.get_write_pointer(1), (int)(PN_int64)int_value);
     break;
 
   case ST_int16:
-    _int_range.validate((int)(PN_int64)int_value, pack_error);
-    do_pack_int16(pack_data.get_write_pointer(2), (int)(PN_int64)int_value, pack_error);
+    _int_range.validate((int)(PN_int64)int_value, range_error);
+    validate_int64_limits((PN_int64)int_value, 16, range_error);
+    do_pack_int16(pack_data.get_write_pointer(2), (int)(PN_int64)int_value);
     break;
 
   case ST_int32:
-    _int_range.validate((int)(PN_int64)int_value, pack_error);
-    do_pack_int32(pack_data.get_write_pointer(4), (int)(PN_int64)int_value, pack_error);
+    _int_range.validate((int)(PN_int64)int_value, range_error);
+    validate_int64_limits((PN_int64)int_value, 32, range_error);
+    do_pack_int32(pack_data.get_write_pointer(4), (int)(PN_int64)int_value);
     break;
 
   case ST_int64:
-    _int64_range.validate((PN_int64)int_value, pack_error);
-    do_pack_int64(pack_data.get_write_pointer(8), (PN_int64)int_value, pack_error);
+    _int64_range.validate((PN_int64)int_value, range_error);
+    do_pack_int64(pack_data.get_write_pointer(8), (PN_int64)int_value);
     break;
 
   case ST_uint8:
-    _uint_range.validate((unsigned int)int_value, pack_error);
-    do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)int_value, pack_error);
+    _uint_range.validate((unsigned int)int_value, range_error);
+    validate_uint64_limits(int_value, 8, range_error);
+    do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)int_value);
     break;
 
   case ST_uint16:
-    _uint_range.validate((unsigned int)int_value, pack_error);
-    do_pack_uint16(pack_data.get_write_pointer(2), (unsigned int)int_value, pack_error);
+    _uint_range.validate((unsigned int)int_value, range_error);
+    validate_uint64_limits(int_value, 16, range_error);
+    do_pack_uint16(pack_data.get_write_pointer(2), (unsigned int)int_value);
     break;
 
   case ST_uint32:
-    _uint_range.validate((unsigned int)int_value, pack_error);
-    do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)int_value, pack_error);
+    _uint_range.validate((unsigned int)int_value, range_error);
+    validate_uint64_limits(int_value, 32, range_error);
+    do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)int_value);
     break;
 
   case ST_uint64:
-    _uint64_range.validate(int_value, pack_error);
-    do_pack_uint64(pack_data.get_write_pointer(8), int_value, pack_error);
+    _uint64_range.validate(int_value, range_error);
+    do_pack_uint64(pack_data.get_write_pointer(8), int_value);
     break;
 
   case ST_float64:
-    _double_range.validate((double)int_value, pack_error);
-    do_pack_float64(pack_data.get_write_pointer(8), (double)int_value, pack_error);
+    _double_range.validate((double)int_value, range_error);
+    do_pack_float64(pack_data.get_write_pointer(8), (double)int_value);
     break;
 
   default:
-    return false;
+    pack_error = true;
   }
-
-  return !pack_error;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleParameter::pack_string
 //       Access: Published, Virtual
 //  Description: Packs the indicated numeric or string value into the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleParameter::
-pack_string(DCPackData &pack_data, const string &value) const {
-  bool pack_error = false;
+void DCSimpleParameter::
+pack_string(DCPackData &pack_data, const string &value,
+            bool &pack_error, bool &range_error) const {
   size_t string_length = value.length();
-  _uint_range.validate(string_length, pack_error);
+  _uint_range.validate(string_length, range_error);
 
   switch (_type) {
   case ST_string:
   case ST_blob:
-    do_pack_uint16(pack_data.get_write_pointer(2), string_length,
-                   pack_error);
+    validate_uint_limits(string_length, 16, range_error);
+    do_pack_uint16(pack_data.get_write_pointer(2), string_length);
     pack_data.append_data(value.data(), string_length);
     break;
 
   case ST_blob32:
-    do_pack_uint32(pack_data.get_write_pointer(4), string_length,
-                   pack_error);
+    do_pack_uint32(pack_data.get_write_pointer(4), string_length);
     pack_data.append_data(value.data(), string_length);
     break;
 
   default:
-    return false;
+    pack_error = true;
   }
-
-  return !pack_error;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleParameter::unpack_double
 //       Access: Public, Virtual
 //  Description: Unpacks the current numeric or string value from the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleParameter::
-unpack_double(const char *data, size_t length, size_t &p, double &value) const {
+void DCSimpleParameter::
+unpack_double(const char *data, size_t length, size_t &p, double &value,
+              bool &pack_error, bool &range_error) const {
   switch (_type) {
   case ST_int8:
-    if (p + 1 > length) {
-      return false;
+    {
+      if (p + 1 > length) {
+        pack_error = true;
+        return;
+      }
+      int int_value = do_unpack_int8(data + p);
+      _int_range.validate(int_value, range_error);
+      value = int_value;
+      p++;
     }
-    value = do_unpack_int8(data + p);
-    p++;
     break;
 
   case ST_int16:
-    if (p + 2 > length) {
-      return false;
+    {
+      if (p + 2 > length) {
+        pack_error = true;
+        return;
+      }
+      int int_value = do_unpack_int16(data + p);
+      _int_range.validate(int_value, range_error);
+      value = int_value;
+      p += 2;
     }
-    value = do_unpack_int16(data + p);
-    p += 2;
     break;
 
   case ST_int32:
-    if (p + 4 > length) {
-      return false;
+    {
+      if (p + 4 > length) {
+        pack_error = true;
+        return;
+      }
+      int int_value = do_unpack_int32(data + p);
+      _int_range.validate(int_value, range_error);
+      value = int_value;
+      p += 4;
     }
-    value = do_unpack_int32(data + p);
-    p += 4;
     break;
 
   case ST_int64:
-    if (p + 8 > length) {
-      return false;
+    {
+      if (p + 8 > length) {
+        pack_error = true;
+        return;
+      }
+      PN_int64 int_value = do_unpack_int64(data + p);
+      _int64_range.validate(int_value, range_error);
+      value = (double)int_value;
+      p += 8;
     }
-    value = (double)do_unpack_int64(data + p);
-    p += 8;
     break;
 
   case ST_uint8:
-    if (p + 1 > length) {
-      return false;
+    {
+      if (p + 1 > length) {
+        pack_error = true;
+        return;
+      }
+      unsigned int uint_value = do_unpack_uint8(data + p);
+      _uint_range.validate(uint_value, range_error);
+      value = uint_value;
+      p++;
     }
-    value = do_unpack_uint8(data + p);
-    p++;
     break;
 
   case ST_uint16:
-    if (p + 2 > length) {
-      return false;
+    {
+      if (p + 2 > length) {
+        pack_error = true;
+        return;
+      }
+      unsigned int uint_value = do_unpack_uint16(data + p);
+      _uint_range.validate(uint_value, range_error);
+      value = uint_value;
+      p += 2;
     }
-    value = do_unpack_uint16(data + p);
-    p += 2;
     break;
 
   case ST_uint32:
-    if (p + 4 > length) {
-      return false;
+    {
+      if (p + 4 > length) {
+        pack_error = true;
+        return;
+      }
+      unsigned int uint_value = do_unpack_uint32(data + p);
+      _uint_range.validate(uint_value, range_error);
+      value = uint_value;
+      p += 4;
     }
-    value = do_unpack_uint32(data + p);
-    p += 4;
     break;
 
   case ST_uint64:
-    if (p + 8 > length) {
-      return false;
+    {
+      if (p + 8 > length) {
+        pack_error = true;
+        return;
+      }
+      PN_uint64 uint_value = do_unpack_uint64(data + p);
+      _uint64_range.validate(uint_value, range_error);
+      value = (double)uint_value;
+      p += 8;
     }
-    value = (double)do_unpack_uint64(data + p);
-    p += 8;
     break;
 
   case ST_float64:
-    if (p + 8 > length) {
-      return false;
+    {
+      if (p + 8 > length) {
+        pack_error = true;
+        return;
+      }
+      value = do_unpack_float64(data + p);
+      _double_range.validate(value, range_error);
+      p += 8;
     }
-    value = do_unpack_float64(data + p);
-    p += 8;
     break;
 
   default:
-    return false;
+    pack_error = true;
+    return;
   }
 
   if (_divisor != 1) {
     value = value / _divisor;
   }
 
-  return true;
+  return;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleParameter::unpack_int
 //       Access: Public, Virtual
 //  Description: Unpacks the current numeric or string value from the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleParameter::
-unpack_int(const char *data, size_t length, size_t &p, int &value) const {
+void DCSimpleParameter::
+unpack_int(const char *data, size_t length, size_t &p, int &value,
+           bool &pack_error, bool &range_error) const {
   switch (_type) {
   case ST_int8:
     if (p + 1 > length) {
-      return false;
+      pack_error = true;
+      return;
     }
     value = do_unpack_int8(data + p);
+    _int_range.validate(value, range_error);
     p++;
     break;
 
   case ST_int16:
     if (p + 2 > length) {
-      return false;
+      pack_error = true;
+      return;
     }
     value = do_unpack_int16(data + p);
+    _int_range.validate(value, range_error);
     p += 2;
     break;
 
   case ST_int32:
     if (p + 4 > length) {
-      return false;
+      pack_error = true;
+      return;
     }
     value = do_unpack_int32(data + p);
+    _int_range.validate(value, range_error);
     p += 4;
     break;
 
   case ST_int64:
-    if (p + 8 > length) {
-      return false;
+    {
+      if (p + 8 > length) {
+        pack_error = true;
+        return;
+      }
+      PN_int64 int_value = do_unpack_uint64(data + p);
+      _int64_range.validate(int_value, range_error);
+      value = (int)int_value;
+      p += 8;
     }
-    value = (int)do_unpack_int64(data + p);
-    p += 8;
     break;
 
   case ST_uint8:
-    if (p + 1 > length) {
-      return false;
+    {
+      if (p + 1 > length) {
+        pack_error = true;
+        return;
+      }
+      unsigned int uint_value = do_unpack_uint8(data + p);
+      _uint_range.validate(uint_value, range_error);
+      value = uint_value;
+      p++;
     }
-    value = (int)do_unpack_uint8(data + p);
-    p++;
     break;
 
   case ST_uint16:
-    if (p + 2 > length) {
-      return false;
+    {
+      if (p + 2 > length) {
+        pack_error = true;
+        return;
+      }
+      unsigned int uint_value = do_unpack_uint16(data + p);
+      _uint_range.validate(uint_value, range_error);
+      value = (int)uint_value;
+      p += 2;
     }
-    value = (int)do_unpack_uint16(data + p);
-    p += 2;
     break;
 
   case ST_uint32:
-    if (p + 4 > length) {
-      return false;
+    {
+      if (p + 4 > length) {
+        pack_error = true;
+        return;
+      }
+      unsigned int uint_value = do_unpack_uint32(data + p);
+      _uint_range.validate(uint_value, range_error);
+      value = (int)uint_value;
+      p += 4;
     }
-    value = (int)do_unpack_uint32(data + p);
-    p += 4;
     break;
 
   case ST_uint64:
-    if (p + 8 > length) {
-      return false;
+    {
+      if (p + 8 > length) {
+        pack_error = true;
+        return;
+      }
+      PN_uint64 uint_value = do_unpack_uint64(data + p);
+      _uint64_range.validate(uint_value, range_error);
+      value = (int)(unsigned int)uint_value;
+      p += 8;
     }
-    value = (int)(unsigned int)do_unpack_uint64(data + p);
-    p += 8;
     break;
 
   case ST_float64:
-    if (p + 8 > length) {
-      return false;
+    {
+      if (p + 8 > length) {
+        pack_error = true;
+        return;
+      }
+      double real_value = do_unpack_float64(data + p);
+      _double_range.validate(real_value, range_error);
+      value = (int)real_value;
+      p += 8;
     }
-    value = (int)do_unpack_float64(data + p);
-    p += 8;
     break;
 
   default:
-    return false;
+    pack_error = true;
+    return;
   }
 
   if (_divisor != 1) {
     value = value / _divisor;
   }
 
-  return true;
+  return;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleParameter::unpack_uint
 //       Access: Public, Virtual
 //  Description: Unpacks the current numeric or string value from the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleParameter::
-unpack_uint(const char *data, size_t length, size_t &p, unsigned int &value) const {
+void DCSimpleParameter::
+unpack_uint(const char *data, size_t length, size_t &p, unsigned int &value,
+              bool &pack_error, bool &range_error) const {
   switch (_type) {
   case ST_int8:
-    if (p + 1 > length) {
-      return false;
+    {
+      if (p + 1 > length) {
+        pack_error = true;
+      return;
+      }
+      int int_value = do_unpack_int8(data + p);
+      _int_range.validate(int_value, range_error);
+      value = (unsigned int)int_value;
+      p++;
     }
-    value = (unsigned int)do_unpack_int8(data + p);
-    p++;
     break;
 
   case ST_int16:
-    if (p + 2 > length) {
-      return false;
+    {
+      if (p + 2 > length) {
+        pack_error = true;
+        return;
+      }
+      int int_value = do_unpack_int16(data + p);
+      _int_range.validate(int_value, range_error);
+      value = (unsigned int)int_value;
+      p += 2;
     }
-    value = (unsigned int)do_unpack_int16(data + p);
-    p += 2;
     break;
 
   case ST_int32:
-    if (p + 4 > length) {
-      return false;
+    {
+      if (p + 4 > length) {
+        pack_error = true;
+        return;
+      }
+      int int_value = do_unpack_int32(data + p);
+      _int_range.validate(int_value, range_error);
+      value = (unsigned int)int_value;
+      p += 4;
     }
-    value = (unsigned int)do_unpack_int32(data + p);
-    p += 4;
     break;
 
   case ST_int64:
-    if (p + 8 > length) {
-      return false;
+    {
+      if (p + 8 > length) {
+        pack_error = true;
+        return;
+      }
+      PN_int64 int_value = do_unpack_int64(data + p);
+      _int64_range.validate(int_value, range_error);
+      value = (unsigned int)(int)int_value;
+      p += 8;
     }
-    value = (unsigned int)do_unpack_int64(data + p);
-    p += 8;
     break;
 
   case ST_uint8:
     if (p + 1 > length) {
-      return false;
+      pack_error = true;
+      return;
     }
     value = do_unpack_uint8(data + p);
+    _uint_range.validate(value, range_error);
     p++;
     break;
 
   case ST_uint16:
     if (p + 2 > length) {
-      return false;
+      pack_error = true;
+      return;
     }
     value = do_unpack_uint16(data + p);
+    _uint_range.validate(value, range_error);
     p += 2;
     break;
 
   case ST_uint32:
     if (p + 4 > length) {
-      return false;
+      pack_error = true;
+      return;
     }
     value = do_unpack_uint32(data + p);
+    _uint_range.validate(value, range_error);
     p += 4;
     break;
 
   case ST_uint64:
-    if (p + 8 > length) {
-      return false;
+    {
+      if (p + 8 > length) {
+        pack_error = true;
+        return;
+      }
+      PN_uint64 uint_value = do_unpack_uint64(data + p);
+      _uint64_range.validate(uint_value, range_error);
+      value = (unsigned int)uint_value;
+      p += 8;
     }
-    value = (unsigned int)do_unpack_uint64(data + p);
-    p += 8;
     break;
 
   case ST_float64:
-    if (p + 8 > length) {
-      return false;
+    {
+      if (p + 8 > length) {
+        pack_error = true;
+        return;
+      }
+      double real_value = do_unpack_float64(data + p);
+      _double_range.validate(real_value, range_error);
+      value = (unsigned int)real_value;
+      p += 8;
     }
-    value = (unsigned int)do_unpack_float64(data + p);
-    p += 8;
     break;
 
   default:
-    return false;
+    pack_error = true;
+    return;
   }
 
   if (_divisor != 1) {
     value = value / _divisor;
   }
 
-  return true;
+  return;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleParameter::unpack_int64
 //       Access: Public, Virtual
 //  Description: Unpacks the current numeric or string value from the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleParameter::
-unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value) const {
+void DCSimpleParameter::
+unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value,
+              bool &pack_error, bool &range_error) const {
   switch (_type) {
   case ST_int8:
     if (p + 1 > length) {
-      return false;
+      pack_error = true;
+      return;
     }
     value = do_unpack_int8(data + p);
+    _int_range.validate(value, range_error);
     p++;
     break;
 
   case ST_int16:
     if (p + 2 > length) {
-      return false;
+      pack_error = true;
+      return;
     }
     value = do_unpack_int16(data + p);
+    _int_range.validate(value, range_error);
     p += 2;
     break;
 
   case ST_int32:
     if (p + 4 > length) {
-      return false;
+      pack_error = true;
+      return;
     }
     value = do_unpack_int32(data + p);
+    _int_range.validate(value, range_error);
     p += 4;
     break;
 
   case ST_int64:
     if (p + 8 > length) {
-      return false;
+      pack_error = true;
+      return;
     }
     value = do_unpack_int64(data + p);
+    _int64_range.validate(value, range_error);
     p += 8;
     break;
 
   case ST_uint8:
-    if (p + 1 > length) {
-      return false;
+    {
+      if (p + 1 > length) {
+        pack_error = true;
+        return;
+      }
+      unsigned int uint_value = do_unpack_uint8(data + p);
+      _uint_range.validate(uint_value, range_error);
+      value = (PN_int64)(int)uint_value;
+      p++;
     }
-    value = (int)do_unpack_uint8(data + p);
-    p++;
     break;
 
   case ST_uint16:
-    if (p + 2 > length) {
-      return false;
+    {
+      if (p + 2 > length) {
+        pack_error = true;
+        return;
+      }
+      unsigned int uint_value = do_unpack_uint16(data + p);
+      _uint_range.validate(uint_value, range_error);
+      value = (PN_int64)(int)uint_value;
+      p += 2;
     }
-    value = (int)do_unpack_uint16(data + p);
-    p += 2;
     break;
 
   case ST_uint32:
-    if (p + 4 > length) {
-      return false;
+    {
+      if (p + 4 > length) {
+        pack_error = true;
+        return;
+      }
+      unsigned int uint_value = do_unpack_uint32(data + p);
+      _uint_range.validate(uint_value, range_error);
+      value = (PN_int64)(int)uint_value;
+      p += 4;
     }
-    value = (int)do_unpack_uint32(data + p);
-    p += 4;
     break;
 
   case ST_uint64:
-    if (p + 8 > length) {
-      return false;
+    {
+      if (p + 8 > length) {
+        pack_error = true;
+        return;
+      }
+      PN_uint64 uint_value = do_unpack_uint64(data + p);
+      _uint64_range.validate(uint_value, range_error);
+      value = (PN_int64)uint_value;
+      p += 8;
     }
-    value = (PN_int64)do_unpack_uint64(data + p);
-    p += 8;
     break;
 
   case ST_float64:
-    if (p + 8 > length) {
-      return false;
+    {
+      if (p + 8 > length) {
+        pack_error = true;
+        return;
+      }
+      double real_value = do_unpack_float64(data + p);
+      _double_range.validate(real_value, range_error);
+      value = (PN_int64)real_value;
+      p += 8;
     }
-    value = (PN_int64)do_unpack_float64(data + p);
-    p += 8;
     break;
 
   default:
-    return false;
+    pack_error = true;
+    return;
   }
 
   if (_divisor != 1) {
     value = value / _divisor;
   }
 
-  return true;
+  return;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleParameter::unpack_uint64
 //       Access: Public, Virtual
 //  Description: Unpacks the current numeric or string value from the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleParameter::
-unpack_uint64(const char *data, size_t length, size_t &p, PN_uint64 &value) const {
+void DCSimpleParameter::
+unpack_uint64(const char *data, size_t length, size_t &p, PN_uint64 &value,
+              bool &pack_error, bool &range_error) const {
   switch (_type) {
   case ST_int8:
-    if (p + 1 > length) {
-      return false;
+    {
+      if (p + 1 > length) {
+        pack_error = true;
+        return;
+      }
+      int int_value = do_unpack_int8(data + p);
+      _int_range.validate(int_value, range_error);
+      value = (PN_uint64)(unsigned int)int_value;
+      p++;
     }
-    value = (unsigned int)do_unpack_int8(data + p);
-    p++;
     break;
 
   case ST_int16:
-    if (p + 2 > length) {
-      return false;
+    {
+      if (p + 2 > length) {
+        pack_error = true;
+        return;
+      }
+      int int_value = do_unpack_int16(data + p);
+      _int_range.validate(int_value, range_error);
+      value = (PN_uint64)(unsigned int)int_value;
+      p += 2;
     }
-    value = (unsigned int)do_unpack_int16(data + p);
-    p += 2;
     break;
 
   case ST_int32:
-    if (p + 4 > length) {
-      return false;
+    {
+      if (p + 4 > length) {
+        pack_error = true;
+        return;
+      }
+      int int_value = do_unpack_int32(data + p);
+      _int_range.validate(int_value, range_error);
+      value = (PN_uint64)(unsigned int)int_value;
+      p += 4;
     }
-    value = (unsigned int)do_unpack_int32(data + p);
-    p += 4;
     break;
 
   case ST_int64:
-    if (p + 8 > length) {
-      return false;
+    {
+      if (p + 8 > length) {
+        pack_error = true;
+        return;
+      }
+      PN_int64 int_value = do_unpack_int64(data + p);
+      _int64_range.validate(int_value, range_error);
+      value = (PN_uint64)int_value;
+      p += 8;
     }
-    value = (PN_uint64)do_unpack_int64(data + p);
-    p += 8;
     break;
 
   case ST_uint8:
     if (p + 1 > length) {
-      return false;
+      pack_error = true;
+      return;
     }
     value = do_unpack_uint8(data + p);
+    _uint_range.validate(value, range_error);
     p++;
     break;
 
   case ST_uint16:
     if (p + 2 > length) {
-      return false;
+      pack_error = true;
+      return;
     }
     value = do_unpack_uint16(data + p);
+    _uint_range.validate(value, range_error);
     p += 2;
     break;
 
   case ST_uint32:
     if (p + 4 > length) {
-      return false;
+      pack_error = true;
+      return;
     }
     value = do_unpack_uint32(data + p);
+    _uint_range.validate(value, range_error);
     p += 4;
     break;
 
   case ST_uint64:
     if (p + 8 > length) {
-      return false;
+      pack_error = true;
+      return;
     }
     value = do_unpack_uint64(data + p);
+    _uint64_range.validate(value, range_error);
     p += 8;
     break;
 
   case ST_float64:
-    if (p + 8 > length) {
-      return false;
+    {
+      if (p + 8 > length) {
+        pack_error = true;
+        return;
+      }
+      double real_value = do_unpack_float64(data + p);
+      _double_range.validate(real_value, range_error);
+      value = (PN_uint64)real_value;
+      p += 8;
     }
-    value = (PN_uint64)do_unpack_float64(data + p);
-    p += 8;
     break;
 
   default:
-    return false;
+    pack_error = true;
+    return;
   }
 
   if (_divisor != 1) {
     value = value / _divisor;
   }
 
-  return true;
+  return;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleParameter::unpack_string
 //       Access: Public, Virtual
 //  Description: Unpacks the current numeric or string value from the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleParameter::
-unpack_string(const char *data, size_t length, size_t &p, string &value) const {
+void DCSimpleParameter::
+unpack_string(const char *data, size_t length, size_t &p, string &value,
+              bool &pack_error, bool &range_error) const {
   size_t string_length;
 
   switch (_type) {
   case ST_string:
   case ST_blob:
     if (p + 2 > length) {
-      return false;
+      pack_error = true;
+      return;
     }
     string_length = do_unpack_uint16(data + p);
     p += 2;
@@ -1242,21 +1501,178 @@ unpack_string(const char *data, size_t length, size_t &p, string &value) const {
 
   case ST_blob32:
     if (p + 4 > length) {
-      return false;
+      pack_error = true;
+      return;
     }
     string_length = do_unpack_uint32(data + p);
     p += 4;
     break;
 
   default:
-    return false;
+    pack_error = true;
+    return;
   }
+  _uint_range.validate(string_length, range_error);
 
   if (p + string_length > length) {
-    return false;
+    pack_error = true;
+    return;
   }
   value = string(data + p, string_length);
   p += string_length;
+
+  return;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleParameter::unpack_validate
+//       Access: Public, Virtual
+//  Description: Internally unpacks the current numeric or string
+//               value and validates it against the type range limits,
+//               but does not return the value.  Returns true on
+//               success, false on failure (e.g. we don't know how to
+//               validate this field).
+////////////////////////////////////////////////////////////////////
+bool DCSimpleParameter::
+unpack_validate(const char *data, size_t length, size_t &p,
+                bool &pack_error, bool &range_error) const {
+  switch (_type) {
+  case ST_int8:
+    {
+      if (p + 1 > length) {
+        pack_error = true;
+        return true;
+      }
+      int int_value = do_unpack_int8(data + p);
+      _int_range.validate(int_value, range_error);
+      p++;
+    }
+    break;
+
+  case ST_int16:
+    {
+      if (p + 2 > length) {
+        pack_error = true;
+        return true;
+      }
+      int int_value = do_unpack_int16(data + p);
+      _int_range.validate(int_value, range_error);
+      p += 2;
+    }
+    break;
+
+  case ST_int32:
+    {
+      if (p + 4 > length) {
+        pack_error = true;
+        return true;
+      }
+      int int_value = do_unpack_int32(data + p);
+      _int_range.validate(int_value, range_error);
+      p += 4;
+    }
+    break;
+
+  case ST_int64:
+    {
+      if (p + 8 > length) {
+        pack_error = true;
+        return true;
+      }
+      PN_int64 int_value = do_unpack_int64(data + p);
+      _int64_range.validate(int_value, range_error);
+      p += 8;
+    }
+    break;
+
+  case ST_uint8:
+    {
+      if (p + 1 > length) {
+        pack_error = true;
+        return true;
+      }
+      unsigned int uint_value = do_unpack_uint8(data + p);
+      _uint_range.validate(uint_value, range_error);
+      p++;
+    }
+    break;
+
+  case ST_uint16:
+    {
+      if (p + 2 > length) {
+        pack_error = true;
+        return true;
+      }
+      unsigned int uint_value = do_unpack_uint16(data + p);
+      _uint_range.validate(uint_value, range_error);
+      p += 2;
+    }
+    break;
+
+  case ST_uint32:
+    {
+      if (p + 4 > length) {
+        pack_error = true;
+        return true;
+      }
+      unsigned int uint_value = do_unpack_uint32(data + p);
+      _uint_range.validate(uint_value, range_error);
+      p += 4;
+    }
+    break;
+
+  case ST_uint64:
+    {
+      if (p + 8 > length) {
+        pack_error = true;
+        return true;
+      }
+      PN_uint64 uint_value = do_unpack_uint64(data + p);
+      _uint64_range.validate(uint_value, range_error);
+      p += 8;
+    }
+    break;
+
+  case ST_float64:
+    {
+      if (p + 8 > length) {
+        pack_error = true;
+        return true;
+      }
+      double real_value = do_unpack_float64(data + p);
+      _double_range.validate(real_value, range_error);
+      p += 8;
+    }
+    break;
+
+  case ST_string:
+  case ST_blob:
+    {
+      if (p + 2 > length) {
+        pack_error = true;
+        return true;
+      }
+      size_t string_length = do_unpack_uint16(data + p);
+      _uint_range.validate(string_length, range_error);
+      p += 2 + string_length;
+    }
+    break;
+
+  case ST_blob32:
+    {
+      if (p + 4 > length) {
+        pack_error = true;
+        return true;
+      }
+      size_t string_length = do_unpack_uint32(data + p);
+      _uint_range.validate(string_length, range_error);
+      p += 4 + string_length;
+    }
+    break;
+
+  default:
+    return false;
+  }
 
   return true;
 }
@@ -1265,8 +1681,9 @@ unpack_string(const char *data, size_t length, size_t &p, string &value) const {
 //     Function: DCSimpleParameter::unpack_skip
 //       Access: Public, Virtual
 //  Description: Increments p to the end of the current field without
-//               actually unpacking any data.  Returns true on
-//               success, false on failure.
+//               actually unpacking any data or performing any range
+//               validation.  Returns true on success, false on
+//               failure (e.g. we don't know how to skip this field).
 ////////////////////////////////////////////////////////////////////
 bool DCSimpleParameter::
 unpack_skip(const char *data, size_t length, size_t &p) const {
@@ -1408,6 +1825,12 @@ generate_hash(HashGenerator &hashgen) const {
 
   hashgen.add_int(_type);
   hashgen.add_int(_divisor);
+
+  _int_range.generate_hash(hashgen);
+  _int64_range.generate_hash(hashgen);
+  _uint_range.generate_hash(hashgen);
+  _uint64_range.generate_hash(hashgen);
+  _double_range.generate_hash(hashgen);
 }
 
 ////////////////////////////////////////////////////////////////////

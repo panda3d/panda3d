@@ -110,9 +110,7 @@ pack_double(double value) {
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
-    if (!_current_field->pack_double(_pack_data, value)) {
-      _pack_error = true;
-    }
+    _current_field->pack_double(_pack_data, value, _pack_error, _range_error);
     advance();
   }
 }
@@ -129,9 +127,7 @@ pack_int(int value) {
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
-    if (!_current_field->pack_int(_pack_data, value)) {
-      _pack_error = true;
-    }
+    _current_field->pack_int(_pack_data, value, _pack_error, _range_error);
     advance();
   }
 }
@@ -148,9 +144,7 @@ pack_uint(unsigned int value) {
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
-    if (!_current_field->pack_uint(_pack_data, value)) {
-      _pack_error = true;
-    }
+    _current_field->pack_uint(_pack_data, value, _pack_error, _range_error);
     advance();
   }
 }
@@ -167,9 +161,7 @@ pack_int64(PN_int64 value) {
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
-    if (!_current_field->pack_int64(_pack_data, value)) {
-      _pack_error = true;
-    }
+    _current_field->pack_int64(_pack_data, value, _pack_error, _range_error);
     advance();
   }
 }
@@ -186,9 +178,7 @@ pack_uint64(PN_uint64 value) {
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
-    if (!_current_field->pack_uint64(_pack_data, value)) {
-      _pack_error = true;
-    }
+    _current_field->pack_uint64(_pack_data, value, _pack_error, _range_error);
     advance();
   }
 }
@@ -205,9 +195,7 @@ pack_string(const string &value) {
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
-    if (!_current_field->pack_string(_pack_data, value)) {
-      _pack_error = true;
-    }
+    _current_field->pack_string(_pack_data, value, _pack_error, _range_error);
     advance();
   }
 }
@@ -244,9 +232,8 @@ unpack_double() {
     _pack_error = true;
 
   } else {
-    if (!_current_field->unpack_double(_unpack_data, _unpack_length, _unpack_p, value)) {
-      _pack_error = true;
-    }
+    _current_field->unpack_double(_unpack_data, _unpack_length, _unpack_p, 
+                                  value, _pack_error, _range_error);
     advance();
   }
 
@@ -267,9 +254,8 @@ unpack_int() {
     _pack_error = true;
 
   } else {
-    if (!_current_field->unpack_int(_unpack_data, _unpack_length, _unpack_p, value)) {
-      _pack_error = true;
-    }
+    _current_field->unpack_int(_unpack_data, _unpack_length, _unpack_p,
+                               value, _pack_error, _range_error);
     advance();
   }
 
@@ -290,9 +276,8 @@ unpack_uint() {
     _pack_error = true;
 
   } else {
-    if (!_current_field->unpack_uint(_unpack_data, _unpack_length, _unpack_p, value)) {
-      _pack_error = true;
-    }
+    _current_field->unpack_uint(_unpack_data, _unpack_length, _unpack_p,
+                                value, _pack_error, _range_error);
     advance();
   }
 
@@ -313,9 +298,8 @@ unpack_int64() {
     _pack_error = true;
 
   } else {
-    if (!_current_field->unpack_int64(_unpack_data, _unpack_length, _unpack_p, value)) {
-      _pack_error = true;
-    }
+    _current_field->unpack_int64(_unpack_data, _unpack_length, _unpack_p,
+                                 value, _pack_error, _range_error);
     advance();
   }
 
@@ -336,9 +320,8 @@ unpack_uint64() {
     _pack_error = true;
 
   } else {
-    if (!_current_field->unpack_uint64(_unpack_data, _unpack_length, _unpack_p, value)) {
-      _pack_error = true;
-    }
+    _current_field->unpack_uint64(_unpack_data, _unpack_length, _unpack_p,
+                                  value, _pack_error, _range_error);
     advance();
   }
 
@@ -359,9 +342,8 @@ unpack_string() {
     _pack_error = true;
 
   } else {
-    if (!_current_field->unpack_string(_unpack_data, _unpack_length, _unpack_p, value)) {
-      _pack_error = true;
-    }
+    _current_field->unpack_string(_unpack_data, _unpack_length, _unpack_p,
+                                  value, _pack_error, _range_error);
     advance();
   }
 
@@ -386,14 +368,39 @@ unpack_literal_value() {
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::had_pack_error
 //       Access: Published
-//  Description: Returns true if there has been an error in packing
-//               since the most recent call to begin().  It is
-//               most useful to call this after end() to validate
-//               the entire packing run.
+//  Description: Returns true if there has been an packing error
+//               since the most recent call to begin(); in particular,
+//               this may be called after end() has returned false to
+//               determine the nature of the failure.
+//
+//               A return value of true indicates there was a push/pop
+//               mismatch, or the push/pop structure did not match the
+//               data structure, or there were the wrong number of
+//               elements in a nested push/pop structure, or on unpack
+//               that the data stream was truncated.
 ////////////////////////////////////////////////////////////////////
 INLINE bool DCPacker::
 had_pack_error() const {
   return _pack_error;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::had_range_error
+//       Access: Published
+//  Description: Returns true if there has been an range validation
+//               error since the most recent call to begin(); in
+//               particular, this may be called after end() has
+//               returned false to determine the nature of the
+//               failure.
+//
+//               A return value of true indicates a value that was
+//               packed or unpacked did not fit within the specified
+//               legal range for a parameter, or within the limits of
+//               the field size.
+////////////////////////////////////////////////////////////////////
+INLINE bool DCPacker::
+had_range_error() const {
+  return _range_error;
 }
 
 ////////////////////////////////////////////////////////////////////

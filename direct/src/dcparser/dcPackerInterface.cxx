@@ -99,131 +99,145 @@ get_nested_field(int n) const {
 //     Function: DCPackerInterface::pack_double
 //       Access: Public, Virtual
 //  Description: Packs the indicated numeric or string value into the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCPackerInterface::
-pack_double(DCPackData &, double) const {
-  return false;
+void DCPackerInterface::
+pack_double(DCPackData &, double, bool &pack_error, bool &) const {
+  pack_error = true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::pack_int
 //       Access: Public, Virtual
 //  Description: Packs the indicated numeric or string value into the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCPackerInterface::
-pack_int(DCPackData &, int) const {
-  return false;
+void DCPackerInterface::
+pack_int(DCPackData &, int, bool &pack_error, bool &) const {
+  pack_error = true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::pack_uint
 //       Access: Public, Virtual
 //  Description: Packs the indicated numeric or string value into the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCPackerInterface::
-pack_uint(DCPackData &, unsigned int) const {
-  return false;
+void DCPackerInterface::
+pack_uint(DCPackData &, unsigned int, bool &pack_error, bool &) const {
+  pack_error = true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::pack_int64
 //       Access: Public, Virtual
 //  Description: Packs the indicated numeric or string value into the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCPackerInterface::
-pack_int64(DCPackData &, PN_int64) const {
-  return false;
+void DCPackerInterface::
+pack_int64(DCPackData &, PN_int64, bool &pack_error, bool &) const {
+  pack_error = true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::pack_uint64
 //       Access: Public, Virtual
 //  Description: Packs the indicated numeric or string value into the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCPackerInterface::
-pack_uint64(DCPackData &, PN_uint64) const {
-  return false;
+void DCPackerInterface::
+pack_uint64(DCPackData &, PN_uint64, bool &pack_error, bool &) const {
+  pack_error = true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::pack_string
 //       Access: Public, Virtual
 //  Description: Packs the indicated numeric or string value into the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCPackerInterface::
-pack_string(DCPackData &, const string &) const {
-  return false;
+void DCPackerInterface::
+pack_string(DCPackData &, const string &, bool &pack_error, bool &) const {
+  pack_error = true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::unpack_double
 //       Access: Public, Virtual
 //  Description: Unpacks the current numeric or string value from the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCPackerInterface::
-unpack_double(const char *, size_t, size_t &, double &) const {
-  return false;
+void DCPackerInterface::
+unpack_double(const char *, size_t, size_t &, double &, bool &pack_error, bool &) const {
+  pack_error = true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::unpack_int
 //       Access: Public, Virtual
 //  Description: Unpacks the current numeric or string value from the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCPackerInterface::
-unpack_int(const char *, size_t, size_t &, int &) const {
-  return false;
+void DCPackerInterface::
+unpack_int(const char *, size_t, size_t &, int &, bool &pack_error, bool &) const {
+  pack_error = true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::unpack_uint
 //       Access: Public, Virtual
 //  Description: Unpacks the current numeric or string value from the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCPackerInterface::
-unpack_uint(const char *, size_t, size_t &, unsigned int &) const {
-  return false;
+void DCPackerInterface::
+unpack_uint(const char *, size_t, size_t &, unsigned int &, bool &pack_error, bool &) const {
+  pack_error = true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::unpack_int64
 //       Access: Public, Virtual
 //  Description: Unpacks the current numeric or string value from the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCPackerInterface::
-unpack_int64(const char *, size_t, size_t &, PN_int64 &) const {
-  return false;
+void DCPackerInterface::
+unpack_int64(const char *, size_t, size_t &, PN_int64 &, bool &pack_error, bool &) const {
+  pack_error = true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::unpack_uint64
 //       Access: Public, Virtual
 //  Description: Unpacks the current numeric or string value from the
-//               stream.  Returns true on success, false on failure.
+//               stream.
 ////////////////////////////////////////////////////////////////////
-bool DCPackerInterface::
-unpack_uint64(const char *, size_t, size_t &, PN_uint64 &) const {
-  return false;
+void DCPackerInterface::
+unpack_uint64(const char *, size_t, size_t &, PN_uint64 &, bool &pack_error, bool &) const {
+  pack_error = true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::unpack_string
 //       Access: Public, Virtual
 //  Description: Unpacks the current numeric or string value from the
-//               stream.  Returns true on success, false on failure.
+//               stream.
+////////////////////////////////////////////////////////////////////
+void DCPackerInterface::
+unpack_string(const char *, size_t, size_t &, string &, bool &pack_error, bool &) const {
+  pack_error = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::unpack_validate
+//       Access: Public, Virtual
+//  Description: Internally unpacks the current numeric or string
+//               value and validates it against the type range limits,
+//               but does not return the value.  Returns true on
+//               success, false on failure (e.g. we don't know how to
+//               validate this field).
 ////////////////////////////////////////////////////////////////////
 bool DCPackerInterface::
-unpack_string(const char *, size_t, size_t &, string &) const {
+unpack_validate(const char *, size_t, size_t &, bool &, bool &) const {
   return false;
 }
 
@@ -231,8 +245,9 @@ unpack_string(const char *, size_t, size_t &, string &) const {
 //     Function: DCPackerInterface::unpack_skip
 //       Access: Public, Virtual
 //  Description: Increments p to the end of the current field without
-//               actually unpacking any data.  Returns true on
-//               success, false on failure.
+//               actually unpacking any data or performing any range
+//               validation.  Returns true on success, false on
+//               failure (e.g. we don't know how to skip this field).
 ////////////////////////////////////////////////////////////////////
 bool DCPackerInterface::
 unpack_skip(const char *, size_t, size_t &) const {

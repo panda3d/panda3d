@@ -47,7 +47,7 @@ public:
 
   virtual void output_instance(ostream &out, const string &prename, 
                                const string &name, const string &postname) const;
-  virtual void generate_hash(HashGenerator &hash) const;
+  virtual void generate_hash(HashGenerator &hashgen) const;
 
 private:
   DCClass *_dclass;

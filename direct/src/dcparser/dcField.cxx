@@ -100,6 +100,26 @@ parse_string(const string &formatted_string) {
   return packer.get_string();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::validate_ranges
+//       Access: Published
+//  Description: Verifies that all of the packed values in the field
+//               data are within the specified ranges and that there
+//               are no extra bytes on the end of the record.  Returns
+//               true if all fields are valid, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCField::
+validate_ranges(const string &packed_data) const {
+  DCPacker packer;
+  packer.begin_unpack(packed_data, this);
+  packer.unpack_validate();
+  if (!packer.end_unpack()) {
+    return false;
+  }
+
+  return (packer.get_num_unpacked_bytes() == packed_data.length());
+}
+
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
 //     Function: DCField::pack_args
@@ -130,8 +150,13 @@ pack_args(Datagram &datagram, PyObject *sequence) const {
   PyObject *str = PyObject_Str(tuple);
   
   ostringstream strm;
-  strm << "Incorrect arguments or value out of range on field: " << get_name()
-       << PyString_AsString(str);
+  if (packer.had_pack_error()) {
+    strm << "Incorrect arguments to field: " << get_name()
+         << PyString_AsString(str);
+  } else {
+    strm << "Value out of range on field: " << get_name()
+         << PyString_AsString(str);
+  }
 
   Py_DECREF(str);
   Py_DECREF(tuple);
@@ -172,7 +197,14 @@ unpack_args(DatagramIterator &iterator) const {
   }
   
   ostringstream strm;
-  strm << "Error unpacking field " << get_name();
+  if (packer.had_pack_error()) {
+    strm << "Error unpacking to field " << get_name();
+  } else {
+    PyObject *str = PyObject_Str(object);
+    strm << "Found value outside specified range when unpacking field " 
+         << get_name() << ": " << PyString_AsString(str);
+    Py_DECREF(str);
+  }
     
   nassert_raise(strm.str());
   return object;

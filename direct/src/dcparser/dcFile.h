@@ -66,7 +66,7 @@ PUBLISHED:
   unsigned long get_hash() const;
 
 public:
-  void generate_hash(HashGenerator &hash) const;
+  void generate_hash(HashGenerator &hashgen) const;
   bool add_class(DCClass *dclass);
   void add_import_module(const string &import_module);
   void add_import_symbol(const string &import_symbol);

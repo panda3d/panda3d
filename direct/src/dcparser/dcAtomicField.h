@@ -64,7 +64,7 @@ PUBLISHED:
 public:
   DCAtomicField(const string &name);
   virtual void write(ostream &out, bool brief, int indent_level) const;
-  virtual void generate_hash(HashGenerator &hash) const;
+  virtual void generate_hash(HashGenerator &hashgen) const;
 
   virtual DCPackerInterface *get_nested_field(int n) const;
 

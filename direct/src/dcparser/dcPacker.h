@@ -80,6 +80,7 @@ PUBLISHED:
   INLINE PN_uint64 unpack_uint64();
   INLINE string unpack_string();
   INLINE string unpack_literal_value();
+  INLINE void unpack_validate();
   void unpack_skip();
 
 #ifdef HAVE_PYTHON
@@ -93,6 +94,7 @@ PUBLISHED:
   void unpack_and_format(ostream &out);
 
   INLINE bool had_pack_error() const;
+  INLINE bool had_range_error() const;
   INLINE size_t get_num_unpacked_bytes() const;
 
   INLINE string get_string() const;
@@ -147,6 +149,7 @@ private:
   int _num_nested_fields;
 
   bool _pack_error;
+  bool _range_error;
 };
 
 #include "dcPacker.I"

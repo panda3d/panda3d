@@ -28,6 +28,17 @@ DCNumericRange() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCNumericRange::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template <class NUM>
+INLINE DCNumericRange<NUM>::
+DCNumericRange(Number min, Number max) {
+  add_range(min, max);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCNumericRange::Copy Constructor
 //       Access: Public
 //  Description:
@@ -86,6 +97,26 @@ INLINE void DCNumericRange<NUM>::
 validate(Number num, bool &validation_error) const {
   if (!is_in_range(num)) {
     validation_error = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCNumericRange::generate_hash
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template <class NUM>
+void DCNumericRange<NUM>::
+generate_hash(HashGenerator &hashgen) const {
+  if (!_ranges.empty()) {
+    hashgen.add_int(_ranges.size());
+    TYPENAME Ranges::const_iterator ri;
+    for (ri = _ranges.begin(); ri != _ranges.end(); ++ri) {
+      // We don't account for the fractional part of floating-point
+      // ranges here.  Shouldn't be a real issue.
+      hashgen.add_int((int)(*ri)._min);
+      hashgen.add_int((int)(*ri)._max);
+    }
   }
 }
 

@@ -117,11 +117,8 @@ get_pack_type() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPackerInterface::
-do_pack_int8(char *buffer, int value, bool &pack_error) {
+do_pack_int8(char *buffer, int value) {
   buffer[0] = (char)(value & 0xff);
-  if ((abs(value) & ~0xff) != 0) {
-    pack_error = true;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,12 +127,9 @@ do_pack_int8(char *buffer, int value, bool &pack_error) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPackerInterface::
-do_pack_int16(char *buffer, int value, bool &pack_error) {
+do_pack_int16(char *buffer, int value) {
   buffer[0] = (char)(value & 0xff);
   buffer[1] = (char)((value >> 8) & 0xff);
-  if ((abs(value) & ~0xffff) != 0) {
-    pack_error = true;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -144,7 +138,7 @@ do_pack_int16(char *buffer, int value, bool &pack_error) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPackerInterface::
-do_pack_int32(char *buffer, int value, bool &) {
+do_pack_int32(char *buffer, int value) {
   buffer[0] = (char)(value & 0xff);
   buffer[1] = (char)((value >> 8) & 0xff);
   buffer[2] = (char)((value >> 16) & 0xff);
@@ -157,7 +151,7 @@ do_pack_int32(char *buffer, int value, bool &) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPackerInterface::
-do_pack_int64(char *buffer, PN_int64 value, bool &) {
+do_pack_int64(char *buffer, PN_int64 value) {
   buffer[0] = (char)(value & 0xff);
   buffer[1] = (char)((value >> 8) & 0xff);
   buffer[2] = (char)((value >> 16) & 0xff);
@@ -174,11 +168,8 @@ do_pack_int64(char *buffer, PN_int64 value, bool &) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPackerInterface::
-do_pack_uint8(char *buffer, unsigned int value, bool &pack_error) {
+do_pack_uint8(char *buffer, unsigned int value) {
   buffer[0] = (char)(value & 0xff);
-  if ((value & ~0xff) != 0) {
-    pack_error = true;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -187,12 +178,9 @@ do_pack_uint8(char *buffer, unsigned int value, bool &pack_error) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPackerInterface::
-do_pack_uint16(char *buffer, unsigned int value, bool &pack_error) {
+do_pack_uint16(char *buffer, unsigned int value) {
   buffer[0] = (char)(value & 0xff);
   buffer[1] = (char)((value >> 8) & 0xff);
-  if ((value & ~0xffff) != 0) {
-    pack_error = true;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -201,7 +189,7 @@ do_pack_uint16(char *buffer, unsigned int value, bool &pack_error) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPackerInterface::
-do_pack_uint32(char *buffer, unsigned int value, bool &) {
+do_pack_uint32(char *buffer, unsigned int value) {
   buffer[0] = (char)(value & 0xff);
   buffer[1] = (char)((value >> 8) & 0xff);
   buffer[2] = (char)((value >> 16) & 0xff);
@@ -214,7 +202,7 @@ do_pack_uint32(char *buffer, unsigned int value, bool &) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPackerInterface::
-do_pack_uint64(char *buffer, PN_uint64 value, bool &) {
+do_pack_uint64(char *buffer, PN_uint64 value) {
   buffer[0] = (char)(value & 0xff);
   buffer[1] = (char)((value >> 8) & 0xff);
   buffer[2] = (char)((value >> 16) & 0xff);
@@ -231,7 +219,7 @@ do_pack_uint64(char *buffer, PN_uint64 value, bool &) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPackerInterface::
-do_pack_float64(char *buffer, double value, bool &) {
+do_pack_float64(char *buffer, double value) {
 #ifdef WORDS_BIGENDIAN
   // Reverse the byte ordering for big-endian machines.
   char *p = (char *)value;
@@ -364,4 +352,77 @@ do_unpack_float64(const char *buffer) {
 #else
   return *(double *)buffer;
 #endif  // WORDS_BIGENDIAN 
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::validate_int_limits
+//       Access: Public, Static
+//  Description: Confirms that the signed value fits within num_bits
+//               bits.  Sets range_error true if it does not.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPackerInterface::
+validate_int_limits(int value, int num_bits, bool &range_error) {
+  // What we're really checking is that all of the bits above the
+  // lower (num_bits - 1) bits are the same--either all 1 or all 0.
+
+  // First, turn on the lower (num_bits - 1).
+  int mask = ((int)1 << (num_bits - 1)) - 1;
+  value |= mask;
+
+  // The result should be either mask (all high bits are 0) or -1 (all
+  // high bits are 1).  If it is anything else we have a range error.
+  if (value != mask && value != -1) {
+    range_error = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::validate_int64_limits
+//       Access: Public, Static
+//  Description: Confirms that the signed value fits within num_bits
+//               bits.  Sets range_error true if it does not.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPackerInterface::
+validate_int64_limits(PN_int64 value, int num_bits, bool &range_error) {
+  PN_int64 mask = ((PN_int64)1 << (num_bits - 1)) - 1;
+  value |= mask;
+
+  if (value != mask && value != -1) {
+    range_error = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::validate_uint_limits
+//       Access: Public, Static
+//  Description: Confirms that the unsigned value fits within num_bits
+//               bits.  Sets range_error true if it does not.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPackerInterface::
+validate_uint_limits(unsigned int value, int num_bits, bool &range_error) {
+  // Here we're really checking that all of the bits above the lower
+  // num_bits bits are all 0.
+
+  unsigned int mask = ((unsigned int)1 << num_bits) - 1;
+  value &= ~mask;
+
+  if (value != 0) {
+    range_error = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::validate_uint64_limits
+//       Access: Public, Static
+//  Description: Confirms that the unsigned value fits within num_bits
+//               bits.  Sets range_error true if it does not.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPackerInterface::
+validate_uint64_limits(PN_uint64 value, int num_bits, bool &range_error) {
+  PN_uint64 mask = ((PN_uint64)1 << num_bits) - 1;
+  value &= ~mask;
+
+  if (value != 0) {
+    range_error = true;
+  }
 }

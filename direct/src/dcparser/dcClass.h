@@ -86,7 +86,7 @@ public:
   ~DCClass();
 
   virtual void write(ostream &out, bool brief, int indent_level) const;
-  void generate_hash(HashGenerator &hash) const;
+  void generate_hash(HashGenerator &hashgen) const;
 
   bool add_field(DCField *field);
   bool add_parameter(DCParameter *parameter);

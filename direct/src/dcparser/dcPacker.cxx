@@ -40,6 +40,7 @@ DCPacker() {
   _current_field_index = 0;
   _num_nested_fields = 0;
   _pack_error = false;
+  _range_error = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -65,6 +66,7 @@ begin_pack(const DCPackerInterface *root) {
   
   _mode = M_pack;
   _pack_error = false;
+  _range_error = false;
   _pack_data.clear();
 
   _root = root;
@@ -97,7 +99,7 @@ end_pack() {
 
   clear();
 
-  return !_pack_error;
+  return !_pack_error && !_range_error;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -128,6 +130,7 @@ begin_unpack(const char *data, size_t length,
   
   _mode = M_unpack;
   _pack_error = false;
+  _range_error = false;
   set_unpack_data(data, length, false);
   _unpack_p = 0;
 
@@ -170,7 +173,7 @@ end_unpack() {
 
   clear();
 
-  return !_pack_error;
+  return !_pack_error && !_range_error;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -208,6 +211,7 @@ begin_repack(const char *data, size_t length,
   
   _mode = M_repack;
   _pack_error = false;
+  _range_error = false;
   set_unpack_data(data, length, false);
   _unpack_p = 0;
 
@@ -244,7 +248,7 @@ end_repack() {
   _mode = M_idle;
   clear();
 
-  return !_pack_error;
+  return !_pack_error && !_range_error;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -429,7 +433,6 @@ push() {
     } else {
       _current_field = _current_parent->get_nested_field(_current_field_index);
     }
-
   }
 }
 
@@ -467,12 +470,11 @@ pop() {
         size_t length = _pack_data.get_length() - _push_marker - length_bytes;
         if (length_bytes == 4) {
           DCPackerInterface::do_pack_uint32
-            (_pack_data.get_rewrite_pointer(_push_marker, 4), length, 
-             _pack_error);
+            (_pack_data.get_rewrite_pointer(_push_marker, 4), length);
         } else {
+          DCPackerInterface::validate_uint_limits(length, 16, _range_error);
           DCPackerInterface::do_pack_uint16
-            (_pack_data.get_rewrite_pointer(_push_marker, 2), length,
-             _pack_error);
+            (_pack_data.get_rewrite_pointer(_push_marker, 2), length);
         }
       }
     }
@@ -489,12 +491,43 @@ pop() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::unpack_validate
+//       Access: Published
+//  Description: Internally unpacks the current numeric or string
+//               value and validates it against the type range limits,
+//               but does not return the value.  If the current field
+//               contains nested fields, validates all of them.
+////////////////////////////////////////////////////////////////////
+void DCPacker::
+unpack_validate() {
+  nassertv(_mode == M_unpack);
+  if (_current_field == NULL) {
+    _pack_error = true;
+
+  } else {
+    if (_current_field->unpack_validate(_unpack_data, _unpack_length, _unpack_p,
+                                        _pack_error, _range_error)) {
+      advance();
+    } else {
+      // If the single field couldn't be validated, try validating
+      // nested fields.
+      push();
+      while (more_nested_fields()) {
+        unpack_validate();
+      }
+      pop();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::unpack_skip
 //       Access: Published
 //  Description: Skips the current field without unpacking it and
-//               advances to the next field.
+//               advances to the next field.  If the current field
+//               contains nested fields, skips all of them.
 ////////////////////////////////////////////////////////////////////
-INLINE void DCPacker::
+void DCPacker::
 unpack_skip() {
   nassertv(_mode == M_unpack);
   if (_current_field == NULL) {

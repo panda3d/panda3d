@@ -20,6 +20,7 @@
 #define DCNUMERICRANGE_H
 
 #include "dcbase.h"
+#include "hashGenerator.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DCNumericRange
@@ -33,11 +34,14 @@ public:
   typedef NUM Number;
 
   INLINE DCNumericRange();
+  INLINE DCNumericRange(Number min, Number max);
   INLINE DCNumericRange(const DCNumericRange &copy);
   INLINE void operator = (const DCNumericRange &copy);
 
   bool is_in_range(Number num) const;
   INLINE void validate(Number num, bool &validation_error) const;
+
+  void generate_hash(HashGenerator &hashgen) const;
 
   void output(ostream &out, Number divisor = 1) const;
 
