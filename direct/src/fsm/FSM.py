@@ -209,6 +209,11 @@ class FSM(DirectObject):
                                   enterArgList,
                                   exitArgList)
                 return 1
+        # are we already in this state?
+        elif (aStateName == self.__currentState.getName()):
+            FSM.notify.debug("[%s]: already in state %s and no self transition" %
+                             (aStateName))
+            return 0
         else:
             FSM.notify.warning("[%s]: no transition exists from %s to %s" %
                                (self.__name,

@@ -123,15 +123,19 @@ class ScrollingLabel(PandaObject.PandaObject):
         self.setKeyFocus(0)
 
         # remove gui items
+        self.frame.cleanup()
         self.frame = None
         self.items = None
 
 	self.label = None
+        self.title.cleanup()
 	self.title = None
+        self.itemSign.cleanup()
 	self.itemSign = None
+        self.leftButton.cleanup()
 	self.leftButton = None
+        self.rightButton.cleanup()
 	self.rightButton = None
-	self.frame = None
 	return None
 
     # accessing

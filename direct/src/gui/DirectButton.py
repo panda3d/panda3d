@@ -1,4 +1,5 @@
 from DirectFrame import *
+import GuiGlobals
 
 class DirectButton(DirectFrame):
     """
@@ -28,8 +29,8 @@ class DirectButton(DirectFrame):
             # Which mouse buttons can be used to click the button
             ('commandButtons',  (LMB,),     self.setCommandButtons),
             # Sounds to be used for button events
-            ('rolloverSound',   None,       self.setRolloverSound),
-            ('clickSound',      None,       self.setClickSound),
+            ('rolloverSound',   GuiGlobals.getDefaultRolloverSound(), self.setRolloverSound),
+            ('clickSound',      GuiGlobals.getDefaultClickSound(),    self.setClickSound),
             # Can only be specified at time of widget contruction
             # Do the text/graphics appear to move when the button is clicked
             ('pressEffect',     1,          INITOPT),

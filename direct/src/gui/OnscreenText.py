@@ -235,6 +235,13 @@ class OnscreenText(PandaObject, NodePath):
     # If you need to change several properties at the same time at
     # runtime, you should call freeze() first and thaw() afterward.
 
+
+    def setFont(self, font):
+        self.textNode.setFont(font)
+
+    def getFont(self):
+        return self.textNode.getFont()
+
     def setText(self, text):
         self.textNode.setText(text)
 
