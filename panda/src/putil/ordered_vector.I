@@ -215,7 +215,7 @@ max_size() const {
 template<class Key, class Compare>
 INLINE bool ordered_vector<Key, Compare>::
 empty() const {
-  return _vector.max_size();
+  return _vector.empty();
 }
 
 ////////////////////////////////////////////////////////////////////
