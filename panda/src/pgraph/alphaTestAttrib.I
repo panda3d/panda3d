@@ -24,7 +24,8 @@
 //               AlphaTestAttrib object.
 ////////////////////////////////////////////////////////////////////
 INLINE AlphaTestAttrib::
-AlphaTestAttrib(AlphaTestAttrib::PandaCompareFunc mode,float reference_alpha) :
+AlphaTestAttrib(AlphaTestAttrib::PandaCompareFunc mode,
+                float reference_alpha) :
   _mode(mode), _reference_alpha(reference_alpha)
 {
 }
@@ -35,7 +36,7 @@ AlphaTestAttrib(AlphaTestAttrib::PandaCompareFunc mode,float reference_alpha) :
 //  Description: Returns the alpha write mode.
 ////////////////////////////////////////////////////////////////////
 INLINE AlphaTestAttrib::PandaCompareFunc AlphaTestAttrib::
-get_mode(void) const {
+get_mode() const {
   return _mode;
 }
 
@@ -45,6 +46,6 @@ get_mode(void) const {
 //  Description: Returns the alpha reference value.
 ////////////////////////////////////////////////////////////////////
 INLINE float AlphaTestAttrib::
-get_reference_alpha(void) const {
+get_reference_alpha() const {
   return _reference_alpha;
 }

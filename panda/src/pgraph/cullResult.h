@@ -53,7 +53,7 @@ public:
 
   INLINE CullBin *get_bin(int bin_index);
 
-  INLINE void add_object(CullableObject *object);
+  void add_object(CullableObject *object);
   void finish_cull();
   void draw();
 
@@ -62,6 +62,10 @@ public:
 
 private:
   CullBin *make_new_bin(int bin_index);
+
+  static CPT(RenderState) get_binary_state();
+  static CPT(RenderState) get_dual_transparent_state();
+  static CPT(RenderState) get_dual_opaque_state();
 
   GraphicsStateGuardianBase *_gsg;
 

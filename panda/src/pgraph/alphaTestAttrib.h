@@ -31,10 +31,12 @@ class FactoryParams;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA AlphaTestAttrib : public RenderAttrib {
 private:
-  INLINE AlphaTestAttrib(PandaCompareFunc mode = M_always,float reference_alpha = 1.0f);
+  INLINE AlphaTestAttrib(PandaCompareFunc mode = M_always,
+                         float reference_alpha = 1.0f);
 
 PUBLISHED:
-  static CPT(RenderAttrib) make(PandaCompareFunc mode,float reference_alpha);
+  static CPT(RenderAttrib) make(PandaCompareFunc mode,
+                                float reference_alpha);
   INLINE float get_reference_alpha() const;
   INLINE PandaCompareFunc get_mode() const;
 

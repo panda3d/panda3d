@@ -238,6 +238,25 @@ get_fog() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_bin
+//       Access: Public
+//  Description: This function is provided as an optimization, to
+//               speed up the render-time checking for the existance
+//               of a BinAttrib on this state.  It returns a
+//               pointer to the BinAttrib, if there is one, or
+//               NULL if there is not.
+////////////////////////////////////////////////////////////////////
+INLINE const CullBinAttrib *RenderState::
+get_bin() const {
+  if ((_flags & F_checked_bin) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal bin cache.
+    ((RenderState *)this)->determine_bin();
+  }
+  return _bin;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::get_transparency
 //       Access: Public
 //  Description: This function is provided as an optimization, to

@@ -18,6 +18,7 @@
 
 #include "config_pgraph.h"
 
+#include "alphaTestAttrib.h"
 #include "ambientLight.h"
 #include "billboardEffect.h"
 #include "camera.h"
@@ -104,6 +105,7 @@ init_libpgraph() {
   }
   initialized = true;
 
+  AlphaTestAttrib::init_type();
   AmbientLight::init_type();
   BillboardEffect::init_type();
   Camera::init_type();
@@ -162,6 +164,7 @@ init_libpgraph() {
   ColorLerpFunctor::init_type();
   ColorScaleLerpFunctor::init_type();
 
+  AlphaTestAttrib::register_with_read_factory();
   AmbientLight::register_with_read_factory();
   BillboardEffect::register_with_read_factory();
   Camera::register_with_read_factory();

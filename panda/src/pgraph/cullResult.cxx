@@ -18,6 +18,9 @@
 
 #include "cullResult.h"
 #include "cullBinManager.h"
+#include "alphaTestAttrib.h"
+#include "transparencyAttrib.h"
+#include "renderState.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullResult::make_next
@@ -42,6 +45,64 @@ make_next() const {
   }
 
   return new_result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullResult::add_object
+//       Access: Public
+//  Description: Adds the indicated CullableObject to the appropriate
+//               bin.  The bin becomes the owner of the object
+//               pointer, and will eventually delete it.
+////////////////////////////////////////////////////////////////////
+void CullResult::
+add_object(CullableObject *object) {
+  // Check to see if there's a special transparency setting.
+  const RenderState *state = object->_state;
+  nassertv(state != (const RenderState *)NULL);
+
+  const TransparencyAttrib *trans = state->get_transparency();
+  if (trans != (const TransparencyAttrib *)NULL) {
+    switch (trans->get_mode()) {
+    case TransparencyAttrib::M_binary:
+      // M_binary is implemented by explicitly setting the alpha test.
+      object->_state = state->compose(get_binary_state());
+      break;
+
+    case TransparencyAttrib::M_dual:
+      {
+        // M_dual is implemented by drawing the opaque parts first,
+        // without transparency, then drawing the transparent parts
+        // later.  This means we must copy the object and add it to
+        // both bins.  We can only do this if we do not have an
+        // explicit bin already applied; otherwise, M_dual falls back
+        // to M_alpha.
+        const CullBinAttrib *bin_attrib = state->get_bin();
+        if (bin_attrib == (CullBinAttrib *)NULL || 
+            bin_attrib->get_bin_name().empty()) {
+          // We make a copy of the object to draw the transparent part
+          // without decals; this gets placed in the transparent bin.
+          CullableObject *transparent_part = new CullableObject(*object);
+          transparent_part->_state = state->compose(get_dual_transparent_state());
+          CullBin *bin = get_bin(transparent_part->_state->get_bin_index());
+          nassertv(bin != (CullBin *)NULL);
+          bin->add_object(transparent_part);
+
+          // Now we can draw the opaque part, with decals.  This will
+          // end up in the opaque bin.
+          object->_state = state->compose(get_dual_opaque_state());
+        }
+      }
+      break;
+
+    default:
+      // Other kinds of transparency need no special handling.
+      break;
+    }
+  }
+  
+  CullBin *bin = get_bin(object->_state->get_bin_index());
+  nassertv(bin != (CullBin *)NULL);
+  bin->add_object(object);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -118,4 +179,53 @@ make_new_bin(int bin_index) {
   }
 
   return bin;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullResult::get_binary_state
+//       Access: Private
+//  Description: Returns a RenderState that applies the effects of
+//               M_binary.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) CullResult::
+get_binary_state() {
+  static CPT(RenderState) state = NULL;
+  if (state == (const RenderState *)NULL) {
+    state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_equal, 1.0f),
+                              RenderState::get_max_priority());
+  }
+  return state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullResult::get_dual_transparent_state
+//       Access: Private
+//  Description: Returns a RenderState that renders only the
+//               transparent parts of an object, in support of M_dual.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) CullResult::
+get_dual_transparent_state() {
+  static CPT(RenderState) state = NULL;
+  if (state == (const RenderState *)NULL) {
+    state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_less, 1.0f),
+                              RenderState::get_max_priority());
+  }
+  return state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullResult::get_dual_opaque_state
+//       Access: Private
+//  Description: Returns a RenderState that renders only the
+//               opaque parts of an object, in support of M_dual.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) CullResult::
+get_dual_opaque_state() {
+  static CPT(RenderState) state = NULL;
+  if (state == (const RenderState *)NULL) {
+    state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_equal, 1.0f),
+                              TransparencyAttrib::make(TransparencyAttrib::M_none),
+                              RenderState::get_max_priority());
+  }
+  return state;
 }

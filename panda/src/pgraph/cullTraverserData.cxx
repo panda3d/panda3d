@@ -156,7 +156,7 @@ get_fake_view_frustum_cull_state() {
       (ColorAttrib::make_flat(Colorf(1.0f, 0.0f, 0.0f, 1.0f)),
        TextureAttrib::make_off(),
        RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
-       1000);
+       RenderState::get_max_priority());
   }
   return state;
 }

@@ -66,22 +66,31 @@ CullableObject(Geom *geom, const RenderState *state,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullableObject::Copy Constructor
-//       Access: Private
-//  Description: CullableObjects should not be copied.
+//       Access: Public
+//  Description: Copies the CullableObject, but does not copy its
+//               children (decals).
 ////////////////////////////////////////////////////////////////////
 INLINE CullableObject::
-CullableObject(const CullableObject &copy) {
-  nassertv(false);
+CullableObject(const CullableObject &copy) :
+  _geom(copy._geom),
+  _state(copy._state),
+  _transform(copy._transform),
+  _next((CullableObject *)NULL)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullableObject::Copy Assignment Operator
 //       Access: Private
-//  Description: CullableObjects should not be copied.
+//       Access: Public
+//  Description: Copies the CullableObject, but does not copy its
+//               children (decals).
 ////////////////////////////////////////////////////////////////////
 INLINE void CullableObject::
 operator = (const CullableObject &copy) {
-  nassertv(false);
+  _geom = copy._geom;
+  _state = copy._state;
+  _transform = copy._transform;
 }
 
 ////////////////////////////////////////////////////////////////////

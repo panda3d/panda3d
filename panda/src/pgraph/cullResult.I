@@ -54,18 +54,3 @@ get_bin(int bin_index) {
   }
   return make_new_bin(bin_index);
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullResult::add_object
-//       Access: Public
-//  Description: Adds the indicated CullableObject to the appropriate
-//               bin.  The bin becomes the owner of the object
-//               pointer, and will eventually delete it.
-////////////////////////////////////////////////////////////////////
-INLINE void CullResult::
-add_object(CullableObject *object) {
-  nassertv(object->_state != (const RenderState *)NULL);
-  CullBin *bin = get_bin(object->_state->get_bin_index());
-  nassertv(bin != (CullBin *)NULL);
-  bin->add_object(object);
-}

@@ -46,7 +46,6 @@ public:
                         const TransformState *transform,
                         CullableObject *next = NULL);
     
-private:
   INLINE CullableObject(const CullableObject &copy);
   INLINE void operator = (const CullableObject &copy);
 

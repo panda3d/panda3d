@@ -83,6 +83,10 @@ output(ostream &out) const {
   case M_binary:
     out << "binary";
     break;
+
+  case M_dual:
+    out << "dual";
+    break;
   }
 }
 

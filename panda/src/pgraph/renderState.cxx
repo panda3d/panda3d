@@ -609,6 +609,21 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_max_priority
+//       Access: Published, Static
+//  Description: Returns the maximum priority number (sometimes called
+//               override) that may be set on any node.  This may or
+//               may not be enforced, but the scene graph code assumes
+//               that no priority numbers will be larger than this,
+//               and some effects may not work properly if you use a
+//               larger number.
+////////////////////////////////////////////////////////////////////
+int RenderState::
+get_max_priority() {
+  return 1000000000;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::issue_delta_modify
 //       Access: Public
 //  Description: This is intended to be called only from
@@ -934,9 +949,8 @@ determine_bin_index() {
   string bin_name;
   _draw_order = 0;
 
-  const RenderAttrib *attrib = get_attrib(CullBinAttrib::get_class_type());
-  if (attrib != (const RenderAttrib *)NULL) {
-    const CullBinAttrib *bin_attrib = DCAST(CullBinAttrib, attrib);
+  const CullBinAttrib *bin_attrib = get_bin();
+  if (bin_attrib != (const CullBinAttrib *)NULL) {
     bin_name = bin_attrib->get_bin_name();
     _draw_order = bin_attrib->get_draw_order();
   }
@@ -946,13 +960,12 @@ determine_bin_index() {
     // either opaque or transparent, based on the transparency
     // setting.
     bin_name = "opaque";
-    const RenderAttrib *attrib = get_attrib(TransparencyAttrib::get_class_type());
-    if (attrib != (const RenderAttrib *)NULL) {
-      const TransparencyAttrib *trans = DCAST(TransparencyAttrib, attrib);
+    const TransparencyAttrib *trans = get_transparency();
+    if (trans != (const TransparencyAttrib *)NULL) {
       switch (trans->get_mode()) {
       case TransparencyAttrib::M_alpha:
       case TransparencyAttrib::M_alpha_sorted:
-      case TransparencyAttrib::M_binary:
+      case TransparencyAttrib::M_dual:
         // These transparency modes require special back-to-front sorting.
         bin_name = "transparent";
         break;
@@ -986,6 +999,21 @@ determine_fog() {
     _fog = DCAST(FogAttrib, attrib);
   }
   _flags |= F_checked_fog;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::determine_bin
+//       Access: Private
+//  Description: This is the private implementation of get_bin().
+////////////////////////////////////////////////////////////////////
+void RenderState::
+determine_bin() {
+  const RenderAttrib *attrib = get_attrib(CullBinAttrib::get_class_type());
+  _bin = (const CullBinAttrib *)NULL;
+  if (attrib != (const RenderAttrib *)NULL) {
+    _bin = DCAST(CullBinAttrib, attrib);
+  }
+  _flags |= F_checked_bin;
 }
 
 ////////////////////////////////////////////////////////////////////

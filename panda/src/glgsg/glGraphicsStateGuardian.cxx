@@ -3480,7 +3480,6 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
     enable_multisample_alpha_one(false);
     enable_multisample_alpha_mask(false);
     enable_blend(true);
-    enable_alpha_test(false);
     call_glBlendFunc(GL_ZERO, GL_ONE);
     return;
   }
@@ -3494,7 +3493,6 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
     enable_multisample_alpha_one(false);
     enable_multisample_alpha_mask(false);
     enable_blend(true);
-    enable_alpha_test(false);
     call_glBlendFunc(GL_DST_COLOR, GL_ZERO);
     return;
 
@@ -3502,7 +3500,6 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
     enable_multisample_alpha_one(false);
     enable_multisample_alpha_mask(false);
     enable_blend(true);
-    enable_alpha_test(false);
     call_glBlendFunc(GL_ONE, GL_ONE);
     return;
 
@@ -3510,7 +3507,6 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
     enable_multisample_alpha_one(false);
     enable_multisample_alpha_mask(false);
     enable_blend(true);
-    enable_alpha_test(false);
     call_glBlendFunc(GL_DST_COLOR, GL_ONE);
     return;
 
@@ -3523,10 +3519,12 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
   // No color blend; is there a transparency set?
   switch (transparency_mode) {
       case TransparencyAttrib::M_none:
+      case TransparencyAttrib::M_binary:
         break;
     
       case TransparencyAttrib::M_alpha:
       case TransparencyAttrib::M_alpha_sorted:
+      case TransparencyAttrib::M_dual:
         // Should we really have an "alpha" and an "alpha_sorted" mode,
         // like Performer does?  (The difference is that "alpha" is with
         // the write to the depth buffer disabled.)  Or should we just use
@@ -3537,30 +3535,19 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
         enable_multisample_alpha_one(false);
         enable_multisample_alpha_mask(false);
         enable_blend(true);
-        enable_alpha_test(false);
         call_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        return;
-
-      case TransparencyAttrib::M_binary:
-        enable_multisample_alpha_one(false);
-        enable_multisample_alpha_mask(false);
-        enable_blend(false);
-        enable_alpha_test(true);
-        call_glAlphaFunc(GL_EQUAL, 1);
         return;
     
       case TransparencyAttrib::M_multisample:
         enable_multisample_alpha_one(true);
         enable_multisample_alpha_mask(true);
         enable_blend(false);
-        enable_alpha_test(false);
         return;
     
       case TransparencyAttrib::M_multisample_mask:
         enable_multisample_alpha_one(false);
         enable_multisample_alpha_mask(true);
         enable_blend(false);
-        enable_alpha_test(false);
         return;
     
       default:
@@ -3573,7 +3560,6 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
   enable_multisample_alpha_one(false);
   enable_multisample_alpha_mask(false);
   enable_blend(false);
-  enable_alpha_test(false);
 }
 
 ////////////////////////////////////////////////////////////////////

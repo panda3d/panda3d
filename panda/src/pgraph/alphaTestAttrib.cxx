@@ -83,9 +83,11 @@ compare_to_impl(const RenderAttrib *other) const {
   const AlphaTestAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
   int compare_result = ((int)_mode - (int)ta->_mode) ;
-  if(compare_result!=0)
-      return compare_result;
-   else return (int) (255.0f*(_reference_alpha - ta->_reference_alpha));
+  if (compare_result!=0) {
+    return compare_result;
+  } else {
+    return (int) (255.0f*(_reference_alpha - ta->_reference_alpha));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
