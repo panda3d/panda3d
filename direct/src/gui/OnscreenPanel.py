@@ -124,17 +124,9 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
             # Otherwise, it's a model to instance.
             self.panelGeom = geom.instanceTo(self)
 
-        # Set up the panel as its own mouse region so mouse clicks on
-        # the panel don't inadvertently drive the toon around.
-        self.geomRect = geomRect
-        self.panelRegion = MouseWatcherRegion(uniqueName, 0, 0, 0, 0)
-        self.panelRegion.setRelative(self.panelGeom,
-                                     geomRect[0], geomRect[1],
-                                     geomRect[2], geomRect[3])
-
         centerX = (rect[0] + rect[1]) / 2.0
         centerY = (rect[2] + rect[3]) / 2.0
-        self.setPos(centerX, 0, centerY)
+        NodePath.setPos(self, centerX, 0, centerY)
 
         # Scale and position the geometry to fill up our desired
         # rectangle.
@@ -159,6 +151,22 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
             dw = DepthWriteTransition()
             self.panelGeom.setY(100)
             self.panelGeom.arc().setTransition(dw, 2)
+
+        # Set up the panel as its own mouse region so mouse clicks on
+        # the panel don't inadvertently drive the toon around.  This
+        # must be done after the panelGeom has been scaled
+        # appropriately, above.
+        self.geomRect = geomRect
+        self.panelRegion = MouseWatcherRegion(uniqueName, 0, 0, 0, 0)
+        self.panelRegion.setRelative(self.panelGeom,
+                                     geomRect[0], geomRect[1],
+                                     geomRect[2], geomRect[3])
+
+        # *** Temporary try/except to support old Pandas.
+        try:
+            self.panelRegion.setSort(self.panelDrawOrder)
+        except:
+            pass
 
     def cleanup(self):
         """cleanup(self):
@@ -358,5 +366,6 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         self.panelRegion.setRelative(self.panelGeom,
                                      self.geomRect[0], self.geomRect[1],
                                      self.geomRect[2], self.geomRect[3])
+
 
 

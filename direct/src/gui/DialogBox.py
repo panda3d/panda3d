@@ -30,7 +30,7 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
         self.isLoaded = 0
 
         # initialize our OnscreenPanel essence
-        # NOTE: all db's have the same name so we can kill tem easily
+        # NOTE: all db's have the same name so we can kill them easily
         OnscreenPanel.OnscreenPanel.__init__(self, "globalDialog")
          
 	return None
@@ -74,7 +74,7 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
             # create OK and CANCEL buttons
             self.makeButton("OK", pos = (-0.325, -0.25),
                             func = self.__handleOk)
-            self.makeButton("CANCEL", pos = (0.2, -0.25),
+            self.makeButton("Cancel", pos = (0.2, -0.25),
                             func = self.__handleCancel)
         else:
             # create a centered OK  button
