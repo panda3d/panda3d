@@ -30,6 +30,8 @@
 #include "eggPolygon.h"
 
 #include "pre_maya_include.h"
+#include <maya/MGlobal.h>
+#include <maya/MDistance.h>
 #include <maya/MArgList.h>
 #include <maya/MColor.h>
 #include <maya/MDagPath.h>
@@ -62,7 +64,6 @@
 MayaFile::
 MayaFile() {
   verbose = 0;
-  _scale_units = 1.0;
 }
 
 MayaFile::
@@ -100,6 +101,50 @@ read(const string &filename) {
 void MayaFile::
 make_egg(EggData &data) {
   traverse(data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaFile::get_units
+//       Access: Public, Static
+//  Description: Returns Maya's internal units in effect.
+////////////////////////////////////////////////////////////////////
+DistanceUnit MayaFile::
+get_units() {
+  switch (MDistance::internalUnit()) {
+  case MDistance::kInches:
+    return DU_inches;
+  case MDistance::kFeet:
+    return DU_feet;
+  case MDistance::kYards:
+    return DU_yards;
+  case MDistance::kMiles:
+    return DU_statute_miles;
+  case MDistance::kMillimeters:
+    return DU_millimeters;
+  case MDistance::kCentimeters:
+    return DU_centimeters;
+  case MDistance::kKilometers:
+    return DU_kilometers;
+  case MDistance::kMeters:
+    return DU_meters;
+
+  default:
+    return DU_invalid;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaFile::get_coordinate_system
+//       Access: Public, Static
+//  Description: Returns Maya's internal coordinate system in effect.
+////////////////////////////////////////////////////////////////////
+CoordinateSystem MayaFile::
+get_coordinate_system() {
+  if (MGlobal::isYAxisUp()) {
+    return CS_yup_right;
+  } else {
+    return CS_zup_right;
+  }
 }
 
 

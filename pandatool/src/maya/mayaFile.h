@@ -22,6 +22,8 @@
 #include "pandatoolbase.h"
 #include "mayaShaders.h"
 #include "eggTextureCollection.h"
+#include "distanceUnit.h"
+#include "coordinateSystem.h"
 
 class EggData;
 class EggGroup;
@@ -42,6 +44,9 @@ public:
   bool init(const string &program);
   bool read(const string &filename);
   void make_egg(EggData &data);
+
+  static DistanceUnit get_units();
+  static CoordinateSystem get_coordinate_system();
 
 private:
   bool traverse(EggData &data);
@@ -65,7 +70,6 @@ private:
   Groups _groups;
 
 public:
-  double _scale_units;
   MayaShaders _shaders;
   EggTextureCollection _textures;
 };

@@ -19,10 +19,6 @@
 #include "mayaToEgg.h"
 #include "global_parameters.h"
 
-#include "pre_maya_include.h"
-#include <maya/MGlobal.h>
-#include "post_maya_include.h"
-
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaToEgg::Constructor
 //       Access: Public
@@ -32,7 +28,12 @@ MayaToEgg::
 MayaToEgg() :
   SomethingToEgg("Maya", ".mb")
 {
+  add_units_options();
   add_normals_options();
+  add_transform_options();
+  //  add_texture_path_options();
+  //  add_rel_dir_options();
+  //  add_search_path_options(false);
 
   set_program_description
     ("This program converts Maya model files to egg.  Nothing fancy yet.");
@@ -85,15 +86,16 @@ run() {
     exit(1);
   }
 
+  // Set the coordinate system to match Maya's.
   if (!_got_coordinate_system) {
-    // Choose a suitable coordinate system matching Maya.
-    if (MGlobal::isYAxisUp()) {
-      _coordinate_system = CS_yup_right;
-    } else {
-      _coordinate_system = CS_zup_right;
-    }
+    _coordinate_system = MayaFile::get_coordinate_system();
   }
   _data.set_coordinate_system(_coordinate_system);
+
+  // Get the units from the Maya file, if the user didn't override.
+  if (_input_units == DU_invalid) {
+    _input_units = MayaFile::get_units();
+  }
 
   _maya.make_egg(_data);
 
