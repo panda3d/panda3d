@@ -49,7 +49,7 @@ CConnectionRepository() :
   _sec_code(0),
   _msg_type(0)
 {
-#ifdef HAVE_NSPR
+#if defined(HAVE_NSPR) && defined(SIMULATE_NETWORK_DELAY)
   if (min_lag != 0.0 || max_lag != 0.0) {
     _qcr.start_delay(min_lag, max_lag);
   }
