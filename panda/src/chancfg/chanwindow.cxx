@@ -16,8 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32_VC
 #include "chancfg_headers.h"
+#endif
+
 #pragma hdrstop
+
+#ifndef WIN32_VC
+#include "chanwindow.h"
+#include "chanparse.h"
+#include "chanshare.h"
+
+#include <notify.h>
+#endif
 
 WindowType* WindowDB = (WindowType*)0;
 

@@ -16,8 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32_VC
 #include "chancfg_headers.h"
+#endif
+
 #pragma hdrstop
+
+#ifndef WIN32_VC
+#include "chanlayout.h"
+#include "chanparse.h"
+#include "chanshare.h"
+
+#include <notify.h>
+#endif
 
 LayoutType* LayoutDB = (LayoutType*)0;
 

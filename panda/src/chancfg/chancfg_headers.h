@@ -16,18 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <camera.h>
-#include <dconfig.h>
-#include <displayRegion.h>
-#include <dSearchPath.h>
-#include <filename.h>
-#include <frustum.h>
-#include <graphicsChannel.h>
-#include <hardwareChannel.h>
 #include <notify.h>
-#include <perspectiveProjection.h>
-#include <renderRelation.h>
-#include <transformTransition.h>
 
 #include "chancfg.h"
 #include "chanlayout.h"

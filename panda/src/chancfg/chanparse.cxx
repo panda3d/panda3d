@@ -16,8 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32_VC
 #include "chancfg_headers.h"
+#endif
+
 #pragma hdrstop
+
+#ifndef WIN32_VC
+#include "chanparse.h"
+
+#include <notify.h>
+#endif
 
 const int ChanFileEOF = -1;
 

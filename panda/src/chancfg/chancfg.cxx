@@ -16,10 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32_VC
 #include "chancfg_headers.h"
+#endif
+
 #pragma hdrstop
 
+#ifndef WIN32_VC
+#include "chancfg.h"
+#include <notify.h>
+#endif
+
 #include <algorithm>
+#include <displayRegion.h>
+#include <graphicsChannel.h>
+#include <hardwareChannel.h>
+#include <camera.h>
+#include <frustum.h>
+#include <perspectiveProjection.h>
+#include <renderRelation.h>
+#include <transformTransition.h>
+#include <dSearchPath.h>
+#include <dconfig.h>
+#include <filename.h>
 
 Configure(chanconfig);
 
