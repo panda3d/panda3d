@@ -86,6 +86,7 @@ class ScrollingLabel(PandaObject.PandaObject):
         # ignore events
         self.ignore(self.name + "-left")
         self.ignore(self.name + "-right")
+	self.ignore(self.name + "-rollover")
         self.setKeyFocus(0)
 
         # remove gui items
