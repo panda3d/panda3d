@@ -1184,11 +1184,11 @@ class LevelEditor(NodePath, PandaObject):
             # If it exists, set the name of the DNA Node
             dnaNode.setName(newName)
 
-    def updateSelectedPose(self):
+    def updateSelectedPose(self, nodePathList):
         """
         Update the DNA database to reflect selected objects current positions
         """
-        for selectedNode in direct.selected:
+        for selectedNode in nodePathList:
             # Is this a DNA Object in the DNASTORE database?
             dnaObject = self.findDNANode(selectedNode)
             if dnaObject:

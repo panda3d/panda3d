@@ -115,7 +115,8 @@ class DirectManipulationControl(PandaObject):
         self.objectHandles.hideGuides()
         # Restart followSelectedNodePath task
         self.spawnFollowSelectedNodePathTask()
-        messenger.send('DIRECT_manipulateObjectCleanup')
+        messenger.send('DIRECT_manipulateObjectCleanup',
+                       [direct.selected.getSelectedAsList()])
 
     def spawnFollowSelectedNodePathTask(self):
         # If nothing selected, just return
@@ -498,7 +499,8 @@ class DirectManipulationControl(PandaObject):
             # Move the objects with the widget
             direct.selected.moveWrtWidgetAll()
             # Let everyone know that something was moved
-            messenger.send('DIRECT_manipulateObjectCleanup')
+            messenger.send('DIRECT_manipulateObjectCleanup',
+                           [direct.selected.getSelectedAsList()])
 
 class ObjectHandles(NodePath,PandaObject):
     def __init__(self):

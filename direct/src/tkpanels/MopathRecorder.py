@@ -748,7 +748,7 @@ class MopathRecorder(AppShell, PandaObject):
             elif direct.selected.last.id() == self.tangentMarker.id():
                 self.manipulandumId = self.tangentMarker.id()
               
-    def manipulateObjectCleanupHook(self):
+    def manipulateObjectCleanupHook(self, nodePathList = []):
         # Clear flag
         self.manipulandumId = None
             

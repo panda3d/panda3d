@@ -567,7 +567,8 @@ class Placer(AppShell):
         
     def xformStop(self, data):
         # Throw event to signal manipulation done
-        messenger.send('DIRECT_manipulateObjectCleanup')
+        # Send nodepath as a list
+        messenger.send('DIRECT_manipulateObjectCleanup', [[self['nodePath']]])
         # Update placer to reflect new state
         self.updatePlacer()
         # If moving widget restart follow task

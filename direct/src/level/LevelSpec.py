@@ -203,10 +203,12 @@ class LevelSpec:
 
         def saveToDisk(self, filename=None, makeBackup=1):
             """returns zero on failure"""
+            print 'saveToDisk', filename
             if filename is None:
                 filename = self.filename
 
             if makeBackup and self.privFileExists(filename):
+                print 'HERE'
                 # create a backup
                 try:
                     backupFilename = self.privGetBackupFilename()
