@@ -46,6 +46,12 @@ is_active() const {
 //               This is normally the root node of a scene graph,
 //               typically a node called 'render', although it could
 //               represent the root of any subgraph.
+//
+//               Note that the use of this method is now deprecated.
+//               In the absence of an explicit scene set on the
+//               camera, the camera will render whatever scene it is
+//               parented into.  This is the preferred way to specify
+//               the scene, since it is the more intuitive mechanism.
 ////////////////////////////////////////////////////////////////////
 INLINE void Camera::
 set_scene(const NodePath &scene) {

@@ -1018,8 +1018,10 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
 
   NodePath scene_root = camera_node->get_scene();
   if (scene_root.is_empty()) {
-    // No scene, no draw.
-    return NULL;
+    // If there's no explicit scene specified, use whatever scene the
+    // camera is parented within.  This is the normal and preferred
+    // case; the use of an explicit scene is now deprecated.
+    scene_root = camera.get_top();
   }
 
   PT(SceneSetup) scene_setup = new SceneSetup;

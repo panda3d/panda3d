@@ -285,7 +285,6 @@ get_render_2d() {
     lens->set_near_far(-1000, 1000);
 
     camera->set_lens(lens);
-    camera->set_scene(_render_2d);
     _display_region_2d->set_camera(camera_np);
   }
 
@@ -938,7 +937,6 @@ make_camera() {
   }
 
   camera->set_lens(lens);
-  camera->set_scene(get_render());
   _display_region_3d->set_camera(camera_np);
 
   return camera;
