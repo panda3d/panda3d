@@ -1172,6 +1172,10 @@ scan_directory(vector_string &contents) const {
   glob_t globbuf;
 
   int r = glob(dirname.c_str(), GLOB_ERR, NULL, &globbuf);
+  if (r != 0 && r != GLOB_NOMATCH) {
+    perror(dirname.c_str());
+    return false;
+  }
   size_t offset = dirname.size() - 1;
 
   for (int i = 0; globbuf.gl_pathv[i] != NULL; i++) {
