@@ -29,9 +29,11 @@
 #define _BOOL 1
 #endif
 
+#ifdef HAVE_IOSTREAM
 // This will ask Maya 5.0 or better to use the new <iostream> library
 // instead of the old <iostream.h> library.
-#define REQUIRE_IOSTREAM 1
+#define REQUIRE_IOSTREAM
+#endif  // HAVE_IOSTREAM
 
 #include <maya/MArgList.h>
 #include <maya/MPxCommand.h>

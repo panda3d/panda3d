@@ -104,6 +104,10 @@
   #define USE_PACKAGES maya
   #define TARGET mayasavepview
 
+  // Since mayasavepview doesn't include pandatoolbase.h, we have to
+  // pass in HAVE_IOSTREAM on the command line.
+  #define EXTRA_CDEFS $[EXTRA_CDEFS] $[if $[HAVE_IOSTREAM],HAVE_IOSTREAM]
+
   #if $[WINDOWS_PLATFORM]
     #define dlllib mll
   #endif
