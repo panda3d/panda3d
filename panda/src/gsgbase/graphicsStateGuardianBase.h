@@ -55,6 +55,7 @@ class qpGeomTrifans;
 class qpGeomLines;
 class qpGeomLinestrips;
 class qpGeomPoints;
+class qpGeomSprites;
 class qpGeomMunger;
 
 class PreparedGraphicsObjects;
@@ -196,6 +197,7 @@ public:
   virtual void draw_lines(const qpGeomLines *primitive)=0;
   virtual void draw_linestrips(const qpGeomLinestrips *primitive)=0;
   virtual void draw_points(const qpGeomPoints *primitive)=0;
+  virtual void draw_sprites(const qpGeomSprites *primitive)=0;
   virtual void end_draw_primitives()=0;
 
   virtual void framebuffer_copy_to_texture

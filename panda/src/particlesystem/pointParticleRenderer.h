@@ -26,7 +26,8 @@
 #include "pointerToArray.h"
 #include "luse.h"
 #include "geom.h"
-#include "geomPoint.h"
+#include "qpgeomVertexData.h"
+#include "qpgeomPoints.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PointParticleRenderer
@@ -76,10 +77,12 @@ private:
   float _point_size;
   CPT(RenderAttrib) _thick;
 
-  PT(GeomPoint) _point_primitive;
+  PT(Geom) _point_primitive;
+  PT(qpGeomPoints) _points;
 
   PTA_Vertexf _vertex_array;
   PTA_Colorf _color_array;
+  PT(qpGeomVertexData) _vdata;
 
   int _max_pool_size;
 

@@ -67,8 +67,6 @@ PUBLISHED:
 public:
   virtual BaseParticleRenderer *make_copy() = 0;
 
-  friend class ParticleSystem;
-
 protected:
   ParticleRendererAlphaMode _alpha_mode;
 
@@ -105,6 +103,8 @@ private:
   virtual void init_geoms() = 0;
   virtual void render(pvector< PT(PhysicsObject) >& po_vector,
                       int ttl_particles) = 0;
+
+  friend class ParticleSystem;
 };
 
 #include "baseParticleRenderer.I"

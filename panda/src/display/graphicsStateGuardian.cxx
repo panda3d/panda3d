@@ -749,6 +749,15 @@ draw_points(const qpGeomPoints *) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::draw_sprites
+//       Access: Public, Virtual
+//  Description: Draws a series of rectangular sprite polygons.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+draw_sprites(const qpGeomSprites *) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::end_draw_primitives()
 //       Access: Public, Virtual
 //  Description: Called after a sequence of draw_primitive()

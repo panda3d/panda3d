@@ -160,6 +160,7 @@ public:
   virtual void draw_lines(const qpGeomLines *primitive);
   virtual void draw_linestrips(const qpGeomLinestrips *primitive);
   virtual void draw_points(const qpGeomPoints *primitive);
+  virtual void draw_sprites(const qpGeomSprites *primitive);
   virtual void end_draw_primitives();
 
   virtual bool framebuffer_bind_to_texture(GraphicsOutput *win, Texture *tex);

@@ -117,8 +117,11 @@ get_vertex_data() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexWriter::
 set_column(int column) {
+  if (_vertex_data == (qpGeomVertexData *)NULL) {
+    return false;
+  }
   return set_column(_vertex_data->get_format()->get_array_with(column),
-                       _vertex_data->get_format()->get_column(column));
+                    _vertex_data->get_format()->get_column(column));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -154,8 +157,11 @@ set_column(const string &name) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexWriter::
 set_column(const InternalName *name) {
+  if (_vertex_data == (qpGeomVertexData *)NULL) {
+    return false;
+  }
   return set_column(_vertex_data->get_format()->get_array_with(name),
-                       _vertex_data->get_format()->get_column(name));
+                    _vertex_data->get_format()->get_column(name));
 }
 
 ////////////////////////////////////////////////////////////////////

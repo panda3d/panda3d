@@ -34,10 +34,12 @@ get_source_type() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
 set_texture(Texture *tex) {
-  _sprite_primitive->set_texture(tex);
-  _sprite_primitive->set_ll_uv(TexCoordf(0.0f, 0.0f));
-  _sprite_primitive->set_ur_uv(TexCoordf(1.0f, 1.0f));
+  _texture = tex;
+  set_ll_uv(TexCoordf(0.0f, 0.0f));
+  set_ur_uv(TexCoordf(1.0f, 1.0f));
   _source_type = ST_texture;
+
+  init_geoms();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -50,7 +52,7 @@ set_texture(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
 set_ll_uv(const TexCoordf &ll_uv) {
-  _sprite_primitive->set_ll_uv(ll_uv);
+  _ll_uv = ll_uv;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -63,7 +65,7 @@ set_ll_uv(const TexCoordf &ll_uv) {
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
 set_ur_uv(const TexCoordf &ur_uv) {
-  _sprite_primitive->set_ur_uv(ur_uv);
+  _ur_uv = ur_uv;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -81,16 +83,14 @@ set_color(const Colorf &color) {
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
 set_x_scale_flag(bool animate_x_ratio) {
-  if (animate_x_ratio == true && _animate_x_ratio == false) {
+  if (animate_x_ratio && !_animate_x_ratio) {
     _x_texel_array = PTA_float::empty_array(_pool_size);
-    _sprite_primitive->set_x_texel_ratio(_x_texel_array, G_PER_PRIM);
-  }
-  else if (animate_x_ratio == false && _animate_x_ratio == true) {
+  } else if (!animate_x_ratio && _animate_x_ratio) {
     _x_texel_array = PTA_float::empty_array(1);
-    _sprite_primitive->set_x_texel_ratio(_x_texel_array, G_OVERALL);
   }
 
   _animate_x_ratio = animate_x_ratio;
+  init_geoms();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -99,16 +99,14 @@ set_x_scale_flag(bool animate_x_ratio) {
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
 set_y_scale_flag(bool animate_y_ratio) {
-  if (animate_y_ratio == true && _animate_y_ratio == false) {
+  if (animate_y_ratio && !_animate_y_ratio) {
     _y_texel_array = PTA_float::empty_array(_pool_size);
-    _sprite_primitive->set_y_texel_ratio(_y_texel_array, G_PER_PRIM);
-  }
-  else if (animate_y_ratio == false && _animate_y_ratio == true) {
+  } else if (!animate_y_ratio && _animate_y_ratio) {
     _y_texel_array = PTA_float::empty_array(1);
-    _sprite_primitive->set_y_texel_ratio(_y_texel_array, G_OVERALL);
   }
 
   _animate_y_ratio = animate_y_ratio;
+  init_geoms();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -117,16 +115,14 @@ set_y_scale_flag(bool animate_y_ratio) {
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
 set_anim_angle_flag(bool animate_theta) {
-  if (animate_theta == true && _animate_theta == false) {
+  if (animate_theta && !_animate_theta) {
     _theta_array = PTA_float::empty_array(_pool_size);
-    _sprite_primitive->set_thetas(_theta_array, G_PER_PRIM);
-  }
-  else if (animate_theta == false && _animate_theta == true) {
+  } else if (!animate_theta && _animate_theta) {
     _theta_array = PTA_float::empty_array(_pool_size);
-    _sprite_primitive->set_thetas(_theta_array, G_OVERALL);
   }
 
   _animate_theta = animate_theta;
+  init_geoms();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -135,7 +131,8 @@ set_anim_angle_flag(bool animate_theta) {
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
 set_initial_x_scale(float initial_x_scale) {
-  _initial_x_texel_ratio = initial_x_scale;
+  _initial_x_scale = initial_x_scale;
+  init_geoms();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -144,7 +141,7 @@ set_initial_x_scale(float initial_x_scale) {
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
 set_final_x_scale(float final_x_scale) {
-  _final_x_texel_ratio = final_x_scale;
+  _final_x_scale = final_x_scale;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -153,7 +150,8 @@ set_final_x_scale(float final_x_scale) {
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
 set_initial_y_scale(float initial_y_scale) {
-  _initial_y_texel_ratio = initial_y_scale;
+  _initial_y_scale = initial_y_scale;
+  init_geoms();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -162,7 +160,7 @@ set_initial_y_scale(float initial_y_scale) {
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
 set_final_y_scale(float final_y_scale) {
-  _final_y_texel_ratio = final_y_scale;
+  _final_y_scale = final_y_scale;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -172,6 +170,7 @@ set_final_y_scale(float final_y_scale) {
 INLINE void SpriteParticleRenderer::
 set_nonanimated_theta(float theta) {
   _theta = theta;
+  init_geoms();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -189,7 +188,7 @@ set_alpha_blend_method(ParticleRendererBlendMethod bm) {
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
 set_alpha_disable(bool ad) {
-  _sprite_primitive->set_alpha_disable(ad);
+  _alpha_disable = ad;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -198,7 +197,7 @@ set_alpha_disable(bool ad) {
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *SpriteParticleRenderer::
 get_texture() const {
-  return _sprite_primitive->get_texture();
+  return _texture;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -209,7 +208,7 @@ get_texture() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const TexCoordf &SpriteParticleRenderer::
 get_ll_uv() const {
-  return _sprite_primitive->get_ll_uv();
+  return _ll_uv;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -220,7 +219,7 @@ get_ll_uv() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const TexCoordf &SpriteParticleRenderer::
 get_ur_uv() const {
-  return _sprite_primitive->get_ur_uv();
+  return _ur_uv;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -265,7 +264,7 @@ get_anim_angle_flag() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float SpriteParticleRenderer::
 get_initial_x_scale() const {
-  return _initial_x_texel_ratio;
+  return _initial_x_scale;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -274,7 +273,7 @@ get_initial_x_scale() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float SpriteParticleRenderer::
 get_final_x_scale() const {
-  return _final_x_texel_ratio;
+  return _final_x_scale;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -283,7 +282,7 @@ get_final_x_scale() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float SpriteParticleRenderer::
 get_initial_y_scale() const {
-  return _initial_y_texel_ratio;
+  return _initial_y_scale;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -292,7 +291,7 @@ get_initial_y_scale() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float SpriteParticleRenderer::
 get_final_y_scale() const {
-  return _final_y_texel_ratio;
+  return _final_y_scale;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -319,5 +318,5 @@ get_alpha_blend_method() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool SpriteParticleRenderer::
 get_alpha_disable() const {
-  return _sprite_primitive->get_alpha_disable();
+  return _alpha_disable;
 }

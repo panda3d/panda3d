@@ -20,15 +20,16 @@
 #define SPRITEPARTICLERENDERER_H
 
 #include "pandabase.h"
+#include "baseParticleRenderer.h"
+#include "baseParticle.h"
 #include "texture.h"
 #include "pointerTo.h"
 #include "pointerToArray.h"
 #include "pta_float.h"
 #include "geom.h"
 #include "geomSprite.h"
-
-#include "baseParticleRenderer.h"
-#include "baseParticle.h"
+#include "qpgeomVertexData.h"
+#include "qpgeomSprites.h"
 
 class NodePath;
 
@@ -91,24 +92,34 @@ PUBLISHED:
   virtual void write(ostream &out, int indent=0) const;
 
 private:
-  PT(GeomSprite) _sprite_primitive;
+  PT(Geom) _sprite_primitive;
+  PT(qpGeomSprites) _sprites;
+  PT(Texture) _texture;
+
   PTA_Vertexf _vertex_array;
   PTA_Colorf _color_array;
   PTA_float _x_texel_array;
   PTA_float _y_texel_array;
   PTA_float _theta_array;
+  GeomBindType _x_bind, _y_bind, _theta_bind;
+  PT(qpGeomVertexData) _vdata;
 
   Colorf _color;
 
-  float _initial_x_texel_ratio;
-  float _final_x_texel_ratio;
-  float _initial_y_texel_ratio;
-  float _final_y_texel_ratio;
+  TexCoordf _ll_uv, _ur_uv;
+  float _initial_x_scale;
+  float _final_x_scale;
+  float _initial_y_scale;
+  float _final_y_scale;
   float _theta;
+  float _base_x_scale;
+  float _base_y_scale;
+  float _aspect_ratio;
 
   bool _animate_x_ratio;
   bool _animate_y_ratio;
   bool _animate_theta;
+  bool _alpha_disable;
 
   ParticleRendererBlendMethod _blend_method;
 

@@ -27,6 +27,7 @@
     qpgeomLines.h \
     qpgeomLinestrips.h \
     qpgeomPoints.h \
+    qpgeomSprites.h \
     qpgeomUsageHint.h \
     qpgeomVertexArrayData.h qpgeomVertexArrayData.I \
     qpgeomVertexArrayFormat.h qpgeomVertexArrayFormat.I \
@@ -79,6 +80,7 @@
     qpgeomLines.cxx \
     qpgeomLinestrips.cxx \
     qpgeomPoints.cxx \
+    qpgeomSprites.cxx \
     qpgeomVertexArrayData.cxx \
     qpgeomVertexArrayFormat.cxx \
     qpgeomCacheEntry.cxx \
@@ -128,6 +130,7 @@
     qpgeomLines.h \
     qpgeomLinestrips.h \
     qpgeomPoints.h \
+    qpgeomSprites.h \
     qpgeomUsageHint.h \
     qpgeomVertexArrayData.h qpgeomVertexArrayData.I \
     qpgeomVertexArrayFormat.h qpgeomVertexArrayFormat.I \

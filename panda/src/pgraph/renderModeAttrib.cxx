@@ -39,10 +39,18 @@ TypeHandle RenderModeAttrib::_type_handle;
 //               linestrip lines; it also specifies the diameter of
 //               points.  It is not supported in DirectX, which only
 //               supports pixel-based lines and points.
+//
+//               If perspective is true, the point thickness
+//               represented is actually a width in 3-d units, and the
+//               points should scale according to perspective.  When
+//               it is false, the point thickness is actually a width
+//               in pixels, and points are a uniform size regardless
+//               of distance from the camera.  This feature is not
+//               supported by all graphics drivers.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) RenderModeAttrib::
-make(RenderModeAttrib::Mode mode, float thickness) {
-  RenderModeAttrib *attrib = new RenderModeAttrib(mode, thickness);
+make(RenderModeAttrib::Mode mode, float thickness, bool perspective) {
+  RenderModeAttrib *attrib = new RenderModeAttrib(mode, thickness, perspective);
   return return_new(attrib);
 }
 
@@ -85,6 +93,10 @@ output(ostream &out) const {
     out << "point(" << get_thickness() << ")";
     break;
   }
+
+  if (get_perspective()) {
+    out << ", perspective";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -111,6 +123,9 @@ compare_to_impl(const RenderAttrib *other) const {
   }
   if (_thickness != ta->_thickness) {
     return _thickness < ta->_thickness ? -1 : 1;
+  }
+  if (_perspective != ta->_perspective) {
+    return (int)_perspective - (int)ta->_perspective;
   }
   return 0;
 }
@@ -143,7 +158,7 @@ compose_impl(const RenderAttrib *other) const {
     mode = get_mode();
   }
 
-  return make(mode, get_thickness());
+  return make(mode, ta->get_thickness(), ta->get_perspective());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -159,7 +174,7 @@ compose_impl(const RenderAttrib *other) const {
 ////////////////////////////////////////////////////////////////////
 RenderAttrib *RenderModeAttrib::
 make_default_impl() const {
-  return new RenderModeAttrib(M_filled, 1.0f);
+  return new RenderModeAttrib(M_filled, 1.0f, false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -185,6 +200,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 
   dg.add_int8(_mode);
   dg.add_float32(_thickness);
+  dg.add_bool(_perspective);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -197,7 +213,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *RenderModeAttrib::
 make_from_bam(const FactoryParams &params) {
-  RenderModeAttrib *attrib = new RenderModeAttrib(M_filled, 0.0f);
+  RenderModeAttrib *attrib = new RenderModeAttrib(M_filled, 1.0f, false);
   DatagramIterator scan;
   BamReader *manager;
 
@@ -220,4 +236,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _mode = (Mode)scan.get_int8();
   _thickness = scan.get_float32();
+  _perspective = false;
+  if (manager->get_file_minor_ver() >= 18) {
+    _perspective = scan.get_bool();
+  }
 }

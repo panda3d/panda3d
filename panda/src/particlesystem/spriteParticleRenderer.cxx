@@ -17,11 +17,16 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "spriteParticleRenderer.h"
-
 #include "boundingSphere.h"
-#include "geom.h"
+#include "geomNode.h"
 #include "nodePath.h"
 #include "dcast.h"
+#include "geomSprite.h"
+#include "qpgeom.h"
+#include "qpgeomVertexWriter.h"
+#include "renderModeAttrib.h"
+#include "texMatrixAttrib.h"
+#include "textureAttrib.h"
 
 ////////////////////////////////////////////////////////////////////
 //    Function : SpriteParticleRenderer::SpriteParticleRenderer
@@ -32,19 +37,21 @@ SpriteParticleRenderer::
 SpriteParticleRenderer(Texture *tex) :
   BaseParticleRenderer(PR_ALPHA_NONE),
   _color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
-  _initial_x_texel_ratio(0.02f),
-  _final_x_texel_ratio(0.02f),
-  _initial_y_texel_ratio(0.02f),
-  _final_y_texel_ratio(0.02f),
+  _ll_uv(0.0f, 0.0f),
+  _ur_uv(1.0f, 1.0f),
+  _initial_x_scale(0.02f),
+  _final_x_scale(0.02f),
+  _initial_y_scale(0.02f),
+  _final_y_scale(0.02f),
   _theta(0.0f),
   _animate_x_ratio(false),
   _animate_y_ratio(false),
   _animate_theta(false),
+  _alpha_disable(false),
   _blend_method(PP_BLEND_LINEAR),
   _pool_size(0),
   _source_type(ST_texture)
 {
-  _sprite_primitive = new GeomSprite(tex);
   init_geoms();
 }
 
@@ -56,17 +63,20 @@ SpriteParticleRenderer(Texture *tex) :
 SpriteParticleRenderer::
 SpriteParticleRenderer(const SpriteParticleRenderer& copy) :
   BaseParticleRenderer(copy), _pool_size(0) {
+  _texture = copy._texture;
   _animate_x_ratio = copy._animate_x_ratio;
   _animate_y_ratio = copy._animate_y_ratio;
   _animate_theta = copy._animate_theta;
+  _alpha_disable = copy._alpha_disable;
   _blend_method = copy._blend_method;
-  _initial_x_texel_ratio = copy._initial_x_texel_ratio;
-  _final_x_texel_ratio = copy._final_x_texel_ratio;
-  _initial_y_texel_ratio = copy._initial_y_texel_ratio;
-  _final_y_texel_ratio = copy._final_y_texel_ratio;
+  _ll_uv = copy._ll_uv;
+  _ur_uv = copy._ur_uv;
+  _initial_x_scale = copy._initial_x_scale;
+  _final_x_scale = copy._final_x_scale;
+  _initial_y_scale = copy._initial_y_scale;
+  _final_y_scale = copy._final_y_scale;
   _theta = copy._theta;
   _color = copy._color;
-  _sprite_primitive = new GeomSprite(copy.get_texture());
   init_geoms();
 }
 
@@ -76,7 +86,7 @@ SpriteParticleRenderer(const SpriteParticleRenderer& copy) :
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 SpriteParticleRenderer::
-~SpriteParticleRenderer(void) {
+~SpriteParticleRenderer() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,7 +95,7 @@ SpriteParticleRenderer::
 // Description : child dynamic copy
 ////////////////////////////////////////////////////////////////////
 BaseParticleRenderer *SpriteParticleRenderer::
-make_copy(void) {
+make_copy() {
   return new SpriteParticleRenderer(*this);
 }
 
@@ -166,6 +176,8 @@ set_from_node(const NodePath &node_path) {
   set_ll_uv(min_uv);
   set_ur_uv(max_uv);
   _source_type = ST_from_node;
+
+  init_geoms();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -180,46 +192,35 @@ resize_pool(int new_size) {
 
   _pool_size = new_size;
 
-  GeomBindType _x_bind, _y_bind, _theta_bind;
-
   // handle the x texel ratio
-  if (_animate_x_ratio == true) {
+  if (_animate_x_ratio) {
     _x_texel_array = PTA_float::empty_array(new_size);
     _x_bind = G_PER_PRIM;
-  }
-  else {
+  } else {
     _x_texel_array = PTA_float::empty_array(1);
     _x_bind = G_OVERALL;
   }
 
   // handle the y texel ratio
-  if (_animate_y_ratio == true) {
+  if (_animate_y_ratio) {
     _y_texel_array = PTA_float::empty_array(new_size);
     _y_bind = G_PER_PRIM;
-  }
-  else {
+  } else {
     _y_texel_array = PTA_float::empty_array(1);
     _y_bind = G_OVERALL;
   }
 
   // handle the theta vector
-  if (_animate_theta == true) {
+  if (_animate_theta) {
     _theta_array = PTA_float::empty_array(new_size);
     _theta_bind = G_PER_PRIM;
-  }
-  else {
+  } else {
     _theta_array = PTA_float::empty_array(1);
     _theta_bind = G_OVERALL;
   }
 
   _vertex_array = PTA_Vertexf::empty_array(new_size);
   _color_array = PTA_Colorf::empty_array(new_size);
-
-  _sprite_primitive->set_coords(_vertex_array);
-  _sprite_primitive->set_colors(_color_array, G_PER_PRIM);
-  _sprite_primitive->set_x_texel_ratio(_x_texel_array, _x_bind);
-  _sprite_primitive->set_y_texel_ratio(_y_texel_array, _y_bind);
-  _sprite_primitive->set_thetas(_theta_array, _theta_bind);
 
   init_geoms();
 }
@@ -232,12 +233,97 @@ resize_pool(int new_size) {
 //               modifications
 ////////////////////////////////////////////////////////////////////
 void SpriteParticleRenderer::
-init_geoms(void) {
-  _sprite_primitive->set_num_prims(0);
+init_geoms() {
+  CPT(RenderState) state = _render_state;
+
+  if (use_qpgeom) {
+    PT(qpGeom) qpgeom = new qpGeom; 
+    _sprite_primitive = qpgeom;
+
+    PT(qpGeomVertexArrayFormat) array_format = new qpGeomVertexArrayFormat
+      (InternalName::get_vertex(), 3, qpGeomVertexColumn::NT_float32,
+       qpGeomVertexColumn::C_point,
+       InternalName::get_color(), 1, qpGeomVertexColumn::NT_packed_dabc,
+       qpGeomVertexColumn::C_color);
+
+    if (_animate_theta || _theta != 0.0f) {
+      array_format->add_column
+        (InternalName::get_rotate(), 1, qpGeomVertexColumn::NT_float32,
+         qpGeomVertexColumn::C_other);
+    }
+
+    _base_x_scale = _initial_x_scale;
+    _base_y_scale = _base_x_scale;
+
+    // We also scale the particle size by the number of texels used,
+    // by established convention.
+    float texel_scale = 1.0f;
+    if (_texture != (Texture *)NULL) {
+      float x_texels = _texture->get_x_size() * fabs(_ur_uv[0] - _ll_uv[0]);
+      float y_texels = _texture->get_y_size() * fabs(_ur_uv[1] - _ll_uv[1]);
+      texel_scale = x_texels;
+      _base_y_scale = _base_x_scale / y_texels * x_texels;
+    }
+
+    if (_animate_x_ratio) {
+      _base_x_scale = max(_initial_x_scale, _final_x_scale);
+      array_format->add_column
+        (InternalName::get_scale_x(), 1, qpGeomVertexColumn::NT_float32,
+         qpGeomVertexColumn::C_other);
+    }
+
+    if (_animate_y_ratio || _initial_y_scale != _base_y_scale) {
+      array_format->add_column
+        (InternalName::get_scale_y(), 1, qpGeomVertexColumn::NT_float32,
+         qpGeomVertexColumn::C_other);
+    }
+
+    CPT(qpGeomVertexFormat) format = qpGeomVertexFormat::register_format
+      (new qpGeomVertexFormat(array_format));
+
+    _vdata = new qpGeomVertexData
+      ("particles", format, qpGeomUsageHint::UH_dynamic);
+    qpgeom->set_vertex_data(_vdata);
+    _sprites = new qpGeomSprites(qpGeomUsageHint::UH_dynamic);
+    qpgeom->add_primitive(_sprites);
+
+    state = state->add_attrib(RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _base_x_scale * texel_scale, true));
+
+    if (_texture != (Texture *)NULL) {
+      state = state->add_attrib(TextureAttrib::make(_texture));
+    }
+
+    // Build a matrix to convert the texture coordinates to the ll, ur
+    // space.
+    LPoint2f ul(_ll_uv[0], _ur_uv[1]);
+    LPoint2f lr(_ur_uv[0], _ll_uv[1]);
+    LVector2f sc = lr - ul;
+
+    LMatrix4f mat
+      (sc[0], 0.0f, 0.0f, 0.0f,
+       0.0f, sc[1], 0.0f, 0.0f,
+       0.0f, 0.0f,  1.0f, 0.0f,
+       ul[0], ul[1], 0.0f, 1.0f);
+    state = state->add_attrib(TexMatrixAttrib::make(mat));
+
+  } else {
+    PT(GeomSprite) sprite = new GeomSprite(get_texture());
+    _sprite_primitive = sprite;
+    _sprite_primitive->set_num_prims(0);
+
+    _sprite_primitive->set_coords(_vertex_array);
+    _sprite_primitive->set_colors(_color_array, G_PER_PRIM);
+    sprite->set_x_texel_ratio(_x_texel_array, _x_bind);
+    sprite->set_y_texel_ratio(_y_texel_array, _y_bind);
+    sprite->set_thetas(_theta_array, _theta_bind);
+    sprite->set_ll_uv(_ll_uv);
+    sprite->set_ur_uv(_ur_uv);
+    sprite->set_alpha_disable(_alpha_disable);
+  }
 
   GeomNode *render_node = get_render_node();
   render_node->remove_all_geoms();
-  render_node->add_geom(_sprite_primitive, _render_state);
+  render_node->add_geom(_sprite_primitive, state);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -277,15 +363,22 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   float *cur_x_texel = &_x_texel_array[0];
   float *cur_y_texel = &_y_texel_array[0];
   float *cur_theta = &_theta_array[0];
+  qpGeomVertexWriter vertex(_vdata, InternalName::get_vertex());
+  qpGeomVertexWriter color(_vdata, InternalName::get_color());
+  qpGeomVertexWriter rotate(_vdata, InternalName::get_rotate());
+  qpGeomVertexWriter scale_x(_vdata, InternalName::get_scale_x());
+  qpGeomVertexWriter scale_y(_vdata, InternalName::get_scale_y());
 
-  if (_animate_x_ratio == false)
-    *cur_x_texel = _initial_x_texel_ratio;
-
-  if (_animate_y_ratio == false)
-    *cur_y_texel = _initial_y_texel_ratio;
-
-  if (_animate_theta == false)
-    *cur_theta = _theta;
+  if (!use_qpgeom) {
+    if (!_animate_x_ratio)
+      *cur_x_texel = _initial_x_scale;
+    
+    if (!_animate_y_ratio)
+      *cur_y_texel = _initial_y_scale;
+    
+    if (!_animate_theta)
+      *cur_theta = _theta;
+  }
 
   // init the aabb
   _aabb_min.set(99999.0f, 99999.0f, 99999.0f);
@@ -295,31 +388,30 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   for (i = 0; i < (int)po_vector.size(); i++) {
     cur_particle = (BaseParticle *) po_vector[i].p();
 
-    if (cur_particle->get_alive() == false)
+    if (!cur_particle->get_alive())
       continue;
 
+    LPoint3f position = cur_particle->get_position();
+
     // x aabb adjust
-    if (cur_particle->get_position().get_x() > _aabb_max.get_x())
-      _aabb_max[0] = cur_particle->get_position().get_x();
-    else if (cur_particle->get_position().get_x() < _aabb_min.get_x())
-      _aabb_min[0] = cur_particle->get_position().get_x();
+    if (position[0] > _aabb_max[0])
+      _aabb_max[0] = position[0];
+    else if (position[0] < _aabb_min[0])
+      _aabb_min[0] = position[0];
 
     // y aabb adjust
-    if (cur_particle->get_position().get_y() > _aabb_max.get_y())
-      _aabb_max[1] = cur_particle->get_position().get_y();
-    else if (cur_particle->get_position().get_y() < _aabb_min.get_y())
-      _aabb_min[1] = cur_particle->get_position().get_y();
+    if (position[1] > _aabb_max[1])
+      _aabb_max[1] = position[1];
+    else if (position[1] < _aabb_min[1])
+      _aabb_min[1] = position[1];
 
     // z aabb adjust
-    if (cur_particle->get_position().get_z() > _aabb_max.get_z())
-      _aabb_max[2] = cur_particle->get_position().get_z();
-    else if (cur_particle->get_position().get_z() < _aabb_min.get_z())
-      _aabb_min[2] = cur_particle->get_position().get_z();
+    if (position[2] > _aabb_max[2])
+      _aabb_max[2] = position[2];
+    else if (position[2] < _aabb_min[2])
+      _aabb_min[2] = position[2];
 
-    // put the current vertex into the array
-    *cur_vert++ = cur_particle->get_position();
-
-    // put the current color into the array
+    // Calculate the color
     Colorf c = _color;
 
     int alphamode=get_alpha_mode();
@@ -339,33 +431,75 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
       }
     }
 
-    *cur_color++ = c;
+    if (use_qpgeom) {
+      vertex.add_data3f(position);
+      color.add_data4f(c);
 
-    // handle x scaling
-    if (_animate_x_ratio == true) {
-      float t = cur_particle->get_parameterized_age();
+      if (_animate_x_ratio) {
+        float t = cur_particle->get_parameterized_age();
+        
+        if (_blend_method == PP_BLEND_CUBIC)
+          t = CUBIC_T(t);
+        
+        float scale = (_initial_x_scale +
+                       (t * (_final_x_scale - _initial_x_scale)));
+        scale_x.add_data1f(scale / _base_x_scale);
 
-      if (_blend_method == PP_BLEND_CUBIC)
-        t = CUBIC_T(t);
+      } else if (scale_x.has_column()) {
+        scale_x.add_data1f(_initial_x_scale / _base_x_scale);
+      }
 
-      *cur_x_texel++ = (_initial_x_texel_ratio +
-        (t * (_final_x_texel_ratio - _initial_x_texel_ratio)));
+      if (_animate_y_ratio) {
+        float t = cur_particle->get_parameterized_age();
+        
+        if (_blend_method == PP_BLEND_CUBIC)
+          t = CUBIC_T(t);
+        
+        float scale = (_initial_y_scale +
+                       (t * (_final_y_scale - _initial_y_scale)));
+        scale_y.add_data1f(scale / _base_y_scale);
+
+      } else if (scale_y.has_column()) {
+        scale_y.add_data1f(_initial_y_scale / _base_y_scale);
+      }
+
+      if (_animate_theta) {
+        rotate.add_data1f(cur_particle->get_theta());
+      } else if (rotate.has_column()) {
+        rotate.add_data1f(_theta);
+      }
+
+    } else {
+      // put the current vertex into the array
+      *cur_vert++ = position;
+      *cur_color++ = c;
+      
+      // handle x scaling
+      if (_animate_x_ratio) {
+        float t = cur_particle->get_parameterized_age();
+        
+        if (_blend_method == PP_BLEND_CUBIC)
+          t = CUBIC_T(t);
+        
+        *cur_x_texel++ = (_initial_x_scale +
+                          (t * (_final_x_scale - _initial_x_scale)));
+      }
+      
+      // handle y scaling
+      if (_animate_y_ratio) {
+        float t = cur_particle->get_parameterized_age();
+        
+        if (_blend_method == PP_BLEND_CUBIC)
+          t = CUBIC_T(t);
+        
+        *cur_y_texel++ = (_initial_y_scale +
+                          (t * (_final_y_scale - _initial_y_scale)));
+      }
+      
+      // handle theta
+      if (_animate_theta)
+        *cur_theta++ = cur_particle->get_theta();
     }
-
-    // handle y scaling
-    if (_animate_y_ratio == true) {
-      float t = cur_particle->get_parameterized_age();
-
-      if (_blend_method == PP_BLEND_CUBIC)
-        t = CUBIC_T(t);
-
-      *cur_y_texel++ = (_initial_y_texel_ratio +
-        (t * (_final_y_texel_ratio - _initial_y_texel_ratio)));
-    }
-
-    // handle theta
-    if (_animate_theta == true)
-      *cur_theta++ = cur_particle->get_theta();
 
     // maybe jump out early?
     remaining_particles--;
@@ -373,7 +507,12 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
       break;
   }
 
-  _sprite_primitive->set_num_prims(ttl_particles);
+  if (use_qpgeom) {
+    _sprites->clear_vertices();
+    _sprites->add_next_vertices(ttl_particles);
+  } else {
+    _sprite_primitive->set_num_prims(ttl_particles);
+  }
 
   // done filling geompoint node, now do the bb stuff
   LPoint3f aabb_center = _aabb_min + ((_aabb_max - _aabb_min) * 0.5f);
@@ -413,10 +552,10 @@ write(ostream &out, int indent) const {
   out.width(indent+2); out<<""; out<<"_y_texel_array "<<_y_texel_array<<"\n";
   out.width(indent+2); out<<""; out<<"_theta_array "<<_theta_array<<"\n";
   out.width(indent+2); out<<""; out<<"_color "<<_color<<"\n";
-  out.width(indent+2); out<<""; out<<"_initial_x_texel_ratio "<<_initial_x_texel_ratio<<"\n";
-  out.width(indent+2); out<<""; out<<"_final_x_texel_ratio "<<_final_x_texel_ratio<<"\n";
-  out.width(indent+2); out<<""; out<<"_initial_y_texel_ratio "<<_initial_y_texel_ratio<<"\n";
-  out.width(indent+2); out<<""; out<<"_final_y_texel_ratio "<<_final_y_texel_ratio<<"\n";
+  out.width(indent+2); out<<""; out<<"_initial_x_scale "<<_initial_x_scale<<"\n";
+  out.width(indent+2); out<<""; out<<"_final_x_scale "<<_final_x_scale<<"\n";
+  out.width(indent+2); out<<""; out<<"_initial_y_scale "<<_initial_y_scale<<"\n";
+  out.width(indent+2); out<<""; out<<"_final_y_scale "<<_final_y_scale<<"\n";
   out.width(indent+2); out<<""; out<<"_theta "<<_theta<<"\n";
   out.width(indent+2); out<<""; out<<"_animate_x_ratio "<<_animate_x_ratio<<"\n";
   out.width(indent+2); out<<""; out<<"_animate_y_ratio "<<_animate_y_ratio<<"\n";

@@ -51,6 +51,7 @@ class Light;
 // system GL version matches or exceeds the GL version in which these
 // functions are defined, and the system gl.h sometimes doesn't
 // declare these typedefs.
+typedef void (APIENTRYP PFNGLPOINTPARAMETERFVPROC) (GLenum pname, const GLfloat *params);
 typedef void (APIENTRYP PFNGLDRAWRANGEELEMENTSPROC) (GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices);
 typedef void (APIENTRYP PFNGLTEXIMAGE3DPROC) (GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
 typedef void (APIENTRYP PFNGLTEXSUBIMAGE3DPROC) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels);
@@ -100,6 +101,7 @@ public:
   virtual void draw_tristrips(const qpGeomTristrips *primitive);
   virtual void draw_lines(const qpGeomLines *primitive);
   virtual void draw_points(const qpGeomPoints *primitive);
+  virtual void draw_sprites(const qpGeomSprites *primitive);
   virtual void end_draw_primitives();
 
   INLINE bool draw_display_list(GeomContext *gc);
@@ -263,6 +265,7 @@ protected:
 
   void do_auto_rescale_normal();
   void do_issue_texture();
+  void do_point_size();
 
 #ifndef NDEBUG
   void build_phony_mipmaps(Texture *tex);
@@ -302,9 +305,9 @@ protected:
   int _max_lights;
   int _max_clip_planes;
 
-  LMatrix4f _current_projection_mat;
-  int _projection_mat_stack_count;
-  
+  LMatrix4f _projection_mat;
+  int _viewport_width;
+  int _viewport_height;
   CPT(TextureAttrib) _current_texture;
   CPT(TexMatrixAttrib) _current_tex_mat;
   bool _needs_tex_mat;
@@ -313,6 +316,9 @@ protected:
   bool _tex_gen_modifies_mat;
   bool _auto_antialias_mode;
   RenderModeAttrib::Mode _render_mode;
+  float _point_size;
+  float _gl_point_size;
+  bool _point_perspective;
 
   bool _transform_stale;
   bool _vertex_blending_enabled;
@@ -335,6 +341,11 @@ protected:
   pset<string> _extensions;
 
 public:
+  bool _supports_point_parameters;
+  PFNGLPOINTPARAMETERFVPROC _glPointParameterfv;
+
+  bool _supports_point_sprite;
+
   bool _supports_vertex_blend;
   PFNGLWEIGHTPOINTERARBPROC _glWeightPointerARB;
   PFNGLVERTEXBLENDARBPROC _glVertexBlendARB;
@@ -380,6 +391,17 @@ public:
   Mutex _lock;
   typedef pvector<GLuint> DeletedDisplayLists;
   DeletedDisplayLists _deleted_display_lists;
+
+  // This class is used internally by draw_sprites().
+  class SpriteData {
+  public:
+    INLINE bool operator < (const SpriteData &other) const;
+    Vertexf _eye;
+    Colorf _color;
+    float _rotate;
+    float _scale_x;
+    float _scale_y;
+  };
 
 public:
   static GraphicsStateGuardian *

@@ -24,9 +24,11 @@
 //               RenderModeAttrib object.
 ////////////////////////////////////////////////////////////////////
 INLINE RenderModeAttrib::
-RenderModeAttrib(RenderModeAttrib::Mode mode, float thickness) :
+RenderModeAttrib(RenderModeAttrib::Mode mode, float thickness,
+                 bool perspective) :
   _mode(mode),
-  _thickness(thickness)
+  _thickness(thickness),
+  _perspective(perspective)
 {
 }
 
@@ -43,10 +45,29 @@ get_mode() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderModeAttrib::get_thickness
 //       Access: Published
-//  Description: Returns the line width.  This is only relevant when
-//               the mode is M_wireframe.
+//  Description: Returns the line width or point thickness.  This is
+//               only relevant when rendering points or lines, such as
+//               when the mode is M_wireframe or M_point (or when
+//               rendering actual points or lines primitives in
+//               M_polygon mode).
 ////////////////////////////////////////////////////////////////////
 INLINE float RenderModeAttrib::
 get_thickness() const {
   return _thickness;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderModeAttrib::get_perspective
+//       Access: Published
+//  Description: Returns the perspective flag.  When this is true, the
+//               point thickness represented by get_thickness() is
+//               actually a width in 3-d units, and the points should
+//               scale according to perspective.  When it is false,
+//               the default, the point thickness is actually a width
+//               in pixels, and points are a uniform size regardless
+//               of distance from the camera.
+////////////////////////////////////////////////////////////////////
+INLINE bool RenderModeAttrib::
+get_perspective() const {
+  return _perspective;
 }

@@ -39,13 +39,15 @@ PUBLISHED:
   };
 
 private:
-  INLINE RenderModeAttrib(Mode mode, float thickness);
+  INLINE RenderModeAttrib(Mode mode, float thickness, bool perspective);
 
 PUBLISHED:
-  static CPT(RenderAttrib) make(Mode mode, float thickness = 1.0f);
+  static CPT(RenderAttrib) make(Mode mode, float thickness = 1.0f,
+                                bool perspective = false);
 
   INLINE Mode get_mode() const;
   INLINE float get_thickness() const;
+  INLINE bool get_perspective() const;
 
 public:
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
@@ -59,6 +61,7 @@ protected:
 private:
   Mode _mode;
   float _thickness;
+  bool _perspective;
 
 public:
   static void register_with_read_factory();

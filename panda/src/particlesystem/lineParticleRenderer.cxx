@@ -17,8 +17,11 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "lineParticleRenderer.h"
-
 #include "boundingSphere.h"
+#include "geomNode.h"
+#include "qpgeom.h"
+#include "qpgeomVertexWriter.h"
+#include "geomLine.h"
 
 ////////////////////////////////////////////////////////////////////
 //    Function : LineParticleRenderer
@@ -30,8 +33,8 @@ LineParticleRenderer::
 LineParticleRenderer() :
   _head_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
   _tail_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)) {
-  _line_primitive = new GeomLine;
-  init_geoms();
+
+  resize_pool(0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -47,8 +50,7 @@ LineParticleRenderer(const Colorf& head,
   BaseParticleRenderer(alpha_mode),
   _head_color(head), _tail_color(tail)
 {
-  _line_primitive = new GeomLine;
-  init_geoms();
+  resize_pool(0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -63,8 +65,7 @@ LineParticleRenderer(const LineParticleRenderer& copy) :
   _head_color = copy._head_color;
   _tail_color = copy._tail_color;
 
-  _line_primitive = new GeomLine;
-  init_geoms();
+  resize_pool(0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -117,11 +118,10 @@ kill_particle(int) {
 
 void LineParticleRenderer::
 resize_pool(int new_size) {
-  _vertex_array = PTA_Vertexf::empty_array(new_size * 2);
-  _color_array = PTA_Colorf::empty_array(new_size * 2);
-
-  _line_primitive->set_coords(_vertex_array);
-  _line_primitive->set_colors(_color_array, G_PER_VERTEX);
+  if (!use_qpgeom) {
+    _vertex_array = PTA_Vertexf::empty_array(new_size * 2);
+    _color_array = PTA_Colorf::empty_array(new_size * 2);
+  }
 
   _max_pool_size = new_size;
 
@@ -136,7 +136,21 @@ resize_pool(int new_size) {
 
 void LineParticleRenderer::
 init_geoms() {
-  _line_primitive->set_num_prims(0);
+  if (use_qpgeom) {
+    PT(qpGeom) qpgeom = new qpGeom; 
+    _line_primitive = qpgeom;
+    _vdata = new qpGeomVertexData
+      ("particles", qpGeomVertexFormat::get_v3cp(),
+       qpGeomUsageHint::UH_dynamic);
+    qpgeom->set_vertex_data(_vdata);
+    _lines = new qpGeomLines(qpGeomUsageHint::UH_dynamic);
+    qpgeom->add_primitive(_lines);
+
+  } else {
+    _line_primitive = new GeomLine;
+    _line_primitive->set_coords(_vertex_array);
+    _line_primitive->set_colors(_color_array, G_PER_VERTEX);
+  }
 
   GeomNode *render_node = get_render_node();
   render_node->remove_all_geoms();
@@ -162,6 +176,11 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   Vertexf *cur_vert = &_vertex_array[0];
   Colorf *cur_color = &_color_array[0];
+  qpGeomVertexWriter vertex(_vdata, InternalName::get_vertex());
+  qpGeomVertexWriter color(_vdata, InternalName::get_color());
+  if (use_qpgeom) {
+    _lines->clear_vertices();
+  }
 
   // init the aabb
 
@@ -176,24 +195,24 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     if (cur_particle->get_alive() == false)
       continue;
 
-    LPoint3f pos = cur_particle->get_position();
+    LPoint3f position = cur_particle->get_position();
 
     // adjust the aabb
 
-    if (pos.get_x() > _aabb_max.get_x())
-      _aabb_max[0] = pos.get_x();
-    if (pos.get_x() < _aabb_min.get_x())
-      _aabb_min[0] = pos.get_x();
+    if (position[0] > _aabb_max[0])
+      _aabb_max[0] = position[0];
+    if (position[0] < _aabb_min[0])
+      _aabb_min[0] = position[0];
 
-    if (pos.get_y() > _aabb_max.get_y())
-      _aabb_max[1] = pos.get_y();
-    if (pos.get_y() < _aabb_min.get_y())
-      _aabb_min[1] = pos.get_y();
+    if (position[1] > _aabb_max[1])
+      _aabb_max[1] = position[1];
+    if (position[1] < _aabb_min[1])
+      _aabb_min[1] = position[1];
 
-    if (pos.get_z() > _aabb_max.get_z())
-      _aabb_max[2] = pos.get_z();
-    if (pos.get_z() < _aabb_min.get_z())
-      _aabb_min[2] = pos.get_z();
+    if (position[2] > _aabb_max[2])
+      _aabb_max[2] = position[2];
+    if (position[2] < _aabb_min[2])
+      _aabb_min[2] = position[2];
 
     // draw the particle.
 
@@ -222,18 +241,29 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
     // one line from current position to last position
 
-    *cur_vert++ = pos;
-    *cur_vert++ = cur_particle->get_last_position();
+    if (use_qpgeom) {
+      vertex.add_data3f(position);
+      vertex.add_data3f(cur_particle->get_last_position());
+      color.add_data4f(head_color);
+      color.add_data4f(tail_color);
+      _lines->add_next_vertices(2);
+      _lines->close_primitive();
+    } else {
+      *cur_vert++ = position;
+      *cur_vert++ = cur_particle->get_last_position();
 
-    *cur_color++ = head_color;
-    *cur_color++ = tail_color;
+      *cur_color++ = head_color;
+      *cur_color++ = tail_color;
+    }
 
     remaining_particles--;
     if (remaining_particles == 0)
       break;
   }
 
-  _line_primitive->set_num_prims(ttl_particles);
+  if (!use_qpgeom) {
+    _line_primitive->set_num_prims(ttl_particles);
+  }
 
   // done filling geomline node, now do the bb stuff
 

@@ -31,6 +31,7 @@
 #include "qpgeomLines.h"
 #include "qpgeomLinestrips.h"
 #include "qpgeomPoints.h"
+#include "qpgeomSprites.h"
 #include "qpgeomVertexArrayData.h"
 #include "qpgeomVertexArrayFormat.h"
 #include "qpgeomVertexData.h"
@@ -256,6 +257,7 @@ ConfigureFn(config_gobj) {
   qpGeomLines::init_type();
   qpGeomLinestrips::init_type();
   qpGeomPoints::init_type();
+  qpGeomSprites::init_type();
   qpGeomVertexArrayData::init_type();
   qpGeomVertexArrayFormat::init_type();
   qpGeomVertexData::init_type();
@@ -300,6 +302,7 @@ ConfigureFn(config_gobj) {
   qpGeomLines::register_with_read_factory();
   qpGeomLinestrips::register_with_read_factory();
   qpGeomPoints::register_with_read_factory();
+  qpGeomSprites::register_with_read_factory();
   qpGeomVertexArrayData::register_with_read_factory();
   qpGeomVertexArrayFormat::register_with_read_factory();
   qpGeomVertexData::register_with_read_factory();

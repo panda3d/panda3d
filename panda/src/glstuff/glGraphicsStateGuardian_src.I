@@ -526,3 +526,14 @@ issue_flat_shading(Geom *geom) {
     // Otherwise, it's a uniform-colored primitive; we can take either one.
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::SpriteData::Ordering
+//       Access: Public
+//  Description: Orders the sprites from back-to-front for correct
+//               transparency sorting in draw_sprites().
+////////////////////////////////////////////////////////////////////
+INLINE bool CLP(GraphicsStateGuardian)::SpriteData::
+operator < (const SpriteData &other) const {
+  return _eye[2] < other._eye[2];
+}

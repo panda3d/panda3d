@@ -138,6 +138,9 @@ add_vertex(int vertex) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
 add_consecutive_vertices(int start, int num_vertices) {
+  if (num_vertices == 0) {
+    return;
+  }
   clear_cache();
   int end = (start + num_vertices) - 1;
   unsigned short short_start = start;
@@ -472,7 +475,8 @@ get_num_bytes() const {
 ////////////////////////////////////////////////////////////////////
 bool qpGeomPrimitive::
 check_valid(const qpGeomVertexData *vertex_data) const {
-  return get_max_vertex() < vertex_data->get_num_vertices();
+  return get_num_vertices() == 0 ||
+    get_max_vertex() < vertex_data->get_num_vertices();
 }
 
 ////////////////////////////////////////////////////////////////////

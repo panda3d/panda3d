@@ -179,6 +179,45 @@ get_color() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InternalName::get_rotate
+//       Access: Published, Static
+//  Description: Returns the standard InternalName "rotate".
+////////////////////////////////////////////////////////////////////
+INLINE PT(InternalName) InternalName::
+get_rotate() {
+  if (_rotate == (InternalName *)NULL) {
+    _rotate = InternalName::make("rotate");
+  }
+  return _rotate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InternalName::get_scale_x
+//       Access: Published, Static
+//  Description: Returns the standard InternalName "scale_x".
+////////////////////////////////////////////////////////////////////
+INLINE PT(InternalName) InternalName::
+get_scale_x() {
+  if (_scale_x == (InternalName *)NULL) {
+    _scale_x = InternalName::make("scale_x");
+  }
+  return _scale_x;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InternalName::get_scale_y
+//       Access: Published, Static
+//  Description: Returns the standard InternalName "scale_y".
+////////////////////////////////////////////////////////////////////
+INLINE PT(InternalName) InternalName::
+get_scale_y() {
+  if (_scale_y == (InternalName *)NULL) {
+    _scale_y = InternalName::make("scale_y");
+  }
+  return _scale_y;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InternalName::get_transform_blend
 //       Access: Published, Static
 //  Description: Returns the standard InternalName "transform_blend".

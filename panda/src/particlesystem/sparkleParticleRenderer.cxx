@@ -17,9 +17,11 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "sparkleParticleRenderer.h"
-
 #include "boundingSphere.h"
 #include "geomNode.h"
+#include "qpgeom.h"
+#include "qpgeomVertexWriter.h"
+#include "geomLine.h"
 
 ////////////////////////////////////////////////////////////////////
 //    Function : SparkleParticleRenderer
@@ -33,8 +35,7 @@ SparkleParticleRenderer() :
   _edge_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
   _birth_radius(0.1f), _death_radius(0.1f)
 {
-  _line_primitive = new GeomLine;
-  init_geoms();
+  resize_pool(0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -51,8 +52,7 @@ SparkleParticleRenderer(const Colorf& center, const Colorf& edge,
   _center_color(center), _edge_color(edge), _birth_radius(birth_radius),
   _death_radius(death_radius), _life_scale(life_scale)
 {
-  _line_primitive = new GeomLine;
-  init_geoms();
+  resize_pool(0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,8 +69,7 @@ SparkleParticleRenderer(const SparkleParticleRenderer& copy) :
   _death_radius = copy._death_radius;
   _life_scale = copy._life_scale;
 
-  _line_primitive = new GeomLine;
-  init_geoms();
+  resize_pool(0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -118,11 +117,10 @@ kill_particle(int) {
 ////////////////////////////////////////////////////////////////////
 void SparkleParticleRenderer::
 resize_pool(int new_size) {
-  _vertex_array = PTA_Vertexf::empty_array(new_size * 12);
-  _color_array = PTA_Colorf::empty_array(new_size * 12);
-
-  _line_primitive->set_coords(_vertex_array);
-  _line_primitive->set_colors(_color_array, G_PER_VERTEX);
+  if (!use_qpgeom) {
+    _vertex_array = PTA_Vertexf::empty_array(new_size * 12);
+    _color_array = PTA_Colorf::empty_array(new_size * 12);
+  }
 
   _max_pool_size = new_size;
 
@@ -136,7 +134,21 @@ resize_pool(int new_size) {
 ////////////////////////////////////////////////////////////////////
 void SparkleParticleRenderer::
 init_geoms() {
-  _line_primitive->set_num_prims(0);
+  if (use_qpgeom) {
+    PT(qpGeom) qpgeom = new qpGeom; 
+    _line_primitive = qpgeom;
+    _vdata = new qpGeomVertexData
+      ("particles", qpGeomVertexFormat::get_v3cp(),
+       qpGeomUsageHint::UH_dynamic);
+    qpgeom->set_vertex_data(_vdata);
+    _lines = new qpGeomLines(qpGeomUsageHint::UH_dynamic);
+    qpgeom->add_primitive(_lines);
+
+  } else {
+    _line_primitive = new GeomLine;
+    _line_primitive->set_coords(_vertex_array);
+    _line_primitive->set_colors(_color_array, G_PER_VERTEX);
+  }
 
   GeomNode *render_node = get_render_node();
   render_node->remove_all_geoms();
@@ -161,6 +173,11 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   Vertexf *cur_vert = &_vertex_array[0];
   Colorf *cur_color = &_color_array[0];
+  qpGeomVertexWriter vertex(_vdata, InternalName::get_vertex());
+  qpGeomVertexWriter color(_vdata, InternalName::get_color());
+  if (use_qpgeom) {
+    _lines->clear_vertices();
+  }
 
   // init the aabb
 
@@ -175,22 +192,24 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     if (cur_particle->get_alive() == false)
       continue;
 
+    LPoint3f position = cur_particle->get_position();
+
     // adjust the aabb
 
-    if (cur_particle->get_position().get_x() > _aabb_max.get_x())
-      _aabb_max[0] = cur_particle->get_position().get_x();
-    else if (cur_particle->get_position().get_x() < _aabb_min.get_x())
-      _aabb_min[0] = cur_particle->get_position().get_x();
+    if (position[0] > _aabb_max[0])
+      _aabb_max[0] = position[0];
+    else if (position[0] < _aabb_min[0])
+      _aabb_min[0] = position[0];
 
-    if (cur_particle->get_position().get_y() > _aabb_max.get_y())
-      _aabb_max[1] = cur_particle->get_position().get_y();
-    else if (cur_particle->get_position().get_y() < _aabb_min.get_y())
-      _aabb_min[1] = cur_particle->get_position().get_y();
+    if (position[1] > _aabb_max[1])
+      _aabb_max[1] = position[1];
+    else if (position[1] < _aabb_min[1])
+      _aabb_min[1] = position[1];
 
-    if (cur_particle->get_position().get_z() > _aabb_max.get_z())
-      _aabb_max[2] = cur_particle->get_position().get_z();
-    else if (cur_particle->get_position().get_z() < _aabb_min.get_z())
-      _aabb_min[2] = cur_particle->get_position().get_z();
+    if (position[2] > _aabb_max[2])
+      _aabb_max[2] = position[2];
+    else if (position[2] < _aabb_min[2])
+      _aabb_min[2] = position[2];
 
     // draw the particle.
 
@@ -198,7 +217,6 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     float neg_radius = -radius;
     float alpha;
 
-    LPoint3f pos = cur_particle->get_position();
     Colorf center_color = _center_color;
     Colorf edge_color = _edge_color;
 
@@ -223,38 +241,81 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
     // 6 lines coming from the center point.
 
-    *cur_vert++ = pos;
-    *cur_vert++ = pos + Vertexf(radius, 0.0f, 0.0f);
-    *cur_vert++ = pos;
-    *cur_vert++ = pos + Vertexf(neg_radius, 0.0f, 0.0f);
-    *cur_vert++ = pos;
-    *cur_vert++ = pos + Vertexf(0.0f, radius, 0.0f);
-    *cur_vert++ = pos;
-    *cur_vert++ = pos + Vertexf(0.0f, neg_radius, 0.0f);
-    *cur_vert++ = pos;
-    *cur_vert++ = pos + Vertexf(0.0f, 0.0f, radius);
-    *cur_vert++ = pos;
-    *cur_vert++ = pos + Vertexf(0.0f, 0.0f, neg_radius);
+    if (use_qpgeom) {
+      vertex.add_data3f(position);
+      vertex.add_data3f(position + Vertexf(radius, 0.0f, 0.0f));
+      vertex.add_data3f(position);
+      vertex.add_data3f(position + Vertexf(neg_radius, 0.0f, 0.0f));
+      vertex.add_data3f(position);
+      vertex.add_data3f(position + Vertexf(0.0f, radius, 0.0f));
+      vertex.add_data3f(position);
+      vertex.add_data3f(position + Vertexf(0.0f, neg_radius, 0.0f));
+      vertex.add_data3f(position);
+      vertex.add_data3f(position + Vertexf(0.0f, 0.0f, radius));
+      vertex.add_data3f(position);
+      vertex.add_data3f(position + Vertexf(0.0f, 0.0f, neg_radius));
 
-    *cur_color++ = center_color;
-    *cur_color++ = edge_color;
-    *cur_color++ = center_color;
-    *cur_color++ = edge_color;
-    *cur_color++ = center_color;
-    *cur_color++ = edge_color;
-    *cur_color++ = center_color;
-    *cur_color++ = edge_color;
-    *cur_color++ = center_color;
-    *cur_color++ = edge_color;
-    *cur_color++ = center_color;
-    *cur_color++ = edge_color;
+      color.add_data4f(center_color);
+      color.add_data4f(edge_color);
+      color.add_data4f(center_color);
+      color.add_data4f(edge_color);
+      color.add_data4f(center_color);
+      color.add_data4f(edge_color);
+      color.add_data4f(center_color);
+      color.add_data4f(edge_color);
+      color.add_data4f(center_color);
+      color.add_data4f(edge_color);
+      color.add_data4f(center_color);
+      color.add_data4f(edge_color);
+
+      _lines->add_next_vertices(2);
+      _lines->close_primitive();
+      _lines->add_next_vertices(2);
+      _lines->close_primitive();
+      _lines->add_next_vertices(2);
+      _lines->close_primitive();
+      _lines->add_next_vertices(2);
+      _lines->close_primitive();
+      _lines->add_next_vertices(2);
+      _lines->close_primitive();
+      _lines->add_next_vertices(2);
+      _lines->close_primitive();
+    } else {
+      *cur_vert++ = position;
+      *cur_vert++ = position + Vertexf(radius, 0.0f, 0.0f);
+      *cur_vert++ = position;
+      *cur_vert++ = position + Vertexf(neg_radius, 0.0f, 0.0f);
+      *cur_vert++ = position;
+      *cur_vert++ = position + Vertexf(0.0f, radius, 0.0f);
+      *cur_vert++ = position;
+      *cur_vert++ = position + Vertexf(0.0f, neg_radius, 0.0f);
+      *cur_vert++ = position;
+      *cur_vert++ = position + Vertexf(0.0f, 0.0f, radius);
+      *cur_vert++ = position;
+      *cur_vert++ = position + Vertexf(0.0f, 0.0f, neg_radius);
+
+      *cur_color++ = center_color;
+      *cur_color++ = edge_color;
+      *cur_color++ = center_color;
+      *cur_color++ = edge_color;
+      *cur_color++ = center_color;
+      *cur_color++ = edge_color;
+      *cur_color++ = center_color;
+      *cur_color++ = edge_color;
+      *cur_color++ = center_color;
+      *cur_color++ = edge_color;
+      *cur_color++ = center_color;
+      *cur_color++ = edge_color;
+    }
 
     remaining_particles--;
     if (remaining_particles == 0)
       break;
   }
 
-  _line_primitive->set_num_prims(6 * ttl_particles);
+  if (!use_qpgeom) {
+    _line_primitive->set_num_prims(6 * ttl_particles);
+  }
 
   // done filling geomline node, now do the bb stuff
 

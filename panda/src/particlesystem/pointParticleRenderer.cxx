@@ -19,6 +19,9 @@
 #include "pointParticleRenderer.h"
 #include "boundingSphere.h"
 #include "geomNode.h"
+#include "geomPoint.h"
+#include "qpgeom.h"
+#include "qpgeomVertexWriter.h"
 
 ////////////////////////////////////////////////////////////////////
 //    Function : PointParticleRenderer
@@ -36,9 +39,8 @@ PointParticleRenderer(ParticleRendererAlphaMode am,
   _start_color(sc), _end_color(ec),
   _blend_type(bt), _blend_method(bm)
 {
-  _point_primitive = new GeomPoint;
   set_point_size(point_size);
-  init_geoms();
+  resize_pool(0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,8 +51,7 @@ PointParticleRenderer(ParticleRendererAlphaMode am,
 
 PointParticleRenderer::
 PointParticleRenderer(const PointParticleRenderer& copy) :
-  BaseParticleRenderer(copy),
-  _max_pool_size(0)
+  BaseParticleRenderer(copy)
 {
   _blend_type = copy._blend_type;
   _blend_method = copy._blend_method;
@@ -58,8 +59,7 @@ PointParticleRenderer(const PointParticleRenderer& copy) :
   _end_color = copy._end_color;
   _point_size = copy._point_size;
   _thick = copy._thick;
-  _point_primitive = new GeomPoint;
-  init_geoms();
+  resize_pool(0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,7 +69,7 @@ PointParticleRenderer(const PointParticleRenderer& copy) :
 ////////////////////////////////////////////////////////////////////
 
 PointParticleRenderer::
-~PointParticleRenderer(void) {
+~PointParticleRenderer() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,7 +79,7 @@ PointParticleRenderer::
 ////////////////////////////////////////////////////////////////////
 
 BaseParticleRenderer *PointParticleRenderer::
-make_copy(void) {
+make_copy() {
   return new PointParticleRenderer(*this);
 }
 
@@ -97,11 +97,10 @@ resize_pool(int new_size) {
 
   _max_pool_size = new_size;
 
-  _vertex_array = PTA_Vertexf::empty_array(new_size);
-  _color_array = PTA_Colorf::empty_array(new_size);
-
-  _point_primitive->set_coords(_vertex_array);
-  _point_primitive->set_colors(_color_array, G_PER_VERTEX);
+  if (!use_qpgeom) {
+    _vertex_array = PTA_Vertexf::empty_array(new_size);
+    _color_array = PTA_Colorf::empty_array(new_size);
+  }
 
   init_geoms();
 }
@@ -113,9 +112,22 @@ resize_pool(int new_size) {
 ////////////////////////////////////////////////////////////////////
 
 void PointParticleRenderer::
-init_geoms(void) {
+init_geoms() {
+  if (use_qpgeom) {
+    PT(qpGeom) qpgeom = new qpGeom; 
+    _point_primitive = qpgeom;
+    _vdata = new qpGeomVertexData
+      ("particles", qpGeomVertexFormat::get_v3cp(),
+       qpGeomUsageHint::UH_dynamic);
+    qpgeom->set_vertex_data(_vdata);
+    _points = new qpGeomPoints(qpGeomUsageHint::UH_dynamic);
+    qpgeom->add_primitive(_points);
 
-  _point_primitive->set_num_prims(0);
+  } else {
+    _point_primitive = new GeomPoint;
+    _point_primitive->set_coords(_vertex_array);
+    _point_primitive->set_colors(_color_array, G_PER_VERTEX);
+  }
   
   GeomNode *render_node = get_render_node();
   render_node->remove_all_geoms();
@@ -228,6 +240,8 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   Vertexf *cur_vert = &_vertex_array[0];
   Colorf *cur_color = &_color_array[0];
+  qpGeomVertexWriter vertex(_vdata, InternalName::get_vertex());
+  qpGeomVertexWriter color(_vdata, InternalName::get_color());
 
   // init the aabb
 
@@ -239,34 +253,41 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   for (i = 0; i < (int)po_vector.size(); i++) {
     cur_particle = (BaseParticle *) po_vector[i].p();
 
-    if (cur_particle->get_alive() == false)
+    if (!cur_particle->get_alive())
       continue;
+
+    LPoint3f position = cur_particle->get_position();
 
     // x aabb adjust
 
-    if (cur_particle->get_position().get_x() > _aabb_max.get_x())
-      _aabb_max[0] = cur_particle->get_position().get_x();
-    else if (cur_particle->get_position().get_x() < _aabb_min.get_x())
-      _aabb_min[0] = cur_particle->get_position().get_x();
+    if (position[0] > _aabb_max[0])
+      _aabb_max[0] = position[0];
+    else if (position[0] < _aabb_min[0])
+      _aabb_min[0] = position[0];
 
     // y aabb adjust
 
-    if (cur_particle->get_position().get_y() > _aabb_max.get_y())
-      _aabb_max[1] = cur_particle->get_position().get_y();
-    else if (cur_particle->get_position().get_y() < _aabb_min.get_y())
-      _aabb_min[1] = cur_particle->get_position().get_y();
+    if (position[1] > _aabb_max[1])
+      _aabb_max[1] = position[1];
+    else if (position[1] < _aabb_min[1])
+      _aabb_min[1] = position[1];
 
     // z aabb adjust
 
-    if (cur_particle->get_position().get_z() > _aabb_max.get_z())
-      _aabb_max[2] = cur_particle->get_position().get_z();
-    else if (cur_particle->get_position().get_z() < _aabb_min.get_z())
-      _aabb_min[2] = cur_particle->get_position().get_z();
+    if (position[2] > _aabb_max[2])
+      _aabb_max[2] = position[2];
+    else if (position[2] < _aabb_min[2])
+      _aabb_min[2] = position[2];
 
     // stuff it into the arrays
 
-    *cur_vert++ = cur_particle->get_position();
-    *cur_color++ = create_color(cur_particle);
+    if (use_qpgeom) {
+      vertex.add_data3f(position);
+      color.add_data4f(create_color(cur_particle));
+    } else {
+      *cur_vert++ = position;
+      *cur_color++ = create_color(cur_particle);
+    }
 
     // maybe jump out early?
 
@@ -275,7 +296,12 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
       break;
   }
 
-  _point_primitive->set_num_prims(ttl_particles);
+  if (use_qpgeom) {
+    _points->clear_vertices();
+    _points->add_next_vertices(ttl_particles);
+  } else {
+    _point_primitive->set_num_prims(ttl_particles);
+  }
 
   // done filling geompoint node, now do the bb stuff
 

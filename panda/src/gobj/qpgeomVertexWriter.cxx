@@ -41,6 +41,10 @@ unsigned char qpGeomVertexWriter::empty_buffer[100] = { 0 };
 ////////////////////////////////////////////////////////////////////
 bool qpGeomVertexWriter::
 set_column(int array, const qpGeomVertexColumn *column) {
+  if (_vertex_data == (qpGeomVertexData *)NULL) {
+    return false;
+  }
+
   // Delete the old writer, if we've got one.
   if (_writer != (Writer *)NULL) {
     delete _writer;
@@ -55,9 +59,9 @@ set_column(int array, const qpGeomVertexColumn *column) {
     _stride = 0;
     _write_vertex = _start_vertex;
     _num_vertices = 0;
-
+    
     return false;
-
+    
   } else {
     _array = array;
     _column = column;
