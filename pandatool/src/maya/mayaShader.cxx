@@ -363,11 +363,6 @@ set_projection_type(const string &type) {
     _projection_type = PT_cylindrical;
     _map_uvs = &MayaShader::map_cylindrical;
 
-    // We always want at least u wrapping with a cylindrical
-    // projection--this will help with the seams.  Plus, if the
-    // _u_wrap value is less than 360, we want wrapping anyway.
-    _wrap_u = true;
-
     // The cylindrical projection is orthographic in the Y axis; scale
     // the range (-1, 1) in this axis into our UV range (0, 1).
     _projection_matrix = _projection_matrix * LMatrix4d(1.0, 0.0, 0.0, 0.0,
