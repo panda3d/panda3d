@@ -77,11 +77,10 @@ OEncryptStream() : ostream(&_buf) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE OEncryptStream::
-OEncryptStream(ostream *dest, bool owns_dest, const string &password,
-               const string &encryption_algorithm) :
+OEncryptStream(ostream *dest, bool owns_dest, const string &password) :
   ostream(&_buf) 
 {
-  open(dest, owns_dest, password, encryption_algorithm);
+  open(dest, owns_dest, password);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,10 +89,9 @@ OEncryptStream(ostream *dest, bool owns_dest, const string &password,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE OEncryptStream &OEncryptStream::
-open(ostream *dest, bool owns_dest, const string &password,
-     const string &encryption_algorithm) {
+open(ostream *dest, bool owns_dest, const string &password) {
   clear((ios_iostate)0);
-  _buf.open_write(dest, owns_dest, password, encryption_algorithm);
+  _buf.open_write(dest, owns_dest, password);
   return *this;
 }
 

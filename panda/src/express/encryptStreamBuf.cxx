@@ -30,6 +30,10 @@
 typedef int streamsize;
 #endif /* HAVE_STREAMSIZE */
 
+// The iteration count is scaled by this factor for writing to the
+// stream.
+static const int iteration_count_factor = 1000;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EncryptStreamBuf::Constructor
 //       Access: Public
@@ -88,6 +92,8 @@ open_read(istream *source, bool owns_source, const string &password) {
   // Now read the header information.
   StreamReader sr(_source, false);
   int nid = sr.get_uint16();
+  int key_length = sr.get_uint16();
+  int count = sr.get_uint16();
 
   const EVP_CIPHER *cipher = EVP_get_cipherbynid(nid);
 
@@ -98,25 +104,39 @@ open_read(istream *source, bool owns_source, const string &password) {
   }
 
   express_cat.debug()
-    << "Using decryption algorithm " << OBJ_nid2sn(nid) << "\n";
+    << "Using decryption algorithm " << OBJ_nid2sn(nid) << " with key length "
+    << key_length * 8 << " bits.\n";
 
   int iv_length = EVP_CIPHER_iv_length(cipher);
-  int key_length = EVP_CIPHER_key_length(cipher);
   _read_block_size = EVP_CIPHER_block_size(cipher);
 
   string iv = sr.extract_bytes(iv_length);
 
-  unsigned char *key = (unsigned char *)alloca(key_length);
+  // Initialize the context
+  int result;
+  result = EVP_DecryptInit(&_read_ctx, cipher, NULL, (unsigned char *)iv.data());
+  nassertv(result > 0);
+
+  result = EVP_CIPHER_CTX_set_key_length(&_read_ctx, key_length);
+  if (result <= 0) {
+    express_cat.error()
+      << "Invalid key length " << key_length * 8 << " bits for algorithm "
+      << OBJ_nid2sn(nid) << "\n";
+    EVP_CIPHER_CTX_cleanup(&_read_ctx);
+    return;
+  }
 
   // Hash the supplied password into a key of the appropriate length.
-  int result;
+  unsigned char *key = (unsigned char *)alloca(key_length);
   result =
     PKCS5_PBKDF2_HMAC_SHA1((const char *)password.data(), password.length(),
-                           (unsigned char *)iv.data(), iv.length(), 1, 
+                           (unsigned char *)iv.data(), iv.length(), 
+                           count * iteration_count_factor, 
                            key_length, key);
   nassertv(result > 0);
 
-  result = EVP_DecryptInit(&_read_ctx, cipher, key, (unsigned char *)iv.data());
+  // Store the key within the context.
+  result = EVP_DecryptInit(&_read_ctx, NULL, key, NULL);
   nassertv(result > 0);
 
   _read_valid = true;
@@ -157,8 +177,7 @@ close_read() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void EncryptStreamBuf::
-open_write(ostream *dest, bool owns_dest, const string &password,
-           const string &encryption_algorithm) {
+open_write(ostream *dest, bool owns_dest, const string &password) {
   OpenSSL_add_all_algorithms();
 
   close_write();
@@ -166,14 +185,8 @@ open_write(ostream *dest, bool owns_dest, const string &password,
   _owns_dest = owns_dest;
   _write_valid = false;
 
-  const EVP_CIPHER *cipher;
-  if (encryption_algorithm.empty()) {
-    // Blowfish is the default algorithm.
-    cipher = EVP_bf_cbc();
-
-  } else {
-    cipher = EVP_get_cipherbyname(encryption_algorithm.c_str());
-  }
+  const EVP_CIPHER *cipher = 
+    EVP_get_cipherbyname(encryption_algorithm.c_str());
 
   if (cipher == NULL) {
     express_cat.error()
@@ -182,36 +195,62 @@ open_write(ostream *dest, bool owns_dest, const string &password,
   };
 
   int nid = EVP_CIPHER_nid(cipher);
-  express_cat.debug()
-    << "Using encryption algorithm " << OBJ_nid2sn(nid) << "\n";
     
-  int key_length = EVP_CIPHER_key_length(cipher);
   int iv_length = EVP_CIPHER_iv_length(cipher);
   _write_block_size = EVP_CIPHER_block_size(cipher);
 
-  unsigned char *key = (unsigned char *)alloca(key_length);
   unsigned char *iv = (unsigned char *)alloca(iv_length);
 
   // Generate a random IV.  It doesn't need to be cryptographically
   // secure, just unique.
   RAND_pseudo_bytes(iv, iv_length);
 
-  // Hash the supplied password into a key of the appropriate length.
   int result;
+  result = EVP_EncryptInit(&_write_ctx, cipher, NULL, iv);
+  nassertv(result > 0);
+
+  // Store the appropriate key length in the context.
+  int key_length = (encryption_key_length + 7) / 8;
+  if (key_length == 0) {
+    key_length = EVP_CIPHER_CTX_key_length(cipher);
+  }
+  result = EVP_CIPHER_CTX_set_key_length(&_write_ctx, key_length);
+  if (result <= 0) {
+    express_cat.error()
+      << "Invalid key length " << key_length * 8 << " bits for algorithm "
+      << OBJ_nid2sn(nid) << "\n";
+    EVP_CIPHER_CTX_cleanup(&_write_ctx);
+    return;
+  }
+
+  express_cat.debug()
+    << "Using encryption algorithm " << OBJ_nid2sn(nid) << " with key length "
+    << key_length * 8 << " bits.\n";
+
+  // Hash the supplied password into a key of the appropriate length.
+  int count = encryption_iteration_count / iteration_count_factor;
+  unsigned char *key = (unsigned char *)alloca(key_length);
   result =
     PKCS5_PBKDF2_HMAC_SHA1((const char *)password.data(), password.length(),
-                           iv, iv_length, 1, key_length, key);
+                           iv, iv_length, count * iteration_count_factor,
+                           key_length, key);
   nassertv(result > 0);
 
-  result = EVP_EncryptInit(&_write_ctx, cipher, key, iv);
+  // Store the key in the context.
+  result = EVP_EncryptInit(&_write_ctx, NULL, key, NULL);
   nassertv(result > 0);
-
-  _write_valid = true;
 
   // Now write the header information to the stream.
   StreamWriter sw(_dest);
+  nassertv((PN_uint16)nid == nid);
   sw.add_uint16(nid);
+  nassertv((PN_uint16)key_length == key_length);
+  sw.add_uint16(key_length);
+  nassertv((PN_uint16)count == count);
+  sw.add_uint16(count);
   sw.append_data(iv, iv_length);
+
+  _write_valid = true;
 }
 
 ////////////////////////////////////////////////////////////////////

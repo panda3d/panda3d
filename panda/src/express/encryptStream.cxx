@@ -22,16 +22,14 @@
 //     Function: encrypt_string
 //       Access: Published
 //  Description: Encrypts the indicated source string using the given
-//               password and algorithm (or empty string for the
-//               default algorithm).  Returns the encrypted string.
+//               password.  Returns the encrypted string.
 ////////////////////////////////////////////////////////////////////
 string
-encrypt_string(const string &source, const string &password,
-               const string &algorithm) {
+encrypt_string(const string &source, const string &password) {
   ostringstream output;
 
   {
-    OEncryptStream encrypt(&output, false, password, algorithm);
+    OEncryptStream encrypt(&output, false, password);
     encrypt.write(source.data(), source.length());
   }
 

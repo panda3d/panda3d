@@ -79,6 +79,32 @@ config_express.GetDouble("max-dt", -1.0);
 const double sleep_precision =
 config_express.GetDouble("sleep-precision", 0.01);
 
+// This defines the OpenSSL encryption algorithm which is used to
+// encrypt any streams created by the current runtime.  The default is
+// Blowfish; the complete set of available algorithms is defined by
+// the current version of OpenSSL.  This value is used only to control
+// encryption; the correct algorithm will automatically be selected on
+// decryption.
+const string encryption_algorithm =
+config_express.GetString("encryption-algorithm", "bf-cbc");
+
+// This defines the key length, in bits, for the selected encryption
+// algorithm.  Some algorithms have a variable key length.  Specifying
+// a value of 0 here means to use the default key length for the
+// algorithm as defined by OpenSSL.
+const int encryption_key_length =
+config_express.GetInt("encryption-key-length", 0);
+
+// This defines the number of times the password is hashed to generate
+// a key when encrypting.  Its purpose is to make it computationally
+// more expensive for an attacker to search the key space
+// exhaustively.  This should be a multiple of 1,000 and should not
+// exceed about 65 million.  This value is used only to control
+// encryption; the correct count will automatically be selected on
+// decryption.
+const int encryption_iteration_count =
+config_express.GetInt("encryption-iteration-count", 100000);
+
 // Set this true to use the VirtualFileSystem mechanism for loading
 // models, etc.  Since the VirtualFileSystem maps to the same as the
 // actual file system by default, there is probably no reason to set

@@ -67,12 +67,10 @@ class EXPCL_PANDAEXPRESS OEncryptStream : public ostream {
 public:
   INLINE OEncryptStream();
   INLINE OEncryptStream(ostream *dest, bool owns_dest, 
-                        const string &password,
-                        const string &encryption_algorithm = "");
+                        const string &password);
 
   INLINE OEncryptStream &open(ostream *dest, bool owns_dest, 
-                              const string &password,
-                              const string &encryption_algorithm = "");
+                              const string &password);
   INLINE OEncryptStream &close();
 
 private:
@@ -80,8 +78,7 @@ private:
 };
 
 BEGIN_PUBLISH
-string encrypt_string(const string &source, const string &password,
-                      const string &algorithm = "");
+string encrypt_string(const string &source, const string &password);
 string decrypt_string(const string &source, const string &password);
 END_PUBLISH
 

@@ -39,8 +39,7 @@ public:
   void open_read(istream *source, bool owns_source, const string &password);
   void close_read();
 
-  void open_write(ostream *dest, bool owns_dest, const string &password,
-                  const string &encryption_algorithm);
+  void open_write(ostream *dest, bool owns_dest, const string &password);
   void close_write();
 
 protected:

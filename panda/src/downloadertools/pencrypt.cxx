@@ -42,11 +42,6 @@ usage() {
 
     << "Options:\n\n"
 
-    << "  -a algorithm\n"
-    << "      Specifies the particular encryption algorithm to use.  Available\n"
-    << "      algorithm names are defined by OpenSSL.  If this is unspecified a\n"
-    << "      default algorithm is selected.\n\n"
-    
     << "  -p \"password\"\n"
     << "      Specifies the password to use for encryption.  There are no\n"
     << "      restrictions on the password length or contents, but longer passwords\n"
@@ -58,9 +53,8 @@ int
 main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
-  const char *optstr = "a:p:h";
+  const char *optstr = "p:h";
 
-  string algorithm;
   string password;
   bool got_password = false;
 
@@ -68,10 +62,6 @@ main(int argc, char *argv[]) {
 
   while (flag != EOF) {
     switch (flag) {
-    case 'a':
-      algorithm = optarg;
-      break;
-
     case 'p':
       password = optarg;
       got_password = true;
@@ -129,7 +119,7 @@ main(int argc, char *argv[]) {
     
   bool fail = false;
   {
-    OEncryptStream encrypt(&write_stream, false, password, algorithm);
+    OEncryptStream encrypt(&write_stream, false, password);
     
     int ch = read_stream.get();
     while (!read_stream.eof() && !read_stream.fail()) {

@@ -56,6 +56,10 @@ extern const double clock_degrade_factor;
 extern const double max_dt;
 extern const double sleep_precision;
 
+extern const string encryption_algorithm;
+extern const int encryption_key_length;
+extern const int encryption_iteration_count;
+
 extern EXPCL_PANDAEXPRESS const bool use_vfs;
 
 extern EXPCL_PANDAEXPRESS const bool collect_tcp;

@@ -59,8 +59,6 @@ PUBLISHED:
   INLINE bool get_encryption_flag() const;
   INLINE void set_encryption_password(const string &password);
   INLINE const string &get_encryption_password() const;
-  INLINE void set_encryption_algorithm(const string &algorithm);
-  INLINE const string &get_encryption_algorithm() const;
 
   string add_subfile(const string &subfile_name, const Filename &filename,
                      int compression_level);
@@ -167,7 +165,6 @@ private:
 
   bool _encryption_flag;
   string _encryption_password;
-  string _encryption_algorithm;
 
   ifstream _read_file;
   ofstream _write_file;

@@ -84,12 +84,11 @@ get_scale_factor() const {
 //               encryption.
 //
 //               When true, subfiles will be encrypted with the
-//               password and algorithm specified by
-//               set_encryption_password() and
-//               set_encryption_algorithm().  It is possible to apply
-//               a different password or algorithm to different files,
-//               but you must call flush() or repack() before changing
-//               these properties.
+//               password specified by set_encryption_password().  It
+//               is possible to apply a different password to
+//               different files, but you must call flush() or
+//               repack() before changing these properties, and the
+//               resulting file can't be mounted via VFS.
 ////////////////////////////////////////////////////////////////////
 INLINE void Multifile::
 set_encryption_flag(bool flag) {
@@ -139,36 +138,6 @@ set_encryption_password(const string &password) {
 INLINE const string &Multifile::
 get_encryption_password() const {
   return _encryption_password;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::set_encryption_algorithm
-//       Access: Published
-//  Description: Specifies the algorithm that will be used to encrypt
-//               subfiles subsequently added to the multifile, if the
-//               encryption flag is also set true (see
-//               set_encryption_flag()).
-//
-//               The empty string, which is the initial value for this
-//               parameter, implies the default encryption algorithm.
-//               The complete list of available encryption algorithms
-//               is defined by OpenSSL.
-////////////////////////////////////////////////////////////////////
-INLINE void Multifile::
-set_encryption_algorithm(const string &algorithm) {
-  _encryption_algorithm = algorithm;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::get_encryption_algorithm
-//       Access: Published
-//  Description: Returns the algorithm that will be used to encrypt
-//               subfiles subsequently added to the multifile.  See
-//               set_encryption_algorithm().
-////////////////////////////////////////////////////////////////////
-INLINE const string &Multifile::
-get_encryption_algorithm() const {
-  return _encryption_algorithm;
 }
 
 ////////////////////////////////////////////////////////////////////
