@@ -449,7 +449,7 @@ EXPCL_MISC AudioTraits::SoundClass* AudioLoadMp3(Filename filename) {
   if (buf != (unsigned char*)0L) {
     return WinSample::load_raw(buf, len);
   }
-  return (AudioTraits::SampleClass*)0L;
+  return (AudioTraits::SoundClass*)0L;
 }
 
 #elif defined(AUDIO_USE_LINUX)

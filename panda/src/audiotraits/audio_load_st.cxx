@@ -400,7 +400,7 @@ EXPCL_MISC AudioTraits::SoundClass* AudioLoadSt(Filename filename) {
     return WinSample::load_raw(buf, len);
   }
 #endif /* HAVE_SOXST */
-  return (AudioTraits::SampleClass*)0L;
+  return (AudioTraits::SoundClass*)0L;
 }
 
 #elif defined(AUDIO_USE_LINUX)
