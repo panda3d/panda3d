@@ -177,6 +177,9 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
     def setSmH(self, h, timestamp):
         self.setComponentH(h)
         self.setComponentTLive(timestamp)
+    def setSmZ(self, z, timestamp):
+        self.setComponentZ(z)
+        self.setComponentTLive(timestamp)
     def setSmXY(self, x, y, timestamp):
         self.setComponentX(x)
         self.setComponentY(y)

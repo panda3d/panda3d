@@ -81,6 +81,19 @@ d_setSmH(float h) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CDistributedSmoothNodeBase::d_setSmZ
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void CDistributedSmoothNodeBase::
+d_setSmZ(float z) {
+  DCPacker packer;
+  begin_send_update(packer, "setSmZ");
+  packer.pack_double(z);
+  finish_send_update(packer);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CDistributedSmoothNodeBase::d_setSmXY
 //       Access: Private
 //  Description: 

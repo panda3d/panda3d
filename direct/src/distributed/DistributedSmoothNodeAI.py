@@ -24,6 +24,9 @@ class DistributedSmoothNodeAI(DistributedNodeAI.DistributedNodeAI,
     # These have their FFI functions exposed for efficiency
     def setSmH(self, h, t):
         self._NodePath__overloaded_setH_ptrNodePath_float(h)
+
+    def setSmZ(self, z, t):
+        self._NodePath__overloaded_setZ_ptrNodePath_float(z)
         
     def setSmXY(self, x, y, t):
         self._NodePath__overloaded_setX_ptrNodePath_float(x)

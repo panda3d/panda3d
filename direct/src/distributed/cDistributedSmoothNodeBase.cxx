@@ -137,6 +137,11 @@ broadcast_pos_hpr_full() {
     _store_stop = false;
     d_setSmH(_store_hpr[0]);
 
+  } else if (only_changed(flags, F_new_z)) {
+    // Only change in Z.
+    _store_stop = false;
+    d_setSmZ(_store_xyz[2]);
+
   } else if (only_changed(flags, F_new_x | F_new_y)) {
     // Only change in X, Y
     _store_stop = false;

@@ -59,6 +59,7 @@ private:
 
   INLINE void d_setSmStop();
   INLINE void d_setSmH(float h);
+  INLINE void d_setSmZ(float z);
   INLINE void d_setSmXY(float x, float y);
   INLINE void d_setSmXZ(float x, float z);
   INLINE void d_setSmPos(float x, float y, float z);
