@@ -156,7 +156,7 @@ class DistributedObject(PandaObject):
             self.activeState = ESDisabled
             self.__callbacks = {}
             if wantOtpServer:
-                self.cr.deleteObjectLocation(self.doId, self.__location[0], self.__location[1])
+                #self.cr.deleteObjectLocation(self.doId, self.__location[0], self.__location[1])
                 self.__location = (None, None)
                 # TODO: disable my children
 
@@ -343,9 +343,9 @@ class DistributedObject(PandaObject):
 
         def setLocation(self, parentId, zoneId):
             # The store must run first so we know the old location
-            self.cr.storeObjectLocation(self.doId, parentId, zoneId)
+            #self.cr.storeObjectLocation(self.doId, parentId, zoneId)
             self.__location = (parentId, zoneId)
-
+            
         def getLocation(self):
             return self.__location
 
