@@ -5,6 +5,7 @@ import DirectNotifyGlobal
 import ClientDistUpdate
 
 class ClientDistClass:
+    notify = DirectNotifyGlobal.directNotify.newCategory("ClientDistClass")
 
     def __init__(self, dcClass):
         self.number = dcClass.getNumber()
@@ -16,8 +17,12 @@ class ClientDistClass:
         self.broadcastRequiredCDU = self.listBroadcastRequiredCDU(self.allCDU)
         self.allRequiredCDU = self.listRequiredCDU(self.allCDU)
         # Import the class, and store the constructor
-        exec("import " + self.name)
-        self.constructor = eval(self.name + "." + self.name)
+        try:
+            exec("import " + self.name)
+            self.constructor = eval(self.name + "." + self.name)
+        except ImportError, e:
+            self.notify.warning("%s.py does not exist." % (self.name))
+            self.constructor = None
         return None
 
     def parseFields(self, dcClass):

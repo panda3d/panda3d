@@ -22,13 +22,16 @@ class ClientDistUpdate:
         self.divisors = []
         self.deriveTypesFromParticle(dcField)
         # Figure out our function pointer
-        exec("import " + cdc.name, moduleGlobals, moduleLocals)
         try:
+            exec("import " + cdc.name, moduleGlobals, moduleLocals)
             self.func = eval(cdc.name + "." + cdc.name + "." + self.name)
         # Only catch name and attribute errors
         # as all other errors are legit errors
+        except ImportError, e:
+            self.notify.warning("%s.py does not exist." % (cdc.name))
+            self.func = None
         except (NameError, AttributeError), e:
-            #ClientDistUpdate.notify.warning(cdc.name + "." + self.name +
+            #self.notify.warning(cdc.name + "." + self.name +
             #                                " does not exist")
             self.func = None
         return None
@@ -47,7 +50,7 @@ class ClientDistUpdate:
                     self.types.append(componentField.getElementType(j))
                     self.divisors.append(componentField.getElementDivisor(j))
         else:
-            ClientDistUpdate.notify.error("field is neither atom nor molecule")
+            self.notify.error("field is neither atom nor molecule")
         return None
 
     def updateField(self, cdc, do, di):
