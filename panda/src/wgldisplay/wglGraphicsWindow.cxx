@@ -160,13 +160,16 @@ make_current() {
 
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_V(wglgsg, _gsg);
-  wglMakeCurrent(_hdc, wglgsg->get_context(_hdc));
+  HGLRC context = wglgsg->get_context(_hdc);
+  if (context) {
+    wglMakeCurrent(_hdc, context);
 
-  // Now that we have made the context current to a window, we can
-  // reset the GSG state if this is the first time it has been used.
-  // (We can't just call reset() when we construct the GSG, because
-  // reset() requires having a current context.)
-  wglgsg->reset_if_new();
+    // Now that we have made the context current to a window, we can
+    // reset the GSG state if this is the first time it has been used.
+    // (We can't just call reset() when we construct the GSG, because
+    // reset() requires having a current context.)
+    wglgsg->reset_if_new();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -201,6 +204,12 @@ release_gsg() {
 void wglGraphicsWindow::
 begin_flip() {
   if (_hdc) {
+    // It turns out that if we don't call make_current() before
+    // calling SwapBuffers() on a Matrix card, we crash a horrible
+    // death.  This is a pity since make_current() seems unnecessary
+    // on other cards, and does incur some performance overhead.
+    make_current();
+
     SwapBuffers(_hdc);
   }
 }
