@@ -281,9 +281,18 @@ private:
     CT_mirror_x,
     CT_mirror_y,
     CT_rotate_90,
+    CT_rotate_180,
+    CT_rotate_270,
+    CT_squash,
+    CT_squash_mirror_y,
+    CT_squash_mirror_diag,
+    CT_small_squash,
+    CT_small_squash_mirror_y,
+    CT_small,
+    CT_small_rotate_270,
     CT_tiny,
     CT_tiny_mirror_x,
-    CT_tiny_rotate_90,
+    CT_tiny_rotate_270,
   };
 
   void get_character_glyphs(int character, TextFont *font,
@@ -298,7 +307,7 @@ private:
                       const LPoint3f &centroid,
                       TextFont *font, GeomNode *dest, 
                       Geom *geom_array[], int &num_geoms);
-  void tack_on_accent(char accent_mark, CheesyPlacement placement,
+  bool tack_on_accent(char accent_mark, CheesyPlacement placement,
                       CheesyTransform transform,
                       const LPoint3f &min_vert, const LPoint3f &max_vert,
                       const LPoint3f &centroid,

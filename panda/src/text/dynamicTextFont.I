@@ -151,8 +151,10 @@ get_texture_margin() const {
 //               helps prevent the edges of the glyphs from being cut
 //               off at small minifications.  It is not related to the
 //               amount of extra pixels reserved in the texture map
-//               (but it should be no larger than this number, which
-//               is controlled by set_texture_margin()).
+//               (but it should be set somewhat smaller than this
+//               number, which is controlled by set_texture_margin(),
+//               to prevent bleed-in from neighboring letters in the
+//               texture).
 ////////////////////////////////////////////////////////////////////
 INLINE void DynamicTextFont::
 set_poly_margin(float poly_margin) {

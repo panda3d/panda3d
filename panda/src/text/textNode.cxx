@@ -55,8 +55,19 @@ PT(TextFont) TextNode::_default_font;
 bool TextNode::_loaded_default_font = false;
 TextNode::Encoding TextNode::_default_encoding;
 
-// This is the factor by which CP_tiny scales the character down.
-static const float tiny_accent_scale = 0.3f;
+// This is the factor by which CT_small scales the character down.
+static const float small_accent_scale = 0.6f;
+
+// This is the factor by which CT_tiny scales the character down.
+static const float tiny_accent_scale = 0.4f;
+
+// This is the factor by which CT_squash scales the character in X and Y.
+static const float squash_accent_scale_x = 0.8f;
+static const float squash_accent_scale_y = 0.5f;
+
+// This is the factor by which CT_small_squash scales the character in X and Y.
+static const float small_squash_accent_scale_x = 0.6f;
+static const float small_squash_accent_scale_y = 0.3f;
 
 // This is the factor by which the advance is reduced for the first
 // character of a two-character ligature.
@@ -1037,7 +1048,7 @@ assemble_row(wstring::iterator &si, const wstring::iterator &send,
             // got and it's probably pretty close.
             LMatrix4f rotate =
               LMatrix4f::translate_mat(-centroid) *
-              LMatrix4f::rotate_mat_normaxis(180.0f, LVecBase3f(0.0f, 1.0f, 0.0f)) *
+              LMatrix4f::rotate_mat_normaxis(180.0f, LVecBase3f(0.0f, -1.0f, 0.0f)) *
               LMatrix4f::translate_mat(centroid);
             glyph_xform *= rotate;
           }
@@ -1331,57 +1342,68 @@ tack_on_accent(UnicodeLatinMap::AccentType accent_type,
     // have a grave accent character, but a lot of fonts put the
     // reverse apostrophe there instead.  And some fonts (particularly
     // fonts from mf) don't even do backslash.
-    tack_on_accent('/', CP_above, CT_tiny_mirror_x, min_vert, max_vert, centroid,
+    tack_on_accent('/', CP_above, CT_small_squash_mirror_y, min_vert, max_vert, centroid,
                    font, dest, geom_array, num_geoms);
     break;
 
   case UnicodeLatinMap::AT_acute:
-    tack_on_accent('/', CP_above, CT_tiny, min_vert, max_vert, centroid,
+    tack_on_accent('/', CP_above, CT_small_squash, min_vert, max_vert, centroid,
                    font, dest, geom_array, num_geoms);
     break;
 
   case UnicodeLatinMap::AT_breve:
-    tack_on_accent(')', CP_above, CT_tiny_rotate_90, min_vert, max_vert, centroid,
+    tack_on_accent(')', CP_above, CT_tiny_rotate_270, min_vert, max_vert, centroid,
                    font, dest, geom_array, num_geoms);
     break;
 
   case UnicodeLatinMap::AT_inverted_breve:
-    tack_on_accent('(', CP_above, CT_tiny_rotate_90, min_vert, max_vert, centroid,
+    tack_on_accent('(', CP_above, CT_tiny_rotate_270, min_vert, max_vert, centroid,
                    font, dest, geom_array, num_geoms);
     break;
 
   case UnicodeLatinMap::AT_circumflex:
     tack_on_accent('^', CP_above, CT_none, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
+                   font, dest, geom_array, num_geoms) ||
+      tack_on_accent('v', CP_above, CT_squash_mirror_y, min_vert, max_vert, centroid,
+                     font, dest, geom_array, num_geoms);
     break;
 
   case UnicodeLatinMap::AT_circumflex_below:
     tack_on_accent('^', CP_below, CT_none, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
+                   font, dest, geom_array, num_geoms) ||
+      tack_on_accent('v', CP_below, CT_squash_mirror_y, min_vert, max_vert, centroid,
+                     font, dest, geom_array, num_geoms);
     break;
 
   case UnicodeLatinMap::AT_caron:
     tack_on_accent('^', CP_above, CT_mirror_y, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
+                   font, dest, geom_array, num_geoms) ||
+      tack_on_accent('v', CP_above, CT_squash, min_vert, max_vert, centroid,
+                     font, dest, geom_array, num_geoms);
+
     break;
 
   case UnicodeLatinMap::AT_tilde:
     tack_on_accent('~', CP_above, CT_none, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
+                   font, dest, geom_array, num_geoms) ||
+      tack_on_accent('s', CP_above, CT_squash_mirror_diag, min_vert, max_vert, centroid,
+                     font, dest, geom_array, num_geoms);
     break;
 
   case UnicodeLatinMap::AT_tilde_below:
     tack_on_accent('~', CP_below, CT_none, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
+                   font, dest, geom_array, num_geoms) ||
+      tack_on_accent('s', CP_below, CT_squash_mirror_diag, min_vert, max_vert, centroid,
+                     font, dest, geom_array, num_geoms);
     break;
 
   case UnicodeLatinMap::AT_diaeresis:
-    tack_on_accent(':', CP_above, CT_rotate_90, min_vert, max_vert, centroid,
+    tack_on_accent(':', CP_above, CT_small_rotate_270, min_vert, max_vert, centroid,
                    font, dest, geom_array, num_geoms);
     break;
 
   case UnicodeLatinMap::AT_diaeresis_below:
-    tack_on_accent(':', CP_below, CT_rotate_90, min_vert, max_vert, centroid,
+    tack_on_accent(':', CP_below, CT_small_rotate_270, min_vert, max_vert, centroid,
                    font, dest, geom_array, num_geoms);
     break;
 
@@ -1416,8 +1438,12 @@ tack_on_accent(UnicodeLatinMap::AccentType accent_type,
     break;
 
   case UnicodeLatinMap::AT_cedilla:
+    tack_on_accent('c', CP_bottom, CT_tiny_mirror_x, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    /*
     tack_on_accent(',', CP_bottom, CT_none, min_vert, max_vert, centroid,
                    font, dest, geom_array, num_geoms);
+    */
     break;
 
   case UnicodeLatinMap::AT_comma_below:
@@ -1445,9 +1471,11 @@ tack_on_accent(UnicodeLatinMap::AccentType accent_type,
 //     Function: TextNode::tack_on_accent
 //       Access: Private
 //  Description: Generates a cheesy accent mark above (or below, etc.)
-//               the character.
+//               the character.  Returns true if successful, or false
+//               if the named accent character doesn't exist in the
+//               font.
 ////////////////////////////////////////////////////////////////////
-void TextNode::
+bool TextNode::
 tack_on_accent(char accent_mark, TextNode::CheesyPlacement placement,
                TextNode::CheesyTransform transform,
                const LPoint3f &min_vert, const LPoint3f &max_vert,
@@ -1473,23 +1501,44 @@ tack_on_accent(char accent_mark, TextNode::CheesyPlacement placement,
 
         case CT_mirror_x:
           accent_mat = LMatrix4f::scale_mat(-1.0f, 1.0f, 1.0f);
-          
-          t = -min_accent[0];
+          t = min_accent[0];
           min_accent[0] = -max_accent[0];
-          max_accent[0] = t;
+          max_accent[0] = -t;
           break;
 
         case CT_mirror_y:
-          accent_mat = LMatrix4f::scale_mat(1.0f, -1.0f, 1.0f);
-          
-          t = -min_accent[2];
+          accent_mat = LMatrix4f::scale_mat(1.0f, 1.0f, -1.0f);
+          t = min_accent[2];
           min_accent[2] = -max_accent[2];
-          max_accent[2] = t;
+          max_accent[2] = -t;
           break;
 
         case CT_rotate_90:
           accent_mat =
-            LMatrix4f::rotate_mat_normaxis(90.0f, LVecBase3f(0.0f, 1.0f, 0.0f));
+            LMatrix4f::rotate_mat_normaxis(90.0f, LVecBase3f(0.0f, -1.0f, 0.0f));
+          // rotate min, max
+          t = min_accent[0];
+          u = max_accent[0];
+          max_accent[0] = -min_accent[2];
+          min_accent[0] = -max_accent[2];
+          max_accent[2] = u;
+          min_accent[2] = t;
+          break;
+
+        case CT_rotate_180:
+          accent_mat = LMatrix4f::scale_mat(-1.0f, -1.0f, 1.0f);
+          
+          t = min_accent[0];
+          min_accent[0] = -max_accent[0];
+          max_accent[0] = -t;
+          t = min_accent[2];
+          min_accent[2] = -max_accent[2];
+          max_accent[2] = -t;
+          break;
+
+        case CT_rotate_270:
+          accent_mat =
+            LMatrix4f::rotate_mat_normaxis(270.0f, LVecBase3f(0.0f, -1.0f, 0.0f));
           // rotate min, max
           t = min_accent[0];
           u = max_accent[0];
@@ -1497,6 +1546,74 @@ tack_on_accent(char accent_mark, TextNode::CheesyPlacement placement,
           max_accent[0] = max_accent[2];
           min_accent[2] = -u;
           max_accent[2] = -t;
+          break;
+
+        case CT_squash:
+          accent_mat = LMatrix4f::scale_mat(squash_accent_scale_x, 1.0f, squash_accent_scale_y);
+          min_accent[0] *= squash_accent_scale_x;
+          max_accent[0] *= squash_accent_scale_x;
+          min_accent[2] *= squash_accent_scale_y;
+          max_accent[2] *= squash_accent_scale_y;
+          break;
+
+        case CT_squash_mirror_y:
+          accent_mat = LMatrix4f::scale_mat(squash_accent_scale_x, 1.0f, -squash_accent_scale_y);
+          min_accent[0] *= squash_accent_scale_x;
+          max_accent[0] *= squash_accent_scale_x;
+          t = min_accent[2];
+          min_accent[2] = -max_accent[2] * squash_accent_scale_y;
+          max_accent[2] = -t * squash_accent_scale_y;
+          break;
+
+        case CT_squash_mirror_diag:
+          accent_mat =
+            LMatrix4f::rotate_mat_normaxis(270.0f, LVecBase3f(0.0f, -1.0f, 0.0f)) *
+            LMatrix4f::scale_mat(-squash_accent_scale_x, 1.0f, squash_accent_scale_y);
+          
+          // rotate min, max
+          t = min_accent[0];
+          u = max_accent[0];
+          min_accent[0] = min_accent[2] * -squash_accent_scale_x;
+          max_accent[0] = max_accent[2] * -squash_accent_scale_x;
+          min_accent[2] = -u * squash_accent_scale_y;
+          max_accent[2] = -t * squash_accent_scale_y;
+          break;
+
+        case CT_small_squash:
+          accent_mat = LMatrix4f::scale_mat(small_squash_accent_scale_x, 1.0f, small_squash_accent_scale_y);
+          min_accent[0] *= small_squash_accent_scale_x;
+          max_accent[0] *= small_squash_accent_scale_x;
+          min_accent[2] *= small_squash_accent_scale_y;
+          max_accent[2] *= small_squash_accent_scale_y;
+          break;
+
+        case CT_small_squash_mirror_y:
+          accent_mat = LMatrix4f::scale_mat(small_squash_accent_scale_x, 1.0f, -small_squash_accent_scale_y);
+          min_accent[0] *= small_squash_accent_scale_x;
+          max_accent[0] *= small_squash_accent_scale_x;
+          t = min_accent[2];
+          min_accent[2] = -max_accent[2] * small_squash_accent_scale_y;
+          max_accent[2] = -t * small_squash_accent_scale_y;
+          break;
+
+        case CT_small:
+          accent_mat = LMatrix4f::scale_mat(small_accent_scale);
+          min_accent *= small_accent_scale;
+          max_accent *= small_accent_scale;
+          break;
+
+        case CT_small_rotate_270:
+          accent_mat =
+            LMatrix4f::rotate_mat_normaxis(270.0f, LVecBase3f(0.0f, -1.0f, 0.0f)) *
+            LMatrix4f::scale_mat(small_accent_scale);
+
+          // rotate min, max
+          t = min_accent[0];
+          u = max_accent[0];
+          min_accent[0] = min_accent[2] * small_accent_scale;
+          max_accent[0] = max_accent[2] * small_accent_scale;
+          min_accent[2] = -u * small_accent_scale;
+          max_accent[2] = -t * small_accent_scale;
           break;
 
         case CT_tiny:
@@ -1508,14 +1625,16 @@ tack_on_accent(char accent_mark, TextNode::CheesyPlacement placement,
         case CT_tiny_mirror_x:
           accent_mat = LMatrix4f::scale_mat(-tiny_accent_scale, 1.0f, tiny_accent_scale);
           
-          t = -min_accent[0] * tiny_accent_scale;
+          t = min_accent[0];
           min_accent[0] = -max_accent[0] * tiny_accent_scale;
-          max_accent[0] = t;
+          max_accent[0] = -t * tiny_accent_scale;
+          min_accent[2] *= tiny_accent_scale;
+          max_accent[2] *= tiny_accent_scale;
           break;
 
-        case CT_tiny_rotate_90:
+        case CT_tiny_rotate_270:
           accent_mat =
-            LMatrix4f::rotate_mat_normaxis(90.0f, LVecBase3f(0.0f, 1.0f, 0.0f)) *
+            LMatrix4f::rotate_mat_normaxis(270.0f, LVecBase3f(0.0f, -1.0f, 0.0f)) *
             LMatrix4f::scale_mat(tiny_accent_scale);
 
           // rotate min, max
@@ -1568,9 +1687,13 @@ tack_on_accent(char accent_mark, TextNode::CheesyPlacement placement,
 
         dest->add_geom(accent_geom, accent_glyph->get_state());
         geom_array[num_geoms++] = accent_geom;
+
+        return true;
       }
     }
   }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
