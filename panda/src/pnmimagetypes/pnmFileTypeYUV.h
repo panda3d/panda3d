@@ -14,7 +14,7 @@
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : PNMFileTypeYUV
-// Description : For reading and Abekas YUV files.
+// Description : For reading and writing Abekas YUV files.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PNMFileTypeYUV : public PNMFileType {
 public:

@@ -13,8 +13,8 @@
 //  Description: Reads a sequence of bytes from the beginning of the
 //               datagram file.  This may be called any number of
 //               times after the file has been opened and before the
-//               first datagram is written.  It may not be called once
-//               the first datagram is written.
+//               first datagram is read.  It may not be called once
+//               the first datagram has been read.
 ////////////////////////////////////////////////////////////////////
 bool DatagramInputFile::
 read_header(string &header, size_t num_bytes) {

@@ -9,6 +9,7 @@
 #include "pnmFileTypeAlias.h"
 #include "pnmFileTypeRadiance.h"
 #include "pnmFileTypeTIFF.h"
+#include "pnmFileTypeTGA.h"
 #include "pnmFileTypeYUV.h"
 #include "pnmFileTypeIMG.h"
 #include "pnmFileTypeSoftImage.h"
@@ -29,6 +30,7 @@ NotifyCategoryDef(pnmimage_sgi, pnmimage_cat);
 NotifyCategoryDef(pnmimage_alias, pnmimage_cat);
 NotifyCategoryDef(pnmimage_radiance, pnmimage_cat);
 NotifyCategoryDef(pnmimage_tiff, pnmimage_cat);
+NotifyCategoryDef(pnmimage_tga, pnmimage_cat);
 NotifyCategoryDef(pnmimage_yuv, pnmimage_cat);
 NotifyCategoryDef(pnmimage_img, pnmimage_cat);
 NotifyCategoryDef(pnmimage_soft, pnmimage_cat);
@@ -46,6 +48,14 @@ const int radiance_brightness_adjustment = config_pnmimagetypes.GetInt("radiance
 // is automatically adjusted down to account for a short file.
 const int yuv_xsize = config_pnmimagetypes.GetInt("yuv-xsize", 720);
 const int yuv_ysize = config_pnmimagetypes.GetInt("yuv-ysize", 486);
+
+// TGA supports RLE compression, as well as colormapping and/or
+// grayscale images.  Set these true to enable these features, if
+// possible, or false to disable them.  Some programs (like xv) have
+// difficulty reading these advanced TGA files.
+const bool tga_rle = config_pnmimagetypes.GetBool("tga-rle", false);
+const bool tga_colormap = config_pnmimagetypes.GetBool("tga-colormap", false);
+const bool tga_grayscale = config_pnmimagetypes.GetBool("tga-grayscale", false);
 
 // IMG format is just a sequential string of r, g, b bytes.  However,
 // it may or may not include a "header" which consists of the xsize
@@ -97,6 +107,7 @@ init_libpnmimagetypes() {
   PNMFileTypeAlias::init_type();
   PNMFileTypeRadiance::init_type();
   PNMFileTypeTIFF::init_type();
+  PNMFileTypeTGA::init_type();
   PNMFileTypeYUV::init_type();
   PNMFileTypeIMG::init_type();
   PNMFileTypeSoftImage::init_type();
@@ -137,6 +148,7 @@ init_libpnmimagetypes() {
   tr->register_type(new PNMFileTypeAlias);
   tr->register_type(new PNMFileTypeRadiance);
   tr->register_type(new PNMFileTypeTIFF);
+  tr->register_type(new PNMFileTypeTGA);
   tr->register_type(new PNMFileTypeYUV);
   tr->register_type(new PNMFileTypeIMG);
   tr->register_type(new PNMFileTypeSoftImage);
@@ -151,6 +163,7 @@ init_libpnmimagetypes() {
   PNMFileTypeAlias::register_with_read_factory();
   PNMFileTypeRadiance::register_with_read_factory();
   PNMFileTypeTIFF::register_with_read_factory();
+  PNMFileTypeTGA::register_with_read_factory();
   PNMFileTypeYUV::register_with_read_factory();
   PNMFileTypeIMG::register_with_read_factory();
   PNMFileTypeSoftImage::register_with_read_factory();

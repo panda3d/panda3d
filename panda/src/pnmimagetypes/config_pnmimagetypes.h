@@ -14,6 +14,7 @@ NotifyCategoryDecl(pnmimage_sgi, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pnmimage_alias, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pnmimage_radiance, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pnmimage_tiff, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(pnmimage_tga, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pnmimage_yuv, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pnmimage_img, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pnmimage_soft, EXPCL_PANDA, EXPTP_PANDA);
@@ -26,6 +27,9 @@ extern const double radiance_gamma_correction;
 extern const int radiance_brightness_adjustment;
 extern const int yuv_xsize;
 extern const int yuv_ysize;
+extern const bool tga_rle;
+extern const bool tga_colormap;
+extern const bool tga_grayscale;
 
 extern const int jpeg_quality;
 extern const int jpeg_scale_num;

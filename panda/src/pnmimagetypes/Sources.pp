@@ -16,6 +16,7 @@
     pnmFileTypeSGI.cxx pnmFileTypeSGI.h pnmFileTypeSGIReader.cxx \
     pnmFileTypeSGIWriter.cxx pnmFileTypeSoftImage.cxx \
     pnmFileTypeSoftImage.h pnmFileTypeTIFF.cxx pnmFileTypeTIFF.h \
+    pnmFileTypeTGA.cxx pnmFileTypeTGA.h \
     pnmFileTypeYUV.cxx pnmFileTypeYUV.h \
     color.c colrops.c resolu.c header.c
 
