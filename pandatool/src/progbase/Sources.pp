@@ -3,7 +3,7 @@
   #define LOCAL_LIBS \
     converter pandatoolbase
   #define OTHER_LIBS \
-    linmath:c putil:c express:c panda:m pystub dtool
+    pnmimage:c linmath:c putil:c express:c panda:m pystub dtool
 
   #define SOURCES \
     programBase.I programBase.cxx programBase.h \
