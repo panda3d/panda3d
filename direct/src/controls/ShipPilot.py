@@ -81,7 +81,6 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             self.ship = None
         else:
             #self.setupShip()
-            print "setAvatar, wallbitmask = %s" % self.wallBitmask
             self.setupPhysics(ship)
             self.ship = ship
             
@@ -249,7 +248,6 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             avatarNodePath.setHpr(Vec3(0))
             avatarNodePath.assign(physicsActor)
         else:
-            print "doing getPhysicsObject"
             physicsActor = avatarNodePath
             self.actorNode = physicsActor.node()
             self.actorNode.getPhysicsObject().setOriented(1)
@@ -345,7 +343,6 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
 
     def setWallBitMask(self, bitMask):
         self.wallBitmask = bitMask
-        print "setWallBitMask, wallbitmask = %s" % self.wallBitmask
 
     def setFloorBitMask(self, bitMask):
         self.floorBitmask = bitMask
@@ -686,15 +683,12 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
                     # ...the avatar has landed.
                     contactLength = contact.length()
                     if contactLength>self.__hardLandingForce:
-                        #print "jumpHardLand"
                         messenger.send("jumpHardLand")
                     else:
-                        #print "jumpLand"
                         messenger.send("jumpLand")
                     self.priorParent.setVector(Vec3.zero())
                     self.isAirborne = 0
                 elif jump:
-                    #print "jump"
                     #self.__jumpButton=0
                     messenger.send("jumpStart")
                     if 0:
@@ -891,7 +885,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
     def setPriorParentVector(self):
         assert(self.debugPrint("doDeltaPos()"))
         
-        print "self.__oldDt", self.__oldDt, "self.__oldPosDelta", self.__oldPosDelta
+        #print "self.__oldDt", self.__oldDt, "self.__oldPosDelta", self.__oldPosDelta
         if __debug__:
             onScreenDebug.add("__oldDt", "% 10.4f"%self.__oldDt)
             onScreenDebug.add("self.__oldPosDelta",
