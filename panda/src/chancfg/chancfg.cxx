@@ -114,7 +114,8 @@ static void ReadChanConfigData(void) {
   ResetSetup();
   ResetWindow();
 
-  DSearchPath path(chanconfig.GetString("ETC_PATH", "."));
+  DSearchPath path =
+    Filename::from_os_specific(chanconfig.GetString("ETC_PATH", "."));
 
   string layoutdbfilename = chanconfig.GetString("layout-db-file","layout_db");
   string windowdbfilename = chanconfig.GetString("window-db-file","window_db");
