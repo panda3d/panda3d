@@ -36,6 +36,7 @@ public:
 
 protected:
   virtual bool handle_args(Args &args);
+  virtual bool post_command_line();
 };
 
 #endif

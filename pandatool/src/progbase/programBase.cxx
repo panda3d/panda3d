@@ -19,17 +19,18 @@
 #include "programBase.h"
 #include "wordWrapStream.h"
 
-#include <pystub.h>
+#include "pystub.h"
 // Since programBase.cxx includes pystub.h, no program that links with
 // progbase needs to do so.  No Python code should attempt to link
 // with libprogbase.so.
 
-#include <indent.h>
-#include <dSearchPath.h>
-#include <coordinateSystem.h>
-#include <dconfig.h>
-#include <config_dconfig.h>
-#include <string_utils.h>
+#include "pnmFileTypeRegistry.h"
+#include "indent.h"
+#include "dSearchPath.h"
+#include "coordinateSystem.h"
+#include "dconfig.h"
+#include "config_dconfig.h"
+#include "string_utils.h"
 
 #include <stdlib.h>
 #include <algorithm>
@@ -933,6 +934,32 @@ dispatch_units(const string &opt, const string &arg, void *var) {
   if ((*ip) == DU_invalid) {
     nout << "Invalid units for -" << opt << ": " << arg << "\n"
          << "Valid units are mm, cm, m, km, yd, ft, in, nmi, and mi.\n";
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::dispatch_image_type
+//       Access: Protected, Static
+//  Description: Standard dispatch function for an option that takes
+//               one parameter, which is to indicate an image file
+//               type, like rgb, bmp, jpg, etc.  The data pointer is
+//               to a PNMFileType pointer.
+////////////////////////////////////////////////////////////////////
+bool ProgramBase::
+dispatch_image_type(const string &opt, const string &arg, void *var) {
+  PNMFileType **ip = (PNMFileType **)var;
+
+  PNMFileTypeRegistry *reg = PNMFileTypeRegistry::get_ptr();
+
+  (*ip) = reg->get_type_from_extension(arg);
+
+  if ((*ip) == (PNMFileType *)NULL) {
+    nout << "Invalid image type for -" << opt << ": " << arg << "\n"
+         << "The following image types are known:\n";
+    reg->write_types(nout, 2);
     return false;
   }
 

@@ -18,6 +18,10 @@
 
 #include "eggReader.h"
 
+#include "pnmImage.h"
+#include "config_util.h"
+#include "eggTextureCollection.h"
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggReader::Constructor
 //       Access: Public
@@ -39,6 +43,43 @@ EggReader() {
      "Force complete loading: load up the egg file along with all of its "
      "external references.",
      &EggReader::dispatch_none, &_force_complete);
+
+  _tex_type = (PNMFileType *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggRead::add_texture_options
+//       Access: Public
+//  Description: Adds -td, -te, etc. as valid options for this
+//               program.  If the user specifies one of the options on
+//               the command line, the textures will be copied and
+//               converted as each egg file is read.
+////////////////////////////////////////////////////////////////////
+void EggReader::
+add_texture_options() {
+  add_option
+    ("td", "dirname", 40,
+     "Copy textures to the indicated directory.  The copy is performed "
+     "only if the destination file does not exist or is older than the "
+     "source file.",
+     &EggReader::dispatch_filename, &_got_tex_dirname, &_tex_dirname);
+
+  add_option
+    ("te", "ext", 40,
+     "Rename textures to have the indicated extension.  This also "
+     "automatically copies them to the new filename (possibly in a "
+     "different directory if -td is also specified), and may implicitly "
+     "convert to a different image format according to the extension.",
+     &EggReader::dispatch_string, &_got_tex_extension, &_tex_extension);
+
+  add_option
+    ("tt", "type", 40,
+     "Explicitly specifies the image format to convert textures to "
+     "when copying them via -td or -te.  Normally, this is unnecessary as "
+     "the image format can be determined by the extension, but sometimes "
+     "the extension is insufficient to unambiguously specify an image "
+     "type.",
+     &EggReader::dispatch_image_type, NULL, &_tex_type);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -98,4 +139,91 @@ handle_args(ProgramBase::Args &args) {
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggReader::post_command_line
+//       Access: Protected, Virtual
+//  Description: This is called after the command line has been
+//               completely processed, and it gives the program a
+//               chance to do some last-minute processing and
+//               validation of the options and arguments.  It should
+//               return true if everything is fine, false if there is
+//               an error.
+////////////////////////////////////////////////////////////////////
+bool EggReader::
+post_command_line() {
+  if (!copy_textures()) {
+    exit(1);
+  }
+
+  return EggBase::post_command_line();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggReader::copy_textures
+//       Access: Protected
+//  Description: Renames and copies the textures referenced in the egg
+//               file, if so specified by the -td and -te options.
+//               Returns true if all textures are copied successfully,
+//               false if any one of them failed.
+////////////////////////////////////////////////////////////////////
+bool EggReader::
+copy_textures() {
+  if (!_got_tex_dirname && !_got_tex_extension) {
+    return true;
+  }
+
+  bool success = true;
+  EggTextureCollection textures;
+  textures.find_used_textures(&_data);
+
+  EggTextureCollection::const_iterator ti;
+  for (ti = textures.begin(); ti != textures.end(); ++ti) {
+    EggTexture *tex = (*ti);
+    Filename orig_filename = tex->get_filename();
+    if (!orig_filename.exists()) {
+      bool found = 
+        orig_filename.resolve_filename(get_texture_path()) ||
+        orig_filename.resolve_filename(get_model_path());
+      if (!found) {
+        nout << "Cannot find " << orig_filename << "\n";
+        success = false;
+        continue;
+      }
+    }
+
+    Filename new_filename = orig_filename;
+    if (_got_tex_dirname) {
+      new_filename.set_dirname(_tex_dirname);
+    }
+    if (_got_tex_extension) {
+      new_filename.set_extension(_tex_extension);
+    }
+
+    if (orig_filename != new_filename) {
+      tex->set_filename(new_filename);
+
+      // The new filename is different; does it need copying?
+      int compare = 
+        orig_filename.compare_timestamps(new_filename, true, true);
+      if (compare > 0) {
+        // Yes, it does.  Copy it!
+        nout << "Reading " << orig_filename << "\n";
+        PNMImage image;
+        if (!image.read(orig_filename)) {
+          nout << "  unable to read!\n";
+          success = false;
+        } else {
+          nout << "Writing " << new_filename << "\n";
+          if (!image.write(new_filename, _tex_type)) {
+            nout << "  unable to write!\n";
+            success = false;
+          }
+        }
+      }
+    }
+  }
+
+  return success;
 }

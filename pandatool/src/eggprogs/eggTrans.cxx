@@ -29,6 +29,7 @@ EggTrans::
 EggTrans() {
   add_normals_options();
   add_transform_options();
+  add_texture_options();
 
   set_program_description
     ("egg-trans reads an egg file and writes an essentially equivalent "

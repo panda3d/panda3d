@@ -19,10 +19,12 @@
 #ifndef EGGREADER_H
 #define EGGREADER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "eggBase.h"
+#include "filename.h"
 
+class PNMFileType;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggReader
@@ -33,12 +35,23 @@ class EggReader : virtual public EggBase {
 public:
   EggReader();
 
+  void add_texture_options();
+  
   virtual EggReader *as_reader();
 
 protected:
   virtual bool handle_args(Args &args);
+  virtual bool post_command_line();
+
+private:
+  bool copy_textures();
 
   bool _force_complete;
+  Filename _tex_dirname;
+  bool _got_tex_dirname;
+  string _tex_extension;
+  bool _got_tex_extension;
+  PNMFileType *_tex_type;
 };
 
 #endif

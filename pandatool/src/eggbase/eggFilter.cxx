@@ -61,3 +61,13 @@ handle_args(ProgramBase::Args &args) {
 
   return EggReader::handle_args(args);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFilter::post_command_line
+//       Access: Protected, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool EggFilter::
+post_command_line() {
+  return EggReader::post_command_line() && EggWriter::post_command_line();
+}
