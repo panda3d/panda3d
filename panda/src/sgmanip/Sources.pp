@@ -6,13 +6,17 @@
   #define LOCAL_LIBS \
     cull dgraph loader sgraphutil sgattrib sgraph linmath lerp
 
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx
+
   #define SOURCES \
-    config_sgmanip.cxx config_sgmanip.h findApproxLevel.I \
-    findApproxLevel.cxx findApproxLevel.h findApproxPath.I \
-    findApproxPath.cxx findApproxPath.h nodePath.I nodePath.cxx \
-    nodePath.h nodePathBase.I nodePathBase.cxx nodePathBase.h \
-    nodePathCollection.I nodePathCollection.cxx nodePathCollection.h \
-    nodePathLerps.cxx nodePathLerps.h
+     config_sgmanip.h findApproxLevel.I findApproxLevel.h  \
+     findApproxPath.I findApproxPath.h nodePath.I nodePath.h  \
+     nodePathBase.I nodePathBase.h nodePathCollection.I  \
+     nodePathCollection.h nodePathLerps.h nodePath.cxx
+    
+  #define INCLUDED_SOURCES \
+     config_sgmanip.cxx findApproxLevel.cxx findApproxPath.cxx  \
+     nodePathBase.cxx nodePathCollection.cxx nodePathLerps.cxx 
 
   #define INSTALL_HEADERS \
     nodePath.I nodePath.h nodePathBase.I nodePathBase.h \
