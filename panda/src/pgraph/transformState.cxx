@@ -499,8 +499,7 @@ compose(const TransformState *other) const {
   // The cache entry in this object is the only one that indicates the
   // result; the other will be NULL for now.
   CPT(TransformState) result = do_compose(other);
-  // We store them in this order, on the off-chance that other is the
-  // same as this, a degenerate case which is still worth supporting.
+
   ((TransformState *)other)->_composition_cache[this]._result = NULL;
   ((TransformState *)this)->_composition_cache[other]._result = result;
 
@@ -566,8 +565,7 @@ invert_compose(const TransformState *other) const {
   // The cache entry in this object is the only one that indicates the
   // result; the other will be NULL for now.
   CPT(TransformState) result = do_invert_compose(other);
-  // We store them in this order, on the off-chance that other is the
-  // same as this, a degenerate case which is still worth supporting.
+
   ((TransformState *)other)->_invert_composition_cache[this]._result = NULL;
   ((TransformState *)this)->_invert_composition_cache[other]._result = result;
 
