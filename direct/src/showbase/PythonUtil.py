@@ -864,3 +864,36 @@ def weightedChoice(choiceList, rng=random.random, sum=None):
 def randFloat(a, b, rng=random.random):
     """returns a random float in [a,b]"""
     return lerp(a,b,rng())
+
+def normalDistrib(a, b, gauss=random.gauss):
+    """
+    NOTE: assumes a < b
+
+    Returns random number between a and b, using gaussian distribution, with
+    mean=avg(a,b), and a standard deviation that fits ~99.7% of the curve
+    between a and b. Outlying results are clipped to a and b.
+
+    ------------------------------------------------------------------------
+    http://www-stat.stanford.edu/~naras/jsm/NormalDensity/NormalDensity.html
+
+    The 68-95-99.7% Rule
+    ====================
+    All normal density curves satisfy the following property which is often
+      referred to as the Empirical Rule:
+    68% of the observations fall within 1 standard deviation of the mean. 
+    95% of the observations fall within 2 standard deviations of the mean.
+    99.7% of the observations fall within 3 standard deviations of the mean.
+    
+    Thus, for a normal distribution, almost all values lie within 3 standard
+      deviations of the mean.
+    ------------------------------------------------------------------------
+
+    In calculating our standard deviation, we divide (b-a) by 6, since the
+    99.7% figure includes 3 standard deviations _on_either_side_ of the mean.
+    """
+    return min(a, max(b, gauss((a+b)*.5, (b-a)/6.)))
+
+def randUint31(rng=random.random):
+    """returns a random integer in [0..2^31).
+    rng must return float in [0..1]"""
+    return int(rng() * 0x7FFFFFFF)
