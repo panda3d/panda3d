@@ -41,7 +41,7 @@ get_force(int index) const {
 //    Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE int ForceNode::
-get_num_forces(void) const {
+get_num_forces() const {
   return _forces.size();
 }
 

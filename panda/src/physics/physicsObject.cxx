@@ -97,10 +97,9 @@ make_copy() const {
 LMatrix4f PhysicsObject::
 get_lcs() const {
   LMatrix4f m = LMatrix4f::translate_mat(_position);
-
-  if (_oriented == true)
-    _orientation.extract_to_matrix(m);
-
+  if (_oriented == true) {
+    m=m*_orientation;
+  }
   return m;
 }
 
@@ -142,6 +141,7 @@ write(ostream &out, unsigned int indent) const {
   out.width(indent+2); out<<""; out<<"_position "<<_position<<"\n";
   out.width(indent+2); out<<""; out<<"_last_position "<<_last_position<<"\n";
   out.width(indent+2); out<<""; out<<"_velocity "<<_velocity<<"\n";
+  out.width(indent+2); out<<""; out<<"(implicit velocity "<<get_implicit_velocity()<<")\n";
   out.width(indent+2); out<<""; out<<"_orientation "<<_orientation<<"\n";
   out.width(indent+2); out<<""; out<<"_rotation "<<_rotation<<"\n";
   out.width(indent+2); out<<""; out<<"_terminal_velocity "<<_terminal_velocity<<"\n";

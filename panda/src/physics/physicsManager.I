@@ -23,6 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 attach_physical(Physical *p) {
+  nassertv(p);
   p->_physics_manager = this;
   pvector< Physical * >::iterator found;
   found = find(_physicals.begin(), _physicals.end(), p);
@@ -37,6 +38,7 @@ attach_physical(Physical *p) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 add_linear_force(LinearForce *f) {
+  nassertv(f);
   pvector< PT(LinearForce) >::iterator found;
   PT(LinearForce) ptlf = f;
   found = find(_linear_forces.begin(), _linear_forces.end(), ptlf);
@@ -51,6 +53,7 @@ add_linear_force(LinearForce *f) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 attach_physicalnode(PhysicalNode *p) {
+  nassertv(p);
   for (int i = 0; i < p->get_num_physicals(); i++)
     attach_physical(p->get_physical(i));
 }
@@ -61,7 +64,7 @@ attach_physicalnode(PhysicalNode *p) {
 // Description : Resets the physics manager force vector
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
-clear_linear_forces(void) {
+clear_linear_forces() {
   _linear_forces.erase(_linear_forces.begin(), _linear_forces.end());
 }
 
@@ -72,6 +75,7 @@ clear_linear_forces(void) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 add_angular_force(AngularForce *f) {
+  nassertv(f);
   pvector< PT(AngularForce) >::iterator found;
   PT(AngularForce) ptaf = f;
   found = find(_angular_forces.begin(), _angular_forces.end(), ptaf);
@@ -85,7 +89,7 @@ add_angular_force(AngularForce *f) {
 // Description : Resets the physics manager force vector
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
-clear_angular_forces(void) {
+clear_angular_forces() {
   _angular_forces.erase(_angular_forces.begin(), _angular_forces.end());
 }
 
@@ -95,7 +99,7 @@ clear_angular_forces(void) {
 // Description : Resets the physics manager objects vector
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
-clear_physicals(void) {
+clear_physicals() {
   _physicals.erase(_physicals.begin(), _physicals.end());
 }
 
@@ -106,6 +110,7 @@ clear_physicals(void) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 attach_linear_integrator(LinearIntegrator *i) {
+  nassertv(i);
   _linear_integrator = i;
 }
 
@@ -116,5 +121,6 @@ attach_linear_integrator(LinearIntegrator *i) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 attach_angular_integrator(AngularIntegrator *i) {
+  nassertv(i);
   _angular_integrator = i;
 }

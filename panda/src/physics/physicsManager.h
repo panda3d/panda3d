@@ -53,6 +53,9 @@ PUBLISHED:
   INLINE void clear_angular_forces();
   INLINE void clear_physicals();
 
+  //INLINE void set_viscosity(float viscosity);
+  //float get_viscosity() const;
+  
   void remove_physical(Physical *p);
   void remove_linear_force(LinearForce *f);
   void remove_angular_force(AngularForce *f);
@@ -68,6 +71,8 @@ public:
   friend class Physical;
 
 private:
+  float _viscosity;
+  
   // NOTE that the physicals container is NOT reference counted.
   // this does indeed mean that you are NOT supposed to use this
   // as a primary storage container for the physicals.  This is so

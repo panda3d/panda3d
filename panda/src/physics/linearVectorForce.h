@@ -32,7 +32,7 @@ PUBLISHED:
   LinearVectorForce(const LinearVectorForce &copy);
   LinearVectorForce(float x = 0.0f, float y = 0.0f, float z = 0.0f,
               float a = 1.0f, bool mass = false);
-  virtual ~LinearVectorForce(void);
+  virtual ~LinearVectorForce();
 
   INLINE void set_vector(const LVector3f& v);
   INLINE void set_vector(float x, float y, float z);
@@ -41,6 +41,9 @@ PUBLISHED:
   
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
+
+public:
+  INLINE LinearVectorForce& operator += (const LinearVectorForce &other);
 
 private:
   LVector3f _fvec;

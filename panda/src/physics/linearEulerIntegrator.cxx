@@ -82,14 +82,21 @@ child_integrate(Physical *physical,
 
     // bail out if this object doesn't exist or doesn't want to be
     // processed.
-    if (current_object == (PhysicsObject *) NULL)
+    if (current_object == (PhysicsObject *) NULL) {
       continue;
-
-    if (current_object->get_active() == false)
+    }
+    
+    if (current_object->get_active() == false) {
       continue;
-
+    }
+    
+    LVector3f md_accum_vec;
+    LVector3f non_md_accum_vec;
+    LVector3f accel_vec;
+    LVector3f vel_vec;
+    
+    
     // reset the accumulation vectors for this object
-    LVector3f md_accum_vec, non_md_accum_vec, accel_vec, vel_vec;
     md_accum_vec.set(0.0f, 0.0f, 0.0f);
     non_md_accum_vec.set(0.0f, 0.0f, 0.0f);
 
@@ -103,44 +110,46 @@ child_integrate(Physical *physical,
     // global forces
     f_cur = forces.begin();
     int index = 0;
-    for (; f_cur != forces.end(); f_cur++) {
+    for (; f_cur != forces.end(); ++f_cur) {
       LinearForce *cur_force = *f_cur;
 
       // make sure the force is turned on.
-      if (cur_force->get_active() == false)
+      if (cur_force->get_active() == false) {
         continue;
-
+      }
       force_node = cur_force->get_force_node();
 
       // now we go from force space to our object's space.
       f = cur_force->get_vector(current_object) * matrices[index++];
 
       // tally it into the accum vectors.
-      if (cur_force->get_mass_dependent() == true)
+      if (cur_force->get_mass_dependent() == true) {
         md_accum_vec += f;
-      else
+      } else {
         non_md_accum_vec += f;
+      }
     }
 
     // local forces
     f_cur = physical->get_linear_forces().begin();
-    for (; f_cur != physical->get_linear_forces().end(); f_cur++) {
+    for (; f_cur != physical->get_linear_forces().end(); ++f_cur) {
       LinearForce *cur_force = *f_cur;
 
       // make sure the force is turned on.
-      if (cur_force->get_active() == false)
+      if (cur_force->get_active() == false) {
         continue;
-
+      }
       force_node = cur_force->get_force_node();
 
       // go from force space to object space
       f = cur_force->get_vector(current_object) * matrices[index++];
 
       // tally it into the accum vectors
-      if (cur_force->get_mass_dependent() == true)
+      if (cur_force->get_mass_dependent() == true) {
         md_accum_vec += f;
-      else
+      } else {
         non_md_accum_vec += f;
+      }
     }
 
     // get this object's physical info
@@ -155,6 +164,7 @@ child_integrate(Physical *physical,
     accel_vec = md_accum_vec / mass;
     accel_vec += non_md_accum_vec;
 
+    #if 0 //[
     // step the position and velocity
     vel_vec += accel_vec * dt;
 
@@ -167,6 +177,14 @@ child_integrate(Physical *physical,
     }
 
     pos += vel_vec * dt;
+    #else //][
+    assert(current_object->get_position()==current_object->get_last_position());
+    
+    // x = x + v * t + 0.5 * a * t * t
+    pos += vel_vec * dt + 0.5 * accel_vec * dt * dt;
+    // v = v + a * t
+    vel_vec += accel_vec * dt;
+    #endif //]
 
     // and store them back.
     current_object->set_position(pos);

@@ -9,5 +9,6 @@
 #include "forceNode.cxx"
 #include "physical.cxx"
 #include "physicalNode.cxx"
+#include "physicsCollisionHandler.cxx"
 #include "physicsManager.cxx"
 #include "physicsObject.cxx"

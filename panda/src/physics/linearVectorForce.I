@@ -42,6 +42,18 @@ set_vector(float x, float y, float z) {
 // Description :
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f LinearVectorForce::
-get_local_vector(void) const {
+get_local_vector() const {
   return _fvec;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LinearVectorForce::LinearVectorForce += LinearVectorForce
+//       Access: Public
+//  Description: Performs a memberwise addition between two LinearVectorForces.
+////////////////////////////////////////////////////////////////////
+LinearVectorForce& LinearVectorForce::
+operator += (const LinearVectorForce &other) {
+  _fvec+=other._fvec;
+  // Should something happen with _amplitude?
+  return *this;
 }

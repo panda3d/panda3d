@@ -32,6 +32,7 @@ PhysicsManager::
 PhysicsManager() {
   _linear_integrator.clear();
   _angular_integrator.clear();
+  _viscosity=0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -50,14 +51,15 @@ PhysicsManager::
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 remove_linear_force(LinearForce *f) {
+  nassertv(f);
   pvector< PT(LinearForce) >::iterator found;
 
   PT(LinearForce) ptbf = f;
   found = find(_linear_forces.begin(), _linear_forces.end(), ptbf);
 
-  if (found == _linear_forces.end())
+  if (found == _linear_forces.end()) {
     return;
-
+  }
   _linear_forces.erase(found);
 }
 
@@ -68,6 +70,7 @@ remove_linear_force(LinearForce *f) {
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 remove_angular_force(AngularForce *f) {
+  nassertv(f);
   pvector< PT(AngularForce) >::iterator found;
 
   PT(BaseForce) ptbf = f;
@@ -86,6 +89,7 @@ remove_angular_force(AngularForce *f) {
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 remove_physical(Physical *p) {
+  nassertv(p);
   pvector< Physical * >::iterator found;
 
   found = find(_physicals.begin(), _physicals.end(), p);
@@ -108,6 +112,7 @@ do_physics(float dt) {
   pvector< Physical * >::iterator p_cur = _physicals.begin();
   for (; p_cur != _physicals.end(); ++p_cur) {
     Physical *physical = *p_cur;
+    nassertv(physical);
 
     // do linear
     if (_linear_integrator.is_null() == false) {

@@ -50,9 +50,10 @@ BaseIntegrator::
 void BaseIntegrator::
 precompute_linear_matrices(Physical *physical,
                            const pvector< PT(LinearForce) > &forces) {
+  nassertv(physical);
   // make sure the physical's in the scene graph, somewhere.
   PhysicalNode *physical_node = physical->get_physical_node();
-  nassertv(physical_node != NULL);
+  nassertv(physical_node);
 
   // by global forces, we mean forces not contained in the physical
   int global_force_vec_size = forces.size();
@@ -70,7 +71,7 @@ precompute_linear_matrices(Physical *physical,
   NodePath physical_np(physical_node);
 
   // tally the global xforms
-  for (i = 0; i < global_force_vec_size; i++) {
+  for (i = 0; i < global_force_vec_size; ++i) {
     force_node = forces[i]->get_force_node();
     nassertv(force_node != (ForceNode *) NULL);
 
@@ -82,7 +83,7 @@ precompute_linear_matrices(Physical *physical,
     physical->get_linear_forces();
 
   // tally the local xforms
-  for (i = 0; i < local_force_vec_size; i++) {
+  for (i = 0; i < local_force_vec_size; ++i) {
     force_node = force_vector[i]->get_force_node();
     nassertv(force_node != (ForceNode *) NULL);
 
@@ -102,6 +103,7 @@ precompute_linear_matrices(Physical *physical,
 void BaseIntegrator::
 precompute_angular_matrices(Physical *physical,
                             const pvector< PT(AngularForce) > &forces) {
+  nassertv(physical);
   // make sure the physical's in the scene graph, somewhere.
   PhysicalNode *physical_node = physical->get_physical_node();
   nassertv(physical_node != NULL);

@@ -47,16 +47,29 @@ set_position(float x, float y, float z) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_position_HandOfGod
+//    Function : reset_position
 //      Access : Public
 // Description : use this to place an object in a completely new
 //               position, that has nothing to do with its last
-//               position (moved by the Hand Of God, or "HOG")
+//               position
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
-set_position_HandOfGod(const LPoint3f &pos) {
+reset_position(const LPoint3f &pos) {
   _position = pos;
   _last_position = pos;
+  _velocity.set(0.0f, 0.0f, 0.0f);
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : reset_orientation
+//      Access : Public
+// Description : set the orientation while clearing the rotation
+//               velocity.
+////////////////////////////////////////////////////////////////////
+INLINE void PhysicsObject::
+reset_orientation(const LOrientationf &orientation) {
+  _orientation = orientation;
+  _rotation.set(0.0f, 0.0f, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,6 +100,16 @@ set_velocity(const LVector3f& vel) {
 INLINE void PhysicsObject::
 set_velocity(float x, float y, float z) {
   _velocity.set(x, y, z);
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : add_impulse
+//      Access : Public
+// Description : Adds an impulse force.
+////////////////////////////////////////////////////////////////////
+INLINE void PhysicsObject::
+add_impulse(const LVector3f &impulse) {
+  _velocity+=impulse;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -147,6 +170,16 @@ get_last_position() const {
 INLINE LVector3f PhysicsObject::
 get_velocity() const {
   return _velocity;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_implicit_velocity
+//      Access : Public
+// Description : Velocity Query
+////////////////////////////////////////////////////////////////////
+INLINE LVector3f PhysicsObject::
+get_implicit_velocity() const {
+  return _position-_last_position;
 }
 
 ////////////////////////////////////////////////////////////////////

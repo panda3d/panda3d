@@ -32,24 +32,27 @@
 //               object's position (shoves).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS ActorNode : public PhysicalNode {
-public:
+PUBLISHED:
   ActorNode(const string &name = "");
   ActorNode(const ActorNode &copy);
   virtual ~ActorNode();
+  
+  PhysicsObject *get_physics_object() { return _mass_center; }
 
-  // update the parent arc with PhysicsObject information
+  // update the parent scene graph node with PhysicsObject information
+  // i.e. copy from PhysicsObject to PandaNode
   void update_transform();
   
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:
-  // node hook if the client changes the node's transform.
-  virtual void transform_changed();
-
   PhysicsObject *_mass_center;
-
   bool _ok_to_callback;
+
+  // node hook if the client changes the node's transform.
+  // i.e. copy from PandaNode to PhysicsObject
+  virtual void transform_changed();
 
 public:
   static TypeHandle get_class_type() {

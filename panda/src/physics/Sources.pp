@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET physics
   #define LOCAL_LIBS \
-    pgraph linmath
+    pgraph linmath collide
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
  
@@ -22,8 +22,10 @@
      linearSinkForce.h linearSourceForce.h \
      linearUserDefinedForce.I linearUserDefinedForce.h \
      linearVectorForce.I linearVectorForce.h physical.I \
-     physical.h physicalNode.I physicalNode.h physicsManager.I \
-     physicsManager.h physicsObject.I physicsObject.h
+     physical.h physicalNode.I physicalNode.h \
+     physicsCollisionHandler.I physicsCollisionHandler.h \
+     physicsManager.I physicsManager.h \
+     physicsObject.I physicsObject.h
 
   #define INCLUDED_SOURCES \
      actorNode.cxx angularEulerIntegrator.cxx angularForce.cxx \
@@ -36,7 +38,7 @@
      linearRandomForce.cxx linearSinkForce.cxx \
      linearSourceForce.cxx linearUserDefinedForce.cxx \
      linearVectorForce.cxx physical.cxx physicalNode.cxx \
-     physicsManager.cxx physicsObject.cxx 
+     physicsCollisionHandler.cxx physicsManager.cxx physicsObject.cxx 
 
   #define INSTALL_HEADERS \
     actorNode.I actorNode.h angularEulerIntegrator.h angularForce.h \
@@ -51,7 +53,9 @@
     linearRandomForce.h linearSinkForce.h linearSourceForce.h \
     linearUserDefinedForce.I linearUserDefinedForce.h \
     linearVectorForce.I linearVectorForce.h physical.I physical.h \
-    physicalNode.I physicalNode.h physicsManager.I physicsManager.h \
+    physicalNode.I physicalNode.h \
+    physicsCollisionHandler.I physicsCollisionHandler.h \
+    physicsManager.I physicsManager.h \
     physicsObject.I physicsObject.h
 
   #define IGATESCAN all
@@ -61,7 +65,7 @@
 #begin test_bin_target
   #define TARGET test_physics
   #define LOCAL_LIBS \
-    linmath physics
+    linmath physics collide
 
   #define SOURCES \
     test_physics.cxx

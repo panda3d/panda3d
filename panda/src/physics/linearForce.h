@@ -34,7 +34,7 @@ PUBLISHED:
   INLINE void set_mass_dependent(bool m);
 
   INLINE float get_amplitude() const;
-  INLINE bool get_mass_dependent(void) const;
+  INLINE bool get_mass_dependent() const;
 
   INLINE void set_vector_masks(bool x, bool y, bool z);
 
