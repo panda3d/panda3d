@@ -31,28 +31,28 @@ FileDateCache = {}
 def filedate(path) :
   global FileDateCache
   if (FileDateCache.has_key(path)):
-    return(FileDateCache[path]);
+    return(FileDateCache[path])
   try : date = os.path.getmtime(path)
-  except : date = 0;
-  FileDateCache[path] = date;
-  return(date);
+  except : date = 0
+  FileDateCache[path] = date
+  return(date)
 
 def updatefiledate(path) :
   global FileDateCache
   try : date = os.path.getmtime(path)
-  except : date = 0;
-  FileDateCache[path] = date;
+  except : date = 0
+  FileDateCache[path] = date
 
 def youngest(files):
   if (type(files) == str):
-    source = filedate(files);
-    if (source==0): sys.exit("Error: source file not readable: "+files);
-    return(source);
-  result = 0;
+    source = filedate(files)
+    if (source==0): sys.exit("Error: source file not readable: "+files)
+    return(source)
+  result = 0
   for sfile in files:
-    source = youngest(sfile);
-    if (source > result): result = source;
-  return(result);
+    source = youngest(sfile)
+    if (source > result): result = source
+  return(result)
 
 def debug_older(file,others):
     print [file, others]
@@ -64,27 +64,27 @@ def debug_older(file,others):
     return fd<y
 
 def older(file,others):
-  return (filedate(file)<youngest(others));
+  return (filedate(file)<youngest(others))
 
 def xpaths(prefix,base,suffix):
   if (type(base) == str):
-    return(prefix + base + suffix);
-  result = [];
+    return(prefix + base + suffix)
+  result = []
   for x in base:
-    result.append(xpaths(prefix,x,suffix));
-  return(result);
+    result.append(xpaths(prefix,x,suffix))
+  return(result)
 
 if (sys.platform == "win32"):
-  import _winreg;
+  import _winreg
   def GetRegistryKey(path, subkey):
     k1=0
     key=0
     try:
-      key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, path, 0, _winreg.KEY_READ);
+      key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, path, 0, _winreg.KEY_READ)
       k1, k2 = _winreg.QueryValueEx(key, subkey)
-    except: pass;
-    if (key!=0): _winreg.CloseKey(key);
-    return k1;
+    except: pass
+    if (key!=0): _winreg.CloseKey(key)
+    return k1
 
 if 0:
   def oslocalcmd(cd, cmd):
@@ -120,8 +120,8 @@ if 1:
   def oscmd(cmd):
     global VERBOSE
     if VERBOSE >= 1:
-      print cmd;
-    sys.stdout.flush();
+      print cmd
+    sys.stdout.flush()
     cmdLine = cmd.split()
     cmd = getExecutablePath(cmdLine[0])
     exitCode = os.spawnv(os.P_WAIT, cmd, cmdLine)
@@ -136,20 +136,20 @@ else:
     # on the spawn so that we can flush stdout:
     global VERBOSE
     if VERBOSE >= 1:
-      print cmd;
-    sys.stdout.flush();
+      print cmd
+    sys.stdout.flush()
     cmdLine = cmd.split()
     spawn(cmdLine)
 
 def oscdcmd(cd, cmd):
   global VERBOSE
   if VERBOSE >= 1:
-    print "cd", cd;
+    print "cd", cd
   base=os.getcwd()
   os.chdir(cd)
   oscmd(cmd)
   if VERBOSE >= 1:
-    print "cd", base;
+    print "cd", base
   os.chdir(base)
 
 def osmove(src,dst):
@@ -200,6 +200,18 @@ def WriteFile(wfile,data):
 
 ########################################################################
 ##
+## MakeDirectory
+##
+## Make a directory in the build tree
+##
+########################################################################
+
+def MakeDirectory(path):
+  if os.path.isdir(path): return 0
+  os.mkdir(path)
+
+########################################################################
+##
 ## Default options:
 ##
 ## You might be tempted to change the defaults by editing them
@@ -210,6 +222,7 @@ def WriteFile(wfile,data):
 
 if (sys.platform == "win32"): COMPILERS=["MSVC7"]
 if (sys.platform == "linux2"): COMPILERS=["LINUXA"]
+PREFIX="built"
 COMPILER=COMPILERS[0]
 OPTIMIZE="3"
 INSTALLER=0
@@ -227,6 +240,7 @@ WARNINGS=[]
 
 DirectXSDK=None
 VERBOSE=0
+
 ##########################################################################################
 #
 # Read the default version number out of dtool/PandaVersion.pp
@@ -237,7 +251,7 @@ try:
   f = file("dtool/PandaVersion.pp","r")
   pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+PANDA_VERSION[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)')
   for line in f:
-    match = pattern.match(line,0);
+    match = pattern.match(line,0)
     if (match):
       VERSION1 = int(match.group(1))
       VERSION2 = int(match.group(2))
@@ -256,110 +270,108 @@ except: pass
 ##########################################################################################
 
 DTOOLDEFAULTS=[
-
-# Variable                         Windows                   Unix
-
-("HAVE_PYTHON",                    '1',                      '1'),
-("PYTHON_FRAMEWORK",               'UNDEF',                  'UNDEF'),
-("COMPILE_IN_DEFAULT_FONT",        '1',                      '1'),
-("HAVE_MAYA",                      '1',                      '1'),
-("MAYA_PRE_5_0",                   'UNDEF',                  'UNDEF'),
-("HAVE_SOFTIMAGE",                 'UNDEF',                  'UNDEF'),
-("SSL_097",                        'UNDEF',                  'UNDEF'),
-("REPORT_OPENSSL_ERRORS",          '1',                      '1'),
-("HAVE_GL",                        '1',                      '1'),
-("HAVE_MESA",                      'UNDEF',                  'UNDEF'),
-("MESA_MGL",                       'UNDEF',                  'UNDEF'),
-("HAVE_SGIGL",                     'UNDEF',                  'UNDEF'),
-("HAVE_GLX",                       'UNDEF',                  '1'),
-("HAVE_WGL",                       '1',                      'UNDEF'),
-("HAVE_DX",                        '1',                      'UNDEF'),
-("HAVE_CHROMIUM",                  'UNDEF',                  'UNDEF'),
-("HAVE_THREADS",                   'UNDEF',                  'UNDEF'),
-("HAVE_AUDIO",                     '1',                      '1'),
-("NOTIFY_DEBUG",                   'UNDEF',                  'UNDEF'),
-("DO_PSTATS",                      'UNDEF',                  'UNDEF'),
-("DO_COLLISION_RECORDING",         'UNDEF',                  'UNDEF'),
-("TRACK_IN_INTERPRETER",           'UNDEF',                  'UNDEF'),
-("DO_MEMORY_USAGE",                'UNDEF',                  'UNDEF'),
-("DO_PIPELINING",                  'UNDEF',                  'UNDEF'),
-("EXPORT_TEMPLATES",               'yes',                    'yes'),
-("LINK_IN_GL",                     'UNDEF',                  'UNDEF'),
-("LINK_IN_PHYSICS",                'UNDEF',                  'UNDEF'),
-("DEFAULT_PATHSEP",                '";"',                    '":"'),
-("DEFAULT_PRC_DIR",                '"<auto>"',               '"<auto>"'),
-("PRC_DIR_ENVVARS",                '"PANDA_PRC_DIR"',        '"PANDA_PRC_DIR"'),
-("PRC_PATH_ENVVARS",               '"PANDA_PRC_PATH"',       '"PANDA_PRC_PATH"'),
-("PRC_PATTERNS",                   '"*.prc"',                '"*.prc"'),
-("PRC_EXECUTABLE_PATTERNS",        '""',                     '""'),
-("PRC_EXECUTABLE_ARGS_ENVVAR",     '"PANDA_PRC_XARGS"',      '"PANDA_PRC_XARGS"'),
-("PRC_PUBLIC_KEYS_FILENAME",       '""',                     '""'),
-("PRC_RESPECT_TRUST_LEVEL",        'UNDEF',                  'UNDEF'),
-("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
-("WORDS_BIGENDIAN",                'UNDEF',                  'UNDEF'),
-("HAVE_NAMESPACE",                 '1',                      '1'),
-("HAVE_OPEN_MASK",                 'UNDEF',                  'UNDEF'),
-("HAVE_WCHAR_T",                   '1',                      '1'),
-("HAVE_WSTRING",                   '1',                      '1'),
-("HAVE_TYPENAME",                  '1',                      '1'),
-("SIMPLE_STRUCT_POINTERS",         '1',                      'UNDEF'),
-("HAVE_DINKUM",                    'UNDEF',                  'UNDEF'),
-("HAVE_STL_HASH",                  'UNDEF',                  'UNDEF'),
-("HAVE_GETTIMEOFDAY",              'UNDEF',                  '1'),
-("GETTIMEOFDAY_ONE_PARAM",         'UNDEF',                  'UNDEF'),
-("HAVE_GETOPT",                    'UNDEF',                  '1'),
-("HAVE_GETOPT_LONG_ONLY",          'UNDEF',                  '1'),
-("HAVE_GETOPT_H",                  'UNDEF',                  '1'),
-("IOCTL_TERMINAL_WIDTH",           'UNDEF',                  '1'),
-("HAVE_STREAMSIZE",                '1',                      '1'),
-("HAVE_IOS_TYPEDEFS",              '1',                      '1'),
-("HAVE_IOS_BINARY",                '1',                      '1'),
-("STATIC_INIT_GETENV",             '1',                      'UNDEF'),
-("HAVE_PROC_SELF_EXE",             'UNDEF',                  '1'),
-("HAVE_PROC_SELF_MAPS",            'UNDEF',                  '1'),
-("HAVE_PROC_SELF_ENVIRON",         'UNDEF',                  '1'),
-("HAVE_PROC_SELF_CMDLINE",         'UNDEF',                  '1'),
-("HAVE_GLOBAL_ARGV",               '1',                      'UNDEF'),
-("PROTOTYPE_GLOBAL_ARGV",          'UNDEF',                  'UNDEF'),
-("GLOBAL_ARGV",                    '__argv',                 'UNDEF'),
-("GLOBAL_ARGC",                    '__argc',                 'UNDEF'),
-("HAVE_IO_H",                      '1',                      'UNDEF'),
-("HAVE_IOSTREAM",                  '1',                      '1'),
-("HAVE_MALLOC_H",                  '1',                      '1'),
-("HAVE_SYS_MALLOC_H",              'UNDEF',                  'UNDEF'),
-("HAVE_ALLOCA_H",                  'UNDEF',                  '1'),
-("HAVE_LOCALE_H",                  'UNDEF',                  '1'),
-("HAVE_MINMAX_H",                  '1',                      'UNDEF'),
-("HAVE_SSTREAM",                   '1',                      '1'),
-("HAVE_NEW",                       '1',                      '1'),
-("HAVE_SYS_TYPES_H",               '1',                      '1'),
-("HAVE_SYS_TIME_H",                'UNDEF',                  '1'),
-("HAVE_UNISTD_H",                  'UNDEF',                  '1'),
-("HAVE_UTIME_H",                   'UNDEF',                  '1'),
-("HAVE_GLOB_H",                    'UNDEF',                  '1'),
-("HAVE_DIRENT_H",                  'UNDEF',                  '1'),
-("HAVE_SYS_SOUNDCARD_H",           'UNDEF',                  '1'),
-("HAVE_RTTI",                      '1',                      '1'),
-("GLOBAL_OPERATOR_NEW_EXCEPTIONS", 'UNDEF',                  '1'),
-("OLD_STYLE_ALLOCATOR",            'UNDEF',                  'UNDEF'),
-("GNU_STYLE_ALLOCATOR",            'UNDEF',                  '1'),
-("VC6_STYLE_ALLOCATOR",            'UNDEF',                  'UNDEF'),
-("MODERN_STYLE_ALLOCATOR",         'UNDEF',                  'UNDEF'),
-("NO_STYLE_ALLOCATOR",             '1',                      'UNDEF'),
-("HAVE_ZLIB",                      'UNDEF',                  'UNDEF'),
-("HAVE_PNG",                       'UNDEF',                  'UNDEF'),
-("HAVE_JPEG",                      'UNDEF',                  'UNDEF'),
-("HAVE_TIFF",                      'UNDEF',                  'UNDEF'),
-("HAVE_VRPN",                      'UNDEF',                  'UNDEF'),
-("HAVE_FMOD",                      'UNDEF',                  'UNDEF'),
-("HAVE_NVIDIACG",                  'UNDEF',                  'UNDEF'),
-("HAVE_NSPR",                      'UNDEF',                  'UNDEF'),
-("HAVE_FREETYPE",                  'UNDEF',                  'UNDEF'),
-("HAVE_FFTW",                      'UNDEF',                  'UNDEF'),
-("HAVE_MILES",                     'UNDEF',                  'UNDEF'),
-("HAVE_SSL",                       'UNDEF',                  'UNDEF'),
-("HAVE_NET",                       'UNDEF',                  'UNDEF'),
-]
+  #_Variable_________________________Windows___________________Unix__________
+  ("HAVE_PYTHON",                    '1',                      '1'),
+  ("PYTHON_FRAMEWORK",               'UNDEF',                  'UNDEF'),
+  ("COMPILE_IN_DEFAULT_FONT",        '1',                      '1'),
+  ("HAVE_MAYA",                      '1',                      '1'),
+  ("MAYA_PRE_5_0",                   'UNDEF',                  'UNDEF'),
+  ("HAVE_SOFTIMAGE",                 'UNDEF',                  'UNDEF'),
+  ("SSL_097",                        'UNDEF',                  'UNDEF'),
+  ("REPORT_OPENSSL_ERRORS",          '1',                      '1'),
+  ("HAVE_GL",                        '1',                      '1'),
+  ("HAVE_MESA",                      'UNDEF',                  'UNDEF'),
+  ("MESA_MGL",                       'UNDEF',                  'UNDEF'),
+  ("HAVE_SGIGL",                     'UNDEF',                  'UNDEF'),
+  ("HAVE_GLX",                       'UNDEF',                  '1'),
+  ("HAVE_WGL",                       '1',                      'UNDEF'),
+  ("HAVE_DX",                        '1',                      'UNDEF'),
+  ("HAVE_CHROMIUM",                  'UNDEF',                  'UNDEF'),
+  ("HAVE_THREADS",                   'UNDEF',                  'UNDEF'),
+  ("HAVE_AUDIO",                     '1',                      '1'),
+  ("NOTIFY_DEBUG",                   'UNDEF',                  'UNDEF'),
+  ("DO_PSTATS",                      'UNDEF',                  'UNDEF'),
+  ("DO_COLLISION_RECORDING",         'UNDEF',                  'UNDEF'),
+  ("TRACK_IN_INTERPRETER",           'UNDEF',                  'UNDEF'),
+  ("DO_MEMORY_USAGE",                'UNDEF',                  'UNDEF'),
+  ("DO_PIPELINING",                  'UNDEF',                  'UNDEF'),
+  ("EXPORT_TEMPLATES",               'yes',                    'yes'),
+  ("LINK_IN_GL",                     'UNDEF',                  'UNDEF'),
+  ("LINK_IN_PHYSICS",                'UNDEF',                  'UNDEF'),
+  ("DEFAULT_PATHSEP",                '";"',                    '":"'),
+  ("DEFAULT_PRC_DIR",                '"<auto>"',               '"<auto>"'),
+  ("PRC_DIR_ENVVARS",                '"PANDA_PRC_DIR"',        '"PANDA_PRC_DIR"'),
+  ("PRC_PATH_ENVVARS",               '"PANDA_PRC_PATH"',       '"PANDA_PRC_PATH"'),
+  ("PRC_PATTERNS",                   '"*.prc"',                '"*.prc"'),
+  ("PRC_EXECUTABLE_PATTERNS",        '""',                     '""'),
+  ("PRC_EXECUTABLE_ARGS_ENVVAR",     '"PANDA_PRC_XARGS"',      '"PANDA_PRC_XARGS"'),
+  ("PRC_PUBLIC_KEYS_FILENAME",       '""',                     '""'),
+  ("PRC_RESPECT_TRUST_LEVEL",        'UNDEF',                  'UNDEF'),
+  ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
+  ("WORDS_BIGENDIAN",                'UNDEF',                  'UNDEF'),
+  ("HAVE_NAMESPACE",                 '1',                      '1'),
+  ("HAVE_OPEN_MASK",                 'UNDEF',                  'UNDEF'),
+  ("HAVE_WCHAR_T",                   '1',                      '1'),
+  ("HAVE_WSTRING",                   '1',                      '1'),
+  ("HAVE_TYPENAME",                  '1',                      '1'),
+  ("SIMPLE_STRUCT_POINTERS",         '1',                      'UNDEF'),
+  ("HAVE_DINKUM",                    'UNDEF',                  'UNDEF'),
+  ("HAVE_STL_HASH",                  'UNDEF',                  'UNDEF'),
+  ("HAVE_GETTIMEOFDAY",              'UNDEF',                  '1'),
+  ("GETTIMEOFDAY_ONE_PARAM",         'UNDEF',                  'UNDEF'),
+  ("HAVE_GETOPT",                    'UNDEF',                  '1'),
+  ("HAVE_GETOPT_LONG_ONLY",          'UNDEF',                  '1'),
+  ("HAVE_GETOPT_H",                  'UNDEF',                  '1'),
+  ("IOCTL_TERMINAL_WIDTH",           'UNDEF',                  '1'),
+  ("HAVE_STREAMSIZE",                '1',                      '1'),
+  ("HAVE_IOS_TYPEDEFS",              '1',                      '1'),
+  ("HAVE_IOS_BINARY",                '1',                      '1'),
+  ("STATIC_INIT_GETENV",             '1',                      'UNDEF'),
+  ("HAVE_PROC_SELF_EXE",             'UNDEF',                  '1'),
+  ("HAVE_PROC_SELF_MAPS",            'UNDEF',                  '1'),
+  ("HAVE_PROC_SELF_ENVIRON",         'UNDEF',                  '1'),
+  ("HAVE_PROC_SELF_CMDLINE",         'UNDEF',                  '1'),
+  ("HAVE_GLOBAL_ARGV",               '1',                      'UNDEF'),
+  ("PROTOTYPE_GLOBAL_ARGV",          'UNDEF',                  'UNDEF'),
+  ("GLOBAL_ARGV",                    '__argv',                 'UNDEF'),
+  ("GLOBAL_ARGC",                    '__argc',                 'UNDEF'),
+  ("HAVE_IO_H",                      '1',                      'UNDEF'),
+  ("HAVE_IOSTREAM",                  '1',                      '1'),
+  ("HAVE_MALLOC_H",                  '1',                      '1'),
+  ("HAVE_SYS_MALLOC_H",              'UNDEF',                  'UNDEF'),
+  ("HAVE_ALLOCA_H",                  'UNDEF',                  '1'),
+  ("HAVE_LOCALE_H",                  'UNDEF',                  '1'),
+  ("HAVE_MINMAX_H",                  '1',                      'UNDEF'),
+  ("HAVE_SSTREAM",                   '1',                      '1'),
+  ("HAVE_NEW",                       '1',                      '1'),
+  ("HAVE_SYS_TYPES_H",               '1',                      '1'),
+  ("HAVE_SYS_TIME_H",                'UNDEF',                  '1'),
+  ("HAVE_UNISTD_H",                  'UNDEF',                  '1'),
+  ("HAVE_UTIME_H",                   'UNDEF',                  '1'),
+  ("HAVE_GLOB_H",                    'UNDEF',                  '1'),
+  ("HAVE_DIRENT_H",                  'UNDEF',                  '1'),
+  ("HAVE_SYS_SOUNDCARD_H",           'UNDEF',                  '1'),
+  ("HAVE_RTTI",                      '1',                      '1'),
+  ("GLOBAL_OPERATOR_NEW_EXCEPTIONS", 'UNDEF',                  '1'),
+  ("OLD_STYLE_ALLOCATOR",            'UNDEF',                  'UNDEF'),
+  ("GNU_STYLE_ALLOCATOR",            'UNDEF',                  '1'),
+  ("VC6_STYLE_ALLOCATOR",            'UNDEF',                  'UNDEF'),
+  ("MODERN_STYLE_ALLOCATOR",         'UNDEF',                  'UNDEF'),
+  ("NO_STYLE_ALLOCATOR",             '1',                      'UNDEF'),
+  ("HAVE_ZLIB",                      'UNDEF',                  'UNDEF'),
+  ("HAVE_PNG",                       'UNDEF',                  'UNDEF'),
+  ("HAVE_JPEG",                      'UNDEF',                  'UNDEF'),
+  ("HAVE_TIFF",                      'UNDEF',                  'UNDEF'),
+  ("HAVE_VRPN",                      'UNDEF',                  'UNDEF'),
+  ("HAVE_FMOD",                      'UNDEF',                  'UNDEF'),
+  ("HAVE_NVIDIACG",                  'UNDEF',                  'UNDEF'),
+  ("HAVE_NSPR",                      'UNDEF',                  'UNDEF'),
+  ("HAVE_FREETYPE",                  'UNDEF',                  'UNDEF'),
+  ("HAVE_FFTW",                      'UNDEF',                  'UNDEF'),
+  ("HAVE_MILES",                     'UNDEF',                  'UNDEF'),
+  ("HAVE_SSL",                       'UNDEF',                  'UNDEF'),
+  ("HAVE_NET",                       'UNDEF',                  'UNDEF'),
+  ]
 
 DTOOLCONFIG={}
 if (sys.platform == "win32"):
@@ -393,6 +405,7 @@ def packageInfo():
     MAYA6     Maya version 6
               "uri?"
               (for .??? files)
+
   Audio playback:
     FMOD      f mod
               "http://www.fmod.org/"
@@ -449,7 +462,7 @@ def packageInfo():
               A library for gpu programming (shaders and such).
 
   Network communication:
-    OPENSSL   Open Secure Socket Layer
+    SSL       Open Secure Socket Layer
               "http://www.openssl.org/"
               A network encryption library.
 
@@ -482,6 +495,7 @@ def usage(problem):
   print ""
   print "  --help            (print the help message you're reading now)"
   print "  --package-info    (help info about the optional packages)"
+  print "  --prefix X        (install into prefix dir, default \"built\")"
   print "  --compiler X      (currently, compiler can only be MSVC7,LINUXA)"
   print "  --optimize X      (optimization level can be 1,2,3,4)"
   print "  --thirdparty X    (directory containing third-party software)"
@@ -510,10 +524,11 @@ def usage(problem):
   sys.exit(1)
 
 def parseopts(args):
-  global COMPILER,OPTIMIZE,OMIT,THIRDPARTY,INSTALLER,COPYEXTRAS,VERSION1,VERSION2,VERSION3,COMPRESSOR
+  global PREFIX,COMPILER,OPTIMIZE,OMIT,THIRDPARTY,INSTALLER
+  global COPYEXTRAS,VERSION1,VERSION2,VERSION3,COMPRESSOR
   global DirectXSDK,VERBOSE
   longopts = [
-    "help","package-info","compiler=","directx-sdk=","thirdparty=",
+    "help","package-info","prefix=","compiler=","directx-sdk=","thirdparty=",
     "optimize=","everything","nothing","installer","quiet","verbose",
     "complete","default","v1=","v2=","v3=","lzma"]
   anything = 0
@@ -523,27 +538,31 @@ def parseopts(args):
     opts, extras = getopt.getopt(args, "", longopts)
     for option,value in opts:
       if (option=="--help"): raise "usage"
-      if (option=="--package-info"): raise "package-info"
-      if (option=="--compiler"): COMPILER=value
-      if (option=="--directx-sdk"): DirectXSDK=value
-      if (option=="--thirdparty"): THIRDPARTY=value
-      if (option=="--optimize"): OPTIMIZE=value
-      if (option=="--quiet"): VERBOSE-=1
-      if (option=="--verbose"): VERBOSE+=1
-      if (option=="--installer"): INSTALLER=1
-      if (option=="--complete"): COMPLETE=1
-      if (option=="--everything"): OMIT=[]
-      if (option=="--nothing"): OMIT=PACKAGES[:]
-      if (option=="--v1"): VERSION1=int(value)
-      if (option=="--v2"): VERSION2=int(value)
-      if (option=="--v3"): VERSION3=int(value)
-      if (option=="--lzma"): COMPRESSOR="lzma"
-      for pkg in PACKAGES:
-        if (option=="--use-"+pkg.lower()):
-          if (OMIT.count(pkg)): OMIT.delete(pkg)
-      for pkg in PACKAGES:
-        if (option=="--no-"+pkg.lower()):
-          if (OMIT.count(pkg)==0): OMIT.append(pkg)
+      elif (option=="--package-info"): raise "package-info"
+      elif (option=="--prefix"): PREFIX=value
+      elif (option=="--compiler"): COMPILER=value
+      elif (option=="--directx-sdk"): DirectXSDK=value
+      elif (option=="--thirdparty"): THIRDPARTY=value
+      elif (option=="--optimize"): OPTIMIZE=value
+      elif (option=="--quiet"): VERBOSE-=1
+      elif (option=="--verbose"): VERBOSE+=1
+      elif (option=="--installer"): INSTALLER=1
+      elif (option=="--complete"): COMPLETE=1
+      elif (option=="--everything"): OMIT=[]
+      elif (option=="--nothing"): OMIT=PACKAGES[:]
+      elif (option=="--v1"): VERSION1=int(value)
+      elif (option=="--v2"): VERSION2=int(value)
+      elif (option=="--v3"): VERSION3=int(value)
+      elif (option=="--lzma"): COMPRESSOR="lzma"
+      else:
+        for pkg in PACKAGES:
+          if (option=="--use-"+pkg.lower()):
+            if (OMIT.count(pkg)): OMIT.remove(pkg)
+            break
+        for pkg in PACKAGES:
+          if (option=="--no-"+pkg.lower()):
+            if (OMIT.count(pkg)==0): OMIT.append(pkg)
+            break
       anything = 1
   except "package-info": packageInfo()
   except: usage(0)
@@ -552,8 +571,8 @@ def parseopts(args):
   elif (OPTIMIZE=="2"): OPTIMIZE=2
   elif (OPTIMIZE=="3"): OPTIMIZE=3
   elif (OPTIMIZE=="4"): OPTIMIZE=4
-  else: usage("Invalid setting for OPTIMIZE");
-  if (COMPILERS.count(COMPILER)==0): usage("Invalid setting for COMPILER: "+COMPILER);
+  else: usage("Invalid setting for OPTIMIZE")
+  if (COMPILERS.count(COMPILER)==0): usage("Invalid setting for COMPILER: "+COMPILER)
 
 parseopts(sys.argv[1:])
 
@@ -581,7 +600,7 @@ if ((os.path.exists(os.path.join(PANDASOURCE,"makepanda/makepanda.py"))==0) or
 ########################################################################
 
 if (THIRDPARTY == ""):
-  if (COMPILER == "MSVC7"): THIRDPARTY="thirdparty\\win-libs-vc7\\"
+  if (COMPILER == "MSVC7"): THIRDPARTY="thirdparty/win-libs-vc7/"
   if (COMPILER == "LINUXA"): THIRDPARTY="thirdparty/linux-libs-a/"
 STDTHIRDPARTY = THIRDPARTY.replace("\\","/")
 
@@ -605,7 +624,7 @@ if sys.platform == "win32" and DirectXSDK is None:
         else:
           DirectXSDK=dxdir
       else:
-        sys.exit("The registry does not appear to contain a pointer to the DirectX 9.0 SDK.");
+        sys.exit("The registry does not appear to contain a pointer to the DirectX 9.0 SDK.")
   DirectXSDK=DirectXSDK.replace("\\", "/")
 
 ########################################################################
@@ -706,11 +725,11 @@ for version,key1,key2,subdir in MAXVERSIONS:
 ########################################################################
 
 if (COMPILER == "MSVC7"):
-  vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\7.1", "InstallDir");
+  vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\7.1", "InstallDir")
   if ((vcdir == 0) or (vcdir[-13:] != "\\Common7\\IDE\\")):
-    vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\7.0", "InstallDir");
+    vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\7.0", "InstallDir")
     if ((vcdir == 0) or (vcdir[-13:] != "\\Common7\\IDE\\")):
-      sys.exit("The registry does not appear to contain a pointer to the Visual Studio 7 install directory");
+      sys.exit("The registry does not appear to contain a pointer to the Visual Studio 7 install directory")
   vcdir = vcdir[:-12]
   old_env_path    = ""
   old_env_include = ""
@@ -734,17 +753,6 @@ if (sys.platform != "win32"):
     WARNINGS.append("HELIX not yet supported under linux")
     WARNINGS.append("I have automatically added this command-line option: --no-helix")
     OMIT.append("HELIX")
-
-##########################################################################################
-#
-# Disable Miles (until we implement support for it)
-#
-##########################################################################################
-
-if (OMIT.count("MILES")==0):
-  WARNINGS.append("Miles audio not yet supported by makepanda")
-  WARNINGS.append("I have automatically added this command-line option: --no-miles")
-  OMIT.append("MILES")
 
 ##########################################################################################
 #
@@ -793,14 +801,14 @@ for x in PACKAGES:
 
 ##########################################################################################
 #
-# Verify that LD_LIBRARY_PATH contains the built/lib directory.
+# Verify that LD_LIBRARY_PATH contains the PREFIX/lib directory.
 #
 # If not, add it on a temporary basis, and issue a warning.
 #
 ##########################################################################################
 
 if (sys.platform != "win32"):
-  BUILTLIB = os.path.abspath("built/lib")
+  BUILTLIB = os.path.abspath(PREFIX+"/lib")
   try:
     LDPATH = []
     f = file("/etc/ld.so.conf","r")
@@ -810,7 +818,7 @@ if (sys.platform != "win32"):
   if (os.environ.has_key("LD_LIBRARY_PATH")):
     LDPATH = LDPATH + os.environ["LD_LIBRARY_PATH"].split(":")
   if (LDPATH.count(BUILTLIB)==0):
-    WARNINGS.append("Caution: the built/lib directory is not in LD_LIBRARY_PATH")
+    WARNINGS.append("Caution: the "+PREFIX+"/lib directory is not in LD_LIBRARY_PATH")
     WARNINGS.append("or /etc/ld.so.conf.  You must add it before using panda.")
     if (os.environ.has_key("LD_LIBRARY_PATH")):
       os.environ["LD_LIBRARY_PATH"] = BUILTLIB + ":" + os.environ["LD_LIBRARY_PATH"]
@@ -834,6 +842,7 @@ def printStatus(header,warnings):
     for x in PACKAGES:
       if (OMIT.count(x)==0): tkeep = tkeep + x + " "
       else                 : tomit = tomit + x + " "
+    print "Makepanda: Prefix Directory:",PREFIX
     print "Makepanda: Compiler:",COMPILER
     print "Makepanda: Optimize:",OPTIMIZE
     print "Makepanda: Keep Pkg:",tkeep
@@ -850,6 +859,25 @@ def printStatus(header,warnings):
 
 printStatus("Makepanda Initial Status Report", WARNINGS)
 
+
+##########################################################################################
+#
+# Create the directory tree
+#
+##########################################################################################
+
+MakeDirectory(PREFIX)
+MakeDirectory(PREFIX+"/bin")
+MakeDirectory(PREFIX+"/lib")
+MakeDirectory(PREFIX+"/etc")
+MakeDirectory(PREFIX+"/include")
+MakeDirectory(PREFIX+"/include/parser-inc")
+MakeDirectory(PREFIX+"/include/parser-inc/openssl")
+MakeDirectory(PREFIX+"/include/parser-inc/Cg")
+MakeDirectory(PREFIX+"/include/openssl")
+MakeDirectory(PREFIX+"/direct")
+MakeDirectory(PREFIX+"/tmp")
+
 ########################################################################
 ##
 ## PkgSelected(package-list,package)
@@ -860,9 +888,9 @@ printStatus("Makepanda Initial Status Report", WARNINGS)
 ########################################################################
 
 def PkgSelected(pkglist, pkg):
-  if (pkglist.count(pkg)==0): return(0);
-  if (OMIT.count(pkg)): return(0);
-  return(1);
+  if (pkglist.count(pkg)==0): return(0)
+  if (OMIT.count(pkg)): return(0)
+  return(1)
 
 ########################################################################
 ##
@@ -896,7 +924,8 @@ ALLTARGETS=[]
 global CxxIncludeCache
 CxxIncludeCache = {}
 
-try: icache = open("makepanda-icache",'rb')
+iCachePath=PREFIX+"/makepanda-icache"
+try: icache = open(iCachePath,'rb')
 except: icache = 0
 if (icache!=0):
   CxxIncludeCache = cPickle.load(icache)
@@ -919,14 +948,14 @@ def CxxGetIncludes(path):
     cached = CxxIncludeCache[path]
     if (cached[0]==date): return cached[1]
   try: sfile = open(path, 'rb')
-  except: sys.exit("Cannot open source file \""+path+"\" for reading.");
+  except: sys.exit("Cannot open source file \""+path+"\" for reading.")
   include = []
   for line in sfile:
-    match = CxxIncludeRegex.match(line,0);
+    match = CxxIncludeRegex.match(line,0)
     if (match):
       incname = match.group(1)
       include.append(incname)
-  sfile.close();
+  sfile.close()
   CxxIncludeCache[path] = [date, include]
   return include
 
@@ -970,7 +999,7 @@ def CxxFindHeader(srcfile, incfile, ipath):
         if (last < 0): sys.exit("CxxFindHeader cannot handle this case #2")
         srcdir = srcdir[:last+1]
       else: sys.exit("CxxFindHeader cannot handle this case #3")
-    full = srcdir + incfile;
+    full = srcdir + incfile
     if filedate(full) > 0: return full
     return 0
   else: return CxxFindSource(incfile, ipath)
@@ -993,7 +1022,7 @@ CxxDependencyCache = {}
 def CxxCalcDependencies(srcfile, ipath, ignore):
   if (CxxDependencyCache.has_key(srcfile)):
     return CxxDependencyCache[srcfile]
-  if (ignore.count(srcfile)): return([]);
+  if (ignore.count(srcfile)): return([])
   dep = {}
   dep[srcfile] = 1
   includes = CxxGetIncludes(srcfile)
@@ -1006,7 +1035,7 @@ def CxxCalcDependencies(srcfile, ipath, ignore):
         if (ignore.count(header)==0):
           hdeps = CxxCalcDependencies(header, ipath, [srcfile]+ignore)
           for x in hdeps: dep[x] = 1
-  result = dep.keys();
+  result = dep.keys()
   CxxDependencyCache[srcfile] = result
   return result
 
@@ -1028,26 +1057,14 @@ def CxxCalcDependenciesAll(srcfiles, ipath):
 
 def ConditionalWriteFile(dest,desiredcontents):
   try:
-    rfile = open(dest, 'rb');
-    contents = rfile.read(-1);
-    rfile.close();
-  except: contents=0;
+    rfile = open(dest, 'rb')
+    contents = rfile.read(-1)
+    rfile.close()
+  except: contents=0
   if (contents != desiredcontents):
     print "Regenerating file: "+dest
     sys.stdout.flush()
     WriteFile(dest,desiredcontents)
-
-########################################################################
-##
-## MakeDirectory
-##
-## Make a directory in the build tree
-##
-########################################################################
-
-def MakeDirectory(path):
-  if os.path.isdir(path): return 0
-  os.mkdir(path)
 
 ########################################################################
 ##
@@ -1063,13 +1080,13 @@ def CopyFile(dstfile,srcfile):
     fnl = srcfile.rfind("/")
     if (fnl < 0): fn = srcfile
     else: fn = srcfile[fnl+1:]
-    dstfile = dstdir + fn;
+    dstfile = dstdir + fn
   if (older(dstfile,srcfile)):
     global VERBOSE
     if VERBOSE >= 1:
       print "Copying "+srcfile+" -> "+dstfile+"..."
     WriteFile(dstfile,ReadFile(srcfile))
-    updatefiledate(dstfile);
+    updatefiledate(dstfile)
   ALLTARGETS.append(dstfile)
 
 ########################################################################
@@ -1095,7 +1112,7 @@ def CopyAllFiles(dstdir,srcdir):
 ########################################################################
 
 def CopyTree(dstdir,srcdir):
-  if (os.path.isdir(dstdir)): return(0);
+  if (os.path.isdir(dstdir)): return(0)
   if (COMPILER=="MSVC7"): cmd = "xcopy.exe /I/Y/E/Q \""+srcdir+"\" \""+dstdir+"\""
   if (COMPILER=="LINUXA"): cmd = "cp --recursive --force "+srcdir+" "+dstdir
   oscmd(cmd)
@@ -1114,19 +1131,19 @@ def CompileBison(pre,dstc,dsth,src):
   dstc=base+"/"+dstc
   dsth=base+"/"+dsth
   if (older(dstc,src) or older(dsth,src)):
-    CopyFile("built/tmp/", src)
+    CopyFile(PREFIX+"/tmp/", src)
     if (COMPILER=="MSVC7"):
-      CopyFile("built/tmp/", STDTHIRDPARTY+"win-util/bison.simple")
+      CopyFile(PREFIX+"/tmp/", STDTHIRDPARTY+"win-util/bison.simple")
       bisonFullPath=os.path.abspath(STDTHIRDPARTY+"win-util/bison.exe")
-      oscdcmd("built/tmp", bisonFullPath+" -y -d -p " + pre + " " + fn)
-      osmove("built/tmp/y_tab.c", dstc)
-      osmove("built/tmp/y_tab.h", dsth)
+      oscdcmd(PREFIX+"/tmp", bisonFullPath+" -y -d -p " + pre + " " + fn)
+      osmove(PREFIX+"/tmp/y_tab.c", dstc)
+      osmove(PREFIX+"/tmp/y_tab.h", dsth)
     if (COMPILER=="LINUXA"):
-      oscdcmd("built/tmp", "bison -y -d -p "+pre+" "+fn)
-      osmove("built/tmp/y.tab.c", dstc)
-      osmove("built/tmp/y.tab.h", dsth)
-    updatefiledate(dstc);
-    updatefiledate(dsth);
+      oscdcmd(PREFIX+"/tmp", "bison -y -d -p "+pre+" "+fn)
+      osmove(PREFIX+"/tmp/y.tab.c", dstc)
+      osmove(PREFIX+"/tmp/y.tab.h", dsth)
+    updatefiledate(dstc)
+    updatefiledate(dsth)
 
 ########################################################################
 ##
@@ -1139,18 +1156,18 @@ def CompileBison(pre,dstc,dsth,src):
 def CompileFlex(pre,dst,src,dashi):
   last = src.rfind("/")
   fn = src[last+1:]
-  dst = "built/tmp/"+dst
+  dst = PREFIX+"/tmp/"+dst
   if (older(dst,src)):
-    CopyFile("built/tmp/", src)
+    CopyFile(PREFIX+"/tmp/", src)
     if (COMPILER=="MSVC7"):
       flexFullPath=os.path.abspath(STDTHIRDPARTY+"win-util/flex.exe")
-      if (dashi): oscdcmd("built/tmp", flexFullPath+" -i -P" + pre + " -olex.yy.c " + fn)
-      else      : oscdcmd("built/tmp", flexFullPath+"    -P" + pre + " -olex.yy.c " + fn)
-      replaceInFile('built/tmp/lex.yy.c', dst, '#include <unistd.h>', '')
+      if (dashi): oscdcmd(PREFIX+"/tmp", flexFullPath+" -i -P" + pre + " -olex.yy.c " + fn)
+      else      : oscdcmd(PREFIX+"/tmp", flexFullPath+"    -P" + pre + " -olex.yy.c " + fn)
+      replaceInFile(PREFIX+'/tmp/lex.yy.c', dst, '#include <unistd.h>', '')
       #WriteFile(wdst, ReadFile("built\\tmp\\lex.yy.c").replace("#include <unistd.h>",""))
     if (COMPILER=="LINUXA"):
-      if (dashi): oscdcmd("built/tmp", "flex -i -P" + pre + " -olex.yy.c " + fn)
-      else      : oscdcmd("built/tmp", "flex    -P" + pre + " -olex.yy.c " + fn)
+      if (dashi): oscdcmd(PREFIX+"/tmp", "flex -i -P" + pre + " -olex.yy.c " + fn)
+      else      : oscdcmd(PREFIX+"/tmp", "flex    -P" + pre + " -olex.yy.c " + fn)
       oscmd('cp built/tmp/lex.yy.c '+dst)
     updatefiledate(dst)
 
@@ -1170,20 +1187,20 @@ def checkIfNewDir(path):
   priorIPath=path
 
 def CompileC(obj=0,src=0,ipath=[],opts=[]):
-  if ((obj==0)|(src==0)): sys.exit("syntax error in CompileC directive");
-  ipath = ["built/tmp"] + ipath + ["built/include"]
+  global VERBOSE
+  if ((obj==0)|(src==0)): sys.exit("syntax error in CompileC directive")
+  ipath = [PREFIX+"/tmp"] + ipath + [PREFIX+"/include"]
   fullsrc = CxxFindSource(src, ipath)
   if (fullsrc == 0): sys.exit("Cannot find source file "+src)
   dep = CxxCalcDependencies(fullsrc, ipath, [])
 
   if (COMPILER=="MSVC7"):
-    wobj = "built/tmp/"+obj
+    wobj = PREFIX+"/tmp/"+obj
     if (older(wobj, dep)):
-      global VERBOSE
       if VERBOSE >= 0:
         checkIfNewDir(ipath[1])
-      cmd = 'cl.exe /Fo"' + wobj + '" /nologo /c';
-      cmd = cmd + " /I\"built/python/include\""
+      cmd = 'cl.exe /Fo"' + wobj + '" /nologo /c'
+      cmd = cmd + " /I\""+PREFIX+"/python/include\""
       if (opts.count("DXSDK")): cmd = cmd + ' /I"' + DirectXSDK + '/include"'
       if (opts.count("MAYA5")): cmd = cmd + ' /I"' + Maya5SDK + 'include"'
       if (opts.count("MAYA6")): cmd = cmd + ' /I"' + Maya6SDK + 'include"'
@@ -1193,14 +1210,14 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
       for pkg in PACKAGES:
         if (pkg != "MAYA5") and (pkg != "MAYA6") and PkgSelected(opts,pkg):
           cmd = cmd + ' /I"' + THIRDPARTY + pkg.lower() + "/include" + '"'
-      for x in ipath: cmd = cmd + " /I \"" + x + "\"";
+      for x in ipath: cmd = cmd + " /I \"" + x + "\""
       if (opts.count('NOFLOATWARN')): cmd = cmd + ' /wd4244 /wd4305'
       if (opts.count("WITHINPANDA")): cmd = cmd + ' /DWITHIN_PANDA'
       if (OPTIMIZE==1): cmd = cmd + " /D_DEBUG /Zc:forScope /MDd /Zi /RTCs /GS "
       if (OPTIMIZE==2): cmd = cmd + " /D_DEBUG /Zc:forScope /MDd /Zi /RTCs /GS "
       if (OPTIMIZE==3): cmd = cmd + " /Zc:forScope /MD /O2 /Ob2 /G6 /Zi /DFORCE_INLINING "
       if (OPTIMIZE==4): cmd = cmd + " /Zc:forScope /MD /O2 /Ob2 /G6 /GL /Zi /DFORCE_INLINING /DNDEBUG "
-      cmd = cmd + " /Fd\"" + wobj[:-4] + ".pdb\"";
+      cmd = cmd + " /Fd\"" + wobj[:-4] + ".pdb\""
       building = buildingwhat(opts)
       if (building): cmd = cmd + " /DBUILDING_"+building
       cmd = cmd + " /EHsc /Zm300 /DWIN32_VC /DWIN32 /W3 \"" + fullsrc + "\""
@@ -1208,9 +1225,8 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
       updatefiledate(wobj)
 
   if (COMPILER=="LINUXA"):
-    wobj = "built/tmp/" + obj[:-4] + ".o"
+    wobj = PREFIX+"/tmp/" + obj[:-4] + ".o"
     if (older(wobj, dep)):
-      global VERBOSE
       if VERBOSE >= 0:
         checkIfNewDir(ipath[1])
       if (src[-2:]==".c"): cmd = "gcc -c -o "+wobj
@@ -1243,16 +1259,16 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
 ########################################################################
 
 def CompileRES(obj=0,src=0,ipath=[],opts=[]):
-  if ((obj==0)|(src==0)): sys.exit("syntax error in CompileRES directive");
+  if ((obj==0)|(src==0)): sys.exit("syntax error in CompileRES directive")
   fullsrc = CxxFindSource(src, ipath)
   if (fullsrc == 0): sys.exit("Cannot find source file "+src)
-  obj = "built/tmp/"+obj
+  obj = PREFIX+"/tmp/"+obj
   wdep = CxxCalcDependencies(fullsrc, ipath, [])
 
   if (COMPILER=="MSVC7"):
     if (older(obj, wdep)):
       cmd = 'rc.exe /d "NDEBUG" /l 0x409'
-      for x in ipath: cmd = cmd + " /I " + x;
+      for x in ipath: cmd = cmd + " /I " + x
       cmd = cmd + ' /fo"' + obj + '"'
       cmd = cmd + ' "'+ fullsrc + '"'
       oscmd(cmd)
@@ -1271,38 +1287,38 @@ def CompileRES(obj=0,src=0,ipath=[],opts=[]):
 
 def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, files=0):
   if ((ipath==0)|(opts==0)|(outd==0)|(outc==0)|(src==0)|(module==0)|(library==0)|(files==0)):
-    sys.exit("syntax error in Interrogate directive");
-  ipath = ["built/tmp"] + ipath + ["built/include"]
-  outd = "built/etc/"+outd
-  outc = "built/tmp/"+outc
+    sys.exit("syntax error in Interrogate directive")
+  ipath = [PREFIX+"/tmp"] + ipath + [PREFIX+"/include"]
+  outd = PREFIX+"/etc/"+outd
+  outc = PREFIX+"/tmp/"+outc
   paths = xpaths(src+"/",files,"")
   dep = CxxCalcDependenciesAll(paths, ipath)
   dotdots = ""
   for i in range(0,src.count("/")+1): dotdots = dotdots + "../"
   ALLIN.append(outd)
-  building = 0;
+  building = 0
   for x in opts:
     if (x[:9]=="BUILDING_"): building = x[9:]
   if (older(outc, dep) or older(outd, dep)):
     if (COMPILER=="MSVC7"):
-      cmd = dotdots + "built/bin/interrogate.exe"
+      cmd = dotdots + PREFIX+"/bin/interrogate.exe"
       cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -longlong __int64 -D_X86_ -DWIN32_VC -D_WIN32'
       cmd = cmd + ' -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
       if (OPTIMIZE==1): cmd = cmd + ' '
       if (OPTIMIZE==2): cmd = cmd + ' '
       if (OPTIMIZE==3): cmd = cmd + ' -DFORCE_INLINING'
       if (OPTIMIZE==4): cmd = cmd + ' -DFORCE_INLINING'
-      cmd = cmd + ' -S"' + dotdots + 'built/include/parser-inc"'
-      cmd = cmd + ' -I"' + dotdots + 'built/python/include"'
+      cmd = cmd + ' -S"' + dotdots + PREFIX+'/include/parser-inc"'
+      cmd = cmd + ' -I"' + dotdots + PREFIX+'/python/include"'
     if (COMPILER=="LINUXA"):
-      cmd = dotdots + "built/bin/interrogate"
+      cmd = dotdots + PREFIX+"/bin/interrogate"
       cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__i386__ -D__const=const'
       if (OPTIMIZE==1): cmd = cmd + ' '
       if (OPTIMIZE==2): cmd = cmd + ' '
       if (OPTIMIZE==3): cmd = cmd + ' '
       if (OPTIMIZE==4): cmd = cmd + ' '
-      cmd = cmd + ' -S"' + dotdots + 'built/include/parser-inc" -S"/usr/include"'
-      cmd = cmd + ' -I"' + dotdots + 'built/python/include"'
+      cmd = cmd + ' -S"' + dotdots + PREFIX+'/include/parser-inc" -S"/usr/include"'
+      cmd = cmd + ' -I"' + dotdots + PREFIX+'/python/include"'
     cmd = cmd + " -oc "+dotdots+outc+" -od "+dotdots+outd
     cmd = cmd + ' -fnames -string -refcount -assert -python'
     for x in ipath: cmd = cmd + ' -I"' + dotdots + x + '"'
@@ -1330,18 +1346,18 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, fil
 
 def InterrogateModule(outc=0, module=0, library=0, files=0):
   if ((outc==0)|(module==0)|(library==0)|(files==0)):
-    sys.exit("syntax error in InterrogateModule directive");
-  outc = "built/tmp/"+outc
-  files = xpaths("built/etc/",files,"")
+    sys.exit("syntax error in InterrogateModule directive")
+  outc = PREFIX+"/tmp/"+outc
+  files = xpaths(PREFIX+"/etc/",files,"")
   if (older(outc, files)):
     if (COMPILER=="MSVC7"):
-        cmd = "built\\bin\\interrogate_module.exe "
+        cmd = PREFIX+"/bin/interrogate_module.exe "
     if (COMPILER=="LINUXA"):
-        cmd = "built/bin/interrogate_module "
+        cmd = PREFIX+"/bin/interrogate_module "
     cmd = cmd + " -oc \"" + outc + '" -module "' + module + '" -library "' + library + '" -python '
     for x in files: cmd = cmd + ' "' + x + '" '
     oscmd(cmd)
-    updatefiledate(outc);
+    updatefiledate(outc)
 
 ########################################################################
 ##
@@ -1352,28 +1368,28 @@ def InterrogateModule(outc=0, module=0, library=0, files=0):
 ########################################################################
 
 def CompileLIB(lib=0, obj=[], opts=[]):
-  if (lib==0): sys.exit("syntax error in CompileLIB directive");
+  if (lib==0): sys.exit("syntax error in CompileLIB directive")
 
   if (COMPILER=="MSVC7"):
-    wlib = "built\\lib\\" + lib
-    wobj = xpaths("built\\tmp\\",obj,"")
+    wlib = PREFIX+"/lib/" + lib
+    wobj = xpaths(PREFIX+"/tmp/",obj,"")
     ALLTARGETS.append(wlib)
     if (older(wlib, wobj)):
-      cmd = 'lib.exe /nologo /OUT:'+wlib;
+      cmd = 'lib.exe /nologo /OUT:'+wlib
       if (OPTIMIZE==4): cmd = cmd + " /LTCG "
-      for x in wobj: cmd=cmd+" "+x;
+      for x in wobj: cmd=cmd+" "+x
       oscmd(cmd)
-      updatefiledate(wlib);
+      updatefiledate(wlib)
 
   if (COMPILER=="LINUXA"):
-    wlib = "built/lib/" + lib[:-4] + ".a"
+    wlib = PREFIX+"/lib/" + lib[:-4] + ".a"
     wobj = []
-    for x in obj: wobj.append("built/tmp/" + x[:-4] + ".o")
+    for x in obj: wobj.append(PREFIX+"/tmp/" + x[:-4] + ".o")
     if (older(wlib, wobj)):
       cmd = "ar cru " + wlib
-      for x in wobj: cmd=cmd+" "+x;
+      for x in wobj: cmd=cmd+" "+x
       oscmd(cmd)
-      updatefiledate(wlib);
+      updatefiledate(wlib)
 
 ########################################################################
 ##
@@ -1384,19 +1400,19 @@ def CompileLIB(lib=0, obj=[], opts=[]):
 ########################################################################
 
 def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
-  if (dll==0): sys.exit("Syntax error in CompileLink directive");
+  if (dll==0): sys.exit("Syntax error in CompileLink directive")
 
   if (COMPILER=="MSVC7"):
-    ALLTARGETS.append("built/bin/"+dll)
-    dll = "built/bin/"+dll
-    lib = "built/lib/"+dll[:-4]+".lib"
+    ALLTARGETS.append(PREFIX+"/bin/"+dll)
+    lib = PREFIX+"/lib/"+dll[:-4]+".lib"
+    dll = PREFIX+"/bin/"+dll
     wobj = []
     for x in obj:
       suffix = x[-4:]
-      if   (suffix==".obj"): wobj.append("built/tmp/"+x)
-      elif (suffix==".dll"): wobj.append("built/lib/"+x[:-4]+".lib")
-      elif (suffix==".lib"): wobj.append("built/lib/"+x)
-      elif (suffix==".res"): wobj.append("built/tmp/"+x)
+      if   (suffix==".obj"): wobj.append(PREFIX+"/tmp/"+x)
+      elif (suffix==".dll"): wobj.append(PREFIX+"/lib/"+x[:-4]+".lib")
+      elif (suffix==".lib"): wobj.append(PREFIX+"/lib/"+x)
+      elif (suffix==".res"): wobj.append(PREFIX+"/tmp/"+x)
       else: sys.exit("unknown suffix in object list.")
     if (older(dll, wobj+xdep)):
       cmd = 'link.exe /nologo /NODEFAULTLIB:LIBCI.LIB'
@@ -1406,13 +1422,13 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
       if (OPTIMIZE==3): cmd = cmd + " /DEBUG /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF "
       if (OPTIMIZE==4): cmd = cmd + " /DEBUG /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF /LTCG "
       cmd = cmd + " /MAP /MAPINFO:EXPORTS /MAPINFO:LINES /fixed:no /incremental:no /stack:4194304 "
-      if (opts.count("NOLIBCI")): cmd = cmd + " /NODEFAULTLIB:LIBCI.LIB ";
+      if (opts.count("NOLIBCI")): cmd = cmd + " /NODEFAULTLIB:LIBCI.LIB "
       if (PkgSelected(opts,"MAX5") or PkgSelected(opts,"MAX6")
           or PkgSelected(opts,"MAX7")):
-        cmd = cmd + ' /DEF:".\\pandatool\\src\\maxegg\\MaxEgg.def" '
+        cmd = cmd + ' /DEF:"./pandatool/src/maxegg/MaxEgg.def" '
       cmd = cmd + " /OUT:\"" + dll + "\" /IMPLIB:\"" + lib + "\" /MAP:NUL"
-      cmd = cmd + " /LIBPATH:built\\python\\libs "
-      for x in wobj: cmd = cmd + " " + x
+      cmd = cmd + " /LIBPATH:\""+PREFIX+"/python/libs\" "
+      for x in wobj: cmd = cmd + " \"" + x + "\""
       if (opts.count("D3D8") or opts.count("D3D9") or opts.count("DXDRAW") or opts.count("DXSOUND") or opts.count("DXGUID")):
         cmd = cmd + ' /LIBPATH:"' + DirectXSDK + 'lib/x86"'
         cmd = cmd + ' /LIBPATH:"' + DirectXSDK + 'lib"'
@@ -1432,61 +1448,71 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
       if (opts.count("WINGDI")):      cmd = cmd + " gdi32.lib"
       if (opts.count("ADVAPI")):      cmd = cmd + " advapi32.lib"
       if (opts.count("GLUT")):        cmd = cmd + " opengl32.lib glu32.lib"
-      if (PkgSelected(opts,"ZLIB")):     cmd = cmd + " " + THIRDPARTY + 'zlib/lib/libz.lib'
-      if (PkgSelected(opts,"PNG")):      cmd = cmd + " " + THIRDPARTY + 'png/lib/libpng.lib'
-      if (PkgSelected(opts,"JPEG")):     cmd = cmd + " " + THIRDPARTY + 'jpeg/lib/libjpeg.lib'
-      if (PkgSelected(opts,"TIFF")):     cmd = cmd + " " + THIRDPARTY + 'tiff/lib/libtiff.lib'
-      if (PkgSelected(opts,"VRPN")):     cmd = cmd + " " + THIRDPARTY + 'vrpn/lib/vrpn.lib'
-      if (PkgSelected(opts,"VRPN")):     cmd = cmd + " " + THIRDPARTY + 'vrpn/lib/quat.lib'
-      if (PkgSelected(opts,"FMOD")):     cmd = cmd + " " + THIRDPARTY + 'fmod/lib/fmod.lib'
-      if (PkgSelected(opts,"MILES")):    cmd = cmd + " " + THIRDPARTY + 'miles/lib/mss32.lib'
+      if (PkgSelected(opts,"ZLIB")):     cmd = cmd + " \"" + THIRDPARTY + 'zlib/lib/libz.lib"'
+      if (PkgSelected(opts,"PNG")):      cmd = cmd + " \"" + THIRDPARTY + 'png/lib/libpng.lib"'
+      if (PkgSelected(opts,"JPEG")):     cmd = cmd + " \"" + THIRDPARTY + 'jpeg/lib/libjpeg.lib"'
+      if (PkgSelected(opts,"TIFF")):     cmd = cmd + " \"" + THIRDPARTY + 'tiff/lib/libtiff.lib"'
+      if (PkgSelected(opts,"VRPN")):
+        cmd = cmd + " \"" + THIRDPARTY + 'vrpn/lib/vrpn.lib"'
+        cmd = cmd + " \"" + THIRDPARTY + 'vrpn/lib/quat.lib"'
+      if (PkgSelected(opts,"FMOD")):
+        cmd = cmd + " \"" + THIRDPARTY + 'fmod/lib/fmod.lib"'
+      if (PkgSelected(opts,"MILES")):
+        cmd = cmd + " \"" + THIRDPARTY + 'miles/lib/mss32.lib"'
       if (PkgSelected(opts,"NVIDIACG")):
-        if (opts.count("CGGL")): cmd = cmd + " " + THIRDPARTY + 'nvidiacg/lib/cgGL.lib'
-        cmd = cmd + " " + THIRDPARTY + 'nvidiacg/lib/cg.lib'
-      if (PkgSelected(opts,"HELIX")):    cmd = cmd + " " + THIRDPARTY + 'helix/lib/runtlib.lib'
-      if (PkgSelected(opts,"HELIX")):    cmd = cmd + " " + THIRDPARTY + 'helix/lib/syslib.lib'
-      if (PkgSelected(opts,"HELIX")):    cmd = cmd + " " + THIRDPARTY + 'helix/lib/contlib.lib'
-      if (PkgSelected(opts,"HELIX")):    cmd = cmd + " " + THIRDPARTY + 'helix/lib/debuglib.lib'
-      if (PkgSelected(opts,"HELIX")):    cmd = cmd + " " + THIRDPARTY + 'helix/lib/utillib.lib'
-      if (PkgSelected(opts,"HELIX")):    cmd = cmd + " " + THIRDPARTY + 'helix/lib/stlport_vc7.lib'
-      if (PkgSelected(opts,"NSPR")):     cmd = cmd + " " + THIRDPARTY + 'nspr/lib/libnspr4.lib'
-      if (PkgSelected(opts,"OPENSSL")):  cmd = cmd + " " + THIRDPARTY + 'openssl/lib/ssleay32.lib'
-      if (PkgSelected(opts,"OPENSSL")):  cmd = cmd + " " + THIRDPARTY + 'openssl/lib/libeay32.lib'
-      if (PkgSelected(opts,"FREETYPE")): cmd = cmd + " " + THIRDPARTY + 'freetype/lib/libfreetype.lib'
-      if (PkgSelected(opts,"FFTW")):     cmd = cmd + " " + THIRDPARTY + 'fftw/lib/rfftw.lib'
-      if (PkgSelected(opts,"FFTW")):     cmd = cmd + " " + THIRDPARTY + 'fftw/lib/fftw.lib'
-      if (PkgSelected(opts,"MAYA5")):    cmd = cmd + ' "' + Maya5SDK +  'lib/Foundation.lib"'
-      if (PkgSelected(opts,"MAYA5")):    cmd = cmd + ' "' + Maya5SDK +  'lib/OpenMaya.lib"'
-      if (PkgSelected(opts,"MAYA5")):    cmd = cmd + ' "' + Maya5SDK +  'lib/OpenMayaAnim.lib"'
-      if (PkgSelected(opts,"MAYA6")):    cmd = cmd + ' "' + Maya6SDK +  'lib/Foundation.lib"'
-      if (PkgSelected(opts,"MAYA6")):    cmd = cmd + ' "' + Maya6SDK +  'lib/OpenMaya.lib"'
-      if (PkgSelected(opts,"MAYA6")):    cmd = cmd + ' "' + Maya6SDK +  'lib/OpenMayaAnim.lib"'
+        if (opts.count("CGGL")): cmd = cmd + " \"" + THIRDPARTY + 'nvidiacg/lib/cgGL.lib"'
+        cmd = cmd + " \"" + THIRDPARTY + 'nvidiacg/lib/cg.lib"'
+      if (PkgSelected(opts,"HELIX")):
+        cmd = cmd + " \"" + THIRDPARTY + 'helix/lib/runtlib.lib"'
+        cmd = cmd + " \"" + THIRDPARTY + 'helix/lib/syslib.lib"'
+        cmd = cmd + " \"" + THIRDPARTY + 'helix/lib/contlib.lib"'
+        cmd = cmd + " \"" + THIRDPARTY + 'helix/lib/debuglib.lib"'
+        cmd = cmd + " \"" + THIRDPARTY + 'helix/lib/utillib.lib"'
+        cmd = cmd + " \"" + THIRDPARTY + 'helix/lib/stlport_vc7.lib"'
+      if (PkgSelected(opts,"NSPR")):
+        cmd = cmd + " \"" + THIRDPARTY + 'nspr/lib/libnspr4.lib"'
+      if (PkgSelected(opts,"SSL")):
+        cmd = cmd + " \"" + THIRDPARTY + 'ssl/lib/ssleay32.lib"'
+        cmd = cmd + " \"" + THIRDPARTY + 'ssl/lib/libeay32.lib"'
+      if (PkgSelected(opts,"FREETYPE")):
+        cmd = cmd + " \"" + THIRDPARTY + 'freetype/lib/libfreetype.lib"'
+      if (PkgSelected(opts,"FFTW")):
+        cmd = cmd + " \"" + THIRDPARTY + 'fftw/lib/rfftw.lib"'
+        cmd = cmd + " \"" + THIRDPARTY + 'fftw/lib/fftw.lib"'
+      if (PkgSelected(opts,"MAYA5")):
+        cmd = cmd + ' \""' + Maya5SDK +  'lib/Foundation.lib"'
+        cmd = cmd + ' \""' + Maya5SDK +  'lib/OpenMaya.lib"'
+        cmd = cmd + ' \""' + Maya5SDK +  'lib/OpenMayaAnim.lib"'
+      if (PkgSelected(opts,"MAYA6")):
+        cmd = cmd + ' \""' + Maya6SDK +  'lib/Foundation.lib"'
+        cmd = cmd + ' \""' + Maya6SDK +  'lib/OpenMaya.lib"'
+        cmd = cmd + ' \""' + Maya6SDK +  'lib/OpenMayaAnim.lib"'
       for max in ["MAX5","MAX6","MAX7"]:
         if PkgSelected(opts,max):
-          cmd = cmd + ' "' + MAXSDK[max] +  'lib\\core.lib"'
-          cmd = cmd + ' "' + MAXSDK[max] +  'lib\\mesh.lib"'
-          cmd = cmd + ' "' + MAXSDK[max] +  'lib\\maxutil.lib"'
-          cmd = cmd + ' "' + MAXSDK[max] +  'lib\\paramblk2.lib"'
+          cmd = cmd + ' "' + MAXSDK[max] +  'lib/core.lib"'
+          cmd = cmd + ' "' + MAXSDK[max] +  'lib/mesh.lib"'
+          cmd = cmd + ' "' + MAXSDK[max] +  'lib/maxutil.lib"'
+          cmd = cmd + ' "' + MAXSDK[max] +  'lib/paramblk2.lib"'
       if 1:
         oscmd(cmd)
       else:
-        WriteFile('built\\tmp\\linkcontrol',cmd)
+        WriteFile(PREFIX+'/tmp/linkcontrol',cmd)
         print "link.exe "+cmd
-        oscmd("link.exe @built\\tmp\\linkcontrol")
-      updatefiledate(dll);
+        oscmd("link.exe @built/tmp/linkcontrol")
+      updatefiledate(dll)
       if ((OPTIMIZE == 1) and (dll[-4:]==".dll")):
-        CopyFile(dll[:-4]+"_d.dll", dll);
+        CopyFile(dll[:-4]+"_d.dll", dll)
 
   if (COMPILER=="LINUXA"):
-    ALLTARGETS.append("built/lib/"+dll[:-4]+".so")
-    if (dll[-4:]==".exe"): wdll = "built/bin/"+dll[:-4]
-    else: wdll = "built/lib/"+dll[:-4]+".so"
+    ALLTARGETS.append(PREFIX+"/lib/"+dll[:-4]+".so")
+    if (dll[-4:]==".exe"): wdll = PREFIX+"/bin/"+dll[:-4]
+    else: wdll = PREFIX+"/lib/"+dll[:-4]+".so"
     wobj = []
     for x in obj:
       suffix = x[-4:]
-      if   (suffix==".obj"): wobj.append("built/tmp/"+x[:-4]+".o")
-      elif (suffix==".dll"): wobj.append("built/lib/"+x[:-4]+".so")
-      elif (suffix==".lib"): wobj.append("built/lib/"+x[:-4]+".a")
+      if   (suffix==".obj"): wobj.append(PREFIX+"/tmp/"+x[:-4]+".o")
+      elif (suffix==".dll"): wobj.append(PREFIX+"/lib/"+x[:-4]+".so")
+      elif (suffix==".lib"): wobj.append(PREFIX+"/lib/"+x[:-4]+".a")
       else: sys.exit("unknown suffix in object list.")
     if (older(wdll, wobj+xdep)):
       if (dll[-4:]==".exe"): cmd = "g++ -o " + wdll + " -Lbuilt/lib"
@@ -1512,7 +1538,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
       if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -L"' + THIRDPARTY + 'fftw/lib" -lrfftw -lfftw'
       if (opts.count("GLUT")):           cmd = cmd + " -lGL -lGLU"
       oscmd(cmd)
-      updatefiledate(dll);
+      updatefiledate(dll)
 
 ##########################################################################################
 #
@@ -1523,64 +1549,45 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
 #
 ##########################################################################################
 
-CxxIgnoreHeader["Python.h"] = 1;
-CxxIgnoreHeader["Python/Python.h"] = 1;
-CxxIgnoreHeader["alloc.h"] = 1;
-CxxIgnoreHeader["ctype.h"] = 1;
-CxxIgnoreHeader["stdlib.h"] = 1;
-CxxIgnoreHeader["ipc_thread.h"] = 1;
-CxxIgnoreHeader["platform/symbian/symbian_print.h"] = 1;
-CxxIgnoreHeader["hxtypes.h"] = 1;
-CxxIgnoreHeader["hxcom.h"] = 1;
-CxxIgnoreHeader["hxiids.h"] = 1;
-CxxIgnoreHeader["hxpiids.h"] = 1;
-CxxIgnoreHeader["dsound.h"] = 1;
-CxxIgnoreHeader["hlxosstr.h"] = 1;
-CxxIgnoreHeader["ddraw.h"] = 1;
-CxxIgnoreHeader["mss.h"] = 1;
-CxxIgnoreHeader["MacSocket.h"] = 1;
-CxxIgnoreHeader["textureTransition.h"] = 1;
-CxxIgnoreHeader["transformTransition.h"] = 1;
-CxxIgnoreHeader["billboardTransition.h"] = 1;
-CxxIgnoreHeader["transformTransition.h"] = 1;
-CxxIgnoreHeader["transparencyTransition.h"] = 1;
-CxxIgnoreHeader["allTransitionsWrapper.h"] = 1;
-CxxIgnoreHeader["allTransitionsWrapper.h"] = 1;
-CxxIgnoreHeader["namedNode.h"] = 1;
-CxxIgnoreHeader["renderRelation.h"] = 1;
-CxxIgnoreHeader["renderTraverser.h"] = 1;
-CxxIgnoreHeader["get_rel_pos.h"] = 1;
-CxxIgnoreHeader["Max.h"] = 1;
-CxxIgnoreHeader["iparamb2.h"] = 1;
-CxxIgnoreHeader["iparamm2.h"] = 1;
-CxxIgnoreHeader["istdplug.h"] = 1;
-CxxIgnoreHeader["iskin.h"] = 1;
-CxxIgnoreHeader["stdmat.h"] = 1;
-CxxIgnoreHeader["phyexp.h"] = 1;
-CxxIgnoreHeader["bipexp.h"] = 1;
-CxxIgnoreHeader["windows.h"] = 1;
-CxxIgnoreHeader["windef.h"] = 1;
-CxxIgnoreHeader["modstack.h"] = 1;
-CxxIgnoreHeader["afxres.h"] = 1;
-
-
-##########################################################################################
-#
-# Create the directory tree
-#
-##########################################################################################
-
-MakeDirectory("built")
-MakeDirectory("built/bin")
-MakeDirectory("built/lib")
-MakeDirectory("built/etc")
-MakeDirectory("built/include")
-MakeDirectory("built/include/parser-inc")
-MakeDirectory("built/include/parser-inc/openssl")
-MakeDirectory("built/include/parser-inc/Cg")
-MakeDirectory("built/include/openssl")
-MakeDirectory("built/direct")
-MakeDirectory("built/tmp")
+CxxIgnoreHeader["Python.h"] = 1
+CxxIgnoreHeader["Python/Python.h"] = 1
+CxxIgnoreHeader["alloc.h"] = 1
+CxxIgnoreHeader["ctype.h"] = 1
+CxxIgnoreHeader["stdlib.h"] = 1
+CxxIgnoreHeader["ipc_thread.h"] = 1
+CxxIgnoreHeader["platform/symbian/symbian_print.h"] = 1
+CxxIgnoreHeader["hxtypes.h"] = 1
+CxxIgnoreHeader["hxcom.h"] = 1
+CxxIgnoreHeader["hxiids.h"] = 1
+CxxIgnoreHeader["hxpiids.h"] = 1
+CxxIgnoreHeader["dsound.h"] = 1
+CxxIgnoreHeader["hlxosstr.h"] = 1
+CxxIgnoreHeader["ddraw.h"] = 1
+CxxIgnoreHeader["mss.h"] = 1
+CxxIgnoreHeader["MacSocket.h"] = 1
+CxxIgnoreHeader["textureTransition.h"] = 1
+CxxIgnoreHeader["transformTransition.h"] = 1
+CxxIgnoreHeader["billboardTransition.h"] = 1
+CxxIgnoreHeader["transformTransition.h"] = 1
+CxxIgnoreHeader["transparencyTransition.h"] = 1
+CxxIgnoreHeader["allTransitionsWrapper.h"] = 1
+CxxIgnoreHeader["allTransitionsWrapper.h"] = 1
+CxxIgnoreHeader["namedNode.h"] = 1
+CxxIgnoreHeader["renderRelation.h"] = 1
+CxxIgnoreHeader["renderTraverser.h"] = 1
+CxxIgnoreHeader["get_rel_pos.h"] = 1
+CxxIgnoreHeader["Max.h"] = 1
+CxxIgnoreHeader["iparamb2.h"] = 1
+CxxIgnoreHeader["iparamm2.h"] = 1
+CxxIgnoreHeader["istdplug.h"] = 1
+CxxIgnoreHeader["iskin.h"] = 1
+CxxIgnoreHeader["stdmat.h"] = 1
+CxxIgnoreHeader["phyexp.h"] = 1
+CxxIgnoreHeader["bipexp.h"] = 1
+CxxIgnoreHeader["windows.h"] = 1
+CxxIgnoreHeader["windef.h"] = 1
+CxxIgnoreHeader["modstack.h"] = 1
+CxxIgnoreHeader["afxres.h"] = 1
 
 ##########################################################################################
 #
@@ -1603,7 +1610,7 @@ conf = conf.replace("VERSION2",str(VERSION2))
 conf = conf.replace("VERSION3",str(VERSION3))
 conf = conf.replace("NVERSION",str(VERSION1*1000000+VERSION2*1000+VERSION3))
 
-ConditionalWriteFile('built/include/pandaVersion.h',conf);
+ConditionalWriteFile(PREFIX+'/include/pandaVersion.h',conf)
 
 conf="""
 # include "dtoolbase.h"
@@ -1615,7 +1622,7 @@ conf = conf.replace("VERSION2",str(VERSION2))
 conf = conf.replace("VERSION3",str(VERSION3))
 conf = conf.replace("NVERSION",str(VERSION1*1000000+VERSION2*1000+VERSION3))
 
-ConditionalWriteFile('built/include/checkPandaVersion.cxx',conf);
+ConditionalWriteFile(PREFIX+'/include/checkPandaVersion.cxx',conf)
 
 conf="""
 # include "dtoolbase.h"
@@ -1634,7 +1641,7 @@ conf = conf.replace("VERSION2",str(VERSION2))
 conf = conf.replace("VERSION3",str(VERSION3))
 conf = conf.replace("NVERSION",str(VERSION1*1000000+VERSION2*1000+VERSION3))
 
-ConditionalWriteFile('built/include/checkPandaVersion.h',conf);
+ConditionalWriteFile(PREFIX+'/include/checkPandaVersion.h',conf)
 
 ##########################################################################################
 #
@@ -1650,7 +1657,7 @@ if    (os.path.isdir(srcdir1)): __path__[0] = srcdir1
 elif  (os.path.isdir(srcdir2)): __path__[0] = srcdir2
 else: sys.exit("Cannot find the 'direct' tree")
 """
-ConditionalWriteFile('built/direct/__init__.py', DIRECTINIT)
+ConditionalWriteFile(PREFIX+'/direct/__init__.py', DIRECTINIT)
 
 ##########################################################################################
 #
@@ -1659,8 +1666,8 @@ ConditionalWriteFile('built/direct/__init__.py', DIRECTINIT)
 ##########################################################################################
 
 for x in PACKAGES:
-  if (OMIT.count(x)): ConditionalWriteFile('built/tmp/dtool_have_'+x.lower()+'.dat',"0\n")
-  else:               ConditionalWriteFile('built/tmp/dtool_have_'+x.lower()+'.dat',"1\n")
+  if (OMIT.count(x)): ConditionalWriteFile(PREFIX+'/tmp/dtool_have_'+x.lower()+'.dat',"0\n")
+  else:               ConditionalWriteFile(PREFIX+'/tmp/dtool_have_'+x.lower()+'.dat',"1\n")
 
 ##########################################################################################
 #
@@ -1673,7 +1680,7 @@ for key,win,unix in DTOOLDEFAULTS:
   val = DTOOLCONFIG[key]
   if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
   else               : conf = conf + "#define " + key + " " + val + "\n"
-ConditionalWriteFile('built/include/dtool_config.h',conf);
+ConditionalWriteFile(PREFIX+'/include/dtool_config.h',conf)
 
 ##########################################################################################
 #
@@ -1681,7 +1688,7 @@ ConditionalWriteFile('built/include/dtool_config.h',conf);
 #
 ##########################################################################################
 
-CopyFile('built/', 'Config.prc')
+CopyFile(PREFIX+'/', 'Config.prc')
 
 ##########################################################################################
 #
@@ -1693,16 +1700,16 @@ for pkg in PACKAGES:
   if (OMIT.count(pkg)==0):
     if (sys.platform == "win32"):
       if (os.path.exists(STDTHIRDPARTY+pkg.lower()+"/bin")):
-        CopyAllFiles("built/bin/", STDTHIRDPARTY + pkg.lower() + "/bin/")
+        CopyAllFiles(PREFIX+"/bin/", STDTHIRDPARTY + pkg.lower() + "/bin/")
     else:
       if (os.path.exists(STDTHIRDPARTY + pkg.lower() + "/lib")):
-        CopyAllFiles("built/lib/", STDTHIRDPARTY + pkg.lower() + "/lib/")
+        CopyAllFiles(PREFIX+"/lib/", STDTHIRDPARTY + pkg.lower() + "/lib/")
 
 if (os.path.exists(STDTHIRDPARTY+"extras/bin")):
-  CopyAllFiles("built/bin/", STDTHIRDPARTY + "extras/bin/")
+  CopyAllFiles(PREFIX+"/bin/", STDTHIRDPARTY + "extras/bin/")
 if (sys.platform == "win32"):
-  CopyTree('built/python', STDTHIRDPARTY+'win-python')
-  CopyFile('built/bin/', STDTHIRDPARTY+'win-python/python22.dll')
+  CopyTree(PREFIX+'/python', STDTHIRDPARTY+'win-python')
+  CopyFile(PREFIX+'/bin/', STDTHIRDPARTY+'win-python/python22.dll')
 
 ########################################################################
 ##
@@ -1726,1656 +1733,1656 @@ CompileLink(opts=['WINUSER'], dll='genpycode.exe', obj=['genpycode.obj'])
 #
 ########################################################################
 
-ConditionalWriteFile('built/include/ctl3d.h', '/* dummy file to make MAX happy */')
+ConditionalWriteFile(PREFIX+'/include/ctl3d.h', '/* dummy file to make MAX happy */')
 
-CopyAllFiles('built/include/parser-inc/','dtool/src/parser-inc/')
-CopyAllFiles('built/include/parser-inc/openssl/','dtool/src/parser-inc/')
-CopyFile('built/include/parser-inc/Cg/','dtool/src/parser-inc/cg.h')
-CopyFile('built/include/parser-inc/Cg/','dtool/src/parser-inc/cgGL.h')
+CopyAllFiles(PREFIX+'/include/parser-inc/','dtool/src/parser-inc/')
+CopyAllFiles(PREFIX+'/include/parser-inc/openssl/','dtool/src/parser-inc/')
+CopyFile(PREFIX+'/include/parser-inc/Cg/','dtool/src/parser-inc/cg.h')
+CopyFile(PREFIX+'/include/parser-inc/Cg/','dtool/src/parser-inc/cgGL.h')
 
-CopyFile('built/include/','dtool/src/dtoolbase/cmath.I')
-CopyFile('built/include/','dtool/src/dtoolbase/cmath.h')
-CopyFile('built/include/','dtool/src/dtoolbase/dallocator.T')
-CopyFile('built/include/','dtool/src/dtoolbase/dallocator.h')
-CopyFile('built/include/','dtool/src/dtoolbase/dtoolbase.h')
-CopyFile('built/include/','dtool/src/dtoolbase/dtoolbase_cc.h')
-CopyFile('built/include/','dtool/src/dtoolbase/dtoolsymbols.h')
-CopyFile('built/include/','dtool/src/dtoolbase/fakestringstream.h')
-CopyFile('built/include/','dtool/src/dtoolbase/nearly_zero.h')
-CopyFile('built/include/','dtool/src/dtoolbase/stl_compares.I')
-CopyFile('built/include/','dtool/src/dtoolbase/stl_compares.h')
-CopyFile('built/include/','dtool/src/dtoolbase/pallocator.T')
-CopyFile('built/include/','dtool/src/dtoolbase/pallocator.h')
-CopyFile('built/include/','dtool/src/dtoolbase/pdeque.h')
-CopyFile('built/include/','dtool/src/dtoolbase/plist.h')
-CopyFile('built/include/','dtool/src/dtoolbase/pmap.h')
-CopyFile('built/include/','dtool/src/dtoolbase/pset.h')
-CopyFile('built/include/','dtool/src/dtoolbase/pvector.h')
-CopyFile('built/include/','dtool/src/dtoolutil/executionEnvironment.I')
-CopyFile('built/include/','dtool/src/dtoolutil/executionEnvironment.h')
-CopyFile('built/include/','dtool/src/dtoolutil/filename.I')
-CopyFile('built/include/','dtool/src/dtoolutil/filename.h')
-CopyFile('built/include/','dtool/src/dtoolutil/load_dso.h')
-CopyFile('built/include/','dtool/src/dtoolutil/dSearchPath.I')
-CopyFile('built/include/','dtool/src/dtoolutil/dSearchPath.h')
-CopyFile('built/include/','dtool/src/dtoolutil/pfstream.h')
-CopyFile('built/include/','dtool/src/dtoolutil/pfstream.I')
-CopyFile('built/include/','dtool/src/dtoolutil/vector_string.h')
-CopyFile('built/include/','dtool/src/dtoolutil/gnu_getopt.h')
-CopyFile('built/include/','dtool/src/dtoolutil/pfstreamBuf.h')
-CopyFile('built/include/','dtool/src/dtoolutil/vector_src.cxx')
-CopyFile('built/include/','dtool/src/dtoolutil/vector_src.h')
-CopyFile('built/include/','dtool/src/dtoolutil/pandaSystem.h')
-CopyFile('built/include/','dtool/src/prc/config_prc.h')
-CopyFile('built/include/','dtool/src/prc/configDeclaration.I')
-CopyFile('built/include/','dtool/src/prc/configDeclaration.h')
-CopyFile('built/include/','dtool/src/prc/configFlags.I')
-CopyFile('built/include/','dtool/src/prc/configFlags.h')
-CopyFile('built/include/','dtool/src/prc/configPage.I')
-CopyFile('built/include/','dtool/src/prc/configPage.h')
-CopyFile('built/include/','dtool/src/prc/configPageManager.I')
-CopyFile('built/include/','dtool/src/prc/configPageManager.h')
-CopyFile('built/include/','dtool/src/prc/configVariable.I')
-CopyFile('built/include/','dtool/src/prc/configVariable.h')
-CopyFile('built/include/','dtool/src/prc/configVariableBase.I')
-CopyFile('built/include/','dtool/src/prc/configVariableBase.h')
-CopyFile('built/include/','dtool/src/prc/configVariableBool.I')
-CopyFile('built/include/','dtool/src/prc/configVariableBool.h')
-CopyFile('built/include/','dtool/src/prc/configVariableCore.I')
-CopyFile('built/include/','dtool/src/prc/configVariableCore.h')
-CopyFile('built/include/','dtool/src/prc/configVariableDouble.I')
-CopyFile('built/include/','dtool/src/prc/configVariableDouble.h')
-CopyFile('built/include/','dtool/src/prc/configVariableEnum.I')
-CopyFile('built/include/','dtool/src/prc/configVariableEnum.h')
-CopyFile('built/include/','dtool/src/prc/configVariableFilename.I')
-CopyFile('built/include/','dtool/src/prc/configVariableFilename.h')
-CopyFile('built/include/','dtool/src/prc/configVariableInt.I')
-CopyFile('built/include/','dtool/src/prc/configVariableInt.h')
-CopyFile('built/include/','dtool/src/prc/configVariableList.I')
-CopyFile('built/include/','dtool/src/prc/configVariableList.h')
-CopyFile('built/include/','dtool/src/prc/configVariableManager.I')
-CopyFile('built/include/','dtool/src/prc/configVariableManager.h')
-CopyFile('built/include/','dtool/src/prc/configVariableSearchPath.I')
-CopyFile('built/include/','dtool/src/prc/configVariableSearchPath.h')
-CopyFile('built/include/','dtool/src/prc/configVariableString.I')
-CopyFile('built/include/','dtool/src/prc/configVariableString.h')
-CopyFile('built/include/','dtool/src/prc/globPattern.I')
-CopyFile('built/include/','dtool/src/prc/globPattern.h')
-CopyFile('built/include/','dtool/src/prc/notify.I')
-CopyFile('built/include/','dtool/src/prc/notify.h')
-CopyFile('built/include/','dtool/src/prc/notifyCategory.I')
-CopyFile('built/include/','dtool/src/prc/notifyCategory.h')
-CopyFile('built/include/','dtool/src/prc/notifyCategoryProxy.I')
-CopyFile('built/include/','dtool/src/prc/notifyCategoryProxy.h')
-CopyFile('built/include/','dtool/src/prc/notifySeverity.h')
-CopyFile('built/include/','dtool/src/prc/prcKeyRegistry.I')
-CopyFile('built/include/','dtool/src/prc/prcKeyRegistry.h')
-CopyFile('built/include/','dtool/src/dconfig/configTable.I')
-CopyFile('built/include/','dtool/src/dconfig/configTable.h')
-CopyFile('built/include/','dtool/src/dconfig/config_dconfig.h')
-CopyFile('built/include/','dtool/src/dconfig/config_setup.h')
-CopyFile('built/include/','dtool/src/dconfig/dconfig.I')
-CopyFile('built/include/','dtool/src/dconfig/dconfig.h')
-CopyFile('built/include/','dtool/src/dconfig/serialization.I')
-CopyFile('built/include/','dtool/src/dconfig/serialization.h')
-CopyFile('built/include/','dtool/src/dconfig/symbolEnt.I')
-CopyFile('built/include/','dtool/src/dconfig/symbolEnt.h')
-CopyFile('built/include/','dtool/src/interrogatedb/interrogate_interface.h')
-CopyFile('built/include/','dtool/src/interrogatedb/interrogate_request.h')
-CopyFile('built/include/','dtool/src/interrogatedb/vector_int.h')
-CopyFile('built/include/','dtool/src/interrogatedb/config_interrogatedb.h')
-CopyFile('built/include/','dtool/src/pystub/pystub.h')
-CopyFile('built/include/','dtool/src/prckeys/signPrcFile_src.cxx')
-CopyFile('built/include/','panda/src/pandabase/pandabase.h')
-CopyFile('built/include/','panda/src/pandabase/pandasymbols.h')
-CopyFile('built/include/','panda/src/express/atomicAdjustDummyImpl.h')
-CopyFile('built/include/','panda/src/express/atomicAdjustDummyImpl.I')
-CopyFile('built/include/','panda/src/express/atomicAdjust.h')
-CopyFile('built/include/','panda/src/express/atomicAdjust.I')
-CopyFile('built/include/','panda/src/express/atomicAdjustImpl.h')
-CopyFile('built/include/','panda/src/express/atomicAdjustNsprImpl.h')
-CopyFile('built/include/','panda/src/express/atomicAdjustNsprImpl.I')
-CopyFile('built/include/','panda/src/express/bigEndian.h')
-CopyFile('built/include/','panda/src/express/buffer.I')
-CopyFile('built/include/','panda/src/express/buffer.h')
-CopyFile('built/include/','panda/src/express/checksumHashGenerator.I')
-CopyFile('built/include/','panda/src/express/checksumHashGenerator.h')
-CopyFile('built/include/','panda/src/express/circBuffer.I')
-CopyFile('built/include/','panda/src/express/circBuffer.h')
-CopyFile('built/include/','panda/src/express/clockObject.I')
-CopyFile('built/include/','panda/src/express/clockObject.h')
-CopyFile('built/include/','panda/src/express/conditionVarDummyImpl.h')
-CopyFile('built/include/','panda/src/express/conditionVarDummyImpl.I')
-CopyFile('built/include/','panda/src/express/conditionVar.h')
-CopyFile('built/include/','panda/src/express/conditionVar.I')
-CopyFile('built/include/','panda/src/express/conditionVarImpl.h')
-CopyFile('built/include/','panda/src/express/conditionVarNsprImpl.h')
-CopyFile('built/include/','panda/src/express/conditionVarNsprImpl.I')
-CopyFile('built/include/','panda/src/express/config_express.h')
-CopyFile('built/include/','panda/src/express/datagram.I')
-CopyFile('built/include/','panda/src/express/datagram.h')
-CopyFile('built/include/','panda/src/express/datagramGenerator.I')
-CopyFile('built/include/','panda/src/express/datagramGenerator.h')
-CopyFile('built/include/','panda/src/express/datagramIterator.I')
-CopyFile('built/include/','panda/src/express/datagramIterator.h')
-CopyFile('built/include/','panda/src/express/datagramSink.I')
-CopyFile('built/include/','panda/src/express/datagramSink.h')
-CopyFile('built/include/','panda/src/express/dcast.T')
-CopyFile('built/include/','panda/src/express/dcast.h')
-CopyFile('built/include/','panda/src/express/encryptStreamBuf.h')
-CopyFile('built/include/','panda/src/express/encryptStreamBuf.I')
-CopyFile('built/include/','panda/src/express/encryptStream.h')
-CopyFile('built/include/','panda/src/express/encryptStream.I')
-CopyFile('built/include/','panda/src/express/error_utils.h')
-CopyFile('built/include/','panda/src/express/hashGeneratorBase.I')
-CopyFile('built/include/','panda/src/express/hashGeneratorBase.h')
-CopyFile('built/include/','panda/src/express/hashVal.I')
-CopyFile('built/include/','panda/src/express/hashVal.h')
-CopyFile('built/include/','panda/src/express/indent.I')
-CopyFile('built/include/','panda/src/express/indent.h')
-CopyFile('built/include/','panda/src/express/indirectLess.I')
-CopyFile('built/include/','panda/src/express/indirectLess.h')
-CopyFile('built/include/','panda/src/express/littleEndian.h')
-CopyFile('built/include/','panda/src/express/memoryInfo.I')
-CopyFile('built/include/','panda/src/express/memoryInfo.h')
-CopyFile('built/include/','panda/src/express/memoryUsage.I')
-CopyFile('built/include/','panda/src/express/memoryUsage.h')
-CopyFile('built/include/','panda/src/express/memoryUsagePointerCounts.I')
-CopyFile('built/include/','panda/src/express/memoryUsagePointerCounts.h')
-CopyFile('built/include/','panda/src/express/memoryUsagePointers.I')
-CopyFile('built/include/','panda/src/express/memoryUsagePointers.h')
-CopyFile('built/include/','panda/src/express/multifile.I')
-CopyFile('built/include/','panda/src/express/multifile.h')
-CopyFile('built/include/','panda/src/express/mutexDummyImpl.h')
-CopyFile('built/include/','panda/src/express/mutexDummyImpl.I')
-CopyFile('built/include/','panda/src/express/pmutex.h')
-CopyFile('built/include/','panda/src/express/mutexHolder.h')
-CopyFile('built/include/','panda/src/express/mutexHolder.I')
-CopyFile('built/include/','panda/src/express/pmutex.I')
-CopyFile('built/include/','panda/src/express/mutexImpl.h')
-CopyFile('built/include/','panda/src/express/mutexNsprImpl.h')
-CopyFile('built/include/','panda/src/express/mutexNsprImpl.I')
-CopyFile('built/include/','panda/src/express/namable.I')
-CopyFile('built/include/','panda/src/express/namable.h')
-CopyFile('built/include/','panda/src/express/nativeNumericData.I')
-CopyFile('built/include/','panda/src/express/nativeNumericData.h')
-CopyFile('built/include/','panda/src/express/numeric_types.h')
-CopyFile('built/include/','panda/src/express/ordered_vector.h')
-CopyFile('built/include/','panda/src/express/ordered_vector.I')
-CopyFile('built/include/','panda/src/express/ordered_vector.T')
-CopyFile('built/include/','panda/src/express/password_hash.h')
-CopyFile('built/include/','panda/src/express/patchfile.I')
-CopyFile('built/include/','panda/src/express/patchfile.h')
-CopyFile('built/include/','panda/src/express/pointerTo.I')
-CopyFile('built/include/','panda/src/express/pointerTo.h')
-CopyFile('built/include/','panda/src/express/pointerToArray.I')
-CopyFile('built/include/','panda/src/express/pointerToArray.h')
-CopyFile('built/include/','panda/src/express/pointerToBase.I')
-CopyFile('built/include/','panda/src/express/pointerToBase.h')
-CopyFile('built/include/','panda/src/express/pointerToVoid.I')
-CopyFile('built/include/','panda/src/express/pointerToVoid.h')
-CopyFile('built/include/','panda/src/express/profileTimer.I')
-CopyFile('built/include/','panda/src/express/profileTimer.h')
-CopyFile('built/include/','panda/src/express/pta_uchar.h')
-CopyFile('built/include/','panda/src/express/ramfile.I')
-CopyFile('built/include/','panda/src/express/ramfile.h')
-CopyFile('built/include/','panda/src/express/referenceCount.I')
-CopyFile('built/include/','panda/src/express/referenceCount.h')
-CopyFile('built/include/','panda/src/express/register_type.I')
-CopyFile('built/include/','panda/src/express/register_type.h')
-CopyFile('built/include/','panda/src/express/reversedNumericData.I')
-CopyFile('built/include/','panda/src/express/reversedNumericData.h')
-CopyFile('built/include/','panda/src/express/selectThreadImpl.h')
-CopyFile('built/include/','panda/src/express/streamReader.I')
-CopyFile('built/include/','panda/src/express/streamReader.h')
-CopyFile('built/include/','panda/src/express/streamWriter.I')
-CopyFile('built/include/','panda/src/express/streamWriter.h')
-CopyFile('built/include/','panda/src/express/stringDecoder.h')
-CopyFile('built/include/','panda/src/express/stringDecoder.I')
-CopyFile('built/include/','panda/src/express/subStream.I')
-CopyFile('built/include/','panda/src/express/subStream.h')
-CopyFile('built/include/','panda/src/express/subStreamBuf.h')
-CopyFile('built/include/','panda/src/express/textEncoder.h')
-CopyFile('built/include/','panda/src/express/textEncoder.I')
-CopyFile('built/include/','panda/src/express/threadDummyImpl.h')
-CopyFile('built/include/','panda/src/express/threadDummyImpl.I')
-CopyFile('built/include/','panda/src/express/thread.h')
-CopyFile('built/include/','panda/src/express/thread.I')
-CopyFile('built/include/','panda/src/express/threadImpl.h')
-CopyFile('built/include/','panda/src/express/threadNsprImpl.h')
-CopyFile('built/include/','panda/src/express/threadNsprImpl.I')
-CopyFile('built/include/','panda/src/express/threadPriority.h')
-CopyFile('built/include/','panda/src/express/tokenBoard.I')
-CopyFile('built/include/','panda/src/express/tokenBoard.h')
-CopyFile('built/include/','panda/src/express/trueClock.I')
-CopyFile('built/include/','panda/src/express/trueClock.h')
-CopyFile('built/include/','panda/src/express/typeHandle.I')
-CopyFile('built/include/','panda/src/express/typeHandle.h')
-CopyFile('built/include/','panda/src/express/typedObject.I')
-CopyFile('built/include/','panda/src/express/typedObject.h')
-CopyFile('built/include/','panda/src/express/typedReferenceCount.I')
-CopyFile('built/include/','panda/src/express/typedReferenceCount.h')
-CopyFile('built/include/','panda/src/express/typedef.h')
-CopyFile('built/include/','panda/src/express/typeRegistry.I')
-CopyFile('built/include/','panda/src/express/typeRegistry.h')
-CopyFile('built/include/','panda/src/express/typeRegistryNode.I')
-CopyFile('built/include/','panda/src/express/typeRegistryNode.h')
-CopyFile('built/include/','panda/src/express/unicodeLatinMap.h')
-CopyFile('built/include/','panda/src/express/vector_uchar.h')
-CopyFile('built/include/','panda/src/express/virtualFileComposite.h')
-CopyFile('built/include/','panda/src/express/virtualFileComposite.I')
-CopyFile('built/include/','panda/src/express/virtualFile.h')
-CopyFile('built/include/','panda/src/express/virtualFile.I')
-CopyFile('built/include/','panda/src/express/virtualFileList.I')
-CopyFile('built/include/','panda/src/express/virtualFileList.h')
-CopyFile('built/include/','panda/src/express/virtualFileMount.h')
-CopyFile('built/include/','panda/src/express/virtualFileMount.I')
-CopyFile('built/include/','panda/src/express/virtualFileMountMultifile.h')
-CopyFile('built/include/','panda/src/express/virtualFileMountMultifile.I')
-CopyFile('built/include/','panda/src/express/virtualFileMountSystem.h')
-CopyFile('built/include/','panda/src/express/virtualFileMountSystem.I')
-CopyFile('built/include/','panda/src/express/virtualFileSimple.h')
-CopyFile('built/include/','panda/src/express/virtualFileSimple.I')
-CopyFile('built/include/','panda/src/express/virtualFileSystem.h')
-CopyFile('built/include/','panda/src/express/virtualFileSystem.I')
-CopyFile('built/include/','panda/src/express/weakPointerTo.I')
-CopyFile('built/include/','panda/src/express/weakPointerTo.h')
-CopyFile('built/include/','panda/src/express/weakPointerToBase.I')
-CopyFile('built/include/','panda/src/express/weakPointerToBase.h')
-CopyFile('built/include/','panda/src/express/weakPointerToVoid.I')
-CopyFile('built/include/','panda/src/express/weakPointerToVoid.h')
-CopyFile('built/include/','panda/src/express/weakReferenceList.I')
-CopyFile('built/include/','panda/src/express/weakReferenceList.h')
-CopyFile('built/include/','panda/src/express/windowsRegistry.h')
-CopyFile('built/include/','panda/src/express/zStream.I')
-CopyFile('built/include/','panda/src/express/zStream.h')
-CopyFile('built/include/','panda/src/express/zStreamBuf.h')
-CopyFile('built/include/','panda/src/downloader/asyncUtility.h')
-CopyFile('built/include/','panda/src/downloader/asyncUtility.I')
-CopyFile('built/include/','panda/src/downloader/bioPtr.I')
-CopyFile('built/include/','panda/src/downloader/bioPtr.h')
-CopyFile('built/include/','panda/src/downloader/bioStreamPtr.I')
-CopyFile('built/include/','panda/src/downloader/bioStreamPtr.h')
-CopyFile('built/include/','panda/src/downloader/bioStream.I')
-CopyFile('built/include/','panda/src/downloader/bioStream.h')
-CopyFile('built/include/','panda/src/downloader/bioStreamBuf.h')
-CopyFile('built/include/','panda/src/downloader/chunkedStream.I')
-CopyFile('built/include/','panda/src/downloader/chunkedStream.h')
-CopyFile('built/include/','panda/src/downloader/chunkedStreamBuf.h')
-CopyFile('built/include/','panda/src/downloader/config_downloader.h')
-CopyFile('built/include/','panda/src/downloader/decompressor.h')
-CopyFile('built/include/','panda/src/downloader/decompressor.I')
-CopyFile('built/include/','panda/src/downloader/documentSpec.h')
-CopyFile('built/include/','panda/src/downloader/documentSpec.I')
-CopyFile('built/include/','panda/src/downloader/download_utils.h')
-CopyFile('built/include/','panda/src/downloader/downloadDb.h')
-CopyFile('built/include/','panda/src/downloader/downloadDb.I')
-CopyFile('built/include/','panda/src/downloader/extractor.h')
-CopyFile('built/include/','panda/src/downloader/httpAuthorization.I')
-CopyFile('built/include/','panda/src/downloader/httpAuthorization.h')
-CopyFile('built/include/','panda/src/downloader/httpBasicAuthorization.I')
-CopyFile('built/include/','panda/src/downloader/httpBasicAuthorization.h')
-CopyFile('built/include/','panda/src/downloader/httpChannel.I')
-CopyFile('built/include/','panda/src/downloader/httpChannel.h')
-CopyFile('built/include/','panda/src/downloader/httpClient.I')
-CopyFile('built/include/','panda/src/downloader/httpClient.h')
-CopyFile('built/include/','panda/src/downloader/httpCookie.I')
-CopyFile('built/include/','panda/src/downloader/httpCookie.h')
-CopyFile('built/include/','panda/src/downloader/httpDate.I')
-CopyFile('built/include/','panda/src/downloader/httpDate.h')
-CopyFile('built/include/','panda/src/downloader/httpDigestAuthorization.I')
-CopyFile('built/include/','panda/src/downloader/httpDigestAuthorization.h')
-CopyFile('built/include/','panda/src/downloader/httpEntityTag.I')
-CopyFile('built/include/','panda/src/downloader/httpEntityTag.h')
-CopyFile('built/include/','panda/src/downloader/httpEnum.h')
-CopyFile('built/include/','panda/src/downloader/identityStream.I')
-CopyFile('built/include/','panda/src/downloader/identityStream.h')
-CopyFile('built/include/','panda/src/downloader/identityStreamBuf.h')
-CopyFile('built/include/','panda/src/downloader/multiplexStream.I')
-CopyFile('built/include/','panda/src/downloader/multiplexStream.h')
-CopyFile('built/include/','panda/src/downloader/multiplexStreamBuf.I')
-CopyFile('built/include/','panda/src/downloader/multiplexStreamBuf.h')
-CopyFile('built/include/','panda/src/downloader/patcher.h')
-CopyFile('built/include/','panda/src/downloader/patcher.I')
-CopyFile('built/include/','panda/src/downloader/socketStream.h')
-CopyFile('built/include/','panda/src/downloader/socketStream.I')
-CopyFile('built/include/','panda/src/downloader/ssl_utils.h')
-CopyFile('built/include/','panda/src/downloader/urlSpec.h')
-CopyFile('built/include/','panda/src/downloader/urlSpec.I')
-CopyFile('built/include/','panda/src/putil/bam.h')
-CopyFile('built/include/','panda/src/putil/bamReader.I')
-CopyFile('built/include/','panda/src/putil/bamReader.h')
-CopyFile('built/include/','panda/src/putil/bamReaderParam.I')
-CopyFile('built/include/','panda/src/putil/bamReaderParam.h')
-CopyFile('built/include/','panda/src/putil/bamWriter.I')
-CopyFile('built/include/','panda/src/putil/bamWriter.h')
-CopyFile('built/include/','panda/src/putil/bitMask.I')
-CopyFile('built/include/','panda/src/putil/bitMask.h')
-CopyFile('built/include/','panda/src/putil/buttonHandle.I')
-CopyFile('built/include/','panda/src/putil/buttonHandle.h')
-CopyFile('built/include/','panda/src/putil/buttonRegistry.I')
-CopyFile('built/include/','panda/src/putil/buttonRegistry.h')
-CopyFile('built/include/','panda/src/putil/collideMask.h')
-CopyFile('built/include/','panda/src/putil/portalMask.h')
-CopyFile('built/include/','panda/src/putil/compareTo.I')
-CopyFile('built/include/','panda/src/putil/compareTo.h')
-CopyFile('built/include/','panda/src/putil/config_util.h')
-CopyFile('built/include/','panda/src/putil/configurable.h')
-CopyFile('built/include/','panda/src/putil/factory.I')
-CopyFile('built/include/','panda/src/putil/factory.h')
-CopyFile('built/include/','panda/src/putil/cachedTypedWritableReferenceCount.h')
-CopyFile('built/include/','panda/src/putil/cachedTypedWritableReferenceCount.I')
-CopyFile('built/include/','panda/src/putil/cycleData.h')
-CopyFile('built/include/','panda/src/putil/cycleData.I')
-CopyFile('built/include/','panda/src/putil/cycleDataReader.h')
-CopyFile('built/include/','panda/src/putil/cycleDataReader.I')
-CopyFile('built/include/','panda/src/putil/cycleDataWriter.h')
-CopyFile('built/include/','panda/src/putil/cycleDataWriter.I')
-CopyFile('built/include/','panda/src/putil/datagramInputFile.I')
-CopyFile('built/include/','panda/src/putil/datagramInputFile.h')
-CopyFile('built/include/','panda/src/putil/datagramOutputFile.I')
-CopyFile('built/include/','panda/src/putil/datagramOutputFile.h')
-CopyFile('built/include/','panda/src/putil/drawMask.h')
-CopyFile('built/include/','panda/src/putil/factoryBase.I')
-CopyFile('built/include/','panda/src/putil/factoryBase.h')
-CopyFile('built/include/','panda/src/putil/factoryParam.I')
-CopyFile('built/include/','panda/src/putil/factoryParam.h')
-CopyFile('built/include/','panda/src/putil/factoryParams.I')
-CopyFile('built/include/','panda/src/putil/factoryParams.h')
-CopyFile('built/include/','panda/src/putil/firstOfPairCompare.I')
-CopyFile('built/include/','panda/src/putil/firstOfPairCompare.h')
-CopyFile('built/include/','panda/src/putil/firstOfPairLess.I')
-CopyFile('built/include/','panda/src/putil/firstOfPairLess.h')
-CopyFile('built/include/','panda/src/putil/globalPointerRegistry.I')
-CopyFile('built/include/','panda/src/putil/globalPointerRegistry.h')
-CopyFile('built/include/','panda/src/putil/indirectCompareNames.I')
-CopyFile('built/include/','panda/src/putil/indirectCompareNames.h')
-CopyFile('built/include/','panda/src/putil/indirectCompareTo.I')
-CopyFile('built/include/','panda/src/putil/indirectCompareTo.h')
-CopyFile('built/include/','panda/src/putil/ioPtaDatagramFloat.h')
-CopyFile('built/include/','panda/src/putil/ioPtaDatagramInt.h')
-CopyFile('built/include/','panda/src/putil/ioPtaDatagramShort.h')
-CopyFile('built/include/','panda/src/putil/iterator_types.h')
-CopyFile('built/include/','panda/src/putil/keyboardButton.h')
-CopyFile('built/include/','panda/src/putil/lineStream.I')
-CopyFile('built/include/','panda/src/putil/lineStream.h')
-CopyFile('built/include/','panda/src/putil/lineStreamBuf.I')
-CopyFile('built/include/','panda/src/putil/lineStreamBuf.h')
-CopyFile('built/include/','panda/src/putil/load_prc_file.h')
-CopyFile('built/include/','panda/src/putil/modifierButtons.I')
-CopyFile('built/include/','panda/src/putil/modifierButtons.h')
-CopyFile('built/include/','panda/src/putil/mouseButton.h')
-CopyFile('built/include/','panda/src/putil/mouseData.I')
-CopyFile('built/include/','panda/src/putil/mouseData.h')
-CopyFile('built/include/','panda/src/putil/nameUniquifier.I')
-CopyFile('built/include/','panda/src/putil/nameUniquifier.h')
-CopyFile('built/include/','panda/src/putil/pipeline.h')
-CopyFile('built/include/','panda/src/putil/pipeline.I')
-CopyFile('built/include/','panda/src/putil/pipelineCycler.h')
-CopyFile('built/include/','panda/src/putil/pipelineCycler.I')
-CopyFile('built/include/','panda/src/putil/pipelineCyclerBase.h')
-CopyFile('built/include/','panda/src/putil/pipelineCyclerBase.I')
-CopyFile('built/include/','panda/src/putil/pta_double.h')
-CopyFile('built/include/','panda/src/putil/pta_float.h')
-CopyFile('built/include/','panda/src/putil/pta_int.h')
-CopyFile('built/include/','panda/src/putil/pta_ushort.h')
-CopyFile('built/include/','panda/src/putil/string_utils.I')
-CopyFile('built/include/','panda/src/putil/string_utils.h')
-CopyFile('built/include/','panda/src/putil/timedCycle.I')
-CopyFile('built/include/','panda/src/putil/timedCycle.h')
-CopyFile('built/include/','panda/src/putil/typedWritable.I')
-CopyFile('built/include/','panda/src/putil/typedWritable.h')
-CopyFile('built/include/','panda/src/putil/typedWritableReferenceCount.I')
-CopyFile('built/include/','panda/src/putil/typedWritableReferenceCount.h')
-CopyFile('built/include/','panda/src/putil/updateSeq.I')
-CopyFile('built/include/','panda/src/putil/updateSeq.h')
-CopyFile('built/include/','panda/src/putil/uniqueIdAllocator.h')
-CopyFile('built/include/','panda/src/putil/vector_double.h')
-CopyFile('built/include/','panda/src/putil/vector_float.h')
-CopyFile('built/include/','panda/src/putil/vector_typedWritable.h')
-CopyFile('built/include/','panda/src/putil/vector_ushort.h')
-CopyFile('built/include/','panda/src/putil/vector_writable.h')
-CopyFile('built/include/','panda/src/putil/writableConfigurable.h')
-CopyFile('built/include/','panda/src/putil/writableParam.I')
-CopyFile('built/include/','panda/src/putil/writableParam.h')
-CopyFile('built/include/','panda/src/audio/config_audio.h')
-CopyFile('built/include/','panda/src/audio/audio.h')
-CopyFile('built/include/','panda/src/audio/audioManager.h')
-CopyFile('built/include/','panda/src/audio/audioSound.h')
-CopyFile('built/include/','panda/src/audio/nullAudioManager.h')
-CopyFile('built/include/','panda/src/audio/nullAudioSound.h')
-CopyFile('built/include/','panda/src/event/buttonEvent.I')
-CopyFile('built/include/','panda/src/event/buttonEvent.h')
-CopyFile('built/include/','panda/src/event/buttonEventList.I')
-CopyFile('built/include/','panda/src/event/buttonEventList.h')
-CopyFile('built/include/','panda/src/event/event.I')
-CopyFile('built/include/','panda/src/event/event.h')
-CopyFile('built/include/','panda/src/event/eventHandler.h')
-CopyFile('built/include/','panda/src/event/eventHandler.I')
-CopyFile('built/include/','panda/src/event/eventParameter.I')
-CopyFile('built/include/','panda/src/event/eventParameter.h')
-CopyFile('built/include/','panda/src/event/eventQueue.I')
-CopyFile('built/include/','panda/src/event/eventQueue.h')
-CopyFile('built/include/','panda/src/event/eventReceiver.h')
-CopyFile('built/include/','panda/src/event/pt_Event.h')
-CopyFile('built/include/','panda/src/event/throw_event.I')
-CopyFile('built/include/','panda/src/event/throw_event.h')
-CopyFile('built/include/','panda/src/linmath/compose_matrix.h')
-CopyFile('built/include/','panda/src/linmath/compose_matrix_src.I')
-CopyFile('built/include/','panda/src/linmath/compose_matrix_src.h')
-CopyFile('built/include/','panda/src/linmath/config_linmath.h')
-CopyFile('built/include/','panda/src/linmath/coordinateSystem.h')
-CopyFile('built/include/','panda/src/linmath/dbl2fltnames.h')
-CopyFile('built/include/','panda/src/linmath/dblnames.h')
-CopyFile('built/include/','panda/src/linmath/deg_2_rad.h')
-CopyFile('built/include/','panda/src/linmath/flt2dblnames.h')
-CopyFile('built/include/','panda/src/linmath/fltnames.h')
-CopyFile('built/include/','panda/src/linmath/ioPtaDatagramLinMath.I')
-CopyFile('built/include/','panda/src/linmath/ioPtaDatagramLinMath.h')
-CopyFile('built/include/','panda/src/linmath/lcast_to.h')
-CopyFile('built/include/','panda/src/linmath/lcast_to_src.I')
-CopyFile('built/include/','panda/src/linmath/lcast_to_src.h')
-CopyFile('built/include/','panda/src/linmath/lmat_ops.h')
-CopyFile('built/include/','panda/src/linmath/lmat_ops_src.I')
-CopyFile('built/include/','panda/src/linmath/lmat_ops_src.h')
-CopyFile('built/include/','panda/src/linmath/lmatrix.h')
-CopyFile('built/include/','panda/src/linmath/lmatrix3.h')
-CopyFile('built/include/','panda/src/linmath/lmatrix3_src.I')
-CopyFile('built/include/','panda/src/linmath/lmatrix3_src.h')
-CopyFile('built/include/','panda/src/linmath/lmatrix4.h')
-CopyFile('built/include/','panda/src/linmath/lmatrix4_src.I')
-CopyFile('built/include/','panda/src/linmath/lmatrix4_src.h')
-CopyFile('built/include/','panda/src/linmath/lorientation.h')
-CopyFile('built/include/','panda/src/linmath/lorientation_src.I')
-CopyFile('built/include/','panda/src/linmath/lorientation_src.h')
-CopyFile('built/include/','panda/src/linmath/lpoint2.h')
-CopyFile('built/include/','panda/src/linmath/lpoint2_src.I')
-CopyFile('built/include/','panda/src/linmath/lpoint2_src.h')
-CopyFile('built/include/','panda/src/linmath/lpoint3.h')
-CopyFile('built/include/','panda/src/linmath/lpoint3_src.I')
-CopyFile('built/include/','panda/src/linmath/lpoint3_src.h')
-CopyFile('built/include/','panda/src/linmath/lpoint4.h')
-CopyFile('built/include/','panda/src/linmath/lpoint4_src.I')
-CopyFile('built/include/','panda/src/linmath/lpoint4_src.h')
-CopyFile('built/include/','panda/src/linmath/lquaternion.h')
-CopyFile('built/include/','panda/src/linmath/lquaternion_src.I')
-CopyFile('built/include/','panda/src/linmath/lquaternion_src.h')
-CopyFile('built/include/','panda/src/linmath/lrotation.h')
-CopyFile('built/include/','panda/src/linmath/lrotation_src.I')
-CopyFile('built/include/','panda/src/linmath/lrotation_src.h')
-CopyFile('built/include/','panda/src/linmath/luse.I')
-CopyFile('built/include/','panda/src/linmath/luse.h')
-CopyFile('built/include/','panda/src/linmath/lvec2_ops.h')
-CopyFile('built/include/','panda/src/linmath/lvec2_ops_src.I')
-CopyFile('built/include/','panda/src/linmath/lvec2_ops_src.h')
-CopyFile('built/include/','panda/src/linmath/lvec3_ops.h')
-CopyFile('built/include/','panda/src/linmath/lvec3_ops_src.I')
-CopyFile('built/include/','panda/src/linmath/lvec3_ops_src.h')
-CopyFile('built/include/','panda/src/linmath/lvec4_ops.h')
-CopyFile('built/include/','panda/src/linmath/lvec4_ops_src.I')
-CopyFile('built/include/','panda/src/linmath/lvec4_ops_src.h')
-CopyFile('built/include/','panda/src/linmath/lvecBase2.h')
-CopyFile('built/include/','panda/src/linmath/lvecBase2_src.I')
-CopyFile('built/include/','panda/src/linmath/lvecBase2_src.h')
-CopyFile('built/include/','panda/src/linmath/lvecBase3.h')
-CopyFile('built/include/','panda/src/linmath/lvecBase3_src.I')
-CopyFile('built/include/','panda/src/linmath/lvecBase3_src.h')
-CopyFile('built/include/','panda/src/linmath/lvecBase4.h')
-CopyFile('built/include/','panda/src/linmath/lvecBase4_src.I')
-CopyFile('built/include/','panda/src/linmath/lvecBase4_src.h')
-CopyFile('built/include/','panda/src/linmath/lvector2.h')
-CopyFile('built/include/','panda/src/linmath/lvector2_src.I')
-CopyFile('built/include/','panda/src/linmath/lvector2_src.h')
-CopyFile('built/include/','panda/src/linmath/lvector3.h')
-CopyFile('built/include/','panda/src/linmath/lvector3_src.I')
-CopyFile('built/include/','panda/src/linmath/lvector3_src.h')
-CopyFile('built/include/','panda/src/linmath/lvector4.h')
-CopyFile('built/include/','panda/src/linmath/lvector4_src.I')
-CopyFile('built/include/','panda/src/linmath/lvector4_src.h')
-CopyFile('built/include/','panda/src/linmath/mathNumbers.h')
-CopyFile('built/include/','panda/src/linmath/mathNumbers.I')
-CopyFile('built/include/','panda/src/linmath/pta_Colorf.h')
-CopyFile('built/include/','panda/src/linmath/pta_Normalf.h')
-CopyFile('built/include/','panda/src/linmath/pta_TexCoordf.h')
-CopyFile('built/include/','panda/src/linmath/pta_Vertexf.h')
-CopyFile('built/include/','panda/src/linmath/vector_Colorf.h')
-CopyFile('built/include/','panda/src/linmath/vector_LPoint2f.h')
-CopyFile('built/include/','panda/src/linmath/vector_LVecBase3f.h')
-CopyFile('built/include/','panda/src/linmath/vector_Normalf.h')
-CopyFile('built/include/','panda/src/linmath/vector_TexCoordf.h')
-CopyFile('built/include/','panda/src/linmath/vector_Vertexf.h')
-CopyFile('built/include/','panda/src/mathutil/boundingHexahedron.I')
-CopyFile('built/include/','panda/src/mathutil/boundingHexahedron.h')
-CopyFile('built/include/','panda/src/mathutil/boundingLine.I')
-CopyFile('built/include/','panda/src/mathutil/boundingLine.h')
-CopyFile('built/include/','panda/src/mathutil/boundingSphere.I')
-CopyFile('built/include/','panda/src/mathutil/boundingSphere.h')
-CopyFile('built/include/','panda/src/mathutil/boundingVolume.I')
-CopyFile('built/include/','panda/src/mathutil/boundingVolume.h')
-CopyFile('built/include/','panda/src/mathutil/config_mathutil.h')
-CopyFile('built/include/','panda/src/mathutil/fftCompressor.h')
-CopyFile('built/include/','panda/src/mathutil/finiteBoundingVolume.h')
-CopyFile('built/include/','panda/src/mathutil/frustum.h')
-CopyFile('built/include/','panda/src/mathutil/frustum_src.I')
-CopyFile('built/include/','panda/src/mathutil/frustum_src.h')
-CopyFile('built/include/','panda/src/mathutil/geometricBoundingVolume.I')
-CopyFile('built/include/','panda/src/mathutil/geometricBoundingVolume.h')
-CopyFile('built/include/','panda/src/mathutil/look_at.h')
-CopyFile('built/include/','panda/src/mathutil/look_at_src.I')
-CopyFile('built/include/','panda/src/mathutil/look_at_src.h')
-CopyFile('built/include/','panda/src/mathutil/linmath_events.h')
-CopyFile('built/include/','panda/src/mathutil/mathHelpers.I')
-CopyFile('built/include/','panda/src/mathutil/mathHelpers.h')
-CopyFile('built/include/','panda/src/mathutil/omniBoundingVolume.I')
-CopyFile('built/include/','panda/src/mathutil/omniBoundingVolume.h')
-CopyFile('built/include/','panda/src/mathutil/plane.h')
-CopyFile('built/include/','panda/src/mathutil/plane_src.I')
-CopyFile('built/include/','panda/src/mathutil/plane_src.h')
-CopyFile('built/include/','panda/src/mathutil/rotate_to.h')
-CopyFile('built/include/','panda/src/gsgbase/graphicsStateGuardianBase.h')
-CopyFile('built/include/','panda/src/pnmimage/config_pnmimage.h')
-CopyFile('built/include/','panda/src/pnmimage/pnmFileType.h')
-CopyFile('built/include/','panda/src/pnmimage/pnmFileTypeRegistry.h')
-CopyFile('built/include/','panda/src/pnmimage/pnmImage.I')
-CopyFile('built/include/','panda/src/pnmimage/pnmImage.h')
-CopyFile('built/include/','panda/src/pnmimage/pnmImageHeader.I')
-CopyFile('built/include/','panda/src/pnmimage/pnmImageHeader.h')
-CopyFile('built/include/','panda/src/pnmimage/pnmReader.I')
-CopyFile('built/include/','panda/src/pnmimage/pnmReader.h')
-CopyFile('built/include/','panda/src/pnmimage/pnmWriter.I')
-CopyFile('built/include/','panda/src/pnmimage/pnmWriter.h')
-CopyFile('built/include/','panda/src/pnmimage/pnmimage_base.h')
-CopyFile('built/include/','panda/src/pnmimagetypes/sgi.h')
-CopyFile('built/include/','panda/src/net/config_net.h')
-CopyFile('built/include/','panda/src/net/connection.h')
-CopyFile('built/include/','panda/src/net/connectionListener.h')
-CopyFile('built/include/','panda/src/net/connectionManager.h')
-CopyFile('built/include/','panda/src/net/connectionReader.h')
-CopyFile('built/include/','panda/src/net/connectionWriter.h')
-CopyFile('built/include/','panda/src/net/datagramQueue.h')
-CopyFile('built/include/','panda/src/net/datagramTCPHeader.I')
-CopyFile('built/include/','panda/src/net/datagramTCPHeader.h')
-CopyFile('built/include/','panda/src/net/datagramUDPHeader.I')
-CopyFile('built/include/','panda/src/net/datagramUDPHeader.h')
-CopyFile('built/include/','panda/src/net/netAddress.h')
-CopyFile('built/include/','panda/src/net/netDatagram.I')
-CopyFile('built/include/','panda/src/net/netDatagram.h')
-CopyFile('built/include/','panda/src/net/pprerror.h')
-CopyFile('built/include/','panda/src/net/queuedConnectionListener.I')
-CopyFile('built/include/','panda/src/net/queuedConnectionListener.h')
-CopyFile('built/include/','panda/src/net/queuedConnectionManager.h')
-CopyFile('built/include/','panda/src/net/queuedConnectionReader.h')
-CopyFile('built/include/','panda/src/net/queuedReturn.I')
-CopyFile('built/include/','panda/src/net/queuedReturn.h')
-CopyFile('built/include/','panda/src/net/recentConnectionReader.h')
-CopyFile('built/include/','panda/src/pstatclient/config_pstats.h')
-CopyFile('built/include/','panda/src/pstatclient/pStatClient.I')
-CopyFile('built/include/','panda/src/pstatclient/pStatClient.h')
-CopyFile('built/include/','panda/src/pstatclient/pStatClientImpl.I')
-CopyFile('built/include/','panda/src/pstatclient/pStatClientImpl.h')
-CopyFile('built/include/','panda/src/pstatclient/pStatClientVersion.I')
-CopyFile('built/include/','panda/src/pstatclient/pStatClientVersion.h')
-CopyFile('built/include/','panda/src/pstatclient/pStatClientControlMessage.h')
-CopyFile('built/include/','panda/src/pstatclient/pStatCollector.I')
-CopyFile('built/include/','panda/src/pstatclient/pStatCollector.h')
-CopyFile('built/include/','panda/src/pstatclient/pStatCollectorDef.h')
-CopyFile('built/include/','panda/src/pstatclient/pStatFrameData.I')
-CopyFile('built/include/','panda/src/pstatclient/pStatFrameData.h')
-CopyFile('built/include/','panda/src/pstatclient/pStatProperties.h')
-CopyFile('built/include/','panda/src/pstatclient/pStatServerControlMessage.h')
-CopyFile('built/include/','panda/src/pstatclient/pStatThread.I')
-CopyFile('built/include/','panda/src/pstatclient/pStatThread.h')
-CopyFile('built/include/','panda/src/pstatclient/pStatTimer.I')
-CopyFile('built/include/','panda/src/pstatclient/pStatTimer.h')
-CopyFile('built/include/','panda/src/gobj/boundedObject.I')
-CopyFile('built/include/','panda/src/gobj/boundedObject.h')
-CopyFile('built/include/','panda/src/gobj/config_gobj.h')
-CopyFile('built/include/','panda/src/gobj/drawable.h')
-CopyFile('built/include/','panda/src/gobj/geom.I')
-CopyFile('built/include/','panda/src/gobj/geom.h')
-CopyFile('built/include/','panda/src/gobj/textureContext.I')
-CopyFile('built/include/','panda/src/gobj/textureContext.h')
-CopyFile('built/include/','panda/src/gobj/geomLine.h')
-CopyFile('built/include/','panda/src/gobj/geomLinestrip.h')
-CopyFile('built/include/','panda/src/gobj/geomPoint.h')
-CopyFile('built/include/','panda/src/gobj/geomPolygon.h')
-CopyFile('built/include/','panda/src/gobj/geomQuad.h')
-CopyFile('built/include/','panda/src/gobj/geomSphere.h')
-CopyFile('built/include/','panda/src/gobj/geomSprite.I')
-CopyFile('built/include/','panda/src/gobj/geomSprite.h')
-CopyFile('built/include/','panda/src/gobj/geomTri.h')
-CopyFile('built/include/','panda/src/gobj/geomTrifan.h')
-CopyFile('built/include/','panda/src/gobj/geomTristrip.h')
-CopyFile('built/include/','panda/src/gobj/geomprimitives.h')
-CopyFile('built/include/','panda/src/gobj/imageBuffer.I')
-CopyFile('built/include/','panda/src/gobj/imageBuffer.h')
-CopyFile('built/include/','panda/src/gobj/material.I')
-CopyFile('built/include/','panda/src/gobj/material.h')
-CopyFile('built/include/','panda/src/gobj/materialPool.I')
-CopyFile('built/include/','panda/src/gobj/materialPool.h')
-CopyFile('built/include/','panda/src/gobj/matrixLens.I')
-CopyFile('built/include/','panda/src/gobj/matrixLens.h')
-CopyFile('built/include/','panda/src/gobj/orthographicLens.I')
-CopyFile('built/include/','panda/src/gobj/orthographicLens.h')
-CopyFile('built/include/','panda/src/gobj/perspectiveLens.I')
-CopyFile('built/include/','panda/src/gobj/perspectiveLens.h')
-CopyFile('built/include/','panda/src/gobj/pixelBuffer.I')
-CopyFile('built/include/','panda/src/gobj/pixelBuffer.h')
-CopyFile('built/include/','panda/src/gobj/preparedGraphicsObjects.I')
-CopyFile('built/include/','panda/src/gobj/preparedGraphicsObjects.h')
-CopyFile('built/include/','panda/src/gobj/lens.h')
-CopyFile('built/include/','panda/src/gobj/lens.I')
-CopyFile('built/include/','panda/src/gobj/savedContext.I')
-CopyFile('built/include/','panda/src/gobj/savedContext.h')
-CopyFile('built/include/','panda/src/gobj/texture.I')
-CopyFile('built/include/','panda/src/gobj/texture.h')
-CopyFile('built/include/','panda/src/gobj/texturePool.I')
-CopyFile('built/include/','panda/src/gobj/texturePool.h')
-CopyFile('built/include/','panda/src/gobj/texCoordName.I')
-CopyFile('built/include/','panda/src/gobj/texCoordName.h')
-CopyFile('built/include/','panda/src/gobj/textureStage.I')
-CopyFile('built/include/','panda/src/gobj/textureStage.h')
-CopyFile('built/include/','panda/src/lerp/lerp.h')
-CopyFile('built/include/','panda/src/lerp/lerpblend.h')
-CopyFile('built/include/','panda/src/lerp/lerpfunctor.h')
-CopyFile('built/include/','panda/src/pgraph/accumulatedAttribs.I')
-CopyFile('built/include/','panda/src/pgraph/accumulatedAttribs.h')
-CopyFile('built/include/','panda/src/pgraph/alphaTestAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/alphaTestAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/antialiasAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/antialiasAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/ambientLight.I')
-CopyFile('built/include/','panda/src/pgraph/ambientLight.h')
-CopyFile('built/include/','panda/src/pgraph/auxSceneData.I')
-CopyFile('built/include/','panda/src/pgraph/auxSceneData.h')
-CopyFile('built/include/','panda/src/pgraph/bamFile.I')
-CopyFile('built/include/','panda/src/pgraph/bamFile.h')
-CopyFile('built/include/','panda/src/pgraph/billboardEffect.I')
-CopyFile('built/include/','panda/src/pgraph/billboardEffect.h')
-CopyFile('built/include/','panda/src/pgraph/binCullHandler.I')
-CopyFile('built/include/','panda/src/pgraph/binCullHandler.h')
-CopyFile('built/include/','panda/src/pgraph/camera.I')
-CopyFile('built/include/','panda/src/pgraph/camera.h')
-CopyFile('built/include/','panda/src/pgraph/clipPlaneAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/clipPlaneAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/colorAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/colorAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/colorBlendAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/colorBlendAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/colorScaleAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/colorScaleAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/colorWriteAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/colorWriteAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/compassEffect.I')
-CopyFile('built/include/','panda/src/pgraph/compassEffect.h')
-CopyFile('built/include/','panda/src/pgraph/config_pgraph.h')
-CopyFile('built/include/','panda/src/pgraph/cullBin.I')
-CopyFile('built/include/','panda/src/pgraph/cullBin.h')
-CopyFile('built/include/','panda/src/pgraph/cullBinAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/cullBinAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/cullBinBackToFront.I')
-CopyFile('built/include/','panda/src/pgraph/cullBinBackToFront.h')
-CopyFile('built/include/','panda/src/pgraph/cullBinFixed.I')
-CopyFile('built/include/','panda/src/pgraph/cullBinFixed.h')
-CopyFile('built/include/','panda/src/pgraph/cullBinFrontToBack.I')
-CopyFile('built/include/','panda/src/pgraph/cullBinFrontToBack.h')
-CopyFile('built/include/','panda/src/pgraph/cullBinManager.I')
-CopyFile('built/include/','panda/src/pgraph/cullBinManager.h')
-CopyFile('built/include/','panda/src/pgraph/cullBinUnsorted.I')
-CopyFile('built/include/','panda/src/pgraph/cullBinUnsorted.h')
-CopyFile('built/include/','panda/src/pgraph/cullFaceAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/cullFaceAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/cullHandler.I')
-CopyFile('built/include/','panda/src/pgraph/cullHandler.h')
-CopyFile('built/include/','panda/src/pgraph/cullResult.I')
-CopyFile('built/include/','panda/src/pgraph/cullResult.h')
-CopyFile('built/include/','panda/src/pgraph/cullTraverser.I')
-CopyFile('built/include/','panda/src/pgraph/cullTraverser.h')
-CopyFile('built/include/','panda/src/pgraph/cullTraverserData.I')
-CopyFile('built/include/','panda/src/pgraph/cullTraverserData.h')
-CopyFile('built/include/','panda/src/pgraph/cullableObject.I')
-CopyFile('built/include/','panda/src/pgraph/cullableObject.h')
-CopyFile('built/include/','panda/src/pgraph/decalEffect.I')
-CopyFile('built/include/','panda/src/pgraph/decalEffect.h')
-CopyFile('built/include/','panda/src/pgraph/depthOffsetAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/depthOffsetAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/depthTestAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/depthTestAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/depthWriteAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/depthWriteAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/directionalLight.I')
-CopyFile('built/include/','panda/src/pgraph/directionalLight.h')
-CopyFile('built/include/','panda/src/pgraph/drawCullHandler.I')
-CopyFile('built/include/','panda/src/pgraph/drawCullHandler.h')
-CopyFile('built/include/','panda/src/pgraph/fadeLodNode.I')
-CopyFile('built/include/','panda/src/pgraph/fadeLodNode.h')
-CopyFile('built/include/','panda/src/pgraph/fadeLodNodeData.h')
-CopyFile('built/include/','panda/src/pgraph/fog.I')
-CopyFile('built/include/','panda/src/pgraph/fog.h')
-CopyFile('built/include/','panda/src/pgraph/fogAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/fogAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/geomNode.I')
-CopyFile('built/include/','panda/src/pgraph/geomNode.h')
-CopyFile('built/include/','panda/src/pgraph/geomTransformer.I')
-CopyFile('built/include/','panda/src/pgraph/geomTransformer.h')
-CopyFile('built/include/','panda/src/pgraph/lensNode.I')
-CopyFile('built/include/','panda/src/pgraph/lensNode.h')
-CopyFile('built/include/','panda/src/pgraph/light.I')
-CopyFile('built/include/','panda/src/pgraph/light.h')
-CopyFile('built/include/','panda/src/pgraph/lightAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/lightAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/lightLensNode.I')
-CopyFile('built/include/','panda/src/pgraph/lightLensNode.h')
-CopyFile('built/include/','panda/src/pgraph/lightNode.I')
-CopyFile('built/include/','panda/src/pgraph/lightNode.h')
-CopyFile('built/include/','panda/src/pgraph/loader.I')
-CopyFile('built/include/','panda/src/pgraph/loader.h')
-CopyFile('built/include/','panda/src/pgraph/loaderFileType.h')
-CopyFile('built/include/','panda/src/pgraph/loaderFileTypeBam.h')
-CopyFile('built/include/','panda/src/pgraph/loaderFileTypeRegistry.h')
-CopyFile('built/include/','panda/src/pgraph/lodNode.I')
-CopyFile('built/include/','panda/src/pgraph/lodNode.h')
-CopyFile('built/include/','panda/src/pgraph/materialAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/materialAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/modelNode.I')
-CopyFile('built/include/','panda/src/pgraph/modelNode.h')
-CopyFile('built/include/','panda/src/pgraph/modelPool.I')
-CopyFile('built/include/','panda/src/pgraph/modelPool.h')
-CopyFile('built/include/','panda/src/pgraph/modelRoot.I')
-CopyFile('built/include/','panda/src/pgraph/modelRoot.h')
-CopyFile('built/include/','panda/src/pgraph/nodePath.I')
-CopyFile('built/include/','panda/src/pgraph/nodePath.h')
-CopyFile('built/include/','panda/src/pgraph/nodePathCollection.I')
-CopyFile('built/include/','panda/src/pgraph/nodePathCollection.h')
-CopyFile('built/include/','panda/src/pgraph/nodePathComponent.I')
-CopyFile('built/include/','panda/src/pgraph/nodePathComponent.h')
-CopyFile('built/include/','panda/src/pgraph/nodePathLerps.h')
-CopyFile('built/include/','panda/src/pgraph/pandaNode.I')
-CopyFile('built/include/','panda/src/pgraph/pandaNode.h')
-CopyFile('built/include/','panda/src/pgraph/planeNode.I')
-CopyFile('built/include/','panda/src/pgraph/planeNode.h')
-CopyFile('built/include/','panda/src/pgraph/pointLight.I')
-CopyFile('built/include/','panda/src/pgraph/pointLight.h')
-CopyFile('built/include/','panda/src/pgraph/polylightNode.I')
-CopyFile('built/include/','panda/src/pgraph/polylightNode.h')
-CopyFile('built/include/','panda/src/pgraph/polylightEffect.I')
-CopyFile('built/include/','panda/src/pgraph/polylightEffect.h')
-CopyFile('built/include/','panda/src/pgraph/portalNode.I')
-CopyFile('built/include/','panda/src/pgraph/portalNode.h')
-CopyFile('built/include/','panda/src/pgraph/portalClipper.I')
-CopyFile('built/include/','panda/src/pgraph/portalClipper.h')
-CopyFile('built/include/','panda/src/pgraph/renderAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/renderAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/renderEffect.I')
-CopyFile('built/include/','panda/src/pgraph/renderEffect.h')
-CopyFile('built/include/','panda/src/pgraph/renderEffects.I')
-CopyFile('built/include/','panda/src/pgraph/renderEffects.h')
-CopyFile('built/include/','panda/src/pgraph/renderModeAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/renderModeAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/renderState.I')
-CopyFile('built/include/','panda/src/pgraph/renderState.h')
-CopyFile('built/include/','panda/src/pgraph/rescaleNormalAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/rescaleNormalAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/sceneGraphAnalyzer.h')
-CopyFile('built/include/','panda/src/pgraph/sceneGraphReducer.I')
-CopyFile('built/include/','panda/src/pgraph/sceneGraphReducer.h')
-CopyFile('built/include/','panda/src/pgraph/sceneSetup.I')
-CopyFile('built/include/','panda/src/pgraph/sceneSetup.h')
-CopyFile('built/include/','panda/src/pgraph/selectiveChildNode.I')
-CopyFile('built/include/','panda/src/pgraph/selectiveChildNode.h')
-CopyFile('built/include/','panda/src/pgraph/sequenceNode.I')
-CopyFile('built/include/','panda/src/pgraph/sequenceNode.h')
-CopyFile('built/include/','panda/src/pgraph/showBoundsEffect.I')
-CopyFile('built/include/','panda/src/pgraph/showBoundsEffect.h')
-CopyFile('built/include/','panda/src/pgraph/spotlight.I')
-CopyFile('built/include/','panda/src/pgraph/spotlight.h')
-CopyFile('built/include/','panda/src/pgraph/switchNode.I')
-CopyFile('built/include/','panda/src/pgraph/switchNode.h')
-CopyFile('built/include/','panda/src/pgraph/texMatrixAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/texMatrixAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/texProjectorEffect.I')
-CopyFile('built/include/','panda/src/pgraph/texProjectorEffect.h')
-CopyFile('built/include/','panda/src/pgraph/textureApplyAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/textureApplyAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/textureAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/textureAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/texGenAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/texGenAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/textureCollection.I')
-CopyFile('built/include/','panda/src/pgraph/textureCollection.h')
-CopyFile('built/include/','panda/src/pgraph/textureStageCollection.I')
-CopyFile('built/include/','panda/src/pgraph/textureStageCollection.h')
-CopyFile('built/include/','panda/src/pgraph/transformState.I')
-CopyFile('built/include/','panda/src/pgraph/transformState.h')
-CopyFile('built/include/','panda/src/pgraph/transparencyAttrib.I')
-CopyFile('built/include/','panda/src/pgraph/transparencyAttrib.h')
-CopyFile('built/include/','panda/src/pgraph/weakNodePath.I')
-CopyFile('built/include/','panda/src/pgraph/weakNodePath.h')
-CopyFile('built/include/','panda/src/pgraph/workingNodePath.I')
-CopyFile('built/include/','panda/src/pgraph/workingNodePath.h')
-CopyFile('built/include/','panda/src/chan/animBundle.I')
-CopyFile('built/include/','panda/src/chan/animBundle.h')
-CopyFile('built/include/','panda/src/chan/animBundleNode.I')
-CopyFile('built/include/','panda/src/chan/animBundleNode.h')
-CopyFile('built/include/','panda/src/chan/animChannel.I')
-CopyFile('built/include/','panda/src/chan/animChannel.h')
-CopyFile('built/include/','panda/src/chan/animChannelBase.I')
-CopyFile('built/include/','panda/src/chan/animChannelBase.h')
-CopyFile('built/include/','panda/src/chan/animChannelFixed.I')
-CopyFile('built/include/','panda/src/chan/animChannelFixed.h')
-CopyFile('built/include/','panda/src/chan/animChannelMatrixDynamic.I')
-CopyFile('built/include/','panda/src/chan/animChannelMatrixDynamic.h')
-CopyFile('built/include/','panda/src/chan/animChannelMatrixXfmTable.I')
-CopyFile('built/include/','panda/src/chan/animChannelMatrixXfmTable.h')
-CopyFile('built/include/','panda/src/chan/animChannelScalarDynamic.I')
-CopyFile('built/include/','panda/src/chan/animChannelScalarDynamic.h')
-CopyFile('built/include/','panda/src/chan/animChannelScalarTable.I')
-CopyFile('built/include/','panda/src/chan/animChannelScalarTable.h')
-CopyFile('built/include/','panda/src/chan/animControl.I')
-CopyFile('built/include/','panda/src/chan/animControl.h')
-CopyFile('built/include/','panda/src/chan/animControlCollection.I')
-CopyFile('built/include/','panda/src/chan/animControlCollection.h')
-CopyFile('built/include/','panda/src/chan/animGroup.I')
-CopyFile('built/include/','panda/src/chan/animGroup.h')
-CopyFile('built/include/','panda/src/chan/auto_bind.h')
-CopyFile('built/include/','panda/src/chan/config_chan.h')
-CopyFile('built/include/','panda/src/chan/movingPart.I')
-CopyFile('built/include/','panda/src/chan/movingPart.h')
-CopyFile('built/include/','panda/src/chan/movingPartBase.I')
-CopyFile('built/include/','panda/src/chan/movingPartBase.h')
-CopyFile('built/include/','panda/src/chan/movingPartMatrix.I')
-CopyFile('built/include/','panda/src/chan/movingPartMatrix.h')
-CopyFile('built/include/','panda/src/chan/movingPartScalar.I')
-CopyFile('built/include/','panda/src/chan/movingPartScalar.h')
-CopyFile('built/include/','panda/src/chan/partBundle.I')
-CopyFile('built/include/','panda/src/chan/partBundle.h')
-CopyFile('built/include/','panda/src/chan/partBundleNode.I')
-CopyFile('built/include/','panda/src/chan/partBundleNode.h')
-CopyFile('built/include/','panda/src/chan/partGroup.I')
-CopyFile('built/include/','panda/src/chan/partGroup.h')
-CopyFile('built/include/','panda/src/chan/vector_PartGroupStar.h')
-CopyFile('built/include/','panda/src/char/character.I')
-CopyFile('built/include/','panda/src/char/character.h')
-CopyFile('built/include/','panda/src/char/characterJoint.h')
-CopyFile('built/include/','panda/src/char/characterJointBundle.I')
-CopyFile('built/include/','panda/src/char/characterJointBundle.h')
-CopyFile('built/include/','panda/src/char/characterSlider.h')
-CopyFile('built/include/','panda/src/char/computedVertices.I')
-CopyFile('built/include/','panda/src/char/computedVertices.h')
-CopyFile('built/include/','panda/src/char/computedVerticesMorph.I')
-CopyFile('built/include/','panda/src/char/computedVerticesMorph.h')
-CopyFile('built/include/','panda/src/char/config_char.h')
-CopyFile('built/include/','panda/src/char/dynamicVertices.h')
-CopyFile('built/include/','panda/src/dgraph/config_dgraph.h')
-CopyFile('built/include/','panda/src/dgraph/dataGraphTraverser.I')
-CopyFile('built/include/','panda/src/dgraph/dataGraphTraverser.h')
-CopyFile('built/include/','panda/src/dgraph/dataNode.I')
-CopyFile('built/include/','panda/src/dgraph/dataNode.h')
-CopyFile('built/include/','panda/src/dgraph/dataNodeTransmit.I')
-CopyFile('built/include/','panda/src/dgraph/dataNodeTransmit.h')
-CopyFile('built/include/','panda/src/display/config_display.h')
-CopyFile('built/include/','panda/src/display/drawableRegion.I')
-CopyFile('built/include/','panda/src/display/drawableRegion.h')
-CopyFile('built/include/','panda/src/display/displayRegion.I')
-CopyFile('built/include/','panda/src/display/displayRegion.h')
-CopyFile('built/include/','panda/src/display/displayRegionStack.I')
-CopyFile('built/include/','panda/src/display/displayRegionStack.h')
-CopyFile('built/include/','panda/src/display/frameBufferProperties.I')
-CopyFile('built/include/','panda/src/display/frameBufferProperties.h')
-CopyFile('built/include/','panda/src/display/frameBufferStack.I')
-CopyFile('built/include/','panda/src/display/frameBufferStack.h')
-CopyFile('built/include/','panda/src/display/graphicsEngine.I')
-CopyFile('built/include/','panda/src/display/graphicsEngine.h')
-CopyFile('built/include/','panda/src/display/graphicsOutput.I')
-CopyFile('built/include/','panda/src/display/graphicsOutput.h')
-CopyFile('built/include/','panda/src/display/graphicsBuffer.I')
-CopyFile('built/include/','panda/src/display/graphicsBuffer.h')
-CopyFile('built/include/','panda/src/display/graphicsPipe.I')
-CopyFile('built/include/','panda/src/display/graphicsPipe.h')
-CopyFile('built/include/','panda/src/display/graphicsPipeSelection.I')
-CopyFile('built/include/','panda/src/display/graphicsPipeSelection.h')
-CopyFile('built/include/','panda/src/display/graphicsStateGuardian.I')
-CopyFile('built/include/','panda/src/display/graphicsStateGuardian.h')
-CopyFile('built/include/','panda/src/display/graphicsWindow.I')
-CopyFile('built/include/','panda/src/display/graphicsWindow.h')
-CopyFile('built/include/','panda/src/display/graphicsThreadingModel.I')
-CopyFile('built/include/','panda/src/display/graphicsThreadingModel.h')
-CopyFile('built/include/','panda/src/display/graphicsWindowInputDevice.I')
-CopyFile('built/include/','panda/src/display/graphicsWindowInputDevice.h')
-CopyFile('built/include/','panda/src/display/graphicsDevice.I')
-CopyFile('built/include/','panda/src/display/graphicsDevice.h')
-CopyFile('built/include/','panda/src/display/parasiteBuffer.I')
-CopyFile('built/include/','panda/src/display/parasiteBuffer.h')
-CopyFile('built/include/','panda/src/display/windowProperties.I')
-CopyFile('built/include/','panda/src/display/windowProperties.h')
-CopyFile('built/include/','panda/src/display/lensStack.I')
-CopyFile('built/include/','panda/src/display/lensStack.h')
-CopyFile('built/include/','panda/src/display/renderBuffer.h')
-CopyFile('built/include/','panda/src/display/savedFrameBuffer.I')
-CopyFile('built/include/','panda/src/display/savedFrameBuffer.h')
-CopyFile('built/include/','panda/src/device/analogNode.I')
-CopyFile('built/include/','panda/src/device/analogNode.h')
-CopyFile('built/include/','panda/src/device/buttonNode.I')
-CopyFile('built/include/','panda/src/device/buttonNode.h')
-CopyFile('built/include/','panda/src/device/clientAnalogDevice.I')
-CopyFile('built/include/','panda/src/device/clientAnalogDevice.h')
-CopyFile('built/include/','panda/src/device/clientBase.I')
-CopyFile('built/include/','panda/src/device/clientBase.h')
-CopyFile('built/include/','panda/src/device/clientButtonDevice.I')
-CopyFile('built/include/','panda/src/device/clientButtonDevice.h')
-CopyFile('built/include/','panda/src/device/clientDevice.I')
-CopyFile('built/include/','panda/src/device/clientDevice.h')
-CopyFile('built/include/','panda/src/device/clientDialDevice.I')
-CopyFile('built/include/','panda/src/device/clientDialDevice.h')
-CopyFile('built/include/','panda/src/device/clientTrackerDevice.I')
-CopyFile('built/include/','panda/src/device/clientTrackerDevice.h')
-CopyFile('built/include/','panda/src/device/config_device.h')
-CopyFile('built/include/','panda/src/device/mouseAndKeyboard.h')
-CopyFile('built/include/','panda/src/device/dialNode.I')
-CopyFile('built/include/','panda/src/device/dialNode.h')
-CopyFile('built/include/','panda/src/device/trackerData.I')
-CopyFile('built/include/','panda/src/device/trackerData.h')
-CopyFile('built/include/','panda/src/device/trackerNode.I')
-CopyFile('built/include/','panda/src/device/trackerNode.h')
-CopyFile('built/include/','panda/src/device/virtualMouse.h')
-CopyFile('built/include/','panda/src/tform/buttonThrower.I')
-CopyFile('built/include/','panda/src/tform/buttonThrower.h')
-CopyFile('built/include/','panda/src/tform/driveInterface.I')
-CopyFile('built/include/','panda/src/tform/driveInterface.h')
-CopyFile('built/include/','panda/src/tform/mouseInterfaceNode.I')
-CopyFile('built/include/','panda/src/tform/mouseInterfaceNode.h')
-CopyFile('built/include/','panda/src/tform/mouseWatcher.I')
-CopyFile('built/include/','panda/src/tform/mouseWatcher.h')
-CopyFile('built/include/','panda/src/tform/mouseWatcherGroup.h')
-CopyFile('built/include/','panda/src/tform/mouseWatcherParameter.I')
-CopyFile('built/include/','panda/src/tform/mouseWatcherParameter.h')
-CopyFile('built/include/','panda/src/tform/mouseWatcherRegion.I')
-CopyFile('built/include/','panda/src/tform/mouseWatcherRegion.h')
-CopyFile('built/include/','panda/src/tform/trackball.h')
-CopyFile('built/include/','panda/src/tform/transform2sg.h')
-CopyFile('built/include/','panda/src/collide/collisionEntry.I')
-CopyFile('built/include/','panda/src/collide/collisionEntry.h')
-CopyFile('built/include/','panda/src/collide/collisionHandler.h')
-CopyFile('built/include/','panda/src/collide/collisionHandlerEvent.I')
-CopyFile('built/include/','panda/src/collide/collisionHandlerEvent.h')
-CopyFile('built/include/','panda/src/collide/collisionHandlerFloor.I')
-CopyFile('built/include/','panda/src/collide/collisionHandlerFloor.h')
-CopyFile('built/include/','panda/src/collide/collisionHandlerGravity.I')
-CopyFile('built/include/','panda/src/collide/collisionHandlerGravity.h')
-CopyFile('built/include/','panda/src/collide/collisionHandlerPhysical.I')
-CopyFile('built/include/','panda/src/collide/collisionHandlerPhysical.h')
-CopyFile('built/include/','panda/src/collide/collisionHandlerPusher.I')
-CopyFile('built/include/','panda/src/collide/collisionHandlerPusher.h')
-CopyFile('built/include/','panda/src/collide/collisionHandlerQueue.h')
-CopyFile('built/include/','panda/src/collide/collisionInvSphere.I')
-CopyFile('built/include/','panda/src/collide/collisionInvSphere.h')
-CopyFile('built/include/','panda/src/collide/collisionLevelState.I')
-CopyFile('built/include/','panda/src/collide/collisionLevelState.h')
-CopyFile('built/include/','panda/src/collide/collisionLine.I')
-CopyFile('built/include/','panda/src/collide/collisionLine.h')
-CopyFile('built/include/','panda/src/collide/collisionNode.I')
-CopyFile('built/include/','panda/src/collide/collisionNode.h')
-CopyFile('built/include/','panda/src/collide/collisionPlane.I')
-CopyFile('built/include/','panda/src/collide/collisionPlane.h')
-CopyFile('built/include/','panda/src/collide/collisionPolygon.I')
-CopyFile('built/include/','panda/src/collide/collisionPolygon.h')
-CopyFile('built/include/','panda/src/collide/collisionRay.I')
-CopyFile('built/include/','panda/src/collide/collisionRay.h')
-CopyFile('built/include/','panda/src/collide/collisionRecorder.I')
-CopyFile('built/include/','panda/src/collide/collisionRecorder.h')
-CopyFile('built/include/','panda/src/collide/collisionSegment.I')
-CopyFile('built/include/','panda/src/collide/collisionSegment.h')
-CopyFile('built/include/','panda/src/collide/collisionSolid.I')
-CopyFile('built/include/','panda/src/collide/collisionSolid.h')
-CopyFile('built/include/','panda/src/collide/collisionSphere.I')
-CopyFile('built/include/','panda/src/collide/collisionSphere.h')
-CopyFile('built/include/','panda/src/collide/collisionTraverser.I')
-CopyFile('built/include/','panda/src/collide/collisionTraverser.h')
-CopyFile('built/include/','panda/src/collide/collisionTube.I')
-CopyFile('built/include/','panda/src/collide/collisionTube.h')
-CopyFile('built/include/','panda/src/collide/collisionVisualizer.I')
-CopyFile('built/include/','panda/src/collide/collisionVisualizer.h')
-CopyFile('built/include/','panda/src/collide/config_collide.h')
-CopyFile('built/include/','panda/src/pnmtext/config_pnmtext.h')
-CopyFile('built/include/','panda/src/pnmtext/freetypeFont.h')
-CopyFile('built/include/','panda/src/pnmtext/freetypeFont.I')
-CopyFile('built/include/','panda/src/pnmtext/pnmTextGlyph.h')
-CopyFile('built/include/','panda/src/pnmtext/pnmTextGlyph.I')
-CopyFile('built/include/','panda/src/pnmtext/pnmTextMaker.h')
-CopyFile('built/include/','panda/src/pnmtext/pnmTextMaker.I')
-CopyFile('built/include/','panda/src/text/config_text.h')
-CopyFile('built/include/','panda/src/text/dynamicTextFont.I')
-CopyFile('built/include/','panda/src/text/dynamicTextFont.h')
-CopyFile('built/include/','panda/src/text/dynamicTextGlyph.I')
-CopyFile('built/include/','panda/src/text/dynamicTextGlyph.h')
-CopyFile('built/include/','panda/src/text/dynamicTextPage.I')
-CopyFile('built/include/','panda/src/text/dynamicTextPage.h')
-CopyFile('built/include/','panda/src/text/fontPool.I')
-CopyFile('built/include/','panda/src/text/fontPool.h')
-CopyFile('built/include/','panda/src/text/geomTextGlyph.I')
-CopyFile('built/include/','panda/src/text/geomTextGlyph.h')
-CopyFile('built/include/','panda/src/text/staticTextFont.I')
-CopyFile('built/include/','panda/src/text/staticTextFont.h')
-CopyFile('built/include/','panda/src/text/textAssembler.I')
-CopyFile('built/include/','panda/src/text/textAssembler.h')
-CopyFile('built/include/','panda/src/text/textFont.I')
-CopyFile('built/include/','panda/src/text/textFont.h')
-CopyFile('built/include/','panda/src/text/textGlyph.I')
-CopyFile('built/include/','panda/src/text/textGlyph.h')
-CopyFile('built/include/','panda/src/text/textNode.I')
-CopyFile('built/include/','panda/src/text/textNode.h')
-CopyFile('built/include/','panda/src/text/textProperties.I')
-CopyFile('built/include/','panda/src/text/textProperties.h')
-CopyFile('built/include/','panda/src/text/textPropertiesManager.I')
-CopyFile('built/include/','panda/src/text/textPropertiesManager.h')
-CopyFile('built/include/','panda/src/grutil/cardMaker.I')
-CopyFile('built/include/','panda/src/grutil/cardMaker.h')
-CopyFile('built/include/','panda/src/grutil/frameRateMeter.I')
-CopyFile('built/include/','panda/src/grutil/frameRateMeter.h')
-CopyFile('built/include/','panda/src/grutil/lineSegs.I')
-CopyFile('built/include/','panda/src/grutil/lineSegs.h')
-CopyFile('built/include/','panda/src/grutil/multitexReducer.I')
-CopyFile('built/include/','panda/src/grutil/multitexReducer.h')
-CopyFile('built/include/','panda/src/gsgmisc/geomIssuer.I')
-CopyFile('built/include/','panda/src/gsgmisc/geomIssuer.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolbase/cmath.I')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolbase/cmath.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolbase/dallocator.T')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolbase/dallocator.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolbase/dtoolbase.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolbase/dtoolbase_cc.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolbase/dtoolsymbols.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolbase/fakestringstream.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolbase/nearly_zero.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolbase/stl_compares.I')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolbase/stl_compares.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolbase/pallocator.T')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolbase/pallocator.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolbase/pdeque.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolbase/plist.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolbase/pmap.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolbase/pset.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolbase/pvector.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolutil/executionEnvironment.I')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolutil/executionEnvironment.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolutil/filename.I')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolutil/filename.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolutil/load_dso.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolutil/dSearchPath.I')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolutil/dSearchPath.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolutil/pfstream.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolutil/pfstream.I')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolutil/vector_string.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolutil/gnu_getopt.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolutil/pfstreamBuf.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolutil/vector_src.cxx')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolutil/vector_src.h')
+CopyFile(PREFIX+'/include/','dtool/src/dtoolutil/pandaSystem.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/config_prc.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configDeclaration.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configDeclaration.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configFlags.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configFlags.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configPage.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configPage.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configPageManager.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configPageManager.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariable.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariable.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableBase.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableBase.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableBool.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableBool.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableCore.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableCore.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableDouble.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableDouble.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableEnum.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableEnum.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableFilename.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableFilename.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableInt.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableInt.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableList.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableList.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableManager.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableManager.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableSearchPath.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableSearchPath.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableString.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/configVariableString.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/globPattern.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/globPattern.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/notify.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/notify.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/notifyCategory.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/notifyCategory.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/notifyCategoryProxy.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/notifyCategoryProxy.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/notifySeverity.h')
+CopyFile(PREFIX+'/include/','dtool/src/prc/prcKeyRegistry.I')
+CopyFile(PREFIX+'/include/','dtool/src/prc/prcKeyRegistry.h')
+CopyFile(PREFIX+'/include/','dtool/src/dconfig/configTable.I')
+CopyFile(PREFIX+'/include/','dtool/src/dconfig/configTable.h')
+CopyFile(PREFIX+'/include/','dtool/src/dconfig/config_dconfig.h')
+CopyFile(PREFIX+'/include/','dtool/src/dconfig/config_setup.h')
+CopyFile(PREFIX+'/include/','dtool/src/dconfig/dconfig.I')
+CopyFile(PREFIX+'/include/','dtool/src/dconfig/dconfig.h')
+CopyFile(PREFIX+'/include/','dtool/src/dconfig/serialization.I')
+CopyFile(PREFIX+'/include/','dtool/src/dconfig/serialization.h')
+CopyFile(PREFIX+'/include/','dtool/src/dconfig/symbolEnt.I')
+CopyFile(PREFIX+'/include/','dtool/src/dconfig/symbolEnt.h')
+CopyFile(PREFIX+'/include/','dtool/src/interrogatedb/interrogate_interface.h')
+CopyFile(PREFIX+'/include/','dtool/src/interrogatedb/interrogate_request.h')
+CopyFile(PREFIX+'/include/','dtool/src/interrogatedb/vector_int.h')
+CopyFile(PREFIX+'/include/','dtool/src/interrogatedb/config_interrogatedb.h')
+CopyFile(PREFIX+'/include/','dtool/src/pystub/pystub.h')
+CopyFile(PREFIX+'/include/','dtool/src/prckeys/signPrcFile_src.cxx')
+CopyFile(PREFIX+'/include/','panda/src/pandabase/pandabase.h')
+CopyFile(PREFIX+'/include/','panda/src/pandabase/pandasymbols.h')
+CopyFile(PREFIX+'/include/','panda/src/express/atomicAdjustDummyImpl.h')
+CopyFile(PREFIX+'/include/','panda/src/express/atomicAdjustDummyImpl.I')
+CopyFile(PREFIX+'/include/','panda/src/express/atomicAdjust.h')
+CopyFile(PREFIX+'/include/','panda/src/express/atomicAdjust.I')
+CopyFile(PREFIX+'/include/','panda/src/express/atomicAdjustImpl.h')
+CopyFile(PREFIX+'/include/','panda/src/express/atomicAdjustNsprImpl.h')
+CopyFile(PREFIX+'/include/','panda/src/express/atomicAdjustNsprImpl.I')
+CopyFile(PREFIX+'/include/','panda/src/express/bigEndian.h')
+CopyFile(PREFIX+'/include/','panda/src/express/buffer.I')
+CopyFile(PREFIX+'/include/','panda/src/express/buffer.h')
+CopyFile(PREFIX+'/include/','panda/src/express/checksumHashGenerator.I')
+CopyFile(PREFIX+'/include/','panda/src/express/checksumHashGenerator.h')
+CopyFile(PREFIX+'/include/','panda/src/express/circBuffer.I')
+CopyFile(PREFIX+'/include/','panda/src/express/circBuffer.h')
+CopyFile(PREFIX+'/include/','panda/src/express/clockObject.I')
+CopyFile(PREFIX+'/include/','panda/src/express/clockObject.h')
+CopyFile(PREFIX+'/include/','panda/src/express/conditionVarDummyImpl.h')
+CopyFile(PREFIX+'/include/','panda/src/express/conditionVarDummyImpl.I')
+CopyFile(PREFIX+'/include/','panda/src/express/conditionVar.h')
+CopyFile(PREFIX+'/include/','panda/src/express/conditionVar.I')
+CopyFile(PREFIX+'/include/','panda/src/express/conditionVarImpl.h')
+CopyFile(PREFIX+'/include/','panda/src/express/conditionVarNsprImpl.h')
+CopyFile(PREFIX+'/include/','panda/src/express/conditionVarNsprImpl.I')
+CopyFile(PREFIX+'/include/','panda/src/express/config_express.h')
+CopyFile(PREFIX+'/include/','panda/src/express/datagram.I')
+CopyFile(PREFIX+'/include/','panda/src/express/datagram.h')
+CopyFile(PREFIX+'/include/','panda/src/express/datagramGenerator.I')
+CopyFile(PREFIX+'/include/','panda/src/express/datagramGenerator.h')
+CopyFile(PREFIX+'/include/','panda/src/express/datagramIterator.I')
+CopyFile(PREFIX+'/include/','panda/src/express/datagramIterator.h')
+CopyFile(PREFIX+'/include/','panda/src/express/datagramSink.I')
+CopyFile(PREFIX+'/include/','panda/src/express/datagramSink.h')
+CopyFile(PREFIX+'/include/','panda/src/express/dcast.T')
+CopyFile(PREFIX+'/include/','panda/src/express/dcast.h')
+CopyFile(PREFIX+'/include/','panda/src/express/encryptStreamBuf.h')
+CopyFile(PREFIX+'/include/','panda/src/express/encryptStreamBuf.I')
+CopyFile(PREFIX+'/include/','panda/src/express/encryptStream.h')
+CopyFile(PREFIX+'/include/','panda/src/express/encryptStream.I')
+CopyFile(PREFIX+'/include/','panda/src/express/error_utils.h')
+CopyFile(PREFIX+'/include/','panda/src/express/hashGeneratorBase.I')
+CopyFile(PREFIX+'/include/','panda/src/express/hashGeneratorBase.h')
+CopyFile(PREFIX+'/include/','panda/src/express/hashVal.I')
+CopyFile(PREFIX+'/include/','panda/src/express/hashVal.h')
+CopyFile(PREFIX+'/include/','panda/src/express/indent.I')
+CopyFile(PREFIX+'/include/','panda/src/express/indent.h')
+CopyFile(PREFIX+'/include/','panda/src/express/indirectLess.I')
+CopyFile(PREFIX+'/include/','panda/src/express/indirectLess.h')
+CopyFile(PREFIX+'/include/','panda/src/express/littleEndian.h')
+CopyFile(PREFIX+'/include/','panda/src/express/memoryInfo.I')
+CopyFile(PREFIX+'/include/','panda/src/express/memoryInfo.h')
+CopyFile(PREFIX+'/include/','panda/src/express/memoryUsage.I')
+CopyFile(PREFIX+'/include/','panda/src/express/memoryUsage.h')
+CopyFile(PREFIX+'/include/','panda/src/express/memoryUsagePointerCounts.I')
+CopyFile(PREFIX+'/include/','panda/src/express/memoryUsagePointerCounts.h')
+CopyFile(PREFIX+'/include/','panda/src/express/memoryUsagePointers.I')
+CopyFile(PREFIX+'/include/','panda/src/express/memoryUsagePointers.h')
+CopyFile(PREFIX+'/include/','panda/src/express/multifile.I')
+CopyFile(PREFIX+'/include/','panda/src/express/multifile.h')
+CopyFile(PREFIX+'/include/','panda/src/express/mutexDummyImpl.h')
+CopyFile(PREFIX+'/include/','panda/src/express/mutexDummyImpl.I')
+CopyFile(PREFIX+'/include/','panda/src/express/pmutex.h')
+CopyFile(PREFIX+'/include/','panda/src/express/mutexHolder.h')
+CopyFile(PREFIX+'/include/','panda/src/express/mutexHolder.I')
+CopyFile(PREFIX+'/include/','panda/src/express/pmutex.I')
+CopyFile(PREFIX+'/include/','panda/src/express/mutexImpl.h')
+CopyFile(PREFIX+'/include/','panda/src/express/mutexNsprImpl.h')
+CopyFile(PREFIX+'/include/','panda/src/express/mutexNsprImpl.I')
+CopyFile(PREFIX+'/include/','panda/src/express/namable.I')
+CopyFile(PREFIX+'/include/','panda/src/express/namable.h')
+CopyFile(PREFIX+'/include/','panda/src/express/nativeNumericData.I')
+CopyFile(PREFIX+'/include/','panda/src/express/nativeNumericData.h')
+CopyFile(PREFIX+'/include/','panda/src/express/numeric_types.h')
+CopyFile(PREFIX+'/include/','panda/src/express/ordered_vector.h')
+CopyFile(PREFIX+'/include/','panda/src/express/ordered_vector.I')
+CopyFile(PREFIX+'/include/','panda/src/express/ordered_vector.T')
+CopyFile(PREFIX+'/include/','panda/src/express/password_hash.h')
+CopyFile(PREFIX+'/include/','panda/src/express/patchfile.I')
+CopyFile(PREFIX+'/include/','panda/src/express/patchfile.h')
+CopyFile(PREFIX+'/include/','panda/src/express/pointerTo.I')
+CopyFile(PREFIX+'/include/','panda/src/express/pointerTo.h')
+CopyFile(PREFIX+'/include/','panda/src/express/pointerToArray.I')
+CopyFile(PREFIX+'/include/','panda/src/express/pointerToArray.h')
+CopyFile(PREFIX+'/include/','panda/src/express/pointerToBase.I')
+CopyFile(PREFIX+'/include/','panda/src/express/pointerToBase.h')
+CopyFile(PREFIX+'/include/','panda/src/express/pointerToVoid.I')
+CopyFile(PREFIX+'/include/','panda/src/express/pointerToVoid.h')
+CopyFile(PREFIX+'/include/','panda/src/express/profileTimer.I')
+CopyFile(PREFIX+'/include/','panda/src/express/profileTimer.h')
+CopyFile(PREFIX+'/include/','panda/src/express/pta_uchar.h')
+CopyFile(PREFIX+'/include/','panda/src/express/ramfile.I')
+CopyFile(PREFIX+'/include/','panda/src/express/ramfile.h')
+CopyFile(PREFIX+'/include/','panda/src/express/referenceCount.I')
+CopyFile(PREFIX+'/include/','panda/src/express/referenceCount.h')
+CopyFile(PREFIX+'/include/','panda/src/express/register_type.I')
+CopyFile(PREFIX+'/include/','panda/src/express/register_type.h')
+CopyFile(PREFIX+'/include/','panda/src/express/reversedNumericData.I')
+CopyFile(PREFIX+'/include/','panda/src/express/reversedNumericData.h')
+CopyFile(PREFIX+'/include/','panda/src/express/selectThreadImpl.h')
+CopyFile(PREFIX+'/include/','panda/src/express/streamReader.I')
+CopyFile(PREFIX+'/include/','panda/src/express/streamReader.h')
+CopyFile(PREFIX+'/include/','panda/src/express/streamWriter.I')
+CopyFile(PREFIX+'/include/','panda/src/express/streamWriter.h')
+CopyFile(PREFIX+'/include/','panda/src/express/stringDecoder.h')
+CopyFile(PREFIX+'/include/','panda/src/express/stringDecoder.I')
+CopyFile(PREFIX+'/include/','panda/src/express/subStream.I')
+CopyFile(PREFIX+'/include/','panda/src/express/subStream.h')
+CopyFile(PREFIX+'/include/','panda/src/express/subStreamBuf.h')
+CopyFile(PREFIX+'/include/','panda/src/express/textEncoder.h')
+CopyFile(PREFIX+'/include/','panda/src/express/textEncoder.I')
+CopyFile(PREFIX+'/include/','panda/src/express/threadDummyImpl.h')
+CopyFile(PREFIX+'/include/','panda/src/express/threadDummyImpl.I')
+CopyFile(PREFIX+'/include/','panda/src/express/thread.h')
+CopyFile(PREFIX+'/include/','panda/src/express/thread.I')
+CopyFile(PREFIX+'/include/','panda/src/express/threadImpl.h')
+CopyFile(PREFIX+'/include/','panda/src/express/threadNsprImpl.h')
+CopyFile(PREFIX+'/include/','panda/src/express/threadNsprImpl.I')
+CopyFile(PREFIX+'/include/','panda/src/express/threadPriority.h')
+CopyFile(PREFIX+'/include/','panda/src/express/tokenBoard.I')
+CopyFile(PREFIX+'/include/','panda/src/express/tokenBoard.h')
+CopyFile(PREFIX+'/include/','panda/src/express/trueClock.I')
+CopyFile(PREFIX+'/include/','panda/src/express/trueClock.h')
+CopyFile(PREFIX+'/include/','panda/src/express/typeHandle.I')
+CopyFile(PREFIX+'/include/','panda/src/express/typeHandle.h')
+CopyFile(PREFIX+'/include/','panda/src/express/typedObject.I')
+CopyFile(PREFIX+'/include/','panda/src/express/typedObject.h')
+CopyFile(PREFIX+'/include/','panda/src/express/typedReferenceCount.I')
+CopyFile(PREFIX+'/include/','panda/src/express/typedReferenceCount.h')
+CopyFile(PREFIX+'/include/','panda/src/express/typedef.h')
+CopyFile(PREFIX+'/include/','panda/src/express/typeRegistry.I')
+CopyFile(PREFIX+'/include/','panda/src/express/typeRegistry.h')
+CopyFile(PREFIX+'/include/','panda/src/express/typeRegistryNode.I')
+CopyFile(PREFIX+'/include/','panda/src/express/typeRegistryNode.h')
+CopyFile(PREFIX+'/include/','panda/src/express/unicodeLatinMap.h')
+CopyFile(PREFIX+'/include/','panda/src/express/vector_uchar.h')
+CopyFile(PREFIX+'/include/','panda/src/express/virtualFileComposite.h')
+CopyFile(PREFIX+'/include/','panda/src/express/virtualFileComposite.I')
+CopyFile(PREFIX+'/include/','panda/src/express/virtualFile.h')
+CopyFile(PREFIX+'/include/','panda/src/express/virtualFile.I')
+CopyFile(PREFIX+'/include/','panda/src/express/virtualFileList.I')
+CopyFile(PREFIX+'/include/','panda/src/express/virtualFileList.h')
+CopyFile(PREFIX+'/include/','panda/src/express/virtualFileMount.h')
+CopyFile(PREFIX+'/include/','panda/src/express/virtualFileMount.I')
+CopyFile(PREFIX+'/include/','panda/src/express/virtualFileMountMultifile.h')
+CopyFile(PREFIX+'/include/','panda/src/express/virtualFileMountMultifile.I')
+CopyFile(PREFIX+'/include/','panda/src/express/virtualFileMountSystem.h')
+CopyFile(PREFIX+'/include/','panda/src/express/virtualFileMountSystem.I')
+CopyFile(PREFIX+'/include/','panda/src/express/virtualFileSimple.h')
+CopyFile(PREFIX+'/include/','panda/src/express/virtualFileSimple.I')
+CopyFile(PREFIX+'/include/','panda/src/express/virtualFileSystem.h')
+CopyFile(PREFIX+'/include/','panda/src/express/virtualFileSystem.I')
+CopyFile(PREFIX+'/include/','panda/src/express/weakPointerTo.I')
+CopyFile(PREFIX+'/include/','panda/src/express/weakPointerTo.h')
+CopyFile(PREFIX+'/include/','panda/src/express/weakPointerToBase.I')
+CopyFile(PREFIX+'/include/','panda/src/express/weakPointerToBase.h')
+CopyFile(PREFIX+'/include/','panda/src/express/weakPointerToVoid.I')
+CopyFile(PREFIX+'/include/','panda/src/express/weakPointerToVoid.h')
+CopyFile(PREFIX+'/include/','panda/src/express/weakReferenceList.I')
+CopyFile(PREFIX+'/include/','panda/src/express/weakReferenceList.h')
+CopyFile(PREFIX+'/include/','panda/src/express/windowsRegistry.h')
+CopyFile(PREFIX+'/include/','panda/src/express/zStream.I')
+CopyFile(PREFIX+'/include/','panda/src/express/zStream.h')
+CopyFile(PREFIX+'/include/','panda/src/express/zStreamBuf.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/asyncUtility.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/asyncUtility.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/bioPtr.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/bioPtr.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/bioStreamPtr.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/bioStreamPtr.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/bioStream.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/bioStream.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/bioStreamBuf.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/chunkedStream.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/chunkedStream.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/chunkedStreamBuf.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/config_downloader.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/decompressor.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/decompressor.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/documentSpec.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/documentSpec.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/download_utils.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/downloadDb.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/downloadDb.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/extractor.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/httpAuthorization.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/httpAuthorization.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/httpBasicAuthorization.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/httpBasicAuthorization.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/httpChannel.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/httpChannel.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/httpClient.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/httpClient.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/httpCookie.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/httpCookie.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/httpDate.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/httpDate.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/httpDigestAuthorization.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/httpDigestAuthorization.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/httpEntityTag.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/httpEntityTag.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/httpEnum.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/identityStream.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/identityStream.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/identityStreamBuf.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/multiplexStream.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/multiplexStream.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/multiplexStreamBuf.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/multiplexStreamBuf.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/patcher.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/patcher.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/socketStream.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/socketStream.I')
+CopyFile(PREFIX+'/include/','panda/src/downloader/ssl_utils.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/urlSpec.h')
+CopyFile(PREFIX+'/include/','panda/src/downloader/urlSpec.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/bam.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/bamReader.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/bamReader.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/bamReaderParam.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/bamReaderParam.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/bamWriter.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/bamWriter.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/bitMask.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/bitMask.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/buttonHandle.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/buttonHandle.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/buttonRegistry.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/buttonRegistry.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/collideMask.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/portalMask.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/compareTo.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/compareTo.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/config_util.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/configurable.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/factory.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/factory.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/cachedTypedWritableReferenceCount.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/cachedTypedWritableReferenceCount.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/cycleData.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/cycleData.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/cycleDataReader.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/cycleDataReader.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/cycleDataWriter.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/cycleDataWriter.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/datagramInputFile.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/datagramInputFile.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/datagramOutputFile.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/datagramOutputFile.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/drawMask.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/factoryBase.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/factoryBase.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/factoryParam.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/factoryParam.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/factoryParams.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/factoryParams.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/firstOfPairCompare.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/firstOfPairCompare.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/firstOfPairLess.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/firstOfPairLess.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/globalPointerRegistry.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/globalPointerRegistry.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/indirectCompareNames.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/indirectCompareNames.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/indirectCompareTo.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/indirectCompareTo.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/ioPtaDatagramFloat.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/ioPtaDatagramInt.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/ioPtaDatagramShort.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/iterator_types.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/keyboardButton.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/lineStream.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/lineStream.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/lineStreamBuf.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/lineStreamBuf.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/load_prc_file.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/modifierButtons.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/modifierButtons.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/mouseButton.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/mouseData.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/mouseData.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/nameUniquifier.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/nameUniquifier.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/pipeline.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/pipeline.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/pipelineCycler.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/pipelineCycler.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/pipelineCyclerBase.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/pipelineCyclerBase.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/pta_double.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/pta_float.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/pta_int.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/pta_ushort.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/string_utils.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/string_utils.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/timedCycle.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/timedCycle.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/typedWritable.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/typedWritable.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/typedWritableReferenceCount.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/typedWritableReferenceCount.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/updateSeq.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/updateSeq.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/uniqueIdAllocator.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/vector_double.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/vector_float.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/vector_typedWritable.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/vector_ushort.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/vector_writable.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/writableConfigurable.h')
+CopyFile(PREFIX+'/include/','panda/src/putil/writableParam.I')
+CopyFile(PREFIX+'/include/','panda/src/putil/writableParam.h')
+CopyFile(PREFIX+'/include/','panda/src/audio/config_audio.h')
+CopyFile(PREFIX+'/include/','panda/src/audio/audio.h')
+CopyFile(PREFIX+'/include/','panda/src/audio/audioManager.h')
+CopyFile(PREFIX+'/include/','panda/src/audio/audioSound.h')
+CopyFile(PREFIX+'/include/','panda/src/audio/nullAudioManager.h')
+CopyFile(PREFIX+'/include/','panda/src/audio/nullAudioSound.h')
+CopyFile(PREFIX+'/include/','panda/src/event/buttonEvent.I')
+CopyFile(PREFIX+'/include/','panda/src/event/buttonEvent.h')
+CopyFile(PREFIX+'/include/','panda/src/event/buttonEventList.I')
+CopyFile(PREFIX+'/include/','panda/src/event/buttonEventList.h')
+CopyFile(PREFIX+'/include/','panda/src/event/event.I')
+CopyFile(PREFIX+'/include/','panda/src/event/event.h')
+CopyFile(PREFIX+'/include/','panda/src/event/eventHandler.h')
+CopyFile(PREFIX+'/include/','panda/src/event/eventHandler.I')
+CopyFile(PREFIX+'/include/','panda/src/event/eventParameter.I')
+CopyFile(PREFIX+'/include/','panda/src/event/eventParameter.h')
+CopyFile(PREFIX+'/include/','panda/src/event/eventQueue.I')
+CopyFile(PREFIX+'/include/','panda/src/event/eventQueue.h')
+CopyFile(PREFIX+'/include/','panda/src/event/eventReceiver.h')
+CopyFile(PREFIX+'/include/','panda/src/event/pt_Event.h')
+CopyFile(PREFIX+'/include/','panda/src/event/throw_event.I')
+CopyFile(PREFIX+'/include/','panda/src/event/throw_event.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/compose_matrix.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/compose_matrix_src.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/compose_matrix_src.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/config_linmath.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/coordinateSystem.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/dbl2fltnames.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/dblnames.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/deg_2_rad.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/flt2dblnames.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/fltnames.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/ioPtaDatagramLinMath.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/ioPtaDatagramLinMath.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lcast_to.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lcast_to_src.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lcast_to_src.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lmat_ops.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lmat_ops_src.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lmat_ops_src.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lmatrix.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lmatrix3.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lmatrix3_src.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lmatrix3_src.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lmatrix4.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lmatrix4_src.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lmatrix4_src.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lorientation.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lorientation_src.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lorientation_src.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lpoint2.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lpoint2_src.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lpoint2_src.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lpoint3.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lpoint3_src.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lpoint3_src.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lpoint4.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lpoint4_src.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lpoint4_src.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lquaternion.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lquaternion_src.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lquaternion_src.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lrotation.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lrotation_src.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lrotation_src.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/luse.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/luse.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvec2_ops.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvec2_ops_src.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvec2_ops_src.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvec3_ops.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvec3_ops_src.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvec3_ops_src.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvec4_ops.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvec4_ops_src.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvec4_ops_src.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvecBase2.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvecBase2_src.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvecBase2_src.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvecBase3.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvecBase3_src.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvecBase3_src.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvecBase4.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvecBase4_src.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvecBase4_src.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvector2.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvector2_src.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvector2_src.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvector3.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvector3_src.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvector3_src.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvector4.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvector4_src.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/lvector4_src.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/mathNumbers.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/mathNumbers.I')
+CopyFile(PREFIX+'/include/','panda/src/linmath/pta_Colorf.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/pta_Normalf.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/pta_TexCoordf.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/pta_Vertexf.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/vector_Colorf.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/vector_LPoint2f.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/vector_LVecBase3f.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/vector_Normalf.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/vector_TexCoordf.h')
+CopyFile(PREFIX+'/include/','panda/src/linmath/vector_Vertexf.h')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/boundingHexahedron.I')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/boundingHexahedron.h')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/boundingLine.I')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/boundingLine.h')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/boundingSphere.I')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/boundingSphere.h')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/boundingVolume.I')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/boundingVolume.h')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/config_mathutil.h')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/fftCompressor.h')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/finiteBoundingVolume.h')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/frustum.h')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/frustum_src.I')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/frustum_src.h')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/geometricBoundingVolume.I')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/geometricBoundingVolume.h')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/look_at.h')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/look_at_src.I')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/look_at_src.h')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/linmath_events.h')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/mathHelpers.I')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/mathHelpers.h')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/omniBoundingVolume.I')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/omniBoundingVolume.h')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/plane.h')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/plane_src.I')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/plane_src.h')
+CopyFile(PREFIX+'/include/','panda/src/mathutil/rotate_to.h')
+CopyFile(PREFIX+'/include/','panda/src/gsgbase/graphicsStateGuardianBase.h')
+CopyFile(PREFIX+'/include/','panda/src/pnmimage/config_pnmimage.h')
+CopyFile(PREFIX+'/include/','panda/src/pnmimage/pnmFileType.h')
+CopyFile(PREFIX+'/include/','panda/src/pnmimage/pnmFileTypeRegistry.h')
+CopyFile(PREFIX+'/include/','panda/src/pnmimage/pnmImage.I')
+CopyFile(PREFIX+'/include/','panda/src/pnmimage/pnmImage.h')
+CopyFile(PREFIX+'/include/','panda/src/pnmimage/pnmImageHeader.I')
+CopyFile(PREFIX+'/include/','panda/src/pnmimage/pnmImageHeader.h')
+CopyFile(PREFIX+'/include/','panda/src/pnmimage/pnmReader.I')
+CopyFile(PREFIX+'/include/','panda/src/pnmimage/pnmReader.h')
+CopyFile(PREFIX+'/include/','panda/src/pnmimage/pnmWriter.I')
+CopyFile(PREFIX+'/include/','panda/src/pnmimage/pnmWriter.h')
+CopyFile(PREFIX+'/include/','panda/src/pnmimage/pnmimage_base.h')
+CopyFile(PREFIX+'/include/','panda/src/pnmimagetypes/sgi.h')
+CopyFile(PREFIX+'/include/','panda/src/net/config_net.h')
+CopyFile(PREFIX+'/include/','panda/src/net/connection.h')
+CopyFile(PREFIX+'/include/','panda/src/net/connectionListener.h')
+CopyFile(PREFIX+'/include/','panda/src/net/connectionManager.h')
+CopyFile(PREFIX+'/include/','panda/src/net/connectionReader.h')
+CopyFile(PREFIX+'/include/','panda/src/net/connectionWriter.h')
+CopyFile(PREFIX+'/include/','panda/src/net/datagramQueue.h')
+CopyFile(PREFIX+'/include/','panda/src/net/datagramTCPHeader.I')
+CopyFile(PREFIX+'/include/','panda/src/net/datagramTCPHeader.h')
+CopyFile(PREFIX+'/include/','panda/src/net/datagramUDPHeader.I')
+CopyFile(PREFIX+'/include/','panda/src/net/datagramUDPHeader.h')
+CopyFile(PREFIX+'/include/','panda/src/net/netAddress.h')
+CopyFile(PREFIX+'/include/','panda/src/net/netDatagram.I')
+CopyFile(PREFIX+'/include/','panda/src/net/netDatagram.h')
+CopyFile(PREFIX+'/include/','panda/src/net/pprerror.h')
+CopyFile(PREFIX+'/include/','panda/src/net/queuedConnectionListener.I')
+CopyFile(PREFIX+'/include/','panda/src/net/queuedConnectionListener.h')
+CopyFile(PREFIX+'/include/','panda/src/net/queuedConnectionManager.h')
+CopyFile(PREFIX+'/include/','panda/src/net/queuedConnectionReader.h')
+CopyFile(PREFIX+'/include/','panda/src/net/queuedReturn.I')
+CopyFile(PREFIX+'/include/','panda/src/net/queuedReturn.h')
+CopyFile(PREFIX+'/include/','panda/src/net/recentConnectionReader.h')
+CopyFile(PREFIX+'/include/','panda/src/pstatclient/config_pstats.h')
+CopyFile(PREFIX+'/include/','panda/src/pstatclient/pStatClient.I')
+CopyFile(PREFIX+'/include/','panda/src/pstatclient/pStatClient.h')
+CopyFile(PREFIX+'/include/','panda/src/pstatclient/pStatClientImpl.I')
+CopyFile(PREFIX+'/include/','panda/src/pstatclient/pStatClientImpl.h')
+CopyFile(PREFIX+'/include/','panda/src/pstatclient/pStatClientVersion.I')
+CopyFile(PREFIX+'/include/','panda/src/pstatclient/pStatClientVersion.h')
+CopyFile(PREFIX+'/include/','panda/src/pstatclient/pStatClientControlMessage.h')
+CopyFile(PREFIX+'/include/','panda/src/pstatclient/pStatCollector.I')
+CopyFile(PREFIX+'/include/','panda/src/pstatclient/pStatCollector.h')
+CopyFile(PREFIX+'/include/','panda/src/pstatclient/pStatCollectorDef.h')
+CopyFile(PREFIX+'/include/','panda/src/pstatclient/pStatFrameData.I')
+CopyFile(PREFIX+'/include/','panda/src/pstatclient/pStatFrameData.h')
+CopyFile(PREFIX+'/include/','panda/src/pstatclient/pStatProperties.h')
+CopyFile(PREFIX+'/include/','panda/src/pstatclient/pStatServerControlMessage.h')
+CopyFile(PREFIX+'/include/','panda/src/pstatclient/pStatThread.I')
+CopyFile(PREFIX+'/include/','panda/src/pstatclient/pStatThread.h')
+CopyFile(PREFIX+'/include/','panda/src/pstatclient/pStatTimer.I')
+CopyFile(PREFIX+'/include/','panda/src/pstatclient/pStatTimer.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/boundedObject.I')
+CopyFile(PREFIX+'/include/','panda/src/gobj/boundedObject.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/config_gobj.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/drawable.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/geom.I')
+CopyFile(PREFIX+'/include/','panda/src/gobj/geom.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/textureContext.I')
+CopyFile(PREFIX+'/include/','panda/src/gobj/textureContext.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/geomLine.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/geomLinestrip.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/geomPoint.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/geomPolygon.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/geomQuad.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/geomSphere.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/geomSprite.I')
+CopyFile(PREFIX+'/include/','panda/src/gobj/geomSprite.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/geomTri.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/geomTrifan.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/geomTristrip.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/geomprimitives.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/imageBuffer.I')
+CopyFile(PREFIX+'/include/','panda/src/gobj/imageBuffer.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/material.I')
+CopyFile(PREFIX+'/include/','panda/src/gobj/material.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/materialPool.I')
+CopyFile(PREFIX+'/include/','panda/src/gobj/materialPool.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/matrixLens.I')
+CopyFile(PREFIX+'/include/','panda/src/gobj/matrixLens.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/orthographicLens.I')
+CopyFile(PREFIX+'/include/','panda/src/gobj/orthographicLens.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/perspectiveLens.I')
+CopyFile(PREFIX+'/include/','panda/src/gobj/perspectiveLens.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/pixelBuffer.I')
+CopyFile(PREFIX+'/include/','panda/src/gobj/pixelBuffer.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/preparedGraphicsObjects.I')
+CopyFile(PREFIX+'/include/','panda/src/gobj/preparedGraphicsObjects.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/lens.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/lens.I')
+CopyFile(PREFIX+'/include/','panda/src/gobj/savedContext.I')
+CopyFile(PREFIX+'/include/','panda/src/gobj/savedContext.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/texture.I')
+CopyFile(PREFIX+'/include/','panda/src/gobj/texture.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/texturePool.I')
+CopyFile(PREFIX+'/include/','panda/src/gobj/texturePool.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/texCoordName.I')
+CopyFile(PREFIX+'/include/','panda/src/gobj/texCoordName.h')
+CopyFile(PREFIX+'/include/','panda/src/gobj/textureStage.I')
+CopyFile(PREFIX+'/include/','panda/src/gobj/textureStage.h')
+CopyFile(PREFIX+'/include/','panda/src/lerp/lerp.h')
+CopyFile(PREFIX+'/include/','panda/src/lerp/lerpblend.h')
+CopyFile(PREFIX+'/include/','panda/src/lerp/lerpfunctor.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/accumulatedAttribs.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/accumulatedAttribs.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/alphaTestAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/alphaTestAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/antialiasAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/antialiasAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/ambientLight.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/ambientLight.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/auxSceneData.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/auxSceneData.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/bamFile.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/bamFile.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/billboardEffect.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/billboardEffect.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/binCullHandler.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/binCullHandler.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/camera.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/camera.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/clipPlaneAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/clipPlaneAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/colorAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/colorAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/colorBlendAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/colorBlendAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/colorScaleAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/colorScaleAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/colorWriteAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/colorWriteAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/compassEffect.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/compassEffect.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/config_pgraph.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullBin.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullBin.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullBinAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullBinAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullBinBackToFront.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullBinBackToFront.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullBinFixed.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullBinFixed.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullBinFrontToBack.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullBinFrontToBack.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullBinManager.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullBinManager.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullBinUnsorted.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullBinUnsorted.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullFaceAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullFaceAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullHandler.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullHandler.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullResult.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullResult.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullTraverser.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullTraverser.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullTraverserData.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullTraverserData.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullableObject.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/cullableObject.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/decalEffect.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/decalEffect.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/depthOffsetAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/depthOffsetAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/depthTestAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/depthTestAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/depthWriteAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/depthWriteAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/directionalLight.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/directionalLight.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/drawCullHandler.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/drawCullHandler.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/fadeLodNode.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/fadeLodNode.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/fadeLodNodeData.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/fog.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/fog.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/fogAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/fogAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/geomNode.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/geomNode.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/geomTransformer.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/geomTransformer.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/lensNode.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/lensNode.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/light.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/light.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/lightAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/lightAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/lightLensNode.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/lightLensNode.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/lightNode.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/lightNode.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/loader.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/loader.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/loaderFileType.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/loaderFileTypeBam.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/loaderFileTypeRegistry.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/lodNode.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/lodNode.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/materialAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/materialAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/modelNode.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/modelNode.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/modelPool.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/modelPool.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/modelRoot.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/modelRoot.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/nodePath.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/nodePath.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/nodePathCollection.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/nodePathCollection.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/nodePathComponent.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/nodePathComponent.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/nodePathLerps.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/pandaNode.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/pandaNode.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/planeNode.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/planeNode.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/pointLight.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/pointLight.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/polylightNode.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/polylightNode.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/polylightEffect.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/polylightEffect.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/portalNode.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/portalNode.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/portalClipper.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/portalClipper.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/renderAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/renderAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/renderEffect.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/renderEffect.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/renderEffects.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/renderEffects.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/renderModeAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/renderModeAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/renderState.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/renderState.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/rescaleNormalAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/rescaleNormalAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/sceneGraphAnalyzer.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/sceneGraphReducer.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/sceneGraphReducer.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/sceneSetup.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/sceneSetup.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/selectiveChildNode.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/selectiveChildNode.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/sequenceNode.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/sequenceNode.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/showBoundsEffect.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/showBoundsEffect.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/spotlight.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/spotlight.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/switchNode.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/switchNode.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/texMatrixAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/texMatrixAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/texProjectorEffect.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/texProjectorEffect.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/textureApplyAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/textureApplyAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/textureAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/textureAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/texGenAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/texGenAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/textureCollection.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/textureCollection.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/textureStageCollection.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/textureStageCollection.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/transformState.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/transformState.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/transparencyAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/transparencyAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/weakNodePath.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/weakNodePath.h')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/workingNodePath.I')
+CopyFile(PREFIX+'/include/','panda/src/pgraph/workingNodePath.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/animBundle.I')
+CopyFile(PREFIX+'/include/','panda/src/chan/animBundle.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/animBundleNode.I')
+CopyFile(PREFIX+'/include/','panda/src/chan/animBundleNode.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/animChannel.I')
+CopyFile(PREFIX+'/include/','panda/src/chan/animChannel.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/animChannelBase.I')
+CopyFile(PREFIX+'/include/','panda/src/chan/animChannelBase.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/animChannelFixed.I')
+CopyFile(PREFIX+'/include/','panda/src/chan/animChannelFixed.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/animChannelMatrixDynamic.I')
+CopyFile(PREFIX+'/include/','panda/src/chan/animChannelMatrixDynamic.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/animChannelMatrixXfmTable.I')
+CopyFile(PREFIX+'/include/','panda/src/chan/animChannelMatrixXfmTable.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/animChannelScalarDynamic.I')
+CopyFile(PREFIX+'/include/','panda/src/chan/animChannelScalarDynamic.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/animChannelScalarTable.I')
+CopyFile(PREFIX+'/include/','panda/src/chan/animChannelScalarTable.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/animControl.I')
+CopyFile(PREFIX+'/include/','panda/src/chan/animControl.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/animControlCollection.I')
+CopyFile(PREFIX+'/include/','panda/src/chan/animControlCollection.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/animGroup.I')
+CopyFile(PREFIX+'/include/','panda/src/chan/animGroup.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/auto_bind.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/config_chan.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/movingPart.I')
+CopyFile(PREFIX+'/include/','panda/src/chan/movingPart.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/movingPartBase.I')
+CopyFile(PREFIX+'/include/','panda/src/chan/movingPartBase.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/movingPartMatrix.I')
+CopyFile(PREFIX+'/include/','panda/src/chan/movingPartMatrix.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/movingPartScalar.I')
+CopyFile(PREFIX+'/include/','panda/src/chan/movingPartScalar.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/partBundle.I')
+CopyFile(PREFIX+'/include/','panda/src/chan/partBundle.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/partBundleNode.I')
+CopyFile(PREFIX+'/include/','panda/src/chan/partBundleNode.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/partGroup.I')
+CopyFile(PREFIX+'/include/','panda/src/chan/partGroup.h')
+CopyFile(PREFIX+'/include/','panda/src/chan/vector_PartGroupStar.h')
+CopyFile(PREFIX+'/include/','panda/src/char/character.I')
+CopyFile(PREFIX+'/include/','panda/src/char/character.h')
+CopyFile(PREFIX+'/include/','panda/src/char/characterJoint.h')
+CopyFile(PREFIX+'/include/','panda/src/char/characterJointBundle.I')
+CopyFile(PREFIX+'/include/','panda/src/char/characterJointBundle.h')
+CopyFile(PREFIX+'/include/','panda/src/char/characterSlider.h')
+CopyFile(PREFIX+'/include/','panda/src/char/computedVertices.I')
+CopyFile(PREFIX+'/include/','panda/src/char/computedVertices.h')
+CopyFile(PREFIX+'/include/','panda/src/char/computedVerticesMorph.I')
+CopyFile(PREFIX+'/include/','panda/src/char/computedVerticesMorph.h')
+CopyFile(PREFIX+'/include/','panda/src/char/config_char.h')
+CopyFile(PREFIX+'/include/','panda/src/char/dynamicVertices.h')
+CopyFile(PREFIX+'/include/','panda/src/dgraph/config_dgraph.h')
+CopyFile(PREFIX+'/include/','panda/src/dgraph/dataGraphTraverser.I')
+CopyFile(PREFIX+'/include/','panda/src/dgraph/dataGraphTraverser.h')
+CopyFile(PREFIX+'/include/','panda/src/dgraph/dataNode.I')
+CopyFile(PREFIX+'/include/','panda/src/dgraph/dataNode.h')
+CopyFile(PREFIX+'/include/','panda/src/dgraph/dataNodeTransmit.I')
+CopyFile(PREFIX+'/include/','panda/src/dgraph/dataNodeTransmit.h')
+CopyFile(PREFIX+'/include/','panda/src/display/config_display.h')
+CopyFile(PREFIX+'/include/','panda/src/display/drawableRegion.I')
+CopyFile(PREFIX+'/include/','panda/src/display/drawableRegion.h')
+CopyFile(PREFIX+'/include/','panda/src/display/displayRegion.I')
+CopyFile(PREFIX+'/include/','panda/src/display/displayRegion.h')
+CopyFile(PREFIX+'/include/','panda/src/display/displayRegionStack.I')
+CopyFile(PREFIX+'/include/','panda/src/display/displayRegionStack.h')
+CopyFile(PREFIX+'/include/','panda/src/display/frameBufferProperties.I')
+CopyFile(PREFIX+'/include/','panda/src/display/frameBufferProperties.h')
+CopyFile(PREFIX+'/include/','panda/src/display/frameBufferStack.I')
+CopyFile(PREFIX+'/include/','panda/src/display/frameBufferStack.h')
+CopyFile(PREFIX+'/include/','panda/src/display/graphicsEngine.I')
+CopyFile(PREFIX+'/include/','panda/src/display/graphicsEngine.h')
+CopyFile(PREFIX+'/include/','panda/src/display/graphicsOutput.I')
+CopyFile(PREFIX+'/include/','panda/src/display/graphicsOutput.h')
+CopyFile(PREFIX+'/include/','panda/src/display/graphicsBuffer.I')
+CopyFile(PREFIX+'/include/','panda/src/display/graphicsBuffer.h')
+CopyFile(PREFIX+'/include/','panda/src/display/graphicsPipe.I')
+CopyFile(PREFIX+'/include/','panda/src/display/graphicsPipe.h')
+CopyFile(PREFIX+'/include/','panda/src/display/graphicsPipeSelection.I')
+CopyFile(PREFIX+'/include/','panda/src/display/graphicsPipeSelection.h')
+CopyFile(PREFIX+'/include/','panda/src/display/graphicsStateGuardian.I')
+CopyFile(PREFIX+'/include/','panda/src/display/graphicsStateGuardian.h')
+CopyFile(PREFIX+'/include/','panda/src/display/graphicsWindow.I')
+CopyFile(PREFIX+'/include/','panda/src/display/graphicsWindow.h')
+CopyFile(PREFIX+'/include/','panda/src/display/graphicsThreadingModel.I')
+CopyFile(PREFIX+'/include/','panda/src/display/graphicsThreadingModel.h')
+CopyFile(PREFIX+'/include/','panda/src/display/graphicsWindowInputDevice.I')
+CopyFile(PREFIX+'/include/','panda/src/display/graphicsWindowInputDevice.h')
+CopyFile(PREFIX+'/include/','panda/src/display/graphicsDevice.I')
+CopyFile(PREFIX+'/include/','panda/src/display/graphicsDevice.h')
+CopyFile(PREFIX+'/include/','panda/src/display/parasiteBuffer.I')
+CopyFile(PREFIX+'/include/','panda/src/display/parasiteBuffer.h')
+CopyFile(PREFIX+'/include/','panda/src/display/windowProperties.I')
+CopyFile(PREFIX+'/include/','panda/src/display/windowProperties.h')
+CopyFile(PREFIX+'/include/','panda/src/display/lensStack.I')
+CopyFile(PREFIX+'/include/','panda/src/display/lensStack.h')
+CopyFile(PREFIX+'/include/','panda/src/display/renderBuffer.h')
+CopyFile(PREFIX+'/include/','panda/src/display/savedFrameBuffer.I')
+CopyFile(PREFIX+'/include/','panda/src/display/savedFrameBuffer.h')
+CopyFile(PREFIX+'/include/','panda/src/device/analogNode.I')
+CopyFile(PREFIX+'/include/','panda/src/device/analogNode.h')
+CopyFile(PREFIX+'/include/','panda/src/device/buttonNode.I')
+CopyFile(PREFIX+'/include/','panda/src/device/buttonNode.h')
+CopyFile(PREFIX+'/include/','panda/src/device/clientAnalogDevice.I')
+CopyFile(PREFIX+'/include/','panda/src/device/clientAnalogDevice.h')
+CopyFile(PREFIX+'/include/','panda/src/device/clientBase.I')
+CopyFile(PREFIX+'/include/','panda/src/device/clientBase.h')
+CopyFile(PREFIX+'/include/','panda/src/device/clientButtonDevice.I')
+CopyFile(PREFIX+'/include/','panda/src/device/clientButtonDevice.h')
+CopyFile(PREFIX+'/include/','panda/src/device/clientDevice.I')
+CopyFile(PREFIX+'/include/','panda/src/device/clientDevice.h')
+CopyFile(PREFIX+'/include/','panda/src/device/clientDialDevice.I')
+CopyFile(PREFIX+'/include/','panda/src/device/clientDialDevice.h')
+CopyFile(PREFIX+'/include/','panda/src/device/clientTrackerDevice.I')
+CopyFile(PREFIX+'/include/','panda/src/device/clientTrackerDevice.h')
+CopyFile(PREFIX+'/include/','panda/src/device/config_device.h')
+CopyFile(PREFIX+'/include/','panda/src/device/mouseAndKeyboard.h')
+CopyFile(PREFIX+'/include/','panda/src/device/dialNode.I')
+CopyFile(PREFIX+'/include/','panda/src/device/dialNode.h')
+CopyFile(PREFIX+'/include/','panda/src/device/trackerData.I')
+CopyFile(PREFIX+'/include/','panda/src/device/trackerData.h')
+CopyFile(PREFIX+'/include/','panda/src/device/trackerNode.I')
+CopyFile(PREFIX+'/include/','panda/src/device/trackerNode.h')
+CopyFile(PREFIX+'/include/','panda/src/device/virtualMouse.h')
+CopyFile(PREFIX+'/include/','panda/src/tform/buttonThrower.I')
+CopyFile(PREFIX+'/include/','panda/src/tform/buttonThrower.h')
+CopyFile(PREFIX+'/include/','panda/src/tform/driveInterface.I')
+CopyFile(PREFIX+'/include/','panda/src/tform/driveInterface.h')
+CopyFile(PREFIX+'/include/','panda/src/tform/mouseInterfaceNode.I')
+CopyFile(PREFIX+'/include/','panda/src/tform/mouseInterfaceNode.h')
+CopyFile(PREFIX+'/include/','panda/src/tform/mouseWatcher.I')
+CopyFile(PREFIX+'/include/','panda/src/tform/mouseWatcher.h')
+CopyFile(PREFIX+'/include/','panda/src/tform/mouseWatcherGroup.h')
+CopyFile(PREFIX+'/include/','panda/src/tform/mouseWatcherParameter.I')
+CopyFile(PREFIX+'/include/','panda/src/tform/mouseWatcherParameter.h')
+CopyFile(PREFIX+'/include/','panda/src/tform/mouseWatcherRegion.I')
+CopyFile(PREFIX+'/include/','panda/src/tform/mouseWatcherRegion.h')
+CopyFile(PREFIX+'/include/','panda/src/tform/trackball.h')
+CopyFile(PREFIX+'/include/','panda/src/tform/transform2sg.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionEntry.I')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionEntry.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionHandler.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionHandlerEvent.I')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionHandlerEvent.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionHandlerFloor.I')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionHandlerFloor.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionHandlerGravity.I')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionHandlerGravity.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionHandlerPhysical.I')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionHandlerPhysical.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionHandlerPusher.I')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionHandlerPusher.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionHandlerQueue.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionInvSphere.I')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionInvSphere.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionLevelState.I')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionLevelState.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionLine.I')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionLine.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionNode.I')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionNode.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionPlane.I')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionPlane.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionPolygon.I')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionPolygon.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionRay.I')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionRay.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionRecorder.I')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionRecorder.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionSegment.I')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionSegment.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionSolid.I')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionSolid.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionSphere.I')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionSphere.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionTraverser.I')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionTraverser.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionTube.I')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionTube.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionVisualizer.I')
+CopyFile(PREFIX+'/include/','panda/src/collide/collisionVisualizer.h')
+CopyFile(PREFIX+'/include/','panda/src/collide/config_collide.h')
+CopyFile(PREFIX+'/include/','panda/src/pnmtext/config_pnmtext.h')
+CopyFile(PREFIX+'/include/','panda/src/pnmtext/freetypeFont.h')
+CopyFile(PREFIX+'/include/','panda/src/pnmtext/freetypeFont.I')
+CopyFile(PREFIX+'/include/','panda/src/pnmtext/pnmTextGlyph.h')
+CopyFile(PREFIX+'/include/','panda/src/pnmtext/pnmTextGlyph.I')
+CopyFile(PREFIX+'/include/','panda/src/pnmtext/pnmTextMaker.h')
+CopyFile(PREFIX+'/include/','panda/src/pnmtext/pnmTextMaker.I')
+CopyFile(PREFIX+'/include/','panda/src/text/config_text.h')
+CopyFile(PREFIX+'/include/','panda/src/text/dynamicTextFont.I')
+CopyFile(PREFIX+'/include/','panda/src/text/dynamicTextFont.h')
+CopyFile(PREFIX+'/include/','panda/src/text/dynamicTextGlyph.I')
+CopyFile(PREFIX+'/include/','panda/src/text/dynamicTextGlyph.h')
+CopyFile(PREFIX+'/include/','panda/src/text/dynamicTextPage.I')
+CopyFile(PREFIX+'/include/','panda/src/text/dynamicTextPage.h')
+CopyFile(PREFIX+'/include/','panda/src/text/fontPool.I')
+CopyFile(PREFIX+'/include/','panda/src/text/fontPool.h')
+CopyFile(PREFIX+'/include/','panda/src/text/geomTextGlyph.I')
+CopyFile(PREFIX+'/include/','panda/src/text/geomTextGlyph.h')
+CopyFile(PREFIX+'/include/','panda/src/text/staticTextFont.I')
+CopyFile(PREFIX+'/include/','panda/src/text/staticTextFont.h')
+CopyFile(PREFIX+'/include/','panda/src/text/textAssembler.I')
+CopyFile(PREFIX+'/include/','panda/src/text/textAssembler.h')
+CopyFile(PREFIX+'/include/','panda/src/text/textFont.I')
+CopyFile(PREFIX+'/include/','panda/src/text/textFont.h')
+CopyFile(PREFIX+'/include/','panda/src/text/textGlyph.I')
+CopyFile(PREFIX+'/include/','panda/src/text/textGlyph.h')
+CopyFile(PREFIX+'/include/','panda/src/text/textNode.I')
+CopyFile(PREFIX+'/include/','panda/src/text/textNode.h')
+CopyFile(PREFIX+'/include/','panda/src/text/textProperties.I')
+CopyFile(PREFIX+'/include/','panda/src/text/textProperties.h')
+CopyFile(PREFIX+'/include/','panda/src/text/textPropertiesManager.I')
+CopyFile(PREFIX+'/include/','panda/src/text/textPropertiesManager.h')
+CopyFile(PREFIX+'/include/','panda/src/grutil/cardMaker.I')
+CopyFile(PREFIX+'/include/','panda/src/grutil/cardMaker.h')
+CopyFile(PREFIX+'/include/','panda/src/grutil/frameRateMeter.I')
+CopyFile(PREFIX+'/include/','panda/src/grutil/frameRateMeter.h')
+CopyFile(PREFIX+'/include/','panda/src/grutil/lineSegs.I')
+CopyFile(PREFIX+'/include/','panda/src/grutil/lineSegs.h')
+CopyFile(PREFIX+'/include/','panda/src/grutil/multitexReducer.I')
+CopyFile(PREFIX+'/include/','panda/src/grutil/multitexReducer.h')
+CopyFile(PREFIX+'/include/','panda/src/gsgmisc/geomIssuer.I')
+CopyFile(PREFIX+'/include/','panda/src/gsgmisc/geomIssuer.h')
 if OMIT.count("HELIX")==0:
-  CopyFile('built/include/','panda/src/helix/config_helix.h')
-  CopyFile('built/include/','panda/src/helix/HelixClient.h')
-CopyFile('built/include/','panda/src/parametrics/classicNurbsCurve.I')
-CopyFile('built/include/','panda/src/parametrics/classicNurbsCurve.h')
-CopyFile('built/include/','panda/src/parametrics/config_parametrics.h')
-CopyFile('built/include/','panda/src/parametrics/cubicCurveseg.h')
-CopyFile('built/include/','panda/src/parametrics/parametricCurveDrawer.I')
-CopyFile('built/include/','panda/src/parametrics/parametricCurveDrawer.h')
-CopyFile('built/include/','panda/src/parametrics/curveFitter.I')
-CopyFile('built/include/','panda/src/parametrics/curveFitter.h')
-CopyFile('built/include/','panda/src/parametrics/hermiteCurve.h')
-CopyFile('built/include/','panda/src/parametrics/nurbsCurve.h')
-CopyFile('built/include/','panda/src/parametrics/nurbsCurveDrawer.I')
-CopyFile('built/include/','panda/src/parametrics/nurbsCurveDrawer.h')
-CopyFile('built/include/','panda/src/parametrics/nurbsCurveEvaluator.I')
-CopyFile('built/include/','panda/src/parametrics/nurbsCurveEvaluator.h')
-CopyFile('built/include/','panda/src/parametrics/nurbsCurveInterface.I')
-CopyFile('built/include/','panda/src/parametrics/nurbsCurveInterface.h')
-CopyFile('built/include/','panda/src/parametrics/nurbsCurveResult.I')
-CopyFile('built/include/','panda/src/parametrics/nurbsCurveResult.h')
-CopyFile('built/include/','panda/src/parametrics/nurbsBasisVector.I')
-CopyFile('built/include/','panda/src/parametrics/nurbsBasisVector.h')
-CopyFile('built/include/','panda/src/parametrics/nurbsSurfaceEvaluator.I')
-CopyFile('built/include/','panda/src/parametrics/nurbsSurfaceEvaluator.h')
-CopyFile('built/include/','panda/src/parametrics/nurbsSurfaceResult.I')
-CopyFile('built/include/','panda/src/parametrics/nurbsSurfaceResult.h')
-CopyFile('built/include/','panda/src/parametrics/nurbsVertex.h')
-CopyFile('built/include/','panda/src/parametrics/nurbsVertex.I')
-CopyFile('built/include/','panda/src/parametrics/nurbsPPCurve.h')
-CopyFile('built/include/','panda/src/parametrics/parametricCurve.h')
-CopyFile('built/include/','panda/src/parametrics/parametricCurveCollection.I')
-CopyFile('built/include/','panda/src/parametrics/parametricCurveCollection.h')
-CopyFile('built/include/','panda/src/parametrics/piecewiseCurve.h')
-CopyFile('built/include/','panda/src/parametrics/ropeNode.I')
-CopyFile('built/include/','panda/src/parametrics/ropeNode.h')
-CopyFile('built/include/','panda/src/parametrics/sheetNode.I')
-CopyFile('built/include/','panda/src/parametrics/sheetNode.h')
-CopyFile('built/include/','panda/src/pgui/pgButton.I')
-CopyFile('built/include/','panda/src/pgui/pgButton.h')
-CopyFile('built/include/','panda/src/pgui/pgSliderButton.I')
-CopyFile('built/include/','panda/src/pgui/pgSliderButton.h')
-CopyFile('built/include/','panda/src/pgui/pgCullTraverser.I')
-CopyFile('built/include/','panda/src/pgui/pgCullTraverser.h')
-CopyFile('built/include/','panda/src/pgui/pgEntry.I')
-CopyFile('built/include/','panda/src/pgui/pgEntry.h')
-CopyFile('built/include/','panda/src/pgui/pgMouseWatcherGroup.I')
-CopyFile('built/include/','panda/src/pgui/pgMouseWatcherGroup.h')
-CopyFile('built/include/','panda/src/pgui/pgMouseWatcherParameter.I')
-CopyFile('built/include/','panda/src/pgui/pgMouseWatcherParameter.h')
-CopyFile('built/include/','panda/src/pgui/pgFrameStyle.I')
-CopyFile('built/include/','panda/src/pgui/pgFrameStyle.h')
-CopyFile('built/include/','panda/src/pgui/pgItem.I')
-CopyFile('built/include/','panda/src/pgui/pgItem.h')
-CopyFile('built/include/','panda/src/pgui/pgMouseWatcherBackground.h')
-CopyFile('built/include/','panda/src/pgui/pgMouseWatcherRegion.I')
-CopyFile('built/include/','panda/src/pgui/pgMouseWatcherRegion.h')
-CopyFile('built/include/','panda/src/pgui/pgTop.I')
-CopyFile('built/include/','panda/src/pgui/pgTop.h')
-CopyFile('built/include/','panda/src/pgui/pgWaitBar.I')
-CopyFile('built/include/','panda/src/pgui/pgWaitBar.h')
-CopyFile('built/include/','panda/src/pgui/pgSliderBar.I')
-CopyFile('built/include/','panda/src/pgui/pgSliderBar.h')
-CopyFile('built/include/','panda/src/pnmimagetypes/config_pnmimagetypes.h')
-CopyFile('built/include/','panda/src/recorder/mouseRecorder.h')
-CopyFile('built/include/','panda/src/recorder/recorderBase.h')
-CopyFile('built/include/','panda/src/recorder/recorderBase.I')
-CopyFile('built/include/','panda/src/recorder/recorderController.h')
-CopyFile('built/include/','panda/src/recorder/recorderController.I')
-CopyFile('built/include/','panda/src/recorder/recorderFrame.h')
-CopyFile('built/include/','panda/src/recorder/recorderFrame.I')
-CopyFile('built/include/','panda/src/recorder/recorderHeader.h')
-CopyFile('built/include/','panda/src/recorder/recorderHeader.I')
-CopyFile('built/include/','panda/src/recorder/recorderTable.h')
-CopyFile('built/include/','panda/src/recorder/recorderTable.I')
-CopyFile('built/include/','panda/src/recorder/socketStreamRecorder.h')
-CopyFile('built/include/','panda/src/recorder/socketStreamRecorder.I')
-CopyFile('built/include/','panda/src/vrpn/config_vrpn.h')
-CopyFile('built/include/','panda/src/vrpn/vrpnClient.I')
-CopyFile('built/include/','panda/src/vrpn/vrpnClient.h')
-CopyFile('built/include/','panda/metalibs/panda/panda.h')
-CopyFile('built/include/','panda/src/builder/builder.I')
-CopyFile('built/include/','panda/src/builder/builder.h')
-CopyFile('built/include/','panda/src/builder/builder_compare.I')
-CopyFile('built/include/','panda/src/builder/builder_compare.h')
-CopyFile('built/include/','panda/src/builder/builderAttrib.I')
-CopyFile('built/include/','panda/src/builder/builderAttrib.h')
-CopyFile('built/include/','panda/src/builder/builderAttribTempl.I')
-CopyFile('built/include/','panda/src/builder/builderAttribTempl.h')
-CopyFile('built/include/','panda/src/builder/builderBucket.I')
-CopyFile('built/include/','panda/src/builder/builderBucket.h')
-CopyFile('built/include/','panda/src/builder/builderBucketNode.I')
-CopyFile('built/include/','panda/src/builder/builderBucketNode.h')
-CopyFile('built/include/','panda/src/builder/builderNormalVisualizer.I')
-CopyFile('built/include/','panda/src/builder/builderNormalVisualizer.h')
-CopyFile('built/include/','panda/src/builder/builderPrim.I')
-CopyFile('built/include/','panda/src/builder/builderPrim.h')
-CopyFile('built/include/','panda/src/builder/builderPrimTempl.I')
-CopyFile('built/include/','panda/src/builder/builderPrimTempl.h')
-CopyFile('built/include/','panda/src/builder/builderProperties.h')
-CopyFile('built/include/','panda/src/builder/builderTypes.h')
-CopyFile('built/include/','panda/src/builder/builderVertex.I')
-CopyFile('built/include/','panda/src/builder/builderVertex.h')
-CopyFile('built/include/','panda/src/builder/builderVertexTempl.I')
-CopyFile('built/include/','panda/src/builder/builderVertexTempl.h')
-CopyFile('built/include/','panda/src/builder/config_builder.h')
-CopyFile('built/include/','panda/src/windisplay/config_windisplay.h')
-CopyFile('built/include/','panda/src/windisplay/winGraphicsPipe.I')
-CopyFile('built/include/','panda/src/windisplay/winGraphicsPipe.h')
-CopyFile('built/include/','panda/src/windisplay/winGraphicsWindow.I')
-CopyFile('built/include/','panda/src/windisplay/winGraphicsWindow.h')
-CopyFile('built/include/','panda/src/dxgsg7/config_dxgsg7.h')
-CopyFile('built/include/','panda/src/dxgsg7/dxGraphicsStateGuardian7.I')
-CopyFile('built/include/','panda/src/dxgsg7/dxGraphicsStateGuardian7.h')
-CopyFile('built/include/','panda/src/dxgsg7/dxTextureContext7.h')
-CopyFile('built/include/','panda/src/dxgsg7/dxgsg7base.h')
-CopyFile('built/include/','panda/src/dxgsg8/dxgsg8base.h')
-CopyFile('built/include/','panda/src/dxgsg8/config_dxgsg8.h')
-CopyFile('built/include/','panda/src/dxgsg8/dxGraphicsStateGuardian8.I')
-CopyFile('built/include/','panda/src/dxgsg8/dxGraphicsStateGuardian8.h')
-CopyFile('built/include/','panda/src/dxgsg8/dxTextureContext8.h')
-CopyFile('built/include/','panda/src/dxgsg8/d3dfont8.h')
-CopyFile('built/include/','panda/src/dxgsg8/dxGraphicsDevice8.h')
-CopyFile('built/include/','panda/src/dxgsg9/dxgsg9base.h')
-CopyFile('built/include/','panda/src/dxgsg9/config_dxgsg9.h')
-CopyFile('built/include/','panda/src/dxgsg9/dxGraphicsStateGuardian9.I')
-CopyFile('built/include/','panda/src/dxgsg9/dxGraphicsStateGuardian9.h')
-CopyFile('built/include/','panda/src/dxgsg9/dxTextureContext9.h')
-CopyFile('built/include/','panda/src/dxgsg9/d3dfont9.h')
-CopyFile('built/include/','panda/src/dxgsg9/dxGraphicsDevice9.h')
-CopyFile('built/include/','panda/src/effects/config_effects.h')
-CopyFile('built/include/','panda/src/effects/cgShader.I')
-CopyFile('built/include/','panda/src/effects/cgShader.h')
-CopyFile('built/include/','panda/src/effects/cgShaderAttrib.I')
-CopyFile('built/include/','panda/src/effects/cgShaderAttrib.h')
-CopyFile('built/include/','panda/src/effects/cgShaderContext.I')
-CopyFile('built/include/','panda/src/effects/cgShaderContext.h')
-CopyFile('built/include/','panda/src/effects/lensFlareNode.I')
-CopyFile('built/include/','panda/src/effects/lensFlareNode.h')
-CopyFile('built/include/','panda/src/egg/eggAnimData.I')
-CopyFile('built/include/','panda/src/egg/eggAnimData.h')
-CopyFile('built/include/','panda/src/egg/eggAttributes.I')
-CopyFile('built/include/','panda/src/egg/eggAttributes.h')
-CopyFile('built/include/','panda/src/egg/eggBin.h')
-CopyFile('built/include/','panda/src/egg/eggBinMaker.h')
-CopyFile('built/include/','panda/src/egg/eggComment.I')
-CopyFile('built/include/','panda/src/egg/eggComment.h')
-CopyFile('built/include/','panda/src/egg/eggCoordinateSystem.I')
-CopyFile('built/include/','panda/src/egg/eggCoordinateSystem.h')
-CopyFile('built/include/','panda/src/egg/eggCurve.I')
-CopyFile('built/include/','panda/src/egg/eggCurve.h')
-CopyFile('built/include/','panda/src/egg/eggData.I')
-CopyFile('built/include/','panda/src/egg/eggData.h')
-CopyFile('built/include/','panda/src/egg/eggExternalReference.I')
-CopyFile('built/include/','panda/src/egg/eggExternalReference.h')
-CopyFile('built/include/','panda/src/egg/eggFilenameNode.I')
-CopyFile('built/include/','panda/src/egg/eggFilenameNode.h')
-CopyFile('built/include/','panda/src/egg/eggGroup.I')
-CopyFile('built/include/','panda/src/egg/eggGroup.h')
-CopyFile('built/include/','panda/src/egg/eggGroupNode.I')
-CopyFile('built/include/','panda/src/egg/eggGroupNode.h')
-CopyFile('built/include/','panda/src/egg/eggGroupUniquifier.h')
-CopyFile('built/include/','panda/src/egg/eggLine.I')
-CopyFile('built/include/','panda/src/egg/eggLine.h')
-CopyFile('built/include/','panda/src/egg/eggMaterial.I')
-CopyFile('built/include/','panda/src/egg/eggMaterial.h')
-CopyFile('built/include/','panda/src/egg/eggMaterialCollection.I')
-CopyFile('built/include/','panda/src/egg/eggMaterialCollection.h')
-CopyFile('built/include/','panda/src/egg/eggMorph.I')
-CopyFile('built/include/','panda/src/egg/eggMorph.h')
-CopyFile('built/include/','panda/src/egg/eggMorphList.I')
-CopyFile('built/include/','panda/src/egg/eggMorphList.h')
-CopyFile('built/include/','panda/src/egg/eggNamedObject.I')
-CopyFile('built/include/','panda/src/egg/eggNamedObject.h')
-CopyFile('built/include/','panda/src/egg/eggNameUniquifier.h')
-CopyFile('built/include/','panda/src/egg/eggNode.I')
-CopyFile('built/include/','panda/src/egg/eggNode.h')
-CopyFile('built/include/','panda/src/egg/eggNurbsCurve.I')
-CopyFile('built/include/','panda/src/egg/eggNurbsCurve.h')
-CopyFile('built/include/','panda/src/egg/eggNurbsSurface.I')
-CopyFile('built/include/','panda/src/egg/eggNurbsSurface.h')
-CopyFile('built/include/','panda/src/egg/eggObject.I')
-CopyFile('built/include/','panda/src/egg/eggObject.h')
-CopyFile('built/include/','panda/src/egg/eggParameters.h')
-CopyFile('built/include/','panda/src/egg/eggPoint.I')
-CopyFile('built/include/','panda/src/egg/eggPoint.h')
-CopyFile('built/include/','panda/src/egg/eggPolygon.I')
-CopyFile('built/include/','panda/src/egg/eggPolygon.h')
-CopyFile('built/include/','panda/src/egg/eggPolysetMaker.h')
-CopyFile('built/include/','panda/src/egg/eggPoolUniquifier.h')
-CopyFile('built/include/','panda/src/egg/eggPrimitive.I')
-CopyFile('built/include/','panda/src/egg/eggPrimitive.h')
-CopyFile('built/include/','panda/src/egg/eggRenderMode.I')
-CopyFile('built/include/','panda/src/egg/eggRenderMode.h')
-CopyFile('built/include/','panda/src/egg/eggSAnimData.I')
-CopyFile('built/include/','panda/src/egg/eggSAnimData.h')
-CopyFile('built/include/','panda/src/egg/eggSurface.I')
-CopyFile('built/include/','panda/src/egg/eggSurface.h')
-CopyFile('built/include/','panda/src/egg/eggSwitchCondition.h')
-CopyFile('built/include/','panda/src/egg/eggTable.I')
-CopyFile('built/include/','panda/src/egg/eggTable.h')
-CopyFile('built/include/','panda/src/egg/eggTexture.I')
-CopyFile('built/include/','panda/src/egg/eggTexture.h')
-CopyFile('built/include/','panda/src/egg/eggTextureCollection.I')
-CopyFile('built/include/','panda/src/egg/eggTextureCollection.h')
-CopyFile('built/include/','panda/src/egg/eggTransform3d.I')
-CopyFile('built/include/','panda/src/egg/eggTransform3d.h')
-CopyFile('built/include/','panda/src/egg/eggUserData.I')
-CopyFile('built/include/','panda/src/egg/eggUserData.h')
-CopyFile('built/include/','panda/src/egg/eggUtilities.I')
-CopyFile('built/include/','panda/src/egg/eggUtilities.h')
-CopyFile('built/include/','panda/src/egg/eggVertex.I')
-CopyFile('built/include/','panda/src/egg/eggVertex.h')
-CopyFile('built/include/','panda/src/egg/eggVertexPool.I')
-CopyFile('built/include/','panda/src/egg/eggVertexPool.h')
-CopyFile('built/include/','panda/src/egg/eggVertexUV.I')
-CopyFile('built/include/','panda/src/egg/eggVertexUV.h')
-CopyFile('built/include/','panda/src/egg/eggXfmAnimData.I')
-CopyFile('built/include/','panda/src/egg/eggXfmAnimData.h')
-CopyFile('built/include/','panda/src/egg/eggXfmSAnim.I')
-CopyFile('built/include/','panda/src/egg/eggXfmSAnim.h')
-CopyFile('built/include/','panda/src/egg/pt_EggMaterial.h')
-CopyFile('built/include/','panda/src/egg/vector_PT_EggMaterial.h')
-CopyFile('built/include/','panda/src/egg/pt_EggTexture.h')
-CopyFile('built/include/','panda/src/egg/vector_PT_EggTexture.h')
-CopyFile('built/include/','panda/src/egg/pt_EggVertex.h')
-CopyFile('built/include/','panda/src/egg/vector_PT_EggVertex.h')
-CopyFile('built/include/','panda/src/egg2pg/egg_parametrics.h')
-CopyFile('built/include/','panda/src/egg2pg/load_egg_file.h')
-CopyFile('built/include/','panda/src/egg2pg/config_egg2pg.h')
-CopyFile('built/include/','panda/src/framework/pandaFramework.I')
-CopyFile('built/include/','panda/src/framework/pandaFramework.h')
-CopyFile('built/include/','panda/src/framework/windowFramework.I')
-CopyFile('built/include/','panda/src/framework/windowFramework.h')
-CopyFile('built/include/','panda/src/glstuff/glext.h')
-CopyFile('built/include/','panda/src/glstuff/glmisc_src.cxx')
-CopyFile('built/include/','panda/src/glstuff/glmisc_src.h')
-CopyFile('built/include/','panda/src/glstuff/glstuff_src.cxx')
-CopyFile('built/include/','panda/src/glstuff/glstuff_src.h')
-CopyFile('built/include/','panda/src/glstuff/glstuff_undef_src.h')
-CopyFile('built/include/','panda/src/glstuff/glGeomContext_src.cxx')
-CopyFile('built/include/','panda/src/glstuff/glGeomContext_src.I')
-CopyFile('built/include/','panda/src/glstuff/glGeomContext_src.h')
-CopyFile('built/include/','panda/src/glstuff/glGraphicsStateGuardian_src.cxx')
-CopyFile('built/include/','panda/src/glstuff/glGraphicsStateGuardian_src.I')
-CopyFile('built/include/','panda/src/glstuff/glGraphicsStateGuardian_src.h')
-CopyFile('built/include/','panda/src/glstuff/glSavedFrameBuffer_src.cxx')
-CopyFile('built/include/','panda/src/glstuff/glSavedFrameBuffer_src.I')
-CopyFile('built/include/','panda/src/glstuff/glSavedFrameBuffer_src.h')
-CopyFile('built/include/','panda/src/glstuff/glTextureContext_src.cxx')
-CopyFile('built/include/','panda/src/glstuff/glTextureContext_src.I')
-CopyFile('built/include/','panda/src/glstuff/glTextureContext_src.h')
-CopyFile('built/include/','panda/src/glstuff/glCgShaderContext_src.cxx')
-CopyFile('built/include/','panda/src/glstuff/glCgShaderContext_src.h')
-CopyFile('built/include/','panda/src/glstuff/glCgShaderContext_src.I')
-CopyFile('built/include/','panda/src/glgsg/config_glgsg.h')
-CopyFile('built/include/','panda/src/glgsg/glgsg.h')
-CopyFile('built/include/','panda/metalibs/pandaegg/pandaegg.h')
-CopyFile('built/include/','panda/src/wgldisplay/config_wgldisplay.h')
-CopyFile('built/include/','panda/src/wgldisplay/wglGraphicsBuffer.I')
-CopyFile('built/include/','panda/src/wgldisplay/wglGraphicsBuffer.h')
-CopyFile('built/include/','panda/src/wgldisplay/wglGraphicsPipe.I')
-CopyFile('built/include/','panda/src/wgldisplay/wglGraphicsPipe.h')
-CopyFile('built/include/','panda/src/wgldisplay/wglGraphicsStateGuardian.I')
-CopyFile('built/include/','panda/src/wgldisplay/wglGraphicsStateGuardian.h')
-CopyFile('built/include/','panda/src/wgldisplay/wglGraphicsWindow.I')
-CopyFile('built/include/','panda/src/wgldisplay/wglGraphicsWindow.h')
-CopyFile('built/include/','panda/src/wgldisplay/wglext.h')
-CopyFile('built/include/','panda/metalibs/pandagl/pandagl.h')
-CopyFile('built/include/','panda/src/physics/actorNode.I')
-CopyFile('built/include/','panda/src/physics/actorNode.h')
-CopyFile('built/include/','panda/src/physics/angularEulerIntegrator.h')
-CopyFile('built/include/','panda/src/physics/angularForce.h')
-CopyFile('built/include/','panda/src/physics/angularIntegrator.h')
-CopyFile('built/include/','panda/src/physics/angularVectorForce.I')
-CopyFile('built/include/','panda/src/physics/angularVectorForce.h')
-CopyFile('built/include/','panda/src/physics/baseForce.I')
-CopyFile('built/include/','panda/src/physics/baseForce.h')
-CopyFile('built/include/','panda/src/physics/baseIntegrator.I')
-CopyFile('built/include/','panda/src/physics/baseIntegrator.h')
-CopyFile('built/include/','panda/src/physics/config_physics.h')
-CopyFile('built/include/','panda/src/physics/forceNode.I')
-CopyFile('built/include/','panda/src/physics/forceNode.h')
-CopyFile('built/include/','panda/src/physics/forces.h')
-CopyFile('built/include/','panda/src/physics/linearCylinderVortexForce.I')
-CopyFile('built/include/','panda/src/physics/linearCylinderVortexForce.h')
-CopyFile('built/include/','panda/src/physics/linearDistanceForce.I')
-CopyFile('built/include/','panda/src/physics/linearDistanceForce.h')
-CopyFile('built/include/','panda/src/physics/linearEulerIntegrator.h')
-CopyFile('built/include/','panda/src/physics/linearForce.I')
-CopyFile('built/include/','panda/src/physics/linearForce.h')
-CopyFile('built/include/','panda/src/physics/linearFrictionForce.I')
-CopyFile('built/include/','panda/src/physics/linearFrictionForce.h')
-CopyFile('built/include/','panda/src/physics/linearIntegrator.h')
-CopyFile('built/include/','panda/src/physics/linearJitterForce.h')
-CopyFile('built/include/','panda/src/physics/linearNoiseForce.I')
-CopyFile('built/include/','panda/src/physics/linearNoiseForce.h')
-CopyFile('built/include/','panda/src/physics/linearRandomForce.I')
-CopyFile('built/include/','panda/src/physics/linearRandomForce.h')
-CopyFile('built/include/','panda/src/physics/linearSinkForce.h')
-CopyFile('built/include/','panda/src/physics/linearSourceForce.h')
-CopyFile('built/include/','panda/src/physics/linearUserDefinedForce.I')
-CopyFile('built/include/','panda/src/physics/linearUserDefinedForce.h')
-CopyFile('built/include/','panda/src/physics/linearVectorForce.I')
-CopyFile('built/include/','panda/src/physics/linearVectorForce.h')
-CopyFile('built/include/','panda/src/physics/physical.I')
-CopyFile('built/include/','panda/src/physics/physical.h')
-CopyFile('built/include/','panda/src/physics/physicalNode.I')
-CopyFile('built/include/','panda/src/physics/physicalNode.h')
-CopyFile('built/include/','panda/src/physics/physicsCollisionHandler.I')
-CopyFile('built/include/','panda/src/physics/physicsCollisionHandler.h')
-CopyFile('built/include/','panda/src/physics/physicsManager.I')
-CopyFile('built/include/','panda/src/physics/physicsManager.h')
-CopyFile('built/include/','panda/src/physics/physicsObject.I')
-CopyFile('built/include/','panda/src/physics/physicsObject.h')
-CopyFile('built/include/','panda/src/particlesystem/baseParticle.I')
-CopyFile('built/include/','panda/src/particlesystem/baseParticle.h')
-CopyFile('built/include/','panda/src/particlesystem/baseParticleEmitter.I')
-CopyFile('built/include/','panda/src/particlesystem/baseParticleEmitter.h')
-CopyFile('built/include/','panda/src/particlesystem/baseParticleFactory.I')
-CopyFile('built/include/','panda/src/particlesystem/baseParticleFactory.h')
-CopyFile('built/include/','panda/src/particlesystem/baseParticleRenderer.I')
-CopyFile('built/include/','panda/src/particlesystem/baseParticleRenderer.h')
-CopyFile('built/include/','panda/src/particlesystem/boxEmitter.I')
-CopyFile('built/include/','panda/src/particlesystem/boxEmitter.h')
-CopyFile('built/include/','panda/src/particlesystem/config_particlesystem.h')
-CopyFile('built/include/','panda/src/particlesystem/discEmitter.I')
-CopyFile('built/include/','panda/src/particlesystem/discEmitter.h')
-CopyFile('built/include/','panda/src/particlesystem/emitters.h')
-CopyFile('built/include/','panda/src/particlesystem/geomParticleRenderer.I')
-CopyFile('built/include/','panda/src/particlesystem/geomParticleRenderer.h')
-CopyFile('built/include/','panda/src/particlesystem/lineEmitter.I')
-CopyFile('built/include/','panda/src/particlesystem/lineEmitter.h')
-CopyFile('built/include/','panda/src/particlesystem/lineParticleRenderer.I')
-CopyFile('built/include/','panda/src/particlesystem/lineParticleRenderer.h')
-CopyFile('built/include/','panda/src/particlesystem/particleSystem.I')
-CopyFile('built/include/','panda/src/particlesystem/particleSystem.h')
-CopyFile('built/include/','panda/src/particlesystem/particleSystemManager.I')
-CopyFile('built/include/','panda/src/particlesystem/particleSystemManager.h')
-CopyFile('built/include/','panda/src/particlesystem/particlefactories.h')
-CopyFile('built/include/','panda/src/particlesystem/particles.h')
-CopyFile('built/include/','panda/src/particlesystem/pointEmitter.I')
-CopyFile('built/include/','panda/src/particlesystem/pointEmitter.h')
-CopyFile('built/include/','panda/src/particlesystem/pointParticle.h')
-CopyFile('built/include/','panda/src/particlesystem/pointParticleFactory.h')
-CopyFile('built/include/','panda/src/particlesystem/pointParticleRenderer.I')
-CopyFile('built/include/','panda/src/particlesystem/pointParticleRenderer.h')
-CopyFile('built/include/','panda/src/particlesystem/rectangleEmitter.I')
-CopyFile('built/include/','panda/src/particlesystem/rectangleEmitter.h')
-CopyFile('built/include/','panda/src/particlesystem/ringEmitter.I')
-CopyFile('built/include/','panda/src/particlesystem/ringEmitter.h')
-CopyFile('built/include/','panda/src/particlesystem/sparkleParticleRenderer.I')
-CopyFile('built/include/','panda/src/particlesystem/sparkleParticleRenderer.h')
-CopyFile('built/include/','panda/src/particlesystem/sphereSurfaceEmitter.I')
-CopyFile('built/include/','panda/src/particlesystem/sphereSurfaceEmitter.h')
-CopyFile('built/include/','panda/src/particlesystem/sphereVolumeEmitter.I')
-CopyFile('built/include/','panda/src/particlesystem/sphereVolumeEmitter.h')
-CopyFile('built/include/','panda/src/particlesystem/spriteParticleRenderer.I')
-CopyFile('built/include/','panda/src/particlesystem/spriteParticleRenderer.h')
-CopyFile('built/include/','panda/src/particlesystem/tangentRingEmitter.I')
-CopyFile('built/include/','panda/src/particlesystem/tangentRingEmitter.h')
-CopyFile('built/include/','panda/src/particlesystem/zSpinParticle.I')
-CopyFile('built/include/','panda/src/particlesystem/zSpinParticle.h')
-CopyFile('built/include/','panda/src/particlesystem/zSpinParticleFactory.I')
-CopyFile('built/include/','panda/src/particlesystem/zSpinParticleFactory.h')
-CopyFile('built/include/','panda/src/particlesystem/particleCommonFuncs.h')
-CopyFile('built/include/','panda/metalibs/pandaphysics/pandaphysics.h')
-CopyFile('built/include/','direct/src/directbase/directbase.h')
-CopyFile('built/include/','direct/src/directbase/directsymbols.h')
-CopyFile('built/include/','direct/src/deadrec/smoothMover.h')
-CopyFile('built/include/','direct/src/deadrec/smoothMover.I')
-CopyFile('built/include/','direct/src/interval/config_interval.h')
-CopyFile('built/include/','direct/src/interval/cInterval.I')
-CopyFile('built/include/','direct/src/interval/cInterval.h')
-CopyFile('built/include/','direct/src/interval/cIntervalManager.I')
-CopyFile('built/include/','direct/src/interval/cIntervalManager.h')
-CopyFile('built/include/','direct/src/interval/cLerpInterval.I')
-CopyFile('built/include/','direct/src/interval/cLerpInterval.h')
-CopyFile('built/include/','direct/src/interval/cLerpNodePathInterval.I')
-CopyFile('built/include/','direct/src/interval/cLerpNodePathInterval.h')
-CopyFile('built/include/','direct/src/interval/cLerpAnimEffectInterval.I')
-CopyFile('built/include/','direct/src/interval/cLerpAnimEffectInterval.h')
-CopyFile('built/include/','direct/src/interval/cMetaInterval.I')
-CopyFile('built/include/','direct/src/interval/cMetaInterval.h')
-CopyFile('built/include/','direct/src/interval/hideInterval.I')
-CopyFile('built/include/','direct/src/interval/hideInterval.h')
-CopyFile('built/include/','direct/src/interval/showInterval.I')
-CopyFile('built/include/','direct/src/interval/showInterval.h')
-CopyFile('built/include/','direct/src/interval/waitInterval.I')
-CopyFile('built/include/','direct/src/interval/waitInterval.h')
-CopyFile('built/include/','pandatool/src/pandatoolbase/animationConvert.h')
-CopyFile('built/include/','pandatool/src/pandatoolbase/config_pandatoolbase.h')
-CopyFile('built/include/','pandatool/src/pandatoolbase/distanceUnit.h')
-CopyFile('built/include/','pandatool/src/pandatoolbase/pandatoolbase.h')
-CopyFile('built/include/','pandatool/src/pandatoolbase/pandatoolsymbols.h')
-CopyFile('built/include/','pandatool/src/pandatoolbase/pathReplace.I')
-CopyFile('built/include/','pandatool/src/pandatoolbase/pathReplace.h')
-CopyFile('built/include/','pandatool/src/pandatoolbase/pathStore.h')
-CopyFile('built/include/','pandatool/src/converter/somethingToEggConverter.I')
-CopyFile('built/include/','pandatool/src/converter/somethingToEggConverter.h')
-CopyFile('built/include/','pandatool/src/progbase/programBase.I')
-CopyFile('built/include/','pandatool/src/progbase/programBase.h')
-CopyFile('built/include/','pandatool/src/progbase/withOutputFile.I')
-CopyFile('built/include/','pandatool/src/progbase/withOutputFile.h')
-CopyFile('built/include/','pandatool/src/progbase/wordWrapStream.h')
-CopyFile('built/include/','pandatool/src/progbase/wordWrapStreamBuf.I')
-CopyFile('built/include/','pandatool/src/progbase/wordWrapStreamBuf.h')
-CopyFile('built/include/','pandatool/src/eggbase/eggBase.h')
-CopyFile('built/include/','pandatool/src/eggbase/eggConverter.h')
-CopyFile('built/include/','pandatool/src/eggbase/eggFilter.h')
-CopyFile('built/include/','pandatool/src/eggbase/eggMakeSomething.h')
-CopyFile('built/include/','pandatool/src/eggbase/eggMultiBase.h')
-CopyFile('built/include/','pandatool/src/eggbase/eggMultiFilter.h')
-CopyFile('built/include/','pandatool/src/eggbase/eggReader.h')
-CopyFile('built/include/','pandatool/src/eggbase/eggSingleBase.h')
-CopyFile('built/include/','pandatool/src/eggbase/eggToSomething.h')
-CopyFile('built/include/','pandatool/src/eggbase/eggWriter.h')
-CopyFile('built/include/','pandatool/src/eggbase/somethingToEgg.h')
-CopyFile('built/include/','pandatool/src/cvscopy/cvsCopy.h')
-CopyFile('built/include/','pandatool/src/dxf/dxfFile.h')
-CopyFile('built/include/','pandatool/src/dxf/dxfLayer.h')
-CopyFile('built/include/','pandatool/src/dxf/dxfLayerMap.h')
-CopyFile('built/include/','pandatool/src/dxf/dxfVertex.h')
-CopyFile('built/include/','pandatool/src/dxfegg/dxfToEggConverter.h')
-CopyFile('built/include/','pandatool/src/dxfegg/dxfToEggLayer.h')
-CopyFile('built/include/','pandatool/src/eggcharbase/eggBackPointer.h')
-CopyFile('built/include/','pandatool/src/eggcharbase/eggCharacterCollection.I')
-CopyFile('built/include/','pandatool/src/eggcharbase/eggCharacterCollection.h')
-CopyFile('built/include/','pandatool/src/eggcharbase/eggCharacterData.I')
-CopyFile('built/include/','pandatool/src/eggcharbase/eggCharacterData.h')
-CopyFile('built/include/','pandatool/src/eggcharbase/eggCharacterFilter.h')
-CopyFile('built/include/','pandatool/src/eggcharbase/eggComponentData.I')
-CopyFile('built/include/','pandatool/src/eggcharbase/eggComponentData.h')
-CopyFile('built/include/','pandatool/src/eggcharbase/eggJointData.h')
-CopyFile('built/include/','pandatool/src/eggcharbase/eggJointData.I')
-CopyFile('built/include/','pandatool/src/eggcharbase/eggJointPointer.h')
-CopyFile('built/include/','pandatool/src/eggcharbase/eggJointPointer.I')
-CopyFile('built/include/','pandatool/src/eggcharbase/eggJointNodePointer.h')
-CopyFile('built/include/','pandatool/src/eggcharbase/eggMatrixTablePointer.h')
-CopyFile('built/include/','pandatool/src/eggcharbase/eggScalarTablePointer.h')
-CopyFile('built/include/','pandatool/src/eggcharbase/eggSliderData.I')
-CopyFile('built/include/','pandatool/src/eggcharbase/eggSliderData.h')
-CopyFile('built/include/','pandatool/src/eggcharbase/eggVertexPointer.h')
-CopyFile('built/include/','pandatool/src/flt/fltBead.h')
-CopyFile('built/include/','pandatool/src/flt/fltBeadID.h')
-CopyFile('built/include/','pandatool/src/flt/fltCurve.I')
-CopyFile('built/include/','pandatool/src/flt/fltCurve.h')
-CopyFile('built/include/','pandatool/src/flt/fltError.h')
-CopyFile('built/include/','pandatool/src/flt/fltExternalReference.h')
-CopyFile('built/include/','pandatool/src/flt/fltEyepoint.h')
-CopyFile('built/include/','pandatool/src/flt/fltFace.I')
-CopyFile('built/include/','pandatool/src/flt/fltFace.h')
-CopyFile('built/include/','pandatool/src/flt/fltGeometry.I')
-CopyFile('built/include/','pandatool/src/flt/fltGeometry.h')
-CopyFile('built/include/','pandatool/src/flt/fltGroup.h')
-CopyFile('built/include/','pandatool/src/flt/fltHeader.h')
-CopyFile('built/include/','pandatool/src/flt/fltInstanceDefinition.h')
-CopyFile('built/include/','pandatool/src/flt/fltInstanceRef.h')
-CopyFile('built/include/','pandatool/src/flt/fltLOD.h')
-CopyFile('built/include/','pandatool/src/flt/fltLightSourceDefinition.h')
-CopyFile('built/include/','pandatool/src/flt/fltLocalVertexPool.I')
-CopyFile('built/include/','pandatool/src/flt/fltLocalVertexPool.h')
-CopyFile('built/include/','pandatool/src/flt/fltMaterial.h')
-CopyFile('built/include/','pandatool/src/flt/fltMesh.I')
-CopyFile('built/include/','pandatool/src/flt/fltMesh.h')
-CopyFile('built/include/','pandatool/src/flt/fltMeshPrimitive.I')
-CopyFile('built/include/','pandatool/src/flt/fltMeshPrimitive.h')
-CopyFile('built/include/','pandatool/src/flt/fltObject.h')
-CopyFile('built/include/','pandatool/src/flt/fltOpcode.h')
-CopyFile('built/include/','pandatool/src/flt/fltPackedColor.I')
-CopyFile('built/include/','pandatool/src/flt/fltPackedColor.h')
-CopyFile('built/include/','pandatool/src/flt/fltRecord.I')
-CopyFile('built/include/','pandatool/src/flt/fltRecord.h')
-CopyFile('built/include/','pandatool/src/flt/fltRecordReader.h')
-CopyFile('built/include/','pandatool/src/flt/fltRecordWriter.h')
-CopyFile('built/include/','pandatool/src/flt/fltTexture.h')
-CopyFile('built/include/','pandatool/src/flt/fltTrackplane.h')
-CopyFile('built/include/','pandatool/src/flt/fltTransformGeneralMatrix.h')
-CopyFile('built/include/','pandatool/src/flt/fltTransformPut.h')
-CopyFile('built/include/','pandatool/src/flt/fltTransformRecord.h')
-CopyFile('built/include/','pandatool/src/flt/fltTransformRotateAboutEdge.h')
-CopyFile('built/include/','pandatool/src/flt/fltTransformRotateAboutPoint.h')
-CopyFile('built/include/','pandatool/src/flt/fltTransformRotateScale.h')
-CopyFile('built/include/','pandatool/src/flt/fltTransformScale.h')
-CopyFile('built/include/','pandatool/src/flt/fltTransformTranslate.h')
-CopyFile('built/include/','pandatool/src/flt/fltUnsupportedRecord.h')
-CopyFile('built/include/','pandatool/src/flt/fltVectorRecord.h')
-CopyFile('built/include/','pandatool/src/flt/fltVertex.I')
-CopyFile('built/include/','pandatool/src/flt/fltVertex.h')
-CopyFile('built/include/','pandatool/src/flt/fltVertexList.h')
-CopyFile('built/include/','pandatool/src/fltegg/fltToEggConverter.I')
-CopyFile('built/include/','pandatool/src/fltegg/fltToEggConverter.h')
-CopyFile('built/include/','pandatool/src/fltegg/fltToEggLevelState.I')
-CopyFile('built/include/','pandatool/src/fltegg/fltToEggLevelState.h')
-CopyFile('built/include/','pandatool/src/imagebase/imageBase.h')
-CopyFile('built/include/','pandatool/src/imagebase/imageFilter.h')
-CopyFile('built/include/','pandatool/src/imagebase/imageReader.h')
-CopyFile('built/include/','pandatool/src/imagebase/imageWriter.I')
-CopyFile('built/include/','pandatool/src/imagebase/imageWriter.h')
-CopyFile('built/include/','pandatool/src/lwo/iffChunk.I')
-CopyFile('built/include/','pandatool/src/lwo/iffChunk.h')
-CopyFile('built/include/','pandatool/src/lwo/iffGenericChunk.I')
-CopyFile('built/include/','pandatool/src/lwo/iffGenericChunk.h')
-CopyFile('built/include/','pandatool/src/lwo/iffId.I')
-CopyFile('built/include/','pandatool/src/lwo/iffId.h')
-CopyFile('built/include/','pandatool/src/lwo/iffInputFile.I')
-CopyFile('built/include/','pandatool/src/lwo/iffInputFile.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoBoundingBox.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoChunk.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoClip.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoDiscontinuousVertexMap.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoGroupChunk.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoHeader.I')
-CopyFile('built/include/','pandatool/src/lwo/lwoHeader.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoInputFile.I')
-CopyFile('built/include/','pandatool/src/lwo/lwoInputFile.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoLayer.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoPoints.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoPolygons.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoPolygonTags.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoTags.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoStillImage.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoSurface.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoSurfaceBlock.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoSurfaceBlockAxis.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoSurfaceBlockChannel.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoSurfaceBlockCoordSys.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoSurfaceBlockEnabled.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoSurfaceBlockImage.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoSurfaceBlockOpacity.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoSurfaceBlockProjection.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoSurfaceBlockHeader.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoSurfaceBlockRefObj.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoSurfaceBlockRepeat.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoSurfaceBlockTMap.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoSurfaceBlockTransform.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoSurfaceBlockVMapName.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoSurfaceBlockWrap.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoSurfaceColor.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoSurfaceParameter.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoSurfaceSidedness.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoSurfaceSmoothingAngle.h')
-CopyFile('built/include/','pandatool/src/lwo/lwoVertexMap.h')
-CopyFile('built/include/','pandatool/src/lwoegg/lwoToEggConverter.I')
-CopyFile('built/include/','pandatool/src/lwoegg/lwoToEggConverter.h')
-CopyFile('built/include/','pandatool/src/vrmlegg/indexedFaceSet.h')
-CopyFile('built/include/','pandatool/src/vrmlegg/vrmlAppearance.h')
-CopyFile('built/include/','pandatool/src/vrmlegg/vrmlToEggConverter.h')
-CopyFile('built/include/','pandatool/src/ptloader/config_ptloader.h')
-CopyFile('built/include/','pandatool/src/ptloader/loaderFileTypePandatool.h')
-CopyFile('built/include/','pandatool/src/pstatserver/pStatClientData.h')
-CopyFile('built/include/','pandatool/src/pstatserver/pStatGraph.I')
-CopyFile('built/include/','pandatool/src/pstatserver/pStatGraph.h')
-CopyFile('built/include/','pandatool/src/pstatserver/pStatListener.h')
-CopyFile('built/include/','pandatool/src/pstatserver/pStatMonitor.I')
-CopyFile('built/include/','pandatool/src/pstatserver/pStatMonitor.h')
-CopyFile('built/include/','pandatool/src/pstatserver/pStatPianoRoll.I')
-CopyFile('built/include/','pandatool/src/pstatserver/pStatPianoRoll.h')
-CopyFile('built/include/','pandatool/src/pstatserver/pStatReader.h')
-CopyFile('built/include/','pandatool/src/pstatserver/pStatServer.h')
-CopyFile('built/include/','pandatool/src/pstatserver/pStatStripChart.I')
-CopyFile('built/include/','pandatool/src/pstatserver/pStatStripChart.h')
-CopyFile('built/include/','pandatool/src/pstatserver/pStatThreadData.I')
-CopyFile('built/include/','pandatool/src/pstatserver/pStatThreadData.h')
-CopyFile('built/include/','pandatool/src/pstatserver/pStatView.I')
-CopyFile('built/include/','pandatool/src/pstatserver/pStatView.h')
-CopyFile('built/include/','pandatool/src/pstatserver/pStatViewLevel.I')
-CopyFile('built/include/','pandatool/src/pstatserver/pStatViewLevel.h')
-CopyFile('built/include/','pandaapp/src/pandaappbase/pandaappbase.h')
-CopyFile('built/include/','pandaapp/src/pandaappbase/pandaappsymbols.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/config_stitch.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/fadeImagePool.I')
-CopyFile('built/include/','pandaapp/src/stitchbase/fadeImagePool.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/fixedPoint.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/layeredImage.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/morphGrid.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/stitchCommand.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/stitchCommandReader.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/stitchCylindricalLens.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/stitchFile.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/stitchFisheyeLens.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/stitchImage.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/stitchImageCommandOutput.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/stitchImageOutputter.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/stitchImageRasterizer.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/stitchLens.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/stitchLexerDefs.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/stitchPSphereLens.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/stitchParserDefs.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/stitchPerspectiveLens.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/stitchPoint.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/stitcher.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/triangle.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/triangleRasterizer.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/stitchCylindricalScreen.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/stitchFlatScreen.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/stitchMultiScreen.h')
-CopyFile('built/include/','pandaapp/src/stitchbase/stitchScreen.h')
+  CopyFile(PREFIX+'/include/','panda/src/helix/config_helix.h')
+  CopyFile(PREFIX+'/include/','panda/src/helix/HelixClient.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/classicNurbsCurve.I')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/classicNurbsCurve.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/config_parametrics.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/cubicCurveseg.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/parametricCurveDrawer.I')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/parametricCurveDrawer.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/curveFitter.I')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/curveFitter.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/hermiteCurve.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/nurbsCurve.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/nurbsCurveDrawer.I')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/nurbsCurveDrawer.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/nurbsCurveEvaluator.I')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/nurbsCurveEvaluator.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/nurbsCurveInterface.I')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/nurbsCurveInterface.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/nurbsCurveResult.I')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/nurbsCurveResult.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/nurbsBasisVector.I')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/nurbsBasisVector.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/nurbsSurfaceEvaluator.I')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/nurbsSurfaceEvaluator.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/nurbsSurfaceResult.I')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/nurbsSurfaceResult.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/nurbsVertex.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/nurbsVertex.I')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/nurbsPPCurve.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/parametricCurve.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/parametricCurveCollection.I')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/parametricCurveCollection.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/piecewiseCurve.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/ropeNode.I')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/ropeNode.h')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/sheetNode.I')
+CopyFile(PREFIX+'/include/','panda/src/parametrics/sheetNode.h')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgButton.I')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgButton.h')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgSliderButton.I')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgSliderButton.h')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgCullTraverser.I')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgCullTraverser.h')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgEntry.I')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgEntry.h')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgMouseWatcherGroup.I')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgMouseWatcherGroup.h')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgMouseWatcherParameter.I')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgMouseWatcherParameter.h')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgFrameStyle.I')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgFrameStyle.h')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgItem.I')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgItem.h')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgMouseWatcherBackground.h')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgMouseWatcherRegion.I')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgMouseWatcherRegion.h')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgTop.I')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgTop.h')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgWaitBar.I')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgWaitBar.h')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgSliderBar.I')
+CopyFile(PREFIX+'/include/','panda/src/pgui/pgSliderBar.h')
+CopyFile(PREFIX+'/include/','panda/src/pnmimagetypes/config_pnmimagetypes.h')
+CopyFile(PREFIX+'/include/','panda/src/recorder/mouseRecorder.h')
+CopyFile(PREFIX+'/include/','panda/src/recorder/recorderBase.h')
+CopyFile(PREFIX+'/include/','panda/src/recorder/recorderBase.I')
+CopyFile(PREFIX+'/include/','panda/src/recorder/recorderController.h')
+CopyFile(PREFIX+'/include/','panda/src/recorder/recorderController.I')
+CopyFile(PREFIX+'/include/','panda/src/recorder/recorderFrame.h')
+CopyFile(PREFIX+'/include/','panda/src/recorder/recorderFrame.I')
+CopyFile(PREFIX+'/include/','panda/src/recorder/recorderHeader.h')
+CopyFile(PREFIX+'/include/','panda/src/recorder/recorderHeader.I')
+CopyFile(PREFIX+'/include/','panda/src/recorder/recorderTable.h')
+CopyFile(PREFIX+'/include/','panda/src/recorder/recorderTable.I')
+CopyFile(PREFIX+'/include/','panda/src/recorder/socketStreamRecorder.h')
+CopyFile(PREFIX+'/include/','panda/src/recorder/socketStreamRecorder.I')
+CopyFile(PREFIX+'/include/','panda/src/vrpn/config_vrpn.h')
+CopyFile(PREFIX+'/include/','panda/src/vrpn/vrpnClient.I')
+CopyFile(PREFIX+'/include/','panda/src/vrpn/vrpnClient.h')
+CopyFile(PREFIX+'/include/','panda/metalibs/panda/panda.h')
+CopyFile(PREFIX+'/include/','panda/src/builder/builder.I')
+CopyFile(PREFIX+'/include/','panda/src/builder/builder.h')
+CopyFile(PREFIX+'/include/','panda/src/builder/builder_compare.I')
+CopyFile(PREFIX+'/include/','panda/src/builder/builder_compare.h')
+CopyFile(PREFIX+'/include/','panda/src/builder/builderAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/builder/builderAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/builder/builderAttribTempl.I')
+CopyFile(PREFIX+'/include/','panda/src/builder/builderAttribTempl.h')
+CopyFile(PREFIX+'/include/','panda/src/builder/builderBucket.I')
+CopyFile(PREFIX+'/include/','panda/src/builder/builderBucket.h')
+CopyFile(PREFIX+'/include/','panda/src/builder/builderBucketNode.I')
+CopyFile(PREFIX+'/include/','panda/src/builder/builderBucketNode.h')
+CopyFile(PREFIX+'/include/','panda/src/builder/builderNormalVisualizer.I')
+CopyFile(PREFIX+'/include/','panda/src/builder/builderNormalVisualizer.h')
+CopyFile(PREFIX+'/include/','panda/src/builder/builderPrim.I')
+CopyFile(PREFIX+'/include/','panda/src/builder/builderPrim.h')
+CopyFile(PREFIX+'/include/','panda/src/builder/builderPrimTempl.I')
+CopyFile(PREFIX+'/include/','panda/src/builder/builderPrimTempl.h')
+CopyFile(PREFIX+'/include/','panda/src/builder/builderProperties.h')
+CopyFile(PREFIX+'/include/','panda/src/builder/builderTypes.h')
+CopyFile(PREFIX+'/include/','panda/src/builder/builderVertex.I')
+CopyFile(PREFIX+'/include/','panda/src/builder/builderVertex.h')
+CopyFile(PREFIX+'/include/','panda/src/builder/builderVertexTempl.I')
+CopyFile(PREFIX+'/include/','panda/src/builder/builderVertexTempl.h')
+CopyFile(PREFIX+'/include/','panda/src/builder/config_builder.h')
+CopyFile(PREFIX+'/include/','panda/src/windisplay/config_windisplay.h')
+CopyFile(PREFIX+'/include/','panda/src/windisplay/winGraphicsPipe.I')
+CopyFile(PREFIX+'/include/','panda/src/windisplay/winGraphicsPipe.h')
+CopyFile(PREFIX+'/include/','panda/src/windisplay/winGraphicsWindow.I')
+CopyFile(PREFIX+'/include/','panda/src/windisplay/winGraphicsWindow.h')
+CopyFile(PREFIX+'/include/','panda/src/dxgsg7/config_dxgsg7.h')
+CopyFile(PREFIX+'/include/','panda/src/dxgsg7/dxGraphicsStateGuardian7.I')
+CopyFile(PREFIX+'/include/','panda/src/dxgsg7/dxGraphicsStateGuardian7.h')
+CopyFile(PREFIX+'/include/','panda/src/dxgsg7/dxTextureContext7.h')
+CopyFile(PREFIX+'/include/','panda/src/dxgsg7/dxgsg7base.h')
+CopyFile(PREFIX+'/include/','panda/src/dxgsg8/dxgsg8base.h')
+CopyFile(PREFIX+'/include/','panda/src/dxgsg8/config_dxgsg8.h')
+CopyFile(PREFIX+'/include/','panda/src/dxgsg8/dxGraphicsStateGuardian8.I')
+CopyFile(PREFIX+'/include/','panda/src/dxgsg8/dxGraphicsStateGuardian8.h')
+CopyFile(PREFIX+'/include/','panda/src/dxgsg8/dxTextureContext8.h')
+CopyFile(PREFIX+'/include/','panda/src/dxgsg8/d3dfont8.h')
+CopyFile(PREFIX+'/include/','panda/src/dxgsg8/dxGraphicsDevice8.h')
+CopyFile(PREFIX+'/include/','panda/src/dxgsg9/dxgsg9base.h')
+CopyFile(PREFIX+'/include/','panda/src/dxgsg9/config_dxgsg9.h')
+CopyFile(PREFIX+'/include/','panda/src/dxgsg9/dxGraphicsStateGuardian9.I')
+CopyFile(PREFIX+'/include/','panda/src/dxgsg9/dxGraphicsStateGuardian9.h')
+CopyFile(PREFIX+'/include/','panda/src/dxgsg9/dxTextureContext9.h')
+CopyFile(PREFIX+'/include/','panda/src/dxgsg9/d3dfont9.h')
+CopyFile(PREFIX+'/include/','panda/src/dxgsg9/dxGraphicsDevice9.h')
+CopyFile(PREFIX+'/include/','panda/src/effects/config_effects.h')
+CopyFile(PREFIX+'/include/','panda/src/effects/cgShader.I')
+CopyFile(PREFIX+'/include/','panda/src/effects/cgShader.h')
+CopyFile(PREFIX+'/include/','panda/src/effects/cgShaderAttrib.I')
+CopyFile(PREFIX+'/include/','panda/src/effects/cgShaderAttrib.h')
+CopyFile(PREFIX+'/include/','panda/src/effects/cgShaderContext.I')
+CopyFile(PREFIX+'/include/','panda/src/effects/cgShaderContext.h')
+CopyFile(PREFIX+'/include/','panda/src/effects/lensFlareNode.I')
+CopyFile(PREFIX+'/include/','panda/src/effects/lensFlareNode.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggAnimData.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggAnimData.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggAttributes.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggAttributes.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggBin.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggBinMaker.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggComment.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggComment.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggCoordinateSystem.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggCoordinateSystem.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggCurve.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggCurve.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggData.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggData.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggExternalReference.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggExternalReference.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggFilenameNode.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggFilenameNode.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggGroup.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggGroup.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggGroupNode.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggGroupNode.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggGroupUniquifier.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggLine.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggLine.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggMaterial.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggMaterial.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggMaterialCollection.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggMaterialCollection.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggMorph.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggMorph.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggMorphList.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggMorphList.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggNamedObject.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggNamedObject.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggNameUniquifier.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggNode.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggNode.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggNurbsCurve.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggNurbsCurve.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggNurbsSurface.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggNurbsSurface.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggObject.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggObject.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggParameters.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggPoint.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggPoint.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggPolygon.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggPolygon.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggPolysetMaker.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggPoolUniquifier.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggPrimitive.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggPrimitive.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggRenderMode.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggRenderMode.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggSAnimData.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggSAnimData.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggSurface.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggSurface.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggSwitchCondition.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggTable.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggTable.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggTexture.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggTexture.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggTextureCollection.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggTextureCollection.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggTransform3d.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggTransform3d.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggUserData.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggUserData.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggUtilities.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggUtilities.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggVertex.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggVertex.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggVertexPool.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggVertexPool.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggVertexUV.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggVertexUV.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggXfmAnimData.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggXfmAnimData.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggXfmSAnim.I')
+CopyFile(PREFIX+'/include/','panda/src/egg/eggXfmSAnim.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/pt_EggMaterial.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/vector_PT_EggMaterial.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/pt_EggTexture.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/vector_PT_EggTexture.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/pt_EggVertex.h')
+CopyFile(PREFIX+'/include/','panda/src/egg/vector_PT_EggVertex.h')
+CopyFile(PREFIX+'/include/','panda/src/egg2pg/egg_parametrics.h')
+CopyFile(PREFIX+'/include/','panda/src/egg2pg/load_egg_file.h')
+CopyFile(PREFIX+'/include/','panda/src/egg2pg/config_egg2pg.h')
+CopyFile(PREFIX+'/include/','panda/src/framework/pandaFramework.I')
+CopyFile(PREFIX+'/include/','panda/src/framework/pandaFramework.h')
+CopyFile(PREFIX+'/include/','panda/src/framework/windowFramework.I')
+CopyFile(PREFIX+'/include/','panda/src/framework/windowFramework.h')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glext.h')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glmisc_src.cxx')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glmisc_src.h')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glstuff_src.cxx')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glstuff_src.h')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glstuff_undef_src.h')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glGeomContext_src.cxx')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glGeomContext_src.I')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glGeomContext_src.h')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glGraphicsStateGuardian_src.cxx')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glGraphicsStateGuardian_src.I')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glGraphicsStateGuardian_src.h')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glSavedFrameBuffer_src.cxx')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glSavedFrameBuffer_src.I')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glSavedFrameBuffer_src.h')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glTextureContext_src.cxx')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glTextureContext_src.I')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glTextureContext_src.h')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glCgShaderContext_src.cxx')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glCgShaderContext_src.h')
+CopyFile(PREFIX+'/include/','panda/src/glstuff/glCgShaderContext_src.I')
+CopyFile(PREFIX+'/include/','panda/src/glgsg/config_glgsg.h')
+CopyFile(PREFIX+'/include/','panda/src/glgsg/glgsg.h')
+CopyFile(PREFIX+'/include/','panda/metalibs/pandaegg/pandaegg.h')
+CopyFile(PREFIX+'/include/','panda/src/wgldisplay/config_wgldisplay.h')
+CopyFile(PREFIX+'/include/','panda/src/wgldisplay/wglGraphicsBuffer.I')
+CopyFile(PREFIX+'/include/','panda/src/wgldisplay/wglGraphicsBuffer.h')
+CopyFile(PREFIX+'/include/','panda/src/wgldisplay/wglGraphicsPipe.I')
+CopyFile(PREFIX+'/include/','panda/src/wgldisplay/wglGraphicsPipe.h')
+CopyFile(PREFIX+'/include/','panda/src/wgldisplay/wglGraphicsStateGuardian.I')
+CopyFile(PREFIX+'/include/','panda/src/wgldisplay/wglGraphicsStateGuardian.h')
+CopyFile(PREFIX+'/include/','panda/src/wgldisplay/wglGraphicsWindow.I')
+CopyFile(PREFIX+'/include/','panda/src/wgldisplay/wglGraphicsWindow.h')
+CopyFile(PREFIX+'/include/','panda/src/wgldisplay/wglext.h')
+CopyFile(PREFIX+'/include/','panda/metalibs/pandagl/pandagl.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/actorNode.I')
+CopyFile(PREFIX+'/include/','panda/src/physics/actorNode.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/angularEulerIntegrator.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/angularForce.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/angularIntegrator.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/angularVectorForce.I')
+CopyFile(PREFIX+'/include/','panda/src/physics/angularVectorForce.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/baseForce.I')
+CopyFile(PREFIX+'/include/','panda/src/physics/baseForce.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/baseIntegrator.I')
+CopyFile(PREFIX+'/include/','panda/src/physics/baseIntegrator.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/config_physics.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/forceNode.I')
+CopyFile(PREFIX+'/include/','panda/src/physics/forceNode.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/forces.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearCylinderVortexForce.I')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearCylinderVortexForce.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearDistanceForce.I')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearDistanceForce.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearEulerIntegrator.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearForce.I')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearForce.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearFrictionForce.I')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearFrictionForce.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearIntegrator.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearJitterForce.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearNoiseForce.I')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearNoiseForce.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearRandomForce.I')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearRandomForce.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearSinkForce.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearSourceForce.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearUserDefinedForce.I')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearUserDefinedForce.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearVectorForce.I')
+CopyFile(PREFIX+'/include/','panda/src/physics/linearVectorForce.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/physical.I')
+CopyFile(PREFIX+'/include/','panda/src/physics/physical.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/physicalNode.I')
+CopyFile(PREFIX+'/include/','panda/src/physics/physicalNode.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/physicsCollisionHandler.I')
+CopyFile(PREFIX+'/include/','panda/src/physics/physicsCollisionHandler.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/physicsManager.I')
+CopyFile(PREFIX+'/include/','panda/src/physics/physicsManager.h')
+CopyFile(PREFIX+'/include/','panda/src/physics/physicsObject.I')
+CopyFile(PREFIX+'/include/','panda/src/physics/physicsObject.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/baseParticle.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/baseParticle.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/baseParticleEmitter.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/baseParticleEmitter.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/baseParticleFactory.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/baseParticleFactory.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/baseParticleRenderer.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/baseParticleRenderer.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/boxEmitter.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/boxEmitter.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/config_particlesystem.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/discEmitter.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/discEmitter.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/emitters.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/geomParticleRenderer.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/geomParticleRenderer.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/lineEmitter.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/lineEmitter.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/lineParticleRenderer.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/lineParticleRenderer.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/particleSystem.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/particleSystem.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/particleSystemManager.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/particleSystemManager.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/particlefactories.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/particles.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/pointEmitter.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/pointEmitter.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/pointParticle.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/pointParticleFactory.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/pointParticleRenderer.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/pointParticleRenderer.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/rectangleEmitter.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/rectangleEmitter.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/ringEmitter.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/ringEmitter.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/sparkleParticleRenderer.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/sparkleParticleRenderer.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/sphereSurfaceEmitter.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/sphereSurfaceEmitter.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/sphereVolumeEmitter.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/sphereVolumeEmitter.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/spriteParticleRenderer.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/spriteParticleRenderer.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/tangentRingEmitter.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/tangentRingEmitter.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/zSpinParticle.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/zSpinParticle.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/zSpinParticleFactory.I')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/zSpinParticleFactory.h')
+CopyFile(PREFIX+'/include/','panda/src/particlesystem/particleCommonFuncs.h')
+CopyFile(PREFIX+'/include/','panda/metalibs/pandaphysics/pandaphysics.h')
+CopyFile(PREFIX+'/include/','direct/src/directbase/directbase.h')
+CopyFile(PREFIX+'/include/','direct/src/directbase/directsymbols.h')
+CopyFile(PREFIX+'/include/','direct/src/deadrec/smoothMover.h')
+CopyFile(PREFIX+'/include/','direct/src/deadrec/smoothMover.I')
+CopyFile(PREFIX+'/include/','direct/src/interval/config_interval.h')
+CopyFile(PREFIX+'/include/','direct/src/interval/cInterval.I')
+CopyFile(PREFIX+'/include/','direct/src/interval/cInterval.h')
+CopyFile(PREFIX+'/include/','direct/src/interval/cIntervalManager.I')
+CopyFile(PREFIX+'/include/','direct/src/interval/cIntervalManager.h')
+CopyFile(PREFIX+'/include/','direct/src/interval/cLerpInterval.I')
+CopyFile(PREFIX+'/include/','direct/src/interval/cLerpInterval.h')
+CopyFile(PREFIX+'/include/','direct/src/interval/cLerpNodePathInterval.I')
+CopyFile(PREFIX+'/include/','direct/src/interval/cLerpNodePathInterval.h')
+CopyFile(PREFIX+'/include/','direct/src/interval/cLerpAnimEffectInterval.I')
+CopyFile(PREFIX+'/include/','direct/src/interval/cLerpAnimEffectInterval.h')
+CopyFile(PREFIX+'/include/','direct/src/interval/cMetaInterval.I')
+CopyFile(PREFIX+'/include/','direct/src/interval/cMetaInterval.h')
+CopyFile(PREFIX+'/include/','direct/src/interval/hideInterval.I')
+CopyFile(PREFIX+'/include/','direct/src/interval/hideInterval.h')
+CopyFile(PREFIX+'/include/','direct/src/interval/showInterval.I')
+CopyFile(PREFIX+'/include/','direct/src/interval/showInterval.h')
+CopyFile(PREFIX+'/include/','direct/src/interval/waitInterval.I')
+CopyFile(PREFIX+'/include/','direct/src/interval/waitInterval.h')
+CopyFile(PREFIX+'/include/','pandatool/src/pandatoolbase/animationConvert.h')
+CopyFile(PREFIX+'/include/','pandatool/src/pandatoolbase/config_pandatoolbase.h')
+CopyFile(PREFIX+'/include/','pandatool/src/pandatoolbase/distanceUnit.h')
+CopyFile(PREFIX+'/include/','pandatool/src/pandatoolbase/pandatoolbase.h')
+CopyFile(PREFIX+'/include/','pandatool/src/pandatoolbase/pandatoolsymbols.h')
+CopyFile(PREFIX+'/include/','pandatool/src/pandatoolbase/pathReplace.I')
+CopyFile(PREFIX+'/include/','pandatool/src/pandatoolbase/pathReplace.h')
+CopyFile(PREFIX+'/include/','pandatool/src/pandatoolbase/pathStore.h')
+CopyFile(PREFIX+'/include/','pandatool/src/converter/somethingToEggConverter.I')
+CopyFile(PREFIX+'/include/','pandatool/src/converter/somethingToEggConverter.h')
+CopyFile(PREFIX+'/include/','pandatool/src/progbase/programBase.I')
+CopyFile(PREFIX+'/include/','pandatool/src/progbase/programBase.h')
+CopyFile(PREFIX+'/include/','pandatool/src/progbase/withOutputFile.I')
+CopyFile(PREFIX+'/include/','pandatool/src/progbase/withOutputFile.h')
+CopyFile(PREFIX+'/include/','pandatool/src/progbase/wordWrapStream.h')
+CopyFile(PREFIX+'/include/','pandatool/src/progbase/wordWrapStreamBuf.I')
+CopyFile(PREFIX+'/include/','pandatool/src/progbase/wordWrapStreamBuf.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggbase/eggBase.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggbase/eggConverter.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggbase/eggFilter.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggbase/eggMakeSomething.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggbase/eggMultiBase.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggbase/eggMultiFilter.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggbase/eggReader.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggbase/eggSingleBase.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggbase/eggToSomething.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggbase/eggWriter.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggbase/somethingToEgg.h')
+CopyFile(PREFIX+'/include/','pandatool/src/cvscopy/cvsCopy.h')
+CopyFile(PREFIX+'/include/','pandatool/src/dxf/dxfFile.h')
+CopyFile(PREFIX+'/include/','pandatool/src/dxf/dxfLayer.h')
+CopyFile(PREFIX+'/include/','pandatool/src/dxf/dxfLayerMap.h')
+CopyFile(PREFIX+'/include/','pandatool/src/dxf/dxfVertex.h')
+CopyFile(PREFIX+'/include/','pandatool/src/dxfegg/dxfToEggConverter.h')
+CopyFile(PREFIX+'/include/','pandatool/src/dxfegg/dxfToEggLayer.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggcharbase/eggBackPointer.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggcharbase/eggCharacterCollection.I')
+CopyFile(PREFIX+'/include/','pandatool/src/eggcharbase/eggCharacterCollection.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggcharbase/eggCharacterData.I')
+CopyFile(PREFIX+'/include/','pandatool/src/eggcharbase/eggCharacterData.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggcharbase/eggCharacterFilter.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggcharbase/eggComponentData.I')
+CopyFile(PREFIX+'/include/','pandatool/src/eggcharbase/eggComponentData.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggcharbase/eggJointData.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggcharbase/eggJointData.I')
+CopyFile(PREFIX+'/include/','pandatool/src/eggcharbase/eggJointPointer.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggcharbase/eggJointPointer.I')
+CopyFile(PREFIX+'/include/','pandatool/src/eggcharbase/eggJointNodePointer.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggcharbase/eggMatrixTablePointer.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggcharbase/eggScalarTablePointer.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggcharbase/eggSliderData.I')
+CopyFile(PREFIX+'/include/','pandatool/src/eggcharbase/eggSliderData.h')
+CopyFile(PREFIX+'/include/','pandatool/src/eggcharbase/eggVertexPointer.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltBead.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltBeadID.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltCurve.I')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltCurve.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltError.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltExternalReference.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltEyepoint.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltFace.I')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltFace.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltGeometry.I')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltGeometry.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltGroup.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltHeader.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltInstanceDefinition.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltInstanceRef.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltLOD.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltLightSourceDefinition.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltLocalVertexPool.I')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltLocalVertexPool.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltMaterial.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltMesh.I')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltMesh.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltMeshPrimitive.I')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltMeshPrimitive.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltObject.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltOpcode.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltPackedColor.I')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltPackedColor.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltRecord.I')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltRecord.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltRecordReader.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltRecordWriter.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltTexture.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltTrackplane.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltTransformGeneralMatrix.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltTransformPut.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltTransformRecord.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltTransformRotateAboutEdge.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltTransformRotateAboutPoint.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltTransformRotateScale.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltTransformScale.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltTransformTranslate.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltUnsupportedRecord.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltVectorRecord.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltVertex.I')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltVertex.h')
+CopyFile(PREFIX+'/include/','pandatool/src/flt/fltVertexList.h')
+CopyFile(PREFIX+'/include/','pandatool/src/fltegg/fltToEggConverter.I')
+CopyFile(PREFIX+'/include/','pandatool/src/fltegg/fltToEggConverter.h')
+CopyFile(PREFIX+'/include/','pandatool/src/fltegg/fltToEggLevelState.I')
+CopyFile(PREFIX+'/include/','pandatool/src/fltegg/fltToEggLevelState.h')
+CopyFile(PREFIX+'/include/','pandatool/src/imagebase/imageBase.h')
+CopyFile(PREFIX+'/include/','pandatool/src/imagebase/imageFilter.h')
+CopyFile(PREFIX+'/include/','pandatool/src/imagebase/imageReader.h')
+CopyFile(PREFIX+'/include/','pandatool/src/imagebase/imageWriter.I')
+CopyFile(PREFIX+'/include/','pandatool/src/imagebase/imageWriter.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/iffChunk.I')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/iffChunk.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/iffGenericChunk.I')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/iffGenericChunk.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/iffId.I')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/iffId.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/iffInputFile.I')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/iffInputFile.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoBoundingBox.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoChunk.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoClip.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoDiscontinuousVertexMap.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoGroupChunk.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoHeader.I')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoHeader.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoInputFile.I')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoInputFile.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoLayer.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoPoints.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoPolygons.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoPolygonTags.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoTags.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoStillImage.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoSurface.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoSurfaceBlock.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoSurfaceBlockAxis.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoSurfaceBlockChannel.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoSurfaceBlockCoordSys.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoSurfaceBlockEnabled.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoSurfaceBlockImage.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoSurfaceBlockOpacity.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoSurfaceBlockProjection.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoSurfaceBlockHeader.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoSurfaceBlockRefObj.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoSurfaceBlockRepeat.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoSurfaceBlockTMap.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoSurfaceBlockTransform.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoSurfaceBlockVMapName.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoSurfaceBlockWrap.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoSurfaceColor.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoSurfaceParameter.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoSurfaceSidedness.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoSurfaceSmoothingAngle.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwo/lwoVertexMap.h')
+CopyFile(PREFIX+'/include/','pandatool/src/lwoegg/lwoToEggConverter.I')
+CopyFile(PREFIX+'/include/','pandatool/src/lwoegg/lwoToEggConverter.h')
+CopyFile(PREFIX+'/include/','pandatool/src/vrmlegg/indexedFaceSet.h')
+CopyFile(PREFIX+'/include/','pandatool/src/vrmlegg/vrmlAppearance.h')
+CopyFile(PREFIX+'/include/','pandatool/src/vrmlegg/vrmlToEggConverter.h')
+CopyFile(PREFIX+'/include/','pandatool/src/ptloader/config_ptloader.h')
+CopyFile(PREFIX+'/include/','pandatool/src/ptloader/loaderFileTypePandatool.h')
+CopyFile(PREFIX+'/include/','pandatool/src/pstatserver/pStatClientData.h')
+CopyFile(PREFIX+'/include/','pandatool/src/pstatserver/pStatGraph.I')
+CopyFile(PREFIX+'/include/','pandatool/src/pstatserver/pStatGraph.h')
+CopyFile(PREFIX+'/include/','pandatool/src/pstatserver/pStatListener.h')
+CopyFile(PREFIX+'/include/','pandatool/src/pstatserver/pStatMonitor.I')
+CopyFile(PREFIX+'/include/','pandatool/src/pstatserver/pStatMonitor.h')
+CopyFile(PREFIX+'/include/','pandatool/src/pstatserver/pStatPianoRoll.I')
+CopyFile(PREFIX+'/include/','pandatool/src/pstatserver/pStatPianoRoll.h')
+CopyFile(PREFIX+'/include/','pandatool/src/pstatserver/pStatReader.h')
+CopyFile(PREFIX+'/include/','pandatool/src/pstatserver/pStatServer.h')
+CopyFile(PREFIX+'/include/','pandatool/src/pstatserver/pStatStripChart.I')
+CopyFile(PREFIX+'/include/','pandatool/src/pstatserver/pStatStripChart.h')
+CopyFile(PREFIX+'/include/','pandatool/src/pstatserver/pStatThreadData.I')
+CopyFile(PREFIX+'/include/','pandatool/src/pstatserver/pStatThreadData.h')
+CopyFile(PREFIX+'/include/','pandatool/src/pstatserver/pStatView.I')
+CopyFile(PREFIX+'/include/','pandatool/src/pstatserver/pStatView.h')
+CopyFile(PREFIX+'/include/','pandatool/src/pstatserver/pStatViewLevel.I')
+CopyFile(PREFIX+'/include/','pandatool/src/pstatserver/pStatViewLevel.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/pandaappbase/pandaappbase.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/pandaappbase/pandaappsymbols.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/config_stitch.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/fadeImagePool.I')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/fadeImagePool.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/fixedPoint.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/layeredImage.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/morphGrid.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/stitchCommand.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/stitchCommandReader.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/stitchCylindricalLens.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/stitchFile.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/stitchFisheyeLens.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/stitchImage.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/stitchImageCommandOutput.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/stitchImageOutputter.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/stitchImageRasterizer.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/stitchLens.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/stitchLexerDefs.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/stitchPSphereLens.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/stitchParserDefs.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/stitchPerspectiveLens.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/stitchPoint.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/stitcher.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/triangle.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/triangleRasterizer.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/stitchCylindricalScreen.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/stitchFlatScreen.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/stitchMultiScreen.h')
+CopyFile(PREFIX+'/include/','pandaapp/src/stitchbase/stitchScreen.h')
 
 ########################################################################
 #
@@ -4080,13 +4087,13 @@ if OMIT.count("HELIX")==0:
   OBJFILES.append("libhelix.lib")
   INFILES.append("libhelix.in")
   LINKOPTS.append('HELIX')
-  LINKXDEP.append('built/tmp/dtool_have_helix.dat')
+  LINKXDEP.append(PREFIX+'/tmp/dtool_have_helix.dat')
 InterrogateModule(outc='libpanda_module.cxx', module='panda', library='libpanda', files=INFILES)
 CompileC(ipath=IPATH, opts=OPTS, src='panda.cxx', obj='panda_panda.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='libpanda_module.cxx', obj='libpanda_module.obj')
 CompileLink(opts=['ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM', 'HELIX', 'VRPN', 'NSPR',
                   'ZLIB', 'JPEG', 'PNG', 'TIFF', 'FFTW', 'FREETYPE'],
-            xdep=['built/tmp/dtool_have_helix.dat'],  dll='libpanda.dll', obj=OBJFILES)
+            xdep=[PREFIX+'/tmp/dtool_have_helix.dat'],  dll='libpanda.dll', obj=OBJFILES)
 
 #
 # DIRECTORY: panda/src/audiotraits/
@@ -6067,13 +6074,13 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'FFTW'], dll='stitch-image.exe', obj=[
 #
 ##########################################################################################
 
-if (older('built/lib/pandac/PandaModules.pyz',xpaths("built/etc/",ALLIN,""))):
-  ALLTARGETS.append('built/lib/pandac/PandaModules.pyz')
+if (older(PREFIX+'/lib/pandac/PandaModules.pyz',xpaths(PREFIX+"/etc/",ALLIN,""))):
+  ALLTARGETS.append(PREFIX+'/lib/pandac/PandaModules.pyz')
   if (sys.platform=="win32"):
-    oscmd("built/bin/genpycode.exe")
+    oscmd(PREFIX+"/bin/genpycode.exe")
   else:
-    oscmd("built/bin/genpycode")
-  updatefiledate('built/lib/pandac/PandaModules.pyz')
+    oscmd(PREFIX+"/bin/genpycode")
+  updatefiledate(PREFIX+'/lib/pandac/PandaModules.pyz')
 
 ########################################################################
 ##
@@ -6081,7 +6088,7 @@ if (older('built/lib/pandac/PandaModules.pyz',xpaths("built/etc/",ALLIN,""))):
 ##
 ########################################################################
 
-try: icache = open("makepanda-icache",'wb')
+try: icache = open(iCachePath,'wb')
 except: icache = 0
 if (icache!=0):
   cPickle.dump(CxxIncludeCache, icache, 1)
@@ -6100,13 +6107,13 @@ if (icache!=0):
 ##########################################################################################
 
 if (COMPLETE):
-  CopyFile('built/', 'InstallerNotes')
-  CopyFile('built/', 'LICENSE')
-  CopyFile('built/', 'README')
-  CopyTree('built/samples', 'samples')
-  CopyTree('built/models', 'models')
-  CopyTree('built/direct/src', 'direct/src')
-  CopyTree('built/SceneEditor', 'SceneEditor')
+  CopyFile(PREFIX+'/', 'InstallerNotes')
+  CopyFile(PREFIX+'/', 'LICENSE')
+  CopyFile(PREFIX+'/', 'README')
+  CopyTree(PREFIX+'/samples', 'samples')
+  CopyTree(PREFIX+'/models', 'models')
+  CopyTree(PREFIX+'/direct/src', 'direct/src')
+  CopyTree(PREFIX+'/SceneEditor', 'SceneEditor')
 
 ##########################################################################################
 #
@@ -6122,7 +6129,7 @@ if (INSTALLER):
       if (COMPRESSOR != "lzma"): print("Note: you are using zlib, which is faster, but lzma gives better compression.")
       if (os.path.exists("panda3d-"+VERSION+".exe")):
         os.remove("panda3d-"+VERSION+".exe")
-      oscmd("thirdparty\\win-nsis\\makensis.exe /V2 /DCOMPRESSOR="+COMPRESSOR+" /DVERSION="+VERSION+" thirdparty\\win-nsis\\panda.nsi")
+      oscmd("thirdparty/win-nsis/makensis.exe /V2 /DCOMPRESSOR="+COMPRESSOR+" /DVERSION="+VERSION+" thirdparty/win-nsis/panda.nsi")
       os.rename("panda3d-install-TMP.exe", "panda3d-"+VERSION+".exe")
   else:
     # Do an rpmbuild or something like that.
