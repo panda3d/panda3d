@@ -989,7 +989,11 @@ class ParticlePanel(AppShell):
 
     def saveParticleEffectToFile(self):
         # Find path to particle directory
-        path = getParticlePath().getDirectory(0).toOsSpecific()
+        pPath = getParticlePath()
+        if pPath.getNumDirectories() > 0:
+            path = pPath.getDirectory(0).toOsSpecific()
+        else:
+            path = ''
         if not os.path.isdir(path):
             print 'LevelEditor Warning: Invalid default DNA directory!'
             print 'Using: C:\\'
