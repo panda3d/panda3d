@@ -42,19 +42,23 @@ register_button(ButtonHandle &button_handle, const string &name,
     int index = -1;
     if (ascii_equivalent != '\0') {
       if (_handle_registry[ascii_equivalent] == (RegistryNode *)NULL) {
-    index = ascii_equivalent;
+        index = ascii_equivalent;
       } else {
-    util_cat->error()
-      << "Attempt to register multiple buttons under ASCII equivalent "
-      << ascii_equivalent << "\n";
+        util_cat->error()
+          << "Attempt to register multiple buttons under ASCII equivalent "
+          << ascii_equivalent << "\n";
       }
     }
     
-    if (util_cat.is_spam()) {
+#ifdef NOTIFY_DEBUG
+    // This code runs at static init time, so cannot use the
+    // util_cat.is_spam() syntax.
+    if (util_cat->is_spam()) {
       util_cat->spam()
-    << "Registering button " << name << "\n";
+        << "Registering button " << name << "\n";
     }
-
+#endif
+    
     if (index == -1) {
       // It's not an ASCII equivalent; make up a new number.
       index = _handle_registry.size();
