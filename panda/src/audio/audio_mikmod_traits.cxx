@@ -219,6 +219,10 @@ MikModPlaying::MikModPlaying(void) : AudioTraits::PlayingClass() {
 MikModPlaying::~MikModPlaying(void) {
 }
 
+AudioTraits::PlayingClass::PlayingStatus MikModPlaying::status(void) {
+  return AudioTraits::PlayingClass::BAD;
+}
+
 MikModSamplePlayer* MikModSamplePlayer::_global_instance =
     (MikModSamplePlayer*)0L;
 
