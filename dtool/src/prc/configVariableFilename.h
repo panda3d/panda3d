@@ -39,8 +39,21 @@ PUBLISHED:
                                 const string &description = string(), int flags = 0);
 
   INLINE void operator = (const Filename &value);
-  INLINE operator Filename () const;
+  INLINE operator const Filename &() const;
+
+  // These methods help the ConfigVariableFilename act like a Filename
+  // object.
+  INLINE const char *c_str() const;
   INLINE bool empty() const;
+  INLINE size_t length() const;
+  INLINE char operator [] (int n) const;
+
+  INLINE string get_fullpath() const;
+  INLINE string get_dirname() const;
+  INLINE string get_basename() const;
+  INLINE string get_fullpath_wo_extension() const;
+  INLINE string get_basename_wo_extension() const;
+  INLINE string get_extension() const;
 
   // Comparison operators are handy.
   INLINE bool operator == (const Filename &other) const;
@@ -48,11 +61,19 @@ PUBLISHED:
   INLINE bool operator < (const Filename &other) const;
 
   INLINE void set_value(const Filename &value);
-  INLINE Filename get_value() const;
+  INLINE const Filename &get_value() const;
   INLINE Filename get_default_value() const;
 
   INLINE Filename get_word(int n) const;
   INLINE void set_word(int n, const Filename &value);
+
+private:
+  void reload_value();
+
+  int _value_seq;
+  bool _value_stale;
+
+  Filename _value;
 };
 
 #include "configVariableFilename.I"

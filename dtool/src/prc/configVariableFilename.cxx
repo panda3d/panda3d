@@ -17,3 +17,17 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "configVariableFilename.h"
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableFilename::reload_value
+//       Access: Private
+//  Description: Recopies the config variable into the Filename for
+//               returning its value.
+////////////////////////////////////////////////////////////////////
+void ConfigVariableFilename::
+reload_value() {
+  _value = Filename::expand_from(get_string_value());
+
+  _value_seq = _core->get_value_seq();
+  _value_stale = false;
+}

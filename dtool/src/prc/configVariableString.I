@@ -163,7 +163,7 @@ INLINE string ConfigVariableString::
 get_default_value() const {
   const ConfigDeclaration *decl = ConfigVariable::get_default_value();
   if (decl != (ConfigDeclaration *)NULL) {
-    return decl->get_string_word(0);
+    return decl->get_string_value();
   }
   return string();
 }

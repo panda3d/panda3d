@@ -24,7 +24,9 @@
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableFilename::
 ConfigVariableFilename(const string &name) :
-  ConfigVariable(name, VT_filename)
+  ConfigVariable(name, VT_filename),
+  _value_seq(-1),
+  _value_stale(true)
 {
   _core->set_used();
 }
@@ -59,18 +61,123 @@ operator = (const Filename &value) {
 //  Description: Returns the variable's value as a Filename.
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableFilename::
-operator Filename () const {
+operator const Filename & () const {
   return get_value();
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableFilename::c_str
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const char *ConfigVariableFilename::
+c_str() const {
+  return get_value().c_str();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableFilename::empty
-//       Access: Published
-//  Description: Returns true if the filename is empty, false otherwise.
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariableFilename::
 empty() const {
   return get_value().empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableFilename::length
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE size_t ConfigVariableFilename::
+length() const {
+  return get_value().length();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableFilename::Indexing operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE char ConfigVariableFilename::
+operator [] (int n) const {
+  return get_value()[n];
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableFilename::get_fullpath
+//       Access: Public
+//  Description: Returns the entire filename: directory, basename,
+//               extension.  This is the same thing returned by the
+//               string typecast operator, so this function is a
+//               little redundant.
+////////////////////////////////////////////////////////////////////
+INLINE string ConfigVariableFilename::
+get_fullpath() const {
+  return get_value().get_fullpath();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableFilename::get_dirname
+//       Access: Public
+//  Description: Returns the directory part of the filename.  This is
+//               everything in the filename up to, but not including
+//               the rightmost slash.
+////////////////////////////////////////////////////////////////////
+INLINE string ConfigVariableFilename::
+get_dirname() const {
+  return get_value().get_dirname();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableFilename::get_basename
+//       Access: Public
+//  Description: Returns the basename part of the filename.  This is
+//               everything in the filename after the rightmost slash,
+//               including any extensions.
+////////////////////////////////////////////////////////////////////
+INLINE string ConfigVariableFilename::
+get_basename() const {
+  return get_value().get_basename();
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableFilename::get_fullpath_wo_extension
+//       Access: Public
+//  Description: Returns the full filename--directory and basename
+//               parts--except for the extension.
+////////////////////////////////////////////////////////////////////
+INLINE string ConfigVariableFilename::
+get_fullpath_wo_extension() const {
+  return get_value().get_fullpath_wo_extension();
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableFilename::get_basename_wo_extension
+//       Access: Public
+//  Description: Returns the basename part of the filename, without
+//               the file extension.
+////////////////////////////////////////////////////////////////////
+INLINE string ConfigVariableFilename::
+get_basename_wo_extension() const {
+  return get_value().get_basename_wo_extension();
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableFilename::get_extension
+//       Access: Public
+//  Description: Returns the file extension.  This is everything after
+//               the rightmost dot, if there is one, or the empty
+//               string if there is not.
+////////////////////////////////////////////////////////////////////
+INLINE string ConfigVariableFilename::
+get_extension() const {
+  return get_value().get_extension();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -118,9 +225,12 @@ set_value(const Filename &value) {
 //       Access: Published
 //  Description: Returns the variable's value.
 ////////////////////////////////////////////////////////////////////
-INLINE Filename ConfigVariableFilename::
+INLINE const Filename &ConfigVariableFilename::
 get_value() const {
-  return Filename::expand_from(get_string_value());
+  if (_value_stale || _value_seq != _core->get_value_seq()) {
+    ((ConfigVariableFilename *)this)->reload_value();
+  }
+  return _value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -132,9 +242,9 @@ INLINE Filename ConfigVariableFilename::
 get_default_value() const {
   const ConfigDeclaration *decl = ConfigVariable::get_default_value();
   if (decl != (ConfigDeclaration *)NULL) {
-    return decl->get_string_word(0);
+    return Filename::expand_from(decl->get_string_value());
   }
-  return string();
+  return Filename();
 }
 
 ////////////////////////////////////////////////////////////////////
