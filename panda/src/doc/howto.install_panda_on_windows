@@ -103,6 +103,7 @@ Step 3: Install Cygwin (v1.0)
       > mount -s -b v:/ /v
       > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio/VC98 /msvc98
       > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio/Common /mscommon
+      > mount -s C:/Program\ Files/Microsoft\ Platform\ Sdk /mscommon
     - These are optional, but handy
       > mkdir /fat
       > mkdir /bit
