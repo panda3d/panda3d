@@ -200,5 +200,5 @@ underflow() {
     _cur += num_bytes;
   }
 
-  return *gptr();
+  return (unsigned char)*gptr();
 }
