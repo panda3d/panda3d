@@ -20,4 +20,9 @@ class ZoneEntityBase(Entity.Entity):
         self.zoneId = zoneId
 
     def getZoneId(self):
+        """network zoneId"""
         return self.zoneId
+
+    def getZoneNum(self):
+        """zoneNum from model"""
+        return self.modelZoneNum
