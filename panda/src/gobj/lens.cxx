@@ -1312,10 +1312,10 @@ compute_film_mat() {
 
   float scale_x = 2.0f / film_size[0];
   float scale_y = 2.0f / film_size[1];
-  _film_mat.set(scale_x,            0.0f, 0.0f,  0.0f,
-                   0.0f,         scale_y, 0.0f,  0.0f,
-                   0.0f,            0.0f, 1.0f,  0.0f,
-        -film_offset[0], -film_offset[1], 0.0f,  1.0f);
+  _film_mat.set(scale_x,      0.0f,   0.0f,  0.0f,
+                   0.0f,   scale_y,   0.0f,  0.0f,
+                   0.0f,      0.0f,   1.0f,  0.0f,
+        -film_offset[0] * scale_x, -film_offset[1] * scale_y, 0.0f,  1.0f);
 
   adjust_comp_flags(CF_film_mat_inv,
                     CF_film_mat);
