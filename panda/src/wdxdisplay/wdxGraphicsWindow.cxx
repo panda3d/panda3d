@@ -1751,7 +1751,7 @@ bool wdxGraphicsWindow::search_for_device(int devnum,DXDeviceInfo *pDevinfo) {
     DWORD dwVidMemTotal,dwVidMemFree;
     dwVidMemTotal=dwVidMemFree=0;
     ZeroMemory(&ddsGAVMCaps,sizeof(DDSCAPS2));
-    ddsGAVMCaps.dwCaps = DDSCAPS_VIDEOMEMORY; //set internally by DX anyway, dont think this any different than 0x0
+    ddsGAVMCaps.dwCaps = DDSCAPS_VIDEOMEMORY | DDSCAPS_LOCALVIDMEM;  // dont count AGP mem!
     if(FAILED(hr = pDD->GetAvailableVidMem(&ddsGAVMCaps,&dwVidMemTotal,&dwVidMemFree))) {
        wdxdisplay_cat.error() << "GetAvailableVidMem failed for device #"<<devnum<<": result = " << ConvD3DErrorToString(hr) << endl;
        // goto skip_device;
