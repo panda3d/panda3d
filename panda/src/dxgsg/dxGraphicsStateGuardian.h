@@ -221,60 +221,6 @@ protected:
   INLINE void enable_clip_plane(int clip_plane, bool val);
   INLINE void enable_fog(bool val);
 
-#ifdef WBD_GL_MODE
-  void print_gfx_visual();
-  INLINE void call_glClearColor(GLclampf red, GLclampf green, GLclampf blue,
-				GLclampf alpha);
-  INLINE void call_glClearDepth(GLclampd depth);
-  INLINE void call_glClearStencil(GLint s);
-  INLINE void call_glClearAccum(GLclampf red, GLclampf green, GLclampf blue,
-				GLclampf alpha);
-  INLINE void call_glDrawBuffer(GLenum mode);
-  INLINE void call_glReadBuffer(GLenum mode);
-  INLINE void call_glShadeModel(GLenum mode);
-  INLINE void call_glCullFace(GLenum mode);
-  INLINE void call_glViewport(GLint x, GLint y, GLsizei width, GLsizei height);
-  INLINE void call_glLightModelAmbient(const Colorf& color);
-  INLINE void call_glLightModelLocal(GLboolean local);
-  INLINE void call_glLightModelTwoSide(GLboolean twoside);
-  INLINE void call_glMaterialAmbient(bool twoside, const Colorf& color);
-  INLINE void call_glMaterialDiffuse(bool twoside, const Colorf& color);
-  INLINE void call_glMaterialAmbientDiffuse(bool twoside, const Colorf& color);
-  INLINE void call_glMaterialSpecular(bool twoside, const Colorf& color);
-  INLINE void call_glMaterialShininess(bool twoside, float shininess);
-  INLINE void call_glMaterialEmission(bool twoside, const Colorf& color);
-  INLINE void call_glStencilFunc(GLenum func);
-  INLINE void call_glStencilOp(GLenum op);
-  INLINE void call_glClipPlane(GLenum plane, const double equation[4]);
-  INLINE void call_glLineWidth(GLfloat width);
-  INLINE void call_glPointSize(GLfloat size);
-  INLINE void call_glDepthMask(GLboolean mask);
-  INLINE void call_glFogMode(GLint mode);
-  INLINE void call_glFogStart(GLfloat start);
-  INLINE void call_glFogEnd(GLfloat end);
-  INLINE void call_glFogDensity(GLfloat density);
-  INLINE void call_glFogColor(const Colorf &color);
-  INLINE void call_glPolygonMode(GLenum mode);
-
-  INLINE GLenum get_light_id(int index) const;
-  INLINE GLenum get_clip_plane_id(int index) const;
-
-  GLenum get_image_type(PixelBuffer::Type type);
-  GLenum get_external_image_format(PixelBuffer::Format format);
-  GLenum get_internal_image_format(PixelBuffer::Format format);
-  GLint get_texture_apply_mode_type( TextureApplyProperty::Mode am ) const;
-
-  GLenum _draw_buffer_mode;
-  GLenum _read_buffer_mode;
-  GLenum _shade_model_mode;
-  GLboolean _lmodel_local;
-  GLboolean _lmodel_twoside;
-  GLenum _polygon_mode;
-  GLenum _stencil_func;
-  GLenum _stencil_op;
-
-
-#else 
 /*  INLINE void enable_multisample_alpha_one(bool val);
   INLINE void enable_multisample_alpha_mask(bool val);
   INLINE void enable_multisample(bool val, LPDIRECT3DDEVICE7 d3dDevice);
@@ -321,9 +267,6 @@ protected:
   Geom::TexCoordIterator ti;
   Geom::ColorIterator ci;
 
-
-#endif		// WBD_GL_MODE
-
   float  _clear_color_red, _clear_color_green, _clear_color_blue,_clear_color_alpha;
   double _clear_depth;
   int    _clear_stencil;
@@ -354,6 +297,8 @@ protected:
   D3DCMPFUNC  _alpha_func;
   D3DBLEND _blend_source_func;
   D3DBLEND _blend_dest_func;
+
+  TextureApplyProperty::Mode _CurTexBlendMode;
 
   int _pack_alignment;
   int _unpack_alignment;
@@ -418,6 +363,7 @@ public:
   INLINE void  Set_HDC(HDC hdc)  {  _hdc = hdc;  }
   void adjust_view_rect(int x, int y);
   INLINE void SetDXStatus(bool stat)  {  _dx_ready = stat; }
+  void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode TexBlendMode);
 
   void  dx_cleanup();
   void  dx_setup_after_resize(RECT viewrect,HWND mwindow) ;

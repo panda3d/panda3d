@@ -480,9 +480,9 @@ init_dx(  LPDIRECTDRAW7		context,
   cfa->issue(this);
   la->issue(this);
 
+  _CurTexBlendMode = TextureApplyProperty::M_modulate;
   _d3dDevice->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_DISABLE);  // disables texturing
   ta->issue(this); // no curtextcontext, this does nothing.  dx should already be properly inited above anyway
-
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3283,16 +3283,9 @@ issue_color_blend(const ColorBlendAttribute *attrib) {
     break;
   }
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_texture_apply
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_texture_apply(const TextureApplyAttribute *attrib) {
-
-   switch(attrib->get_mode()) {
+       
+void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode TexBlendMode) {
+   switch(TexBlendMode) {
        case TextureApplyProperty::M_modulate: 
            // emulates GL_MODULATE glTexEnv mode
            // want to multiply tex-color*pixel color to emulate GL modulate blend (see glTexEnv)
@@ -3335,7 +3328,7 @@ issue_texture_apply(const TextureApplyAttribute *attrib) {
            break;           
        case TextureApplyProperty::M_blend: 
            dxgsg_cat.error()
-             << "Impossible to emulate GL_BLEND in DX exactly " << (int) attrib->get_mode() << endl;
+             << "Impossible to emulate GL_BLEND in DX exactly " << (int) TexBlendMode << endl;
 /*
            // emulate GL_BLEND glTexEnv
            
@@ -3362,9 +3355,47 @@ issue_texture_apply(const TextureApplyAttribute *attrib) {
 
            break;
         default:
-            dxgsg_cat.error() << "Unknown texture blend mode " << (int) attrib->get_mode() << endl;
+            dxgsg_cat.error() << "Unknown texture blend mode " << (int) TexBlendMode << endl;
             break;
    }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::enable_texturing
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void DXGraphicsStateGuardian::
+enable_texturing(bool val) {
+  if (_texturing_enabled != val) {   
+    _texturing_enabled = val;
+  } 
+
+//  assert(_pCurTexContext!=NULL);  we're definitely called with it NULL for both true and false
+
+  if((val == FALSE) || (_pCurTexContext==NULL)) {
+      _d3dDevice->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_DISABLE);
+  } else {
+       SetTextureBlendMode(_CurTexBlendMode);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::issue_texture_apply
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+issue_texture_apply(const TextureApplyAttribute *attrib) {
+
+   _CurTexBlendMode = attrib->get_mode();
+
+   if(!_texturing_enabled) {
+      return;
+   }
+
+   SetTextureBlendMode(_CurTexBlendMode);
 }
 
 ////////////////////////////////////////////////////////////////////

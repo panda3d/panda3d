@@ -31,7 +31,6 @@ public:
 
   LPDIRECTDRAWSURFACE7  _surface;
   Texture *_tex;            // ptr to parent, primarily for access to namestr
-  D3DTEXTUREOP _SavedStage0_ColorOp;
 
   LPDIRECTDRAWSURFACE7 CreateTexture( HDC hdc, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT pTexPixFmts);
   void DeleteTexture();

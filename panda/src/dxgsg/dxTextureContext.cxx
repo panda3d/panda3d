@@ -852,7 +852,6 @@ DXTextureContext(Texture *tex) :
 #endif
   _surface = NULL;
   _tex = tex;
- _SavedStage0_ColorOp=D3DTOP_MODULATE;  // this is default when texturing is enabled
 }
 
 DXTextureContext::
