@@ -122,12 +122,12 @@ GetModelNoteInfo( SAA_Scene *scene, SAA_Elem *model ) {
                             &bigEndian, (void *)modelNote );
     
     //strip off newline, if present
-    char *eol = strchr( modelNote, '\n' );
+    char *eol = (char *)memchr( modelNote, '\n', size );
     if ( eol != NULL)
       *eol = '\0';
     else
       modelNote[size] = '\0';
-    
+
     softegg_cat.spam() << "\nmodelNote = " << modelNote << endl;
   }
   
