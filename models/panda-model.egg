@@ -4,7 +4,7 @@
   "MaxEggPlugin nul.max -o 'C:\Panda\panda-model.egg' -a model"
 }
 <Texture> Tex1 {
-  "PandaPaint.tif"
+  "maps/panda-model.jpg"
   <Scalar> format { rgb }
   <Scalar> wrapu { repeat }
   <Scalar> wrapv { repeat }
