@@ -410,7 +410,12 @@ INLINE_LINMATH FLOATNAME(LQuaternion)
 invert(const FLOATNAME(LQuaternion) &a) {
   FLOATNAME(LQuaternion) result;
   bool nonsingular = result.invert_from(a);
-  nassertr(nonsingular, FLOATNAME(LQuaternion)::ident_quat());
+#ifndef NDEBUG
+  if (!nonsingular) {
+    nassert_raise("Attempt to compute inverse of singular quaternion!");
+    return FLOATNAME(LQuaternion)::ident_quat();
+  }
+#endif
   return result;
 }
 

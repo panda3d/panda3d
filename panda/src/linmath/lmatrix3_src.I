@@ -605,9 +605,7 @@ multiply(const FLOATNAME(LMatrix3) &other1, const FLOATNAME(LMatrix3) &other2) {
 // faster than operator * since it writes result in place, avoiding extra copying
 // this will fail if you try to mat.multiply(mat,other_mat)
 
-  #ifdef _DEBUG
-     assert((&other1 != this) && (&other2 != this));
-  #endif
+  nassertv((&other1 != this) && (&other2 != this));
 
   MATRIX3_PRODUCT((*this),other1,other2);
 }
@@ -981,9 +979,7 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
 
   // Normalize the axis.
   FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
-#ifdef _DEBUG
   nassertr(length_sq != 0.0f, ident_mat());
-#endif
   FLOATTYPE recip_length = 1.0f/csqrt(length_sq);
 
   axis_0 *= recip_length;
@@ -1207,6 +1203,11 @@ INLINE_LINMATH FLOATNAME(LMatrix3)
 invert(const FLOATNAME(LMatrix3) &a) {
   FLOATNAME(LMatrix3) result;
   bool nonsingular = result.invert_from(a);
-  nassertr(nonsingular, FLOATNAME(LMatrix3)::ident_mat());
+#ifndef NDEBUG
+  if (!nonsingular) {
+    nassert_raise("Attempt to compute inverse of singular matrix!");
+    return FLOATNAME(LMatrix3)::ident_mat();
+  }
+#endif
   return result;
 }
