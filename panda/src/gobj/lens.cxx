@@ -1660,8 +1660,8 @@ build_shear_mat(LMatrix4f &shear_mat,
 ////////////////////////////////////////////////////////////////////
 float Lens::
 sqr_dist_to_line(const LPoint3f &point, const LPoint3f &origin, 
-                 const LVector3f &vector) {
-  LVector3f norm = vector;
+                 const LVector3f &vec) {
+  LVector3f norm = vec;
   norm.normalize();
   LVector3f d = point - origin;
   float hyp_2 = d.length_squared();

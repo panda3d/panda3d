@@ -173,7 +173,7 @@ private:
                               const LPoint3f &cul, const LPoint3f &cur,
                               const LPoint3f &cll, const LPoint3f &clr);
   static float sqr_dist_to_line(const LPoint3f &point, const LPoint3f &origin, 
-                                const LVector3f &vector);
+                                const LVector3f &vec);
 
 protected:
   string _change_event;
