@@ -46,6 +46,7 @@ void egg_cleanup_parser();
 class EXPCL_PANDAEGG EggTokenType {
 public:
   double _number;
+  unsigned long _ulong;
   string _string;
   PT(EggObject) _egg;
   PTA_double _number_list;

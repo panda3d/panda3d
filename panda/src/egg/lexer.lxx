@@ -275,7 +275,6 @@ eat_c_comment() {
 }
 
 
-
 // accept() is called below as each piece is pulled off and
 // accepted by the lexer; it increments the current column number.
 INLINE void accept() {
@@ -658,17 +657,17 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 {HEX} {
   // A hexadecimal integer number.
   accept(); 
-  eggyylval._number = strtoul(yytext+2, NULL, 16);
+  eggyylval._ulong = strtoul(yytext+2, NULL, 16);
   eggyylval._string = yytext;
-  return NUMBER; 
+  return ULONG; 
 }
 
 {BINARY} {
   // A binary integer number.
   accept(); 
-  eggyylval._number = strtoul(yytext+2, NULL, 2);
+  eggyylval._ulong = strtoul(yytext+2, NULL, 2);
   eggyylval._string = yytext;
-  return NUMBER; 
+  return ULONG; 
 }
 
 "nan"{HEX} {

@@ -111,6 +111,7 @@ egg_cleanup_parser() {
 %}
 
 %token <_number> NUMBER
+%token <_ulong> ULONG
 %token <_string> STRING
 
 %token BEZIERCURVE BFACE BILLBOARD BILLBOARDCENTER BUNDLE CLOSED
@@ -862,6 +863,7 @@ group_body:
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   string name = $3;
   double value = $<_number>5;
+  unsigned long ulong_value = $<_ulong>5;
   string strval = $<_string>5;
 
   if (cmp_nocase_uh(name, "fps") == 0) {
@@ -897,15 +899,15 @@ group_body:
       group->set_depth_test_mode(m);
     }
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
-    group->set_draw_order((int)value);
+    group->set_draw_order(ulong_value);
   } else if (cmp_nocase_uh(name, "bin") == 0) {
     group->set_bin(strval);
   } else if (cmp_nocase_uh(name, "collide_mask") == 0) {
-    group->set_collide_mask((int)value);
+    group->set_collide_mask(ulong_value);
   } else if (cmp_nocase_uh(name, "from_collide_mask") == 0) {
-    group->set_from_collide_mask((int)value);
+    group->set_from_collide_mask(ulong_value);
   } else if (cmp_nocase_uh(name, "into_collide_mask") == 0) {
-    group->set_into_collide_mask((int)value);
+    group->set_into_collide_mask(ulong_value);
   } else {
     eggyywarning("Unknown group scalar " + name);
   }
@@ -2292,6 +2294,10 @@ string:
 {
   $$ = $<_string>1;
 }
+        | ULONG
+{
+  $$ = $<_string>1;
+}
         | STRING
         ;
 
@@ -2344,24 +2350,37 @@ repeated_string_body:
  */
 real:
         NUMBER
+        | ULONG
+{
+  $$ = $1;
+}
         ;
 
 /*
  * real_or_string
  *
  * enter: 
- * exit: Returns a number as ($<_number>1) or a string (as $<_string>1).
+ * exit: Returns a number as ($<_number>1) or as an unsigned long
+ * ($<_ulong>1) or a string (as $<_string>1).
  *
  */
 real_or_string:
         NUMBER
 {
   $<_number>$ = $1;
+  $<_ulong>$ = (unsigned long)$1;
+  $<_string>$ = $<_string>1;
+}
+        | ULONG
+{
+  $<_number>$ = $1;
+  $<_ulong>$ = $1;
   $<_string>$ = $<_string>1;
 }
         | STRING
 {
   $<_number>$ = 0.0;
+  $<_ulong>$ = 0;
   $<_string>$ = $1;
 }
         ;
@@ -2382,6 +2401,10 @@ integer:
     eggyywarning("Integer expected.");
     $$ = (double)i;
   }
+}
+        | ULONG
+{
+  $$ = $1;
 }
         ;
 
