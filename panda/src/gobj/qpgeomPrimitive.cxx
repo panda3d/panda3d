@@ -886,7 +886,7 @@ evict_callback() {
   // might not actually have a cache entry there (it might have been
   // added to stage 1 instead).  No big deal if we don't.
   CData *cdata = _source->_cycler.write_stage(0);
-  if (cdata->_cache == this) {
+  if (cdata->_cache.p() == this) {
     cdata->_cache = NULL;
   }
   _source->_cycler.release_write_stage(0, cdata);
