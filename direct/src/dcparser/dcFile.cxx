@@ -102,7 +102,7 @@ read_all() {
 
   // Load the DC files in opposite order, because we want to load the
   // least-important (most fundamental) files first.
-  for (int i = size - 1; i >= 0; i--) {
+  for (int i = size - 1; i >= 0; --i) {
     string dc_file = ExecutionEnvironment::expand_string(dc_files[i]);
     Filename filename = Filename::from_os_specific(dc_file);
     if (!read(filename)) {
