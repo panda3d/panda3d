@@ -142,7 +142,10 @@ class DistributedObjectAI(DirectObject.DirectObject):
         def setLocation(self, parentId, zoneId):
             # The store must run first so we know the old location
             self.air.sendSetLocation(self, parentId, zoneId)
+            self.__location = (parentId, zoneId)
 
+        def getLocation(self):
+            return self.__location
 
         if 0: # this is untested:
             def setLocation(self, parentId, zoneId):
@@ -150,8 +153,6 @@ class DistributedObjectAI(DirectObject.DirectObject):
                 self.air.storeObjectLocation(self.doId, parentId, zoneId)
                 self.__location = (parentId, zoneId)
 
-            def getLocation(self):
-                return self.__location
 
     def updateRequiredFields(self, dclass, di):
         dclass.receiveUpdateBroadcastRequired(self, di)

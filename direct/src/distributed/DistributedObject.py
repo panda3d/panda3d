@@ -342,6 +342,8 @@ class DistributedObject(PandaObject):
             self.cr.addInterest(self.getDoId(), zoneId, note, event)
 
         def setLocation(self, parentId, zoneId):
+            #print "%s setLocation %s, %s" % (self.doId, parentId, zoneId)
+            
             # The store must run first so we know the old location
             #self.cr.storeObjectLocation(self.doId, parentId, zoneId)
             self.__location = (parentId, zoneId)
