@@ -402,7 +402,9 @@ set_matched_anything(bool matched_anything) {
 ////////////////////////////////////////////////////////////////////
 void SourceEgg::
 write_pi(ostream &out) const {
-  out << "egg " << get_egg_filename() << " in";
+  Filename absolute_filename = get_egg_filename();
+  absolute_filename.make_absolute();
+  out << "egg " << absolute_filename << " in";
   PaletteGroups::const_iterator gi;
   for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
     out << " " << (*gi)->get_name();
