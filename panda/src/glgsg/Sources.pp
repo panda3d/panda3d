@@ -16,7 +16,7 @@
      glGraphicsStateGuardian.cxx \
      config_glgsg.h glGraphicsStateGuardian.I \
      glGraphicsStateGuardian.h glSavedFrameBuffer.I \
-     glSavedFrameBuffer.h glTextureContext.I \
+     glSavedFrameBuffer.h glTextureContext.I glext.h \
      glGeomNodeContext.I glGeomNodeContext.h  glTextureContext.h
 
   #define INCLUDED_SOURCES \
