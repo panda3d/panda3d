@@ -174,8 +174,21 @@ write(ostream &out, int indent_level) const {
 //               false if it was already on the list.
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcher::
-add_group(MouseWatcherGroup *group) {
-  return _groups.insert(group).second;
+add_group(PT(MouseWatcherGroup) group) {
+  // return _groups.insert(group).second;
+
+  // See if the group is in the set/vector already
+  Groups::const_iterator gi = find(_groups.begin(), 
+                                   _groups.end(), 
+                                   group);
+  if (gi != _groups.end()) {
+    // Already in the set, return false
+    return false;
+  }
+
+  // Not in the set, add it and return true
+  _groups.push_back(group);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -187,7 +200,7 @@ add_group(MouseWatcherGroup *group) {
 //               removed or was never added via add_group().
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcher::
-remove_group(MouseWatcherGroup *group) {
+remove_group(PT(MouseWatcherGroup) group) {
   remove_regions_from(_current_regions, group);
   if (group->has_region(_preferred_region)) {
     _preferred_region = (MouseWatcherRegion *)NULL;
@@ -196,7 +209,18 @@ remove_group(MouseWatcherGroup *group) {
     _preferred_button_down_region = (MouseWatcherRegion *)NULL;
   }
 
-  return _groups.erase(group) != 0;
+  // See if the group is in the set/vector
+  Groups::iterator gi = find(_groups.begin(),
+                            _groups.end(),
+                            group);
+  if (gi != _groups.end()) {
+    // Found it, now erase it
+    _groups.erase(gi);
+    return true;
+  }
+
+  // Did not find the group to erase
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

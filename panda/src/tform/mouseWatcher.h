@@ -34,7 +34,7 @@
 #include "modifierButtons.h"
 #include "buttonHandle.h"
 
-#include "pset.h"
+#include "pvector.h"
 
 class MouseWatcherParameter;
 
@@ -110,8 +110,8 @@ public:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
-  bool add_group(MouseWatcherGroup *group);
-  bool remove_group(MouseWatcherGroup *group);
+  bool add_group(PT(MouseWatcherGroup) group);
+  bool remove_group(PT(MouseWatcherGroup) group);
 
 protected:
   typedef pvector< PT(MouseWatcherRegion) > VRegions;
@@ -143,7 +143,9 @@ protected:
   void enter_region(MouseWatcherRegion *region, const MouseWatcherParameter &param);
   void exit_region(MouseWatcherRegion *region, const MouseWatcherParameter &param);
 
-  typedef pset< PT(MouseWatcherGroup) > Groups;
+  // This wants to be a set, but because you cannot export sets across
+  // dlls in windows, we will make it a vector instead
+  typedef pvector< PT(MouseWatcherGroup) > Groups;
   Groups _groups;
 
   bool _has_mouse;
