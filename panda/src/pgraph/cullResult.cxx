@@ -191,7 +191,7 @@ CPT(RenderState) CullResult::
 get_binary_state() {
   static CPT(RenderState) state = NULL;
   if (state == (const RenderState *)NULL) {
-    state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_equal, 1.0f),
+    state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_greater_equal, 0.5f),
                               TransparencyAttrib::make(TransparencyAttrib::M_none),
                               RenderState::get_max_priority());
   }
