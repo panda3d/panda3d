@@ -67,6 +67,10 @@
 
 #include <pandabase.h>
 
+#define DISABLE_POLYGON_OFFSET_DECALING
+// currently doesnt work well enough in toontown models for us to use
+// prob is when viewer gets close to decals, they disappear into wall poly, need to investigate
+
 TypeHandle DXGraphicsStateGuardian::_type_handle;
 
 // bit masks used for drawing primitives
@@ -384,7 +388,7 @@ init_dx(  LPDIRECTDRAW7		context,
       #if(DIRECT3D_VERSION < 0x700)
           dxgsg_cat.error() << "dx-decal-type 'offset' not supported by hardware, switching to decal masking\n";
       #else
-          dxgsg_cat.error() << "dx-decal-type 'offset' not supported by hardware, switching to decal blend-based masking\n";      
+          dxgsg_cat.error() << "dx-decal-type 'offset' not supported by hardware, switching to decal double-draw blend-based masking\n";
       #endif
 #endif
       #if(DIRECT3D_VERSION < 0x700)
@@ -393,6 +397,18 @@ init_dx(  LPDIRECTDRAW7		context,
           dx_decal_type = GDT_blend;      
       #endif
   } 
+
+#ifdef DISABLE_POLYGON_OFFSET_DECALING
+     #ifdef _DEBUG
+       dxgsg_cat.spam() << "polygon-offset decaling disabled in dxgsg, switching to double-draw decaling\n";
+     #endif
+     
+     #if(DIRECT3D_VERSION < 0x700)
+          dx_decal_type = GDT_mask;
+     #else
+          dx_decal_type = GDT_blend;      
+     #endif
+#endif
 
   if((dx_decal_type==GDT_mask) && !(D3DDevDesc.dpcTriCaps.dwMiscCaps & D3DPMISCCAPS_MASKPLANES)) {
 #ifdef _DEBUG
@@ -3729,13 +3745,16 @@ begin_decal(GeomNode *base_geom) {
   _decal_level++;
   nassertv(4*_decal_level < 16);
 
+#ifndef DISABLE_POLYGON_OFFSET_DECALING
   if (dx_decal_type == GDT_offset) {
 
 #define POLYGON_OFFSET_MULTIPLIER 2
     // Just draw the base geometry normally.
     base_geom->draw(this);
-	_d3dDevice->SetRenderState(D3DRENDERSTATE_ZBIAS, POLYGON_OFFSET_MULTIPLIER * _decal_level); // _decal_level better not be higher than 4!
-  } else {
+	_d3dDevice->SetRenderState(D3DRENDERSTATE_ZBIAS, POLYGON_OFFSET_MULTIPLIER * _decal_level); // _decal_level better not be higher than 8!
+  } else 
+#endif  
+  {
     if (_decal_level > 1) 
 	      base_geom->draw(this);  // If we're already decaling, just draw the geometry.
     else {
@@ -3766,10 +3785,13 @@ end_decal(GeomNode *base_geom) {
   _decal_level--;
 //  nassertv(_decal_level >= 1);
 
+#ifndef DISABLE_POLYGON_OFFSET_DECALING
   if (dx_decal_type == GDT_offset) {
     // Restore the Zbias offset.
 	_d3dDevice->SetRenderState(D3DRENDERSTATE_ZBIAS, POLYGON_OFFSET_MULTIPLIER * _decal_level); // _decal_level better not be higher than 8!
-  } else {  // for GDT_mask
+  } else
+#endif  
+  {  // for GDT_mask
     if (_decal_level == 0) {
       // Now we need to re-render the base geometry with the depth write
       // on and the color mask off, so we update the depth buffer
