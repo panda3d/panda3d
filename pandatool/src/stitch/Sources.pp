@@ -23,11 +23,11 @@
 #begin bin_target
   #define TARGET stitch-viewer
   #define LOCAL_LIBS \
-    stitchviewer stitchbase progbase config compiler
+    stitchviewer stitchbase progbase
   #define OTHER_LIBS \
     device:c tform:c graph:c dgraph:c sgraph:c gobj:c sgattrib:c \
     event:c chancfg:c display:c sgraphutil:c light:c putil:c express:c \
-    panda:m
+    panda:m dtool
 
   #define SOURCES \
     stitchViewerProgram.cxx stitchViewerProgram.h

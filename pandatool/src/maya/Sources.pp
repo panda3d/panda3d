@@ -12,9 +12,9 @@
   #define USE_MAYA yes
   #define TARGET maya2egg_bin
   #define LOCAL_LIBS \
-    eggbase progbase config compiler
+    eggbase progbase
   #define OTHER_LIBS \
-    egg:c linmath:c putil:c express:c panda:m
+    egg:c linmath:c putil:c express:c panda:m dtool
   #define UNIX_SYS_LIBS \
     m
 

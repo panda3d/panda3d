@@ -4,9 +4,9 @@
 #begin bin_target
   #define TARGET gtk-stats
   #define LOCAL_LIBS \
-    gtkbase progbase pstatserver config compiler
+    gtkbase progbase pstatserver
   #define OTHER_LIBS \
-    pstatclient:c linmath:c putil:c express:c panda:m
+    pstatclient:c linmath:c putil:c express:c panda:m dtool
   #define UNIX_SYS_LIBS \
     m
 

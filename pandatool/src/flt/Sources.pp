@@ -1,9 +1,8 @@
 #begin lib_target
   #define TARGET flt
-  #define LOCAL_LIBS \
-    compiler
+  #define LOCAL_LIBS 
   #define OTHER_LIBS \
-    mathutil:c linmath:c putil:c express:c panda:m dtool:m
+    mathutil:c linmath:c putil:c express:c panda:m dtool
   #define UNIX_SYS_LIBS \
     m
 

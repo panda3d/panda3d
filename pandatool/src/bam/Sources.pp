@@ -1,10 +1,11 @@
 #begin bin_target
   #define TARGET bam-info
   #define LOCAL_LIBS \
-    eggbase progbase config compiler
+    eggbase progbase
   #define OTHER_LIBS \
     loader:c egg:c sgraphutil:c sgattrib:c sgraph:c pnmimagetypes:c \
-    graph:c putil:c express:c panda:m interrogatedb:c dtool:m
+    graph:c putil:c express:c panda:m \
+    interrogatedb:c dtoolutil:c dconfig:c dtool:m
   #define UNIX_SYS_LIBS \
     m
 
@@ -18,10 +19,11 @@
 #begin bin_target
   #define TARGET egg2bam
   #define LOCAL_LIBS \
-    eggbase progbase config compiler
+    eggbase progbase
   #define OTHER_LIBS \
     loader:c egg2sg:c builder:c egg:c pnmimagetypes:c graph:c putil:c \
-    express:c panda:m interrogatedb:c dtool:m
+    express:c panda:m interrogatedb:c \
+    interrogatedb:c dtoolutil:c dconfig:c dtool:m
   #define UNIX_SYS_LIBS \
     m
 

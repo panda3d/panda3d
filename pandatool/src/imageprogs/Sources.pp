@@ -1,9 +1,9 @@
 #begin bin_target
   #define TARGET image-trans
   #define LOCAL_LIBS \
-    imagebase progbase config compiler
+    imagebase progbase
   #define OTHER_LIBS \
-    pnmimagetypes:c pnmimage:c putil:c express:c panda:m
+    pnmimagetypes:c pnmimage:c putil:c express:c panda:m dtool
   #define UNIX_SYS_LIBS \
     m
 

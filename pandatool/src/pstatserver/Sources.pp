@@ -1,9 +1,8 @@
 #begin lib_target
   #define TARGET pstatserver
-  #define LOCAL_LIBS \
-    compiler
+  #define LOCAL_LIBS
   #define OTHER_LIBS \
-    pstatclient:c net:c putil:c express:c panda:m dtool:m
+    pstatclient:c net:c putil:c express:c panda:m dtool
   #define UNIX_SYS_LIBS \
     m
 
