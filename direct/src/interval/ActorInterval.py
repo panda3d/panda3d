@@ -38,7 +38,7 @@ class ActorInterval(Interval.Interval):
         """__init__(name)
         """
         # Generate unique id
-        id = 'Actor-%d' % ActorInterval.animNum
+        id = 'Actor-%s-%d' % (animName, ActorInterval.animNum)
         ActorInterval.animNum += 1
         # Record class specific variables
         self.actor = actor
