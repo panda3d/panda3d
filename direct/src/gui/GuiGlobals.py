@@ -38,21 +38,19 @@ def setDefaultDrawOrder(newDrawOrder):
 
 def getDefaultRolloverSound():
     global sndRollover
+    if not base.wantSfx:
+        return None
     if sndRollover == None:
         sndRollover = base.loadSfx("phase_3/audio/sfx/GUI_rollover.mp3")
-    if base.wantSfx:
-        return sndRollover
-    else:
-        return None
+    return sndRollover
 
 def getDefaultClickSound():
     global sndClick
+    if not base.wantSfx:
+        return None
     if sndClick == None:
         sndClick = base.loadSfx("phase_3/audio/sfx/GUI_create_toon_fwd.mp3")
-    if base.wantSfx:
-        return sndClick
-    else:
-        return None
+    return sndClick
 
 def getNewRolloverFunctor(sound = None):
     val = None
