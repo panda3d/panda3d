@@ -309,7 +309,7 @@ intersects_line(double &t1, double &t2,
 
   if (IS_NEARLY_ZERO(radical)) {
     // Tangent.
-    t1 = t2 = -B / (2.0*A);
+    t1 = t2 = -B /(2.0*A);
     return true;
   }
 
@@ -318,10 +318,11 @@ intersects_line(double &t1, double &t2,
     return false;
   }
 
+  double reciprocal_2A = 1.0f/(2.0*A);
   double sqrt_radical = sqrtf(radical);
-  t1 = ( -B - sqrt_radical ) / (2.0*A);
-  t2 = ( -B + sqrt_radical ) / (2.0*A);
-  
+  t1 = ( -B - sqrt_radical ) * reciprocal_2A;
+  t2 = ( -B + sqrt_radical ) * reciprocal_2A;
+
   return true;
 }
 
