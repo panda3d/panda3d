@@ -119,7 +119,7 @@ class ClientRepository(DirectObject.DirectObject):
         if self.connectHttp:
             self.notify.info("Connecting via HTTP interface.")
             ch = self.http.makeChannel(0)
-            ch.beginConnectTo(serverURL)
+            ch.beginConnectTo(DocumentSpec(serverURL))
             ch.spawnTask(name = 'connect-to-server',
                          callback = self.httpConnectCallback,
                          extraArgs = [ch, successCallback, successArgs,
