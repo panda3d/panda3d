@@ -87,6 +87,46 @@ operator - () const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::quaternion + quaternion
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::
+operator + (const FLOATNAME(LQuaternion) &other) const {
+  return FLOATNAME(LVecBase4)::operator + (other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::quaternion - quaternion
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::
+operator - (const FLOATNAME(LQuaternion) &other) const {
+  return FLOATNAME(LVecBase4)::operator - (other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::quaternion * scalar
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::
+operator * (FLOATTYPE scalar) const {
+  return FLOATNAME(LVecBase4)::operator * (scalar);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::quaternion / scalar
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::
+operator / (FLOATTYPE scalar) const {
+  return FLOATNAME(LVecBase4)::operator / (scalar);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LQuaternion::Multiply Operator
 //       Access: public
 //  Description:
