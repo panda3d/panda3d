@@ -747,6 +747,16 @@ def average(*args):
         val += arg
     return val / len(args)
 
+def addListsByValue(a, b):
+    """
+    returns a new array containing the sums of the two array arguments
+    (c[0] = a[0 + b[0], etc.)
+    """
+    c = []
+    for x, y in zip(a, b):
+        c.append(x + y)
+    return c
+
 def boolEqual(a, b):
     """
     returns true if a and b are both true or both false.
