@@ -48,6 +48,7 @@ class Palettizer : public TypedWritable {
 public:
   Palettizer();
 
+  bool is_valid() const;
   void report_pi() const;
   void report_statistics() const;
 
@@ -87,6 +88,8 @@ public:
   };
 
   static RemapUV string_remap(const string &str);
+
+  bool _is_valid;
 
   // These values are not stored in the bam file, but are specific to
   // each session.

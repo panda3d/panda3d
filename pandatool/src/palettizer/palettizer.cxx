@@ -101,6 +101,8 @@ public:
 ////////////////////////////////////////////////////////////////////
 Palettizer::
 Palettizer() {
+  _is_valid = true;
+
   _generated_image_pattern = "%g_palette_%p_%i";
   _map_dirname = "%g";
   _shadow_dirname = "shadow";
@@ -121,6 +123,18 @@ Palettizer() {
   _round_fuzz = 0.01;
   _remap_uv = RU_poly;
   _remap_char_uv = RU_poly;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Palettizer::is_valid
+//       Access: Public
+//  Description: Returns true if the palette information file was read
+//               correctly, or false if there was some error and the
+//               palettization can't continue.
+////////////////////////////////////////////////////////////////////
+bool Palettizer::
+is_valid() const {
+  return _is_valid;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1041,6 +1055,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
 
   _read_pi_version = scan.get_int32();
+  if (_read_pi_version > _pi_version || _read_pi_version < _min_pi_version) {
+    // Oops, we don't know how to read this palette information file.
+    _is_valid = false;
+    return;
+  }
   if (_read_pi_version >= 12) {
     _generated_image_pattern = scan.get_string();
   }

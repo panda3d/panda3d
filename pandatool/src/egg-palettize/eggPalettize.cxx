@@ -645,6 +645,12 @@ run() {
            << " and try again).\n\n";
       exit(1);
     }
+
+    if (!pal->is_valid()) {
+      nout << FilenameUnifier::make_user_filename(state_filename)
+           << " could not be properly read.  You will need to remove it.\n";
+      exit(1);
+    }
   }
 
   if (_report_pi) {
