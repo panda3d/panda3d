@@ -59,6 +59,7 @@ class MopathRecorder(AppShell, PandaObject):
         self.recorderNodePath = direct.group.attachNewNode(self.name)
         self.tempCS = self.recorderNodePath.attachNewNode(
             'mopathRecorderTempCS')
+        self.nodePathParent = render
         self.playbackMarker = loader.loadModel('models/directmodels/smiley')
         self.playbackMarker.reparentTo(self.recorderNodePath)
         self.playbackMarker.hide()
@@ -105,7 +106,7 @@ class MopathRecorder(AppShell, PandaObject):
         self.preRecordFunc = None
         # Hook to start/stop recording
         self.startStopHook = 'f6'
-        self.keyframeHook = 'f12'
+        self.keyframeHook = 'f10'
         # Curve fitter object
         self.startPos = Point3(0)
         self.xyzCurveFitter = CurveFitter()
@@ -669,12 +670,12 @@ class MopathRecorder(AppShell, PandaObject):
                 # Show playback marker
                 self.playbackMarker.getChild(0).show()
                 pos = Point3(0)
-                pos = self.playbackMarker.getPos()
+                pos = self.playbackMarker.getPos(self.nodePathParent)
                 self.xyzNurbsCurve.adjustPoint(
                     self.playbackTime,
                     pos[0], pos[1], pos[2])
                 hpr = Point3(0)
-                hpr = self.playbackMarker.getHpr()
+                hpr = self.playbackMarker.getHpr(self.nodePathParent)
                 self.hprNurbsCurve.adjustPoint(
                     self.playbackTime,
                     hpr[0], hpr[1], hpr[2])
@@ -685,7 +686,7 @@ class MopathRecorder(AppShell, PandaObject):
                 # Hide playback marker
                 self.playbackMarker.getChild(0).hide()
                 # If manipulating marker, update curve
-                tan = self.tangentMarker.getPos()
+                tan = self.tangentMarker.getPos(self.nodePathParent)
                 self.xyzNurbsCurve.adjustTangent(
                     self.playbackTime,
                     tan[0], tan[1], tan[2])
@@ -794,9 +795,9 @@ class MopathRecorder(AppShell, PandaObject):
         
     def setTraceVis(self):
         if self.getVariable('Style', 'Show Trace').get():
-            self.trace.reparentTo(self.recorderNodePath)
+            self.trace.show()
         else:
-            self.trace.reparentTo(hidden)
+            self.trace.hide()
 
     def setMarkerVis(self):
         if self.getVariable('Style', 'Show Marker').get():
@@ -846,18 +847,12 @@ class MopathRecorder(AppShell, PandaObject):
 
     def setKeyframeHook(self, event = None):
         # Clear out old hook
-        self.ignoreKeyframeHook()
+        self.ignore(self.keyframeHook)
         # Record new one
         hook = self.getVariable('Recording', 'Keyframe Hook').get()
         self.keyframeHook = hook
-
-    def acceptKeyframeHook(self):
         # Add new one
         self.accept(self.keyframeHook, self.addKeyframe)
-
-    def ignoreKeyframeHook(self):
-        # Clear out old hook
-        self.ignore(self.keyframeHook)
 
     def reset(self):
         self.pointSet = []
@@ -898,8 +893,9 @@ class MopathRecorder(AppShell, PandaObject):
 
     def toggleRecord(self):
         if self.getVariable('Recording', 'Record').get():
-            # Kill old task
+            # Kill old tasks
             taskMgr.removeTasksNamed(self.name + '-recordTask')
+            taskMgr.removeTasksNamed(self.name + '-curveEditTask')
             # Remove old curve
             self.xyzNurbsCurveDrawer.hide()
             # Reset curve fitters
@@ -912,10 +908,12 @@ class MopathRecorder(AppShell, PandaObject):
             self.createNewPointSet()
             # Record nopath's parent
             self.nodePathParent = self['nodePath'].getParent()
+            # Put curve drawer under record node path's parent
+            self.curveNodePath.reparentTo(self.nodePathParent)
+            # Clear out old trace, get ready to draw new
+            self.initTrace()
             # Keyframe mode?
             if (self.samplingMode == 'Keyframe'):
-                # Add hook
-                self.acceptKeyframeHook()
                 # Record first point
                 self.startPos = Point3(
                     self['nodePath'].getPos(self.nodePathParent))
@@ -959,8 +957,6 @@ class MopathRecorder(AppShell, PandaObject):
             else:
                 # Add last point
                 self.addKeyframe(0)
-                # Ignore hook
-                self.ignoreKeyframeHook()
             # Reset sampling mode
             self.setSamplingMode('Continuous')
             self.enableKeyframeButton()
@@ -995,6 +991,11 @@ class MopathRecorder(AppShell, PandaObject):
             time = (self.recordStart +
                     (Vec3(self['nodePath'].getPos(self.nodePathParent) -
                           self.startPos).length()))
+            # Did we move at all?
+            if len(self.pointSet) > 0:
+                if time == self.pointSet[-1][0]:
+                    print 'No delta'
+                    return
             self.recordPoint(time)
 
     def easeInOut(self, t):
@@ -1043,6 +1044,12 @@ class MopathRecorder(AppShell, PandaObject):
         # Add it to the curve fitters
         self.xyzCurveFitter.addPoint(time, pos )
         self.hprCurveFitter.addPoint(time, hpr)
+        # Update trace now if recording keyframes
+        if (self.samplingMode == 'Keyframe'):
+            self.trace.reset()
+            for t, p, h in self.pointSet:
+                self.trace.drawTo(p[0], p[1], p[2])
+            self.trace.create()
 
     def computeCurves(self):
         # Check to make sure curve fitters have points
@@ -1066,6 +1073,13 @@ class MopathRecorder(AppShell, PandaObject):
         self.hprNurbsCurve.setCurveType(PCTHPR)
         # Update widget based on new curve
         self.updateWidgets()
+
+    def initTrace(self):
+        self.trace.reset()
+        # Put trace line segs under node path's parent
+        self.trace.reparentTo(self.nodePathParent)
+        # Show it
+        self.trace.show()
 
     def updateWidgets(self):
         if not self.xyzNurbsCurve:
@@ -1156,8 +1170,6 @@ class MopathRecorder(AppShell, PandaObject):
         if self['nodePath']:
             self.recNodePathMenuEntry.configure(
                 background = self.recNodePathMenuBG)
-            # Put curve drawer under record node path's parent
-            self.curveNodePath.reparentTo(nodePath.getParent())
         else:
             # Flash entry
             self.recNodePathMenuEntry.configure(background = 'Pink')
@@ -1251,11 +1263,11 @@ class MopathRecorder(AppShell, PandaObject):
         if self.xyzNurbsCurve != None:
             pos = Point3(0)
             self.xyzNurbsCurve.getPoint(self.playbackTime, pos)
-            self.playbackNodePath.setPos(pos)
+            self.playbackNodePath.setPos(self.nodePathParent, pos)
         if self.hprNurbsCurve != None:
             hpr = Point3(0)
             self.hprNurbsCurve.getPoint(self.playbackTime, hpr)
-            self.playbackNodePath.setHpr(hpr)
+            self.playbackNodePath.setHpr(self.nodePathParent, hpr)
 
     def startPlayback(self):
         if (self.xyzNurbsCurve == None) & (self.hprNurbsCurve == None):
