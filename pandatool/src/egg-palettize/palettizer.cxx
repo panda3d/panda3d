@@ -23,6 +23,24 @@ Palettizer *pal = (Palettizer *)NULL;
 
 TypeHandle Palettizer::_type_handle;
 
+ostream &operator << (ostream &out, Palettizer::RemapUV remap) {
+  switch (remap) {
+  case Palettizer::RU_never:
+    return out << "never";
+
+  case Palettizer::RU_group:
+    return out << "per group";
+
+  case Palettizer::RU_poly:
+    return out << "per polygon";
+
+  case Palettizer::RU_invalid:
+    return out << "(invalid)";
+  }
+
+  return out << "**invalid**(" << (int)remap << ")";
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Palettizer::Constructor
 //       Access: Public
@@ -35,7 +53,11 @@ Palettizer() {
   // allows us to easily update egg-palettize to write out additional
   // information to its pi file, without having it increment the bam
   // version number for all bam and boo files anywhere in the world.
-  _pi_version = 0;
+
+  _pi_version = 1;
+  // Updated to version 1 on 12/11/00 to add _remap_char_uv.
+
+  _read_pi_version = _pi_version;
 
   _map_dirname = "%g";
   _shadow_dirname = "shadow";
@@ -54,6 +76,7 @@ Palettizer() {
   _round_unit = 0.1;
   _round_fuzz = 0.01;
   _remap_uv = RU_poly;
+  _remap_char_uv = RU_poly;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -83,20 +106,8 @@ report_pi() const {
     cout << "  round UV area to nearest " << _round_unit << " with fuzz "
 	 << _round_fuzz << "\n";
   }
-  cout << "  remap UV's: ";
-  switch (_remap_uv) {
-  case RU_never:
-    cout << "never\n";
-    break;
-
-  case RU_group:
-    cout << "per group\n";
-    break;
-
-  case RU_poly:
-    cout << "per polygon\n";
-    break;
-  }
+  cout << "  remap UV's: " << _remap_uv << "\n"
+       << "  remap UV's for characters: " << _remap_char_uv << "\n";
 
   if (_color_type != (PNMFileType *)NULL) {
     cout << "  generate image files of type: " 
@@ -607,6 +618,29 @@ get_texture(const string &name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Palettizer::string_remap
+//       Access: Public, Static
+//  Description: Returns the RemapUV code corresponding to the
+//               indicated string, or RU_invalid if the string is
+//               invalid.
+////////////////////////////////////////////////////////////////////
+Palettizer::RemapUV Palettizer::
+string_remap(const string &str) {
+  if (str == "never") {
+    return RU_never;
+
+  } else if (str == "group") {
+    return RU_group;
+
+  } else if (str == "poly") {
+    return RU_poly;
+
+  } else {
+    return RU_invalid;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Palettizer::yesno
 //       Access: Private, Static
 //  Description: A silly function to return "yes" or "no" based on a
@@ -653,6 +687,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_float64(_round_unit);
   datagram.add_float64(_round_fuzz);
   datagram.add_int32((int)_remap_uv);
+  datagram.add_int32((int)_remap_char_uv);
+
   writer->write_pointer(datagram, _color_type);
   writer->write_pointer(datagram, _alpha_type); 
   writer->write_pointer(datagram, _shadow_color_type);
@@ -769,7 +805,7 @@ make_Palettizer(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void Palettizer::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  _pi_version = scan.get_int32();
+  _read_pi_version = scan.get_int32();
   _map_dirname = scan.get_string();
   _shadow_dirname = FilenameUnifier::get_bam_filename(scan.get_string());
   _rel_dirname = FilenameUnifier::get_bam_filename(scan.get_string());
@@ -785,6 +821,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _round_unit = scan.get_float64();
   _round_fuzz = scan.get_float64();
   _remap_uv = (RemapUV)scan.get_int32();
+  if (_read_pi_version < 1) {
+    _remap_char_uv = _remap_uv;
+  } else {
+    _remap_char_uv = (RemapUV)scan.get_int32();
+  }
+
   manager->read_pointer(scan, this);  // _color_type
   manager->read_pointer(scan, this);  // _alpha_type
   manager->read_pointer(scan, this);  // _shadow_color_type

@@ -378,7 +378,15 @@ describe_input_file() {
 	    "but possibly at the expense of triangle strips in the resulting "
 	    "model (since some vertices can no longer be shared).\n\n"
 
-	    "The default if this is unspecified is 'poly'.\n\n");
+	    "Sometimes, it may be necessary to be more restrictive on "
+	    "character geometry than on non-character geometry, because "
+	    "the cost of adding additional vertices on characters is "
+	    "greater.  You can specify a different kind of remapping for "
+	    "characters only, by using the keyword 'char' on the same line, "
+	    "e.g. ':remap group char never'.\n\n"
+
+	    "The default remap mode for all geometry, character or otherwise, "
+	    "if no remap mode is specified is 'poly'.\n\n");
 
   show_text("  :imagetype type[,alpha_type]", 10,
 	    "This specifies the default type of image file that should be "

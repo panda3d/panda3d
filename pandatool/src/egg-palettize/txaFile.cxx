@@ -411,24 +411,34 @@ parse_round_line(const vector_string &words) {
 ////////////////////////////////////////////////////////////////////
 bool TxaFile::
 parse_remap_line(const vector_string &words) {
-  if (words.size() != 2) {
-    nout << "Exactly one parameter required for :remap.\n";
-    return false;
-  }
+  int i = 1;
+  while (i < (int)words.size()) {
+    const string &keyword = words[i];
+    if (keyword == "char") {
+      // Defining how to remap UV's for characters.
+      i++;
+      if (i == (int)words.size()) {
+	nout << "Keyword expected following 'char'\n";
+	return false;
+      }
+      pal->_remap_char_uv = Palettizer::string_remap(words[i]);
+      if (pal->_remap_char_uv == Palettizer::RU_invalid) {
+	nout << "Invalid remap keyword: " << words[i] << "\n";
+	return false;
+      }
 
-  const string &keyword = words[1];
-  if (keyword == "never") {
-    pal->_remap_uv = Palettizer::RU_never;
+    } else {
+      // Defining how to remap UV's in general.
+      pal->_remap_uv = Palettizer::string_remap(words[i]);
+      if (pal->_remap_uv == Palettizer::RU_invalid) {
+	nout << "Invalid remap keyword: " << words[i] << "\n";
+	return false;
+      }
 
-  } else if (keyword == "group") {
-    pal->_remap_uv = Palettizer::RU_group;
+      pal->_remap_char_uv = pal->_remap_uv;
+    }
 
-  } else if (keyword == "poly") {
-    pal->_remap_uv = Palettizer::RU_poly;
-
-  } else {
-    nout << "Invalid remap keyword: " << keyword << "\n";
-    return false;
+    i++;
   }
 
   return true;

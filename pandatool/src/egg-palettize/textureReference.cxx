@@ -112,7 +112,7 @@ from_egg(EggFile *egg_file, EggData *data, EggTexture *egg_tex) {
     _uses_alpha = true;
   }
 
-  get_uv_range(_egg_data);
+  get_uv_range(_egg_data, pal->_remap_uv);
 
   _wrap_u = egg_tex->determine_wrap_u();
   _wrap_v = egg_tex->determine_wrap_v();
@@ -319,9 +319,7 @@ update_egg() {
 
   // Finally, go back and actually adjust the UV's to match what we
   // claimed they could be.
-  if (pal->_remap_uv != Palettizer::RU_never) {
-    update_uv_range(_egg_data);
-  }
+  update_uv_range(_egg_data, pal->_remap_uv);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -396,7 +394,7 @@ write(ostream &out, int indent_level) const {
 //               later.
 ////////////////////////////////////////////////////////////////////
 void TextureReference::
-get_uv_range(EggGroupNode *group) {
+get_uv_range(EggGroupNode *group, Palettizer::RemapUV remap) {
   if (group->is_of_type(EggGroup::get_class_type())) {
     EggGroup *egg_group;
     DCAST_INTO_V(egg_group, group);
@@ -405,6 +403,12 @@ get_uv_range(EggGroupNode *group) {
       // If we reach a <Group> node with the "backstage" flag set,
       // ignore it and everything under it.
       return;
+    }
+
+    if (egg_group->get_dart_type() != EggGroup::DT_none) {
+      // If it's a character, we might change the kind of remapping we
+      // do.
+      remap = pal->_remap_char_uv;
     }
   }
 
@@ -452,7 +456,7 @@ get_uv_range(EggGroupNode *group) {
 	TexCoordd geom_min_uv, geom_max_uv;
 
 	if (get_geom_uvs(geom, geom_min_uv, geom_max_uv)) {
-	  if (pal->_remap_uv == Palettizer::RU_poly) {
+	  if (remap == Palettizer::RU_poly) {
 	    LVector2d trans = translate_uv(geom_min_uv, geom_max_uv);
 	    geom_min_uv += trans;
 	    geom_max_uv += trans;
@@ -464,12 +468,12 @@ get_uv_range(EggGroupNode *group) {
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       EggGroupNode *cg = DCAST(EggGroupNode, child);
-      get_uv_range(cg);
+      get_uv_range(cg, remap);
     }
   }
 
   if (group_any_uvs) {
-    if (pal->_remap_uv == Palettizer::RU_group) {
+    if (remap == Palettizer::RU_group) {
       LVector2d trans = translate_uv(group_min_uv, group_max_uv);
       group_min_uv += trans;
       group_max_uv += trans;
@@ -485,7 +489,7 @@ get_uv_range(EggGroupNode *group) {
 //               in the previous call to get_uv_range().
 ////////////////////////////////////////////////////////////////////
 void TextureReference::
-update_uv_range(EggGroupNode *group) {
+update_uv_range(EggGroupNode *group, Palettizer::RemapUV remap) {
   if (group->is_of_type(EggGroup::get_class_type())) {
     EggGroup *egg_group;
     DCAST_INTO_V(egg_group, group);
@@ -494,6 +498,12 @@ update_uv_range(EggGroupNode *group) {
       // If we reach a <Group> node with the "backstage" flag set,
       // ignore it and everything under it.
       return;
+    }
+
+    if (egg_group->get_dart_type() != EggGroup::DT_none) {
+      // If it's a character, we might change the kind of remapping we
+      // do.
+      remap = pal->_remap_char_uv;
     }
   }
 
@@ -508,31 +518,33 @@ update_uv_range(EggGroupNode *group) {
       // about these things.
 
     } else if (child->is_of_type(EggPrimitive::get_class_type())) {
-      EggPrimitive *geom = DCAST(EggPrimitive, child);
-      if (geom->has_texture() && geom->get_texture() == _egg_tex) {
-	TexCoordd geom_min_uv, geom_max_uv;
-
-	if (get_geom_uvs(geom, geom_min_uv, geom_max_uv)) {
-	  if (pal->_remap_uv == Palettizer::RU_poly) {
-	    LVector2d trans = translate_uv(geom_min_uv, geom_max_uv);
-	    trans = trans * _inv_tex_mat;
-	    if (!trans.almost_equal(LVector2d::zero())) {
-	      translate_geom_uvs(geom, trans);
-	    }
-	  } else {
-	    collect_uv(group_any_uvs, group_min_uv, group_max_uv,
+      if (remap != Palettizer::RU_never) {
+	EggPrimitive *geom = DCAST(EggPrimitive, child);
+	if (geom->has_texture() && geom->get_texture() == _egg_tex) {
+	  TexCoordd geom_min_uv, geom_max_uv;
+	  
+	  if (get_geom_uvs(geom, geom_min_uv, geom_max_uv)) {
+	    if (remap == Palettizer::RU_poly) {
+	      LVector2d trans = translate_uv(geom_min_uv, geom_max_uv);
+	      trans = trans * _inv_tex_mat;
+	      if (!trans.almost_equal(LVector2d::zero())) {
+		translate_geom_uvs(geom, trans);
+	      }
+	    } else {
+	      collect_uv(group_any_uvs, group_min_uv, group_max_uv,
 		       geom_min_uv, geom_max_uv);
+	    }
 	  }
 	}
       }
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       EggGroupNode *cg = DCAST(EggGroupNode, child);
-      update_uv_range(cg);
+      update_uv_range(cg, remap);
     }
   }
 
-  if (group_any_uvs && pal->_remap_uv == Palettizer::RU_group) {
+  if (group_any_uvs && remap == Palettizer::RU_group) {
     LVector2d trans = translate_uv(group_min_uv, group_max_uv);
     trans = trans * _inv_tex_mat;
     if (!trans.almost_equal(LVector2d::zero())) {
@@ -587,7 +599,13 @@ translate_geom_uvs(EggPrimitive *geom, const TexCoordd &trans) const {
     if (vtx->has_uv()) {
       EggVertex vtx_copy(*vtx);
       vtx_copy.set_uv(vtx_copy.get_uv() + trans);
-      geom->replace(pi, vtx->get_pool()->create_unique_vertex(vtx_copy));
+      EggVertex *new_vtx = vtx->get_pool()->create_unique_vertex(vtx_copy);
+
+      if (new_vtx->gref_size() != vtx->gref_size()) {
+	new_vtx->copy_grefs_from(*vtx);
+      }
+
+      geom->replace(pi, new_vtx);
     }
   }
 }

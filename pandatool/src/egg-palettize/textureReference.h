@@ -9,6 +9,7 @@
 #include <pandatoolbase.h>
 
 #include "textureProperties.h"
+#include "palettizer.h"
 
 #include <luse.h>
 #include <typedWriteable.h>
@@ -59,8 +60,8 @@ public:
   void write(ostream &out, int indent_level = 0) const;
 
 private:
-  void get_uv_range(EggGroupNode *group);
-  void update_uv_range(EggGroupNode *group);
+  void get_uv_range(EggGroupNode *group, Palettizer::RemapUV remap);
+  void update_uv_range(EggGroupNode *group, Palettizer::RemapUV remap);
   
   bool get_geom_uvs(EggPrimitive *geom,
 		    TexCoordd &geom_min_uv, TexCoordd &geom_max_uv);

@@ -55,12 +55,16 @@ private:
 
 public:
   int _pi_version;
+  int _read_pi_version;
 
   enum RemapUV {
     RU_never,
     RU_group,
-    RU_poly
+    RU_poly,
+    RU_invalid
   };
+
+  static RemapUV string_remap(const string &str);
 
   // These values are not stored in the bam file, but are specific to
   // each session.
@@ -83,7 +87,7 @@ public:
   bool _round_uvs;
   double _round_unit;
   double _round_fuzz;
-  RemapUV _remap_uv;
+  RemapUV _remap_uv, _remap_char_uv;
   PNMFileType *_color_type;
   PNMFileType *_alpha_type;
   PNMFileType *_shadow_color_type;
