@@ -71,9 +71,12 @@ else
 CFILES := $(CFILES) $(LCFILES)
 endif
 
+# We must strip out the reference to unistd.h that flex so annoyingly
+# puts in its generated code.
 $(LCFILES) : %.$(LEXTENSION) : %.lxx
 	$(LEX) $(LFLAGS) $<
-	mv lex.yy.c $@
+	sed '/#include <unistd.h>/d' lex.yy.c > $@
+	rm lex.yy.c
 
 clean:: 
 	rm -f $(LCFILES)
