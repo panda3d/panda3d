@@ -160,9 +160,7 @@ class ConnectionRepository(DirectObject.DirectObject):
             
             url = serverList[serverIndex]
             self.notify.info("Connecting to %s via HTTP interface." % (url.cStr()))
-            # Temporary test for old pandas.
-            if hasattr(ch, "preserveStatus"):
-                ch.preserveStatus()
+            ch.preserveStatus()
             
             ch.beginConnectTo(DocumentSpec(url))
             ch.spawnTask(name = 'connect-to-server',
