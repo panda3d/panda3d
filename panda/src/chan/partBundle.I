@@ -19,7 +19,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::get_blend_type
-//       Access: Public
+//       Access: Published
 //  Description: Returns the way the character responds to multiple
 //               animations being bound simultaneously.
 ////////////////////////////////////////////////////////////////////
@@ -30,7 +30,7 @@ get_blend_type() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::get_node
-//       Access: Public
+//       Access: Published
 //  Description: Returns the PartBundleNode associated with this
 //               PartBundle.
 ////////////////////////////////////////////////////////////////////

@@ -22,7 +22,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControlCollection::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Returns the AnimControl associated with the given
 //               name, or NULL if no such control has been associated.
 ////////////////////////////////////////////////////////////////////
@@ -33,7 +33,7 @@ AnimControlCollection() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControlCollection::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 AnimControlCollection::
@@ -42,7 +42,7 @@ AnimControlCollection::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControlCollection::store_anim
-//       Access: Public
+//       Access: Published
 //  Description: Associates the given AnimControl with this collection
 //               under the given name.  The AnimControl will remain
 //               associated until a new AnimControl is associated with
@@ -64,7 +64,7 @@ store_anim(AnimControl *control, const string &name) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControlCollection::find_anim
-//       Access: Public
+//       Access: Published
 //  Description: Returns the AnimControl associated with the given
 //               name, or NULL if no such control has been associated.
 ////////////////////////////////////////////////////////////////////
@@ -79,7 +79,7 @@ find_anim(const string &name) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControlCollection::unbind_anim
-//       Access: Public
+//       Access: Published
 //  Description: Removes the AnimControl associated with the given
 //               name, if any.  Returns true if an AnimControl was
 //               removed, false if there was no AnimControl with the
@@ -100,7 +100,7 @@ unbind_anim(const string &name) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControlCollection::get_num_anims
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of AnimControls associated with
 //               this collection.
 ////////////////////////////////////////////////////////////////////
@@ -111,7 +111,7 @@ get_num_anims() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControlCollection::clear_anims
-//       Access: Public
+//       Access: Published
 //  Description: Disassociates all anims from this collection.
 ////////////////////////////////////////////////////////////////////
 void AnimControlCollection::
@@ -121,7 +121,7 @@ clear_anims() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControlCollection::play_all
-//       Access: Public
+//       Access: Published
 //  Description: Starts all animations playing.
 ////////////////////////////////////////////////////////////////////
 void AnimControlCollection::
@@ -134,7 +134,7 @@ play_all() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControlCollection::play_all
-//       Access: Public
+//       Access: Published
 //  Description: Starts all animations playing.
 ////////////////////////////////////////////////////////////////////
 void AnimControlCollection::
@@ -147,7 +147,7 @@ play_all(int from, int to) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControlCollection::loop_all
-//       Access: Public
+//       Access: Published
 //  Description: Starts all animations looping.
 ////////////////////////////////////////////////////////////////////
 void AnimControlCollection::
@@ -160,7 +160,7 @@ loop_all(bool restart) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControlCollection::loop_all
-//       Access: Public
+//       Access: Published
 //  Description: Starts all animations looping.
 ////////////////////////////////////////////////////////////////////
 void AnimControlCollection::
@@ -173,7 +173,7 @@ loop_all(bool restart, int from, int to) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControlCollection::stop_all
-//       Access: Public
+//       Access: Published
 //  Description: Stops all currently playing animations.  Returns true
 //               if any animations were stopped, false if none were
 //               playing.
@@ -194,7 +194,7 @@ stop_all() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControlCollection::pose_all
-//       Access: Public
+//       Access: Published
 //  Description: Sets all animations to the indicated frame.
 ////////////////////////////////////////////////////////////////////
 void AnimControlCollection::
@@ -207,7 +207,7 @@ pose_all(int frame) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControlCollection::which_anim_playing
-//       Access: Public
+//       Access: Published
 //  Description: Returns the name of the bound AnimControl currently
 //               playing, if any.  If more than one AnimControl is
 //               currently playing, returns all of the names separated

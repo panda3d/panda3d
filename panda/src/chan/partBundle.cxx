@@ -80,7 +80,7 @@ make_copy() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::set_blend_type
-//       Access: Public
+//       Access: Published
 //  Description: Defines the way the character responds to multiple
 //               set_control_effect()).  By default, the blend_type is
 //               BT_single, which disallows multiple animations.  In
@@ -118,7 +118,7 @@ set_blend_type(BlendType bt) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::clear_control_effects
-//       Access: Public
+//       Access: Published
 //  Description: Sets the control effect of all AnimControls to zero
 //               (but does not "stop" the AnimControls).  The
 //               character will no longer be affected by any
@@ -143,7 +143,7 @@ clear_control_effects() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::set_control_effect
-//       Access: Public
+//       Access: Published
 //  Description: Sets the amount by which the character is affected by
 //               the indicated AnimControl (and its associated
 //               animation).  Normally, this will only be zero or one.
@@ -191,7 +191,7 @@ set_control_effect(AnimControl *control, float effect) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::get_control_effect
-//       Access: Public
+//       Access: Published
 //  Description: Returns the amount by which the character is affected
 //               by the indicated AnimControl and its associated
 //               animation.  See set_control_effect().
@@ -213,7 +213,7 @@ get_control_effect(AnimControl *control) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::output
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Writes a one-line description of the bundle.
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
@@ -223,7 +223,7 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::write
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Writes a brief description of the bundle and all of
 //               its descendants.
 ////////////////////////////////////////////////////////////////////
@@ -238,7 +238,7 @@ write(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::bind_anim
-//       Access: Public
+//       Access: Published
 //  Description: Binds the animation to the bundle, if possible, and
 //               returns a new AnimControl that can be used to start
 //               and stop the animation.  If the anim hierarchy does
@@ -255,7 +255,7 @@ write(ostream &out, int indent_level) const {
 //               within the PartBundle; it is the user's
 //               responsibility to maintain the pointer.  The
 //               animation will automatically unbind itself when the
-//               AnimControl destructs (e.g. its reference count goes
+//               AnimControl destructs (i.e. its reference count goes
 //               to zero).
 ////////////////////////////////////////////////////////////////////
 PT(AnimControl) PartBundle::
@@ -291,7 +291,7 @@ bind_anim(AnimBundle *anim, int hierarchy_match_flags) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::bind_anim
-//       Access: Public
+//       Access: Published
 //  Description: Binds the animation to the bundle, if possible, and
 //               returns a new AnimControl that can be used to start
 //               and stop the animation.  If the anim hierarchy does

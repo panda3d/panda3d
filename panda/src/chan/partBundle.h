@@ -42,7 +42,7 @@ public:
 
   // This is passed down through the MovingParts during the
   // do_update() call to specify the channels that are in effect.
-  typedef pmap<PT(AnimControl), float> ChannelBlend;
+  typedef pmap<AnimControl *, float> ChannelBlend;
 
   // This is the parameter to set_blend_type() and specifies the kind
   // of blending operation to be performed when multiple controls are
@@ -98,17 +98,6 @@ PUBLISHED:
   void set_control_effect(AnimControl *control, float effect);
   float get_control_effect(AnimControl *control);
 
-public:
-  // The following functions may be used to traverse the set of
-  // controls applied to the PartBundle.  Beware!  These are not safe
-  // to use outside of PANDA.DLL.
-  INLINE control_iterator control_begin() const;
-  INLINE control_iterator control_end() const;
-  INLINE control_size_type control_size() const;
-
-  INLINE const ChannelBlend &get_blend_map() const;
-
-PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 
@@ -119,6 +108,15 @@ PUBLISHED:
                  int hierarchy_match_flags = 0);
 
 public:
+  // The following functions may be used to traverse the set of
+  // controls applied to the PartBundle.  Beware!  These are not safe
+  // to use outside of PANDA.DLL.
+  INLINE control_iterator control_begin() const;
+  INLINE control_iterator control_end() const;
+  INLINE control_size_type control_size() const;
+
+  INLINE const ChannelBlend &get_blend_map() const;
+
   // The following functions aren't really part of the public
   // interface; they're just public so we don't have to declare a
   // bunch of friends.

@@ -21,7 +21,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::set_play_rate
-//       Access: Public
+//       Access: Published
 //  Description: Sets the speed of the animation, relative to its
 //               "normal" speed.  Setting this number to 2.0 plays it
 //               twice as fast, 0.5 half as fast.  -1.0 plays it
@@ -42,7 +42,7 @@ set_play_rate(double play_rate) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::get_play_rate
-//       Access: Public
+//       Access: Published
 //  Description: Returns the current speed of the animation.  See
 //               set_play_rate().
 ////////////////////////////////////////////////////////////////////
@@ -53,7 +53,7 @@ get_play_rate() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::get_frame_rate
-//       Access: Public
+//       Access: Published
 //  Description: Returns the actual frame rate of the animation, based
 //               on the play_rate (see set_play_rate()) and the
 //               animation's base frame rate (see
@@ -67,7 +67,7 @@ get_frame_rate() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::get_frame
-//       Access: Public
+//       Access: Published
 //  Description: Returns the current frame number of the animation.
 ////////////////////////////////////////////////////////////////////
 INLINE int AnimControl::
@@ -80,7 +80,7 @@ get_frame() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::get_num_frames
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of frames of animation.  This is
 //               actually just extracted directly from the AnimBundle;
 //               the function is duplicated here for convenience.  The
@@ -94,7 +94,7 @@ get_num_frames() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::is_playing
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the AnimControl is currently playing,
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -105,7 +105,7 @@ is_playing() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::get_anim
-//       Access: Public
+//       Access: Published
 //  Description: Returns the AnimBundle bound in with this
 //               AnimControl.
 ////////////////////////////////////////////////////////////////////

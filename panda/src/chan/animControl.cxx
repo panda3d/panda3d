@@ -30,7 +30,7 @@ TypeHandle AnimControl::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::Constructor
-//       Access: Public, Scheme
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 AnimControl::
@@ -49,10 +49,20 @@ AnimControl(PartBundle *part, AnimBundle *anim, int channel_index) {
   _marked_frame = -1;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: AnimControl::Destructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+AnimControl::
+~AnimControl() {
+  get_part()->set_control_effect(this, 0.0f);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::play
-//       Access: Public
+//       Access: Published
 //  Description: Runs the entire animation from beginning to end and
 //               stops, throwing the stop event (if it is non-NULL).
 ////////////////////////////////////////////////////////////////////
@@ -69,7 +79,7 @@ play(const CPT_Event &stop_event) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::play
-//       Access: Public
+//       Access: Published
 //  Description: Runs the animation from the frame "from" to and
 //               including the frame "to", at which point the
 //               animation is stopped and the indicated stop event is
@@ -99,7 +109,7 @@ play(int from, int to, const CPT_Event &stop_event) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::loop
-//       Access: Public
+//       Access: Published
 //  Description: Starts the entire animation looping.  If restart is
 //               true, the animation is restarted from the beginning;
 //               otherwise, it continues from the current frame.
@@ -125,7 +135,7 @@ loop(bool restart) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::loop
-//       Access: Public
+//       Access: Published
 //  Description: Loops the animation from the frame "from" to and
 //               including the frame "to", indefinitely.  If restart
 //               is true, the animation is restarted from the
@@ -192,7 +202,7 @@ loop(bool restart, int from, int to) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::pingpong
-//       Access: Public
+//       Access: Published
 //  Description: Loops the animation from the frame "from" to and
 //               including the frame "to", and then back in the
 //               opposite direction, indefinitely.
@@ -224,7 +234,7 @@ pingpong(bool restart, int from, int to) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::stop
-//       Access: Public
+//       Access: Published
 //  Description: Stops a currently playing or looping animation right
 //               where it is.  The animation remains posed at the
 //               current frame, and no event is thrown.
@@ -236,7 +246,7 @@ stop() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::pose
-//       Access: Public
+//       Access: Published
 //  Description: Sets the animation to the indicated frame and holds
 //               it there.
 ////////////////////////////////////////////////////////////////////
@@ -257,7 +267,7 @@ pose(int frame) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::add_event
-//       Access: Public
+//       Access: Published
 //  Description: Adds the indicated event to the list of events that
 //               will be called whenever the animation reaches the
 //               indicated frame number.  Once added, the event will
@@ -274,7 +284,7 @@ add_event(int frame, const CPT_Event &event) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::remove_event
-//       Access: Public
+//       Access: Published
 //  Description: Removes all events found that match the indicated
 //               event name, and returns the number of events
 //               removed.
@@ -325,7 +335,7 @@ remove_event(const string &event_name) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::remove_all_events
-//       Access: Public
+//       Access: Published
 //  Description: Removes all user-defined event messages.  However, if
 //               called while an animation is running, this will not
 //               take effect until the animation is stopped and
@@ -338,7 +348,7 @@ remove_all_events() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::get_part
-//       Access: Public
+//       Access: Published
 //  Description: Returns the PartBundle bound in with this
 //               AnimControl.
 ////////////////////////////////////////////////////////////////////
