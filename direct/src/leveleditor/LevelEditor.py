@@ -195,7 +195,7 @@ def DNARemoveAllChildrenOfClass(dnaNode, classType):
             children.append(child)
     for child in children:
         dnaNode.remove(child)
-        #skyler? DNASTORE.removeDNAGroup(child)
+        DNASTORE.removeDNAGroup(child)
 
 def DNAGetChildren(dnaNode, classType=None):
     """ Return the objects of that type """
@@ -3259,7 +3259,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             label_text = 'Selected:', entry_width = 14,
             selectioncommand = self.selectSignBaseline,
             history = 0,
-            scrolledlist_items = ['<the sign>'])
+            scrolledlist_items = [''])
         self.baselineMenu.selectitem(self.currentBaselineIndex)
         self.baselineMenu.grid(row=0, column=0, columnspan=3)
 
@@ -3300,11 +3300,10 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             maxVelocity=1.0,
             command=self.setSignBaselineStomp)
         self.addStompFloater.grid(row=8, column=0, rowspan=2, columnspan=3)
-        self.addCurveFloater = EntryScale.EntryScale(
+        self.addCurveFloater = Floater.Floater(
             gridFrame, 
             text='Curve',
-            min = -1.0, max = 1.0,
-            resolution = .01,
+            maxVelocity = 1.0,
             command=self.setSignBaselineCurve)
         self.addCurveFloater.grid(row=10, column=0, rowspan=2, columnspan=3)
         self.addXFloater = Floater.Floater(
@@ -3578,6 +3577,8 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             return target
     
     def selectSignBaseline(self, val):
+        if not self.currentSignDNA:
+            return
         self.currentBaselineIndex=int((self.baselineMenu.curselection())[0])
         target=DNAGetChild(self.currentSignDNA, DNA_SIGN_BASELINE, self.currentBaselineIndex)
         if target:
