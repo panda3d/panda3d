@@ -121,7 +121,7 @@ class DirectSession(PandaObject):
                           'shift', 'shift-up', 'alt', 'alt-up',
                           'page_up', 'page_down', 
                           '[', '{', ']', '}',
-                          'A', 'b', 'l', 'p', 's', 't', 'v', 'w']
+                          'A', 'b', 'l', 'p', 'r', 's', 't', 'v', 'w']
         self.mouseEvents = ['mouse1', 'mouse1-up',
                             'mouse2', 'mouse2-up',
                             'mouse3', 'mouse3-up']
@@ -252,6 +252,9 @@ class DirectSession(PandaObject):
         elif input == 'p':
             if self.selected.last:
                 self.setActiveParent(self.selected.last)
+        elif input == 'r':
+            if self.selected.last:
+                self.reparent(self.selected.last)
         elif input == 's':
             if self.selected.last:
                 self.select(self.selected.last)
