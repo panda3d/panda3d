@@ -45,6 +45,7 @@
 #define build_models \
    $[SOURCES(flt_egg):%.flt=%.egg] \
    $[patsubst %.lwo %.LWO,%.egg,$[SOURCES(lwo_egg)]] \
+   $[patsubst %.ma %.mb,%.egg,$[SOURCES(maya_egg)]] \
    $[forscopes soft_char_egg,$[POLY_MODEL:%=$[EGG_PREFIX]%.egg] $[NURBS_MODEL:%=$[EGG_PREFIX]%.egg]]
 
 #define build_anims \
@@ -177,6 +178,17 @@ $[TAB]lwo2egg $[LWO2EGG_OPTS] -o $[target] $[source]
 
   #end lwo
 #end lwo_egg
+
+// Egg file generation from Maya files.
+#forscopes maya_egg
+  #foreach maya $[SOURCES]
+    #define target $[patsubst %.ma %.mb,%.egg,$[maya]]
+    #define source $[maya]
+$[target] : $[source]
+$[TAB]maya2egg $[MAYA2EGG_OPTS] -o $[target] $[source]
+
+  #end maya
+#end maya_egg
 
 // Egg character model generation from Soft databases.
 #forscopes soft_char_egg
