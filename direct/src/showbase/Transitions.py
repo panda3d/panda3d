@@ -13,6 +13,7 @@ class Transitions:
     def __init__(self, loader):
         self.iris = None
         self.fade = None
+        self.fadeColor = Vec3(0)
 
         self.irisTaskName = "irisTask"
         self.fadeTaskName = "fadeTask"
@@ -41,9 +42,12 @@ class Transitions:
         else:
             # Create a sequence that lerps the color out, then
             # parents the fade to hidden
+            r = self.fadeColor[0]
+            g = self.fadeColor[1]
+            b = self.fadeColor[2]
             task = Task.sequence(
-                self.fade.lerpColor(0,0,0,1,
-                                    0,0,0,0,
+                self.fade.lerpColor(r,g,b,1,
+                                    r,g,b,0,
                                     t),
                 Task.Task(self.__fadeInLerpDone))
             # Spawn the sequence
@@ -73,18 +77,21 @@ class Transitions:
         self.loadFade()
         self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
 
+        r = self.fadeColor[0]
+        g = self.fadeColor[1]
+        b = self.fadeColor[2]
         if (t == 0):
             # Fade out immediately with no lerp
-            self.fade.setColor(0,0,0,1)
+            self.fade.setColor(r,g,b,1)
         else:
             # Spawn a lerp of the color from no alpha to full alpha
             if not block:
-                self.fade.lerpColor(0,0,0,0,
-                                    0,0,0,1,
+                self.fade.lerpColor(r,g,b,0,
+                                    r,g,b,1,
                                     t, task=self.fadeTaskName)
             else:
-                return self.fade.lerpColor(0,0,0,0,
-                                           0,0,0,1,
+                return self.fade.lerpColor(r,g,b,0,
+                                           r,g,b,1,
                                            t)
 
     def fadeScreen(self, alpha=0.5):
@@ -96,7 +103,11 @@ class Transitions:
         self.noTransitions()
         self.loadFade()
         self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
-        self.fade.setColor(0,0,0,alpha)
+        
+        self.fade.setColor(self.fadeColor[0],
+                           self.fadeColor[1],
+                           self.fadeColor[2],
+                           alpha)
 
     def fadeScreenColor(self, color):
         """
@@ -107,7 +118,7 @@ class Transitions:
         self.noTransitions()
         self.loadFade()
         self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
-        self.fade.setColor(color)
+        self.fade.setColor(color)        
 
     def fadeOutTask(self, task, time=0.3, noFade=1):
         """
@@ -134,6 +145,9 @@ class Transitions:
         taskMgr.remove(self.fadeTaskName)
         if self.fade != None:
             self.fade.reparentTo(hidden)
+
+    def setFadeColor(self, r, g, b):
+        self.fadeColor.set(r,g,b)
         
     def __irisInLerpDone(self, task):
         # This is a helper function to the fadeIn sequence
