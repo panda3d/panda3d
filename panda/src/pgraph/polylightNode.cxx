@@ -80,11 +80,11 @@ Colorf PolylightNode::flicker() const {
     //srand((int)ClockObject::get_global_clock()->get_frame_time());
     variation = (rand()%100);  // a value between 0-99
     variation /= 100.0;
-    pgraph_cat.info() << "Random Variation: " << variation << endl;
+    pgraph_cat.debug() << "Random Variation: " << variation << endl;
   } else if (_flicker_type == FSIN) {
     double now = ClockObject::get_global_clock()->get_frame_time();
     variation = sinf(now*_sin_freq);
-    pgraph_cat.info() << "Variation: " << variation << endl;
+    pgraph_cat.debug() << "Variation: " << variation << endl;
     // can't use negative variation, so make it positive
     if (variation < 0.0)
       variation *= -1.0;

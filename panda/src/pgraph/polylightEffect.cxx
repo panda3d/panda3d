@@ -222,7 +222,7 @@ do_poly_light(const CullTraverserData *data, const TransformState *node_transfor
     r = Rcollect / num_lights;
     g = Gcollect / num_lights;
     b = Bcollect / num_lights;
-    pgraph_cat.info() << "r=" << r << "; g=" << g << "; b=" << b << endl;
+    pgraph_cat.debug() << "r=" << r << "; g=" << g << "; b=" << b << endl;
   }
 
   return ColorScaleAttrib::make(LVecBase4f(r, g, b, 1.0));
