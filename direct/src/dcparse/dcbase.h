@@ -17,7 +17,14 @@
 #pragma warning (disable : 4503)
 #endif  /* WIN32_VC */
 
+#if defined(WIN32) || defined(CPPPARSER)
 #include <iostream>
+#include <fstream>
+#else
+#include <iostream.h>
+#include <fstream.h>
+#endif
+
 #include <string>
 
 // These header files are needed to compile dcLexer.cxx, the output

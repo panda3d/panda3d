@@ -7,7 +7,6 @@
 #include "dcParserDefs.h"
 #include "dcLexerDefs.h"
 
-#include <fstream>
 #include <assert.h>
 
 ////////////////////////////////////////////////////////////////////
