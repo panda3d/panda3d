@@ -123,7 +123,7 @@ handle_entries() {
           if (_current_velocity > 0.0f || adjust < -0.001f) {
             // ...we have a vertical thrust,
             // ...or the node is above the floor, so it is airborne.
-            float dt = min(ClockObject::get_global_clock()->get_dt(), 0.1);
+            float dt = ClockObject::get_global_clock()->get_dt();
             // The sign in this equation is reversed from normal.  This is
             // because _current_velocity is a scaler and the equation normally
             // has a vector.  I suppose the sign of _gravity could have been

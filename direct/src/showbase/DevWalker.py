@@ -100,7 +100,7 @@ class DevWalker(DirectObject.DirectObject):
         # Check to see if we're moving at all:
         if self.speed or self.liftSpeed or self.slideSpeed or self.rotationSpeed:
             # How far did we move based on the amount of time elapsed?
-            dt=min(ClockObject.getGlobalClock().getDt(), 0.1)
+            dt=ClockObject.getGlobalClock().getDt()
             distance = dt * self.speed * run
             lift = dt * self.liftSpeed * run
             slideDistance = dt * self.slideSpeed * run

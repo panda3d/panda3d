@@ -461,7 +461,7 @@ class GravityWalker(DirectObject.DirectObject):
         self.__oldPosDelta = self.avatarNodePath.getPosDelta(render)
         # How far did we move based on the amount of time elapsed?
         self.__oldDt = ClockObject.getGlobalClock().getDt()
-        dt=min(self.__oldDt, 0.1)
+        dt=self.__oldDt
 
         # Check to see if we're moving at all:
         self.moving = self.speed or self.slideSpeed or self.rotationSpeed or (self.priorParent!=Vec3.zero())

@@ -696,7 +696,7 @@ class ShowBase(DirectObject.DirectObject):
 
     def updateManagers(self, state):
         """updateManagers(self)"""
-        dt = min(globalClock.getDt(), 0.1)
+        dt = globalClock.getDt()
         if (self.particleMgrEnabled == 1):
             self.particleMgr.doParticles(dt)
         if (self.physicsMgrEnabled == 1):

@@ -440,7 +440,7 @@ class PhysicsWalker(DirectObject.DirectObject):
                 (turnRight and -self.avatarControlRotateSpeed))
 
         # How far did we move based on the amount of time elapsed?
-        dt=min(ClockObject.getGlobalClock().getDt(), 0.1)
+        dt=ClockObject.getGlobalClock().getDt()
 
         if self.needToDeltaPos:
             self.setPriorParentVector()

@@ -181,7 +181,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
                 (turnRight and -self.avatarControlRotateSpeed))
             
         # How far did we move based on the amount of time elapsed?
-        dt=min(ClockObject.getGlobalClock().getDt(), 0.1)
+        dt=ClockObject.getGlobalClock().getDt()
         # Check to see if we're moving at all:
         if self.speed or self.slideSpeed or self.rotationSpeed:
             if self.stopThisFrame:
