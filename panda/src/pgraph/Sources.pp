@@ -49,7 +49,22 @@
   #endif
 
   #define INSTALL_HEADERS \
-    pandaNode.h pandaNode.I
+    colorAttrib.h colorAttrib.I \
+    config_pgraph.h \
+    cullHandler.h \
+    qpcullTraverser.h qpcullTraverser.I \
+    cycleData.h cycleData.I \
+    cycleDataReader.h cycleDataReader.I \
+    cycleDataWriter.h cycleDataWriter.I \
+    qpgeomNode.h qpgeomNode.I \
+    pandaNode.h pandaNode.I \
+    pipeline.h pipeline.I \
+    pipelineCycler.h pipelineCycler.I \
+    pipelineCyclerBase.h pipelineCyclerBase.I \
+    renderAttrib.h renderAttrib.I \
+    renderState.h renderState.I \
+    textureAttrib.h textureAttrib.I \
+    transformAttrib.h transformAttrib.I
 
   #define IGATESCAN all
 
