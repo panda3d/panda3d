@@ -325,7 +325,7 @@ uninstall-lib$[TARGET] :
 $[install_lib_dir]/lib$[TARGET].so : $[so_dir]/lib$[TARGET].so
 #define local lib$[TARGET].so
 #define dest $[install_lib_dir]
-	cd ./$[so_dir]; $[INSTALL_PROG]
+	cd ./$[so_dir] && $[INSTALL_PROG]
 
 #if $[igatescan]
 // Now, some additional rules to generate and compile the interrogate
@@ -343,7 +343,7 @@ $[install_lib_dir]/lib$[TARGET].so : $[so_dir]/lib$[TARGET].so
 $[install_igatedb_dir]/$[igatedb] : $[so_dir]/$[igatedb]
 #define local $[igatedb]
 #define dest $[install_igatedb_dir]
-	cd ./$[so_dir]; $[INSTALL]
+	cd ./$[so_dir] && $[INSTALL]
 
 // We have to split this out as a separate rule to properly support
 // parallel make.
@@ -450,7 +450,7 @@ uninstall-lib$[TARGET] :
 $[install_lib_dir]/lib$[TARGET].a : $[st_dir]/lib$[TARGET].a
 #define local lib$[TARGET].a
 #define dest $[install_lib_dir]
-	cd ./$[st_dir]; $[INSTALL]
+	cd ./$[st_dir] && $[INSTALL]
 
 #end static_lib_target
 
@@ -485,7 +485,7 @@ uninstall-$[TARGET] :
 $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
 #define local $[TARGET]
 #define dest $[install_bin_dir]
-	cd ./$[st_dir]; $[INSTALL_PROG]
+	cd ./$[st_dir] && $[INSTALL_PROG]
 
 #end sed_bin_target
 
@@ -533,7 +533,7 @@ uninstall-$[TARGET] :
 $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
 #define local $[TARGET]
 #define dest $[install_bin_dir]
-	cd ./$[st_dir]; $[INSTALL_PROG]
+	cd ./$[st_dir] && $[INSTALL_PROG]
 
 #end bin_target
 
@@ -782,47 +782,47 @@ uninstall-igate : $[subdirs:%=uninstall-igate-%]
 #formap dirname subdirs
 #define depends 
 $[dirname] : $[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]
-	cd ./$[PATH]; $(MAKE) all
+	cd ./$[PATH] && $(MAKE) all
 #end dirname
 
 #formap dirname subdirs
 test-$[dirname] :
-	cd ./$[PATH]; $(MAKE) test
+	cd ./$[PATH] && $(MAKE) test
 #end dirname
 
 #formap dirname subdirs
 clean-$[dirname] :
-	cd ./$[PATH]; $(MAKE) clean
+	cd ./$[PATH] && $(MAKE) clean
 #end dirname
 
 #formap dirname subdirs
 clean-igate-$[dirname] :
-	cd ./$[PATH]; $(MAKE) clean-igate
+	cd ./$[PATH] && $(MAKE) clean-igate
 #end dirname
 
 #formap dirname subdirs
 cleanall-$[dirname] : $[patsubst %,cleanall-%,$[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]]
-	cd ./$[PATH]; $(MAKE) cleanall
+	cd ./$[PATH] && $(MAKE) cleanall
 #end dirname
 
 #formap dirname subdirs
 install-$[dirname] : $[patsubst %,install-%,$[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]]
-	cd ./$[PATH]; $(MAKE) install
+	cd ./$[PATH] && $(MAKE) install
 #end dirname
 
 #formap dirname subdirs
 install-igate-$[dirname] :
-	cd ./$[PATH]; $(MAKE) install-igate
+	cd ./$[PATH] && $(MAKE) install-igate
 #end dirname
 
 #formap dirname subdirs
 uninstall-$[dirname] :
-	cd ./$[PATH]; $(MAKE) uninstall
+	cd ./$[PATH] && $(MAKE) uninstall
 #end dirname
 
 #formap dirname subdirs
 uninstall-igate-$[dirname] :
-	cd ./$[PATH]; $(MAKE) uninstall-igate
+	cd ./$[PATH] && $(MAKE) uninstall-igate
 #end dirname
 
 #if $[ne $[CONFIG_HEADER],]

@@ -212,6 +212,23 @@ cleanall : clean
 	-del /f $[DEPENDENCY_CACHE_FILENAME]
 #endif
 
+clean-igate :
+#forscopes metalib_target lib_target ss_lib_target
+  #define igatedb $[get_igatedb]
+  #define igateoutput $[get_igateoutput]
+  #define igatemscan $[components $[get_igatedb:%=$[RELDIR]/$[so_dir]/%],$[active_component_libs]]
+  #define igatemout $[if $[igatemscan],lib$[TARGET]_module.cxx]
+  #if $[igatedb]
+	-del /f $[so_dir]\$[igatedb]
+  #endif
+  #if $[igateoutput]
+	-del /f $[so_dir]\$[igateoutput] $[igateoutput:%.cxx=$[so_dir]\%.obj]
+  #endif
+  #if $[igatemout]
+	-del /f $[so_dir]\$[igatemout] $[igatemout:%.cxx=$[so_dir]/%.obj]
+  #endif
+#end metalib_target lib_target ss_lib_target
+
 // Now, 'install' and 'uninstall'.  These simply copy files into the
 // install directory (or remove them).  The 'install' rule also makes
 // the directories if necessary.
@@ -221,6 +238,9 @@ cleanall : clean
      $[INSTALL_PARSER_INC:%=$[install_parser_inc_dir]\%] \
      $[INSTALL_DATA:%=$[install_data_dir]\%] \
      $[INSTALL_CONFIG:%=$[install_config_dir]\%]
+
+#define installed_igate_files \
+     $[get_igatedb(metalib_target lib_target ss_lib_target):%=$[install_igatedb_dir]\%]
 
 #define install_targets \
      $[sort \
@@ -238,8 +258,15 @@ cleanall : clean
 
 install : all $[install_targets]
 
+install-igate : $[sort $[installed_igate_files]]
+
 uninstall : $[active_target(metalib_target lib_target static_lib_target ss_lib_target):%=uninstall-lib%] $[active_target(bin_target):%=uninstall-%]
 #foreach file $[sort $[installed_files]]
+	-del /f $[file]
+#end file
+
+uninstall-igate :
+#foreach file $[sort $[installed_igate_files]]
 	-del /f $[file]
 #end file
 
@@ -835,12 +862,15 @@ $[DEPENDENCY_CACHE_FILENAME] : $[dep_sources]
 all : $[subdirs]
 test : $[subdirs:%=test-%]
 clean : $[subdirs:%=clean-%]
+clean-igate : $[subdirs:%=clean-igate-%]
 cleanall : $[subdirs:%=cleanall-%]
 install : $[if $[CONFIG_HEADER],$[install_headers_dir] $[install_headers_dir]\$[CONFIG_HEADER]] $[subdirs:%=install-%]
+install-igate : $[subdirs:%=install-igate-%]
 uninstall : $[subdirs:%=uninstall-%]
 #if $[CONFIG_HEADER]
 	-del /f $[install_headers_dir]\$[CONFIG_HEADER]
 #endif
+uninstall-igate : $[subdirs:%=uninstall-igate-%]
 
 #formap dirname subdirs
 #define depends 
@@ -859,6 +889,11 @@ clean-$[dirname] :
 #end dirname
 
 #formap dirname subdirs
+clean-igate-$[dirname] :
+	cd $[osfilename $[PATH]] && $(MAKE) /nologo clean-igate
+#end dirname
+
+#formap dirname subdirs
 cleanall-$[dirname] : $[patsubst %,cleanall-%,$[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]]
 	cd $[osfilename $[PATH]] && $(MAKE) /nologo cleanall
 #end dirname
@@ -869,8 +904,18 @@ install-$[dirname] : $[patsubst %,install-%,$[dirnames $[if $[build_directory],$
 #end dirname
 
 #formap dirname subdirs
+install-igate-$[dirname] :
+	cd $[osfilename $[PATH]] && $(MAKE) /nologo install-igate
+#end dirname
+
+#formap dirname subdirs
 uninstall-$[dirname] :
 	cd $[osfilename $[PATH]] && $(MAKE) /nologo uninstall
+#end dirname
+
+#formap dirname subdirs
+uninstall-igate-$[dirname] :
+	cd $[osfilename $[PATH]] && $(MAKE) /nologo uninstall-igate
 #end dirname
 
 #if $[ne $[CONFIG_HEADER],]
