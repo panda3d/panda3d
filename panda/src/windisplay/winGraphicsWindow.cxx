@@ -1187,7 +1187,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
           can_t[result_size/sizeof(wchar_t)] = '\0';
           
-          _input_devices[0].candidate(can_t, min(cursor_pos, delta_start), max(cursor_pos, delta_start));
+          _input_devices[0].candidate(can_t, min(cursor_pos, delta_start), max(cursor_pos, delta_start), cursor_pos);
 
           ImmReleaseContext(hwnd, hIMC);
         }
