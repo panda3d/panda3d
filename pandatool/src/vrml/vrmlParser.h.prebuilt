@@ -1,0 +1,52 @@
+#ifndef BISON_Y_TAB_H
+# define BISON_Y_TAB_H
+
+#ifndef YYSTYPE
+typedef union {
+  char *string;
+  VrmlFieldValue fv;
+  VrmlNode *node;
+  MFArray *mfarray;
+  SFNodeRef nodeRef;
+  VrmlScene *scene;
+} yystype;
+# define YYSTYPE yystype
+# define YYSTYPE_IS_TRIVIAL 1
+#endif
+# define	IDENTIFIER	257
+# define	DEF	258
+# define	USE	259
+# define	PROTO	260
+# define	EXTERNPROTO	261
+# define	TO	262
+# define	IS	263
+# define	ROUTE	264
+# define	SFN_NULL	265
+# define	EVENTIN	266
+# define	EVENTOUT	267
+# define	FIELD	268
+# define	EXPOSEDFIELD	269
+# define	SFBOOL	270
+# define	SFCOLOR	271
+# define	SFFLOAT	272
+# define	SFIMAGE	273
+# define	SFINT32	274
+# define	SFNODE	275
+# define	SFROTATION	276
+# define	SFSTRING	277
+# define	SFTIME	278
+# define	SFVEC2F	279
+# define	SFVEC3F	280
+# define	MFCOLOR	281
+# define	MFFLOAT	282
+# define	MFINT32	283
+# define	MFROTATION	284
+# define	MFSTRING	285
+# define	MFVEC2F	286
+# define	MFVEC3F	287
+# define	MFNODE	288
+
+
+extern YYSTYPE vrmlyylval;
+
+#endif /* not BISON_Y_TAB_H */

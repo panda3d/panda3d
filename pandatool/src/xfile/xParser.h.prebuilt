@@ -1,0 +1,26 @@
+#ifndef BISON_Y_TAB_H
+# define BISON_Y_TAB_H
+
+# define	INTEGER	257
+# define	REAL	258
+# define	STRING	259
+# define	IDENTIFIER	260
+# define	WINDOWS_GUID	261
+# define	KW_ARRAY	262
+# define	KW_BYTE	263
+# define	KW_CHAR	264
+# define	KW_CSTRING	265
+# define	KW_DOUBLE	266
+# define	KW_DWORD	267
+# define	KW_FLOAT	268
+# define	KW_STRING	269
+# define	KW_TEMPLATE	270
+# define	KW_UCHAR	271
+# define	KW_UNICODE	272
+# define	KW_WORD	273
+# define	ELLIPSIS	274
+
+
+extern YYSTYPE xyylval;
+
+#endif /* not BISON_Y_TAB_H */
