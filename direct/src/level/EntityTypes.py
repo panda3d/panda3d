@@ -19,13 +19,6 @@ class LevelMgr(Entity):
     attribs = (
         ('name', 'LevelMgr', 'const'),
         ('parentEntId', 0, 'const'),
-        ('cogLevel', 0, 'int', {'min':0, 'max':11}),
-        ('cogTrack', 'c', 'choice', {'choiceSet':('sellbot','cashbot',
-                                                  'lawbot','bossbot',),
-                                     'valueDict':{'sellbot':'s',
-                                                  'cashbot':'m',
-                                                  'lawbot':'l',
-                                                  'bossbot':'c'}}),
         ('modelFilename', '', 'const'),
         ('ouchMultiplier', 1, 'int', {'min':1}),
         )
