@@ -476,15 +476,7 @@ IDirect3DTexture8 *DXTextureContext8::CreateTexture(DXScreenData &scrn) {
     PixelBuffer::Type pixbuf_type = pbuf->get_image_type();
     DWORD cNumColorChannels = pbuf->get_num_components();
 
-    assert(pbuf->get_component_width()==sizeof(BYTE));   // cant handle anything else now
-    assert(pixbuf_type==PixelBuffer::T_unsigned_byte);   // cant handle anything else now
-
     //PRINT_REFCNT(dxgsg8,scrn.pD3D8);
-
-    if((pixbuf_type!=PixelBuffer::T_unsigned_byte) || (pbuf->get_component_width()!=1)) {
-        dxgsg8_cat.error() << "CreateTexture failed, havent handled non 8-bit channel pixelbuffer types yet! \n";
-        return NULL;
-    }
 
     DWORD dwOrigWidth  = (DWORD)pbuf->get_xsize();
     DWORD dwOrigHeight = (DWORD)pbuf->get_ysize();
@@ -959,6 +951,7 @@ FillDDSurfTexturePixels(void) {
     DWORD cNumColorChannels = pbuf->get_num_components();
     D3DFORMAT SrcFormat=_PixBufD3DFmt;
     BYTE *pPixels=(BYTE*)pbuf->_image.p();
+    int component_width = pbuf->get_component_width();
 
     assert(IS_VALID_PTR(pPixels));
 
@@ -984,25 +977,55 @@ FillDDSurfTexturePixels(void) {
 
     // D3DXLoadSurfaceFromMemory will load black luminance and we want full white,
     // so convert to explicit luminance-alpha format
-    if(_PixBufD3DFmt==D3DFMT_A8) {
-        // alloc buffer for explicit D3DFMT_A8L8
-        USHORT *pTempPixBuf=new USHORT[OrigWidth*OrigHeight];
-        if(!IS_VALID_PTR(pTempPixBuf)) {
-            dxgsg8_cat.error() << "FillDDSurfaceTexturePixels couldnt alloc mem for temp pixbuf!\n";
-            goto exit_FillDDSurf;
+    if (_PixBufD3DFmt==D3DFMT_A8) {
+      // alloc buffer for explicit D3DFMT_A8L8
+      USHORT *pTempPixBuf=new USHORT[OrigWidth*OrigHeight];
+      if(!IS_VALID_PTR(pTempPixBuf)) {
+        dxgsg8_cat.error() << "FillDDSurfaceTexturePixels couldnt alloc mem for temp pixbuf!\n";
+        goto exit_FillDDSurf;
+      }
+      bUsingTempPixBuf=true;
+      
+      USHORT *pOutPix=pTempPixBuf;
+      BYTE *pSrcPix=pPixels;
+      for (UINT y = 0; y < OrigHeight; y++) {
+        for (UINT x = 0; 
+             x < OrigWidth; 
+             x++, pSrcPix += component_width, pOutPix++) {
+          // add full white, which is our interpretation of alpha-only
+          // (similar to default adding full opaque alpha 0xFF to
+          // RGB-only textures)
+          *pOutPix = ((*pSrcPix) << 8 ) | 0xFF;
         }
-        bUsingTempPixBuf=true;
+      }
+      
+      SrcFormat=D3DFMT_A8L8;
+      SrcPixBufRowByteLength=OrigWidth*sizeof(USHORT);
+      pPixels=(BYTE*)pTempPixBuf;
+      
+    } else if (component_width != 1) {
+      // Convert from 16-bit per channel (or larger) format down to
+      // 8-bit per channel.  This throws away precision in the
+      // original image, but dx8 doesn't support high-precision images
+      // anyway.
 
-        USHORT *pOutPix=pTempPixBuf;
-        BYTE *pSrcPix=pPixels;
-        for(UINT y=0;y<OrigHeight;y++)
-          for(UINT x=0;x<OrigWidth;x++,pSrcPix++,pOutPix++)
-              *pOutPix = ((*pSrcPix) << 8 ) | 0xFF;  // add full white, which is our interpretation of alpha-only (similar to default adding full opaque alpha 0xFF to RGB-only textures)
+      int num_components = pbuf->get_num_components();
+      int num_pixels = OrigWidth * OrigHeight * num_components;
+      BYTE *pTempPixBuf = new BYTE[num_pixels];
+      if(!IS_VALID_PTR(pTempPixBuf)) {
+        dxgsg8_cat.error() << "FillDDSurfaceTexturePixels couldnt alloc mem for temp pixbuf!\n";
+        goto exit_FillDDSurf;
+      }
+      bUsingTempPixBuf=true;
 
-        SrcFormat=D3DFMT_A8L8;
-        SrcPixBufRowByteLength=OrigWidth*sizeof(USHORT);
-        pPixels=(BYTE*)pTempPixBuf;
+      BYTE *pSrcPix = pPixels;
+      for (int i = 0; i < num_pixels; i++) {
+        pTempPixBuf[i] = *pSrcPix;
+        pSrcPix += component_width;
+      }
+      pPixels=(BYTE*)pTempPixBuf;
     }
+
 
     // filtering may be done here if texture if targetsize!=origsize
     hr=D3DXLoadSurfaceFromMemory(pMipLevel0,(PALETTEENTRY*)NULL,(RECT*)NULL,(LPCVOID)pPixels,SrcFormat,
