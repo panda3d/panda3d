@@ -52,12 +52,19 @@ def getPackages():
         # we're running from the directory above all of the source
         # trees; look within these directories for the *.pth files.
 
-        searchstr = os.path.join('*', 'src', 'configfiles', '*.pth')
+        # If PLAYER is defined, use that as the root; otherwise, use
+        # the current directory.
+        player = os.getenv("PLAYER")
+        if player == None:
+            searchstr = os.path.join('*', 'src', 'configfiles', '*.pth')
+        else:
+            searchstr = os.path.join(player, '*', 'src', 'configfiles', '*.pth')
+            
         filenames = glob.glob(searchstr)
         if len(filenames) == 0:
             print ''
             print 'Warning: no files found matching %s.' % (searchstr)
-            print 'Check your starting directory.'
+            print 'Check $PLAYER, or your starting directory.'
             print ''
             
         for filename in filenames:
