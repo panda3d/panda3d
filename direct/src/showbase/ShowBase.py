@@ -328,6 +328,9 @@ class ShowBase:
                     self.wantSfx=None
             if self.wantMusic:
                 self.musicManager = AudioManager.createAudioManager()
+                # Turn down the music globally
+                # Eventually we may want to control this in the options page
+                self.musicManager.setVolume(0.5)
                 if not self.musicManager.isValid():
                     self.wantMusic=None
             if not (self.wantSfx or self.wantMusic):
