@@ -51,6 +51,7 @@ class Nodepath(Entity):
         ('parentEntId', 0, 'entId', {'type':'nodepath'}),
         ('pos', Point3(0,0,0), 'pos'),
         ('hpr', Vec3(0,0,0), 'hpr'),
+        ('scale', 1, 'scale'),
         )
 
 class Zone(Nodepath):
@@ -102,14 +103,12 @@ class CutScene(Entity):
 class Model(Nodepath):
     type = 'model'
     attribs = (
-        ('scale', 1, 'pos'),
         ('modelPath', None, 'bamfilename'),
         )
 
 class Path(Nodepath):
     type = 'path'
     attribs = (
-        ('scale', 1, 'pos'),
         ('pathIndex', 0, 'int'),
         )
 
