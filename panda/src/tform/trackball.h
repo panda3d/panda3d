@@ -20,12 +20,16 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Trackball
-// Description : Trackball acts like Performer in trackball mode.  If
-//               you connect it to a DCS, either over your entire
-//               scene graph or over some portion of it, Trackball
-//               will spin the geometry under the DCS for viewing at
-//               all angles.  The center of rotation is initially the
-//               origin.
+// Description : Trackball acts like Performer in trackball mode.  It
+//               can either spin around a piece of geometry directly,
+//               or it can spin around a camera with the inverse
+//               transform to make it appear that the whole world is
+//               spinning.
+//
+//               The Trackball object actually just places a transform
+//               in the data graph; parent a Transform2SG node under
+//               it to actually transform objects (or cameras) in the
+//               world.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Trackball : public DataNode {
 PUBLISHED:
