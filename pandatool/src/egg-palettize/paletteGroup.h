@@ -15,6 +15,7 @@
 #include <typedWriteable.h>
 
 #include <set>
+#include <vector>
 
 class EggFile;
 class TexturePlacement;
@@ -44,8 +45,14 @@ public:
   void group_with(PaletteGroup *other);
   const PaletteGroups &get_groups() const;
 
+  void get_placements(vector<TexturePlacement *> &placements) const;
+  void get_complete_placements(vector<TexturePlacement *> &placements) const;
+
+  void reset_dependency_level();
   void set_dependency_level(int level);
+  bool set_dependency_order();
   int get_dependency_level() const;
+  int get_dependency_order() const;
 
   void increment_egg_count();
   int get_egg_count() const;
@@ -69,6 +76,7 @@ private:
   int _egg_count;
   PaletteGroups _dependent;
   int _dependency_level;
+  int _dependency_order;
 
   typedef set<TexturePlacement *> Placements;
   Placements _placements;

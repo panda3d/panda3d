@@ -20,6 +20,7 @@ class PNMFileType;
 class EggFile;
 class PaletteGroup;
 class TextureImage;
+class TexturePlacement;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : Palettizer
@@ -34,6 +35,8 @@ public:
   Palettizer();
 
   void report_pi() const;
+  void report_statistics() const;
+
   void read_txa_file(const Filename &txa_filename);
   void all_params_set();
   void process_command_line_eggs(bool force_texture_read);
@@ -94,6 +97,10 @@ public:
   PNMFileType *_shadow_alpha_type;
 
 private:
+  typedef vector<TexturePlacement *> Placements;
+  void compute_statistics(ostream &out, int indent_level,
+			  const Placements &placements) const;
+
   typedef map<string, EggFile *> EggFiles;
   EggFiles _egg_files;
 

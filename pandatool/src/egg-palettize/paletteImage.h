@@ -34,6 +34,7 @@ public:
   PalettePage *get_page() const;
 
   bool is_empty() const;
+  double count_utilization() const;
 
   bool place(TexturePlacement *placement);
   void unplace(TexturePlacement *placement);

@@ -22,6 +22,7 @@
     palettizer.cxx palettizer.h \
     sourceTextureImage.cxx sourceTextureImage.h \
     textureImage.cxx textureImage.h \
+    textureMemoryCounter.cxx textureMemoryCounter.h \
     texturePlacement.cxx texturePlacement.h \
     texturePosition.cxx texturePosition.h \
     textureProperties.cxx textureProperties.h textureReference.cxx \

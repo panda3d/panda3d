@@ -9,6 +9,7 @@
 #include "pal_string_utils.h"
 #include "paletteGroup.h"
 #include "filenameUnifier.h"
+#include "textureMemoryCounter.h"
 
 #include <pnmImage.h>
 #include <pnmFileTypeRegistry.h>
@@ -18,6 +19,7 @@
 #include <datagramIterator.h>
 #include <bamReader.h>
 #include <bamWriter.h>
+#include <indent.h>
 
 Palettizer *pal = (Palettizer *)NULL;
 
@@ -26,9 +28,10 @@ Palettizer *pal = (Palettizer *)NULL;
 // allows us to easily update egg-palettize to write out additional
 // information to its pi file, without having it increment the bam
 // version number for all bam and boo files anywhere in the world.
-int Palettizer::_pi_version = 2;
+int Palettizer::_pi_version = 3;
 // Updated to version 1 on 12/11/00 to add _remap_char_uv.
 // Updated to version 2 on 12/19/00 to add TexturePlacement::_dest.
+// Updated to version 3 on 12/19/00 to add PaletteGroup::_dependency_order.
 
 int Palettizer::_read_pi_version = 0;
 
@@ -51,6 +54,18 @@ ostream &operator << (ostream &out, Palettizer::RemapUV remap) {
 
   return out << "**invalid**(" << (int)remap << ")";
 }
+
+
+// This STL function object is used in report_statistics(), below.
+class SortGroupsByDependencyOrder {
+public:
+  bool operator ()(PaletteGroup *a, PaletteGroup *b) {
+    if (a->get_dependency_order() != b->get_dependency_order()) {
+      return a->get_dependency_order() < b->get_dependency_order();
+    }
+    return a->get_name() < b->get_name();
+  }
+};
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Palettizer::Constructor
@@ -178,6 +193,63 @@ report_pi() const {
   cout << "\n";
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Palettizer::report_statistics
+//       Access: Public
+//  Description: Output a report of the palettization effectiveness,
+//               texture memory utilization, and so on.
+////////////////////////////////////////////////////////////////////
+void Palettizer::
+report_statistics() const {
+  // Sort the groups into order by dependency order, for the user's
+  // convenience.
+  vector<PaletteGroup *> sorted_groups;
+
+  Groups::const_iterator gi;
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    sorted_groups.push_back((*gi).second);
+  }
+
+  sort(sorted_groups.begin(), sorted_groups.end(), 
+       SortGroupsByDependencyOrder());
+
+  Placements overall_placements;
+
+  vector<PaletteGroup *>::const_iterator sgi;
+  for (sgi = sorted_groups.begin();
+       sgi != sorted_groups.end();
+       ++sgi) {
+    PaletteGroup *group = (*sgi);
+
+    Placements placements;
+    group->get_placements(placements);
+    if (!placements.empty()) {
+      group->get_placements(overall_placements);
+
+      cout << "\n" << group->get_name() << ", by itself:\n";
+      compute_statistics(cout, 2, placements);
+
+      PaletteGroups complete;
+      complete.make_complete(group->get_groups());
+
+      if (complete.size() > 1) {
+	Placements complete_placements;
+	group->get_complete_placements(complete_placements);
+	if (complete_placements.size() != placements.size()) {
+	  cout << "\n" << group->get_name() 
+	       << ", with dependents (" << complete << "):\n";
+	  compute_statistics(cout, 2, complete_placements);
+	}
+      }
+    }
+  }
+
+  cout << "\nOverall:\n";
+  compute_statistics(cout, 2, overall_placements);
+
+  cout << "\n";
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Palettizer::read_txa_file
@@ -209,12 +281,28 @@ read_txa_file(const Filename &txa_filename) {
     exit(1);
   }
 
-  // Compute the correct dependency level for each group.  This will
-  // help us when we assign the textures to their groups.
+  // Compute the correct dependency level and order for each group.
+  // This will help us when we assign the textures to their groups.
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    PaletteGroup *group = (*gi).second;
+    group->reset_dependency_level();
+  }
+
   for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
     PaletteGroup *group = (*gi).second;
     group->set_dependency_level(1);
   }
+
+  bool any_changed;
+  do {
+    any_changed = false;
+    for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+      PaletteGroup *group = (*gi).second;
+      if (group->set_dependency_order()) {
+	any_changed = true;
+      }
+    }
+  } while (any_changed);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -618,6 +706,17 @@ get_texture(const string &name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Palettizer::yesno
+//       Access: Private, Static
+//  Description: A silly function to return "yes" or "no" based on a
+//               bool flag for nicely formatted output.
+////////////////////////////////////////////////////////////////////
+const char *Palettizer::
+yesno(bool flag) {
+  return flag ? "yes" : "no";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Palettizer::string_remap
 //       Access: Public, Static
 //  Description: Returns the RemapUV code corresponding to the
@@ -641,14 +740,24 @@ string_remap(const string &str) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::yesno
-//       Access: Private, Static
-//  Description: A silly function to return "yes" or "no" based on a
-//               bool flag for nicely formatted output.
+//     Function: Palettizer::compute_statistics
+//       Access: Private
+//  Description: Determines how much memory, etc. is required by the
+//               indicated set of texture placements, and reports this
+//               to the indicated output stream.
 ////////////////////////////////////////////////////////////////////
-const char *Palettizer::
-yesno(bool flag) {
-  return flag ? "yes" : "no";
+void Palettizer::
+compute_statistics(ostream &out, int indent_level,
+		   const Palettizer::Placements &placements) const {
+  TextureMemoryCounter counter;
+
+  Placements::const_iterator pi;
+  for (pi = placements.begin(); pi != placements.end(); ++pi) {
+    TexturePlacement *placement = (*pi);
+    counter.add_placement(placement);
+  }
+
+  counter.report(out, indent_level);
 }
 
 ////////////////////////////////////////////////////////////////////

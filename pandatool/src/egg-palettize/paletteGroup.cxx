@@ -7,6 +7,7 @@
 #include "palettePage.h"
 #include "texturePlacement.h"
 #include "textureImage.h"
+#include "palettizer.h"
 
 #include <indent.h>
 #include <datagram.h>
@@ -25,6 +26,7 @@ PaletteGroup::
 PaletteGroup() {
   _egg_count = 0;
   _dependency_level = 0;
+  _dependency_order = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -73,6 +75,7 @@ void PaletteGroup::
 clear_depends() {
   _dependent.clear();
   _dependency_level = 0;
+  _dependency_order = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,6 +106,59 @@ get_groups() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::get_placements
+//       Access: Public
+//  Description: Adds the set of TexturePlacements associated with
+//               this group to the indicated vector.  The vector is
+//               not cleared before this operation; if the user wants
+//               to retrieve the set of placements particular to this
+//               group only, it is the user's responsibility to clear
+//               the vector first.
+////////////////////////////////////////////////////////////////////
+void PaletteGroup::
+get_placements(vector<TexturePlacement *> &placements) const {
+  Placements::iterator pi;
+  for (pi = _placements.begin(); pi != _placements.end(); ++pi) {
+    placements.push_back(*pi);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::get_complete_placements
+//       Access: Public
+//  Description: Adds the set of TexturePlacements associated with
+//               this group and all dependent groups to the indicated
+//               vector.  See get_placements().
+////////////////////////////////////////////////////////////////////
+void PaletteGroup::
+get_complete_placements(vector<TexturePlacement *> &placements) const {
+  PaletteGroups complete;
+  complete.make_complete(_dependent);
+
+  PaletteGroups::iterator gi;
+  for (gi = complete.begin(); gi != complete.end(); ++gi) {
+    PaletteGroup *group = (*gi);
+    group->get_placements(placements);
+  }
+
+  get_placements(placements);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::reset_dependency_level
+//       Access: Public
+//  Description: Unconditionally sets the dependency level and order
+//               of this group to zero, in preparation for a later
+//               call to set_dependency_level().  See
+//               set_dependency_level().
+////////////////////////////////////////////////////////////////////
+void PaletteGroup::
+reset_dependency_level() {
+  _dependency_level = 0;
+  _dependency_order = 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PaletteGroup::set_dependency_level
 //       Access: Public
 //  Description: Sets the dependency level of this group to the
@@ -120,9 +176,42 @@ set_dependency_level(int level) {
     _dependency_level = level;
     PaletteGroups::iterator gi;
     for (gi = _dependent.begin(); gi != _dependent.end(); ++gi) {
-      (*gi)->set_dependency_level(level + 1);
+      PaletteGroup *group = (*gi);
+      group->set_dependency_level(level + 1);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::set_dependency_order
+//       Access: Public
+//  Description: Updates the dependency order of this group.  This
+//               number is the inverse of the dependency level, and
+//               can be used to rank the groups in order so that all
+//               the groups that a given group depends on will appear
+//               first in the list.  See get_dependency_order().
+//
+//               This function returns true if anything was changed,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PaletteGroup::
+set_dependency_order() {
+  bool any_changed = false;
+
+  PaletteGroups::iterator gi;
+  for (gi = _dependent.begin(); gi != _dependent.end(); ++gi) {
+    PaletteGroup *group = (*gi);
+    if (group->set_dependency_order()) {
+      any_changed = true;
+    }
+
+    if (_dependency_order <= group->get_dependency_order()) {
+      _dependency_order = group->get_dependency_order() + 1;
+      any_changed = true;
+    }
+  }
+
+  return any_changed;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -149,6 +238,26 @@ set_dependency_level(int level) {
 int PaletteGroup::
 get_dependency_level() const {
   return _dependency_level;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::get_dependency_order
+//       Access: Public
+//  Description: Returns the dependency order of this group.  This is
+//               similar in principle to the dependency level, but it
+//               represents the inverse concept: if group a depends on
+//               group b, then a->get_dependency_order() >
+//               b->get_dependency_order().
+//
+//               This is not exactly the same thing as n -
+//               get_dependency_level().  In particular, this can be
+//               used to sort the groups into an ordering such that
+//               all the groups that group a depends on appear before
+//               group a in the list.
+////////////////////////////////////////////////////////////////////
+int PaletteGroup::
+get_dependency_order() const {
+  return _dependency_order;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -392,8 +501,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_string(_dirname);
   _dependent.write_datagram(writer, datagram);
 
-  // We don't write out _dependency_level.  It's best to recompute
-  // that each time.
+  datagram.add_int32(_dependency_level);
+  datagram.add_int32(_dependency_order);
 
   datagram.add_uint32(_placements.size());
   Placements::const_iterator pli;
@@ -503,6 +612,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   set_name(scan.get_string());
   _dirname = scan.get_string();
   _dependent.fillin(scan, manager);
+
+  if (Palettizer::_read_pi_version >= 3) {
+    _dependency_level = scan.get_int32();
+    _dependency_order = scan.get_int32();
+  }
 
   _num_placements = scan.get_uint32();
   manager->read_pointers(scan, this, _num_placements);

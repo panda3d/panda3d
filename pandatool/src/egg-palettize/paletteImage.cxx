@@ -208,6 +208,31 @@ is_empty() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PaletteImage::count_utilization
+//       Access: Public
+//  Description: Returns the fraction of the PaletteImage that is
+//               actually used by any textures.  This is 1.0 if every
+//               pixel in the PaletteImage is used, or 0.0 if none
+//               are.  Normally it will be somewhere in between.
+////////////////////////////////////////////////////////////////////
+double PaletteImage::
+count_utilization() const {
+  int used_pixels = 0;
+
+  Placements::const_iterator pi;
+  for (pi = _placements.begin(); pi != _placements.end(); ++pi) {
+    TexturePlacement *placement = (*pi);
+
+    int texture_pixels = placement->get_x_size() * placement->get_y_size();
+    used_pixels += texture_pixels;
+  }
+
+  int total_pixels = get_x_size() * get_y_size();
+
+  return (double)used_pixels / (double)total_pixels;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PaletteImage::place
 //       Access: Public
 //  Description: Attempts to place the indicated texture on the image.

@@ -44,7 +44,7 @@ private:
   // The following values control behavior specific to this session.
   // They're not saved for future sessions.
   bool _report_pi;
-  bool _statistics_only;
+  bool _report_statistics;
   bool _all_textures; 
   bool _optimal;
   bool _redo_all;

@@ -69,7 +69,7 @@ EggPalettize() : EggMultiFilter(true) {
     ("s", "", 0, 
      "Do not process anything, but report statistics on palette "
      "and texture utilization.",
-     &EggPalettize::dispatch_none, &_statistics_only);
+     &EggPalettize::dispatch_none, &_report_statistics);
 
   // We redefine -d using add_option() instead of redescribe_option()
   // so it gets listed along with these other options that relate.
@@ -512,6 +512,11 @@ run() {
 
   if (_report_pi) {
     pal->report_pi();
+    exit(0);
+  }
+
+  if (_report_statistics) {
+    pal->report_statistics();
     exit(0);
   }
 
