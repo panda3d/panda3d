@@ -209,7 +209,7 @@ expose(EggGroup::DCSType dcs_type) {
 bool EggJointNodePointer::
 has_vertices() const {
   if (_joint != (EggGroup *)NULL) {
-    return (_joint->vref_size() != 0) || _joint->has_primitives();
+    return (_joint->vref_size() != 0) || _joint->joint_has_primitives();
   }
 
   return false;
