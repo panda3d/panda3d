@@ -86,7 +86,7 @@
 #include <mmsystem.h>
 
 // print out simple drawprim stats every few secs
-//#define COUNT_DRAWPRIMS
+#define COUNT_DRAWPRIMS
 
 //#define DISABLE_DECALING
 #define DISABLE_POLYGON_OFFSET_DECALING
@@ -567,7 +567,7 @@ init_dx(  LPDIRECTDRAW7     context,
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 clear(const RenderBuffer &buffer) {
-    PStatTimer timer(_win->_clear_pcollector);
+    DO_PSTATS_STUFF(PStatTimer timer(_win->_clear_pcollector));
 
     nassertv(buffer._gsg == this);
     int buffer_type = buffer._buffer_type;
@@ -6035,11 +6035,11 @@ prepare_geom_node(GeomNode *node) {
       continue;
     
     if(dxgsg_cat.is_debug()) {
-    static bool bPrintedMsg=false;
-    if(!bPrintedMsg) {
-        dxgsg_cat.debug() << "linking tristrips together with degenerate tris\n";
-        bPrintedMsg=true;
-    }
+       static bool bPrintedMsg=false;
+       if(!bPrintedMsg) {
+           dxgsg_cat.debug() << "linking tristrips together with degenerate tris\n";
+           bPrintedMsg=true;
+       }
     }
 
     bool bStripReversalNeeded;
