@@ -28,8 +28,9 @@ class StateData(DirectObject):
         """
         if self.isEntered:
             return 0
-        
-        self.load()
+        if not self.isLoaded:
+            self.notify.warning("entered StateData before it was loaded")
+            self.load()
         self.isEntered = 1
         StateData.notify.debug('enter()')
         return 1
@@ -56,7 +57,6 @@ class StateData(DirectObject):
         """
         if self.isLoaded:
             return 0
-
         self.isLoaded = 1
         StateData.notify.debug('load()')
         return 1
@@ -71,8 +71,9 @@ class StateData(DirectObject):
         """
         if not self.isLoaded:
             return 0
-
-        self.exit()
+        if self.isEntered:
+            self.notify.warning("unloaded StateData before it was exited")
+            self.exit()
         self.isLoaded = 0
         StateData.notify.debug('unload()')
         return 1
