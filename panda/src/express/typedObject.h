@@ -35,9 +35,17 @@
 //               Inheriting from this automatically provides support
 //               for is_of_type() and is_exact_type().
 //               
-//               Defining get_type() and force_init_type() are not
-//               necessary if your class does not define any virtual
-//               functions.
+//               All classes that inherit directly or indirectly from
+//               TypedObject should redefine get_type() and
+//               force_init_type(), as shown below.  Some classes that
+//               do not inherit from TypedObject may still declare
+//               TypeHandles for themselves by defining methods called
+//               get_class_type() and init_type().  Classes such as
+//               these may serve as base classes, but the dynamic type
+//               identification system will be limited.  Classes that
+//               do not inherit from TypedObject need not define the
+//               virtual functions get_type() and force_init_type()
+//               (or any other virtual functions).
 //               
 //               There is a specific layout for defining the
 //               overrides from this class.  Keeping the definitions
