@@ -77,8 +77,13 @@ void AudioManager::ns_update(void) {
 	AudioManager::play(sound);
 	AudioManager::set_loop(sound, true);
       } else if (AudioManager::_master_volume_change)
-	if (sound->get_player()->adjust_volume(sound->get_state()))
+	if (sound->get_player()->adjust_volume(sound->get_state())) {
+	  if (audio_cat->is_debug())
+	    audio_cat->debug() << "AudioManager::ns_update sound is turned "
+			       << "off, stopping '" << sound->get_name()
+			       << "'" << endl;
 	  AudioManager::stop(sound);
+	}
     }
   AudioManager::_master_volume_change = false;
 }
