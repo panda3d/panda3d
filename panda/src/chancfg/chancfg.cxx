@@ -29,6 +29,8 @@
 #include "filename.h"
 #include "transformState.h"
 #include "dcast.h"
+#include "config_util.h"
+#include "virtualFileSystem.h"
 
 #include <algorithm>
 #include <stdio.h>  // for sprintf
@@ -41,6 +43,66 @@ ConfigureFn(chanconfig) {
 
 static bool have_read = false;
 NotifyCategoryDef(chancfg, "");
+
+static bool
+load_chancfg_database(const string &filename, const DSearchPath &path,
+                    const string &type_desc, void (*parser_func)(istream &)) {
+  Filename fname = Filename::text_filename(filename);
+
+  if (use_vfs) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+    if (!vfs->resolve_filename(fname, path)) {
+      chancfg_cat.error() 
+        << "Could not find " << type_desc << " database " << filename
+        << " in path " << path << "\n";
+      return false;
+
+    } else {
+      istream *ifs;
+      ifs = vfs->open_read_file(fname);
+      if (ifs == (istream *)NULL) {
+        chancfg_cat.error()
+          << "Unable to read " << type_desc << " database "
+          << filename << "\n";
+        return false;
+      }
+      if (chancfg_cat.is_debug()) {
+        chancfg_cat.debug()
+          << "Reading " << type_desc << " database " << filename 
+          << "\n";
+      }
+      parser_func(*ifs);
+      delete ifs;
+    }
+
+  } else {
+
+    if (!fname.resolve_filename(path)) {
+      chancfg_cat.error() 
+        << "Could not find " << type_desc << " database " << filename
+        << " in path " << path << "\n";
+      return false;
+
+    } else {
+      ifstream ifs;
+      if (!fname.open_read(ifs)) {
+        chancfg_cat.error()
+          << "Unable to read " << type_desc << " database "
+          << filename << "\n";
+        return false;
+      }
+      if (chancfg_cat.is_debug()) {
+        chancfg_cat.debug()
+          << "Reading " << type_desc << " database " << filename 
+          << "\n";
+      }
+      parser_func(ifs);
+    }
+  }
+
+  return true;
+}
 
 static void ReadChanConfigData(void) {
   if (have_read)
@@ -56,59 +118,9 @@ static void ReadChanConfigData(void) {
   string windowdbfilename = chanconfig.GetString("window-db-file","window_db");
   string setupdbfilename = chanconfig.GetString("setup-db-file","setup_db");
 
-  Filename layoutfname = Filename::text_filename(layoutdbfilename);
-  if (!layoutfname.resolve_filename(path)) {
-    chancfg_cat->error() << "Could not find layoutdb file " << layoutfname << " in path " << path << "\n";
-    exit(1);
-  } else {
-    ifstream ifs;
-    if (layoutfname.open_read(ifs)) {
-      if (chancfg_cat.is_debug())
-        chancfg_cat->debug()
-          << "Reading layout database " << layoutfname << endl;
-      ParseLayout(ifs);
-    } else {
-      chancfg_cat->error()
-        << "Unable to read layout database " << layoutfname << "\n";
-      exit(1);
-    }
-  }
-
-  Filename setupfname = Filename::text_filename(setupdbfilename);
-  if (!setupfname.resolve_filename(path)) {
-    chancfg_cat->error() << "Could not find setupdb file " << setupfname << " in path " << path << "\n"; 
-    exit(1);
-  } else {
-    ifstream ifs;
-    if (setupfname.open_read(ifs)) {
-      if (chancfg_cat.is_debug())
-        chancfg_cat->debug()
-          << "Reading setup database " << setupfname << endl;
-      ParseSetup(ifs);
-    } else {
-      chancfg_cat->error()
-        << "Unable to read setup database " << setupfname << "\n";
-      exit(1);
-    }
-  }
-
-  Filename windowfname = Filename::text_filename(windowdbfilename);
-  if (!windowfname.resolve_filename(path)) {
-    chancfg_cat->error() << "Could not find windowdb file " << setupfname << " in path " << path << "\n"; 
-    exit(1);
-  } else {
-    ifstream ifs;
-    if (windowfname.open_read(ifs)) {
-      if (chancfg_cat.is_debug())
-        chancfg_cat->debug()
-          << "Reading window database " << windowfname << endl;
-      ParseWindow(ifs);
-    } else {
-      chancfg_cat->error()
-        << "Unable to read window database " << windowfname << "\n";
-      exit(1);
-    }
-  }
+  load_chancfg_database(layoutdbfilename, path, "layout", ParseLayout);
+  load_chancfg_database(setupdbfilename, path, "setup", ParseSetup);
+  load_chancfg_database(windowdbfilename, path, "window", ParseWindow);
 }
 
 static const bool config_sanity_check =
