@@ -84,6 +84,12 @@
 #define glDeleteTextures glDeleteTexturesEXT
 #endif
 
+#if !defined(GL_BGR) && defined(GL_BGR_EXT)
+// These symbols are sometimes defined as _EXT variants.
+#define GL_BGR GL_BGR_EXT
+#define GL_BGRA GL_BGRA_EXT
+#endif
+
 TypeHandle GLGraphicsStateGuardian::_type_handle;
 
 #if !defined(CPPPARSER) && defined(DO_PSTATS)
