@@ -199,7 +199,10 @@ get_https_proxy(const URLSpec &url, const string &body) {
       << "CONNECT " << url.get_authority() << " HTTP/1.1\r\n"
       << "\r\n";
     string request_str = request.str();
-    
+
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug() << "send:\n" << request_str << "\n";
+    }
     BIO_puts(bio, request_str.c_str());
   }
 
@@ -213,10 +216,14 @@ get_https_proxy(const URLSpec &url, const string &body) {
         << ": " << doc->get_status_code() << " "
         << doc->get_status_string() << "\n";
       
-      // If the proxy won't open a raw connection for us, see if it will
-      // handle the https communication directly.
-      BIO_free_all(bio);
-      return get_http_proxy(url, body);
+      // If the proxy refused to open a raw connection for us, see if
+      // it will handle the https communication directly.  For other
+      // error codes, just return error.
+      if ((doc->get_status_code() / 100) == 4) {
+        BIO_free_all(bio);
+        return get_http_proxy(url, body);
+      }
+      return NULL;
     }
   }
 
@@ -230,6 +237,16 @@ get_https_proxy(const URLSpec &url, const string &body) {
   BIO_get_ssl(sbio, &ssl);
   nassertr(ssl != (SSL *)NULL, NULL);
   SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
+
+  if (BIO_do_handshake(sbio) <= 0) {
+    downloader_cat.info()
+      << "Could not establish SSL handshake with " 
+      << url.get_server() << ":" << url.get_port() << "\n";
+#ifndef NDEBUG
+    ERR_print_errors_fp(stderr);
+#endif
+    return NULL;
+  }
 
   send_get_request(sbio, url.get_path(), url.get_server(), body);
   return sbio;
@@ -265,5 +282,8 @@ send_get_request(BIO *bio,
   }
 
   string request_str = request.str();
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug() << "send:\n" << request_str << "\n";
+  }
   BIO_puts(bio, request_str.c_str());
 }

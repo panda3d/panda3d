@@ -165,6 +165,9 @@ read_headers() {
   if (!line.empty() && line[line.length() - 1] == '\r') {
     line = line.substr(0, line.length() - 1);
   }
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug() << "recv: " << line << "\n";
+  }
   if (!(*_source) || line.length() < 5 || line.substr(0, 5) != "HTTP/") {
     // Not an HTTP response.
     _status_code = 0;
@@ -203,6 +206,9 @@ read_headers() {
   if (!line.empty() && line[line.length() - 1] == '\r') {
     line = line.substr(0, line.length() - 1);
   }
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug() << "recv: " << line << "\n";
+  }
   while (!_source->eof() && !_source->fail() && !line.empty()) {
     if (isspace(line[0])) {
       // If the line begins with a space, that continues the previous
@@ -235,6 +241,9 @@ read_headers() {
     getline(*_source, line);
     if (!line.empty() && line[line.length() - 1] == '\r') {
       line = line.substr(0, line.length() - 1);
+    }
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug() << "recv: " << line << "\n";
     }
   }
   if (!field_name.empty()) {
