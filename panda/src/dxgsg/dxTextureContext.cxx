@@ -1218,9 +1218,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
 
             assert(cNumAlphaBits==0);  // dont know how to handle non-zero alpha for 24bit total
 
-#ifdef _DEBUG
             if(!dx_force_16bpptextures)
-#endif
                 for(i=0,pCurPixFmt=pTexPixFmts;i<cNumTexPixFmts;i++,pCurPixFmt++) {
                     if((pCurPixFmt->dwFlags & DDPF_RGB)&&(pCurPixFmt->dwRGBBitCount==24)) {
                         ConvNeeded=((cNumColorChannels==3) ? Conv24to24 : Conv32to24);
@@ -1228,13 +1226,10 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
                     }
                 }
 
-#ifdef _DEBUG
-            if(!dx_force_16bpptextures)
-#endif
-
-          // no 24-bit fmt.  look for 32 bit fmt  (note: this is memory-hogging choice
-          // instead I could look for memory-conserving 16-bit fmt).
-          // check mask to ensure ARGB, not RGBA (which I am not handling here)
+            if(!dx_force_16bpptextures) {
+                // no 24-bit fmt.  look for 32 bit fmt  (note: this is memory-hogging choice
+                // instead I could look for memory-conserving 16-bit fmt).
+                // check mask to ensure ARGB, not RGBA (which I am not handling here)
                 for(i=0,pCurPixFmt=pTexPixFmts;i<cNumTexPixFmts;i++,pCurPixFmt++) {
                     if((pCurPixFmt->dwRGBBitCount==32) && (pCurPixFmt->dwFlags & DDPF_RGB)
                        && ((pCurPixFmt->dwRBitMask|pCurPixFmt->dwGBitMask|pCurPixFmt->dwBBitMask)==0xFFFFFF)
@@ -1244,6 +1239,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
                         goto found_matching_format;
                     }
                 }
+            }
 
           // no 24-bit or 32 fmt.  look for 16 bit fmt
             for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
@@ -1269,11 +1265,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
 
             if(ddsd.ddpfPixelFormat.dwFlags & DDPF_LUMINANCE) {
            // look for native lum fmt
-#ifdef _DEBUG
-                if(!dx_force_16bpptextures)
-#endif
-                {
-
+                if(!dx_force_16bpptextures) {
                     for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
                         if((pCurPixFmt->dwRGBBitCount==16) && (pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS) &&
                            (pCurPixFmt->dwFlags & DDPF_LUMINANCE)) {
@@ -1373,9 +1365,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
               // look for native lum fmt
 
                 assert(cNumAlphaBits==0);  // dont handle those other 8bit lum fmts like 4-4, since 16 8-8 is usually supported too
-#ifdef _DEBUG
                 if(!dx_force_16bpptextures)
-#endif
                 {
                     for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
                         if((pCurPixFmt->dwRGBBitCount==8) && (pCurPixFmt->dwFlags & DDPF_LUMINANCE) &&

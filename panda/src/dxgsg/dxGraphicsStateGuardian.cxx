@@ -574,7 +574,7 @@ dx_init(  LPDIRECTDRAW7     context,
     assert(_pTexPixFmts!=NULL);
 
     if (pDevice->EnumTextureFormats(EnumTexFmtsCallback, this) != S_OK) {
-        dxgsg_cat.error() << "EnumTextureFormats failed!!\n";
+        dxgsg_cat.error() << "EnumTextureFormats failed!\n";
     }
 
     if (FAILED(hr = pDevice->GetCaps(&_D3DDevDesc))) {
