@@ -5,6 +5,5 @@
 #include "pnmFileTypeBMPWriter.cxx"
 #include "pnmFileTypeIMG.cxx"
 #include "pnmFileTypeBMP.cxx"
-#include "pnmFileTypeRadiance.cxx"
 
 

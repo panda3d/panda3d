@@ -19,8 +19,8 @@
 #include "pnmFileTypeSoftImage.h"
 #include "config_pnmimagetypes.h"
 
-#include <pnmFileTypeRegistry.h>
-#include <bamReader.h>
+#include "pnmFileTypeRegistry.h"
+#include "bamReader.h"
 
 static const float imageVersionNumber = 3.0;
 static const int imageCommentLength = 80;
@@ -39,15 +39,15 @@ static const char imageComment[imageCommentLength+1] =
 #define SOFTIMAGE_MAGIC1 0x5380
 #define SOFTIMAGE_MAGIC2 0xf634
 
-static const char * const extensions_SI[] = {
+static const char * const extensions_softimage[] = {
   "pic", "soft"
 };
-static const int num_extensions_SI = sizeof(extensions_SI) / sizeof(const char *);
+static const int num_extensions_softimage = sizeof(extensions_softimage) / sizeof(const char *);
 
 TypeHandle PNMFileTypeSoftImage::_type_handle;
 
 inline float
-read_float(FILE *file) {
+read_float(istream *file) {
   long l;
 
   if (pm_readbiglong(file, &l)==0) {
@@ -58,42 +58,42 @@ read_float(FILE *file) {
 }
 
 inline unsigned short
-read_ushort_SI(FILE *file) {
+read_ushort_SI(istream *file) {
   unsigned short x;
   return pm_readbigshort(file, (short *)&x)==0 ? x : 0;
 }
 
 inline unsigned char
-read_uchar_SI(FILE *file) {
+read_uchar_SI(istream *file) {
   int x;
-  x = getc(file);
+  x = file->get();
   return (x!=EOF) ? (unsigned char)x : 0;
 }
 
 inline void
-write_ushort_SI(FILE *file, unsigned short x) {
+write_ushort_SI(ostream *file, unsigned short x) {
   pm_writebigshort(file, (short)x);
 }
 
 inline void
-write_uchar_SI(FILE *file, unsigned char x) {
-  putc(x, file);
+write_uchar_SI(ostream *file, unsigned char x) {
+  file->put(x);
 }
 
 inline void
-write_float(FILE *file, float x) {
+write_float(ostream *file, float x) {
   pm_writebiglong(file, *(long *)&x);
 }
 
 static int
-read_channel_pkt(FILE *file,
+read_channel_pkt(istream *file,
                  int &chained, int &size, int &type, int &channel) {
   chained = read_uchar_SI(file);
   size = read_uchar_SI(file);
   type = read_uchar_SI(file);
   channel = read_uchar_SI(file);
 
-  if (feof(file)) {
+  if (file->eof() || file->fail()) {
     return false;
   }
 
@@ -107,7 +107,7 @@ read_channel_pkt(FILE *file,
 }
 
 static void
-read_rgb(xel *row_data, xelval *, FILE *file, int x, int repeat) {
+read_rgb(xel *row_data, xelval *, istream *file, int x, int repeat) {
   xelval red, grn, blu;
   red = read_uchar_SI(file);
   grn = read_uchar_SI(file);
@@ -121,7 +121,7 @@ read_rgb(xel *row_data, xelval *, FILE *file, int x, int repeat) {
 }
 
 static void
-read_alpha(xel *, xelval *alpha_data, FILE *file, int x, int repeat) {
+read_alpha(xel *, xelval *alpha_data, istream *file, int x, int repeat) {
   xelval alpha = read_uchar_SI(file);
 
   while (repeat>0) {
@@ -132,7 +132,7 @@ read_alpha(xel *, xelval *alpha_data, FILE *file, int x, int repeat) {
 }
 
 static void
-read_rgba(xel *row_data, xelval *alpha_data, FILE *file, int x, int repeat) {
+read_rgba(xel *row_data, xelval *alpha_data, istream *file, int x, int repeat) {
   xelval red, grn, blu, alpha;
   red = read_uchar_SI(file);
   grn = read_uchar_SI(file);
@@ -149,8 +149,8 @@ read_rgba(xel *row_data, xelval *alpha_data, FILE *file, int x, int repeat) {
 
 
 static int
-read_scanline(xel *row_data, xelval *alpha_data, int cols, FILE *file,
-              void (*read_data)(xel *row_data, xelval *alpha_data, FILE *file,
+read_scanline(xel *row_data, xelval *alpha_data, int cols, istream *file,
+              void (*read_data)(xel *row_data, xelval *alpha_data, istream *file,
                                 int x, int repeat),
               int ctype) {
   if (ctype==UNCOMPRESSED) {
@@ -174,7 +174,7 @@ read_scanline(xel *row_data, xelval *alpha_data, int cols, FILE *file,
         }
         while (num>0) {
           read_data(row_data, alpha_data, file, x, 1);
-          if (feof(file)) {
+          if (file->eof() || file->fail()) {
             return false;
           }
           x++;
@@ -191,7 +191,7 @@ read_scanline(xel *row_data, xelval *alpha_data, int cols, FILE *file,
           return false;
         }
         read_data(row_data, alpha_data, file, x, num);
-        if (feof(file)) {
+        if (file->eof() || file->fail()) {
           return false;
         }
         x += num;
@@ -225,11 +225,11 @@ get_name() const {
 //     Function: PNMFileTypeSoftImage::get_num_extensions
 //       Access: Public, Virtual
 //  Description: Returns the number of different possible filename
-//               extensions_SI associated with this particular file type.
+//               extensions_softimage associated with this particular file type.
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeSoftImage::
 get_num_extensions() const {
-  return num_extensions_SI;
+  return num_extensions_softimage;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -241,8 +241,8 @@ get_num_extensions() const {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypeSoftImage::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < num_extensions_SI, string());
-  return extensions_SI[n];
+  nassertr(n >= 0 && n < num_extensions_softimage, string());
+  return extensions_softimage[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -292,7 +292,7 @@ matches_magic_number(const string &magic_number) const {
 //               from this file type is not supported, returns NULL.
 ////////////////////////////////////////////////////////////////////
 PNMReader *PNMFileTypeSoftImage::
-make_reader(FILE *file, bool owns_file, const string &magic_number) {
+make_reader(istream *file, bool owns_file, const string &magic_number) {
   init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
@@ -305,7 +305,7 @@ make_reader(FILE *file, bool owns_file, const string &magic_number) {
 //               files of this type is not supported, returns NULL.
 ////////////////////////////////////////////////////////////////////
 PNMWriter *PNMFileTypeSoftImage::
-make_writer(FILE *file, bool owns_file) {
+make_writer(ostream *file, bool owns_file) {
   init_pnm();
   return new Writer(this, file, owns_file);
 }
@@ -317,7 +317,7 @@ make_writer(FILE *file, bool owns_file) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeSoftImage::Reader::
-Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
+Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   if (!read_magic_number(_file, magic_number, 4)) {
@@ -346,10 +346,11 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   read_float(_file);
 
   // Skip comment
-  fseek(_file, imageCommentLength, SEEK_CUR);
+  _file->seekg(imageCommentLength, ios::cur);
 
   char pict_id[4];
-  if (fread(pict_id, 1, 4, _file) < 4) {
+  _file->read(pict_id, 4);
+  if (_file->gcount() < 4) {
     _is_valid = false;
     return;
   }
@@ -492,7 +493,7 @@ read_row(xel *row_data, xelval *alpha_data) {
 
 
 static void
-write_channel_pkt(FILE *file,
+write_channel_pkt(ostream *file,
                  int chained, int size, int type, int channel) {
   write_uchar_SI(file, chained);
   write_uchar_SI(file, size);
@@ -501,7 +502,7 @@ write_channel_pkt(FILE *file,
 }
 
 static void
-write_rgb(xel *row_data, xelval *, FILE *file, int x) {
+write_rgb(xel *row_data, xelval *, ostream *file, int x) {
   write_uchar_SI(file, PPM_GETR(row_data[x]));
   write_uchar_SI(file, PPM_GETG(row_data[x]));
   write_uchar_SI(file, PPM_GETB(row_data[x]));
@@ -513,7 +514,7 @@ compare_rgb(xel *row_data, xelval *, int x1, int x2) {
 }
 
 static void
-write_gray(xel *row_data, xelval *, FILE *file, int x) {
+write_gray(xel *row_data, xelval *, ostream *file, int x) {
   write_uchar_SI(file, PPM_GETB(row_data[x]));
   write_uchar_SI(file, PPM_GETB(row_data[x]));
   write_uchar_SI(file, PPM_GETB(row_data[x]));
@@ -525,7 +526,7 @@ compare_gray(xel *row_data, xelval *, int x1, int x2) {
 }
 
 static void
-write_alpha(xel *, xelval *alpha_data, FILE *file, int x) {
+write_alpha(xel *, xelval *alpha_data, ostream *file, int x) {
   write_uchar_SI(file, alpha_data[x]);
 }
 
@@ -535,8 +536,8 @@ compare_alpha(xel *, xelval *alpha_data, int x1, int x2) {
 }
 
 static void
-write_diff(xel *row_data, xelval *alpha_data, FILE *file,
-           void (*write_data)(xel *row_data, xelval *alpha_data, FILE *file,
+write_diff(xel *row_data, xelval *alpha_data, ostream *file,
+           void (*write_data)(xel *row_data, xelval *alpha_data, ostream *file,
                               int x),
            int tox, int length) {
   if (length>0) {
@@ -551,8 +552,8 @@ write_diff(xel *row_data, xelval *alpha_data, FILE *file,
 }
 
 static void
-write_same(xel *row_data, xelval *alpha_data, FILE *file,
-           void (*write_data)(xel *row_data, xelval *alpha_data, FILE *file,
+write_same(xel *row_data, xelval *alpha_data, ostream *file,
+           void (*write_data)(xel *row_data, xelval *alpha_data, ostream *file,
                               int x),
            int tox, int length) {
   if (length==1) {
@@ -571,11 +572,11 @@ write_same(xel *row_data, xelval *alpha_data, FILE *file,
 
 
 static void
-write_scanline(xel *row_data, xelval *alpha_data, int cols, FILE *file,
+write_scanline(xel *row_data, xelval *alpha_data, int cols, ostream *file,
                int (*compare_data)(xel *row_data, xelval *alpha_data,
                                    int x1, int x2),
                void (*write_data)(xel *row_data, xelval *alpha_data,
-                                  FILE *file, int x)) {
+                                  ostream *file, int x)) {
   int run_length = 0;
 
   int x = 0;
@@ -666,7 +667,7 @@ write_scanline(xel *row_data, xelval *alpha_data, int cols, FILE *file,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeSoftImage::Writer::
-Writer(PNMFileType *type, FILE *file, bool owns_file) :
+Writer(PNMFileType *type, ostream *file, bool owns_file) :
   PNMWriter(type, file, owns_file)
 {
 }
@@ -706,8 +707,8 @@ write_header() {
   write_ushort_SI(_file, SOFTIMAGE_MAGIC2);
   write_float(_file, imageVersionNumber);
 
-  fwrite(imageComment, 1, imageCommentLength, _file);
-  fwrite("PICT", 1, 4, _file);
+  _file->write(imageComment, imageCommentLength);
+  _file->write("PICT", 4);
 
   write_ushort_SI(_file, _x_size);
   write_ushort_SI(_file, _y_size);
@@ -757,7 +758,7 @@ write_row(xel *row_data, xelval *alpha_data) {
     write_scanline(row_data, alpha_data, _x_size, _file, compare_alpha, write_alpha);
   }
 
-  return !ferror(_file);
+  return !_file->fail();
 }
 
 

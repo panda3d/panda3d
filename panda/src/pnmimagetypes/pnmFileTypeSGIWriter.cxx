@@ -20,8 +20,8 @@
 #include "config_pnmimagetypes.h"
 #include "sgi.h"
 
-#include <pnmImage.h>
-#include <pnmWriter.h>
+#include "pnmImage.h"
+#include "pnmWriter.h"
 
 // Much code in this file originally came from from Netpbm,
 // specifically pnmtosgi.c.  It has since been fairly heavily
@@ -53,26 +53,26 @@
 #define MAXVAL_WORD     65535
 
 inline void
-put_byte(FILE *out_file, unsigned char b) {
-  putc(b, out_file);
+put_byte(ostream *out_file, unsigned char b) {
+  out_file->put(b);
 }
 
 static void
-put_big_short(FILE *out_file, short s) {
+put_big_short(ostream *out_file, short s) {
     if ( pm_writebigshort( out_file, s ) == -1 )
         pm_error( "write error" );
 }
 
 
 static void
-put_big_long(FILE *out_file, long l) {
+put_big_long(ostream *out_file, long l) {
     if ( pm_writebiglong( out_file, l ) == -1 )
         pm_error( "write error" );
 }
 
 
 static void
-put_short_as_byte(FILE *out_file, short s) {
+put_short_as_byte(ostream *out_file, short s) {
     put_byte(out_file, (unsigned char)s);
 }
 
@@ -83,7 +83,7 @@ put_short_as_byte(FILE *out_file, short s) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeSGI::Writer::
-Writer(PNMFileType *type, FILE *file, bool owns_file) :
+Writer(PNMFileType *type, ostream *file, bool owns_file) :
   PNMWriter(type, file, owns_file)
 {
 }
@@ -97,7 +97,7 @@ PNMFileTypeSGI::Writer::
 ~Writer() {
   if (table!=NULL) {
     // Rewrite the table with the correct values in it.
-    fseek(_file, table_start, SEEK_SET);
+    _file->seekp(table_start);
     write_table();
     delete[] table;
   }
@@ -171,7 +171,7 @@ write_header() {
   write_rgb_header(sgi_imagename.c_str());
 
   if (table!=NULL) {
-    table_start = ftell(_file);
+    table_start = _file->tellp();
 
     // The first time we write the table, it has zeroes.  We'll correct
     // this later.
@@ -257,11 +257,11 @@ write_table() {
 
 
 void PNMFileTypeSGI::Writer::
-write_channels(ScanLine channel[], void (*put)(FILE *, short)) {
+write_channels(ScanLine channel[], void (*put)(ostream *, short)) {
   int i, col;
 
   for( i = 0; i < _num_channels; i++ ) {
-    Table(i).start = ftell(_file);
+    Table(i).start = _file->tellp();
     Table(i).length = channel[i].length * bpc;
 
     for( col = 0; col < channel[i].length; col++ ) {

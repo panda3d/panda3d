@@ -19,9 +19,7 @@
 #include "config_pnmimagetypes.h"
 #include "pnmFileTypeSGI.h"
 #include "pnmFileTypeAlias.h"
-#include "pnmFileTypeRadiance.h"
 #include "pnmFileTypeTGA.h"
-#include "pnmFileTypeYUV.h"
 #include "pnmFileTypeIMG.h"
 #include "pnmFileTypeSoftImage.h"
 #include "pnmFileTypeBMP.h"
@@ -42,10 +40,8 @@ Configure(config_pnmimagetypes);
 NotifyCategoryDef(pnmimage_pnm, pnmimage_cat);
 NotifyCategoryDef(pnmimage_sgi, pnmimage_cat);
 NotifyCategoryDef(pnmimage_alias, pnmimage_cat);
-NotifyCategoryDef(pnmimage_radiance, pnmimage_cat);
 NotifyCategoryDef(pnmimage_tiff, pnmimage_cat);
 NotifyCategoryDef(pnmimage_tga, pnmimage_cat);
-NotifyCategoryDef(pnmimage_yuv, pnmimage_cat);
 NotifyCategoryDef(pnmimage_img, pnmimage_cat);
 NotifyCategoryDef(pnmimage_soft, pnmimage_cat);
 NotifyCategoryDef(pnmimage_bmp, pnmimage_cat);
@@ -54,15 +50,6 @@ NotifyCategoryDef(pnmimage_jpg2000, pnmimage_cat);
 
 int sgi_storage_type = STORAGE_RLE;
 const string sgi_imagename = config_pnmimagetypes.GetString("sgi-imagename", "");
-const double radiance_gamma_correction = config_pnmimagetypes.GetDouble("radiance-gamma-correction", 2.2);
-const int radiance_brightness_adjustment = config_pnmimagetypes.GetInt("radiance-brightness-adjustment", 0);
-
-// YUV format doesn't include an image size specification, so the
-// image size must be specified externally.  The defaults here are
-// likely candidates, since this is the Abekas native size; the ysize
-// is automatically adjusted down to account for a short file.
-const int yuv_xsize = config_pnmimagetypes.GetInt("yuv-xsize", 720);
-const int yuv_ysize = config_pnmimagetypes.GetInt("yuv-ysize", 486);
 
 // TGA supports RLE compression, as well as colormapping and/or
 // grayscale images.  Set these true to enable these features, if
@@ -124,9 +111,7 @@ init_libpnmimagetypes() {
   init_libpnmimage();
   PNMFileTypeSGI::init_type();
   PNMFileTypeAlias::init_type();
-  PNMFileTypeRadiance::init_type();
   PNMFileTypeTGA::init_type();
-  PNMFileTypeYUV::init_type();
   PNMFileTypeIMG::init_type();
   PNMFileTypeSoftImage::init_type();
   PNMFileTypeBMP::init_type();
@@ -169,9 +154,7 @@ init_libpnmimagetypes() {
 
   tr->register_type(new PNMFileTypeSGI);
   tr->register_type(new PNMFileTypeAlias);
-  tr->register_type(new PNMFileTypeRadiance);
   tr->register_type(new PNMFileTypeTGA);
-  tr->register_type(new PNMFileTypeYUV);
   tr->register_type(new PNMFileTypeIMG);
   tr->register_type(new PNMFileTypeSoftImage);
   tr->register_type(new PNMFileTypeBMP);
@@ -188,9 +171,7 @@ init_libpnmimagetypes() {
   // Also register with the Bam reader.
   PNMFileTypeSGI::register_with_read_factory();
   PNMFileTypeAlias::register_with_read_factory();
-  PNMFileTypeRadiance::register_with_read_factory();
   PNMFileTypeTGA::register_with_read_factory();
-  PNMFileTypeYUV::register_with_read_factory();
   PNMFileTypeIMG::register_with_read_factory();
   PNMFileTypeSoftImage::register_with_read_factory();
   PNMFileTypeBMP::register_with_read_factory();

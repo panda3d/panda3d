@@ -32,10 +32,10 @@ extern "C" {
 #include <tiffio.h>
 }
 
-static const char * const extensions_TIFF[] = {
+static const char * const extensions_tiff[] = {
   "tiff", "tif"
 };
-static const int num_extensions_TIFF = sizeof(extensions_TIFF) / sizeof(const char *);
+static const int num_extensions_tiff = sizeof(extensions_tiff) / sizeof(const char *);
 
 // These are configurable parameters to specify TIFF details on
 // output.  See tiff.h or type man pnmtotiff for a better explanation
@@ -80,57 +80,115 @@ long tiff_rowsperstrip = 0;
 #define PHOTOMETRIC_DEPTH 32768
 #endif
 
-// Here's a number of functions to support the stdio-FILE interface
+// Here's a number of functions to support the iostream interface
 // via the TIFF library.
 static tsize_t
-stdio_read(thandle_t fd, tdata_t buf, tsize_t size) {
-  return ((tsize_t)fread((void *)buf, 1, (size_t) size, (FILE *)fd));
+istream_read(thandle_t fd, tdata_t buf, tsize_t size) {
+  istream *in = (istream *)fd;
+  in->read((char *)buf, size);
+  return in->gcount();
 }
 
 static tsize_t
-stdio_write(thandle_t fd, tdata_t buf, tsize_t size) {
-  return ((tsize_t)fwrite((void *)buf, 1, (size_t) size, (FILE *)fd));
+ostream_write(thandle_t fd, tdata_t buf, tsize_t size) {
+  ostream *out = (ostream *)fd;
+  out->write((char *)buf, size);
+  return out->fail() ? (tsize_t)0 : size;
 }
 
 static tsize_t
-stdio_dont_read(thandle_t, tdata_t, tsize_t) {
-  // This no-op variant of stdio_read() is passed in when we open the
+ostream_dont_read(thandle_t, tdata_t, tsize_t) {
+  // This no-op variant of istream_read() is passed in when we open the
   // file for writing only.  Shouldn't mix reads and writes.
   return 0;
 }
 
 static tsize_t
-stdio_dont_write(thandle_t, tdata_t, tsize_t) {
-  // This no-op variant of stdio_write() is passed in when we open the
+istream_dont_write(thandle_t, tdata_t, tsize_t) {
+  // This no-op variant of ostream_write() is passed in when we open the
   // file for reading only.  Shouldn't mix reads and writes.
   return 0;
 }
 
 static toff_t
-stdio_seek(thandle_t fd, off_t off, int whence) {
-  fseek((FILE *)fd, (long)off, whence);
-  return (toff_t)ftell((FILE *)fd);
+istream_seek(thandle_t fd, off_t off, int whence) {
+  istream *in = (istream *)fd;
+
+  ios::seek_dir dir;
+  switch (whence) {
+  case SEEK_SET:
+    dir = ios::beg;
+    break;
+
+  case SEEK_END:
+    dir = ios::end;
+    break;
+
+  case SEEK_CUR:
+    dir = ios::cur;
+    break;
+
+  default:
+    return in->tellg();
+  }
+
+  in->seekg(off, dir);
+  return in->tellg();
+}
+
+static toff_t
+ostream_seek(thandle_t fd, off_t off, int whence) {
+  ostream *out = (ostream *)fd;
+
+  ios::seek_dir dir;
+  switch (whence) {
+  case SEEK_SET:
+    dir = ios::beg;
+    break;
+
+  case SEEK_END:
+    dir = ios::end;
+    break;
+
+  case SEEK_CUR:
+    dir = ios::cur;
+    break;
+
+  default:
+    return out->tellp();
+  }
+
+  out->seekp(off, dir);
+  return out->tellp();
 }
 
 static int
-stdio_dont_close(thandle_t) {
+iostream_dont_close(thandle_t) {
   // We don't actually close the file; we'll leave that to PNMReader.
   return true;
 }
 
 static toff_t
-stdio_size(thandle_t fd) {
-  fseek((FILE *)fd, 0, SEEK_END);
-  return (toff_t)ftell((FILE *)fd);
+istream_size(thandle_t fd) {
+  istream *in = (istream *)fd;
+  in->seekg(0, ios::end);
+  return in->tellg();
+}
+
+static toff_t
+ostream_size(thandle_t fd) {
+  ostream *out = (ostream *)fd;
+  out->seekp(0, ios::end);
+  return out->tellp();
 }
 
 static int
-stdio_map(thandle_t, tdata_t*, toff_t*) {
+iostream_map(thandle_t, tdata_t*, toff_t*) {
   return (0);
 }
 
 static void
-stdio_unmap(thandle_t, tdata_t, toff_t) {
+iostream_unmap(thandle_t, tdata_t, toff_t) {
 }
 
 TypeHandle PNMFileTypeTIFF::_type_handle;
@@ -158,11 +216,11 @@ get_name() const {
 //     Function: PNMFileTypeTIFF::get_num_extensions
 //       Access: Public, Virtual
 //  Description: Returns the number of different possible filename
-//               extensions_TIFF associated with this particular file type.
+//               extensions associated with this particular file type.
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeTIFF::
 get_num_extensions() const {
-  return num_extensions_TIFF;
+  return num_extensions_tiff;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -174,8 +232,8 @@ get_num_extensions() const {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypeTIFF::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < num_extensions_TIFF, string());
-  return extensions_TIFF[n];
+  nassertr(n >= 0 && n < num_extensions_tiff, string());
+  return extensions_tiff[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -225,7 +283,7 @@ matches_magic_number(const string &magic_number) const {
 //               from this file type is not supported, returns NULL.
 ////////////////////////////////////////////////////////////////////
 PNMReader *PNMFileTypeTIFF::
-make_reader(FILE *file, bool owns_file, const string &magic_number) {
+make_reader(istream *file, bool owns_file, const string &magic_number) {
   init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
@@ -238,7 +296,7 @@ make_reader(FILE *file, bool owns_file, const string &magic_number) {
 //               files of this type is not supported, returns NULL.
 ////////////////////////////////////////////////////////////////////
 PNMWriter *PNMFileTypeTIFF::
-make_writer(FILE *file, bool owns_file) {
+make_writer(ostream *file, bool owns_file) {
   init_pnm();
   return new Writer(this, file, owns_file);
 }
@@ -250,7 +308,7 @@ make_writer(FILE *file, bool owns_file) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeTIFF::Reader::
-Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
+Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   bool grayscale;
@@ -264,18 +322,25 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   for (string::reverse_iterator mi = magic_number.rbegin();
        mi != magic_number.rend();
        mi++) {
-    ungetc(*mi, _file);
+    _file->putback(*mi);
+  }
+  if (_file->fail()) {
+    pnmimage_tiff_cat.error()
+      << "Unable to put back magic number.\n";
+    _is_valid = false;
   }
 
-  tif = TIFFClientOpen("TIFF file", "r",
-                       (thandle_t) _file,
-                       stdio_read, stdio_dont_write,
-                       (TIFFSeekProc)stdio_seek,
-                       stdio_dont_close, stdio_size,
-                       stdio_map, stdio_unmap);
+  if (_is_valid) {
+    tif = TIFFClientOpen("TIFF file", "r",
+                         (thandle_t) _file,
+                         istream_read, istream_dont_write,
+                         (TIFFSeekProc)istream_seek,
+                         iostream_dont_close, istream_size,
+                         iostream_map, iostream_unmap);
 
-  if ( tif == NULL ) {
-    _is_valid = false;
+    if ( tif == NULL ) {
+      _is_valid = false;
+    }
   }
 
   if (_is_valid) {
@@ -551,7 +616,7 @@ read_row(xel *row_data, xelval *alpha_data) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeTIFF::Writer::
-Writer(PNMFileType *type, FILE *file, bool owns_file) :
+Writer(PNMFileType *type, ostream *file, bool owns_file) :
   PNMWriter(type, file, owns_file)
 {
 }
@@ -645,10 +710,10 @@ write_data(xel *array, xelval *alpha) {
   /* Open output file. */
   tif = TIFFClientOpen("TIFF file", "w",
                        (thandle_t) _file,
-                       stdio_dont_read, stdio_write,
-                       (TIFFSeekProc)stdio_seek,
-                       stdio_dont_close, stdio_size,
-                       stdio_map, stdio_unmap);
+                       ostream_dont_read, ostream_write,
+                       (TIFFSeekProc)ostream_seek,
+                       iostream_dont_close, ostream_size,
+                       iostream_map, iostream_unmap);
   if ( tif == NULL ) {
     return false;
   }

@@ -25,7 +25,6 @@
 #include "pandabase.h"
 
 #include <string>
-#include <stdio.h>
 
 // Since we no longer include pnm.h directly, we have to provide our
 // own definitions for xel and xelval.
@@ -85,14 +84,14 @@ EXPCL_PANDA int pm_bitstomaxval(int bits);
 EXPCL_PANDA char *pm_allocrow(int cols, int size);
 EXPCL_PANDA void pm_freerow(char *itrow);
 
-EXPCL_PANDA int pm_readbigshort(FILE *in, short *sP);
-EXPCL_PANDA int pm_writebigshort(FILE *out, short s);
-EXPCL_PANDA int pm_readbiglong(FILE *in, long *lP);
-EXPCL_PANDA int pm_writebiglong(FILE *out, long l);
-EXPCL_PANDA int pm_readlittleshort(FILE *in, short *sP);
-EXPCL_PANDA int pm_writelittleshort(FILE *out, short s);
-EXPCL_PANDA int pm_readlittlelong(FILE *in, long *lP);
-EXPCL_PANDA int pm_writelittlelong(FILE *out, long l);
+EXPCL_PANDA int pm_readbigshort(istream *in, short *sP);
+EXPCL_PANDA int pm_writebigshort(ostream *out, short s);
+EXPCL_PANDA int pm_readbiglong(istream *in, long *lP);
+EXPCL_PANDA int pm_writebiglong(ostream *out, long l);
+EXPCL_PANDA int pm_readlittleshort(istream *in, short *sP);
+EXPCL_PANDA int pm_writelittleshort(ostream *out, short s);
+EXPCL_PANDA int pm_readlittlelong(istream *in, long *lP);
+EXPCL_PANDA int pm_writelittlelong(ostream *out, long l);
 
 
 // These ratios are used to compute the brightness of a colored pixel; they

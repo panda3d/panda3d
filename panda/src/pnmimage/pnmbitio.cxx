@@ -17,8 +17,8 @@
 #include <assert.h>
 struct bitstream
 {
-        FILE *
-                f;              /* bytestream */
+        istream *inf;
+        ostream *outf;
         unsigned long
                 bitbuf;         /* bit buffer */
         int
@@ -46,19 +46,39 @@ struct bitstream
  */
 
 EXPCL_PANDA struct bitstream *
-pm_bitinit(FILE *f, char *mode)
+pm_bitinit(istream *f, char *mode)
 {
         struct bitstream *ans = (struct bitstream *)0;
 
         if(!f || !mode || !*mode)
                 return ans;
-        if(strcmp(mode, "r") && strcmp(mode, "w"))
+        if(strcmp(mode, "r"))
                 return ans;
 
         ans = (struct bitstream *)calloc(1, sizeof(struct bitstream));
         if(ans)
         {
-                ans->f = f;
+                ans->inf = f;
+                ans->mode = *mode;
+        }
+
+        return ans;
+}
+
+EXPCL_PANDA struct bitstream *
+pm_bitinit(ostream *f, char *mode)
+{
+        struct bitstream *ans = (struct bitstream *)0;
+
+        if(!f || !mode || !*mode)
+                return ans;
+        if(strcmp(mode, "w"))
+                return ans;
+
+        ans = (struct bitstream *)calloc(1, sizeof(struct bitstream));
+        if(ans)
+        {
+                ans->outf = f;
                 ans->mode = *mode;
         }
 
@@ -102,7 +122,7 @@ pm_bitfini(struct bitstream *b)
 
                         BitPut(b, 0, (long)8-(b->nbitbuf));
                         c = (char) BitGet(b, (long)8);
-                        if(putc(c, b->f) == EOF)
+                        if(!b->outf->put(c))
                         {
                                 return -1;
                         }
@@ -137,7 +157,7 @@ pm_bitread(struct bitstream *b, unsigned long nbits, unsigned long *val)
         
         while (b->nbitbuf < (signed long)nbits)
         {
-                if((c = getc(b->f)) == EOF)
+                if((c = b->inf->get()) == EOF)
                 {
                         return -1;
                 }
@@ -173,7 +193,7 @@ pm_bitwrite(struct bitstream *b, unsigned long nbits, unsigned long val)
         {
                 c = (char) BitGet(b, (long)8);
 
-                if(putc(c, b->f) == EOF)
+                if(!b->outf->put(c))
                 {
                         return -1;
                 }

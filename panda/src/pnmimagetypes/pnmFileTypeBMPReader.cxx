@@ -43,16 +43,16 @@
  * Utilities
  */
 
-static int GetByte (FILE * fp);
-static short GetShort (FILE * fp);
-static long GetLong (FILE * fp);
-static void readto (FILE *fp, unsigned long *ppos, unsigned long dst);
-static void BMPreadfileheader (FILE *fp, unsigned long *ppos,
+static int GetByte (istream * fp);
+static short GetShort (istream * fp);
+static long GetLong (istream * fp);
+static void readto (istream *fp, unsigned long *ppos, unsigned long dst);
+static void BMPreadfileheader (istream *fp, unsigned long *ppos,
     unsigned long *poffBits);
-static void BMPreadinfoheader (FILE *fp, unsigned long *ppos,
+static void BMPreadinfoheader (istream *fp, unsigned long *ppos,
     unsigned long *pcx, unsigned long *pcy, unsigned short *pcBitCount,
     int *pclassv);
-static int BMPreadrgbtable (FILE *fp, unsigned long *ppos,
+static int BMPreadrgbtable (istream *fp, unsigned long *ppos,
     unsigned short cBitCount, int classv, pixval *R, pixval *G, pixval *B);
 
 static const char *ifname = "BMP";
@@ -60,11 +60,11 @@ static char     er_read[] = "%s: read error";
 //static char     er_seek[] = "%s: seek error";
 
 static int
-GetByte(FILE *fp)
+GetByte(istream *fp)
 {
         int             v;
 
-        if ((v = getc(fp)) == EOF)
+        if ((v = fp->get()) == EOF)
         {
                 pm_error(er_read, ifname);
         }
@@ -73,7 +73,7 @@ GetByte(FILE *fp)
 }
 
 static short
-GetShort(FILE *fp)
+GetShort(istream *fp)
 {
         short           v;
 
@@ -86,7 +86,7 @@ GetShort(FILE *fp)
 }
 
 static long
-GetLong(FILE *fp)
+GetLong(istream *fp)
 {
         long            v;
 
@@ -104,7 +104,7 @@ GetLong(FILE *fp)
  */
 
 static void
-readto(FILE           *fp,
+readto(istream           *fp,
         unsigned long  *ppos,   /* pointer to number of bytes read from fp */
         unsigned long   dst)
 {
@@ -120,7 +120,7 @@ readto(FILE           *fp,
 
         for(; pos < dst; pos++)
         {
-                if (getc(fp) == EOF)
+                if (fp->get() == EOF)
                 {
                         pm_error(er_read, ifname);
                 }
@@ -136,7 +136,7 @@ readto(FILE           *fp,
 
 static void
 BMPreadfileheader(
-        FILE           *fp,
+        istream           *fp,
         unsigned long  *ppos,   /* number of bytes read from fp */
         unsigned long  *poffBits)
 {
@@ -171,7 +171,7 @@ BMPreadfileheader(
 
 static void
 BMPreadinfoheader(
-        FILE           *fp,
+        istream           *fp,
         unsigned long  *ppos,   /* number of bytes read from fp */
         unsigned long  *pcx,
         unsigned long  *pcy,
@@ -269,7 +269,7 @@ BMPreadinfoheader(
  */
 static int
 BMPreadrgbtable(
-        FILE           *fp,
+        istream           *fp,
         unsigned long  *ppos,   /* number of bytes read from fp */
         unsigned short  cBitCount,
         int             classv,
@@ -305,7 +305,7 @@ BMPreadrgbtable(
  */
 static int
 BMPreadrow(
-        FILE           *fp,
+        istream           *fp,
         unsigned long  *ppos,   /* number of bytes read from fp */
         pixel          *row,
         unsigned long   cx,
@@ -371,7 +371,7 @@ BMPreadrow(
 
 static void
 BMPreadbits(xel *array,
-        FILE           *fp,
+        istream           *fp,
         unsigned long  *ppos,   /* number of bytes read from fp */
         unsigned long   offBits,
         unsigned long   cx,
@@ -424,7 +424,7 @@ BMPreadbits(xel *array,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeBMP::Reader::
-Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
+Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   if (!read_magic_number(_file, magic_number, 2)) {

@@ -19,11 +19,11 @@
 #ifndef PNMFILETYPESGI_H
 #define PNMFILETYPESGI_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <pnmFileType.h>
-#include <pnmReader.h>
-#include <pnmWriter.h>
+#include "pnmFileType.h"
+#include "pnmReader.h"
+#include "pnmWriter.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PNMFileTypeSGI
@@ -42,14 +42,14 @@ public:
   virtual bool has_magic_number() const;
   virtual bool matches_magic_number(const string &magic_number) const;
 
-  virtual PNMReader *make_reader(FILE *file, bool owns_file = true,
+  virtual PNMReader *make_reader(istream *file, bool owns_file = true,
                                  const string &magic_number = string());
-  virtual PNMWriter *make_writer(FILE *file, bool owns_file = true);
+  virtual PNMWriter *make_writer(ostream *file, bool owns_file = true);
 
 public:
   class Reader : public PNMReader {
   public:
-    Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number);
+    Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number);
     virtual ~Reader();
 
     virtual bool supports_read_row() const;
@@ -69,7 +69,7 @@ public:
 
   class Writer : public PNMWriter {
   public:
-    Writer(PNMFileType *type, FILE *file, bool owns_file);
+    Writer(PNMFileType *type, ostream *file, bool owns_file);
     virtual ~Writer();
 
     virtual bool supports_write_row() const;
@@ -94,7 +94,7 @@ public:
 
     void write_rgb_header(const char *imagename);
     void write_table();
-    void write_channels(ScanLine channel[], void (*put)(FILE *, short));
+    void write_channels(ScanLine channel[], void (*put)(ostream *, short));
     void build_scanline(ScanLine output[], xel *row_data, xelval *alpha_data);
     ScanElem *compress(ScanElem *temp, ScanLine &output);
     int rle_compress(ScanElem *inbuf, int size);

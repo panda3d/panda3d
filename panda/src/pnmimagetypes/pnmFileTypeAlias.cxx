@@ -27,10 +27,10 @@
 // or height is larger than this, it must be bogus.
 #define INSANE_SIZE 20000
 
-static const char * const extensions_ALIAS[] = {
+static const char * const extensions_alias[] = {
   "pix", "als"
 };
-static const int num_extensions_ALIAS = sizeof(extensions_ALIAS) / sizeof(const char *);
+static const int num_extensions_alias = sizeof(extensions_alias) / sizeof(const char *);
 
 TypeHandle PNMFileTypeAlias::_type_handle;
 
@@ -57,11 +57,11 @@ get_name() const {
 //     Function: PNMFileTypeAlias::get_num_extensions
 //       Access: Public, Virtual
 //  Description: Returns the number of different possible filename
-//               extensions_ALIAS associated with this particular file type.
+//               extensions associated with this particular file type.
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeAlias::
 get_num_extensions() const {
-  return num_extensions_ALIAS;
+  return num_extensions_alias;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -73,8 +73,8 @@ get_num_extensions() const {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypeAlias::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < num_extensions_ALIAS, string());
-  return extensions_ALIAS[n];
+  nassertr(n >= 0 && n < num_extensions_alias, string());
+  return extensions_alias[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,7 +97,7 @@ get_suggested_extension() const {
 //               from this file type is not supported, returns NULL.
 ////////////////////////////////////////////////////////////////////
 PNMReader *PNMFileTypeAlias::
-make_reader(FILE *file, bool owns_file, const string &magic_number) {
+make_reader(istream *file, bool owns_file, const string &magic_number) {
   init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
@@ -110,7 +110,7 @@ make_reader(FILE *file, bool owns_file, const string &magic_number) {
 //               files of this type is not supported, returns NULL.
 ////////////////////////////////////////////////////////////////////
 PNMWriter *PNMFileTypeAlias::
-make_writer(FILE *file, bool owns_file) {
+make_writer(ostream *file, bool owns_file) {
   init_pnm();
   return new Writer(this, file, owns_file);
 }
@@ -118,26 +118,26 @@ make_writer(FILE *file, bool owns_file) {
 
 
 inline unsigned short
-read_ushort(FILE *file) {
+read_ushort(istream *file) {
   unsigned short x;
   return pm_readbigshort(file, (short *)&x)==0 ? x : 0;
 }
 
 inline unsigned char
-read_uchar_ALIAS(FILE *file) {
+read_uchar_ALIAS(istream *file) {
   int x;
-  x = getc(file);
+  x = file->get();
   return (x!=EOF) ? (unsigned char)x : 0;
 }
 
 inline void
-write_ushort(FILE *file, unsigned short x) {
+write_ushort(ostream *file, unsigned short x) {
   pm_writebigshort(file, (short)x);
 }
 
 inline void
-write_uchar_ALIAS(FILE *file, unsigned char x) {
-  putc(x, file);
+write_uchar_ALIAS(ostream *file, unsigned char x) {
+  file->put(x);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -146,7 +146,7 @@ write_uchar_ALIAS(FILE *file, unsigned char x) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeAlias::Reader::
-Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
+Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   if (!read_magic_number(_file, magic_number, 4)) {
@@ -270,7 +270,7 @@ static unsigned char last_red = 0, last_blu = 0, last_grn = 0;
 static int num_count = 0;
 
 static void
-flush_color(FILE *file) {
+flush_color(ostream *file) {
   if (num_count>0) {
     write_uchar_ALIAS(file, num_count);
     write_uchar_ALIAS(file, last_blu);
@@ -281,7 +281,7 @@ flush_color(FILE *file) {
 }
 
 static void
-write_color(FILE *file,
+write_color(ostream *file,
             unsigned char red, unsigned char blu, unsigned char grn) {
   if (red==last_red && blu==last_blu && grn==last_grn && num_count<0377) {
     num_count++;
@@ -301,7 +301,7 @@ write_color(FILE *file,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeAlias::Writer::
-Writer(PNMFileType *type, FILE *file, bool owns_file) :
+Writer(PNMFileType *type, ostream *file, bool owns_file) :
   PNMWriter(type, file, owns_file)
 {
 }

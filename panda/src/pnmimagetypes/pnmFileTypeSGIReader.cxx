@@ -20,10 +20,10 @@
 #include "config_pnmimagetypes.h"
 #include "sgi.h"
 
-#include <pnmImage.h>
-#include <pnmReader.h>
+#include "pnmImage.h"
+#include "pnmReader.h"
 
-#include <notify.h>
+#include "notify.h"
 
 // Much code in this file is borrowed from Netpbm, specifically sgitopnm.c.
 
@@ -52,18 +52,18 @@ typedef short       ScanElem;
 typedef ScanElem *  ScanLine;
 
 /* prototypes */
-static unsigned char get_byte ( FILE* f );
-static long get_big_long (FILE *f);
-static short get_big_short (FILE *f);
-static short get_byte_as_short (FILE *f);
-static int readerr (FILE *f);
+static unsigned char get_byte ( istream* f );
+static long get_big_long (istream *f);
+static short get_big_short (istream *f);
+static short get_byte_as_short (istream *f);
+static int readerr (istream *f);
 static void * xmalloc (int bytes);
 #define MALLOC(n, type)     (type *)xmalloc((n) * sizeof(type))
 static char * compression_name (char compr);
-static void       read_bytes (FILE *ifp, int n, char *buf);
-static bool read_header(FILE *ifp, Header *head, const string &magic_number);
-static TabEntry * read_table (FILE *ifp, int tablen);
-static void       read_channel (FILE *ifp, int xsize, int ysize,
+static void       read_bytes (istream *ifp, int n, char *buf);
+static bool read_header(istream *ifp, Header *head, const string &magic_number);
+static TabEntry * read_table (istream *ifp, int tablen);
+static void       read_channel (istream *ifp, int xsize, int ysize,
                                      int zsize, int bpc, TabEntry *table,
                                      ScanElem *channel_data, long table_start,
                                      int channel, int row);
@@ -86,7 +86,7 @@ static bool eof_err = false;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeSGI::Reader::
-Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
+Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   eof_err = false;
@@ -119,7 +119,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
 
   _maxval = (xelval)pixmax;
 
-  table_start = ftell(file);
+  table_start = file->tellg();
   if( head.storage != STORAGE_VERBATIM )
     table = read_table(file, head.ysize * head.zsize);
 
@@ -230,7 +230,7 @@ read_row(xel *row_data, xelval *alpha_data) {
 
 
 static bool
-read_header(FILE *ifp, Header *head, const string &magic_number) {
+read_header(istream *ifp, Header *head, const string &magic_number) {
     nassertr(magic_number.size() == 4, false);
     head->magic =
       ((unsigned char)magic_number[0] << 8) |
@@ -318,7 +318,7 @@ read_header(FILE *ifp, Header *head, const string &magic_number) {
 
 
 static TabEntry *
-read_table(FILE *ifp, int tablen) {
+read_table(istream *ifp, int tablen) {
     TabEntry *table;
     int i;
 
@@ -337,7 +337,7 @@ read_table(FILE *ifp, int tablen) {
 
 
 static void
-read_channel(FILE *ifp,
+read_channel(istream *ifp,
              int xsize, int ysize, int, int bpc,
              TabEntry *table,
              ScanElem *channel_data, long table_start,
@@ -346,7 +346,7 @@ read_channel(FILE *ifp,
     int sgi_index, i;
     long offset, length;
 
-    short (*func)(FILE *);
+    short (*func)(istream *);
     func = (bpc==1) ? get_byte_as_short : get_big_short;
 
     if ( table ) {
@@ -359,7 +359,7 @@ read_channel(FILE *ifp,
       length = table[sgi_index].length;
       if( bpc == 2 )
         length /= 2;   /* doc says length is in bytes, we are reading words */
-      if( fseek(ifp, offset, SEEK_SET) != 0 )
+      if(!ifp->seekg(offset))
         pm_error("seek error for offset %ld", offset);
 
       nassertv(length <= WORSTCOMPR(xsize));
@@ -370,7 +370,7 @@ read_channel(FILE *ifp,
     }
     else {
       offset = sgi_index * xsize + table_start;
-      if( fseek(ifp, offset, SEEK_SET) != 0 )
+      if(!ifp->seekg(offset))
         pm_error("seek error for offset %ld", offset);
       for( i = 0; i < xsize; i++ )
         channel_data[i] = (*func)(ifp);
@@ -420,7 +420,7 @@ rle_decompress(ScanElem *src,
 /* basic I/O functions, taken from ilbmtoppm.c */
 
 static short
-get_big_short(FILE *ifp) {
+get_big_short(istream *ifp) {
     short s;
 
     if( pm_readbigshort(ifp, &s) == -1 )
@@ -430,7 +430,7 @@ get_big_short(FILE *ifp) {
 }
 
 static long
-get_big_long(FILE *ifp) {
+get_big_long(istream *ifp) {
     long l;
 
     if( pm_readbiglong(ifp, &l) == -1 )
@@ -440,10 +440,10 @@ get_big_long(FILE *ifp) {
 }
 
 static unsigned char
-get_byte(FILE *ifp) {
+get_byte(istream *ifp) {
     int i;
 
-    i = getc(ifp);
+    i = ifp->get();
     if( i == EOF )
         i = readerr(ifp);
 
@@ -452,13 +452,15 @@ get_byte(FILE *ifp) {
 
 
 static int
-readerr(FILE *f) {
-  // This will return only if the error is EOF.
-  if( ferror(f) )
-    pm_error("read error");
-
+readerr(istream *f) {
   if (!eof_err) {
-    fprintf(stderr, "Warning: premature EOF on file\n");
+    if (!f->eof()) {
+      pnmimage_sgi_cat.warning()
+        << "Read error on file.\n";
+    } else {
+      pnmimage_sgi_cat.warning()
+        << "Premature EOF on file.\n";
+    }
     eof_err = true;
   }
 
@@ -467,12 +469,13 @@ readerr(FILE *f) {
 
 
 static void
-read_bytes(FILE *ifp,
+read_bytes(istream *ifp,
            int n,
            char *buf) {
     int r;
 
-    r = fread((void *)buf, 1, n, ifp);
+    ifp->read(buf, n);
+    r = ifp->gcount();
     if( r != n ) {
       readerr(ifp);
       memset(buf+r, 0, n-r);
@@ -481,7 +484,7 @@ read_bytes(FILE *ifp,
 
 
 static short
-get_byte_as_short(FILE *ifp) {
+get_byte_as_short(istream *ifp) {
     return (short)get_byte(ifp);
 }
 

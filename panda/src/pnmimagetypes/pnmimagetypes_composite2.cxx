@@ -4,4 +4,3 @@
 #include "pnmFileTypeSGIWriter.cxx"
 #include "pnmFileTypeSoftImage.cxx"
 #include "pnmFileTypeTGA.cxx"
-#include "pnmFileTypeYUV.cxx"

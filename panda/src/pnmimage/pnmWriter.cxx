@@ -26,8 +26,9 @@
 PNMWriter::
 ~PNMWriter() {
   if (_owns_file) {
-    fclose(_file);
+    delete _file;
   }
+  _file = (ostream *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

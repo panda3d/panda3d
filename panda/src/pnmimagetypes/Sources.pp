@@ -14,10 +14,9 @@
 
   #define SOURCES  \
      config_pnmimagetypes.h pnmFileTypeAlias.h pnmFileTypeBMP.h  \
-     pnmFileTypeIMG.h pnmFileTypeRadiance.h  \
+     pnmFileTypeIMG.h  \
      pnmFileTypeSGI.h pnmFileTypeSoftImage.h  \
-     pnmFileTypeTGA.h pnmFileTypeYUV.h color.c colrops.c resolu.c  \
-     header.c \
+     pnmFileTypeTGA.h \
      $[if $[HAVE_TIFF], pnmFileTypeTIFF.cxx pnmFileTypeTIFF.h] \
      $[if $[HAVE_JPEG], pnmFileTypeJPG.h] \
      $[if $[HAVE_JPEG2000], pnmFileTypeJPG2000.h]
@@ -26,10 +25,10 @@
      config_pnmimagetypes.cxx pnmFileTypeAlias.cxx  \
      pnmFileTypeBMPReader.cxx pnmFileTypeBMPWriter.cxx  \
      pnmFileTypeIMG.cxx pnmFileTypeBMP.cxx  \
-     pnmFileTypeRadiance.cxx pnmFileTypeSGI.cxx  \
+     pnmFileTypeSGI.cxx  \
      pnmFileTypeSGIReader.cxx pnmFileTypeSGIWriter.cxx  \
      pnmFileTypeSoftImage.cxx \
-     pnmFileTypeTGA.cxx pnmFileTypeYUV.cxx \
+     pnmFileTypeTGA.cxx \
      $[if $[HAVE_JPEG], pnmFileTypeJPG.cxx pnmFileTypeJPGReader.cxx pnmFileTypeJPGWriter.cxx] \
      $[if $[HAVE_JPEG2000], pnmFileTypeJPG2000.cxx pnmFileTypeJPG2000Reader.cxx pnmFileTypeJPG2000Writer.cxx]
 

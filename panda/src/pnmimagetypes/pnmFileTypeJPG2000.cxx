@@ -19,13 +19,13 @@
 #include "pnmFileTypeJPG2000.h"
 #include "config_pnmimagetypes.h"
 
-#include <pnmFileTypeRegistry.h>
-#include <bamReader.h>
+#include "pnmFileTypeRegistry.h"
+#include "bamReader.h"
 
-static const char * const extensions_JPG2000[] = {
+static const char * const extensions_jpg2000[] = {
   "JP2","JPC"
 };
-static const int num_extensions_JPG2000 = sizeof(extensions_JPG2000) / sizeof(const char *);
+static const int num_extensions_jpg2000 = sizeof(extensions_jpg2000) / sizeof(const char *);
 
 TypeHandle PNMFileTypeJPG2000::_type_handle;
 
@@ -45,18 +45,18 @@ PNMFileTypeJPG2000() {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypeJPG2000::
 get_name() const {
-  return "JPEG_2000";
+  return "JPEG 2000";
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeJPG2000::get_num_extensions
 //       Access: Public, Virtual
 //  Description: Returns the number of different possible filename
-//               extensions_JPG2000 associated with this particular file type.
+//               extensions_jpg2000 associated with this particular file type.
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeJPG2000::
 get_num_extensions() const {
-  return num_extensions_JPG2000;
+  return num_extensions_jpg2000;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,8 +68,8 @@ get_num_extensions() const {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypeJPG2000::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < num_extensions_JPG2000, string());
-  return extensions_JPG2000[n];
+  nassertr(n >= 0 && n < num_extensions_jpg2000, string());
+  return extensions_jpg2000[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -117,7 +117,7 @@ matches_magic_number(const string &magic_number) const {
 //               from this file type is not supported, returns NULL.
 ////////////////////////////////////////////////////////////////////
 PNMReader *PNMFileTypeJPG2000::
-make_reader(FILE *file, bool owns_file, const string &magic_number) {
+make_reader(istream *file, bool owns_file, const string &magic_number) {
   init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
@@ -130,7 +130,7 @@ make_reader(FILE *file, bool owns_file, const string &magic_number) {
 //               files of this type is not supported, returns NULL.
 ////////////////////////////////////////////////////////////////////
 PNMWriter *PNMFileTypeJPG2000::
-make_writer(FILE *file, bool owns_file) {
+make_writer(ostream *file, bool owns_file) {
   init_pnm();
   return new Writer(this, file, owns_file);
 }

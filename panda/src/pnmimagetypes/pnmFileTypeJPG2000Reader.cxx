@@ -18,7 +18,6 @@
 
 #include "pnmFileTypeJPG2000.h"
 #include "config_pnmimagetypes.h"
-#include <typedef.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeJPG2000::Reader::Constructor
@@ -26,11 +25,11 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeJPG2000::Reader::
-Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
+Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   // Put the magic number bytes back into the file
-  fseek(file, 0, SEEK_SET);
+  file->seekg(0);
 
   /* Step 1: allocate and initialize JPEG decompression object */
 
@@ -41,7 +40,8 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   jpeg_create_decompress(&_cinfo);
 
   /* Step 2: specify data source (eg, a file) */
-
+  // This is broken, and won't compile.  We need to drop in an
+  // iostream replacement, like we did for JPG.
   jpeg_stdio_src(&_cinfo, file);
 
   /* Step 3: read file parameters with jpeg_read_header() */

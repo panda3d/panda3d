@@ -17,9 +17,12 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmimage_base.h"
+#include "streamReader.h"
+#include "streamWriter.h"
 
 #include <stdarg.h>
-#include <stdio.h>
+#include <stdio.h>   // for sprintf()
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: pm_message
@@ -124,105 +127,57 @@ pm_freerow(char *itrow) {
 */
 
 int
-pm_readbigshort(FILE* in, short* sP)
-    {
-    int c;
-
-    if ( (c = getc( in )) == EOF )
-        return -1;
-    *sP = ( c & 0xff ) << 8;
-    if ( (c = getc( in )) == EOF )
-        return -1;
-    *sP |= c & 0xff;
-    return 0;
-    }
+pm_readbigshort(istream *in, short *sP) {
+  StreamReader reader(in);
+  *sP = reader.get_be_int16();
+  return (!in->eof() && !in->fail()) ? 0 : -1;
+}
 
 int
-pm_writebigshort( FILE* out, short s )
-    {
-    (void) putc( ( s >> 8 ) & 0xff, out );
-    (void) putc( s & 0xff, out );
-    return 0;
-    }
+pm_writebigshort(ostream *out, short s) {
+  StreamWriter writer(out);
+  writer.add_be_int16(s);
+  return (!out->fail()) ? 0 : -1;
+}
 
 int
-pm_readbiglong(FILE* in, long* lP)
-    {
-    int c;
-
-    if ( (c = getc( in )) == EOF )
-        return -1;
-    *lP = ( c & 0xff ) << 24;
-    if ( (c = getc( in )) == EOF )
-        return -1;
-    *lP |= ( c & 0xff ) << 16;
-    if ( (c = getc( in )) == EOF )
-        return -1;
-    *lP |= ( c & 0xff ) << 8;
-    if ( (c = getc( in )) == EOF )
-        return -1;
-    *lP |= c & 0xff;
-    return 0;
-    }
+pm_readbiglong(istream *in, long *lP) {
+  StreamReader reader(in);
+  *lP = reader.get_be_int32();
+  return (!in->eof() && !in->fail()) ? 0 : -1;
+}
 
 int
-pm_writebiglong(FILE* out, long l)
-    {
-    (void) putc( ( l >> 24 ) & 0xff, out );
-    (void) putc( ( l >> 16 ) & 0xff, out );
-    (void) putc( ( l >> 8 ) & 0xff, out );
-    (void) putc( l & 0xff, out );
-    return 0;
-    }
+pm_writebiglong(ostream *out, long l) {
+  StreamWriter writer(out);
+  writer.add_be_int32(l);
+  return (!out->fail()) ? 0 : -1;
+}
 
 int
-pm_readlittleshort(FILE* in, short* sP)
-    {
-    int c;
-
-    if ( (c = getc( in )) == EOF )
-        return -1;
-    *sP = c & 0xff;
-    if ( (c = getc( in )) == EOF )
-        return -1;
-    *sP |= ( c & 0xff ) << 8;
-    return 0;
-    }
+pm_readlittleshort(istream *in, short *sP) {
+  StreamReader reader(in);
+  *sP = reader.get_int16();
+  return (!in->eof() && !in->fail()) ? 0 : -1;
+}
 
 int
-pm_writelittleshort( FILE* out, short s )
-    {
-    (void) putc( s & 0xff, out );
-    (void) putc( ( s >> 8 ) & 0xff, out );
-    return 0;
-    }
+pm_writelittleshort(ostream *out, short s) {
+  StreamWriter writer(out);
+  writer.add_int16(s);
+  return (!out->fail()) ? 0 : -1;
+}
 
 int
-pm_readlittlelong(FILE* in, long* lP)
-    {
-    int c;
-
-    if ( (c = getc( in )) == EOF )
-        return -1;
-    *lP = c & 0xff;
-    if ( (c = getc( in )) == EOF )
-        return -1;
-    *lP |= ( c & 0xff ) << 8;
-    if ( (c = getc( in )) == EOF )
-        return -1;
-    *lP |= ( c & 0xff ) << 16;
-    if ( (c = getc( in )) == EOF )
-        return -1;
-    *lP |= ( c & 0xff ) << 24;
-    return 0;
-    }
+pm_readlittlelong(istream *in, long *lP) {
+  StreamReader reader(in);
+  *lP = reader.get_int32();
+  return (!in->eof() && !in->fail()) ? 0 : -1;
+}
 
 int
-pm_writelittlelong(FILE* out, long l)
-    {
-    (void) putc( l & 0xff, out );
-    (void) putc( ( l >> 8 ) & 0xff, out );
-    (void) putc( ( l >> 16 ) & 0xff, out );
-    (void) putc( ( l >> 24 ) & 0xff, out );
-    return 0;
-    }
+pm_writelittlelong(ostream *out, long l) {
+  StreamWriter writer(out);
+  writer.add_int32(l);
+  return (!out->fail()) ? 0 : -1;
+}

@@ -53,25 +53,25 @@
 static char     er_write[] = "stdout: write error";
 
 /* prototypes */
-static void PutByte (FILE *fp, char v);
-static void PutShort (FILE *fp, short v);
-static void PutLong (FILE *fp, long v);
-static int BMPwritefileheader (FILE *fp, int classv, unsigned long bitcount,
+static void PutByte (ostream *fp, char v);
+static void PutShort (ostream *fp, short v);
+static void PutLong (ostream *fp, long v);
+static int BMPwritefileheader (ostream *fp, int classv, unsigned long bitcount,
     unsigned long x, unsigned long y);
-static int BMPwriteinfoheader (FILE *fp, int classv, unsigned long bitcount,
+static int BMPwriteinfoheader (ostream *fp, int classv, unsigned long bitcount,
     unsigned long x, unsigned long y);
-static int BMPwritergb (FILE *fp, int classv, pixval R, pixval G, pixval B);
-static int BMPwritergbtable (FILE *fp, int classv, int bpp, int colors,
+static int BMPwritergb (ostream *fp, int classv, pixval R, pixval G, pixval B);
+static int BMPwritergbtable (ostream *fp, int classv, int bpp, int colors,
     pixval *R, pixval *G, pixval *B);
 static int colorstobpp (int colors);
-static void BMPEncode (FILE *fp, int classv, int x, int y, pixel **pixels,
+static void BMPEncode (ostream *fp, int classv, int x, int y, pixel **pixels,
     int colors, colorhash_table cht, pixval *R, pixval *G, pixval *B);
 static void
 PutByte(
-        FILE           *fp,
+        ostream           *fp,
         char            v)
 {
-        if (putc(v, fp) == EOF)
+        if (!fp->put(v))
         {
                 pm_error(er_write);
         }
@@ -79,7 +79,7 @@ PutByte(
 
 static void
 PutShort(
-        FILE           *fp,
+        ostream           *fp,
         short           v)
 {
         if (pm_writelittleshort(fp, v) == -1)
@@ -90,7 +90,7 @@ PutShort(
 
 static void
 PutLong(
-        FILE           *fp,
+        ostream           *fp,
         long            v)
 {
         if (pm_writelittlelong(fp, v) == -1)
@@ -108,7 +108,7 @@ PutLong(
  */
 static int
 BMPwritefileheader(
-        FILE           *fp,
+        ostream           *fp,
         int             classv,
         unsigned long   bitcount,
         unsigned long   x,
@@ -137,7 +137,7 @@ BMPwritefileheader(
  */
 static int
 BMPwriteinfoheader(
-        FILE           *fp,
+        ostream           *fp,
         int             classv,
         unsigned long   bitcount,
         unsigned long   x,
@@ -201,7 +201,7 @@ BMPwriteinfoheader(
  */
 static int
 BMPwritergb(
-        FILE           *fp,
+        ostream           *fp,
         int             classv,
         pixval          R,
         pixval          G,
@@ -231,7 +231,7 @@ BMPwritergb(
  */
 static int
 BMPwritergbtable(
-        FILE           *fp,
+        ostream           *fp,
         int             classv,
         int             bpp,
         int             colors,
@@ -263,7 +263,7 @@ BMPwritergbtable(
  */
 static int
 BMPwriterow(
-        FILE           *fp,
+        ostream           *fp,
         pixel          *row,
         unsigned long   cx,
         unsigned short  bpp,
@@ -323,7 +323,7 @@ BMPwriterow(
  */
 static int
 BMPwritebits(
-        FILE           *fp,
+        ostream           *fp,
         unsigned long   cx,
         unsigned long   cy,
         unsigned short  cBitCount,
@@ -397,7 +397,7 @@ colorstobpp(int colors)
  */
 static void
 BMPEncode(
-        FILE           *fp,
+        ostream           *fp,
         int             classv,
         int             x,
         int             y,
@@ -472,7 +472,7 @@ BMPEncode(
  */
 static void
 BMPEncode24(
-        FILE           *fp,
+        ostream           *fp,
         int             classv,
         int             x,
         int             y,
@@ -507,7 +507,7 @@ BMPEncode24(
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeBMP::Writer::
-Writer(PNMFileType *type, FILE *file, bool owns_file) :
+Writer(PNMFileType *type, ostream *file, bool owns_file) :
   PNMWriter(type, file, owns_file)
 {
 }

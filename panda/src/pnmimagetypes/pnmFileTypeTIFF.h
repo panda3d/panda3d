@@ -19,11 +19,11 @@
 #ifndef PNMFILETYPETIFF_H
 #define PNMFILETYPETIFF_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <pnmFileType.h>
-#include <pnmReader.h>
-#include <pnmWriter.h>
+#include "pnmFileType.h"
+#include "pnmReader.h"
+#include "pnmWriter.h"
 
 #define TIFF_COLORMAP_MAXCOLORS 1024
 
@@ -44,14 +44,14 @@ public:
   virtual bool has_magic_number() const;
   virtual bool matches_magic_number(const string &magic_number) const;
 
-  virtual PNMReader *make_reader(FILE *file, bool owns_file = true,
+  virtual PNMReader *make_reader(istream *file, bool owns_file = true,
                                  const string &magic_number = string());
-  virtual PNMWriter *make_writer(FILE *file, bool owns_file = true);
+  virtual PNMWriter *make_writer(ostream *file, bool owns_file = true);
 
 public:
   class Reader : public PNMReader {
   public:
-    Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number);
+    Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number);
     virtual ~Reader();
 
     virtual bool supports_read_row() const;
@@ -68,7 +68,7 @@ public:
 
   class Writer : public PNMWriter {
   public:
-    Writer(PNMFileType *type, FILE *file, bool owns_file);
+    Writer(PNMFileType *type, ostream *file, bool owns_file);
 
     virtual int write_data(xel *array, xelval *alpha);
   };

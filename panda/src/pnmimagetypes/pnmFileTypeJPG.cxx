@@ -19,13 +19,13 @@
 #include "pnmFileTypeJPG.h"
 #include "config_pnmimagetypes.h"
 
-#include <pnmFileTypeRegistry.h>
-#include <bamReader.h>
+#include "pnmFileTypeRegistry.h"
+#include "bamReader.h"
 
-static const char * const extensions_JPG[] = {
+static const char *const extensions_jpg[] = {
   "jpg", "jpeg"
 };
-static const int num_extensions_JPG = sizeof(extensions_JPG) / sizeof(const char *);
+static const int num_extensions_jpg = sizeof(extensions_jpg) / sizeof(const char *);
 
 TypeHandle PNMFileTypeJPG::_type_handle;
 
@@ -52,11 +52,11 @@ get_name() const {
 //     Function: PNMFileTypeJPG::get_num_extensions
 //       Access: Public, Virtual
 //  Description: Returns the number of different possible filename
-//               extensions_JPG associated with this particular file type.
+//               extensions associated with this particular file type.
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeJPG::
 get_num_extensions() const {
-  return num_extensions_JPG;
+  return num_extensions_jpg;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,8 +68,8 @@ get_num_extensions() const {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypeJPG::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < num_extensions_JPG, string());
-  return extensions_JPG[n];
+  nassertr(n >= 0 && n < num_extensions_jpg, string());
+  return extensions_jpg[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -117,7 +117,7 @@ matches_magic_number(const string &magic_number) const {
 //               from this file type is not supported, returns NULL.
 ////////////////////////////////////////////////////////////////////
 PNMReader *PNMFileTypeJPG::
-make_reader(FILE *file, bool owns_file, const string &magic_number) {
+make_reader(istream *file, bool owns_file, const string &magic_number) {
   init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
@@ -130,7 +130,7 @@ make_reader(FILE *file, bool owns_file, const string &magic_number) {
 //               files of this type is not supported, returns NULL.
 ////////////////////////////////////////////////////////////////////
 PNMWriter *PNMFileTypeJPG::
-make_writer(FILE *file, bool owns_file) {
+make_writer(ostream *file, bool owns_file) {
   init_pnm();
   return new Writer(this, file, owns_file);
 }

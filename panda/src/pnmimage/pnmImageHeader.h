@@ -80,18 +80,18 @@ public:
 
   PNMReader *make_reader(const Filename &filename,
                          PNMFileType *type = NULL) const;
-  PNMReader *make_reader(FILE *file, bool owns_file = true,
+  PNMReader *make_reader(istream *file, bool owns_file = true,
                          const Filename &filename = Filename(),
                          string magic_number = string(),
                          PNMFileType *type = NULL) const;
 
   PNMWriter *make_writer(const Filename &filename,
                          PNMFileType *type = NULL) const;
-  PNMWriter *make_writer(FILE *file, bool owns_file = true,
+  PNMWriter *make_writer(ostream *file, bool owns_file = true,
                          const Filename &filename = Filename(),
                          PNMFileType *type = NULL) const;
 
-  static bool read_magic_number(FILE *file, string &magic_number,
+  static bool read_magic_number(istream *file, string &magic_number,
                                 int num_bytes);
 
   void output(ostream &out) const;

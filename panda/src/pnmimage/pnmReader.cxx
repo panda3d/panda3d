@@ -26,8 +26,9 @@
 PNMReader::
 ~PNMReader() {
   if (_owns_file) {
-    fclose(_file);
+    delete _file;
   }
+  _file = (istream *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

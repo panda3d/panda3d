@@ -33,7 +33,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PNMWriter : public PNMImageHeader {
 protected:
-  INLINE PNMWriter(PNMFileType *type, FILE *file, bool owns_file);
+  INLINE PNMWriter(PNMFileType *type, ostream *file, bool owns_file);
 
 public:
 
@@ -62,7 +62,7 @@ public:
 protected:
   PNMFileType *_type;
   bool _owns_file;
-  FILE *_file;
+  ostream *_file;
 };
 
 #include "pnmWriter.I"

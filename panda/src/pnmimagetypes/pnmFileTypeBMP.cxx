@@ -19,13 +19,13 @@
 #include "pnmFileTypeBMP.h"
 #include "config_pnmimagetypes.h"
 
-#include <pnmFileTypeRegistry.h>
-#include <bamReader.h>
+#include "pnmFileTypeRegistry.h"
+#include "bamReader.h"
 
-static const char * const extensions_BMP[] = {
+static const char * const extensions_bmp[] = {
   "bmp"
 };
-static const int num_extensions_BMP = sizeof(extensions_BMP) / sizeof(const char *);
+static const int num_extensions_bmp = sizeof(extensions_bmp) / sizeof(const char *);
 
 TypeHandle PNMFileTypeBMP::_type_handle;
 
@@ -52,11 +52,11 @@ get_name() const {
 //     Function: PNMFileTypeBMP::get_num_extensions
 //       Access: Public, Virtual
 //  Description: Returns the number of different possible filename
-//               extensions_BMP associated with this particular file type.
+//               extensions associated with this particular file type.
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeBMP::
 get_num_extensions() const {
-  return num_extensions_BMP;
+  return num_extensions_bmp;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,8 +68,8 @@ get_num_extensions() const {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypeBMP::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < num_extensions_BMP, string());
-  return extensions_BMP[n];
+  nassertr(n >= 0 && n < num_extensions_bmp, string());
+  return extensions_bmp[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -116,7 +116,7 @@ matches_magic_number(const string &magic_number) const {
 //               from this file type is not supported, returns NULL.
 ////////////////////////////////////////////////////////////////////
 PNMReader *PNMFileTypeBMP::
-make_reader(FILE *file, bool owns_file, const string &magic_number) {
+make_reader(istream *file, bool owns_file, const string &magic_number) {
   init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
@@ -129,7 +129,7 @@ make_reader(FILE *file, bool owns_file, const string &magic_number) {
 //               files of this type is not supported, returns NULL.
 ////////////////////////////////////////////////////////////////////
 PNMWriter *PNMFileTypeBMP::
-make_writer(FILE *file, bool owns_file) {
+make_writer(ostream *file, bool owns_file) {
   init_pnm();
   return new Writer(this, file, owns_file);
 }

@@ -52,9 +52,9 @@ public:
   virtual bool has_magic_number() const;
   virtual bool matches_magic_number(const string &magic_number) const;
 
-  virtual PNMReader *make_reader(FILE *file, bool owns_file = true,
+  virtual PNMReader *make_reader(istream *file, bool owns_file = true,
                                  const string &magic_number = string());
-  virtual PNMWriter *make_writer(FILE *file, bool owns_file = true);
+  virtual PNMWriter *make_writer(ostream *file, bool owns_file = true);
 
 protected:
   static void init_pnm();

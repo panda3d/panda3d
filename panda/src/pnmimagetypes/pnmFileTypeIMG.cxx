@@ -19,18 +19,18 @@
 #include "pnmFileTypeIMG.h"
 #include "config_pnmimagetypes.h"
 
-#include <pnmFileTypeRegistry.h>
-#include <bamReader.h>
+#include "pnmFileTypeRegistry.h"
+#include "bamReader.h"
 
 // Since raw image files don't have a magic number, we'll make a little
 // sanity check on the size of the image.  If either the width or height is
 // larger than this, it must be bogus.
 #define INSANE_SIZE 20000
 
-static const char * const extensionsIMG[] = {
+static const char * const extensions_img[] = {
   "img"
 };
-static const int num_extensions_IMG = sizeof(extensionsIMG) / sizeof(const char *);
+static const int num_extensions_img = sizeof(extensions_img) / sizeof(const char *);
 
 TypeHandle PNMFileTypeIMG::_type_handle;
 
@@ -61,7 +61,7 @@ get_name() const {
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeIMG::
 get_num_extensions() const {
-  return num_extensions_IMG;
+  return num_extensions_img;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -73,8 +73,8 @@ get_num_extensions() const {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypeIMG::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < num_extensions_IMG, string());
-  return extensionsIMG[n];
+  nassertr(n >= 0 && n < num_extensions_img, string());
+  return extensions_img[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,7 +97,7 @@ get_suggested_extension() const {
 //               from this file type is not supported, returns NULL.
 ////////////////////////////////////////////////////////////////////
 PNMReader *PNMFileTypeIMG::
-make_reader(FILE *file, bool owns_file, const string &magic_number) {
+make_reader(istream *file, bool owns_file, const string &magic_number) {
   init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
@@ -110,44 +110,44 @@ make_reader(FILE *file, bool owns_file, const string &magic_number) {
 //               files of this type is not supported, returns NULL.
 ////////////////////////////////////////////////////////////////////
 PNMWriter *PNMFileTypeIMG::
-make_writer(FILE *file, bool owns_file) {
+make_writer(ostream *file, bool owns_file) {
   init_pnm();
   return new Writer(this, file, owns_file);
 }
 
 
 inline unsigned long
-read_ulong(FILE *file) {
+read_ulong(istream *file) {
   unsigned long x;
   return pm_readbiglong(file, (long *)&x)==0 ? x : 0;
 }
 
 inline unsigned short
-read_ushort_IMG(FILE *file) {
+read_ushort_IMG(istream *file) {
   unsigned short x;
   return pm_readbigshort(file, (short *)&x)==0 ? x : 0;
 }
 
 inline unsigned char
-read_uchar_IMG(FILE *file) {
+read_uchar_IMG(istream *file) {
   int x;
-  x = getc(file);
+  x = file->get();
   return (x!=EOF) ? (unsigned char)x : 0;
 }
 
 inline void
-write_ulong(FILE *file, unsigned long x) {
+write_ulong(ostream *file, unsigned long x) {
   pm_writebiglong(file, (long)x);
 }
 
 inline void
-write_ushort_IMG(FILE *file, unsigned long x) {
+write_ushort_IMG(ostream *file, unsigned long x) {
   pm_writebigshort(file, (short)(long)x);
 }
 
 inline void
-write_uchar_IMG(FILE *file, unsigned char x) {
-  putc(x, file);
+write_uchar_IMG(ostream *file, unsigned char x) {
+  file->put(x);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -156,7 +156,7 @@ write_uchar_IMG(FILE *file, unsigned char x) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeIMG::Reader::
-Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
+Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   if (img_header_type == IHT_long) {
@@ -274,7 +274,7 @@ read_row(xel *row_data, xelval *) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeIMG::Writer::
-Writer(PNMFileType *type, FILE *file, bool owns_file) :
+Writer(PNMFileType *type, ostream *file, bool owns_file) :
   PNMWriter(type, file, owns_file)
 {
 }

@@ -34,7 +34,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PNMReader : public PNMImageHeader {
 protected:
-  INLINE PNMReader(PNMFileType *type, FILE *file, bool owns_file);
+  INLINE PNMReader(PNMFileType *type, istream *file, bool owns_file);
 
 public:
   virtual ~PNMReader();
@@ -52,7 +52,7 @@ public:
 protected:
   PNMFileType *_type;
   bool _owns_file;
-  FILE *_file;
+  istream *_file;
   bool _is_valid;
 };
 

@@ -22,7 +22,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMReader::
-PNMReader(PNMFileType *type, FILE *file, bool owns_file) :
+PNMReader(PNMFileType *type, istream *file, bool owns_file) :
   _type(type),
   _owns_file(owns_file),
   _file(file),

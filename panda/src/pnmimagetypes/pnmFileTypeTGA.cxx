@@ -55,10 +55,10 @@
 
 #include <string.h>
 
-static const char * const extensions_TGA[] = {
+static const char * const extensions_tga[] = {
   "tga"
 };
-static const int num_extensions_TGA = sizeof(extensions_TGA) / sizeof(const char *);
+static const int num_extensions_tga = sizeof(extensions_tga) / sizeof(const char *);
 
 TypeHandle PNMFileTypeTGA::_type_handle;
 
@@ -123,11 +123,11 @@ get_name() const {
 //     Function: PNMFileTypeTGA::get_num_extensions
 //       Access: Public, Virtual
 //  Description: Returns the number of different possible filename
-//               extensions_TGA associated with this particular file type.
+//               extensions_tga associated with this particular file type.
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeTGA::
 get_num_extensions() const {
-  return num_extensions_TGA;
+  return num_extensions_tga;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -139,8 +139,8 @@ get_num_extensions() const {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypeTGA::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < num_extensions_TGA, string());
-  return extensions_TGA[n];
+  nassertr(n >= 0 && n < num_extensions_tga, string());
+  return extensions_tga[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -163,7 +163,7 @@ get_suggested_extension() const {
 //               from this file type is not supported, returns NULL.
 ////////////////////////////////////////////////////////////////////
 PNMReader *PNMFileTypeTGA::
-make_reader(FILE *file, bool owns_file, const string &magic_number) {
+make_reader(istream *file, bool owns_file, const string &magic_number) {
   init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
@@ -176,7 +176,7 @@ make_reader(FILE *file, bool owns_file, const string &magic_number) {
 //               files of this type is not supported, returns NULL.
 ////////////////////////////////////////////////////////////////////
 PNMWriter *PNMFileTypeTGA::
-make_writer(FILE *file, bool owns_file) {
+make_writer(ostream *file, bool owns_file) {
   init_pnm();
   return new Writer(this, file, owns_file);
 }
@@ -188,7 +188,7 @@ make_writer(FILE *file, bool owns_file) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeTGA::Reader::
-Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
+Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   tga_head = new ImageHeader;
@@ -369,7 +369,7 @@ read_data(xel *array, xelval *alpha) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeTGA::Writer::
-Writer(PNMFileType *type, FILE *file, bool owns_file) :
+Writer(PNMFileType *type, ostream *file, bool owns_file) :
   PNMWriter(type, file, owns_file)
 {
   tgaHeader = new ImageHeader;
@@ -538,14 +538,14 @@ write_data(xel *array, xelval *) {
             {
               if ( runlength[col] > 0 )
                 {
-                  fputc( 0x80 + runlength[col] - 1, _file );
+                  _file->put( 0x80 + runlength[col] - 1 );
                   put_pixel(&(array[realrow * cols + col]),
                             tgaHeader->ImgType, _maxval, cht );
                   col += runlength[col];
                 }
               else if ( runlength[col] < 0 )
                 {
-                  fputc( -runlength[col] - 1, _file );
+                  _file->put( -runlength[col] - 1 );
                   for ( i = 0; i < -runlength[col]; ++i )
                     put_pixel(&(array[realrow * cols + (col + i)]),
                               tgaHeader->ImgType, _maxval, cht );
@@ -597,7 +597,7 @@ make_PNMFileTypeTGA(const FactoryParams &params) {
 }
 
 void PNMFileTypeTGA::Reader::
-readtga( FILE *ifp, struct ImageHeader *tgaP, const string &magic_number ) {
+readtga( istream *ifp, struct ImageHeader *tgaP, const string &magic_number ) {
     unsigned char flags;
     ImageIDField junk;
 
@@ -641,11 +641,11 @@ readtga( FILE *ifp, struct ImageHeader *tgaP, const string &magic_number ) {
     tgaP->IntrLve = ( flags & 0xc0 ) >> 6;
 
     if ( tgaP->IDLength != 0 )
-        fread( junk, 1, (int) tgaP->IDLength, ifp );
+        ifp->read(junk, (int) tgaP->IDLength);
     }
 
 void PNMFileTypeTGA::Reader::
-get_map_entry( FILE *ifp, pixel *Value, int Size, gray *Alpha ) {
+get_map_entry( istream *ifp, pixel *Value, int Size, gray *Alpha ) {
     unsigned char j, k, r, g, b, a;
 
     /* Read appropriate number of bytes, break into rgb & put in map. */
@@ -687,7 +687,7 @@ get_map_entry( FILE *ifp, pixel *Value, int Size, gray *Alpha ) {
 
 
 void PNMFileTypeTGA::Reader::
-get_pixel( FILE *ifp, pixel *dest, int Size, gray *alpha_p) {
+get_pixel( istream *ifp, pixel *dest, int Size, gray *alpha_p) {
     static pixval Red, Grn, Blu;
     static pixval Alpha;
     unsigned char j, k;
@@ -769,10 +769,11 @@ PixEncode:
 
 
 unsigned char PNMFileTypeTGA::Reader::
-getbyte( FILE *ifp ) {
+getbyte( istream *ifp ) {
     unsigned char c;
 
-    if ( fread( (char*) &c, 1, 1, ifp ) != 1 )
+    c = ifp->get();
+    if (ifp->fail() || ifp->eof()) 
         pm_error( "EOF / read error" );
 
     return c;
@@ -783,28 +784,28 @@ writetga( struct ImageHeader *tgaP, char *id )
     {
     unsigned char flags;
 
-    fputc( tgaP->IDLength, _file );
-    fputc( tgaP->CoMapType, _file );
-    fputc( tgaP->ImgType, _file );
-    fputc( tgaP->Index_lo, _file );
-    fputc( tgaP->Index_hi, _file );
-    fputc( tgaP->Length_lo, _file );
-    fputc( tgaP->Length_hi, _file );
-    fputc( tgaP->CoSize, _file );
-    fputc( tgaP->X_org_lo, _file );
-    fputc( tgaP->X_org_hi, _file );
-    fputc( tgaP->Y_org_lo, _file );
-    fputc( tgaP->Y_org_hi, _file );
-    fputc( tgaP->Width_lo, _file );
-    fputc( tgaP->Width_hi, _file );
-    fputc( tgaP->Height_lo, _file );
-    fputc( tgaP->Height_hi, _file );
-    fputc( tgaP->PixelSize, _file );
+    _file->put( tgaP->IDLength );
+    _file->put( tgaP->CoMapType );
+    _file->put( tgaP->ImgType );
+    _file->put( tgaP->Index_lo );
+    _file->put( tgaP->Index_hi );
+    _file->put( tgaP->Length_lo );
+    _file->put( tgaP->Length_hi );
+    _file->put( tgaP->CoSize );
+    _file->put( tgaP->X_org_lo );
+    _file->put( tgaP->X_org_hi );
+    _file->put( tgaP->Y_org_lo );
+    _file->put( tgaP->Y_org_hi );
+    _file->put( tgaP->Width_lo );
+    _file->put( tgaP->Width_hi );
+    _file->put( tgaP->Height_lo );
+    _file->put( tgaP->Height_hi );
+    _file->put( tgaP->PixelSize );
     flags = ( tgaP->AttBits & 0xf ) | ( ( tgaP->Rsrvd & 0x1 ) << 4 ) |
             ( ( tgaP->OrgBit & 0x1 ) << 5 ) | ( ( tgaP->OrgBit & 0x3 ) << 6 );
-    fputc( flags, _file );
+    _file->put( flags );
     if ( tgaP->IDLength )
-        fwrite( id, 1, (int) tgaP->IDLength, _file );
+        _file->write( id, (int) tgaP->IDLength );
     }
 
 void PNMFileTypeTGA::Writer::
@@ -824,8 +825,8 @@ put_map_entry( pixel* valueP, int size, pixval maxval )
         PPM_DEPTH( p, *valueP, maxval, 31 );
         j = (int) PPM_GETB( p ) | ( (int) PPM_GETG( p ) << 5 ) |
             ( (int) PPM_GETR( p ) << 10 );
-        fputc( j % 256, _file );
-        fputc( j / 256, _file );
+        _file->put( j % 256 );
+        _file->put( j / 256 );
         break;
 
         case 32:
@@ -907,25 +908,25 @@ put_mono( pixel* pP, pixval maxval )
     {
     pixel p;
     PPM_DEPTH( p, *pP, maxval, (pixval) 255 );
-    fputc( PPM_GETB( p ), _file );
+    _file->put( PPM_GETB( p ) );
     }
 
 void PNMFileTypeTGA::Writer::
 put_map( pixel *pP, colorhash_table cht )
     {
-    fputc( ppm_lookupcolor( cht, pP ), _file );
+    _file->put( ppm_lookupcolor( cht, pP ) );
     }
 
 void PNMFileTypeTGA::Writer::
 put_rgb( pixel* pP, pixval maxval ) {
   pixel p;
   PPM_DEPTH( p, *pP, maxval, (pixval) 255 );
-  fputc( PPM_GETB( p ), _file );
+  _file->put( PPM_GETB( p ) );
   if (is_grayscale()) {
-    fputc( PPM_GETB( p ), _file );
-    fputc( PPM_GETB( p ), _file );
+    _file->put( PPM_GETB( p ) );
+    _file->put( PPM_GETB( p ) );
   } else {
-    fputc( PPM_GETG( p ), _file );
-    fputc( PPM_GETR( p ), _file );
+    _file->put( PPM_GETG( p ) );
+    _file->put( PPM_GETR( p ) );
   }
 }

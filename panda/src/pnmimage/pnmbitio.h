@@ -19,7 +19,7 @@
 #include "pandabase.h"
 #include "pnmimage_base.h"
 
-typedef struct bitstream        *BITSTREAM;
+typedef struct bitstream *BITSTREAM;
 
 /*
  * pm_bitinit() - allocate and return a BITSTREAM for the given FILE*.
@@ -30,7 +30,8 @@ typedef struct bitstream        *BITSTREAM;
  * Returns 0 on error.
  */
 
-extern EXPCL_PANDA BITSTREAM pm_bitinit(FILE *f, char *mode);
+extern EXPCL_PANDA BITSTREAM pm_bitinit(istream *f, char *mode);
+extern EXPCL_PANDA BITSTREAM pm_bitinit(ostream *f, char *mode);
 
 /*
  * pm_bitfini() - deallocate the given BITSTREAM.

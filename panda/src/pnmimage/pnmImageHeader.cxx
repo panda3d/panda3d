@@ -21,6 +21,8 @@
 #include "pnmFileType.h"
 #include "pnmReader.h"
 #include "config_pnmimage.h"
+#include "virtualFileSystem.h"
+#include "config_util.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::read_header
@@ -63,13 +65,12 @@ make_reader(const Filename &filename, PNMFileType *type) const {
     pnmimage_cat.debug()
       << "Reading image from " << filename << "\n";
   }
-  Filename actual_name = Filename::binary_filename(filename);
-  bool owns_file;
-  FILE *file;
+  bool owns_file = false;
+  istream *file = (istream *)NULL;
 
   if (filename == "-") {
     owns_file = false;
-    file = stdin;
+    file = &cin;
 
     if (pnmimage_cat.is_debug()) {
       pnmimage_cat.debug()
@@ -77,21 +78,25 @@ make_reader(const Filename &filename, PNMFileType *type) const {
     }
 
   } else {
-    if (!actual_name.exists()) {
-      if (pnmimage_cat.is_debug()) {
-        pnmimage_cat.debug()
-          << "File " << filename << " does not exist.\n";
+    if (use_vfs) {
+      VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+      owns_file = true;
+      file = vfs->open_read_file(filename);
+
+    } else {
+      ifstream *new_istream = new ifstream;
+      Filename actual_name = Filename::binary_filename(filename);
+      if (!actual_name.open_read(*new_istream)) {
+        delete new_istream;
+
+      } else {
+        owns_file = true;
+        file = new_istream;
       }
-      // The file doesn't exist.  Don't pass it through libpnm, which
-      // will abort.
-      return NULL;
     }
-    owns_file = true;
-    string os_specific = actual_name.to_os_specific();
-    file = fopen((char *)os_specific.c_str(), "rb");
   }
 
-  if (file == (FILE *)NULL) {
+  if (file == (istream *)NULL) {
     if (pnmimage_cat.is_debug()) {
       pnmimage_cat.debug()
         << "Unable to open file.\n";
@@ -111,10 +116,10 @@ make_reader(const Filename &filename, PNMFileType *type) const {
 //               or NULL if the file cannot be read for some reason.
 //
 //               owns_file should be set true if the PNMReader is to
-//               be considered the owner of the FILE stream (in which
-//               case the stream will be closed on completion, whether
-//               successful or not), or false if it should not close
-//               it.
+//               be considered the owner of the stream pointer (in
+//               which case the stream will be deleted on completion,
+//               whether successful or not), or false if it should not
+//               delete it.
 //
 //               The filename parameter is optional here, since the
 //               file has already been opened; it is only used to
@@ -133,7 +138,7 @@ make_reader(const Filename &filename, PNMFileType *type) const {
 //               needed.
 ////////////////////////////////////////////////////////////////////
 PNMReader *PNMImageHeader::
-make_reader(FILE *file, bool owns_file, const Filename &filename,
+make_reader(istream *file, bool owns_file, const Filename &filename,
             string magic_number, PNMFileType *type) const {
   if (type == (PNMFileType *)NULL) {
     if (!read_magic_number(file, magic_number, 2)) {
@@ -143,7 +148,7 @@ make_reader(FILE *file, bool owns_file, const Filename &filename,
           << "Image file appears to be empty.\n";
       }
       if (owns_file) {
-        fclose(file);
+        delete file;
       }
       return NULL;
     }
@@ -200,14 +205,14 @@ make_reader(FILE *file, bool owns_file, const Filename &filename,
         write_types(pnmimage_cat.error(false), 2);
     }
     if (owns_file) {
-      fclose(file);
+      delete file;
     }
     return NULL;
   }
 
   PNMReader *reader = type->make_reader(file, owns_file, magic_number);
   if (reader == NULL && owns_file) {
-    fclose(file);
+    delete file;
   }
 
   if (!reader->is_valid()) {
@@ -237,13 +242,12 @@ make_writer(const Filename &filename, PNMFileType *type) const {
     pnmimage_cat.debug()
       << "Writing image to " << filename << "\n";
   }
-  Filename actual_name = Filename::binary_filename(filename);
-  bool owns_file;
-  FILE *file;
+  bool owns_file = false;
+  ostream *file = (ostream *)NULL;
 
   if (filename == "-") {
     owns_file = false;
-    file = stdout;
+    file = &cout;
 
     if (pnmimage_cat.is_debug()) {
       pnmimage_cat.debug()
@@ -251,12 +255,18 @@ make_writer(const Filename &filename, PNMFileType *type) const {
     }
 
   } else {
-    owns_file = true;
-    string os_specific = actual_name.to_os_specific();
-    file = fopen((char *)os_specific.c_str(), "wb");
+    ofstream *new_ostream = new ofstream;
+    Filename actual_name = Filename::binary_filename(filename);
+    if (!actual_name.open_write(*new_ostream)) {
+      delete new_ostream;
+      
+    } else {
+      owns_file = true;
+      file = new_ostream;
+    }
   }
 
-  if (file == (FILE *)NULL) {
+  if (file == (ostream *)NULL) {
     if (pnmimage_cat.is_debug()) {
       pnmimage_cat.debug()
         << "Unable to write to file.\n";
@@ -275,10 +285,10 @@ make_writer(const Filename &filename, PNMFileType *type) const {
 //               NULL if the file cannot be written for some reason.
 //
 //               owns_file should be set true if the PNMWriter is to
-//               be considered the owner of the FILE stream (in which
-//               case the stream will be closed on completion, whether
-//               successful or not), or false if it should not close
-//               it.
+//               be considered the owner of the stream pointer (in
+//               which case the stream will be deleted on completion,
+//               whether successful or not), or false if it should not
+//               delete it.
 //
 //               The filename parameter is optional here, since the
 //               file has already been opened; it is only used to
@@ -292,7 +302,7 @@ make_writer(const Filename &filename, PNMFileType *type) const {
 //               needed.
 ////////////////////////////////////////////////////////////////////
 PNMWriter *PNMImageHeader::
-make_writer(FILE *file, bool owns_file, const Filename &filename,
+make_writer(ostream *file, bool owns_file, const Filename &filename,
             PNMFileType *type) const {
   if (type == (PNMFileType *)NULL && !filename.empty()) {
     // We don't know the type; attempt to guess it from the filename
@@ -328,14 +338,14 @@ make_writer(FILE *file, bool owns_file, const Filename &filename,
         << "Cannot determine type of image file " << filename << ".\n";
     }
     if (owns_file) {
-      fclose(file);
+      delete file;
     }
     return NULL;
   }
 
   PNMWriter *writer = type->make_writer(file, owns_file);
   if (writer == NULL && owns_file) {
-    fclose(file);
+    delete file;
   }
 
   return writer;
@@ -352,10 +362,10 @@ make_writer(FILE *file, bool owns_file, const Filename &filename,
 //               could be read.
 ////////////////////////////////////////////////////////////////////
 bool PNMImageHeader::
-read_magic_number(FILE *file, string &magic_number, int num_bytes) {
+read_magic_number(istream *file, string &magic_number, int num_bytes) {
   while ((int)magic_number.size() < num_bytes) {
-    int ch = getc(file);
-    if (ch == EOF) {
+    int ch = file->get();
+    if (file->eof() || file->fail()) {
       return false;
     }
     magic_number += (char)ch;

@@ -47,24 +47,24 @@ public:
   virtual string get_extension(int n) const;
   virtual string get_suggested_extension() const;
 
-  virtual PNMReader *make_reader(FILE *file, bool owns_file = true,
+  virtual PNMReader *make_reader(istream *file, bool owns_file = true,
                                  const string &magic_number = string());
-  virtual PNMWriter *make_writer(FILE *file, bool owns_file = true);
+  virtual PNMWriter *make_writer(ostream *file, bool owns_file = true);
 
 public:
   class Reader : public PNMReader {
   public:
-    Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number);
+    Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number);
     virtual ~Reader();
 
     virtual int read_data(xel *array, xelval *alpha);
 
   private:
-    void readtga ( FILE* ifp, struct ImageHeader* tgaP, const string &magic_number );
-    void get_map_entry ( FILE* ifp, pixel* Value, int Size,
+    void readtga ( istream* ifp, struct ImageHeader* tgaP, const string &magic_number );
+    void get_map_entry ( istream* ifp, pixel* Value, int Size,
                          gray* Alpha);
-    void get_pixel ( FILE* ifp, pixel* dest, int Size, gray* alpha_p);
-    unsigned char getbyte ( FILE* ifp );
+    void get_pixel ( istream* ifp, pixel* dest, int Size, gray* alpha_p);
+    unsigned char getbyte ( istream* ifp );
 
     int rows, cols, rlencoded, mapped;
     struct ImageHeader *tga_head;
@@ -75,7 +75,7 @@ public:
 
   class Writer : public PNMWriter {
   public:
-    Writer(PNMFileType *type, FILE *file, bool owns_file);
+    Writer(PNMFileType *type, ostream *file, bool owns_file);
     virtual ~Writer();
 
     virtual int write_data(xel *array, xelval *alpha);

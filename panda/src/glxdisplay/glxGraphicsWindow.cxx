@@ -19,17 +19,18 @@
 #include "glxDisplay.h"
 #include "config_glxdisplay.h"
 
-#include <graphicsPipe.h>
-#include <keyboardButton.h>
-#include <mouseButton.h>
-#include <glGraphicsStateGuardian.h>
-#include <pStatTimer.h>
-#include <clockObject.h>
+#include "graphicsPipe.h"
+#include "keyboardButton.h"
+#include "mouseButton.h"
+#include "glGraphicsStateGuardian.h"
+#include "pStatTimer.h"
+#include "clockObject.h"
 
 #include <errno.h>
 #include <sys/time.h>
 #include <X11/keysym.h>
 #include <X11/Xutil.h>
+#include <stdio.h>   // for sprintf()
 
 ////////////////////////////////////////////////////////////////////
 // Static variables

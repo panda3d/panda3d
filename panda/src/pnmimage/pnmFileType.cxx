@@ -114,7 +114,7 @@ matches_magic_number(const string &) const {
 //               from this file type is not supported, returns NULL.
 ////////////////////////////////////////////////////////////////////
 PNMReader *PNMFileType::
-make_reader(FILE *, bool, const string &) {
+make_reader(istream *, bool, const string &) {
   return NULL;
 }
 
@@ -126,7 +126,7 @@ make_reader(FILE *, bool, const string &) {
 //               files of this type is not supported, returns NULL.
 ////////////////////////////////////////////////////////////////////
 PNMWriter *PNMFileType::
-make_writer(FILE *, bool) {
+make_writer(ostream *, bool) {
   return NULL;
 }
 
@@ -144,7 +144,7 @@ init_pnm() {
   if (!_did_init_pnm) {
     _did_init_pnm = true;
 
-    // No reason to do anything here now.
+    // No reason to do anything here nowadays.
     /*
       
     // Make an argc/argv style copy of the ExecutionEnvironment's

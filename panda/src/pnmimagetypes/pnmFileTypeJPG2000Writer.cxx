@@ -19,8 +19,8 @@
 #include "pnmFileTypeJPG2000.h"
 #include "config_pnmimagetypes.h"
 
-#include <pnmImage.h>
-#include <pnmWriter.h>
+#include "pnmImage.h"
+#include "pnmWriter.h"
 
 extern "C" {
 #include <jpeglib.h>
@@ -32,7 +32,7 @@ extern "C" {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeJPG2000::Writer::
-Writer(PNMFileType *type, FILE *file, bool owns_file) :
+Writer(PNMFileType *type, ostream *file, bool owns_file) :
   PNMWriter(type, file, owns_file)
 {
 }
@@ -106,6 +106,8 @@ write_data(xel *array, xelval *) {
    * VERY IMPORTANT: use "b" option to fopen() if you are on a machine that
    * requires it in order to write binary files.
    */
+  // This is broken, and won't compile.  We need to drop in an
+  // iostream replacement, like we did for JPG.
   jpeg_stdio_dest(&cinfo, _file);
 
   /* Step 3: set parameters for compression */
