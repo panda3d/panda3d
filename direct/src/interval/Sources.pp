@@ -13,8 +13,9 @@
     cLerpNodePathInterval.cxx cLerpNodePathInterval.I cLerpNodePathInterval.h \
     cLerpAnimEffectInterval.cxx cLerpAnimEffectInterval.I cLerpAnimEffectInterval.h \
     cMetaInterval.cxx cMetaInterval.I cMetaInterval.h \
-    showInterval.cxx showInterval.I showInterval.h \
     hideInterval.cxx hideInterval.I hideInterval.h \
+    showInterval.cxx showInterval.I showInterval.h \
+    waitInterval.cxx waitInterval.I waitInterval.h \
     lerp_helpers.h
 
   #define INSTALL_HEADERS \
@@ -25,8 +26,9 @@
     cLerpNodePathInterval.I cLerpNodePathInterval.h \
     cLerpAnimEffectInterval.I cLerpAnimEffectInterval.h \
     cMetaInterval.I cMetaInterval.h \
+    hideInterval.I hideInterval.h \
     showInterval.I showInterval.h \
-    hideInterval.I hideInterval.h
+    waitInterval.I waitInterval.h
 
   #define IGATESCAN all
 #end lib_target

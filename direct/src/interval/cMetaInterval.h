@@ -49,7 +49,8 @@ PUBLISHED:
   INLINE double get_precision() const;
 
   void clear_intervals();
-  int push_level(double rel_time, RelativeStart rel_to);
+  int push_level(const string &name,
+                 double rel_time, RelativeStart rel_to);
   int add_c_interval(CInterval *c_interval, 
                      double rel_time, RelativeStart rel_to);
   int add_ext_index(int ext_index, const string &name,
@@ -90,6 +91,7 @@ PUBLISHED:
   void pop_event();
 
   virtual void write(ostream &out, int indent_level) const;
+  void timeline(ostream &out) const;
 
 protected:
   virtual void do_recompute();
@@ -157,6 +159,10 @@ private:
   int recompute_level(int n, int level_begin, int &level_end);
   int get_begin_time(const IntervalDef &def, int level_begin,
                      int previous_begin, int previous_end);
+
+  void write_event_desc(ostream &out, const IntervalDef &def, 
+                        int &extra_indent_level) const;
+
 
   double _precision;
   Defs _defs;

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cMetaInterval.h"
+#include "waitInterval.h"
 #include "config_interval.h"
 #include "indirectLess.h"
 #include "indent.h"
@@ -111,12 +112,13 @@ clear_intervals() {
 //               created by this push.
 ////////////////////////////////////////////////////////////////////
 int CMetaInterval::
-push_level(double rel_time, RelativeStart rel_to) {
+push_level(const string &name, double rel_time, RelativeStart rel_to) {
   nassertr(_event_queue.empty() && !_processing_events, -1);
 
   _defs.push_back(IntervalDef());
   IntervalDef &def = _defs.back();
   def._type = DT_push_level;
+  def._ext_name = name;
   def._rel_time = rel_time;
   def._rel_to = rel_to;
   _current_nesting_level++;
@@ -760,40 +762,54 @@ write(ostream &out, int indent_level) const {
     sprintf(time_str, format_str, int_to_double_time(def._actual_begin_time));
     indent(out, indent_level) << time_str;
 
-    switch (def._type) {
-    case DT_c_interval:
-      indent(out, extra_indent_level)
-        << *def._c_interval;
-      if (!def._c_interval->get_open_ended()) {
-        out << " (!oe)";
-      }
-      out << "\n";
-      break;
+    write_event_desc(out, def, extra_indent_level);
+  }
+}
 
-    case DT_ext_index:
-      indent(out, extra_indent_level)
-        << "*" << def._ext_name;
-      if (def._ext_duration != 0.0) {
-        out << " dur " << def._ext_duration;
-      }
-      if (!def._ext_open_ended) {
-        out << " (!oe)";
-      }
-      out<< "\n";
-      break;
+////////////////////////////////////////////////////////////////////
+//     Function: CMetaInterval::timeline
+//       Access: Published
+//  Description: Outputs a list of all events in the order in which
+//               they occur.
+////////////////////////////////////////////////////////////////////
+void CMetaInterval::
+timeline(ostream &out) const {
+  recompute();
 
-    case DT_push_level:
-      indent(out, extra_indent_level)
-        << "{\n";
-      extra_indent_level += 2;
-      break;
+  // How many digits of precision should we output for time?
+  int num_decimals = (int)ceil(log10(_precision));
+  int total_digits = num_decimals + 4;
+  static const int max_digits = 32;  // totally arbitrary
+  nassertv(total_digits <= max_digits);
+  char format_str[12];
+  sprintf(format_str, "%%%d.%df", total_digits, num_decimals);
 
-    case DT_pop_level:
-      extra_indent_level -= 2;
-      indent(out, extra_indent_level)
-        << "}\n";
+  int extra_indent_level = 0;
+  PlaybackEvents::const_iterator ei;
+  for (ei = _events.begin(); ei != _events.end(); ++ei) {
+    const PlaybackEvent *event = (*ei);
+
+    char time_str[max_digits + 1];
+    sprintf(time_str, format_str, int_to_double_time(event->_time));
+    out << time_str;
+
+    switch (event->_type) {
+    case PET_begin:
+      out << " begin   ";
+      break;
+    case PET_end:
+      out << " end     ";
+      break;
+    case PET_instant:
+      out << " instant ";
       break;
     }
+
+    int n = event->_n;
+    nassertv(n >= 0 && n < (int)_defs.size());
+    const IntervalDef &def = _defs[n];
+
+    write_event_desc(out, def, extra_indent_level);
   }
 }
 
@@ -1166,14 +1182,21 @@ recompute_level(int n, int level_begin, int &level_end) {
       begin_time = get_begin_time(def, level_begin, previous_begin, previous_end);
       def._actual_begin_time = begin_time;
       end_time = begin_time + double_to_int_time(def._c_interval->get_duration());
-      if (begin_time == end_time) {
-        _events.push_back(new PlaybackEvent(begin_time, n, PET_instant));
+
+      if (def._c_interval->is_exact_type(WaitInterval::get_class_type())) {
+        // Don't bother enqueuing events for WaitIntervals; they're
+        // just there to fill up time.
+
       } else {
-        PlaybackEvent *begin = new PlaybackEvent(begin_time, n, PET_begin);
-        PlaybackEvent *end = new PlaybackEvent(end_time, n, PET_end);
-        end->_begin_event = begin;
-        _events.push_back(begin);
-        _events.push_back(end);
+        if (begin_time == end_time) {
+          _events.push_back(new PlaybackEvent(begin_time, n, PET_instant));
+        } else {
+          PlaybackEvent *begin = new PlaybackEvent(begin_time, n, PET_begin);
+          PlaybackEvent *end = new PlaybackEvent(end_time, n, PET_end);
+          end->_begin_event = begin;
+          _events.push_back(begin);
+          _events.push_back(end);
+        }
       }
       break;
 
@@ -1247,4 +1270,49 @@ get_begin_time(const CMetaInterval::IntervalDef &def, int level_begin,
 
   nassertr(false, previous_end);
   return previous_end;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CMetaInterval::write_event_desc
+//       Access: Private
+//  Description: Formats an event for output, for write() or
+//               timeline().
+////////////////////////////////////////////////////////////////////
+void CMetaInterval::
+write_event_desc(ostream &out, const CMetaInterval::IntervalDef &def, 
+                 int &extra_indent_level) const {
+  switch (def._type) {
+  case DT_c_interval:
+    indent(out, extra_indent_level)
+      << *def._c_interval;
+    if (!def._c_interval->get_open_ended()) {
+      out << " (!oe)";
+    }
+    out << "\n";
+    break;
+    
+  case DT_ext_index:
+    indent(out, extra_indent_level)
+      << "*" << def._ext_name;
+    if (def._ext_duration != 0.0) {
+      out << " dur " << def._ext_duration;
+    }
+    if (!def._ext_open_ended) {
+      out << " (!oe)";
+    }
+    out<< "\n";
+    break;
+    
+  case DT_push_level:
+    indent(out, extra_indent_level)
+      << def._ext_name << " {\n";
+    extra_indent_level += 2;
+    break;
+    
+  case DT_pop_level:
+    extra_indent_level -= 2;
+    indent(out, extra_indent_level)
+      << "}\n";
+    break;
+  }
 }

@@ -266,6 +266,10 @@ class Func(FunctionInterval):
         kw['extraArgs'] = extraArgs
         FunctionInterval.__init__(self, function, **kw)
 
+class Wait(WaitInterval):
+    def __init__(self, duration):
+        WaitInterval.__init__(self, duration)
+
 """
 SAMPLE CODE
 

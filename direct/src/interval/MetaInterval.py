@@ -131,23 +131,23 @@ class MetaInterval(CMetaInterval):
 
     # Functions to define sequence, parallel, and track behaviors:
     
-    def addSequence(self, list, relTime, relTo, duration):
+    def addSequence(self, list, name, relTime, relTo, duration):
         # Adds the given list of intervals to the MetaInterval to be
         # played one after the other.
-        self.pushLevel(relTime, relTo)
+        self.pushLevel(name, relTime, relTo)
         for ival in list:
             self.addInterval(ival, 0.0, PREVIOUS_END)
         self.popLevel(duration)
 
-    def addParallel(self, list, relTime, relTo, duration):
+    def addParallel(self, list, name, relTime, relTo, duration):
         # Adds the given list of intervals to the MetaInterval to be
         # played simultaneously.
-        self.pushLevel(relTime, relTo)
+        self.pushLevel(name, relTime, relTo)
         for ival in list:
             self.addInterval(ival, 0.0, TRACK_START)
         self.popLevel(duration)
 
-    def addTrack(self, list, relTime, relTo, duration):
+    def addTrack(self, list, name, relTime, relTo, duration):
         # Adds a "track list".  This is a list of tuples of the form:
         #
         #   ( <delay>, <Interval>,
@@ -159,7 +159,7 @@ class MetaInterval(CMetaInterval):
         # interval (PREVIOUS_START) or the start of the track list
         # (TRACK_START).  If the relative code is omitted, the default
         # is TRACK_START.
-        self.pushLevel(relTime, relTo)
+        self.pushLevel(name, relTime, relTo)
         for tuple in list:
             if isinstance(tuple, Interval.Interval) or \
                isinstance(tuple, CInterval):
@@ -218,10 +218,6 @@ class MetaInterval(CMetaInterval):
             self.pythonIvals.append(ival)
             self.addExtIndex(index, ival.getName(), ival.getDuration(),
                              ival.getOpenEnded(), relTime, relTo)
-
-            # Once we have any Python intervals, we must handle this
-            # interval from Python.
-            self.inPython = 1
 
         else:
             self.notify.error("Not an Interval: %s" % (ival,))
@@ -394,21 +390,35 @@ class MetaInterval(CMetaInterval):
         return CMetaInterval.__str__(self, *args, **kw)
 
 
+    def timeline(self, out = None): 
+        # This function overrides from the parent level to force it to
+        # update the interval list first, if necessary.
+
+        self.__updateIvals()
+        if out == None:
+            out = ostream
+        CMetaInterval.timeline(self, out)
+
+
 
 
 class Sequence(MetaInterval):
     def applyIvals(self, meta, relTime, relTo):
-        meta.addSequence(self.ivals, relTime, relTo, self.phonyDuration)
+        meta.addSequence(self.ivals, self.getName(),
+                         relTime, relTo, self.phonyDuration)
 
 class Parallel(MetaInterval):
     def applyIvals(self, meta, relTime, relTo):
-        meta.addParallel(self.ivals, relTime, relTo, self.phonyDuration)
+        meta.addParallel(self.ivals, self.getName(),
+                         relTime, relTo, self.phonyDuration)
 
 class Track(MetaInterval):
     def applyIvals(self, meta, relTime, relTo):
-        meta.addTrack(self.ivals, relTime, relTo, self.phonyDuration)
+        meta.addTrack(self.ivals, self.getName(),
+                      relTime, relTo, self.phonyDuration)
 
 # Temporary for backward compatibility.
 class MultiTrack(MetaInterval):
     def applyIvals(self, meta, relTime, relTo):
-        meta.addParallel(self.ivals, relTime, relTo, self.phonyDuration)
+        meta.addParallel(self.ivals, self.getName(),
+                         relTime, relTo, self.phonyDuration)
