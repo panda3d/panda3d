@@ -7,7 +7,7 @@
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_DTOOL
 
-#define LOCAL_LIBS interrogatedb dconfig dtoolutil dtoolbase
+#define COMPONENT_LIBS interrogatedb dconfig dtoolutil dtoolbase
 
 #begin metalib_target
   #define TARGET dtool
