@@ -437,6 +437,8 @@ free_dxgsg_objects(void) {
 
     // dont want a full reset of gsg, just a state clear      
     GraphicsStateGuardian::clear_cached_state(); // want gsg to pass all state settings through
+    // we need to reset our internal state guards right here because dx_init() should be called after this,
+    // which resets all of them to our defaults, and syncs them with the D3DRENDERSTATE
 
     _dx_ready = false;
 
@@ -516,8 +518,8 @@ dx_init( void) {
     _CurShadeMode =  D3DSHADE_FLAT;
     scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, _CurShadeMode);
 
-    _depth_test_enabled = true; 
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, _depth_test_enabled);
+    _depth_write_enabled = true; 
+    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, _depth_write_enabled);
 
     // need to free these properly
 #ifndef USE_TEXFMTVEC
@@ -5484,9 +5486,9 @@ issue_color_mask(const ColorMaskTransition *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_depth_test(const DepthTestTransition *attrib) {
-    
-
     DepthTestProperty::Mode mode = attrib->get_mode();
+
+    // no cache check since we dont store ZFUNC along w/bool val
 
     if (mode == DepthTestProperty::M_none) {
         _depth_test_enabled = false;
@@ -5884,8 +5886,6 @@ end_decal(GeomNode *base_geom) {
                 scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_PLANEMASK,0x0);  // note PLANEMASK is supposedly obsolete for DX7
             }
 #endif
-            // Note: For DX8, use D3DRS_COLORWRITEENABLE  (check D3DPMISCCAPS_COLORWRITEENABLE first)
-
             // No need to have texturing on for this.
             enable_texturing(false);
 
