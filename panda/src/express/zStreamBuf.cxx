@@ -79,11 +79,11 @@ open_read(istream *source, bool owns_source) {
   _z_source.zalloc = Z_NULL;
   _z_source.zfree = Z_NULL;
   _z_source.opaque = Z_NULL;
+  _z_source.msg = "no error message";
 
   int result = inflateInit(&_z_source);
   if (result < 0) {
-    express_cat.warning()
-      << "zlib error " << result << " = " << _z_source.msg << "\n";
+    show_zlib_error("inflateInit", result, _z_source);
     close_read();
   }
 }
@@ -99,8 +99,7 @@ close_read() {
 
     int result = inflateEnd(&_z_source);
     if (result < 0) {
-      express_cat.warning()
-        << "zlib error " << result << " = " << _z_source.msg << "\n";
+      show_zlib_error("inflateEnd", result, _z_source);
     }
 
     if (_owns_source) {
@@ -124,11 +123,11 @@ open_write(ostream *dest, bool owns_dest, int compression_level) {
   _z_dest.zalloc = Z_NULL;
   _z_dest.zfree = Z_NULL;
   _z_dest.opaque = Z_NULL;
+  _z_dest.msg = "no error message";
 
   int result = deflateInit(&_z_dest, compression_level);
   if (result < 0) {
-    express_cat.warning()
-      << "zlib error " << result << " = " << _z_dest.msg << "\n";
+    show_zlib_error("deflateInit", result, _z_dest);
     close_write();
   }
 }
@@ -147,8 +146,7 @@ close_write() {
 
     int result = deflateEnd(&_z_dest);
     if (result < 0) {
-      express_cat.warning()
-        << "zlib error " << result << " = " << _z_dest.msg << "\n";
+      show_zlib_error("deflateEnd", result, _z_dest);
     }
 
     if (_owns_dest) {
@@ -272,9 +270,10 @@ read_chars(char *start, size_t length) {
       // Here's the end of the file.
       return bytes_read;
     }
-    if (result < 0) {
-      express_cat.warning()
-        << "zlib error " << result << " = " << _z_source.msg << "\n";
+    // It might return Z_BUF_ERROR if we passed in Z_FINISH but not a
+    // big enough output buffer for everything.
+    if (result < 0 && result != Z_BUF_ERROR) {
+      show_zlib_error("inflate", result, _z_source);
       return bytes_read;
     }
   }
@@ -301,8 +300,7 @@ write_chars(const char *start, size_t length, int flush) {
 
   int result = deflate(&_z_dest, flush);
   if (result < 0 && result != Z_BUF_ERROR) {
-    express_cat.warning()
-      << "zlib error " << result << " = " << _z_dest.msg << "\n";
+    show_zlib_error("deflate", result, _z_dest);
   }
 
   while (_z_dest.avail_in != 0) {
@@ -313,8 +311,7 @@ write_chars(const char *start, size_t length, int flush) {
     }
     result = deflate(&_z_dest, flush);
     if (result < 0) {
-      express_cat.warning()
-        << "zlib error " << result << " = " << _z_dest.msg << "\n";
+      show_zlib_error("deflate", result, _z_dest);
     }
   }
 
@@ -324,10 +321,59 @@ write_chars(const char *start, size_t length, int flush) {
     _z_dest.avail_out = compress_buffer_size;
     result = deflate(&_z_dest, flush);
     if (result < 0 && result != Z_BUF_ERROR) {
-      express_cat.warning()
-        << "zlib error " << result << " = " << _z_dest.msg << "\n";
+      show_zlib_error("deflate", result, _z_dest);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ZStreamBuf::show_zlib_error
+//       Access: Private
+//  Description: Reports a recent error code returned by zlib.
+////////////////////////////////////////////////////////////////////
+void ZStreamBuf::
+show_zlib_error(const char *function, int error_code, z_stream &z) {
+  stringstream error_line;
+
+  error_line
+    << "zlib error in " << function << ": ";
+  switch (error_code) {
+  case Z_OK:
+    error_line << "Z_OK";
+    break;
+  case Z_STREAM_END:
+    error_line << "Z_STREAM_END";
+    break;
+  case Z_NEED_DICT:
+    error_line << "Z_NEED_DICT";
+    break;
+  case Z_ERRNO:
+    error_line << "Z_ERRNO";
+    break;
+  case Z_STREAM_ERROR:
+    error_line << "Z_STREAM_ERROR";
+    break;
+  case Z_DATA_ERROR:
+    error_line << "Z_DATA_ERROR";
+    break;
+  case Z_MEM_ERROR:
+    error_line << "Z_MEM_ERROR";
+    break;
+  case Z_BUF_ERROR:
+    error_line << "Z_BUF_ERROR";
+    break;
+  case Z_VERSION_ERROR:
+    error_line << "Z_VERSION_ERROR";
+    break;
+  default:
+    error_line << error_code;
+  }
+  if (z.msg != (char *)NULL) {
+    error_line
+      << " = " << z.msg;
+  }
+
+  express_cat.warning() << error_line.str() << "\n";
 }
 
 #endif  // HAVE_ZLIB

@@ -50,6 +50,7 @@ protected:
 private:
   size_t read_chars(char *start, size_t length);
   void write_chars(const char *start, size_t length, int flush);
+  void show_zlib_error(const char *function, int error_code, z_stream &z);
 
 private:
   istream *_source;
