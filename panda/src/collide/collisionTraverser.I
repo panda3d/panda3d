@@ -19,7 +19,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::set_respect_prev_transform
-//       Access: Public
+//       Access: Published
 //  Description: Sets the flag that indicates whether the
 //               prev_transform stored on a node (as updated via
 //               set_fluid_pos(), etc.) is respected to calculate
@@ -36,7 +36,7 @@ set_respect_prev_transform(bool flag) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::get_respect_prev_transform
-//       Access: Public
+//       Access: Published
 //  Description: Returns the flag that indicates whether the
 //               prev_transform stored on a node is respected to
 //               calculate collisions.  See
@@ -51,7 +51,7 @@ get_respect_prev_transform() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::has_recorder
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the CollisionTraverser has a
 //               CollisionRecorder object currently assigned, false
 //               otherwise.
@@ -63,7 +63,7 @@ has_recorder() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::get_recorder
-//       Access: Public
+//       Access: Published
 //  Description: Returns the CollisionRecorder currently assigned, or
 //               NULL if no recorder is assigned.
 ////////////////////////////////////////////////////////////////////
@@ -74,7 +74,7 @@ get_recorder() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::clear_recorder
-//       Access: Public
+//       Access: Published
 //  Description: Removes the CollisionRecorder from the traverser and
 //               restores normal low-overhead operation.
 ////////////////////////////////////////////////////////////////////

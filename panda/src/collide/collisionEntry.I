@@ -101,6 +101,20 @@ get_into_node() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_from_node_path
+//       Access: Published
+//  Description: Returns the NodePath that represents the
+//               CollisionNode that contains the CollisionSolid that
+//               triggered this collision.  This will be a NodePath
+//               that has been added to a CollisionTraverser via
+//               add_collider().
+////////////////////////////////////////////////////////////////////
+INLINE const NodePath &CollisionEntry::
+get_from_node_path() const {
+  return _from_node_path;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_into_node_path
 //       Access: Published
 //  Description: Returns the NodePath that represents the specific

@@ -36,7 +36,7 @@ PStatCollector CollisionTraverser::_collisions_pcollector("App:Collisions");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CollisionTraverser::
@@ -49,7 +49,7 @@ CollisionTraverser() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CollisionTraverser::
@@ -61,7 +61,7 @@ CollisionTraverser::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::add_collider
-//       Access: Public
+//       Access: Published
 //  Description: Adds a new CollisionNode, representing an object that
 //               will be tested for collisions into other objects,
 //               along with the handler that will serve each detected
@@ -74,12 +74,12 @@ CollisionTraverser::
 //               again on the same node.
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
-add_collider(CollisionNode *node, CollisionHandler *handler) {
+add_collider(const NodePath &collider, CollisionHandler *handler) {
   nassertv(_ordered_colliders.size() == _colliders.size());
-  nassertv(node != (CollisionNode *)NULL);
+  nassertv(!collider.is_empty() && collider.node()->is_of_type(CollisionNode::get_class_type()));
   nassertv(handler != (CollisionHandler *)NULL);
 
-  Colliders::iterator ci = _colliders.find(node);
+  Colliders::iterator ci = _colliders.find(collider);
   if (ci != _colliders.end()) {
     // We already knew about this collider.
     if ((*ci).second != handler) {
@@ -106,8 +106,8 @@ add_collider(CollisionNode *node, CollisionHandler *handler) {
 
   } else {
     // We hadn't already known about this collider.
-    _colliders.insert(Colliders::value_type(node, handler));
-    _ordered_colliders.push_back(node);
+    _colliders.insert(Colliders::value_type(collider, handler));
+    _ordered_colliders.push_back(collider);
 
     Handlers::iterator hi = _handlers.find(handler);
     if (hi == _handlers.end()) {
@@ -122,7 +122,7 @@ add_collider(CollisionNode *node, CollisionHandler *handler) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::remove_collider
-//       Access: Public
+//       Access: Published
 //  Description: Removes the collider (and its associated handler)
 //               from the set of CollisionNodes that will be tested
 //               each frame for collisions into other objects.
@@ -130,10 +130,10 @@ add_collider(CollisionNode *node, CollisionHandler *handler) {
 //               false if it wasn't present to begin with.
 ////////////////////////////////////////////////////////////////////
 bool CollisionTraverser::
-remove_collider(CollisionNode *node) {
+remove_collider(const NodePath &collider) {
   nassertr(_ordered_colliders.size() == _colliders.size(), false);
 
-  Colliders::iterator ci = _colliders.find(node);
+  Colliders::iterator ci = _colliders.find(collider);
   if (ci == _colliders.end()) {
     // We didn't know about this node.
     return false;
@@ -153,7 +153,7 @@ remove_collider(CollisionNode *node) {
   _colliders.erase(ci);
 
   OrderedColliders::iterator oci =
-    find(_ordered_colliders.begin(), _ordered_colliders.end(), node);
+    find(_ordered_colliders.begin(), _ordered_colliders.end(), collider);
   nassertr(oci != _ordered_colliders.end(), false);
   _ordered_colliders.erase(oci);
 
@@ -163,20 +163,20 @@ remove_collider(CollisionNode *node) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::has_collider
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the indicated node is current in the
 //               set of nodes that will be tested each frame for
 //               collisions into other objects.
 ////////////////////////////////////////////////////////////////////
 bool CollisionTraverser::
-has_collider(CollisionNode *node) const {
-  Colliders::const_iterator ci = _colliders.find(node);
+has_collider(const NodePath &collider) const {
+  Colliders::const_iterator ci = _colliders.find(collider);
   return (ci != _colliders.end());
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::get_num_colliders
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of CollisionNodes that have been
 //               added to the traverser via add_collider().
 ////////////////////////////////////////////////////////////////////
@@ -188,11 +188,11 @@ get_num_colliders() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::get_collider
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth CollisionNode that has been
 //               added to the traverser via add_collider().
 ////////////////////////////////////////////////////////////////////
-CollisionNode *CollisionTraverser::
+NodePath CollisionTraverser::
 get_collider(int n) const {
   nassertr(_ordered_colliders.size() == _colliders.size(), NULL);
   nassertr(n >= 0 && n < (int)_ordered_colliders.size(), NULL);
@@ -201,14 +201,14 @@ get_collider(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::get_handler
-//       Access: Public
+//       Access: Published
 //  Description: Returns the handler that is currently assigned to
 //               serve the indicated collision node, or NULL if the
 //               node is not on the traverser's set of active nodes.
 ////////////////////////////////////////////////////////////////////
 CollisionHandler *CollisionTraverser::
-get_handler(CollisionNode *node) const {
-  Colliders::const_iterator ci = _colliders.find(node);
+get_handler(const NodePath &collider) const {
+  Colliders::const_iterator ci = _colliders.find(collider);
   if (ci != _colliders.end()) {
     return (*ci).second;
   };
@@ -217,7 +217,7 @@ get_handler(CollisionNode *node) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::clear_colliders
-//       Access: Public
+//       Access: Published
 //  Description: Completely empties the set of collision nodes and
 //               their associated handlers.
 ////////////////////////////////////////////////////////////////////
@@ -227,10 +227,31 @@ clear_colliders() {
   _ordered_colliders.clear();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTraverser::add_collider
+//       Access: Published
+//  Description: This method is deprecated and will shortly be removed
+//               in favor of the newer NodePath-based method, above.
+////////////////////////////////////////////////////////////////////
+void CollisionTraverser::
+add_collider(CollisionNode *node, CollisionHandler *handler) {
+  add_collider(NodePath(node), handler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTraverser::remove_collider
+//       Access: Published
+//  Description: This method is deprecated and will shortly be removed
+//               in favor of the newer NodePath-based method, above.
+////////////////////////////////////////////////////////////////////
+bool CollisionTraverser::
+remove_collider(CollisionNode *node) {
+  return remove_collider(NodePath(node));
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::traverse
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
@@ -272,7 +293,7 @@ traverse(const NodePath &root) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::reset_prev_transform
-//       Access: Public
+//       Access: Published
 //  Description: Once the collision traversal has finished, resets all
 //               of the velocity deltas in the scene graph by setting
 //               the "previous" transform to the current transform.
@@ -287,7 +308,7 @@ reset_prev_transform(const NodePath &root) {
 #ifdef DO_COLLISION_RECORDING
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::set_recorder
-//       Access: Public
+//       Access: Published
 //  Description: Uses the indicated CollisionRecorder object to start
 //               recording the intersection tests made by each
 //               subsequent call to traverse() on this object.  A
@@ -333,7 +354,7 @@ set_recorder(CollisionRecorder *recorder) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::output
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
@@ -344,7 +365,7 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::write
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
@@ -354,16 +375,19 @@ write(ostream &out, int indent_level) const {
     << " colliders and " << _handlers.size() << " handlers:\n";
   Colliders::const_iterator ci;
   for (ci = _colliders.begin(); ci != _colliders.end(); ++ci) {
-    CollisionNode *cnode = (*ci).first;
+    NodePath cnode_path = (*ci).first;
     CollisionHandler *handler = (*ci).second;
-    nassertv(cnode != (CollisionNode *)NULL);
     nassertv(handler != (CollisionHandler *)NULL);
 
     indent(out, indent_level + 2)
-      << *cnode << " handled by " << handler->get_type() << "\n";
-    int num_solids = cnode->get_num_solids();
-    for (int i = 0; i < num_solids; i++) {
-      cnode->get_solid(i)->write(out, indent_level + 4);
+      << cnode_path << " handled by " << handler->get_type() << "\n";
+    if (!cnode_path.is_empty() && cnode_path.node()->is_of_type(CollisionNode::get_class_type())) {
+      CollisionNode *cnode = DCAST(CollisionNode, cnode_path.node());
+      
+      int num_solids = cnode->get_num_solids();
+      for (int i = 0; i < num_solids; i++) {
+        cnode->get_solid(i)->write(out, indent_level + 4);
+      }
     }
   }
 }
@@ -381,40 +405,23 @@ prepare_colliders(CollisionLevelState &level_state) {
 
   int i = 0;
   while (i < (int)_ordered_colliders.size()) {
-    CollisionNode *cnode = _ordered_colliders[i];
+    NodePath cnode_path = _ordered_colliders[i];
+    if (!cnode_path.is_empty() && 
+        cnode_path.node()->is_of_type(CollisionNode::get_class_type())) {
+      CollisionNode *cnode = DCAST(CollisionNode, cnode_path.node());
 
-    CollisionLevelState::ColliderDef def;
-    def._node = cnode;
-    NodePath cnode_path(cnode);
-    def._space = cnode_path.get_net_transform();
-    def._inv_space = def._space->invert_compose(TransformState::make_identity());
-    def._prev_space = cnode_path.get_net_prev_transform();
-    if (_respect_prev_transform) {
-      def._delta = cnode_path.get_pos_delta();
-    } else {
-      def._delta = LVector3f::zero();
-    }
-
-
-#ifndef NDEBUG
-    if (def._space->is_invalid()) {
-      collide_cat.error()
-        << "Collider " << *cnode
-        << " has become invalid.  Dropping from traverser.\n";
-      // This is safe to do while traversing the list of colliders,
-      // because we do not increment i in this case.
-      remove_collider(cnode);
-    } else
-#endif
-      {
-        int num_solids = cnode->get_num_solids();
-        for (int s = 0; s < num_solids; s++) {
-          CollisionSolid *collider = cnode->get_solid(s);
-          def._collider = collider;
-          level_state.prepare_collider(def);
-        }
-        i++;
+      CollisionLevelState::ColliderDef def;
+      def._node = cnode;
+      def._node_path = cnode_path;
+      
+      int num_solids = cnode->get_num_solids();
+      for (int s = 0; s < num_solids; s++) {
+        CollisionSolid *collider = cnode->get_solid(s);
+        def._collider = collider;
+        level_state.prepare_collider(def);
       }
+      i++;
+    }
   }
 }
 
@@ -450,21 +457,20 @@ r_traverse(CollisionLevelState &level_state) {
     int num_colliders = level_state.get_num_colliders();
     for (int c = 0; c < num_colliders; c++) {
       if (level_state.has_collider(c)) {
-        entry._from_node = level_state.get_node(c);
+        entry._from_node = level_state.get_collider_node(c);
 
         if ((entry._from_node->get_from_collide_mask() &
              cnode->get_into_collide_mask()) != 0) {
+          entry._from_node_path = level_state.get_collider_node_path(c);
           entry._from = level_state.get_collider(c);
-          entry._from_space = level_state.get_space(c);
+          entry._from_space = entry._from_node_path.get_net_transform();
 
-          LVector3f from_delta = level_state.get_delta(c);
+          entry._wrt_space = entry._from_node_path.get_transform(entry._into_node_path);
+          entry._inv_wrt_space = entry._into_node_path.get_transform(entry._from_node_path);
 
-          entry._wrt_space = entry._into_space->invert_compose(entry._from_space);
-          entry._inv_wrt_space = entry._from_space->invert_compose(entry._into_space);
           if (_respect_prev_transform) {
-            CPT(TransformState) into_prev_space = entry._into_node_path.get_net_prev_transform();
-            CPT(TransformState) from_prev_space = level_state.get_prev_space(c);
-            entry._wrt_prev_space = into_prev_space->invert_compose(from_prev_space);
+            entry._wrt_prev_space = entry._from_node_path.get_prev_transform(entry._into_node_path);
+
           } else {
             entry._wrt_prev_space = entry._wrt_space;
           }
@@ -501,13 +507,13 @@ r_traverse(CollisionLevelState &level_state) {
     int num_colliders = level_state.get_num_colliders();
     for (int c = 0; c < num_colliders; c++) {
       if (level_state.has_collider_with_geom(c)) {
-        entry._from_node = level_state.get_node(c);
-
+        entry._from_node = level_state.get_collider_node(c);
+        entry._from_node_path = level_state.get_collider_node_path(c);
         entry._from = level_state.get_collider(c);
-        entry._from_space = level_state.get_space(c);
+        entry._from_space = entry._from_node_path.get_net_transform();
 
-        entry._wrt_space = entry._into_space->invert_compose(entry._from_space);
-        entry._inv_wrt_space = entry._from_space->invert_compose(entry._into_space);
+        entry._wrt_space = entry._from_node_path.get_transform(entry._into_node_path);
+        entry._inv_wrt_space = entry._into_node_path.get_transform(entry._from_node_path);
 
         compare_collider_to_geom_node(entry, 
                                       level_state.get_parent_bound(c),
@@ -708,7 +714,7 @@ remove_handler(CollisionTraverser::Handlers::iterator hi) {
   while (ci != _colliders.end()) {
     if ((*ci).second == handler) {
       // This collider references this handler; remove it.
-      PT(CollisionNode) node = (*ci).first;
+      NodePath node_path = (*ci).first;
 
       Colliders::iterator cnext = ci;
       ++cnext;
@@ -717,7 +723,7 @@ remove_handler(CollisionTraverser::Handlers::iterator hi) {
 
       // Also remove it from the ordered list.
       OrderedColliders::iterator oci =
-        find(_ordered_colliders.begin(), _ordered_colliders.end(), node);
+        find(_ordered_colliders.begin(), _ordered_colliders.end(), node_path);
       nassertr(oci != _ordered_colliders.end(), hi);
       _ordered_colliders.erase(oci);
       

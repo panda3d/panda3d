@@ -31,6 +31,7 @@ CollisionEntry(const CollisionEntry &copy) :
   _into(copy._into),
   _from_node(copy._from_node),
   _into_node(copy._into_node),
+  _from_node_path(copy._from_node_path),
   _into_node_path(copy._into_node_path),
   _from_space(copy._from_space),
   _into_space(copy._into_space),
@@ -55,6 +56,7 @@ operator = (const CollisionEntry &copy) {
   _into = copy._into;
   _from_node = copy._from_node;
   _into_node = copy._into_node;
+  _from_node_path = copy._from_node_path;
   _into_node_path = copy._into_node_path;
   _from_space = copy._from_space;
   _into_space = copy._into_space;

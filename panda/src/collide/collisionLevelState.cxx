@@ -64,6 +64,11 @@ prepare_collider(const ColliderDef &def) {
     GeometricBoundingVolume *gbv;
     DCAST_INTO_V(gbv, bv.make_copy());
 
+    // TODO: we need to make this logic work in the new relative
+    // world.  The bounding volume should be extended by the object's
+    // motion relative to each object it is considering a collision
+    // with.  That makes things complicated!
+    /*
     if (def._delta != LVector3f::zero()) {
       // If the node has a delta, we have to include the starting
       // point in the volume as well.
@@ -76,8 +81,9 @@ prepare_collider(const ColliderDef &def) {
       // same results, and is much easier to compute.
       gbv->extend_by(LPoint3f(-def._delta));
     }
+    */
 
-    gbv->xform(def._space->get_mat());
+    gbv->xform(def._node_path.get_mat(NodePath()));
     _local_bounds.push_back(gbv);
   }
 
@@ -119,14 +125,14 @@ any_in_bounds() {
     int num_colliders = get_num_colliders();
     for (int c = 0; c < num_colliders; c++) {
       if (has_collider(c)) {
-        CollisionNode *collider = get_node(c);
+        CollisionNode *cnode = get_collider_node(c);
         bool is_in = false;
 
         // Don't even bother testing the bounding volume if there are
         // no collide bits in common between our collider and this
         // node.
-        CollideMask from_mask = collider->get_from_collide_mask();
-        if (collider->get_collide_geom() ||
+        CollideMask from_mask = cnode->get_from_collide_mask();
+        if (cnode->get_collide_geom() ||
             (from_mask & node()->get_net_collide_mask()) != 0) {
           // There are bits in common, so go ahead and try the
           // bounding volume.

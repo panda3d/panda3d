@@ -62,25 +62,24 @@ handle_entries() {
 
   FromEntries::const_iterator fi;
   for (fi = _from_entries.begin(); fi != _from_entries.end(); ++fi) {
-    CollisionNode *from_node = (*fi).first;
-    nassertr(from_node != (CollisionNode *)NULL, false);
+    const NodePath &from_node_path = (*fi).first;
     const Entries &entries = (*fi).second;
 
     Colliders::iterator ci;
-    ci = _colliders.find(from_node);
+    ci = _colliders.find(from_node_path);
     if (ci == _colliders.end()) {
       // Hmm, someone added a CollisionNode to a traverser and gave
       // it this CollisionHandler pointer--but they didn't tell us
       // about the node.
       collide_cat.error()
         << get_type() << " doesn't know about "
-        << *from_node << ", disabling.\n";
+        << from_node_path << ", disabling.\n";
       okflag = false;
     } else {
       ColliderDef &def = (*ci).second;
       if (!def.is_valid()) {
         collide_cat.error()
-          << "Removing invalid collider " << *from_node << " from "
+          << "Removing invalid collider " << from_node_path << " from "
           << get_type() << "\n";
         _colliders.erase(ci);
       } else {
@@ -92,7 +91,7 @@ handle_entries() {
         for (ei = entries.begin(); ei != entries.end(); ++ei) {
           CollisionEntry *entry = (*ei);
           nassertr(entry != (CollisionEntry *)NULL, false);
-          nassertr(from_node == entry->get_from_node(), false);
+          nassertr(from_node_path == entry->get_from_node_path(), false);
           
           if (entry->has_from_intersection_point()) {
             LPoint3f point = entry->get_from_intersection_point();

@@ -126,40 +126,29 @@ end_group() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerPhysical::add_collider_drive
-//       Access: Public
-//  Description: Adds a new collider to the list with a DriveInterface
-//               pointer that needs to be told about the collider's
-//               new position, or updates the existing collider with a
-//               new DriveInterface pointer.
+//     Function: CollisionHandlerPhysical::add_collider
+//       Access: Published
+//  Description: Adds a new collider to the list with a NodePath
+//               that will be updated with the collider's new
+//               position, or updates the existing collider with a new
+//               NodePath object.
 ////////////////////////////////////////////////////////////////////
 void CollisionHandlerPhysical::
-add_collider_drive(CollisionNode *node, DriveInterface *drive_interface) {
-  _colliders[node].set_drive_interface(drive_interface);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerPhysical::add_collider_node
-//       Access: Public
-//  Description: Adds a new collider to the list with a PandaNode
-//               pointer that will be updated with the collider's
-//               new position, or updates the existing collider with a
-//               new PandaNode pointer.
-////////////////////////////////////////////////////////////////////
-void CollisionHandlerPhysical::
-add_collider_node(CollisionNode *node, PandaNode *target) {
-  _colliders[node].set_node(target);
+add_collider(const NodePath &collider, const NodePath &target) {
+  nassertv(!collider.is_empty() && collider.node()->is_of_type(CollisionNode::get_class_type()));
+  nassertv(!target.is_empty());
+  _colliders[collider].set_target(target);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerPhysical::remove_collider
-//       Access: Public
+//       Access: Published
 //  Description: Removes the collider from the list of colliders that
 //               this handler knows about.
 ////////////////////////////////////////////////////////////////////
 bool CollisionHandlerPhysical::
-remove_collider(CollisionNode *node) {
-  Colliders::iterator ci = _colliders.find(node);
+remove_collider(const NodePath &collider) {
+  Colliders::iterator ci = _colliders.find(collider);
   if (ci == _colliders.end()) {
     return false;
   }
@@ -169,19 +158,19 @@ remove_collider(CollisionNode *node) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerPhysical::has_collider
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the handler knows about the indicated
 //               collider, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CollisionHandlerPhysical::
-has_collider(CollisionNode *node) const {
-  Colliders::const_iterator ci = _colliders.find(node);
+has_collider(const NodePath &target) const {
+  Colliders::const_iterator ci = _colliders.find(target);
   return (ci != _colliders.end());
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerPhysical::clear_colliders
-//       Access: Public
+//       Access: Published
 //  Description: Completely empties the list of colliders this handler
 //               knows about.
 ////////////////////////////////////////////////////////////////////
@@ -190,4 +179,26 @@ clear_colliders() {
   _colliders.clear();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerPhysical::add_collider_node
+//       Access: Published
+//  Description: This method is deprecated and will shortly be removed
+//               in favor of the newer NodePath-based method, above.
+////////////////////////////////////////////////////////////////////
+void CollisionHandlerPhysical::
+add_collider_node(CollisionNode *node, PandaNode *target) {
+  add_collider(NodePath(node), NodePath(target));
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerPhysical::add_collider_drive
+//       Access: Published
+//  Description: Adds a new collider to the list with a DriveInterface
+//               pointer that needs to be told about the collider's
+//               new position, or updates the existing collider with a
+//               new DriveInterface pointer.
+////////////////////////////////////////////////////////////////////
+void CollisionHandlerPhysical::
+add_collider_drive(CollisionNode *node, DriveInterface *drive_interface) {
+  _colliders[NodePath(node)].set_drive_interface(drive_interface);
+}

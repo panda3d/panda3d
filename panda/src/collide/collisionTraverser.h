@@ -56,13 +56,18 @@ PUBLISHED:
   INLINE void set_respect_prev_transform(bool flag);
   INLINE bool get_respect_prev_transform() const;
 
+  void add_collider(const NodePath &collider, CollisionHandler *handler);
+  bool remove_collider(const NodePath &collider);
+  bool has_collider(const NodePath &collider) const;
+  int get_num_colliders() const;
+  NodePath get_collider(int n) const;
+  CollisionHandler *get_handler(const NodePath &collider) const;
+  void clear_colliders();
+
+  // The following methods are deprecated and exist only as a temporary
+  // transition to the above new NodePath-based methods.
   void add_collider(CollisionNode *node, CollisionHandler *handler);
   bool remove_collider(CollisionNode *node);
-  bool has_collider(CollisionNode *node) const;
-  int get_num_colliders() const;
-  CollisionNode *get_collider(int n) const;
-  CollisionHandler *get_handler(CollisionNode *node) const;
-  void clear_colliders();
 
   void traverse(const NodePath &root);
   void reset_prev_transform(const NodePath &root);
@@ -103,9 +108,9 @@ private:
   PT(CollisionHandler) _default_handler;
   TypeHandle _graph_type;
 
-  typedef pmap<PT(CollisionNode),  PT(CollisionHandler) > Colliders;
+  typedef pmap<NodePath,  PT(CollisionHandler) > Colliders;
   Colliders _colliders;
-  typedef pvector<CollisionNode *> OrderedColliders;
+  typedef pvector<NodePath> OrderedColliders;
   OrderedColliders _ordered_colliders;
 
   typedef pmap<PT(CollisionHandler), int> Handlers;

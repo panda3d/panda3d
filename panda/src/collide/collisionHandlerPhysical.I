@@ -40,6 +40,19 @@ set_node(PandaNode *node) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerPhysical::ColliderDef::set_target
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionHandlerPhysical::ColliderDef::
+set_target(const NodePath &target) {
+  _target = target;
+  if (!target.is_empty()) {
+    _node = target.node();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerPhysical::ColliderDef::is_valid
 //       Access: Public
 //  Description: Returns true if this ColliderDef is still valid;

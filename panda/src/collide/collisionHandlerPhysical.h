@@ -45,23 +45,28 @@ public:
   virtual bool end_group();
 
 PUBLISHED:
-  void add_collider_node(CollisionNode *node, PandaNode *target);
-  bool remove_collider(CollisionNode *node);
-  bool has_collider(CollisionNode *node) const;
+  void add_collider(const NodePath &collider, const NodePath &target);
+  bool remove_collider(const NodePath &collider);
+  bool has_collider(const NodePath &collider) const;
   void clear_colliders();
+
+  // The following method is deprecated and exists only as a temporary
+  // transition to the above new NodePath-based methods.
+  void add_collider_node(CollisionNode *node, PandaNode *target);
 
   // add_collider_drive() is becoming obsolete.  If you need it, let us know.
   void add_collider_drive(CollisionNode *node, DriveInterface *drive_interface);
 
 protected:
   typedef pvector< PT(CollisionEntry) > Entries;
-  typedef pmap<PT(CollisionNode), Entries> FromEntries;
+  typedef pmap<NodePath, Entries> FromEntries;
   FromEntries _from_entries;
 
   class ColliderDef {
   public:
     INLINE void set_drive_interface(DriveInterface *drive_interface);
     INLINE void set_node(PandaNode *node);
+    INLINE void set_target(const NodePath &target);
     INLINE bool is_valid() const;
 
     void get_mat(LMatrix4f &mat) const;
@@ -69,9 +74,10 @@ protected:
 
     PT(DriveInterface) _drive_interface;
     PT(PandaNode) _node;
+    NodePath _target;
   };
 
-  typedef pmap<PT(CollisionNode), ColliderDef> Colliders;
+  typedef pmap<NodePath, ColliderDef> Colliders;
   Colliders _colliders;
 
   virtual bool handle_entries()=0;

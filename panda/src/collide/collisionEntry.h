@@ -59,6 +59,7 @@ PUBLISHED:
 
   INLINE CollisionNode *get_from_node() const;
   INLINE PandaNode *get_into_node() const;
+  INLINE const NodePath &get_from_node_path() const;
   INLINE const NodePath &get_into_node_path() const;
 
   INLINE const TransformState *get_from_space() const;
@@ -106,6 +107,7 @@ private:
 
   PT(CollisionNode) _from_node;
   PT(PandaNode) _into_node;
+  NodePath _from_node_path;
   NodePath _into_node_path;
   CPT(TransformState) _from_space;
   CPT(TransformState) _into_space;

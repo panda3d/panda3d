@@ -150,12 +150,12 @@ get_collider(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::get_node
+//     Function: CollisionLevelState::get_collider_node
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionNode *CollisionLevelState::
-get_node(int n) const {
+get_collider_node(int n) const {
   nassertr(n >= 0 && n < (int)_colliders.size(), NULL);
   nassertr(has_collider(n), NULL);
 
@@ -163,55 +163,16 @@ get_node(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::get_space
+//     Function: CollisionLevelState::get_collider_node_path
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const TransformState *CollisionLevelState::
-get_space(int n) const {
-  nassertr(n >= 0 && n < (int)_colliders.size(), TransformState::make_identity());
-  nassertr(has_collider(n), TransformState::make_identity());
+INLINE NodePath CollisionLevelState::
+get_collider_node_path(int n) const {
+  nassertr(n >= 0 && n < (int)_colliders.size(), NodePath::fail());
+  nassertr(has_collider(n), NodePath::fail());
 
-  return _colliders[n]._space;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::get_inv_space
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE const TransformState *CollisionLevelState::
-get_inv_space(int n) const {
-  nassertr(n >= 0 && n < (int)_colliders.size(), TransformState::make_identity());
-  nassertr(has_collider(n), TransformState::make_identity());
-
-  return _colliders[n]._inv_space;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::get_prev_space
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE const TransformState *CollisionLevelState::
-get_prev_space(int n) const {
-  nassertr(n >= 0 && n < (int)_colliders.size(), TransformState::make_identity());
-  nassertr(has_collider(n), TransformState::make_identity());
-
-  return _colliders[n]._prev_space;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::get_delta
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE const LVector3f &CollisionLevelState::
-get_delta(int n) const {
-  nassertr(n >= 0 && n < (int)_colliders.size(), LVector3f::zero());
-  nassertr(has_collider(n), LVector3f::zero());
-
-  return _colliders[n]._delta;
+  return _colliders[n]._node_path;
 }
 
 ////////////////////////////////////////////////////////////////////
