@@ -19,9 +19,33 @@
 #include <boundingSphere.h>
 #include <sceneGraphAnalyzer.h>
 #include <sceneGraphReducer.h>
+#include <nodeTransitionWrapper.h>
+#include <nodeAttributeWrapper.h>
+#include <nullLevelState.h>
+#include <traverserVisitor.h>
+#include <dftraverser.h>
 #include <bamFile.h>
 
 #include <list>
+
+// This class is used in prepare_scene() to traverse the scene graph
+// and register textures with the gsg.
+class ScenePrepareVisitor : public TraverserVisitor<NodeTransitionWrapper, NullLevelState> {
+public:
+  bool forward_arc(NodeRelation *, NodeTransitionWrapper &trans,
+		   NodeAttributeWrapper &, NodeAttributeWrapper &,
+		   NullLevelState &) {
+    TextureTransition *tt;
+    if (get_transition_into(tt, trans)) {
+      if (tt->is_on()) {
+	tt->get_texture()->prepare(_gsg);
+      }
+    }
+    return true;
+  }
+
+  GraphicsStateGuardianBase *_gsg;
+};
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::extend_by
@@ -2164,6 +2188,33 @@ get_hidden_ancestor() const {
   NodePath next(*this);
   next.shorten();
   return next.get_hidden_ancestor();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::prepare_scene
+//       Access: Public
+//  Description: Walks through the scene graph beginning at the bottom
+//               node, and does whatever initialization is required to
+//               render the scene properly with the indicated GSG.  It
+//               is not strictly necessary to call this, since the GSG
+//               will initialize itself when the scene is rendered,
+//               but this may take some of the overhead away from that
+//               process.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+prepare_scene(GraphicsStateGuardianBase *gsg) {
+  nassertv(!is_empty());
+
+  // Use the ScenePrepareVisitor and fire off a traversal of the scene
+  // beginning at the bottom node.  The ScenePrepareVisitor (defined
+  // above) will call prepare() on each texture it finds in the scene
+  // graph at this point at below.
+  ScenePrepareVisitor visitor;
+  visitor._gsg = gsg;
+
+  NodeAttributeWrapper initial(TextureTransition::get_class_type());
+  df_traverse(node(), visitor, initial, NullLevelState(), 
+	      RenderRelation::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////

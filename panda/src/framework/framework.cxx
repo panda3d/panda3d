@@ -1118,6 +1118,10 @@ int framework_main(int argc, char *argv[]) {
 
     // And start looping any animations we successfully bound.
     anim_controls.loop_all(true);
+
+    // Now prepare all the textures with the GSG.
+    NodePath render_path(render);
+    render_path.prepare_scene(main_win->get_gsg());
   }
 
   // Set up keyboard events.

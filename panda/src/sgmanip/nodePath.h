@@ -24,6 +24,7 @@ class Texture;
 class Fog;
 class Camera;
 class AllTransitionsWrapper;
+class GraphicsStateGuardianBase;
 
 //
 // A NodePath is the fundamental unit of high-level interaction with
@@ -419,6 +420,8 @@ PUBLISHED:
   bool is_hidden() const;
   NodePath get_hidden_ancestor() const;
 
+  void prepare_scene(GraphicsStateGuardianBase *gsg);
+
   void show_bounds();
   void hide_bounds();
   PT(BoundingVolume) get_bounds() const;
@@ -456,6 +459,8 @@ private:
   void r_find_matches(NodePathCollection &result,
 		      const FindApproxLevel &level, 
 		      int max_matches, int num_levels_remaining) const;
+
+  void r_prepare_scene(Node *node);
 
   void r_list_descendants(ostream &out, int indent_level) const;
   void r_list_transitions(ostream &out, int indent_level) const;
