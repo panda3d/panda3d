@@ -18,10 +18,11 @@ class Mopath(PandaObject):
         self.hprPoint = Point3(0)
         self.tangentVec = Vec3(0)
         self.fFaceForward = 0
+        self.timeScale = 1
         self.reset()
 
     def getMaxT(self):
-        return self.maxT
+        return self.maxT * self.timeScale
 
     def loadFile(self, filename, fReset = 1):
         if fReset:
@@ -95,6 +96,7 @@ class Mopath(PandaObject):
         if (self.xyzNurbsCurve == None) and (self.hprNurbsCurve == None):
             print 'Mopath: Mopath has no curves'
             return
+        time /= self.timeScale
         self.playbackTime = self.calcTime(CLAMP(time, 0.0, self.maxT))
         if (self.xyzNurbsCurve != None):
             self.xyzNurbsCurve.getPoint(self.playbackTime, self.posPoint)
@@ -128,10 +130,10 @@ class Mopath(PandaObject):
         dTime = time - state.lastTime
         state.lastTime = time
         if (self.loop):
-            cTime = (state.currentTime + dTime) % self.maxT
+            cTime = (state.currentTime + dTime) % self.getMaxT()
         else:
             cTime = state.currentTime + dTime
-        if ((self.loop == 0) and (cTime > self.maxT)):
+        if ((self.loop == 0) and (cTime > self.getMaxT())):
             self.stop()
             messenger.send(self.name + '-done')
             self.node = None
