@@ -378,7 +378,19 @@ check_blend_shapes(const MFnDagNode &node, const string &attrib_name) {
         status.perror("MFnBlendShapeDeformer constructor");
 
       } else {
-        if (_tree->ignore_slider(blends.name().asChar())) {
+        // Check if the slider is a "parallel blender", which is a
+        // construct created by Maya for Maya's internal purposes
+        // only.  We don't want to fiddle with the parallel blenders.
+        MPlug plug = blends.findPlug("pb");
+	bool is_parallel_blender;
+	status = plug.getValue(is_parallel_blender);
+        if (!status) {
+          status.perror("Could not get value of pb plug.");
+          is_parallel_blender = false;
+        }
+
+        if (is_parallel_blender || 
+            _tree->ignore_slider(blends.name().asChar())) {
           _tree->report_ignored_slider(blends.name().asChar());
 
         } else {

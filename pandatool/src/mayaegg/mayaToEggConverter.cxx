@@ -93,17 +93,6 @@ MayaToEggConverter(const string &program_name) :
 
   _from_selection = false;
 
-  // By default, we ignore any sliders whose name begins with
-  // "parallelBlender".  This is because sliders of this name are
-  // created automatically by the parallel blend system, and while
-  // they do not directly control the geometry, they are often
-  // inadvertently linked to the sliders that do (so that, for
-  // instance, dialing them down to zero will also dial down the
-  // effect of the true sliders to zero).  We don't want to monkey
-  // with them.  The user can change this list with the -ignore-slider
-  // command-line option to maya2egg.
-  _ignore_sliders.push_back(GlobPattern("parallelBlender*"));
-
   _polygon_output = false;
   _polygon_tolerance = 0.01;
   _respect_maya_double_sided = maya_default_double_sided;

@@ -97,14 +97,10 @@ MayaToEgg() :
   add_option
     ("ignore-slider", "name", 0,
      "Specifies the name of a slider (blend shape deformer) that maya2egg "
-     "should not process.  The slider will not be adjusted and it will not "
-     "become a part of the animation.  Since maya2egg will normally reset "
-     "all slider values to 0 before converting an animated character, this "
-     "option may be necessary in order to tell maya2egg to ignore sliders "
-     "for which doing this may cause an undesired side effect.  This "
+     "should not process.  The slider will not be touched during conversion "
+     "and it will not become a part of the animation.  This "
      "parameter may including globbing characters, and it may be repeated "
-     "as needed.  If the parameter does not appear at all, the default is "
-     "to ignore sliders named 'parallelBlender*'.",
+     "as needed.",
      &MayaToEgg::dispatch_vector_string, NULL, &_ignore_sliders);
 
   add_option
