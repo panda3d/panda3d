@@ -28,6 +28,7 @@
 #include "nodePath.h"
 #include "cullTraverser.h"
 #include "cullTraverserData.h"
+#include "cullBinManager.h"
 #include "dcast.h"
 
 #ifdef HAVE_AUDIO
@@ -182,9 +183,44 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       DCAST_INTO_R(pg_trav, trav, true);
 
       const LMatrix4f &transform = data._net_transform->get_mat();
-      activate_region(transform, pg_trav->_sort_index);
-      pg_trav->_sort_index++;
 
+      // Consider the cull bin this object is in.  Since the binning
+      // affects the render order, we want bins that render later to
+      // get higher sort values.
+      int bin_index = data._state->get_bin_index();
+      int sort;
+
+      CullBinManager *bin_manager = CullBinManager::get_global_ptr();
+      CullBinManager::BinType bin_type = bin_manager->get_bin_type(bin_index);
+      if (bin_type == CullBinManager::BT_fixed) {
+        // If the bin is a "fixed" type bin, our local sort is based
+        // on the fixed order.
+        sort = data._state->get_draw_order();
+
+      } else if (bin_type == CullBinManager::BT_unsorted) {
+        // If the bin is an "unsorted" type bin, we base the local
+        // sort on the scene graph order.
+        sort = pg_trav->_sort_index;
+        pg_trav->_sort_index++;
+
+      } else {
+        // Otherwise, the local sort is irrelevant.
+        sort = 0;
+      }
+
+      // Now what order does this bin sort relative to the other bins?
+      // This becomes the high-order part of the final sort count.
+      int bin_sort = bin_manager->get_bin_sort(data._state->get_bin_index());
+
+      // Combine the two sorts into a single int.  This assumes we
+      // only need 16 bits for each sort number, possibly an erroneous
+      // assumption.  We should really provide two separate sort
+      // values, both ints, in the MouseWatcherRegion; but in the
+      // interest of expediency we work within the existing interface
+      // which only provides one.
+      sort = (bin_sort << 16) | (sort & 0xffff);
+
+      activate_region(transform, sort);
       pg_trav->_top->add_region(get_region());
     }
   }
