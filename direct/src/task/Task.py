@@ -70,6 +70,13 @@ class Task:
         self.runningTotal = 0.0
         self.pstats = None
         self.__removed = 0
+        self.__onDoLaterList = 0
+
+    def setOnDoLaterList(self, status):
+        self.__onDoLaterList = status
+
+    def isOnDoLaterList(self):
+        return self.__onDoLaterList
 
     def remove(self):
         self.__removed = 1
@@ -356,6 +363,7 @@ class TaskManager:
             dl = self.doLaterList[0]
             if dl.isRemoved():
                 del self.doLaterList[0]
+                dl.setOnDoLaterList(0)
                 continue
             # If the time now is less than the start of the doLater + delay
             # then we are not ready yet, continue to next one
@@ -367,6 +375,8 @@ class TaskManager:
                 assert(TaskManager.notify.debug('__doLaterProcessor: spawning %s' % (dl)))
                 del self.doLaterList[0]
                 dl.setStartTimeFrame(self.currentTime, self.currentFrame)
+                # No longer on the doLaterList
+                dl.setOnDoLaterList(0)
                 self.__addPendingTask(dl)
                 continue
         return cont
@@ -383,6 +393,8 @@ class TaskManager:
         task.setStartTimeFrame(currentTime, self.currentFrame)
         # Cache the time we should wake up for easier sorting
         task.wakeTime = task.starttime + task.delayTime
+        # For more efficient removal, note that it is on the doLaterList
+        task.setOnDoLaterList(1)
         index = self.doLaterList.add(task)
         if self.fVerbose:
             # Alert the world, a new task is born!
@@ -520,6 +532,8 @@ class TaskManager:
             assert(TaskManager.notify.debug('__removeTasksEqual: removing task: %s' % (task)))
             # Flag the task for removal from the real list
             task.remove()
+            if task.isOnDoLaterList():
+                self.doLaterList.remove(task)
             # Cleanup stuff
             task.finishTask(self.fVerbose)
             return 1
@@ -533,6 +547,8 @@ class TaskManager:
         for task in self.nameDict[taskName]:
             # Flag for removal
             task.remove()
+            if task.isOnDoLaterList():
+                self.doLaterList.remove(task)
             # Cleanup stuff
             task.finishTask(self.fVerbose)
         # Record the number of tasks removed
@@ -611,6 +627,8 @@ class TaskManager:
                 if not task.isRemoved():
                     assert(TaskManager.notify.debug('__stepThroughList: task not removed %s' % (task)))
                     task.remove()
+                    # Note: Should not need to remove from doLaterList here because
+                    # this task is not in the doLaterList
                     task.finishTask(self.fVerbose)
                     self.__removeTaskFromNameDict(task)
                 else:
