@@ -175,6 +175,9 @@ public:
   void copy_sub_image(const PNMImage &copy, int xto, int yto,
                       int xfrom = 0, int yfrom = 0,
                       int x_size = -1, int y_size = -1);
+  void blend_sub_image(const PNMImage &copy, int xto, int yto,
+                       int xfrom = 0, int yfrom = 0,
+                       int x_size = -1, int y_size = -1);
 
   // The bodies for the non-inline *_filter() functions can be found
   // in the file pnm-image-filter.cxx.

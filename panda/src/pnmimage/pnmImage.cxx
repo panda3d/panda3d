@@ -546,6 +546,56 @@ copy_sub_image(const PNMImage &copy, int xto, int yto,
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::blend_sub_image
+//       Access: Public
+//  Description: Behaves like copy_sub_image(), except the alpha
+//               channel of the copy is used to blend the copy into
+//               the destination image, instead of overwriting pixels
+//               unconditionally.
+//
+//               If the copy has no alpha channel, this degenerates
+//               into copy_sub_image().
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+blend_sub_image(const PNMImage &copy, int xto, int yto,
+                int xfrom, int yfrom, int x_size, int y_size) {
+  if (!copy.has_alpha()) {
+    copy_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size);
+    return;
+  }
+
+  if (xfrom < 0) {
+    xto += -xfrom;
+    xfrom = 0;
+  }
+  if (yfrom < 0) {
+    yto += -yfrom;
+    yfrom = 0;
+  }
+
+  x_size = (x_size < 0) ?
+    copy.get_x_size() :
+    min(x_size, copy.get_x_size() - xfrom);
+  y_size = (y_size < 0) ?
+    copy.get_y_size() :
+    min(y_size, copy.get_y_size() - yfrom);
+
+  int xmin = max(0, xto);
+  int ymin = max(0, yto);
+
+  int xmax = min(xmin + x_size, get_x_size());
+  int ymax = min(ymin + y_size, get_y_size());
+
+  int x, y;
+  for (y = ymin; y < ymax; y++) {
+    for (x = xmin; x < xmax; x++) {
+      blend(x, y, copy.get_xel(x - xmin + xfrom, y - ymin + yfrom),
+            copy.get_alpha(x - xmin + xfrom, y - ymin + yfrom));
+    }
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::setup_rc
