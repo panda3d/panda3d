@@ -386,6 +386,7 @@ class TaskManager:
         index = self.doLaterList.add(task)
         if self.fVerbose:
             # Alert the world, a new task is born!
+            index = len(self.doLaterList)
             messenger.send('TaskManager-spawnDoLater',
                            sentArgs = [task, task.name, index])
         return task
