@@ -615,10 +615,14 @@ class Actor(PandaObject, NodePath):
             Actor.notify.warning("no lod named %s!" % (lodName))
 
                     
-    def drawInFront(self, frontPartName, backPartName, root=None,
+    def stackDecals(self, frontPartName, backPartName, root=None,
                     lodName=None):
-        """drawInFront(self, string, string=None, key=None)
-        Arrange geometry so the frontPart is drawn properly wrt backPart.
+        """stackDecals(self, string, string=None, key=None)
+
+        Arrange geometry so the frontPart is drawn as a decal onto
+        backPart.  This assumes that frontPart is mostly coplanar with
+        and does not extend beyond backPart.
+        
         Takes an optional argument root as the start of the search for the
         given parts. Also takes optional lod name to refine search for the
         named parts. If root and lod are defined, we search for the given
@@ -639,18 +643,25 @@ class Actor(PandaObject, NodePath):
             if (root == None):
                 root = self
 
+        # In case people don't have an up-to-date Panda, we'll fall
+        # back on DirectRenderTransition.
+        try:
+            dt = DecalTransition()
+        except:
+            dt = DirectRenderTransition()
+
         # make the back part have the proper transition
         backPart = root.find("**/" + backPartName)
         if (backPart.isEmpty()):
             Actor.notify.warning("no part named %s!" % (backPartName))
         else:
-            (backPart.getBottomArc()).setTransition(DirectRenderTransition())
+            backPart.getBottomArc().setTransition(dt)
 
-        #reparent the front parts to the back part
-        frontParts = root.findAllMatches( "**/" + frontPartName)
-        numFrontParts = frontParts.getNumPaths()
-        for partNum in range(0, numFrontParts):
-            (frontParts.getPath(partNum)).reparentTo(backPart)
+            #reparent the front parts to the back part
+            frontParts = root.findAllMatches( "**/" + frontPartName)
+            numFrontParts = frontParts.getNumPaths()
+            for partNum in range(0, numFrontParts):
+                (frontParts.getPath(partNum)).reparentTo(backPart)
 
 
     def fixBounds(self, part=None):
