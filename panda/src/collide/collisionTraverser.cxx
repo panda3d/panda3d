@@ -82,10 +82,10 @@ add_collider(CollisionNode *node, CollisionHandler *handler) {
     // We already knew about this collider.
     if ((*ci).second != handler) {
       // Change the handler.
+      PT(CollisionHandler) old_handler = (*ci).second;
       (*ci).second = handler;
 
       // Now update our own reference counts within our handler set.
-      CollisionHandler *old_handler = (*ci).second;
       Handlers::iterator hi = _handlers.find(old_handler);
       nassertv(hi != _handlers.end());
       (*hi).second--;
