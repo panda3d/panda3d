@@ -785,9 +785,10 @@ dx_init(  LPDIRECTDRAW7     context,
               dxgsg_cat.debug() << "error, invalid value for dx-force-backface-culling\n";
       }
     }
-#endif
-
     _d3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, dx_force_backface_culling);
+#else
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+#endif
 
     _alpha_func = D3DCMP_ALWAYS;
     _alpha_func_ref = 0;
