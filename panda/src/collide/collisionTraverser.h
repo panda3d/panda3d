@@ -83,7 +83,7 @@ PUBLISHED:
   void write(ostream &out, int indent_level) const;
 
 private:
-  void prepare_colliders(CollisionLevelState &state);
+  void prepare_colliders(CollisionLevelState &state, const NodePath &root);
 
   void r_traverse(CollisionLevelState &level_state);
 

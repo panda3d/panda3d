@@ -262,13 +262,6 @@ node() const {
 //               given key will never be reused for a different
 //               instance (unless the app has been running long enough
 //               that we overflow the integer key value).
-//
-//               There are a few special case circumstances that can
-//               cause the key for a particular instance to be
-//               changed.  These all involve different instances being
-//               collapsed into the same instance by some scene graph
-//               operation (for instance, detaching a node below an
-//               instanced node).
 ////////////////////////////////////////////////////////////////////
 INLINE int NodePath::
 get_key() const {
@@ -276,6 +269,27 @@ get_key() const {
     return 0;
   }
   return _head->get_key();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::is_same_graph
+//       Access: Published
+//  Description: Returns true if the node represented by this NodePath
+//               is parented within the same graph as that of the
+//               other NodePath.  This is essentially the same thing
+//               as asking whether the top node of both NodePaths is
+//               the same (e.g., both "render").
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+is_same_graph(const NodePath &other) const {
+  // Actually, it's possible for the top nodes to be the same, but the
+  // NodePaths still to be considered in different graphs.  This will
+  // happen if one of the top nodes is considered a different
+  // instance--for instance, render.instance_to(NodePath()) returns a
+  // different instance of render that appears to have the same top
+  // node.  But this is a very rare thing to do.
+  int a_count, b_count;
+  return (find_common_ancestor(*this, other, a_count, b_count) != (NodePathComponent *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////

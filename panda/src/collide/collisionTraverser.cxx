@@ -265,7 +265,7 @@ traverse(const NodePath &root) {
 #endif  // DO_COLLISION_RECORDING
 
   CollisionLevelState level_state(root);
-  prepare_colliders(level_state);
+  prepare_colliders(level_state, root);
 
   Handlers::iterator hi;
   for (hi = _handlers.begin(); hi != _handlers.end(); ++hi) {
@@ -399,29 +399,38 @@ write(ostream &out, int indent_level) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
-prepare_colliders(CollisionLevelState &level_state) {
+prepare_colliders(CollisionLevelState &level_state, const NodePath &root) {
   level_state.clear();
   level_state.reserve(_colliders.size());
 
   int i = 0;
   while (i < (int)_ordered_colliders.size()) {
     NodePath cnode_path = _ordered_colliders[i];
-    if (!cnode_path.is_empty() && 
-        cnode_path.node()->is_of_type(CollisionNode::get_class_type())) {
-      CollisionNode *cnode = DCAST(CollisionNode, cnode_path.node());
-
-      CollisionLevelState::ColliderDef def;
-      def._node = cnode;
-      def._node_path = cnode_path;
-      
-      int num_solids = cnode->get_num_solids();
-      for (int s = 0; s < num_solids; s++) {
-        CollisionSolid *collider = cnode->get_solid(s);
-        def._collider = collider;
-        level_state.prepare_collider(def);
+#ifndef NDEBUG
+    if (!cnode_path.is_same_graph(root)) {
+      collide_cat.error()
+        << "Collider " << cnode_path
+        << " is not in scene graph.  Dropping from traverser.\n";
+      // This is safe to do while traversing the list of colliders,
+      // because we do not increment i in this case.
+      remove_collider(cnode_path);
+    } else
+#endif
+      {
+        CollisionNode *cnode = DCAST(CollisionNode, cnode_path.node());
+        
+        CollisionLevelState::ColliderDef def;
+        def._node = cnode;
+        def._node_path = cnode_path;
+        
+        int num_solids = cnode->get_num_solids();
+        for (int s = 0; s < num_solids; s++) {
+          CollisionSolid *collider = cnode->get_solid(s);
+          def._collider = collider;
+          level_state.prepare_collider(def);
+        }
+        i++;
       }
-      i++;
-    }
   }
 }
 

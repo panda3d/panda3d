@@ -179,6 +179,8 @@ PUBLISHED:
 
   INLINE int get_key() const;
 
+  INLINE bool is_same_graph(const NodePath &other) const;
+
   // Methods that return collections of NodePaths derived from or
   // related to this one.
 
