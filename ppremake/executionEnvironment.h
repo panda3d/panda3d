@@ -30,6 +30,8 @@
 ////////////////////////////////////////////////////////////////////
 class ExecutionEnvironment {
 public:
+  static string get_environment_variable(const string &var);
+  static string expand_string(const string &str);
   static Filename get_cwd();
 };
 

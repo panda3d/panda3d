@@ -1911,34 +1911,34 @@ expand_makeguid(const string &params) {
   MD5Final(digest, &context);
 
   string guid;
-  int i = 0;
   char hex[2];
+  int i;
 
-  for (int i = 0; i < 4; i++) {
+  for (i = 0; i < 4; i++) {
     sprintf(hex, "%02x", digest[i]);
     guid.append(hex);
   }
   guid += "-";
 
-  for (int i = 4; i < 6; i++) {
+  for (i = 4; i < 6; i++) {
     sprintf(hex, "%02x", digest[i]);
     guid.append(hex);
   }
   guid += "-";
 
-  for (int i = 6; i < 8; i++) {
+  for (i = 6; i < 8; i++) {
     sprintf(hex, "%02x", digest[i]);
     guid.append(hex);
   }
   guid += "-";
 
-  for (int i = 8; i < 10; i++) {
+  for (i = 8; i < 10; i++) {
     sprintf(hex, "%02x", digest[i]);
     guid.append(hex);
   }
   guid += "-";
 
-  for (int i = 10; i < 16; i++) {
+  for (i = 10; i < 16; i++) {
     sprintf(hex, "%02x", digest[i]);
     guid.append(hex);
   }

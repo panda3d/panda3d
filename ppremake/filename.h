@@ -77,6 +77,8 @@ PUBLISHED:
 
   static Filename from_os_specific(const string &os_specific,
                                    Type type = T_general);
+  static Filename expand_from(const string &user_string, 
+                              Type type = T_general);
   static Filename temporary(const string &dirname, const string &prefix,
                             Type type = T_general);
 
@@ -120,6 +122,7 @@ PUBLISHED:
   INLINE void set_type(Type type);
   INLINE Type get_type() const;
 
+  void extract_components(vector_string &components) const;
   void standardize();
 
   // The following functions deal with the outside world.
@@ -132,6 +135,7 @@ PUBLISHED:
   bool make_canonical();
 
   string to_os_specific() const;
+  string to_os_generic() const;
 
   bool exists() const;
   bool is_regular_file() const;
@@ -148,7 +152,7 @@ PUBLISHED:
   bool scan_directory(vector_string &contents) const;
 
   bool open_read(ifstream &stream) const;
-  bool open_write(ofstream &stream) const;
+  bool open_write(ofstream &stream, bool truncate = true) const;
   bool open_append(ofstream &stream) const;
   bool open_read_write(fstream &stream) const;
 

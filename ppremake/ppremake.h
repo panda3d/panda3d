@@ -22,17 +22,30 @@
 #include <fstream>
 #ifdef HAVE_SSTREAM
 #include <sstream>
-#else  // HAVE_SSTREAM
+#else  /* HAVE_SSTREAM */
 #include <strstream>
-#endif  // HAVE_SSTREAM
-#else  // HAVE_IOSTREAM
+#endif  /* HAVE_SSTREAM */
+
+typedef std::ios::openmode ios_openmode;
+typedef std::ios::fmtflags ios_fmtflags;
+typedef std::ios::iostate ios_iostate;
+typedef std::ios::seekdir ios_seekdir;
+
+#else  /* HAVE_IOSTREAM */
 #include <iostream.h>
 #include <fstream.h>
 #include <strstream.h>
-#endif  // HAVE_IOSTREAM
+
+typedef int ios_openmode;
+typedef int ios_fmtflags;
+typedef int ios_iostate;
+/* Old iostream libraries used ios::seek_dir instead of ios::seekdir. */
+typedef ios::seek_dir ios_seekdir;
+
+#endif  /* HAVE_IOSTREAM */
 
 #if defined(HAVE_CYGWIN) || defined(WIN32_VC)
-// Either Cygwin or Visual C++ is a Win32 environment.
+/* Either Cygwin or Visual C++ is a Win32 environment. */
 #define WIN32
 #endif
 

@@ -52,6 +52,12 @@
 #include <windows.h>
 #endif
 
+// The MSVC 6.0 Win32 SDK lacks the following definitions, so we define them
+// here for compatibility.
+#ifndef FILE_ATTRIBUTE_DEVICE
+#define FILE_ATTRIBUTE_DEVICE	0x00000040
+#endif
+
 // We might have been linked with the Cygwin dll.  This is ideal if it
 // is available, because it allows Panda to access all the Cygwin
 // mount definitions if they are in use.  If the Cygwin dll is not
@@ -99,7 +105,7 @@ get_panda_root() {
       panda_root = front_to_back_slash(envvar);
     }
 
-    if (!panda_root.empty() && panda_root[panda_root.length() - 1] != '\\') {
+    if (panda_root.empty() || panda_root[panda_root.length() - 1] != '\\') {
       panda_root += '\\';
     }
 
@@ -110,7 +116,7 @@ get_panda_root() {
 }
 
 static string
-convert_pathname(const string &unix_style_pathname) {
+convert_pathname(const string &unix_style_pathname, bool use_backslash) {
   if (unix_style_pathname.empty()) {
     return string();
   }
@@ -133,7 +139,11 @@ convert_pathname(const string &unix_style_pathname) {
     // It doesn't even start from the root, so we don't have to do
     // anything fancy--relative pathnames are the same in Windows as
     // in Unix, except for the direction of the slashes.
-    windows_pathname = front_to_back_slash(unix_style_pathname);
+    if (use_backslash) {
+      windows_pathname = front_to_back_slash(unix_style_pathname);
+    } else {
+      windows_pathname = unix_style_pathname;
+    }
 
   } else if (unix_style_pathname.length() > 3 &&
              isalpha(unix_style_pathname[1]) &&
@@ -145,9 +155,15 @@ convert_pathname(const string &unix_style_pathname) {
     // compilers (e.g. Cygwin's gcc 2.95.3) happy; so that they do not
     // confuse this string constructor with one that takes two
     // iterators.
-    windows_pathname =
-      string(1, (char)toupper(unix_style_pathname[1])) + ":" +
-      front_to_back_slash(unix_style_pathname.substr(2));
+    if (use_backslash) {
+      windows_pathname =
+	string(1, (char)toupper(unix_style_pathname[1])) + ":" +
+	front_to_back_slash(unix_style_pathname.substr(2));
+    } else {
+      windows_pathname =
+	string(1, (char)toupper(unix_style_pathname[1])) + ":" +
+	unix_style_pathname.substr(2);
+    }
 
   } else {
     // It starts with a slash, but the first part is not a single
@@ -157,29 +173,37 @@ convert_pathname(const string &unix_style_pathname) {
     // Use Cygwin to convert it if possible.
     char result[4096] = "";
     cygwin_conv_to_win32_path(unix_style_pathname.c_str(), result);
-    windows_pathname = result;
+    if (use_backslash) {
+      windows_pathname = result;
+    } else {
+      windows_pathname = back_to_front_slash(result);
+    }
 #else  // HAVE_CYGWIN
     // Without Cygwin, just prefix $PANDA_ROOT.
-    windows_pathname =
-      get_panda_root() + front_to_back_slash(unix_style_pathname.substr(1));
+    windows_pathname = get_panda_root();
+    if (use_backslash) {
+      windows_pathname += front_to_back_slash(unix_style_pathname.substr(1));
+    } else {
+      windows_pathname += unix_style_pathname.substr(1);
+    }
 #endif  // HAVE_CYGWIN
   }
 
   return windows_pathname;
 }
 
-string
-convert_dso_pathname(const string &unix_style_pathname) {
+static string
+convert_dso_pathname(const string &unix_style_pathname, bool use_backslash) {
   // If the extension is .so, change it to .dll.
   size_t dot = unix_style_pathname.rfind('.');
   if (dot == string::npos ||
       unix_style_pathname.find('/', dot) != string::npos) {
     // No filename extension.
-    return convert_pathname(unix_style_pathname);
+    return convert_pathname(unix_style_pathname, use_backslash);
   }
   if (unix_style_pathname.substr(dot) != ".so") {
     // Some other extension.
-    return convert_pathname(unix_style_pathname);
+    return convert_pathname(unix_style_pathname, use_backslash);
   }
 
   string dll_basename = unix_style_pathname.substr(0, dot);
@@ -196,27 +220,27 @@ convert_dso_pathname(const string &unix_style_pathname) {
   // somewhere on the LD_LIBRARY_PATH, or on PATH, or any of a number
   // of nutty places.
 
-  return convert_pathname(dll_basename + "_d.dll");
+  return convert_pathname(dll_basename + "_d.dll", use_backslash);
 #else
-  return convert_pathname(dll_basename + ".dll");
+  return convert_pathname(dll_basename + ".dll", use_backslash);
 #endif
 }
 
-string
-convert_executable_pathname(const string &unix_style_pathname) {
+static string
+convert_executable_pathname(const string &unix_style_pathname, bool use_backslash) {
   // If the extension is not .exe, append .exe.
   size_t dot = unix_style_pathname.rfind('.');
   if (dot == string::npos ||
       unix_style_pathname.find('/', dot) != string::npos) {
     // No filename extension.
-    return convert_pathname(unix_style_pathname + ".exe");
+    return convert_pathname(unix_style_pathname + ".exe", use_backslash);
   }
   if (unix_style_pathname.substr(dot) != ".exe") {
     // Some other extension.
-    return convert_pathname(unix_style_pathname + ".exe");
+    return convert_pathname(unix_style_pathname + ".exe", use_backslash);
   }
 
-  return convert_pathname(unix_style_pathname);
+  return convert_pathname(unix_style_pathname, use_backslash);
 }
 #endif //WIN32
 
@@ -311,6 +335,19 @@ from_os_specific(const string &os_specific, Filename::Type type) {
   filename.set_type(type);
   return filename;
 #endif  // WIN32
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::expand_from
+//       Access: Public, Static
+//  Description: Returns the same thing as from_os_specific(), but
+//               embedded environment variable references
+//               (e.g. "$DMODELS/foo.txt") are expanded out.
+////////////////////////////////////////////////////////////////////
+Filename Filename::
+expand_from(const string &os_specific, Filename::Type type) {
+  return from_os_specific(ExecutionEnvironment::expand_string(os_specific),
+                          type);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -503,6 +540,39 @@ set_extension(const string &s) {
     // Replace an existing extension.
     _filename.replace(_extension_start, string::npos, s);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::extract_components
+//       Access: Public
+//  Description: Extracts out the individual directory components of
+//               the path into a series of strings.  get_basename()
+//               will be the last component stored in the vector.
+//               Note that no distinction is made by this method
+//               between a leading slash and no leading slash, but you
+//               can call is_local() to differentiate the two cases.
+////////////////////////////////////////////////////////////////////
+void Filename::
+extract_components(vector_string &components) const {
+  components.clear();
+
+  size_t p = 0;
+  if (!_filename.empty() && _filename[0] == '/') {
+    // Skip the leading slash.
+    p = 1;
+  }
+  while (p < _filename.length()) {
+    size_t q = _filename.find('/', p);
+    if (q == string::npos) {
+      components.push_back(_filename.substr(p));
+      return;
+    }
+    components.push_back(_filename.substr(p, q - p));
+    p = q + 1;
+  }
+
+  // A trailing slash means we have an empty get_basename().
+  components.push_back(string());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -700,11 +770,48 @@ to_os_specific() const {
 #ifdef WIN32
   switch (get_type()) {
   case T_dso:
-    return convert_dso_pathname(standard.get_fullpath());
+    return convert_dso_pathname(standard.get_fullpath(), true);
   case T_executable:
-    return convert_executable_pathname(standard.get_fullpath());
+    return convert_executable_pathname(standard.get_fullpath(), true);
   default:
-    return convert_pathname(standard.get_fullpath());
+    return convert_pathname(standard.get_fullpath(), true);
+  }
+#else // WIN32
+  return standard;
+#endif // WIN32
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::to_os_generic
+//       Access: Public
+//  Description: This is similar to to_os_specific(), but it is
+//               designed to generate a filename that can be
+//               understood on as many platforms as possible.  Since
+//               Windows can usually understand a
+//               forward-slash-delimited filename, this means it does
+//               the same thing as to_os_specific(), but it uses
+//               forward slashes instead of backslashes.
+//
+//               This method has a pretty limited use; it should
+//               generally be used for writing file references to a
+//               file that might be read on any operating system.
+////////////////////////////////////////////////////////////////////
+string Filename::
+to_os_generic() const {
+  if (empty()) {
+    return string();
+  }
+  Filename standard(*this);
+  standard.standardize();
+
+#ifdef WIN32
+  switch (get_type()) {
+  case T_dso:
+    return convert_dso_pathname(standard.get_fullpath(), false);
+  case T_executable:
+    return convert_executable_pathname(standard.get_fullpath(), false);
+  default:
+    return convert_pathname(standard.get_fullpath(), false);
   }
 #else // WIN32
   return standard;
@@ -1158,7 +1265,7 @@ bool Filename::
 open_read(ifstream &stream) const {
   assert(is_text() || is_binary());
 
-  ios::openmode open_mode = ios::in;
+  ios_openmode open_mode = ios::in;
 
 #ifdef HAVE_IOS_BINARY
   // For some reason, some systems (like Irix) don't define
@@ -1184,12 +1291,30 @@ open_read(ifstream &stream) const {
 //               appropriately as indicated; it is an error to call
 //               open_read() without first calling one of set_text()
 //               or set_binary().
+//
+//               If truncate is true, the file is truncated to zero
+//               length upon opening it, if it already exists.
+//               Otherwise, the file is kept at its original length.
 ////////////////////////////////////////////////////////////////////
 bool Filename::
-open_write(ofstream &stream) const {
+open_write(ofstream &stream, bool truncate) const {
   assert(is_text() || is_binary());
 
-  ios::openmode open_mode = ios::out;
+  ios_openmode open_mode = ios::out;
+
+  if (truncate) {
+    open_mode |= ios::trunc;
+
+  } else {
+    // Some systems insist on having ios::in set to prevent the file
+    // from being truncated when we open it.  Makes ios::trunc kind of
+    // pointless, doesn't it?  On the other hand, setting ios::in also
+    // seems to imply ios::nocreate (!), so we should only set this if
+    // the file already exists.
+    if (exists()) {
+      open_mode |= ios::in;
+    }
+  }
 
 #ifdef HAVE_IOS_BINARY
   // For some reason, some systems (like Irix) don't define
@@ -1225,7 +1350,7 @@ bool Filename::
 open_append(ofstream &stream) const {
   assert(is_text() || is_binary());
 
-  ios::openmode open_mode = ios::app;
+  ios_openmode open_mode = ios::app;
 
 #ifdef HAVE_IOS_BINARY
   // For some reason, some systems (like Irix) don't define
@@ -1261,7 +1386,7 @@ bool Filename::
 open_read_write(fstream &stream) const {
   assert(is_text() || is_binary());
 
-  ios::openmode open_mode = ios::in | ios::out;
+  ios_openmode open_mode = ios::in | ios::out;
 
 #ifdef HAVE_IOS_BINARY
   // For some reason, some systems (like Irix) don't define
@@ -1292,7 +1417,36 @@ open_read_write(fstream &stream) const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 touch() const {
-#ifdef HAVE_UTIME_H
+#ifdef WIN32_VC
+  // In Windows, we have to use the Windows API to do this reliably.
+
+  // First, guarantee the file exists (and also get its handle).
+  string os_specific = to_os_specific();
+  HANDLE fhandle;
+  fhandle = CreateFile(os_specific.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE,
+                       NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+  if (fhandle == INVALID_HANDLE_VALUE) {
+    return false;
+  }
+
+  // Now update the file time and date.
+  SYSTEMTIME sysnow;
+  FILETIME ftnow;
+  GetSystemTime(&sysnow);
+  if (!SystemTimeToFileTime(&sysnow, &ftnow)) {
+    CloseHandle(fhandle);
+    return false;
+  }
+  
+  if (!SetFileTime(fhandle, NULL, NULL, &ftnow)) {
+    CloseHandle(fhandle);
+    return false;
+  }
+
+  CloseHandle(fhandle);
+  return true;
+
+#elif defined(HAVE_UTIME_H)
   // Most Unix systems can do this explicitly.
 
   string os_specific = to_os_specific();
@@ -1325,14 +1479,14 @@ touch() const {
     return false;
   }
   return true;
-#else  // HAVE_UTIME_H
+#else  // WIN32, HAVE_UTIME_H
   // Other systems may not have an explicit control over the
   // modification time.  For these systems, we'll just temporarily
   // open the file in append mode, then close it again (it gets closed
   // when the ofstream goes out of scope).
   ofstream file;
   return open_append(file);
-#endif  // HAVE_UTIME_H
+#endif  // WIN32, HAVE_UTIME_H
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1374,12 +1528,27 @@ rename_to(const Filename &other) const {
 //               itself.  This assumes that the Filename contains the
 //               name of a file, not a directory name; it ensures that
 //               the directory containing the file exists.
+//
+//               However, if the filename ends in a slash, it assumes
+//               the Filename represents the name of a directory, and
+//               creates all the paths.
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 make_dir() const {
+  if (empty()) {
+    return false;
+  }
   Filename path = *this;
   path.standardize();
-  string dirname = path.get_dirname();
+  string dirname;
+  if (_filename[_filename.length() - 1] == '/') {
+    // The Filename ends in a slash; it represents a directory.
+    dirname = path.get_fullpath();
+
+  } else {
+    // The Filename does not end in a slash; it represents a file.
+    dirname = path.get_dirname();
+  }
 
   // First, make sure everything up to the last path is known.  We
   // don't care too much if any of these fail; maybe they failed
