@@ -345,8 +345,7 @@ class GravityWalker(DirectObject.DirectObject):
                 self.isAirborne = 0
                 impact = self.lifter.getImpactVelocity()
                 if impact < -30.0:
-                    #messenger.send("jumpHardLand")
-                    messenger.send("jumpLand")
+                    messenger.send("jumpHardLand")
                     self.startJumpDelay(0.1)
                 else:
                     messenger.send("jumpLand")
