@@ -82,7 +82,7 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
 
   switch (background_color.get_num_words()) {
   case 1:
-    set_clear_color(Colorf(background_color[0], background_color[0], background_color[0], 1.0f));
+    set_clear_color(Colorf(background_color[0], background_color[0], background_color[0], 0.0f));
     break;
 
   case 2:
@@ -90,7 +90,7 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
     break;
 
   case 3:
-    set_clear_color(Colorf(background_color[0], background_color[1], background_color[2], 1.0f));
+    set_clear_color(Colorf(background_color[0], background_color[1], background_color[2], 0.0f));
     break;
 
   case 4:

@@ -525,8 +525,16 @@ get_screenshot(PNMImage &image) {
   
   window->make_current();
 
-  PixelBuffer p(x_size, y_size, 3, 1, PixelBuffer::T_unsigned_byte,
-                PixelBuffer::F_rgb);
+  int components = 3;
+  PixelBuffer::Format format = PixelBuffer::F_rgb;
+
+  if ((gsg->get_properties().get_frame_buffer_mode() & FrameBufferProperties::FM_alpha) != 0) {
+    components = 4;
+    format = PixelBuffer::F_rgba;
+  }
+
+  PixelBuffer p(x_size, y_size, components, 1, PixelBuffer::T_unsigned_byte,
+                format);
 
   RenderBuffer buffer = gsg->get_render_buffer(get_screenshot_buffer_type());
   if (!gsg->copy_pixel_buffer(&p, this, buffer)) {

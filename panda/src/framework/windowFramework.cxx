@@ -881,21 +881,21 @@ set_background_type(WindowFramework::BackgroundType type) {
   case BT_black:
     _display_region_3d->set_clear_color_active(true);
     _display_region_3d->set_clear_depth_active(true);
-    _display_region_3d->set_clear_color(Colorf(0.0f, 0.0f, 0.0f, 1.0f));
+    _display_region_3d->set_clear_color(Colorf(0.0f, 0.0f, 0.0f, 0.0f));
     _display_region_3d->set_clear_depth(1.0f);
     break;
     
   case BT_gray:
     _display_region_3d->set_clear_color_active(true);
     _display_region_3d->set_clear_depth_active(true);
-    _display_region_3d->set_clear_color(Colorf(0.3f, 0.3f, 0.3f, 1.0f));
+    _display_region_3d->set_clear_color(Colorf(0.3f, 0.3f, 0.3f, 0.0f));
     _display_region_3d->set_clear_depth(1.0f);
     break;
     
   case BT_white:
     _display_region_3d->set_clear_color_active(true);
     _display_region_3d->set_clear_depth_active(true);
-    _display_region_3d->set_clear_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+    _display_region_3d->set_clear_color(Colorf(1.0f, 1.0f, 1.0f, 0.0f));
     _display_region_3d->set_clear_depth(1.0f);
     break;
 
