@@ -19,6 +19,7 @@
 #include "xFileMaker.h"
 #include "xFileMesh.h"
 #include "xFileMaterial.h"
+#include "xFileTemplates.h"
 
 #include "notify.h"
 #include "eggGroupNode.h"
@@ -33,10 +34,6 @@
 #include "vector_int.h"
 #include "string_utils.h"
 #include "datagram.h"
-
-// This must be included only in exactly one .cxx file, since
-// including defines the structure!
-#include <rmxftmpl.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: XFileMaker::Constructor
@@ -79,7 +76,7 @@ open(const Filename &filename) {
   }
 
   // Register our templates.
-  hr = _dx_file->RegisterTemplates(D3DRM_XTEMPLATES, D3DRM_XTEMPLATE_BYTES);
+  hr = _dx_file->RegisterTemplates(D3DRM_XTEMPLATES, d3drm_xtemplates_length);
   if (hr != DXFILE_OK) {
     nout << "Unable to register templates.\n";
     return false;
@@ -152,7 +149,7 @@ add_tree(EggData &egg_data) {
   int num_bins = pmaker.make_bins(&egg_data);
 
   // And now we're ready to traverse the egg hierarchy.
-  return add_node(&egg_data, NULL);
+  return recurse_nodes(&egg_data, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////

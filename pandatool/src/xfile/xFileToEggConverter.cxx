@@ -19,13 +19,13 @@
 #include "xFileToEggConverter.h"
 #include "xFileMesh.h"
 #include "xFileMaterial.h"
+#include "xFileTemplates.h"
+
 #include "eggData.h"
 #include "eggGroup.h"
 #include "datagram.h"
-
-// This must be included only in exactly one .cxx file, since
-// including defines the structure!
-#include <rmxftmpl.h>
+#include "eggMaterialCollection.h"
+#include "eggTextureCollection.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -119,7 +119,7 @@ convert_file(const Filename &filename) {
   }
 
   // Register our templates.
-  hr = _dx_file->RegisterTemplates(D3DRM_XTEMPLATES, D3DRM_XTEMPLATE_BYTES);
+  hr = _dx_file->RegisterTemplates(D3DRM_XTEMPLATES, d3drm_xtemplates_length);
   if (hr != DXFILE_OK) {
     nout << "Unable to register templates.\n";
     return false;
@@ -152,6 +152,30 @@ close() {
     _dx_file->Release();
     _dx_file = NULL;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileToEggConverter::create_unique_texture
+//       Access: Public
+//  Description: Returns an EggTexture pointer whose properties match
+//               that of the the given EggTexture, except for the tref
+//               name.
+////////////////////////////////////////////////////////////////////
+EggTexture *XFileToEggConverter::
+create_unique_texture(const EggTexture &copy) {
+  return _textures.create_unique_texture(copy, ~EggTexture::E_tref_name);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileToEggConverter::create_unique_material
+//       Access: Public
+//  Description: Returns an EggMaterial pointer whose properties match
+//               that of the the given EggMaterial, except for the mref
+//               name.
+////////////////////////////////////////////////////////////////////
+EggMaterial *XFileToEggConverter::
+create_unique_material(const EggMaterial &copy) {
+  return _materials.create_unique_material(copy, ~EggMaterial::E_mref_name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -312,7 +336,7 @@ convert_mesh(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent) {
     return false;
   }
 
-  if (!mesh.create_polygons(egg_parent, _textures, _materials)) {
+  if (!mesh.create_polygons(egg_parent, this)) {
     return false;
   }
 

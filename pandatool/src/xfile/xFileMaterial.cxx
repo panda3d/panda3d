@@ -17,11 +17,10 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "xFileMaterial.h"
+#include "xFileToEggConverter.h"
 
 #include "eggMaterial.h"
 #include "eggTexture.h"
-#include "eggMaterialCollection.h"
-#include "eggTextureCollection.h"
 #include "eggPrimitive.h"
 #include "datagram.h"
 
@@ -101,14 +100,12 @@ set_from_egg(EggPrimitive *egg_prim) {
 //               indicated egg primitive.
 ////////////////////////////////////////////////////////////////////
 void XFileMaterial::
-apply_to_egg(EggPrimitive *egg_prim,
-             EggTextureCollection &textures,
-             EggMaterialCollection &materials) {
+apply_to_egg(EggPrimitive *egg_prim, XFileToEggConverter *converter) {
   // Is there a texture?
   if (_has_texture) {
-    EggTexture temp("", _texture);
-    EggTexture *egg_tex =
-      textures.create_unique_texture(temp, ~EggTexture::E_tref_name);
+    Filename texture = converter->convert_texture_path(_texture);
+    EggTexture temp("", texture);
+    EggTexture *egg_tex = converter->create_unique_texture(temp);
     egg_prim->set_texture(egg_tex);
   }
 
@@ -127,8 +124,7 @@ apply_to_egg(EggPrimitive *egg_prim,
       temp.set_emit(Colorf(_emissive_color[0], _emissive_color[1],
                            _emissive_color[2], 1.0));
     }
-    EggMaterial *egg_mat =
-      materials.create_unique_material(temp, ~EggMaterial::E_mref_name);
+    EggMaterial *egg_mat = converter->create_unique_material(temp);
     egg_prim->set_material(egg_mat);
   }
 

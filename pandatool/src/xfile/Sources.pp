@@ -15,14 +15,13 @@
 
   #define SOURCES \
     xFileFace.cxx xFileFace.h \
+    xFileMaker.cxx xFileMaker.h \
     xFileMaterial.cxx xFileMaterial.h \
     xFileMesh.cxx xFileMesh.h \
     xFileNormal.cxx xFileNormal.h \
+    xFileTemplates.cxx xFileTemplates.h \
+    xFileToEggConverter.cxx xFileToEggConverter.h \
     xFileVertex.cxx xFileVertex.h
-
-  #define SOURCES \
-    $[SOURCES] \
-    xFileMaker.cxx xFileMaker.h
 
   #define SOURCES \
     $[SOURCES] \
@@ -44,14 +43,13 @@
 
   #define SOURCES \
     xFileFace.cxx xFileFace.h \
+    xFileMaker.cxx xFileMaker.h \
     xFileMaterial.cxx xFileMaterial.h \
     xFileMesh.cxx xFileMesh.h \
     xFileNormal.cxx xFileNormal.h \
+    xFileTemplates.cxx xFileTemplates.h \
+    xFileToEggConverter.cxx xFileToEggConverter.h \
     xFileVertex.cxx xFileVertex.h
-
-  #define SOURCES \
-    $[SOURCES] \
-    xFileToEggConverter.cxx xFileToEggConverter.h
 
   #define SOURCES \
     $[SOURCES] \

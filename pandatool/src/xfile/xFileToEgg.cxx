@@ -32,7 +32,7 @@ XFileToEgg() :
   add_transform_options();
   add_texture_path_options();
   add_rel_dir_options();
-  add_search_path_options(false);
+  add_search_path_options(true);
 
   set_program_description
     ("This program converts DirectX retained-mode (.x) files to egg.  This "

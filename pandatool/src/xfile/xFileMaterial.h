@@ -24,9 +24,8 @@
 #include "filename.h"
 
 class EggPrimitive;
-class EggTextureCollection;
-class EggMaterialCollection;
 class Datagram;
+class XFileToEggConverter;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : XFileMaterial
@@ -39,9 +38,7 @@ public:
   ~XFileMaterial();
 
   void set_from_egg(EggPrimitive *egg_prim);
-  void apply_to_egg(EggPrimitive *egg_prim,
-                    EggTextureCollection &textures,
-                    EggMaterialCollection &materials);
+  void apply_to_egg(EggPrimitive *egg_prim, XFileToEggConverter *converter);
 
   int compare_to(const XFileMaterial &other) const;
 

@@ -24,7 +24,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggToX::
-EggToX() : EggToSomething("DirectX", "x") {
+EggToX() : EggToSomething("DirectX", ".x") {
   set_program_description
     ("This program reads an Egg file and outputs an equivalent, "
      "or nearly equivalent, DirectX-style .x file.  Only simple "

@@ -254,9 +254,7 @@ add_material(XFileMaterial *material) {
 //               node.
 ////////////////////////////////////////////////////////////////////
 bool XFileMesh::
-create_polygons(EggGroupNode *egg_parent,
-                EggTextureCollection &textures,
-                EggMaterialCollection &materials) {
+create_polygons(EggGroupNode *egg_parent, XFileToEggConverter *converter) {
   EggVertexPool *vpool = new EggVertexPool(get_name());
   egg_parent->add_child(vpool);
   Faces::const_iterator fi;
@@ -308,9 +306,8 @@ create_polygons(EggGroupNode *egg_parent,
     int material_index = face->_material_index;
     if (material_index >= 0 && material_index < (int)_materials.size()) {
       XFileMaterial *material = _materials[material_index];
-      material->apply_to_egg(egg_poly, textures, materials);
+      material->apply_to_egg(egg_poly, converter);
     }
-
   }
 
   return true;

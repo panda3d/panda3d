@@ -35,6 +35,8 @@ class EggGroupNode;
 class Datagram;
 class XFileMesh;
 class XFileMaterial;
+class EggTexture;
+class EggMaterial;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : XFileToEggConverter
@@ -53,6 +55,9 @@ public:
 
   virtual bool convert_file(const Filename &filename);
   void close();
+
+  EggTexture *create_unique_texture(const EggTexture &copy);
+  EggMaterial *create_unique_material(const EggMaterial &copy);
 
 private:
   bool get_toplevel();

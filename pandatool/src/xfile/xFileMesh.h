@@ -30,12 +30,11 @@ class XFileVertex;
 class XFileNormal;
 class XFileMaterial;
 class XFileFace;
+class XFileToEggConverter;
 class EggGroupNode;
 class EggVertex;
 class EggPolygon;
 class EggPrimitive;
-class EggTextureCollection;
-class EggMaterialCollection;
 class Datagram;
 
 ////////////////////////////////////////////////////////////////////
@@ -59,8 +58,7 @@ public:
   int add_material(XFileMaterial *material);
 
   bool create_polygons(EggGroupNode *egg_parent, 
-                       EggTextureCollection &textures,
-                       EggMaterialCollection &materials);
+                       XFileToEggConverter *converter);
 
   bool has_normals() const;
   bool has_colors() const;
