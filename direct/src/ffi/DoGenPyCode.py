@@ -31,10 +31,11 @@ default.
 Options:
   -h          print this message
   -v          verbose
-  -d dir      directory to write output code       
-  -x dir      directory to pull extension code from       
+  -d dir      directory to write output code
+  -x dir      directory to pull extension code from
   -i lib      interrogate library
   -e dir      directory to search for *.in files (may be repeated)
+  -r          remove the default library list; instrument only named libraries
   -O          no C++ comments or assertion statements
   -n          Don't use squeezeTool to squeeze the result into one .pyz file
 
@@ -59,8 +60,8 @@ def doGetopts():
     global doSqueeze
     global etcPath
 
-    # These options are allowed but are ignored (they are deprecated with
-    # the new genPyCode script):
+    # These options are allowed but are flagged as warnings (they are
+    # deprecated with the new genPyCode script):
 
     # -g adds libgateway
     # -t adds libtoontown
@@ -72,7 +73,7 @@ def doGetopts():
 
     # Extract the args the user passed in
     try:
-        opts, pargs = getopt.getopt(sys.argv[1:], 'hvOd:x:i:e:ngtpo')
+        opts, pargs = getopt.getopt(sys.argv[1:], 'hvOd:x:i:e:rngtpo')
     except Exception, e:
         # User passed in a bad option, print the error and the help, then exit
         print e
@@ -98,13 +99,15 @@ def doGetopts():
             interrogateLib = value
         elif (flag == '-e'):
             etcPath.append(value)
+        elif (flag == '-r'):
+            codeLibs = []
         elif (flag == '-O'):
             FFIConstants.wantComments = 0
             FFIConstants.wantTypeChecking = 0
         elif (flag == '-n'):
             doSqueeze = 0
         elif (flag in ['-g', '-t', '-p', '-o']):
-            FFIConstants.notify.debug("option is deprecated: %s" % (flag))
+            FFIConstants.notify.warning("option is deprecated: %s" % (flag))
             
         else:
             FFIConstants.notify.error('illegal option: ' + flag)
