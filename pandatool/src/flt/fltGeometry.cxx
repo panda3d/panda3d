@@ -178,12 +178,14 @@ extract_record(FltRecordReader &reader) {
   if (!_alt_packed_color.extract_record(reader)) {
     return false;
   }
-  
-  _texture_mapping_index = iterator.get_be_int16();
-  iterator.skip_bytes(2);
-  _color_index = iterator.get_be_uint32();
-  _alt_color_index = iterator.get_be_uint32();
-  iterator.skip_bytes(2 + 2);
+
+  if (_header->get_flt_version() >= 15.2) {
+    _texture_mapping_index = iterator.get_be_int16();
+    iterator.skip_bytes(2);
+    _color_index = iterator.get_be_uint32();
+    _alt_color_index = iterator.get_be_uint32();
+    iterator.skip_bytes(2 + 2);
+  }
 
   return true;
 }

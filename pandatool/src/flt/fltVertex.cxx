@@ -171,12 +171,14 @@ extract_record(FltRecordReader &reader) {
   if (!_packed_color.extract_record(reader)) {
     return false;
   }
-  _color_index = iterator.get_be_uint32();
+  if (_header->get_flt_version() >= 15.2) {
+    _color_index = iterator.get_be_uint32();
 
-  if (_has_normal) {
-    // If we extracted a normal, our double-word alignment is off; now
-    // we have a few extra bytes to ignore.
-    iterator.skip_bytes(4);
+    if (_has_normal && iterator.get_remaining_size() > 0) {
+      // If we extracted a normal, our double-word alignment is off; now
+      // we have a few extra bytes to ignore.
+      iterator.skip_bytes(4);
+    }
   }
 
   check_remaining_size(iterator);

@@ -7,6 +7,7 @@
 
 #include <config_util.h>
 #include <bamFile.h>
+#include <nodePath.h>
 #include <load_egg_file.h>
 #include <config_egg2sg.h>
 #include <config_gobj.h>
@@ -43,6 +44,23 @@ EggToBam() :
      &EggToBam::dispatch_none, &_keep_paths);
 
   add_option
+    ("fl", "flag", 0, 
+     "Specifies whether to flatten the egg hierarchy after it is loaded.  "
+     "If flag is zero, the egg hierarchy will not be flattened, but will "
+     "instead be written to the bam file exactly as it is.  If flag is "
+     "non-zero, the hierarchy will be flattened so that unnecessary nodes "
+     "(usually group nodes with only one child) are eliminated.  The default "
+     "if this is not specified is taken from the egg-flatten Configrc "
+     "variable.",
+     &EggToBam::dispatch_int, &_has_egg_flatten, &_egg_flatten);
+
+  add_option
+    ("ls", "", 0,
+     "Writes a scene graph listing to standard output after the egg "
+     "file has been loaded, showing the nodes that will be written out.",
+     &EggToBam::dispatch_none, &_ls);
+
+  add_option
     ("C", "quality", 0,
      "Specify the quality level for lossy channel compression.  If this "
      "is specified, the animation channels will be compressed at this "
@@ -65,6 +83,8 @@ EggToBam() :
      " file.  This may be "
      "one of 'y-up', 'z-up', 'y-up-left', or 'z-up-left'.  The default "
      "is z-up.");
+
+  _egg_flatten = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,6 +99,12 @@ run() {
     // variables directly to achieve this.
     egg_keep_texture_pathnames = true;
     bam_texture_mode = BTM_fullpath;
+  }
+
+  if (_has_egg_flatten) {
+    // If the user specified some -fl, we need to set the
+    // corresponding Configrc variable.
+    egg_flatten = (_egg_flatten != 0);
   }
 
   if (_compression_off) {
@@ -102,6 +128,12 @@ run() {
   if (root == (NamedNode *)NULL) {
     nout << "Unable to build scene graph from egg file.\n";
     exit(1);
+  }
+
+  if (_ls) {
+    // If we wanted to list the contents, we need a NodePath.
+    NodePath np(root);
+    np.ls();
   }
 
   // This should be guaranteed because we pass false to the

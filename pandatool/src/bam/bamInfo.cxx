@@ -27,6 +27,11 @@ BamInfo() {
   add_runline("[opts] input.bam [input.bam ... ]");
 
   add_option
+    ("ls", "", 0,
+     "List the scene graph hierarchy in the bam file.",
+     &BamInfo::dispatch_none, &_ls);
+
+  add_option
     ("t", "", 0, 
      "List explicitly each transition in the hierarchy.",
      &BamInfo::dispatch_none, &_verbose_transitions);
@@ -157,7 +162,7 @@ describe_scene_graph(Node *node) {
   nout << "  " << num_nodes << " nodes, bounding volume is "
        << arc->get_bound() << "\n";
 
-  if (_verbose_geoms || _verbose_transitions) {
+  if (_ls || _verbose_geoms || _verbose_transitions) {
     list_hierarchy(node, 0);
   }
 }
@@ -192,16 +197,20 @@ list_hierarchy(Node *node, int indent_level) {
 
   int num_children = node->get_num_children(RenderRelation::get_class_type());
   for (int i = 0; i < num_children; i++) {
-    NodeRelation *arc = node->get_child(RenderRelation::get_class_type(), i);
-    nout << "\n";
-    indent(nout, indent_level + 2) << *arc << "\n";
+    int next_indent = indent_level + 2;
 
+    NodeRelation *arc = node->get_child(RenderRelation::get_class_type(), i);
     if (_verbose_transitions) {
-      arc->write_transitions(nout, indent_level + 2);
       nout << "\n";
+      indent(nout, next_indent) << *arc << "\n";
+
+      arc->write_transitions(nout, next_indent);
+      nout << "\n";
+
+      next_indent += 2;
     }
 
-    list_hierarchy(arc->get_child(), indent_level + 4);
+    list_hierarchy(arc->get_child(), next_indent);
   }
 }
 

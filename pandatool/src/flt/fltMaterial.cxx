@@ -104,3 +104,36 @@ build_record(FltRecordWriter &writer) const {
 
   return true;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltMaterial::extract_14_record
+//       Access: Public
+//  Description: Fills in the information in this record based on the
+//               information from the current position within the v14
+//               material palette.  Leaves the iterator at the
+//               beginning of the next material.
+////////////////////////////////////////////////////////////////////
+bool FltMaterial::
+extract_14_record(int index, DatagramIterator &di) {
+  _material_index = index;
+
+  _ambient[0] = di.get_be_float32();
+  _ambient[1] = di.get_be_float32();
+  _ambient[2] = di.get_be_float32();
+  _diffuse[0] = di.get_be_float32();
+  _diffuse[1] = di.get_be_float32();
+  _diffuse[2] = di.get_be_float32();
+  _specular[0] = di.get_be_float32();
+  _specular[1] = di.get_be_float32();
+  _specular[2] = di.get_be_float32();
+  _emissive[0] = di.get_be_float32();
+  _emissive[1] = di.get_be_float32();
+  _emissive[2] = di.get_be_float32();
+  _shininess = di.get_be_float32();
+  _alpha = di.get_be_float32();
+  _flags = di.get_be_uint32();
+  _material_name = di.get_fixed_string(12);
+  di.skip_bytes(4 * 28);
+
+  return true;
+}

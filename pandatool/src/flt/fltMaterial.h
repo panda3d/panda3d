@@ -12,6 +12,8 @@
 
 #include <luse.h>
 
+class DatagramIterator;
+
 ////////////////////////////////////////////////////////////////////
 // 	 Class : FltMaterial
 // Description : Represents a single material in the material palette.
@@ -37,6 +39,9 @@ public:
 protected:
   virtual bool extract_record(FltRecordReader &reader);
   virtual bool build_record(FltRecordWriter &writer) const;
+
+public:
+  bool extract_14_record(int index, DatagramIterator &di);
 
 public:
   virtual TypeHandle get_type() const {

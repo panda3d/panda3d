@@ -413,6 +413,7 @@ is_ancillary(FltOpcode opcode) {
   case FO_local_vertex_pool:
   case FO_cat_data:
 
+  case FO_14_material_palette:
   case FO_vertex_palette:
   case FO_vertex_c:
   case FO_vertex_cn:

@@ -69,6 +69,7 @@ FltHeader() : FltBeadID(this) {
   _vertex_lookups_stale = false;
   _current_vertex_offset = 0;
   _got_color_palette = false;
+  _got_14_material_palette = false;
   _got_eyepoint_trackplane_palette = false;
 
   _auto_attr_update = AU_if_missing;
@@ -236,7 +237,7 @@ get_flt_version() const {
 ////////////////////////////////////////////////////////////////////
 double FltHeader::
 min_flt_version() {
-  return 15.2;
+  return 14.2;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1150,25 +1151,28 @@ extract_record(FltRecordReader &reader) {
   iterator.skip_bytes(2);
   _next_road_id = iterator.get_be_int16();
   _next_cat_id = iterator.get_be_int16();
-  iterator.skip_bytes(2 + 2 + 2 + 2);
-  _earth_model = (EarthModel)iterator.get_be_int32();
+  
+  if (get_flt_version() >= 15.2 && iterator.get_remaining_size() > 0) {
+    iterator.skip_bytes(2 + 2 + 2 + 2);
+    _earth_model = (EarthModel)iterator.get_be_int32();
 
-  // Undocumented padding.
-  iterator.skip_bytes(4);
-
-  if (get_flt_version() >= 15.6 && iterator.get_remaining_size() > 0) {
-    _next_adaptive_id = iterator.get_be_int16();
-    _next_curve_id = iterator.get_be_int16();
+    // Undocumented padding.
     iterator.skip_bytes(4);
     
-    if (get_flt_version() >= 15.7 && iterator.get_remaining_size() > 0) {
-      _delta_z = iterator.get_be_float64();
-      _radius = iterator.get_be_float64();
-      _next_mesh_id = iterator.get_be_int16();
-      iterator.skip_bytes(2);
-
-      // Undocumented padding.
+    if (get_flt_version() >= 15.6 && iterator.get_remaining_size() > 0) {
+      _next_adaptive_id = iterator.get_be_int16();
+      _next_curve_id = iterator.get_be_int16();
       iterator.skip_bytes(4);
+      
+      if (get_flt_version() >= 15.7 && iterator.get_remaining_size() > 0) {
+	_delta_z = iterator.get_be_float64();
+	_radius = iterator.get_be_float64();
+	_next_mesh_id = iterator.get_be_int16();
+	iterator.skip_bytes(2);
+	
+	// Undocumented padding.
+	iterator.skip_bytes(4);
+      }
     }
   }
 
@@ -1206,6 +1210,9 @@ extract_ancillary(FltRecordReader &reader) {
 
   case FO_15_material:
     return extract_material(reader);
+
+  case FO_14_material_palette:
+    return extract_14_material_palette(reader);
 
   case FO_texture:
     return extract_texture(reader);
@@ -1409,12 +1416,14 @@ extract_color_palette(FltRecordReader &reader) {
   while (iterator.get_remaining_size() > 0) {
     int entry_length = iterator.get_be_uint16();
     iterator.skip_bytes(2);
-    int color_index = iterator.get_be_int16();
-    iterator.skip_bytes(2);
+    if (iterator.get_remaining_size() > 0) {
+      int color_index = iterator.get_be_int16();
+      iterator.skip_bytes(2);
 
-    int name_length = entry_length - 8;
-    nassertr(color_index >= 0 && color_index < (int)_colors.size(), false);
-    _color_names[color_index] = iterator.get_fixed_string(name_length);
+      int name_length = entry_length - 8;
+      nassertr(color_index >= 0 && color_index < (int)_colors.size(), false);
+      _color_names[color_index] = iterator.get_fixed_string(name_length);
+    }
   }
 
   check_remaining_size(iterator);
@@ -1428,12 +1437,46 @@ extract_color_palette(FltRecordReader &reader) {
 ////////////////////////////////////////////////////////////////////
 bool FltHeader::
 extract_material(FltRecordReader &reader) {
-  FltMaterial *material = new FltMaterial(this);
+  PT(FltMaterial) material = new FltMaterial(this);
   if (!material->extract_record(reader)) {
     return false;
   }
   add_material(material);
   
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltHeader::extract_14_material_palette
+//       Access: Private
+//  Description: Reads the v14.2 material palette.
+////////////////////////////////////////////////////////////////////
+bool FltHeader::
+extract_14_material_palette(FltRecordReader &reader) {
+  nassertr(reader.get_opcode() == FO_14_material_palette, false);
+  DatagramIterator &iterator = reader.get_iterator();
+
+  if (_got_14_material_palette) {
+    nout << "Warning: multiple material palettes found.\n";
+  }
+  _got_14_material_palette = true;
+
+  static const int expected_material_entries = 64;
+
+  _materials.clear();
+  for (int i = 0; i < expected_material_entries; i++) {
+    if (iterator.get_remaining_size() == 0) {
+      // An early end to the palette is acceptable.
+      return true;
+    }
+    PT(FltMaterial) material = new FltMaterial(this);
+    if (!material->extract_14_record(i, iterator)) {
+      return false;
+    }
+    add_material(material);
+  }
+
+  check_remaining_size(iterator);
   return true;
 }
 

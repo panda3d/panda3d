@@ -258,6 +258,7 @@ private:
 
 
   // Support for the material palette.
+  bool _got_14_material_palette;
   typedef map<int, PT(FltMaterial)> Materials;
   Materials _materials;
 
@@ -290,6 +291,7 @@ private:
   bool extract_vertex(FltRecordReader &reader);
   bool extract_color_palette(FltRecordReader &reader);
   bool extract_material(FltRecordReader &reader);
+  bool extract_14_material_palette(FltRecordReader &reader);
   bool extract_texture(FltRecordReader &reader);
   bool extract_texture_map(FltRecordReader &reader);
   bool extract_light_source(FltRecordReader &reader);
