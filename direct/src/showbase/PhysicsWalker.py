@@ -21,15 +21,13 @@ import DirectObject
 import PhysicsManager
 import math
 
-import LineStream
+#import LineStream
 
 
 class PhysicsWalker(DirectObject.DirectObject):
 
     notify = DirectNotifyGlobal.directNotify.newCategory("PhysicsWalker")
     wantAvatarPhysicsIndicator = base.config.GetBool('want-avatar-physics-indicator', 1)
-    
-    rotatePhysics = 1
 
     # special methods
     def __init__(self, gravity = -32.1740, standableGround=0.707,
@@ -141,7 +139,7 @@ class PhysicsWalker(DirectObject.DirectObject):
 
         # Connect to Physics Manager:
         self.actorNode=ActorNode("physicsActor")
-        self.actorNode.getPhysicsObject().setOriented(self.rotatePhysics)
+        self.actorNode.getPhysicsObject().setOriented(1)
         self.actorNode.getPhysical(0).setViscosity(0.1)
         physicsActor=NodePath(self.actorNode)
         avatarNodePath.reparentTo(physicsActor)
@@ -352,14 +350,6 @@ class PhysicsWalker(DirectObject.DirectObject):
                             self.avatarNodePath,
                             self.avatarNodePath.getPosDelta(render)).pPrintValues())
                 
-                if 0:
-                    lines = LineStream.LineStream()
-                    self.phys.write(lines)
-                    phys = ""
-                    while lines.isTextAvailable():
-                        phys += lines.getLine()
-                    onScreenDebug.add("phys", phys)
-                
                 if 1:
                     onScreenDebug.add("gravity",
                         self.gravity.getLocalVector().pPrintValues())
@@ -430,8 +420,7 @@ class PhysicsWalker(DirectObject.DirectObject):
             rotation = dt * self.__rotationSpeed
 
             #debugTempH=self.avatarNodePath.getH()
-            if self.rotatePhysics:
-                assert self.avatarNodePath.getHpr().almostEqual(physObject.getOrientation().getHpr(), 0.0001)
+            assert self.avatarNodePath.getHpr().almostEqual(physObject.getOrientation().getHpr(), 0.0001)
             assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
 
             # update pos:
@@ -440,42 +429,23 @@ class PhysicsWalker(DirectObject.DirectObject):
                 Vec3.forward() * distance + 
                 Vec3.right() * slideDistance)
             
-            if self.rotatePhysics:
-                # rotMat is the rotation matrix corresponding to
-                # our previous heading.
-                rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
-                step=rotMat.xform(self.__vel)
-                physObject.setPosition(Point3(
-                    physObject.getPosition()+step))
-            
-                # update hpr:
-                o=physObject.getOrientation()
-                r=LOrientationf()
-                r.setHpr(Vec3(rotation, 0.0, 0.0))
-                physObject.setOrientation(o*r)
+            # rotMat is the rotation matrix corresponding to
+            # our previous heading.
+            rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
+            step=rotMat.xform(self.__vel)
+            physObject.setPosition(Point3(
+                physObject.getPosition()+step))
 
-                # sync the change:
-                self.actorNode.updateTransform()
-            else:
-                #physObject.setPosition(Point3(
-                #    physObject.getPosition()+self.__vel))
-                
-                # rotMat is the rotation matrix corresponding to
-                # our previous heading.
-                rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
-                step=rotMat.xform(self.__vel)
-                physObject.setPosition(Point3(
-                    physObject.getPosition()+step))
+            # update hpr:
+            o=physObject.getOrientation()
+            r=LOrientationf()
+            r.setHpr(Vec3(rotation, 0.0, 0.0))
+            physObject.setOrientation(o*r)
 
-                # sync the change:
-                self.actorNode.updateTransform()
+            # sync the change:
+            self.actorNode.updateTransform()
 
-                self.avatarNodePath.setHpr(
-                    self.avatarNodePath.getHpr()+
-                    Vec3(rotation, 0.0, 0.0))
-
-            if self.rotatePhysics:
-                assert self.avatarNodePath.getHpr().almostEqual(physObject.getOrientation().getHpr(), 0.0001)
+            assert self.avatarNodePath.getHpr().almostEqual(physObject.getOrientation().getHpr(), 0.0001)
             assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
             #assert self.avatarNodePath.getH()==debugTempH-rotation
             messenger.send("avatarMoving")
