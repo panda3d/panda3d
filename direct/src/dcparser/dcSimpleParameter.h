@@ -40,6 +40,7 @@ public:
 PUBLISHED:
   virtual DCSimpleParameter *as_simple_parameter();
   virtual DCParameter *make_copy() const;
+  virtual bool is_valid() const;
 
   DCSubatomicType get_type() const;
   int get_divisor() const;

@@ -38,6 +38,7 @@ public:
 PUBLISHED:
   virtual DCArrayParameter *as_array_parameter();
   virtual DCParameter *make_copy() const;
+  virtual bool is_valid() const;
 
   DCParameter *get_element_type() const;
   int get_array_size() const;

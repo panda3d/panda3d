@@ -37,7 +37,7 @@
 ////////////////////////////////////////////////////////////////////
 DCFile::
 DCFile() {
-  _all_classes_valid = true;
+  _all_objects_valid = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -237,7 +237,9 @@ write(ostream &out, bool brief) const {
   if (!_typedefs.empty()) {
     Typedefs::const_iterator ti;
     for (ti = _typedefs.begin(); ti != _typedefs.end(); ++ti) {
-      (*ti)->write(out, brief, 0);
+      if (!(*ti)->is_bogus_typedef()) {
+        (*ti)->write(out, brief, 0);
+      }
     }
     out << "\n";
   }
@@ -293,7 +295,7 @@ get_class_by_name(const string &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCFile::all_classes_valid
+//     Function: DCFile::all_objects_valid
 //       Access: Published
 //  Description: Returns true if all of the classes read from the DC
 //               file were defined and valid, or false if any of them
@@ -301,8 +303,8 @@ get_class_by_name(const string &name) const {
 //               we might have read a partial file.
 ////////////////////////////////////////////////////////////////////
 bool DCFile::
-all_classes_valid() const {
-  return _all_classes_valid;
+all_objects_valid() const {
+  return _all_objects_valid;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -447,7 +449,7 @@ add_class(DCClass *dclass) {
   _classes.push_back(dclass);
 
   if (dclass->is_bogus_class()) {
-    _all_classes_valid = false;
+    _all_objects_valid = false;
   }
 
   return true;
@@ -503,6 +505,10 @@ add_typedef(DCTypedef *dtypedef) {
 
   dtypedef->set_number(get_num_typedefs());
   _typedefs.push_back(dtypedef);
+
+  if (dtypedef->is_bogus_typedef()) {
+    _all_objects_valid = false;
+  }
 
   return true;
 }

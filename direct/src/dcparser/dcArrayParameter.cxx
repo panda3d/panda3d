@@ -86,6 +86,18 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCArrayParameter::is_valid
+//       Access: Published, Virtual
+//  Description: Returns false if the type is an invalid type
+//               (e.g. declared from an undefined typedef), true if
+//               it is valid.
+////////////////////////////////////////////////////////////////////
+bool DCArrayParameter::
+is_valid() const {
+  return _element_type->is_valid();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCArrayParameter::get_element_type
 //       Access: Published
 //  Description: Returns the type of the individual elements of this

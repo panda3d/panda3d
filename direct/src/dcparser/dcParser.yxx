@@ -209,7 +209,16 @@ import_symbol_list:
 typedef_decl:
         KW_TYPEDEF parameter
 {
-  dc_file->add_typedef(new DCTypedef($2));
+  DCTypedef *dtypedef = new DCTypedef($2);
+
+  if (!dc_file->add_typedef(dtypedef)) {
+    DCTypedef *old_typedef = dc_file->get_typedef_by_name(dtypedef->get_name());
+    if (old_typedef->is_bogus_typedef()) {
+      yyerror("typedef defined after its first reference: " + dtypedef->get_name());
+    } else {
+      yyerror("Duplicate typedef name: " + dtypedef->get_name());
+    }
+  }
 }
 	;
 
@@ -290,14 +299,20 @@ atomic_element:
 }
 	parameter_value
 {
-  if (!current_packer->end_pack()) {
-    yyerror("Invalid default value for type");
+  bool is_valid = $1->is_valid();
+  atomic_element = DCAtomicField::ElementType($1);
+  if (current_packer->end_pack()) {
+    atomic_element.set_default_value(current_packer->get_string());
 
   } else {
-    atomic_element = DCAtomicField::ElementType($1);
-    atomic_element.set_default_value(current_packer->get_string());
-    current_atomic->add_element(atomic_element);
+    if (is_valid) {
+      yyerror("Invalid default value for type");
+    }
+    // If the current parameter isn't valid, we don't mind a pack
+    // error (there's no way for us to validate the syntax).  So we'll
+    // just ignore the default value in this case.
   }
+  current_atomic->add_element(atomic_element);
 }
 	;
 
@@ -333,11 +348,11 @@ type_name:
 {
   DCTypedef *dtypedef = dc_file->get_typedef_by_name($1);
   if (dtypedef == (DCTypedef *)NULL) {
-    yyerror("Invalid type name");
-
-  } else {
-    $$ = dtypedef->make_new_parameter();
+    dtypedef = new DCTypedef($1);
+    dc_file->add_typedef(dtypedef);
   }
+
+  $$ = dtypedef->make_new_parameter();
 }
 	;
 

@@ -32,12 +32,15 @@ class DCParameter;
 class EXPCL_DIRECT DCTypedef {
 public:
   DCTypedef(DCParameter *parameter);
+  DCTypedef(const string &name);
   ~DCTypedef();
 
 PUBLISHED:
   int get_number() const;
   const string &get_name() const;
   string get_description() const;
+
+  bool is_bogus_typedef() const;
 
 public:
   DCParameter *make_new_parameter() const;
@@ -47,6 +50,7 @@ public:
 
 private:
   DCParameter *_parameter;
+  bool _bogus_typedef;
   int _number;
 };
 

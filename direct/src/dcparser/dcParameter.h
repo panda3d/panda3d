@@ -52,6 +52,7 @@ PUBLISHED:
   virtual DCArrayParameter *as_array_parameter();
 
   virtual DCParameter *make_copy() const=0;
+  virtual bool is_valid() const=0;
 
   const DCTypedef *get_typedef() const;
 

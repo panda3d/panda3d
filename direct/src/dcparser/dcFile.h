@@ -51,7 +51,7 @@ PUBLISHED:
   DCClass *get_class(int n) const;
   DCClass *get_class_by_name(const string &name) const;
 
-  bool all_classes_valid() const;
+  bool all_objects_valid() const;
 
   int get_num_import_modules() const;
   string get_import_module(int n) const;
@@ -94,7 +94,7 @@ private:
   typedef pmap<string, DCTypedef *> TypedefsByName;
   TypedefsByName _typedefs_by_name;
 
-  bool _all_classes_valid;
+  bool _all_objects_valid;
 };
 
 #endif
