@@ -64,7 +64,8 @@ public:
   virtual bool is_thread_safe();
 
 private:
-  virtual void connection_reset(const PT(Connection) &connection);
+  virtual void connection_reset(const PT(Connection) &connection, 
+                                PRErrorCode errcode);
 
   PStatListener *_listener;
 

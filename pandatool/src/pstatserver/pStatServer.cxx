@@ -230,7 +230,7 @@ is_thread_safe() {
 //               parties and clean up gracefully.
 ////////////////////////////////////////////////////////////////////
 void PStatServer::
-connection_reset(const PT(Connection) &connection) {
+connection_reset(const PT(Connection) &connection, PRErrorCode errcode) {
   // Was this a client connection?  Tell the reader about it if it
   // was.
   close_connection(connection);
