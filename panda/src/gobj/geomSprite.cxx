@@ -118,7 +118,7 @@ fillin(DatagramIterator& scan, BamReader* manager) {
   READ_PTA(manager, scan, IPD_float::read_datagram, _y_texel_ratio);
   _x_bind_type = (GeomBindType) scan.get_uint8();
   _y_bind_type = (GeomBindType) scan.get_uint8();
-  _alpha_disable = (bool) scan.get_uint8();
+  _alpha_disable = (scan.get_uint8() !=0);
   manager->read_pointer(scan, this);
 }
 
