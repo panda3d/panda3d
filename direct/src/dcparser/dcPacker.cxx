@@ -20,6 +20,8 @@
 #include "dcSwitch.h"
 #include "dcParserDefs.h"
 #include "dcLexerDefs.h"
+#include "dcClassParameter.h"
+#include "dcClass.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::Constructor
@@ -217,6 +219,9 @@ begin_repack(const char *data, size_t length,
   _root = root;
   _catalog = _root->get_catalog();
   _live_catalog = _catalog->get_live_catalog(_unpack_data, _unpack_length);
+  if (_live_catalog == NULL) {
+    _pack_error = true;
+  }
 
   // We don't begin at the first field in repack mode.  Instead, you
   // must explicitly call seek().
@@ -268,6 +273,10 @@ seek(const string &field_name) {
       _live_catalog = _catalog->get_live_catalog(_unpack_data, _unpack_length);
     }
     nassertr(_catalog != (DCPackerCatalog *)NULL, false);
+    if (_live_catalog == NULL) {
+      _pack_error = true;
+      return false;
+    }
 
     int entry_index = _live_catalog->find_entry_by_name(field_name);
     if (entry_index < 0) {
@@ -305,6 +314,10 @@ seek(const string &field_name) {
       _pack_error = true;
       return false;
     }
+    if (_live_catalog == NULL) {
+      _pack_error = true;
+      return false;
+    }
 
     int entry_index = _live_catalog->find_entry_by_name(field_name);
     if (entry_index < 0) {
@@ -337,6 +350,11 @@ seek(const string &field_name) {
 
       _catalog->release_live_catalog(_live_catalog);
       _live_catalog = _catalog->get_live_catalog(_unpack_data, _unpack_length);
+
+      if (_live_catalog == NULL) {
+        _pack_error = true;
+        return false;
+      }
 
       begin = _live_catalog->get_begin(entry_index);
     }
@@ -696,6 +714,22 @@ unpack_object() {
     }
     break;
 
+  case PT_class:
+    {
+      const DCClassParameter *class_param = ((DCPackerInterface *)get_current_field())->as_class_parameter();
+      if (class_param != (DCClassParameter *)NULL) {
+        DCClass *dclass = class_param->get_class();
+        if (dclass->has_class_def()) {
+          // If we know what kind of class object this is and it has a
+          // valid constructor, create the class object instead of
+          // just a tuple.
+          object = unpack_class_object(dclass);
+          break;
+        }
+      }
+    }
+    // If we don't know what kind of class object it is, or it doesn't
+    // have a constructor, fall through and make a tuple.
   default:
     {
       // First, build up a list from the nested objects.
@@ -994,3 +1028,92 @@ set_unpack_data(const char *unpack_data, size_t unpack_length,
   _unpack_length = unpack_length;
   _owns_unpack_data = owns_unpack_data;
 }
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::unpack_class_object
+//       Access: Private
+//  Description: Given that the current element is a ClassParameter
+//               for a Python class for which we have a valid
+//               constructor, unpack it and fill in its values.
+////////////////////////////////////////////////////////////////////
+PyObject *DCPacker::
+unpack_class_object(DCClass *dclass) {
+  PyObject *class_def = dclass->get_class_def();
+  nassertr(class_def != (PyObject *)NULL, NULL);
+
+  PyObject *object = PyObject_CallObject(class_def, NULL);
+  if (object == (PyObject *)NULL) {
+    return NULL;
+  }
+
+  push();
+  while (more_nested_fields()) {
+    const DCField *field = ((DCPackerInterface *)get_current_field())->as_field();
+    nassertr(field != (DCField *)NULL, object);
+
+    set_class_element(object, field);
+  }
+  pop();
+
+  return object;
+}
+#endif  // HAVE_PYTHON
+
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::set_class_element
+//       Access: Private
+//  Description: Unpacks the current element and stuffs it on the
+//               Python class object in whatever way is appopriate.
+////////////////////////////////////////////////////////////////////
+void DCPacker::
+set_class_element(PyObject *object, const DCField *field) {
+  string field_name = field->get_name();
+  DCPackType pack_type = get_pack_type();
+
+  if (field_name.empty()) {
+    switch (pack_type) {
+    case PT_class:
+    case PT_switch:
+      // If the field has no name, but it is one of these container
+      // objects, we want to unpack its nested objects directly into
+      // the class.
+      push();
+      while (more_nested_fields()) {
+        const DCField *field = ((DCPackerInterface *)get_current_field())->as_field();
+        nassertv(field != (DCField *)NULL);
+        set_class_element(object, field);
+      }
+      pop();
+      break;
+
+    default:
+      // Otherwise, we just skip over the field.
+      unpack_skip();
+    }
+
+  } else {
+    // If the field does have a name, we will want to store it on the
+    // class, either by calling a method (for a PT_field pack_type) or
+    // by setting a value (for any other kind of pack_type).
+
+    PyObject *element = unpack_object();
+
+    if (pack_type == PT_field) {
+      PyObject *func = PyObject_GetAttrString(object, (char *)field_name.c_str());
+      if (func != (PyObject *)NULL) {
+        PyObject *result = PyObject_CallObject(func, element);
+        Py_XDECREF(result);
+      }
+      Py_DECREF(func);
+      
+    } else {
+      PyObject_SetAttrString(object, (char *)field_name.c_str(), element);
+    }
+
+    Py_DECREF(element);
+  }
+}
+#endif  // HAVE_PYTHON

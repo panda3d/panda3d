@@ -55,6 +55,7 @@ PUBLISHED:
   bool is_bogus_class() const;
 
 #ifdef HAVE_PYTHON
+  bool has_class_def() const;
   void set_class_def(PyObject *class_def);
   PyObject *get_class_def() const;
 

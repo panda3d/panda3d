@@ -61,6 +61,16 @@ get_number() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCField::as_field
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DCField *DCField::
+as_field() {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCField::as_atomic_field
 //       Access: Published, Virtual
 //  Description: Returns the same field pointer converted to an atomic

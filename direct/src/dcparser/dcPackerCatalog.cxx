@@ -138,7 +138,10 @@ get_live_catalog(const char *data, size_t length) const {
   r_fill_live_catalog(live_catalog, packer, last_switch);
   bool okflag = packer.end_unpack();
 
-  nassertr(okflag, live_catalog);
+  if (!okflag) {
+    delete live_catalog;
+    return NULL;
+  }
 
   if (_root->has_fixed_structure()) {
     // If our root field has a fixed structure, then the live catalog

@@ -225,6 +225,19 @@ is_bogus_class() const {
 
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
+//     Function: DCClass::has_class_def
+//       Access: Published
+//  Description: Returns true if the DCClass object has an associated
+//               Python class definition, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCClass::
+has_class_def() const {
+  return (_class_def != NULL);
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
 //     Function: DCClass::set_class_def
 //       Access: Published
 //  Description: Sets the class object associated with this

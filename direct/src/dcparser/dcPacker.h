@@ -26,6 +26,7 @@
 #include "dcPackerCatalog.h"
 #include "dcPython.h"
 
+class DCClass;
 class DCSwitch;
 
 ////////////////////////////////////////////////////////////////////
@@ -133,6 +134,11 @@ private:
   void clear();
   void set_unpack_data(const char *unpack_data, size_t unpack_length, 
                        bool owns_unpack_data);
+
+#ifdef HAVE_PYTHON
+  PyObject *unpack_class_object(DCClass *dclass);
+  void set_class_element(PyObject *object, const DCField *field);
+#endif
 
 private:
   enum Mode {

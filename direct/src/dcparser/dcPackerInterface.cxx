@@ -70,6 +70,16 @@ DCPackerInterface::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::as_field
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DCField *DCPackerInterface::
+as_field() {
+  return (DCField *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::as_switch
 //       Access: Published, Virtual
 //  Description: 
@@ -77,6 +87,16 @@ DCPackerInterface::
 DCSwitch *DCPackerInterface::
 as_switch() {
   return (DCSwitch *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::as_class_parameter
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DCClassParameter *DCPackerInterface::
+as_class_parameter() {
+  return (DCClassParameter *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

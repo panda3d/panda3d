@@ -42,6 +42,7 @@ public:
 PUBLISHED:
   int get_number() const;
 
+  virtual DCField *as_field();
   virtual DCAtomicField *as_atomic_field();
   virtual DCMolecularField *as_molecular_field();
   virtual DCParameter *as_parameter();

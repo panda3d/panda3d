@@ -22,7 +22,9 @@
 #include "dcbase.h"
 #include "dcSubatomicType.h"
 
+class DCField;
 class DCSwitch;
+class DCClassParameter;
 class DCPackData;
 class DCPackerCatalog;
 
@@ -74,7 +76,9 @@ public:
 PUBLISHED:
   INLINE const string &get_name() const;
 
+  virtual DCField *as_field();
   virtual DCSwitch *as_switch();
+  virtual DCClassParameter *as_class_parameter();
 
 public:
   INLINE void set_name(const string &name);
