@@ -18,6 +18,16 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureStage::Copy Constructor
+//       Access: Published
+//  Description: Initialize the texture stage from other
+////////////////////////////////////////////////////////////////////
+INLINE TextureStage::
+TextureStage(TextureStage &copy) {
+  (*this) = copy;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureStage::get_name
 //       Access: Published
 //  Description: Returns the name of this texture stage
@@ -119,37 +129,6 @@ operator < (const TextureStage &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::opertor =
-//       Access: Published
-//  Description: just copy the members of other to this
-////////////////////////////////////////////////////////////////////
-INLINE TextureStage &TextureStage::
-operator = (const TextureStage &other) {
-  _name = other._name;
-  _sort = other._sort;
-  _priority = other._priority;
-  _texcoord_name = other._texcoord_name;
-  _mode = other._mode;
-  _color = other._color;
-  _combine_rgb_mode = other._combine_rgb_mode;
-  _combine_rgb_source0 = other._combine_rgb_source0;
-  _combine_rgb_operand0 = other._combine_rgb_operand0;
-  _combine_rgb_source1 = other._combine_rgb_source1;
-  _combine_rgb_operand1 = other._combine_rgb_operand1;
-  _combine_rgb_source2 = other._combine_rgb_source2;
-  _combine_rgb_operand2 = other._combine_rgb_operand2;
-  _combine_alpha_mode = other._combine_alpha_mode;
-  _combine_alpha_source0 = other._combine_alpha_source0;
-  _combine_alpha_operand0 = _combine_alpha_operand0;
-  _combine_alpha_source1 = other._combine_alpha_source1;
-  _combine_alpha_operand1 = other._combine_alpha_operand1;
-  _combine_alpha_source2 = other._combine_alpha_source2;
-  _combine_alpha_operand2 = other._combine_alpha_operand2;
-
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextureStage::set_texcoord_name
 //       Access: Published
 //  Description: Indicate which set of UV's this texture stage will
@@ -196,6 +175,7 @@ set_mode(TextureStage::Mode mode) {
     _num_combine_rgb_operands = 0;
     _num_combine_alpha_operands = 0;
   }
+  set_involves_color_scale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -229,6 +209,57 @@ get_color() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureStage::set_rgb_scale
+//       Access: Published
+//  Description: Sets an additional factor that will scale all three
+//               r, g, b components after the texture has been
+//               applied.  This is used only when the mode is
+//               CM_combine.
+//
+//               The only legal values are 1, 2, or 4.
+////////////////////////////////////////////////////////////////////
+INLINE void TextureStage::
+set_rgb_scale(int rgb_scale) {
+  nassertv(rgb_scale == 1 || rgb_scale == 2 || rgb_scale == 4);
+  _rgb_scale = rgb_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureStage::get_rgb_scale
+//       Access: Published
+//  Description: See set_rgb_scale().
+////////////////////////////////////////////////////////////////////
+INLINE int TextureStage::
+get_rgb_scale() const {
+  return _rgb_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureStage::set_alpha_scale
+//       Access: Published
+//  Description: Sets an additional factor that will scale the
+//               alpha component after the texture has been applied.
+//               This is used only when the mode is CM_combine.
+//
+//               The only legal values are 1, 2, or 4.
+////////////////////////////////////////////////////////////////////
+INLINE void TextureStage::
+set_alpha_scale(int alpha_scale) {
+  nassertv(alpha_scale == 1 || alpha_scale == 2 || alpha_scale == 4);
+  _alpha_scale = alpha_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureStage::get_alpha_scale
+//       Access: Published
+//  Description: See set_alpha_scale().
+////////////////////////////////////////////////////////////////////
+INLINE int TextureStage::
+get_alpha_scale() const {
+  return _alpha_scale;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureStage::set_combine_rgb
 //       Access: Published
 //  Description: Specifies any of the CombineMode values that
@@ -249,6 +280,8 @@ set_combine_rgb(CombineMode mode,
   _combine_rgb_operand1 = CO_undefined;
   _combine_rgb_source2 = CS_undefined;
   _combine_rgb_operand2 = CO_undefined;
+
+  set_involves_color_scale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -275,6 +308,8 @@ set_combine_rgb(CombineMode mode,
   _combine_rgb_operand1 = operand1;
   _combine_rgb_source2 = CS_undefined;
   _combine_rgb_operand2 = CO_undefined;
+
+  set_involves_color_scale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -302,6 +337,8 @@ set_combine_rgb(CombineMode mode,
   _combine_rgb_operand1 = operand1;
   _combine_rgb_source2 = source2;
   _combine_rgb_operand2 = operand2;
+
+  set_involves_color_scale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -407,6 +444,8 @@ set_combine_alpha(CombineMode mode,
   _combine_alpha_operand1 = CO_undefined;
   _combine_alpha_source2 = CS_undefined;
   _combine_alpha_operand2 = CO_undefined;
+
+  set_involves_color_scale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -433,6 +472,8 @@ set_combine_alpha(CombineMode mode,
   _combine_alpha_operand1 = operand1;
   _combine_alpha_source2 = CS_undefined;
   _combine_alpha_operand2 = CO_undefined;
+
+  set_involves_color_scale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -460,6 +501,8 @@ set_combine_alpha(CombineMode mode,
   _combine_alpha_operand1 = operand1;
   _combine_alpha_source2 = source2;
   _combine_alpha_operand2 = operand2;
+
+  set_involves_color_scale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -545,6 +588,18 @@ get_combine_alpha_operand2() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureStage::involves_color_scale
+//       Access: Published
+//  Description: Returns true if the TextureStage is affected by the
+//               setting of the current ColorScaleAttrib, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextureStage::
+involves_color_scale() const {
+  return _involves_color_scale;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureStage::get_default
 //       Access: Published, Static
 //  Description: Returns the default TextureStage that will be used
@@ -572,6 +627,23 @@ get_default() {
 INLINE UpdateSeq TextureStage::
 get_sort_seq() {
   return _sort_seq;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureStage::set_involves_color_scale
+//       Access: Private
+//  Description: Updates _involves_color_scale appropriately.
+////////////////////////////////////////////////////////////////////
+INLINE void TextureStage::
+set_involves_color_scale() {
+  _involves_color_scale = (_mode == M_blend_color_scale ||
+      (_mode == M_combine &&
+       (_combine_rgb_source0 == CS_constant_color_scale ||
+        _combine_rgb_source1 == CS_constant_color_scale ||
+        _combine_rgb_source2 == CS_constant_color_scale ||
+        _combine_alpha_source0 == CS_constant_color_scale ||
+        _combine_alpha_source1 == CS_constant_color_scale ||
+        _combine_alpha_source2 == CS_constant_color_scale)));
 }
 
 INLINE ostream &

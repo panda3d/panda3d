@@ -58,6 +58,17 @@ PUBLISHED:
     O_constant_alpha,
     O_one_minus_constant_alpha,
     O_incoming_color_saturate,  // valid only for operand a
+
+    // If you set either of the operands to any of the below, the
+    // blend color is taken from the current ColorScaleAttrib.  This
+    // also inhibits the normal behavior of the ColorScaleAttrib; it
+    // no longer directly scales the vertex colors, on the assumption
+    // that you will instead take care of the scale here, in the blend
+    // mode.
+    O_color_scale,
+    O_one_minus_color_scale,
+    O_alpha_scale,
+    O_one_minus_alpha_scale,
   };
 
 private:
@@ -76,7 +87,11 @@ PUBLISHED:
   INLINE Operand get_operand_b() const;
   INLINE Colorf get_color() const;
 
+  INLINE bool involves_constant_color() const;
+  INLINE bool involves_color_scale() const;
+
   INLINE static bool involves_constant_color(Operand operand);
+  INLINE static bool involves_color_scale(Operand operand);
 
 public:
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
@@ -90,6 +105,8 @@ private:
   Mode _mode;
   Operand _a, _b;
   Colorf _color;
+  bool _involves_constant_color;
+  bool _involves_color_scale;
 
 public:
   static void register_with_read_factory();

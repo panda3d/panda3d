@@ -741,6 +741,14 @@ make_texture_layer(const NodePath &render,
       (ColorBlendAttrib::M_add, ColorBlendAttrib::O_fbuffer_color,
        ColorBlendAttrib::O_zero);
     break;
+
+  case TextureStage::M_blend_color_scale:
+    // TODO: make a distinction between this and M_blend.
+    cba = ColorBlendAttrib::make
+      (ColorBlendAttrib::M_add, ColorBlendAttrib::O_constant_color,
+       ColorBlendAttrib::O_one_minus_incoming_color,
+       stage_info._stage->get_color());
+    break;
   }
 
   NodePath geom;

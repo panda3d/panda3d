@@ -37,6 +37,8 @@ TextureStage(const string &name) {
   _texcoord_name = TexCoordName::get_default();
   _mode = M_modulate;
   _color.set(0.0f, 0.0f, 0.0f, 1.0f);
+  _rgb_scale = 1;
+  _alpha_scale = 1;
   _combine_rgb_mode = CM_undefined;
   _num_combine_rgb_operands = 0;
   _combine_rgb_source0 = CS_undefined;
@@ -53,36 +55,42 @@ TextureStage(const string &name) {
   _combine_alpha_operand1 = CO_undefined;
   _combine_alpha_source2 = CS_undefined;
   _combine_alpha_operand2 = CO_undefined;
+
+  _involves_color_scale = false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::Constructor
+//     Function: TextureStage::operator =
 //       Access: Published
-//  Description: Initialize the texture stage from other
+//  Description: just copy the members of other to this
 ////////////////////////////////////////////////////////////////////
-TextureStage::
-TextureStage(TextureStage *copy) {
-  _name = copy->_name;
-  _sort = copy->_sort;
-  _priority = copy->_priority;
-  _texcoord_name = copy->_texcoord_name;
-  _mode = copy->_mode;
-  _color = copy->_color;
-  _combine_rgb_mode = copy->_combine_rgb_mode;
-  _combine_rgb_source0 = copy->_combine_rgb_source0;
-  _combine_rgb_operand0 = copy->_combine_rgb_operand0;
-  _combine_rgb_source1 = copy->_combine_rgb_source1;
-  _combine_rgb_operand1 = copy->_combine_rgb_operand1;
-  _combine_rgb_source2 = copy->_combine_rgb_source2;
-  _combine_rgb_operand2 = copy->_combine_rgb_operand2;
-  _combine_alpha_mode = copy->_combine_alpha_mode;
-  _combine_alpha_source0 = copy->_combine_alpha_source0;
-  _combine_alpha_operand0 = _combine_alpha_operand0;
-  _combine_alpha_source1 = copy->_combine_alpha_source1;
-  _combine_alpha_operand1 = copy->_combine_alpha_operand1;
-  _combine_alpha_source2 = copy->_combine_alpha_source2;
-  _combine_alpha_operand2 = copy->_combine_alpha_operand2;
+void TextureStage::
+operator = (const TextureStage &other) {
+  _name = other._name;
+  _sort = other._sort;
+  _priority = other._priority;
+  _texcoord_name = other._texcoord_name;
+  _mode = other._mode;
+  _color = other._color;
+  _rgb_scale = other._rgb_scale;
+  _alpha_scale = other._alpha_scale;
 
+  _combine_rgb_mode = other._combine_rgb_mode;
+  _combine_rgb_source0 = other._combine_rgb_source0;
+  _combine_rgb_operand0 = other._combine_rgb_operand0;
+  _combine_rgb_source1 = other._combine_rgb_source1;
+  _combine_rgb_operand1 = other._combine_rgb_operand1;
+  _combine_rgb_source2 = other._combine_rgb_source2;
+  _combine_rgb_operand2 = other._combine_rgb_operand2;
+  _combine_alpha_mode = other._combine_alpha_mode;
+  _combine_alpha_source0 = other._combine_alpha_source0;
+  _combine_alpha_operand0 = _combine_alpha_operand0;
+  _combine_alpha_source1 = other._combine_alpha_source1;
+  _combine_alpha_operand1 = other._combine_alpha_operand1;
+  _combine_alpha_source2 = other._combine_alpha_source2;
+  _combine_alpha_operand2 = other._combine_alpha_operand2;
+
+  _involves_color_scale = other._involves_color_scale;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,7 +111,8 @@ void TextureStage::
 write(ostream &out) const {
   out << "TextureStage " << get_name() << ", sort = " << get_sort() << ", priority = " << get_priority() << "\n"
       << "  texcoords = " << get_texcoord_name()->get_name()
-      << ", mode = " << get_mode() << ", color = " << get_color() << "\n";
+      << ", mode = " << get_mode() << ", color = " << get_color()
+      << ", scale = " << get_rgb_scale() << ", " << get_alpha_scale() << "\n";
 
   if (get_mode() == M_combine) {
     out << "  RGB combine mode =  " << get_combine_rgb_mode() << "\n";
@@ -269,6 +278,14 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _mode = (TextureStage::Mode) scan.get_uint8();
   _color.read_datagram(scan);
+
+  if (manager->get_file_minor_ver() >= 16) {
+    _rgb_scale = scan.get_uint8();
+    _alpha_scale = scan.get_uint8();
+  } else {
+    _rgb_scale = 1;
+    _alpha_scale = 1;
+  }
   
   _combine_rgb_mode = (TextureStage::CombineMode) scan.get_uint8();
   _num_combine_rgb_operands = scan.get_uint8();
@@ -287,6 +304,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _combine_alpha_operand1 = (TextureStage::CombineOperand) scan.get_uint8();
   _combine_alpha_source2 = (TextureStage::CombineSource) scan.get_uint8();
   _combine_alpha_operand2 = (TextureStage::CombineOperand) scan.get_uint8();
+
+  set_involves_color_scale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -322,10 +341,12 @@ write_datagram(BamWriter *manager, Datagram &me) {
     me.add_int32(_sort);
     me.add_int32(_priority);
 
-    manager->write_pointer(me,_texcoord_name);
+    manager->write_pointer(me, _texcoord_name);
     
     me.add_uint8(_mode);
     _color.write_datagram(me);
+    me.add_uint8(_rgb_scale);
+    me.add_uint8(_alpha_scale);
     
     me.add_uint8(_combine_rgb_mode);
     me.add_uint8(_num_combine_rgb_operands);
@@ -367,6 +388,9 @@ operator << (ostream &out, TextureStage::Mode mode) {
 
   case TextureStage::M_combine:
     return out << "combine";
+
+  case TextureStage::M_blend_color_scale:
+    return out << "blend_color_scale";
   }
 
   return out << "**invalid Mode(" << (int)mode << ")**";
@@ -423,6 +447,9 @@ operator << (ostream &out, TextureStage::CombineSource cs) {
 
   case TextureStage::CS_previous:
     return out << "previous";
+
+  case TextureStage::CS_constant_color_scale:
+    return out << "constant_color_scale";
   }
 
   return out << "**invalid CombineSource(" << (int)cs << ")**";

@@ -87,6 +87,8 @@ operator = (const EggTexture &copy) {
   _priority = copy._priority;
   _color = copy._color;
   _uv_name = copy._uv_name;
+  _rgb_scale = 1;
+  _alpha_scale = 1;
   _flags = copy._flags;
   _transform = copy._transform;
   _alpha_filename = copy._alpha_filename;
@@ -223,6 +225,16 @@ write(ostream &out, int indent_level) const {
   if (has_uv_name()) {
     indent(out, indent_level + 2)
       << "<Scalar> uv-name { " << get_uv_name() << " }\n";
+  }
+
+  if (has_rgb_scale()) {
+    indent(out, indent_level + 2)
+      << "<Scalar> rgb-scale { " << get_rgb_scale() << " }\n";
+  }
+
+  if (has_alpha_scale()) {
+    indent(out, indent_level + 2)
+      << "<Scalar> alpha-scale { " << get_alpha_scale() << " }\n";
   }
 
   EggRenderMode::write(out, indent_level + 2);
@@ -676,6 +688,9 @@ string_env_type(const string &string) {
   } else if (cmp_nocase_uh(string, "add") == 0) {
     return ET_add;
 
+  } else if (cmp_nocase_uh(string, "blend_color_scale") == 0) {
+    return ET_blend_color_scale;
+
   } else {
     return ET_unspecified;
   }
@@ -739,6 +754,9 @@ string_combine_source(const string &string) {
 
   } else if (cmp_nocase_uh(string, "previous") == 0) {
     return CS_previous;
+
+  } else if (cmp_nocase_uh(string, "constant_color_scale") == 0) {
+    return CS_constant_color_scale;
 
   } else {
     return CS_unspecified;
@@ -979,6 +997,9 @@ ostream &operator << (ostream &out, EggTexture::EnvType type) {
 
   case EggTexture::ET_add:
     return out << "add";
+
+  case EggTexture::ET_blend_color_scale:
+    return out << "blend_color_scale";
   }
 
   nassertr(false, out);
@@ -1054,6 +1075,9 @@ operator << (ostream &out, EggTexture::CombineSource cs) {
 
   case EggTexture::CS_previous:
     return out << "previous";
+
+  case EggTexture::CS_constant_color_scale:
+    return out << "constant_color_scale";
   }
 
   return out << "**invalid CombineSource(" << (int)cs << ")**";

@@ -1188,6 +1188,10 @@ make_texture_stage(const EggTexture *egg_tex) {
   case EggTexture::ET_add:
     stage->set_mode(TextureStage::M_add);
     break;
+    
+  case EggTexture::ET_blend_color_scale:
+    stage->set_mode(TextureStage::M_blend_color_scale);
+    break;
 
   case EggTexture::ET_unspecified:
     break;
@@ -1266,6 +1270,14 @@ make_texture_stage(const EggTexture *egg_tex) {
     CPT(TexCoordName) name = 
       TexCoordName::make(egg_tex->get_uv_name());
     stage->set_texcoord_name(name);
+  }
+
+  if (egg_tex->has_rgb_scale()) {
+    stage->set_rgb_scale(egg_tex->get_rgb_scale());
+  }
+
+  if (egg_tex->has_alpha_scale()) {
+    stage->set_alpha_scale(egg_tex->get_alpha_scale());
   }
 
   stage->set_sort(egg_tex->get_multitexture_sort() * 10);
@@ -3047,6 +3059,9 @@ get_combine_source(const EggTexture *egg_tex,
 
   case EggTexture::CS_previous:
     return TextureStage::CS_previous;
+
+  case EggTexture::CS_constant_color_scale:
+    return TextureStage::CS_constant_color_scale;
   };
 
   return TextureStage::CS_undefined;

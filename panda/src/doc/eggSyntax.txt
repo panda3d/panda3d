@@ -200,12 +200,13 @@ appear before they are referenced.
       BLEND
       REPLACE
       ADD
+      BLEND_COLOR_SCALE
 
     The default environment type is MODULATE, which means the texture
     color is multiplied with the base polygon (or vertex) color.  This
     is the most common texture environment by far.  Other environment
     types are more esoteric and are especially useful in the presence
-    of multitexture.
+    of multitexture.  See howto.use_multitexture.txt for more on these.
 
   <Scalar> combine-rgb { combine-mode }
   <Scalar> combine-alpha { combine-mode }
@@ -246,6 +247,7 @@ appear before they are referenced.
       CONSTANT
       PRIMARY-COLOR
       PREVIOUS
+      CONSTANT_COLOR_SCALE
 
     combine-operand may be one of:
 
@@ -313,6 +315,14 @@ appear before they are referenced.
     associated with this texture.  If this is omitted, the default
     texture coordinates are used.
 
+  <Scalar> rgb-scale { scale }
+  <Scalar> alpha-scale { scale }
+
+    Specifies an additional scale factor that will scale the r, g, b
+    (or a) components after the texture has been applied.  This is
+    only used when a combine mode is in effect.  The only legal values
+    are 1, 2, or 4.
+
   <Scalar> alpha { alpha-type }
 
     This specifies whether and what type of transparency will be
@@ -326,7 +336,7 @@ appear before they are referenced.
       MS_MASK
 
     If alpha-type is OFF, it means not to enable transparency, even if
-    the image contains an alpha channel or the format is RGBA12.  If
+    the image contains an alpha channel or the format is RGBA.  If
     alpha-type is ON, it means to enable the default transparency,
     even if the image filename does not contain an alpha channel.  If
     alpha-type is any of the other options, it specifies the type of

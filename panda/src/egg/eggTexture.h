@@ -91,6 +91,7 @@ PUBLISHED:
     ET_blend,
     ET_replace,
     ET_add,
+    ET_blend_color_scale,
   };
   enum CombineMode {
     CM_unspecified,
@@ -117,6 +118,7 @@ PUBLISHED:
     CS_constant,
     CS_primary_color,
     CS_previous,
+    CS_constant_color_scale,
   };
   enum CombineOperand {
     CO_unspecified,
@@ -192,6 +194,16 @@ PUBLISHED:
   INLINE bool has_uv_name() const;
   INLINE const string &get_uv_name() const;
 
+  INLINE void set_rgb_scale(int rgb_scale);
+  INLINE void clear_rgb_scale();
+  INLINE bool has_rgb_scale() const;
+  INLINE int get_rgb_scale() const;
+
+  INLINE void set_alpha_scale(int alpha_scale);
+  INLINE void clear_alpha_scale();
+  INLINE bool has_alpha_scale() const;
+  INLINE int get_alpha_scale() const;
+
   INLINE void set_transform(const LMatrix3d &transform);
   INLINE void clear_transform();
   INLINE bool has_transform() const;
@@ -240,6 +252,8 @@ private:
     F_has_uv_name            = 0x0020,
     F_has_priority           = 0x0040,
     F_has_color              = 0x0080,
+    F_has_rgb_scale          = 0x0100,
+    F_has_alpha_scale        = 0x0200,
   };
 
   Format _format;
@@ -252,6 +266,8 @@ private:
   int _priority;
   Colorf _color;
   string _uv_name;
+  int _rgb_scale;
+  int _alpha_scale;
   int _flags;
   LMatrix3d _transform;
   Filename _alpha_filename;

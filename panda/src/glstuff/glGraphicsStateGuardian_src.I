@@ -171,6 +171,7 @@ enable_multisample_alpha_mask(bool val) {
 INLINE void CLP(GraphicsStateGuardian)::
 enable_line_smooth(bool val) {
   if (_line_smooth_enabled != val) {
+    _blend_mode_stale = true;
     _line_smooth_enabled = val;
     if (val) {
       GLP(Enable)(GL_LINE_SMOOTH);
@@ -188,6 +189,7 @@ enable_line_smooth(bool val) {
 INLINE void CLP(GraphicsStateGuardian)::
 enable_point_smooth(bool val) {
   if (_point_smooth_enabled != val) {
+    _blend_mode_stale = true;
     _point_smooth_enabled = val;
     if (val) {
       GLP(Enable)(GL_POINT_SMOOTH);
@@ -228,7 +230,10 @@ setup_antialias_line() {
     // have multisample available.
     enable_multisample_antialias(false);
     enable_line_smooth(true);
-    set_blend_mode();
+
+    if (_blend_mode_stale) {
+      set_blend_mode();
+    }
   }
 }
 
@@ -246,7 +251,10 @@ setup_antialias_point() {
     // have multisample available.
     enable_multisample_antialias(false);
     enable_point_smooth(true);
-    set_blend_mode();
+
+    if (_blend_mode_stale) {
+      set_blend_mode();
+    }
   }
 }
 
@@ -276,13 +284,18 @@ setup_antialias_polygon() {
     default:
       // For polygons, multisample is best if it's available, otherwise
       // polygon smoothing will do.
+      enable_line_smooth(false);
+      enable_point_smooth(false);
       if (_supports_multisample) {
         enable_multisample_antialias(true);
       } else {
         enable_polygon_smooth(true);
       }
     }
-    set_blend_mode();
+
+    if (_blend_mode_stale) {
+      set_blend_mode();
+    }
   }
 }
 
@@ -483,7 +496,7 @@ get_clip_plane_id(int index) const {
 INLINE void CLP(GraphicsStateGuardian)::
 issue_scene_graph_color() {
   if (_scene_graph_color_stale) {
-    issue_transformed_color(_scene_graph_color);
+    issue_scaled_color(_scene_graph_color);
     _scene_graph_color_stale = false;
   }
 }

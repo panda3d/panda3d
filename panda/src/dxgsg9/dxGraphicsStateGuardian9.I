@@ -435,10 +435,10 @@ add_to_FVFBuf(void *data,  size_t bytes) {
 INLINE void DXGraphicsStateGuardian9::
 transform_color(Colorf &InColor,D3DCOLOR &OutRGBAColor) {
   Colorf transformed
-    ((InColor[0] * _current_color_scale[0]) + _current_color_offset[0],
-     (InColor[1] * _current_color_scale[1]) + _current_color_offset[1],
-     (InColor[2] * _current_color_scale[2]) + _current_color_offset[2],
-     (InColor[3] * _current_color_scale[3]) + _current_color_offset[3]);
+    (InColor[0] * _current_color_scale[0],
+     InColor[1] * _current_color_scale[1],
+     InColor[2] * _current_color_scale[2],
+     InColor[3] * _current_color_scale[3]);
   OutRGBAColor = Colorf_to_D3DCOLOR(transformed);
 }
 

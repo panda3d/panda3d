@@ -543,6 +543,22 @@ texture_body:
   } else if (cmp_nocase_uh(name, "uv_name") == 0) {
     texture->set_uv_name(strval);
 
+  } else if (cmp_nocase_uh(name, "rgb_scale") == 0) {
+    int int_value = (int)value;
+    if (int_value != 1 && int_value != 2 && int_value != 4) {
+      eggyyerror("Invalid rgb-scale value " + strval);
+    } else {
+      texture->set_rgb_scale(int_value);
+    }
+
+  } else if (cmp_nocase_uh(name, "alpha_scale") == 0) {
+    int int_value = (int)value;
+    if (int_value != 1 && int_value != 2 && int_value != 4) {
+      eggyyerror("Invalid alpha-scale value " + strval);
+    } else {
+      texture->set_alpha_scale(int_value);
+    }
+
   } else if (cmp_nocase_uh(name, "alpha") == 0) {
     EggRenderMode::AlphaMode a = EggRenderMode::string_alpha_mode(strval);
     if (a == EggRenderMode::AM_unspecified) {

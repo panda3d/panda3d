@@ -28,7 +28,9 @@ ColorBlendAttrib() :
   _mode(M_none),
   _a(O_one),
   _b(O_one),
-  _color(Colorf::zero())
+  _color(Colorf::zero()),
+  _involves_constant_color(false),
+  _involves_color_scale(false)
 {
 }
 
@@ -45,7 +47,9 @@ ColorBlendAttrib(ColorBlendAttrib::Mode mode,
   _mode(mode),
   _a(a),
   _b(b),
-  _color(color)
+  _color(color),
+  _involves_constant_color(involves_constant_color(a) || involves_constant_color(b)),
+  _involves_color_scale(involves_color_scale(a) || involves_color_scale(b))
 {
 }
 
@@ -91,17 +95,59 @@ get_color() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ColorBlendAttrib::involves_constant_color
+//       Access: Published
+//  Description: Returns true if the this attrib uses the
+//               constant color, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool ColorBlendAttrib::
+involves_constant_color() const {
+  return _involves_constant_color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorBlendAttrib::involves_color_scale
+//       Access: Published
+//  Description: Returns true if the this attrib uses the
+//               color scale attrib, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool ColorBlendAttrib::
+involves_color_scale() const {
+  return _involves_color_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorBlendAttrib::involves_constant_color
 //       Access: Published, Static
 //  Description: Returns true if the indicated operand uses the
 //               constant color, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ColorBlendAttrib::
-involves_constant_color(Operand operand) {
+involves_constant_color(ColorBlendAttrib::Operand operand) {
   switch (operand) {
   case O_constant_color:
   case O_one_minus_constant_color:
   case O_constant_alpha:
   case O_one_minus_constant_alpha:
+    return true;
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorBlendAttrib::involves_color_scale
+//       Access: Published, Static
+//  Description: Returns true if the indicated operand uses the
+//               color scale attrib, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool ColorBlendAttrib::
+involves_color_scale(ColorBlendAttrib::Operand operand) {
+  switch (operand) {
+  case O_color_scale:
+  case O_one_minus_color_scale:
+  case O_alpha_scale:
+  case O_one_minus_alpha_scale:
     return true;
 
   default:

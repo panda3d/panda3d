@@ -528,6 +528,107 @@ get_uv_name() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::set_rgb_scale
+//       Access: Published
+//  Description: Sets an additional factor that will scale all three
+//               r, g, b components after the texture has been
+//               applied.  This is used only when a combine mode is in
+//               effect.
+//
+//               The only legal values are 1, 2, or 4.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+set_rgb_scale(int rgb_scale) {
+  _rgb_scale = rgb_scale;
+  _flags |= F_has_rgb_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::clear_rgb_scale
+//       Access: Published
+//  Description: Removes the rgb_scale from the texture and restores
+//               it to the default value of 1.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+clear_rgb_scale() {
+  _rgb_scale = 1;
+  _flags &= ~F_has_rgb_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::has_rgb_scale
+//       Access: Published
+//  Description: Returns true if an rgb_scale has been specified for
+//               the texture, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggTexture::
+has_rgb_scale() const {
+  return (_flags & F_has_rgb_scale) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::get_rgb_scale
+//       Access: Published
+//  Description: Returns the rgb_scale value that has been
+//               specified for the texture, or 1 if no rgb_scale value
+//               has been specified.
+////////////////////////////////////////////////////////////////////
+INLINE int EggTexture::
+get_rgb_scale() const {
+  return _rgb_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::set_alpha_scale
+//       Access: Published
+//  Description: Sets an additional factor that will scale the
+//               alpha component after the texture has been applied.
+//               This is used only when a combine mode is in effect.
+//
+//               The only legal values are 1, 2, or 4.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+set_alpha_scale(int alpha_scale) {
+  _alpha_scale = alpha_scale;
+  _flags |= F_has_alpha_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::clear_alpha_scale
+//       Access: Published
+//  Description: Removes the alpha_scale from the texture and restores
+//               it to the default value of 1.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+clear_alpha_scale() {
+  _alpha_scale = 1;
+  _flags &= ~F_has_alpha_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::has_alpha_scale
+//       Access: Published
+//  Description: Returns true if an alpha_scale has been specified for
+//               the texture, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggTexture::
+has_alpha_scale() const {
+  return (_flags & F_has_alpha_scale) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::get_alpha_scale
+//       Access: Published
+//  Description: Returns the alpha_scale value that has been
+//               specified for the texture, or 1 if no alpha_scale
+//               value has been specified.
+////////////////////////////////////////////////////////////////////
+INLINE int EggTexture::
+get_alpha_scale() const {
+  return _alpha_scale;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_transform
 //       Access: Published
 //  Description:

@@ -112,7 +112,6 @@ public:
 
   virtual void issue_transform(const TransformState *transform);
   virtual void issue_tex_matrix(const TexMatrixAttrib *attrib);
-  virtual void issue_texture(const TextureAttrib *attrib);
   virtual void issue_material(const MaterialAttrib *attrib);
   virtual void issue_render_mode(const RenderModeAttrib *attrib);
   virtual void issue_antialias(const AntialiasAttrib *);
@@ -148,7 +147,7 @@ public:
   //enabled/disable GL State compared to what GL says it is
   void dump_state(void);
 
-  void issue_transformed_color(const Colorf &color) const;
+  void issue_scaled_color(const Colorf &color) const;
 
   INLINE static bool report_errors(int line, const char *source_file);
   INLINE void report_my_errors(int line, const char *source_file);
@@ -240,12 +239,19 @@ protected:
   static CPT(RenderState) get_untextured_state();
 
   void do_auto_rescale_normal();
+  void do_issue_texture();
 
 #ifndef NDEBUG
   void build_phony_mipmaps(Texture *tex);
   void build_phony_mipmap_level(int level, int xsize, int ysize);
   void save_mipmap_images(Texture *tex);
 #endif
+
+  enum AutoAntialiasMode {
+    AA_poly,
+    AA_line,
+    AA_point,
+  };
 
   enum MultisampleMode {
     MM_antialias  = 0x0001,

@@ -93,6 +93,11 @@ texture_stage.set_mode().  The mode may be one of:
        used to paint arbitrary color stripes or a similar effect over
        an existing texture.
 
+     TextureStage::M_blend_color_scale
+       This is identical to M_blend, except that the blend color,
+       specified by texture_stage.set_color(), is also modified by the
+       color scale applied to the scene graph.
+
      TextureStage::M_replace
        Completely replaces the incoming color with the texture color;
        probably not terribly useful in a multitexture environment,

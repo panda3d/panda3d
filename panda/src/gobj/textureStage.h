@@ -42,7 +42,9 @@ class FactoryParams;
 class EXPCL_PANDA TextureStage : public TypedWritableReferenceCount {
 PUBLISHED:
   TextureStage(const string &name);
-  TextureStage(TextureStage *copy);
+  INLINE TextureStage(TextureStage &copy);
+  void operator = (const TextureStage &copy);
+
   virtual ~TextureStage();
 
   enum Mode {
@@ -52,6 +54,7 @@ PUBLISHED:
     M_replace,
     M_add,
     M_combine,
+    M_blend_color_scale,
   };
 
   enum CombineMode {
@@ -75,6 +78,7 @@ PUBLISHED:
     CS_constant,
     CS_primary_color,
     CS_previous,
+    CS_constant_color_scale,
   };
 
   enum CombineOperand {
@@ -95,7 +99,6 @@ PUBLISHED:
   INLINE int get_priority() const;
 
   INLINE bool operator < (const TextureStage &other) const;
-  INLINE TextureStage &operator = (const TextureStage &copy);
 
   INLINE void set_texcoord_name(const TexCoordName *name);
   INLINE void set_texcoord_name(const string &texcoord_name);
@@ -106,6 +109,12 @@ PUBLISHED:
 
   INLINE void set_color(const Colorf &color);
   INLINE Colorf get_color() const;
+
+  INLINE void set_rgb_scale(int rgb_scale);
+  INLINE int get_rgb_scale() const;
+
+  INLINE void set_alpha_scale(int alpha_scale);
+  INLINE int get_alpha_scale() const;
 
   INLINE void set_combine_rgb(CombineMode mode, 
                               CombineSource source0, CombineOperand operand0);
@@ -143,6 +152,8 @@ PUBLISHED:
   INLINE CombineSource get_combine_alpha_source2() const;
   INLINE CombineOperand get_combine_alpha_operand2() const;
 
+  INLINE bool involves_color_scale() const;
+
   void write(ostream &out) const;
   void output(ostream &out) const;
 
@@ -150,6 +161,8 @@ PUBLISHED:
   INLINE static UpdateSeq get_sort_seq();
 
 private:
+  INLINE void set_involves_color_scale();
+
   static int get_expected_num_combine_operands(CombineMode cm);
   static bool operand_valid_for_rgb(CombineOperand co);
   static bool operand_valid_for_alpha(CombineOperand co);
@@ -160,6 +173,9 @@ private:
   CPT(TexCoordName) _texcoord_name;
   Mode _mode;
   Colorf _color;
+  int _rgb_scale;
+  int _alpha_scale;
+  bool _involves_color_scale;
 
   CombineMode _combine_rgb_mode;
   int _num_combine_rgb_operands;

@@ -956,7 +956,7 @@ draw_prim_setup(const Geom *geom) {
 
 #define GET_NEXT_COLOR() {                                                           \
     Colorf tempcolor = geom->get_next_color(ci);                                     \
-    if(_color_transform_enabled == 0) {                                              \
+    if(!_color_scale_enabled) {                                              \
         _curD3Dcolor = Colorf_to_D3DCOLOR(tempcolor);                                \
     } else {                                                                         \
         transform_color(tempcolor,_curD3Dcolor);                                     \
@@ -994,7 +994,7 @@ draw_prim_setup(const Geom *geom) {
     if (_has_scene_graph_color) {
       if (_scene_graph_color_stale) {
         // Compute the D3DCOLOR for the scene graph override color.
-        if(_color_transform_enabled == 0) {
+        if(!_color_scale_enabled) {
           _scene_graph_color_D3DCOLOR = Colorf_to_D3DCOLOR(_scene_graph_color);
         } else {
           transform_color(_scene_graph_color, _scene_graph_color_D3DCOLOR);

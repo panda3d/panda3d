@@ -34,7 +34,7 @@ static const unsigned short _bam_major_ver = 4;
 // Bumped to major version 3 on 12/8/00 to change float64's to float32's.
 // Bumped to major version 4 on 4/10/02 to store new scene graph.
 
-static const unsigned short _bam_minor_ver = 15;
+static const unsigned short _bam_minor_ver = 16;
 // Bumped to minor version 1 on 4/10/03 to add CullFaceAttrib::reverse.
 // Bumped to minor version 1 on 4/10/03 to add CullFaceAttrib::reverse.
 // Bumped to minor version 2 on 4/12/03 to add num_components to texture.
@@ -51,6 +51,7 @@ static const unsigned short _bam_minor_ver = 15;
 // Bumped to minor version 13 on 09/24/04 to store actual LODNode switch distances instead of squares.
 // Bumped to minor version 14 on 11/18/04 to differentiate old_hpr from new_hpr in compressed anim channels.
 // Bumped to minor version 15 on 1/16/05 to remove width from GeomLine, etc.
+// Bumped to minor version 16 on 2/24/05 to add TextureStage::rgb_scale, etc.
 
 
 #endif

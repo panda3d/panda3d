@@ -94,8 +94,7 @@ output(ostream &out) const {
   if (get_mode() != M_none) {
     out << "(" << get_operand_a()
         << "," << get_operand_b();
-    if (involves_constant_color(get_operand_a()) ||
-        involves_constant_color(get_operand_b())) {
+    if (involves_constant_color()) {
       out << "," << get_color();
     }
     out << ")";
@@ -215,6 +214,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _a = (Operand)scan.get_uint8();
   _b = (Operand)scan.get_uint8();
   _color.read_datagram(scan);
+
+  _involves_constant_color = involves_constant_color(_a) || involves_constant_color(_b);
+  _involves_color_scale = involves_color_scale(_a) || involves_color_scale(_b);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -297,6 +299,18 @@ operator << (ostream &out, ColorBlendAttrib::Operand operand) {
 
   case ColorBlendAttrib::O_incoming_color_saturate:
     return out << "ics";
+
+  case ColorBlendAttrib::O_color_scale:
+    return out << "cs";
+
+  case ColorBlendAttrib::O_one_minus_color_scale:
+    return out << "1-cs";
+
+  case ColorBlendAttrib::O_alpha_scale:
+    return out << "as";
+
+  case ColorBlendAttrib::O_one_minus_alpha_scale:
+    return out << "1-as";
   }
 
   return out << "**invalid ColorBlendAttrib::Operand(" << (int)operand << ")**";

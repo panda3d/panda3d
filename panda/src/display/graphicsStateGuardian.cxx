@@ -150,23 +150,28 @@ reset() {
   _accum_clear_value.set(0.0f, 0.0f, 0.0f, 0.0f);
   _force_normals = 0;
 
-  //Color and alpha transform variables
-  _color_transform_enabled = 0;
-  _current_color_offset.set(0.0f, 0.0f, 0.0f, 0.0f);
-  _current_color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
-
-  _color_write_mode = ColorWriteAttrib::M_on;
-  _color_blend_mode = ColorBlendAttrib::M_none;
-  _transparency_mode = TransparencyAttrib::M_none;
-
   _has_scene_graph_color = false;
   _scene_graph_color_stale = false;
+  _color_blend_involves_color_scale = false;
+  _texture_involves_color_scale = false;
   _vertex_colors_enabled = true;
   _lighting_enabled = false;
   _lighting_enabled_this_frame = false;
 
   _clip_planes_enabled = false;
   _clip_planes_enabled_this_frame = false;
+
+  _color_scale_enabled = false;
+  _current_color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
+
+  _color_write_mode = ColorWriteAttrib::M_on;
+  _color_blend_mode = ColorBlendAttrib::M_none;
+  _transparency_mode = TransparencyAttrib::M_none;
+
+  _color_blend = NULL;
+  _blend_mode_stale = false;
+  _pending_texture = NULL;
+  _texture_stale = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -625,15 +630,17 @@ issue_transform(const TransformState *) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 issue_color_scale(const ColorScaleAttrib *attrib) {
+  _color_scale_enabled = attrib->has_scale();
   _current_color_scale = attrib->get_scale();
 
-  if (attrib->has_scale()) {
-    _color_transform_enabled |= CT_scale;
-  } else {
-    _color_transform_enabled &= ~CT_scale;
-  }
-
   _scene_graph_color_stale = _has_scene_graph_color;
+
+  if (_color_blend_involves_color_scale) {
+    _blend_mode_stale = true;
+  }
+  if (_texture_involves_color_scale) {
+    _texture_stale = true;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -834,7 +841,7 @@ issue_light(const LightAttrib *attrib) {
 void GraphicsStateGuardian::
 issue_color_write(const ColorWriteAttrib *attrib) {
   _color_write_mode = attrib->get_mode();
-  set_blend_mode();
+  _blend_mode_stale = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -845,7 +852,7 @@ issue_color_write(const ColorWriteAttrib *attrib) {
 void GraphicsStateGuardian::
 issue_transparency(const TransparencyAttrib *attrib) {
   _transparency_mode = attrib->get_mode();
-  set_blend_mode();
+  _blend_mode_stale = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -857,7 +864,21 @@ void GraphicsStateGuardian::
 issue_color_blend(const ColorBlendAttrib *attrib) {
   _color_blend = attrib;
   _color_blend_mode = attrib->get_mode();
-  set_blend_mode();
+  _color_blend_involves_color_scale = attrib->involves_color_scale();
+  _blend_mode_stale = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::issue_texture
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+issue_texture(const TextureAttrib *attrib) {
+  // By default, we don't apply the texture attrib right away, since
+  // it might have a dependency on the current ColorScaleAttrib.
+  _pending_texture = attrib;
+  _texture_stale = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1203,6 +1224,10 @@ set_blend_mode() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 finish_modify_state() {
+  if (_blend_mode_stale) {
+    _blend_mode_stale = false;
+    set_blend_mode();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -1046,6 +1046,10 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
       case ButtonEvent::T_resume_down:
         // Ignore this, since the button wasn't pressed just now.
         break;
+
+      case ButtonEvent::T_move:
+        // This is handled below.
+        break;
       }
     }
   }

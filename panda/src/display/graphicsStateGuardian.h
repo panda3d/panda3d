@@ -42,6 +42,7 @@
 #include "planeNode.h"
 #include "colorWriteAttrib.h"
 #include "colorBlendAttrib.h"
+#include "textureAttrib.h"
 #include "transparencyAttrib.h"
 #include "config_display.h"
 
@@ -165,6 +166,7 @@ public:
   virtual void issue_color_write(const ColorWriteAttrib *attrib);
   virtual void issue_transparency(const TransparencyAttrib *attrib);
   virtual void issue_color_blend(const ColorBlendAttrib *attrib);
+  virtual void issue_texture(const TextureAttrib *attrib);
   virtual void issue_clip_plane(const ClipPlaneAttrib *attrib);
 
   virtual void bind_light(PointLight *light_obj, const NodePath &light, 
@@ -256,22 +258,23 @@ protected:
   Colorf _scene_graph_color;
   bool _has_scene_graph_color;
   bool _scene_graph_color_stale;
+  bool _color_blend_involves_color_scale;
+  bool _texture_involves_color_scale;
   bool _vertex_colors_enabled;
   bool _lighting_enabled;
   bool _clip_planes_enabled;
 
-  enum ColorTransform {
-    CT_offset  = 0x01,
-    CT_scale   = 0x02,
-  };
-  int _color_transform_enabled;  // Zero or more of ColorTransform bits, above.
-  LVecBase4f _current_color_offset;
+  bool _color_scale_enabled;
   LVecBase4f _current_color_scale;
 
   ColorWriteAttrib::Mode _color_write_mode;
   ColorBlendAttrib::Mode _color_blend_mode;
   TransparencyAttrib::Mode _transparency_mode;
   CPT(ColorBlendAttrib) _color_blend;
+  bool _blend_mode_stale;
+
+  CPT(TextureAttrib) _pending_texture;
+  bool _texture_stale;
 
   bool _needs_reset;
   bool _closing_gsg;

@@ -114,11 +114,11 @@ issue_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
 }
 
 static void
-issue_transformed_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
+issue_scaled_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
                            GraphicsStateGuardianBase *gsg) {
   const CLP(GraphicsStateGuardian) *glgsg = DCAST(CLP(GraphicsStateGuardian), gsg);
   const Colorf &color = geom->get_next_color(citerator);
-  glgsg->issue_transformed_color(color);
+  glgsg->issue_scaled_color(color);
 }
 
 // The following noop functions are assigned to the corresponding
@@ -784,10 +784,10 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (_color_transform_enabled == 0) {
+  if (_color_blend_involves_color_scale || !_color_scale_enabled) {
     issue_color = issue_color_gl;
   } else {
-    issue_color = issue_transformed_color_gl;
+    issue_color = issue_scaled_color_gl;
   }
 
   GeomIssuer issuer(geom, this,
@@ -854,10 +854,10 @@ draw_line(GeomLine *geom, GeomContext *gc) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (_color_transform_enabled == 0) {
+  if (_color_blend_involves_color_scale || !_color_scale_enabled) {
     issue_color = issue_color_gl;
   } else {
-    issue_color = issue_transformed_color_gl;
+    issue_color = issue_scaled_color_gl;
   }
 
   GeomIssuer issuer(geom, this,
@@ -938,10 +938,10 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *gc) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (_color_transform_enabled == 0) {
+  if (_color_blend_involves_color_scale || !_color_scale_enabled) {
     issue_color = issue_color_gl;
   } else {
-    issue_color = issue_transformed_color_gl;
+    issue_color = issue_scaled_color_gl;
   }
 
   GeomIssuer issuer(geom, this,
@@ -1320,10 +1320,10 @@ draw_polygon(GeomPolygon *geom, GeomContext *gc) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (_color_transform_enabled == 0) {
+  if (_color_blend_involves_color_scale || !_color_scale_enabled) {
     issue_color = issue_color_gl;
   } else {
-    issue_color = issue_transformed_color_gl;
+    issue_color = issue_scaled_color_gl;
   }
 
   GeomIssuer issuer(geom, this,
@@ -1408,10 +1408,10 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (_color_transform_enabled == 0) {
+  if (_color_blend_involves_color_scale || !_color_scale_enabled) {
     issue_color = issue_color_gl;
   } else {
-    issue_color = issue_transformed_color_gl;
+    issue_color = issue_scaled_color_gl;
   }
 
   GeomIssuer issuer(geom, this,
@@ -1494,10 +1494,10 @@ draw_quad(GeomQuad *geom, GeomContext *gc) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (_color_transform_enabled == 0) {
+  if (_color_blend_involves_color_scale || !_color_scale_enabled) {
     issue_color = issue_color_gl;
   } else {
-    issue_color = issue_transformed_color_gl;
+    issue_color = issue_scaled_color_gl;
   }
 
   GeomIssuer issuer(geom, this,
@@ -1584,10 +1584,10 @@ draw_tristrip(GeomTristrip *geom, GeomContext *gc) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (_color_transform_enabled == 0) {
+  if (_color_blend_involves_color_scale || !_color_scale_enabled) {
     issue_color = issue_color_gl;
   } else {
-    issue_color = issue_transformed_color_gl;
+    issue_color = issue_scaled_color_gl;
   }
 
   GeomIssuer issuer(geom, this,
@@ -1692,10 +1692,10 @@ draw_trifan(GeomTrifan *geom, GeomContext *gc) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (_color_transform_enabled == 0) {
+  if (_color_blend_involves_color_scale || !_color_scale_enabled) {
     issue_color = issue_color_gl;
   } else {
-    issue_color = issue_transformed_color_gl;
+    issue_color = issue_scaled_color_gl;
   }
 
   GeomIssuer issuer(geom, this,
@@ -1797,10 +1797,10 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (_color_transform_enabled == 0) {
+  if (_color_blend_involves_color_scale || !_color_scale_enabled) {
     issue_color = issue_color_gl;
   } else {
-    issue_color = issue_transformed_color_gl;
+    issue_color = issue_scaled_color_gl;
   }
 
   GeomIssuer issuer(geom, this,
@@ -2385,128 +2385,6 @@ issue_tex_gen(const TexGenAttrib *attrib) {
   // the other attribs are done being issued.
   _current_tex_gen = attrib;
   _needs_tex_gen = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_texture
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-issue_texture(const TextureAttrib *attrib) {
-  DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
-
-  CPT(TextureAttrib) new_texture = attrib->filter_to_max(_max_texture_stages);
-  
-  int num_stages = new_texture->get_num_on_stages();
-  int num_old_stages = _current_texture->get_num_on_stages();
-
-  nassertv(num_stages <= _max_texture_stages && 
-           num_old_stages <= _max_texture_stages);
-
-  int i;
-  for (i = 0; i < num_stages; i++) {
-    TextureStage *stage = new_texture->get_on_stage(i);
-    Texture *texture = new_texture->get_on_texture(stage);
-    nassertv(texture != (Texture *)NULL);
-    
-    if (i >= num_old_stages ||
-        stage != _current_texture->get_on_stage(i) ||
-        texture != _current_texture->get_on_texture(stage)) {
-      // Stage i has changed.  Issue the texture on this stage.
-      _glActiveTexture(GL_TEXTURE0 + i);
-
-      GLP(Enable)(GL_TEXTURE_2D);
-      
-      TextureContext *tc = texture->prepare_now(_prepared_objects, this);
-      apply_texture(tc);
-      
-      GLint glmode = get_texture_apply_mode_type(stage->get_mode());
-      GLP(TexEnvi)(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, glmode);
-      GLP(TexEnvfv)(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, stage->get_color().get_data());
-
-      if (stage->get_mode() == TextureStage::M_combine) {
-        GLP(TexEnvi)(GL_TEXTURE_ENV, GL_COMBINE_RGB, 
-                     get_texture_combine_type(stage->get_combine_rgb_mode()));
-
-        switch (stage->get_num_combine_rgb_operands()) {
-        case 3:
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC2_RGB, 
-                       get_texture_src_type(stage->get_combine_rgb_source2()));
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND2_RGB, 
-                       get_texture_operand_type(stage->get_combine_rgb_operand2()));
-          // fall through
-
-        case 2:
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC1_RGB, 
-                       get_texture_src_type(stage->get_combine_rgb_source1()));
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND1_RGB, 
-                       get_texture_operand_type(stage->get_combine_rgb_operand1()));
-          // fall through
-
-        case 1:
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC0_RGB, 
-                       get_texture_src_type(stage->get_combine_rgb_source0()));
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND0_RGB, 
-                       get_texture_operand_type(stage->get_combine_rgb_operand0()));
-          // fall through
-
-        default:
-          break;
-        }
-        GLP(TexEnvi)(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, 
-                     get_texture_combine_type(stage->get_combine_alpha_mode()));
-
-        switch (stage->get_num_combine_alpha_operands()) {
-        case 3:
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC2_ALPHA, 
-                       get_texture_src_type(stage->get_combine_alpha_source2()));
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA, 
-                       get_texture_operand_type(stage->get_combine_alpha_operand2()));
-          // fall through
-
-        case 2:
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC1_ALPHA, 
-                       get_texture_src_type(stage->get_combine_alpha_source1()));
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, 
-                       get_texture_operand_type(stage->get_combine_alpha_operand1()));
-          // fall through
-
-        case 1:
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC0_ALPHA, 
-                       get_texture_src_type(stage->get_combine_alpha_source0()));
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, 
-                       get_texture_operand_type(stage->get_combine_alpha_operand0()));
-          // fall through
-
-        default:
-          break;
-        }
-      }
-
-      GLP(MatrixMode)(GL_TEXTURE);
-      if (_current_tex_mat->has_stage(stage)) {
-        GLP(LoadMatrixf)(_current_tex_mat->get_mat(stage).get_data());
-      } else {
-        GLP(LoadIdentity)();
-      }
-    }
-  }
-    
-  // Disable the texture stages that are no longer used.
-  for (i = num_stages; i < num_old_stages; i++) {
-    _glActiveTexture(GL_TEXTURE0 + i);
-    GLP(Disable)(GL_TEXTURE_2D);
-  }
-
-  _current_texture = new_texture;
-
-  // Changing the set of texture stages will require us to reissue the
-  // texgen and texmat attribs.
-  _needs_tex_gen = true;
-  _needs_tex_mat = true;
-
-  report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3976,6 +3854,7 @@ get_texture_apply_mode_type(TextureStage::Mode am) {
   case TextureStage::M_replace: return GL_REPLACE;
   case TextureStage::M_add: return GL_ADD;
   case TextureStage::M_combine: return GL_COMBINE;
+  case TextureStage::M_blend_color_scale: return GL_BLEND;
   }
 
   GLCAT.error()
@@ -4021,6 +3900,7 @@ get_texture_src_type(TextureStage::CombineSource cs) {
   case TextureStage::CS_constant: return GL_CONSTANT;
   case TextureStage::CS_primary_color: return GL_PRIMARY_COLOR;
   case TextureStage::CS_previous: return GL_PREVIOUS;
+  case TextureStage::CS_constant_color_scale: return GL_CONSTANT;
   }
 
   GLCAT.error()
@@ -4141,15 +4021,19 @@ get_blend_func(ColorBlendAttrib::Operand operand) {
     return GL_ONE_MINUS_DST_ALPHA;
 
   case ColorBlendAttrib::O_constant_color:
+  case ColorBlendAttrib::O_color_scale:
     return GL_CONSTANT_COLOR;
 
   case ColorBlendAttrib::O_one_minus_constant_color:
+  case ColorBlendAttrib::O_one_minus_color_scale:
     return GL_ONE_MINUS_CONSTANT_COLOR;
 
   case ColorBlendAttrib::O_constant_alpha:
+  case ColorBlendAttrib::O_alpha_scale:
     return GL_CONSTANT_ALPHA;
 
   case ColorBlendAttrib::O_one_minus_constant_alpha:
+  case ColorBlendAttrib::O_one_minus_alpha_scale:
     return GL_ONE_MINUS_CONSTANT_ALPHA;
 
   case ColorBlendAttrib::O_incoming_color_saturate:
@@ -4211,18 +4095,18 @@ print_gfx_visual() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_transformed_color
+//     Function: CLP(GraphicsStateGuardian)::issue_scaled_color
 //       Access: Public
 //  Description: Transform the color by the current color matrix, and
 //               calls the appropriate glColor function.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-issue_transformed_color(const Colorf &color) const {
+issue_scaled_color(const Colorf &color) const {
   Colorf transformed
-    ((color[0] * _current_color_scale[0]) + _current_color_offset[0],
-     (color[1] * _current_color_scale[1]) + _current_color_offset[1],
-     (color[2] * _current_color_scale[2]) + _current_color_offset[2],
-     (color[3] * _current_color_scale[3]) + _current_color_offset[3]);
+    (color[0] * _current_color_scale[0],
+     color[1] * _current_color_scale[1],
+     color[2] * _current_color_scale[2],
+     color[3] * _current_color_scale[3]);
 
   GLP(Color4fv)(transformed.get_data());
 }
@@ -4462,8 +4346,16 @@ set_blend_mode() {
     _glBlendEquation(get_blend_equation_type(_color_blend_mode));
     GLP(BlendFunc)(get_blend_func(_color_blend->get_operand_a()),
                    get_blend_func(_color_blend->get_operand_b()));
-    Colorf c = _color_blend->get_color();
-    _glBlendColor(c[0], c[1], c[2], c[3]);
+
+    if (_color_blend_involves_color_scale) {
+      // Apply the current color scale to the blend mode.
+      _glBlendColor(_current_color_scale[0], _current_color_scale[1], 
+                    _current_color_scale[2], _current_color_scale[3]);
+      
+    } else {
+      Colorf c = _color_blend->get_color();
+      _glBlendColor(c[0], c[1], c[2], c[3]);
+    }
     return;
   }
 
@@ -4538,6 +4430,14 @@ set_blend_mode() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 finish_modify_state() {
+  GraphicsStateGuardian::finish_modify_state();
+
+  // Apply the texture, if it needs to be reapplied.
+  if (_texture_stale) {
+    _texture_stale = false;
+    do_issue_texture();
+  }
+
   // Apply the texture matrix, if needed.
   if (_needs_tex_mat) {
     _needs_tex_mat = false;
@@ -4808,6 +4708,170 @@ do_auto_rescale_normal() {
       GLP(Disable)(GL_RESCALE_NORMAL);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::do_issue_texture
+//       Access: Protected
+//  Description: This is called by finish_modify_state() when the
+//               texture state has changed.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+do_issue_texture() {
+  DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
+
+  CPT(TextureAttrib) new_texture = _pending_texture->filter_to_max(_max_texture_stages);
+  
+  int num_stages = new_texture->get_num_on_stages();
+  int num_old_stages = _current_texture->get_num_on_stages();
+
+  nassertv(num_stages <= _max_texture_stages && 
+           num_old_stages <= _max_texture_stages);
+
+  _texture_involves_color_scale = false;
+
+  int i;
+  for (i = 0; i < num_stages; i++) {
+    TextureStage *stage = new_texture->get_on_stage(i);
+    Texture *texture = new_texture->get_on_texture(stage);
+    nassertv(texture != (Texture *)NULL);
+    
+    if (i >= num_old_stages ||
+        stage != _current_texture->get_on_stage(i) ||
+        texture != _current_texture->get_on_texture(stage) ||
+        stage->involves_color_scale()) {
+      // Stage i has changed.  Issue the texture on this stage.
+      _glActiveTexture(GL_TEXTURE0 + i);
+
+      GLP(Enable)(GL_TEXTURE_2D);
+      
+      TextureContext *tc = texture->prepare_now(_prepared_objects, this);
+      apply_texture(tc);
+
+      if (stage->involves_color_scale() && _color_scale_enabled) {
+        Colorf color = stage->get_color();
+        color.set(color[0] * _current_color_scale[0],
+                  color[1] * _current_color_scale[1],
+                  color[2] * _current_color_scale[2],
+                  color[3] * _current_color_scale[3]);
+        _texture_involves_color_scale = true;
+        GLP(TexEnvfv)(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color.get_data());
+      } else {
+        GLP(TexEnvfv)(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, stage->get_color().get_data());
+      }
+
+      if (stage->get_mode() == TextureStage::M_decal) {
+        if (texture->_pbuffer != (PixelBuffer *)NULL &&
+            texture->_pbuffer->get_num_components() < 3) {
+          // Make a special case for 1- and 2-channel decal textures.
+          // OpenGL does not define their use with GL_DECAL for some
+          // reason, so implement them using the combiner instead.
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_INTERPOLATE);
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_ALPHA_SCALE, 1);
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_TEXTURE);
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PREVIOUS);
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC2_RGB, GL_TEXTURE);
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND2_RGB, GL_SRC_ALPHA);
+          
+        } else {
+          // Normal 3- and 4-channel decal textures.
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+        }
+
+      } else if (stage->get_mode() == TextureStage::M_combine) {
+        GLP(TexEnvi)(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+        GLP(TexEnvi)(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_INTERPOLATE);
+        GLP(TexEnvi)(GL_TEXTURE_ENV, GL_RGB_SCALE, stage->get_rgb_scale());
+        GLP(TexEnvi)(GL_TEXTURE_ENV, GL_ALPHA_SCALE, stage->get_alpha_scale());
+        GLP(TexEnvi)(GL_TEXTURE_ENV, GL_COMBINE_RGB, 
+                     get_texture_combine_type(stage->get_combine_rgb_mode()));
+
+        switch (stage->get_num_combine_rgb_operands()) {
+        case 3:
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC2_RGB, 
+                       get_texture_src_type(stage->get_combine_rgb_source2()));
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND2_RGB, 
+                       get_texture_operand_type(stage->get_combine_rgb_operand2()));
+          // fall through
+
+        case 2:
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC1_RGB, 
+                       get_texture_src_type(stage->get_combine_rgb_source1()));
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND1_RGB, 
+                       get_texture_operand_type(stage->get_combine_rgb_operand1()));
+          // fall through
+
+        case 1:
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC0_RGB, 
+                       get_texture_src_type(stage->get_combine_rgb_source0()));
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND0_RGB, 
+                       get_texture_operand_type(stage->get_combine_rgb_operand0()));
+          // fall through
+
+        default:
+          break;
+        }
+        GLP(TexEnvi)(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, 
+                     get_texture_combine_type(stage->get_combine_alpha_mode()));
+
+        switch (stage->get_num_combine_alpha_operands()) {
+        case 3:
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC2_ALPHA, 
+                       get_texture_src_type(stage->get_combine_alpha_source2()));
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA, 
+                       get_texture_operand_type(stage->get_combine_alpha_operand2()));
+          // fall through
+
+        case 2:
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC1_ALPHA, 
+                       get_texture_src_type(stage->get_combine_alpha_source1()));
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, 
+                       get_texture_operand_type(stage->get_combine_alpha_operand1()));
+          // fall through
+
+        case 1:
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC0_ALPHA, 
+                       get_texture_src_type(stage->get_combine_alpha_source0()));
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, 
+                       get_texture_operand_type(stage->get_combine_alpha_operand0()));
+          // fall through
+
+        default:
+          break;
+        }
+
+      } else {
+        GLint glmode = get_texture_apply_mode_type(stage->get_mode());
+        GLP(TexEnvi)(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, glmode);
+      }
+
+      GLP(MatrixMode)(GL_TEXTURE);
+      if (_current_tex_mat->has_stage(stage)) {
+        GLP(LoadMatrixf)(_current_tex_mat->get_mat(stage).get_data());
+      } else {
+        GLP(LoadIdentity)();
+      }
+    }
+  }
+    
+  // Disable the texture stages that are no longer used.
+  for (i = num_stages; i < num_old_stages; i++) {
+    _glActiveTexture(GL_TEXTURE0 + i);
+    GLP(Disable)(GL_TEXTURE_2D);
+  }
+
+  _current_texture = new_texture;
+
+  // Changing the set of texture stages will require us to reissue the
+  // texgen and texmat attribs.
+  _needs_tex_gen = true;
+  _needs_tex_mat = true;
+
+  report_my_gl_errors();
 }
 
 #ifndef NDEBUG

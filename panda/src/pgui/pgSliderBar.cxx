@@ -68,8 +68,8 @@ PGSliderBar::
 PGSliderBar::
 PGSliderBar(const PGSliderBar &copy) :
   PGItem(copy),
-  _range(copy._range),
   _value(copy._value),
+  _range(copy._range),
   //  _slider(copy._slider),
   _left(copy._left),
   _right(copy._right)
@@ -238,7 +238,7 @@ drag(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar:: 
 update() {
-  int state = get_state();
+  //  int state = get_state();
 
   // need left and right button input if they exist
   if (!_slider_only) {
