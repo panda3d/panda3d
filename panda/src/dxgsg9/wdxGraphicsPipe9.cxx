@@ -527,231 +527,238 @@ search_for_valid_displaymode(DXScreenData &scrn,
                              D3DFORMAT *pSuggestedPixFmt,
                              bool bForce16bppZBuffer,
                              bool bVerboseMode) {
-
+  bVerboseMode = true;
+  // Use this list of format modes when trying to find a valid graphics
+  // format for the card.  Formats are scanned in the order listed.
+  static D3DFORMAT valid_formats[] = {
+    D3DFMT_X8R8G8B8,
+    D3DFMT_A2B10G10R10, 
+    D3DFMT_R5G6B5,
+    D3DFMT_X1R5G5B5, 
+  };
+  static const int num_valid_formats = (sizeof(valid_formats) / sizeof(D3DFORMAT));
+  
   assert(IS_VALID_PTR(scrn.pD3D9));
   HRESULT hr;
-
-#ifndef NDEBUG
-  //   no longer true, due to special_check_fullscreen_res, where lowvidmem cards are allowed higher resolutions
-  //    if (_dxgsg->scrn.bIsLowVidMemCard)
-  //        nassertv((RequestedX_Size==640)&&(RequestedY_Size==480));
-#endif
 
   *pSuggestedPixFmt = D3DFMT_UNKNOWN;
   *pSupportedScreenDepthsMask = 0x0;
   *pCouldntFindAnyValidZBuf = false;
 
-  int cNumModes = scrn.pD3D9->GetAdapterModeCount(scrn.CardIDNum, D3DFMT_A8R8G8B8);
-  D3DDISPLAYMODE BestDispMode;
-  ZeroMemory(&BestDispMode,sizeof(BestDispMode));
+  wdxdisplay9_cat.info()
+    << "searching for valid display modes at res: ("
+    << RequestedX_Size << "," << RequestedY_Size
+    << ")" << endl;
 
-  //  if (bVerboseMode)
-    {
-    wdxdisplay9_cat.info()
-      << "searching for valid display modes at res: ("
-      << RequestedX_Size << "," << RequestedY_Size
-      << "), TotalModes: " << cNumModes << endl;
-  }
+  // iterate through all the formats we might support, and check the
+  // card for each one.
+  for (int fi = 0; fi < num_valid_formats; ++fi) {
+    int cNumModes = scrn.pD3D9->GetAdapterModeCount(scrn.CardIDNum, valid_formats[fi]);
+    D3DDISPLAYMODE BestDispMode;
+    ZeroMemory(&BestDispMode,sizeof(BestDispMode));
 
-  // ignore memory based checks for min res 640x480.  some cards just
-  // dont give accurate memavails.  (should I do the check anyway for
-  // 640x480 32bpp?)
-  bool bDoMemBasedChecks = 
-    ((!((RequestedX_Size==640)&&(RequestedY_Size==480))) &&
-     (scrn.MaxAvailVidMem!=UNKNOWN_VIDMEM_SIZE) &&
-     (!special_check_fullscreen_resolution(scrn,RequestedX_Size,RequestedY_Size)));
-
-  if (bVerboseMode || wdxdisplay9_cat.is_spam()) {
-    wdxdisplay9_cat.info()
-      << "DoMemBasedChecks = " << bDoMemBasedChecks << endl;
-  }
-
-  for (int i=0; i < cNumModes; i++) {
-    D3DDISPLAYMODE dispmode;
-    hr = scrn.pD3D9->EnumAdapterModes(scrn.CardIDNum,D3DFMT_A8R8G8B8,i,&dispmode);
-    if (FAILED(hr)) {
-      wdxdisplay9_cat.error()
-        << "EnumAdapterDisplayMode failed for device #"
-        << scrn.CardIDNum << D3DERRORSTRING(hr);
-      exit(1);
+    if (bVerboseMode || wdxdisplay9_cat.is_spam()) {
+      wdxdisplay9_cat.info()
+        << "TotalModes with format " << D3DFormatStr(valid_formats[fi])
+        << ": " << cNumModes << endl;
     }
 
-    if ((dispmode.Width!=RequestedX_Size) ||
-        (dispmode.Height!=RequestedY_Size)) {
-      continue;
+    // ignore memory based checks for min res 640x480.  some cards just
+    // dont give accurate memavails.  (should I do the check anyway for
+    // 640x480 32bpp?)
+    bool bDoMemBasedChecks = 
+      ((!((RequestedX_Size==640)&&(RequestedY_Size==480))) &&
+       (scrn.MaxAvailVidMem!=UNKNOWN_VIDMEM_SIZE) &&
+       (!special_check_fullscreen_resolution(scrn,RequestedX_Size,RequestedY_Size)));
+
+    if (bVerboseMode || wdxdisplay9_cat.is_spam()) {
+      wdxdisplay9_cat.info()
+        << "DoMemBasedChecks = " << bDoMemBasedChecks << endl;
     }
 
-    if ((dispmode.RefreshRate<60) && (dispmode.RefreshRate>1)) {
-      // dont want refresh rates under 60Hz, but 0 or 1 might indicate
-      // a default refresh rate, which is usually >=60
-      if (bVerboseMode) {
-        wdxdisplay9_cat.info()
-          << "skipping mode[" << i << "], bad refresh rate: " 
-          << dispmode.RefreshRate << endl;
-      }
-      continue;
-    }
-
-    // Note no attempt is made to verify if format will work at
-    // requested size, so even if this call succeeds, could still get
-    // an out-of-video-mem error
-
-    hr = scrn.pD3D9->CheckDeviceFormat(scrn.CardIDNum, D3DDEVTYPE_HAL, dispmode.Format,
-                                               D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE,
-                                               dispmode.Format);
-    if (FAILED(hr)) {
-      if (hr==D3DERR_NOTAVAILABLE) {
-        if (bVerboseMode) {
-          wdxdisplay9_cat.info()
-            << "skipping mode[" << i 
-            << "], CheckDevFmt returns NotAvail for fmt: "
-            << D3DFormatStr(dispmode.Format) << endl;
-        }
-        continue;
-      } else {
+    for (int i=0; i < cNumModes; i++) {
+      D3DDISPLAYMODE dispmode;
+      hr = scrn.pD3D9->EnumAdapterModes(scrn.CardIDNum,valid_formats[fi],i,&dispmode);
+      if (FAILED(hr)) {
         wdxdisplay9_cat.error()
-          << "CheckDeviceFormat failed for device #" 
+          << "EnumAdapterDisplayMode failed for device #"
           << scrn.CardIDNum << D3DERRORSTRING(hr);
         exit(1);
       }
-    }
 
-    bool bIs16bppRenderTgt = IS_16BPP_DISPLAY_FORMAT(dispmode.Format);
-    float RendTgtMinMemReqmt;
+      if ((dispmode.Width!=RequestedX_Size) ||
+          (dispmode.Height!=RequestedY_Size)) {
+        continue;
+      }
 
-    // if we have a valid memavail value, try to determine if we have
-    // enough space
-    if (bDoMemBasedChecks) {
-      // assume user is testing fullscreen, not windowed, so use the
-      // dwTotal value see if 3 scrnbufs (front/back/z)at 16bpp at
-      // x_size*y_size will fit with a few extra megs for texmem
+      if ((dispmode.RefreshRate<60) && (dispmode.RefreshRate>1)) {
+        // dont want refresh rates under 60Hz, but 0 or 1 might indicate
+        // a default refresh rate, which is usually >=60
+        if (bVerboseMode) {
+          wdxdisplay9_cat.info()
+            << "skipping mode[" << i << "], bad refresh rate: " 
+            << dispmode.RefreshRate << endl;
+        }
+        continue;
+      }
 
-      // 8MB Rage Pro says it has 6.8 megs Total free and will run at
-      // 1024x768, so formula makes it so that is OK
+      // Note no attempt is made to verify if format will work at
+      // requested size, so even if this call succeeds, could still get
+      // an out-of-video-mem error
+
+      hr = scrn.pD3D9->CheckDeviceFormat(scrn.CardIDNum, D3DDEVTYPE_HAL, dispmode.Format,
+                                         D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE,
+                                         dispmode.Format);
+      if (FAILED(hr)) {
+        if (hr==D3DERR_NOTAVAILABLE) {
+          if (bVerboseMode) {
+            wdxdisplay9_cat.info()
+              << "skipping mode[" << i 
+              << "], CheckDevFmt returns NotAvail for fmt: "
+              << D3DFormatStr(dispmode.Format) << endl;
+          }
+          continue;
+        } else {
+          wdxdisplay9_cat.error()
+            << "CheckDeviceFormat failed for device #" 
+            << scrn.CardIDNum << D3DERRORSTRING(hr);
+          exit(1);
+        }
+      }
+
+      bool bIs16bppRenderTgt = IS_16BPP_DISPLAY_FORMAT(dispmode.Format);
+      float RendTgtMinMemReqmt;
+
+      // if we have a valid memavail value, try to determine if we have
+      // enough space
+      if (bDoMemBasedChecks) {
+        // assume user is testing fullscreen, not windowed, so use the
+        // dwTotal value see if 3 scrnbufs (front/back/z)at 16bpp at
+        // x_size*y_size will fit with a few extra megs for texmem
+
+        // 8MB Rage Pro says it has 6.8 megs Total free and will run at
+        // 1024x768, so formula makes it so that is OK
 
 #define REQD_TEXMEM 1800000
 
-      float bytes_per_pixel = (bIs16bppRenderTgt ? 2 : 4);
+        float bytes_per_pixel = (bIs16bppRenderTgt ? 2 : 4);
       
-//    cant do this check yet since gsg doesnt exist!
-//    assert((_gsg->get_properties().get_frame_buffer_mode() & FrameBufferProperties::FM_double_buffer) != 0);
+        //    cant do this check yet since gsg doesnt exist!
+        //    assert((_gsg->get_properties().get_frame_buffer_mode() & FrameBufferProperties::FM_double_buffer) != 0);
 
-      // *2 for double buffer
+        // *2 for double buffer
 
-      RendTgtMinMemReqmt = 
-        ((float)RequestedX_Size) * ((float)RequestedY_Size) * 
-        bytes_per_pixel * 2 + REQD_TEXMEM;
-
-      if (bVerboseMode || wdxdisplay9_cat.is_spam())
-        wdxdisplay9_cat.info()
-          << "Testing Mode (" <<RequestedX_Size<<"x" << RequestedY_Size 
-          << "," << D3DFormatStr(dispmode.Format) << ")\nReqdVidMem: "
-          << (int)RendTgtMinMemReqmt << " AvailVidMem: " 
-          << scrn.MaxAvailVidMem << endl;
-
-      if (RendTgtMinMemReqmt > scrn.MaxAvailVidMem) {
-        if (bVerboseMode || wdxdisplay9_cat.is_debug())
-          wdxdisplay9_cat.info()
-            << "not enough VidMem for render tgt, skipping display fmt "
-            << D3DFormatStr(dispmode.Format) << " (" 
-            << (int)RendTgtMinMemReqmt << " > " 
-            << scrn.MaxAvailVidMem << ")\n";
-        continue;
-      }
-    }
-
-    if (bWantZBuffer) {
-      D3DFORMAT zformat;
-      if (!find_best_depth_format(scrn,dispmode, &zformat,
-                                  bWantStencil, bForce16bppZBuffer)) {
-        *pCouldntFindAnyValidZBuf=true;
-        continue;
-      }
-
-      float MinMemReqmt = 0.0f;
-
-      if (bDoMemBasedChecks) {
-        // test memory again, this time including zbuf size
-        float zbytes_per_pixel = (IS_16BPP_ZBUFFER(zformat) ? 2 : 4);
-        float MinMemReqmt = RendTgtMinMemReqmt + ((float)RequestedX_Size)*((float)RequestedY_Size)*zbytes_per_pixel;
+        RendTgtMinMemReqmt = 
+          ((float)RequestedX_Size) * ((float)RequestedY_Size) * 
+          bytes_per_pixel * 2 + REQD_TEXMEM;
 
         if (bVerboseMode || wdxdisplay9_cat.is_spam())
           wdxdisplay9_cat.info()
-            << "Testing Mode w/Z (" << RequestedX_Size << "x"
-            << RequestedY_Size << "," << D3DFormatStr(dispmode.Format)
-            << ")\nReqdVidMem: "<< (int)MinMemReqmt << " AvailVidMem: " 
+            << "Testing Mode (" <<RequestedX_Size<<"x" << RequestedY_Size 
+            << "," << D3DFormatStr(dispmode.Format) << ")\nReqdVidMem: "
+            << (int)RendTgtMinMemReqmt << " AvailVidMem: " 
             << scrn.MaxAvailVidMem << endl;
 
-        if (MinMemReqmt > scrn.MaxAvailVidMem) {
+        if (RendTgtMinMemReqmt > scrn.MaxAvailVidMem) {
           if (bVerboseMode || wdxdisplay9_cat.is_debug())
             wdxdisplay9_cat.info()
-              << "not enough VidMem for RendTgt+zbuf, skipping display fmt "
-              << D3DFormatStr(dispmode.Format) << " (" << (int)MinMemReqmt
-              << " > " << scrn.MaxAvailVidMem << ")\n";
+              << "not enough VidMem for render tgt, skipping display fmt "
+              << D3DFormatStr(dispmode.Format) << " (" 
+              << (int)RendTgtMinMemReqmt << " > " 
+              << scrn.MaxAvailVidMem << ")\n";
           continue;
         }
       }
 
-      if ((!bDoMemBasedChecks) || (MinMemReqmt<scrn.MaxAvailVidMem)) {
-        if (!IS_16BPP_ZBUFFER(zformat)) {
-          // see if things fit with a 16bpp zbuffer
+      if (bWantZBuffer) {
+        D3DFORMAT zformat;
+        if (!find_best_depth_format(scrn,dispmode, &zformat,
+                                    bWantStencil, bForce16bppZBuffer)) {
+          *pCouldntFindAnyValidZBuf=true;
+          continue;
+        }
 
-          if (!find_best_depth_format(scrn, dispmode, &zformat, 
-                                      bWantStencil, true, bVerboseMode)) {
-            if (bVerboseMode)
+        float MinMemReqmt = 0.0f;
+
+        if (bDoMemBasedChecks) {
+          // test memory again, this time including zbuf size
+          float zbytes_per_pixel = (IS_16BPP_ZBUFFER(zformat) ? 2 : 4);
+          float MinMemReqmt = RendTgtMinMemReqmt + ((float)RequestedX_Size)*((float)RequestedY_Size)*zbytes_per_pixel;
+
+          if (bVerboseMode || wdxdisplay9_cat.is_spam())
+            wdxdisplay9_cat.info()
+              << "Testing Mode w/Z (" << RequestedX_Size << "x"
+              << RequestedY_Size << "," << D3DFormatStr(dispmode.Format)
+              << ")\nReqdVidMem: "<< (int)MinMemReqmt << " AvailVidMem: " 
+              << scrn.MaxAvailVidMem << endl;
+
+          if (MinMemReqmt > scrn.MaxAvailVidMem) {
+            if (bVerboseMode || wdxdisplay9_cat.is_debug())
               wdxdisplay9_cat.info()
-                << "FindBestDepthFmt rejected Mode[" << i << "] (" 
-                << RequestedX_Size << "x" << RequestedY_Size 
-                << "," << D3DFormatStr(dispmode.Format) << endl;
-            *pCouldntFindAnyValidZBuf=true;
+                << "not enough VidMem for RendTgt+zbuf, skipping display fmt "
+                << D3DFormatStr(dispmode.Format) << " (" << (int)MinMemReqmt
+                << " > " << scrn.MaxAvailVidMem << ")\n";
             continue;
           }
+        }
+
+        if ((!bDoMemBasedChecks) || (MinMemReqmt<scrn.MaxAvailVidMem)) {
+          if (!IS_16BPP_ZBUFFER(zformat)) {
+            // see if things fit with a 16bpp zbuffer
+
+            if (!find_best_depth_format(scrn, dispmode, &zformat, 
+                                        bWantStencil, true, bVerboseMode)) {
+              if (bVerboseMode)
+                wdxdisplay9_cat.info()
+                  << "FindBestDepthFmt rejected Mode[" << i << "] (" 
+                  << RequestedX_Size << "x" << RequestedY_Size 
+                  << "," << D3DFormatStr(dispmode.Format) << endl;
+              *pCouldntFindAnyValidZBuf=true;
+              continue;
+            }
           
-          // right now I'm not going to use these flags, just let the
-          // create fail out-of-mem and retry at 16bpp
-          *pSupportedScreenDepthsMask |= 
-            (IS_16BPP_DISPLAY_FORMAT(dispmode.Format) ? DISPLAY_16BPP_REQUIRES_16BPP_ZBUFFER_FLAG : DISPLAY_32BPP_REQUIRES_16BPP_ZBUFFER_FLAG);
+            // right now I'm not going to use these flags, just let the
+            // create fail out-of-mem and retry at 16bpp
+            *pSupportedScreenDepthsMask |= 
+              (IS_16BPP_DISPLAY_FORMAT(dispmode.Format) ? DISPLAY_16BPP_REQUIRES_16BPP_ZBUFFER_FLAG : DISPLAY_32BPP_REQUIRES_16BPP_ZBUFFER_FLAG);
+          }
         }
       }
+
+      if (bVerboseMode || wdxdisplay9_cat.is_spam())
+        wdxdisplay9_cat.info()
+          << "Validated Mode (" << RequestedX_Size << "x" 
+          << RequestedY_Size << "," << D3DFormatStr(dispmode.Format) << endl;
+
+      if (*pSuggestedPixFmt == D3DFMT_UNKNOWN) {
+        // Prefer the first format on the list we find.
+        // note: this chooses 32bpp, which may not be preferred over 16 for
+        // memory & speed reasons on some older cards in particular
+        *pSuggestedPixFmt = dispmode.Format;
+      }
+
+      switch (dispmode.Format) {
+      case D3DFMT_X8R8G8B8:
+        *pSupportedScreenDepthsMask |= X8R8G8B8_FLAG;
+        break;
+      case D3DFMT_A2B10G10R10:
+        *pSupportedScreenDepthsMask |= A2B10G10R10_FLAG;
+        break;
+      case D3DFMT_R5G6B5:
+        *pSupportedScreenDepthsMask |= R5G6B5_FLAG;
+        break;
+      case D3DFMT_X1R5G5B5:
+        *pSupportedScreenDepthsMask |= X1R5G5B5_FLAG;
+        break;
+
+      default:
+        // Render target formats should be only one of valid_formats,
+        // above.
+        wdxdisplay9_cat.error()
+          << "unrecognized supported fmt "<< D3DFormatStr(dispmode.Format)
+          << " returned by EnumAdapterDisplayModes!\n";
+      }
     }
-
-    if (bVerboseMode || wdxdisplay9_cat.is_spam())
-      wdxdisplay9_cat.info()
-        << "Validated Mode (" << RequestedX_Size << "x" 
-        << RequestedY_Size << "," << D3DFormatStr(dispmode.Format) << endl;
-
-    switch (dispmode.Format) {
-    case D3DFMT_X1R5G5B5:
-      *pSupportedScreenDepthsMask |= X1R5G5B5_FLAG;
-      break;
-    case D3DFMT_X8R8G8B8:
-      *pSupportedScreenDepthsMask |= X8R8G8B8_FLAG;
-      break;
-    case D3DFMT_R8G8B8:
-      *pSupportedScreenDepthsMask |= R8G8B8_FLAG;
-      break;
-    case D3DFMT_R5G6B5:
-      *pSupportedScreenDepthsMask |= R5G6B5_FLAG;
-      break;
-    default:
-      // Render target formats should be only D3DFMT_X1R5G5B5,
-      // D3DFMT_R5G6B5, D3DFMT_X8R8G8B8 (or R8G8B8?)
-      wdxdisplay9_cat.error()
-        << "unrecognized supported fmt "<< D3DFormatStr(dispmode.Format)
-        << " returned by EnumAdapterDisplayModes!\n";
-    }
-  }
-
-  // note: this chooses 32bpp, which may not be preferred over 16 for
-  // memory & speed reasons on some older cards in particular
-  if (*pSupportedScreenDepthsMask & X8R8G8B8_FLAG) {
-    *pSuggestedPixFmt = D3DFMT_X8R8G8B8;
-  } else if (*pSupportedScreenDepthsMask & R8G8B8_FLAG) {
-    *pSuggestedPixFmt = D3DFMT_R8G8B8;
-  } else if (*pSupportedScreenDepthsMask & R5G6B5_FLAG) {
-    *pSuggestedPixFmt = D3DFMT_R5G6B5;
-  } else if (*pSupportedScreenDepthsMask & X1R5G5B5_FLAG) {
-    *pSuggestedPixFmt = D3DFMT_X1R5G5B5;
   }
 
   if (bVerboseMode || wdxdisplay9_cat.is_spam()) {
