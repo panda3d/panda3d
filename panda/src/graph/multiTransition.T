@@ -23,6 +23,20 @@ template<class Property, class NameClass>
 TypeHandle MultiTransition<Property, NameClass>::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MultiTransition::SortByFirstOfPair function operator
+//       Access: Public
+//  Description: Implements the STL function object that sorts
+//               elements in the vector according to the first
+//               component of each element.
+////////////////////////////////////////////////////////////////////
+template<class Property, class NameClass>
+INLINE_GRAPH bool MultiTransition<Property, NameClass>::SortByFirstOfPair::
+operator ()(const MultiTransition<Property, NameClass>::Element &a, 
+            const MultiTransition<Property, NameClass>::Element &b) const {
+  return a.first < b.first;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MultiTransition::Constructor
 //       Access: Public
 //  Description:
@@ -139,7 +153,20 @@ get_default_dir() const {
 template<class Property, class NameClass>
 void MultiTransition<Property, NameClass>::
 set_identity(const Property &property) {
-  _properties[property] = TD_identity;
+  Properties::iterator pi;
+  for (pi = _properties.begin(); pi != _properties.end(); ++pi) {
+    if ((*pi).first == property) {
+      (*pi).second = TD_identity;
+      state_changed();
+      return;
+    }
+  }
+
+  // It wasn't already on the list; append it.
+  _properties.push_back(Element(property, TD_identity));
+
+  // And now we need to re-sort the list.
+  sort(_properties.begin(), _properties.end(), SortByFirstOfPair());
   state_changed();
 }
 
@@ -153,7 +180,20 @@ set_identity(const Property &property) {
 template<class Property, class NameClass>
 void MultiTransition<Property, NameClass>::
 set_on(const Property &property) {
-  _properties[property] = TD_on;
+  Properties::iterator pi;
+  for (pi = _properties.begin(); pi != _properties.end(); ++pi) {
+    if ((*pi).first == property) {
+      (*pi).second = TD_on;
+      state_changed();
+      return;
+    }
+  }
+
+  // It wasn't already on the list; append it.
+  _properties.push_back(Element(property, TD_on));
+
+  // And now we need to re-sort the list.
+  sort(_properties.begin(), _properties.end(), SortByFirstOfPair());
   state_changed();
 }
 
@@ -167,7 +207,20 @@ set_on(const Property &property) {
 template<class Property, class NameClass>
 void MultiTransition<Property, NameClass>::
 set_off(const Property &property) {
-  _properties[property] = TD_off;
+  Properties::iterator pi;
+  for (pi = _properties.begin(); pi != _properties.end(); ++pi) {
+    if ((*pi).first == property) {
+      (*pi).second = TD_off;
+      state_changed();
+      return;
+    }
+  }
+
+  // It wasn't already on the list; append it.
+  _properties.push_back(Element(property, TD_off));
+
+  // And now we need to re-sort the list.
+  sort(_properties.begin(), _properties.end(), SortByFirstOfPair());
   state_changed();
 }
 
@@ -181,9 +234,10 @@ template<class Property, class NameClass>
 bool MultiTransition<Property, NameClass>::
 is_identity(const Property &property) const {
   Properties::const_iterator pi;
-  pi = _properties.find(property);
-  if (pi != _properties.end()) {
-    return (*pi).second == TD_identity;
+  for (pi = _properties.begin(); pi != _properties.end(); ++pi) {
+    if ((*pi).first == property) {
+      return (*pi).second == TD_identity;
+    }
   }
 
   // The property is not mentioned.  It's implicitly identity only if
@@ -201,13 +255,14 @@ template<class Property, class NameClass>
 bool MultiTransition<Property, NameClass>::
 is_on(const Property &property) const {
   Properties::const_iterator pi;
-  pi = _properties.find(property);
-  if (pi != _properties.end()) {
-    return (*pi).second == TD_on;
+  for (pi = _properties.begin(); pi != _properties.end(); ++pi) {
+    if ((*pi).first == property) {
+      return (*pi).second == TD_on;
+    }
   }
 
-  // The property is not mentioned.  It's implicitly 'on' only if the
-  // default_dir flag is TD_on.
+  // The property is not mentioned.  It's implicitly on only if
+  // the default_dir flag is on.
   return (_default_dir == TD_on);
 }
 
@@ -221,13 +276,14 @@ template<class Property, class NameClass>
 bool MultiTransition<Property, NameClass>::
 is_off(const Property &property) const {
   Properties::const_iterator pi;
-  pi = _properties.find(property);
-  if (pi != _properties.end()) {
-    return (*pi).second == TD_off;
+  for (pi = _properties.begin(); pi != _properties.end(); ++pi) {
+    if ((*pi).first == property) {
+      return (*pi).second == TD_off;
+    }
   }
 
-  // The property is not mentioned.  It's implicitly 'off' only if the
-  // default_dir flag is TD_off.
+  // The property is not mentioned.  It's implicitly off only if
+  // the default_dir flag is off.
   return (_default_dir == TD_off);
 }
 
@@ -291,7 +347,7 @@ compose(const NodeTransition *other) const {
 
     dmap_compose(_properties.begin(), _properties.end(),
                  ot->_properties.begin(), ot->_properties.end(),
-                 inserter(result->_properties, result->_properties.begin()));
+                 back_inserter(result->_properties));
 
     return result;
   }
@@ -315,7 +371,8 @@ invert() const {
   result->_default_dir = TD_identity;
 
   dmap_invert(_properties.begin(), _properties.end(),
-              inserter(result->_properties, result->_properties.begin()));
+              back_inserter(result->_properties),
+              (Element *)NULL);
 
   return result;
 }

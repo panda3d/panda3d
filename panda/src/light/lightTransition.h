@@ -55,6 +55,15 @@ public:
   virtual NodeTransition *make_identity() const;
   virtual NodeTransition *make_initial() const;
 
+#ifdef CPPPARSER
+  // Interrogate seems to have difficulty figuring out that we do
+  // implement this pure virtual function properly in MultiTransition.
+  // For now, we'll pretend for interrogate's sake that it's also
+  // implemented here, just so interrogate doesn't believe the class
+  // is abstract.
+  virtual NodeAttribute *apply(const NodeAttribute *attrib) const;
+#endif
+
   virtual void issue(GraphicsStateGuardianBase *gsgbase);
 
 protected:

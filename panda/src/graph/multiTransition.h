@@ -19,13 +19,15 @@
 #ifndef MULTITRANSITION_H
 #define MULTITRANSITION_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "nodeTransition.h"
 #include "transitionDirection.h"
 #include "multiTransitionHelpers.h"
 
-#include <indent.h>
+#include "indent.h"
+
+#include <algorithm>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MultiTransition
@@ -52,7 +54,18 @@
 template<class Property, class NameClass>
 class MultiTransition : public NodeTransition {
 private:
-  typedef pmap<Property, TransitionDirection> Properties;
+  typedef pair<Property, TransitionDirection> Element;
+
+  // This has to be a vector and not a map, so we can safely access
+  // the iterators outside of PANDA.DLL.
+  typedef pvector<Element> Properties;
+
+  // We use this as an STL function object for sorting the vector in
+  // order by its property.
+  class SortByFirstOfPair {
+  public:
+    INLINE_GRAPH bool operator ()(const Element &a, const Element &b) const;
+  };
 
 protected:
   MultiTransition();
@@ -106,8 +119,7 @@ protected:
 
 public:
   // These functions and typedefs allow one to peruse all of the
-  // Properties in the transition.  Beware!  It is not safe to use
-  // this interface outside of PANDA.DLL.
+  // Properties in the transition.
   typedef Properties::const_iterator iterator;
   typedef Properties::const_iterator const_iterator;
   typedef Properties::value_type value_type;

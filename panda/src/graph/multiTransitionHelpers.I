@@ -131,26 +131,24 @@ dmap_invert_compose(InputIterator1 first1, InputIterator1 last1,
 //               input.  Guarantees that the new list will have
 //               exactly the same length as the input list.
 ////////////////////////////////////////////////////////////////////
-template<class InputIterator, class OutputIterator>
+template<class InputIterator, class OutputIterator, class ValueType>
 OutputIterator
 dmap_invert(InputIterator first, InputIterator last,
-            OutputIterator result) {
-  typedef TYPENAME InputIterator::value_type OutputType;
-
+            OutputIterator result, ValueType *) {
   while (first != last) {
     switch ((*first).second) {
     case TD_identity:
-      (*result) = OutputType((*first).first, TD_identity);
+      (*result) = ValueType((*first).first, TD_identity);
       ++result;
       break;
 
     case TD_on:
-      (*result) = OutputType((*first).first, TD_off);
+      (*result) = ValueType((*first).first, TD_off);
       ++result;
       break;
 
     case TD_off:
-      (*result) = OutputType((*first).first, TD_on);
+      (*result) = ValueType((*first).first, TD_on);
       ++result;
       break;
     }

@@ -56,10 +56,10 @@ dmap_invert_compose(InputIterator1 first1, InputIterator1 last1,
 //               input.  Guarantees that the new list will have
 //               exactly the same length as the input list.
 ////////////////////////////////////////////////////////////////////
-template<class InputIterator, class OutputIterator>
+template<class InputIterator, class OutputIterator, class ValueType>
 OutputIterator
 dmap_invert(InputIterator first, InputIterator last,
-            OutputIterator result);
+            OutputIterator result, ValueType *);
 
 
 ////////////////////////////////////////////////////////////////////
