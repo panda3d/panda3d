@@ -2044,6 +2044,10 @@ do_expand_object_type(EggGroup *egg_group, const pset<string> &expanded,
     } else if (cmp_nocase_uh(object_type, "model") == 0) {
       egg_syntax = "<Model> { 1 }";
       
+    } else if (cmp_nocase_uh(object_type, "none") == 0) {
+      // ObjectType "none" is a special case, meaning nothing in particular.
+      return true;
+      
     } else if (cmp_nocase_uh(object_type, "backstage") == 0) {
       // Ignore "backstage" geometry.
       return false;
