@@ -724,7 +724,7 @@ class Actor(PandaObject, NodePath):
         be too late to add a new control during that animation.
         """
         partBundleDict = self.__partBundleDict.get(lodName)
-        if partBundleDict:
+        if not partBundleDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
             return None
 
