@@ -13,7 +13,8 @@ class DistributedSmoothNodeBase:
         pass
 
     def delete(self):
-        pass
+        # make sure our task is gone
+        self.stopPosHprBroadcast()
 
     ### distributed set pos and hpr functions ###
 
