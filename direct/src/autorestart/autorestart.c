@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 #include <errno.h>
+#include <string.h>  /* for strerror */
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -326,6 +327,9 @@ main(int argc, char *argv[]) {
     }
     fprintf(stderr, "Generating output to %s.\n", logfile_name);
   }
+
+  /* Make sure standard input is closed. */
+  close(STDIN_FILENO);
 
   double_fork();
 
