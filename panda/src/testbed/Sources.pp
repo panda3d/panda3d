@@ -1,4 +1,4 @@
-#define OTHER_LIBS interrogatedb dconfig dtoolutil dtoolbase pystub
+#define OTHER_LIBS dtool pystub
 #define LOCAL_LIBS \
     framework putil collide loader sgmanip chan text chancfg cull \
     pnmimage pnmimagetypes event effects shader graph gobj display \
