@@ -18,4 +18,5 @@ if test "$DTOOL" = ""; then
 fi
 PATH=$DTOOL/bin:$PATH
 export PATH
+ppremake
 $* build attach
