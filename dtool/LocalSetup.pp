@@ -191,6 +191,7 @@ $[cdefine HAVE_RTTI]
 $[cdefine GLOBAL_OPERATOR_NEW_EXCEPTIONS]
 
 /* What style STL allocator should we declare? */
+$[cdefine UNKNOWN_ALLOCATOR]
 $[cdefine OLD_STYLE_ALLOCATOR]
 $[cdefine GNU_STYLE_ALLOCATOR]
 
