@@ -1,5 +1,5 @@
 #define DIR_TYPE models
-#define INSTALL_TO models/directtools
+#define INSTALL_TO models/directmodels
 
 #begin install_egg
   #define SOURCES \
