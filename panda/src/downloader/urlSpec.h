@@ -41,6 +41,7 @@ PUBLISHED:
   INLINE bool operator == (const URLSpec &other) const;
   INLINE bool operator != (const URLSpec &other) const;
   INLINE bool operator < (const URLSpec &other) const;
+  INLINE int compare_to(const URLSpec &other) const;
 
   INLINE bool has_scheme() const;
   INLINE bool has_authority() const;

@@ -78,6 +78,18 @@ operator < (const URLSpec &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::compare_to
+//       Access: Published
+//  Description: Returns a number less than zero if this URLSpec
+//               sorts before the other one, greater than zero if it
+//               sorts after, or zero if they are equivalent.
+////////////////////////////////////////////////////////////////////
+INLINE int URLSpec::
+compare_to(const URLSpec &other) const {
+  return strcmp(_url.c_str(), other._url.c_str());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: URLSpec::has_scheme
 //       Access: Published
 //  Description: Returns true if the URL specifies a scheme

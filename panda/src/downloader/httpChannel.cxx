@@ -270,7 +270,7 @@ run() {
       _proxy = _client->get_proxy();
       
       if (_proxy.empty()) {
-        _bio = new BioPtr(_url);
+        _bio = new BioPtr(_request.get_url());
       } else {
         _bio = new BioPtr(_proxy);
       }
@@ -686,7 +686,7 @@ run_connecting_wait() {
 
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
-      << "waiting to connect to " << _url.get_server_and_port() << ".\n";
+      << "waiting to connect to " << _request.get_url().get_server_and_port() << ".\n";
   }
   fd_set wset;
   FD_ZERO(&wset);
@@ -717,7 +717,8 @@ run_connecting_wait() {
          _started_connecting_time > get_connect_timeout())) {
       // Time to give up.
       downloader_cat.info()
-        << "Timeout connecting to " << _url.get_server_and_port() << ".\n";
+        << "Timeout connecting to " 
+        << _request.get_url().get_server_and_port() << ".\n";
       _state = S_failure;
       return false;
     }
@@ -894,7 +895,7 @@ run_ssl_handshake() {
     }
     downloader_cat.info()
       << "Could not establish SSL handshake with " 
-      << _url.get_server_and_port() << "\n";
+      << _request.get_url().get_server_and_port() << "\n";
 #ifdef REPORT_OPENSSL_ERRORS
     ERR_print_errors_fp(stderr);
 #endif
@@ -921,7 +922,7 @@ run_ssl_handshake() {
   long verify_result = SSL_get_verify_result(ssl);
   if (verify_result == X509_V_ERR_CERT_HAS_EXPIRED) {
     downloader_cat.info()
-      << "Expired certificate from " << _url.get_server_and_port() << "\n";
+      << "Expired certificate from " << _request.get_url().get_server_and_port() << "\n";
     if (_client->get_verify_ssl() == HTTPClient::VS_normal) {
       _state = S_failure;
       return false;
@@ -929,7 +930,7 @@ run_ssl_handshake() {
 
   } else if (verify_result == X509_V_ERR_CERT_NOT_YET_VALID) {
     downloader_cat.info()
-      << "Premature certificate from " << _url.get_server_and_port() << "\n";
+      << "Premature certificate from " << _request.get_url().get_server_and_port() << "\n";
     if (_client->get_verify_ssl() == HTTPClient::VS_normal) {
       _state = S_failure;
       return false;
@@ -937,7 +938,7 @@ run_ssl_handshake() {
 
   } else if (verify_result != X509_V_OK) {
     downloader_cat.info()
-      << "Unable to verify identity of " << _url.get_server_and_port()
+      << "Unable to verify identity of " << _request.get_url().get_server_and_port()
       << ", verify error code " << verify_result << "\n";
     if (_client->get_verify_ssl() != HTTPClient::VS_no_verify) {
       _state = S_failure;
@@ -1046,7 +1047,7 @@ run_request_sent() {
                _sent_request_time > get_http_timeout()) {
       // Time to give up.
       downloader_cat.info()
-        << "Timeout waiting for " << _url.get_server_and_port() << ".\n";
+        << "Timeout waiting for " << _request.get_url().get_server_and_port() << ".\n";
       _state = S_failure;
     }
 
@@ -1093,7 +1094,7 @@ run_reading_header() {
                _sent_request_time > get_http_timeout()) {
       // Time to give up.
       downloader_cat.info()
-        << "Timeout waiting for " << _url.get_server_and_port() << ".\n";
+        << "Timeout waiting for " << _request.get_url().get_server_and_port() << ".\n";
       _state = S_failure;
     }
     return true;
@@ -1131,6 +1132,17 @@ run_reading_header() {
   } else {
     _first_byte = 0;
     _last_byte = 0;
+  }
+
+  // Set the _document_spec to reflect what we just retrieved.
+  _document_spec = DocumentSpec(_request.get_url());
+  string tag = get_header_value("ETag");
+  if (!tag.empty()) {
+    _document_spec.set_tag(HTTPEntityTag(tag));
+  }
+  string date = get_header_value("Last-Modified");
+  if (!date.empty()) {
+    _document_spec.set_date(HTTPDate(date));
   }
 
   // In case we've got a download in effect, reset the download
@@ -1185,10 +1197,10 @@ run_reading_header() {
   if (get_status_code() == 401 && last_status != 401) {
     // 401: not authorized to remote server.  Try to get the authorization.
     string authenticate_request = get_header_value("WWW-Authenticate");
-    _www_auth = _client->generate_auth(_url, false, authenticate_request);
+    _www_auth = _client->generate_auth(_request.get_url(), false, authenticate_request);
     if (_www_auth != (HTTPAuthorization *)NULL) {
       _www_realm = _www_auth->get_realm();
-      _www_username = _client->select_username(_url, false, _www_realm);
+      _www_username = _client->select_username(_request.get_url(), false, _www_realm);
       if (!_www_username.empty()) {
         make_request_text();
       
@@ -1214,10 +1226,11 @@ run_reading_header() {
           downloader_cat.debug()
             << "following redirect to " << new_url << "\n";
         }
-        if (_url.has_username()) {
-          new_url.set_username(_url.get_username());
+        if (_request.get_url().has_username()) {
+          new_url.set_username(_request.get_url().get_username());
         }
-        set_url(new_url);
+        reset_url(_request.get_url(), new_url);
+        _document_spec.set_url(new_url);
         make_header();
         make_request_text();
 
@@ -1507,7 +1520,7 @@ run_download_to_ram() {
 //               necessary.
 ////////////////////////////////////////////////////////////////////
 void HTTPChannel::
-begin_request(HTTPEnum::Method method, const URLSpec &url,
+begin_request(HTTPEnum::Method method, const DocumentSpec &url,
               const string &body, bool nonblocking, 
               size_t first_byte, size_t last_byte) {
   reset_for_new_request();
@@ -1524,13 +1537,15 @@ begin_request(HTTPEnum::Method method, const URLSpec &url,
     reset_to_new();
   }
 
-  set_url(url);
+  reset_url(_request.get_url(), url.get_url());
+  _request = url;
+  _document_spec = DocumentSpec();
   _method = method;
   _body = body;
 
   // An https-style request means we'll need to establish an SSL
   // connection.
-  _want_ssl = (_url.get_scheme() == "https");
+  _want_ssl = (_request.get_url().get_scheme() == "https");
 
   // If we have a proxy, we'll be asking the proxy to hand us the
   // document--except when we also have https, in which case we'll be
@@ -1550,11 +1565,11 @@ begin_request(HTTPEnum::Method method, const URLSpec &url,
     // requested a direct connection somewhere.
     ostringstream request;
     request 
-      << "CONNECT " << _url.get_server_and_port()
+      << "CONNECT " << _request.get_url().get_server_and_port()
       << " " << _client->get_http_version_string() << "\r\n";
     if (_client->get_http_version() >= HTTPEnum::HV_11) {
       request 
-        << "Host: " << _url.get_server() << "\r\n";
+        << "Host: " << _request.get_url().get_server() << "\r\n";
     }
     _proxy_header = request.str();
     make_proxy_request_text();
@@ -2241,7 +2256,7 @@ x509_name_subset(X509_NAME *name_a, X509_NAME *name_b) {
 //       Access: Private
 //  Description: Formats the appropriate GET or POST (or whatever)
 //               request to send to the server, based on the current
-//               _method, _url, _body, and _proxy settings.
+//               _method, _document_spec, _body, and _proxy settings.
 ////////////////////////////////////////////////////////////////////
 void HTTPChannel::
 make_header() {
@@ -2261,25 +2276,25 @@ make_header() {
     return;
   }
 
-  _www_auth = _client->select_auth(_url, false, _www_realm);
+  _www_auth = _client->select_auth(_request.get_url(), false, _www_realm);
   _www_username = string();
   if (_www_auth != (HTTPAuthorization *)NULL) {
     _www_realm = _www_auth->get_realm();
-    _www_username = _client->select_username(_url, false, _www_realm);
+    _www_username = _client->select_username(_request.get_url(), false, _www_realm);
   }
 
   string request_path;
   if (_proxy_serves_document) {
     // If we'll be asking the proxy for the document, we need its full
     // URL--but we omit the username, which is information just for us.
-    URLSpec url_no_username = _url;
+    URLSpec url_no_username = _request.get_url();
     url_no_username.set_username(string());
     request_path = url_no_username.get_url();
 
   } else {
     // If we'll be asking the server directly for the document, we
     // just want its path relative to the server.
-    request_path = _url.get_path();
+    request_path = _request.get_url().get_path();
   }
 
   ostringstream stream;
@@ -2290,7 +2305,7 @@ make_header() {
 
   if (_client->get_http_version() >= HTTPEnum::HV_11) {
     stream 
-      << "Host: " << _url.get_server() << "\r\n";
+      << "Host: " << _request.get_url().get_server() << "\r\n";
     if (!get_persistent_connection()) {
       stream
         << "Connection: close\r\n";
@@ -2304,6 +2319,64 @@ make_header() {
   } else if (_first_byte != 0) {
     stream 
       << "Range: bytes=" << _first_byte << "-\r\n";
+  }
+
+  switch (_request.get_request_mode()) {
+  case DocumentSpec::RM_any:
+    // No particular request; give us any document that matches the
+    // URL.  
+    if (_first_byte != 0) {
+      // Unless we're requesting a subrange, in which case if the
+      // exact document matches, retrieve the subrange indicated;
+      // otherwise, retrieve the entire document.
+      if (_request.has_tag()) {
+        stream
+          << "If-Range: " << _request.get_tag().get_string() << "\r\n";
+      } else if (_request.has_date()) {
+        stream
+          << "If-Range: " << _request.get_date().get_string() << "\r\n";
+      }
+    }
+    break;
+
+  case DocumentSpec::RM_equal:
+    // Give us only this particular version of the document, or
+    // nothing.
+    if (_request.has_tag()) {
+      stream
+        << "If-Match: " << _request.get_tag().get_string() << "\r\n";
+    }
+    if (_request.has_date()) {
+      stream
+        << "If-Unmodified-Since: " << _request.get_date().get_string()
+        << "\r\n";
+    }
+    break;
+
+  case DocumentSpec::RM_newer:
+    // Give us anything newer than this document, or nothing.
+    if (_request.has_tag()) {
+      stream
+        << "If-None-Match: " << _request.get_tag().get_string() << "\r\n";
+    }
+    if (_request.has_date()) {
+      stream
+        << "If-Modified-Since: " << _request.get_date().get_string()
+        << "\r\n";
+    }
+    break;
+
+  case DocumentSpec::RM_equal_or_newer:
+    // Just don't give us anything older.
+    if (_request.has_date()) {
+      // This is a little unreliable: we ask for any document that's
+      // been modified since one second before our last-modified-date.
+      // Who knows whether the server will honor this properly.
+      stream
+        << "If-Modified-Since: " << (_request.get_date() - 1).get_string()
+        << "\r\n";
+    }
+    break;
   }
 
   if (!_body.empty()) {
@@ -2331,7 +2404,7 @@ make_proxy_request_text() {
   if (_proxy_auth != (HTTPAuthorization *)NULL && !_proxy_username.empty()) {
     _proxy_request_text += "Proxy-Authorization: ";
     _proxy_request_text += 
-      _proxy_auth->generate(HTTPEnum::M_connect, _url.get_server_and_port(),
+      _proxy_auth->generate(HTTPEnum::M_connect, _request.get_url().get_server_and_port(),
                             _proxy_username, _body);
     _proxy_request_text += "\r\n";
   }
@@ -2354,7 +2427,7 @@ make_request_text() {
       _proxy_auth != (HTTPAuthorization *)NULL && !_proxy_username.empty()) {
     _request_text += "Proxy-Authorization: ";
     _request_text += 
-      _proxy_auth->generate(_method, _url.get_url(), _proxy_username, _body);
+      _proxy_auth->generate(_method, _request.get_url().get_url(), _proxy_username, _body);
     _request_text += "\r\n";
   }
 
@@ -2362,7 +2435,7 @@ make_request_text() {
     string authorization = 
     _request_text += "Authorization: ";
     _request_text +=
-      _www_auth->generate(_method, _url.get_path(), _www_username, _body);
+      _www_auth->generate(_method, _request.get_url().get_path(), _www_username, _body);
     _request_text += "\r\n";
   }
 
@@ -2372,25 +2445,24 @@ make_request_text() {
 }
   
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::set_url
+//     Function: HTTPChannel::reset_url
 //       Access: Private
-//  Description: Specifies the document's URL before attempting a
-//               connection.  This controls the name of the server to
-//               be contacted, etc.
+//  Description: Redirects the next connection to the indicated URL
+//               (from the previous URL).  This resets the socket if
+//               necessary when we are about to switch servers.
 ////////////////////////////////////////////////////////////////////
 void HTTPChannel::
-set_url(const URLSpec &url) {
+reset_url(const URLSpec &old_url, const URLSpec &new_url) {
   // If we change between http and https, we have to reset the
   // connection regardless of proxy.  Otherwise, we have to drop the
   // connection if the server or port changes, unless we're
   // communicating through a proxy.
 
-  if (url.get_scheme() != _url.get_scheme() ||
-      (_proxy.empty() && (url.get_server() != _url.get_server() || 
-                          url.get_port() != _url.get_port()))) {
+  if (new_url.get_scheme() != old_url.get_scheme() ||
+      (_proxy.empty() && (new_url.get_server() != old_url.get_server() || 
+                          new_url.get_port() != old_url.get_port()))) {
     reset_to_new();
   }
-  _url = url;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -1,0 +1,93 @@
+// Filename: documentSpec.h
+// Created by:  drose (28Jan03)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef DOCUMENTSPEC_H
+#define DOCUMENTSPEC_H
+
+#include "pandabase.h"
+#include "urlSpec.h"
+#include "httpEntityTag.h"
+#include "httpDate.h"
+
+////////////////////////////////////////////////////////////////////
+//       Class : DocumentSpec
+// Description : A descriptor that refers to a particular version of a
+//               document.  This includes the URL of the document and
+//               its identity tag and last-modified dates.
+//
+//               The DocumentSpec may also be used to request a newer
+//               document than a particular one if available, for
+//               instance to refresh a cached document.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDAEXPRESS DocumentSpec {
+PUBLISHED:
+  INLINE DocumentSpec();
+  INLINE DocumentSpec(const string &url);
+  INLINE DocumentSpec(const URLSpec &url);
+  INLINE DocumentSpec(const DocumentSpec &copy);
+  INLINE void operator = (const DocumentSpec &copy);
+
+  INLINE bool operator == (const DocumentSpec &other) const;
+  INLINE bool operator != (const DocumentSpec &other) const;
+  INLINE bool operator < (const DocumentSpec &other) const;
+  int compare_to(const DocumentSpec &other) const;
+
+  INLINE void set_url(const URLSpec &url);
+  INLINE const URLSpec &get_url() const;
+
+  INLINE void set_tag(const HTTPEntityTag &tag);
+  INLINE bool has_tag() const;
+  INLINE const HTTPEntityTag &get_tag() const;
+  INLINE void clear_tag();
+
+  INLINE void set_date(const HTTPDate &date);
+  INLINE bool has_date() const;
+  INLINE const HTTPDate &get_date() const;
+  INLINE void clear_date();
+
+  enum RequestMode {
+    RM_any,
+    RM_equal,
+    RM_newer,
+    RM_equal_or_newer,
+  };
+
+  INLINE void set_request_mode(RequestMode request_mode);
+  INLINE RequestMode get_request_mode() const;
+
+  void output(ostream &out) const;
+  void write(ostream &out) const;
+
+private:
+  URLSpec _url;
+  HTTPEntityTag _tag;
+  HTTPDate _date;
+  RequestMode _request_mode;
+
+  enum Flags {
+    F_has_tag    = 0x0001,
+    F_has_date   = 0x0002,
+  };
+  int _flags;
+};
+
+INLINE ostream &operator << (ostream &out, const DocumentSpec &doc);
+
+#include "documentSpec.I"
+
+#endif

@@ -31,6 +31,7 @@
 #include "httpClient.h"
 #include "httpEnum.h"
 #include "urlSpec.h"
+#include "documentSpec.h"
 #include "virtualFile.h"
 #include "bioPtr.h"
 #include "bioStreamPtr.h"
@@ -77,6 +78,7 @@ PUBLISHED:
   INLINE bool is_valid() const;
   INLINE bool is_connection_ready() const;
   INLINE const URLSpec &get_url() const;
+  INLINE const DocumentSpec &get_document_spec() const;
   INLINE HTTPEnum::HTTPVersion get_http_version() const;
   INLINE const string &get_http_version_string() const;
   INLINE int get_status_code() const;
@@ -115,23 +117,23 @@ PUBLISHED:
   INLINE void clear_extra_headers();
   INLINE void send_extra_header(const string &key, const string &value);
 
-  INLINE bool get_document(const URLSpec &url);
-  INLINE bool get_subdocument(const URLSpec &url, 
+  INLINE bool get_document(const DocumentSpec &url);
+  INLINE bool get_subdocument(const DocumentSpec &url, 
                               size_t first_byte, size_t last_byte);
-  INLINE bool get_header(const URLSpec &url);
-  INLINE bool post_form(const URLSpec &url, const string &body);
-  INLINE bool put_document(const URLSpec &url, const string &body);
-  INLINE bool delete_document(const URLSpec &url);
-  INLINE bool get_trace(const URLSpec &url);
-  INLINE bool connect_to(const URLSpec &url);
+  INLINE bool get_header(const DocumentSpec &url);
+  INLINE bool post_form(const DocumentSpec &url, const string &body);
+  INLINE bool put_document(const DocumentSpec &url, const string &body);
+  INLINE bool delete_document(const DocumentSpec &url);
+  INLINE bool get_trace(const DocumentSpec &url);
+  INLINE bool connect_to(const DocumentSpec &url);
 
-  INLINE void begin_get_document(const URLSpec &url);
-  INLINE void begin_get_subdocument(const URLSpec &url, 
+  INLINE void begin_get_document(const DocumentSpec &url);
+  INLINE void begin_get_subdocument(const DocumentSpec &url, 
                                     size_t first_byte, size_t last_byte);
-  INLINE void begin_get_header(const URLSpec &url);
-  INLINE void begin_post_form(const URLSpec &url, const string &body);
+  INLINE void begin_get_header(const DocumentSpec &url);
+  INLINE void begin_post_form(const DocumentSpec &url, const string &body);
   bool run();
-  INLINE void begin_connect_to(const URLSpec &url);
+  INLINE void begin_connect_to(const DocumentSpec &url);
 
   ISocketStream *read_body();
   bool download_to_file(const Filename &filename, bool subdocument_resumes = true);
@@ -166,7 +168,7 @@ private:
   bool run_download_to_file();
   bool run_download_to_ram();
 
-  void begin_request(HTTPEnum::Method method, const URLSpec &url, 
+  void begin_request(HTTPEnum::Method method, const DocumentSpec &url, 
                      const string &body, bool nonblocking,
                      size_t first_byte, size_t last_byte);
   void reset_for_new_request();
@@ -190,7 +192,7 @@ private:
   void make_proxy_request_text();
   void make_request_text();
 
-  void set_url(const URLSpec &url);
+  void reset_url(const URLSpec &old_url, const URLSpec &new_url);
   void store_header_field(const string &field_name, const string &field_value);
 
 #ifndef NDEBUG
@@ -217,7 +219,8 @@ private:
   bool _nonblocking;
   string _send_extra_headers;
 
-  URLSpec _url;
+  DocumentSpec _document_spec;
+  DocumentSpec _request;
   HTTPEnum::Method _method;
   string request_path;
   string _header;

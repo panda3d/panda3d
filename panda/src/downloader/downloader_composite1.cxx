@@ -7,3 +7,7 @@
 #include "chunkedStream.cxx"
 #include "chunkedStreamBuf.cxx"
 #include "extractor.cxx"
+#include "httpDate.cxx"
+#include "httpEntityTag.cxx"
+#include "documentSpec.cxx"
+

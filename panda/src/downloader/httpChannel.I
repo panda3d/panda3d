@@ -54,7 +54,25 @@ is_connection_ready() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const URLSpec &HTTPChannel::
 get_url() const {
-  return _url;
+  return _document_spec.get_url();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_document_spec
+//       Access: Published
+//  Description: Returns the DocumentSpec associated with the most
+//               recent document.  This includes its actual URL
+//               (following redirects) along with the identity tag and
+//               last-modified date, if supplied by the server.
+//
+//               This structure may be saved and used to retrieve the
+//               same version of the document later, or to
+//               conditionally retrieve a newer version if it is
+//               available.
+////////////////////////////////////////////////////////////////////
+INLINE const DocumentSpec &HTTPChannel::
+get_document_spec() const {
+  return _document_spec;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -462,7 +480,7 @@ send_extra_header(const string &key, const string &value) {
 //               Returns true if successful, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
-get_document(const URLSpec &url) {
+get_document(const DocumentSpec &url) {
   begin_request(HTTPEnum::M_get, url, string(), false, 0, 0);
   run();
   return is_valid();
@@ -479,7 +497,7 @@ get_document(const URLSpec &url) {
 //               not of the complete document.
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
-get_subdocument(const URLSpec &url, size_t first_byte, size_t last_byte) {
+get_subdocument(const DocumentSpec &url, size_t first_byte, size_t last_byte) {
   begin_request(HTTPEnum::M_get, url, string(), false, first_byte, last_byte);
   run();
   return is_valid();
@@ -495,7 +513,7 @@ get_subdocument(const URLSpec &url, size_t first_byte, size_t last_byte) {
 //               server gives us this information).
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
-get_header(const URLSpec &url) {
+get_header(const DocumentSpec &url) {
   begin_request(HTTPEnum::M_head, url, string(), false, 0, 0);
   run();
   return is_valid();
@@ -508,7 +526,7 @@ get_header(const URLSpec &url) {
 //               response.
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
-post_form(const URLSpec &url, const string &body) {
+post_form(const DocumentSpec &url, const string &body) {
   begin_request(HTTPEnum::M_post, url, body, false, 0, 0);
   run();
   return is_valid();
@@ -521,7 +539,7 @@ post_form(const URLSpec &url, const string &body) {
 //               the indicated URL, if the server allows this.
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
-put_document(const URLSpec &url, const string &body) {
+put_document(const DocumentSpec &url, const string &body) {
   begin_request(HTTPEnum::M_put, url, body, false, 0, 0);
   run();
   return is_valid();
@@ -533,7 +551,7 @@ put_document(const URLSpec &url, const string &body) {
 //  Description: Requests the server to remove the indicated URL.
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
-delete_document(const URLSpec &url) {
+delete_document(const DocumentSpec &url) {
   begin_request(HTTPEnum::M_delete, url, string(), false, 0, 0);
   run();
   return is_valid();
@@ -547,7 +565,7 @@ delete_document(const URLSpec &url) {
 //               it, allowing inspection of proxy hops, etc.
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
-get_trace(const URLSpec &url) {
+get_trace(const DocumentSpec &url) {
   begin_request(HTTPEnum::M_trace, url, string(), false, 0, 0);
   run();
   return is_valid();
@@ -566,7 +584,7 @@ get_trace(const URLSpec &url) {
 //               begin_connect_to().
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
-connect_to(const URLSpec &url) {
+connect_to(const DocumentSpec &url) {
   begin_request(HTTPEnum::M_connect, url, string(), false, 0, 0);
   run();
   return is_connection_ready();
@@ -587,7 +605,7 @@ connect_to(const URLSpec &url) {
 //               is discarded.
 ////////////////////////////////////////////////////////////////////
 INLINE void HTTPChannel::
-begin_get_document(const URLSpec &url) {
+begin_get_document(const DocumentSpec &url) {
   begin_request(HTTPEnum::M_get, url, string(), true, 0, 0);
 }
 
@@ -603,7 +621,7 @@ begin_get_document(const URLSpec &url) {
 //               the complete document.
 ////////////////////////////////////////////////////////////////////
 INLINE void HTTPChannel::
-begin_get_subdocument(const URLSpec &url, size_t first_byte, 
+begin_get_subdocument(const DocumentSpec &url, size_t first_byte, 
                       size_t last_byte) {
   begin_request(HTTPEnum::M_get, url, string(), true, first_byte, last_byte);
 }
@@ -615,7 +633,7 @@ begin_get_subdocument(const URLSpec &url, size_t first_byte,
 //               header.  See begin_get_document() and get_header().
 ////////////////////////////////////////////////////////////////////
 INLINE void HTTPChannel::
-begin_get_header(const URLSpec &url) {
+begin_get_header(const DocumentSpec &url) {
   begin_request(HTTPEnum::M_head, url, string(), true, 0, 0);
 }
 
@@ -634,7 +652,7 @@ begin_get_header(const URLSpec &url) {
 //               may not get posted.
 ////////////////////////////////////////////////////////////////////
 INLINE void HTTPChannel::
-begin_post_form(const URLSpec &url, const string &body) {
+begin_post_form(const DocumentSpec &url, const string &body) {
   begin_request(HTTPEnum::M_post, url, body, true, 0, 0);
 }
 
@@ -657,7 +675,7 @@ begin_post_form(const URLSpec &url, const string &body) {
 //               connect_to().
 ////////////////////////////////////////////////////////////////////
 INLINE void HTTPChannel::
-begin_connect_to(const URLSpec &url) {
+begin_connect_to(const DocumentSpec &url) {
   begin_request(HTTPEnum::M_connect, url, string(), true, 0, 0);
 }
 

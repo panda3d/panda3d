@@ -17,12 +17,15 @@
     bioStreamPtr.I bioStreamPtr.h \
     bioStream.I bioStream.h bioStreamBuf.h \
     chunkedStream.I chunkedStream.h chunkedStreamBuf.h \
+    documentSpec.I documentSpec.h \
     extractor.h \
     httpAuthorization.I httpAuthorization.h \
     httpBasicAuthorization.I httpBasicAuthorization.h \
     httpClient.I httpClient.h \
     httpChannel.I httpChannel.h \
+    httpDate.I httpDate.h \
     httpDigestAuthorization.I httpDigestAuthorization.h \
+    httpEntityTag.I httpEntityTag.h \
     httpEnum.h \
     identityStream.I identityStream.h identityStreamBuf.h \
     multiplexStream.I multiplexStream.h \
@@ -40,12 +43,15 @@
     bioStreamPtr.cxx \
     bioStream.cxx bioStreamBuf.cxx \
     chunkedStream.cxx chunkedStreamBuf.cxx \
+    documentSpec.cxx \
     extractor.cxx \
     httpAuthorization.cxx \
     httpBasicAuthorization.cxx \
     httpClient.cxx \
     httpChannel.cxx \
+    httpDate.cxx \
     httpDigestAuthorization.cxx \
+    httpEntityTag.cxx \
     httpEnum.cxx \
     identityStream.cxx identityStreamBuf.cxx \
     multiplexStream.cxx multiplexStreamBuf.cxx \
@@ -62,13 +68,16 @@
     chunkedStream.I chunkedStream.h chunkedStreamBuf.h \
     config_downloader.h \
     decompressor.h \
+    documentSpec.h documentSpec.I \
     download_utils.h downloadDb.h downloadDb.I \
     extractor.h \
     httpAuthorization.I httpAuthorization.h \
     httpBasicAuthorization.I httpBasicAuthorization.h \
     httpClient.I httpClient.h \
     httpChannel.I httpChannel.h \
+    httpDate.I httpDate.h \
     httpDigestAuthorization.I httpDigestAuthorization.h \
+    httpEntityTag.I httpEntityTag.h \
     httpEnum.h \
     identityStream.I identityStream.h identityStreamBuf.h \
     multiplexStream.I multiplexStream.h \
