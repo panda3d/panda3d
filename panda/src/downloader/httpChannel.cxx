@@ -54,6 +54,7 @@ HTTPChannel(HTTPClient *client) :
   _nonblocking = false;
   _want_ssl = false;
   _proxy_serves_document = false;
+  _proxy_tunnel = false;
   _first_byte = 0;
   _last_byte = 0;
   _read_index = 0;
@@ -69,7 +70,6 @@ HTTPChannel(HTTPClient *client) :
   _done_state = S_new;
   _started_download = false;
   _sent_so_far = 0;
-  _proxy_tunnel = false;
   _body_stream = NULL;
   _sbio = NULL;
   _last_status_code = 0;
@@ -310,16 +310,32 @@ run() {
       repeat_later = run_connecting_wait();
       break;
       
-    case S_proxy_ready:
-      repeat_later = run_proxy_ready();
+    case S_http_proxy_ready:
+      repeat_later = run_http_proxy_ready();
       break;
       
-    case S_proxy_request_sent:
-      repeat_later = run_proxy_request_sent();
+    case S_http_proxy_request_sent:
+      repeat_later = run_http_proxy_request_sent();
       break;
       
-    case S_proxy_reading_header:
-      repeat_later = run_proxy_reading_header();
+    case S_http_proxy_reading_header:
+      repeat_later = run_http_proxy_reading_header();
+      break;
+      
+    case S_socks_proxy_greet:
+      repeat_later = run_socks_proxy_greet();
+      break;
+      
+    case S_socks_proxy_greet_reply:
+      repeat_later = run_socks_proxy_greet_reply();
+      break;
+      
+    case S_socks_proxy_connect:
+      repeat_later = run_socks_proxy_connect();
+      break;
+      
+    case S_socks_proxy_connect_reply:
+      repeat_later = run_socks_proxy_connect_reply();
       break;
       
     case S_setup_ssl:
@@ -688,8 +704,12 @@ run_connecting() {
       << _bio->get_port() << "\n";
   }
 
-  if (!_proxy.empty()) {
-    _state = S_proxy_ready;
+  if (_proxy_tunnel) {
+    if (_proxy.get_scheme() == "socks") {
+      _state = S_socks_proxy_greet;
+    } else {
+      _state = S_http_proxy_ready;
+    }
 
   } else {
     _state = _want_ssl ? S_setup_ssl : S_ready;
@@ -763,36 +783,27 @@ run_connecting_wait() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_proxy_ready
+//     Function: HTTPChannel::run_http_proxy_ready
 //       Access: Private
 //  Description: This state is reached only after first establishing a
-//               connection to the proxy, if a proxy is in use.
-//
-//               In the normal http mode, this state immediately
-//               transitions to S_ready, but in some cases (like
-//               https-over-proxy) we need to send a special message
-//               directly to the proxy that is separate from the http
-//               request we will send to the server.
+//               connection to the proxy, if a proxy is in use and we
+//               are tunneling through it via a CONNECT command.
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
-run_proxy_ready() {
+run_http_proxy_ready() {
   // If there's a request to be sent to the proxy, send it now.
-  if (!_proxy_request_text.empty()) {
-    if (!http_send(_proxy_request_text)) {
-      return true;
-    }
-    
-    // All done sending request.
-    _state = S_proxy_request_sent;
-
-  } else {
-    _state = S_ready;
+  nassertr(!_proxy_request_text.empty(), false);
+  if (!server_send(_proxy_request_text, false)) {
+    return true;
   }
+    
+  // All done sending request.
+  _state = S_http_proxy_request_sent;
   return false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_proxy_request_sent
+//     Function: HTTPChannel::run_http_proxy_request_sent
 //       Access: Private
 //  Description: This state is reached only after we have sent a
 //               special message to the proxy and we are waiting for
@@ -801,21 +812,10 @@ run_proxy_ready() {
 //               special message to the proxy.
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
-run_proxy_request_sent() {
+run_http_proxy_request_sent() {
   // Wait for the first line to come back from the server.
   string line;
-  if (!http_getline(line)) {
-    if (_bio.is_null()) {
-      // Huh, the proxy hung up on us as soon as we tried to connect.
-      if (_response_type == RT_hangup) {
-        // This was our second immediate hangup in a row.  Give up.
-        _state = S_try_next_proxy;
-        
-      } else {
-        // Try again, once.
-        _response_type = RT_hangup;
-      }
-    }
+  if (!server_getline_failsafe(line)) {
     return true;
   }
 
@@ -823,7 +823,7 @@ run_proxy_request_sent() {
     return false;
   }
 
-  _state = S_proxy_reading_header;
+  _state = S_http_proxy_reading_header;
   _current_field_name = string();
   _current_field_value = string();
   _headers.clear();
@@ -832,13 +832,13 @@ run_proxy_request_sent() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_proxy_reading_header
+//     Function: HTTPChannel::run_http_proxy_reading_header
 //       Access: Private
 //  Description: In this state we are reading the header lines from
 //               the proxy's response to our special message.
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
-run_proxy_reading_header() {
+run_http_proxy_reading_header() {
   if (parse_http_header()) {
     return true;
   }
@@ -887,8 +887,202 @@ run_proxy_reading_header() {
   }
 
   // Now we have a tunnel opened through the proxy.
-  _proxy_tunnel = true;
   make_request_text();
+
+  _state = _want_ssl ? S_setup_ssl : S_ready;
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::run_socks_proxy_greet
+//       Access: Private
+//  Description: This state is reached only after first establishing a
+//               connection to a SOCKS proxy, with which we now have
+//               to negotiate a connection.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+run_socks_proxy_greet() {
+  static const char socks_greeting[] = {
+    0x05, // Socks version 5
+    0x01, // Number of supported login methods
+    0x00, // Login method 0: no authentication
+    /*
+    0x01, // Login method 1: GSSAPI
+    0x02  // Login method 2: username/password
+    */
+  };
+  static const int socks_greeting_len = sizeof(socks_greeting);
+  if (!server_send(string(socks_greeting, socks_greeting_len), true)) {
+    return true;
+  }
+    
+  // All done sending request.
+  _state = S_socks_proxy_greet_reply;
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::run_socks_proxy_greet_reply
+//       Access: Private
+//  Description: We are waiting for the SOCKS proxy to respond to our
+//               greeting.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+run_socks_proxy_greet_reply() {
+  string reply;
+
+  // Get the two-byte reply from the SOCKS server.
+  if (!server_get_failsafe(reply, 2)) {
+    return true;
+  }
+
+  if (reply[0] != 0x05) {
+    // We only speak Socks5.
+    downloader_cat.info()
+      << "Rejecting Socks version " << (int)reply[0] << "\n";
+    _state = S_try_next_proxy;
+    return false;
+  }
+
+  // TODO: don't ignore the login method.
+  
+  _state = S_socks_proxy_connect;
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::run_socks_proxy_connect
+//       Access: Private
+//  Description: The SOCKS proxy has accepted us, and now we may issue
+//               the connect request.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+run_socks_proxy_connect() {
+  static const char socks_connect[] = {
+    0x05, // Socks version 5
+    0x01, // Command 1: connect
+    0x00, // reserved
+    0x03, // DNS name
+  };
+  static const int socks_connect_len = sizeof(socks_connect);
+
+  string hostname = _request.get_url().get_server();
+  int port = _request.get_url().get_port();
+
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << "Requesting SOCKS5 connection to " 
+      << _request.get_url().get_server_and_port() << "\n";
+  }
+
+  string connect = 
+    string(socks_connect, socks_connect_len) +
+    string(1, (char)hostname.length()) +
+    hostname +
+    string(1, (char)((port >> 8) & 0xff)) +
+    string(1, (char)(port & 0xff));
+
+  if (!server_send(connect, true)) {
+    return true;
+  }
+    
+  _state = S_socks_proxy_connect_reply;
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::run_socks_proxy_connect_reply
+//       Access: Private
+//  Description: We are waiting for the SOCKS proxy to honor our
+//               connect request.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+run_socks_proxy_connect_reply() {
+  string reply;
+
+  // Get the first two bytes of the connect reply.
+  if (!server_get_failsafe(reply, 2)) {
+    return true;
+  }
+
+  if (reply[0] != 0x05) {
+    // We only speak Socks5.
+    downloader_cat.info()
+      << "Rejecting Socks version " << (int)reply[0] << "\n";
+    close_connection();  // connection is now bad.
+    _state = S_try_next_proxy;
+    return false;
+  }
+
+  if (reply[1] != 0x00) {
+    downloader_cat.info()
+      << "Connection refused, SOCKS code " << (int)reply[1] << "\n";
+    close_connection();  // connection is now bad.
+    _state = S_try_next_proxy;
+    return false;
+  }
+
+  // Now put those bytes back, and get five bytes of the reply.
+  _working_get = reply;
+  if (!server_get_failsafe(reply, 5)) {
+    return true;
+  }
+
+  // Figure out how many bytes total we will expect for the reply.
+  int total_bytes = 6;
+
+  switch (reply[3]) {
+  case 0x01:  // IPv4
+    total_bytes += 4;
+    break;
+
+  case 0x03:  // DNS
+    total_bytes += (unsigned int)reply[4];
+    break;
+
+  default:
+    downloader_cat.info()
+      << "Unsupported SOCKS address type: " << (int)reply[3] << "\n";
+    _state = S_try_next_proxy;
+    return false;
+  }
+
+  // Now put back the bytes we've read so far, and get the rest of
+  // them.
+  _working_get = reply;
+  if (!server_get_failsafe(reply, total_bytes)) {
+    return true;
+  }
+
+  if (downloader_cat.is_debug()) {
+    // Finally, we can decode the whole thing.
+    string connect_host;
+
+    switch (reply[3]) {
+    case 0x01:  // IPv4
+      {
+        ostringstream strm;
+        strm << (unsigned int)(unsigned char)reply[4] << "." 
+             << (unsigned int)(unsigned char)reply[5] << "."
+             << (unsigned int)(unsigned char)reply[6] << "." 
+             << (unsigned int)(unsigned char)reply[7];
+        connect_host = strm.str();
+      }
+      break;
+      
+    case 0x03:  // DNS
+      connect_host = string(&reply[5], (unsigned int)reply[4]);
+      break;
+    }
+    
+    int connect_port =
+      (((unsigned int)(unsigned char)reply[total_bytes - 2]) << 8) |
+      ((unsigned int)(unsigned char)reply[total_bytes - 1]);
+    
+    downloader_cat.debug()
+      << _proxy << " directed us to " << connect_host << ":"
+      << connect_port << "\n";
+  }
 
   _state = _want_ssl ? S_setup_ssl : S_ready;
   return false;
@@ -1043,7 +1237,7 @@ bool HTTPChannel::
 run_ready() {
   // If there's a request to be sent upstream, send it now.
   if (!_request_text.empty()) {
-   if (!http_send(_request_text)) {
+   if (!server_send(_request_text, false)) {
       return true;
     }
   }
@@ -1064,26 +1258,7 @@ bool HTTPChannel::
 run_request_sent() {
   // Wait for the first line to come back from the server.
   string line;
-  if (!http_getline(line)) {
-    if (_bio.is_null()) {
-      // Huh, the server hung up on us as soon as we tried to connect.
-      if (_response_type == RT_hangup) {
-        // This was our second immediate hangup in a row.  Give up.
-        _state = S_try_next_proxy;
-        
-      } else {
-        // Try again, once.
-        _response_type = RT_hangup;
-      }
-
-    } else if (ClockObject::get_global_clock()->get_real_time() -
-               _sent_request_time > get_http_timeout()) {
-      // Time to give up.
-      downloader_cat.info()
-        << "Timeout waiting for " << _request.get_url().get_server_and_port() << ".\n";
-      _state = S_try_next_proxy;
-    }
-
+  if (!server_getline_failsafe(line)) {
     return true;
   }
 
@@ -1283,7 +1458,7 @@ run_reading_header() {
 
   if (_state == S_read_header && 
       ((get_status_code() / 100) == 5 || get_status_code() == 407) &&
-      !_proxy.empty() && !_proxy_tunnel && _proxy_next_index < _proxies.size()) {
+      _proxy_serves_document && _proxy_next_index < _proxies.size()) {
     // If we were using a proxy (but not tunneling through the proxy)
     // and we got some kind of a server error, try the next proxy in
     // sequence (if we have one).  This handles the case of a working
@@ -1445,11 +1620,11 @@ run_read_body() {
   // Skip the trailer following the recently-read body.
 
   string line;
-  if (!http_getline(line)) {
+  if (!server_getline(line)) {
     return true;
   }
   while (!line.empty()) {
-    if (!http_getline(line)) {
+    if (!server_getline(line)) {
       return true;
     }
   }
@@ -1474,11 +1649,7 @@ run_read_trailer() {
     return false;
   }
 
-  if (!_proxy.empty() && !_proxy_tunnel) {
-    _state = S_proxy_ready;
-  } else {
-    _state = S_ready;
-  }
+  _state = S_ready;
   return false;
 }
 
@@ -1624,10 +1795,21 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
   // connection.
   _want_ssl = (_request.get_url().get_scheme() == "https");
 
-  // If we have a proxy, we'll be asking the proxy to hand us the
-  // document--except when we also have https, in which case we'll be
-  // tunnelling through the proxy to talk to the server directly.
-  _proxy_serves_document = (!_proxy.empty() && !_want_ssl);
+  _proxy_tunnel = false;
+  _proxy_serves_document = false;
+
+  if (!_proxy.empty()) {
+    // If we're opening an SSL connection, or we ask for a direct
+    // connection of some kind, or if we have a SOCKS-style proxy,
+    // that demands a tunnel through the proxy to speak directly to
+    // the http server.
+    _proxy_tunnel =
+      (_want_ssl || _method == HTTPEnum::M_connect || _proxy.get_scheme() == "socks");
+
+    // Otherwise (but we still have a proxy), then we ask the proxy to
+    // hand us the document.
+    _proxy_serves_document = !_proxy_tunnel;
+  }
 
   _first_byte = first_byte;
   _last_byte = last_byte;
@@ -1636,10 +1818,9 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
   make_header();
   make_request_text();
 
-  if (!_proxy.empty() && (_want_ssl || _method == HTTPEnum::M_connect)) {
+  if (_proxy_tunnel) {
     // Maybe we need to tunnel through the proxy to connect to the
-    // server directly.  We need this for HTTPS, or if the user
-    // requested a direct connection somewhere.
+    // server directly.
     ostringstream request;
     request 
       << "CONNECT " << _request.get_url().get_server_and_port()
@@ -1773,7 +1954,7 @@ reset_download_position() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::http_getline
+//     Function: HTTPChannel::server_getline
 //       Access: Private
 //  Description: Reads a single line from the server's reply.  Returns
 //               true if the line is successfully retrieved, or false
@@ -1781,15 +1962,15 @@ reset_download_position() {
 //               the connection has been closed.
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
-http_getline(string &str) {
+server_getline(string &str) {
   nassertr(!_source.is_null(), false);
   int ch = (*_source)->get();
   while (!(*_source)->eof() && !(*_source)->fail()) {
     switch (ch) {
     case '\n':
       // end-of-line character, we're done.
-      str = _working_getline;
-      _working_getline = string();
+      str = _working_get;
+      _working_get = string();
       {
         // Trim trailing whitespace.  We're not required to do this per the
         // HTTP spec, but let's be generous.
@@ -1809,7 +1990,7 @@ http_getline(string &str) {
       break;
 
     default:
-      _working_getline += (char)ch;
+      _working_get += (char)ch;
     }
     ch = (*_source)->get();
   }
@@ -1819,16 +2000,120 @@ http_getline(string &str) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::http_send
+//     Function: HTTPChannel::server_getline_failsafe
+//       Access: Private
+//  Description: Reads a line from the server's reply.  If the server
+//               disconnects or times out before sending a reply,
+//               moves on to the next proxy server (or sets failure
+//               mode) and returns false; otherwise, returns true.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+server_getline_failsafe(string &str) {
+  if (!server_getline(str)) {
+    if (_bio.is_null()) {
+      // Huh, the server hung up on us as soon as we tried to connect.
+      if (_response_type == RT_hangup) {
+        // This was our second immediate hangup in a row.  Give up.
+        _state = S_try_next_proxy;
+        
+      } else {
+        // Try again, once.
+        _response_type = RT_hangup;
+      }
+      
+    } else if (ClockObject::get_global_clock()->get_real_time() -
+               _sent_request_time > get_http_timeout()) {
+      // Time to give up.
+      downloader_cat.info()
+        << "Timeout waiting for " << _request.get_url().get_server_and_port() << ".\n";
+      _state = S_try_next_proxy;
+    }
+    
+    return false;
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::server_get
+//       Access: Private
+//  Description: Reads a fixed number of bytes from the server's
+//               reply.  Returns true if the indicated number of bytes
+//               are successfully retrieved, or false if the complete
+//               set has not yet been received or if the connection
+//               has been closed.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+server_get(string &str, size_t num_bytes) {
+  nassertr(!_source.is_null(), false);
+  int ch = (*_source)->get();
+  while (!(*_source)->eof() && !(*_source)->fail()) {
+    _working_get += (char)ch;
+    if (_working_get.length() >= num_bytes) {
+      str = _working_get;
+      _working_get = string();
+      return true;
+    }
+
+    ch = (*_source)->get();
+  }
+
+  check_socket();
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::server_get_failsafe
+//       Access: Private
+//  Description: Reads a fixed number of bytes from the server.  If
+//               the server disconnects or times out before sending a
+//               reply, moves on to the next proxy server (or sets
+//               failure mode) and returns false; otherwise, returns
+//               true.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+server_get_failsafe(string &str, size_t num_bytes) {
+  if (!server_get(str, num_bytes)) {
+    if (_bio.is_null()) {
+      // Huh, the server hung up on us as soon as we tried to connect.
+      if (_response_type == RT_hangup) {
+        // This was our second immediate hangup in a row.  Give up.
+        _state = S_try_next_proxy;
+        
+      } else {
+        // Try again, once.
+        _response_type = RT_hangup;
+      }
+      
+    } else if (ClockObject::get_global_clock()->get_real_time() -
+               _sent_request_time > get_http_timeout()) {
+      // Time to give up.
+      downloader_cat.info()
+        << "Timeout waiting for " << _request.get_url().get_server_and_port() << ".\n";
+      _state = S_try_next_proxy;
+    }
+    
+    return false;
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::server_send
 //       Access: Private
 //  Description: Sends a series of lines to the server.  Returns true
 //               if the buffer is fully sent, or false if some of it
 //               remains.  If this returns false, the function must be
 //               called again later, passing in the exact same string,
 //               until the return value is true.
+//
+//               If the secret flag is true, the data is not echoed to
+//               the log (even in spam mode).  This may be desirable
+//               if the data may contain binary data, or if it may
+//               contain passwords etc.
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
-http_send(const string &str) {
+server_send(const string &str, bool secret) {
   nassertr(str.length() > _sent_so_far, true);
 
   // Use the underlying BIO to write to the server, instead of the
@@ -1853,7 +2138,7 @@ http_send(const string &str) {
   }
   
 #ifndef NDEBUG
-  if (downloader_cat.is_spam()) {
+  if (!secret && downloader_cat.is_spam()) {
     show_send(str.substr(0, write_count));
   }
 #endif
@@ -1933,7 +2218,7 @@ parse_http_response(const string &line) {
 bool HTTPChannel::
 parse_http_header() {
   string line;
-  if (!http_getline(line)) {
+  if (!server_getline(line)) {
     return true;
   }
 
@@ -1966,7 +2251,7 @@ parse_http_header() {
       }
     }
 
-    if (!http_getline(line)) {
+    if (!server_getline(line)) {
       return true;
     }
   }
@@ -2529,7 +2814,7 @@ void HTTPChannel::
 make_request_text() {
   _request_text = _header;
 
-  if (!_proxy.empty() && !_proxy_tunnel &&
+  if (_proxy_serves_document &&
       _proxy_auth != (HTTPAuthorization *)NULL && !_proxy_username.empty()) {
     _request_text += "Proxy-Authorization: ";
     _request_text += 
@@ -2658,9 +2943,8 @@ close_connection() {
   }
   _source.clear();
   _bio.clear();
-  _working_getline = string();
+  _working_get = string();
   _sent_so_far = 0;
-  _proxy_tunnel = false;
   _read_index++;
 }
 

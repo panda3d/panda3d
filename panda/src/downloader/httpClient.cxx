@@ -487,6 +487,13 @@ get_proxies_for_url(const URLSpec &url, pvector<URLSpec> &proxies) const {
     }
   }
 
+  // Failing that, use SOCKS for an SSL-type connection.
+  if (!got_any && scheme == "https") {
+    if (get_proxies_for_scheme("socks", proxies)) {
+      got_any = true;
+    }
+  }
+
   // And failing that, try the http proxy.
   if (!got_any) {
     get_proxies_for_scheme("http", proxies);

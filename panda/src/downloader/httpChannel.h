@@ -153,9 +153,13 @@ private:
   bool run_try_next_proxy();
   bool run_connecting();
   bool run_connecting_wait();
-  bool run_proxy_ready();
-  bool run_proxy_request_sent();
-  bool run_proxy_reading_header();
+  bool run_http_proxy_ready();
+  bool run_http_proxy_request_sent();
+  bool run_http_proxy_reading_header();
+  bool run_socks_proxy_greet();
+  bool run_socks_proxy_greet_reply();
+  bool run_socks_proxy_connect();
+  bool run_socks_proxy_connect_reply();
   bool run_setup_ssl();
   bool run_ssl_handshake();
   bool run_ready();
@@ -178,8 +182,11 @@ private:
   void finished_body(bool has_trailer);
   bool reset_download_position();
 
-  bool http_getline(string &str);
-  bool http_send(const string &str);
+  bool server_getline(string &str);
+  bool server_getline_failsafe(string &str);
+  bool server_get(string &str, size_t num_bytes);
+  bool server_get_failsafe(string &str, size_t num_bytes);
+  bool server_send(const string &str, bool secret);
   bool parse_http_response(const string &line);
   bool parse_http_header();
   bool parse_content_range(const string &content_range);
@@ -233,6 +240,7 @@ private:
   string _body;
   bool _want_ssl;
   bool _proxy_serves_document;
+  bool _proxy_tunnel;
   bool _server_response_has_no_body;
   size_t _first_byte;
   size_t _last_byte;
@@ -294,9 +302,13 @@ private:
     S_try_next_proxy,
     S_connecting,
     S_connecting_wait,
-    S_proxy_ready,
-    S_proxy_request_sent,
-    S_proxy_reading_header,
+    S_http_proxy_ready,
+    S_http_proxy_request_sent,
+    S_http_proxy_reading_header,
+    S_socks_proxy_greet,
+    S_socks_proxy_greet_reply,
+    S_socks_proxy_connect,
+    S_socks_proxy_connect_reply,
     S_setup_ssl,
     S_ssl_handshake,
     S_ready,
@@ -316,9 +328,8 @@ private:
   bool _started_download;
   string _proxy_header;
   string _proxy_request_text;
-  bool _proxy_tunnel;
   string _request_text;
-  string _working_getline;
+  string _working_get;
   size_t _sent_so_far;
   string _current_field_name;
   string _current_field_value;

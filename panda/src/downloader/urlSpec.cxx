@@ -93,6 +93,9 @@ get_port() const {
   if (scheme == "https") {
     return 443;
 
+  } else if (scheme == "socks") {
+    return 1080;
+
   } else { // == "http"
     return 80;
   }
