@@ -46,6 +46,10 @@ if [ "$TTRADER" ]; then
     TTRADER=`cygpath -w $TTRADER`
     export TTRADER
 fi
+if [ "$VRIDE" ]; then
+    VRIDE=`cygpath -w $VRIDE`
+    export VRIDE
+fi
 if [ "$WINTOOLS" ]; then
     WINTOOLS=`cygpath -w $WINTOOLS`
     export WINTOOLS
@@ -81,11 +85,7 @@ HOME=`cygpath -w $HOME`
 export HOME
 
 # Now start up emacs
-if [ "$1" != "" ]; then
-    exec runemacs $1
-else
-    exec runemacs
-fi
+exec runemacs $@
 
 
 
