@@ -9,7 +9,7 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 
   #define SOURCES \
-    config_lerp.h lerp.h lerpblend.h 
+    config_lerp.h lerp.h lerpblend.h lerpfunctor.h
     
   #define INCLUDED_SOURCES \
     config_lerp.cxx lerp.cxx lerpblend.cxx lerpfunctor.cxx 

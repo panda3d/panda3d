@@ -59,7 +59,6 @@ protected:
   value _end;
   value _diff_cache;
 
-  value interpolate(float);
   SimpleLerpFunctor(value start, value end) : LerpFunctor(), _start(start),
                                               _end(end), _diff_cache(end-start)
     {}
@@ -70,11 +69,14 @@ public:
   virtual void operator()(float);
 
 PUBLISHED:
+  value interpolate(float);
+  INLINE const value &get_start() const { return _start; }
+  INLINE const value &get_end() const { return _end; }
+
+public:
   static TypeHandle get_class_type(void) {
     return _type_handle;
   }
-
-public:
   static void init_type(void) {
     LerpFunctor::init_type();
     do_init_type(value);
