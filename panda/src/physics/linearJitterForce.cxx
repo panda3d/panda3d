@@ -46,7 +46,7 @@ LinearJitterForce(const LinearJitterForce &copy) :
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 LinearJitterForce::
-~LinearJitterForce(void) {
+~LinearJitterForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,7 +55,7 @@ LinearJitterForce::
 // Description : copier
 ////////////////////////////////////////////////////////////////////
 LinearForce *LinearJitterForce::
-make_copy(void) {
+make_copy() {
   return new LinearJitterForce(*this);
 }
 

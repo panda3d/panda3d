@@ -30,25 +30,25 @@ class EXPCL_PANDAPHYSICS LinearJitterForce : public LinearRandomForce {
 PUBLISHED:
   LinearJitterForce(float a = 1.0f, bool m = false);
   LinearJitterForce(const LinearJitterForce &copy);
-  virtual ~LinearJitterForce(void);
+  virtual ~LinearJitterForce();
   
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:
   virtual LVector3f get_child_vector(const PhysicsObject *po);
-  virtual LinearForce *make_copy(void);
+  virtual LinearForce *make_copy();
 
 public:
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     LinearRandomForce::init_type();
     register_type(_type_handle, "LinearJitterForce",
                   LinearRandomForce::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
