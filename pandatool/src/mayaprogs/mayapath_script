@@ -11,4 +11,4 @@ if test "zzz" != ""; then
   export LM_LICENSE_FILE
 fi
 export LD_LIBRARY_PATH
-exec `dirname $0`/yyy_bin $*
+exec `dirname $0`/yyy_bin "$@"
