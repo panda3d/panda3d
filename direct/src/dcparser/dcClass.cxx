@@ -459,6 +459,7 @@ direct_update(PyObject *distobj, const string &field_name,
 }
 #endif  // HAVE_PYTHON
 
+#ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
 //     Function: DCClass::pack_required_field
 //       Access: Published
@@ -486,6 +487,7 @@ pack_required_field(Datagram &datagram, PyObject *distobj,
   datagram.append_data(packer.get_data(), packer.get_length());
   return true;
 }
+#endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
