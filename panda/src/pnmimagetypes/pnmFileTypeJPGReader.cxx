@@ -56,6 +56,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   _num_channels = _cinfo.output_components;
   _x_size = (int)_cinfo.output_width;
   _y_size = (int)_cinfo.output_height;
+  _maxval = MAXJSAMPLE;
 }
 
 
@@ -98,6 +99,7 @@ read_data(xel *array, xelval *) {
   /* Here we use the library's state variable cinfo.output_scanline as the
    * loop counter, so that we don't have to keep track ourselves.
    */
+  int x = 0;
   while (_cinfo.output_scanline < _cinfo.output_height) {
     /* jpeg_read_scanlines expects an array of pointers to scanlines.
      * Here the array is only one element long, but you could ask for
@@ -106,19 +108,21 @@ read_data(xel *array, xelval *) {
     jpeg_read_scanlines(&_cinfo, buffer, 1);
     /* Assume put_scanline_someplace wants a pointer and sample count. */
     //put_scanline_someplace(buffer[0], row_stride);
-    uchar *bufptr = buffer[0];
-    int x = 0;
-    for (int i = 0; i < _cinfo.output_width; i += _cinfo.output_components) {
+    JSAMPROW bufptr = buffer[0];
+    for (int i = 0; i < row_stride; i += _cinfo.output_components) {
       if (_cinfo.output_components == 1) {
-	xelval val = bufptr[i];
-	PNM_ASSIGN1(array[x++], val);
+	xelval val = (xelval)bufptr[i];
+	nassertr(x < _x_size * _y_size, 0);
+	PNM_ASSIGN1(array[x], val);
       } else {
         xelval red, grn, blu;
-        red = (uchar)bufptr[i];
-        grn = (uchar)bufptr[i+1];
-        blu = (uchar)bufptr[i+2];
-        PPM_ASSIGN(array[x++], red, grn, blu);
+        red = (xelval)bufptr[i];
+        grn = (xelval)bufptr[i+1];
+        blu = (xelval)bufptr[i+2];
+	nassertr(x < _x_size * _y_size, 0);
+        PPM_ASSIGN(array[x], red, grn, blu);
       }
+      x++;
     } 
   }
 
