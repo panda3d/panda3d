@@ -866,7 +866,7 @@ class LevelEditor(NodePath, PandaObject):
 	# If nothing selected, just return
         if not self.selectedNPRoot:
             return
-
+        
 	# Next check to see if the selected object is a DNA object
 	dnaObject = self.findDNANode(self.selectedNPRoot)
 	# Nope, not a DNA object, just return
@@ -877,6 +877,9 @@ class LevelEditor(NodePath, PandaObject):
         if DNAClassEqual(dnaObject, DNA_FLAT_BUILDING):
             # FLAT BUILDING OPERATIONS
             menuMode, wallNum = self.getFlatBuildingMode(dnaObject)
+            # Check menuMode
+            if menuMode == None:
+                return
             # Find appropriate target
             wall = self.getWall(dnaObject, wallNum)
             # Record bldg/wall
@@ -917,11 +920,11 @@ class LevelEditor(NodePath, PandaObject):
             # STREET OPERATIONS
             self.DNATarget = dnaObject
             menuMode = 'street_texture'
-
+        
         # No valid menu mode, get the hell out of here!
         if menuMode == None:
             return
-
+        
         # Now spawn apropriate menu task if menu selected
         self.activeMenu = self.getMenu(menuMode)
         # Set initial state
@@ -1000,6 +1003,8 @@ class LevelEditor(NodePath, PandaObject):
                     menuMode = 'door_orientation'
                 else:
                     menuMode = 'door_texture'
+                # MRM: Temp for now
+                menuMode = None
             else:
                 # Do window operations
                 if direct.fControl:
