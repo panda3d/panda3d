@@ -626,6 +626,11 @@ do_reshape_request(int x_origin, int y_origin, int x_size, int y_size) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 system_changed_properties(const WindowProperties &properties) {
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "system_changed_properties(" << properties << ")\n";
+  }
+
   MutexHolder holder(_properties_lock);
 
   if (properties.has_size()) {
@@ -649,6 +654,11 @@ system_changed_properties(const WindowProperties &properties) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 system_changed_size(int x_size, int y_size) {
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "system_changed_size(" << x_size << ", " << y_size << ")\n";
+  }
+
   if (x_size != _properties.get_x_size() || 
       y_size != _properties.get_y_size()) {
     _x_size = x_size;

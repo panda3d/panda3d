@@ -26,6 +26,7 @@
 #include "cullResult.h"
 #include "pointerTo.h"
 #include "pmutex.h"
+#include "config_display.h"
 
 #include "plist.h"
 

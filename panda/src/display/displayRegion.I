@@ -36,6 +36,11 @@ is_active() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DisplayRegion::
 do_compute_pixels(int x_size, int y_size) {
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "DisplayRegion::do_compute_pixels(" << x_size << ", " << y_size << ")\n";
+  }
+
   _pl = int((_l * x_size) + 0.5);
   _pr = int((_r * x_size) + 0.5);
   _pb = int((_b * y_size) + 0.5);
