@@ -931,7 +931,7 @@ class DirectSessionPanel(AppShell):
         # Set light specific info
         if self.activeLight:
             l = self.activeLight.getLight()
-            self.lightActive.set(direct.lights.la.hasLight(l))
+            self.lightActive.set(render.hasLight(self.activeLight))
             lightColor = l.getColor() * 255.0
             self.lightColor.set([lightColor[0], lightColor[1],
                                  lightColor[2], lightColor[3]], 0)
