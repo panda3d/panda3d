@@ -15,6 +15,7 @@ src/leveleditor
 src/net
 src/particles
 src/showbase
+src/showutil
 src/task
 src/tkpanels
 src/tkwidgets
