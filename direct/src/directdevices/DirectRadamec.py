@@ -38,8 +38,10 @@ class DirectRadamec(PandaObject):
         # Note:  These values change quite often, i.e. everytime
         #        you unplug the radamec cords, or jostle them too
         #        much.  For best results, re-record these values often.
-        self.minRange = [-180.0, -90, 524290.0, 520315.0]
-        self.maxRange = [180.0, 90, 542700.0, 559518.0]
+        self.minRange = [-180.0, -90, 515210.0, 506887.0]
+        self.maxRange = [180.0, 90, 539820.0, 546075.0]
+        #self.minRange = [-180.0, -90, 516880.0, 516873.0]
+        #self.maxRange = [180.0, 90, 541491.0, 556087.0]
         # Pick initial mode
         self.updateFunc = self.radamecUpdate
         # Spawn update task
