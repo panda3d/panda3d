@@ -283,7 +283,7 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
 #ifndef NDEBUG
   if (_quality >= 104) {
     // If quality level is at least 104, we don't even convert hpr at
-    // all.
+    // all.  This is just for debugging.
     vector_float h, p, r;
 
     h.reserve(length);
@@ -303,6 +303,7 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
   }
   if (_quality >= 103) {
     // If quality level is 103, we convert hpr to a table of matrices.
+    // This is just for debugging.
     vector_float 
       m00, m01, m02,
       m10, m11, m12,
@@ -354,7 +355,7 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
     compose_matrix(mat, LVecBase3f(1.0, 1.0, 1.0), array[i]);
 
     LOrientationf rot(mat);
-    rot.normalize();
+    rot.normalize();  // This may not be necessary, but let's not take chances.
 
     if (rot.get_r() < 0) {
       // Since rot == -rot, we can flip the quarternion if need be to
@@ -370,26 +371,40 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
       rot.set(-rot.get_r(), -rot.get_i(), -rot.get_j(), -rot.get_k());
     }
 
-    // This is a debug severity, and not a warning or error, because
-    // (a) some small errors in hpr are usually acceptable, and (b)
-    // sometimes two different hpr trios actually represent the same
-    // rotation, e.g. (180, 0, -180) vs. (0, 0, 0).
-    if (mathutil_cat.is_debug()) {
+#ifdef NOTIFY_DEBUG
+    if (mathutil_cat.is_warning()) {
       LMatrix3f mat2;
       rot.extract_to_matrix(mat2);
-      LVecBase3f scale, hpr;
-      bool success = decompose_matrix(mat2, scale, hpr);
-      nassertv(success);
-      if (!array[i].almost_equal(hpr, 0.001) || 
-		  !scale.almost_equal(LVecBase3f(1.0, 1.0, 1.0), 0.001)) {
-		  mathutil_cat.debug()
-		      << "Converted hpr to quaternion incorrectly!\n"
-			  << "  Source hpr: " << array[i] << "\n"
-			  << "  Quaternion: " << rot << "\n" 
-			  << "  Which represents: hpr " << hpr << " scale "
-			  << scale << "\n";
-	  }
+      if (!mat.almost_equal(mat2, 0.0001)) {
+        LVecBase3f hpr1, hpr2;
+        LVecBase3f scale;
+        bool d1 = decompose_matrix(mat, scale, hpr1);
+        bool d2 = decompose_matrix(mat2, scale, hpr2);
+	mathutil_cat.warning()
+	  << "Converted hpr to quaternion incorrectly!\n"
+	  << "  Source hpr: " << array[i];
+        if (d1) {
+          mathutil_cat.warning(false)
+            << ", or " << hpr1 << "\n";
+        } else {
+          mathutil_cat.warning(false)
+            << ", incorrectly converted to the non-ortho matrix:\n";
+          mat2.write(mathutil_cat.warning(false), 4);
+        }
+        mathutil_cat.warning(false)
+          << "  Quaternion: " << rot << "\n";
+        if (d2) {
+          mathutil_cat.warning(false)
+            << "  Which represents: hpr " << hpr2 << " scale "
+            << scale << "\n";
+        } else {
+          mathutil_cat.warning(false)
+            << "  Which is incorrectly converted to the following non-ortho matrix:\n";
+          mat2.write(mathutil_cat.warning(false), 4);
+        }
+      }
     }
+#endif
 
     qr.push_back(rot.get_r());
     qi.push_back(rot.get_i());
@@ -398,7 +413,7 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
   }
 
   // If quality is at least 102, we write all four quat components,
-  // instead of just the three.
+  // instead of just the three.  This is just for debugging.
 #ifndef NDEBUG
   if (_quality >= 102) {
     write_reals(datagram, &qr[0], length);
@@ -531,7 +546,7 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
 #ifndef NDEBUG
   if (_quality >= 104) {
     // If quality level is at least 104, we don't even convert hpr to
-    // quat.
+    // quat.  This is just for debugging.
     vector_float h, p, r;
     bool okflag = true;
     okflag = 
@@ -550,7 +565,7 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
   }
   if (_quality >= 103) {
     // If quality level is 103, we read in a table of 3x3 rotation
-    // matrices.
+    // matrices.  This is just for debugging.
     vector_float 
       m00, m01, m02,
       m10, m11, m12,
