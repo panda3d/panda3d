@@ -127,6 +127,7 @@ private:
   bool              _mouse_passive_motion_enabled;
   bool              _mouse_entry_enabled;
   bool              _ime_open;
+  bool              _ime_composition_w;
   bool              _exiting_window;
   bool              _window_inactive;
   bool              _active_minimized_fullscreen;

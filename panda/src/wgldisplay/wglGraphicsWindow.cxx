@@ -1708,7 +1708,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
               ImmGetCompositionStringA(hIMC, GCS_RESULTSTR,
                                        ime_result, max_ime_result);
 
-            // ImmGetCompositionStringA() returned an encoded ANSI
+            // ImmGetCompositionStringA() returns an encoded ANSI
             // string, which we now have to map to wide-character
             // Unicode.
             static const int max_wide_result = 128;
@@ -1727,8 +1727,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           }
 
           ImmReleaseContext(hwnd, hIMC);
-            
-
         }
         return 0;
       }

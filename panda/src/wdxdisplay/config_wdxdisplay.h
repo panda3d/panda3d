@@ -31,6 +31,7 @@ extern bool dx_preserve_fpu_state;
 extern Filename get_icon_filename();
 extern Filename get_mono_cursor_filename();
 extern Filename get_color_cursor_filename();
+extern bool ime_composition_w;
 
 extern EXPCL_PANDADX void init_libwdxdisplay();
 
