@@ -1986,7 +1986,7 @@ do_expand_object_type(EggGroup *egg_group, const pset<string> &expanded,
       egg_syntax = "<Model> { 1 }";
       
     } else if (cmp_nocase_uh(object_type, "decal") == 0) {
-      egg_syntax = "<Decal> { 1 }";
+      egg_syntax = "<Scalar> decal { 1 }";
       
     } else if (cmp_nocase_uh(object_type, "billboard") == 0) {
       egg_syntax = "<Billboard> { axis }";
