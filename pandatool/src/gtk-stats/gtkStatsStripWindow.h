@@ -47,6 +47,7 @@ protected:
   virtual void menu_new_window();
   void menu_hscale(float wpm);
   void menu_vscale(float max_height);
+  void menu_smooth();
   void menu_auto_vscale();
   void menu_show_levels(int collector_index);
   void open_subchart(int collector_index);
@@ -68,6 +69,8 @@ private:
 
   Gtk::Menu *_scale_menu;
   Gtk::Menu *_levels_menu;
+
+  bool _smooth;
 };
 
 

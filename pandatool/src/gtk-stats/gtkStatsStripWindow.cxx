@@ -27,6 +27,7 @@
 
 
 using Gtk::Menu_Helpers::MenuElem;
+using Gtk::Menu_Helpers::CheckMenuElem;
 using Gtk::Menu_Helpers::SeparatorElem;
 
 ////////////////////////////////////////////////////////////////////
@@ -45,6 +46,7 @@ GtkStatsStripWindow(GtkStatsMonitor *monitor, int thread_index,
 {
   _title_unknown = false;
   _setup_scale_menu = false;
+  _smooth = false;
 
   setup_menu();
   layout_window(chart_xsize, chart_ysize);
@@ -173,8 +175,11 @@ setup_menu() {
 
   _menu->items().push_back(MenuElem("Speed", *manage(speed_menu)));
 
-
   _scale_menu = new Gtk::Menu;
+  _scale_menu->items().push_back
+    (CheckMenuElem("Smooth",
+                   slot(this, &GtkStatsStripWindow::menu_smooth)));
+  _scale_menu->items().push_back(SeparatorElem());
   _scale_menu->items().push_back
     (MenuElem("Auto scale",
               slot(this, &GtkStatsStripWindow::menu_auto_vscale)));
@@ -294,6 +299,18 @@ menu_hscale(float wpm) {
 void GtkStatsStripWindow::
 menu_vscale(float max_height) {
   _chart->set_vertical_scale(max_height);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripWindow::menu_smooth
+//       Access: Protected
+//  Description: Toggles the "smooth" state of the check menu.
+////////////////////////////////////////////////////////////////////
+void GtkStatsStripWindow::
+menu_smooth() {
+  _smooth = !_smooth;
+
+  _chart->set_average_mode(_smooth);
 }
 
 ////////////////////////////////////////////////////////////////////
