@@ -26,6 +26,7 @@
 #include "pruneTransition.h"
 #include "geomNode.h"
 #include "pStatTimer.h"
+#include "wrt.h"
 
 TypeHandle QuickRenderTraverser::_type_handle;
 
@@ -73,11 +74,13 @@ traverse(Node *root,
 
   _root = root;
   _initial_state.apply_from(initial_state, net_trans);
+  _arc_chain = ArcChain(_root);
 
   QuickRenderLevelState level_state;
   level_state._as_of = UpdateSeq::initial();
+  level_state._under_instance = false;
 
-  df_traverse(root, *this,
+  df_traverse(_root, *this,
               NullAttributeWrapper(), level_state, _graph_type);
 
   _root = (Node *)NULL;
@@ -99,6 +102,7 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
   Node *node = arc->get_child();
 
   if (node->get_num_parents(_graph_type) != 1) {
+    /*
     const UpRelationPointers &urp = node->find_connection(_graph_type).get_up();
     int num_parents = urp.size();
 
@@ -118,6 +122,8 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
     sgraphutil_cat.warning(false) << "\n";
 
     return false;
+    */
+    level_state._under_instance = true;
   }
 
   if (implicit_app_traversal) {
@@ -135,6 +141,8 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
   }
 
   mark_forward_arc(arc);
+  _arc_chain.push_back(arc);
+  
   _gsg->_nodes_pcollector.add_level(1);
 
   if (node->is_of_type(GeomNode::get_class_type())) {
@@ -143,18 +151,28 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
     // Determine the net transition to this GeomNode, and render it.
     GeomNode *gnode = DCAST(GeomNode, node);
     AllTransitionsWrapper trans;
-    Node *top_subtree = 
+
+    if (level_state._under_instance) {
+      // If we're under an instance node, we have to use the more
+      // expensive wrt() operation.
+      wrt(node, begin(), end(), (Node *)NULL, trans, _graph_type);
+
+    } else {
+      // Otherwise, we can use wrt_subtree() to get better caching.
+
+      //Node *top_subtree = 
       wrt_subtree(arc, NULL,
                   level_state._as_of, now,
                   trans, _graph_type);
 
-    /*
-    cerr << "top_subtree is " << (void *)top_subtree;
-    if (top_subtree != (Node *)NULL) {
-      cerr << " is " << *top_subtree;
+      /*
+      cerr << "top_subtree is " << (void *)top_subtree;
+      if (top_subtree != (Node *)NULL) {
+        cerr << " is " << *top_subtree;
+      }
+      cerr << "\n";
+      */
     }
-    cerr << "\n";
-    */
 
     AllAttributesWrapper attrib;
     attrib.apply_from(_initial_state, trans);

@@ -32,6 +32,7 @@
 class EXPCL_PANDA QuickRenderLevelState {
 public:
   UpdateSeq _as_of;
+  bool _under_instance;
 };
 
 #endif

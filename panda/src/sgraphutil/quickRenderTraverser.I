@@ -27,4 +27,5 @@ backward_arc(NodeRelation *arc, NullTransitionWrapper &,
              NullAttributeWrapper &, NullAttributeWrapper &,
              const QuickRenderLevelState &) {
   mark_backward_arc(arc);
+  _arc_chain.pop_back();
 }
