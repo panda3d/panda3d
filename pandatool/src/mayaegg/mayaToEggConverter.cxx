@@ -1148,6 +1148,9 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
   MStatus status;
   string name = mesh.name().asChar();
 
+  bool double_sided = false;
+  get_bool_attribute(mesh.object(), "doubleSided", double_sided);
+
   if (mayaegg_cat.is_spam()) {
     mayaegg_cat.spam()
       << "  numPolygons: "
@@ -1202,6 +1205,8 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
   while (!pi.isDone()) {
     EggPolygon *egg_poly = new EggPolygon;
     egg_group->add_child(egg_poly);
+
+    egg_poly->set_bface_flag(double_sided);
 
     long num_verts = pi.polygonVertexCount();
     for (long i = 0; i < num_verts; i++) {
