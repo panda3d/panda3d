@@ -49,15 +49,7 @@ INLINE void ConfigTable::ConfigSuffixDefault(void) {
 }
 
 INLINE void ConfigTable::ConfigPathDefault(void) {
-#ifdef PENV_PS2
-
-  // When this is empty, ReadConfigFile (ConfigTable.C) is forced
-  // to look in CONFIG_PATH compiler_flag (instead of env var)
-
-  configpath = "";
-#else
-  configpath = "CONFIG_PATH";
-#endif
+  configpath = "CFG_PATH";
 }
 
 INLINE void ConfigTable::ConfigCmtDefault(void) {

@@ -120,45 +120,34 @@ void ConfigTable::ParseConfigFile(istream& is, const ConfigString& Filename)
 }
 
 void ConfigTable::ReadConfigFile(void) {
-  if (configpath.empty()) {
+  // The configpath variable lists the environment variables that
+  // themselves should be considered to contain search paths for
+  // Configrc files.  This is one level of indirection from the
+  // intuitive definition.
 
-#ifdef PENV_PS2
-
-    // roight. PS2 has no environment variables, so the config path
-    // has to be explicitly set with the CONFIG_PATH compiler variable.
-    // this is currently done in makefile.config.so...
-
-    // CSN.
-
-#ifndef CONFIG_PATH
-#define CONFIG_PATH "."
-#endif
-    configpath = CONFIG_PATH;
-#else
-    configpath = ".";
-#endif
-  } else {
-    ConfigString S;
-    while (!configpath.empty()) {
-      int i = configpath.find_first_of(" ");
-      ConfigString stmp = configpath.substr(0, i);
-      if (ExecutionEnvironment::has_environment_variable(stmp)) {
-        S += " ";
-        S += ExecutionEnvironment::get_environment_variable(stmp);
-      }
-      configpath.erase(0, i);
-      CropString(configpath);
+  DSearchPath config_search;
+  while (!configpath.empty()) {
+    int i = configpath.find_first_of(" ");
+    ConfigString stmp = configpath.substr(0, i);
+    if (ExecutionEnvironment::has_environment_variable(stmp)) {
+      config_search.append_path(ExecutionEnvironment::get_environment_variable(stmp));
     }
-    if (S.empty())
-      S = ".";
-    CropString(S);
-    configpath = S;
+    configpath.erase(0, i);
+    CropString(configpath);
   }
-  if (microconfig_cat->is_spam())
-    microconfig_cat->spam() << "evaluated value of configpath '"
-                            << configpath << "'" << endl;
 
-  DSearchPath config_search(configpath);
+  if (config_search.is_empty()) {
+    // If we still have no directories on the search path, then at
+    // least search the current directory.
+    config_search.append_directory(".");
+  }
+
+  if (microconfig_cat->is_spam()) {
+    microconfig_cat->spam()
+      << "search path from configpath is: " 
+      << config_search << endl;
+  }
+
   DSearchPath::Results config_files;
 
   if (!configsuffix.empty()) {
