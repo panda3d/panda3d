@@ -429,8 +429,9 @@ $[install_lib_dir]/lib$[TARGET].a : $[st_dir]/lib$[TARGET].a
 #forscopes sed_bin_target
 #define target $[st_dir]/$[TARGET]
 #define source $[SOURCE]
+#define script $[COMMAND]
 $[target] : $[source]
-	$[SED] $[COMMAND] $[source] >$[target]
+	$[SED]
 	chmod +x $[target]
 
 #define installed_files \
@@ -540,8 +541,10 @@ $[target] : $[source]
 #define source $[file]
 $[target] : $[source]
 	$[FLEX] $[LFLAGS] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[source]
-	$[SED] '/#include <unistd.h>/d' lex.yy.c > $[target]
-	rm lex.yy.c
+#define source lex.yy.c
+#define script /#include <unistd.h>/d
+	$[SED]
+	rm $[source]
 
 #end file
 

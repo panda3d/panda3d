@@ -468,9 +468,9 @@ $[install_lib_dir]\lib$[TARGET]$[dllext].lib : $[st_dir]\lib$[TARGET]$[dllext].l
 #forscopes sed_bin_target
 #define target $[st_dir]\$[TARGET]
 #define source $[SOURCE]
+#define script $[COMMAND]
 $[target] : $[source]
-	$[SED] $[COMMAND] $[source] >$[target]
-	chmod +x $[target]
+	$[SED]
 
 #define installed_files \
     $[install_bin_dir]\$[TARGET]
@@ -579,8 +579,10 @@ $[target] : $[source]
 #define source $[file]
 $[target] : $[source]
 	$[FLEX] $[LFLAGS] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[source]
-	$[SED] '/#include <unistd.h>/d' lex.yy.c > $[target]
-	del lex.yy.c
+#define source lex.yy.c
+#define script /#include <unistd.h>/d
+	$[SED]
+	del $[source]
 
 #end file
 

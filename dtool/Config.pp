@@ -259,9 +259,14 @@
 #defer BISON bison
 #defer FLEX flex 
 
-// How to invoke sed.  Only a few make rules use this.  You can
-// probably do without it without too much trouble.
-#defer SED sed
+// How to invoke sed.  A handful of make rules use this.  Since some
+// platforms (specifically, non-Unix platforms like Windows) don't
+// have any kind of sed, ppremake performs some limited sed-like
+// functions.  The default is to use ppremake in this capacity.  In
+// this variable, $[source] is the name of the file to read, $[target]
+// is the name of the file to generate, and $[script] is the one-line
+// sed script to run.
+#defer SED ppremake -s '$[script]' <$[source] >$[target]
 
 // What directory name (within each source directory) should the .o
 // (or .obj) files be written to, for both shared and static sources?

@@ -52,6 +52,10 @@
 #define install_config_dir $[decygwin %,%,$[install_config_dir]]
 #define install_parser_inc_dir $[decygwin %,%,$[install_parser_inc_dir]]
 
+// In the Windows command shell, we need to use double quotes instead
+// of single quotes.
+#defer SED ppremake -s "$[script]" <$[source] >$[target]
+
 // Define this if we want to make .sbr files.
 #defer BROWSEINFO_FLAG /Fr"$[osfilename $[target:%.obj=%.sbr]]"
 #defer CFLAGS_SHARED
