@@ -962,32 +962,32 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int TexturePlacement::
-complete_pointers(vector_typedWritable &plist, BamReader *manager) {
-  nassertr((int)plist.size() >= 3 + _num_references, 0);
+complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
+  nassertr((int)p_list.size() >= 3 + _num_references, 0);
   if (Palettizer::_read_pi_version >= 2) {
-    nassertr((int)plist.size() >= 4 + _num_references, 0);
+    nassertr((int)p_list.size() >= 4 + _num_references, 0);
   }
 
   int index = 0;
 
-  if (plist[index] != (TypedWritable *)NULL) {
-    DCAST_INTO_R(_texture, plist[index], index);
+  if (p_list[index] != (TypedWritable *)NULL) {
+    DCAST_INTO_R(_texture, p_list[index], index);
   }
   index++;
 
-  if (plist[index] != (TypedWritable *)NULL) {
-    DCAST_INTO_R(_group, plist[index], index);
+  if (p_list[index] != (TypedWritable *)NULL) {
+    DCAST_INTO_R(_group, p_list[index], index);
   }
   index++;
 
-  if (plist[index] != (TypedWritable *)NULL) {
-    DCAST_INTO_R(_image, plist[index], index);
+  if (p_list[index] != (TypedWritable *)NULL) {
+    DCAST_INTO_R(_image, p_list[index], index);
   }
   index++;
 
   if (Palettizer::_read_pi_version >= 2) {
-    if (plist[index] != (TypedWritable *)NULL) {
-      DCAST_INTO_R(_dest, plist[index], index);
+    if (p_list[index] != (TypedWritable *)NULL) {
+      DCAST_INTO_R(_dest, p_list[index], index);
     }
     index++;
   }
@@ -995,7 +995,7 @@ complete_pointers(vector_typedWritable &plist, BamReader *manager) {
   int i;
   for (i = 0; i < _num_references; i++) {
     TextureReference *reference;
-    DCAST_INTO_R(reference, plist[index], index);
+    DCAST_INTO_R(reference, p_list[index], index);
     _references.insert(reference);
     index++;
   }

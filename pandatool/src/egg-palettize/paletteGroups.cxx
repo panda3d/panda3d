@@ -297,11 +297,11 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int PaletteGroups::
-complete_pointers(vector_typedWritable &plist, BamReader *manager) {
-  nassertr(_num_groups == (int)plist.size(), 0);
+complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
+  nassertr(_num_groups == (int)p_list.size(), 0);
   for (int i = 0; i < _num_groups; i++) {
     PaletteGroup *group;
-    DCAST_INTO_R(group, plist[i], i);
+    DCAST_INTO_R(group, p_list[i], i);
     _groups.insert(group);
   }
   return 0;

@@ -568,21 +568,21 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int EggFile::
-complete_pointers(vector_typedWritable &plist, BamReader *manager) {
-  nassertr((int)plist.size() >= _num_textures + 1, 0);
+complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
+  nassertr((int)p_list.size() >= _num_textures + 1, 0);
   int index = 0;
 
   int i;
   _textures.reserve(_num_textures);
   for (i = 0; i < _num_textures; i++) {
     TextureReference *texture;
-    DCAST_INTO_R(texture, plist[index], index);
+    DCAST_INTO_R(texture, p_list[index], index);
     _textures.push_back(texture);
     index++;
   }
 
-  if (plist[index] != (TypedWritable *)NULL) {
-    DCAST_INTO_R(_default_group, plist[index], index);
+  if (p_list[index] != (TypedWritable *)NULL) {
+    DCAST_INTO_R(_default_group, p_list[index], index);
   }
   index++;
 

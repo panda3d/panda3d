@@ -903,48 +903,48 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int Palettizer::
-complete_pointers(vector_typedWritable &plist, BamReader *manager) {
-  nassertr((int)plist.size() >= 4 + _num_egg_files + _num_groups + _num_textures, 0);
+complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
+  nassertr((int)p_list.size() >= 4 + _num_egg_files + _num_groups + _num_textures, 0);
   int index = 0;
 
-  if (plist[index] != (TypedWritable *)NULL) {
-    DCAST_INTO_R(_color_type, plist[index], index);
+  if (p_list[index] != (TypedWritable *)NULL) {
+    DCAST_INTO_R(_color_type, p_list[index], index);
   }
   index++;
 
-  if (plist[index] != (TypedWritable *)NULL) {
-    DCAST_INTO_R(_alpha_type, plist[index], index);
+  if (p_list[index] != (TypedWritable *)NULL) {
+    DCAST_INTO_R(_alpha_type, p_list[index], index);
   }
   index++;
 
-  if (plist[index] != (TypedWritable *)NULL) {
-    DCAST_INTO_R(_shadow_color_type, plist[index], index);
+  if (p_list[index] != (TypedWritable *)NULL) {
+    DCAST_INTO_R(_shadow_color_type, p_list[index], index);
   }
   index++;
 
-  if (plist[index] != (TypedWritable *)NULL) {
-    DCAST_INTO_R(_shadow_alpha_type, plist[index], index);
+  if (p_list[index] != (TypedWritable *)NULL) {
+    DCAST_INTO_R(_shadow_alpha_type, p_list[index], index);
   }
   index++;
 
   int i;
   for (i = 0; i < _num_egg_files; i++) {
     EggFile *egg_file;
-    DCAST_INTO_R(egg_file, plist[index], index);
+    DCAST_INTO_R(egg_file, p_list[index], index);
     _egg_files.insert(EggFiles::value_type(egg_file->get_name(), egg_file));
     index++;
   }
 
   for (i = 0; i < _num_groups; i++) {
     PaletteGroup *group;
-    DCAST_INTO_R(group, plist[index], index);
+    DCAST_INTO_R(group, p_list[index], index);
     _groups.insert(Groups::value_type(group->get_name(), group));
     index++;
   }
 
   for (i = 0; i < _num_textures; i++) {
     TextureImage *texture;
-    DCAST_INTO_R(texture, plist[index], index);
+    DCAST_INTO_R(texture, p_list[index], index);
     _textures.insert(Textures::value_type(texture->get_name(), texture));
     index++;
   }
