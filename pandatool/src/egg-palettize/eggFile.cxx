@@ -327,18 +327,26 @@ choose_placements() {
       // Now groups is the set of groups that the egg file requires,
       // which also happen to include the texture.  It better not be
       // empty.
-      nassertv(!groups.empty());
-      
-      // It doesn't really matter which group in the set we choose, so
-      // we arbitrarily choose the first one.
-      PaletteGroup *group = (*groups.begin());
+      if (groups.empty()) {
+	nout << "Warning!  Egg file " << get_name() << ", referencing texture "
+	     << *reference << ", does not have any groups in common.\n"
+	     << "Egg groups:\n";
+	get_complete_groups().write(nout, 2);
+	nout << "Texture groups:\n";
+	texture->get_groups().write(nout, 2);
 
-      // Now get the TexturePlacement object that corresponds to the
-      // placement of this texture into this group.
-      TexturePlacement *placement = texture->get_placement(group);
-      nassertv(placement != (TexturePlacement *)NULL);
-      
-      reference->set_placement(placement);
+      } else {
+	// It doesn't really matter which group in the set we choose, so
+	// we arbitrarily choose the first one.
+	PaletteGroup *group = (*groups.begin());
+
+	// Now get the TexturePlacement object that corresponds to the
+	// placement of this texture into this group.
+	TexturePlacement *placement = texture->get_placement(group);
+	nassertv(placement != (TexturePlacement *)NULL);
+	
+	reference->set_placement(placement);
+      }
     }
   }
 }
