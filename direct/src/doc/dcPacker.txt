@@ -52,7 +52,9 @@ on the end.
 If end_pack() returns false, there was an error (see ADDITIONAL NOTES,
 below).  Otherwise, you may call get_data() to get a pointer to the
 packed data record, and get_length() to get the number of bytes in the
-record.
+record.  If you immediately call begin_pack() again, you will append
+additional data onto the end of the pack buffer--to reset the buffer
+between pack sessions, call clear_data().
 
   DCField *field = dclass->get_field_by_name("setChat");
 
@@ -75,22 +77,25 @@ UNPACK MODE (sequential read)
 
 You can also unpack all the elements of a field, from beginning to
 end.  This is very similar to pack mode, above.  Start with a call to
-begin_unpack() and pass in the existing data record for the field, and
-the pointer to the DCField itself.  Then call push(), followed by the
-appropriate number and type of unpack calls, followed by pop() and
-end_unpack().
+set_unpack_data() to specify the existing data record for the field,
+and then call begin_unpack() with the pointer to the DCField itself.
+Then call push(), followed by the appropriate number and type of
+unpack calls, followed by pop() and end_unpack().
 
 As above, you must unpack all fields; it is an error not to unpack the
 fields on the end.  However, it is not an error if there are
 additional bytes in the data buffer; the assumption is the data buffer
 may be part of a larger buffer.  After end_unpack(), you can call
 get_num_unpacked_bytes() to determine how many bytes of the buffer
-were consumed.
+were consumed.  (If you immediately call begin_unpack() again, you
+will begin to unpack the next record from the current point in the
+buffer.)
 
   DCField *field = dclass->get_field_by_name("setChat");
 
   DCPacker packer;
-  packer.begin_unpack(source_buffer, source_size, field);
+  packer.set_unpack_data(source_buffer, source_size, false);
+  packer.begin_unpack(field);
   packer.push();
   string chat = packer.unpack_string();
   int chatFlags = packer.unpack_int();
@@ -117,7 +122,8 @@ pop() to unpack the nested elements of an array that you seek to.
   DCField *field = dclass->get_field_by_name("setChat");
 
   DCPacker packer;
-  packer.begin_unpack(source_buffer, source_size, field);
+  packer.set_unpack_data(source_buffer, source_size, false);
+  packer.begin_unpack(field);
   packer.seek("chat");
   string chat = packer.unpack_string();
   if (!packer.end_unpack()) {
@@ -136,8 +142,8 @@ to a switch parameter variable.
 REPACK MODE (random write)
 
 Repack mode allows you to modify some elements of a previously-packed
-field, without disturbing the elements you don't specify.
-begin_repack() takes the same parameters as begin_unpack(), then call
+field, without disturbing the elements you don't specify.  First, call
+set_unpack_data() as in unpack mode, then begin_repack(); then call
 seek() for each field you want to modify followed by the appropriate
 pack call.
 
@@ -147,7 +153,8 @@ field with get_data() and get_length(), just as in pack mode.
   DCField *field = dclass->get_field_by_name("setChat");
 
   DCPacker packer;
-  packer.begin_repack(source_buffer, source_size, field);
+  packer.set_unpack_data(source_buffer, source_size, false);
+  packer.begin_repack(field);
   packer.seek("chat");
   packer.pack_string(chatString);
   if (!packer.end_repack()) {
