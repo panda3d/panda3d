@@ -15,8 +15,6 @@ from direct.showbase import DirectObject
 from PyDatagram import PyDatagram
 #from PyDatagramIterator import PyDatagramIterator
 
-WantInterestPrintout = 0
-
 class DoInterestManager(DirectObject.DirectObject):
     """
     Top level Interest Manager
@@ -24,11 +22,9 @@ class DoInterestManager(DirectObject.DirectObject):
     if __debug__:
         notify = DirectNotifyGlobal.directNotify.newCategory("DoInterestManager")
         
-        
     _interestIdAssign = 1;
     _interestIdScopes = 100;
     _interests = {}
-        
 
     def __init__(self):
         assert self.notify.debugCall()
@@ -130,20 +126,19 @@ class DoInterestManager(DirectObject.DirectObject):
 
     if __debug__:
         def printInterests(self):
-            if not WantInterestPrintout:
-                return 1
             """
             Part of the new otp-server code.
             """
-            print "*********************** Interest Sets **************"
-            for i in DoInterestManager._interests.keys():
-                 print "Interest ID:%s, Description=%s Scope=%s Event=%s Mode=%s"%(
-                     i,
-                     DoInterestManager._interests[i][0],
-                     DoInterestManager._interests[i][1],
-                     DoInterestManager._interests[i][2],
-                     DoInterestManager._interests[i][3])
-            print "****************************************************"
+            if self.notify.getDebug():
+                print "*********************** Interest Sets **************"
+                for i in DoInterestManager._interests.keys():
+                    print "Interest ID:%s, Description=%s Scope=%s Event=%s Mode=%s"%(
+                        i,
+                        DoInterestManager._interests[i][0],
+                        DoInterestManager._interests[i][1],
+                        DoInterestManager._interests[i][2],
+                        DoInterestManager._interests[i][3])
+                print "****************************************************"
             return 1 # for assert()
 
     def _sendAddInterest(self, contextId, scopeId, parentId, zoneIdList):
