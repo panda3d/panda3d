@@ -41,7 +41,7 @@ class EXPCL_PANDA GraphicsStateGuardian : public GraphicsStateGuardianBase {
   //
 public:
   GraphicsStateGuardian(GraphicsWindow *win);
-  ~GraphicsStateGuardian();
+  virtual ~GraphicsStateGuardian();
 
 PUBLISHED:
   INLINE void set_render_traverser(RenderTraverser *rt);

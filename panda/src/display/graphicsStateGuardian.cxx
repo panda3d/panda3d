@@ -72,7 +72,7 @@ GraphicsStateGuardian(GraphicsWindow *win) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::Destructor
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 GraphicsStateGuardian::
