@@ -1168,7 +1168,7 @@ run_reading_header() {
 
   // The server might have given us just a filename for the redirect.
   // In that case, it's relative to the same server.
-  if (!_redirect.has_authority()) {
+  if (_redirect.has_path() && !_redirect.has_authority()) {
     _redirect.set_scheme(_document_spec.get_url().get_scheme());
     _redirect.set_authority(_document_spec.get_url().get_authority());
   }
