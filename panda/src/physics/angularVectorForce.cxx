@@ -58,7 +58,7 @@ AngularVectorForce(const AngularVectorForce &copy) :
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 AngularVectorForce::
-~AngularVectorForce(void) {
+~AngularVectorForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ AngularVectorForce::
 // Description : dynamic copier
 ////////////////////////////////////////////////////////////////////
 AngularForce *AngularVectorForce::
-make_copy(void) const {
+make_copy() const {
   return new AngularVectorForce(*this);
 }
 

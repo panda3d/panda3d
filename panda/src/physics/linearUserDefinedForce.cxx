@@ -27,7 +27,7 @@ TypeHandle LinearUserDefinedForce::_type_handle;
 ////////////////////////////////////////////////////////////////////
 LinearUserDefinedForce::
 LinearUserDefinedForce(LVector3f (*proc)(const PhysicsObject *),
-                 float a, bool md) :
+    float a, bool md) :
   LinearForce(a, md),
   _proc(proc)
 {
@@ -50,7 +50,7 @@ LinearUserDefinedForce(const LinearUserDefinedForce &copy) :
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 LinearUserDefinedForce::
-~LinearUserDefinedForce(void) {
+~LinearUserDefinedForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -59,7 +59,7 @@ LinearUserDefinedForce::
 // Description : child copier
 ////////////////////////////////////////////////////////////////////
 LinearForce *LinearUserDefinedForce::
-make_copy(void) {
+make_copy() {
   return new LinearUserDefinedForce(*this);
 }
 
