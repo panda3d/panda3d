@@ -7,7 +7,6 @@
     dgraph display gobj sgraph graph gsgbase ipc mathutil linmath putil
 
   #define SOURCES \
-    analogData.I analogData.cxx analogData.h \
     analogNode.I analogNode.cxx analogNode.h \
     buttonNode.I buttonNode.h buttonNode.cxx \
     clientAnalogDevice.I clientAnalogDevice.cxx clientAnalogDevice.h \
@@ -21,7 +20,6 @@
     trackerNode.I trackerNode.cxx trackerNode.h
 
   #define INSTALL_HEADERS \
-    analogData.I analogData.h \
     analogNode.I analogNode.h \
     buttonNode.I buttonNode.h \
     clientAnalogDevice.I clientAnalogDevice.h \

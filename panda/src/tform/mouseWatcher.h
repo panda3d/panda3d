@@ -76,6 +76,7 @@ PUBLISHED:
   INLINE NodeRelation *get_geometry() const;
   INLINE void clear_geometry();
 
+public:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
