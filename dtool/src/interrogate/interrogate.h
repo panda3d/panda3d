@@ -19,11 +19,11 @@
 #ifndef INTERROGATE_H
 #define INTERROGATE_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
-#include <cppParser.h>
-#include <cppVisibility.h>
-#include <filename.h>
+#include "cppParser.h"
+#include "cppVisibility.h"
+#include "filename.h"
 
 extern CPPParser parser;
 

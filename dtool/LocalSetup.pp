@@ -173,6 +173,9 @@ $[cdefine HAVE_GETOPT]
 /* Define if you have the getopt_long_only function.  */
 $[cdefine HAVE_GETOPT_LONG_ONLY]
 
+/* Define if getopt appears in getopt.h.  */
+$[cdefine HAVE_GETOPT_H]
+
 /* Define if you have ioctl(TIOCGWINSZ) to determine terminal width. */
 $[cdefine IOCTL_TERMINAL_WIDTH]
 

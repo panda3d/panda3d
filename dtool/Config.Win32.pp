@@ -42,6 +42,9 @@
 #define HAVE_GETOPT
 #define HAVE_GETOPT_LONG_ONLY
 
+// Are the above getopt() functions defined in getopt.h, or somewhere else?
+#define HAVE_GETOPT_H
+
 // Can we determine the terminal width by making an ioctl(TIOCGWINSZ) call?
 #define IOCTL_TERMINAL_WIDTH
 
