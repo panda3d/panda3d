@@ -8,9 +8,11 @@
 # -v adds libvrpn
 # -n doesn't perform a squeeze
 
+base_dir=$(pwd)
 extra_genPyCode_libs=""
 fSqueeze="squeezeMe"
 optimizeFlag=""
+ppython=ppython
 ppythonOptimizeFlag=""
 
 while getopts tvn flag; do
@@ -27,23 +29,28 @@ firstarg="$1"
 shift
 extra_genPyCode_libs="$extra_genPyCode_libs $*"
 
+if [ "$INSTALL_DIR" != "" ]; then
+    install_dir="$INSTALL_DIR"
+elif [ "$DIRECT" != "" ]; then
+    install_dir="$DIRECT"
+else
+    install_dir="./install"
+fi
+
 if [ "$firstarg" = "linux" ]; then
     pyDir=$DIRECT/lib/py
     cd $DIRECT/bin
     ppython -d generatePythonCode -v -d $pyDir -e $DIRECT/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
     pSqueezer=$DIRECT/src/showbase/pandaSqueezer.py
-
 elif [ "$firstarg" = "win-debug" ]; then
     pyDir=`cygpath -w $DIRECT/lib/py`
     cd $DIRECT/bin
     ppython -d generatePythonCode -v -d $pyDir -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
-
 elif [ "$firstarg" = "win-release" ]; then
     pyDir=`cygpath -w $DIRECT/lib/py`
     cd $DIRECT/bin
     ppython generatePythonCode -v -d $pyDir -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
     pSqueezer=`cygpath -w $DIRECT/src/showbase/pandaSqueezer.py`
-
 elif [ "$firstarg" = "win-publish" ]; then
     # no assertions, no comments, no docstrings
     pyDir=`cygpath -w $DIRECT/lib/py`
@@ -52,19 +59,18 @@ elif [ "$firstarg" = "win-publish" ]; then
     optimizeFlag="-O"
     ppythonOptimizeFlag="-OO"
     pSqueezer=`cygpath -w $DIRECT/src/showbase/pandaSqueezer.py`
-
 elif [ "$firstarg" = "install" ]; then
     # as installed on a machine without ctattach etc.
-    pyDir=install/lib/py
-    install/bin/ppython -d install/bin/generatePythonCode -O -v -d $pyDir -e direct/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
-    pSqueezer=`pwd`/direct/src/showbase/pandaSqueezer.py
-
+    pyDir=$install_dir/lib/py
+    ppython=$install_dir/bin/ppython
+    $ppython -d $install_dir/bin/generatePythonCode -O -v -d $pyDir -e direct/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
+    pSqueezer=$(cygpath -w $base_dir/direct/src/showbase/pandaSqueezer.py) || exit
 elif [ "$firstarg" = "release" ]; then
-    # as installed on a machine without ctattach etc. 
-    pyDir=install/lib/py
-    install/bin/ppython install/bin/generatePythonCode -v -d $pyDir -e direct/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
-    pSqueezer=`pwd`/direct/src/showbase/pandaSqueezer.py
-
+    # as installed on a machine without ctattach etc.
+    pyDir=$install_dir/lib/py
+    ppython=$install_dir/bin/ppython
+    $ppython $install_dir/bin/generatePythonCode -v -d $pyDir -e direct/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
+    pSqueezer=$(cygpath -w $base_dir/direct/src/showbase/pandaSqueezer.py) || exit
 else
     echo "Invalid parameter: $firstarg"
     exit 1
@@ -72,16 +78,14 @@ fi
 
 if [ "$fSqueeze" = "squeezeMe" ]; then
     echo SQUEEZING PandaModules
-
-    cd $pyDir
-    rm -f PandaModules.py*
-    ppython $ppythonOptimizeFlag $pSqueezer $optimizeFlag || exit
-
+    cd $pyDir              || exit
+    rm -f PandaModules.py* || exit
+    $base_dir/$ppython $ppythonOptimizeFlag $pSqueezer $optimizeFlag || exit
 else
-    cd $pyDir
     echo RENAMING PandaModulesUnsqueezed.py to PandaModules.py
-    rm -f PandaModules.py*
-    mv PandaModulesUnsqueezed.py PandaModules.py
+    cd $pyDir              || exit
+    rm -f PandaModules.py* || exit
+    mv PandaModulesUnsqueezed.py PandaModules.py || exit
 fi
 
 echo DONE
