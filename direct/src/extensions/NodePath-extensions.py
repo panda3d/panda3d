@@ -111,6 +111,36 @@
         self.calcTightBounds(v1,v2)
         return v1, v2
 
+    def pPrintString(self, other = None):
+        """
+        pretty print
+        """
+        if __debug__:
+            # Normally I would have put the if __debug__ around
+            # the entire funciton, the that doesn't seem to work
+            # with -extensions.  Maybe someone will look into
+            # this further.
+            if other:
+                pos = self.getPos(other)
+                hpr = self.getHpr(other)
+                scale = self.getScale(other)
+                shear = self.getShear(other)
+                otherString = "  'other': %s,\n" % (other.getName(),)
+            else:
+                pos = self.getPos()
+                hpr = self.getHpr()
+                scale = self.getScale()
+                shear = self.getShear()
+                otherString = '\n'
+            return (
+                "%s = {"%(self.getName()) +
+                otherString + 
+                "  'Pos'  : (%s),\n" % pos.pPrintValues() +
+                "  'Hpr'  : (%s),\n" % hpr.pPrintValues() +
+                "  'Scale': (%s),\n" % scale.pPrintValues() +
+                "  'Shear': (%s),\n" % shear.pPrintValues() +
+                "}")
+
     def printPos(self, other = None, sd = 2):
         """ Pretty print a node path's pos """
         formatString = '%0.' + '%d' % sd + 'f'
@@ -913,7 +943,7 @@
         direct.deselect(self)
 
     def showCS(self, mask = None):
-        """showCS(self, mask)
+        """
         Shows the collision solids at or below this node.  If mask is
         not None, it is a BitMask32 object (e.g. WallBitmask,
         CameraBitmask) that indicates which particular collision
@@ -926,7 +956,7 @@
                 np.show()
 
     def hideCS(self, mask = None):
-        """hideCS(self, mask)
+        """
         Hides the collision solids at or below this node.  If mask is
         not None, it is a BitMask32 object (e.g. WallBitmask,
         CameraBitmask) that indicates which particular collision
