@@ -60,6 +60,7 @@ MY_DEFINE_GUID(DXFILEOBJ_SkinWeights,
 XFileToEggConverter::
 XFileToEggConverter() {
   _make_char = false;
+  _frame_rate = 30.0;
   _dx_file = NULL;
   _dx_file_enum = NULL;
   _dart_node = NULL;
@@ -903,10 +904,13 @@ convert_animation_key(LPDIRECTXFILEDATA obj, const string &joint_name,
   int key_type = di.get_uint32();
   int nkeys = di.get_uint32();
 
-  int last_time = 0;
-
   for (int i = 0; i < nkeys; i++) {
-    int time = di.get_uint32();
+    // We ignore the time value.  It seems to be of questionable value
+    // anyway, being of all sorts of crazy scales; and Panda doesn't
+    // support timestamped keyframes anyway.  Assume the x file was
+    // generated with one frame per frame of animation, and translate
+    // accordingly.
+    /*int time =*/ di.get_uint32();
 
     int nvalues = di.get_uint32();
     pvector<float> values;
@@ -916,12 +920,9 @@ convert_animation_key(LPDIRECTXFILEDATA obj, const string &joint_name,
       values.push_back(value);
     }
 
-    while (last_time <= time) {
-      if (!set_animation_frame(joint_name, table, last_time, key_type, 
-                               &values[0], nvalues)) {
-        return false;
-      }
-      last_time++;
+    if (!set_animation_frame(joint_name, table, i, key_type, 
+                             &values[0], nvalues)) {
+      return false;
     }
   }
 
@@ -937,44 +938,40 @@ bool XFileToEggConverter::
 set_animation_frame(const string &joint_name, 
                     XFileToEggConverter::FrameData &table, int frame,
                     int key_type, const float *values, int nvalues) {
-  LMatrix4d mat;
-
-  // Pad out the table by duplicating the last row as necessary.
-  if ((int)table.size() <= frame) {
-    if (table.empty()) {
-      // Get the initial transform from the joint's rest transform.
-      EggGroup *joint = find_joint(joint_name);
-      if (joint != (EggGroup *)NULL) {
-        mat = joint->get_transform();
-      } else {
-        mat = LMatrix4d::ident_mat();
-      }
-    } else {
-      // Get the initial transform from the last frame of animation.
-      mat = table.back();
-    }
-    table.push_back(mat);
-    while ((int)table.size() <= frame) {
-      table.push_back(mat);
-    }
-
-  } else {
-    mat = table.back();
+  if ((int)table._entries.size() <= frame) {
+    nassertr((int)table._entries.size() == frame, false);
+    table._entries.push_back(XFileAnimationSet::FrameEntry());
   }
+
+  XFileAnimationSet::FrameEntry &frame_entry = table._entries[frame];
 
   // Now modify the last row in the table.
   switch (key_type) {
-    /*
   case 0:
-    // Key type 0: rotation
+    // Key type 0: rotation.
+    // This appears to be a quaternion.  Hope we get the coordinate
+    // system right.
+    if (nvalues != 4) {
+      xfile_cat.error()
+        << "Incorrect number of values in animation table: "
+        << nvalues << " for rotation data.\n";
+      return false;
+    }
+    frame_entry._rot.set(values[0], -values[1], values[2], -values[3]);
+    //    frame_entry._rot.set_from_matrix(LMatrix3d::rotate_mat(-90, LVecBase3d(1, 0, 0)) * frame_entry._rot * LMatrix3d::rotate_mat(90, LVecBase3d(1, 0, 0)));
+    table._flags |= XFileAnimationSet::FDF_rot;
     break;
-    */
     
-    /*
   case 1:
-    // Key type 1: scale
+    if (nvalues != 3) {
+      xfile_cat.error()
+        << "Incorrect number of values in animation table: "
+        << nvalues << " for scale data.\n";
+      return false;
+    }
+    frame_entry._scale.set(values[0], values[1], values[2]);
+    table._flags |= XFileAnimationSet::FDF_scale;
     break;
-    */
     
   case 2:
     // Key type 2: position
@@ -984,7 +981,8 @@ set_animation_frame(const string &joint_name,
         << nvalues << " for position data.\n";
       return false;
     }
-    mat.set_row(3, LVecBase3d(values[0], values[1], values[2]));
+    frame_entry._trans.set(values[0], values[1], values[2]);
+    table._flags |= XFileAnimationSet::FDF_trans;
     break;
 
     /*
@@ -1001,10 +999,11 @@ set_animation_frame(const string &joint_name,
         << nvalues << " for matrix data.\n";
       return false;
     }
-    mat.set(values[0], values[1], values[2], values[3],
-            values[4], values[5], values[6], values[7],
-            values[8], values[9], values[10], values[11],
-            values[12], values[13], values[14], values[15]);
+    frame_entry._mat.set(values[0], values[1], values[2], values[3],
+                         values[4], values[5], values[6], values[7],
+                         values[8], values[9], values[10], values[11],
+                         values[12], values[13], values[14], values[15]);
+    table._flags |= XFileAnimationSet::FDF_mat;
     break;
 
   default:
@@ -1012,8 +1011,6 @@ set_animation_frame(const string &joint_name,
       << "Unsupported key type " << key_type << " in animation table.\n";
     return false;
   }
-
-  table.back() = mat;
   
   return true;
 }

@@ -65,7 +65,8 @@ create_hierarchy(XFileToEggConverter *converter) {
   bundle->add_child(skeleton);
 
   // Fill in the rest of the hierarchy with empty tables.
-  mirror_table(converter->get_dart_node(), skeleton);
+  mirror_table(converter->_frame_rate,
+               converter->get_dart_node(), skeleton);
 
   // Now populate those empty tables with the frame data.
   JointData::const_iterator ji;
@@ -79,9 +80,9 @@ create_hierarchy(XFileToEggConverter *converter) {
         << "Frame " << joint_name << ", named by animation data, not defined.\n";
     } else {
       // If we have animation data, apply it.
-      FrameData::const_iterator fi;
-      for (fi = table.begin(); fi != table.end(); ++fi) {
-        anim_table->add_data(*fi);
+      FrameEntries::const_iterator fi;
+      for (fi = table._entries.begin(); fi != table._entries.end(); ++fi) {
+        anim_table->add_data((*fi).get_mat(table._flags));
       }
       anim_table->optimize();
     }
@@ -139,7 +140,7 @@ create_frame_data(const string &joint_name) {
 //               record.
 ////////////////////////////////////////////////////////////////////
 void XFileAnimationSet::
-mirror_table(EggGroup *model_node, EggTable *anim_node) {
+mirror_table(double frame_rate, EggGroup *model_node, EggTable *anim_node) {
   EggGroupNode::iterator gi;
   for (gi = model_node->begin(); gi != model_node->end(); ++gi) {
     EggNode *child = (*gi);
@@ -151,16 +152,17 @@ mirror_table(EggGroup *model_node, EggTable *anim_node) {
         anim_node->add_child(new_table);
         EggXfmSAnim *xform = new EggXfmSAnim("xform");
         new_table->add_child(xform);
+        xform->set_fps(frame_rate);
         TablePair &table_pair = _tables[group->get_name()];
         table_pair._table = xform;
         table_pair._joint = group;
 
         // Now recurse.
-        mirror_table(group, new_table);
+        mirror_table(frame_rate, group, new_table);
 
       } else {
         // If we come to an ordinary <Group>, skip past it.
-        mirror_table(group, anim_node);
+        mirror_table(frame_rate, group, anim_node);
       }
     }
   }

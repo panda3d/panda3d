@@ -30,7 +30,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <d3d.h>
+#include <d3dx.h>
 #include <dxfile.h>
 #include <rmxfguid.h>
 #undef WIN32_LEAN_AND_MEAN
@@ -72,6 +72,7 @@ public:
 public:
   bool _make_char;
   string _char_name;
+  double _frame_rate;
 
 private:
   typedef XFileAnimationSet::FrameData FrameData;

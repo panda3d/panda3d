@@ -23,7 +23,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <d3d.h>
+#include <d3dx.h>
 #include <dxfile.h>
 #include <rmxfguid.h>
 #undef WIN32_LEAN_AND_MEAN

@@ -46,11 +46,38 @@ public:
   bool create_hierarchy(XFileToEggConverter *converter);
   EggXfmSAnim *get_table(const string &joint_name) const;
 
-  typedef pvector<LMatrix4d> FrameData;
+  enum FrameDataFlags {
+    FDF_scale    = 0x01,
+    FDF_rot      = 0x02,
+    FDF_trans    = 0x04,
+    FDF_mat      = 0x08,
+  };
+
+  class FrameEntry {
+  public:
+    INLINE FrameEntry();
+    INLINE const LMatrix4d &get_mat(int flags) const;
+
+    LVecBase3d _scale;
+    LQuaterniond _rot;
+    LVector3d _trans;
+    LMatrix4d _mat;
+  };
+
+  typedef pvector<FrameEntry> FrameEntries;
+
+  class FrameData {
+  public:
+    INLINE FrameData();
+    FrameEntries _entries;
+    int _flags;
+  };
+  
   FrameData &create_frame_data(const string &joint_name);
 
 private:
-  void mirror_table(EggGroup *model_node, EggTable *anim_node);
+  void mirror_table(double frame_rate, 
+                    EggGroup *model_node, EggTable *anim_node);
 
   typedef pmap<string, FrameData> JointData;
   JointData _joint_data;
@@ -64,6 +91,8 @@ private:
   typedef pmap<string, TablePair> Tables;
   Tables _tables;
 };
+
+#include "xFileAnimationSet.I"
 
 #endif
 

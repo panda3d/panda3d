@@ -20,7 +20,7 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
     
   #define SOURCES \
-     xFileAnimationSet.h \
+     xFileAnimationSet.h xFileAnimationSet.I \
      xFileFace.h xFileMaker.h xFileMaterial.h \
      xFileMesh.h xFileNormal.h xFileTemplates.h \
      xFileToEggConverter.h xFileVertex.h 
