@@ -37,18 +37,7 @@ class PickList(PandaObject.PandaObject):
 	"""
 	if self.isClean == 0:
 	    self.isClean = 1
-            # remove keyboard events
-            self.ignore("up-up")
-            self.ignore("down-up")
-            self.ignore("enter-up")
-
-            # ignore all the buttons
-            for item in self.frame.getItems():
-            	self.ignore(item.getGuiItem().getUpEvent())
-            	self.ignore(item.getGuiItem().getUpRolloverEvent())
-            	self.ignore(item.getGuiItem().getDownRolloverEvent())
-
-            # reset the display
+            self.disable()
             self.frame.unmanage()
 	    self.frame = None
 	    self.choiceList = []
@@ -107,13 +96,23 @@ class PickList(PandaObject.PandaObject):
 	return None
 
     def manage(self):
+        self.enable()
+        self.frame.manage()
+	return None
+
+    def unmanage(self):
+        self.disable()
+        self.frame.unmanage()
+	return None
+
+    def enable(self):
+        # turn the buttons on
+        self.activate()
+        
         # listen for keyboard events
         self.accept("up-up", self.__decrementChoice)
         self.accept("down-up", self.__incrementChoice)
         self.accept("enter-up", self.__makeChoice, [1])
-        #for button in self.choiceList:
-        #    self.accept("gui-button-" + button.name + "-enter",
-        #                self.__makeChoice, [1])
 
         for choice in self.choiceList:
             choiceIndex = self.choiceList.index(choice)
@@ -127,17 +126,16 @@ class PickList(PandaObject.PandaObject):
             eventName = self.name + "-exit-" + str(choiceIndex)
             self.accept(eventName, self.__exitChoice)
 
-        self.frame.manage()
+            
 
-	return None
+    def disable(self, button=None):
+        # turn the buttons off
+        self.deactivate(button)
 
-    def unmanage(self):
-        # remove keyboard events
+        # ignore all hooks
         self.ignore("up-up")
         self.ignore("down-up")
         self.ignore("enter-up")
-        #for button in self.choiceList:
-        #    self.ignore("gui-button-" + button.name + "-enter")
 
         # ignore all the buttons
         for item in self.frame.getItems():
@@ -145,10 +143,22 @@ class PickList(PandaObject.PandaObject):
     	    self.ignore(item.getGuiItem().getUpRolloverEvent())
        	    self.ignore(item.getGuiItem().getDownRolloverEvent())
 
-        self.frame.unmanage()
+    def activate(self):
+        # make sure items are active
+        for choice in self.choiceList:
+            choice.getGuiItem().up()
 
-	return None
-
+    def deactivate(self, button=None):
+        # make sure all items are inactive, if a button
+        # is passed in do NOT deactivate it.
+        for choice in self.choiceList:
+            if (choice.getGuiItem().isActive()):
+                if not (button == None):
+                    if not (self.choiceList.index(choice) == button):
+                        choice.getGuiItem().inactive()
+                else:
+                    choice.getGuiItem().inactive()
+                    
     def recompute(self):
         self.frame.recompute()
 
@@ -212,7 +222,9 @@ class PickList(PandaObject.PandaObject):
             else:
                 # let everyone know a choice was made                
                 messenger.send(self.eventName, [self.choice])
-
+                self.disable(self.choice)
+                
+                
 
 
 
