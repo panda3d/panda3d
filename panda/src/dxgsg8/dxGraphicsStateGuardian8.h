@@ -182,7 +182,7 @@ protected:
   virtual void enable_lighting(bool enable);
   virtual void enable_light(int light_id, bool enable);
 
-  void free_pointers();            // free local internal buffers
+  void free_local_resources();            // free local internal buffers
   void free_dxgsg_objects(void);   // free the DirectX objects we create
   virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
                          CPT(DisplayRegion) dr);
@@ -196,7 +196,6 @@ protected:
   bool                  _bDXisReady;
   HRESULT               _last_testcooplevel_result;
   bool                  _bShowFPSMeter;
-//  HDC               _front_hdc;
   DXTextureContext  *_pCurTexContext;
 
   bool              _bTransformIssued;  // decaling needs to tell when a transform has been issued
@@ -362,18 +361,8 @@ protected:
   DWORD _start_time;
   DWORD _start_frame_count;
   DWORD _cur_frame_count;
-  float _current_fps;
-//  DWORD *_fpsmeter_verts;
-//  DWORD _fpsmeter_fvfflags;
-//  LPDIRECTDRAWSURFACE7 _fpsmeter_font_surf;
-//  void *_fpsmeter_font_surf;
-//  float _fps_u_usedwidth,_fps_v_usedheight;  // fraction of fps font texture actually used
-//  DWORD _fps_vertexsize;   // size of verts used to render fps meter
-//  void  FillFPSMeterTexture(void);
-  ::CD3DFont *_pFPSFont;
-
-  void  SetFPSMeterPosition(void);
-
+  float _current_fps,_fpsmeter_x_offset,_fpsmeter_y_offset;
+  ::CD3DFont *_pStatMeterFont;
 
 public:
   static GraphicsStateGuardian*

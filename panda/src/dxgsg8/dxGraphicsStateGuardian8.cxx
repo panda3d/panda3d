@@ -98,7 +98,6 @@ POS_NORM_COLOR_TEX_VERTEX junk33;
 //#define COUNT_DRAWPRIMS
 
 //#define PRINT_TEXSTATS
-// #define MAKE_FPSMETER_TRANSPARENT    
 
 //#define DISABLE_DECALING
 #define DISABLE_POLYGON_OFFSET_DECALING
@@ -271,150 +270,6 @@ set_color_clear_value(const Colorf& value) {
   _d3dcolor_clear_value =  Colorf_to_D3DCOLOR(value);
 }
 
-#if 0
-void DXGraphicsStateGuardian::SetFPSMeterPosition(void) {
-    if(_fpsmeter_verts==NULL)
-      return;
-
-    DWORD renderWid = scrn.pProps->_xsize;
-    DWORD renderHt = scrn.pProps->_ysize;
-
-    // adjust these to match fontsize (these are hacks for default font, probably should get char width from win32)
-    #define FPSMETER_NUMFONTLETTERS 11            // need 11 letters [0-9.]
-    #define NUM_FPSMETER_LETTERS 6                // field width used for display
-    #define FPSMETER_LETTER_WIDTH  9
-    #define FPSMETER_LETTER_HEIGHT 12
-    
-    #define FPSMETER_SUFFIX " FPS"
-    #define FPSMETER_SUFFIXLEN 4
-
-    float top_offset,left_offset;
-    float letter_width=FPSMETER_LETTER_WIDTH;
-    float z = 0.1f;  // shouldnt matter since I turn off zfunc and clipping.  these values are written into zbuf, but shouldnt matter since its endofframe
-    float rhw=1.0f;
-
-    top_offset=0.05f * renderHt;
-
-    left_offset = 0.99f*renderWid-letter_width*(NUM_FPSMETER_LETTERS+FPSMETER_SUFFIXLEN);
-    if(left_offset<0.0f)
-        left_offset=0.0f;
-
-    float *fltptr= (float*)_fpsmeter_verts;
-
-    // poly color should be irrelevant since fps texblend throws it away
-    D3DCOLOR fpscolr =  (D3DCOLOR) 0xFFFFFFFF;  //MY_D3DRGBA(1.0f,1.0f,1.0f,1.0f);  
-
-    #define WRITE_FPSMETER_VERT(x,y,z,w,colr,u,v) { *fltptr = x; fltptr++;    \
-                                           *fltptr = y; fltptr++;             \
-                                           *fltptr = z; fltptr++;             \
-                                           *fltptr = w; fltptr++;             \
-                                           (*((DWORD*)fltptr)) = colr; fltptr++; \
-                                           *fltptr = u; fltptr++;             \
-                                           *fltptr = v; fltptr++;             }
-
-    float u_letter_width = _fps_u_usedwidth/(float)FPSMETER_NUMFONTLETTERS;
-    float height = FPSMETER_LETTER_HEIGHT;
-    float cur_xoffset=left_offset;
-
-    // fmt is 3.2, need 12 tris.  cant share verts since texcoords differ
-
-    #define WRITE_FPS_SQUARE(x1,y1,x2,y2,u1,v1,u2,v2)                      \
-        float *firstvertptr = fltptr;                                      \
-        WRITE_FPSMETER_VERT(x1,y1,z,rhw,fpscolr,u1,v1);                    \
-        WRITE_FPSMETER_VERT(x1,y2,z,rhw,fpscolr,u1,v2);                    \
-        float *thirdvertptr=fltptr;                                        \
-        WRITE_FPSMETER_VERT(x2,y2,z,rhw,fpscolr,u2,v2);                    \
-        memcpy(fltptr,thirdvertptr,_fps_vertexsize);                       \
-        fltptr = (float*) (((BYTE*)fltptr) + _fps_vertexsize);             \
-        WRITE_FPSMETER_VERT(x2,y1,z,rhw,fpscolr,u2,v1);                    \
-        memcpy(fltptr,firstvertptr,_fps_vertexsize);                       \
-        fltptr = (float*) (((BYTE*)fltptr) + _fps_vertexsize);  
-
-    for(int i=0;i<NUM_FPSMETER_LETTERS;i++,cur_xoffset+=letter_width) {
-        WRITE_FPS_SQUARE(cur_xoffset,top_offset,cur_xoffset+letter_width,top_offset+height,0.0f,0.0f,u_letter_width,_fps_v_usedheight);
-    }
-
-    // write verts for suffix square
-    WRITE_FPS_SQUARE(cur_xoffset,top_offset,cur_xoffset+FPSMETER_SUFFIXLEN*letter_width,top_offset+height,u_letter_width*FPSMETER_NUMFONTLETTERS,0.0f,u_letter_width*(FPSMETER_NUMFONTLETTERS+FPSMETER_SUFFIXLEN),_fps_v_usedheight);
-}
-
-void DXGraphicsStateGuardian::FillFPSMeterTexture(void) {
-    assert(_fpsmeter_font_surf!=NULL);
-    HRESULT hr;
-
-    DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd);
-
-    _fpsmeter_font_surf->GetSurfaceDesc(&ddsd);
-
-    // init it to transparent black
-    if(FAILED( hr = _fpsmeter_font_surf->Lock( NULL, &ddsd,  DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL ))) {
-        dxgsg_cat.error() << "fps meter creation failed, Lock() failed on texture! hr = " << D3DERRORSTRING(hr);
-        _bShowFPSMeter = false;
-        return;
-    }
-    ZeroMemory(ddsd.lpSurface,ddsd.dwWidth*ddsd.dwHeight*2);
-    _fpsmeter_font_surf->Unlock(NULL);
-
-    // draw FPS text using GDI
-    HDC hDC;
-    if(FAILED( hr = _fpsmeter_font_surf->GetDC(&hDC))) {
-        dxgsg_cat.error() << "fps meter creation failed, GetDC failed on fps font surface! hr = " << D3DERRORSTRING(hr);
-        _bShowFPSMeter = false;
-        return;
-    }
-
-    HFONT hfnt = (HFONT) GetStockObject(ANSI_FIXED_FONT); 
-    (void) SelectObject(hDC, hfnt);
-
-    SetTextColor(hDC, RGB(255,255,128) );
-    SetBkMode(hDC, TRANSPARENT );
-
-    char tstr[2] = {'\0','\0'};
-    RECT Rect;
-    Rect.top = 0; Rect.bottom = FPSMETER_LETTER_HEIGHT-1;
-    Rect.left = 0;  Rect.right = FPSMETER_LETTER_WIDTH;
-
-    for(int i=0;i<FPSMETER_NUMFONTLETTERS;i++) {
-        tstr[0] = '0'+i;
-        if(i==(FPSMETER_NUMFONTLETTERS-1)) {
-            tstr[0] = '.';
-        }
-        DrawText(hDC,tstr,1,&Rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE );
-        Rect.left=Rect.right;
-        Rect.right+=FPSMETER_LETTER_WIDTH;
-    }
-
-    Rect.right=Rect.left+FPSMETER_SUFFIXLEN*FPSMETER_LETTER_WIDTH;
-    DrawText(hDC,FPSMETER_SUFFIX,FPSMETER_SUFFIXLEN,&Rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE );
-
-    _fpsmeter_font_surf->ReleaseDC(hDC);
-
-    // GDI writes 0x00 for alpha, have to make letter pixels opaque again
-    if(FAILED( hr = _fpsmeter_font_surf->Lock( NULL, &ddsd,  DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL ))) {
-        dxgsg_cat.error() << "fps meter creation failed, Lock() failed on texture! hr = " << D3DERRORSTRING(hr);
-        _bShowFPSMeter = false;
-        return;
-    }
-
-    DWORD numpixels=ddsd.dwWidth*ddsd.dwHeight;
-
-    #ifdef MAKE_FPSMETER_TRANSPARENT
-        WORD *pPixel=(WORD*)ddsd.lpSurface;
-        for(int ii=numpixels;ii>0;ii--) {
-            WORD wPixel=*pPixel;
-            if(wPixel & 0x0FFF) {
-                *pPixel |= 0xF000;  //  make written pixels opaque
-            }// else {
-             //   *pPixel = 0x700F;  // otherwise background is translucent blue
-              // }
-            pPixel++;
-        }
-    #endif
-    _fpsmeter_font_surf->Unlock(NULL);
-}
-#endif
-
-
 void DXGraphicsStateGuardian::
 reset_panda_gsg(void) {
     GraphicsStateGuardian::reset();
@@ -462,9 +317,7 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
     _clip_plane_enabled = (bool *)NULL;
     _cur_clip_plane_enabled = (bool *)NULL;
 
-//    _fpsmeter_verts=NULL;
-//    _fpsmeter_font_surf=NULL;
-    _pFPSFont=NULL;
+    _pStatMeterFont=NULL;
     _bShowFPSMeter = false;
 
     //    _max_light_range = __D3DLIGHT_RANGE_MAX;
@@ -493,7 +346,7 @@ DXGraphicsStateGuardian::
         scrn.pD3DDevice->SetTexture(0, NULL);  // this frees reference to the old texture
     _pCurTexContext = NULL;
 
-    free_pointers();
+    free_local_resources();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -530,7 +383,7 @@ free_dxgsg_objects(void) {
     if (scrn.pD3DDevice!=NULL)
         RELEASE(scrn.pD3DDevice,dxgsg,"d3dDevice",RELEASE_DOWN_TO_ZERO);
 
-    free_pointers();
+    free_local_resources();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -854,130 +707,59 @@ dx_init(HCURSOR hMouseCursor) {
     // must check (scrn.d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_BLENDOP) (yes on GF2/Radeon85, no on TNT)
     scrn.pD3DDevice->SetRenderState(D3DRS_BLENDOP,D3DBLENDOP_ADD);
 
-    hr = CreateDX8Cursor(scrn.pD3DDevice,hMouseCursor,dx_show_cursor_watermark);
-    if(FAILED(hr))
-        dxgsg_cat.error() << "CreateDX8Cursor failed!\n";
+    if(dx_full_screen) {
+        hr = CreateDX8Cursor(scrn.pD3DDevice,hMouseCursor,dx_show_cursor_watermark);
+        if(FAILED(hr))
+            dxgsg_cat.error() << "CreateDX8Cursor failed!\n";
+    }
 
+    // need to release this better, so dx_init can be called multiple times
     if(_bShowFPSMeter) {
-        assert(_pFPSFont == NULL);
-        _pFPSFont = new CD3DFont(_T("Arial"),12,0x0);
-        assert(IS_VALID_PTR(_pFPSFont));
-        hr=_pFPSFont->InitDeviceObjects(scrn.pD3DDevice);
+        // statmeter uses d3dpool default, so it must be destroyed and recreated every time
+        assert(_pStatMeterFont == NULL);
+        hr=S_OK;
+        SIZE TextRectSize;
+
+        _pStatMeterFont = new CD3DFont(_T("Arial"),12,D3DFONT_BOLD);
+        if(IS_VALID_PTR(_pStatMeterFont))
+            hr=_pStatMeterFont->InitDeviceObjects(scrn.pD3DDevice);
+        if(IS_VALID_PTR(_pStatMeterFont) && SUCCEEDED(hr)) {
+            // instead of computing offset every frame (could change based on font chars,
+            // do it once here.  if we wanted top left corner instead of top right,
+            // could get rid of this alignment stuff
+
+            UINT xsize = scrn.pProps->_xsize;
+            UINT ysize = scrn.pProps->_ysize;
+
+            #define FPS_MSG_FORMAT_STR " %dx%d\n%6.02f fps"
+
+            char fps_msg[50];
+            sprintf(fps_msg,FPS_MSG_FORMAT_STR,xsize,ysize,800.00f); // 6 == NUM_FPSMETER_LETTERS
+
+            hr = _pStatMeterFont->GetTextExtent(fps_msg,&TextRectSize);
+            if(SUCCEEDED(hr)) {
+                UINT xsize = scrn.pProps->_xsize;
+
+                _fpsmeter_x_offset=xsize-TextRectSize.cx-20;
+                _fpsmeter_y_offset=20;
+
+                // make sure its onscreen for any wnd size
+                if((_fpsmeter_x_offset<0.0f) || (_fpsmeter_x_offset+TextRectSize.cx)>=scrn.pProps->_xsize)
+                  _fpsmeter_x_offset=0.0f;
+
+                if((_fpsmeter_y_offset<0.0f) || (_fpsmeter_y_offset+TextRectSize.cy)>=scrn.pProps->_ysize)
+                  _fpsmeter_y_offset=0.0f;
+            }
+        }
+
         if(FAILED(hr)) {
             _bShowFPSMeter=false;
         }
-    }
 
-    // comment out FPS meter stuff for the moment
-    #if 0
-    // need to release this better, so dx_init can be called multiple times
-    if(_bShowFPSMeter) {
         _start_time = timeGetTime();
         _current_fps = 0.0f;
         _start_frame_count = _cur_frame_count = 0;
-
-        // create the fpsmeter font texture
-        DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd);
-        ddsd.dwFlags         =  DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT ;
-        ddsd.ddsCaps.dwCaps  = DDSCAPS_TEXTURE;
-        ddsd.ddsCaps.dwCaps2 = DDSCAPS2_TEXTUREMANAGE | DDSCAPS2_HINTSTATIC;  
-
-        ddsd.dwTextureStage=0;
-        ddsd.dwFlags |= DDSD_TEXTURESTAGE;
-        ddsd.dwMipMapCount = 1;
-
-        // note GDI cant draw to 4-4-4-4 fmt DDSURF on win9x (GetDC will fail)
-
-        DDPIXELFORMAT *pCurPixFmt;
-
-        for(i=0,pCurPixFmt=&_pTexPixFmts[_cNumTexPixFmts-1];i<_cNumTexPixFmts;i++,pCurPixFmt--) {
-            if((pCurPixFmt->dwRGBBitCount==16) && 
-        #ifdef MAKE_FPSMETER_TRANSPARENT    
-               (pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS) &&
-               (pCurPixFmt->dwRGBAlphaBitMask==0x8000)
-        #else
-               ((pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)==0) && 
-               (pCurPixFmt->dwBBitMask==0x001F)
-        #endif
-               )  // emacs gets confused if we don't match parens accurately.
-               break;
-        }
-
-        if(i>=_cNumTexPixFmts) {
-              // if this fails, no 4-4-4-4 fmt, need code to use 5-5-5-1 
-            dxgsg_cat.error() << "couldnt find 4-4-4-4 tex fmt for fpsmeter font!\n";
-            _bShowFPSMeter = false;
-            return;
-        }
-
-        memcpy(&ddsd.ddpfPixelFormat,pCurPixFmt,sizeof(DDPIXELFORMAT));
-
-        DWORD fontareaHeight = FPSMETER_LETTER_HEIGHT;
-        DWORD fontareaWidth = FPSMETER_LETTER_WIDTH * (FPSMETER_NUMFONTLETTERS + FPSMETER_SUFFIXLEN);
-
-        // this is just the area used for the letters, not the suffix
-        DWORD letterfontareaWidth = FPSMETER_LETTER_WIDTH * FPSMETER_NUMFONTLETTERS;
-
-        DWORD texdim_x = fontareaWidth;
-        DWORD texdim_y = fontareaHeight;
-
-        #define ROUND_UP_TO_POW2(val)    if(!ISPOW2(val)) {                    \
-                                            for(int i=31;i>=0;i--) {           \
-                                                if(((1<<i) & val)!=0) {        \
-                                                   val = 1<<(i+1);             \
-                                                   break;                      \
-                                                }}}
-                                                
-        ROUND_UP_TO_POW2(texdim_x);
-        ROUND_UP_TO_POW2(texdim_y);
-
-        // could handle this case less wastefully by creating font texture w/multiple rows, 
-        // so its naturally square
-        if(scrn.d3dcaps.TextureCaps & D3DPTEXTURECAPS_SQUAREONLY ) {
-            if(texdim_y> texdim_x)
-              texdim_x = texdim_y;
-            texdim_y = texdim_x;
-        }
-
-        ddsd.dwWidth = texdim_x;
-        ddsd.dwHeight = texdim_y;
-
-        if(_fpsmeter_font_surf!=NULL) {
-            ULONG refcnt;
-            RELEASE(_fpsmeter_font_surf,dxgsg,"fpsmeter fontsurf",false);
-        }
-
-        PRINTREFCNT(scrn.pD3DDevice,"pre-fpsmeter-font-create IDirectDraw7");
-
-        // Create a new surface for the texture
-        if(FAILED( hr = scrn.pD3DDevice->CreateSurface( &ddsd, &_fpsmeter_font_surf, NULL ) )) {
-            dxgsg_cat.error() << "CreateSurface() failed for fpsmeter font!" << D3DERRORSTRING(hr);
-            _bShowFPSMeter = false;
-            return;
-        }
-
-        PRINTREFCNT(scrn.pD3DDevice,"post-fpsmeter-font-create IDirectDraw7");
-
-        FillFPSMeterTexture();
-
-        // make buffer for fps meter tri data
-
-        _fps_vertexsize = sizeof(float) * 4 + sizeof(D3DCOLOR) + sizeof(float) * 2;
-        _fpsmeter_fvfflags = D3DFVF_XYZRHW | D3DFVF_DIFFUSE | (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
-
-        int numverts=(NUM_FPSMETER_LETTERS+1)*2*3;  // +1 for square to hold suffix
-
-        if(_fpsmeter_verts == NULL)
-            _fpsmeter_verts = (DWORD *) new BYTE[_fps_vertexsize*numverts];
-
-        _fps_u_usedwidth = letterfontareaWidth/(float)texdim_x;
-        _fps_v_usedheight = fontareaHeight/(float)texdim_y;
-
-        SetFPSMeterPosition();
     }
-    #else
-        _bShowFPSMeter = false;
-    #endif
 
     // Make sure the DX state matches all of our initial attribute states.
     PT(DepthTestTransition) dta = new DepthTestTransition;
@@ -1252,156 +1034,26 @@ render_frame() {
     }   //  for (int c = 0; c < max_channel_index; c++)
 #endif
 
-    // draw new tri-based FPS meter
-#if 0
-  // not implemented for DX8 yet
   if(_bShowFPSMeter) {
-        DO_PSTATS_STUFF(PStatTimer timer(_win->_show_fps_pcollector));
-        // compute and write new texture indices here
-    
-        char fps_msg[15];
-        sprintf(fps_msg, "%6.02f fps", _current_fps); // 6 == NUM_FPSMETER_LETTERS
-    
-        #define WRITE_FPS_UV(u,v) {*fltptr=(u); fltptr[1]=(v); fltptr= (float*)(((BYTE*)fltptr)+_fps_vertexsize);}
-        float u_FPSMETER_LETTER_WIDTH = _fps_u_usedwidth/(float)FPSMETER_NUMFONTLETTERS;
-    
-        // write out texcoords
-        float *fltptr = (float*)_fpsmeter_verts;
-        fltptr+=5;   // skip over 1st XYZ,RHW, and colr (5 DWORDs)
-    
-        for(DWORD c=0;c<NUM_FPSMETER_LETTERS;c++) {
-          char ch=fps_msg[c];
-          int charnum=ch-'0';
-          float uval1, uval2;
-          float vval2=_fps_v_usedheight;
+    DO_PSTATS_STUFF(PStatTimer timer(_win->_show_fps_pcollector));
 
-          if(ch=='.')
-             charnum=FPSMETER_NUMFONTLETTERS-1;       
+    assert(IS_VALID_PTR(_pStatMeterFont));
 
-          uval1=u_FPSMETER_LETTER_WIDTH*charnum;
-          uval2=uval1+u_FPSMETER_LETTER_WIDTH;
+    D3DCOLOR fontColor = D3DCOLOR_ARGB(255,255,255,0);  // yellow
 
-          if((ch!='.') && ((ch<'0') || (ch>'9'))) {
-            uval1=0.0f; uval2=0.0f; vval2=0.0f;
-          }
+    char fps_msg[50];
+    sprintf(fps_msg,FPS_MSG_FORMAT_STR,scrn.pProps->_xsize,scrn.pProps->_ysize,_current_fps);
 
-          WRITE_FPS_UV(uval1,0.0f);
-          WRITE_FPS_UV(uval1,vval2);
-          WRITE_FPS_UV(uval2,vval2);
-    
-          WRITE_FPS_UV(uval2,vval2);
-          WRITE_FPS_UV(uval2,0.0f);
-          WRITE_FPS_UV(uval1,0.0f); 
-        }
-    
-        // is this blending fn expensive?  if so, can just overwrite everything
-    
-        // could a state-block be used here instead?  definitely to set up, but to restore?
-        #ifdef MAKE_FPSMETER_TRANSPARENT    
-           call_dxBlendFunc(D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA);
-           if(!_blend_enabled)
-              scrn.pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
-        #else
-           if(_blend_enabled)
-               scrn.pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
-        #endif
-        
-        if(_bGouraudShadingOn)
-            scrn.pD3DDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);
-
-        DWORD saved_zfunc;
-        scrn.pD3DDevice->GetRenderState(D3DRS_ZFUNC,&saved_zfunc);
-        scrn.pD3DDevice->SetRenderState(D3DRS_ZFUNC,D3DCMP_ALWAYS);
-
-        DWORD saved_fill_state;
-        if(_current_fill_mode != RenderModeProperty::M_filled) {
-            scrn.pD3DDevice->GetRenderState(D3DRS_FILLMODE, &saved_fill_state);
-            scrn.pD3DDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-        }
-
-    
-        DWORD saved_clipping_state,saved_cull_state;
-        scrn.pD3DDevice->GetRenderState(D3DRS_CULLMODE, &saved_cull_state);
-        scrn.pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-    
-        scrn.pD3DDevice->GetRenderState(D3DRS_CLIPPING, &saved_clipping_state);
-        scrn.pD3DDevice->SetRenderState(D3DRS_CLIPPING, false);
-        
-        // ignore lighting state since verts are post-xform
-    
-        D3DTEXTUREFILTERTYPE saved_magfilter,saved_minfilter,saved_mipfilter;
-        DWORD saved_colorop,saved_alphaop,saved_colorarg1,saved_alphaarg1;
-        LPDIRECTDRAWSURFACE7 saved_tex_surf=NULL;
-
-        scrn.pD3DDevice->GetTextureStageState(0, D3DTSS_MAGFILTER, (DWORD*) &saved_magfilter);
-        scrn.pD3DDevice->GetTextureStageState(0, D3DTSS_MINFILTER, (DWORD*) &saved_minfilter);
-        scrn.pD3DDevice->GetTextureStageState(0, D3DTSS_MIPFILTER, (DWORD*) &saved_mipfilter);
-        scrn.pD3DDevice->GetTextureStageState(0, D3DTSS_COLOROP, (DWORD*) &saved_colorop);
-        scrn.pD3DDevice->GetTextureStageState(0, D3DTSS_COLORARG1, (DWORD*) &saved_colorarg1);
-        scrn.pD3DDevice->GetTextureStageState(0, D3DTSS_ALPHAOP, (DWORD*) &saved_alphaop);
-        scrn.pD3DDevice->GetTextureStageState(0, D3DTSS_ALPHAARG1, (DWORD*) &saved_alphaarg1);
-
-        if(saved_mipfilter!=D3DTEXF_NONE)
-            scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTEXF_NONE);
-
-        if(saved_minfilter!=D3DTEXF_POINT)
-            scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTEXF_POINT);
-        if(saved_magfilter!=D3DTEXF_POINT)
-            scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTEXF_POINT);
-
-        if(saved_colorop!=D3DTOP_SELECTARG1)
-            scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
-        if(saved_colorarg1!=D3DTA_TEXTURE)
-            scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
-        if(saved_alphaop!=D3DTOP_SELECTARG1)
-            scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-        if(saved_alphaarg1!=D3DTA_TEXTURE)
-            scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
-    
-        hr = scrn.pD3DDevice->SetTexture(0, _fpsmeter_font_surf);
-        if(FAILED(hr)) {
-           dxgsg_cat.error() << "SetTexture failed in draw fps meter, result = " << D3DERRORSTRING(hr);
-           exit(1);
-        }
-    
-        DWORD nVerts = (NUM_FPSMETER_LETTERS+1)*2*3;   // +1 for suffix square
-
-        set_vertex_format(_fpsmeter_fvfflags);
-
-        HRESULT hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, _fpsmeter_verts, nVerts, NULL);
-        TestDrawPrimFailure(DrawPrim,hr,scrn.pD3DDevice,NUM_FPSMETER_LETTERS*2,0);
-    
-        #ifdef MAKE_FPSMETER_TRANSPARENT    
-          if(!_blend_enabled)
-              scrn.pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
-        #else
-          if(_blend_enabled)
-              scrn.pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
-        #endif
-        
-        scrn.pD3DDevice->SetRenderState(D3DRS_ZFUNC, saved_zfunc);
-    
-        scrn.pD3DDevice->SetRenderState(D3DRS_CLIPPING, saved_clipping_state);
-        scrn.pD3DDevice->SetRenderState(D3DRS_CULLMODE, saved_cull_state);
-    
-        scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, saved_magfilter);
-        scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, saved_minfilter);
-        scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, saved_mipfilter);
-        scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_COLOROP, saved_colorop);
-        scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_COLORARG1, saved_colorarg1);
-        scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, saved_alphaop);
-        scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, saved_alphaarg1);
-
-        if(_bGouraudShadingOn)
-            scrn.pD3DDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
-
-        if(_current_fill_mode != RenderModeProperty::M_filled) {
-            scrn.pD3DDevice->SetRenderState(D3DRS_FILLMODE, saved_fill_state);            
-        }
-
-        scrn.pD3DDevice->SetTexture(0, ((_pCurTexContext != NULL) ? _pCurTexContext->_surface : NULL));
+    // usually only want to call BeginText() & EndText() once/frame
+    // to bracket all the text for a given cd3dfont obj
+    hr=_pStatMeterFont->BeginText(); 
+    if(SUCCEEDED(hr))
+        hr=_pStatMeterFont->DrawText(_fpsmeter_x_offset, _fpsmeter_y_offset, fontColor, fps_msg);
+    if(SUCCEEDED(hr))
+        hr=_pStatMeterFont->EndText(); 
+    if(FAILED(hr))
+        _bShowFPSMeter=false;
   }
-#endif
 
   hr = scrn.pD3DDevice->EndScene();  
 
@@ -1420,6 +1072,8 @@ render_frame() {
    }
 
    if(_bShowFPSMeter) {
+        // update frame stats
+
          DO_PSTATS_STUFF(PStatTimer timer(_win->_show_fps_pcollector));
 
          DWORD now = timeGetTime();  // this is win32 fn
@@ -5411,16 +5065,17 @@ enable_light(int light_id, bool enable) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::free_pointers
+//     Function: DXGraphicsStateGuardian::free_local_resources
 //       Access: Public
 //  Description: Frees some memory that was explicitly allocated
 //               within the dxgsg.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-free_pointers() {
+free_local_resources() {
+    // this must not release any objects associated with D3D/DX!
+    // those should be released in free_dxgsg_objects instead
     SAFE_DELETE_ARRAY(_index_buf);
     SAFE_DELETE_ARRAY(_pFvfBufBasePtr);
-//    SAFE_DELETE_ARRAY(_fpsmeter_verts);
     SAFE_DELETE_ARRAY(_cur_clip_plane_enabled);
     SAFE_DELETE_ARRAY(_clip_plane_enabled);
 }
@@ -5552,6 +5207,8 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
         release_all_textures();
         release_all_geoms();
 
+        SAFE_DELETE(_pStatMeterFont);
+
         PRINTREFCNT(scrn.pD3DDevice,"after release_all_textures IDirect3DDevice8");
 
 
@@ -5637,8 +5294,8 @@ HRESULT DXGraphicsStateGuardian::DeleteAllDeviceObjects(void) {
   if(dxgsg_cat.is_debug())
       dxgsg_cat.debug() << "release of all textures complete\n";
 
-  if(IS_VALID_PTR(_pFPSFont)) {
-       _pFPSFont->DeleteDeviceObjects();
+  if(IS_VALID_PTR(_pStatMeterFont)) {
+       _pStatMeterFont->DeleteDeviceObjects();
   }
   return S_OK;
 }
@@ -5647,8 +5304,8 @@ HRESULT DXGraphicsStateGuardian::DeleteAllDeviceObjects(void) {
 HRESULT DXGraphicsStateGuardian::RecreateAllDeviceObjects(void) {
   // BUGBUG: need to handle vertexbuffer handling here
 
-    if(IS_VALID_PTR(_pFPSFont)) {
-       _pFPSFont->RestoreDeviceObjects();
+    if(IS_VALID_PTR(_pStatMeterFont)) {
+       _pStatMeterFont->RestoreDeviceObjects();
     }
 
   // cant access template in libpanda.dll directly due to vc++ limitations, use traverser to get around it
@@ -5662,9 +5319,8 @@ HRESULT DXGraphicsStateGuardian::RecreateAllDeviceObjects(void) {
 HRESULT DXGraphicsStateGuardian::ReleaseAllDeviceObjects(void) {
     // release any D3DPOOL_DEFAULT objects here (currently none)
 
-    if(IS_VALID_PTR(_pFPSFont)) {
-       _pFPSFont->InvalidateDeviceObjects();
-    }
+    // StatMeter uses dynamic D3DPOOL_DEFAULT VertBuf, must destroy it now
+    SAFE_DELETE(_pStatMeterFont);
     return S_OK;
 }
 
@@ -5688,9 +5344,8 @@ HRESULT DXGraphicsStateGuardian::RestoreAllDeviceObjects(void) {
   // cant access template in libpanda.dll directly due to vc++ limitations, use traverser to get around it
 //  traverse_prepared_textures(refill_tex_callback,this);
 
-  if(IS_VALID_PTR(_pFPSFont))
-    _pFPSFont->RestoreDeviceObjects();
-//      FillFPSMeterTexture();
+  if(IS_VALID_PTR(_pStatMeterFont))
+    _pStatMeterFont->RestoreDeviceObjects();
 
   if(dxgsg_cat.is_debug())
       dxgsg_cat.debug() << "restore and refill of video surfaces complete...\n";
