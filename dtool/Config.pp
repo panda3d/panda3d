@@ -294,6 +294,12 @@
 // possible.
 #defer DO_PSTATS $[and $[HAVE_NET],$[< $[OPTIMIZE], 4]]
 
+// Do you want to include the "debug" and "spam" Notify messages?
+// Normally, these are stripped out when we build with OPTIMIZE = 4, but
+// sometimes it's useful to keep them around.  Redefine this in your
+// own Config.pp to achieve that.
+#defer NOTIFY_DEBUG $[< $[OPTIMIZE], 4]
+
 // Do you want to build the audio interface?  What additional
 // libraries are required?
 #define AUDIO_IPATH /mspsdk/Include

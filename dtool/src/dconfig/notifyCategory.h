@@ -35,7 +35,7 @@ PUBLISHED:
   
   INLINE bool is_on(NotifySeverity severity) const;
 
-#ifndef NDEBUG
+#ifdef NOTIFY_DEBUG
   INLINE bool is_spam() const;
   INLINE bool is_debug() const;
 #else

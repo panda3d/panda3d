@@ -72,7 +72,7 @@ public:
 
   INLINE bool is_on(NotifySeverity severity);
 
-#ifndef NDEBUG
+#ifdef NOTIFY_DEBUG
   INLINE bool is_spam();
   INLINE bool is_debug();
 #else

@@ -57,7 +57,7 @@ is_on(NotifySeverity severity) const {
   return (int)severity >= (int)_severity;
 }
 
-#ifndef NDEBUG
+#ifdef NOTIFY_DEBUG
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategory::is_spam
 //       Access: Public
@@ -81,10 +81,10 @@ is_debug() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategory::is_spam
 //       Access: Public, Static
-//  Description: In NDEBUG mode, the categories are never set to
-//               "spam" or "debug" severities, and these methods are
-//               redefined to be static to make the more obvious to
-//               the compiler.
+//  Description: When NOTIFY_DEBUG is not defined, the categories are
+//               never set to "spam" or "debug" severities, and these
+//               methods are redefined to be static to make it more
+//               obvious to the compiler.
 ////////////////////////////////////////////////////////////////////
 INLINE bool NotifyCategory::
 is_spam() {
@@ -94,10 +94,10 @@ is_spam() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategory::is_debug
 //       Access: Public
-//  Description: In NDEBUG mode, the categories are never set to
-//               "spam" or "debug" severities, and these methods are
-//               redefined to be static to make the more obvious to
-//               the compiler.
+//  Description: When NOTIFY_DEBUG is not defined, the categories are
+//               never set to "spam" or "debug" severities, and these
+//               methods are redefined to be static to make it more
+//               obvious to the compiler.
 ////////////////////////////////////////////////////////////////////
 INLINE bool NotifyCategory::
 is_debug() {

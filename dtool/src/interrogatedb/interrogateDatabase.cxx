@@ -34,12 +34,10 @@ InterrogateDatabase() {
 InterrogateDatabase *InterrogateDatabase::
 get_ptr() {
   if (_global_ptr == (InterrogateDatabase *)NULL) {
-#ifndef NDEBUG
     if (interrogatedb_cat->is_debug()) {
       interrogatedb_cat->debug()
 	<< "Creating interrogate database\n";
     }
-#endif
     _global_ptr = new InterrogateDatabase;
   }
   return _global_ptr;
@@ -56,7 +54,6 @@ get_ptr() {
 ////////////////////////////////////////////////////////////////////
 void InterrogateDatabase::
 request_module(InterrogateModuleDef *def) {
-#ifndef NDEBUG
   if (interrogatedb_cat->is_debug()) {
     if (def->library_name == (const char *)NULL) {
       interrogatedb_cat->debug()
@@ -66,7 +63,6 @@ request_module(InterrogateModuleDef *def) {
 	<< "Got interrogate data for module " << def->library_name << "\n";
     }
   }
-#endif
 
   int num_indices = def->next_index - def->first_index;
   if (num_indices > 0) {
