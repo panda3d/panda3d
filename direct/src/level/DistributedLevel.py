@@ -15,6 +15,7 @@ import OnscreenText
 import Task
 import LevelUtil
 import FactoryCameraViews
+import random
 
 class DistributedLevel(DistributedObject.DistributedObject,
                        Level.Level):
@@ -215,14 +216,27 @@ class DistributedLevel(DistributedObject.DistributedObject,
         if self.entranceId not in self.entranceId2entity:
             self.notify.warning('unknown entranceId %s' % self.entranceId)
             toonbase.localToon.setPos(0,0,0)
+            self.notify.warning('showing all zones')
+            self.setColorZones(1)
+            # put the toon in a random zone to start
+            zoneEntIds = self.entType2ids['zone']
+            while 1:
+                zoneEntId = random.choice(zoneEntIds)
+                if zoneEntId is not LevelConstants.UberZoneEntId:
+                    initialZoneEnt = self.getEntity(zoneEntId)
+                    toonbase.localToon.setPos(
+                        render,
+                        initialZoneEnt.getZoneNode().getPos(render))
+                    break
         else:
             epEnt = self.entranceId2entity[self.entranceId]
             epEnt.placeToon(toonbase.localToon,
                             self.avIdList.index(toonbase.localToon.doId),
                             len(self.avIdList))
-            # kickstart the visibility
-            firstZoneEnt = self.getEntity(epEnt.getZoneEntId())
-            self.enterZone(firstZoneEnt.getZoneNum())
+            initialZoneEnt = self.getEntity(epEnt.getZoneEntId())
+
+        # kickstart the visibility
+        self.enterZone(initialZoneEnt.getZoneNum())
 
     def createEntityCreator(self):
         """Create the object that will be used to create Entities.
@@ -561,6 +575,8 @@ class DistributedLevel(DistributedObject.DistributedObject,
         #print 'updateVisibility %s' % globalClock.getFrameCount()
         if zoneNum is None:
             zoneNum = self.curZoneNum
+            if zoneNum is None:
+                return
         if hasattr(self, 'lockVizZone'):
             zoneNum = self.lockVizZone
             
