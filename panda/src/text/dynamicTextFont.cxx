@@ -120,6 +120,19 @@ DynamicTextFont(const Filename &font_filename, int face_index) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::Constructor
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DynamicTextFont::
+~DynamicTextFont() {
+  if (_is_valid) {
+    FT_Done_Face(_face);
+    _is_valid = false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextFont::get_num_pages
 //       Access: Published
 //  Description: Returns the number of pages associated with the font.

@@ -45,6 +45,7 @@
 class EXPCL_PANDA DynamicTextFont : public TextFont {
 PUBLISHED:
   DynamicTextFont(const Filename &font_filename, int face_index = 0);
+  virtual ~DynamicTextFont();
 
   INLINE bool set_point_size(float point_size);
   INLINE float get_point_size() const;
