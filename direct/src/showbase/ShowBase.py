@@ -179,10 +179,10 @@ class ShowBase:
         """
         try:
             # Temporary try .. except for new window code
+            self.graphicsEngine.removeAllWindows()
+        except:
             for win in self.winList:
                 win.closeWindow()
-        except:
-            pass
         del self.win
         del self.winList
         del self.pipe
@@ -221,6 +221,7 @@ class ShowBase:
             pass
 
         self.getCameras(chanConfig)
+        return win
 
 
     def setupRender(self):

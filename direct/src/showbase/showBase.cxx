@@ -28,7 +28,7 @@
 // Don't define this unless you have drose's new GraphicsWindow code,
 // which is currently a work in progress.  You probably won't have it
 // unless you are drose.
-//#define NEW_WINDOW_CODE
+#define NEW_WINDOW_CODE 1
 
 #ifdef NEW_WINDOW_CODE
 #include "graphicsPipeSelection.h"
