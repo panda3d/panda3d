@@ -49,6 +49,10 @@ if [ "$TOONTOWN" ]; then
     TOONTOWN=`cygpath -w $TOONTOWN`
     export TOONTOWN
 fi
+if [ "$BARTOP" ]; then
+    BARTOP=`cygpath -w $BARTOP`
+    export BARTOP
+fi
 
 # Export the proper home environment variable
 HOME=`cygpath -w $HOME`
