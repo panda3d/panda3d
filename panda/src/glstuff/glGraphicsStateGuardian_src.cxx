@@ -2061,20 +2061,23 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomVertexData *vertex_data) {
 
     // If it has been modified, or this is the first time, then we
     // need to build the display list up.
-    GLP(NewList)(ggc->_index, GL_COMPILE_AND_EXECUTE);
+    if (CLP(compile_and_execute)) {
+      GLP(NewList)(ggc->_index, GL_COMPILE_AND_EXECUTE);
+    } else {
+      GLP(NewList)(ggc->_index, GL_COMPILE);
+    }      
     ggc->_modified = geom->get_modified();
-    _geom_display_list = ggc;
 
 #ifdef DO_PSTATS
-    // Count up the number of vertices we're about to render, by
-    // checking the PStats vertex counters now, and at the end.  This is
-    // kind of hacky, but this is debug code.
-    _num_display_list_verts_before =
-      _vertices_tristrip_pcollector.get_level() +
-      _vertices_trifan_pcollector.get_level() +
-      _vertices_tri_pcollector.get_level() +
-      _vertices_other_pcollector.get_level();
+    // Count up the number of vertices used by primitives in the Geom,
+    // for PStats reporting.
+    ggc->_num_verts = 0;
+    for (int i = 0; i < geom->get_num_primitives(); i++) {
+      ggc->_num_verts += geom->get_primitive(i)->get_num_vertices();
+    }
 #endif
+
+    _geom_display_list = ggc;
   }
 
   const qpGeomVertexArrayData *array_data;
@@ -2145,11 +2148,11 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomVertexData *vertex_data) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_triangles(const qpGeomTriangles *primitive) {
-  setup_antialias_polygon();
+  //  setup_antialias_polygon();
 
   _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
   const unsigned short *client_pointer = setup_primitive(primitive);
- 
+
   _glDrawRangeElements(GL_TRIANGLES, 
                        primitive->get_min_vertex(),
                        primitive->get_max_vertex(),
@@ -2166,7 +2169,7 @@ draw_triangles(const qpGeomTriangles *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_tristrips(const qpGeomTristrips *primitive) {
-  setup_antialias_polygon();
+  //  setup_antialias_polygon();
 
   _vertices_tristrip_pcollector.add_level(primitive->get_num_vertices());
   const unsigned short *client_pointer = setup_primitive(primitive);
@@ -2199,16 +2202,9 @@ end_draw_primitives() {
   if (_geom_display_list != NULL) {
     // If we were building a display list, close it now.
     GLP(EndList)();
-
-#ifdef DO_PSTATS
-    float num_verts_after =
-      _vertices_tristrip_pcollector.get_level() +
-      _vertices_trifan_pcollector.get_level() +
-      _vertices_tri_pcollector.get_level() +
-      _vertices_other_pcollector.get_level();
-    float num_verts = num_verts_after - _num_display_list_verts_before;
-    _geom_display_list->_num_verts = (int)(num_verts + 0.5);
-#endif
+    if (!CLP(compile_and_execute)) {
+      GLP(CallList)(_geom_display_list->_index);
+    }      
   }
   _geom_display_list = NULL;
 

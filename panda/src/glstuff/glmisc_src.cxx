@@ -58,6 +58,16 @@ ConfigVariableBool CLP(color_mask)
             "is broken (some are).  This will force the use of a (presumably) "
             "more expensive blending operation instead."));
 
+ConfigVariableBool CLP(compile_and_execute)
+  ("gl-compile-and-execute", false,
+   PRC_DESC("Configure this true if you know your GL's implementation of "
+            "glNewList(n, GL_COMPILE_AND_EXECUTE) works.  It is "
+            "false by default, since it is known to cause a crash with "
+            "Intel 855GM driver 4.14.10.3889 at least.  Turning this on "
+            "*may* reduce the chug you get for preparing display lists "
+            "for the first time, by allowing the display list to be "
+            "rendered at the same time it is being compiled."));
+
 
 void CLP(init_classes)() {
   CLP(GraphicsStateGuardian)::init_type();
