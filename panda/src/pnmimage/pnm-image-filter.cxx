@@ -395,10 +395,10 @@ filter_image(PNMImage &dest, const PNMImage &source,
       filter_red_xy(dest, source, width, make_filter);
       filter_green_xy(dest, source, width, make_filter);
       filter_blue_xy(dest, source, width, make_filter);
+    }
       
-      if (dest.has_alpha() && source.has_alpha()) {
-	filter_alpha_xy(dest, source, width, make_filter);
-      }
+    if (dest.has_alpha() && source.has_alpha()) {
+      filter_alpha_xy(dest, source, width, make_filter);
     }
 
   } else {
@@ -408,10 +408,10 @@ filter_image(PNMImage &dest, const PNMImage &source,
       filter_red_yx(dest, source, width, make_filter);
       filter_green_yx(dest, source, width, make_filter);
       filter_blue_yx(dest, source, width, make_filter);
+    }
       
-      if (dest.has_alpha() && source.has_alpha()) {
-	filter_alpha_yx(dest, source, width, make_filter);
-      }
+    if (dest.has_alpha() && source.has_alpha()) {
+      filter_alpha_yx(dest, source, width, make_filter);
     }
   }
 }

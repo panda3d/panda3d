@@ -24,6 +24,10 @@ EXPCL_PANDA string downcase(const string &s);
 // Separates the string into words according to whitespace.
 EXPCL_PANDA int extract_words(const string &str, vector_string &words);
 
+// Separates the string into words according to the indicated delimiters.
+EXPCL_PANDA void tokenize(const string &str, vector_string &words,
+			  const string &delimiters);
+
 // Trims leading and/or trailing whitespace from the string.
 EXPCL_PANDA string trim_left(const string &str);
 EXPCL_PANDA string trim_right(const string &str);

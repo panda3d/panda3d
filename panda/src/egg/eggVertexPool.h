@@ -80,6 +80,14 @@ public:
   // user to allocate the vertex.
   void add_vertex(PT(EggVertex) vertex, int index = -1);
 
+  // make_new_vertex() allocates and returns a new vertex from the
+  // pool.
+  INLINE EggVertex *make_new_vertex();
+  INLINE EggVertex *make_new_vertex(double pos);
+  INLINE EggVertex *make_new_vertex(const LPoint2d &pos);
+  INLINE EggVertex *make_new_vertex(const LPoint3d &pos);
+  INLINE EggVertex *make_new_vertex(const LPoint4d &pos);
+
   // create_unique_vertex() creates a new vertex if there is not
   // already one identical to the indicated vertex, or returns the
   // existing one if there is.

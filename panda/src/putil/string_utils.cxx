@@ -97,6 +97,33 @@ extract_words(const string &str, vector_string &words) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: tokenize
+//  Description: Chops the source string up into pieces delimited by
+//               any of the characters specified in delimiters.
+//               Repeated delimiter characters represent zero-length
+//               tokens.
+//
+//               It is the user's responsibility to ensure the output
+//               vector is cleared before calling this function; the
+//               results will simply be appended to the end of the
+//               vector.
+////////////////////////////////////////////////////////////////////
+void
+tokenize(const string &str, vector_string &words, const string &delimiters) {
+  size_t p = 0;
+  while (p < str.length()) {
+    size_t q = str.find_first_of(delimiters, p);
+    if (q == string::npos) {
+      words.push_back(str.substr(p));
+      return;
+    }
+    words.push_back(str.substr(p, q - p));
+    p = q + 1;
+  }
+  words.push_back(string());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: trim_left
 //  Description: Returns a new string representing the contents of the
 //               given string with the leading whitespace removed.

@@ -158,7 +158,7 @@ handle_args(Args &args) {
     return false;
   }
 
-  _source_files = args;
+  _source_files.insert(_source_files.end(), args.begin(), args.end());
   return true;
 }
 
