@@ -41,7 +41,7 @@
   #define TARGET audio_load_mp3
   #define BUILDING_DLL BUILDING_MISC
   #define LOCAL_LIBS \
-    audio express $[if $[ne $[USE_RAD_MSS],] , mpg123]
+    audio express $[if $[ne $[USE_RAD_MSS],], , mpg123]
   #define C++FLAGS -DGENERIC -DNOXFERMEM
 
   #define SOURCES \
