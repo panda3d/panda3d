@@ -3,8 +3,9 @@ how to set up Panda on a new PC using our internal development
 environment.  It is not useful for programmers who are not within the
 VR Studio firewall.
 
-If you are looking for documentation on installing Panda in the rest
-of the world, see INSTALL.txt in this directory.
+If you are looking for documentation on installing Panda for the rest
+of the world, see INSTALL in the root directory of the panda3d tree
+(or in the doc CVS module).
 
 
 
@@ -194,14 +195,14 @@ Step 7: (Optional) Build $DTOOL
     > cta dtool personal
     > cd $DTOOL
     > ppremake
-    > nmake install
+    > make install
 
 Step 8: (Optional) Build $PANDA 
   - Build panda
     > cta panda personal
     > cd $PANDA
     > ppremake
-    > nmake install
+    > make install
   - You can now run "demo" to test the install and build - you should
     see a window pop up with a triangle in it.  To see the triangle with
     a texture on it, you'll need to be in $PANDA/src/all/testbed/ when
@@ -233,13 +234,13 @@ Step 10: Build $DIRECT
   > cta direct personal
   > cd $DIRECT
   > ppremake
-  > nmake install
+  > make install
 
 Step 11: Build $TOONTOWN
   > cta toontown personal
   > cd $TOONTOWN
   > ppremake
-  > nmake install
+  > make install
 
 Step 12: Generate Python Code
   > cd $DIRECT/bin
