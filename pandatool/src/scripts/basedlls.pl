@@ -10,9 +10,10 @@ $archive_root="\\\\dimbo\\panda\\win\\";
 
 # note: this is the order dlls will be laid out in memory
 @dll_names=("libpanda","libpandadx","libpandagl","libpandaexpress","libpandaphysics",
-            "libshader","libdtool","libdtoolconfig","libpystub","libdirect","libtoontown",
-            "libaudio_load_midi","libaudio_load_mp3","libaudio_load_st","libaudio_load_wav",
-            "libpandaegg");
+            "libshader","libdtool","libdtoolconfig","libpystub","libdirect","libtoontown","libmiles_audio","libpandaegg");
+
+# old audio dlls
+#            "libaudio_load_midi","libaudio_load_mp3","libaudio_load_st","libaudio_load_wav",
 
 @headerstrs=(
 "This file is used by the MSVC linker to specify DLL base addresses to",
