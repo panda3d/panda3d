@@ -903,9 +903,16 @@ config() {
   if (_coords != (Vertexf*)0L && _bind[G_COORD] != G_OFF) {
     _get_vertex =
       (_vindex == (ushort*)0L) ? get_vertex_nonindexed : get_vertex_indexed;
+
   } else {
-    gobj_cat.error()
-      << "Geom::Config() - no vertex array!" << endl;
+    // It's not really an error not to have a vertex array; maybe
+    // there are no vertices in the Geom.  This happens sometimes with
+    // the particle system.  It's perfectly legal to have a Geom with
+    // no vertices--it just doesn't look like much.
+
+    //    gobj_cat.error()
+    //      << "Geom::Config() - no vertex array!" << endl;
+    _get_vertex = get_vertex_noop;
   }
 
   // Set up normal rendering configuration
