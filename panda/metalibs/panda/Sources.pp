@@ -17,7 +17,7 @@
     parametrics pnm \
     pnmimagetypes pnmimage sgattrib sgmanip sgraph sgraphutil \
     switchnode pnmtext text tform tiff lerp loader putil \
-    audio pgui pandabase glstuff
+    audio pgui pandabase
 
 #define LOCAL_LIBS \
   downloader express pandabase
