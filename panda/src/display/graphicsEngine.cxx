@@ -1039,8 +1039,9 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
       PT(GeometricBoundingVolume) local_frustum;
       local_frustum = DCAST(GeometricBoundingVolume, bv->make_copy());
 
+      NodePath scene_parent = scene_setup->get_scene_root().get_parent();
       CPT(TransformState) cull_center_transform = 
-        scene_setup->get_cull_center().get_transform(scene_setup->get_scene_root());
+        scene_setup->get_cull_center().get_transform(scene_parent);
       local_frustum->xform(cull_center_transform->get_mat());
 
       trav.set_view_frustum(local_frustum);
