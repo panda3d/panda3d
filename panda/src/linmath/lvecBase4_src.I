@@ -156,7 +156,7 @@ unit_w() {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase4)::
 operator [](int i) const {
-  //  nassertr(i >= 0 && i < 4, 0);
+  nassertr(i >= 0 && i < 4, 0.0);
   return _v.data[i];
 }
 
@@ -167,7 +167,7 @@ operator [](int i) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE &FLOATNAME(LVecBase4)::
 operator [](int i) {
-  //  nassertr(i >= 0 && i < 4, _v.v._0);
+  nassertr(i >= 0 && i < 4, _v.data[0]);
   return _v.data[i];
 }
 
@@ -189,7 +189,7 @@ is_nan() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase4)::
 get_cell(int i) const {
-//  nassertr(i >= 0 && i < 4, 0);
+  nassertr(i >= 0 && i < 4, 0.0);
   return _v.data[i];
 }
 
@@ -240,7 +240,7 @@ get_w() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
 set_cell(int i, FLOATTYPE value) {
-//  nassertv(i >= 0 && i < 4);
+  nassertv(i >= 0 && i < 4);
   _v.data[i] = value;
 }
 

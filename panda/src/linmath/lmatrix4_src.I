@@ -388,8 +388,7 @@ get_col3(int col) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE &FLOATNAME(LMatrix4)::
 operator () (int row, int col) {
-  //  nassertr(row >= 0 && row < 4, _m.data[0]);
-  //  nassertr(col >= 0 && col < 4, _m.data[0]);
+  nassertr(row >= 0 && row < 4 && col >= 0 && col < 4, _m.data[0]);
   return _m.data[row * 4 + col];
 }
 
@@ -400,8 +399,7 @@ operator () (int row, int col) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix4)::
 operator () (int row, int col) const {
-  //  nassertr(row >= 0 && row < 4, 0.0f);
-  //  nassertr(col >= 0 && col < 4, 0.0f);
+  nassertr(row >= 0 && row < 4 && col >= 0 && col < 4, 0.0f);
   return _m.data[row * 4 + col];
 }
 
@@ -427,8 +425,7 @@ is_nan() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix4)::
 get_cell(int row, int col) const {
-//  nassertr(row >= 0 && row < 4, 0.0f);
-//  nassertr(col >= 0 && col < 4, 0.0f);
+  nassertr(row >= 0 && row < 4 && col >= 0 && col < 4, 0.0f);
   return _m.data[row * 4 + col];
 }
 
@@ -439,8 +436,7 @@ get_cell(int row, int col) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 set_cell(int row, int col, FLOATTYPE value) {
-//  nassertv(row >= 0 && row < 4);
-//  nassertv(col >= 0 && col < 4);
+  nassertv(row >= 0 && row < 4 && col >= 0 && col < 4);
   _m.data[row * 4 + col] = value;
 }
 

@@ -237,8 +237,7 @@ get_col2(int col) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE &FLOATNAME(LMatrix3)::
 operator () (int row, int col) {
-//  nassertr(row >= 0 && row < 3, _m.data[0]);
-//  nassertr(col >= 0 && col < 3, _m.data[0]);
+  nassertr(row >= 0 && row < 3 && col >= 0 && col < 3, _m.data[0]);
   return _m.data[row * 3 + col];
 }
 
@@ -249,8 +248,7 @@ operator () (int row, int col) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix3)::
 operator () (int row, int col) const {
-//  nassertr(row >= 0 && row < 3, 0.0f);
-//  nassertr(col >= 0 && col < 3, 0.0f);
+  nassertr(row >= 0 && row < 3 && col >= 0 && col < 3, 0.0);
   return _m.data[row * 3 + col];
 }
 
@@ -275,8 +273,7 @@ is_nan() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix3)::
 get_cell(int row, int col) const {
-//  nassertr(row >= 0 && row < 3, 0.0f);
-//  nassertr(col >= 0 && col < 3, 0.0f);
+  nassertr(row >= 0 && row < 3 && col >= 0 && col < 3, 0.0);
   return _m.data[row * 3 + col];
 }
 
@@ -287,8 +284,7 @@ get_cell(int row, int col) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LMatrix3)::
 set_cell(int row, int col, FLOATTYPE value) {
-//  nassertv(row >= 0 && row < 3);
-//  nassertv(col >= 0 && col < 3);
+  nassertv(row >= 0 && row < 3 && col >= 0 && col < 3);
   _m.data[row * 3 + col] = value;
 }
 
