@@ -18,7 +18,7 @@ class LerpNodePathInterval(CLerpNodePathInterval):
     lerpNodePathNum = 1
 
     def __init__(self, name, duration, blendType, bakeInStart, fluid,
-                 node, other):
+                 nodePath, other):
         if name == None:
             name = '%s-%d' % (self.__class__.__name__, self.lerpNodePathNum)
             LerpNodePathInterval.lerpNodePathNum += 1
@@ -30,7 +30,7 @@ class LerpNodePathInterval(CLerpNodePathInterval):
             other = NodePath()
 
         CLerpNodePathInterval.__init__(self, name, duration, blendType,
-                                       bakeInStart, fluid, node, other)
+                                       bakeInStart, fluid, nodePath, other)
 
     def anyCallable(self, *params):
         # Returns true if any of the parameters listed is a callable
@@ -81,11 +81,11 @@ class LerpNodePathInterval(CLerpNodePathInterval):
 #####################################################################
 
 class LerpPosInterval(LerpNodePathInterval):
-    def __init__(self, node, duration, pos, startPos = None,
+    def __init__(self, nodePath, duration, pos, startPos = None,
                  other = None, blendType = 'noBlend',
                  bakeInStart = 1, fluid = 0, name = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
-                                      bakeInStart, fluid, node, other)
+                                      bakeInStart, fluid, nodePath, other)
 
         # Check for functors in the input parameters.
         self.paramSetup = self.anyCallable(pos, startPos)
@@ -108,11 +108,11 @@ class LerpPosInterval(LerpNodePathInterval):
                 
 
 class LerpHprInterval(LerpNodePathInterval):
-    def __init__(self, node, duration, hpr, startHpr = None,
+    def __init__(self, nodePath, duration, hpr, startHpr = None,
                  other = None, blendType = 'noBlend',
                  bakeInStart = 1, fluid = 0, name = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
-                                      bakeInStart, fluid, node, other)
+                                      bakeInStart, fluid, nodePath, other)
 
         # Check for functors in the input parameters.
         self.paramSetup = self.anyCallable(hpr, startHpr)
@@ -134,11 +134,11 @@ class LerpHprInterval(LerpNodePathInterval):
         LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpScaleInterval(LerpNodePathInterval):
-    def __init__(self, node, duration, scale, startScale = None,
+    def __init__(self, nodePath, duration, scale, startScale = None,
                  other = None, blendType = 'noBlend',
                  bakeInStart = 1, fluid = 0, name = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
-                                      bakeInStart, fluid, node, other)
+                                      bakeInStart, fluid, nodePath, other)
         # Check for functors in the input parameters.
         self.paramSetup = self.anyCallable(scale, startScale)
         if self.paramSetup:
@@ -159,11 +159,11 @@ class LerpScaleInterval(LerpNodePathInterval):
         LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpShearInterval(LerpNodePathInterval):
-    def __init__(self, node, duration, shear, startShear = None,
+    def __init__(self, nodePath, duration, shear, startShear = None,
                  other = None, blendType = 'noBlend',
                  bakeInStart = 1, fluid = 0, name = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
-                                      bakeInStart, fluid, node, other)
+                                      bakeInStart, fluid, nodePath, other)
         # Check for functors in the input parameters.
         self.paramSetup = self.anyCallable(shear, startShear)
         if self.paramSetup:
@@ -184,12 +184,12 @@ class LerpShearInterval(LerpNodePathInterval):
         LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpPosHprInterval(LerpNodePathInterval):
-    def __init__(self, node, duration, pos, hpr,
+    def __init__(self, nodePath, duration, pos, hpr,
                  startPos = None, startHpr = None,
                  other = None, blendType = 'noBlend',
                  bakeInStart = 1, fluid = 0, name = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
-                                      bakeInStart, fluid, node, other)
+                                      bakeInStart, fluid, nodePath, other)
         # Check for functors in the input parameters.
         self.paramSetup = self.anyCallable(pos, startPos, hpr, startHpr)
         if self.paramSetup:
@@ -217,12 +217,12 @@ class LerpPosHprInterval(LerpNodePathInterval):
         LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpHprScaleInterval(LerpNodePathInterval):
-    def __init__(self, node, duration, hpr, scale,
+    def __init__(self, nodePath, duration, hpr, scale,
                  startHpr = None, startScale = None,
                  other = None, blendType = 'noBlend',
                  bakeInStart = 1, fluid = 0, name = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
-                                      bakeInStart, fluid, node, other)
+                                      bakeInStart, fluid, nodePath, other)
 
         # Check for functors in the input parameters.
         self.paramSetup = self.anyCallable(hpr, startHpr, scale, startScale)
@@ -251,12 +251,12 @@ class LerpHprScaleInterval(LerpNodePathInterval):
         LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpPosHprScaleInterval(LerpNodePathInterval):
-    def __init__(self, node, duration, pos, hpr, scale,
+    def __init__(self, nodePath, duration, pos, hpr, scale,
                  startPos = None, startHpr = None, startScale = None,
                  other = None, blendType = 'noBlend',
                  bakeInStart = 1, fluid = 0, name = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
-                                      bakeInStart, fluid, node, other)
+                                      bakeInStart, fluid, nodePath, other)
         # Check for functors in the input parameters.
         self.paramSetup = self.anyCallable(pos, startPos, hpr, startHpr, scale, startScale)
         if self.paramSetup:
@@ -291,12 +291,12 @@ class LerpPosHprScaleInterval(LerpNodePathInterval):
         LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpPosHprScaleShearInterval(LerpNodePathInterval):
-    def __init__(self, node, duration, pos, hpr, scale, shear,
+    def __init__(self, nodePath, duration, pos, hpr, scale, shear,
                  startPos = None, startHpr = None, startScale = None, startShear = None,
                  other = None, blendType = 'noBlend',
                  bakeInStart = 1, fluid = 0, name = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
-                                      bakeInStart, fluid, node, other)
+                                      bakeInStart, fluid, nodePath, other)
         # Check for functors in the input parameters.
         self.paramSetup = self.anyCallable(pos, startPos, hpr, startHpr, scale, startScale, shear, startShear)
         if self.paramSetup:
@@ -338,21 +338,21 @@ class LerpPosHprScaleShearInterval(LerpNodePathInterval):
         LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpColorScaleInterval(LerpNodePathInterval):
-    def __init__(self, node, duration, colorScale, startColorScale = None,
+    def __init__(self, nodePath, duration, colorScale, startColorScale = None,
                  other = None, blendType = 'noBlend',
                  bakeInStart = 1, fluid = 0, name = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
-                                      bakeInStart, fluid, node, other)
+                                      bakeInStart, fluid, nodePath, other)
         self.setEndColorScale(colorScale)
         if startColorScale != None:
             self.setStartColorScale(startColorScale)
 
 class LerpColorInterval(LerpNodePathInterval):
-    def __init__(self, node, duration, color, startColor = None,
+    def __init__(self, nodePath, duration, color, startColor = None,
                  other = None, blendType = 'noBlend',
                  bakeInStart = 1, fluid = 0, name = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
-                                      bakeInStart, fluid, node, other)
+                                      bakeInStart, fluid, nodePath, other)
         self.setEndColor(color)
         if startColor != None:
             self.setStartColor(startColor)

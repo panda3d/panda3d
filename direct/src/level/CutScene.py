@@ -3,7 +3,7 @@
 
 import DirectObject
 import DirectNotifyGlobal
-import Entity
+import BasicEntities
 
 from PandaModules import *
 from ShowBaseGlobal import *
@@ -57,30 +57,56 @@ def foo1(self, track, subjectNodePath, duration):
             track, subjectNodePath, duration)))
     track.append(Sequence(
         Func(toonbase.localToon.stopUpdateSmartCamera),
-        LerpPosHprInterval(node=camera,
-                           other=subjectNodePath,
-                           duration=0.0,
-                           pos=Point3(-2, -35, 7.5),
-                           hpr=VBase3(-7, 0, 0),
-                           blendType="easeInOut"),
-        LerpPosHprInterval(node=camera,
-                           other=subjectNodePath,
-                           duration=duration,
-                           pos=Point3(2, -22, 7.5),
-                           hpr=VBase3(4, 0, 0),
-                           blendType="easeInOut"),
-        LerpPosHprInterval(node=camera,
-                           other=subjectNodePath,
-                           duration=0.0,
-                           pos=Point3(0, -28, 7.5),
-                           hpr=VBase3(0, 0, 0),
-                           blendType="easeInOut"),
+        PosHprInterval(
+            camera,
+            other=subjectNodePath,
+            pos=Point3(-2, -35, 7.5),
+            hpr=VBase3(-7, 0, 0)),
+        LerpPosHprInterval(
+            nodePath=camera,
+            other=subjectNodePath,
+            duration=duration,
+            pos=Point3(2, -22, 7.5),
+            hpr=VBase3(4, 0, 0),
+            blendType="easeInOut"),
+        PosHprInterval(
+            camera,
+            other=subjectNodePath,
+            pos=Point3(0, -28, 7.5),
+            hpr=VBase3(0, 0, 0)),
+        Func(toonbase.localToon.startUpdateSmartCamera),
+        ))
+    return track
+
+def doorUnlock(self, track, subjectNodePath, duration):
+    assert(self.debugPrint(
+            "foo1(track=%s, subjectNodePath=%s, duration=%s)"%(
+            track, subjectNodePath, duration)))
+    track.append(Sequence(
+        Func(toonbase.localToon.stopUpdateSmartCamera),
+        PosHprInterval(
+            camera,
+            other=self,
+            pos=Point3(-2, -35, 7.5),
+            hpr=VBase3(-7, 0, 0)),
+        LerpPosHprInterval(
+            nodePath=camera,
+            other=self,
+            duration=duration,
+            pos=Point3(2, -22, 7.5),
+            hpr=VBase3(4, 0, 0),
+            blendType="easeInOut"),
+        PosHprInterval(
+            camera,
+            other=self,
+            pos=Point3(0, -28, 7.5),
+            hpr=VBase3(0, 0, 0)),
         Func(toonbase.localToon.startUpdateSmartCamera),
         ))
     return track
 
 
-class CutScene(Entity.Entity, DirectObject.DirectObject):
+class CutScene(BasicEntities.NodePathEntity, DirectObject.DirectObject):
     if __debug__:
         notify = DirectNotifyGlobal.directNotify.newCategory('CutScene')
     
@@ -92,6 +118,7 @@ class CutScene(Entity.Entity, DirectObject.DirectObject):
     
     motions={
         "foo1": foo1,
+        "doorUnlock": doorUnlock,
     }
 
     def __init__(self, level, entId):
@@ -99,7 +126,7 @@ class CutScene(Entity.Entity, DirectObject.DirectObject):
                 "CutScene(level=%s, entId=%s)"
                 %(level, entId)))
         DirectObject.DirectObject.__init__(self)
-        Entity.Entity.__init__(self, level, entId)
+        BasicEntities.NodePathEntity.__init__(self, level, entId)
         self.track = None
         self.setEffect(self.effect)
         self.setMotion(self.motion)
@@ -113,7 +140,7 @@ class CutScene(Entity.Entity, DirectObject.DirectObject):
         assert(self.debugPrint("destroy()"))
         self.ignore(self.startStopEvent)
         self.startStopEvent = None
-        Entity.Entity.destroy(self)
+        BasicEntities.NodePathEntity.destroy(self)
         #DirectObject.DirectObject.destroy(self)
     
     def setEffect(self, effect):
