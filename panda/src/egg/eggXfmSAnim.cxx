@@ -482,16 +482,13 @@ set_value(int row, const LMatrix4d &mat) {
 //
 //               This function may fail silently if the matrix cannot
 //               be decomposed into scale, rotate, and translate.  In
-//               this case, nothing is done and the function returns
-//               false.
+//               this case, the closest approximation is added to the
+//               table, and false is returned.
 ////////////////////////////////////////////////////////////////////
 bool EggXfmSAnim::
 add_data(const LMatrix4d &mat) {
   LVector3d scale, hpr, translate;
-  bool result = decompose_matrix(mat, scale, hpr, translate, _coordsys);
-  if (!result) {
-    return false;
-  }
+  bool add_ok = decompose_matrix(mat, scale, hpr, translate, _coordsys);
 
   if (empty()) {
     // If we have no children, create all nine tables now.
@@ -576,7 +573,8 @@ add_data(const LMatrix4d &mat) {
   }
 
   nassertr(num_tables == 9, false);
-  return true;
+
+  return add_ok;
 }
 
 ////////////////////////////////////////////////////////////////////
