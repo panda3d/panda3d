@@ -21,6 +21,46 @@ INLINE float ccos(float v) {
   return cosf(v);
 }
 
+INLINE void
+sincosf(float v, float *pSinResult, float *pCosResult) {
+
+// msvc defines _M_IX86 for x86
+#ifdef _M_IX86
+#define fsincos __asm _emit 0xd9 __asm _emit 0xfb
+    __asm {
+        mov eax, pSinResult
+        mov edx, pCosResult
+        fld v
+        fsincos
+        fstp DWORD ptr [edx]
+        fstp DWORD ptr [eax]
+    }
+#undef fsincos
+#else //!_X86_
+    *pSinResult = sinf(v);
+    *pCosResult = cosf(v);
+#endif //!_X86_
+}
+
+INLINE void
+sincos(double v, double *pSinResult, double *pCosResult) {
+#ifdef _M_IX86
+#define sincos __asm _emit 0xd9 __asm _emit 0xfb
+    __asm {
+        mov eax, pSinResult
+        mov edx, pCosResult
+        fld v
+        fsincos
+        fstp QWORD ptr [edx]
+        fstp QWORD ptr [eax]
+    }
+#undef sincos
+#else //!_X86_
+    *pSinResult = sin(v);
+    *pCosResult = cos(v);
+#endif //!_X86_
+}
+
 INLINE float cabs(float v) {
   return fabs(v);
 }
