@@ -282,6 +282,12 @@ class ShowBase(DirectObject.DirectObject):
         the desktop and keyboard functionality, etc.
         """
         self.graphicsEngine.removeAllWindows()
+
+        if self.musicManager:
+            # Temporary condition for old Pandas.
+            if hasattr(self.musicManager, 'shutdown'):
+                self.musicManager.shutdown()
+
         del self.win
         del self.winList
         del self.pipe

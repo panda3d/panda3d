@@ -181,9 +181,9 @@ MilesAudioSound(MilesAudioManager* manager,
 MilesAudioSound::
 ~MilesAudioSound() {
   miles_audio_debug("~MilesAudioSound()");
-  stop();
+  cleanup();
   _manager->release_sound(this);
-  AIL_quick_unload(_audio);
+  miles_audio_debug("~MilesAudioSound() done");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -204,6 +204,7 @@ play() {
     if (status() == AudioSound::PLAYING) {
       stop();
     }
+    nassertv(_audio);
     _manager->starting_sound(this);
     // Start playing:
     if (AIL_quick_play(_audio, _loop_count)) {
@@ -235,6 +236,7 @@ stop() {
   // make this symmetrical with play().  set_active() is the 'owner' of
   // _paused.  play() accesses _paused to help in the situation where
   // someone calls play on an inactive sound().
+  nassertv(_audio);
   AIL_quick_halt(_audio);
 }
 
@@ -319,6 +321,7 @@ void MilesAudioSound::
 set_time(float time) {
   miles_audio_debug("set_time(time="<<time<<")");
 
+  nassertv(_audio);
   // Ensure we don't inadvertently run off the end of the sound.
   float max_time = length();
   if (time > max_time) {
@@ -339,6 +342,7 @@ set_time(float time) {
 ////////////////////////////////////////////////////////////////////
 float MilesAudioSound::
 get_time() const {
+  nassertr(_audio, 0.0f);
   S32 millisecond_time=AIL_quick_ms_position(_audio);
   float time=float(millisecond_time*.001);
   miles_audio_debug("get_time() returning "<<time);
@@ -353,6 +357,7 @@ get_time() const {
 void MilesAudioSound::
 set_volume(float volume) {
   miles_audio_debug("set_volume(volume="<<volume<<")");
+  nassertv(_audio);
   // *Set the volume even if our volume is not changing, because the
   // MilesAudioManager will call set_volume when *its* volume changes.
   // Set the volume:
@@ -536,6 +541,23 @@ status() const {
       return AudioSound::PLAYING;
     default:
       return AudioSound::BAD;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSound::cleanup
+//       Access: Private
+//  Description: Called to release any resources associated with the
+//               sound.
+////////////////////////////////////////////////////////////////////
+void MilesAudioSound::
+cleanup() {
+  if (_audio) {
+    stop();
+    if (MilesAudioManager::_miles_active) {
+      AIL_quick_unload(_audio);
+    }
+    _audio = 0;
   }
 }
 

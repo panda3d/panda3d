@@ -34,54 +34,17 @@
 TypeHandle MilesAudioManager::_type_handle;
 
 int MilesAudioManager::_active_managers = 0;
+bool MilesAudioManager::_miles_active = false;
 HDLSFILEID MilesAudioManager::_dls_field = NULL;
 
-namespace {
-  bool miles_shutdown_called = false;
-}
+// This is the list of all MilesAudioManager objects in the world.  It
+// must be a pointer rather than a concrete object, so it won't be
+// destructed at exit time before we're done removing things from it.
+MilesAudioManager::Managers *MilesAudioManager::_managers;
 
 PT(AudioManager) Create_AudioManager() {
   audio_debug("Create_AudioManager() Miles.");
   return new MilesAudioManager();
-}
-
-void CustomMilesShutdown() {
-  if (miles_shutdown_called) {
-    return;
-  }
-  miles_shutdown_called = true;
-
-  if (MilesAudioManager::_dls_field!=NULL) {
-    HDLSDEVICE dls= NULL;
-    AIL_quick_handles(0, 0, &dls);
-    if (dls!=NULL) {
-      AIL_DLS_unload(dls,MilesAudioManager::_dls_field);
-    }
-    #ifndef NDEBUG //[
-      // Clear _dls_field in debug version (for assert in ctor):
-      MilesAudioManager::_dls_field = NULL;  
-    #endif //]
-  }
-
-  #define SHUTDOWN_HACK
-  // if python crashes, the midi notes are left on,
-  // so we need to turn them off.  Unfortunately
-  // in Miles 6.5, AIL_quick_shutdown() crashes
-  // when it's called from atexit after a python crash, probably
-  // because mss32.dll has already been unloaded
-  // workaround: use these internal values in the miles struct
-  //             to reset the win32 midi ourselves
-  #ifdef SHUTDOWN_HACK
-  HMDIDRIVER hMid=NULL;
-  AIL_quick_handles(0, &hMid, 0);
-  if ((hMid!=NULL) && (hMid->deviceid != MIDI_NULL_DRIVER) && (hMid->hMidiOut != NULL)) {
-    midiOutReset(hMid->hMidiOut);
-    midiOutClose(hMid->hMidiOut);
-  }
-  #else
-  audio_debug("  AIL_quick_shutdown()");
-  AIL_quick_shutdown();
-  #endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,16 +57,23 @@ void CustomMilesShutdown() {
 ////////////////////////////////////////////////////////////////////
 MilesAudioManager::
 MilesAudioManager() {
-  audio_debug("MilesAudioManager::MilesAudioManager()");
+  audio_debug("MilesAudioManager::MilesAudioManager(), this = " 
+              << (void *)this);
+  if (_managers == (Managers *)NULL) {
+    _managers = new Managers;
+  }
+  _managers->insert(this);
+
   audio_debug("  audio_active="<<audio_active);
   audio_debug("  audio_volume="<<audio_volume);
+  _cleanup_required = true;
   _active = audio_active;
   _volume = audio_volume;
   _cache_limit = audio_cache_limit;
   _concurrent_sound_limit = 0;
   _is_valid = true;
   _hasMidiSounds = false;
-  if (_active_managers==0) {
+  if (_active_managers==0 || !_miles_active) {
     S32 use_digital=(audio_play_wave || audio_play_mp3)?1:0;
     S32 use_MIDI=(audio_play_midi)?1:0;
     if (audio_play_midi && audio_software_midi) {
@@ -123,33 +93,38 @@ MilesAudioManager() {
     if (AIL_quick_startup(use_digital,
         use_MIDI, audio_output_rate,
         audio_output_bits, audio_output_channels)) {
+      _miles_active = true;
       if (audio_software_midi) {
         // Load the downloadable sounds file:
 
-        HDLSDEVICE dls;
-        AIL_quick_handles(0, 0, &dls);
-        nassertv(!_dls_field);
-        string dls_file = Filename(audio_dls_file).to_os_specific();
-        if (dls_file.empty()) {
-          get_gm_file_path(dls_file);
-          // we need more dbg info in logs, so bumping the msgs from 'debug' status to 'info' status
-          audio_info("  using default dls_file: "<< dls_file );
-        }
-
-        audio_debug("  dls_file=\""<<dls_file<<"\"");
-
-        // note: if AIL_DLS_load_file is not done, midi fails to play on some machines.
-        _dls_field=AIL_DLS_load_file(dls, dls_file.c_str(), 0);
-        if (!_dls_field) {
-          audio_error("  AIL_DLS_load_file() failed, \""<<AIL_last_error() <<"\" Switching to hardware midi");
-          AIL_quick_shutdown();
-          if (!AIL_quick_startup(use_digital, 1, audio_output_rate,
-              audio_output_bits, audio_output_channels)) {
-            audio_error("  midi hardware startup failed, "<<AIL_last_error());
-            _is_valid = false;
+        if (_dls_field == NULL) {
+          HDLSDEVICE dls;
+          AIL_quick_handles(0, 0, &dls);
+          nassertv(dls != NULL);
+          string dls_file = Filename(audio_dls_file).to_os_specific();
+          if (dls_file.empty()) {
+            get_gm_file_path(dls_file);
+            // we need more dbg info in logs, so bumping the msgs from 'debug' status to 'info' status
+            audio_info("  using default dls_file: "<< dls_file );
           }
-        } else {
-          audio_info("  using Miles software midi");
+          
+          audio_debug("  dls_file=\""<<dls_file<<"\"");
+          
+          // note: if AIL_DLS_load_file is not done, midi fails to play on some machines.
+          nassertv(_dls_field == NULL);
+          audio_debug("  AIL_DLS_load_file(dls, " << dls_file << ", 0)");
+          _dls_field = AIL_DLS_load_file(dls, dls_file.c_str(), 0);
+          if (!_dls_field) {
+            audio_error("  AIL_DLS_load_file() failed, \""<<AIL_last_error() <<"\" Switching to hardware midi");
+            AIL_quick_shutdown();
+            if (!AIL_quick_startup(use_digital, 1, audio_output_rate,
+                                   audio_output_bits, audio_output_channels)) {
+              audio_error("  midi hardware startup failed, "<<AIL_last_error());
+              _is_valid = false;
+            }
+          } else {
+            audio_info("  using Miles software midi");
+          }
         }
       } else {
         audio_info("  using Miles hardware midi");
@@ -166,15 +141,17 @@ MilesAudioManager() {
   audio_debug("  _active_managers="<<_active_managers);
   nassertv(_active_managers>0);
 
-  if (_is_valid)  {
-    assert(is_valid());
+  // We used to hang a call to a force-shutdown function on atexit(),
+  // so that any running sounds (particularly MIDI sounds) would be
+  // silenced on exit, especially a sudden exit triggered by a Python
+  // exception.  But that causes problems because Miles itself also
+  // hangs a force-shutdown function on atexit(), and you can't call
+  // AIL_cleanup() twice--that results in a crash.
 
-    static bool atexit_registered = false;
-    if(!atexit_registered) {
-       atexit_registered = true;
-       atexit(CustomMilesShutdown);
-    }
-  }
+  // Nowadays, we provide the AudioManager::shutdown() method instead,
+  // which allows the app to force all sounds to stop cleanly before
+  // we get to the atexit() stack.  In Python, we guarantee that this
+  // method will be called in the sys.exitfunc chain.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -187,27 +164,38 @@ MilesAudioManager() {
 ////////////////////////////////////////////////////////////////////
 MilesAudioManager::
 ~MilesAudioManager() {
-  audio_debug("MilesAudioManager::~MilesAudioManager()");
-  // Be sure to delete associated sounds before deleting the manager:
-  nassertv(_sounds_on_loan.empty());
-  clear_cache();
-  nassertv(_active_managers>0);
-  --_active_managers;
-  audio_debug("  _active_managers="<<_active_managers);
-  if (_active_managers==0) {
-    if (audio_software_midi) {
-      HDLSDEVICE dls;
-      AIL_quick_handles(0, 0, &dls);
-      AIL_DLS_unload(dls, _dls_field);
-      #ifndef NDEBUG //[
-        // Clear _dls_field in debug version (for assert in ctor):
-        _dls_field=0;
-      #endif //]
+  audio_debug("MilesAudioManager::~MilesAudioManager(), this = " 
+              << (void *)this);
+  nassertv(_managers != (Managers *)NULL);
+  Managers::iterator mi = _managers->find(this);
+  nassertv(mi != _managers->end());
+  _managers->erase(mi);
+
+  cleanup();
+  audio_debug("MilesAudioManager::~MilesAudioManager() finished");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::shutdown
+//       Access: Published, Virtual
+//  Description: Call this at exit time to shut down the audio system.
+//               This will invalidate all currently-active
+//               AudioManagers and AudioSounds in the system.  If you
+//               change your mind and want to play sounds again, you
+//               will have to recreate all of these objects.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+shutdown() {
+  audio_debug("shutdown(), _miles_active = " << _miles_active);
+  if (_managers != (Managers *)NULL) {
+    Managers::iterator mi;
+    for (mi = _managers->begin(); mi != _managers->end(); ++mi) {
+      (*mi)->cleanup();
     }
-    audio_debug("  AIL_quick_shutdown()");
-    AIL_quick_shutdown();
-    miles_shutdown_called = true;
   }
+
+  nassertv(_active_managers == 0);
+  audio_debug("shutdown() finished");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -305,7 +293,7 @@ load(Filename file_name) {
   }
 
   sd->_audio = AIL_quick_load_mem(sd->_raw_data.data(), sd->_raw_data.size());
-   
+
   if (!sd->_audio) {
     audio_error("  MilesAudioManager::load failed "<< AIL_last_error());
     return NULL;
@@ -376,7 +364,8 @@ get_sound(const string& file_name, bool) {
         =new MilesAudioSound(this, sd, (*si).first);
     nassertr(milesAudioSound, 0);
     milesAudioSound->set_active(_active);
-    _sounds_on_loan.insert(milesAudioSound);
+    bool inserted = _sounds_on_loan.insert(milesAudioSound).second;
+    nassertr(inserted, milesAudioSound.p());
     audioSound=milesAudioSound;
   }
 
@@ -505,8 +494,12 @@ get_cache_limit() const {
 void MilesAudioManager::
 release_sound(MilesAudioSound* audioSound) {
   audio_debug("MilesAudioManager::release_sound(audioSound=\""
-      <<audioSound->get_name()<<"\")");
-  _sounds_on_loan.erase(audioSound);
+              <<audioSound->get_name()<<"\"), this = " << (void *)this);
+  AudioSet::iterator ai = _sounds_on_loan.find(audioSound);
+  nassertv(ai != _sounds_on_loan.end());
+  _sounds_on_loan.erase(ai);
+
+  audio_debug("MilesAudioManager::release_sound() finished");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -524,29 +517,6 @@ set_volume(float volume) {
     for (; i!=_sounds_on_loan.end(); ++i) {
       (**i).set_volume((**i).get_volume());
     }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::force_midi_reset
-//       Access: Public
-//  Description: ?????.
-////////////////////////////////////////////////////////////////////
-void MilesAudioManager::
-force_midi_reset() {
-  if (!miles_audio_force_midi_reset) {
-    audio_debug("MilesAudioManager::skipping force_midi_reset");  
-    return;
-  }
-  audio_debug("MilesAudioManager::force_midi_reset");
-
-  // sometimes Miles seems to leave midi notes hanging, even after stop is called,
-  // so perform an explicit reset using winMM.dll calls, just to ensure silence.
-  HMDIDRIVER hMid=NULL;
-  AIL_quick_handles(0, &hMid, 0);
-  if ((hMid!=NULL) && (hMid->deviceid != MIDI_NULL_DRIVER) && (hMid->hMidiOut != NULL)) {
-    audio_debug("MilesAudioManager::calling midiOutReset");
-    midiOutReset(hMid->hMidiOut);
   }
 }
 
@@ -733,6 +703,76 @@ get_gm_file_path(string& result) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::force_midi_reset
+//       Access: Private
+//  Description: ?????.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+force_midi_reset() {
+  if (!miles_audio_force_midi_reset) {
+    audio_debug("MilesAudioManager::skipping force_midi_reset");  
+    return;
+  }
+  audio_debug("MilesAudioManager::force_midi_reset");
+
+  // sometimes Miles seems to leave midi notes hanging, even after
+  // stop is called, so perform an explicit reset using winMM.dll
+  // calls, just to ensure silence.
+
+  HMDIDRIVER hMid=NULL;
+  AIL_quick_handles(0, &hMid, 0);
+  if ((hMid!=NULL) && (hMid->deviceid != MIDI_NULL_DRIVER) && (hMid->hMidiOut != NULL)) {
+    audio_debug("MilesAudioManager::calling midiOutReset");
+    midiOutReset(hMid->hMidiOut);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::cleanup
+//       Access: Private
+//  Description: Shuts down the audio manager and releases any
+//               resources associated with it.  Also cleans up all
+//               AudioSounds created via the manager.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+cleanup() {
+  audio_debug("MilesAudioManager::cleanup(), this = " << (void *)this
+              << ", _cleanup_required = " << _cleanup_required);
+  if (!_cleanup_required) {
+    return;
+  }
+
+  // Be sure to cleanup associated sounds before cleaning up the manager:
+  AudioSet::iterator ai;
+  for (ai = _sounds_on_loan.begin(); ai != _sounds_on_loan.end(); ++ai) {
+    (*ai)->cleanup();
+  }
+
+  clear_cache();
+  nassertv(_active_managers > 0);
+  --_active_managers;
+  audio_debug("  _active_managers="<<_active_managers);
+
+  if (_active_managers == 0) {
+    if (_dls_field != NULL) {
+      HDLSDEVICE dls;
+      AIL_quick_handles(0, 0, &dls);
+      audio_debug("  AIL_DLS_unload()");
+      AIL_DLS_unload(dls, _dls_field);
+      _dls_field = NULL;
+    }
+
+    if (_miles_active) {
+      audio_debug("  AIL_quick_shutdown()");
+      AIL_quick_shutdown();
+      _miles_active = false;
+    }
+  }
+  _cleanup_required = false;
+  audio_debug("MilesAudioManager::cleanup() finished");
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::SoundData::Constructor
 //       Access: Public
 //  Description: 
@@ -752,7 +792,10 @@ SoundData() :
 MilesAudioManager::SoundData::
 ~SoundData() {
   if (_audio != 0) {
-    AIL_quick_unload(_audio);
+    if (_miles_active) {
+      AIL_quick_unload(_audio);
+    }
+    _audio = 0;
   }
 }
 

@@ -38,6 +38,8 @@ public:
   MilesAudioManager();
   ~MilesAudioManager();
 
+  virtual void shutdown();
+
   bool is_valid();
   
   virtual PT(AudioSound) get_sound(const string& file_name, bool positional = false);
@@ -58,10 +60,6 @@ public:
   void reduce_sounds_playing_to(unsigned int count);
 
   void stop_all_sounds();
-
-  // Optional Downloadable Sound field for software midi:
-  // made public so C atexit fn can access it
-  static HDLSFILEID _dls_field;
 
 private:
   // The sound cache:
@@ -96,12 +94,20 @@ private:
   float _volume;
   bool _active;
   int _cache_limit;
+  bool _cleanup_required;
   // keep a count for startup and shutdown:
   static int _active_managers;
+  static bool _miles_active;
   unsigned int _concurrent_sound_limit;
   
   bool _is_valid;
   bool _hasMidiSounds;
+
+  // Optional Downloadable Sound field for software midi
+  static HDLSFILEID _dls_field;
+
+  typedef pset<MilesAudioManager *> Managers;
+  static Managers *_managers;
   
   PT(SoundData) load(Filename file_name);
   // Tell the manager that the sound dtor was called.
@@ -122,6 +128,7 @@ private:
   void get_gm_file_path(string& result);
 
   void force_midi_reset();
+  void cleanup();
 
   friend class MilesAudioSound;
 

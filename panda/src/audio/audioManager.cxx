@@ -87,6 +87,28 @@ create_AudioManager() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::Destructor
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+AudioManager::
+~AudioManager() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::shutdown
+//       Access: Published, Virtual
+//  Description: Call this at exit time to shut down the audio system.
+//               This will invalidate all currently-active
+//               AudioManagers and AudioSounds in the system.  If you
+//               change your mind and want to play sounds again, you
+//               will have to recreate all of these objects.
+////////////////////////////////////////////////////////////////////
+void AudioManager::
+shutdown() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AudioManager::get_null_sound
 //       Access: Public
 //  Description: Returns a special NullAudioSound object that has all

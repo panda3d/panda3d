@@ -37,7 +37,9 @@ PUBLISHED:
   //   my_music = MyMusicManager.get_sound("introTheme.mid");
 
   static PT(AudioManager) create_AudioManager();
-  virtual ~AudioManager() {}
+  virtual ~AudioManager();
+
+  virtual void shutdown();
   
   // If you're interested in knowing whether this audio manager
   // is valid, here's the call to do it.  It is not necessary
