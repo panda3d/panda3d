@@ -193,19 +193,25 @@ void ImageFile::
 set_filename(const string &dirname, const string &basename) {
   _filename = Filename(dirname, basename);
 
-  if (_properties._alpha_type != (PNMFileType *)NULL) {
-    _alpha_filename = 
-      _filename.get_fullpath() + "_a." +  
-      _properties._alpha_type->get_suggested_extension();
-  }
+  // Since we use set_extension() here, if the file already contains a
+  // filename extension it will be lost.
+
+  // It is particularly important to note that a single embedded dot
+  // will appear to begin a filename extension, so if the filename
+  // does *not* contain an extension, but does contain an embedded
+  // dot, the filename will be truncated at that dot.  It is therefore
+  // important that the supplied basename always contains either an
+  // extension or a terminating dot.
 
   if (_properties._color_type != (PNMFileType *)NULL) {
-    // We shouldn't use _filename.set_extension(), because that may
-    // inadvertently truncate the filename if it already includes a
-    // dot.
-    _filename = 
-      _filename.get_fullpath() + "." +
-      _properties._color_type->get_suggested_extension();
+    _filename.set_extension
+      (_properties._color_type->get_suggested_extension());
+  }
+
+  if (_properties._alpha_type != (PNMFileType *)NULL) {
+    _alpha_filename = _filename.get_fullpath_wo_extension() + "_a";
+    _alpha_filename.set_extension
+      (_properties._alpha_type->get_suggested_extension());
   }
 }
 

@@ -175,8 +175,12 @@ PaletteImage(PalettePage *page, int index) :
   _got_image = false;
 
   ostringstream name;
+  // We must end the basename with a dot, so that it does not appear
+  // to have a filename extension.  Otherwise, an embedded dot in the
+  // group's name would make everything following appear to be an
+  // extension, which would get lost in the set_filename() call.
   name << page->get_group()->get_name() << "_palette_"
-       << page->get_name() << "_" << index + 1;
+       << page->get_name() << "_" << index + 1 << ".";
 
   _basename = name.str();
 
