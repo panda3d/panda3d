@@ -334,7 +334,7 @@ post_txa_file() {
     _properties._magfilter = _request._magfilter;
   }
 
-  _properties._anisotropic_degree = max(_request._anisotropic_degree, _properties._anisotropic_degree);
+  _properties._anisotropic_degree = _request._anisotropic_degree;
 
   if (_properties._color_type == (PNMFileType *)NULL) {
     _properties._color_type = _request._properties._color_type;
