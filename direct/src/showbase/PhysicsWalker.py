@@ -401,10 +401,9 @@ class PhysicsWalker(DirectObject.DirectObject):
         
         # hack fix for falling through the floor:
         if contact==Vec3.zero() and self.avatarNodePath.getZ()<-50.0:
-            # reset:
             # DCR: don't reset X and Y; allow player to move
+            self.reset()
             self.avatarNodePath.setZ(50.0)
-            self.resetPhys()
 
         # get the button states:
         forward = inputState.isSet("forward")
@@ -664,8 +663,8 @@ class PhysicsWalker(DirectObject.DirectObject):
             if self.wantAvatarPhysicsIndicator:
                 onScreenDebug.add("velocity", velocity.pPrintValues())
     
-    def resetPhys(self):
-        assert(self.debugPrint("resetPhys()"))
+    def reset(self):
+        assert(self.debugPrint("reset()"))
         self.actorNode.getPhysicsObject().resetPosition(self.avatarNodePath.getPos())
         self.priorParent.setVector(Vec3.zero())
         self.highMark = 0
@@ -687,7 +686,7 @@ class PhysicsWalker(DirectObject.DirectObject):
 
         if __debug__:
             self.accept("control-f3", self.spawnTest) #*#
-            self.accept("f3", self.resetPhys) # for debugging only.
+            self.accept("f3", self.reset) # for debugging only.
 
         taskName = "AvatarControls%s"%(id(self),)
         # remove any old

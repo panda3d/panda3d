@@ -195,6 +195,10 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         else:
             self.vel.set(0.0, 0.0, 0.0)
         return Task.cont
+    
+    def reset(self):
+        assert(self.debugPrint("reset()"))
+        pass
 
     def enableAvatarControls(self):
         """

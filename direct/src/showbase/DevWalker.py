@@ -135,8 +135,9 @@ class DevWalker(DirectObject.DirectObject):
         """
         assert(self.debugPrint("disableAvatarControls"))
         print id(self), "DW.disableAvatarControls()"
-        self.task.remove()
-        self.task = None
+        if self.task:
+            self.task.remove()
+            self.task = None
     
     if __debug__:
         def debugPrint(self, message):

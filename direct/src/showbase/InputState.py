@@ -73,7 +73,7 @@ class InputState(DirectObject.DirectObject):
     def set(self, name, isSet):
         assert(self.debugPrint("set(name=%s, isSet=%s)"%(name, isSet)))
         self.state[name] = isSet
-        messenger.send(name, [isSet])
+        #*#messenger.send(name, [isSet])
     
     def isSet(self, name):
         """

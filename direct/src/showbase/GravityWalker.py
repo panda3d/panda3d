@@ -416,6 +416,10 @@ class GravityWalker(DirectObject.DirectObject):
         if __debug__:
             if self.wantDebugIndicator:
                 onScreenDebug.add("velocity", velocity.pPrintValues())
+    
+    def reset(self):
+        assert(self.debugPrint("reset()"))
+        self.lifter.setVelocity(0.0)
 
     def enableAvatarControls(self):
         """
