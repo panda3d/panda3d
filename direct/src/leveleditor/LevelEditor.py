@@ -2959,6 +2959,8 @@ class LevelStyleManager:
         self.createMiscAttribute('wall_height', [10, 20])
         # Window orientation menu
         self.createMiscAttribute('window_orientation', ['ur','ul',None,None])
+        # Sign orientation menu
+        self.createMiscAttribute('sign_orientation', ['ur','ul',None,None])
         # Door orientation menu
         self.createMiscAttribute('door_orientation', ['ur','ul',None,None])
         # Cornice orientation menu
@@ -4069,7 +4071,10 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                 self.addScaleZFloater.set(1)
                 self.addRollFloater.set(0)
                 
-                self.updateSelectedObjColor(Vec4(1.0))
+                #self.updateSelectedObjColor(Vec4(1.0))
+                self.setCurrentColor(Vec4(1.0))
+                self.setResetColor(Vec4(1.0))
+                baseline.setColor(Vec4(1.0))
                 
                 self.levelEditor.replaceSelectedEnabled=1
                 self.levelEditor.replaceSelected()
@@ -4121,8 +4126,12 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             if settings['roll']:
                 self.addRollFloater.set(float(settings['roll']))
                 
-            if settings['color']:
-                self.updateSelectedObjColor(settings['color'])
+            color = settings['color']
+            if color:
+                #self.updateSelectedObjColor(settings['color'])
+                self.setCurrentColor(color)
+                self.setResetColor(color)
+                baseline.setColor(color)
 
             self.levelEditor.replaceSelectedEnabled=1
             self.levelEditor.replaceSelected()
