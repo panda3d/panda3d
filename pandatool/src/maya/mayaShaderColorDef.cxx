@@ -331,8 +331,14 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
       for (size_t j=0; j<pla.length(); ++j) {
         //maya_cat.debug() << pl.name() << " is(pl) " << pl.node().apiTypeStr() << endl;
         //maya_cat.debug() << pla[j].name() << " is(pla) " << pla[j].node().apiTypeStr() << endl;
+        string pla_name = pla[j].name().asChar();
+        // sometimes, by default, maya gives a outAlpha on subsequent plugs, ignore that
+        if (pla_name.find("outAlpha") != -1) {
+          maya_cat.debug() << pl.name() << " ignoring: " << pla_name << endl;
+          continue;
+        }
         if (!first) {
-          maya_cat.debug() << pl.name() << "next:connectedTo: " << pla[j].name() << endl;
+          maya_cat.debug() << pl.name() << " next:connectedTo: " << pla_name << endl;
           MayaShaderColorDef *color_p = new MayaShaderColorDef;
           color_p->read_surface_color(shader, pla[j].node());
           color_p->_texture_name.assign(pla[j].name().asChar());
@@ -342,7 +348,7 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
           maya_cat.debug() << "uv_name : " << color_p->_texture_name << endl;
         }
         else {
-          maya_cat.debug() << pl.name() << " first:connectedTo: " << pla[j].name() << endl;
+          maya_cat.debug() << pl.name() << " first:connectedTo: " << pla_name << endl;
           read_surface_color(shader, pla[j].node());
           _texture_name.assign(pla[j].name().asChar());
           int loc = _texture_name.find('.',0);
@@ -356,7 +362,7 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
         MPlug pl_temp = pla[j];
         MPlugArray pla_temp;
         pl_temp.connectedTo(pla_temp, true, false);
-        maya_cat.debug() << pl_temp.name() << "connectedTo:" << pla_temp.length() << " plugs\n";
+        maya_cat.debug() << pl_temp.name() << " connectedTo:" << pla_temp.length() << " plugs\n";
       }
       /*
       string blah;

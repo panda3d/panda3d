@@ -2283,15 +2283,17 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader, const M
         
         // if multi-textured, first texture in maya is on top, so
         if (shader._color.size() > 1) {
+          // last shader on the list is the base one, which should always pick up the alpha
+          // from the texture file. But the top textures may have to strip the alpha
           if (i!=shader._color.size()-1) {
             // read the _alpha_is_luminance to figure out env_type
             if (!shader._alpha_is_luminance)
               tex.set_env_type(EggTexture::ET_decal);
+            // multitexture modulate mode may specify, desired alpha on/off
+            if (!color_def->_alpha_is_luminance)
+              tex.set_alpha_mode(EggRenderMode::AM_off);  // Force alpha to be 'off'
           }
           if (color_def->_alpha_is_luminance) {
-            // multitexture modulate mode may specify, desired alpha on/off
-            if (color_def->_alpha_is_luminance)
-              tex.set_alpha_mode(EggRenderMode::AM_off);  // Force alpha to be 'off'
           }
         }
       } else {  // trans_def._has_texture
