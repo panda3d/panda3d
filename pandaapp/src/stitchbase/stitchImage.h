@@ -48,6 +48,9 @@ public:
   string get_name() const;
   bool has_filename() const;
   string get_filename() const;
+  bool has_fade_filename() const;
+  string get_fade_filename() const;
+  void set_fade_filename(const Filename &filename);
 
   // This function reads the image file if it is available.
   bool read_file();
@@ -152,9 +155,11 @@ public:
 private:
   void setup_pixel_scales();
   void resize_data();
+  void fade_out();
 
 private:
   Filename _filename;
+  Filename _fade_filename;
   string _name;
 
   int _x_verts, _y_verts;

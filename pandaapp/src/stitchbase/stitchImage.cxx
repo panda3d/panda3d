@@ -130,6 +130,21 @@ get_filename() const {
 }
 
 bool StitchImage::
+has_fade_filename() const {
+  return !_fade_filename.empty();
+}
+
+string StitchImage::
+get_fade_filename() const {
+  return _fade_filename;
+}
+
+void StitchImage::
+set_fade_filename(const Filename &filename) {
+  _fade_filename = filename;
+}
+
+bool StitchImage::
 read_file() {
   if (_data != NULL) {
     delete _data;
@@ -232,8 +247,11 @@ close_output_file() {
     if (_data == NULL) {
       result = false;
     } else {
-      nout << "Writing " << _filename << "\n";
       resize_data();
+      if (has_fade_filename()) {
+        fade_out();
+      }
+      nout << "Writing " << _filename << "\n";
       result = _data->write(_filename);
     }
   }
@@ -241,6 +259,7 @@ close_output_file() {
   clear_file();
   return result;
 }
+
 
 void StitchImage::
 clear_transform() {
@@ -333,6 +352,7 @@ const LVecBase2d &StitchImage::
 get_size_pixels() const {
   return _size_pixels;
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StitchImage::set_size_pixels
@@ -482,7 +502,56 @@ resize_data() {
   cerr << "Filtering to " << reduced->get_x_size() << " by " 
        << reduced->get_y_size() << "\n";
 
-  reduced->box_filter_from(1.0, *_data);
+  reduced->box_filter_from(0.5, *_data);
   delete _data;
   _data = reduced;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StitchImage::fade_out
+//       Access: Private
+//  Description: Fades out the image (presumably at the edges) by
+//               multiplying each pixel by the corresponding pixel in
+//               the named fade image.
+//
+//               This is generally useful for generating output images
+//               that are intended to overlap meaningfully, for
+//               instance when projected through overlapping
+//               projectors.
+////////////////////////////////////////////////////////////////////
+void StitchImage::
+fade_out() {
+  assert(_data != (PNMImage *)NULL);
+
+  cerr << "Reading fade image " << get_fade_filename() << "\n";
+  PNMImage *fade = new PNMImage(get_fade_filename());
+  if (!fade->is_valid()) {
+    cerr << "Unable to read fade image.\n";
+    return;
+  }
+
+  if (fade->get_x_size() != _data->get_x_size() ||
+      fade->get_y_size() != _data->get_y_size()) {
+    cerr << "Resizing fade image to " << _data->get_x_size()
+         << " by " << _data->get_y_size() << "\n";
+    PNMImage *resized_fade = 
+      new PNMImage(_data->get_x_size(), _data->get_y_size(),
+                   fade->get_num_channels(), fade->get_maxval());
+    resized_fade->quick_filter_from(*fade);
+    delete fade;
+    fade = resized_fade;
+  }
+
+  // Now apply the fade factor to darken each of our pixels.
+  cerr << "Applying fade image.\n";
+  for (int y = 0; y < _data->get_y_size(); y++) {
+    for (int x = 0; x < _data->get_x_size(); x++) {
+      double bright = fade->get_bright(x, y);
+      _data->set_red_val(x, y, (xelval)_data->get_red_val(x, y) * bright);
+      _data->set_green_val(x, y, (xelval)_data->get_green_val(x, y) * bright);
+      _data->set_blue_val(x, y, (xelval)_data->get_blue_val(x, y) * bright);
+    }
+  }
+
+  delete fade;
 }

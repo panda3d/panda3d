@@ -95,6 +95,10 @@ operator << (ostream &out, StitchCommand::Command c) {
     return out << "filename";
     break;
 
+  case StitchCommand::C_fade:
+    return out << "fade";
+    break;
+
   case StitchCommand::C_point2d:
   case StitchCommand::C_point3d:
     return out << "point";
@@ -710,6 +714,10 @@ create_image() {
 
     case C_grid:
       image->setup_grid((int)(*ci)->_n[0], (int)(*ci)->_n[1]);
+      break;
+
+    case C_fade:
+      image->set_fade_filename((*ci)->get_str());
       break;
 
     default:

@@ -47,6 +47,7 @@ stitch_init_parser(istream &in, const string &filename,
 %token KW_SINGULARITY_TOLERANCE
 %token KW_RESOLUTION
 %token KW_FILENAME
+%token KW_FADE
 %token KW_POINT
 %token KW_SHOW_POINTS
 %token KW_IMAGE_SIZE
@@ -209,6 +210,11 @@ simple_command:
         | KW_FILENAME STRING
 {
   $$ = new StitchCommand(parent, StitchCommand::C_filename);
+  $$->set_str($2);
+}
+        | KW_FADE STRING
+{
+  $$ = new StitchCommand(parent, StitchCommand::C_fade);
   $$->set_str($2);
 }
         | KW_POINT name point

@@ -51,6 +51,7 @@ public:
     C_singularity_tolerance,
     C_resolution,
     C_filename,
+    C_fade,
     C_point2d,
     C_point3d,
     C_show_points,
