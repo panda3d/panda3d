@@ -3,14 +3,15 @@ import sys
 import getopt
 import pandaSqueezeTool
 
-# Assumption: We will be squeezing the files from the current directory.
+# Assumption: We will be squeezing the files from the current directory or the -d directory.
 
 try:
-    opts, pargs = getopt.getopt(sys.argv[1:], 'O')
+    opts, pargs = getopt.getopt(sys.argv[1:], 'Od:')
 except Exception, e:
     # User passed in a bad option, print the error and the help, then exit
     print e
     print 'Usage: pass in -O for optimized'
+    print '       pass in -d directory'
     sys.exit()
 
 fOptimized = 0
@@ -20,6 +21,8 @@ for opt in opts:
     if (flag == '-O'):
         fOptimized = 1
         print 'Squeezing pyo files'
+    elif (flag == '-d'):
+        os.chdir(value)
 
 def getSqueezeableFiles():
     fileList = os.listdir(".")
