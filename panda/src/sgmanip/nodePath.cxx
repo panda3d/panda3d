@@ -392,9 +392,13 @@ find_singular_transform() const {
   nassertr(!is_empty(), NodePath::fail());
 
   if (has_mat()) {
-    LMatrix4f mat;
-    if (!mat.invert_from(get_mat())) {
+    LMatrix4f mat = get_mat();
+    LMatrix4f inv_mat;
+    bool ok = inv_mat.invert_from(mat);
+    if (!ok) {
       // Here's a singular matrix!
+      sgmanip_cat.info()
+        << "Singular transform at: " << *this << "\n";
       return *this;
     }
   }
@@ -3129,6 +3133,32 @@ r_list_transitions(ostream &out, int indent_level) const {
     indent(out, indent_level + 2) << *child_arc << ":\n";
     child_arc->write_transitions(out, indent_level + 2);
     next.r_list_transitions(out, indent_level + 2);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::r_list_transforms
+//       Access: Private
+//  Description: The recursive implementation of ls_transforms().
+////////////////////////////////////////////////////////////////////
+void NodePath::
+r_list_transforms(ostream &out, int indent_level) const {
+  if (has_mat()) {
+    indent(out, indent_level) << *this << ":\n";
+    get_mat().write(out, indent_level + 2);
+    indent_level += 4;
+  }
+
+  Node *bottom_node = node();
+  nassertv(bottom_node != (Node *)NULL);
+
+  int num_children = bottom_node->get_num_children(_graph_type);
+  for (int i = 0; i < num_children; i++) {
+    NodeRelation *child_arc = bottom_node->get_child(_graph_type, i);
+    NodePath next(*this);
+    next.extend_by(child_arc);
+
+    next.r_list_transforms(out, indent_level);
   }
 }
 

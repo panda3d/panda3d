@@ -248,7 +248,7 @@ PUBLISHED:
   INLINE void ls() const;
   INLINE void ls(ostream &out, int indent_level = 0) const;
   INLINE void ls_transitions() const;
-  INLINE void ls_transitions(ostream &out, int indent_level = 0) const;
+  INLINE void ls_transforms() const;
   void analyze() const;
 
   int flatten_light();
@@ -541,6 +541,7 @@ private:
 
   void r_list_descendants(ostream &out, int indent_level) const;
   void r_list_transitions(ostream &out, int indent_level) const;
+  void r_list_transforms(ostream &out, int indent_level) const;
 
   void r_adjust_all_priorities(NodeRelation *arc, int adjustment);
   void r_clear_wrt_cache(NodeRelation *arc);

@@ -428,22 +428,24 @@ ls(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 ls_transitions() const {
-  ls_transitions(nout);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::ls_transitions
-//       Access: Published
-//  Description: Lists all the nodes at and below the current path
-//               hierarchically, along with all the transitions on the
-//               arcs between them.
-////////////////////////////////////////////////////////////////////
-INLINE void NodePath::
-ls_transitions(ostream &out, int indent_level) const {
   nassertv(verify_connectivity());
   nassertv(!is_empty());
 
-  r_list_transitions(out, indent_level);
+  r_list_transitions(nout, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::ls_transforms
+//       Access: Published
+//  Description: Lists only the nodes at and below this path that have
+//               transform matrices set, and the matrices they have.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+ls_transforms() const {
+  nassertv(verify_connectivity());
+  nassertv(!is_empty());
+
+  r_list_transforms(nout, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
