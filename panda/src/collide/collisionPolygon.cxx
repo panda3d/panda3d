@@ -382,7 +382,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   DCAST_INTO_R(sphere, entry.get_from(), 0);
 
   CPT(TransformState) wrt_space = entry.get_wrt_space();
-  CPT(TransformState) wrt_prev_space = entry.get_wrt_space();
+  CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
 
   const LMatrix4f &wrt_mat = wrt_space->get_mat();
 
