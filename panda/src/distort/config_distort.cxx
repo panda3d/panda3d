@@ -1,5 +1,5 @@
-// Filename: config_effects.cxx
-// Created by:  jason (18Jul00)
+// Filename: config_distort.cxx
+// Created by:  drose (11Dec01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,20 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_effects.h"
-#include "lensFlareNode.h"
+#include "config_distort.h"
+#include "cylindricalLens.h"
+#include "fisheyeLens.h"
+#include "projectionScreen.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
-Configure(config_effects);
-NotifyCategoryDef(effects, "");
+Configure(config_distort);
+NotifyCategoryDef(distort, "");
 
-ConfigureFn(config_effects) {
-  init_libeffects();
+ConfigureFn(config_distort) {
+  init_libdistort();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: init_libeffects
+//     Function: init_libdistort
 //  Description: Initializes the library.  This must be called at
 //               least once before any of the functions or classes in
 //               this library can be used.  Normally it will be
@@ -37,10 +39,14 @@ ConfigureFn(config_effects) {
 //               called explicitly, but special cases exist.
 ////////////////////////////////////////////////////////////////////
 void
-init_libeffects() {
-  LensFlareNode::init_type();
+init_libdistort() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
 
-  //Registration of writeable object's creation
-  //functions with BamReader's factory
-  LensFlareNode::register_with_read_factory();
+  CylindricalLens::init_type();
+  FisheyeLens::init_type();
+  ProjectionScreen::init_type();
 }

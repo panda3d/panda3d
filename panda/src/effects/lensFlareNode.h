@@ -32,7 +32,7 @@
 class GraphicsStateGuardian;
 class ClockObject;
 
-class EXPCL_PANDA LensFlareNode : public Node
+class EXPCL_PANDAFX LensFlareNode : public Node
 {
 PUBLISHED:
   INLINE LensFlareNode(void);
@@ -41,7 +41,6 @@ PUBLISHED:
                  PTA_float angle_scales, PTA_Colorf colors);
   void add_blind(PT(Texture) blind);
 
-  INLINE void set_angle_scale(float scale);
   INLINE void set_texel_scale(float texel_to_world);
   INLINE void set_global_scale(float scale);
 

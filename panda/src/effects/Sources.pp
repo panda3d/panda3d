@@ -14,5 +14,7 @@
   #define INSTALL_HEADERS \
     config_effects.h lensFlareNode.I lensFlareNode.h
 
+  #define IGATESCAN all
+
 #end lib_target
 

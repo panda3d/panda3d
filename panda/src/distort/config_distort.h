@@ -1,5 +1,5 @@
-// Filename: config_effects.h
-// Created by:  jason (18Jul00)
+// Filename: config_distort.h
+// Created by:  drose (11Dec01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,15 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifndef CONFIG_DISTORT_H
+#define CONFIG_DISTORT_H
 
-#ifndef CONFIG_EFFECTS_H
-#define CONFIG_EFFECTS_H
+#include "pandabase.h"
+#include "notifyCategoryProxy.h"
 
-#include <pandabase.h>
-#include <notifyCategoryProxy.h>
+NotifyCategoryDecl(distort, EXPCL_PANDAFX, EXPTP_PANDAFX);
 
-NotifyCategoryDecl(effects, EXPCL_PANDAFX, EXPTP_PANDAFX);
+extern EXPCL_PANDAFX void init_libdistort();
 
-extern EXPCL_PANDAFX void init_libeffects();
-
-#endif /* CONFIG_EFFECTS_H */
+#endif /* CONFIG_DISTORT_H */

@@ -70,16 +70,16 @@ extrude(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point) cons
 //
 //               Returns true if the 3-d point is in front of the lens
 //               and within the viewing frustum (in which case point2d
-//               is filled in), or false otherwise.
+//               is filled in), or false otherwise (in which case
+//               point2d will be filled in with something, which may
+//               or may not be meaningful).
 ////////////////////////////////////////////////////////////////////
 INLINE bool Lens::
 project(const LPoint3f &point3d, LPoint2f &point2d) const {
   LPoint3f result;
-  if (project_impl(point3d, result)) {
-    point2d.set(result[0], result[1]);
-    return true;
-  }
-  return false;
+  bool okflag = project_impl(point3d, result);
+  point2d.set(result[0], result[1]);
+  return okflag;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,14 +90,15 @@ project(const LPoint3f &point3d, LPoint2f &point2d) const {
 //               where (0,0) is the center of the lens and
 //               (-1,-1) is the lower-left corner.
 //
-//               Some lens types also set the z coordinate of the 2-d
-//               point to a value in the range (-1, 1), where 1
-//               represents a point on the near plane, and -1
-//               represents a point on the far plane.
+//               The z coordinate will also be set to a value in the
+//               range (-1, 1), where 1 represents a point on the near
+//               plane, and -1 represents a point on the far plane.
 //
 //               Returns true if the 3-d point is in front of the lens
 //               and within the viewing frustum (in which case point2d
-//               is filled in), or false otherwise.
+//               is filled in), or false otherwise (in which case
+//               point2d will be filled in with something, which may
+//               or may not be meaningful).
 ////////////////////////////////////////////////////////////////////
 INLINE bool Lens::
 project(const LPoint3f &point3d, LPoint3f &point2d) const {

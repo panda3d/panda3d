@@ -31,12 +31,12 @@
   #define EXPTP_PANDA extern
 #endif
 
-#ifdef BUILDING_PANDAEXPRESS
-  #define EXPCL_PANDAEXPRESS __declspec(dllexport)
-  #define EXPTP_PANDAEXPRESS
+#ifdef BUILDING_PANDADX
+  #define EXPCL_PANDADX __declspec(dllexport)
+  #define EXPTP_PANDADX
 #else
-  #define EXPCL_PANDAEXPRESS __declspec(dllimport)
-  #define EXPTP_PANDAEXPRESS extern
+  #define EXPCL_PANDADX __declspec(dllimport)
+  #define EXPTP_PANDADX extern
 #endif
 
 #ifdef BUILDING_PANDAEGG
@@ -47,12 +47,20 @@
   #define EXPTP_PANDAEGG extern
 #endif
 
-#ifdef BUILDING_PANDAPHYSICS
-  #define EXPCL_PANDAPHYSICS __declspec(dllexport)
-  #define EXPTP_PANDAPHYSICS
+#ifdef BUILDING_PANDAEXPRESS
+  #define EXPCL_PANDAEXPRESS __declspec(dllexport)
+  #define EXPTP_PANDAEXPRESS
 #else
-  #define EXPCL_PANDAPHYSICS __declspec(dllimport)
-  #define EXPTP_PANDAPHYSICS extern
+  #define EXPCL_PANDAEXPRESS __declspec(dllimport)
+  #define EXPTP_PANDAEXPRESS extern
+#endif
+
+#ifdef BUILDING_PANDAFX
+  #define EXPCL_PANDAFX __declspec(dllexport)
+  #define EXPTP_PANDAFX
+#else
+  #define EXPCL_PANDAFX __declspec(dllimport)
+  #define EXPTP_PANDAFX extern
 #endif
 
 #ifdef BUILDING_PANDAGL
@@ -71,12 +79,12 @@
   #define EXPTP_PANDAGLUT extern
 #endif
 
-#ifdef BUILDING_PANDADX
-  #define EXPCL_PANDADX __declspec(dllexport)
-  #define EXPTP_PANDADX
+#ifdef BUILDING_PANDAPHYSICS
+  #define EXPCL_PANDAPHYSICS __declspec(dllexport)
+  #define EXPTP_PANDAPHYSICS
 #else
-  #define EXPCL_PANDADX __declspec(dllimport)
-  #define EXPTP_PANDADX extern
+  #define EXPCL_PANDAPHYSICS __declspec(dllimport)
+  #define EXPTP_PANDAPHYSICS extern
 #endif
 
 #ifdef BUILDING_PANDARIB
@@ -116,14 +124,17 @@
 #define EXPCL_PANDA
 #define EXPTP_PANDA
 
-#define EXPCL_PANDAEXPRESS
-#define EXPTP_PANDAEXPRESS
+#define EXPCL_PANDADX
+#define EXPTP_PANDADX
 
 #define EXPCL_PANDAEGG
 #define EXPTP_PANDAEGG
 
-#define EXPCL_PANDAPHYSICS
-#define EXPTP_PANDAPHYSICS
+#define EXPCL_PANDAEXPRESS
+#define EXPTP_PANDAEXPRESS
+
+#define EXPCL_PANDAFX
+#define EXPTP_PANDAFX
 
 #define EXPCL_PANDAGL
 #define EXPTP_PANDAGL
@@ -131,8 +142,8 @@
 #define EXPCL_PANDAGLUT
 #define EXPTP_PANDAGLUT
 
-#define EXPCL_PANDADX
-#define EXPTP_PANDADX
+#define EXPCL_PANDAPHYSICS
+#define EXPTP_PANDAPHYSICS
 
 #define EXPCL_PANDARIB
 #define EXPTP_PANDARIB

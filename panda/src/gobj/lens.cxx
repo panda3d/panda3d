@@ -1034,7 +1034,7 @@ get_lens_mat_inv() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Lens::extrude
+//     Function: Lens::extrude_impl
 //       Access: Protected, Virtual
 //  Description: Given a 2-d point in the range (-1,1) in both
 //               dimensions, where (0,0) is the center of the
@@ -1080,14 +1080,15 @@ extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point)
 //               where (0,0) is the center of the lens and
 //               (-1,-1) is the lower-left corner.
 //
-//               Some lens types also set the z coordinate of the 2-d
-//               point to a value in the range (-1, 1), where 1
-//               represents a point on the near plane, and -1
-//               represents a point on the far plane.
+//               The z coordinate will also be set to a value in the
+//               range (-1, 1), where 1 represents a point on the near
+//               plane, and -1 represents a point on the far plane.
 //
 //               Returns true if the 3-d point is in front of the lens
 //               and within the viewing frustum (in which case point2d
-//               is filled in), or false otherwise.
+//               is filled in), or false otherwise (in which case
+//               point2d will be filled in with something, which may
+//               or may not be meaningful).
 ////////////////////////////////////////////////////////////////////
 bool Lens::
 project_impl(const LPoint3f &point3d, LPoint3f &point2d) const {
@@ -1095,10 +1096,13 @@ project_impl(const LPoint3f &point3d, LPoint3f &point2d) const {
   LVecBase4f full(point3d[0], point3d[1], point3d[2], 1.0f);
   full = projection_mat.xform(full);
   if (full[3] == 0.0f) {
+    point2d.set(0.0f, 0.0f, 0.0f);
     return false;
   }
   point2d.set(full[0] / full[3], full[1] / full[3], full[2] / full[3]);
-  return point2d[0] >= -1.0f && point2d[0] <= 1.0f && 
+  return
+    full[3] > 0.0f &&
+    point2d[0] >= -1.0f && point2d[0] <= 1.0f && 
     point2d[1] >= -1.0f && point2d[1] <= 1.0f;
 }
 

@@ -47,10 +47,10 @@ PUBLISHED:
   ImageBuffer( void ) : dDrawable() { }
   virtual ~ImageBuffer( void ) { }
 
+public:
   virtual bool read( const string& name ) = 0;
   virtual bool write( const string& name = "" ) const = 0;
 
-public:
   virtual void config( void ) { WritableConfigurable::config(); }
 
   virtual void copy(GraphicsStateGuardianBase *, const DisplayRegion *)=0;

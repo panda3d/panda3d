@@ -15,7 +15,7 @@
     gsgmisc light linmath mathutil net \
     parametrics pnm \
     pnmimagetypes pnmimage sgattrib sgmanip sgraph sgraphutil \
-    switchnode text tform tiff lerp loader putil effects \
+    switchnode text tform tiff lerp loader putil \
     audio pgui pandabase 
 
 
