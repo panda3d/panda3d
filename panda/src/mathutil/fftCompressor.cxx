@@ -274,6 +274,9 @@ write_reals(Datagram &datagram, const float *array, int length) {
   // First, check the compressability.
   bool reject_compression = false;
 
+  // This logic needs a closer examination.  Not sure it's useful
+  // as-is.
+  /*
   if (_use_error_threshold) {
     // Don't encode the data if it moves too erratically.
     float error = get_compressability(array, length);
@@ -283,6 +286,7 @@ write_reals(Datagram &datagram, const float *array, int length) {
       reject_compression = true;
     }
   }
+  */
 
   datagram.add_bool(reject_compression);
   if (reject_compression) {
