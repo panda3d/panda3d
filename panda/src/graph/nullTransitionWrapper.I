@@ -24,7 +24,7 @@
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH NullTransitionWrapper::
+INLINE NullTransitionWrapper::
 NullTransitionWrapper() {
 }
 
@@ -33,7 +33,7 @@ NullTransitionWrapper() {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH NullTransitionWrapper::
+INLINE NullTransitionWrapper::
 NullTransitionWrapper(const NullTransitionWrapper &) {
 }
 
@@ -42,7 +42,7 @@ NullTransitionWrapper(const NullTransitionWrapper &) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH void NullTransitionWrapper::
+INLINE void NullTransitionWrapper::
 operator = (const NullTransitionWrapper &) {
 }
 
@@ -51,7 +51,7 @@ operator = (const NullTransitionWrapper &) {
 //       Access: Public, Static
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH NullTransitionWrapper NullTransitionWrapper::
+INLINE NullTransitionWrapper NullTransitionWrapper::
 init_from(const NullTransitionWrapper &) {
   return NullTransitionWrapper();
 }
@@ -61,7 +61,7 @@ init_from(const NullTransitionWrapper &) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH bool NullTransitionWrapper::
+INLINE bool NullTransitionWrapper::
 is_identity() const {
   return true;
 }
@@ -71,7 +71,7 @@ is_identity() const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH int NullTransitionWrapper::
+INLINE int NullTransitionWrapper::
 compare_to(const NullTransitionWrapper &) const {
   return 0;
 }
@@ -81,7 +81,7 @@ compare_to(const NullTransitionWrapper &) const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH void NullTransitionWrapper::
+INLINE void NullTransitionWrapper::
 make_identity() {
 }
 
@@ -90,7 +90,7 @@ make_identity() {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH void NullTransitionWrapper::
+INLINE void NullTransitionWrapper::
 extract_from(const NodeRelation *) {
 }
 
@@ -99,7 +99,7 @@ extract_from(const NodeRelation *) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH void NullTransitionWrapper::
+INLINE void NullTransitionWrapper::
 store_to(NodeRelation *) const {
 }
 
@@ -108,7 +108,7 @@ store_to(NodeRelation *) const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH void NullTransitionWrapper::
+INLINE void NullTransitionWrapper::
 compose_in_place(const NullTransitionWrapper &) {
 }
 
@@ -117,7 +117,7 @@ compose_in_place(const NullTransitionWrapper &) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH void NullTransitionWrapper::
+INLINE void NullTransitionWrapper::
 invert_in_place() {
 }
 
@@ -126,7 +126,7 @@ invert_in_place() {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH void NullTransitionWrapper::
+INLINE void NullTransitionWrapper::
 invert_compose_in_place(const NullTransitionWrapper &) {
 }
 
@@ -135,7 +135,7 @@ invert_compose_in_place(const NullTransitionWrapper &) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH Node *NullTransitionWrapper::
+INLINE Node *NullTransitionWrapper::
 extract_from_cache(const NodeRelation *) {
   return NULL;
 }
@@ -146,7 +146,7 @@ extract_from_cache(const NodeRelation *) {
 //  Description: Stores this transition into the arc's cache, and
 //               updates the arc's top_subtree.
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH void NullTransitionWrapper::
+INLINE void NullTransitionWrapper::
 store_to_cache(NodeRelation *, Node *) {
 }
 
@@ -155,7 +155,7 @@ store_to_cache(NodeRelation *, Node *) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH bool NullTransitionWrapper::
+INLINE bool NullTransitionWrapper::
 is_cache_verified(UpdateSeq) const {
   return true;
 }
@@ -165,7 +165,7 @@ is_cache_verified(UpdateSeq) const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH void NullTransitionWrapper::
+INLINE void NullTransitionWrapper::
 set_computed_verified(UpdateSeq) {
 }
 
@@ -176,7 +176,7 @@ set_computed_verified(UpdateSeq) {
 //               that indicated by value, using the cache as a helper,
 //               and stores the result in this wrapper.
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH void NullTransitionWrapper::
+INLINE void NullTransitionWrapper::
 cached_compose(const NullTransitionWrapper &,
                const NullTransitionWrapper &,
                UpdateSeq) {
@@ -187,7 +187,7 @@ cached_compose(const NullTransitionWrapper &,
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH void NullTransitionWrapper::
+INLINE void NullTransitionWrapper::
 output(ostream &) const {
 }
 
@@ -196,11 +196,11 @@ output(ostream &) const {
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH void NullTransitionWrapper::
+INLINE void NullTransitionWrapper::
 write(ostream &, int) const {
 }
 
-INLINE_GRAPH ostream &operator << (ostream &out, const NullTransitionWrapper &ntw) {
+INLINE ostream &operator << (ostream &out, const NullTransitionWrapper &ntw) {
   ntw.output(out);
   return out;
 }

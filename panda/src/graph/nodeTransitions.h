@@ -19,11 +19,12 @@
 #ifndef NODETRANSITIONS_H
 #define NODETRANSITIONS_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "nodeTransition.h"
 
-#include <pointerTo.h>
+#include "pointerTo.h"
+#include "dcast.h"
 
 #include "pmap.h"
 

@@ -22,6 +22,7 @@
 
 #include "indent.h"
 #include "modifierButtons.h"
+#include "dcast.h"
 
 #include <algorithm>
 

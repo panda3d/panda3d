@@ -46,47 +46,51 @@ class NodeRelation;
 //               wrt(), but it's useful for passing to df_traverse()
 //               to perform a traversal without bothering to keep
 //               track of state.
+
+//               It is important that these functions be honestly
+//               flagged INLINE, instead of INLINE_GRAPH, so that they
+//               honestly get flagged as inline functions, so they can
+//               be optimized away by the compiler.  They don't hide
+//               anything that can't be exported anyway.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NullTransitionWrapper {
 public:
   typedef NullTransitionWrapper TransitionWrapper;
 
-  INLINE_GRAPH NullTransitionWrapper();
-  INLINE_GRAPH NullTransitionWrapper(const NullTransitionWrapper &copy);
-  INLINE_GRAPH void operator = (const NullTransitionWrapper &copy);
+  INLINE NullTransitionWrapper();
+  INLINE NullTransitionWrapper(const NullTransitionWrapper &copy);
+  INLINE void operator = (const NullTransitionWrapper &copy);
 
-  INLINE_GRAPH static NullTransitionWrapper
+  INLINE static NullTransitionWrapper
   init_from(const NullTransitionWrapper &other);
 
-  INLINE_GRAPH bool is_identity() const;
-  INLINE_GRAPH int compare_to(const NullTransitionWrapper &other) const;
+  INLINE bool is_identity() const;
+  INLINE int compare_to(const NullTransitionWrapper &other) const;
 
-  INLINE_GRAPH void make_identity();
-  INLINE_GRAPH void extract_from(const NodeRelation *arc);
-  INLINE_GRAPH void store_to(NodeRelation *arc) const;
+  INLINE void make_identity();
+  INLINE void extract_from(const NodeRelation *arc);
+  INLINE void store_to(NodeRelation *arc) const;
 
-  INLINE_GRAPH void compose_in_place(const NullTransitionWrapper &other);
-  INLINE_GRAPH void invert_in_place();
-  INLINE_GRAPH void invert_compose_in_place(const NullTransitionWrapper &other);
+  INLINE void compose_in_place(const NullTransitionWrapper &other);
+  INLINE void invert_in_place();
+  INLINE void invert_compose_in_place(const NullTransitionWrapper &other);
 
-  INLINE_GRAPH Node *extract_from_cache(const NodeRelation *arc);
-  INLINE_GRAPH void store_to_cache(NodeRelation *arc, Node *top_subtree);
-  INLINE_GRAPH bool is_cache_verified(UpdateSeq now) const;
-  INLINE_GRAPH void set_computed_verified(UpdateSeq now);
+  INLINE Node *extract_from_cache(const NodeRelation *arc);
+  INLINE void store_to_cache(NodeRelation *arc, Node *top_subtree);
+  INLINE bool is_cache_verified(UpdateSeq now) const;
+  INLINE void set_computed_verified(UpdateSeq now);
 
-  INLINE_GRAPH void cached_compose(const NullTransitionWrapper &cache,
+  INLINE void cached_compose(const NullTransitionWrapper &cache,
                              const NullTransitionWrapper &value,
                              UpdateSeq now);
 
-  INLINE_GRAPH void output(ostream &out) const;
-  INLINE_GRAPH void write(ostream &out, int indent_level = 0) const;
+  INLINE void output(ostream &out) const;
+  INLINE void write(ostream &out, int indent_level = 0) const;
 };
 
-INLINE_GRAPH ostream &operator << (ostream &out, const NullTransitionWrapper &ntw);
+INLINE ostream &operator << (ostream &out, const NullTransitionWrapper &ntw);
 
-#ifndef DONT_INLINE_GRAPH
 #include "nullTransitionWrapper.I"
-#endif
 
 #endif
 

@@ -20,8 +20,9 @@
 #include "pnmFileType.h"
 #include "config_pnmimage.h"
 
-#include <string_utils.h>
-#include <indent.h>
+#include "string_utils.h"
+#include "indent.h"
+#include "pset.h"
 
 #include <algorithm>
 

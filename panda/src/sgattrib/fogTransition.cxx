@@ -18,7 +18,8 @@
 
 #include "fogTransition.h"
 
-#include <indent.h>
+#include "dcast.h"
+#include "indent.h"
 
 TypeHandle FogTransition::_type_handle;
 

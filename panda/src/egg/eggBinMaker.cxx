@@ -21,7 +21,8 @@
 #include "eggGroup.h"
 #include "eggBin.h"
 
-#include <notify.h>
+#include "dcast.h"
+#include "notify.h"
 
 TypeHandle EggBinMaker::_type_handle;
 

@@ -19,9 +19,11 @@
 #ifndef EGGPOLYSETMAKER_H
 #define EGGPOLYSETMAKER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggBinMaker.h"
+
+#include "dcast.h"
 
 ///////////////////////////////////////////////////////////////////
 //       Class : EggPolysetMaker

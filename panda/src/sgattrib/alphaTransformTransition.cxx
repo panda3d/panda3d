@@ -20,6 +20,7 @@
 
 #include "graphicsStateGuardianBase.h"
 #include "indent.h"
+#include "dcast.h"
 
 TypeHandle AlphaTransformTransition::_type_handle;
 

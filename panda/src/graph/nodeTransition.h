@@ -19,11 +19,12 @@
 #ifndef NODETRANSITION_H
 #define NODETRANSITION_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "graphHashGenerator.h"
 
-#include <typedWritableReferenceCount.h>
+#include "pset.h"
+#include "typedWritableReferenceCount.h"
 
 class Node;
 class NodeTransitions;

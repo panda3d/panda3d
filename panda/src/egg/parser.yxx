@@ -29,13 +29,13 @@
 #include "pt_EggTexture.h"
 #include "pt_EggMaterial.h"
 
-#include <string_utils.h>
-#include <filename.h>
-#include <luse.h>
-#include <lmatrix.h>
-#include <coordinateSystem.h>
-
+#include "string_utils.h"
+#include "filename.h"
+#include "luse.h"
+#include "lmatrix.h"
+#include "coordinateSystem.h"
 #include "pvector.h"
+#include "dcast.h"
 
 // Because our token type contains objects of type string, which
 // require correct copy construction (and not simply memcpying), we

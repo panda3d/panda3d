@@ -170,8 +170,8 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
       */
     }
 
-    AllTransitionsWrapper attrib(_initial_state);
-    attrib.compose_in_place(trans);
+    AllTransitionsWrapper attrib;
+    attrib.compose_from(_initial_state, trans);
 
     _gsg->set_state(attrib.get_transitions(), true);
     gnode->draw(_gsg);

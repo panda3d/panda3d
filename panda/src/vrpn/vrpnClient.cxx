@@ -27,8 +27,9 @@
 #include "vrpnDialDevice.h"
 #include "config_vrpn.h"
 
-#include <string_utils.h>
-#include <indent.h>
+#include "dcast.h"
+#include "string_utils.h"
+#include "indent.h"
 
 TypeHandle VrpnClient::_type_handle;
 

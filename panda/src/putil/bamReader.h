@@ -28,6 +28,8 @@
 #include "bamReaderParam.h"
 #include "factory.h"
 #include "vector_ushort.h"
+#include "pset.h"
+#include "dcast.h"
 
 #include <algorithm>
 

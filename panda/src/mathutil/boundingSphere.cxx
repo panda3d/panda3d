@@ -20,6 +20,7 @@
 #include "boundingHexahedron.h"
 #include "boundingLine.h"
 #include "config_mathutil.h"
+#include "dcast.h"
 
 #include <math.h>
 #include <algorithm>

@@ -18,6 +18,7 @@
      datagramGenerator.h datagramInputFile.I datagramInputFile.h \
      datagramIterator.I datagramIterator.h datagramOutputFile.I \
      datagramOutputFile.h datagramSink.I datagramSink.h \
+     dcast.T dcast.h \
      error_utils.h \
      get_config_path.h hashGeneratorBase.I hashGeneratorBase.h \
      hashVal.I hashVal.h indent.I indent.h littleEndian.h \
@@ -31,10 +32,13 @@
      pointerToArray.I pointerToArray.h \
      profileTimer.I profileTimer.h \
      pta_uchar.h referenceCount.I referenceCount.h \
+     register_type.I register_type.h \
      reversedNumericData.I reversedNumericData.h tokenBoard.I \
      tokenBoard.h trueClock.I trueClock.h typeHandle.I \
      typeHandle.h typedObject.I typedObject.h \
      typedReferenceCount.I typedReferenceCount.h typedef.h \
+     typeRegistry.I typeRegistry.h \
+     typeRegistryNode.I typeRegistryNode.h \
      vector_uchar.h
     
   #define INCLUDED_SOURCES  \
@@ -47,10 +51,10 @@
      memoryInfo.cxx memoryUsage.cxx memoryUsagePointerCounts.cxx \
      memoryUsagePointers.cxx multifile.cxx namable.cxx \
      nativeNumericData.cxx profileTimer.cxx \
-     pta_uchar.cxx referenceCount.cxx \
+     pta_uchar.cxx referenceCount.cxx register_type.cxx \
      reversedNumericData.cxx trueClock.cxx typeHandle.cxx \
      typedObject.cxx typedReferenceCount.cxx \
-     vector_uchar.cxx
+     typeRegistry.cxx typeRegistryNode.cxx vector_uchar.cxx
 
   #define IF_CRYPTO_SOURCES                         \
     crypto_utils.cxx crypto_utils.h \
@@ -63,7 +67,8 @@
     datagramGenerator.I datagramGenerator.h datagramInputFile.I \
     datagramInputFile.h datagramIterator.I datagramIterator.h \
     datagramOutputFile.I datagramOutputFile.h datagramSink.I \
-    datagramSink.h error_utils.h get_config_path.h hashGeneratorBase.I \
+    datagramSink.h dcast.T dcast.h \
+    error_utils.h get_config_path.h hashGeneratorBase.I \
     hashGeneratorBase.h hashVal.I hashVal.h indent.I indent.h \
     littleEndian.h memoryInfo.I memoryInfo.h memoryUsage.I \
     memoryUsage.h memoryUsagePointerCounts.I \
@@ -73,11 +78,26 @@
     patchfile.I patchfile.h pointerTo.I pointerTo.h \
     pointerToArray.I pointerToArray.h profileTimer.I \
     profileTimer.h pta_uchar.h referenceCount.I referenceCount.h \
+    register_type.I register_type.h \
     reversedNumericData.I reversedNumericData.h tokenBoard.I \
     tokenBoard.h trueClock.I trueClock.h typeHandle.I typeHandle.h \
     typedObject.I typedObject.h typedReferenceCount.I \
-    typedReferenceCount.h typedef.h vector_uchar.h
+    typedReferenceCount.h typedef.h \
+    typeRegistry.I typeRegistry.h \
+    typeRegistryNode.I typeRegistryNode.h \
+    vector_uchar.h
 
   #define IGATESCAN all
 
 #end lib_target
+
+#begin test_bin_target
+  #define TARGET test_types
+  #define LOCAL_LIBS $[LOCAL_LIBS] express
+  #define OTHER_LIBS pystub
+
+  #define SOURCES \
+    test_types.cxx
+
+#end test_bin_target
+
