@@ -137,6 +137,7 @@ class Messenger:
         """__repr__(self)
         Print out the table in a readable format
         """
+        import types
         str = 'Messenger\n'
         str = str + '='*50 + '\n'
         keys = self.dict.keys()
@@ -146,7 +147,10 @@ class Messenger:
             str = str + 'Event: ' + event + '\n'
             for object in acceptorDict.keys():
                 method, extraArgs, persistent = acceptorDict[object]
-                className = object.__class__.__name__
+                if (type(object) == types.InstanceType):
+                    className = object.__class__.__name__
+                else:
+                    className = "Not a class"
                 methodName = method.__name__
                 str = (str + '\t' +
                        'Acceptor:   ' + className + ' instance' + '\n\t' +
