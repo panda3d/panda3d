@@ -1218,9 +1218,6 @@ verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
              }
          }
 
-       wdxdisplay_cat.fatal() << "XXXXXXXXXXXXXXXXXXXXX:   " <<  ((1024.0f*768.0f)*6+REQD_TEXMEM)
-                              << "       " << _MaxAvailVidMem  << endl; 
-
        if(bIsGoodMode)
          num_valid_modes++;
         else {
