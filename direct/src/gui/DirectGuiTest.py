@@ -103,7 +103,7 @@ def printDialogValue(value):
 simpleDialog = YesNoDialog(text = 'Simple',
                            command = printDialogValue)
 
-customValues = YesNoDialog(text = 'Simple',
+customValues = YesNoDialog(text = 'Not Quite So Simple',
                            buttonValueList = ['Yes', 'No'],
                            command = printDialogValue)
 
