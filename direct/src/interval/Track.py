@@ -4,25 +4,30 @@ import Interval
 
 class Track(Interval.Interval):
 
+    trackNum = 1
+
     # special methods
     
-    def __init__(self, name, intervalList):
-        """__init__(name, intervalList)
+    def __init__(self, intervalList, name = None):
+        """__init__(intervalList, name)
         """
-	self.name = name
+	if (name == None):
+	    self.name = 'Track-%d' % self.trackNum
+	    self.trackNum = self.trackNum + 1
+	else:
+	    self.name = name
 	self.ilist = intervalList
 	self.dlist = []
-	self.getDuration()
+	self.computeDuration()
 
-    def getDuration(self):
-	""" getDuration()
+    def computeDuration(self):
+	""" computeDuration()
 	"""
 	self.duration = 0.0
 	for i in self.ilist:
 	    dur = i.getDuration()
 	    self.duration = self.duration + dur
 	    self.dlist.append(dur)
-	return self.duration
 
     def getStartTimeOf(self, name):
 	""" getStartTimeOf(name)

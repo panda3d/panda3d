@@ -5,24 +5,31 @@ import Track
 
 class MultiTrack(Interval.Interval):
 
+    multiTrackNum = 1
+
     # special methods
     
-    def __init__(self, name, trackList):
-        """__init__(name, trackList)
+    def __init__(self, trackList, name = None):
+        """__init__(trackList, name)
         """
-	self.name = name
+	if (name == None):
+	    self.name = 'MultiTrack-%d' % self.multiTrackNum
+	    self.multiTrackNum = self.multiTrackNum + 1
+	else:
+	    self.name = name
 	self.tlist = trackList
 	self.getDuration()
 
     def getDuration(self):
 	""" getDuration()
 	"""
-	if (len(self.tlist == 0):
-	    Interval.notify.warning('MultiTrack.getDuration(): no Tracks')
-	    return 0.0
+	#if (len(self.tlist == 0)):
+	#    Interval.notify.warning('MultiTrack.getDuration(): no Tracks')
+	#    return 0.0
 	self.duration = self.tlist[0].getDuration()
 	for t in self.tlist:
-	    assert(self.duration = t.getDuration())
+	    if (self.duration != t.getDuration()):
+		Interval.Interval.notify.warning('MultiTrack.getDuration(): tracks not all same duration')
 	return self.duration
 
     def setT(self, t):
