@@ -15,6 +15,7 @@ import sys
 import LinearEulerIntegrator
 import AngularEulerIntegrator
 import ClockObject
+import Transitions
 
 globalClock = ClockObject.ClockObject.getGlobalClock()
 
@@ -126,6 +127,9 @@ class ShowBase:
         self.createAudioManager()
         self.createRootPanel()
         self.createStats()
+
+        # Transition effects (fade, iris, etc)
+        self.transitions = Transitions.Transitions(self.loader)
 
         self.restart()
 

@@ -14,3 +14,6 @@ __builtin__.loader = base.loader
 __builtin__.ostream = Notify.out()
 __builtin__.run = base.run
 __builtin__.tkroot = base.tkroot
+__builtin__.taskMgr = base.taskMgr
+__builtin__.eventMgr = base.eventMgr
+__builtin__.messenger = base.messenger
