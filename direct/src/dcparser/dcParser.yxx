@@ -114,6 +114,7 @@ dclass_name:
     $$ = (*ni).second;
   }
 }
+	;
 
 dclass_derivation:
         empty
@@ -168,6 +169,7 @@ atomic_name:
     }
   }
 }
+	;
 
 parameter_list:
         empty
