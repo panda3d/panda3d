@@ -56,6 +56,7 @@ typedef struct {
       DWORD             MaxAvailVidMem;
       bool              bIsLowVidMemCard;
       bool              bIsTNLDevice;
+      bool              bIsSWRast;
       ushort            depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly
       ushort            CardIDNum;  // its posn in DisplayArray, for dbgprint purposes
       DDDEVICEIDENTIFIER2 DXDeviceID;

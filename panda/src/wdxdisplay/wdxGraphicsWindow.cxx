@@ -1302,15 +1302,17 @@ HRESULT CALLBACK EnumDevicesCallback(LPSTR pDeviceDescription, LPSTR pDeviceName
     wdxdisplay_cat.spam() << "Enumerating Device " << pDeviceName << " : " << pDeviceDescription << endl;
 #endif
 
+
 #define REGHALIDX 0
 #define TNLHALIDX 1
-
-    // only saves hal and tnl devs, not sw rasts
+#define SWRASTIDX 2
 
     if(IsEqualGUID(pD3DDeviceDesc->deviceGUID,IID_IDirect3DHALDevice)) {
         CopyMemory(&pd3ddevs[REGHALIDX],pD3DDeviceDesc,sizeof(D3DDEVICEDESC7));
     } else if(IsEqualGUID(pD3DDeviceDesc->deviceGUID,IID_IDirect3DTnLHalDevice)) {
         CopyMemory(&pd3ddevs[TNLHALIDX],pD3DDeviceDesc,sizeof(D3DDEVICEDESC7));
+    } else if(IsEqualGUID(pD3DDeviceDesc->deviceGUID,IID_IDirect3DRGBDevice)) {
+        CopyMemory(&pd3ddevs[SWRASTIDX],pD3DDeviceDesc,sizeof(D3DDEVICEDESC7));
     }
     return DDENUMRET_OK;
 }
@@ -1626,7 +1628,7 @@ check_for_color_cursor_support(void) {
 bool wdxGraphicsWindow::search_for_device(int devnum,DXDeviceInfo *pDevinfo) {
     DWORD dwRenderWidth  = _props._xsize;
     DWORD dwRenderHeight = _props._ysize;
-    LPDIRECTDRAW7 pDD;
+    LPDIRECTDRAW7 pDD=NULL;
     HRESULT hr;
 
     assert(_dxgsg!=NULL);
@@ -1639,8 +1641,8 @@ bool wdxGraphicsWindow::search_for_device(int devnum,DXDeviceInfo *pDevinfo) {
     assert(_pParentWindowGroup->_pDDCreateEx!=NULL);
 
     // Create the Direct Draw Objects
-    hr = (*_pParentWindowGroup->_pDDCreateEx)(pDDDeviceGUID,(void **)&pDD, IID_IDirectDraw7, NULL);
-    if(hr != DD_OK) {
+    hr = (*(_pParentWindowGroup->_pDDCreateEx))(pDDDeviceGUID,(void **)&pDD, IID_IDirectDraw7, NULL);
+    if((hr != DD_OK)||(pDD==NULL)) {
           wdxdisplay_cat.fatal() << "DirectDrawCreateEx failed for monitor("<<devnum<< "): result = " << ConvD3DErrorToString(hr) << endl;
           return false;
     }
@@ -1670,12 +1672,12 @@ bool wdxGraphicsWindow::search_for_device(int devnum,DXDeviceInfo *pDevinfo) {
         goto error_exit;
     }
 
-    D3DDEVICEDESC7 d3ddevs[2];  // put HAL in 0, TnLHAL in 1
+    D3DDEVICEDESC7 d3ddevs[3];  // put HAL in 0, TnLHAL in 1, SW rast in 2
 
     // just look for HAL and TnL devices right now.  I dont think
     // we have any interest in the sw rasts at this point
 
-    ZeroMemory(d3ddevs,2*sizeof(D3DDEVICEDESC7));
+    ZeroMemory(d3ddevs,3*sizeof(D3DDEVICEDESC7));
 
     hr = _dxgsg->scrn.pD3D->EnumDevices(EnumDevicesCallback,d3ddevs);
     if(hr != DD_OK) {
@@ -1684,23 +1686,27 @@ bool wdxGraphicsWindow::search_for_device(int devnum,DXDeviceInfo *pDevinfo) {
     }
     
     WORD DeviceIdx;
-    DeviceIdx=REGHALIDX;
-    
-    if(!(d3ddevs[REGHALIDX].dwDevCaps & D3DDEVCAPS_HWRASTERIZATION )) {
-       // should never get here because enum devices should filter out non-HAL devices
-       wdxdisplay_cat.error() << "No 3D HW present on device #"<<devnum<<", skipping it... (" << _dxgsg->scrn.DXDeviceID.szDescription<<")\n";
-       goto error_exit;
-    }
-    
+
     // select TNL if present
     if(d3ddevs[TNLHALIDX].dwDevCaps & D3DDEVCAPS_HWRASTERIZATION) {
        DeviceIdx=TNLHALIDX;
-    } 
+    } else if(d3ddevs[REGHALIDX].dwDevCaps & D3DDEVCAPS_HWRASTERIZATION) {
+       DeviceIdx=REGHALIDX;
+    } else if(dx_allow_software_renderer || dx_force_software_renderer) {
+       DeviceIdx=SWRASTIDX;      
+    } else {
+       wdxdisplay_cat.error() << "No 3D HW present on device #"<<devnum<<", skipping it... (" << _dxgsg->scrn.DXDeviceID.szDescription<<")\n";
+       goto error_exit;
+    }
+
+    if(dx_force_software_renderer) {
+       DeviceIdx=SWRASTIDX; 
+    }
     
     memcpy(&_dxgsg->scrn.D3DDevDesc,&d3ddevs[DeviceIdx],sizeof(D3DDEVICEDESC7));
 
     _dxgsg->scrn.bIsTNLDevice=(DeviceIdx==TNLHALIDX);
-    
+
     // Get Current VidMem avail.  Note this is only an estimate, when we switch to fullscreen
     // mode from desktop, more vidmem will be available (typically 1.2 meg).  I dont want
     // to switch to fullscreen more than once due to the annoying monitor flicker, so try
@@ -1724,6 +1730,13 @@ bool wdxGraphicsWindow::search_for_device(int devnum,DXDeviceInfo *pDevinfo) {
     #define LOWVIDMEMTHRESHOLD 3500000
     // assume buggy drivers (this means you, FireGL2) may return zero for dwVidMemFree, so ignore value if its 0        
     _dxgsg->scrn.bIsLowVidMemCard = ((dwVidMemFree>0) && (dwVidMemFree< LOWVIDMEMTHRESHOLD));
+
+    if(DeviceIdx==SWRASTIDX) {
+        // this will force 640x480x16, is this what we want for all sw rast?
+        _dxgsg->scrn.bIsLowVidMemCard = true; 
+        _dxgsg->scrn.bIsSWRast = true; 
+        dx_force_16bpp_zbuffer = true;
+    }
 
     if(dx_full_screen) {
         _props._xorg = _props._yorg = 0;
@@ -1933,7 +1946,6 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
 
     assert(pDD!=NULL);
     assert(pD3DI!=NULL);
-    assert(pD3DDevDesc->dwDevCaps & D3DDEVCAPS_HWRASTERIZATION );
 
 /*
     // select the best device if the caller does not provide one
@@ -2169,7 +2181,7 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
 
         // Setup the surface desc for the z-buffer.
         ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | DDSD_PIXELFORMAT;
-        ddsd.ddsCaps.dwCaps = DDSCAPS_ZBUFFER | DDSCAPS_VIDEOMEMORY;
+        ddsd.ddsCaps.dwCaps = DDSCAPS_ZBUFFER | ((_dxgsg->scrn.bIsSWRast) ?  DDSCAPS_SYSTEMMEMORY : DDSCAPS_VIDEOMEMORY);
 
         DDPIXELFORMAT ZBufPixFmts[MAX_DX_ZBUF_FMTS];
         cNumZBufFmts=0;
@@ -2224,7 +2236,10 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
         }
 
         #define SET_ZBUF_DEPTH(DEPTH) { assert(pz##DEPTH != NULL); Display.depth_buffer_bitdepth=DEPTH; ddsd.ddpfPixelFormat = *pz##DEPTH;}
-
+        
+        if(_dxgsg->scrn.bIsSWRast) {
+            SET_ZBUF_DEPTH(16);    // need this for fast path rasterizers
+        } else
         if(IS_NVIDIA(Display.DXDeviceID)) {
            DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd_pri)
             pPrimaryDDSurf->GetSurfaceDesc(&ddsd_pri);
@@ -2898,13 +2913,18 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
         }
     }
 
+    assert(_windows[0] != NULL);
+
     for(i=0;i<num_windows;i++) {
         _windows[i]->config_window(this);
     }
 
+    assert(_windows[0] != NULL);
+
     DWORD good_device_count=0;
 
     if(num_windows==1) {
+        assert(_windows[0] != NULL);
         if(_windows[0]->search_for_device(0,NULL))
             good_device_count=1;
     } else {

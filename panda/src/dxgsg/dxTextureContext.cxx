@@ -1503,8 +1503,12 @@ LPDIRECTDRAWSURFACE7 DXTextureContext::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevic
 
     ddsd.ddsCaps.dwCaps  = DDSCAPS_TEXTURE;
 
-    ddsd.ddsCaps.dwCaps2 = DDSCAPS2_TEXTUREMANAGE  // Turn on texture management
-                           | DDSCAPS2_HINTSTATIC;  // BUGBUG:  is this ok for ALL textures?
+    if(pD3DDevDesc->dwDevCaps & D3DDEVCAPS_HWRASTERIZATION) {
+        ddsd.ddsCaps.dwCaps2 = DDSCAPS2_TEXTUREMANAGE  // Turn on texture management
+                               | DDSCAPS2_HINTSTATIC;  // BUGBUG:  is this ok for ALL textures?
+    } else {
+        ddsd.ddsCaps.dwCaps |= DDSCAPS_SYSTEMMEMORY;
+    }
 
     // validate magfilter setting
     // degrade filtering if no HW support

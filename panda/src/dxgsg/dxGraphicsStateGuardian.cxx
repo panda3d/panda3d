@@ -864,7 +864,12 @@ dx_init( void) {
         DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd);
         ddsd.dwFlags         =  DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT ;
         ddsd.ddsCaps.dwCaps  = DDSCAPS_TEXTURE;
-        ddsd.ddsCaps.dwCaps2 = DDSCAPS2_TEXTUREMANAGE | DDSCAPS2_HINTSTATIC;  
+
+        if(!scrn.bIsSWRast) 
+            ddsd.ddsCaps.dwCaps2 = DDSCAPS2_TEXTUREMANAGE | DDSCAPS2_HINTSTATIC;  
+          else {
+            ddsd.ddsCaps.dwCaps |= DDSCAPS_SYSTEMMEMORY;
+          }
 
         ddsd.dwTextureStage=0;
         ddsd.dwFlags |= DDSD_TEXTURESTAGE;

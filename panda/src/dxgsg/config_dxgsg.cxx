@@ -60,6 +60,9 @@ bool dx_no_vertex_fog = config_dxgsg.GetBool("dx-no-vertex-fog", false);
 // variable
 bool dx_auto_normalize_lighting = config_dxgsg.GetBool("auto-normalize-lighting", false);
 
+bool dx_allow_software_renderer = config_dxgsg.GetBool("dx-allow-software-renderer", false);
+bool dx_force_software_renderer = config_dxgsg.GetBool("dx-force-software-renderer", false);
+
 bool dx_show_fps_meter = config_dxgsg.GetBool("show-fps-meter", false);
 float dx_fps_meter_update_interval = max(0.5,config_dxgsg.GetFloat("fps-meter-update-interval", 1.7));
 
