@@ -82,15 +82,6 @@ class ScrollingLabel(PandaObject.PandaObject):
     def __del__(self):
 	"""__del__(self)
 	"""
-	self.cleanup()
-	del(self.label)
-	del(self.title)
-	del(self.itemSign)
-	del(self.leftButton)
-	del(self.rightButton)
-	return None
-
-    def cleanup(self):
         # remove gui items
         del(self.frame)
         del(self.items)
@@ -99,7 +90,14 @@ class ScrollingLabel(PandaObject.PandaObject):
         self.ignore(self.name + "-left")
         self.ignore(self.name + "-right")
         self.setKeyFocus(0)
-        
+
+	del(self.label)
+	del(self.title)
+	del(self.itemSign)
+	del(self.leftButton)
+	del(self.rightButton)
+	return None
+
     # accessing
     def getTitle(self):
         return self.name

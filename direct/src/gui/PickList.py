@@ -36,13 +36,6 @@ class PickList(PandaObject.PandaObject):
     def __del__(self):
 	"""__del__(self)
 	"""
-	self.cleanup()
-	return None
-        
-    def cleanup(self):
-        """cleanup(self)
-        Remove events and cleanup the display
-        """
         # remove keyboard events
         self.ignore("up-up")
         self.ignore("down-up")
@@ -57,7 +50,8 @@ class PickList(PandaObject.PandaObject):
         # reset the display
         self.frame.unmanage()
         del(self.frame)
-
+	return None
+        
     # accessing
     def getName(self):
         return self.name
