@@ -101,7 +101,8 @@
 #define GLOBAL_OPERATOR_NEW_EXCEPTIONS
 
 // Do we expect the old STL allocator?
-#undef OLD_STYLE_ALLOCATOR
+// this indicates OLD_STYLE_ALLOCATOR is NOT used (defined as the empty string)
+#define OLD_STYLE_ALLOCATOR
 
 // can Intel C++ build this directory successfully (if not, change CC to msvc)
 #define NOT_INTEL_BUILDABLE false
