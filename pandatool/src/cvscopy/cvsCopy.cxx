@@ -159,7 +159,7 @@ handle_args(Args &args) {
     return false;
   }
 
-  copy(args.begin(), args.end(), back_inserter<vector_string>(_source_files));
+  copy(args.begin(), args.end(), back_inserter(_source_files));
   return true;
 }
 

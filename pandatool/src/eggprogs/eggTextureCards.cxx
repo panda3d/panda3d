@@ -71,7 +71,7 @@ handle_args(ProgramBase::Args &args) {
   }
 
   copy(args.begin(), args.end(),
-       back_inserter<vector_string>(_texture_names));
+       back_inserter(_texture_names));
 
   return true;
 }
