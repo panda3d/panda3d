@@ -1253,6 +1253,8 @@ r_load_externals(const DSearchPath &searchpath, CoordinateSystem coordsys) {
 void EggGroupNode::
 prepare_add_child(EggNode *node) {
   nassertv(node != (EggNode *)NULL);
+  test_ref_count_integrity();
+  node->test_ref_count_integrity();
   // Make sure the node is not already a child of some other group.
   nassertv(node->get_parent() == NULL);
   nassertv(node->get_depth() == 0);

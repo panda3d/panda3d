@@ -117,11 +117,11 @@ load_egg_file(const string &filename, CoordinateSystem cs) {
 //               loading.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode)
-load_egg_data(EggData &data, CoordinateSystem cs) {
+load_egg_data(EggData *data, CoordinateSystem cs) {
   // We temporarily shuttle the children to a holding node so we can
   // copy them into the EggLoader's structure without it complaining.
   EggGroupNode children_holder;
-  children_holder.steal_children(data);
+  children_holder.steal_children(*data);
 
   EggLoader loader(data);
   loader._data->steal_children(children_holder);

@@ -75,9 +75,9 @@ PUBLISHED:
   PTA_ushort modify_vertices();
   void set_vertices(PTA_ushort vertices);
 
-  INLINE CPTA_int get_lengths() const;
-  PTA_int modify_lengths();
-  void set_lengths(PTA_int lengths);
+  INLINE CPTA_int get_ends() const;
+  PTA_int modify_ends();
+  void set_ends(PTA_int ends);
 
   int get_num_bytes() const;
 
@@ -85,6 +85,7 @@ PUBLISHED:
   INLINE int get_max_vertex() const;
 
   virtual int get_num_vertices_per_primitive() const;
+  virtual int get_min_num_vertices_per_primitive() const;
   int get_num_primitives() const;
   int get_primitive_start(int i) const;
   int get_primitive_num_vertices(int i) const;
@@ -121,7 +122,7 @@ private:
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
     PTA_ushort _vertices;
-    PTA_int _lengths;
+    PTA_int _ends;
 
     bool _got_minmax;
     unsigned short _min_vertex;

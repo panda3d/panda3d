@@ -65,13 +65,17 @@ write(ostream &out, int indent_level) const {
 //               It is assumed that the EggTriangleStrip is not
 //               already a child of any other group when this function
 //               is called.
+//
+//               Returns true if the triangulation is successful, or
+//               false if there was some error (in which case the
+//               container may contain some partial triangulation).
 ////////////////////////////////////////////////////////////////////
-void EggTriangleStrip::
-do_triangulate(EggGroupNode *container) {
+bool EggTriangleStrip::
+do_triangulate(EggGroupNode *container) const {
   if (size() < 3) {
-    return;
+    return false;
   }
-  iterator vi = begin();
+  const_iterator vi = begin();
   EggVertex *v0 = (*vi);
   ++vi;
   EggVertex *v1 = (*vi);
@@ -104,4 +108,6 @@ do_triangulate(EggGroupNode *container) {
     container->add_child(poly);
     ++vi;
   }
+
+  return true;
 }

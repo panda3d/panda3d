@@ -53,6 +53,7 @@ public:
   bool _show_qsheets;
 
 private:
+  void clear();
   bool add_polygon(const EggPolygon *egg_poly, 
                    EggMesherStrip::MesherOrigin origin);
   void do_mesh();

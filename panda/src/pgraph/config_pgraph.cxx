@@ -78,6 +78,7 @@
 #include "rescaleNormalAttrib.h"
 #include "selectiveChildNode.h"
 #include "sequenceNode.h"
+#include "shadeModelAttrib.h"
 #include "showBoundsEffect.h"
 #include "spotlight.h"
 #include "switchNode.h"
@@ -277,6 +278,7 @@ init_libpgraph() {
   RescaleNormalAttrib::init_type();
   SelectiveChildNode::init_type();
   SequenceNode::init_type();
+  ShadeModelAttrib::init_type();
   ShowBoundsEffect::init_type();
   Spotlight::init_type();
   SwitchNode::init_type();
@@ -332,6 +334,7 @@ init_libpgraph() {
   RenderModeAttrib::register_with_read_factory();
   RenderState::register_with_read_factory();
   SequenceNode::register_with_read_factory();
+  ShadeModelAttrib::register_with_read_factory();
   ShowBoundsEffect::register_with_read_factory();
   Spotlight::register_with_read_factory();
   SwitchNode::register_with_read_factory();

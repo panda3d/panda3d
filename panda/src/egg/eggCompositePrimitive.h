@@ -42,13 +42,14 @@ PUBLISHED:
   INLINE EggAttributes *get_component(int i);
   INLINE void set_component(int i, const EggAttributes *attrib);
 
+  INLINE bool triangulate_into(EggGroupNode *container) const;
   PT(EggCompositePrimitive) triangulate_in_place();
 
 protected:
   virtual void prepare_add_vertex(EggVertex *vertex, int i, int n);
   virtual void prepare_remove_vertex(EggVertex *vertex, int i, int n);
 
-  virtual void do_triangulate(EggGroupNode *container)=0;
+  virtual bool do_triangulate(EggGroupNode *container) const=0;
 
   void write_body(ostream &out, int indent_level) const;
 

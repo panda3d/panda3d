@@ -141,11 +141,16 @@ close_primitive() {
   if (num_vertices_per_primitive == 0) {
     // This is a complex primitive type like a triangle strip: each
     // primitive uses a different number of vertices.
-    if (cdata->_lengths.empty()) {
-      cdata->_lengths.push_back((int)cdata->_vertices.size());
-    } else if (cdata->_lengths.back() != (int)cdata->_vertices.size()) {
-      cdata->_lengths.push_back((int)cdata->_vertices.size() - cdata->_lengths.back());
+#ifndef NDEBUG
+    int num_added;
+    if (cdata->_ends.empty()) {
+      num_added = (int)cdata->_vertices.size();
+    } else {
+      num_added = (int)cdata->_vertices.size() - cdata->_ends.back();
     }
+    nassertv(num_added >= get_min_num_vertices_per_primitive());
+#endif
+    cdata->_ends.push_back((int)cdata->_vertices.size());
 
   } else {
     // This is a simple primitive type like a triangle: each primitive
@@ -166,7 +171,7 @@ clear_vertices() {
   clear_cache();
   CDWriter cdata(_cycler);
   cdata->_vertices.clear();
-  cdata->_lengths.clear();
+  cdata->_ends.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -189,7 +194,7 @@ modify_vertices() {
 //       Access: Published
 //  Description: Completely replaces the vertex index list with a new
 //               table.  Chances are good that you should also replace
-//               the lengths list with set_lengths() at the same time.
+//               the ends list with set_ends() at the same time.
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
 set_vertices(PTA_ushort vertices) {
@@ -199,41 +204,41 @@ set_vertices(PTA_ushort vertices) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::modify_lengths
+//     Function: qpGeomPrimitive::modify_ends
 //       Access: Published
-//  Description: Returns a modifiable pointer to the primitive lengths
+//  Description: Returns a modifiable pointer to the primitive ends
 //               array, so application code can directly fiddle with
 //               this data.  Use with caution, since there are no
 //               checks that the data will be left in a stable state.
 //
 //               Note that simple primitive types, like triangles, do
-//               not have a lengths array: since all the primitives
+//               not have a ends array: since all the primitives
 //               have the same number of vertices, it is not needed.
 ////////////////////////////////////////////////////////////////////
 PTA_int qpGeomPrimitive::
-modify_lengths() {
+modify_ends() {
   clear_cache();
   CDWriter cdata(_cycler);
-  return cdata->_lengths;
+  return cdata->_ends;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::set_lengths
+//     Function: qpGeomPrimitive::set_ends
 //       Access: Published
-//  Description: Completely replaces the primitive lengths array with
+//  Description: Completely replaces the primitive ends array with
 //               a new table.  Chances are good that you should also
 //               replace the vertices list with set_vertices() at the
 //               same time.
 //
 //               Note that simple primitive types, like triangles, do
-//               not have a lengths array: since all the primitives
+//               not have a ends array: since all the primitives
 //               have the same number of vertices, it is not needed.
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
-set_lengths(PTA_int lengths) {
+set_ends(PTA_int ends) {
   clear_cache();
   CDWriter cdata(_cycler);
-  cdata->_lengths = lengths;
+  cdata->_ends = ends;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -246,7 +251,7 @@ int qpGeomPrimitive::
 get_num_bytes() const {
   CDReader cdata(_cycler);
   return cdata->_vertices.size() * sizeof(short) +
-    cdata->_lengths.size() * sizeof(int);
+    cdata->_ends.size() * sizeof(int);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -266,6 +271,17 @@ get_num_vertices_per_primitive() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_min_num_vertices_per_primitive
+//       Access: Published, Virtual
+//  Description: Returns the minimum number of vertices that must be
+//               added before close_primitive() may legally be called.
+////////////////////////////////////////////////////////////////////
+int qpGeomPrimitive::
+get_min_num_vertices_per_primitive() const {
+  return 3;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::get_num_primitives
 //       Access: Published
 //  Description: Returns the number of individual primitives stored
@@ -280,7 +296,7 @@ get_num_primitives() const {
   if (num_vertices_per_primitive == 0) {
     // This is a complex primitive type like a triangle strip: each
     // primitive uses a different number of vertices.
-    return cdata->_lengths.size();
+    return cdata->_ends.size();
 
   } else {
     // This is a simple primitive type like a triangle: each primitive
@@ -293,7 +309,7 @@ get_num_primitives() const {
 //     Function: qpGeomPrimitive::get_primitive_start
 //       Access: Published
 //  Description: Returns the element within the _vertices list at which
-//               the ith primitive starts.  
+//               the ith primitive ends.  
 //
 //               If i is one more than the highest valid primitive
 //               vertex, the return value will be one more than the
@@ -310,11 +326,11 @@ get_primitive_start(int i) const {
     // This is a complex primitive type like a triangle strip: each
     // primitive uses a different number of vertices.
     CDReader cdata(_cycler);
-    nassertr(i >= 0 && i <= (int)cdata->_lengths.size(), -1);
+    nassertr(i >= 0 && i <= (int)cdata->_ends.size(), -1);
     if (i == 0) {
       return 0;
     } else {
-      return cdata->_lengths[i - 1];
+      return cdata->_ends[i - 1];
     }
 
   } else {
@@ -338,8 +354,12 @@ get_primitive_num_vertices(int i) const {
     // This is a complex primitive type like a triangle strip: each
     // primitive uses a different number of vertices.
     CDReader cdata(_cycler);
-    nassertr(i >= 0 && i < (int)cdata->_lengths.size(), 0);
-    return cdata->_lengths[i];
+    nassertr(i >= 0 && i < (int)cdata->_ends.size(), 0);
+    if (i == 0) {
+      return cdata->_ends[0];
+    } else {
+      return cdata->_ends[i] - cdata->_ends[i - 1];
+    }      
 
   } else {
     // This is a simple primitive type like a triangle: each primitive

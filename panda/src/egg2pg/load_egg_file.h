@@ -48,7 +48,7 @@ load_egg_file(const string &filename, CoordinateSystem cs = CS_default);
 //               loading.
 ////////////////////////////////////////////////////////////////////
 EXPCL_PANDAEGG PT(PandaNode)
-load_egg_data(EggData &data, CoordinateSystem cs = CS_default);
+load_egg_data(EggData *data, CoordinateSystem cs = CS_default);
 END_PUBLISH
 
 #endif

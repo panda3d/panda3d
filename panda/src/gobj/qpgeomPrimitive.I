@@ -58,19 +58,19 @@ get_vertices() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::get_vertices
 //       Access: Published
-//  Description: Returns a const pointer to the primitive lengths
+//  Description: Returns a const pointer to the primitive ends
 //               array so application code can read it directly.  Do
 //               not attempt to modify the returned array; use
-//               modify_lengths() or set_lengths() for this.
+//               modify_ends() or set_ends() for this.
 //
 //               Note that simple primitive types, like triangles, do
-//               not have a lengths array: since all the primitives
+//               not have a ends array: since all the primitives
 //               have the same number of vertices, it is not needed.
 ////////////////////////////////////////////////////////////////////
 INLINE CPTA_int qpGeomPrimitive::
-get_lengths() const {
+get_ends() const {
   CDReader cdata(_cycler);
-  return cdata->_lengths;
+  return cdata->_ends;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,7 +124,7 @@ CData() :
 INLINE qpGeomPrimitive::CData::
 CData(const qpGeomPrimitive::CData &copy) :
   _vertices(copy._vertices),
-  _lengths(copy._lengths),
+  _ends(copy._ends),
   _got_minmax(copy._got_minmax),
   _min_vertex(copy._min_vertex),
   _max_vertex(copy._max_vertex)

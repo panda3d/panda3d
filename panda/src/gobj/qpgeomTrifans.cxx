@@ -81,27 +81,30 @@ PT(qpGeomPrimitive) qpGeomTrifans::
 decompose_impl() {
   PT(qpGeomTriangles) triangles = new qpGeomTriangles;
   CPTA_ushort vertices = get_vertices();
-  CPTA_int lengths = get_lengths();
+  CPTA_int ends = get_ends();
 
-  CPTA_ushort::const_iterator vi;
-  vi = vertices.begin();
-
-  CPTA_int::const_iterator li;
-  for (li = lengths.begin(); li != lengths.end(); ++li) {
-    int length = (*li);
-    nassertr(length >= 2, triangles.p());
-    int v0 = (*vi);
+  int vi = 0;
+  int li = 0;
+  while (li < (int)ends.size()) {
+    int end = ends[li];
+    nassertr(vi + 2 <= end, triangles.p());
+    nassertr(vi < (int)vertices.size(), this);
+    int v0 = vertices[vi];
     ++vi;
-    int v1 = (*vi);
+    nassertr(vi < (int)vertices.size(), this);
+    int v1 = vertices[vi];
     ++vi;
-    for (int i = 2; i < length; i++) {
+    while (vi < end) {
       triangles->add_vertex(v0);
       triangles->add_vertex(v1);
-      triangles->add_vertex(*vi);
+      triangles->add_vertex(vertices[vi]);
       triangles->close_primitive();
       ++vi;
     }
+    ++li;
   }
+
+  nassertr(vi == (int)vertices.size(), triangles.p());
 
   return triangles.p();
 }

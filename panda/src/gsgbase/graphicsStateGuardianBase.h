@@ -78,6 +78,7 @@ class CgShaderAttrib;
 class CullFaceAttrib;
 class StencilAttrib;
 class ClipPlaneAttrib;
+class ShadeModelAttrib;
 class TransparencyAttrib;
 class FogAttrib;
 class LinesmoothAttrib;
@@ -212,6 +213,7 @@ public:
   virtual void issue_cg_shader_bind(const CgShaderAttrib *){}
   virtual void issue_stencil(const StencilAttrib *) { }
   virtual void issue_clip_plane(const ClipPlaneAttrib *) { }
+  virtual void issue_shade_model(const ShadeModelAttrib *) { }
 
   virtual void bind_light(PointLight *light_obj, const NodePath &light, 
                           int light_id) { }

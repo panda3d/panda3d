@@ -69,7 +69,7 @@ class PolylightNode;
 class EggLoader {
 public:
   EggLoader();
-  EggLoader(const EggData &data);
+  EggLoader(const EggData *data);
 
   void build_graph();
   void reparent_decals();
@@ -133,7 +133,7 @@ private:
   void make_primitive(EggPrimitive *egg_prim, Primitives &primitives);
 
   void set_portal_polygon(EggGroup *egg_group, PortalNode *pnode);
-  EggPolygon *find_first_polygon(EggGroup *egg_group);
+  PT(EggPolygon) find_first_polygon(EggGroup *egg_group);
 
   bool make_sphere(EggGroup *start_group, EggGroup::CollideFlags flags,
                    LPoint3f &center, float &radius, Colorf &color);

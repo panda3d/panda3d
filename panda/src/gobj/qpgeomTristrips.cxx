@@ -81,26 +81,21 @@ PT(qpGeomPrimitive) qpGeomTristrips::
 decompose_impl() {
   PT(qpGeomTriangles) triangles = new qpGeomTriangles;
   CPTA_ushort vertices = get_vertices();
-  CPTA_int lengths = get_lengths();
+  CPTA_int ends = get_ends();
 
-  CPTA_ushort::const_iterator vi;
-  vi = vertices.begin();
-
-  cerr << "starting vertices, size = " << vertices.size() << "\n";
-
-  CPTA_int::const_iterator li;
-  for (li = lengths.begin(); li != lengths.end(); ++li) {
-    int length = (*li);
-    cerr << "length = " << length << "\n";
-    nassertr(length >= 2, triangles.p());
-    nassertr(vi != vertices.end(), this);
-    int v0 = (*vi);
+  int vi = 0;
+  int li = 0;
+  while (li < (int)ends.size()) {
+    int end = ends[li];
+    nassertr(vi + 2 <= end, triangles.p());
+    nassertr(vi < (int)vertices.size(), this);
+    int v0 = vertices[vi];
     ++vi;
-    nassertr(vi != vertices.end(), this);
-    int v1 = (*vi);
+    nassertr(vi < (int)vertices.size(), this);
+    int v1 = vertices[vi];
     ++vi;
     bool reversed = false;
-    for (int i = 2; i < length; i++) {
+    while (vi < end) {
       if (reversed) {
         triangles->add_vertex(v1);
         triangles->add_vertex(v0);
@@ -110,16 +105,17 @@ decompose_impl() {
         triangles->add_vertex(v1);
         reversed = true;
       }
-      triangles->add_vertex(*vi);
+      triangles->add_vertex(vertices[vi]);
       v0 = v1;
-      nassertr(vi != vertices.end(), this);
-      v1 = *vi;
+      nassertr(vi < (int)vertices.size(), this);
+      v1 = vertices[vi];
       triangles->close_primitive();
       ++vi;
     }
+    ++li;
   }
 
-  triangles->write(cerr, 0);
+  nassertr(vi == (int)vertices.size(), triangles.p());
 
   return triangles.p();
 }

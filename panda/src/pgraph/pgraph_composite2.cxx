@@ -32,6 +32,7 @@
 #include "sceneGraphReducer.cxx"
 #include "selectiveChildNode.cxx"
 #include "sequenceNode.cxx"
+#include "shadeModelAttrib.cxx"
 #include "showBoundsEffect.cxx"
 #include "spotlight.cxx"
 #include "switchNode.cxx"

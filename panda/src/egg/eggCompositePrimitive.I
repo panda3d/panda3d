@@ -104,3 +104,20 @@ set_component(int i, const EggAttributes *attrib) {
   nassertv(i >= 0 && i < (int)_components.size());
   _components[i] = new EggAttributes(*attrib);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCompositePrimitive::triangulate_into
+//       Access: Published
+//  Description: Subdivides the composite primitive into triangles and
+//               adds those triangles to the indicated container.
+//               Does not remove the primitive from its existing
+//               parent or modify it in any way.
+//
+//               Returns true if the triangulation is successful, or
+//               false if there was some error (in which case the
+//               container may contain some partial triangulation).
+////////////////////////////////////////////////////////////////////
+INLINE bool EggCompositePrimitive::
+triangulate_into(EggGroupNode *container) const {
+  return do_triangulate(container);
+}

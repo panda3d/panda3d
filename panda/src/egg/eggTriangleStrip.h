@@ -40,7 +40,7 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level) const;
 
 protected:
-  virtual void do_triangulate(EggGroupNode *container);
+  virtual bool do_triangulate(EggGroupNode *container) const;
 
 public:
   static TypeHandle get_class_type() {

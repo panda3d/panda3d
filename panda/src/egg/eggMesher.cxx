@@ -42,54 +42,74 @@ EggMesher() {
 //       Access: Public
 //  Description: Accepts an EggGroupNode, which contains a set of
 //               EggPrimitives--typically, triangles and quads--as
-//               children.  All of the EggPrimitives must reference
-//               the same vertex pool.
-//
-//               At the completion of this function, the triangles in
-//               the group will have been replaced with
-//               EggTriangleStrips as appropriate.
+//               children.  Removes these primitives and replaces them
+//               with (mostly) equivalent EggTriangleStrips and
+//               EggTriangleFans where possible.
 ////////////////////////////////////////////////////////////////////
 void EggMesher::
 mesh(EggGroupNode *group) {
-  _vertex_pool = NULL;
-  _strip_index = 0;
+  // Create a temporary node to hold the children of group that aren't
+  // involved in the meshing, as well as the newly-generate triangle
+  // strips.
+  PT(EggGroupNode) output_children = new EggGroupNode;
 
-  // Create a temporary node to hold the children of groupthat aren't
-  // involved in the meshing.
-  PT(EggGroupNode) saved_children = new EggGroupNode;
+  // And another to hold the children that will be processed next
+  // time.
+  PT(EggGroupNode) next_children = new EggGroupNode;
+  PT(EggGroupNode) this_children = group;
 
-  // Add each primitive in the group to the mesh pool.
-  EggGroupNode::iterator ci = group->begin();
-  while (ci != group->end()) {
-    EggGroupNode::iterator cnext = ci;
-    ++cnext;
+  // Only primitives that share a common vertex pool can be meshed
+  // together.  Thus, pull out the primitives with the same vertex
+  // pool in groups.
+  while (this_children->size() != 0) {
+    clear();
 
-    if ((*ci)->is_of_type(EggPolygon::get_class_type())) {
-      add_polygon(DCAST(EggPolygon, *ci), EggMesherStrip::MO_user);
-    } else {
-      // If it's not a polygon, preserve it.
-      saved_children->add_child(*ci);
+    // Add each polygon in the group to the mesh pool.
+    while (!this_children->empty()) {
+      PT(EggNode) child = this_children->get_first_child();
+      this_children->remove_child(child);
+      
+      if (child->is_of_type(EggPolygon::get_class_type())) {
+        EggPolygon *poly = DCAST(EggPolygon, child);
+
+        if (_vertex_pool == (EggVertexPool *)NULL) {
+          _vertex_pool = poly->get_pool();
+          add_polygon(poly, EggMesherStrip::MO_user);
+
+        } else if (_vertex_pool == poly->get_pool()) {
+          add_polygon(poly, EggMesherStrip::MO_user);
+
+        } else {
+          // A different vertex pool; save this one for next pass.
+          next_children->add_child(poly);
+        }
+
+      } else {
+        // If it's not a polygon of any kind, just output it
+        // unchanged.
+        output_children->add_child(child);
+      }
     }
-    ci = cnext;
-  }
+    
+    do_mesh();
+    
+    Strips::iterator si;
+    for (si = _done.begin(); si != _done.end(); ++si) {
+      PT(EggPrimitive) egg_prim = get_prim(*si);
+      if (egg_prim != (EggPrimitive *)NULL) {
+        output_children->add_child(egg_prim);
+      }
+    }
 
-  do_mesh();
+    this_children = next_children;
+    next_children = new EggGroupNode;
+  }
 
   // Now copy the newly-meshed primitives back to the group.
   group->clear();
-  group->steal_children(*saved_children);
+  group->steal_children(*output_children);
 
-  Strips::iterator si;
-  for (si = _done.begin(); si != _done.end(); ++si) {
-    PT(EggPrimitive) egg_prim = get_prim(*si);
-    if (egg_prim != (EggPrimitive *)NULL) {
-      group->add_child(egg_prim);
-    }
-  }
-
-  _vertex_pool = NULL;
-  _strip_index = 0;
-  _color_sheets.clear();
+  clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -134,6 +154,26 @@ write(ostream &out) const {
   for (si = _strips.begin(); si != _strips.end(); ++si) {
     out << (*si) << "\n";
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMesher::clear
+//       Access: Private
+//  Description: Empties the pool of meshable primitives and resets to
+//               an initial state.
+////////////////////////////////////////////////////////////////////
+void EggMesher::
+clear() {
+  _tris.clear();
+  _quads.clear();
+  _strips.clear();
+  _dead.clear();
+  _done.clear();
+  _verts.clear();
+  _edges.clear();
+  _strip_index = 0;
+  _vertex_pool = NULL;
+  _color_sheets.clear();
 }
 
 ////////////////////////////////////////////////////////////////////

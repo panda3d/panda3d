@@ -87,6 +87,7 @@
     sceneSetup.I sceneSetup.h \
     selectiveChildNode.I selectiveChildNode.h \
     sequenceNode.I sequenceNode.h \
+    shadeModelAttrib.I shadeModelAttrib.h \
     showBoundsEffect.I showBoundsEffect.h \
     spotlight.I spotlight.h \
     switchNode.I switchNode.h \
@@ -181,6 +182,7 @@
     sceneSetup.cxx \
     selectiveChildNode.cxx \
     sequenceNode.cxx \
+    shadeModelAttrib.cxx \
     showBoundsEffect.cxx \
     spotlight.cxx \
     switchNode.cxx \
@@ -273,6 +275,7 @@
     sceneSetup.I sceneSetup.h \
     selectiveChildNode.I selectiveChildNode.h \
     sequenceNode.I sequenceNode.h \
+    shadeModelAttrib.I shadeModelAttrib.h \
     showBoundsEffect.I showBoundsEffect.h \
     spotlight.I spotlight.h \
     switchNode.I switchNode.h \

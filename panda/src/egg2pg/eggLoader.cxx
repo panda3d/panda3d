@@ -134,11 +134,12 @@ EggLoader() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::Constructor
 //       Access: Public
-//  Description:
+//  Description: The EggLoader constructor makes a copy of the EggData
+//               passed in.
 ////////////////////////////////////////////////////////////////////
 EggLoader::
-EggLoader(const EggData &data) :
-  _data(new EggData(data))
+EggLoader(const EggData *data) :
+  _data(new EggData(*data))
 {
   _error = false;
 }
@@ -1595,8 +1596,8 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     if (pnode->get_num_vertices() == 0) {
       egg2pg_cat.warning()
         << "Portal " << egg_group->get_name() << " has no vertices!\n";
-	}
-
+    }
+    
   } else if (egg_group->get_polylight_flag()) {
     // Create a polylight instead of a regular polyset.
     // use make_sphere to get the center, radius and color
@@ -1987,7 +1988,7 @@ void EggLoader::
 set_portal_polygon(EggGroup *egg_group, PortalNode *pnode) {
   pnode->clear_vertices();
 
-  EggPolygon *poly = find_first_polygon(egg_group);
+  PT(EggPolygon) poly = find_first_polygon(egg_group);
   if (poly != (EggPolygon *)NULL) {
     LMatrix4d mat = poly->get_vertex_to_node();
 
@@ -2005,7 +2006,7 @@ set_portal_polygon(EggGroup *egg_group, PortalNode *pnode) {
 //  Description: Returns the first EggPolygon found at or below the
 //               indicated node.
 ////////////////////////////////////////////////////////////////////
-EggPolygon *EggLoader::
+PT(EggPolygon) EggLoader::
 find_first_polygon(EggGroup *egg_group) {
   // Does this group have any polygons?
   EggGroup::const_iterator ci;
@@ -2021,8 +2022,8 @@ find_first_polygon(EggGroup *egg_group) {
   for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
     if ((*ci)->is_of_type(EggGroup::get_class_type())) {
       EggGroup *child_group = DCAST(EggGroup, *ci);
-      EggPolygon *found = find_first_polygon(child_group);
-      if (found != NULL) {
+      PT(EggPolygon) found = find_first_polygon(child_group);
+      if (found != (EggPolygon *)NULL) {
         return found;
       }
     }
@@ -2181,6 +2182,13 @@ make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,
           cnode->add_solid(csplane);
           return;
         }
+      } else if ((*ci)->is_of_type(EggCompositePrimitive::get_class_type())) {
+        EggCompositePrimitive *comp = DCAST(EggCompositePrimitive, *ci);
+        PT(EggGroup) temp_group = new EggGroup;
+        if (comp->triangulate_into(temp_group)) {
+          make_collision_plane(temp_group, cnode, flags);
+          return;
+        }
       }
     }
   }
@@ -2203,6 +2211,13 @@ make_collision_polygon(EggGroup *egg_group, CollisionNode *cnode,
       if ((*ci)->is_of_type(EggPolygon::get_class_type())) {
         create_collision_polygons(cnode, DCAST(EggPolygon, *ci),
                                   egg_group, flags);
+      } else if ((*ci)->is_of_type(EggCompositePrimitive::get_class_type())) {
+        EggCompositePrimitive *comp = DCAST(EggCompositePrimitive, *ci);
+        PT(EggGroup) temp_group = new EggGroup;
+        if (comp->triangulate_into(temp_group)) {
+          make_collision_polygon(temp_group, cnode, flags);
+          return;
+        }
       }
     }
   }
@@ -2224,6 +2239,12 @@ make_collision_polyset(EggGroup *egg_group, CollisionNode *cnode,
       if ((*ci)->is_of_type(EggPolygon::get_class_type())) {
         create_collision_polygons(cnode, DCAST(EggPolygon, *ci),
                                   egg_group, flags);
+      } else if ((*ci)->is_of_type(EggCompositePrimitive::get_class_type())) {
+        EggCompositePrimitive *comp = DCAST(EggCompositePrimitive, *ci);
+        PT(EggGroup) temp_group = new EggGroup;
+        if (comp->triangulate_into(temp_group)) {
+          make_collision_polyset(temp_group, cnode, flags);
+        }
       }
     }
   }
