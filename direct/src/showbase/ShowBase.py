@@ -44,6 +44,9 @@ class ShowBase:
         if not self.wantAnySound:
             self.wantSfx = None
             self.wantMusic = None
+        self.musicManager = None
+        self.sfxManager = None
+
         self.wantDIRECT = self.config.GetBool('want-directtools', 0)
         self.wantStats = self.config.GetBool('want-stats', 0)
 
@@ -205,6 +208,8 @@ class ShowBase:
 
         # Transition effects (fade, iris, etc)
         self.transitions = Transitions.Transitions(self.loader)
+
+        self.AppHasAudioFocus = 1
 
         import __builtin__
         __builtin__.base = self
@@ -668,17 +673,51 @@ class ShowBase:
             state.frameIndex += 1
             return Task.cont
 
+    # these are meant to be called in response to a user request
+    def EnableMusic(self, bEnableMusic):
+        if(self.musicManager == None):
+            # would need to createaudiomanager/loadsfx for this to work.  would that be safe after startup?
+            self.notify.warning("Cant toggle music, must set audio-music-active #t in Configrc at startup")
+            return 0
+        self.wantMusic = bEnableMusic
+        # dont setActive(1) if no audiofocus
+        if(not (self.wantMusic and not self.AppHasAudioFocus)):
+                self.musicManager.setActive(bEnableMusic)
+        if(self.wantMusic):
+            self.notify.debug("Enabling music")
+        else:
+            self.notify.debug("Disabling music")
+        return 1
+
+    def EnableSoundEffects(self, bEnableSoundEffects):
+        if(self.sfxManager == None):
+            # would need to createaudiomanager/loadsfx for this to work.  would that be safe after startup?
+            self.notify.warning("Cant toggle music, must set audio-music-active #t in Configrc at startup")
+            return 0
+        self.wantSfx = bEnableSoundEffects
+        # dont setActive(1) if no audiofocus
+        if(not (self.wantSfx and not self.AppHasAudioFocus)):
+            self.sfxManager.setActive(bEnableSoundEffects)
+        if(self.wantSfx):
+            self.notify.debug("Enabling sound effects")
+        else:
+            self.notify.debug("Disabling sound effects")
+        return 1
+
+    # these are meant to be called by the sw when app loses audio focus (switched out)
     def DisableAudio(self):
-        if self.wantSfx:
+        self.AppHasAudioFocus = 0
+        if (self.wantSfx and (self.sfxManager != None)):
             self.sfxManager.setActive(0)
-        if self.wantMusic:
+        if (self.wantMusic and (self.musicManager != None)):
             self.musicManager.setActive(0)
         self.notify.debug("Disabling audio")
 
     def EnableAudio(self):
-        if self.wantSfx:
+        self.AppHasAudioFocus = 1
+        if (self.wantSfx and (self.sfxManager != None)):
             self.sfxManager.setActive(1)
-        if self.wantMusic:
+        if (self.wantMusic and (self.musicManager != None)):
             self.musicManager.setActive(1)
         self.notify.debug("Enabling audio")
 
