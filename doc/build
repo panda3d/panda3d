@@ -1,12 +1,25 @@
 #!/bin/bash
 
 # This script is an experiment.  It is designed to automate the
-# Panda3D build process for users who have Cygwin installed on their
-# Windows machine.  It may also work for users on a Linux or Unix
-# machine.
+# Panda3D build process for Linux or Unix users, or for Windows users
+# who have Cygwin installed.  If you want to build Panda3D on a
+# Windows machine without Cygwin, please refer to the INSTALL document
+# instead of attempting to run this script.
 
-# You must still set up your Config.pp file and Config.prc files as
-# described in the INSTALL document before running this script.
+# Before you run this script, you must set up your Config.pp file and
+# Config.prc files as described in the INSTALL document, and you must
+# build and install ppremake (or ppremake.exe), before running this
+# script.  
+
+# You should ensure that the install bin directory,
+# e.g. /usr/local/panda/bin, is on your PATH, and that the install lib
+# directory, /usr/local/panda/lib, is on your LD_LIBRARY_PATH (for
+# Unix) or your PATH (for Windows).  If you are building Python
+# interfaces, you should also ensure that /usr/local/panda/lib is on
+# your PYTHONPATH.
+
+# Finally, you must have write permission to the /usr/local/panda
+# directory hierarchy in order for this script to run successfully.
 
 # As with any automatic process, this script may not work in every
 # environment.  An effort has been made to make the script as
