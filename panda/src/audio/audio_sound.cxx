@@ -28,10 +28,9 @@ TypeHandle AudioSound::_type_handle;
 //  Description: deletes the sound data and then lets the system
 //               destroy this structure
 ////////////////////////////////////////////////////////////////////
-AudioSound::~AudioSound() {
-  if (audio_cat.is_debug())
-    audio_cat->debug() << "AudioSound destructor (" << get_name() << ")"
-               << endl;
+AudioSound::
+~AudioSound() {
+  audio_debug("AudioSound destructor (" << get_name() << ")");
   AudioManager::stop(this);
   (*_delstate)(_state);
 }
@@ -41,7 +40,8 @@ AudioSound::~AudioSound() {
 //       Access: Public
 //  Description: return the length (in seconds) of the sound
 ////////////////////////////////////////////////////////////////////
-float AudioSound::length() const {
+float AudioSound::
+length() const {
   return _sound->length();
 }
 
@@ -50,7 +50,8 @@ float AudioSound::length() const {
 //       Access: Public
 //  Description: return the current play status of this sound
 ////////////////////////////////////////////////////////////////////
-AudioSound::SoundStatus AudioSound::status() const {
+AudioSound::SoundStatus AudioSound::
+status() const {
   AudioTraits::PlayingClass::PlayingStatus stat = _state->status();
   switch (stat) {
   case AudioTraits::PlayingClass::BAD:
@@ -60,6 +61,6 @@ AudioSound::SoundStatus AudioSound::status() const {
   case AudioTraits::PlayingClass::PLAYING:
     return PLAYING;
   }
-  audio_cat->error() << "unknown status for sound" << endl;
+  audio_error("unknown status for sound");
   return BAD;
 }

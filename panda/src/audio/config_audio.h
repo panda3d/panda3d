@@ -41,4 +41,22 @@ extern EXPCL_PANDA int audio_thread_priority;
 
 extern EXPCL_PANDA void audio_load_loaders();
 
+#ifndef NDEBUG //[
+  // Non-release build:
+  #define audio_debug(msg) \
+  if (audio_cat.is_debug()) { \
+    audio_cat->debug() << msg << endl; \
+  }
+
+  #define audio_info(msg) \
+    audio_cat->info() << msg << endl
+#else //][
+  // Release build:
+  #define audio_debug(msg) ((void)0)
+  #define audio_info(msg) ((void)0)
+#endif //]
+
+#define audio_error(msg) \
+  audio_cat->error() << msg << endl
+
 #endif /* __CONFIG_AUDIO_H__ */

@@ -27,11 +27,31 @@
 #include <filename.h>
 #include <pointerTo.h>
 
+// The AudioPool is a cache of SoundClass objects.  When retrieving
+// a sound, you will actually get an AudioSound object (which you own).
 class EXPCL_PANDA AudioPool {
+public:
+  typedef AudioTraits::SoundClass* SoundLoadFunc(Filename);
+
+PUBLISHED:
+  INLINE static bool has_sound(const string& filename);
+  INLINE static bool verify_sound(const string& filename);
+  
+  INLINE static AudioSound* load_sound(const string& filename);
+  
+  INLINE static void release_sound(AudioSound* sound);
+  INLINE static void release_all_sounds();
+  
+  INLINE static int get_num_loaded_sounds();
+  INLINE static string get_nth_sound_name(int);
+  
+  static void register_sound_loader(const string&, SoundLoadFunc*);
+
 private:
   INLINE AudioPool();
 
   bool ns_has_sound(Filename filename);
+  PT(AudioTraits::SoundClass) call_sound_loader(Filename fileName);
   AudioSound* ns_load_sound(Filename filename);
   void ns_release_sound(AudioSound* sound);
   void ns_release_all_sounds();
@@ -42,18 +62,6 @@ private:
   static AudioPool *_global_ptr;
   typedef pmap<string, PT(AudioTraits::SoundClass) > SoundMap;
   SoundMap _sounds;
-public:
-  typedef AudioTraits::SoundClass* SoundLoadFunc(Filename);
-
-PUBLISHED:
-  INLINE static bool has_sound(const string& filename);
-  INLINE static bool verify_sound(const string& filename);
-  INLINE static AudioSound* load_sound(const string& filename);
-  INLINE static void release_sound(AudioSound* sound);
-  INLINE static void release_all_sounds();
-  INLINE static int get_num_loaded_sounds();
-  INLINE static string get_nth_sound_name(int);
-  static void register_sound_loader(const string&, SoundLoadFunc*);
 };
 
 #include "audio_pool.I"

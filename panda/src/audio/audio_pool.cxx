@@ -20,18 +20,20 @@
 #include "config_audio.h"
 #include <config_util.h>
 
-AudioPool* AudioPool::_global_ptr = (AudioPool*)0L;
+AudioPool* AudioPool::_global_ptr; // static is 0 by default.
 typedef pmap<string, AudioPool::SoundLoadFunc*> SoundLoaders;
-SoundLoaders* _sound_loaders = (SoundLoaders*)0L;
+static SoundLoaders* _sound_loaders; // static is 0 by default.
 
 ////////////////////////////////////////////////////////////////////
 //     Function: check_sound_loaders
 //       Access: Static
 //  Description: ensure that the sound loaders map has been initialized
 ////////////////////////////////////////////////////////////////////
-static void check_sound_loaders() {
-  if (_sound_loaders == (SoundLoaders*)0L)
+static void 
+check_sound_loaders() {
+  if (!_sound_loaders) {
     _sound_loaders = new SoundLoaders;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -40,9 +42,11 @@ static void check_sound_loaders() {
 //  Description: Initializes and/or returns the global pointer to the
 //               one AudioPool object in the system.
 ////////////////////////////////////////////////////////////////////
-AudioPool* AudioPool::get_ptr() {
-  if (_global_ptr == (AudioPool*)0L)
+AudioPool* AudioPool::
+get_ptr() {
+  if (!_global_ptr) {
     _global_ptr = new AudioPool;
+  }
   audio_load_loaders();
   return _global_ptr;
 }
@@ -52,71 +56,86 @@ AudioPool* AudioPool::get_ptr() {
 //       Access: Private
 //  Description: The nonstatic implementation of has_sound().
 ////////////////////////////////////////////////////////////////////
-bool AudioPool::ns_has_sound(Filename filename) {
+bool AudioPool::
+ns_has_sound(Filename filename) {
   filename.resolve_filename(get_sound_path());
 
   SoundMap::const_iterator si;
   si = _sounds.find(filename);
-  if (si != _sounds.end()) {
-    // this sound was previously loaded
-    return true;
+  return si != _sounds.end();
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioPool::call_sound_loader
+//       Access: Private
+//  Description: Call the sound loader to load the sound, without
+//               looking in the sound pool.
+////////////////////////////////////////////////////////////////////
+PT(AudioTraits::SoundClass) AudioPool::
+call_sound_loader(Filename fileName) {
+  if (!fileName.exists()) {
+    audio_info("'" << fileName << "' does not exist");
+    return 0;
   }
-  return false;
+  audio_info("Loading sound " << fileName);
+  // Determine which sound loader to use:
+  string ext = fileName.get_extension();
+  SoundLoaders::const_iterator sli;
+  check_sound_loaders();
+  sli = _sound_loaders->find(ext);
+  if (sli == _sound_loaders->end()) {
+    audio_error("no loader available for audio type '" << ext << "'");
+    return 0;
+  }
+  // Call the sound loader:
+  PT(AudioTraits::SoundClass) sound=(*((*sli).second))(fileName);
+  if (!sound) {
+    audio_error("could not load '" << fileName << "'");
+  }
+  return sound;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AudioPool::ns_load_sound
 //       Access: Private
 //  Description: The nonstatic implementation of load_sound().
+//
+//               First we will search the pool for the sound.
+//               If that fails, we will call the loader for the
+//               sound, and then add this sound to the pool.
 ////////////////////////////////////////////////////////////////////
-AudioSound* AudioPool::ns_load_sound(Filename filename) {
-  if (audio_cat.is_debug())
-    audio_cat->debug() << "in AudioPool::ns_load_sound" << endl;
-  filename.resolve_filename(get_sound_path());
-  if (audio_cat.is_debug())
-    audio_cat->debug() << "resolved filename is '" << filename << "'" << endl;
+AudioSound* AudioPool::
+ns_load_sound(Filename fileName) {
+  audio_debug("in AudioPool::ns_load_sound");
+  fileName.resolve_filename(get_sound_path());
+  audio_debug("resolved fileName is '" << fileName << "'");
 
+  PT(AudioTraits::SoundClass) sound=0;
+  // Get the sound, either from the pool or from a loader:
   SoundMap::const_iterator si;
-  si = _sounds.find(filename);
+  si = _sounds.find(fileName);
   if (si != _sounds.end()) {
-    // this sound was previously loaded
-    PT(AudioTraits::SoundClass) sc = (*si).second;
-    if (audio_cat.is_debug())
-      audio_cat->debug() << "sound is already loaded (0x" << (void*)sc
-             << ")" << endl;
-    AudioSound* ret = new AudioSound(sc, sc->get_state(), sc->get_player(),
-                     sc->get_delstate(), filename);
-    if (audio_cat.is_debug())
-      audio_cat->debug() << "AudioPool: returning 0x" << (void*)ret << endl;
-    return ret;
+    // ...found the sound in the pool.
+    sound = (*si).second;
+    audio_debug("sound found in pool (0x" << (void*)sound << ")");
+  } else {
+    // ...the sound was not found in the cache/pool.
+    sound=call_sound_loader(fileName);
+    if (sound) {
+      // Put it in the pool:
+      _sounds[fileName] = sound;
+    }
   }
-  if (!filename.exists()) {
-    audio_cat.info() << "'" << filename << "' does not exist" << endl;
-    return (AudioSound*)0L;
+  // Create an AudioSound from the sound:
+  AudioSound* audioSound = 0;
+  if (sound) {
+    audioSound = new AudioSound(sound, 
+      sound->get_state(), sound->get_player(),
+      sound->get_delstate(), fileName);
   }
-  audio_cat.info() << "Loading sound " << filename << endl;
-  string ext = filename.get_extension();
-  SoundLoaders::const_iterator sli;
-  check_sound_loaders();
-  sli = _sound_loaders->find(ext);
-  if (sli == _sound_loaders->end()) {
-    audio_cat->error() << "no loader available for audio type '" << ext
-               << "'" << endl;
-    return (AudioSound*)0L;
-  }
-  PT(AudioTraits::SoundClass) sound = (*((*sli).second))(filename);
-  if (sound == (AudioTraits::SoundClass*)0L) {
-    audio_cat->error() << "could not load '" << filename << "'" << endl;
-    return (AudioSound*)0L;
-  }
-  AudioSound* the_sound = new AudioSound(sound, sound->get_state(),
-                     sound->get_player(),
-                     sound->get_delstate(), filename);
-  if (audio_cat.is_debug())
-    audio_cat->debug() << "AudioPool: returning 0x" << (void*)the_sound
-               << endl;
-  _sounds[filename] = sound;
-  return the_sound;
+  audio_debug("AudioPool: returning 0x" << (void*)audioSound);
+  return audioSound;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -125,9 +144,7 @@ AudioSound* AudioPool::ns_load_sound(Filename filename) {
 //  Description: The nonstatic implementation of release_sound().
 ////////////////////////////////////////////////////////////////////
 void AudioPool::ns_release_sound(AudioSound* sound) {
-  if (audio_cat.is_debug())
-    audio_cat->debug() << "AudioPool: releasing sound 0x" << (void*)sound
-               << endl;
+  audio_debug("AudioPool: releasing sound 0x" << (void*)sound);
   string filename = sound->get_name();
   SoundMap::iterator si;
   si = _sounds.find(filename);
@@ -140,9 +157,9 @@ void AudioPool::ns_release_sound(AudioSound* sound) {
 //       Access: Private
 //  Description: The nonstatic implementation of release_all_sounds().
 ////////////////////////////////////////////////////////////////////
-void AudioPool::ns_release_all_sounds() {
-  if (audio_cat.is_debug())
-    audio_cat->debug() << "AudioPool: releasing all sounds" << endl;
+void AudioPool::
+ns_release_all_sounds() {
+  audio_debug("AudioPool: releasing all sounds");
   _sounds.clear();
 }
 
@@ -151,17 +168,24 @@ void AudioPool::ns_release_all_sounds() {
 //       Access: Public, static
 //  Description: A static function to register a function for loading
 //               audio sounds.
+//               ext: a file name extension (e.g. .mp3 or .wav).
+//               func: a function that will be called to load a file
+//                     with the extension 'ext'.
 ////////////////////////////////////////////////////////////////////
-void AudioPool::register_sound_loader(const string& ext,
-                       AudioPool::SoundLoadFunc* func) {
-  SoundLoaders::const_iterator sli;
+void AudioPool::
+register_sound_loader(const string& ext,
+    AudioPool::SoundLoadFunc* func) {
   check_sound_loaders();
-  sli = _sound_loaders->find(ext);
-  if (sli != _sound_loaders->end()) {
-    audio_cat->warning() << "attempted to register a loader for audio type '"
-             << ext << "' more then once." << endl;
-    return;
-  }
+  #ifndef NDEBUG //[
+    // Debug check: See if the loader is already registered:
+    SoundLoaders::const_iterator sli = _sound_loaders->find(ext);
+    if (sli != _sound_loaders->end()) {
+      audio_cat->warning() 
+        << "attempted to register a loader for audio type '"
+        << ext << "' more then once." << endl;
+      return;
+    }
+  #endif //]
   (*_sound_loaders)[ext] = func;
 }
 
@@ -170,9 +194,12 @@ void AudioPool::register_sound_loader(const string& ext,
 //       Access: Public
 //  Description: return the name of the nth loaded  sound
 ////////////////////////////////////////////////////////////////////
-string AudioPool::ns_get_nth_sound_name(int n) const {
+string AudioPool::
+ns_get_nth_sound_name(int n) const {
   SoundMap::const_iterator i;
   int j;
-  for (i=_sounds.begin(), j=0; j<n; ++i, ++j);
+  for (i=_sounds.begin(), j=0; j<n; ++i, ++j) {
+    // the work is being done in the for statement.
+  }
   return (*i).first;
 }

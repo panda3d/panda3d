@@ -28,7 +28,7 @@ private:
   typedef plist<string> StrList;
   StrList _seq;
 public:
-  AudioMidi(Filename, int = 1);
+  AudioMidi(Filename filename, int header_idx = 1);
   AudioMidi(const AudioMidi&);
   ~AudioMidi();
 

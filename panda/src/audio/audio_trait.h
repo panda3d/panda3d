@@ -46,7 +46,7 @@ public:
     SoundClass* _sound;
     float _volume;
   public:
-    PlayingClass(SoundClass* s) : _sound(s), _volume(1.) {}
+    PlayingClass(SoundClass* s) : _sound(s), _volume(1.0) {}
     virtual ~PlayingClass();
 
     enum PlayingStatus { BAD, READY, PLAYING } ;

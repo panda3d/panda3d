@@ -24,7 +24,7 @@ AudioTraits::SoundClass::~SoundClass() {
 
 float AudioTraits::SoundClass::length() const {
   audio_cat->error() << "In abstract SoundClass::length!" << endl;
-  return -1.;
+  return -1.0;
 }
 
 AudioTraits::PlayingClass* AudioTraits::SoundClass::get_state() const {
