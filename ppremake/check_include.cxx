@@ -44,10 +44,11 @@ check_include(const string &line) {
   // note: ppremake cant expand cpp #define vars used as include targets yet
 
   if (p >= line.length() || (line[p] != '"' && line[p] != '<')) {
-    // it it starts with a capital, assume its a #define var used as include tgt,
-	// and dont print a warning
-	if(!((line[p]>='A')&&(line[p]<='Z')))
-		cerr << "Ignoring invalid #include directive: " << line << "\n";
+    // if it starts with a capital, assume its a #define var used as
+    // include tgt, and dont print a warning
+    if(!((line[p]>='A')&&(line[p]<='Z'))) {
+      cerr << "Ignoring invalid #include directive: " << line << "\n";
+    }
     return string();
   }
 
