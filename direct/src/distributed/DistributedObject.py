@@ -69,6 +69,8 @@ class DistributedObject(PandaObject):
 
     def delayDelete(self, flag):
         # Flag should be 0 or 1, meaning increment or decrement count
+        # Also see DelayDelete.py
+
         if (flag == 1):
             self.delayDeleteCount += 1
         elif (flag == 0):
