@@ -990,8 +990,11 @@ draw_line(const GeomLine* geom) {
 #endif
 
 #ifdef _DEBUG
-     if(geom->get_width()!=1.0f) {
-         dxgsg_cat.error() << "DX does not support drawing lines with a non-1.0 pixel width!!\n";
+     static BOOL bPrintedMsg=FALSE;
+
+     if(!bPrintedMsg && (geom->get_width()!=1.0f)) {
+         bPrintedMsg=TRUE;
+         dxgsg_cat.warning() << "DX does not support drawing lines with a non-1.0 pixel width, setting width to 1.0!\n";
      }
 #endif
 
