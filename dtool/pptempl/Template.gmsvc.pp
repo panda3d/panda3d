@@ -340,15 +340,17 @@ $[varname] = $[sources]
   #define target $[so_dir]/lib$[TARGET]$[dllext].dll
   #define sources $($[varname])
   #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
+  #define tmpverdatedirname $[directory]/$[subst /,-, $[target]]
 $[target] : $[sources] $[so_dir]/stamp $[dtool_ver_dir_cyg]/version.rc
-   //  first generate builddate for rc compiler
-   // uses different .res names, no rm verdate.h to allow multi-proc build to work
-	cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[dtool_ver_dir]\verdate.h"
-	rc /n /fo"$[target]-ver.res" $[filter /D%, $[flags]]  "$[dtool_ver_dir]\version.rc"
+   // first generate builddate for rc compiler
+   // different .res names and mkdir used to solve multiproc build issues (have multiple verdate.h's and .res files)
+	mkdir -p $[tmpverdatedirname]
+	cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[decygwin %,%,$[tmpverdatedirname]]\verdate.h"
+	rc /n /i"$[decygwin %,%,$[tmpverdatedirname]]" /fo"$[target]-ver.res" $[filter /D%, $[flags]]  "$[dtool_ver_dir]\version.rc"
   #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
-	$[SHARED_LIB_C++] "$[target]-ver.res"
+	$[SHARED_LIB_C++] "$[decygwin %,%,$[target]-ver.res]"
   #else  
-	$[SHARED_LIB_C]   "$[target]-ver.res"
+	$[SHARED_LIB_C]   "$[decygwin %,%,$[target]-ver.res]"
   #endif
 
 $[so_dir]/lib$[TARGET]$[dllext].lib : $[so_dir]/lib$[TARGET]$[dllext].dll
