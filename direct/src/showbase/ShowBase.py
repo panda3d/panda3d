@@ -49,13 +49,29 @@ class ShowBase:
                                       self.dataRoot.node(),
                                       self.initialState)
 
-        self.render2d = NodePath(setupPanda2d(self.win))
         # This is a list of cams associated with the display region's cameras
         self.camList = []
         for camera in self.cameraList:
             self.camList.append( camera.find('**/+Camera') )
         # Set the default camera
         self.cam = self.camera.find('**/+Camera')
+
+        # Set up a 2-d layer for drawing things behind Gui labels.
+        self.render2d = NodePath(setupPanda2d(self.win))
+
+        # Set up another 2-d layer for drawing the Gui labels themselves.
+        self.renderGui = NodePath(setupPanda2d(self.win))
+
+        # Set up an auxiliary 3-d layer for rendering floating heads
+        # or other 3-d objects on top of text or widgets in the 2-d
+        # layer.  We set it up with a camera that specifically shares
+        # the projection with the default camera, so that when we
+        # change the default camera's parameters, it changes this one
+        # too.
+        self.renderAux = NodePath(NamedNode('renderAux'))
+        self.camAux = self.renderAux.attachNewNode(Camera('camAux'))
+        self.camAux.node().shareProjection(self.cam.node().getProjection())
+        addRenderLayer(self.win, self.renderAux.node(), self.camAux.node())
 
         # We create both a MouseAndKeyboard object and a MouseWatcher object
         # for the window.  The MouseAndKeyboard generates mouse events and

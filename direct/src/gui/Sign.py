@@ -3,7 +3,7 @@ from DirectObject import *
 import GuiSign
 import GuiManager
 
-guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node())
+guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node(), base.renderGui.node())
 
 class Sign(DirectObject):
 
