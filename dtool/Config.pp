@@ -417,6 +417,11 @@
 #define MAYA_LICENSE_FILE
 #defer HAVE_MAYA $[isdir $[MAYA_LOCATION]/include/maya]
 
+// In the same fashion as mayaegg converter above, set softimage to egg converter as well
+#define SOFTIMAGE_LOCATION /c/Softimage/sdk_18sp2/SDK_1.8SP2/SAAPHIRE
+#defer SOFTIMAGE_LIBS SAA.lib
+#defer HAVE_SOFTIMAGE $[isdir $[SOFTIMAGE_LOCATION]/h]
+
 
 // Define this to generate static libraries and executables, rather than
 // dynamic libraries.

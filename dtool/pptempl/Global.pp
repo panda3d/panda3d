@@ -217,6 +217,12 @@
   #define maya_libs $[MAYA_LIBS]
 #endif
 
+#if $[and $[HAVE_SOFTIMAGE],$[SOFTIMAGE_LOCATION]]
+  #define softimage_ipath $[SOFTIMAGE_LOCATION]/h
+  #define softimage_lpath $[SOFTIMAGE_LOCATION]/dso
+  #define softimage_libs $[SOFTIMAGE_LIBS]
+#endif
+
 #if $[HAVE_NET]
   #define net_ipath $[wildcard $[NET_IPATH]]
   #define net_lpath $[wildcard $[NET_LPATH]]

@@ -203,6 +203,9 @@
 #set MAYA_LOCATION $[unixfilename $[MAYA_LOCATION]]
 #set HAVE_MAYA $[HAVE_MAYA]
 
+#set SOFTIMAGE_LOCATION $[unixfilename $[SOFTIMAGE_LOCATION]]
+#set HAVE_SOFTIMAGE $[HAVE_SOFTIMAGE]
+
 
 // Now infer a few more variables based on what was defined.
 #if $[and $[HAVE_MIKMOD],$[MIKMOD_CONFIG]]

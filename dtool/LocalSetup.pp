@@ -31,6 +31,9 @@ $[cdefine COMPILE_IN_DEFAULT_FONT]
 /* Define if we have Maya available. */
 $[cdefine HAVE_MAYA]
 
+/* Define if we have SoftImage available. */
+$[cdefine HAVE_SOFTIMAGE]
+
 /* Define if we have NSPR installed.  */
 $[cdefine HAVE_NSPR]
 
