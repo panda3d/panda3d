@@ -264,7 +264,7 @@ CreateTexture( HDC hdc, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPI
     if((dwOrigWidth>ddDesc.dwMaxTextureWidth)||(dwOrigHeight>ddDesc.dwMaxTextureHeight)) {
         #ifdef _DEBUG
          dxgsg_cat.error() << "WARNING: " <<_tex->get_name() << ": Image size exceeds max texture dimensions of (" << ddDesc.dwMaxTextureWidth << "," << ddDesc.dwMaxTextureHeight << ") !!\n" 
-                           << "Scaling "<< _tex->get_name() << " ("<< dwOrigWidth<<"," <<dwOrigHeight << ") => ("<< ddsd.dwWidth<<"," << ddsd.dwHeight << ")\n";
+                           << "Scaling "<< _tex->get_name() << " ("<< dwOrigWidth<<"," <<dwOrigHeight << ") => ("<<  ddDesc.dwMaxTextureWidth << "," << ddDesc.dwMaxTextureHeight << ") !\n";
         #endif
         
          if(dwOrigWidth>ddDesc.dwMaxTextureWidth) 
