@@ -209,7 +209,11 @@ handle_args(Args &args) {
     return false;
   }
 
-  copy(args.begin(), args.end(), back_inserter(_source_files));
+  for (Args::const_iterator ai = args.begin();
+       ai != args.end();
+       ++ai) {
+    _source_files.push_back(Filename::from_os_specific(*ai));
+  }
   return true;
 }
 

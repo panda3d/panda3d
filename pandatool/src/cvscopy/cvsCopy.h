@@ -25,6 +25,7 @@
 
 #include "programBase.h"
 #include "filename.h"
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CVSCopy
@@ -81,7 +82,7 @@ protected:
   string _cvs_binary;
   bool _user_aborted;
 
-  typedef vector_string SourceFiles;
+  typedef pvector<Filename> SourceFiles;
   SourceFiles _source_files;
 
   CVSSourceTree _tree;
