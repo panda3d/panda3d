@@ -208,4 +208,4 @@ These are used to control properties of selected chunks.
    Flags in lower level beads generally override flags in upper level
    beads. 
 
-5) For more detailed information see $DWD/doc/eggSyntax    
+5) For more detailed information see $PANDA/src/doc/eggSyntax.txt.
