@@ -83,6 +83,34 @@ WinGraphicsWindow::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::move_pointer
+//       Access: Published, Virtual
+//  Description: Forces the pointer to the indicated position within
+//               the window, if possible.  
+//
+//               Returns true if successful, false on failure.  This
+//               may fail if the mouse is not currently within the
+//               window, or if the API doesn't support this operation.
+////////////////////////////////////////////////////////////////////
+bool WinGraphicsWindow::
+move_pointer(int device, int x, int y) {
+  // Note: this is not thread-safe; it should be called only from App.
+  // Probably not an issue.
+  nassertr(device == 0, false);
+  if (!_properties.get_foreground()) {
+    // If the window doesn't have focus, forget it.
+    return false;
+  }
+
+  RECT view_rect;
+  get_client_rect_screen(_hWnd, &view_rect);
+
+  SetCursorPos(view_rect.left + x, view_rect.top + y);
+  _input_devices[0].set_pointer_in_window(x, y);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinGraphicsWindow::begin_flip
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
@@ -165,6 +193,25 @@ set_properties_now(WindowProperties &properties) {
   if (!properties.is_any_specified()) {
     // The base class has already handled this case.
     return;
+  }
+
+  if (properties.has_title()) {
+    string title = properties.get_title();
+    _properties.set_title(title);
+    SetWindowText(_hWnd, title.c_str());
+    properties.clear_title();
+  }
+
+  if (properties.has_cursor_hidden()) {
+    bool hide_cursor = properties.get_cursor_hidden();
+    cerr << "Setting cursor_hidden to " << hide_cursor << "\n";
+    _properties.set_cursor_hidden(hide_cursor);
+    if (_cursor_window == this) {
+      cerr << "in window now\n";
+      hide_or_show_cursor(hide_cursor);
+    }
+
+    properties.clear_cursor_hidden();
   }
 }
 
@@ -308,7 +355,7 @@ fullscreen_restored(WindowProperties &) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WinGraphicsWindow::open_window
+//     Function: WinGraphicsWindow::do_reshape_request
 //       Access: Protected, Virtual
 //  Description: Called from the window thread in response to a request
 //               from within the code (via request_properties()) to
@@ -1265,21 +1312,32 @@ update_cursor_window(WinGraphicsWindow *to_window) {
     }
   }
 
+  hide_or_show_cursor(hide_cursor);
+
+  _cursor_window = to_window;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::hide_or_show_cursor
+//       Access: Private, Static
+//  Description: Hides or shows the mouse cursor according to the
+//               indicated parameter.  This is normally called when
+//               the mouse wanders into or out of a window with the
+//               cursor_hidden properties.
+////////////////////////////////////////////////////////////////////
+void WinGraphicsWindow::
+hide_or_show_cursor(bool hide_cursor) {
   if (hide_cursor) {
-    // We should hide the cursor in the new window.
     if (!_cursor_hidden) {
       ShowCursor(false);
       _cursor_hidden = true;
     }
   } else {
-    // We should reveal the cursor in the new window.
     if (_cursor_hidden) {
       ShowCursor(true);
       _cursor_hidden = false;
     }
   }
-
-  _cursor_window = to_window;
 }
   
 ////////////////////////////////////////////////////////////////////

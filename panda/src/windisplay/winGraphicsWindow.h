@@ -45,6 +45,8 @@ public:
                     const string &name);
   virtual ~WinGraphicsWindow();
 
+  virtual bool move_pointer(int device, int x, int y);
+
   virtual void begin_flip();
 
   virtual void process_events();
@@ -91,6 +93,7 @@ private:
 
   void resend_lost_keypresses();
   static void update_cursor_window(WinGraphicsWindow *to_window);
+  static void hide_or_show_cursor(bool hide_cursor);
 
   static void register_window_class();
   static bool find_acceptable_display_mode(DWORD dwWidth, DWORD dwHeight,
