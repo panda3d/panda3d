@@ -153,6 +153,17 @@ set_time_units(int unit_mask) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::set_scroll_speed
+//       Access: Public
+//  Description: Called when the user selects a new scroll speed from
+//               the moniotr pulldown menu, this should adjust the
+//               speed for the graph to the indicated value.
+////////////////////////////////////////////////////////////////////
+void WinStatsGraph::
+set_scroll_speed(float scroll_speed) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinStatsGraph::user_guide_bars_changed
 //       Access: Public
 //  Description: Called when the user guide bars have been changed.

@@ -57,6 +57,7 @@ public:
   virtual void changed_graph_size(int graph_xsize, int graph_ysize);
 
   virtual void set_time_units(int unit_mask);
+  virtual void set_scroll_speed(float scroll_speed);
   void user_guide_bars_changed();
 
 protected:

@@ -75,6 +75,7 @@ public:
   int get_menu_id(const MenuDef &menu_def);
 
   void set_time_units(int unit_mask);
+  void set_scroll_speed(float scroll_speed);
   
 private:
   void add_graph(WinStatsGraph *graph);
@@ -82,6 +83,7 @@ private:
 
   void create_window();
   void setup_options_menu();
+  void setup_speed_menu();
   void setup_frame_rate_label();
   static void register_window_class(HINSTANCE application);
 
@@ -103,8 +105,10 @@ private:
   HWND _window;
   HMENU _menu_bar;
   HMENU _options_menu;
+  HMENU _speed_menu;
   string _window_title;
   int _time_units;
+  float _scroll_speed;
 
   static bool _window_class_registered;
   static const char * const _window_class_name;

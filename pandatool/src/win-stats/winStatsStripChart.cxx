@@ -139,6 +139,20 @@ set_time_units(int unit_mask) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinStatsStripChart::set_scroll_speed
+//       Access: Public
+//  Description: Called when the user selects a new scroll speed from
+//               the moniotr pulldown menu, this should adjust the
+//               speed for the graph to the indicated value.
+////////////////////////////////////////////////////////////////////
+void WinStatsStripChart::
+set_scroll_speed(float scroll_speed) {
+  if (scroll_speed != 0.0f) {
+    set_horizontal_scale(60.0f / scroll_speed);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinStatsStripChart::set_vertical_scale
 //       Access: Public
 //  Description: Changes the value the height of the vertical axis

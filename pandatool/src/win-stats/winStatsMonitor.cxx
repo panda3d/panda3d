@@ -39,7 +39,10 @@ WinStatsMonitor(WinStatsServer *server) : PStatMonitor(server) {
   _window = 0;
   _menu_bar = 0;
   _options_menu = 0;
-  _time_units = PStatGraph::GBU_ms;
+
+  // This is filled in later when the menu is created.
+  _time_units = 0;
+  _scroll_speed = 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -291,6 +294,7 @@ open_strip_chart(int thread_index, int collector_index) {
   add_graph(graph);
 
   graph->set_time_units(_time_units);
+  graph->set_scroll_speed(_scroll_speed);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -304,6 +308,7 @@ open_piano_roll(int thread_index) {
   add_graph(graph);
 
   graph->set_time_units(_time_units);
+  graph->set_scroll_speed(_scroll_speed);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -381,6 +386,51 @@ set_time_units(int unit_mask) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinStatsMonitor::set_scroll_speed
+//       Access: Public
+//  Description: Called when the user selects a new scroll speed from
+//               the monitor pulldown menu, this should adjust the
+//               speeds for all graphs to the indicated value.
+////////////////////////////////////////////////////////////////////
+void WinStatsMonitor::
+set_scroll_speed(float scroll_speed) {
+  _scroll_speed = scroll_speed;
+
+  // First, change all of the open graphs appropriately.
+  Graphs::iterator gi;
+  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
+    WinStatsGraph *graph = (*gi);
+    graph->set_scroll_speed(_scroll_speed);
+  }
+
+  // Now change the checkmark on the pulldown menu.
+  MENUITEMINFO mii;
+  memset(&mii, 0, sizeof(mii));
+  mii.cbSize = sizeof(mii);
+  mii.fMask = MIIM_STATE;
+
+  mii.fState = IS_THRESHOLD_EQUAL(_scroll_speed, 1.0, 0.1) ?
+    MFS_CHECKED : MFS_UNCHECKED;
+  SetMenuItemInfo(_speed_menu, MI_speed_1, FALSE, &mii);
+
+  mii.fState = IS_THRESHOLD_EQUAL(_scroll_speed, 2.0, 0.1) ?
+    MFS_CHECKED : MFS_UNCHECKED;
+  SetMenuItemInfo(_speed_menu, MI_speed_2, FALSE, &mii);
+
+  mii.fState = IS_THRESHOLD_EQUAL(_scroll_speed, 3.0, 0.1) ?
+    MFS_CHECKED : MFS_UNCHECKED;
+  SetMenuItemInfo(_speed_menu, MI_speed_3, FALSE, &mii);
+
+  mii.fState = IS_THRESHOLD_EQUAL(_scroll_speed, 6.0, 0.1) ?
+    MFS_CHECKED : MFS_UNCHECKED;
+  SetMenuItemInfo(_speed_menu, MI_speed_6, FALSE, &mii);
+
+  mii.fState = IS_THRESHOLD_EQUAL(_scroll_speed, 12.0, 0.1) ?
+    MFS_CHECKED : MFS_UNCHECKED;
+  SetMenuItemInfo(_speed_menu, MI_speed_12, FALSE, &mii);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinStatsMonitor::add_graph
 //       Access: Private
 //  Description: Adds the newly-created graph to the list of managed
@@ -422,6 +472,7 @@ create_window() {
   _menu_bar = CreateMenu();
 
   setup_options_menu();
+  setup_speed_menu();
   setup_frame_rate_label();
 
   ChartMenus::iterator mi;
@@ -466,7 +517,12 @@ setup_options_menu() {
   mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_SUBMENU;
   mii.fType = MFT_STRING; 
   mii.hSubMenu = _options_menu;
-  mii.dwTypeData = "Options"; 
+
+  // One day, when there is more than one option here, we will
+  // actually present this to the user as the "Options" menu.  For
+  // now, the only option we have is time units.
+  //mii.dwTypeData = "Options"; 
+  mii.dwTypeData = "Units"; 
   InsertMenuItem(_menu_bar, GetMenuItemCount(_menu_bar), TRUE, &mii);
 
   
@@ -474,15 +530,64 @@ setup_options_menu() {
   mii.fType = MFT_STRING | MFT_RADIOCHECK; 
   mii.hbmpChecked = NULL;
   mii.hbmpUnchecked = NULL;
-  mii.fState = MFS_CHECKED;
+  mii.fState = MFS_UNCHECKED;
   mii.wID = MI_time_ms;
   mii.dwTypeData = "ms";
   InsertMenuItem(_options_menu, GetMenuItemCount(_options_menu), TRUE, &mii);
 
-  mii.fState = MFS_UNCHECKED;
   mii.wID = MI_time_hz;
   mii.dwTypeData = "Hz";
   InsertMenuItem(_options_menu, GetMenuItemCount(_options_menu), TRUE, &mii);
+
+  set_time_units(PStatGraph::GBU_ms);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsMonitor::setup_speed_menu
+//       Access: Private
+//  Description: Creates the "Speed" pulldown menu.
+////////////////////////////////////////////////////////////////////
+void WinStatsMonitor::
+setup_speed_menu() {
+  _speed_menu = CreatePopupMenu();
+
+  MENUITEMINFO mii;
+  memset(&mii, 0, sizeof(mii));
+  mii.cbSize = sizeof(mii);
+
+  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_SUBMENU;
+  mii.fType = MFT_STRING; 
+  mii.hSubMenu = _speed_menu;
+  mii.dwTypeData = "Speed"; 
+  InsertMenuItem(_menu_bar, GetMenuItemCount(_menu_bar), TRUE, &mii);
+
+  
+  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID | MIIM_CHECKMARKS | MIIM_STATE;
+  mii.fType = MFT_STRING | MFT_RADIOCHECK; 
+  mii.hbmpChecked = NULL;
+  mii.hbmpUnchecked = NULL;
+  mii.fState = MFS_UNCHECKED;
+  mii.wID = MI_speed_1;
+  mii.dwTypeData = "1";
+  InsertMenuItem(_speed_menu, GetMenuItemCount(_speed_menu), TRUE, &mii);
+
+  mii.wID = MI_speed_2;
+  mii.dwTypeData = "2";
+  InsertMenuItem(_speed_menu, GetMenuItemCount(_speed_menu), TRUE, &mii);
+
+  mii.wID = MI_speed_3;
+  mii.dwTypeData = "3";
+  InsertMenuItem(_speed_menu, GetMenuItemCount(_speed_menu), TRUE, &mii);
+
+  mii.wID = MI_speed_6;
+  mii.dwTypeData = "6";
+  InsertMenuItem(_speed_menu, GetMenuItemCount(_speed_menu), TRUE, &mii);
+
+  mii.wID = MI_speed_12;
+  mii.dwTypeData = "12";
+  InsertMenuItem(_speed_menu, GetMenuItemCount(_speed_menu), TRUE, &mii);
+
+  set_scroll_speed(3);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -600,6 +705,26 @@ handle_menu_command(int menu_id) {
 
   case MI_time_hz:
     set_time_units(PStatGraph::GBU_hz);
+    break;
+
+  case MI_speed_1:
+    set_scroll_speed(1);
+    break;
+
+  case MI_speed_2:
+    set_scroll_speed(2);
+    break;
+
+  case MI_speed_3:
+    set_scroll_speed(3);
+    break;
+
+  case MI_speed_6:
+    set_scroll_speed(6);
+    break;
+
+  case MI_speed_12:
+    set_scroll_speed(12);
     break;
 
   default:
