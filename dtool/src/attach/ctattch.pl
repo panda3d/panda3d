@@ -3,7 +3,7 @@ require "$tool/include/ctutils.pl" ;
 $shell_type = "csh" ;
 if ( $ENV{"SHELL_TYPE"} ne "" ) {
     if ( $ENV{"SHELL_TYPE"} eq "sh" ) {
-	$shell_type = "sh" ;
+    $shell_type = "sh" ;
     }
 }
 
@@ -21,8 +21,8 @@ require "$tool/include/ctquery.pl" ;
 # %newenv = variable marked to be set to value
 sub CTAttachSet {
     if ( ( $_[0] ne "" ) && ( $_[1] ne "" ) ) {
-	&CTUDebug( "setting " . $_[0] . " to '" . $_[1] . "'\n" ) ;
-	$newenv{$_[0]} = $_[1] ;
+    &CTUDebug( "setting " . $_[0] . " to '" . $_[1] . "'\n" ) ;
+    $newenv{$_[0]} = $_[1] ;
     }
 }
 
@@ -36,8 +36,8 @@ sub CTAttachSet {
 sub CTSpoolEnv {
     local( $ret ) = $ENV{$_[0]} ;
     if ( $envsep{$_[0]} ne "" ) {
-	local( @splitlist ) = split( $envsep{$_[0]}, $ret );
-	$ret = join( " ", @splitlist ) ;
+    local( @splitlist ) = split( $envsep{$_[0]}, $ret );
+    $ret = join( " ", @splitlist ) ;
     }
     $ret ;
 }
@@ -54,96 +54,96 @@ sub CTSpoolEnv {
 sub CTAttachMod {
     &CTUDebug( "in CTAttachMod\n" ) ;
     if ( $_[0] eq "CTPROJS" ) {
-	# as part of the system, this one is special
-	&CTUDebug( "doing a mod on $CTPROJS\n" ) ;
-	if ( $newenv{$_[0]} eq "" ) {
-	    $newenv{$_[0]} = $ENV{$_[0]} ;
-	}
-	local( $proj ) = $_[3] ;
-	$proj =~ tr/A-Z/a-z/ ;
-	local( $curflav ) = &CTQueryProj( $proj ) ;
-	if ( $curflav ne "" ) {
-	    local( $tmp ) = $_[3] . ":" . $curflav ;
-	    if ( $newenv{$_[0]} =~ /$tmp/ ) {
-		local( $hold ) = $newenv{$_[0]} ;
-		$hold =~ s/$tmp/$_[1]/ ;
-		&CTUDebug( "already attached to " . $_[3] . " changing '" .
-			   $tmp . "' to '" . $_[1] . "' yielding '" . $hold .
-			   "'\n" ) ;
-		$newenv{$_[0]} = $hold ;
-	    } else {
-		&CTUDebug( "prepending '" . $_[1] . "' to CTPROJS\n" ) ;
-		$newenv{$_[0]} = $_[1] . " " . $newenv{$_[0]} ;
-	    }
-	} else {
-	    &CTUDebug( "writing '" . $_[1] . "' to CTPROJS\n" ) ;
-	    if ( $newenv{$_[0]} eq "" ) {
-		$newenv{$_[0]} = $_[1] ;
-	    } else {
-		$newenv{$_[0]} = $_[1] . " " . $newenv{$_[0]} ;
-	    }
-	}
+    # as part of the system, this one is special
+    &CTUDebug( "doing a mod on $CTPROJS\n" ) ;
+    if ( $newenv{$_[0]} eq "" ) {
+        $newenv{$_[0]} = $ENV{$_[0]} ;
+    }
+    local( $proj ) = $_[3] ;
+    $proj =~ tr/A-Z/a-z/ ;
+    local( $curflav ) = &CTQueryProj( $proj ) ;
+    if ( $curflav ne "" ) {
+        local( $tmp ) = $_[3] . ":" . $curflav ;
+        if ( $newenv{$_[0]} =~ /$tmp/ ) {
+        local( $hold ) = $newenv{$_[0]} ;
+        $hold =~ s/$tmp/$_[1]/ ;
+        &CTUDebug( "already attached to " . $_[3] . " changing '" .
+               $tmp . "' to '" . $_[1] . "' yielding '" . $hold .
+               "'\n" ) ;
+        $newenv{$_[0]} = $hold ;
+        } else {
+        &CTUDebug( "prepending '" . $_[1] . "' to CTPROJS\n" ) ;
+        $newenv{$_[0]} = $_[1] . " " . $newenv{$_[0]} ;
+        }
+    } else {
+        &CTUDebug( "writing '" . $_[1] . "' to CTPROJS\n" ) ;
+        if ( $newenv{$_[0]} eq "" ) {
+        $newenv{$_[0]} = $_[1] ;
+        } else {
+        $newenv{$_[0]} = $_[1] . " " . $newenv{$_[0]} ;
+        }
+    }
     } elsif ( ( $_[0] ne "" ) && ( $_[1] ne "" ) ) {
-	local( $dosimple ) = 0 ;
-	if ( $newenv{$_[0]} eq "" ) {
-	    # not in our 'new' environment yet, add it.
-	    # may still be empty
-	    $newenv{$_[0]} = &CTSpoolEnv( $_[0] ) ;
-	}
-	if ( ! ( $newenv{$_[0]} =~ /$_[1]/ )) {
-	    &CTUDebug( "'" . $_[1] . "' exists in " . $_[0] .
-		       " testing for simple modification\n" ) ;
-	    # if it's in there already, we're done before we started.
-	    if ( $_[1] =~ /^$_[2]/ ) {
-		&CTUDebug( "new value contains root '" . $_[2] .
-			   "', may not be able to do simple edit\n" ) ;
-		# damn, might need to do an in-place edit
-		local( $curroot ) = $ENV{$_[3]} ;
-		&CTUDebug( "current root for '" . $_[3] . "' is '" .
-			   $curroot . "'\n" ) ;
-		if ( $curroot eq "" ) {
-		    &CTUDebug( "can do simple edit\n" ) ;
-		    $dosimple = 1 ;
-		} else {
-		    local( $test ) = $_[1] ;
-		    $test =~ s/^$_[2]// ;
-		    $test = $curroot . $test ;
-		    if ( $newenv{$_[0]} =~ /$test/ ) {
-			# there it is.  in-place edit
-			local( $foo ) = $newenv{$_[0]} ;
-			$foo =~ s/$test/$_[1]/ ;
-			&CTUDebug( "doing in-place edit on " . $_[0] .
-				   " changing '" . $test . "' to '" .
-				   $_[1] . "' yielding '" . $foo . "'\n" ) ;
-			$newenv{$_[0]} = $foo ;
-		    } else {
-			&CTUDebug( "'" . $test . "' did not appear in $_[0]." .
+    local( $dosimple ) = 0 ;
+    if ( $newenv{$_[0]} eq "" ) {
+        # not in our 'new' environment yet, add it.
+        # may still be empty
+        $newenv{$_[0]} = &CTSpoolEnv( $_[0] ) ;
+    }
+    if ( ! ( $newenv{$_[0]} =~ /$_[1]/ )) {
+        &CTUDebug( "'" . $_[1] . "' exists in " . $_[0] .
+               " testing for simple modification\n" ) ;
+        # if it's in there already, we're done before we started.
+        if ( $_[1] =~ /^$_[2]/ ) {
+        &CTUDebug( "new value contains root '" . $_[2] .
+               "', may not be able to do simple edit\n" ) ;
+        # damn, might need to do an in-place edit
+        local( $curroot ) = $ENV{$_[3]} ;
+        &CTUDebug( "current root for '" . $_[3] . "' is '" .
+               $curroot . "'\n" ) ;
+        if ( $curroot eq "" ) {
+            &CTUDebug( "can do simple edit\n" ) ;
+            $dosimple = 1 ;
+        } else {
+            local( $test ) = $_[1] ;
+            $test =~ s/^$_[2]// ;
+            $test = $curroot . $test ;
+            if ( $newenv{$_[0]} =~ /$test/ ) {
+            # there it is.  in-place edit
+            local( $foo ) = $newenv{$_[0]} ;
+            $foo =~ s/$test/$_[1]/ ;
+            &CTUDebug( "doing in-place edit on " . $_[0] .
+                   " changing '" . $test . "' to '" .
+                   $_[1] . "' yielding '" . $foo . "'\n" ) ;
+            $newenv{$_[0]} = $foo ;
+            } else {
+            &CTUDebug( "'" . $test . "' did not appear in $_[0]." .
                                    "  Simple edit\n" ) ;
-			$dosimple = 1 ;
-		    }
-		}
-	    } else {
-		&CTUDebug( "new value does not contain root '" . $_[2] .
-			   "', can do simple edit\n" ) ;
-		# don't have to sweat in-place edits
-		$dosimple = 1 ;
-	    }
-	}
-	if ( $dosimple ) {
-	    if ( $newenv{$_[0]} eq "" ) {
-		&CTUDebug( "no pre-existing value in " . $_[0] .
-			   " setting it to '" . $_[1] . "'\n" ) ;
-		$newenv{$_[0]} = $_[1] ;
-	    } elsif ( $envpostpend{$_[0]} ) {
-		&CTUDebug( "post-pending '" . $_[1] . "' to " . $_[0] .
-			   "\n" ) ;
-		$newenv{$_[0]} = $newenv{$_[0]} . " " . $_[1] ;
-	    } else {
-		&CTUDebug( "pre-pending '" . $_[1] . "' to " . $_[0] .
-			   "\n" ) ;
-		$newenv{$_[0]} = $_[1] . " " . $newenv{$_[0]} ;
-	    }
-	}
+            $dosimple = 1 ;
+            }
+        }
+        } else {
+        &CTUDebug( "new value does not contain root '" . $_[2] .
+               "', can do simple edit\n" ) ;
+        # don't have to sweat in-place edits
+        $dosimple = 1 ;
+        }
+    }
+    if ( $dosimple ) {
+        if ( $newenv{$_[0]} eq "" ) {
+        &CTUDebug( "no pre-existing value in " . $_[0] .
+               " setting it to '" . $_[1] . "'\n" ) ;
+        $newenv{$_[0]} = $_[1] ;
+        } elsif ( $envpostpend{$_[0]} ) {
+        &CTUDebug( "post-pending '" . $_[1] . "' to " . $_[0] .
+               "\n" ) ;
+        $newenv{$_[0]} = $newenv{$_[0]} . " " . $_[1] ;
+        } else {
+        &CTUDebug( "pre-pending '" . $_[1] . "' to " . $_[0] .
+               "\n" ) ;
+        $newenv{$_[0]} = $_[1] . " " . $newenv{$_[0]} ;
+        }
+    }
     }
 }
 
@@ -180,6 +180,7 @@ sub CTAttachCompute {
    #
    while ( ! $done ) {
       $spec = &CTResolveSpec( $_[0], $flav ) ;
+      #print STDERR  "spec line '" . $spec . "' flav: '" . $flav ."'\n";
       &CTUDebug( "spec line = '$spec'\n" ) ;
       if ( $spec ne "" ) {
          $root = &CTComputeRoot( $_[0], $flav, $spec ) ;
@@ -203,7 +204,7 @@ sub CTAttachCompute {
          } elsif ( $flav eq "ship" ) {
             $flav = "release" ;
          } else {
-            $flav = "ship" ;
+            $flav = "install" ;
          }
       } elsif ( ! $done ) {
          $spec = "" ;
@@ -232,122 +233,122 @@ sub CTAttachCompute {
       local( $localdocnt ) = 0 ;
       local( %localpost );
       if ( -e $init ) {
-	  &CTUDebug( "scanning " . $_[0] . ".init\n" ) ;
-	  local( @linesplit ) ;
-	  local( $linetmp ) ;
-	  local( $loop ) ;
-	  local( $looptmp ) ;
-	  local( *INITFILE ) ;
-	  if ( -x $init ) {
-	      open( INITFILE, "$init $_[0] $_[1] $root |" ) ;
-	  } else {
-	      open( INITFILE, "< $init" ) ;
-	  }
-	  while ( <INITFILE> ) {
-	      s/\n$// ;
-	      @linesplit = split( /\#/ ) ;
-	      $_ = $linesplit[0] ;
-	      if ( $_ =~ /^MODABS/ ) {
-		  @linesplit = split ;
-		  $linetmp = $linesplit[1] ;
-		  shift( @linesplit ) ;
-		  shift( @linesplit ) ;
-		  if ( $localmod{$linetmp} eq "" ) {
-		      $localmod{$linetmp} = join( " ", @linesplit ) ;
-		  } else {
-		      $localmod{$linetmp} = $localmod{$linetmp} . " " .
-			  join( " ", @linesplit ) ;
-		  }
-	      } elsif ( $_ =~ /^MODREL/ ) {
-		  @linesplit = split ;
-		  $linetmp = $linesplit[1] ;
-		  shift( @linesplit ) ;
-		  shift( @linesplit ) ;
-		  foreach $loop ( @linesplit ) {
-		      $looptmp = $root . "/" . &CTUShellEval($loop) ;
-		      if ( -e $looptmp ) {
-			  if ( $localmod{$linetmp} eq "" ) {
-			      $localmod{$linetmp} = $looptmp ;
-			  } else {
-			      $localmod{$linetmp} = $localmod{$linetmp} . " " .
-				  $looptmp ;
-			  }
-		      }
-		  }
-	      } elsif ( $_ =~ /^SETABS/ ) {
-		  @linesplit = split ;
-		  $linetmp = $linesplit[1] ;
-		  shift( @linesplit ) ;
-		  shift( @linesplit ) ;
-		  if ( $localset{$linetmp} eq "" ) {
-		      $localset{$linetmp} = join( " ", @linesplit ) ;
-		  } else {
-		      $localset{$linetmp} = $localset{$linetmp} . " " .
-			  join( " ", @linesplit ) ;
-		  }
-	      } elsif ( $_ =~ /^SETREL/ ) {
-		  @linesplit = split ;
-		  $linetmp = $linesplit[1] ;
-		  shift( @linesplit ) ;
-		  shift( @linesplit ) ;
-		  foreach $loop ( @linesplit ) {
-		      $looptmp = $root . "/" . &CTUShellEval($loop) ;
-		      if ( -e $looptmp ) {
-			  if ( $localset{$linetmp} eq "" ) {
-			      $localset{$linetmp} = $looptmp ;
-			  } else {
-			      $localset{$linetmp} = $localset{$linetmp} . " " .
-				  $looptmp ;
-			  }
-		      }
-		  }
-	      } elsif ( $_ =~ /^SEP/ ) {
-		  @linesplit = split ;
-		  $localsep{$linesplit[1]} = $linesplit[2] ;
-	      } elsif ( $_ =~ /^CMD/ ) {
-		  @linesplit = split ;
-		  $localcmd{$linesplit[1]} = $linesplit[2] ;
-	      } elsif ( $_ =~ /^DOCSH/ ) {
-		  if ( $shell_type ne "sh" ) {
-		      @linesplit = split ;
-		      shift( @linesplit ) ;
-		      $localdo{$localdocnt} = join( " ", @linesplit ) ;
-		      $localdocnt++ ;
-		  }
-	      } elsif ( $_ =~ /^DOSH/ ) {
-		  if ( $shell_type eq "sh" ) {
-		      @linesplit = split ;
-		      shift( @linesplit ) ;
-		      $localdo{$localdocnt} = join( " ", @linesplit ) ;
-		      $localdocnt++ ;
-		  }
-	      } elsif ( $_ =~ /^DO/ ) {
-		  @linesplit = split ;
-		  shift( @linesplit ) ;
-		  $localdo{$localdocnt} = join( " ", @linesplit ) ;
-		  $localdocnt++ ;
-	      } elsif ( $_ =~ /^POSTPEND/ ) {
-		  @linesplit = split ;
-		  $localpost{$linesplit[1]} = 1 ;
-	      } elsif ( $_ =~ /^ATTACH/ ) {
-		  @linesplit = split ;
-		  shift( @linesplit ) ;
-		  foreach $loop ( @linesplit ) {
-		      push( @attachqueue, $loop ) ;
-		  }
-	      } elsif ( $_ ne "" ) {
-		  print STDERR "Unknown .init directive '$_'\n" ;
-	      }
-	  }
-	  close( INITFILE ) ;
+      &CTUDebug( "scanning " . $_[0] . ".init\n" ) ;
+      local( @linesplit ) ;
+      local( $linetmp ) ;
+      local( $loop ) ;
+      local( $looptmp ) ;
+      local( *INITFILE ) ;
+      if ( -x $init ) {
+          open( INITFILE, "$init $_[0] $_[1] $root |" ) ;
+      } else {
+          open( INITFILE, "< $init" ) ;
+      }
+      while ( <INITFILE> ) {
+          s/\n$// ;
+          @linesplit = split( /\#/ ) ;
+          $_ = $linesplit[0] ;
+          if ( $_ =~ /^MODABS/ ) {
+          @linesplit = split ;
+          $linetmp = $linesplit[1] ;
+          shift( @linesplit ) ;
+          shift( @linesplit ) ;
+          if ( $localmod{$linetmp} eq "" ) {
+              $localmod{$linetmp} = join( " ", @linesplit ) ;
+          } else {
+              $localmod{$linetmp} = $localmod{$linetmp} . " " .
+              join( " ", @linesplit ) ;
+          }
+          } elsif ( $_ =~ /^MODREL/ ) {
+          @linesplit = split ;
+          $linetmp = $linesplit[1] ;
+          shift( @linesplit ) ;
+          shift( @linesplit ) ;
+          foreach $loop ( @linesplit ) {
+              $looptmp = $root . "/" . &CTUShellEval($loop) ;
+              if ( -e $looptmp ) {
+              if ( $localmod{$linetmp} eq "" ) {
+                  $localmod{$linetmp} = $looptmp ;
+              } else {
+                  $localmod{$linetmp} = $localmod{$linetmp} . " " .
+                  $looptmp ;
+              }
+              }
+          }
+          } elsif ( $_ =~ /^SETABS/ ) {
+          @linesplit = split ;
+          $linetmp = $linesplit[1] ;
+          shift( @linesplit ) ;
+          shift( @linesplit ) ;
+          if ( $localset{$linetmp} eq "" ) {
+              $localset{$linetmp} = join( " ", @linesplit ) ;
+          } else {
+              $localset{$linetmp} = $localset{$linetmp} . " " .
+              join( " ", @linesplit ) ;
+          }
+          } elsif ( $_ =~ /^SETREL/ ) {
+          @linesplit = split ;
+          $linetmp = $linesplit[1] ;
+          shift( @linesplit ) ;
+          shift( @linesplit ) ;
+          foreach $loop ( @linesplit ) {
+              $looptmp = $root . "/" . &CTUShellEval($loop) ;
+              if ( -e $looptmp ) {
+              if ( $localset{$linetmp} eq "" ) {
+                  $localset{$linetmp} = $looptmp ;
+              } else {
+                  $localset{$linetmp} = $localset{$linetmp} . " " .
+                  $looptmp ;
+              }
+              }
+          }
+          } elsif ( $_ =~ /^SEP/ ) {
+          @linesplit = split ;
+          $localsep{$linesplit[1]} = $linesplit[2] ;
+          } elsif ( $_ =~ /^CMD/ ) {
+          @linesplit = split ;
+          $localcmd{$linesplit[1]} = $linesplit[2] ;
+          } elsif ( $_ =~ /^DOCSH/ ) {
+          if ( $shell_type ne "sh" ) {
+              @linesplit = split ;
+              shift( @linesplit ) ;
+              $localdo{$localdocnt} = join( " ", @linesplit ) ;
+              $localdocnt++ ;
+          }
+          } elsif ( $_ =~ /^DOSH/ ) {
+          if ( $shell_type eq "sh" ) {
+              @linesplit = split ;
+              shift( @linesplit ) ;
+              $localdo{$localdocnt} = join( " ", @linesplit ) ;
+              $localdocnt++ ;
+          }
+          } elsif ( $_ =~ /^DO/ ) {
+          @linesplit = split ;
+          shift( @linesplit ) ;
+          $localdo{$localdocnt} = join( " ", @linesplit ) ;
+          $localdocnt++ ;
+          } elsif ( $_ =~ /^POSTPEND/ ) {
+          @linesplit = split ;
+          $localpost{$linesplit[1]} = 1 ;
+          } elsif ( $_ =~ /^ATTACH/ ) {
+          @linesplit = split ;
+          shift( @linesplit ) ;
+          foreach $loop ( @linesplit ) {
+              push( @attachqueue, $loop ) ;
+          }
+          } elsif ( $_ ne "" ) {
+          print STDERR "Unknown .init directive '$_'\n" ;
+          }
+      }
+      close( INITFILE ) ;
       }
 
       # now handle sub-attaches
       &CTUDebug( "performing sub-attaches\n" ) ;
       while ( @attachqueue != () ) {
-	  $item = shift( @attachqueue ) ;
-	  &CTUDebug( "attaching to " . $item . "\n" ) ;
-	  &CTAttachCompute( $item, $defflav, 1 ) ;
+      $item = shift( @attachqueue ) ;
+      &CTUDebug( "attaching to " . $item . "\n" ) ;
+      &CTAttachCompute( $item, $defflav, 1 ) ;
       }
 
       # now we will do our extentions, then apply the mods from the .init
@@ -355,7 +356,7 @@ sub CTAttachCompute {
       &CTUDebug( "extending paths\n" ) ;
       local( $type ) = &CTSpecType( $spec ) ;
       if ( $type eq "vroot" ) {
-	  &CTAttachMod( "PATH", "/usr/atria/bin", $root, $proj ) ;
+      &CTAttachMod( "PATH", "/usr/atria/bin", $root, $proj ) ;
       }
 
       # For now, we will not check whether the various /bin, /lib,
@@ -370,30 +371,30 @@ sub CTAttachCompute {
 
           $item = $root . "/bin" ;
           #if ( -e $item ) {
-	  &CTAttachMod( "PATH", $item, $root, $proj ) ;
+      &CTAttachMod( "PATH", $item, $root, $proj ) ;
           #}
 
           $item = $root . "/lib" ;
           #if ( -e $item ) {
-	  if ( $ENV{"PENV"} eq "WIN32" ) {
-	      &CTAttachMod( "PATH", $item, $root, $proj ) ;
-	  }
-	  &CTAttachMod( "LD_LIBRARY_PATH", $item, $root, $proj ) ;
+      if ( $ENV{"PENV"} eq "WIN32" ) {
+          &CTAttachMod( "PATH", $item, $root, $proj ) ;
+      }
+      &CTAttachMod( "LD_LIBRARY_PATH", $item, $root, $proj ) ;
           #}
 
           $item = $root . "/src" ;
           #if ( -e $item ) {
-	  &CTAttachMod( "CDPATH", $item, $root, $proj ) ;
+      &CTAttachMod( "CDPATH", $item, $root, $proj ) ;
           #}
 
           $item = $root . "/include" ;
           #if ( -e $item ) {
-	  &CTAttachMod( "CT_INCLUDE_PATH", $item, $root, $proj ) ;
+      &CTAttachMod( "CT_INCLUDE_PATH", $item, $root, $proj ) ;
           #}
 
           $item = $root . "/etc" ;
           #if ( -e $item ) {
-	  &CTAttachMod( "ETC_PATH", $item, $root, $proj ) ;
+      &CTAttachMod( "ETC_PATH", $item, $root, $proj ) ;
           #}
       }
 
@@ -402,27 +403,27 @@ sub CTAttachCompute {
 
       # run thru the stuff saved up from the .init file
       foreach $item ( keys %localsep ) {
-	  $envsep{$item} = $localsep{$item} ;
+      $envsep{$item} = $localsep{$item} ;
       }
       foreach $item ( keys %localpost ) {
-	  $envpostpend{$item} = $localpost{$item} ;
+      $envpostpend{$item} = $localpost{$item} ;
       }
       foreach $item ( keys %localmod ) {
-	  local( @splitthis ) = split( / +/, $localmod{$item} ) ;
-	  local( $thing ) ;
-	  foreach $thing ( @splitthis ) {
-	      &CTAttachMod( $item, $thing, $root, $proj ) ;
-	  }
+      local( @splitthis ) = split( / +/, $localmod{$item} ) ;
+      local( $thing ) ;
+      foreach $thing ( @splitthis ) {
+          &CTAttachMod( $item, $thing, $root, $proj ) ;
+      }
       }
       foreach $item ( keys %localset ) {
-	  &CTAttachSet( $item, $localset{$item} ) ;
+      &CTAttachSet( $item, $localset{$item} ) ;
       }
       foreach $item ( keys %localcmd ) {
-	  $envcmd{$item} = $localcmd{$item} ;
+      $envcmd{$item} = $localcmd{$item} ;
       }
       foreach $item ( keys %localdo ) {
-	  $envdo{$docnt} = $localdo{$item} ;
-	  $docnt++ ;
+      $envdo{$docnt} = $localdo{$item} ;
+      $docnt++ ;
       }
    }
 
@@ -457,39 +458,39 @@ sub CTAttachWriteScript {
    foreach $item ( keys %newenv ) {
        local( $sep ) = " " ;
        if ( $envsep{$item} ne "" ) {
-	   $sep = $envsep{$item} ;
+       $sep = $envsep{$item} ;
        }
        local( @splitlist ) = split( / +/, $newenv{$item} ) ;
        local( $outval ) = join( $sep, @splitlist ) ;
 
        if ( $shell_type eq "sh" ) {
-	   print OUTFILE "$item=\"" . $outval . "\"\n" ;
-	   if ( $envcmd{$item} ne "set" ) {
-	       print OUTFILE "export $item\n" ;
-	   }
+       print OUTFILE "$item=\"" . $outval . "\"\n" ;
+       if ( $envcmd{$item} ne "set" ) {
+           print OUTFILE "export $item\n" ;
+       }
        } else {
-	   if ( $envcmd{$item} ne "" ) {
-	       print OUTFILE $envcmd{$item} . " $item " ;
-	       if ( $envcmd{$item} eq "set" ) {
-		   print OUTFILE "= ( " ;
-	       }
-	       print OUTFILE $outval ;
-	       if ( $envcmd{$item} eq "set" ) {
-		   print OUTFILE ")" ;
-	       }
-	       print OUTFILE "\n" ;
-	   } else {
-	       print OUTFILE "setenv $item \"$outval\"\n" ;
+       if ( $envcmd{$item} ne "" ) {
+           print OUTFILE $envcmd{$item} . " $item " ;
+           if ( $envcmd{$item} eq "set" ) {
+           print OUTFILE "= ( " ;
+           }
+           print OUTFILE $outval ;
+           if ( $envcmd{$item} eq "set" ) {
+           print OUTFILE ")" ;
+           }
+           print OUTFILE "\n" ;
+       } else {
+           print OUTFILE "setenv $item \"$outval\"\n" ;
                if ( $ctdebug ) {
                    print OUTFILE "echo setting " . $item . " to '" . $outval . "'\n" ;
                }
-	   }
+       }
        }
    }
 
    if ( $newenv{"CDPATH"} ne "" ) {
        if ( $shell_type ne "sh" ) {
-	   print OUTFILE "set cdpath = ( \$" . "CDPATH )\n" ;
+       print OUTFILE "set cdpath = ( \$" . "CDPATH )\n" ;
            if ( $ctdebug ) {
                print OUTFILE "echo assigning cdpath\n" ;
            }
