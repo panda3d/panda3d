@@ -45,29 +45,6 @@ EggJointData(EggCharacterCollection *collection,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggJointData::find_joint
-//       Access: Public
-//  Description: Returns the first descendent joint found with the
-//               indicated name, or NULL if no joint has that name.
-////////////////////////////////////////////////////////////////////
-EggJointData *EggJointData::
-find_joint(const string &name) {
-  Children::const_iterator ci;
-  for (ci = _children.begin(); ci != _children.end(); ++ci) {
-    EggJointData *child = (*ci);
-    if (child->get_name() == name) {
-      return child;
-    }
-    EggJointData *result = child->find_joint(name);
-    if (result != (EggJointData *)NULL) {
-      return result;
-    }
-  }
-
-  return (EggJointData *)NULL;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: EggJointData::get_frame
 //       Access: Public
 //  Description: Returns the local transform matrix corresponding to
@@ -436,6 +413,53 @@ do_finish_reparent() {
   }
 
   return all_ok;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::find_joint_exact
+//       Access: Private
+//  Description: The recursive implementation of find_joint, this
+//               flavor searches recursively for an exact match of the
+//               preferred joint name.
+////////////////////////////////////////////////////////////////////
+EggJointData *EggJointData::
+find_joint_exact(const string &name) {
+  Children::const_iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    EggJointData *child = (*ci);
+    if (child->get_name() == name) {
+      return child;
+    }
+    EggJointData *result = child->find_joint_exact(name);
+    if (result != (EggJointData *)NULL) {
+      return result;
+    }
+  }
+
+  return (EggJointData *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::find_joint_matches
+//       Access: Private
+//  Description: The recursive implementation of find_joint, this
+//               flavor searches recursively for any acceptable match.
+////////////////////////////////////////////////////////////////////
+EggJointData *EggJointData::
+find_joint_matches(const string &name) {
+  Children::const_iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    EggJointData *child = (*ci);
+    if (child->matches_name(name)) {
+      return child;
+    }
+    EggJointData *result = child->find_joint_matches(name);
+    if (result != (EggJointData *)NULL) {
+      return result;
+    }
+  }
+
+  return (EggJointData *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

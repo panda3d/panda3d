@@ -49,6 +49,21 @@ get_child(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::find_joint
+//       Access: Public
+//  Description: Returns the first descendent joint found with the
+//               indicated name, or NULL if no joint has that name.
+////////////////////////////////////////////////////////////////////
+INLINE EggJointData *EggJointData::
+find_joint(const string &name) {
+  EggJointData *joint = find_joint_exact(name);
+  if (joint == (EggJointData *)NULL) {
+    joint = find_joint_matches(name);
+  }
+  return joint;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggJointData::has_rest_frame
 //       Access: Public
 //  Description: Returns true if the joint knows its rest frame, false

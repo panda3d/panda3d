@@ -41,7 +41,7 @@ public:
   INLINE EggJointData *get_parent() const;
   INLINE int get_num_children() const;
   INLINE EggJointData *get_child(int n) const;
-  EggJointData *find_joint(const string &name);
+  INLINE EggJointData *find_joint(const string &name);
 
   LMatrix4d get_frame(int model_index, int n) const;
   LMatrix4d get_net_frame(int model_index, int n) const;
@@ -69,6 +69,9 @@ protected:
   bool do_finish_reparent();
 
 private:
+  EggJointData *find_joint_exact(const string &name);
+  EggJointData *find_joint_matches(const string &name);
+
   const LMatrix4d &get_new_net_frame(int model_index, int n);
   const LMatrix4d &get_new_net_frame_inv(int model_index, int n);
   LMatrix4d get_new_frame(int model_index, int n);
