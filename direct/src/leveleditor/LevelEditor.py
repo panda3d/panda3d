@@ -1614,6 +1614,8 @@ class LevelEditor(NodePath, PandaObject):
             self.DNATarget = dnaObject
             if direct.fControl:
                 menuMode = 'prop_color'
+            elif direct.fAlt and self.panel.currentBaselineDNA:
+                menuMode = 'baseline_style'
             elif direct.fShift:
                 menuMode = 'sign_texture'
                 self.DNATarget = DNAGetChildOfClass(dnaObject, DNA_SIGN)
@@ -1688,10 +1690,10 @@ class LevelEditor(NodePath, PandaObject):
             # Do sign operations
             if direct.fControl:
                 menuMode = 'sign_color'
+            elif direct.fAlt and self.panel.currentBaselineDNA:
+                menuMode = 'baseline_style'
             elif direct.fAlt:
                 menuMode = 'sign_orientation'
-            elif direct.fShift:
-                menuMode = 'baseline_style'
             else:
                 menuMode = 'sign_texture'
         return menuMode
