@@ -1,9 +1,10 @@
 """DistributedNode module: contains the DistributedNode class"""
 
-from direct.showbase.ShowBaseGlobal import *
 from pandac.PandaModules import NodePath
-import DistributedObject
+from direct.showbase.ShowBaseGlobal import *
 from direct.task import Task
+import GridParent
+import DistributedObject
 import types
 
 class DistributedNode(DistributedObject.DistributedObject, NodePath):
@@ -17,6 +18,9 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
             self.gotStringParentToken = 0
             DistributedObject.DistributedObject.__init__(self, cr)
 
+            # initialize gridParent
+            self.gridParent = None
+            
     def disable(self):
         if self.activeState != DistributedObject.ESDisabled:
             self.reparentTo(hidden)
@@ -29,12 +33,34 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
             self.DistributedNode_deleted = 1
             if not self.isEmpty():
                 self.removeNode()
+            if self.gridParent:
+                self.gridParent.delete()
             DistributedObject.DistributedObject.delete(self)
 
     def generate(self):
         DistributedObject.DistributedObject.generate(self)
         self.gotStringParentToken = 0
 
+    def setLocation(self, parentId, zoneId):
+        # Redefine DistributedObject setLocation, so that when
+        # location is set to the ocean grid, we can update our parenting
+        # under gridParent
+        DistributedObject.DistributedObject.setLocation(self, parentId, zoneId)
+        parentObj = self.cr.doId2do.get(parentId)
+        if parentObj:
+            if parentObj.isGridParent():
+                if not self.gridParent:
+                    self.gridParent = GridParent.GridParent(self)
+                self.gridParent.setGridParent(parentObj, zoneId)
+            else:
+                if self.gridParent:
+                    self.gridParent.delete()
+                    self.gridParent = None
+                    # NOTE: at this point the avatar has been detached from the scene
+                    # graph.  Someone else needs to reparent him to something in the scene graph
+            # TODO: handle DistributedNode parenting
+
+            
     def __cmp__(self, other):
         # DistributedNode inherits from NodePath, which inherits a
         # definition of __cmp__ from FFIExternalObject that uses the

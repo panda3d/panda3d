@@ -367,3 +367,7 @@ class DistributedObject(PandaObject):
     def updateZone(self, zoneId):
         self.cr.sendUpdateZone(self, zoneId)
 
+    def isGridParent(self):
+        # If this distributed object is a DistributedGrid return 1.  0 by default
+        return 0
+

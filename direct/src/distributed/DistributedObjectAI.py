@@ -316,7 +316,6 @@ class DistributedObjectAI(DirectObject.DirectObject):
                 assert doId is None or doId == self.__preallocDoId
                 doId=self.__preallocDoId
                 self.__preallocDoId = 0
-
             self.air.sendGenerateOtpObject(
                     self, parentId, zoneId, optionalFields, doId=doId)
             assert not hasattr(self, 'parentId')
@@ -475,4 +474,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
         else:
             self.notify.warning("Unexpected completion from barrier %s" % (context))
 
+    def isGridParent(self):
+        # If this distributed object is a DistributedGrid return 1.  0 by default
+        return 0
 
