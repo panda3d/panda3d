@@ -1,7 +1,7 @@
 from PandaModules import Vec3, Point3
 
 UNPICKABLE = ['x-disc-visible', 'y-disc-visible', 'z-disc-visible',
-              'gridBack', 'unpickable']
+              'GridBack', 'unpickable']
 
 # For linmath operations
 X_AXIS = Vec3(1,0,0)
@@ -31,4 +31,3 @@ SKIP_BACKFACE = 2
 SKIP_CAMERA = 4
 SKIP_UNPICKABLE = 8
 SKIP_ALL = SKIP_HIDDEN | SKIP_BACKFACE | SKIP_CAMERA | SKIP_UNPICKABLE
-
