@@ -118,7 +118,7 @@ void EggComponentData::
 extend_to(int model_index, int num_frames) const {
   EggBackPointer *back = get_model(model_index);
   nassertv(back != (EggBackPointer *)NULL);
-  return back->extend_to(num_frames);
+  back->extend_to(num_frames);
 }
 
 ////////////////////////////////////////////////////////////////////
