@@ -10,3 +10,4 @@ MODREL PYTHONPATH src/showbase
 MODREL PYTHONPATH src/directutil
 MODREL PYTHONPATH src/tkwidgets
 MODREL PYTHONPATH src/tkpanels
+MODREL PYTHONPATH src/leveleditor

@@ -117,6 +117,8 @@ class DirectSession(PandaObject):
         self.in2DWidget = 1
 
     def enable(self):
+        # Make sure old tasks are shut down
+        self.disable()
 	# Start all display region context tasks
         for context in self.contextList:
             context.spawnContextTask()

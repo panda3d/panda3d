@@ -292,7 +292,7 @@ class LevelEditor(NodePath, PandaObject):
     def getWallTexture(self):
 	return self.attributeDictionary['wallTexture']
 
-    def getWallTexture(self, dnaString):
+    def getWallTextureDNA(self, dnaString):
 	self.attributeDictionary['wallTexture'] = dnaString
 
     def getWallTextures(self):
@@ -1934,25 +1934,25 @@ class LevelEditor(NodePath, PandaObject):
             newDNAFlatBuilding.add(self.createWall(20.0))
         elif selectedType == 'toonTenTwenty':
             self.setBuildingHeight(30.0)
-            newDNAFlatBuilding(self.createWall(10.0))
-            newDNAFlatBuilding(self.createWall(20.0))
+            newDNAFlatBuilding.add(self.createWall(10.0))
+            newDNAFlatBuilding.add(self.createWall(20.0))
         elif selectedType == 'toonTwentyTen':
             self.setBuildingHeight(30.0)
-            newDNAFlatBuilding(self.createWall(20.0))
-            newDNAFlatBuilding(self.createWall(10.0))
+            newDNAFlatBuilding.add(self.createWall(20.0))
+            newDNAFlatBuilding.add(self.createWall(10.0))
         elif selectedType == 'toonTenTenTen':
             self.setBuildingHeight(30.0)
-            newDNAFlatBuilding(self.createWall(10.0))
-            newDNAFlatBuilding(self.createWall(10.0))
-            newDNAFlatBuilding(self.createWall(10.0))
+            newDNAFlatBuilding.add(self.createWall(10.0))
+            newDNAFlatBuilding.add(self.createWall(10.0))
+            newDNAFlatBuilding.add(self.createWall(10.0))
         elif selectedType == 'toonTenTwenty':
-            newDNAFlatBuilding(self.createWall(10.0))
-            newDNAFlatBuilding(self.createWall(20.0))
+            newDNAFlatBuilding.add(self.createWall(10.0))
+            newDNAFlatBuilding.add(self.createWall(20.0))
         elif selectedType == 'toonTwentyTen':
-            newDNAFlatBuilding(self.createWall(20.0))
-            newDNAFlatBuilding(self.createWall(10.0))
+            newDNAFlatBuilding.add(self.createWall(20.0))
+            newDNAFlatBuilding.add(self.createWall(10.0))
         elif selectedType == 'toonThirty':
-            newDNAFlatBuilding(self.createWall(30.0))
+            newDNAFlatBuilding.add(self.createWall(30.0))
 
 	# Pick a style for this building
 	self.setRandomBuildingStyle(newDNAFlatBuilding)
@@ -1970,7 +1970,7 @@ class LevelEditor(NodePath, PandaObject):
 	newDNALandmarkBuilding.setCode(self.getDNACode(landmarkType))
 	newDNALandmarkBuilding.setPos(VBase3(0))
 	newDNALandmarkBuilding.setHpr(VBase3(self.lastAngle,0.0,0.0))
-	newDNADoor = self.createDoor(self.doorTexture)
+	newDNADoor = self.createDoor(self.getDoorTexture())
 	newDNALandmarkBuilding.add(newDNADoor)
 	# Now place new building in the world
 	self.addDNAGroup(newDNALandmarkBuilding)
@@ -1990,7 +1990,7 @@ class LevelEditor(NodePath, PandaObject):
 	newDNAProp.setHpr(VBase3(self.lastAngle,0.0,0.0))
 	# Now place new building in the world
 	self.addDNAGroup(newDNAProp)
-	self.propType(newPropType)
+	self.setPropType(newPropType)
 
     def addStreetModule(self, streetType):
 	newDNAStreet = DNAStreet(streetType)
@@ -2009,8 +2009,8 @@ class LevelEditor(NodePath, PandaObject):
 	newDNAWall = self.createWallWithDNA(dnaString, height)
 	# Pick a default window
 	newDNAWindows = DNAWindows()
-	self.windowTexture(self.getRandomWindowTexture())
-	newDNAWindows.setCode(self.getDNACode(self.windowTexture))
+	self.setWindowTexture(self.getRandomWindowTexture())
+	newDNAWindows.setCode(self.getDNACode(self.getWindowTexture()))
 	newDNAWindows.setCount(self.getRandomNumWindows(height))
         # MRM Need to randomize
 	newDNAWindows.setColor(self.getWallColors())
@@ -2028,7 +2028,8 @@ class LevelEditor(NodePath, PandaObject):
 	newDNADoor = DNADoor()
 	newDNADoor.setCode(self.getDNACode(dnaString))
         # MRM Need to randomize
-	newDNADoor.setColor(self.getDoorColors())
+        colors = self.getDoorColors()
+	newDNADoor.setColor(colors[randint(0,len(colors) - 1)])
 	return newDNADoor
 
     def createNewLevelGroup(self):
@@ -2075,18 +2076,18 @@ class LevelEditor(NodePath, PandaObject):
 	
 	# Pick a default window
 	newDNAWindows = DNAWindows()
-	newDNAWindows.setCode(self.getDNACode(self.windowTexture))
+	newDNAWindows.setCode(self.getDNACode(self.getWindowTexture()))
 	newDNAWindows.setCount(1)
-	newDNAWindows.setColor(self.windowColor)
+	newDNAWindows.setColor(self.getWindowColor())
 	newDNAWall.add(newDNAWindows)
 	
 	return newDNAWall
 
     def createWindows(self, numWindows):
 	newDNAWindows = DNAWindows()
-	newDNAWindows.setCode(self.getDNACode(self.windowTexture))
+	newDNAWindows.setCode(self.getDNACode(self.getWindowTexture()))
 	newDNAWindows.setCount(numWindows)
-	newDNAWindows.setColor(self.windowColor)
+	newDNAWindows.setColor(self.getWindowColor())
 	return newDNAWindows
 
     def getCatalogCodes(self, category):
@@ -2108,7 +2109,7 @@ class LevelEditor(NodePath, PandaObject):
 	lastWall = self.getLastWall(aDNAFlatBuilding)
         if lastWall:
             for i in range(lastWall.getNumChildren()):
-                child = lastWall[i]
+                child = lastWall.at(i)
                 if child.getClassType().eq(DNACornice.getClassType()):
                     return child
         # Not found
@@ -2132,7 +2133,7 @@ class LevelEditor(NodePath, PandaObject):
 
     def getDoor(self, aDNAGroup):
         for i in range(aDNAGroup.getNumChildren()):
-            child = aDNAGroup[i]
+            child = aDNAGroup.at(i)
             # MRM CLASS INFO?
             if child.getClassType().eq(DNADoor.getClassType()):
                 return child
@@ -2142,7 +2143,7 @@ class LevelEditor(NodePath, PandaObject):
     def getLastWall(self, aDNAFlatBuilding):
 	lastWall = None
         for i in range(aDNAFlatBuilding.getNumChildren()):
-            child = aDNAFlatBuilding[i]
+            child = aDNAFlatBuilding.at(i)
             if child.getClassType().eq(DNAWall.getClassType()):
                 lastWall = child
         return lastWall
@@ -2195,7 +2196,7 @@ class LevelEditor(NodePath, PandaObject):
             return None
         
     def getRandomStyle(self):
-	return self.getRandomDictionaryEntry(styleDictionary)
+	return self.getRandomDictionaryEntry(self.styleDictionary)
 
     def getRandomWallTexture(self):
 	return self.getWallTextures()[
@@ -2221,7 +2222,7 @@ class LevelEditor(NodePath, PandaObject):
     def getWall(self, aDNAGroup, wallNum):
 	wallCount = 0
         for i in range(aDNAGroup.getNumChildren()):
-            child = aDNAGroup[i]
+            child = aDNAGroup.at(i)
             if child.getClassType().eq(DNAWall.getClassType()):
                 if wallCount == wallNum:
                     return child
@@ -2235,7 +2236,7 @@ class LevelEditor(NodePath, PandaObject):
 
 	# Compute wall heights
         for i in range(aDNAFlatBuilding.getNumChildren()):
-            child = aDNAFlatBuilding[i]
+            child = aDNAFlatBuilding.at(i)
             if child.getClassType().eq(DNAWall.getClassType()):
                 heightTotal = heightTotal + child.getHeight()
                 heightList.add(heightTotal)
@@ -2255,7 +2256,7 @@ class LevelEditor(NodePath, PandaObject):
     def getWindow(self, aDNAGroup, windowNum):
 	windowCount = 0
         for i in range(aDNAGroup.getNumChildren()):
-            child = aDNAGroup[i]
+            child = aDNAGroup.at(i)
             if (child.getClassType().eq(DNAWindow.getClassType()) |
                 child.getClassType().eq(DNAWindows.getClassType())):
                 if windowCount == windowNum:
@@ -2267,7 +2268,7 @@ class LevelEditor(NodePath, PandaObject):
     def initDNAGroupWithParent(self, dnaGroup, parent):
 	# Create the geometry
 	# If it is a flat building, update building DNA to current wall width
-        if (dnaGroup.getClassType().eq(DNAFlatBuilding.getClassType)):
+        if (dnaGroup.getClassType().eq(DNAFlatBuilding.getClassType())):
             dnaGroup.setWidth(self.getWallWidth())
 	newNodePath = dnaGroup.traverse(parent,self.dnaStore)
 	# Add it to the level dictionary
@@ -2276,7 +2277,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.groupParentDNA.add(dnaGroup)
 
 	# Place the new node path at the current grid origin
-	newNodePath.setPos(grid,0,0,0)
+	newNodePath.setPos(self.grid,0,0,0)
 	# Initialize angle to match last object
 	newNodePath.setH(self.lastAngle)
 
@@ -2319,7 +2320,7 @@ class LevelEditor(NodePath, PandaObject):
     def initNewDNAGroupWithParent(self, dnaGroup, rootNode):
 	# Reflect currently selected prop type
         if dnaGroup.getClassType().eq(DNAProp.getClassType()):
-            self.updatePropType(dnaGroup,self.propType)
+            self.updatePropType(dnaGroup,self.getPropType())
 
         # Create a new copy of dnaGroup's class
         # Extract group's class using __class__
@@ -2339,7 +2340,7 @@ class LevelEditor(NodePath, PandaObject):
         # Create a new dna Group of the same type a dnaGroup
 	newDNAGroup = dnaGroup.__class__(dnaGroup)
         if dnaGroup.getClassType().eq(DNAProp.getClassType()):
-            self.updatePropType(newDNAGroup,self.propType)
+            self.updatePropType(newDNAGroup,self.getPropType())
 
         self.initDNAGroupWithParentType(newDNAGroup, self.groupParent, type)
 
@@ -2426,7 +2427,7 @@ class LevelEditor(NodePath, PandaObject):
     def removeDNAObjectFrom(self, aDNAGroup, objectClass):
 	# Remove the first object of that type you come across
         for i in range(aDNAGroup.getNumChildren()):
-            child = aDNAGroup[i]
+            child = aDNAGroup.at(i)
             if child.getClassType().eq(objectClass):
                 aDNAGroup.remove(child)
                 return 1
@@ -2436,8 +2437,8 @@ class LevelEditor(NodePath, PandaObject):
     def removeDNAObjectOfClass(self, objectClass, aDNAGroup):
 	# Remove the first object of that type you come across
         for i in range(aDNAGroup.getNumChildren()):
-            child = aDNAGroup[i]
-            if child.getClassType.eq(objectClass):
+            child = aDNAGroup.at(i)
+            if child.getClassType().eq(objectClass):
                 aDNAGroup.remove(child)
                 return 1
 	# None found
@@ -2558,8 +2559,8 @@ class LevelEditor(NodePath, PandaObject):
 	aDNAFlatBuilding.setWidth(self.getWallWidth())
 	style = self.getRandomStyle()
         for i in range(aDNAFlatBuilding.getNumChildren()):
-            child = aDNAFlatBuilding[i]
-            if child.getClassType.eq(DNAWall):
+            child = aDNAFlatBuilding.at(i)
+            if child.getClassType().eq(DNAWall):
                 self.setWallStyle(child, style)
                 if randint(0,100) < 40:
                     style = self.getRandomStyle()
@@ -2671,7 +2672,7 @@ class LevelEditor(NodePath, PandaObject):
 	aDNADoor.setCode(self.dnaStore.findCode(dnaString))
 	# Replace object in levelObjects dictionary and scene graph
 	self.replaceLevelObjectNodePath(self.selectedLevelObject)
-	self.doorTexture(dnaString)
+	self.setDoorTexture(dnaString)
 
     def updateNumWindows(self, numWindows):
         if numWindows < 0:
@@ -2747,7 +2748,7 @@ class LevelEditor(NodePath, PandaObject):
         if (propNumber < 0):
             dnaString = self.activeMenu.getInitialState()
         else:
-            dnaString = self.propTypes[propNumber]
+            dnaString = self.getPropTypes()[propNumber]
 
 	# Now update the texture on the wall with that texture
 	self.updatePropDNA(aDNAProp,dnaString)
@@ -2756,12 +2757,12 @@ class LevelEditor(NodePath, PandaObject):
 	aDNAProp.setCode(self.dnaStore.findCode(dnaString))
 	# Replace object in levelObjects dictionary and scene graph
 	self.replaceLevelObjectNodePath(self.selectedLevelObject)
-	self.propType(dnaString)
+	self.setPropType(dnaString)
 
     def updateRandomNumWindows(self, aDNAFlatBuilding):
         for i in range(aDNAFlatBuilding.getNumChildren()):
-            child = aDNAFlatBuilding[i]
-            if child.getClassType().eq(DNAWall.getClassType):
+            child = aDNAFlatBuilding.at(i)
+            if child.getClassType().eq(DNAWall.getClassType()):
                 self.setRandomNumWindows(
                     child,
                     self.getRandomNumWindows(child.getHeight()))
@@ -2852,14 +2853,14 @@ class LevelEditor(NodePath, PandaObject):
 	aDNAWindow.setCode(self.dnaStore.findCode(dnaString))
 	# Replace object in levelObjects dictionary and scene graph
 	self.replaceLevelObjectNodePath(self.selectedLevelObject)
-	self.windowTexture(dnaString)
+	self.setWindowTexture(dnaString)
 
     def roundTo(self, value, divisor):
         return round(value/float(divisor)) * divisor
 
     def autoPositionGrid(self):
 	# Move grid to prepare for placement of next object
-	selectedNode = direct.selected.last
+	selectedNode = self.direct.selected.last
         if selectedNode:
             dnaGroup = self.getDNAGroup(selectedNode)
             groupClass = dnaGroup.getClassType().getName()
@@ -2934,10 +2935,10 @@ class LevelEditor(NodePath, PandaObject):
             if self.grid.getXyzSnap():
                 # Tighten up grid position
                 pos = self.grid.getPos()
-                roundVal = roundTo(self.grid.getGridSpacing(), 1)
-                x = roundTo(pos[0], roundVal)
-                y = roundTo(pos[1], roundVal)
-                z = rountTo(pos[2], roundVal)
+                roundVal = self.roundTo(self.grid.getGridSpacing(), 1)
+                x = self.roundTo(pos[0], roundVal)
+                y = self.roundTo(pos[1], roundVal)
+                z = self.roundTo(pos[2], roundVal)
                 self.grid.setPos(x,y,z)
 
 	# Also move the camera
@@ -2951,7 +2952,7 @@ class LevelEditor(NodePath, PandaObject):
 
     def plantSelectedNodePath(self):
 	# Move grid to prepare for placement of next object
-	selectedNode = direct.selected.last
+	selectedNode = self.direct.selected.last
         if selectedNode:
             # Where is the mouse relative to the grid?
             # MRM NEEDED
@@ -2992,7 +2993,7 @@ class LevelEditor(NodePath, PandaObject):
     def getWallIntersectionPoint(self, intersectionPoint):
 	# Find point of intersection between grid plane and line from cam through mouse
 	# Don't do anything if nothing selected
-	selectedNode = direct.selected.last
+	selectedNode = self.direct.selected.last
         if not selectedNode:
             return 0
 
