@@ -296,6 +296,8 @@ def DNAGetBaselineString(baseline):
         child = baseline.at(i)
         if DNAClassEqual(child, DNA_SIGN_TEXT):
             s=s+child.getLetters()
+        elif DNAClassEqual(child, DNA_SIGN_GRAPHIC):
+            s=s+'['+child.getCode()+']'
     return s
 
 def DNASetBaselineString(baseline, text):
@@ -1168,12 +1170,15 @@ class LevelEditor(NodePath, PandaObject):
             elif menuMode == 'building_style' >= 0:
                 # Extract the building style from the current building
                 state = DNAFlatBuildingStyle(building = self.DNATarget)
+            elif menuMode == 'baseline_style' >= 0:
+                # Extract the baseline style
+                state = DNABaselineStyle(baseline = self.panel.currentBaselineDNA)
             elif menuMode == 'wall_style' >= 0:
                 # Extract the wall style from the current wall
                 state = DNAWallStyle(wall = self.DNATarget)
         self.activeMenu.setInitialState(state)
         
-        # Spawn active menu's tatsk
+        # Spawn active menu's task
         self.activeMenu.spawnPieMenuTask()
 
     def getLandmarkBuildingMode(self, dnaObject):
@@ -2268,7 +2273,7 @@ class LevelStyleManager:
             attribute.setDict(
                 # Create a baseline style dictionary for each neighborhood
                 self.createBaselineStyleDictionary(neighborhood))
-            # Using this dictionary, create color pie menus
+            # Using this dictionary, create style pie menus
             attribute.setMenu(
                 self.createBaselineStyleMenu(neighborhood, attribute.getDict()))
             dict[neighborhood] = attribute
@@ -2862,7 +2867,7 @@ class LevelStyleManager:
                 (dnaType == 'toon_landmark')):
                 dnaList = self.getCatalogCodes(dnaType)
             elif (dnaType == 'sign'):
-                dnaList = [None] + [''] + self.getCatalogCodes(dnaType)
+                dnaList = [''] + self.getCatalogCodes(dnaType)
             else:
                 dnaList = [None] + self.getCatalogCodesSuffix(dnaType, '_ur')
             # Add dnaCodes to attribute dictionary
@@ -3647,6 +3652,11 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             text="Add Baseline", command=self.addBaseline)
         self.baselineAddButton.pack(side = 'left', expand = 1, fill = 'x')
 
+        self.baselineDeleteButton = Button(
+            signSelectedFrame, 
+            text="Del", command=self.deleteSignItem)
+        self.baselineDeleteButton.pack(side = 'left', expand = 1, fill = 'x')
+
         signSelectedFrame.grid(row=0, column=0, columnspan=6)
 
         self.baselineString=StringVar()
@@ -3664,6 +3674,15 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             scrolledlist_items = fontList)
         self.fontMenu.selectitem(0)
         self.fontMenu.grid(row=1, column=3, columnspan=3)
+
+        graphicList = self.styleManager.getCatalogCodes('door')
+        self.graphicMenu = Pmw.ComboBox(
+            gridFrame, labelpos = W,
+            label_text = 'Add Graphic:', entry_width = 24,
+            selectioncommand = self.addSignGraphic, history = 0,
+            scrolledlist_items = graphicList)
+        self.graphicMenu.selectitem(0)
+        self.graphicMenu.grid(row=2, column=0, columnspan=4)
 
         signButtonFrame = Frame(gridFrame)
         
@@ -4042,14 +4061,56 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             self.addRollFloater.set(hpr[2])
 
             self.levelEditor.DNATarget=target
-    
+
+    def deleteSignItem(self):
+        """Delete the selected sign or sign baseline"""
+        if (self.currentBaselineDNA):
+            # Remove the baseline:
+            assert(int((self.baselineMenu.curselection())[0]) == self.currentBaselineIndex)
+            DNARemoveChildOfClass(self.currentSignDNA, DNA_SIGN_BASELINE,
+                self.currentBaselineIndex-1)
+            self.baselineMenu.delete(self.currentBaselineIndex)
+            self.baselineMenu.selectitem(0)
+            self.currentBaselineIndex=0
+            self.currentBaselineDNA=None
+            self.selectSignBaseline(0)
+            self.levelEditor.replaceSelected()
+        elif (self.currentSignDNA):
+            # Remove the sign:
+            assert(int((self.baselineMenu.curselection())[0]) == 0)
+            le = self.levelEditor
+            le.removeSign(le.DNATarget, le.DNATargetParent)
+            self.currentBaselineDNA=None
+            self.currentSignDNA=None
+            self.levelEditor.replaceSelected()
+
     def signBaselineTrace(self, a, b, mode):
         #print self, a, b, mode, self.baselineString.get()
         baseline=self.currentBaselineDNA
         if baseline:
             s=self.baselineString.get()
             self.setBaselineString(s)
-    
+
+    def addSignGraphic(self, code):
+        """
+        Create a new baseline with a graphic and 
+        add it to the current sign
+        """
+        sign=self.findSignFromDNARoot()
+        if sign:
+            graphic=DNASignGraphic()
+            graphic.setCode(code)
+            baseline=DNASignBaseline()
+            baseline.add(graphic)
+            sign.add(baseline)
+            # Show the UI to the new baseline:
+            self.levelEditor.DNATarget=baseline
+            self.baselineMenu.insert(END, '['+code+']')
+            current=self.baselineMenu.size()-1
+            self.baselineMenu.selectitem(current)
+            self.selectSignBaseline(current)
+            self.levelEditor.replaceSelected()
+
     def addBaseline(self):
         sign=self.findSignFromDNARoot()
         if sign:
