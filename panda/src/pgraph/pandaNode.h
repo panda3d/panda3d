@@ -55,12 +55,20 @@ PUBLISHED:
 
   INLINE int get_num_children() const;
   INLINE PandaNode *get_child(int n) const;
-  INLINE int get_sort(int n) const;
+  INLINE int get_child_sort(int n) const;
   int find_child(PandaNode *node) const;
 
   int add_child(PandaNode *child, int sort = 0);
   void remove_child(int n);
   bool remove_child(PandaNode *child);
+
+  /*
+  bool stash_child(PandaNode *child);
+  bool unstash_child(PandaNode *child);
+  INLINE int get_num_stashed() const;
+  INLINE PandaNode *get_stashed(int n) const;
+  INLINE PandaNode *get_stashed_sort(int n) const;
+  */
 
   void remove_all_children();
 

@@ -28,6 +28,7 @@
 #include "pvector.h"
 
 class DisplayRegion;
+class PandaNode;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Camera
@@ -56,6 +57,9 @@ PUBLISHED:
   INLINE void set_scene(Node *scene);
   INLINE Node *get_scene() const;
 
+  INLINE void set_qpscene(PandaNode *scene);
+  INLINE PandaNode *get_qpscene() const;
+
   int get_num_drs() const;
   DisplayRegion *get_dr(int index) const;
 
@@ -65,6 +69,7 @@ private:
 
   bool _active;
   PT_Node _scene;
+  PandaNode *_qpscene;
 
   typedef pvector<DisplayRegion *> DisplayRegions;
   DisplayRegions _display_regions;

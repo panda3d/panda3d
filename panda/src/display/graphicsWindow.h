@@ -63,6 +63,7 @@ enum WindowModeType
 
 class GraphicsPipe;
 class GraphicsWindow;
+class CullHandler;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsWindow
@@ -109,14 +110,10 @@ public:
 public:
 
   GraphicsWindow(GraphicsPipe*);
-#ifdef WIN32_VC
   GraphicsWindow(GraphicsPipe*, const Properties&);
-#else
-  GraphicsWindow(GraphicsPipe*, const GraphicsWindow::Properties&);
-#endif
   virtual ~GraphicsWindow();
 
-  INLINE const GraphicsWindow::Properties& get_properties() const;
+  INLINE const Properties& get_properties() const;
 
 PUBLISHED:
   INLINE int get_width() const;
@@ -191,16 +188,23 @@ PUBLISHED:
   virtual void register_draw_function(GraphicsWindow::vfn);
   virtual void register_idle_function(GraphicsWindow::vfn);
 
+  // Old-style scene graph rendering (will be phased out eventually).
   virtual void main_loop();
   virtual bool supports_update() const;
   virtual void update();
   INLINE void render_and_update();
 
 public:
+  // New-style scene graph rendering (not yet complete).
+  void clear();
+  virtual void flip();
+
   virtual void begin_frame();
   virtual void end_frame();
   virtual void deactivate_window(void);
   virtual void reactivate_window(void);
+
+  INLINE void win_display_regions_changed();
 
   // Statistics
   static PStatCollector _app_pcollector;
@@ -241,12 +245,22 @@ PUBLISHED:
   int get_max_channel_index() const;
   bool is_channel_defined(int index) const;
 
+  INLINE int get_num_display_regions() const;
+  INLINE DisplayRegion *get_display_region(int n) const;
+
 protected:
   void declare_channel(int index, GraphicsChannel *chan);
 
 private:
+  INLINE void determine_display_regions() const;
+  void do_determine_display_regions();
+
   typedef pvector< PT(GraphicsChannel) > Channels;
   Channels _channels;
+
+  typedef pvector<DisplayRegion *> DisplayRegions;
+  DisplayRegions _display_regions;
+  bool _display_regions_stale;
 
 public:
 

@@ -18,7 +18,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::get_channel
-//       Access: Public
+//       Access: Published
 //  Description: Returns the GraphicsChannel that this layer is
 //               associated with.  It is possible that the
 //               GraphicsChannel might have been deleted while an
@@ -33,18 +33,21 @@ get_channel() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::set_active
-//       Access: Public
+//       Access: Published
 //  Description: Sets the active flag on the layer.  If the layer
 //               is marked as inactive, nothing will be rendered.
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsLayer::
 set_active(bool active) {
-  _is_active = active;
+  if (active != _is_active) {
+    _is_active = active;
+    win_display_regions_changed();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::is_active
-//       Access: Public
+//       Access: Published
 //  Description: Returns the active flag on the layer.
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsLayer::

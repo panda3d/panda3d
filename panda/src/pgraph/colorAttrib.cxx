@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "colorAttrib.h"
+#include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -61,6 +62,20 @@ CPT(RenderAttrib) ColorAttrib::
 make_off() {
   ColorAttrib *attrib = new ColorAttrib(T_off);
   return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorAttrib::issue
+//       Access: Public, Virtual
+//  Description: Calls the appropriate method on the indicated GSG
+//               to issue the graphics commands appropriate to the
+//               given attribute.  This is normally called
+//               (indirectly) only from
+//               GraphicsStateGuardian::set_state() or modify_state().
+////////////////////////////////////////////////////////////////////
+void ColorAttrib::
+issue(GraphicsStateGuardianBase *gsg) const {
+  gsg->issue_color(this);
 }
 
 ////////////////////////////////////////////////////////////////////

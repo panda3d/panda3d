@@ -27,6 +27,15 @@
 #end bin_target
 
 #begin test_bin_target
+  #define TARGET pview
+
+  #define SOURCES \
+    pview.cxx
+
+  #define LOCAL_LIBS pgraph $[LOCAL_LIBS]
+#end test_bin_target
+
+#begin test_bin_target
   #define TARGET open_window
 
   #define SOURCES \

@@ -24,6 +24,7 @@
 #include "savedFrameBuffer.h"
 #include "frameBufferStack.h"
 #include "displayRegionStack.h"
+#include "lensStack.h"
 
 #include "graphicsStateGuardianBase.h"
 #include "nodeTransition.h"
@@ -34,7 +35,9 @@
 #include "renderTraverser.h"
 #include "pStatCollector.h"
 #include "allTransitionsWrapper.h"
+#include "renderState.h"
 
+#include "notify.h"
 #include "pvector.h"
 
 class AllTransitionsWrapper;
@@ -101,8 +104,10 @@ public:
 
   virtual void clear(const RenderBuffer &buffer)=0;
   virtual void clear(const RenderBuffer &buffer, const DisplayRegion* region)=0;
+  virtual void clear_framebuffer();
 
   virtual void prepare_display_region()=0;
+  virtual bool prepare_lens();
 
   virtual void render_frame()=0;
   virtual void render_scene(Node *root, LensNode *projnode)=0;
@@ -119,20 +124,24 @@ public:
   // These functions will be queried by the GeomIssuer to determine if
   // it should issue normals, texcoords, and/or colors, based on the
   // GSG's current state.
-  virtual bool wants_normals(void) const;
-  virtual bool wants_texcoords(void) const;
-  virtual bool wants_colors(void) const;
+  virtual bool wants_normals() const;
+  virtual bool wants_texcoords() const;
+  virtual bool wants_colors() const;
 
   virtual void begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib);
   virtual void end_decal(GeomNode *base_geom);
 
   virtual void reset();
 
+  // *** QP
   void modify_state(const NodeTransitions &new_state);
   //  void modify_state(const NodeTransitionCache &new_state);
   void set_state(const NodeTransitionCache &new_state);
   INLINE void set_state(const AllTransitionsWrapper &new_state);
   //  INLINE const NodeTransitionCache *get_state() const;
+
+  INLINE void modify_state(const RenderState *state);
+  INLINE void set_state(const RenderState *state);
 
   RenderBuffer get_render_buffer(int buffer_type);
 
@@ -140,12 +149,17 @@ public:
   INLINE const Node* get_current_root_node(void) const;
 
   INLINE const DisplayRegion *get_current_display_region(void) const;
+  INLINE const Lens *get_current_lens() const;
 
   INLINE DisplayRegionStack push_display_region(const DisplayRegion *dr);
   INLINE void pop_display_region(DisplayRegionStack &node);
   INLINE FrameBufferStack push_frame_buffer(const RenderBuffer &buffer,
                                             const DisplayRegion *dr);
   INLINE void pop_frame_buffer(FrameBufferStack &node);
+
+  INLINE LensStack push_lens(const Lens *lens);
+  INLINE void pop_lens(LensStack &stack);
+  INLINE bool set_lens(const Lens *lens);
 
   INLINE void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
@@ -158,6 +172,8 @@ public:
   virtual float compute_distance_to(const LPoint3f &point) const=0;
 
   INLINE void clear_cached_state(void) { _state.clear(); };  
+
+  virtual void issue_color(const ColorAttrib *attrib);
 
 protected:
   virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
@@ -207,6 +223,8 @@ protected:
   typedef pvector<StateInfo> State;
   State _state;
 
+  CPT(RenderState) _qpstate;
+
   int _buffer_mask;
   Colorf _color_clear_value;
   float _depth_clear_value;
@@ -216,6 +234,7 @@ protected:
 
   int _display_region_stack_level;
   int _frame_buffer_stack_level;
+  int _lens_stack_level;
 
   GraphicsWindow *_win;
   PT(RenderTraverser) _render_traverser;
@@ -225,10 +244,23 @@ protected:
   LensNode *_current_camera;
   CPT(DisplayRegion) _current_display_region;
 
+  CPT(Lens) _current_lens;
+
   // This is used by wants_normals()
   bool _normals_enabled;
 
   CoordinateSystem _coordinate_system;
+
+  Colorf _scene_graph_color;
+  bool _has_scene_graph_color;
+  bool _issued_color_stale;
+  bool _vertex_colors_enabled;
+
+  bool _color_transform_enabled;
+  bool _alpha_transform_enabled;
+  LMatrix4f _current_color_mat;
+  float _current_alpha_offset;
+  float _current_alpha_scale;
 
 public:
   // Statistics

@@ -187,14 +187,14 @@ get_child(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_sort
+//     Function: PandaNode::get_child_sort
 //       Access: Published
 //  Description: Returns the sort index of the nth child node of this
 //               node (that is, the number that was passed to
 //               add_child()).  See get_num_children().
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::
-get_sort(int n) const {
+get_child_sort(int n) const {
   CDReader cdata(_cycler);
   nassertr(n >= 0 && n < (int)cdata->_down.size(), -1);
   return cdata->_down[n].get_sort();

@@ -226,3 +226,18 @@ window_resized(int x, int y) {
     (*li)->channel_resized(x, y);
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsChannel::win_display_regions_changed
+//       Access: Public
+//  Description: Intended to be called when the active state on a
+//               nested channel or layer or display region changes,
+//               forcing the window to recompute its list of active
+//               display regions.
+////////////////////////////////////////////////////////////////////
+void GraphicsChannel::
+win_display_regions_changed() {
+  if (_window != (GraphicsWindow *)NULL) {
+    _window->win_display_regions_changed();
+  }
+}

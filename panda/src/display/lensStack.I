@@ -1,5 +1,5 @@
-// Filename: pipeline.cxx
-// Created by:  drose (21Feb02)
+// Filename: lensStack.I
+// Created by:  drose (25Feb02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,47 +16,46 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "pipeline.h"
 
-Pipeline *Pipeline::_render_pipeline = (Pipeline *)NULL;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Pipeline::Constructor
+//     Function: LensStack::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-Pipeline::
-Pipeline(const string &name) :
-  Namable(name)
+INLINE LensStack::
+LensStack() {
+  _stack_level = -1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LensStack::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE LensStack::
+~LensStack() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LensStack::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE LensStack::
+LensStack(const LensStack &copy) :
+  _lens(copy._lens),
+  _stack_level(copy._stack_level)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Pipeline::Destructor
-//       Access: Public, Virtual
-//  Description: 
+//     Function: LensStack::Copy Operator
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
-Pipeline::
-~Pipeline() {
+INLINE void LensStack::
+operator =(const LensStack &copy) {
+  _lens = copy._lens;
+  _stack_level = copy._stack_level;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: Pipeline::cycle
-//       Access: Public, Virtual
-//  Description: Flows all the pipeline data down to the next stage.
-////////////////////////////////////////////////////////////////////
-void Pipeline::
-cycle() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Pipeline::make_render_pipeline
-//       Access: Private, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void Pipeline::
-make_render_pipeline() {
-  nassertv(_render_pipeline == (Pipeline *)NULL);
-  _render_pipeline = new Pipeline("render");
-}
-

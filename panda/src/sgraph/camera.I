@@ -62,3 +62,27 @@ INLINE Node *Camera::
 get_scene() const {
   return _scene;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::set_qpscene
+//       Access: Public
+//  Description: Sets the scene that will be rendered by the camera.
+//               This is normally the root node of a scene graph,
+//               typically a node called 'render', although it could
+//               represent the root of any subgraph.
+////////////////////////////////////////////////////////////////////
+INLINE void Camera::
+set_qpscene(PandaNode *scene) {
+  _qpscene = scene;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::get_qpscene
+//       Access: Public
+//  Description: Returns the scene that will be rendered by the
+//               camera.  See set_qpscene().
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode *Camera::
+get_qpscene() const {
+  return _qpscene;
+}

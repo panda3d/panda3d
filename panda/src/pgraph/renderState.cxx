@@ -121,6 +121,18 @@ RenderState::
     ++ci;
   }
 
+  // A similar bit of code for the invert cache.
+  ci = _invert_composition_cache.begin();
+  while (ci != _invert_composition_cache.end()) {
+    {
+      PT(RenderState) other = (RenderState *)(*ci).first;
+      Composition comp = (*ci).second;
+      nassertv(other != (const RenderState *)this);
+      other->_invert_composition_cache.erase(this);
+    }
+    ++ci;
+  }
+
   // Also, if we called compose(this) at some point and the return
   // value was something other than this, we need to decrement the
   // associated reference count.
@@ -270,8 +282,6 @@ compose(const RenderState *other) const {
   // but we pretend that it is because it's only a cache which is
   // transparent to the rest of the interface.
 
-  cerr << "composing " << *this << " with " << *other << "\n";
-
   // We handle empty state (identity) as a trivial special case.
   if (is_empty()) {
     return other;
@@ -329,6 +339,68 @@ compose(const RenderState *other) const {
   // same as this, a degenerate case which is still worth supporting.
   ((RenderState *)other)->_composition_cache[this]._result = NULL;
   ((RenderState *)this)->_composition_cache[other]._result = result;
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::invert_compose
+//       Access: Published
+//  Description: Returns a new RenderState object that represents the
+//               composition of this state's inverse with the other
+//               state.
+//
+//               This is similar to compose(), but is particularly
+//               useful for computing the relative state of a node as
+//               viewed from some other node.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) RenderState::
+invert_compose(const RenderState *other) const {
+  // This method isn't strictly const, because it updates the cache,
+  // but we pretend that it is because it's only a cache which is
+  // transparent to the rest of the interface.
+
+  cerr << "invert composing " << *this << " with " << *other << "\n";
+
+  // We handle empty state (identity) as a trivial special case.
+  if (is_empty()) {
+    return other;
+  }
+  // Unlike compose(), the case of other->is_empty() is not quite as
+  // trivial for invert_compose().
+
+  if (other == this) {
+    // a->invert_compose(a) always produces identity.
+    return make_empty();
+  }
+
+  // Is this composition already cached?
+  CompositionCache::const_iterator ci = _invert_composition_cache.find(other);
+  if (ci != _invert_composition_cache.end()) {
+    const Composition &comp = (*ci).second;
+    if (comp._result == (const RenderState *)NULL) {
+      // Well, it wasn't cached already, but we already had an entry
+      // (probably created for the reverse direction), so use the same
+      // entry to store the new result.
+      ((Composition &)comp)._result = do_invert_compose(other);
+    }
+    // Here's the cache!
+    cerr << "  returning cached result " << (void *)comp._result.p() << "\n";
+    return comp._result;
+  }
+
+  // We need to make a new cache entry, both in this object and in the
+  // other object.  We make both records so the other RenderState
+  // object will know to delete the entry from this object when it
+  // destructs, and vice-versa.
+
+  // The cache entry in this object is the only one that indicates the
+  // result; the other will be NULL for now.
+  CPT(RenderState) result = do_invert_compose(other);
+  // We store them in this order, on the off-chance that other is the
+  // same as this, a degenerate case which is still worth supporting.
+  ((RenderState *)other)->_invert_composition_cache[this]._result = NULL;
+  ((RenderState *)this)->_invert_composition_cache[other]._result = result;
 
   cerr << "  returning new result " << (void *)result.p() << "\n";
   return result;
@@ -396,7 +468,7 @@ remove(TypeHandle type) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::output
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void RenderState::
@@ -417,7 +489,7 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::write
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void RenderState::
@@ -428,6 +500,149 @@ write(ostream &out, int indent_level) const {
     const Attribute &attribute = (*ai);
     attribute._attrib->write(out, indent_level + 2);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::issue_delta_modify
+//       Access: Public
+//  Description: This is intended to be called only from
+//               GraphicsStateGuardian::modify_state().  It calls
+//               issue() for each attribute given in the other state
+//               that differs from the current state (which is assumed
+//               to represent the GSG's current state).  Returns the
+//               RenderState representing the newly composed result.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) RenderState::
+issue_delta_modify(const RenderState *other, 
+                   GraphicsStateGuardianBase *gsg) const {
+  if (other == this) {
+    // If the state doesn't change, that's a trivial special case.
+    return other;
+  }
+
+  // First, build a new Attributes member that represents the union of
+  // this one and that one.
+  Attributes::const_iterator ai = _attributes.begin();
+  Attributes::const_iterator bi = other->_attributes.begin();
+
+  // Create a new RenderState that will hold the result.
+  RenderState *new_state = new RenderState;
+  back_insert_iterator<Attributes> result = 
+    back_inserter(new_state->_attributes);
+
+  bool any_changed = false;
+
+  while (ai != _attributes.end() && bi != other->_attributes.end()) {
+    if ((*ai) < (*bi)) {
+      // Here is an attribute that we have in the original, which is
+      // not present in the secondary.  Leave it alone.
+      *result = *ai;
+      ++ai;
+      ++result;
+    } else if ((*bi) < (*ai)) {
+      // Here is a new attribute we have in the secondary, that was
+      // not present in the original.  Issue the new one, and save it.
+      (*bi)._attrib->issue(gsg);
+      *result = *bi;
+      ++bi;
+      ++result;
+      any_changed = true;
+    } else {
+      // Here is an attribute we have in both.  Issue the new one if
+      // it's different, and save it.
+      if ((*ai)._attrib != (*bi)._attrib) {
+        any_changed = true;
+        (*bi)._attrib->issue(gsg);
+      }
+      *result = *bi;
+      ++ai;
+      ++bi;
+      ++result;
+    }
+  }
+
+  while (ai != _attributes.end()) {
+    *result = *ai;
+    ++ai;
+    ++result;
+  }
+
+  while (bi != other->_attributes.end()) {
+    (*bi)._attrib->issue(gsg);
+    *result = *bi;
+    ++bi;
+    ++result;
+    any_changed = true;
+  }
+
+  if (any_changed) {
+    return return_new(new_state);
+  } else {
+    delete new_state;
+    return other;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::issue_delta_set
+//       Access: Public
+//  Description: This is intended to be called only from
+//               GraphicsStateGuardian::set_state().  It calls issue()
+//               for each attribute given in the other state that
+//               differs from the current state (which is assumed to
+//               represent the GSG's current state).  Returns the
+//               RenderState representing the newly composed result
+//               (which will be the same as other).
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) RenderState::
+issue_delta_set(const RenderState *other, 
+                GraphicsStateGuardianBase *gsg) const {
+  if (other->is_empty()) {
+    // If the other state is empty, that's a trivial special case.
+    return this;
+  }
+
+  // We don't need to build a new RenderState, because the return
+  // value will be exactly other.
+
+  Attributes::const_iterator ai = _attributes.begin();
+  Attributes::const_iterator bi = other->_attributes.begin();
+
+  while (ai != _attributes.end() && bi != other->_attributes.end()) {
+    if ((*ai) < (*bi)) {
+      // Here is an attribute that we have in the original, which is
+      // not present in the secondary.  Issue the default state instead.
+      (*ai)._attrib->make_default()->issue(gsg);
+      ++ai;
+
+    } else if ((*bi) < (*ai)) {
+      // Here is a new attribute we have in the secondary, that was
+      // not present in the original.  Issue the new one.
+      (*bi)._attrib->issue(gsg);
+      ++bi;
+
+    } else {
+      // Here is an attribute we have in both.  Issue the new one if
+      // it's different.
+      if ((*ai)._attrib != (*bi)._attrib) {
+        (*bi)._attrib->issue(gsg);
+      }
+      ++ai;
+      ++bi;
+    }
+  }
+
+  while (ai != _attributes.end()) {
+    (*ai)._attrib->make_default()->issue(gsg);
+    ++ai;
+  }
+
+  while (bi != other->_attributes.end()) {
+    (*bi)._attrib->issue(gsg);
+    ++bi;
+  }
+
+  return other;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -513,7 +728,7 @@ do_compose(const RenderState *other) const {
 
       } else if (b._override < a._override) {
         // A overrides.
-        *result = *bi;
+        *result = *ai;
 
       } else {
         // No, they're equivalent, so compose them.
@@ -527,6 +742,59 @@ do_compose(const RenderState *other) const {
 
   while (ai != _attributes.end()) {
     *result = *ai;
+    ++ai;
+    ++result;
+  }
+
+  while (bi != other->_attributes.end()) {
+    *result = *bi;
+    ++bi;
+    ++result;
+  }
+
+  return return_new(new_state);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::do_invert_compose
+//       Access: Private
+//  Description: The private implemention of invert_compose().
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) RenderState::
+do_invert_compose(const RenderState *other) const {
+  Attributes::const_iterator ai = _attributes.begin();
+  Attributes::const_iterator bi = other->_attributes.begin();
+
+  // Create a new RenderState that will hold the result.
+  RenderState *new_state = new RenderState;
+  back_insert_iterator<Attributes> result = 
+    back_inserter(new_state->_attributes);
+
+  while (ai != _attributes.end() && bi != other->_attributes.end()) {
+    if ((*ai) < (*bi)) {
+      // Here is an attribute that we have in the original, which is
+      // not present in the secondary.
+      *result = Attribute((*ai)._attrib->invert_compose((*ai)._attrib->make_default()), 0);
+      ++ai;
+      ++result;
+    } else if ((*bi) < (*ai)) {
+      // Here is a new attribute we have in the secondary, that was
+      // not present in the original.
+      *result = *bi;
+      ++bi;
+      ++result;
+    } else {
+      // Here is an attribute we have in both.  In this case, override
+      // is meaningless.
+      *result = Attribute((*ai)._attrib->invert_compose((*bi)._attrib), (*bi)._override);
+      ++ai;
+      ++bi;
+      ++result;
+    }
+  }
+
+  while (ai != _attributes.end()) {
+    *result = Attribute((*ai)._attrib->invert_compose((*ai)._attrib->make_default()), 0);
     ++ai;
     ++result;
   }

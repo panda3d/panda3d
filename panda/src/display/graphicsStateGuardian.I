@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <notify.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::StateInfo::Constructor
@@ -114,6 +113,37 @@ set_state(const AllTransitionsWrapper &new_state) {
   set_state(new_state.get_transitions());
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::modify_state
+//       Access: Public
+//  Description: Applies the attributes indicated in the state set to
+//               the current state, and issues the changes to the
+//               graphics hardware.
+//
+//               Any transitions not mentioned are left unchanged.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+modify_state(const RenderState *state) {
+  _qpstate = _qpstate->issue_delta_modify(state, this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_state
+//       Access: Public
+//  Description: Applies the attributes indicated in the state set to
+//               the current state, and issues the changes to the
+//               graphics hardware.
+//
+//               The state is taken to be a complete description of
+//               what the graphics state should be; any transitions
+//               not mentioned are implicitly reset to their initial
+//               values.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+set_state(const RenderState *state) {
+  _qpstate = _qpstate->issue_delta_set(state, this);
+}
+
 /*
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_state
@@ -166,6 +196,19 @@ get_current_root_node(void) const {
 INLINE const DisplayRegion *GraphicsStateGuardian::
 get_current_display_region(void) const {
   return _current_display_region;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_current_lens
+//       Access: Public
+//  Description: Returns the current lens being rendered with, as set
+//               by the last call to push_lens() (or restored by
+//               pop_lens()).  This lens will be made active (if it is
+//               not already) by a call to prepare_lens().
+////////////////////////////////////////////////////////////////////
+INLINE const Lens *GraphicsStateGuardian::
+get_current_lens() const {
+  return _current_lens;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -243,6 +286,65 @@ pop_frame_buffer(FrameBufferStack &node) {
   nassertv(node._stack_level == _frame_buffer_stack_level);
   restore_frame_buffer(node._frame_buffer);
   node._stack_level = -1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::push_lens
+//       Access: Public
+//  Description: Saves the current lens information and sets up a new
+//               lens for rendering.  The return value from this
+//               function must eventually be passed to a matching
+//               pop_lens() call.
+//
+//               The new lens will not actually be made active for
+//               rendering until the next call to prepare_lens().
+//               This is a state-changing optimization.
+////////////////////////////////////////////////////////////////////
+INLINE LensStack GraphicsStateGuardian::
+push_lens(const Lens *lens) {
+  LensStack old;
+  old._lens = _current_lens;
+  old._stack_level = _lens_stack_level;
+  _lens_stack_level++;
+  _current_lens = lens;
+  return old;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::pop_lens
+//       Access: Public
+//  Description: Restores the lens previously in effect, before the
+//               matching call to push_lens().
+//
+//               The newly-restored lens will not actually be made
+//               active for rendering until the next call to
+//               prepare_lens().  This is a state-changing
+//               optimization.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+pop_lens(LensStack &node) {
+  nassertv(_lens_stack_level > 0);
+  _lens_stack_level--;
+  nassertv(node._stack_level == _lens_stack_level);
+  _current_lens = node._lens;
+  node._stack_level = -1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_lens
+//       Access: Public
+//  Description: Sets a new lens for rendering without bothering to
+//               push or pop.  This replaces the lens most recently
+//               pushed, if any.  There is no need to call
+//               prepare_lens() following this call.
+//
+//               The return value is true if the lens is acceptable,
+//               false if it is not.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+set_lens(const Lens *lens) {
+  _current_lens = lens;
+  return prepare_lens();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "textureAttrib.h"
+#include "graphicsStateGuardianBase.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "datagram.h"
@@ -47,6 +48,20 @@ CPT(RenderAttrib) TextureAttrib::
 make_off() {
   TextureAttrib *attrib = new TextureAttrib;
   return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::issue
+//       Access: Public, Virtual
+//  Description: Calls the appropriate method on the indicated GSG
+//               to issue the graphics commands appropriate to the
+//               given attribute.  This is normally called
+//               (indirectly) only from
+//               GraphicsStateGuardian::set_state() or modify_state().
+////////////////////////////////////////////////////////////////////
+void TextureAttrib::
+issue(GraphicsStateGuardianBase *gsg) const {
+  gsg->issue_texture(this);
 }
 
 ////////////////////////////////////////////////////////////////////

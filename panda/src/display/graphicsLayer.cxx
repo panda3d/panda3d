@@ -93,6 +93,7 @@ GraphicsLayer::
        ++dri) {
     (*dri)->_layer = NULL;
   }
+  win_display_regions_changed();
 
   // We don't need to remove ourself from the channel's list of
   // layers.  We must have already been removed, or we wouldn't be
@@ -113,6 +114,7 @@ make_display_region() {
     dr->compute_pixels(win->get_width(), win->get_height());
   }
   _display_regions.push_back(dr);
+  win_display_regions_changed();
   return dr;
 }
 
@@ -131,6 +133,7 @@ make_display_region(float l, float r, float b, float t) {
     dr->compute_pixels(win->get_width(), win->get_height());
   }
   _display_regions.push_back(dr);
+  win_display_regions_changed();
   return dr;
 }
 
@@ -169,6 +172,7 @@ remove_dr(int index) {
   nassertv(index >= 0 && index < (int)_display_regions.size());
   _display_regions[index]->_layer = NULL;
   _display_regions.erase(_display_regions.begin() + index);
+  win_display_regions_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -190,6 +194,7 @@ remove_dr(DisplayRegion *display_region) {
   if (dri != _display_regions.end()) {
     display_region->_layer = NULL;
     _display_regions.erase(dri);
+    win_display_regions_changed();
     return true;
   }
   return false;
@@ -236,5 +241,20 @@ channel_resized(int x, int y) {
        dri != _display_regions.end();
        ++dri) {
     (*dri)->compute_pixels(x, y);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsLayer::win_display_regions_changed
+//       Access: Public
+//  Description: Intended to be called when the active state on a
+//               nested channel or layer or display region changes,
+//               forcing the window to recompute its list of active
+//               display regions.
+////////////////////////////////////////////////////////////////////
+void GraphicsLayer::
+win_display_regions_changed() {
+  if (_channel != (GraphicsChannel *)NULL) {
+    _channel->win_display_regions_changed();
   }
 }

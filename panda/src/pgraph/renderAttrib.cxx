@@ -68,8 +68,21 @@ RenderAttrib::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderAttrib::output
+//     Function: RenderAttrib::issue
 //       Access: Public, Virtual
+//  Description: Calls the appropriate method on the indicated GSG
+//               to issue the graphics commands appropriate to the
+//               given attribute.  This is normally called
+//               (indirectly) only from
+//               GraphicsStateGuardian::set_state() or modify_state().
+////////////////////////////////////////////////////////////////////
+void RenderAttrib::
+issue(GraphicsStateGuardianBase *) const {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::output
+//       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void RenderAttrib::
@@ -79,7 +92,7 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::write
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void RenderAttrib::
@@ -164,6 +177,20 @@ compare_to_impl(const RenderAttrib *other) const {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) RenderAttrib::
 compose_impl(const RenderAttrib *other) const {
+  return other;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::invert_compose_impl
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by derived RenderAttrib
+//               types to specify how two consecutive RenderAttrib
+//               objects of the same type interact.
+//
+//               See invert_compose() and compose_impl().
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) RenderAttrib::
+invert_compose_impl(const RenderAttrib *other) const {
   return other;
 }
 

@@ -140,7 +140,10 @@ get_cull_frustum() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DisplayRegion::
 set_active(bool active) {
-  _active = active;
+  if (active != _active) {
+    _active = active;
+    win_display_regions_changed();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -42,10 +42,7 @@ public:
 
   INLINE static Pipeline *get_render_pipeline();
 
-  void cycle();
-
-protected:
-  virtual void pre_cycle();
+  virtual void cycle();
 
 private:
   static void make_render_pipeline();

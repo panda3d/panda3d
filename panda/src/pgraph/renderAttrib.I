@@ -33,6 +33,27 @@ compose(const RenderAttrib *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::invert_compose
+//       Access: Public
+//  Description: Returns a new RenderAttrib object that represents the
+//               composition of the inverse of this attrib with the
+//               other attrib.  In most cases, this is the same as the
+//               other attrib; !a compose b produces b.  Some kinds of
+//               attributes, like a TextureTransform, for instance,
+//               might produce a new result: !a compose b produces c.
+//
+//               This is similar to compose() except that the source
+//               attrib is inverted first.  This is used to compute
+//               the relative attribute for one node as viewed from
+//               some other node, which is especially useful for
+//               transform-type attributes.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(RenderAttrib) RenderAttrib::
+invert_compose(const RenderAttrib *other) const {
+  return invert_compose_impl(other);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::make_default
 //       Access: Public
 //  Description: Returns a different (or possibly the same)

@@ -27,6 +27,8 @@
 #include "indirectLess.h"
 #include "ordered_vector.h"
 
+class GraphicsStateGuardianBase;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : RenderState
 // Description : This represents a unique collection of RenderAttrib
@@ -73,6 +75,7 @@ PUBLISHED:
                                const RenderAttrib *attrib4, int override = 0);
 
   CPT(RenderState) compose(const RenderState *other) const;
+  CPT(RenderState) invert_compose(const RenderState *other) const;
 
   CPT(RenderState) add(const RenderAttrib *attrib, int override = 0) const;
   CPT(RenderState) remove(TypeHandle type) const;
@@ -80,9 +83,16 @@ PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
 
+public:
+  CPT(RenderState) issue_delta_modify(const RenderState *other, 
+                                      GraphicsStateGuardianBase *gsg) const;
+  CPT(RenderState) issue_delta_set(const RenderState *other, 
+                                   GraphicsStateGuardianBase *gsg) const;
+
 private:
   static CPT(RenderState) return_new(RenderState *state);
   CPT(RenderState) do_compose(const RenderState *other) const;
+  CPT(RenderState) do_invert_compose(const RenderState *other) const;
 
 private:
   typedef pset<const RenderState *, IndirectLess<RenderState> > States;
@@ -106,8 +116,9 @@ private:
     
   typedef pmap<const RenderState *, Composition> CompositionCache;
   CompositionCache _composition_cache;
+  CompositionCache _invert_composition_cache;
 
-  // This pointer is used to cache the result of compose(this).  This
+  // Thise pointer is used to cache the result of compose(this).  This
   // has to be a special case, because we have to handle the reference
   // counts carefully so that we don't leak.  Most of the time, the
   // result of compose(this) is this, which should not be reference

@@ -74,6 +74,7 @@ public:
   virtual void clear(const RenderBuffer &buffer, const DisplayRegion* region);
 
   virtual void prepare_display_region();
+  virtual bool prepare_lens();
 
   virtual void render_frame();
   virtual void render_scene(Node *root, LensNode *projnode);
@@ -155,9 +156,10 @@ public:
   virtual void issue_point_shape(const PointShapeTransition *attrib);
   virtual void issue_polygon_offset(const PolygonOffsetTransition *attrib);
 
+  virtual void issue_texture(const TextureAttrib *attrib);
+
   virtual bool wants_normals(void) const;
   virtual bool wants_texcoords(void) const;
-  virtual bool wants_colors(void) const;
 
   virtual void begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib);
   virtual void end_decal(GeomNode *base_geom);
@@ -326,8 +328,6 @@ protected:
   bool _dithering_enabled;
   bool _alpha_test_enabled;
   bool _polygon_offset_enabled;
-  bool _color_transform_enabled;
-  bool _alpha_transform_enabled;
   int _decal_level;
 
   class LightInfo {
@@ -352,15 +352,6 @@ protected:
   int _cur_clip_plane_id;
 
   CPT(DisplayRegion) _actual_display_region;
-
-  LMatrix4f _current_color_mat;
-  float _current_alpha_offset;
-  float _current_alpha_scale;
-
-  Colorf _scene_graph_color;
-  bool _has_scene_graph_color;
-  bool _issued_color_stale;
-  bool _vertex_colors_enabled;
 
   int _pass_number;
 

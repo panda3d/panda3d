@@ -42,6 +42,7 @@ PUBLISHED:
   INLINE Texture *get_texture() const;
 
 public:
+  virtual void issue(GraphicsStateGuardianBase *gsg) const;
   virtual void output(ostream &out) const;
 
 protected:

@@ -142,6 +142,7 @@ GraphicsWindow(GraphicsPipe *pipe) : Configurable() {
   _idle_callback = NULL;
   _frame_number = 0;
   _is_synced = false;
+  _display_regions_stale = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -351,6 +352,40 @@ declare_channel(int index, GraphicsChannel *chan) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::do_determine_display_regions
+//       Access: Private
+//  Description: Recomputes the list of active DisplayRegions within
+//               the window.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+do_determine_display_regions() {
+  _display_regions.clear();
+  Channels::const_iterator ci;
+  for (ci = _channels.begin(); ci != _channels.end(); ++ci) {
+    GraphicsChannel *chan = (*ci);
+    if (chan->is_active()) {
+      GraphicsChannel::GraphicsLayers::const_iterator li;
+      for (li = chan->_layers.begin(); li != chan->_layers.end(); ++li) {
+        GraphicsLayer *layer = (*li);
+        if (layer->is_active()) {
+          GraphicsLayer::DisplayRegions::const_iterator dri;
+          for (dri = layer->_display_regions.begin(); 
+               dri != layer->_display_regions.end(); 
+               ++dri) {
+            DisplayRegion *dr = (*dri);
+            if (dr->is_active()) {
+              _display_regions.push_back(dr);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  _display_regions_stale = false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::register_draw_function
 //       Access: Public, Virtual
 //  Description:
@@ -411,6 +446,33 @@ supports_update() const {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 update() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::clear
+//       Access: Public
+//  Description: Invokes the GSG to clear the entire contents of the
+//               window prior to drawing into it.  This is normally
+//               called only by the draw process at the beginning of
+//               the frame.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+clear() {
+  _gsg->clear_framebuffer();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::flip
+//       Access: Public, Virtual
+//  Description: Flips the back buffer and front buffer, or does
+//               whatever other processing is appropriate, after the
+//               frame has been completely drawn.  Normally this is
+//               only called by the draw process between frames, in
+//               sync with all the other windows.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+flip() {
+  end_frame();
 }
 
 ////////////////////////////////////////////////////////////////////

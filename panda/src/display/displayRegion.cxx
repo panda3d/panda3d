@@ -21,8 +21,8 @@
 #include "graphicsChannel.h"
 #include "graphicsWindow.h"
 #include "config_display.h"
-
 #include "displayRegion.h"
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::Constructor
@@ -192,4 +192,19 @@ output(ostream &out) const {
   out << "DisplayRegion(" << _l << " " << _r << " " << _b << " " << _t
       << ")=pixels(" << _pl << " " << _pr << " " << _pb << " " << _pt
       << ")";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::win_display_regions_changed
+//       Access: Public
+//  Description: Intended to be called when the active state on a
+//               nested channel or layer or display region changes,
+//               forcing the window to recompute its list of active
+//               display regions.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+win_display_regions_changed() {
+  if (_layer != (GraphicsLayer *)NULL) {
+    _layer->win_display_regions_changed();
+  }
 }

@@ -48,6 +48,7 @@ PUBLISHED:
   INLINE const Colorf &get_color() const;
 
 public:
+  virtual void issue(GraphicsStateGuardianBase *gsg) const;
   virtual void output(ostream &out) const;
 
 protected:

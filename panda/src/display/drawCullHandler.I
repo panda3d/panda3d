@@ -1,5 +1,5 @@
-// Filename: cullHandler.h
-// Created by:  drose (23Feb02)
+// Filename: drawCullHandler.I
+// Created by:  drose (25Feb02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,30 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CULLHANDLER_H
-#define CULLHANDLER_H
-
-#include "pandabase.h"
-
-class Geom;
-class RenderState;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : CullHandler
-// Description : This defines the abstract interface for an object
-//               that receives Geoms identified by the CullTraverser.
-//               By itself, it's not a particularly useful class; to
-//               use it, derive from it and redefine record_geom().
+//     Function: DrawCullHandler::Constructor
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullHandler {
-public:
-  //  virtual void begin_decal();
-  virtual void record_geom(Geom *geom, const RenderState *state);
-  //  virtual void push_decal();
-  //  virtual void pop_decal();
-};
-
-#endif
-
-
-  
+INLINE DrawCullHandler::
+DrawCullHandler(GraphicsStateGuardian *gsg) :
+  _gsg(gsg)
+{
+}

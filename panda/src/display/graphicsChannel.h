@@ -36,6 +36,7 @@
 class GraphicsChannel;
 class GraphicsPipe;
 class GraphicsWindow;
+class CullHandler;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsChannel
@@ -66,6 +67,8 @@ PUBLISHED:
 
 public:
   virtual void window_resized(int x, int y);
+
+  void win_display_regions_changed();
 
 PUBLISHED:
   INLINE void set_active(bool active);

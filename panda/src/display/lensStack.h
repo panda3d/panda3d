@@ -1,5 +1,5 @@
-// Filename: cullHandler.h
-// Created by:  drose (23Feb02)
+// Filename: lensStack.h
+// Created by:  drose (25Feb02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,30 +16,35 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CULLHANDLER_H
-#define CULLHANDLER_H
+#ifndef LENSSTACK_H
+#define LENSSTACK_H
 
-#include "pandabase.h"
+#include <pandabase.h>
 
-class Geom;
-class RenderState;
+#include "lens.h"
+
+class GraphicsStateGuardian;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : CullHandler
-// Description : This defines the abstract interface for an object
-//               that receives Geoms identified by the CullTraverser.
-//               By itself, it's not a particularly useful class; to
-//               use it, derive from it and redefine record_geom().
+//       Class : LensStack
+// Description : An instance of this kind of object is returned by
+//               GraphicsStateGuardian::push_lens().  It holds the
+//               information needed to restore the previous display
+//               region in the subsequent matching call to pop_lens().
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullHandler {
+class LensStack {
 public:
-  //  virtual void begin_decal();
-  virtual void record_geom(Geom *geom, const RenderState *state);
-  //  virtual void push_decal();
-  //  virtual void pop_decal();
+  INLINE LensStack();
+  INLINE ~LensStack();
+  INLINE LensStack(const LensStack &copy);
+  INLINE void operator =(const LensStack &copy);
+
+private:
+  CPT(Lens) _lens;
+  int _stack_level;
+  friend class GraphicsStateGuardian;
 };
 
+#include "lensStack.I"
+
 #endif
-
-
-  

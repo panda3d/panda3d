@@ -1,5 +1,5 @@
-// Filename: cullHandler.cxx
-// Created by:  drose (23Feb02)
+// Filename: drawCullHandler.cxx
+// Created by:  drose (25Feb02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,21 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "cullHandler.h"
+#include "drawCullHandler.h"
 #include "geom.h"
 #include "renderState.h"
+#include "graphicsStateGuardian.h"
+
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullHandler::record_geom
+//     Function: DrawCullHandler::record_geom
 //       Access: Public, Virtual
 //  Description: This callback function is intended to be overridden
 //               by a derived class.  This is called as each Geom is
 //               discovered by the CullTraverser.
-//
-//               This default method simply outputs a message to cerr;
-//               it's not intended to be used except for debugging.
 ////////////////////////////////////////////////////////////////////
-void CullHandler::
+void DrawCullHandler::
 record_geom(Geom *geom, const RenderState *state) {
-  cerr << *geom << " " << *state << "\n";
+  _gsg->set_state(state);
+  geom->draw(_gsg);
 }

@@ -37,6 +37,7 @@
 class GraphicsChannel;
 class GraphicsWindow;
 class GraphicsPipe;
+class CullHandler;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsLayer
@@ -74,6 +75,8 @@ PUBLISHED:
 public:
   void channel_resized(int x, int y);
 
+  void win_display_regions_changed();
+
 PUBLISHED:
   INLINE void set_active(bool active);
   INLINE bool is_active() const;
@@ -109,6 +112,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class GraphicsChannel;
+  friend class GraphicsWindow;
 };
 
 #include "graphicsLayer.I"

@@ -104,7 +104,7 @@ r_traverse(PandaNode *node, const RenderState *state, int flags) {
       Geom *geom = geom_node->get_geom(i);
       CPT(RenderState) geom_state = 
         next_state->compose(geom_node->get_geom_state(i));
-      _cull_handler->found_geom(geom, geom_state);
+      _cull_handler->record_geom(geom, geom_state);
     }
   }
 

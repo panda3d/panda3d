@@ -1,5 +1,5 @@
-// Filename: cullHandler.h
-// Created by:  drose (23Feb02)
+// Filename: drawCullHandler.h
+// Created by:  drose (25Feb02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,28 +16,39 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CULLHANDLER_H
-#define CULLHANDLER_H
+#ifndef DRAWCULLHANDLER_H
+#define DRAWCULLHANDLER_H
 
 #include "pandabase.h"
+#include "cullHandler.h"
 
-class Geom;
-class RenderState;
+class GraphicsStateGuardian;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : CullHandler
-// Description : This defines the abstract interface for an object
-//               that receives Geoms identified by the CullTraverser.
-//               By itself, it's not a particularly useful class; to
-//               use it, derive from it and redefine record_geom().
+//       Class : DrawCullHandler
+// Description : This special kind of CullHandler immediately draws
+//               its contents as soon as it receives them.  This draws
+//               geometry immediately as it is encountered in the
+//               scene graph by cull, mixing the draw and cull
+//               traversals into one traversal, and prohibiting state
+//               sorting.  However, it has somewhat lower overhead
+//               than separating out draw and cull, if state sorting
+//               and multiprocessing are not required.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullHandler {
+class EXPCL_PANDA DrawCullHandler : public CullHandler {
 public:
+  INLINE DrawCullHandler(GraphicsStateGuardian *gsg);
+
   //  virtual void begin_decal();
   virtual void record_geom(Geom *geom, const RenderState *state);
   //  virtual void push_decal();
   //  virtual void pop_decal();
+
+private:
+  GraphicsStateGuardian *_gsg;
 };
+
+#include "drawCullHandler.I"
 
 #endif
 

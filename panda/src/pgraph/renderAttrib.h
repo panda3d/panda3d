@@ -26,6 +26,8 @@
 #include "pointerTo.h"
 #include "pset.h"
 
+class GraphicsStateGuardianBase;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : RenderAttrib
 // Description : This is the base class for a number of render
@@ -54,8 +56,10 @@ public:
   virtual ~RenderAttrib();
 
   INLINE CPT(RenderAttrib) compose(const RenderAttrib *other) const;
+  INLINE CPT(RenderAttrib) invert_compose(const RenderAttrib *other) const;
   INLINE CPT(RenderAttrib) make_default() const;
   INLINE int compare_to(const RenderAttrib &other) const;
+  virtual void issue(GraphicsStateGuardianBase *gsg) const;
 
 PUBLISHED:
   virtual void output(ostream &out) const;
@@ -66,6 +70,7 @@ protected:
 
   virtual int compare_to_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
+  virtual CPT(RenderAttrib) invert_compose_impl(const RenderAttrib *other) const;
   virtual RenderAttrib *make_default_impl() const=0;
 
 private:

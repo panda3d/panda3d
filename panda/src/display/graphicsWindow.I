@@ -419,6 +419,19 @@ render_and_update() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::win_display_regions_changed
+//       Access: Public
+//  Description: Intended to be called when the active state on a
+//               nested channel or layer or display region changes,
+//               forcing the window to recompute its list of active
+//               display regions.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindow::
+win_display_regions_changed() {
+  _display_regions_stale = true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::set_sync
 //       Access: Public
 //  Description: Sets flag for whether the buffer swap is done 
@@ -441,3 +454,45 @@ get_sync() const {
   return _is_synced;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::get_num_display_regions
+//       Access: Published
+//  Description: Returns the number of active DisplayRegions that have
+//               been created within the various layers and channels
+//               of the window.
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsWindow::
+get_num_display_regions() const {
+  determine_display_regions();
+  return _display_regions.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::get_display_region
+//       Access: Published
+//  Description: Returns the nth active DisplayRegion of those that
+//               have been created within the various layers and
+//               channels of the window.
+////////////////////////////////////////////////////////////////////
+INLINE DisplayRegion *GraphicsWindow::
+get_display_region(int n) const {
+  determine_display_regions();
+  nassertr(n >= 0 && n < (int)_display_regions.size(), NULL);
+  return _display_regions[n];
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::determine_display_regions
+//       Access: Private
+//  Description: Recomputes the list of active DisplayRegions within
+//               the window, if they have changed recently.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindow::
+determine_display_regions() const {
+  // This function isn't strictly speaking const, but we pretend it is
+  // because it only updates a transparent cache value.
+  if (_display_regions_stale) {
+    ((GraphicsWindow *)this)->do_determine_display_regions();
+  }
+}

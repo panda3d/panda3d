@@ -1,6 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-#define LOCAL_LIBS gobj putil graph linmath express pandabase
+#define LOCAL_LIBS gsgbase gobj putil graph linmath express pandabase
 
 #begin lib_target
   #define TARGET pgraph

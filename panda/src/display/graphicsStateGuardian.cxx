@@ -21,6 +21,7 @@
 #include "config_display.h"
 #include "textureContext.h"
 #include "renderBuffer.h"
+#include "colorAttrib.h"
 
 #include "clockObject.h"
 #include "geomNode.h"
@@ -93,6 +94,7 @@ GraphicsStateGuardian(GraphicsWindow *win) {
   _win = win;
   _coordinate_system = default_coordinate_system;
   _current_display_region = (DisplayRegion*)0L;
+  _current_lens = (Lens *)NULL;
   reset();
 }
 
@@ -115,8 +117,10 @@ void GraphicsStateGuardian::
 reset() {
   _display_region_stack_level = 0;
   _frame_buffer_stack_level = 0;
+  _lens_stack_level = 0;
 
   _state.clear();
+  _qpstate = RenderState::make_empty();
 
   _buffer_mask = 0;
   _color_clear_value.set(gsg_clear_r, gsg_clear_g, gsg_clear_b, 0.0);
@@ -125,6 +129,17 @@ reset() {
   _accum_clear_value.set(0.0, 0.0, 0.0, 0.0);
   _clear_buffer_type = RenderBuffer::T_back | RenderBuffer::T_depth;
   _normals_enabled = false;
+
+  //Color and alpha transform variables
+  _color_transform_enabled = false;
+  _alpha_transform_enabled = false;
+  _current_color_mat = LMatrix4f::ident_mat();
+  _current_alpha_offset = 0;
+  _current_alpha_scale = 1;
+
+  _has_scene_graph_color = false;
+  _issued_color_stale = false;
+  _vertex_colors_enabled = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -762,6 +777,47 @@ release_geom(GeomContext *) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::clear_framebuffer
+//       Access: Public, Virtual
+//  Description: Erases the contents of the framebuffer, according to
+//               _clear_buffer_type, which is set by
+//               enable_frame_clear().
+//
+//               This is used to prepare the framebuffer for drawing
+//               a new frame.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+clear_framebuffer() {
+  if (_clear_buffer_type != 0) {
+    PT(DisplayRegion) win_dr =
+      _win->make_scratch_display_region(_win->get_width(), _win->get_height());
+    nassertv(win_dr != (DisplayRegion*)NULL);
+    DisplayRegionStack old_dr = push_display_region(win_dr);
+    prepare_display_region();
+    clear(get_render_buffer(_clear_buffer_type));
+    pop_display_region(old_dr);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::prepare_lens
+//       Access: Public, Virtual
+//  Description: Makes the current lens (whichever lens was most
+//               recently specified with push_lens()) active, so that
+//               it will transform future rendered geometry.  Normally
+//               this is only called from the draw process, and
+//               usually it is called immediately after a call to
+//               push_lens().
+//
+//               The return value is true if the lens is acceptable,
+//               false if it is not.
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+prepare_lens() {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::wants_normals
 //       Access: Public, Virtual
 //  Description:
@@ -784,11 +840,12 @@ wants_texcoords() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::wants_colors
 //       Access: Public, Virtual
-//  Description:
+//  Description: Returns true if the GSG should issue geometry color
+//               commands, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
 wants_colors() const {
-  return false;
+  return _vertex_colors_enabled;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -820,6 +877,49 @@ begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 end_decal(GeomNode *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::issue_color
+//       Access: Public, Virtual
+//  Description: This method is defined in the base class because it
+//               is likely that this functionality will be used for
+//               all (or at least most) kinds of
+//               GraphicsStateGuardians--it's not specific to any one
+//               rendering backend.
+//
+//               The ColorAttribute just changes the interpretation of
+//               the color on the vertices, and fiddles with
+//               _vertex_colors_enabled, etc.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+issue_color(const ColorAttrib *attrib) {
+  switch (attrib->get_color_type()) {
+  case ColorAttrib::T_flat:
+    // Color attribute flat: it specifies a scene graph color that
+    // overrides the vertex color.
+    _scene_graph_color = attrib->get_color();
+    _has_scene_graph_color = true;
+    _vertex_colors_enabled = false;
+    _issued_color_stale = true;
+    break;
+
+  case ColorAttrib::T_off:
+    // Color attribute off: it specifies that no scene graph color is
+    // in effect, and vertex color is not important either.
+    _has_scene_graph_color = false;
+    _issued_color_stale = false;
+    _vertex_colors_enabled = false;
+    break;
+
+  case ColorAttrib::T_vertex:
+    // Color attribute vertex: it specifies that vertex color should
+    // be revealed.
+    _has_scene_graph_color = false;
+    _issued_color_stale = false;
+    _vertex_colors_enabled = true;
+    break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

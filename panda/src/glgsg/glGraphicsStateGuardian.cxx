@@ -65,6 +65,7 @@
 #include "stencilTransition.h"
 #include "pointShapeTransition.h"
 #include "polygonOffsetTransition.h"
+#include "textureAttrib.h"
 #include "clockObject.h"
 #include "string_utils.h"
 #include "dcast.h"
@@ -300,17 +301,6 @@ reset() {
   _current_projection_mat = LMatrix4f::ident_mat();
   _projection_mat_stack_count = 0;
 
-  //Color and alpha transform variables
-  _color_transform_enabled = false;
-  _alpha_transform_enabled = false;
-  _current_color_mat = LMatrix4f::ident_mat();
-  _current_alpha_offset = 0;
-  _current_alpha_scale = 1;
-
-  _has_scene_graph_color = false;
-  _issued_color_stale = false;
-  _vertex_colors_enabled = true;
-
   // Make sure the GL state matches all of our initial attribute
   // states.
   PT(DepthTestTransition) dta = new DepthTestTransition;
@@ -462,6 +452,51 @@ prepare_display_region() {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::prepare_lens
+//       Access: Public, Virtual
+//  Description: Makes the current lens (whichever lens was most
+//               recently specified with push_lens()) active, so that
+//               it will transform future rendered geometry.  Normally
+//               this is only called from the draw process, and
+//               usually it is called immediately after a call to
+//               push_lens().
+//
+//               The return value is true if the lens is acceptable,
+//               false if it is not.
+////////////////////////////////////////////////////////////////////
+bool GLGraphicsStateGuardian::
+prepare_lens() {
+  if (_current_lens == (Lens *)NULL) {
+    return false;
+  }
+
+  if (!_current_lens->is_linear()) {
+    return false;
+  }
+
+  const LMatrix4f &projection_mat = _current_lens->get_projection_mat();
+
+  // The projection matrix must always be right-handed Y-up, even if
+  // our coordinate system of choice is otherwise, because certain GL
+  // calls (specifically glTexGen(GL_SPHERE_MAP)) assume this kind of
+  // a coordinate system.  Sigh.  In order to implement a Z-up (or
+  // other arbitrary) coordinate system, we'll use a Y-up projection
+  // matrix, and store the conversion to our coordinate system of
+  // choice in the modelview matrix.
+  LMatrix4f new_projection_mat =
+    LMatrix4f::convert_mat(CS_yup_right, _current_lens->get_coordinate_system()) *
+    projection_mat;
+
+#ifdef GSG_VERBOSE
+  glgsg_cat.debug()
+    << "glMatrixMode(GL_PROJECTION): " << new_projection_mat << endl;
+#endif
+  glMatrixMode(GL_PROJECTION);
+  glLoadMatrixf(new_projection_mat.get_data());
+
+  return true;
+}
 
 
 ////////////////////////////////////////////////////////////////////
@@ -498,16 +533,8 @@ render_frame() {
   clear_attribute(TextureTransition::get_class_type());
 #endif
 
-  if (_clear_buffer_type != 0) {
-    // First, clear the entire window.
-    PT(DisplayRegion) win_dr =
-      _win->make_scratch_display_region(_win->get_width(), _win->get_height());
-    nassertv(win_dr != (DisplayRegion*)NULL);
-    DisplayRegionStack old_dr = push_display_region(win_dr);
-    prepare_display_region();
-    clear(get_render_buffer(_clear_buffer_type));
-    pop_display_region(old_dr);
-  }
+  // First, clear the entire window.
+  clear_framebuffer();
 
   // Now render each of our layers in order.
   int max_channel_index = _win->get_max_channel_index();
@@ -624,37 +651,15 @@ render_subgraph(RenderTraverser *traverser,
   //  activate();
 
   Lens *lens = projnode->get_lens();
-  if (!lens->is_linear()) {
+  LensNode *old_camera = _current_camera;
+  _current_camera = projnode;
+
+  LensStack lens_stack = push_lens(lens);
+  if (!prepare_lens()) {
     glgsg_cat.error()
       << "Cannot render with a nonlinear lens!\n";
     return;
   }
-
-  LensNode *old_camera = _current_camera;
-  _current_camera = projnode;
-  LMatrix4f old_projection_mat = _current_projection_mat;
-
-  const LMatrix4f &projection_mat = lens->get_projection_mat();
-
-  // The projection matrix must always be right-handed Y-up, even if
-  // our coordinate system of choice is otherwise, because certain GL
-  // calls (specifically glTexGen(GL_SPHERE_MAP)) assume this kind of
-  // a coordinate system.  Sigh.  In order to implement a Z-up (or
-  // other arbitrary) coordinate system, we'll use a Y-up projection
-  // matrix, and store the conversion to our coordinate system of
-  // choice in the modelview matrix.
-  _current_projection_mat =
-    LMatrix4f::convert_mat(CS_yup_right, lens->get_coordinate_system()) *
-    projection_mat;
-  _projection_mat_stack_count++;
-
-  // We load the projection matrix directly.
-#ifdef GSG_VERBOSE
-  glgsg_cat.debug()
-    << "glMatrixMode(GL_PROJECTION): " << _current_projection_mat << endl;
-#endif
-  glMatrixMode(GL_PROJECTION);
-  glLoadMatrixf(_current_projection_mat.get_data());
 
   // We infer the modelview matrix by doing a wrt on the lens
   // node.
@@ -677,18 +682,8 @@ render_subgraph(RenderTraverser *traverser,
   render_subgraph(traverser, subgraph, sub_trans);
 
   _current_camera = old_camera;
-  _current_projection_mat = old_projection_mat;
-  _projection_mat_stack_count--;
 
-
-  // We must now restore the projection matrix from before.  We could
-  // do a push/pop matrix, but OpenGL doesn't promise more than 2
-  // levels in the projection matrix stack, so we'd better do it in
-  // the CPU.
-  if (_projection_mat_stack_count > 0) {
-    glMatrixMode(GL_PROJECTION);
-    glLoadMatrixf(_current_projection_mat.get_data());
-  }
+  pop_lens(lens_stack);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3421,6 +3416,24 @@ issue_polygon_offset(const PolygonOffsetTransition *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::issue_texture
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+issue_texture(const TextureAttrib *attrib) {
+  if (attrib->is_off()) {
+    enable_texturing(false);
+  } else {
+    enable_texturing(true);
+    Texture *tex = attrib->get_texture();
+    nassertv(tex != (Texture *)NULL);
+    tex->apply(this);
+  }
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::wants_normals
 //       Access: Public, Virtual
 //  Description:
@@ -3438,17 +3451,6 @@ wants_normals() const {
 bool GLGraphicsStateGuardian::
 wants_texcoords() const {
   return _texturing_enabled;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::wants_colors
-//       Access: Public, Virtual
-//  Description: Returns true if the GSG should issue geometry color
-//               commands, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool GLGraphicsStateGuardian::
-wants_colors() const {
-  return _vertex_colors_enabled;
 }
 
 ////////////////////////////////////////////////////////////////////

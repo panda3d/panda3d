@@ -75,6 +75,9 @@ class LinesmoothTransition;
 class PointShapeTransition;
 class PolygonOffsetTransition;
 
+class TextureAttrib;
+class ColorAttrib;
+
 class Node;
 class GeomNode;
 class PointLight;
@@ -187,6 +190,9 @@ public:
   virtual void issue_linesmooth(const LinesmoothTransition *) { }
   virtual void issue_point_shape(const PointShapeTransition *) { }
   virtual void issue_polygon_offset(const PolygonOffsetTransition *) { }
+
+  virtual void issue_texture(const TextureAttrib *) { }
+  virtual void issue_color(const ColorAttrib *) { }
 
 PUBLISHED:
   static TypeHandle get_class_type() {

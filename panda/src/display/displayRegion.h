@@ -35,6 +35,7 @@ class GraphicsLayer;
 class GraphicsChannel;
 class GraphicsWindow;
 class GraphicsPipe;
+class CullHandler;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DisplayRegion
@@ -79,6 +80,9 @@ PUBLISHED:
   INLINE int get_pixel_height() const;
 
   void output(ostream &out) const;
+
+public:
+  void win_display_regions_changed();
 
 protected:
 
