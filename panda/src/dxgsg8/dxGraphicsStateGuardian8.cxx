@@ -397,7 +397,7 @@ read_vertex_shader(string &filename) {
    hr = scrn.pD3DDevice->CreateVertexShader((DWORD*)ShaderDeclHeader,
                                      (DWORD*) ((pD3DXBuf_CompiledShader!=NULL) ? pD3DXBuf_CompiledShader->GetBufferPointer() : pShaderBytes),
                                      &hShader, UsageFlags);
-   if (FAILED(hr)) {
+   if(FAILED(hr)) {
         dxgsg_cat.error() << "CreateVertexShader failed for '"<< filename << "' " << D3DERRORSTRING(hr);
         hShader=NULL;
    }
@@ -3237,68 +3237,50 @@ release_texture(TextureContext *tc) {
     delete gtc;
 }
 
-#if 1
-
-void DXGraphicsStateGuardian::
-copy_texture(TextureContext *tc, const DisplayRegion *dr) {
-    dxgsg_cat.fatal() << "DX copy_texture unimplemented!!!";
-}
-
-#else
-static int logs[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048,
-    4096, 0};
-
-// This function returns the smallest power of two greater than or
-// equal to x.
-static int binary_log_cap(const int x) {
-    int i = 0;
-    for (; (x > logs[i]) && (logs[i] != 0); ++i);
-    if (logs[i] == 0)
-        return 4096;
-    return logs[i];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::copy_texture
-//       Access: Public, Virtual
-//  Description: Copy the pixel region indicated by the display
-//       region from the framebuffer into texture memory
-////////////////////////////////////////////////////////////////////
+// copies current display region in framebuffer to the texture
 void DXGraphicsStateGuardian::
 copy_texture(TextureContext *tc, const DisplayRegion *dr) {
 
-    nassertv(tc != NULL && dr != NULL);
+  HRESULT hr;
+  int xo, yo, w, h;
+  dr->get_region_pixels(xo, yo, w, h);
 
-    Texture *tex = tc->_texture;
+  DXTextureContext *dtc = DCAST(DXTextureContext, tc);
+  PixelBuffer *pb = dtc->_tex->_pbuffer;
+  pb->set_size(0,0,w-xo,h-yo);
 
-    // Determine the size of the grab from the given display region
-    // If the requested region is not a power of two, grab a region that is
-    // a power of two that contains the requested region
-    int xo, yo, req_w, req_h;
-    dr->get_region_pixels(xo, yo, req_w, req_h);
-    int w = binary_log_cap(req_w);
-    int h = binary_log_cap(req_h);
-    if (w != req_w || h != req_h) {
-        tex->_requested_w = req_w;
-        tex->_requested_h = req_h;
-        tex->_has_requested_size = true;
-    }
+  IDirect3DSurface8 *pTexSurfaceLev0,*pCurRenderTarget;
+  hr = dtc->_pD3DTexture8->GetSurfaceLevel(0,&pTexSurfaceLev0);
+  if(FAILED(hr)) {
+    dxgsg_cat.error() << "GetSurfaceLev failed in copy_texture" << D3DERRORSTRING(hr);
+    exit(1);
+  }
 
-    PixelBuffer *pb = tex->_pbuffer;
-
-    pb->set_xorg(xo);
-    pb->set_yorg(yo);
-    pb->set_xsize(w);
-    pb->set_ysize(h);
+  hr = scrn.pD3DDevice->GetRenderTarget(&pCurRenderTarget);
+  if(FAILED(hr)) {
+    dxgsg_cat.error() << "GetRenderTgt failed in copy_texture" << D3DERRORSTRING(hr);
+    exit(1);
+  }
 
 
-    bind_texture(tc);
-    glCopyTexImage2D( GL_TEXTURE_2D, tex->get_level(),
-                      get_internal_image_format(pb->get_format()),
-                      pb->get_xorg(), pb->get_yorg(),
-                      pb->get_xsize(), pb->get_ysize(), pb->get_border() );
+  RECT SrcRect;
+
+  SrcRect.left = xo;
+  SrcRect.right = xo+w;
+  SrcRect.top = yo;
+  SrcRect.bottom = yo+h;
+
+  // now copy from fb to tex
+  hr = scrn.pD3DDevice->CopyRects(pCurRenderTarget,&SrcRect,1,pTexSurfaceLev0,NULL);
+  if(FAILED(hr)) {
+    dxgsg_cat.error() << "CopyRects failed in copy_texture" << D3DERRORSTRING(hr);
+    exit(1);
+  }
+
+  SAFE_RELEASE(pCurRenderTarget);
+  SAFE_RELEASE(pTexSurfaceLev0);
 }
-#endif
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::copy_texture
