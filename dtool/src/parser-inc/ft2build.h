@@ -30,6 +30,7 @@
 
 class FT_Face;
 class FT_Library;
+class FT_Bitmap;
 
 #endif
 
