@@ -139,6 +139,7 @@ class ClientRepository(DirectObject.DirectObject):
         if self.qcm.resetConnectionAvailable():
             resetConnectionPointer = PointerToConnection()
             if self.qcm.getResetConnection(resetConnectionPointer):
+                self.qcm.closeConnection(resetConnectionPointer.p())
                 self.loginFSM.request("noConnection")
         return None
 
