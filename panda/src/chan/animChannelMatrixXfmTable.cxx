@@ -263,9 +263,9 @@ write_datagram(BamWriter *manager, Datagram &me)
       max(max(_tables[3].size(), _tables[4].size()), _tables[5].size());
     hprs.reserve(hprs_length);
     for (i = 0; i < hprs_length; i++) {
-      float h = (i < (int)_tables[3].size()) ? _tables[3][i] : 0.0f;
-      float p = (i < (int)_tables[4].size()) ? _tables[4][i] : 0.0f;
-      float r = (i < (int)_tables[5].size()) ? _tables[5][i] : 0.0f;
+      float h = _tables[3].empty() ? 0.0f : _tables[3][i % _tables[3].size()];
+      float p = _tables[4].empty() ? 0.0f : _tables[4][i % _tables[4].size()];
+      float r = _tables[5].empty() ? 0.0f : _tables[5][i % _tables[5].size()];
       hprs.push_back(LVecBase3f(h, p, r));
     }
     compressor.write_hprs(me, &hprs[0], hprs_length);

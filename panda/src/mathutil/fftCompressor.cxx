@@ -65,10 +65,15 @@ is_compression_available() {
 //               how aggressively the reals are compressed; lower
 //               numbers mean smaller output, and more data loss.
 //
-//               As a special case, a negative quality indicates that
-//               the individual parameters should be separately
-//               controlled via config variables, and a quality
-//               greater than 100 indicates lossless output.
+//               There are a few special cases.  Quality -1 means to
+//               use whatever individual parameters are set in the
+//               user's Configrc file, rather than the single quality
+//               dial.  Quality 101 or higher means to generate
+//               lossless output (this is the default if libfftw is
+//               not available).  Quality 102 writes all four
+//               components of quaternions to the output file, rather
+//               than just three, and quality 103 doesn't even convert
+//               hpr to quat.
 ////////////////////////////////////////////////////////////////////
 void FFTCompressor::
 set_quality(int quality) {
@@ -84,11 +89,12 @@ set_quality(int quality) {
   _quality = quality;
 
   if (_quality < 0) {
-    // A negative quality indicates to read the important parameters
-    // from config variables.
+    // A negative quality indicates we should read the various
+    // parameters from individual config variables.
     _fft_offset = fft_offset;
     _fft_factor = fft_factor;
     _fft_exponent = fft_exponent;
+
   } else if (_quality < 40) {
     // 0 - 40 : 
     //   fft-offset 1.0 - 0.001
@@ -191,28 +197,16 @@ write_reals(Datagram &datagram, const float *array, int length) {
   }
     
   // Normal case: FFT the array, and write that out.
-  double data[length];
+  double *data = (double *)alloca(length * sizeof(double));
   int i;
   for (i = 0; i < length; i++) {
     data[i] = array[i];
   }
 
-  double half_complex[length];
+  double *half_complex = (double *)alloca(length * sizeof(double));
 
   rfftw_plan plan = get_real_compress_plan(length);
   rfftw_one(plan, data, half_complex);
-
-  if (mathutil_cat.is_debug()) {
-    mathutil_cat.debug()
-      << "write_reals :";
-    for (int i = 0; i < length; i++) {
-      double scale_factor = get_scale_factor(i, length);
-      mathutil_cat.debug(false) 
-	//	<< " " << data[i];
-	<< " " << floor(half_complex[i] / scale_factor + 0.5);
-    }
-    mathutil_cat.debug(false) << "\n";
-  }
 
   // Now encode the numbers, run-length encoded by size, so we only
   // write out the number of bits we need for each number.
@@ -281,6 +275,22 @@ write_reals(Datagram &datagram, const float *array, int length) {
 ////////////////////////////////////////////////////////////////////
 void FFTCompressor::
 write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
+  if (_quality >= 103) {
+    // If quality level is at least 103, we don't even convert hpr to
+    // quat.
+    vector_float h, p, r;
+    for (int i = 0; i < length; i++) {
+      h.push_back(array[i][0]);
+      p.push_back(array[i][1]);
+      r.push_back(array[i][2]);
+    }
+
+    write_reals(datagram, &h[0], length);
+    write_reals(datagram, &p[0], length);
+    write_reals(datagram, &r[0], length);
+    return;
+  }
+
   // First, convert the HPR's to quats.  We expect quats to have
   // better FFT consistency, and therefore compress better, even
   // though they have an extra component.
@@ -289,11 +299,12 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
   // have to write out all three components; any three can be used to
   // determine the fourth (provided we ensure consistency of sign).
 
-  vector_float qi, qj, qk;
+  vector_float qr, qi, qj, qk;
 
   for (int i = 0; i < length; i++) {
     LMatrix3f mat;
     compose_matrix(mat, LVecBase3f(1.0, 1.0, 1.0), array[i]);
+
     LOrientationf rot;
     rot.set(mat);
     rot.normalize();
@@ -312,11 +323,30 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
       rot.set(-rot.get_r(), -rot.get_i(), -rot.get_j(), -rot.get_k());
     }
 
+    /*
+    {
+      LMatrix3f mat2;
+      rot.extract_to_matrix(mat2);
+      LVecBase3f scale, hpr;
+      bool success = decompose_matrix(mat2, scale, hpr);
+      nassertv(success);
+      if (!array[i].almost_equal(hpr, 0.001)) {
+	cerr << "array " << array[i] << " hpr " << hpr << "\n";
+      }
+    }
+    */
+
+    qr.push_back(rot.get_r());
     qi.push_back(rot.get_i());
     qj.push_back(rot.get_j());
     qk.push_back(rot.get_k());
   }
 
+  // If quality is at least 102, we write all four quat components,
+  // instead of just the three.
+  if (_quality >= 102) {
+    write_reals(datagram, &qr[0], length);
+  }
   write_reals(datagram, &qi[0], length);
   write_reals(datagram, &qj[0], length);
   write_reals(datagram, &qk[0], length);
@@ -335,6 +365,11 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
 bool FFTCompressor::
 read_header(DatagramIterator &di) {
   _quality = di.get_int8();
+
+  if (mathutil_cat.is_debug()) {
+    mathutil_cat.debug()
+      << "Found compressed data at quality level " << _quality << "\n";
+  }
 
 #ifndef HAVE_FFTW
   if (_quality <= 100) {
@@ -410,7 +445,7 @@ read_reals(DatagramIterator &di, vector_float &array) {
     half_complex[i] *= get_scale_factor(i, length);
   }
 
-  double data[length];
+  double *data = (double *)alloca(length * sizeof(double));
   rfftw_plan plan = get_real_decompress_plan(length);
   rfftw_one(plan, &half_complex[0], data);
 
@@ -418,16 +453,6 @@ read_reals(DatagramIterator &di, vector_float &array) {
   array.reserve(array.size() + length);
   for (i = 0; i < length; i++) {
     array.push_back(data[i] * scale);
-  }
-
-  if (mathutil_cat.is_debug()) {
-    mathutil_cat.debug()
-      << "read_reals :";
-    for (int i = 0; i < length; i++) {
-      mathutil_cat.debug(false)
-	<< " " << data[i] * scale;
-    }
-    mathutil_cat.debug(false) << "\n";
   }
 
   return true;
@@ -444,11 +469,36 @@ read_reals(DatagramIterator &di, vector_float &array) {
 ////////////////////////////////////////////////////////////////////
 bool FFTCompressor::
 read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
-  vector_float qi, qj, qk;
+  if (_quality >= 103) {
+    // If quality level is at least 103, we don't even convert hpr to
+    // quat.
+    vector_float h, p, r;
+    bool okflag = true;
+    okflag = 
+      read_reals(di, h) &&
+      read_reals(di, p) &&
+      read_reals(di, r);
+
+    if (okflag) {
+      nassertr(h.size() == p.size() && p.size() == r.size(), false);
+      for (int i = 0; i < (int)h.size(); i++) {
+	array.push_back(LVecBase3f(h[i], p[i], r[i]));
+      }
+    }
+
+    return okflag;
+  }
+
+  vector_float qr, qi, qj, qk;
 
   bool okflag = true;
 
+  if (_quality >= 102) {
+    okflag = read_reals(di, qr);
+  }
+
   okflag = 
+    okflag &&
     read_reals(di, qi) &&
     read_reals(di, qj) &&
     read_reals(di, qk);
@@ -458,10 +508,20 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
     
     array.reserve(array.size() + qi.size());
     for (int i = 0; i < (int)qi.size(); i++) {
-      float qr2 = 1.0 - (qi[i] * qi[i] + qj[i] * qj[i] + qk[i] * qk[i]);
-      float qr = qr2 < 0.0 ? 0.0 : sqrtf(qr2);
+      LOrientationf rot;
 
-      LOrientationf rot(qr, qi[i], qj[i], qk[i]);
+      if (_quality >= 102) {
+	// If we have written out all four components, use them.
+	rot.set(qr[i], qi[i], qj[i], qj[i]);
+
+      } else {
+	// Otherwise, infer the real component from the remaining
+	// three.
+	float qr2 = 1.0 - (qi[i] * qi[i] + qj[i] * qj[i] + qk[i] * qk[i]);
+	float qr1 = qr2 < 0.0 ? 0.0 : sqrtf(qr2);
+	rot.set(qr1, qi[i], qj[i], qk[i]); 
+      }
+
       rot.normalize();      // Just for good measure.
 
       LMatrix3f mat;
