@@ -16,8 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "dgraph_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "buttonEventDataTransition.h"
 #include "buttonEventDataAttribute.h"
+#endif
 
 TypeHandle ButtonEventDataTransition::_type_handle;
 

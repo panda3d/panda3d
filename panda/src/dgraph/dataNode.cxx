@@ -16,7 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "dgraph_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "dataNode.h"
+#endif
 
 TypeHandle DataNode::_type_handle;
 

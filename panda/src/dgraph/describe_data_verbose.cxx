@@ -16,16 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "describe_data_verbose.h"
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "dgraph_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "dataGraphTraversal.h"
+#include "describe_data_verbose.h"
 
 #include <indent.h>
+#endif
+
 #include <nodeAttributes.h>
 
 // The number of columns in from the start of the name to print the
 // data value.
 static const int data_indent_level = 12;
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: describe_data_verbose

@@ -16,8 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "dgraph_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "dataGraphTraversal.h"
 #include "dataGraphTraverser.h"
+#endif
+
 #include <pStatTimer.h>
 #include <pStatCollector.h>
 

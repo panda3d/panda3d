@@ -16,7 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "dgraph_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "dataRelation.h"
+#endif
+
 #include "transformTransition.h"
 
 TypeHandle DataRelation::_type_handle;
