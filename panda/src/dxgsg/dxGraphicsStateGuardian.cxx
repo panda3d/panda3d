@@ -93,6 +93,11 @@ TypeHandle DXGraphicsStateGuardian::_type_handle;
 #define PER_NORMAL   0x2
 #define PER_COORD    0x1
 
+// technically DX7's front-end has no limit on the number of lights, but it's simpler for
+// this implementation to set a small GL-like limit to make the light array traversals short
+// and so I dont have to write code that reallocs light arrays
+#define DXGSG_MAX_LIGHTS 8
+
 // debugging-only flag to test non-optimized general geom pipe for all models
 //#define DONT_USE_DRAWPRIMSTRIDED
 
@@ -270,9 +275,11 @@ init_dx(  LPDIRECTDRAW7     context,
 	_view_rect = viewrect;
 	HRESULT hr;
 
-    _start_time = 0.0;
-    _start_frame_count = _cur_frame_count = 0;
-	_current_fps = 0.0;
+	if(dx_show_fps_meter) {
+		_start_time = timeGetTime();
+		_current_fps = 0.0;
+		_start_frame_count = _cur_frame_count = 0;
+	}
 
 	_pTexPixFmts = new DDPIXELFORMAT[MAX_DX_TEXPIXFMTS];
 
@@ -391,10 +398,18 @@ init_dx(  LPDIRECTDRAW7     context,
 	enable_line_smooth(false);
 	enable_multisample(true);
 
-	_max_lights = 16;	  // assume for now.  This is totally arbitrary
+	// technically DX7's front-end has no limit on the number of lights, but it's simpler for
+	// this implementation to set a small GL-like limit to make the light array traversals short
+	// and so I dont have to write code that reallocs light arrays
+	assert((_D3DDevDesc.dwMaxActiveLights==0) ||  // 0 means infinite lights
+           (DXGSG_MAX_LIGHTS <= _D3DDevDesc.dwMaxActiveLights));
+
+	_max_lights = DXGSG_MAX_LIGHTS;
+
 	_available_light_ids = PTA(Light*)(_max_lights);
 	_light_enabled = new bool[_max_lights];
 	_cur_light_enabled = new bool[_max_lights];
+
 	int i;
 	for (i = 0; i < _max_lights; i++) {
 		_available_light_ids[i] = NULL;
@@ -686,35 +701,36 @@ render_frame(const AllAttributesWrapper &initial_state) {
 
 	// Now we're done with the frame processing.  Clean up.
 
-	// Let's turn off all the lights we had on, and clear the light
-	// cache--to force the lights to be reissued next frame, in case
-	// their parameters or positions have changed between frames.
+	_d3dDevice->EndScene();  // FPS meter drawing MUST occur after EndScene, since it uses GDI
 
-	for (int i = 0; i < _max_lights; i++) {
-		enable_light(i, false);
-		_available_light_ids[i] = NULL;
-	}
-
-	// Also force the lighting state to unlit, so that issue_light()
-	// will be guaranteed to be called next frame even if we have the
-	// same set of light pointers we had this frame.
-	NodeAttributes state;
-	state.set_attribute(LightTransition::get_class_type(), new LightAttribute);
-	state.set_attribute(TextureTransition::get_class_type(), new TextureAttribute);
-	set_state(state, false);
-
-	// All this work to undo the lighting state each frame doesn't seem
-	// ideal--there may be a better way.  Maybe if the lights were just
-	// more aware of whether their parameters or positions have changed
-	// at all?
-
-	_d3dDevice->EndScene();
+	if(_lighting_enabled) { 
+		// Let's turn off all the lights we had on, and clear the light
+		// cache--to force the lights to be reissued next frame, in case
+		// their parameters or positions have changed between frames.
+	
+		for (int i = 0; i < _max_lights; i++) {
+			enable_light(i, false);
+			_available_light_ids[i] = NULL;
+		}
+	
+		// Also force the lighting state to unlit, so that issue_light()
+		// will be guaranteed to be called next frame even if we have the
+		// same set of light pointers we had this frame.
+		NodeAttributes state;
+		state.set_attribute(LightTransition::get_class_type(), new LightAttribute);
+		set_state(state, false);
+	
+		// All this work to undo the lighting state each frame doesn't seem
+		// ideal--there may be a better way.  Maybe if the lights were just
+		// more aware of whether their parameters or positions have changed
+		// at all?
+	} 
 
 	if(dx_show_fps_meter) {
 
 		 DWORD now = timeGetTime();  // this is win32 fn
 
-		 float time_delta = (now - _start_time)/1000.0;
+		 float time_delta = (now - _start_time) * 0.001f;
 
 		 if(time_delta > dx_fps_meter_update_interval) {
 			 // didnt use global clock object, it wasnt working properly when I tried,
@@ -730,8 +746,8 @@ render_frame(const AllAttributesWrapper &initial_state) {
 		 HDC hDC;
 
 		 if(SUCCEEDED(_back->GetDC(&hDC))) {
-			 char fps_msg[20];
-			 sprintf(fps_msg, "%7.02f fps", _current_fps);
+			 char fps_msg[15];
+			 sprintf(fps_msg, "%.02f fps", _current_fps);
 			 SetTextColor(hDC, RGB(255,255,0) );
 			 SetBkMode(hDC, TRANSPARENT );
 
@@ -4378,11 +4394,11 @@ issue_color_blend(const ColorBlendAttribute *attrib) {
 
 void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode TexBlendMode,bool bCanJustEnable) {
 
-/*class EXPCL_PANDA TextureApplyProperty {
+/*class TextureApplyProperty {
   enum Mode {
 	M_modulate,M_decal,M_blend,M_replace,M_add};
 */  
-	static D3DTEXTUREOP TexBlendColorOp1[/*TextureApplyProperty::Mode */ 10] = 
+	static D3DTEXTUREOP TexBlendColorOp1[/* TextureApplyProperty::Mode maxval*/ 10] = 
 	{D3DTOP_MODULATE,D3DTOP_BLENDTEXTUREALPHA,D3DTOP_MODULATE,D3DTOP_SELECTARG1,D3DTOP_ADD};
 
 	//if bCanJustEnable, then we only need to make sure ColorOp is turned on and set properly
@@ -4473,23 +4489,24 @@ void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode Tex
 ////////////////////////////////////////////////////////////////////
 INLINE void DXGraphicsStateGuardian::
 enable_texturing(bool val) {
-	if (_texturing_enabled != val) {
+	if (_texturing_enabled != val) {  // this check is mostly for internal gsg calls, panda already screens out redundant state changes
 		_texturing_enabled = val;
 	}
 
 //  assert(_pCurTexContext!=NULL);  we're definitely called with it NULL for both true and false
+//  I'm going to allow enabling texturing even if no tex has been set yet, seems to cause no probs
 
-	if ((val == FALSE) || (_pCurTexContext==NULL)) {
+	if (val == FALSE) {
 		_d3dDevice->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_DISABLE);
 	} else {
-		SetTextureBlendMode(_CurTexBlendMode,TRUE);
+		  SetTextureBlendMode(_CurTexBlendMode,TRUE);
 	}
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::issue_texture_apply
 //       Access: Public, Virtual
-//  Description:
+//  Description: handles texture attribute (i.e. filter modes, etc) changes
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_texture_apply(const TextureApplyAttribute *attrib) {
@@ -5282,7 +5299,7 @@ dx_cleanup() {
 		int val;
 		if (0 < (val = _pDD->Release())) {
 			dxgsg_cat.error()
-			<< "DXGraphicsStateGuardian::destructor - context reference count = " << val << endl;
+			<< "DXGraphicsStateGuardian::destructor -  IDDraw Obj reference count = " << val << ", should be zero!\n";
 		}
 		_pDD  = NULL;
 	}
