@@ -28,11 +28,15 @@ PUBLISHED:
   INLINE void set_offset(float offset);
   INLINE float get_offset() const;
 
+  INLINE void set_max_velocity(float max_vel);
+  INLINE float get_max_velocity() const;
+
 protected:
   virtual void handle_entries();
 
 private:
   float _offset;
+  float _max_velocity;
 
 
 public:

@@ -8,6 +8,7 @@
 
 #include <renderRelation.h>
 #include <transformTransition.h>
+#include <clockObject.h>
 
 TypeHandle CollisionHandlerFloor::_type_handle;
 
@@ -19,6 +20,7 @@ TypeHandle CollisionHandlerFloor::_type_handle;
 CollisionHandlerFloor::
 CollisionHandlerFloor() {
   _offset = 0.0;
+  _max_velocity = 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -84,14 +86,22 @@ handle_entries() {
       }
 
       // Now set our height accordingly.
-      if (!IS_THRESHOLD_ZERO(max_height + _offset, 0.001)) {
+      float adjust = max_height + _offset;
+      if (!IS_THRESHOLD_ZERO(adjust, 0.001)) {
 	if (collide_cat.is_debug()) {
 	  collide_cat.debug()
-	    << "Adjusting height by " << max_height + _offset << "\n";
+	    << "Adjusting height by " << adjust << "\n";
 	}
+
+	if (adjust < 0.0 && _max_velocity != 0.0) {
+	  float max_adjust = 
+	    _max_velocity * ClockObject::get_global_clock()->get_dt();
+	  adjust = max(adjust, -max_adjust);
+	}
+
 	LMatrix4f mat;
 	def.get_mat(mat);
-	mat(3, 2) += max_height + _offset;
+	mat(3, 2) += adjust;
 	def.set_mat(mat);
       } else {
 	if (collide_cat.is_spam()) {

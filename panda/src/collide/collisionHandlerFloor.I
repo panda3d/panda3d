@@ -3,6 +3,7 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerFloor::set_offset
 //       Access: Public
@@ -25,4 +26,29 @@ set_offset(float offset) {
 INLINE float CollisionHandlerFloor::
 get_offset() const {
   return _offset;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerFloor::set_max_velocity
+//       Access: Public
+//  Description: Sets the maximum speed at which the object will be
+//               allowed to descend towards a floor below it, in units
+//               per second.  Set this to zero to allow it to
+//               instantly teleport any distance.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionHandlerFloor::
+set_max_velocity(float max_velocity) {
+  _max_velocity = max_velocity;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerFloor::get_max_velocity
+//       Access: Public
+//  Description: Retrieves the maximum speed at which the object will
+//               be allowed to descend towards a floor below it, in
+//               units per second.  See set_max_velocity().
+////////////////////////////////////////////////////////////////////
+INLINE float CollisionHandlerFloor::
+get_max_velocity() const {
+  return _max_velocity;
 }

@@ -396,13 +396,38 @@ recompute() {
 ////////////////////////////////////////////////////////////////////
 void DriveInterface::
 transmit_data(NodeAttributes &data) {
+
+  // Look for mouse activity.
+  double x = 0.0;
+  double y = 0.0;
+
+  bool got_mouse = false;
+
+  const Vec3DataAttribute *xyz;
+  if (get_attribute_into(xyz, data, _xyz_type)) {
+    LVecBase3f p = xyz->get_value();
+    x = p[0];
+    y = p[1];
+
+    got_mouse = true;
+  }
+
   // Look for keyboard events.
   const ButtonEventDataAttribute *b;
   if (get_attribute_into(b, data, _button_events_type)) {
     ButtonEventDataAttribute::const_iterator bi;
     for (bi = b->begin(); bi != b->end(); ++bi) {
       const ButtonEvent &be = (*bi);
-      if (!(_ignore_mouse && be._down)) {
+      if (be._down) {
+	// We only trap button down events if (a) the mouse is in the
+	// window, and (b) we aren't set to ignore the mouse.
+	if (got_mouse && !_ignore_mouse) {
+	  _mods.add_event(be);
+	}
+      } else {
+	// However, we always trap button up events, so we don't get
+	// confused and believe a button is still being held down when
+	// it is not.
 	_mods.add_event(be);
       }
 
@@ -416,17 +441,6 @@ transmit_data(NodeAttributes &data) {
 	_right_arrow.set_key(be._down);
       }
     }
-  }
-
-  // Now look for mouse activity.
-  double x = 0.0;
-  double y = 0.0;
-
-  const Vec3DataAttribute *xyz;
-  if (get_attribute_into(xyz, data, _xyz_type)) {
-    LVecBase3f p = xyz->get_value();
-    x = p[0];
-    y = p[1];
   }
 
   apply(x, y, _mods.is_any_down());
