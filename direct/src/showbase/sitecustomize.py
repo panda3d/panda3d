@@ -1,36 +1,11 @@
 import os
 import sys
+import glob
 
 print 'Site customize for Panda'
 
-def getPackages():
-    """
-    Find all the packages on your ctprojs variable and parse them
-    to extract the tree name from the long details like this:
-    TOONTOWN:default DIRECT:default PANDA:personal DTOOL:install
-    Returns a list of the packages as strings
-    Note: the ctprojs are reversed to put them in the order of attachment.
-    """
-    packages = []
-    ctprojs = os.getenv("CTPROJS").split()
-    for proj in ctprojs:
-        projName = proj.split(':')[0]
-        packages.append(projName)
-    packages.reverse()
-    return packages
 
-
-def addpackage(package):
-    """
-    Look in this package name for the file $PACKAGE/etc/package.pth
-    which contains paths that we want prepended to sys.path
-    There should be one relative pathname per line (relative to $PACKAGE)
-    comments and empty lines are ok
-    """
-    tree = os.getenv(package)
-    
-    lowerPackage = package.lower()
-    fullname = os.path.join(tree, 'etc' + os.sep + (lowerPackage + '.pth'))
+def readpth(tree, fullname):
     try:
         f = open(fullname)
         print 'Appending paths in ' + fullname
@@ -49,6 +24,58 @@ def addpackage(package):
         if dir not in sys.path and os.path.exists(dir):
             sys.path = [dir] + sys.path
 
-for package in getPackages():
-    addpackage(package)
+def addpackage(package):
+    """
+    Look in this package name for the file $PACKAGE/etc/package.pth
+    which contains paths that we want prepended to sys.path
+    There should be one relative pathname per line (relative to $PACKAGE)
+    comments and empty lines are ok
+    """
+    tree = os.getenv(package)
+    
+    lowerPackage = package.lower()
+    fullname = os.path.join(tree, 'etc', lowerPackage + '.pth')
 
+    readpth(tree, fullname)
+
+def getPackages():
+    """
+    Find all the packages on your ctprojs variable and parse them
+    to extract the tree name from the long details like this:
+    TOONTOWN:default DIRECT:default PANDA:personal DTOOL:install
+    Returns a list of the packages as strings
+    Note: the ctprojs are reversed to put them in the order of attachment.
+    """
+    ctprojs = os.getenv("CTPROJS")
+    if ctprojs == None:
+        # The CTPROJS environment variable isn't defined.  Assume
+        # we're running from the directory above all of the source
+        # trees; look within these directories for the *.pth files.
+
+        searchstr = os.path.join('*', 'etc', '*.pth')
+        filenames = glob.glob(searchstr)
+        if len(filenames) == 0:
+            print ''
+            print 'Warning: no files found matching %s.' % (searchstr)
+            print 'Check your starting directory.'
+            print ''
+            
+        for filename in filenames:
+            tree = os.path.dirname(os.path.dirname(filename))
+            readpth(tree, filename)
+
+    else:
+        # The CTPROJS environment variable *is* defined.  We must be
+        # using the ctattach tools; get the *.pth files from the set
+        # of attached trees.
+        packages = []
+
+        for proj in ctprojs.split():
+            projName = proj.split(':')[0]
+            packages.append(projName)
+        packages.reverse()
+
+        for package in packages:
+            addpackage(package)
+
+getPackages()
