@@ -487,6 +487,7 @@ add_child(PandaNode *child_node, int sort) {
   {
     PT(PandaNode) keep_child = child_node;
     remove_child(child_node);
+
     CDWriter cdata(_cycler);
     CDWriter cdata_child(child_node->_cycler);
     

@@ -68,6 +68,7 @@ PUBLISHED:
   };
 
   INLINE qpNodePath();
+  INLINE qpNodePath(const string &top_node_name);
   INLINE qpNodePath(PandaNode *top_node);
   INLINE qpNodePath(const qpNodePath &copy);
   INLINE void operator = (const qpNodePath &copy);

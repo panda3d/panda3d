@@ -31,8 +31,7 @@ PipelineCyclerBase(CycleData *initial_data, Pipeline *pipeline) :
   _data(initial_data),
   _pipeline(pipeline),
   _read_count(0),
-  _write_count(0),
-  _stage_count(0)
+  _write_count(0)
 {
   if (_pipeline == (Pipeline *)NULL) {
     _pipeline = Pipeline::get_render_pipeline();
@@ -49,8 +48,7 @@ PipelineCyclerBase(const PipelineCyclerBase &copy) :
   _data(copy._data->make_copy()),
   _pipeline(copy._pipeline),
   _read_count(0),
-  _write_count(0),
-  _stage_count(0)
+  _write_count(0)
 {
 }
 
@@ -61,7 +59,7 @@ PipelineCyclerBase(const PipelineCyclerBase &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerBase::
 operator = (const PipelineCyclerBase &copy) {
-  nassertv(_read_count == 0 && _write_count == 0 && _stage_count == 0);
+  nassertv(_read_count == 0 && _write_count == 0);
   _data = copy._data->make_copy();
   _pipeline = copy._pipeline;
 }
@@ -73,7 +71,7 @@ operator = (const PipelineCyclerBase &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE PipelineCyclerBase::
 ~PipelineCyclerBase() {
-  nassertv(_read_count == 0 && _write_count == 0 && _stage_count == 0);
+  nassertv(_read_count == 0 && _write_count == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -92,7 +90,9 @@ read() const {
   // This function isn't truly const, but it doesn't change the data
   // in any meaningful way, so we pretend it is.
   ((PipelineCyclerBase *)this)->_read_count++;
-  nassertr(_write_count == 0, _data);
+
+  // It's not an error to grab a read pointer while someone else holds
+  // a read or a write pointer.
   return _data;
 }
 
@@ -146,8 +146,14 @@ release_read(const CycleData *pointer) const {
 INLINE CycleData *PipelineCyclerBase::
 write() {
   _write_count++;
+
+  // It's an error to grab a write pointer while someone else holds a
+  // read pointer, because doing so may invalidate the read pointer.
   nassertr(_read_count == 0, _data);
-  nassertr(_write_count == 1, _data);
+
+  // It's not an error to do this while someone else holds a write
+  // pointer, however.
+
   return _data;
 }
 
@@ -215,7 +221,7 @@ is_stage_unique(int n) const {
 INLINE CycleData *PipelineCyclerBase::
 write_stage(int n) {
   nassertr(n == 0, (CycleData *)NULL);
-  _stage_count++;
+  _write_count++;
   return _data;
 }
 
@@ -228,8 +234,8 @@ write_stage(int n) {
 INLINE void PipelineCyclerBase::
 release_write_stage(int n, CycleData *pointer) {
   nassertv(n == 0 && pointer == _data);
-  nassertv(_stage_count > 0);
-  _stage_count--;
+  nassertv(_write_count > 0);
+  _write_count--;
 }
 
 ////////////////////////////////////////////////////////////////////

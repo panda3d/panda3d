@@ -19,16 +19,18 @@
 #ifndef __CHANCFG_H__
 #define __CHANCFG_H__
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "chanlayout.h"
 #include "chansetup.h"
 #include "chanwindow.h"
 #include "chanshare.h"
 
-#include <graphicsPipe.h>
-#include <graphicsWindow.h>
-#include <pt_NamedNode.h>
+#include "graphicsPipe.h"
+#include "graphicsWindow.h"
+#include "pt_NamedNode.h"
+#include "pandaNode.h"
+#include "qpnodePath.h"
 
 #include "pmap.h"
 
@@ -104,6 +106,7 @@ extern ChanCfgOverrides ChanOverrideNone;
 
 typedef pvector<SetupItem> SVec;
 class NamedNode;
+
 class EXPCL_PANDA ChanConfig
 {
 private:
@@ -118,6 +121,27 @@ PUBLISHED:
   ChanConfig(GraphicsPipe*, std::string, Node *render,
     ChanCfgOverrides& = ChanOverrideNone);
   INLINE PT_NamedNode get_group_node(const int node_index) const;
+  INLINE int get_group_membership(const int dr_index) const;
+  INLINE int get_num_groups(void) const;
+  INLINE int get_num_drs(void) const;
+  INLINE PT(DisplayRegion) get_dr(const int dr_index) const;
+  INLINE PT(GraphicsWindow) get_win(void) const;
+};
+
+class EXPCL_PANDA qpChanConfig
+{
+private:
+  std::vector< PT(PandaNode) > _group_node;
+  std::vector< PT(DisplayRegion) > _display_region;
+  std::vector<int> _group_membership;
+  PT(GraphicsWindow) _graphics_window;
+  void chan_eval(GraphicsWindow* win, WindowItem& W, LayoutItem& L, 
+         SVec& S, ChanViewport& V, int hw_offset, 
+         int xsize, int ysize, const qpNodePath &render, bool want_cameras);
+PUBLISHED:
+  qpChanConfig(GraphicsPipe*, std::string, const qpNodePath &render,
+    ChanCfgOverrides& = ChanOverrideNone);
+  INLINE PandaNode *get_group_node(const int node_index) const;
   INLINE int get_group_membership(const int dr_index) const;
   INLINE int get_num_groups(void) const;
   INLINE int get_num_drs(void) const;

@@ -35,10 +35,22 @@ qpNodePath() :
 ////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::Constructor
 //       Access: Published
+//  Description: This constructs an empty qpNodePath with a single
+//               node.  An ordinary PandaNode is created with the
+//               indicated name.
+////////////////////////////////////////////////////////////////////
+INLINE qpNodePath::
+qpNodePath(const string &top_node_name) :
+  _error_type(ET_ok)
+{
+  PandaNode *top_node = new PandaNode(top_node_name);
+  _head = top_node->get_generic_component();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::Constructor
+//       Access: Published
 //  Description: This constructs an empty qpNodePath with a single node.
-//               This path may now be extended by repeatedly calling
-//               push_back() with each node below that node in
-//               sequence.
 //
 //               If the Node pointer is NULL, this quietly creates an
 //               empty qpNodePath.

@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
   INLINE PT_NamedNode ChanConfig::get_group_node(const int node_index) const {
-         return _group_node[node_index];
+    return _group_node[node_index];
   }
   INLINE int ChanConfig::get_group_membership(const int dr_index) const {
     return _group_membership[dr_index];
@@ -32,6 +32,26 @@
     return _display_region[dr_index];
   }
   INLINE PT(GraphicsWindow) ChanConfig::get_win(void) const {
+    return _graphics_window;
+  }
+
+
+  INLINE PandaNode *qpChanConfig::get_group_node(const int node_index) const {
+    return _group_node[node_index];
+  }
+  INLINE int qpChanConfig::get_group_membership(const int dr_index) const {
+    return _group_membership[dr_index];
+  }
+  INLINE int qpChanConfig::get_num_groups(void) const {
+    return _group_node.size();
+  }
+  INLINE int qpChanConfig::get_num_drs(void) const {
+    return _display_region.size();
+  }
+  INLINE PT(DisplayRegion) qpChanConfig::get_dr(const int dr_index) const {
+    return _display_region[dr_index];
+  }
+  INLINE PT(GraphicsWindow) qpChanConfig::get_win(void) const {
     return _graphics_window;
   }
 

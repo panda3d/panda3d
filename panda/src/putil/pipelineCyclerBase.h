@@ -62,7 +62,7 @@ public:
 private:
   PT(CycleData) _data;
   Pipeline *_pipeline;
-  short _read_count, _write_count, _stage_count;
+  short _read_count, _write_count;
 #endif  // DO_PIPELINING
 };
 
