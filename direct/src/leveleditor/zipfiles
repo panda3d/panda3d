@@ -2,32 +2,40 @@
 
 if [ "$1" = "-d" ]
 then
-    #destdir=$2
-    destdir="levelEditor"
-    zipfile="levelEditor.zip"
+    destdir=$2
+    zipfile=$3
     debug_state="-d"
 else
-    #destdir=$1
-    destdir="levelEditor"
-    zipfile="levelEditor.zip"
+    destdir=$1
+    zipfile=$2
     debug_state=""
 fi
 
 if [ "${destdir}" = "" ]
 then
-    echo "Usage: zipfiles [-d]"
+    echo "Usage: zipfiles [-d] destdir destfile.zip"
     exit 1
 fi
 
 if [ -d ${destdir} ]
 then
     echo "Removing ${destdir}"
-    rm -rf ${destdir}
+    echo "ERROR: destdir must not already exist"
+    exit 1
+fi
+
+if [ -f ${zipfile} ]
+then
+    echo "Found printfiles"
+else
+    echo "Cannot find printfiles script. Run zipfiles in the same directory as printfiles"
+    exit 1
 fi
 
 if mkdir ${destdir}
 then
-    if copyfiles ${debug_state} ${destdir} printfiles
+    echo "Created destdir"
+    if copyfiles ${debug_state} ${destdir} ./printfiles
     then
 	if [ -f ${zipfile} ]
 	then
