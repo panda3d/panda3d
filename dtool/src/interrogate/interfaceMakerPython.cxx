@@ -41,8 +41,12 @@ InterfaceMakerPython(InterrogateModuleDef *def) :
 void InterfaceMakerPython::
 write_includes(ostream &out) {
   InterfaceMaker::write_includes(out);
-  out << "#undef HAVE_LONG_LONG\n"
-      << "#include <Python.h>\n\n";
+  out << "#undef HAVE_LONG_LONG\n\n"
+      << "#if PYTHON_FRAMEWORK\n"
+      << "  #include \"Python/Python.h\"\n"
+      << "#else\n"
+      << "  #include \"Python.h\"\n"
+      << "#endif\n\n";
 }
 
 ////////////////////////////////////////////////////////////////////

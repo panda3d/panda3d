@@ -9,7 +9,12 @@
 #include "dtoolbase.h"
 
 #undef HAVE_LONG_LONG
-#include "Python.h"
+
+#ifdef PYTHON_FRAMEWORK
+  #include "Python/Python.h"
+#else
+  #include "Python.h"
+#endif
 
 extern "C" {
 

@@ -15,6 +15,8 @@
 
 /* Define if we have Python installed.  */
 $[cdefine HAVE_PYTHON]
+/* Define if we have Python as a framework (Mac OS X).  */
+$[cdefine PYTHON_FRAMEWORK]
 
 /* Define if we have RAD game tools, Miles Sound System installed.  */
 $[cdefine HAVE_RAD_MSS]
