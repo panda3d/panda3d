@@ -204,19 +204,7 @@ get_balance() const {
 
 float MilesAudioSound::
 length() const {
-  // hack:
-  // For now, the sound needs to be playing, in order to 
-  // get the right length.  I'm in contact with RAD about the problem.  I've
-  // sent them example code.  They've told me they're looking into it.
-  // Until then, we'll play the sound to get the length.
-  float length;
-  if (AIL_quick_status(_audio)==QSTAT_PLAYING) {
-    length=((float)AIL_quick_ms_length(_audio))*0.001;
-  } else {
-    AIL_quick_play(_audio, 1);
-    length=((float)AIL_quick_ms_length(_audio))*0.001;
-    AIL_quick_halt(_audio);
-  }
+  float length=((float)AIL_quick_ms_length(_audio))*0.001;
   audio_debug("MilesAudioSound::length() returning "<<length);
   return length;
 }
