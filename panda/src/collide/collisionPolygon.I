@@ -125,8 +125,36 @@ to_2d(const LVecBase3f &point3d) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionPolygon::
 calc_to_3d_mat(LMatrix4f &to_3d_mat) const {
-  look_at(to_3d_mat, get_plane().get_normal());
+  // We have to be explicit about the coordinate system--we
+  // specifically mean CS_zup_right, because that points the forward
+  // vector down the Y axis and moves the coords inthe (X, 0, Z).  We
+  // want this effect regardless of the user's coordinate system of
+  // choice.
+
+  // The up vector, on the other hand, is completely arbitrary.
+
+  look_at(to_3d_mat, get_plane().get_normal(), 
+          LVector3f(0.0f, 0.0f, 1.0f), CS_zup_right);
   to_3d_mat.set_row(3, get_plane().get_point());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::rederive_to_3d_mat
+//       Access: Private
+//  Description: Fills the indicated matrix with the appropriate
+//               rotation transform to move points from the 2-d plane
+//               into the 3-d (X, 0, Z) plane.
+//
+//               This is essentially similar to calc_to_3d_mat, except
+//               that the matrix is rederived from whatever is stored
+//               in _to_2d_mat, guaranteeing that it will match
+//               whatever algorithm produced that one, even if it was
+//               produced on a different machine with different
+//               numerical precision.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionPolygon::
+rederive_to_3d_mat(LMatrix4f &to_3d_mat) const {
+  to_3d_mat.invert_from(_to_2d_mat);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -100,6 +100,7 @@ private:
   void setup_points(const LPoint3f *begin, const LPoint3f *end);
   INLINE LPoint2f to_2d(const LVecBase3f &point3d) const;
   INLINE void calc_to_3d_mat(LMatrix4f &to_3d_mat) const;
+  INLINE void rederive_to_3d_mat(LMatrix4f &to_3d_mat) const;
   INLINE static LPoint3f to_3d(const LVecBase2f &point2d, const LMatrix4f &to_3d_mat);
   LPoint3f legacy_to_3d(const LVecBase2f &point2d, int axis) const;
 

@@ -227,7 +227,7 @@ xform(const LMatrix4f &mat) {
 
   if (!_points.empty()) {
     LMatrix4f to_3d_mat;
-    calc_to_3d_mat(to_3d_mat);
+    rederive_to_3d_mat(to_3d_mat);
 
     pvector<LPoint3f> verts;
     Points::const_iterator pi;
@@ -254,7 +254,7 @@ xform(const LMatrix4f &mat) {
 LPoint3f CollisionPolygon::
 get_collision_origin() const {
   LMatrix4f to_3d_mat;
-  calc_to_3d_mat(to_3d_mat);
+  rederive_to_3d_mat(to_3d_mat);
 
   LPoint2f median = _points[0]._p;
   for (int n = 1; n < (int)_points.size(); n++) {
@@ -339,7 +339,7 @@ write(ostream &out, int indent_level) const {
   }
 
   LMatrix4f to_3d_mat;
-  calc_to_3d_mat(to_3d_mat);
+  rederive_to_3d_mat(to_3d_mat);
   out << "In 3-d space:\n";
   PTA_Vertexf verts;
   for (pi = _points.begin(); pi != _points.end(); ++pi) {
@@ -368,7 +368,7 @@ recompute_bound() {
   // Now actually compute the bounding volume by putting it around all
   // of our vertices.
   LMatrix4f to_3d_mat;
-  calc_to_3d_mat(to_3d_mat);
+  rederive_to_3d_mat(to_3d_mat);
   pvector<LPoint3f> vertices;
   Points::const_iterator pi;
   for (pi = _points.begin(); pi != _points.end(); ++pi) {
@@ -737,7 +737,7 @@ draw_polygon(GeomNode *geom_node, const CollisionPolygon::Points &points) const 
   }
 
   LMatrix4f to_3d_mat;
-  calc_to_3d_mat(to_3d_mat);
+  rederive_to_3d_mat(to_3d_mat);
   PTA_Vertexf verts;
   Points::const_iterator pi;
   for (pi = points.begin(); pi != points.end(); ++pi) {
