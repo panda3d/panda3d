@@ -433,6 +433,7 @@ server_add_file(string mfname, string fname) {
   // Uh-oh, did not find it
   downloader_cat.error() << "Could not find record named "
                          << mfname << " in database " << endl;
+  nassertv(false);
   return;
 }
 
@@ -547,6 +548,7 @@ get_file_record_named(string fname) const {
   downloader_cat.error() << "Could not find record named "
                          << fname << " in multifile " << _name << endl;
   PT(FileRecord) foo = new FileRecord;
+  nassertr(false, foo);
   return foo;
 }
 
@@ -649,6 +651,7 @@ get_multifile_record_named(string mfname) const {
   downloader_cat.error() << "Could not find record named "
                          << mfname << " in database " << endl;
   PT(MultifileRecord) foo = new MultifileRecord;
+  nassertr(false, foo);
   return foo;
 }
 
