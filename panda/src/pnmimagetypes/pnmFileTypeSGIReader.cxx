@@ -266,11 +266,15 @@ read_header(istream *ifp, Header *head, const string &magic_number) {
       return false;
     }
 
+    // Actually, some old broken SGI image writers put garbage in this
+    // field, so just ignore it.
+    /*
     if (head->colormap != CMAP_NORMAL) {
       pnmimage_sgi_cat.error()
         << "Unsupported non-normal pixel data (" << head->colormap << ")\n";
       return false;
     }
+    */
 
     /* adjust ysize/zsize to dimension, just to be sure */
 
