@@ -129,7 +129,9 @@ class SceneGraphExplorerItem(TreeItem):
         return type + "  " + name
 
     def IsEditable(self):
-        return issubclass(self.nodePath.node().__class__, NamedNode)
+        # All nodes' names can be edited nowadays.
+        return 1
+        #return issubclass(self.nodePath.node().__class__, NamedNode)
 
     def SetText(self, text):
         try:
