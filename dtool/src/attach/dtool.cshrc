@@ -85,8 +85,10 @@ endif
 
 if($SETUP_SCRIPT == "") then
   echo "error: ctattach.drv returned NULL string for setup_script filename!"
+  echo "       'dtool/bin/ctattach.drv' probably doesnt exist, need to make install on dtool to copy it from dtool\src\attach"
   exit
 endif
 
 source $SETUP_SCRIPT
+
 
