@@ -133,6 +133,31 @@ lookup_key(WPARAM wparam) const {
     if (isascii(key) && key != 0) {
       if (GetKeyState(VK_SHIFT) >= 0)
 	key = tolower(key); 
+      else {
+	switch (key) {
+	case '1': key = '!'; break;
+	case '2': key = '@'; break;
+	case '3': key = '#'; break;
+	case '4': key = '$'; break;
+	case '5': key = '%'; break;
+	case '6': key = '^'; break;
+	case '7': key = '&'; break;
+	case '8': key = '*'; break;
+	case '9': key = '('; break;
+	case '0': key = ')'; break;
+	case '-': key = '_'; break;
+	case '=': key = '+'; break;
+	case ',': key = '<'; break;
+	case '.': key = '>'; break;
+	case '/': key = '?'; break;
+	case ';': key = ':'; break;
+	case '\'': key = '"'; break;
+	case '[': key = '{'; break;
+	case ']': key = '}'; break;
+	case '\\': key = '|'; break;
+	case '`': key = '~'; break;
+	}
+      }
       return KeyboardButton::ascii_key((uchar)key);
     }
     break;

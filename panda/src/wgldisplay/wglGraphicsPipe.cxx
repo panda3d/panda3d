@@ -376,9 +376,16 @@ wglGraphicsPipe::lookup_key(WPARAM wparam) const {
 	case '8': key = '*'; break;
 	case '9': key = '('; break;
 	case '0': key = ')'; break;
+	case '-': key = '_'; break;
 	case '=': key = '+'; break;
+	case ',': key = '<'; break;
+	case '.': key = '>'; break;
 	case '/': key = '?'; break;
 	case ';': key = ':'; break;
+	case '\'': key = '"'; break;
+	case '[': key = '{'; break;
+	case ']': key = '}'; break;
+	case '\\': key = '|'; break;
 	case '`': key = '~'; break;
 	}
       }
