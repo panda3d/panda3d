@@ -57,6 +57,11 @@ PUBLISHED:
                     double rel_time, RelativeStart rel_to);
   int pop_level();
 
+  bool set_interval_start_time(const string &name, double rel_time, 
+                               RelativeStart rel_to = RS_level_begin);
+  double get_interval_start_time(const string &name) const;
+  double get_interval_end_time(const string &name) const;
+
   enum DefType {
     DT_c_interval,
     DT_ext_index,

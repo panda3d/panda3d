@@ -169,16 +169,7 @@ class MetaInterval(CMetaInterval):
     def addInterval(self, ival, relTime, relTo):
         # Adds the given interval to the MetaInterval.
 
-        if isinstance(ival, MetaInterval):
-            # It's another MetaInterval, so copy in its intervals
-            # directly to this object.  We could just store the
-            # MetaInterval itself, which would work, but we get a
-            # performance advantage by flattening out the deeply
-            # nested hierarchy into a linear list within the root
-            # CMetaInterval object.
-            ival.applyIvals(self, relTime, relTo)
-        
-        elif isinstance(ival, CInterval):
+        if isinstance(ival, CInterval):
             # It's a C++-style Interval, so add it directly.
             if getattr(ival, "inPython", 0):
                 # Actually, it's been flagged to run in Python, even
@@ -190,10 +181,20 @@ class MetaInterval(CMetaInterval):
                 self.pythonIvals.append(ival)
                 self.addExtIndex(index, ival.getName(), ival.getDuration(),
                                  ival.getOpenEnded(), relTime, relTo)
+
+            elif isinstance(ival, MetaInterval):
+                # It's another MetaInterval, so copy in its intervals
+                # directly to this object.  We could just store the
+                # MetaInterval itself, which would work, but we get a
+                # performance advantage by flattening out the deeply
+                # nested hierarchy into a linear list within the root
+                # CMetaInterval object.
+                ival.applyIvals(self, relTime, relTo)
+            
             else:
                 # Nope, a perfectly ordinary C++ interval.  Hooray!
                 self.addCInterval(ival, relTime, relTo)
-            
+
         elif isinstance(ival, Interval.Interval):
             # It's a Python-style Interval, so add it as an external.
             index = len(self.pythonIvals)
@@ -315,6 +316,26 @@ class MetaInterval(CMetaInterval):
         CMetaInterval.setFinalT(self)
         self.__doPythonCallbacks()
 
+    def setIntervalStartTime(self, *args, **kw):
+        # This function overrides from the parent level to force it to
+        # update the interval list first, if necessary.
+
+        self.__updateIvals()
+        # Once we have monkeyed with the interval timings, we'd better
+        # run the whole thing as a monolithic Python interval, since
+        # we can't extract the ivals list back out and append them
+        # into a parent MetaInterval.
+        self.inPython = 1
+        return CMetaInterval.setIntervalStartTime(self, *args, **kw)
+
+    def getIntervalStartTime(self, *args, **kw):
+        # This function overrides from the parent level to force it to
+        # update the interval list first, if necessary.
+
+        self.__updateIvals()
+        return CMetaInterval.getIntervalStartTime(self, *args, **kw)
+        
+        
     def getDuration(self):
         # This function overrides from the parent level to force it to
         # update the interval list first, if necessary.

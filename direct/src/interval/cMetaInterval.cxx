@@ -197,6 +197,130 @@ pop_level() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CMetaInterval::set_interval_start_time
+//       Access: Published
+//  Description: Adjusts the start time of the child interval with the
+//               given name, if found.  This may be either a C++
+//               interval added via add_c_interval(), or an external
+//               interval added via add_ext_index(); the name must
+//               match exactly.
+//
+//               If the interval is found, its start time is adjusted,
+//               and all subsequent intervals are adjusting
+//               accordingly, and true is returned.  If a matching
+//               interval is not found, nothing is changed and false
+//               is returned.
+////////////////////////////////////////////////////////////////////
+bool CMetaInterval::
+set_interval_start_time(const string &name, double rel_time,
+                        CMetaInterval::RelativeStart rel_to) {
+  Defs::iterator di;
+  for (di = _defs.begin(); di != _defs.end(); ++di) {
+    IntervalDef &def = (*di);
+
+    bool match = false;
+    switch (def._type) {
+    case DT_c_interval:
+      match = (def._c_interval->get_name() == name);
+      break;
+
+    case DT_ext_index:
+      match = (def._ext_name == name);
+      break;
+
+    default:
+      break;
+    }
+    if (match) {
+      // Here's the interval.
+      def._rel_time = rel_time;
+      def._rel_to = rel_to;
+      mark_dirty();
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CMetaInterval::get_interval_start_time
+//       Access: Published
+//  Description: Returns the actual start time, relative to the
+//               beginning of the interval, of the child interval with
+//               the given name, if found, or -1 if the interval is
+//               not found.
+////////////////////////////////////////////////////////////////////
+double CMetaInterval::
+get_interval_start_time(const string &name) const {
+  recompute();
+  Defs::const_iterator di;
+  for (di = _defs.begin(); di != _defs.end(); ++di) {
+    const IntervalDef &def = (*di);
+
+    bool match = false;
+    switch (def._type) {
+    case DT_c_interval:
+      match = (def._c_interval->get_name() == name);
+      break;
+
+    case DT_ext_index:
+      match = (def._ext_name == name);
+      break;
+
+    default:
+      break;
+    }
+    if (match) {
+      // Here's the interval.
+      return int_to_double_time(def._actual_begin_time);
+    }
+  }
+
+  return -1.0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CMetaInterval::get_interval_end_time
+//       Access: Published
+//  Description: Returns the actual end time, relative to the
+//               beginning of the interval, of the child interval with
+//               the given name, if found, or -1 if the interval is
+//               not found.
+////////////////////////////////////////////////////////////////////
+double CMetaInterval::
+get_interval_end_time(const string &name) const {
+  recompute();
+  Defs::const_iterator di;
+  for (di = _defs.begin(); di != _defs.end(); ++di) {
+    const IntervalDef &def = (*di);
+
+    bool match = false;
+    double duration = 0.0;
+    switch (def._type) {
+    case DT_c_interval:
+      duration = def._c_interval->get_duration();
+      match = (def._c_interval->get_name() == name);
+      break;
+
+    case DT_ext_index:
+      duration = def._ext_duration;
+      match = (def._ext_name == name);
+      break;
+
+    default:
+      break;
+    }
+    if (match) {
+      // Here's the interval.
+      return int_to_double_time(def._actual_begin_time) + duration;
+    }
+  }
+
+  return -1.0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CMetaInterval::initialize
 //       Access: Published, Virtual
 //  Description: This replaces the first call to step(), and indicates
