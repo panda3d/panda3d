@@ -12,6 +12,7 @@ import EntityCreator
 import OnscreenText
 import Task
 import LevelUtil
+import FactoryCameraViews
 
 class DistributedLevel(DistributedObject.DistributedObject,
                        Level.Level):
@@ -78,6 +79,10 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
         # add factory menu to SpeedChat
         toonbase.localToon.chatMgr.chatInputSpeedChat.addFactoryMenu()
+
+        # add special camera views
+        self.factoryViews = FactoryCameraViews.FactoryCameraViews(self)
+
 
     # the real required fields
     def setLevelZoneId(self, zoneId):
@@ -301,7 +306,9 @@ class DistributedLevel(DistributedObject.DistributedObject,
         DistributedObject.DistributedObject.delete(self)
         # remove factory menu to SpeedChat
         toonbase.localToon.chatMgr.chatInputSpeedChat.removeFactoryMenu()
-
+        # remove special camera views
+        del self.factoryViews
+        
     def getZoneNode(self, zoneNum):
         return self.zoneNum2node[zoneNum]
 
