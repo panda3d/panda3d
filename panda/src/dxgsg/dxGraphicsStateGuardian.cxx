@@ -64,6 +64,9 @@
 #include "config_dxgsg.h"
 #include "dxGraphicsStateGuardian.h"
 
+// disable nameless struct 'warning'
+#pragma warning (disable : 4201)
+
 #include <mmsystem.h>
 
 // print out simple drawprim stats every few secs
@@ -133,11 +136,13 @@ static void CountDPs(DWORD nVerts,DWORD nTris) {
 #define CountDPs(nv,nt)
 #endif
 
+#define MY_D3DRGBA(r,g,b,a) ((D3DCOLOR) D3DRGBA(r,g,b,a))
+
 #if defined(DO_PSTATS) || defined(PRINT_TEXSTATS)
 static bool bTexStatsRetrievalImpossible=false;
 #endif
 
-//#define Colorf_to_D3DCOLOR(out_color) (D3DRGBA((out_color)[0], (out_color)[1], (out_color)[2], (out_color)[3]))
+//#define Colorf_to_D3DCOLOR(out_color) (MY_D3DRGBA((out_color)[0], (out_color)[1], (out_color)[2], (out_color)[3]))
 
 INLINE DWORD
 Colorf_to_D3DCOLOR(const Colorf &cColorf) {
@@ -188,7 +193,7 @@ Colorf_to_D3DCOLOR(const Colorf &cColorf) {
    //   dxgsg_cat.debug() << (void*)d3dcolor << endl;
    return d3dcolor;
 #else //!_X86_
-   return D3DRGBA(cColorf[0], cColorf[1], cColorf[2], cColorf[3]);
+   return MY_D3DRGBA(cColorf[0], cColorf[1], cColorf[2], cColorf[3]);
 #endif //!_X86_
 }
 
@@ -228,7 +233,7 @@ void DXGraphicsStateGuardian::SetFPSMeterPosition(RECT &view_rect) {
     float *fltptr= (float*)_fpsmeter_verts;
 
     // poly color should be irrelevant since fps texblend throws it away
-    D3DCOLOR fpscolr = D3DRGBA(1.0f,1.0f,1.0f,1.0f);  
+    D3DCOLOR fpscolr =  (D3DCOLOR) 0xFFFFFFFF;  //MY_D3DRGBA(1.0f,1.0f,1.0f,1.0f);  
 
     #define WRITE_FPSMETER_VERT(x,y,z,w,colr,u,v) { *fltptr = x; fltptr++;    \
                                            *fltptr = y; fltptr++;             \
@@ -3043,7 +3048,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
 
     _d3dDevice->SetTextureStageState(0,D3DTSS_ADDRESSU,D3DTADDRESS_BORDER);
     _d3dDevice->SetTextureStageState(0,D3DTSS_ADDRESSV,D3DTADDRESS_BORDER);
-    _d3dDevice->SetTextureStageState(0,D3DTSS_BORDERCOLOR,D3DRGBA(0,0,0,0));
+    _d3dDevice->SetTextureStageState(0,D3DTSS_BORDERCOLOR,MY_D3DRGBA(0,0,0,0));
 
     _curFVFflags =  D3DFVF_XYZ | (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0)) ;
     HRESULT hr = _d3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST,  _curFVFflags, vert_buf, nPrims*3, NULL);
@@ -3883,7 +3888,7 @@ apply_texture(TextureContext *tc) {
 #endif
 */
 
-    int aniso_degree=tex->get_anisotropic_degree();
+    uint aniso_degree=tex->get_anisotropic_degree();
     Texture::FilterType ft=tex->get_magfilter();
 
     if (aniso_degree<=1) {
@@ -4448,7 +4453,7 @@ apply_fog(Fog *fog) {
 
     Colorf  fog_colr = fog->get_color();
     _d3dDevice->SetRenderState(D3DRENDERSTATE_FOGCOLOR,
-                   D3DRGBA(fog_colr[0], fog_colr[1], fog_colr[2], 0.0f));  // Alpha bits are not used
+                   MY_D3DRGBA(fog_colr[0], fog_colr[1], fog_colr[2], 0.0f));  // Alpha bits are not used
 
     // do we need to adjust fog start/end values based on D3DPRASTERCAPS_WFOG/D3DPRASTERCAPS_ZFOG ?
     // if not WFOG, then docs say we need to adjust values to range [0,1]
@@ -4759,12 +4764,12 @@ issue_transform(const TransformTransition *attrib) {
         }        VERTFORMAT;
 
         VERTFORMAT vert_buf[] = {
-            {0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  D3DRGBA(1.0f, 0.0f, 0.0f, 1.0f)},      // red
-            {3.0, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  D3DRGBA(1.0f, 0.0f, 0.0f, 1.0f)},       // red
-            {0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  D3DRGBA(0.0f, 1.0f, 0.0f, 1.0f)},      // grn
-            {0.0f, 3.0, 0.0f,  0.0f, -1.0f, 0.0f,  D3DRGBA(0.0f, 1.0f, 0.0f, 1.0f)},       // grn
-            {0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  D3DRGBA(0.0f, 0.0f, 1.0f, 1.0f)},      // blu
-            {0.0f, 0.0f, 3.0,  0.0f, -1.0f, 0.0f,  D3DRGBA(0.0f, 0.0f, 1.0f, 1.0f)},       // blu
+            {0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  MY_D3DRGBA(1.0f, 0.0f, 0.0f, 1.0f)},      // red
+            {3.0, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  MY_D3DRGBA(1.0f, 0.0f, 0.0f, 1.0f)},       // red
+            {0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  MY_D3DRGBA(0.0f, 1.0f, 0.0f, 1.0f)},      // grn
+            {0.0f, 3.0, 0.0f,  0.0f, -1.0f, 0.0f,  MY_D3DRGBA(0.0f, 1.0f, 0.0f, 1.0f)},       // grn
+            {0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  MY_D3DRGBA(0.0f, 0.0f, 1.0f, 1.0f)},      // blu
+            {0.0f, 0.0f, 3.0,  0.0f, -1.0f, 0.0f,  MY_D3DRGBA(0.0f, 0.0f, 1.0f, 1.0f)},       // blu
         };
 
         HRESULT hr = _d3dDevice->DrawPrimitive(D3DPT_LINELIST, D3DFVF_DIFFUSE | D3DFVF_XYZ | D3DFVF_NORMAL,
@@ -6763,7 +6768,7 @@ prepare_geom_node(GeomNode *node) {
 
 #define IsOdd(X) (((X) & 0x1)!=0)
 
-    int cTotalVertsOutputSoFar=0;
+    uint cTotalVertsOutputSoFar=0;
     int nVerts;
     bool bAddExtraStartVert;
 

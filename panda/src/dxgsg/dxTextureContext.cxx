@@ -1540,7 +1540,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
 
     _tex->set_minfilter(ft);
 
-    int aniso_degree;
+    uint aniso_degree;
 
     aniso_degree=1;
     if(devDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ANISOTROPY) {
@@ -1796,7 +1796,7 @@ FillDDSurfTexturePixels(void) {
                 } else
 #endif
                 {
-                    res = StretchBlt(hScreenDC,curx,ddsd_cur.dwHeight+cury,ddsd_cur.dwWidth,-ddsd_cur.dwHeight, hTexDC,0,0,ddsd_cur.dwWidth,ddsd_cur.dwHeight,SRCCOPY);
+                    res = StretchBlt(hScreenDC,curx,ddsd_cur.dwHeight+cury,ddsd_cur.dwWidth,-((int)ddsd_cur.dwHeight), hTexDC,0,0,ddsd_cur.dwWidth,ddsd_cur.dwHeight,SRCCOPY);
                     if(!res) {
                         PrintLastError(msg);
                         dxgsg_cat.error() << "StretchBLT failed: "<<msg<<"\n";
