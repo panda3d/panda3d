@@ -228,7 +228,7 @@ help() {
           "completion, it is not restarted.\n\n"
 
           "If the program is terminated via a TERM or KILL signal (e.g. via\n"
-          "kill [pid] or kill -i [pid]), it is assumed the user meant for the\n"
+          "kill [pid] or kill -9 [pid]), it is assumed the user meant for the\n"
           "process to stop, and it is not restarted.\n\n");
 }
 
