@@ -617,7 +617,8 @@ evaluate() const {
 ////////////////////////////////////////////////////////////////////
 CPPType *CPPExpression::
 determine_type() const {
-  CPPType *t1, *t2;
+  CPPType *t1 = (CPPType *)NULL;
+  CPPType *t2 = (CPPType *)NULL;
 
   CPPType *int_type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_int));
