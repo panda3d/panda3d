@@ -256,8 +256,19 @@ PNMFileTypeJPG::Reader::
 Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
-  // Put the magic number bytes back into the file
-  file->seekg(0);
+  // Hope we can putback() more than one character.
+  for (string::reverse_iterator mi = magic_number.rbegin();
+       mi != magic_number.rend();
+       mi++) {
+    _file->putback(*mi);
+  }
+  if (_file->fail()) {
+    pnmimage_jpg_cat.error()
+      << "Unable to put back magic number.\n";
+    _is_valid = false;
+    return;
+  }
+  _is_valid = true;
 
   /* Step 1: allocate and initialize JPEG decompression object */
 
@@ -302,8 +313,11 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeJPG::Reader::
-~Reader(void) {
-  jpeg_destroy_decompress(&_cinfo);
+~Reader() {
+  if (_is_valid) {
+    jpeg_destroy_decompress(&_cinfo);
+    _is_valid = false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -321,6 +335,9 @@ PNMFileTypeJPG::Reader::
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeJPG::Reader::
 read_data(xel *array, xelval *) {
+  if (!_is_valid) {
+    return 0;
+  }
   JSAMPARRAY buffer;            /* Output row buffer */
   int row_stride;               /* physical row width in output buffer */
 

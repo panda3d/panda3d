@@ -83,6 +83,8 @@ public:
     pixval R[256];      /* reds */
     pixval G[256];      /* greens */
     pixval B[256];      /* blues */
+
+    bool _is_valid;
   };
 
   class Writer : public PNMWriter {

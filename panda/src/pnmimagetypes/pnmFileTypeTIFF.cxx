@@ -318,7 +318,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   unsigned short* greencolormap;
   unsigned short* bluecolormap;
 
-  // Hope we can ungetc() more than one character.
+  // Hope we can putback() more than one character.
   for (string::reverse_iterator mi = magic_number.rbegin();
        mi != magic_number.rend();
        mi++) {
