@@ -123,6 +123,10 @@ class ShowBase(DirectObject.DirectObject):
         self.pipeList = []
         self.mak = None
         self.mouse2cam = None
+        self.mouseInterface = None
+        self.mouseWatcherNode = None
+        self.drive = None
+        self.trackball = None
         self.cam = None
         self.camList = []
         self.camNode = None
@@ -1222,16 +1226,18 @@ class ShowBase(DirectObject.DirectObject):
         """
         Switch mouse action to drive mode
         """
-        self.changeMouseInterface(self.drive)
-        # Set the height to a good eyeheight
-        self.mouseInterfaceNode.reset()
-        self.mouseInterfaceNode.setZ(4.0)
+        if self.drive:
+            self.changeMouseInterface(self.drive)
+            # Set the height to a good eyeheight
+            self.mouseInterfaceNode.reset()
+            self.mouseInterfaceNode.setZ(4.0)
 
     def useTrackball(self):
         """
         Switch mouse action to trackball mode
         """
-        self.changeMouseInterface(self.trackball)
+        if self.trackball:
+            self.changeMouseInterface(self.trackball)
 
     def oobe(self):
         """
