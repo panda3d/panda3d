@@ -27,6 +27,7 @@ class DirectSession(PandaObject):
         self.group = render.attachNewNode('DIRECT')
         self.font = TextNode.getDefaultFont()
         self.fEnabled = 0
+        self.fEnabledLight = 0
         self.drList = DisplayRegionList()
         self.iRayList = map(lambda x: x.iRay, self.drList)
         self.dr = self.drList[0]
@@ -194,45 +195,34 @@ class DirectSession(PandaObject):
         self.disable()
         # Start all display region context tasks
         self.drList.spawnContextTask()
-        # Turn on mouse Flying
-        self.cameraControl.enableMouseFly()
+        if not self.fEnabledLight:
+            # Turn on mouse Flying
+            self.cameraControl.enableMouseFly()
         # Turn on object manipulation
         self.manipulationControl.enableManipulation()
         # Make sure list of selected items is reset
         self.selected.reset()
         # Accept appropriate hooks
-        self.enableKeyEvents()
-        self.enableModifierEvents()
+        if not self.fEnabledLight:
+            self.enableKeyEvents()
         self.enableMouseEvents()
         self.enableActionEvents()
+        self.enableModifierEvents()
         # Set flag
         self.fEnabled = 1
 
     def enableLight(self):
-        if self.fEnabled:
-            return
-        # Make sure old tasks are shut down
-        self.disable()
-        # Start all display region context tasks
-        self.drList.spawnContextTask()
-        # Turn on object manipulation
-        self.manipulationControl.enableManipulation()
-        # Make sure list of selected items is reset
-        self.deselectAll()
-        self.selected.reset()
-        # Accept appropriate hooks
-        self.enableMouseEvents()
-        self.enableActionEvents()
-        self.enableModifierEvents()
-        # Set flag
-        self.fEnabled = 1
+        self.fEnabledLight = 1
+        self.enable()
 
     def disable(self):
         # Shut down all display region context tasks
         self.drList.removeContextTask()
-        # Turn off camera fly
-        self.cameraControl.disableMouseFly()
+        if not self.fEnabledLight:
+            # Turn off camera fly
+            self.cameraControl.disableMouseFly()
         # Turn off object manipulation
+        self.deselectAll()
         self.manipulationControl.disableManipulation()
         self.disableKeyEvents()
         self.disableModifierEvents()

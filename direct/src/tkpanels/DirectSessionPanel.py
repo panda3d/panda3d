@@ -88,7 +88,7 @@ class DirectSessionPanel(AppShell):
         self.menuBar.addmenu('DIRECT', 'Direct Session Panel Operations')
         
         self.directEnabled = BooleanVar()
-        self.directEnabled.set(direct.isEnabled())
+        self.directEnabled.set(1)
         self.menuBar.addmenuitem('DIRECT', 'checkbutton',
                                  'DIRECT Enabled',
                                  label = 'Enable',
