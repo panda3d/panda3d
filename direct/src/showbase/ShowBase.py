@@ -191,10 +191,19 @@ class ShowBase:
             self.tkroot = None
 
     def igloop(self, state):
+        # First, traverse the data graph.  This reads all the control
+        # inputs (from the mouse and keyboard, for instance) and also
+        # directly acts upon them (for instance, to move the avatar).
         directTraverseDataGraph(self.dataRoot.node())
+
+        # Then, run the collision traversal if we have a
+        # CollisionTraverser set.
         if self.cTrav:
             self.cTrav.traverse(self.render)
+
+        # Finally, render the frame.
         self.win.update()
+        
         return Task.cont
     
     def restart(self):
