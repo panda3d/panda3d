@@ -137,12 +137,16 @@ class ScrollingLabel(PandaObject.PandaObject):
         return self.frame.getPos()
     
     def setPos(self, x, y):
+        self.frame.freeze()
         self.frame.setPos(x, y)
         self.frame.recompute()
-
+        self.frame.thaw()
+        
     def setScale(self, scale):
+        self.frame.freeze()
         self.frame.setScale(scale)
         self.frame.recompute()
+        self.frame.thaw()
 
     def getKeyFocus(self):
         return self.keyFocus

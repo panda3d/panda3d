@@ -130,3 +130,4 @@ class Button(DirectObject):
             v3 = Vec3(mat.xformPoint(Point3(x, 0., y)))
             
         self.button.setPos(v3)
+
