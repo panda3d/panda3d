@@ -3,6 +3,8 @@
 setenv OS `uname`
 
 setenv LD_LIBRARY_PATH "."
+setenv CTEMACS_FOREHIGHLIGHT white
+setenv CTEMACS_BACKHIGHLIGHT blue
 
 # Setup the initial path
 if ( $OS == "Linux" ) then
@@ -76,10 +78,15 @@ endif
 
 if ( ! $?DTOOL ) setenv DTOOL /beta/player/bootstrap/dtool
 if ( $#argv == 0 ) then
-   source `$DTOOL/bin/ctattach.drv dtool default`
+   setenv SETUP_SCRIPT `$DTOOL/bin/ctattach.drv dtool default`
 else
-   source `$DTOOL/bin/ctattach.drv dtool $argv[1]`
+   setenv SETUP_SCRIPT `$DTOOL/bin/ctattach.drv dtool $argv[1]`
 endif
 
-setenv CTEMACS_FOREHIGHLIGHT white
-setenv CTEMACS_BACKHIGHLIGHT blue
+if($SETUP_SCRIPT == "") then
+  echo "error: ctattach.drv returned NULL string for setup_script filename!"
+  exit
+endif
+
+source $SETUP_SCRIPT
+
