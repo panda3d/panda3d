@@ -1948,6 +1948,7 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader) {
   rgba[0] *= color_def._color_gain[0];
   rgba[1] *= color_def._color_gain[1];
   rgba[2] *= color_def._color_gain[2];
+  rgba[3] *= color_def._color_gain[3];
 
   primitive.set_color(rgba);
 }

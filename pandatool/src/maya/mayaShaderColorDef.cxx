@@ -37,7 +37,7 @@
 ////////////////////////////////////////////////////////////////////
 MayaShaderColorDef::
 MayaShaderColorDef() {
-  _color_gain.set(1.0f, 1.0f, 1.0f);
+  _color_gain.set(1.0f, 1.0f, 1.0f, 1.0f);
 
   _has_flat_color = false;
   _flat_color.set(0.0, 0.0, 0.0, 0.0);
@@ -187,6 +187,10 @@ read_surface_color(MObject color) {
     _color_gain[0] *= color_gain[0];
     _color_gain[1] *= color_gain[1];
     _color_gain[2] *= color_gain[2];
+  }
+  float alpha_gain;
+  if (get_maya_attribute(color, "alphaGain", alpha_gain)) {
+    _color_gain[3] *= alpha_gain;
   }
 
   if (color.hasFn(MFn::kFileTexture)) {
