@@ -90,7 +90,6 @@
 #defer DEBUG_TYPE_FLAGS /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"
 #elif $[eq $[NUMBER_OF_PROCESSORS],1]
 // no multi-proc, so can use same .pdb file for each compile
-//#defer DEBUG_TYPE_FLAGS /Zi /Fd"$[osfilename $[st_dir]/$[TARGET].pdb]"
 #defer DEBUG_TYPE_FLAGS /Zi /Fd"$[osfilename $[target_dirname].pdb]"
 #else
 // puts dbg info inside first .obj

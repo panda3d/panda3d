@@ -775,6 +775,7 @@ $[TAB] $[COMPILE_C++]
 #if $[DO_PCH]
 // best way to find out if file use pch (and needs /Yu) is to check dependencies
 // these must be defined before flags (or could defer them)
+
 #define target_pch $[subst /./,/,$[patsubst %.h,$[st_dir]/%.pch,$[filter %_headers.h, $[dependencies $[file]]]]]
 #define target_dirname $[patsubst %_headers.pch,%,$[target_pch]] 
 #endif
@@ -797,6 +798,8 @@ $[TAB] $[COMPILE_LINE]
 #foreach file $[pch_header_source]
 #define target_pch $[patsubst %.h,$[st_dir]/%.pch,$[file]]
 #define target_obj $[patsubst %.h,$[st_dir]/%.obj,$[file]]
+#define target_dirname $[patsubst %_headers.pch,%,$[target_pch]] 
+
 #define target $[target_obj]
 #define source $[file]
 #define ipath $[file_ipath]
