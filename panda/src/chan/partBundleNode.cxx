@@ -83,10 +83,10 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int PartBundleNode::
-complete_pointers(vector_typedWritable &plist, BamReader* manager)
+complete_pointers(vector_typedWritable &p_list, BamReader* manager)
 {
-  int start = NamedNode::complete_pointers(plist, manager);
-  _bundle = DCAST(PartBundle, plist[start]);
+  int start = NamedNode::complete_pointers(p_list, manager);
+  _bundle = DCAST(PartBundle, p_list[start]);
   //Let PartBundleNode tell the PartBundle about itselt
   _bundle->_node = this;
   return start+1;

@@ -50,7 +50,7 @@ private:
 
 public:
   virtual void write_datagram(BamWriter* manager, Datagram &me);
-  virtual int complete_pointers(vector_typedWritable &plist,
+  virtual int complete_pointers(vector_typedWritable &p_list,
                                 BamReader *manager);
 
 protected:

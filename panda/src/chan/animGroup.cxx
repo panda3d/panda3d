@@ -228,20 +228,20 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int AnimGroup::
-complete_pointers(vector_typedWritable &plist, BamReader*)
+complete_pointers(vector_typedWritable &p_list, BamReader*)
 {
-  nassertr(plist[0] != TypedWritable::Null, 0);
-  _root = DCAST(AnimBundle, plist[0]);
+  nassertr(p_list[0] != TypedWritable::Null, 0);
+  _root = DCAST(AnimBundle, p_list[0]);
   for(int i = 1; i < _num_children+1; i++)
   {
-    if (plist[i] == TypedWritable::Null)
+    if (p_list[i] == TypedWritable::Null)
     {
       chan_cat->warning() << get_type().get_name()
                           << " Ignoring null child" << endl;
     }
     else
     {
-      _children.push_back(DCAST(AnimGroup, plist[i]));
+      _children.push_back(DCAST(AnimGroup, p_list[i]));
     }
   }
   return _num_children+1;

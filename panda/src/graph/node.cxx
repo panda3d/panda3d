@@ -474,7 +474,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int Node::
-complete_pointers(vector_typedWritable &plist, BamReader *manager) {
+complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
   if (manager->get_file_minor_ver() < 3) {
     // In bam versions before 3.3, this function does nothing (since
     // the arcs are completely responsible for adding themselves to
@@ -504,7 +504,7 @@ complete_pointers(vector_typedWritable &plist, BamReader *manager) {
 
       DownRelationPointers::iterator drpi;
       for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
-        (*drpi) = DCAST(NodeRelation, plist[count]);
+        (*drpi) = DCAST(NodeRelation, p_list[count]);
         count++;
       }
     }

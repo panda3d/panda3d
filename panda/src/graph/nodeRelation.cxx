@@ -900,11 +900,11 @@ write_datagram(BamWriter *manager, Datagram &me)
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int NodeRelation::
-complete_pointers(vector_typedWritable &plist, BamReader *manager) {
-  nassertr(plist[0] != TypedWritable::Null &&
-           plist[1] != TypedWritable::Null, 0);
-  _parent = DCAST(Node, plist[0]);
-  _child = DCAST(Node, plist[1]);
+complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
+  nassertr(p_list[0] != TypedWritable::Null &&
+           p_list[1] != TypedWritable::Null, 0);
+  _parent = DCAST(Node, p_list[0]);
+  _child = DCAST(Node, p_list[1]);
 
   if (manager->get_file_minor_ver() < 3) {
     // In bam versions before 3.3, we let the NodeRelation completely
@@ -935,7 +935,7 @@ complete_pointers(vector_typedWritable &plist, BamReader *manager) {
     //version doesn't know about, so we want to be able
     //to gracefully handle new functionality being thrown
     //at old code
-    if (plist[i] == TypedWritable::Null)
+    if (p_list[i] == TypedWritable::Null)
     {
       graph_cat->warning()
         << get_type().get_name()
@@ -946,7 +946,7 @@ complete_pointers(vector_typedWritable &plist, BamReader *manager) {
       //Let set_transition do the work for storing
       //a reference to this transition, determing it's
       //exact type, telling the transition about me, etc...
-      set_transition(DCAST(NodeTransition, plist[i]));
+      set_transition(DCAST(NodeTransition, p_list[i]));
     }
   }
   return _num_transitions+2;

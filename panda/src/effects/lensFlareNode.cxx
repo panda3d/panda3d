@@ -510,26 +510,26 @@ fillin(DatagramIterator &scan, BamReader *manager)
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int LensFlareNode::
-complete_pointers(vector_typedWritable &plist, BamReader *manager)
+complete_pointers(vector_typedWritable &p_list, BamReader *manager)
 {
   int i;
-  int start = Node::complete_pointers(plist, manager);
+  int start = Node::complete_pointers(p_list, manager);
   int end = _num_flares + start;
 
   for(i = start; i < end; i++)
   {
-    _flares.push_back(DCAST(Texture, plist[i]));
+    _flares.push_back(DCAST(Texture, p_list[i]));
   }
 
-  _blind = DCAST(Texture, plist[end]);
+  _blind = DCAST(Texture, p_list[end]);
 
   end += 1 + _num_arcs;
   for(; i < end; i++)
   {
-    _flare_arcs.push_back(DCAST(RenderRelation, plist[i]));
+    _flare_arcs.push_back(DCAST(RenderRelation, p_list[i]));
   }
 
-  _light_node = DCAST(Node, plist[end]);
+  _light_node = DCAST(Node, p_list[end]);
 
   return end+1;
 }

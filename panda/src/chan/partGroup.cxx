@@ -503,19 +503,19 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int PartGroup::
-complete_pointers(vector_typedWritable &plist, BamReader*)
+complete_pointers(vector_typedWritable &p_list, BamReader*)
 {
   int i;
   for(i = 0; i < _num_children; i++)
   {
-    if (plist[i] == TypedWritable::Null)
+    if (p_list[i] == TypedWritable::Null)
     {
       chan_cat->warning() << get_type().get_name()
                           << " Ignoring null PartGroup" << endl;
     }
     else
     {
-      _children.push_back(DCAST(PartGroup, plist[i]));
+      _children.push_back(DCAST(PartGroup, p_list[i]));
     }
   }
 

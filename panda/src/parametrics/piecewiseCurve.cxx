@@ -625,14 +625,14 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int PiecewiseCurve::
-complete_pointers(vector_typedWritable &plist, BamReader *manager) {
-  int used = ParametricCurve::complete_pointers(plist, manager);
+complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
+  int used = ParametricCurve::complete_pointers(p_list, manager);
 
-  nassertr(used + _segs.size() <= plist.size(), used);
+  nassertr(used + _segs.size() <= p_list.size(), used);
 
   size_t i;
   for (i = 0; i < _segs.size(); i++) {
-    DCAST_INTO_R(_segs[i]._curve, plist[used + i], used);
+    DCAST_INTO_R(_segs[i]._curve, p_list[used + i], used);
   }
 
   return used + _segs.size();

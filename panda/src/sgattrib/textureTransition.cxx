@@ -129,8 +129,8 @@ write_datagram(BamWriter *manager, Datagram &me) {
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int TextureTransition::
-complete_pointers(vector_typedWritable &plist, BamReader *) {
-  if (plist[0] == TypedWritable::Null) {
+complete_pointers(vector_typedWritable &p_list, BamReader *) {
+  if (p_list[0] == TypedWritable::Null) {
     if (sgattrib_cat.is_debug()) {
       sgattrib_cat->debug()
     << get_type().get_name() << " received null Texture,"
@@ -140,7 +140,7 @@ complete_pointers(vector_typedWritable &plist, BamReader *) {
     set_off();
 
   } else {
-    _value = DCAST(Texture, plist[0]);
+    _value = DCAST(Texture, p_list[0]);
   }
 
   return 1;
