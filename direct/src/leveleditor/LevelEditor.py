@@ -53,6 +53,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.dnaStore = DNAStorage()
 	loadDNAFile(self.dnaStore, 'dna/storage.dna',
                     getDefaultCoordinateSystem())
+        self.dnaOutputDir = 'ToontownCentral'
         self.dnaOutputFile = 'toontown_working.dna'
 
 	# Top level DNA Data Object
@@ -402,6 +403,7 @@ class LevelEditor(NodePath, PandaObject):
             self.pieMenuDictionary['toontownCentralStyleMenu'])
 	self.attributeDictionary['streetTexture'] = 'street_street_tex'
 	self.attributeDictionary['sidewalkTexture'] = 'street_sidewalk_tex'
+        self.dnaOutputDir = 'ToontownCentral'
         self.dnaOutputFile = 'toontown_central_working.dna'
         self.panel.editMenu.selectitem('Toontown Central')
 
@@ -416,6 +418,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.attributeDictionary['streetTexture'] = 'street_street_dock_tex'
 	self.attributeDictionary['sidewalkTexture'] = (
             'street_sidewalk_dock_tex')
+        self.dnaOutputDir = 'DonaldsDock'
         self.dnaOutputFile = 'donalds_dock_working.dna'
         self.panel.editMenu.selectitem('Donalds Dock')
 
@@ -430,6 +433,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.attributeDictionary['streetTexture'] = 'street_street_dock_tex'
 	self.attributeDictionary['sidewalkTexture'] = (
             'street_sidewalk_dock_tex')
+        self.dnaOutputDir = 'MinniesMelodyLand'
         self.dnaOutputFile = 'minnies_melody_land_working.dna'
         self.panel.editMenu.selectitem('Minnies Melody Land')
 
@@ -444,6 +448,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.attributeDictionary['streetTexture'] = 'street_street_dock_tex'
 	self.attributeDictionary['sidewalkTexture'] = (
             'street_sidewalk_dock_tex')
+        self.dnaOutputDir = 'TheBurrrgh'
         self.dnaOutputFile = 'the_burrrgh_working.dna'
         self.panel.editMenu.selectitem('The Burrrgh')
 
@@ -2188,9 +2193,11 @@ class LevelEditor(NodePath, PandaObject):
         self.initDNAGroupWithParentType(newDNAGroup, self.groupParent, type)
 
     def loadSpecifiedDNAFile(self):
-        f = Filename('dna')
-        f.resolveFilename(getModelPath())
-        path = f.toOsSpecific()
+        f = Filename('/alpha/DIRECT/LevelEditor/DNAFiles')
+        path = os.path.join(f.toOsSpecific(), self.dnaOutputDir)
+        #f = Filename('dna')
+        #f.resolveFilename(getModelPath())
+        #path = f.toOsSpecific()
         if not os.path.isdir(path):
             print 'LevelEditor Warning: Invalid default DNA directory!'
             print 'Using: C:\\'
@@ -2205,7 +2212,8 @@ class LevelEditor(NodePath, PandaObject):
             self.loadDNAFromFile(dnaFilename)
 
     def saveToSpecifiedDNAFile(self):
-        path = os.path.join(os.path.expandvars('$DIRECT'), 'etc')
+        f = Filename('/alpha/DIRECT/LevelEditor/DNAFiles')
+        path = os.path.join(f.toOsSpecific(), self.dnaOutputDir)
         if not os.path.isdir(path):
             print 'LevelEditor Warning: Invalid DNA save directory!'
             print 'Using: C:\\'
@@ -2275,7 +2283,8 @@ class LevelEditor(NodePath, PandaObject):
 	self.createNewLevelGroup()
 
     def outputDNADefaultFile(self):
-        file = os.path.join(os.path.expandvars('$DIRECT'),'etc',
+        f = Filename('/alpha/DIRECT/LevelEditor/DNAFiles')
+        file = os.path.join(f.toOsSpecific(), self.dnaOutputDir,
                             self.dnaOutputFile)
         self.outputDNA(file)
         
