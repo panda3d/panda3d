@@ -96,10 +96,18 @@ class ConnectionRepository(DirectObject.DirectObject):
                         # Get all symbols.
                         dcImports.update(module.__dict__)
                     else:
-                        if not hasattr(module, symbolName):
+                        mangledName = self.mangleName(symbolName)
+                        gotAny = 0
+                        if hasattr(module, symbolName):
+                            dcImports[symbolName] = getattr(module, symbolName)
+                            gotAny = 1
+                        if hasattr(module, mangledName): 
+                            dcImports[mangledName] = getattr(module, mangledName)
+                            gotAny = 1
+                            
+                        if not gotAny:
                             self.notify.error("Symbol %s not found in module %s." % (
                                 symbolName, moduleName))
-                        dcImports[symbolName] = getattr(module, symbolName)
             else:
                 # "import moduleName"
                 # Copy the module itself into the dictionary.
