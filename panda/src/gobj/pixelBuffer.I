@@ -311,37 +311,65 @@ set_uchar_rgb_texel(const uchar color[3], int x, int y, int width)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PixelBuffer::store_unsigned_byte
+//     Function: PixelBuffer::store_unscaled_byte
 //       Access: Private
 //  Description: This is used by load() to store the next consecutive
 //               component value into the indicated element of the
 //               array, which is taken to be an array of unsigned
-//               bytes.
+//               bytes.  The value is assumed to be in the range
+//               0-255.
 ////////////////////////////////////////////////////////////////////
 INLINE void PixelBuffer::
-store_unsigned_byte(int &index, double value) {
-  nassertv(index >= 0 && index < (int)_image.size());
-  _image[index++] = (uchar)(value * 255.0);
+store_unscaled_byte(int &index, int value) {
+  _image[index++] = (uchar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PixelBuffer::store_unsigned_short
+//     Function: PixelBuffer::store_unscaled_short
 //       Access: Private
 //  Description: This is used by load() to store the next consecutive
 //               component value into the indicated element of the
 //               array, which is taken to be an array of unsigned
-//               shorts.
+//               shorts.  The value is assumed to be in the range
+//               0-65535.
 ////////////////////////////////////////////////////////////////////
 INLINE void PixelBuffer::
-store_unsigned_short(int &index, double value) {
-  nassertv(index >= 0 && index+1 < (int)_image.size());
+store_unscaled_short(int &index, int value) {
   union {
     ushort us;
     uchar uc[2];
   } v;
-  v.us = (ushort)(value * 65535.0);
+  v.us = (ushort)value;
   _image[index++] = v.uc[0];
   _image[index++] = v.uc[1];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::store_scaled_byte
+//       Access: Private
+//  Description: This is used by load() to store the next consecutive
+//               component value into the indicated element of the
+//               array, which is taken to be an array of unsigned
+//               bytes.  The value will be scaled by the indicated
+//               factor before storing it.
+////////////////////////////////////////////////////////////////////
+INLINE void PixelBuffer::
+store_scaled_byte(int &index, int value, double scale) {
+  store_unscaled_byte(index, (int)(value * scale));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::store_scaled_short
+//       Access: Private
+//  Description: This is used by load() to store the next consecutive
+//               component value into the indicated element of the
+//               array, which is taken to be an array of unsigned
+//               shorts.  The value will be scaled by the indicated
+//               factor before storing it.
+////////////////////////////////////////////////////////////////////
+INLINE void PixelBuffer::
+store_scaled_short(int &index, int value, double scale) {
+  store_unscaled_short(index, (int)(value * scale));
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -111,28 +111,9 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
   bool has_alpha = pnmimage.has_alpha();
   bool is_grayscale = pnmimage.is_grayscale();
 
-  if (maxval > 255) {
-    // Wide pixels; we need to use a short for each component.
-    _type = T_unsigned_short;
-    _image = PTA_uchar(_xsize * _ysize * _components * 2);
-    int idx = 0;
-    
-    for (int j = _ysize-1; j >= 0; j--) {
-      for (int i = 0; i < _xsize; i++) {
-	if (is_grayscale) {
-	  store_unsigned_short(idx, pnmimage.get_gray(i, j));
-	} else {
-	  store_unsigned_short(idx, pnmimage.get_red(i, j));
-	  store_unsigned_short(idx, pnmimage.get_green(i, j));
-	  store_unsigned_short(idx, pnmimage.get_blue(i, j));
-	}
-	if (has_alpha) {
-	  store_unsigned_short(idx, pnmimage.get_alpha(i, j));
-	}
-      }
-    }
-  } else {
-    // Normal pixels: a byte per component will do.
+  if (maxval == 255) {
+    // Most common case: one byte per pixel, and the source image
+    // shows a maxval of 255.  No scaling is necessary.
     _type = T_unsigned_byte;
     _image = PTA_uchar(_xsize * _ysize * _components);
     int idx = 0;
@@ -140,14 +121,84 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     for (int j = _ysize-1; j >= 0; j--) {
       for (int i = 0; i < _xsize; i++) {
 	if (is_grayscale) {
-	  store_unsigned_byte(idx, pnmimage.get_gray(i, j));
+	  store_unscaled_byte(idx, pnmimage.get_gray_val(i, j));
 	} else {
-	  store_unsigned_byte(idx, pnmimage.get_red(i, j));
-	  store_unsigned_byte(idx, pnmimage.get_green(i, j));
-	  store_unsigned_byte(idx, pnmimage.get_blue(i, j));
+	  store_unscaled_byte(idx, pnmimage.get_red_val(i, j));
+	  store_unscaled_byte(idx, pnmimage.get_green_val(i, j));
+	  store_unscaled_byte(idx, pnmimage.get_blue_val(i, j));
 	}
 	if (has_alpha) {
-	  store_unsigned_byte(idx, pnmimage.get_alpha(i, j));
+	  store_unscaled_byte(idx, pnmimage.get_alpha_val(i, j));
+	}
+      }
+    }
+
+  } else if (maxval == 65535) {
+    // Another possible case: two bytes per pixel, and the source
+    // image shows a maxval of 65535.  Again, no scaling is necessary.
+    _type = T_unsigned_short;
+    _image = PTA_uchar(_xsize * _ysize * _components * 2);
+    int idx = 0;
+    
+    for (int j = _ysize-1; j >= 0; j--) {
+      for (int i = 0; i < _xsize; i++) {
+	if (is_grayscale) {
+	  store_unscaled_short(idx, pnmimage.get_gray_val(i, j));
+	} else {
+	  store_unscaled_short(idx, pnmimage.get_red_val(i, j));
+	  store_unscaled_short(idx, pnmimage.get_green_val(i, j));
+	  store_unscaled_short(idx, pnmimage.get_blue_val(i, j));
+	}
+	if (has_alpha) {
+	  store_unscaled_short(idx, pnmimage.get_alpha_val(i, j));
+	}
+      }
+    }
+
+  } else if (maxval <= 255) {
+    // A less common case: one byte per pixel, but the maxval is
+    // something other than 255.  In this case, we should scale the
+    // pixel values up to the appropriate amount.
+    _type = T_unsigned_byte;
+    _image = PTA_uchar(_xsize * _ysize * _components);
+    int idx = 0;
+    double scale = 255.0 / (double)maxval;
+    
+    for (int j = _ysize-1; j >= 0; j--) {
+      for (int i = 0; i < _xsize; i++) {
+	if (is_grayscale) {
+	  store_scaled_byte(idx, pnmimage.get_gray_val(i, j), scale);
+	} else {
+	  store_scaled_byte(idx, pnmimage.get_red_val(i, j), scale);
+	  store_scaled_byte(idx, pnmimage.get_green_val(i, j), scale);
+	  store_scaled_byte(idx, pnmimage.get_blue_val(i, j), scale);
+	}
+	if (has_alpha) {
+	  store_scaled_byte(idx, pnmimage.get_alpha_val(i, j), scale);
+	}
+      }
+    }
+
+  } else {
+    // Another uncommon case: two bytes per pixel, and the maxval is
+    // something other than 65535.  Again, we must scale the pixel
+    // values.
+    _type = T_unsigned_short;
+    _image = PTA_uchar(_xsize * _ysize * _components * 2);
+    int idx = 0;
+    double scale = 65535.0 / (double)maxval;
+    
+    for (int j = _ysize-1; j >= 0; j--) {
+      for (int i = 0; i < _xsize; i++) {
+	if (is_grayscale) {
+	  store_scaled_short(idx, pnmimage.get_gray_val(i, j), scale);
+	} else {
+	  store_scaled_short(idx, pnmimage.get_red_val(i, j), scale);
+	  store_scaled_short(idx, pnmimage.get_green_val(i, j), scale);
+	  store_scaled_short(idx, pnmimage.get_blue_val(i, j), scale);
+	}
+	if (has_alpha) {
+	  store_scaled_short(idx, pnmimage.get_alpha_val(i, j), scale);
 	}
       }
     }

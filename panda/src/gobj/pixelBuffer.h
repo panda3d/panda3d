@@ -112,8 +112,10 @@ public:
                   int x, int y, int width);
 
 private:
-  INLINE void store_unsigned_byte(int &index, double value);
-  INLINE void store_unsigned_short(int &index, double value);
+  INLINE void store_unscaled_byte(int &index, int value);
+  INLINE void store_unscaled_short(int &index, int value);
+  INLINE void store_scaled_byte(int &index, int value, double scale);
+  INLINE void store_scaled_short(int &index, int value, double scale);
   INLINE double get_unsigned_byte(int &index) const;
   INLINE double get_unsigned_short(int &index) const;
 
