@@ -12,6 +12,10 @@
 
 class EXPCL_PANDAEXPRESS HashVal {
 public:
+  uint get_value(int val) const {
+    if (val < 4 && val >= 0)
+      return hv[val];
+  }
   uint hv[4];
 };
 
