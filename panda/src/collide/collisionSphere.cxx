@@ -123,8 +123,6 @@ test_intersection_from_sphere(CollisionHandler *record,
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), 0);
 
-  LPoint3f from_center = sphere->get_center() * entry.get_wrt_space();
-
  //from_radius_v = LVector3f(sphere->get_radius(), 0.0, 0.0) * entry.get_wrt_space();
  //float from_radius = length(from_radius_v);
 
@@ -134,7 +132,9 @@ test_intersection_from_sphere(CollisionHandler *record,
                             (*pMat)(0,1)*(*pMat)(0,1) + 
                             (*pMat)(0,2)*(*pMat)(0,2));
 
+  LPoint3f from_center = sphere->get_center() * entry.get_wrt_space();
   LVector3f vec = from_center - _center;
+
   float dist2 = dot(vec, vec);
   float total_radius = _radius + from_radius;
 
