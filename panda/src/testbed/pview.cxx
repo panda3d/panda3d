@@ -352,9 +352,9 @@ main(int argc, char *argv[]) {
   PT(qpCamera) camera = make_camera(window);
 
   // Now we just need to make a scene graph for the camera to render.
-  render = qpNodePath(new PandaNode("render"));
+  render = qpNodePath("render");
   render.attach_new_node(camera);
-  camera->set_scene(qpNodePath(render));
+  camera->set_scene(render);
 
   // We will take advantage of this bin if the user toggles state
   // sorting, above, in event_s().
