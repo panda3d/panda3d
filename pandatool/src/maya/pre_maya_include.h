@@ -27,23 +27,10 @@
 #define _BOOL 1
 #endif
 
-// Maya tries to make a forward declaration for class ostream, but
-// this is not necessarily a class!  Curses.  We can't use any of the
-// built-in Maya stream operators, and we have to protect ourselves
-// from them.
-
 // In Maya 5.0, the headers seem to provide the manifest
 // REQUIRE_IOSTREAM, which forces it to use the new <iostream> headers
 // instead of the old <iostream.h> headers.  It also says this is for
-// Linux only.
-#ifdef __GNUC__
-#ifndef PRE_MAYA_INCLUDE_H
-#define PRE_MAYA_INCLUDE_H
+// Linux only, but it seems to work just fine on Windows, obviating
+// the need for sneaky #defines in this and in post_maya_include.h.
 #define REQUIRE_IOSTREAM
-#endif
-#else  // __GNUC__
 
-#define ostream maya_ostream
-#define istream maya_istream
-
-#endif  // __GNUC__
