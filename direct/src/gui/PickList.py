@@ -101,7 +101,13 @@ class PickList(PandaObject.PandaObject):
 
     def unmanage(self):
         self.frame.unmanage()
-        
+
+    def recompute(self):
+        self.frame.recompute()
+
+    def setPos(self, x, y):
+        self.frame.setPos(x, y)
+
     # event handlers
     def __incrementChoice(self):
         # handle the up arrow
