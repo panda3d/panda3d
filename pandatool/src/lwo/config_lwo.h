@@ -19,7 +19,7 @@
 #ifndef CONFIG_LWO_H
 #define CONFIG_LWO_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 extern void init_liblwo();
 

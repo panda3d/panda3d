@@ -19,9 +19,9 @@
 #ifndef PSTATTHREADDATA_H
 #define PSTATTHREADDATA_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <referenceCount.h>
+#include "referenceCount.h"
 
 #include "pdeque.h"
 

@@ -19,7 +19,7 @@
 #ifndef LWOSURFACEBLOCKREPEAT_H
 #define LWOSURFACEBLOCKREPEAT_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoChunk.h"
 

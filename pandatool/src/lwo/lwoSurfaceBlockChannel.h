@@ -19,7 +19,7 @@
 #ifndef LWOSURFACEBLOCKCHANNEL_H
 #define LWOSURFACEBLOCKCHANNEL_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoChunk.h"
 

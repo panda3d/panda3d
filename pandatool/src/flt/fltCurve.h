@@ -19,12 +19,12 @@
 #ifndef FLTCURVE_H
 #define FLTCURVE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltBeadID.h"
 #include "fltHeader.h"
 
-#include <luse.h>
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FltCurve

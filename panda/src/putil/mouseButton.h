@@ -19,7 +19,7 @@
 #ifndef MOUSEBUTTON_H
 #define MOUSEBUTTON_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "buttonHandle.h"
 

@@ -19,7 +19,7 @@
 #ifndef VRPNBUTTONDEVICE_H
 #define VRPNBUTTONDEVICE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <clientButtonDevice.h>
 

@@ -19,7 +19,7 @@
 #ifndef INDIRECTCOMPARENAMES_H
 #define INDIRECTCOMPARENAMES_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : IndirectCompareNames

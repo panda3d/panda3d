@@ -19,7 +19,7 @@
 #ifndef _IO_PTA_DATAGRAM_INT
 #define _IO_PTA_DATAGRAM_INT
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pointerToArray.h"
 #include "pta_int.h"

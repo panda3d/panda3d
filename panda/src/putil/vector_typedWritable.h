@@ -19,7 +19,7 @@
 #ifndef VECTOR_TYPED_WRITABLE_H
 #define VECTOR_TYPED_WRITABLE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pvector.h"
 

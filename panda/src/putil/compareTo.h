@@ -19,7 +19,7 @@
 #ifndef COMPARETO_H
 #define COMPARETO_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CompareTo

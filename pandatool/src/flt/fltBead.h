@@ -19,12 +19,12 @@
 #ifndef FLTBEAD_H
 #define FLTBEAD_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltRecord.h"
 #include "fltTransformRecord.h"
 
-#include <luse.h>
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FltBead

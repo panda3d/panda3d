@@ -19,7 +19,7 @@
 #ifndef FLTERROR_H
 #define FLTERROR_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 // Return values for various functions in the flt library.
 enum FltError {

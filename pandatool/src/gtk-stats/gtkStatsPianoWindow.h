@@ -19,7 +19,7 @@
 #ifndef GTKSTATSPIANOWINDOW_H
 #define GTKSTATSPIANOWINDOW_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "gtkStatsMonitor.h"
 #include "gtkStatsWindow.h"

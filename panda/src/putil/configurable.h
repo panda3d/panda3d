@@ -22,7 +22,7 @@
 // Includes
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "typedObject.h"
 

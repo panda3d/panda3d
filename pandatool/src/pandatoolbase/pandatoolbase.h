@@ -23,7 +23,7 @@
 #ifndef PANDATOOLBASE_H
 #define PANDATOOLBASE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include "pandatoolsymbols.h"
 
 #endif

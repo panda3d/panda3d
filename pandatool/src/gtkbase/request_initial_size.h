@@ -19,7 +19,7 @@
 #ifndef REQUEST_INITIAL_SIZE_H
 #define REQUEST_INITIAL_SIZE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include <gtk--.h>
 

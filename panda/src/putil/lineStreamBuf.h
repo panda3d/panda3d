@@ -19,7 +19,7 @@
 #ifndef LINESTREAMBUF_H
 #define LINESTREAMBUF_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <string>
 

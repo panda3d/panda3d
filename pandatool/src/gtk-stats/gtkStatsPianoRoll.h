@@ -19,12 +19,12 @@
 #ifndef GTKSTATSPIANOROLL_H
 #define GTKSTATSPIANOROLL_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "gtkStatsMonitor.h"
 
 #include <pStatPianoRoll.h>
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 #include <gtk--.h>
 #include "pmap.h"

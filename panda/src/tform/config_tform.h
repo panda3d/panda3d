@@ -19,8 +19,8 @@
 #ifndef CONFIG_TFORM_H
 #define CONFIG_TFORM_H
 
-#include <pandabase.h>
-#include <notifyCategoryProxy.h>
+#include "pandabase.h"
+#include "notifyCategoryProxy.h"
 
 NotifyCategoryDecl(tform, EXPCL_PANDA, EXPTP_PANDA);
 

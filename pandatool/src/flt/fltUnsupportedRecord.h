@@ -19,11 +19,11 @@
 #ifndef FLTUNSUPPORTEDRECORD_H
 #define FLTUNSUPPORTEDRECORD_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltRecord.h"
 
-#include <datagram.h>
+#include "datagram.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FltUnsupportedRecord

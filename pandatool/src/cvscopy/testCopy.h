@@ -19,7 +19,7 @@
 #ifndef TESTCOPY_H
 #define TESTCOPY_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "cvsCopy.h"
 

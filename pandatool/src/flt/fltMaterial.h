@@ -19,11 +19,11 @@
 #ifndef FLTMATERIAL_H
 #define FLTMATERIAL_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltRecord.h"
 
-#include <luse.h>
+#include "luse.h"
 
 class DatagramIterator;
 

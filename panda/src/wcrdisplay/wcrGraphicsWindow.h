@@ -21,9 +21,9 @@
 ////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <graphicsWindow.h>
+#include "graphicsWindow.h"
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
 #undef WINDOWS_LEAN_AND_MEAN

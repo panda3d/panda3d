@@ -19,12 +19,12 @@
 #ifndef CLWOSURFACE_H
 #define CLWOSURFACE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "cLwoSurfaceBlock.h"
 
 #include <lwoSurface.h>
-#include <luse.h>
+#include "luse.h"
 #include <eggTexture.h>
 #include <eggMaterial.h>
 #include <pt_EggTexture.h>

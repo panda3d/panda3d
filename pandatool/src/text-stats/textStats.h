@@ -19,7 +19,7 @@
 #ifndef TEXTSTATS_H
 #define TEXTSTATS_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include <programBase.h>
 #include <pStatServer.h>

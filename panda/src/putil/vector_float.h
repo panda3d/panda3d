@@ -19,7 +19,7 @@
 #ifndef VECTOR_FLOAT_H
 #define VECTOR_FLOAT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pvector.h"
 

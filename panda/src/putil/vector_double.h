@@ -19,7 +19,7 @@
 #ifndef VECTOR_DOUBLE_H
 #define VECTOR_DOUBLE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pvector.h"
 

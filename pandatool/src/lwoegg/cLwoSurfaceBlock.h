@@ -19,7 +19,7 @@
 #ifndef CLWOSURFACEBLOCK_H
 #define CLWOSURFACEBLOCK_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include <lwoSurfaceBlock.h>
 #include <lwoSurfaceBlockOpacity.h>
@@ -27,7 +27,7 @@
 #include <lwoSurfaceBlockAxis.h>
 #include <lwoSurfaceBlockWrap.h>
 
-#include <luse.h>
+#include "luse.h"
 
 class LwoToEggConverter;
 class CLwoSurfaceBlockTMap;

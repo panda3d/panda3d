@@ -19,12 +19,12 @@
 #ifndef CLWOSURFACEBLOCKTMAP_H
 #define CLWOSURFACEBLOCKTMAP_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include <lwoSurfaceBlockTMap.h>
 #include <lwoSurfaceBlockCoordSys.h>
 
-#include <luse.h>
+#include "luse.h"
 
 class LwoToEggConverter;
 

@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <configurable.h>
 #include <namedNode.h>
@@ -30,7 +30,7 @@
 #include <graphicsStateGuardian.h>
 #include <allAttributesWrapper.h>
 #include <allTransitionsWrapper.h>
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 // Defines

@@ -19,7 +19,7 @@
 #ifndef IFFID_H
 #define IFFID_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include <numeric_types.h>
 

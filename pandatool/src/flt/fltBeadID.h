@@ -19,7 +19,7 @@
 #ifndef FLTBEADID_H
 #define FLTBEADID_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltBead.h"
 

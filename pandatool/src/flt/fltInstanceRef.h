@@ -19,7 +19,7 @@
 #ifndef FLTINSTANCEREF_H
 #define FLTINSTANCEREF_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltBead.h"
 

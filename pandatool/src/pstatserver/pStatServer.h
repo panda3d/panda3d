@@ -19,11 +19,11 @@
 #ifndef PSTATSERVER_H
 #define PSTATSERVER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "pStatListener.h"
 
-#include <connectionManager.h>
+#include "connectionManager.h"
 
 #include "pmap.h"
 #include "pdeque.h"

@@ -19,11 +19,11 @@
 #ifndef CLWOLAYER_H
 #define CLWOLAYER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include <lwoLayer.h>
 #include <eggGroup.h>
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 class LwoToEggConverter;
 

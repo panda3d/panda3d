@@ -19,7 +19,7 @@
 #ifndef LWOSURFACESMOOTHINGANGLE_H
 #define LWOSURFACESMOOTHINGANGLE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoChunk.h"
 

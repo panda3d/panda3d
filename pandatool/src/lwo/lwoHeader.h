@@ -19,7 +19,7 @@
 #ifndef LWOHEADER_H
 #define LWOHEADER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoGroupChunk.h"
 

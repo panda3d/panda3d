@@ -19,11 +19,11 @@
 #ifndef FLTTRANSFORMRECORD_H
 #define FLTTRANSFORMRECORD_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltRecord.h"
 
-#include <luse.h>
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FltTransformRecord

@@ -19,7 +19,7 @@
 #ifndef FILENAMEUNIFIER_H
 #define FILENAMEUNIFIER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include <filename.h>
 

@@ -19,11 +19,11 @@
 #ifndef FLTVECTORRECORD_H
 #define FLTVECTORRECORD_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltRecord.h"
 
-#include <luse.h>
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FltVectorRecord

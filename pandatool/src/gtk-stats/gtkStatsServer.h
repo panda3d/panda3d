@@ -19,7 +19,7 @@
 #ifndef GTKSTATSSERVER_H
 #define GTKSTATSSERVER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include <pStatServer.h>
 

@@ -19,7 +19,7 @@
 #ifndef VRPNCLIENT_H
 #define VRPNCLIENT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include <clientBase.h>
 
 #include "vrpn_interface.h"

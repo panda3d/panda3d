@@ -19,13 +19,13 @@
 #ifndef PSTATVIEW_H
 #define PSTATVIEW_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "pStatClientData.h"
 #include "pStatThreadData.h"
 #include "pStatViewLevel.h"
 
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PStatView

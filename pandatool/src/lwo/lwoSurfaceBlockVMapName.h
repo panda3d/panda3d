@@ -19,7 +19,7 @@
 #ifndef LWOSURFACEBLOCKVMAPNAME_H
 #define LWOSURFACEBLOCKVMAPNAME_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoChunk.h"
 

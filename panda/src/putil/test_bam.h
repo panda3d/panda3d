@@ -17,8 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 
-#include <pandabase.h>
-#include <notify.h>
+#include "pandabase.h"
+#include "notify.h"
 
 #include "factory.h"
 #include "writableParam.h"

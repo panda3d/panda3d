@@ -19,7 +19,7 @@
 #ifndef LWOPOLYGONTAGS_H
 #define LWOPOLYGONTAGS_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoChunk.h"
 

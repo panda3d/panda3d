@@ -19,7 +19,7 @@
 #ifndef DRAWMASK_H
 #define DRAWMASK_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "bitMask.h"
 

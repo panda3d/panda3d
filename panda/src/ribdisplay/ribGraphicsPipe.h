@@ -19,7 +19,7 @@
 #ifndef RIBGRAPHICSPIPE_H
 #define RIBGRAPHICSPIPE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <string>
 #include <noninteractiveGraphicsPipe.h>

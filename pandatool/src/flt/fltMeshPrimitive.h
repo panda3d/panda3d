@@ -19,12 +19,12 @@
 #ifndef FLTMESHPRIMITIVE_H
 #define FLTMESHPRIMITIVE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltBead.h"
 #include "fltHeader.h"
 
-#include <luse.h>
+#include "luse.h"
 #include <vector_int.h>
 
 ////////////////////////////////////////////////////////////////////

@@ -19,7 +19,7 @@
 #ifndef FLTTRANSFORMROTATESCALE_H
 #define FLTTRANSFORMROTATESCALE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltTransformRecord.h"
 

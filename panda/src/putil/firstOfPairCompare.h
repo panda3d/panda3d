@@ -19,7 +19,7 @@
 #ifndef FIRSTOFPAIRCOMPARE_H
 #define FIRSTOFPAIRCOMPARE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FirstOfPairCompare

@@ -19,11 +19,11 @@
 #ifndef CLWOPOLYGONS_H
 #define CLWOPOLYGONS_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include <lwoPolygons.h>
 #include <eggGroup.h>
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 #include "pmap.h"
 

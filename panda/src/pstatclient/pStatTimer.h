@@ -19,7 +19,7 @@
 #ifndef PSTATTIMER_H
 #define PSTATTIMER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pStatCollector.h"
 

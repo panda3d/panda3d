@@ -19,7 +19,7 @@
 #ifndef PSTATVIEWLEVEL_H
 #define PSTATVIEWLEVEL_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "pvector.h"
 

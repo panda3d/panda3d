@@ -19,11 +19,11 @@
 #ifndef CLWOCLIP_H
 #define CLWOCLIP_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include <lwoClip.h>
 #include <eggGroup.h>
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 class LwoToEggConverter;
 

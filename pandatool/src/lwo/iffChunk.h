@@ -19,7 +19,7 @@
 #ifndef IFFCHUNK_H
 #define IFFCHUNK_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "iffId.h"
 

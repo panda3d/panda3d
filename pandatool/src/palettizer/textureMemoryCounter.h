@@ -19,7 +19,7 @@
 #ifndef TEXTUREMEMORYCOUNTER_H
 #define TEXTUREMEMORYCOUNTER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 class ImageFile;
 class PaletteImage;

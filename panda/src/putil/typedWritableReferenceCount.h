@@ -19,7 +19,7 @@
 #ifndef TYPEDWRITABLEREFERENCECOUNT_H
 #define TYPEDWRITABLEREFERENCECOUNT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "typedWritable.h"
 #include "referenceCount.h"

@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <datagram.h>
+#include "datagram.h"
 #include <datagramIterator.h>
 #include <bamReader.h>
 #include <bamWriter.h>

@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "ioPtaDatagramFloat.h"
 #include "datagram.h"

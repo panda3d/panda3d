@@ -22,7 +22,7 @@
 #include "triangleRasterizer.h"
 #include "triangle.h"
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 #include <deg_2_rad.h>
 
 #include <math.h>

@@ -19,7 +19,7 @@
 #ifndef BAMREADERPARAM_H
 #define BAMREADERPARAM_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "factoryParam.h"
 

@@ -19,7 +19,7 @@
 #ifndef DESTTEXTUREIMAGE_H
 #define DESTTEXTUREIMAGE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "imageFile.h"
 

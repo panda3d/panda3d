@@ -19,7 +19,7 @@
 #ifndef FIRSTOFPAIRLESS_H
 #define FIRSTOFPAIRLESS_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FirstOfPairLess

@@ -19,7 +19,7 @@
 #ifndef IMAGEREADER_H
 #define IMAGEREADER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "imageBase.h"
 

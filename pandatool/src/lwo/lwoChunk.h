@@ -19,7 +19,7 @@
 #ifndef LWOCHUNK_H
 #define LWOCHUNK_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "iffChunk.h"
 

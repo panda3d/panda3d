@@ -19,7 +19,7 @@
 #ifndef COLLIDEMASK_H
 #define COLLIDEMASK_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "bitMask.h"
 

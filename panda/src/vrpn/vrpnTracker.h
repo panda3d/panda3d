@@ -19,7 +19,7 @@
 #ifndef VRPNTRACKER_H
 #define VRPNTRACKER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "vrpn_interface.h"
 

@@ -19,11 +19,11 @@
 #ifndef LWOTOEGGCONVERTER_H
 #define LWOTOEGGCONVERTER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <somethingToEggConverter.h>
-#include <lwoHeader.h>
-#include <pointerTo.h>
+#include "somethingToEggConverter.h"
+#include "lwoHeader.h"
+#include "pointerTo.h"
 
 #include "pvector.h"
 #include "pmap.h"

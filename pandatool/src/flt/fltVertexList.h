@@ -19,13 +19,13 @@
 #ifndef FLTVERTEXLIST_H
 #define FLTVERTEXLIST_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltRecord.h"
 #include "fltPackedColor.h"
 #include "fltVertex.h"
 
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FltVertexList

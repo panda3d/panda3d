@@ -19,7 +19,7 @@
 #ifndef VRPNDIALDEVICE_H
 #define VRPNDIALDEVICE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <clientDialDevice.h>
 

@@ -19,7 +19,7 @@
 #ifndef FLTTRANSFORMGENERALMATRIX_H
 #define FLTTRANSFORMGENERALMATRIX_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltTransformRecord.h"
 

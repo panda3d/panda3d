@@ -19,11 +19,11 @@
 #ifndef CLWOPOINTS_H
 #define CLWOPOINTS_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include <lwoPoints.h>
 #include <eggVertexPool.h>
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 #include "pmap.h"
 

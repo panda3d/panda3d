@@ -19,11 +19,11 @@
 #ifndef IFFGENERICCHUNK_H
 #define IFFGENERICCHUNK_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "iffChunk.h"
 
-#include <datagram.h>
+#include "datagram.h"
 
 
 ////////////////////////////////////////////////////////////////////

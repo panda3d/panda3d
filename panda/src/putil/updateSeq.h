@@ -19,7 +19,7 @@
 #ifndef UPDATE_SEQ
 #define UPDATE_SEQ
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : UpdateSeq

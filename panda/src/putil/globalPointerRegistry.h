@@ -19,7 +19,7 @@
 #ifndef GLOBALPOINTERREGISTRY_H
 #define GLOBALPOINTERREGISTRY_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "typedObject.h"
 

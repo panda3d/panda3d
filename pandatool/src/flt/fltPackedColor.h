@@ -19,9 +19,9 @@
 #ifndef FLTPACKEDCOLOR_H
 #define FLTPACKEDCOLOR_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <luse.h>
+#include "luse.h"
 #include <math.h>
 
 class FltRecordReader;

@@ -19,7 +19,7 @@
 #ifndef RIBSTUFFTRAVERSER_H
 #define RIBSTUFFTRAVERSER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <traverserVisitor.h>
 #include <renderRelation.h>

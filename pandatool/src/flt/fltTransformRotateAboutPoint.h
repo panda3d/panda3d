@@ -19,7 +19,7 @@
 #ifndef FLTTRANSFORMROTATEABOUTPOINT_H
 #define FLTTRANSFORMROTATEABOUTPOINT_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltTransformRecord.h"
 

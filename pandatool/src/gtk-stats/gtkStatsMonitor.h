@@ -19,10 +19,10 @@
 #ifndef GTKSTATSMONITOR_H
 #define GTKSTATSMONITOR_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include <pStatMonitor.h>
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 #include "pset.h"
 

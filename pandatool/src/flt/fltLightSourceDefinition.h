@@ -19,11 +19,11 @@
 #ifndef FLTLIGHTSOURCEDEFINITION_H
 #define FLTLIGHTSOURCEDEFINITION_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltRecord.h"
 
-#include <luse.h>
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FltLightSourceDefinition

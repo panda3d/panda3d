@@ -19,7 +19,7 @@
 #ifndef MODIFIERBUTTONS_H
 #define MODIFIERBUTTONS_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "buttonHandle.h"
 #include "pointerToArray.h"

@@ -19,7 +19,7 @@
 #ifndef FACTORYPARAM_H
 #define FACTORYPARAM_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "typedReferenceCount.h"
 

@@ -19,7 +19,7 @@
 #ifndef LWOSURFACEPARAMETER_H
 #define LWOSURFACEPARAMETER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoChunk.h"
 

@@ -19,7 +19,7 @@
 #ifndef FLTFACE_H
 #define FLTFACE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltGeometry.h"
 

@@ -19,12 +19,12 @@
 #ifndef SHADERTRANSITION_H
 #define SHADERTRANSITION_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "shader.h"
 
 #include <immediateTransition.h>
-#include <pointerTo.h>
+#include "pointerTo.h"
 #include <nodeRelation.h>
 
 #include "plist.h"

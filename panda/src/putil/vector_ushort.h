@@ -19,7 +19,7 @@
 #ifndef VECTOR_USHORT_H
 #define VECTOR_USHORT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pvector.h"
 

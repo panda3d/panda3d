@@ -19,7 +19,7 @@
 #ifndef BITMASK_H
 #define BITMASK_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "numeric_types.h"
 #include "typedObject.h"

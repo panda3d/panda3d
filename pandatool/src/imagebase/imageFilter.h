@@ -19,7 +19,7 @@
 #ifndef IMAGEFILTER_H
 #define IMAGEFILTER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "imageReader.h"
 #include "imageWriter.h"

@@ -19,13 +19,13 @@
 #ifndef FLTLOCALVERTEXPOOL_H
 #define FLTLOCALVERTEXPOOL_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltRecord.h"
 #include "fltHeader.h"
 #include "fltVertex.h"
 
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FltLocalVertexPool

@@ -19,13 +19,13 @@
 #ifndef GTKSTATSWINDOW_H
 #define GTKSTATSWINDOW_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "gtkStatsMonitor.h"
 
 #include <basicGtkWindow.h>
 
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GtkStatsWindow

@@ -19,9 +19,9 @@
 #ifndef FLTTRACKPLANE_H
 #define FLTTRACKPLANE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <luse.h>
+#include "luse.h"
 
 class FltRecordReader;
 class FltRecordWriter;

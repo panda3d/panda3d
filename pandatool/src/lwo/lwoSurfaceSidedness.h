@@ -19,7 +19,7 @@
 #ifndef LWOSURFACESIDEDNESS_H
 #define LWOSURFACESIDEDNESS_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoChunk.h"
 

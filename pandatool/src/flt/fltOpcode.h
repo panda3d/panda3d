@@ -19,7 +19,7 @@
 #ifndef FLTOPCODE_H
 #define FLTOPCODE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 // Known opcodes, as of the latest version of flt.
 enum FltOpcode {

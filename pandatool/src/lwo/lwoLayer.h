@@ -19,11 +19,11 @@
 #ifndef LWOLAYER_H
 #define LWOLAYER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoChunk.h"
 
-#include <luse.h>
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LwoLayer

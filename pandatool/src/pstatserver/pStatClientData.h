@@ -19,13 +19,13 @@
 #ifndef PSTATCLIENTDATA_H
 #define PSTATCLIENTDATA_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "pStatThreadData.h"
 
 #include <pStatClientVersion.h>
-#include <referenceCount.h>
-#include <pointerTo.h>
+#include "referenceCount.h"
+#include "pointerTo.h"
 
 #include "pvector.h"
 

@@ -19,7 +19,7 @@
 #ifndef LWOSTILLIMAGE_H
 #define LWOSTILLIMAGE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoChunk.h"
 

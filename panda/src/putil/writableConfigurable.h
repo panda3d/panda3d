@@ -24,7 +24,7 @@
 // Includes
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "typedWritable.h"
 

@@ -19,7 +19,7 @@
 #ifndef LWOSURFACEBLOCKPROJECTION_H
 #define LWOSURFACEBLOCKPROJECTION_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoChunk.h"
 

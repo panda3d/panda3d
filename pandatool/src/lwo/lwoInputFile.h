@@ -19,11 +19,11 @@
 #ifndef LWOINPUTFILE_H
 #define LWOINPUTFILE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "iffInputFile.h"
 
-#include <luse.h>
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LwoInputFile

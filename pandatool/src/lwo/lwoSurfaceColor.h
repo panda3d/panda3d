@@ -19,11 +19,11 @@
 #ifndef LWOSURFACECOLOR_H
 #define LWOSURFACECOLOR_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoChunk.h"
 
-#include <luse.h>
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LwoSurfaceColor

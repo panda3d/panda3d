@@ -16,9 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
-#include <notify.h>
-#include <dconfig.h>
+#include "pandabase.h"
+#include "notify.h"
+#include "dconfig.h"
 
 #include "test_bam.h"
 

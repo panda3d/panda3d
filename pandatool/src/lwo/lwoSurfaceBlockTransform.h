@@ -19,11 +19,11 @@
 #ifndef LWOSURFACEBLOCKTRANSFORM_H
 #define LWOSURFACEBLOCKTRANSFORM_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoChunk.h"
 
-#include <luse.h>
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LwoSurfaceBlockTransform

@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
-#include <notify.h>
+#include "pandabase.h"
+#include "notify.h"
 
 #include "test_bam.h"
 

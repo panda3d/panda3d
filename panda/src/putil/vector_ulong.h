@@ -19,7 +19,7 @@
 #ifndef VECTOR_ULONG_H
 #define VECTOR_ULONG_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pvector.h"
 

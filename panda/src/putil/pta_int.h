@@ -19,7 +19,7 @@
 #ifndef PTA_INT_H
 #define PTA_INT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pointerToArray.h"
 #include "vector_int.h"

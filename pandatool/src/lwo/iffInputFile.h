@@ -19,13 +19,13 @@
 #ifndef IFFINPUTFILE_H
 #define IFFINPUTFILE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "iffId.h"
 #include "iffChunk.h"
 
 #include <typedObject.h>
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 class Datagram;
 

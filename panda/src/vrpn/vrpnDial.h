@@ -19,7 +19,7 @@
 #ifndef VRPNDIAL_H
 #define VRPNDIAL_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "vrpn_interface.h"
 

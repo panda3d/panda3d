@@ -19,11 +19,11 @@
 #ifndef LWOTAGS_H
 #define LWOTAGS_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoChunk.h"
 
-#include <luse.h>
+#include "luse.h"
 #include <vector_string.h>
 
 ////////////////////////////////////////////////////////////////////

@@ -19,7 +19,7 @@
 #ifndef LWODISCONTINUOUSVERTEXMAP_H
 #define LWODISCONTINUOUSVERTEXMAP_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoChunk.h"
 

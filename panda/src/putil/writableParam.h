@@ -19,7 +19,7 @@
 #ifndef WRITABLEPARAM_H
 #define WRITABLEPARAM_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "factoryParam.h"
 #include "datagram.h"

@@ -19,12 +19,12 @@
 #ifndef LWOGROUPCHUNK_H
 #define LWOGROUPCHUNK_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoChunk.h"
 #include "iffChunk.h"
 
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 #include "pvector.h"
 

@@ -19,14 +19,14 @@
 #ifndef PSTATREADER_H
 #define PSTATREADER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "pStatClientData.h"
 #include "pStatMonitor.h"
 
-#include <connectionReader.h>
-#include <connectionWriter.h>
-#include <referenceCount.h>
+#include "connectionReader.h"
+#include "connectionWriter.h"
+#include "referenceCount.h"
 #include <circBuffer.h>
 
 class PStatServer;

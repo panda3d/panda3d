@@ -19,12 +19,12 @@
 #ifndef FLTRECORDREADER_H
 #define FLTRECORDREADER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltOpcode.h"
 #include "fltError.h"
 
-#include <datagram.h>
+#include "datagram.h"
 #include <datagramIterator.h>
 
 ////////////////////////////////////////////////////////////////////

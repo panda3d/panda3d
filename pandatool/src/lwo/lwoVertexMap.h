@@ -19,7 +19,7 @@
 #ifndef LWOVERTEXMAP_H
 #define LWOVERTEXMAP_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoChunk.h"
 

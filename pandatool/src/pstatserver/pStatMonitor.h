@@ -19,14 +19,14 @@
 #ifndef PSTATMONITOR_H
 #define PSTATMONITOR_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "pStatClientData.h"
 #include "pStatView.h"
 
-#include <referenceCount.h>
-#include <pointerTo.h>
-#include <luse.h>
+#include "referenceCount.h"
+#include "pointerTo.h"
+#include "luse.h"
 
 #include "pmap.h"
 

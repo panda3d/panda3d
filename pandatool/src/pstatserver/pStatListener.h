@@ -19,10 +19,10 @@
 #ifndef PSTATLISTENER_H
 #define PSTATLISTENER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include <connectionListener.h>
-#include <referenceCount.h>
+#include "referenceCount.h"
 
 class PStatServer;
 class PStatMonitor;

@@ -19,7 +19,7 @@
 #ifndef VRPNANALOGDEVICE_H
 #define VRPNANALOGDEVICE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <clientAnalogDevice.h>
 

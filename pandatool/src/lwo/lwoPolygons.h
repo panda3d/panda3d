@@ -19,14 +19,14 @@
 #ifndef LWOPOLYGONS_H
 #define LWOPOLYGONS_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoChunk.h"
 
-#include <luse.h>
+#include "luse.h"
 #include <vector_int.h>
-#include <referenceCount.h>
-#include <pointerTo.h>
+#include "referenceCount.h"
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LwoPolygons

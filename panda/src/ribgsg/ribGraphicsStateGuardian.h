@@ -19,7 +19,7 @@
 #ifndef RIBGRAPHICSSTATEGUARDIAN_H
 #define RIBGRAPHICSSTATEGUARDIAN_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <graphicsStateGuardian.h>
 #include <filename.h>

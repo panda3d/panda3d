@@ -19,7 +19,7 @@
 #ifndef PTA_USHORT_H
 #define PTA_USHORT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pointerToArray.h"
 #include "vector_ushort.h"

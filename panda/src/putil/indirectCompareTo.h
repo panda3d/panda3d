@@ -19,7 +19,7 @@
 #ifndef INDIRECTCOMPARETO_H
 #define INDIRECTCOMPARETO_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : IndirectCompareTo

@@ -19,7 +19,7 @@
 #ifndef PTA_FLOAT_H
 #define PTA_FLOAT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pointerToArray.h"
 #include "vector_float.h"

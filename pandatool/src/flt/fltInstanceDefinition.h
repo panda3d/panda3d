@@ -19,7 +19,7 @@
 #ifndef FLTINSTANCEDEFINITION_H
 #define FLTINSTANCEDEFINITION_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltBead.h"
 

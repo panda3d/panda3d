@@ -19,7 +19,7 @@
 #ifndef FACTORY_H
 #define FACTORY_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "factoryBase.h"
 

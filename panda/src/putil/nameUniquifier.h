@@ -19,7 +19,7 @@
 #ifndef NAMEUNIQUIFIER_H
 #define NAMEUNIQUIFIER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <string>
 #include "pset.h"

@@ -19,7 +19,7 @@
 #ifndef EGGTOSOMETHING_H
 #define EGGTOSOMETHING_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "eggConverter.h"
 

@@ -19,12 +19,12 @@
 #ifndef FLTMESH_H
 #define FLTMESH_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltGeometry.h"
 #include "fltLocalVertexPool.h"
 
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FltMesh

@@ -19,13 +19,13 @@
 #ifndef FLTGEOMETRY_H
 #define FLTGEOMETRY_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltBeadID.h"
 #include "fltPackedColor.h"
 #include "fltHeader.h"
 
-#include <luse.h>
+#include "luse.h"
 
 class FltTexture;
 class FltMaterial;

@@ -19,7 +19,7 @@
 #ifndef OMITREASON_H
 #define OMITREASON_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 ////////////////////////////////////////////////////////////////////
 //        Enum : OmitReason

@@ -19,7 +19,7 @@
 #ifndef EGGMULTIFILTER_H
 #define EGGMULTIFILTER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "eggMultiBase.h"
 

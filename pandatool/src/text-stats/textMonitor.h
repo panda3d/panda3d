@@ -19,7 +19,7 @@
 #ifndef TEXTMONITOR_H
 #define TEXTMONITOR_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include <pStatMonitor.h>
 

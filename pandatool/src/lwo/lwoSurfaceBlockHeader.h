@@ -19,7 +19,7 @@
 #ifndef LWOSURFACEBLOCKHEADER_H
 #define LWOSURFACEBLOCKHEADER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoGroupChunk.h"
 

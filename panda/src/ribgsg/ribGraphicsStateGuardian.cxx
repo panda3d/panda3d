@@ -33,7 +33,7 @@
 #include <geom.h>
 #include <geomprimitives.h>
 #include <geomIssuer.h>
-#include <graphicsWindow.h>
+#include "graphicsWindow.h"
 #include <graphicsChannel.h>
 #include <indent.h>
 #include <dftraverser.h>
@@ -50,7 +50,7 @@
 #include <directionalLight.h>
 #include <pointLight.h>
 #include <spotlight.h>
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <assert.h>
 

@@ -19,12 +19,12 @@
 #ifndef GTKSTATSSTRIPCHART_H
 #define GTKSTATSSTRIPCHART_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "gtkStatsMonitor.h"
 
 #include <pStatStripChart.h>
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 #include <gtk--.h>
 #include "pmap.h"

@@ -19,7 +19,7 @@
 #ifndef VRPNTRACKERDEVICE_H
 #define VRPNTRACKERDEVICE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <clientTrackerDevice.h>
 

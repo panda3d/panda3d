@@ -19,12 +19,12 @@
 #ifndef FLTVERTEX_H
 #define FLTVERTEX_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltRecord.h"
 #include "fltPackedColor.h"
 
-#include <luse.h>
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FltVertex

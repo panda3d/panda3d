@@ -19,7 +19,7 @@
 #ifndef GTKSTATSGUIDE_H
 #define GTKSTATSGUIDE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include <gtk--.h>
 

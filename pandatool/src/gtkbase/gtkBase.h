@@ -19,7 +19,7 @@
 #ifndef GTKBASE_H
 #define GTKBASE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include <programBase.h>
 

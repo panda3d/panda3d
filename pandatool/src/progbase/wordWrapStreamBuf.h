@@ -19,7 +19,7 @@
 #ifndef WORDWRAPSTREAMBUF_H
 #define WORDWRAPSTREAMBUF_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include <string>
 

@@ -19,7 +19,7 @@
 #ifndef VRPN_INTERFACE_H
 #define VRPN_INTERFACE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #ifdef CPPPARSER
   // For correct interrogate parsing of UNC's vrpn library.

@@ -19,9 +19,9 @@
 #ifndef CONFIG_FLT_H
 #define CONFIG_FLT_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <notifyCategoryProxy.h>
+#include "notifyCategoryProxy.h"
 
 NotifyCategoryDeclNoExport(flt);
 

@@ -19,7 +19,7 @@
 #ifndef WORDWRAPSTREAM_H
 #define WORDWRAPSTREAM_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "wordWrapStreamBuf.h"
 

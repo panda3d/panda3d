@@ -19,10 +19,10 @@
 #ifndef TEXTUREPOSITION_H
 #define TEXTUREPOSITION_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include <typedWritable.h>
-#include <luse.h>
+#include "luse.h"
 #include <eggTexture.h>
 
 ////////////////////////////////////////////////////////////////////

@@ -19,7 +19,7 @@
 #ifndef GTKSTATSMAINWINDOW_H
 #define GTKSTATSMAINWINDOW_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include <basicGtkWindow.h>
 

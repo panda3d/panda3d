@@ -19,7 +19,7 @@
 #ifndef PAL_STRING_UTILS_H
 #define PAL_STRING_UTILS_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 #include <string_utils.h>
 
 class PNMFileType;

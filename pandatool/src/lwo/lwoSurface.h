@@ -19,7 +19,7 @@
 #ifndef LWOSURFACE_H
 #define LWOSURFACE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoGroupChunk.h"
 

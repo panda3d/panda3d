@@ -19,12 +19,12 @@
 #ifndef PSTATGRAPH_H
 #define PSTATGRAPH_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "pStatMonitor.h"
 #include "pStatClientData.h"
 
-#include <luse.h>
+#include "luse.h"
 #include <vector_int.h>
 
 #include "pmap.h"

@@ -19,7 +19,7 @@
 #ifndef KEYBOARDBUTTON_H
 #define KEYBOARDBUTTON_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "buttonHandle.h"
 

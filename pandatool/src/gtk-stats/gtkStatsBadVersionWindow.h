@@ -19,7 +19,7 @@
 #ifndef GTKSTATSBADVERSIONWINDOW_H
 #define GTKSTATSBADVERSIONWINDOW_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include <basicGtkWindow.h>
 

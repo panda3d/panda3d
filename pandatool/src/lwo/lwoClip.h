@@ -19,7 +19,7 @@
 #ifndef LWOCLIP_H
 #define LWOCLIP_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "lwoGroupChunk.h"
 

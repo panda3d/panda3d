@@ -19,7 +19,7 @@
 #ifndef STITCHVIEWERPROGRAM_H
 #define STITCHVIEWERPROGRAM_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "stitchCommandReader.h"
 
