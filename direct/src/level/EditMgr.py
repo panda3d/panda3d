@@ -17,5 +17,6 @@ class EditMgr(Entity.Entity):
                                           data['parentEntId'],
                                           )
 
-    def setRemoveEntity(self, entId):
-        self.level.levelSpec.removeEntity(entId)
+    def setRemoveEntity(self, data):
+        self.level.levelSpec.removeEntity(data['entId'],
+                                          )
