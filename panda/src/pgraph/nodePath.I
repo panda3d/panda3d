@@ -1045,7 +1045,10 @@ unstash() {
 INLINE bool NodePath::
 stash() {
   nassertr(!is_singleton(), false);
-  return get_parent().node()->stash_child(node());
+  PandaNode *parent_node = get_parent().node();
+  PandaNode *this_node = node();
+  nassertr(parent_node != (PandaNode *)NULL && this_node != (PandaNode *)NULL, false);
+  return parent_node->stash_child(this_node);
 }
 
 ////////////////////////////////////////////////////////////////////
