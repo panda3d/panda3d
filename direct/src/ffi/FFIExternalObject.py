@@ -170,6 +170,20 @@ class FFIExternalObject:
         else:
             return 1
 
+    def __repr__(self):
+        # Print this info for all objects
+        baseRepr = ('<' + self.__class__.__name__ + ' instance at C++ pointer: ' + `self.this` + '>')
+        try:
+            # Lots of Panda classes have an output function defined that takes an Ostream
+            # We create a LineStream for the output function to write to, then we extract
+            # the string out of it and return it as our repr
+            import LineStream
+            lineStream = LineStream.LineStream()
+            self.output(lineStream)
+            return baseRepr + '\n' + lineStream.getLine()
+        except:
+            return baseRepr
+
     def __hash__(self):
         return self.this
 
