@@ -41,6 +41,9 @@ class ClientRepository(DirectObject.DirectObject):
         # is weak.
         self.connectHttp = base.config.GetBool('connect-http', 1)
 
+        self.bootedIndex = None
+        self.bootedText = None
+
         self.tcpConn = None
         return None
 
@@ -75,7 +78,8 @@ class ClientRepository(DirectObject.DirectObject):
         the return status code giving reason for failure, if it is
         known.
         """
-
+        self.bootedIndex = None
+        self.bootedText = None
         if self.connectHttp:
             ch = self.http.makeChannel(0)
             ch.beginConnectTo(serverURL)
@@ -488,24 +492,43 @@ class ClientRepository(DirectObject.DirectObject):
                 "Asked to update non-existent DistObj " + str(doId))
         return None
 
+    def handleGoGetLost(self, di):
+        # The server told us it's about to drop the connection on us.
+        # Get ready!
+        if (di.getRemainingSize() > 0):
+            self.bootedIndex = di.getUint16()
+            self.bootedText = di.getString()
+
+            ClientRepository.notify.warning(
+                "Server is booting us out (%d): %s" % (self.bootedIndex, self.bootedText))
+        else:
+            self.bootedIndex = None
+            self.bootedText = None
+            ClientRepository.notify.warning(
+                "Server is booting us out with no explanation.")
+        
+
     def handleUnexpectedMsgType(self, msgType, di):
-        currentLoginState = self.loginFSM.getCurrentState()
-        if currentLoginState:
-            currentLoginStateName = currentLoginState.getName()
+        if msgType == CLIENT_GO_GET_LOST:
+            self.handleGoGetLost(di)
         else:
-            currentLoginStateName = "None"
-        currentGameState = self.gameFSM.getCurrentState()
-        if currentGameState:
-            currentGameStateName = currentGameState.getName()
-        else:
-            currentGameStateName = "None"
-        ClientRepository.notify.warning(
-            "Ignoring unexpected message type: " +
-            str(msgType) +
-            " login state: " +
-            currentLoginStateName +
-            " game state: " +
-            currentGameStateName)
+            currentLoginState = self.loginFSM.getCurrentState()
+            if currentLoginState:
+                currentLoginStateName = currentLoginState.getName()
+            else:
+                currentLoginStateName = "None"
+            currentGameState = self.gameFSM.getCurrentState()
+            if currentGameState:
+                currentGameStateName = currentGameState.getName()
+            else:
+                currentGameStateName = "None"
+            ClientRepository.notify.warning(
+                "Ignoring unexpected message type: " +
+                str(msgType) +
+                " login state: " +
+                currentLoginStateName +
+                " game state: " +
+                currentGameStateName)
         return None
 
     def sendSetShardMsg(self, shardId):

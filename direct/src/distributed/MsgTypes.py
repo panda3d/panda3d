@@ -1,5 +1,8 @@
 """MsgTypes module: contains distributed object message types"""
 
+# Sent by the server when it is dropping the connection deliberately.
+CLIENT_GO_GET_LOST =                          4
+
 CLIENT_OBJECT_UPDATE_FIELD =                 24
 CLIENT_OBJECT_UPDATE_FIELD_RESP =            24
 CLIENT_OBJECT_DISABLE_RESP =                 25
