@@ -52,8 +52,12 @@ class GravityWalker(DirectObject.DirectObject):
         self.avatarControlReverseSpeed=0
         self.avatarControlRotateSpeed=0
         self.getAirborneHeight=None
+        
+        self.priorParent=Vec3(0)
         self.__oldPosDelta=Vec3(0)
         self.__oldDt=0
+        
+        self.moving=0
         self.speed=0.0
         self.rotationSpeed=0.0
         self.slideSpeed=0.0
@@ -213,8 +217,8 @@ class GravityWalker(DirectObject.DirectObject):
 
         self.setCollisionsActive(1)
 
-    def setAirborneHeightFunc(self, getAirborneHeight):
-        self.getAirborneHeight = getAirborneHeight
+    def setAirborneHeightFunc(self, unused_parameter):
+        self.getAirborneHeight = self.lifter.getAirborneHeight
 
     def setAvatarPhysicsIndicator(self, indicator):
         """
@@ -236,6 +240,8 @@ class GravityWalker(DirectObject.DirectObject):
         del self.pusher
         del self.event
         del self.lifter
+        
+        del self.getAirborneHeight
 
     def setCollisionsActive(self, active = 1):
         assert(self.debugPrint("collisionsActive(active=%s)"%(active,)))
@@ -264,7 +270,10 @@ class GravityWalker(DirectObject.DirectObject):
         as floor, but are nearly vertical.  This ray is
         a hack to help deal with the cliff.
         """
-        if self.lifter.isInOuterSpace():
+        if (base.isRendering
+                and self.collisionsActive
+                and self.moving
+                and self.lifter.isInOuterSpace()):
             temp = self.cRayNodePath.getZ()
             self.cRayNodePath.setZ(14.0)
             self.oneTimeCollide()
@@ -325,6 +334,9 @@ class GravityWalker(DirectObject.DirectObject):
                 (turnLeft and self.avatarControlRotateSpeed) or
                 (turnRight and -self.avatarControlRotateSpeed))
 
+        if self.needToDeltaPos:
+            self.setPriorParentVector()
+            self.needToDeltaPos = 0
         if self.wantDebugIndicator:
             onScreenDebug.add("airborneHeight", self.lifter.getAirborneHeight()) #*#
             onScreenDebug.add("falling", self.falling) #*#
@@ -343,14 +355,15 @@ class GravityWalker(DirectObject.DirectObject):
         if self.lifter.isOnGround():
             if self.isAirborne:
                 self.isAirborne = 0
+                self.priorParent = Vec3(0)
                 impact = self.lifter.getImpactVelocity()
                 if impact < -30.0:
                     messenger.send("jumpHardLand")
-                    self.startJumpDelay(0.1)
+                    self.startJumpDelay(0.3)
                 else:
                     messenger.send("jumpLand")
                     if impact < -5.0:
-                        self.startJumpDelay(0.05)
+                        self.startJumpDelay(0.2)
                     # else, ignore the little potholes.
             if jump and self.mayJump:
                 # ...the jump button is down and we're close
@@ -363,10 +376,14 @@ class GravityWalker(DirectObject.DirectObject):
         #    if self.lifter.getAirborneHeight() > 10000.0:
         #        assert(0)
 
+        self.__oldPosDelta = self.avatarNodePath.getPosDelta(render)
+        # How far did we move based on the amount of time elapsed?
+        self.__oldDt = ClockObject.getGlobalClock().getDt()
+        dt=min(self.__oldDt, 0.1)
+
         # Check to see if we're moving at all:
-        if self.speed or self.slideSpeed or self.rotationSpeed:
-            # How far did we move based on the amount of time elapsed?
-            dt=min(ClockObject.getGlobalClock().getDt(), 0.1)
+        self.moving = self.speed or self.slideSpeed or self.rotationSpeed or (self.priorParent!=Vec3.zero())
+        if self.moving:
             distance = dt * self.speed
             slideDistance = dt * self.slideSpeed
             rotation = dt * self.rotationSpeed
@@ -374,11 +391,11 @@ class GravityWalker(DirectObject.DirectObject):
             # Take a step in the direction of our previous heading.
             self.vel=Vec3(Vec3.forward() * distance + 
                           Vec3.right() * slideDistance)
-            if self.vel != Vec3.zero():
+            if self.vel != Vec3.zero() or self.priorParent != Vec3.zero():
                 # rotMat is the rotation matrix corresponding to
                 # our previous heading.
                 rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
-                step=rotMat.xform(self.vel)
+                step=rotMat.xform(self.vel) + (self.priorParent * dt)
                 self.avatarNodePath.setFluidPos(Point3(
                         self.avatarNodePath.getPos()+step))
             self.avatarNodePath.setH(self.avatarNodePath.getH()+rotation)
@@ -392,25 +409,22 @@ class GravityWalker(DirectObject.DirectObject):
         self.needToDeltaPos = 1
     
     def setPriorParentVector(self):
-        assert(self.debugPrint("doDeltaPos()"))
-        
-        print "self.__oldDt", self.__oldDt, "self.__oldPosDelta", self.__oldPosDelta
+        assert(self.debugPrint("setPriorParentVector()"))
         if __debug__:
             onScreenDebug.add("__oldDt", "% 10.4f"%self.__oldDt)
             onScreenDebug.add("self.__oldPosDelta",
                               self.__oldPosDelta.pPrintValues())
-        
-        velocity = self.__oldPosDelta*(1/self.__oldDt)*4.0 # *4.0 is a hack
-        assert(self.debugPrint("  __oldPosDelta=%s"%(self.__oldPosDelta,)))
-        assert(self.debugPrint("  velocity=%s"%(velocity,)))
-        self.priorParent.setVector(Vec3(velocity))
+        velocity = self.__oldPosDelta*(1.0/self.__oldDt)
+        self.priorParent = Vec3(velocity)
+        self.priorParent.setZ(0.0) # The lifter handles the z value.
         if __debug__:
             if self.wantDebugIndicator:
-                onScreenDebug.add("velocity", velocity.pPrintValues())
+                onScreenDebug.add("priorParent", self.priorParent.pPrintValues())
     
     def reset(self):
         assert(self.debugPrint("reset()"))
         self.lifter.setVelocity(0.0)
+        self.priorParent=Vec3(0.0)
 
     def enableAvatarControls(self):
         """

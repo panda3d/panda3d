@@ -67,6 +67,12 @@ class ShowBase(DirectObject.DirectObject):
         # the program by closing the main window.
         self.exitFunc = None
 
+        # There are times when we are not drawing anything new to the
+        # screen, but we were grinding away on all the collision loops
+        # and shadow stuff and actually rendering.  This is to test
+        # not doing some of that:
+        self.isRendering = 0
+        
         taskMgr.taskTimerVerbose = self.config.GetBool('task-timer-verbose', 0)
         taskMgr.extendedExceptions = self.config.GetBool('extended-exceptions', 0)
         
@@ -831,34 +837,37 @@ class ShowBase(DirectObject.DirectObject):
     def shadowCollisionLoop(self, state):
         # run the collision traversal if we have a
         # CollisionTraverser set.
-        if self.shadowTrav:
-            self.shadowTrav.traverse(self.render)
+        if self.isRendering:
+            if self.shadowTrav:
+                self.shadowTrav.traverse(self.render)
         return Task.cont
 
     def collisionloop(self, state):
         # run the collision traversal if we have a
         # CollisionTraverser set.
-        if self.cTrav:
-            self.cTrav.traverse(self.render)
-        if self.appTrav:
-            self.appTrav.traverse(self.render)
+        if self.isRendering:
+            if self.cTrav:
+                self.cTrav.traverse(self.render)
+            if self.appTrav:
+                self.appTrav.traverse(self.render)
         return Task.cont
 
     def igloop(self, state):
-        if __debug__:
-            # We render the watch variables for the onScreenDebug as soon
-            # as we reasonably can before the renderFrame().
-            onScreenDebug.render()
+        if self.isRendering:
+            if __debug__:
+                # We render the watch variables for the onScreenDebug as soon
+                # as we reasonably can before the renderFrame().
+                onScreenDebug.render()
 
-        # Finally, render the frame.
-        self.graphicsEngine.renderFrame()
-        if self.clusterSyncFlag:
-            self.graphicsEngine.syncFrame()
+            # Finally, render the frame.
+            self.graphicsEngine.renderFrame()
+            if self.clusterSyncFlag:
+                self.graphicsEngine.syncFrame()
 
-        if __debug__:
-            # We clear the text buffer for the onScreenDebug as soon
-            # as we reasonably can after the renderFrame().
-            onScreenDebug.clear()
+            if __debug__:
+                # We clear the text buffer for the onScreenDebug as soon
+                # as we reasonably can after the renderFrame().
+                onScreenDebug.clear()
     
         if self.mainWinMinimized:
             # If the main window is minimized, slow down the app a bit
@@ -875,6 +884,10 @@ class ShowBase(DirectObject.DirectObject):
         # C++, not in Python.
         throwNewFrame()
         return Task.cont
+
+    def setRendering(self, isRendering):
+        self.isRendering = isRendering
+        print "** base.isRendering=%s **"%isRendering
 
     def restart(self):
         self.shutdown()

@@ -348,6 +348,8 @@ class PhysicsWalker(DirectObject.DirectObject):
         del self.cSphereNodePath
 
         del self.pusher
+        
+        del self.getAirborneHeight
 
     def setCollisionsActive(self, active = 1):
         assert(self.debugPrint("collisionsActive(active=%s)"%(active,)))
@@ -410,9 +412,9 @@ class PhysicsWalker(DirectObject.DirectObject):
         reverse = inputState.isSet("reverse")
         turnLeft = inputState.isSet("turnLeft")
         turnRight = inputState.isSet("turnRight")
-        slide = inputState.isSet("slide")
-        slideLeft = inputState.isSet("slideLeft")
-        slideRight = inputState.isSet("slideRight")
+        slide = 0#inputState.isSet("slide")
+        slideLeft = 0#inputState.isSet("slideLeft")
+        slideRight = 0#inputState.isSet("slideRight")
         jump = inputState.isSet("jump")
         # Determine what the speeds are based on the buttons:
         self.__speed=(forward and self.avatarControlForwardSpeed or 

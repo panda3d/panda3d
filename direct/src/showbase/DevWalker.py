@@ -75,18 +75,22 @@ class DevWalker(DirectObject.DirectObject):
         reverse = inputState.isSet("reverse")
         turnLeft = inputState.isSet("turnLeft")
         turnRight = inputState.isSet("turnRight")
-        shift = inputState.isSet("shift")
+        slideLeft = inputState.isSet("slideLeft")
+        slideRight = inputState.isSet("slideRight")
+        levitateUp = inputState.isSet("levitateUp")
+        levitateDown = inputState.isSet("levitateDown")
+        run = inputState.isSet("run") and 4.0 or 1.0
         # Determine what the speeds are based on the buttons:
-        self.speed=shift and (
+        self.speed=(
                 (forward and self.avatarControlForwardSpeed or 
                 reverse and -self.avatarControlReverseSpeed))
-        self.liftSpeed=not shift and (
-                (forward and self.avatarControlForwardSpeed or 
-                reverse and -self.avatarControlReverseSpeed))
-        self.slideSpeed=not shift and (
-                (turnLeft and -self.avatarControlForwardSpeed) or 
-                (turnRight and self.avatarControlForwardSpeed))
-        self.rotationSpeed=shift and (
+        self.liftSpeed=(
+                (levitateUp and self.avatarControlForwardSpeed or 
+                levitateDown and -self.avatarControlReverseSpeed))
+        self.slideSpeed=(
+                (slideLeft and -self.avatarControlForwardSpeed) or 
+                (slideRight and self.avatarControlForwardSpeed))
+        self.rotationSpeed=(
                 (turnLeft and self.avatarControlRotateSpeed) or
                 (turnRight and -self.avatarControlRotateSpeed))
             
@@ -94,9 +98,9 @@ class DevWalker(DirectObject.DirectObject):
         if self.speed or self.liftSpeed or self.slideSpeed or self.rotationSpeed:
             # How far did we move based on the amount of time elapsed?
             dt=min(ClockObject.getGlobalClock().getDt(), 0.1)
-            distance = dt * self.speed
-            lift = dt * self.liftSpeed
-            slideDistance = dt * self.slideSpeed
+            distance = dt * self.speed * run
+            lift = dt * self.liftSpeed * run
+            slideDistance = dt * self.slideSpeed * run
             rotation = dt * self.rotationSpeed
 
             # Take a step in the direction of our previous heading.
