@@ -11,23 +11,33 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 
   #define SOURCES \
-     classicNurbsCurve.I classicNurbsCurve.h config_parametrics.h  \
-     cubicCurveseg.h parametricCurveDrawer.I  \
-     parametricCurveDrawer.h curveFitter.I curveFitter.h  \
-     hermiteCurve.h nurbsCurve.h nurbsCurveDrawer.I  \
-     nurbsCurveDrawer.h nurbsCurveInterface.I  \
-     nurbsCurveInterface.h parametricCurve.h  \
-     parametricCurveCollection.I parametricCurveCollection.h  \
-     piecewiseCurve.h \
-     $[if $[HAVE_NURBSPP], nurbsPPCurve.cxx nurbsPPCurve.h]
+    classicNurbsCurve.I classicNurbsCurve.h config_parametrics.h  \
+    cubicCurveseg.h parametricCurveDrawer.I  \
+    parametricCurveDrawer.h curveFitter.I curveFitter.h  \
+    hermiteCurve.h nurbsCurve.h \
+    nurbsCurveDrawer.I nurbsCurveDrawer.h \
+    nurbsCurveEvaluator.h \
+    nurbsCurveInterface.I nurbsCurveInterface.h \
+    nurbsCurveResult.I nurbsCurveResult.h \
+    nurbsMatrixVector.I nurbsMatrixVector.h \
+    nurbsVertex.h nurbsVertex.I \
+    parametricCurve.h  \
+    parametricCurveCollection.I parametricCurveCollection.h  \
+    piecewiseCurve.h \
+    $[if $[HAVE_NURBSPP], nurbsPPCurve.cxx nurbsPPCurve.h]
 
 
   #define INCLUDED_SOURCES \
-     classicNurbsCurve.cxx config_parametrics.cxx cubicCurveseg.cxx  \
-     parametricCurveDrawer.cxx curveFitter.cxx hermiteCurve.cxx  \
-     nurbsCurveDrawer.cxx nurbsCurveInterface.cxx  \
-     parametricCurve.cxx parametricCurveCollection.cxx  \
-     piecewiseCurve.cxx 
+    classicNurbsCurve.cxx config_parametrics.cxx cubicCurveseg.cxx  \
+    parametricCurveDrawer.cxx curveFitter.cxx hermiteCurve.cxx  \
+    nurbsCurveDrawer.cxx \
+    nurbsCurveEvaluator.cxx \
+    nurbsCurveResult.cxx \
+    nurbsCurveInterface.cxx  \
+    nurbsMatrixVector.cxx \
+    nurbsVertex.cxx \
+    parametricCurve.cxx parametricCurveCollection.cxx  \
+    piecewiseCurve.cxx 
 
   #define INSTALL_HEADERS \
     classicNurbsCurve.I classicNurbsCurve.h \
@@ -38,7 +48,11 @@
     hermiteCurve.h \
     nurbsCurve.h \
     nurbsCurveDrawer.I nurbsCurveDrawer.h \
+    nurbsCurveEvaluator.h \
     nurbsCurveInterface.I nurbsCurveInterface.h \
+    nurbsCurveResult.I nurbsCurveResult.h \
+    nurbsMatrixVector.I nurbsMatrixVector.h \
+    nurbsVertex.h nurbsVertex.I \
     nurbsPPCurve.h \
     parametricCurve.h \
     parametricCurveCollection.I parametricCurveCollection.h \
