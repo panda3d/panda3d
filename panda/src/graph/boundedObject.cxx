@@ -65,6 +65,6 @@ recompute_bound() {
     _bound = NULL;
   }
 
-  _bound_stale = false;
+  _flags &= ~F_bound_stale;
   // By default, the bound is empty.
 }

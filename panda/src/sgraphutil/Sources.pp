@@ -4,8 +4,8 @@
 #begin lib_target
   #define TARGET sgraphutil
   #define LOCAL_LIBS \
-    graph sgraph sgattrib linmath putil gobj mathutil gsgbase display \
-    pnmimage
+    pstatclient graph sgraph sgattrib linmath putil gobj mathutil \
+    gsgbase display pnmimage
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
@@ -18,7 +18,8 @@
 
   #define INCLUDED_SOURCES  \
      appTraverser.cxx config_sgraphutil.cxx directRenderTraverser.cxx  \
-     get_rel_pos.cxx sceneGraphAnalyzer.cxx sceneGraphReducer.cxx
+     frustumCullTraverser.cxx get_rel_pos.cxx sceneGraphAnalyzer.cxx \
+     sceneGraphReducer.cxx
 
   #define INSTALL_HEADERS \
     appTraverser.I appTraverser.h config_sgraphutil.h \

@@ -53,12 +53,19 @@ PUBLISHED:
   INLINE_GRAPH void force_bound_stale();
   INLINE_GRAPH bool is_bound_stale() const;
 
+  INLINE_GRAPH void set_final(bool flag);
+  INLINE_GRAPH bool is_final() const;
+
 protected:
   virtual void propagate_stale_bound();
   virtual void recompute_bound();
 
 private:
-  bool _bound_stale;
+  enum Flags {
+    F_bound_stale  = 0x0001,
+    F_final        = 0x0002,
+  };
+  int _flags;
   BoundingVolumeType _bound_type;
 
 protected:

@@ -63,6 +63,8 @@ FrustumCullTraverser(ArcChain &arc_chain, Node *root,
 
     local_frustum = DCAST(GeometricBoundingVolume, _view_frustum->make_copy());
     local_frustum->xform(rel_from_camera);
+    GraphicsStateGuardian::_frustum_cull_volumes_pcollector.add_level(1);
+    GraphicsStateGuardian::_frustum_cull_transforms_pcollector.add_level(1);
 
     if (sgraphutil_cat.is_spam()) {
       sgraphutil_cat.spam()
@@ -130,6 +132,7 @@ traverse(NodeRelation *arc, AttributeWrapper render_state,
 
         nassertv(local_frustum != (GeometricBoundingVolume *)NULL);
         int result = local_frustum->contains(arc_gbv);
+        GraphicsStateGuardian::_frustum_cull_volumes_pcollector.add_level(1);
         if (result == BoundingVolume::IF_no_intersection) {
           // No intersection at all.  Cull.
           if (sgraphutil_cat.is_spam()) {
@@ -175,11 +178,16 @@ traverse(NodeRelation *arc, AttributeWrapper render_state,
       }
 
       if (carry_on) {
-        if (arc->has_transition(BillboardTransition::get_class_type())) {
+        if (arc->is_final() ||
+            arc->has_transition(BillboardTransition::get_class_type())) {
           // We can't reliably cull within a billboard, because the
           // geometry might get rotated out of its bounding volume.
           // So once we get within a billboard, we consider it all
           // visible.
+
+          // Also, if the arc has the "final" flag, the user is
+          // claiming that there is some other reason we should
+          // consider everything visible at this point.  So be it.
           all_in = true;
         }
 
@@ -205,6 +213,7 @@ traverse(NodeRelation *arc, AttributeWrapper render_state,
             // be.
             nassertv(local_frustum != (GeometricBoundingVolume *)NULL);
             local_frustum->xform(tt->get_matrix());
+            GraphicsStateGuardian::_frustum_cull_transforms_pcollector.add_level(1);
 
             if (sgraphutil_cat.is_spam()) {
               sgraphutil_cat.spam()

@@ -33,9 +33,9 @@
 #include <transformTransition.h>
 #include <billboardTransition.h>
 #include <wrt.h>
+#include <pStatCollector.h>
 
 #include "config_sgraphutil.h"
-
 
 
 ///////////////////////////////////////////////////////////////////

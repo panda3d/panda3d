@@ -47,6 +47,9 @@ PStatCollector GraphicsStateGuardian::_transform_state_pcollector("State changes
 PStatCollector GraphicsStateGuardian::_texture_state_pcollector("State changes:Textures");
 PStatCollector GraphicsStateGuardian::_nodes_pcollector("Nodes");
 PStatCollector GraphicsStateGuardian::_geom_nodes_pcollector("Nodes:GeomNodes");
+PStatCollector GraphicsStateGuardian::_frustum_cull_volumes_pcollector("Cull volumes");
+PStatCollector GraphicsStateGuardian::_frustum_cull_transforms_pcollector("Cull volumes:Transforms");
+
 #endif
 
 TypeHandle GraphicsStateGuardian::_type_handle;
@@ -759,6 +762,10 @@ init_frame_pstats() {
 
   _nodes_pcollector.clear_level();
   _geom_nodes_pcollector.clear_level();
+
+  // Not to mention the view-frustum-cull counters.
+  _frustum_cull_volumes_pcollector.clear_level();
+  _frustum_cull_transforms_pcollector.clear_level();
 }
 
 ////////////////////////////////////////////////////////////////////
