@@ -1024,6 +1024,13 @@ replace_child(PandaNode *orig_child, PandaNode *new_child) {
 void PandaNode::
 stash_child(int child_index) {
   nassertv(child_index >= 0 && child_index < get_num_children());
+
+  // Save a reference count for ourselves.  I don't think this should
+  // be necessary, but there are occasional crashes in stash() during
+  // furniture moving mode.  Perhaps this will eliminate those
+  // crashes.
+  PT(PandaNode) self = this;
+
   PT(PandaNode) child_node = get_child(child_index);
   int sort = get_child_sort(child_index);
   
