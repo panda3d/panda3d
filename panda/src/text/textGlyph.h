@@ -33,7 +33,7 @@ class TextGlyph;
 //               font.  This is a piece of renderable geometry of some
 //               kind.
 ////////////////////////////////////////////////////////////////////
-class TextGlyph : public ReferenceCount {
+class EXPCL_PANDA TextGlyph : public ReferenceCount {
 public:
   INLINE TextGlyph();
   INLINE TextGlyph(Geom *geom, const AllTransitionsWrapper &trans, float advance);
