@@ -322,6 +322,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
             assert not hasattr(self, 'parentId')
             self.parentId = parentId
             self.zoneId = zoneId
+            self.__location = (parentId, zoneId)
             self.generate()
 
     def generate(self):
