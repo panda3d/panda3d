@@ -186,7 +186,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             return
         assert not avatarNodePath.isEmpty()
         # Connect to Physics Manager:
-        self.actorNode=ActorNode("physicsActor")
+        self.actorNode=ActorNode("ship physicsActor")
         self.actorNode.getPhysicsObject().setOriented(1)
         self.actorNode.getPhysical(0).setViscosity(0.1)
         physicsActor=render.attachNewNode(self.actorNode)
@@ -206,6 +206,14 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         fn.addForce(gravity)
         self.phys.addLinearForce(gravity)
         self.gravity = gravity
+
+        fn=ForceNode("ship keel")
+        fnp=NodePath(fn)
+        #fnp.reparentTo(physicsActor)
+        fnp.reparentTo(render)
+        self.keel=AngularVectorForce(0.0, 0.0, 80.0)
+        fn.addForce(self.keel)
+        self.phys.addAngularForce(self.keel)
 
         fn=ForceNode("ship priorParent")
         fnp=NodePath(fn)
@@ -227,6 +235,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             self.phys.addLinearForce(self.avatarViscosity)
 
         self.phys.attachLinearIntegrator(LinearEulerIntegrator())
+        #*#self.phys.attachAngularIntegrator(AngularEulerIntegrator())
         self.phys.attachPhysicalnode(physicsActor.node())
 
         self.momentumForce=LinearVectorForce(0.0, 0.0, 0.0)
@@ -406,6 +415,76 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
 
         onScreenDebug.add("w ship", self.ship)
         onScreenDebug.add("w isAirborne", self.isAirborne)
+        onScreenDebug.add("posDelta1",
+            self.avatarNodePath.getPosDelta(render).pPrintValues())
+
+        physObject=self.actorNode.getPhysicsObject()
+        if 0:
+            onScreenDebug.add("w posDelta3",
+                render.getRelativeVector(
+                    self.avatarNodePath,
+                    self.avatarNodePath.getPosDelta(render)).pPrintValues())
+        if 0:
+            onScreenDebug.add("w gravity",
+                self.gravity.getLocalVector().pPrintValues())
+            onScreenDebug.add("w priorParent",
+                self.priorParent.getLocalVector().pPrintValues())
+
+            onScreenDebug.add("w physObject pos",
+                physObject.getPosition().pPrintValues())
+            onScreenDebug.add("w physObject hpr",
+                physObject.getOrientation().getHpr().pPrintValues())
+            onScreenDebug.add("w physObject orien",
+                physObject.getOrientation().pPrintValues())
+        if 1:
+            physObject = physObject.getVelocity()
+            onScreenDebug.add("w physObject vec",
+                physObject.pPrintValues())
+            onScreenDebug.add("w physObject len",
+                "% 10.4f"%physObject.length())
+
+            acForce = self.acForce.getLocalVector()
+            onScreenDebug.add("w acForce vec",
+                acForce.pPrintValues())
+            onScreenDebug.add("w acForce len",
+                "% 10.4f"%acForce.length())
+
+            onScreenDebug.add("avatarViscosity",
+                "% 10.4f"%(self.avatarViscosity.getCoef(),))
+
+            #onScreenDebug.add("physMgr",
+            #    self.phys.debugOutput())
+            onScreenDebug.add("orientation",
+                self.actorNode.getPhysicsObject().getOrientation().pPrintValues())
+
+            momentumForce = self.momentumForce.getLocalVector()
+            onScreenDebug.add("w momentumForce vec",
+                momentumForce.pPrintValues())
+            onScreenDebug.add("w momentumForce len",
+                "% 10.4f"%momentumForce.length())
+
+            keel = self.keel.getLocalVector()
+            onScreenDebug.add("w keel vec",
+                keel.pPrintValues())
+        if 0:
+            onScreenDebug.add("posDelta4", 
+                self.priorParentNp.getRelativeVector(
+                    render,
+                    self.avatarNodePath.getPosDelta(render)).pPrintValues())
+        if 1:
+            onScreenDebug.add("w priorParent",
+                self.priorParent.getLocalVector().pPrintValues())
+        if 0:
+            onScreenDebug.add("w priorParent po",
+                self.priorParent.getVector(physObject).pPrintValues())
+        if 0:
+            onScreenDebug.add("w __posDelta",
+                self.__oldPosDelta.pPrintValues())
+        if 1:
+            onScreenDebug.add("w contact",
+                self.actorNode.getContactVector().pPrintValues())
+            #onScreenDebug.add("airborneHeight", "% 10.4f"%(
+            #    self.getAirborneHeight(),))
 
     def handleAvatarControls(self, task):
         """
@@ -441,25 +520,25 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         # Determine what the speeds are based on the buttons:
         
         
-        if not hasattr(self, "sailsDeployed"):
-            self.sailsDeployed = 0.0
-        if forward and reverse:
-            # Way anchor:
-            self.__speed = 0.0
-            physObject.setVelocity(Vec3.zero())
-        elif forward:
-            self.sailsDeployed += 0.25
-            if self.sailsDeployed > 1.0:
-                self.sailsDeployed = 1.0
-        elif reverse:
-            self.sailsDeployed -= 0.25
-            if self.sailsDeployed < -1.0:
-                self.sailsDeployed = -1.0
-        self.__speed = self.ship.acceleration * self.sailsDeployed
-        
-        
-        #self.__speed=(forward and self.ship.acceleration or 
-        #        reverse and -self.ship.reverseAcceleration)
+        if 0:
+            if not hasattr(self, "sailsDeployed"):
+                self.sailsDeployed = 0.0
+            if forward and reverse:
+                # Way anchor:
+                self.__speed = 0.0
+                physObject.setVelocity(Vec3.zero())
+            elif forward:
+                self.sailsDeployed += 0.25
+                if self.sailsDeployed > 1.0:
+                    self.sailsDeployed = 1.0
+            elif reverse:
+                self.sailsDeployed -= 0.25
+                if self.sailsDeployed < -1.0:
+                    self.sailsDeployed = -1.0
+            self.__speed = self.ship.acceleration * self.sailsDeployed
+        else:
+            self.__speed=(forward and self.ship.acceleration or 
+                    reverse and -self.ship.reverseAcceleration)
         avatarSlideSpeed=self.ship.acceleration*0.5
         #self.__slideSpeed=slide and (
         #        (turnLeft and -avatarSlideSpeed) or 
@@ -508,67 +587,6 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         #    self.priorParent.setVector(Vec3.zero())
         #    # We must copy the vector to preserve it:
         #    self.__oldPosDelta=Vec3(posDelta)
-        if __debug__:
-            if self.wantDebugIndicator:
-                onScreenDebug.add("posDelta1",
-                    self.avatarNodePath.getPosDelta(render).pPrintValues())
-                
-                if 0:
-                    onScreenDebug.add("posDelta3",
-                        render.getRelativeVector(
-                            self.avatarNodePath,
-                            self.avatarNodePath.getPosDelta(render)).pPrintValues())
-                
-                if 0:
-                    onScreenDebug.add("gravity",
-                        self.gravity.getLocalVector().pPrintValues())
-                    onScreenDebug.add("priorParent",
-                        self.priorParent.getLocalVector().pPrintValues())
-                    onScreenDebug.add("avatarViscosity",
-                        "% 10.4f"%(self.avatarViscosity.getCoef(),))
-                    
-                    onScreenDebug.add("physObject pos",
-                        physObject.getPosition().pPrintValues())
-                    onScreenDebug.add("physObject hpr",
-                        physObject.getOrientation().getHpr().pPrintValues())
-                    onScreenDebug.add("physObject orien",
-                        physObject.getOrientation().pPrintValues())
-
-                if 1:
-                    onScreenDebug.add("physObject vel",
-                        physObject.getVelocity().pPrintValues())
-                    onScreenDebug.add("physObject len",
-                        "% 10.4f"%physObject.getVelocity().length())
-
-                if 0:
-                    onScreenDebug.add("posDelta4", 
-                        self.priorParentNp.getRelativeVector(
-                            render,
-                            self.avatarNodePath.getPosDelta(render)).pPrintValues())
-
-                if 1:
-                    onScreenDebug.add("priorParent",
-                        self.priorParent.getLocalVector().pPrintValues())
-
-                if 0:
-                    onScreenDebug.add("priorParent po",
-                        self.priorParent.getVector(physObject).pPrintValues())
-
-                if 0:
-                    onScreenDebug.add("__posDelta",
-                        self.__oldPosDelta.pPrintValues())
-
-                if 1:
-                    onScreenDebug.add("contact",
-                        contact.pPrintValues())
-                    #onScreenDebug.add("airborneHeight", "% 10.4f"%(
-                    #    self.getAirborneHeight(),))
-
-                if 0:
-                    onScreenDebug.add("__oldContact",
-                        contact.pPrintValues())
-                    onScreenDebug.add("__oldAirborneHeight", "% 10.4f"%(
-                        self.getAirborneHeight(),))
         airborneHeight=self.getAirborneHeight()
         if airborneHeight > self.highMark:
             self.highMark = airborneHeight
@@ -645,6 +663,15 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             self.__oldContact=Vec3(contact)
         self.__oldAirborneHeight=airborneHeight
 
+        #debugTempH=self.avatarNodePath.getH()
+        if __debug__:
+            q1=self.avatarNodePath.getQuat()
+            q2=physObject.getOrientation()
+            q1.normalize()
+            q2.normalize()
+            assert q1.isSameDirection(q2) or q1.getHpr() == q2.getHpr()
+        assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
+
         moveToGround = Vec3.zero()
         if not self.useHeightRay or self.isAirborne: 
             # ...the airborne check is a hack to stop sliding.
@@ -659,20 +686,21 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             moveToGround = Vec3(0.0, 0.0, -self.determineHeight())
             if __debug__:       
                 onScreenDebug.add("phys", "off")
+
+        #debugTempH=self.avatarNodePath.getH()
+        if __debug__:
+            q1=self.avatarNodePath.getQuat()
+            q2=physObject.getOrientation()
+            q1.normalize()
+            q2.normalize()
+            assert q1.isSameDirection(q2) or q1.getHpr() == q2.getHpr()
+        assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
+
         # Check to see if we're moving at all:
-        if 1 or self.__speed or self.__slideSpeed or self.__rotationSpeed or moveToGround!=Vec3.zero():
+        if 0 or self.__speed or self.__slideSpeed or self.__rotationSpeed or moveToGround!=Vec3.zero():
             distance = dt * self.__speed
             slideDistance = dt * self.__slideSpeed
             rotation = dt * self.__rotationSpeed
-
-            #debugTempH=self.avatarNodePath.getH()
-            if __debug__:
-                q1=self.avatarNodePath.getQuat()
-                q2=physObject.getOrientation()
-                q1.normalize()
-                q2.normalize()
-                assert q1.isSameDirection(q2)
-            assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
             
             # update pos:
             # Take a step in the direction of our previous heading.
@@ -702,17 +730,11 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             onScreenDebug.add("newVector length",
                 newVector.length())
             self.acForce.setVector(Vec3(newVector))
-
-
-            #*#
-            speed = physObject.getVelocity()
-            speedLen = speed.length()
-            if speedLen > self.ship.maxSpeed:
-                speed.normalize()
-                speed *= self.ship.maxSpeed
-                physObject.setVelocity(speed)
-                #self.actorNode.updateTransform()
-
+            
+            
+            #momentum = self.momentumForce.getLocalVector()
+            #momentum *= 0.9
+            #self.momentumForce.setVector(momentum)
 
             
             #physObject.setPosition(Point3(
@@ -726,18 +748,39 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
 
             # sync the change:
             self.actorNode.updateTransform()
-
-            if __debug__:
-                q1=self.avatarNodePath.getQuat()
-                q2=physObject.getOrientation()
-                q1.normalize()
-                q2.normalize()
-                assert q1.isSameDirection(q2)
-            assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
             #assert self.avatarNodePath.getH()==debugTempH-rotation
             messenger.send("avatarMoving")
         else:
             self.__vel.set(0.0, 0.0, 0.0)
+
+        
+        #*#
+        speed = physObject.getVelocity()
+        speedLen = speed.length()
+        if speedLen > self.ship.maxSpeed:
+            speed.normalize()
+            speed *= self.ship.maxSpeed
+
+        self.avatarViscosity.setCoef(0.5)
+
+        #speed *= 1.0 - dt * 0.05
+        physObject.setVelocity(speed)
+
+        #rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
+        #speed=rotMat.xform(speed)
+        f = Vec3(self.__vel)
+        f.normalize()
+        self.momentumForce.setVector(Vec3(f*(speed.length()*0.9)))
+
+
+        if __debug__:
+            q1=self.avatarNodePath.getQuat()
+            q2=physObject.getOrientation()
+            q1.normalize()
+            q2.normalize()
+            assert q1.isSameDirection(q2) or q1.getHpr() == q2.getHpr()
+        assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
+
         # Clear the contact vector so we can tell if we contact something next frame:
         self.actorNode.setContactVector(Vec3.zero())
         return Task.cont
