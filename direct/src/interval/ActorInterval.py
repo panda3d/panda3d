@@ -3,7 +3,12 @@
 from PandaModules import *
 from Interval import *
 
+import DirectNotifyGlobal
+
 class ActorInterval(Interval):
+
+    notify = DirectNotifyGlobal.directNotify.newCategory('ActorInterval')
+
     # Name counter
     animNum = 1
     # Class methods
@@ -59,6 +64,8 @@ class ActorInterval(Interval):
                          (self.startTime + self.getDuration()))
             frame = int(round(currT)) % self.numFrames
             # Pose anim
+	    self.notify.debug('updateFunc() - stopping at frame: %d of %d' \
+		% (frame, self.numFrames))
             self.actor.pose(self.animName, frame)
             if self.loop:
                 self.ignore(self.stopEvent)
