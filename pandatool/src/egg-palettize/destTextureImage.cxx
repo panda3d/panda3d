@@ -70,10 +70,18 @@ DestTextureImage(TexturePlacement *placement) {
 void DestTextureImage::
 copy(TextureImage *texture) {
   const PNMImage &source_image = texture->read_source_image();
-  PNMImage dest_image(_x_size, _y_size, texture->get_num_channels(),
-                      source_image.get_maxval());
-  dest_image.quick_filter_from(source_image);
-  write(dest_image);
+  if (source_image.is_valid()) {
+    PNMImage dest_image(_x_size, _y_size, texture->get_num_channels(),
+                        source_image.get_maxval());
+    dest_image.quick_filter_from(source_image);
+    write(dest_image);
+
+  } else {
+    // Couldn't read the texture, so fill it with red.
+    PNMImage dest_image(_x_size, _y_size, texture->get_num_channels());
+    dest_image.fill(1.0, 0.0, 0.0);
+    write(dest_image);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
