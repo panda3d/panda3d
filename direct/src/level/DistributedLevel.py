@@ -26,6 +26,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
     FloorCollPrefix = 'zoneFloor'
 
     OuchTaskName = 'ouchTask'
+    VisChangeTaskName = 'visChange'
 
     def __init__(self, cr):
         DistributedObject.DistributedObject.__init__(self, cr)
@@ -291,6 +292,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         if hasattr(self, 'geom'):
             del self.geom
 
+        self.shutdownVisibility()
         self.destroyLevel()
         DistributedObject.DistributedObject.disable(self)
         self.ignoreAll()
@@ -393,6 +395,8 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # we have not entered any zone yet
         self.curZoneNum = None
 
+        self.visChangedThisFrame = 0
+
         # listen for camera-ray/floor collision events
         def handleCameraRayFloorCollision(collEntry, self=self):
             name = collEntry.getIntoNode().getName()
@@ -413,6 +417,15 @@ class DistributedLevel(DistributedObject.DistributedObject,
             zoneNums = list(self.zoneNums)
             zoneNums.remove(LevelConstants.UberZoneNum)
             self.setVisibility(zoneNums)
+
+        # send out any zone changes at the end of the frame, just before
+        # rendering
+        taskMgr.add(self.visChangeTask,
+                    self.uniqueName(DistributedLevel.VisChangeTaskName),
+                    priority=49)
+
+    def shutdownVisibility(self):
+        taskMgr.remove(self.uniqueName(DistributedLevel.VisChangeTaskName))
 
     def toonEnterZone(self, zoneNum, ouchLevel=None):
         """
@@ -464,6 +477,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
     def updateVisibility(self, zoneNum=None):
         """update the visibility assuming that we're in the specified
         zone; don't check to see if it's the zone we're already in"""
+        #print 'updateVisibility %s' % globalClock.getFrameCount()
         if zoneNum is None:
             zoneNum = self.curZoneNum
             
@@ -535,6 +549,19 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # Redo visibility using current zone num
         self.updateVisibility()
 
+    def handleVisChange(self):
+        """the zone visibility lists have changed on-the-fly"""
+        Level.Level.handleVisChange(self)
+        self.visChangedThisFrame = 1
+
+    def visChangeTask(self, task):
+        # this runs just before igloop; if viz lists have changed
+        # this frame, updates the visibility and sends out a setZoneMsg
+        if self.visChangedThisFrame:
+            self.updateVisibility()
+            self.visChangedThisFrame = 0
+        return Task.cont
+
     if __debug__:
         # level editing stuff
         def setAttribChange(self, entId, attribName, valueStr, username):
@@ -542,11 +569,6 @@ class DistributedLevel(DistributedObject.DistributedObject,
             from the AI"""
             value = eval(valueStr)
             self.levelSpec.setAttribChange(entId, attribName, value, username)
-
-        def handleVisChange(self):
-            """the zone visibility lists have changed"""
-            Level.Level.handleVisChange(self)
-            self.updateVisibility()
 
     def spawnTitleText(self):
         def getDescription(zoneId, self=self):
