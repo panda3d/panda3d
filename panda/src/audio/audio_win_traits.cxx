@@ -362,7 +362,8 @@ WinSample* WinSample::load_wav(Filename filename) {
   UINT wavSize = 0;
   BYTE* wavData = NULL;
 
-  HRESULT result = wave_load(filename.to_os_specific().c_str(), wavInfo, wavData, wavSize);
+  string stmp = filename.to_os_specific();
+  HRESULT result = wave_load(stmp.c_str(), wavInfo, wavData, wavSize);
   if (FAILED(result)) {
     if (wavData)
       delete [] wavData;
@@ -622,9 +623,9 @@ WinMusic* WinMusic::load_midi(Filename filename) {
     return ret;
   }
 */
-  MULTI_TO_WIDE(fdesc.wszFileName, filename.to_os_specific().c_str());
-  audio_cat->debug() << "os_specific name '" << filename.to_os_specific()
-		     << "'" << endl;
+  string stmp = filename.to_os_specific();
+  MULTI_TO_WIDE(fdesc.wszFileName, stmp.c_str());
+  audio_cat->debug() << "os_specific name '" << stmp << "'" << endl;
   if (filename.is_local()) {
     fdesc.dwValidData = DMUS_OBJ_CLASS | DMUS_OBJ_FILENAME;
     audio_cat->debug() << "is local" << endl;
