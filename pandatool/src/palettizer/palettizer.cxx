@@ -112,7 +112,7 @@ Palettizer() {
   _coverage_threshold = 2.5;
   _aggressively_clean_mapdir = true;
   _force_power_2 = true;
-  _color_type = PNMFileTypeRegistry::get_ptr()->get_type_from_extension("rgb");
+  _color_type = PNMFileTypeRegistry::get_global_ptr()->get_type_from_extension("rgb");
   _alpha_type = (PNMFileType *)NULL;
   _shadow_color_type = (PNMFileType *)NULL;
   _shadow_alpha_type = (PNMFileType *)NULL;

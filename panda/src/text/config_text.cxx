@@ -25,6 +25,7 @@
 #include "dynamicTextPage.h"
 #include "geomTextGlyph.h"
 #include "unicodeLatinMap.h"
+#include "pandaSystem.h"
 
 #include "dconfig.h"
 #include "config_express.h"
@@ -167,5 +168,8 @@ init_libtext() {
   DynamicTextPage::init_type();
   GeomTextGlyph::init_type();
   GeomTextGlyph::register_with_read_factory();
+
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("Freetype");
 #endif
 }

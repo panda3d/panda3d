@@ -19,6 +19,7 @@
 #include "config_net.h"
 
 #include "netDatagram.h"
+#include "pandaSystem.h"
 
 #include "dconfig.h"
 
@@ -47,7 +48,11 @@ init_libnet() {
   initialized = true;
 
   NetDatagram::init_type();
+
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("NSPR");
 }
+
 
 
 // The following two maximum queue sizes are totally arbitrary and

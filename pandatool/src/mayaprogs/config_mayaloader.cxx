@@ -50,7 +50,7 @@ init_libmayaloader() {
 
   LoaderFileTypePandatool::init_type();
 
-  LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
+  LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
 
   init_libmayaegg();
   MayaToEggConverter *maya = new MayaToEggConverter;

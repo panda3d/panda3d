@@ -26,6 +26,7 @@
 #include "boundingLine.h"
 #include "linmath_events.h"
 #include "dconfig.h"
+#include "pandaSystem.h"
 
 Configure(config_mathutil);
 NotifyCategoryDef(mathutil, "");
@@ -57,5 +58,10 @@ ConfigureFn(config_mathutil) {
   EventStoreVec2::register_with_read_factory();
   EventStoreVec3::register_with_read_factory();
   EventStoreMat4::register_with_read_factory();
+
+#ifdef HAVE_FFTW
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("fftw");
+#endif  // FFTW
 }
 

@@ -561,13 +561,13 @@ load_model(const NodePath &parent, Filename filename) {
   bool is_image = false;
   string extension = filename.get_extension();
   if (!extension.empty()) {
-    LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
+    LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
     LoaderFileType *model_type =
       reg->get_type_from_extension(extension);
     if (model_type == (LoaderFileType *)NULL) {
       // The extension isn't a known model file type, is it a known
       // image extension?
-      PNMFileTypeRegistry *reg = PNMFileTypeRegistry::get_ptr();
+      PNMFileTypeRegistry *reg = PNMFileTypeRegistry::get_global_ptr();
       PNMFileType *image_type =
         reg->get_type_from_extension(extension);
       if (image_type != (PNMFileType *)NULL) {

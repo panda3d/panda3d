@@ -46,7 +46,7 @@ PNMFileType::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileType::get_num_extensions
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Returns the number of different possible filename
 //               extensions associated with this particular file type.
 ////////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ get_num_extensions() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileType::get_extension
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Returns the nth possible filename extension
 //               associated with this particular file type, without a
 //               leading dot.
@@ -70,7 +70,7 @@ get_extension(int) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileType::get_suggested_extension
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Returns a suitable filename extension (without a
 //               leading dot) to suggest for files of this type, or
 //               empty string if no suggestions are available.

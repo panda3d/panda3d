@@ -31,6 +31,7 @@
 #define CLP(name) GL##name
 #define GLPREFIX_QUOTED "gl"
 #define CLASSPREFIX_QUOTED "GL"
+#define GLSYSTEM_NAME "OpenGL"
 #define CONFIGOBJ config_glgsg
 #define GLCAT glgsg_cat
 #define EXPCL_GL EXPCL_PANDAGL

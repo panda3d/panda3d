@@ -31,16 +31,16 @@ ConfigureFn(config_linmath) {
 
 ConfigVariableBool paranoid_hpr_quat
 ("paranoid-hpr-quat", false,
- "Set this true to doublecheck the quaternion-hpr compose and "
- "decompose operations against the quaternion-matrix and matrix-hpr "
- "operations.  This only has effect if NDEBUG is not defined.");
+ PRC_DESC("Set this true to doublecheck the quaternion-hpr compose and "
+          "decompose operations against the quaternion-matrix and matrix-hpr "
+          "operations.  This only has effect if NDEBUG is not defined."));
 
 ConfigVariableBool temp_hpr_fix
 ("temp-hpr-fix", true,
- "Set this true to compute hpr's correctly.  Historically, Panda has "
- "applied these in the wrong order, and roll was backwards relative "
- "to the other two.  Set this false if you need compatibility with "
- "Panda's old hpr calculations.");
+ PRC_DESC("Set this true to compute hpr's correctly.  Historically, Panda has "
+          "applied these in the wrong order, and roll was backwards relative "
+          "to the other two.  Set this false if you need compatibility with "
+          "Panda's old hpr calculations."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_liblinmath

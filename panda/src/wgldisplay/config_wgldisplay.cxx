@@ -23,6 +23,7 @@
 #include "wglGraphicsWindow.h"
 #include "graphicsPipeSelection.h"
 #include "dconfig.h"
+#include "pandaSystem.h"
 
 Configure(config_wgldisplay);
 NotifyCategoryDef(wgldisplay, "windisplay");
@@ -70,4 +71,7 @@ init_libwgldisplay() {
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
   selection->add_pipe_type(wglGraphicsPipe::get_class_type(),
                            wglGraphicsPipe::pipe_constructor);
+
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->set_system_tag("OpenGL", "window_system", "WGL");
 }

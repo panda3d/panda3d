@@ -23,6 +23,7 @@
 #include "graphicsPipeSelection.h"
 #include "wdxGraphicsWindow9.h"
 #include "wdxGraphicsPipe9.h"
+#include "pandaSystem.h"
 
 #include "dconfig.h"
 
@@ -152,4 +153,6 @@ init_libdxgsg9() {
   selection->add_pipe_type(wdxGraphicsPipe9::get_class_type(),
                            wdxGraphicsPipe9::pipe_constructor);
 
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("DirectX9");
 }

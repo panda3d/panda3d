@@ -48,22 +48,49 @@ PNMFileTypeRegistry::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeRegistry::get_ptr
-//       Access: Public, Static
-//  Description: Returns a pointer to the global PNMFileTypeRegistry
-//               object.
+//     Function: PNMFileTypeRegistry::register_type
+//       Access: Public
+//  Description: Defines a new PNMFileType in the universe.
 ////////////////////////////////////////////////////////////////////
-PNMFileTypeRegistry *PNMFileTypeRegistry::
-get_ptr() {
-  if (_global_ptr == (PNMFileTypeRegistry *)NULL) {
-    _global_ptr = new PNMFileTypeRegistry;
+void PNMFileTypeRegistry::
+register_type(PNMFileType *type) {
+  // Make sure we haven't already registered this type.
+  Handles::iterator hi = _handles.find(type->get_type());
+  if (hi != _handles.end()) {
+    pnmimage_cat.warning()
+      << "Attempt to register PNMFileType " << type->get_name()
+      << " (" << type->get_type() << ") more than once.\n";
+    return;
   }
-  return _global_ptr;
+
+  _types.push_back(type);
+  _handles.insert(Handles::value_type(type->get_type(), type));
+
+  // Collect the unique extensions associated with the type.
+  pset<string> unique_extensions;
+  int num_extensions = type->get_num_extensions();
+  for (int i = 0; i < num_extensions; i++) {
+    string extension = downcase(type->get_extension(i));
+
+    if (!unique_extensions.insert(extension).second) {
+      pnmimage_cat.warning()
+        << "PNMFileType " << type->get_name()
+        << " (" << type->get_type() << ") defined extension "
+        << extension << " more than once.\n";
+    }
+  }
+
+  pset<string>::iterator ui;
+  for (ui = unique_extensions.begin(); ui != unique_extensions.end(); ++ui) {
+    _extensions[*ui].push_back(type);
+  }
+
+  _requires_sort = true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeRegistry::get_num_types
-//       Access: Public
+//       Access: Published
 //  Description: Returns the total number of types registered.
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeRegistry::
@@ -76,7 +103,7 @@ get_num_types() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeRegistry::get_type
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth type registered.
 ////////////////////////////////////////////////////////////////////
 PNMFileType *PNMFileTypeRegistry::
@@ -87,7 +114,7 @@ get_type(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeRegistry::get_type_from_extension
-//       Access: Public
+//       Access: Published
 //  Description: Tries to determine what the PNMFileType is likely to
 //               be for a particular image file based on its
 //               extension.  Returns a suitable PNMFileType pointer,
@@ -132,7 +159,7 @@ get_type_from_extension(const string &filename) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeRegistry::get_type_from_magic_number
-//       Access: Public
+//       Access: Published
 //  Description: Tries to determine what the PNMFileType is likely to
 //               be for a particular image file based on its
 //               magic number, the first two bytes read from the
@@ -159,7 +186,7 @@ get_type_from_magic_number(const string &magic_number) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeRegistry::get_type_by_handle
-//       Access: Public
+//       Access: Published
 //  Description: Returns the PNMFileType instance stored in the
 //               registry for the given TypeHandle, e.g. as retrieved
 //               by a previous call to get_type() on the type
@@ -177,13 +204,13 @@ get_type_by_handle(TypeHandle handle) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeRegistry::write_types
-//       Access: Public
+//     Function: PNMFileTypeRegistry::write
+//       Access: Published
 //  Description: Writes a list of supported image file types to the
 //               indicated output stream, one per line.
 ////////////////////////////////////////////////////////////////////
 void PNMFileTypeRegistry::
-write_types(ostream &out, int indent_level) const {
+write(ostream &out, int indent_level) const {
   if (_types.empty()) {
     indent(out, indent_level) << "(No image types are known).\n";
   } else {
@@ -209,44 +236,17 @@ write_types(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeRegistry::register_type
-//       Access: Public
-//  Description: Defines a new PNMFileType in the universe.
+//     Function: PNMFileTypeRegistry::get_global_ptr
+//       Access: Published, Static
+//  Description: Returns a pointer to the global PNMFileTypeRegistry
+//               object.
 ////////////////////////////////////////////////////////////////////
-void PNMFileTypeRegistry::
-register_type(PNMFileType *type) {
-  // Make sure we haven't already registered this type.
-  Handles::iterator hi = _handles.find(type->get_type());
-  if (hi != _handles.end()) {
-    pnmimage_cat.warning()
-      << "Attempt to register PNMFileType " << type->get_name()
-      << " (" << type->get_type() << ") more than once.\n";
-    return;
+PNMFileTypeRegistry *PNMFileTypeRegistry::
+get_global_ptr() {
+  if (_global_ptr == (PNMFileTypeRegistry *)NULL) {
+    _global_ptr = new PNMFileTypeRegistry;
   }
-
-  _types.push_back(type);
-  _handles.insert(Handles::value_type(type->get_type(), type));
-
-  // Collect the unique extensions associated with the type.
-  pset<string> unique_extensions;
-  int num_extensions = type->get_num_extensions();
-  for (int i = 0; i < num_extensions; i++) {
-    string extension = downcase(type->get_extension(i));
-
-    if (!unique_extensions.insert(extension).second) {
-      pnmimage_cat.warning()
-        << "PNMFileType " << type->get_name()
-        << " (" << type->get_type() << ") defined extension "
-        << extension << " more than once.\n";
-    }
-  }
-
-  pset<string>::iterator ui;
-  for (ui = unique_extensions.begin(); ui != unique_extensions.end(); ++ui) {
-    _extensions[*ui].push_back(type);
-  }
-
-  _requires_sort = true;
+  return _global_ptr;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -54,6 +54,9 @@ PUBLISHED:
   void set_system_tag(const string &system, const string &tag,
                       const string &value);
 
+  void output(ostream &out) const;
+  void write(ostream &out) const;
+
   static PandaSystem *get_global_ptr();
 
 private:
@@ -69,6 +72,11 @@ private:
 
   static PandaSystem *_global_ptr;
 };
+
+inline ostream &operator << (ostream &out, const PandaSystem &ps) {
+  ps.output(out);
+  return out;
+}
 
 #endif
 

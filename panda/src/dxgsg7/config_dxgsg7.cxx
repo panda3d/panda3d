@@ -23,6 +23,7 @@
 #include "wdxGraphicsPipe7.h"
 #include "wdxGraphicsWindow7.h"
 #include "graphicsPipeSelection.h"
+#include "pandaSystem.h"
 
 #include "dconfig.h"
 
@@ -126,4 +127,7 @@ init_libdxgsg7() {
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
   selection->add_pipe_type(wdxGraphicsPipe7::get_class_type(),
                            wdxGraphicsPipe7::pipe_constructor);
+
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("DirectX7");
 }

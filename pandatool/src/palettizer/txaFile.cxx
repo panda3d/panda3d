@@ -413,7 +413,7 @@ parse_imagetype_line(const vector_string &words) {
   const string &imagetype = words[1];
   if (!parse_image_type_request(imagetype, pal->_color_type, pal->_alpha_type)) {
     nout << "\nKnown image types are:\n";
-    PNMFileTypeRegistry::get_ptr()->write_types(nout, 2);
+    PNMFileTypeRegistry::get_global_ptr()->write(nout, 2);
     nout << "\n";
     return false;
   }
@@ -439,7 +439,7 @@ parse_shadowtype_line(const vector_string &words) {
   if (!parse_image_type_request(shadowtype, pal->_shadow_color_type,
                                 pal->_shadow_alpha_type)) {
     nout << "\nKnown image types are:\n";
-    PNMFileTypeRegistry::get_ptr()->write_types(nout, 2);
+    PNMFileTypeRegistry::get_global_ptr()->write(nout, 2);
     nout << "\n";
     return false;
   }

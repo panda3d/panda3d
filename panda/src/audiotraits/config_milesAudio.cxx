@@ -22,6 +22,7 @@
 #include "config_milesAudio.h"
 #include "milesAudioManager.h"
 #include "milesAudioSound.h"
+#include "pandaSystem.h"
 #include "dconfig.h"
 
 ConfigureDef(config_milesAudio);
@@ -72,6 +73,11 @@ init_libMilesAudio() {
 
   MilesAudioManager::init_type();
   MilesAudioSound::init_type();
+
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("Miles");
+  ps->add_system("audio");
+  ps->set_system_tag("audio", "implementation", "Miles");
 }
 
 #endif //]

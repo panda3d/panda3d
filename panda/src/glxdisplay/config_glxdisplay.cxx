@@ -23,6 +23,7 @@
 #include "glxGraphicsStateGuardian.h"
 #include "graphicsPipeSelection.h"
 #include "dconfig.h"
+#include "pandaSystem.h"
 
 Configure(config_glxdisplay);
 NotifyCategoryDef(glxdisplay, "display");
@@ -63,4 +64,7 @@ init_libglxdisplay() {
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
   selection->add_pipe_type(glxGraphicsPipe::get_class_type(),
                            glxGraphicsPipe::pipe_constructor);
+
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->set_system_tag("OpenGL", "window_system", "GLX");
 }

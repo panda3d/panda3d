@@ -19,6 +19,7 @@
 #include "dconfig.h"
 #include "config_downloader.h"
 #include "httpChannel.h"
+#include "pandaSystem.h"
 
 
 ConfigureDef(config_downloader);
@@ -157,5 +158,8 @@ ConfigVariableList http_username
 ConfigureFn(config_downloader) {
 #ifdef HAVE_SSL
   HTTPChannel::init_type();
+
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("OpenSSL");
 #endif
 }

@@ -32,6 +32,7 @@
 #include "pnmFileTypeRegistry.h"
 #include "string_utils.h"
 #include "dconfig.h"
+#include "pandaSystem.h"
 
 Configure(config_pnmimagetypes);
 NotifyCategoryDefName(pnmimage_sgi, "sgi", pnmimage_cat);
@@ -209,7 +210,7 @@ init_libpnmimagetypes() {
 #endif
 
   // Register each type with the PNMFileTypeRegistry.
-  PNMFileTypeRegistry *tr = PNMFileTypeRegistry::get_ptr();
+  PNMFileTypeRegistry *tr = PNMFileTypeRegistry::get_global_ptr();
 
   tr->register_type(new PNMFileTypeSGI);
   tr->register_type(new PNMFileTypeAlias);
@@ -242,5 +243,18 @@ init_libpnmimagetypes() {
 #endif
 #ifdef HAVE_TIFF
   PNMFileTypeTIFF::register_with_read_factory();
+#endif
+
+  // And register with the PandaSystem.
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+
+#ifdef HAVE_JPEG
+  ps->add_system("libjpeg");
+#endif
+#ifdef HAVE_PNG
+  ps->add_system("libpng");
+#endif
+#ifdef HAVE_TIFF
+  ps->add_system("libtiff");
 #endif
 }

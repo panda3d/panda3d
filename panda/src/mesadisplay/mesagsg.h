@@ -38,6 +38,7 @@
 #endif
 #define CLP(name) Mesa##name
 #define CLASSPREFIX_QUOTED "Mesa"
+#define GLSYSTEM_NAME "Mesa"
 #define CONFIGOBJ config_mesadisplay
 #define GLCAT mesadisplay_cat
 #define EXPCL_GL EXPCL_PANDAMESA

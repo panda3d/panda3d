@@ -1168,14 +1168,14 @@ bool ProgramBase::
 dispatch_image_type(const string &opt, const string &arg, void *var) {
   PNMFileType **ip = (PNMFileType **)var;
 
-  PNMFileTypeRegistry *reg = PNMFileTypeRegistry::get_ptr();
+  PNMFileTypeRegistry *reg = PNMFileTypeRegistry::get_global_ptr();
 
   (*ip) = reg->get_type_from_extension(arg);
 
   if ((*ip) == (PNMFileType *)NULL) {
     nout << "Invalid image type for -" << opt << ": " << arg << "\n"
          << "The following image types are known:\n";
-    reg->write_types(nout, 2);
+    reg->write(nout, 2);
     return false;
   }
 

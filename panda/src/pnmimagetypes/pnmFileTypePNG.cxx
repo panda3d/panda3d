@@ -183,7 +183,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *PNMFileTypePNG::
 make_PNMFileTypePNG(const FactoryParams &params) {
-  return PNMFileTypeRegistry::get_ptr()->get_type_by_handle(get_class_type());
+  return PNMFileTypeRegistry::get_global_ptr()->get_type_by_handle(get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////

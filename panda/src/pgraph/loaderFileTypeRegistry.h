@@ -39,17 +39,17 @@ protected:
 public:
   ~LoaderFileTypeRegistry();
 
-  static LoaderFileTypeRegistry *get_ptr();
-
-  int get_num_types() const;
-  LoaderFileType *get_type(int n) const;
-
-  LoaderFileType *get_type_from_extension(const string &extension);
-
-  void write_types(ostream &out, int indent_level = 0) const;
-
   void register_type(LoaderFileType *type);
   void register_deferred_type(const string &extension, const string &library);
+
+PUBLISHED:
+  int get_num_types() const;
+  LoaderFileType *get_type(int n) const;
+  LoaderFileType *get_type_from_extension(const string &extension);
+
+  void write(ostream &out, int indent_level = 0) const;
+
+  static LoaderFileTypeRegistry *get_global_ptr();
 
 private:
   void record_extension(const string &extension, LoaderFileType *type);

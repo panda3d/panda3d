@@ -37,8 +37,9 @@ protected:
 public:
   ~PNMFileTypeRegistry();
 
-  static PNMFileTypeRegistry *get_ptr();
+  void register_type(PNMFileType *type);
 
+PUBLISHED:
   int get_num_types() const;
   PNMFileType *get_type(int n) const;
 
@@ -46,9 +47,9 @@ public:
   PNMFileType *get_type_from_magic_number(const string &magic_number) const;
   PNMFileType *get_type_by_handle(TypeHandle handle) const;
 
-  void write_types(ostream &out, int indent_level = 0) const;
+  void write(ostream &out, int indent_level = 0) const;
 
-  void register_type(PNMFileType *type);
+  static PNMFileTypeRegistry *get_global_ptr();
 
 private:
   void sort_preferences();

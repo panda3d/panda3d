@@ -41,10 +41,12 @@ protected:
 public:
   virtual ~LoaderFileType();
 
+PUBLISHED:
   virtual string get_name() const=0;
   virtual string get_extension() const=0;
   virtual string get_additional_extensions() const;
 
+public:
   virtual PT(PandaNode) load_file(const Filename &path, bool report_errors) const;
 
 public:

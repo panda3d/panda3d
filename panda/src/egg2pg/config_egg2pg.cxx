@@ -155,7 +155,7 @@ init_libegg2pg() {
 
   LoaderFileTypeEgg::init_type();
 
-  LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
+  LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
 
   reg->register_type(new LoaderFileTypeEgg);
 }

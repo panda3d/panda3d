@@ -169,7 +169,7 @@ get_num_systems() const {
 ////////////////////////////////////////////////////////////////////
 string PandaSystem::
 get_system(int n) const {
-  if (n < 0 || n >= (int)_system_names.size()) {
+  if (n < 0 || n >= (int)_systems.size()) {
     return string();
   }
 
@@ -241,6 +241,38 @@ set_system_tag(const string &system, const string &tag,
   SystemTags &tags = (*result.first).second;
   tags[tag] = value;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaSystem::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PandaSystem::
+output(ostream &out) const {
+  out << "Panda version " << get_version_string();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaSystem::write
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PandaSystem::
+write(ostream &out) const {
+  out << *this << ":\n";
+
+  for (Systems::const_iterator si = _systems.begin();
+       si != _systems.end();
+       ++si) {
+    out << "  " << (*si).first << "\n";
+    const SystemTags &tags = (*si).second;
+    SystemTags::const_iterator ti;
+    for (ti = tags.begin(); ti != tags.end(); ++ti) {
+      out << "    " << (*ti).first << " " << (*ti).second << "\n";
+    }
+  }
+}
+
   
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaSystem::get_global_ptr

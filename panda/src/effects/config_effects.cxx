@@ -21,6 +21,7 @@
 #include "cgShaderAttrib.h"
 #include "cgShaderContext.h"
 #include "lensFlareNode.h"
+#include "pandaSystem.h"
 
 
 #include "dconfig.h"
@@ -46,6 +47,9 @@ init_libeffects() {
   CgShader::init_type();
   CgShaderAttrib::init_type();
   CgShaderContext::init_type();
+
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("Cg");
 #endif
 #if 0  // temporarily disabled until we can port to new scene graph.
   LensFlareNode::init_type();

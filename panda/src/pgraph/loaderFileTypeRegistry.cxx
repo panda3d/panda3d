@@ -47,124 +47,6 @@ LoaderFileTypeRegistry::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::get_ptr
-//       Access: Public, Static
-//  Description: Returns a pointer to the global LoaderFileTypeRegistry
-//               object.
-////////////////////////////////////////////////////////////////////
-LoaderFileTypeRegistry *LoaderFileTypeRegistry::
-get_ptr() {
-  if (_global_ptr == (LoaderFileTypeRegistry *)NULL) {
-    _global_ptr = new LoaderFileTypeRegistry;
-  }
-  return _global_ptr;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::get_num_types
-//       Access: Public
-//  Description: Returns the total number of types registered.
-////////////////////////////////////////////////////////////////////
-int LoaderFileTypeRegistry::
-get_num_types() const {
-  return _types.size();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::get_type
-//       Access: Public
-//  Description: Returns the nth type registered.
-////////////////////////////////////////////////////////////////////
-LoaderFileType *LoaderFileTypeRegistry::
-get_type(int n) const {
-  nassertr(n >= 0 && n < (int)_types.size(), NULL);
-  return _types[n];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::get_type_from_extension
-//       Access: Public
-//  Description: Determines the type of the file based on the indicated
-//               extension (without a leading dot).  Returns NULL if
-//               the extension matches no known file types.
-////////////////////////////////////////////////////////////////////
-LoaderFileType *LoaderFileTypeRegistry::
-get_type_from_extension(const string &extension) {
-  string dcextension = downcase(extension);
-
-  Extensions::const_iterator ei;
-  ei = _extensions.find(dcextension);
-  if (ei == _extensions.end()) {
-    // Nothing matches that extension.  Do we have a deferred type?
-
-    DeferredTypes::iterator di;
-    di = _deferred_types.find(dcextension);
-    if (di != _deferred_types.end()) {
-      // We do!  Try to load the deferred library on-the-fly.  Note
-      // that this is a race condition if we support threaded loading;
-      // this whole function needs to be protected from multiple
-      // entry.
-      string name = (*di).second;
-      Filename dlname = Filename::dso_filename("lib" + name + ".so");
-      _deferred_types.erase(di);
-
-      loader_cat->info()
-        << "loading file type module: " << name << endl;
-      void *tmp = load_dso(dlname);
-      if (tmp == (void *)NULL) {
-        loader_cat->warning()
-          << "Unable to load " << dlname.to_os_specific() << ": " 
-          << load_dso_error() << endl;
-        return NULL;
-      }
-
-      // Now try again to find the LoaderFileType.
-      ei = _extensions.find(dcextension);
-    }
-  }
-
-  if (ei == _extensions.end()) {
-    // Nothing matches that extension, even after we've checked for a
-    // deferred type description.
-    return NULL;
-  }
-
-  return (*ei).second;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::write_types
-//       Access: Public
-//  Description: Writes a list of supported file types to the
-//               indicated output stream, one per line.
-////////////////////////////////////////////////////////////////////
-void LoaderFileTypeRegistry::
-write_types(ostream &out, int indent_level) const {
-  if (_types.empty()) {
-    indent(out, indent_level) << "(No file types are known).\n";
-  } else {
-    Types::const_iterator ti;
-    for (ti = _types.begin(); ti != _types.end(); ++ti) {
-      LoaderFileType *type = (*ti);
-      string name = type->get_name();
-      indent(out, indent_level) << name;
-      indent(out, max(30 - (int)name.length(), 0))
-        << "  ." << type->get_extension() << "\n";
-    }
-  }
-
-  if (!_deferred_types.empty()) {
-    indent(out, indent_level) << "Also available:";
-    DeferredTypes::const_iterator di;
-    for (di = _deferred_types.begin(); di != _deferred_types.end(); ++di) {
-      const string &extension = (*di).first;
-      out << " ." << extension;
-    }
-    out << "\n";
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LoaderFileTypeRegistry::register_type
 //       Access: Public
 //  Description: Defines a new LoaderFileType in the universe.
@@ -232,6 +114,124 @@ register_deferred_type(const string &extension, const string &library) {
   }
 
   _deferred_types[dcextension] = library;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypeRegistry::get_num_types
+//       Access: Published
+//  Description: Returns the total number of types registered.
+////////////////////////////////////////////////////////////////////
+int LoaderFileTypeRegistry::
+get_num_types() const {
+  return _types.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypeRegistry::get_type
+//       Access: Published
+//  Description: Returns the nth type registered.
+////////////////////////////////////////////////////////////////////
+LoaderFileType *LoaderFileTypeRegistry::
+get_type(int n) const {
+  nassertr(n >= 0 && n < (int)_types.size(), NULL);
+  return _types[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypeRegistry::get_type_from_extension
+//       Access: Published
+//  Description: Determines the type of the file based on the indicated
+//               extension (without a leading dot).  Returns NULL if
+//               the extension matches no known file types.
+////////////////////////////////////////////////////////////////////
+LoaderFileType *LoaderFileTypeRegistry::
+get_type_from_extension(const string &extension) {
+  string dcextension = downcase(extension);
+
+  Extensions::const_iterator ei;
+  ei = _extensions.find(dcextension);
+  if (ei == _extensions.end()) {
+    // Nothing matches that extension.  Do we have a deferred type?
+
+    DeferredTypes::iterator di;
+    di = _deferred_types.find(dcextension);
+    if (di != _deferred_types.end()) {
+      // We do!  Try to load the deferred library on-the-fly.  Note
+      // that this is a race condition if we support threaded loading;
+      // this whole function needs to be protected from multiple
+      // entry.
+      string name = (*di).second;
+      Filename dlname = Filename::dso_filename("lib" + name + ".so");
+      _deferred_types.erase(di);
+
+      loader_cat->info()
+        << "loading file type module: " << name << endl;
+      void *tmp = load_dso(dlname);
+      if (tmp == (void *)NULL) {
+        loader_cat->warning()
+          << "Unable to load " << dlname.to_os_specific() << ": " 
+          << load_dso_error() << endl;
+        return NULL;
+      }
+
+      // Now try again to find the LoaderFileType.
+      ei = _extensions.find(dcextension);
+    }
+  }
+
+  if (ei == _extensions.end()) {
+    // Nothing matches that extension, even after we've checked for a
+    // deferred type description.
+    return NULL;
+  }
+
+  return (*ei).second;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypeRegistry::write
+//       Access: Published
+//  Description: Writes a list of supported file types to the
+//               indicated output stream, one per line.
+////////////////////////////////////////////////////////////////////
+void LoaderFileTypeRegistry::
+write(ostream &out, int indent_level) const {
+  if (_types.empty()) {
+    indent(out, indent_level) << "(No file types are known).\n";
+  } else {
+    Types::const_iterator ti;
+    for (ti = _types.begin(); ti != _types.end(); ++ti) {
+      LoaderFileType *type = (*ti);
+      string name = type->get_name();
+      indent(out, indent_level) << name;
+      indent(out, max(30 - (int)name.length(), 0))
+        << "  ." << type->get_extension() << "\n";
+    }
+  }
+
+  if (!_deferred_types.empty()) {
+    indent(out, indent_level) << "Also available:";
+    DeferredTypes::const_iterator di;
+    for (di = _deferred_types.begin(); di != _deferred_types.end(); ++di) {
+      const string &extension = (*di).first;
+      out << " ." << extension;
+    }
+    out << "\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypeRegistry::get_global_ptr
+//       Access: Published, Static
+//  Description: Returns a pointer to the global LoaderFileTypeRegistry
+//               object.
+////////////////////////////////////////////////////////////////////
+LoaderFileTypeRegistry *LoaderFileTypeRegistry::
+get_global_ptr() {
+  if (_global_ptr == (LoaderFileTypeRegistry *)NULL) {
+    _global_ptr = new LoaderFileTypeRegistry;
+  }
+  return _global_ptr;
 }
 
 ////////////////////////////////////////////////////////////////////

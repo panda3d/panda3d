@@ -144,7 +144,7 @@ make_reader(istream *file, bool owns_file, const Filename &filename,
       return NULL;
     }
 
-    type = PNMFileTypeRegistry::get_ptr()->
+    type = PNMFileTypeRegistry::get_global_ptr()->
       get_type_from_magic_number(magic_number);
 
     if (pnmimage_cat.is_debug()) {
@@ -162,7 +162,7 @@ make_reader(istream *file, bool owns_file, const Filename &filename,
   if (type == (PNMFileType *)NULL && !filename.empty()) {
     // We still don't know the type; attempt to guess it from the
     // filename extension.
-    type = PNMFileTypeRegistry::get_ptr()->get_type_from_extension(filename);
+    type = PNMFileTypeRegistry::get_global_ptr()->get_type_from_extension(filename);
 
     if (pnmimage_cat.is_debug()) {
       if (type != (PNMFileType *)NULL) {
@@ -192,8 +192,8 @@ make_reader(istream *file, bool owns_file, const Filename &filename,
       pnmimage_cat.error()
         << "Cannot determine type of image file " << filename << ".\n"
         << "Currently supported image types:\n";
-      PNMFileTypeRegistry::get_ptr()->
-        write_types(pnmimage_cat.error(false), 2);
+      PNMFileTypeRegistry::get_global_ptr()->
+        write(pnmimage_cat.error(false), 2);
     }
     if (owns_file) {
       VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -306,7 +306,7 @@ make_writer(ostream *file, bool owns_file, const Filename &filename,
   if (type == (PNMFileType *)NULL && !filename.empty()) {
     // We don't know the type; attempt to guess it from the filename
     // extension.
-    type = PNMFileTypeRegistry::get_ptr()->get_type_from_extension(filename);
+    type = PNMFileTypeRegistry::get_global_ptr()->get_type_from_extension(filename);
 
     if (pnmimage_cat.is_debug()) {
       if (type != (PNMFileType *)NULL) {

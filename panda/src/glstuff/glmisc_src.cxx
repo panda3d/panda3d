@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "pandaSystem.h"
 
 ConfigVariableBool CLP(cheap_textures)
   ("gl-cheap-textures", false,
@@ -63,5 +64,12 @@ void CLP(init_classes)() {
   CLP(SavedFrameBuffer)::init_type();
   CLP(TextureContext)::init_type();
   CLP(GeomContext)::init_type();
+
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system(GLSYSTEM_NAME);
+
+  // We can't add any tags defining the available OpenGL capabilities,
+  // since we won't know those until we create a graphics context (and
+  // the answer may be different for different contexts).
 }
 

@@ -43,12 +43,14 @@ protected:
 public:
   virtual ~PNMFileType();
 
+PUBLISHED:
   virtual string get_name() const=0;
 
   virtual int get_num_extensions() const;
   virtual string get_extension(int n) const;
   virtual string get_suggested_extension() const;
 
+public:
   virtual bool has_magic_number() const;
   virtual bool matches_magic_number(const string &magic_number) const;
 

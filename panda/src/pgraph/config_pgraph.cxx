@@ -343,6 +343,6 @@ init_libpgraph() {
   TransformState::register_with_read_factory();
   TransparencyAttrib::register_with_read_factory();
 
-  LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
+  LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
   reg->register_type(new LoaderFileTypeBam);
 }

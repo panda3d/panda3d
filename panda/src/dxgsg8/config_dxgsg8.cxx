@@ -23,6 +23,7 @@
 #include "graphicsPipeSelection.h"
 #include "wdxGraphicsWindow8.h"
 #include "wdxGraphicsPipe8.h"
+#include "pandaSystem.h"
 
 #include "dconfig.h"
 
@@ -152,4 +153,6 @@ init_libdxgsg8() {
   selection->add_pipe_type(wdxGraphicsPipe8::get_class_type(),
                            wdxGraphicsPipe8::pipe_constructor);
 
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("DirectX8");
 }

@@ -104,7 +104,7 @@ find_all_files(const Filename &filename, const DSearchPath &search_path,
 
   if (!extension.empty()) {
     // If the extension is not empty, it specifies a single file type.
-    LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
+    LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
     LoaderFileType *requested_type =
       reg->get_type_from_extension(extension);
 
@@ -132,7 +132,7 @@ find_all_files(const Filename &filename, const DSearchPath &search_path,
   } else {
     // If the extension *is* empty, we have to search for all possible
     // file types.
-    LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
+    LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
     int num_types = reg->get_num_types();
 
     if (!filename.is_local()) {
@@ -332,7 +332,7 @@ load_file_types() {
         // Multiple words: the first n words are filename extensions,
         // and the last word is the name of the library to load should
         // any of those filename extensions be encountered.
-        LoaderFileTypeRegistry *registry = LoaderFileTypeRegistry::get_ptr();
+        LoaderFileTypeRegistry *registry = LoaderFileTypeRegistry::get_global_ptr();
         size_t num_extensions = words.size() - 1;
         string library_name = words[num_extensions];
         
@@ -424,7 +424,7 @@ load_file(const Filename &filename, bool search) const {
     // unknown file type.  Report a useful message either way.
     string extension = filename.get_extension();
     if (!extension.empty()) {
-      LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
+      LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
       LoaderFileType *requested_type =
         reg->get_type_from_extension(extension);
       if (requested_type == (LoaderFileType *)NULL) {
@@ -433,7 +433,7 @@ load_file(const Filename &filename, bool search) const {
           << " is unrecognized; cannot load.\n";
         loader_cat.error(false)
           << "Currently known scene file types are:\n";
-        reg->write_types(loader_cat.error(false), 2);
+        reg->write(loader_cat.error(false), 2);
         return NULL;
       }
     }

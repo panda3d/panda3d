@@ -55,7 +55,7 @@ extract_param_value(const string &str, string &param, string &value) {
 bool
 parse_image_type_request(const string &word, PNMFileType *&color_type,
                          PNMFileType *&alpha_type) {
-  PNMFileTypeRegistry *registry = PNMFileTypeRegistry::get_ptr();
+  PNMFileTypeRegistry *registry = PNMFileTypeRegistry::get_global_ptr();
   color_type = (PNMFileType *)NULL;
   alpha_type = (PNMFileType *)NULL;
 

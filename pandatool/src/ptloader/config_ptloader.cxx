@@ -68,7 +68,7 @@ init_libptloader() {
 
   LoaderFileTypePandatool::init_type();
 
-  LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
+  LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
 
   init_liblwo();
   FltToEggConverter *flt = new FltToEggConverter;
