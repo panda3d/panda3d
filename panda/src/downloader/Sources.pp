@@ -19,7 +19,7 @@
     chunkedStream.I chunkedStream.h chunkedStreamBuf.h \
     extractor.h \
     httpClient.I httpClient.h \
-    httpDocument.I httpDocument.h \
+    httpChannel.I httpChannel.h \
     identityStream.I identityStream.h identityStreamBuf.h \
     multiplexStream.I multiplexStream.h \
     multiplexStreamBuf.I multiplexStreamBuf.h \
@@ -38,7 +38,7 @@
     chunkedStream.cxx chunkedStreamBuf.cxx \
     extractor.cxx \
     httpClient.cxx \
-    httpDocument.cxx \
+    httpChannel.cxx \
     identityStream.cxx identityStreamBuf.cxx \
     multiplexStream.cxx multiplexStreamBuf.cxx \
     urlSpec.cxx \
@@ -57,7 +57,7 @@
     downloader.h downloader.I \
     extractor.h \
     httpClient.I httpClient.h \
-    httpDocument.I httpDocument.h \
+    httpChannel.I httpChannel.h \
     identityStream.I identityStream.h identityStreamBuf.h \
     multiplexStream.I multiplexStream.h \
     multiplexStreamBuf.I multiplexStreamBuf.I \

@@ -27,7 +27,7 @@
 #include "socketStream.h"
 #include "identityStreamBuf.h"
 
-class HTTPDocument;
+class HTTPChannel;
 class BioStreamPtr;
 
 ////////////////////////////////////////////////////////////////////
@@ -40,17 +40,17 @@ class BioStreamPtr;
 //               stream (like a SubStreamBuf) up to but not past the
 //               specified content-length.  (If the content-length was
 //               unspecified, this class cannot be used.)  It also
-//               updates the HTTPDocument when the stream is
+//               updates the HTTPChannel when the stream is
 //               completely read.
 ////////////////////////////////////////////////////////////////////
 // No need to export from DLL.
 class IIdentityStream : public ISocketStream {
 public:
   INLINE IIdentityStream();
-  INLINE IIdentityStream(BioStreamPtr *source, HTTPDocument *doc,
+  INLINE IIdentityStream(BioStreamPtr *source, HTTPChannel *doc,
                          bool has_content_length, size_t content_length);
 
-  INLINE IIdentityStream &open(BioStreamPtr *source, HTTPDocument *doc,
+  INLINE IIdentityStream &open(BioStreamPtr *source, HTTPChannel *doc,
                                bool has_content_length, size_t content_length);
   INLINE IIdentityStream &close();
 

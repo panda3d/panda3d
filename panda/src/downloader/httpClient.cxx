@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "httpClient.h"
-#include "httpDocument.h"
+#include "httpChannel.h"
 #include "config_downloader.h"
 #include "filename.h"
 #include "config_express.h"
@@ -288,15 +288,15 @@ clear_expected_servers() {
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::make_channel
 //       Access: Published
-//  Description: Returns a new HTTPDocument object that may be used
+//  Description: Returns a new HTTPChannel object that may be used
 //               for reading multiple documents using the same
 //               connection, for greater network efficiency than
 //               calling HTTPClient::get_document() repeatedly (and
 //               thus forcing a new connection for each document).
 ////////////////////////////////////////////////////////////////////
-PT(HTTPDocument) HTTPClient::
+PT(HTTPChannel) HTTPClient::
 make_channel() {
-  PT(HTTPDocument) doc = new HTTPDocument(this);
+  PT(HTTPChannel) doc = new HTTPChannel(this);
   doc->set_persistent_connection(true);
   return doc;
 }
@@ -305,14 +305,14 @@ make_channel() {
 //     Function: HTTPClient::post_form
 //       Access: Published
 //  Description: Posts form data to a particular URL and retrieves the
-//               response.  Returns a new HTTPDocument object whether
+//               response.  Returns a new HTTPChannel object whether
 //               the document is successfully read or not; you can
 //               test is_valid() and get_return_code() to determine
 //               whether the document was retrieved.
 ////////////////////////////////////////////////////////////////////
-PT(HTTPDocument) HTTPClient::
+PT(HTTPChannel) HTTPClient::
 post_form(const URLSpec &url, const string &body) {
-  PT(HTTPDocument) doc = new HTTPDocument(this);
+  PT(HTTPChannel) doc = new HTTPChannel(this);
   doc->post_form(url, body);
   return doc;
 }
@@ -322,14 +322,14 @@ post_form(const URLSpec &url, const string &body) {
 //       Access: Published
 //  Description: Opens the named document for reading, or if body is
 //               nonempty, posts data for a particular URL and
-//               retrieves the response.  Returns a new HTTPDocument
+//               retrieves the response.  Returns a new HTTPChannel
 //               object whether the document is successfully read or
 //               not; you can test is_valid() and get_return_code() to
 //               determine whether the document was retrieved.
 ////////////////////////////////////////////////////////////////////
-PT(HTTPDocument) HTTPClient::
+PT(HTTPChannel) HTTPClient::
 get_document(const URLSpec &url, const string &body) {
-  PT(HTTPDocument) doc = new HTTPDocument(this);
+  PT(HTTPChannel) doc = new HTTPChannel(this);
   if (body.empty()) {
     doc->get_document(url);
   } else {
@@ -347,9 +347,9 @@ get_document(const URLSpec &url, const string &body) {
 //               might also return the size of the document (if the
 //               server gives us this information).
 ////////////////////////////////////////////////////////////////////
-PT(HTTPDocument) HTTPClient::
+PT(HTTPChannel) HTTPClient::
 get_header(const URLSpec &url) {
-  PT(HTTPDocument) doc = new HTTPDocument(this);
+  PT(HTTPChannel) doc = new HTTPChannel(this);
   doc->get_header(url);
   return doc;
 }

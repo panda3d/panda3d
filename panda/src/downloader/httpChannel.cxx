@@ -1,4 +1,4 @@
-// Filename: httpDocument.cxx
+// Filename: httpChannel.cxx
 // Created by:  drose (24Sep02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "httpDocument.h"
+#include "httpChannel.h"
 #include "httpClient.h"
 #include "bioStream.h"
 #include "chunkedStream.h"
@@ -24,7 +24,7 @@
 
 #ifdef HAVE_SSL
 
-TypeHandle HTTPDocument::_type_handle;
+TypeHandle HTTPChannel::_type_handle;
 
 static const char base64_table[64] = {
   'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
@@ -38,12 +38,12 @@ static const char base64_table[64] = {
 };
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::Constructor
+//     Function: HTTPChannel::Constructor
 //       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-HTTPDocument::
-HTTPDocument(HTTPClient *client) :
+HTTPChannel::
+HTTPChannel(HTTPClient *client) :
   _client(client)
 {
   _persistent_connection = false;
@@ -58,18 +58,18 @@ HTTPDocument(HTTPClient *client) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::send_request
+//     Function: HTTPChannel::send_request
 //       Access: Private
 //  Description: This is normally called immediately after
 //               construction to send the request to the server and
 //               read the response.  It can't be called as part of the
 //               constructor because it may involve an up-and-down
-//               change in the reference count of the HTTPDocument
+//               change in the reference count of the HTTPChannel
 //               object, which would inadvertently cause the object to
 //               be deleted if it hasn't returned from its constructor
 //               yet!
 ////////////////////////////////////////////////////////////////////
-bool HTTPDocument::
+bool HTTPChannel::
 send_request(const string &method, const URLSpec &url, const string &body) {
   // Let's call this before we call make_header(), so we'll get the
   // right HTTP version and proxy information etc.
@@ -115,13 +115,13 @@ send_request(const string &method, const URLSpec &url, const string &body) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::send_request
+//     Function: HTTPChannel::send_request
 //       Access: Private
 //  Description: This is a lower-level interface than the above
 //               send_request(); it accepts a header and body string
 //               that have already been defined.
 ////////////////////////////////////////////////////////////////////
-bool HTTPDocument::
+bool HTTPChannel::
 send_request(const string &header, const string &body, bool allow_reconnect) {
   if (prepare_for_next(allow_reconnect)) {
     // Tack on a proxy authorization if it is called for.  Assume we
@@ -173,57 +173,57 @@ send_request(const string &header, const string &body, bool allow_reconnect) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::Destructor
+//     Function: HTTPChannel::Destructor
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-HTTPDocument::
-~HTTPDocument() {
+HTTPChannel::
+~HTTPChannel() {
   free_bio();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::get_file_system
+//     Function: HTTPChannel::get_file_system
 //       Access: Published, Virtual
 //  Description: Returns the VirtualFileSystem this file is associated
 //               with.
 ////////////////////////////////////////////////////////////////////
-VirtualFileSystem *HTTPDocument::
+VirtualFileSystem *HTTPChannel::
 get_file_system() const {
   return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::get_filename
+//     Function: HTTPChannel::get_filename
 //       Access: Published, Virtual
 //  Description: Returns the full pathname to this file within the
 //               virtual file system.
 ////////////////////////////////////////////////////////////////////
-Filename HTTPDocument::
+Filename HTTPChannel::
 get_filename() const {
   return Filename();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::is_regular_file
+//     Function: HTTPChannel::is_regular_file
 //       Access: Published, Virtual
 //  Description: Returns true if this file represents a regular file
 //               (and read_file() may be called), false otherwise.
 ////////////////////////////////////////////////////////////////////
-bool HTTPDocument::
+bool HTTPChannel::
 is_regular_file() const {
   return is_valid();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::will_close_connection
+//     Function: HTTPChannel::will_close_connection
 //       Access: Public
 //  Description: Returns true if the server has indicated it will
 //               close the connection after this document has been
 //               read, or false if it will remain open (and future
 //               documents may be requested on the same connection).
 ////////////////////////////////////////////////////////////////////
-bool HTTPDocument::
+bool HTTPChannel::
 will_close_connection() const {
   if (get_http_version() < HTTPClient::HV_11) {
     // pre-HTTP 1.1 always closes.
@@ -241,27 +241,27 @@ will_close_connection() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::open_read_file
+//     Function: HTTPChannel::open_read_file
 //       Access: Public, Virtual
 //  Description: Opens the document for reading.  Returns a newly
 //               allocated istream on success (which you should
 //               eventually delete when you are done reading).
 //               Returns NULL on failure.  This may only be called
-//               once for a particular HTTPDocument.
+//               once for a particular HTTPChannel.
 ////////////////////////////////////////////////////////////////////
-istream *HTTPDocument::
+istream *HTTPChannel::
 open_read_file() const {
-  return ((HTTPDocument *)this)->read_body();
+  return ((HTTPChannel *)this)->read_body();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::get_header_value
+//     Function: HTTPChannel::get_header_value
 //       Access: Published
 //  Description: Returns the HTML header value associated with the
 //               indicated key, or empty string if the key was not
 //               defined in the message returned by the server.
 ////////////////////////////////////////////////////////////////////
-string HTTPDocument::
+string HTTPChannel::
 get_header_value(const string &key) const {
   Headers::const_iterator hi = _headers.find(downcase(key));
   if (hi != _headers.end()) {
@@ -271,12 +271,12 @@ get_header_value(const string &key) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::write_headers
+//     Function: HTTPChannel::write_headers
 //       Access: Published
 //  Description: Outputs a list of all headers defined by the server
 //               to the indicated output stream.
 ////////////////////////////////////////////////////////////////////
-void HTTPDocument::
+void HTTPChannel::
 write_headers(ostream &out) const {
   Headers::const_iterator hi;
   for (hi = _headers.begin(); hi != _headers.end(); ++hi) {
@@ -285,12 +285,12 @@ write_headers(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::read_body
+//     Function: HTTPChannel::read_body
 //       Access: Published
 //  Description: Returns a newly-allocated istream suitable for
 //               reading the body of the document.
 ////////////////////////////////////////////////////////////////////
-ISocketStream *HTTPDocument::
+ISocketStream *HTTPChannel::
 read_body() {
   if (_state != S_read_header) {
     return NULL;
@@ -307,7 +307,7 @@ read_body() {
     _file_size = 0;
     _state = S_started_body;
     _read_index++;
-    result = new IChunkedStream(_source, (HTTPDocument *)this);
+    result = new IChunkedStream(_source, (HTTPChannel *)this);
 
   } else {
     // If the transfer encoding is anything else, assume "identity".
@@ -316,7 +316,7 @@ read_body() {
     // specified), or till end of file otherwise.
     _state = S_started_body;
     _read_index++;
-    result = new IIdentityStream(_source, (HTTPDocument *)this, 
+    result = new IIdentityStream(_source, (HTTPChannel *)this, 
                                  !content_length.empty(), _file_size);
   }
 
@@ -324,7 +324,7 @@ read_body() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::establish_connection
+//     Function: HTTPChannel::establish_connection
 //       Access: Private
 //  Description: Establishes a connection to the server, using the
 //               appropriate means.  Returns true if a connection is
@@ -332,7 +332,7 @@ read_body() {
 //               connection), or false otherwise (and _bio is either
 //               NULL or an invalid connection.)
 ////////////////////////////////////////////////////////////////////
-bool HTTPDocument::
+bool HTTPChannel::
 establish_connection() {
   bool result;
   if (_proxy.empty()) {
@@ -353,12 +353,12 @@ establish_connection() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::establish_http
+//     Function: HTTPChannel::establish_http
 //       Access: Private
 //  Description: Establishes a connection to the server directly,
 //               without using a proxy.
 ////////////////////////////////////////////////////////////////////
-bool HTTPDocument::
+bool HTTPChannel::
 establish_http() {
   _bio = new BioPtr(_url);
   _source = new BioStreamPtr(new IBioStream(_bio));
@@ -366,12 +366,12 @@ establish_http() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::establish_https
+//     Function: HTTPChannel::establish_https
 //       Access: Private
 //  Description: Establishes a connection to the secure server
 //               directly, without using a proxy.
 ////////////////////////////////////////////////////////////////////
-bool HTTPDocument::
+bool HTTPChannel::
 establish_https() {
   _bio = new BioPtr(_url);
   _source = new BioStreamPtr(new IBioStream(_bio));
@@ -383,12 +383,12 @@ establish_https() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::establish_http_proxy
+//     Function: HTTPChannel::establish_http_proxy
 //       Access: Private
 //  Description: Establishes a connection to the server through a
 //               proxy.
 ////////////////////////////////////////////////////////////////////
-bool HTTPDocument::
+bool HTTPChannel::
 establish_http_proxy() {
   _bio = new BioPtr(_proxy);
   _source = new BioStreamPtr(new IBioStream(_bio));
@@ -396,12 +396,12 @@ establish_http_proxy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::establish_https_proxy
+//     Function: HTTPChannel::establish_https_proxy
 //       Access: Private
 //  Description: Establishes a connection to the secure server through
 //               a proxy.
 ////////////////////////////////////////////////////////////////////
-bool HTTPDocument::
+bool HTTPChannel::
 establish_https_proxy() {
   // First, ask the proxy to open a connection for us.
   _bio = new BioPtr(_proxy);
@@ -485,13 +485,13 @@ establish_https_proxy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::make_https_connection
+//     Function: HTTPChannel::make_https_connection
 //       Access: Private
 //  Description: Starts speaking SSL over the opened connection.
 //               Returns true on success, false if the SSL connection
 //               cannot be established for some reason.
 ////////////////////////////////////////////////////////////////////
-bool HTTPDocument::
+bool HTTPChannel::
 make_https_connection() {
   BIO *sbio = BIO_new_ssl(_client->_ssl_ctx, true);
   BIO_push(sbio, *_bio);
@@ -767,14 +767,14 @@ certificate signing
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::verify_server
+//     Function: HTTPChannel::verify_server
 //       Access: Private
 //  Description: Returns true if the indicated server matches one of
 //               our expected servers (or the list of expected servers
 //               is empty), or false if it does not match any of our
 //               expected servers.
 ////////////////////////////////////////////////////////////////////
-bool HTTPDocument::
+bool HTTPChannel::
 verify_server(X509_NAME *subject) const {
   if (_client->_expected_servers.empty()) {
     if (downloader_cat.is_debug()) {
@@ -824,12 +824,12 @@ verify_server(X509_NAME *subject) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::get_x509_name_component
+//     Function: HTTPChannel::get_x509_name_component
 //       Access: Private, Static
 //  Description: Returns the indicated component of the X509 name as a
 //               string, if defined, or empty string if it is not.
 ////////////////////////////////////////////////////////////////////
-string HTTPDocument::
+string HTTPChannel::
 get_x509_name_component(X509_NAME *name, int nid) {
   ASN1_OBJECT *obj = OBJ_nid2obj(nid);
 
@@ -848,13 +848,13 @@ get_x509_name_component(X509_NAME *name, int nid) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::x509_name_subset
+//     Function: HTTPChannel::x509_name_subset
 //       Access: Private, Static
 //  Description: Returns true if name_a is a subset of name_b: each
 //               property of name_a is defined in name_b, and the
 //               defined value is equivalent to that of name_a.
 ////////////////////////////////////////////////////////////////////
-bool HTTPDocument::
+bool HTTPChannel::
 x509_name_subset(X509_NAME *name_a, X509_NAME *name_b) {
   int count_a = X509_NAME_entry_count(name_a);
   for (int ai = 0; ai < count_a; ai++) {
@@ -877,13 +877,13 @@ x509_name_subset(X509_NAME *name_a, X509_NAME *name_b) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::make_header
+//     Function: HTTPChannel::make_header
 //       Access: Private
 //  Description: Formats the appropriate GET or POST (or whatever)
 //               request to send to the server.  Also saves the
 //               indicated url.
 ////////////////////////////////////////////////////////////////////
-void HTTPDocument::
+void HTTPChannel::
 make_header(string &header, const string &method, 
             const URLSpec &url, const string &body) {
   set_url(url);
@@ -922,13 +922,13 @@ make_header(string &header, const string &method,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::set_url
+//     Function: HTTPChannel::set_url
 //       Access: Private
 //  Description: Specifies the document's URL before attempting a
 //               connection.  This controls the name of the server to
 //               be contacted, etc.
 ////////////////////////////////////////////////////////////////////
-void HTTPDocument::
+void HTTPChannel::
 set_url(const URLSpec &url) {
   // If we change between http and https, we have to reset the
   // connection regardless of proxy.  Otherwise, we have to drop the
@@ -944,12 +944,12 @@ set_url(const URLSpec &url) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::issue_request
+//     Function: HTTPChannel::issue_request
 //       Access: Private
 //  Description: Issues the request to the HTTP server and waits for a
 //               response.
 ////////////////////////////////////////////////////////////////////
-void HTTPDocument::
+void HTTPChannel::
 issue_request(const string &header, const string &body) {
   if (!_bio.is_null()) {
     string request = header;
@@ -983,13 +983,13 @@ issue_request(const string &header, const string &body) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::read_http_response
+//     Function: HTTPChannel::read_http_response
 //       Access: Private
 //  Description: Reads all of the responses from the server up until
 //               the first blank line, and stores the list of header
 //               key:value pairs so retrieved.
 ////////////////////////////////////////////////////////////////////
-void HTTPDocument::
+void HTTPChannel::
 read_http_response() {
   _headers.clear();
   _realm = string();
@@ -1112,13 +1112,13 @@ read_http_response() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::store_header_field
+//     Function: HTTPChannel::store_header_field
 //       Access: Private
 //  Description: Stores a single name: value pair in the header list,
 //               or appends the value to the end of the existing
 //               value, if the header has been repeated.
 ////////////////////////////////////////////////////////////////////
-void HTTPDocument::
+void HTTPChannel::
 store_header_field(const string &field_name, const string &field_value) {
   pair<Headers::iterator, bool> insert_result =
     _headers.insert(Headers::value_type(field_name, field_value));
@@ -1133,14 +1133,14 @@ store_header_field(const string &field_name, const string &field_value) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::get_authorization
+//     Function: HTTPChannel::get_authorization
 //       Access: Private
 //  Description: Looks for a username:password to satisfy the given
 //               authenticate_request string from the server or proxy.
 //               If found, fills in authorization and returns true;
 //               otherwise, returns false.
 ////////////////////////////////////////////////////////////////////
-bool HTTPDocument::
+bool HTTPChannel::
 get_authorization(string &authorization, const string &authenticate_request,
                   const URLSpec &url, bool is_proxy) {
   AuthenticationSchemes schemes;
@@ -1162,12 +1162,12 @@ get_authorization(string &authorization, const string &authenticate_request,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::downcase
+//     Function: HTTPChannel::downcase
 //       Access: Private, Static
 //  Description: Returns the input string with all uppercase letters
 //               converted to lowercase.
 ////////////////////////////////////////////////////////////////////
-string HTTPDocument::
+string HTTPChannel::
 downcase(const string &s) {
   string result;
   result.reserve(s.size());
@@ -1179,12 +1179,12 @@ downcase(const string &s) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::base64_encode
+//     Function: HTTPChannel::base64_encode
 //       Access: Private, Static
 //  Description: Returns the input string encoded using base64.  No
 //               respect is paid to maintaining a 76-char line length.
 ////////////////////////////////////////////////////////////////////
-string HTTPDocument::
+string HTTPChannel::
 base64_encode(const string &s) {
   // Collect the string 3 bytes at a time into 24-bit words, then
   // output each word using 4 bytes.
@@ -1227,7 +1227,7 @@ base64_encode(const string &s) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::scan_quoted_or_unquoted_string
+//     Function: HTTPChannel::scan_quoted_or_unquoted_string
 //       Access: Private, Static
 //  Description: Scans the string source beginning at character
 //               position start, to identify either the
@@ -1237,7 +1237,7 @@ base64_encode(const string &s) {
 //               next character position after the string (or after
 //               its closing quote mark).
 ////////////////////////////////////////////////////////////////////
-size_t HTTPDocument::
+size_t HTTPChannel::
 scan_quoted_or_unquoted_string(string &result, const string &source, 
                                size_t start) {
   result = string();
@@ -1281,12 +1281,12 @@ scan_quoted_or_unquoted_string(string &result, const string &source,
 
 #ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::show_send
+//     Function: HTTPChannel::show_send
 //       Access: Private, Static
 //  Description: Writes the outgoing message, one line at a time, to
 //               the debugging log.
 ////////////////////////////////////////////////////////////////////
-void HTTPDocument::
+void HTTPChannel::
 show_send(const string &message) {
   size_t start = 0;
   size_t newline = message.find('\n', start);
@@ -1305,13 +1305,13 @@ show_send(const string &message) {
 #endif   // NDEBUG
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::parse_authentication_schemes
+//     Function: HTTPChannel::parse_authentication_schemes
 //       Access: Private, Static
 //  Description: Decodes the text following a WWW-Authenticate: or
 //               Proxy-Authenticate: header field.
 ////////////////////////////////////////////////////////////////////
-void HTTPDocument::
-parse_authentication_schemes(HTTPDocument::AuthenticationSchemes &schemes,
+void HTTPChannel::
+parse_authentication_schemes(HTTPChannel::AuthenticationSchemes &schemes,
                              const string &field_value) {
   // This string will consist of one or more records of the form:
   //
@@ -1367,7 +1367,7 @@ parse_authentication_schemes(HTTPDocument::AuthenticationSchemes &schemes,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::prepare_for_next
+//     Function: HTTPChannel::prepare_for_next
 //       Access: Private
 //  Description: Resets the state to prepare it for sending a new
 //               request to the server.  This might mean closing the
@@ -1382,7 +1382,7 @@ parse_authentication_schemes(HTTPDocument::AuthenticationSchemes &schemes,
 //               this function will fail (and return false) if
 //               multiple connections are required.
 ////////////////////////////////////////////////////////////////////
-bool HTTPDocument::
+bool HTTPChannel::
 prepare_for_next(bool allow_reconnect) {
   if (get_persistent_connection() && !will_close_connection() &&
       _proxy == _client->get_proxy()) {
@@ -1462,13 +1462,13 @@ prepare_for_next(bool allow_reconnect) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::free_bio
+//     Function: HTTPChannel::free_bio
 //       Access: Private
 //  Description: Frees the BIO and its IBioStream object, if
 //               allocated.  This will close the connection if it is
 //               open.
 ////////////////////////////////////////////////////////////////////
-void HTTPDocument::
+void HTTPChannel::
 free_bio() {
   _source.clear();
   _bio.clear();
@@ -1477,14 +1477,14 @@ free_bio() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::get_basic_authorization
+//     Function: HTTPChannel::get_basic_authorization
 //       Access: Private
 //  Description: Looks for a username:password to satisfy the "Basic"
 //               scheme authorization request from the server or
 //               proxy.
 ////////////////////////////////////////////////////////////////////
-bool HTTPDocument::
-get_basic_authorization(string &authorization, const HTTPDocument::Tokens &tokens, const URLSpec &url, bool is_proxy) {
+bool HTTPChannel::
+get_basic_authorization(string &authorization, const HTTPChannel::Tokens &tokens, const URLSpec &url, bool is_proxy) {
   Tokens::const_iterator ti;
   ti = tokens.find("realm");
   if (ti != tokens.end()) {

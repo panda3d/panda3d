@@ -39,7 +39,7 @@
 #endif
 
 class Filename;
-class HTTPDocument;
+class HTTPChannel;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : HTTPClient
@@ -89,11 +89,11 @@ PUBLISHED:
   bool add_expected_server(const string &server_attributes);
   void clear_expected_servers();
 
-  PT(HTTPDocument) make_channel();
-  PT(HTTPDocument) post_form(const URLSpec &url, const string &body);
-  PT(HTTPDocument) get_document(const URLSpec &url,
+  PT(HTTPChannel) make_channel();
+  PT(HTTPChannel) post_form(const URLSpec &url, const string &body);
+  PT(HTTPChannel) get_document(const URLSpec &url,
                                 const string &body = string());
-  PT(HTTPDocument) get_header(const URLSpec &url);
+  PT(HTTPChannel) get_header(const URLSpec &url);
 
 private:
   void make_ctx();
@@ -125,7 +125,7 @@ private:
 
   static bool _ssl_initialized;
   static X509_STORE *_x509_store;
-  friend class HTTPDocument;
+  friend class HTTPChannel;
 };
 
 #include "httpClient.I"

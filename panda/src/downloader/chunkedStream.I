@@ -32,7 +32,7 @@ IChunkedStream() : ISocketStream(&_buf) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE IChunkedStream::
-IChunkedStream(BioStreamPtr *source, HTTPDocument *doc) : ISocketStream(&_buf) {
+IChunkedStream(BioStreamPtr *source, HTTPChannel *doc) : ISocketStream(&_buf) {
   open(source, doc);
 }
 
@@ -42,7 +42,7 @@ IChunkedStream(BioStreamPtr *source, HTTPDocument *doc) : ISocketStream(&_buf) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE IChunkedStream &IChunkedStream::
-open(BioStreamPtr *source, HTTPDocument *doc) {
+open(BioStreamPtr *source, HTTPChannel *doc) {
   clear(0);
   _buf.open_read(source, doc);
   return *this;

@@ -32,7 +32,7 @@ IIdentityStream() : ISocketStream(&_buf) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE IIdentityStream::
-IIdentityStream(BioStreamPtr *source, HTTPDocument *doc,
+IIdentityStream(BioStreamPtr *source, HTTPChannel *doc,
                 bool has_content_length, size_t content_length) : 
   ISocketStream(&_buf) 
 {
@@ -45,7 +45,7 @@ IIdentityStream(BioStreamPtr *source, HTTPDocument *doc,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE IIdentityStream &IIdentityStream::
-open(BioStreamPtr *source, HTTPDocument *doc, 
+open(BioStreamPtr *source, HTTPChannel *doc, 
      bool has_content_length, size_t content_length) {
   clear(0);
   _buf.open_read(source, doc, has_content_length, content_length);

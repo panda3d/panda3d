@@ -24,7 +24,7 @@
 // This module is not compiled if OpenSSL is not available.
 #ifdef HAVE_SSL
 
-#include "httpDocument.h"
+#include "httpChannel.h"
 #include "bioStreamPtr.h"
 #include "pointerTo.h"
 
@@ -39,7 +39,7 @@ public:
   ChunkedStreamBuf();
   virtual ~ChunkedStreamBuf();
 
-  void open_read(BioStreamPtr *source, HTTPDocument *doc);
+  void open_read(BioStreamPtr *source, HTTPChannel *doc);
   void close_read();
 
 protected:
@@ -52,7 +52,7 @@ private:
   size_t _chunk_remaining;
   bool _done;
 
-  PT(HTTPDocument) _doc;
+  PT(HTTPChannel) _doc;
   int _read_index;
 
   friend class IChunkedStream;

@@ -1,4 +1,4 @@
-// Filename: httpDocument.h
+// Filename: httpChannel.h
 // Created by:  drose (24Sep02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef HTTPDOCUMENT_H
-#define HTTPDOCUMENT_H
+#ifndef HTTPCHANNEL_H
+#define HTTPCHANNEL_H
 
 #include "pandabase.h"
 
@@ -40,12 +40,23 @@
 class HTTPClient;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : HTTPDocument
-// Description : A single document retrieved from an HTTP server.
+//       Class : HTTPChannel
+// Description : A single channel of communication from an HTTPClient.
+//               This is similar to the concept of a 'connection',
+//               except that HTTP is technically connectionless; in
+//               fact, a channel may represent one unbroken connection
+//               or it may transparently close and reopen a new
+//               connection with each request.
+//
+//               A channel is conceptually a single thread of I/O.
+//               One document at a time may be requested using a
+//               channel; a new document may (in general) not be
+//               requested from the same HTTPChannel until the first
+//               document has been fully retrieved.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS HTTPDocument : public VirtualFile {
+class EXPCL_PANDAEXPRESS HTTPChannel : public VirtualFile {
 private:
-  HTTPDocument(HTTPClient *client);
+  HTTPChannel(HTTPClient *client);
 
   bool send_request(const string &method, const URLSpec &url, 
                     const string &body);
@@ -53,7 +64,7 @@ private:
                     bool allow_reconnect);
 
 public:
-  virtual ~HTTPDocument();
+  virtual ~HTTPChannel();
 
   virtual VirtualFileSystem *get_file_system() const;
   virtual Filename get_filename() const;
@@ -169,7 +180,7 @@ public:
   }
   static void init_type() {
     VirtualFile::init_type();
-    register_type(_type_handle, "HTTPDocument",
+    register_type(_type_handle, "HTTPChannel",
                   VirtualFile::get_class_type());
   }
 
@@ -180,7 +191,7 @@ private:
   friend class HTTPClient;
 };
 
-#include "httpDocument.I"
+#include "httpChannel.I"
 
 #endif  // HAVE_SSL
 

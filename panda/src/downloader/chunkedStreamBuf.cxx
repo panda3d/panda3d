@@ -70,13 +70,13 @@ ChunkedStreamBuf::
 //               from the chunked encoding.
 ////////////////////////////////////////////////////////////////////
 void ChunkedStreamBuf::
-open_read(BioStreamPtr *source, HTTPDocument *doc) {
+open_read(BioStreamPtr *source, HTTPChannel *doc) {
   _source = source;
   _chunk_remaining = 0;
   _done = false;
   _doc = doc;
 
-  if (_doc != (HTTPDocument *)NULL) {
+  if (_doc != (HTTPChannel *)NULL) {
     _read_index = doc->_read_index;
     _doc->_file_size = 0;
 
@@ -161,13 +161,13 @@ read_chars(char *start, size_t length) {
   if (chunk_size == 0) {
     // Last chunk; we're done.
     _done = true;
-    if (_doc != (HTTPDocument *)NULL && _read_index == _doc->_read_index) {
-      _doc->_state = HTTPDocument::S_read_body;
+    if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
+      _doc->_state = HTTPChannel::S_read_body;
     }
     return 0;
   }
 
-  if (_doc != (HTTPDocument *)NULL && _read_index == _doc->_read_index) {
+  if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
     _doc->_file_size += chunk_size;
   }
 

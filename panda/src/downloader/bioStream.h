@@ -31,7 +31,7 @@
 //       Class : IBioStream
 // Description : An input stream object that reads data from an
 //               OpenSSL BIO object.  This is used by the HTTPClient
-//               and HTTPDocument classes to provide a C++ interface
+//               and HTTPChannel classes to provide a C++ interface
 //               to OpenSSL.
 //
 //               Seeking is not supported.

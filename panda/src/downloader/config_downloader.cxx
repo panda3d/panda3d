@@ -19,7 +19,7 @@
 #include "dconfig.h"
 #include "get_config_path.h"
 #include "config_downloader.h"
-#include "httpDocument.h"
+#include "httpChannel.h"
 
 
 Configure(config_downloader);
@@ -80,6 +80,6 @@ config_downloader.GetBool("verify-ssl", true);
 
 ConfigureFn(config_downloader) {
 #ifdef HAVE_SSL
-  HTTPDocument::init_type();
+  HTTPChannel::init_type();
 #endif
 }

@@ -1,4 +1,4 @@
-// Filename: httpDocument.I
+// Filename: httpChannel.I
 // Created by:  drose (24Sep02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -18,78 +18,82 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::is_valid
+//     Function: HTTPChannel::is_valid
 //       Access: Published
-//  Description: Returns true if the document was successfully
-//               retrieved and is ready to be read, false otherwise.
+//  Description: Returns true if the last-requested document was
+//               successfully retrieved and is ready to be read, false
+//               otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE bool HTTPDocument::
+INLINE bool HTTPChannel::
 is_valid() const {
   return (!_source.is_null() && (_status_code / 100) == 2);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::get_url
+//     Function: HTTPChannel::get_url
 //       Access: Published
-//  Description: Returns the URL that was used to retrieve this
-//               document: whatever URL was last passed to
-//               get_document() or get_header().
+//  Description: Returns the URL that was used to retrieve the
+//               most recent document: whatever URL was last passed to
+//               get_document() or get_header().  If a redirect has
+//               transparently occurred, this will return the new,
+//               redirected URL (the actual URL at which the document
+//               was located).
 ////////////////////////////////////////////////////////////////////
-INLINE const URLSpec &HTTPDocument::
+INLINE const URLSpec &HTTPChannel::
 get_url() const {
   return _url;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::get_http_version
+//     Function: HTTPChannel::get_http_version
 //       Access: Published
 //  Description: Returns the HTTP version number returned by the
 //               server, as one of the HTTPClient enumerated types,
 //               e.g. HTTPClient::HV_11.
 ////////////////////////////////////////////////////////////////////
-INLINE HTTPClient::HTTPVersion HTTPDocument::
+INLINE HTTPClient::HTTPVersion HTTPChannel::
 get_http_version() const {
   return _http_version;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::get_http_version_string
+//     Function: HTTPChannel::get_http_version_string
 //       Access: Published
 //  Description: Returns the HTTP version number returned by the
 //               server, formatted as a string, e.g. "HTTP/1.1".
 ////////////////////////////////////////////////////////////////////
-INLINE const string &HTTPDocument::
+INLINE const string &HTTPChannel::
 get_http_version_string() const {
   return _http_version_string;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::get_status_code
+//     Function: HTTPChannel::get_status_code
 //       Access: Published
 //  Description: Returns the HTML return code from the document
 //               retrieval request.  This will be in the 200 range if
 //               the document is successfully retrieved, or some other
 //               value in the case of an error.
 ////////////////////////////////////////////////////////////////////
-INLINE int HTTPDocument::
+INLINE int HTTPChannel::
 get_status_code() const {
   return _status_code;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::get_status_string
+//     Function: HTTPChannel::get_status_string
 //       Access: Published
 //  Description: Returns the string as returned by the server
 //               describing the status code for humans.  This may or
 //               may not be meaningful.
 ////////////////////////////////////////////////////////////////////
-INLINE const string &HTTPDocument::
+INLINE const string &HTTPChannel::
 get_status_string() const {
   return _status_string;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::get_realm
+//     Function: HTTPChannel::get_realm
 //       Access: Published
 //  Description: If the document failed to connect because of a 401
 //               (Authorization required) or 407 (Proxy authorization
@@ -106,13 +110,13 @@ get_status_string() const {
 //               or 407 error, then the client code and the server do
 //               not have a common scheme for exchanging passwords.
 ////////////////////////////////////////////////////////////////////
-INLINE const string &HTTPDocument::
+INLINE const string &HTTPChannel::
 get_realm() const {
   return _realm;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::get_redirect
+//     Function: HTTPChannel::get_redirect
 //       Access: Published
 //  Description: If the document failed with a redirect code (300
 //               series), this will generally contain the new URL the
@@ -122,15 +126,15 @@ get_realm() const {
 //               and get_redirect() will return empty, but get_url()
 //               will return the new, redirected URL.
 ////////////////////////////////////////////////////////////////////
-INLINE const URLSpec &HTTPDocument::
+INLINE const URLSpec &HTTPChannel::
 get_redirect() const {
   return _redirect;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::set_persistent_connection
+//     Function: HTTPChannel::set_persistent_connection
 //       Access: Published
-//  Description: Indicates whether the HTTPDocument should try to keep
+//  Description: Indicates whether the HTTPChannel should try to keep
 //               the connection to the server open and reuse that
 //               connection for multiple documents, or whether it
 //               should close the connection and open a new one for
@@ -138,32 +142,31 @@ get_redirect() const {
 //               around when possible, false to recycle them.
 //
 //               It makes most sense to set this false when the
-//               HTTPDocument will be used only once to retrieve a
-//               single document, true when you will be using the
-//               HTTPDocument interface to retrieve multiple
-//               documents.
+//               HTTPChannel will be used only once to retrieve a
+//               single document, true when you will be using the same
+//               HTTPChannel object to retrieve multiple documents.
 ////////////////////////////////////////////////////////////////////
-INLINE void HTTPDocument::
+INLINE void HTTPChannel::
 set_persistent_connection(bool persistent_connection) {
   _persistent_connection = persistent_connection;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::get_persistent_connection
+//     Function: HTTPChannel::get_persistent_connection
 //       Access: Published
-//  Description: Returns whether the HTTPDocument should try to keep
+//  Description: Returns whether the HTTPChannel should try to keep
 //               the connection to the server open and reuse that
 //               connection for multiple documents, or whether it
 //               should close the connection and open a new one for
 //               each request.  See set_persistent_connection().
 ////////////////////////////////////////////////////////////////////
-INLINE bool HTTPDocument::
+INLINE bool HTTPChannel::
 get_persistent_connection() const {
   return _persistent_connection;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::get_file_size
+//     Function: HTTPChannel::get_file_size
 //       Access: Published
 //  Description: Returns the size of the file, if it is known.
 //               Returns 0 if the file size is not known.  
@@ -176,35 +179,35 @@ get_persistent_connection() const {
 //               their minds midstream about how much data they're
 //               sending you.
 ////////////////////////////////////////////////////////////////////
-INLINE size_t HTTPDocument::
+INLINE size_t HTTPChannel::
 get_file_size() const {
   return _file_size;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::post_form
+//     Function: HTTPChannel::post_form
 //       Access: Published
 //  Description: Posts form data to a particular URL and retrieves the
 //               response.
 ////////////////////////////////////////////////////////////////////
-INLINE bool HTTPDocument::
+INLINE bool HTTPChannel::
 post_form(const URLSpec &url, const string &body) {
   return send_request("POST", url, body);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::get_document
+//     Function: HTTPChannel::get_document
 //       Access: Published
 //  Description: Opens the named document for reading, if available.
 //               Returns true if successful, false otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE bool HTTPDocument::
+INLINE bool HTTPChannel::
 get_document(const URLSpec &url) {
   return send_request("GET", url, string());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::get_header
+//     Function: HTTPChannel::get_header
 //       Access: Published
 //  Description: Like get_document(), except only the header
 //               associated with the document is retrieved.  This may
@@ -212,7 +215,7 @@ get_document(const URLSpec &url) {
 //               might also return the size of the document (if the
 //               server gives us this information).
 ////////////////////////////////////////////////////////////////////
-INLINE bool HTTPDocument::
+INLINE bool HTTPChannel::
 get_header(const URLSpec &url) {
   return send_request("HEAD", url, string());
 }

@@ -70,14 +70,14 @@ IdentityStreamBuf::
 //               from the identity encoding.
 ////////////////////////////////////////////////////////////////////
 void IdentityStreamBuf::
-open_read(BioStreamPtr *source, HTTPDocument *doc, 
+open_read(BioStreamPtr *source, HTTPChannel *doc, 
           bool has_content_length, size_t content_length) {
   _source = source;
   _doc = doc;
   _has_content_length = has_content_length;
   _bytes_remaining = content_length;
 
-  if (_doc != (HTTPDocument *)NULL) {
+  if (_doc != (HTTPChannel *)NULL) {
     _read_index = doc->_read_index;
   }
 }
@@ -141,10 +141,10 @@ read_chars(char *start, size_t length) {
 
     if (length == 0) {
       // End of file; we're done.
-      if (_doc != (HTTPDocument *)NULL && _read_index == _doc->_read_index) {
+      if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
         // An IdentityStreamBuf doesn't have a trailer, so we've already
         // "read" it.
-        _doc->_state = HTTPDocument::S_read_trailer;
+        _doc->_state = HTTPChannel::S_read_trailer;
       }
     }
 
@@ -162,10 +162,10 @@ read_chars(char *start, size_t length) {
     
     if (_bytes_remaining == 0) {
       // We're done.
-      if (_doc != (HTTPDocument *)NULL && _read_index == _doc->_read_index) {
+      if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
         // An IdentityStreamBuf doesn't have a trailer, so we've already
         // "read" it.
-        _doc->_state = HTTPDocument::S_read_trailer;
+        _doc->_state = HTTPChannel::S_read_trailer;
       }
     }
   }

@@ -24,7 +24,7 @@
 // This module is not compiled if OpenSSL is not available.
 #ifdef HAVE_SSL
 
-#include "httpDocument.h"
+#include "httpChannel.h"
 #include "bioStreamPtr.h"
 #include "pointerTo.h"
 
@@ -38,7 +38,7 @@ public:
   IdentityStreamBuf();
   virtual ~IdentityStreamBuf();
 
-  void open_read(BioStreamPtr *source, HTTPDocument *doc,
+  void open_read(BioStreamPtr *source, HTTPChannel *doc,
                  bool has_content_length, size_t content_length);
   void close_read();
 
@@ -52,7 +52,7 @@ private:
   bool _has_content_length;
   size_t _bytes_remaining;
 
-  PT(HTTPDocument) _doc;
+  PT(HTTPChannel) _doc;
   int _read_index;
 
   friend class IIdentityStream;

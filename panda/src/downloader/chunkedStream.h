@@ -27,7 +27,7 @@
 #include "socketStream.h"
 #include "chunkedStreamBuf.h"
 
-class HTTPDocument;
+class HTTPChannel;
 class BioStreamPtr;
 
 ////////////////////////////////////////////////////////////////////
@@ -42,9 +42,9 @@ class BioStreamPtr;
 class IChunkedStream : public ISocketStream {
 public:
   INLINE IChunkedStream();
-  INLINE IChunkedStream(BioStreamPtr *source, HTTPDocument *doc);
+  INLINE IChunkedStream(BioStreamPtr *source, HTTPChannel *doc);
 
-  INLINE IChunkedStream &open(BioStreamPtr *source, HTTPDocument *doc);
+  INLINE IChunkedStream &open(BioStreamPtr *source, HTTPChannel *doc);
   INLINE IChunkedStream &close();
 
   virtual bool is_closed();
