@@ -50,8 +50,8 @@ class ShowBase:
         self.screenshotExtension = self.config.GetString('screenshot-extension', 'jpg')
         self.musicManager = None
         self.musicManagerIsValid = None
-        self.sfxManager = None
-        self.sfxManagerIsValid = None
+        self.sfxManagerList = []
+        self.sfxManagerIsValidList = []
 
         self.wantDIRECT = self.config.GetBool('want-directtools', 0)
         self.wantStats = self.config.GetBool('want-stats', 0)
@@ -133,7 +133,7 @@ class ShowBase:
         self.physicsMgrEnabled = 0
         self.physicsMgrAngular = 0
 
-        self.createAudioManager()
+        self.createBaseAudioManagers()
         self.createStats()
 
         self.AppHasAudioFocus = 1
@@ -495,52 +495,112 @@ class ShowBase:
         if self.wantStats:
             PStatClient.connect()
 
-    def createAudioManager(self):
-        self.sfxManager = AudioManager.createAudioManager()
-        self.sfxManagerIsValid=self.sfxManager!=None \
-                and self.sfxManager.isValid()
-        if self.sfxManagerIsValid:
-            self.sfxManager.setActive(self.sfxActive)
+    def addSfxManager(self, extraSfxManager):
+        # keep a list of sfx manager objects to apply settings to, since there may be others
+        # in addition to the one we create here
+        self.sfxManagerList.append(extraSfxManager)
+        newSfxManagerIsValid = (extraSfxManager!=None) and extraSfxManager.isValid()
+        self.sfxManagerIsValidList.append(newSfxManagerIsValid)
+        if newSfxManagerIsValid:
+            extraSfxManager.setActive(self.sfxActive)
+
+    def createBaseAudioManagers(self):
+        sfxManager = AudioManager.createAudioManager()
+        self.addSfxManager(sfxManager)
 
         self.musicManager = AudioManager.createAudioManager()
         self.musicManagerIsValid=self.musicManager!=None \
                 and self.musicManager.isValid()
         if self.musicManagerIsValid:
             self.musicManager.setActive(self.musicActive)
-            # Turn down the music globally
-            # Eventually we may want to control this in the options page
-            self.musicManager.setVolume(0.7)
+
+    # enableMusic/enableSoundEffects are meant to be called in response to a user request
+    # so sfxActive/musicActive represent how things *should* be, regardless of App/OS/HW state
+    def enableMusic(self, bEnableMusic):
+        # dont setActive(1) if no audiofocus
+        if self.AppHasAudioFocus and self.musicManagerIsValid:
+            self.musicManager.setActive(bEnableMusic)
+        self.musicActive = bEnableMusic
+        if bEnableMusic:
+            self.notify.debug("Enabling music")
+        else:
+            self.notify.debug("Disabling music")
+
+    def SetAllSfxEnables(self, bEnabled):
+        for i in range(len(self.sfxManagerList)):
+            if (self.sfxManagerIsValidList[i]):
+                self.sfxManagerList[i].setActive(bEnabled)
+
+    def enableSoundEffects(self, bEnableSoundEffects):
+        # dont setActive(1) if no audiofocus
+        if self.AppHasAudioFocus or (bEnableSoundEffects==0):
+            self.SetAllSfxEnables(bEnableSoundEffects)
+        self.sfxActive=bEnableSoundEffects
+        if bEnableSoundEffects:
+            self.notify.debug("Enabling sound effects")
+        else:
+            self.notify.debug("Disabling sound effects")
+
+    # enable/disableAllAudio allow a programmable global override-off for current audio settings.
+    # they're meant to be called when app loses audio focus (switched out), so we can turn off sound
+    # without affecting internal sfxActive/musicActive sound settings, so things 
+    # come back ok when the app is switched back to
+
+    def disableAllAudio(self):
+        self.AppHasAudioFocus = 0
+        self.SetAllSfxEnables(0)
+        if self.musicManagerIsValid:
+            self.musicManager.setActive(0)
+        self.notify.debug("Disabling audio")
+
+    def enableAllAudio(self):
+        self.AppHasAudioFocus = 1
+        self.SetAllSfxEnables(self.sfxActive)
+        if self.musicManagerIsValid:
+            self.musicManager.setActive(self.musicActive)
+        self.notify.debug("Enabling audio")
 
     def loadSfx(self, name):
+        # showbase's sfxManager should always be at front of list
+        if(not self.sfxManagerIsValidList[0]):
+            # dont print a warning if mgr invalid, since they should already know
+            return None
+        sound = None
         if (name):
-            sound=self.sfxManager.getSound(name)
-            if sound == None:
-                self.notify.warning("Could not load sound file %s." % name)
-            return sound
+            sound=self.sfxManagerList[0].getSound(name)
+        if sound == None:
+            self.notify.warning("Could not load sound file %s." % name)
+        return sound
+
 
     def loadMusic(self, name):
+        if(not self.musicManagerIsValid):
+            return None
+        sound = None
         if (name):
             sound=self.musicManager.getSound(name)
-            if sound == None:
-                self.notify.warning("Could not load music file %s." % name)
-            return sound
+        if sound == None:
+            self.notify.warning("Could not load music file %s." % name)
+        return sound
 
-    def playSfx(self, sfx, looping = 0, interupt = 1, volume = None,
-            time = 0.):
+    def playSfx(self, sfx, looping = 0, interrupt = 1, volume = None, time = 0.0):
         if sfx:
             if volume != None:
                 sfx.setVolume(volume)
-            if interupt or (sfx.status() != AudioSound.PLAYING):
+
+            # dont start over if it's already playing, unless "interrupt" was specified
+            if interrupt or (sfx.status() != AudioSound.PLAYING):
                 sfx.setTime(time)
                 sfx.setLoop(looping)
                 sfx.play()
 
-    def playMusic(self, music, looping = 0, interupt = 1, volume = None,
-            time = 0.0):
+    def playMusic(self, music, looping = 0, interrupt = 1, volume = None, time = 0.0):
         if music:
             if volume != None:
                 music.setVolume(volume)
-            if interupt or (music.status() != AudioSound.PLAYING):
+
+            # if interrupt was set to 0, start over even if it's already playing
+            if interrupt or (music.status() != AudioSound.PLAYING):
                 music.setTime(time)
                 music.setLoop(looping)
                 music.play()
@@ -901,43 +961,6 @@ class ShowBase:
             state.frameIndex += 1
             return Task.cont
 
-    # these are meant to be called in response to a user request
-    def EnableMusic(self, bEnableMusic):
-        # dont setActive(1) if no audiofocus
-        if self.AppHasAudioFocus and self.musicManagerIsValid:
-            self.musicManager.setActive(bEnableMusic)
-        self.musicActive = bEnableMusic
-        if bEnableMusic:
-            self.notify.debug("Enabling music")
-        else:
-            self.notify.debug("Disabling music")
-
-    def EnableSoundEffects(self, bEnableSoundEffects):
-        # dont setActive(1) if no audiofocus
-        if self.AppHasAudioFocus and self.sfxManagerIsValid:
-            self.sfxManager.setActive(bEnableSoundEffects)
-        self.sfxActive=bEnableSoundEffects
-        if bEnableSoundEffects:
-            self.notify.debug("Enabling sound effects")
-        else:
-            self.notify.debug("Disabling sound effects")
-
-    # these are meant to be called by the sw when app loses audio focus (switched out)
-    def DisableAudio(self):
-        self.AppHasAudioFocus = 0
-        if self.sfxManagerIsValid:
-            self.sfxManager.setActive(0)
-        if self.musicManagerIsValid:
-            self.musicManager.setActive(0)
-        self.notify.debug("Disabling audio")
-
-    def EnableAudio(self):
-        self.AppHasAudioFocus = 1
-        if self.sfxManagerIsValid:
-            self.sfxManager.setActive(self.sfxActive)
-        if self.musicManagerIsValid:
-            self.musicManager.setActive(self.musicActive)
-        self.notify.debug("Enabling audio")
 
     def run(self):
         self.taskMgr.run()
