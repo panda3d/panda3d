@@ -26,6 +26,7 @@
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
 #include "pStatTimer.h"
+#include <stdio.h>  // For sprintf/snprintf
 
 #ifndef CPPPARSER
 PStatCollector FrameRateMeter::_show_fps_pcollector("Cull:Show fps");
