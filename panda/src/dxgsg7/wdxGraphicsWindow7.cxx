@@ -167,13 +167,14 @@ make_gsg() {
 void wdxGraphicsWindow7::
 release_gsg() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
-    
     if (is_fullscreen()) {
       // Release the cooperative level we grabbed when we created the
       // GSG.
       DXScreenData *pScrn = &_dxgsg->scrn;
       nassertv(pScrn != (DXScreenData *)NULL);
-      pScrn->pDD->SetCooperativeLevel(_mwindow, DDSCL_NORMAL);
+      if (pScrn->pDD != (LPDIRECTDRAW7)NULL) {
+        pScrn->pDD->SetCooperativeLevel(_mwindow, DDSCL_NORMAL);
+      }
     }
 
     GraphicsWindow::release_gsg();
