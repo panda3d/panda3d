@@ -93,4 +93,5 @@ init_libcollide() {
   CollisionRay::register_with_read_factory();
   CollisionSegment::register_with_read_factory();
   CollisionSphere::register_with_read_factory();
+  CollisionTube::register_with_read_factory();
 }
