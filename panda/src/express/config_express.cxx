@@ -41,8 +41,8 @@ ConfigureFn(config_express) {
   ReferenceCount::init_type();
   TypedObject::init_type();
   TypedReferenceCount::init_type();
-  VirtualFileComposite::init_type();
   VirtualFile::init_type();
+  VirtualFileComposite::init_type();
   VirtualFileMount::init_type();
   VirtualFileMountMultifile::init_type();
   VirtualFileMountSystem::init_type();
@@ -145,6 +145,12 @@ const int patchfile_buffer_size =
 
 const int patchfile_zone_size =
         config_express.GetInt("patchfile-zone-size", 10000);
+
+// Set this true to use the VirtualFileSystem mechanism for loading
+// models, etc.  Since the VirtualFileSystem maps to the same as the
+// actual file system by default, there is probably no reason to set
+// this false, except for testing or if you mistrust the new code.
+const bool use_vfs = config_express.GetBool("use-vfs", true);
 
 
 // Returns the configure object for accessing config variables from a

@@ -25,6 +25,7 @@
 #include "config_egg.h"
 
 #include "config_util.h"
+#include "config_express.h"
 #include "string_utils.h"
 #include "dSearchPath.h"
 #include "virtualFileSystem.h"

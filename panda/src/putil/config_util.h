@@ -19,9 +19,9 @@
 #ifndef __CONFIG_UTIL_H__
 #define __CONFIG_UTIL_H__
 
-#include <pandabase.h>
-#include <notifyCategoryProxy.h>
-#include <dconfig.h>
+#include "pandabase.h"
+#include "notifyCategoryProxy.h"
+#include "dconfig.h"
 
 class DSearchPath;
 
@@ -45,7 +45,5 @@ EXPCL_PANDA DSearchPath &get_model_path();
 EXPCL_PANDA DSearchPath &get_texture_path();
 EXPCL_PANDA DSearchPath &get_sound_path();
 END_PUBLISH
-
-extern EXPCL_PANDA const bool use_vfs;
 
 #endif /* __CONFIG_UTIL_H__ */

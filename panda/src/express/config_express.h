@@ -19,9 +19,9 @@
 #ifndef __CONFIG_EXPRESS_H__
 #define __CONFIG_EXPRESS_H__
 
-#include <pandabase.h>
-#include <notifyCategoryProxy.h>
-#include <dconfig.h>
+#include "pandabase.h"
+#include "notifyCategoryProxy.h"
+#include "dconfig.h"
 
 ConfigureDecl(config_express, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 NotifyCategoryDecl(express, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
@@ -44,6 +44,8 @@ extern const int patchfile_window_size;
 extern const int patchfile_increment_size;
 extern const int patchfile_buffer_size;
 extern const int patchfile_zone_size;
+
+extern EXPCL_PANDAEXPRESS const bool use_vfs;
 
 // Expose the Config variable for Python access.
 BEGIN_PUBLISH

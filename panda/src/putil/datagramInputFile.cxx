@@ -21,6 +21,7 @@
 #include "datagramIterator.h"
 #include "profileTimer.h"
 #include "config_util.h"
+#include "config_express.h"
 #include "virtualFileSystem.h"
 
 #include "datagramInputFile.h"

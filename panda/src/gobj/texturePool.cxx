@@ -19,6 +19,7 @@
 #include "texturePool.h"
 #include "config_gobj.h"
 #include "config_util.h"
+#include "config_express.h"
 #include "virtualFileSystem.h"
 
 

@@ -20,8 +20,9 @@
 #include "config_pgraph.h"
 #include "bamFile.h"
 
-#include "virtualFileSystem.h"
 #include "config_util.h"
+#include "config_express.h"
+#include "virtualFileSystem.h"
 #include "dcast.h"
 
 TypeHandle LoaderFileTypeBam::_type_handle;

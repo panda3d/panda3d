@@ -88,9 +88,3 @@ get_sound_path() {
   static DSearchPath *sound_path = NULL;
   return get_config_path("sound-path", sound_path);
 }
-
-// Set this true to use the VirtualFileSystem mechanism for loading
-// models, etc.  Since the VirtualFileSystem maps to the same as the
-// actual file system by default, there is probably no reason to set
-// this false, except for testing or if you mistrust the new code.
-const bool use_vfs = config_util.GetBool("use-vfs", true);

@@ -21,7 +21,7 @@
 #include "loaderFileTypeRegistry.h"
 #include "config_pgraph.h"
 
-#include "config_util.h"
+#include "config_express.h"
 #include "virtualFileSystem.h"
 #include "event.h"
 #include "pt_Event.h"

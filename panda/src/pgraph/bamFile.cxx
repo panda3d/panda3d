@@ -24,6 +24,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "filename.h"
+#include "config_express.h"
 #include "virtualFileSystem.h"
 
 ////////////////////////////////////////////////////////////////////

@@ -22,6 +22,7 @@
 #include "sceneGraphReducer.h"
 #include "virtualFileSystem.h"
 #include "config_util.h"
+#include "config_express.h"
 
 static PT(PandaNode)
 load_from_loader(EggLoader &loader) {

@@ -21,8 +21,8 @@
 #include "pnmFileType.h"
 #include "pnmReader.h"
 #include "config_pnmimage.h"
+#include "config_express.h"
 #include "virtualFileSystem.h"
-#include "config_util.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::read_header
