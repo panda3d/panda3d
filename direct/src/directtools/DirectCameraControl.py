@@ -32,6 +32,8 @@ class DirectCameraControl(PandaObject):
         self.actionEvents = [
             ['DIRECT-mouse2', self.mouseFlyStart],
             ['DIRECT-mouse2Up', self.mouseFlyStop],
+            ]
+        self.keyEvents = [
             ['c', self.centerCamIn, 0.5],
             ['f', self.fitOnWidget],
             ['h', self.homeCam],
@@ -625,12 +627,15 @@ class DirectCameraControl(PandaObject):
         # Continue
         return Task.cont
 
-    def enableMouseFly(self):
+    def enableMouseFly(self, fKeyEvents = 1):
         # disable C++ fly interface
         base.disableMouse()
         # Enable events
         for event in self.actionEvents:
             self.accept(event[0], event[1], extraArgs = event[2:])
+        if fKeyEvents:
+            for event in self.keyEvents:
+                self.accept(event[0], event[1], extraArgs = event[2:])
         # Show marker
         self.coaMarker.reparentTo(direct.group)
 
@@ -639,6 +644,8 @@ class DirectCameraControl(PandaObject):
         self.coaMarker.reparentTo(hidden)
         # Ignore events
         for event in self.actionEvents:
+            self.ignore(event[0])
+        for event in self.keyEvents:
             self.ignore(event[0])
         # Kill tasks
         self.removeManipulateCameraTask()

@@ -145,11 +145,14 @@ class DirectSession(PandaObject):
             ['SGE_Delete', self.removeNodePath],
             ['SGE_Set Name', self.getAndSetName],
             ]
-        self.keyEvents = ['escape', 'delete', 'control', 'control-up',
-                          'shift', 'shift-up', 'alt', 'alt-up',
-                          'page_up', 'page_down', 
+        self.modifierEvents = ['control', 'control-up',
+                              'shift', 'shift-up',
+                              'alt', 'alt-up',
+                              ]
+        self.keyEvents = ['escape', 'delete', 'page_up', 'page_down', 
                           '[', '{', ']', '}',
-                          'shift-a', 'b', 'control-f', 'l', 'shift-l', 'o', 'p', 'r',
+                          'shift-a', 'b', 'control-f',
+                          'l', 'shift-l', 'o', 'p', 'r',
                           'shift-r', 's', 't', 'v', 'w']
         self.mouseEvents = ['mouse1', 'mouse1-up',
                             'shift-mouse1', 'shift-mouse1-up',
@@ -199,6 +202,7 @@ class DirectSession(PandaObject):
         self.selected.reset()
         # Accept appropriate hooks
         self.enableKeyEvents()
+        self.enableModifierEvents()
         self.enableMouseEvents()
         self.enableActionEvents()
         # Set flag
@@ -219,6 +223,7 @@ class DirectSession(PandaObject):
         # Accept appropriate hooks
         self.enableMouseEvents()
         self.enableActionEvents()
+        self.enableModifierEvents()
         # Set flag
         self.fEnabled = 1
 
@@ -230,6 +235,7 @@ class DirectSession(PandaObject):
         # Turn off object manipulation
         self.manipulationControl.disableManipulation()
         self.disableKeyEvents()
+        self.disableModifierEvents()
         self.disableMouseEvents()
         self.disableActionEvents()
         # Kill tasks
@@ -255,6 +261,7 @@ class DirectSession(PandaObject):
         self.disableActionEvents()
         # But let mouse events pass through
         self.enableMouseEvents()
+        self.enableModifierEvents()
 
     def oobe(self):
         # If oobeMode was never set, set it to false and create the
@@ -332,6 +339,10 @@ class DirectSession(PandaObject):
         for event in self.actionEvents:
             self.accept(event[0], event[1], extraArgs = event[2:])
 
+    def enableModifierEvents(self):
+        for event in self.modifierEvents:
+            self.accept(event, self.inputHandler, [event])
+
     def enableKeyEvents(self):
         for event in self.keyEvents:
             self.accept(event, self.inputHandler, [event])
@@ -342,6 +353,10 @@ class DirectSession(PandaObject):
 
     def disableActionEvents(self):
         for event, method in self.actionEvents:
+            self.ignore(event)
+
+    def disableModifierEvents(self):
+        for event in self.modifierEvents:
             self.ignore(event)
 
     def disableKeyEvents(self):
