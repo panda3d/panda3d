@@ -115,26 +115,28 @@ EggMakeFont() : EggWriter(true, false) {
      "Specify the pixels per unit.  This is the number of pixels in the "
      "generated texture map that are used for each onscreen unit (or each "
      "10 points of font; see -ps).  Setting this number larger results in "
-     "an easier-to-read font, but at the cost of more texture memory.",
+     "an easier-to-read font, but at the cost of more texture memory.  "
+     "The default is 30.",
      &EggMakeFont::dispatch_double, NULL, &_pixels_per_unit);
 
   add_option
     ("ps", "size", 0,
      "Specify the point size of the resulting font.  This controls the "
      "apparent size of the font when it is rendered onscreen.  By convention, "
-     "a 10 point font is 1 screen unit high.",
+     "a 10 point font is 1 screen unit high, so the default is 10.",
      &EggMakeFont::dispatch_double, NULL, &_point_size);
 
   add_option
     ("pm", "n", 0,
      "The number of extra pixels around a single character in the "
-     "generated polygon.  This may be a floating-point number.",
+     "generated polygon.  This may be a floating-point number.  The "
+     "default is 1.",
      &EggMakeFont::dispatch_double, NULL, &_poly_margin);
 
   add_option
     ("tm", "n", 0,
      "The number of extra pixels around each character in the texture map.  "
-     "This may only be an integer.",
+     "This may only be an integer.  The default is 2.",
      &EggMakeFont::dispatch_int, NULL, &_tex_margin);
 
   add_option
@@ -144,7 +146,7 @@ EggMakeFont() : EggWriter(true, false) {
      "to improve antialiasing.  If the specified font contains one "
      "or more fixed-size fonts instead of a scalable font, the scale factor "
      "may be automatically adjusted as necessary to scale the closest-"
-     "matching font to the desired pixel size.",
+     "matching font to the desired pixel size.  The default is 2.",
      &EggMakeFont::dispatch_double, &_got_scale_factor, &_scale_factor);
 
   add_option
@@ -325,7 +327,7 @@ run() {
   }
   if (_output_palette_pattern.empty()) {
     // Create a default texture filename pattern.
-    _output_palette_pattern = get_output_filename().get_fullpath_wo_extension() + "_%i.rgb";
+    _output_palette_pattern = get_output_filename().get_fullpath_wo_extension() + "_%i";
   }
 
   // Figure out how many channels we need based on the foreground and
@@ -385,9 +387,12 @@ run() {
 
   pal->all_params_set();
 
-  // Now create all the egg structures.
+  // Now create all the egg structures.  We can't use _data, since we
+  // want to pass this object to the palettizer, which will try to up
+  // its reference count.
+  PT(EggData) egg_data = new EggData;
   _group = new EggGroup();
-  _data.add_child(_group);
+  egg_data->add_child(_group);
 
   _vpool = new EggVertexPool("vpool");
   _group->add_child(_vpool);
@@ -435,7 +440,7 @@ run() {
     // writing it to disk first.
     string name = get_output_filename().get_basename();
     EggFile *egg_file = pal->get_egg_file(name);
-    egg_file->from_command_line(&_data, "", get_output_filename(),
+    egg_file->from_command_line(egg_data, "", get_output_filename(),
                                 get_exec_command());
 
     pal->add_command_line_egg(egg_file);

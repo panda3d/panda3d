@@ -45,6 +45,7 @@ TextureImage::
 TextureImage() {
   _preferred_source = (SourceTextureImage *)NULL;
   _read_source_image = false;
+  _allow_release_source_image = true;
   _is_surprise = true;
   _ever_read_image = false;
   _forced_grayscale = false;
@@ -746,6 +747,7 @@ read_source_image() {
       source->read(_source_image);
     }
     _read_source_image = true;
+    _allow_release_source_image = true;
     _ever_read_image = true;
   }
 
@@ -762,7 +764,7 @@ read_source_image() {
 ////////////////////////////////////////////////////////////////////
 void TextureImage::
 release_source_image() {
-  if (_read_source_image) {
+  if (_read_source_image && _allow_release_source_image) {
     _source_image.clear();
     _read_source_image = false;
   }
@@ -779,6 +781,7 @@ release_source_image() {
 void TextureImage::
 set_source_image(const PNMImage &image) {
   _source_image = image;
+  _allow_release_source_image = false;
   _read_source_image = true;
   _ever_read_image = true;
 }

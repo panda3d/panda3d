@@ -150,6 +150,7 @@ private:
   Dests _dests;
 
   bool _read_source_image;
+  bool _allow_release_source_image;
   PNMImage _source_image;
   bool _texture_named;
   bool _got_txa_file;
