@@ -71,6 +71,7 @@ WinGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _ime_composition_w = false;
   _tracking_mouse_leaving = false;
   _maximized = false;
+  _cursor = 0;
   memset(_keyboard_state, 0, sizeof(BYTE) * num_virtual_keys);
   _lost_keypresses = false;
 }
