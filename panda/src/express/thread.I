@@ -156,3 +156,9 @@ INLINE void Thread::
 sleep(double seconds) {
   ThreadImpl::sleep(seconds);
 }
+
+INLINE ostream &
+operator << (ostream &out, const Thread &thread) {
+  thread.output(out);
+  return out;
+}

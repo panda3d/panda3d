@@ -28,3 +28,13 @@ TypeHandle Thread::_type_handle;
 Thread::
 ~Thread() {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::Destructor
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Thread::
+output(ostream &out) const {
+  out << get_type() << " " << get_name();
+}

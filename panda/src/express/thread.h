@@ -61,6 +61,8 @@ public:
   INLINE static bool is_threading_supported();
   INLINE static void sleep(double seconds);
 
+  virtual void output(ostream &out) const;
+
 private:
   bool _started;
   string _name;
@@ -81,6 +83,8 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+INLINE ostream &operator << (ostream &out, const Thread &thread);
 
 #include "thread.I"
 
