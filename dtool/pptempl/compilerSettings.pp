@@ -74,8 +74,8 @@
   #define COMMONFLAGS /DHAVE_DINKUM 
   
   #define OPTFLAGS /O2 /Ob2 /G6 /QIfist
-//  #define OPT1FLAGS /RTCsu /GS    // Note /GS makes things REAL slow, so dont use this unless you have to
-  #define OPT1FLAGS /RTCsu
+//  #define OPT1FLAGS /RTCsu /GS     removing /GS cause we really dont need it, /RTCu because it crashes in dxgsg with internal compiler bug
+  #define OPT1FLAGS /RTCs
   
 //  #define WARNING_LEVEL_FLAG /Wall  //this is scary
   #define WARNING_LEVEL_FLAG /W3   // WL
