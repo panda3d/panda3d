@@ -1989,7 +1989,7 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
     GeomBindType bind;
     PTA_ushort vindexes,nindexes,tindexes,cindexes;
 
-    geom->get_coords(coords,bind,vindexes);
+    geom->get_coords(coords,vindexes);
     geom->get_normals(norms,bind,nindexes);
     geom->get_colors(colors,bind,cindexes);
     geom->get_texcoords(texcoords,bind,tindexes);
@@ -2795,10 +2795,10 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
     PTA_Normalf norms;
     PTA_Colorf colors;
     PTA_TexCoordf texcoords;
-    GeomBindType TexCoordBinding,ColorBinding,NormalBinding,junk1;
+    GeomBindType TexCoordBinding,ColorBinding,NormalBinding;
     PTA_ushort vindexes,nindexes,tindexes,cindexes;
 
-    geom->get_coords(coords,junk1,vindexes);
+    geom->get_coords(coords,vindexes);
     geom->get_normals(norms,NormalBinding,nindexes);
     geom->get_colors(colors,ColorBinding,cindexes);
     geom->get_texcoords(texcoords,TexCoordBinding,tindexes);
@@ -3141,10 +3141,10 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
     PTA_Normalf norms;
     PTA_Colorf colors;
     PTA_TexCoordf texcoords;
-    GeomBindType TexCoordBinding,ColorBinding,NormalBinding,junk1;
+    GeomBindType TexCoordBinding,ColorBinding,NormalBinding;
     PTA_ushort vindexes,nindexes,tindexes,cindexes;
 
-    geom->get_coords(coords,junk1,vindexes);
+    geom->get_coords(coords,vindexes);
     geom->get_normals(norms,NormalBinding,nindexes);
     geom->get_colors(colors,ColorBinding,cindexes);
     geom->get_texcoords(texcoords,TexCoordBinding,tindexes);
@@ -3184,7 +3184,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
         _perVertex = PER_COORD;
         _perPrim = _perComp = 0;
 
-        switch (geom->get_binding(G_NORMAL)) {
+        switch (NormalBinding) {
             case G_PER_VERTEX:
                 _perVertex |= PER_NORMAL;
                 break;
@@ -3196,7 +3196,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
                 break;
         }
 
-        switch (geom->get_binding(G_COLOR)) {
+        switch (ColorBinding) {
             case G_PER_VERTEX:
                 _perVertex |= PER_COLOR;
                 break;
@@ -3208,7 +3208,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
                 break;
         }
 
-        if (geom->get_binding(G_TEXCOORD) == G_PER_VERTEX)
+        if (TexCoordBinding == G_PER_VERTEX)
             _perVertex |= PER_TEXCOORD;
 
         size_t vertex_size = draw_prim_setup(geom);
@@ -3225,11 +3225,11 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
             
             int nVerts;
 
-            if(pLengthArr==NULL) {
-                // we've been called by draw_quad, which has no lengths array
-                nVerts=4;
-            } else {
+            if(pLengthArr!=NULL) {
               nVerts = *(pLengthArr++);
+            } else {
+              // we've been called by draw_quad, which has no lengths array
+              nVerts=4;
             }
 
 #ifdef _DEBUG
@@ -3266,7 +3266,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
             }
 
             if(!_bDrawPrimDoSetupVertexBuffer) {
-                HRESULT hr = _d3dDevice->DrawPrimitive(trilisttype,  _curFVFflags, _pFvfBufBasePtr, nVerts, NULL);
+                hr = _d3dDevice->DrawPrimitive(trilisttype,  _curFVFflags, _pFvfBufBasePtr, nVerts, NULL);
                 TestDrawPrimFailure(DrawPrim,hr,_pDD,nVerts,nVerts-2);
             } else {
                 COPYVERTDATA_2_VERTEXBUFFER(trilisttype,nVerts);
@@ -4521,56 +4521,6 @@ void DXGraphicsStateGuardian::apply_light( PointLight* light ) {
     // The light position will be relative to the current matrix, so
     // we have to know what the current matrix is.  Find a better
     // solution later.
-#ifdef WBD_GL_MODE
-#ifdef GSG_VERBOSE
-    dxgsg_cat.debug()
-    << "glMatrixMode(GL_MODELVIEW)" << endl;
-    dxgsg_cat.debug()
-    << "glPushMatrix()" << endl;
-    dxgsg_cat.debug()
-    << "glLoadIdentity()" << endl;
-#endif
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-
-    glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_left)
-                  .get_data());
-
-    GLenum id = get_light_id( _cur_light_id );
-    Colorf black(0, 0, 0, 1);
-    glLightfv(id, GL_AMBIENT, black.get_data());
-    glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
-    glLightfv(id, GL_SPECULAR, light->get_specular().get_data());
-
-    // Position needs to specify x, y, z, and w
-    // w == 1 implies non-infinite position
-    LPoint3f pos = get_rel_pos( light, _current_projection_node );
-    LPoint4f fpos( pos[0], pos[1], pos[2], 1 );
-    glLightfv( id, GL_POSITION, fpos.get_data() );
-
-    // GL_SPOT_DIRECTION is not significant when cutoff == 180
-
-    // Exponent == 0 implies uniform light distribution
-    glLightf( id, GL_SPOT_EXPONENT, 0 );
-
-    // Cutoff == 180 means uniform point light source
-    glLightf( id, GL_SPOT_CUTOFF, 180.0 );
-
-    glLightf( id, GL_CONSTANT_ATTENUATION,
-              light->get_constant_attenuation() );
-    glLightf( id, GL_LINEAR_ATTENUATION,
-              light->get_linear_attenuation() );
-    glLightf( id, GL_QUADRATIC_ATTENUATION,
-              light->get_quadratic_attenuation() );
-
-    glPopMatrix();
-
-#ifdef GSG_VERBOSE
-    dxgsg_cat.debug()
-    << "glPopMatrix()" << endl;
-#endif
-
-#else
     D3DCOLORVALUE black;
     black.r = black.g = black.b = black.a = 0.0f;
     D3DLIGHT7  alight;
@@ -4589,10 +4539,8 @@ void DXGraphicsStateGuardian::apply_light( PointLight* light ) {
     alight.dvAttenuation0 = (D3DVALUE)light->get_constant_attenuation();
     alight.dvAttenuation1 = (D3DVALUE)light->get_linear_attenuation();
     alight.dvAttenuation2 = (D3DVALUE)light->get_quadratic_attenuation();
-
+    
     HRESULT res = _d3dDevice->SetLight(_cur_light_id, &alight);
-
-#endif              // WBD_GL_MODE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4604,53 +4552,6 @@ void DXGraphicsStateGuardian::apply_light( DirectionalLight* light ) {
     // The light position will be relative to the current matrix, so
     // we have to know what the current matrix is.  Find a better
     // solution later.
-#ifdef WBD_GL_MODE
-#ifdef GSG_VERBOSE
-    dxgsg_cat.debug()
-    << "glMatrixMode(GL_MODELVIEW)" << endl;
-    dxgsg_cat.debug()
-    << "glPushMatrix()" << endl;
-    dxgsg_cat.debug()
-    << "glLoadIdentity()" << endl;
-#endif
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_left)
-                  .get_data());
-
-    GLenum id = get_light_id( _cur_light_id );
-    Colorf black(0, 0, 0, 1);
-    glLightfv(id, GL_AMBIENT, black.get_data());
-    glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
-    glLightfv(id, GL_SPECULAR, light->get_specular().get_data());
-
-    // Position needs to specify x, y, z, and w
-    // w == 0 implies light is at infinity
-    LPoint3f dir = get_rel_forward( light, _current_root_node,
-                                    _coordinate_system );
-    LPoint4f pos( -dir[0], -dir[1], -dir[2], 0 );
-    glLightfv( id, GL_POSITION, pos.get_data() );
-
-    // GL_SPOT_DIRECTION is not significant when cutoff == 180
-    // In this case, position x, y, z specifies direction
-
-    // Exponent == 0 implies uniform light distribution
-    glLightf( id, GL_SPOT_EXPONENT, 0 );
-
-    // Cutoff == 180 means uniform point light source
-    glLightf( id, GL_SPOT_CUTOFF, 180.0 );
-
-    // Default attenuation values (only spotlight can modify these)
-    glLightf( id, GL_CONSTANT_ATTENUATION, 1 );
-    glLightf( id, GL_LINEAR_ATTENUATION, 0 );
-    glLightf( id, GL_QUADRATIC_ATTENUATION, 0 );
-
-    glPopMatrix();
-#ifdef GSG_VERBOSE
-    dxgsg_cat.debug()
-    << "glPopMatrix()" << endl;
-#endif
-#else           // DX Directional light
     D3DCOLORVALUE black;
     black.r = black.g = black.b = black.a = 0.0f;
 
@@ -4675,8 +4576,6 @@ void DXGraphicsStateGuardian::apply_light( DirectionalLight* light ) {
     HRESULT res = _d3dDevice->SetLight(_cur_light_id, &alight);
 //    _d3dDevice->LightEnable( _cur_light_id, TRUE );
 //    _d3dDevice->SetRenderState( D3DRENDERSTATE_LIGHTING, TRUE );
-
-#endif              // WBD_GL_MODE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5060,7 +4959,7 @@ void DXGraphicsStateGuardian::issue_light(const LightTransition *attrib ) {
 
   // Initialize the current ambient light total and currently enabled
   // light list
-  _cur_ambient_light.set(0, 0, 0, 1);
+  _cur_ambient_light.set(0.0f, 0.0f, 0.0f, 1.0f);
   int i;
   for (i = 0; i < _max_lights; i++)
     _cur_light_enabled[i] = false;
@@ -6957,7 +6856,7 @@ prepare_geom_node(GeomNode *node) {
     }  // end per-Prim (strip) loop
 
     if(old_coord_indices!=NULL)  {
-        me->set_coords(old_coords, coordbinding, new_coord_indices);
+        me->set_coords(old_coords, new_coord_indices);
         new_lengths.push_back(new_coord_indices.size());
     } else {
         me->set_coords(new_coords);
