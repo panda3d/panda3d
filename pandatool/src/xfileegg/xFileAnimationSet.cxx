@@ -18,7 +18,7 @@
 
 #include "xFileAnimationSet.h"
 #include "xFileToEggConverter.h"
-
+#include "config_xfile.h"
 #include "eggGroup.h"
 #include "eggTable.h"
 #include "eggData.h"
