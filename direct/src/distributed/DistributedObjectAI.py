@@ -300,7 +300,6 @@ class DistributedObjectAI(DirectObject.DirectObject):
                 doId=self.__preallocDoId
                 self.__preallocDoId = 0
 
-            # The repository is the one that really does the work
             self.air.sendGenerateOtpObject(
                     self, parentId, zoneId, optionalFields, doId=doId)
             assert not hasattr(self, 'parentId')
@@ -316,16 +315,16 @@ class DistributedObjectAI(DirectObject.DirectObject):
         assert self.notify.debugStateCall(self)
 
     if wantOtpServer:
-        def generateInit(self, repository):
+        def generateInit(self, repository=None):
             """
             First generate (not from cache).
             """
             assert self.notify.debugStateCall(self)
-            
+
         def generateTargetChannel(self, repository):
             """
             Who to send this to for generate messages
-            """        
+            """
             if hasattr(self, "dbObject"):
                 return self.doId
             return repository.serverId
@@ -345,7 +344,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
             dg = self.dclass.aiFormatGenerate(
                     self, self.doId, parentId, zoneId,
                     #repository.serverId,
-                    self.generateTargetChannel(repository),                    
+                    self.generateTargetChannel(repository),
                     repository.ourChannel,
                     optionalFields)
         repository.send(dg)
