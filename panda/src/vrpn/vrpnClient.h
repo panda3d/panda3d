@@ -9,10 +9,15 @@
 #include <pandabase.h>
 #include <clientBase.h>
 
-#if defined(WIN32_VC) && defined(CPPPARSER)
+#ifdef CPPPARSER
   // For correct interrogate parsing of UNC's vrpn library.
-  #define _WIN32
-  #define SOCKET int
+  #ifdef WIN32_VC
+    #define _WIN32
+    #define SOCKET int
+  #else
+    #define linux
+    typedef struct timeval timeval;
+  #endif
 #endif
 
 #include <vrpn_Connection.h>
