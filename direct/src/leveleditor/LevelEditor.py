@@ -112,14 +112,14 @@ class LevelEditor(NodePath, PandaObject):
 	# Initialize pie Menus (this depends on the style dictionary)
 	self.initializePieMenus()
 
+        self.panel = LevelEditorPanel(self, parent)
+
 	base.cam.node().setNear(5.0)
 	base.cam.node().setFar(10000)
 	self.direct.camera.setPos(0,-10,10)
 
 	# Default is to use the toontown central color palette
 	self.editToontownCentral()
-
-        self.panel = LevelEditorPanel(self, parent)
 
 	self.enable()
 
