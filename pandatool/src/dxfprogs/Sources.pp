@@ -40,6 +40,7 @@
     dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 
   #define SOURCES \
-    eggToDXF.cxx eggToDXF.h
+    eggToDXF.cxx eggToDXF.h \
+    eggToDXFLayer.cxx eggToDXFLayer.h
 
 #end bin_target

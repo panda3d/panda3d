@@ -288,6 +288,7 @@ DXFFile::
 DXFFile() {
   _layer = NULL;
   reset_entity();
+  _color_index = -1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -697,7 +698,7 @@ reset_entity() {
   _s.set(0.0, 0.0, 0.0);
   _z.set(0.0, 0.0, 1.0);
   _vertices_follow = false;
-  _color_index = -1;
+  //_color_index = -1;
 
   _verts.erase(_verts.begin(), _verts.end());
 }
@@ -756,6 +757,8 @@ state_top() {
 ////////////////////////////////////////////////////////////////////
 void DXFFile::
 state_section() {
+  string tail;
+
   switch (_code) {
   case 0:
     if (_string == "ENDSEC") {
@@ -781,6 +784,10 @@ state_section() {
 
   case 8:
     change_layer(_string);
+    break;
+
+  case 62:  // Color.
+    _color_index = string_to_int(_string, tail);
     break;
 
   default:
