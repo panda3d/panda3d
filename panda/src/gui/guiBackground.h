@@ -19,6 +19,7 @@ private:
 PUBLISHED:
   GuiBackground(const string&, GuiItem*);
   GuiBackground(const string&, GuiItem*, Texture*);
+  GuiBackground(const string&, GuiItem*, GuiLabel*);
   ~GuiBackground(void);
 
   virtual void manage(GuiManager*, EventHandler&);

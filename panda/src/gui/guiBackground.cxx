@@ -42,6 +42,15 @@ GuiBackground::GuiBackground(const string& name, GuiItem* item, Texture* tex)
   item->set_priority(_bg, P_High);
 }
 
+GuiBackground::GuiBackground(const string& name, GuiItem* item, GuiLabel* l)
+  : GuiItem(name), _bg(l), _item(item) {
+  _bg->set_width(_item->get_width());
+  _bg->set_height(_item->get_height());
+  _bg->set_pos(LVector3f::rfu((_item->get_left() + _item->get_right())*0.5, 0.,
+			      (_item->get_bottom() + _item->get_top())*0.5));
+  item->set_priority(_bg, P_High);
+}
+
 GuiBackground::~GuiBackground(void) {
   this->unmanage();
 }
