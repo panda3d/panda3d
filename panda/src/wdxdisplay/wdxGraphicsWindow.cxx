@@ -1073,10 +1073,10 @@ BOOL WINAPI DriverEnumCallback( GUID* pGUID, TCHAR* strDesc,TCHAR* strName,
 }
 
 void wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
-   if(wdxdisplay_cat.is_debug())
-      wdxdisplay_cat.debug() << "resize("<<xsize<<","<<ysize<<") called\n";
 
    if (!_props._fullscreen) {
+       if(wdxdisplay_cat.is_debug())
+           wdxdisplay_cat.debug() << "resize("<<xsize<<","<<ysize<<") called\n";
         // is this enough?
         SetWindowPos(_mwindow, NULL, 0,0, xsize, ysize, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSENDCHANGING);
         // WM_ERASEBKGND will be ignored, because _WindowAdjustingType!=NotAdjusting because 
@@ -1089,6 +1089,9 @@ void wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
         handle_reshape(true);
         return;
    }
+
+   if(wdxdisplay_cat.is_info())
+      wdxdisplay_cat.info() << "resize("<<xsize<<","<<ysize<<") called\n";
 
    _dxgsg->SetDXReady(false);
 
