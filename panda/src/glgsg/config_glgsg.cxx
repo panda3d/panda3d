@@ -22,7 +22,7 @@
 #include "glTextureContext.h"
 #include "glGeomNodeContext.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_glgsg);
 NotifyCategoryDef(glgsg, ":display:gsg");

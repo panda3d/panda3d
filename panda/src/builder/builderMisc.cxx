@@ -19,7 +19,7 @@
 #include "builderMisc.h"
 #include "builderTypes.h"
 
-#include <luse.h>
+#include "luse.h"
 #include <stdlib.h>
 ////////////////////////////////////////////////////////////////////
 //     Function: make_random_color

@@ -21,7 +21,7 @@
 
 #include "stitchImageOutputter.h"
 
-#include <luse.h>
+#include "luse.h"
 
 class Stitcher;
 class StitchImage;

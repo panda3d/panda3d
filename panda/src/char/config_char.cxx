@@ -24,7 +24,7 @@
 #include "characterSlider.h"
 #include "computedVertices.h"
 #include "dynamicVertices.h"
-#include <dconfig.h>
+#include "dconfig.h"
 #include <lmatrix4.h>
 
 Configure(config_char);

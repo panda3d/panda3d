@@ -19,8 +19,8 @@
 #include "coordinateSystem.h"
 #include "config_linmath.h"
 
-#include <dconfig.h>
-#include <notify.h>
+#include "dconfig.h"
+#include "notify.h"
 
 #include <ctype.h>
 #include <string>

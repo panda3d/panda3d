@@ -20,7 +20,7 @@
 #define CONFIG_PNMIMAGETYPES_H
 
 #include "pandabase.h"
-#include <notifyCategoryProxy.h>
+#include "notifyCategoryProxy.h"
 
 NotifyCategoryDecl(pnmimage_sgi, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pnmimage_alias, EXPCL_PANDA, EXPTP_PANDA);

@@ -18,7 +18,7 @@
 
 #include "lineStream.h"
 
-#include <notify.h>
+#include "notify.h"
 
 int
 main(int argc, char *argv[]) {

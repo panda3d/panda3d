@@ -24,7 +24,7 @@
 #include "wdxGraphicsWindow8.h"
 #include "wdxGraphicsPipe8.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_dxgsg8);
 //NotifyCategoryDef(dxgsg8, ":display:gsg");  dont want to merge this with the regular parent class dbg output

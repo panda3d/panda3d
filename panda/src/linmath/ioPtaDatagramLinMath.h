@@ -27,7 +27,7 @@
 #include "pta_Normalf.h"
 #include "pta_TexCoordf.h"
 
-#include <pointerToArray.h>
+#include "pointerToArray.h"
 
 class Datagram;
 class DatagramIterator;

@@ -19,7 +19,7 @@
 #ifndef TRIANGLEMESH_H
 #define TRIANGLEMESH_H
 
-#include <luse.h>
+#include "luse.h"
 #include <pta_Vertexf.h>
 #include <pta_Normalf.h>
 #include <pta_Colorf.h>

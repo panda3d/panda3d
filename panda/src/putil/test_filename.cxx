@@ -19,7 +19,7 @@
 #include "filename.h"
 #include "config_util.h"
 
-#include <dSearchPath.h>
+#include "dSearchPath.h"
 
 #include <stdlib.h>
 

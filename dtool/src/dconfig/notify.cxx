@@ -20,7 +20,7 @@
 #include "config_notify.h"
 #include "dconfig.h"
 
-#include <filename.h>
+#include "filename.h"
 
 #include <ctype.h>
 

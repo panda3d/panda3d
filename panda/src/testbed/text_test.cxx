@@ -20,7 +20,7 @@
 #include <chancfg.h>
 #include <textNode.h>
 #include <eggLoader.h>
-#include <notify.h>
+#include "notify.h"
 #include <pt_NamedNode.h>
 
 extern PT_NamedNode render;

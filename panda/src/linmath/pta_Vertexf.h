@@ -23,7 +23,7 @@
 
 #include "vector_Vertexf.h"
 
-#include <pointerToArray.h>
+#include "pointerToArray.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PTA_Vertexf

@@ -19,7 +19,7 @@
 #include "chanlayout.h"
 #include "chanparse.h"
 #include "chanshare.h"
-#include <notify.h>
+#include "notify.h"
 
 LayoutType* LayoutDB = (LayoutType*)0;
 

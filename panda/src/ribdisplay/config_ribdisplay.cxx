@@ -20,7 +20,7 @@
 #include "ribGraphicsPipe.h"
 #include "ribGraphicsWindow.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_ribdisplay);
 NotifyCategoryDef(ribdisplay, "display");

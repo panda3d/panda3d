@@ -20,7 +20,7 @@
 #include "eggNode.h"
 #include "eggGroupNode.h"
 
-#include <notify.h>
+#include "notify.h"
 
 TypeHandle EggNameUniquifier::_type_handle;
 

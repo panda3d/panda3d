@@ -20,8 +20,8 @@
 #define CONFIG_DISPLAY_H
 
 #include "pandabase.h"
-#include <notifyCategoryProxy.h>
-#include <dconfig.h>
+#include "notifyCategoryProxy.h"
+#include "dconfig.h"
 
 #include <string>
 #include "pvector.h"

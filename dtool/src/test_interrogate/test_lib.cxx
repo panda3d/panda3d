@@ -34,7 +34,7 @@ int my_class1::method2(float x) { return (int)(x); }
 
 int stupid_global;
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(test_lib);
 

@@ -29,7 +29,7 @@
 #include "spheretexShader.h"
 #include "spotlightShader.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_shader);
 NotifyCategoryDef(shader, "");

@@ -50,7 +50,7 @@
 #include <dataRelation.h>
 
 //Misc
-#include <dconfig.h>
+#include "dconfig.h"
 #include <framework.h>
 #include <loader.h>
 #include <eventHandler.h>

@@ -23,7 +23,7 @@
   #include <getopt.h>
 #endif
 #include <patchfile.h>
-#include <filename.h>
+#include "filename.h"
 
 int
 main(int argc, char *argv[]) {

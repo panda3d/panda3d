@@ -20,7 +20,7 @@
 #define CONFIG_CHAN_H
 
 #include "pandabase.h"
-#include <notifyCategoryProxy.h>
+#include "notifyCategoryProxy.h"
 
 // Configure variables for chan package.
 NotifyCategoryDecl(chan, EXPCL_PANDA, EXPTP_PANDA);

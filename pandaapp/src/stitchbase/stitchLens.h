@@ -19,7 +19,7 @@
 #ifndef STITCHLENS_H
 #define STITCHLENS_H
 
-#include <luse.h>
+#include "luse.h"
 
 class TriangleRasterizer;
 class RasterizerVertex;

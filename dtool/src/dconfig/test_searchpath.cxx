@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <dSearchPath.h>
+#include "dSearchPath.h"
 //#include <expand.h>
 #include <string>
 

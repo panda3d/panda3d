@@ -19,7 +19,7 @@
 #include "lwoGroupChunk.h"
 #include "lwoInputFile.h"
 
-#include <notify.h>
+#include "notify.h"
 
 TypeHandle LwoGroupChunk::_type_handle;
 

@@ -47,7 +47,7 @@
 #include <cppTypeDeclaration.h>
 #include <cppEnumType.h>
 #include <cppCommentBlock.h>
-#include <notify.h>
+#include "notify.h"
 
 #include <ctype.h>
 #include <algorithm>

@@ -19,7 +19,7 @@
 #include "config_pnmimage.h"
 #include "pnmFileType.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_pnmimage);
 NotifyCategoryDef(pnmimage, "");

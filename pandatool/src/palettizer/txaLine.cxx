@@ -24,7 +24,7 @@
 #include "sourceTextureImage.h"
 #include "paletteGroup.h"
 
-#include <notify.h>
+#include "notify.h"
 #include <pnmFileType.h>
 
 ////////////////////////////////////////////////////////////////////

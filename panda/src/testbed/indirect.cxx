@@ -21,7 +21,7 @@
 #include <graphicsWindow.h>
 #include <graphicsStateGuardian.h>
 #include <pixelBuffer.h>
-#include <dconfig.h>
+#include "dconfig.h"
 #include <chancfg.h>
 #include <string>
 

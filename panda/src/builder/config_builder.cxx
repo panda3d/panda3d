@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_builder.h"
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_builder);
 NotifyCategoryDef(builder, "");

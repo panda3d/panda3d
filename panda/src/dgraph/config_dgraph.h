@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 
-#include <notifyCategoryProxy.h>
+#include "notifyCategoryProxy.h"
 
 NotifyCategoryDecl(dgraph, EXPCL_PANDA, EXPTP_PANDA);
 

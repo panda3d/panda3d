@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 
-#include <dSearchPath.h>
+#include "dSearchPath.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: get_config_path

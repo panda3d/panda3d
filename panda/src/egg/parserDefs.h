@@ -24,8 +24,8 @@
 #include "eggObject.h"
 
 #include "pointerTo.h"
-#include <pointerToArray.h>
-#include <pta_double.h>
+#include "pointerToArray.h"
+#include "pta_double.h"
 
 #include <string>
 

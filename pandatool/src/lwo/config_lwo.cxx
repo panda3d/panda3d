@@ -55,7 +55,7 @@
 #include "lwoTags.h"
 #include "lwoVertexMap.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_lwo);
 

@@ -19,7 +19,7 @@
 #ifndef MORPHGRID_H
 #define MORPHGRID_H
 
-#include <luse.h>
+#include "luse.h"
 
 class MorphGrid {
 public:

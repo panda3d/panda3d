@@ -23,7 +23,7 @@
 
 #include "vector_TexCoordf.h"
 
-#include <pointerToArray.h>
+#include "pointerToArray.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PTA_TexCoordf

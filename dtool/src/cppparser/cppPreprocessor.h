@@ -26,7 +26,7 @@
 #include "cppFile.h"
 #include "cppCommentBlock.h"
 
-#include <dSearchPath.h>
+#include "dSearchPath.h"
 #include <vector_string.h>
 
 #include <map>

@@ -19,7 +19,7 @@
 #ifndef TRIANGLE_H
 #define TRIANGLE_H
 
-#include <luse.h>
+#include "luse.h"
 
 // A handy triangle utility.  Maybe more later.
 

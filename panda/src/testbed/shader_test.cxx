@@ -52,7 +52,7 @@
 #include <dataRelation.h>
 #include <geomLine.h>
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 #ifdef SHADER_VERBOSE
 #include <indent.h>

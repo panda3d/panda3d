@@ -25,7 +25,7 @@
 
 #include <programBase.h>
 #include <withOutputFile.h>
-#include <filename.h>
+#include "filename.h"
 
 class Node;
 

@@ -23,7 +23,7 @@
 
 #include "multiplexStreamBuf.h"
 
-#include <filename.h>
+#include "filename.h"
 
 #include <stdio.h>
 

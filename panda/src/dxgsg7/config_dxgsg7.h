@@ -20,7 +20,7 @@
 #define CONFIG_DXGSG7_H
 
 #include "pandabase.h"
-#include <notifyCategoryProxy.h>
+#include "notifyCategoryProxy.h"
 
 NotifyCategoryDecl(dxgsg7, EXPCL_PANDADX, EXPTP_PANDADX);
 NotifyCategoryDecl(wdxdisplay7, EXPCL_PANDADX, EXPTP_PANDADX);

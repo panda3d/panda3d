@@ -20,7 +20,7 @@
 #include "builderPrim.h"
 #include "mesher.h"
 
-#include <notify.h>
+#include "notify.h"
 #include <geom.h>
 #include <geomNode.h>
 #include <namedNode.h>

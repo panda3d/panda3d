@@ -49,7 +49,7 @@
 #include "fltTransformRotateScale.h"
 #include "fltExternalReference.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_flt);
 NotifyCategoryDef(flt, "");

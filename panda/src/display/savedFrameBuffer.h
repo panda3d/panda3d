@@ -24,7 +24,7 @@
 #include "renderBuffer.h"
 #include "displayRegion.h"
 
-#include <typedReferenceCount.h>
+#include "typedReferenceCount.h"
 #include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////

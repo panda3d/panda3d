@@ -19,7 +19,7 @@
 #include "cvsCopy.h"
 #include "cvsSourceDirectory.h"
 
-#include <notify.h>
+#include "notify.h"
 #include <algorithm>
 
 ////////////////////////////////////////////////////////////////////

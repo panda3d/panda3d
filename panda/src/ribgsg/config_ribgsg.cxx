@@ -19,7 +19,7 @@
 #include "config_ribgsg.h"
 #include "ribGraphicsStateGuardian.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_ribgsg);
 NotifyCategoryDef(ribgsg, ":display:gsg");

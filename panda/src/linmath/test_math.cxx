@@ -20,7 +20,7 @@
 #include "lmatrix.h"
 #include "compose_matrix.h"
 
-#include <notify.h>
+#include "notify.h"
 #include <stdlib.h>
 
 void test() {

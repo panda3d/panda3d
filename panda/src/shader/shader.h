@@ -26,7 +26,7 @@
 #include <configurable.h>
 #include <namedNode.h>
 #include <lensNode.h>
-#include <typedReferenceCount.h>
+#include "typedReferenceCount.h"
 #include <graphicsStateGuardian.h>
 #include <allAttributesWrapper.h>
 #include <allTransitionsWrapper.h>

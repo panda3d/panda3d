@@ -19,7 +19,7 @@
 #include "config_effects.h"
 #include "lensFlareNode.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_effects);
 NotifyCategoryDef(effects, "");

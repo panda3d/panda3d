@@ -23,7 +23,7 @@
 #include "vrpnDialDevice.h"
 #include "vrpnTrackerDevice.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_vrpn);
 NotifyCategoryDef(vrpn, "");

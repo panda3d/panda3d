@@ -21,7 +21,7 @@
 
 #include "pandatoolbase.h"
 
-#include <filename.h>
+#include "filename.h"
 
 #include "pmap.h"
 

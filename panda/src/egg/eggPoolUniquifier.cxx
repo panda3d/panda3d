@@ -22,7 +22,7 @@
 #include "eggMaterial.h"
 #include "eggVertexPool.h"
 
-#include <notify.h>
+#include "notify.h"
 
 TypeHandle EggPoolUniquifier::_type_handle;
 

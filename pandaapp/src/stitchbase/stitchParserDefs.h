@@ -21,7 +21,7 @@
 
 #include "pandaappbase.h"
 
-#include <luse.h>
+#include "luse.h"
 
 class StitchCommand;
 

@@ -20,7 +20,7 @@
 #define LWOSCAN_H
 
 #include <programBase.h>
-#include <filename.h>
+#include "filename.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LwoScan

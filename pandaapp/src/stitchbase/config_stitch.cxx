@@ -19,7 +19,7 @@
 #include "config_stitch.h"
 #include "stitchScreen.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_stitch);
 

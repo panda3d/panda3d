@@ -18,7 +18,7 @@
 
 #include "config_xfile.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_xfile);
 NotifyCategoryDef(xfile, "");

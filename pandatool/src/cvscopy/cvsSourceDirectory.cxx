@@ -19,7 +19,7 @@
 #include "cvsSourceDirectory.h"
 #include "cvsSourceTree.h"
 
-#include <notify.h>
+#include "notify.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CVSSourceDirectory::Constructor

@@ -21,24 +21,24 @@
 #include "triangleMesh.h"
 #include "stitchLens.h"
 
-#include <luse.h>
-#include <chancfg.h>
-#include <transform2sg.h>
-#include <geomTristrip.h>
-#include <geomNode.h>
-#include <interactiveGraphicsPipe.h>
-#include <noninteractiveGraphicsPipe.h>
-#include <buttonThrower.h>
-#include <dataGraphTraversal.h>
-#include <eventQueue.h>
-#include <texture.h>
-#include <textureTransition.h>
-#include <renderModeTransition.h>
-#include <cullFaceTransition.h>
-#include <clockObject.h>
-#include <config_gobj.h>
-#include <renderRelation.h>
-#include <dataRelation.h>
+#include "luse.h"
+#include "chancfg.h"
+#include "transform2sg.h"
+#include "geomTristrip.h"
+#include "geomNode.h"
+#include "interactiveGraphicsPipe.h"
+#include "noninteractiveGraphicsPipe.h"
+#include "buttonThrower.h"
+#include "dataGraphTraversal.h"
+#include "eventQueue.h"
+#include "texture.h"
+#include "textureTransition.h"
+#include "renderModeTransition.h"
+#include "cullFaceTransition.h"
+#include "clockObject.h"
+#include "config_gobj.h"
+#include "renderRelation.h"
+#include "dataRelation.h"
 
 #include <algorithm>
 

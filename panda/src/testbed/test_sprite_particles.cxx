@@ -34,7 +34,7 @@
 #include <boundingSphere.h>
 #include <geomSphere.h>
 #include <geomNode.h>
-#include <notify.h>
+#include "notify.h"
 #include <directionalLight.h>
 #include <renderRelation.h>
 #include <camera.h>
@@ -55,7 +55,7 @@
 #include <colorTransition.h>
 #include <particleSystemManager.h>
 #include <clockObject.h>
-#include <nodePath.h>
+#include "nodePath.h"
 #include <pointShapeTransition.h>
 #include <texture.h>
 #include <texturePool.h>

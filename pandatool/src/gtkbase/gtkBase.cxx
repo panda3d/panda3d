@@ -18,7 +18,7 @@
 
 #include "gtkBase.h"
 
-#include <notify.h>
+#include "notify.h"
 
 Gtk::Main *GtkBase::_gtk = NULL;
 

@@ -25,7 +25,7 @@
 #include <interrogate_request.h>
 #include <load_dso.h>
 #include <pystub.h>
-#include <notify.h>
+#include "notify.h"
 
 // If our system getopt() doesn't come with getopt_long_only(), then use
 // the GNU flavor that we've got in tool for this purpose.

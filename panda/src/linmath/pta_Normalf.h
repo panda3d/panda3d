@@ -23,7 +23,7 @@
 
 #include "vector_Normalf.h"
 
-#include <pointerToArray.h>
+#include "pointerToArray.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PTA_Normalf

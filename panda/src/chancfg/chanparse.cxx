@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "chanparse.h"
-#include <notify.h>
+#include "notify.h"
 
 const int ChanFileEOF = -1;
 

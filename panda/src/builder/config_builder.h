@@ -20,7 +20,7 @@
 #define CONFIG_BUILDER_H
 
 #include "pandabase.h"
-#include <notifyCategoryProxy.h>
+#include "notifyCategoryProxy.h"
 
 NotifyCategoryDecl(builder, EXPCL_PANDAEGG, EXPTP_PANDAEGG);
 

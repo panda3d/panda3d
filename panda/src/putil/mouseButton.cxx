@@ -20,7 +20,7 @@
 #include "buttonRegistry.h"
 
 #include <stdio.h>
-#include <notify.h>
+#include "notify.h"
 
 static const int num_mouse_buttons = 3;
 

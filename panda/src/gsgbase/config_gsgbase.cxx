@@ -19,7 +19,7 @@
 #include "config_gsgbase.h"
 #include "graphicsStateGuardianBase.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_gsgbase);
 

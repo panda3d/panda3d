@@ -58,7 +58,7 @@
 #include "pandabase.h"
 
 #include "graphicsWindow.h"
-#include <filename.h>
+#include "filename.h"
 
 class RIBGraphicsPipe;
 

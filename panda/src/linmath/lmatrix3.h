@@ -24,7 +24,7 @@
 #include <typedObject.h>
 #include <datagram.h>
 #include <datagramIterator.h>
-#include <notify.h>
+#include "notify.h"
 #include <indent.h>
 #include "deg_2_rad.h"
 #include "nearly_zero.h"

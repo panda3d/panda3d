@@ -22,7 +22,7 @@
 #include "crTextureContext.h"
 #include "crGeomNodeContext.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_crgsg);
 NotifyCategoryDef(crgsg, ":display:gsg");

@@ -21,7 +21,7 @@
 #define CONFIG_EFFECTS_H
 
 #include "pandabase.h"
-#include <notifyCategoryProxy.h>
+#include "notifyCategoryProxy.h"
 
 NotifyCategoryDecl(effects, EXPCL_PANDAFX, EXPTP_PANDAFX);
 

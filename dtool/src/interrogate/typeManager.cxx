@@ -28,7 +28,7 @@
 #include <cppSimpleType.h>
 #include <cppStructType.h>
 #include <cppTypeDeclaration.h>
-#include <notify.h>
+#include "notify.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::resolve_type

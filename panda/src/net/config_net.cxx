@@ -20,7 +20,7 @@
 
 #include "netDatagram.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_net);
 NotifyCategoryDef(net, "");

@@ -20,7 +20,7 @@
 #include "chanparse.h"
 #include "chanshare.h"
 
-#include <notify.h>
+#include "notify.h"
 
 WindowType* WindowDB = (WindowType*)0;
 

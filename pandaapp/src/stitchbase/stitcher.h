@@ -19,7 +19,7 @@
 #ifndef STITCHER_H
 #define STITCHER_H
 
-#include <luse.h>
+#include "luse.h"
 
 #include <string>
 #include <map>

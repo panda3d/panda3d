@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <notify.h>
+#include "notify.h"
 
 INLINE void ChanEatFrontWhite(std::string& S) {
   size_t i = S.find_first_not_of(" \t\r\f\n");

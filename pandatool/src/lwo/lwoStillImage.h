@@ -23,7 +23,7 @@
 
 #include "lwoChunk.h"
 
-#include <filename.h>
+#include "filename.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LwoStillImage

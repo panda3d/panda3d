@@ -19,7 +19,7 @@
 #include "config_interrogatedb.h"
 #include "interrogate_request.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 #if defined(WIN32_VC) && defined(_DEBUG)
 // _DEBUG assumes you are linking to msvcrt70d.dll, not msvcrt70.dll

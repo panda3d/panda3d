@@ -25,9 +25,9 @@
 #include "morphGrid.h"
 
 #include <lmatrix.h>
-#include <luse.h>
+#include "luse.h"
 #include <pnmImage.h>
-#include <filename.h>
+#include "filename.h"
 
 #include <map>
 

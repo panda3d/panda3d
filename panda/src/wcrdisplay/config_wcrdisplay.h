@@ -20,7 +20,7 @@
 #define __CONFIG_WCRDISPLAY_H__
 
 #include "pandabase.h"
-#include <filename.h>
+#include "filename.h"
 #include "notifyCategoryProxy.h"
 
 NotifyCategoryDecl(wcrdisplay, EXPCL_PANDACR, EXPTP_PANDACR);

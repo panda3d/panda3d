@@ -19,7 +19,7 @@
 /* okcircular */
 #include "builderFuncs.h"
 
-#include <notify.h>
+#include "notify.h"
 #include <mathNumbers.h>
 
 #include <math.h>

@@ -57,7 +57,7 @@
 #include <pt_NamedNode.h>
 #include <geomLine.h>
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(shader_test);
 

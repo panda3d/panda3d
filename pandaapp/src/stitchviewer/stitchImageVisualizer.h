@@ -22,7 +22,7 @@
 #include "stitchImage.h"
 #include "stitchImageOutputter.h"
 
-#include <pointerTo.h>
+#include "pointerTo.h"
 #include <graphicsPipe.h>
 #include <graphicsWindow.h>
 #include <namedNode.h>

@@ -21,7 +21,7 @@
 #include "pprerror.h"
 #include "config_net.h"
 
-#include <notify.h>
+#include "notify.h"
 #include <prerror.h>
 
 ////////////////////////////////////////////////////////////////////

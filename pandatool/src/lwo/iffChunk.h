@@ -24,7 +24,7 @@
 #include "iffId.h"
 
 #include <typedObject.h>
-#include <typedReferenceCount.h>
+#include "typedReferenceCount.h"
 
 class IffInputFile;
 

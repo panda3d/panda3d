@@ -20,7 +20,7 @@
 #include "luse.h"
 #include "coordinateSystem.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_linmath);
 NotifyCategoryDef(linmath, "");

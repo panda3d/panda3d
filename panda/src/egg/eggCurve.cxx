@@ -19,7 +19,7 @@
 #include "eggCurve.h"
 
 #include <string_utils.h>
-#include <notify.h>
+#include "notify.h"
 
 TypeHandle EggCurve::_type_handle;
 

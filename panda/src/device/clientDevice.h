@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 
-#include <typedReferenceCount.h>
+#include "typedReferenceCount.h"
 
 #ifdef OLD_HAVE_IPC
 #include <ipc_mutex.h>

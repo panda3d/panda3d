@@ -21,7 +21,7 @@
 
 #include "fixedPoint.h"
 
-#include <luse.h>
+#include "luse.h"
 #include <pnmImage.h>
 
 class StitchImage;

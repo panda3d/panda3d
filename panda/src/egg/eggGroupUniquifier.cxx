@@ -19,7 +19,7 @@
 #include "eggGroupUniquifier.h"
 #include "eggGroup.h"
 
-#include <notify.h>
+#include "notify.h"
 
 #include <ctype.h>
 

@@ -21,8 +21,8 @@
 
 #include "pandaappbase.h"
 
-#include <luse.h>
-#include <filename.h>
+#include "luse.h"
+#include "filename.h"
 
 #include <vector>
 

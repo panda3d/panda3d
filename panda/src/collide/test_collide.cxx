@@ -24,9 +24,9 @@
 
 #include <namedNode.h>
 #include <pt_NamedNode.h>
-#include <pointerTo.h>
+#include "pointerTo.h"
 #include <transformTransition.h>
-#include <luse.h>
+#include "luse.h"
 #include <get_rel_pos.h>
 #include <renderRelation.h>
 

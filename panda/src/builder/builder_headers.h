@@ -23,7 +23,7 @@
 #include "pmap.h"
 #include <math.h>
 #include <namedNode.h>
-#include <notify.h>
+#include "notify.h"
 #include "pandabase.h"
 #include <pta_Colorf.h>
 #include <pta_Normalf.h>

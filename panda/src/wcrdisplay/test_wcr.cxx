@@ -18,7 +18,7 @@
 
 #include <graphicsPipe.h>
 #include <interactiveGraphicsPipe.h>
-#include <notify.h>
+#include "notify.h"
 #include <pt_NamedNode.h>
 
 #include "wcrGraphicsWindow.h"

@@ -22,7 +22,7 @@
 #include "pandabase.h"
 
 #include "luse.h"
-#include <filename.h>
+#include "filename.h"
 
 class ParametricCurve;
 

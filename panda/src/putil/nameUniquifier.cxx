@@ -18,7 +18,7 @@
 
 #include "nameUniquifier.h"
 
-#include <notify.h>
+#include "notify.h"
 
 #include <stdio.h>
 

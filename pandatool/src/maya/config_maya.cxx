@@ -18,7 +18,7 @@
 
 #include "config_maya.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_maya);
 NotifyCategoryDef(maya, "");

@@ -22,7 +22,7 @@
 #include "pandabase.h"
 
 #include <graphicsStateGuardian.h>
-#include <filename.h>
+#include "filename.h"
 
 class Geom;
 class Texture;

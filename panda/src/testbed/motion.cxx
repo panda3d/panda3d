@@ -21,7 +21,7 @@
 #include <graphicsWindow.h>
 #include <graphicsStateGuardian.h>
 #include <chancfg.h>
-#include <notify.h>
+#include "notify.h"
 
 #include <string>
 #include "plist.h"

@@ -20,8 +20,8 @@
 #define __CONFIG_LERP_H__
 
 #include "pandabase.h"
-#include <dconfig.h>
-#include <notifyCategoryProxy.h>
+#include "dconfig.h"
+#include "notifyCategoryProxy.h"
 
 NotifyCategoryDecl(lerp, EXPCL_PANDA, EXPTP_PANDA);
 

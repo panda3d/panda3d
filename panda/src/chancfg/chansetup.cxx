@@ -19,7 +19,7 @@
 #include "chansetup.h"
 #include "chanparse.h"
 #include "chanshare.h"
-#include <notify.h>
+#include "notify.h"
 
 SetupType* SetupDB = (SetupType*)0;
 

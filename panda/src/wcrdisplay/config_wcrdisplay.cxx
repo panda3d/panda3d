@@ -20,7 +20,7 @@
 #include "wcrGraphicsPipe.h"
 #include "wcrGraphicsWindow.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_wcrdisplay);
 NotifyCategoryDef(wcrdisplay, "display");

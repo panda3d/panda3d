@@ -31,7 +31,7 @@
 #include "trackerNode.h"
 #include "virtualMouse.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_device);
 NotifyCategoryDef(device, "");
