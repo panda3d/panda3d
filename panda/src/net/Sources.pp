@@ -37,6 +37,7 @@
 #begin test_bin_target
   #define TARGET test_datagram
   #define LOCAL_LIBS net
+  #define OTHER_LIBS pystub
 
   #define SOURCES \
     test_datagram.cxx
@@ -46,6 +47,7 @@
 #begin test_bin_target
   #define TARGET test_spam_client
   #define LOCAL_LIBS net
+  #define OTHER_LIBS pystub
 
   #define SOURCES \
     datagram_ui.cxx datagram_ui.h test_spam_client.cxx
@@ -55,6 +57,7 @@
 #begin test_bin_target
   #define TARGET test_spam_server
   #define LOCAL_LIBS net
+  #define OTHER_LIBS pystub
 
   #define SOURCES \
     datagram_ui.cxx datagram_ui.h test_spam_server.cxx
@@ -64,6 +67,7 @@
 #begin test_bin_target
   #define TARGET test_tcp_client
   #define LOCAL_LIBS net
+  #define OTHER_LIBS pystub
 
   #define SOURCES \
     datagram_ui.cxx datagram_ui.h test_tcp_client.cxx
@@ -73,6 +77,7 @@
 #begin test_bin_target
   #define TARGET test_tcp_server
   #define LOCAL_LIBS net
+  #define OTHER_LIBS pystub
 
   #define SOURCES \
     datagram_ui.cxx datagram_ui.h test_tcp_server.cxx
@@ -82,6 +87,7 @@
 #begin test_bin_target
   #define TARGET test_udp
   #define LOCAL_LIBS net
+  #define OTHER_LIBS pystub
 
   #define SOURCES \
     datagram_ui.cxx datagram_ui.h test_udp.cxx

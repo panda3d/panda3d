@@ -40,7 +40,7 @@ public:
   ConnectionManager();
   virtual ~ConnectionManager();
 
-  PT(Connection) open_UDP_connection(int port = -1);
+  PT(Connection) open_UDP_connection(int port = 0);
 
   PT(Connection) open_TCP_server_rendezvous(int port, int backlog);
   PT(Connection) open_TCP_client_connection(const NetAddress &address,

@@ -35,7 +35,9 @@ main(int argc, char *argv[]) {
     exit(1);
   }
 
-  nout << "Successfully opened UDP connection on port " << port << "\n";
+  nout << "Successfully opened UDP connection on port " 
+       << c->get_address().get_port() << " and IP "
+       << c->get_address().get_ip() << "\n";
 
   RecentConnectionReader reader(&cm);
   reader.add_connection(c);

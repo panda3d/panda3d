@@ -48,11 +48,16 @@ ConnectionManager::
 //     Function: ConnectionManager::open_UDP_connection
 //       Access: Public
 //  Description: Opens a socket for sending and/or receiving UDP
-//               packets.  If the port is non-negative, it will be
-//               bound to the connection; this is primarily a useful
-//               to do when the UDP connection will be used for
-//               reading.  Use a ConnectionReader and
-//               ConnectionWriter to handle the actual communication.
+//               packets.  If the port number is negative, it will not
+//               be bound to a socket; this is generally a pointless
+//               thing to do.  If the port number is zero, a random
+//               socket will be chosen.  Otherwise, the specified
+//               port number is used.  Normally, you don't care what
+//               port a UDP connection is opened on, so you should use
+//               the default value of zero.
+//
+//               Use a ConnectionReader and ConnectionWriter to handle
+//               the actual communication.
 ////////////////////////////////////////////////////////////////////
 PT(Connection) ConnectionManager::
 open_UDP_connection(int port) {
