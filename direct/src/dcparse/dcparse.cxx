@@ -128,6 +128,7 @@ main(int argc, char *argv[]) {
     cerr << "File hash is " << hash << "\n";
   }
 
+#ifdef DO_MEMORY_USAGE
   if (MemoryUsage::is_tracking()) {
     file.clear();
     MemoryUsage::show_current_types();
@@ -137,6 +138,7 @@ main(int argc, char *argv[]) {
     file.clear();
     MemoryUsage::show_current_types();
   }
+#endif
 
   return (0);
 }
