@@ -131,9 +131,9 @@ public:
   virtual void DisplayTexture(PT(Texture)&, Shader*);
   virtual void DisplayPixelBuffer(PT(PixelBuffer)&, Shader*);
 protected:
-  typedef std::list<PT(Texture) > texlist;
+  typedef std::plist<PT(Texture) > texlist;
   typedef texlist::iterator texiter;
-  typedef std::list<PT(PixelBuffer) > pblist;
+  typedef std::plist<PT(PixelBuffer) > pblist;
   typedef pblist::iterator pbiter;
 
   texlist _texs;
@@ -191,7 +191,7 @@ public:
   virtual ~Viztex(void);
   virtual void Flush(void);
 protected:
-  typedef std::list< PT(GraphicsWindow) > winlist;
+  typedef std::plist< PT(GraphicsWindow) > winlist;
   typedef winlist::iterator winiter;
 
   winlist _wins;

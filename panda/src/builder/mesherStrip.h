@@ -25,7 +25,7 @@
 #include "builderTypes.h"
 #include "builderBucket.h"
 
-#include <list>
+#include "plist.h"
 #include <math.h>
 
 
@@ -118,9 +118,9 @@ public:
 
   ostream &output(ostream &out) const;
 
-  typedef list<SAttrib> Prims;
-  typedef list<Edge *> Edges;
-  typedef list<const Vertex *> Verts;
+  typedef plist<SAttrib> Prims;
+  typedef plist<Edge *> Edges;
+  typedef plist<const Vertex *> Verts;
 
   Prims _prims;
   Edges _edges;

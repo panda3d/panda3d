@@ -21,7 +21,7 @@
 #include <config_util.h>
 
 AudioPool* AudioPool::_global_ptr = (AudioPool*)0L;
-typedef map<string, AudioPool::SoundLoadFunc*> SoundLoaders;
+typedef pmap<string, AudioPool::SoundLoadFunc*> SoundLoaders;
 SoundLoaders* _sound_loaders = (SoundLoaders*)0L;
 
 ////////////////////////////////////////////////////////////////////

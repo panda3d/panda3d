@@ -149,7 +149,7 @@ init_geoms(void) {
 ////////////////////////////////////////////////////////////////////
 
 void LineParticleRenderer::
-render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
+render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   if (!ttl_particles)
     return;

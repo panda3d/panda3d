@@ -20,12 +20,12 @@
 #define __AUDIO_MIDI_H__
 
 #include <filename.h>
-#include <list>
+#include "plist.h"
 
 // define an internal representation for a midi file
 class AudioMidi {
 private:
-  typedef list<string> StrList;
+  typedef plist<string> StrList;
   StrList _seq;
 public:
   AudioMidi(Filename, int = 1);

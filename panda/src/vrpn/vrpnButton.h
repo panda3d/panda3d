@@ -23,7 +23,7 @@
 
 #include "vrpn_interface.h"
 
-#include <vector>
+#include "pvector.h"
 
 class VrpnButtonDevice;
 
@@ -67,7 +67,7 @@ private:
   string _button_name;
   vrpn_Button_Remote *_button;
 
-  typedef vector<VrpnButtonDevice *> Devices;
+  typedef pvector<VrpnButtonDevice *> Devices;
   Devices _devices;
 };
 

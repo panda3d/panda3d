@@ -41,7 +41,7 @@
 #include <materialPool.h>
 #include <pt_NodeRelation.h>
 
-#include <list>
+#include "plist.h"
 
 TypeHandle NodePath::_type_handle;
 
@@ -593,7 +593,7 @@ get_top_node() const {
 ////////////////////////////////////////////////////////////////////
 int NodePath::
 share_with(const NodePath &other) {
-  typedef list<ArcComponent *> Comps;
+  typedef plist<ArcComponent *> Comps;
   Comps other_comps;
   Comps this_comps;
 
@@ -1098,30 +1098,33 @@ analyze() const {
 //     Function: NodePath::flatten_light
 //       Access: Public
 //  Description: Lightly flattens out the hierarchy below this node by
-//               removing unneeded grouping nodes--nodes that have
-//               exactly one child, for instance, but have no special
-//               properties in themselves.  This will not affect any
-//               transforms or other transitions.
+//               applying transforms, colors, and texture matrices
+//               from the arcs onto the vertices, but does not remove
+//               any nodes.
 //
-//               This is the same level of flattening that is normally
-//               automatically applied by the egg loader.  It's
-//               generally completely safe (except that it may remove
-//               a node you expected to be there).
+//               This can result in improved rendering performance
+//               because there will be fewer transforms in the
+//               resulting scene graph, but the number of nodes will
+//               remain the same.
 //
-//               The return value is the number of arcs removed.
+//               Particularly, any NodePaths that reference nodes
+//               within this hierarchy will not be damaged.  However,
+//               since this operation will remove transforms from the
+//               scene graph, it may be dangerous to apply to arcs
+//               where you expect to dynamically modify the transform,
+//               or where you expect the geometry to remain in a
+//               particular local coordinate system.
+//
+//               The return value is always 0, since flatten_light
+//               does not remove any arcs.
 ////////////////////////////////////////////////////////////////////
 int NodePath::
 flatten_light() {
   nassertr(!is_empty(), 0);
   SceneGraphReducer gr(_graph_type);
-  int num_removed = gr.flatten(node(), false);
+  gr.apply_transitions(arc());
 
-  if (sgmanip_cat.is_debug()) {
-    sgmanip_cat.debug()
-      << "flatten_light() removed " << num_removed << " arcs.\n";
-  }
-
-  return num_removed;
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1130,16 +1133,15 @@ flatten_light() {
 //  Description: A more thorough flattening than flatten_light(), this
 //               first applies all the transforms, colors, and texture
 //               matrices from the arcs onto the vertices, and then
-//               performs a flatten.  This results in substantially
-//               improved perforamance over flatten_light() because
-//               (a) there are now fewer transforms, and (b) once the
-//               transforms are gone, it can safely remove more nodes.
+//               removes unneeded grouping nodes--nodes that have
+//               exactly one child, for instance, but have no special
+//               properties in themselves.
 //
-//               Since this operation will remove transforms from the
-//               scene graph, it may be dangerous to apply to arcs
-//               where you expect to dynamically modify the transform,
-//               or where you expect the geometry to remain in a
-//               particular local coordinate system.
+//               This results in improved perforamance over
+//               flatten_light() because the number of nodes in the
+//               scene graph is reduced.
+//
+//               The return value is the number of arcs removed.
 ////////////////////////////////////////////////////////////////////
 int NodePath::
 flatten_medium() {

@@ -26,7 +26,7 @@
 #include "pointerTo.h"
 #include "factoryParam.h"
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FactoryParams
@@ -54,7 +54,7 @@ public:
   FactoryParam *get_param_of_type(TypeHandle type) const;
 
 private:
-  typedef vector< PT(TypedReferenceCount) > Params;
+  typedef pvector< PT(TypedReferenceCount) > Params;
 
   Params _params;
 };

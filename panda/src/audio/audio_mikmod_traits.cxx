@@ -22,7 +22,7 @@
 
 #include "audio_manager.h"
 #include "config_audio.h"
-#include <list>
+#include "plist.h"
 #include <serialization.h>
 
 static bool have_initialized = false;
@@ -43,7 +43,7 @@ static void initialize(void) {
   md_mixfreq = audio_mix_freq;
   {
     // I think this is defined elsewhere
-    typedef list<string> StrList;
+    typedef plist<string> StrList;
     typedef Serialize::Deserializer<StrList> OptBuster;
     StrList opts;
     OptBuster buster(*audio_mode_flags, " ");

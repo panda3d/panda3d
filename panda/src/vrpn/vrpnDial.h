@@ -23,7 +23,7 @@
 
 #include "vrpn_interface.h"
 
-#include <vector>
+#include "pvector.h"
 
 class VrpnDialDevice;
 
@@ -67,7 +67,7 @@ private:
   string _dial_name;
   vrpn_Dial_Remote *_dial;
 
-  typedef vector<VrpnDialDevice *> Devices;
+  typedef pvector<VrpnDialDevice *> Devices;
   Devices _devices;
 };
 

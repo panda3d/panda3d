@@ -24,7 +24,7 @@
 #include "builderPrim.h"
 #include "builderBucket.h"
 
-#include <set>
+#include "pset.h"
 
 class GeomNode;
 
@@ -59,8 +59,8 @@ public:
   int build(GeomNode *geom_node) const;
 
 protected:
-  typedef multiset<BuilderPrim, less<BuilderPrim> > Prims;
-  typedef multiset<BuilderPrimI, less<BuilderPrimI> > IPrims;
+  typedef pmultiset<BuilderPrim, less<BuilderPrim> > Prims;
+  typedef pmultiset<BuilderPrimI, less<BuilderPrimI> > IPrims;
 
   BuilderBucket *_bucket;
   Prims _prims;

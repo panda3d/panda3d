@@ -42,7 +42,7 @@ ParticleSystemManager(int every_nth_frame) :
 ////////////////////////////////////////////////////////////////////
 void ParticleSystemManager::
 remove_particlesystem(ParticleSystem *ps) {
-  list< PT(ParticleSystem) >::iterator found;
+  plist< PT(ParticleSystem) >::iterator found;
 
   PT(ParticleSystem) ptps = ps;
   found = find(_ps_list.begin(), _ps_list.end(), ptps);
@@ -66,7 +66,7 @@ void ParticleSystemManager::
 do_particles(float dt) {
   //  cout << "ParticlesystemManager::doparticles entering." << endl;
 
-  list< PT(ParticleSystem) >::iterator cur;
+  plist< PT(ParticleSystem) >::iterator cur;
 
   bool render_due = false;
 
@@ -98,7 +98,7 @@ do_particles(float dt) {
 
         // handle death
         if (age >= cur_ps->get_system_lifespan()) {
-          list< PT(ParticleSystem) >::iterator kill = cur;
+          plist< PT(ParticleSystem) >::iterator kill = cur;
           cur++;
 
           _ps_list.erase(kill);

@@ -63,10 +63,10 @@ TypeHandle RIBGraphicsStateGuardian::_type_handle;
 // Here are some global arrays we use in the various draw() routines
 // to hold temporary coordinate values for each Geom for formatting.
 
-static vector<Vertexf> rib_vertices;
-static vector<Normalf> rib_normals;
-static vector<TexCoordf> rib_texcoords;
-static vector<RGBColorf> rib_colors;
+static pvector<Vertexf> rib_vertices;
+static pvector<Normalf> rib_normals;
+static pvector<TexCoordf> rib_texcoords;
+static pvector<RGBColorf> rib_colors;
 
 static void
 issue_vertex_rib(const Geom *geom, Geom::VertexIterator &vi) {

@@ -24,7 +24,7 @@
 #include "eggVertex.h"
 #include "pt_EggVertex.h"
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : vector_PT_EggVertex

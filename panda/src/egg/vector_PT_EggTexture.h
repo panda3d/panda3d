@@ -24,7 +24,7 @@
 #include "eggTexture.h"
 #include "pt_EggTexture.h"
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : vector_PT_EggTexture

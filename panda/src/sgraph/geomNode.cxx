@@ -238,7 +238,7 @@ recompute_bound() {
 
   // Now actually compute the bounding volume by putting it around all
   // of our drawable's bounding volumes.
-  vector<const BoundingVolume *> child_volumes;
+  pvector<const BoundingVolume *> child_volumes;
 
   Geoms::const_iterator gi;
   for (gi = _geoms.begin(); gi != _geoms.end(); ++gi) {

@@ -30,7 +30,7 @@
 #include "builderVertex.h"
 #include "builderPrim.h"
 
-#include <vector>
+#include "pvector.h"
 
 ///////////////////////////////////////////////////////////////////
 //       Class : BuilderNormalVisualizer
@@ -56,7 +56,7 @@ private:
 
   BuilderV _net_vertex;
   int _num_vertices;
-  vector<BuilderPrim> _lines;
+  pvector<BuilderPrim> _lines;
 };
 
 #include "builderNormalVisualizer.I"

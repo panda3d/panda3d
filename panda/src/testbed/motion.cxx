@@ -24,7 +24,7 @@
 #include <notify.h>
 
 #include <string>
-#include <list>
+#include "plist.h"
 
 extern GraphicsWindow* win;
 
@@ -33,9 +33,9 @@ extern void (*extra_display_func)();
 extern void (*define_keys)(EventHandler&);
 
 #include <GL/gl.h>
-typedef list<Texture*> TexList;
+typedef plist<Texture*> TexList;
 TexList screenshots;
-typedef list<PixelBuffer*> PBList;
+typedef plist<PixelBuffer*> PBList;
 PBList sshots;
 int num_frames = 4;
 int frame_num = 0;

@@ -88,8 +88,8 @@ protected:
                           const string &curve_type, int indent_level) const;
 
 private:
-  typedef vector<LVecBase4f> Points;
-  typedef vector<float> Knots;
+  typedef pvector<LVecBase4f> Points;
+  typedef pvector<float> Knots;
 
   bool make_nurbs_valid();
   void make_arrays_valid();

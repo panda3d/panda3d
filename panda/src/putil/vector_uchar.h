@@ -21,7 +21,7 @@
 
 #include <pandabase.h>
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : vector_uchar

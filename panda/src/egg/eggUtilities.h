@@ -36,14 +36,14 @@
 #include <filename.h>
 #include <pointerTo.h>
 
-#include <set>
-#include <map>
+#include "pset.h"
+#include "pmap.h"
 
 class EggNode;
 class EggVertex;
 
-typedef set< PT_EggTexture > EggTextures;
-typedef map<Filename, EggTextures> EggTextureFilenames;
+typedef pset< PT_EggTexture > EggTextures;
+typedef pmap<Filename, EggTextures> EggTextureFilenames;
 
 
 ////////////////////////////////////////////////////////////////////

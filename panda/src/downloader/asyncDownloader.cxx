@@ -35,7 +35,7 @@
 
 #include "asyncDownloader.h"
 #include <circBuffer.h>
-#include <list>
+#include "plist.h"
 
 #if !defined(WIN32_VC)
 // #define errno wsaGetLastError()

@@ -25,7 +25,7 @@
 #include "pointerTo.h"
 #include "referenceCount.h"
 
-#include <vector>
+#include "pvector.h"
 
 #ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
@@ -86,7 +86,7 @@ private:
     double _age;
   };
 
-  typedef vector<Entry> Entries;
+  typedef pvector<Entry> Entries;
   Entries _entries;
   friend class MemoryUsage;
 };

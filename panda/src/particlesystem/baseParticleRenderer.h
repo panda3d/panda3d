@@ -30,7 +30,7 @@
 #include "particleCommonFuncs.h"
 #include "baseParticle.h"
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BaseParticleRenderer
@@ -61,7 +61,7 @@ private:
 
 
   virtual void init_geoms(void) = 0;
-  virtual void render(vector< PT(PhysicsObject) >& po_vector,
+  virtual void render(pvector< PT(PhysicsObject) >& po_vector,
                       int ttl_particles) = 0;
 
 PUBLISHED:

@@ -24,7 +24,7 @@
 #include "eggMaterial.h"
 #include "pt_EggMaterial.h"
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : vector_PT_EggMaterial

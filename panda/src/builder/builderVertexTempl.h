@@ -24,7 +24,7 @@
 #include "builderTypes.h"
 #include "builderAttribTempl.h"
 
-#include <vector>
+#include "pvector.h"
 
 
 /////////////////////////////////////////////////////////////////////

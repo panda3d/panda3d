@@ -26,7 +26,7 @@
 #include <namable.h>
 #include <typedef.h>
 
-#include <list>
+#include "plist.h"
 
 class AnimControl;
 class AnimGroup;
@@ -89,10 +89,10 @@ protected:
   void write_descendants(ostream &out, int indent_level) const;
   void write_descendants_with_value(ostream &out, int indent_level) const;
 
-  virtual void pick_channel_index(list<int> &holes, int &next) const;
+  virtual void pick_channel_index(plist<int> &holes, int &next) const;
   virtual void bind_hierarchy(AnimGroup *anim, int channel_index);
 
-  typedef vector< PT(PartGroup) > Children;
+  typedef pvector< PT(PartGroup) > Children;
   Children _children;
 
 public:

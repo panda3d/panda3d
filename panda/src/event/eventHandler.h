@@ -24,8 +24,8 @@
 #include "event.h"
 #include "pt_Event.h"
 
-#include <set>
-#include <map>
+#include "pset.h"
+#include "pmap.h"
 
 class EventQueue;
 
@@ -68,11 +68,11 @@ public:
 
 protected:
 
-  typedef set<EventFunction *> Functions;
-  typedef map<string, Functions> Hooks;
+  typedef pset<EventFunction *> Functions;
+  typedef pmap<string, Functions> Hooks;
   typedef pair<EventCallbackFunction*, void*> CallbackFunction;
-  typedef set<CallbackFunction> CallbackFunctions;
-  typedef map<string, CallbackFunctions> CallbackHooks;
+  typedef pset<CallbackFunction> CallbackFunctions;
+  typedef pmap<string, CallbackFunctions> CallbackHooks;
 
   Hooks _hooks;
   CallbackHooks _cbhooks;

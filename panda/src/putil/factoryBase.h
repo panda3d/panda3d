@@ -25,7 +25,7 @@
 #include "typedReferenceCount.h"
 #include "factoryParams.h"
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FactoryBase
@@ -92,14 +92,14 @@ private:
 #if defined(WIN32_VC) && !defined(__ICL)    //__ICL is Intel C++
   // Visual C++ seems to have a problem with building a map based on
   // BaseCreateFunc.  We'll have to typecast it on the way out.
-  typedef map<TypeHandle, void *> Creators;
+  typedef pmap<TypeHandle, void *> Creators;
 #else
-  typedef map<TypeHandle, BaseCreateFunc *> Creators;
+  typedef pmap<TypeHandle, BaseCreateFunc *> Creators;
 #endif
 
   Creators _creators;
 
-  typedef vector<TypeHandle> Preferred;
+  typedef pvector<TypeHandle> Preferred;
   Preferred _preferred;
 };
 

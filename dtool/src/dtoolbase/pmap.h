@@ -35,7 +35,8 @@ template<class Key, class Value, class Compare = less<Key> >
 class pmap : public map<Key, Value, Compare, pallocator<pair<Key, Value> > > {
 public:
   pmap() : map<Key, Value, Compare, pallocator<pair<Key, Value> > >() { }
-  pmap(const pmap<Key> &copy) : map<Key, Value, Compare, pallocator<pair<Key, Value> > >(copy) { }
+  pmap(const pmap<Key, Value, Compare> &copy) : map<Key, Value, Compare, pallocator<pair<Key, Value> > >(copy) { }
+  pmap(const Compare &comp) : map<Key, Compare, pallocator<Key> >(comp) { }
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -49,7 +50,8 @@ template<class Key, class Value, class Compare = less<Key> >
 class pmultimap : public multimap<Key, Value, Compare, pallocator<pair<Key, Value> > > {
 public:
   pmultimap() : multimap<Key, Value, Compare, pallocator<pair<Key, Value> > >() { }
-  pmultimap(const pmultimap<Key> &copy) : multimap<Key, Value, Compare, pallocator<pair<Key, Value> > >(copy) { }
+  pmultimap(const pmultimap<Key, Value, Compare> &copy) : multimap<Key, Value, Compare, pallocator<pair<Key, Value> > >(copy) { }
+  pmultimap(const Compare &comp) : multimap<Key, Compare, pallocator<Key> >(comp) { }
 };
 
 #endif

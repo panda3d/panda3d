@@ -32,7 +32,7 @@
 #include <referenceCount.h>
 #include <renderRelation.h>
 
-#include <deque>
+#include "pdeque.h"
 
 #include "baseParticle.h"
 #include "baseParticleRenderer.h"
@@ -57,7 +57,7 @@ private:
   void birth_litter(void);
   void resize_pool(int size);
 
-  deque< int > _free_particle_fifo;
+  pdeque< int > _free_particle_fifo;
 
   int _particle_pool_size;
   int _living_particles;
@@ -89,7 +89,7 @@ private:
 
   bool _spawn_on_death_flag;
   PT(Node) _spawn_render_node;
-  vector< PT(ParticleSystem) > _spawn_templates;
+  pvector< PT(ParticleSystem) > _spawn_templates;
 
   void spawn_child_system(BaseParticle *bp);
 

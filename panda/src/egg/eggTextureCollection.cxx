@@ -252,7 +252,7 @@ int EggTextureCollection::
 collapse_equivalent_textures(int eq, EggTextureCollection::TextureReplacement &removed) {
   int num_collapsed = 0;
 
-  typedef set<PT(EggTexture), UniqueEggTextures> Collapser;
+  typedef pset<PT(EggTexture), UniqueEggTextures> Collapser;
   UniqueEggTextures uet(eq);
   Collapser collapser(uet);
 

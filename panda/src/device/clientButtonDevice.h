@@ -78,7 +78,7 @@ protected:
     State _state;
   };
 
-  typedef vector<ButtonState> Buttons;
+  typedef pvector<ButtonState> Buttons;
   Buttons _buttons;
 
   PT(ButtonEventDataAttribute) _button_events;

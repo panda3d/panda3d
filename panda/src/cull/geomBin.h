@@ -31,7 +31,7 @@
 #include <typedReferenceCount.h>
 #include <namable.h>
 
-#include <set>
+#include "pset.h"
 
 class GeomNode;
 class CullTraverser;

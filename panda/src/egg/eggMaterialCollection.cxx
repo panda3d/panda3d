@@ -252,7 +252,7 @@ int EggMaterialCollection::
 collapse_equivalent_materials(int eq, EggMaterialCollection::MaterialReplacement &removed) {
   int num_collapsed = 0;
 
-  typedef set<PT(EggMaterial), UniqueEggMaterials> Collapser;
+  typedef pset<PT(EggMaterial), UniqueEggMaterials> Collapser;
   UniqueEggMaterials uet(eq);
   Collapser collapser(uet);
 

@@ -23,7 +23,7 @@
 
 #include "vrpn_interface.h"
 
-#include <vector>
+#include "pvector.h"
 
 class VrpnTrackerDevice;
 
@@ -70,7 +70,7 @@ private:
   string _tracker_name;
   vrpn_Tracker_Remote *_tracker;
 
-  typedef vector<VrpnTrackerDevice *> Devices;
+  typedef pvector<VrpnTrackerDevice *> Devices;
   Devices _devices;
 };
 

@@ -23,9 +23,9 @@
 #include <pandabase.h>
 #include <stdlib.h>
 #include <eekernel.h>
-#include <list>
-#include <vector>
-#include <map>
+#include "plist.h"
+#include "pvector.h"
+#include "pmap.h"
 
 // OK.  The deal with the PS2 is that there is native library thread support
 // for threads and semaphors.  Nothing else.  This is why mutex and condition
@@ -155,7 +155,7 @@ class EXPCL_PANDAEXPRESS ipc_traits
             int thread_id;
         };
 
-        list<WaitingThread> waiting_thread_list;
+        plist<WaitingThread> waiting_thread_list;
         mutex_class list_access_lock;
         mutex_class* _mutex;
 
@@ -214,9 +214,9 @@ class EXPCL_PANDAEXPRESS ipc_traits
 
         INLINE void broadcast(void)
         {
-          list<WaitingThread>::iterator begin = waiting_thread_list.begin();
-          list<WaitingThread>::iterator end = waiting_thread_list.end();
-          list<WaitingThread>::iterator cur = begin;
+          plist<WaitingThread>::iterator begin = waiting_thread_list.begin();
+          plist<WaitingThread>::iterator end = waiting_thread_list.end();
+          plist<WaitingThread>::iterator cur = begin;
 
           int s_id;
 
@@ -274,7 +274,7 @@ class EXPCL_PANDAEXPRESS ipc_traits
             thread_class *thread_ptr;
         };
 
-        static vector<pointer_lookup> thread_addr_vector;
+        static pvector<pointer_lookup> thread_addr_vector;
         static void thread_wrapper(void *);
 
       public:
@@ -366,7 +366,7 @@ class EXPCL_PANDAEXPRESS ipc_traits
         {
           int id = GetThreadId();
 
-          vector<pointer_lookup>::iterator cur;
+          pvector<pointer_lookup>::iterator cur;
 
           for (cur = thread_addr_vector.begin(); cur != thread_addr_vector.end();
                cur++)
@@ -396,7 +396,7 @@ class EXPCL_PANDAEXPRESS ipc_traits
           int id, result;
 
           struct ThreadParam thread_param;
-          vector<pointer_lookup>::iterator cur;
+          pvector<pointer_lookup>::iterator cur;
 
           id = GetThreadId();
 

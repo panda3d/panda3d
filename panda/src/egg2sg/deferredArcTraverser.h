@@ -27,7 +27,7 @@
 #include <nullTransitionWrapper.h>
 #include <nullAttributeWrapper.h>
 
-#include <map>
+#include "pmap.h"
 
 class NodeRelation;
 

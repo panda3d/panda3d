@@ -493,7 +493,7 @@ recompute_bound() {
 
   // Now actually compute the bounding volume by putting it around all
   // of our vertices.
-  vector<LPoint3f> vertices;
+  pvector<LPoint3f> vertices;
   VertexIterator vi = make_vertex_iterator();
 
   for (int p = 0; p < get_num_prims(); p++) {

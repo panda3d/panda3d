@@ -22,8 +22,6 @@
 #include "dcbase.h"
 #include "dcField.h"
 
-#include <vector>
-
 class DCAtomicField;
 
 ////////////////////////////////////////////////////////////////////
@@ -48,7 +46,7 @@ public:
 public:
   // These members define the primary interface to the molecular field
   // definition as read from the file.
-  typedef vector<DCAtomicField *> Fields;
+  typedef pvector<DCAtomicField *> Fields;
   Fields _fields;
 };
 

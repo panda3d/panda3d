@@ -146,8 +146,8 @@ static void initialize(void) {
 
 class BufferStuff {
 private:
-  typedef vector<unsigned char> Buffer;
-  typedef vector<Buffer> Buffers;
+  typedef pvector<unsigned char> Buffer;
+  typedef pvector<Buffer> Buffers;
   Buffers _bufs;
 public:
   BufferStuff(void) {}

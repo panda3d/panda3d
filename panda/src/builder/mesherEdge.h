@@ -24,7 +24,7 @@
 #include "mesherConfig.h"
 #include "builderBucket.h"
 
-#include <list>
+#include "plist.h"
 #include <math.h>
 
 
@@ -61,7 +61,7 @@ public:
 
   const Vertex *_a, *_b;
 
-  typedef list<Strip *> Strips;
+  typedef plist<Strip *> Strips;
   Strips _strips;
   MesherEdge *_opposite;
 };

@@ -26,7 +26,7 @@
 #include "typedef.h"
 #include <notify.h>
 #include <filename.h>
-#include <list>
+#include "plist.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "buffer.h"

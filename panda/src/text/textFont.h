@@ -28,7 +28,7 @@
 #include <pt_Node.h>
 #include <allTransitionsWrapper.h>
 
-#include <map>
+#include "pmap.h"
 
 class Node;
 class Geom;
@@ -69,7 +69,7 @@ private:
                             AllTransitionsWrapper &trans);
   void find_characters(Node *root);
 
-  typedef map<int, CharDef> CharDefs;
+  typedef pmap<int, CharDef> CharDefs;
   CharDefs _defs;
   float _font_height;
   PT_Node _font;

@@ -39,8 +39,8 @@
 #include <pStatCollector.h>
 
 #include <string>
-#include <vector>
-#include <deque>
+#include "pvector.h"
+#include "pdeque.h"
 
 ////////////////////////////////////////////////////////////////////
 // Defines
@@ -207,7 +207,7 @@ protected:
   void declare_channel(int index, GraphicsChannel *chan);
 
 private:
-  typedef vector< PT(GraphicsChannel) > Channels;
+  typedef pvector< PT(GraphicsChannel) > Channels;
   Channels _channels;
 
 public:

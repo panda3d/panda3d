@@ -23,7 +23,7 @@
 
 #include <namable.h>
 #include <luse.h>
-#include <set>
+#include "pset.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggMorph

@@ -44,7 +44,7 @@ LayoutParseFunctor::~LayoutParseFunctor(void) {
   return;
 }
 
-typedef std::vector<bool> LayoutBoolVec;
+typedef std::pvector<bool> LayoutBoolVec;
 
 void LayoutParseFunctor::operator()(std::string S) {
   std::string sym;

@@ -23,7 +23,7 @@
 
 #include "partGroup.h"
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : vector_PartGroupStar

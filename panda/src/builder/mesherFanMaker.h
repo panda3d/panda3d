@@ -30,7 +30,7 @@
 #include "mesherEdge.h"
 #include "mesherStrip.h"
 
-#include <list>
+#include "plist.h"
 
 
 template <class PrimType>
@@ -46,8 +46,8 @@ public:
   typedef MesherStrip<PrimType> Strip;
   typedef MesherTempl<PrimType> Mesher;
 
-  typedef list<const Edge *> Edges;
-  typedef list<Strip *> Strips;
+  typedef plist<const Edge *> Edges;
+  typedef plist<Strip *> Strips;
 
   MesherFanMaker() {}
   MesherFanMaker(const Vertex *vertex, Strip *tri, Mesher *mesher);

@@ -24,7 +24,7 @@
 #include "nodeRelation.h"
 #include "pt_NodeRelation.h"
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : vector_PT_NodeRelation

@@ -52,7 +52,7 @@
 template<class Property, class NameClass>
 class MultiTransition : public NodeTransition {
 private:
-  typedef map<Property, TransitionDirection> Properties;
+  typedef pmap<Property, TransitionDirection> Properties;
 
 protected:
   MultiTransition();

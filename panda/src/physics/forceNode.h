@@ -20,7 +20,7 @@
 #define FORCENODE_H
 
 #include <namedNode.h>
-#include <vector>
+#include "pvector.h"
 
 #include "baseForce.h"
 
@@ -33,7 +33,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS ForceNode : public NamedNode {
 private:
-  vector< PT(BaseForce) > _forces;
+  pvector< PT(BaseForce) > _forces;
 
 PUBLISHED:
   ForceNode(const string &name = "");

@@ -25,7 +25,7 @@
 
 #include <pointerTo.h>
 
-#include <set>
+#include "pset.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomBinFixed
@@ -64,7 +64,7 @@ private:
     bool _is_direct;
   };
 
-  typedef multiset<NodeEntry> NodeEntries;
+  typedef pmultiset<NodeEntry> NodeEntries;
   NodeEntries _node_entries;
 
 public:

@@ -72,7 +72,7 @@ private:
     INLINE void operator = (const SortEntries &other);
   };
 
-  typedef set<PT(CollisionEntry), SortEntries> Colliding;
+  typedef pset<PT(CollisionEntry), SortEntries> Colliding;
   Colliding _current_colliding;
   Colliding _last_colliding;
 

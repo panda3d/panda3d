@@ -227,7 +227,7 @@ register_type(PNMFileType *type) {
   _handles.insert(Handles::value_type(type->get_type(), type));
 
   // Collect the unique extensions associated with the type.
-  set<string> unique_extensions;
+  pset<string> unique_extensions;
   int num_extensions = type->get_num_extensions();
   for (int i = 0; i < num_extensions; i++) {
     string extension = downcase(type->get_extension(i));
@@ -240,7 +240,7 @@ register_type(PNMFileType *type) {
     }
   }
 
-  set<string>::iterator ui;
+  pset<string>::iterator ui;
   for (ui = unique_extensions.begin(); ui != unique_extensions.end(); ++ui) {
     _extensions[*ui].push_back(type);
   }

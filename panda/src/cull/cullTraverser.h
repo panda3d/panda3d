@@ -31,8 +31,8 @@
 #include <nullAttributeWrapper.h>
 #include <pStatCollector.h>
 
-#include <list>
-#include <set>
+#include "plist.h"
+#include "pset.h"
 
 class GraphicsStateGuardian;
 class CullStateLookup;
@@ -119,13 +119,13 @@ private:
 
   AllAttributesWrapper _initial_state;
 
-  typedef map<string,  PT(GeomBin) > ToplevelBins;
-  typedef multimap<int,  PT(GeomBin) > SubBins;
+  typedef pmap<string,  PT(GeomBin) > ToplevelBins;
+  typedef pmultimap<int,  PT(GeomBin) > SubBins;
   ToplevelBins _toplevel_bins;
   SubBins _sub_bins;
   PT(GeomBin) _default_bin;
 
-  typedef set<PT(CullState), IndirectCompareTo<CullState> > States;
+  typedef pset<PT(CullState), IndirectCompareTo<CullState> > States;
   States _states;
 
   CullStateLookup _lookup;

@@ -61,7 +61,7 @@ protected:
     bool _known;
   };
 
-  typedef vector<AnalogState> Controls;
+  typedef pvector<AnalogState> Controls;
   Controls _controls;
 
 

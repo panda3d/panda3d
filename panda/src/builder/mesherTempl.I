@@ -384,7 +384,7 @@ count_vert_edges(const EdgePtrs &edges) const {
 }
 
 template <class PrimType>
-list<MesherTempl<PrimType>::Strip> &MesherTempl<PrimType>::
+plist<MesherTempl<PrimType>::Strip> &MesherTempl<PrimType>::
 choose_strip_list(const Strip &strip) {
   switch (strip._status) {
   case MS_done:
@@ -513,7 +513,7 @@ find_fans() {
       const Vertex &v = (*vi).first;
 
       // Build up a list of far fan edges.
-      typedef vector<FanMaker> FanMakers;
+      typedef pvector<FanMaker> FanMakers;
 
       FanMakers fans;
 
@@ -588,7 +588,7 @@ make_quads() {
 
   typedef pair<Strip *, Strip *> Pair;
   typedef pair<Pair, Edge *> Matched;
-  typedef vector<Matched> SoulMates;
+  typedef pvector<Matched> SoulMates;
 
   SoulMates soulmates;
 

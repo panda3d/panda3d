@@ -211,8 +211,8 @@
 #include <pointerTo.h>
 #include <notify.h>
 
-#include <set>
-#include <map>
+#include "pset.h"
+#include "pmap.h"
 
 class EggNode;
 class EggGroup;
@@ -270,14 +270,14 @@ private:
   // and store all the pointers into the GroupNodes/SortedNodes
   // structure, which groups nodes by their parent group, and then
   // sorted into bin order.
-  typedef multiset<PT(EggNode), EggBinMakerCompareNodes> SortedNodes;
-  typedef map<EggGroupNode *, SortedNodes> GroupNodes;
+  typedef pmultiset<PT(EggNode), EggBinMakerCompareNodes> SortedNodes;
+  typedef pmap<EggGroupNode *, SortedNodes> GroupNodes;
 
   // Then we walk through that list and create a Bins/Nodes structure
   // for each group, which separates out the nodes into the individual
   // bins.
-  typedef vector< PT(EggNode) > Nodes;
-  typedef vector<Nodes> Bins;
+  typedef pvector< PT(EggNode) > Nodes;
+  typedef pvector<Nodes> Bins;
 
   void collect_nodes(EggGroupNode *group);
   int get_bins_for_group(GroupNodes::const_iterator gi);

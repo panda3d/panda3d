@@ -99,7 +99,7 @@ handle_entries() {
       // share nearly the same direction, and if so, we keep only the
       // longer of the two.
 
-      typedef vector<ShoveData> Shoves;
+      typedef pvector<ShoveData> Shoves;
       Shoves shoves;
 
       Entries::const_iterator ei;

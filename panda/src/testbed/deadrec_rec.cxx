@@ -39,7 +39,7 @@ Configure(deadrec);
 ConfigureFn(deadrec) {
 }
 
-typedef set< PT(Connection) > Clients;
+typedef pset< PT(Connection) > Clients;
 
 static PT_Node smiley;
 static RenderRelation* my_arc;

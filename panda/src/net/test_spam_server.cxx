@@ -30,7 +30,7 @@
 
 #include <prinrval.h>
 
-#include <set>
+#include "pset.h"
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -57,7 +57,7 @@ main(int argc, char *argv[]) {
   QueuedConnectionListener listener(&cm, 1);
   listener.add_connection(rendezvous);
 
-  typedef set< PT(Connection) > Clients;
+  typedef pset< PT(Connection) > Clients;
   Clients clients;
 
   QueuedConnectionReader reader(&cm, 10);

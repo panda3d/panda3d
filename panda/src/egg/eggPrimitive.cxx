@@ -339,7 +339,7 @@ test_vref_integrity() const {
   // First, we need to know how many times each vertex appears.
   // Usually, this will be only one, but it's possible for a vertex to
   // appear more than once.
-  typedef map<const EggVertex *, int> VertexCount;
+  typedef pmap<const EggVertex *, int> VertexCount;
   VertexCount _count;
 
   // Now count up the vertices.

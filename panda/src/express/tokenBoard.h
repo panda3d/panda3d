@@ -22,7 +22,7 @@
 // Includes
 ////////////////////////////////////////////////////////////////////
 #include <pandabase.h>
-#include <list>
+#include "plist.h"
 #include "circBuffer.h"
 #include "pointerTo.h"
 
@@ -70,7 +70,7 @@ public:
   // extracted into the local list so we can safely search for and
   // remove a particular token from the middle of the list (we can
   // only remove from the head of a circular buffer).
-  list< PT(TokenType) > _really_done;
+  plist< PT(TokenType) > _really_done;
 };
 
 #include "tokenBoard.I"

@@ -50,9 +50,9 @@ LinearEulerIntegrator::
 ////////////////////////////////////////////////////////////////////
 void LinearEulerIntegrator::
 child_integrate(Physical *physical,
-                vector< PT(LinearForce) >& forces,
+                pvector< PT(LinearForce) >& forces,
                 float dt) {
-  vector< PT(PhysicsObject) >::const_iterator current_object_iter;
+  pvector< PT(PhysicsObject) >::const_iterator current_object_iter;
 
   // perform the precomputation.  Note that the vector returned by
   // get_precomputed_matrices() has the matrices loaded in order of force
@@ -60,7 +60,7 @@ child_integrate(Physical *physical,
   // another integrator, be sure to process your forces global, then local.
   // otherwise your transforms will be VERY bad.
   precompute_linear_matrices(physical, forces);
-  const vector< LMatrix4f > &matrices = get_precomputed_linear_matrices();
+  const pvector< LMatrix4f > &matrices = get_precomputed_linear_matrices();
 
   // Loop through each object in the set.  This processing occurs in O(pf) time,
   // where p is the number of physical objects and f is the number of
@@ -96,7 +96,7 @@ child_integrate(Physical *physical,
     //    LMatrix4f force_to_object_xform;
 
     ForceNode *force_node;
-    vector< PT(LinearForce) >::const_iterator f_cur;
+    pvector< PT(LinearForce) >::const_iterator f_cur;
 
     // global forces
     f_cur = forces.begin();

@@ -24,12 +24,12 @@
 #include "config_audio.h"
 #include <ipc_thread.h>
 #include <ipc_mutex.h>
-#include <set>
+#include "pset.h"
 #include <fcntl.h>
 #include <sys/soundcard.h>
 #include <sys/ioctl.h>
 
-typedef set<Buffer*> BufferSet;
+typedef pset<Buffer*> BufferSet;
 
 static bool have_initialized = false;
 static mutex buffer_mutex;

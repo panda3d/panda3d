@@ -26,7 +26,7 @@
 #include <pt_Node.h>
 #include <pt_NodeRelation.h>
 
-#include <map>
+#include "pmap.h"
 
 class CullState;
 class CullStateSubtree;
@@ -74,10 +74,10 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 private:
-  typedef map<PT_Node,  PT(CullState) > CullStates;
+  typedef pmap<PT_Node,  PT(CullState) > CullStates;
   CullStates _cull_states;
 
-  typedef map<PT_NodeRelation, CullStateSubtree *> Subtrees;
+  typedef pmap<PT_NodeRelation, CullStateSubtree *> Subtrees;
   Subtrees _subtrees;
 };
 

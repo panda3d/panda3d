@@ -79,7 +79,7 @@ make_copy(void) const {
 ////////////////////////////////////////////////////////////////////
 void PhysicalNode::
 add_physicals_from(const PhysicalNode &other) {
-  vector< PT(Physical) >::iterator last = _physicals.end() - 1;
+  pvector< PT(Physical) >::iterator last = _physicals.end() - 1;
 
   _physicals.insert(_physicals.end(),
                     other._physicals.begin(), other._physicals.end());
@@ -95,7 +95,7 @@ add_physicals_from(const PhysicalNode &other) {
 ////////////////////////////////////////////////////////////////////
 void PhysicalNode::
 remove_physical(Physical *physical) {
-  vector< PT(Physical) >::iterator found;
+  pvector< PT(Physical) >::iterator found;
   PT(Physical) ptp = physical;
   found = find(_physicals.begin(), _physicals.end(), ptp);
   if (found == _physicals.end())
@@ -112,7 +112,7 @@ void PhysicalNode::
 remove_physical(int index) {
   nassertv(index >= 0 && index <= (int)_physicals.size());
 
-  vector< PT(Physical) >::iterator remove;
+  pvector< PT(Physical) >::iterator remove;
   remove = _physicals.begin() + index;
   (*remove)->_physical_node = (PhysicalNode *) NULL;
 

@@ -34,6 +34,8 @@
 #include <notify.h>
 #include <filename.h>
 #include <numeric_types.h>
+#include "pvector.h"
+#include "pmap.h"
 
 #else
 
@@ -98,6 +100,10 @@ typedef string Filename;
 #define IS_LITTLE_ENDIAN
 #endif
 
+#include <vector>
+#include <map>
+#define pvector vector
+#define pmap map
 
 #endif  // WITHIN_PANDA
 

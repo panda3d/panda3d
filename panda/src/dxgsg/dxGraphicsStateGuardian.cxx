@@ -1712,8 +1712,8 @@ draw_sprite(const GeomSprite *geom) {
     Colorf v_color;
 
     // sort container and iterator
-    vector< WrappedSpriteSortPtr > sorted_sprite_vector;
-    vector< WrappedSpriteSortPtr >::iterator sorted_vec_iter;
+    pvector< WrappedSpriteSortPtr > sorted_sprite_vector;
+    pvector< WrappedSpriteSortPtr >::iterator sorted_vec_iter;
 
     WrappedSprite *SpriteArray = new WrappedSprite[nprims];
 

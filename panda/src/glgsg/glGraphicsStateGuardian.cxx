@@ -92,7 +92,7 @@
 
 #include <pandabase.h>
 
-#include <vector>
+#include "pvector.h"
 #include <algorithm>
 
 #if 0
@@ -1046,8 +1046,8 @@ draw_sprite(const GeomSprite *geom) {
   }
 
   // sort container and iterator
-  vector< WrappedSprite > cameraspace_vector;
-  vector< WrappedSprite >::iterator vec_iter;
+  pvector< WrappedSprite > cameraspace_vector;
+  pvector< WrappedSprite >::iterator vec_iter;
 
   // inner loop vars
   int i;

@@ -32,7 +32,7 @@
 #include "vector_PT_EggVertex.h"
 
 #include <pointerTo.h>
-#include <vector>
+#include "pvector.h"
 
 class EggVertexPool;
 

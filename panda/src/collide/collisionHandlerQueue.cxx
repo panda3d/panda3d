@@ -94,7 +94,7 @@ void CollisionHandlerQueue::
 sort_entries() {
   // Build up a temporary vector of entries so we can sort the
   // pointers.  This uses the class defined above.
-  typedef vector<CollisionEntrySorter> Sorter;
+  typedef pvector<CollisionEntrySorter> Sorter;
   Sorter sorter;
   sorter.reserve(_entries.size());
 

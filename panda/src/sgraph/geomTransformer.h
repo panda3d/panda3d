@@ -64,7 +64,7 @@ private:
     LMatrix4f _mat;
     PTA_Vertexf _coords;
   };
-  typedef map<SourceVertices, PTA_Vertexf> Vertices;
+  typedef pmap<SourceVertices, PTA_Vertexf> Vertices;
   Vertices _vertices;
 
   class SourceNormals {
@@ -74,7 +74,7 @@ private:
     LMatrix4f _mat;
     PTA_Normalf _norms;
   };
-  typedef map<SourceNormals, PTA_Normalf> Normals;
+  typedef pmap<SourceNormals, PTA_Normalf> Normals;
   Normals _normals;
 
   class SourceTexCoords {
@@ -84,10 +84,10 @@ private:
     LMatrix4f _mat;
     PTA_TexCoordf _texcoords;
   };
-  typedef map<SourceTexCoords, PTA_TexCoordf> TexCoords;
+  typedef pmap<SourceTexCoords, PTA_TexCoordf> TexCoords;
   TexCoords _texcoords;
 
-  typedef map<Colorf, PTA_Colorf> Colors;
+  typedef pmap<Colorf, PTA_Colorf> Colors;
   Colors _colors;
 };
 

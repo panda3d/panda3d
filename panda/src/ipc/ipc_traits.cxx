@@ -236,13 +236,13 @@ void ipc_traits::thread_class::thread_wrapper(void* data) {
 // PS2
 
 #include <eekernel.h>
-#include <map>
+#include "pmap.h"
 
 ConfigureFn(ipc_trait) {
   ipc_traits::thread_class::BuildRootThread();
 }
 
-vector<ipc_traits::thread_class::pointer_lookup> ipc_traits::thread_class::thread_addr_vector;
+pvector<ipc_traits::thread_class::pointer_lookup> ipc_traits::thread_class::thread_addr_vector;
 ipc_traits::thread_class *ipc_traits::thread_class::m_root_thread;
 
 ipc_traits::mutex_class* const ipc_traits::mutex_class::Null =

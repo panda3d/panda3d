@@ -22,9 +22,6 @@
 #include "dcbase.h"
 #include "dcClass.h"
 
-#include <vector>
-#include <map>
-
 class HashGenerator;
 
 ////////////////////////////////////////////////////////////////////
@@ -57,12 +54,12 @@ public:
 public:
   // This vector is the primary interface to the distributed classes
   // read from the file.
-  typedef vector<DCClass *> Classes;
+  typedef pvector<DCClass *> Classes;
   Classes _classes;
 
 public:
   // This map is built up during parsing for the convenience of the parser.
-  typedef map<string, DCClass *> ClassesByName;
+  typedef pmap<string, DCClass *> ClassesByName;
   ClassesByName _classes_by_name;
 };
 

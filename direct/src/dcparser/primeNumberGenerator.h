@@ -36,7 +36,7 @@ public:
   int operator [] (int n);
 
 private:
-  typedef vector<int> Primes;
+  typedef pvector<int> Primes;
   Primes _primes;
 };
 

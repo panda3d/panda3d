@@ -111,7 +111,7 @@ public:
 protected:
   int _priority;
 
-  typedef set<NodeRelation *> Arcs;
+  typedef pset<NodeRelation *> Arcs;
   Arcs _arcs;
 
 public:

@@ -22,7 +22,7 @@
 #include "audio_sound.h"
 #include "audio_trait.h"
 #include "config_audio.h"
-#include <map>
+#include "pmap.h"
 #include <pandabase.h>
 #include <filename.h>
 #include <pointerTo.h>
@@ -40,7 +40,7 @@ private:
   static AudioPool* get_ptr(void);
 
   static AudioPool *_global_ptr;
-  typedef map<string, PT(AudioTraits::SoundClass) > SoundMap;
+  typedef pmap<string, PT(AudioTraits::SoundClass) > SoundMap;
   SoundMap _sounds;
 public:
   typedef AudioTraits::SoundClass* SoundLoadFunc(Filename);

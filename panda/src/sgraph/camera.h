@@ -27,7 +27,7 @@
 
 #include <pt_Node.h>
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 // Defines
@@ -71,7 +71,7 @@ private:
   bool _active;
   PT_Node _scene;
 
-  typedef vector<DisplayRegion *> DisplayRegions;
+  typedef pvector<DisplayRegion *> DisplayRegions;
   DisplayRegions _display_regions;
 
 public:

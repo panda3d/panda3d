@@ -155,11 +155,11 @@ protected:
   string _texture_extension;
   ostream *_output;
   int _indent_level;
-  typedef map<const Texture *, Filename> TextureNames;
+  typedef pmap<const Texture *, Filename> TextureNames;
   TextureNames _texture_names;
-  typedef map<const Light *, int> LightIDs;
+  typedef pmap<const Light *, int> LightIDs;
   LightIDs _light_ids;
-  typedef vector<bool> EnabledLights;
+  typedef pvector<bool> EnabledLights;
   EnabledLights _enabled_lights;
 
 

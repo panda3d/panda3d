@@ -38,6 +38,7 @@ public:
   pvector(const pvector<Type> &copy) : vector<Type, pallocator<Type> >(copy) { }
   pvector(size_type n) : vector<Type, pallocator<Type> >(n) { }
   pvector(size_type n, const Type &value) : vector<Type, pallocator<Type> >(n, value) { }
+  pvector(const Type *begin, const Type *end) : vector<Type, pallocator<Type> >(begin, end) { }
 };
 
 #endif

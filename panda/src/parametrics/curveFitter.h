@@ -26,7 +26,7 @@
 #include "parametricCurveCollection.h"
 
 #include <typedef.h>
-#include <vector>
+#include "pvector.h"
 
 class HermiteCurve;
 class ParametricCurve;
@@ -79,7 +79,7 @@ public:
     LVecBase3f _hpr_tangent;
   };
 
-  typedef vector<DataPoint> Data;
+  typedef pvector<DataPoint> Data;
   Data _data;
 
   bool _got_xyz;

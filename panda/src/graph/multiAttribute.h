@@ -37,7 +37,7 @@ class MultiTransition;
 template<class Property, class NameClass>
 class MultiAttribute : public NodeAttribute {
 private:
-  typedef vector<Property> Properties;
+  typedef pvector<Property> Properties;
 
 protected:
   MultiAttribute();
@@ -79,7 +79,7 @@ private:
 public:
   // These functions and typedefs allow one to peruse all of the
   // Properties in the transition.  Remember to export the
-  // vector<Property> template class if you intend to use these
+  // pvector<Property> template class if you intend to use these
   // outside of PANDA.DLL.
   typedef Properties::const_iterator iterator;
   typedef Properties::const_iterator const_iterator;

@@ -60,7 +60,7 @@
 #include <interactiveGraphicsPipe.h>
 #include <noninteractiveGraphicsPipe.h>
 #include <graphicsWindow.h>
-#include <list>
+#include "plist.h"
 #include <lightTransition.h>
 #include <lightAttribute.h>
 #include <materialTransition.h>
@@ -1091,7 +1091,7 @@ int framework_main(int argc, char *argv[]) {
   // line.  This is handy, for instance, to load up both a character
   // and its animation file.
 
-  typedef vector<Filename> Files;
+  typedef pvector<Filename> Files;
   Files files;
   Files gridded_files;
 

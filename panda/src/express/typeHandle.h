@@ -24,9 +24,9 @@
 #include <notify.h>
 
 #include <string>
-#include <vector>
-#include <map>
-#include <set>
+#include "pvector.h"
+#include "pmap.h"
+#include "pset.h"
 #include <stdlib.h>
 
 // The following illustrates the convention for declaring a type that
@@ -152,7 +152,7 @@ protected:
     TypeHandle _handle;
     string _name;
     TypeHandle &_ref;
-    typedef vector<RegistryNode *> Classes;
+    typedef pvector<RegistryNode *> Classes;
     Classes _parent_classes;
     Classes _child_classes;
   };
@@ -209,13 +209,13 @@ private:
   void write_node(ostream &out, int indent_level,
                   const RegistryNode *node) const;
 
-  typedef vector<RegistryNode *> HandleRegistry;
+  typedef pvector<RegistryNode *> HandleRegistry;
   HandleRegistry _handle_registry;
 
-  typedef map<string, RegistryNode *> NameRegistry;
+  typedef pmap<string, RegistryNode *> NameRegistry;
   NameRegistry _name_registry;
 
-  typedef vector<RegistryNode *> RootClasses;
+  typedef pvector<RegistryNode *> RootClasses;
   bool _root_classes_fresh;
   RootClasses _root_classes;
 

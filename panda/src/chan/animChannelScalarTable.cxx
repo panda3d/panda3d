@@ -165,13 +165,13 @@ write_datagram(BamWriter *manager, Datagram &me)
     static const int max_values = 16;
     static const float scale = 1000.0;
 
-    map<int, int> index;
+    pmap<int, int> index;
     int i;
     for (i = 0;
          i < (int)_table.size() && (int)index.size() <= max_values;
          i++) {
       int value = (int)floor(_table[i] * scale + 0.5);
-      index.insert(map<int, int>::value_type(value, index.size()));
+      index.insert(pmap<int, int>::value_type(value, index.size()));
     }
     int index_length = index.size();
     if (index_length <= max_values) {
@@ -184,7 +184,7 @@ write_datagram(BamWriter *manager, Datagram &me)
         // We need to write the index in order by its index number; for
         // this, we need to invert the index.
         vector_float reverse_index(index_length);
-        map<int, int>::iterator mi;
+        pmap<int, int>::iterator mi;
         for (mi = index.begin(); mi != index.end(); ++mi) {
           float f = (float)(*mi).first / scale;
           int i = (*mi).second;

@@ -27,8 +27,8 @@
 #include <pointerTo.h>
 #include <luse.h>
 
-#include <vector>
-#include <list>
+#include "pvector.h"
+#include "plist.h"
 
 class ParametricCurveDrawer;
 
@@ -106,9 +106,9 @@ private:
   void redraw();
 
 private:
-  typedef vector< PT(ParametricCurve) > ParametricCurves;
+  typedef pvector< PT(ParametricCurve) > ParametricCurves;
   ParametricCurves _curves;
-  typedef list<ParametricCurveDrawer *> DrawerList;
+  typedef plist<ParametricCurveDrawer *> DrawerList;
   DrawerList _drawers;
 };
 

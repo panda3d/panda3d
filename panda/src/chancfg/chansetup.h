@@ -23,7 +23,7 @@
 
 #include <vector_string.h>
 
-#include <map>
+#include "pmap.h"
 #include "chanviewport.h"
 
 typedef vector_string SetupSyms;
@@ -88,7 +88,7 @@ public:
   INLINE Orientation getOrientation(void) const;
 };
 
-typedef std::map<std::string, SetupItem> SetupType;
+typedef std::pmap<std::string, SetupItem> SetupType;
 
 extern SetupType* SetupDB;
 

@@ -320,7 +320,7 @@ ComputedVertices *ComputedVerticesMaker::
 make_computed_vertices(Character *character, CharacterMaker &char_maker) {
   // We must first build up a set of all the unique kinds of vertex
   // transforms.
-  typedef set<ComputedVertices::VertexTransform> VertexTransforms;
+  typedef pset<ComputedVertices::VertexTransform> VertexTransforms;
   VertexTransforms transforms;
 
   TransformSpaces::const_iterator tsi;

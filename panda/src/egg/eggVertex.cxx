@@ -165,7 +165,7 @@ write(ostream &out, int indent_level) const {
   // a helpful comment.
   if (!_gref.empty()) {
     // We need to build a list of group entries.
-    set<GroupRefEntry> gre;
+    pset<GroupRefEntry> gre;
 
     GroupRef::const_iterator gi;
     for (gi = _gref.begin(); gi != _gref.end(); ++gi) {

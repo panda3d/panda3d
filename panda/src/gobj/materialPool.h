@@ -26,7 +26,7 @@
 #include <indirectCompareTo.h>
 #include <pointerTo.h>
 
-#include <set>
+#include "pset.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MaterialPool
@@ -63,7 +63,7 @@ private:
   static MaterialPool *get_ptr();
 
   static MaterialPool *_global_ptr;
-  typedef set< CPT(Material), IndirectCompareTo<Material> > Materials;
+  typedef pset< CPT(Material), IndirectCompareTo<Material> > Materials;
   Materials _materials;
 };
 

@@ -28,7 +28,7 @@
 #include <geomLinestrip.h>
 #include <geomNode.h>
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LineSegs
@@ -83,8 +83,8 @@ private:
     Colorf _color;
   };
 
-  typedef vector<Point> SegmentList;
-  typedef vector<SegmentList> LineList;
+  typedef pvector<Point> SegmentList;
+  typedef pvector<SegmentList> LineList;
 
   LineList _list;
   Colorf _color;

@@ -33,7 +33,7 @@
 static rfftw_plan get_real_compress_plan(int length);
 static rfftw_plan get_real_decompress_plan(int length);
 
-typedef map<int, rfftw_plan> RealPlans;
+typedef pmap<int, rfftw_plan> RealPlans;
 static RealPlans _real_compress_plans;
 static RealPlans _real_decompress_plans;
 

@@ -27,7 +27,7 @@
 #include <pta_Colorf.h>
 #include <pta_float.h>
 #include <renderRelation.h>
-#include <map>
+#include "pmap.h"
 
 class GraphicsStateGuardian;
 class ClockObject;
@@ -57,10 +57,10 @@ public:
   virtual bool has_sub_render() const;
 
 private:
-  typedef vector<PTA_float> vector_Vfloat;
-  typedef vector<PTA_Colorf> vector_Vcolorf;
-  typedef vector< PT(RenderRelation) > vector_relation;
-  typedef vector< PT(Texture) > vector_texture;
+  typedef pvector<PTA_float> vector_Vfloat;
+  typedef pvector<PTA_Colorf> vector_Vcolorf;
+  typedef pvector< PT(RenderRelation) > vector_relation;
+  typedef pvector< PT(Texture) > vector_texture;
 
   vector_texture _flares;
   PT(Texture) _blind;
@@ -152,9 +152,9 @@ private:
   float _sparkle_fps;
   float _inv_sparkle_fps;
 
-  typedef map<PT_Node, vector_float> Sparkle_Scales;
-  typedef map<PT_Node, vector_float> Sparkle_Offsets;
-  typedef map<PT_Node, vector_Colorf> Sparkle_Colors;
+  typedef pmap<PT_Node, vector_float> Sparkle_Scales;
+  typedef pmap<PT_Node, vector_float> Sparkle_Offsets;
+  typedef pmap<PT_Node, vector_Colorf> Sparkle_Colors;
 
   Textures _sparkles;
   Relations _sparkle_arcs;
@@ -164,7 +164,7 @@ private:
   Sparkle_Colors _sparkle_colors;
 
   int _num_sparkles_on;
-  map<PT_Node, int> _current_sparkles;
+  pmap<PT_Node, int> _current_sparkles;
 
   void prepare_sparkles(vector_relation &arcs, const vector_texture &sparkles,
                         const vector_float &scales, const vector_float &offsets,

@@ -135,7 +135,7 @@ main(int argc, char *argv[]) {
 
   SampleData *ds = datasets[ds_index];
 
-  vector<PStatCollector> _collectors;
+  pvector<PStatCollector> _collectors;
   int i = 0;
   while (ds[i].category != (const char *)NULL) {
     _collectors.push_back(PStatCollector(ds[i].category));
@@ -151,7 +151,7 @@ main(int argc, char *argv[]) {
     float total_ms = 0.0;
     float now = client->get_clock().get_real_time();
 
-    typedef vector<WaitRequest> Wait;
+    typedef pvector<WaitRequest> Wait;
     Wait wait;
 
     // Make up some random intervals to "wait".

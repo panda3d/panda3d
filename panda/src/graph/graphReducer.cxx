@@ -21,8 +21,8 @@
 #include "namedNode.h"
 #include "pt_Node.h"
 
-#include <map>
-#include <list>
+#include "pmap.h"
+#include "plist.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphReducer::Constructor
@@ -165,7 +165,7 @@ flatten_siblings(Node *root) {
 
   // First, collect the children into groups of arcs with common
   // properties.
-  typedef map<NodeRelation *, list<NodeRelation *>, SortByTransitions> Children;
+  typedef pmap<NodeRelation *, plist<NodeRelation *>, SortByTransitions> Children;
   Children children;
 
   const DownRelationPointers &drp =
@@ -179,17 +179,17 @@ flatten_siblings(Node *root) {
   // Now visit each of those groups and try to collapse them together.
   Children::iterator ci;
   for (ci = children.begin(); ci != children.end(); ++ci) {
-    list<NodeRelation *> &arcs = (*ci).second;
+    plist<NodeRelation *> &arcs = (*ci).second;
 
-    list<NodeRelation *>::iterator ai1;
+    plist<NodeRelation *>::iterator ai1;
     ai1 = arcs.begin();
     while (ai1 != arcs.end()) {
-      list<NodeRelation *>::iterator ai1_hold = ai1;
+      plist<NodeRelation *>::iterator ai1_hold = ai1;
       NodeRelation *arc1 = (*ai1);
       ++ai1;
-      list<NodeRelation *>::iterator ai2 = ai1;
+      plist<NodeRelation *>::iterator ai2 = ai1;
       while (ai2 != arcs.end()) {
-        list<NodeRelation *>::iterator ai2_hold = ai2;
+        plist<NodeRelation *>::iterator ai2_hold = ai2;
         NodeRelation *arc2 = (*ai2);
         ++ai2;
 

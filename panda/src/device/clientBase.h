@@ -34,7 +34,7 @@
 #include <ipc_thread.h>
 #endif
 
-#include <map>
+#include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ClientBase
@@ -74,8 +74,8 @@ protected:
   virtual void do_poll();
 
 private:
-  typedef map<string, ClientDevice *> DevicesByName;
-  typedef map<TypeHandle, DevicesByName> Devices;
+  typedef pmap<string, ClientDevice *> DevicesByName;
+  typedef pmap<TypeHandle, DevicesByName> Devices;
   Devices _devices;
 
   bool _forked;

@@ -28,7 +28,7 @@
 #include <pointerTo.h>
 #include <luse.h>
 
-#include <list>
+#include "plist.h"
 
 class EggTextureCollection;
 class EggMaterialCollection;
@@ -59,7 +59,7 @@ private:
   // We define the list of children as a list and not a vector, so we
   // can avoid the bad iterator-invalidating properties of vectors as
   // we insert/delete elements.
-  typedef list< PT(EggNode) > Children;
+  typedef plist< PT(EggNode) > Children;
 
   // Here begins the actual public interface to EggGroupNode.
 
@@ -154,8 +154,8 @@ private:
     Normald _normal;
     size_t _vertex;
   };
-  typedef vector<NVertexReference> NVertexGroup;
-  typedef map<Vertexd, NVertexGroup> NVertexCollection;
+  typedef pvector<NVertexReference> NVertexGroup;
+  typedef pmap<Vertexd, NVertexGroup> NVertexCollection;
 
   void r_collect_vertex_normals(NVertexCollection &collection,
                                 double threshold, CoordinateSystem cs);

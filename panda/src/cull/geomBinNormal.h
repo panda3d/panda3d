@@ -25,7 +25,7 @@
 
 #include <pointerTo.h>
 
-#include <set>
+#include "pset.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomBinNormal

@@ -21,8 +21,8 @@
 
 #include <pandabase.h>
 
-#include <vector>
-#include <map>
+#include "pvector.h"
+#include "pmap.h"
 
 class LoaderFileType;
 class Filename;
@@ -51,10 +51,10 @@ public:
   void register_type(LoaderFileType *type);
 
 private:
-  typedef vector<LoaderFileType *> Types;
+  typedef pvector<LoaderFileType *> Types;
   Types _types;
 
-  typedef map<string, LoaderFileType *> Extensions;
+  typedef pmap<string, LoaderFileType *> Extensions;
   Extensions _extensions;
 
   static LoaderFileTypeRegistry *_global_ptr;

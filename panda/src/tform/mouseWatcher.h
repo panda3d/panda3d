@@ -32,7 +32,7 @@
 #include <eventHandler.h>
 #include <pt_NodeRelation.h>
 
-#include <set>
+#include "pset.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MouseWatcher
@@ -105,7 +105,7 @@ private:
                            const MouseWatcherRegion *region,
                            const string &button_name = string());
 
-  typedef set< PT(MouseWatcherRegion) > Regions;
+  typedef pset< PT(MouseWatcherRegion) > Regions;
   Regions _regions;
 
   bool _has_mouse;

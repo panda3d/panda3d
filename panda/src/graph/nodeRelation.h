@@ -33,8 +33,8 @@
 #include <updateSeq.h>
 #include <factory.h>
 
-#include <set>
-#include <map>
+#include "pset.h"
+#include "pmap.h"
 #include <stdlib.h>
 
 class Node;

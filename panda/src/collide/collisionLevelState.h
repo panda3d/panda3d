@@ -26,7 +26,7 @@
 #include <geometricBoundingVolume.h>
 #include <arcChain.h>
 
-#include <list>
+#include "plist.h"
 
 class CollisionSolid;
 class CollisionNode;

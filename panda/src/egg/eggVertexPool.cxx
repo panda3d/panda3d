@@ -338,7 +338,7 @@ transform(const LMatrix4d &mat) {
     // of vertices in this pool.  We must have a copy because we might
     // be modifying the list as we traverse it.
 
-    typedef vector<EggVertex *> Verts;
+    typedef pvector<EggVertex *> Verts;
     Verts verts;
     verts.reserve(size());
     copy(begin(), end(), back_inserter(verts));

@@ -59,13 +59,13 @@ split_vertex(EggVertex *vert, const FunctionObject &sequence) {
 
   // Define a map of ints to vert pointers, to indicate which sequence
   // numbers we have already created vertices for.
-  typedef map<int, EggVertex *> Sequences;
+  typedef pmap<int, EggVertex *> Sequences;
   Sequences _sequences;
 
   // Get a copy of the list of primitives that reference this vertex.
   // We must have a copy because we will be modifying the list as we
   // traverse it.
-  typedef vector<EggPrimitive *> Prims;
+  typedef pvector<EggPrimitive *> Prims;
   Prims prims;
   prims.reserve(vert->pref_size());
   copy(vert->pref_begin(), vert->pref_end(), back_inserter(prims));

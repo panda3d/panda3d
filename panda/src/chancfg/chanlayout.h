@@ -21,14 +21,14 @@
 
 #include <pandabase.h>
 
-#include <map>
-#include <vector>
+#include "pmap.h"
+#include "pvector.h"
 #include <algorithm>
 #include <string>
 #include "chanviewport.h"
 
 
-typedef std::vector<ChanViewport> LayoutRegionVec;
+typedef std::pvector<ChanViewport> LayoutRegionVec;
 
 class LayoutItem {
 private:
@@ -46,7 +46,7 @@ public:
   INLINE const ChanViewport& operator[](int);
 };
 
-typedef std::map<std::string, LayoutItem> LayoutType;
+typedef std::pmap<std::string, LayoutItem> LayoutType;
 
 extern LayoutType* LayoutDB;
 

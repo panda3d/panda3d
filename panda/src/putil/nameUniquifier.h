@@ -22,7 +22,7 @@
 #include <pandabase.h>
 
 #include <string>
-#include <set>
+#include "pset.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NameUniquifier
@@ -44,7 +44,7 @@ public:
 private:
   string add_name_body(const string &name, const string &prefix);
 
-  typedef set<string> Names;
+  typedef pset<string> Names;
   Names _names;
   string _separator;
   string _empty;

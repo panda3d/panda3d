@@ -20,7 +20,7 @@
 #include "actorNode.h"
 
 #include <algorithm>
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function : PhysicsManager
@@ -50,7 +50,7 @@ PhysicsManager::
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 remove_linear_force(LinearForce *f) {
-  vector< PT(LinearForce) >::iterator found;
+  pvector< PT(LinearForce) >::iterator found;
 
   PT(LinearForce) ptbf = f;
   found = find(_linear_forces.begin(), _linear_forces.end(), ptbf);
@@ -68,7 +68,7 @@ remove_linear_force(LinearForce *f) {
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 remove_angular_force(AngularForce *f) {
-  vector< PT(AngularForce) >::iterator found;
+  pvector< PT(AngularForce) >::iterator found;
 
   PT(BaseForce) ptbf = f;
   found = find(_angular_forces.begin(), _angular_forces.end(), ptbf);
@@ -86,7 +86,7 @@ remove_angular_force(AngularForce *f) {
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 remove_physical(Physical *p) {
-  vector< Physical * >::iterator found;
+  pvector< Physical * >::iterator found;
 
   found = find(_physicals.begin(), _physicals.end(), p);
   if (found == _physicals.end())
@@ -104,7 +104,7 @@ remove_physical(Physical *p) {
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 do_physics(float dt) {
-  vector< Physical * >::iterator p_cur;
+  pvector< Physical * >::iterator p_cur;
 
   // now, run through each physics object in the set.
   p_cur = _physicals.begin();

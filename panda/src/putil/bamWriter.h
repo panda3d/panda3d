@@ -24,7 +24,7 @@
 
 #include "typedWritable.h"
 #include "datagramSink.h"
-#include <deque>
+#include "pdeque.h"
 
 // A handy macro for writing PointerToArrays.
 #define WRITE_PTA(Manager, dest, Write_func, array)  \
@@ -91,7 +91,7 @@ private:
 
 
   // This is the set of all TypeHandles already written.
-  set<int> _types_written;
+  pset<int> _types_written;
 
   // This keeps track of all of the objects we have written out
   // already (or are about to write out), and associates a unique
@@ -103,7 +103,7 @@ private:
 
     StoreState(int object_id) : _object_id(object_id), _written(false) {}
   };
-  typedef map<TypedWritable *, StoreState> StateMap;
+  typedef pmap<TypedWritable *, StoreState> StateMap;
   StateMap _state_map;
 
   // This is the next object ID that will be assigned to a new object.
@@ -111,12 +111,12 @@ private:
 
   // This is the queue of objects that need to be written when the
   // current object is finished.
-  typedef deque<TypedWritable *> ObjectQueue;
+  typedef pdeque<TypedWritable *> ObjectQueue;
   ObjectQueue _object_queue;
 
   // These are used by register_pta() to unify multiple references to
   // the same PointerToArray.
-  typedef map<void *, int> PTAMap;
+  typedef pmap<void *, int> PTAMap;
   PTAMap _pta_map;
   int _next_pta_id;
 

@@ -29,7 +29,7 @@
 #include <notify.h>
 #include <namedNode.h>
 #include <geomNode.h>
-#include <map>
+#include "pmap.h"
 #endif
 
 #include "builder.h"
@@ -126,7 +126,7 @@ public:
 ////////////////////////////////////////////////////////////////////
 GeomNode *Builder::
 build(const string &default_name) {
-  typedef map<NodeMap, GeomNode *, less<NodeMap> > GeomNodeMap;
+  typedef pmap<NodeMap, GeomNode *, less<NodeMap> > GeomNodeMap;
   GeomNodeMap geom_nodes;
 
   // First, build all the Geoms and create GeomNodes for them.  Each

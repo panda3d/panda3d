@@ -23,7 +23,7 @@
 
 #include "typedObject.h"
 
-#include <map>
+#include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GlobalPointerRegistry
@@ -79,7 +79,7 @@ private:
   static GlobalPointerRegistry *_global_ptr;
 
 private:
-  typedef map<TypeHandle, void *> Pointers;
+  typedef pmap<TypeHandle, void *> Pointers;
   Pointers _pointers;
 };
 

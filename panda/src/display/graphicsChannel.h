@@ -28,7 +28,7 @@
 #include <typedReferenceCount.h>
 #include <pointerTo.h>
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 // Defines
@@ -75,7 +75,7 @@ private:
   GraphicsWindow *_window;
   bool _is_active;
 
-  typedef vector< PT(GraphicsLayer) > GraphicsLayers;
+  typedef pvector< PT(GraphicsLayer) > GraphicsLayers;
   GraphicsLayers _layers;
 
 private:

@@ -27,7 +27,7 @@
 #include <typedef.h>
 
 #include <string>
-#include <map>
+#include "pmap.h"
 
 class EggNode;
 class EggGroup;
@@ -72,7 +72,7 @@ private:
                               EggGroupNode *prim_home);
   EggGroupNode *determine_primitive_home(EggPrimitive *egg_primitive);
 
-  typedef map<EggNode *, int> NodeMap;
+  typedef pmap<EggNode *, int> NodeMap;
   NodeMap _node_map;
 
   typedef vector_PartGroupStar Parts;

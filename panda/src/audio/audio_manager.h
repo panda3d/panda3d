@@ -25,7 +25,7 @@
 
 #include <ipc_mutex.h>
 #include <ipc_thread.h>
-#include <set>
+#include "pset.h"
 
 class EXPCL_PANDA AudioManager {
 private:
@@ -46,7 +46,7 @@ private:
 
   typedef void UpdateFunc(void);
   typedef void ShutdownFunc(void);
-  typedef set<AudioSound*> LoopSet;
+  typedef pset<AudioSound*> LoopSet;
   static AudioManager* _global_ptr;
   static UpdateFunc* _update_func;
   static ShutdownFunc* _shutdown_func;

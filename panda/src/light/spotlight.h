@@ -25,7 +25,7 @@
 
 #include <graphicsStateGuardian.h>
 #include <luse.h>
-#include <map>
+#include "pmap.h"
 #include <namedNode.h>
 #include <frustum.h>
 #include "light.h"

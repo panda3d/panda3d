@@ -23,8 +23,8 @@
 #include <pointerTo.h>
 #include <typedReferenceCount.h>
 
-#include <vector>
-#include <list>
+#include "pvector.h"
+#include "plist.h"
 
 #include "physicsObject.h"
 #include "linearForce.h"
@@ -46,9 +46,9 @@ private:
 
 protected:
   // containers
-  vector< PT(PhysicsObject) > _physics_objects;
-  vector< PT(LinearForce) > _linear_forces;
-  vector< PT(AngularForce) > _angular_forces;
+  pvector< PT(PhysicsObject) > _physics_objects;
+  pvector< PT(LinearForce) > _linear_forces;
+  pvector< PT(AngularForce) > _angular_forces;
 
   // this pointer exists to make life easy.  If a physical exists
   // with only one element (i.e. NOT a particle system or set-physical),
@@ -83,9 +83,9 @@ PUBLISHED:
   INLINE PT(AngularForce) get_angular_force(int index) const;
 
 public:
-  INLINE const vector< PT(PhysicsObject) > &get_object_vector(void) const;
-  INLINE const vector< PT(LinearForce) > &get_linear_forces(void) const;
-  INLINE const vector< PT(AngularForce) > &get_angular_forces(void) const;
+  INLINE const pvector< PT(PhysicsObject) > &get_object_vector(void) const;
+  INLINE const pvector< PT(LinearForce) > &get_linear_forces(void) const;
+  INLINE const pvector< PT(AngularForce) > &get_angular_forces(void) const;
 
   friend class PhysicsManager;
   friend class PhysicalNode;

@@ -26,8 +26,8 @@
 #include "pt_EggVertex.h"
 
 #include <pointerTo.h>
-#include <set>
-#include <map>
+#include "pset.h"
+#include "pmap.h"
 #include <lmatrix.h>
 #include <iterator_types.h>
 
@@ -56,14 +56,14 @@ private:
   // IndexVertices is the main storage mechanism of the vertex pool.
   // It stores a reference-counting pointer to each vertex, ordered by
   // vertex index number.
-  typedef map<int, PT_EggVertex> IndexVertices;
+  typedef pmap<int, PT_EggVertex> IndexVertices;
 
   // UniqueVertices is an auxiliary indexing mechanism.  It stores the
   // same vertex pointers as IndexVertices (although these pointers
   // are not reference-counted), this time ordered by vertex
   // properties.  This makes it easy to determine when one or more
   // vertices already exist in the pool with identical properties.
-  typedef multiset<EggVertex *, UniqueEggVertices> UniqueVertices;
+  typedef pmultiset<EggVertex *, UniqueEggVertices> UniqueVertices;
 
 public:
   typedef second_of_pair_iterator<IndexVertices::const_iterator> iterator;

@@ -26,7 +26,7 @@
 #include "graphicsWindow.h"
 #include "config_display.h"
 
-#include <map>
+#include "pmap.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////

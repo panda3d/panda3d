@@ -23,7 +23,7 @@
 
 #include <notify.h>
 
-#include <vector>
+#include "pvector.h"
 
 class Datagram;
 class DatagramIterator;
@@ -69,7 +69,7 @@ private:
     int _index;
     float _value;
   };
-  typedef vector<DataPoint> Data;
+  typedef pvector<DataPoint> Data;
 
   Data _time_data, _level_data;
 };

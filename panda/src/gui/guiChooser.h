@@ -22,13 +22,13 @@
 #include "guiBehavior.h"
 #include "guiButton.h"
 
-#include <vector>
+#include "pvector.h"
 
 // Only shows one item at a time.  Has two buttons that move back and forth
 // over the list of things it has.  Can do both circular and linear lists.
 class EXPCL_PANDA GuiChooser : public GuiBehavior {
 private:
-  typedef vector< PT(GuiItem) > ItemVector;
+  typedef pvector< PT(GuiItem) > ItemVector;
 
   class EXPCL_PANDA ChooseFunctor : public GuiBehavior::BehaviorFunctor {
   protected:

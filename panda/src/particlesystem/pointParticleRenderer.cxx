@@ -212,7 +212,7 @@ create_color(const BaseParticle *p) {
 ////////////////////////////////////////////////////////////////////
 
 void PointParticleRenderer::
-render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
+render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   BaseParticle *cur_particle;
 

@@ -156,7 +156,7 @@ protected:
   int find_cv(float t);
   void recompute_basis();
 
-  vector<HermiteCurveCV> _points;
+  pvector<HermiteCurveCV> _points;
 
 // TypedWritable stuff
 public:

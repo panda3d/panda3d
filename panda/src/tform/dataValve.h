@@ -94,7 +94,7 @@ private:
   ModifierButtons _mods;
   PT(Control) _default_control;
 
-  typedef map<TypeHandle,  PT(Control) > FineControls;
+  typedef pmap<TypeHandle,  PT(Control) > FineControls;
 
   class Child {
   public:
@@ -102,7 +102,7 @@ private:
     FineControls _fine_controls;
   };
 
-  typedef vector<Child> Controls;
+  typedef pvector<Child> Controls;
   Controls _controls;
 
 

@@ -37,11 +37,11 @@
 #include <nullTransitionWrapper.h>
 #include "auto_bind.h"
 
-typedef set<AnimBundleNode *> AnimNodes;
-typedef map<string, AnimNodes> Anims;
+typedef pset<AnimBundleNode *> AnimNodes;
+typedef pmap<string, AnimNodes> Anims;
 
-typedef set<PartBundleNode *> PartNodes;
-typedef map<string, PartNodes> Parts;
+typedef pset<PartBundleNode *> PartNodes;
+typedef pmap<string, PartNodes> Parts;
 
 
 

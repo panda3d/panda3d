@@ -23,8 +23,8 @@
 
 #include "buttonHandle.h"
 
-#include <vector>
-#include <map>
+#include "pvector.h"
+#include "pmap.h"
 #include <string>
 
 ////////////////////////////////////////////////////////////////////
@@ -69,10 +69,10 @@ private:
 
   RegistryNode *look_up(ButtonHandle button) const;
 
-  typedef vector<RegistryNode *> HandleRegistry;
+  typedef pvector<RegistryNode *> HandleRegistry;
   HandleRegistry _handle_registry;
 
-  typedef map<string, RegistryNode *> NameRegistry;
+  typedef pmap<string, RegistryNode *> NameRegistry;
   NameRegistry _name_registry;
 
   static ButtonRegistry *_global_pointer;

@@ -23,7 +23,7 @@
 
 #include "pt_Light.h"
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : vector_PT_Light

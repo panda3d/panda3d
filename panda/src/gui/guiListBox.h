@@ -22,13 +22,13 @@
 #include "guiBehavior.h"
 #include "guiButton.h"
 
-#include <vector>
-#include <deque>
+#include "pvector.h"
+#include "pdeque.h"
 
 class EXPCL_PANDA GuiListBox : public GuiBehavior {
 private:
-  typedef vector< PT(GuiItem) > ItemVector;
-  typedef deque< PT(GuiItem) > ItemDeque;
+  typedef pvector< PT(GuiItem) > ItemVector;
+  typedef pdeque< PT(GuiItem) > ItemDeque;
 
   class EXPCL_PANDA ListFunctor : public GuiBehavior::BehaviorFunctor {
   protected:

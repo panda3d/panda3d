@@ -26,7 +26,7 @@
 #include "imageBuffer.h"
 #include "pixelBuffer.h"
 #include <graphicsStateGuardianBase.h>
-#include <map>
+#include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
 // Defines
@@ -161,7 +161,7 @@ protected:
   // has been prepared into.  Each GSG conversely keeps a list (a set)
   // of all the Texture's that have been prepared there.  When either
   // destructs, it removes itself from the other's list.
-  typedef map<GraphicsStateGuardianBase *, TextureContext *> Contexts;
+  typedef pmap<GraphicsStateGuardianBase *, TextureContext *> Contexts;
   Contexts _contexts;
 
 

@@ -52,7 +52,7 @@ EggXfmAnimData(const EggXfmSAnim &convert_from)
   // contents string.  Also store up the SAnim tables themselves in a
   // temporary vector for convenience.
 
-  vector<EggSAnimData *> subtables;
+  pvector<EggSAnimData *> subtables;
 
   EggXfmSAnim::const_iterator ci;
   for (ci = convert_from.begin(); ci != convert_from.end(); ++ci) {

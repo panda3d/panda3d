@@ -25,7 +25,7 @@
 
 #include <pointerTo.h>
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomBinGroup
@@ -65,7 +65,7 @@ protected:
   virtual PT(GeomBin) detach();
 
 private:
-  typedef vector< PT(GeomBin) > SubBins;
+  typedef pvector< PT(GeomBin) > SubBins;
   SubBins _sub_bins;
 
 public:

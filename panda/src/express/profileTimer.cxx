@@ -25,7 +25,7 @@
 #include "profileTimer.h"
 #endif
 
-#include <map>
+#include "pmap.h"
 
 using namespace std;
 
@@ -121,7 +121,7 @@ consolidateAllTo(ostream &out) {
 
 void ProfileTimer::
 consolidateTo(ostream &out) const {
-  map<string, double> entries;
+  pmap<string, double> entries;
   int i;
   for (i=0; i<_entryCount; ++i) {
     TimerEntry& te=_entries[i];
@@ -132,7 +132,7 @@ consolidateTo(ostream &out) const {
     << "\n\n"; // ...should print data and time too.
   double total=0;
   {
-  map<string, double>::const_iterator i=entries.begin();
+  pmap<string, double>::const_iterator i=entries.begin();
   for (;i!=entries.end(); ++i) {
     out << "  " << setw(50) << i->first << ": "
     << setiosflags(ios::fixed) << setprecision(6) << setw(10) << i->second << "\n";

@@ -21,7 +21,7 @@
 
 #include "guiItem.h"
 
-#include <vector>
+#include "pvector.h"
 
 class EXPCL_PANDA GuiFrame : public GuiItem {
 PUBLISHED:
@@ -50,7 +50,7 @@ private:
     inline GuiItem* get_who(void) const { return _who; }
     inline float get_gap(void) const { return _gap; }
   };
-  typedef vector<Connection> Connections;
+  typedef pvector<Connection> Connections;
   class Box {
   private:
     PT(GuiItem) _thing;
@@ -77,7 +77,7 @@ private:
     inline void erase_nth_link(int n) { _links.erase(_links.begin() + n); }
     inline void erase_all_links(void) { _links.clear(); }
   };
-  typedef vector<Box> Boxes;
+  typedef pvector<Box> Boxes;
 
   Boxes _items;
   bool _align_to_left;

@@ -1264,7 +1264,7 @@ make_node(EggBin *egg_bin, NamedNode *parent) {
   LODNode *lod_node = new LODNode;
   lod_node->set_name(egg_bin->get_name());
 
-  vector<LODInstance> instances;
+  pvector<LODInstance> instances;
 
   EggGroup::const_iterator ci;
   for (ci = egg_bin->begin(); ci != egg_bin->end(); ++ci) {
@@ -1316,8 +1316,8 @@ make_node(EggGroup *egg_group, NamedNode *parent) {
     // We'll allow recursive expansion of ObjectType strings--but we
     // don't want to get caught in a cycle.  Keep track of the strings
     // we've expanded so far.
-    set<string> expanded;
-    vector<string> expanded_history;
+    pset<string> expanded;
+    pvector<string> expanded_history;
 
     while (egg_group->has_objecttype()) {
       string objecttype = egg_group->get_objecttype();
@@ -1737,7 +1737,7 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
   EggGroup *geom_group = find_collision_geometry(egg_group);
   if (geom_group != (EggGroup *)NULL) {
     // Collect all of the vertices.
-    set<EggVertex *> vertices;
+    pset<EggVertex *> vertices;
 
     EggGroup::const_iterator ci;
     for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
@@ -1753,7 +1753,7 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
     // Now average together all of the vertices to get a center.
     int num_vertices = 0;
     LPoint3d center(0.0, 0.0, 0.0);
-    set<EggVertex *>::const_iterator vi;
+    pset<EggVertex *>::const_iterator vi;
 
     for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
       EggVertex *vtx = (*vi);
@@ -1868,7 +1868,7 @@ create_collision_plane(EggPolygon *egg_poly, EggGroup *parent_group) {
     return NULL;
   }
 
-  vector<Vertexf> vertices;
+  pvector<Vertexf> vertices;
   if (!egg_poly->empty()) {
     EggPolygon::const_iterator vi;
     vi = egg_poly->begin();
@@ -1929,7 +1929,7 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
   for (ci = group->begin(); ci != group->end(); ++ci) {
     EggPolygon *poly = DCAST(EggPolygon, *ci);
 
-    vector<Vertexf> vertices;
+    pvector<Vertexf> vertices;
     if (!poly->empty()) {
       EggPolygon::const_iterator vi;
       vi = poly->begin();

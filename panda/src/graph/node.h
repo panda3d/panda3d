@@ -115,7 +115,7 @@ private:
 protected:
   virtual void propagate_stale_bound();
 
-  typedef map<Node *, Node *> InstanceMap;
+  typedef pmap<Node *, Node *> InstanceMap;
   virtual Node *r_copy_subgraph(TypeHandle graph_type,
                                 InstanceMap &inst_map) const;
   virtual void r_copy_children(const Node *from, TypeHandle graph_type,

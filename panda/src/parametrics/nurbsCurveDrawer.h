@@ -57,7 +57,7 @@ protected:
   LVecBase3f _cv_color, _hull_color, _knot_color;
   int _num_cvs, _num_hull, _num_knots;
   LineSegs _hull, _knots, _cvs;
-  vector<int> _knotnums;
+  pvector<int> _knotnums;
 
   bool _show_cvs, _show_hull, _show_knots;
 

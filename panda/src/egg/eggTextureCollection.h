@@ -26,7 +26,7 @@
 #include "vector_PT_EggTexture.h"
 
 #include <string>
-#include <map>
+#include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggTextureCollection
@@ -43,7 +43,7 @@ class EXPCL_PANDAEGG EggTextureCollection {
   // EggTextureCollection as an STL container.
 
 private:
-  typedef map<PT_EggTexture, int> Textures;
+  typedef pmap<PT_EggTexture, int> Textures;
   typedef vector_PT_EggTexture OrderedTextures;
 
 public:
@@ -51,7 +51,7 @@ public:
   typedef iterator const_iterator;
   typedef OrderedTextures::size_type size_type;
 
-  typedef map<PT_EggTexture,  PT_EggTexture > TextureReplacement;
+  typedef pmap<PT_EggTexture,  PT_EggTexture > TextureReplacement;
 
   // Here begins the actual public interface to EggTextureCollection.
 

@@ -1,5 +1,5 @@
-// Filename: set
-// Created by:  drose (12May00)
+// Filename: stdcompare.h
+// Created by:  drose (05Jun01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -21,35 +21,13 @@
 // interrogate) in lieu of the actual system headers, to generate the
 // interrogate database.
 
-#ifndef SET_H
-#define SET_H
+#ifndef STDCOMPARE_H
+#define STDCOMPARE_H
 
-#include <stdtypedefs.h>
-#include <stdcompare.h>
-
-template<class key, class compare = less<key> >
-class set {
+template<class key>
+class less {
 public:
-  typedef key key_type;
-  typedef key value_type;
-  typedef compare key_compare;
-  typedef compare value_compare;
-
-  typedef key *pointer;
-  typedef const key *const_pointer;
-  typedef key &reference;
-  typedef const key &const_reference;
-
-  class iterator;
-  class const_iterator;
-  class reverse_iterator;
-  class const_reverse_iterator;
-  typedef size_t size_type;
-  class difference_type;
-};
-
-template<class key, class compare = less<key> >
-class multiset : public set<key, compare> {
 };
 
 #endif
+

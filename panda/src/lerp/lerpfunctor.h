@@ -189,12 +189,12 @@ typedef SimpleQueryLerpFunctor<LVector2f> LVector2fQueryLerpFunctor;
 typedef SimpleQueryLerpFunctor<LVector3f> LVector3fQueryLerpFunctor;
 typedef SimpleQueryLerpFunctor<LVector4f> LVector4fQueryLerpFunctor;
 
-#include <set>
+#include "pset.h"
 #include <pointerTo.h>
 
 class EXPCL_PANDA MultiLerpFunctor : public LerpFunctor {
 private:
-  typedef set< PT(LerpFunctor) > Functors;
+  typedef pset< PT(LerpFunctor) > Functors;
   Functors _funcs;
 public:
   MultiLerpFunctor(void) {}

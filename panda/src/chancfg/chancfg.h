@@ -29,7 +29,7 @@
 #include <graphicsPipe.h>
 #include <graphicsWindow.h>
 
-#include <map>
+#include "pmap.h"
 
 class Node;
 
@@ -72,7 +72,7 @@ private:
     INLINE void setString(const std::string& v) { _str = v; }
     INLINE std::string getString(void) const { return _str; }
   };
-  typedef std::map<Field, Types> Fields;
+  typedef std::pmap<Field, Types> Fields;
   Fields _fields;
 public:
   ChanCfgOverrides(void);

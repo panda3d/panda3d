@@ -28,7 +28,7 @@
 
 #include "datagram_ui.h"
 
-#include <set>
+#include "pset.h"
 
 int
 main(int argc, char *argv[]) {
@@ -52,7 +52,7 @@ main(int argc, char *argv[]) {
   QueuedConnectionListener listener(&cm, 0);
   listener.add_connection(rendezvous);
 
-  typedef set< PT(Connection) > Clients;
+  typedef pset< PT(Connection) > Clients;
   Clients clients;
 
   QueuedConnectionReader reader(&cm, 1);

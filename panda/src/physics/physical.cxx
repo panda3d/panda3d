@@ -75,23 +75,23 @@ Physical(const Physical& copy) {
   _physics_manager = (PhysicsManager *) NULL;
 
   // copy the forces.
-  vector< PT(LinearForce) >::const_iterator lf_cur;
-  vector< PT(LinearForce) >::const_iterator lf_end = copy._linear_forces.end();
+  pvector< PT(LinearForce) >::const_iterator lf_cur;
+  pvector< PT(LinearForce) >::const_iterator lf_end = copy._linear_forces.end();
 
   for (lf_cur = copy._linear_forces.begin(); lf_cur != lf_end; lf_cur++) {
     _linear_forces.push_back((*lf_cur)->make_copy());
   }
 
-  vector< PT(AngularForce) >::const_iterator af_cur;
-  vector< PT(AngularForce) >::const_iterator af_end = copy._angular_forces.end();
+  pvector< PT(AngularForce) >::const_iterator af_cur;
+  pvector< PT(AngularForce) >::const_iterator af_end = copy._angular_forces.end();
 
   for (af_cur = copy._angular_forces.begin(); af_cur != af_end; af_cur++) {
     _angular_forces.push_back((*af_cur)->make_copy());
   }
 
   // copy the physics objects
-  vector< PT(PhysicsObject) >::const_iterator p_cur;
-  vector< PT(PhysicsObject) >::const_iterator p_end = copy._physics_objects.end();
+  pvector< PT(PhysicsObject) >::const_iterator p_cur;
+  pvector< PT(PhysicsObject) >::const_iterator p_end = copy._physics_objects.end();
 
   for (p_cur = copy._physics_objects.begin(); p_cur != p_end; p_cur++) {
     // oooh so polymorphic.

@@ -58,10 +58,10 @@ public:
 protected:
   MovingPartBase(void);
 
-  virtual void pick_channel_index(list<int> &holes, int &next) const;
+  virtual void pick_channel_index(plist<int> &holes, int &next) const;
   virtual void bind_hierarchy(AnimGroup *anim, int channel_index);
 
-  typedef vector< PT(AnimChannelBase) > Channels;
+  typedef pvector< PT(AnimChannelBase) > Channels;
   Channels _channels;
 
 public:

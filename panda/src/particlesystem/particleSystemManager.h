@@ -20,7 +20,7 @@
 #define PARTICLESYSTEMMANAGER_H
 
 #include <pandabase.h>
-#include <list>
+#include "plist.h"
 
 #include "particleSystem.h"
 
@@ -34,7 +34,7 @@
 class EXPCL_PANDAPHYSICS ParticleSystemManager {
 private:
 
-  list< PT(ParticleSystem) > _ps_list;
+  plist< PT(ParticleSystem) > _ps_list;
 
   int _nth_frame;
   int _cur_frame;

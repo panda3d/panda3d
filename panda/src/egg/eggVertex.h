@@ -27,7 +27,7 @@
 
 #include <referenceCount.h>
 #include <luse.h>
-#include <set>
+#include "pset.h"
 
 class EggVertexPool;
 class EggGroup;
@@ -41,8 +41,8 @@ class EggPrimitive;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggVertex : public EggObject, public EggAttributes {
 public:
-  typedef set<EggGroup *> GroupRef;
-  typedef multiset<EggPrimitive *> PrimitiveRef;
+  typedef pset<EggGroup *> GroupRef;
+  typedef pmultiset<EggPrimitive *> PrimitiveRef;
 
   EggVertex();
   EggVertex(const EggVertex &copy);

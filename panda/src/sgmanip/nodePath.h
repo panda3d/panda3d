@@ -44,7 +44,7 @@
 #include <pruneTransition.h>
 #include <namedNode.h>
 
-#include <map>
+#include "pmap.h"
 
 class FindApproxLevel;
 class FindApproxPath;

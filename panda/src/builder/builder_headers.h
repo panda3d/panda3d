@@ -18,9 +18,9 @@
 
 #include <geom.h>
 #include <geomNode.h>
-#include <list>
+#include "plist.h"
 #include <luse.h>
-#include <map>
+#include "pmap.h"
 #include <math.h>
 #include <namedNode.h>
 #include <notify.h>
@@ -29,9 +29,9 @@
 #include <pta_Normalf.h>
 #include <pta_TexCoordf.h>
 #include <pta_Vertexf.h>
-#include <set>
+#include "pset.h"
 #include <stdlib.h>
-#include <vector>
+#include "pvector.h"
 
 #include "builderAttrib.h"
 #include "builderAttribTempl.h"

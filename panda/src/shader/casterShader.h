@@ -48,7 +48,7 @@ class EXPCL_SHADER CasterShader : public FrustumShader
     INLINE int add_caster(NamedNode* node);
     INLINE int remove_caster(NamedNode* node);
 
-    typedef vector<NamedNode *> NamedNodeVector;
+    typedef pvector<NamedNode *> NamedNodeVector;
 
   protected:
 

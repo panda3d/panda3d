@@ -58,7 +58,7 @@ PUBLISHED:
   void clear_local_transforms();
 
 private:
-  typedef set< PT_NodeRelation > ArcList;
+  typedef pset< PT_NodeRelation > ArcList;
   ArcList _net_transform_arcs;
   ArcList _local_transform_arcs;
 

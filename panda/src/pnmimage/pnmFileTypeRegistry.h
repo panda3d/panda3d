@@ -53,13 +53,13 @@ public:
 private:
   void sort_preferences();
 
-  typedef vector<PNMFileType *> Types;
+  typedef pvector<PNMFileType *> Types;
   Types _types;
 
-  typedef map<string, Types> Extensions;
+  typedef pmap<string, Types> Extensions;
   Extensions _extensions;
 
-  typedef map<TypeHandle, PNMFileType *> Handles;
+  typedef pmap<TypeHandle, PNMFileType *> Handles;
   Handles _handles;
 
   bool _requires_sort;

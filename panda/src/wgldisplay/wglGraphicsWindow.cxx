@@ -410,7 +410,7 @@ int wglGraphicsWindow::choose_visual(void) {
     0
       };
 
-      set<int> tried_masks;
+      pset<int> tried_masks;
       tried_masks.insert(mask);
 
       int i;

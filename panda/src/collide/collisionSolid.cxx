@@ -166,7 +166,7 @@ test_intersection_from_segment(CollisionHandler *,
 void CollisionSolid::
 report_undefined_intersection_test(TypeHandle from_type, TypeHandle into_type) {
 #ifndef NDEBUG
-  typedef map<TypeHandle, TypeHandle> Reported;
+  typedef pmap<TypeHandle, TypeHandle> Reported;
   static Reported reported;
 
   if (reported.insert(Reported::value_type(from_type, into_type)).second) {

@@ -28,8 +28,8 @@
 #include <prio.h>
 #include <prthread.h>
 #include <prlock.h>
-#include <vector>
-#include <set>
+#include "pvector.h"
+#include "pset.h"
 
 class NetDatagram;
 class ConnectionManager;
@@ -119,15 +119,15 @@ protected:
 private:
   bool _shutdown;
 
-  typedef vector<PRThread *> Threads;
+  typedef pvector<PRThread *> Threads;
   Threads _threads;
   PRLock *_startup_mutex;
   bool _polling;
 
   // These structures are used to manage polling for noise on
   // available sockets.
-  typedef vector<PRPollDesc> Poll;
-  typedef vector<SocketInfo *> Sockets;
+  typedef pvector<PRPollDesc> Poll;
+  typedef pvector<SocketInfo *> Sockets;
   Poll _poll;
   Sockets _polled_sockets;
   int _next_index;

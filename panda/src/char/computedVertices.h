@@ -64,14 +64,14 @@ private:
     void read_datagram(DatagramIterator &source);
   };
 
-  typedef vector<VertexTransform> VertexTransforms;
+  typedef pvector<VertexTransform> VertexTransforms;
 
   VertexTransforms _transforms;
 
-  typedef vector<ComputedVerticesMorphVertex> VertexMorphs;
-  typedef vector<ComputedVerticesMorphNormal> NormalMorphs;
-  typedef vector<ComputedVerticesMorphTexCoord> TexCoordMorphs;
-  typedef vector<ComputedVerticesMorphColor> ColorMorphs;
+  typedef pvector<ComputedVerticesMorphVertex> VertexMorphs;
+  typedef pvector<ComputedVerticesMorphNormal> NormalMorphs;
+  typedef pvector<ComputedVerticesMorphTexCoord> TexCoordMorphs;
+  typedef pvector<ComputedVerticesMorphColor> ColorMorphs;
   VertexMorphs _vertex_morphs;
   NormalMorphs _normal_morphs;
   TexCoordMorphs _texcoord_morphs;

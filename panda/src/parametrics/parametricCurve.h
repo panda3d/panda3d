@@ -26,8 +26,8 @@
 #include <luse.h>
 
 #include <typedef.h>
-#include <list>
-#include <vector>
+#include "plist.h"
+#include "pvector.h"
 
 
 // Parametric curve semantic types.  A parametric curve may have one
@@ -105,7 +105,7 @@ public:
     LVecBase3f _v[4];
     float _t;
   };
-  typedef vector<BezierSeg> BezierSegs;
+  typedef pvector<BezierSeg> BezierSegs;
 
   virtual bool get_bezier_segs(BezierSegs &) const;
   virtual bool get_bezier_seg(BezierSeg &) const;
@@ -140,7 +140,7 @@ protected:
   int _num_dimensions;
 
 private:
-  typedef list<ParametricCurveDrawer *> DrawerList;
+  typedef plist<ParametricCurveDrawer *> DrawerList;
   DrawerList _drawers;
   ParametricCurveDrawer *_implicit_drawer;
   PT_NodeRelation _viz_arc;

@@ -25,7 +25,7 @@
 
 #include <filename.h>
 
-#include <map>
+#include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TexturePool
@@ -68,7 +68,7 @@ private:
   static TexturePool *get_ptr();
 
   static TexturePool *_global_ptr;
-  typedef map<string,  PT(Texture) > Textures;
+  typedef pmap<string,  PT(Texture) > Textures;
   Textures _textures;
 };
 

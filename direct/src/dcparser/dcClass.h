@@ -22,9 +22,6 @@
 #include "dcbase.h"
 #include "dcField.h"
 
-#include <vector>
-#include <map>
-
 class HashGenerator;
 
 ////////////////////////////////////////////////////////////////////
@@ -62,16 +59,16 @@ public:
   int _number;
   string _name;
 
-  typedef vector<DCClass *> Parents;
+  typedef pvector<DCClass *> Parents;
   Parents _parents;
 
-  typedef vector<DCField *> Fields;
+  typedef pvector<DCField *> Fields;
   Fields _fields;
 
 public:
   // These members are built up during parsing for the convenience of
   // the parser.
-  typedef map<string, DCField *> FieldsByName;
+  typedef pmap<string, DCField *> FieldsByName;
   FieldsByName _fields_by_name;
 };
 

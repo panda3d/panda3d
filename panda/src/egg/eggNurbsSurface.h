@@ -26,7 +26,7 @@
 
 #include <vector_double.h>
 
-#include <list>
+#include "plist.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggNurbsSurface
@@ -34,11 +34,11 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggNurbsSurface : public EggSurface {
 public:
-  typedef list< PT(EggNurbsCurve) > Curves;
+  typedef plist< PT(EggNurbsCurve) > Curves;
   typedef Curves Loop;
-  typedef list<Loop> Loops;
+  typedef plist<Loop> Loops;
   typedef Loops Trim;
-  typedef list<Trim> Trims;
+  typedef plist<Trim> Trims;
 
   INLINE EggNurbsSurface(const string &name = "");
   INLINE EggNurbsSurface(const EggNurbsSurface &copy);

@@ -157,7 +157,7 @@ init_geoms(void) {
 ////////////////////////////////////////////////////////////////////
 
 void SparkleParticleRenderer::
-render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
+render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   if (!ttl_particles)
     return;

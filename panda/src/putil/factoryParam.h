@@ -23,7 +23,7 @@
 
 #include "typedReferenceCount.h"
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FactoryParam

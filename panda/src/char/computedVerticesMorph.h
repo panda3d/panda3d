@@ -107,7 +107,7 @@ public:
   INLINE ComputedVerticesMorph(const ComputedVerticesMorph &copy);
 
   typedef MorphValueType MorphValue;
-  typedef vector<MorphValue> Morphs;
+  typedef pvector<MorphValue> Morphs;
 
   void output(ostream &out) const;
 

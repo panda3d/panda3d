@@ -466,7 +466,7 @@ cut_sheet(int first_row_id, int do_mate, const BuilderBucket &bucket) {
   // calling cut_sheet() recursively will start things mating, and
   // could damage our edge list.
 
-  typedef list<MesherStrip *> StripPtrs;
+  typedef plist<MesherStrip *> StripPtrs;
   StripPtrs strip_ptrs;
 
   for (ei = _edges.begin(); ei != _edges.end(); ++ei) {

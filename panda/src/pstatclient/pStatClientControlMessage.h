@@ -23,7 +23,7 @@
 
 #include "pStatCollectorDef.h"
 
-#include <vector>
+#include "pvector.h"
 
 class Datagram;
 class PStatClientVersion;
@@ -58,11 +58,11 @@ public:
   int _minor_version;
 
   // Used for T_define_collectors
-  vector<PStatCollectorDef *> _collectors;
+  pvector<PStatCollectorDef *> _collectors;
 
   // Used for T_define_threads
   int _first_thread_index;
-  vector<string> _names;
+  pvector<string> _names;
 };
 
 

@@ -48,7 +48,7 @@ public:
   }
 };
 
-typedef map<GuiItem*, PosFrame> UtilMap;
+typedef pmap<GuiItem*, PosFrame> UtilMap;
 
 GuiFrame::Boxes::iterator GuiFrame::find_box(GuiItem* item) {
   bool found = false;
@@ -64,7 +64,7 @@ GuiFrame::Boxes::iterator GuiFrame::find_box(GuiItem* item) {
   return ret;
 }
 
-#include <map>
+#include "pmap.h"
 
 void GuiFrame::recompute_frame(void) {
   GuiItem::recompute_frame();

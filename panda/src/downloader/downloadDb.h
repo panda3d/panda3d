@@ -26,10 +26,10 @@
 #include <filename.h>
 #include <multifile.h>
 
-#include <vector>
+#include "pvector.h"
 #include <string>
 #include <pointerTo.h>
-#include <map>
+#include "pmap.h"
 
 #include "hashVal.h"
 #include <buffer.h>
@@ -134,7 +134,7 @@ public:
     string _name;
   };
 
-  typedef vector< PT(FileRecord) > FileRecords;
+  typedef pvector< PT(FileRecord) > FileRecords;
 
   class EXPCL_PANDAEXPRESS MultifileRecord : public ReferenceCount {
   public:
@@ -154,7 +154,7 @@ public:
     FileRecords _file_records;
   };
 
-  typedef vector< PT(MultifileRecord) > MultifileRecords;
+  typedef pvector< PT(MultifileRecord) > MultifileRecords;
 
   class EXPCL_PANDAEXPRESS Db {
   public:
@@ -197,8 +197,8 @@ public:
   // Magic number for knowing this is a download Db
   static PN_uint32 _magic_number;
   static PN_uint32 _bogus_magic_number;
-  typedef vector<HashVal> vectorHash;
-  typedef map<string, vectorHash> VersionMap;
+  typedef pvector<HashVal> vectorHash;
+  typedef pmap<string, vectorHash> VersionMap;
 
 PUBLISHED:
   void add_version(const Filename &name, HashVal hash, Version version);

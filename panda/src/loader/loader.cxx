@@ -28,8 +28,8 @@
 #include <filename.h>
 #include <load_dso.h>
 
-#include <list>
-#include <vector>
+#include "plist.h"
+#include "pvector.h"
 #include <algorithm>
 
 
@@ -358,7 +358,7 @@ public:
 ////////////////////////////////////////////////////////////////////
 PT_Node Loader::
 load_unknown_file_type(const Filename &filename) const {
-  typedef vector<LoaderConsiderFile> Files;
+  typedef pvector<LoaderConsiderFile> Files;
   Files files;
 
   // First, build up a list of all of the possible files it could be.
@@ -446,7 +446,7 @@ load_unknown_file_type(const Filename &filename) const {
 ////////////////////////////////////////////////////////////////////
 void Loader::
 resolve_unknown_file_type(Filename &filename) const {
-  typedef vector<LoaderConsiderFile> Files;
+  typedef pvector<LoaderConsiderFile> Files;
   Files files;
 
   // First, build up a list of all of the possible files it could be.

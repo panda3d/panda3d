@@ -87,7 +87,7 @@ void MemoryUsage::TypeHistogram::
 show() const {
   // First, copy the relevant information to a vector so we can sort
   // by counts.
-  vector<TypeHistogramCountSorter> count_sorter;
+  pvector<TypeHistogramCountSorter> count_sorter;
   Counts::const_iterator ci;
   for (ci = _counts.begin(); ci != _counts.end(); ++ci) {
     count_sorter.push_back
@@ -96,7 +96,7 @@ show() const {
 
   sort(count_sorter.begin(), count_sorter.end());
 
-  vector<TypeHistogramCountSorter>::const_iterator vi;
+  pvector<TypeHistogramCountSorter>::const_iterator vi;
   for (vi = count_sorter.begin(); vi != count_sorter.end(); ++vi) {
     TypeHandle type = (*vi)._type;
     if (type == TypeHandle::none()) {

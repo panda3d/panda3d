@@ -131,20 +131,20 @@ private:
 
   Builder _builder;
 
-  typedef set<PT(TextureApplyTransition), IndirectCompareTo<NodeTransition> > TextureApplies;
+  typedef pset<PT(TextureApplyTransition), IndirectCompareTo<NodeTransition> > TextureApplies;
   TextureApplies _texture_applies;
 
-  typedef map<PT_EggTexture, TextureDef> Textures;
+  typedef pmap<PT_EggTexture, TextureDef> Textures;
   Textures _textures;
 
-  typedef map<CPT_EggMaterial, PT(MaterialTransition) > Materials;
+  typedef pmap<CPT_EggMaterial, PT(MaterialTransition) > Materials;
   Materials _materials;
   Materials _materials_bface;
 
-  typedef set<RenderRelation *> Decals;
+  typedef pset<RenderRelation *> Decals;
   Decals _decals;
 
-  typedef set<RenderRelation *> Directs;
+  typedef pset<RenderRelation *> Directs;
   Directs _directs;
 
   DeferredArcs _deferred_arcs;

@@ -38,7 +38,7 @@ class EXPCL_PANDA GuiLabel : public TypedReferenceCount {
 PUBLISHED:
   enum PriorityType { P_NONE, P_LOWEST, P_LOWER, P_HIGHER, P_HIGHEST };
 private:
-  typedef map<GuiLabel*, PriorityType> PriorityMap;
+  typedef pmap<GuiLabel*, PriorityType> PriorityMap;
   enum LabelType { NONE, L_NULL, SIMPLE_TEXTURE, SIMPLE_TEXT, SIMPLE_CARD, MODEL };
 
   LabelType _type;

@@ -23,8 +23,6 @@
 #include "dcField.h"
 #include "dcSubatomicType.h"
 
-#include <vector>
-
 ////////////////////////////////////////////////////////////////////
 //       Class : DCAtomicField
 // Description : A single atomic field of a Distributed Class, as read
@@ -81,7 +79,7 @@ public:
     bool format_default_value(const string &str, string &formatted) const;
   };
 
-  typedef vector<ElementType> Elements;
+  typedef pvector<ElementType> Elements;
   Elements _elements;
 
   enum Flags {

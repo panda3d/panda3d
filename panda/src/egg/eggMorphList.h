@@ -25,7 +25,7 @@
 
 #include <indent.h>
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggMorphList
@@ -34,7 +34,7 @@
 template<class MorphType>
 class EggMorphList {
 private:
-  typedef vector<MorphType> Morphs;
+  typedef pvector<MorphType> Morphs;
 
 public:
   typedef Morphs::iterator iterator;

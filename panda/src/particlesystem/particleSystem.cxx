@@ -380,7 +380,7 @@ resize_pool(int size) {
           kill_particle(delete_index);
           _free_particle_fifo.pop_back();
         } else {
-          deque<int>::iterator i;
+          pdeque<int>::iterator i;
           i = find(_free_particle_fifo.begin(), _free_particle_fifo.end(), delete_index);
           if (i != _free_particle_fifo.end()) {
             _free_particle_fifo.erase(i);
@@ -432,7 +432,7 @@ resize_pool(int size) {
 #ifdef PSDEBUG
         cout << "WAS NOT ALIVE" << endl;
 #endif
-        deque<int>::iterator i;
+        pdeque<int>::iterator i;
         i = find(_free_particle_fifo.begin(), _free_particle_fifo.end(), delete_index);
         if (i != _free_particle_fifo.end()) {
           _free_particle_fifo.erase(i);
@@ -554,8 +554,8 @@ public:
 };
 
 // returns 0 if OK, # of errors if not OK
-static int check_free_live_total_particles(vector< PT(SC_valuenamepair) > live_counts,
-  vector< PT(SC_valuenamepair) > dead_counts, vector< PT(SC_valuenamepair) > total_counts,
+static int check_free_live_total_particles(pvector< PT(SC_valuenamepair) > live_counts,
+  pvector< PT(SC_valuenamepair) > dead_counts, pvector< PT(SC_valuenamepair) > total_counts,
   int print_all = 0) {
 
   int val = 0;
@@ -663,9 +663,9 @@ sanity_check() {
 
   ///////////////////////////////////////////////////////////////////
   // check the numbers of free particles, live particles, and total particles
-  vector< PT(SC_valuenamepair) > live_counts;
-  vector< PT(SC_valuenamepair) > dead_counts;
-  vector< PT(SC_valuenamepair) > total_counts;
+  pvector< PT(SC_valuenamepair) > live_counts;
+  pvector< PT(SC_valuenamepair) > dead_counts;
+  pvector< PT(SC_valuenamepair) > total_counts;
 
   live_counts.push_back(new SC_valuenamepair(real_live_particle_count, "real_live_particle_count"));
 

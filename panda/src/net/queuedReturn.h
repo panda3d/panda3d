@@ -26,7 +26,7 @@
 #include "netAddress.h"
 
 #include <prlock.h>
-#include <deque>
+#include "pdeque.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : QueuedReturn
@@ -54,7 +54,7 @@ protected:
 
 private:
   PRLock *_mutex;
-  deque<Thing> _things;
+  pdeque<Thing> _things;
   bool _available;
   int _max_queue_size;
 };

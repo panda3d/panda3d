@@ -25,11 +25,11 @@
 #include "ipc_mutex.h"
 #include "ipc_condition.h"
 #include "ipc_thread.h"
-#include <list>
+#include "plist.h"
 
 class app_service;
 
-typedef std::list<app_service*> service_list;
+typedef std::plist<app_service*> service_list;
 
 extern service_list *task_list;
 extern mutex *main_thread_mutex;

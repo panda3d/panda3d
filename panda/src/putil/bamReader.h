@@ -136,18 +136,18 @@ private:
 
   // This maps the type index numbers encountered within the Bam file
   // to actual TypeHandles.
-  typedef map<int, TypeHandle> IndexMap;
+  typedef pmap<int, TypeHandle> IndexMap;
   IndexMap _index_map;
 
   // This maps the object ID numbers encountered within the Bam file
   // to the actual pointers of the corresponding generated objects.
-  typedef map<int, TypedWritable *> CreatedObjs;
+  typedef pmap<int, TypedWritable *> CreatedObjs;
   CreatedObjs _created_objs;
 
   // This records all the objects that still need their pointers
   // completed, along with the object ID's of the pointers they need,
   // in the order in which read_pointer() was called.
-  typedef map<TypedWritable *, vector_ushort> Requests;
+  typedef pmap<TypedWritable *, vector_ushort> Requests;
   Requests _deferred_pointers;
 
   // This is the number of extra objects that must still be read (and
@@ -157,12 +157,12 @@ private:
 
   // This is the set of all objects that registered themselves for
   // finalization.
-  typedef set<TypedWritable *> Finalize;
+  typedef pset<TypedWritable *> Finalize;
   Finalize _finalize_list;
 
   // These are used by get_pta() and register_pta() to unify multiple
   // references to the same PointerToArray.
-  typedef map<int, void *> PTAMap;
+  typedef pmap<int, void *> PTAMap;
   PTAMap _pta_map;
   int _pta_id;
 

@@ -42,7 +42,7 @@ public:
 
   // This is passed down through the MovingParts during the
   // do_update() call to specify the channels that are in effect.
-  typedef map<PT(AnimControl), float> ChannelBlend;
+  typedef pmap<PT(AnimControl), float> ChannelBlend;
 
   // This is the parameter to set_blend_type() and specifies the kind
   // of blending operation to be performed when multiple controls are

@@ -25,11 +25,10 @@
 #define MAP_H
 
 #include <stdtypedefs.h>
+#include <stdcompare.h>
 #include <pair>
 
-class default_map_compare;
-
-template<class key, class element, class compare = default_map_compare>
+template<class key, class element, class compare = less<key> >
 class map {
 public:
   typedef key key_type;
@@ -51,7 +50,7 @@ public:
   class difference_type;
 };
 
-template<class key, class element, class compare = default_map_compare>
+template<class key, class element, class compare = less<key> >
 class multimap : public map<key, element, compare> {
 };
 

@@ -25,7 +25,7 @@
 
 #include <clockObject.h>
 #include <luse.h>
-#include <map>
+#include "pmap.h"
 
 #ifdef HAVE_NET
 #include <connectionManager.h>
@@ -115,7 +115,7 @@ private:
   // Stats collecting stuff
   ClockObject _clock;
 
-  typedef map<string, int> ThingsByName;
+  typedef pmap<string, int> ThingsByName;
   ThingsByName _threads_by_name;
 
   // This is for the data that is per-collector, per-thread.  A vector
@@ -128,7 +128,7 @@ private:
     float _level;
     int _nested_count;
   };
-  typedef vector<PerThreadData> PerThread;
+  typedef pvector<PerThreadData> PerThread;
 
   // This is where the meat of the Collector data is stored.  (All the
   // stuff in PStatCollector and PStatCollectorDef is just fluff.)
@@ -139,7 +139,7 @@ private:
 
     PerThread _per_thread;
   };
-  typedef vector<Collector> Collectors;
+  typedef pvector<Collector> Collectors;
   Collectors _collectors;
 
   // This defines a single thread, i.e. a separate chain of execution,
@@ -153,7 +153,7 @@ private:
     int _frame_number;
     float _next_packet;
   };
-  typedef vector<Thread> Threads;
+  typedef pvector<Thread> Threads;
   Threads _threads;
 
 

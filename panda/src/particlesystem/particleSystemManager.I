@@ -44,7 +44,7 @@ get_frame_stepping(void) const {
 INLINE void ParticleSystemManager::
 attach_particlesystem(ParticleSystem *ps) {
   ps->_manager = this;
-  list< PT(ParticleSystem) >::iterator found;
+  plist< PT(ParticleSystem) >::iterator found;
   PT(ParticleSystem) ptps = ps;
   found = find(_ps_list.begin(), _ps_list.end(), ptps);
   if (found == _ps_list.end())

@@ -163,7 +163,7 @@ xform(const LMatrix4f &mat) {
   }
 
   if (!_points.empty()) {
-    vector<LPoint3f> verts;
+    pvector<LPoint3f> verts;
     Points::const_iterator pi;
     for (pi = _points.begin(); pi != _points.end(); ++pi) {
       verts.push_back(to_3d(*pi) * mat);
@@ -219,7 +219,7 @@ recompute_bound() {
 
   // Now actually compute the bounding volume by putting it around all
   // of our vertices.
-  vector<LPoint3f> vertices;
+  pvector<LPoint3f> vertices;
   Points::const_iterator pi;
   for (pi = _points.begin(); pi != _points.end(); ++pi) {
     vertices.push_back(to_3d(*pi));

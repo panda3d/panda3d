@@ -25,7 +25,7 @@
 #include "memoryInfo.h"
 #include "memoryUsagePointerCounts.h"
 
-#include <map>
+#include "pmap.h"
 
 class ReferenceCount;
 class MemoryUsagePointers;
@@ -124,6 +124,7 @@ private:
 
   static MemoryUsage *_global_ptr;
 
+  // Cannot use a pmap, since that would be recursive!
   typedef map<void *, MemoryInfo> Table;
   Table _table;
   int _freeze_index;
@@ -138,6 +139,7 @@ private:
     void clear();
 
   private:
+    // Cannot use a pmap, since that would be recursive!
     typedef map<TypeHandle, MemoryUsagePointerCounts> Counts;
     Counts _counts;
   };

@@ -26,7 +26,7 @@
 
 #include <referenceCount.h>
 
-#include <map>
+#include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NodeTransitionCache
@@ -62,7 +62,7 @@ public:
   store_entry(TypeHandle handle, const NodeTransitionCacheEntry &entry);
 
 private:
-  typedef map<TypeHandle, NodeTransitionCacheEntry> Cache;
+  typedef pmap<TypeHandle, NodeTransitionCacheEntry> Cache;
 public:
   // STL-like definitions to allow read-only traversal of the
   // individual transitions.  Note that each of these is a

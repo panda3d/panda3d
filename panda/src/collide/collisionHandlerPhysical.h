@@ -55,8 +55,8 @@ protected:
   virtual void handle_entries()=0;
 
 protected:
-  typedef vector< PT(CollisionEntry) > Entries;
-  typedef map<PT(CollisionNode), Entries> FromEntries;
+  typedef pvector< PT(CollisionEntry) > Entries;
+  typedef pmap<PT(CollisionNode), Entries> FromEntries;
   FromEntries _from_entries;
 
   class ColliderDef {
@@ -71,7 +71,7 @@ protected:
     PT_NodeRelation _arc;
   };
 
-  typedef map<PT(CollisionNode), ColliderDef> Colliders;
+  typedef pmap<PT(CollisionNode), ColliderDef> Colliders;
   Colliders _colliders;
 
 

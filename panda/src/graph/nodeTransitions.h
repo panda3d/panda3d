@@ -25,7 +25,7 @@
 
 #include <pointerTo.h>
 
-#include <map>
+#include "pmap.h"
 
 class NodeRelation;
 
@@ -62,7 +62,7 @@ public:
   void remove_all_from_arc(NodeRelation *arc);
 
 private:
-  typedef map<TypeHandle, PT(NodeTransition) > Transitions;
+  typedef pmap<TypeHandle, PT(NodeTransition) > Transitions;
 
 public:
   // STL-like definitions to allow read-only traversal of the

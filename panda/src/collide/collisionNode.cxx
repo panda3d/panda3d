@@ -175,7 +175,7 @@ recompute_bound() {
 
   // Now actually compute the bounding volume by putting it around all
   // of our solids' bounding volumes.
-  vector<const BoundingVolume *> child_volumes;
+  pvector<const BoundingVolume *> child_volumes;
 
   Solids::const_iterator gi;
   for (gi = _solids.begin(); gi != _solids.end(); ++gi) {

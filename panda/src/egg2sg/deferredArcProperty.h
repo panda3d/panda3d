@@ -61,7 +61,7 @@ public:
   CollideMask _into_collide_mask;
 };
 
-typedef map<NodeRelation *, DeferredArcProperty> DeferredArcs;
+typedef pmap<NodeRelation *, DeferredArcProperty> DeferredArcs;
 
 
 #endif

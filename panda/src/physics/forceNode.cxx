@@ -79,7 +79,7 @@ make_copy(void) const {
 ////////////////////////////////////////////////////////////////////
 void ForceNode::
 add_forces_from(const ForceNode &other) {
-  vector< PT(BaseForce) >::iterator last = _forces.end() - 1;
+  pvector< PT(BaseForce) >::iterator last = _forces.end() - 1;
 
   _forces.insert(_forces.end(),
                  other._forces.begin(), other._forces.end());
@@ -95,7 +95,7 @@ add_forces_from(const ForceNode &other) {
 ////////////////////////////////////////////////////////////////////
 void ForceNode::
 remove_force(BaseForce *f) {
-  vector< PT(BaseForce) >::iterator found;
+  pvector< PT(BaseForce) >::iterator found;
   PT(BaseForce) ptbf = f;
   found = find(_forces.begin(), _forces.end(), ptbf);
   if (found == _forces.end())
@@ -112,7 +112,7 @@ void ForceNode::
 remove_force(int index) {
   nassertv(index >= 0 && index <= (int)_forces.size());
 
-  vector< PT(BaseForce) >::iterator remove;
+  pvector< PT(BaseForce) >::iterator remove;
   remove = _forces.begin() + index;
   (*remove)->_force_node = (ForceNode *) NULL;
 

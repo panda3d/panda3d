@@ -30,7 +30,7 @@ TypeHandle NodeRelation::_stashed_type_handle;
 
 Factory<NodeRelation> *NodeRelation::_factory = NULL;
 
-typedef map<TypeHandle, UpdateSeq> LastGraphUpdate;
+typedef pmap<TypeHandle, UpdateSeq> LastGraphUpdate;
 static LastGraphUpdate *last_graph_update_map = NULL;
 
 ////////////////////////////////////////////////////////////////////
@@ -825,7 +825,7 @@ recompute_bound() {
 
   // Now actually compute the bounding volume by putting it around all
   // of our child bounding volumes.
-  vector<const BoundingVolume *> child_volumes;
+  pvector<const BoundingVolume *> child_volumes;
 
   Node *node = _child;
   nassertv(node != (Node*)NULL);

@@ -25,18 +25,18 @@
 #include <mouseWatcher.h>
 #include <mouseWatcherRegion.h>
 #include <node.h>
-#include <set>
+#include "pset.h"
 
 #include "guiLabel.h"
 #include "config_gui.h"
 
 class EXPCL_PANDA GuiManager {
 private:
-  typedef map<GraphicsWindow*, GuiManager*> GuiMap;
+  typedef pmap<GraphicsWindow*, GuiManager*> GuiMap;
   static GuiMap* _map;
-  typedef set<MouseWatcherRegion*> RegionSet;
+  typedef pset<MouseWatcherRegion*> RegionSet;
   RegionSet _regions;
-  typedef set<GuiLabel*> LabelSet;
+  typedef pset<GuiLabel*> LabelSet;
   LabelSet _labels;
   class SortComp {
   public:
@@ -44,7 +44,7 @@ private:
       return (*a) < (*b);
     }
   };
-  typedef set<GuiLabel*, SortComp> SortSet;
+  typedef pset<GuiLabel*, SortComp> SortSet;
   SortSet _sorts;
 
   int _start_draw_order;

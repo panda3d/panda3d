@@ -411,7 +411,7 @@ write_descendants_with_value(ostream &out, int indent_level) const {
 //               infinity.
 ////////////////////////////////////////////////////////////////////
 void PartGroup::
-pick_channel_index(list<int> &holes, int &next) const {
+pick_channel_index(plist<int> &holes, int &next) const {
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     (*ci)->pick_channel_index(holes, next);

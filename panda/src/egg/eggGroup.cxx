@@ -625,9 +625,9 @@ write_vertex_ref(ostream &out, int indent_level) const {
   // separate VertexRef entry.  Within each group, we'll sort the
   // vertices by index number.
 
-  typedef set<int> Indices;
-  typedef map<double, Indices> Memberships;
-  typedef map<EggVertexPool *, Memberships> Pools;
+  typedef pset<int> Indices;
+  typedef pmap<double, Indices> Memberships;
+  typedef pmap<EggVertexPool *, Memberships> Pools;
 
   Pools _entries;
   bool all_membership_one = true;

@@ -25,7 +25,7 @@
 
 #include <pointerTo.h>
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomBinUnsorted
@@ -52,7 +52,7 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 private:
-  typedef vector< PT(CullState) > CullStates;
+  typedef pvector< PT(CullState) > CullStates;
   CullStates _cull_states;
 
 public:

@@ -21,9 +21,9 @@
 
 #include <throw_event.h>
 
-#include <map>
+#include "pmap.h"
 
-typedef map<const MouseWatcherRegion*, GuiButton*> ButtonMap;
+typedef pmap<const MouseWatcherRegion*, GuiButton*> ButtonMap;
 static ButtonMap buttons;
 static bool bAddedHooks = false;
 

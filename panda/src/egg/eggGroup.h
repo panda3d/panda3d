@@ -37,7 +37,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggGroup : public EggGroupNode, public EggRenderMode {
 public:
-  typedef map<PT_EggVertex, double> VertexRef;
+  typedef pmap<PT_EggVertex, double> VertexRef;
 
   // These bits are all stored somewhere in _flags.
   enum GroupType {

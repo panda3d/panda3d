@@ -29,8 +29,8 @@
 #include "angularIntegrator.h"
 #include "physicalNode.h"
 
-#include <list>
-#include <vector>
+#include "plist.h"
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysicsManager
@@ -47,9 +47,9 @@ private:
   // current physicsmanager, if one exists, relieving the client from
   // the task and also allowing for dynamically created and destroyed
   // physicals.
-  vector< Physical * > _physicals;
-  vector< PT(LinearForce) > _linear_forces;
-  vector< PT(AngularForce) > _angular_forces;
+  pvector< Physical * > _physicals;
+  pvector< PT(LinearForce) > _linear_forces;
+  pvector< PT(AngularForce) > _angular_forces;
 
   PT(LinearIntegrator) _linear_integrator;
   PT(AngularIntegrator) _angular_integrator;

@@ -183,7 +183,7 @@ kill_particle(int) {
 // Description : big child render.  populates the geom node.
 ////////////////////////////////////////////////////////////////////
 void SpriteParticleRenderer::
-render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
+render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   BaseParticle *cur_particle;
 
   int remaining_particles = ttl_particles;

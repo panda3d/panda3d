@@ -32,8 +32,8 @@
 #include <referenceCount.h>
 #include <arcChain.h>
 
-#include <map>
-#include <vector>
+#include "pmap.h"
+#include "pvector.h"
 
 class GraphicsStateGuardian;
 class GeomBin;
@@ -49,8 +49,8 @@ class GeomBin;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CullState : public ReferenceCount {
 public:
-  typedef vector<ArcChain> CurrentGeomNodes;
-  typedef vector<ArcChain> CurrentDirectNodes;
+  typedef pvector<ArcChain> CurrentGeomNodes;
+  typedef pvector<ArcChain> CurrentDirectNodes;
 
 public:
   INLINE CullState(const AllTransitionsWrapper &trans);
@@ -107,7 +107,7 @@ private:
   AllTransitionsWrapper _trans;
   NodeAttributes *_attrib;
 
-  typedef map<Node *, UpdateSeq> Verified;
+  typedef pmap<Node *, UpdateSeq> Verified;
   Verified _verified;
 
   CurrentGeomNodes _current_geom_nodes;

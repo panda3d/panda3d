@@ -33,7 +33,7 @@
 #include <factoryParam.h>
 
 #include <string>
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 // Defines
@@ -115,8 +115,8 @@ protected:
 private:
   // Some private type declarations.  These must be declared here so
   // we can declare the public iterator types, below.
-  typedef vector< PT(GraphicsWindow) > Windows;
-  typedef vector<GraphicsPipe *> Pipes;
+  typedef pvector< PT(GraphicsWindow) > Windows;
+  typedef pvector<GraphicsPipe *> Pipes;
 
   Windows _windows;
 

@@ -21,11 +21,11 @@
 
 #include "guiItem.h"
 
-#include <vector>
+#include "pvector.h"
 
 class EXPCL_PANDA GuiCollection : public GuiItem {
 private:
-  typedef vector< PT(GuiItem) > Items;
+  typedef pvector< PT(GuiItem) > Items;
 
   Items _items;
 

@@ -89,10 +89,10 @@ private:
   string _server_name;
   vrpn_Connection *_connection;
 
-  typedef map<string, VrpnTracker *> Trackers;
-  typedef map<string, VrpnButton *> Buttons;
-  typedef map<string, VrpnAnalog *> Analogs;
-  typedef map<string, VrpnDial *> Dials;
+  typedef pmap<string, VrpnTracker *> Trackers;
+  typedef pmap<string, VrpnButton *> Buttons;
+  typedef pmap<string, VrpnAnalog *> Analogs;
+  typedef pmap<string, VrpnDial *> Dials;
 
   Trackers _trackers;
   Buttons _buttons;

@@ -24,8 +24,8 @@
 #include <buttonEvent.h>
 #include <mouseData.h>
 
-#include <deque>
-#include <vector>
+#include "pdeque.h"
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsWindowInputDevice
@@ -68,7 +68,7 @@ public:
 
 public:
   // We need these methods to make VC++ happy when we try to
-  // instantiate a vector<GraphicsWindowInputDevice>.  They don't do
+  // instantiate a pvector<GraphicsWindowInputDevice>.  They don't do
   // anything useful.
   INLINE bool operator == (const GraphicsWindowInputDevice &other) const;
   INLINE bool operator != (const GraphicsWindowInputDevice &other) const;
@@ -79,7 +79,7 @@ private:
     IDF_has_pointer    = 0x01,
     IDF_has_keyboard   = 0x02
   };
-  typedef deque<ButtonEvent> ButtonEvents;
+  typedef pdeque<ButtonEvent> ButtonEvents;
 
   string _name;
   int _flags;

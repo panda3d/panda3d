@@ -19,9 +19,9 @@
 #include "guiRollover.h"
 #include "config_gui.h"
 
-#include <map>
+#include "pmap.h"
 
-typedef map<const MouseWatcherRegion*, GuiRollover*> RolloverMap;
+typedef pmap<const MouseWatcherRegion*, GuiRollover*> RolloverMap;
 static RolloverMap rollovers;
 static bool added_hooks = false;
 

@@ -25,7 +25,7 @@
 #include "builderAttrib.h"
 #include "builderTypes.h"
 
-#include <vector>
+#include "pvector.h"
 
 
 /////////////////////////////////////////////////////////////////////
@@ -135,8 +135,8 @@ protected:
   INLINE int sort_value() const;
   void update_overall_attrib();
 
-  typedef vector<Vertex> Verts;
-  typedef vector<DAttrib> Components;
+  typedef pvector<Vertex> Verts;
+  typedef pvector<DAttrib> Components;
 
   Verts _verts;
   Components _components;

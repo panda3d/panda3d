@@ -46,7 +46,7 @@ decomp_concave(const PrimType &prim, BuilderBucket &bucket,
                int asum, int x, int y) {
 #define VX(p, c)    p->coord[c]
 
-  vector<PrimType> output_prims;
+  pvector<PrimType> output_prims;
 
   DecompVtx *p0, *p1, *p2, *t0, *vert;
   DecompVtx *m[3];
@@ -804,7 +804,7 @@ __mesh_and_build(InputIterator first, InputIterator last,
     return 0;
   }
 
-  typedef vector<PrimType> Prims;
+  typedef pvector<PrimType> Prims;
   Prims prims;
   BuilderBucket *local_bucket = NULL;
   BuilderBucket *bucket_ptr = &bucket;

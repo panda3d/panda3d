@@ -27,7 +27,7 @@
 #include "linearForce.h"
 #include "angularForce.h"
 
-#include <vector>
+#include "pvector.h"
 
 class Physical;
 
@@ -43,19 +43,19 @@ private:
   // and however many forces will be the same among one physical,
   // the transformation matrices can be pulled out of the inner loop
   // and precomputed.
-  vector< LMatrix4f > _precomputed_linear_matrices;
-  vector< LMatrix4f > _precomputed_angular_matrices;
+  pvector< LMatrix4f > _precomputed_linear_matrices;
+  pvector< LMatrix4f > _precomputed_angular_matrices;
 
 protected:
   BaseIntegrator(void);
 
-  INLINE const vector< LMatrix4f > &get_precomputed_linear_matrices(void) const;
-  INLINE const vector< LMatrix4f > &get_precomputed_angular_matrices(void) const;
+  INLINE const pvector< LMatrix4f > &get_precomputed_linear_matrices(void) const;
+  INLINE const pvector< LMatrix4f > &get_precomputed_angular_matrices(void) const;
 
   void precompute_linear_matrices(Physical *physical,
-                                  const vector< PT(LinearForce) > &forces);
+                                  const pvector< PT(LinearForce) > &forces);
   void precompute_angular_matrices(Physical *physical,
-                                   const vector< PT(AngularForce) > &forces);
+                                   const pvector< PT(AngularForce) > &forces);
 
 public:
   virtual ~BaseIntegrator(void);

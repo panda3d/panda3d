@@ -27,7 +27,7 @@
 #include <pointerTo.h>
 
 #include <prthread.h>
-#include <vector>
+#include "pvector.h"
 
 class ConnectionManager;
 class NetAddress;
@@ -74,7 +74,7 @@ protected:
 private:
   DatagramQueue _queue;
 
-  typedef vector<PRThread *> Threads;
+  typedef pvector<PRThread *> Threads;
   Threads _threads;
   bool _immediate;
 

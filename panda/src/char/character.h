@@ -68,7 +68,7 @@ PUBLISHED:
 private:
   void copy_joints(PartGroup *copy, PartGroup *orig);
 
-  typedef map<NodeRelation *, NodeRelation *> ArcMap;
+  typedef pmap<NodeRelation *, NodeRelation *> ArcMap;
   virtual Node *r_copy_subgraph(TypeHandle graph_type,
                                 InstanceMap &inst_map) const;
   void r_copy_char(Node *dest, const Node *source, TypeHandle graph_type,

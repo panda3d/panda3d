@@ -24,7 +24,7 @@
 #include <dconfig.h>
 
 #include <string>
-#include <vector>
+#include "pvector.h"
 
 NotifyCategoryDecl(display, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(gsg, EXPCL_PANDA, EXPTP_PANDA);

@@ -33,8 +33,8 @@
 #include <pta_Colorf.h>
 #include <pta_TexCoordf.h>
 
-#include <set>
-#include <map>
+#include "pset.h"
+#include "pmap.h"
 
 class ComputedVertices;
 class CharacterMaker;
@@ -90,10 +90,10 @@ public:
   PTA_TexCoordf _texcoords;
 
 protected:
-  typedef map<int, LVector3f> VertexMorphList;
-  typedef map<int, LVector3f> NormalMorphList;
-  typedef map<int, LVector2f> TexCoordMorphList;
-  typedef map<int, LVector4f> ColorMorphList;
+  typedef pmap<int, LVector3f> VertexMorphList;
+  typedef pmap<int, LVector3f> NormalMorphList;
+  typedef pmap<int, LVector2f> TexCoordMorphList;
+  typedef pmap<int, LVector4f> ColorMorphList;
   class MorphList {
   public:
     VertexMorphList _vmorphs;
@@ -102,10 +102,10 @@ protected:
     ColorMorphList _cmorphs;
   };
 
-  typedef map<string, MorphList> Morphs;
+  typedef pmap<string, MorphList> Morphs;
   Morphs _morphs;
 
-  typedef set<int> Vertices;
+  typedef pset<int> Vertices;
 
   Vertices _cindex;
   Vertices _tindex;
@@ -117,7 +117,7 @@ protected:
 public:
 #endif
 
-  class JointWeights: public map<EggNode *, double> {
+  class JointWeights: public pmap<EggNode *, double> {
   public:
     bool operator < (const JointWeights &other) const;
     void normalize_weights();
@@ -135,7 +135,7 @@ protected:
     ComputedVerticesMakerNormalMap _nmap;
   };
 
-  typedef map<JointWeights, VertexCollection> TransformSpaces;
+  typedef pmap<JointWeights, VertexCollection> TransformSpaces;
   TransformSpaces _transforms;
 
   class VertexTransform {

@@ -137,12 +137,12 @@ kill_particle(int index) {
 ////////////////////////////////////////////////////////////////////
 
 void GeomParticleRenderer::
-render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
+render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   BaseParticle *cur_particle;
   LPoint3f pos;
   int i, remaining_particles = ttl_particles;
 
-  vector< PT(RenderRelation) >::iterator cur_arc_iter = _arc_vector.begin();
+  pvector< PT(RenderRelation) >::iterator cur_arc_iter = _arc_vector.begin();
 
   // run through the particle vector
 

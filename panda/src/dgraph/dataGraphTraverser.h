@@ -59,7 +59,7 @@ private:
   void resume(Node *node, SavedState &state);
   void resume_all();
 
-  typedef map<Node *, SavedState> States;
+  typedef pmap<Node *, SavedState> States;
   States _saved_states;
 };
 

@@ -26,7 +26,7 @@
 #include "queuedReturn.h"
 
 #include <prlock.h>
-#include <deque>
+#include "pdeque.h"
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, QueuedReturn<NetDatagram>);
 

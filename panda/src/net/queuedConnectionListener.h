@@ -27,7 +27,7 @@
 #include "queuedReturn.h"
 
 #include <prlock.h>
-#include <deque>
+#include "pdeque.h"
 
 
 class EXPCL_PANDA ConnectionListenerData {

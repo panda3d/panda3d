@@ -458,7 +458,7 @@ stitch(const ParametricCurve *a, const ParametricCurve *b) {
   float t = na->get_max_t();
 
   // Now add all the new CV's.
-  vector<CV>::iterator ci;
+  pvector<CV>::iterator ci;
   for (ci = nb->_cvs.begin(); ci != nb->_cvs.end(); ++ci) {
     CV new_cv = (*ci);
     new_cv._t += t;

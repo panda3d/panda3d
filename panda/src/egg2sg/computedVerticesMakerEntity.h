@@ -26,7 +26,7 @@
 #include <typedef.h>
 #include <pointerToArray.h>
 
-#include <map>
+#include "pmap.h"
 
 ///////////////////////////////////////////////////////////////////
 //       Class : ComputedVerticesMakerEntity
@@ -62,7 +62,7 @@ public:
   int add_value(const ValueType &value, const MorphType &morphs,
                 PTA(ValueType) &table);
 
-  typedef map<ComputedVerticesMakerEntity<ValueType, MorphType>, int> MapType;
+  typedef pmap<ComputedVerticesMakerEntity<ValueType, MorphType>, int> MapType;
   MapType _map;
 };
 

@@ -27,9 +27,9 @@
 #include <pointerTo.h>
 #include <nodeRelation.h>
 
-#include <list>
-#include <map>
-#include <set>
+#include "plist.h"
+#include "pmap.h"
+#include "pset.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ShaderTransition
@@ -41,11 +41,11 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_SHADER ShaderTransition : public ImmediateTransition {
 private:
-  //  typedef vector< PT(Shader) > Shaders;
-  typedef list< PT(Shader) > Shaders;
-  typedef map<TypeHandle, int> ShaderOrder;
-  typedef map<PT(Shader), int> ShaderOverride;
-  typedef set<TypeHandle> ShaderBlend;
+  //  typedef pvector< PT(Shader) > Shaders;
+  typedef plist< PT(Shader) > Shaders;
+  typedef pmap<TypeHandle, int> ShaderOrder;
+  typedef pmap<PT(Shader), int> ShaderOverride;
+  typedef pset<TypeHandle> ShaderBlend;
 
 public:
   INLINE ShaderTransition();

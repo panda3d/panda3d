@@ -33,7 +33,7 @@
 #include <renderTraverser.h>
 #include <pStatCollector.h>
 
-#include <list>
+#include "plist.h"
 
 class AllAttributesWrapper;
 class AllTransitionsWrapper;
@@ -155,7 +155,7 @@ protected:
   void init_frame_pstats();
   void add_to_texture_record(TextureContext *tc);
   void record_state_change(TypeHandle type);
-  set<TextureContext *> _current_textures;
+  pset<TextureContext *> _current_textures;
 #else
   INLINE void init_frame_pstats() { }
   INLINE void add_to_texture_record(TextureContext *) { }
@@ -208,7 +208,7 @@ public:
   static PStatCollector _geom_nodes_pcollector;
 
 private:
-  typedef set<TextureContext *> Textures;
+  typedef pset<TextureContext *> Textures;
   Textures _prepared_textures;  // NOTE: on win32 another DLL (e.g. libpandadx.dll) cannot access set directly due to exported template issue
 
 public:

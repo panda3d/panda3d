@@ -25,10 +25,10 @@
 #include "mesherEdge.h"
 #include "mesherStrip.h"
 
-#include <vector>
-#include <list>
-#include <set>
-#include <map>
+#include "pvector.h"
+#include "plist.h"
+#include "pset.h"
+#include "pmap.h"
 
 template <class PrimType>
 class MesherFanMaker;
@@ -54,18 +54,18 @@ public:
   void show(ostream &out);
 
 protected:
-  typedef list<Strip> Strips;
-  typedef set<Edge, less<Edge> > Edges;
-  typedef set<Edge *, less<Edge *> > EdgePtrs;
-  typedef map<Vertex, EdgePtrs, less<Vertex> > Verts;
+  typedef plist<Strip> Strips;
+  typedef pset<Edge, less<Edge> > Edges;
+  typedef pset<Edge *, less<Edge *> > EdgePtrs;
+  typedef pmap<Vertex, EdgePtrs, less<Vertex> > Verts;
 
   // This is used for show-tstrips.
-  typedef vector<BuilderC> Colors;
+  typedef pvector<BuilderC> Colors;
   // And this is used for show-qsheets.
-  typedef map<int, int, less<int> > ColorSheetMap;
+  typedef pmap<int, int, less<int> > ColorSheetMap;
 
   int count_vert_edges(const EdgePtrs &edges) const;
-  list<Strip> &choose_strip_list(const Strip &strip);
+  plist<Strip> &choose_strip_list(const Strip &strip);
 
   void build_sheets();
   void find_fans();

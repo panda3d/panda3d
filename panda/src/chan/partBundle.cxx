@@ -284,7 +284,7 @@ bind_anim(AnimBundle *anim, int hierarchy_match_flags) {
     return NULL;
   }
 
-  list<int> holes;
+  plist<int> holes;
   int channel_index = 0;
   pick_channel_index(holes, channel_index);
 

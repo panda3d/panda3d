@@ -32,7 +32,7 @@
 #include "textureContext.h"
 
 #include <algorithm>
-#include <map>
+#include "pmap.h"
 
 #pragma hdrstop
 

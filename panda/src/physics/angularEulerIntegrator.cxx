@@ -50,7 +50,7 @@ AngularEulerIntegrator::
 ////////////////////////////////////////////////////////////////////
 void AngularEulerIntegrator::
 child_integrate(Physical *physical,
-                vector< PT(AngularForce) >& forces,
+                pvector< PT(AngularForce) >& forces,
                 float dt) {
   // perform the precomputation.  Note that the vector returned by
   // get_precomputed_matrices() has the matrices loaded in order of force
@@ -58,7 +58,7 @@ child_integrate(Physical *physical,
   // another integrator, be sure to process your forces global, then local.
   // otherwise your transforms will be VERY bad.  No good.
   precompute_angular_matrices(physical, forces);
-  const vector< LMatrix4f > &matrices = get_precomputed_angular_matrices();
+  const pvector< LMatrix4f > &matrices = get_precomputed_angular_matrices();
 
   // Loop through each object in the set.  This processing occurs in O(pf) time,
   // where p is the number of physical objects and f is the number of
@@ -67,7 +67,7 @@ child_integrate(Physical *physical,
   // velocity of each physicsobject in the set.  Accordingly, we have
   // to grunt our way through each one.  wrt caching of the xform matrix
   // should help.
-  vector< PT(PhysicsObject) >::const_iterator current_object_iter;
+  pvector< PT(PhysicsObject) >::const_iterator current_object_iter;
   current_object_iter = physical->get_object_vector().begin();
 
   for (; current_object_iter != physical->get_object_vector().end();
@@ -87,7 +87,7 @@ child_integrate(Physical *physical,
 
     // set up the traversal stuff.
     ForceNode *force_node;
-    vector< PT(AngularForce) >::const_iterator f_cur;
+    pvector< PT(AngularForce) >::const_iterator f_cur;
 
     LVector3f f;
 

@@ -20,7 +20,7 @@
 
 #include <pandabase.h>
 
-#include <vector>
+#include "pvector.h"
 
 #include <string>
 

@@ -78,7 +78,7 @@
 
 #include "eggObject.h"
 
-#include <map>
+#include "pmap.h"
 
 class EggNode;
 
@@ -109,8 +109,8 @@ public:
                                const string &category, int index);
 
 private:
-  typedef map<string, EggNode *> UsedNames;
-  typedef map<string, UsedNames> Categories;
+  typedef pmap<string, EggNode *> UsedNames;
+  typedef pmap<string, UsedNames> Categories;
 
   Categories _categories;
   int _index;

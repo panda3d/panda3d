@@ -24,7 +24,7 @@
 #include <nodeAttribute.h>
 #include <buttonEvent.h>
 
-#include <vector>
+#include "pvector.h"
 
 class ButtonEventDataTransition;
 class ModifierButtons;
@@ -38,7 +38,7 @@ class ModifierButtons;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ButtonEventDataAttribute : public NodeAttribute {
 private:
-  typedef vector<ButtonEvent> Buttons;
+  typedef pvector<ButtonEvent> Buttons;
 
 public:
   INLINE ButtonEventDataAttribute();

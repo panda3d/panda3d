@@ -22,7 +22,7 @@
 #include <pandabase.h>
 #include <namedNode.h>
 
-#include <vector>
+#include "pvector.h"
 
 #include "physical.h"
 #include "config_physics.h"
@@ -34,7 +34,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS PhysicalNode : public NamedNode {
 private:
-  vector< PT(Physical) > _physicals;
+  pvector< PT(Physical) > _physicals;
 
 PUBLISHED:
   PhysicalNode(const string &name = "");

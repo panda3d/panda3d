@@ -32,7 +32,7 @@
 #include <pointerTo.h>
 #include <pStatCollector.h>
 
-#include <set>
+#include "pset.h"
 
 class CollisionNode;
 class Geom;
@@ -94,12 +94,12 @@ private:
   PT(CollisionHandler) _default_handler;
   TypeHandle _graph_type;
 
-  typedef map<PT(CollisionNode),  PT(CollisionHandler) > Colliders;
+  typedef pmap<PT(CollisionNode),  PT(CollisionHandler) > Colliders;
   Colliders _colliders;
-  typedef vector<CollisionNode *> OrderedColliders;
+  typedef pvector<CollisionNode *> OrderedColliders;
   OrderedColliders _ordered_colliders;
 
-  typedef map<PT(CollisionHandler), int> Handlers;
+  typedef pmap<PT(CollisionHandler), int> Handlers;
   Handlers _handlers;
 
   // Statistics

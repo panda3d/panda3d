@@ -29,7 +29,7 @@
 
 #include <notify.h>
 #include <filename.h>
-#include <list>
+#include "plist.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Multifile
@@ -99,7 +99,7 @@ private:
     int _bytes_written;
   };
 
-  typedef list<Memfile *> MemfileList;
+  typedef plist<Memfile *> MemfileList;
 
   class MemfileMatch {
   public:

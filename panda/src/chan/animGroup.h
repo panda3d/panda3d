@@ -62,7 +62,7 @@ protected:
   void write_descendants(ostream &out, int indent_level) const;
 
 protected:
-  typedef vector< PT(AnimGroup) > Children;
+  typedef pvector< PT(AnimGroup) > Children;
   Children _children;
   AnimBundle *_root;
 

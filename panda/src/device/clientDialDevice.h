@@ -59,7 +59,7 @@ protected:
     bool _known;
   };
 
-  typedef vector<DialState> Dials;
+  typedef pvector<DialState> Dials;
   Dials _dials;
 
 

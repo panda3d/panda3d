@@ -49,7 +49,7 @@ get_geom_node(void) {
 
 INLINE void GeomParticleRenderer::
 kill_arcs(void) {
-  vector< PT(RenderRelation) >::iterator vec_iter = _arc_vector.begin();
+  pvector< PT(RenderRelation) >::iterator vec_iter = _arc_vector.begin();
 
   for (; vec_iter != _arc_vector.end(); vec_iter++)
     remove_arc(*vec_iter);

@@ -25,7 +25,7 @@
 
 #include <prlock.h>
 #include <prcvar.h>
-#include <deque>
+#include "pdeque.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DatagramQueue
@@ -53,9 +53,9 @@ private:
 #ifdef __ICL
   // The Intel compiler for some reason dumps core on a queue of
   // NetDatagrams.
-  typedef deque<NetDatagram *> QueueType;
+  typedef pdeque<NetDatagram *> QueueType;
 #else
-  typedef deque<NetDatagram> QueueType;
+  typedef pdeque<NetDatagram> QueueType;
 #endif
 
   QueueType _queue;

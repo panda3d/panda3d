@@ -29,7 +29,7 @@
 #include <mouseButton.h>
 #include <keyboardButton.h>
 
-#include <map>
+#include "pmap.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////

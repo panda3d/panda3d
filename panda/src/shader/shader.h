@@ -123,7 +123,7 @@ public:
   INLINE int add_frustum(ProjectionNode* frust);
   INLINE int remove_frustum(ProjectionNode* frust);
 
-  typedef vector<ProjectionNode *> ProjectionVector;
+  typedef pvector<ProjectionNode *> ProjectionVector;
 
 protected:
 

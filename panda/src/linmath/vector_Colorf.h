@@ -23,7 +23,7 @@
 
 #include "luse.h"
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : vector_Colorf

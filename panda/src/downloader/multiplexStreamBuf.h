@@ -25,7 +25,7 @@
 #include <ipc_mutex.h>
 #endif
 
-#include <vector>
+#include "pvector.h"
 #include <stdio.h>
 
 ////////////////////////////////////////////////////////////////////
@@ -77,7 +77,7 @@ private:
     bool _owns_obj;
   };
 
-  typedef vector<Output> Outputs;
+  typedef pvector<Output> Outputs;
   Outputs _outputs;
 
   string _line_buffer;

@@ -57,7 +57,7 @@ public:
   INLINE void rescale(float factor_squared);
 
   // We must declare these operators to allow VC++ to explicitly
-  // export vector<LODSwitch>, below.  They don't do anything useful.
+  // export pvector<LODSwitch>, below.  They don't do anything useful.
   INLINE bool operator == (const LODSwitch &other) const;
   INLINE bool operator != (const LODSwitch &other) const;
   INLINE bool operator < (const LODSwitch &other) const;

@@ -110,7 +110,7 @@ protected:
     float _t;
   };
 
-  vector<CV> _cvs;
+  pvector<CV> _cvs;
 
 
 // TypedWritable stuff

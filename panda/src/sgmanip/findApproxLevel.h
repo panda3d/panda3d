@@ -87,7 +87,7 @@ public:
 
   void write(ostream &out) const;
 
-  typedef vector<FindApproxLevelEntry> Vec;
+  typedef pvector<FindApproxLevelEntry> Vec;
   Vec _v;
 };
 

@@ -63,9 +63,9 @@ VertexTransform(const VertexTransform &copy) :
 ////////////////////////////////////////////////////////////////////
 template<class ValueType, class MorphType>
 static void
-compute_morphs(ValueType *table, const vector<MorphType> &morph_list,
+compute_morphs(ValueType *table, const pvector<MorphType> &morph_list,
            Character *character) {
-  vector<MorphType>::const_iterator mli;
+  pvector<MorphType>::const_iterator mli;
   for (mli = morph_list.begin(); mli != morph_list.end(); ++mli) {
     const MorphType &morph = (*mli);
     const CharacterSlider *slider;

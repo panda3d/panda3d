@@ -24,7 +24,7 @@
 #include "node.h"
 #include "pt_Node.h"
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : vector_PT_Node

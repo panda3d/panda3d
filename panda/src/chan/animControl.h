@@ -31,7 +31,7 @@
 #include <pt_Event.h>
 
 #include <string>
-#include <map>
+#include "pmap.h"
 
 class PartBundle;
 class AnimChannelBase;
@@ -108,7 +108,7 @@ public:
   };
 
 private:
-  typedef multimap<int, Action> Actions;
+  typedef pmultimap<int, Action> Actions;
 
   static void insert_event_action(Actions &actions, int frame, const CPT_Event &event);
   static void insert_stop_action(Actions &actions, int frame);

@@ -24,7 +24,7 @@
 #include <filename.h>
 #include <pt_Node.h>
 
-#include <map>
+#include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ModelPool
@@ -73,7 +73,7 @@ private:
   static ModelPool *get_ptr();
 
   static ModelPool *_global_ptr;
-  typedef map<string,  PT(Node) > Models;
+  typedef pmap<string,  PT(Node) > Models;
   Models _models;
 };
 

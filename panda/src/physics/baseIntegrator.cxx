@@ -50,7 +50,7 @@ BaseIntegrator::
 ////////////////////////////////////////////////////////////////////
 void BaseIntegrator::
 precompute_linear_matrices(Physical *physical,
-                           const vector< PT(LinearForce) > &forces) {
+                           const pvector< PT(LinearForce) > &forces) {
   // make sure the physical's in the scene graph, somewhere.
   PhysicalNode *physical_node = physical->get_physical_node();
   nassertv(physical_node != NULL);
@@ -78,7 +78,7 @@ precompute_linear_matrices(Physical *physical,
     _precomputed_linear_matrices[index++] = current_xform;
   }
 
-  const vector< PT(LinearForce) > &force_vector =
+  const pvector< PT(LinearForce) > &force_vector =
     physical->get_linear_forces();
 
   // tally the local xforms
@@ -101,7 +101,7 @@ precompute_linear_matrices(Physical *physical,
 ////////////////////////////////////////////////////////////////////
 void BaseIntegrator::
 precompute_angular_matrices(Physical *physical,
-                            const vector< PT(AngularForce) > &forces) {
+                            const pvector< PT(AngularForce) > &forces) {
   // make sure the physical's in the scene graph, somewhere.
   PhysicalNode *physical_node = physical->get_physical_node();
   nassertv(physical_node != NULL);
@@ -129,7 +129,7 @@ precompute_angular_matrices(Physical *physical,
     _precomputed_angular_matrices[index++] = current_xform;
   }
 
-  const vector< PT(AngularForce) > &force_vector =
+  const pvector< PT(AngularForce) > &force_vector =
     physical->get_angular_forces();
 
   // tally the local xforms

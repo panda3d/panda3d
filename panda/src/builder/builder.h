@@ -172,7 +172,7 @@
 
 #include <pointerTo.h>
 
-#include <set>
+#include "pset.h"
 
 
 class GeomNode;
@@ -200,7 +200,7 @@ public:
 protected:
   void add_bucket(const BuilderBucket &bucket);
 
-  typedef set<BuilderBucketNode, less<BuilderBucketNode> > Buckets;
+  typedef pset<BuilderBucketNode, less<BuilderBucketNode> > Buckets;
 
   Buckets _buckets;
   Buckets::iterator _bi;

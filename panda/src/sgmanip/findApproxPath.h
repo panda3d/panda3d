@@ -24,7 +24,7 @@
 #include <typedObject.h>
 
 #include <string>
-#include <vector>
+#include "pvector.h"
 
 class Node;
 class NodeRelation;
@@ -93,7 +93,7 @@ private:
     int _flags;
   };
 
-  typedef vector<Component> Path;
+  typedef pvector<Component> Path;
   Path _path;
 
   bool _return_hidden;

@@ -49,7 +49,7 @@ PUBLISHED:
   CollisionEntry *get_entry(int n) const;
 
 private:
-  typedef vector< PT(CollisionEntry) > Entries;
+  typedef pvector< PT(CollisionEntry) > Entries;
   Entries _entries;
 
 public:

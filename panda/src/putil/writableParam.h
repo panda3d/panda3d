@@ -24,7 +24,7 @@
 #include "factoryParam.h"
 #include "datagram.h"
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : WritableParam

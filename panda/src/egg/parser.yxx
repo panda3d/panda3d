@@ -35,7 +35,7 @@
 #include <lmatrix.h>
 #include <coordinateSystem.h>
 
-#include <vector>
+#include "pvector.h"
 
 // Because our token type contains objects of type string, which
 // require correct copy construction (and not simply memcpying), we
@@ -50,7 +50,7 @@
 // and push it onto the stack.  At any given time, the top of the
 // stack is the EggObject we are currently scanning.
 
-typedef vector< PT(EggObject) > EggStack;
+typedef pvector< PT(EggObject) > EggStack;
 static EggStack egg_stack;
 
 // There's one "top-level" egg node, which is where we should parent
@@ -60,15 +60,15 @@ static EggStack egg_stack;
 static EggGroupNode *egg_top_node;
 
 // We need a table mapping vertex pool names to vertex pools.
-typedef map<string,  PT(EggVertexPool) > VertexPools;
+typedef pmap<string,  PT(EggVertexPool) > VertexPools;
 static VertexPools vertex_pools;
 
 // And another one mapping texture names to textures.
-typedef map<string,  PT_EggTexture > Textures;
+typedef pmap<string,  PT_EggTexture > Textures;
 static Textures textures;
 
 // And again for material names to materials.
-typedef map<string,  PT_EggMaterial > Materials;
+typedef pmap<string,  PT_EggMaterial > Materials;
 static Materials materials;
 
 // We need to be able to save the index number requested for a vertex

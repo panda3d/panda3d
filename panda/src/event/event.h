@@ -63,7 +63,7 @@ PUBLISHED:
   void output(ostream &out) const;
 
 protected:
-  typedef vector<EventParameter> ParameterList;
+  typedef pvector<EventParameter> ParameterList;
   ParameterList _parameters;
   EventReceiver *_receiver;
 

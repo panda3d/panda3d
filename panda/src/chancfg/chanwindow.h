@@ -21,8 +21,8 @@
 
 #include <pandabase.h>
 
-#include <map>
-#include <vector>
+#include "pmap.h"
+#include "pvector.h"
 #include <string>
 #include "chansetup.h"
 
@@ -53,7 +53,7 @@ public:
   INLINE SetupSyms getSetups(void) const;
 };
 
-typedef std::map<std::string, WindowItem> WindowType;
+typedef std::pmap<std::string, WindowItem> WindowType;
 
 extern WindowType* WindowDB;
 

@@ -24,7 +24,7 @@
 #include <typedObject.h>
 #include <renderRelation.h>
 
-#include <map>
+#include "pmap.h"
 
 class Node;
 class GeomNode;
@@ -55,8 +55,8 @@ private:
 
   void consider_normals(const Normalf *norms, const ushort *nindex, int num);
 
-  typedef map<Node *, int> Nodes;
-  typedef map<Texture *, int> Textures;
+  typedef pmap<Node *, int> Nodes;
+  typedef pmap<Texture *, int> Textures;
 
   Nodes _nodes;
   Textures _textures;

@@ -27,7 +27,7 @@
 #include <pointerTo.h>
 
 #include <prlock.h>
-#include <set>
+#include "pset.h"
 
 class NetAddress;
 class ConnectionReader;
@@ -74,9 +74,9 @@ protected:
   void add_writer(ConnectionWriter *writer);
   void remove_writer(ConnectionWriter *writer);
 
-  typedef set< PT(Connection) > Connections;
-  typedef set<ConnectionReader *> Readers;
-  typedef set<ConnectionWriter *> Writers;
+  typedef pset< PT(Connection) > Connections;
+  typedef pset<ConnectionReader *> Readers;
+  typedef pset<ConnectionWriter *> Writers;
   Connections _connections;
   Readers _readers;
   Writers _writers;

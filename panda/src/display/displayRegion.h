@@ -26,7 +26,7 @@
 #include <referenceCount.h>
 #include <camera.h>
 
-#include <list>
+#include "plist.h"
 
 ////////////////////////////////////////////////////////////////////
 // Defines

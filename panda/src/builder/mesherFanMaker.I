@@ -304,12 +304,12 @@ unroll(Strips::iterator strip_begin, Strips::iterator strip_end,
 
   } else {
     // Now decompose the new polygon into triangles.
-    vector<Prim> tris;
+    pvector<Prim> tris;
     result = expand(poly, *_bucket, back_inserter(tris));
 
     if (result) {
       // Now add each triangle back into the mesher.
-      vector<Prim>::iterator ti;
+      pvector<Prim>::iterator ti;
 
       for (ti = tris.begin(); ti != tris.end(); ++ti) {
         _mesher->add_prim(*ti);

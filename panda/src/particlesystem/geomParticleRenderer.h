@@ -27,7 +27,7 @@
 #include <pointerToArray.h>
 #include <renderRelation.h>
 
-#include <vector>
+#include "pvector.h"
 
 class EXPCL_PANDAPHYSICS GeomParticleRenderer : public BaseParticleRenderer {
 private:
@@ -35,7 +35,7 @@ private:
   PT(Node) _geom_node;
   PT(Node) _dead_particle_parent_node;
 
-  vector< PT(RenderRelation) > _arc_vector;
+  pvector< PT(RenderRelation) > _arc_vector;
 
   int _pool_size;
 
@@ -47,7 +47,7 @@ private:
   virtual void kill_particle(int index);
 
   virtual void init_geoms(void);
-  virtual void render(vector< PT(PhysicsObject) >& po_vector,
+  virtual void render(pvector< PT(PhysicsObject) >& po_vector,
                       int ttl_particles);
 
   virtual void resize_pool(int new_size);

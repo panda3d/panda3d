@@ -90,7 +90,7 @@ protected:
     float _tend;
   };
 
-  vector<Curveseg> _segs;
+  pvector<Curveseg> _segs;
   int _last_ti;
 
 
