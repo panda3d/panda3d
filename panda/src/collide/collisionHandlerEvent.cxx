@@ -111,13 +111,11 @@ end_group() {
       // intersection.
       throw_event_for(_in_patterns, *ca);
       ++ca;
-
     } else if (order(*cb, *ca)) {
       // Here's an element in b but not in a.  That's a newly exited
       // intersection.
       throw_event_for(_out_patterns, *cb);
       ++cb;
-
     } else {
       // This element is in both b and a.  It hasn't changed.
       throw_event_for(_again_patterns, *cb);
