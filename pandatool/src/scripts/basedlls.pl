@@ -7,14 +7,13 @@
 # make sure Opt1 and Opt3 are current so current sizes are used in map
 
 $archive_root="\\\\dimbo\\panda\\win\\";
-
-#edit this to where rebase.exe is on your machine
-$rebase_path="C:\\Program Files\\Microsoft Platform SDK\\Bin;C:\\Program Files\\Microsoft Visual Studio\\VC98\\bin";
-$ENV{'PATH'}.=";".$rebase_path;
+#edit this to where rebase.exe is on your machine, must be cygwin-style path for cygwin perl
+$rebase_path="/msvc7/Common7/Tools/bin";
+$ENV{'PATH'}=$rebase_path.":".$ENV{'PATH'};
+print $ENV{'PATH'},"\n";
 
 # note: this is the order dlls will be laid out in memory
-@dll_names=("libpanda","libpandadx","libpandadx8","libpandagl","libpandaexpress","libpandaphysics",
-            "libpandafx","libdtool","libdtoolconfig","libpystub","libdirect","libtoontown","libmiles_audio","libpandaegg");
+@dll_names=("libpanda","libpandadx","libpandadx7","libpandagl","libpandaexpress","libpandaphysics","libpandafx","libdtool","libdtoolconfig","libpystub","libdirect","libtoontown","libmiles_audio","libpandaegg");
 
 # old audio dlls
 #            "libaudio_load_midi","libaudio_load_mp3","libaudio_load_st","libaudio_load_wav",
