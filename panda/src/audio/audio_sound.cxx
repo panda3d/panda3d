@@ -15,6 +15,8 @@ TypeHandle AudioSound::_type_handle;
 //               destroy this structure
 ////////////////////////////////////////////////////////////////////
 AudioSound::~AudioSound(void) {
+  if (audio_cat->is_debug())
+    audio_cat->debug() << "AudioSound destructor" << endl;
   (*_delstate)(_state);
 }
 

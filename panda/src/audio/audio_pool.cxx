@@ -56,6 +56,8 @@ bool AudioPool::ns_has_sound(Filename filename) {
 //  Description: The nonstatic implementation of load_sound().
 ////////////////////////////////////////////////////////////////////
 AudioSound* AudioPool::ns_load_sound(Filename filename) {
+  if (audio_cat->is_debug())
+    audio_cat->debug() << "in AudioPool::ns_load_sound" << endl;
   filename.resolve_filename(get_sound_path());
 
   SoundMap::const_iterator si;
@@ -63,8 +65,14 @@ AudioSound* AudioPool::ns_load_sound(Filename filename) {
   if (si != _sounds.end()) {
     // this sound was previously loaded
     AudioTraits::SoundClass* sc = (*si).second;
-    return new AudioSound(sc, sc->get_state(), sc->get_player(),
-			  sc->get_delstate(), filename);
+    if (audio_cat->is_debug())
+      audio_cat->debug() << "sound is already loaded (0x" << (void*)sc
+			 << ")" << endl;
+    AudioSound* ret = new AudioSound(sc, sc->get_state(), sc->get_player(),
+				     sc->get_delstate(), filename);
+    if (audio_cat->is_debug())
+      audio_cat->debug() << "AudioPool: returning 0x" << (void*)ret << endl;
+    return ret;
   }
   if (!filename.exists()) {
     audio_cat.info() << "'" << filename << "' does not exist" << endl;
@@ -85,9 +93,12 @@ AudioSound* AudioPool::ns_load_sound(Filename filename) {
     audio_cat->error() << "could not load '" << filename << "'" << endl;
     return (AudioSound*)0L;
   }
-  PT(AudioSound) the_sound = new AudioSound(sound, sound->get_state(),
-					    sound->get_player(),
-					    sound->get_delstate(), filename);
+  AudioSound* the_sound = new AudioSound(sound, sound->get_state(),
+					 sound->get_player(),
+					 sound->get_delstate(), filename);
+  if (audio_cat->is_debug())
+    audio_cat->debug() << "AudioPool: returning 0x" << (void*)the_sound
+		       << endl;
   _sounds[filename] = sound;
   return the_sound;
 }
