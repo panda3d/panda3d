@@ -245,7 +245,7 @@ pick_up_singularity(TriangleRasterizer &rast,
     int xi, yi;
     for (yi = 0; yi <= bot_y; yi++) {
       // Project xi point 1 to determine the radius.
-      v0._p.set(xi, yi);
+      v0._p.set(0, yi);
       v0._space = extrude(v0._p * pixels_to_mm, width_mm) * rotate;
       v0._uv = input->project(v0._space);
 
@@ -281,7 +281,7 @@ pick_up_singularity(TriangleRasterizer &rast,
     int xi, yi;
     for (yi = top_y; yi < ysize; yi++) {
       // Project xi point 1 to determine the radius.
-      v0._p.set(xi, yi);
+      v0._p.set(0, yi);
       v0._space = extrude(v0._p * pixels_to_mm, width_mm) * rotate;
       v0._uv = input->project(v0._space);
 
