@@ -37,6 +37,12 @@ class ShowBase:
         # Store dconfig variables
         self.wantTk = self.config.GetBool('want-tk', 0)
         self.wantSound = self.config.GetBool('want-sound', 1)
+        if not self.wantSound:
+            AudioManager.setAllSoundActive(0)
+        self.wantSfx = AudioManager.getSfxActive()
+        self.wantMusic = AudioManager.getMusicActive()
+        if not (self.wantSfx or self.wantMusic):
+            self.wantSound = None
         self.wantDIRECT = self.config.GetBool('want-directtools', 0)
         self.wantStats = self.config.GetBool('want-stats', 0)
 
@@ -227,6 +233,69 @@ class ShowBase:
     def createAudioManager(self):
         if self.wantSound:
             AudioManager.spawnUpdate()
+
+    def loadSfx(self, name):
+        if name:
+            if base.wantSfx:
+                s = loader.loadSound(name)
+                return s
+        return None
+
+    def loadMusic(self, name):
+        if name:
+            if base.wantMusic:
+                m = loader.loadSound(name)
+                return m
+        return None
+
+    def unloadSfx(self, sfx):
+        if sfx:
+            loader.unloadSound(sfx)
+
+    def unloadMusic(self, music):
+        if music:
+            loader.unloadSound(music)
+
+    def playSfx(self, sfx, looping = None, interupt = 1, volume = None):
+        if sfx:
+            if base.wantSfx:
+                if not interupt:
+                    if not (sfx.status() == AudioSound.PLAYING):
+                        AudioManager.play(sfx)
+                else:
+                    AudioManager.play(sfx)
+                if looping:
+                    AudioManager.setLoop(sfx, 1)
+                if volume:
+                    AudioManager.setVolume(sfx, volume)
+
+    def playMusic(self, music, looping = None, interupt = 1, volume = None,
+                  restart = None):
+        if music:
+            if base.wantMusic:
+                if not interupt:
+                    if not (music.status() == AudioSound.PLAYING):
+                        AudioManager.plsy(music)
+                else:
+                    AudioManager.play(music)
+                if looping:
+                    AudioManager.setLoop(music, 1)
+                if volume:
+                    AudioManager.setVolume(music, volume)
+                if restart:
+                    restart[0].accept("restart-music", restart[1])
+
+    def stopSfx(self, sfx):
+        if sfx:
+            if base.wantSfx:
+                AudioManager.stop(sfx)
+
+    def stopMusic(self, music, restart = None):
+        if music:
+            if base.wantMusic:
+                AudioManager.stop(music)
+                if restart:
+                    restart[0].ignore("restart-music")
 
     def dataloop(self, state):
         # traverse the data graph.  This reads all the control
