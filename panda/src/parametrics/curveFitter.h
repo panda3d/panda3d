@@ -16,6 +16,7 @@
 #define CURVEFITTER_H
 
 #include <pandabase.h>
+#include "luse.h"
 #include <typedef.h>
 #include <vector>
 
