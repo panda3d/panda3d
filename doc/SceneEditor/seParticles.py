@@ -223,8 +223,8 @@ class Particles(ParticleSystem.ParticleSystem):
 
     def printParams(self, file = sys.stdout, targ = 'self'):
         """printParams(file, targ)"""
-	i1="    "
-	i2=i1+i1
+        i1="    "
+        i2=i1+i1
         file.write(i2+'# Particles parameters\n')
         file.write(i2+targ + '.setFactory(\"' + self.factoryType + '\")\n')
         file.write(i2+targ + '.setRenderer(\"' + self.rendererType + '\")\n')

@@ -126,7 +126,7 @@ class dataHolder:
         # resetAll(self)
         # This function will reset the whole scene
         #################################################################
-	# Delete Everything in the Scene Graph
+        # Delete Everything in the Scene Graph
         for index in self.ModelDic:
             self.ModelDic[index].removeNode()
         for index in self.ActorDic:
@@ -137,22 +137,22 @@ class dataHolder:
             self.collisionDict[index].removeNode()
         for index in self.particleNodes:
             self.particleDict[index].cleanup()
-	    self.particleNodes[index].removeNode()
+            self.particleNodes[index].removeNode()
 
         # Clear all data containers in the dataHolder
-	self.ModelDic.clear()
+        self.ModelDic.clear()
         self.ModelRefDic.clear()
         self.ActorDic.clear()
         self.ActorRefDic.clear()
-	self.dummyDict.clear()
-	self.lightManager.deleteAll()
-	self.blendAnimDict.clear()
-	self.particleDict.clear()
-	self.particleNodes.clear()
+        self.dummyDict.clear()
+        self.lightManager.deleteAll()
+        self.blendAnimDict.clear()
+        self.particleDict.clear()
+        self.particleNodes.clear()
         
         self.ModelNum=0
         self.ActorNum=0
-	self.theScene=None
+        self.theScene=None
         messenger.send('SGE_Update Explorer',[render])
         print 'Scene should be cleaned up!'
 
@@ -207,10 +207,10 @@ class dataHolder:
                     self.removeObj(node)
             list = self.lightManager.delete(name)
             return list
-	elif self.particleNodes.has_key(name):
-	    self.particleNodes[name].removeNode()
-	    del self.particleNodes[name]
-	    del self.particleDict[name]
+        elif self.particleNodes.has_key(name):
+            self.particleNodes[name].removeNode()
+            del self.particleNodes[name]
+            del self.particleDict[name]
         else:
             print 'You cannot remove this NodePath'
             return
@@ -588,7 +588,7 @@ class dataHolder:
             return True
 
         return False
-	
+
     def bindCurveToNode(self,node,curveCollection):
         ###########################################################################
         # bindCurveToNode(self,node,curveCollection)
@@ -929,143 +929,143 @@ class dataHolder:
         # loadScene(self)
         # Opens a dialog box asking for a scene file to load.  It then removes
         # the current scene and opens the new one.
-	# It basically proceeds by executig the python file containing the scene
-	# and then re-populating the various dictionaries based on the dictionaries
-	# in the scene file hence reviving the state for the scene
+        # It basically proceeds by executig the python file containing the scene
+        # and then re-populating the various dictionaries based on the dictionaries
+        # in the scene file hence reviving the state for the scene
         ###########################################################################
 
         ### Ask for a filename  
- 	OpenFilename = tkFileDialog.askopenfilename(filetypes = [("PY","py")],title = "Load Scene")
-	if(not OpenFilename):	
-	    return None
-	f=Filename.fromOsSpecific(OpenFilename)
-	fileName=f.getBasenameWoExtension()
-	dirName=f.getFullpathWoExtension()
-	print "DATAHOLDER::" + dirName
-	############################################################################
-	# Append the path to this file to our sys path where python looks for modules
-	# We do this so that we can use "import"  on our saved scene code and execute it
-	############################################################################
-	sys.path.append(os.path.dirname(f.toOsSpecific()))
+        OpenFilename = tkFileDialog.askopenfilename(filetypes = [("PY","py")],title = "Load Scene")
+        if(not OpenFilename):
+            return None
+        f=Filename.fromOsSpecific(OpenFilename)
+        fileName=f.getBasenameWoExtension()
+        dirName=f.getFullpathWoExtension()
+        print "DATAHOLDER::" + dirName
+        ############################################################################
+        # Append the path to this file to our sys path where python looks for modules
+        # We do this so that we can use "import"  on our saved scene code and execute it
+        ############################################################################
+        sys.path.append(os.path.dirname(f.toOsSpecific()))
 
-	############################################################################
-	# Actually import the scene... this executes the code in the scene
-	############################################################################
-	self.theScene=__import__(fileName)
-	self.Scene=self.theScene.SavedScene(0,seParticleEffect,seParticles,dirName) # Specify load mode of 0 which will allow us to pass seParticle and seParticleEffect
-	messenger.send('SGE_Update Explorer',[render])    
+        ############################################################################
+        # Actually import the scene... this executes the code in the scene
+        ############################################################################
+        self.theScene=__import__(fileName)
+        self.Scene=self.theScene.SavedScene(0,seParticleEffect,seParticles,dirName) # Specify load mode of 0 which will allow us to pass seParticle and seParticleEffect
+        messenger.send('SGE_Update Explorer',[render])    
 
 
         # Lets call some important initialization methods on our scene:
         #self.Scene.starteffects(0,seParticleEffect,seParticles,dirName)    # This special calling of start effect with mode 0 is to use seParticleEffect and seParticles
 
 
-	############################################################################
-	# Populate Model related Dictionaries
-	############################################################################
-	for model in self.Scene.ModelDic:
-	    self.ModelDic[model]=self.Scene.ModelDic[model]
-	    #self.ModelRefDic[model]=self.Scene.ModelRefDic[model] # The Old absolute paths way
-	    self.ModelRefDic[model]=Filename(dirName + "/" + self.Scene.ModelRefDic[model]) # Relative Paths
+        ############################################################################
+        # Populate Model related Dictionaries
+        ############################################################################
+        for model in self.Scene.ModelDic:
+            self.ModelDic[model]=self.Scene.ModelDic[model]
+            #self.ModelRefDic[model]=self.Scene.ModelRefDic[model] # The Old absolute paths way
+            self.ModelRefDic[model]=Filename(dirName + "/" + self.Scene.ModelRefDic[model]) # Relative Paths
             self.ModelNum=self.ModelNum+1
 
-	############################################################################
-	# Populate Actor related Dictionaries
-	############################################################################
-	for actor in self.Scene.ActorDic:
-	    self.ActorDic[actor]=self.Scene.ActorDic[actor]
-	    #self.ActorRefDic[actor]=self.Scene.ActorRefDic[actor] # Old way of doing absolute paths
-	    self.ActorRefDic[actor]=Filename(dirName + "/" + self.Scene.ActorRefDic[actor]) # Relative Paths
-	    if(self.Scene.blendAnimDict.has_key(str(actor))):
-	        self.blendAnimDict[actor]=self.Scene.blendAnimDict[actor]
-	    self.ActorNum=self.ActorNum+1
+        ############################################################################
+        # Populate Actor related Dictionaries
+        ############################################################################
+        for actor in self.Scene.ActorDic:
+            self.ActorDic[actor]=self.Scene.ActorDic[actor]
+            #self.ActorRefDic[actor]=self.Scene.ActorRefDic[actor] # Old way of doing absolute paths
+            self.ActorRefDic[actor]=Filename(dirName + "/" + self.Scene.ActorRefDic[actor]) # Relative Paths
+            if(self.Scene.blendAnimDict.has_key(str(actor))):
+                self.blendAnimDict[actor]=self.Scene.blendAnimDict[actor]
+            self.ActorNum=self.ActorNum+1
 
 
 
-	############################################################################
-	# Populate Light related Dictionaries
-	############################################################################
+        ############################################################################
+        # Populate Light related Dictionaries
+        ############################################################################
         #print self.Scene.LightDict
         for light in self.Scene.LightDict:
-	    #print light
-	    alight=self.Scene.LightDict[light]
-	    type=self.Scene.LightTypes[light]	
-	    thenode=self.Scene.LightNodes[light]
-	    #print type
-	    if type == 'ambient':
+            #print light
+            alight=self.Scene.LightDict[light]
+            type=self.Scene.LightTypes[light]
+            thenode=self.Scene.LightNodes[light]
+            #print type
+            if type == 'ambient':
                 self.lightManager.create('ambient',alight.getColor(),name=alight.getName(),tag=thenode.getTag("Metadata"))
             elif type == 'directional':
-		#print alight.getPoint()
-		#print alight.getDirection()
+                #print alight.getPoint()
+                #print alight.getDirection()
                 self.lightManager.create('directional',alight.getColor(),alight.getSpecularColor(),thenode.getPos(),thenode.getHpr(),name=alight.getName(),tag=thenode.getTag("Metadata"))
             elif type == 'point':
-		atten=alight.getAttenuation()
-		#print alight.getPoint()
+                atten=alight.getAttenuation()
+                #print alight.getPoint()
                 self.lightManager.create('point',alight.getColor(),alight.getSpecularColor(),thenode.getPos(),Vec3(1,0,0),atten.getX(),atten.getY(),atten.getZ(),name=alight.getName(),tag=thenode.getTag("Metadata"))
             elif type == 'spot':
-		atten=alight.getAttenuation()
+                atten=alight.getAttenuation()
                 self.lightManager.create('spot',alight.getColor(),alight.getSpecularColor(),thenode.getPos(),thenode.getHpr(),atten.getX(),atten.getY(),atten.getZ(),alight.getExponent(),name=alight.getName(),tag=thenode.getTag("Metadata"))
             else:
-           	print 'Invalid light type'
+                print 'Invalid light type'
 
-	############################################################################
-	# Populate Dummy related Dictionaries
-	############################################################################
-	for dummy in self.Scene.dummyDict:
-	    self.dummyDict[dummy] = self.Scene.dummyDict[dummy]
+        ############################################################################
+        # Populate Dummy related Dictionaries
+        ############################################################################
+        for dummy in self.Scene.dummyDict:
+            self.dummyDict[dummy] = self.Scene.dummyDict[dummy]
 
-	############################################################################
-	# Populate Collision related Dictionaries
-	############################################################################
-	for collnode in self.Scene.collisionDict:
-	    self.collisionDict[collnode]=self.Scene.collisionDict[collnode]
+        ############################################################################
+        # Populate Collision related Dictionaries
+        ############################################################################
+        for collnode in self.Scene.collisionDict:
+            self.collisionDict[collnode]=self.Scene.collisionDict[collnode]
 
-	############################################################################
-	# Populate Mopath related Dictionaries
-	############################################################################
-	for node in self.Scene.curveDict:
-	    curveCollection=self.Scene.curveDict[node]
-	    for curve in curveCollection:
-	        curveColl=ParametricCurveCollection()
-	        nodeP=loader.loadModel(curve)
-		curveColl.addCurves(nodeP.node())
-		nodeP.removeNode()
-		thenode=render.find("**/"+str(node))
-		self.bindCurveToNode(thenode,curveColl)
-	
-	############################################################################
-	# Populate Particle related Dictionaries
-	############################################################################
+        ############################################################################
+        # Populate Mopath related Dictionaries
+        ############################################################################
+        for node in self.Scene.curveDict:
+            curveCollection=self.Scene.curveDict[node]
+            for curve in curveCollection:
+                curveColl=ParametricCurveCollection()
+                nodeP=loader.loadModel(curve)
+                curveColl.addCurves(nodeP.node())
+                nodeP.removeNode()
+                thenode=render.find("**/"+str(node))
+                self.bindCurveToNode(thenode,curveColl)
+
+        ############################################################################
+        # Populate Particle related Dictionaries
+        ############################################################################
         for effect in self.Scene.particleDict:
-	    theeffect=self.Scene.particleDict[effect]
-	    emitter=loader.loadModel("sphere")
-	    emitter.setPosHprScale(theeffect.getX(),theeffect.getY(),theeffect.getZ(),theeffect.getH(),theeffect.getP(),theeffect.getR(),theeffect.getSx(),theeffect.getSy(),theeffect.getSz())
-	    theeffect.setPos(0,0,0)
-	    theeffect.setName(str(effect))
-	    tempparent=theeffect.getParent()
-	    theeffect.reparentTo(emitter)
-	    emitter.setName(str(effect))
-	    emitter.reparentTo(tempparent)
-	    theeffect.enable()
-	    self.particleDict[effect]=theeffect
-	    self.particleNodes[effect]=emitter
-	    
-	
- 
-	# Clean up things added to scene graph by saved file's code execution
-	for light in self.Scene.LightDict:
-	    vestige=render.find('**/'+light)
-	    if(vestige != None):
-   	        vestige.removeNode()
+            theeffect=self.Scene.particleDict[effect]
+            emitter=loader.loadModel("sphere")
+            emitter.setPosHprScale(theeffect.getX(),theeffect.getY(),theeffect.getZ(),theeffect.getH(),theeffect.getP(),theeffect.getR(),theeffect.getSx(),theeffect.getSy(),theeffect.getSz())
+            theeffect.setPos(0,0,0)
+            theeffect.setName(str(effect))
+            tempparent=theeffect.getParent()
+            theeffect.reparentTo(emitter)
+            emitter.setName(str(effect))
+            emitter.reparentTo(tempparent)
+            theeffect.enable()
+            self.particleDict[effect]=theeffect
+            self.particleNodes[effect]=emitter
 
-	############################################################################
-	# return the filename and update the scenegraph explorer window
-	############################################################################
+
+ 
+        # Clean up things added to scene graph by saved file's code execution
+        for light in self.Scene.LightDict:
+            vestige=render.find('**/'+light)
+            if(vestige != None):
+                vestige.removeNode()
+
+        ############################################################################
+        # return the filename and update the scenegraph explorer window
+        ############################################################################
         messenger.send('SGE_Update Explorer',[render])  
-	if(OpenFilename):
+        if(OpenFilename):
             return OpenFilename
-	else:
-	    return None
+        else:
+            return None
 
     def getList(self):
-	return self.lightManager.getList()     
+        return self.lightManager.getList()     

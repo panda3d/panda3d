@@ -94,7 +94,7 @@ class DirectManipulationControl(PandaObject):
             return Task.cont
 
     def manipulationStop(self,xy=[]):
-	taskMgr.remove('manipulateObject')
+        taskMgr.remove('manipulateObject')
         taskMgr.remove('manip-move-wait')
         taskMgr.remove('manip-watch-mouse')
         # depending on flag.....

@@ -209,12 +209,12 @@ class ParticleEffect(NodePath):
         """loadConfig(filename)"""
         #try:
         #    if vfs:
-	print vfs.readFile(filename)
+        print vfs.readFile(filename)
         exec vfs.readFile(filename)
-	print "Particle Effect Reading using VFS"
+        print "Particle Effect Reading using VFS"
         #    else:
-        #	execfile(filename.toOsSpecific())
-	#	print "Shouldnt be wrong"
+        #       execfile(filename.toOsSpecific())
+        #       print "Shouldnt be wrong"
         #except:
         #    self.notify.error('loadConfig: failed to load particle file: '+ repr(filename))
 
@@ -222,7 +222,7 @@ class ParticleEffect(NodePath):
 
     def AppendConfig(self, f):
         f.write('\n')
-	i1="    "
+        i1="    "
         i2=i1+i1
         # Make sure we start with a clean slate
         f.write(i2+'self.effect.reset()\n')
@@ -242,9 +242,9 @@ class ParticleEffect(NodePath):
         for p in self.particlesDict.values():
             target = 'p%d' % num 
             num = num + 1
-	    f.write(i2+"if(mode==0):\n")
-	    f.write(i2+i1+target + ' = seParticles.Particles(\'%s\')\n' % p.getName())
-	    f.write(i2+"else:\n")
+            f.write(i2+"if(mode==0):\n")
+            f.write(i2+i1+target + ' = seParticles.Particles(\'%s\')\n' % p.getName())
+            f.write(i2+"else:\n")
             f.write(i2+i1+target + ' = Particles.Particles(\'%s\')\n' % p.getName())
             p.printParams(f, target)
             f.write(i2+'self.effect.addParticles(%s)\n' % target)

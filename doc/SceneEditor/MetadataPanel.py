@@ -23,10 +23,10 @@ class MetadataPanel(AppShell,Pmw.MegaWidget):
         optiondefs = (
             ('title',       self.appname,       None),
             )
-	self.defineoptions(kw, optiondefs)
-	self.Metanode=nodePath
-	if(nodePath.hasTag("Metadata")):
-	    self.Metatag=self.Metanode.getTag("Metadata")
+        self.defineoptions(kw, optiondefs)
+        self.Metanode=nodePath
+        if(nodePath.hasTag("Metadata")):
+            self.Metatag=self.Metanode.getTag("Metadata")
 
         if parent == None:
             self.parent = Toplevel()
@@ -36,24 +36,24 @@ class MetadataPanel(AppShell,Pmw.MegaWidget):
 
     
     def appInit(self):
-	print "Metadata Panel"
+        print "Metadata Panel"
 
     def createInterface(self):
         interior = self.interior()
         mainFrame = Frame(interior)
-	tag_label=Label (mainFrame,text="Enter Metadata",font=('MSSansSerif', 15),
+        tag_label=Label (mainFrame,text="Enter Metadata",font=('MSSansSerif', 15),
                            relief = RIDGE, borderwidth=5)
-	tag_label.pack()
-	source=StringVar()
-	source.set(self.Metatag)
-	self.tag_text=Entry(mainFrame, width=10,textvariable=source)
-	self.tag_text.pack()
-	set_button=Button(mainFrame, text='Set Metadata',font=('MSSansSerif', 15),
+        tag_label.pack()
+        source=StringVar()
+        source.set(self.Metatag)
+        self.tag_text=Entry(mainFrame, width=10,textvariable=source)
+        self.tag_text.pack()
+        set_button=Button(mainFrame, text='Set Metadata',font=('MSSansSerif', 15),
                            relief = RIDGE, borderwidth=5, command= lambda:self.SetIt())
-	set_button.pack()
-	mainFrame.pack(fill = 'both', expand = 1)
+        set_button.pack()
+        mainFrame.pack(fill = 'both', expand = 1)
 
     def SetIt(self):
-	self.Metanode.setTag("Metadata",self.tag_text.get())
-	
-	
+        self.Metanode.setTag("Metadata",self.tag_text.get())
+
+

@@ -603,6 +603,6 @@ class LoadAnimPanel(AppShell):
         # Then, it will close the panel itself.
         #################################################################
         messenger.send('AW_AnimationLoad',[self.Actor,self.animDic])
-	#print self.animDic
+        #print self.animDic
         self.quit()
         return

@@ -96,8 +96,8 @@ class ForceGroup(DirectObject):
 
     def printParams(self, file = sys.stdout, targ = 'self'):
         """printParams(file, targ)"""
-	i1="    "
-	i2=i1+i1
+        i1="    "
+        i2=i1+i1
         file.write(i2+'# Force parameters\n')
         for i in range(self.node.getNumForces()):
             f = self.node.getForce(i)

@@ -550,13 +550,13 @@ class SelectionRay(SelectionQueue):
                 # No mouse in window.
                 self.clearEntries()
                 return
-	    mx = base.mouseWatcherNode.getMouseX()
+            mx = base.mouseWatcherNode.getMouseX()
             my = base.mouseWatcherNode.getMouseY()
         #base.mouseWatcherNode.setDisplayRegion(base.win.getDisplayRegion(0))
         #mx = base.mouseWatcherNode.getMouseX()+1
         #my = base.mouseWatcherNode.getMouseY()+1
-	#print base.camNode.getName()
-	#print "Arrived X" + str(mx) + " Arrived Y " + str(my) 
+        #print base.camNode.getName()
+        #print "Arrived X" + str(mx) + " Arrived Y " + str(my) 
         self.collider.setFromLens( base.camNode, mx, my )
 
         self.ct.traverse( targetNodePath )

@@ -147,7 +147,7 @@ class myLevelEditor(AppShell):
         self.initialiseoptions(myLevelEditor)
 
         self.parent.resizable(False,False) ## Disable the ability to resize for this Window.
-	
+
         ######### Set the event handler ##########
         self.dataFlowEvents = [
             ## Event from Side Window
@@ -202,14 +202,14 @@ class myLevelEditor(AppShell):
             ['SEditor-ToggleBackface',self.toggleBackface],
             ['SEditor-ToggleTexture',self.toggleTexture],
             ['SEditor-ToggleWireframe',self.toggleWireframe],
-	    ['ParticlePanel_Added_Effect',self.addParticleEffect],
+            ['ParticlePanel_Added_Effect',self.addParticleEffect],
             ]
         
 
         #################################
         ###  Collision detection
         #################################
-       	self.cTrav = CollisionTraverser()
+        self.cTrav = CollisionTraverser()
         base.cTrav = self.cTrav
 
         for event in self.dataFlowEvents:
@@ -223,7 +223,7 @@ class myLevelEditor(AppShell):
             ['SGE_Remove', self.remove],
             ['SGE_Add Dummy', self.addDummyNode],
             ['SGE_Add Collision Object', self.addCollisionObj],
-	    ['SGE_Metadata', self.openMetadataPanel],
+            ['SGE_Metadata', self.openMetadataPanel],
             ['SGE_Set as Reparent Target', self.setAsReparentTarget],
             ['SGE_Reparent to Target', self.reparentToNode],
             ['SGE_Animation Panel', self.openAnimPanel],
@@ -255,17 +255,17 @@ class myLevelEditor(AppShell):
         ### Create SceneEditor Ver. DirectSession
         self.seSession = SeSession()
         self.seSession.enable()
-	SEditor.camera.setPos(0,-50,10)
+        SEditor.camera.setPos(0,-50,10)
 
-	self.placer=None
-	self.MopathPanel = None
-	self.alignPanelDict = {}
-	#self.quadview=QuadView()
-	
+        self.placer=None
+        self.MopathPanel = None
+        self.alignPanelDict = {}
+        #self.quadview=QuadView()
 
-	self.lightingPanel = None
-	self.controllerPanel = None
-	self.particlePanel = None
+
+        self.lightingPanel = None
+        self.controllerPanel = None
+        self.particlePanel = None
 
         ### Create Side Window
         self.sideWindow = sideWindow(worldColor = self.worldColor,
@@ -293,7 +293,7 @@ class myLevelEditor(AppShell):
         ### Creating the Buttons in the window frame
         #######################################################
         buttonFrame = Frame(interior)
-	self.image=[]
+        self.image=[]
         self.image.append(PhotoImage(file='new.gif'))#0
         self.image.append(PhotoImage(file='open.gif'))#1
         self.image.append(PhotoImage(file='save.gif'))#2
@@ -314,9 +314,9 @@ class myLevelEditor(AppShell):
         self.image.append(PhotoImage(file='blank.gif'))
         self.image.append(PhotoImage(file='blank.gif'))
         self.image.append(PhotoImage(file='blank.gif'))
-	self.image.append(PhotoImage(file='blank.gif'))
-	self.image.append(PhotoImage(file='blank.gif'))
-	self.image.append(PhotoImage(file='blank.gif'))
+        self.image.append(PhotoImage(file='blank.gif'))
+        self.image.append(PhotoImage(file='blank.gif'))
+        self.image.append(PhotoImage(file='blank.gif'))
 
 
         i = 0
@@ -324,11 +324,11 @@ class myLevelEditor(AppShell):
             i += 1
             button = Button(buttonFrame, image = element, command=lambda n=i : self.buttonPushed(n))
             button.pack(fill=X, side = LEFT)
-	    
+
 
         buttonFrame.pack(fill=X, side=LEFT,expand=True)
-	
-	
+
+
     def buttonPushed(self, buttonIndex):
         #################################################################
         # buttonPushed(self, buttonNum)
@@ -339,8 +339,8 @@ class myLevelEditor(AppShell):
         ####  Change here to process the button event further.
         ####
         if buttonIndex==1: # New Scene
-	    self.newScene()
-	    return
+            self.newScene()
+            return
         elif buttonIndex==2: # Open Scene
             self.openScene()
             return
@@ -357,13 +357,13 @@ class myLevelEditor(AppShell):
             self.openPlacerPanel()
             return
         elif buttonIndex==7: # Open Mopath Panel
-	    self.openMoPathPanel()
+            self.openMoPathPanel()
             return
         elif buttonIndex==8: # Open Lighting Panel
             self.openLightingPanel()
             return
         elif buttonIndex==9: # Open Particle Panel
-	    self.openParticlePanel()
+            self.openParticlePanel()
             return
         elif buttonIndex==10: 
             self.openInputPanel()
@@ -570,7 +570,7 @@ class myLevelEditor(AppShell):
     ## Processing message events
 
     def makeDirty(self):
-	self.Dirty=1
+        self.Dirty=1
 
     def removeLight(self, lightNode):
         #################################################################
@@ -627,7 +627,7 @@ class myLevelEditor(AppShell):
         list, lightNode = AllScene.createLight(type = type)
         if self.lightingPanel != None:
             self.lightingPanel.updateList(list,lightNode)
-	self.makeDirty()
+        self.makeDirty()
         return
     
     def lightingPanelClose(self):
@@ -662,9 +662,9 @@ class myLevelEditor(AppShell):
         return
 
     def openMetadataPanel(self,nodePath=None):
-	print nodePath
-	self.MetadataPanel=MetadataPanel(nodePath)
-	pass
+        print nodePath
+        self.MetadataPanel=MetadataPanel(nodePath)
+        pass
 
     def duplicate(self, nodePath = None):
         #################################################################
@@ -706,7 +706,7 @@ class myLevelEditor(AppShell):
         #
         #################################################################
         AllScene.addDummyNode(nodepath)
-	self.makeDirty()
+        self.makeDirty()
         pass
 
     def addCollisionObj(self, nodepath = None):
@@ -820,67 +820,67 @@ class myLevelEditor(AppShell):
         # and will reset the application title to "New Scene"
         #################################################################
         self.closeAllSubWindows() ## Close all sub window
-	if(self.CurrentFileName):
-	    currentF=Filename(self.CurrentFileName)
-	    self.CurrentFileName=None
+        if(self.CurrentFileName):
+            currentF=Filename(self.CurrentFileName)
+            self.CurrentFileName=None
             AllScene.resetAll()
-	    currentModName=currentF.getBasenameWoExtension()
- 	    # Let us actually remove the scene from sys modules... this is done because every scene is loaded as a module
-	    # And if we reload a scene python wont reload since its already in sys.modules... and hence we delete it
-	    # If there is ever a garbage colleciton bug..this might be a point to look at 
-	    if sys.modules.has_key(currentModName):
-	        del sys.modules[currentModName]
-	        print sys.getrefcount(AllScene.theScene)
-	        del AllScene.theScene
-	else:
-	    AllScene.resetAll()
-	self.parent.title('Scene Editor - New Scene')
+            currentModName=currentF.getBasenameWoExtension()
+            # Let us actually remove the scene from sys modules... this is done because every scene is loaded as a module
+            # And if we reload a scene python wont reload since its already in sys.modules... and hence we delete it
+            # If there is ever a garbage colleciton bug..this might be a point to look at 
+            if sys.modules.has_key(currentModName):
+                del sys.modules[currentModName]
+                print sys.getrefcount(AllScene.theScene)
+                del AllScene.theScene
+        else:
+            AllScene.resetAll()
+        self.parent.title('Scene Editor - New Scene')
         pass
 
     def openScene(self):
         #################################################################
         # openScene(self)
         #################################################################
-	# In the future try and provide merging of two scenes
-	
+        # In the future try and provide merging of two scenes
+
         if(self.CurrentFileName or self.Dirty):
-	    saveScene = tkMessageBox._show("Load scene","Save the current scene?",icon = tkMessageBox.QUESTION,type = tkMessageBox.YESNOCANCEL)
-	    if (saveScene == "yes"):
-		self.saveScene()
-	    elif (saveScene == "cancel"):
-		return
+            saveScene = tkMessageBox._show("Load scene","Save the current scene?",icon = tkMessageBox.QUESTION,type = tkMessageBox.YESNOCANCEL)
+            if (saveScene == "yes"):
+                self.saveScene()
+            elif (saveScene == "cancel"):
+                return
         
         self.closeAllSubWindows() ## Close all sub window
-	if(self.CurrentFileName):
-	    currentF=Filename(self.CurrentFileName)
-	    AllScene.resetAll()
-	    currentModName=currentF.getBasenameWoExtension()
-	    # Let us actually remove the scene from sys modules... this is done because every scene is loaded as a module
-	    # And if we reload a scene python wont reload since its already in sys.modules... and hence we delete it
-	    # If there is ever a garbage colleciton bug..this might be a point to look at 
-	    if sys.modules.has_key(currentModName):
-	        del sys.modules[currentModName]
-	        print sys.getrefcount(AllScene.theScene)
-	        del AllScene.theScene
+        if(self.CurrentFileName):
+            currentF=Filename(self.CurrentFileName)
+            AllScene.resetAll()
+            currentModName=currentF.getBasenameWoExtension()
+            # Let us actually remove the scene from sys modules... this is done because every scene is loaded as a module
+            # And if we reload a scene python wont reload since its already in sys.modules... and hence we delete it
+            # If there is ever a garbage colleciton bug..this might be a point to look at 
+            if sys.modules.has_key(currentModName):
+                del sys.modules[currentModName]
+                print sys.getrefcount(AllScene.theScene)
+                del AllScene.theScene
         else:
-	    AllScene.resetAll()
+            AllScene.resetAll()
 
-	self.CurrentFileName = AllScene.loadScene()
-	
-	if(self.CurrentFileName==None):
-	    return
+        self.CurrentFileName = AllScene.loadScene()
 
-	thefile=Filename(self.CurrentFileName)
-	thedir=thefile.getFullpathWoExtension()
-	print "SCENE EDITOR::" + thedir
-	self.CurrentDirName=thedir
-	if self.CurrentFileName != None:
+        if(self.CurrentFileName==None):
+            return
+
+        thefile=Filename(self.CurrentFileName)
+        thedir=thefile.getFullpathWoExtension()
+        print "SCENE EDITOR::" + thedir
+        self.CurrentDirName=thedir
+        if self.CurrentFileName != None:
             self.parent.title('Scene Editor - '+ Filename.fromOsSpecific(self.CurrentFileName).getBasenameWoExtension())
-	if self.lightingPanel !=None:
+        if self.lightingPanel !=None:
             lightList=AllScene.getList()
             self.lightingPanel.updateList(lightList)
         messenger.send('SGE_Update Explorer',[render])
-	
+
 
         # Close the side window in order to reset all world settings to fit the scene we have loaded.
         self.sideWindow.quit()
@@ -905,45 +905,45 @@ class myLevelEditor(AppShell):
         # If this filename exists in sys.modules you cannot use it
         #################################################################
 
-	if(self.CurrentFileName):
-	    f=FileSaver()	
-	    f.SaveFile(AllScene,self.CurrentFileName,self.CurrentDirName,1)
-	    self.Dirty=0
-	else:
-      	    self.saveAsScene()
+        if(self.CurrentFileName):
+            f=FileSaver()
+            f.SaveFile(AllScene,self.CurrentFileName,self.CurrentDirName,1)
+            self.Dirty=0
+        else:
+            self.saveAsScene()
         pass
    
 
     def saveAsScene(self):
         #################################################################
-	# saveAsScene(self)
+        # saveAsScene(self)
         # Ask for filename using a file save dialog
         # If this filename exists in sys.modules you cannot use it
         # Instantiate FileSaver from seFileSaver.py and pass it the filename
         #################################################################
 
         fileName = tkFileDialog.asksaveasfilename(filetypes = [("PY","py")],title = "Save Scene")
-	if(not fileName):
-	    return
-	fCheck=Filename(fileName)
-	#print fCheck.getBasenameWoExtension()
-	###############################################################################
-	# !!!!! See if a module exists by this name... if it does you cannot use this filename !!!!!
-	###############################################################################
-	if(sys.modules.has_key(fCheck.getBasenameWoExtension())):
-	    tkMessageBox.showwarning(
+        if(not fileName):
+            return
+        fCheck=Filename(fileName)
+        #print fCheck.getBasenameWoExtension()
+        ###############################################################################
+        # !!!!! See if a module exists by this name... if it does you cannot use this filename !!!!!
+        ###############################################################################
+        if(sys.modules.has_key(fCheck.getBasenameWoExtension())):
+            tkMessageBox.showwarning(
             "Save file",
             "Cannot save with this name because there is a system module with the same name. Please resave as something else."
-	        )
+                )
 
-	    return
-	self.CurrentDirName=fileName
-	fileName=fileName+".py"
+            return
+        self.CurrentDirName=fileName
+        fileName=fileName+".py"
         f=FileSaver()
-	self.CurrentFileName=fileName
-	f.SaveFile(AllScene,fileName,self.CurrentDirName,0)
-	self.Dirty=0
-	self.parent.title('Scene Editor - '+ Filename.fromOsSpecific(self.CurrentFileName).getBasenameWoExtension())
+        self.CurrentFileName=fileName
+        f.SaveFile(AllScene,fileName,self.CurrentDirName,0)
+        self.Dirty=0
+        self.parent.title('Scene Editor - '+ Filename.fromOsSpecific(self.CurrentFileName).getBasenameWoExtension())
         pass
 
     def loadModel(self):
@@ -962,7 +962,7 @@ class myLevelEditor(AppShell):
             title = 'Load New Model',
             parent = self.parent)
         if modelFilename:
-	    self.makeDirty()
+            self.makeDirty()
             if not AllScene.loadModel(modelFilename, Filename.fromOsSpecific(modelFilename)):
                 print '----Error! No Such Model File!'
         pass
@@ -983,9 +983,9 @@ class myLevelEditor(AppShell):
             title = 'Load New Actor',
             parent = self.parent)
 
-	
+
         if ActorFilename:
-	    self.makeDirty()
+            self.makeDirty()
             if not AllScene.loadActor(ActorFilename, Filename.fromOsSpecific(ActorFilename)):
                 print '----Error! No Such Model File!'
         pass
@@ -1162,24 +1162,24 @@ class myLevelEditor(AppShell):
         return
     
     def addParticleEffect(self,effect_name,effect,node):
-	AllScene.particleDict[effect_name]=effect
-	AllScene.particleNodes[effect_name]=node
-	if not self.ParticleEnable:
+        AllScene.particleDict[effect_name]=effect
+        AllScene.particleNodes[effect_name]=node
+        if not self.ParticleEnable:
             AllScene.particleNodes[effect_name].setTransparency(True)
             AllScene.particleNodes[effect_name].setAlphaScale(0)
             AllScene.particleNodes[effect_name].setBin("fixed",1)
-	return
+        return
 
     def openParticlePanel(self):
         if self.particlePanel != None:
             ## There already has a Particle panel!
             return
-	if(len(AllScene.particleDict)==0):
-	    self.particlePanel=seParticlePanel.ParticlePanel()
-	else:
-	    for effect in AllScene.particleDict:
-	        theeffect=AllScene.particleDict[effect]
-	    self.particlePanel=seParticlePanel.ParticlePanel(particleEffect=theeffect,effectsDict=AllScene.particleDict)
+        if(len(AllScene.particleDict)==0):
+            self.particlePanel=seParticlePanel.ParticlePanel()
+        else:
+            for effect in AllScene.particleDict:
+                theeffect=AllScene.particleDict[effect]
+            self.particlePanel=seParticlePanel.ParticlePanel(particleEffect=theeffect,effectsDict=AllScene.particleDict)
 
         pass
 
@@ -1325,7 +1325,7 @@ class myLevelEditor(AppShell):
             self.menuEdit.entryconfig('Duplicate', state=NORMAL)
             self.menuEdit.entryconfig('Remove', state=NORMAL)
             self.menuEdit.entryconfig('Object Properties', state=NORMAL)
-	    if callBack:
+            if callBack:
                 self.seSession.select(nodePath,fResetAncestry=1)
             messenger.send('SGE_Update Explorer',[render])
             if not taskMgr.hasTaskNamed('seMonitorSelectedNode'):

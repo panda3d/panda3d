@@ -26,7 +26,7 @@ class seLight(NodePath):
                  linear = 0.0,
                  quadratic = 0.0,
                  exponent = 0.0,
-		 tag="",
+                 tag="",
                  lence = None):
         #################################################################
         # __init__(self, light, parent, type,
@@ -38,7 +38,7 @@ class seLight(NodePath):
         #          linear = 0.0,
         #          quadratic = 0.0,
         #          exponent = 0.0,
-	# 	   tag="",
+        #          tag="",
         #          lence = None):
         # This constructor will create a light node inside it and upcast
         # this light node to itself as a nodePath.
@@ -68,24 +68,24 @@ class seLight(NodePath):
             node = light.upcastToPandaNode()
 
         # Attach node to self
-	self.LightNode=parent.attachNewNode(node)
-	self.LightNode.setTag("Metadata",tag)
-	if(self.type=='spot'):
- 	    self.LightNode.setHpr(self.orientation)
-	    self.LightNode.setPos(self.position)
-	else:
-	    self.LightNode.setHpr(self.orientation)	
-	    self.LightNode.setPos(self.position)
-	    
-	
-	self.assign(self.LightNode)
+        self.LightNode=parent.attachNewNode(node)
+        self.LightNode.setTag("Metadata",tag)
+        if(self.type=='spot'):
+            self.LightNode.setHpr(self.orientation)
+            self.LightNode.setPos(self.position)
+        else:
+            self.LightNode.setHpr(self.orientation)
+            self.LightNode.setPos(self.position)
+
+
+        self.assign(self.LightNode)
         if(self.type=='spot'):
             self.helpModel = loader.loadModelCopy( "Spotlight" )
         elif(self.type=='point'):
             self.helpModel = loader.loadModelCopy( "Pointlight" )
         elif(self.type=='directional'):
             self.helpModel = loader.loadModelCopy( "Dirlight" )
-	else:
+        else:
             self.helpModel = loader.loadModelCopy( "misc/Sphere" )
         self.helpModel.setColor(self.lightcolor)
         self.helpModel.reparentTo(self)
@@ -156,7 +156,7 @@ class seLight(NodePath):
         # Although you can call this function for all kinds of light,
         # it will only meanful if this light is not a ambient light.
         #################################################################
-	return self.specularColor
+        return self.specularColor
 
     def setSpecColor(self,color):
         #################################################################
@@ -178,7 +178,7 @@ class seLight(NodePath):
         # It only has meaning for "point Light" and "Directional light"
         #################################################################
         self.position = self.LightNode.getPos()
-	return self.position
+        return self.position
 
     def setPosition(self, pos):
         #################################################################
@@ -201,8 +201,8 @@ class seLight(NodePath):
         #
         #################################################################
         self.orientation = self.LightNode.getHpr()
-	return self.orientation
-	
+        return self.orientation
+
     def setOrientation(self,orient):
         #################################################################
         # setOrientation(self, orient)
@@ -228,7 +228,7 @@ class seLight(NodePath):
         # tyoe of lights.
         #
         #################################################################
-	return Vec3(self.constant,self.linear,self.quadratic)
+        return Vec3(self.constant,self.linear,self.quadratic)
 
     def setConstantAttenuation(self, value):
         #################################################################
@@ -269,7 +269,7 @@ class seLight(NodePath):
         # This function will return the value of the Exponent Attenuation
         # of this light node. (float)
         #################################################################
-	return self.exponent    
+        return self.exponent    
 
     def setExponent(self, value):
         #################################################################
@@ -291,8 +291,8 @@ class seLightManager(NodePath):
         # Initialize the superclass
         NodePath.__init__(self)
         # Create a node for the lights
-	self.lnode=render.attachNewNode('Lights')
-	self.assign(self.lnode)
+        self.lnode=render.attachNewNode('Lights')
+        self.assign(self.lnode)
         # Create a light attrib
         self.lightAttrib = LightAttrib.makeAllOff()
         self.lightDict = {}
@@ -319,8 +319,8 @@ class seLightManager(NodePath):
                  linear = 0.0,
                  quadratic = 0.0,
                  exponent = 0.0,
-		 tag= "",
-		 name='DEFAULT_NAME'):
+                 tag= "",
+                 name='DEFAULT_NAME'):
         #################################################################
         # create(self, type = 'ambient',
         #        lightcolor=VBase4(0.3,0.3,0.3,1),
@@ -331,12 +331,12 @@ class seLightManager(NodePath):
         #        linear = 0.0,
         #        quadratic = 0.0,
         #        exponent = 0.0,
-	#        tag= "",
-	#	 name='DEFAULT_NAME')
-	# As you can see, once user call this function and specify those
-	# variables, this function will create a seLight node.
-	# In the default, the light which just has been created will be
-	# set to off.
+        #        tag= "",
+        #        name='DEFAULT_NAME')
+        # As you can see, once user call this function and specify those
+        # variables, this function will create a seLight node.
+        # In the default, the light which just has been created will be
+        # set to off.
         #################################################################
         ### create the light
 
@@ -344,10 +344,10 @@ class seLightManager(NodePath):
         
         if type == 'ambient':
             self.ambientCount += 1
-	    if(name=='DEFAULT_NAME'):
+            if(name=='DEFAULT_NAME'):
                 light = AmbientLight('ambient_' + `self.ambientCount`)
-	    else:
-	        light = AmbientLight(name)
+            else:
+                light = AmbientLight(name)
 
             light.setColor(lightcolor)
 
@@ -355,18 +355,18 @@ class seLightManager(NodePath):
             self.directionalCount += 1
             if(name=='DEFAULT_NAME'):
                 light = DirectionalLight('directional_' + `self.directionalCount`)
-	    else:
-	        light = DirectionalLight(name)
+            else:
+                light = DirectionalLight(name)
 
             light.setColor(lightcolor)
             light.setSpecularColor(specularColor)
 
         elif type == 'point':
             self.pointCount += 1
-	    if(name=='DEFAULT_NAME'):
+            if(name=='DEFAULT_NAME'):
                 light = PointLight('point_' + `self.pointCount`)
-	    else:
-	        light = PointLight(name)
+            else:
+                light = PointLight(name)
             
             light.setColor(lightcolor)
             light.setSpecularColor(specularColor)
@@ -374,10 +374,10 @@ class seLightManager(NodePath):
 
         elif type == 'spot':
             self.spotCount += 1
-	    if(name=='DEFAULT_NAME'):
+            if(name=='DEFAULT_NAME'):
                 light = Spotlight('spot_' + `self.spotCount`)
-	    else:
-	        light = Spotlight(name)
+            else:
+                light = Spotlight(name)
 
             light.setColor(lightcolor)
             lence = PerspectiveLens()
@@ -399,9 +399,9 @@ class seLightManager(NodePath):
                             linear = linear,
                             quadratic = quadratic,
                             exponent = exponent,
-			    tag=tag,
+                            tag=tag,
                             lence = lence
-				)
+                                )
         self.lightDict[light.getName()] = lightNode
         self.setOn(lightNode)
 
@@ -629,4 +629,4 @@ class seLightManager(NodePath):
         # This function actually has the same functionality with getLightList(),
         # but this one should be more efficient.
         #################################################################
-	return self.lightDict.keys()
+        return self.lightDict.keys()

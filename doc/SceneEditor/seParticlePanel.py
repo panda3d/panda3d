@@ -34,7 +34,7 @@ class ParticlePanel(AppShell):
         # Record particle effect
         if particleEffect != None:
             self.particleEffect = particleEffect
-       	    self.effectsDict = effectsDict
+            self.effectsDict = effectsDict
         else:
             # Or create a new one if none given
             particles = seParticles.Particles()
@@ -47,17 +47,17 @@ class ParticlePanel(AppShell):
             particles.enable()
             pe = seParticleEffect.ParticleEffect('effect1', particles)
             self.particleEffect = pe
-	    self.emitter=loader.loadModel("sphere")
-	    pe.reparentTo(self.emitter)	
-	    self.emitter.setName("effect1")
-	    self.emitter.reparentTo(render)
+            self.emitter=loader.loadModel("sphere")
+            pe.reparentTo(self.emitter)
+            self.emitter.setName("effect1")
+            self.emitter.reparentTo(render)
             pe.enable()
             messenger.send('ParticlePanel_Added_Effect',['effect1',pe,self.emitter])
-	    self.effectsDict[self.particleEffect.getName()]=self.particleEffect
-	
+            self.effectsDict[self.particleEffect.getName()]=self.particleEffect
 
-	messenger.send('SGE_Update Explorer',[render])
-	
+
+        messenger.send('SGE_Update Explorer',[render])
+
         # Initialize application specific info
         AppShell.__init__(self)
 
@@ -1713,7 +1713,7 @@ class ParticlePanel(AppShell):
         name = askstring('Particle Panel', 'Effect Name:',
                          parent = self.parent)
         if name:
-	    particles = seParticles.Particles()
+            particles = seParticles.Particles()
             particles.setBirthRate(0.02)
             particles.setLitterSize(10)
             particles.setLitterSpread(0)
@@ -1725,12 +1725,12 @@ class ParticlePanel(AppShell):
             self.effectsDict[name] = effect
             self.updateMenusAndLabels()
             self.selectEffectNamed(name)
-	    self.emitter=loader.loadModel("sphere")
-	    self.emitter.setName(name)
-	    effect.reparentTo(self.emitter)
-	    self.emitter.reparentTo(render)
+            self.emitter=loader.loadModel("sphere")
+            self.emitter.setName(name)
+            effect.reparentTo(self.emitter)
+            self.emitter.reparentTo(render)
             effect.enable()
-	    messenger.send('ParticlePanel_Added_Effect',[name,effect,self.emitter])
+            messenger.send('ParticlePanel_Added_Effect',[name,effect,self.emitter])
             messenger.send('SGE_Update Explorer',[render])
 
     def createNewParticles(self):
