@@ -1452,7 +1452,7 @@ class LevelEditor(NodePath, PandaObject):
         self.landmarkBlock=self.landmarkBlock+1
         return str(self.landmarkBlock)
     
-    def addLandmark(self, landmarkType):
+    def addLandmark(self, landmarkType, hq):
         # Record new landmark type
         self.setCurrent('toon_landmark_texture', landmarkType)
         # And create new landmark building
@@ -1460,10 +1460,13 @@ class LevelEditor(NodePath, PandaObject):
         newDNALandmarkBuilding = DNALandmarkBuilding(
             'tb'+block+':'+landmarkType + '_DNARoot')
         newDNALandmarkBuilding.setCode(landmarkType)
+        newDNALandmarkBuilding.setHq(hq)
         newDNALandmarkBuilding.setPos(VBase3(0))
         newDNALandmarkBuilding.setHpr(VBase3(0))
-        newDNADoor = self.createDoor('landmark_door')
-        newDNALandmarkBuilding.add(newDNADoor)
+        # Headquarters do not have doors
+        if not hq:
+            newDNADoor = self.createDoor('landmark_door')
+            newDNALandmarkBuilding.add(newDNADoor)
         # Now place new landmark building in the world
         self.initDNANode(newDNALandmarkBuilding)
 
@@ -4619,6 +4622,16 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         # LANDMARK BUILDINGS
         Label(landmarkBuildingsPage, text = 'Landmark Buildings',
               font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
+
+        self.landmarkHQIntVar = IntVar()
+        self.landmarkHQIntVar.set(0)
+        self.landmarkHQButton = Checkbutton(
+            landmarkBuildingsPage,
+            text = 'HQ',
+            variable=self.landmarkHQIntVar,
+            command=self.setLandmarkHQ)
+        self.landmarkHQButton.pack(side = LEFT, expand = 1, fill = X)
+
         self.addLandmarkBuildingButton = Button(
             landmarkBuildingsPage,
             text = 'ADD LANDMARK BUILDING',
@@ -5358,6 +5371,10 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                  flags=string.join(flags.split(flagChar), '')
                  baseline.setFlags(flags)
             self.levelEditor.replaceSelected()
+
+    def setLandmarkHQ(self):
+        if self.levelEditor.lastLandmarkBuildingDNA:
+            self.levelEditor.lastLandmarkBuildingDNA.setHq(self.landmarkHQIntVar.get())
     
     def setBigFirstLetter(self):
         self.adjustBaselineFlag(self.bigFirstLetterIntVar.get(), 'b')
@@ -5451,7 +5468,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             self.levelEditor.replaceSelected()
 
     def addLandmark(self):
-        self.levelEditor.addLandmark(self.landmarkType)
+        self.levelEditor.addLandmark(self.landmarkType, self.landmarkHQIntVar.get())
 
     def setPropType(self,name):
         self.propType = name
