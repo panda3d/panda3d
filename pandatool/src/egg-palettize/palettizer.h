@@ -54,8 +54,8 @@ private:
   static const char *yesno(bool flag);
 
 public:
-  int _pi_version;
-  int _read_pi_version;
+  static int _pi_version;
+  static int _read_pi_version;
 
   enum RemapUV {
     RU_never,

@@ -174,6 +174,7 @@ fully_define() {
       break;
 
     case EggTexture::F_luminance_alpha:
+    case EggTexture::F_luminance_alphamask:
       _num_channels = 2;
       break;
 
@@ -207,6 +208,7 @@ fully_define() {
   case 2:
     switch (_format) {
     case EggTexture::F_luminance_alpha:
+    case EggTexture::F_luminance_alphamask:
       break;
 
     default:
@@ -392,6 +394,9 @@ get_format_string(EggTexture::Format format) {
 
   case EggTexture::F_luminance_alpha:
     return "t"; // t for two-channel
+
+  case EggTexture::F_luminance_alphamask:
+    return "t1";
 
   case EggTexture::F_red:
     return "r";

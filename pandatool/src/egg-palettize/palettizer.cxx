@@ -21,6 +21,17 @@
 
 Palettizer *pal = (Palettizer *)NULL;
 
+// This number is written out as the first number to the pi file, to
+// indicate the version of egg-palettize that wrote it out.  This
+// allows us to easily update egg-palettize to write out additional
+// information to its pi file, without having it increment the bam
+// version number for all bam and boo files anywhere in the world.
+int Palettizer::_pi_version = 2;
+// Updated to version 1 on 12/11/00 to add _remap_char_uv.
+// Updated to version 2 on 12/19/00 to add TexturePlacement::_dest.
+
+int Palettizer::_read_pi_version = 0;
+
 TypeHandle Palettizer::_type_handle;
 
 ostream &operator << (ostream &out, Palettizer::RemapUV remap) {
@@ -48,17 +59,6 @@ ostream &operator << (ostream &out, Palettizer::RemapUV remap) {
 ////////////////////////////////////////////////////////////////////
 Palettizer::
 Palettizer() {
-  // This number is written out as the first number to the pi file, to
-  // indicate the version of egg-palettize that wrote it out.  This
-  // allows us to easily update egg-palettize to write out additional
-  // information to its pi file, without having it increment the bam
-  // version number for all bam and boo files anywhere in the world.
-
-  _pi_version = 1;
-  // Updated to version 1 on 12/11/00 to add _remap_char_uv.
-
-  _read_pi_version = _pi_version;
-
   _map_dirname = "%g";
   _shadow_dirname = "shadow";
   _margin = 2;

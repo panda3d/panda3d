@@ -66,7 +66,6 @@ public:
   void copy_unplaced(bool redo_all);
 
   const PNMImage &read_source_image();
-  const PNMImage &get_dest_image();
 
   void write_source_pathnames(ostream &out, int indent_level = 0) const;
   void write_scale_info(ostream &out, int indent_level = 0);
@@ -113,8 +112,6 @@ private:
 
   bool _read_source_image;
   PNMImage _source_image;
-  bool _got_dest_image;
-  PNMImage _dest_image;
 
 
   // The TypedWriteable interface follows.

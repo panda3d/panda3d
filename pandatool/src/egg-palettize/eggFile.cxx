@@ -327,6 +327,11 @@ choose_placements() {
       // Now groups is the set of groups that the egg file requires,
       // which also happen to include the texture.  It better not be
       // empty.
+      if (groups.empty()) {
+	cerr << "groups empty for " << get_name() << ", texture " << texture->get_name() << "\n"
+	     << "complete groups is " << get_complete_groups() << "\n"
+	     << "texture groups is " << texture->get_groups() << "\n";
+      }
       nassertv(!groups.empty());
       
       // It doesn't really matter which group in the set we choose, so

@@ -29,6 +29,10 @@ public:
   void copy(TextureImage *texture);
   void copy_if_stale(const DestTextureImage *other, TextureImage *texture);
 
+private:
+  static int to_power_2(int value);
+
+
   // The TypedWriteable interface follows.
 public:
   static void register_with_read_factory();

@@ -7,6 +7,7 @@
 #include "sourceTextureImage.h"
 #include "texturePlacement.h"
 #include "textureImage.h"
+#include "palettizer.h"
 
 #include <datagram.h>
 #include <datagramIterator.h>
@@ -14,6 +15,7 @@
 #include <bamWriter.h>
 
 TypeHandle DestTextureImage::_type_handle;
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DestTextureImage::Default Constructor
@@ -38,6 +40,11 @@ DestTextureImage(TexturePlacement *placement) {
   _x_size = texture->get_x_size();
   _y_size = texture->get_y_size();
 
+  if (pal->_force_power_2) {
+    _x_size = to_power_2(_x_size);
+    _y_size = to_power_2(_y_size);
+  }
+
   set_filename(placement->get_group(), texture->get_name());
 }
 
@@ -49,7 +56,11 @@ DestTextureImage(TexturePlacement *placement) {
 ////////////////////////////////////////////////////////////////////
 void DestTextureImage::
 copy(TextureImage *texture) {
-  write(texture->get_dest_image());
+  const PNMImage &source_image = texture->read_source_image();
+  PNMImage dest_image(_x_size, _y_size, texture->get_num_channels(),
+		      source_image.get_maxval());
+  dest_image.quick_filter_from(source_image);
+  write(dest_image);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -76,6 +87,21 @@ copy_if_stale(const DestTextureImage *other, TextureImage *texture) {
       copy(texture);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DestTextureImage::to_power_2
+//       Access: Private, Static
+//  Description: Returns the largest power of 2 less than or equal to
+//               value.
+////////////////////////////////////////////////////////////////////
+int DestTextureImage::
+to_power_2(int value) {
+  int x = 1;
+  while ((x << 1) <= value) {
+    x = (x << 1);
+  }
+  return x;
 }
 
 ////////////////////////////////////////////////////////////////////

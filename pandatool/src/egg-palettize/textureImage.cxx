@@ -8,6 +8,7 @@
 #include "destTextureImage.h"
 #include "eggFile.h"
 #include "paletteGroup.h"
+#include "paletteImage.h"
 #include "texturePlacement.h"
 #include "filenameUnifier.h"
 
@@ -28,7 +29,6 @@ TextureImage::
 TextureImage() {
   _preferred_source = (SourceTextureImage *)NULL;
   _read_source_image = false;
-  _got_dest_image = false;
   _is_surprise = true;
   _ever_read_image = false;
   _forced_grayscale = false;
@@ -411,7 +411,6 @@ get_source(const Filename &filename, const Filename &alpha_filename) {
   // next time someone asks.
   _preferred_source = (SourceTextureImage *)NULL;
   _read_source_image = false;
-  _got_dest_image = false;
 
   return source;
 }
@@ -579,27 +578,6 @@ read_source_image() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::get_dest_image
-//       Access: Public
-//  Description: Returns the image appropriate for writing to the
-//               destination directory, having been resized and
-//               everything.
-////////////////////////////////////////////////////////////////////
-const PNMImage &TextureImage::
-get_dest_image() {
-  if (!_got_dest_image) {
-    const PNMImage &source_image = read_source_image();
-    _dest_image.clear(get_x_size(), get_y_size(), get_num_channels(),
-		      source_image.get_maxval());
-    _dest_image.quick_filter_from(source_image);
-
-    _got_dest_image = true;
-  }
-
-  return _dest_image;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextureImage::write_source_pathnames
 //       Access: Public
 //  Description: Writes the list of source pathnames that might
@@ -677,6 +655,39 @@ write_scale_info(ostream &out, int indent_level) {
     out << " scale " << scale << "%";
   }
   out << "\n";
+
+  // Also cross-reference the placed and unplaced information.
+  Placement::iterator pi;
+  for (pi = _placement.begin(); pi != _placement.end(); ++pi) {
+    TexturePlacement *placement = (*pi).second;
+    if (placement->get_omit_reason() == OR_none) {
+      PaletteImage *image = placement->get_image();
+      nassertv(image != (PaletteImage *)NULL);
+      indent(out, indent_level + 2)
+	<< "placed on " 
+	<< FilenameUnifier::make_user_filename(image->get_filename())
+	<< "\n";
+    } else {
+      DestTextureImage *image = placement->get_dest();
+      nassertv(image != (DestTextureImage *)NULL);
+      indent(out, indent_level + 2)
+	<< "copied to "
+	<< FilenameUnifier::make_user_filename(image->get_filename());
+      if (image->get_x_size() != get_x_size() ||
+	  image->get_y_size() != get_y_size()) {
+	out << " at size " << image->get_x_size() << " " 
+	    << image->get_y_size();
+	if (source != (SourceTextureImage *)NULL &&
+	    source->is_size_known()) {
+	  double scale = 
+	    100.0 * (((double)image->get_x_size() / (double)source->get_x_size()) +
+		     ((double)image->get_y_size() / (double)source->get_y_size())) / 2.0;
+	  out << " scale " << scale << "%";
+	}
+      }
+      out << "\n";
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1015,10 +1026,6 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   for (di = _dests.begin(); di != _dests.end(); ++di) {
     writer->write_pointer(datagram, (*di).second);
   }
-
-  // We don't write out _read_source_image, _source_image,
-  // _got_dest_image, or _dest_image; these must be reread each
-  // session.
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -10,6 +10,7 @@
 #include "paletteImage.h"
 #include "palettizer.h"
 #include "eggFile.h"
+#include "destTextureImage.h"
 
 #include <indent.h>
 #include <datagram.h>
@@ -898,9 +899,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   writer->write_pointer(datagram, _texture);
   writer->write_pointer(datagram, _group);
   writer->write_pointer(datagram, _image);
-
-  // We don't write _dest.  That can safely be redetermined each
-  // session.
+  writer->write_pointer(datagram, _dest);
   
   datagram.add_bool(_has_uvs);
   datagram.add_bool(_size_known);
@@ -930,6 +929,10 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 int TexturePlacement::
 complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
   nassertr((int)plist.size() >= 3 + _num_references, 0);
+  if (Palettizer::_read_pi_version >= 2) {
+    nassertr((int)plist.size() >= 4 + _num_references, 0);
+  }
+    
   int index = 0;
 
   if (plist[index] != (TypedWriteable *)NULL) {
@@ -946,6 +949,13 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
     DCAST_INTO_R(_image, plist[index], index);
   }
   index++;
+
+  if (Palettizer::_read_pi_version >= 2) {
+    if (plist[index] != (TypedWriteable *)NULL) {
+      DCAST_INTO_R(_dest, plist[index], index);
+    }
+    index++;
+  }
 
   int i;
   for (i = 0; i < _num_references; i++) {
@@ -991,6 +1001,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   manager->read_pointer(scan, this);  // _texture
   manager->read_pointer(scan, this);  // _group
   manager->read_pointer(scan, this);  // _image
+
+  if (Palettizer::_read_pi_version >= 2) {
+    manager->read_pointer(scan, this);  // _dest
+  }
 
   _has_uvs = scan.get_bool();
   _size_known = scan.get_bool();
