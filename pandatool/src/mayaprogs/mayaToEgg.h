@@ -29,7 +29,6 @@
 class MayaToEgg : public SomethingToEgg {
 public:
   MayaToEgg();
-  ~MayaToEgg();
 
   void run();
 

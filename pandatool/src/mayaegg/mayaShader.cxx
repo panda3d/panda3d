@@ -230,7 +230,11 @@ read_surface_shader(MObject shader) {
 void MayaShader::
 read_surface_color(MObject color) {
   if (color.hasFn(MFn::kFileTexture)) {
-    _has_texture = get_string_attribute(color, "fileTextureName", _texture);
+    string filename;
+    _has_texture = get_string_attribute(color, "fileTextureName", filename);
+    if (_has_texture) {
+      _texture = Filename::from_os_specific(filename);
+    }
 
     get_vec2f_attribute(color, "coverage", _coverage);
     get_vec2f_attribute(color, "translateFrame", _translate_frame);

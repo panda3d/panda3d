@@ -164,6 +164,10 @@ convert_file(const Filename &filename) {
 ////////////////////////////////////////////////////////////////////
 bool MayaToEggConverter::
 convert_maya() {
+  if (_egg_data->get_coordinate_system() == CS_default) {
+    _egg_data->set_coordinate_system(_maya->get_coordinate_system());
+  }
+
   MStatus status;
 
   MItDag dag_iterator(MItDag::kDepthFirst, MFn::kTransform, &status);
@@ -172,10 +176,8 @@ convert_maya() {
     return false;
   }
 
-  if (mayaegg_cat.is_debug()) {
-    mayaegg_cat.debug()
-      << "Traversing scene graph.\n";
-  }
+  mayaegg_cat.info()
+    << "Converting from Maya.\n";
 
   // This while loop walks through the entire Maya hierarchy, one node
   // at a time.  Maya's MItDag object automatically performs a
@@ -197,10 +199,10 @@ convert_maya() {
 
   if (all_ok) {
     mayaegg_cat.info()
-      << "\nDone, no errors.\n";
+      << "Converted, no errors.\n";
   } else {
     mayaegg_cat.info()
-      << "\nDone, errors encountered.\n";
+      << "Errors encountered in conversion.\n";
   }
 
   return all_ok;

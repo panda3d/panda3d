@@ -50,7 +50,7 @@ public:
   double _transparency;
 
   bool _has_texture;
-  string _texture;
+  Filename _texture;
 
   LVector2f _coverage;
   LVector2f _translate_frame;

@@ -141,7 +141,6 @@ read(const Filename &filename) {
     stat.perror(filename.c_str());
     return false;
   }
-  mayaegg_cat.info() << "done.\n";
   return true;
 }
 
