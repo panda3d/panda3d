@@ -156,5 +156,7 @@ class DirectEntry(DirectFrame):
         else:
             self.guiItem.setCursorPosition(pos)
             
-
-
+    def enterText(self, text):
+        """ sets the entry's text, and moves the cursor to the end """
+        self.set(text)
+        self.setCursorPosition(len(self.get()))
