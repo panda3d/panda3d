@@ -1,10 +1,12 @@
-
 from libpandaexpressModules import *
 from DirectNotify import *
 from PythonUtil import *
 import time
 import fnmatch
 import string
+
+# MRM: Need to make internal task variables like time, name, index
+# more unique (less likely to have name clashes)
 
 exit = -1
 done = 0
@@ -255,6 +257,12 @@ class TaskManager:
     def spawnTaskNamed(self, task, name):
         TaskManager.notify.debug('spawning task named: ' + name)
         task.name = name
+        # Reset task indicies (only applicable for sequences and loops)
+        # So same sequence or loop can be spawned multiple times
+        # MRM: Should we do this or should a new task instance have
+        # to be created every time you spawn a task?
+        task.index = 0
+        task.prevIndex = -1
         task.setStartTimeFrame(self.currentTime, self.currentFrame)
         # search back from the end of the list until we find a
         # task with a lower priority, or we hit the start of the list
