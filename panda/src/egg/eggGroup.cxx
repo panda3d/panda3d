@@ -505,6 +505,26 @@ get_vertex_membership(const EggVertex *vert) const {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::steal_vrefs
+//       Access: Public
+//  Description: Moves all of the vertex references from the indicated
+//               other group into this one.  If a given vertex was
+//               previously shared by both groups, the relative
+//               memberships will be summed.
+////////////////////////////////////////////////////////////////////
+void EggGroup::
+steal_vrefs(EggGroup *other) {
+  nassertv(other != this);
+  VertexRef::const_iterator vri;
+  for (vri = other->vref_begin(); vri != other->vref_end(); ++vri) {
+    EggVertex *vert = (*vri).first;
+    double membership = (*vri).second;
+    ref_vertex(vert, membership);
+  }
+  other->unref_all_vertices();
+}
+
 
 #ifndef NDEBUG
 
