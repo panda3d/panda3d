@@ -2988,7 +2988,11 @@ issue_polygon_offset(const PolygonOffsetAttribute *attrib) {
   //offset to decide whether to enable or disable PolygonOffset
   if(attrib->get_units() != 0 || attrib->get_factor() != 0)
   {
-    glPolygonOffset(attrib->get_factor(), attrib->get_units());
+//    GLfloat newfactor=attrib->get_factor();
+    GLfloat newfactor= 1.0;
+
+    GLfloat newunits=attrib->get_units();
+    glPolygonOffset(newfactor,newunits);
     enable_polygon_offset(true);
   }
   else
@@ -3054,18 +3058,29 @@ begin_decal(GeomNode *base_geom) {
   nassertv(base_geom != (GeomNode *)NULL);
   _decal_level++;
 
+#define POLYGON_OFFSET_MULTIPLIER -2
+
   if (gl_decal_type == GDT_offset) {
     // GL 1.1-style: use glPolygonOffset to do decals.
 
     // Just draw the base geometry normally.
     base_geom->draw(this);
 
+#if 0    
+// Note: code below does not work since state engine resets PolygonOffsetAttrib
+//       before decal geom is rendered
+
     // And now draw the decal geoms with a polygon offset specified.
     NodeAttributes state;
     PolygonOffsetAttribute *po = new PolygonOffsetAttribute;
-    po->set_units(-2 * _decal_level);
+    po->set_units(POLYGON_OFFSET_MULTIPLIER * _decal_level);
     state.set_attribute(PolygonOffsetTransition::get_class_type(), po);
     set_state(state, false);
+#else
+// use old way instead
+    glPolygonOffset(0.0,POLYGON_OFFSET_MULTIPLIER * _decal_level);
+    glEnable(GL_POLYGON_OFFSET_FILL);
+#endif
   } else {
     // GL 1.0-style: use three-step rendering to do decals.
 
@@ -3102,16 +3117,27 @@ end_decal(GeomNode *base_geom) {
   if (gl_decal_type == GDT_offset) {
     // GL 1.1-style: use glPolygonOffset to do decals.
 
+#if 0
+// Note: code below does not work since state engine resets PolygonOffsetAttrib
+//       before decal geom is rendered
+
     NodeAttributes state;
     PolygonOffsetAttribute *po = new PolygonOffsetAttribute;
     if (_decal_level == 0) {
       po->set_units(0);
     }
     else {
-      po->set_units(-2 * _decal_level);
+      po->set_units(POLYGON_OFFSET_MULTIPLIER * _decal_level);
     }
     state.set_attribute(PolygonOffsetTransition::get_class_type(), po);
     set_state(state, false);
+#else
+// use old way instead
+    glPolygonOffset(0.0,POLYGON_OFFSET_MULTIPLIER * _decal_level);
+    if (_decal_level == 0) {
+        glDisable(GL_POLYGON_OFFSET_FILL);
+    }
+#endif
 
   } else {
     // GL 1.0-style: use three-step rendering to do decals.
@@ -3131,14 +3157,15 @@ end_decal(GeomNode *base_geom) {
       // Disable the writing to the color buffer, however we have to
       // do this.
       if (gl_decal_type == GDT_blend) {
-	// For the early nVidia Linux driver, at least, we don't seem
-	// to have a working glColorMask.  So we have to disable the
-	// color writes through the use of a blend function.
-	// Expensive.
-	enable_blend(true);
-	call_glBlendFunc(GL_ZERO, GL_ONE);
+    	// For the early nVidia Linux driver, at least, we don't seem
+    	// to have a working glColorMask.  So we have to disable the
+    	// color writes through the use of a blend function.
+    	// Expensive.
+
+    	enable_blend(true);
+    	call_glBlendFunc(GL_ZERO, GL_ONE);
       } else {
-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+          glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
       }
 
       // No need to have texturing on for this.
@@ -3151,22 +3178,21 @@ end_decal(GeomNode *base_geom) {
       DepthWriteAttribute *depth_write;
       if (get_attribute_into(depth_write, _state,
 			     DepthWriteTransition::get_class_type())) {
-	issue_depth_write(depth_write);
+          issue_depth_write(depth_write);
       }
 
       if (gl_decal_type == GDT_blend) {
-	enable_blend(was_blend);
-	if (was_blend) {
-	  call_glBlendFunc(old_blend_source_func, old_blend_dest_func);
-	}
+          enable_blend(was_blend);
+          if (was_blend) {
+              call_glBlendFunc(old_blend_source_func, old_blend_dest_func);
+          }
       } else {
-	ColorMaskAttribute *color_mask;
-	if (get_attribute_into(color_mask, _state,
-			       ColorMaskTransition::get_class_type())) {
-	  issue_color_mask(color_mask);
-	} else {
-	  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-	}
+          ColorMaskAttribute *color_mask;
+          if (get_attribute_into(color_mask, _state, ColorMaskTransition::get_class_type())) {
+              issue_color_mask(color_mask);
+          } else {
+              glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+          }
       }
       
       enable_texturing(was_textured);
