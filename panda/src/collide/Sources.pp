@@ -14,6 +14,7 @@
     collisionHandler.h  \
     collisionHandlerEvent.I collisionHandlerEvent.h  \
     collisionHandlerFloor.I collisionHandlerFloor.h  \
+    collisionHandlerGravity.I collisionHandlerGravity.h  \
     collisionHandlerPhysical.I collisionHandlerPhysical.h  \
     collisionHandlerPusher.I collisionHandlerPusher.h  \
     collisionHandlerQueue.h \
@@ -36,6 +37,7 @@
     collisionHandler.cxx \
     collisionHandlerEvent.cxx  \
     collisionHandlerFloor.cxx \
+    collisionHandlerGravity.cxx \
     collisionHandlerPhysical.cxx  \
     collisionHandlerPusher.cxx \
     collisionHandlerQueue.cxx  \
@@ -57,6 +59,7 @@
     collisionHandler.h \
     collisionHandlerEvent.I collisionHandlerEvent.h \
     collisionHandlerFloor.I collisionHandlerFloor.h \
+    collisionHandlerGravity.I collisionHandlerGravity.h \
     collisionHandlerPhysical.I collisionHandlerPhysical.h \
     collisionHandlerPusher.I collisionHandlerPusher.h \
     collisionHandlerQueue.h \

@@ -3,6 +3,7 @@
 #include "collisionHandler.cxx"
 #include "collisionHandlerEvent.cxx"
 #include "collisionHandlerFloor.cxx"
+#include "collisionHandlerGravity.cxx"
 #include "collisionHandlerPhysical.cxx"
 #include "collisionHandlerPusher.cxx"
 #include "collisionHandlerQueue.cxx"

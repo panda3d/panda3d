@@ -1,4 +1,4 @@
-// Filename: collisionHandlerFloor.cxx
+// Filename: CollisionHandlerGravity.cxx
 // Created by:  drose (16Mar02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,37 +16,40 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "collisionHandlerFloor.h"
+#include "CollisionHandlerGravity.h"
 #include "collisionNode.h"
 #include "collisionEntry.h"
 #include "config_collide.h"
 
 #include "clockObject.h"
 
-TypeHandle CollisionHandlerFloor::_type_handle;
+TypeHandle CollisionHandlerGravity::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerFloor::Constructor
+//     Function: CollisionHandlerGravity::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-CollisionHandlerFloor::
-CollisionHandlerFloor() {
+CollisionHandlerGravity::
+CollisionHandlerGravity() {
   _offset = 0.0f;
-  _max_velocity = 0.0f;
+  _airborne_height = 0.0f;
+  _gravity = 32.174f;
+  _current_velocity = 0.0f;
+  _max_velocity = 400.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerFloor::Destructor
+//     Function: CollisionHandlerGravity::Destructor
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-CollisionHandlerFloor::
-~CollisionHandlerFloor() {
+CollisionHandlerGravity::
+~CollisionHandlerGravity() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerFloor::handle_entries
+//     Function: CollisionHandlerGravity::handle_entries
 //       Access: Protected, Virtual
 //  Description: Called by the parent class after all collisions have
 //               been detected, this manages the various collisions
@@ -56,7 +59,7 @@ CollisionHandlerFloor::
 //               false to indicate the CollisionTraverser should
 //               disable this handler from being called in the future.
 ////////////////////////////////////////////////////////////////////
-bool CollisionHandlerFloor::
+bool CollisionHandlerGravity::
 handle_entries() {
   bool okflag = true;
 
@@ -105,16 +108,40 @@ handle_entries() {
         
         // Now set our height accordingly.
         float adjust = max_height + _offset;
-        if (!IS_THRESHOLD_ZERO(adjust, 0.001)) {
+        if (_current_velocity > 0.0f || !IS_THRESHOLD_ZERO(adjust, 0.001)) {
           if (collide_cat.is_debug()) {
             collide_cat.debug()
               << "Adjusting height by " << adjust << "\n";
           }
           
-          if (adjust < 0.0f && _max_velocity != 0.0f) {
-            float max_adjust =
-              _max_velocity * ClockObject::get_global_clock()->get_dt();
-            adjust = max(adjust, -max_adjust);
+          if (_current_velocity > 0.0f || adjust < -0.001f) {
+            // ...we have a vertical thrust,
+            // ...or the node is above the floor, so it is airborne.
+            float dt = min(ClockObject::get_global_clock()->get_dt(), 0.1f);
+            // The sign in this equation is reversed from normal.  This is
+            // because _current_velocity is a scaler and the equation normally
+            // has a vector.  I suppose the sign of _gravity could have been
+            // reversed, but I think it makes the get_*() set_*()
+            // more intuitive to do it this way.
+            float gravity_adjust = _current_velocity * dt - 0.5 * _gravity * dt * dt;
+            if (adjust > 0.0f) {
+              // ...the node is under the floor, so it has landed.
+              // Keep the adjust to bring us up to the ground and
+              // then add the gravity_adjust to get us airborne:
+              adjust += max(0.0f, gravity_adjust);
+            } else {
+              // ...the node is above the floor, so it is airborne.
+              adjust = max(adjust, gravity_adjust);
+            }
+            _current_velocity -= _gravity * dt;
+            // Record the airborne height in case someone else needs it: 
+            _airborne_height = -max_height + adjust;
+          }
+          
+          if (_airborne_height < 0.001f && _current_velocity < 0.001f) {
+            // ...the node is under the floor, so it has landed.
+            // These values are used by is_on_ground().
+            _current_velocity = _airborne_height = 0.0f;
           }
 
           CPT(TransformState) trans = def._target.get_transform();
@@ -125,6 +152,7 @@ handle_entries() {
 
           apply_linear_force(def, LVector3f(0.0f, 0.0f, adjust));
         } else {
+          _current_velocity = _airborne_height = 0.0f;
           if (collide_cat.is_spam()) {
             collide_cat.spam()
               << "Leaving height unchanged.\n";
@@ -138,10 +166,10 @@ handle_entries() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerFloor::apply_linear_force
+//     Function: CollisionHandlerGravity::apply_linear_force
 //       Access: Protected, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void CollisionHandlerFloor::
+void CollisionHandlerGravity::
 apply_linear_force(ColliderDef &def, const LVector3f &force) {
 }
