@@ -20,11 +20,7 @@
 #include "textGlyph.h"
 #include "stringDecoder.h"
 #include "config_text.h"
-#include "fontPool.h"
-#include "default_font.h"
-#include "dynamicTextFont.h"
-#include "staticTextFont.h"
-#include "unicodeLatinMap.h"
+#include "textAssembler.h"
 
 #include "compose_matrix.h"
 #include "geom.h"
@@ -46,36 +42,13 @@
 #include "geometricBoundingVolume.h"
 #include "accumulatedAttribs.h"
 #include "renderState.h"
-#include "cullFaceAttrib.h"
 #include "dcast.h"
 #include "bamFile.h"
 #include "zStream.h"
 
 #include <stdio.h>
-#include <ctype.h>
 
 TypeHandle TextNode::_type_handle;
-
-PT(TextFont) TextNode::_default_font;
-bool TextNode::_loaded_default_font = false;
-
-// This is the factor by which CT_small scales the character down.
-static const float small_accent_scale = 0.6f;
-
-// This is the factor by which CT_tiny scales the character down.
-static const float tiny_accent_scale = 0.4f;
-
-// This is the factor by which CT_squash scales the character in X and Y.
-static const float squash_accent_scale_x = 0.8f;
-static const float squash_accent_scale_y = 0.5f;
-
-// This is the factor by which CT_small_squash scales the character in X and Y.
-static const float small_squash_accent_scale_x = 0.6f;
-static const float small_squash_accent_scale_y = 0.3f;
-
-// This is the factor by which the advance is reduced for the first
-// character of a two-character ligature.
-static const float ligature_advance_scale = 0.6f;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::Constructor
@@ -83,22 +56,15 @@ static const float ligature_advance_scale = 0.6f;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 TextNode::
-TextNode(const string &name) : PandaNode(name) {
-  _slant = 0.0f;
-  
+TextNode(const string &name) : PandaNode(name), _assembler(this) {
   _flags = 0;
-  _align = A_left;
-  _wordwrap_width = 1.0f;
 
   if (text_small_caps) {
-    _flags |= F_small_caps;
+    set_small_caps(true);
   }
-  _small_caps_scale = text_small_caps_scale;
 
-  _text_color.set(1.0f, 1.0f, 1.0f, 1.0f);
   _frame_color.set(1.0f, 1.0f, 1.0f, 1.0f);
   _card_color.set(1.0f, 1.0f, 1.0f, 1.0f);
-  _shadow_color.set(1.0f, 1.0f, 1.0f, 1.0f);
 
   _frame_width = 1.0f;
 
@@ -106,19 +72,44 @@ TextNode(const string &name) : PandaNode(name) {
   _frame_lr.set(0.0f, 0.0f);
   _card_ul.set(0.0f, 0.0f);
   _card_lr.set(0.0f, 0.0f);
-  _shadow_offset.set(0.0f, 0.0f);
-
-  _draw_order = 1;
-  _tab_width = text_tab_width;
 
   _transform = LMatrix4f::ident_mat();
   _coordinate_system = CS_default;
 
-  _ul2d.set(0.0f, 0.0f);
-  _lr2d.set(0.0f, 0.0f);
   _ul3d.set(0.0f, 0.0f, 0.0f);
   _lr3d.set(0.0f, 0.0f, 0.0f);
-  _num_rows = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::Copy Constructor
+//       Access: Published
+//  Description: It's sort of a copy constructor: it copies the
+//               indicated TextProperties, without copying a complete
+//               TextNode.
+////////////////////////////////////////////////////////////////////
+TextNode::
+TextNode(const string &name, const TextProperties &copy) : 
+  PandaNode(name), TextProperties(copy),
+  _assembler(this) 
+{
+  _flags = 0;
+  _max_rows = 0;
+
+  _frame_color.set(1.0f, 1.0f, 1.0f, 1.0f);
+  _card_color.set(1.0f, 1.0f, 1.0f, 1.0f);
+
+  _frame_width = 1.0f;
+
+  _frame_ul.set(0.0f, 0.0f);
+  _frame_lr.set(0.0f, 0.0f);
+  _card_ul.set(0.0f, 0.0f);
+  _card_lr.set(0.0f, 0.0f);
+
+  _transform = LMatrix4f::ident_mat();
+  _coordinate_system = CS_default;
+
+  _ul3d.set(0.0f, 0.0f, 0.0f);
+  _lr3d.set(0.0f, 0.0f, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -131,32 +122,21 @@ TextNode::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::wordwrap_to
+//     Function: TextNode::calc_width
 //       Access: Published
-//  Description: Inserts newlines into the given text at the
-//               appropriate places in order to make each line be the
-//               longest possible line that is not longer than
-//               wordwrap_width (and does not break any words, if
-//               possible).  Returns the new string.
+//  Description: Returns the width of a single character of the font,
+//               or 0.0 if the character is not known.  This may be a
+//               wide character (greater than 255).
 ////////////////////////////////////////////////////////////////////
-string TextNode::
-wordwrap_to(const string &text, float wordwrap_width,
-            bool preserve_trailing_whitespace) const {
+float TextNode::
+calc_width(int character) const {
   TextFont *font = get_font();
   if (font == (TextFont *)NULL) {
-    font = get_default_font();
+    return 0.0f;
   }
 
-  if (font == (TextFont *)NULL) {
-    return text;
-  }
-
-  wstring decoded = decode_text(text);
-  wstring wrapped = 
-    font->wordwrap_to(decoded, wordwrap_width, preserve_trailing_whitespace);
-  return encode_wtext(wrapped);
+  return _assembler.calc_width(character, *this);
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::write
@@ -167,81 +147,9 @@ void TextNode::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "TextNode " << get_name() << "\n";
-  if (_font != (TextFont *)NULL) {
-    indent(out, indent_level + 2)
-      << "with font " << _font->get_name() << "\n";
-  }
-  if (has_text_color()) {
-    indent(out, indent_level + 2)
-      << "text color is " << _text_color << "\n";
-  } else {
-    indent(out, indent_level + 2)
-      << "text color is unchanged from source\n";
-  }
-  indent(out, indent_level + 2)
-    << "alignment is ";
-  switch (_align) {
-  case A_left:
-    out << "A_left\n";
-    break;
+  TextProperties::write(out, indent_level + 2);
 
-  case A_right:
-    out << "A_right\n";
-    break;
-
-  case A_center:
-    out << "A_center\n";
-    break;
-  }
-
-  if (has_wordwrap()) {
-    indent(out, indent_level + 2)
-      << "Word-wrapping at " << _wordwrap_width << " units.\n";
-  }
-
-  if (has_frame()) {
-    indent(out, indent_level + 2)
-      << "frame of color " << _frame_color << " at "
-      << get_frame_as_set() << " line width " << _frame_width << "\n";
-    if (get_frame_corners()) {
-      indent(out, indent_level + 2)
-        << "frame corners are enabled\n";
-    }
-    if (is_frame_as_margin()) {
-      indent(out, indent_level + 2)
-        << "frame coordinates are specified as margin; actual frame is:\n"
-        << get_frame_actual() << "\n";
-    } else {
-      indent(out, indent_level + 2)
-        << "frame coordinates are actual\n";
-    }
-  }
-  if (has_card()) {
-    indent(out, indent_level + 2)
-      << "card of color " << _card_color << " at "
-      << get_card_as_set() << "\n";
-    if (is_card_as_margin()) {
-      indent(out, indent_level + 2)
-        << "card coordinates are specified as margin; actual card is:\n"
-        << get_card_actual() << "\n";
-    } else {
-      indent(out, indent_level + 2)
-        << "card coordinates are actual\n";
-    }
-  }
-  if (has_shadow()) {
-    indent(out, indent_level + 2)
-      << "shadow of color " << _shadow_color << " at "
-      << _shadow_offset << "\n";
-  }
-  if (has_bin()) {
-    indent(out, indent_level + 2)
-      << "bin is " << _bin << "\n";
-  }
-  indent(out, indent_level + 2)
-    << "draw order is " << _draw_order << ", "
-    << _draw_order + 1 << ", " << _draw_order + 2 << "\n";
-
+  out << "\n";
   LVecBase3f scale, shear, hpr, trans;
   if (decompose_matrix(_transform, scale, shear, hpr, trans, _coordinate_system)) {
   indent(out, indent_level + 2)
@@ -257,8 +165,9 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level + 2)
     << "in coordinate system " << _coordinate_system << "\n";
 
+  out << "\n";
   indent(out, indent_level + 2)
-    << "\ntext is " << get_text() << "\n";
+    << "text is " << get_text() << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -285,11 +194,8 @@ generate() {
   // horizontally and vertically, and for each row, there is another
   // node for each character.
 
-  _ul2d.set(0.0f, 0.0f);
-  _lr2d.set(0.0f, 0.0f);
   _ul3d.set(0.0f, 0.0f, 0.0f);
   _lr3d.set(0.0f, 0.0f, 0.0f);
-  _num_rows = 0;
 
   // Now build a new sub-tree for all the text components.
   PT(PandaNode) root = new PandaNode(get_text());
@@ -299,10 +205,6 @@ generate() {
   }
 
   TextFont *font = get_font();
-  if (font == (TextFont *)NULL) {
-    font = get_default_font();
-  }
-
   if (font == (TextFont *)NULL) {
     return root;
   }
@@ -317,39 +219,29 @@ generate() {
   root->set_transform(TransformState::make_mat(mat));
 
   wstring wtext = get_wtext();
-  if (has_wordwrap()) {
-    wtext = font->wordwrap_to(wtext, _wordwrap_width, false);
-  }
 
   // Assemble the text.
-  LVector2f ul, lr;
-  int num_rows = 0;
-  PT(PandaNode) text_root = 
-    assemble_text(wtext.begin(), wtext.end(), font, 
-                  ul, lr, num_rows);
+  bool all_set = _assembler.set_wtext(wtext, *this, _max_rows);
+  if (all_set) {
+    // No overflow.
+    _flags &= ~F_has_overflow;
+  } else {
+    // Overflow.
+    _flags |= F_has_overflow;
+  }
+
+  PT(PandaNode) text_root = _assembler.assemble_text();
 
   // Parent the text in.  We create an intermediate node so we can
   // choose to reinstance the text_root as the shadow, below.
   PT(PandaNode) text = new PandaNode("text");
-  root->add_child(text, _draw_order + 2);
+  root->add_child(text, get_draw_order() + 2);
   text->add_child(text_root);
-
-  if (has_text_color()) {
-    text->set_attrib(ColorAttrib::make_flat(_text_color));
-    if (_text_color[3] != 1.0) {
-      text->set_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
-    }
-  }
-
-  if (has_bin()) {
-    text->set_attrib(CullBinAttrib::make(_bin, _draw_order + 2));
-  }
 
   // Save the bounding-box information about the text in a form
   // friendly to the user.
-  _num_rows = num_rows;
-  _ul2d = ul;
-  _lr2d = lr;
+  const LVector2f &ul = _assembler.get_ul();
+  const LVector2f &lr = _assembler.get_lr();
   _ul3d.set(ul[0], 0.0f, ul[1]);
   _lr3d.set(lr[0], 0.0f, lr[1]);
 
@@ -360,42 +252,18 @@ generate() {
   _flags &= ~F_needs_measure;
 
 
-  // Now deal with all the decorations.
-
-  if (has_shadow()) {
-    // Make a shadow by instancing the text behind itself.
-
-    // For now, the depth offset is 0.0 because we don't expect to see
-    // text with shadows in the 3-d world that aren't decals.  Maybe
-    // this will need to be addressed in the future.
-
-    LMatrix4f offset =
-      LMatrix4f::translate_mat(_shadow_offset[0], 0.0f, -_shadow_offset[1]);
-    PT(PandaNode) shadow = new PandaNode("shadow");
-    root->add_child(shadow, _draw_order + 1);
-    shadow->add_child(text_root);
-    shadow->set_transform(TransformState::make_mat(offset));
-    shadow->set_attrib(ColorAttrib::make_flat(_shadow_color));
-
-    if (_shadow_color[3] != 1.0f) {
-      shadow->set_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
-    }
-
-    if (has_bin()) {
-      shadow->set_attrib(CullBinAttrib::make(_bin, _draw_order + 1));
-    }
-  }
+  // Now deal with the decorations.
 
   if (has_frame()) {
     PT(PandaNode) frame_root = make_frame();
-    root->add_child(frame_root, _draw_order + 1);
-    frame_root->set_attrib(ColorAttrib::make_flat(_frame_color));
-    if (_frame_color[3] != 1.0f) {
+    root->add_child(frame_root, get_draw_order() + 1);
+    frame_root->set_attrib(ColorAttrib::make_flat(get_frame_color()));
+    if (get_frame_color()[3] != 1.0f) {
       frame_root->set_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
     }
 
     if (has_bin()) {
-      frame_root->set_attrib(CullBinAttrib::make(_bin, _draw_order + 1));
+      frame_root->set_attrib(CullBinAttrib::make(get_bin(), get_draw_order() + 1));
     }
   }
 
@@ -405,17 +273,17 @@ generate() {
       card_root = make_card_with_border();
     else
       card_root = make_card();
-    root->add_child(card_root, _draw_order);
-    card_root->set_attrib(ColorAttrib::make_flat(_card_color));
-    if (_card_color[3] != 1.0f) {
+    root->add_child(card_root, get_draw_order());
+    card_root->set_attrib(ColorAttrib::make_flat(get_card_color()));
+    if (get_card_color()[3] != 1.0f) {
       card_root->set_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
     }
     if (has_card_texture()) {
-      card_root->set_attrib(TextureAttrib::make(_card_texture));
+      card_root->set_attrib(TextureAttrib::make(get_card_texture()));
     }
 
     if (has_bin()) {
-      card_root->set_attrib(CullBinAttrib::make(_bin, _draw_order));
+      card_root->set_attrib(CullBinAttrib::make(get_bin(), get_draw_order()));
     }
   }
 
@@ -429,6 +297,26 @@ generate() {
   }
 
   return root;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::calc_width
+//       Access: Public
+//  Description: Returns the width of a line of text of arbitrary
+//               characters.  The line should not include the newline
+//               character or any embedded control characters like \1
+//               or \3.
+////////////////////////////////////////////////////////////////////
+float TextNode::
+calc_width(const wstring &line) const {
+  float width = 0.0f;
+
+  wstring::const_iterator si;
+  for (si = line.begin(); si != line.end(); ++si) {
+    width += calc_width(*si);
+  }
+
+  return width;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -484,11 +372,10 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
       const ColorAttrib *ca = DCAST(ColorAttrib, attribs._color);
       if (ca->get_color_type() == ColorAttrib::T_flat) {
         const Colorf &c = ca->get_color();
-        _text_color = c;
-        _frame_color = c;
-        _card_color = c;
-        _shadow_color = c;
-        _flags |= F_has_text_color;
+        set_text_color(c);
+        set_frame_color(c);
+        set_card_color(c);
+        set_shadow_color(c);
       }
     }
   }
@@ -497,22 +384,30 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
       const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attribs._color_scale);
       const LVecBase4f &s = csa->get_scale();
       if (s != LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)) {
-        _text_color[0] *= s[0];
-        _text_color[1] *= s[1];
-        _text_color[2] *= s[2];
-        _text_color[3] *= s[3];
-        _frame_color[0] *= s[0];
-        _frame_color[1] *= s[1];
-        _frame_color[2] *= s[2];
-        _frame_color[3] *= s[3];
-        _card_color[0] *= s[0];
-        _card_color[1] *= s[1];
-        _card_color[2] *= s[2];
-        _card_color[3] *= s[3];
-        _shadow_color[0] *= s[0];
-        _shadow_color[1] *= s[1];
-        _shadow_color[2] *= s[2];
-        _shadow_color[3] *= s[3];
+        LVecBase4f tc = get_text_color();
+        tc[0] *= s[0];
+        tc[1] *= s[1];
+        tc[2] *= s[2];
+        tc[3] *= s[3];
+        set_text_color(tc);
+        LVecBase4f sc = get_shadow_color();
+        sc[0] *= s[0];
+        sc[1] *= s[1];
+        sc[2] *= s[2];
+        sc[3] *= s[3];
+        set_shadow_color(sc);
+        LVecBase4f fc = get_frame_color();
+        fc[0] *= s[0];
+        fc[1] *= s[1];
+        fc[2] *= s[2];
+        fc[3] *= s[3];
+        set_frame_color(fc);
+        LVecBase4f cc = get_card_color();
+        cc[0] *= s[0];
+        cc[1] *= s[1];
+        cc[2] *= s[2];
+        cc[3] *= s[3];
+        set_card_color(cc);
       }
     }
   }
@@ -662,842 +557,8 @@ do_rebuild() {
 ////////////////////////////////////////////////////////////////////
 void TextNode::
 do_measure() {
-  _flags &= ~F_needs_measure;
-
-  _ul2d.set(0.0f, 0.0f);
-  _lr2d.set(0.0f, 0.0f);
-  _ul3d.set(0.0f, 0.0f, 0.0f);
-  _lr3d.set(0.0f, 0.0f, 0.0f);
-  _num_rows = 0;
-
-  if (!has_text()) {
-    return;
-  }
-
-  TextFont *font = get_font();
-  if (font == (TextFont *)NULL) {
-    font = get_default_font();
-  }
-
-  if (font == (TextFont *)NULL) {
-    return;
-  }
-
-  wstring wtext = get_wtext();
-  if (has_wordwrap()) {
-    wtext = font->wordwrap_to(wtext, _wordwrap_width, false);
-  }
-
-  LVector2f ul, lr;
-  int num_rows = 0;
-  measure_text(wtext.begin(), wtext.end(), font,
-               ul, lr, num_rows);
-
-  _num_rows = num_rows;
-  _ul2d = ul;
-  _lr2d = lr;
-  _ul3d.set(ul[0], 0.0f, ul[1]);
-  _lr3d.set(lr[0], 0.0f, lr[1]);
-
-  _ul3d = _ul3d * _transform;
-  _lr3d = _lr3d * _transform;
-}
-  
-  
-#ifndef CPPPARSER  // interrogate has a bit of trouble with wstring.
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::assemble_row
-//       Access: Private
-//  Description: Assembles the letters in the source string, up until
-//               the first newline or the end of the string into a
-//               single row (which is parented to 'dest'), and returns
-//               the length of the row.  The source pointer is moved
-//               to the terminating character.
-////////////////////////////////////////////////////////////////////
-float TextNode::
-assemble_row(wstring::iterator &si, const wstring::iterator &send, 
-             TextFont *font, GeomNode *dest, const LMatrix4f &mat) {
-  float xpos = 0.0f;
-  while (si != send && (*si) != '\n') {
-    wchar_t character = *si;
-
-    if (character == ' ') {
-      // A space is a special case.
-      xpos += font->get_space_advance();
-
-    } else if (character == '\t') {
-      // So is a tab character.
-      xpos = (floor(xpos / _tab_width) + 1.0f) * _tab_width;
-
-    } else if (character == text_soft_hyphen_key) {
-      // And so is the 'soft-hyphen' key character.
-
-    } else {
-      // A printable character.
-      bool got_glyph;
-      const TextGlyph *glyph;
-      const TextGlyph *second_glyph;
-      UnicodeLatinMap::AccentType accent_type;
-      int additional_flags;
-      float glyph_scale;
-      float advance_scale;
-      get_character_glyphs(character, font, 
-                           got_glyph, glyph, second_glyph, accent_type,
-                           additional_flags, glyph_scale, advance_scale);
-
-      if (!got_glyph) {
-        text_cat.warning()
-          << "No definition in " << font->get_name() 
-          << " for character " << character;
-        if (character < 128 && isprint((unsigned int)character)) {
-          text_cat.warning(false)
-            << " ('" << (char)character << "')";
-        }
-        text_cat.warning(false)
-          << "\n";
-      }
-
-      // Build up a temporary array of the Geoms that go into this
-      // character.  Normally, there is only one Geom per character,
-      // but it may involve multiple Geoms if we need to add cheesy
-      // accents or ligatures.
-      static const int max_geoms = 10;
-      Geom *geom_array[max_geoms];
-      int num_geoms = 0;
-      int gi;
-
-      float advance = 0.0f;
-
-      if (glyph != (TextGlyph *)NULL) {
-        PT(Geom) char_geom = glyph->get_geom();
-        if (char_geom != (Geom *)NULL) {
-          dest->add_geom(char_geom, glyph->get_state());
-          geom_array[num_geoms++] = char_geom;
-        }
-        advance = glyph->get_advance() * advance_scale;
-      }
-      if (second_glyph != (TextGlyph *)NULL) {
-        PT(Geom) second_char_geom = second_glyph->get_geom();
-        if (second_char_geom != (Geom *)NULL) {
-          second_char_geom->transform_vertices(LMatrix4f::translate_mat(advance, 0.0f, 0.0f));
-          dest->add_geom(second_char_geom, second_glyph->get_state());
-          geom_array[num_geoms++] = second_char_geom;
-        }
-        advance += second_glyph->get_advance();
-      }
-
-      // Now compute the matrix that will transform the glyph (or
-      // glyphs) into position.
-      LMatrix4f glyph_xform = LMatrix4f::scale_mat(glyph_scale);
-
-      if (accent_type != UnicodeLatinMap::AT_none || additional_flags != 0) {
-        // If we have some special handling to perform, do so now.
-        // This will probably require the bounding volume of the
-        // glyph, so go get that.
-        LPoint3f min_vert, max_vert;
-        bool found_any = false;
-        for (gi = 0; gi < num_geoms; gi++) {
-          geom_array[gi]->calc_tight_bounds(min_vert, max_vert, found_any);
-        }
-
-        if (found_any) {
-          LPoint3f centroid = (min_vert + max_vert) / 2.0f;
-          tack_on_accent(accent_type, min_vert, max_vert, centroid, 
-                         font, dest, geom_array, num_geoms);
-    
-          if ((additional_flags & UnicodeLatinMap::AF_turned) != 0) {
-            // Invert the character.  Should we also invert the accent
-            // mark, so that an accent that would have been above the
-            // glyph will now be below it?  That's what we do here,
-            // which is probably the right thing to do for n-tilde,
-            // but not for most of the rest of the accent marks.  For
-            // now we'll assume there are no characters with accent
-            // marks that also have the turned flag.
-
-            // We rotate the character around its centroid, which may
-            // not always be the right point, but it's the best we've
-            // got and it's probably pretty close.
-            LMatrix4f rotate =
-              LMatrix4f::translate_mat(-centroid) *
-              LMatrix4f::rotate_mat_normaxis(180.0f, LVecBase3f(0.0f, -1.0f, 0.0f)) *
-              LMatrix4f::translate_mat(centroid);
-            glyph_xform *= rotate;
-          }
-        }
-      }
-
-      glyph_xform(3, 0) += xpos;
-      LMatrix4f net_xform = glyph_xform * mat;
-
-      // Finally, transform all the Geoms for this character into
-      // place.  Again, normally there is only one Geom per character;
-      // there will only be multiple Geoms if we have added accents or
-      // ligatures.
-      for (gi = 0; gi < num_geoms; gi++) {
-        geom_array[gi]->transform_vertices(net_xform);
-      }
-      
-      xpos += advance * glyph_scale;
-    }
-    ++si;
-  }
-
-  return xpos;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::assemble_text
-//       Access: Private
-//  Description: Constructs a hierarchy of nodes that contain the
-//               geometry representing the indicated source text, and
-//               returns it.  Also sets the ul, lr corners.
-////////////////////////////////////////////////////////////////////
-PT(PandaNode) TextNode::
-assemble_text(wstring::iterator si, const wstring::iterator &send,
-              TextFont *font, LVector2f &ul, LVector2f &lr, int &num_rows) {
-  float line_height = font->get_line_height();
-
-  ul.set(0.0f, 0.8f * line_height);
-  lr.set(0.0f, 0.0f);
-
-  // Make a geom node to hold our formatted text geometry.
-  PT(GeomNode) root_node = new GeomNode("text");
-
-  float posy = 0.0f;
-  while (si != send) {
-    // First, just measure the row, so we know how wide it is.
-    // (Centered or right-justified text will require us to know this
-    // up front.)
-    wstring::iterator tsi = si;
-    float row_width = measure_row(tsi, send, font);
-
-    LMatrix4f mat = LMatrix4f::ident_mat();
-    if (_align == A_left) {
-      mat.set_row(3, LVector3f(0.0f, 0.0f, posy));
-      lr[0] = max(lr[0], row_width);
-
-    } else if (_align == A_right) {
-      mat.set_row(3, LVector3f(-row_width, 0.0f, posy));
-      ul[0] = min(ul[0], -row_width);
-
-    } else {
-      float half_row_width=0.5f*row_width;
-      mat.set_row(3, LVector3f(-half_row_width, 0.0f, posy));
-      lr[0] = max(lr[0], half_row_width);
-      ul[0] = min(ul[0], -half_row_width);
-    }
-
-    // Also apply whatever slant the user has asked for to the entire
-    // row.  This is an X shear.
-    if (_slant != 0.0f) {
-      LMatrix4f shear(1.0f, 0.0f, 0.0f, 0.0f,
-                      0.0f, 1.0f, 0.0f, 0.0f,
-                      _slant, 0.0f, 1.0f, 0.0f,
-                      0.0f, 0.0f, 0.0f, 1.0f);
-      mat = shear * mat;
-    }
-
-    // Now that we've computed the row's transform matrix, generate
-    // the actual geoms for the row.
-    assemble_row(si, send, font, root_node, mat);
-    if (si != send) {
-      // Skip past the newline.
-      ++si;
-    }
-
-    posy -= line_height;
-    num_rows++;
-  }
-
-  lr[1] = posy + 0.8f * line_height;
-
-  return root_node.p();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::measure_row
-//       Access: Private
-//  Description: Returns the length of the row in units, as it would
-//               be if it were assembled, without actually assembling
-//               it.
-////////////////////////////////////////////////////////////////////
-float TextNode::
-measure_row(wstring::iterator &si, const wstring::iterator &send,
-            TextFont *font) {
-  float xpos = 0.0f;
-  while (si != send && *si != '\n') {
-    wchar_t character = *si;
-
-    if (character == ' ') {
-      // A space is a special case.
-      xpos += font->get_space_advance();
-
-    } else if (character == '\t') {
-      // So is a tab character.
-      xpos = (floor(xpos / _tab_width) + 1.0f) * _tab_width;
-
-    } else if (character == text_soft_hyphen_key) {
-      // And so is the 'soft-hyphen' key character.
-
-    } else {
-      // A printable character.
-      bool got_glyph;
-      const TextGlyph *glyph;
-      const TextGlyph *second_glyph;
-      UnicodeLatinMap::AccentType accent_type;
-      int additional_flags;
-      float glyph_scale;
-      float advance_scale;
-      get_character_glyphs(character, font, 
-                           got_glyph, glyph, second_glyph, accent_type,
-                           additional_flags, glyph_scale, advance_scale);
-
-      float advance = 0.0f;
-
-      if (glyph != (TextGlyph *)NULL) {
-        advance = glyph->get_advance() * advance_scale;
-      }
-      if (second_glyph != (TextGlyph *)NULL) {
-        advance += second_glyph->get_advance();
-      }
-
-      xpos += advance * glyph_scale;
-    }
-    ++si;
-  }
-
-  return xpos;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::measure_text
-//       Access: Private
-//  Description: Sets the ul, lr corners to fit the text, without
-//               actually assembling it.
-////////////////////////////////////////////////////////////////////
-void TextNode::
-measure_text(wstring::iterator si, const wstring::iterator &send,
-             TextFont *font, LVector2f &ul, LVector2f &lr, int &num_rows) {
-  float line_height = font->get_line_height();
-
-  ul.set(0.0f, 0.8f * line_height);
-  lr.set(0.0f, 0.0f);
-
-  float posy = 0.0f;
-  while (si != send) {
-    float row_width = measure_row(si, send, font);
-    if (si != send) {
-      // Skip past the newline.
-      ++si;
-    }
-
-    if (_align == A_left) {
-      lr[0] = max(lr[0], row_width);
-
-    } else if (_align == A_right) {
-      ul[0] = min(ul[0], -row_width);
-
-    } else {
-      float half_row_width = 0.5f * row_width;
-
-      lr[0] = max(lr[0], half_row_width);
-      ul[0] = min(ul[0], -half_row_width);
-    }
-
-    posy -= line_height;
-    num_rows++;
-  }
-
-  lr[1] = posy + 0.8f * line_height;
-}
-#endif  // CPPPARSER
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_character_glyphs
-//       Access: Private
-//  Description: Looks up the glyph(s) from the font for the
-//               appropriate character.  If the desired glyph isn't
-//               available (especially in the case of an accented
-//               letter), tries to find a suitable replacement.
-//               Normally, only one glyph is returned per character,
-//               but in the case in which we have to simulate a
-//               missing ligature in the font, two glyphs might be
-//               returned.
-//
-//               All parameters except the first two are output
-//               parameters.  got_glyph is set true if the glyph (or
-//               an acceptable substitute) is successfully found,
-//               false otherwise; but even if it is false, glyph might
-//               still be non-NULL, indicating a stand-in glyph for a
-//               missing character.
-////////////////////////////////////////////////////////////////////
-void TextNode::
-get_character_glyphs(int character, TextFont *font,
-                     bool &got_glyph, const TextGlyph *&glyph,
-                     const TextGlyph *&second_glyph,
-                     UnicodeLatinMap::AccentType &accent_type,
-                     int &additional_flags,
-                     float &glyph_scale, float &advance_scale) {
-  got_glyph = false;
-  glyph = NULL;
-  second_glyph = NULL;
-  accent_type = UnicodeLatinMap::AT_none;
-  additional_flags = 0;
-  glyph_scale = 1.0f;
-  advance_scale = 1.0f;
-
-  // Maybe we should remap the character to something else--e.g. a
-  // small capital.
-  const UnicodeLatinMap::Entry *map_entry = 
-    UnicodeLatinMap::look_up(character);
-  if (map_entry != NULL) {
-    if (get_small_caps() && map_entry->_toupper_character != character) {
-      character = map_entry->_toupper_character;
-      map_entry = UnicodeLatinMap::look_up(character);
-      glyph_scale = get_small_caps_scale();
-    }
-  }
-  
-  got_glyph = font->get_glyph(character, glyph);
-  if (!got_glyph && map_entry != NULL && map_entry->_ascii_equiv != 0) {
-    // If we couldn't find the Unicode glyph, try the ASCII
-    // equivalent (without the accent marks).
-    got_glyph = font->get_glyph(map_entry->_ascii_equiv, glyph);
-    
-    if (!got_glyph && map_entry->_toupper_character != character) {
-      // If we still couldn't find it, try the uppercase
-      // equivalent.
-      character = map_entry->_toupper_character;
-      map_entry = UnicodeLatinMap::look_up(character);
-      if (map_entry != NULL) {
-        got_glyph = font->get_glyph(map_entry->_ascii_equiv, glyph);
-      }
-    }
-    
-    if (got_glyph) {
-      accent_type = map_entry->_accent_type;
-      additional_flags = map_entry->_additional_flags;
-      
-      bool got_second_glyph = false;
-      if (map_entry->_ascii_additional != 0) {
-        // There's another character, too--probably a ligature.
-        got_second_glyph = 
-          font->get_glyph(map_entry->_ascii_additional, second_glyph);
-      }
-      
-      if ((additional_flags & UnicodeLatinMap::AF_ligature) != 0 &&
-          got_second_glyph) {
-        // If we have two letters that are supposed to be in a
-        // ligature, just jam them together.
-        additional_flags &= ~UnicodeLatinMap::AF_ligature;
-        advance_scale = ligature_advance_scale;
-      }
-      
-      if ((additional_flags & UnicodeLatinMap::AF_smallcap) != 0) {
-        additional_flags &= ~UnicodeLatinMap::AF_smallcap;
-        glyph_scale = get_small_caps_scale();
-      }
-    }
-  }
-}
-  
-  
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::tack_on_accent
-//       Access: Private
-//  Description: This is a cheesy attempt to tack on an accent to an
-//               ASCII letter for which we don't have the appropriate
-//               already-accented glyph in the font.
-////////////////////////////////////////////////////////////////////
-void TextNode::
-tack_on_accent(UnicodeLatinMap::AccentType accent_type,
-               const LPoint3f &min_vert, const LPoint3f &max_vert,
-               const LPoint3f &centroid,
-               TextFont *font, GeomNode *dest, 
-               Geom *geom_array[], int &num_geoms) {
-  switch (accent_type) {
-  case UnicodeLatinMap::AT_grave:
-    // We use the slash as the grave and acute accents.  ASCII does
-    // have a grave accent character, but a lot of fonts put the
-    // reverse apostrophe there instead.  And some fonts (particularly
-    // fonts from mf) don't even do backslash.
-    tack_on_accent('/', CP_above, CT_small_squash_mirror_y, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
-    break;
-
-  case UnicodeLatinMap::AT_acute:
-    tack_on_accent('/', CP_above, CT_small_squash, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
-    break;
-
-  case UnicodeLatinMap::AT_breve:
-    tack_on_accent(')', CP_above, CT_tiny_rotate_270, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
-    break;
-
-  case UnicodeLatinMap::AT_inverted_breve:
-    tack_on_accent('(', CP_above, CT_tiny_rotate_270, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
-    break;
-
-  case UnicodeLatinMap::AT_circumflex:
-    tack_on_accent('^', CP_above, CT_none, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms) ||
-      tack_on_accent('v', CP_above, CT_squash_mirror_y, min_vert, max_vert, centroid,
-                     font, dest, geom_array, num_geoms);
-    break;
-
-  case UnicodeLatinMap::AT_circumflex_below:
-    tack_on_accent('^', CP_below, CT_none, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms) ||
-      tack_on_accent('v', CP_below, CT_squash_mirror_y, min_vert, max_vert, centroid,
-                     font, dest, geom_array, num_geoms);
-    break;
-
-  case UnicodeLatinMap::AT_caron:
-    tack_on_accent('^', CP_above, CT_mirror_y, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms) ||
-      tack_on_accent('v', CP_above, CT_squash, min_vert, max_vert, centroid,
-                     font, dest, geom_array, num_geoms);
-
-    break;
-
-  case UnicodeLatinMap::AT_tilde:
-    tack_on_accent('~', CP_above, CT_none, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms) ||
-      tack_on_accent('s', CP_above, CT_squash_mirror_diag, min_vert, max_vert, centroid,
-                     font, dest, geom_array, num_geoms);
-    break;
-
-  case UnicodeLatinMap::AT_tilde_below:
-    tack_on_accent('~', CP_below, CT_none, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms) ||
-      tack_on_accent('s', CP_below, CT_squash_mirror_diag, min_vert, max_vert, centroid,
-                     font, dest, geom_array, num_geoms);
-    break;
-
-  case UnicodeLatinMap::AT_diaeresis:
-    tack_on_accent(':', CP_above, CT_small_rotate_270, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
-    break;
-
-  case UnicodeLatinMap::AT_diaeresis_below:
-    tack_on_accent(':', CP_below, CT_small_rotate_270, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
-    break;
-
-  case UnicodeLatinMap::AT_dot_above:
-    tack_on_accent('.', CP_above, CT_none, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
-    break;
-
-  case UnicodeLatinMap::AT_dot_below:
-    tack_on_accent('.', CP_below, CT_none, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
-    break;
-
-  case UnicodeLatinMap::AT_macron:
-    tack_on_accent('-', CP_above, CT_none, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
-    break;
-
-  case UnicodeLatinMap::AT_line_below:
-    tack_on_accent('-', CP_below, CT_none, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
-    break;
-
-  case UnicodeLatinMap::AT_ring_above:
-    tack_on_accent('o', CP_top, CT_tiny, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
-    break;
-
-  case UnicodeLatinMap::AT_ring_below:
-    tack_on_accent('o', CP_bottom, CT_tiny, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
-    break;
-
-  case UnicodeLatinMap::AT_cedilla:
-    tack_on_accent('c', CP_bottom, CT_tiny_mirror_x, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
-    /*
-    tack_on_accent(',', CP_bottom, CT_none, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
-    */
-    break;
-
-  case UnicodeLatinMap::AT_comma_below:
-    tack_on_accent(',', CP_below, CT_none, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
-    break;
-
-  case UnicodeLatinMap::AT_ogonek:
-    tack_on_accent(',', CP_bottom, CT_mirror_x, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
-    break;
-
-  case UnicodeLatinMap::AT_stroke:
-    tack_on_accent('/', CP_within, CT_none, min_vert, max_vert, centroid,
-                   font, dest, geom_array, num_geoms);
-    break;
-
-  default:
-    // There are lots of other crazy kinds of accents.  Forget 'em.
-    break;
-  }    
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::tack_on_accent
-//       Access: Private
-//  Description: Generates a cheesy accent mark above (or below, etc.)
-//               the character.  Returns true if successful, or false
-//               if the named accent character doesn't exist in the
-//               font.
-////////////////////////////////////////////////////////////////////
-bool TextNode::
-tack_on_accent(char accent_mark, TextNode::CheesyPlacement placement,
-               TextNode::CheesyTransform transform,
-               const LPoint3f &min_vert, const LPoint3f &max_vert,
-               const LPoint3f &centroid,
-               TextFont *font, GeomNode *dest, 
-               Geom *geom_array[], int &num_geoms) {
-  
-  const TextGlyph *accent_glyph;
-  if (font->get_glyph(accent_mark, accent_glyph)) {
-    PT(Geom) accent_geom = accent_glyph->get_geom();
-    if (accent_geom != (Geom *)NULL) {
-      LPoint3f min_accent, max_accent;
-      bool found_any = false;
-      accent_geom->calc_tight_bounds(min_accent, max_accent, found_any);
-      if (found_any) {
-        float t, u;
-        LMatrix4f accent_mat;
-
-        // This gets set to true if the glyph gets mirrored and needs
-        // to have backface culling disabled.
-        bool mirrored = false;
-
-        switch (transform) {
-        case CT_none:
-          accent_mat = LMatrix4f::ident_mat();
-          break;
-
-        case CT_mirror_x:
-          accent_mat = LMatrix4f::scale_mat(-1.0f, 1.0f, 1.0f);
-          t = min_accent[0];
-          min_accent[0] = -max_accent[0];
-          max_accent[0] = -t;
-          mirrored = true;
-          break;
-
-        case CT_mirror_y:
-          accent_mat = LMatrix4f::scale_mat(1.0f, 1.0f, -1.0f);
-          t = min_accent[2];
-          min_accent[2] = -max_accent[2];
-          max_accent[2] = -t;
-          mirrored = true;
-          break;
-
-        case CT_rotate_90:
-          accent_mat =
-            LMatrix4f::rotate_mat_normaxis(90.0f, LVecBase3f(0.0f, -1.0f, 0.0f));
-          // rotate min, max
-          t = min_accent[0];
-          u = max_accent[0];
-          max_accent[0] = -min_accent[2];
-          min_accent[0] = -max_accent[2];
-          max_accent[2] = u;
-          min_accent[2] = t;
-          break;
-
-        case CT_rotate_180:
-          accent_mat = LMatrix4f::scale_mat(-1.0f, -1.0f, 1.0f);
-          
-          t = min_accent[0];
-          min_accent[0] = -max_accent[0];
-          max_accent[0] = -t;
-          t = min_accent[2];
-          min_accent[2] = -max_accent[2];
-          max_accent[2] = -t;
-          break;
-
-        case CT_rotate_270:
-          accent_mat =
-            LMatrix4f::rotate_mat_normaxis(270.0f, LVecBase3f(0.0f, -1.0f, 0.0f));
-          // rotate min, max
-          t = min_accent[0];
-          u = max_accent[0];
-          min_accent[0] = min_accent[2];
-          max_accent[0] = max_accent[2];
-          min_accent[2] = -u;
-          max_accent[2] = -t;
-          break;
-
-        case CT_squash:
-          accent_mat = LMatrix4f::scale_mat(squash_accent_scale_x, 1.0f, squash_accent_scale_y);
-          min_accent[0] *= squash_accent_scale_x;
-          max_accent[0] *= squash_accent_scale_x;
-          min_accent[2] *= squash_accent_scale_y;
-          max_accent[2] *= squash_accent_scale_y;
-          break;
-
-        case CT_squash_mirror_y:
-          accent_mat = LMatrix4f::scale_mat(squash_accent_scale_x, 1.0f, -squash_accent_scale_y);
-          min_accent[0] *= squash_accent_scale_x;
-          max_accent[0] *= squash_accent_scale_x;
-          t = min_accent[2];
-          min_accent[2] = -max_accent[2] * squash_accent_scale_y;
-          max_accent[2] = -t * squash_accent_scale_y;
-          mirrored = true;
-          break;
-
-        case CT_squash_mirror_diag:
-          accent_mat =
-            LMatrix4f::rotate_mat_normaxis(270.0f, LVecBase3f(0.0f, -1.0f, 0.0f)) *
-            LMatrix4f::scale_mat(-squash_accent_scale_x, 1.0f, squash_accent_scale_y);
-          
-          // rotate min, max
-          t = min_accent[0];
-          u = max_accent[0];
-          min_accent[0] = min_accent[2] * -squash_accent_scale_x;
-          max_accent[0] = max_accent[2] * -squash_accent_scale_x;
-          min_accent[2] = -u * squash_accent_scale_y;
-          max_accent[2] = -t * squash_accent_scale_y;
-          mirrored = true;
-          break;
-
-        case CT_small_squash:
-          accent_mat = LMatrix4f::scale_mat(small_squash_accent_scale_x, 1.0f, small_squash_accent_scale_y);
-          min_accent[0] *= small_squash_accent_scale_x;
-          max_accent[0] *= small_squash_accent_scale_x;
-          min_accent[2] *= small_squash_accent_scale_y;
-          max_accent[2] *= small_squash_accent_scale_y;
-          break;
-
-        case CT_small_squash_mirror_y:
-          accent_mat = LMatrix4f::scale_mat(small_squash_accent_scale_x, 1.0f, -small_squash_accent_scale_y);
-          min_accent[0] *= small_squash_accent_scale_x;
-          max_accent[0] *= small_squash_accent_scale_x;
-          t = min_accent[2];
-          min_accent[2] = -max_accent[2] * small_squash_accent_scale_y;
-          max_accent[2] = -t * small_squash_accent_scale_y;
-          mirrored = true;
-          break;
-
-        case CT_small:
-          accent_mat = LMatrix4f::scale_mat(small_accent_scale);
-          min_accent *= small_accent_scale;
-          max_accent *= small_accent_scale;
-          break;
-
-        case CT_small_rotate_270:
-          accent_mat =
-            LMatrix4f::rotate_mat_normaxis(270.0f, LVecBase3f(0.0f, -1.0f, 0.0f)) *
-            LMatrix4f::scale_mat(small_accent_scale);
-
-          // rotate min, max
-          t = min_accent[0];
-          u = max_accent[0];
-          min_accent[0] = min_accent[2] * small_accent_scale;
-          max_accent[0] = max_accent[2] * small_accent_scale;
-          min_accent[2] = -u * small_accent_scale;
-          max_accent[2] = -t * small_accent_scale;
-          break;
-
-        case CT_tiny:
-          accent_mat = LMatrix4f::scale_mat(tiny_accent_scale);
-          min_accent *= tiny_accent_scale;
-          max_accent *= tiny_accent_scale;
-          break;
-
-        case CT_tiny_mirror_x:
-          accent_mat = LMatrix4f::scale_mat(-tiny_accent_scale, 1.0f, tiny_accent_scale);
-          
-          t = min_accent[0];
-          min_accent[0] = -max_accent[0] * tiny_accent_scale;
-          max_accent[0] = -t * tiny_accent_scale;
-          min_accent[2] *= tiny_accent_scale;
-          max_accent[2] *= tiny_accent_scale;
-          mirrored = true;
-          break;
-
-        case CT_tiny_rotate_270:
-          accent_mat =
-            LMatrix4f::rotate_mat_normaxis(270.0f, LVecBase3f(0.0f, -1.0f, 0.0f)) *
-            LMatrix4f::scale_mat(tiny_accent_scale);
-
-          // rotate min, max
-          t = min_accent[0];
-          u = max_accent[0];
-          min_accent[0] = min_accent[2] * tiny_accent_scale;
-          max_accent[0] = max_accent[2] * tiny_accent_scale;
-          min_accent[2] = -u * tiny_accent_scale;
-          max_accent[2] = -t * tiny_accent_scale;
-          break;
-        }
-
-        LPoint3f accent_centroid = (min_accent + max_accent) / 2.0f;
-        float accent_height = max_accent[2] - min_accent[2];
-        LVector3f trans;
-        switch (placement) {
-        case CP_above:
-          // A little above the character.
-          trans.set(centroid[0] - accent_centroid[0], 0.0f,
-                    max_vert[2] - accent_centroid[2] + accent_height * 0.5);
-          break;
-
-        case CP_below:
-          // A little below the character.
-          trans.set(centroid[0] - accent_centroid[0], 0.0f,
-                    min_vert[2] - accent_centroid[2] - accent_height * 0.5);
-          break;
-
-        case CP_top:
-          // Touching the top of the character.
-          trans.set(centroid[0] - accent_centroid[0], 0.0f,
-                    max_vert[2] - accent_centroid[2]);
-          break;
-
-        case CP_bottom:
-          // Touching the bottom of the character.
-          trans.set(centroid[0] - accent_centroid[0], 0.0f,
-                    min_vert[2] - accent_centroid[2]);
-          break;
-
-        case CP_within:
-          // Centered within the character.
-          trans.set(centroid[0] - accent_centroid[0], 0.0f,
-                    centroid[2] - accent_centroid[2]);
-          break;
-        }
-
-        accent_mat.set_row(3, trans);
-        accent_geom->transform_vertices(accent_mat);
-
-        if (mirrored) {
-          // Once someone asks for this pointer, we hold its reference
-          // count and never free it.
-          static CPT(RenderState) disable_backface;
-          if (disable_backface == (const RenderState *)NULL) {
-            disable_backface = RenderState::make
-              (CullFaceAttrib::make(CullFaceAttrib::M_cull_none));
-          }
-            
-          CPT(RenderState) state = 
-            accent_glyph->get_state()->compose(disable_backface);
-          dest->add_geom(accent_geom, state);
-        } else {
-          dest->add_geom(accent_geom, accent_glyph->get_state());
-        }
-        geom_array[num_geoms++] = accent_geom;
-
-        return true;
-      }
-    }
-  }
-
-  return false;
+  // We no longer make this a special case.
+  do_rebuild();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1711,60 +772,4 @@ make_card_with_border() {
   card_geode->add_geom(geoset);
 
   return card_geode.p();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::load_default_font
-//       Access: Private, Static
-//  Description: This function is called once (or never), the first
-//               time someone attempts to render a TextNode using the
-//               default font.  It should attempt to load the default
-//               font, using the compiled-in version if it is
-//               available, or whatever system file may be named in
-//               Configrc.
-////////////////////////////////////////////////////////////////////
-void TextNode::
-load_default_font() {
-  _loaded_default_font = true;
-
-  if (!text_default_font.empty()) {
-    // First, attempt to load the user-specified filename.
-    _default_font = FontPool::load_font(text_default_font);
-    if (_default_font->is_valid()) {
-      return;
-    }
-  }
-
-  // Then, attempt to load the compiled-in font, if we have one.
-#ifdef COMPILE_IN_DEFAULT_FONT
-#ifdef HAVE_FREETYPE
-  // Loading the compiled-in FreeType font is relatively easy.
-  _default_font = new DynamicTextFont((const char *)default_font_data, 
-                                      default_font_size, 0);
-
-#else
-  // The compiled-in Bam font requires creating a BamFile object to
-  // decode it.
-  string data((const char *)default_font_data, default_font_size);
-
-#ifdef HAVE_ZLIB
-  // The font data is stored compressed; decompress it on-the-fly.
-  istringstream inz(data);
-  IDecompressStream in(&inz, false);
-  
-#else
-  // The font data is stored uncompressed, so just load it.
-  istringstream in(data);
-#endif  // HAVE_ZLIB
-  
-  BamFile bam_file;
-  if (bam_file.open_read(in, "default font stream")) {
-    PT(PandaNode) node = bam_file.read_node();
-    if (node != (PandaNode *)NULL) {
-      _default_font = new StaticTextFont(node);
-    }
-  }
-  
-#endif  // HAVE_FREETYPE
-#endif  // COMPILE_IN_DEFAULT_FONT
 }

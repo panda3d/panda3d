@@ -9,7 +9,7 @@
     putil gobj pgraph linmath \
     pnmtext pnmimage gsgbase mathutil
     
-  #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
   #define SOURCES \
     config_text.h \
@@ -20,9 +20,12 @@
     fontPool.I fontPool.h \
     geomTextGlyph.I geomTextGlyph.h \
     staticTextFont.I staticTextFont.h \
+    textAssembler.I textAssembler.h \
     textFont.I textFont.h \
     textGlyph.I textGlyph.h \
-    textNode.I textNode.h textNode.cxx
+    textNode.I textNode.h \
+    textProperties.I textProperties.h \
+    textPropertiesManager.I textPropertiesManager.h
 
   #define INCLUDED_SOURCES \
     config_text.cxx \
@@ -33,7 +36,11 @@
     fontPool.cxx \
     geomTextGlyph.cxx \
     staticTextFont.cxx \
-    textFont.cxx textGlyph.cxx
+    textAssembler.cxx \
+    textFont.cxx textGlyph.cxx \
+    textNode.cxx \
+    textProperties.cxx \
+    textPropertiesManager.cxx
 
   #define INSTALL_HEADERS \
     config_text.h \
@@ -43,9 +50,12 @@
     fontPool.I fontPool.h \
     geomTextGlyph.I geomTextGlyph.h \
     staticTextFont.I staticTextFont.h \
+    textAssembler.I textAssembler.h \
     textFont.I textFont.h \
     textGlyph.I textGlyph.h \
-    textNode.I textNode.h
+    textNode.I textNode.h \
+    textProperties.I textProperties.h \
+    textPropertiesManager.I textPropertiesManager.h
 
 
   #define IGATESCAN all

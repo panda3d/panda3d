@@ -38,6 +38,8 @@ extern const bool text_small_caps;
 extern const float text_small_caps_scale;
 extern const string text_default_font;
 extern const float text_tab_width;
+extern const int text_push_properties_key;
+extern const int text_pop_properties_key;
 extern const int text_soft_hyphen_key;
 extern const int text_soft_break_key;
 extern wstring *text_soft_hyphen_output;

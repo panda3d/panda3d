@@ -90,12 +90,12 @@ def printEntryText(text):
 # CALL de1.get() and de1.set('new text') to get and set entry contents
 de1 = DirectEntry(initialText = 'Hello, how are you?',
                   image = 'models/maps/noise.rgb',
-                  #image = 'phase_3/maps/toowntown-logo.jpg',
-                  image_pos = (4.55, 0, -1.65),
-                  image_scale = (5.5, 1, 2.55),
+                  image_pos = (4.55, 0, -2.55),
+                  image_scale = (5.5, 1, 4),
                   command = printEntryText,
                   pos = (-1.1875, 0, 0.879167),
                   scale = 0.0707855,
+                  cursorKeys = 1,
                   )
 
 # DIRECT DIALOG EXAMPLE

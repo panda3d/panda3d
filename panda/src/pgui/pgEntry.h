@@ -98,6 +98,12 @@ PUBLISHED:
   INLINE void set_obscure_mode(bool flag);
   INLINE bool get_obscure_mode() const;
 
+  INLINE void set_candidate_active(const string &candidate_active);
+  INLINE const string &get_candidate_active() const;
+
+  INLINE void set_candidate_inactive(const string &candidate_inactive);
+  INLINE const string &get_candidate_inactive() const;
+
   void set_text_def(int state, TextNode *node);
   TextNode *get_text_def(int state) const;
 
@@ -133,9 +139,16 @@ private:
   bool _cursor_stale;
   bool _cursor_visible;
 
+  wstring _candidate_wtext;
+  size_t _candidate_highlight_start;
+  size_t _candidate_highlight_end;
+
   int _max_chars;
   float _max_width;
   int _num_lines;
+
+  string _candidate_active;
+  string _candidate_inactive;
 
   typedef pvector< PT(TextNode) > TextDefs;
   TextDefs _text_defs;

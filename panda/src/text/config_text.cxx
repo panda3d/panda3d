@@ -20,6 +20,7 @@
 #include "staticTextFont.h"
 #include "textFont.h"
 #include "textNode.h"
+#include "textProperties.h"
 #include "dynamicTextFont.h"
 #include "dynamicTextPage.h"
 #include "geomTextGlyph.h"
@@ -47,6 +48,16 @@ const float text_small_caps_scale = config_text.GetFloat("text-small-caps-scale"
 const string text_default_font = config_text.GetString("text-default-font", "");
 const float text_tab_width = config_text.GetFloat("text-tab-width", 5.0f);
 
+
+// This is the decimal character number that, embedded in a string, is
+// used to bracket the name of a TextProperties structure added to the
+// TextPropertiesManager object, to control the appearance of
+// subsequent text.
+const int text_push_properties_key = config_text.GetInt("text-push-properties-key", 1);
+
+// This is the decimal character number that undoes the effect of a
+// previous appearance of text_push_properties_key.
+const int text_pop_properties_key = config_text.GetInt("text-pop-properties-key", 2);
 
 // This is the decimal character number that, embedded in a string, is
 // identified as the soft-hyphen character.
@@ -98,6 +109,7 @@ init_libtext() {
   StaticTextFont::init_type();
   TextFont::init_type();
   TextNode::init_type();
+  TextProperties::init_type();
 
 #ifdef HAVE_FREETYPE
   DynamicTextFont::init_type();

@@ -3988,13 +3988,11 @@ class LevelStyleManager:
         for i in range (numItems):
             # Create a text node--just a card, really--of the right color.
             tn = TextNode('colorChip')
-            tn.freeze()
             tn.setFont(getDefaultFont())
             tn.setTransform(Mat4.scaleMat(0.07, 0.07, 0.07 * aspectRatio))
             tn.setCardColor(colorList[i])
             tn.setCardActual(0, 1.1111, 0, 0.8333)
             tn.setText(' ')
-            tn.thaw()
 
             # Reposition it
             card = tn.getCardTransformed()
@@ -4113,14 +4111,12 @@ class LevelStyleManager:
             # Create text node for each item
             if (textList[i] != None):
                 tn = TextNode('TextItem')
-                tn.freeze()
                 tn.setFont(getDefaultFont())
                 tn.setTransform(Mat4.scaleMat(0.07, 0.07, 0.07 * aspectRatio))
                 tn.setTextColor(0, 0, 0, 1)
                 tn.setCardColor(1, 1, 1, 1)
                 tn.setCardAsMargin(0.1, 0.1, 0.1, 0.1)
                 tn.setText(str(textList[i]))
-                tn.thaw()
 
                 # Reposition it
                 card = tn.getCardTransformed()

@@ -266,6 +266,70 @@ get_obscure_mode() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::set_candidate_active
+//       Access: Published
+//  Description: Specifies the name of the TextProperties structure
+//               added to the TextPropertiesManager that will be used
+//               to render candidate strings from the IME, used for
+//               typing characters in east Asian languages.  Each
+//               candidate string represents one possible way to
+//               interpret the sequence of keys the user has just
+//               entered; it should not be considered typed yet, but
+//               it is important for the user to be able to see what
+//               he is considering entering.
+//
+//               This particular method sets the properties for the
+//               subset of the current candidate string that the user
+//               can actively scroll through.
+////////////////////////////////////////////////////////////////////
+INLINE void PGEntry:: 
+set_candidate_active(const string &candidate_active) {
+  _candidate_active = candidate_active;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_candidate_active
+//       Access: Published
+//  Description: See set_candidate_active().
+////////////////////////////////////////////////////////////////////
+INLINE const string &PGEntry:: 
+get_candidate_active() const {
+  return _candidate_active;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::set_candidate_inactive
+//       Access: Published
+//  Description: Specifies the name of the TextProperties structure
+//               added to the TextPropertiesManager that will be used
+//               to render candidate strings from the IME, used for
+//               typing characters in east Asian languages.  Each
+//               candidate string represents one possible way to
+//               interpret the sequence of keys the user has just
+//               entered; it should not be considered typed yet, but
+//               it is important for the user to be able to see what
+//               he is considering entering.
+//
+//               This particular method sets the properties for the
+//               subset of the current candidate string that the user
+//               is not actively scrolling through.
+////////////////////////////////////////////////////////////////////
+INLINE void PGEntry:: 
+set_candidate_inactive(const string &candidate_inactive) {
+  _candidate_inactive = candidate_inactive;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_candidate_inactive
+//       Access: Published
+//  Description: See set_candidate_inactive().
+////////////////////////////////////////////////////////////////////
+INLINE const string &PGEntry:: 
+get_candidate_inactive() const {
+  return _candidate_inactive;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGEntry::get_accept_prefix
 //       Access: Published, Static
 //  Description: Returns the prefix that is used to define the accept

@@ -23,12 +23,11 @@
 
 #include "config_text.h"
 #include "textEncoder.h"
+#include "textProperties.h"
 #include "textFont.h"
-#include "unicodeLatinMap.h"
+#include "textAssembler.h"
 #include "pandaNode.h"
 #include "luse.h"
-
-class StringDecoder;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextNode
@@ -53,49 +52,19 @@ class StringDecoder;
 //               you may use however you like.  Each time you call
 //               generate() a new node is returned.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TextNode : public PandaNode, public TextEncoder {
+class EXPCL_PANDA TextNode : public PandaNode, public TextEncoder, public TextProperties {
 PUBLISHED:
   TextNode(const string &name);
+  TextNode(const string &name, const TextProperties &copy);
   ~TextNode();
-
-  enum Alignment {
-    A_left,
-    A_right,
-    A_center,
-  };
- 
-  INLINE int freeze();
-  INLINE int thaw();
-
-  INLINE void set_font(TextFont *font);
-  INLINE TextFont *get_font() const;
-
-  INLINE static void set_default_font(TextFont *);
-  INLINE static TextFont *get_default_font();
 
   INLINE float get_line_height() const;
 
-  INLINE void set_small_caps(bool small_caps);
-  INLINE bool get_small_caps() const;
-  INLINE void set_small_caps_scale(float small_caps_scale);
-  INLINE float get_small_caps_scale() const;
-
-  INLINE void set_slant(float slant);
-  INLINE float get_slant() const;
-
-  INLINE void set_align(Alignment align_type);
-  INLINE Alignment get_align() const;
-
-  INLINE void set_wordwrap(float width);
-  INLINE void clear_wordwrap();
-  INLINE bool has_wordwrap() const;
-  INLINE float get_wordwrap() const;
-
-  INLINE void set_text_color(float r, float g, float b, float a);
-  INLINE void set_text_color(const Colorf &text_color);
-  INLINE void clear_text_color();
-  INLINE bool has_text_color() const;
-  INLINE Colorf get_text_color() const;
+  INLINE void set_max_rows(int max_rows);
+  INLINE void clear_max_rows();
+  INLINE bool has_max_rows() const;
+  INLINE int get_max_rows() const;
+  INLINE bool has_overflow() const;
 
   INLINE void set_frame_color(float r, float g, float b, float a);
   INLINE void set_frame_color(const Colorf &frame_color);
@@ -115,10 +84,6 @@ PUBLISHED:
   INLINE void clear_card_texture();
   INLINE bool has_card_texture() const;
   INLINE Texture *get_card_texture() const;
-
-  INLINE void set_shadow_color(float r, float g, float b, float a);
-  INLINE void set_shadow_color(const Colorf &shadow_color);
-  INLINE Colorf get_shadow_color() const;
 
   INLINE void set_frame_as_margin(float left, float right,
                                   float bottom, float top);
@@ -146,27 +111,63 @@ PUBLISHED:
   INLINE LVecBase4f get_card_actual() const;
   INLINE LVecBase4f get_card_transformed() const;
 
-  INLINE void set_shadow(float xoffset, float yoffset);
-  INLINE void clear_shadow();
-  INLINE bool has_shadow() const;
-  INLINE LVecBase2f get_shadow() const;
-
-  INLINE void set_bin(const string &bin);
-  INLINE void clear_bin();
-  INLINE bool has_bin() const;
-  INLINE const string &get_bin() const;
-
-  INLINE int set_draw_order(int draw_order);
-  INLINE int get_draw_order() const;
-
-  INLINE void set_tab_width(float tab_width);
-  INLINE float get_tab_width() const;
-
   INLINE void set_transform(const LMatrix4f &transform);
   INLINE LMatrix4f get_transform() const;
 
   INLINE void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
+
+  // These methods are inherited from TextProperties, but we override
+  // here so we can flag the TextNode as dirty when they have been
+  // change.
+
+  INLINE void set_font(TextFont *font);
+  INLINE void clear_font();
+
+  INLINE void set_small_caps(bool small_caps);
+  INLINE void clear_small_caps();
+
+  INLINE void set_small_caps_scale(float small_caps_scale);
+  INLINE void clear_small_caps_scale();
+
+  INLINE void set_slant(float slant);
+  INLINE void clear_slant();
+
+  INLINE void set_align(Alignment align_type);
+  INLINE void clear_align();
+
+  INLINE void set_indent(float indent);
+  INLINE void clear_indent();
+
+  INLINE void set_wordwrap(float wordwrap);
+  INLINE void clear_wordwrap();
+
+  INLINE void set_text_color(float r, float g, float b, float a);
+  INLINE void set_text_color(const Colorf &text_color);
+  INLINE void clear_text_color();
+
+  INLINE void set_shadow_color(float r, float g, float b, float a);
+  INLINE void set_shadow_color(const Colorf &shadow_color);
+  INLINE void clear_shadow_color();
+
+  INLINE void set_shadow(float xoffset, float yoffset);
+  INLINE void set_shadow(const LVecBase2f &shadow_offset);
+  INLINE void clear_shadow();
+
+  INLINE void set_bin(const string &bin);
+  INLINE void clear_bin();
+
+  INLINE int set_draw_order(int draw_order);
+  INLINE void clear_draw_order();
+
+  INLINE void set_tab_width(float tab_width);
+  INLINE void clear_tab_width();
+
+  INLINE void set_glyph_scale(float glyph_scale);
+  INLINE void clear_glyph_scale();
+
+  INLINE void set_glyph_shift(float glyph_shift);
+  INLINE void clear_glyph_shift();
 
   // These methods are inherited from TextEncoder, but we override
   // here so we can flag the TextNode as dirty when they have been
@@ -177,10 +178,14 @@ PUBLISHED:
   INLINE void append_text(const string &text);
   INLINE void append_unicode_char(int character);
 
-  INLINE float calc_width(int character) const;
+  // After the text has been set, you can query this to determine how
+  // it will be wordwrapped.
+  INLINE string get_wordwrapped_text() const;
+
+  // These methods calculate the width of a single character or a line
+  // of text in the current font.
+  float calc_width(int character) const;
   INLINE float calc_width(const string &line) const;
-  string wordwrap_to(const string &text, float wordwrap_width,
-                     bool preserve_trailing_whitespace) const;
 
   virtual void write(ostream &out, int indent_level = 0) const;
 
@@ -207,9 +212,8 @@ public:
   INLINE void set_wtext(const wstring &wtext);
   INLINE void append_wtext(const wstring &text);
 
-  INLINE float calc_width(const wstring &line) const;
-  INLINE wstring wordwrap_to(const wstring &wtext, float wordwrap_width,
-                             bool preserve_trailing_whitespace) const;
+  INLINE wstring get_wordwrapped_wtext() const;
+  float calc_width(const wstring &line) const;
 
   // From parent class PandaNode
   virtual int get_unsafe_to_apply_attribs() const;
@@ -235,123 +239,47 @@ private:
   void do_rebuild();
   void do_measure();
 
-#ifndef CPPPARSER  // interrogate has a bit of trouble with wstring.
-  float assemble_row(wstring::iterator &si, const wstring::iterator &send, 
-                     TextFont *font, GeomNode *dest, const LMatrix4f &mat);
-  PT(PandaNode) assemble_text(wstring::iterator si, const wstring::iterator &send,
-                              TextFont *font,
-                              LVector2f &ul, LVector2f &lr, int &num_rows);
-  float measure_row(wstring::iterator &si, const wstring::iterator &send,
-                    TextFont *font);
-  void measure_text(wstring::iterator si, const wstring::iterator &send,
-                    TextFont *font,
-                    LVector2f &ul, LVector2f &lr, int &num_rows);
-#endif  // CPPPARSER
-
-  enum CheesyPlacement {
-    CP_above,
-    CP_below,
-    CP_top,
-    CP_bottom,
-    CP_within,
-  };
-  enum CheesyTransform {
-    CT_none,
-    CT_mirror_x,
-    CT_mirror_y,
-    CT_rotate_90,
-    CT_rotate_180,
-    CT_rotate_270,
-    CT_squash,
-    CT_squash_mirror_y,
-    CT_squash_mirror_diag,
-    CT_small_squash,
-    CT_small_squash_mirror_y,
-    CT_small,
-    CT_small_rotate_270,
-    CT_tiny,
-    CT_tiny_mirror_x,
-    CT_tiny_rotate_270,
-  };
-
-  void get_character_glyphs(int character, TextFont *font,
-                            bool &got_glyph, const TextGlyph *&glyph,
-                            const TextGlyph *&second_glyph,
-                            UnicodeLatinMap::AccentType &accent_type,
-                            int &additional_flags,
-                            float &glyph_scale, float &advance_scale);
-
-  void tack_on_accent(UnicodeLatinMap::AccentType accent_type,
-                      const LPoint3f &min_vert, const LPoint3f &max_vert,
-                      const LPoint3f &centroid,
-                      TextFont *font, GeomNode *dest, 
-                      Geom *geom_array[], int &num_geoms);
-  bool tack_on_accent(char accent_mark, CheesyPlacement placement,
-                      CheesyTransform transform,
-                      const LPoint3f &min_vert, const LPoint3f &max_vert,
-                      const LPoint3f &centroid,
-                      TextFont *font, GeomNode *dest, 
-                      Geom *geom_array[], int &num_geoms);
-
   PT(PandaNode) make_frame();
   PT(PandaNode) make_card();
   PT(PandaNode) make_card_with_border();
 
-  static void load_default_font();
-
-  PT(TextFont) _font;
   PT(PandaNode) _internal_geom;
 
-  float _slant;
-
   PT(Texture) _card_texture;
-  Colorf _text_color;
-  Colorf _shadow_color;
   Colorf _frame_color;
   Colorf _card_color;
 
   enum Flags {
-    F_has_text_color   =  0x00000001,
-    F_has_wordwrap     =  0x00000002,
-    F_has_frame        =  0x00000004,
-    F_frame_as_margin  =  0x00000008,
-    F_has_card         =  0x00000010,
-    F_card_as_margin   =  0x00000020,
-    F_has_card_texture =  0x00000040,
-    F_has_shadow       =  0x00000080,
-    F_frame_corners    =  0x00000100,
-    F_card_transp      =  0x00000200,
-    F_has_card_border  =  0x00000400,
-    F_needs_rebuild    =  0x00004000,
-    F_needs_measure    =  0x00008000,
-    F_small_caps       =  0x00010000,
+    F_has_frame        =  0x0001,
+    F_frame_as_margin  =  0x0002,
+    F_has_card         =  0x0004,
+    F_card_as_margin   =  0x0008,
+    F_has_card_texture =  0x0010,
+    F_frame_corners    =  0x0020,
+    F_card_transp      =  0x0040,
+    F_has_card_border  =  0x0080,
+    F_needs_rebuild    =  0x0100,
+    F_needs_measure    =  0x0200,
+    F_has_overflow     =  0x0400,
   };
 
   int _flags;
-  Alignment _align;
-  float _wordwrap_width;
+  int _max_rows;
   float _frame_width;
   float _card_border_size;
   float _card_border_uv_portion;
-  float _small_caps_scale;
 
   LVector2f _frame_ul, _frame_lr;
   LVector2f _card_ul, _card_lr;
-  LVector2f _shadow_offset;
-
-  string _bin;
-  int _draw_order;
-  float _tab_width;
 
   LMatrix4f _transform;
   CoordinateSystem _coordinate_system;
 
-  LPoint2f _ul2d, _lr2d;
   LPoint3f _ul3d, _lr3d;
-  int _num_rows;
 
-  static PT(TextFont) _default_font;
-  static bool _loaded_default_font;
+#ifndef CPPPARSER
+  TextAssembler _assembler;
+#endif
 
 public:
   static TypeHandle get_class_type() {
@@ -359,9 +287,12 @@ public:
   }
   static void init_type() {
     PandaNode::init_type();
+    TextEncoder::init_type();
+    TextProperties::init_type();
     register_type(_type_handle, "TextNode",
                   PandaNode::get_class_type(),
-                  TextEncoder::get_class_type());
+                  TextEncoder::get_class_type(),
+                  TextProperties::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

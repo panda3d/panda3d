@@ -73,11 +73,10 @@ class DirectEntry(DirectFrame):
             scale = 1,
             # Don't get rid of the text node
             mayChange = 1)
-        # We want to keep this sucker frozen since its not
-        # in the scene graph
-        self.onscreenText.freeze()
-        # We can also get rid of the node path since we're just using the
-        # onscreenText as an easy way to access a text node as a component
+
+        # We can get rid of the node path since we're just using the
+        # onscreenText as an easy way to access a text node as a
+        # component
         self.onscreenText.removeNode()
 
         # Bind command function

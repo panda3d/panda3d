@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "fontPool.h"
+#include "staticTextFont.h"
+#include "dynamicTextFont.h"
 #include "config_util.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"

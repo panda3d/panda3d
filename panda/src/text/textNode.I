@@ -18,321 +18,83 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::freeze
-//       Access: Published
-//  Description: This method is deprecated and no longer does
-//               anything.  It is included for historical purposes
-//               only and will shortly be removed.
-////////////////////////////////////////////////////////////////////
-INLINE int TextNode::
-freeze() {
-  return 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::thaw
-//       Access: Published
-//  Description: This method is deprecated and no longer does
-//               anything.  It is included for historical purposes
-//               only and will shortly be removed.
-////////////////////////////////////////////////////////////////////
-INLINE int TextNode::
-thaw() {
-  return 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_font
-//       Access: Published
-//  Description: Sets the font that will be used when making text.  If
-//               this is set to NULL, the default font will be used,
-//               which can be set via set_default_font().
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-set_font(TextFont *font) {
-  if (_font != font) {
-    _font = font;
-    invalidate_with_measure();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_font
-//       Access: Published
-//  Description: Returns the font currently in use, if any.  If this
-//               returns NULL, the default font will be used, which
-//               can be retrieved via get_default_font().
-////////////////////////////////////////////////////////////////////
-INLINE TextFont *TextNode::
-get_font() const {
-  return _font;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_default_font
-//       Access: Published, Static
-//  Description: Specifies the default font to be used for any
-//               TextNode whose font is uninitialized or NULL.  See
-//               set_font().
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-set_default_font(TextFont *font) {
-  // If the user overrides the default, we don't need to try to load
-  // whatever it would have been.
-  _loaded_default_font = true;
-  _default_font = font;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_default_font
-//       Access: Published, Static
-//  Description: Specifies the default font to be used for any
-//               TextNode whose font is uninitialized or NULL.  See
-//               set_font().
-////////////////////////////////////////////////////////////////////
-INLINE TextFont *TextNode::
-get_default_font() {
-  if (!_loaded_default_font) {
-    load_default_font();
-  }
-  return _default_font;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_line_height
 //       Access: Published
 //  Description: Returns the number of units high each line of text
-//               is.  This is based on the font.
+//               is.  This is based on the font.  Note that it is
+//               possible for the text to include nested font change
+//               commands, in which case the value of this method is
+//               questionable.
 ////////////////////////////////////////////////////////////////////
 INLINE float TextNode::
 get_line_height() const {
-  if (_font != (TextFont *)NULL) {
-    return _font->get_line_height();
-  } else if (get_default_font() != (TextFont *)NULL) {
-    return _default_font->get_line_height();
+  TextFont *font = get_font();
+  if (font == (TextFont *)NULL) {
+    return 0.0f;
   }
-  return 0.0f;
+
+  return font->get_line_height();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_small_caps
+//     Function: TextNode::set_max_rows
 //       Access: Published
-//  Description: Sets the small_caps flag.  When this is set,
-//               lowercase letters are generated as scaled-down
-//               versions of their uppercase equivalents.  This is
-//               particularly useful to set for fonts that do not have
-//               lowercase letters.
-//
-//               It is also a good idea to set this for a (dynamic)
-//               font that has already implemented lowercase letters
-//               as scaled-down versions of their uppercase
-//               equivalents, since without this flag the texture
-//               memory may needlessly duplicate equivalent glyphs for
-//               upper and lowercase letters.  Setting this flag
-//               causes the texture memory to share the mixed-case
-//               letters.
-//
-//               The amount by which the lowercase letters are scaled
-//               is specified by set_small_caps_scale().
+//  Description: Sets the maximum number of rows that may be formatted
+//               by the TextNode.  If more text than this is
+//               attempted, it will be truncated and has_overflow()
+//               will return true.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_small_caps(bool small_caps) {
-  if (small_caps) {
-    _flags |= F_small_caps;
-  } else {
-    _flags &= ~F_small_caps;
-  }
+set_max_rows(int max_rows) {
+  _max_rows = max_rows;
   invalidate_with_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_small_caps
+//     Function: TextNode::clear_max_rows
 //       Access: Published
-//  Description: Returns the small_caps flag.  See set_small_caps().
-////////////////////////////////////////////////////////////////////
-INLINE bool TextNode::
-get_small_caps() const {
-  return (_flags & F_small_caps) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_small_caps_scale
-//       Access: Published
-//  Description: Sets the scale factor applied to lowercase letters
-//               from their uppercase equivalents, when the small_caps
-//               flag is in effect.  See set_small_caps().  Normally,
-//               this will be a number less than one.
+//  Description: Resets the TextNode's default behavior of not
+//               limiting the number of rows of text.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_small_caps_scale(float small_caps_scale) {
-  _small_caps_scale = small_caps_scale;
+clear_max_rows() {
+  _max_rows = 0;
   invalidate_with_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_small_caps_scale
+//     Function: TextNode::has_max_rows
 //       Access: Published
-//  Description: Returns the scale factor applied to lowercase letters
-//               from their uppercase equivalents, when the small_caps
-//               flag is in effect.  See set_small_caps() and
-//               set_small_caps_scale().
-////////////////////////////////////////////////////////////////////
-INLINE float TextNode::
-get_small_caps_scale() const {
-  return _small_caps_scale;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_slant
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-set_slant(float slant) {
-  if (_slant != slant) {
-    _slant = slant;
-    invalidate_with_measure();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_slant
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE float TextNode::
-get_slant() const {
-  return _slant;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_align
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-set_align(TextNode::Alignment align_type) {
-  if (_align != align_type) {
-    _align = align_type;
-    invalidate_with_measure();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_align
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE TextNode::Alignment TextNode::
-get_align() const {
-  return _align;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_wordwrap
-//       Access: Published
-//  Description: Sets the TextNode up to automatically wordwrap text
-//               that exceeds the indicated width.
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-set_wordwrap(float wordwrap) {
-  if (!has_wordwrap() || _wordwrap_width != wordwrap) {
-    _flags |= F_has_wordwrap;
-    _wordwrap_width = wordwrap;
-    invalidate_with_measure();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::clear_wordwrap
-//       Access: Published
-//  Description: Removes the wordwrap setting from the TextNode.  Text
-//               will be as wide as it is.
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-clear_wordwrap() {
-  if (has_wordwrap()) {
-    _flags &= ~F_has_wordwrap;
-    invalidate_with_measure();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::has_wordwrap
-//       Access: Published
-//  Description:
+//  Description: Returns true if a limit on the height of the TextNode
+//               has been set via set_max_rows(), false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
-has_wordwrap() const {
-  return (_flags & F_has_wordwrap) != 0;
+has_max_rows() const {
+  return _max_rows > 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_wordwrap
+//     Function: TextNode::get_max_rows
 //       Access: Published
-//  Description:
+//  Description: Returns the limit on the height of the TextNode
+//               specified by set_max_rows().
 ////////////////////////////////////////////////////////////////////
-INLINE float TextNode::
-get_wordwrap() const {
-  return _wordwrap_width;
+INLINE int TextNode::
+get_max_rows() const {
+  return _max_rows;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_text_color
+//     Function: TextNode::has_overflow
 //       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-set_text_color(float r, float g, float b, float a) {
-  set_text_color(Colorf(r, g, b, a));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_text_color
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-set_text_color(const Colorf &text_color) {
-  if (!has_text_color() || _text_color != text_color) {
-    _text_color = text_color;
-    _flags |= F_has_text_color;
-    invalidate_no_measure();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::clear_text_color
-//       Access: Published
-//  Description: Removes the text color specification; the text will
-//               be colored whatever it was in the source font file.
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-clear_text_color() {
-  if (has_text_color()) {
-    _flags &= ~F_has_text_color;
-    invalidate_no_measure();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::has_text_color
-//       Access: Published
-//  Description:
+//  Description: Returns true if the last text set on the text node
+//               exceeded the max_rows constraint, or false if it all
+//               fit.
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
-has_text_color() const {
-  return (_flags & F_has_text_color) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_text_color
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE Colorf TextNode::
-get_text_color() const {
-  return _text_color;
+has_overflow() const {
+  check_measure();
+  return (_flags & F_has_overflow) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -512,39 +274,6 @@ get_card_texture() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_shadow_color
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-set_shadow_color(float r, float g, float b, float a) {
-  set_shadow_color(Colorf(r, g, b, a));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_shadow_color
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-set_shadow_color(const Colorf &shadow_color) {
-  if (_shadow_color != shadow_color) {
-    _shadow_color = shadow_color;
-    invalidate_no_measure();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_shadow_color
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE Colorf TextNode::
-get_shadow_color() const {
-  return _shadow_color;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_frame_as_margin
 //       Access: Published
 //  Description: Specifies that a border will be drawn around the text
@@ -652,14 +381,18 @@ INLINE LVecBase4f TextNode::
 get_frame_actual() const {
   if (!has_frame()) {
     check_measure();
-    return LVecBase4f(_ul2d[0], _lr2d[0], _lr2d[1], _ul2d[1]);
+    const LVector2f &ul = _assembler.get_ul();
+    const LVector2f &lr = _assembler.get_lr();
+    return LVecBase4f(ul[0], lr[0], lr[1], ul[1]);
 
   } else if (is_frame_as_margin()) {
     check_measure();
-    return LVecBase4f(_ul2d[0] - _frame_ul[0],
-                      _lr2d[0] + _frame_lr[0],
-                      _lr2d[1] - _frame_lr[1],
-                      _ul2d[1] + _frame_ul[1]);
+    const LVector2f &ul = _assembler.get_ul();
+    const LVector2f &lr = _assembler.get_lr();
+    return LVecBase4f(ul[0] - _frame_ul[0],
+                      lr[0] + _frame_lr[0],
+                      lr[1] - _frame_lr[1],
+                      ul[1] + _frame_ul[1]);
   } else {
     return get_frame_as_set();
   }
@@ -823,14 +556,18 @@ INLINE LVecBase4f TextNode::
 get_card_actual() const {
   if (!has_card()) {
     check_measure();
-    return LVecBase4f(_ul2d[0], _lr2d[0], _lr2d[1], _ul2d[1]);
+    const LVector2f &ul = _assembler.get_ul();
+    const LVector2f &lr = _assembler.get_lr();
+    return LVecBase4f(ul[0], lr[0], lr[1], ul[1]);
 
   } else if (is_card_as_margin()) {
     check_measure();
-    return LVecBase4f(_ul2d[0] - _card_ul[0],
-                      _lr2d[0] + _card_lr[0],
-                      _lr2d[1] - _card_lr[1],
-                      _ul2d[1] + _card_ul[1]);
+    const LVector2f &ul = _assembler.get_ul();
+    const LVector2f &lr = _assembler.get_lr();
+    return LVecBase4f(ul[0] - _card_ul[0],
+                      lr[0] + _card_lr[0],
+                      lr[1] - _card_lr[1],
+                      ul[1] + _card_ul[1]);
   } else {
     return get_card_as_set();
   }
@@ -852,164 +589,6 @@ get_card_transformed() const {
   LPoint3f lr = LPoint3f(card[1], 0.0, card[2]) * _transform;
 
   return LVecBase4f(ul[0], lr[0], lr[2], ul[2]);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_shadow
-//       Access: Published
-//  Description: Specifies that the text should be drawn with a
-//               shadow, by creating a second copy of the text and
-//               offsetting it slightly behind the first.
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-set_shadow(float xoffset, float yoffset) {
-  _flags |= F_has_shadow;
-  _shadow_offset.set(xoffset, yoffset);
-  invalidate_no_measure();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::clear_shadow
-//       Access: Published
-//  Description: Specifies that a shadow will not be drawn behind the
-//               text.
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-clear_shadow() {
-  _flags &= ~F_has_shadow;
-  invalidate_no_measure();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::has_shadow
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE bool TextNode::
-has_shadow() const {
-  return (_flags & F_has_shadow) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_shadow
-//       Access: Published
-//  Description: Returns the offset of the shadow as set by
-//               set_shadow().  It is an error to call this if
-//               has_shadow() is false.
-////////////////////////////////////////////////////////////////////
-INLINE LVecBase2f TextNode::
-get_shadow() const {
-  nassertr(has_shadow(), LVecBase2f(0.0, 0.0));
-  return _shadow_offset;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_bin
-//       Access: Published
-//  Description: Names the GeomBin that the TextNode geometry should
-//               be assigned to.  If this is set, then a
-//               GeomBinTransition will be created to explicitly place
-//               each component in the named bin.
-//
-//               The draw_order value will also be passed to each
-//               GeomBinTransition as appropriate; this is
-//               particularly useful if this names a GeomBinFixed,
-//               e.g. "fixed".
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-set_bin(const string &bin) {
-  _bin = bin;
-  invalidate_no_measure();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::clear_bin
-//       Access: Published
-//  Description: Removes the effect of a previous call to
-//               set_bin().  Text will be drawn in whatever bin
-//               it would like to be drawn in, with no explicit
-//               ordering.
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-clear_bin() {
-  _bin = string();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::has_bin
-//       Access: Published
-//  Description: Returns true if an explicit drawing bin has been
-//               set via set_bin(), false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool TextNode::
-has_bin() const {
-  return !_bin.empty();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_bin
-//       Access: Published
-//  Description: Returns the drawing bin set with set_bin(), or empty
-//               string if no bin has been set.
-////////////////////////////////////////////////////////////////////
-INLINE const string &TextNode::
-get_bin() const {
-  return _bin;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_draw_order
-//       Access: Published
-//  Description: Sets the drawing order of text created by the
-//               TextMaker.  This is actually the draw order of the
-//               card and frame.  The shadow is drawn at
-//               _draw_order+1, and the text at _draw_order+2.
-//
-//               This affects the sorting order assigned to the arcs
-//               as they are created, and also is passed to whatever
-//               bin may be assigned via set_bin().
-//
-//               The return value is the first unused draw_order
-//               number, e.g. _draw_order + 3.
-////////////////////////////////////////////////////////////////////
-INLINE int TextNode::
-set_draw_order(int draw_order) {
-  _draw_order = draw_order;
-  invalidate_no_measure();
-  return _draw_order + 3;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_draw_order
-//       Access: Published
-//  Description: Returns the drawing order set with set_draw_order().
-////////////////////////////////////////////////////////////////////
-INLINE int TextNode::
-get_draw_order() const {
-  return _draw_order;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_tab_width
-//       Access: Published
-//  Description: Sets the width of each tab stop, in screen units.  A
-//               tab character embedded in the text will advance the
-//               horizontal position to the next tab stop.
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-set_tab_width(float tab_width) {
-  _tab_width = tab_width;
-  invalidate_with_measure();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_tab_width
-//       Access: Published
-//  Description: Returns the width set via set_tab_width().
-////////////////////////////////////////////////////////////////////
-INLINE float TextNode::
-get_tab_width() const {
-  return _tab_width;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1054,6 +633,427 @@ set_coordinate_system(CoordinateSystem coordinate_system) {
 INLINE CoordinateSystem TextNode::
 get_coordinate_system() const {
   return _coordinate_system;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_font
+//       Access: Published
+//  Description: Sets the font that will be used when making text.  If
+//               this is set to NULL, the default font will be used,
+//               which can be set via set_default_font().
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_font(TextFont *font) {
+  TextProperties::set_font(font);
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::clear_font
+//       Access: Published
+//  Description: Resets the font to the default font.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+clear_font() {
+  TextProperties::clear_font();
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_small_caps
+//       Access: Published
+//  Description: Sets the small_caps flag.  When this is set,
+//               lowercase letters are generated as scaled-down
+//               versions of their uppercase equivalents.  This is
+//               particularly useful to set for fonts that do not have
+//               lowercase letters.
+//
+//               It is also a good idea to set this for a (dynamic)
+//               font that has already implemented lowercase letters
+//               as scaled-down versions of their uppercase
+//               equivalents, since without this flag the texture
+//               memory may needlessly duplicate equivalent glyphs for
+//               upper and lowercase letters.  Setting this flag
+//               causes the texture memory to share the mixed-case
+//               letters.
+//
+//               The amount by which the lowercase letters are scaled
+//               is specified by set_small_caps_scale().
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_small_caps(bool small_caps) {
+  TextProperties::set_small_caps(small_caps);
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::clear_small_caps
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+clear_small_caps() {
+  TextProperties::clear_small_caps();
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_small_caps_scale
+//       Access: Published
+//  Description: Sets the scale factor applied to lowercase letters
+//               from their uppercase equivalents, when the small_caps
+//               flag is in effect.  See set_small_caps().  Normally,
+//               this will be a number less than one.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_small_caps_scale(float small_caps_scale) {
+  TextProperties::set_small_caps_scale(small_caps_scale);
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::clear_small_caps_scale
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+clear_small_caps_scale() {
+  TextProperties::clear_small_caps_scale();
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_slant
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_slant(float slant) {
+  TextProperties::set_slant(slant);
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::clear_slant
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+clear_slant() {
+  TextProperties::clear_slant();
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_align
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_align(TextNode::Alignment align_type) {
+  TextProperties::set_align(align_type);
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::clear_align
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+clear_align() {
+  TextProperties::clear_align();
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_indent
+//       Access: Published
+//  Description: Specifies the amount of extra space that is inserted
+//               before the first character of each line.  This can be
+//               thought of as a left margin.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_indent(float indent) {
+  TextProperties::set_indent(indent);
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::clear_indent
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+clear_indent() {
+  TextProperties::clear_indent();
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_wordwrap
+//       Access: Published
+//  Description: Sets the text up to automatically wordwrap when it
+//               exceeds the indicated width.  This can be thought of
+//               as a right margin or margin width.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_wordwrap(float wordwrap) {
+  TextProperties::set_wordwrap(wordwrap);
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::clear_wordwrap
+//       Access: Published
+//  Description: Removes the wordwrap setting from the TextNode.  Text
+//               will be as wide as it is.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+clear_wordwrap() {
+  TextProperties::clear_wordwrap();
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_text_color
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_text_color(const Colorf &text_color) {
+  TextProperties::set_text_color(text_color);
+  invalidate_no_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_text_color
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_text_color(float r, float g, float b, float a) {
+  set_text_color(Colorf(r, g, b, a));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::clear_text_color
+//       Access: Published
+//  Description: Removes the text color specification; the text will
+//               be colored whatever it was in the source font file.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+clear_text_color() {
+  TextProperties::clear_text_color();
+  invalidate_no_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_shadow_color
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_shadow_color(float r, float g, float b, float a) {
+  set_shadow_color(Colorf(r, g, b, a));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_shadow_color
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_shadow_color(const Colorf &shadow_color) {
+  TextProperties::set_shadow_color(shadow_color);
+  invalidate_no_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::clear_shadow_color
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+clear_shadow_color() {
+  TextProperties::clear_shadow_color();
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_shadow
+//       Access: Published
+//  Description: Specifies that the text should be drawn with a
+//               shadow, by creating a second copy of the text and
+//               offsetting it slightly behind the first.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_shadow(float xoffset, float yoffset) {
+  set_shadow(LVecBase2f(xoffset, yoffset));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_shadow
+//       Access: Published
+//  Description: Specifies that the text should be drawn with a
+//               shadow, by creating a second copy of the text and
+//               offsetting it slightly behind the first.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_shadow(const LVecBase2f &shadow_offset) {
+  TextProperties::set_shadow(shadow_offset);
+  invalidate_no_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::clear_shadow
+//       Access: Published
+//  Description: Specifies that a shadow will not be drawn behind the
+//               text.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+clear_shadow() {
+  TextProperties::clear_shadow();
+  invalidate_no_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_bin
+//       Access: Published
+//  Description: Names the GeomBin that the TextNode geometry should
+//               be assigned to.  If this is set, then a
+//               GeomBinTransition will be created to explicitly place
+//               each component in the named bin.
+//
+//               The draw_order value will also be passed to each
+//               GeomBinTransition as appropriate; this is
+//               particularly useful if this names a GeomBinFixed,
+//               e.g. "fixed".
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_bin(const string &bin) {
+  TextProperties::set_bin(bin);
+  invalidate_no_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::clear_bin
+//       Access: Published
+//  Description: Removes the effect of a previous call to
+//               set_bin().  Text will be drawn in whatever bin
+//               it would like to be drawn in, with no explicit
+//               ordering.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+clear_bin() {
+  TextProperties::clear_bin();
+  invalidate_no_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_draw_order
+//       Access: Published
+//  Description: Sets the drawing order of text created by the
+//               TextMaker.  This is actually the draw order of the
+//               card and frame.  The shadow is drawn at
+//               _draw_order+1, and the text at _draw_order+2.
+//
+//               This affects the sorting order assigned to the arcs
+//               as they are created, and also is passed to whatever
+//               bin may be assigned via set_bin().
+//
+//               The return value is the first unused draw_order
+//               number, e.g. _draw_order + 3.
+////////////////////////////////////////////////////////////////////
+INLINE int TextNode::
+set_draw_order(int draw_order) {
+  invalidate_no_measure();
+  return TextProperties::set_draw_order(draw_order);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::clear_draw_order
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+clear_draw_order() {
+  TextProperties::clear_draw_order();
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_tab_width
+//       Access: Published
+//  Description: Sets the width of each tab stop, in screen units.  A
+//               tab character embedded in the text will advance the
+//               horizontal position to the next tab stop.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_tab_width(float tab_width) {
+  TextProperties::set_tab_width(tab_width);
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::clear_tab_width
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+clear_tab_width() {
+  TextProperties::clear_tab_width();
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_glyph_scale
+//       Access: Published
+//  Description: Specifies the factor by which to scale each letter of
+//               the text as it is placed.  This can be used (possibly
+//               in conjunction with set_glyph_shift()) to implement
+//               superscripting or subscripting.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_glyph_scale(float glyph_scale) {
+  TextProperties::set_glyph_scale(glyph_scale);
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::clear_glyph_scale
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+clear_glyph_scale() {
+  TextProperties::clear_glyph_scale();
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_glyph_shift
+//       Access: Published
+//  Description: Specifies a vertical amount to shift each letter of
+//               the text as it is placed.  This can be used (possibly
+//               in conjunction with set_glyph_scale()) to implement
+//               superscripting or subscripting.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_glyph_shift(float glyph_shift) {
+  TextProperties::set_glyph_shift(glyph_shift);
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::clear_glyph_shift
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+clear_glyph_shift() {
+  TextProperties::clear_glyph_shift();
+  invalidate_with_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1121,16 +1121,16 @@ append_unicode_char(int character) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::calc_width
-//       Access: Published
-//  Description: Returns the width of a single character of the font,
-//               or 0.0 if the character is not known.  This may be a
-//               wide character (greater than 255).
+//     Function: TextNode::get_wordwrapped_text
+//       Access: Public
+//  Description: Returns a string that represents the contents of the
+//               text, as it has been formatted by wordwrap rules.
+//               This will not contain any embedded special characters
+//               like \1 or \3.
 ////////////////////////////////////////////////////////////////////
-INLINE float TextNode::
-calc_width(int character) const {
-  nassertr(_font != (TextFont *)NULL, 0.0);
-  return _font->calc_width(character);
+INLINE string TextNode::
+get_wordwrapped_text() const {
+  return encode_wtext(get_wordwrapped_wtext());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1142,8 +1142,7 @@ calc_width(int character) const {
 ////////////////////////////////////////////////////////////////////
 INLINE float TextNode::
 calc_width(const string &line) const {
-  nassertr(_font != (TextFont *)NULL, 0.0);
-  return _font->calc_width(decode_text(line));
+  return calc_width(decode_text(line));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1156,7 +1155,7 @@ calc_width(const string &line) const {
 INLINE float TextNode::
 get_left() const {
   check_measure();
-  return _ul2d[0];
+  return _assembler.get_ul()[0];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1169,7 +1168,7 @@ get_left() const {
 INLINE float TextNode::
 get_right() const {
   check_measure();
-  return _lr2d[0];
+  return _assembler.get_lr()[0];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1182,7 +1181,7 @@ get_right() const {
 INLINE float TextNode::
 get_bottom() const {
   check_measure();
-  return _lr2d[1];
+  return _assembler.get_lr()[1];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1195,7 +1194,7 @@ get_bottom() const {
 INLINE float TextNode::
 get_top() const {
   check_measure();
-  return _ul2d[1];
+  return _assembler.get_ul()[1];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1207,7 +1206,7 @@ get_top() const {
 INLINE float TextNode::
 get_height() const {
   check_measure();
-  return _ul2d[1] - _lr2d[1];
+  return _assembler.get_ul()[1] - _assembler.get_lr()[1];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1219,7 +1218,7 @@ get_height() const {
 INLINE float TextNode::
 get_width() const {
   check_measure();
-  return _lr2d[0] - _ul2d[0];
+  return _assembler.get_lr()[0] - _assembler.get_ul()[0];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1258,7 +1257,7 @@ get_lower_right_3d() const {
 INLINE int TextNode::
 get_num_rows() const {
   check_measure();
-  return _num_rows;
+  return _assembler.get_num_rows();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1316,32 +1315,17 @@ append_wtext(const wstring &wtext) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::calc_width
+//     Function: TextNode::get_wordwrapped_wtext
 //       Access: Public
-//  Description: Returns the width of a line of text of arbitrary
-//               characters.  The line should not include the newline
-//               character.
-////////////////////////////////////////////////////////////////////
-INLINE float TextNode::
-calc_width(const wstring &line) const {
-  nassertr(_font != (TextFont *)NULL, 0.0);
-  return _font->calc_width(line);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::wordwrap_to
-//       Access: Public
-//  Description: Inserts newlines into the given text at the
-//               appropriate places in order to make each line be the
-//               longest possible line that is not longer than
-//               wordwrap_width (and does not break any words, if
-//               possible).  Returns the new string.
+//  Description: Returns a wstring that represents the contents of the
+//               text, as it has been formatted by wordwrap rules.
+//               This will not contain any embedded special characters
+//               like \1 or \3.
 ////////////////////////////////////////////////////////////////////
 INLINE wstring TextNode::
-wordwrap_to(const wstring &wtext, float wordwrap_width,
-            bool preserve_trailing_whitespace) const {
-  nassertr(_font != (TextFont *)NULL, wtext);
-  return _font->wordwrap_to(wtext, wordwrap_width, preserve_trailing_whitespace);
+get_wordwrapped_wtext() const {
+  check_measure();
+  return _assembler.get_wordwrapped_wtext();
 }
 
 ////////////////////////////////////////////////////////////////////

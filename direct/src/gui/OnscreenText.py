@@ -157,8 +157,6 @@ class OnscreenText(PandaObject, NodePath):
         if font == None:
             font = DirectGuiGlobals.getDefaultFont()
         
-        # Freeze the node while we set all the properties
-        textNode.freeze()
         textNode.setFont(font)
         textNode.setTextColor(fg[0], fg[1], fg[2], fg[3])
         textNode.setAlign(align)
@@ -202,12 +200,9 @@ class OnscreenText(PandaObject, NodePath):
             self.mayChange = mayChange
 
         # Ok, now update the node.
-        if self.mayChange:
-            # If we might change the text later, we have to keep the
-            # TextNode around.
-            textNode.thaw()
-        else:
-            # Otherwise, we can throw it away.
+        if not self.mayChange:
+            # If we aren't going to change the text later, we can
+            # throw away the TextNode.
             self.textNode = textNode.generate()
         
         self.isClean = 0
@@ -225,10 +220,10 @@ class OnscreenText(PandaObject, NodePath):
         self.cleanup()
 
     def freeze(self):
-        self.textNode.freeze()
+        pass
 
     def thaw(self):
-        self.textNode.thaw()
+        pass
 
     # Allow changing of several of the parameters after the text has
     # been created.  These should be used with caution; it is better
@@ -236,9 +231,6 @@ class OnscreenText(PandaObject, NodePath):
     # primarily intended for interactive placement of the initial
     # text, and for those rare occasions when you actually want to
     # change a text's property after it has been created.
-
-    # If you need to change several properties at the same time at
-    # runtime, you should call freeze() first and thaw() afterward.
 
 
     def setFont(self, font):
@@ -321,7 +313,6 @@ class OnscreenText(PandaObject, NodePath):
         self.textNode.setTextColor(fg[0], fg[1], fg[2], fg[3])
 
     def setBg(self, bg):
-        self.textNode.freeze()
         if bg[3] != 0:
             # If we have a background color, create a card.
             self.textNode.setCardColor(bg[0], bg[1], bg[2], bg[3])
@@ -329,10 +320,8 @@ class OnscreenText(PandaObject, NodePath):
         else:
             # Otherwise, remove the card.
             self.textNode.clearCard()
-        self.textNode.thaw()
 
     def setShadow(self, shadow):
-        self.textNode.freeze()
         if shadow[3] != 0:
             # If we have a shadow color, create a shadow.
             self.textNode.setShadowColor(shadow[0], shadow[1], shadow[2], shadow[3])
@@ -340,10 +329,8 @@ class OnscreenText(PandaObject, NodePath):
         else:
             # Otherwise, remove the shadow.
             self.textNode.clearShadow()
-        self.textNode.thaw()
 
     def setFrame(self, frame):
-        self.textNode.freeze()
         if frame[3] != 0:
             # If we have a frame color, create a frame.
             self.textNode.setFrameColor(frame[0], frame[1], frame[2], frame[3])
@@ -351,15 +338,12 @@ class OnscreenText(PandaObject, NodePath):
         else:
             # Otherwise, remove the frame.
             self.textNode.clearFrame()
-        self.textNode.thaw()
 
     def configure(self, option=None, **kw):
         # These is for compatability with DirectGui functions
         if not self.mayChange:
             print 'OnscreenText.configure: mayChange == 0'
             return
-        # Freeze text node prior to making changes
-        self.freeze()
         for option, value in kw.items():
             # Use option string to access setter function
             try:
@@ -371,7 +355,6 @@ class OnscreenText(PandaObject, NodePath):
                     setter(value)
             except AttributeError:
                 print 'OnscreenText.configure: invalid option:', option
-        self.thaw()
 
     # Allow index style references
     def __setitem__(self, key, value):

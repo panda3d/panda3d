@@ -53,15 +53,9 @@ PUBLISHED:
   INLINE float get_space_advance() const;
   INLINE void set_space_advance(float space_advance);
 
-  float calc_width(int character);
-  float calc_width(const string &line);
-  string wordwrap_to(const string &text, float wordwrap_width,
-                     bool preserve_trailing_whitespace);
-
   virtual void write(ostream &out, int indent_level) const;
 
 public:
-  float calc_width(const wstring &line);
   wstring wordwrap_to(const wstring &text, float wordwrap_width,
                      bool preserve_trailing_whitespace);
 
