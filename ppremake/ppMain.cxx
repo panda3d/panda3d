@@ -28,6 +28,16 @@ PPMain(PPScope *global_scope) {
 
   _def_scope = (PPScope *)NULL;
   _defs = (PPCommandFile *)NULL;
+
+  // save current working dir
+  char tmp[1024];
+  string dirpath = getcwd(tmp,sizeof(tmp));
+  size_t slash_pos = dirpath.rfind('/');
+  if (slash_pos == string::npos) {
+     _original_working_dir = dirpath;
+   } else {
+     _original_working_dir = dirpath.substr(slash_pos + 1);
+   }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,11 +76,11 @@ read_source(const string &root) {
     string source_file = trydir + "/" + SOURCE_FILENAME;
     if (access(source_file.c_str(), F_OK) != 0) {
       cerr << "Could not find ppremake package file " << PACKAGE_FILENAME
-	   << ".\n\n"
-	   << "This file should be present in the top of the source directory tree;\n"
-	   << "it defines implementation-specific variables to control the output\n"
-	   << "of ppremake, as well as pointing out the installed location of\n"
-	   << "important ppremake config files.\n\n";
+       << ".\n\n"
+       << "This file should be present in the top of the source directory tree;\n"
+       << "it defines implementation-specific variables to control the output\n"
+       << "of ppremake, as well as pointing out the installed location of\n"
+       << "important ppremake config files.\n\n";
       return false;
     }
     trydir += "/..";
@@ -114,11 +124,11 @@ read_source(const string &root) {
 
   if (_tree.count_source_files() == 0) {
     cerr << "Could not find any source definition files named " << SOURCE_FILENAME
-	 << ".\n\n"
-	 << "A file by this name should be present in each directory of the source\n"
-	 << "hierarchy; it defines the source files and targets that should be\n"
-	 << "built in each directory, as well as the relationships between the\n"
-	 << "directories.\n\n";
+     << ".\n\n"
+     << "A file by this name should be present in each directory of the source\n"
+     << "hierarchy; it defines the source files and targets that should be\n"
+     << "built in each directory, as well as the relationships between the\n"
+     << "directories.\n\n";
     return false;
   }
 
@@ -171,8 +181,9 @@ process_all() {
 //               output the template file indicates.
 ////////////////////////////////////////////////////////////////////
 bool PPMain::
-process(const string &dirname) {
+process(const string &dirnam) {
   string cache_filename = _def_scope->expand_variable("DEPENDENCY_CACHE_FILENAME");
+  string dirname = dirnam;
 
   if (cache_filename.empty()) {
     cerr << "Warning: no definition given for $[DEPENDENCY_CACHE_FILENAME].\n";
@@ -180,6 +191,10 @@ process(const string &dirname) {
     _tree.read_file_dependencies(cache_filename);
   }
 
+  if(dirname == ".") {
+      dirname = _original_working_dir;
+  }
+  
   PPDirectory *dir = _tree.find_dirname(dirname);
   if (dir == (PPDirectory *)NULL) {
     cerr << "Unknown directory: " << dirname << "\n";
@@ -338,7 +353,7 @@ read_global_file() {
   PPCommandFile global(_def_scope);
   if (!global.read_file(global_filename)) {
     cerr << "Error reading global definition file "
-	 << global_filename << ".\n";
+     << global_filename << ".\n";
     return false;
   }
 

@@ -14,7 +14,7 @@ class PPScope;
 class PPCommandFile;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : PPMain
+//   Class : PPMain
 // Description : Handles the toplevel processing in this program:
 //               holds the tree of source files, and all the scopes,
 //               etc.  Generally get the ball rolling.
@@ -51,6 +51,7 @@ private:
   PPScope *_parent_scope;
 
   static string _root;
+  string _original_working_dir;
 };
 
 #endif
