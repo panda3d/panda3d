@@ -56,7 +56,7 @@ private:
   static void register_window_class(HINSTANCE application);
 
   static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-  LONG WINAPI window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+  LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
   HWND _window;
   int _x;

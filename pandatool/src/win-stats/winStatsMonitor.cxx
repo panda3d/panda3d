@@ -348,7 +348,7 @@ create_window() {
 
   _window = 
     CreateWindow(_window_class_name, _window_title.c_str(), window_style,
-                 CW_USEDEFAULT, 0, CW_USEDEFAULT, 0,
+                 CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
                  NULL, _menu_bar, application, 0);
   if (!_window) {
     nout << "Could not create monitor window!\n";
@@ -357,7 +357,8 @@ create_window() {
 
   SetWindowLongPtr(_window, 0, (LONG_PTR)this);
   ShowWindow(_window, SW_SHOWNORMAL);
-  ShowWindow(_window, SW_SHOWNORMAL);
+  SetWindowPos(_window, HWND_TOP, 0, 0, 0, 0, 
+               SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -37,12 +37,18 @@ WinStatsGraph(WinStatsMonitor *monitor, int thread_index) :
   _graph_window = 0;
   _bitmap = 0;
   _bitmap_dc = 0;
+
+  _graph_left = 0;
+  _graph_top = 0;
   _bitmap_xsize = 0;
   _bitmap_ysize = 0;
   _left_margin = 96;
   _right_margin = 32;
   _top_margin = 16;
   _bottom_margin = 8;
+
+  _dark_pen = CreatePen(PS_SOLID, 1, RGB(51, 51, 51));
+  _light_pen = CreatePen(PS_SOLID, 1, RGB(154, 154, 154));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,6 +60,9 @@ WinStatsGraph::
 ~WinStatsGraph() {
   _monitor = (WinStatsMonitor *)NULL;
   release_bitmap();
+
+  DeleteObject(_dark_pen);
+  DeleteObject(_light_pen);
   
   Brushes::iterator bi;
   for (bi = _brushes.begin(); bi != _brushes.end(); ++bi) {
@@ -205,7 +214,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
   case WM_SIZE:
     move_label_stack();
-    InvalidateRect(hwnd, NULL, FALSE);
+    InvalidateRect(hwnd, NULL, TRUE);
     break;
 
   case WM_PAINT:
@@ -237,6 +246,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         }
       }
 
+      additional_window_paint(hdc);
+
       EndPaint(hwnd, &ps);
       return 0;
     }
@@ -246,6 +257,53 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   }
 
   return DefWindowProc(hwnd, msg, wparam, lparam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::graph_window_proc
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+LONG WinStatsGraph::
+graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+  switch (msg) {
+  case WM_DISPLAYCHANGE:
+    setup_bitmap(_bitmap_xsize, _bitmap_ysize);
+    force_redraw();
+    break;
+
+  case WM_PAINT:
+    {
+      // Repaint the graph by copying the backing pixmap in.
+      PAINTSTRUCT ps;
+      HDC hdc = BeginPaint(hwnd, &ps);
+
+      BitBlt(hdc, 0, 0, 
+             _bitmap_xsize, _bitmap_ysize,
+             _bitmap_dc, 0, 0,
+             SRCCOPY);
+
+      EndPaint(hwnd, &ps);
+      return 0;
+    }
+
+  default:
+    break;
+  }
+
+  return DefWindowProc(hwnd, msg, wparam, lparam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::additional_window_paint
+//       Access: Protected, Virtual
+//  Description: This is called during the servicing of WM_PAINT; it
+//               gives a derived class opportunity to do some further
+//               painting into the window (the outer window, not the
+//               graph window).
+////////////////////////////////////////////////////////////////////
+void WinStatsGraph::
+additional_window_paint(HDC hdc) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -300,8 +358,11 @@ move_graph_window(int graph_left, int graph_top, int graph_xsize, int graph_ysiz
     create_graph_window();
   }
 
+  _graph_left = graph_left;
+  _graph_top = graph_top;
+
   SetWindowPos(_graph_window, 0, 
-               graph_left, graph_top,
+               _graph_left, _graph_top,
                graph_xsize, graph_ysize,
                SWP_NOZORDER | SWP_SHOWWINDOW);
 
@@ -386,39 +447,4 @@ static_graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   } else {
     return DefWindowProc(hwnd, msg, wparam, lparam);
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::graph_window_proc
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
-LONG WinStatsGraph::
-graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-  switch (msg) {
-  case WM_DISPLAYCHANGE:
-    setup_bitmap(_bitmap_xsize, _bitmap_ysize);
-    force_redraw();
-    break;
-
-  case WM_PAINT:
-    {
-      // Repaint the graph by copying the backing pixmap in.
-      PAINTSTRUCT ps;
-      HDC hdc = BeginPaint(hwnd, &ps);
-
-      BitBlt(hdc, 0, 0, 
-             _bitmap_xsize, _bitmap_ysize,
-             _bitmap_dc, 0, 0,
-             SRCCOPY);
-
-      EndPaint(hwnd, &ps);
-      return 0;
-    }
-
-  default:
-    break;
-  }
-
-  return DefWindowProc(hwnd, msg, wparam, lparam);
 }

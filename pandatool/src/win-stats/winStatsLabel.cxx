@@ -96,7 +96,7 @@ setup(HWND parent_window) {
   create_window(parent_window);
 
   HDC hdc = GetDC(_window);
-  HGDIOBJ hfnt = GetStockObject(ANSI_VAR_FONT); 
+  HFONT hfnt = (HFONT)GetStockObject(ANSI_VAR_FONT); 
   SelectObject(hdc, hfnt);
 
   SIZE size;
@@ -268,7 +268,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       RECT rect = { 0, 0, _width, _height };
       FillRect(hdc, &rect, _bg_brush);
 
-      HGDIOBJ hfnt = GetStockObject(ANSI_VAR_FONT); 
+      HFONT hfnt = (HFONT)GetStockObject(ANSI_VAR_FONT); 
       SelectObject(hdc, hfnt);
       SetTextAlign(hdc, TA_RIGHT | TA_TOP);
 

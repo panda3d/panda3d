@@ -18,6 +18,7 @@
 
 #include "winStatsStripChart.h"
 #include "winStatsMonitor.h"
+#include "numeric_types.h"
 
 static const int default_strip_chart_width = 400;
 static const int default_strip_chart_height = 100;
@@ -39,6 +40,8 @@ WinStatsStripChart(WinStatsMonitor *monitor, int thread_index,
   WinStatsGraph(monitor, thread_index)
 {
   _brush_origin = 0;
+  _drag_vscale = false;
+  _drag_vscale_start = 0.0f;
 
   create_window();
   clear_region();
@@ -104,6 +107,22 @@ force_redraw() {
 void WinStatsStripChart::
 changed_graph_size(int graph_xsize, int graph_ysize) {
   PStatStripChart::changed_size(graph_xsize, graph_ysize);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsStripChart::set_vertical_scale
+//       Access: Public
+//  Description: Changes the value the height of the vertical axis
+//               represents.  This may force a redraw.
+////////////////////////////////////////////////////////////////////
+void WinStatsStripChart::
+set_vertical_scale(float value_height) {
+  PStatStripChart::set_vertical_scale(value_height);
+
+  RECT rect;
+  GetClientRect(_window, &rect);
+  rect.left = _right_margin;
+  InvalidateRect(_window, &rect, TRUE);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -233,11 +252,151 @@ draw_cursor(int x) {
 ////////////////////////////////////////////////////////////////////
 void WinStatsStripChart::
 end_draw(int from_x, int to_x) {
+  // Draw in the guide bars.
+  int num_guide_bars = get_num_guide_bars();
+  for (int i = 0; i < num_guide_bars; i++) {
+    const GuideBar &bar = get_guide_bar(i);
+    int y = height_to_pixel(bar._height);
+
+    if (y >= 5) {
+      // Only draw it if it's not too close to the top.
+      if (bar._is_target) {
+        SelectObject(_bitmap_dc, _light_pen);
+      } else {
+        SelectObject(_bitmap_dc, _dark_pen);
+      }
+      MoveToEx(_bitmap_dc, from_x, y, NULL);
+      LineTo(_bitmap_dc, to_x + 1, y);
+    }
+  }
+
   RECT rect = { 
     from_x, 0, to_x + 1, get_ysize() 
   };
   InvalidateRect(_graph_window, &rect, FALSE);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsStripChart::window_proc
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+LONG WinStatsStripChart::
+window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+  /*
+  switch (msg) {
+  default:
+    break;
+    }
+  */
+
+  return WinStatsGraph::window_proc(hwnd, msg, wparam, lparam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsStripChart::graph_window_proc
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+LONG WinStatsStripChart::
+graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+  switch (msg) {
+  case WM_LBUTTONDOWN:
+    {
+      _drag_vscale = true;
+      PN_int16 y = HIWORD(lparam);
+      _drag_vscale_start = pixel_to_height(y);
+      SetCapture(_graph_window);
+    }
+    return 0;
+
+  case WM_MOUSEMOVE: 
+    if (_drag_vscale) {
+      PN_int16 y = HIWORD(lparam);
+      float ratio = 1.0f - ((float)y / (float)get_ysize());
+      if (ratio > 0.0f) {
+        set_vertical_scale(_drag_vscale_start / ratio);
+      }
+      return 0;
+    }
+    break;
+
+  case WM_LBUTTONUP:
+    if (_drag_vscale) {
+      PN_int16 y = HIWORD(lparam);
+      float ratio = 1.0f - ((float)y / (float)get_ysize());
+      if (ratio > 0.0f) {
+        set_vertical_scale(_drag_vscale_start / ratio);
+      }
+      _drag_vscale = false;
+      ReleaseCapture();
+      return 0;
+    }
+    break;
+
+  default:
+    break;
+  }
+
+  return WinStatsGraph::graph_window_proc(hwnd, msg, wparam, lparam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsStripChart::additional_window_paint
+//       Access: Protected, Virtual
+//  Description: This is called during the servicing of WM_PAINT; it
+//               gives a derived class opportunity to do some further
+//               painting into the window (the outer window, not the
+//               graph window).
+////////////////////////////////////////////////////////////////////
+void WinStatsStripChart::
+additional_window_paint(HDC hdc) {
+  HFONT hfnt = (HFONT)GetStockObject(ANSI_VAR_FONT); 
+  SelectObject(hdc, hfnt);
+  SetTextAlign(hdc, TA_LEFT | TA_TOP);
+  SetBkMode(hdc, TRANSPARENT);
+  SetTextColor(hdc, RGB(0, 0, 0));
+
+  RECT rect;
+  GetClientRect(_window, &rect);
+  int x = rect.right - _right_margin + 2;
+  int last_y = -100;
+
+  int num_guide_bars = get_num_guide_bars();
+  for (int i = 0; i < num_guide_bars; i++) {
+    const GuideBar &bar = get_guide_bar(i);
+    last_y = draw_guide_label(hdc, x, bar._height, last_y);
+  }
+
+  draw_guide_label(hdc, x, get_vertical_scale(), last_y);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsStripChart::draw_guide_label
+//       Access: Private
+//  Description: Draws the text for the indicated guide bar label to
+//               the right of the graph, unless it would overlap with
+//               the indicated last label, whose top pixel value is
+//               given.  Returns the top pixel value of the new label.
+////////////////////////////////////////////////////////////////////
+int WinStatsStripChart::
+draw_guide_label(HDC hdc, int x, float value, int last_y) {
+  int y = height_to_pixel(value);
+  string label = format_number(value, get_guide_bar_units(),
+                               get_guide_bar_unit_name());
+  SIZE size;
+  GetTextExtentPoint32(hdc, label.data(), label.length(), &size);
+
+  int this_y = _graph_top + y - size.cy / 2;
+  if (last_y < this_y || last_y > this_y + size.cy) {
+    TextOut(hdc, x, this_y,
+            label.data(), label.length()); 
+    last_y = this_y;
+  }
+
+  return last_y;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WinStatsStripChart::create_window
@@ -331,21 +490,4 @@ static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   } else {
     return DefWindowProc(hwnd, msg, wparam, lparam);
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsStripChart::window_proc
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
-LONG WinStatsStripChart::
-window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-  /*
-  switch (msg) {
-  default:
-    break;
-  }
-  */
-
-  return WinStatsGraph::window_proc(hwnd, msg, wparam, lparam);
 }

@@ -72,7 +72,7 @@ create_toplevel_window(HINSTANCE application) {
 
   HWND toplevel_window = 
     CreateWindow(toplevel_class_name, "PStats", window_style,
-                 CW_USEDEFAULT, 0, CW_USEDEFAULT, 0,
+                 CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
                  NULL, NULL, application, 0);
   if (!toplevel_window) {
     nout << "Could not create toplevel window!\n";

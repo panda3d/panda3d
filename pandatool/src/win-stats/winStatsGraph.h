@@ -51,7 +51,11 @@ protected:
 
   HBRUSH get_collector_brush(int collector_index);
 
-  LONG WINAPI window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+  LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+  virtual LONG graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+
+  virtual void additional_window_paint(HDC hdc);
+
 
 protected:
   // Table of brushes for our various collectors.
@@ -67,9 +71,13 @@ protected:
   HBITMAP _bitmap;
   HDC _bitmap_dc;
 
+  int _graph_left, _graph_top;
   int _bitmap_xsize, _bitmap_ysize;
   int _left_margin, _right_margin;
   int _top_margin, _bottom_margin;
+
+  HPEN _dark_pen;
+  HPEN _light_pen;
 
 private:
   void setup_bitmap(int xsize, int ysize);
@@ -80,7 +88,6 @@ private:
   static void register_graph_window_class(HINSTANCE application);
 
   static LONG WINAPI static_graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-  LONG WINAPI graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
   static bool _graph_window_class_registered;
   static const char * const _graph_window_class_name;

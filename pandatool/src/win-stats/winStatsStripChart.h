@@ -44,6 +44,8 @@ public:
   virtual void force_redraw();
   virtual void changed_graph_size(int graph_xsize, int graph_ysize);
 
+  void set_vertical_scale(float value_height);
+
 protected:
   virtual void update_labels();
 
@@ -54,14 +56,20 @@ protected:
   virtual void draw_cursor(int x);
   virtual void end_draw(int from_x, int to_x);
 
+  LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+  virtual LONG graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+  virtual void additional_window_paint(HDC hdc);
+
 private:
+  int draw_guide_label(HDC hdc, int x, float value, int last_y);
   void create_window();
   static void register_window_class(HINSTANCE application);
 
   static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-  LONG WINAPI window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
   int _brush_origin;
+  bool _drag_vscale;
+  float _drag_vscale_start;
 
   static bool _window_class_registered;
   static const char * const _window_class_name;
