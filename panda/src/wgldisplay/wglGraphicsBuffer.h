@@ -60,11 +60,13 @@ protected:
 
 private:
   bool make_pbuffer(HDC window_dc);
+  int choose_pbuffer_format(HDC twindow_dc, bool draw_to_texture);
 
   static void process_1_event();
 
   HPBUFFERARB _pbuffer;
   HDC _pbuffer_dc;
+  bool _render_texture;
 
 public:
   static TypeHandle get_class_type() {

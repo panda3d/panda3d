@@ -329,6 +329,18 @@ int wglGraphicsPipe::
 try_for_pfnum(HDC hdc, bool hardware, bool software, int frame_buffer_mode,
               int want_depth_bits, int want_color_bits,
               int want_alpha_bits, int want_stencil_bits) {
+  if (wgldisplay_cat.is_debug()) {
+    wgldisplay_cat.debug()
+      << "try_for_pfnum(hdc, hardware = " << hardware
+      << ", software = " << software
+      << ", frame_buffer_mode = 0x" << hex << frame_buffer_mode << dec
+      << ", want_depth_bits = " << want_depth_bits
+      << ", want_color_bits = " << want_color_bits
+      << ", want_alpha_bits = " << want_alpha_bits
+      << ", want_stencil_bits = " << want_stencil_bits
+      << ")\n";
+  }
+
   PIXELFORMATDESCRIPTOR pfd;
   ZeroMemory(&pfd,sizeof(PIXELFORMATDESCRIPTOR));
   pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
@@ -347,16 +359,6 @@ try_for_pfnum(HDC hdc, bool hardware, bool software, int frame_buffer_mode,
     want_flags |= PFD_DOUBLEBUFFER;
     break;
   }
-
-  wgldisplay_cat.debug()
-    << "try_for_pfnum(hdc, hardware = " << hardware
-    << ", software = " << software
-    << ", frame_buffer_mode = 0x" << hex << frame_buffer_mode << dec
-    << ", want_depth_bits = " << want_depth_bits
-    << ", want_color_bits = " << want_color_bits
-    << ", want_alpha_bits = " << want_alpha_bits
-    << ", want_stencil_bits = " << want_stencil_bits
-    << ")\n";
 
   // We have to call DescribePixelFormat() once just to get the
   // highest pfnum available.  Then we can iterate through all of the
@@ -647,6 +649,18 @@ try_for_pfnum_advanced(int orig_pfnum, const wglGraphicsStateGuardian *wglgsg,
                        int want_depth_bits, int want_color_bits,
                        int want_alpha_bits, int want_stencil_bits,
                        int want_multisamples) {
+  if (wgldisplay_cat.is_debug()) {
+    wgldisplay_cat.debug()
+      << "try_for_pfnum_advanced(orig_pfnum = " << orig_pfnum 
+      << ", wglgsg, window_dc, frame_buffer_mode = 0x" << hex << frame_buffer_mode << dec
+      << ", want_depth_bits = " << want_depth_bits
+      << ", want_color_bits = " << want_color_bits
+      << ", want_alpha_bits = " << want_alpha_bits
+      << ", want_stencil_bits = " << want_stencil_bits
+      << ", want_multisamples = " << want_multisamples
+      << ")\n";
+  }
+
   static const int max_attrib_list = 32;
   int iattrib_list[max_attrib_list];
   float fattrib_list[max_attrib_list];
@@ -727,8 +741,8 @@ try_for_pfnum_advanced(int orig_pfnum, const wglGraphicsStateGuardian *wglgsg,
                                         max_pformats, pformat, &nformats) ||
       nformats == 0) {
     if (wgldisplay_cat.is_debug()) {
-      wgldisplay_cat.info()
-        << "Couldn't find a suitable advanced pixel format.\n";
+      wgldisplay_cat.debug()
+        << "No formats meet the criteria.\n";
     }
     return 0;
   }

@@ -46,6 +46,7 @@ wglGraphicsStateGuardian(const FrameBufferProperties &properties,
   _supports_pbuffer = false;
   _supports_pixel_format = false;
   _supports_wgl_multisample = false;
+  _supports_render_texture = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,6 +76,7 @@ reset() {
   _supports_pbuffer = has_extension("WGL_ARB_pbuffer");
   _supports_pixel_format = has_extension("WGL_ARB_pixel_format");
   _supports_wgl_multisample = has_extension("WGL_ARB_multisample");
+  _supports_render_texture = has_extension("WGL_ARB_render_texture");
 
   _wglCreatePbufferARB = 
     (PFNWGLCREATEPBUFFERARBPROC)wglGetProcAddress("wglCreatePbufferARB");
@@ -113,6 +115,23 @@ reset() {
       wgldisplay_cat.error()
         << "Driver claims to support WGL_ARB_pixel_format extension, but does not define all functions.\n";
       _supports_pixel_format = false;
+    }
+  }
+
+  _wglBindTexImageARB = 
+    (PFNWGLBINDTEXIMAGEARBPROC)wglGetProcAddress("wglBindTexImageARB");
+  _wglReleaseTexImageARB = 
+    (PFNWGLRELEASETEXIMAGEARBPROC)wglGetProcAddress("wglReleaseTexImageARB");
+  _wglSetPbufferAttribARB = 
+    (PFNWGLSETPBUFFERATTRIBARBPROC)wglGetProcAddress("wglSetPbufferAttribARB");
+
+  if (_supports_render_texture) {
+    if (_wglBindTexImageARB == NULL ||
+        _wglReleaseTexImageARB == NULL ||
+        _wglSetPbufferAttribARB == NULL) {
+      wgldisplay_cat.error()
+        << "Driver claims to support WGL_ARB_render_texture, but does not define all functions.\n";
+      _supports_render_texture = false;
     }
   }
 }

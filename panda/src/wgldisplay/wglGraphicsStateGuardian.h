@@ -82,7 +82,6 @@ private:
 
 public:
   bool _supports_pbuffer;
-
   PFNWGLCREATEPBUFFERARBPROC _wglCreatePbufferARB;
   PFNWGLGETPBUFFERDCARBPROC _wglGetPbufferDCARB;
   PFNWGLRELEASEPBUFFERDCARBPROC _wglReleasePbufferDCARB;
@@ -90,12 +89,16 @@ public:
   PFNWGLQUERYPBUFFERARBPROC _wglQueryPbufferARB;
 
   bool _supports_pixel_format;
-
   PFNWGLGETPIXELFORMATATTRIBIVARBPROC _wglGetPixelFormatAttribivARB;
   PFNWGLGETPIXELFORMATATTRIBFVARBPROC _wglGetPixelFormatAttribfvARB;
   PFNWGLCHOOSEPIXELFORMATARBPROC _wglChoosePixelFormatARB;
 
   bool _supports_wgl_multisample;
+
+  bool _supports_render_texture;
+  PFNWGLBINDTEXIMAGEARBPROC _wglBindTexImageARB;
+  PFNWGLRELEASETEXIMAGEARBPROC _wglReleaseTexImageARB;
+  PFNWGLSETPBUFFERATTRIBARBPROC _wglSetPbufferAttribARB;
 
 public:
   static TypeHandle get_class_type() {
@@ -113,6 +116,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class wglGraphicsBuffer;
 };
 
 #include "wglGraphicsStateGuardian.I"

@@ -86,6 +86,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class wglGraphicsBuffer;
 };
 
 #include "wglGraphicsPipe.I"
