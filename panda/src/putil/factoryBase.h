@@ -63,6 +63,8 @@ public:
   INLINE TypedObject *make_instance_more_general(const string &type_name,
                                                  const FactoryParams &params);
 
+  TypeHandle find_registered_type(TypeHandle handle);
+
   void register_factory(TypeHandle handle, BaseCreateFunc *func);
 
   int get_num_types() const;

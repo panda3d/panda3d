@@ -30,6 +30,10 @@
 #include "lens.h"
 #include "geomLine.h"
 #include "geometricBoundingVolume.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 
 #include "geomNode.h"
 #include "lensNode.h"
@@ -240,4 +244,62 @@ fill_viz_geom() {
   segment->set_num_prims(1);
 
   _viz_geom->add_geom(segment, get_other_viz_state());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSegment::register_with_read_factory
+//       Access: Public, Static
+//  Description: Tells the BamReader how to create objects of type
+//               CollisionSegment.
+////////////////////////////////////////////////////////////////////
+void CollisionSegment::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSegment::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void CollisionSegment::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  CollisionSolid::write_datagram(manager, dg);
+  _a.write_datagram(dg);
+  _b.write_datagram(dg);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSegment::make_from_bam
+//       Access: Protected, Static
+//  Description: This function is called by the BamReader's factory
+//               when a new object of type CollisionSegment is encountered
+//               in the Bam file.  It should create the CollisionSegment
+//               and extract its information from the file.
+////////////////////////////////////////////////////////////////////
+TypedWritable *CollisionSegment::
+make_from_bam(const FactoryParams &params) {
+  CollisionSegment *node = new CollisionSegment();
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  node->fillin(scan, manager);
+
+  return node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSegment::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new CollisionSegment.
+////////////////////////////////////////////////////////////////////
+void CollisionSegment::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  CollisionSolid::fillin(scan, manager);
+  _a.read_datagram(scan);
+  _b.read_datagram(scan);
 }

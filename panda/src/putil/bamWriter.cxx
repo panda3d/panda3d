@@ -16,12 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
-#include <notify.h>
+#include "pandabase.h"
+#include "notify.h"
 
 #include "config_util.h"
 #include "bam.h"
 #include "bamWriter.h"
+#include "bamReader.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamWriter::Constructor
@@ -128,6 +129,20 @@ write_object(const TypedWritable *object) {
 
       TypeHandle type = object->get_type();
       nassertr(type != TypeHandle::none(), false);
+
+      // Determine what the nearest kind of type is that the reader
+      // will be able to handle, and write that instead.
+      TypeHandle registered_type = 
+        BamReader::get_factory()->find_registered_type(type);
+      if (registered_type == TypeHandle::none()) {
+        // We won't be able to read this type again.
+        util_cat.warning()
+          << "Objects of type " << type << " cannot be read; bam file is invalid.\n";
+      } else if (registered_type != type) {
+        util_cat.info()
+          << "Writing " << registered_type << " instead of " << type << "\n";
+        type = registered_type;
+      }
 
       write_handle(dg, type);
       dg.add_uint16(object_id);
@@ -358,7 +373,15 @@ enqueue_object(const TypedWritable *object) {
   // No object should ever be written out that is not registered as a
   // child of TypedWritable.  The only way this can happen is if
   // someone failed to initialize their type correctly in init_type().
-  nassertr(object->is_of_type(TypedWritable::get_class_type()), 0);
+#ifndef NDEBUG
+  if (!object->is_of_type(TypedWritable::get_class_type())) {
+    util_cat.error()
+      << "Type " << object->get_type() 
+      << " does not indicate inheritance from TypedWritable.\n"
+      << "(this is almost certainly an oversight in " << object->get_type()
+      << "::init_type().)\n";
+  }
+#endif
 
   // We need to assign a unique index number to every object we write
   // out.  Has this object been assigned a number yet?

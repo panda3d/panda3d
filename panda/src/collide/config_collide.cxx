@@ -93,5 +93,7 @@ init_libcollide() {
   qpCollisionNode::register_with_read_factory();
   CollisionPlane::register_with_read_factory();
   CollisionPolygon::register_with_read_factory();
+  CollisionRay::register_with_read_factory();
+  CollisionSegment::register_with_read_factory();
   CollisionSphere::register_with_read_factory();
 }

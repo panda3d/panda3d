@@ -123,9 +123,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedReferenceCount::init_type();
+    PandaNode::init_type();
     register_type(_type_handle, "qpFog",
-                  TypedReferenceCount::get_class_type());
+                  PandaNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

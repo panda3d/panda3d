@@ -100,6 +100,9 @@ register_with_read_factory() {
 void qpLensNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
+
+  // We should actually write out the lens.  Easy to do, but not
+  // immediately pressing; I hope no one gets burned by the omission.
 }
 
 ////////////////////////////////////////////////////////////////////

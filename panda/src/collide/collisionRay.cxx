@@ -28,6 +28,10 @@
 #include "boundingLine.h"
 #include "qplensNode.h"
 #include "lens.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 
 #include "lensNode.h"
 #include "geomNode.h"
@@ -258,4 +262,62 @@ fill_viz_geom() {
   ray->set_num_prims(1);
 
   _viz_geom->add_geom(ray, get_other_viz_state());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionRay::register_with_read_factory
+//       Access: Public, Static
+//  Description: Tells the BamReader how to create objects of type
+//               CollisionRay.
+////////////////////////////////////////////////////////////////////
+void CollisionRay::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionRay::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void CollisionRay::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  CollisionSolid::write_datagram(manager, dg);
+  _origin.write_datagram(dg);
+  _direction.write_datagram(dg);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionRay::make_from_bam
+//       Access: Protected, Static
+//  Description: This function is called by the BamReader's factory
+//               when a new object of type CollisionRay is encountered
+//               in the Bam file.  It should create the CollisionRay
+//               and extract its information from the file.
+////////////////////////////////////////////////////////////////////
+TypedWritable *CollisionRay::
+make_from_bam(const FactoryParams &params) {
+  CollisionRay *node = new CollisionRay();
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  node->fillin(scan, manager);
+
+  return node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionRay::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new CollisionRay.
+////////////////////////////////////////////////////////////////////
+void CollisionRay::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  CollisionSolid::fillin(scan, manager);
+  _origin.read_datagram(scan);
+  _direction.read_datagram(scan);
 }

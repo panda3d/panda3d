@@ -1821,6 +1821,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
+  TypedWritable::write_datagram(manager, dg);
   dg.add_string(get_name());
 
   manager->write_cdata(dg, _cycler);

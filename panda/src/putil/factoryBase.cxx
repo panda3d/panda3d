@@ -80,15 +80,19 @@ make_instance(TypeHandle handle, const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 TypedObject *FactoryBase::
 make_instance_more_general(TypeHandle handle, const FactoryParams &params) {
-  // Walk up the left side of the inheritance tree until we find
-  // something we know about.
   TypedObject *object = make_instance_exact(handle, params);
-  while (object == (TypedObject *)NULL) {
+
+  if (object == (TypedObject *)NULL) {
+    // Recursively search through the entire inheritance tree until we
+    // find something we know about.
     if (handle.get_num_parent_classes() == 0) {
       return NULL;
     }
-    handle = handle.get_parent_class(0);
-    object = make_instance_exact(handle, params);
+
+    int num_parents = handle.get_num_parent_classes();
+    for (int i = 0; i < num_parents && object == (TypedObject *)NULL; i++) {
+      object = make_instance_more_general(handle.get_parent_class(i), params);
+    }
   }
 
   if (util_cat.is_debug()) {
@@ -105,6 +109,41 @@ make_instance_more_general(TypeHandle handle, const FactoryParams &params) {
   return object;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: FactoryBase::find_registered_type
+//       Access: Public
+//  Description: Returns the TypeHandle given, if it is a registered
+//               type, or if it is not registered, searches for the
+//               nearest ancestor of the indicated type that is
+//               registered and returns it.  If no ancestor of the
+//               indicated type is registered, returns
+//               TypeHandle::none().
+////////////////////////////////////////////////////////////////////
+TypeHandle FactoryBase::
+find_registered_type(TypeHandle handle) {
+  Creators::const_iterator ci = _creators.find(handle);
+  if (ci != _creators.end()) {
+    // This type is registered.
+    return handle;
+  }
+
+  // Recursively search through the entire inheritance tree until we
+  // find something we know about.
+  if (handle.get_num_parent_classes() == 0) {
+    return TypeHandle::none();
+  }
+
+  int num_parents = handle.get_num_parent_classes();
+  for (int i = 0; i < num_parents; i++) {
+    TypeHandle result = find_registered_type(handle.get_parent_class(i));
+    if (result != TypeHandle::none()) {
+      return result;
+    }
+  }
+
+  // No known types.
+  return TypeHandle::none();
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FactoryBase::register_factory
