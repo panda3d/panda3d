@@ -86,7 +86,7 @@
 #include <mmsystem.h>
 
 // print out simple drawprim stats every few secs
-#define COUNT_DRAWPRIMS
+//#define COUNT_DRAWPRIMS
 
 //#define DISABLE_DECALING
 #define DISABLE_POLYGON_OFFSET_DECALING
