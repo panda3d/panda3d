@@ -841,20 +841,24 @@ def mostDerivedLast(classList):
         return result
     classList.sort(compare)
 
-def weightedChoice(choiceList, rng=random.random):
-    """given a list of (probability,item) pairs, chooses an item based on the
-    probabilities. rng must return 0..1"""
-    sum = 0.
-    for prob, item in choiceList:
-        sum += prob
+def weightedChoice(choiceList, rng=random.random, sum=None):
+    """given a list of (weight,item) pairs, chooses an item based on the
+    weights. rng must return 0..1. if you happen to have the sum of the
+    weights, pass it in 'sum'."""
+    if sum is None:
+        sum = 0.
+        for weight, item in choiceList:
+            sum += weight
+
     rand = rng()
     accum = rand * sum
-    for prob, item in choiceList:
-        accum -= prob
+    for weight, item in choiceList:
+        accum -= weight
         if accum <= 0.:
             return item
-    # rand must be ~1., and floating-point error prevented accum from
-    # hitting 0. Return the last item.
+    # rand is ~1., and floating-point error prevented accum from hitting 0.
+    # Or you passed in a 'sum' that was was too large.
+    # Return the last item.
     return item
 
 def randFloat(a, b, rng=random.random):

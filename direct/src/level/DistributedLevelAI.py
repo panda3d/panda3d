@@ -6,8 +6,7 @@ import DistributedObjectAI
 import Level
 import DirectNotifyGlobal
 import EntityCreatorAI
-import WeightedChoice
-from PythonUtil import Functor
+from PythonUtil import Functor, weightedChoice
 
 class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
                          Level.Level):
@@ -74,8 +73,7 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         # make list of lists: [(weight, scenarioIndex), ...]
         lol = zip([1] * levelSpec.getNumScenarios(),
                   range(levelSpec.getNumScenarios()))
-        wc = WeightedChoice.WeightedChoice(lol)
-        scenarioIndex = wc.choose()[1]
+        scenarioIndex = weightedChoice(lol)
 
         Level.Level.initializeLevel(self, self.doId, levelSpec, scenarioIndex)
 

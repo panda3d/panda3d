@@ -1,6 +1,11 @@
 
 import random
 
+# DCR: I added a weightedChoice() function to PythonUtil that supports
+# floating-point weights and is intended for one-shot choices. It
+# has an optional 'sum' argument that you can pass in if you know the
+# sum of the weights and want to make repeated choices.
+
 class WeightedChoice:
     def __init__(self, listOfLists, weightIndex=0):
         t=0
