@@ -1843,7 +1843,7 @@ replay_forscopes(const string &name) {
   // Extract out the scope names from the #forscopes .. #end name.  This
   // is a space-delimited list of scope names.
   vector<string> words;
-  tokenize_whitespace(name, words);
+  tokenize_whitespace(_scope->expand_string(name), words);
 
   // Now build up the list of scopes with these names.
   PPNamedScopes::Scopes scopes;
