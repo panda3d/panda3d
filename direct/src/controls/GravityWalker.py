@@ -26,7 +26,7 @@ class GravityWalker(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory("GravityWalker")
     wantDebugIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
     wantFloorSphere = base.config.GetBool('want-floor-sphere', 0)
-    
+
     # special methods
     def __init__(self, gravity = -32.1740, standableGround=0.707,
             hardLandingForce=16.0):
@@ -35,7 +35,7 @@ class GravityWalker(DirectObject.DirectObject):
         self.__gravity=gravity
         self.__standableGround=standableGround
         self.__hardLandingForce=hardLandingForce
-        
+
         self.mayJump = 1
         self.jumpDelayTask = None
 
@@ -50,18 +50,18 @@ class GravityWalker(DirectObject.DirectObject):
         self.avatarControlReverseSpeed=0
         self.avatarControlRotateSpeed=0
         self.getAirborneHeight=None
-        
+
         self.priorParent=Vec3(0)
         self.__oldPosDelta=Vec3(0)
         self.__oldDt=0
-        
+
         self.moving=0
         self.speed=0.0
         self.rotationSpeed=0.0
         self.slideSpeed=0.0
         self.vel=Vec3(0.0)
         self.collisionsActive = 0
-        
+
         self.isAirborne = 0
         self.highMark = 0
 
@@ -71,7 +71,7 @@ class GravityWalker(DirectObject.DirectObject):
             self.doLaterTask.remove()
             del self.doLaterTask
         #DirectObject.DirectObject.delete(self)
-    
+
     """
     def spawnTest(self):
         assert self.notify.debugStateCall(self)
@@ -80,7 +80,7 @@ class GravityWalker(DirectObject.DirectObject):
         from pandac.PandaModules import *
         from direct.interval.IntervalGlobal import *
         from toontown.coghq import MovingPlatform
-        
+
         if hasattr(self, "platform"):
             # Remove the prior instantiation:
             self.moveIval.pause()
@@ -89,7 +89,7 @@ class GravityWalker(DirectObject.DirectObject):
             del self.platform
             self.platform2.destroy()
             del self.platform2
-        
+
         model = loader.loadModelCopy('phase_9/models/cogHQ/platform1')
         fakeId = id(self)
         self.platform = MovingPlatform.MovingPlatform()
@@ -292,14 +292,14 @@ class GravityWalker(DirectObject.DirectObject):
             walks under a ledge that is <= floorOffset above the ground (a
             double floor situation), the avatar will step up on to the
             ledge (instantly).
-        
+
         Set up the avatar collisions
         """
         assert self.notify.debugStateCall(self)
-        
+
         assert not avatarNodePath.isEmpty()
         self.avatarNodePath = avatarNodePath
-        
+
         self.cTrav = collisionTraverser
 
         self.setupRay(self.floorBitmask, floorOffset, reach )
@@ -342,14 +342,14 @@ class GravityWalker(DirectObject.DirectObject):
         # del self.pusherFloor
         del self.event
         del self.lifter
-        
+
         del self.getAirborneHeight
 
     def setCollisionsActive(self, active = 1):
         assert self.notify.debugStateCall(self)
         if self.collisionsActive != active:
             self.collisionsActive = active
-            # Each time we change the collision geometry, make one 
+            # Each time we change the collision geometry, make one
             # more pass to ensure we aren't standing in a wall.
             self.oneTimeCollide()
             if active:
@@ -374,11 +374,11 @@ class GravityWalker(DirectObject.DirectObject):
         assert(self.debugPrint("getCollisionsActive() returning=%s"%(
             self.collisionsActive,)))
         return self.collisionsActive
-    
+
     def placeOnFloor(self):
         """
         Make a reasonable effor to place the avatar on the ground.
-        For example, this is useful when switching away from the 
+        For example, this is useful when switching away from the
         current walker.
         """
         assert self.notify.debugStateCall(self)
@@ -426,7 +426,7 @@ class GravityWalker(DirectObject.DirectObject):
         For debug use.
         """
         onScreenDebug.add("w controls", "GravityWalker")
-        
+
         onScreenDebug.add("w airborneHeight", self.lifter.getAirborneHeight())
         onScreenDebug.add("w falling", self.falling)
         onScreenDebug.add("w isOnGround", self.lifter.isOnGround())
@@ -452,18 +452,18 @@ class GravityWalker(DirectObject.DirectObject):
         slide = 0 #hack -- was: inputState.isSet("slide")
         jump = inputState.isSet("jump")
         # Determine what the speeds are based on the buttons:
-        self.speed=(forward and self.avatarControlForwardSpeed or 
+        self.speed=(forward and self.avatarControlForwardSpeed or
                     reverse and -self.avatarControlReverseSpeed)
         #if run and self.speed>0.0:
         #    self.speed*=2.0 #*#
         # Should fSlide be renamed slideButton?
         self.slideSpeed=slide and (
-                (turnLeft and -self.avatarControlForwardSpeed) or 
+                (turnLeft and -self.avatarControlForwardSpeed) or
                 (turnRight and self.avatarControlForwardSpeed))
         self.rotationSpeed=not slide and (
                 (turnLeft and self.avatarControlRotateSpeed) or
                 (turnRight and -self.avatarControlRotateSpeed))
-        
+
         if __debug__:
             debugRunning = inputState.isSet("debugRunning")
             if debugRunning:
@@ -516,7 +516,7 @@ class GravityWalker(DirectObject.DirectObject):
             rotation = dt * self.rotationSpeed
 
             # Take a step in the direction of our previous heading.
-            self.vel=Vec3(Vec3.forward() * distance + 
+            self.vel=Vec3(Vec3.forward() * distance +
                           Vec3.right() * slideDistance)
             if self.vel != Vec3.zero() or self.priorParent != Vec3.zero():
                 if 1:
@@ -561,11 +561,11 @@ class GravityWalker(DirectObject.DirectObject):
         if self.moving or jump:
             messenger.send("avatarMoving")
         return Task.cont
-    
+
     def doDeltaPos(self):
         assert self.notify.debugStateCall(self)
         self.needToDeltaPos = 1
-    
+
     def setPriorParentVector(self):
         assert self.notify.debugStateCall(self)
         if __debug__:
@@ -577,7 +577,7 @@ class GravityWalker(DirectObject.DirectObject):
         if __debug__:
             if self.wantDebugIndicator:
                 onScreenDebug.add("priorParent", self.priorParent.pPrintValues())
-    
+
     def reset(self):
         assert self.notify.debugStateCall(self)
         self.lifter.setVelocity(0.0)
@@ -628,7 +628,7 @@ class GravityWalker(DirectObject.DirectObject):
         if __debug__:
             self.ignore("control-f3") #*#
 
-    
+
     if __debug__:
         def debugPrint(self, message):
             """for debugging"""
