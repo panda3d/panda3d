@@ -158,7 +158,7 @@ INLINE PixelBuffer::
 ////////////////////////////////////////////////////////////////////
 INLINE void PixelBuffer::set_xsize(int size)
 {
-  if (_xsize != size && size > 1) {
+  if (_xsize != size) {
     _xsize = size;
     make_dirty();
   }
@@ -171,7 +171,7 @@ INLINE void PixelBuffer::set_xsize(int size)
 ////////////////////////////////////////////////////////////////////
 INLINE void PixelBuffer::set_ysize(int size)
 {
-  if (_ysize != size && size > 1) {
+  if (_ysize != size) {
     _ysize = size;
     make_dirty();
   }
@@ -184,7 +184,7 @@ INLINE void PixelBuffer::set_ysize(int size)
 ////////////////////////////////////////////////////////////////////
 INLINE void PixelBuffer::set_xorg(int org)
 {
-  if (_xorg != org && org >= 0) {
+  if (_xorg != org) {
     _xorg = org;
     make_dirty();
   }
@@ -197,7 +197,7 @@ INLINE void PixelBuffer::set_xorg(int org)
 ////////////////////////////////////////////////////////////////////
 INLINE void PixelBuffer::set_yorg(int org)
 {
-  if (_yorg != org && org >= 0) {
+  if (_yorg != org) {
     _yorg = org;
     make_dirty();
   }
