@@ -54,21 +54,25 @@ class LevelSpec:
 
         if __dev__:
             if newSpec:
-                # add required entities
+                # add basic required entities
+                import EntityTypes
+                import EntityTypeRegistry
+                etr = EntityTypeRegistry.EntityTypeRegistry(EntityTypes)
+                self.setEntityTypeReg(etr)
 
                 # UberZone
                 entId = LevelConstants.UberZoneEntId
-                self.insertEntity(entId, 'zone', None)
+                self.insertEntity(entId, 'zone')
                 self.doSetAttrib(entId, 'modelZoneNum',
                                  LevelConstants.UberZoneNum)
                 self.doSetAttrib(entId, 'name', 'UberZone')
                 # LevelMgr
                 entId = LevelConstants.LevelMgrEntId
-                self.insertEntity(entId, 'levelMgr', None)
+                self.insertEntity(entId, 'levelMgr')
                 self.doSetAttrib(entId, 'name', 'LevelMgr')
                 # EditMgr
                 entId = LevelConstants.EditMgrEntId
-                self.insertEntity(entId, 'editMgr', None)
+                self.insertEntity(entId, 'editMgr')
                 self.doSetAttrib(entId, 'name', 'EditMgr')
                                        
     def getNumScenarios(self):
@@ -194,7 +198,7 @@ class LevelSpec:
                 # officially changed
                 self.level.handleAttribChange(entId, attrib, value, username)
 
-        def insertEntity(self, entId, entType, parentEntId):
+        def insertEntity(self, entId, entType, parentEntId='unspecified'):
             LevelSpec.notify.info('inserting entity %s (%s)' % (entId, entType))
             assert entId not in self.entId2specDict
             assert self.entTypeReg is not None
@@ -209,7 +213,8 @@ class LevelSpec:
             for name, desc in attribDescs.items():
                 spec[name] = desc.getDefaultValue()
             spec['type'] = entType
-            spec['parentEntId'] = parentEntId
+            if parentEntId != 'unspecified':
+                spec['parentEntId'] = parentEntId
 
             if self.hasLevel():
                 # notify the level
