@@ -44,6 +44,11 @@ DESTROY = 'destroy-'
 PRINT = 'print-'
 ENTER = PGButton.getEnterPrefix()
 EXIT = PGButton.getExitPrefix()
+#WITHIN = PGButton.getWithinPrefix()
+#WITHOUT = PGButton.getWithoutPrefix()
+# Temporary for old pandas
+WITHIN = 'within-'
+WITHOUT = 'without-'
 B1CLICK = PGButton.getClickPrefix() + MouseButton.one().getName() + '-'
 B2CLICK = PGButton.getClickPrefix() + MouseButton.two().getName() + '-'
 B3CLICK = PGButton.getClickPrefix() + MouseButton.three().getName() + '-'
