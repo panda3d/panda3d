@@ -534,16 +534,20 @@ def formatElapsedSeconds(seconds):
     Returns a string of the form "mm:ss" or "hh:mm:ss" or "n days",
     representing the indicated elapsed time in seconds.
     """
+    sign = ''
+    if seconds < 0:
+        seconds = -seconds
+        sign = '-'
     seconds = (int)(seconds)
     hours = (int)(seconds / (60 * 60))
     if hours > 36:
         days = (int)((hours + 12) / 24)
-        return "%d days" % (days)
+        return "%s%d days" % (sign, days)
     
     seconds -= hours * (60 * 60)
     minutes = (int)(seconds / 60)
     seconds -= minutes * 60
     if hours != 0:
-        return "%d:%02d:%02d" % (hours, minutes, seconds)
+        return "%s%d:%02d:%02d" % (sign, hours, minutes, seconds)
     else:
-        return "%d:%02d" % (minutes, seconds)
+        return "%s%d:%02d" % (sign, minutes, seconds)
