@@ -600,7 +600,7 @@ class LevelEditor(NodePath, PandaObject):
                     # First snap selected node path to grid
                     pos = selectedNode.getPos(direct.grid)
                     snapPos = direct.grid.computeSnapPoint(pos)
-                    if self.fPlaneSnap.get():
+                    if self.panel.fPlaneSnap.get():
                         zheight = 0
                     else:
                         zheight = snapPos[2]
