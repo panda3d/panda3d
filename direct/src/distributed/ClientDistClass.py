@@ -26,7 +26,7 @@ class ClientDistClass:
 
         # Import the class, and store the constructor
         try:
-            exec("import " + self.name, moduleGlobals, moduleLocals)
+             exec("import " + self.name, moduleGlobals, moduleLocals)
         except ImportError, e:
             self.notify.warning("Unable to import %s.py: %s" % (self.name, e))
             self.constructor = None
