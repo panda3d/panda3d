@@ -166,11 +166,21 @@ xform(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 activate_region(PGTop *, const LMatrix4f &transform, int sort) {
+  // Transform all four vertices, and get the new bounding box.  This
+  // way the region works (mostly) even if has been rotated.
   LPoint3f ll(_frame[0], 0.0, _frame[2]);
+  LPoint3f lr(_frame[1], 0.0, _frame[2]);
+  LPoint3f ul(_frame[0], 0.0, _frame[3]);
   LPoint3f ur(_frame[1], 0.0, _frame[3]);
   ll = ll * transform;
+  lr = lr * transform;
+  ul = ul * transform;
   ur = ur * transform;
-  _region->set_frame(ll[0], ur[0], ll[2], ur[2]);
+  _region->set_frame(min(min(ll[0], lr[0]), min(ul[0], ur[0])),
+                     max(max(ll[0], lr[0]), max(ul[0], ur[0])),
+                     min(min(ll[2], lr[2]), min(ul[2], ur[2])),
+                     max(max(ll[2], lr[2]), max(ul[2], ur[2])));
+                     
   _region->set_sort(sort);
   _region->set_active(true);
 }
@@ -221,6 +231,28 @@ exit(const MouseWatcherParameter &param) {
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
   throw_event(get_exit_event(),
               EventParameter(ep));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::focus_in
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever the
+//               widget gets the keyboard focus.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+focus_in() {
+  throw_event(get_focus_in_event());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::focus_out
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever the
+//               widget loses the keyboard focus.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+focus_out() {
+  throw_event(get_focus_out_event());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -302,7 +334,10 @@ set_focus(bool focus) {
       }
       _focus_item = this;
     }
-    _flags |= F_focus;
+    if (!get_focus()) {
+      focus_in();
+      _flags |= F_focus;
+    }
 
   } else {
     if (_focus_item == this) {
@@ -310,7 +345,10 @@ set_focus(bool focus) {
       _focus_item = (PGItem *)NULL;
     }
 
-    _flags &= ~F_focus;
+    if (get_focus()) {
+      focus_out();
+      _flags &= ~F_focus;
+    }
   }
   _region->set_keyboard(focus);
 }

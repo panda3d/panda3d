@@ -203,6 +203,36 @@ get_exit_prefix() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_focus_in_prefix
+//       Access: Published, Static
+//  Description: Returns the prefix that is used to define the focus_in
+//               event for all PGItems.  The focus_in event is the
+//               concatenation of this string followed by get_id().
+//
+//               Unlike most item events, this event is thrown with no
+//               parameters.
+////////////////////////////////////////////////////////////////////
+INLINE string PGItem::
+get_focus_in_prefix() {
+  return "fin-";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_focus_out_prefix
+//       Access: Published, Static
+//  Description: Returns the prefix that is used to define the focus_out
+//               event for all PGItems.  The focus_out event is the
+//               concatenation of this string followed by get_id().
+//
+//               Unlike most item events, this event is thrown with no
+//               parameters.
+////////////////////////////////////////////////////////////////////
+INLINE string PGItem::
+get_focus_out_prefix() {
+  return "fout-";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGItem::get_press_prefix
 //       Access: Published, Static
 //  Description: Returns the prefix that is used to define the press
@@ -248,6 +278,28 @@ get_enter_event() const {
 INLINE string PGItem::
 get_exit_event() const {
   return get_exit_prefix() + get_id();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_focus_in_event
+//       Access: Published
+//  Description: Returns the event name that will be thrown when the
+//               item gets the keyboard focus.
+////////////////////////////////////////////////////////////////////
+INLINE string PGItem::
+get_focus_in_event() const {
+  return get_focus_in_prefix() + get_id();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_focus_out_event
+//       Access: Published
+//  Description: Returns the event name that will be thrown when the
+//               item loses the keyboard focus.
+////////////////////////////////////////////////////////////////////
+INLINE string PGItem::
+get_focus_out_event() const {
+  return get_focus_out_prefix() + get_id();
 }
 
 ////////////////////////////////////////////////////////////////////

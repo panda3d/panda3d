@@ -73,6 +73,8 @@ public:
 
   virtual void enter(const MouseWatcherParameter &param);
   virtual void exit(const MouseWatcherParameter &param);
+  virtual void focus_in();
+  virtual void focus_out();
   virtual void press(const MouseWatcherParameter &param);
   virtual void release(const MouseWatcherParameter &param);
 
@@ -106,11 +108,15 @@ PUBLISHED:
 
   INLINE static string get_enter_prefix();
   INLINE static string get_exit_prefix();
+  INLINE static string get_focus_in_prefix();
+  INLINE static string get_focus_out_prefix();
   INLINE static string get_press_prefix();
   INLINE static string get_release_prefix();
 
   INLINE string get_enter_event() const;
   INLINE string get_exit_event() const;
+  INLINE string get_focus_in_event() const;
+  INLINE string get_focus_out_event() const;
   INLINE string get_press_event(const ButtonHandle &button) const;
   INLINE string get_release_event(const ButtonHandle &button) const;
 
