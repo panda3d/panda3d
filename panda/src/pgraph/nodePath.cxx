@@ -2818,7 +2818,7 @@ has_tex_transform(TextureStage *stage) const {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) NodePath::
 get_tex_transform(TextureStage *stage) const {
-  nassertr_always(!is_empty(), false);
+  nassertr_always(!is_empty(), NULL);
 
   const RenderAttrib *attrib =
     node()->get_attrib(TexMatrixAttrib::get_class_type());
