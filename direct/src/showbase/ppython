@@ -61,6 +61,10 @@ if [ "$FOURD" ]; then
     FOURD=`cygpath -w $FOURD`
     export FOURD
 fi
+if [ "$MRM" ]; then
+    MRM=`cygpath -w $MRM`
+    export MRM
+fi
 if [ "$PARALLAX" ]; then
     PARALLAX=`cygpath -w $PARALLAX`
     export PARALLAX
