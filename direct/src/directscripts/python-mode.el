@@ -136,7 +136,7 @@ mode buffer is visited during an Emacs session.  After that, use
 		 (const :tag "JPython" jpython))
   :group 'python)
 
-(defcustom py-python-command-args '("-i")
+(defcustom py-python-command-args '("-i" "-u")
   "*List of string arguments to be used when starting a Python shell."
   :type '(repeat string)
   :group 'python)
@@ -563,7 +563,6 @@ Currently-active file is at the head of the list.")
   ;; VR STUDIO ENHANCEMENTS
   (define-key py-shell-map "\C-d"  'comint-delchar-or-maybe-python-resume)
   (define-key py-shell-map [return] 'comint-interrupt-subjob-or-maybe-return)
-  (define-key py-shell-map [C-return] 'comint-send-input)
   (define-key py-shell-map "\C-c\C-r" 'python-resume)
   (define-key py-shell-map "\C-c\C-s" 'pyd-shell)
   )
@@ -3181,7 +3180,14 @@ These are Python temporary files awaiting execution."
   (interactive "p")
   (let ((proc (get-buffer-process (current-buffer))))
     (if (and (eobp) proc (= (point) (marker-position (process-mark proc))))
-	(comint-interrupt-subjob)
+	(let ((current (point)))
+	  (goto-char (- current 4))
+	  (if (or (search-forward ">>> " current t)
+		  (search-forward "... " current t))
+	      (comint-send-input)
+	    (let ()
+	     (goto-char current)
+	     (comint-interrupt-subjob))))
       (comint-send-input))))
 
 ;; Function to try to resume panda mainloop
