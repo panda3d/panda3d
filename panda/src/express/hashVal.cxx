@@ -61,12 +61,12 @@ input_hex(istream &in) {
   }
 
   if (i != 32) {
-    in.setstate(ios::failbit);
+    in.clear(ios::failbit|in.rdstate());
     return;
   }
 
   if (!in.eof()) {
-    in.unget();
+    in.putback(ch);
   } else {
     in.clear();
   }
