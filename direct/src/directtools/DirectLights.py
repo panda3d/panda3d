@@ -2,6 +2,23 @@ from PandaObject import *
 from DirectGeometry import *
 from string import lower
 
+class DirectLight(NodePath):
+    def __init__(self, light, parent):
+        # Initialize the superclass
+        NodePath.__init__(self)
+        # Record light and name
+        self.light = light
+        self.name = light.getName()
+        # Attach node to self
+        if isinstance(light, Spotlight):
+            self.assign(parent.attachNewNode(light.upcastToProjectionNode()))
+        else:
+            self.assign(parent.attachNewNode(light.upcastToNamedNode()))
+    def getName(self):
+        return self.name
+    def getLight(self):
+        return self.light
+
 class DirectLights(NodePath):
     def __init__(self, parent = None):
         # Initialize the superclass
@@ -14,72 +31,71 @@ class DirectLights(NodePath):
         # Create a light attribute 
         self.la = LightAttribute()
         # Create a list of all active lights
-        self.lightList = []
-        self.nodePathList = []
-        self.nameList = []
+        self.lightDict = {}
         # Counts of the various types of lights
         self.ambientCount = 0
         self.directionalCount = 0
         self.pointCount = 0
         self.spotCount = 0
 
-    def __getitem__(self, index):
-        return self.lightList[index]
+    def __getitem__(self, name):
+        return self.lightDict.get(name, None)
 
     def __len__(self):
-        return len(self.lightList)
+        return len(self.lightDict)
 
-    def getLightNodePath(self, index):
-        return self.nodePathList[index]
+    def delete(self, light):
+        del self.lightDict[light.getName()]
+        self.setOff(light)
+        light.removeNode()
 
-    def getLightName(self, index):
-        return self.nameList[index]
+    def deleteAll(self):
+        for light in self.asList():
+            self.delete(light)
 
+    def asList(self):
+        return map(lambda n, s=self: s[n], self.getNameList())
+
+    def getNameList(self):
+        # Return a sorted list of all lights in the light dict
+        nameList = map(lambda x: x.getName(), self.lightDict.values())
+        nameList.sort()
+        return nameList
+    
     def create(self, type):
         type = type.lower()
         if type == 'ambient':
             self.ambientCount += 1
-            light = AmbientLight('ambient_' + `self.ambientCount`)
+            light = AmbientLight('ambient-' + `self.ambientCount`)
             light.setColor(VBase4(.3,.3,.3,1))
         elif type == 'directional':
             self.directionalCount += 1
-            light = DirectionalLight('directional_' + `self.directionalCount`)
+            light = DirectionalLight('directional-' + `self.directionalCount`)
             light.setColor(VBase4(1))
         elif type == 'point':
             self.pointCount += 1
-            light = PointLight('point_' + `self.pointCount`)
+            light = PointLight('point-' + `self.pointCount`)
             light.setColor(VBase4(1))
         elif type == 'spot':
             self.spotCount += 1
-            light = Spotlight('spot_' + `self.spotCount`)
+            light = Spotlight('spot-' + `self.spotCount`)
             light.setColor(VBase4(1))
         else:
             print 'Invalid light type'
             return None
         # Add the new light
-        self.addLight(light)
+        directLight = DirectLight(light,self)
+        self.lightDict[directLight.getName()] = directLight
         # Turn it on as a default
-        self.setOn(light)
+        self.setOn(directLight)
+        # Send an event to all watching objects
+        messenger.send('DirectLights_addLight', [directLight])
         # Return the new light
-        return light
+        return directLight
 
     def createDefaultLights(self):
         self.create('ambient')
         self.create('directional')
-
-    def addLight(self, light):
-        # Attach node to self
-        if isinstance(light, Spotlight):
-            nodePath = self.attachNewNode(light.upcastToProjectionNode())
-        else:
-            nodePath = self.attachNewNode(light.upcastToNamedNode())
-        name = light.getName()
-        # Store it in the lists
-        self.lightList.append(light)
-        self.nodePathList.append(nodePath)
-        self.nameList.append(name)
-        # Send an event to all watching objects
-        messenger.send('DirectLights_addLight', [light])
 
     def allOn(self):
         """ Turn on all DIRECT lights """
@@ -97,16 +113,12 @@ class DirectLights(NodePath):
         else:
             self.allOn()
 
-    def setOnNum(self, index):
-        self.setOn(self.lightList[index])
+    def setOn(self, directLight):
+        """ setOn(directLight) """
+        self.la.setOn(directLight.getLight().upcastToLight())
 
-    def setOffNum(self, index):
-        self.setOff(self.lightList[index])
-
-    def setOn(self, light):
-        self.la.setOn(light.upcastToLight())
-
-    def setOff(self, light):
-        self.la.setOff(light.upcastToLight())
+    def setOff(self, directLight):
+        """ setOff(directLight)"""
+        self.la.setOff(directLight.getLight().upcastToLight())
 
 

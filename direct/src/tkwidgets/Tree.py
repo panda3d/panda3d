@@ -121,6 +121,7 @@ class TreeNode:
 
     def popupMenuCommand(self):
         self.item.MenuCommand(self.menuList[self.menuVar.get()])
+        self.parent.update()
 
     def expand(self, event=None):
         if not self.item.IsExpandable():

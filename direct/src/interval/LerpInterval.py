@@ -23,9 +23,14 @@ class LerpInterval(Interval):
 	if (event == IVAL_INIT):
 	    self.lerp = Lerp.Lerp(self.functorFunc(), self.duration, 
                                   self.blendType)
-        # Evaluate the lerp if its been created
-        if self.lerp:
-            self.lerp.setT(t)
+        # Make sure lerp exists
+        try:
+            self.lerp
+        except AttributeError:
+	    self.lerp = Lerp.Lerp(self.functorFunc(), self.duration, 
+                                  self.blendType)
+        # Evaluate the lerp
+        self.lerp.setT(t)
 
     def getBlend(self, blendType):
         """__getBlend(self, string)

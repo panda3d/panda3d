@@ -105,8 +105,7 @@ class SceneGraphExplorerItem(TreeItem):
             pass
 
     def GetIconName(self):
-        if not self.IsExpandable():
-            return "sphere2" # XXX wish there was a "file" icon
+        return "sphere2" # XXX wish there was a "file" icon
 
     def IsExpandable(self):
         return self.nodePath.getNumChildren() != 0

@@ -39,7 +39,7 @@ class DirectSessionPanel(AppShell):
         
         # Active light
         if len(direct.lights) > 0:
-            name = direct.lights[0].getName()
+            name = direct.lights.getNameList()[0]
             self.lightMenu.selectitem(name)
             self.selectLightNamed(name)
         else:
@@ -318,7 +318,7 @@ class DirectSessionPanel(AppShell):
         mainSwitchFrame.pack(fill = X, expand = 0)
         
         # Widget to select a light to configure
-        nameList = direct.lights.nameList
+        nameList = direct.lights.getNameList()
         lightMenuFrame = Frame(lightFrame)
         
         self.lightMenu = Pmw.ComboBox(
@@ -769,47 +769,47 @@ class DirectSessionPanel(AppShell):
             
     # Lights #
     def selectLightNamed(self, name):
-        self.activeLight = None
-        for light in direct.lights:
-            if name == light.getName():
-                self.activeLight = light
-                break
+        # See if light exists
+        self.activeLight = direct.lights[name]
+        # If not...create new one
         if self.activeLight == None:
             self.activeLight = direct.lights.create(name)
+        # Do we have a valid light at this point?
         if self.activeLight:
-            if isinstance(self.activeLight, AmbientLight):
+            light = self.activeLight.getLight()
+            if isinstance(light, AmbientLight):
                 self.lightNotebook.selectpage('Ambient')
-            elif isinstance(self.activeLight, DirectionalLight):
+            elif isinstance(light, DirectionalLight):
                 self.lightNotebook.selectpage('Directional')
-            elif isinstance(self.activeLight, PointLight):
+            elif isinstance(light, PointLight):
                 self.lightNotebook.selectpage('Point')
-            elif isinstance(self.activeLight, Spotlight):
+            elif isinstance(light, Spotlight):
                 self.lightNotebook.selectpage('Spot')
         else:
             # Restore valid data
             listbox = self.lightMenu.component('scrolledlist')
-            listbox.setlist(direct.lights.nameList)
+            listbox.setlist(direct.lights.getNameList())
             if len(direct.lights) > 0:
-                self.lightMenu.selectitem(direct.lights[0].getName())
+                self.lightMenu.selectitem(direct.lights.getNameList()[0])
         # Make sure info is current
         self.updateLightInfo()
 
     def addAmbient(self):
-        direct.lights.create('ambient')
+        return direct.lights.create('ambient')
 
     def addDirectional(self):
-        direct.lights.create('directional')
+        return direct.lights.create('directional')
 
     def addPoint(self):
-        direct.lights.create('point')
+        return direct.lights.create('point')
 
     def addSpot(self):
-        direct.lights.create('spot')
-
+        return direct.lights.create('spot')
+        
     def addLight(self, light):
         # Make list reflect current list of lights
         listbox = self.lightMenu.component('scrolledlist')
-        listbox.setlist(direct.lights.nameList)
+        listbox.setlist(direct.lights.getNameList())
         # Select the newly added light
         self.lightMenu.selectitem(light.getName())
         # And show corresponding page
@@ -830,33 +830,33 @@ class DirectSessionPanel(AppShell):
 
     def setLightColor(self, color):
         if self.activeLight:
-            self.activeLight.setColor(Vec4(color[0]/255.0,
-                                           color[1]/255.0,
-                                           color[2]/255.0,
-                                           color[3]/255.0))
+            self.activeLight.getLight().setColor(Vec4(color[0]/255.0,
+                                                      color[1]/255.0,
+                                                      color[2]/255.0,
+                                                      color[3]/255.0))
 
     def setSpecularColor(self, color):
         if self.activeLight:
-            self.activeLight.setSpecular(Vec4(color[0]/255.0,
-                                              color[1]/255.0,
-                                              color[2]/255.0,
-                                              color[3]/255.0))
+            self.activeLight.getLight().setSpecular(Vec4(color[0]/255.0,
+                                                         color[1]/255.0,
+                                                         color[2]/255.0,
+                                                         color[3]/255.0))
 
     def setConstantAttenuation(self, value):
         if self.activeLight:
-            self.activeLight.setConstantAttenuation(value)
+            self.activeLight.getLight().setConstantAttenuation(value)
 
     def setLinearAttenuation(self, value):
         if self.activeLight:
-            self.activeLight.setLinearAttenuation(value)
+            self.activeLight.getLight().setLinearAttenuation(value)
             
     def setQuadraticAttenuation(self, value):
         if self.activeLight:
-            self.activeLight.setQuadraticAttenuation(value)
+            self.activeLight.getLight().setQuadraticAttenuation(value)
 
     def setExponent(self, value):
         if self.activeLight:
-            self.activeLight.setExponent(value)
+            self.activeLight.getLight().setExponent(value)
 
     ## GRID CONTROLS ##
     def toggleGrid(self):
@@ -908,7 +908,7 @@ class DirectSessionPanel(AppShell):
             base.initialState.hasAttribute(LightTransition.getClassType()))
         # Set light specific info
         if self.activeLight:
-            l = self.activeLight
+            l = self.activeLight.getLight()
             self.lightActive.set(direct.lights.la.isOn(l))
             lightColor = l.getColor() * 255.0
             self.lightColor.set([lightColor[0], lightColor[1],
@@ -983,5 +983,7 @@ class DirectSessionPanel(AppShell):
         
     def onDestroy(self, event):
         # Remove hooks
+        print 'here'
         for event, method in self.actionEvents:
             self.ignore(event)
+        print 'there'
