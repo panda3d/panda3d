@@ -87,11 +87,6 @@ initiate(Filename &source_file, const Filename &rel_path) {
   _total_bytes_read = 0;
   _read_all_input = false;
   _handled_all_input = false;
-  //_mfile.reset();
-  if (_mfile != NULL)
-    delete _mfile;
-  _mfile = new Multifile;
-  _buffer_start = _buffer->_buffer;
   return ES_success;
 }
 
@@ -102,12 +97,13 @@ initiate(Filename &source_file, const Filename &rel_path) {
 ////////////////////////////////////////////////////////////////////
 int Extractor::
 run(void) {
-  nassertr(_mfile != NULL, ES_error);
+  if (_mfile == NULL)
+    _mfile = new Multifile;
+
   // See if there is anything left in the source file
   if (_read_all_input == false) {
     _read_stream.read(_buffer->_buffer, _buffer->get_length());
     _source_buffer_length = _read_stream.gcount();
-    _buffer_size = _source_buffer_length;
     _total_bytes_read += _source_buffer_length;
     if (_read_stream.eof()) {
       nassertr(_total_bytes_read == _source_file_length, false);
@@ -115,10 +111,15 @@ run(void) {
     }
   }
 
+  char *buffer_start = _buffer->_buffer;
+  int buffer_size = _source_buffer_length;
+
   // Write to the out file
-  if (_mfile->write(_buffer_start, _buffer_size, _rel_path) == true) {
+  if (_mfile->write(buffer_start, buffer_size, _rel_path) == true) {
     _read_stream.close();
     _source_file.unlink();
+    delete _mfile;
+    _mfile = NULL;
     return ES_success;
   }
   return ES_ok;
