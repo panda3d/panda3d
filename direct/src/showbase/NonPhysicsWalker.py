@@ -57,7 +57,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         # Set up the collision sphere
         # This is a sphere on the ground to detect barrier collisions
         self.cSphere = CollisionSphere(0.0, 0.0, 0.0, avatarRadius)
-        cSphereNode = CollisionNode('cSphereNode')
+        cSphereNode = CollisionNode('NPW.cSphereNode')
         cSphereNode.addSolid(self.cSphere)
         self.cSphereNodePath = avatarNodePath.attachNewNode(cSphereNode)
         self.cSphereBitMask = wallCollideMask
@@ -69,7 +69,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         # This is a ray cast from your head down to detect floor polygons
         # A toon is about 4.0 feet high, so start it there
         self.cRay = CollisionRay(0.0, 0.0, 4.0, 0.0, 0.0, -1.0)
-        cRayNode = CollisionNode('cRayNode')
+        cRayNode = CollisionNode('NPW.cRayNode')
         cRayNode.addSolid(self.cRay)
         self.cRayNodePath = avatarNodePath.attachNewNode(cRayNode)
         self.cRayBitMask = floorCollideMask
@@ -92,12 +92,12 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         # and float above them as we go down. I increased this
         # from 8.0 to 16.0 to prevent this
         self.lifter.setMaxVelocity(16.0)
-
-        # activate the collider with the traverser and pusher
-        self.setCollisionsActive(1)
         
         self.pusher.addCollider(self.cSphereNodePath, avatarNodePath)
         self.lifter.addCollider(self.cRayNodePath, avatarNodePath)
+
+        # activate the collider with the traverser and pusher
+        self.setCollisionsActive(1)
 
     def setAirborneHeightFunc(self, getAirborneHeight):
         self.getAirborneHeight = getAirborneHeight
@@ -130,6 +130,8 @@ class NonPhysicsWalker(DirectObject.DirectObject):
                 # Now that we have disabled collisions, make one more pass
                 # right now to ensure we aren't standing in a wall.
                 self.oneTimeCollide()
+        print "  cTrav.ls()" #*#
+        print self.cTrav #*#
 
     def oneTimeCollide(self):
         """

@@ -119,7 +119,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         # This is a ray cast from your head down to detect floor polygons
         # A toon is about 4.0 feet high, so start it there
         self.cRay = CollisionRay(0.0, 0.0, 4.0, 0.0, 0.0, -1.0)
-        cRayNode = CollisionNode('cRayNode')
+        cRayNode = CollisionNode('PW.cRayNode')
         cRayNode.addSolid(self.cRay)
         self.cRayNodePath = self.avatarNodePath.attachNewNode(cRayNode)
         self.cRayBitMask = floorBitmask
@@ -189,7 +189,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         if self.useHeightRay:
             centerHeight *= 2.0
         self.cSphere = CollisionSphere(0.0, 0.0, centerHeight, avatarRadius)
-        cSphereNode = CollisionNode('cSphereNode')
+        cSphereNode = CollisionNode('PW.cSphereNode')
         cSphereNode.addSolid(self.cSphere)
         self.cSphereNodePath = self.avatarNodePath.attachNewNode(cSphereNode)
         self.cSphereBitMask = bitmask

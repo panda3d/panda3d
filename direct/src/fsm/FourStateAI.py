@@ -137,6 +137,9 @@ class FourStateAI:
 
     def delete(self):
         assert(self.debugPrint("delete()"))
+        if self.doLaterTask is not None:
+            self.doLaterTask.remove()
+            del self.doLaterTask
         del self.states
         del self.fsm
     
