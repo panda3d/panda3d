@@ -203,7 +203,7 @@ dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *pMsg) {
   //  ddsCaps.dwCaps |= DDSCAPS_VIDEOMEMORY; done internally by DX anyway
   
   if(FAILED(  hr = pDD->GetAvailableVidMem(&ddsCaps,&dwTotal,&dwFree))) {
-    wdxdisplay_cat.debug() << "GetAvailableVidMem failed : result = " << ConvD3DErrorToString(hr) << endl;
+    wdxdisplay7_cat.debug() << "GetAvailableVidMem failed : result = " << ConvD3DErrorToString(hr) << endl;
     exit(1);
   }
 
@@ -211,8 +211,8 @@ dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *pMsg) {
   char tmpstr[100],tmpstr2[100];
   sprintf(tmpstr,"%.4g",dwTotal/1000000.0);
   sprintf(tmpstr2,"%.4g",dwFree/1000000.0);
-  if(wdxdisplay_cat.is_debug())
-    wdxdisplay_cat.debug() << "AvailableVidMem before creating "<< pMsg << ",(megs) total: " << tmpstr << "  free:" << tmpstr2 <<endl;
+  if(wdxdisplay7_cat.is_debug())
+    wdxdisplay7_cat.debug() << "AvailableVidMem before creating "<< pMsg << ",(megs) total: " << tmpstr << "  free:" << tmpstr2 <<endl;
 }
 #endif
 

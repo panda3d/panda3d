@@ -1407,6 +1407,7 @@ init_resized_window() {
     //    _props._xorg = client_rect.left;  // _props should reflect view rectangle
     //    _props._yorg = client_rect.top;
 
+    /*
 #ifdef _DEBUG
     // try to make sure GDI and DX agree on window client area size
     // but client rect will not include any offscreen areas, so dont
@@ -1423,6 +1424,7 @@ init_resized_window() {
       assert((RECT_X_SIZE(client_rect) == newWidth) &&
              (RECT_Y_SIZE(client_rect) == newHeight));
 #endif
+    */
   }
 
   //  resized(newWidth, newHeight);  // update panda channel/display rgn info, _props.x_size, _props.y_size
