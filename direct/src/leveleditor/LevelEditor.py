@@ -1,7 +1,7 @@
 import pdb
 from PandaObject import *
 from PieMenu import *
-from OnscreenText import *
+#from OnscreenText import *
 from GuiGlobals import *
 from Tkinter import *
 from DirectGeometry import *
@@ -908,13 +908,6 @@ class LevelEditor(NodePath, PandaObject):
                                     self.getRandomWallWidth())
                 dnaNode.setWidth(self.getCurrent('building_width'))
         
-        # Add the DNA to the active parent
-        self.DNAParent.add(dnaNode)
-        # And create the geometry
-        newNodePath = dnaNode.traverse(self.NPParent, DNASTORE, 1)
-        # Update scene graph explorer
-        # self.panel.sceneGraphExplorer.update()
-        
         # Position it
         # First kill autoposition task so grid can jump to its final
         # destination (part of cleanup
@@ -924,15 +917,26 @@ class LevelEditor(NodePath, PandaObject):
             # If its a prop and a copy, place it based upon current
             # mouse position
             hitPt = self.getGridIntersectionPoint()
-            newNodePath.setPos(direct.grid, hitPt)
+            # Attach a node, so we can set pos with respect to:
+            tempNode=hidden.attachNewNode('tempNode')
+            # Place it:
+            tempNode.setPos(direct.grid, hitPt)
+            # Copy the pos to where we really want it:
+            dnaNode.setPos(tempNode.getPos())
+            # Clean up:
+            tempNode.removeNode()
         else:
             # Place the new node path at the current grid origin
-            newNodePath.setPos(direct.grid,0,0,0)
+            dnaNode.setPos(direct.grid.getPos())
         # Initialize angle to match last object
-        newNodePath.setHpr(self.getLastAngle(), 0, 0)
-        # Now update DNA pos and hpr to reflect final pose
-        dnaNode.setPos(newNodePath.getPos())
-        dnaNode.setHpr(newNodePath.getHpr())
+        dnaNode.setHpr(Vec3(self.getLastAngle(), 0, 0))
+        
+        # Add the DNA to the active parent
+        self.DNAParent.add(dnaNode)
+        # And create the geometry
+        newNodePath = dnaNode.traverse(self.NPParent, DNASTORE, 1)
+        # Update scene graph explorer
+        # self.panel.sceneGraphExplorer.update()
 
         # Reset last Code (for autoPositionGrid)
         if DNAClassEqual(dnaNode, DNA_STREET):
@@ -981,9 +985,6 @@ class LevelEditor(NodePath, PandaObject):
         newDNAFlatBuilding = DNAFlatBuilding()
         self.setRandomBuildingStyle(newDNAFlatBuilding,
                                     name = 'tb0:'+buildingType + '_DNARoot')
-        # Initialize its position and hpr
-        newDNAFlatBuilding.setPos(VBase3(0))
-        newDNAFlatBuilding.setHpr(VBase3(0))
         # Now place new building in the world
         self.initDNANode(newDNAFlatBuilding)
 
