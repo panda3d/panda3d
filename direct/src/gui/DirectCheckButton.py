@@ -92,7 +92,7 @@ class DirectCheckButton(DirectButton):
             indicatorHeight = (self.indicator.getHeight() + (2*ibw[1]))
             diff = (indicatorHeight + (2*self['boxBorder']) -
                     (self.bounds[3] - self.bounds[2]))
-            print diff, self.bounds[3], self.bounds[2]
+            # print diff, self.bounds[3], self.bounds[2]
             # If background is smaller then indicator, enlarge background
             if diff > 0:
                 if self['boxPlacement'] == 'left':            #left
