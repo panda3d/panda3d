@@ -686,6 +686,14 @@ run_proxy_reading_header() {
 
   if (!is_valid()) {
     // Proxy wouldn't open connection.
+
+    // Change some of the status codes a proxy might return to
+    // differentiate them from similar status codes the destination
+    // server might have returned.
+    if (get_status_code() != 407) {
+      _status_code += 1000;
+    }
+
     _state = S_failure;
     return false;
   }

@@ -75,6 +75,13 @@ get_http_version_string() const {
 //               retrieval request.  This will be in the 200 range if
 //               the document is successfully retrieved, or some other
 //               value in the case of an error.
+//
+//               Some proxy errors during an https-over-proxy request
+//               would return the same status code as a different
+//               error that occurred on the host server.  To
+//               differentiate these cases, status codes that are
+//               returned by the proxy during the CONNECT phase
+//               (except code 407) are incremented by 1000.
 ////////////////////////////////////////////////////////////////////
 INLINE int HTTPChannel::
 get_status_code() const {
