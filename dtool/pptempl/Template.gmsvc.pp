@@ -636,7 +636,7 @@ $[TAB] cp -f $[ODIR]/$[local] $[dest]
 #define dest $[install_bin_dir]
 
 $[ODIR]/$[bin_postprocess_target].exe : $[ODIR]/$[TARGET].exe
-$[TAB] $[bin_postprocess_cmd] $[ODIR]/$[TARGET].exe $[ODIR]/$[exename]
+$[TAB] $[bin_postprocess_cmd] $[ODIR]/$[TARGET].exe $[bin_postprocess_arg1] $[ODIR]/$[exename]
 
 $[install_bin_dir]/$[bin_postprocess_target].exe : $[ODIR]/$[exename]
 $[TAB] cp -f $[ODIR]/$[exename] $[dest]
