@@ -1884,7 +1884,7 @@ find_all_card_memavails(void) {
         // #define LOWVIDMEMTHRESHOLD 3500000
         // #define CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD 1000000
 
-        #define LOWVIDMEMTHRESHOLD 5000000  // 4MB cards should fall below this
+        #define LOWVIDMEMTHRESHOLD 5700000  // 4MB cards should fall below this
         #define CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD 1000000  // if # is > 1MB, card is lying and I cant tell what it is
 
         // assume buggy drivers (this means you, FireGL2) may return zero (or small amts) for dwVidMemTotal, so ignore value if its < CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD

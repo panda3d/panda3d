@@ -1808,7 +1808,7 @@ bool wdxGraphicsWindow::search_for_device(int devnum,DXDeviceInfo *pDevinfo) {
     // so this is the true value
     _dxgsg->scrn.MaxAvailVidMem = dwVidMemTotal;
     
-    #define LOWVIDMEMTHRESHOLD 3500000
+    #define LOWVIDMEMTHRESHOLD 5500000
     #define CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD 1000000     // every vidcard we deal with should have at least 1MB
     
     // assume buggy drivers (this means you, FireGL2) may return zero for dwVidMemTotal, so ignore value if its < CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD
