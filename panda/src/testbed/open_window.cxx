@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "glxGraphicsPipe.h"
 #include "graphicsWindow.h"
 #include "graphicsChannel.h"
 #include "graphicsLayer.h"
@@ -28,6 +27,13 @@
 #include "transformTransition.h"
 #include "loader.h"
 #include "clockObject.h"
+
+#ifdef USE_GLX
+  #include "glxGraphicsPipe.h"
+#else
+  #include "wdxGraphicsPipe.h"
+#endif
+
 
 // This program demonstrates creating a graphics window in Panda
 // explicitly, without using ChanCfg as an interface wrapper.
@@ -59,7 +65,13 @@ main(int argc, char *argv[]) {
   // know it's a weird way to pass parameters to an object.
 
   PipeSpecifier pipe_spec;
-  PT(GraphicsPipe) pipe = new glxGraphicsPipe(pipe_spec);
+  PT(GraphicsPipe) pipe;
+
+#ifdef USE_GLX
+  pipe = new glxGraphicsPipe(pipe_spec);
+#else
+  pipe = new wdxGraphicsPipe(pipe_spec);
+#endif
 
   // Now create a window on that pipe.
   GraphicsWindow::Properties window_prop;
@@ -68,7 +80,7 @@ main(int argc, char *argv[]) {
   window_prop._xsize = 640;
   window_prop._ysize = 480;
   window_prop._title = "Window";
-  //window_prop._fullscreen = true;
+  //  window_prop._fullscreen = true;
 
   PT(GraphicsWindow) window = pipe->make_window(window_prop);
 
