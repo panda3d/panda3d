@@ -8,8 +8,7 @@
 
 #include <pandatoolbase.h>
 
-#include "distanceUnit.h"
-
+#include <distanceUnit.h>
 #include <filename.h>
 #include <vector_string.h>
 

@@ -6,6 +6,8 @@
 #include "cLwoLayer.h"
 #include "lwoToEggConverter.h"
 
+#include <eggData.h>
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLwoLayer::make_egg
@@ -44,6 +46,6 @@ connect_egg() {
 	 << "; cannot parent layer " << _layer->_number << " properly.\n";
   }
   
-  _converter->get_egg_root()->add_child(_egg_group.p());
+  _converter->get_egg_data().add_child(_egg_group.p());
 }
 

@@ -1,5 +1,5 @@
 #define LOCAL_LIBS \
-  eggbase progbase
+  converter eggbase progbase
 #define OTHER_LIBS \
   egg:c linmath:c putil:c express:c pandaegg:m panda:m pandaexpress:m \
   dtoolutil:c dconfig:c dtoolconfig:m dtool:m pystub

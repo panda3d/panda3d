@@ -11,6 +11,7 @@
 
 #include <lwoPolygonTags.h>
 #include <lwoTags.h>
+#include <eggData.h>
 #include <eggPolygon.h>
 #include <eggPoint.h>
 #include <deg_2_rad.h>

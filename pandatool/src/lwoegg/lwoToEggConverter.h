@@ -8,8 +8,8 @@
 
 #include <pandatoolbase.h>
 
+#include <somethingToEggConverter.h>
 #include <lwoHeader.h>
-#include <eggData.h>
 #include <pointerTo.h>
 
 #include <vector>
@@ -27,15 +27,17 @@ class CLwoSurface;
 //               Reading and writing the egg and lwo structures is
 //               left to the user.
 ////////////////////////////////////////////////////////////////////
-class LwoToEggConverter {
+class LwoToEggConverter : public SomethingToEggConverter {
 public:
-  LwoToEggConverter(EggData &egg_data);
-  ~LwoToEggConverter();
+  LwoToEggConverter();
+  virtual ~LwoToEggConverter();
 
+  virtual string get_name() const;
+  virtual string get_extension() const;
+
+  virtual bool convert_file(const Filename &filename);
   bool convert_lwo(const LwoHeader *lwo_header);
 
-  INLINE EggGroupNode *get_egg_root() const;
-  INLINE EggData &get_egg_data();
   CLwoLayer *get_layer(int number) const;
 
   CLwoSurface *get_surface(const string &name) const;
@@ -48,7 +50,6 @@ private:
   void slot_layer(int number);
   CLwoLayer *make_generic_layer();
 
-  EggData &_egg_data;
   CPT(LwoHeader) _lwo_header;
   
   CLwoLayer *_generic_layer;
@@ -63,8 +64,6 @@ private:
 
   typedef map<string, CLwoSurface *> Surfaces;
   Surfaces _surfaces;
-
-  bool _error;
 };
 
 #include "lwoToEggConverter.I"

@@ -131,7 +131,8 @@ run() {
     _input_units = header->get_units();
   }
 
-  FltToEggConverter converter(_data);
+  FltToEggConverter converter;
+  converter.set_egg_data(&_data, false);
   converter.set_texture_path_convert(_texture_path_convert, _make_rel_dir);
   converter.set_model_path_convert(_model_path_convert, _make_rel_dir);
 

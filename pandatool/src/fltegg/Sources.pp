@@ -1,6 +1,6 @@
 #begin ss_lib_target
   #define TARGET fltegg
-  #define LOCAL_LIBS pandatoolbase progbase flt
+  #define LOCAL_LIBS converter flt pandatoolbase
   #define OTHER_LIBS \
     egg:c pandaegg:m \
     mathutil:c linmath:c putil:c express:c panda:m dtoolconfig dtool

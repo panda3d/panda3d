@@ -9,6 +9,7 @@
 #include "cLwoPolygons.h"
 #include "cLwoSurface.h"
 
+#include <eggData.h>
 #include <lwoHeader.h>
 #include <lwoLayer.h>
 #include <lwoPoints.h>
@@ -16,6 +17,7 @@
 #include <lwoVertexMap.h>
 #include <lwoTags.h>
 #include <lwoPolygonTags.h>
+#include <lwoInputFile.h>
 
 
 ////////////////////////////////////////////////////////////////////
@@ -24,14 +26,13 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 LwoToEggConverter::
-LwoToEggConverter(EggData &egg_data) : _egg_data(egg_data) {
+LwoToEggConverter() {
   _generic_layer = (CLwoLayer *)NULL;
-  _error = false;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LwoToEggConverter::Destructor
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 LwoToEggConverter::
@@ -68,6 +69,72 @@ LwoToEggConverter::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LwoToEggConverter::get_name
+//       Access: Public, Virtual
+//  Description: Returns the English name of the file type this
+//               converter supports.
+////////////////////////////////////////////////////////////////////
+string LwoToEggConverter::
+get_name() const {
+  return "Lightwave";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LwoToEggConverter::get_extension
+//       Access: Public, Virtual
+//  Description: Returns the common extension of the file type this
+//               converter supports.
+////////////////////////////////////////////////////////////////////
+string LwoToEggConverter::
+get_extension() const {
+  return "lwo";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LwoToEggConverter::convert_file
+//       Access: Public, Virtual
+//  Description: Handles the reading of the input file and converting
+//               it to egg.  Returns true if successful, false
+//               otherwise.
+//
+//               This is designed to be as generic as possible,
+//               generally in support of run-time loading.
+//               Command-line converters may choose to use
+//               convert_lwo() instead, as it provides more control.
+////////////////////////////////////////////////////////////////////
+bool LwoToEggConverter::
+convert_file(const Filename &filename) {
+  LwoInputFile in;
+
+  nout << "Reading " << filename << "\n";
+  if (!in.open_read(filename)) {
+    nout << "Unable to open " << filename << "\n";
+    return false;
+  }
+
+  PT(IffChunk) chunk = in.get_chunk();
+  if (chunk == (IffChunk *)NULL) {
+    nout << "Unable to read " << filename << "\n";
+    return false;
+  }
+
+  if (!chunk->is_of_type(LwoHeader::get_class_type())) {
+    nout << "File " << filename << " is not a Lightwave Object file.\n";
+    return false;
+  }
+
+  LwoHeader *header = DCAST(LwoHeader, chunk);
+  if (!header->is_valid()) {
+    nout << "File " << filename
+	 << " is not recognized as a Lightwave Object file.  "
+	 << "Perhaps the version is too recent.\n";
+    return false;
+  }
+
+  return convert_lwo(header);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LwoToEggConverter::convert_lwo
 //       Access: Public
 //  Description: Fills up the egg_data structure according to the
@@ -75,13 +142,18 @@ LwoToEggConverter::
 ////////////////////////////////////////////////////////////////////
 bool LwoToEggConverter::
 convert_lwo(const LwoHeader *lwo_header) {
+  if (_egg_data->get_coordinate_system() == CS_default) {
+    _egg_data->set_coordinate_system(CS_yup_left);
+  }
+
+  _error = false;
   _lwo_header = lwo_header;
 
   collect_lwo();
   make_egg();
   connect_egg();
 
-  _egg_data.remove_unused_vertices();
+  _egg_data->remove_unused_vertices();
 
   return !_error;
 }

@@ -15,6 +15,7 @@
 #include <fltVertex.h>
 #include <fltVertexList.h>
 #include <fltExternalReference.h>
+#include <eggData.h>
 #include <eggGroup.h>
 #include <eggSwitchCondition.h>
 #include <eggPrimitive.h>
@@ -32,10 +33,57 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 FltToEggConverter::
-FltToEggConverter(EggData &egg_data) : _egg_data(egg_data) {
-  _tpc = PC_unchanged;
-  _mpc = PC_unchanged;
-  _error = false;
+FltToEggConverter() {
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltToEggConverter::get_name
+//       Access: Public, Virtual
+//  Description: Returns the English name of the file type this
+//               converter supports.
+////////////////////////////////////////////////////////////////////
+string FltToEggConverter::
+get_name() const {
+  return "MultiGen";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltToEggConverter::get_extension
+//       Access: Public, Virtual
+//  Description: Returns the common extension of the file type this
+//               converter supports.
+////////////////////////////////////////////////////////////////////
+string FltToEggConverter::
+get_extension() const {
+  return "flt";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltToEggConverter::convert_file
+//       Access: Public, Virtual
+//  Description: Handles the reading of the input file and converting
+//               it to egg.  Returns true if successful, false
+//               otherwise.
+//
+//               This is designed to be as generic as possible,
+//               generally in support of run-time loading.
+//               Command-line converters may choose to use
+//               convert_flt() instead, as it provides more control.
+////////////////////////////////////////////////////////////////////
+bool FltToEggConverter::
+convert_file(const Filename &filename) {
+  PT(FltHeader) header = new FltHeader;
+
+  nout << "Reading " << filename << "\n";
+  FltError result = header->read_flt(filename);
+  if (result != FE_ok) {
+    nout << "Unable to read: " << result << "\n";
+    return false;
+  }
+
+  header->check_version();
+  return convert_flt(header);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -46,12 +94,16 @@ FltToEggConverter(EggData &egg_data) : _egg_data(egg_data) {
 ////////////////////////////////////////////////////////////////////
 bool FltToEggConverter::
 convert_flt(const FltHeader *flt_header) {
+  if (_egg_data->get_coordinate_system() == CS_default) {
+    _egg_data->set_coordinate_system(CS_zup_right);
+  }
+
   _error = false;
   _flt_header = flt_header;
 
   // Generate a default vertex pool.
   _main_egg_vpool = new EggVertexPool("vpool");
-  _egg_data.add_child(_main_egg_vpool);
+  _egg_data->add_child(_main_egg_vpool);
 
   // We could populate the vertex pool right away, but it's better to
   // defer each vertex until we encounter it, since some of the
@@ -60,13 +112,13 @@ convert_flt(const FltHeader *flt_header) {
   // something).
 
   FltToEggLevelState state;
-  state._egg_parent = &_egg_data;
+  state._egg_parent = _egg_data;
   convert_record(_flt_header, state);
 
   if (_main_egg_vpool->empty()) {
     // If we didn't get any global vertices, remove the vertex pool
     // just for cleanliness.
-    _egg_data.remove_child(_main_egg_vpool);
+    _egg_data->remove_child(_main_egg_vpool);
   }
 
   return !_error;
@@ -640,6 +692,9 @@ convert_path(const Filename &orig_filename, const Filename &as_found,
     result.make_relative_to(rel_dir);
     result = Filename(rel_dir, result);
     return result;
+
+  case PC_strip:
+    return orig_filename.get_basename();
 
   case PC_unchanged:
     return orig_filename;

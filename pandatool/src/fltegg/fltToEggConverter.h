@@ -10,10 +10,8 @@
 
 #include "fltToEggLevelState.h"
 
-#include <distanceUnit.h>
-
+#include <somethingToEggConverter.h>
 #include <fltHeader.h>
-#include <eggData.h>
 #include <eggVertex.h>
 #include <eggTexture.h>
 #include <pointerTo.h>
@@ -40,22 +38,14 @@ class EggVertexPool;
 //               Reading and writing the egg and flt structures is
 //               left to the user.
 ////////////////////////////////////////////////////////////////////
-class FltToEggConverter {
+class FltToEggConverter : public SomethingToEggConverter {
 public:
-  FltToEggConverter(EggData &egg_data);
-  INLINE ~FltToEggConverter();
+  FltToEggConverter();
 
-  enum PathConvert {
-    PC_relative,
-    PC_absolute,
-    PC_rel_abs,
-    PC_unchanged
-  };
-  INLINE void set_texture_path_convert(PathConvert tpc,
-				       const Filename &tpc_directory = Filename());
-  INLINE void set_model_path_convert(PathConvert mpc,
-				     const Filename &mpc_directory = Filename());
+  virtual string get_name() const;
+  virtual string get_extension() const;
 
+  virtual bool convert_file(const Filename &filename);
   bool convert_flt(const FltHeader *flt_header);
 
 private:
@@ -92,20 +82,12 @@ private:
   PT(EggVertex) make_egg_vertex(const FltVertex *flt_vertex);
   PT(EggTexture) make_egg_texture(const FltTexture *flt_texture);
 
-  PathConvert _tpc;
-  Filename _tpc_directory;
-  PathConvert _mpc;
-  Filename _mpc_directory;
-
-  EggData &_egg_data;
   CPT(FltHeader) _flt_header;
 
   EggVertexPool *_main_egg_vpool;
 
   typedef map<const FltTexture *, PT(EggTexture) > Textures;
   Textures _textures;
-
-  bool _error;
 };
 
 #include "fltToEggConverter.I"

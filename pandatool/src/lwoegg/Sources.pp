@@ -1,6 +1,6 @@
 #begin ss_lib_target
   #define TARGET lwoegg
-  #define LOCAL_LIBS pandatoolbase lwo
+  #define LOCAL_LIBS converter lwo pandatoolbase
   #define OTHER_LIBS \
     egg:c pandaegg:m \
     mathutil:c linmath:c putil:c express:c panda:m dtoolconfig dtool

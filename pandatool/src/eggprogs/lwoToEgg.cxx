@@ -50,42 +50,16 @@ LwoToEgg() :
 ////////////////////////////////////////////////////////////////////
 void LwoToEgg::
 run() {
-  LwoInputFile in;
-
-  nout << "Reading " << _input_filename << "\n";
-  if (!in.open_read(_input_filename)) {
-    nout << "Unable to open " << _input_filename << "\n";
-    exit(1);
-  }
-
-  PT(IffChunk) chunk = in.get_chunk();
-  if (chunk == (IffChunk *)NULL) {
-    nout << "Unable to read " << _input_filename << "\n";
-    exit(1);
-  }
-
-  if (!chunk->is_of_type(LwoHeader::get_class_type())) {
-    nout << "File " << _input_filename << " is not a Lightwave Object file.\n";
-    exit(1);
-  }
-
-  LwoHeader *header = DCAST(LwoHeader, chunk);
-  if (!header->is_valid()) {
-    nout << "File " << _input_filename
-	 << " is not recognized as a Lightwave Object file.  "
-	 << "Perhaps the version is too recent.\n";
-    exit(1);
-  }
-
   _data.set_coordinate_system(_coordinate_system);
 
   if (_input_units == DU_invalid) {
     _input_units = DU_meters;
   }
 
-  LwoToEggConverter converter(_data);
+  LwoToEggConverter converter;
+  converter.set_egg_data(&_data, false);
 
-  if (!converter.convert_lwo(header)) {
+  if (!converter.convert_file(_input_filename)) {
     nout << "Errors in conversion.\n";
     exit(1);
   }

@@ -12,6 +12,7 @@
 #define PANDATOOLBASE_H
 
 #include <pandabase.h>
+#include "pandatoolsymbols.h"
 
 #endif
 
