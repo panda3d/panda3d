@@ -296,23 +296,24 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 ////////////////////////////////////////////////////////////////////
 int PalettePage::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
-  int index = TypedWritable::complete_pointers(p_list, manager);
+  int pi = TypedWritable::complete_pointers(p_list, manager);
 
-  if (p_list[index] != (TypedWritable *)NULL) {
-    DCAST_INTO_R(_group, p_list[index], index);
+  if (p_list[pi] != (TypedWritable *)NULL) {
+    DCAST_INTO_R(_group, p_list[pi], pi);
   }
-  index++;
+  pi++;
+
+  pi += _properties.complete_pointers(p_list + pi, manager);
 
   int i;
   _images.reserve(_num_images);
   for (i = 0; i < _num_images; i++) {
     PaletteImage *image;
-    DCAST_INTO_R(image, p_list[index], index);
+    DCAST_INTO_R(image, p_list[pi++], pi);
     _images.push_back(image);
-    index++;
   }
 
-  return index;
+  return pi;
 }
 
 ////////////////////////////////////////////////////////////////////

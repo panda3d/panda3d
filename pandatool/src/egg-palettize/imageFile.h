@@ -77,6 +77,8 @@ protected:
   // The TypedWritable interface follows.
 public:
   virtual void write_datagram(BamWriter *writer, Datagram &datagram);
+  virtual int complete_pointers(TypedWritable **p_list,
+                                BamReader *manager);
 
 protected:
   void fillin(DatagramIterator &scan, BamReader *manager);

@@ -1173,39 +1173,37 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 ////////////////////////////////////////////////////////////////////
 int TextureImage::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
-  int index = ImageFile::complete_pointers(p_list, manager);
+  int pi = ImageFile::complete_pointers(p_list, manager);
+
+  pi += _actual_assigned_groups.complete_pointers(p_list + pi, manager);
 
   int i;
   for (i = 0; i < _num_placement; i++) {
     PaletteGroup *group;
     TexturePlacement *placement;
-    DCAST_INTO_R(group, p_list[index], index);
-    index++;
-    DCAST_INTO_R(placement, p_list[index], index);
-    index++;
+    DCAST_INTO_R(group, p_list[pi++], pi);
+    DCAST_INTO_R(placement, p_list[pi++], pi);
     _placement.insert(Placement::value_type(group, placement));
   }
 
   for (i = 0; i < _num_sources; i++) {
     SourceTextureImage *source;
-    DCAST_INTO_R(source, p_list[index], index);
+    DCAST_INTO_R(source, p_list[pi++], pi);
     string key = get_source_key(source->get_filename(),
                                 source->get_alpha_filename());
 
     bool inserted = _sources.insert(Sources::value_type(key, source)).second;
-    index++;
-    nassertr(inserted, index);
+    nassertr(inserted, pi);
   }
 
   for (i = 0; i < _num_dests; i++) {
     DestTextureImage *dest;
-    DCAST_INTO_R(dest, p_list[index], index);
+    DCAST_INTO_R(dest, p_list[pi++], pi);
     bool inserted = _dests.insert(Dests::value_type(dest->get_filename(), dest)).second;
-    index++;
-    nassertr(inserted, index);
+    nassertr(inserted, pi);
   }
 
-  return index;
+  return pi;
 }
 
 ////////////////////////////////////////////////////////////////////

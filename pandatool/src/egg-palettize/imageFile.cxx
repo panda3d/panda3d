@@ -420,6 +420,24 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::complete_pointers
+//       Access: Public, Virtual
+//  Description: Called after the object is otherwise completely read
+//               from a Bam file, this function's job is to store the
+//               pointers that were retrieved from the Bam file for
+//               each pointer object written.  The return value is the
+//               number of pointers processed from the list.
+////////////////////////////////////////////////////////////////////
+int ImageFile::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = TypedWritable::complete_pointers(p_list, manager);
+
+  pi += _properties.complete_pointers(p_list + pi, manager);
+
+  return pi;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ImageFile::fillin
 //       Access: Protected
 //  Description: Reads the binary data from the given datagram

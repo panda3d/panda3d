@@ -572,23 +572,25 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 ////////////////////////////////////////////////////////////////////
 int EggFile::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
-  int index = TypedWritable::complete_pointers(p_list, manager);
+  int pi = TypedWritable::complete_pointers(p_list, manager);
 
   int i;
   _textures.reserve(_num_textures);
   for (i = 0; i < _num_textures; i++) {
     TextureReference *texture;
-    DCAST_INTO_R(texture, p_list[index], index);
+    DCAST_INTO_R(texture, p_list[pi], pi);
     _textures.push_back(texture);
-    index++;
+    pi++;
   }
 
-  if (p_list[index] != (TypedWritable *)NULL) {
-    DCAST_INTO_R(_default_group, p_list[index], index);
-  }
-  index++;
+  pi += _explicitly_assigned_groups.complete_pointers(p_list + pi, manager);
 
-  return index;
+  if (p_list[pi] != (TypedWritable *)NULL) {
+    DCAST_INTO_R(_default_group, p_list[pi], pi);
+  }
+  pi++;
+
+  return pi;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -722,24 +722,26 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 ////////////////////////////////////////////////////////////////////
 int TextureReference::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
-  int index = TypedWritable::complete_pointers(p_list, manager);
+  int pi = TypedWritable::complete_pointers(p_list, manager);
 
-  if (p_list[index] != (TypedWritable *)NULL) {
-    DCAST_INTO_R(_egg_file, p_list[index], index);
+  if (p_list[pi] != (TypedWritable *)NULL) {
+    DCAST_INTO_R(_egg_file, p_list[pi], pi);
   }
-  index++;
+  pi++;
 
-  if (p_list[index] != (TypedWritable *)NULL) {
-    DCAST_INTO_R(_source_texture, p_list[index], index);
+  if (p_list[pi] != (TypedWritable *)NULL) {
+    DCAST_INTO_R(_source_texture, p_list[pi], pi);
   }
-  index++;
+  pi++;
 
-  if (p_list[index] != (TypedWritable *)NULL) {
-    DCAST_INTO_R(_placement, p_list[index], index);
+  if (p_list[pi] != (TypedWritable *)NULL) {
+    DCAST_INTO_R(_placement, p_list[pi], pi);
   }
-  index++;
+  pi++;
 
-  return index;
+  pi += _properties.complete_pointers(p_list + pi, manager);
+
+  return pi;
 }
 
 ////////////////////////////////////////////////////////////////////

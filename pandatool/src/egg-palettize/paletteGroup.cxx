@@ -633,15 +633,16 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 ////////////////////////////////////////////////////////////////////
 int PaletteGroup::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
-  int index = TypedWritable::complete_pointers(p_list, manager);
+  int pi = TypedWritable::complete_pointers(p_list, manager);
+
+  pi += _dependent.complete_pointers(p_list + pi, manager);
 
   int i;
   for (i = 0; i < _num_placements; i++) {
     TexturePlacement *placement;
-    DCAST_INTO_R(placement, p_list[index], index);
-    index++;
+    DCAST_INTO_R(placement, p_list[pi++], pi);
     bool inserted = _placements.insert(placement).second;
-    nassertr(inserted, index);
+    nassertr(inserted, pi);
   }
 
   // We must store the list of pages in a temporary vector first.  We
@@ -651,12 +652,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   _load_pages.reserve(_num_pages);
   for (i = 0; i < _num_pages; i++) {
     PalettePage *page;
-    DCAST_INTO_R(page, p_list[index], index);
-    index++;
+    DCAST_INTO_R(page, p_list[pi++], pi);
     _load_pages.push_back(page);
   }
 
-  return index;
+  return pi;
 }
 
 ////////////////////////////////////////////////////////////////////
