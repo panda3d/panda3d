@@ -409,7 +409,7 @@ class DirectJoybox(PandaObject):
             if (chan == L_TWIST) or (chan == R_TWIST):
                 # These channels have reduced range
                 return self.analogs.normalize(
-                    self.analogs.getControlState(chan) * 3.0, minVal, maxVal)
+                    self.analogs.getControlState(chan), minVal, maxVal, 3.0)
             else:
                 return self.analogs.normalize(
                     self.analogs.getControlState(chan), minVal, maxVal)

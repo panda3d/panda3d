@@ -135,28 +135,29 @@ class DirectAnalogs(AnalogNode, DirectObject):
                  ((val - self.analogMin) / self.analogRange)) + minVal)
 
 
-    def normalize(self, val, minVal = -1, maxVal = 1):
+    def normalize(self, val, minVal = -1, maxVal = 1, sf = 1.0):
         max = self.analogMax
         min = self.analogMin
         center = self.analogCenter
         deadband = self.analogDeadband
         range = self.analogRange
+        # Zero out values in deadband
+        if (abs(val) <= deadband):
+            return 0.0
+        # Apply scale factor
+        val *= sf
         # Clamp value between min and max and scale around center
         if (val >= center):
             val = (val - center) / (max - center)
         else:
             val = (val - center) / (center - min)            
-        # Zero out values in deadband
-        if (abs(val) <= deadband):
-            val = 0.0
         # Normalize values to given minVal and maxVal range
         return (((maxVal - minVal) *
                  ((val - min) / range)) + minVal)
-
             
-    def normalizeChannel(self, chan, minVal = -1, maxVal = 1):
+    def normalizeChannel(self, chan, minVal = -1, maxVal = 1, sf = 1.0):
         try:
-            return self.normalize(self[chan], minVal, maxVal)
+            return self.normalize(self[chan], minVal, maxVal, sfx)
         except IndexError:
             return 0.0
 
