@@ -10,3 +10,4 @@
 #include "nurbsBasisVector.cxx"
 #include "nurbsVertex.cxx"
 #include "ropeNode.cxx"
+#include "sheetNode.cxx"

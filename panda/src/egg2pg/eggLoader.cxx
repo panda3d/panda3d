@@ -34,6 +34,8 @@
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
 #include "materialAttrib.h"
+#include "texMatrixAttrib.h"
+#include "colorAttrib.h"
 #include "materialPool.h"
 #include "geomNode.h"
 #include "sequenceNode.h"
@@ -46,6 +48,7 @@
 #include "eggPoint.h"
 #include "eggTextureCollection.h"
 #include "eggNurbsCurve.h"
+#include "eggNurbsSurface.h"
 #include "eggGroupNode.h"
 #include "eggGroup.h"
 #include "eggPolygon.h"
@@ -67,6 +70,10 @@
 #include "nurbsCurve.h"
 #include "classicNurbsCurve.h"
 #include "nurbsCurveInterface.h"
+#include "nurbsCurveEvaluator.h"
+#include "nurbsSurfaceEvaluator.h"
+#include "ropeNode.h"
+#include "sheetNode.h"
 #include "look_at.h"
 
 #include <ctype.h>
@@ -238,66 +245,75 @@ make_nonindexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
     mat = egg_prim->get_vertex_to_node();
   }
 
-  BuilderPrim bprim;
-  bprim.set_type(BPT_poly);
-  if (egg_prim->is_of_type(EggPoint::get_class_type())) {
-    bprim.set_type(BPT_point);
-  }
+  if (egg_prim->is_of_type(EggNurbsCurve::get_class_type())) {
+    make_nurbs_curve(DCAST(EggNurbsCurve, egg_prim), parent, mat);
 
-  if (egg_prim->has_normal()) {
-    Normald norm = egg_prim->get_normal() * mat;
-    norm.normalize();
-    bprim.set_normal(LCAST(float, norm));
-  }
-  if (egg_prim->has_color() && !egg_false_color) {
-    bprim.set_color(egg_prim->get_color());
-  }
+  } else if (egg_prim->is_of_type(EggNurbsSurface::get_class_type())) {
+    make_nurbs_surface(DCAST(EggNurbsSurface, egg_prim), parent, mat);
 
-  bool has_vert_color = true;
-  EggPrimitive::const_iterator vi;
-  for (vi = egg_prim->begin(); vi != egg_prim->end(); ++vi) {
-    EggVertex *egg_vert = *vi;
-    if (egg_vert->get_num_dimensions() != 3) {
-      egg2pg_cat.error()
-        << "Vertex " << egg_vert->get_pool()->get_name() 
-        << ":" << egg_vert->get_index() << " has dimension " 
-        << egg_vert->get_num_dimensions() << "\n";
-    } else {
-      BuilderVertex bvert(LCAST(float, egg_vert->get_pos3() * mat));
-
-      if (egg_vert->has_normal()) {
-        Normald norm = egg_vert->get_normal() * mat;
-        norm.normalize();
-        bvert.set_normal(LCAST(float, norm));
-      }
-      if (egg_vert->has_color() && !egg_false_color) {
-        bvert.set_color(egg_vert->get_color());
-      } else {
-        // If any vertex doesn't have a color, we can't use any of the
-        // vertex colors.
-        has_vert_color = false;
-      }
-      if (egg_vert->has_uv()) {
-        TexCoordd uv = egg_vert->get_uv();
-        if (egg_prim->has_texture() &&
-            egg_prim->get_texture()->has_transform()) {
-          // If we have a texture matrix, apply it.
-          uv = uv * egg_prim->get_texture()->get_transform();
-        }
-        bvert.set_texcoord(LCAST(float, uv));
-      }
-    
-      bprim.add_vertex(bvert);
+  } else {
+    // A normal primitive: polygon or point.
+    BuilderPrim bprim;
+    bprim.set_type(BPT_poly);
+    if (egg_prim->is_of_type(EggPoint::get_class_type())) {
+      bprim.set_type(BPT_point);
     }
-  }
+    
+    if (egg_prim->has_normal()) {
+      Normald norm = egg_prim->get_normal() * mat;
+      norm.normalize();
+      bprim.set_normal(LCAST(float, norm));
+    }
+    if (egg_prim->has_color() && !egg_false_color) {
+      bprim.set_color(egg_prim->get_color());
+    }
+    
+    bool has_vert_color = true;
+    EggPrimitive::const_iterator vi;
+    for (vi = egg_prim->begin(); vi != egg_prim->end(); ++vi) {
+      EggVertex *egg_vert = *vi;
+      if (egg_vert->get_num_dimensions() != 3) {
+        egg2pg_cat.error()
+          << "Vertex " << egg_vert->get_pool()->get_name() 
+          << ":" << egg_vert->get_index() << " has dimension " 
+          << egg_vert->get_num_dimensions() << "\n";
+      } else {
+        BuilderVertex bvert(LCAST(float, egg_vert->get_pos3() * mat));
+        
+        if (egg_vert->has_normal()) {
+          Normald norm = egg_vert->get_normal() * mat;
+          norm.normalize();
+          bvert.set_normal(LCAST(float, norm));
+        }
+        if (egg_vert->has_color() && !egg_false_color) {
+          bvert.set_color(egg_vert->get_color());
+        } else {
+          // If any vertex doesn't have a color, we can't use any of the
+          // vertex colors.
+          has_vert_color = false;
+        }
+        if (egg_vert->has_uv()) {
+          TexCoordd uv = egg_vert->get_uv();
+          if (egg_prim->has_texture() &&
+              egg_prim->get_texture()->has_transform()) {
+            // If we have a texture matrix, apply it.
+            uv = uv * egg_prim->get_texture()->get_transform();
+          }
+          bvert.set_texcoord(LCAST(float, uv));
+        }
+        
+        bprim.add_vertex(bvert);
+      }
+    }
 
-  // Finally, if the primitive didn't have a color, and it didn't have
-  // vertex color, make it white.
-  if (!egg_prim->has_color() && !has_vert_color && !egg_false_color) {
-    bprim.set_color(Colorf(1.0, 1.0, 1.0, 1.0));
-  }
+    // Finally, if the primitive didn't have a color, and it didn't have
+    // vertex color, make it white.
+    if (!egg_prim->has_color() && !has_vert_color && !egg_false_color) {
+      bprim.set_color(Colorf(1.0, 1.0, 1.0, 1.0));
+    }
 
-  _builder.add_prim(bucket, bprim);
+    _builder.add_prim(bucket, bprim);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -428,6 +444,339 @@ make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
   }
 
   _builder.add_prim(bucket, bprim);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::make_nurbs_curve
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+void EggLoader::
+make_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent, 
+                 const LMatrix4d &mat) {
+  if (egg_load_old_curves) {
+    // Make a NurbsCurve instead of a RopeNode (old interface).
+    make_old_nurbs_curve(egg_curve, parent, mat);
+    return;
+  }
+
+  assert(parent != NULL);
+  assert(!parent->is_geom_node());
+
+  PT(NurbsCurveEvaluator) nurbs = new NurbsCurveEvaluator;
+
+  if (egg_curve->get_order() < 1 || egg_curve->get_order() > 4) {
+    egg2pg_cat.error()
+      << "Invalid NURBSCurve order for " << egg_curve->get_name() << ": "
+      << egg_curve->get_order() << "\n";
+    _error = true;
+    return;
+  }
+
+  nurbs->set_order(egg_curve->get_order());
+
+  nurbs->reset(egg_curve->size());
+  EggPrimitive::const_iterator pi;
+  int vi = 0;
+  for (pi = egg_curve->begin(); pi != egg_curve->end(); ++pi) {
+    EggVertex *egg_vertex = (*pi);
+    nurbs->set_vertex(vi, LCAST(float, egg_vertex->get_pos4() * mat));
+    Colorf color = egg_vertex->get_color();
+    nurbs->set_extended_vertex(vi, 0, color[0]);
+    nurbs->set_extended_vertex(vi, 1, color[1]);
+    nurbs->set_extended_vertex(vi, 2, color[2]);
+    nurbs->set_extended_vertex(vi, 3, color[3]);
+    vi++;
+  }
+
+  int num_knots = egg_curve->get_num_knots();
+  if (num_knots != nurbs->get_num_knots()) {
+    egg2pg_cat.error()
+      << "Invalid NURBSCurve number of knots for "
+      << egg_curve->get_name() << ": got " << num_knots
+      << " knots, expected " << nurbs->get_num_knots() << "\n";
+    _error = true;
+    return;
+  }
+
+  for (int i = 0; i < num_knots; i++) {
+    nurbs->set_knot(i, egg_curve->get_knot(i));
+  }
+
+  /*
+  switch (egg_curve->get_curve_type()) {
+  case EggCurve::CT_xyz:
+    curve->set_curve_type(PCT_XYZ);
+    break;
+
+  case EggCurve::CT_hpr:
+    curve->set_curve_type(PCT_HPR);
+    break;
+
+  case EggCurve::CT_t:
+    curve->set_curve_type(PCT_T);
+    break;
+
+  default:
+    break;
+  }
+  */
+
+  PT(RopeNode) rope = new RopeNode(egg_curve->get_name());
+  rope->set_curve(nurbs);
+
+  // Respect the subdivision values in the egg file, if any.
+  if (egg_curve->get_subdiv() != 0) {
+    int subdiv_per_segment = 
+      (int)((egg_curve->get_subdiv() + 0.5) / nurbs->get_num_segments());
+    rope->set_num_subdiv(subdiv_per_segment);
+  }
+
+  // Now get the attributes to apply to the rope.  We create a
+  // BuilderBucket for this purpose, so we can call setup_bucket(),
+  // but all we do with this bucket is immediately extract the state
+  // from it.
+  BuilderBucket bucket;
+  setup_bucket(bucket, parent, egg_curve);
+
+  rope->set_state(bucket._state);
+
+  // If we have a texture matrix, we have to apply that explicitly
+  // (the UV's are computed on the fly, so we can't precompute the
+  // texture matrix into them).
+  if (egg_curve->has_texture()) {
+    rope->set_uv_mode(RopeNode::UV_parametric);
+
+    PT(EggTexture) egg_tex = egg_curve->get_texture();
+    if (egg_tex->has_transform()) {
+      // Expand the 2-d matrix to a 3-d matrix.
+      const LMatrix3d &mat3 = egg_tex->get_transform();
+      LMatrix4f mat4(mat3(0, 0), mat3(0, 1), 0.0f, mat3(0, 2),
+                     mat3(1, 0), mat3(1, 1), 0.0f, mat3(1, 2),
+                     0.0f, 0.0f, 1.0f, 0.0f,
+                     mat3(2, 0), mat3(2, 1), 0.0f, mat3(2, 2));
+      rope->set_attrib(TexMatrixAttrib::make(mat4));
+    }
+  }
+  if (egg_curve->has_vertex_color()) {
+    // If the curve had individual vertex color, enable it.
+    rope->set_use_vertex_color(true);
+  } else if (egg_curve->has_color()) {
+    // Otherwise, if the curve has overall color, apply it.
+    rope->set_attrib(ColorAttrib::make_flat(egg_curve->get_color()));
+  }
+
+  parent->add_child(rope);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::make_old_nurbs_curve
+//       Access: Private
+//  Description: This deprecated interface creates a NurbsCurve (or a
+//               ClassicNurbsCurve) object for the EggNurbsCurve
+//               entry.  It will eventually be removed in favor of the
+//               above, which creates a RopeNode.
+////////////////////////////////////////////////////////////////////
+void EggLoader::
+make_old_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
+                     const LMatrix4d &mat) {
+  assert(parent != NULL);
+  assert(!parent->is_geom_node());
+
+  PT(ParametricCurve) curve;
+
+  if (egg_load_classic_nurbs_curves) {
+    curve = new ClassicNurbsCurve;
+  } else {
+    curve = new NurbsCurve;
+  }
+
+  NurbsCurveInterface *nurbs = curve->get_nurbs_interface();
+  nassertv(nurbs != (NurbsCurveInterface *)NULL);
+
+  if (egg_curve->get_order() < 1 || egg_curve->get_order() > 4) {
+    egg2pg_cat.error()
+      << "Invalid NURBSCurve order for " << egg_curve->get_name() << ": "
+      << egg_curve->get_order() << "\n";
+    _error = true;
+    return;
+  }
+
+  nurbs->set_order(egg_curve->get_order());
+
+  EggPrimitive::const_iterator pi;
+  for (pi = egg_curve->begin(); pi != egg_curve->end(); ++pi) {
+    nurbs->append_cv(LCAST(float, (*pi)->get_pos4() * mat));
+  }
+
+  int num_knots = egg_curve->get_num_knots();
+  if (num_knots != nurbs->get_num_knots()) {
+    egg2pg_cat.error()
+      << "Invalid NURBSCurve number of knots for "
+      << egg_curve->get_name() << ": got " << num_knots
+      << " knots, expected " << nurbs->get_num_knots() << "\n";
+    _error = true;
+    return;
+  }
+
+  for (int i = 0; i < num_knots; i++) {
+    nurbs->set_knot(i, egg_curve->get_knot(i));
+  }
+
+  switch (egg_curve->get_curve_type()) {
+  case EggCurve::CT_xyz:
+    curve->set_curve_type(PCT_XYZ);
+    break;
+
+  case EggCurve::CT_hpr:
+    curve->set_curve_type(PCT_HPR);
+    break;
+
+  case EggCurve::CT_t:
+    curve->set_curve_type(PCT_T);
+    break;
+
+  default:
+    break;
+  }
+  curve->set_name(egg_curve->get_name());
+
+  if (!curve->recompute()) {
+    egg2pg_cat.error()
+      << "Invalid NURBSCurve " << egg_curve->get_name() << "\n";
+    _error = true;
+    return;
+  }
+
+  parent->add_child(curve);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::make_nurbs_surface
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+void EggLoader::
+make_nurbs_surface(EggNurbsSurface *egg_surface, PandaNode *parent,
+                   const LMatrix4d &mat) {
+  assert(parent != NULL);
+  assert(!parent->is_geom_node());
+
+  PT(NurbsSurfaceEvaluator) nurbs = new NurbsSurfaceEvaluator;
+
+  if (egg_surface->get_u_order() < 1 || egg_surface->get_u_order() > 4) {
+    egg2pg_cat.error()
+      << "Invalid NURBSSurface U order for " << egg_surface->get_name() << ": "
+      << egg_surface->get_u_order() << "\n";
+    _error = true;
+    return;
+  }
+
+  if (egg_surface->get_v_order() < 1 || egg_surface->get_v_order() > 4) {
+    egg2pg_cat.error()
+      << "Invalid NURBSSurface V order for " << egg_surface->get_name() << ": "
+      << egg_surface->get_v_order() << "\n";
+    _error = true;
+    return;
+  }
+
+  nurbs->set_u_order(egg_surface->get_u_order());
+  nurbs->set_v_order(egg_surface->get_v_order());
+
+  int num_u_vertices = egg_surface->get_num_u_cvs();
+  int num_v_vertices = egg_surface->get_num_v_cvs();
+  nurbs->reset(num_u_vertices, num_v_vertices);
+  for (int ui = 0; ui < num_u_vertices; ui++) {
+    for (int vi = 0; vi < num_v_vertices; vi++) {
+      int i = egg_surface->get_vertex_index(ui, vi);
+      EggVertex *egg_vertex = egg_surface->get_vertex(i);
+      nurbs->set_vertex(ui, vi, LCAST(float, egg_vertex->get_pos4() * mat));
+
+      Colorf color = egg_vertex->get_color();
+      nurbs->set_extended_vertex(ui, vi, 0, color[0]);
+      nurbs->set_extended_vertex(ui, vi, 1, color[1]);
+      nurbs->set_extended_vertex(ui, vi, 2, color[2]);
+      nurbs->set_extended_vertex(ui, vi, 3, color[3]);
+    }
+  }
+
+  int num_u_knots = egg_surface->get_num_u_knots();
+  if (num_u_knots != nurbs->get_num_u_knots()) {
+    egg2pg_cat.error()
+      << "Invalid NURBSSurface number of U knots for "
+      << egg_surface->get_name() << ": got " << num_u_knots
+      << " knots, expected " << nurbs->get_num_u_knots() << "\n";
+    _error = true;
+    return;
+  }
+
+  int num_v_knots = egg_surface->get_num_v_knots();
+  if (num_v_knots != nurbs->get_num_v_knots()) {
+    egg2pg_cat.error()
+      << "Invalid NURBSSurface number of U knots for "
+      << egg_surface->get_name() << ": got " << num_v_knots
+      << " knots, expected " << nurbs->get_num_v_knots() << "\n";
+    _error = true;
+    return;
+  }
+
+  int i;
+  for (i = 0; i < num_u_knots; i++) {
+    nurbs->set_u_knot(i, egg_surface->get_u_knot(i));
+  }
+  for (i = 0; i < num_v_knots; i++) {
+    nurbs->set_v_knot(i, egg_surface->get_v_knot(i));
+  }
+
+  PT(SheetNode) sheet = new SheetNode(egg_surface->get_name());
+  sheet->set_surface(nurbs);
+
+  // Respect the subdivision values in the egg file, if any.
+  if (egg_surface->get_u_subdiv() != 0) {
+    int u_subdiv_per_segment = 
+      (int)((egg_surface->get_u_subdiv() + 0.5) / nurbs->get_num_u_segments());
+    sheet->set_num_u_subdiv(u_subdiv_per_segment);
+  }
+  if (egg_surface->get_v_subdiv() != 0) {
+    int v_subdiv_per_segment = 
+      (int)((egg_surface->get_v_subdiv() + 0.5) / nurbs->get_num_v_segments());
+    sheet->set_num_v_subdiv(v_subdiv_per_segment);
+  }
+
+  // Now get the attributes to apply to the sheet.  We create a
+  // BuilderBucket for this purpose, so we can call setup_bucket(),
+  // but all we do with this bucket is immediately extract the state
+  // from it.
+  BuilderBucket bucket;
+  setup_bucket(bucket, parent, egg_surface);
+
+  sheet->set_state(bucket._state);
+
+  // If we have a texture matrix, we have to apply that explicitly
+  // (the UV's are computed on the fly, so we can't precompute the
+  // texture matrix into them).
+  if (egg_surface->has_texture()) {
+    PT(EggTexture) egg_tex = egg_surface->get_texture();
+    if (egg_tex->has_transform()) {
+      // Expand the 2-d matrix to a 3-d matrix.
+      const LMatrix3d &mat3 = egg_tex->get_transform();
+      LMatrix4f mat4(mat3(0, 0), mat3(0, 1), 0.0f, mat3(0, 2),
+                     mat3(1, 0), mat3(1, 1), 0.0f, mat3(1, 2),
+                     0.0f, 0.0f, 1.0f, 0.0f,
+                     mat3(2, 0), mat3(2, 1), 0.0f, mat3(2, 2));
+      sheet->set_attrib(TexMatrixAttrib::make(mat4));
+    }
+  }
+
+  if (egg_surface->has_vertex_color()) {
+    // If the surface had individual vertex color, enable it.
+    sheet->set_use_vertex_color(true);
+  } else if (egg_surface->has_color()) {
+    // Otherwise, if the surface has overall color, apply it.
+    sheet->set_attrib(ColorAttrib::make_flat(egg_surface->get_color()));
+  }
+
+  parent->add_child(sheet);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1146,9 +1495,7 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
 ////////////////////////////////////////////////////////////////////
 PandaNode *EggLoader::
 make_node(EggNode *egg_node, PandaNode *parent) {
-  if (egg_node->is_of_type(EggNurbsCurve::get_class_type())) {
-    return make_node(DCAST(EggNurbsCurve, egg_node), parent);
-  } else if (egg_node->is_of_type(EggPrimitive::get_class_type())) {
+  if (egg_node->is_of_type(EggPrimitive::get_class_type())) {
     return make_node(DCAST(EggPrimitive, egg_node), parent);
   } else if (egg_node->is_of_type(EggBin::get_class_type())) {
     return make_node(DCAST(EggBin, egg_node), parent);
@@ -1161,85 +1508,6 @@ make_node(EggNode *egg_node, PandaNode *parent) {
   }
 
   return (PandaNode *)NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggLoader::make_node (EggNurbsCurve)
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
-PandaNode *EggLoader::
-make_node(EggNurbsCurve *egg_curve, PandaNode *parent) {
-  assert(parent != NULL);
-  assert(!parent->is_geom_node());
-
-  PT(ParametricCurve) curve;
-
-  if (egg_load_classic_nurbs_curves) {
-    curve = new ClassicNurbsCurve;
-  } else {
-    curve = new NurbsCurve;
-  }
-
-  NurbsCurveInterface *nurbs = curve->get_nurbs_interface();
-  nassertr(nurbs != (NurbsCurveInterface *)NULL, (PandaNode *)NULL);
-
-  if (egg_curve->get_order() < 1 || egg_curve->get_order() > 4) {
-    egg2pg_cat.error()
-      << "Invalid NURBSCurve order for " << egg_curve->get_name() << ": "
-      << egg_curve->get_order() << "\n";
-    _error = true;
-    return (PandaNode *)NULL;
-  }
-
-  nurbs->set_order(egg_curve->get_order());
-
-  EggPrimitive::const_iterator pi;
-  for (pi = egg_curve->begin(); pi != egg_curve->end(); ++pi) {
-    nurbs->append_cv(LCAST(float, (*pi)->get_pos4()));
-  }
-
-  int num_knots = egg_curve->get_num_knots();
-  if (num_knots != nurbs->get_num_knots()) {
-    egg2pg_cat.error()
-      << "Invalid NURBSCurve number of knots for "
-      << egg_curve->get_name() << ": got " << num_knots
-      << " knots, expected " << nurbs->get_num_knots() << "\n";
-    _error = true;
-    return (PandaNode *)NULL;
-  }
-
-  for (int i = 0; i < num_knots; i++) {
-    nurbs->set_knot(i, egg_curve->get_knot(i));
-  }
-
-  switch (egg_curve->get_curve_type()) {
-  case EggCurve::CT_xyz:
-    curve->set_curve_type(PCT_XYZ);
-    break;
-
-  case EggCurve::CT_hpr:
-    curve->set_curve_type(PCT_HPR);
-    break;
-
-  case EggCurve::CT_t:
-    curve->set_curve_type(PCT_T);
-    break;
-
-  default:
-    break;
-  }
-  curve->set_name(egg_curve->get_name());
-
-  if (!curve->recompute()) {
-    egg2pg_cat.error()
-      << "Invalid NURBSCurve " << egg_curve->get_name() << "\n";
-    _error = true;
-    return (PandaNode *)NULL;
-  }
-
-  parent->add_child(curve);
-  return curve;
 }
 
 ////////////////////////////////////////////////////////////////////

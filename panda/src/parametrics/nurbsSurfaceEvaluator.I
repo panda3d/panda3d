@@ -202,7 +202,7 @@ set_vertex_space(int ui, int vi, const string &space) {
 //               ordinary vertex must be set first, before the
 //               extended vertices can be set.
 ////////////////////////////////////////////////////////////////////
-void NurbsSurfaceEvaluator::
+INLINE void NurbsSurfaceEvaluator::
 set_extended_vertex(int ui, int vi, int d, float value) {
   nassertv(ui >= 0 && ui < _num_u_vertices &&
            vi >= 0 && vi < _num_v_vertices);
@@ -217,7 +217,7 @@ set_extended_vertex(int ui, int vi, int d, float value) {
 //               for the indicated dimension, or 0.0 if nothing has
 //               been set.
 ////////////////////////////////////////////////////////////////////
-float NurbsSurfaceEvaluator::
+INLINE float NurbsSurfaceEvaluator::
 get_extended_vertex(int ui, int vi, int d) const {
   nassertr(ui >= 0 && ui < _num_u_vertices &&
            vi >= 0 && vi < _num_v_vertices, 0.0f);
@@ -246,6 +246,36 @@ get_num_u_knots() const {
 INLINE int NurbsSurfaceEvaluator::
 get_num_v_knots() const {
   return _num_v_vertices + _v_order;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsSurfaceEvaluator::get_num_u_segments
+//       Access: Published
+//  Description: Returns the number of piecewise continuous segments
+//               in the surface in the U direction.  This is based on
+//               the knot vector.
+////////////////////////////////////////////////////////////////////
+INLINE int NurbsSurfaceEvaluator::
+get_num_u_segments() const {
+  if (_u_basis_dirty) {
+    ((NurbsSurfaceEvaluator *)this)->recompute_u_basis();
+  }
+  return _u_basis.get_num_segments();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsSurfaceEvaluator::get_num_v_segments
+//       Access: Published
+//  Description: Returns the number of piecewise continuous segments
+//               in the surface in the V direction.  This is based on
+//               the knot vector.
+////////////////////////////////////////////////////////////////////
+INLINE int NurbsSurfaceEvaluator::
+get_num_v_segments() const {
+  if (_v_basis_dirty) {
+    ((NurbsSurfaceEvaluator *)this)->recompute_v_basis();
+  }
+  return _v_basis.get_num_segments();
 }
 
 ////////////////////////////////////////////////////////////////////

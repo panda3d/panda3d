@@ -53,10 +53,16 @@ bool egg_flatten_siblings = config_egg2pg.GetBool("egg-flatten-siblings", false)
 bool egg_show_collision_solids = config_egg2pg.GetBool("egg-show-collision-solids", false);
 
 // When this is true, a <NurbsCurve> entry appearing in an egg file
-// will load a ClassicNurbsCurve object instead of the default, a
-// NurbsCurve object.  This only makes a difference when the NURBS++
-// library is available, in which case the default, NurbsCurve, is
-// actually a NurbsPPCurve object.
+// will load as a NurbsCurve or ClassicNurbsCurve object (see below).
+// When this is false, it will load a RopeNode instead, which uses the
+// new NurbsCurveEvaluator interface.
+bool egg_load_old_curves = config_egg2pg.GetBool("egg-load-old-curves", true);
+
+// When this is true (and the above is also true), a <NurbsCurve>
+// entry appearing in an egg file will load a ClassicNurbsCurve object
+// instead of the default, a NurbsCurve object.  This only makes a
+// difference when the NURBS++ library is available, in which case the
+// default, NurbsCurve, is actually a NurbsPPCurve object.
 bool egg_load_classic_nurbs_curves = config_egg2pg.GetBool("egg-load-classic-nurbs-curves", false);
 
 // When this is true, certain kinds of recoverable errors (not syntax

@@ -52,6 +52,7 @@ extern EXPCL_PANDAEGG bool egg_ignore_decals;
 extern EXPCL_PANDAEGG bool egg_flatten;
 extern EXPCL_PANDAEGG bool egg_flatten_siblings;
 extern EXPCL_PANDAEGG bool egg_show_collision_solids;
+extern EXPCL_PANDAEGG bool egg_load_old_curves;
 extern EXPCL_PANDAEGG bool egg_load_classic_nurbs_curves;
 extern EXPCL_PANDAEGG bool egg_accept_errors;
 extern EXPCL_PANDAEGG EggRenderMode::AlphaMode egg_alpha_mode;

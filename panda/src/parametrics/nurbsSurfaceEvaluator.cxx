@@ -309,7 +309,7 @@ recompute_u_basis() {
   _u_basis.clear(_u_order);
   if (_num_u_vertices > _u_order - 1) {
     int min_knot = _u_order;
-    int max_knot = _num_u_vertices + 1;
+    int max_knot = _num_u_vertices;
     
     for (int i = min_knot; i <= max_knot; i++) {
       nassertv(i - 1 >= 0 && i < (int)_u_knots.size());
@@ -338,7 +338,7 @@ recompute_v_basis() {
   _v_basis.clear(_v_order);
   if (_num_v_vertices > _v_order - 1) {
     int min_knot = _v_order;
-    int max_knot = _num_v_vertices + 1;
+    int max_knot = _num_v_vertices;
     
     for (int i = min_knot; i <= max_knot; i++) {
       nassertv(i - 1 >= 0 && i < (int)_v_knots.size());

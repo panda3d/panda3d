@@ -157,7 +157,7 @@ set_vertex_space(int i, const string &space) {
 //               ordinary vertex must be set first, before the
 //               extended vertices can be set.
 ////////////////////////////////////////////////////////////////////
-void NurbsCurveEvaluator::
+INLINE void NurbsCurveEvaluator::
 set_extended_vertex(int i, int d, float value) {
   nassertv(i >= 0 && i < (int)_vertices.size());
   _vertices[i].set_extended_vertex(d, value);
@@ -171,7 +171,7 @@ set_extended_vertex(int i, int d, float value) {
 //               for the indicated dimension, or 0.0 if nothing has
 //               been set.
 ////////////////////////////////////////////////////////////////////
-float NurbsCurveEvaluator::
+INLINE float NurbsCurveEvaluator::
 get_extended_vertex(int i, int d) const {
   nassertr(i >= 0 && i < (int)_vertices.size(), 0.0f);
   return _vertices[i].get_extended_vertex(d);
@@ -186,4 +186,18 @@ get_extended_vertex(int i, int d) const {
 INLINE int NurbsCurveEvaluator::
 get_num_knots() const {
   return (int)_vertices.size() + _order;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveEvaluator::get_num_segments
+//       Access: Published
+//  Description: Returns the number of piecewise continuous segments
+//               in the curve.  This is based on the knot vector.
+////////////////////////////////////////////////////////////////////
+INLINE int NurbsCurveEvaluator::
+get_num_segments() const {
+  if (_basis_dirty) {
+    ((NurbsCurveEvaluator *)this)->recompute_basis();
+  }
+  return _basis.get_num_segments();
 }

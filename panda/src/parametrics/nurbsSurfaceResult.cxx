@@ -46,63 +46,54 @@ NurbsSurfaceResult(const NurbsBasisVector &u_basis,
   int num_segments = num_u_segments * num_v_segments;
 
   _composed.reserve(num_segments);
-  for (int ui = 0; ui < num_u_segments; ui++) {
-    const LMatrix4f &u_basis_mat = _u_basis.get_basis(ui);
+  for (int i = 0; i < num_segments; i++) {
+    _composed.push_back(ComposedMats());
+  }
 
-    int un = _u_basis.get_vertex_index(ui);
-    nassertv(un >= 0 && un + u_order - 1 < _num_u_vertices);
-
-    for (int vi = 0; vi < num_v_segments; vi++) {
-      LMatrix4f v_basis_transpose = transpose(_v_basis.get_basis(vi));
-
-      int vn = _v_basis.get_vertex_index(vi);
-      nassertv(vn >= 0 && vn + v_order - 1 < _num_v_vertices);
-
+  for (int vi = 0; vi < num_v_segments; vi++) {
+    LMatrix4f v_basis_transpose = transpose(_v_basis.get_basis(vi));
+    
+    int vn = _v_basis.get_vertex_index(vi);
+    nassertv(vn >= 0 && vn + v_order - 1 < _num_v_vertices);
+    
+    for (int ui = 0; ui < num_u_segments; ui++) {
+      const LMatrix4f &u_basis_mat = _u_basis.get_basis(ui);
+      
+      int un = _u_basis.get_vertex_index(ui);
+      nassertv(un >= 0 && un + u_order - 1 < _num_u_vertices);
+      
       // Create four geometry matrices from our (up to) sixteen
       // involved vertices.
-      LVecBase4f c[4][4];
+      LMatrix4f geom_x, geom_y, geom_z, geom_w;
+      memset(&geom_x, 0, sizeof(geom_x));
+      memset(&geom_y, 0, sizeof(geom_y));
+      memset(&geom_z, 0, sizeof(geom_z));
+      memset(&geom_w, 0, sizeof(geom_w));
+
       for (int uni = 0; uni < 4; uni++) {
         for (int vni = 0; vni < 4; vni++) {
-          c[uni][vni] = (uni < u_order && vni < v_order) ? 
-            vecs[verti(un + uni, vn + vni)] :
-            LVecBase4f::zero();
+          if (uni < u_order && vni < v_order) {
+            const LVecBase4f &vec = vecs[verti(un + uni, vn + vni)];
+            geom_x(uni, vni) = vec[0];
+            geom_y(uni, vni) = vec[1];
+            geom_z(uni, vni) = vec[2];
+            geom_w(uni, vni) = vec[3];
+          }
         }
       }
-
-      LMatrix4f geom_x(c[0][0][0], c[0][1][0], c[0][2][0], c[0][3][0],
-                       c[1][0][0], c[1][1][0], c[1][2][0], c[1][3][0],
-                       c[2][0][0], c[2][1][0], c[2][2][0], c[2][3][0],
-                       c[3][0][0], c[3][1][0], c[3][2][0], c[3][3][0]);
-
-      LMatrix4f geom_y(c[0][0][1], c[0][1][1], c[0][2][1], c[0][3][1],
-                       c[1][0][1], c[1][1][1], c[1][2][1], c[1][3][1],
-                       c[2][0][1], c[2][1][1], c[2][2][1], c[2][3][1],
-                       c[3][0][1], c[3][1][1], c[3][2][1], c[3][3][1]);
-
-      LMatrix4f geom_z(c[0][0][2], c[0][1][2], c[0][2][2], c[0][3][2],
-                       c[1][0][2], c[1][1][2], c[1][2][2], c[1][3][2],
-                       c[2][0][2], c[2][1][2], c[2][2][2], c[2][3][2],
-                       c[3][0][2], c[3][1][2], c[3][2][2], c[3][3][2]);
-      
-      LMatrix4f geom_w(c[0][0][3], c[0][1][3], c[0][2][3], c[0][3][3],
-                       c[1][0][3], c[1][1][3], c[1][2][3], c[1][3][3],
-                       c[2][0][3], c[2][1][3], c[2][2][3], c[2][3][3],
-                       c[3][0][3], c[3][1][3], c[3][2][3], c[3][3][3]);
 
       // And compose these geometry matrices with the basis matrices
       // to produce a new set of matrices, which will be used to
       // evaluate the surface.
-      ComposedMats result;
+      int i = segi(ui, vi);
+      nassertv(i >= 0 && i < (int)_composed.size());
+      ComposedMats &result = _composed[i];
       result._x = u_basis_mat * geom_x * v_basis_transpose;
       result._y = u_basis_mat * geom_y * v_basis_transpose;
       result._z = u_basis_mat * geom_z * v_basis_transpose;
       result._w = u_basis_mat * geom_w * v_basis_transpose;
-
-      _composed.push_back(result);
     }
   }
-
-  nassertv((int)_composed.size() == num_segments);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -125,12 +116,13 @@ NurbsSurfaceResult(const NurbsBasisVector &u_basis,
 ////////////////////////////////////////////////////////////////////
 void NurbsSurfaceResult::
 eval_segment_point(int ui, int vi, float u, float v, LVecBase3f &point) const {
+  int i = segi(ui, vi);
+  nassertv(i >= 0 && i < (int)_composed.size());
+
   float u2 = u*u;
   LVecBase4f uvec(u*u2, u2, u, 1.0f);
   float v2 = v*v;
   LVecBase4f vvec(v*v2, v2, v, 1.0f);
-  int i = segi(ui, vi);
-  nassertv(i >= 0 && i < (int)_composed.size());
 
   float weight = vvec.dot(uvec * _composed[i]._w);
 
@@ -149,14 +141,25 @@ eval_segment_point(int ui, int vi, float u, float v, LVecBase3f &point) const {
 ////////////////////////////////////////////////////////////////////
 void NurbsSurfaceResult::
 eval_segment_normal(int ui, int vi, float u, float v, LVecBase3f &normal) const {
-  /*
-  float t2 = t*t;
-  LVecBase4f tvec(t2, t, 1.0f, 0.0f);
+  int i = segi(ui, vi);
+  nassertv(i >= 0 && i < (int)_composed.size());
 
-  normal.set(tvec.dot(_composed[segment].get_col(0)),
-              tvec.dot(_composed[segment].get_col(1)),
-              tvec.dot(_composed[segment].get_col(2)));
-  */
+  float u2 = u*u;
+  LVecBase4f uvec(u*u2, u2, u, 1.0f);
+  LVecBase4f duvec(3.0f * u2, 2.0f * u, 1.0f, 0.0f);
+  float v2 = v*v;
+  LVecBase4f vvec(v*v2, v2, v, 1.0f);
+  LVecBase4f dvvec(3.0f * v2, 2.0f * v, 1.0f, 0.0f);
+
+  LVector3f utan(vvec.dot(duvec * _composed[i]._x),
+                 vvec.dot(duvec * _composed[i]._y),
+                 vvec.dot(duvec * _composed[i]._z));
+
+  LVector3f vtan(dvvec.dot(uvec * _composed[i]._x),
+                 dvvec.dot(uvec * _composed[i]._y),
+                 dvvec.dot(uvec * _composed[i]._z));
+
+  normal = utan.cross(vtan);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -168,40 +171,39 @@ eval_segment_normal(int ui, int vi, float u, float v, LVecBase3f &normal) const 
 ////////////////////////////////////////////////////////////////////
 float NurbsSurfaceResult::
 eval_segment_extended_point(int ui, int vi, float u, float v, int d) const {
-  /*
-  nassertr(segment >= 0 && segment < _basis.get_num_segments(), 0.0f);
+  // Calculate the composition of the basis matrices and the geometry
+  // matrix on-the-fly.
+  LMatrix4f v_basis_transpose = transpose(_v_basis.get_basis(vi));
+  const LMatrix4f &u_basis_mat = _u_basis.get_basis(ui);
+  int u_order = _u_basis.get_order();
+  int v_order = _v_basis.get_order();
 
-  int order = _basis.get_order();
-  int vi = _basis.get_vertex_index(segment);
+  int un = _u_basis.get_vertex_index(ui);
+  int vn = _v_basis.get_vertex_index(vi);
 
-  LVecBase4f geom;
-  int ci = 0;
-  while (ci < order) {
-    geom[ci] = _verts[vi + ci].get_extended_vertex(d);
-    ci++;
+  LMatrix4f geom;
+  memset(&geom, 0, sizeof(geom));
+
+  for (int uni = 0; uni < 4; uni++) {
+    for (int vni = 0; vni < 4; vni++) {
+      if (uni < u_order && vni < v_order) {
+        geom(uni, vni) = _verts[verti(un + uni, vn + vni)].get_extended_vertex(d);
+      }
+    }
   }
-  while (ci < 4) {
-    geom[ci] = 0.0f;
-    ci++;
-  }
 
-  const LMatrix4f &basis = _basis.get_basis(segment);
+  LMatrix4f composed = u_basis_mat * geom * v_basis_transpose;
 
-  // Compute matrix * column vector.
-  LVecBase4f composed_geom(basis.get_row(0).dot(geom),
-                           basis.get_row(1).dot(geom),
-                           basis.get_row(2).dot(geom),
-                           basis.get_row(3).dot(geom));
+  int i = segi(ui, vi);
+  nassertr(i >= 0 && i < (int)_composed.size(), 0.0f);
 
-  float t2 = t*t;
-  LVecBase4f tvec(t*t2, t2, t, 1.0f);
+  float u2 = u*u;
+  LVecBase4f uvec(u*u2, u2, u, 1.0f);
+  float v2 = v*v;
+  LVecBase4f vvec(v*v2, v2, v, 1.0f);
 
-  float weight = tvec.dot(_composed[segment].get_col(3));
-
-  float result = tvec.dot(composed_geom) / weight;
-  return result;
-  */
-  return 0.0f;
+  float weight = vvec.dot(uvec * _composed[i]._w);
+  return vvec.dot(uvec * composed) / weight;
 }
 
 ////////////////////////////////////////////////////////////////////

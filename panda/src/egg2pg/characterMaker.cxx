@@ -29,6 +29,8 @@
 #include "characterSlider.h"
 #include "character.h"
 #include "transformState.h"
+#include "eggSurface.h"
+#include "eggCurve.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterMaker::Construtor
@@ -239,7 +241,16 @@ make_geometry(EggNode *egg_node) {
     if (!egg_primitive->empty()) {
       EggGroupNode *prim_home = determine_primitive_home(egg_primitive);
 
-      if (prim_home == NULL) {
+      if (prim_home == (EggGroupNode *)NULL &&
+          (egg_primitive->is_of_type(EggSurface::get_class_type()) ||
+           egg_primitive->is_of_type(EggCurve::get_class_type()))) {
+        // If the primitive would be dynamic but is a parametric
+        // primitive, we can't animate it anyway, so just put the
+        // whole thing under the primitive's parent node.
+        prim_home = egg_primitive->get_parent();
+      }
+
+      if (prim_home == (EggGroupNode *)NULL) {
         // This is a totally dynamic primitive that lives under the
         // character's node.
         make_dynamic_primitive(egg_primitive, _egg_root);

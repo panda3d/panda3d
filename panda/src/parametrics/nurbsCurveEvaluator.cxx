@@ -227,7 +227,7 @@ recompute_basis() {
   _basis.clear(_order);
   if ((int)_vertices.size() > _order - 1) {
     int min_knot = _order;
-    int max_knot = (int)_vertices.size() + 1;
+    int max_knot = (int)_vertices.size();
     
     for (int i = min_knot; i <= max_knot; i++) {
       nassertv(i - 1 >= 0 && i < (int)_knots.size());

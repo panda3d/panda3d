@@ -1,5 +1,5 @@
-// Filename: ropeNode.h
-// Created by:  drose (04Dec02)
+// Filename: sheetNode.h
+// Created by:  drose (11Oct03)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,32 +16,32 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef ROPENODE_H
-#define ROPENODE_H
+#ifndef SHEETNODE_H
+#define SHEETNODE_H
 
 #include "pandabase.h"
-#include "nurbsCurveEvaluator.h"
+#include "nurbsSurfaceEvaluator.h"
 #include "pandaNode.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : RopeNode
+//       Class : SheetNode
 // Description : This class draws a visible representation of the
-//               NURBS curve stored in its NurbsCurveEvaluator.  It
-//               automatically recomputes the curve every frame.
+//               NURBS surface stored in its NurbsSurfaceEvaluator.  It
+//               automatically recomputes the surface every frame.
 //
-//               This is not related to NurbsCurve, ClassicNurbsCurve,
-//               CubicCurveseg or any of the ParametricCurve-derived
+//               This is not related to NurbsSurface, ClassicNurbsSurface,
+//               CubicSurfaceseg or any of the ParametricSurface-derived
 //               objects in this module.  It is a completely parallel
-//               implementation of NURBS curves, and will probably
-//               eventually replace the whole ParametricCurve class
+//               implementation of NURBS surfaces, and will probably
+//               eventually replace the whole ParametricSurface class
 //               hierarchy.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA RopeNode : public PandaNode {
+class EXPCL_PANDA SheetNode : public PandaNode {
 PUBLISHED:
-  RopeNode(const string &name);
+  SheetNode(const string &name);
 
 protected:
-  RopeNode(const RopeNode &copy);
+  SheetNode(const SheetNode &copy);
 public:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -53,56 +53,16 @@ public:
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
 PUBLISHED:
-  enum RenderMode {
-    // Render the rope as a one-pixel thread using a linestrip.
-    RM_thread,
-
-    // Render the rope as a continuous triangle strip oriented to be
-    // perpendicular to the view vector.
-    RM_billboard
-  };
-
-  enum UVMode {
-    // Don't generate UV's along the curve.
-    UV_none,
-
-    // Generate UV's based on the parametric coordinates along the
-    // curve.
-    UV_parametric,
-
-    // Generate UV's in proportion to spatial distance along the
-    // curve, by using the distance function to compute the length of
-    // each segment.
-    UV_distance,
-
-    // As above, but don't bother to take the square root of each
-    // segment.  The distance is then in proportion to the
-    // sum-of-squares of the segments along the rope.  If the segments
-    // are similar in length, this approximates the proportion of
-    // UV_distance while avoiding hundreds of square root operations.
-    UV_distance2,
-  };
-
-  INLINE void set_curve(NurbsCurveEvaluator *curve);
-  INLINE NurbsCurveEvaluator *get_curve() const;
-
-  INLINE void set_render_mode(RenderMode render_mode);
-  INLINE RenderMode get_render_mode() const;
-
-  INLINE void set_uv_mode(UVMode uv_mode);
-  INLINE UVMode get_uv_mode() const;
-
-  INLINE void set_uv_scale(const LVecBase2f &uv_scale);
-  INLINE const LVecBase2f &get_uv_scale() const;
+  INLINE void set_surface(NurbsSurfaceEvaluator *surface);
+  INLINE NurbsSurfaceEvaluator *get_surface() const;
 
   INLINE void set_use_vertex_color(bool flag);
   INLINE bool get_use_vertex_color() const;
 
-  INLINE void set_num_subdiv(int num_subdiv);
-  INLINE int get_num_subdiv() const;
-
-  INLINE void set_thickness(float thickness);
-  INLINE float get_thickness() const;
+  INLINE void set_num_u_subdiv(int num_u_subdiv);
+  INLINE int get_num_u_subdiv() const;
+  INLINE void set_num_v_subdiv(int num_v_subdiv);
+  INLINE int get_num_v_subdiv() const;
 
   void reset_bound(const NodePath &rel_to);
 
@@ -111,10 +71,8 @@ protected:
 
 private:
   BoundingVolume *do_recompute_bound(const NodePath &rel_to);
-  void render_thread(CullTraverser *trav, CullTraverserData &data, 
-                     NurbsCurveResult *result);
-  void render_billboard(CullTraverser *trav, CullTraverserData &data, 
-                        NurbsCurveResult *result);
+  void render_sheet(CullTraverser *trav, CullTraverserData &data, 
+                    NurbsSurfaceResult *result);
 
 private:
   // This is the data that must be cycled between pipeline stages.
@@ -126,13 +84,10 @@ private:
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
-    PT(NurbsCurveEvaluator) _curve;
-    RenderMode _render_mode;
-    UVMode _uv_mode;
-    LVecBase2f _uv_scale;
+    PT(NurbsSurfaceEvaluator) _surface;
     bool _use_vertex_color;
-    int _num_subdiv;
-    float _thickness;
+    int _num_u_subdiv;
+    int _num_v_subdiv;
   };
 
   PipelineCycler<CData> _cycler;
@@ -153,7 +108,7 @@ public:
   }
   static void init_type() {
     PandaNode::init_type();
-    register_type(_type_handle, "RopeNode",
+    register_type(_type_handle, "SheetNode",
                   PandaNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -165,6 +120,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "ropeNode.I"
+#include "sheetNode.I"
 
 #endif

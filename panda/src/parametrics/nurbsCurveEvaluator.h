@@ -71,6 +71,8 @@ PUBLISHED:
   void set_knot(int i, float knot);
   float get_knot(int i) const;
 
+  INLINE int get_num_segments() const;
+
   PT(NurbsCurveResult) evaluate(const NodePath &rel_to = NodePath()) const;
 
 public:

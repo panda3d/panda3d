@@ -72,6 +72,9 @@ PUBLISHED:
   void set_v_knot(int i, float knot);
   float get_v_knot(int i) const;
 
+  INLINE int get_num_u_segments() const;
+  INLINE int get_num_v_segments() const;
+
   PT(NurbsSurfaceResult) evaluate(const NodePath &rel_to = NodePath()) const;
 
 public:

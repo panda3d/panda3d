@@ -28,7 +28,8 @@ CData() {
   _render_mode = RopeNode::RM_thread;
   _uv_mode = RopeNode::UV_none;
   _uv_scale.set(1.0f, 1.0f);
-  _num_segs = 10;
+  _use_vertex_color = false;
+  _num_subdiv = 10;
   _thickness = 1.0f;
 }
 
@@ -43,7 +44,8 @@ CData(const RopeNode::CData &copy) :
   _render_mode(copy._render_mode),
   _uv_mode(copy._uv_mode),
   _uv_scale(copy._uv_scale),
-  _num_segs(copy._num_segs),
+  _use_vertex_color(copy._use_vertex_color),
+  _num_subdiv(copy._num_subdiv),
   _thickness(copy._thickness)
 {
 }
@@ -145,29 +147,57 @@ get_uv_scale() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: set_num_segs
+//     Function: set_use_vertex_color
 //       Access: Public
-//  Description: Specifies the number of segments per cubic segment
-//               (that is, per unique knot value) to draw in a fixed
-//               uniform tesselation of the curve.
+//  Description: Sets the "use vertex color" flag.  When this is true,
+//               the R, G, B, A vertex color is assumed to be stored
+//               as the dimensions 0, 1, 2, 3, respectively, of the
+//               extended vertex values.  Use
+//               NurbsCurveEvaluator::set_extended_vertex() to set
+//               these values.
 ////////////////////////////////////////////////////////////////////
 INLINE void RopeNode::
-set_num_segs(int num_segs) {
-  nassertv(num_segs >= 0);
+set_use_vertex_color(bool flag) {
   CDWriter cdata(_cycler);
-  cdata->_num_segs = num_segs;
+  cdata->_use_vertex_color = flag;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: get_num_segs
+//     Function: get_use_vertex_color
 //       Access: Public
-//  Description: Returns the number of segments per cubic segment to
-//               draw.  See set_num_segs().
+//  Description: Returns the "use vertex color" flag.  See
+//               set_use_vertex_color().
+////////////////////////////////////////////////////////////////////
+INLINE bool RopeNode::
+get_use_vertex_color() const {
+  CDReader cdata(_cycler);
+  return cdata->_use_vertex_color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: set_num_subdiv
+//       Access: Public
+//  Description: Specifies the number of subdivisions per cubic
+//               segment (that is, per unique knot value) to draw in a
+//               fixed uniform tesselation of the curve.
+////////////////////////////////////////////////////////////////////
+INLINE void RopeNode::
+set_num_subdiv(int num_subdiv) {
+  nassertv(num_subdiv >= 0);
+  CDWriter cdata(_cycler);
+  cdata->_num_subdiv = num_subdiv;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_num_subdiv
+//       Access: Public
+//  Description: Returns the number of subdivisions per cubic segment
+//               to draw.  See set_num_subdiv().
 ////////////////////////////////////////////////////////////////////
 INLINE int RopeNode::
-get_num_segs() const {
+get_num_subdiv() const {
   CDReader cdata(_cycler);
-  return cdata->_num_segs;
+  return cdata->_num_subdiv;
 }
 
 ////////////////////////////////////////////////////////////////////

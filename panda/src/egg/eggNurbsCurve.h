@@ -66,9 +66,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    EggPrimitive::init_type();
+    EggCurve::init_type();
     register_type(_type_handle, "EggNurbsCurve",
-                  EggPrimitive::get_class_type());
+                  EggCurve::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -151,19 +151,21 @@ has_cull_callback() const {
 bool RopeNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // Create some geometry on-the-fly to render the rope.
-  if (get_num_segs() > 0) {
+  if (get_num_subdiv() > 0) {
     NurbsCurveEvaluator *curve = get_curve();
-    PT(NurbsCurveResult) result = curve->evaluate(data._node_path.get_node_path());
+    if (curve != (NurbsCurveEvaluator *)NULL) {
+      PT(NurbsCurveResult) result = curve->evaluate(data._node_path.get_node_path());
 
-    if (result->get_num_segments() > 0) {
-      switch (get_render_mode()) {
-      case RM_thread:
-        render_thread(trav, data, result);
-        break;
-
-      case RM_billboard:
-        render_billboard(trav, data, result);
-        break;
+      if (result->get_num_segments() > 0) {
+        switch (get_render_mode()) {
+        case RM_thread:
+          render_thread(trav, data, result);
+          break;
+          
+        case RM_billboard:
+          render_billboard(trav, data, result);
+          break;
+        }
       }
     }
   }
@@ -261,13 +263,14 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
               NurbsCurveResult *result) {
   UVMode uv_mode = get_uv_mode();
   LVecBase2f uv_scale = get_uv_scale();
+  bool use_vertex_color = get_use_vertex_color();
 
   PTA_Vertexf verts;
   PTA_TexCoordf uvs;
   PTA_Colorf colors;
   PTA_int lengths;
 
-  int num_verts = get_num_segs() + 1;
+  int num_verts = get_num_subdiv() + 1;
   int num_segments = result->get_num_segments();
   float dist = 0.0f;
   for (int segment = 0; segment < num_segments; segment++) {
@@ -277,6 +280,14 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
       LPoint3f point;
       result->eval_segment_point(segment, t, point);
       verts.push_back(point);
+
+      if (use_vertex_color) {
+        Colorf color(result->eval_segment_extended_point(segment, t, 0),
+                     result->eval_segment_extended_point(segment, t, 1),
+                     result->eval_segment_extended_point(segment, t, 2),
+                     result->eval_segment_extended_point(segment, t, 3));
+        colors.push_back(color);
+      }
 
       t = result->get_segment_t(segment, t);
       switch (uv_mode) {
@@ -308,8 +319,6 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
     }
     lengths.push_back(num_verts);
   }
-
-  colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
   
   PT(GeomLinestrip) geom = new GeomLinestrip;
   geom->set_width(get_thickness());
@@ -318,7 +327,13 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
   if (uv_mode != UV_none) {
     geom->set_texcoords(uvs, G_PER_VERTEX);
   }
-  geom->set_colors(colors, G_OVERALL);
+
+  if (use_vertex_color) {
+    geom->set_colors(colors, G_PER_VERTEX);
+  } else {
+    colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+    geom->set_colors(colors, G_OVERALL);
+  }
   geom->set_lengths(lengths);
   
   CullableObject *object = new CullableObject(geom, data._state,
@@ -355,7 +370,7 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
   // build one continuous tristrip for all connected segments, so we
   // can stitch them together properly at the seams.
 
-  int num_verts = get_num_segs() + 1;
+  int num_verts = get_num_subdiv() + 1;
   int num_segments = result->get_num_segments();
 
   vector_Vertexf center_verts;

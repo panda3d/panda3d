@@ -27,6 +27,7 @@
     parametricCurveCollection.I parametricCurveCollection.h  \
     piecewiseCurve.h \
     ropeNode.I ropeNode.h \
+    sheetNode.I sheetNode.h \
     $[if $[HAVE_NURBSPP], nurbsPPCurve.cxx nurbsPPCurve.h]
 
 
@@ -43,7 +44,8 @@
     nurbsVertex.cxx \
     parametricCurve.cxx parametricCurveCollection.cxx  \
     piecewiseCurve.cxx \
-    ropeNode.cxx
+    ropeNode.cxx \
+    sheetNode.cxx
 
   #define INSTALL_HEADERS \
     classicNurbsCurve.I classicNurbsCurve.h \
@@ -65,7 +67,8 @@
     parametricCurve.h \
     parametricCurveCollection.I parametricCurveCollection.h \
     piecewiseCurve.h \
-    ropeNode.I ropeNode.h
+    ropeNode.I ropeNode.h \
+    sheetNode.I sheetNode.h
 
   #define IGATESCAN all
 

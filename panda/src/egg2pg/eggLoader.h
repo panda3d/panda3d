@@ -41,6 +41,7 @@ class EggNode;
 class EggBin;
 class EggTable;
 class EggNurbsCurve;
+class EggNurbsSurface;
 class EggPrimitive;
 class EggPolygon;
 class EggMaterial;
@@ -81,6 +82,13 @@ private:
     CPT(RenderAttrib) _apply;
   };
 
+  void make_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
+                        const LMatrix4d &mat);
+  void make_old_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
+                            const LMatrix4d &mat);
+  void make_nurbs_surface(EggNurbsSurface *egg_surface, PandaNode *parent,
+                          const LMatrix4d &mat);
+
   void load_textures();
   bool load_texture(TextureDef &def, const EggTexture *egg_tex);
   void apply_texture_attributes(Texture *tex, const EggTexture *egg_tex);
@@ -93,7 +101,6 @@ private:
                     EggPrimitive *egg_prim);
 
   PandaNode *make_node(EggNode *egg_node, PandaNode *parent);
-  PandaNode *make_node(EggNurbsCurve *egg_curve, PandaNode *parent);
   PandaNode *make_node(EggPrimitive *egg_prim, PandaNode *parent);
   PandaNode *make_node(EggBin *egg_bin, PandaNode *parent);
   PandaNode *make_node(EggGroup *egg_group, PandaNode *parent);

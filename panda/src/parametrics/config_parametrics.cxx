@@ -27,6 +27,7 @@
 #include "parametricCurveDrawer.h"
 #include "piecewiseCurve.h"
 #include "ropeNode.h"
+#include "sheetNode.h"
 
 #ifdef HAVE_NURBSPP
 #include "nurbsPPCurve.h"
@@ -48,6 +49,7 @@ ConfigureFn(config_parametrics) {
   ParametricCurveDrawer::init_type();
   PiecewiseCurve::init_type();
   RopeNode::init_type();
+  SheetNode::init_type();
 
 #ifdef HAVE_NURBSPP
   NurbsPPCurve::init_type();
@@ -58,6 +60,7 @@ ConfigureFn(config_parametrics) {
   CubicCurveseg::register_with_read_factory();
   HermiteCurve::register_with_read_factory();
   RopeNode::register_with_read_factory();
+  SheetNode::register_with_read_factory();
 }
 
 const DSearchPath &

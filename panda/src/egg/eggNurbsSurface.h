@@ -100,9 +100,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    EggPrimitive::init_type();
+    EggSurface::init_type();
     register_type(_type_handle, "EggNurbsSurface",
-                  EggPrimitive::get_class_type());
+                  EggSurface::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
