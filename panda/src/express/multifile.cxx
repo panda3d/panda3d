@@ -695,7 +695,7 @@ extract_subfile_to(int index, ostream &out) {
 istream &Multifile::
 open_read_subfile(int index) {
 #ifndef NDEBUG
-  ifstream empty_stream;
+  static ifstream empty_stream;
   nassertr(_open_subfile == (Subfile *)NULL, empty_stream);
   nassertr(is_read_valid(), empty_stream);
   nassertr(index >= 0 && index < (int)_subfiles.size(), empty_stream);
