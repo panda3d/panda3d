@@ -670,7 +670,7 @@ issue_delta_modify(const RenderState *other,
     return return_new(new_state);
   } else {
     delete new_state;
-    return other;
+    return this;
   }
 }
 
@@ -692,9 +692,6 @@ issue_delta_set(const RenderState *other,
     // If the state doesn't change, that's a trivial special case.
     return other;
   }
-
-  // We don't need to build a new RenderState, because the return
-  // value will be exactly other.
 
   Attributes::const_iterator ai = _attributes.begin();
   Attributes::const_iterator bi = other->_attributes.begin();
