@@ -72,15 +72,17 @@ deallocate(void *p, allocator<Type>::size_type) {
 
 #elif MODERN_STYLE_ALLOCATOR
 
+
+
 template<class Type>
 INLINE pallocator<Type>::
 pallocator() throw() {
 }
 
 template<class Type>
-INLINE pallocator<Type>::pointer pallocator<Type>::
-allocate(pallocator<Type>::size_type n, allocator<void>::const_pointer) {
-  return (pallocator<Type>::pointer)(*global_operator_new)(n * sizeof(Type));
+INLINE typename pallocator<Type>::pointer pallocator<Type>::
+allocate(typename pallocator<Type>::size_type n, typename allocator<void>::const_pointer) {
+  return (typename pallocator<Type>::pointer)(*global_operator_new)(n * sizeof(Type));
 }
 
 template<class Type>

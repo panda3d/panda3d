@@ -49,8 +49,13 @@
 #pragma warning (disable : 4244)
 
 #if _MSC_VER >= 1300
+ #if _MSC_VER >= 1310
+   #define USING_MSVC7_1
+//#pragma message("VC 7.1")    
+ #else
+//#pragma message("VC 7.0") 
+ #endif
 #define USING_MSVC7
-//#pragma message("VC 7.0")
 #else 
 // #pragma message("VC 6.0")
 #endif

@@ -44,7 +44,7 @@
   // ensure pdbs are copied to install dir
   #define build_pdbs yes  
   
-#elif $[eq $[USE_COMPILER], MSVC7]
+#elif $[or $[eq $[USE_COMPILER], MSVC7], $[eq $[USE_COMPILER], MSVC7_1]]
 
   #define COMPILER cl
   #define LINKER link
