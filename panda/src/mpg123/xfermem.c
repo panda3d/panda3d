@@ -20,7 +20,9 @@
 #include <sys/mman.h>
 #include <sys/socket.h>
 #include <fcntl.h>
+#ifdef WIN32
 #include <io.h>
+#endif
 
 #ifdef AIX
 #include <sys/select.h>

@@ -10,8 +10,11 @@
 #include <sys/time.h>
 #endif /* WIN32 */
 
-#include <fcntl.h>
+#ifdef WIN32
 #include <io.h>
+#endif
+
+#include <fcntl.h>
 
 #ifdef READ_MMAP
 #include <sys/mman.h>

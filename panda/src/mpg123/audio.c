@@ -1,6 +1,8 @@
 
 #include "mpg123.h"
+#ifdef WIN32
 #include <io.h>
+#endif
 #include <stdlib.h>
 
 void audio_info_struct_init(struct audio_info_struct *ai)
