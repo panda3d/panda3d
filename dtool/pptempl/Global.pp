@@ -88,6 +88,9 @@
 #if $[HAVE_PYTHON]
   #define python_ipath $[wildcard $[PYTHON_IPATH]]
   #define python_lpath $[wildcard $[PYTHON_LPATH]]
+  #define python_fpath $[wildcard $[PYTHON_FPATH]]
+  #define python_libs $[PYTHON_LIBS]
+  #define python_framework $[PYTHON_FRAMEWORK]
 #endif
 
 #if $[HAVE_NSPR]
@@ -384,6 +387,34 @@
 
   $[alt_lpath]
 #end get_lpath
+
+// This function returns the appropriate framework search path for the
+// target, based on the various external frameworks this particular
+// target claims to require.  This returns a space-separated set of
+// directory names only; the -F switch is not included here.
+#defun get_fpath
+  #define alt_fpath $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_fpath] $[nspr_fpath] $[python_fpath]]
+
+  #foreach package $[use_packages]
+    #set alt_fpath $[alt_fpath] $[$[package]_fpath]
+  #end package
+
+  $[alt_fpath]
+#end get_fpath
+
+// This function returns the appropriate framework for the
+// target, based on the various external frameworks this particular
+// target claims to require.  This returns a space-separated set of
+// framework names only; the -framework switch is not included here.
+#defun get_frameworks
+  #define alt_framework $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_framework] $[nspr_framework] $[python_framework]]
+
+  #foreach package $[use_packages]
+    #set alt_framework $[alt_framework] $[$[package]_framework]
+  #end package
+
+  $[alt_framework]
+#end get_frameworks
 
 // This function returns the appropriate set of library names to link
 // with for the target, based on the various external packages this
