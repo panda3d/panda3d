@@ -106,7 +106,7 @@ resize_pool(int new_size) {
 //    Access : private
 ////////////////////////////////////////////////////////////////////
 
-INLINE void GeomParticleRenderer::
+void GeomParticleRenderer::
 kill_nodes(void) {
   pvector< PT(PandaNode) >::iterator vec_iter = _node_vector.begin();
 
