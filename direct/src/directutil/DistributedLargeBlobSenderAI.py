@@ -20,11 +20,35 @@ class DistributedLargeBlobSenderAI(DistributedObjectAI.DistributedObjectAI):
         self.generateWithRequired(zoneId)
 
         # send the data
+        s = str(data)
         if useDisk:
-            DistributedLargeBlobSenderAI.notify.error(
-                'large blob transfer by file not yet implemented')
+            # write the data to a file and tell the client where to get it
+            import os
+            import random
+            origDir = os.getcwd()
+            bPath = LargeBlobSenderConsts.getLargeBlobPath()
+            try:
+                os.chdir(bPath)
+            except OSError:
+                DistributedLargeBlobSenderAI.notify.error(
+                    'could not access %s' % bPath)
+            # find an unused temp filename
+            while 1:
+                num = random.randrange((1 << 30)-1)
+                filename = LargeBlobSenderConsts.FilePattern % num
+                try:
+                    os.stat(filename)
+                except OSError:
+                    break
+            # NOTE: there's a small chance of a race condition here, if
+            # the file is created by another AI just after the stat fails
+            f = file(filename, 'wb')
+            f.write(s)
+            f.close()
+            os.chdir(origDir)
+            self.sendUpdateToAvatarId(self.targetAvId,
+                                      'setFilename', [filename])
         else:
-            s = str(data)
             chunkSize = LargeBlobSenderConsts.ChunkSize
             while len(s):
                 self.sendUpdateToAvatarId(self.targetAvId,

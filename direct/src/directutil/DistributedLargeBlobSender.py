@@ -45,11 +45,23 @@ class DistributedLargeBlobSender(DistributedObject.DistributedObject):
             self.privOnBlobComplete()
 
     def setFilename(self, filename):
-        DistributedLargeBlobSender.notify.debug('setFilename')
+        DistributedLargeBlobSender.notify.debug('setFilename: %s' % filename)
         assert self.useDisk
-        self.blob = ''
-        DistributedLargeBlobSender.notify.error(
-            'large blob transfer by file not yet implemented')
+
+        import os
+        origDir = os.getcwd()
+        bPath = LargeBlobSenderConsts.getLargeBlobPath()
+        try:
+            os.chdir(bPath)
+        except OSError:
+            DistributedLargeBlobSender.notify.error(
+                'could not access %s' % bPath)
+        f = file(filename, 'rb')
+        self.blob = f.read()
+        f.close()
+        os.unlink(filename)
+        os.chdir(origDir)
+
         self.privOnBlobComplete()
 
     def isComplete(self):
