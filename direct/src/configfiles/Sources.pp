@@ -1,5 +1,5 @@
 #define INSTALL_CONFIG \
-  Configrc.direct
+  _direct.prc
 
 #if $[CTPROJS]
   // These files only matter to ctattach users.

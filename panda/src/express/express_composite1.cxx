@@ -15,7 +15,6 @@
 #include "dcast.cxx"
 #include "error_utils.cxx"
 #include "get_config_path.cxx"
-#include "globPattern.cxx"
 #include "hashGeneratorBase.cxx"
 #include "hashVal.cxx"
 #include "indent.cxx"

@@ -73,7 +73,7 @@ clear() {
 //     Function: DCFile::read_all
 //       Access: Published
 //  Description: This special method reads all of the .dc files named
-//               by the "dc-file" Configrc variable, and loads them
+//               by the "dc-file" config.prc variable, and loads them
 //               into the DCFile namespace.
 ////////////////////////////////////////////////////////////////////
 bool DCFile::
@@ -82,7 +82,7 @@ read_all() {
   config_express.GetAll("dc-file", dc_files);
 
   if (dc_files.empty()) {
-    cerr << "No files specified via dc-file Configrc variable!\n";
+    cerr << "No files specified via dc-file Config.prc variable!\n";
     return false;
   }
 

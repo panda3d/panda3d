@@ -8,7 +8,9 @@
   #define SOURCES \
     configTable.I configTable.h \
     config_dconfig.h config_notify.h config_setup.h \
-    dconfig.I dconfig.h notify.I \
+    dconfig.I dconfig.h \
+    globPattern.I globPattern.h \
+    notify.I \
     notify.h notifyCategory.I \
     notifyCategory.h notifyCategoryProxy.I notifyCategoryProxy.h \
     notifySeverity.h serialization.I serialization.h  \
@@ -16,12 +18,15 @@
     
  #define INCLUDED_SOURCES \
     configTable.cxx config_dconfig.cxx dconfig.cxx \
-    config_notify.cxx notify.cxx notifyCategory.cxx \
+    config_notify.cxx \
+    globPattern.cxx \
+    notify.cxx notifyCategory.cxx \
     notifySeverity.cxx symbolEnt.cxx 
 
   #define INSTALL_HEADERS                                               \
     configTable.I configTable.h config_dconfig.h config_setup.h         \
-    dconfig.I dconfig.h                                                 \
+    dconfig.I dconfig.h \
+    globPattern.I globPattern.h \
     notify.I notify.h notifyCategory.I                \
     notifyCategory.h notifyCategoryProxy.I notifyCategoryProxy.h        \
     notifySeverity.h serialization.I serialization.h symbolEnt.I        \

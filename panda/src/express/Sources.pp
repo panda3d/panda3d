@@ -25,7 +25,6 @@
     dcast.T dcast.h \
     error_utils.h \
     get_config_path.h \
-    globPattern.I globPattern.h \
     hashGeneratorBase.I hashGeneratorBase.h \
     hashVal.I hashVal.h indent.I indent.h \
     indirectLess.I indirectLess.h \
@@ -82,7 +81,6 @@
     datagramIterator.cxx \
     datagramSink.cxx dcast.cxx error_utils.cxx \
     get_config_path.cxx \
-    globPattern.cxx \
     hashGeneratorBase.cxx hashVal.cxx indent.cxx \
     memoryInfo.cxx memoryUsage.cxx memoryUsagePointerCounts.cxx \
     memoryUsagePointers.cxx multifile.cxx \
@@ -128,7 +126,6 @@
     datagramIterator.I datagramIterator.h \
     datagramSink.I datagramSink.h dcast.T dcast.h \
     error_utils.h get_config_path.h \
-    globPattern.I globPattern.h \
     hashGeneratorBase.I \
     hashGeneratorBase.h hashVal.I hashVal.h \
     indent.I indent.h \

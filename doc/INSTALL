@@ -432,9 +432,6 @@ After installing panda, you are almost ready to run the program
 "pview," which is a basic model viewer program that demonstrates some
 Panda functionality.  Successfully running pview proves that Panda is
 installed and configured correctly (at least as a C++ library).
-However, you must set up a Configrc file to set your runtime
-configuration options before you can run Panda and open up a graphics
-window.  See HOW TO RUN PANDA, below.
 
 If you wish, you may also build direct.  You only need to build this
 if you intend to use the Python interfaces.
@@ -631,9 +628,6 @@ After installing panda, you are almost ready to run the program
 "pview," which is a basic model viewer program that demonstrates some
 Panda functionality.  Successfully running pview proves that Panda is
 now installed and configured correctly (at least as a C++ library).
-However, you must set up a Configrc file to set your runtime
-configuration options before you can run Panda and open up a graphics
-window.  See HOW TO RUN PANDA, below.
 
 If you wish, you may also build direct.  You only need to build this
 if you intend to use the Python interfaces.
@@ -664,68 +658,67 @@ to type rehash first if you use csh):
 
   pview
 
-The first time you run pview, if you have not yet created a Configrc
-file, you should see something like this:
-
-  Known pipe types:
-  No interactive pipe is available!  Check your Configrc!
-
-If you get instead an error about some shared library or libraries not
-being found, check that your LD_LIBRARY_PATH setting (on Unix) or your
-PATH (on Windows) includes the directory in which all of the Panda
+If you get an error about some shared library or libraries not being
+found, check that your LD_LIBRARY_PATH setting (on Unix) or your PATH
+(on Windows) includes the directory in which all of the Panda
 libraries have been installed.  (This is normally $INSTALL_DIR/lib, or
 whatever you set INSTALL_DIR to followed by "lib".  On Unix, this
 defaults to /usr/local/panda/lib.  If you have redefined
 INSTALL_LIB_DIR in your Config.pp, for instance to define Panda as a
 native Python module, you should use that directory instead.)
 
-If you do get the above error message, you will need to create a
-Configrc file to indicate some run-time parameters.  This is different
-from the Config.pp file you created above, which is only used by
-ppremake to define compile-time parameters; the Configrc file is read
-every time Panda is started and it defines parameters that control
-run-time behavior.
+If all goes well, pview should open up a window with a blue triangle.
+You can use the mouse to move the triangle around.  You can also pass
+on the command line the name of an egg or bam file, if you have one
+(look in the models directory for some sample egg files), and pview
+will load up and display the model.
 
-Create a file called Configrc in the $INSTALL_DIR/etc directory.  By
-convention, your custom Configrc file should not have any extension,
-not even the extension ".txt"; this differentiates it from the
-standard Configrc files which are also installed into the
-$INSTALL_DIR/etc file (and having no extension causes your file to be
-sorted to the top of the list, so that your personal settings will
-override those in the other files).
 
-For now, add just the line:
+There are several files in the $INSTALL_DIR/etc directory with the
+filename extension .prc; these are Panda Runtime Configuration files.
+These are different from the Config.pp file, which controls the way
+Panda is compiled and is only used at build time.  The prc files are
+read in every time Panda is started and control the way Panda behaves
+at runtime.
 
-  load-display pandagl
+The system-defined prc files begin with the underscore character, so
+that they sort to the top of the list and are read first (and so that
+you may define one or more additional files that are read afterwards
+and that will therefore override the values specified in these system
+files).
 
-Or, if you are on Windows and prefer to use DirectX instead of OpenGL,
-add instead the line:
+We suggest creating a file in $INSTALL_DIR/etc called Config.prc,
+where you will put your own custom configuration options.  For
+instance, if you want to run using OpenGL instead of the Windows
+default of DirectX9, you can add the line:
 
-  load-display pandadx8
+load-display pandagl
 
-Later you may add additional lines here to control the default
-behavior of Panda in other ways.  See the file Configrc in this
-directory for more examples.
+to your Config.prc file.  If you choose not to do this at this time,
+you can just leave this file empty for now; we do recommend creating
+at least an empty Config.prc file as a placeholder into which you can
+add your custom configuration options later.
 
-Now try to run pview again.  If all goes well, it should open up a
-window with a blue triangle.  You can use the mouse to move the
-triangle around.  You can also pass the name of an egg file, if you
-have one (look in the models directory for some sample egg files), on
-the command line, and pview will load up and display the egg file.
+The complete list of available configuration options is very large and
+is not fully documented; but there are other documents that list
+several particularly useful config variables.  These are sometimes
+referred to as "Configrc" variables because an older Panda convention
+named this file Configrc instead of Config.prc.
 
-If you want to load the Configrc from other than the compiled-in
-default directory, set the environment variable:
+If you want to load Config.prc from other than the compiled-in default
+directory of $INSTALL_DIR/etc, set the environment variable:
 
-  CONFIGRC_DIR=/my/home/directory
-  export CONFIGRC_DIR
+  PRC_DIR=/my/home/directory
+  export PRC_DIR
 
 Where /my/home/directory is the name of your home directory (or
-wherever you put the Configrc file).  Note that if you redefine
-CONFIGRC_DIR, you will no longer automatically load the standard
-Configrc files that were installed into $INSTALL_DIR/etc.  It is
-possible to configure Panda to search for Configrc files in more than
-one directory, but that's a little more complicated and is outside the
-scope of this document.
+wherever you put the Config.prc file).  Note that if you redefine
+PRC_DIR, you will no longer automatically load the standard prc files
+that were installed into $INSTALL_DIR/etc (so you should consider
+copying these files into the same directory).  It is possible to
+configure Panda to search for prc files in more than one directory,
+but that's a little more complicated and is outside the scope of this
+document.
 
 
 
@@ -833,7 +826,7 @@ defined appropriately once you have become root.
 
 Testing the Python interface
 
-Assuming that you have already set up your Configrc file and tested
+Assuming that you have already set up your Config.prc file and tested
 that pview works, as described above in HOW TO RUN PANDA, you should
 now be ready to try to run Panda from within Python.  Start up a
 Python shell and type the following command:

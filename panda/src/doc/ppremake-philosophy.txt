@@ -146,7 +146,7 @@ SOURCE TREE AND INSTALL TREE HIERARCHY
   /usr/local/panda or something else.  (On a Windows environment the
   directory name /usr/local/panda may be inappropriate.  It is up to
   the user to specify a suitable directory name.  We suggest
-  C:\panda.)
+  C:\Panda3d.)
 
   Once dtool has been built and installed, the next step is to cd to
   the panda package, ppremake, and 'make' followed by 'make install',
@@ -161,7 +161,7 @@ AN ALTERNATIVE INSTALL TREE PHILOSOPHY
   the outside developer who is primarily interested in taking the
   whole body of code as a complete piece, but we have different needs
   for our own in-house development.  It is convenient to be able to
-  treat the individual packages separately; our in-house 'attach'
+  treat the individual packages separately; our in-house 'ctattach'
   scripts (not included with the distribution) allow us to use one of
   several automatically-built trees for development, or upon need, to
   switch on-the-fly to using our own personally built tree.

@@ -185,9 +185,9 @@ $[cdefine LINK_IN_GL]
 $[cdefine LINK_IN_PHYSICS]
 
 /* The compiled-in default directory to look for the Configrc file, in
-   the absence of the CONFIGRC_DIR environment variable set, and in
+   the absence of the PRC_DIR environment variable set, and in
    the absence of anything specified via the configpath directive. */
-# define DEFAULT_CONFIGRC_DIR "$[DEFAULT_CONFIGRC_DIR]"
+# define DEFAULT_PRC_DIR "$[DEFAULT_PRC_DIR]"
 
 
 

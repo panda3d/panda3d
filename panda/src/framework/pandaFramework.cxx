@@ -750,7 +750,9 @@ make_default_pipe() {
   _default_pipe = selection->make_default_pipe();
 
   if (_default_pipe == (GraphicsPipe*)NULL) {
-    nout << "No graphics pipe is available!  Check your Configrc!\n";
+    nout << "No graphics pipe is available!\n"
+         << "Your Config.prc file must name at least one valid panda display\n"
+         << "library via load-display or aux-display.\n";
   }
 }
 

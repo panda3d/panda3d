@@ -269,9 +269,9 @@ class ShowBase(DirectObject.DirectObject):
         import Transitions
         self.transitions = Transitions.Transitions(self.loader)
 
-        # Start Tk and DIRECT if specified by Configrc
+        # Start Tk and DIRECT if specified by Config.prc
         fTk = self.config.GetBool('want-tk', 0)
-        # Start DIRECT if specified in Configrc or in cluster mode
+        # Start DIRECT if specified in Config.prc or in cluster mode
         fDirect = (self.config.GetBool('want-directtools', 0) or
                    (base.config.GetString("cluster-mode", '') != ''))
         # Set fWantTk to 0 to avoid starting Tk with this call
@@ -324,7 +324,11 @@ class ShowBase(DirectObject.DirectObject):
         selection.printPipeTypes()
         self.pipe = selection.makeDefaultPipe()
         if not self.pipe:
-            self.notify.error("No graphics pipe is available!  Check your Configrc!")
+            self.notify.error(
+                "No graphics pipe is available!\n"
+                "Your Config.prc file must name at least one valid panda display\n"
+                "library via load-display or aux-display.")
+
         self.notify.info("Default graphics pipe is %s (%s)." % (self.pipe.getInterfaceName(), self.pipe.getType().getName()))
         self.pipeList.append(self.pipe)
 
@@ -939,7 +943,7 @@ class ShowBase(DirectObject.DirectObject):
         return Task.cont
 
     def createStats(self):
-        # You must specify a pstats-host in your configrc
+        # You must specify a pstats-host in your Config.prc
         # The default is localhost
         if self.wantStats:
             PStatClient.connect()

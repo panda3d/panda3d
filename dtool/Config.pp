@@ -104,14 +104,16 @@
 // #define INSTALL_LIB_DIR /usr/lib/python2.2/site-packages
 
 
-// The Configrc file is used by Panda for runtime configuration.
-// Panda will load up all files named Configrc* (with any and every
-// extension) in the directory specified by the CONFIGRC_DIR
-// environment variable, or in the directory named here if that
-// environment variable is undefined.  By default, we specify the
-// install/etc dir, which is where the system-provided Configrc files
-// get copied to.
-#defer DEFAULT_CONFIGRC_DIR $[INSTALL_DIR]/etc
+// The PRC files are used by Panda for runtime configuration.  Panda
+// will load up all files named *.prc in the directory specified by
+// the PRC_DIR environment variable, or in the directory named here if
+// that environment variable is undefined.  Config files are loaded up
+// in alphabetical order (sorted by ASCII value), and the
+// alphabetically last files have precedence.
+
+// By default, we specify the install/etc dir, which is where the
+// system-provided PRC files get copied to.
+#defer DEFAULT_PRC_DIR $[INSTALL_DIR]/etc
 
 
 // What level of compiler optimization/debug symbols should we build?
@@ -459,9 +461,9 @@
 // specify one.  Define it empty not to do this, saving a few
 // kilobytes on the generated library.  Sorry, you can't pick a
 // particular font to be the default; it's hardcoded in the source
-// (although you can use the text-default-font Configrc variable to
-// specify a particular font file to load as the default, overriding
-// the compiled-in font).
+// (although you can use the text-default-font prc variable to specify
+// a particular font file to load as the default, overriding the
+// compiled-in font).
 #define COMPILE_IN_DEFAULT_FONT 1
 
 // Is Maya installed?  This matters only to programs in PANDATOOL.

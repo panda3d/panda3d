@@ -156,7 +156,7 @@ void ConfigTable::ReadConfigFile() {
 
       size_t p = 0;
       while (p < path.length()) {
-        size_t q = path.find_first_of(" :", p);
+        size_t q = path.find_first_of(pathsep, p);
         if (q == string::npos) {
           config_search.append_directory(Filename::from_os_specific(path.substr(p)));
           break;
@@ -179,47 +179,37 @@ void ConfigTable::ReadConfigFile() {
 
   DSearchPath::Results config_files;
 
-  if (!configsuffix.empty()) {
-    if (configsuffix == "*") {
-      // A configsuffix of "*" is a special case: this means to find
-      // all files that begin with configname.  We don't do full
-      // globbing, though.  We also make a special case for files
-      // ending in ~, which we always ignore (these are usually just
-      // backup files).
-      if (microconfig_cat->is_spam())
-        microconfig_cat->spam() << "searching for files matching: "
-                                << (configname + configsuffix) << endl;
-      for (int di = 0; di < config_search.get_num_directories(); di++) {
-        const Filename &directory = config_search.get_directory(di);
-        if (directory.is_directory()) {
-          vector_string files;
-          directory.scan_directory(files);
-          // Scan the files in reverse order to match Configrc overwrite
-          // rules, so that the alphabetically earliest file has
-          // precedence.
-          for (vector_string::reverse_iterator fi = files.rbegin();
-               fi != files.rend();
-               ++fi) {
-            if ((*fi).substr(0, configname.length()) == configname &&
-                (*fi).substr((*fi).length() - 1) != string("~")) {
-              Filename file(directory, (*fi));
-              config_files.add_file(file);
-            }
-          }
+  if (microconfig_cat->is_spam()) {
+    microconfig_cat->spam() << "searching for files matching:\n";
+    for (Globs::const_iterator gi = configname.begin();
+         gi != configname.end();
+         ++gi) {
+      microconfig_cat->spam() << "  " << (*gi) << endl;
+    }
+  }
+
+  for (int di = 0; di < config_search.get_num_directories(); di++) {
+    const Filename &directory = config_search.get_directory(di);
+    if (directory.is_directory()) {
+      vector_string files;
+      directory.scan_directory(files);
+      // Scan the files in alphabetical order, so that the
+      // alphabetically last file has precedence.
+      for (vector_string::iterator fi = files.begin();
+           fi != files.end();
+           ++fi) {
+        bool matches = false;
+        for (Globs::const_iterator gi = configname.begin();
+             gi != configname.end() && !matches;
+             ++gi) {
+          matches = (*gi).matches(*fi);
+        }
+        if (matches) {
+          Filename file(directory, (*fi));
+          config_files.add_file(file);
         }
       }
-
-    } else {
-      if (microconfig_cat->is_spam())
-        microconfig_cat->spam() << "aggregate config name is: "
-                                << (configname + configsuffix) << endl;
-      config_search.find_all_files(configname + configsuffix, config_files);
     }
-  } else {
-    if (microconfig_cat->is_spam())
-      microconfig_cat->spam() << "searching for '" << configname << "'"
-                              << endl;
-    config_search.find_all_files(configname, config_files);
   }
 
   if (microconfig_cat->is_spam())
@@ -375,11 +365,11 @@ void ConfigTable::ParseArgs() {
 }
 
 void ConfigTable::ConfigDirDefault() {
-  // The configdir default comes from $CONFIGRC_DIR, or from the
-  // compiled in DEFAULT_CONFIGRC_DIR if that's unspecified.
-  configdir = ExecutionEnvironment::get_environment_variable("CONFIGRC_DIR");
+  // The configdir default comes from $PRC_DIR, or from the
+  // compiled in DEFAULT_PRC_DIR if that's unspecified.
+  configdir = ExecutionEnvironment::get_environment_variable("PRC_DIR");
   if (configdir.empty()) {
-    configdir = DEFAULT_CONFIGRC_DIR;
+    configdir = DEFAULT_PRC_DIR;
   }
 }
 
@@ -410,7 +400,6 @@ void ConfigTable::MicroConfig() {
    bool psep = false;
    bool fsep = false;
    bool cname = false;
-   bool csuff = false;
    bool cargs = false;
    bool cpath = false;
    bool cdir = false;
@@ -478,22 +467,12 @@ void ConfigTable::MicroConfig() {
                         << "setting the file separator to '" << filesep << "'"
                         << endl;
                } else if (tok == "configname") {
-                  configname = rest;
-                  cname = true;
-                  if (microconfig_cat->is_spam())
-                     microconfig_cat->spam()
-                        << "got a microconfig configname directive, "
-                        << "setting the configfile name to '" << configname
-                        << "'" << endl;
-               } else if (tok == "configsuffix") {
-                  configsuffix = rest;
-                  csuff = true;
-                  if (microconfig_cat->is_spam())
-                     microconfig_cat->spam()
-                        << "got a microconfig configsuffix directive, "
-                        << "setting the config file suffix to '"
-                        << configsuffix << "'"
-                        << endl;
+                 configname.push_back(GlobPattern(rest));
+                 cname = true;
+                 if (microconfig_cat->is_spam())
+                   microconfig_cat->spam()
+                     << "got a microconfig configname directive, "
+                     << "adding configname '" << rest << "'" << endl;
                } else if (tok == "configargs") {
                   configargs = rest;
                   cargs = true;
@@ -631,15 +610,7 @@ void ConfigTable::MicroConfig() {
       ConfigNameDefault();
       if (microconfig_cat->is_spam())
         microconfig_cat->spam() << "no microconfig for configname, "
-                                << "setting to default '" << configname
-                                << "'" << endl;
-   }
-   if (!csuff) {
-      ConfigSuffixDefault();
-      if (microconfig_cat->is_spam())
-        microconfig_cat->spam() << "no microconfig for configsuffix, "
-                                << "setting to default '" << configsuffix
-                                << "'" << endl;
+                                << "setting to default" << endl;
    }
    if (!cargs) {
       ConfigArgsDefault();

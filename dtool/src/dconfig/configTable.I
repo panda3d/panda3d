@@ -45,11 +45,8 @@ INLINE void ConfigTable::FileSepDefault() {
 }
 
 INLINE void ConfigTable::ConfigNameDefault() {
-  configname = "Configrc";
-}
-
-INLINE void ConfigTable::ConfigSuffixDefault() {
-  configsuffix = "*";
+  configname.push_back(GlobPattern("Configrc"));
+  configname.push_back(GlobPattern("*.prc"));
 }
 
 INLINE void ConfigTable::ConfigArgsDefault() {

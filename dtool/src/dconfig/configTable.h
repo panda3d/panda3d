@@ -24,9 +24,10 @@
 #include "config_setup.h"
 #include "config_dconfig.h"
 #include "symbolEnt.h"
+#include "globPattern.h"
 
-#include <vector>
-#include <map>
+#include "pvector.h"
+#include "pmap.h"
 
 namespace Config {
 
@@ -39,8 +40,10 @@ public:
   typedef vector_SymbolEnt    Symbol;
 
 private:
-  typedef std::map<ConfigString, Symbol>      SymbolTable;
-  typedef std::map<ConfigString, SymbolTable> TableMap;
+  typedef pmap<ConfigString, Symbol>      SymbolTable;
+  typedef pmap<ConfigString, SymbolTable> TableMap;
+  typedef pvector<GlobPattern> Globs;
+
   SymbolTable unqualified;
   TableMap qualified;
   bool _initializing;
@@ -50,8 +53,7 @@ private:
   bool readenvs;
   ConfigString pathsep;
   ConfigString filesep;
-  ConfigString configname;
-  ConfigString configsuffix;
+  Globs configname;
   ConfigString configargs;
   ConfigString configpath;
   ConfigString configdir;
@@ -76,7 +78,6 @@ private:
   INLINE void PathSepDefault();
   INLINE void FileSepDefault();
   INLINE void ConfigNameDefault();
-  INLINE void ConfigSuffixDefault();
   INLINE void ConfigArgsDefault();
   INLINE void ConfigPathDefault();
   void ConfigDirDefault();

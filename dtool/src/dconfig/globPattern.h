@@ -19,7 +19,7 @@
 #ifndef GLOBPATTERN_H
 #define GLOBPATTERN_H
 
-#include "pandabase.h"
+#include "dtoolbase.h"
 #include "filename.h"
 #include "vector_string.h"
 
@@ -38,7 +38,7 @@
 //               example, to scan a directory for all files matching a
 //               particular pattern.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS GlobPattern {
+class EXPCL_DTOOL GlobPattern {
 public:
   INLINE GlobPattern(const string &pattern = string());
   INLINE GlobPattern(const GlobPattern &copy);
