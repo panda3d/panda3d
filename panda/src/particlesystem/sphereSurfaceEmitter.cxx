@@ -1,6 +1,6 @@
-// Filename: sphereSurfaceEmitter.C
+// Filename: sphereSurfaceEmitter.cxx
 // Created by:  charles (22Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "sphereSurfaceEmitter.h"

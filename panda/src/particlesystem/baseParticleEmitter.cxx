@@ -1,6 +1,6 @@
-// Filename: baseParticleEmitter.C
+// Filename: baseParticleEmitter.cxx
 // Created by:  charles (14Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "baseParticleEmitter.h"

@@ -1,6 +1,6 @@
-// Filename: baseParticle.C
+// Filename: baseParticle.cxx
 // Created by:  charles (14Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "baseParticle.h"

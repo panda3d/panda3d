@@ -1,6 +1,6 @@
-// Filename: pointEmitter.C
+// Filename: pointEmitter.cxx
 // Created by:  charles (22Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pointEmitter.h"
@@ -11,7 +11,7 @@
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 PointEmitter::
-PointEmitter(void) : 
+PointEmitter(void) :
   BaseParticleEmitter() {
   _location.set(0.0f, 0.0f, 0.0f);
 }

@@ -1,6 +1,6 @@
-// Filename: rectangleEmitter.C
+// Filename: rectangleEmitter.cxx
 // Created by:  charles (22Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "rectangleEmitter.h"

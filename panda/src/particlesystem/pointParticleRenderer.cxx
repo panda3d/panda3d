@@ -1,6 +1,6 @@
-// Filename: pointParticleRenderer.C
+// Filename: pointParticleRenderer.cxx
 // Created by:  charles (20Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <boundingSphere.h>

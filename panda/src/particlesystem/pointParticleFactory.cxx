@@ -1,6 +1,6 @@
-// Filename: pointParticleFactory.C
+// Filename: pointParticleFactory.cxx
 // Created by:  charles (05Jul00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pointParticleFactory.h"

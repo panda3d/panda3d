@@ -1,6 +1,6 @@
-// Filename: tangentRingEmitter.C
+// Filename: tangentRingEmitter.cxx
 // Created by:  charles (25Jul00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "tangentRingEmitter.h"

@@ -8,7 +8,7 @@
 
 #include <pandabase.h>
 #include <notifyCategoryProxy.h>
-#include <config.h>
+#include <dconfig.h>
 
 ConfigureDecl(config_particlesystem, EXPCL_PANDAPHYSICS, EXPTP_PANDAPHYSICS);
 NotifyCategoryDecl(particlesystem, EXPCL_PANDAPHYSICS, EXPTP_PANDAPHYSICS);

@@ -1,6 +1,6 @@
-// Filename: particleSystem.C
+// Filename: particleSystem.cxx
 // Created by:  charles (14Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <stdlib.h>
@@ -28,7 +28,7 @@
 // Description : Default Constructor.
 ////////////////////////////////////////////////////////////////////
 ParticleSystem::
-ParticleSystem(int pool_size) : 
+ParticleSystem(int pool_size) :
   _particle_pool_size(pool_size), Physical(pool_size, false)
 {
   _birth_rate = 0.0f;
@@ -46,7 +46,7 @@ ParticleSystem(int pool_size) :
   // just in case someone tries to do something that requires the
   // use of an emitter, renderer, or factory before they've actually
   // assigned one.  This is ok, because assigning them (set_renderer(),
-  // set_emitter(), etc...) forces them to set themselves up for the 
+  // set_emitter(), etc...) forces them to set themselves up for the
   // system, keeping the pool sizes consistent.
 
   _render_arc.clear();
@@ -219,7 +219,7 @@ spawn_child_system(BaseParticle *bp) {
     return;
   }
 
-  NodeRelation *parent_relation = 
+  NodeRelation *parent_relation =
     this_pn->get_parent(RenderRelation::get_class_type(), 0);
 
   Node *parent = parent_relation->get_parent();
@@ -249,7 +249,7 @@ spawn_child_system(BaseParticle *bp) {
   LMatrix4f old_system_to_parent_xform;
   get_rel_mat(get_physical_node(), parent, old_system_to_parent_xform);
 
-  LMatrix4f child_space_xform = old_system_to_parent_xform * 
+  LMatrix4f child_space_xform = old_system_to_parent_xform *
     bp->get_lcs();
 
   rr->set_transition(new TransformTransition(child_space_xform));

@@ -1,4 +1,4 @@
-// Filename: particleSystemManager.C
+// Filename: particleSystemManager.cxx
 // Created by:  charles (28Jun00)
 //
 ////////////////////////////////////////////////////////////////////

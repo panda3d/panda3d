@@ -1,6 +1,6 @@
-// Filename: orientedParticle.C
+// Filename: orientedParticle.cxx
 // Created by:  charles (19Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "orientedParticle.h"
@@ -66,7 +66,7 @@ die(void) {
 ////////////////////////////////////////////////////////////////////
 //    Function : update
 //      Access : public
-// Description : particle update routine.  
+// Description : particle update routine.
 //               This NEEDS to be filled in with quaternion slerp
 //               stuff, or oriented particles will not rotate.
 ////////////////////////////////////////////////////////////////////

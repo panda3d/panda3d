@@ -1,6 +1,6 @@
-// Filename: ringEmitter.C
+// Filename: ringEmitter.cxx
 // Created by:  charles (22Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "ringEmitter.h"
@@ -25,7 +25,7 @@ RingEmitter(const RingEmitter &copy) :
   BaseParticleEmitter(copy) {
   _radius = copy._radius;
   _aoe = copy._aoe;
-  
+
   _sin_theta = copy._sin_theta;
   _cos_theta = copy._cos_theta;
 }

@@ -1,4 +1,4 @@
-// Filename: spriteParticleRenderer.C
+// Filename: spriteParticleRenderer.cxx
 // Created by:  charles (13Jul00)
 //
 ////////////////////////////////////////////////////////////////////

@@ -1,4 +1,4 @@
-// Filename: baseParticleRenderer.C
+// Filename: baseParticleRenderer.cxx
 // Created by:  charles (20Jun00)
 //
 ////////////////////////////////////////////////////////////////////

@@ -1,6 +1,6 @@
-// Filename: sphereVolumeEmitter.C
+// Filename: sphereVolumeEmitter.cxx
 // Created by:  charles (22Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "sphereVolumeEmitter.h"

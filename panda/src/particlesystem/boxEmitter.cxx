@@ -1,6 +1,6 @@
-// Filename: boxEmitter.C
+// Filename: boxEmitter.cxx
 // Created by:  charles (22Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "boxEmitter.h"

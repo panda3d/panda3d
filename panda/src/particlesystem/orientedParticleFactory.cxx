@@ -1,6 +1,6 @@
-// Filename: orientedParticleFactory.C
+// Filename: orientedParticleFactory.cxx
 // Created by:  charles (05Jul00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "orientedParticleFactory.h"

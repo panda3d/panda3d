@@ -1,6 +1,6 @@
-// Filename: geomParticleRenderer.C
+// Filename: geomParticleRenderer.cxx
 // Created by:  charles (05Jul00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "geomParticleRenderer.h"

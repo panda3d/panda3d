@@ -1,4 +1,4 @@
-// Filename: zSpinParticleFactory.C
+// Filename: zSpinParticleFactory.cxx
 // Created by:  charles (16Aug00)
 //
 ////////////////////////////////////////////////////////////////////

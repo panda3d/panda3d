@@ -1,6 +1,6 @@
-// Filename: sparkleParticleRenderer.C
+// Filename: sparkleParticleRenderer.cxx
 // Created by:  charles (27Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "sparkleParticleRenderer.h"
@@ -35,7 +35,7 @@ SparkleParticleRenderer(const Colorf& center, const Colorf& edge,
 			SparkleParticleLifeScale life_scale,
 			ParticleRendererAlphaMode alpha_mode) :
   _center_color(center), _edge_color(edge), _birth_radius(birth_radius),
-  _death_radius(death_radius), _life_scale(life_scale), 
+  _death_radius(death_radius), _life_scale(life_scale),
   BaseParticleRenderer(alpha_mode) {
   _line_primitive = new GeomLine;
   init_geoms();

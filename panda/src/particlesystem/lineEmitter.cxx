@@ -1,6 +1,6 @@
-// Filename: lineEmitter.C
+// Filename: lineEmitter.cxx
 // Created by:  charles (22Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "lineEmitter.h"

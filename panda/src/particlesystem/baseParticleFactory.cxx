@@ -1,6 +1,6 @@
-// Filename: baseParticleFactory.C
+// Filename: baseParticleFactory.cxx
 // Created by:  charles (05Jul00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "baseParticleFactory.h"
@@ -14,7 +14,7 @@ BaseParticleFactory::
 BaseParticleFactory(void) {
   _mass_base = 1.0f;
   _mass_spread = 0.0f;
-  
+
   _terminal_velocity_base = PhysicsObject::_default_terminal_velocity;
   _terminal_velocity_spread = 0.0f;
 
