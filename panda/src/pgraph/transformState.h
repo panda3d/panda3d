@@ -228,7 +228,7 @@ INLINE ostream &operator << (ostream &out, const TransformState &state) {
 
 // This class is used to pass TransformState pointers as parameters to
 // events, or as elements on a data graph.
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, EventStoreValue<CPT(TransformState)>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, EventStoreValue< CPT(TransformState) >);
 
 typedef EventStoreValue<CPT(TransformState)> EventStoreTransform;
 
