@@ -133,6 +133,7 @@ def copyFuncs(fromClass, toClass):
                 replaceMessengerFunc(oldFunc, newFunc)
                 replaceTaskMgrFunc(oldFunc, newFunc)
                 replaceStateFunc(oldFunc, newFunc)
+                replaceTcrFunc(oldFunc, newFunc)
             toClass.__dict__[key] = newFunc
 
 def replaceMessengerFunc(oldFunc, newFunc):
@@ -154,3 +155,7 @@ def replaceStateFunc(oldFunc, newFunc):
     if res:
         print ('replaced state exit function: ' + newFunc.__name__)
 
+def replaceTcrFunc(oldFunc, newFunc):
+    res = toonbase.tcr.replaceMethod(oldFunc, newFunc)
+    if res:
+        print ('replaced DistributedObject function: ' + newFunc.__name__)

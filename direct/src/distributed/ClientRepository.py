@@ -304,3 +304,25 @@ class ClientRepository(DirectObject.DirectObject):
 
         self.cw.send(datagram, self.tcpConn)
         return None
+
+    def replaceMethod(self, oldMethod, newFunction):
+        foundIt = 0
+        import new
+        # Iterate over the ClientDistClasses
+        for cdc in self.number2cdc.values():
+            # Iterate over the ClientDistUpdates
+            for cdu in cdc.allCDU:
+                method = cdu.func
+                # See if this is a match
+                if (method and (method.im_func == oldMethod)):
+                    # Create a new unbound method out of this new function
+                    newMethod = new.instancemethod(newFunction,
+                                                   method.im_self,
+                                                   method.im_class)
+                    # Set the new method on the cdu
+                    cdu.func = newMethod
+                    foundIt = 1
+        return foundIt
+                    
+            
+                

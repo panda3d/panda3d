@@ -4,6 +4,12 @@ import DirectNotifyGlobal
 import Datagram
 from MsgTypes import *
 
+# These are stored here so that the distributed classes we load on the fly
+# can be exec'ed in the module namespace as if we imported them normally.
+# This is important for redefine to work, and is a good idea anyways.
+moduleGlobals = globals()
+moduleLocals = locals()
+
 class ClientDistUpdate:
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientDistUpdate")
 
@@ -16,7 +22,7 @@ class ClientDistUpdate:
         self.divisors = []
         self.deriveTypesFromParticle(dcField)
         # Figure out our function pointer
-        exec("import " + cdc.name)
+        exec("import " + cdc.name, moduleGlobals, moduleLocals)
         try:
             self.func = eval(cdc.name + "." + cdc.name + "." + self.name)
         # Only catch name and attribute errors
