@@ -331,8 +331,8 @@ class DistributedLevel(DistributedObject.DistributedObject,
         zone.show()
         zone.clearColor()
 
-    def toggleColorZones(self):
-        self.fColorZones = 1 - self.fColorZones
+    def setColorZones(self, fColorZones):
+        self.fColorZones = fColorZones
 
     def hideZone(self, zoneNum):
         zone = self.zoneNum2node[zoneNum]
