@@ -20,7 +20,7 @@
 #include "prcKeyRegistry.h"
 #include "filename.h"
 #include "vector_int.h"
-#include <assert.h>
+#include <stdio.h>
 
 // Pick up the public key definitions.
 #ifdef PRC_PUBLIC_KEYS_INCLUDE
@@ -264,39 +264,38 @@ usage() {
   cerr <<
     "\nmake-prc-key [opts] 1 [2 3 ...]\n\n"
 
-    "This program generates one or more new private keys for signing\n"
+    "This program generates one or more new keys to be used for signing\n"
     "a prc file.  The key itself is a completely arbitrary random bit\n"
     "sequence.  It is divided into a public and a private key; the public\n"
-    "key is not secret and will be compiled into Panda, while the private\n"
+    "key is not secret and will be compiled into libdtool, while the private\n"
     "key should be safeguarded and will be written into a .cxx file that\n"
     "can be compiled as a standalone application.\n\n"
-
-    "The generated public keys are written to outfile.cxx, which can\n"
-    "then be named via the PRC_PUBLIC_KEYS_FILENAME Config.pp variable\n"
-    "so that they will be compiled into the config system and will be\n"
-    "available to verify signatures on prc files.  If -o is not\n"
-    "specified, the filename previously named by\n"
-    "PRC_PUBLIC_KEYS_FILENAME is used (and the previous contents as\n"
-    "compiled into this executable will be preserved).\n\n"
     
-    "The private keys are written to one or more files named\n"
-    "outfile_sign1.cxx, outfile_sign2.cxx, etc., based on the key numbers\n"
-    "to be generated.  When compiled, these files will generate a program\n"
-    "that can be used to sign a prc file with the indicated key.\n\n"
+    "The output is a public and private key pair for each trust level.  The\n"
+    "form of the output for both public and private keys will be compilable\n"
+    "C++ code; see -a and -b, below, for a complete description.\n\n"
     
-    "The arguments on the command line list the individual key numbers to\n"
-    "generate.  For each integer specified, a different key will be\n"
-    "created.  There should be one key for each trust level required,\n"
-    "so typically you will only need one or two keys.\n\n"
+    "After the options, the remaining arguments list the individual trust\n"
+    "level keys to generate.  For each integer specified, a different key\n"
+    "will be created.  There should be one key for each trust level\n"
+    "required; a typical application will only need one or two keys.\n\n"
   
     "Options:\n\n"
     
-    "   -o outfile.cxx\n"
-    "       Specifies the name and location of the output file to generate.\n"
-    "       This directly specifies the name of the public key file, and\n"
-    "       also indirectly specifies the names of the private key programs\n"
-    "       that are to be generated (they will be named outfile_sign1.cxx,\n"
-    "       outfile_sign2.cxx, and so on).\n\n"
+    "   -a pub_outfile.cxx\n"
+    "       Specifies the name and location of the public key output file\n"
+    "       to generate.  This file must then be named by the Config.pp\n"
+    "       variable PRC_PUBLIC_KEYS_FILENAME so that it will be compiled\n"
+    "       in with libdtool and available to verify signatures.\n\n"
+
+    "   -b priv_outfile#.cxx\n"
+    "       Specifies the name and location of the private key output file(s)\n"
+    "       to generate.  A different output file will be generated for each\n"
+    "       different trust level; the hash mark '#' appearing in the file\n"
+    "       name will be filled in with the corresponding numeric trust level.\n"
+    "       When compiled against dtool, each of these files will generate\n"
+    "       a program that can be used to sign a prc file with the corresponding\n"
+    "       trust level.\n\n"
 
     "   -p \"[pass phrase]\"\n"
     "       Uses the indicated pass phrase to encrypt the private key.\n"
@@ -319,10 +318,12 @@ int
 main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
-  const char *optstr = "o:p:h";
+  const char *optstr = "a:b:p:h";
 
-  Filename outfile;
-  bool got_outfile = false;
+  Filename pub_outfile;
+  bool got_pub_outfile = false;
+  Filename priv_outfile;
+  bool got_priv_outfile = false;
   string pass_phrase;
   bool got_pass_phrase = false;
 
@@ -330,9 +331,14 @@ main(int argc, char *argv[]) {
 
   while (flag != EOF) {
     switch (flag) {
-    case 'o':
-      outfile = optarg;
-      got_outfile = true;
+    case 'a':
+      pub_outfile = optarg;
+      got_pub_outfile = true;
+      break;
+
+    case 'b':
+      priv_outfile = optarg;
+      got_priv_outfile = true;
       break;
 
     case 'p':
@@ -358,22 +364,35 @@ main(int argc, char *argv[]) {
     exit(1);
   }
 
-  if (got_outfile) {
-    if (outfile.get_extension() != "cxx") {
-      cerr << "Output file '" << outfile << "' should have a .cxx extension.\n";
+  if (got_pub_outfile) {
+    if (pub_outfile.get_extension() != "cxx") {
+      cerr << "Public key output file '" << pub_outfile
+           << "' should have a .cxx extension.\n";
       exit(1);
     }
   } else {
 #ifdef PRC_PUBLIC_KEYS_INCLUDE
     PrcKeyRegistry::get_global_ptr()->record_keys(prc_pubkeys, num_prc_pubkeys);
-    outfile = PRC_PUBLIC_KEYS_FILENAME;
+    pub_outfile = PRC_PUBLIC_KEYS_FILENAME;
 #endif
 
-    if (outfile.empty()) {
-      cerr << "No -o specified, and no PRC_PUBLIC_KEYS_FILENAME variable\n"
+    if (pub_outfile.empty()) {
+      cerr << "No -a specified, and no PRC_PUBLIC_KEYS_FILENAME variable\n"
            << "compiled in.\n\n";
       exit(1);
     }
+  }
+
+  if (got_priv_outfile) {
+    if (priv_outfile.get_extension() != "cxx") {
+      cerr << "Private key output file '" << priv_outfile
+           << "' should have a .cxx extension.\n";
+      exit(1);
+    }
+
+  } else {
+    cerr << "You must use the -b option to specify the private key output filenames.\n";
+    exit(1);
   }
 
   int max_key_number = 0;
@@ -407,6 +426,22 @@ main(int argc, char *argv[]) {
     pp = pass_phrase.c_str();
   }
 
+  string name = priv_outfile.get_fullpath_wo_extension();
+  string prefix, suffix;
+  bool got_hash;
+
+  size_t hash = name.find('#');
+  if (hash == string::npos) {
+    prefix = name;
+    suffix = ".cxx";
+    got_hash = false;
+
+  } else {
+    prefix = name.substr(0, hash);
+    suffix = name.substr(hash + 1) + ".cxx";
+    got_hash = true;
+  }
+
   vector_int::iterator ki;
   for (ki = key_numbers.begin(); ki != key_numbers.end(); ++ki) {
     int n = (*ki);
@@ -414,13 +449,23 @@ main(int argc, char *argv[]) {
     PrcKeyRegistry::get_global_ptr()->set_key(n, pkey, now);
 
     ostringstream strm;
-    strm << outfile.get_fullpath_wo_extension() << "_sign" << n
-         << ".cxx";
+    if (got_hash || n != 1) {
+      // If we got an explicit hash mark, we always output the number.
+      // If we did not get an explicit hash mark, we output the number
+      // only if it is other than 1.
+      strm << prefix << n << suffix;
+
+    } else {
+      // If we did not get an explicit hash mark in the filename, we
+      // omit the number for key 1 (this might be the only key, and
+      // so maybe the user doesn't require a number designator).
+      strm << prefix << suffix;
+    }
 
     write_private_key(pkey, strm.str(), n, now, pp);
   }
 
-  write_public_keys(outfile);
+  write_public_keys(pub_outfile);
 
   return (0);
 }

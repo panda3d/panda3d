@@ -1,6 +1,7 @@
 #define BUILD_DIRECTORY $[HAVE_INTERROGATE]
 
 #define LOCAL_LIBS cppParser pystub interrogatedb dconfig dtoolutil dtoolbase
+#define USE_PACKAGES ssl
 
 #begin bin_target
   #define TARGET interrogate

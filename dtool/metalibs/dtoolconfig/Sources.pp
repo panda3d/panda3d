@@ -9,7 +9,7 @@
 
 #define COMPONENT_LIBS interrogatedb dconfig prc
 #define LOCAL_LIBS dtoolutil dtoolbase
-#define USE_PACKAGES python
+#define USE_PACKAGES python ssl
 
 #begin metalib_target
   #define TARGET dtoolconfig

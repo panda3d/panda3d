@@ -295,7 +295,7 @@ main(int argc, char *argv[]) {
   if (argv[0] != NULL && *argv[0]) {
     // Get the program name from the command-line arguments, if the OS
     // provides it.
-    Filename progfile = argv[0];
+    Filename progfile = Filename::from_os_specific(argv[0]);
     progname = progfile.get_basename_wo_extension();
   }
 
