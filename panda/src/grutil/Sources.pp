@@ -5,11 +5,16 @@
   #define TARGET grutil
   #define LOCAL_LIBS \
     sgraphutil sgattrib sgraph gobj linmath putil
+    
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 
   #define SOURCES \
-    cardMaker.I cardMaker.cxx cardMaker.h \
-    config_grutil.cxx config_grutil.h \
-    lineSegs.I lineSegs.cxx lineSegs.h
+    cardMaker.I cardMaker.h \
+    config_grutil.h \
+    lineSegs.I lineSegs.h
+    
+  #define INCLUDED_SOURCES \
+    cardMaker.cxx config_grutil.cxx lineSegs.cxx
 
   #define INSTALL_HEADERS \
     cardMaker.I cardMaker.h \
