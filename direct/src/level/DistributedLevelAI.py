@@ -20,7 +20,6 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         self.zoneId = zoneId
         if __debug__:
             self.modified = 0
-            self.makeBackup = 1
 
     def generate(self, levelSpec):
         self.notify.debug('generate')
@@ -41,7 +40,7 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
     def delete(self):
         self.notify.debug('delete')
         if __debug__:
-            self.saveSpec()
+            self.removeBackupTask()
         self.destroyLevel()
         DistributedObjectAI.DistributedObjectAI.delete(self)
 
@@ -103,35 +102,43 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
             self.levelSpec.setAttribChange(entId, attribName, value, username)
 
             self.modified = 1
-            self.scheduleSave()
+            self.scheduleAutosave()
 
-        SavePeriod = simbase.config.GetInt('factory-save-period', 10)
-        BackupPeriod = simbase.config.GetInt('factory-backup-period-minutes',5)
+        # backups are made every N minutes, starting from the time that
+        # the first edit is made
+        AutosavePeriod = simbase.config.GetFloat(
+            'level-autosave-period-minutes', 5)
 
-        def scheduleSave(self):
-            if hasattr(self, 'saveTask'):
+        def scheduleAutosave(self):
+            if hasattr(self, 'autosaveTask'):
                 return
-            self.saveTask = taskMgr.doMethodLater(
-                DistributedLevelAI.SavePeriod,
-                self.saveSpec,
-                self.uniqueName('saveSpec'))
+            self.autosaveTaskName = self.uniqueName('saveSpec')
+            self.autosaveTask = taskMgr.doMethodLater(
+                DistributedLevelAI.AutosavePeriod * 60,
+                self.autosaveSpec,
+                self.autosaveTaskName)
+
+        def removeAutosaveTask(self):
+            if hasattr(self, 'autosaveTask'):
+                taskMgr.remove(self.autosaveTaskName)
+                del self.autosaveTask
+
+        def autosaveSpec(self, task=None):
+            self.removeAutosaveTask()
+            if self.modified:
+                DistributedLevelAI.notify.info('autosaving spec')
+                filename = self.levelSpec.getFilename()
+                filename = '%s.autosave' % filename
+                self.levelSpec.saveToDisk(filename, makeBackup=0)
 
         def saveSpec(self, task=None):
             DistributedLevelAI.notify.info('saving spec')
-            if hasattr(self, 'saveTask'):
-                del self.saveTask
+            self.removeAutosaveTask()
             if not self.modified:
                 DistributedLevelAI.notify.info('no changes to save')
                 return
-            self.levelSpec.saveToDisk(createBackup=self.makeBackup)
+            self.levelSpec.saveToDisk()
             self.modified = 0
-            self.makeBackup = 0
-            def setMakeBackup(task, self=self):
-                self.makeBackup = 1
-            self.backupTask = taskMgr.doMethodLater(
-                DistributedLevelAI.BackupPeriod * 60,
-                setMakeBackup,
-                self.uniqueName('setMakeBackup'))
 
         def requestCurrentLevelSpec(self, specHash, entTypeRegHash):
             senderId = self.air.msgSender

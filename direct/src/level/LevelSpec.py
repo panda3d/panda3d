@@ -3,6 +3,8 @@
 import DirectNotifyGlobal
 from PythonUtil import list2dict, uniqueElements
 import string
+if __debug__:
+    import os
 
 class LevelSpec:
     """contains spec data for a level, is responsible for handing the data
@@ -138,42 +140,32 @@ class LevelSpec:
             # name of module that should be imported by spec py file
             return 'SpecImports'
 
-        def saveToDisk(self, filename=None, createBackup=1):
-            """returns zero on failure"""
-            import os
+        def getFilename(self):
+            return self.filename
 
+        def privGetBackupFilename(self):
+            return '%s.bak' % self.getFilename()
+
+        def saveToDisk(self, filename=None, makeBackup=1):
+            """returns zero on failure"""
             if filename is None:
                 filename = self.filename
 
-            if createBackup:
+            if makeBackup and self.privFileExists(filename):
                 # create a backup
                 try:
-                    # does the file exist?
-                    exists = 0
-                    try:
-                        os.stat(filename)
-                        exists = 1
-                    except OSError:
-                        pass
-                    if exists:
-                        def getBackupFilename(num, filename=filename):
-                            return '%s.%03i' % (filename, num)
-                        numBackups = 200
-                        try:
-                            os.unlink(getBackupFilename(numBackups-1))
-                        except OSError:
-                            pass
-                        for i in range(numBackups-1,0,-1):
-                            try:
-                                os.rename(getBackupFilename(i-1),
-                                          getBackupFilename(i))
-                            except OSError:
-                                pass
-                        os.rename(filename, getBackupFilename(0))
+                    backupFilename = self.privGetBackupFilename()
+                    self.privRemoveFile(backupFilename)
+                    os.rename(filename, backupFilename)
                 except OSError, e:
                     LevelSpec.notify.warning(
                         'error during backup: %s' % str(e))
 
+            self.privRemoveFile(filename)
+            self.privSaveToDisk(filename)
+
+        def privSaveToDisk(self, filename):
+            """internal. saves spec to file. returns zero on failure"""
             retval = 1
             # wb to create a UNIX-format file
             f = file(filename, 'wb')
@@ -183,6 +175,20 @@ class LevelSpec:
                 retval = 0
             f.close()
             return retval
+
+        def privFileExists(self, filename):
+            try:
+                os.stat(filename)
+                return 1
+            except OSError:
+                return 0
+
+        def privRemoveFile(self, filename):
+            try:
+                os.remove(filename)
+                return 1
+            except OSError:
+                return 0
 
         def getPrettyString(self):
             """Returns a string that contains the spec data, nicely formatted.
