@@ -7,14 +7,18 @@
     graph sgraph sgattrib linmath putil gobj mathutil gsgbase display \
     pnmimage
 
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
+
   #define SOURCES \
-    appTraverser.I appTraverser.cxx appTraverser.h \
-    config_sgraphutil.cxx config_sgraphutil.h directRenderTraverser.I \
-    directRenderTraverser.cxx directRenderTraverser.h \
-    frustumCullTraverser.I frustumCullTraverser.h \
-    get_rel_pos.I get_rel_pos.cxx get_rel_pos.h sceneGraphAnalyzer.cxx \
-    sceneGraphAnalyzer.h sceneGraphReducer.I sceneGraphReducer.cxx \
-    sceneGraphReducer.h
+     appTraverser.I appTraverser.h config_sgraphutil.h  \
+     directRenderTraverser.I directRenderTraverser.h  \
+     frustumCullTraverser.I frustumCullTraverser.h get_rel_pos.I  \
+     get_rel_pos.h sceneGraphAnalyzer.h sceneGraphReducer.I  \
+     sceneGraphReducer.h
+
+  #define INCLUDED_SOURCES  \
+     appTraverser.cxx config_sgraphutil.cxx directRenderTraverser.cxx  \
+     get_rel_pos.cxx sceneGraphAnalyzer.cxx sceneGraphReducer.cxx
 
   #define INSTALL_HEADERS \
     appTraverser.I appTraverser.h config_sgraphutil.h \
