@@ -114,10 +114,18 @@ poll() {
 
   _listener->poll();
 
-  Readers::const_iterator ri;
-  for (ri = _readers.begin(); ri != _readers.end(); ++ri) {
-    (*ri).second->poll();
-    (*ri).second->idle();
+  Readers::const_iterator ri = _readers.begin();
+  while (ri != _readers.end()) {
+    // Preincrement the iterator, in case we remove it as a result of
+    // calling poll().
+    Readers::const_iterator rnext = ri;
+    ++rnext;
+    PStatReader *reader = (*ri).second;
+
+    reader->poll();
+    reader->idle();
+    
+    ri = rnext;
   }
 }
 
@@ -224,7 +232,7 @@ is_thread_safe() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatServer::connection_reset
-//       Access: Private
+//       Access: Protected, Virtual
 //  Description: Called when a lost connection is detected by the net
 //               code, this should pass the word on to the interested
 //               parties and clean up gracefully.
@@ -243,7 +251,7 @@ connection_reset(const PT(Connection) &connection, PRErrorCode errcode) {
 
     // Unfortunately, we can't delete the reader right away, because
     // we might have been called from a method on the reader!  We'll
-    // have to safe the reader pointer and delete it some time later.
+    // have to save the reader pointer and delete it some time later.
     _lost_readers.push_back(reader);
   }
 }

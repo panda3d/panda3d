@@ -63,10 +63,11 @@ public:
 
   virtual bool is_thread_safe();
 
-private:
+protected:
   virtual void connection_reset(const PT(Connection) &connection, 
                                 PRErrorCode errcode);
 
+private:
   PStatListener *_listener;
 
   typedef pmap<PT(Connection), PStatReader *> Readers;
