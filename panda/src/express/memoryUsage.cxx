@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #ifdef DO_MEMORY_USAGE
-// Nothing in this module gets compiled in NDEBUG mode.
 
 #include "memoryUsagePointers.h"
 #include "trueClock.h"
@@ -190,7 +189,7 @@ choose_bucket(double age) const {
   return 0;
 }
 
-#if defined(__GNUC__) && !defined(NDEBUG)
+#if defined(__GNUC__)
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::record_pointer
@@ -243,7 +242,7 @@ remove_pointer(ReferenceCount *ptr) {
   get_global_ptr()->ns_remove_pointer(ptr);
 }
 
-#endif // __GNUC__ && !NDEBUG
+#endif // __GNUC__
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::operator_new_handler
@@ -1042,4 +1041,4 @@ consolidate_void_ptr(MemoryInfo &info) {
 }
 
 
-#endif  // NDEBUG
+#endif  // DO_MEMORY_USAGE

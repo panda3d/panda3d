@@ -19,7 +19,7 @@
 #ifndef MEMORYUSAGEPOINTERS_H
 #define MEMORYUSAGEPOINTERS_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #ifdef DO_MEMORY_USAGE
 
@@ -93,7 +93,7 @@ private:
 
 #include "memoryUsagePointers.I"
 
-#endif  // NDEBUG
+#endif  // MEMORY_USAGE_POINTERS
 
 #endif
 

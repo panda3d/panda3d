@@ -19,7 +19,7 @@
 #ifndef MEMORYUSAGEPOINTERCOUNTS_H
 #define MEMORYUSAGEPOINTERCOUNTS_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #ifdef DO_MEMORY_USAGE
 
@@ -62,7 +62,7 @@ INLINE ostream &operator << (ostream &out, const MemoryUsagePointerCounts &c);
 
 #include "memoryUsagePointerCounts.I"
 
-#endif  // NDEBUG
+#endif  // DO_MEMORY_USAGE
 
 #endif
 

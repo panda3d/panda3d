@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #ifdef DO_MEMORY_USAGE
-// Nothing in this module gets compiled in NDEBUG mode.
 
 #include "memoryInfo.h"
 #include "typedReferenceCount.h"
@@ -151,4 +150,4 @@ update_type_handle(TypeHandle &destination, TypeHandle refined) {
   }
 }
 
-#endif  // NDEBUG
+#endif  // DO_MEMORY_USAGE

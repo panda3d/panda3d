@@ -16,36 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef NDEBUG
-
-// In NDEBUG mode, these are all defined to do nothing.
-
-INLINE bool MemoryUsage::
-get_track_memory_usage() {
-  return false;
-}
-
-INLINE void MemoryUsage::
-record_pointer(ReferenceCount *) {
-}
-
-INLINE void MemoryUsage::
-update_type(ReferenceCount *, TypeHandle) {
-}
-
-INLINE void MemoryUsage::
-update_type(ReferenceCount *, TypedObject *) {
-}
-
-INLINE void MemoryUsage::
-remove_pointer(ReferenceCount *) {
-}
-
-#else  // NDEBUG
-
-// In the normal compilation mode, most of these functions vector into
-// their corresponding ns_* non-static variants.
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::track_memory_usage
@@ -380,5 +350,3 @@ INLINE void MemoryUsage::
 show_trend_ages() {
   get_global_ptr()->ns_show_trend_ages();
 }
-
-#endif // NDEBUG

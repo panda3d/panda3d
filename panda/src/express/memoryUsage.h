@@ -19,7 +19,7 @@
 #ifndef MEMORYUSAGE_H
 #define MEMORYUSAGE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #ifdef DO_MEMORY_USAGE
 
@@ -46,38 +46,24 @@ class EXPCL_PANDAEXPRESS MemoryUsage {
 public:
   INLINE static bool get_track_memory_usage();
 
-#if defined(__GNUC__) && !defined(NDEBUG)
+#if defined(__GNUC__)
   // There seems to be a problem with egcs-2.91.66: it gets confused
   // with too many nested inline functions, and sets the wrong pointer
   // as 'this'.  Yucky.  The workaround is to make these functions
   // non-inline, but this is inner-loop stuff, and we'd rather not pay
   // the price universally.  So we only compile them non-inline when
-  // we're building on GCC and not building in NDEBUG mode (in NDEBUG
-  // mode, these functions do nothing anyway).
+  // we're building on GCC.
   static void record_pointer(ReferenceCount *ptr);
   static void update_type(ReferenceCount *ptr, TypeHandle type);
   static void update_type(ReferenceCount *ptr, TypedObject *typed_ptr);
   static void remove_pointer(ReferenceCount *ptr);
-#else // __GNUC__ && !NDEBUG
+#else // __GNUC__
   INLINE static void record_pointer(ReferenceCount *ptr);
   INLINE static void update_type(ReferenceCount *ptr, TypeHandle type);
   INLINE static void update_type(ReferenceCount *ptr, TypedObject *typed_ptr);
   INLINE static void remove_pointer(ReferenceCount *ptr);
-#endif // __GNUC__ && !NDEBUG
+#endif // __GNUC__
 
-#ifdef NDEBUG
-public:
-  INLINE static bool is_tracking() { return false; }
-  INLINE static bool is_counting() { return false; }
-  INLINE static size_t get_current_cpp_size() { return 0; }
-  INLINE static bool has_cpp_size() { return false; }
-  INLINE static size_t get_cpp_size() { return 0; }
-  INLINE static bool has_interpreter_size() { return false; }
-  INLINE static size_t get_interpreter_size() { return 0; }
-  INLINE static bool has_total_size() { return false; }
-  INLINE static size_t get_total_size() { return 0; }
-
-#else  // NDEBUG
 public:
   static void *operator_new_handler(size_t size);
   static void operator_delete_handler(void *ptr);
@@ -194,12 +180,11 @@ private:
 
   bool _track_memory_usage;
   bool _count_memory_usage;
-
-#endif  // NDEBUG
 };
 
 #include "memoryUsage.I"
-#endif
+
+#endif  // DO_MEMORY_USAGE
 
 #endif
 

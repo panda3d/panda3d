@@ -19,7 +19,7 @@
 #ifndef MEMORYINFO_H
 #define MEMORYINFO_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #ifdef DO_MEMORY_USAGE
 
@@ -84,7 +84,7 @@ private:
 
 #include "memoryInfo.I"
 
-#endif  // NDEBUG
+#endif  // DO_MEMORY_USAGE
 
 #endif
 

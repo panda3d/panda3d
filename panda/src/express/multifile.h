@@ -68,6 +68,9 @@ private:
 
   INLINE void write_header(ofstream &write_stream);
 
+public:
+  // This nested class must be public so we can make a list of its
+  // pointers.  Weird.
   class Memfile {
   public:
     Memfile(void);
@@ -99,6 +102,7 @@ private:
     int _bytes_written;
   };
 
+private:
   typedef plist<Memfile *> MemfileList;
 
   class MemfileMatch {
