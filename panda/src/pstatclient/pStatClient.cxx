@@ -40,8 +40,9 @@
 PStatClient *PStatClient::_global_pstats = NULL;
 
 #ifndef CPPPARSER
-PStatCollector _memory_usage_pcollector("Memory usage");
-PStatCollector _cpp_usage_pcollector("Memory usage:C++");
+PStatCollector _total_size_pcollector("Memory usage");
+PStatCollector _cpp_size_pcollector("Memory usage:C++");
+PStatCollector _interpreter_size_pcollector("Memory usage:Interpreter");
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -372,11 +373,14 @@ main_tick() {
   // code inside the MemoryUsage class, where it fits a little better,
   // simply because MemoryUsage is a very low-level class that doesn't
   // know about PStatClient.
-  if (MemoryUsage::has_cpp_size()) {
-    _cpp_usage_pcollector.set_level(MemoryUsage::get_cpp_size());
-  }
   if (MemoryUsage::has_total_size()) {
-    _memory_usage_pcollector.set_level(MemoryUsage::get_total_size());
+    _total_size_pcollector.set_level(MemoryUsage::get_total_size());
+  }
+  if (MemoryUsage::has_cpp_size()) {
+    _cpp_size_pcollector.set_level(MemoryUsage::get_cpp_size());
+  }
+  if (MemoryUsage::has_interpreter_size()) {
+    _interpreter_size_pcollector.set_level(MemoryUsage::get_interpreter_size());
   }
 
   get_global_pstats()->get_main_thread().new_frame();

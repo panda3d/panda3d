@@ -29,6 +29,8 @@
 #endif
 
 #include "memoryUsage.h"
+#include "interrogate_request.h"
+
 #if defined(WIN32_VC) && defined(_DEBUG)
 #include <crtdbg.h>
 #endif
@@ -40,6 +42,14 @@
 #include "config_express.h"
 #include <algorithm>
 #endif
+
+// This flag is set true in is_counting() mode to indicate that the
+// malloc operation is coming from C++ operator new or delete.
+static bool _is_cpp_operator = false;
+
+// This flag is used to protect the operator new/delete handlers
+// against recursive entry.
+static bool _recursion_protect = false;
 
 MemoryUsage *MemoryUsage::_global_ptr = (MemoryUsage *)NULL;
 
@@ -256,8 +266,24 @@ remove_pointer(ReferenceCount *ptr) {
 ////////////////////////////////////////////////////////////////////
 void *MemoryUsage::
 operator_new_handler(size_t size) {
-  void *ptr = default_operator_new(size);
-  get_global_ptr()->ns_record_void_pointer(ptr, size);
+  void *ptr;
+
+  if (_recursion_protect) {
+    ptr = default_operator_new(size);
+
+  } else {
+    MemoryUsage *mu = get_global_ptr();
+    if (mu->_track_memory_usage) {
+      ptr = default_operator_new(size);
+      get_global_ptr()->ns_record_void_pointer(ptr, size);
+      
+    } else {
+      _is_cpp_operator = true;
+      ptr = default_operator_new(size);
+      _is_cpp_operator = false;
+    }
+  }
+
   return ptr;
 }
 
@@ -272,8 +298,20 @@ operator_new_handler(size_t size) {
 ////////////////////////////////////////////////////////////////////
 void MemoryUsage::
 operator_delete_handler(void *ptr) {
-  get_global_ptr()->ns_remove_void_pointer(ptr);
-  default_operator_delete(ptr);
+  if (_recursion_protect) {
+    default_operator_delete(ptr);
+
+  } else {
+    MemoryUsage *mu = get_global_ptr();
+    if (mu->_track_memory_usage) {
+      mu->ns_remove_void_pointer(ptr);
+      default_operator_delete(ptr);
+    } else {
+      _is_cpp_operator = true;
+      default_operator_delete(ptr);
+      _is_cpp_operator = false;
+    }
+  }
 }
 
 #if defined(WIN32_VC) && defined(_DEBUG)
@@ -289,20 +327,38 @@ int MemoryUsage::
 win32_malloc_hook(int alloc_type, void *ptr, 
                   size_t size, int block_use, long request, 
                   const unsigned char *filename, int line) {
-  MemoryUsage *mu = get_global_ptr();
-  if (mu->_count_memory_usage) {
-    switch (alloc_type) {
-    case _HOOK_ALLOC:
-      mu->_total_size += size;
-      break;
+  if (!_recursion_protect) {
+    MemoryUsage *mu = get_global_ptr();
+    if (mu->_count_memory_usage) {
+      int increment = 0;
+      switch (alloc_type) {
+      case _HOOK_ALLOC:
+        increment = size;
+        break;
+        
+      case _HOOK_REALLOC:
+        increment = size - _msize(ptr);
+        break;
+        
+      case _HOOK_FREE:
+        increment = -_msize(ptr);
+        break;
+      }
       
-    case _HOOK_REALLOC:
-      mu->_total_size += size - _msize(ptr);
-      break;
-      
-    case _HOOK_FREE:
-      mu->_total_size -= _msize(ptr);
-      break;
+      mu->_total_size += increment;
+
+      /*
+        This isn't working reliably right now.
+      if (_is_cpp_operator) {
+        mu->_cpp_size += increment;
+      }
+      */
+
+#ifdef TRACK_IN_INTERPRETER
+      if (in_interpreter) {
+        mu->_interpreter_size += increment;
+      }
+#endif
     }
   }
 
@@ -350,6 +406,8 @@ MemoryUsage() {
 
 #if defined(WIN32_VC) && defined(_DEBUG)
   if (_count_memory_usage) {
+    global_operator_new = &operator_new_handler;
+    global_operator_delete = &operator_delete_handler;
     _CrtSetAllocHook(&win32_malloc_hook);
   }
 #endif
@@ -358,6 +416,7 @@ MemoryUsage() {
   _count = 0;
   _current_cpp_size = 0;
   _cpp_size = 0;
+  _interpreter_size = 0;
   _total_size = 0;
 }
 
@@ -386,11 +445,11 @@ void MemoryUsage::
 ns_record_pointer(ReferenceCount *ptr) {
   if (_track_memory_usage) {
     // We have to protect modifications to the table from recursive
-    // calls by turning off _track_memory_usage while we adjust it.
-    _track_memory_usage = false;
+    // calls by toggling _recursion_protect while we adjust it.
+    _recursion_protect = true;
     pair<Table::iterator, bool> insert_result =
       _table.insert(Table::value_type((void *)ptr, MemoryInfo()));
-    _track_memory_usage = true;
+    _recursion_protect = false;
     
     // This shouldn't fail.
     assert(insert_result.first != _table.end());
@@ -516,11 +575,11 @@ ns_remove_pointer(ReferenceCount *ptr) {
       double now = TrueClock::get_ptr()->get_real_time();
 
       // We have to protect modifications to the table from recursive
-      // calls by turning off _track_memory_usage while we adjust it.
-      _track_memory_usage = false;
+      // calls by toggling _recursion_protect while we adjust it.
+      _recursion_protect = true;
       _trend_types.add_info(info.get_type(), info);
       _trend_ages.add_info(now - info._time, info);
-      _track_memory_usage = true;
+      _recursion_protect = false;
     }
 
     if ((info._flags & (MemoryInfo::F_got_ref | MemoryInfo::F_got_void)) == 0) {
@@ -533,10 +592,10 @@ ns_remove_pointer(ReferenceCount *ptr) {
       _cpp_size -= info._size;
 
       // We have to protect modifications to the table from recursive
-      // calls by turning off _track_memory_usage while we adjust it.
-      _track_memory_usage = false;
+      // calls by toggling _recursion_protect while we adjust it.
+      _recursion_protect = true;
       _table.erase(ti);
-      _track_memory_usage = true;
+      _recursion_protect = false;
     }
   }
 }
@@ -552,13 +611,12 @@ void MemoryUsage::
 ns_record_void_pointer(void *ptr, size_t size) {
   if (_track_memory_usage) {
     // We have to protect modifications to the table from recursive
-    // calls by turning off _track_memory_usage while we adjust it.
-    _track_memory_usage = false;
+    // calls by toggling _recursion_protect while we adjust it.
+    _recursion_protect = true;
     pair<Table::iterator, bool> insert_result =
       _table.insert(Table::value_type((void *)ptr, MemoryInfo()));
-    _track_memory_usage = true;
-    
-    // This shouldn't fail.
+    _recursion_protect = false;
+
     assert(insert_result.first != _table.end());
 
     if (insert_result.second) {
@@ -636,10 +694,10 @@ ns_remove_void_pointer(void *ptr) {
       _cpp_size -= info._size;
 
       // We have to protect modifications to the table from recursive
-      // calls by turning off _track_memory_usage while we adjust it.
-      _track_memory_usage = false;
+      // calls by toggling _recursion_protect while we adjust it.
+      _recursion_protect = true;
       _table.erase(ti);
-      _track_memory_usage = true;
+      _recursion_protect = false;
     }
   }
 }
@@ -666,6 +724,20 @@ ns_get_current_cpp_size() {
 size_t MemoryUsage::
 ns_get_cpp_size() {
   return _cpp_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::ns_get_interpreter_size
+//       Access: Private
+//  Description: Returns the total number of bytes of allocated memory
+//               while the high-level languange code is running.  This
+//               number is only meaningful if both Panda and the
+//               high-level language are single-threaded, and running
+//               in the same thread.
+////////////////////////////////////////////////////////////////////
+size_t MemoryUsage::
+ns_get_interpreter_size() {
+  return _interpreter_size;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -843,8 +915,8 @@ void MemoryUsage::
 ns_show_current_types() {
   nassertv(_track_memory_usage);
   // We have to protect modifications to the table from recursive
-  // calls by turning off _track_memory_usage while we adjust it.
-  _track_memory_usage = false;
+  // calls by toggling _recursion_protect while we adjust it.
+  _recursion_protect = true;
 
   TypeHistogram hist;
   
@@ -857,7 +929,7 @@ ns_show_current_types() {
   }
 
   hist.show();
-  _track_memory_usage = true;
+  _recursion_protect = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -883,8 +955,8 @@ ns_show_current_ages() {
   nassertv(_track_memory_usage);
 
   // We have to protect modifications to the table from recursive
-  // calls by turning off _track_memory_usage while we adjust it.
-  _track_memory_usage = false;
+  // calls by toggling _recursion_protect while we adjust it.
+  _recursion_protect = true;
 
   AgeHistogram hist;
   double now = TrueClock::get_ptr()->get_real_time();
@@ -899,7 +971,7 @@ ns_show_current_ages() {
 
   hist.show();
 
-  _track_memory_usage = true;
+  _recursion_protect = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -974,10 +1046,10 @@ consolidate_void_ptr(MemoryInfo &info) {
   }
     
   // We have to protect modifications to the table from recursive
-  // calls by turning off _track_memory_usage while we adjust it.
-  _track_memory_usage = false;
+  // calls by toggling _recursion_protect while we adjust it.
+  _recursion_protect = true;
   _table.erase(ti);
-  _track_memory_usage = true;
+  _recursion_protect = false;
 }
 
 

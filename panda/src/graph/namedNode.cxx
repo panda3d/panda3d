@@ -25,6 +25,15 @@
 TypeHandle NamedNode::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NamedNode::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+NamedNode::
+~NamedNode() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NamedNode::make_copy
 //       Access: Public, Virtual
 //  Description: Returns a newly-allocated Node that is a shallow copy

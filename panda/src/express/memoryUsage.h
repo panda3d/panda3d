@@ -71,6 +71,8 @@ public:
   INLINE static size_t get_current_cpp_size() { return 0; }
   INLINE static bool has_cpp_size() { return false; }
   INLINE static size_t get_cpp_size() { return 0; }
+  INLINE static bool has_interpreter_size() { return false; }
+  INLINE static size_t get_interpreter_size() { return 0; }
   INLINE static bool has_total_size() { return false; }
   INLINE static size_t get_total_size() { return 0; }
 
@@ -91,6 +93,8 @@ PUBLISHED:
   INLINE static size_t get_current_cpp_size();
   INLINE static bool has_cpp_size();
   INLINE static size_t get_cpp_size();
+  INLINE static bool has_interpreter_size();
+  INLINE static size_t get_interpreter_size();
   INLINE static bool has_total_size();
   INLINE static size_t get_total_size();
 
@@ -123,6 +127,7 @@ private:
 
   size_t ns_get_current_cpp_size();
   size_t ns_get_cpp_size();
+  size_t ns_get_interpreter_size();
   size_t ns_get_total_size();
   int ns_get_num_pointers();
   void ns_get_pointers(MemoryUsagePointers &result);
@@ -152,6 +157,7 @@ private:
   int _count;
   size_t _current_cpp_size;
   size_t _cpp_size;
+  size_t _interpreter_size;
   size_t _total_size;
 
   class TypeHistogram {

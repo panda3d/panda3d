@@ -161,7 +161,14 @@ get_current_cpp_size() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool MemoryUsage::
 has_cpp_size() {
+#if defined(WIN32_VC) && defined(_DEBUG)
+  // Windows in debug mode can count C++ size without having to do a
+  // full track.
+  return is_counting();
+#else
+  // Other systems require the full hammer.
   return is_tracking();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -174,6 +181,37 @@ has_cpp_size() {
 INLINE size_t MemoryUsage::
 get_cpp_size() {
   return get_global_ptr()->ns_get_cpp_size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::has_interpreter_size
+//       Access: Public, Static
+//  Description: Returns true if the value returned by
+//               get_interpreter_size() is meaningful on this particular
+//               system with this particular configuration, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool MemoryUsage::
+has_interpreter_size() {
+#ifdef TRACK_IN_INTERPRETER
+  return is_counting();
+#else
+  return false;
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::get_interpreter_size
+//       Access: Public, Static
+//  Description: Returns the total number of bytes of allocated memory
+//               while the high-level languange code is running.  This
+//               number is only meaningful if both Panda and the
+//               high-level language are single-threaded, and running
+//               in the same thread.
+////////////////////////////////////////////////////////////////////
+INLINE size_t MemoryUsage::
+get_interpreter_size() {
+  return get_global_ptr()->ns_get_interpreter_size();
 }
 
 ////////////////////////////////////////////////////////////////////

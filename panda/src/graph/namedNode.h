@@ -36,6 +36,7 @@ PUBLISHED:
 public:
   INLINE_GRAPH NamedNode(const NamedNode &copy);
   INLINE_GRAPH void operator = (const NamedNode &copy);
+  virtual ~NamedNode();
 
   virtual Node *make_copy() const;
   virtual void output(ostream &out) const;
