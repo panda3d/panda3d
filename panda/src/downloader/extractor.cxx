@@ -89,6 +89,7 @@ reset() {
   }
 
   _requests.clear();
+  _requests_total_length = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,6 +106,7 @@ request_subfile(const Filename &subfile_name) {
     return false;
   }
   _requests.push_back(index);
+  _requests_total_length += _multifile.get_subfile_length(index);
   return true;
 }
 
@@ -117,9 +119,11 @@ request_subfile(const Filename &subfile_name) {
 int Extractor::
 request_all_subfiles() {
   _requests.clear();
+  _requests_total_length = 0;
   int num_subfiles = _multifile.get_num_subfiles();
   for (int i = 0; i < num_subfiles; i++) {
     _requests.push_back(i);
+    _requests_total_length += _multifile.get_subfile_length(i);
   }
   return num_subfiles;
 }
@@ -145,6 +149,7 @@ step() {
     _subfile_index = 0;
     _subfile_pos = 0;
     _subfile_length = 0;
+    _total_bytes_extracted = 0;
     _read = (istream *)NULL;
     _initiated = true;
   }
@@ -209,6 +214,7 @@ step() {
       return EU_error_abort;
     }
     _subfile_pos += max_bytes;
+    _total_bytes_extracted += max_bytes;
   }
 
   return EU_ok;
@@ -225,27 +231,11 @@ get_progress() const {
   if (!_initiated) {
     return 0.0f;
   }
-
-  float progress_through_file;
-
-  if (_read == (istream *)NULL) {
-    // Time to open the next subfile.
-    progress_through_file = 0.0f;
-
-  } else if (_subfile_pos >= _subfile_length) {
-    // Time to close this subfile.
-    progress_through_file = 1.0f;
-
-  } else {
-    // In the middle of processing a subfile.
-    progress_through_file = (float)_subfile_pos / (float)_subfile_length;
+  if (_requests_total_length == 0) {
+    return 1.0f;
   }
 
-  float progress_through_list =
-    (((float)_request_index + progress_through_file) / 
-     (float)(_requests.size()));
-
-  return progress_through_list;
+  return (float)_total_bytes_extracted / (float)_requests_total_length;
 }
 
 ////////////////////////////////////////////////////////////////////

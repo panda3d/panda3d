@@ -32,10 +32,12 @@
 //
 //               It is designed to limit its use of system resources
 //               and run unobtrusively in the background.  After
-//               initiate(), each call to run() extracts another small
-//               portion of the Multifile.  Call run() repeatedly
-//               whenever you have spare cycles until run() returns
-//               EU_success.
+//               specifying the files you wish to extract via repeated
+//               calls to request_subfile(), begin the process by
+//               calling run() repeatedly.  Each call to run()
+//               extracts another small portion of the Multifile.
+//               Call run() whenever you have spare cycles until run()
+//               returns EU_success.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Extractor {
 PUBLISHED:
@@ -63,6 +65,7 @@ private:
 
   typedef pvector<int> Requests;
   Requests _requests;
+  size_t _requests_total_length;
   
   bool _initiated;
 
@@ -71,6 +74,7 @@ private:
   int _subfile_index;
   size_t _subfile_pos;
   size_t _subfile_length;
+  size_t _total_bytes_extracted;
   istream *_read;
   ofstream _write;
   Filename _subfile_filename;
