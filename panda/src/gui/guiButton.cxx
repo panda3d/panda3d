@@ -105,6 +105,7 @@ void GuiButton::switch_state(GuiButton::States nstate) {
   }
 
   test_ref_count_integrity();
+  States ostate = _state;
   // cleanup old state
   switch (_state) {
   case NONE:
@@ -158,12 +159,17 @@ void GuiButton::switch_state(GuiButton::States nstate) {
 	_mgr->add_label(_up, _alt_root);
     }
     if (!_up_event.empty()) {
+#ifdef _DEBUG
       if (gui_cat->is_debug())
 	gui_cat->debug() << "throwing _up_event '" << _up_event << "'" << endl;
+#endif /* _DEBUG */
       throw_event(_up_event, EventParameter(this));
-    } else
-      if (gui_cat->is_debug())
+#ifdef _DEBUG
+    } else if (gui_cat->is_debug())
 	gui_cat->debug() << "_up_event is empty!" << endl;
+#else /* _DEBUG */
+    }
+#endif /* _DEBUG */
     _rgn->set_suppress_below(true);
     break;
   case UP_ROLLOVER:
@@ -178,12 +184,18 @@ void GuiButton::switch_state(GuiButton::States nstate) {
 	  _mgr->add_label(_up_rollover, _alt_root);
       }
       if (!_up_rollover_event.empty()) {
+#ifdef _DEBUG
 	if (gui_cat->is_debug())
 	  gui_cat->debug() << "throwing _up_rollover_event '"
 			   << _up_rollover_event << "'" << endl;
+#endif /* _DEBUG */
 	throw_event(_up_rollover_event, EventParameter(this));
+#ifdef _DEBUG
       } else if (gui_cat->is_debug())
 	  gui_cat->debug() << "_up_rollover_event is empty!" << endl;
+#else /* _DEBUG */
+      }
+#endif /* _DEBUG */
     } else {
       if (_alt_root.is_null()) {
 	if (!(_mgr->has_label(_up)))
@@ -193,15 +205,24 @@ void GuiButton::switch_state(GuiButton::States nstate) {
 	  _mgr->add_label(_up, _alt_root);
       }
       if (!_up_event.empty()) {
+#ifdef _DEBUG
 	if (gui_cat->is_debug())
 	  gui_cat->debug() << "throwing _up_event '" << _up_event << "'"
 			   << endl;
+#endif /* _DEBUG */
 	throw_event(_up_event, EventParameter(this));
+#ifdef _DEBUG
       } else if (gui_cat->is_debug())
 	gui_cat->debug() << "_up_event is empty!" << endl;
+#else /* _DEBUG */
+      }
+#endif /* _DEBUG */
       _state = UP;
     }
     _rgn->set_suppress_below(true);
+    if ((ostate == UP) &&
+	(_rollover_functor != (GuiBehavior::BehaviorFunctor*)0L))
+      _rollover_functor->doit(this);
     break;
   case DOWN:
     if (!(_mgr->has_region(_rgn)))
@@ -214,12 +235,18 @@ void GuiButton::switch_state(GuiButton::States nstate) {
 	_mgr->add_label(_down, _alt_root);
     }
     if (!_down_event.empty()) {
+#ifdef _DEBUG
       if (gui_cat->is_debug())
 	gui_cat->debug() << "throwing _down_event '" << _down_event << "'"
 			 << endl;
+#endif /* _DEBUG */
       throw_event(_down_event, EventParameter(this));
+#ifdef _DEBUG
     } else if (gui_cat->is_debug())
       gui_cat->debug() << "_down_event is empty!" << endl;
+#else /* _DEBUG */
+    }
+#endif /* _DEBUG */
     _rgn->set_suppress_below(true);
     break;
   case DOWN_ROLLOVER:
@@ -234,12 +261,18 @@ void GuiButton::switch_state(GuiButton::States nstate) {
 	  _mgr->add_label(_down_rollover, _alt_root);
       }
       if (!_down_rollover_event.empty()) {
+#ifdef _DEBUG
 	if (gui_cat->is_debug())
 	  gui_cat->debug() << "throwing _down_rollover_event '"
 			   << _down_rollover_event << "'" << endl;
+#endif /* _DEBUG */
 	throw_event(_down_rollover_event, EventParameter(this));
+#ifdef _DEBUG
       } else if (gui_cat->is_debug())
 	gui_cat->debug() << "_down_rollover_event is empty!" << endl;
+#else /* _DEBUG */
+      }
+#endif /* _DEBUG */
     } else {
       if (_alt_root.is_null()) {
 	if (!(_mgr->has_label(_down)))
@@ -249,12 +282,18 @@ void GuiButton::switch_state(GuiButton::States nstate) {
 	  _mgr->add_label(_down, _alt_root);
       }
       if (!_down_event.empty()) {
+#ifdef _DEBUG
 	if (gui_cat->is_debug())
 	  gui_cat->debug() << "throwing _down_event '" << _down_event << "'"
 			   << endl;
+#endif /* _DEBUG */
 	throw_event(_down_event, EventParameter(this));
+#ifdef _DEBUG
       } else if (gui_cat->is_debug())
 	gui_cat->debug() << "_down_event is empty!" << endl;
+#else /* _DEBUG */
+      }
+#endif /* _DEBUG */
       _state = DOWN;
     }
     _rgn->set_suppress_below(true);
@@ -271,9 +310,11 @@ void GuiButton::switch_state(GuiButton::States nstate) {
 	  _mgr->add_label(_inactive, _alt_root);
       }
       if (!_inactive_event.empty()) {
+#ifdef _DEBUG
 	if (gui_cat->is_debug())
 	  gui_cat->debug() << "throwing _inactive_event '" << _inactive_event
 			   << "'" << endl;
+#endif /* _DEBUG */
 	throw_event(_inactive_event, EventParameter(this));
       }
     }
@@ -291,9 +332,11 @@ void GuiButton::switch_state(GuiButton::States nstate) {
 	  _mgr->add_label(_inactive, _alt_root);
       }
       if (!_inactive_event.empty()) {
+#ifdef _DEBUG
 	if (gui_cat->is_debug())
 	  gui_cat->debug() << "throwing _inactive_event '" << _inactive_event
 			   << "'" << endl;
+#endif /* _DEBUG */
 	throw_event(_inactive_event, EventParameter(this));
       }
     }
@@ -343,40 +386,52 @@ void GuiButton::set_priority(GuiLabel* l, GuiItem::Priority p) {
 
 void GuiButton::behavior_up(CPT_Event e) {
   const GuiButton* button = DCAST(GuiButton, e->get_parameter(0).get_ptr());
+#ifdef _DEBUG
   if (gui_cat->is_debug())
     gui_cat->debug() << "behavior_up (0x" << (void*)button << ")" << endl;
+#endif /* _DEBUG */
   button->run_button_up();
 }
 
 void GuiButton::behavior_down(CPT_Event e) {
   const GuiButton* button = DCAST(GuiButton, e->get_parameter(0).get_ptr());
+#ifdef _DEBUG
   if (gui_cat->is_debug())
     gui_cat->debug() << "behavior_down (0x" << (void*)button << ")" << endl;
+#endif /* _DEBUG */
   button->run_button_down();
 }
 
 void GuiButton::run_button_up(void) const {
+#ifdef _DEBUG
   if (gui_cat->is_debug())
     gui_cat->debug() << "run_button_up (0x" << (void*)this << " '"
 		     << this->get_name() << "')" << endl;
+#endif /* _DEBUG */
   if ((_eh == (EventHandler*)0L) || (!(this->_behavior_running)))
     return;
+#ifdef _DEBUG
   if (gui_cat->is_debug())
     gui_cat->debug() << "doing work" << endl;
+#endif /* _DEBUG */
   _eh->remove_hook(_up_event, GuiButton::behavior_up);
   _eh->remove_hook(_up_rollover_event, GuiButton::behavior_up);
   if (!_behavior_event.empty()) {
     if (_have_event_param) {
+#ifdef _DEBUG
       if (gui_cat->is_debug())
 	gui_cat->debug() << "throwing behavior event '" << _behavior_event
 			 << "' with parameter (" << _event_param << ")"
 			 << endl;
+#endif /* _DEBUG */
       throw_event(_behavior_event, EventParameter(this),
 		  EventParameter(_event_param));
     } else {
+#ifdef _DEBUG
       if (gui_cat->is_debug())
 	gui_cat->debug() << "throwing behavior event '" << _behavior_event
 			 << "'" << endl;
+#endif /* _DEBUG */
       throw_event(_behavior_event, EventParameter(this));
     }
   }
@@ -385,14 +440,18 @@ void GuiButton::run_button_up(void) const {
 }
 
 void GuiButton::run_button_down(void) const {
+#ifdef _DEBUG
   if (gui_cat->is_debug())
     gui_cat->debug() << "run_button_down (0x" << (void*)this << " '"
 		     << this->get_name() << "')" << endl;
+#endif /* _DEBUG */
   if ((_eh == (EventHandler*)0L) || (!(this->_behavior_running)))
     return;
+#ifdef _DEBUG
   if (gui_cat->is_debug())
     gui_cat->debug() << "doing work, up_event is '" << _up_event << "' '"
 		     << _up_rollover_event << "'" << endl;
+#endif /* _DEBUG */
   _eh->add_hook(_up_event, GuiButton::behavior_up);
   _eh->add_hook(_up_rollover_event, GuiButton::behavior_up);
 }
@@ -405,7 +464,8 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down)
     _inactive_event(""), _up_scale(up->get_scale()), _upr_scale(1.),
     _down_scale(down->get_scale()), _downr_scale(1.), _inactive_scale(1.),
     _state(GuiButton::NONE), _have_event_param(false), _event_param(0),
-    _behavior_functor((GuiBehavior::BehaviorFunctor*)0L) {
+    _behavior_functor((GuiBehavior::BehaviorFunctor*)0L),
+    _rollover_functor((GuiBehavior::BehaviorFunctor*)0L) {
   GetExtents(up, down, _up_rollover, _down_rollover, _inactive, _left, _right,
 	     _bottom, _top);
   _rgn = new MouseWatcherRegion("button-" + name, _left, _right, _bottom,
@@ -424,7 +484,8 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down,
     _upr_scale(1.), _down_scale(down->get_scale()), _downr_scale(1.),
     _inactive_scale(inactive->get_scale()), _state(GuiButton::NONE),
     _have_event_param(false), _event_param(0),
-    _behavior_functor((GuiBehavior::BehaviorFunctor*)0L) {
+    _behavior_functor((GuiBehavior::BehaviorFunctor*)0L),
+    _rollover_functor((GuiBehavior::BehaviorFunctor*)0L) {
   GetExtents(up, down, _up_rollover, _down_rollover, inactive, _left, _right,
 	     _bottom, _top);
   _rgn = new MouseWatcherRegion("button-" + name, _left, _right, _bottom,
@@ -444,7 +505,8 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* up_roll,
     _downr_scale(down_roll->get_scale()),
     _inactive_scale(inactive->get_scale()), _state(GuiButton::NONE),
     _have_event_param(false), _event_param(0),
-    _behavior_functor((GuiBehavior::BehaviorFunctor*)0L) {
+    _behavior_functor((GuiBehavior::BehaviorFunctor*)0L),
+    _rollover_functor((GuiBehavior::BehaviorFunctor*)0L) {
   GetExtents(up, down, up_roll, down_roll, inactive, _left, _right, _bottom,
 	     _top);
   _rgn = new MouseWatcherRegion("button-" + name, _left, _right, _bottom,
@@ -469,6 +531,8 @@ GuiButton::~GuiButton(void) {
   }
 
   if (_behavior_functor != (GuiBehavior::BehaviorFunctor*)0L)
+    delete _behavior_functor;
+  if (_rollover_functor != (GuiBehavior::BehaviorFunctor*)0L)
     delete _behavior_functor;
 }
 

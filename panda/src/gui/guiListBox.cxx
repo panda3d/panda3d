@@ -20,6 +20,8 @@ void GuiListBox::ListFunctor::doit(GuiBehavior* b) {
     this->_lb->scroll_up();
   if ((b == this->_lb->_down_arrow) && this->_lb->_down_arrow->is_active())
     this->_lb->scroll_down();
+  if (_prev != (GuiBehavior::BehaviorFunctor*)0L)
+    _prev->doit(b);
 }
 
 void GuiListBox::recompute_frame(void) {

@@ -10,5 +10,6 @@
 #include "audio_sound.h"
 #include "audio_manager.h"
 #include "audio_pool.h"
+#include "audio_gui_functor.h"
 
 #endif /* __AUDIO_H__ */

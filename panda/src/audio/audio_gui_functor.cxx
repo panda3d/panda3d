@@ -10,4 +10,15 @@ AudioGuiFunctor::AudioGuiFunctor(AudioSound* sound,
   : _prev(prev), _sound(sound) {}
 
 AudioGuiFunctor::~AudioGuiFunctor(void) {
+  if (_prev != (GuiBehavior::BehaviorFunctor*)0L)
+    delete _prev;
+}
+
+#include "audio_manager.h"
+
+void AudioGuiFunctor::doit(GuiBehavior* b) {
+  if (_sound != (AudioSound*)0L)
+    AudioManager::play(_sound);
+  if (_prev != (GuiBehavior::BehaviorFunctor*)0L)
+    _prev->doit(b);
 }

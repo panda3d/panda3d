@@ -20,6 +20,8 @@ void GuiChooser::ChooseFunctor::doit(GuiBehavior* b) {
     this->_ch->move_prev();
   if ((b == this->_ch->_next_button) && this->_ch->_next_button->is_active())
     this->_ch->move_next();
+  if (_prev != (GuiBehavior::BehaviorFunctor*)0L)
+    _prev->doit(b);
 }
 
 void GuiChooser::recompute_frame(void) {
