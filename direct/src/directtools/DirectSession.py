@@ -84,12 +84,11 @@ class DirectSession(PandaObject):
             ['SGENodePath_Place', Placer.place],
             ['SGENodePath_Delete', self.removeNodePath],
             ]
-        self.keyEvents = ['left', 'right', 'up', 'down',
-                          'escape', 'delete', 'control', 'control-up',
+        self.keyEvents = ['escape', 'delete', 'control', 'control-up',
                           'shift', 'shift-up', 'alt', 'alt-up',
-                          'page_up', 'page_down', 'tab',
+                          'page_up', 'page_down', 
                           '[', '{', ']', '}',
-                          'b', 'l', 's', 't', 'v', 'w']
+                          'A', 'b', 'l', 's', 't', 'v', 'w']
         self.mouseEvents = ['mouse1', 'mouse1-up',
                             'mouse2', 'mouse2-up',
                             'mouse3', 'mouse3-up']
@@ -210,7 +209,7 @@ class DirectSession(PandaObject):
             self.deselectAll()
         elif input == 'delete':
             self.removeAllSelected()
-        elif input == 'tab':
+        elif input == 'v':
             self.toggleWidgetVis()
         elif input == 'b':
             base.toggleBackface()
@@ -221,7 +220,7 @@ class DirectSession(PandaObject):
                 self.select(self.selected.last)
         elif input == 't':
             base.toggleTexture()
-        elif input == 'v':
+        elif input == 'A':
             self.selected.toggleVisAll()
         elif input == 'w':
             base.toggleWireframe()

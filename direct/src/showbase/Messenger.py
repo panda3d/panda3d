@@ -120,6 +120,16 @@ class Messenger:
         keys.sort()
         for event in keys:
             str = str + 'Event: ' + event + '\n'
+            acceptorDict = self.dict[event]
+            for object in acceptorDict.keys():
+                method, extraArgs, persistent = acceptorDict[object]
+                className = object.__class__.__name__
+                methodName = method.__name__
+                str = str + '\t' + className + '.' + methodName + '('
+                if extraArgs:
+                    str = str + `extraArgs` + ' + '
+                str = str + 'sentArgs)\n'
+            str = str + '\n'
         str = str + '='*50 + '\n'
         print str
 
@@ -146,24 +156,4 @@ class Messenger:
                        )
         str = str + '='*50 + '\n'
         return str
-
-    def __reprehensible__(self):
-        """__repr__(self)
-        Old way to print out the table in a readable format
-        """
-        str = 'Messenger\n'
-        str = str + '='*50 + '\n'
-        for event in self.dict.keys():
-            acceptorDict = self.dict[event]
-            str = str + event + '\n'
-            for object in acceptorDict.keys():
-                method, extraArgs, persistent = acceptorDict[object]
-                str = str + '\t' + `object` + '\n\t' + `method` + '\n\t' + `extraArgs` + ' ' + `persistent` + '\n'
-        str = str + '='*50 + '\n'
-        return str
-
-
-
-
-
 

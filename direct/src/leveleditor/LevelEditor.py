@@ -295,7 +295,7 @@ class LevelEditor(NodePath, PandaObject):
             ('select_prop_color', self.setDNATargetColor),
             # Hot key actions
             ('a', self.autoPositionGrid),
-            ('.', self.jumpToInsertionPoint),
+            ('j', self.jumpToInsertionPoint),
             ('left', self.keyboardXformSelected, ['left']),
             ('right', self.keyboardXformSelected, ['right']),
             ('up', self.keyboardXformSelected, ['up']),

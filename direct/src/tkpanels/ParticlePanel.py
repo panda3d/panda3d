@@ -600,22 +600,36 @@ class ParticlePanel(AppShell):
         forceMenu.add_command(label = 'Add Linear Friction Force',
                             command = self.addLinearFrictionForce)
         """
-        forceMenu.add_command(label = 'Add Linear Cylinder Vortex Force',
-                            command = self.addLinearCylinderVortexForce)
-        forceMenu.add_command(label = 'Add Linear Distance Force',
-                            command = self.addLinearDistanceForce)
+        # derive from RANDOM derives from Linear Force
+        # setAmplitude        	<function setAmplitude at 01CAE3DC>
+        # setMassDependent    	<function setMassDependent at 01CAE08C>
+        # setVectorMasks      	<function setVectorMasks at 01CAFF0C>
         forceMenu.add_command(label = 'Add Linear Jitter Force',
                             command = self.addLinearJitterForce)
         forceMenu.add_command(label = 'Add Linear Noise Force',
                             command = self.addLinearNoiseForce)
-        forceMenu.add_command(label = 'Add Linear Random Force',
-                            command = self.addLinearRandomForce)
+        # setCoef             	<function setCoef at 01CAF14C>
+        # setLength           	<function setLength at 01C7F34C>
+        # setRadius           	<function setRadius at 01CAF08C>
+        forceMenu.add_command(label = 'Add Linear Cylinder Vortex Force',
+                            command = self.addLinearCylinderVortexForce)
+        forceMenu.add_command(label = 'Add Linear User Defined Force',
+                            command = self.addLinearUserDefinedForce)
+        # Also friction
+
+        # Linear Distance force
+        # setFalloffType      	<function setFalloffType at 01F300BC>
+        # setForceCenter      	<function setForceCenter at 01F3005C>
+        # setRadius           	<function setRadius at 01F3031C>
         forceMenu.add_command(label = 'Add Linear Sink Force',
                             command = self.addLinearSinkForce)
         forceMenu.add_command(label = 'Add Linear Source Force',
                             command = self.addLinearSourceForce)
-        forceMenu.add_command(label = 'Add Linear User Defined Force',
-                            command = self.addLinearUserDefinedForce)
+
+        forceMenu.add_command(label = 'Add Linear Distance Force',
+                            command = self.addLinearDistanceForce)
+        forceMenu.add_command(label = 'Add Linear Random Force',
+                            command = self.addLinearRandomForce)
         """                 
         self.addForceButton.pack(expand = 0)
 

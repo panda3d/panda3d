@@ -26,7 +26,7 @@ class DirectManipulationControl(PandaObject):
         self.actionEvents = [
             ['handleMouse1', self.manipulationStart],
             ['handleMouse1Up', self.manipulationStop],
-            ['space', self.toggleObjectHandlesMode],
+            ['tab', self.toggleObjectHandlesMode],
             ['.', self.objectHandles.multiplyScalingFactorBy, 2.0],
             ['>', self.objectHandles.multiplyScalingFactorBy, 2.0],
             [',', self.objectHandles.multiplyScalingFactorBy, 0.5],
