@@ -4,10 +4,15 @@ from direct.distributed import DistributedObjectAI
 
 class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI, NodePath):
     def __init__(self, air, name=None):
-        DistributedObjectAI.DistributedObjectAI.__init__(self, air)
-        if name is None:
-            name = self.__class__.__name__
-        NodePath.__init__(self, hidden.attachNewNode(name))
+        # Be careful not to create multiple NodePath objects
+        try:
+            self.DistributedNodeAI_initialized
+        except:
+            self.DistributedNodeAI_initialized = 1
+            DistributedObjectAI.DistributedObjectAI.__init__(self, air)
+            if name is None:
+                name = self.__class__.__name__
+            NodePath.__init__(self, name)
 
     def delete(self):
         if not self.isEmpty():
