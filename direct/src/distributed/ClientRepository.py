@@ -58,7 +58,7 @@ class ClientRepository(DirectObject.DirectObject):
         self.rsDatagramCount = 0
         self.rsUpdateObjs = {}
         self.rsLastUpdate = 0
-        self.rsDoReport = base.config.GetBool('reader-statistics', 1)
+        self.rsDoReport = base.config.GetBool('reader-statistics', 0)
         self.rsUpdateInterval = base.config.GetDouble('reader-statistics-interval', 10)
         return None
 
