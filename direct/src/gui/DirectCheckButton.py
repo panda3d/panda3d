@@ -20,33 +20,45 @@ class DirectCheckButton(DirectButton):
         # State transitions happen automatically based upon mouse interaction
         # Responds to click event and calls command if None
         
+        self.colors = None
         optiondefs = (
             ('indicatorValue', 0, self.setIndicatorValue),
             # boxBorder defines the space created around the check box
             ('boxBorder', 0, None),
             # boxPlacement maps left, above, right, below
             ('boxPlacement', 'left', None),
+            ('boxImage', None, None),
+            ('boxImageScale', 1, None),
+            ('boxImageColor', None, None),
+            ('boxRelief', 'sunken', None),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
         # Initialize superclasses
         DirectButton.__init__(self, parent)
-        
         self.indicator = self.createcomponent("indicator", (), None,
                                               DirectLabel, (self,),
                                               numStates = 2,
+                                              image = self['boxImage'],
+                                              image_scale = self['boxImageScale'],
+                                              image_color = self['boxImageColor'],
                                               state = 'disabled',
                                               text = ('X' , 'X'),
-                                              relief = 'sunken',
+                                              relief = self['boxRelief'],
                                               )
        
         # Call option initialization functions
         self.initialiseoptions(DirectCheckButton)
         # After initialization with X giving it the correct size, put back space 
-        self.indicator['text'] = (' ', '*')
-        self.indicator['text_pos'] = (0,-.17)
-
-        
+        if self['boxImage'] ==  None:
+            self.indicator['text'] = (' ', '*')
+            self.indicator['text_pos'] = (0,-.17)
+        else:
+            self.indicator['text'] = (' ', ' ')
+        if self['boxImageColor'] != None and self['boxImage'] !=  None:
+            self.colors = [VBase4(0,0,0,0), self['boxImageColor']]
+            self.component('indicator')['image_color'] = VBase4(0,0,0,0)
+            
     # Override the resetFrameSize of DirectGuiWidget inorder to provide space for label
     def resetFrameSize(self):
         self.setFrameSize(fClearFrame = 1)
@@ -130,14 +142,17 @@ class DirectCheckButton(DirectButton):
         
     def commandFunc(self, event):
         self['indicatorValue'] = 1 - self['indicatorValue']
-
+        if self.colors != None:
+            self.component('indicator')['image_color'] = self.colors[self['indicatorValue']]
+            
         if self['command']:
             # Pass any extra args to command
             apply(self['command'], [self['indicatorValue']] + self['extraArgs'])
             
     def setIndicatorValue(self):
         self.component('indicator').guiItem.setState(self['indicatorValue'])
-        
+        if self.colors != None:
+            self.component('indicator')['image_color'] = self.colors[self['indicatorValue']]
 
 
 
