@@ -182,10 +182,36 @@ check_pseudo_joints(bool joint_above) {
   // Don't bother traversing further if _joint_type is none, since
   // that means this node has no joint children.
   if (_joint_type != JT_none) {
+
+    bool any_joints = false;
     Children::const_iterator ci;
     for (ci = _children.begin(); ci != _children.end(); ++ci) {
       MayaNodeDesc *child = (*ci);
       child->check_pseudo_joints(joint_above);
+      if (child->is_joint()) {
+        any_joints = true;
+      }
+    }
+
+    // If any children qualify as joints, then any sibling nodes that
+    // are parents of joints are also elevated to joints.
+    if (any_joints) {
+      bool all_joints = true;
+      for (ci = _children.begin(); ci != _children.end(); ++ci) {
+        MayaNodeDesc *child = (*ci);
+        if (child->_joint_type == JT_joint_parent) {
+          child->_joint_type = JT_pseudo_joint;
+        } else if (child->_joint_type == JT_none) {
+          all_joints = false;
+        }
+      }
+
+      if (all_joints) {
+        // Finally, if all children are joints, then we are too.
+        if (_joint_type == JT_joint_parent) {
+          _joint_type = JT_pseudo_joint;
+        }
+      }
     }
   }
 }

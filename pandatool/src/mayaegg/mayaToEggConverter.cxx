@@ -440,8 +440,9 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
       mayaegg_cat.debug(false)
         << "frame " << frame.value() << "\n";
     } else {
-      mayaegg_cat.info(false)
-        << ".";
+      // We have to write to cerr instead of mayaegg_cat to allow
+      // flushing without writing a newline.
+      cerr << "." << flush;
     }
     MGlobal::viewFrame(frame);
 
