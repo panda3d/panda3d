@@ -317,3 +317,19 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
         else:
             NodePath.wrtReparentTo(self, parent)
 
+
+    ### Monitor clock sync ###
+
+    def d_suggestResync(self, avId):
+        self.sendUpdate("suggestResync", [avId])
+        
+    def suggestResync(self, avId):
+        """suggestResync(self, avId)
+
+        This message is sent from one client to another when the other
+        client receives a timestamp from this client that is so far
+        out of date as to suggest that one or both clients needs to
+        resynchronize with the AI.
+        """
+        if self.cr.timeManager != None:
+            self.cr.timeManager.synchronize("suggested by %d" % (avId))
