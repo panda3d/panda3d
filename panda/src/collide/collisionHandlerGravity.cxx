@@ -187,11 +187,11 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
     // is colliding with relative to the avatar.  A positive y valye means
     // the avatar is facing downhill and a negative y value means the
     // avatar is facing uphill.
-    _contact_normal = DCAST(CollisionPlane, highest->get_into())->get_normal() * from_node_path.get_mat(highest->get_into_node_path());
+    //_contact_normal = DCAST(CollisionPlane, highest->get_into())->get_normal() * from_node_path.get_mat(highest->get_into_node_path());
     //_contact_normal = DCAST(CollisionPlane, highest->get_into())->get_normal();
     // This is asking: what is the normal of the avatar that the avatar
     // is colliding with relative to the plane.
-    //_contact_normal = DCAST(CollisionPlane, highest->get_into())->get_normal() * highest->get_into_node_path().get_mat(from_node_path);
+    _contact_normal = DCAST(CollisionPlane, highest->get_into())->get_normal() * highest->get_into_node_path().get_mat(from_node_path);
   } else {
     _contact_normal = highest->get_surface_normal(from_node_path);
   }
@@ -286,6 +286,7 @@ handle_entries() {
 
         apply_linear_force(def, LVector3f(0.0f, 0.0f, adjust));
       } else {
+        // _impact_velocity = _current_velocity;
         _current_velocity = _airborne_height = 0.0f;
         if (collide_cat.is_spam()) {
           collide_cat.spam()
