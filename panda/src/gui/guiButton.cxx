@@ -112,6 +112,7 @@ static void click_button_up(CPT_Event e) {
 
 void GuiButton::switch_state(GuiButton::States nstate) {
   test_ref_count_integrity();
+  States ostate = _state;
   // cleanup old state
   switch (_state) {
   case NONE:
@@ -154,6 +155,8 @@ void GuiButton::switch_state(GuiButton::States nstate) {
     } else
       gui_cat->debug() << "_up_event is empty!" << endl;
     _rgn->trap_clicks(true);
+    if ((ostate == INACTIVE) || (ostate == INACTIVE_ROLLOVER))
+      _mgr->add_region(_rgn);
     break;
   case UP_ROLLOVER:
     if (_up_rollover != (GuiLabel*)0L) {
@@ -174,6 +177,8 @@ void GuiButton::switch_state(GuiButton::States nstate) {
       _state = UP;
     }
     _rgn->trap_clicks(true);
+    if ((ostate == INACTIVE) || (ostate == INACTIVE_ROLLOVER))
+      _mgr->add_region(_rgn);
     break;
   case DOWN:
     _mgr->add_label(_down);
@@ -182,6 +187,8 @@ void GuiButton::switch_state(GuiButton::States nstate) {
     else
       gui_cat->debug() << "_down_event is empty!" << endl;
     _rgn->trap_clicks(true);
+    if ((ostate == INACTIVE) || (ostate == INACTIVE_ROLLOVER))
+      _mgr->add_region(_rgn);
     break;
   case DOWN_ROLLOVER:
     if (_down_rollover != (GuiLabel*)0L) {
@@ -199,6 +206,8 @@ void GuiButton::switch_state(GuiButton::States nstate) {
       _state = DOWN;
     }
     _rgn->trap_clicks(true);
+    if ((ostate == INACTIVE) || (ostate == INACTIVE_ROLLOVER))
+      _mgr->add_region(_rgn);
     break;
   case INACTIVE:
     if (_inactive != (GuiLabel*)0L) {
@@ -207,6 +216,8 @@ void GuiButton::switch_state(GuiButton::States nstate) {
 	throw_event(_inactive_event);
     }
     _rgn->trap_clicks(false);
+    if ((ostate != INACTIVE) && (ostate != INACTIVE_ROLLOVER))
+      _mgr->remove_region(_rgn);
     break;
   case INACTIVE_ROLLOVER:
     if (_inactive != (GuiLabel*)0L) {
@@ -215,11 +226,14 @@ void GuiButton::switch_state(GuiButton::States nstate) {
 	throw_event(_inactive_event);
     }
     _rgn->trap_clicks(false);
+    if ((ostate != INACTIVE) && (ostate != INACTIVE_ROLLOVER))
+      _mgr->remove_region(_rgn);
     break;
   default:
     gui_cat->warning() << "switched to invalid state (" << (int)_state << ")"
 		       << endl;
   }
+  _mgr->recompute_priorities();
 }
 
 void GuiButton::recompute_frame(void) {

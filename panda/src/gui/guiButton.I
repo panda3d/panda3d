@@ -48,6 +48,9 @@ INLINE void GuiButton::up(void) {
   case INACTIVE_ROLLOVER:
     switch_state(UP_ROLLOVER);
     break;
+  case UP:
+  case UP_ROLLOVER:
+    break;
   default:
     gui_cat->warning() << "got up from invalid state (" << (int)_state << "),"
 		       << " button '" << this->get_name() << "'" << endl;
@@ -63,6 +66,9 @@ INLINE void GuiButton::down(void) {
   case UP_ROLLOVER:
   case INACTIVE_ROLLOVER:
     switch_state(DOWN_ROLLOVER);
+    break;
+  case DOWN:
+  case DOWN_ROLLOVER:
     break;
   default:
     gui_cat->warning() << "got down from invalid state (" << (int)_state

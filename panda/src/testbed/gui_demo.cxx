@@ -650,25 +650,27 @@ static void test11(GuiManager* mgr, Node* font) {
   cout << *lb1;
 }
 
+PT(GuiButton) gb1;
+
 static void test12(GuiManager* mgr, Node* font) {
   GuiLabel* l1 = GuiLabel::make_simple_text_label("up", font);
   GuiLabel* l2 = GuiLabel::make_simple_text_label("upr", font);
   GuiLabel* l3 = GuiLabel::make_simple_text_label("down", font);
   GuiLabel* l4 = GuiLabel::make_simple_text_label("downr", font);
   GuiLabel* l5 = GuiLabel::make_simple_text_label("none", font);
-  GuiButton* b1 = new GuiButton("test12", l1, l2, l3, l4, l5);
-  b1->set_scale(0.1);
-  b1->set_pos(LVector3f::rfu(-0.25, 0., 0.25));
+  gb1 = new GuiButton("test12", l1, l2, l3, l4, l5);
+  gb1->set_scale(0.1);
+  gb1->set_pos(LVector3f::rfu(-0.25, 0., 0.25));
   l2->set_foreground_color(1., 1., 0., 1.);
   l4->set_foreground_color(1., 1., 0., 1.);
   l1->set_background_color(0., 0., 0., 1.);
   l2->set_background_color(0., 0., 0., 1.);
   l3->set_background_color(1., 1., 1., 0.5);
   l4->set_background_color(1., 1., 1., 0.5);
-  b1->thaw();
-  b1->manage(mgr, event_handler);
-  b1->set_behavior_event("demo-event-thing");
-  b1->start_behavior();
+  gb1->thaw();
+  gb1->manage(mgr, event_handler);
+  gb1->set_behavior_event("demo-event-thing");
+  gb1->start_behavior();
 }
 
 static void test13(GuiManager* mgr, Node* font) {
@@ -1082,6 +1084,13 @@ static void event_3(CPT_Event) {
 }
 */
 
+/*
+// for test 12
+static void event_3(CPT_Event) {
+  gb1->inactive();
+}
+*/
+
 // for test 14-16
 static void event_3(CPT_Event) {
   ch1->move_prev();
@@ -1092,6 +1101,13 @@ static void event_3(CPT_Event) {
 static void event_4(CPT_Event) {
   lb1->scroll_down();
   cout << *lb1;
+}
+*/
+
+/*
+// for test 12
+static void event_4(CPT_Event) {
+  gb1->up();
 }
 */
 
@@ -1109,9 +1125,9 @@ void gui_keys(EventHandler&) {
   have_dlight = true;
 
   event_handler.add_hook("2", event_2);
-  // for tests 7-11, 13-16
+  // for tests 7-16
   event_handler.add_hook("3", event_3);
-  // for test 11, 13-16
+  // for test 11-16
   event_handler.add_hook("4", event_4);
   event_handler.add_hook("demo-event-thing", event_demo);
 }
