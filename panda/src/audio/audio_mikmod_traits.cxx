@@ -37,74 +37,74 @@ static void initialize(void) {
     opts = buster();
     for (StrList::iterator i=opts.begin(); i!=opts.end(); ++i) {
       if ((*i) == "DMODE_INTERP") {
-	md_mode |= DMODE_INTERP;
+    md_mode |= DMODE_INTERP;
       } else if ((*i) == "DMODE_REVERSE") {
-	md_mode |= DMODE_REVERSE;
+    md_mode |= DMODE_REVERSE;
       } else if ((*i) == "DMODE_SURROUND") {
-	md_mode |= DMODE_SURROUND;
+    md_mode |= DMODE_SURROUND;
       } else if ((*i) == "DMODE_16BITS") {
-	md_mode |= DMODE_16BITS;
+    md_mode |= DMODE_16BITS;
       } else if ((*i) == "DMODE_HQMIXER") {
-	md_mode |= DMODE_HQMIXER;
+    md_mode |= DMODE_HQMIXER;
       } else if ((*i) == "DMODE_SOFT_MUSIC") {
-	md_mode |= DMODE_SOFT_MUSIC;
+    md_mode |= DMODE_SOFT_MUSIC;
       } else if ((*i) == "DMODE_SOFT_SNDFX") {
-	md_mode |= DMODE_SOFT_SNDFX;
+    md_mode |= DMODE_SOFT_SNDFX;
       } else if ((*i) == "DMODE_STEREO") {
-	md_mode |= DMODE_STEREO;
+    md_mode |= DMODE_STEREO;
       } else {
-	audio_cat->error() << "unknown audio driver flag '" << *i << "'"
-			   << endl;
+    audio_cat->error() << "unknown audio driver flag '" << *i << "'"
+               << endl;
       }
     }
-    if (audio_cat->is_debug()) {
+    if (audio_cat.is_debug()) {
       audio_cat->debug() << "final driver mode is (";
       bool any_out = false;
       if (md_mode & DMODE_INTERP) {
-	audio_cat->debug(false) << "DMODE_INTERP";
-	any_out = true;
+    audio_cat->debug(false) << "DMODE_INTERP";
+    any_out = true;
       }
       if (md_mode & DMODE_REVERSE) {
-	if (any_out)
-	  audio_cat->debug(false) << ", ";
-	audio_cat->debug(false) << "DMODE_REVERSE";
-	any_out = true;
+    if (any_out)
+      audio_cat->debug(false) << ", ";
+    audio_cat->debug(false) << "DMODE_REVERSE";
+    any_out = true;
       }
       if (md_mode & DMODE_SURROUND) {
-	if (any_out)
-	  audio_cat->debug(false) << ", ";
-	audio_cat->debug(false) << "DMODE_SURROUND";
-	any_out = true;
+    if (any_out)
+      audio_cat->debug(false) << ", ";
+    audio_cat->debug(false) << "DMODE_SURROUND";
+    any_out = true;
       }
       if (md_mode & DMODE_16BITS) {
-	if (any_out)
-	  audio_cat->debug(false) << ", ";
-	audio_cat->debug(false) << "DMODE_16BITS";
-	any_out = true;
+    if (any_out)
+      audio_cat->debug(false) << ", ";
+    audio_cat->debug(false) << "DMODE_16BITS";
+    any_out = true;
       }
       if (md_mode & DMODE_HQMIXER) {
-	if (any_out)
-	  audio_cat->debug(false) << ", ";
-	audio_cat->debug(false) << "DMODE_HQMIXER";
-	any_out = true;
+    if (any_out)
+      audio_cat->debug(false) << ", ";
+    audio_cat->debug(false) << "DMODE_HQMIXER";
+    any_out = true;
       }
       if (md_mode & DMODE_SOFT_MUSIC) {
-	if (any_out)
-	  audio_cat->debug(false) << ", ";
-	audio_cat->debug(false) << "DMODE_SOFT_MUSIC";
-	any_out = true;
+    if (any_out)
+      audio_cat->debug(false) << ", ";
+    audio_cat->debug(false) << "DMODE_SOFT_MUSIC";
+    any_out = true;
       }
       if (md_mode & DMODE_SOFT_SNDFX) {
-	if (any_out)
-	  audio_cat->debug(false) << ", ";
-	audio_cat->debug(false) << "DMODE_SOFT_SNDFX";
-	any_out = true;
+    if (any_out)
+      audio_cat->debug(false) << ", ";
+    audio_cat->debug(false) << "DMODE_SOFT_SNDFX";
+    any_out = true;
       }
       if (md_mode & DMODE_STEREO) {
-	if (any_out)
-	  audio_cat->debug(false) << ", ";
-	audio_cat->debug(false) << "DMODE_STEREO";
-	any_out = true;
+    if (any_out)
+      audio_cat->debug(false) << ", ";
+    audio_cat->debug(false) << "DMODE_STEREO";
+    any_out = true;
       }
       audio_cat->debug(false) << ")" << endl;
     }
@@ -112,11 +112,11 @@ static void initialize(void) {
   md_device = audio_driver_select;
   if (MikMod_Init((char*)(audio_driver_params->c_str()))) {
     audio_cat->error() << "Could not initialize the audio drivers.  '"
-		       << MikMod_strerror(MikMod_errno) << "'" << endl;
+               << MikMod_strerror(MikMod_errno) << "'" << endl;
     initialization_error = true;
     return;
   }
-  if (audio_cat->is_debug()) {
+  if (audio_cat.is_debug()) {
     audio_cat->debug() << "driver info" << endl << MikMod_InfoDriver() << endl;
   }
   MikMod_SetNumVoices(-1, audio_sample_voices);
@@ -154,7 +154,7 @@ MikModSample* MikModSample::load_wav(Filename filename) {
   SAMPLE* sample = Sample_Load((char*)(filename.c_str()));
   if (sample == (SAMPLE*)0L) {
     audio_cat->error() << "error loading sample '" << filename << "' because '"
-		       << MikMod_strerror(MikMod_errno) << "'" << endl;
+               << MikMod_strerror(MikMod_errno) << "'" << endl;
     return (MikModSample*)0L;
   }
   return new MikModSample(sample);
@@ -280,14 +280,14 @@ MikModSamplePlayer::~MikModSamplePlayer(void) {
 }
 
 void MikModSamplePlayer::play_sound(AudioTraits::SoundClass* sample,
-				    AudioTraits::PlayingClass* playing,
-				    float) {
+                    AudioTraits::PlayingClass* playing,
+                    float) {
   if (!have_initialized)
     initialize();
   if (!MikMod_Active()) {
     if (MikMod_EnableOutput()) {
       audio_cat->error() << "could not enable sample output '"
-			 << MikMod_strerror(MikMod_errno) << "'" << endl;
+             << MikMod_strerror(MikMod_errno) << "'" << endl;
     }
   }
   // cast to the correct type
@@ -304,20 +304,20 @@ void MikModSamplePlayer::play_sound(AudioTraits::SoundClass* sample,
 }
 
 void MikModSamplePlayer::stop_sound(AudioTraits::SoundClass* sample,
-				    AudioTraits::PlayingClass* playing) {
+                    AudioTraits::PlayingClass* playing) {
   if (!have_initialized)
     initialize();
   // stop it
 }
 
 void MikModSamplePlayer::set_volume(AudioTraits::PlayingClass* state,
-				    float v) {
+                    float v) {
   initialize();
   MikModSamplePlaying* mplay = (MikModSamplePlaying*)state;
   if (!AudioManager::get_sfx_active())
     return;
   Voice_SetVolume(mplay->get_voice(),
-		  v * AudioManager::get_master_sfx_volume());
+          v * AudioManager::get_master_sfx_volume());
   state->set_volume(v);
 }
 
@@ -327,7 +327,7 @@ bool MikModSamplePlayer::adjust_volume(AudioTraits::PlayingClass* state) {
   if (!AudioManager::get_sfx_active())
     return true;
   Voice_SetVolume(mplay->get_voice(),
-		  state->get_volume() * AudioManager::get_master_sfx_volume());
+          state->get_volume() * AudioManager::get_master_sfx_volume());
   return false;
 }
 
@@ -347,13 +347,13 @@ MikModFmsynthPlayer::~MikModFmsynthPlayer(void) {
 }
 
 void MikModFmsynthPlayer::play_sound(AudioTraits::SoundClass*,
-				     AudioTraits::PlayingClass*, float) {
+                     AudioTraits::PlayingClass*, float) {
   audio_cat->error() << "trying to play a sample with a MikModFmsynthPlayer"
-		     << endl;
+             << endl;
 }
 
 void MikModFmsynthPlayer::stop_sound(AudioTraits::SoundClass*,
-				     AudioTraits::PlayingClass*) {
+                     AudioTraits::PlayingClass*) {
 }
 
 void MikModFmsynthPlayer::set_volume(AudioTraits::PlayingClass* p, float v) {
@@ -384,13 +384,13 @@ MikModMidiPlayer::~MikModMidiPlayer(void) {
 }
 
 void MikModMidiPlayer::play_sound(AudioTraits::SoundClass*,
-				  AudioTraits::PlayingClass*, float) {
+                  AudioTraits::PlayingClass*, float) {
   audio_cat->error() << "trying to play a sample with a MikModMidiPlayer"
-		     << endl;
+             << endl;
 }
 
 void MikModMidiPlayer::stop_sound(AudioTraits::SoundClass*,
-				  AudioTraits::PlayingClass*) {
+                  AudioTraits::PlayingClass*) {
 }
 
 void MikModMidiPlayer::set_volume(AudioTraits::PlayingClass* p, float v) {

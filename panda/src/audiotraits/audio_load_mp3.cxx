@@ -81,21 +81,21 @@ static void set_synth_functions(struct frame* fr) {
   };
   static func_mono funcs_mono[2][2][4] = {
     { { synth_1to1_mono2stereo,
-	synth_2to1_mono2stereo,
-	synth_4to1_mono2stereo,
-	synth_ntom_mono2stereo } ,
+    synth_2to1_mono2stereo,
+    synth_4to1_mono2stereo,
+    synth_ntom_mono2stereo } ,
       { synth_1to1_8bit_mono2stereo,
-	synth_2to1_8bit_mono2stereo,
-	synth_4to1_8bit_mono2stereo,
-	synth_ntom_8bit_mono2stereo } } ,
+    synth_2to1_8bit_mono2stereo,
+    synth_4to1_8bit_mono2stereo,
+    synth_ntom_8bit_mono2stereo } } ,
     { { synth_1to1_mono,
-	synth_2to1_mono,
-	synth_4to1_mono,
-	synth_ntom_mono } ,
+    synth_2to1_mono,
+    synth_4to1_mono,
+    synth_ntom_mono } ,
       { synth_1to1_8bit_mono,
-	synth_2to1_8bit_mono,
-	synth_4to1_8bit_mono,
-	synth_ntom_8bit_mono } } ,
+    synth_2to1_8bit_mono,
+    synth_4to1_8bit_mono,
+    synth_ntom_8bit_mono } } ,
   };
 
   if ((ai.format & AUDIO_FORMAT_MASK) == AUDIO_FORMAT_8)
@@ -152,7 +152,7 @@ public:
   void output(unsigned char* b) {
     for (Buffers::const_iterator i=_bufs.begin(); i!=_bufs.end(); ++i)
       for (Buffer::const_iterator j=(*i).begin(); j!=(*i).end(); ++j)
-	*(b++) = (*j);
+    *(b++) = (*j);
   }
 };
 
@@ -166,7 +166,7 @@ private:
   BufferPart* _next;
 
   BufferPart(void) : _ptr((unsigned char*)0L), _len(0), _next((BufferPart*)0L)
-	 {}
+     {}
 public:
   BufferPart(unsigned char* b, unsigned long l) : _next((BufferPart*)0L),
                                                   _len(l) {
@@ -190,7 +190,7 @@ public:
   void output(unsigned char* b) {
      memcpy(b, _ptr, _len);
      if (_next != (BufferPart*)0L)
-	_next->output(b+_len);
+    _next->output(b+_len);
   }
 };
 
@@ -232,7 +232,7 @@ int audio_set_rate(struct audio_info_struct* ai) {
 int audio_set_channels(struct audio_info_struct* ai) {
   if (ai->channels != 2)
     audio_cat->warning() << "trying to decode mp3 to non-stereo ("
-			 << ai->channels << " != 2)" << endl;
+             << ai->channels << " != 2)" << endl;
   return 0;
 }
 
@@ -248,7 +248,7 @@ int audio_get_formats(struct audio_info_struct* ai) {
 }
 
 int audio_play_samples(struct audio_info_struct* ai, unsigned char* buf,
-		       int len) {
+               int len) {
   /*
   if (my_buf_head == (BufferPart*)0L) {
     my_buf_head = my_buf_curr = new BufferPart(buf, len);
@@ -344,56 +344,56 @@ int play_frame(struct mpstr* mp, int init, struct frame* fr) {
       audio_fit_capabilities(&ai, fr->stereo, newrate);
       // check whether the fitter set our proposed rate
       if (ai.rate != newrate) {
-	if (ai.rate == (newrate >> 1))
-	  fr->down_sample++;
-	else if (ai.rate == (newrate >> 2))
-	  fr->down_sample += 2;
-	else {
-	  fr->down_sample = 3;
-	  audio_cat->warning() << "flexable rate not heavily tested!" << endl;
-	}
-	if (fr->down_sample > 3)
-	  fr->down_sample = 3;
+    if (ai.rate == (newrate >> 1))
+      fr->down_sample++;
+    else if (ai.rate == (newrate >> 2))
+      fr->down_sample += 2;
+    else {
+      fr->down_sample = 3;
+      audio_cat->warning() << "flexable rate not heavily tested!" << endl;
+    }
+    if (fr->down_sample > 3)
+      fr->down_sample = 3;
       }
       switch (fr->down_sample) {
       case 0:
       case 1:
       case 2:
-	fr->down_sample_sblimit = SBLIMIT >> (fr->down_sample);
-	break;
+    fr->down_sample_sblimit = SBLIMIT >> (fr->down_sample);
+    break;
       case 3:
-	{
-	  long n = freqs[fr->sampling_frequency];
-	  long m = ai.rate;
-	  synth_ntom_set_step(n, m);
-	  if (n>m) {
-	    fr->down_sample_sblimit = SBLIMIT * m;
-	    fr->down_sample_sblimit /= n;
-	  } else
-	    fr->down_sample_sblimit = SBLIMIT;
-	}
-	break;
+    {
+      long n = freqs[fr->sampling_frequency];
+      long m = ai.rate;
+      synth_ntom_set_step(n, m);
+      if (n>m) {
+        fr->down_sample_sblimit = SBLIMIT * m;
+        fr->down_sample_sblimit /= n;
+      } else
+        fr->down_sample_sblimit = SBLIMIT;
+    }
+    break;
       }
       set_synth_functions(fr);
       init_output();
       if (ai.rate != old_rate || ai.channels != old_channels ||
-	  ai.format != old_format || param.force_reopen) {
-	if (param.force_mono < 0) {
-	  if (ai.channels == 1)
-	    fr->single = 3;
-	  else
-	    fr->single = -1;
-	} else
-	  fr->single = param.force_mono;
-	param.force_stereo &= ~0x2;
-	if (fr->single >= 0 && ai.channels == 2)
-	  param.force_stereo |= 0x2;
-	set_synth_functions(fr);
-	init_layer3(fr->down_sample_sblimit);
-	reset_audio();
+      ai.format != old_format || param.force_reopen) {
+    if (param.force_mono < 0) {
+      if (ai.channels == 1)
+        fr->single = 3;
+      else
+        fr->single = -1;
+    } else
+      fr->single = param.force_mono;
+    param.force_stereo &= ~0x2;
+    if (fr->single >= 0 && ai.channels == 2)
+      param.force_stereo |= 0x2;
+    set_synth_functions(fr);
+    init_layer3(fr->down_sample_sblimit);
+    reset_audio();
       }
       if (intflag)
-	return !0;
+    return !0;
     }
   }
   if (fr->error_protection)
@@ -421,7 +421,7 @@ int play_frame(struct mpstr* mp, int init, struct frame* fr) {
 }
 
 static void read_file(Filename filename, unsigned char** buf,
-		      unsigned long& slen) {
+              unsigned long& slen) {
   int init;
   unsigned long frameNum = 0;
 
@@ -438,19 +438,19 @@ static void read_file(Filename filename, unsigned char** buf,
     leftFrames = numframes;
     for (frameNum=0; read_frame(&fr) && leftFrames && !intflag; ++frameNum) {
       if ((frameNum % 100) == 0)
-        if (audio_cat->is_debug())
+        if (audio_cat.is_debug())
           audio_cat->debug(false) << ".";
       if (frameNum < param.startFrame || (param.doublespeed &&
-					  (frameNum % param.doublespeed))) {
-	if (fr.lay == 3)
-	  set_pointer(512);
-	continue;
+                      (frameNum % param.doublespeed))) {
+    if (fr.lay == 3)
+      set_pointer(512);
+    continue;
       }
       if (leftFrames > 0)
-	--leftFrames;
+    --leftFrames;
       if (!play_frame(&mp, init, &fr)) {
-	audio_cat->error() << "Error in frame #" << frameNum << endl;
-	break;
+    audio_cat->error() << "Error in frame #" << frameNum << endl;
+    break;
       }
       init = 0;
     }
@@ -459,7 +459,7 @@ static void read_file(Filename filename, unsigned char** buf,
       intflag = FALSE;
     }
   }
-  if (audio_cat->is_debug())
+  if (audio_cat.is_debug())
     audio_cat->debug(false) << endl;
   audio_flush(param.outmode, &ai);
   switch (param.outmode) {
@@ -513,7 +513,7 @@ static void read_file(Filename filename, unsigned char** buf,
 
 AudioTraits::SoundClass* AudioLoadMp3(Filename) {
   audio_cat->warning() << "Mikmod doesn't support reading mp3 data yet"
-		       << endl;
+               << endl;
   return (AudioTraits::SoundClass*)0L;
 }
 

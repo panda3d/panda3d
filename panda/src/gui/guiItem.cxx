@@ -14,7 +14,7 @@ void GuiItem::recompute_frame(void) {
 void GuiItem::adjust_region(void) {
   test_ref_count_integrity();
   gui_cat->debug() << "in adjust_region, base values (" << _left << ", "
-		   << _right << ", " << _bottom << ", " << _top << ")" << endl;
+           << _right << ", " << _bottom << ", " << _top << ")" << endl;
   if (!(_alt_root.is_null())) {
     // adjust for graph transform
     LMatrix4f m;
@@ -28,8 +28,8 @@ void GuiItem::adjust_region(void) {
     _right = lr.dot(LVector3f::rfu(1., 0., 0.));
     _bottom = lr.dot(LVector3f::rfu(0., 0., 1.));
     gui_cat->debug() << "childed to non-default node, current values ("
-		     << _left << ", " << _right << ", " << _bottom << ", "
-		     << _top << ")" << endl;
+             << _left << ", " << _right << ", " << _bottom << ", "
+             << _top << ")" << endl;
   }
 }
 
@@ -37,18 +37,18 @@ void GuiItem::set_priority(GuiLabel*, const GuiItem::Priority) {
 }
 
 GuiItem::GuiItem(const string& name) : Namable(name), _scale(1.), _scale_x(1.),
-				       _scale_y(1.), _scale_z(1.), _left(-1.),
-				       _right(1.), _bottom(-1.), _top(1.),
-				       _pos(0., 0., 0.), _mgr((GuiManager*)0L),
-				       _pri(P_Normal) {
+                       _scale_y(1.), _scale_z(1.), _left(-1.),
+                       _right(1.), _bottom(-1.), _top(1.),
+                       _pos(0., 0., 0.), _mgr((GuiManager*)0L),
+                       _pri(P_Normal) {
 
-  if (gui_cat->is_debug())
+  if (gui_cat.is_debug())
     gui_cat->debug()
       << "creating item '" << get_name() << "' (" << (void *)this << ")\n";
 }
 
 GuiItem::~GuiItem(void) {
-  if (gui_cat->is_debug())
+  if (gui_cat.is_debug())
     gui_cat->debug()
       << "deleting item '" << get_name() << "' (" << (void *)this << ")\n";
   //  this->unmanage();

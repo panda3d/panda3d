@@ -31,7 +31,7 @@ ButtonRegistry *ButtonRegistry::_global_pointer = NULL;
 ////////////////////////////////////////////////////////////////////
 bool ButtonRegistry::
 register_button(ButtonHandle &button_handle, const string &name,
-		char ascii_equivalent) { 
+        char ascii_equivalent) { 
   NameRegistry::iterator ri;
   ri = _name_registry.find(name);
 
@@ -42,17 +42,17 @@ register_button(ButtonHandle &button_handle, const string &name,
     int index = -1;
     if (ascii_equivalent != '\0') {
       if (_handle_registry[ascii_equivalent] == (RegistryNode *)NULL) {
-	index = ascii_equivalent;
+    index = ascii_equivalent;
       } else {
-	util_cat->error()
-	  << "Attempt to register multiple buttons under ASCII equivalent "
-	  << ascii_equivalent << "\n";
+    util_cat->error()
+      << "Attempt to register multiple buttons under ASCII equivalent "
+      << ascii_equivalent << "\n";
       }
     }
     
-    if (util_cat->is_spam()) {
+    if (util_cat.is_spam()) {
       util_cat->spam()
-	<< "Registering button " << name << "\n";
+    << "Registering button " << name << "\n";
     }
 
     if (index == -1) {
@@ -75,7 +75,7 @@ register_button(ButtonHandle &button_handle, const string &name,
   RegistryNode *rnode = (*ri).second;
   nassertr(rnode->_name == (*ri).first, false);
   nassertr(rnode->_handle._index >= 0 && 
-	   rnode->_handle._index < (int)_handle_registry.size(), false);
+       rnode->_handle._index < (int)_handle_registry.size(), false);
   nassertr(_handle_registry[rnode->_handle._index] == rnode, false);
   nassertr(rnode->_handle._index != 0, false);
 

@@ -67,22 +67,22 @@ void WindowParseFunctor::operator()(std::string S) {
   }
 
   WindowItem W(hw_chans, dvr, hw_chan_offset, layout, sv, X, Y, border,
-	       cursor);
+           cursor);
 
-  if (chancfg_cat->is_debug()) {
+  if (chancfg_cat.is_debug()) {
     chancfg_cat->debug() << "parsed a window called '" << sym << "':" << endl;
     chancfg_cat->debug() << "  do" << (W.getHWChans()?" ":" not ")
-			 << "use HW channels" << endl;
+             << "use HW channels" << endl;
     chancfg_cat->debug() << "  do" << (W.getDVR()?" ":" not ") << "use DVR"
-			 << endl;
+             << endl;
     chancfg_cat->debug() << "  do" << (W.getBorder()?" ":" not ")
-			 << "have a border" << endl;
+             << "have a border" << endl;
     chancfg_cat->debug() << "  do" << (W.getCursor()?" ":" not ")
-			 << "have a cursor" << endl;
+             << "have a cursor" << endl;
     chancfg_cat->debug() << "  HW channel offset: " << W.getChanOffset()
-			 << endl;
+             << endl;
     chancfg_cat->debug() << "  prefered window size: (" << W.getSizeX()
-			 << ", " << W.getSizeY() << ")" << endl;
+             << ", " << W.getSizeY() << ")" << endl;
     chancfg_cat->debug() << "  layout: '" << W.getLayout() << "'" << endl;
     chancfg_cat->debug() << "  setups:" << endl;
     SetupSyms q(W.getSetups());

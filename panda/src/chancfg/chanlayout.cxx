@@ -66,16 +66,16 @@ void LayoutParseFunctor::operator()(std::string S) {
 
     for (int j=y; j<y+n; ++j)
       for (int k=x; k<x+m; ++k)
-	if (mask[(j*X)+k])
-	  ok = false;
-	else
-	  mask[(j*X)+k] = true;
+    if (mask[(j*X)+k])
+      ok = false;
+    else
+      mask[(j*X)+k] = true;
     if (ok) {
       ChanViewport l((x*xfrac), ((x+m)*xfrac), (y*yfrac), ((y+n)*yfrac));
       L.AddRegion(l);
     } else {
       nout << "error, region (" << m << " " << n << " " << start
-	   << ") overlaps another.  It is being skipped." << endl;
+       << ") overlaps another.  It is being skipped." << endl;
     }
   }
   for (i=0; i<(X*Y); ++i)
@@ -87,14 +87,14 @@ void LayoutParseFunctor::operator()(std::string S) {
       L.AddRegion(l);
     }
 
-  if (chancfg_cat->is_debug()) {
+  if (chancfg_cat.is_debug()) {
     chancfg_cat->debug() << "parsed a layout called '" << sym << "':" << endl;
     chancfg_cat->debug() << "  " << L.GetNumRegions() << " regions" << endl;
     for (int q=0; q<L.GetNumRegions(); ++q) {
       const ChanViewport& v = L[q];
       chancfg_cat->debug() << "  region #" << q << ": (" << v.left() << ", "
-			   << v.right() << ", " << v.bottom() << ", "
-			   << v.top() << ")" << endl;
+               << v.right() << ", " << v.bottom() << ", "
+               << v.top() << ")" << endl;
     }
   }
   (*LayoutDB)[sym] = L;

@@ -46,7 +46,7 @@ static void ReadChanConfigData(void) {
   } else {
     ifstream ifs;
     if (layoutfname.open_read(ifs)) {
-      if (chancfg_cat->is_debug())
+      if (chancfg_cat.is_debug())
         chancfg_cat->debug()
           << "Reading layout database " << layoutfname << endl;
       ParseLayout(ifs);
@@ -63,7 +63,7 @@ static void ReadChanConfigData(void) {
   } else {
     ifstream ifs;
     if (setupfname.open_read(ifs)) {
-      if (chancfg_cat->is_debug())
+      if (chancfg_cat.is_debug())
         chancfg_cat->debug()
           << "Reading setup database " << setupfname << endl;
       ParseSetup(ifs);
@@ -80,7 +80,7 @@ static void ReadChanConfigData(void) {
   } else {
     ifstream ifs;
     if (windowfname.open_read(ifs)) {
-      if (chancfg_cat->is_debug())
+      if (chancfg_cat.is_debug())
         chancfg_cat->debug()
           << "Reading window database " << windowfname << endl;
       ParseWindow(ifs);
@@ -135,23 +135,23 @@ bool ChanCheckSetups(SetupSyms& S) {
     if (((*SetupDB)[*i]).getRecurse()) {
       SetupSyms a = ((*SetupDB)[*i]).getLayouts();
       if (!ChanCheckLayouts(a))
-	return false;
+    return false;
       a = ((*SetupDB)[*i]).getSetups();
       if (!ChanCheckSetups(a))
-	return false;
+    return false;
     }
   }
   return true;
 }
 
 INLINE ChanViewport ChanScaleViewport(const ChanViewport& parent,
-				      const ChanViewport& child) {
+                      const ChanViewport& child) {
   float dx = (parent.right() - parent.left());
   float dy = (parent.top() - parent.bottom());
   ChanViewport v(parent.left() + (dx * child.left()),
-		 parent.left() + (dx * child.right()),
-		 parent.bottom() + (dy * child.bottom()),
-		 parent.bottom() + (dy * child.top()));
+         parent.left() + (dx * child.right()),
+         parent.bottom() + (dy * child.bottom()),
+         parent.bottom() + (dy * child.top()));
   return v;
 }
 
@@ -171,22 +171,22 @@ SetupFOV ChanResolveFOV(SetupFOV& fov, float sizeX, float sizeY) {
   switch (fov.getType()) {
   case SetupFOV::Horizontal:
     horiz = fov.getHoriz();
-    if (chancfg_cat->is_debug())
+    if (chancfg_cat.is_debug())
       chancfg_cat->debug() << "ChanResolveFOV:: setting default horiz = "
-			   << horiz << endl;
+               << horiz << endl;
   case SetupFOV::Default:
     horiz = chanconfig.GetFloat("fov", horiz);
     vert = 2.*rad_2_deg(atan((sizeY/sizeX)*tan(0.5*deg_2_rad(horiz))));
-    if (chancfg_cat->is_debug())
+    if (chancfg_cat.is_debug())
       chancfg_cat->debug() << "ChanResolveFOV:: setting horiz = " << horiz
-			   << " and vert = " << vert << endl;
+               << " and vert = " << vert << endl;
     break;
   case SetupFOV::Both:
     horiz = fov.getHoriz();
     vert = fov.getVert();
-    if (chancfg_cat->is_debug())
+    if (chancfg_cat.is_debug())
       chancfg_cat->debug() << "ChanResolveFOV:: setting horiz = " << horiz
-			   << " and vert = " << vert << endl;
+               << " and vert = " << vert << endl;
     break;
 
   default:
@@ -198,8 +198,8 @@ SetupFOV ChanResolveFOV(SetupFOV& fov, float sizeX, float sizeY) {
 }
 
 void ChanEval(GraphicsWindow* win, WindowItem& W, LayoutItem& L, SVec& S,
-	      ChanViewport& V, int hw_offset, int xsize, int ysize,
-	      Node *camera_node, Node *render, bool want_cameras) {
+          ChanViewport& V, int hw_offset, int xsize, int ysize,
+          Node *camera_node, Node *render, bool want_cameras) {
   int i = min(L.GetNumRegions(), int(S.size()));
   int j;
   SVec::iterator k;
@@ -211,72 +211,72 @@ void ChanEval(GraphicsWindow* win, WindowItem& W, LayoutItem& L, SVec& S,
       LayoutItem subL = (*LayoutDB)[l[0]];
       SVec subS;
       for (SetupSyms::iterator m=s.begin(); m!=s.end(); ++m)
-	subS.push_back((*SetupDB)[*m]);
+    subS.push_back((*SetupDB)[*m]);
       int xs = int(xsize*(v.right()-v.left()));
       int ys = int(ysize*(v.top()-v.bottom()));
       ChanEval(win, W, subL, subS, v, hw_offset, xs, ys, camera_node, render, want_cameras);
     } else {
       PT(GraphicsChannel) chan;
       if ((*k).getHWChan() && W.getHWChans()) {
-	if ((*k).getChan() == -1) {
-	  chan = win->get_channel(hw_offset);
-	} else
-	  chan = win->get_channel((*k).getChan());
-	// HW channels always start with the full area of the channel
-	v = ChanViewport(0., 1., 0., 1.);
+    if ((*k).getChan() == -1) {
+      chan = win->get_channel(hw_offset);
+    } else
+      chan = win->get_channel((*k).getChan());
+    // HW channels always start with the full area of the channel
+    v = ChanViewport(0., 1., 0., 1.);
       } else {
-	chan = win->get_channel(0);
+    chan = win->get_channel(0);
       }
       ChanViewport v2(ChanScaleViewport(v, (*k).getViewport()));
       PT(GraphicsLayer) layer = chan->make_layer();
       PT(DisplayRegion) dr = 
-	layer->make_display_region(v2.left(), v2.right(),
-				   v2.bottom(), v2.top());
+    layer->make_display_region(v2.left(), v2.right(),
+                   v2.bottom(), v2.top());
       if (want_cameras && camera_node != (Node *)NULL) {
-	// now make a camera for it
-	PT(Camera) cam = new Camera;
-	dr->set_camera(cam);
-	SetupFOV fov = (*k).getFOV();
-	fov = ChanResolveFOV(fov, xsize*(v2.right()-v2.left()),
-			     ysize*(v2.top()-v2.bottom()));
-	if (chancfg_cat->is_debug()) {
-	  chancfg_cat->debug() << "ChanEval:: about to compute frustum."
-			       << endl;
-	  chancfg_cat->debug() << "ChanEval:: FOVhoriz = " << fov.getHoriz()
-			       << "  FOVvert = " << fov.getVert() << endl;
-	  chancfg_cat->debug() << "ChanEval:: xsize = " << xsize
-			       << "  ysize = " << ysize << endl;
-	}
-	Frustumf frust;
-	frust.make_perspective(fov.getHoriz(), fov.getVert(), 1., 10000.);
-	cam->set_projection(PerspectiveProjection(frust));
-	if (chancfg_cat->is_debug())
-	  chancfg_cat->debug() << "ChanEval:: camera hfov = "
-			       << cam->get_hfov() << "  vfov = "
-			       << cam->get_vfov() << endl;
-	cam->set_scene(render);
+    // now make a camera for it
+    PT(Camera) cam = new Camera;
+    dr->set_camera(cam);
+    SetupFOV fov = (*k).getFOV();
+    fov = ChanResolveFOV(fov, xsize*(v2.right()-v2.left()),
+                 ysize*(v2.top()-v2.bottom()));
+    if (chancfg_cat.is_debug()) {
+      chancfg_cat->debug() << "ChanEval:: about to compute frustum."
+                   << endl;
+      chancfg_cat->debug() << "ChanEval:: FOVhoriz = " << fov.getHoriz()
+                   << "  FOVvert = " << fov.getVert() << endl;
+      chancfg_cat->debug() << "ChanEval:: xsize = " << xsize
+                   << "  ysize = " << ysize << endl;
+    }
+    Frustumf frust;
+    frust.make_perspective(fov.getHoriz(), fov.getVert(), 1., 10000.);
+    cam->set_projection(PerspectiveProjection(frust));
+    if (chancfg_cat.is_debug())
+      chancfg_cat->debug() << "ChanEval:: camera hfov = "
+                   << cam->get_hfov() << "  vfov = "
+                   << cam->get_vfov() << endl;
+    cam->set_scene(render);
 
-	// take care of the orientation
-	PT(TransformTransition) orient;
+    // take care of the orientation
+    PT(TransformTransition) orient;
       
-	switch ((*k).getOrientation()) {
-	case SetupItem::Up:
-	  break;
-	case SetupItem::Down:
-	  orient = new TransformTransition(LMatrix4f::rotate_mat_normaxis(180., LVector3f::forward()));
-	  break;
-	case SetupItem::Left:
-	  orient = new TransformTransition(LMatrix4f::rotate_mat_normaxis(90., LVector3f::forward()));
-	  break;
-	case SetupItem::Right:
-	  orient = new TransformTransition(LMatrix4f::rotate_mat_normaxis(-90., LVector3f::forward()));
-	  break;
-	}
+    switch ((*k).getOrientation()) {
+    case SetupItem::Up:
+      break;
+    case SetupItem::Down:
+      orient = new TransformTransition(LMatrix4f::rotate_mat_normaxis(180., LVector3f::forward()));
+      break;
+    case SetupItem::Left:
+      orient = new TransformTransition(LMatrix4f::rotate_mat_normaxis(90., LVector3f::forward()));
+      break;
+    case SetupItem::Right:
+      orient = new TransformTransition(LMatrix4f::rotate_mat_normaxis(-90., LVector3f::forward()));
+      break;
+    }
 
-	RenderRelation *tocam = new RenderRelation(camera_node, cam);
-	if (orient != (TransformTransition *)NULL) {
-	  tocam->set_transition(orient);
-	}
+    RenderRelation *tocam = new RenderRelation(camera_node, cam);
+    if (orient != (TransformTransition *)NULL) {
+      tocam->set_transition(orient);
+    }
       }
     }
   }
@@ -284,8 +284,8 @@ void ChanEval(GraphicsWindow* win, WindowItem& W, LayoutItem& L, SVec& S,
 }
 
 PT(GraphicsWindow) ChanConfig(GraphicsPipe* pipe, std::string cfg,
-			      Node *camera_node, Node *render,
-			      ChanCfgOverrides& overrides) {
+                  Node *camera_node, Node *render,
+                  ChanCfgOverrides& overrides) {
   ReadChanConfigData();
   // check to make sure we know everything we need to
   if (!ConfigDefined(cfg)) {
@@ -380,56 +380,56 @@ PT(GraphicsWindow) ChanConfig(GraphicsPipe* pipe, std::string cfg,
   // make channels and display regions
   ChanViewport V(0., 1., 0., 1.);
   ChanEval(win, W, L, S, V, W.getChanOffset()+1, sizeX, sizeY, 
-	   camera_node, render, want_cameras);
+       camera_node, render, want_cameras);
 
   // sanity check
   if (config_sanity_check) {
     nout << "ChanConfig Sanity check:" << endl;
     nout << "window - " << (void*)win << endl;
     nout << "  width = " << win->get_width() << "  height = "
-	 << win->get_height() << endl;
+     << win->get_height() << endl;
     nout << "  xorig = " << win->get_xorg() << "  yorig = " << win->get_yorg()
-	 << endl;
+     << endl;
     {
       int max_channel_index = win->get_max_channel_index();
       for (int c = 0; c < max_channel_index; c++) {
-	if (win->is_channel_defined(c)) {
-	  GraphicsChannel *chan = win->get_channel(c);
-	  nout << "  Chan - " << (void*)chan << endl;
-	  nout << "    window = " << (void*)(chan->get_window()) << endl;
-	  nout << "    active = " << chan->is_active() << endl;;
+    if (win->is_channel_defined(c)) {
+      GraphicsChannel *chan = win->get_channel(c);
+      nout << "  Chan - " << (void*)chan << endl;
+      nout << "    window = " << (void*)(chan->get_window()) << endl;
+      nout << "    active = " << chan->is_active() << endl;;
 
-	  int num_layers = chan->get_num_layers();
-	  for (int l = 0; l < num_layers; l++) {
-	    GraphicsLayer *layer = chan->get_layer(l);
-	    nout << "    Layer - " << (void*)layer << endl;
-	    nout << "      channel = " << (void*)(layer->get_channel()) << endl;
-	    nout << "      active = " << layer->is_active() << endl;;
+      int num_layers = chan->get_num_layers();
+      for (int l = 0; l < num_layers; l++) {
+        GraphicsLayer *layer = chan->get_layer(l);
+        nout << "    Layer - " << (void*)layer << endl;
+        nout << "      channel = " << (void*)(layer->get_channel()) << endl;
+        nout << "      active = " << layer->is_active() << endl;;
 
-	    int num_drs = layer->get_num_drs();
-	    for (int d = 0; d < num_drs; d++) {
-	      DisplayRegion *dr = layer->get_dr(d);
-	      nout << "      DR - " << (void*)dr << endl;
-	      nout << "        layer = " << (void*)(dr->get_layer()) << endl;
-	      float ll, rr, bb, tt;
-	      dr->get_dimensions(ll, rr, bb, tt);
-	      nout << "        (" << ll << " " << rr << " " << bb << " " << tt << ")"
-		   << endl;
-	      nout << "        camera = " << (void*)(dr->get_camera()) << endl;
-	      {
-		Camera* cmm = dr->get_camera();
-		if (cmm != (Camera*)0L) {
-		  nout << "          active = " << cmm->is_active() << endl;;
-		  int num_cam_drs = cmm->get_num_drs();
-		  for (int cd = 0; cd < num_cam_drs; cd++) {
-		    nout << "          dr = " << (void*)cmm->get_dr(cd) << endl;
-		  }
-		}
-	      }
-	      nout << "      active = " << dr->is_active() << endl;
-	    }
-	  }
-	}
+        int num_drs = layer->get_num_drs();
+        for (int d = 0; d < num_drs; d++) {
+          DisplayRegion *dr = layer->get_dr(d);
+          nout << "      DR - " << (void*)dr << endl;
+          nout << "        layer = " << (void*)(dr->get_layer()) << endl;
+          float ll, rr, bb, tt;
+          dr->get_dimensions(ll, rr, bb, tt);
+          nout << "        (" << ll << " " << rr << " " << bb << " " << tt << ")"
+           << endl;
+          nout << "        camera = " << (void*)(dr->get_camera()) << endl;
+          {
+        Camera* cmm = dr->get_camera();
+        if (cmm != (Camera*)0L) {
+          nout << "          active = " << cmm->is_active() << endl;;
+          int num_cam_drs = cmm->get_num_drs();
+          for (int cd = 0; cd < num_cam_drs; cd++) {
+            nout << "          dr = " << (void*)cmm->get_dr(cd) << endl;
+          }
+        }
+          }
+          nout << "      active = " << dr->is_active() << endl;
+        }
+      }
+    }
       }
     }
   }

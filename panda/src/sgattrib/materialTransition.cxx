@@ -117,10 +117,10 @@ write_datagram(BamWriter *manager, Datagram &me) {
 int MaterialTransition::
 complete_pointers(vector_typedWritable &plist, BamReader *) {
   if (plist[0] == TypedWritable::Null) {
-    if (sgattrib_cat->is_debug()) {
+    if (sgattrib_cat.is_debug()) {
       sgattrib_cat->debug()
-	<< get_type().get_name() << " received null Material," 
-	<< " turning off" << endl;
+    << get_type().get_name() << " received null Material," 
+    << " turning off" << endl;
     }
     _value = (const Material *)NULL;
     set_off();

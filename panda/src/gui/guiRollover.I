@@ -11,7 +11,7 @@ INLINE void GuiRollover::enter(void) {
 #ifdef _DEBUG
     if (gui_cat->is_debug())
       gui_cat->debug() << "entered '" << *this
-		       << "' more then once without exit" << endl;
+               << "' more then once without exit" << endl;
 #endif
   } else if (_mgr != (GuiManager*)0L) {
     _mgr->remove_label(_off);
@@ -26,9 +26,9 @@ INLINE void GuiRollover::enter(void) {
 INLINE void GuiRollover::exit(void) {
   if (!_state) {
 #ifdef _DEBUG
-    if (gui_cat->is_debug())
+    if (gui_cat.is_debug())
       gui_cat->debug() << "exited '" << *this
-		       << "' more then once without enter" << endl;
+               << "' more then once without enter" << endl;
 #endif
   } else if (_mgr != (GuiManager*)0L) {
     _mgr->remove_label(_on);

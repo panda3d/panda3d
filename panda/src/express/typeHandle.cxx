@@ -102,7 +102,7 @@ register_type(TypeHandle &type_handle, const string &name) {
     // The name was not already used; this is the first time this
     // class has been defined.
 
-    if (express_cat->is_spam()) {
+    if (express_cat.is_spam()) {
       express_cat->spam() << "Registering type " << name << "\n";
     }
     
@@ -119,7 +119,7 @@ register_type(TypeHandle &type_handle, const string &name) {
   RegistryNode *rnode = (*ri).second;
   nassertr(rnode->_name == (*ri).first, false);
   nassertr(rnode->_handle._index >= 0 && 
-	   rnode->_handle._index < (int)_handle_registry.size(), false);
+       rnode->_handle._index < (int)_handle_registry.size(), false);
   nassertr(_handle_registry[rnode->_handle._index] == rnode, false);
   nassertr(rnode->_handle._index != 0, false);
 
@@ -175,7 +175,7 @@ register_dynamic_type(const string &name) {
     // The name was not already used; this is the first time this
     // class has been defined.
 
-    if (express_cat->is_spam()) {
+    if (express_cat.is_spam()) {
       express_cat->spam() << "Registering type " << name << "\n";
     }
     
@@ -216,7 +216,7 @@ record_derivation(TypeHandle child, TypeHandle parent) {
   // already made this connection.
   RegistryNode::Classes::iterator ni;
   ni = find(cnode->_parent_classes.begin(), cnode->_parent_classes.end(),
-	    pnode);
+        pnode);
 
   if (ni == cnode->_parent_classes.end()) {
     cnode->_parent_classes.push_back(pnode);
@@ -241,8 +241,8 @@ record_alternate_name(TypeHandle type, const string &name) {
       _name_registry.insert(NameRegistry::value_type(name, rnode)).first;
     if ((*ri).second != rnode) {
       express_cat.warning()
-	<< "Name " << name << " already assigned to TypeHandle "
-	<< rnode->_name << "; cannot reassign to " << type << "\n";
+    << "Name " << name << " already assigned to TypeHandle "
+    << rnode->_name << "; cannot reassign to " << type << "\n";
     }
   }
 }
@@ -296,7 +296,7 @@ get_name(TypeHandle type, TypedObject *object) const {
 ////////////////////////////////////////////////////////////////////
 bool TypeRegistry::
 is_derived_from(TypeHandle child, TypeHandle parent,
-		TypedObject *child_object) const {
+        TypedObject *child_object) const {
   RegistryNode *rnode = look_up(child, child_object);
   nassertr(rnode != (RegistryNode *)NULL, false);
   return rnode->is_derived_from(parent);
@@ -363,7 +363,7 @@ get_parent_class(TypeHandle child, int index) const {
   RegistryNode *rnode = look_up(child, (TypedObject *)NULL);
   nassertr(rnode != (RegistryNode *)NULL, TypeHandle::none());
   nassertr(index >= 0 && index < (int)rnode->_parent_classes.size(),
-	   TypeHandle::none());
+       TypeHandle::none());
   return rnode->_parent_classes[index]->_handle;
 }
 
@@ -398,7 +398,7 @@ get_child_class(TypeHandle child, int index) const {
   RegistryNode *rnode = look_up(child, (TypedObject *)NULL);
   nassertr(rnode != (RegistryNode *)NULL, TypeHandle::none());
   nassertr(index >= 0 && index < (int)rnode->_child_classes.size(),
-	   TypeHandle::none());
+       TypeHandle::none());
   return rnode->_child_classes[index]->_handle;
 }
 
@@ -418,7 +418,7 @@ get_child_class(TypeHandle child, int index) const {
 ////////////////////////////////////////////////////////////////////
 TypeHandle TypeRegistry::
 get_parent_towards(TypeHandle child, TypeHandle ancestor,
-		   TypedObject *child_object) const {
+           TypedObject *child_object) const {
   if (child_object != (TypedObject *)NULL) {
     // First, guarantee that the ancestor type is defined.
     look_up(ancestor, child_object);
@@ -450,7 +450,7 @@ reregister_types() {
     RegistryNode *rnode = (*ri);
     if (rnode != NULL && rnode->_handle != rnode->_ref) {
       express_cat->warning()
-	<< "Reregistering " << rnode->_name << "\n";
+    << "Reregistering " << rnode->_name << "\n";
     }
   }
 }
@@ -537,11 +537,11 @@ freshen_root_classes() {
 
     HandleRegistry::iterator hi;
     for (hi = _handle_registry.begin();
-	 hi != _handle_registry.end();
-	 ++hi) {
+     hi != _handle_registry.end();
+     ++hi) {
       RegistryNode *root = *hi;
       if (root != NULL && root->_parent_classes.empty()) {
-	_root_classes.push_back(root);
+    _root_classes.push_back(root);
       }
     }
     _root_classes_fresh = true;
@@ -593,32 +593,32 @@ look_up(TypeHandle handle, TypedObject *object) const {
       // Maybe we can use it to resolve the error.
       handle = object->force_init_type();
       if (handle._index == 0) {
-	// Strange.
-	express_cat->error()
-	  << "Unable to force_init_type() on unregistered TypeHandle.\n";
-	nassertr(false, NULL);
+    // Strange.
+    express_cat->error()
+      << "Unable to force_init_type() on unregistered TypeHandle.\n";
+    nassertr(false, NULL);
       }
       if (handle == object->get_type()) {
-	// Problem solved!
-	express_cat->warning()
-	  << "Type " << handle << " was unregistered!\n";
+    // Problem solved!
+    express_cat->warning()
+      << "Type " << handle << " was unregistered!\n";
       } else {
-	// No good; it looks like the TypeHandle belongs to a class
-	// that defined get_type(), but didn't define
-	// force_init_type().
-	express_cat->error()
-	  << "Attempt to reference unregistered TypeHandle.  Type is of some\n"
-	  << "class derived from " << handle << " that doesn't define a good\n"
-	  << "force_init_type() method.\n";
-	nassertr(false, NULL);
+    // No good; it looks like the TypeHandle belongs to a class
+    // that defined get_type(), but didn't define
+    // force_init_type().
+    express_cat->error()
+      << "Attempt to reference unregistered TypeHandle.  Type is of some\n"
+      << "class derived from " << handle << " that doesn't define a good\n"
+      << "force_init_type() method.\n";
+    nassertr(false, NULL);
       }
 
     } else {
       // We don't have a TypedObject pointer, so there's nothing we
       // can do about it.
       express_cat->error()
-	<< "Attempt to reference unregistered TypeHandle!\n"
-	<< "Registered TypeHandles are:\n";
+    << "Attempt to reference unregistered TypeHandle!\n"
+    << "Registered TypeHandles are:\n";
       write(express_cat->error(false));
       nassertr(false, NULL);
     }

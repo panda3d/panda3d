@@ -45,7 +45,7 @@ inline static unsigned LONG read32(istream& is, istream& supp) {
 }
 
 inline static void scroll8(unsigned LONG& prev, unsigned LONG& curr,
-			   istream& is, istream& supp) {
+               istream& is, istream& supp) {
   unsigned char b1 = ((curr >> 24) & 0xff);
   prev = ((prev << 8) & 0xffffff00) | (b1);
   b1 = read8(is, supp);
@@ -69,12 +69,12 @@ AudioMidi::AudioMidi(Filename filename, int header_idx) {
     if (curr == MThd) {
       ++count;
       if (count == header_idx)
-	done = true;
+    done = true;
       else {
-	scroll8(prev, curr, in, dummy);
-	scroll8(prev, curr, in, dummy);
-	scroll8(prev, curr, in, dummy);
-	scroll8(prev, curr, in, dummy);
+    scroll8(prev, curr, in, dummy);
+    scroll8(prev, curr, in, dummy);
+    scroll8(prev, curr, in, dummy);
+    scroll8(prev, curr, in, dummy);
       }
     } else {
       scroll8(prev, curr, in, dummy);
@@ -84,11 +84,11 @@ AudioMidi::AudioMidi(Filename filename, int header_idx) {
   } while (!done);
   if (in.eof()) {
     cerr << "fewer then " << header_idx << " headers in file (" << count
-	 << ")" << endl;
+     << ")" << endl;
     return;
   }
   if (prev == RIFF) {
-    if (audio_cat->is_debug())
+    if (audio_cat.is_debug())
       audio_cat->debug() << "it's a RIFF file" << endl;
     curr = read32(in, dummy);
     curr = read32(in, dummy);
@@ -100,7 +100,7 @@ AudioMidi::AudioMidi(Filename filename, int header_idx) {
   unsigned SHORT numtracks;
   unsigned SHORT division;
   if (curr == MThd) {
-    if (audio_cat->is_debug())
+    if (audio_cat.is_debug())
       audio_cat->debug() << "easy header" << endl;
     tracklen = read32(in, dummy);
     format = read16(in, dummy);
@@ -111,16 +111,16 @@ AudioMidi::AudioMidi(Filename filename, int header_idx) {
     cerr << "don't support Creative Labs CMF files yet" << endl;
     return;
   } else {
-    if (audio_cat->is_debug())
+    if (audio_cat.is_debug())
       audio_cat->debug() << "hard header" << endl;
     done = false;
     do {
       if (curr == MThd)
-	done = true;
+    done = true;
       else
-	scroll8(prev, curr, in, dummy);
+    scroll8(prev, curr, in, dummy);
       if (in.eof())
-	done = true;
+    done = true;
     } while (!done);
     if (in.eof()) {
       cerr << "truncated file!" << endl;
@@ -131,57 +131,57 @@ AudioMidi::AudioMidi(Filename filename, int header_idx) {
     numtracks = read16(in, dummy);
     division = read16(in, dummy);
   }
-  if (audio_cat->is_debug())
+  if (audio_cat.is_debug())
     audio_cat->debug() << "Read header.  tracklen = " << tracklen
-		       << "  format = " << format << "  numtracks = "
-		       << numtracks << "  division = " << division << endl;
+               << "  format = " << format << "  numtracks = "
+               << numtracks << "  division = " << division << endl;
   for (int currtrack = 0; currtrack < numtracks; ++currtrack) {
     string fudge;
     curr = read32(in, dummy);
     if (curr != MTrk) {
-      if (audio_cat->is_debug())
-	audio_cat->debug() << "having to seach for track #" << currtrack
-			   << endl;
+      if (audio_cat.is_debug())
+    audio_cat->debug() << "having to seach for track #" << currtrack
+               << endl;
       if (curr == MThd) {
-	if (audio_cat->is_debug())
-	  audio_cat->debug() << "hit a header instead, skipping track" << endl;
-	continue;
+    if (audio_cat.is_debug())
+      audio_cat->debug() << "hit a header instead, skipping track" << endl;
+    continue;
       } else {
-	done = false;
-	if (currtrack > 0) {
-	  string stmp = (*(_seq.rbegin()));
-	  int i = stmp.rfind("MTrk");
-	  if (i != string::npos) {
-	    fudge = stmp.substr(i+4, string::npos);
-	    unsigned char b;
-	    b = ((curr >> 24) & 0xff);
-	    fudge += b;
-	    b = ((curr >> 16) & 0xff);
-	    fudge += b;
-	    b = ((curr >> 8) & 0xff);
-	    fudge += b;
-	    b = (curr & 0xff);
-	    fudge += b;
-	    done = true;
-	  }
-	}
-	if (!done) {
-	  do {
-	    if (curr == MTrk)
-	      done = true;
-	    else
-	      scroll8(prev, curr, in, dummy);
-	    if (in.eof())
-	      done = true;
-	  } while (!done);
-	  if (in.eof()) {
-	    cerr << "truncated file" << endl;
-	    return;
-	  }
-	}
+    done = false;
+    if (currtrack > 0) {
+      string stmp = (*(_seq.rbegin()));
+      int i = stmp.rfind("MTrk");
+      if (i != string::npos) {
+        fudge = stmp.substr(i+4, string::npos);
+        unsigned char b;
+        b = ((curr >> 24) & 0xff);
+        fudge += b;
+        b = ((curr >> 16) & 0xff);
+        fudge += b;
+        b = ((curr >> 8) & 0xff);
+        fudge += b;
+        b = (curr & 0xff);
+        fudge += b;
+        done = true;
       }
     }
-    if (audio_cat->is_debug())
+    if (!done) {
+      do {
+        if (curr == MTrk)
+          done = true;
+        else
+          scroll8(prev, curr, in, dummy);
+        if (in.eof())
+          done = true;
+      } while (!done);
+      if (in.eof()) {
+        cerr << "truncated file" << endl;
+        return;
+      }
+    }
+      }
+    }
+    if (audio_cat.is_debug())
       audio_cat->debug() << "fudge = '" << fudge << "'" << endl;
     istringstream fudges(fudge);
     if (fudge.empty()) {
@@ -190,30 +190,30 @@ AudioMidi::AudioMidi(Filename filename, int header_idx) {
       fudges >> b;
     }
     unsigned LONG thislen = read32(in, fudges);
-    if (audio_cat->is_debug())
+    if (audio_cat.is_debug())
       audio_cat->debug() << "found track #" << currtrack << " with length = "
-			 << thislen << endl;
+             << thislen << endl;
     {
       ostringstream os;
       int i;
       for (i=0; i<thislen; ++i) {
-	unsigned char b;
-	b = read8(in, fudges);
-	os << b;
-	if (in.eof() && ((i+1) < thislen))
-	  break;
+    unsigned char b;
+    b = read8(in, fudges);
+    os << b;
+    if (in.eof() && ((i+1) < thislen))
+      break;
       }
       if (in.eof() && (i != thislen)) {
-	cerr << "truncated file" << endl;
+    cerr << "truncated file" << endl;
       }
       string s = os.str();
       _seq.push_back(s);
-      if (audio_cat->is_debug())
-	audio_cat->debug() << "track data (" << s.length() << "): '" << s
-			   << "'" << endl;
+      if (audio_cat.is_debug())
+    audio_cat->debug() << "track data (" << s.length() << "): '" << s
+               << "'" << endl;
     }
   }
-  if ((_seq.size() != numtracks) && audio_cat->is_debug())
+  if ((_seq.size() != numtracks) && audio_cat.is_debug())
     audio_cat->debug()
       << "actual number of tracks read does not match header. ("
       << _seq.size() << " != " << numtracks << ")" << endl;

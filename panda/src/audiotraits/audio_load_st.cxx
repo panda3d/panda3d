@@ -153,7 +153,7 @@ static int flow_effect(int e) {
     odone = BUFSIZ;
     eflow = (effFlowFunc*)(efftab[e].h->flow);
     (*eflow)(&efftab[e], &efftab[e-1].obuf[efftab[e-1].odone], efftab[e].obuf,
-	     &idone, &odone);
+         &idone, &odone);
     efftab[e-1].odone += idone;
     efftab[e].odone = 0;
     efftab[e].olen = odone;
@@ -263,17 +263,17 @@ static void read_file(Filename filename, byte** buf, unsigned long& slen) {
     return;
   }
   CHECKFORMAT(&iformat);
-  if (audio_cat->is_debug())
+  if (audio_cat.is_debug())
     audio_cat->debug() << "Input file '" << iformat.filename
-		       << "': sample rate = " << iformat.info.rate
-		       << "  size = " << SIZES[iformat.info.size]
-		       << "  encoding = " << ENCODING[iformat.info.ENCODEFIELD]
-		       << "  " << iformat.info.channels
-		       << ((iformat.info.channels > 1)?"channels":"channel")
-		       << endl;
-  if (audio_cat->is_debug())
+               << "': sample rate = " << iformat.info.rate
+               << "  size = " << SIZES[iformat.info.size]
+               << "  encoding = " << ENCODING[iformat.info.ENCODEFIELD]
+               << "  " << iformat.info.channels
+               << ((iformat.info.channels > 1)?"channels":"channel")
+               << endl;
+  if (audio_cat.is_debug())
     audio_cat->debug() << "Input file comment: '" << iformat.comment << "'"
-		       << endl;
+               << endl;
   COPYFORMAT(&iformat, &oformat);
   check_effects();
   // start all effects
@@ -305,25 +305,25 @@ static void read_file(Filename filename, byte** buf, unsigned long& slen) {
       // run entire chain backwards: pull, don't push
       // this is because buffering system isn't a nice queueing system
       for (e=neffects-1; e>0; --e)
-	if (flow_effect(e))
-	  break;
+    if (flow_effect(e))
+      break;
       // add to output data
       if (efftab[neffects-1].olen>efftab[neffects-1].odone) {
-	for (LONG i=0; i<efftab[neffects-1].olen; ++i) {
-	  LONG foo = efftab[neffects-1].obuf[i];
-	  signed short bar = (foo >> 16);
-	  unsigned char *b = (unsigned char*)&bar;
-	  out << *b << *(++b);
-	}
-	efftab[neffects-1].odone = efftab[neffects-1].olen;
+    for (LONG i=0; i<efftab[neffects-1].olen; ++i) {
+      LONG foo = efftab[neffects-1].obuf[i];
+      signed short bar = (foo >> 16);
+      unsigned char *b = (unsigned char*)&bar;
+      out << *b << *(++b);
+    }
+    efftab[neffects-1].odone = efftab[neffects-1].olen;
       }
       // if there is still stuff in the pipeline, setup to flow effects again
       havedata = 0;
       for (e=0; e<neffects-1; ++e)
-	if (efftab[e].odone < efftab[e].olen) {
-	  havedata = 1;
-	  break;
-	}
+    if (efftab[e].odone < efftab[e].olen) {
+      havedata = 1;
+      break;
+    }
     } while (havedata);
     // read another chunk
     rfunc = (formatReadFunc*)(iformat.h->read);
@@ -335,17 +335,17 @@ static void read_file(Filename filename, byte** buf, unsigned long& slen) {
   for (e=1; e<neffects; ++e)
     while (1) {
       if (drain_effect(e) == 0)
-	break;  // get out of while loop
+    break;  // get out of while loop
       if (efftab[neffects-1].olen > 0) {
-	for (LONG i=0; i<efftab[neffects-1].olen; ++i) {
-	  LONG foo = efftab[neffects-1].obuf[i];
-	  signed short bar = (foo >> 16);
-	  unsigned char *b = (unsigned char*)&bar;
-	  out << *b << *(++b);
-	}
+    for (LONG i=0; i<efftab[neffects-1].olen; ++i) {
+      LONG foo = efftab[neffects-1].obuf[i];
+      signed short bar = (foo >> 16);
+      unsigned char *b = (unsigned char*)&bar;
+      out << *b << *(++b);
+    }
       }
       if (efftab[e].olen != BUFSIZ)
-	break;
+    break;
     }
   // stop all effects.  In so doing, some may generate more data
   for (e=1; e<neffects; ++e) {
@@ -383,7 +383,7 @@ void cleanup(void) {
 
 AudioTraits::SoundClass* AudioLoadSt(Filename) {
   audio_cat->warning() << "MikMod doesn't support reading raw data yet"
-		       << endl;
+               << endl;
   return (AudioTraits::SoundClass*)0L;
 }
 
@@ -438,9 +438,9 @@ ConfigureFn(audio_load_st) {
 #ifdef HAVE_SOXST
   for (int i=0; FORMATS[i].names != (char**)0L; ++i)
     for (int j=0; FORMATS[i].names[j] != (char*)0L; ++j) {
-      if (audio_cat->is_debug())
-	audio_cat->debug() << "adding reader for '." << FORMATS[i].names[j]
-			   << "'" << endl;
+      if (audio_cat.is_debug())
+    audio_cat->debug() << "adding reader for '." << FORMATS[i].names[j]
+               << "'" << endl;
       AudioPool::register_sound_loader(FORMATS[i].names[j], AudioLoadSt);
     }
 #else /* HAVE_SOXST */

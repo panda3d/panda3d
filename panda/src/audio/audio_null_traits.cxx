@@ -13,7 +13,7 @@
 static bool have_initialized = false;
 
 static void update_null(void) {
-  if (audio_cat->is_debug())
+  if (audio_cat.is_debug())
     audio_cat->debug() << "Update in Null audio driver" << endl;
 }
 
@@ -28,7 +28,7 @@ NullSound::~NullSound(void) {
 }
 
 float NullSound::length(void) const {
-  if (audio_cat->is_debug())
+  if (audio_cat.is_debug())
     audio_cat->debug() << "in sample length in Null audio driver" << endl;
   return -1.;
 }
@@ -50,7 +50,7 @@ NullPlaying::~NullPlaying(void) {
 }
 
 AudioTraits::PlayingClass::PlayingStatus NullPlaying::status(void) {
-  if (audio_cat->is_debug())
+  if (audio_cat.is_debug())
     audio_cat->debug() << "in playing status in Null audio driver" << endl;
   return BAD;
 }
@@ -63,25 +63,25 @@ NullPlayer::~NullPlayer(void) {
 }
 
 void NullPlayer::play_sound(AudioTraits::SoundClass*,
-			    AudioTraits::PlayingClass*, float) {
-  if (audio_cat->is_debug())
+                AudioTraits::PlayingClass*, float) {
+  if (audio_cat.is_debug())
     audio_cat->debug() << "in play sound in Null audio driver" << endl;
 }
 
 void NullPlayer::stop_sound(AudioTraits::SoundClass*,
-			    AudioTraits::PlayingClass*) {
-  if (audio_cat->is_debug())
+                AudioTraits::PlayingClass*) {
+  if (audio_cat.is_debug())
     audio_cat->debug() << "in stop sound in Null audio driver" << endl;
 }
 
 void NullPlayer::set_volume(AudioTraits::PlayingClass* p, float v) {
-  if (audio_cat->is_debug())
+  if (audio_cat.is_debug())
     audio_cat->debug() << "in set volume in Null audio driver" << endl;
   p->set_volume(v);
 }
 
 bool NullPlayer::adjust_volume(AudioTraits::PlayingClass*) {
-  if (audio_cat->is_debug())
+  if (audio_cat.is_debug())
     audio_cat->debug() << "in adjust volume in Null audio driver" << endl;
   return false;
 }

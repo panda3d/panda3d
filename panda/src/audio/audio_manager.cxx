@@ -43,7 +43,7 @@ AudioManager::~AudioManager(void) {
 void AudioManager::set_update_func(AudioManager::UpdateFunc* func) {
   if (_update_func != (AudioManager::UpdateFunc*)0L)
     audio_cat->error() << "There maybe be more then one audio driver installed"
-		       << endl;
+               << endl;
   _update_func = func;
 }
 
@@ -71,19 +71,19 @@ void AudioManager::ns_update(void) {
     for (LoopSet::iterator i=_loopcopy->begin(); i!=_loopcopy->end(); ++i) {
       AudioSound* sound = *i;
       if (sound->status() == AudioSound::READY) {
-	if (audio_cat->is_debug())
-	  audio_cat->debug() << "AudioManager::ns_update looping '"
-			     << sound->get_name() << "'" << endl;
-	AudioManager::play(sound);
-	AudioManager::set_loop(sound, true);
+    if (audio_cat.is_debug())
+      audio_cat->debug() << "AudioManager::ns_update looping '"
+                 << sound->get_name() << "'" << endl;
+    AudioManager::play(sound);
+    AudioManager::set_loop(sound, true);
       } else if (AudioManager::_master_volume_change)
-	if (sound->get_player()->adjust_volume(sound->get_state())) {
-	  if (audio_cat->is_debug())
-	    audio_cat->debug() << "AudioManager::ns_update sound is turned "
-			       << "off, stopping '" << sound->get_name()
-			       << "'" << endl;
-	  AudioManager::stop(sound);
-	}
+    if (sound->get_player()->adjust_volume(sound->get_state())) {
+      if (audio_cat.is_debug())
+        audio_cat->debug() << "AudioManager::ns_update sound is turned "
+                   << "off, stopping '" << sound->get_name()
+                   << "'" << endl;
+      AudioManager::stop(sound);
+    }
     }
   AudioManager::_master_volume_change = false;
 }
@@ -97,7 +97,7 @@ void AudioManager::ns_update(void) {
 void AudioManager::set_shutdown_func(AudioManager::ShutdownFunc* func) {
   if (_shutdown_func != (AudioManager::ShutdownFunc*)0L)
     audio_cat->error() << "There maybe be more then one audio driver installed"
-		       << endl;
+               << endl;
   _shutdown_func = func;
   if (_quit == (bool*)0L)
     _quit = new bool(false);
@@ -121,13 +121,13 @@ AudioManager* AudioManager::get_ptr(void) {
 //  Description: get the player off the sound, and start it playing
 ////////////////////////////////////////////////////////////////////
 void AudioManager::ns_play(AudioSound* sound, float start_time) {
-  if (audio_cat->is_debug())
+  if (audio_cat.is_debug())
     audio_cat->debug() << "AudioManager: playing sound 0x" << (void*)sound
-		       << " (" << sound->get_name() << ")" << endl;
+               << " (" << sound->get_name() << ")" << endl;
   if (sound->status() == AudioSound::PLAYING)
     this->ns_stop(sound);
   sound->get_player()->play_sound(sound->get_sound(), sound->get_state(),
-				  start_time);
+                  start_time);
   sound->get_player()->adjust_volume(sound->get_state());
 }
 
@@ -137,9 +137,9 @@ void AudioManager::ns_play(AudioSound* sound, float start_time) {
 //  Description: get the player off the sound, and stop it playing
 ////////////////////////////////////////////////////////////////////
 void AudioManager::ns_stop(AudioSound* sound) {
-  if (audio_cat->is_debug())
+  if (audio_cat.is_debug())
     audio_cat->debug() << "AudioManager: stopping sound 0x" << (void*)sound
-		       << " (" << sound->get_name() << ")" << endl;
+               << " (" << sound->get_name() << ")" << endl;
   this->ns_set_loop(sound, false);
   if (sound->status() == AudioSound::PLAYING)
     sound->get_player()->stop_sound(sound->get_sound(), sound->get_state());
@@ -185,7 +185,7 @@ void* AudioManager::spawned_update(void* data) {
     ipc_traits::sleep(0, audio_auto_update_delay);
   }
   *flag = false;
-  if (audio_cat->is_debug())
+  if (audio_cat.is_debug())
     audio_cat->debug() << "exiting update thread" << endl;
   return (void*)0L;
 }
@@ -222,7 +222,7 @@ void AudioManager::ns_spawn_update(void) {
       break;
     default:
       audio_cat->error() << "audio-thread-priority set to something other "
-			 << "then low, normal, or high" << endl;
+             << "then low, normal, or high" << endl;
       audio_thread_priority = 1;
       pri = thread::PRIORITY_NORMAL;
     }
@@ -244,7 +244,7 @@ void AudioManager::ns_shutdown(void) {
     (*_shutdown_func)();
   if (_spawned != (thread*)0L)
     while (*_quit);
-  if (audio_cat->is_debug())
+  if (audio_cat.is_debug())
     audio_cat->debug() << "update thread has shutdown" << endl;
   delete _quit;
 }

@@ -42,7 +42,7 @@ wglGraphicsWindow(GraphicsPipe* pipe) : GraphicsWindow(pipe) {
 ////////////////////////////////////////////////////////////////////
 wglGraphicsWindow::
 wglGraphicsWindow(GraphicsPipe* pipe, const
-	GraphicsWindow::Properties& props) : GraphicsWindow(pipe, props) {
+    GraphicsWindow::Properties& props) : GraphicsWindow(pipe, props) {
   config();
 }
 
@@ -54,7 +54,7 @@ wglGraphicsWindow(GraphicsPipe* pipe, const
 wglGraphicsWindow::~wglGraphicsWindow(void) {
 
   if(gl_show_fps_meter)
-	glDeleteLists(FONT_BITMAP_OGLDISPLAYLISTNUM, 128);
+    glDeleteLists(FONT_BITMAP_OGLDISPLAYLISTNUM, 128);
 
   if(_visual!=NULL)
     free(_visual);
@@ -75,7 +75,7 @@ wglGraphicsWindow::~wglGraphicsWindow(void) {
 ////////////////////////////////////////////////////////////////////
 PIXELFORMATDESCRIPTOR* wglGraphicsWindow::
 try_for_visual(wglGraphicsPipe *pipe, int mask,
-	       int want_depth_bits, int want_color_bits) {
+           int want_depth_bits, int want_color_bits) {
   static const int max_attrib_list = 32;
   int attrib_list[max_attrib_list];
   int n=0;
@@ -157,55 +157,55 @@ try_for_visual(wglGraphicsPipe *pipe, int mask,
   while (*p) {
     switch (*p) {
       case GLX_USE_GL:
-	pfd.dwFlags |= PFD_SUPPORT_OPENGL;
-	break;
+    pfd.dwFlags |= PFD_SUPPORT_OPENGL;
+    break;
       case GLX_LEVEL:
-	pfd.bReserved = *(++p);
-	break;
+    pfd.bReserved = *(++p);
+    break;
       case GLX_RGBA:
-	pfd.iPixelType = PFD_TYPE_RGBA;
-	break;
+    pfd.iPixelType = PFD_TYPE_RGBA;
+    break;
       case GLX_DOUBLEBUFFER:
-	pfd.dwFlags |= PFD_DOUBLEBUFFER;
-	break;
+    pfd.dwFlags |= PFD_DOUBLEBUFFER;
+    break;
       case GLX_STEREO:
-	stereo = true;
-	pfd.dwFlags |= PFD_STEREO;
-	break;
+    stereo = true;
+    pfd.dwFlags |= PFD_STEREO;
+    break;
       case GLX_AUX_BUFFERS:
-	pfd.cAuxBuffers = *(++p);
-	break;
+    pfd.cAuxBuffers = *(++p);
+    break;
       case GLX_RED_SIZE:
-	pfd.cRedBits = 8; // Try to get the maximum
-	++p;
-	break;
+    pfd.cRedBits = 8; // Try to get the maximum
+    ++p;
+    break;
       case GLX_GREEN_SIZE:
-	pfd.cGreenBits = 8; // Try to get the maximum
-	++p;
-	break;
+    pfd.cGreenBits = 8; // Try to get the maximum
+    ++p;
+    break;
       case GLX_BLUE_SIZE:
-	pfd.cBlueBits = 8; // Try to get the maximum
-	++p;
-	break;
+    pfd.cBlueBits = 8; // Try to get the maximum
+    ++p;
+    break;
       case GLX_ALPHA_SIZE:
-	pfd.cAlphaBits = 8; // Try to get the maximum
-	++p;
-	break;
+    pfd.cAlphaBits = 8; // Try to get the maximum
+    ++p;
+    break;
       case GLX_DEPTH_SIZE:
-	pfd.cDepthBits = 32; // Try to get the maximum
-	++p;
-	break;
+    pfd.cDepthBits = 32; // Try to get the maximum
+    ++p;
+    break;
       case GLX_STENCIL_SIZE:
-	pfd.cStencilBits = *(++p);
-	break;
+    pfd.cStencilBits = *(++p);
+    break;
       case GLX_ACCUM_RED_SIZE:
       case GLX_ACCUM_GREEN_SIZE:
       case GLX_ACCUM_BLUE_SIZE:
       case GLX_ACCUM_ALPHA_SIZE:
-	// Only cAccumBits is used for requesting accum buffer
-	pfd.cAccumBits = 1;
-	++p;
-	break;
+    // Only cAccumBits is used for requesting accum buffer
+    pfd.cAccumBits = 1;
+    ++p;
+    break;
     }
     ++p;
   }
@@ -218,8 +218,8 @@ try_for_visual(wglGraphicsPipe *pipe, int mask,
     // ChoosePixelFormat is dumb about stereo
     if (stereo) {
       if (!(match->dwFlags & PFD_STEREO)) {
-	wgldisplay_cat.info()
-	  << "wglGraphicsWindow::try_for_visual() - request for stereo failed" << endl;	
+    wgldisplay_cat.info()
+      << "wglGraphicsWindow::try_for_visual() - request for stereo failed" << endl; 
       }
     }
   }
@@ -240,21 +240,21 @@ get_config(PIXELFORMATDESCRIPTOR *visual, int attrib, int *value) {
   switch (attrib) {
     case GLX_USE_GL:
       if (visual->dwFlags & (PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW)) {
-	if (visual->iPixelType == PFD_TYPE_COLORINDEX &&
-	    visual->cColorBits >= 24) {
-	  *value = 0;
-	} else {
-	  *value = 1;
-	}
+    if (visual->iPixelType == PFD_TYPE_COLORINDEX &&
+        visual->cColorBits >= 24) {
+      *value = 0;
+    } else {
+      *value = 1;
+    }
       } else {
-	*value = 0;
+    *value = 0;
       }
       break;
     case GLX_BUFFER_SIZE:
       if (visual->iPixelType == PFD_TYPE_RGBA)
- 	*value = visual->cColorBits;
+    *value = visual->cColorBits;
       else
-	*value = 8;
+    *value = 8;
       break;
     case GLX_LEVEL:
       *value = visual->bReserved;
@@ -317,7 +317,7 @@ int wglGraphicsWindow::choose_visual(void) {
 
     wgldisplay_cat.info()
       << "wglGraphicsWindow::mask =0x" << (void*) _props._mask
-	<< endl;
+    << endl;
 
   int want_depth_bits = _props._want_depth_bits;
   int want_color_bits = _props._want_color_bits;
@@ -325,7 +325,7 @@ int wglGraphicsWindow::choose_visual(void) {
   if (mask & W_MULTISAMPLE) {
     wgldisplay_cat.info()
       << "wglGraphicsWindow::config() - multisample not supported"
-	<< endl;
+    << endl;
     mask &= ~W_MULTISAMPLE;
   }
 
@@ -370,32 +370,32 @@ int wglGraphicsWindow::choose_visual(void) {
       // the requested mask, in order.
       
       static const int strip_properties[] = { 
-	// One esoteric option removed.
-	W_MULTISAMPLE,
-	W_STENCIL,
-	W_ACCUM,
-	W_ALPHA,
-	W_STEREO,
-	
-	// Two esoteric options removed.
-	W_STENCIL | W_MULTISAMPLE,
-	W_ACCUM | W_MULTISAMPLE,
-	W_ALPHA | W_MULTISAMPLE,
-	W_STEREO | W_MULTISAMPLE,
-	W_STENCIL | W_ACCUM,
-	W_ALPHA | W_STEREO,
-	W_STENCIL | W_ACCUM | W_MULTISAMPLE,
-	W_ALPHA | W_STEREO | W_MULTISAMPLE,
-	
-	// All esoteric options removed.
-	W_STENCIL | W_ACCUM | W_ALPHA | W_STEREO | W_MULTISAMPLE,
+    // One esoteric option removed.
+    W_MULTISAMPLE,
+    W_STENCIL,
+    W_ACCUM,
+    W_ALPHA,
+    W_STEREO,
+    
+    // Two esoteric options removed.
+    W_STENCIL | W_MULTISAMPLE,
+    W_ACCUM | W_MULTISAMPLE,
+    W_ALPHA | W_MULTISAMPLE,
+    W_STEREO | W_MULTISAMPLE,
+    W_STENCIL | W_ACCUM,
+    W_ALPHA | W_STEREO,
+    W_STENCIL | W_ACCUM | W_MULTISAMPLE,
+    W_ALPHA | W_STEREO | W_MULTISAMPLE,
+    
+    // All esoteric options removed.
+    W_STENCIL | W_ACCUM | W_ALPHA | W_STEREO | W_MULTISAMPLE,
 
-	// All esoteric options, plus some we'd really really prefer,
-	// removed.
-	W_STENCIL | W_ACCUM | W_ALPHA | W_STEREO | W_MULTISAMPLE | W_DOUBLE,
-	
-	// A zero marks the end of the array.
-	0
+    // All esoteric options, plus some we'd really really prefer,
+    // removed.
+    W_STENCIL | W_ACCUM | W_ALPHA | W_STEREO | W_MULTISAMPLE | W_DOUBLE,
+    
+    // A zero marks the end of the array.
+    0
       };
 
       set<int> tried_masks;
@@ -403,40 +403,40 @@ int wglGraphicsWindow::choose_visual(void) {
 
       int i;
       for (i = 0; _visual == NULL && strip_properties[i] != 0; i++) {
-	int new_mask = mask & ~strip_properties[i];
-	if (tried_masks.insert(new_mask).second) {
-	  _visual = try_for_visual(pipe, new_mask, want_depth_bits,
-				   want_color_bits);
-	}
+    int new_mask = mask & ~strip_properties[i];
+    if (tried_masks.insert(new_mask).second) {
+      _visual = try_for_visual(pipe, new_mask, want_depth_bits,
+                   want_color_bits);
+    }
       }
 
       if (special_size_request) {
-	tried_masks.clear();
-	tried_masks.insert(mask);
-	
-	if (_visual == NULL) {
-	  // Try once more, this time eliminating all of the size
-	  // requests.
-	  for (i = 0; _visual == NULL && strip_properties[i] != 0; i++) {
-	    int new_mask = mask & ~strip_properties[i];
-	    if (tried_masks.insert(new_mask).second) {
-	      _visual = try_for_visual(pipe, new_mask);
-	    }
-	  }
-	}
+    tried_masks.clear();
+    tried_masks.insert(mask);
+    
+    if (_visual == NULL) {
+      // Try once more, this time eliminating all of the size
+      // requests.
+      for (i = 0; _visual == NULL && strip_properties[i] != 0; i++) {
+        int new_mask = mask & ~strip_properties[i];
+        if (tried_masks.insert(new_mask).second) {
+          _visual = try_for_visual(pipe, new_mask);
+        }
       }
-	
-      if (_visual == NULL) {
-	// Here's our last-ditch desparation attempt: give us any GLX
-	// visual at all!
-	_visual = try_for_visual(pipe, 0);
+    }
       }
-	
+    
       if (_visual == NULL) {
-	wgldisplay_cat.fatal()
-	  << "wglGraphicsWindow::choose_visual() - could not get any "
-	  	"visual." << endl;
-	exit(1);
+    // Here's our last-ditch desparation attempt: give us any GLX
+    // visual at all!
+    _visual = try_for_visual(pipe, 0);
+      }
+    
+      if (_visual == NULL) {
+    wgldisplay_cat.fatal()
+      << "wglGraphicsWindow::choose_visual() - could not get any "
+        "visual." << endl;
+    exit(1);
       }
     }
   }
@@ -513,7 +513,7 @@ int wglGraphicsWindow::choose_visual(void) {
   }
     wgldisplay_cat.info()
       << "wglGraphicsWindow::mask =0x" << (void*) mask
-	<< endl;
+    << endl;
 
   PIXELFORMATDESCRIPTOR pfd;
   ZeroMemory(&pfd,sizeof(PIXELFORMATDESCRIPTOR));
@@ -532,8 +532,8 @@ int wglGraphicsWindow::choose_visual(void) {
   for(i=1;i<=MaxPixFmtNum;i++) {
       DescribePixelFormat(_hdc, i, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
 
-      if (wgldisplay_cat->is_debug())
-	wgldisplay_cat->debug() << "----------------" << endl;
+      if (wgldisplay_cat.is_debug())
+    wgldisplay_cat->debug() << "----------------" << endl;
 
       if((pfd.dwFlags & PFD_GENERIC_ACCELERATED) && (pfd.dwFlags & PFD_GENERIC_FORMAT))
           drvtype=MCD;
@@ -541,8 +541,8 @@ int wglGraphicsWindow::choose_visual(void) {
           drvtype=ICD;
        else {
          drvtype=Software;
-	 if (wgldisplay_cat->is_debug())
-	   wgldisplay_cat->debug() << "skipping software driver" << endl;
+     if (wgldisplay_cat.is_debug())
+       wgldisplay_cat->debug() << "skipping software driver" << endl;
          continue;  // skipping all SW fmts
        }
 
@@ -558,22 +558,22 @@ int wglGraphicsWindow::choose_visual(void) {
 
        DWORD dwReqFlags=(PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW);
 
-       if (wgldisplay_cat->is_debug()) {
-	 if (mask & W_ALPHA)
-	   wgldisplay_cat->debug() << "want alpha, pfd says '"
-				   << (int)(pfd.cAlphaBits) << "'" << endl;
-	 if (mask & W_DEPTH)
-	   wgldisplay_cat->debug() << "want depth, pfd says '"
-				   << (int)(pfd.cDepthBits) << "'" << endl;
-	 if (mask & W_STENCIL)
-	   wgldisplay_cat->debug() << "want stencil, pfd says '"
-				   << (int)(pfd.cStencilBits) << "'" << endl;
-	 wgldisplay_cat->debug() << "final flag check "
-				 << (int)(pfd.dwFlags & dwReqFlags) << " =? "
-				 << (int)dwReqFlags << endl;
-	 wgldisplay_cat->debug() << "pfd bits = " << (int)(pfd.cColorBits)
-				 << endl;
-	 wgldisplay_cat->debug() << "cur_bpp = " << cur_bpp << endl;
+       if (wgldisplay_cat.is_debug()) {
+     if (mask & W_ALPHA)
+       wgldisplay_cat->debug() << "want alpha, pfd says '"
+                   << (int)(pfd.cAlphaBits) << "'" << endl;
+     if (mask & W_DEPTH)
+       wgldisplay_cat->debug() << "want depth, pfd says '"
+                   << (int)(pfd.cDepthBits) << "'" << endl;
+     if (mask & W_STENCIL)
+       wgldisplay_cat->debug() << "want stencil, pfd says '"
+                   << (int)(pfd.cStencilBits) << "'" << endl;
+     wgldisplay_cat->debug() << "final flag check "
+                 << (int)(pfd.dwFlags & dwReqFlags) << " =? "
+                 << (int)dwReqFlags << endl;
+     wgldisplay_cat->debug() << "pfd bits = " << (int)(pfd.cColorBits)
+                 << endl;
+     wgldisplay_cat->debug() << "cur_bpp = " << cur_bpp << endl;
        }
 
        if(mask & W_DOUBLE)
@@ -630,9 +630,9 @@ int wglGraphicsWindow::choose_visual(void) {
 //     Function: adjust_coords 
 //       Access:
 //  Description: Adjust the window rectangle because Win32 thinks
-//		 that the x, y, width, and height are the *entire*
-//		 window, including decorations, whereas we assume
-//		 the size is the *client* area of the window.
+//       that the x, y, width, and height are the *entire*
+//       window, including decorations, whereas we assume
+//       the size is the *client* area of the window.
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::
 adjust_coords(int &xorg, int &yorg, int &xsize, int &ysize) {
@@ -644,7 +644,7 @@ adjust_coords(int &xorg, int &yorg, int &xsize, int &ysize) {
   // Style determines whether there are borders or not
   // False in third parameter indicates window has no menu bar
   AdjustWindowRect(&rect, WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
-			  WS_OVERLAPPEDWINDOW, false);
+              WS_OVERLAPPEDWINDOW, false);
 
   // Readjust if the x and y are offscreen
   if (rect.left < 0)
@@ -690,7 +690,7 @@ void wglGraphicsWindow::config(void) {
     _props._ysize = GetSystemMetrics(SM_CYSCREEN);
     _mwindow = CreateWindow("wglFullscreen", _props._title.c_str(),
                 WS_POPUP | WS_MAXIMIZE, 
-		_props._xorg, _props._yorg, _props._xsize, _props._ysize,
+        _props._xorg, _props._yorg, _props._xsize, _props._ysize,
                 desktop, NULL, hinstance, 0);
 
   } else {
@@ -773,28 +773,28 @@ void wglGraphicsWindow::config(void) {
 
   if(gl_show_fps_meter) {
 
-	  _start_time = timeGetTime();
-	  _current_fps = 0.0;
-	  _start_frame_count = _cur_frame_count = 0;
+      _start_time = timeGetTime();
+      _current_fps = 0.0;
+      _start_frame_count = _cur_frame_count = 0;
 
-	 // 128 enough to handle all the ascii chars
-	 // this creates a display list for each char.  displist numbering starts
-	 // at FONT_BITMAP_OGLDISPLAYLISTNUM.  Might want to optimize just to save
-	 // mem by just allocing bitmaps for chars we need (0-9 fps,SPC) 
+     // 128 enough to handle all the ascii chars
+     // this creates a display list for each char.  displist numbering starts
+     // at FONT_BITMAP_OGLDISPLAYLISTNUM.  Might want to optimize just to save
+     // mem by just allocing bitmaps for chars we need (0-9 fps,SPC) 
      wglUseFontBitmaps(_hdc, 0, 128, FONT_BITMAP_OGLDISPLAYLISTNUM);
   }
 
   if(wgldisplay_cat.is_debug()) {
-	  const GLubyte *vendorname=glGetString(GL_VENDOR);
-	  if(vendorname!=NULL) {
-		  if(strncmp((const char *)vendorname,"Microsoft",9)==0) {
-			  wgldisplay_cat.debug() << "wglGraphicsWindow:: GL VendorID: " <<   glGetString(GL_VENDOR) << " (Software Rendering)" << endl;
-		  } else {
-			  wgldisplay_cat.debug() << "wglGraphicsWindow:: GL VendorID: " <<   glGetString(GL_VENDOR) << endl;
-		  }
-	  } else {
-		 wgldisplay_cat.info() << "wglGraphicsWindow:: glGetString(GL_VENDOR) returns NULL!!!\n";
-	  }
+      const GLubyte *vendorname=glGetString(GL_VENDOR);
+      if(vendorname!=NULL) {
+          if(strncmp((const char *)vendorname,"Microsoft",9)==0) {
+              wgldisplay_cat.debug() << "wglGraphicsWindow:: GL VendorID: " <<   glGetString(GL_VENDOR) << " (Software Rendering)" << endl;
+          } else {
+              wgldisplay_cat.debug() << "wglGraphicsWindow:: GL VendorID: " <<   glGetString(GL_VENDOR) << endl;
+          }
+      } else {
+         wgldisplay_cat.info() << "wglGraphicsWindow:: glGetString(GL_VENDOR) returns NULL!!!\n";
+      }
   }
 }
 
@@ -905,7 +905,7 @@ void wglGraphicsWindow::end_frame(void) {
     glLoadMatrixf(LMatrix4f::ident_mat().get_data());
     
     glOrtho(_props._xorg,_props._xorg+_props._xsize,
-	    _props._yorg,_props._yorg+_props._ysize,-1.0,1.0);
+        _props._yorg,_props._yorg+_props._ysize,-1.0,1.0);
     
     glRasterPos2f(_props._xsize-70,_props._ysize-20);  // these seem to be good for default font
     
@@ -1014,11 +1014,11 @@ void wglGraphicsWindow::handle_changes(void) {
     changes.top = point.y;
     // Don't do this in full-screen mode
     AdjustWindowRect(&changes, WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS |
-		WS_CLIPCHILDREN, FALSE);
+        WS_CLIPCHILDREN, FALSE);
     SetWindowPos(_mwindow, HWND_TOP, changes.left, changes.top,
-		changes.right - changes.left, changes.bottom - changes.top,
-		SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER |
-		SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOZORDER);
+        changes.right - changes.left, changes.bottom - changes.top,
+        SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER |
+        SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOZORDER);
   }
   _change_mask = 0;
 }
@@ -1180,7 +1180,7 @@ TypeHandle wglGraphicsWindow::get_class_type(void) {
 void wglGraphicsWindow::init_type(void) {
   GraphicsWindow::init_type();
   register_type(_type_handle, "wglGraphicsWindow",
-		GraphicsWindow::get_class_type());
+        GraphicsWindow::get_class_type());
 }
 
 TypeHandle wglGraphicsWindow::get_type(void) const {

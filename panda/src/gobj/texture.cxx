@@ -90,7 +90,7 @@ consider_rescale(PNMImage &pnmimage, const string &name) {
       << new_x_size << " by " << new_y_size << "\n";
 
     PNMImage scaled(new_x_size, new_y_size, pnmimage.get_num_channels(),
-		    pnmimage.get_maxval(), pnmimage.get_type());
+            pnmimage.get_maxval(), pnmimage.get_type());
     scaled.quick_filter_from(pnmimage);
     pnmimage = scaled;
   }
@@ -150,7 +150,7 @@ read(const string& name) {
 //     Function: read
 //       Access: Published
 //  Description: Combine a 3-component image with a grayscale image
-//		 to get a 4-component image
+//       to get a 4-component image
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 read(const string &name, const string &gray) {
@@ -180,8 +180,8 @@ read(const string &name, const string &gray) {
       << pnmimage.get_x_size() << " by " << pnmimage.get_y_size() << "\n";
 
     PNMImage scaled(pnmimage.get_x_size(), pnmimage.get_y_size(), 
-		    grayimage.get_num_channels(),
-		    grayimage.get_maxval(), grayimage.get_type());
+            grayimage.get_num_channels(),
+            grayimage.get_maxval(), grayimage.get_type());
     scaled.quick_filter_from(grayimage);
     grayimage = scaled;
   }
@@ -323,7 +323,7 @@ void Texture::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr) {
 }
 
 void Texture::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
-			const RenderBuffer &rb) {
+            const RenderBuffer &rb) {
   gsg->copy_texture(prepare(gsg), dr, rb);
 }
 
@@ -337,7 +337,7 @@ void Texture::draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr) {
 }
 
 void Texture::draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
-			const RenderBuffer &rb) {
+            const RenderBuffer &rb) {
   gsg->draw_texture(prepare(gsg), dr, rb);
 }
 
@@ -472,15 +472,15 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       PixelBuffer::Format format = (PixelBuffer::Format)scan.get_uint8();
       int num_components = -1;
       if (scan.get_remaining_size() > 0) {
-	num_components = scan.get_uint8();
+    num_components = scan.get_uint8();
       }
 
       if (_pbuffer != (PixelBuffer *)NULL) {
-	if (num_components == _pbuffer->get_num_components()) {
-	  // Only reset the format if the number of components hasn't
-	  // changed.
-	  _pbuffer->set_format(format);
-	}
+    if (num_components == _pbuffer->get_num_components()) {
+      // Only reset the format if the number of components hasn't
+      // changed.
+      _pbuffer->set_format(format);
+    }
       }
     }
   }
@@ -524,7 +524,7 @@ make_Texture(const FactoryParams &params)
     dummy->fillin(scan, manager);
 
   } else {
-    if (gobj_cat->is_debug()) {
+    if (gobj_cat.is_debug()) {
       gobj_cat->debug() << "Created texture " << me->get_name() << endl;
     }
     me->fillin(scan, manager);
