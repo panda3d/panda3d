@@ -911,10 +911,10 @@ void wglGraphicsWindow::end_frame(void) {
 
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
-    glLoadMatrixf(LMatrix4f::ident_mat().get_data());
+    glLoadIdentity();
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
-    glLoadMatrixf(LMatrix4f::ident_mat().get_data());
+    glLoadIdentity();
 
     glOrtho(_props._xorg,_props._xorg+_props._xsize,
         _props._yorg,_props._yorg+_props._ysize,-1.0,1.0);
