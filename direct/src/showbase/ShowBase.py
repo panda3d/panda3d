@@ -988,8 +988,9 @@ class ShowBase(DirectObject.DirectObject):
             color = VBase4(arg[0], arg[1], arg[2], 1.0)
         else:
             raise TypeError, ('Invalid number of arguments: %d, expected 1, 3, or 4.' % numArgs)
-            
-        self.win.setClearColor(color)
+
+        if self.win:
+            self.win.setClearColor(color)
                 
     def toggleBackface(self):
         if self.backfaceCullingEnabled:
