@@ -357,3 +357,32 @@ class LerpFunctionInterval(Interval):
             raise Exception(
                 'Error: LerpInterval.__getBlend: Unknown blend type')
 
+
+class LerpColorScaleInterval(LerpInterval):
+    # Name counter
+    lerpColorScaleNum = 1
+    # Class methods
+    def __init__(self, node, duration, startColor, endColor,
+                 other=None, blendType='noBlend', name=None):
+
+        def functorFunc(node=node, startColor=startColor, endColor=endColor, other=other):
+            assert(not node.isEmpty())
+            if callable(endColor):
+                # This may be a thunk that returns a point.
+                endColor = endColor()
+            if callable(startColor):
+                # This may be a thunk that returns a point.
+                startColor = startColor()
+            if (other != None):
+                functor = ColorScaleLerpFunctor(node, startColor, endColor, other)
+            else:
+                functor = ColorScaleLerpFunctor(node, startColor, endColor)
+            return functor
+
+        # Generate unique name if necessary
+        if (name == None):
+            name = 'LerpColorScaleInterval-%d' % LerpColorScaleInterval.lerpColorScaleNum
+            LerpColorScaleInterval.lerpColorScaleNum += 1
+        # Initialize superclass
+        LerpInterval.__init__(self, name, duration, functorFunc, blendType)
+

@@ -10,13 +10,13 @@
 
     def getName(self):
         """Returns the name of the bottom node if it exists, or <noname>"""
-        from PandaModules import *
+        import NamedNode
         # Initialize to a default value
         name = '<noname>'
         # Get the bottom node
         node = self.node()
         # Is it a named node?, If so, see if it has a name
-        if issubclass(node.__class__, NamedNode):
+        if issubclass(node.__class__, NamedNode.NamedNode):
             namedNodeName = node.getName()
             # Is it not zero length?
             if len(namedNodeName) != 0:
@@ -25,11 +25,11 @@
 
     def setName(self, name = '<noname>'):
         """Returns the name of the bottom node if it exists, or <noname>"""
-        from PandaModules import *
+        import NamedNode        
         # Get the bottom node
         node = self.node()
         # Is it a named node?, If so, see if it has a name
-        if issubclass(node.__class__, NamedNode):
+        if issubclass(node.__class__, NamedNode.NamedNode):
             node.setName(name)
 
     # For iterating over children
@@ -103,7 +103,6 @@
 
     def getAncestry(self):
         """Get a list of a node path's ancestors"""
-        from PandaObject import *
         node = self.node()
         if (self.hasParent()):
             ancestry = self.getParent().getAncestry()
@@ -113,7 +112,7 @@
             return [self]
 
     def getTightBounds(self):
-        from PandaObject import *
+        from Point3 import Point3
         v1 = Point3(0)
         v2 = Point3(0)
         self.calcTightBounds(v1,v2)
@@ -121,7 +120,6 @@
 
     def pprintPos(self, other = None, sd = 2):
         """ Pretty print a node path's pos """
-        from PandaObject import *
         formatString = '%0.' + '%d' % sd + 'f'
         if other:
             pos = self.getPos(other)
@@ -137,7 +135,6 @@
 
     def pprintHpr(self, other = None, sd = 2):
         """ Pretty print a node path's hpr """
-        from PandaObject import *
         formatString = '%0.' + '%d' % sd + 'f'
         if other:
             hpr = self.getHpr(other)
@@ -153,7 +150,6 @@
 
     def pprintScale(self, other = None, sd = 2):
         """ Pretty print a node path's scale """
-        from PandaObject import *
         formatString = '%0.' + '%d' % sd + 'f'
         if other:
             scale = self.getScale(other)
@@ -169,7 +165,6 @@
 
     def pprintPosHpr(self, other = None, sd = 2):
         """ Pretty print a node path's pos and, hpr """
-        from PandaObject import *
         formatString = '%0.' + '%d' % sd + 'f'
         if other:
             pos = self.getPos(other)
@@ -190,7 +185,6 @@
 
     def pprintPosHprScale(self, other = None, sd = 2):
         """ Pretty print a node path's pos, hpr, and scale """
-        from PandaObject import *
         formatString = '%0.' + '%d' % sd + 'f'
         if other:
             pos = self.getPos(other)
@@ -294,23 +288,23 @@
         
         # make the task function
         def lerpTaskFunc(task):
-            import Lerp
-            import Task
-            import ClockObject
+            from Lerp import Lerp
+            from ClockObject import ClockObject
+            from Task import Task, cont, done
             if task.init == 1:
                 # make the lerp
                 functor = task.functorFunc()
-                task.lerp = Lerp.Lerp(functor, task.duration, task.blendType)
+                task.lerp = Lerp(functor, task.duration, task.blendType)
                 task.init = 0
-            dt = ClockObject.ClockObject.getGlobalClock().getDt()
+            dt = ClockObject.getGlobalClock().getDt()
             task.lerp.setStepSize(dt)
             task.lerp.step()
             if (task.lerp.isDone()):
                 # Reset the init flag, in case the task gets re-used
                 task.init = 1
-                return(Task.done)
+                return(done)
             else:
-                return(Task.cont)
+                return(cont)
         
         # make the lerp task
         lerpTask = Task.Task(lerpTaskFunc)
@@ -333,7 +327,7 @@
         This lerp uses C++ to handle the stepping. Bonus is
         its more efficient, trade-off is there is less control"""
         import AutonomousLerp
-        from ShowBaseGlobal import *
+        # from ShowBaseGlobal import *
 
         # make a lerp that lives in C++ land
         functor = functorFunc()
