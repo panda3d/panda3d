@@ -102,7 +102,14 @@ Palettizer() {
 //               perusal.
 ////////////////////////////////////////////////////////////////////
 void Palettizer::
-report_pi() const {
+report_pi() const { 
+  // Start out with the cross links and back counts; some of these are
+  // nice to report.
+  EggFiles::const_iterator efi;
+  for (efi = _egg_files.begin(); efi != _egg_files.end(); ++efi) {
+    (*efi).second->build_cross_links();
+  }
+
   cout 
     << "\nparams\n"
     << "  map directory: " << _map_dirname << "\n"
@@ -369,7 +376,11 @@ process_command_line_eggs(bool force_texture_read) {
     TextureImage *texture = *ti;
 
     if (force_texture_read) {
+      // If we're forcing a redo, re-read the complete image.
       texture->read_source_image();
+    } else {
+      // Otherwise, just the header is sufficient.
+      texture->read_header();
     }
 
     texture->pre_txa_file();

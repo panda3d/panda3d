@@ -580,6 +580,23 @@ read_source_image() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureImage::read_header
+//       Access: Public
+//  Description: Causes the header part of the image to be reread,
+//               usually to confirm that its image properties (size,
+//               number of channels, etc.) haven't changed.
+////////////////////////////////////////////////////////////////////
+void TextureImage::
+read_header() {
+  if (!_read_source_image) {
+    SourceTextureImage *source = get_preferred_source();
+    if (source != (SourceTextureImage *)NULL) {
+      source->read_header();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureImage::write_source_pathnames
 //       Access: Public
 //  Description: Writes the list of source pathnames that might
@@ -592,20 +609,22 @@ write_source_pathnames(ostream &out, int indent_level) const {
   for (si = _sources.begin(); si != _sources.end(); ++si) {
     SourceTextureImage *source = (*si).second;
 
-    indent(out, indent_level);
-    source->output_filename(out);
-    if (!source->is_size_known()) {
-      out << " (unknown size)";
-
-    } else {
-      out << " " << source->get_x_size() << " " 
-	  << source->get_y_size();
-
-      if (source->get_properties().has_num_channels()) {
-	out << " " << source->get_properties().get_num_channels();
+    if (source->get_egg_count() > 0) {
+      indent(out, indent_level);
+      source->output_filename(out);
+      if (!source->is_size_known()) {
+	out << " (unknown size)";
+	
+      } else {
+	out << " " << source->get_x_size() << " " 
+	    << source->get_y_size();
+	
+	if (source->get_properties().has_num_channels()) {
+	  out << " " << source->get_properties().get_num_channels();
+	}
       }
+      out << "\n";
     }
-    out << "\n";
   }
 }
 

@@ -66,6 +66,7 @@ public:
   void copy_unplaced(bool redo_all);
 
   const PNMImage &read_source_image();
+  void read_header();
 
   void write_source_pathnames(ostream &out, int indent_level = 0) const;
   void write_scale_info(ostream &out, int indent_level = 0);
