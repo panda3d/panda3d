@@ -47,6 +47,9 @@ bool bResponsive_minimized_fullscreen_window = config_wgldisplay.GetBool("respon
 // will crab out WireGL.
 bool support_wiregl = config_wgldisplay.GetBool("support-wiregl", false);
 
+// Set this true to enable HW swapbuffer frame-lock on 3dlabs cards
+bool gl_swapbuffer_framelock = config_wgldisplay.GetBool("gl-swapbuffer-framelock", false);
+
 // if true, use ddraw's GetAvailVidMem to fail if driver says it has too little video mem
 bool gl_do_vidmemsize_check = config_wgldisplay.GetBool("do-vidmemsize-check", true);
 

@@ -620,6 +620,31 @@ void wglGraphicsWindow::config() {
   if (wgldisplay_cat.is_spam())
      wgldisplay_cat.spam() << "GL extensions: " << _extensions_str << endl;
 
+  if(gl_swapbuffer_framelock) {
+     // utilize HW-assisted framelocking if available (3dLabs ext)
+     WGLENABLEFRAMELOCKI3DFUNCPTR wglEnableFrameLock = (WGLENABLEFRAMELOCKI3DFUNCPTR) wglGetProcAddress("wglEnableFrameLockI3D");
+
+     if(wglEnableFrameLock==NULL) {
+         wgldisplay_cat.fatal() << "wglEnableFrameLockI3D not found in OpenGL ICD, cannot implement gl-swapbuffer-framelock!\n";
+         exit(1);
+     } else {
+         BOOL result = wglEnableFrameLock();
+         if(!result) {
+             wgldisplay_cat.fatal() << "wglEnableFrameLockI3D failed, error=" << GetLastError() << endl;
+             exit(1);
+         }
+     }
+
+     if(wgldisplay_cat.is_debug()) {
+         WGLQUERYFRAMELOCKMASTERI3DFUNCPTR wglQueryFrameLockMasterI3D = (WGLQUERYFRAMELOCKMASTERI3DFUNCPTR) wglGetProcAddress("wglQueryFrameLockMasterI3D");
+         BOOL bIsMaster;
+         if((wglQueryFrameLockMasterI3D!=NULL) && wglQueryFrameLockMasterI3D(&bIsMaster))
+             wgldisplay_cat.debug() << "SwapBuffer Frame-locking Enabled, HW wired as framelock " << (bIsMaster ? "Master" : "Slave") << endl;
+     }
+
+     gl_sync_video=true;       // you want gl_sync_video if you want framelock, right?
+  }
+
   if (gl_sync_video) {
       // set swapbuffers to swap no more than once per monitor refresh
       // note sometimes the ICD advertises this ext, but it still doesn't seem to work

@@ -391,6 +391,21 @@ typedef void * (APIENTRY * PFNWGLALLOCATEMEMORYNVPROC) (int size, float readfreq
 typedef void (APIENTRY * PFNWGLFREEMEMORYNVPROC) (void *pointer);
 #endif
 
+// added from 3dlabs glext.h
+/*
+ * Constants and typedefs for the WGL swap_frame_usage extension.
+ */
+typedef BOOL (APIENTRY *WGLGETFRAMEUSAGEI3DFUNCPTR)(float *);
+
+
+/*
+ * Constants and typedefs for the WGL swap_frame_lock extension.
+ */
+typedef BOOL (APIENTRY *WGLENABLEFRAMELOCKI3DFUNCPTR)(VOID);
+typedef BOOL (APIENTRY *WGLDISABLEFRAMELOCKI3DFUNCPTR)(VOID);
+typedef BOOL (APIENTRY *WGLISENABLEDFRAMELOCKI3DFUNCPTR)(BOOL *);
+typedef BOOL (APIENTRY *WGLQUERYFRAMELOCKMASTERI3DFUNCPTR)(BOOL *);
+
 
 #ifdef __cplusplus
 }
