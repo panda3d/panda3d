@@ -19,9 +19,9 @@
 #ifndef CONFIG_PARTICLESYSTEM_H
 #define CONFIG_PARTICLESYSTEM_H
 
-#include <pandabase.h>
-#include <notifyCategoryProxy.h>
-#include <dconfig.h>
+#include "pandabase.h"
+#include "notifyCategoryProxy.h"
+#include "dconfig.h"
 
 ConfigureDecl(config_particlesystem, EXPCL_PANDAPHYSICS, EXPTP_PANDAPHYSICS);
 NotifyCategoryDecl(particlesystem, EXPCL_PANDAPHYSICS, EXPTP_PANDAPHYSICS);

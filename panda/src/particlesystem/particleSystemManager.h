@@ -19,7 +19,7 @@
 #ifndef PARTICLESYSTEMMANAGER_H
 #define PARTICLESYSTEMMANAGER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include "plist.h"
 
 #include "particleSystem.h"
@@ -32,13 +32,6 @@
 ////////////////////////////////////////////////////////////////////
 
 class EXPCL_PANDAPHYSICS ParticleSystemManager {
-private:
-
-  plist< PT(ParticleSystem) > _ps_list;
-
-  int _nth_frame;
-  int _cur_frame;
-
 PUBLISHED:
   ParticleSystemManager(int every_nth_frame = 1);
 
@@ -50,6 +43,12 @@ PUBLISHED:
   INLINE void clear();
 
   void do_particles(float dt);
+
+private:
+  plist< PT(ParticleSystem) > _ps_list;
+
+  int _nth_frame;
+  int _cur_frame;
 };
 
 #include "particleSystemManager.I"

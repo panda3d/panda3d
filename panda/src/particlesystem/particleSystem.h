@@ -45,56 +45,6 @@ class ParticleSystemManager;
 // Description : Contains and manages a particle system.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS ParticleSystem : public Physical {
-private:
-
-#ifdef PSSANITYCHECK
-  int sanity_check();
-#endif
-
-  bool birth_particle();
-  void kill_particle(int pool_index);
-  void birth_litter();
-  void resize_pool(int size);
-
-  pdeque< int > _free_particle_fifo;
-
-  int _particle_pool_size;
-  int _living_particles;
-  float _birth_rate;
-  float _tics_since_birth;
-  int _litter_size;
-  int _litter_spread;
-  float _system_age;
-  float _system_lifespan;
-
-  PT(BaseParticleFactory) _factory;
-  PT(BaseParticleEmitter) _emitter;
-  PT(BaseParticleRenderer) _renderer;
-  ParticleSystemManager *_manager;
-
-  bool _template_system_flag;
-
-  // _render_parent is the ALREADY ALLOC'D node under which this
-  // system will render its particles.
-
-  PT(PandaNode) _render_parent;
-  PT(PandaNode) _render_node;
-
-  bool _active_system_flag;
-  bool _local_velocity_flag;
-  bool _system_grows_older_flag;
-
-  // information for systems that will spawn
-
-  bool _spawn_on_death_flag;
-  PT(PandaNode) _spawn_render_node;
-  pvector< PT(ParticleSystem) > _spawn_templates;
-
-  void spawn_child_system(BaseParticle *bp);
-
-  // information for spawned systems
-  bool _i_was_spawned_flag;
-
 PUBLISHED:
   // constructor/destructor
 
@@ -148,6 +98,55 @@ PUBLISHED:
   INLINE void render();
   INLINE void induce_labor();
   void update(float dt);
+
+private:
+  #ifdef PSSANITYCHECK
+  int sanity_check();
+  #endif
+
+  bool birth_particle();
+  void kill_particle(int pool_index);
+  void birth_litter();
+  void resize_pool(int size);
+
+  pdeque< int > _free_particle_fifo;
+
+  int _particle_pool_size;
+  int _living_particles;
+  float _birth_rate;
+  float _tics_since_birth;
+  int _litter_size;
+  int _litter_spread;
+  float _system_age;
+  float _system_lifespan;
+
+  PT(BaseParticleFactory) _factory;
+  PT(BaseParticleEmitter) _emitter;
+  PT(BaseParticleRenderer) _renderer;
+  ParticleSystemManager *_manager;
+
+  bool _template_system_flag;
+
+  // _render_parent is the ALREADY ALLOC'D node under which this
+  // system will render its particles.
+
+  PT(PandaNode) _render_parent;
+  PT(PandaNode) _render_node;
+
+  bool _active_system_flag;
+  bool _local_velocity_flag;
+  bool _system_grows_older_flag;
+
+  // information for systems that will spawn
+
+  bool _spawn_on_death_flag;
+  PT(PandaNode) _spawn_render_node;
+  pvector< PT(ParticleSystem) > _spawn_templates;
+
+  void spawn_child_system(BaseParticle *bp);
+
+  // information for spawned systems
+  bool _i_was_spawned_flag;
 
 public:
   friend class ParticleSystemManager;

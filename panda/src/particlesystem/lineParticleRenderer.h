@@ -22,10 +22,10 @@
 #include "baseParticle.h"
 #include "baseParticleRenderer.h"
 
-#include <pointerTo.h>
-#include <pointerToArray.h>
-#include <geom.h>
-#include <geomLine.h>
+#include "pointerTo.h"
+#include "pointerToArray.h"
+#include "geom.h"
+#include "geomLine.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LineParticleRenderer
@@ -34,25 +34,6 @@
 ////////////////////////////////////////////////////////////////////
 
 class EXPCL_PANDAPHYSICS LineParticleRenderer : public BaseParticleRenderer {
-PUBLISHED:
-  LineParticleRenderer();
-  LineParticleRenderer(const LineParticleRenderer& copy);
-  LineParticleRenderer(const Colorf& head,
-                       const Colorf& tail,
-                       ParticleRendererAlphaMode alpha_mode);
-
-  virtual ~LineParticleRenderer();
-
-  virtual BaseParticleRenderer *make_copy();
-
-  INLINE void set_head_color(const Colorf& c);
-  INLINE void set_tail_color(const Colorf& c);
-
-  INLINE const Colorf& get_head_color() const;
-  INLINE const Colorf& get_tail_color() const;
-  
-  virtual void output(ostream &out, unsigned int indent=0) const;
-
 private:
   Colorf _head_color;
   Colorf _tail_color;
@@ -72,6 +53,25 @@ private:
   virtual void render(pvector< PT(PhysicsObject) >& po_vector,
                       int ttl_particles);
   virtual void resize_pool(int new_size);
+
+PUBLISHED:
+  LineParticleRenderer();
+  LineParticleRenderer(const LineParticleRenderer& copy);
+  LineParticleRenderer(const Colorf& head,
+                       const Colorf& tail,
+                       ParticleRendererAlphaMode alpha_mode);
+
+  virtual ~LineParticleRenderer();
+
+  virtual BaseParticleRenderer *make_copy();
+
+  INLINE void set_head_color(const Colorf& c);
+  INLINE void set_tail_color(const Colorf& c);
+
+  INLINE const Colorf& get_head_color() const;
+  INLINE const Colorf& get_tail_color() const;
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
 };
 
 #include "lineParticleRenderer.I"

@@ -27,15 +27,6 @@
 //               particles are generated.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS PointEmitter : public BaseParticleEmitter {
-private:
-  LPoint3f _location;
-
-  // CUSTOM EMISSION PARAMETERS
-  // none
-
-  virtual void assign_initial_position(LPoint3f& pos);
-  virtual void assign_initial_velocity(LVector3f& vel);
-
 PUBLISHED:
   PointEmitter(void);
   PointEmitter(const PointEmitter &copy);
@@ -45,6 +36,15 @@ PUBLISHED:
 
   INLINE void set_location(const LPoint3f& p);
   INLINE LPoint3f get_location(void) const;
+
+private:
+  LPoint3f _location;
+
+  // CUSTOM EMISSION PARAMETERS
+  // none
+
+  virtual void assign_initial_position(LPoint3f& pos);
+  virtual void assign_initial_velocity(LVector3f& vel);
 };
 
 #include "pointEmitter.I"

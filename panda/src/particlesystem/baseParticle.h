@@ -19,8 +19,8 @@
 #ifndef BASEPARTICLE_H
 #define BASEPARTICLE_H
 
-#include <pandabase.h>
-#include <physicsObject.h>
+#include "pandabase.h"
+#include "physicsObject.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BaseParticle

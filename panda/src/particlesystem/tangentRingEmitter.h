@@ -28,6 +28,16 @@
 //               fly off tangential to the ring.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS TangentRingEmitter : public BaseParticleEmitter {
+PUBLISHED:
+  TangentRingEmitter();
+  TangentRingEmitter(const TangentRingEmitter &copy);
+  virtual ~TangentRingEmitter();
+
+  virtual BaseParticleEmitter *make_copy();
+
+  INLINE void set_radius(float r);
+  INLINE float get_radius() const;
+
 private:
   float _radius;
 
@@ -41,16 +51,6 @@ private:
 
   virtual void assign_initial_position(LPoint3f& pos);
   virtual void assign_initial_velocity(LVector3f& vel);
-
-PUBLISHED:
-  TangentRingEmitter();
-  TangentRingEmitter(const TangentRingEmitter &copy);
-  virtual ~TangentRingEmitter();
-
-  virtual BaseParticleEmitter *make_copy();
-
-  INLINE void set_radius(float r);
-  INLINE float get_radius() const;
 };
 
 #include "tangentRingEmitter.I"

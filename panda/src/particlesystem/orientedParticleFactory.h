@@ -21,7 +21,7 @@
 
 #include "baseParticleFactory.h"
 
-#include <luse.h>
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : OrientedParticleFactory

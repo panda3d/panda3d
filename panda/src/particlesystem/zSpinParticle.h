@@ -30,13 +30,6 @@
 //               oriented (i.e. angry quat math), use this.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS ZSpinParticle : public BaseParticle {
-private:
-  float _initial_angle;
-  float _final_angle;
-  float _cur_angle;
-  float _angular_velocity;
-  bool  _bUseAngularVelocity;
-
 public:
   ZSpinParticle();
   ZSpinParticle(const ZSpinParticle &copy);
@@ -63,6 +56,13 @@ public:
 
   INLINE void enable_angular_velocity(bool bEnabled);
   INLINE bool get_angular_velocity_enabled() const;
+
+private:
+  float _initial_angle;
+  float _final_angle;
+  float _cur_angle;
+  float _angular_velocity;
+  bool  _bUseAngularVelocity;
 };
 
 #include "zSpinParticle.I"

@@ -22,10 +22,10 @@
 #include "baseParticle.h"
 #include "baseParticleRenderer.h"
 
-#include <pointerTo.h>
-#include <pointerToArray.h>
-#include <geom.h>
-#include <geomLine.h>
+#include "pointerTo.h"
+#include "pointerToArray.h"
+#include "geom.h"
+#include "geomLine.h"
 
 enum SparkleParticleLifeScale {
   SP_NO_SCALE,
@@ -69,7 +69,6 @@ PUBLISHED:
   INLINE SparkleParticleLifeScale get_life_scale() const;
 
 private:
-
   Colorf _center_color;
   Colorf _edge_color;
 

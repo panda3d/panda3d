@@ -27,24 +27,6 @@
 //               are generated
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS DiscEmitter : public BaseParticleEmitter {
-private:
-  float _radius;
-
-  // CUSTOM EMISSION PARAMETERS
-  float _outer_aoe, _inner_aoe;
-  float _outer_magnitude, _inner_magnitude;
-  bool _cubic_lerping;
-
-  ///////////////////////////////
-  // scratch variables that carry over from position calc to velocity calc
-  float _distance_from_center;
-  float _sinf_theta;
-  float _cosf_theta;
-  ///////////////////////////////
-
-  virtual void assign_initial_position(LPoint3f& pos);
-  virtual void assign_initial_velocity(LVector3f& vel);
-
 PUBLISHED:
   DiscEmitter();
   DiscEmitter(const DiscEmitter &copy);
@@ -65,6 +47,24 @@ PUBLISHED:
   INLINE float get_outer_magnitude() const;
   INLINE float get_inner_magnitude() const;
   INLINE bool get_cubic_lerping() const;
+
+private:
+  float _radius;
+
+  // CUSTOM EMISSION PARAMETERS
+  float _outer_aoe, _inner_aoe;
+  float _outer_magnitude, _inner_magnitude;
+  bool _cubic_lerping;
+
+  ///////////////////////////////
+  // scratch variables that carry over from position calc to velocity calc
+  float _distance_from_center;
+  float _sinf_theta;
+  float _cosf_theta;
+  ///////////////////////////////
+
+  virtual void assign_initial_position(LPoint3f& pos);
+  virtual void assign_initial_velocity(LVector3f& vel);
 };
 
 #include "discEmitter.I"

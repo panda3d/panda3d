@@ -38,7 +38,6 @@ class NodePath;
 //               trick sprites.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS SpriteParticleRenderer : public BaseParticleRenderer {
-
 PUBLISHED:
   // This enumerated type indicates the source of the sprite texture:
   // whether it came from an explicit call to set_texture(), or
@@ -48,38 +47,6 @@ PUBLISHED:
     ST_from_node,
   };
 
-private:
-  PT(GeomSprite) _sprite_primitive;
-  PTA_Vertexf _vertex_array;
-  PTA_Colorf _color_array;
-  PTA_float _x_texel_array;
-  PTA_float _y_texel_array;
-  PTA_float _theta_array;
-
-  Colorf _color;
-
-  float _initial_x_texel_ratio, _final_x_texel_ratio;
-  float _initial_y_texel_ratio, _final_y_texel_ratio;
-  float _theta;
-
-  bool _animate_x_ratio, _animate_y_ratio;
-  bool _animate_theta;
-
-  ParticleRendererBlendMethod _blend_method;
-
-  Vertexf _aabb_min, _aabb_max;
-
-  int _pool_size;
-  SourceType _source_type;
-
-  virtual void birth_particle(int index);
-  virtual void kill_particle(int index);
-  virtual void init_geoms();
-  virtual void render(pvector< PT(PhysicsObject) > &po_vector,
-                      int ttl_particles);
-  virtual void resize_pool(int new_size);
-
-PUBLISHED:
   SpriteParticleRenderer(Texture *tex = (Texture *) NULL);
   SpriteParticleRenderer(const SpriteParticleRenderer &copy);
   virtual ~SpriteParticleRenderer();
@@ -119,6 +86,37 @@ PUBLISHED:
   INLINE float get_nonanimated_theta() const;
   INLINE ParticleRendererBlendMethod get_alpha_blend_method() const;
   INLINE bool get_alpha_disable() const;
+
+private:
+  PT(GeomSprite) _sprite_primitive;
+  PTA_Vertexf _vertex_array;
+  PTA_Colorf _color_array;
+  PTA_float _x_texel_array;
+  PTA_float _y_texel_array;
+  PTA_float _theta_array;
+
+  Colorf _color;
+
+  float _initial_x_texel_ratio, _final_x_texel_ratio;
+  float _initial_y_texel_ratio, _final_y_texel_ratio;
+  float _theta;
+
+  bool _animate_x_ratio, _animate_y_ratio;
+  bool _animate_theta;
+
+  ParticleRendererBlendMethod _blend_method;
+
+  Vertexf _aabb_min, _aabb_max;
+
+  int _pool_size;
+  SourceType _source_type;
+
+  virtual void birth_particle(int index);
+  virtual void kill_particle(int index);
+  virtual void init_geoms();
+  virtual void render(pvector< PT(PhysicsObject) > &po_vector,
+                      int ttl_particles);
+  virtual void resize_pool(int new_size);
 };
 
 #include "spriteParticleRenderer.I"

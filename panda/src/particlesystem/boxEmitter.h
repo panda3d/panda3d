@@ -27,15 +27,6 @@
 //               particles are generated.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS BoxEmitter : public BaseParticleEmitter {
-private:
-  LPoint3f _vmin, _vmax;
-
-  // CUSTOM EMISSION PARAMETERS
-  // none
-
-  virtual void assign_initial_position(LPoint3f& pos);
-  virtual void assign_initial_velocity(LVector3f& vel);
-
 PUBLISHED:
   BoxEmitter();
   BoxEmitter(const BoxEmitter &copy);
@@ -48,6 +39,15 @@ PUBLISHED:
 
   INLINE LPoint3f get_min_bound() const;
   INLINE LPoint3f get_max_bound() const;
+
+private:
+  LPoint3f _vmin, _vmax;
+
+  // CUSTOM EMISSION PARAMETERS
+  // none
+
+  virtual void assign_initial_position(LPoint3f& pos);
+  virtual void assign_initial_velocity(LVector3f& vel);
 };
 
 #include "boxEmitter.I"

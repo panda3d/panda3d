@@ -27,6 +27,16 @@
 //               particles are generated.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS SphereVolumeEmitter : public BaseParticleEmitter {
+PUBLISHED:
+  SphereVolumeEmitter(void);
+  SphereVolumeEmitter(const SphereVolumeEmitter &copy);
+  virtual ~SphereVolumeEmitter(void);
+
+  virtual BaseParticleEmitter *make_copy(void);
+
+  INLINE void set_radius(float r);
+  INLINE float get_radius(void) const;
+
 private:
   float _radius;
 
@@ -40,16 +50,6 @@ private:
 
   virtual void assign_initial_position(LPoint3f& pos);
   virtual void assign_initial_velocity(LVector3f& vel);
-
-PUBLISHED:
-  SphereVolumeEmitter(void);
-  SphereVolumeEmitter(const SphereVolumeEmitter &copy);
-  virtual ~SphereVolumeEmitter(void);
-
-  virtual BaseParticleEmitter *make_copy(void);
-
-  INLINE void set_radius(float r);
-  INLINE float get_radius(void) const;
 };
 
 #include "sphereVolumeEmitter.I"

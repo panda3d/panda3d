@@ -27,6 +27,19 @@
 //               particles are generated.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS RingEmitter : public BaseParticleEmitter {
+PUBLISHED:
+  RingEmitter();
+  RingEmitter(const RingEmitter &copy);
+  virtual ~RingEmitter();
+
+  virtual BaseParticleEmitter *make_copy();
+
+  INLINE void set_radius(float r);
+  INLINE void set_angle(float angle);
+
+  INLINE float get_radius() const;
+  INLINE float get_angle() const;
+
 private:
   float _radius;
 
@@ -41,19 +54,6 @@ private:
 
   virtual void assign_initial_position(LPoint3f& pos);
   virtual void assign_initial_velocity(LVector3f& vel);
-
-PUBLISHED:
-  RingEmitter();
-  RingEmitter(const RingEmitter &copy);
-  virtual ~RingEmitter();
-
-  virtual BaseParticleEmitter *make_copy();
-
-  INLINE void set_radius(float r);
-  INLINE void set_angle(float angle);
-
-  INLINE float get_radius() const;
-  INLINE float get_angle() const;
 };
 
 #include "ringEmitter.I"

@@ -19,15 +19,15 @@
 #ifndef BASEPARTICLEEMITTER_H
 #define BASEPARTICLEEMITTER_H
 
-#include <pandabase.h>
-#include <referenceCount.h>
-#include <luse.h>
+#include "pandabase.h"
+#include "referenceCount.h"
+#include "luse.h"
 
 #include "particleCommonFuncs.h"
 
-#include <mathNumbers.h>
+#include "mathNumbers.h"
 
-////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////// //////
 //       Class : BaseParticleEmitter
 // Description : Describes a physical region in space in which
 //               particles are randomly generated.

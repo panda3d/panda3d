@@ -19,8 +19,8 @@
 #ifndef BASEPARTICLEFACTORY_H
 #define BASEPARTICLEFACTORY_H
 
-#include <pandabase.h>
-#include <referenceCount.h>
+#include "pandabase.h"
+#include "referenceCount.h"
 
 #include "baseParticle.h"
 #include "particleCommonFuncs.h"
@@ -32,22 +32,6 @@
 // Description : Pure Virtual base class for creating particles
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS BaseParticleFactory : public ReferenceCount {
-private:
-  float _lifespan_base;
-  float _lifespan_spread;
-
-  float _mass_base;
-  float _mass_spread;
-
-  float _terminal_velocity_base;
-  float _terminal_velocity_spread;
-
-  virtual void populate_child_particle(BaseParticle *bp) const = 0;
-
-protected:
-  BaseParticleFactory();
-  BaseParticleFactory(const BaseParticleFactory &copy);
-
 PUBLISHED:
   virtual ~BaseParticleFactory();
 
@@ -68,6 +52,22 @@ PUBLISHED:
   virtual BaseParticle *alloc_particle() const = 0;
 
   void populate_particle(BaseParticle* bp);
+
+protected:
+  BaseParticleFactory();
+  BaseParticleFactory(const BaseParticleFactory &copy);
+
+private:
+  float _lifespan_base;
+  float _lifespan_spread;
+
+  float _mass_base;
+  float _mass_spread;
+
+  float _terminal_velocity_base;
+  float _terminal_velocity_spread;
+
+  virtual void populate_child_particle(BaseParticle *bp) const = 0;
 };
 
 #include "baseParticleFactory.I"

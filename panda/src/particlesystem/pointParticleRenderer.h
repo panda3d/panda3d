@@ -22,11 +22,11 @@
 #include "baseParticleRenderer.h"
 #include "baseParticle.h"
 
-#include <pointerTo.h>
-#include <pointerToArray.h>
-#include <luse.h>
-#include <geom.h>
-#include <geomPoint.h>
+#include "pointerTo.h"
+#include "pointerToArray.h"
+#include "luse.h"
+#include "geom.h"
+#include "geomPoint.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PointParticleRenderer
