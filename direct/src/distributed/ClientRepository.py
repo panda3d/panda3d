@@ -338,9 +338,9 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             # Just update it.
             distObj = self.doId2do[doId]
             assert(distObj.dclass == dclass)
+            distObj.generate()
             if wantOtpServer:
                 distObj.setLocation(parentId, zoneId)
-            distObj.generate()
             distObj.updateRequiredFields(dclass, di)
             # updateRequiredFields calls announceGenerate
         elif self.cache.contains(doId):
@@ -351,9 +351,9 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             # put it in the dictionary:
             self.doId2do[doId] = distObj
             # and update it.
+            distObj.generate()
             if wantOtpServer:
                 distObj.setLocation(parentId, zoneId)
-            distObj.generate()
             distObj.updateRequiredFields(dclass, di)
             # updateRequiredFields calls announceGenerate
         else:
@@ -369,10 +369,10 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             # Put the new do in the dictionary
             self.doId2do[doId] = distObj
             # Update the required fields
-            if wantOtpServer:
-                distObj.setLocation(parentId, zoneId)
             distObj.generateInit()  # Only called when constructed
             distObj.generate()
+            if wantOtpServer:
+                distObj.setLocation(parentId, zoneId)
             distObj.updateRequiredFields(dclass, di)
             # updateRequiredFields calls announceGenerate
             if wantOtpServer:
@@ -396,13 +396,13 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         # Put the new do in the dictionary
         self.doId2do[doId] = distObj
         # Update the required fields
+        distObj.generateInit()  # Only called when constructed
+        distObj.generate()
         if wantOtpServer:
             # TODO: ROGER: where should we get parentId and zoneId?
             parentId = None
             zoneId = None
             distObj.setLocation(parentId, zoneId)
-        distObj.generateInit()  # Only called when constructed
-        distObj.generate()
         # updateRequiredFields calls announceGenerate
         return  distObj
 
@@ -412,9 +412,9 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             # Just update it.
             distObj = self.doId2do[doId]
             assert(distObj.dclass == dclass)
+            distObj.generate()
             if wantOtpServer:
                 distObj.setLocation(parentId, zoneId)
-            distObj.generate()
             distObj.updateRequiredOtherFields(dclass, di)
             # updateRequiredOtherFields calls announceGenerate
         elif self.cache.contains(doId):
@@ -425,9 +425,9 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             # put it in the dictionary:
             self.doId2do[doId] = distObj
             # and update it.
+            distObj.generate()
             if wantOtpServer:
                 distObj.setLocation(parentId, zoneId)
-            distObj.generate()
             distObj.updateRequiredOtherFields(dclass, di)
             # updateRequiredOtherFields calls announceGenerate
         else:
@@ -443,10 +443,10 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             # Put the new do in the dictionary
             self.doId2do[doId] = distObj
             # Update the required fields
-            if wantOtpServer:
-                distObj.setLocation(parentId, zoneId)
             distObj.generateInit()  # Only called when constructed
             distObj.generate()
+            if wantOtpServer:
+                distObj.setLocation(parentId, zoneId)
             distObj.updateRequiredOtherFields(dclass, di)
             # updateRequiredOtherFields calls announceGenerate
         return distObj
