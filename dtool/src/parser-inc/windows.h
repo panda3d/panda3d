@@ -25,6 +25,7 @@
 #define WINDOWS_H
 
 typedef bool BOOL;
+typedef long DWORD;
 
 union LARGE_INTEGER {
   __int64 QuadPart;
