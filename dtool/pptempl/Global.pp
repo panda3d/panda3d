@@ -629,7 +629,7 @@ Warning: Variable $[upcase $[tree]]_INSTALL is not set!
 
 
 // The language stuff is used by model builds only.
-// Set language_filters to be "%_english %_castillian" etc.
+// Set language_filters to be "%_english %_castillian %_japanese %_german" etc.
 #if $[LANGUAGES]
   #define language_filters $[subst <pct>,%,$[LANGUAGES:%=<pct>_%]]
   #print Using language $[LANGUAGE]
