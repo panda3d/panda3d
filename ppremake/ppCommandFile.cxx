@@ -1500,7 +1500,9 @@ handle_defer_command() {
   def = _scope->expand_self_reference(def, varname);
   _scope->define_variable(varname, def);
 
-  if (verbose>=2) cerr<<"#defer "<<varname<<" = "<<_params.substr(p)<<endl;
+  if (verbose>=2) {
+    cerr<<"#defer "<<varname<<" = "<<_params.substr(p)<<endl;
+  }
   return true;
 }
 
@@ -1530,7 +1532,9 @@ handle_define_command() {
   string def = _scope->expand_string(_params.substr(p));
   _scope->define_variable(varname, def);
 
-  if (verbose>=2) cerr<<"#define "<<varname<<" = "<<_params.substr(p)<<"\n          \""<<def<<"\""<<endl;
+  if (verbose>=2) {
+    cerr<<"#define "<<varname<<" = "<<_params.substr(p)<<"\n          \""<<def<<"\""<<endl;
+  }
   return true;
 }
 

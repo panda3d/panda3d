@@ -11,15 +11,15 @@
 #include "sedProcess.h"
 
 #ifdef HAVE_GETOPT
-#ifdef HAVE_GETOPT_H
-#include <getopt.h>
-#endif  // HAVE_GETOPT_H
+  #ifdef HAVE_GETOPT_H
+    #include <getopt.h>
+  #endif  // HAVE_GETOPT_H
 #else
-#include "gnu_getopt.h"
+  #include "gnu_getopt.h"
 #endif  // HAVE_GETOPT
 
 #ifdef HAVE_UNISTD_H
-#include <unistd.h>
+  #include <unistd.h>
 #endif
 
 #include <set>
