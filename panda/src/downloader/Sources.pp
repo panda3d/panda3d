@@ -3,18 +3,22 @@
                    dtoolutil:c dtoolbase:c dtool:m
 #define USE_ZLIB yes
 #define USE_IPC yes
+#define USE_NET yes
 
 #begin lib_target
   #define TARGET downloader
 
   #define SOURCES							\
     config_downloader.cxx						\
-    config_downloader.h downloadDb.I					\
+    config_downloader.h \
     asyncUtility.I asyncUtility.cxx asyncUtility.h			\
-    downloadDb.cxx downloadDb.h						\
-    downloader.I downloader.cxx downloader.h extractor.cxx extractor.h	\
+    extractor.cxx extractor.h	\
     multiplexStream.I multiplexStream.cxx multiplexStream.h \
     multiplexStreamBuf.I multiplexStreamBuf.cxx multiplexStreamBuf.h 
+
+  #define IF_NET_SOURCES \
+    downloadDb.I downloadDb.cxx downloadDb.h \
+    downloader.I downloader.cxx downloader.h
 
   #define IF_ZLIB_SOURCES						\
     decompressor.cxx decompressor.h zcompressor.I zcompressor.cxx	\
