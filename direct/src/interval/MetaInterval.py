@@ -88,6 +88,13 @@ class MetaInterval(CMetaInterval):
 
         self.pythonIvals = []
 
+        # If we are running in debug mode, we validate the intervals
+        # in the list right away.  There's no good reason to do this,
+        # except that it makes it easier for the programmer to detect
+        # when a MetaInterval is misdefined at creation time.
+        assert(self.validateComponents(self.ivals))
+
+
 
     # Functions to make the MetaInterval object act just like a Python
     # list of intervals:
@@ -98,6 +105,7 @@ class MetaInterval(CMetaInterval):
             self.ivals = list(self.ivals)
         self.ivals.append(ival)
         self.__ivalsDirty = 1
+        assert(self.validateComponent(ival))
 
     def extend(self, ivals):
         # Appends a list of intervals to the list so far.
@@ -117,6 +125,7 @@ class MetaInterval(CMetaInterval):
             self.ivals = list(self.ivals)
         self.ivals.insert(index, ival)
         self.__ivalsDirty = 1
+        assert(self.validateComponent(ival))
 
     def pop(self, index = None):
         # Returns element index (or the last element) and removes it
@@ -164,6 +173,7 @@ class MetaInterval(CMetaInterval):
             self.ivals = list(self.ivals)
         self.ivals[index] = value
         self.__ivalsDirty = 1
+        assert(self.validateComponent(value))
 
     def __delitem__(self, index):
         if isinstance(self.ivals, types.TupleType):
@@ -181,6 +191,7 @@ class MetaInterval(CMetaInterval):
             self.ivals = list(self.ivals)
         self.ivals[i : j] = s
         self.__ivalsDirty = 1
+        assert(self.validateComponents(s))
 
     def __delslice__(self, i, j):
         if isinstance(self.ivals, types.TupleType):
@@ -192,10 +203,13 @@ class MetaInterval(CMetaInterval):
         if isinstance(self.ivals, types.TupleType):
             self.ivals = list(self.ivals)
         if isinstance(other, MetaInterval):
-            self.ivals += other.ivals
+            assert(self.__class__ == other.__class__)
+            ivals = other.ivals
         else:
-            self.ivals += list(other)
+            ivals = list(other)
+        self.ivals += ivals
         self.__ivalsDirty = 1
+        assert(self.validateComponents(ivals))
         return self
 
     def __add__(self, other):
@@ -362,6 +376,24 @@ class MetaInterval(CMetaInterval):
 
     # Internal functions:
 
+    def validateComponent(self, component):
+        # This is called only in debug mode to verify that the
+        # indicated component added to the MetaInterval is appropriate
+        # to this type of MetaInterval.  In most cases except Track,
+        # this is the same as asking that the component is itself an
+        # Interval.
+        return isinstance(component, CInterval) or \
+               isinstance(component, Interval.Interval)
+
+    def validateComponents(self, components):
+        # This is called only in debug mode to verify that all the
+        # components on the indicated list are appropriate to this
+        # type of MetaInterval.
+        for component in components:
+            if not self.validateComponent(component):
+                return 0
+        return 1
+
     def __updateIvals(self):
         # The MetaInterval object does not create the C++ list of
         # Intervals immediately; rather, it stores a Python list of
@@ -520,6 +552,30 @@ class Track(MetaInterval):
     def applyIvals(self, meta, relTime, relTo):
         meta.addTrack(self.ivals, self.getName(),
                       relTime, relTo, self.phonyDuration)
+
+    def validateComponent(self, tuple):
+        # This is called only in debug mode to verify that the
+        # indicated component added to the MetaInterval is appropriate
+        # to this type of MetaInterval.  In most cases except Track,
+        # this is the same as asking that the component is itself an
+        # Interval.
+
+        if isinstance(tuple, CInterval) or \
+           isinstance(tuple, Interval.Interval):
+            # Actually, it's not a tuple, but just an interval.
+            # In this case we fall back on the old default of
+            # assuming a sequential list of intervals.  This is a
+            # temporary feature for backward compatibility.
+            return 1
+
+        if isinstance(tuple, types.TupleType) or \
+           isinstance(tuple, types.ListType):
+            ival = tuple[1]
+            return MetaInterval.validateComponent(self, ival)
+
+        # It's not a tuple or an interval.
+        return 0
+        
 
 # Temporary for backward compatibility.
 class MultiTrack(MetaInterval):
