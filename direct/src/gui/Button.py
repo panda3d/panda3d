@@ -11,6 +11,7 @@ class Button(DirectObject):
                  label = None,
                  scale = 0.1,
                  width = None,
+                 align = None,
                  drawOrder = getDefaultDrawOrder(),
                  font = getDefaultFont(),
                  pos = (0, 0),
@@ -37,17 +38,17 @@ class Button(DirectObject):
             # text label, make text button
             self.label = label
 
-            self.lUp = Label.textLabel(self.label, upStyle,
-                                       scale, width, drawOrder, font)
+            self.lUp = Label.textLabel(self.label, upStyle, scale,
+                                       width, drawOrder, font)
 
             if width == None:
                 width = self.lUp.getWidth() / scale
                 self.width = width
 
-            self.lLit = Label.textLabel(self.label, litStyle,
-                                        scale, width, drawOrder, font)
-            self.lDown = Label.textLabel(self.label, downStyle,
-                                         scale, width, drawOrder, font)
+            self.lLit = Label.textLabel(self.label, litStyle, scale,
+                                        width, drawOrder, font)
+            self.lDown = Label.textLabel(self.label, downStyle, scale,
+                                         width, drawOrder, font)
 
             if supportInactive:
                 self.lInactive = Label.textLabel(self.label, inactiveStyle,
@@ -94,6 +95,14 @@ class Button(DirectObject):
         self.button = GuiButton.GuiButton(self.name, self.lUp, self.lLit,
                                           self.lDown, self.lDown, self.lInactive)
         self.button.setDrawOrder(drawOrder)
+
+        if align == TMALIGNLEFT:
+            self.xoffset = width / 2.0 * scale
+        elif align == TMALIGNRIGHT:
+            self.xoffset = -width / 2.0 * scale
+        else:
+            self.xoffset = 0
+            
         self.setPos(pos[0], pos[1])
         self.managed = 0
 
@@ -157,14 +166,15 @@ class Button(DirectObject):
         self.managed = 0
 
     def getPos(self):
-        return self.button.getPos()
+        v = self.button.getPos()
+        return Vec3(v[0] - self.xoffset, v[1], v[2])
 
     def setPos(self, x, y, node = None):
         if node == None:
-            v3 = Vec3(x, 0., y)
+            v3 = Vec3(x + self.xoffset, 0., y)
         else:
             mat = node.getMat(base.render2d)
-            v3 = Vec3(mat.xformPoint(Point3(x, 0., y)))
+            v3 = Vec3(mat.xformPoint(Point3(x + self.xoffset, 0., y)))
 
         self.button.setPos(v3)
 
