@@ -33,10 +33,10 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : PolylightEffect
 // Description : A PolylightEffect can be used on a node to define a
-//               LightGroup  for that node. A LightGroup contains 
+//				 LightGroup  for that node. A LightGroup contains 
 //               Polylights which are essentially nodes that add 
-//               color to the polygons of a model based on distance.
-//               PolylightNode is a cheap way to get lighting effects
+//			     color to the polygons of a model based on distance.
+//				 PolylightNode is a cheap way to get lighting effects
 //               specially for night scenes
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PolylightEffect : public RenderEffect {
@@ -45,32 +45,38 @@ private:
   
 
 PUBLISHED:
-  
-  static CPT(RenderEffect) make(string contribution_type= "proximal", float weight=0.9);
+  enum Contrib_Type {
+    CPROXIMAL,
+    CALL,
+  };
+
+  static CPT(RenderEffect) make();
   INLINE void enable();
   INLINE void disable();
-  INLINE bool add_light(string lightname, NodePath *newlight);
-  INLINE bool remove_light(string lightname);
+  INLINE bool add_light(const string &lightname, const NodePath &newlight);
+  INLINE bool remove_light(const string &lightname);
   INLINE bool remove_all();
   INLINE bool set_weight(float w);
   INLINE float get_weight() const;
-  INLINE bool set_contrib(string type);  
-  INLINE string get_contrib() const;
+  INLINE bool set_contrib(Contrib_Type type);  
+  INLINE Contrib_Type get_contrib() const;
   INLINE bool is_enabled()const;
+  INLINE void set_effect_center(LPoint3f effect_center);
+  INLINE LPoint3f get_effect_center()const;
 
 public:
   CPT(RenderAttrib) do_poly_light(const CullTraverserData *data, const TransformState *node_transform) const;
-
 
 protected:
   virtual int compare_to_impl(const RenderEffect *other) const;
 
 private:
   bool _enabled;
-  string _contribution_type;
+  Contrib_Type _contribution_type;
   float _weight;
-  typedef pmap<string, NodePath *> LIGHTGROUP;
+  typedef pmap<string, NodePath> LIGHTGROUP;
   LIGHTGROUP _lightgroup;
+  LPoint3f _effect_center;
   
 
 public:

@@ -37,20 +37,41 @@ class EXPCL_PANDA PolylightNode : public PandaNode{
 
 
 PUBLISHED:
+  /*
+  // This was the old constructor... interrogate would generate a 
+  // separate wrapper for each parameter... so its better to 
+  // have a simpler constructor and require the programmer
+  // to use set_* methods.
   PolylightNode(const string &name, float x = 0.0, float y = 0.0, float z = 0.0,
-    float r = 1.0, float g = 1.0, float b = 1.0,
-    float radius=50.0, string attenuation_type= "linear",
-    bool flickering =false, string flicker_type="random");
+	float r = 1.0, float g = 1.0, float b = 1.0,
+	float radius=50.0, string attenuation_type= "linear",
+	bool flickering =false, string flicker_type="random");
+  */
+
+  enum Flicker_Type {
+    FRANDOM,
+    FSIN,
+    FCUSTOM,
+  };
+
+  enum Attenuation_Type {
+    ALINEAR,
+    AQUADRATIC,
+  };
+
+  PolylightNode(const string &name);
   INLINE void enable();
   INLINE void disable();
+  INLINE void set_pos(LVecBase3f position);
   INLINE void set_pos(float x,float y, float z);
   INLINE LVecBase3f get_pos() const;
+  INLINE void set_color(Colorf color);
   INLINE void set_color(float r, float g, float b);
   INLINE Colorf get_color() const;
   INLINE void set_radius(float r);
   INLINE float get_radius() const;
-  INLINE bool set_attenuation(string type);
-  INLINE string get_attenuation() const;
+  INLINE bool set_attenuation(Attenuation_Type type);
+  INLINE Attenuation_Type get_attenuation() const;
   INLINE void set_a0(float a0);
   INLINE void set_a1(float a1);
   INLINE void set_a2(float a2);
@@ -60,26 +81,14 @@ PUBLISHED:
   INLINE void flicker_on();
   INLINE void flicker_off();
   INLINE bool is_flickering() const;
-  INLINE bool set_flicker_type(string type);
-  INLINE string get_flicker_type() const;
+  INLINE bool set_flicker_type(Flicker_Type type);
+  INLINE Flicker_Type get_flicker_type() const;
   INLINE void set_offset(float offset);
   INLINE float get_offset() const;
   INLINE void set_scale(float scale);
   INLINE float get_scale() const;
   INLINE void set_step_size(float step) ;
   INLINE float get_step_size() const;
-  INLINE void set_x(float x);
-  INLINE void set_y(float y);
-  INLINE void set_z(float z);
-  //INLINE void set_r(float r);
-  //INLINE void set_g(float g);
-  //INLINE void set_b(float b);
-  INLINE float get_x() const;
-  INLINE float get_y() const;
-  INLINE float get_z() const;
-  INLINE float get_r() const;
-  INLINE float get_g() const;
-  INLINE float get_b() const;
   INLINE void set_freq(float f);
   INLINE float get_freq() const;
 
@@ -97,15 +106,15 @@ public:
   
 private:
   bool _enabled;
-  //LPoint3f _position;
+  LVecBase3f _position;
   //Colorf _color;
   float _radius;
-  string _attenuation_type;
+  Attenuation_Type _attenuation_type;
   float _a0;
   float _a1;
   float _a2;
   bool _flickering;
-  string _flicker_type;
+  Flicker_Type _flicker_type;
   float _offset;
   float _scale;
   float _step_size;

@@ -33,7 +33,8 @@ PolylightEffect() {
 //       Access: Published
 //  Description: Returns state of the effect: enabled/disabled
 ////////////////////////////////////////////////////////////////////
-INLINE bool PolylightEffect::is_enabled() const {
+INLINE bool PolylightEffect::
+is_enabled() const {
   return _enabled;
 }
 
@@ -68,9 +69,9 @@ disable() {
 //               unique name. Returns true if light added
 ////////////////////////////////////////////////////////////////////
 INLINE bool PolylightEffect::
-add_light(string lightname,NodePath *newlight) {
-  nassertr( newlight->node()->is_of_type(PolylightNode::get_class_type()) ,false);
-  nassertr(newlight->node() != (PolylightNode *)NULL,false);
+add_light(const string &lightname, const NodePath &newlight) {
+  nassertr(newlight.node()->is_of_type(PolylightNode::get_class_type()) ,false);
+  nassertr(newlight.node() != (PolylightNode *)NULL,false);
   
   // Check if light name is unique
   if(_lightgroup.find(lightname) != _lightgroup.end()) {
@@ -79,7 +80,7 @@ add_light(string lightname,NodePath *newlight) {
   }
     
   // Add the light
-  pair<string,NodePath *> _light_to_add(lightname, newlight);
+  pair<string,NodePath> _light_to_add(lightname, newlight);
   _lightgroup.insert(_light_to_add);
   return true;
 }
@@ -92,7 +93,7 @@ add_light(string lightname,NodePath *newlight) {
 //               success.
 ////////////////////////////////////////////////////////////////////
 INLINE bool PolylightEffect::
-remove_light(string lightname) {
+remove_light(const string &lightname) {
 
   // Check if light name exists
   if(_lightgroup.find(lightname) == _lightgroup.end()) {
@@ -155,13 +156,13 @@ get_weight() const {
 //               _contribution_type is a string that controls how
 //               this division occurs.
 //               "proximal" : A light only contributes if the node 
-//               is inside its volume
+//				 is inside its volume
 //               "all" : All lights added to the effect are used in
 //               division irrespective of their light volumes
 ////////////////////////////////////////////////////////////////////
 INLINE bool PolylightEffect::
-set_contrib(string type) {
-  nassertr(type == "all" || type == "proximal",false);
+set_contrib(PolylightEffect::Contrib_Type type) {
+  nassertr(type == CALL || type == CPROXIMAL,false);
   _contribution_type = type;
   return true;
 }
@@ -169,9 +170,31 @@ set_contrib(string type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PolylightEffect::get_contrib
 //       Access: Published
-//  Description: Returns a string value "all"/"proximal"
+//  Description: Returns CALL or CPROXIMAL
 ////////////////////////////////////////////////////////////////////
-INLINE string PolylightEffect::
+INLINE PolylightEffect::Contrib_Type PolylightEffect::
 get_contrib() const {
   return _contribution_type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PolylightEffect::set_effect_center
+//       Access: Published
+//  Description: Set the center point of the effect...generally 0,0,0
+//               and hence the pivot point of the model
+////////////////////////////////////////////////////////////////////
+INLINE void PolylightEffect::
+set_effect_center(LPoint3f effect_center) {
+  _effect_center = effect_center;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PolylightEffect::get_effect_center
+//       Access: Published
+//  Description: Return the value of the _effect_center
+////////////////////////////////////////////////////////////////////
+INLINE LPoint3f PolylightEffect::
+get_effect_center() const {
+  return _effect_center;
 }

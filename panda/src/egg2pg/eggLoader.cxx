@@ -1641,9 +1641,10 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
       egg2pg_cat.warning()
         << "Polylight " << egg_group->get_name() << " make_sphere failed!\n";
 	}
-	PolylightNode *pnode = new PolylightNode(egg_group->get_name(),
-	  center[0], center[1], center[2], color[0], color[1], color[2], 
-	  radius, "linear", false, "random");
+	PolylightNode *pnode = new PolylightNode(egg_group->get_name());
+    pnode->set_pos(center);
+    pnode->set_color(color);
+    pnode->set_radius(radius);
     node = pnode;
     
   } else {
