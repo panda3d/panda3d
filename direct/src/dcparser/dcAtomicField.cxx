@@ -565,17 +565,6 @@ is_ownsend() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::is_compress
-//       Access: Public
-//  Description: Returns true if the "compress" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::
-is_compress() const {
-  return (_flags & F_compress) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::Constructor
 //       Access: Public
 //  Description:
@@ -631,9 +620,6 @@ write(ostream &out, int indent_level) const {
   }
   if ((_flags & F_ownsend) != 0) {
     out << " ownsend";
-  }
-  if ((_flags & F_compress) != 0) {
-    out << " compress";
   }
 
   out << ";  // field " << _number << "\n";

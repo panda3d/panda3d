@@ -62,14 +62,14 @@ class ClientDistClass:
                     requiredCDU.append(i)
         return requiredCDU
 
-    def updateField(self, do, di, allowCompress):
+    def updateField(self, do, di):
         # Get the update field id
         fieldId = di.getArg(STUint16)
         # look up the CDU
         assert(self.number2CDU.has_key(fieldId))
         cdu = self.number2CDU[fieldId]
         # Let the cdu finish the job
-        cdu.updateField(self, do, di, allowCompress)
+        cdu.updateField(self, do, di)
         return None
 
     def sendUpdate(self, cr, do, fieldName, args, sendToId = None):

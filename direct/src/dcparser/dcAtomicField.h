@@ -53,7 +53,6 @@ PUBLISHED:
   bool is_clsend() const;
   bool is_clrecv() const;
   bool is_ownsend() const;
-  bool is_compress() const;
 
 public:
   DCAtomicField();
@@ -98,7 +97,6 @@ public:
     F_clsend          = 0x0020,
     F_clrecv          = 0x0040,
     F_ownsend         = 0x0080,
-    F_compress        = 0x0100,
   };
 
   int _flags;  // A bitmask union of any of the above values.

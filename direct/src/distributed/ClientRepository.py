@@ -517,7 +517,7 @@ class ClientRepository(DirectObject.DirectObject):
         cdc = self.doId2cdc.get(doId)
         if (do != None and cdc != None):
             # Let the cdc finish the job
-            cdc.updateField(do, di, 1)
+            cdc.updateField(do, di)
         else:
             ClientRepository.notify.warning(
                 "Asked to update non-existent DistObj " + str(doId))
