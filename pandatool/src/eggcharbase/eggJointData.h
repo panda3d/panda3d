@@ -43,9 +43,12 @@ public:
   INLINE EggJointData *get_child(int n) const;
   EggJointData *find_joint(const string &name);
 
-  int get_num_frames(int model_index) const;
+  virtual int get_num_frames(int model_index) const;
   LMatrix4d get_frame(int model_index, int n) const;
   LMatrix4d get_net_frame(int model_index, int n) const;
+
+  INLINE void reparent_to(EggJointData *new_parent);
+  void move_vertices_to(EggJointData *new_owner);
 
   bool do_rebuild();
   void optimize();
@@ -54,11 +57,28 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 protected:
+  void do_begin_reparent();
+  void do_begin_compute_reparent();
+  bool do_compute_reparent(int model_index, int n);
+  bool do_finish_reparent();
+
+private:
+  const LMatrix4d &get_new_net_frame(int model_index, int n);
+  const LMatrix4d &get_new_net_frame_inv(int model_index, int n);
+  LMatrix4d get_new_frame(int model_index, int n);
+
+  // These are used to cache the above results for optimizing
+  // do_compute_reparent().
+  LMatrix4d _new_net_frame, _new_net_frame_inv;
+  bool _got_new_net_frame, _got_new_net_frame_inv;
+  bool _computed_reparent;
+  bool _computed_ok;
+
+protected:
   typedef pvector<EggJointData *> Children;
   Children _children;
   EggJointData *_parent;
-
-  friend class EggCharacterCollection;
+  EggJointData *_new_parent;
 
 
 public:
@@ -77,6 +97,9 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class EggCharacterCollection;
+  friend class EggCharacterData;
 };
 
 #include "eggJointData.I"

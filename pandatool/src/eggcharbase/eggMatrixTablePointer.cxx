@@ -86,6 +86,10 @@ get_frame(int n) const {
     // If we have exactly one frame, then we have as many frames as we
     // want; just repeat the first frame.
     n = 0;
+
+  } else if (get_num_frames() == 0) {
+    // If we have no frames, we really have the identity matrix.
+    return LMatrix4d::ident_mat();
   }
 
   nassertr(n >= 0 && n < get_num_frames(), LMatrix4d::ident_mat());
@@ -120,6 +124,32 @@ add_frame(const LMatrix4d &mat) {
   }
 
   return _xform->add_data(mat);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMatrixTablePointer::do_finish_reparent
+//       Access: Protected
+//  Description: Performs the actual reparenting operation
+//               by removing the node from its old parent and
+//               associating it with its new parent, if any.
+////////////////////////////////////////////////////////////////////
+void EggMatrixTablePointer::
+do_finish_reparent(EggJointPointer *new_parent) {
+  if (new_parent == (EggJointPointer *)NULL) {
+    // No new parent; unparent the joint.
+    EggGroupNode *egg_parent = _table->get_parent();
+    if (egg_parent != (EggGroupNode *)NULL) {
+      egg_parent->remove_child(_table.p());
+    }
+
+  } else {
+    // Reparent the joint to its new parent (implicitly unparenting it
+    // from its previous parent).
+    EggMatrixTablePointer *new_node = DCAST(EggMatrixTablePointer, new_parent);
+    if (new_node->_table != _table->get_parent()) {
+      new_node->_table->add_child(_table.p());
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -95,6 +95,30 @@ find_joint(const string &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterData::get_num_joints
+//       Access: Public
+//  Description: Returns the total number of joints in the character
+//               joint hierarchy.
+////////////////////////////////////////////////////////////////////
+INLINE int EggCharacterData::
+get_num_joints() const {
+  return _joints.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterData::get_joint
+//       Access: Public
+//  Description: Returns the nth joint in the character joint
+//               hierarchy.  This returns all of the joints in the
+//               hierarchy in an arbitrary ordering.
+////////////////////////////////////////////////////////////////////
+INLINE EggJointData *EggCharacterData::
+get_joint(int n) const {
+  nassertr(n >= 0 && n < (int)_joints.size(), NULL);
+  return _joints[n];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterData::get_num_sliders
 //       Access: Public
 //  Description: Returns the number of sliders in the character

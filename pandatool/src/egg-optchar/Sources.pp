@@ -7,12 +7,12 @@
   dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 #define UNIX_SYS_LIBS m
 
-#begin test_bin_target
-  #define TARGET egg-optchar
+#begin bin_target
+  #define TARGET egg-optchar-new
 
   #define SOURCES \
     config_egg_optchar.cxx config_egg_optchar.h \
     eggOptchar.cxx eggOptchar.h \
     eggOptcharUserData.I eggOptcharUserData.cxx eggOptcharUserData.h
 
-#end test_bin_target
+#end bin_target

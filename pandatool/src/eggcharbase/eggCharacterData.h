@@ -68,9 +68,13 @@ public:
   INLINE int get_num_models() const;
   INLINE int get_model_index(int n) const;
   INLINE EggNode *get_model_root(int n) const;
+  int get_num_frames(int model_index) const;
 
   INLINE EggJointData *get_root_joint() const;
   INLINE EggJointData *find_joint(const string &name) const;
+  INLINE int get_num_joints() const;
+  INLINE EggJointData *get_joint(int n) const;
+  bool do_reparent();
 
   INLINE int get_num_sliders() const;
   INLINE EggSliderData *get_slider(int n) const;
@@ -99,6 +103,9 @@ protected:
 
   typedef pvector<EggSliderData *> Sliders;
   Sliders _sliders;
+
+  typedef pvector<EggJointData *> Joints;
+  Joints _joints;
 
   typedef pvector<EggComponentData *> Components;
   Components _components;

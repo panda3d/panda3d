@@ -12,7 +12,8 @@
      eggCharacterCollection.h eggCharacterCollection.I \
      eggCharacterData.h eggCharacterData.I eggCharacterFilter.h \
      eggComponentData.h eggComponentData.I eggJointData.h \
-     eggJointData.I eggJointPointer.h eggJointNodePointer.h \
+     eggJointData.I eggJointPointer.h eggJointPointer.I \
+     eggJointNodePointer.h \
      eggMatrixTablePointer.h eggScalarTablePointer.h \
      eggSliderData.h eggSliderData.I \
      eggVertexPointer.h
@@ -32,7 +33,7 @@
     eggCharacterData.I eggCharacterData.h eggCharacterFilter.h \
     eggComponentData.I eggComponentData.h \
     eggJointData.h eggJointData.I \
-    eggJointPointer.h \
+    eggJointPointer.h eggJointPointer.I \
     eggJointNodePointer.h \
     eggMatrixTablePointer.h \
     eggScalarTablePointer.h \

@@ -45,6 +45,8 @@ public:
   void add_name(const string &name);
   bool matches_name(const string &name) const;
 
+  virtual int get_num_frames(int model_index) const=0;
+
   virtual void add_back_pointer(int model_index, EggObject *egg_object)=0;
   virtual void write(ostream &out, int indent_level = 0) const=0;
 

@@ -43,7 +43,8 @@ public:
     F_static   = 0x0001,
     F_identity = 0x0002,
     F_empty    = 0x0004,
-    F_remove   = 0x0008
+    F_remove   = 0x0008,
+    F_expose   = 0x0010,
   };
   int _flags;
   LMatrix4d _static_mat;

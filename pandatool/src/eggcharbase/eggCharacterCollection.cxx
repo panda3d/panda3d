@@ -98,7 +98,7 @@ add_egg(EggData *egg) {
     TopEggNodes::iterator ti;
     for (ti = top_nodes.begin(); ti != top_nodes.end(); ++ti) {
       EggNode *model_root = (*ti).first;
-      EggNodeList &egg_nodes = (*ti).second;
+      ModelDescription &desc = (*ti).second;
 
       int model_index = _next_model_index++;
       if (egg_info._models.empty()) {
@@ -109,8 +109,9 @@ add_egg(EggData *egg) {
       char_data->add_model(model_index, model_root);
       nassertr(model_index == (int)_characters_by_model_index.size(), -1);
       _characters_by_model_index.push_back(char_data);
+      root_joint->add_back_pointer(model_index, desc._root_node);
 
-      match_egg_nodes(char_data, root_joint, egg_nodes,
+      match_egg_nodes(char_data, root_joint, desc._top_nodes,
                       egg_index, model_index);
 
       scan_for_morphs(model_root, model_index, char_data);
@@ -268,12 +269,16 @@ scan_for_top_joints(EggNode *egg_node, EggNode *model_root,
     EggGroup *group = DCAST(EggGroup, egg_node);
 
     if (group->has_lod()) {
-      // This flag has an LOD specification.
+      // This group has an LOD specification; that indicates multiple
+      // skeleton hierarchies for this character, one for each LOD.
+      // We call each of these a separate model.
       model_root = group;
     }
     if (group->get_group_type() == EggGroup::GT_joint) {
       // A <Joint> node begins a model hierarchy.
-      _top_egg_nodes[character_name][model_root].push_back(group);
+      ModelDescription &desc = _top_egg_nodes[character_name][model_root];
+      desc._root_node = model_root;
+      desc._top_nodes.push_back(group);
       return;
     }
   }
@@ -307,12 +312,14 @@ scan_for_top_tables(EggTable *bundle, EggNode *model_root,
       if (table->get_name() == "<skeleton>") {
         // Here it is!  Now the immediate children of this node are
         // the top tables.
+        ModelDescription &desc = _top_egg_nodes[character_name][model_root];
+        desc._root_node = table;
 
         EggGroupNode::iterator cgi;
         for (cgi = table->begin(); cgi != table->end(); ++cgi) {
           EggNode *grandchild = (*cgi);
           if (grandchild->is_of_type(EggTable::get_class_type())) {
-            _top_egg_nodes[character_name][model_root].push_back(grandchild);
+            desc._top_nodes.push_back(grandchild);
           }
         }
       }
@@ -459,8 +466,10 @@ match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
       EggNode *egg_node = (*ei);
       EggJointData *data = make_joint_data(char_data);
       joint_data->_children.push_back(data);
+      char_data->_joints.push_back(data);
       char_data->_components.push_back(data);
       data->_parent = joint_data;
+      data->_new_parent = joint_data;
       found_egg_match(char_data, data, egg_node, egg_index, model_index);
     }
 
@@ -565,8 +574,10 @@ match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
           EggNode *egg_node = (*ei);
           EggJointData *data = make_joint_data(char_data);
           joint_data->_children.push_back(data);
+          char_data->_joints.push_back(data);
           char_data->_components.push_back(data);
           data->_parent = joint_data;
+          data->_new_parent = joint_data;
           found_egg_match(char_data, data, egg_node, egg_index, model_index);
         }
       }

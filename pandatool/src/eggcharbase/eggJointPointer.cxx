@@ -35,6 +35,16 @@ add_frame(const LMatrix4d &) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggJointPointer::move_vertices_to
+//       Access: Public, Virtual
+//  Description: Moves the vertices assigned to this joint into the
+//               other joint (which should be of the same type).
+////////////////////////////////////////////////////////////////////
+void EggJointPointer::
+move_vertices_to(EggJointPointer *) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggJointPointer::begin_rebuild
 //       Access: Public
 //  Description: Resets the set of rebuild frames in preparation for

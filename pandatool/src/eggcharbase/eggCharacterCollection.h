@@ -19,13 +19,13 @@
 #ifndef EGGCHARACTERCOLLECTION_H
 #define EGGCHARACTERCOLLECTION_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "eggCharacterData.h"
 
-#include <eggData.h>
-#include <eggNode.h>
-#include <pointerTo.h>
+#include "eggData.h"
+#include "eggNode.h"
+#include "pointerTo.h"
 
 class EggTable;
 class EggAttributes;
@@ -66,7 +66,7 @@ public:
   class EggInfo {
   public:
     PT(EggData) _egg;
-    typedef pvector<PT(EggNode)> Models;
+    typedef pvector< PT(EggNode) > Models;
     Models _models;
     int _first_model_index;
   };
@@ -95,7 +95,14 @@ private:
   // The _top_egg_nodes member is only used temporarily, when adding
   // each pre-existing egg file to the structure for the first time.
   typedef pvector<EggNode *> EggNodeList;
-  typedef pmap<EggNode *, EggNodeList> TopEggNodes;
+  class ModelDescription {
+  public:
+    INLINE ModelDescription();
+    EggNodeList _top_nodes;
+    EggObject *_root_node;
+  };
+
+  typedef pmap<EggNode *, ModelDescription> TopEggNodes;
   typedef pmap<string, TopEggNodes> TopEggNodesByName;
   TopEggNodesByName _top_egg_nodes;
 

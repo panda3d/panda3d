@@ -25,6 +25,7 @@
 #include "luse.h"
 
 #include "pvector.h"
+#include "vector_string.h"
 
 class EggCharacterData;
 class EggComponentData;
@@ -49,13 +50,35 @@ protected:
   virtual bool handle_args(Args &args);
 
 private:
+  static bool dispatch_vector_string_pair(const string &opt, const string &arg, void *var);
+
+  void determine_removed_components();
+  bool remove_joints();
+  EggJointData *find_best_parent(EggJointData *joint_data) const;
+
+  bool apply_user_reparents();
   void analyze_joints(EggJointData *joint_data);
   void analyze_sliders(EggCharacterData *char_data);
   void list_joints(EggJointData *joint_data, int indent_level);
+  void list_joints_p(EggJointData *joint_data);
   void list_scalars(EggCharacterData *char_data);
   void describe_component(EggComponentData *comp_data, int indent_level);
+  void do_reparent();
 
   bool _list_hierarchy;
+  bool _list_hierarchy_p;
+  bool _keep_all;
+
+  class StringPair {
+  public:
+    string _a;
+    string _b;
+  };
+  typedef pvector<StringPair> StringPairs;
+  StringPairs _reparent_joints;
+
+  vector_string _keep_components;
+  vector_string _expose_components;
 };
 
 #endif

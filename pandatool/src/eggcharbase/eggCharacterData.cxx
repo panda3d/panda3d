@@ -73,6 +73,117 @@ add_model(int model_index, EggNode *model_root) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterData::get_num_frames
+//       Access: Public
+//  Description: Returns the number of frames of animation of the
+//               indicated model.  This is more reliable than asking a
+//               particular joint or slider of the animation for its
+//               number of frames, since a particular joint may have
+//               only 1 frame (if it is unanimated), even though the
+//               overall animation has many frames.
+////////////////////////////////////////////////////////////////////
+int EggCharacterData::
+get_num_frames(int model_index) const {
+  int max_num_frames = 0;
+  Components::const_iterator ci;
+  for (ci = _components.begin(); ci != _components.end(); ++ci) {
+    EggComponentData *component = (*ci);
+    int num_frames = component->get_num_frames(model_index);
+    if (num_frames > 1) {
+      // We have a winner.  Assume all other components will be
+      // similar.
+      return num_frames;
+    }
+    max_num_frames = max(max_num_frames, num_frames);
+  }
+
+  // Every component had either 1 frame or 0 frames.  Return the
+  // maximum of these.
+  return max_num_frames;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterData::do_reparent
+//       Access: Public
+//  Description: Begins the process of restructuring the joint
+//               hierarchy according to the previous calls to
+//               reparent_to() on various joints.  This will reparent
+//               the joint hierachy in all models as requested, while
+//               adjusting the transforms as appropriate so that each
+//               joint retains the same net transform across all
+//               frames that it had before the operation.  Returns
+//               true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool EggCharacterData::
+do_reparent() {
+  typedef pset<EggJointData *> InvalidSet;
+  InvalidSet invalid_set;
+
+  // First, make sure the list of new_children is accurate.
+  Joints::const_iterator ji;
+  for (ji = _joints.begin(); ji != _joints.end(); ++ji) {
+    EggJointData *joint_data = (*ji);
+    joint_data->do_begin_reparent();
+  }
+  // We also need to clear the children on the root joint, but the
+  // root joint doesn't get any of the other operations (including
+  // finish_reparent) applied to it.
+  _root_joint->do_begin_reparent();
+
+  // Now compute the new transforms for the joints' new positions.
+  // This is done recursively through the new parent hierarchy, so we
+  // can take advantage of caching the net value for a particular
+  // frame.
+  Models::const_iterator mi;
+  for (mi = _models.begin(); mi != _models.end(); ++mi) {
+    int model_index = (*mi)._model_index;
+    int num_frames = get_num_frames(model_index);
+    for (int f = 0; f < num_frames; f++) {
+      // First, walk through all the joints and flush the computed net
+      // transforms from before.
+      for (ji = _joints.begin(); ji != _joints.end(); ++ji) {
+        EggJointData *joint_data = (*ji);
+        joint_data->do_begin_compute_reparent();
+      }
+      _root_joint->do_begin_compute_reparent();
+
+      // Now go back through and compute the reparented transforms,
+      // caching net transforms as necessary.
+      for (ji = _joints.begin(); ji != _joints.end(); ++ji) {
+        EggJointData *joint_data = (*ji);
+        if (!joint_data->do_compute_reparent(model_index, f)) {
+          // Oops, we got an invalid transform.
+          invalid_set.insert(joint_data);
+        }
+      }
+    }
+  }
+
+  // Now remove all of the old children and add in the new children.
+  for (ji = _joints.begin(); ji != _joints.end(); ++ji) {
+    EggJointData *joint_data = (*ji);
+    if (!joint_data->do_finish_reparent()) {
+      invalid_set.insert(joint_data);
+    }
+  }
+
+  InvalidSet::const_iterator si;
+  for (si = invalid_set.begin(); si != invalid_set.end(); ++si) {
+    EggJointData *joint_data = (*si);
+    // Don't bother reporting joints that no longer have a parent,
+    // since we don't care about joints that are now outside the
+    // hierarchy.
+    if (joint_data->get_parent() != (EggJointData *)NULL) {
+      nout << "Warning: reparenting " << joint_data->get_name()
+           << " to " << joint_data->get_parent()->get_name()
+           << " results in a skew transform.\n";
+    }
+  }
+
+  return invalid_set.empty();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterData::find_slider
 //       Access: Public
 //  Description: Returns the slider with the indicated name, or NULL

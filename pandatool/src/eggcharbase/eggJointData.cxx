@@ -39,6 +39,7 @@ EggJointData(EggCharacterCollection *collection,
   EggComponentData(collection, char_data)
 {
   _parent = (EggJointData *)NULL;
+  _new_parent = (EggJointData *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,7 +67,7 @@ find_joint(const string &name) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggJointData::get_num_frames
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Returns the number of frames of animation for this
 //               particular joint in the indicated model.
 ////////////////////////////////////////////////////////////////////
@@ -117,6 +118,26 @@ get_net_frame(int model_index, int n) const {
     mat = mat * _parent->get_net_frame(model_index, n);
   }
   return mat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::move_vertices_to
+//       Access: Public
+//  Description: Moves the vertices assigned to this joint into the
+//               indicated joint, without changing their weight
+//               assignments.
+////////////////////////////////////////////////////////////////////
+void EggJointData::
+move_vertices_to(EggJointData *new_owner) {
+  int num_models = get_num_models();
+  for (int model_index = 0; model_index < num_models; model_index++) {
+    if (has_model(model_index) && new_owner->has_model(model_index)) {
+      EggJointPointer *joint, *new_joint;
+      DCAST_INTO_V(joint, get_model(model_index));
+      DCAST_INTO_V(new_joint, new_owner->get_model(model_index));
+      joint->move_vertices_to(new_joint);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -186,6 +207,7 @@ optimize() {
 ////////////////////////////////////////////////////////////////////
 void EggJointData::
 add_back_pointer(int model_index, EggObject *egg_object) {
+  nassertv(egg_object != (EggObject *)NULL);
   if (egg_object->is_of_type(EggGroup::get_class_type())) {
     // It must be a <Joint>.
     EggJointNodePointer *joint = new EggJointNodePointer(egg_object);
@@ -225,4 +247,197 @@ write(ostream &out, int indent_level) const {
   }
 
   indent(out, indent_level) << "}\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::do_begin_reparent
+//       Access: Protected
+//  Description: Clears out the _children vector in preparation for
+//               refilling it from the _new_parent information.
+////////////////////////////////////////////////////////////////////
+void EggJointData::
+do_begin_reparent() {
+  _children.clear();
+
+  int num_models = get_num_models();
+  for (int model_index = 0; model_index < num_models; model_index++) {
+    if (has_model(model_index)) {
+      EggJointPointer *joint;
+      DCAST_INTO_V(joint, get_model(model_index));
+      joint->begin_rebuild();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::do_begin_compute_reparent
+//       Access: Protected
+//  Description: Eliminates any cached values before beginning a walk
+//               through all the joints for do_compute_reparent(), for
+//               a given model/frame.
+////////////////////////////////////////////////////////////////////
+void EggJointData::
+do_begin_compute_reparent() { 
+  _got_new_net_frame = false;
+  _got_new_net_frame_inv = false;
+  _computed_reparent = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::do_compute_reparent
+//       Access: Protected
+//  Description: Prepares the reparent operation by computing a new
+//               transform for each frame of each model, designed to
+//               keep the net transform the same when the joint is
+//               moved to its new parent.  Returns true on success,
+//               false on failure.
+////////////////////////////////////////////////////////////////////
+bool EggJointData::
+do_compute_reparent(int model_index, int n) {
+  if (_computed_reparent) {
+    // We've already done this joint.  This is possible because we
+    // have to recursively compute joints upwards, so we might visit
+    // the same joint more than once.
+    return _computed_ok;
+  }
+  _computed_reparent = true;
+
+  if (_parent == _new_parent) {
+    // Trivial (and most common) case: we are not moving the joint.
+    // No recomputation necessary.
+    _computed_ok = true;
+    return true;
+  }
+
+  EggBackPointer *back = get_model(model_index);
+  if (back == (EggBackPointer *)NULL) {
+    // This joint doesn't have any data to modify.
+    _computed_ok = true;
+    return true;
+  }
+
+  EggJointPointer *joint;
+  DCAST_INTO_R(joint, back, false);
+
+  LMatrix4d transform;
+  if (_parent == (EggJointData *)NULL) {
+    // We are moving from outside the joint hierarchy to within it.
+    transform = _new_parent->get_new_net_frame_inv(model_index, n);
+
+  } else if (_new_parent == (EggJointData *)NULL) {
+    // We are moving from within the hierarchy to outside it.
+    transform = _parent->get_new_net_frame(model_index, n);
+
+  } else {
+    // We are changing parents within the hierarchy.
+    transform = 
+      _parent->get_new_net_frame(model_index, n) *
+      _new_parent->get_new_net_frame_inv(model_index, n);
+  }
+
+  nassertr(n == joint->get_num_rebuild_frames(), false);
+
+  _computed_ok = joint->add_rebuild_frame(joint->get_frame(n) * transform);
+  return _computed_ok;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::do_finish_reparent
+//       Access: Protected
+//  Description: Performs the actual reparenting operation
+//               by removing all of the old children and replacing
+//               them with the set of new children.  Returns true on
+//               success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool EggJointData::
+do_finish_reparent() {
+  bool all_ok = true;
+
+  int num_models = get_num_models();
+  for (int model_index = 0; model_index < num_models; model_index++) {
+    EggJointPointer *parent_joint = NULL;
+    if (_new_parent != NULL && _new_parent->has_model(model_index)) {
+      DCAST_INTO_R(parent_joint, _new_parent->get_model(model_index), false);
+    }
+
+    if (has_model(model_index)) {
+      EggJointPointer *joint;
+      DCAST_INTO_R(joint, get_model(model_index), false);
+      joint->do_finish_reparent(parent_joint);
+      if (!joint->do_rebuild()) {
+        all_ok = false;
+      }
+    }
+  }
+
+  _parent = _new_parent;
+  if (_parent != (EggJointData *)NULL) {
+    _parent->_children.push_back(this);
+  }
+
+  return all_ok;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::get_new_net_frame
+//       Access: Private
+//  Description: Similar to get_net_frame(), but computed for the
+//               prospective new parentage of the node, before
+//               do_finish_reparent() is called.  This is generally
+//               useful only when called within do_compute_reparent().
+////////////////////////////////////////////////////////////////////
+const LMatrix4d &EggJointData::
+get_new_net_frame(int model_index, int n) {
+  if (!_got_new_net_frame) {
+    _new_net_frame = get_new_frame(model_index, n);
+    if (_new_parent != (EggJointData *)NULL) {
+      _new_net_frame = _new_net_frame * _new_parent->get_new_net_frame(model_index, n);
+    }
+    _got_new_net_frame = true;
+  }
+  return _new_net_frame;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::get_new_net_frame_inv
+//       Access: Private
+//  Description: Returns the inverse of get_new_net_frame().
+////////////////////////////////////////////////////////////////////
+const LMatrix4d &EggJointData::
+get_new_net_frame_inv(int model_index, int n) {
+  if (!_got_new_net_frame_inv) {
+    _new_net_frame_inv.invert_from(get_new_frame(model_index, n));
+    if (_new_parent != (EggJointData *)NULL) {
+      _new_net_frame_inv = _new_parent->get_new_net_frame_inv(model_index, n) * _new_net_frame_inv;
+    }
+    _got_new_net_frame_inv = true;
+  }
+  return _new_net_frame_inv;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::get_new_frame
+//       Access: Private
+//  Description: Returns the local transform matrix corresponding to
+//               this joint position in the nth frame in the indicated
+//               model, as it will be when do_finish_reparent() is
+//               called.
+////////////////////////////////////////////////////////////////////
+LMatrix4d EggJointData::
+get_new_frame(int model_index, int n) {
+  do_compute_reparent(model_index, n);
+
+  EggBackPointer *back = get_model(model_index);
+  if (back == (EggBackPointer *)NULL) {
+    return LMatrix4d::ident_mat();
+  }
+
+  EggJointPointer *joint;
+  DCAST_INTO_R(joint, back, LMatrix4d::ident_mat());
+
+  if (joint->get_num_rebuild_frames() > 0) {
+    return joint->get_rebuild_frame(n);
+  } else {
+    return joint->get_frame(n);
+  }
 }

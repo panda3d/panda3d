@@ -38,6 +38,9 @@ public:
   virtual LMatrix4d get_frame(int n) const;
   virtual void set_frame(int n, const LMatrix4d &mat);
 
+  virtual void do_finish_reparent(EggJointPointer *new_parent);
+  virtual void move_vertices_to(EggJointPointer *new_joint);
+
   virtual bool add_rebuild_frame(const LMatrix4d &mat);
   virtual bool do_rebuild();
 

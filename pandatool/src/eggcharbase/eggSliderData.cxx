@@ -42,7 +42,7 @@ EggSliderData(EggCharacterCollection *collection,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggSliderData::get_num_frames
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Returns the number of frames of animation for this
 //               particular slider in the indicated model.
 ////////////////////////////////////////////////////////////////////

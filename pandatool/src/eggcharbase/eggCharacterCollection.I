@@ -112,3 +112,13 @@ get_character_by_model_index(int model_index) const {
            (EggCharacterData *)NULL);
   return _characters_by_model_index[model_index];
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterCollection::ModelDescription::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE EggCharacterCollection::ModelDescription::
+ModelDescription() {
+  _root_node = (EggObject *)NULL;
+}

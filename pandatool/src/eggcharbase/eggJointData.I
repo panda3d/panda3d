@@ -47,3 +47,17 @@ get_child(int n) const {
   nassertr(n >= 0 && n < (int)_children.size(), (EggJointData *)NULL);
   return _children[n];
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::reparent_to
+//       Access: Public
+//  Description: Indicates an intention to change the parent of this
+//               joint to the indicated joint, or NULL to remove it
+//               from the hierarchy.  The joint is not reparented
+//               immediately, but rather all of the joints are
+//               reparented at once when do_reparent() is called.
+////////////////////////////////////////////////////////////////////
+INLINE void EggJointData::
+reparent_to(EggJointData *new_parent) {
+  _new_parent = new_parent;
+}

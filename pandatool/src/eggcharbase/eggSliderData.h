@@ -37,7 +37,7 @@ public:
   EggSliderData(EggCharacterCollection *collection,
                 EggCharacterData *char_data);
 
-  int get_num_frames(int model_index) const;
+  virtual int get_num_frames(int model_index) const;
   double get_frame(int model_index, int n) const;
 
   virtual void add_back_pointer(int model_index, EggObject *egg_object);
