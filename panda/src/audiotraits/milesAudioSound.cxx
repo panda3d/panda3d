@@ -203,7 +203,7 @@ play() {
     // Start playing:
     if (AIL_quick_play(_audio, _loop_count)) {
       panda_AIL_quick_set_finished_callback(_audio, this);
-      assert(status()==PLAYING);
+      // assert(status()==PLAYING);
       audio_debug("  started sound " << _file_name );
     } else {
       audio_debug("  sound " << _file_name<<" failed to start, err: " <<AIL_last_error());
