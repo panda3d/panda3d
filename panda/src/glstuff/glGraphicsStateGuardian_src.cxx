@@ -95,8 +95,9 @@ static void
 issue_texcoord_multi_gl(const Geom *geom, 
                         Geom::MultiTexCoordIterator &tciterator, 
                         GraphicsStateGuardianBase *gsgbase) {
-  CLP(GraphicsStateGuardian) *gsg;
-  DCAST_INTO_V(gsg, gsgbase);
+  // We avoid DCAST here because we don't really need it, and it's
+  // nice not to have to pay that overhead on each vertex.
+  CLP(GraphicsStateGuardian) *gsg = (CLP(GraphicsStateGuardian) *)gsgbase;
   for (int i = 0; i < tciterator._num_stages; i++) {
     const TexCoordf &texcoord = geom->get_next_multitexcoord(tciterator, i);
     int stage_index = tciterator._stage_index[i];
