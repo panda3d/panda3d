@@ -361,6 +361,7 @@ class LevelEditor(NodePath, PandaObject):
             # Actions in response to DIRECT operations
             ('selectedNodePath', self.selectedNodePathHook),
             ('deselectedNodePath', self.deselectedNodePathHook),
+            ('preRemoveNodePath', self.removeNodePathHook),
             ('manipulateObjectCleanup', self.updateSelectedPose),
             
             # Actions in response to Level Editor Panel operations
@@ -665,6 +666,19 @@ class LevelEditor(NodePath, PandaObject):
             direct.deselect(nodePath)
             # Now you can get rid of the node path
             nodePath.removeNode()
+
+    def removeNodePathHook(self, nodePath):
+        if nodePath:
+            dnaNode = self.findDNANode(nodePath)
+            # Does the node path correspond to a DNA Object
+            if dnaNode:
+                # Get DNANode's parent
+                parentDNANode = dnaNode.getParent()
+                if parentDNANode:
+                    # Remove DNANode from its parent
+                    parentDNANode.remove(dnaNode)
+                # Delete DNA and associated Node Relations from DNA Store
+                DNASTORE.removeDNAGroup(dnaNode)
 
     def reparent(self, nodePath):
         """ Move node path (and its DNA) to active parent """
@@ -989,7 +1003,8 @@ class LevelEditor(NodePath, PandaObject):
 
     def createDoor(self):
         if not (self.getCurrent('door_texture')):
-            defaultDoorStyle = self.styleManager.attributeDictionary['door_texture'].getList()[0]
+            doorStyles = self.styleManager.attributeDictionary['door_texture'].getList()[:-1]
+            defaultDoorStyle = doorStyles[randint(0, len(doorStyles) - 1)]
             self.setCurrent('door_texture', defaultDoorStyle)
         newDNADoor = DNADoor('door')
         newDNADoor.setCode(self.getCurrent('door_texture'))
