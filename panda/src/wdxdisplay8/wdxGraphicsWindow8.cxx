@@ -2353,20 +2353,19 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
                         dwRenderWidth=MemRes[i].scrnX;
                         dwRenderHeight=MemRes[i].scrnY;
 
-                        wdxdisplay_cat.info() << "pick_best_screenres: picked " << dwRenderWidth << "x" << dwRenderHeight << " based on " << _dxgsg->scrn.MaxAvailVidMem << " bytes avail\n";
+                        wdxdisplay_cat.info() << "pick_best_screenres: trying " << dwRenderWidth << "x" << dwRenderHeight << " based on " << _dxgsg->scrn.MaxAvailVidMem << " bytes avail\n";
 
                         search_for_valid_displaymode(dwRenderWidth,dwRenderHeight,bNeedZBuffer,bWantStencil,
                                          &_dxgsg->scrn.SupportedScreenDepthsMask,
                                          &bCouldntFindValidZBuf,
                                          &pixFmt);
 
-
                         // note I'm not saving refresh rate, will just use adapter default at given res for now
 
                         if(pixFmt!=D3DFMT_UNKNOWN)
                            break;
 
-                        wdxdisplay_cat.debug() << "skipping scrnres; "
+                        wdxdisplay_cat.info() << "skipping scrnres; "
                                 << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
                                 << " at " << dwRenderWidth << "x" << dwRenderHeight << " for device #" << _dxgsg->scrn.CardIDNum << endl;
                     }
