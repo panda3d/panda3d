@@ -243,6 +243,42 @@ max_flt_version() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FltHeader::check_version
+//       Access: Public
+//  Description: Verifies that the version number read from the header
+//               is an understand version number, and prints a warning
+//               to the user if this is not so--the reading may or may
+//               not succeed.  Returns true if the version number is
+//               acceptable (and no warning is printed), or false if
+//               it is questionable (and a warning is printed).
+////////////////////////////////////////////////////////////////////
+bool FltHeader::
+check_version() const {
+  double version = get_flt_version();
+
+  if (version < min_flt_version()) {
+    nout << "Warning!  The version number of this file appears to be "
+	 << version << ", which is older than " << min_flt_version()
+	 << ", the oldest OpenFlight version understood by this program.  "
+      "It is unlikely that this program will be able to read the file "
+      "correctly.\n";
+    return false;
+  }
+  
+  if (version > max_flt_version()) {
+    nout << "Warning!  The version number of this file appears to be "
+	 << version << ", which is newer than " << max_flt_version()
+	 << ", the newest OpenFlight version understood by this program.  "
+      "Chances are good that the program will still be able to read it "
+      "correctly, but any features in the file that are specific to "
+      "the latest version of OpenFlight will not be understood.\n";
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FltHeader::has_instance
 //       Access: Public
 //  Description: Returns true if a instance subtree with the given
@@ -1111,7 +1147,7 @@ extract_record(FltRecordReader &reader) {
   // Undocumented additional padding.
   iterator.skip_bytes(4);
 
-  nassertr(iterator.get_remaining_size() == 0, true);
+  //  nassertr(iterator.get_remaining_size() == 0, true);
   return true;
 }
 

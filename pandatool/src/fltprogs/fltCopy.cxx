@@ -108,6 +108,8 @@ copy_flt_file(const Filename &source, const Filename &dest,
     return false;
   }
 
+  header->check_version();
+
   // Now scan the flt file for nested references.
   Refs refs;
   Textures textures;

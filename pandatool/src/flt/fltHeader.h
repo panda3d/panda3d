@@ -125,6 +125,7 @@ public:
   double get_flt_version() const;
   static double min_flt_version();
   static double max_flt_version();
+  bool check_version() const;
 
 
   // Accessors into the instance pool.

@@ -43,9 +43,17 @@ handle_args(ProgramBase::Args &args) {
   // Any separate egg files that are listed on the command line will
   // get implicitly loaded up into one big egg file.
 
+  DSearchPath local_path(".");
+
   Args::const_iterator ai;
   for (ai = args.begin(); ai != args.end(); ++ai) {
-    if (!_data.read(*ai)) {
+    Filename filename = *ai;
+    // First, we always try to resolve a filename from the current
+    // directory.  This means a local filename will always be found
+    // before the model path is searched.
+    filename.resolve_filename(local_path);
+
+    if (!_data.read(filename)) {
       // Rather than returning false, we simply exit here, so the
       // ProgramBase won't try to tell the user how to run the program
       // just because we got a bad egg file.

@@ -100,7 +100,15 @@ append_command_comment(EggData &data) {
 EggData *EggMultiBase::
 read_egg(const Filename &filename) {
   EggData *data = new EggData;
-  if (!data->read(filename)) {
+
+  // First, we always try to resolve a filename from the current
+  // directory.  This means a local filename will always be found
+  // before the model path is searched.
+  Filename local_filename = filename;
+  DSearchPath local_path(".");
+  local_filename.resolve_filename(local_path);
+
+  if (!data->read(local_filename)) {
     // Failure reading.
     delete data;
     return (EggData *)NULL;

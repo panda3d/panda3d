@@ -49,6 +49,8 @@ main(int argc, char *argv[]) {
 
   FltError result = header->read_flt(filename);
   cerr << "Read result is " << result << "\n\n";
+  cerr << "Version is " << header->get_flt_version() << "\n";
+  header->check_version();
 
   if (result == FE_ok) {
     //header->write(cerr);
