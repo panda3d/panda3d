@@ -40,15 +40,20 @@ PUBLISHED:
   INLINE void set_offset(float offset);
   INLINE float get_offset() const;
 
+  INLINE void set_reach(float reach);
+  INLINE float get_reach() const;
+
   INLINE void set_max_velocity(float max_vel);
   INLINE float get_max_velocity() const;
 
 protected:
+  float set_highest_collision(const NodePath &target_node_path, const NodePath &from_node_path, const Entries &entries);
   virtual bool handle_entries();
   virtual void apply_linear_force(ColliderDef &def, const LVector3f &force);
 
 private:
   float _offset;
+  float _reach;
   float _max_velocity;
 
 

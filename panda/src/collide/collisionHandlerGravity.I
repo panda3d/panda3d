@@ -42,6 +42,28 @@ get_offset() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerGravity::set_reach
+//       Access: Public
+//  Description: Sets the reach to add to (or subtract from)
+//               the highest collision point
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionHandlerGravity::
+set_reach(float reach) {
+  _reach = reach;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerGravity::get_reach
+//       Access: Public
+//  Description: Returns the reach to add to (or subtract from)
+//               the highest collision point
+////////////////////////////////////////////////////////////////////
+INLINE float CollisionHandlerGravity::
+get_reach() const {
+  return _reach;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerGravity::get_airborne_height
 //       Access: Public
 //  Description: Return the height of the object from the ground.

@@ -33,6 +33,7 @@ TypeHandle CollisionHandlerFloor::_type_handle;
 CollisionHandlerFloor::
 CollisionHandlerFloor() {
   _offset = 0.0f;
+  _reach = 1.0f;
   _max_velocity = 0.0f;
 }
 
@@ -43,6 +44,88 @@ CollisionHandlerFloor() {
 ////////////////////////////////////////////////////////////////////
 CollisionHandlerFloor::
 ~CollisionHandlerFloor() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerGravity::set_highest_collision
+//       Access: Protected
+//  Description: 
+//               
+//               
+//
+//               
+//               
+//               
+////////////////////////////////////////////////////////////////////
+float CollisionHandlerFloor::
+set_highest_collision(const NodePath &target_node_path, const NodePath &from_node_path, const Entries &entries) {
+  // Get the maximum height for all collisions with this node.
+  // This is really the distance to-the-ground, so it will
+  // be negative when the avatar is above the ground.
+  // Larger values (less negative) are higher elevation (assuming
+  // the avatar is right-side-up (or the ray is plumb)).
+  bool got_max = false;
+  bool got_min = false;
+  float max_height = 0.0f;
+  float min_height = 0.0f;
+  CollisionEntry *highest = NULL;
+  CollisionEntry *lowest = NULL;
+
+  Entries::const_iterator ei;
+  for (ei = entries.begin(); ei != entries.end(); ++ei) {
+    CollisionEntry *entry = (*ei);
+    nassertr(entry != (CollisionEntry *)NULL, 0.0f);
+    nassertr(from_node_path == entry->get_from_node_path(), 0.0f);
+
+    if (entry->has_surface_point()) {
+      LPoint3f point = entry->get_surface_point(target_node_path);
+      if (collide_cat.is_debug()) {
+        collide_cat.debug()
+          << "Intersection point detected at " << point << "\n";
+      }
+
+      float height = point[2];
+      if (height < _offset + _reach &&
+         (!got_max || height > max_height)) {
+        got_max = true;
+        max_height = height;
+        highest = entry;
+      }
+      if (!got_min || height < min_height) {
+        got_min = true;
+        min_height = height;
+        lowest = entry;
+      }
+    }
+  }
+  if (!got_max && got_min) {
+    // We've fallen through the world, but we're also under some walkable
+    // geometry.
+    // Move us up to the lowest surface:
+    got_max = true;
+    max_height = min_height;
+    highest = lowest;
+  }
+  //#*#_has_contact = got_max;
+
+  #if 0
+    cout<<"\ncolliding with:\n";
+    for (Colliding::const_iterator i = _current_colliding.begin(); i != _current_colliding.end(); ++i) {
+      (**i).write(cout, 2);
+    }
+    cout<<"\nhighest:\n";
+    highest->write(cout, 2);
+    cout<<endl;
+  #endif
+  #if 1
+  // We only collide with things we are impacting with.
+  // Remove the collisions:
+  _current_colliding.clear();
+  // Add only the one that we're impacting with:
+  add_entry(highest);
+  #endif
+  
+  return max_height;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -83,6 +166,7 @@ handle_entries() {
     } else {
       ColliderDef &def = (*ci).second;
       {
+        #if 0
         // Get the maximum height for all collisions with this node.
         bool got_max = false;
         float max_height = 0.0f;
@@ -116,6 +200,12 @@ handle_entries() {
 
         // Now set our height accordingly.
         float adjust = max_height + _offset;
+        #else
+        float max_height = set_highest_collision(def._target, from_node_path, entries);
+
+        // Now set our height accordingly.
+        float adjust = max_height + _offset;        
+        #endif
         if (!IS_THRESHOLD_ZERO(adjust, 0.001)) {
           if (collide_cat.is_debug()) {
             collide_cat.debug()

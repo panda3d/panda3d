@@ -40,6 +40,9 @@ PUBLISHED:
   INLINE void set_offset(float offset);
   INLINE float get_offset() const;
 
+  INLINE void set_reach(float reach);
+  INLINE float get_reach() const;
+
   INLINE float get_airborne_height() const;
   INLINE bool is_on_ground() const;
   INLINE float get_impact_velocity() const;
@@ -61,6 +64,7 @@ protected:
 
 private:
   float _offset;
+  float _reach;
   float _airborne_height;
   float _impact_velocity;
   float _gravity;

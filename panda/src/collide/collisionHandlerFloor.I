@@ -42,6 +42,28 @@ get_offset() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerFloor::set_reach
+//       Access: Public
+//  Description: Sets the reach to add to (or subtract from)
+//               the highest collision point
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionHandlerFloor::
+set_reach(float reach) {
+  _reach = reach;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerFloor::get_reach
+//       Access: Public
+//  Description: Returns the reach to add to (or subtract from)
+//               the highest collision point
+////////////////////////////////////////////////////////////////////
+INLINE float CollisionHandlerFloor::
+get_reach() const {
+  return _reach;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerFloor::set_max_velocity
 //       Access: Public
 //  Description: Sets the maximum speed at which the object will be
