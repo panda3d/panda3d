@@ -4,7 +4,7 @@
     progbase
   #define OTHER_LIBS \
     parametrics:c collide:c chan:c char:c \
-    loader:c egg:c pnmimagetypes:c \
+    loader:c egg:c pnmimagetypes:c pgraph:c gobj:c \
     putil:c linmath:c express:c panda:m pandaexpress:m \
     interrogatedb:c dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
   #define UNIX_SYS_LIBS \
@@ -23,8 +23,8 @@
     eggbase progbase
   #define OTHER_LIBS \
     dgraph:c \
-    loader:c egg2pg:c builder:c egg:c pnmimagetypes:c gobj:c \
-    chan:c putil:c linmath:c \
+    loader:c egg2pg:c builder:c egg:c pnmimagetypes:c \
+    pgraph:c gobj:c chan:c putil:c linmath:c \
     express:c pandaegg:m panda:m pandaexpress:m \
     interrogatedb:c dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
   #define UNIX_SYS_LIBS \
@@ -43,7 +43,7 @@
     converter eggbase progbase
   #define OTHER_LIBS \
     egg:c pandaegg:m \
-    parametrics:c collide:c chan:c char:c \
+    pgraph:c gobj:c parametrics:c collide:c chan:c char:c \
     loader:c gobj:c pnmimagetypes:c pstatclient:c \
     putil:c linmath:c express:c panda:m pandaexpress:m \
     interrogatedb:c dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
