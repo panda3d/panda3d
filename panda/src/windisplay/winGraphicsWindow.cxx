@@ -1071,10 +1071,10 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 #endif
             
             if (ImmSetCompositionWindow(hIMC, &comf))
-              windisplay_cat.debug() << "comf success\n";
+              windisplay_cat.debug() << "set composition form: success\n";
             for (int i=0; i<3; ++i) {
               if (ImmSetCandidateWindow(hIMC, &canf))
-                windisplay_cat.debug() << "canf success\n";
+                windisplay_cat.debug() << "set candidate form: success\n";
               canf.dwIndex++;
             }
           }
@@ -1125,8 +1125,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         break;
         
       case WM_IME_COMPOSITION:
-        if (lparam & GCS_RESULTSTR) {
-
+        if (ime_aware) {
           // If the ime window is not marked as active at this point, we
           // must be in the process of closing it down (in close_ime), and
           // we don't want to send the current composition string in that
@@ -1139,6 +1138,11 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             static const int max_ime_result = 128;
             static char ime_result[max_ime_result];
             
+            DWORD result_size = 0;
+            const int max_t = 256;
+            wchar_t can_t[max_t];
+            size_t cursor_pos, delta_start;
+            
             if (_ime_composition_w) {
               // Since ImmGetCompositionStringA() doesn't seem to work
               // for Win2000 (it always returns question mark
@@ -1146,95 +1150,87 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
               // on this OS.  This is actually the easier of the two
               // functions to use.
               
-              DWORD result_size =
-                ImmGetCompositionStringW(hIMC, GCS_RESULTSTR,
-                                         ime_result, max_ime_result);
+              if (lparam & GCS_RESULTSTR) {
+                windisplay_cat.debug() << "GCS_RESULTSTR\n";
+                result_size = ImmGetCompositionStringW(hIMC, GCS_RESULTSTR,
+                                                       ime_result, max_ime_result);
               
-              // Add this string into the text buffer of the application.
+                // Add this string into the text buffer of the application.
               
-              // ImmGetCompositionStringW() returns a string, but it's
-              // filled in with wstring data: every two characters defines a
-              // 16-bit unicode char.  The docs aren't clear on the
-              // endianness of this.  I guess it's safe to assume all Win32
-              // machines are little-endian.
-              for (DWORD i = 0; i < result_size; i += 2) {
-                int result =
-                  ((int)(unsigned char)ime_result[i + 1] << 8) |
-                  (unsigned char)ime_result[i];
-                _input_devices[0].keystroke(result);
+                // ImmGetCompositionStringW() returns a string, but it's
+                // filled in with wstring data: every two characters defines a
+                // 16-bit unicode char.  The docs aren't clear on the
+                // endianness of this.  I guess it's safe to assume all Win32
+                // machines are little-endian.
+                for (DWORD i = 0; i < result_size; i += 2) {
+                  int result =
+                    ((int)(unsigned char)ime_result[i + 1] << 8) |
+                    (unsigned char)ime_result[i];
+                  _input_devices[0].keystroke(result);
+                }
+              }
+              if (lparam & GCS_COMPSTR) {
+                windisplay_cat.debug() << "GCS_COMPSTR\n";
+                /*
+                  result_size = ImmGetCompositionStringW(hIMC, GCS_COMPREADSTR, can_t, max_t);
+                  windisplay_cat.debug() << "got readstr of size " << result_size << endl;
+                */
+                
+                result_size = ImmGetCompositionStringW(hIMC, GCS_CURSORPOS, can_t, max_t);
+                cursor_pos = result_size&0xffff;
+                windisplay_cat.debug() << "got cursorpos at " << cursor_pos  << endl;
+                
+                result_size = ImmGetCompositionStringW(hIMC, GCS_DELTASTART, can_t, max_t);
+                delta_start = result_size&0xffff;
+                windisplay_cat.debug() << "got deltastart at " << delta_start << endl;
+                
+                /*
+                  result_size = ImmGetCompositionStringW(hIMC, GCS_COMPATTR, can_t, max_t);
+                  windisplay_cat.debug() << "got compatr of size " << result_size << endl;
+                  
+                  result_size = ImmGetCompositionStringW(hIMC, GCS_COMPREADSTR, can_t, max_t);
+                  windisplay_cat.debug() << "got compreadstr of size " << result_size << endl;
+                  
+                  result_size = ImmGetCompositionStringW(hIMC, GCS_COMPCLAUSE, can_t, max_t);
+                  windisplay_cat.debug() << "got compclause of size " << result_size << endl;
+                */
+                
+                result_size = ImmGetCompositionStringW(hIMC, GCS_COMPSTR, can_t, max_t);
+                windisplay_cat.debug() << "got compstr of size " << result_size << endl;
+                
+                can_t[result_size/sizeof(wchar_t)] = '\0';
+          
+                _input_devices[0].candidate(can_t, min(cursor_pos, delta_start), max(cursor_pos, delta_start), cursor_pos);
               }
             } else {
-              // On the other hand, ImmGetCompositionStringW() doesn't
-              // work on Win95 or Win98; for these OS's we must use
-              // ImmGetCompositionStringA().
-              DWORD result_size =
-                ImmGetCompositionStringA(hIMC, GCS_RESULTSTR,
-                                         ime_result, max_ime_result);
+              if (lparam & GCS_RESULTSTR) {
+                // On the other hand, ImmGetCompositionStringW() doesn't
+                // work on Win95 or Win98; for these OS's we must use
+                // ImmGetCompositionStringA().
+                result_size = ImmGetCompositionStringA(hIMC, GCS_RESULTSTR,
+                                                       ime_result, max_ime_result);
               
-              // ImmGetCompositionStringA() returns an encoded ANSI
-              // string, which we now have to map to wide-character
-              // Unicode.
-              static const int max_wide_result = 128;
-              static wchar_t wide_result[max_wide_result];
+                // ImmGetCompositionStringA() returns an encoded ANSI
+                // string, which we now have to map to wide-character
+                // Unicode.
+                static const int max_wide_result = 128;
+                static wchar_t wide_result[max_wide_result];
               
-              int wide_size =
-                MultiByteToWideChar(CP_ACP, 0,
-                                    ime_result, result_size,
-                                    wide_result, max_wide_result);
-              if (wide_size == 0) {
-                show_error_message();
-              }
-              for (int i = 0; i < wide_size; i++) {
-                _input_devices[0].keystroke(wide_result[i]);
+                int wide_size =
+                  MultiByteToWideChar(CP_ACP, 0,
+                                      ime_result, result_size,
+                                      wide_result, max_wide_result);
+                if (wide_size == 0) {
+                  show_error_message();
+                }
+                for (int i = 0; i < wide_size; i++) {
+                  _input_devices[0].keystroke(wide_result[i]);
+                }
               }
             }
           
             ImmReleaseContext(hwnd, hIMC);
           }
-          return 0;
-        }
-        //else if (0) {
-        else if (lparam & GCS_COMPSTR && ime_aware) {
-          HIMC hIMC = ImmGetContext(hwnd);
-          nassertr(hIMC != 0, 0);
-          
-          const int max_t = 256;
-          wchar_t can_t[max_t];
-          DWORD result_size = 0;
-          size_t cursor_pos, delta_start;
-
-          /*
-          result_size = ImmGetCompositionStringW(hIMC, GCS_COMPREADSTR, can_t, max_t);
-          windisplay_cat.debug() << "got readstr of size " << result_size << endl;
-          */
-
-          result_size = ImmGetCompositionStringW(hIMC, GCS_CURSORPOS, can_t, max_t);
-          cursor_pos = result_size&0xffff;
-          windisplay_cat.debug() << "got cursorpos at " << cursor_pos  << endl;
-
-          result_size = ImmGetCompositionStringW(hIMC, GCS_DELTASTART, can_t, max_t);
-          delta_start = result_size&0xffff;
-          windisplay_cat.debug() << "got deltastart at " << delta_start << endl;
-          
-          /*
-          result_size = ImmGetCompositionStringW(hIMC, GCS_COMPATTR, can_t, max_t);
-          windisplay_cat.debug() << "got compatr of size " << result_size << endl;
-
-          result_size = ImmGetCompositionStringW(hIMC, GCS_COMPREADSTR, can_t, max_t);
-          windisplay_cat.debug() << "got compreadstr of size " << result_size << endl;
-
-          result_size = ImmGetCompositionStringW(hIMC, GCS_COMPCLAUSE, can_t, max_t);
-          windisplay_cat.debug() << "got compclause of size " << result_size << endl;
-          */
-
-          result_size = ImmGetCompositionStringW(hIMC, GCS_COMPSTR, can_t, max_t);
-          windisplay_cat.debug() << "got compstr of size " << result_size << endl;
-
-          can_t[result_size/sizeof(wchar_t)] = '\0';
-          
-          _input_devices[0].candidate(can_t, min(cursor_pos, delta_start), max(cursor_pos, delta_start), cursor_pos);
-
-          ImmReleaseContext(hwnd, hIMC);
         }
         break;
         
