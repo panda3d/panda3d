@@ -2,6 +2,12 @@ from PandaObject import *
 from PieMenu import *
 from OnscreenText import *
 from whrandom import *
+from Tkinter import *
+from DirectGeometry import *
+import Pmw
+import Dial
+import Floater
+import VectorWidgets
 
 
 class LevelEditor(NodePath, PandaObject):
@@ -14,6 +20,9 @@ class LevelEditor(NodePath, PandaObject):
         self.direct = direct
 	# Make sure direct is running
 	self.direct.enable()
+        self.direct.widget.disableHandles(['x-ring', 'x-disc',
+                                           'y-ring', 'y-disc',
+                                           'z-post'])
 
 	# Create level editor dictionaries
 	# This dictionary stores information about new objects added
@@ -22,9 +31,6 @@ class LevelEditor(NodePath, PandaObject):
 	# This dictionary stores information about module hooks,
         # grouped by level
 	self.hooksDictionary = {}
-	# This dictionary stores information about clickBoxLists,
-        # grouped by level
-	self.clickBoxDictionary = {}
 	# This dictionary stores information about the various
         # pie menus in use
 	self.pieMenuDictionary = {}
@@ -35,11 +41,15 @@ class LevelEditor(NodePath, PandaObject):
 	self.attributeDictionary = {}
 	# This dictionary stores pleasing style combinations
 	self.styleDictionary = {}
+        # This dictionary stores pointers to the various maps
+        self.mapDictionary = {}
+        self.activeMap = None
 
 	# DNAStorage instance for storing level DNA info
 	self.dnaStore = DNAStorage()
-	self.dnaStore.loadDNAFile('dna/storage.dna',
-                                  getDefaultCoordinateSystem())
+	loadDNAFile(self.dnaStore, 'dna/storage.dna',
+                    getDefaultCoordinateSystem())
+        self.dnaOutputFile = 'toontown-working.dna'
 
 	# Top level DNA Data Object
 	self.levelObjectsDNA = DNAData('LevelObjects')
@@ -57,19 +67,39 @@ class LevelEditor(NodePath, PandaObject):
 	self.targetDNAObject = None
 	self.activeMenu = None
 
-	# Plane for intersection tests with wall
-	self.wallIntersectionPlane = Plane(Vec3.up(), Point3(0))
-
         # Get a handle to the grid
 	self.grid = self.direct.grid
         self.showGrid(0)
 
-	#self.levelMap = loader.loadModel('LevelEditor/level-map.egg')
         self.levelMap = hidden.attachNewNode(NamedNode('level-map'))
-	self.levelMap.reparentTo(self)
-	self.levelMap.getBottomArc().setTransition(TransparencyTransition(1))
-	self.levelMap.setColor(Vec4(1,1,1,.4))
-	self.levelMap.hide()
+
+	map = loader.loadModel('level_editor/toontown_central_layout')
+	map.getBottomArc().setTransition(TransparencyTransition(1))
+	map.setColor(Vec4(1,1,1,.4))
+        map.reparentTo(self.levelMap)
+	map.hide()
+        self.mapDictionary['toontownCentral'] = map
+
+	map = loader.loadModel('level_editor/donalds_dock_layout')
+	map.getBottomArc().setTransition(TransparencyTransition(1))
+	map.setColor(Vec4(1,1,1,.4))
+        map.reparentTo(self.levelMap)
+	map.hide()
+        self.mapDictionary['donaldsDock'] = map
+
+	map = loader.loadModel('level_editor/minnies_melody_land_layout')
+	map.getBottomArc().setTransition(TransparencyTransition(1))
+	map.setColor(Vec4(1,1,1,.4))
+        map.reparentTo(self.levelMap)
+	map.hide()
+        self.mapDictionary['minniesMelodyLand'] = map
+
+	map = loader.loadModel('level_editor/the_burrrgh_layout')
+	map.getBottomArc().setTransition(TransparencyTransition(1))
+	map.setColor(Vec4(1,1,1,.4))
+        map.reparentTo(self.levelMap)
+	map.hide()
+        self.mapDictionary['theBurrrgh'] = map
 
 	self.hitPt = Point3(0)
 	self.offset = Point3(0)
@@ -77,12 +107,10 @@ class LevelEditor(NodePath, PandaObject):
 	self.crankDir = Vec3(0)
 
 	self.hprSnap = 1
-	self.snapAngle = 90.0
+	self.snapAngle = 15.0
 	self.lastAngle = 0.0
 
-	# Create buttons and pie menus
-        # MRM
-	#self.initializeLevelEditorButtons()
+	# Create Level Editor Panel and pie menus
 	# Initialize styles
 	self.initializeStyleDictionary()
 	# Initialize pie Menus (this depends on the style dictionary)
@@ -102,8 +130,8 @@ class LevelEditor(NodePath, PandaObject):
 	# Retrieve lists of available attributes from DNAStorage object
 	# Cornices
 	attributeList = self.getCatalogCodesSuffix('cornice', '_ur')
-        # MRM: What does this do?
-	# attributeList addFirst: 'none'
+        # Make the first one a null texture
+        attributeList[:0] = [None]
 	self.attributeDictionary['corniceTextures'] = attributeList
 	self.attributeDictionary['corniceTexture'] = attributeList[1]
 	self.attributeDictionary['corniceOrienation'] = '_ur'
@@ -150,9 +178,6 @@ class LevelEditor(NodePath, PandaObject):
 
     def getCategorySet(self):
 	return self.categorySet
-
-    def getClickBoxDictionary(self):
-	return self.clickBoxDictionary
 
     def getCorniceColor(self):
 	return self.attributeDictionary['corniceColor']
@@ -226,7 +251,8 @@ class LevelEditor(NodePath, PandaObject):
     def printWallStyle(self):
         if self.selectedLevelObject:
             dnaObject = self.selectedLevelObject['DNA']
-            if dnaObject.getClassType().eq(DNAFlatBuilding.getClassType()):
+            objectClass = dnaObject.__class__.getClassType()
+            if objectClass.eq(DNAFlatBuilding.getClassType()):
                 self.printWallStyleFor(dnaObject)
                 
     def printWallStyleFor(self, DNAFlatBuilding):
@@ -240,7 +266,7 @@ class LevelEditor(NodePath, PandaObject):
             print 'wallTexture: ', self.getDNAString(wall)
             print 'wallColor: #(', wall.getColor(), ')'
             window = self.getWindow(wall,0)
-            if window & (window.getCount() > 0):
+            if window & (window.getWindowCount() > 0):
                 print 'windowTexture: ', self.getDNAString(window)
                 print 'windowColor: #(', window.getColor(), ')'
             else:
@@ -253,10 +279,10 @@ class LevelEditor(NodePath, PandaObject):
                 print'corniceTexture: None'
                 print'corniceColor: None'
 
-    def printWallStyleForBldgWall(self, DNAFlatBuilding,wallNum):
-        if (DNAFlatBuilding.getClassType().eq(DNAFlatBuilding.getClassType())):
-            wall = self.getWall(DNAFlatBuilding, wallNum)
-            cornice = self.getCornice(DNAFlatBuilding)
+    def printWallStyleForBldgWall(self, aDNAFlatBuilding, wallNum):
+        if (aDNAFlatBuilding.getClassType().eq(DNAFlatBuilding.getClassType())):
+            wall = self.getWall(aDNAFlatBuilding, wallNum)
+            cornice = self.getCornice(aDNAFlatBuilding)
             self.printWallStyleWith(wall,cornice)
 
     def getPropType(self):
@@ -272,10 +298,10 @@ class LevelEditor(NodePath, PandaObject):
 	return self.selectedLevelObject
 
     def getSnapAngle(self):
-	return self.snapAngle
+	return self.grid.getSnapAngle()
 
     def setSnapAngle(self, aFloat):
-	self.snapAngle = aFloat
+	self.grid.setSnapAngle(aFloat)
 
     def getWallColor(self):
 	return self.attributeDictionary['wallColor']
@@ -291,6 +317,9 @@ class LevelEditor(NodePath, PandaObject):
 
     def getWallTexture(self):
 	return self.attributeDictionary['wallTexture']
+
+    def setWallTexture(self, texture):
+        self.attributeDictionary['wallTexture'] = texture
 
     def getWallTextureDNA(self, dnaString):
 	self.attributeDictionary['wallTexture'] = dnaString
@@ -331,130 +360,15 @@ class LevelEditor(NodePath, PandaObject):
     def getWindowTextures(self):
 	return self.attributeDictionary['windowTextures']
 
-    def acceptArrowKeys(self):
-	# Accept arrow key events for swinging piece around
-	self.accept('left', self.keyboardXformNodePath, ['left'])
-	self.accept('right', self.keyboardXformNodePath, ['right'])
-	self.accept('up', self.keyboardXformNodePath, ['up'])
-	self.accept('down', self.keyboardXformNodePath, ['down'])
-
-    def keyboardXformNodePath(self,x):
-        pass
-
-    def activateLandmarkButtons(self):
-	# Switch menus to reveal street menu
-	self.mainMenuDisable()
-	self.categoryEnable('toon_landmark')
-
-    def activatePropButtons(self):
-	# Switch menus to reveal street menu
-	self.mainMenuDisable()
-	self.categoryEnable('prop')
-
-    def activateStreetModuleButtons(self):
-	# Switch menus to reveal street menu
-	self.mainMenuDisable()
-	self.categoryEnable('street')
-
-    def activateVizObjectsButtons(self):
-	# Switch menus to reveal viz region menu
-	#self.mainMenuDisable()
-	#self.clickBoxDictionary['vizRegionButtons'].enable()
-	self.accept('addVizRegion', self.addVizRegion)
-	self.accept('addCollisionSphere', self.addCollisionSphere)
-	self.grid.setGridSpacing(10.0)
-
-    def activateWallModuleButtons(self):
-	# Switch menus to reveal street menu
-	self.mainMenuDisable()
-	self.categoryEnable('wall')
-
-    def addHook(self, hook, function):
-	self.accept(hook, function, [hook])
-
-    def allMenuDisable(self):
-	self.mainMenuDisable()
-	self.gridMenuDisable()
-	self.subMenuDisable()
-	self.dnaMenuDisable()
-
-    def categoryDisable(self, categoryName):
-        clickBoxList = self.clickBoxDictionary.set(categoryName,None)
-        if clickBoxList:
-            clickBoxList.disable()
-
-        hooks = self.hooksDictionary.get(categoryName, None)
-        if hooks:
-            for hook in hooks:
-                self.ignore(hook)
-
-	# Do any category specific disabilizaton here
-        if categoryName == 'wall':
-            clickBoxList = self.clickBoxDictionary.get('wallWidths',None)
-            if clickBoxList:
-                clickBoxList.disable()
-                hooks = self.hooksDictionary.get('wallWidths', None)
-                if hooks:
-                    for hook in hooks:
-                        self.ignore(hook)
-
-	# Clear out space and insert hooks
-	self.ignore('space')
-	self.ignore('insert')
-
-    def categoryEnable(self,categoryName):
-	# First activate this category's main buttons
-        """
-        clickBoxList = self.clickBoxDictionary.get(categoryName,None)
-        if clickBoxList:
-            clickBoxList.enable()
-        """
-	# Now activate hooks and any supplemental actions
-        if categoryName == 'street':
-            # activate street module hooks
-            hooks = self.hooksDictionary.get(categoryName,None)
-            if hooks:
-                for hook in hooks:
-                    self.addHook(hook,self.addStreetModule)
-        elif categoryName == 'wall':
-            # Activate wall module hooks	
-            hooks = self.hooksDictionary.get(categoryName,None)
-            if hooks:
-                for hook in hooks:
-                    self.addHook(hook, self.addFlatBuilding)
-            """
-            # Also activate wall width buttons and hooks
-            clickBoxList = self.clickBoxDictionary.get('wallWidths', None)
-            if clickBoxList:
-                clickBoxList.enable()
-            """
-            hooks = self.hooksDictionary.get('wallWidths',None)
-            if hooks:
-                for hook in hooks:
-                    self.addHook(hook,self.wallWidthSym)
-        elif categoryName == 'toon_landmark':
-            # activate landmark hooks
-            hooks = self.hooksDictionary.get(categoryName,None)
-            if hooks:
-                for hook in hooks:
-                    self.addHook(hook,self.addLandmark)
-        elif categoryName == 'prop':
-            # activate prop hooks
-            hooks = self.hooksDictionary.get(categoryName,None)
-            if hooks:
-                for hook in hooks:
-                    self.addHook(hook,self.addProp)
-
     def destroy(self):
 	self.disable()
 	self.removeNode()
 
     def disable(self):
 	self.direct.deselectAll()
-	self.allMenuDisable()
+        self.reparentTo(hidden)
 	self.hide()
 	self.grid.ignore('insert')
-	self.ignore('mainMenuEnable')
 	self.ignore('preRemoveNodePath')
 	self.ignore('preSelectNodePath')
 	self.ignore('setGroupParent')
@@ -467,35 +381,25 @@ class LevelEditor(NodePath, PandaObject):
 	self.disableManipulation()
 
     def disableManipulation(self):
-	# Ignore arrow keys
-	self.ignoreArrowKeys()
-
 	# Disable handling of mouse events
-	self.ignore('handleMouse1')
-	self.ignore('handleMouse1Up')
 	self.ignore('handleMouse3')
 	self.ignore('handleMouse3Up')
 
-    def dnaMenuDisable(self):
-	# Disable DNA menu
-	self.clickBoxDictionary['groupButton'].disable()
-	self.ignore('createNewLevelGroup')
-	self.clickBoxDictionary['saveButton'].disable()
-	self.ignore('outputDNA:')
-	self.clickBoxDictionary['mapButton'].disable()
-	self.ignore('toggleMapViz')
-
-    def dnaMenuEnable(self):
-	# Enable DNA menu
-	self.clickBoxDictionary['groupButton'].enable()
-	self.accept('createNewLevelGroup', self.createNewLevelGroup)
-	self.clickBoxDictionary['saveButton'].enable()
-	self.accept('outputDNA', self.outputDNA)
-	self.clickBoxDictionary['mapButton'].enable()
-	self.accept('toggleMapViz', self.toggleMapViz)
+    def editToontownCentral(self):
+	self.levelMap.setPos(0.0,0.0,0.0)
+        self.showMap('toontownCentral')
+	self.useToontownCentralColors()
+	self.styleDictionary = (
+            self.attributeDictionary['toontownCentralStyleDictionary'])
+        self.pieMenuDictionary['styleMenu'] = (
+            self.pieMenuDictionary['toontownCentralStyleMenu'])
+	self.attributeDictionary['streetTexture'] = 'street_street_tex'
+	self.attributeDictionary['sidewalkTexture'] = 'street_sidewalk_tex'
+        self.dnaOutputFile = 'toontownCentral-working.dna'
 
     def editDonaldsDock(self):
-	self.levelMap.setPos(-900.0,-300.0,0.0)
+	self.levelMap.setPos(0.0,0.0,0.0)
+        self.showMap('donaldsDock')
 	self.useDonaldsDockColors()
 	self.styleDictionary = (
             self.attributeDictionary['donaldsDockStyleDictionary'])
@@ -504,24 +408,17 @@ class LevelEditor(NodePath, PandaObject):
 	self.attributeDictionary['streetTexture'] = 'street_street_dock_tex'
 	self.attributeDictionary['sidewalkTexture'] = (
             'street_sidewalk_dock_tex')
+        self.dnaOutputFile = 'donaldsDock-working.dna'
 
-    def editToontownCentral(self):
-	self.levelMap.setPos(0.0,0.0,0.0)
-	self.useToontownCentralColors()
-	self.styleDictionary = (
-            self.attributeDictionary['toontownCentralStyleDictionary'])
-        self.pieMenuDictionary['styleMenu'] = (
-            self.pieMenuDictionary['toontownCentralStyleMenu'])
-	self.attributeDictionary['streetTexture'] = 'street_street_tex'
-	self.attributeDictionary['sidewalkTexture'] = 'street_sidewalk_tex'
+    def showMap(self, mapName):
+        if self.activeMap:
+            self.activeMap.hide()
+        self.activeMap = self.mapDictionary[mapName]
+        self.activeMap.show()
 
     def enable(self):
-	#self.allMenuDisable()
-	#self.mainMenuEnable()
-	#self.gridMenuEnable()
-	#self.dnaMenuEnable()
+        self.reparentTo(render)
 	self.show()
-	self.accept('mainMenuEnable', self.mainMenuEnable)
 	self.accept('preRemoveNodePath', self.preRemoveNodePath)
 	self.accept('preSelectNodePath', self.preSelectNodePath)
 	self.accept('toggleMapViz', self.toggleMapViz)
@@ -530,6 +427,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.accept('reparentNodePath', self.reparentNodePath)
 	self.accept('createNewLevelGroup', self.createNewLevelGroup)
 	self.accept('setNodePathName', self.setNodePathName)
+        self.accept('manipulateObjectCleanup', self.updateSelectedPose)
 	self.accept('showAll', self.showAll)
 	self.accept('p',self.plantSelectedNodePath)
 	self.enableManipulation()
@@ -539,56 +437,9 @@ class LevelEditor(NodePath, PandaObject):
 	# Turn off camera control
 	base.disableMouse()
 
-	# Update arrow key events for swinging selected around
-        # using the keyboard
-	self.acceptArrowKeys()
-
-	# Handle mouse events for moving object around
-	self.accept('handleMouse1',self.levelHandleMouse1)
-	self.accept('handleMouse1Up',self.levelHandleMouse1Up)
+	# Handle mouse events for pie menus
 	self.accept('handleMouse3',self.levelHandleMouse3)
 	self.accept('handleMouse3Up',self.levelHandleMouse3Up)
-
-    def gridMenuDisable(self):
-	self.clickBoxDictionary['gridMenuButtons'].disable()
-	self.ignore('showGrid')
-	self.ignore('xyzSnap')
-	self.ignore('hprSnap')
-
-    def gridMenuEnable(self):
-	# Enable grid menu
-	self.clickBoxDictionary['gridMenuButtons'].enable()
-	self.accept('showGrid', self.showGrid)
-	self.accept('xyzSnap', self.xyzSnap)
-	self.accept('hprSnap', self.hprSnap)
-
-    def ignoreArrowKeys(self):
-	# Accept arrow key events for swinging piece around
-	self.ignore('left')
-	self.ignore('right')
-	self.ignore('up')
-	self.ignore('down')
-
-    def mainMenuDisable(self):
-	self.clickBoxDictionary['mainMenuButtons'].disable()
-	self.ignore('activateWallModuleButtons')
-	self.ignore('activateStreetModuleButtons')
-	self.ignore('activateLandmarkButtons')
-	self.ignore('activatePropButtons')
-
-    def mainMenuEnable(self):
-	# Make sure all submenus are hidden
-	self.subMenuDisable()
-	# Now enable main menu
-	self.clickBoxDictionary['mainMenuButtons'].enable
-	self.accept('activateWallModuleButtons', self.activateWallModuleButtons)
-	self.accept('activateStreetModuleButtons', self.activateStreetModuleButtons)
-	self.accept('activateLandmarkButtons', self.activateLandmarkButtons)
-	self.accept('activatePropButtons', self.activatePropButtons)
-
-    def subMenuDisable(self):
-        for category in self.categorySet:
-            self.categoryDisable(category)
 
     def useDonaldsDockColors(self):
 	self.attributeDictionary['wallColors'] = (
@@ -648,12 +499,6 @@ class LevelEditor(NodePath, PandaObject):
 	self.pieMenuDictionary['corniceColorMenu'] = (
             self.pieMenuDictionary['toontownCentralCorniceColors'])
 
-    def vizMenuDisable(self):
-	self.clickBoxDictionary['vizRegionButtons'].disable()
-	self.ignore('addVizRegion')
-	self.ignore('addCollisionSphere')
-	self.grid.setGridSpacing(5.0)
-
     def addCollisionSphere(self):
 	sphere = self.vizRegion.attachNewNode(NamedNode('vizSphere'))
 	instance = self.vizSphere.instanceTo(sphere)
@@ -681,15 +526,25 @@ class LevelEditor(NodePath, PandaObject):
 	self.levelObjects.showAllDescendants()
 	render.hideCollisionSolids()
 	aNodePath.hideSiblings()
-        
-    def levelHandleMouse1(self):
-        selectedNodePath = self.direct.selected.last
-        if selectedNodePath:
-            self.followMouseStart(selectedNodePath)
-            
-    def levelHandleMouse1Up(self):
-	self.followMouseStop()
 
+    def updateSelectedPose(self):
+	# Move grid to line up with object
+        for selectedNode in self.direct.selected:
+            if self.levelDictionary.has_key(selectedNode.id()):
+                # First snap to grid
+                pos = selectedNode.getPos(self.grid)
+                snapPos = self.grid.computeSnapPoint(pos)
+                selectedNode.setPos(self.grid, snapPos[0], snapPos[1], 0)
+                # Angle snap
+                self.lastAngle = self.grid.computeSnapAngle(
+                    selectedNode.getH(self.grid))
+                selectedNode.setH(self.grid, self.lastAngle)
+                # Update DNA
+                self.updateDNAPosHpr(selectedNode)
+                
+        # Position grid for placing next object
+        self.autoPositionGrid()
+                
     def levelHandleMouse3(self):
 	# If nothing selected, just return
         if not self.direct.selected.last:
@@ -701,13 +556,16 @@ class LevelEditor(NodePath, PandaObject):
 	# If not None, determine interaction type
         if self.selectedLevelObject:
             selectedObjectDNA = self.selectedLevelObject['DNA']
+            # Default target/menu
+            target = None
+            menuType = None
 
             # Interaction type depends on selected object's class
-            objClass = selectedObjectDNA.getClassType()
+            objClass = selectedObjectDNA.__class__.getClassType()
             if objClass.eq(DNAFlatBuilding.getClassType()):
                 # Where are we hitting the building?
-                hitPt = Point3(0)
-                if self.getWallIntersectionPoint(hitPt):
+                hitPt = self.getWallIntersectionPoint()
+                if hitPt:
                     xPt = hitPt[0]
                     zPt = hitPt[2]
                     # Which wall are we pointing at (if any)
@@ -715,7 +573,7 @@ class LevelEditor(NodePath, PandaObject):
                     # How wide is the selected wall?
                     wallWidth = selectedObjectDNA.getWidth()
                     # Menu mode depends on where we are pointing
-                    if (zPt > self.getWallHeights(selectedObjectDNA)[-1:]):
+                    if (zPt > self.getWallHeights(selectedObjectDNA)[-1:][0]):
                         menuMode = 'cornice'
                     else:
                         if (xPt < 0.0):
@@ -782,7 +640,7 @@ class LevelEditor(NodePath, PandaObject):
                 if self.direct.fControl:
                     menuType = 'propColor'
             # Now spawn apropriate menu task
-            if (target | (menuType == 'cornice')):
+            if ((target != None) | (menuType == 'cornice')):
                 self.spawnMenuTask(menuType, target)
 
     def levelHandleMouse3Up(self):
@@ -854,7 +712,7 @@ class LevelEditor(NodePath, PandaObject):
                 state = None
         elif menu == 'numWindows':
             self.activeMenu = self.pieMenuDictionary['numWindowsMenu']
-            state = self.getWindow(aDNAObject, 0).getCount()
+            state = self.getWindow(aDNAObject, 0).getWindowCount()
         elif menu == 'cornice':
             self.activeMenu = self.pieMenuDictionary['corniceMenu']
             if aDNAObject:
@@ -925,7 +783,7 @@ class LevelEditor(NodePath, PandaObject):
         if corniceColor:
             color = VBase4(corniceColor)
         style['corniceColor'] = color
-        dictionary['key'] = style
+        dictionary[key] = style
 
     def createColorMenu(self, menuName, colorArray):
         # Create the new one
@@ -960,7 +818,8 @@ class LevelEditor(NodePath, PandaObject):
             # Reposition it
             node.setXY(radius * math.cos(i * angle),
                        (radius *
-                        (self.direct.chan.width / self.direct.chan.height) *
+                        (self.direct.chan.width /
+                         float(self.direct.chan.height)) *
                         math.sin(i * angle)))
             
             # Add it to the wallColorMenu
@@ -1123,7 +982,8 @@ class LevelEditor(NodePath, PandaObject):
             path.setPos(0.75 * math.cos(i * angle),
 			0.0,
                         (0.75 *
-                         (self.direct.chan.width/self.direct.chan.height) *
+                         (self.direct.chan.width /
+                          float(self.direct.chan.height)) *
                          math.sin(i * angle)))
             path.setScale(0.5)
 
@@ -1152,7 +1012,7 @@ class LevelEditor(NodePath, PandaObject):
 			0.0,
 			((0.75 *
                           (self.direct.chan.width/
-                           self.direct.chan.height) *
+                           float(self.direct.chan.height)) *
                           math.sin(i * angle)) - 0.025))
             path.setScale(0.05)
 
@@ -1181,7 +1041,8 @@ class LevelEditor(NodePath, PandaObject):
             # Reposition it
             node.setXY(radius * math.cos(i * angle),
                        (radius *
-                        (self.direct.chan.width/self.direct.chan.height) *
+                        (self.direct.chan.width/
+                         float(self.direct.chan.height)) *
                         math.sin(i * angle)))
 
             # Add it to the numWindowsMenu
@@ -1238,7 +1099,8 @@ class LevelEditor(NodePath, PandaObject):
             # Reposition it
             node.setXY(radius * math.cos(i * angle),
                        (radius *
-                        (self.direct.chan.width/self.direct.chan.height) *
+                        (self.direct.chan.width/
+                         float(self.direct.chan.height)) *
                         math.sin(i * angle)))
 
             # Add it to the propTypeMenu
@@ -1268,7 +1130,8 @@ class LevelEditor(NodePath, PandaObject):
             # Reposition it
             node.setXY(radius * math.cos(i * angle),
                        (radius *
-                        (self.direct.chan.width/self.direct.chan.height) *
+                        (self.direct.chan.width/
+                         float(self.direct.chan.height)) *
                         math.sin(i * angle)))
 
             # Add it to the styleMenu
@@ -1298,7 +1161,8 @@ class LevelEditor(NodePath, PandaObject):
             # Reposition it
             node.setXY(radius * math.cos(i * angle),
                        (radius *
-                        (self.direct.chan.width/self.direct.chan.height) *
+                        (self.direct.chan.width/
+                         float(self.direct.chan.height)) *
                         math.sin(i * angle)))
 
             # Add it to the styleMenu
@@ -1348,9 +1212,10 @@ class LevelEditor(NodePath, PandaObject):
             path.setPos(0.75 * math.cos(i * angle) - 0.15,
 			0.0,
 			(0.75 *
-                         (self.direct.chan.width/self.direct.chan.height) *
+                         (self.direct.chan.width/
+                          float(self.direct.chan.height)) *
                          math.sin(i * angle) - 0.15))
-            path.setScale(0.3)
+            path.setScale(0.25)
 
 	# Scale the whole shebang down by 0.5
 	newWallMenu.setScale(0.5)
@@ -1358,8 +1223,9 @@ class LevelEditor(NodePath, PandaObject):
 
     def createWallWidthMenu(self):
 	numberNodes = []
-        for i in range(5):
-            node = OnscreenText(`(i * 5)`,0,0)
+        widths = [5, 10, 15, 15.6, 20, 20.7, 25]
+        for width in widths:
+            node = OnscreenText(`width`,0,0)
             numberNodes.append(node)
         numItems = len(numberNodes)
 
@@ -1375,7 +1241,8 @@ class LevelEditor(NodePath, PandaObject):
             # Reposition it
             node.setXY(radius * math.cos(i * angle),
                        (radius *
-                        (self.direct.chan.width/self.direct.chan.height) *
+                        (self.direct.chan.width/
+                         float(self.direct.chan.height)) *
                         math.sin(i * angle)))
 
             # Add it to the wallWidthMenu
@@ -1405,7 +1272,8 @@ class LevelEditor(NodePath, PandaObject):
             path.setPos(0.75 * math.cos(i * angle) - 0.05,
 			0.0,
 			(0.75 *
-                         (self.direct.chan.width/self.direct.chan.height) *
+                         (self.direct.chan.width/
+                          float(self.direct.chan.height)) *
                          math.sin(i * angle) - 0.05))
             path.setScale(0.1)
 
@@ -1419,205 +1287,88 @@ class LevelEditor(NodePath, PandaObject):
 	styleCount = 0
 
         styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall_bricks_ur',
-                      Vec4(0.627, 0.470,0.235,1.0),
-                      'window_sm_shuttered_ur',
-                      Vec4(1.0, 0.501, 0.376, 1.0),
-                      'cornice_stone_ur',
-                      Vec4(0.760, 0.568, 0.286, 1.0))
-
-        styleCount = styleCount + 1
         self.addStyle(dictionary, styleCount,
-                      'wall_md_board_ur',
-                      Vec4(0.713,0.494,0.345,1.0 ),
-                      'window_porthole_ur',
-                      Vec4(1.0, 0.501, 0.376, 1.0),
-                      'cornice_shingles_ur',
-                      Vec4(0.572, 0.384, 0.337, 1.0))
-
-        styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall_md_board_ur',
-                      Vec4(0.925,0.152,0.152,1.0 ),
-                      'window_sm_round_ur',
-                      Vec4(0.643, 0.933, 0.454, 1.0),
-                      None,
-                      None)
-
-        styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall_md_board_ur',
-                      Vec4(0.925, 0.152, 0.152, 1.0 ),
-                      'window_porthole_ur',
-                      Vec4(0.0, 0.611, 0.364, 1.0),
-                      'cornice_shingles_ur',
-                      Vec4(0.760, 0.568, 0.286, 1.0))
-
-        styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall_md_board_ur',
-                      Vec4(0.713,0.494,0.345,1.0),
+                      'wall_md_blank_ur',
+                      Vec4(0.417323, 0.15711, 0.15711, 1.0),
                       'window_sm_square_ur',
-                      Vec4(0.823, 0.823, 0.400, 1.0 ),
+                      Vec4(0.874016, 0.654655, 0.329041, 1.0),
+                      'cornice_marble_ur',
+                      Vec4(0.76378, 0.572086, 0.287541, 1.0))
+        
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_sm_wood_ur',
+                      Vec4(0.874016, 0.610097, 0.610097, 1.0),
+                      'window_sm_shuttered_ur',
+                      Vec4(0.874016, 0.548402, 0.329041, 1.0),
                       None,
                       None)
 
         styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall_lg_rock_ur',
-                      Vec4(0.752, 0.450, 0.447, 1.0),
-                      'window_sm_round_ur',
-                      Vec4(0.823, 0.823, 0.400, 1.0),
-                      'cornice_brick_ur',
-                      Vec4(0.760, 0.568, 0.286, 1.0))
-
-        styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall_md_red_ur',
-                      Vec4(0.415, 0.933, 0.454, 1.0 ),
-                      'cornice_marble_ur',
-                      Vec4(0.643, 0.933, 0.454, 1.0),
-                      'cornice_marble_ur',
-                      Vec4(0.643, 0.933, 0.454, 1.0))
-
-        styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
+        self.addStyle(dictionary, styleCount,
                       'wall_sm_wood_ur',
-                      Vec4(0.713, 0.494, 0.345, 1.0 ),
-                      'window_sm_shuttered_ur',
-                      Vec4(0.878,  0.427,  0.427,  1.0 ),
+                      Vec4(0.913386, 0.540868, 0.540868, 1.0),
+                      'window_porthole_ur',
+                      Vec4(0.0778138, 0.472441, 0.314961, 1.0),
+                      'cornice_horizontal_ur',
+                      Vec4(1.0, 0.501961, 0.376471, 1.0))
+        
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_sm_wood_ur',
+                      Vec4(0.913386, 0.540868, 0.540868, 1.0),
+                      'window_porthole_ur',
+                      Vec4(0.0778138, 0.472441, 0.314961, 1.0),
                       'cornice_shingles_ur',
-                      Vec4(0.760,  0.568,  0.286,  1.0 ))
+                      Vec4(0.732283, 0.511163, 0.511163, 1.0))
 
         styleCount = styleCount + 1
         self.addStyle(dictionary, styleCount,
-                      'wall_bricks_ur',
-                      Vec4(0.168, 0.454, 0.227, 1.0 ),
+                      'wall_md_blank_ur',
+                      Vec4(0.384314, 0.305635, 0.187618, 1.0),
                       'window_sm_round_ur',
-                      Vec4(0.643,  0.933,  0.454,  1.0),
-                      'cornice_horizontal_ur',
-                      Vec4(0.752,  0.447,  0.447,  1.0 ))
-
-        styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall_sm_wood_ur',
-                      Vec4(0.713, 0.494, 0.345, 1.0 ),
-                      'window_porthole_ur',
-                      Vec4(1.0, 0.501,  0.376,  1.0 ),
-                      'cornice_shingles_ur',
-                      Vec4(0.75, 0.75, 0.75, 1.0 ))
-
-        styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall_md_red_ur',
-                      Vec4(0.415, 0.247, 0.247, 1.0 ),
-                      'window_sm_round_ur',
-                      Vec4(0.643,  0.933,  0.454,  1.0 ),
+                      Vec4(0.779528, 0.489115, 0.293469, 1.0),
                       'cornice_dental_ur',
-                      Vec4(0.572,  0.384,  0.337,  1.0 ))
-
+                      Vec4(0.574803, 0.38771, 0.340374, 1.0))
+        
         styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount ,
+        self.addStyle(dictionary, styleCount,
+                      'wall_bricks_dr',
+                      Vec4(0.629921, 0.471823, 0.237147, 1.0),
+                      'window_sm_shuttered_ur',
+                      Vec4(1.0, 0.627451, 0.376471, 1.0),
+                      None,
+                      None)
+        
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
                       'wall_md_board_ur',
-                      Vec4(0.925, 0.152, 0.152, 1.0 ),
+                      Vec4(0.929134, 0.153034, 0.153034, 1.0),
                       'window_porthole_ur',
-                      Vec4(0.0, 0.611,  0.364,  1.0 ),
+                      Vec4(0.0, 0.532747, 0.317894, 1.0),
                       'cornice_shingles_ur',
-                      Vec4(0.941,  0.713,  0.658,  1.0 ))
+                      Vec4(0.944882, 0.715146, 0.659565, 1.0))
 
         styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall_lg_brick_dr',
-                      Vec4(0.168, 0.454, 0.227, 1.0 ),
+        self.addStyle(dictionary, styleCount,
+                      'wall_lg_brick_ur',
+                      Vec4(0.166003, 0.440945, 0.276671, 1.0),
                       'window_md_curtains_ur',
-                      Vec4(0.75, 0.75, 0.75, 1.0 ),
-                      'cornice_dental_ur',
-                      Vec4(0.5, 0.5, 0.5, 1.0 ))
+                      Vec4(0.17258, 0.637795, 0.450208, 1.0),
+                      None,
+                      None)
+
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_md_board_ur',
+                      Vec4(0.929134, 0.153034, 0.153034, 1.0),
+                      'window_porthole_ur',
+                      Vec4(0.0, 0.532747, 0.317894, 1.0),
+                      None,
+                      None)
 
 	# Store this dictionary in the self.attributeDictionary
 	self.attributeDictionary['donaldsDockStyleDictionary'] = dictionary
-
-    def initializeLandmarkButtons(self):
-	# Initialize Hooks and Buttons for the wall type buttons
-	landmarkTypes = self.getCatalogCodes('toon_landmark')
-        methodArray = []
-        for landmark in landmarkTypes:
-            methodArray.append(
-                [landmark[15:len(landmark)], landmark])
-
-	hooksSet = self.hooksDictionary.get('toon_landmark',[])
-        for pair in methodArray:
-            hooksSet.append(pair[1])
-	self.hooksDictionary['toon_landmark'] = hooksSet
-
-	# Create wall module buttons
-	# First get rid of any existing buttons
-	buttons = self.clickBoxDictionary.get('toon_landmark', None)
-        if buttons:
-            buttons.disable()
-	buttons = ClickBoxList(methodArray, 0.95, 0.90)
-	buttons.addButtonWithText('back',self.mainMenuEnable)
-	buttons.alignRight()
-	buttons.setScale(0.06)
-	buttons.setColor(0.6, 0.6, 0.6, 0.8)
-	self.clickBoxDictionary['landmarkSym'] = buttons
-
-	self.categorySet.append(landmarkSym)
-
-    def initializeLevelEditorButtons(self):
-	newClickBoxObject = ToggleBoxList(
-            [('Show Grid', self.showGrid, 0)
-             ('XYZ Snap', self.xyzSnap, 1),
-             ('HPR Snap', self.hprSnap, 1)],
-            -0.95, 0.90)
-	newClickBoxObject.alignLeft()
-	newClickBoxObject.setScale(0.06)
-	newClickBoxObject.makeAllWideAsWidest()
-	newClickBoxObject.enable()
-	self.clickBoxDictionary['gridMenuButtons'] = newClickBoxObject
-
-	newClickBoxObject = ClickBoxList(
-            [('Street modules', self.activateStreetModuleButtons),
-             ('Toon Walls', self.activateWallModuleButtons),
-             ('Landmark bldgs', self.activateLandmarkButtons),
-             ('Props', self.activatePropButtons)],
-            0.95, 0.90)
-	newClickBoxObject.setColor(0.5, 0.5, 0.5, 0.5)
-	newClickBoxObject.setScale(0.06)
-	newClickBoxObject.alignRight()
-	self.clickBoxDictionary['mainMenuButtons'] = newClickBoxObject
-
-	newClickBoxObject = ClickBox(
-            'New Group', 0.3, 0.3, -0.95, -0.9,
-            self.createNewLevelGroup, 0)
-	newClickBoxObject.nodePath().node().setCardColor(Point4(1,1,1,.5))
-	newClickBoxObject.setScale(0.05)
-	self.clickBoxDictionary['groupButton'] = newClickBoxObject
-
-	newClickBoxObject = ClickBox(
-            'Save DNA', 0.3, 0.3, -0.7, -0.9,
-            self.outputDNA, ['toontown.dna'],0)
-	newClickBoxObject.nodePath().node().setCardColor(Point4(1,1,1,.5))
-	newClickBoxObject.setScale(0.05)
-	self.clickBoxDictionary['saveButton'] = newClickBoxObject
-
-	newClickBoxObject = ToggleBox(
-            'Level Map', 0.3, 0.3, -0.47, -0.9,
-            self.toggleMapViz, [], 0)
-	newClickBoxObject.nodePath().node().setCardColor(Point4(1,1,1,.5))
-	newClickBoxObject.setButtonState(0)
-	newClickBoxObject.setScale(0.05)
-	self.clickBoxDictionary['mapButton'] = newClickBoxObject
-
-	self.dnaMenuEnable()
-
-	# Initialize module Dictionary with pointers to module
-                                   # node paths and create module buttons
-	self.initializeStreetButtons()
-	self.initializeWallButtons()
-	self.initializeLandmarkButtons()
-	self.initializePropButtons()
 
     def initializePieMenus(self):
 	# Clear out any old menus just in case
@@ -1631,10 +1382,12 @@ class LevelEditor(NodePath, PandaObject):
 
 	# Create pop-up pie menus
 	self.pieMenuDictionary['wallMenu'] = (
-            PieMenu(self.direct, self.createWallMenu(), self.updateWallTextureNum))
+            PieMenu(self.direct, self.createWallMenu(),
+                    self.updateWallTextureNum))
 
 	self.pieMenuDictionary['windowMenu'] = (
-            PieMenu(self.direct, self.createWindowMenu(), self.updateWindowTextureNum))
+            PieMenu(self.direct, self.createWindowMenu(),
+                    self.updateWindowTextureNum))
 
 	menu = PieMenu(self.direct, self.createOrientationMenu(),
                        self.updateOrientationNum)
@@ -1689,174 +1442,109 @@ class LevelEditor(NodePath, PandaObject):
 
         styleCount = styleCount + 1
 	self.addStyle(dictionary, styleCount,
-                      'wall=md=pillars_ur',
+                      'wall_md_pillars_ur',
                       Vec4(1.0, 0.917, 0.592, 1.0 ),
-                      'window=sm=pointed_ur',
+                      'window_sm_pointed_ur',
                       Vec4(0.396,  0.611,  0.666,  1.0 ),
-                      'cornice=stone_ur',
+                      'cornice_stone_ur',
                       Vec4(1.0, 1.0, 0.592,  1.0 ))
 
         styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall=lg=brick_ur',
-                      Vec4(1.0, 0.705, 0.270, 1.0 ),
-                      'window=sm=round_ur',
-                      Vec4(0.588,  0.996,  0.486,  1.0 ),
+        self.addStyle(dictionary, styleCount,
+                      'wall_md_pillars_ur',
+                      Vec4(1.0, 1.0, 0.592157, 1.0),
+                      'window_sm_pointed_ur',
+                      Vec4(0.142751, 0.527559, 0.295847, 1.0),
+                      'cornice_stone_ur',
+                      Vec4(1.0, 1.0, 0.592157, 1.0))
+        
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_lg_brick_ur',
+                      Vec4(1.0, 0.415686, 0.270588, 1.0),
+                      'window_porthole_ur',
+                      Vec4(0.306315, 0.627451, 0.370542, 1.0),
+                      None,
+                      None)
+        
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_sm_cement_ur',
+                      Vec4(1.0, 0.882353, 0.803922, 1.0),
+                      'window_porthole_ur',
+                      Vec4(0.0972673, 0.590551, 0.393701, 1.0),
                       None,
                       None)
 
         styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall=lg=brick_ur',
-                      Vec4(1.0, 0.415, 0.270, 1.0 ),
-                      'window=porthole_ur',
-                      Vec4(0.129, 0.784, 0.521, 1.0 ),
+        self.addStyle(dictionary, styleCount,
+                      'wall_md_dental_ur',
+                      Vec4(0.996078, 0.894118, 0.486275, 1.0),
+                      'window_md_curved_ur',
+                      Vec4(1.0, 0.87451, 0.376471, 1.0),
+                      None,
+                      None)
+        
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_md_pillars_ur',
+                      Vec4(0.996078, 0.690196, 0.486275, 1.0),
+                      'window_porthole_ur',
+                      Vec4(0.31706, 0.535433, 0.361155, 1.0),
+                      None,
+                      None)
+        
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_md_pillars_ur',
+                      Vec4(0.996078, 0.690196, 0.486275, 1.0),
+                      'window_porthole_ur',
+                      Vec4(0.31706, 0.535433, 0.361155, 1.0),
+                      'cornice_brick_ur',
+                      Vec4(0.31706, 0.535433, 0.361155, 1.0))
+
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_lg_brick_ur',
+                      Vec4(0.996078, 0.690196, 0.486275, 1.0),
+                      'window_sm_curved_ur',
+                      Vec4(0.996078, 0.996078, 0.486275, 1.0),
                       None,
                       None)
 
         styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall=sm=cement_ur',
-                      Vec4(1.0, 0.882, 0.803, 1.0 ),
-                      'window=sm=round_ur',
-                      Vec4(0.270, 1.0, 0.415, 1.0 ),
+        self.addStyle(dictionary, styleCount,
+                      'wall_md_blank_ur',
+                      Vec4(1.0, 0.415686, 0.270588, 1.0),
+                      'window_sm_curved_ur',
+                      Vec4(1.0, 0.87451, 0.376471, 1.0),
+                      'cornice_marble_ur',
+                      Vec4(1.0, 0.74902, 0.376471, 1.0))
+
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_sm_brick_ur',
+                      Vec4(1.0, 0.67451, 0.592157, 1.0),
+                      'window_sm_pointed_ur',
+                      Vec4(0.88189, 0.439216, 0.145252, 1.0),
                       None,
                       None)
 
         styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall=md=dental_ur',
-                      Vec4(1.0, 0.917, 0.592, 1.0 ),
-                      'window=md=curved_ur',
-                      Vec4(1.0, 0.627, 0.376, 1.0 ),
-                      None,
-                      None)
+        self.addStyle(dictionary, styleCount,
+                      'wall_md_blank_ur',
+                      Vec4(1.0, 0.705882, 0.270588, 1.0),
+                      'window_sm_pointed_ur',
+                      Vec4(0.110236, 0.669291, 0.333333, 1.0),
+                      'cornice_stone_ur',
+                      Vec4(0.944882, 0.711441, 0.559518, 1.0))
 
         styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall=lg=brick_ur',
-                      Vec4(0.901, 0.564, 0.337, 1.0 ),
-                      'window=sm=round_ur',
-                      Vec4(0.588, 0.996, 0.486, 1.0 ),
-                      None,
-                      None)
-
-        styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall=md=pillars_ur',
-                      Vec4(0.996, 0.690, 0.486, 1.0 ),
-                      'window=porthole_ur',
-                      Vec4(0.909, 0.627, 0.443, 1.0 ),
-                      None,
-                      None)
-
-        styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall=sm=brick_ur',
-                      Vec4(1.0, 0.835, 0.592, 1.0 ),
-                      'window=sm=pointed_ur',
-                      Vec4(1.0, 0.627, 0.376, 1.0 ),
-                      None,
-                      None)
-
-        styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall=md=yellow_ur',
-                      Vec4(0.901, 0.564, 0.337, 1.0 ),
-                      'window=sm=pointed_ur',
-                      Vec4(0.321, 0.666, 0.596, 1.0 ),
-                      'cornice=stone_ur',
-                      Vec4(0.941, 0.713, 0.658, 1.0 ))
-
-        styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall=md=pillars_ur',
-                      Vec4(0.815, 0.909, 0.443, 1.0 ),
-                      'window=sm=round_ur',
-                      Vec4(0.588,  0.996,  0.486,  1.0 ),
-                      'cornice=stone_ur',
-                      Vec4(1.0, 1.0, 0.592,  1.0))
-
-        styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall=md=dental_ur',
-                      Vec4(0.909, 0.627, 0.443, 1.0 ),
-                      'window=sm=round_ur',
-                      Vec4(0.588,  0.996,  0.486,  1.0 ),
-                      None,
-                      None)
-
-
-
-        styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall=md=pillars_ur',
-                      Vec4(1.0, 0.882, 0.803, 1.0 ),
-                      'window=sm=curved_ur',
-                      Vec4(1.0, 0.917, 0.592, 1.0 ),
-                      None,
-                      None)
-
-        styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall=md=pillars_ur',
-                      Vec4(1.0, 0.882, 0.803, 1.0 ),
-                      'window=porthole_ur',
-                      Vec4(1.0, 0.917, 0.592, 1.0 ),
-                      None,
-                      None)
-
-        styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall=md=pillars_ur',
-                      Vec4(1.0, 0.882, 0.803, 1.0 ),
-                      'window=sm=round_ur',
-                      Vec4(0.588, 0.996, 0.486, 1.0 ),
-                      'cornice=stone_ur',
-                      Vec4(1.0, 1.0, 1.0, 1.0 ))
-
-        styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall=bricks_ur',
-                      Vec4(1.0,0.835, 0.592, 1.0 ),
-                      'window=sm=shuttered_ur',
-                      Vec4(1.0, 1.0, 1.0, 1.0 ),
-                      'cornice=marble_ur',
-                      Vec4(1.0, 1.0, 0.592,  1.0 ))
-
-        styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall=md=yellow_ur',
-                      Vec4(1.0, 0.835, 0.592, 1.0 ),
-                      'window=sm=shuttered_ur',
-                      Vec4(1.0, 0.917,  0.592,  1.0 ),
-                      'cornice=dental_ur',
-                      Vec4(1.0, 1.0, 0.592,  1.0 ))
-
-        styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall=md=yellow_ur',
-                      Vec4(1.0, 0.835, 0.592, 1.0 ),
-                      'window=sm=round_ur',
-                      Vec4(1.0, 0.627,  0.376,  1.0 ),
-                      'cornice=dental_ur',
-                      Vec4(1.0, 0.749,  0.376,  1.0 ))
-
-        styleCount = styleCount + 1
-	self.addStyle(dictionary, styleCount,
-                      'wall=md=yellow_ur',
-                      Vec4(1.0,0.917, 0.592, 1.0 ),
-                      'window=sm=pointed_ur',
-                      Vec4(1.0, 1.0, 1.0, 1.0 ),
-                      'cornice=marble_ur',
-                      Vec4(0.443,  0.909,  0.627,  1.0 ))
-
-        styleCount = styleCount + 1
-	self.addStyle(self.styleDictionary, styleCount,
-                      'wall=md=yellow_ur',
-                      Vec4(1.0, 0.917, 0.592, 1.0 ),
-                      'window=sm=curved_ur',
-                      Vec4(1.0, 0.627,  0.376,  1.0 ),
+        self.addStyle(dictionary, styleCount,
+                      'wall_md_dental_ur',
+                      Vec4(0.909804, 0.630415, 0.444156, 1.0),
+                      'window_sm_round_ur',
+                      Vec4(1.0, 0.270588, 0.270588, 1.0),
                       None,
                       None)
 
@@ -1895,7 +1583,6 @@ class LevelEditor(NodePath, PandaObject):
 	self.initDNAGroupWithParentType(dnaGroup, self.groupParent, type)
 
     def addDNAGroupTypeMethod(self, dnaGroup, type, method):
-
 	# Add hook to allow placement of a new dna Group of this type
         # by simply hitting the space bar
 	# First clear out old hooks just to be safe
@@ -1969,7 +1656,7 @@ class LevelEditor(NodePath, PandaObject):
 	newDNALandmarkBuilding = DNALandmarkBuilding(landmarkType)
 	newDNALandmarkBuilding.setCode(self.getDNACode(landmarkType))
 	newDNALandmarkBuilding.setPos(VBase3(0))
-	newDNALandmarkBuilding.setHpr(VBase3(self.lastAngle,0.0,0.0))
+	newDNALandmarkBuilding.setHpr(VBase3(0))
 	newDNADoor = self.createDoor(self.getDoorTexture())
 	newDNALandmarkBuilding.add(newDNADoor)
 	# Now place new building in the world
@@ -1980,14 +1667,14 @@ class LevelEditor(NodePath, PandaObject):
 	objectDictionary = {}
 	objectDictionary['nodePath'] = aNodePath 
 	objectDictionary['DNA'] = dnaGroup
-	self.levelDictionary[aNodePath.node().this] = objectDictionary
+	self.levelDictionary[aNodePath.id()] = objectDictionary
         return objectDictionary
 
     def addProp(self, newPropType):
 	newDNAProp = DNAProp(newPropType)
 	newDNAProp.setCode(self.getDNACode(newPropType))
 	newDNAProp.setPos(VBase3(0))
-	newDNAProp.setHpr(VBase3(self.lastAngle,0.0,0.0))
+	newDNAProp.setHpr(VBase3(0))
 	# Now place new building in the world
 	self.addDNAGroup(newDNAProp)
 	self.setPropType(newPropType)
@@ -1996,7 +1683,7 @@ class LevelEditor(NodePath, PandaObject):
 	newDNAStreet = DNAStreet(streetType)
 	newDNAStreet.setCode(self.getDNACode(streetType))
 	newDNAStreet.setPos(VBase3(0))
-	newDNAStreet.setHpr(VBase3(self.lastAngle, 0.0, 0.0))
+	newDNAStreet.setHpr(VBase3(0))
 	newDNAStreet.setStreetTexture(
             self.getDNACode(self.attributeDictionary['streetTexture']))
         newDNAStreet.setSidewalkTexture(
@@ -2011,23 +1698,22 @@ class LevelEditor(NodePath, PandaObject):
 	newDNAWindows = DNAWindows()
 	self.setWindowTexture(self.getRandomWindowTexture())
 	newDNAWindows.setCode(self.getDNACode(self.getWindowTexture()))
-	newDNAWindows.setCount(self.getRandomNumWindows(height))
-        # MRM Need to randomize
-	newDNAWindows.setColor(self.getWallColors())
+	newDNAWindows.setWindowCount(self.getRandomNumWindows(height))
+        colors = self.getWallColors()
+	newDNAWindows.setColor(colors[randint(0,len(colors) - 1)])
 	newDNAWall.add(newDNAWindows)
 	return newDNAWall
 
     def createCornice(self,dnaString):
 	newDNACornice = DNACornice()
 	newDNACornice.setCode(self.getDNACode(dnaString))
-        # MRM Need to randomize
-	newDNACornice.setColor(self.getCorniceColors())
+        colors = self.getCorniceColors()
+	newDNACornice.setColor(colors[randint(0,len(colors) - 1)])
 	return newDNACornice
 
     def createDoor(self, dnaString):
 	newDNADoor = DNADoor()
 	newDNADoor.setCode(self.getDNACode(dnaString))
-        # MRM Need to randomize
         colors = self.getDoorColors()
 	newDNADoor.setColor(colors[randint(0,len(colors) - 1)])
 	return newDNADoor
@@ -2077,7 +1763,7 @@ class LevelEditor(NodePath, PandaObject):
 	# Pick a default window
 	newDNAWindows = DNAWindows()
 	newDNAWindows.setCode(self.getDNACode(self.getWindowTexture()))
-	newDNAWindows.setCount(1)
+	newDNAWindows.setWindowCount(1)
 	newDNAWindows.setColor(self.getWindowColor())
 	newDNAWall.add(newDNAWindows)
 	
@@ -2086,10 +1772,13 @@ class LevelEditor(NodePath, PandaObject):
     def createWindows(self, numWindows):
 	newDNAWindows = DNAWindows()
 	newDNAWindows.setCode(self.getDNACode(self.getWindowTexture()))
-	newDNAWindows.setCount(numWindows)
+	newDNAWindows.setWindowCount(numWindows)
 	newDNAWindows.setColor(self.getWindowColor())
 	return newDNAWindows
 
+    def getCatalogCode(self, category, i):
+        return self.dnaStore.getCatalogCode(category, i)
+    
     def getCatalogCodes(self, category):
 	numCodes = self.dnaStore.getNumCatalogCodes(category)
 	codes = []
@@ -2110,7 +1799,7 @@ class LevelEditor(NodePath, PandaObject):
         if lastWall:
             for i in range(lastWall.getNumChildren()):
                 child = lastWall.at(i)
-                if child.getClassType().eq(DNACornice.getClassType()):
+                if child.__class__.getClassType().eq(DNACornice.getClassType()):
                     return child
         # Not found
 	return None
@@ -2134,8 +1823,7 @@ class LevelEditor(NodePath, PandaObject):
     def getDoor(self, aDNAGroup):
         for i in range(aDNAGroup.getNumChildren()):
             child = aDNAGroup.at(i)
-            # MRM CLASS INFO?
-            if child.getClassType().eq(DNADoor.getClassType()):
+            if child.__class__.getClassType().eq(DNADoor.getClassType()):
                 return child
         # Not found
 	return None
@@ -2144,14 +1832,14 @@ class LevelEditor(NodePath, PandaObject):
 	lastWall = None
         for i in range(aDNAFlatBuilding.getNumChildren()):
             child = aDNAFlatBuilding.at(i)
-            if child.getClassType().eq(DNAWall.getClassType()):
+            if child.__class__.getClassType().eq(DNAWall.getClassType()):
                 lastWall = child
         return lastWall
 
     def getLevelObject(self, aNodePath):
 	# Given a node path, find the corresponding level object
         # in the levelDictionary, if none exists, return 0
-	return self.levelDictionary.get(aNodePath.node().this, None)
+	return self.levelDictionary.get(aNodePath.id(), None)
 
     def getRandomCorniceTexture(self):
 	chance = 100 * random()
@@ -2167,20 +1855,20 @@ class LevelEditor(NodePath, PandaObject):
         return int(round(val))
     
     def getRandomNumWindows(self, height):
-	h = rounded(height)
+	h = self.rounded(height)
         if h == 10:
             # Only return 0 25% of the time
-            if rounded(self.getWallWidth()) == 5:
+            if self.rounded(self.getWallWidth()) == 5:
                 return randint(1,3)
             else:
                 return randint(0,3)
         elif h == 20:
-            if rounded(self.getWallWidth()) == 5:
+            if self.rounded(self.getWallWidth()) == 5:
                 return randint(1,3)
             else:
                 return randint(0,4)
         elif h == 30:
-            if rounded(self.getWallWidth()) == 5:
+            if self.rounded(self.getWallWidth()) == 5:
                 return randint(1,3)
             else:
                 return randint(0,4)
@@ -2223,7 +1911,7 @@ class LevelEditor(NodePath, PandaObject):
 	wallCount = 0
         for i in range(aDNAGroup.getNumChildren()):
             child = aDNAGroup.at(i)
-            if child.getClassType().eq(DNAWall.getClassType()):
+            if child.__class__.getClassType().eq(DNAWall.getClassType()):
                 if wallCount == wallNum:
                     return child
                 wallCount = wallCount + 1
@@ -2237,9 +1925,9 @@ class LevelEditor(NodePath, PandaObject):
 	# Compute wall heights
         for i in range(aDNAFlatBuilding.getNumChildren()):
             child = aDNAFlatBuilding.at(i)
-            if child.getClassType().eq(DNAWall.getClassType()):
+            if child.__class__.getClassType().eq(DNAWall.getClassType()):
                 heightTotal = heightTotal + child.getHeight()
-                heightList.add(heightTotal)
+                heightList.append(heightTotal)
 	return heightList
 
     def getWallNum(self, aDNAFlatBuilding, zPt):
@@ -2257,8 +1945,7 @@ class LevelEditor(NodePath, PandaObject):
 	windowCount = 0
         for i in range(aDNAGroup.getNumChildren()):
             child = aDNAGroup.at(i)
-            if (child.getClassType().eq(DNAWindow.getClassType()) |
-                child.getClassType().eq(DNAWindows.getClassType())):
+            if child.__class__.getClassType().eq(DNAWindows.getClassType()):
                 if windowCount == windowNum:
                     return child
                 windowCount = windowCount + 1
@@ -2268,7 +1955,7 @@ class LevelEditor(NodePath, PandaObject):
     def initDNAGroupWithParent(self, dnaGroup, parent):
 	# Create the geometry
 	# If it is a flat building, update building DNA to current wall width
-        if (dnaGroup.getClassType().eq(DNAFlatBuilding.getClassType())):
+        if (dnaGroup.__class__.getClassType().eq(DNAFlatBuilding.getClassType())):
             dnaGroup.setWidth(self.getWallWidth())
 	newNodePath = dnaGroup.traverse(parent,self.dnaStore)
 	# Add it to the level dictionary
@@ -2279,7 +1966,7 @@ class LevelEditor(NodePath, PandaObject):
 	# Place the new node path at the current grid origin
 	newNodePath.setPos(self.grid,0,0,0)
 	# Initialize angle to match last object
-	newNodePath.setH(self.lastAngle)
+	newNodePath.setH(self.grid, self.lastAngle)
 
 	# Select the instance
 	self.selectNodePath(newNodePath)
@@ -2294,18 +1981,20 @@ class LevelEditor(NodePath, PandaObject):
     def initDNAGroupWithParentType(self, dnaGroup, parent, type):
 	# Create the geometry
 	# If it is a flat building, update building DNA to current wall width
-        if dnaGroup.getClassType().eq(DNAFlatBuilding.getClassType()):
+        if dnaGroup.__class__.getClassType().eq(DNAFlatBuilding.getClassType()):
             dnaGroup.setWidth(self.getWallWidth())
 	newNodePath = dnaGroup.traverse(parent, self.dnaStore)
+        
 	# Add it to the level dictionary
 	self.addObject(newNodePath, dnaGroup)
+        
 	# Add it to the top level DNA Group
 	self.groupParentDNA.add(dnaGroup)
 
 	# Place the new node path at the current grid origin
 	newNodePath.setPos(self.grid,0,0,0)
 	# Initialize angle to match last object
-	newNodePath.setH(self.lastAngle)
+	newNodePath.setH(self.grid, self.lastAngle)
 
 	# Select the instance
 	self.selectNodePath(newNodePath)
@@ -2319,7 +2008,7 @@ class LevelEditor(NodePath, PandaObject):
 
     def initNewDNAGroupWithParent(self, dnaGroup, rootNode):
 	# Reflect currently selected prop type
-        if dnaGroup.getClassType().eq(DNAProp.getClassType()):
+        if dnaGroup.__class__.getClassType().eq(DNAProp.getClassType()):
             self.updatePropType(dnaGroup,self.getPropType())
 
         # Create a new copy of dnaGroup's class
@@ -2327,19 +2016,19 @@ class LevelEditor(NodePath, PandaObject):
         # Call that class's constructor passing in dnaGroup to make a copy
         self.initDNAGroupWithParent(dnaGroup.__class__(dnaGroup), self.groupParent)
         # Initialize
-        if dnaGroup.getClassType().eq(DNAProp.getClassType()):
+        if dnaGroup.__class__.getClassType().eq(DNAProp.getClassType()):
             objectType = self.getDNAString(dnaGroup)
             if objectType != 'prop_sphere':
                 # Update props placement to reflect current mouse position
                 # Where is the mouse relative to the grid?
-                self.grid.getMouseIntersectionPoint(self.hitPt, 0)
+                hitPt = self.getGridIntersectionPoint()
                 self.direct.selected.last.setPos(self.grid, self.hitPt)
                 dnaGroup.setPos(self.direct.selected.last.getPos())
 
     def initNewDNAGroupWithParentType(self, dnaGroup, rootNode, type):
         # Create a new dna Group of the same type a dnaGroup
 	newDNAGroup = dnaGroup.__class__(dnaGroup)
-        if dnaGroup.getClassType().eq(DNAProp.getClassType()):
+        if dnaGroup.__class__.getClassType().eq(DNAProp.getClassType()):
             self.updatePropType(newDNAGroup,self.getPropType())
 
         self.initDNAGroupWithParentType(newDNAGroup, self.groupParent, type)
@@ -2355,7 +2044,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.dnaStore.resetDNAGroups()
 
 	# Now load in new file
-	self.groupParent = self.dnaStore.loadDNAFile(filename)
+	self.groupParent = loadDNAFile(self.dnaStore, filename)
 
  	# Make sure the topmost level object gets put under level objects dna
  	self.groupParentDNA = self.dnaStore.findDNAGroup(self.groupParent.getBottomArc())
@@ -2400,6 +2089,9 @@ class LevelEditor(NodePath, PandaObject):
 
 	self.createNewLevelGroup()
 
+    def outputDNADefaultFile(self):
+        self.outputDNA(self.dnaOutputFile)
+        
     def outputDNA(self,filename):
 	print 'Saving DNA to: ', filename
 	self.levelObjectsDNA.writeDna(Filename(filename),Notify.out(),self.dnaStore)
@@ -2421,46 +2113,28 @@ class LevelEditor(NodePath, PandaObject):
 	print 'To Be Supplied'
 
     def removeCornices(self, aDNAGroup):
-        while self.removeDNAObjectOfClass(DNACornice,self.getLastWall(aDNAGroup)):
+        while self.removeDNAObjectOfClass(
+            DNACornice,self.getLastWall(aDNAGroup)):
             pass
-
-    def removeDNAObjectFrom(self, aDNAGroup, objectClass):
-	# Remove the first object of that type you come across
-        for i in range(aDNAGroup.getNumChildren()):
-            child = aDNAGroup.at(i)
-            if child.getClassType().eq(objectClass):
-                aDNAGroup.remove(child)
-                return 1
-	# None found
-	return 0
 
     def removeDNAObjectOfClass(self, objectClass, aDNAGroup):
 	# Remove the first object of that type you come across
         for i in range(aDNAGroup.getNumChildren()):
             child = aDNAGroup.at(i)
-            if child.getClassType().eq(objectClass):
+            if child.__class__.getClassType().eq(objectClass.getClassType()):
                 aDNAGroup.remove(child)
                 return 1
 	# None found
 	return 0
 
-    def removeLevelObject(self, aNodePath):
-	# Remove specified node path from the scene dictionary
-	nodePathHandle = aNodePath.this
-	del(self.levelDictionary[nodePathHandle])
-	# Get rid of its visible representation
-	aNodePath.removeNode()
-
     def removeNodePath(self, aNodePath):
 	# Remove specified node path from the scene dictionary
-	nodePathHandle = aNodePath.this
+	nodePathHandle = aNodePath.id()
 	del(self.levelDictionary[nodePathHandle])
 	# Get rid of its visible representation
 	aNodePath.removeNode()
 
     def removeWindows(self, aDNAGroup):
-        while self.removeDNAObjectOfClass(DNAWindow, aDNAGroup):
-            pass
         while self.removeDNAObjectOfClass(DNAWindows, aDNAGroup):
             pass
 
@@ -2559,8 +2233,9 @@ class LevelEditor(NodePath, PandaObject):
 	aDNAFlatBuilding.setWidth(self.getWallWidth())
 	style = self.getRandomStyle()
         for i in range(aDNAFlatBuilding.getNumChildren()):
+            # Set style of each child
             child = aDNAFlatBuilding.at(i)
-            if child.getClassType().eq(DNAWall):
+            if child.__class__.getClassType().eq(DNAWall.getClassType()):
                 self.setWallStyle(child, style)
                 if randint(0,100) < 40:
                     style = self.getRandomStyle()
@@ -2575,31 +2250,37 @@ class LevelEditor(NodePath, PandaObject):
                 aDNACornice = self.getCornice(aDNAFlatBuilding)
                 if not aDNACornice:
                     aDNACornice = DNACornice()
-                    aDNACornice.setCode(self.dnaStore.findCode(style['corniceTexture']))
+                    aDNACornice.setCode(
+                        self.dnaStore.findCode(style['corniceTexture']))
                     aDNACornice.setColor(style['corniceColor'])
                     lastWall = self.getLastWall(aDNAFlatBuilding)
                     lastWall.add(aDNACornice)
 
     def setRandomNumWindows(self, aDNAWall, numWindows):
 	window = self.getWindow(aDNAWall, 0)
-	window.setCount(numWindows)
+	window.setWindowCount(numWindows)
 
     def setWallStyle(self, aDNAWall, style):
-	aDNAWall.setCode(self.dnaStore,style['wallTexture'])
+	aDNAWall.setCode(self.dnaStore.findCode(style['wallTexture']))
 	aDNAWall.setColor(style['wallColor'])
 	aDNAWindows = self.getWindow(aDNAWall, 0)
-	aDNAWindows.setCount(self.getRandomNumWindows(aDNAWall.getHeight()))
-	aDNAWindows.setCode(self.dnaStore.findCode(style['windowTexture']))
-	aDNAWindows.setColor(style['windowColor'])
+        # If the wall has windows:
+        if aDNAWindows:
+            aDNAWindows.setWindowCount(
+                self.getRandomNumWindows(aDNAWall.getHeight()))
+            aDNAWindows.setCode(self.dnaStore.findCode(style['windowTexture']))
+            aDNAWindows.setColor(style['windowColor'])
 
-    def setWallStyle(self, aDNAWall, styleNum):
+    def setWallStyleNum(self, aDNAWall, styleNum):
 	self.setWallStyle(aDNAWall, self.styleDictionary[styleNum])
 
     def updateColorIndex(self, colorIndex):
         if colorIndex < 0:
-            self.updateObjColor(self.targetDNAObject,self.activeMenu.getInitialState())
+            self.updateObjColor(
+                self.targetDNAObject,self.activeMenu.getInitialState())
         else:
-            self.updateObjColor(self.targetDNAObject,self.activeColors[colorIndex])
+            self.updateObjColor(
+                self.targetDNAObject,self.activeColors[colorIndex])
 
     def updateObjColor(self, aDNAObject, color):
 	aDNAObject.setColor(color)
@@ -2645,13 +2326,14 @@ class LevelEditor(NodePath, PandaObject):
 
 	# Replace object in levelObjects dictionary and scene graph
 	self.replaceLevelObjectNodePath(self.selectedLevelObject)
-	self.corniceTexture(dnaString)
+	self.setCorniceTexture(dnaString)
 
     def updateDNAPosHpr(self, aNodePath):
         if aNodePath:
             dnaGroup = self.getDNAGroup(aNodePath)
             if dnaGroup:
-                if not(dnaGroup.getClassType().eq(DNAGroup.getClassType())):
+                groupClass = dnaGroup.__class__.getClassType()
+                if not(groupClass.eq(DNAGroup.getClassType())):
                     dnaGroup.setPos(aNodePath.getPos())
                     dnaGroup.setHpr(aNodePath.getHpr())
 
@@ -2663,7 +2345,7 @@ class LevelEditor(NodePath, PandaObject):
         if doorTextureNumber < 0:
             dnaString = self.activeMenu.getInitialState()
         else:
-            dnaString = self.doorTextures()[doorTextureNumber]
+            dnaString = self.getDoorTextures()[doorTextureNumber]
 
 	# Now update the texture on the door with that texture
 	self.updateDoorTextureDNA(aDNADoor, dnaString)
@@ -2699,45 +2381,41 @@ class LevelEditor(NodePath, PandaObject):
 
 	# Remap lower menu values for Door's and Cornices'
         # (only have upper orientations)
-	if ((self.targetDNAObject.getClassType().eq(DNADoor.getClassType())) |
-            (self.targetDNAObject.getClassType().eq(DNACornice.getClassType()))):
+        targetClass = self.targetDNAObject.__class__.getClassType()
+	if (targetClass.eq(DNADoor.getClassType()) |
+            targetClass.eq(DNAWindows.getClassType()) |
+            targetClass.eq(DNACornice.getClassType())):
             if (orientationNumber == 2):
-                remappedOrientationNumber = 0
-            elif (orientationNumber == 3):
                 remappedOrientationNumber = 1
-
+            elif (orientationNumber == 3):
+                remappedOrientationNumber = 0
 	self.updateOrientation(self.targetDNAObject, remappedOrientationNumber)
 
     def updateOrientation(self, aDNAObject, orientationNumber):
         if self.activeMenu.getInitialState() == None:
             return None
-	currString = self.getDNAString(aDNAObject)
-
-	# Strip off current suffix
+        currString = self.getDNAString(aDNAObject)
+        # Strip off current suffix
         newString = currString[:-3]
-
         if orientationNumber == 0:
             dnaString = newString + '_ur'
         elif orientationNumber == 1:
             dnaString = newString + '_ul'
         elif orientationNumber == 2:
-            dnaString = newString + '_dr'
-        elif orientationNumber == 3:
             dnaString = newString + '_dl'
+        elif orientationNumber == 3:
+            dnaString = newString + '_dr'
         else:
-            self.activeMenu.getInitialState()
-
-        if newString != currString:
-            objClass = aDNAObject.getClassType()
-            if objClass == DNAWall.getClassType():
+            dnaString = self.activeMenu.getInitialState()
+        if dnaString != currString:
+            objClass = aDNAObject.__class__.getClassType()
+            if objClass.eq(DNAWall.getClassType()):
                 self.updateWallTextureDNA(aDNAObject, dnaString)
-            elif objClass == DNACornice.getClassType():
+            elif objClass.eq(DNACornice.getClassType()):
                 self.updateCorniceTextureDNA(aDNAObject, dnaString)
-            elif objClass == DNADoor.getClassType():
+            elif objClass.eq(DNADoor.getClassType()):
                 self.updateDoorTextureDNA(aDNAObject, dnaString)
-            elif objClass == DNAWindow.getClassType():
-                self.updateWindowTextureDNA(aDNAObject, dnaString)
-            elif objClass == DNAWindows.getClassType():
+            elif objClass.eq(DNAWindows.getClassType()):
                 self.updateWindowTextureDNA(aDNAObject, dnaString)
 
     def updatePropNum(self,propNumber):
@@ -2762,7 +2440,7 @@ class LevelEditor(NodePath, PandaObject):
     def updateRandomNumWindows(self, aDNAFlatBuilding):
         for i in range(aDNAFlatBuilding.getNumChildren()):
             child = aDNAFlatBuilding.at(i)
-            if child.getClassType().eq(DNAWall.getClassType()):
+            if child.__class__.getClassType().eq(DNAWall.getClassType()):
                 self.setRandomNumWindows(
                     child,
                     self.getRandomNumWindows(child.getHeight()))
@@ -2789,16 +2467,16 @@ class LevelEditor(NodePath, PandaObject):
         elif wallOrientationNumber == 3:
             dnaString = newString + '_dl'
         else:
-            self.activeMenu.getInitialState()
+            dnaString = self.activeMenu.getInitialState()
 
-        if newString != currString:
+        if dnaString != currString:
             self.updateWallTextureDNA(aDNAWall, dnaString)
 
     def updateWallStyleNum(self, styleNum):
         if styleNum < 0:
-            self.setWallStyle(self.targetDNAObject, 1)
+            self.setWallStyleNum(self.targetDNAObject, 1)
         else:
-            self.setWallStyle(self.targetDNAObject, (1 + styleNum))
+            self.setWallStyleNum(self.targetDNAObject, (1 + styleNum))
 	self.replaceLevelObjectNodePath(self.selectedLevelObject)
 
     def updateWallTextureNum(self, wallTextureNumber):
@@ -2863,12 +2541,12 @@ class LevelEditor(NodePath, PandaObject):
 	selectedNode = self.direct.selected.last
         if selectedNode:
             dnaGroup = self.getDNAGroup(selectedNode)
-            groupClass = dnaGroup.getClassType().getName()
-            deltaPos = VBase3(20,0,0)
+            groupClass = dnaGroup.__class__.getClassType()
+            deltaPos = Point3(20,0,0)
             deltaHpr = VBase3(0)
-            if groupClass == 'DNAFlatBuilding':
+            if groupClass.eq(DNAFlatBuilding.getClassType()):
                 deltaPos.setX(self.getWallWidth())
-            elif groupClass == 'DNAStreet':
+            elif groupClass.eq(DNAStreet.getClassType()):
                 objectType = self.getDNAString(dnaGroup)
                 if objectType == 'street_5x20':
                     deltaPos.setX(5.0)
@@ -2893,11 +2571,11 @@ class LevelEditor(NodePath, PandaObject):
                 elif objectType == 'street_80x40':
                     deltaPos.setX(80.0)
                 elif objectType == 'street_angle_30':
-                    deltaPos.setX(30.0)
+                    deltaPos.setX(0.0)
                 elif objectType == 'street_angle_45':
-                    deltaPos.setX(30.0)
+                    deltaPos.setX(0.0)
                 elif objectType == 'street_angle_60':
-                    deltaPos.setX(30.0)
+                    deltaPos.setX(0.0)
                 elif objectType == 'street_inner_corner':
                     deltaPos.setX(20.0)
                 elif objectType == 'street_outer_corner':
@@ -2915,32 +2593,55 @@ class LevelEditor(NodePath, PandaObject):
                 elif objectType == 'street_sidewalk_20x20':
                     deltaPos.setX(20.0)
                 elif objectType == 'street_sidewalk_40x40':
-                    eltaPos.setX(40.0)
-            elif groupClass == 'DNALandmarkBuilding':
-                objectType = self.getDNAString(dnaGroup)
-                if objectType == 'toon_landmark_building_01':
-                    deltaPos.setX(25.0)
-                elif objectType == 'toon_landmark_building_02':
-                    deltaPos.setX(15.0)
-                elif objectType == 'toon_landmark_building_03':
+                    deltaPos.setX(40.0)
+                elif objectType == 'street_divided_transition':
+                    deltaPos.setX(40.0)
+                elif objectType == 'street_divided_40x70':
+                    deltaPos.setX(40.0)
+                elif objectType == 'street_stairs_40x10x5':
+                    deltaPos.setX(40.0)
+                elif objectType == 'street_4way_intersection':
+                    deltaPos.setX(40.0)
+                elif objectType == 'street_incline_40x40x5':
+                    deltaPos.setX(40.0)
+                elif objectType == 'street_courtyard_70':
+                    deltaPos.setX(0.0)
+                elif objectType == 'street_courtyard_70_exit':
+                    deltaPos.setX(0.0)
+                elif objectType == 'street_courtyard_90':
+                    deltaPos.setX(0.0)
+                elif objectType == 'street_courtyard_90_exit':
+                    deltaPos.setX(0.0)
+                elif objectType == 'street_50_transition':
+                    deltaPos.setX(10.0)
+                elif objectType == 'street_20x50':
                     deltaPos.setX(20.0)
-            elif groupClass == 'DNAProp':
+                elif objectType == 'street_40x50':
+                    deltaPos.setX(40.0)
+            elif groupClass.eq(DNALandmarkBuilding.getClassType()):
+                objectType = self.getDNAString(dnaGroup)
+                if objectType[:-1] == 'toon_landmark_building_0':
+                    deltaPos.setX(25.0)
+                elif objectType[:-1] == 'toon_landmark_building_2':
+                    deltaPos.setX(15.0)
+                elif objectType[:-1] == 'toon_landmark_building_3':
+                    deltaPos.setX(20.0)
+            elif groupClass.eq(DNAProp.getClassType()):
                 objectType = self.getDNAString(dnaGroup)
                 if objectType == 'prop_sphere':
                     deltaPos.setX(40.0)
 
             # Position grid for placing next object
             # Eventually we need to setHpr too
-            self.grid.setPos(selectedNode, deltaPos)
-            if self.grid.getXyzSnap():
-                # Tighten up grid position
-                pos = self.grid.getPos()
-                roundVal = self.roundTo(self.grid.getGridSpacing(), 1)
-                x = self.roundTo(pos[0], roundVal)
-                y = self.roundTo(pos[1], roundVal)
-                z = self.roundTo(pos[2], roundVal)
-                self.grid.setPos(x,y,z)
-
+            taskMgr.removeTasksNamed('autoPositionGrid')
+            t = self.grid.lerpPos(deltaPos, 0.25,
+                                  other = selectedNode,
+                                  blendType = 'easeInOut',
+                                  task = 'autoPositionGrid')
+            t.deltaPos = deltaPos
+            t.selectedNode = selectedNode
+            t.uponDeath = self.autoPositionCleanup
+                                  
 	# Also move the camera
 	taskMgr.removeTasksNamed('autoMoveDelay')
 	handlesToCam = self.direct.widget.getPos(self.direct.camera)
@@ -2950,18 +2651,28 @@ class LevelEditor(NodePath, PandaObject):
             taskMgr.removeTasksNamed('manipulateCamera')
             self.direct.cameraControl.centerCamIn(self.direct.chan, 0.5)
 
+    def autoPositionCleanup(self,state):
+        self.grid.setPos(state.selectedNode, state.deltaPos)
+        if self.grid.getXyzSnap():
+            # Tighten up grid position
+            pos = self.grid.getPos()
+            roundVal = self.roundTo(self.grid.getGridSpacing(), 1)
+            x = self.roundTo(pos[0], roundVal)
+            y = self.roundTo(pos[1], roundVal)
+            z = self.roundTo(pos[2], roundVal)
+            self.grid.setPos(x,y,z)
+
     def plantSelectedNodePath(self):
 	# Move grid to prepare for placement of next object
 	selectedNode = self.direct.selected.last
         if selectedNode:
             # Where is the mouse relative to the grid?
-            # MRM NEEDED
-            self.getMouseIntersectionPoint(self.hitPt, 0)
+            hitPt = self.getGridIntersectionPoint()
             selectedNode.setPos(self.grid, self.hitPt)
             dnaGroup = self.getDNAGroup(selectedNode)
             if dnaGroup:
                 # Update props placement to reflect current mouse position
-                dnaGroup.setPos(direct.selected.last.getPos())
+                dnaGroup.setPos(self.direct.selected.last.getPos())
 
     def resetLevel(self):
 	# Clear out all objects
@@ -2984,33 +2695,302 @@ class LevelEditor(NodePath, PandaObject):
 	self.grid.setPosHpr(0,0,0,0,0,0)
 
     def selectNodePath(self, aNodePath):
-	# Method to handle the select event.
-        # MRM: THis or message?
+        # Select new node path
 	self.direct.select(aNodePath)
 	# Update selectedLevelObject
 	self.selectedLevelObject = self.getLevelObject(aNodePath)
 
-    def getWallIntersectionPoint(self, intersectionPoint):
-	# Find point of intersection between grid plane and line from cam through mouse
-	# Don't do anything if nothing selected
+    def getWallIntersectionPoint(self):
+	"""
+        Return point of intersection between building's wall and line from cam
+        through mouse. Return false, if nothing selected
+        """
 	selectedNode = self.direct.selected.last
         if not selectedNode:
             return 0
-
+        # Find mouse point on near plane
         chan = self.direct.chan
     	mouseX = chan.mouseX
   	mouseY = chan.mouseY
    	nearX = math.tan(deg2Rad(chan.fovH)/2.0) * mouseX * chan.near
    	nearZ = math.tan(deg2Rad(chan.fovV)/2.0) * mouseY * chan.near
+        # Initialize points
+   	mCam2Wall = chan.camera.getMat(selectedNode)
+	mouseOrigin = Point3(0)
+   	mouseOrigin.assign(mCam2Wall.getRow3(3))
+	mouseDir = Vec3(0)
+   	mouseDir.set(nearX, chan.near, nearZ)
+   	mouseDir.assign(mCam2Wall.xformVec(mouseDir))
+        # Calc intersection point
+        return planeIntersect(mouseOrigin, mouseDir, ZERO_POINT, NEG_Y_AXIS)
 
-   	mCam2Grid = chan.camera.getMat(selectedNode)
+    def getGridIntersectionPoint(self):
+	"""
+        Return point of intersection between ground plane and line from cam
+        through mouse. Return false, if nothing selected
+        """
+        # Find mouse point on near plane
+        chan = self.direct.chan
+    	mouseX = chan.mouseX
+  	mouseY = chan.mouseY
+   	nearX = math.tan(deg2Rad(chan.fovH)/2.0) * mouseX * chan.near
+   	nearZ = math.tan(deg2Rad(chan.fovV)/2.0) * mouseY * chan.near
+        # Initialize points
+   	mCam2Grid = chan.camera.getMat(self.direct.grid)
 	mouseOrigin = Point3(0)
    	mouseOrigin.assign(mCam2Grid.getRow3(3))
 	mouseDir = Vec3(0)
    	mouseDir.set(nearX, chan.near, nearZ)
    	mouseDir.assign(mCam2Grid.xformVec(mouseDir))
-   
-   	return self.wallIntersectionPlane.intersectsLine(intersectionPoint, mouseOrigin, mouseDir)
+        # Calc intersection point
+        return planeIntersect(mouseOrigin, mouseDir, ZERO_POINT, Z_AXIS)
+
+class LevelEditorPanel(Pmw.MegaToplevel):
+    def __init__(self, levelEditor, parent = None, **kw):
+
+        INITOPT = Pmw.INITOPT
+        optiondefs = (
+            ('title',       'Toontown Level Editor',       None),
+            )
+        self.defineoptions(kw, optiondefs)
+
+        Pmw.MegaToplevel.__init__(self, parent, title = self['title'])
+
+        self.levelEditor = levelEditor
+        self.direct = levelEditor.direct
+        # Handle to the toplevels hull
+        hull = self.component('hull')
+
+        balloon = self.balloon = Pmw.Balloon(hull)
+        # Start with balloon help disabled
+        self.balloon.configure(state = 'none')
+        
+        menuFrame = Frame(hull, relief = GROOVE, bd = 2)
+        menuFrame.pack(fill = X, expand = 1)
+
+        menuBar = Pmw.MenuBar(menuFrame, hotkeys = 1, balloon = balloon)
+        menuBar.pack(side = LEFT, expand = 1, fill = X)
+        menuBar.addmenu('Level Editor', 'Level Editor Operations')
+        menuBar.addmenuitem('Level Editor', 'command',
+                            'Exit Level Editor Panel',
+                            label = 'Exit',
+                            command = self.destroy)
+
+        menuBar.addmenu('Help', 'Level Editor Help Operations')
+        self.toggleBalloonVar = IntVar()
+        self.toggleBalloonVar.set(0)
+        menuBar.addmenuitem('Help', 'checkbutton',
+                            'Toggle balloon help',
+                            label = 'Balloon Help',
+                            variable = self.toggleBalloonVar,
+                            command = self.toggleBalloon)
+
+        # Create the notebook pages
+        notebook = Pmw.NoteBook(hull)
+        notebook.pack(fill = BOTH, expand = 1)
+        streetsPage = notebook.add('Streets')
+        toonBuildingsPage = notebook.add('Toon Bldgs')
+        landmarkBuildingsPage = notebook.add('Landmark Bldgs')
+        # suitBuildingsPage = notebook.add('Suit Buildings')
+        propsPage = notebook.add('Props')
+        colorPage = notebook.add('Set Color')
+
+        self.addStreetButton = Button(
+            streetsPage,
+            text = 'ADD STREET',
+            command = self.addStreetModule)
+        self.addStreetButton.pack(fill = 'x')
+        self.streetSelector = Pmw.ComboBox(
+            streetsPage,
+            dropdown = 0,
+            listheight = 200,
+            labelpos = W,
+            label_text = 'Street type:',
+            entry_width = 24,
+            selectioncommand = self.setStreetModuleType,
+            scrolledlist_items = map(lambda s: s[7:],
+                                     levelEditor.getCatalogCodes(
+            'street'))
+            )
+        self.streetModuleType = levelEditor.getCatalogCode('street',0)
+        self.streetSelector.selectitem(self.streetModuleType[7:])
+        self.streetSelector.pack(expand = 1, fill = 'x')
+
+        self.addToonBuildingButton = Button(
+            toonBuildingsPage,
+            text = 'ADD TOON BUILDING',
+            command = self.addFlatBuilding)
+        self.addToonBuildingButton.pack(fill = 'x')
+        self.toonBuildingSelector = Pmw.ComboBox(
+            toonBuildingsPage,
+            dropdown = 0,
+            listheight = 200,
+            labelpos = W,
+            label_text = 'Toon building type:',
+            entry_width = 24,
+            selectioncommand = self.setFlatBuildingType,
+            scrolledlist_items = ('random20', 'random30',
+                                  'toonTenTen', 'toonTwenty',
+                                  'toonTenTwenty', 'toonTwentyTen',
+                                  'toonTenTenTen', 'toonThirty')
+            )
+        self.toonBuildingType = 'random20'
+        self.toonBuildingSelector.selectitem(self.toonBuildingType)
+        self.toonBuildingSelector.pack(side = 'left', expand = 0)
+        
+        self.addLandmarkBuildingButton = Button(
+            landmarkBuildingsPage,
+            text = 'ADD LANDMARK BUILDING',
+            command = self.addLandmark)
+        self.addLandmarkBuildingButton.pack(fill = 'x')
+        self.landmarkBuildingSelector = Pmw.ComboBox(
+            landmarkBuildingsPage,
+            dropdown = 0,
+            listheight = 200,
+            labelpos = W,
+            label_text = 'Landmark Building type:',
+            entry_width = 24,
+            selectioncommand = self.setLandmarkType,
+            scrolledlist_items = map(lambda s: s[14:],
+                                     levelEditor.getCatalogCodes(
+            'toon_landmark'))
+            )
+        self.landmarkType = levelEditor.getCatalogCode(
+            'toon_landmark',0)
+        self.landmarkBuildingSelector.selectitem(
+            levelEditor.getCatalogCode('toon_landmark',0)[14:])
+        self.landmarkBuildingSelector.pack(side = 'left', expand = 0)
+
+        self.addPropsButton = Button(
+            propsPage,
+            text = 'ADD PROP',
+            command = self.addProp)
+        self.addPropsButton.pack(fill = 'x')
+        self.propSelector = Pmw.ComboBox(
+            propsPage,
+            dropdown = 0,
+            listheight = 200,
+            labelpos = W,
+            label_text = 'Prop type:',
+            entry_width = 24,
+            selectioncommand = self.setPropType,
+            scrolledlist_items = map(lambda s: s[5:],
+                                     levelEditor.getCatalogCodes('prop'))
+            )
+        self.propType = levelEditor.getCatalogCode('prop',0)
+        self.propSelector.selectitem(
+            levelEditor.getCatalogCode('prop',0)[5:])
+        self.propSelector.pack(side = 'left', expand = 0)
+        # Compact down notebook
+        notebook.setnaturalsize()
+
+        buttonFrame = Frame(hull)
+        self.fGrid = IntVar()
+        self.fGrid.set(0)
+        self.gridButton = Checkbutton(buttonFrame,
+                                      text = 'Show Grid',
+                                      variable = self.fGrid,
+                                      command = self.toggleGrid)
+        self.gridButton.pack(side = 'left', fill = 'x')
+
+        self.fXyzSnap = IntVar()
+        self.fXyzSnap.set(1)
+        self.xyzSnapButton = Checkbutton(buttonFrame,
+                                      text = 'XyzSnap',
+                                      variable = self.fXyzSnap,
+                                      command = self.toggleXyzSnap)
+        self.xyzSnapButton.pack(side = 'left', fill = 'x')
+
+        self.fHprSnap = IntVar()
+        self.fHprSnap.set(1)
+        self.hprSnapButton = Checkbutton(buttonFrame,
+                                      text = 'HprSnap',
+                                      variable = self.fHprSnap,
+                                      command = self.toggleHprSnap)
+        self.hprSnapButton.pack(side = 'left', fill = 'x')
+        buttonFrame.pack(fill = 'both')
+
+        buttonFrame2 = Frame(hull)
+        self.groupButton = Button(
+            buttonFrame2,
+            text = 'Create new level group',
+            command = self.levelEditor.createNewLevelGroup)
+        self.groupButton.pack(side = 'left', fill = 'x')
+        self.saveButton = Button(
+            buttonFrame2,
+            text = 'Save DNA',
+            command = self.levelEditor.outputDNADefaultFile)
+        self.saveButton.pack(side = 'left', fill = 'x')
+        self.fMapViz = IntVar()
+        self.fMapViz.set(1)
+        self.mapSnapButton = Checkbutton(buttonFrame,
+                                      text = 'Map Viz',
+                                      variable = self.fMapViz,
+                                      command = self.toggleMapViz)
+        self.mapSnapButton.pack(side = 'left', fill = 'x')
+        buttonFrame2.pack(fill = 'both')
+
+        widget = VectorWidgets.ColorEntry(
+            colorPage, text = 'Select Color',
+            command = self.updateSelectedObjColor)
+        widget.pack(fill = X)
+        
+    def toggleGrid(self):
+        if self.fGrid.get():
+            self.direct.grid.show()
+        else:
+            self.direct.grid.hide()
+
+    def toggleXyzSnap(self):
+        self.direct.grid.setXyzSnap(self.fXyzSnap.get())
+
+    def toggleHprSnap(self):
+        self.direct.grid.setHprSnap(self.fXyzSnap.get())
+        
+    def toggleMapViz(self):
+        if self.fMapViz.get():
+            pass
+        else:
+            pass
+        
+    def setStreetModuleType(self,name):
+        self.streetModuleType = 'street_' + name
+
+    def addStreetModule(self):
+        self.levelEditor.addStreetModule(self.streetModuleType)
+
+    def setFlatBuildingType(self,name):
+        self.toonBuildingType = name
+        
+    def addFlatBuilding(self):
+        self.levelEditor.addFlatBuilding(self.toonBuildingType)
+
+    def setLandmarkType(self,name):
+        self.landmarkType = 'toon_landmark_' + name
+
+    def addLandmark(self):
+        self.levelEditor.addLandmark(self.landmarkType)
+
+    def setPropType(self,name):
+        self.propType = 'prop_' + name
+        
+    def addProp(self):
+        self.levelEditor.addProp(self.propType)
+
+    def updateSelectedObjColor(self, color):
+        if self.levelEditor.targetDNAObject:
+            self.levelEditor.updateObjColor(
+                self.levelEditor.targetDNAObject,
+                VBase4((color[0]/255.0),
+                       (color[1]/255.0),
+                       (color[2]/255.0),
+                       1.0))
+
+    def toggleBalloon(self):
+        if self.toggleBalloonVar.get():
+            self.balloon.configure(state = 'balloon')
+        else:
+            self.balloon.configure(state = 'none')
 
 """
 
@@ -3308,4 +3288,252 @@ mouseCrank: aNodePath
 							].
 				].
 ! !
+
+
+    def acceptArrowKeys(self):
+	# Accept arrow key events for swinging piece around
+	self.accept('left', self.keyboardXformNodePath, ['left'])
+	self.accept('right', self.keyboardXformNodePath, ['right'])
+	self.accept('up', self.keyboardXformNodePath, ['up'])
+	self.accept('down', self.keyboardXformNodePath, ['down'])
+
+    def keyboardXformNodePath(self,x):
+        pass
+
+    def levelHandleMouse1(self):
+        selectedNodePath = self.direct.selected.last
+        if selectedNodePath:
+            self.followMouseStart(selectedNodePath)
+            
+    def levelHandleMouse1Up(self):
+	self.followMouseStop()
+
+        # MRM
+    def activateLandmarkButtons(self):
+	# Switch menus to reveal street menu
+	self.mainMenuDisable()
+	self.categoryEnable('toon_landmark')
+
+        # MRM
+    def activatePropButtons(self):
+	# Switch menus to reveal street menu
+	self.mainMenuDisable()
+	self.categoryEnable('prop')
+
+    def activateStreetModuleButtons(self):
+	# Switch menus to reveal street menu
+	self.mainMenuDisable()
+	self.categoryEnable('street')
+
+    def activateVizObjectsButtons(self):
+	# Switch menus to reveal viz region menu
+	#self.mainMenuDisable()
+	#self.clickBoxDictionary['vizRegionButtons'].enable()
+	self.accept('addVizRegion', self.addVizRegion)
+	self.accept('addCollisionSphere', self.addCollisionSphere)
+	self.grid.setGridSpacing(10.0)
+
+        # MRM
+    def activateWallModuleButtons(self):
+	# Switch menus to reveal street menu
+	self.mainMenuDisable()
+	self.categoryEnable('wall')
+
+
+
+    def addHook(self, hook, function):
+	self.accept(hook, function, [hook])
+
+    def allMenuDisable(self):
+	self.mainMenuDisable()
+	self.gridMenuDisable()
+	self.subMenuDisable()
+	self.dnaMenuDisable()
+
+    def categoryDisable(self, categoryName):
+        clickBoxList = self.clickBoxDictionary.set(categoryName,None)
+        if clickBoxList:
+            clickBoxList.disable()
+
+        hooks = self.hooksDictionary.get(categoryName, None)
+        if hooks:
+            for hook in hooks:
+                self.ignore(hook)
+
+	# Do any category specific disabilizaton here
+        if categoryName == 'wall':
+            clickBoxList = self.clickBoxDictionary.get('wallWidths',None)
+            if clickBoxList:
+                clickBoxList.disable()
+                hooks = self.hooksDictionary.get('wallWidths', None)
+                if hooks:
+                    for hook in hooks:
+                        self.ignore(hook)
+
+	# Clear out space and insert hooks
+	self.ignore('space')
+	self.ignore('insert')
+
+    def categoryEnable(self,categoryName):
+	# First activate this category's main buttons
+        clickBoxList = self.clickBoxDictionary.get(categoryName,None)
+        if clickBoxList:
+            clickBoxList.enable()
+	# Now activate hooks and any supplemental actions
+        if categoryName == 'street':
+            # activate street module hooks
+            hooks = self.hooksDictionary.get(categoryName,None)
+            if hooks:
+                for hook in hooks:
+                    self.addHook(hook,self.addStreetModule)
+        elif categoryName == 'wall':
+            # Activate wall module hooks	
+            hooks = self.hooksDictionary.get(categoryName,None)
+            if hooks:
+                for hook in hooks:
+                    self.addHook(hook, self.addFlatBuilding)
+            # Also activate wall width buttons and hooks
+            clickBoxList = self.clickBoxDictionary.get('wallWidths', None)
+            if clickBoxList:
+                clickBoxList.enable()
+            hooks = self.hooksDictionary.get('wallWidths',None)
+            if hooks:
+                for hook in hooks:
+                    self.addHook(hook,self.wallWidthSym)
+        elif categoryName == 'toon_landmark':
+            # activate landmark hooks
+            hooks = self.hooksDictionary.get(categoryName,None)
+            if hooks:
+                for hook in hooks:
+                    self.addHook(hook,self.addLandmark)
+        elif categoryName == 'prop':
+            # activate prop hooks
+            hooks = self.hooksDictionary.get(categoryName,None)
+            if hooks:
+                for hook in hooks:
+                    self.addHook(hook,self.addProp)
+
+    def getClickBoxDictionary(self):
+	return self.clickBoxDictionary
+
+    def dnaMenuDisable(self):
+	# Disable DNA menu
+	self.clickBoxDictionary['groupButton'].disable()
+	self.ignore('createNewLevelGroup')
+	self.clickBoxDictionary['saveButton'].disable()
+	self.ignore('outputDNA:')
+	self.clickBoxDictionary['mapButton'].disable()
+	self.ignore('toggleMapViz')
+
+    def dnaMenuEnable(self):
+	# Enable DNA menu
+	self.clickBoxDictionary['groupButton'].enable()
+	self.accept('createNewLevelGroup', self.createNewLevelGroup)
+	self.clickBoxDictionary['saveButton'].enable()
+	self.accept('outputDNA', self.outputDNA)
+	self.clickBoxDictionary['mapButton'].enable()
+	self.accept('toggleMapViz', self.toggleMapViz)
+
+
+    def gridMenuDisable(self):
+	self.clickBoxDictionary['gridMenuButtons'].disable()
+	self.ignore('showGrid')
+	self.ignore('xyzSnap')
+	self.ignore('hprSnap')
+
+    def gridMenuEnable(self):
+	# Enable grid menu
+	self.clickBoxDictionary['gridMenuButtons'].enable()
+	self.accept('showGrid', self.showGrid)
+	self.accept('xyzSnap', self.xyzSnap)
+	self.accept('hprSnap', self.hprSnap)
+
+    def ignoreArrowKeys(self):
+	# Accept arrow key events for swinging piece around
+	self.ignore('left')
+	self.ignore('right')
+	self.ignore('up')
+	self.ignore('down')
+
+    def mainMenuDisable(self):
+	self.clickBoxDictionary['mainMenuButtons'].disable()
+	self.ignore('activateWallModuleButtons')
+	self.ignore('activateStreetModuleButtons')
+	self.ignore('activateLandmarkButtons')
+	self.ignore('activatePropButtons')
+
+    def mainMenuEnable(self):
+	# Make sure all submenus are hidden
+	self.subMenuDisable()
+	# Now enable main menu
+	self.clickBoxDictionary['mainMenuButtons'].enable
+	self.accept('activateWallModuleButtons', self.activateWallModuleButtons)
+	self.accept('activateStreetModuleButtons', self.activateStreetModuleButtons)
+	self.accept('activateLandmarkButtons', self.activateLandmarkButtons)
+	self.accept('activatePropButtons', self.activatePropButtons)
+
+    def subMenuDisable(self):
+        for category in self.categorySet:
+            self.categoryDisable(category)
+
+    def vizMenuDisable(self):
+	self.clickBoxDictionary['vizRegionButtons'].disable()
+	self.ignore('addVizRegion')
+	self.ignore('addCollisionSphere')
+	self.grid.setGridSpacing(5.0)
+
+    def initializeLevelEditorButtons(self):
+	newClickBoxObject = ToggleBoxList(
+            [('Show Grid', self.showGrid, 0)
+             ('XYZ Snap', self.xyzSnap, 1),
+             ('HPR Snap', self.hprSnap, 1)],
+            -0.95, 0.90)
+	newClickBoxObject.alignLeft()
+	newClickBoxObject.setScale(0.06)
+	newClickBoxObject.makeAllWideAsWidest()
+	newClickBoxObject.enable()
+	self.clickBoxDictionary['gridMenuButtons'] = newClickBoxObject
+
+	newClickBoxObject = ClickBoxList(
+            [('Street modules', self.activateStreetModuleButtons),
+             ('Toon Walls', self.activateWallModuleButtons),
+             ('Landmark bldgs', self.activateLandmarkButtons),
+             ('Props', self.activatePropButtons)],
+            0.95, 0.90)
+	newClickBoxObject.setColor(0.5, 0.5, 0.5, 0.5)
+	newClickBoxObject.setScale(0.06)
+	newClickBoxObject.alignRight()
+	self.clickBoxDictionary['mainMenuButtons'] = newClickBoxObject
+
+	newClickBoxObject = ClickBox(
+            'New Group', 0.3, 0.3, -0.95, -0.9,
+            self.createNewLevelGroup, 0)
+	newClickBoxObject.nodePath().node().setCardColor(Point4(1,1,1,.5))
+	newClickBoxObject.setScale(0.05)
+	self.clickBoxDictionary['groupButton'] = newClickBoxObject
+
+	newClickBoxObject = ClickBox(
+            'Save DNA', 0.3, 0.3, -0.7, -0.9,
+            self.outputDNA, ['toontown.dna'],0)
+	newClickBoxObject.nodePath().node().setCardColor(Point4(1,1,1,.5))
+	newClickBoxObject.setScale(0.05)
+	self.clickBoxDictionary['saveButton'] = newClickBoxObject
+
+	newClickBoxObject = ToggleBox(
+            'Level Map', 0.3, 0.3, -0.47, -0.9,
+            self.toggleMapViz, [], 0)
+	newClickBoxObject.nodePath().node().setCardColor(Point4(1,1,1,.5))
+	newClickBoxObject.setButtonState(0)
+	newClickBoxObject.setScale(0.05)
+	self.clickBoxDictionary['mapButton'] = newClickBoxObject
+
+	self.dnaMenuEnable()
+
+	# Initialize module Dictionary with pointers to module
+                                   # node paths and create module buttons
+	self.initializeStreetButtons()
+	self.initializeWallButtons()
+	self.initializeLandmarkButtons()
+	self.initializePropButtons()
+
 """

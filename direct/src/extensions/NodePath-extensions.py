@@ -4,6 +4,10 @@
     of the NodePath class
     """
 
+    def id(self):
+        """Returns the bottom node's this pointer as a unique id"""
+        return self.node().this
+
     def getNodePathName(self):
         from PandaModules import *
         # Initialize to a default value
@@ -70,7 +74,8 @@
 
     def getAncestry(self):
         from PandaObject import *
-        if self.node() != render.node():
+        node = self.node()
+        if ((node != render.node()) | (node != hidden.node())):
             ancestry = self.getParent().getAncestry()
             ancestry.append(self)
             return ancestry

@@ -1,4 +1,15 @@
+from PandaModules import *
 from PandaObject import *
+
+X_AXIS = Vec3(1,0,0)
+Y_AXIS = Vec3(0,1,0)
+Z_AXIS = Vec3(0,0,1)
+NEG_X_AXIS = Vec3(-1,0,0)
+NEG_Y_AXIS = Vec3(0,-1,0)
+NEG_Z_AXIS = Vec3(0,0,-1)
+ZERO_VEC = ORIGIN = Vec3(0)
+UNIT_VEC = Vec3(1)
+ZERO_POINT = Point3(0)
 
 class LineNodePath(NodePath):
     def __init__(self, parent = None, **kw):
@@ -71,3 +82,5 @@ def planeIntersect (lineOrigin, lineDir, planeOrigin, normal):
     hitPt = lineDir * t
     return hitPt + lineOrigin
 
+def roundTo(value, divisor):
+    return round(value/float(divisor)) * divisor

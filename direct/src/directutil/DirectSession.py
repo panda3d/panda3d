@@ -43,6 +43,10 @@ class DirectSession(PandaObject):
         self.iRay = self.iRayList[0]
         self.hitPt = Point3(0.0)
 
+        # One run through the context task to init everything
+        for context in self.contextList:
+            context.contextTask(None)
+
         self.actionEvents = [('select', self.select),
                              ('deselect', self.deselect),
                              ('deselectAll', self.deselectAll),
@@ -89,8 +93,9 @@ class DirectSession(PandaObject):
 
     def followSelectedNodePathTask(self, state):
         mCoa2Render = state.dnp.mCoa2Dnp * state.dnp.getMat(render)
-        mCoa2Render.decomposeMatrix(
-            self.scale,self.hpr,self.pos,getDefaultCoordinateSystem())
+        decomposeMatrix(mCoa2Render,
+                        self.scale,self.hpr,self.pos,
+                        getDefaultCoordinateSystem())
         self.widget.setPosHpr(self.pos,self.hpr)
         return Task.cont
 

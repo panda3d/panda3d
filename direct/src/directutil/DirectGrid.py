@@ -43,8 +43,10 @@ class DirectGrid(NodePath,PandaObject):
 
 	# Initialize Grid characteristics
         self.fXyzSnap = 1
+        self.fHprSnap = 1
 	self.gridSize = 100.0
 	self.gridSpacing = 5.0
+        self.snapAngle = 15.0
         self.enable()
 
     def enable(self):
@@ -96,30 +98,43 @@ class DirectGrid(NodePath,PandaObject):
         minor.create()
         major.create()
         self.gridBack.setScale(scaledSize)
-
-    def roundTo(self, value, divisor):
-        return round(value/float(divisor)) * divisor
-
+        
     def setXyzSnap(self, fSnap):
         self.fXyzSnap = fSnap
 
     def getXyzSnap(self):
         return self.fXyzSnap
 
-    def snapToGrid(self, point):
+    def setHprSnap(self, fSnap):
+        self.fHprSnap = fSnap
+
+    def getHprSnap(self):
+        return self.fHprSnap
+
+    def computeSnapPoint(self, point):
+        # Start of with current point
+        self.snapPos.assign(point)
+        # Snap if necessary
         if self.fXyzSnap:
             self.snapPos.set(
-                roundTo(point[0], self.gridSpacing),
-                roundTo(point[1], self.gridSpacing),
-                roundTo(point[2], self.gridSpacing))
-        else:
-            self.snapPos.assign(point)
+                roundTo(self.snapPos[0], self.gridSpacing),
+                roundTo(self.snapPos[1], self.gridSpacing),
+                roundTo(self.snapPos[2], self.gridSpacing))
             
 	# Move snap marker to this point
 	self.snapMarker.setPos(self.snapPos)
 	
 	# Return the hit point
 	return self.snapPos
+
+    def computeSnapAngle(self, angle):
+        return roundTo(angle, self.snapAngle)
+
+    def setSnapAngle(self, angle):
+        self.snapAngle = angle
+
+    def getSnapAngle(self):
+        return self.snapAngle
 
     def setGridSpacing(self, spacing):
         self.gridSpacing = spacing

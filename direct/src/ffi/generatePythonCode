@@ -14,10 +14,10 @@ Generates Python code for the C++ libraries listed.
 
 Example:
 Linux:
-  ppython -d generatePythonCode -v -d $DIRECT/lib/py -e $DIRECT/src/extensions -i libdtool libpandaexpress libpanda libdirect
+  ppython -d generatePythonCode -v -d $DIRECT/lib/py -e $DIRECT/src/extensions -i libdtool libpandaexpress libpanda libdirect libtoontown
 
 Windows:
-  ppython -d generatePythonCode -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtool libpandaexpress libpanda libdirect
+  ppython -d generatePythonCode -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtool libpandaexpress libpanda libdirect libtoontown
 
 
 Options:

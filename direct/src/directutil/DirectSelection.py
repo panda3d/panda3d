@@ -18,12 +18,10 @@ class DirectNodePath(NodePath):
         # and its center of action (COA)
         self.mCoa2Dnp = Mat4()
         self.mCoa2Dnp.assign(Mat4.identMat())
-        self.mCoa2Dnp.setRow(3, Vec4(center[0], center[1], center[2], 1))
+        # self.mCoa2Dnp.setRow(3, Vec4(center[0], center[1], center[2], 1))
         # Transform from nodePath to widget
         self.mDnp2Widget = Mat4()
         self.mDnp2Widget.assign(Mat4.identMat())
-        # Use value of this pointer as unique ID
-        self.id = self.node().this
 
     def highlight(self):
         self.bbox.show()
@@ -65,7 +63,7 @@ class SelectedNodePaths(PandaObject):
             self.deselectAll()
 
         # Get this pointer
-        id = nodePath.node().this
+        id = nodePath.id()
         # First see if its already in the selected dictionary
         dnp = self.selectedDict.get(id, None)
         # If so, we're done
@@ -84,14 +82,14 @@ class SelectedNodePaths(PandaObject):
                 # Show its bounding box
                 dnp.highlight()
             # Add it to the selected dictionary
-            self.selectedDict[dnp.id] = dnp
+            self.selectedDict[dnp.id()] = dnp
         # And update last
         self.last = dnp
         return dnp
 
     def deselect(self, nodePath):
         # Get this pointer
-        id = nodePath.node().this
+        id = nodePath.id()
         # See if it is in the selected dictionary
         dnp = self.selectedDict.get(id, None)
         if dnp:
@@ -108,11 +106,16 @@ class SelectedNodePaths(PandaObject):
         list = []
         for key in self.selectedDict.keys():
             list.append(self.selectedDict[key])
+        return list
+
+    def __getitem__(self,index):
+        return self.selectedAsList()[index]
 
     def deselectedAsList(self):
         list = []
         for key in self.deselectedDict.keys():
             list.append(self.deselectedDict[key])
+        return list
 
     def forEachSelectedNodePathDo(self, func):
         duplicateKeys = self.selectedDict.keys()[:]
@@ -171,7 +174,7 @@ class SelectedNodePaths(PandaObject):
 
     def getDirectNodePath(self, nodePath):
         # Get this pointer
-        id = nodePath.node().this
+        id = nodePath.id()
         # First check selected dict
         dnp = self.selectedDict.get(id, None)
         if dnp:

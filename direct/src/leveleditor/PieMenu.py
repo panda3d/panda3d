@@ -4,28 +4,31 @@ from DirectGeometry import *
 class PieMenu(NodePath, PandaObject):
     def __init__(self, direct, menu, action = None, fUpdateOnlyOnChange = 1):
         NodePath.__init__(self)
-        # Become the menu
-        self.assign(menu)
+        # Create a toplevel node for aspect ratio scaling
+        self.assign(hidden.attachNewNode(NamedNode('PieMenu')))
+        # Attach the menu
+        self.menu = menu
+        self.menu.reparentTo(self)
         # Initialize instance variables
         self.direct = direct
-        self.numItems = self.getNumChildren()
+        self.numItems = self.menu.getNumChildren()
         self.degreesPerItem = 360.0/self.numItems
-        self.sfx = self.getSx()
-        self.sfz = self.getSz()
+        self.itemOffset = self.degreesPerItem / 2.0
+        self.sfx = self.menu.getSx()
+        self.sfz = self.menu.getSz()
         # Record target and action
         self.action = action
         self.initialState = None
         # Marking lines
-        self.lines = LineNodePath(self)
+        self.lines = LineNodePath(self.menu)
         self.lines.setColor(VBase4(1))
         self.lines.setThickness(1)
         # Set flags
         self.fUpdateOnlyOnChange = fUpdateOnlyOnChange
-        self.itemOffset = 0
 
     def performAction(self, value):
-        if action:
-            action(value)
+        if self.action:
+            self.action(value)
 
     def removePieMenuTask(self):
         taskMgr.removeTasksNamed('pieMenuTask')
@@ -43,7 +46,9 @@ class PieMenu(NodePath, PandaObject):
 	# Pop up menu
 	self.reparentTo(render2d)
 	self.setPos(self.originX,0.0,self.originY)
-
+        # Compensate for window aspect ratio
+        self.setScale(1.0, 1.0,1.0)
+        #self.direct.chan.width/float(self.direct.chan.height))
 	# Start drawing the selection line
 	self.lines.reset()
 	self.lines.moveTo(0,0,0)
@@ -62,7 +67,7 @@ class PieMenu(NodePath, PandaObject):
         deltaY = mouseY - self.originY
 
         # Update the line
-        self.lines.setVertex(1,(deltaX/sfx),0.0,(deltaY / sfz))
+        self.lines.setVertex(1,(deltaX/self.sfx),0.0,(deltaY/self.sfz))
 
         # How far from starting point has user moved the cursor?
         if ((abs(deltaX) < 0.1) & (abs(deltaY) < 0.1)):
@@ -74,15 +79,16 @@ class PieMenu(NodePath, PandaObject):
             else:
                 # Alway let use know mouse is in the center
                 self.performAction(-1)
-            
             self.currItem = -1
+        else:
+            # Outside of the center
             # Interacting with menu
             # subtract half a slice to effectively center item
             menuAngle = rad2Deg(math.atan2(deltaY, deltaX)) + self.itemOffset
             if menuAngle < 0.0:
                 menuAngle = menuAngle + 360.0
             menuAngle = menuAngle % 360.0
-            newItem = math.floor(menuAngle / self.degreesPerItem)
+            newItem = int(math.floor(menuAngle / self.degreesPerItem))
 
             if self.fUpdateOnlyOnChange:
                 if (self.currItem != newItem):
@@ -109,3 +115,4 @@ class PieMenu(NodePath, PandaObject):
 
     def setUpdateOnlyOnChange(self,flag):
 	self.fUpdateOnlyOnChange = flag
+
