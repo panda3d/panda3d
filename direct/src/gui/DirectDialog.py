@@ -64,6 +64,8 @@ class DirectDialog(DirectFrame):
             pad                  Space between border and interior graphics
             topPad               Extra space added above text/geom/image
             midPad               Extra space added between text/buttons
+            sidePad              Extra space added to either side of
+                                 text/buttons
             buttonPadSF          Scale factor used to expand/contract 
                                  button horizontal spacing
             command              Callback command used when a button is
@@ -102,6 +104,7 @@ class DirectDialog(DirectFrame):
             ('buttonSize',        None,          INITOPT),
             ('topPad',            0.06,          INITOPT),
             ('midPad',            0.12,          INITOPT),
+            ('sidePad',           0.,            INITOPT),
             ('buttonPadSF',       1.05,          INITOPT),
             # Alpha of fade screen behind dialog
             ('fadeScreen',        0,             None),
@@ -286,6 +289,9 @@ class DirectDialog(DirectFrame):
         # Resize frame to fit text and buttons
         l = min(bPos + bl, l) - pad[0]
         r = max(bMax + br, r) + pad[0]
+        sidePad = self['sidePad']
+        l -= sidePad
+        r += sidePad
         # reduce bottom by pad, button height and 2*button pad
         b = min(b - self['midPad'] - bpad[1] - bHeight - bpad[1], b) - pad[1]
         t = t + self['topPad'] + pad[1]
