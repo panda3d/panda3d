@@ -1924,7 +1924,7 @@ draw_tri(const GeomTri *geom) {
 //      nassertv(coords.size==norms.size);      nassertv(coords.size==colors.size);     nassertv(coords.size==texcoords.size);  need to assert only if we have this w/same binding
         // indexed mode requires all used norms,colors,texcoords,coords array be the same
 	    // length, or 0 or 1 (dwStride==0), also requires all elements to use the same index array
-  } else if(!(vindexes==NULL)&&(cindexes==NULL)&&(tindexes==NULL)&&(nindexes==NULL))
+  } else if(!((vindexes==NULL)&&(cindexes==NULL)&&(tindexes==NULL)&&(nindexes==NULL)))
 		 GeomVrtFmt=MixedFmtVerts;
 
 #ifdef DONT_USE_DRAWPRIMSTRIDED
@@ -2432,7 +2432,7 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 	//      nassertv(coords.size==norms.size);      nassertv(coords.size==colors.size);     nassertv(coords.size==texcoords.size);  need to assert only if we have this w/same binding
 		  // indexed mode requires all used norms,colors,texcoords,coords array be the same
 		  // length, or 0 or 1 (dwStride==0), also requires all elements to use the same index array
-	} else if(!(vindexes==NULL)&&(cindexes==NULL)&&(tindexes==NULL)&&(nindexes==NULL))
+	} else if(!((vindexes==NULL)&&(cindexes==NULL)&&(tindexes==NULL)&&(nindexes==NULL)))
 		   GeomVrtFmt=MixedFmtVerts;
 
 #ifdef DONT_USE_DRAWPRIMSTRIDED
