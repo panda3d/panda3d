@@ -654,6 +654,8 @@ update_image(bool redo_all) {
   if (pal->_shadow_color_type != (PNMFileType *)NULL) {
     _shadow_image.write(_image);
   }
+
+  release_image();
 }
 
 
@@ -769,6 +771,18 @@ get_image() {
     TexturePlacement *placement = (*pi);
     placement->fill_image(_image);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteImage::release_image
+//       Access: Public
+//  Description: Deallocates the memory allocated by a previous call to
+//               get_image().
+////////////////////////////////////////////////////////////////////
+void PaletteImage::
+release_image() {
+  _image.clear();
+  _got_image = false;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -66,6 +66,7 @@ private:
   bool find_hole(int &x, int &y, int x_size, int y_size) const;
   TexturePlacement *find_overlap(int x, int y, int x_size, int y_size) const;
   void get_image();
+  void release_image();
   void remove_image();
 
   // The ClearedRegion object keeps track of TexturePlacements that

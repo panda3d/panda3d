@@ -753,6 +753,22 @@ read_source_image() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureImage::release_source_image
+//       Access: Public
+//  Description: Frees the memory that was allocated by a previous
+//               call to read_source_image().  The next time
+//               read_source_image() is called, it will have to read
+//               the disk again.
+////////////////////////////////////////////////////////////////////
+void TextureImage::
+release_source_image() {
+  if (_read_source_image) {
+    _source_image.clear();
+    _read_source_image = false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureImage::set_source_image
 //       Access: Public
 //  Description: Accepts the indicated source image as if it had been

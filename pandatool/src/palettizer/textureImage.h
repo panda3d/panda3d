@@ -89,6 +89,7 @@ public:
   void copy_unplaced(bool redo_all);
 
   const PNMImage &read_source_image();
+  void release_source_image();
   void set_source_image(const PNMImage &image);
   void read_header();
   bool is_newer_than(const Filename &reference_filename);

@@ -88,6 +88,8 @@ copy(TextureImage *texture) {
 
     write(dest_image);
   }
+
+  texture->release_source_image();
 }
 
 ////////////////////////////////////////////////////////////////////
