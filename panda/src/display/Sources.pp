@@ -13,7 +13,6 @@
      config_display.h displayRegion.I displayRegion.h  \
      displayRegionStack.I \
      displayRegionStack.h \
-     drawCullHandler.h drawCullHandler.I \
      frameBufferStack.I frameBufferStack.h \
      geomContext.I geomContext.h geomNodeContext.I geomNodeContext.h \
      graphicsChannel.I graphicsChannel.h \
@@ -33,7 +32,6 @@
      
  #define INCLUDED_SOURCES  \
      config_display.cxx displayRegion.cxx \
-     drawCullHandler.cxx \
      geomContext.cxx geomNodeContext.cxx graphicsChannel.cxx  \
      graphicsEngine.cxx \
      graphicsLayer.cxx graphicsPipe.cxx graphicsStateGuardian.cxx  \
@@ -46,7 +44,6 @@
     config_display.h \
     displayRegion.I displayRegion.h displayRegionStack.I \
     displayRegionStack.h \
-    drawCullHandler.h drawCullHandler.I \
     frameBufferStack.I frameBufferStack.h \
     geomContext.I geomContext.h geomNodeContext.I geomNodeContext.h \
     graphicsChannel.I graphicsChannel.h \

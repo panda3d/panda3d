@@ -22,6 +22,9 @@
 #include "textureContext.h"
 #include "renderBuffer.h"
 #include "colorAttrib.h"
+#include "renderState.h"
+#include "depthWriteAttrib.h"
+#include "colorWriteAttrib.h"
 
 #include "clockObject.h"
 #include "geomNode.h"
@@ -890,6 +893,101 @@ begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 end_decal(GeomNode *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::polygon_offset_decals
+//       Access: Public, Virtual
+//  Description: Returns true if this GSG can implement decals using a
+//               PolygonOffsetAttrib, or false if that is unreliable
+//               and the three-step rendering process should be used
+//               instead.
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+polygon_offset_decals() {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::begin_decal_base_first
+//       Access: Public, Virtual
+//  Description: Called during draw to begin a three-step rendering
+//               phase to draw decals.  The first step,
+//               begin_decal_base_first(), is called prior to drawing the
+//               base geometry.  It should set up whatever internal
+//               state is appropriate, as well as returning a
+//               RenderState object that should be applied to the base
+//               geometry for rendering.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) GraphicsStateGuardian::
+begin_decal_base_first() {
+  // Turn off writing the depth buffer to render the base geometry.
+  static CPT(RenderState) decal_base_first;
+  if (decal_base_first == (const RenderState *)NULL) {
+    decal_base_first = RenderState::make
+      (DepthWriteAttrib::make(DepthWriteAttrib::M_off));
+  }
+  return decal_base_first;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::begin_decal_nested
+//       Access: Public, Virtual
+//  Description: Called during draw to begin a three-step rendering
+//               phase to draw decals.  The second step,
+//               begin_decal_nested(), is called after drawing the
+//               base geometry and prior to drawing any of the nested
+//               decal geometry that is to be applied to the base
+//               geometry.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) GraphicsStateGuardian::
+begin_decal_nested() {
+  // We keep the depth buffer off during this operation, although
+  // perhaps it doesn't matter so much here.
+  static CPT(RenderState) decal_nested;
+  if (decal_nested == (const RenderState *)NULL) {
+    decal_nested = RenderState::make
+      (DepthWriteAttrib::make(DepthWriteAttrib::M_off));
+  }
+  return decal_nested;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::begin_decal_base_second
+//       Access: Public, Virtual
+//  Description: Called during draw to begin a three-step rendering
+//               phase to draw decals.  The third step,
+//               begin_decal_base_second(), is called after drawing the
+//               base geometry and the nested decal geometry, and
+//               prior to drawing the base geometry one more time (if
+//               needed).
+//
+//               It should return a RenderState object appropriate for
+//               rendering the base geometry the second time, or NULL
+//               if it is not necessary to re-render the base
+//               geometry.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) GraphicsStateGuardian::
+begin_decal_base_second() {
+  // Now let the depth buffer go back on, but turn off writing the
+  // color buffer to render the base geometry after the second pass.
+  static CPT(RenderState) decal_base_second;
+  if (decal_base_second == (const RenderState *)NULL) {
+    decal_base_second = RenderState::make
+      (ColorWriteAttrib::make(ColorWriteAttrib::M_off));
+  }
+  return decal_base_second;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::finish_decal
+//       Access: Public, Virtual
+//  Description: Called during draw to clean up after decals are
+//               finished.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+finish_decal() {
+  // No need to do anything special here.
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -135,6 +135,12 @@ public:
   virtual void begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib);
   virtual void end_decal(GeomNode *base_geom);
 
+  virtual bool polygon_offset_decals();
+  virtual CPT(RenderState) begin_decal_base_first();
+  virtual CPT(RenderState) begin_decal_nested();
+  virtual CPT(RenderState) begin_decal_base_second();
+  virtual void finish_decal();
+
   virtual void reset();
 
   // *** QP

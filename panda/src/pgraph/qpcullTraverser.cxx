@@ -167,10 +167,7 @@ r_traverse(PandaNode *node,
       // actually culling an object we simply force it to be drawn in
       // red wireframe.
       view_frustum = (GeometricBoundingVolume *)NULL;
-      CPT(RenderState) fake_effect = RenderState::make
-        (ColorAttrib::make_flat(Colorf(1.0f, 0.0f, 0.0f, 1.0f)),
-         TextureAttrib::make_off(),
-         1000);
+      CPT(RenderState) fake_effect = get_fake_view_frustum_cull_effect();
       next_state = next_state->compose(fake_effect);
 
     } else if ((result & BoundingVolume::IF_all) != 0) {
@@ -196,16 +193,16 @@ r_traverse(PandaNode *node,
   PT(GeometricBoundingVolume) next_view_frustum = view_frustum;
   PT(GeometricBoundingVolume) next_guard_band = guard_band;
 
-  const TransformState *transform = node->get_transform();
-  if (!transform->is_identity()) {
-    next_render_transform = render_transform->compose(transform);
-    next_net_transform = net_transform->compose(transform);
+  const TransformState *node_transform = node->get_transform();
+  if (!node_transform->is_identity()) {
+    next_render_transform = render_transform->compose(node_transform);
+    next_net_transform = net_transform->compose(node_transform);
 
     if ((view_frustum != (GeometricBoundingVolume *)NULL) ||
         (guard_band != (GeometricBoundingVolume *)NULL)) {
       // We need to move the viewing frustums into the node's
       // coordinate space by applying the node's inverse transform.
-      if (transform->is_singular()) {
+      if (node_transform->is_singular()) {
         // But we can't invert a singular transform!  Instead of
         // trying, we'll just give up on frustum culling from this
         // point down.
@@ -214,7 +211,7 @@ r_traverse(PandaNode *node,
 
       } else {
         CPT(TransformState) inv_transform = 
-          transform->invert_compose(TransformState::make_identity());
+          node_transform->invert_compose(TransformState::make_identity());
         
         if (view_frustum != (GeometricBoundingVolume *)NULL) {
           next_view_frustum = DCAST(GeometricBoundingVolume, view_frustum->make_copy());
@@ -229,9 +226,10 @@ r_traverse(PandaNode *node,
     }
   }
 
-  next_state = next_state->compose(node->get_state());
+  const RenderState *node_state = node->get_state();
+  next_state = next_state->compose(node_state);
 
-  const BillboardAttrib *billboard = state->get_billboard();
+  const BillboardAttrib *billboard = node_state->get_billboard();
   if (billboard != (const BillboardAttrib *)NULL) {
     // Got to apply a billboard transform here.
     CPT(TransformState) billboard_transform = 
@@ -245,24 +243,162 @@ r_traverse(PandaNode *node,
     next_view_frustum = (GeometricBoundingVolume *)NULL;
   }
 
+  if (node_state->has_decal()) {
+    start_decal(node, next_render_transform, next_state);
+
+  } else {
+    if (node->is_geom_node()) {
+      qpGeomNode *geom_node = DCAST(qpGeomNode, node);
+      
+      // Get all the Geoms, with no decalling.
+      int num_geoms = geom_node->get_num_geoms();
+      for (int i = 0; i < num_geoms; i++) {
+        CullableObject *object = new CullableObject;
+        object->_geom = geom_node->get_geom(i);
+        object->_state = next_state->compose(geom_node->get_geom_state(i));
+        object->_transform = next_render_transform;
+        _cull_handler->record_object(object);
+      }
+    }
+
+    // Now visit all the node's children.
+    PandaNode::Children cr = node->get_children();
+    int num_children = cr.get_num_children();
+    for (int i = 0; i < num_children; i++) {
+      r_traverse(cr.get_child(i), next_render_transform, next_net_transform,
+                 next_state, next_view_frustum, next_guard_band);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpCullTraverser::start_decal
+//       Access: Private
+//  Description: Collects a base node and all of the decals applied to
+//               it.  This involves recursing below the base GeomNode
+//               to find all the decal geoms; we don't bother to apply
+//               any view-frustum culling at this point, and we don't
+//               presently support billboards or LOD's within the
+//               decals.  Hard to justify the duplicate code this
+//               would require.
+////////////////////////////////////////////////////////////////////
+void qpCullTraverser::
+start_decal(PandaNode *node, 
+            const TransformState *render_transform,
+            const RenderState *state) {
+  if (!node->is_geom_node()) {
+    pgraph_cat.error()
+      << "DecalAttrib applied to " << *node << ", not a GeomNode.\n";
+    return;
+  }
+
+  // Build a chain of CullableObjects.  The head of the chain will be
+  // all of the base Geoms in order, followed by an empty
+  // CullableObject node, followed by all of the decal Geoms, in
+  // order.
+
+  const TransformState *next_render_transform = render_transform;
+  const RenderState *next_state = state;
+
+  // Since the CullableObject is a linked list which gets built in
+  // LIFO order, we start with the decals.
+  CullableObject *decals = (CullableObject *)NULL;
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = num_children - 1; i >= 0; i--) {
+    decals =
+      r_get_decals(cr.get_child(i), next_render_transform, next_state, decals);
+  }
+
+  // Now create a new, empty CullableObject to separate the decals
+  // from the non-decals.
+  CullableObject *separator = new CullableObject(decals);
+
+  // And now get the base Geoms, again in reverse order.
+  CullableObject *object = separator;
+  qpGeomNode *geom_node = DCAST(qpGeomNode, node);
+      
+  // Get all the Geoms, with no decalling.
+  int num_geoms = geom_node->get_num_geoms();
+  for (int i = num_geoms - 1; i >= 0; i--) {
+    object = new CullableObject(object);
+    object->_geom = geom_node->get_geom(i);
+    object->_state = next_state->compose(geom_node->get_geom_state(i));
+    object->_transform = next_render_transform;
+  }
+
+  if (object != separator) {
+    // Finally, send the whole list down to the CullHandler for
+    // processing.  The first Geom in the node now represents the
+    // overall state.
+    _cull_handler->record_object(object);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpCullTraverser::r_get_decals
+//       Access: Private
+//  Description: Recursively gets all the decals applied to a
+//               particular GeomNode.  These are built into a
+//               CullableObject list in LIFO order (so that the
+//               traversing the list will extract them in the order
+//               they were encountered in the scene graph).
+////////////////////////////////////////////////////////////////////
+CullableObject *qpCullTraverser::
+r_get_decals(PandaNode *node, 
+             const TransformState *render_transform,
+             const RenderState *state,
+             CullableObject *decals) {
+  const TransformState *node_transform = node->get_transform();
+  const RenderState *node_state = node->get_state();
+
+  CPT(TransformState) next_render_transform = 
+    render_transform->compose(node_transform);
+  CPT(RenderState) next_state =
+    state->compose(node_state);
+
+  // First, visit all of the node's children.
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = num_children - 1; i >= 0; i--) {
+    decals =
+      r_get_decals(cr.get_child(i), next_render_transform, next_state, decals);
+  }
+
+  // Now, tack on any geoms within the node.
   if (node->is_geom_node()) {
-    qpGeomNode *geom_node;
-    DCAST_INTO_V(geom_node, node);
-    
+    qpGeomNode *geom_node = DCAST(qpGeomNode, node);
+
     int num_geoms = geom_node->get_num_geoms();
-    for (int i = 0; i < num_geoms; i++) {
-      Geom *geom = geom_node->get_geom(i);
-      CPT(RenderState) geom_state = 
-        next_state->compose(geom_node->get_geom_state(i));
-      _cull_handler->record_geom(geom, next_render_transform, geom_state);
+    for (int i = num_geoms - 1; i >= 0; i--) {
+      decals = new CullableObject(decals);
+      decals->_geom = geom_node->get_geom(i);
+      decals->_state = next_state->compose(geom_node->get_geom_state(i));
+      decals->_transform = next_render_transform;
     }
   }
 
-  // Now visit all the node's children.
-  PandaNode::Children cr = node->get_children();
-  int num_children = cr.get_num_children();
-  for (int i = 0; i < num_children; i++) {
-    r_traverse(cr.get_child(i), next_render_transform, next_net_transform,
-               next_state, next_view_frustum, next_guard_band);
-  }
+  return decals;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpCullTraverser::get_fake_view_frustum_cull_effect
+//       Access: Private, Static
+//  Description: Returns a RenderState for rendering stuff in red
+//               wireframe, strictly for the fake_view_frustum_cull
+//               effect.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) qpCullTraverser::
+get_fake_view_frustum_cull_effect() {
+  // Once someone asks for this pointer, we hold its reference count
+  // and never free it.
+  static CPT(RenderState) effect = (const RenderState *)NULL;
+  if (effect == (const RenderState *)NULL) {
+    effect = RenderState::make
+      (ColorAttrib::make_flat(Colorf(1.0f, 0.0f, 0.0f, 1.0f)),
+       TextureAttrib::make_off(),
+       1000);
+  }
+  return effect;
+}
+

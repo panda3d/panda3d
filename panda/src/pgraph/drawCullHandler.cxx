@@ -1,5 +1,5 @@
-// Filename: binCullHandler.cxx
-// Created by:  drose (28Feb02)
+// Filename: drawCullHandler.cxx
+// Created by:  drose (25Feb02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,16 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "binCullHandler.h"
+#include "drawCullHandler.h"
+#include "cullableObject.h"
+#include "geom.h"
+#include "transformState.h"
+#include "renderState.h"
+#include "graphicsStateGuardianBase.h"
+
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BinCullHandler::record_object
+//     Function: DrawCullHandler::record_object
 //       Access: Public, Virtual
 //  Description: This callback function is intended to be overridden
 //               by a derived class.  This is called as each Geom is
 //               discovered by the CullTraverser.
 ////////////////////////////////////////////////////////////////////
-void BinCullHandler::
+void DrawCullHandler::
 record_object(CullableObject *object) {
-  _cull_result->add_object(object);
+  draw(object, _gsg);
+  delete object;
 }

@@ -68,6 +68,9 @@
 #include "textureAttrib.h"
 #include "cullFaceAttrib.h"
 #include "transparencyAttrib.h"
+#include "depthTestAttrib.h"
+#include "depthWriteAttrib.h"
+#include "colorWriteAttrib.h"
 #include "clockObject.h"
 #include "string_utils.h"
 #include "dcast.h"
@@ -3143,8 +3146,7 @@ issue_depth_test(const DepthTestTransition *attrib) {
 void GLGraphicsStateGuardian::
 issue_depth_write(const DepthWriteTransition *attrib) {
   //  activate();
-
-  call_glDepthMask(attrib->is_on());
+  glDepthMask(attrib->is_on());
   report_errors();
 }
 
@@ -3545,6 +3547,55 @@ issue_transparency(const TransparencyAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::issue_color_write
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+issue_color_write(const ColorWriteAttrib *attrib) {
+  ColorWriteAttrib::Mode mode = attrib->get_mode();
+  if (mode == ColorWriteAttrib::M_off) {
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+  } else {
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  }
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::issue_depth_test
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+issue_depth_test(const DepthTestAttrib *attrib) {
+  DepthTestAttrib::Mode mode = attrib->get_mode();
+  if (mode == DepthTestAttrib::M_none) {
+    enable_depth_test(false);
+  } else {
+    enable_depth_test(true);
+    glDepthFunc(get_depth_func_type(mode));
+  }
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::issue_depth_write
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+issue_depth_write(const DepthWriteAttrib *attrib) {
+  DepthWriteAttrib::Mode mode = attrib->get_mode();
+  if (mode == DepthWriteAttrib::M_off) {
+    glDepthMask(GL_FALSE);
+  } else {
+    glDepthMask(GL_TRUE);
+  }
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::wants_normals
 //       Access: Public, Virtual
 //  Description:
@@ -3603,7 +3654,7 @@ begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib) {
 
     } else {
       // Turn off writing the depth buffer to render the base geometry.
-      call_glDepthMask(false);
+      glDepthMask(false);
       DepthWriteTransition *dwa = new DepthWriteTransition;
       dwa->set_off();
       attrib.set_transition(dwa);
@@ -3661,7 +3712,7 @@ end_decal(GeomNode *base_geom) {
       glPopMatrix();
 
       // Enable the writing to the depth buffer.
-      call_glDepthMask(true);
+      glDepthMask(true);
 
       // Disable the writing to the color buffer, however we have to
       // do this.
@@ -4356,6 +4407,31 @@ get_depth_func_type(DepthTestProperty::Mode m) const
   default:
     glgsg_cat.error()
       << "Invalid DepthTestProperty::Mode value" << endl;
+    return GL_LESS;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_depth_func_type
+//       Access: Protected
+//  Description: Maps from the depth func modes to gl version
+////////////////////////////////////////////////////////////////////
+GLenum GLGraphicsStateGuardian::
+get_depth_func_type(DepthTestAttrib::Mode m) const
+{
+  switch(m) {
+  case DepthTestAttrib::M_never: return GL_NEVER;
+  case DepthTestAttrib::M_less: return GL_LESS;
+  case DepthTestAttrib::M_equal: return GL_EQUAL;
+  case DepthTestAttrib::M_less_equal: return GL_LEQUAL;
+  case DepthTestAttrib::M_greater: return GL_GREATER;
+  case DepthTestAttrib::M_not_equal: return GL_NOTEQUAL;
+  case DepthTestAttrib::M_greater_equal: return GL_GEQUAL;
+  case DepthTestAttrib::M_always: return GL_ALWAYS;
+
+  default:
+    glgsg_cat.error()
+      << "Invalid DepthTestAttrib::Mode value" << endl;
     return GL_LESS;
   }
 }

@@ -1,5 +1,5 @@
-// Filename: cullBinUnsorted.I
-// Created by:  drose (28Feb02)
+// Filename: colorWriteAttrib.I
+// Created by:  drose (04Mar02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,12 +18,23 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullBinUnsorted::Constructor
-//       Access: Public
-//  Description: 
+//     Function: ColorWriteAttrib::Constructor
+//       Access: Private
+//  Description: Use ColorWriteAttrib::make() to construct a new
+//               ColorWriteAttrib object.
 ////////////////////////////////////////////////////////////////////
-INLINE CullBinUnsorted::
-CullBinUnsorted(GraphicsStateGuardianBase *gsg) :
-  CullBin(gsg)
+INLINE ColorWriteAttrib::
+ColorWriteAttrib(ColorWriteAttrib::Mode mode) :
+  _mode(mode)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorWriteAttrib::get_mode
+//       Access: Published
+//  Description: Returns the color write mode.
+////////////////////////////////////////////////////////////////////
+INLINE ColorWriteAttrib::Mode ColorWriteAttrib::
+get_mode() const {
+  return _mode;
 }

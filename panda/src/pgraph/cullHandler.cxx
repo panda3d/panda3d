@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cullHandler.h"
+#include "cullableObject.h"
 #include "geom.h"
 #include "transformState.h"
 #include "renderState.h"
@@ -33,17 +34,66 @@ CullHandler::
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullHandler::record_geom
+//     Function: CullHandler::record_object
 //       Access: Public, Virtual
 //  Description: This callback function is intended to be overridden
 //               by a derived class.  This is called as each Geom is
 //               discovered by the CullTraverser.
 //
-//               This default method simply outputs a message to cerr;
-//               it's not intended to be used except for debugging.
+//               The CullHandler becomes the owner of the
+//               CullableObject pointer and is expected to delete it
+//               later.
 ////////////////////////////////////////////////////////////////////
 void CullHandler::
-record_geom(Geom *geom, const TransformState *transform,
-            const RenderState *state) {
-  cerr << *geom << " " << *transform << " " << *state << "\n";
+record_object(CullableObject *object) {
+  cerr << *object->_geom << " " << *object->_transform << " " << *object->_state << "\n";
+  delete object;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullHandler::draw_with_decals
+//       Access: Public, Static
+//  Description: Draws the indicated CullableObject, assuming it has
+//               attached decals.
+////////////////////////////////////////////////////////////////////
+void CullHandler::
+draw_with_decals(CullableObject *object, GraphicsStateGuardianBase *gsg) {
+  // We draw with a three-step process.
+
+  // First, render all of the base geometry for the first pass.
+  CPT(RenderState) state = gsg->begin_decal_base_first();
+
+  CullableObject *base = object;
+  while (base != (CullableObject *)NULL && base->_geom != (Geom *)NULL) {
+    gsg->set_state_and_transform(base->_state->compose(state), base->_transform);
+    base->_geom->draw(gsg);
+
+    base = base->_next;
+  }
+
+  if (base != (CullableObject *)NULL) {
+    // Now, draw all the decals.
+    state = gsg->begin_decal_nested();
+
+    CullableObject *decal = base->_next;
+    while (decal != (CullableObject *)NULL) {
+      gsg->set_state_and_transform(decal->_state->compose(state), decal->_transform);
+      decal->_geom->draw(gsg);
+      
+      decal = decal->_next;
+    }
+  }
+
+  // And now, re-draw the base geometry, if required.
+  state = gsg->begin_decal_base_second();
+  if (state != (const RenderState *)NULL) {
+    base = object;
+    while (base != (CullableObject *)NULL && base->_geom != (Geom *)NULL) {
+      gsg->set_state_and_transform(base->_state->compose(state), base->_transform);
+      base->_geom->draw(gsg);
+      
+      base = base->_next;
+    }
+  }
+}
+

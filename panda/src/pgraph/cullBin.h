@@ -24,9 +24,7 @@
 #include "typedReferenceCount.h"
 #include "pointerTo.h"
 
-class Geom;
-class TransformState;
-class RenderState;
+class CullableObject;
 class GraphicsStateGuardianBase;
 
 ////////////////////////////////////////////////////////////////////
@@ -43,11 +41,11 @@ class GraphicsStateGuardianBase;
 class EXPCL_PANDA CullBin : public TypedReferenceCount {
 public:
   INLINE CullBin(GraphicsStateGuardianBase *gsg);
+  virtual ~CullBin();
 
   virtual PT(CullBin) make_next() const;
 
-  virtual void add_geom(Geom *geom, const TransformState *transform,
-                        const RenderState *state)=0;
+  virtual void add_object(CullableObject *object)=0;
   virtual void finish_cull();
 
   virtual void draw()=0;

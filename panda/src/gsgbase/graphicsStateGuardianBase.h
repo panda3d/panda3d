@@ -89,7 +89,7 @@ class MaterialAttrib;
 class RenderModeAttrib;
 class ColorBlendAttrib;
 class TextureApplyAttrib;
-class ColorMaskAttrib;
+class ColorWriteAttrib;
 class DepthTestAttrib;
 class DepthWriteAttrib;
 class TexGenAttrib;
@@ -155,6 +155,16 @@ public:
   // virtual function because different GSG's may define the modelview
   // coordinate space differently.
   virtual float compute_distance_to(const LPoint3f &point) const=0;
+
+  // These are used to implement decals.  If polygon_offset_decals()
+  // returns true, none of the remaining functions will be called,
+  // since polygon offsets can be used to implement decals fully (and
+  // usually faster).
+  virtual bool polygon_offset_decals()=0;
+  virtual CPT(RenderState) begin_decal_base_first()=0;
+  virtual CPT(RenderState) begin_decal_nested()=0;
+  virtual CPT(RenderState) begin_decal_base_second()=0;
+  virtual void finish_decal()=0;
 
   // Defined here are some internal interface functions for the
   // GraphicsStateGuardian.  These are here to support
@@ -238,7 +248,7 @@ public:
   virtual void issue_render_mode(const RenderModeAttrib *) { }
   virtual void issue_color_blend(const ColorBlendAttrib *) { }
   virtual void issue_texture_apply(const TextureApplyAttrib *) { }
-  virtual void issue_color_mask(const ColorMaskAttrib *) { }
+  virtual void issue_color_write(const ColorWriteAttrib *) { }
   virtual void issue_depth_test(const DepthTestAttrib *) { }
   virtual void issue_depth_write(const DepthWriteAttrib *) { }
   virtual void issue_tex_gen(const TexGenAttrib *) { }

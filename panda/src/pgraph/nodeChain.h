@@ -91,9 +91,9 @@ PUBLISHED:
   /*
   NodeChainCollection get_siblings() const;
   NodeChainCollection get_children() const;
+  */
   INLINE int get_num_children() const;
   INLINE NodeChain get_child(int n) const;
-  */
 
   INLINE bool has_parent() const;
   INLINE NodeChain get_parent() const;

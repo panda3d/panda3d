@@ -1,5 +1,5 @@
-// Filename: cullBinUnsorted.I
-// Created by:  drose (28Feb02)
+// Filename: depthWriteAttrib.I
+// Created by:  drose (04Mar02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,12 +18,23 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullBinUnsorted::Constructor
-//       Access: Public
-//  Description: 
+//     Function: DepthWriteAttrib::Constructor
+//       Access: Private
+//  Description: Use DepthWriteAttrib::make() to construct a new
+//               DepthWriteAttrib object.
 ////////////////////////////////////////////////////////////////////
-INLINE CullBinUnsorted::
-CullBinUnsorted(GraphicsStateGuardianBase *gsg) :
-  CullBin(gsg)
+INLINE DepthWriteAttrib::
+DepthWriteAttrib(DepthWriteAttrib::Mode mode) :
+  _mode(mode)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DepthWriteAttrib::get_mode
+//       Access: Published
+//  Description: Returns the depth write mode.
+////////////////////////////////////////////////////////////////////
+INLINE DepthWriteAttrib::Mode DepthWriteAttrib::
+get_mode() const {
+  return _mode;
 }

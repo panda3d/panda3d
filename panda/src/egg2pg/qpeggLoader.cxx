@@ -28,6 +28,7 @@
 #include "cullFaceAttrib.h"
 #include "cullBinAttrib.h"
 #include "transparencyAttrib.h"
+#include "decalAttrib.h"
 #include "qpgeomNode.h"
 #include "string_utils.h"
 #include "eggPrimitive.h"
@@ -39,6 +40,7 @@
 #include "eggPolygon.h"
 #include "eggBin.h"
 #include "eggTable.h"
+#include "nodeChain.h"
 
 #include <ctype.h>
 #include <algorithm>
@@ -123,16 +125,13 @@ build_graph() {
   make_node(&_data, _root);
   _builder.qpbuild();
 
-  /*
-  reset_directs();
+  //  reset_directs();
   reparent_decals();
 
-  apply_deferred_arcs(_root);
-  */
+  //  apply_deferred_arcs(_root);
 }
 
 
-/*
 ////////////////////////////////////////////////////////////////////
 //     Function: qpEggLoader::reparent_decals
 //       Access: Public
@@ -145,38 +144,34 @@ void qpEggLoader::
 reparent_decals() {
   Decals::const_iterator di;
   for (di = _decals.begin(); di != _decals.end(); ++di) {
-    RenderRelation *arc = (*di);
-    nassertv(arc != (RenderRelation *)NULL);
-    PandaNode *node = DCAST(PandaNode, arc->get_child());
+    PandaNode *node = (*di);
     nassertv(node != (PandaNode *)NULL);
 
-    // First, search for the GeomNode.
-    GeomNode *geom = NULL;
-    int num_children =
-      node->get_num_children(RenderRelation::get_class_type());
-    for (int i = 0; i < num_children; i++) {
-      NodeRelation *child_arc =
-        node->get_child(RenderRelation::get_class_type(), i);
-      nassertv(child_arc != (NodeRelation *)NULL);
-      Node *child = child_arc->get_child();
-      nassertv(child != (Node *)NULL);
+    // The NodeChain interface is best for this.
+    NodeChain parent(node);
 
-      if (child->is_of_type(GeomNode::get_class_type())) {
-        if (geom != (GeomNode *)NULL) {
+    // First, search for the GeomNode.
+    NodeChain geom_parent;
+    int num_children = parent.get_num_children();
+    for (int i = 0; i < num_children; i++) {
+      NodeChain child = parent.get_child(i);
+
+      if (child.node()->is_of_type(qpGeomNode::get_class_type())) {
+        if (!geom_parent.is_empty()) {
           // Oops, too many GeomNodes.
           egg2pg_cat.error()
-            << "Decal onto " << node->get_name()
-            << " uses base geometry with multiple states.\n";
+            << "Decal onto " << parent.node()->get_name()
+            << " uses base geometry with multiple GeomNodes.\n";
           _error = true;
         }
-        DCAST_INTO_V(geom, child);
+        geom_parent = child;
       }
     }
 
-    if (geom == (GeomNode *)NULL) {
+    if (geom_parent.is_empty()) {
       // No children were GeomNodes.
       egg2pg_cat.error()
-        << "Ignoring decal onto " << node->get_name()
+        << "Ignoring decal onto " << parent.node()->get_name()
         << "; no geometry within group.\n";
       _error = true;
     } else {
@@ -185,23 +180,21 @@ reparent_decals() {
       // list.
       int i = 0;
       while (i < num_children) {
-        NodeRelation *child_arc =
-          node->get_child(RenderRelation::get_class_type(), i);
-        nassertv(child_arc != (NodeRelation *)NULL);
-        Node *child = child_arc->get_child();
-        nassertv(child != (Node *)NULL);
+        NodeChain child = parent.get_child(i);
 
-        if (child->is_of_type(GeomNode::get_class_type())) {
+        if (child.node()->is_of_type(qpGeomNode::get_class_type())) {
           i++;
         } else {
-          child_arc->change_parent(geom);
+          child.reparent_to(geom_parent);
           num_children--;
         }
       }
+
+      // Finally, set the DecalAttrib on the base geometry.
+      geom_parent.node()->set_attrib(DecalAttrib::make());
     }
   }
 }
-*/
 
 /*
 ////////////////////////////////////////////////////////////////////
@@ -1516,7 +1509,6 @@ create_group_arc(EggGroup *egg_group, PandaNode *parent, PandaNode *node) {
     break;
   }
 
-  /*
   if (egg_group->get_decal_flag()) {
     if (egg_ignore_decals) {
       egg2pg_cat.error()
@@ -1528,12 +1520,8 @@ create_group_arc(EggGroup *egg_group, PandaNode *parent, PandaNode *node) {
     // descendant groups will be decaled onto the geometry within
     // this group.  This means we'll need to reparent things a bit
     // afterward.
-    _decals.insert(arc);
-
-    // We'll also set up the DecalTransition now.
-    arc->set_transition(new DecalTransition);
+    _decals.insert(node);
   }
-  */
 
   /*
   if (egg_group->get_direct_flag()) {

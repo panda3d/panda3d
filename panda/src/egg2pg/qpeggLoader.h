@@ -139,10 +139,10 @@ private:
   Materials _materials_bface;
   */
 
-  /*
   typedef pset<PandaNode *> Decals;
   Decals _decals;
 
+  /*
   typedef pset<PandaNode *> Directs;
   Directs _directs;
 

@@ -10,6 +10,7 @@
     binCullHandler.h binCullHandler.I \
     qpcamera.h qpcamera.I \
     colorAttrib.h colorAttrib.I \
+    colorWriteAttrib.h colorWriteAttrib.I \
     config_pgraph.h \
     cullBin.h cullBin.I \
     cullBinAttrib.h cullBinAttrib.I \
@@ -17,9 +18,14 @@
     cullBinManager.h cullBinManager.I \
     cullBinUnsorted.h cullBinUnsorted.I \
     cullFaceAttrib.h cullFaceAttrib.I \
-    cullHandler.h \
+    cullHandler.h cullHandler.I \
     cullResult.h cullResult.I \
     qpcullTraverser.h qpcullTraverser.I \
+    cullableObject.h cullableObject.I \
+    decalAttrib.h decalAttrib.I \
+    depthTestAttrib.h depthTestAttrib.I \
+    depthWriteAttrib.h depthWriteAttrib.I \
+    drawCullHandler.h drawCullHandler.I \
     qpgeomNode.h qpgeomNode.I \
     qplensNode.h qplensNode.I \
     nodeChain.h nodeChain.I \
@@ -37,6 +43,7 @@
     binCullHandler.cxx \
     qpcamera.cxx \
     colorAttrib.cxx \
+    colorWriteAttrib.cxx \
     config_pgraph.cxx \
     cullBin.cxx \
     cullBinAttrib.cxx \
@@ -47,6 +54,11 @@
     cullHandler.cxx \
     cullResult.cxx \
     qpcullTraverser.cxx \
+    cullableObject.cxx \
+    decalAttrib.cxx \
+    depthTestAttrib.cxx \
+    depthWriteAttrib.cxx \
+    drawCullHandler.cxx \
     qpgeomNode.cxx \
     qplensNode.cxx \
     nodeChain.cxx \
@@ -69,6 +81,7 @@
     binCullHandler.h binCullHandler.I \
     qpcamera.h qpcamera.I \
     colorAttrib.h colorAttrib.I \
+    colorWriteAttrib.h colorWriteAttrib.I \
     config_pgraph.h \
     cullBin.h cullBin.I \
     cullBinAttrib.h cullBinAttrib.I \
@@ -76,9 +89,14 @@
     cullBinManager.h cullBinManager.I \
     cullBinUnsorted.h cullBinUnsorted.I \
     cullFaceAttrib.h cullFaceAttrib.I \
-    cullHandler.h \
+    cullHandler.h cullHandler.I \
     cullResult.h cullResult.I \
     qpcullTraverser.h qpcullTraverser.I \
+    cullableObject.h cullableObject.I \
+    decalAttrib.h decalAttrib.I \
+    depthTestAttrib.h depthTestAttrib.I \
+    depthWriteAttrib.h depthWriteAttrib.I \
+    drawCullHandler.h drawCullHandler.I \
     qpgeomNode.h qpgeomNode.I \
     qplensNode.h qplensNode.I \
     nodeChain.h nodeChain.I \

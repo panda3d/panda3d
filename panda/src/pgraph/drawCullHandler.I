@@ -1,5 +1,5 @@
-// Filename: cullBinUnsorted.I
-// Created by:  drose (28Feb02)
+// Filename: drawCullHandler.I
+// Created by:  drose (25Feb02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,12 +18,12 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullBinUnsorted::Constructor
+//     Function: DrawCullHandler::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE CullBinUnsorted::
-CullBinUnsorted(GraphicsStateGuardianBase *gsg) :
-  CullBin(gsg)
+INLINE DrawCullHandler::
+DrawCullHandler(GraphicsStateGuardianBase *gsg) :
+  _gsg(gsg)
 {
 }

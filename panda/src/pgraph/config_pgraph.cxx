@@ -21,11 +21,16 @@
 #include "billboardAttrib.h"
 #include "qpcamera.h"
 #include "colorAttrib.h"
+#include "colorWriteAttrib.h"
 #include "cullFaceAttrib.h"
 #include "cullBin.h"
 #include "cullBinAttrib.h"
 #include "cullBinBackToFront.h"
 #include "cullBinUnsorted.h"
+#include "cullableObject.h"
+#include "decalAttrib.h"
+#include "depthTestAttrib.h"
+#include "depthWriteAttrib.h"
 #include "qpgeomNode.h"
 #include "qplensNode.h"
 #include "nodeChain.h"
@@ -72,11 +77,16 @@ init_libpgraph() {
   BillboardAttrib::init_type();
   qpCamera::init_type();
   ColorAttrib::init_type();
+  ColorWriteAttrib::init_type();
   CullFaceAttrib::init_type();
   CullBin::init_type();
   CullBinAttrib::init_type();
   CullBinBackToFront::init_type();
   CullBinUnsorted::init_type();
+  CullableObject::init_type();
+  DecalAttrib::init_type();
+  DepthTestAttrib::init_type();
+  DepthWriteAttrib::init_type();
   qpGeomNode::init_type();
   qpLensNode::init_type();
   NodeChain::init_type();
@@ -91,8 +101,12 @@ init_libpgraph() {
 
   BillboardAttrib::register_with_read_factory();
   ColorAttrib::register_with_read_factory();
+  ColorWriteAttrib::register_with_read_factory();
   CullBinAttrib::register_with_read_factory();
   CullFaceAttrib::register_with_read_factory();
+  DecalAttrib::register_with_read_factory();
+  DepthTestAttrib::register_with_read_factory();
+  DepthWriteAttrib::register_with_read_factory();
   qpGeomNode::register_with_read_factory();
   PandaNode::register_with_read_factory();
   RenderState::register_with_read_factory();

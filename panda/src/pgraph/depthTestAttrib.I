@@ -1,5 +1,5 @@
-// Filename: drawCullHandler.I
-// Created by:  drose (25Feb02)
+// Filename: depthTestAttrib.I
+// Created by:  drose (04Mar02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,12 +18,23 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DrawCullHandler::Constructor
-//       Access: Public
-//  Description: 
+//     Function: DepthTestAttrib::Constructor
+//       Access: Private
+//  Description: Use DepthTestAttrib::make() to construct a new
+//               DepthTestAttrib object.
 ////////////////////////////////////////////////////////////////////
-INLINE DrawCullHandler::
-DrawCullHandler(GraphicsStateGuardian *gsg) :
-  _gsg(gsg)
+INLINE DepthTestAttrib::
+DepthTestAttrib(DepthTestAttrib::Mode mode) :
+  _mode(mode)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DepthTestAttrib::get_mode
+//       Access: Published
+//  Description: Returns the depth write mode.
+////////////////////////////////////////////////////////////////////
+INLINE DepthTestAttrib::Mode DepthTestAttrib::
+get_mode() const {
+  return _mode;
 }

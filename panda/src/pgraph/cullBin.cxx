@@ -22,6 +22,15 @@
 TypeHandle CullBin::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullBin::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CullBin::
+~CullBin() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullBin::make_next
 //       Access: Public, Virtual
 //  Description: Returns a newly-allocated CullBin object that
@@ -40,14 +49,13 @@ make_next() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullBin::add_geom
+//     Function: CullBin::add_object
 //       Access: Public, Virtual
-//  Description: Adds the geom, along with its associated state, to
+//  Description: Adds a geom, along with its associated state, to
 //               the bin for rendering.
 ////////////////////////////////////////////////////////////////////
 void CullBin::
-add_geom(Geom *geom, const TransformState *transform,
-         const RenderState *state) {
+add_object(CullableObject *) {
 }
 
 ////////////////////////////////////////////////////////////////////

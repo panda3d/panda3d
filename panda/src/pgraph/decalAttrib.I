@@ -1,5 +1,5 @@
-// Filename: drawCullHandler.cxx
-// Created by:  drose (25Feb02)
+// Filename: decalAttrib.I
+// Created by:  drose (04Mar02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,24 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "drawCullHandler.h"
-#include "geom.h"
-#include "transformState.h"
-#include "renderState.h"
-#include "graphicsStateGuardian.h"
-
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DrawCullHandler::record_geom
-//       Access: Public, Virtual
-//  Description: This callback function is intended to be overridden
-//               by a derived class.  This is called as each Geom is
-//               discovered by the CullTraverser.
+//     Function: DecalAttrib::Constructor
+//       Access: Private
+//  Description: Use DecalAttrib::make() to construct a new
+//               DecalAttrib object.
 ////////////////////////////////////////////////////////////////////
-void DrawCullHandler::
-record_geom(Geom *geom, const TransformState *transform,
-            const RenderState *state) {
-  _gsg->set_transform(transform);
-  _gsg->set_state(state);
-  geom->draw(_gsg);
+INLINE DecalAttrib::
+DecalAttrib() {
 }

@@ -35,11 +35,7 @@ class EXPCL_PANDA BinCullHandler : public CullHandler {
 public:
   INLINE BinCullHandler(CullResult *cull_result);
 
-  //  virtual void begin_decal();
-  virtual void record_geom(Geom *geom, const TransformState *transform,
-                           const RenderState *state);
-  //  virtual void push_decal();
-  //  virtual void pop_decal();
+  virtual void record_object(CullableObject *object);
 
 private:
   PT(CullResult) _cull_result;

@@ -1,5 +1,5 @@
-// Filename: cullBinUnsorted.h
-// Created by:  drose (28Feb02)
+// Filename: decalAttrib.h
+// Created by:  drose (04Mar02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,41 +16,46 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CULLBINUNSORTED_H
-#define CULLBINUNSORTED_H
+#ifndef DECALATTRIB_H
+#define DECALATTRIB_H
 
 #include "pandabase.h"
 
-#include "cullBin.h"
-#include "pointerTo.h"
+#include "renderAttrib.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : CullBinUnsorted
-// Description : A specific kind of CullBin that does not reorder the
-//               geometry; it simply passes it through to the GSG in
-//               the same order it was encountered, which will be in
-//               scene-graph order.
+//       Class : DecalAttrib
+// Description : Applied to a GeomNode to indicate that the children
+//               of this GeomNode are coplanar and should be drawn as
+//               decals (eliminating Z-fighting).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullBinUnsorted : public CullBin {
-public:
-  INLINE CullBinUnsorted(GraphicsStateGuardianBase *gsg);
-  ~CullBinUnsorted();
-
-  virtual void add_object(CullableObject *object);
-  virtual void draw();
-
+class EXPCL_PANDA DecalAttrib : public RenderAttrib {
 private:
-  typedef pvector<CullableObject *> Objects;
-  Objects _objects;
+  INLINE DecalAttrib();
 
+PUBLISHED:
+  static CPT(RenderAttrib) make();
+
+protected:
+  virtual int compare_to_impl(const RenderAttrib *other) const;
+  virtual RenderAttrib *make_default_impl() const;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
+  
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    CullBin::init_type();
-    register_type(_type_handle, "CullBinUnsorted",
-                  CullBin::get_class_type());
+    RenderAttrib::init_type();
+    register_type(_type_handle, "DecalAttrib",
+                  RenderAttrib::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -61,9 +66,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "cullBinUnsorted.I"
+#include "decalAttrib.I"
 
 #endif
 
-
-  

@@ -20,10 +20,8 @@
 #define CULLHANDLER_H
 
 #include "pandabase.h"
-
-class Geom;
-class TransformState;
-class RenderState;
+#include "cullableObject.h"
+#include "graphicsStateGuardianBase.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CullHandler
@@ -36,12 +34,15 @@ class EXPCL_PANDA CullHandler {
 public:
   virtual ~CullHandler();
 
-  //  virtual void begin_decal();
-  virtual void record_geom(Geom *geom, const TransformState *transform,
-                           const RenderState *state);
-  //  virtual void push_decal();
-  //  virtual void pop_decal();
+  virtual void record_object(CullableObject *object);
+
+  INLINE static void draw(CullableObject *object,
+                          GraphicsStateGuardianBase *gsg);
+  static void draw_with_decals(CullableObject *object,
+                               GraphicsStateGuardianBase *gsg);
 };
+
+#include "cullHandler.I"
 
 #endif
 

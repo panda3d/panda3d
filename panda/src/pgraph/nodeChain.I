@@ -164,6 +164,31 @@ node() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodeChain::get_num_children
+//       Access: Published
+//  Description: Returns the number of children of the bottom node.
+////////////////////////////////////////////////////////////////////
+INLINE int NodeChain::
+get_num_children() const {
+  nassertr(!is_empty(), 0);
+  return _head->get_node()->get_num_children();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeChain::get_child
+//       Access: Published
+//  Description: Returns a NodeChain representing the nth child of the
+//               bottom node.
+////////////////////////////////////////////////////////////////////
+INLINE NodeChain NodeChain::
+get_child(int n) const {
+  nassertr(n >= 0 && n < get_num_children(), NodeChain());
+  NodeChain child;
+  child._head = PandaNode::get_component(_head, _head->get_node()->get_child(n));
+  return child;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodeChain::has_parent
 //       Access: Published
 //  Description: Returns true if the node at the bottom of the
@@ -184,8 +209,8 @@ has_parent() const {
 INLINE NodeChain NodeChain::
 get_parent() const {
   nassertr(has_parent(), NodeChain::fail());
-  NodeChain parent(*this);
-  parent._head = parent._head->get_next();
+  NodeChain parent;
+  parent._head = _head->get_next();
   return parent;
 }
 

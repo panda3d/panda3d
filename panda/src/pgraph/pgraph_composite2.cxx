@@ -1,3 +1,8 @@
+#include "cullableObject.cxx"
+#include "decalAttrib.cxx"
+#include "depthTestAttrib.cxx"
+#include "depthWriteAttrib.cxx"
+#include "drawCullHandler.cxx"
 #include "qpgeomNode.cxx"
 #include "qplensNode.cxx"
 #include "nodeChain.cxx"

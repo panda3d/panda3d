@@ -17,36 +17,49 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cullBinUnsorted.h"
+#include "cullHandler.h"
 #include "graphicsStateGuardianBase.h"
 
 
 TypeHandle CullBinUnsorted::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullBinUnsorted::add_geom
+//     Function: CullBinUnsorted::Destructor
 //       Access: Public, Virtual
-//  Description: Adds the geom, along with its associated state, to
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CullBinUnsorted::
+~CullBinUnsorted() {
+  Objects::iterator oi;
+  for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
+    CullableObject *object = (*oi);
+    delete object;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBinUnsorted::add_object
+//       Access: Public, Virtual
+//  Description: Adds a geom, along with its associated state, to
 //               the bin for rendering.
 ////////////////////////////////////////////////////////////////////
 void CullBinUnsorted::
-add_geom(Geom *geom, const TransformState *transform,
-         const RenderState *state) {
-  _geoms.push_back(GeomData(geom, transform, state));
+add_object(CullableObject *object) {
+  _objects.push_back(object);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullBinUnsorted::draw
 //       Access: Public
-//  Description: Draws all the geoms in the bin, in the appropriate
+//  Description: Draws all the objects in the bin, in the appropriate
 //               order.
 ////////////////////////////////////////////////////////////////////
 void CullBinUnsorted::
 draw() {
-  Geoms::iterator gi;
-  for (gi = _geoms.begin(); gi != _geoms.end(); ++gi) {
-    GeomData &geom_data = (*gi);
-    _gsg->set_state_and_transform(geom_data._state, geom_data._transform);
-    geom_data._geom->draw(_gsg);
+  Objects::iterator oi;
+  for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
+    CullableObject *object = (*oi);
+    CullHandler::draw(object, _gsg);
   }
 }
 

@@ -38,27 +38,24 @@
 class EXPCL_PANDA CullBinBackToFront : public CullBin {
 public:
   INLINE CullBinBackToFront(GraphicsStateGuardianBase *gsg);
+  virtual ~CullBinBackToFront();
 
-  virtual void add_geom(Geom *geom, const TransformState *transform,
-                        const RenderState *state);
+  virtual void add_object(CullableObject *object);
   virtual void finish_cull();
   virtual void draw();
 
 private:
-  class GeomData {
+  class ObjectData {
   public:
-    INLINE GeomData(Geom *geom, const TransformState *transform,
-                    const RenderState *state, float dist);
-    INLINE bool operator < (const GeomData &other) const;
-
-    PT(Geom) _geom;
-    CPT(TransformState) _transform;
-    CPT(RenderState) _state;
+    INLINE ObjectData(CullableObject *object, float dist);
+    INLINE bool operator < (const ObjectData &other) const;
+    
+    CullableObject *_object;
     float _dist;
   };
 
-  typedef pvector<GeomData> Geoms;
-  Geoms _geoms;
+  typedef pvector<ObjectData> Objects;
+  Objects _objects;
 
 public:
   static TypeHandle get_class_type() {

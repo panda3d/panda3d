@@ -492,7 +492,9 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void Geom::
 output(ostream &out) const {
-  out << get_type() << " (" << _numprims << ")"
+  out << get_type() << " (" << _numprims << ")";
+
+  /*
       << " v:" << _coords.size()
       << " n:" << _norms.size()
       << " c:" << _colors.size()
@@ -501,6 +503,7 @@ output(ostream &out) const {
       << " ni:" << _nindex.size()
       << " ci:" << _cindex.size()
       << " ti:" << _tindex.size();
+  */
 }
 
 ////////////////////////////////////////////////////////////////////

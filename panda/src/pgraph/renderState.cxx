@@ -540,9 +540,9 @@ write(ostream &out, int indent_level) const {
 CPT(RenderState) RenderState::
 issue_delta_modify(const RenderState *other, 
                    GraphicsStateGuardianBase *gsg) const {
-  if (other == this) {
-    // If the state doesn't change, that's a trivial special case.
-    return other;
+  if (other->is_empty()) {
+    // If the other state is empty, that's a trivial special case.
+    return this;
   }
 
   // First, build a new Attributes member that represents the union of
@@ -622,9 +622,9 @@ issue_delta_modify(const RenderState *other,
 CPT(RenderState) RenderState::
 issue_delta_set(const RenderState *other, 
                 GraphicsStateGuardianBase *gsg) const {
-  if (other->is_empty()) {
-    // If the other state is empty, that's a trivial special case.
-    return this;
+  if (other == this) {
+    // If the state doesn't change, that's a trivial special case.
+    return other;
   }
 
   // We don't need to build a new RenderState, because the return
@@ -858,6 +858,20 @@ determine_billboard() {
     _billboard = DCAST(BillboardAttrib, attrib);
   }
   _flags |= F_checked_billboard;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::determine_decal
+//       Access: Private
+//  Description: This is the private implementation of has_decal().
+////////////////////////////////////////////////////////////////////
+void RenderState::
+determine_decal() {
+  const RenderAttrib *attrib = get_attrib(DecalAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    _flags |= F_has_decal;
+  }
+  _flags |= F_checked_decal;
 }
 
 ////////////////////////////////////////////////////////////////////

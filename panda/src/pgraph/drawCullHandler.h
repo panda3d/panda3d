@@ -22,7 +22,7 @@
 #include "pandabase.h"
 #include "cullHandler.h"
 
-class GraphicsStateGuardian;
+class GraphicsStateGuardianBase;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DrawCullHandler
@@ -37,16 +37,12 @@ class GraphicsStateGuardian;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DrawCullHandler : public CullHandler {
 public:
-  INLINE DrawCullHandler(GraphicsStateGuardian *gsg);
+  INLINE DrawCullHandler(GraphicsStateGuardianBase *gsg);
 
-  //  virtual void begin_decal();
-  virtual void record_geom(Geom *geom, const TransformState *transform,
-                           const RenderState *state);
-  //  virtual void push_decal();
-  //  virtual void pop_decal();
+  virtual void record_object(CullableObject *object);
 
 private:
-  GraphicsStateGuardian *_gsg;
+  GraphicsStateGuardianBase *_gsg;
 };
 
 #include "drawCullHandler.I"

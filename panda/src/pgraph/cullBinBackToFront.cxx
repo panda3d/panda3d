@@ -19,6 +19,8 @@
 #include "cullBinBackToFront.h"
 #include "graphicsStateGuardianBase.h"
 #include "geometricBoundingVolume.h"
+#include "cullableObject.h"
+#include "cullHandler.h"
 
 #include <algorithm>
 
@@ -26,16 +28,29 @@
 TypeHandle CullBinBackToFront::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullBinBackToFront::add_geom
+//     Function: CullBinBackToFront::Destructor
 //       Access: Public, Virtual
-//  Description: Adds the geom, along with its associated state, to
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CullBinBackToFront::
+~CullBinBackToFront() {
+  Objects::iterator oi;
+  for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
+    CullableObject *object = (*oi)._object;
+    delete object;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBinBackToFront::add_object
+//       Access: Public, Virtual
+//  Description: Adds a geom, along with its associated state, to
 //               the bin for rendering.
 ////////////////////////////////////////////////////////////////////
 void CullBinBackToFront::
-add_geom(Geom *geom, const TransformState *transform,
-         const RenderState *state) {
+add_object(CullableObject *object) {
   // Determine the center of the bounding volume.
-  const BoundingVolume &volume = geom->get_bound();
+  const BoundingVolume &volume = object->_geom->get_bound();
 
   if (!volume.is_empty() &&
       volume.is_of_type(GeometricBoundingVolume::get_class_type())) {
@@ -43,12 +58,11 @@ add_geom(Geom *geom, const TransformState *transform,
     DCAST_INTO_V(gbv, &volume);
     
     LPoint3f center = gbv->get_approx_center();
-    center = center * transform->get_mat();
+    nassertv(object->_transform != (const TransformState *)NULL);
+    center = center * object->_transform->get_mat();
     
-    // Oops!  Don't have compute_distance_to() here yet!
-    //    float distance = gsg->compute_distance_to(center);
-    float distance = -center[2];
-    _geoms.push_back(GeomData(geom, transform, state, distance));
+    float distance = _gsg->compute_distance_to(center);
+    _objects.push_back(ObjectData(object, distance));
   }
 }
 
@@ -63,7 +77,7 @@ add_geom(Geom *geom, const TransformState *transform,
 ////////////////////////////////////////////////////////////////////
 void CullBinBackToFront::
 finish_cull() {
-  sort(_geoms.begin(), _geoms.end());
+  sort(_objects.begin(), _objects.end());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,11 +88,10 @@ finish_cull() {
 ////////////////////////////////////////////////////////////////////
 void CullBinBackToFront::
 draw() {
-  Geoms::iterator gi;
-  for (gi = _geoms.begin(); gi != _geoms.end(); ++gi) {
-    GeomData &geom_data = (*gi);
-    _gsg->set_state_and_transform(geom_data._state, geom_data._transform);
-    geom_data._geom->draw(_gsg);
+  Objects::const_iterator oi;
+  for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
+    CullableObject *object = (*oi)._object;
+    CullHandler::draw(object, _gsg);
   }
 }
 

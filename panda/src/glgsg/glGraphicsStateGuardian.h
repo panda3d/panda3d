@@ -21,19 +21,22 @@
 
 //#define GSG_VERBOSE
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <graphicsStateGuardian.h>
-#include <geomprimitives.h>
-#include <texture.h>
-#include <pixelBuffer.h>
-#include <displayRegion.h>
-#include <material.h>
-#include <textureApplyProperty.h>
-#include <depthTestProperty.h>
-#include <stencilProperty.h>
-#include <fog.h>
-#include <pt_Light.h>
+#include "graphicsStateGuardian.h"
+#include "geomprimitives.h"
+#include "texture.h"
+#include "pixelBuffer.h"
+#include "displayRegion.h"
+#include "material.h"
+#include "textureApplyProperty.h"
+#include "depthTestProperty.h"
+#include "stencilProperty.h"
+#include "fog.h"
+#include "pt_Light.h"
+
+#include "depthTestAttrib.h"
+#include "pointerToArray.h"
 
 #ifdef WIN32_VC
 // Must include windows.h before gl.h on NT
@@ -44,7 +47,6 @@
 
 #include <GL/gl.h>
 
-#include <pointerToArray.h>
 
 class PlaneNode;
 class Light;
@@ -160,6 +162,9 @@ public:
   virtual void issue_texture(const TextureAttrib *attrib);
   virtual void issue_cull_face(const CullFaceAttrib *attrib);
   virtual void issue_transparency(const TransparencyAttrib *attrib);
+  virtual void issue_color_write(const ColorWriteAttrib *attrib);
+  virtual void issue_depth_test(const DepthTestAttrib *attrib);
+  virtual void issue_depth_write(const DepthWriteAttrib *attrib);
 
   virtual bool wants_normals(void) const;
   virtual bool wants_texcoords(void) const;
@@ -212,7 +217,6 @@ protected:
   INLINE void call_glClipPlane(GLenum plane, const double equation[4]);
   INLINE void call_glLineWidth(GLfloat width);
   INLINE void call_glPointSize(GLfloat size);
-  INLINE void call_glDepthMask(GLboolean mask);
   INLINE void call_glFogMode(GLint mode);
   INLINE void call_glFogStart(GLfloat start);
   INLINE void call_glFogEnd(GLfloat end);
@@ -261,6 +265,7 @@ protected:
   GLenum get_internal_image_format(PixelBuffer::Format format);
   GLint get_texture_apply_mode_type( TextureApplyProperty::Mode am ) const;
   GLenum get_depth_func_type(DepthTestProperty::Mode m) const;
+  GLenum get_depth_func_type(DepthTestAttrib::Mode m) const;
   GLenum get_stencil_func_type(StencilProperty::Mode m) const;
   GLenum get_stencil_action_type(StencilProperty::Action a) const;
   GLenum get_fog_mode_type(Fog::Mode m) const;

@@ -182,6 +182,27 @@ get_billboard() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::has_decal
+//       Access: Public
+//  Description: This function is provided as an optimization, to
+//               speed up the render-time checking for the existance
+//               of a DecalAttrib on this state.  It returns true if a
+//               DecalAttrib exists, false otherwise.  Note that since
+//               there is no additional information stored on the
+//               DecalAttrib, there's no point in returning it if it
+//               exists.
+////////////////////////////////////////////////////////////////////
+INLINE bool RenderState::
+has_decal() const {
+  if ((_flags & F_checked_decal) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal decal cache.
+    ((RenderState *)this)->determine_decal();
+  }
+  return ((_flags & F_has_decal) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::get_bin_index
 //       Access: Public
 //  Description: Returns the bin index indicated by the CullBinAttrib,

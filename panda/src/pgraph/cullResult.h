@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "cullBin.h"
 #include "renderState.h"
+#include "cullableObject.h"
 
 #include "referenceCount.h"
 #include "pointerTo.h"
@@ -52,8 +53,7 @@ public:
 
   INLINE CullBin *get_bin(int bin_index);
 
-  INLINE void add_geom(Geom *geom, const TransformState *transform,
-                       const RenderState *state);
+  INLINE void add_object(CullableObject *object);
   void finish_cull();
   void draw();
 

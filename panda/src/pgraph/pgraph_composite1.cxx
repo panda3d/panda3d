@@ -2,6 +2,7 @@
 #include "binCullHandler.cxx"
 #include "qpcamera.cxx"
 #include "colorAttrib.cxx"
+#include "colorWriteAttrib.cxx"
 #include "config_pgraph.cxx"
 #include "cullBin.cxx"
 #include "cullBinAttrib.cxx"

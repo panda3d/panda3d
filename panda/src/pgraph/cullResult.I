@@ -56,14 +56,16 @@ get_bin(int bin_index) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullResult::add_geom
+//     Function: CullResult::add_object
 //       Access: Public
-//  Description: Adds the indicated Geom to the appropriate bin.
+//  Description: Adds the indicated CullableObject to the appropriate
+//               bin.  The bin becomes the owner of the object
+//               pointer, and will eventually delete it.
 ////////////////////////////////////////////////////////////////////
 INLINE void CullResult::
-add_geom(Geom *geom, const TransformState *transform,
-         const RenderState *state) {
-  CullBin *bin = get_bin(state->get_bin_index());
+add_object(CullableObject *object) {
+  nassertv(object->_state != (const RenderState *)NULL);
+  CullBin *bin = get_bin(object->_state->get_bin_index());
   nassertv(bin != (CullBin *)NULL);
-  bin->add_geom(geom, transform, state);
+  bin->add_object(object);
 }

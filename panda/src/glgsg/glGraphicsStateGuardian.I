@@ -474,23 +474,6 @@ call_glBlendFunc(GLenum sfunc, GLenum dfunc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::call_glDepthMask
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void GLGraphicsStateGuardian::
-call_glDepthMask(GLboolean mask) {
-  if (_depth_mask != mask) {
-    _depth_mask = mask;
-#ifdef GSG_VERBOSE
-    glgsg_cat.debug()
-      << "glDepthMask(" << (int)mask << ")" << endl;
-#endif
-    glDepthMask(mask);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glFogMode
 //       Access:
 //  Description:

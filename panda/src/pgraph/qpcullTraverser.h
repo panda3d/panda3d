@@ -56,6 +56,15 @@ private:
                   const RenderState *state,
                   GeometricBoundingVolume *view_frustum,
                   GeometricBoundingVolume *guard_band);
+  void start_decal(PandaNode *node, 
+                   const TransformState *render_transform,
+                   const RenderState *state);
+  CullableObject *r_get_decals(PandaNode *node, 
+                               const TransformState *render_transform,
+                               const RenderState *state,
+                               CullableObject *decals);
+
+  static CPT(RenderState) get_fake_view_frustum_cull_effect();
 
   CPT(RenderState) _initial_state;
   CPT(TransformState) _camera_transform;

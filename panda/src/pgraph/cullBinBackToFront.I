@@ -18,28 +18,25 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullBinBackToFront::GeomData::Constructor
+//     Function: CullBinBackToFront::ObjectData::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE CullBinBackToFront::GeomData::
-GeomData(Geom *geom, const TransformState *transform,
-         const RenderState *state, float dist) :
-  _geom(geom),
-  _transform(transform),
-  _state(state),
+INLINE CullBinBackToFront::ObjectData::
+ObjectData(CullableObject *object, float dist) :
+  _object(object),
   _dist(dist)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullBinBackToFront::GeomData::operator <
+//     Function: CullBinBackToFront::ObjectData::operator <
 //       Access: Public
 //  Description: Specifies the correct sort ordering for these
 //               objects.
 ////////////////////////////////////////////////////////////////////
-INLINE bool CullBinBackToFront::GeomData::
-operator < (const GeomData &other) const {
+INLINE bool CullBinBackToFront::ObjectData::
+operator < (const ObjectData &other) const {
   return _dist > other._dist;
 }
 
