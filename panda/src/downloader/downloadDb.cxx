@@ -110,17 +110,27 @@ DownloadDb::
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
 output(ostream &out) const {
+  out << "[" << _server_db._filename << " " << _client_db._filename << "]";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::write
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DownloadDb::
+write(ostream &out) const {
   out << "DownloadDb" << endl;
   out << "============================================================" << endl;
   out << "  Client DB file: " << _client_db._filename << endl;
   out << "============================================================" << endl;
-  _client_db.output(out);
+  _client_db.write(out);
   out << endl;
   out << "============================================================" << endl;
-  out << "  Server DB file: " << endl;
+  out << "  Server DB file: " << _server_db._filename << endl;
   out << "============================================================" << endl;
-  _server_db.output(out);
-  output_version_map(out);
+  _server_db.write(out);
+  write_version_map(out);
   out << endl;
 }
 
@@ -452,12 +462,12 @@ MultifileRecord(string name, Phase phase, int size, int status) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::MultifileRecord::output
+//     Function: DownloadDb::MultifileRecord::write
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::MultifileRecord::
-output(ostream &out) const {
+write(ostream &out) const {
   out << "==================================================" << endl;
   out << "MultifileRecord: " << _name    << endl
       << "    phase: " << _phase   << endl
@@ -471,7 +481,7 @@ output(ostream &out) const {
   out << "--------------------------------------------------" << endl;
   pvector< PT(FileRecord) >::const_iterator i = _file_records.begin();
   for(; i != _file_records.end(); ++i) {
-    (*i)->output(out);
+    (*i)->write(out);
   }
 }
 
@@ -573,10 +583,10 @@ Db(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::Db::
-output(ostream &out) const {
+write(ostream &out) const {
   pvector< PT(MultifileRecord) >::const_iterator i = _mfile_records.begin();
   for(; i != _mfile_records.end(); ++i) {
-    (*i)->output(out);
+    (*i)->write(out);
   }
 }
 
@@ -1069,7 +1079,7 @@ FileRecord(string name) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::FileRecord::
-output(ostream &out) const {
+write(ostream &out) const {
   out << " FileRecord: " << _name << endl;
 }
 
@@ -1324,12 +1334,12 @@ read_version_map(istream &read_stream) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::output_version_map
+//     Function: DownloadDb::write_version_map
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
-output_version_map(ostream &out) const {
+write_version_map(ostream &out) const {
   out << "Version Map: " << endl;
   VersionMap::const_iterator vmi;
   VectorHash::const_iterator i;

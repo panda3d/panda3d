@@ -84,7 +84,8 @@ PUBLISHED:
   ~DownloadDb(void);
 
   void output(ostream &out) const;
-  void output_version_map(ostream &out) const;
+  void write(ostream &out) const;
+  void write_version_map(ostream &out) const;
 
   // Write a database file
   bool write_client_db(Filename &file);
@@ -141,7 +142,7 @@ public:
   public:
     FileRecord(void);
     FileRecord(string name);
-    void output(ostream &out) const;
+    void write(ostream &out) const;
     string _name;
   };
 
@@ -151,7 +152,7 @@ public:
   public:
     MultifileRecord(void);
     MultifileRecord(string name, Phase phase, int size, int status);
-    void output(ostream &out) const;
+    void write(ostream &out) const;
     int get_num_files(void) const;
     string get_file_name(int index) const;
     bool file_exists(string fname) const;
@@ -171,7 +172,7 @@ public:
   class EXPCL_PANDAEXPRESS Db {
   public:
     Db(void);
-    void output(ostream &out) const;
+    void write(ostream &out) const;
     int get_num_multifiles(void) const;
     string get_multifile_name(int index) const;
     bool multifile_exists(string mfname) const;
