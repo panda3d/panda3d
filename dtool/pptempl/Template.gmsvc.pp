@@ -528,6 +528,12 @@ $[rgs_to_gen] : $[GENERATED_RGS_DEPENDENCIES]
 $[TAB] $[RGS_GENERATOR_RULE]
 #endif
 
+#define verhdr_to_gen $[filter %Version.h, $[GENERATED_SOURCES]]
+#if $[verhdr_to_gen]
+$[verhdr_to_gen] : $[GENERATED_VERHEADER_DEPENDENCIES]
+$[TAB] $[VERHEADER_GENERATOR_RULE]
+#endif
+
 #define MIDL_COMMAND $[COMPILE_IDL] /out $[ODIR] $[ODIR]/$[IDL_BASENAME].idl
 
 #define idl_to_gen $[filter %.idl, $[GENERATED_SOURCES]]
