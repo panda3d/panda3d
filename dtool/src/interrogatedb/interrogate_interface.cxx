@@ -358,6 +358,16 @@ interrogate_type_comment(TypeIndex type) {
 }
 
 bool
+interrogate_type_has_module_name(TypeIndex type) {
+  return InterrogateDatabase::get_ptr()->get_type(type).has_module_name();
+}
+
+const char *
+interrogate_type_module_name(TypeIndex type) {
+  return InterrogateDatabase::get_ptr()->get_type(type).get_module_name();
+}
+
+bool
 interrogate_type_is_atomic(TypeIndex type) {
   return InterrogateDatabase::get_ptr()->get_type(type).is_atomic();
 }

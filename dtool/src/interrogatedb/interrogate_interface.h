@@ -365,6 +365,10 @@ EXPCL_DTOOL TypeIndex interrogate_type_outer_class(TypeIndex type);
 EXPCL_DTOOL bool interrogate_type_has_comment(TypeIndex type);
 EXPCL_DTOOL const char *interrogate_type_comment(TypeIndex type);
 
+// This returns the module name reported for the type, if available.
+EXPCL_DTOOL bool interrogate_type_has_module_name(TypeIndex type);
+EXPCL_DTOOL const char *interrogate_type_module_name(TypeIndex type);
+
 // If interrogate_type_is_atomic() returns true, the type is one of
 // the basic C types enumerated in AtomicToken, above.  The type may
 // then be further modified by one or more of unsigned, signed, long,
