@@ -99,6 +99,29 @@ class LineNodePath(NodePath):
         self.moveTo(ev)
         self.drawTo(Point3(ev + Point3(a2x, a2y, z)))
 
+    def drawArrow2d(self, sv, ev, arrowAngle, arrowLength):
+        """
+        Do the work of moving the cursor around to draw an arrow from
+        sv to ev. Hack: the arrows take the z value of the end point
+        """
+        self.moveTo(sv)
+        self.drawTo(ev)
+        v = sv - ev
+        # Find the angle of the line
+        angle = math.atan2(v[2], v[0])
+        # Get the arrow angles
+        a1 = angle + deg2Rad(arrowAngle)
+        a2 = angle - deg2Rad(arrowAngle)
+        # Get the arrow points
+        a1x = arrowLength * math.cos(a1)
+        a1y = arrowLength * math.sin(a1)
+        a2x = arrowLength * math.cos(a2)
+        a2y = arrowLength * math.sin(a2)
+        self.moveTo(ev)
+        self.drawTo(Point3(ev + Point3(a1x, 0.0, a1y)))
+        self.moveTo(ev)
+        self.drawTo(Point3(ev + Point3(a2x, 0.0, a2y)))
+
     def drawLines(self, lineList):
         """
         Given a list of lists of points, draw a separate line for each list
