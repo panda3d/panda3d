@@ -95,36 +95,6 @@ make_graphics_pipe() {
   return main_pipe;
 }
 
-ChanConfig
-make_graphics_window(GraphicsEngine *engine, GraphicsPipe *pipe, 
-                     const NodePath &render) {
-  PT(GraphicsWindow) main_win;
-  ChanCfgOverrides override;
-
-  std::string conf = config_showbase.GetString("chan-config", chan_config);
-
-  // Now use ChanConfig to create the window.
-#ifdef NEW_WINDOW_CODE
-  ChanConfig chan_config(engine, pipe, conf, render, override);
-
-#else  // NEW_WINDOW_CODE
-
-  override.setField(ChanCfgOverrides::Mask,
-                    ((unsigned int)(W_DOUBLE|W_DEPTH)));
-
-  std::string title = config_showbase.GetString("window-title", window_title);
-  override.setField(ChanCfgOverrides::Title, title);
-
-  ChanConfig chan_config(pipe, conf, render, override);
-#endif  // NEW_WINDOW_CODE
-
-
-  main_win = chan_config.get_win();
-  assert(main_win != (GraphicsWindow*)0L);
-
-  return chan_config;
-}
-
 // Throw the "NewFrame" event in the C++ world.  Some of the lerp code
 // depends on receiving this.
 void 

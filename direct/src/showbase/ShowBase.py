@@ -185,10 +185,12 @@ class ShowBase(DirectObject.DirectObject):
         is closed cleanly, so that we free system resources, restore
         the desktop and keyboard functionality, etc.
         """
+        # Temporary try .. except for new window code
         try:
-            # Temporary try .. except for new window code
+            # new window code
             self.graphicsEngine.removeAllWindows()
         except:
+            # old window code
             for win in self.winList:
                 win.closeWindow()
         del self.win
@@ -213,17 +215,36 @@ class ShowBase(DirectObject.DirectObject):
             self.pipe = makeGraphicsPipe()
             self.pipeList.append(self.pipe)
 
-        chanConfig = makeGraphicsWindow(self.graphicsEngine, self.pipe, self.render)
+        # Temporary try .. except for new window code.
+        try:
+            # old window code
+            chanConfig = makeGraphicsWindow(self.graphicsEngine, self.pipe, self.render)
+        except:
+            # new window code
+            chanString = self.config.GetString('chan-config', 'single')
+            chanConfig = ChanConfig(self.graphicsEngine, self.pipe, chanString,
+                                    self.render)
+            
         win = chanConfig.getWin()
+
+        # Adjust some of the window properties.
+        props = WindowProperties()
+        windowTitle = self.config.GetString("window-title", "");
+        if windowTitle:
+            props.setTitle(windowTitle)
+
+        win.requestProperties(props)
 
         if self.win == None:
             self.win = win
 
         self.winList.append(win)
+        # temporary try..except to support new window code
         try:
-            # temporary try..except to support new window code
+            # new window code
             self.graphicsEngine.addWindow(win)
         except:
+            # old window code
             pass
 
         self.getCameras(chanConfig)
