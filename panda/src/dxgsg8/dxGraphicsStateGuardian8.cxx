@@ -751,7 +751,7 @@ dx_init(HCURSOR hMouseCursor) {
     scrn.pD3DDevice->SetRenderState(D3DRS_LIGHTING, _lighting_enabled);
 
     // turn on dithering if the rendertarget is < 8bits/color channel
-    _dither_enabled = ((!dx_no_dithering) && IS_16BPP_FORMAT(scrn.PresParams.BackBufferFormat)
+    _dither_enabled = ((!dx_no_dithering) && IS_16BPP_DISPLAY_FORMAT(scrn.PresParams.BackBufferFormat)
                         && (scrn.d3dcaps.RasterCaps & D3DPRASTERCAPS_DITHER));
     scrn.pD3DDevice->SetRenderState(D3DRS_DITHERENABLE, _dither_enabled);
 
@@ -957,7 +957,7 @@ dx_init(HCURSOR hMouseCursor) {
 
         // Create a new surface for the texture
         if(FAILED( hr = scrn.pD3DDevice->CreateSurface( &ddsd, &_fpsmeter_font_surf, NULL ) )) {
-            dxgsg_cat.error() << "CreateSurface() failed for fpsmeter font!  hr = " << D3DERRORSTRING(hr);
+            dxgsg_cat.error() << "CreateSurface() failed for fpsmeter font!" << D3DERRORSTRING(hr);
             _bShowFPSMeter = false;
             return;
         }
@@ -1069,7 +1069,7 @@ enable_light(int light_id, bool val) {
 #endif
 
         if (FAILED(hr)) {
-            dxgsg_cat.error() << "LightEnable(" << light_id << "=" << val << ") failed, hr=" << D3DERRORSTRING(hr);
+            dxgsg_cat.error() << "LightEnable(" << light_id << "=" << val << ") failed, " <<D3DERRORSTRING(hr);
             return false;
         }
     }
@@ -3972,7 +3972,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
        hr=scrn.pD3DDevice->GetBackBuffer(0,D3DBACKBUFFER_TYPE_MONO,&pD3DSurf);
 
        if(FAILED(hr)) {
-           dxgsg_cat.error() << "GetBackBuffer failed, hr = " << D3DERRORSTRING(hr);
+           dxgsg_cat.error() << "GetBackBuffer failed" << D3DERRORSTRING(hr);
            exit(1);
        }
 
@@ -4016,7 +4016,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
         
         hr=scrn.pD3DDevice->CreateImageSurface(TmpSurfXsize,TmpSurfYsize,D3DFMT_A8R8G8B8,&pD3DSurf);
         if(FAILED(hr)) {
-           dxgsg_cat.error() << "CreateImageSurface failed in copy_pixel_buffer(), hr = " << D3DERRORSTRING(hr);
+           dxgsg_cat.error() << "CreateImageSurface failed in copy_pixel_buffer()" << D3DERRORSTRING(hr);
            exit(1);
         }
         
@@ -5733,7 +5733,7 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
           if(dxgsg_cat.is_spam())
                 dxgsg_cat.spam() << "dx_cleanup -  Restoring original desktop DisplayMode\n";
           if(FAILED(hr)) {
-                dxgsg_cat.error() << "dx_cleanup -  RestoreDisplayMode failed, hr = " << D3DERRORSTRING(hr);
+                dxgsg_cat.error() << "dx_cleanup -  RestoreDisplayMode failed" << D3DERRORSTRING(hr);
           }
         }
 
@@ -5866,7 +5866,7 @@ void DXGraphicsStateGuardian::show_frame(void) {
     if(hr == D3DERR_DEVICELOST) {
         CheckCooperativeLevel();
     } else {
-      dxgsg_cat.error() << "show_frame() - Present() failed, hr = " << D3DERRORSTRING(hr);
+      dxgsg_cat.error() << "show_frame() - Present() failed" << D3DERRORSTRING(hr);
       exit(1);
     }
   }

@@ -94,7 +94,7 @@ protected:
   void search_for_valid_displaymode(UINT RequestedXsize,UINT RequestedYsize,bool bWantZBuffer,bool bWantStencil,
                                     UINT *pSupportedScreenDepthsMask,bool *pCouldntFindAnyValidZBuf,
                                     D3DFORMAT *pSuggestedPixFmt);
-  bool FindBestDepthFormat(DXScreenData &Display,D3DDISPLAYMODE &TestDisplayMode,D3DFORMAT *pBestFmt,bool bWantStencil) const;
+  bool FindBestDepthFormat(DXScreenData &Display,D3DDISPLAYMODE &TestDisplayMode,D3DFORMAT *pBestFmt,bool bWantStencil,bool bForce16bpp) const;
   void init_resized_window(void);
   bool reset_device_resize_window(RECT &viewrect);
   void setup_colormap(void);

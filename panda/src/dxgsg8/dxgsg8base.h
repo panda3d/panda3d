@@ -54,7 +54,11 @@
 #endif
 
 #ifndef D3DERRORSTRING
+#ifdef NDEBUG
+#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DXGetErrorString8(HRESULT) << endl  // leave out descriptions to shrink release build
+#else
 #define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DXGetErrorString8(HRESULT) << ": " << DXGetErrorDescription8(HRESULT) << endl
+#endif
 #endif
 
 #define ISPOW2(X) (((X) & ((X)-1))==0)
@@ -152,7 +156,12 @@ typedef enum {
     DXT5_FLAG =         FLG(31)
 } D3DFORMAT_FLAG;
 
-#define IS_16BPP_FORMAT(FMT) (((FMT)>=D3DFMT_R5G6B5)&&((FMT)<=D3DFMT_A1R5G5B5))
+// this is only used in conjunction w/rendertgt fmts, so just make it something that can never be a rtgt
+#define DISPLAY_32BPP_REQUIRES_16BPP_ZBUFFER_FLAG DXT1_FLAG
+#define DISPLAY_16BPP_REQUIRES_16BPP_ZBUFFER_FLAG DXT2_FLAG
+
+#define IS_16BPP_DISPLAY_FORMAT(FMT) (((FMT)==D3DFMT_R5G6B5)||((FMT)==D3DFMT_X1R5G5B5)||((FMT)==D3DFMT_A1R5G5B5))
+#define IS_16BPP_ZBUFFER(FMT) ((FMT==D3DFMT_D16)||(FMT==D3DFMT_D15S1))
 #define IS_STENCIL_FORMAT(FMT) (((FMT)==D3DFMT_D24S8) || ((FMT)==D3DFMT_D15S1) || ((FMT)==D3DFMT_D24X4S4))
 #define RECT_XSIZE(REC) (REC.right-REC.left)
 #define RECT_YSIZE(REC) (REC.bottom-REC.top)

@@ -32,7 +32,7 @@ ConfigureFn(config_wdxdisplay) {
 bool dx_force_16bpp_zbuffer = config_wdxdisplay.GetBool("dx-force-16bpp-zbuffer", false);
 bool bResponsive_minimized_fullscreen_window = config_wdxdisplay.GetBool("responsive-minimized-fullscreen-window",false);
 bool dx_preserve_fpu_state = config_wdxdisplay.GetBool("dx-preserve-fpu-state", false);
-int dx_preferred_deviceID = config_wdxdisplay.GetInt("dx-preferred-deviceID", -1);
+int dx_preferred_deviceID = config_wdxdisplay.GetInt("dx-preferred-device-id", -1);
 
 extern void AtExitFn(void);
 

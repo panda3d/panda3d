@@ -752,7 +752,7 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface8 *pD3DSurf8,PixelB
 
     hr = pD3DSurf8->LockRect(&LockedRect,(CONST RECT*)NULL,(D3DLOCK_READONLY | D3DLOCK_NO_DIRTY_UPDATE /* | D3DLOCK_NOSYSLOCK */));
     if(FAILED(hr)) {
-        dxgsg_cat.error() << "ConvertDDSurftoPixBuf LockRect() failed! hr = " << D3DERRORSTRING(hr);
+        dxgsg_cat.error() << "ConvertDDSurftoPixBuf LockRect() failed!" << D3DERRORSTRING(hr);
         return hr;
     }
 
@@ -1409,7 +1409,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
     
     if(FAILED( hr = scrn.pD3DDevice->CreateTexture(TargetWidth,TargetHeight,cMipLevelCount,0x0,
                                                    TargetPixFmt,D3DPOOL_MANAGED,&_pD3DTexture8) )) {
-        dxgsg_cat.error() << "pD3DDevice->CreateTexture() failed!  hr = " << D3DERRORSTRING(hr);
+        dxgsg_cat.error() << "pD3DDevice->CreateTexture() failed!" << D3DERRORSTRING(hr);
         goto error_exit;
     }
 
@@ -1459,7 +1459,7 @@ FillDDSurfTexturePixels(void) {
     IDirect3DSurface8 *pMipLevel0;
     hr=_pD3DTexture8->GetSurfaceLevel(0,&pMipLevel0);
     if(FAILED(hr)) {
-       dxgsg_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", GetSurfaceLevel returns hr = " << D3DERRORSTRING(hr);
+       dxgsg_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", GetSurfaceLevel failed" << D3DERRORSTRING(hr);
        return E_FAIL;
     }
 
@@ -1477,7 +1477,7 @@ FillDDSurfTexturePixels(void) {
     hr=D3DXLoadSurfaceFromMemory(pMipLevel0,(PALETTEENTRY*)NULL,(RECT*)NULL,(LPCVOID) pbuf->_image.p(),_PixBufD3DFmt,
                                  OrigWidth*cNumColorChannels,(PALETTEENTRY*)NULL,&SrcSize,Lev0Filter,(D3DCOLOR)0x0);
     if(FAILED(hr)) {
-       dxgsg_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", D3DXLoadSurfFromMem returns hr = " << D3DERRORSTRING(hr);
+       dxgsg_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", D3DXLoadSurfFromMem failed" << D3DERRORSTRING(hr);
        goto exit_FillDDSurf;
     }
 
@@ -1490,7 +1490,7 @@ FillDDSurfTexturePixels(void) {
 
         hr=D3DXFilterTexture(_pD3DTexture8,(PALETTEENTRY*)NULL,0,MipFilterFlags);
         if(FAILED(hr)) {
-            dxgsg_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", D3DXFilterTex returns hr = " << D3DERRORSTRING(hr);
+            dxgsg_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", D3DXFilterTex failed" << D3DERRORSTRING(hr);
             goto exit_FillDDSurf;
         }
     }
