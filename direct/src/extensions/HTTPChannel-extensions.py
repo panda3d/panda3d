@@ -15,20 +15,17 @@
         """
         if not name:
             name = self.getUrl().cStr()
-
         import Task
         task = Task.Task(self.doTask)
         task.callback = callback
-        task.extraArgs = extraArgs
-
-        return taskMgr.add(task, name)
+        task.callbackArgs = extraArgs
+        return taskMgr.add(task, name)    
         
     def doTask(self, task):
         import Task
         if self.run():
             return Task.cont
-
         if task.callback:
-            task.callback(*task.extraArgs)
+            task.callback(*task.callbackArgs)
         return Task.done
     

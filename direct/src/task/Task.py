@@ -71,6 +71,7 @@ class Task:
         self.pstats = None
         self.__removed = 0
         self.__onDoLaterList = 0
+        self.extraArgs = None
 
     def setOnDoLaterList(self, status):
         self.__onDoLaterList = status
@@ -120,7 +121,6 @@ class Task:
             return ('Task id: %s, name %s' % (self.id, self.name))
         else:
             return ('Task id: %s, no name' % (self.id))
-
 
 def pause(delayTime):
     def func(self):
@@ -407,7 +407,14 @@ class TaskManager:
                 continue
         return cont
 
-    def __spawnDoLater(self, task):
+    def doMethodLater(self, delayTime, func, taskName, extraArgs=None, uponDeath=None):
+        task = Task(func)
+        task.delayTime = delayTime
+        task.name = taskName
+        if extraArgs:
+            task.extraArgs = extraArgs
+        if uponDeath:
+            task.uponDeath = uponDeath
         if TaskManager.notify.getDebug():
             TaskManager.notify.debug('spawning doLater: %s' % (task))
         # Add this task to the nameDict
@@ -429,18 +436,7 @@ class TaskManager:
                            sentArgs = [task, task.name, task.id])
         return task
 
-    def doLater(self, delayTime, task, taskName):
-        if TaskManager.notify.getDebug():
-            TaskManager.notify.debug('doLater: %s' % (taskName))
-        task.delayTime = delayTime
-        task.name = taskName
-        return self.__spawnDoLater(task)
-
-    def doMethodLater(self, delayTime, func, taskName):
-        task = Task(func)
-        return self.doLater(delayTime, task, taskName)
-
-    def add(self, funcOrTask, name, priority = 0):
+    def add(self, funcOrTask, name, priority=0, extraArgs=None, uponDeath=None):
         """
         Add a new task to the taskMgr.
         You can add a Task object or a method that takes one argument.
@@ -448,22 +444,17 @@ class TaskManager:
         if TaskManager.notify.getDebug():
             TaskManager.notify.debug('add: %s' % (name))
         if isinstance(funcOrTask, Task):
-            funcOrTask.setPriority(priority)
-            return self.__spawnTaskNamed(funcOrTask, name)
+            task = funcOrTask
         elif callable(funcOrTask):
-            return self.__spawnMethodNamed(funcOrTask, name, priority)
+            task = Task(funcOrTask, priority)
         else:
             self.notify.error('add: Tried to add a task that was not a Task or a func')
-
-    def __spawnMethodNamed(self, func, name, priority=0):
-        task = Task(func, priority)
-        return self.__spawnTaskNamed(task, name)
-
-    def __spawnTaskNamed(self, task, name):
-        if TaskManager.notify.getDebug():
-            TaskManager.notify.debug('__spawnTaskNamed: %s' % (name))
-        # Init params
+        task.setPriority(priority)
         task.name = name
+        if extraArgs:
+            task.extraArgs = extraArgs
+        if uponDeath:
+            task.uponDeath = uponDeath
         # be sure to ask the globalClock for the current frame time
         # rather than use a cached value; globalClock's frame time may
         # have been synced since the start of this frame
@@ -606,13 +597,19 @@ class TaskManager:
         task.setCurrentTimeFrame(self.currentTime, self.currentFrame)
         if not self.taskTimerVerbose:
             # don't record timing info
-            ret = task(task)
+            if task.extraArgs:
+                ret = apply(task, task.extraArgs)
+            else:
+                ret = task(task)
         else:
             # Run the task and check the return value
             if task.pstats:
                 task.pstats.start()
             startTime = globalClock.getRealTime()
-            ret = task(task)
+            if task.extraArgs:
+                ret = apply(task, task.extraArgs)
+            else:
+                ret = task(task)
             endTime = globalClock.getRealTime()
             if task.pstats:
                 task.pstats.stop()
