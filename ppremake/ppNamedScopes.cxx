@@ -5,7 +5,7 @@
 
 #include "ppNamedScopes.h"
 #include "ppScope.h"
-#include "ppDirectoryTree.h"
+#include "ppDirectory.h"
 
 #include <assert.h>
 #include <algorithm>
@@ -15,12 +15,12 @@
 class SortScopesByDependencyAndName {
 public:
   bool operator () (const PPScope *a, const PPScope *b) const {
-    PPDirectoryTree *da = a->get_directory();
-    PPDirectoryTree *db = b->get_directory();
+    PPDirectory *da = a->get_directory();
+    PPDirectory *db = b->get_directory();
 
     // Scopes without associated directories appear first in the list.
-    bool da_is_null = (da == (PPDirectoryTree *)NULL);
-    bool db_is_null = (db == (PPDirectoryTree *)NULL);
+    bool da_is_null = (da == (PPDirectory *)NULL);
+    bool db_is_null = (db == (PPDirectory *)NULL);
 
     if (da_is_null != db_is_null) {
       return da_is_null > db_is_null;
@@ -33,8 +33,8 @@ public:
     } else {
       // Otherwise, both scopes have associated directories, and we
       // can properly put them in order by dependencies.
-      assert(da != (PPDirectoryTree *)NULL);
-      assert(db != (PPDirectoryTree *)NULL);
+      assert(da != (PPDirectory *)NULL);
+      assert(db != (PPDirectory *)NULL);
       if (da->get_depends_index() != db->get_depends_index()) {
 	return da->get_depends_index() < db->get_depends_index();
       }

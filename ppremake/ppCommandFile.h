@@ -67,7 +67,8 @@ protected:
   bool replay_forscopes(const string &name);
   bool replay_foreach(const string &varname, const vector<string> &words);
   bool replay_formap(const string &varname, const string &mapvar);
-  bool compare_output(const string &temp_name, const string &true_name);
+  bool compare_output(const string &temp_name, const string &true_name,
+		      bool notouch);
   bool failed_if() const;
 
   bool is_valid_formal(const string &formal_parameter_name) const;
@@ -131,6 +132,10 @@ private:
     WriteFormat _format;
     bool _last_blank;
   };
+
+  enum OutputFlags {
+    OF_notouch  = 0x001,
+  };
   
   class BlockNesting {
   public:
@@ -142,6 +147,7 @@ private:
     char *_tempnam;
     ofstream _output;
     vector<string> _words;
+    int _flags;
     BlockNesting *_next;
   };
 

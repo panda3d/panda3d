@@ -6,9 +6,10 @@
 #include "ppScope.h"
 #include "ppNamedScopes.h"
 #include "ppFilenamePattern.h"
-#include "ppDirectoryTree.h"
+#include "ppDirectory.h"
 #include "ppSubroutine.h"
 #include "ppCommandFile.h"
+#include "ppDependableFile.h"
 #include "tokenize.h"
 #include "find_searchpath.h"
 
@@ -23,6 +24,7 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <assert.h>
 
 static const string variable_patsubst(VARIABLE_PATSUBST);
 
@@ -39,7 +41,7 @@ PPScope::
 PPScope(PPNamedScopes *named_scopes) : 
   _named_scopes(named_scopes)
 {
-  _directory = (PPDirectoryTree *)NULL;
+  _directory = (PPDirectory *)NULL;
   _parent_scope = (PPScope *)NULL;
 }
 
@@ -368,21 +370,21 @@ find_map_variable(const string &varname) const {
 //               scope, if any, or with the nearest parent to this
 //               scope.
 ////////////////////////////////////////////////////////////////////
-PPDirectoryTree *PPScope::
+PPDirectory *PPScope::
 get_directory() const {
-  if (_directory != (PPDirectoryTree *)NULL) {
+  if (_directory != (PPDirectory *)NULL) {
     return _directory;
   }
 
   // Check the stack.
   ScopeStack::reverse_iterator si;
   for (si = _scope_stack.rbegin(); si != _scope_stack.rend(); ++si) {
-    if ((*si)->_directory != (PPDirectoryTree *)NULL) {
+    if ((*si)->_directory != (PPDirectory *)NULL) {
       return (*si)->_directory;
     }
   }
 
-  return (PPDirectoryTree *)NULL;
+  return (PPDirectory *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -394,7 +396,7 @@ get_directory() const {
 //               known directory level.
 ////////////////////////////////////////////////////////////////////
 void PPScope::
-set_directory(PPDirectoryTree *directory) {
+set_directory(PPDirectory *directory) {
   _directory = directory;
 }
 
@@ -546,6 +548,44 @@ tokenize_params(const string &str, vector<string> &tokens,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPScope::tokenize_numeric_pair
+//       Access: Public
+//  Description: This function is used by all the numeric comparision
+//               functions, e.g. nne, nlt, etc.  It splits the string
+//               up into two parameters based on commas, and evaluates
+//               each parameter as a number, into a and b.  It returns
+//               true if successful, or false if there was some user
+//               error.
+////////////////////////////////////////////////////////////////////
+bool PPScope::
+tokenize_numeric_pair(const string &str, double &a, double &b) const {
+  vector<string> words;
+  tokenize_params(str, words, true);
+  if (words.size() != 2) {
+    cerr << words.size() << " parameters supplied when two were expected:\n"
+	 << str << "\n";
+    return false;
+  }
+
+  double results[2];
+
+  for (int i = 0; i < 2; i++) {
+    const char *param = words[i].c_str();
+    char *n;
+    results[i] = strtod(param, &n);
+    if (n == param) {
+      // strtod failed--not a numeric representation.
+      cerr << "Warning: " << words[i] << " is not a number.\n";
+      results[i] = 0.0;
+    }
+  }
+
+  a = results[0];
+  b = results[1];
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPScope::p_set_variable
 //       Access: Private
 //  Description: The private implementation of p_set_variable.
@@ -586,8 +626,8 @@ p_get_variable(const string &varname, string &result) const {
   }
 
   if (varname == "RELDIR" && 
-      _directory != (PPDirectoryTree *)NULL &&
-      current_output_directory != (PPDirectoryTree *)NULL) {
+      _directory != (PPDirectory *)NULL &&
+      current_output_directory != (PPDirectory *)NULL) {
     // $[RELDIR] is a special variable name that evaluates to the
     // relative directory of the current scope to the current output
     // directory.
@@ -596,7 +636,7 @@ p_get_variable(const string &varname, string &result) const {
   }
 
   if (varname == "DEPENDS_INDEX" && 
-      _directory != (PPDirectoryTree *)NULL) {
+      _directory != (PPDirectory *)NULL) {
     // $[DEPENDS_INDEX] is another special variable name that
     // evaluates to the numeric sorting index assigned to this
     // directory based on its dependency relationship with other
@@ -797,6 +837,18 @@ r_expand_variable(const string &str, size_t &vp,
       return expand_eq(params);
     } else if (funcname == "ne") {
       return expand_ne(params);
+    } else if (funcname == "=" || funcname == "==") {
+      return expand_eqn(params);
+    } else if (funcname == "!=") {
+      return expand_nen(params);
+    } else if (funcname == "<") {
+      return expand_ltn(params);
+    } else if (funcname == "<=") {
+      return expand_len(params);
+    } else if (funcname == ">") {
+      return expand_gtn(params);
+    } else if (funcname == ">=") {
+      return expand_gen(params);
     } else if (funcname == "not") {
       return expand_not(params);
     } else if (funcname == "or") {
@@ -813,6 +865,8 @@ r_expand_variable(const string &str, size_t &vp,
       return expand_closure(params);
     } else if (funcname == "unmapped") {
       return expand_unmapped(params);
+    } else if (funcname == "dependencies") {
+      return expand_dependencies(params);
     }
 
     // It must be a map variable.
@@ -1665,7 +1719,8 @@ expand_if(const string &params) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PPScope::expand_eq
 //       Access: Private
-//  Description: Expands the "eq" function variable.
+//  Description: Expands the "eq" function variable.  This tests
+//               string equivalence.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_eq(const string &params) const {
@@ -1689,7 +1744,8 @@ expand_eq(const string &params) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PPScope::expand_ne
 //       Access: Private
-//  Description: Expands the "ne" function variable.
+//  Description: Expands the "ne" function variable.  This tests
+//               string equivalence.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_ne(const string &params) const {
@@ -1711,6 +1767,126 @@ expand_ne(const string &params) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_eqn
+//       Access: Private
+//  Description: Expands the "=" function variable.  This tests
+//               numeric equivalence.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_eqn(const string &params) const {
+  double a, b;
+  if (!tokenize_numeric_pair(params, a, b)) {
+    return string();
+  }
+
+  string result;
+  if (a == b) {
+    result = "1";
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_nen
+//       Access: Private
+//  Description: Expands the "!=" function variable.  This tests
+//               numeric equivalence.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_nen(const string &params) const {
+  double a, b;
+  if (!tokenize_numeric_pair(params, a, b)) {
+    return string();
+  }
+
+  string result;
+  if (a != b) {
+    result = "1";
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_ltn
+//       Access: Private
+//  Description: Expands the "<" function variable.  This tests
+//               numeric relationships.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_ltn(const string &params) const {
+  double a, b;
+  if (!tokenize_numeric_pair(params, a, b)) {
+    return string();
+  }
+
+  string result;
+  if (a < b) {
+    result = "1";
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_len
+//       Access: Private
+//  Description: Expands the "<=" function variable.  This tests
+//               numeric relationships.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_len(const string &params) const {
+  double a, b;
+  if (!tokenize_numeric_pair(params, a, b)) {
+    return string();
+  }
+
+  string result;
+  if (a <= b) {
+    result = "1";
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_gtn
+//       Access: Private
+//  Description: Expands the ">" function variable.  This tests
+//               numeric relationships.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_gtn(const string &params) const {
+  double a, b;
+  if (!tokenize_numeric_pair(params, a, b)) {
+    return string();
+  }
+
+  string result;
+  if (a > b) {
+    result = "1";
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_gen
+//       Access: Private
+//  Description: Expands the ">=" function variable.  This tests
+//               numeric relationships.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_gen(const string &params) const {
+  double a, b;
+  if (!tokenize_numeric_pair(params, a, b)) {
+    return string();
+  }
+
+  string result;
+  if (a >= b) {
+    result = "1";
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPScope::expand_not
 //       Access: Private
 //  Description: Expands the "not" function variable.  This returns
@@ -1724,7 +1900,7 @@ expand_not(const string &params) const {
   tokenize_params(params, tokens, true);
 
   if (tokens.size() != 1) {
-    cerr << "not requires two parameters.\n";
+    cerr << "not requires one parameter.\n";
     return string();
   }
 
@@ -1778,11 +1954,12 @@ expand_and(const string &params) const {
     }
   }
 
-  if (tokens.empty()) {
-    return "1";
-  } else {
-    return tokens.back();
+  string result = "1";
+  if (!tokens.empty()) {
+    result = tokens.back();
   }
+
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1967,6 +2144,43 @@ expand_unmapped(const string &params) const {
     if (di == def.end()) {
       // This key was undefined.
       results.push_back(*ki);
+    }
+  }
+
+  string result = repaste(results, " ");
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_dependencies
+//       Access: Private
+//  Description: Expands the "dependencies" function variable.  This
+//               function returns all of the inter-file dependencies
+//               that the named file(s) depend on, as defined by the
+//               #include directives appearing within the files.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_dependencies(const string &params) const {
+  // Split the string up into filenames based on whitespace.
+  vector<string> filenames;
+  tokenize_whitespace(expand_string(params), filenames);
+
+  vector<string> results;
+  vector<string>::const_iterator fi;
+  for (fi = filenames.begin(); fi != filenames.end(); ++fi) {
+    PPDependableFile *file = _directory->get_dependable_file(*fi, false);
+    assert(file != (PPDependableFile *)NULL);
+
+    set<PPDependableFile *> files;
+    file->get_complete_dependencies(files);
+
+    set<PPDependableFile *>::const_iterator dfi;
+    for (dfi = files.begin(); dfi != files.end(); ++dfi) {
+      PPDependableFile *df = (*dfi);
+      string rel_filename =
+	current_output_directory->get_rel_to(df->get_directory()) + "/" +
+	df->get_filename();
+      results.push_back(rel_filename);
     }
   }
 

@@ -12,7 +12,7 @@
 #include <vector>
 
 class PPNamedScopes;
-class PPDirectoryTree;
+class PPDirectory;
 class PPSubroutine;
 
 ///////////////////////////////////////////////////////////////////
@@ -47,8 +47,8 @@ public:
   string expand_variable(const string &varname) const;
   MapVariableDefinition &find_map_variable(const string &varname) const;
 
-  PPDirectoryTree *get_directory() const;
-  void set_directory(PPDirectoryTree *directory);
+  PPDirectory *get_directory() const;
+  void set_directory(PPDirectory *directory);
 
   string expand_string(const string &str) const;
   string expand_self_reference(const string &str, const string &varname) const;
@@ -59,6 +59,7 @@ public:
 
   void tokenize_params(const string &str, vector<string> &tokens,
 		       bool expand) const;
+  bool tokenize_numeric_pair(const string &str, double &a, double &b) const;
 
   static MapVariableDefinition _null_map_def;
 
@@ -96,6 +97,12 @@ private:
   string expand_if(const string &params) const;
   string expand_eq(const string &params) const;
   string expand_ne(const string &params) const;
+  string expand_eqn(const string &params) const;
+  string expand_nen(const string &params) const;
+  string expand_ltn(const string &params) const;
+  string expand_len(const string &params) const;
+  string expand_gtn(const string &params) const;
+  string expand_gen(const string &params) const;
   string expand_not(const string &params) const;
   string expand_or(const string &params) const;
   string expand_and(const string &params) const;
@@ -104,6 +111,7 @@ private:
   string expand_cdefine(const string &params) const;
   string expand_closure(const string &params) const;
   string expand_unmapped(const string &params) const;
+  string expand_dependencies(const string &params) const;
   string expand_function(const string &funcname, const PPSubroutine *sub,
 			 const string &params) const;
   string expand_map_variable(const string &varname, const string &params) const;
@@ -117,7 +125,7 @@ private:
 
   PPNamedScopes *_named_scopes;
 
-  PPDirectoryTree *_directory;
+  PPDirectory *_directory;
 
   typedef map<string, string> Variables;
   Variables _variables;

@@ -31,7 +31,6 @@ using namespace std;
 #define PACKAGE_FILENAME "Package.pp"
 #define SOURCE_FILENAME "Sources.pp"
 
-#define DIRECTORY_SEPARATOR '/'
 #define COMMAND_PREFIX '#'
 #define VARIABLE_PREFIX '$'
 #define VARIABLE_OPEN_BRACE '['

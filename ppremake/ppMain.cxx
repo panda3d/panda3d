@@ -6,6 +6,7 @@
 #include "ppMain.h"
 #include "ppScope.h"
 #include "ppCommandFile.h"
+#include "ppDirectory.h"
 
 #include <unistd.h>
 #include <assert.h>
@@ -97,7 +98,7 @@ read_source(const string &root) {
     return false;
   }
 
-  _def_scope->define_variable("TREE", _tree.get_complete_subtree());
+  _def_scope->define_variable("TREE", _tree.get_complete_tree());
 
   if (_tree.count_source_files() == 0) {
     cerr << "Could not find any source definition files named " << SOURCE_FILENAME
@@ -131,7 +132,22 @@ read_source(const string &root) {
 ////////////////////////////////////////////////////////////////////
 bool PPMain::
 process_all() {
-  return r_process_all(&_tree);
+  string cache_filename = _def_scope->expand_variable("DEPENDENCY_CACHE_FILENAME");
+
+  if (cache_filename.empty()) {
+    cerr << "Warning: no definition given for $[DEPENDENCY_CACHE_FILENAME].\n";
+  } else {
+    _tree.read_file_dependencies(cache_filename);
+  }
+
+  if (!r_process_all(_tree.get_root())) {
+    return false;
+  }
+
+  if (!cache_filename.empty()) {
+    _tree.update_file_dependencies(cache_filename);
+  }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -144,8 +160,8 @@ process_all() {
 ////////////////////////////////////////////////////////////////////
 bool PPMain::
 process(const string &dirname) {
-  PPDirectoryTree *dir = _tree.find_dirname(dirname);
-  if (dir == (PPDirectoryTree *)NULL) {
+  PPDirectory *dir = _tree.find_dirname(dirname);
+  if (dir == (PPDirectory *)NULL) {
     cerr << "Unknown directory: " << dirname << "\n";
     return false;
   }
@@ -159,12 +175,46 @@ process(const string &dirname) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPMain::report_depends
+//       Access: Public
+//  Description: Reports all the directories that the named directory
+//               depends on.
+////////////////////////////////////////////////////////////////////
+void PPMain::
+report_depends(const string &dirname) const {
+  PPDirectory *dir = _tree.find_dirname(dirname);
+  if (dir == (PPDirectory *)NULL) {
+    cerr << "Unknown directory: " << dirname << "\n";
+    return;
+  }
+
+  dir->report_depends();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPMain::report_needs
+//       Access: Public
+//  Description: Reports all the directories that depend on (need) the
+//               named directory.
+////////////////////////////////////////////////////////////////////
+void PPMain::
+report_needs(const string &dirname) const {
+  PPDirectory *dir = _tree.find_dirname(dirname);
+  if (dir == (PPDirectory *)NULL) {
+    cerr << "Unknown directory: " << dirname << "\n";
+    return;
+  }
+
+  dir->report_needs();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPMain::r_process_all
 //       Access: Private
 //  Description: The recursive implementation of process_all().
 ////////////////////////////////////////////////////////////////////
 bool PPMain::
-r_process_all(PPDirectoryTree *dir) {
+r_process_all(PPDirectory *dir) {
   if (dir->get_source() != (PPCommandFile *)NULL) {
     if (!p_process(dir)) {
       return false;
@@ -187,7 +237,7 @@ r_process_all(PPDirectoryTree *dir) {
 //  Description: The private implementation of process().
 ////////////////////////////////////////////////////////////////////
 bool PPMain::
-p_process(PPDirectoryTree *dir) {
+p_process(PPDirectory *dir) {
   current_output_directory = dir;
   _named_scopes.set_current(dir->get_dirname());
   PPCommandFile *source = dir->get_source();

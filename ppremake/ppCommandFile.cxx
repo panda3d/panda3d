@@ -12,6 +12,8 @@
 #include <ctype.h>
 #include <stdio.h>  // for tempnam()
 #include <unistd.h>
+#include <sys/types.h>
+#include <utime.h>
 
 static const string begin_comment(BEGIN_COMMENT);
 
@@ -823,12 +825,30 @@ handle_format_command() {
 ////////////////////////////////////////////////////////////////////
 bool PPCommandFile::
 handle_output_command() {
+  vector<string> words;
+  tokenize_whitespace(_scope->expand_string(_params), words);
+
+  if (words.empty()) {
+    cerr << "#output command requires one parameter.\n";
+    return false;
+  }
+
   BlockNesting *nest = new BlockNesting;
   nest->_state = BS_output;
-  nest->_name = trim_blanks(_scope->expand_string(_params));
+  nest->_name = words[0];
   nest->_write_state = _write_state;
   nest->_scope = _scope;
   nest->_next = _block_nesting;
+
+  // Also check the output flags.
+  nest->_flags = 0;
+  for (int i = 1; i < (int)words.size(); i++) {
+    if (words[i] == "notouch") {
+      nest->_flags |= OF_notouch;
+    } else {
+      cerr << "Invalid output flag: " << words[i] << "\n";
+    }
+  }
 
   _block_nesting = nest;
 
@@ -1036,7 +1056,8 @@ handle_end_command() {
 
       // Verify the output file.
       if (nest->_tempnam != (char *)NULL) {
-	if (!compare_output(nest->_tempnam, nest->_true_name)) {
+	if (!compare_output(nest->_tempnam, nest->_true_name,
+			    (nest->_flags & OF_notouch) != 0)) {
 	  return false;
 	}
 	free(nest->_tempnam);
@@ -1503,7 +1524,8 @@ replay_formap(const string &varname, const string &mapvar) {
 //               same, remove the temporary file.
 ////////////////////////////////////////////////////////////////////
 bool PPCommandFile::
-compare_output(const string &temp_name, const string &true_name) {
+compare_output(const string &temp_name, const string &true_name,
+	       bool notouch) {
   ifstream in_a(temp_name.c_str());
   ifstream in_b(true_name.c_str());
 
@@ -1537,6 +1559,15 @@ compare_output(const string &temp_name, const string &true_name) {
     //    cerr << "File " << true_name << " is unchanged.\n";
     if (unlink(temp_name.c_str()) < 0) {
       cerr << "Warning: unable to remove temporary file " << temp_name << "\n";
+    }
+
+    // Even though the file is unchanged, unless the "notouch" flag is
+    // set, we want to update the modification time.  This helps the
+    // makefiles know we did something.
+    if (!notouch) {
+      if (utime(true_name.c_str(), (struct utimbuf *)NULL) < 0) {
+	cerr << "Warning: unable to touch " << true_name << "\n";
+      }
     }
   }
 

@@ -1,22 +1,15 @@
 bin_PROGRAMS = ppremake
 
 ppremake_SOURCES =						\
-    find_searchpath.cxx find_searchpath.h			\
+    check_include.cxx check_include.h find_searchpath.cxx	\
+    find_searchpath.h						\
     gnu_getopt.c gnu_getopt.h					\
-    ppCommandFile.cxx ppCommandFile.h ppDirectoryTree.cxx	\
-    ppDirectoryTree.h ppMain.cxx ppMain.h			\
+    ppCommandFile.cxx ppCommandFile.h ppDependableFile.cxx	\
+    ppDependableFile.h ppDirectory.cxx				\
+    ppDirectory.h ppDirectoryTree.cxx ppDirectoryTree.h		\
+    ppMain.cxx ppMain.h						\
     ppFilenamePattern.cxx					\
     ppFilenamePattern.h ppNamedScopes.cxx ppNamedScopes.h	\
     ppScope.cxx ppScope.h ppSubroutine.cxx ppSubroutine.h	\
     ppremake.cxx ppremake.h tokenize.cxx			\
     tokenize.h
-
-data_DATA = \
-    System.pp Depends.pp Global.pp Template.autoconf.pp \
-    Global.stopgap.pp Template.stopgap.pp \
-    Global.unix.pp Template.unix.pp
-
-EXTRA_DIST =\
-    System.pp Depends.pp Global.pp Template.autoconf.pp \
-    Global.stopgap.pp Template.stopgap.pp \
-    Global.unix.pp Template.unix.pp

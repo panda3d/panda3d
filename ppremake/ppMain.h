@@ -29,9 +29,12 @@ public:
   bool process_all();
   bool process(const string &dirname);
 
+  void report_depends(const string &dirname) const;
+  void report_needs(const string &dirname) const;
+
 private:
-  bool r_process_all(PPDirectoryTree *dir);
-  bool p_process(PPDirectoryTree *dir);
+  bool r_process_all(PPDirectory *dir);
+  bool p_process(PPDirectory *dir);
   bool read_global_file();
   static string get_cwd();
 
