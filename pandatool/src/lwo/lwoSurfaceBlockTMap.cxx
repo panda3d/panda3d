@@ -5,6 +5,9 @@
 
 #include "lwoSurfaceBlockTMap.h"
 #include "lwoInputFile.h"
+#include "lwoSurfaceBlockCoordSys.h"
+#include "lwoSurfaceBlockTransform.h"
+#include "lwoSurfaceBlockRefObj.h"
 
 #include <indent.h>
 
@@ -52,30 +55,18 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 IffChunk *LwoSurfaceBlockTMap::
 make_new_chunk(IffInputFile *in, IffId id) {
-  /*
-  if (id == IffId("COLR")) {
-    return new LwoSurfaceColor;
-  
-  } else if (id == IffId("DIFF") ||
-	     id == IffId("LUMI") ||
-	     id == IffId("SPEC") ||
-	     id == IffId("REFL") ||
-	     id == IffId("TRAN") ||
-	     id == IffId("TRNL") ||
-	     id == IffId("GLOS") ||
-	     id == IffId("SHRP") ||
-	     id == IffId("BUMP") ||
-	     id == IffId("RSAN") ||
-	     id == IffId("RIND")) {
-    return new LwoSurfaceParameter;
+  if (id == IffId("CNTR") ||
+      id == IffId("SIZE") ||
+      id == IffId("ROTA")) {
+    return new LwoSurfaceBlockTransform;
 
-  } else if (id == IffId("SIDE")) {
-    return new LwoSurfaceSidedness;
+  } else if (id == IffId("OREF")) {
+    return new LwoSurfaceBlockRefObj;
 
-  } else if (id == IffId("SMAN")) {
-    return new LwoSurfaceSmoothingAngle;
+  } else if (id == IffId("CSYS")) {
+    return new LwoSurfaceBlockCoordSys;
   
-    } else */ {
+  } else {
     return IffChunk::make_new_chunk(in, id);
   }
 }

@@ -28,13 +28,16 @@
     lwoSurfaceBlock.h lwoSurfaceBlock.cxx \
     lwoSurfaceBlockAxis.h lwoSurfaceBlockAxis.cxx \
     lwoSurfaceBlockChannel.h lwoSurfaceBlockChannel.cxx \
+    lwoSurfaceBlockCoordSys.h lwoSurfaceBlockCoordSys.cxx \
     lwoSurfaceBlockEnabled.h lwoSurfaceBlockEnabled.cxx \
     lwoSurfaceBlockImage.h lwoSurfaceBlockImage.cxx \
     lwoSurfaceBlockOpacity.h lwoSurfaceBlockOpacity.cxx \
     lwoSurfaceBlockProjection.h lwoSurfaceBlockProjection.cxx \
     lwoSurfaceBlockHeader.h lwoSurfaceBlockHeader.cxx \
+    lwoSurfaceBlockRefObj.h lwoSurfaceBlockRefObj.cxx \
     lwoSurfaceBlockRepeat.h lwoSurfaceBlockRepeat.cxx \
     lwoSurfaceBlockTMap.h lwoSurfaceBlockTMap.cxx \
+    lwoSurfaceBlockTransform.h lwoSurfaceBlockTransform.cxx \
     lwoSurfaceBlockWrap.h lwoSurfaceBlockWrap.cxx \
     lwoSurfaceColor.h lwoSurfaceColor.cxx \
     lwoSurfaceParameter.h lwoSurfaceParameter.cxx \
@@ -62,13 +65,16 @@
     lwoSurfaceBlock.h \
     lwoSurfaceBlockAxis.h \
     lwoSurfaceBlockChannel.h \
+    lwoSurfaceBlockCoordSys.h \
     lwoSurfaceBlockEnabled.h \
     lwoSurfaceBlockImage.h \
     lwoSurfaceBlockOpacity.h \
     lwoSurfaceBlockProjection.h \
     lwoSurfaceBlockHeader.h \
+    lwoSurfaceBlockRefObj.h \
     lwoSurfaceBlockRepeat.h \
     lwoSurfaceBlockTMap.h \
+    lwoSurfaceBlockTransform.h \
     lwoSurfaceBlockWrap.h \
     lwoSurfaceColor.h \
     lwoSurfaceParameter.h \
