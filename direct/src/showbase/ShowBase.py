@@ -550,11 +550,24 @@ class ShowBase(DirectObject.DirectObject):
                 self.win.setClearDepthActive(oldClearDepthActive)
                 self.win.setClearDepth(oldClearDepth)
 
-            if self.config.GetBool('show-frame-rate-meter', 0):
-                self.frameRateMeter = FrameRateMeter('frameRateMeter')
-                self.frameRateMeter.setupLayer(self.win)
+            self.setFrameRateMeter(self.config.GetBool('show-frame-rate-meter', 0))
 
         return success
+
+    def setFrameRateMeter(self, flag):
+        """
+        Turns on or off (according to flag) a standard frame rate
+        meter in the upper-right corner of the main window.
+        """
+        if flag:
+            if not self.frameRateMeter:
+                self.frameRateMeter = FrameRateMeter('frameRateMeter')
+                self.frameRateMeter.setupLayer(self.win)
+        else:
+            if self.frameRateMeter:
+                self.frameRateMeter.clearLayer()
+                self.frameRateMeter = None
+
     
     def setupRender(self):
         """
