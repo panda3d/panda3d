@@ -1175,11 +1175,10 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
             for x in ipath: cmd = cmd + " /I" + x
             if (opts.count('NOFLOATWARN')): cmd = cmd + ' /wd4244 /wd4305'
             if (opts.count("WITHINPANDA")): cmd = cmd + ' /DWITHIN_PANDA'
-#            if (OPTIMIZE==1): cmd = cmd + " /Zc:forScope /MD /Zi /RTCs /GS "
-            if (OPTIMIZE==1): cmd = cmd + " /Zc:forScope /MD /Zi /O2 /Ob2 /G6 /DFORCE_INLINING "
-            if (OPTIMIZE==2): cmd = cmd + " /Zc:forScope /MD /Zi /O2 /Ob2 /G6 /DFORCE_INLINING "
-            if (OPTIMIZE==3): cmd = cmd + " /Zc:forScope /MD /Zi /O2 /Ob2 /G6 /DFORCE_INLINING "
-            if (OPTIMIZE==4): cmd = cmd + " /Zc:forScope /MD /Zi /O2 /Ob2 /G6 /DFORCE_INLINING /GL /DNDEBUG "
+            if (OPTIMIZE==1): cmd = cmd + " /Zc:forScope /MD /Zi /O2 /Ob2 /DFORCE_INLINING /RTCs /GS"
+            if (OPTIMIZE==2): cmd = cmd + " /Zc:forScope /MD /Zi /O2 /Ob2 /DFORCE_INLINING "
+            if (OPTIMIZE==3): cmd = cmd + " /Zc:forScope /MD /Zi /O2 /Ob2 /DFORCE_INLINING "
+            if (OPTIMIZE==4): cmd = cmd + " /Zc:forScope /MD /Zi /O2 /Ob2 /DFORCE_INLINING /GL /DNDEBUG "
             cmd = cmd + " /Fd" + wobj[:-4] + ".pdb"
             building = buildingwhat(opts)
             if (building): cmd = cmd + " /DBUILDING_" + building
@@ -1340,7 +1339,8 @@ def CompileLIB(lib=0, obj=[], opts=[]):
     if (lib==0): sys.exit("syntax error in CompileLIB directive")
 
     if (COMPILER=="MSVC7"):
-        wlib = PREFIX+"/lib/" + lib
+        if (lib[-4:]==".ilb"): wlib = PREFIX+"/tmp/" + lib[:-4] + ".lib"
+        else:                  wlib = PREFIX+"/lib/" + lib[:-4] + ".lib"
         wobj = xpaths(PREFIX+"/tmp/",obj,"")
         ALLTARGETS.append(wlib)
         if (older(wlib, wobj)):
@@ -1351,7 +1351,8 @@ def CompileLIB(lib=0, obj=[], opts=[]):
             updatefiledate(wlib)
 
     if (COMPILER=="LINUXA"):
-        wlib = PREFIX + "/lib/" + lib[:-4] + ".a"
+        if (lib[-4:]==".ilb"): wlib = PREFIX+"/tmp/" + lib[:-4] + ".a"
+        else:                  wlib = PREFIX+"/lib/" + lib[:-4] + ".a"
         wobj = []
         for x in obj: wobj.append(PREFIX + "/tmp/" + x[:-4] + ".o")
         if (older(wlib, wobj)):
@@ -1381,6 +1382,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             if   (suffix==".obj"): wobj.append(PREFIX+"/tmp/"+x)
             elif (suffix==".dll"): wobj.append(PREFIX+"/lib/"+x[:-4]+".lib")
             elif (suffix==".lib"): wobj.append(PREFIX+"/lib/"+x)
+            elif (suffix==".ilb"): wobj.append(PREFIX+"/tmp/"+x[:-4]+".lib")
             elif (suffix==".res"): wobj.append(PREFIX+"/tmp/"+x)
             else: sys.exit("unknown suffix in object list.")
         if (older(dll, wobj+xdep)):
@@ -1477,6 +1479,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             if   (suffix==".obj"): wobj.append(PREFIX+"/tmp/"+x[:-4]+".o")
             elif (suffix==".dll"): wobj.append(PREFIX+"/lib/"+x[:-4]+".so")
             elif (suffix==".lib"): wobj.append(PREFIX+"/lib/"+x[:-4]+".a")
+            elif (suffix==".ilb"): wobj.append(PREFIX+"/tmp/"+x[:-4]+".a")
             else: sys.exit("unknown suffix in object list.")
         if (older(wdll, wobj+xdep)):
             if (dll[-4:]==".exe"): cmd = 'g++ -o ' + wdll + ' -L' + PREFIX + '/lib'
@@ -1486,6 +1489,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
                 if   (suffix==".obj"): cmd = cmd + ' ' + PREFIX + '/tmp/' + x[:-4] + '.o'
                 elif (suffix==".dll"): cmd = cmd + ' -l' + x[3:-4]
                 elif (suffix==".lib"): cmd = cmd + ' ' + PREFIX + '/lib/' + x[:-4] + '.a'
+                elif (suffix==".ilb"): cmd = cmd + ' ' + PREFIX + '/tmp/' + x[:-4] + '.a'
             if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -L' + THIRDPARTY + '/linux-libs-a/fmod/lib -lfmod-3.74'
             if (PkgSelected(opts,"NVIDIACG")):
                 cmd = cmd + ' -L' + THIRDPARTY + 'nvidiacg/lib '
@@ -1711,13 +1715,13 @@ CompileLink(opts=['WINUSER'], dll='genpycode.exe', obj=['genpycode.obj'])
 # Copy header files to the PREFIX/include directory.
 #
 # Are we just copying *ALL* headers into the include directory?
-# If so, let's automate this. - Dave Schuyler
+# If so, let's automate this.
 #
 # We're definitely not copying all headers.  We're only copying those
 # same headers that are copied by ppremake.  But the bigger question
 # is, did he *intend* to copy all headers?  Another good question is,
 # could we just put a little tag into the header file itself, indicating
-# that it is meant to be copied?  - Josh Yelon
+# that it is meant to be copied?
 #
 ########################################################################
 
@@ -2773,9 +2777,11 @@ CopyFile(PREFIX+'/include/','panda/src/grutil/multitexReducer.I')
 CopyFile(PREFIX+'/include/','panda/src/grutil/multitexReducer.h')
 CopyFile(PREFIX+'/include/','panda/src/gsgmisc/geomIssuer.I')
 CopyFile(PREFIX+'/include/','panda/src/gsgmisc/geomIssuer.h')
-if OMIT.count("HELIX")==0:
-    CopyFile(PREFIX+'/include/','panda/src/helix/config_helix.h')
-    CopyFile(PREFIX+'/include/','panda/src/helix/HelixClient.h')
+CopyFile(PREFIX+'/include/','panda/src/helix/config_helix.h')
+CopyFile(PREFIX+'/include/','panda/src/helix/HelixClient.h')
+CopyFile(PREFIX+'/include/','panda/src/vrpn/config_vrpn.h')
+CopyFile(PREFIX+'/include/','panda/src/vrpn/vrpnClient.I')
+CopyFile(PREFIX+'/include/','panda/src/vrpn/vrpnClient.h')
 CopyFile(PREFIX+'/include/','panda/src/parametrics/classicNurbsCurve.I')
 CopyFile(PREFIX+'/include/','panda/src/parametrics/classicNurbsCurve.h')
 CopyFile(PREFIX+'/include/','panda/src/parametrics/config_parametrics.h')
@@ -2850,9 +2856,6 @@ CopyFile(PREFIX+'/include/','panda/src/recorder/recorderTable.h')
 CopyFile(PREFIX+'/include/','panda/src/recorder/recorderTable.I')
 CopyFile(PREFIX+'/include/','panda/src/recorder/socketStreamRecorder.h')
 CopyFile(PREFIX+'/include/','panda/src/recorder/socketStreamRecorder.I')
-CopyFile(PREFIX+'/include/','panda/src/vrpn/config_vrpn.h')
-CopyFile(PREFIX+'/include/','panda/src/vrpn/vrpnClient.I')
-CopyFile(PREFIX+'/include/','panda/src/vrpn/vrpnClient.h')
 CopyFile(PREFIX+'/include/','panda/metalibs/panda/panda.h')
 CopyFile(PREFIX+'/include/','panda/src/builder/builder.I')
 CopyFile(PREFIX+'/include/','panda/src/builder/builder.h')
@@ -3423,7 +3426,7 @@ OPTS=['NSPR']
 CompileC(ipath=IPATH, opts=OPTS, src='cppParser_composite1.cxx', obj='cppParser_composite1.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='cppParser_composite2.cxx', obj='cppParser_composite2.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='cppBison.cxx', obj='cppParser_cppBison.obj')
-CompileLIB(lib='libcppParser.lib', obj=[
+CompileLIB(lib='libcppParser.ilb', obj=[
              'cppParser_composite1.obj',
              'cppParser_composite2.obj',
              'cppParser_cppBison.obj',
@@ -3497,7 +3500,7 @@ CompileC(ipath=IPATH, opts=OPTS, src='interrogate_composite2.cxx', obj='interrog
 CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='interrogate.exe', obj=[
              'interrogate_composite1.obj',
              'interrogate_composite2.obj',
-             'libcppParser.lib',
+             'libcppParser.ilb',
              'libpystub.dll',
              'libdtoolconfig.dll',
              'libdtool.dll',
@@ -3506,7 +3509,7 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='interrogate.exe', obj=[
 CompileC(ipath=IPATH, opts=OPTS, src='interrogate_module.cxx', obj='interrogate_module_interrogate_module.obj')
 CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='interrogate_module.exe', obj=[
              'interrogate_module_interrogate_module.obj',
-             'libcppParser.lib',
+             'libcppParser.ilb',
              'libpystub.dll',
              'libdtoolconfig.dll',
              'libdtool.dll',
@@ -3515,7 +3518,7 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='interrogate_module.exe', obj=[
 CompileC(ipath=IPATH, opts=OPTS, src='parse_file.cxx', obj='parse_file_parse_file.obj')
 CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='parse_file.exe', obj=[
              'parse_file_parse_file.obj',
-             'libcppParser.lib',
+             'libcppParser.ilb',
              'libpystub.dll',
              'libdtoolconfig.dll',
              'libdtool.dll',
@@ -3719,14 +3722,19 @@ CompileC(ipath=IPATH, opts=OPTS, src='libpnmimage_igate.cxx', obj='libpnmimage_i
 # DIRECTORY: panda/src/net/
 #
 
-IPATH=['panda/src/net']
-OPTS=['BUILDING_PANDA', 'NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='net_composite1.cxx', obj='net_composite1.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='net_composite2.cxx', obj='net_composite2.obj')
-Interrogate(ipath=IPATH, opts=OPTS, outd='libnet.in', outc='libnet_igate.cxx',
-            src='panda/src/net',  module='panda', library='libnet', files=[
-            'config_net.h', 'connection.h', 'connectionListener.h', 'connectionManager.h', 'connectionReader.h', 'connectionWriter.h', 'datagramQueue.h', 'datagramTCPHeader.h', 'datagramUDPHeader.h', 'netAddress.h', 'netDatagram.h', 'pprerror.h', 'queuedConnectionListener.h', 'queuedConnectionManager.h', 'queuedConnectionReader.h', 'recentConnectionReader.h', 'queuedReturn.h', 'net_composite1.cxx', 'net_composite2.cxx'])
-CompileC(ipath=IPATH, opts=OPTS, src='libnet_igate.cxx', obj='libnet_igate.obj')
+if (OMIT.count("NSPR")==0):
+    IPATH=['panda/src/net']
+    OPTS=['BUILDING_PANDA', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='net_composite1.cxx', obj='net_composite1.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='net_composite2.cxx', obj='net_composite2.obj')
+    Interrogate(ipath=IPATH, opts=OPTS, outd='libnet.in', outc='libnet_igate.cxx',
+                src='panda/src/net',  module='panda', library='libnet', files=[
+                'config_net.h', 'connection.h', 'connectionListener.h', 'connectionManager.h',
+                'connectionReader.h', 'connectionWriter.h', 'datagramQueue.h', 'datagramTCPHeader.h',
+                'datagramUDPHeader.h', 'netAddress.h', 'netDatagram.h', 'pprerror.h', 'queuedConnectionListener.h',
+                'queuedConnectionManager.h', 'queuedConnectionReader.h', 'recentConnectionReader.h',
+                'queuedReturn.h', 'net_composite1.cxx', 'net_composite2.cxx'])
+    CompileC(ipath=IPATH, opts=OPTS, src='libnet_igate.cxx', obj='libnet_igate.obj')
 
 #
 # DIRECTORY: panda/src/pstatclient/
@@ -3875,12 +3883,13 @@ CompileC(ipath=IPATH, opts=OPTS, src='libcollide_igate.cxx', obj='libcollide_iga
 # DIRECTORY: panda/src/pnmtext/
 #
 
-IPATH=['panda/src/pnmtext']
-OPTS=['BUILDING_PANDA', 'NSPR', 'FREETYPE']
-CompileC(ipath=IPATH, opts=OPTS, src='config_pnmtext.cxx', obj='pnmtext_config_pnmtext.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='freetypeFont.cxx', obj='pnmtext_freetypeFont.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='pnmTextGlyph.cxx', obj='pnmtext_pnmTextGlyph.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='pnmTextMaker.cxx', obj='pnmtext_pnmTextMaker.obj')
+if (OMIT.count("FREETYPE")==0):
+    IPATH=['panda/src/pnmtext']
+    OPTS=['BUILDING_PANDA', 'NSPR', 'FREETYPE']
+    CompileC(ipath=IPATH, opts=OPTS, src='config_pnmtext.cxx', obj='pnmtext_config_pnmtext.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='freetypeFont.cxx', obj='pnmtext_freetypeFont.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='pnmTextGlyph.cxx', obj='pnmtext_pnmTextGlyph.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='pnmTextMaker.cxx', obj='pnmtext_pnmTextMaker.obj')
 
 #
 # DIRECTORY: panda/src/text/
@@ -3936,7 +3945,7 @@ if (OMIT.count("HELIX")==0):
   Interrogate(ipath=IPATH, opts=OPTS, outd='libhelix.in', outc='libhelix_igate.cxx',
               src='panda/src/helix',  module='panda', library='libhelix', files=['HelixClient.cxx'])
   CompileC(ipath=IPATH, opts=OPTS, src='libhelix_igate.cxx', obj='libhelix_igate.obj')
-  CompileLIB(lib='libhelix.lib', obj=[
+  CompileLIB(lib='libhelix.ilb', obj=[
              'helix_config_helix.obj',
              'helix_fivemmap.obj',
              'helix_HelixClient.obj',
@@ -4010,33 +4019,33 @@ CompileC(ipath=IPATH, opts=OPTS, src='librecorder_igate.cxx', obj='librecorder_i
 # DIRECTORY: panda/src/vrpn/
 #
 
-IPATH=['panda/src/vrpn']
-OPTS=['BUILDING_PANDA', 'NSPR', 'VRPN']
-CompileC(ipath=IPATH, opts=OPTS, src='vrpn_composite1.cxx', obj='pvrpn_composite1.obj')
-Interrogate(ipath=IPATH, opts=OPTS, outd='libpvrpn.in', outc='libpvrpn_igate.cxx',
-            src='panda/src/vrpn',  module='panda', library='libpvrpn', files=[
-            'config_vrpn.cxx', 'config_vrpn.h', 'vrpnClient.cxx', 'vrpnAnalog.cxx', 'vrpnAnalog.h',
-            'vrpnAnalogDevice.cxx', 'vrpnAnalogDevice.h', 'vrpnButton.cxx', 'vrpnButton.h',
-            'vrpnButtonDevice.cxx', 'vrpnButtonDevice.h', 'vrpnClient.h', 'vrpnDial.cxx', 'vrpnDial.h',
-            'vrpnDialDevice.cxx', 'vrpnDialDevice.h', 'vrpnTracker.cxx', 'vrpnTracker.h', 'vrpnTrackerDevice.cxx',
-            'vrpnTrackerDevice.h', 'vrpn_interface.h'])
-CompileC(ipath=IPATH, opts=OPTS, src='libpvrpn_igate.cxx', obj='libpvrpn_igate.obj')
+if (OMIT.count("VRPN")==0):
+    IPATH=['panda/src/vrpn']
+    OPTS=['BUILDING_PANDA', 'NSPR', 'VRPN']
+    CompileC(ipath=IPATH, opts=OPTS, src='vrpn_composite1.cxx', obj='pvrpn_composite1.obj')
+    Interrogate(ipath=IPATH, opts=OPTS, outd='libpvrpn.in', outc='libpvrpn_igate.cxx',
+                src='panda/src/vrpn',  module='panda', library='libpvrpn', files=[
+                'config_vrpn.cxx', 'config_vrpn.h', 'vrpnClient.cxx', 'vrpnAnalog.cxx', 'vrpnAnalog.h',
+                'vrpnAnalogDevice.cxx', 'vrpnAnalogDevice.h', 'vrpnButton.cxx', 'vrpnButton.h',
+                'vrpnButtonDevice.cxx', 'vrpnButtonDevice.h', 'vrpnClient.h', 'vrpnDial.cxx', 'vrpnDial.h',
+                'vrpnDialDevice.cxx', 'vrpnDialDevice.h', 'vrpnTracker.cxx', 'vrpnTracker.h', 'vrpnTrackerDevice.cxx',
+                'vrpnTrackerDevice.h', 'vrpn_interface.h'])
+    CompileC(ipath=IPATH, opts=OPTS, src='libpvrpn_igate.cxx', obj='libpvrpn_igate.obj')
 
 #
 # DIRECTORY: panda/metalibs/panda/
 #
 
 IPATH=['panda/metalibs/panda']
-OPTS=['BUILDING_PANDA', 'ZLIB', 'NSPR', 'VRPN', 'JPEG', 'TIFF', 'FREETYPE']
-INFILES=['librecorder.in', 'libpgraph.in', 'libpvrpn.in', 'libgrutil.in', 'libchan.in', 'libpstatclient.in',
+OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'TIFF', 'FREETYPE']
+INFILES=['librecorder.in', 'libpgraph.in', 'libgrutil.in', 'libchan.in', 'libpstatclient.in',
          'libchar.in', 'libcollide.in', 'libdevice.in', 'libdgraph.in', 'libdisplay.in', 'libevent.in',
-         'libgobj.in', 'libgsgbase.in', 'liblinmath.in', 'libmathutil.in', 'libnet.in', 'libparametrics.in',
+         'libgobj.in', 'libgsgbase.in', 'liblinmath.in', 'libmathutil.in', 'libparametrics.in',
          'libpnmimage.in', 'libtext.in', 'libtform.in', 'liblerp.in', 'libputil.in', 'libaudio.in',
          'libpgui.in']
 OBJFILES=['panda_panda.obj', 'libpanda_module.obj', 'recorder_composite1.obj',
           'recorder_composite2.obj', 'librecorder_igate.obj',
           'pgraph_nodePath.obj', 'pgraph_composite1.obj', 'pgraph_composite2.obj', 'libpgraph_igate.obj',
-          'pvrpn_composite1.obj', 'libpvrpn_igate.obj',
           'grutil_multitexReducer.obj', 'grutil_composite1.obj', 'libgrutil_igate.obj',
           'chan_composite1.obj', 'chan_composite2.obj', 'libchan_igate.obj', 'pstatclient_composite1.obj',
           'pstatclient_composite2.obj', 'libpstatclient_igate.obj', 'char_composite1.obj',
@@ -4046,12 +4055,11 @@ OBJFILES=['panda_panda.obj', 'libpanda_module.obj', 'recorder_composite1.obj',
           'display_composite2.obj', 'libdisplay_igate.obj', 'event_composite1.obj', 'libevent_igate.obj',
           'gobj_composite1.obj', 'gobj_composite2.obj', 'libgobj_igate.obj', 'gsgbase_composite1.obj',
           'libgsgbase_igate.obj', 'gsgmisc_geomIssuer.obj', 'linmath_composite1.obj',
-          'linmath_composite2.obj', 'liblinmath_igate.obj', 'mathutil_composite1.obj', 'mathutil_composite2.obj',
-          'libmathutil_igate.obj', 'net_composite1.obj', 'net_composite2.obj',
-          'libnet_igate.obj', 'parametrics_composite1.obj', 'parametrics_composite2.obj', 'libparametrics_igate.obj',
+          'linmath_composite2.obj', 'liblinmath_igate.obj',
+          'mathutil_composite1.obj', 'mathutil_composite2.obj', 'libmathutil_igate.obj', 
+          'parametrics_composite1.obj', 'parametrics_composite2.obj', 'libparametrics_igate.obj',
           'pnmimagetypes_pnmFileTypePNG.obj', 'pnmimagetypes_pnmFileTypeTIFF.obj', 'pnmimagetypes_composite1.obj',
           'pnmimagetypes_composite2.obj', 'pnmimage_composite1.obj', 'pnmimage_composite2.obj', 'libpnmimage_igate.obj',
-          'pnmtext_config_pnmtext.obj', 'pnmtext_freetypeFont.obj', 'pnmtext_pnmTextGlyph.obj', 'pnmtext_pnmTextMaker.obj',
           'text_composite1.obj', 'text_composite2.obj', 'libtext_igate.obj', 'tform_composite1.obj', 'tform_composite2.obj',
           'libtform_igate.obj', 'lerp_composite1.obj', 'liblerp_igate.obj', 'putil_composite1.obj', 'putil_composite2.obj',
           'libputil_igate.obj', 'audio_composite1.obj', 'libaudio_igate.obj', 'pgui_composite1.obj', 'pgui_composite2.obj',
@@ -4060,14 +4068,38 @@ LINKOPTS=['ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM', 'VRPN', 'NSPR', 'ZLIB', 'JPE
 LINKXDEP=[]
 if OMIT.count("HELIX")==0:
     OPTS.append('HELIX')
-    OBJFILES.append("libhelix.lib")
+    OBJFILES.append("libhelix.ilb")
     INFILES.append("libhelix.in")
     LINKOPTS.append('HELIX')
-    LINKXDEP.append(PREFIX+'/tmp/dtool_have_helix.dat')
+if OMIT.count("VRPN")==0:
+    OPTS.append("VRPN")
+    OBJFILES.append("pvrpn_composite1.obj")
+    OBJFILES.append("libpvrpn_igate.obj")
+    INFILES.append("libpvrpn.in")
+    LINKOPTS.append("VRPN")
+if OMIT.count("NSPR")==0:
+    OPTS.append("NSPR")
+    OBJFILES.append("net_composite1.obj")
+    OBJFILES.append("net_composite2.obj")
+    OBJFILES.append("libnet_igate.obj")
+    INFILES.append("libnet.in")
+    LINKOPTS.append("NSPR")
+if OMIT.count("FREETYPE")==0:
+    OPTS.append("FREETYPE")
+    OBJFILES.append("pnmtext_config_pnmtext.obj")
+    OBJFILES.append("pnmtext_freetypeFont.obj")
+    OBJFILES.append("pnmtext_pnmTextGlyph.obj")
+    OBJFILES.append("pnmtext_pnmTextMaker.obj")
+    LINKOPTS.append("FREETYPE")
 InterrogateModule(outc='libpanda_module.cxx', module='panda', library='libpanda', files=INFILES)
 CompileC(ipath=IPATH, opts=OPTS, src='panda.cxx', obj='panda_panda.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='libpanda_module.cxx', obj='libpanda_module.obj')
-CompileLink(opts=LINKOPTS, xdep=LINKXDEP,  dll='libpanda.dll', obj=OBJFILES)
+CompileLink(opts=LINKOPTS, dll='libpanda.dll', obj=OBJFILES, xdep=[
+        PREFIX+'/tmp/dtool_have_helix.dat',
+        PREFIX+'/tmp/dtool_have_vrpn.dat',
+        PREFIX+'/tmp/dtool_have_nspr.dat',
+        PREFIX+'/tmp/dtool_have_freetype.dat',
+])
 
 #
 # DIRECTORY: panda/src/audiotraits/
@@ -4122,115 +4154,116 @@ CompileC(ipath=IPATH, opts=OPTS, src='libdistort_igate.cxx', obj='libdistort_iga
 # DIRECTORY: panda/src/downloadertools/
 #
 
-IPATH=['panda/src/downloadertools']
-OPTS=['SSL', 'ZLIB', 'NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='apply_patch.cxx', obj='apply_patch_apply_patch.obj')
-CompileLink(dll='apply_patch.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'apply_patch_apply_patch.obj',
-             'libpandaexpress.dll',
-             'libpanda.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-CompileC(ipath=IPATH, opts=OPTS, src='build_patch.cxx', obj='build_patch_build_patch.obj')
-CompileLink(dll='build_patch.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'build_patch_build_patch.obj',
-             'libpandaexpress.dll',
-             'libpanda.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-IPATH=['panda/src/downloadertools']
-OPTS=['SSL', 'ZLIB', 'ZLIB', 'NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='check_adler.cxx', obj='check_adler_check_adler.obj')
-CompileLink(dll='check_adler.exe', opts=['ADVAPI', 'NSPR', 'ZLIB'], obj=[
-             'check_adler_check_adler.obj',
-             'libpandaexpress.dll',
-             'libpanda.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-CompileC(ipath=IPATH, opts=OPTS, src='check_crc.cxx', obj='check_crc_check_crc.obj')
-CompileLink(dll='check_crc.exe', opts=['ADVAPI', 'NSPR', 'ZLIB'], obj=[
-             'check_crc_check_crc.obj',
-             'libpandaexpress.dll',
-             'libpanda.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-IPATH=['panda/src/downloadertools']
-OPTS=['SSL', 'ZLIB', 'NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='check_md5.cxx', obj='check_md5_check_md5.obj')
-CompileLink(dll='check_md5.exe', opts=['ADVAPI', 'NSPR', 'SSL'], obj=[
-             'check_md5_check_md5.obj',
-             'libpandaexpress.dll',
-             'libpanda.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-CompileC(ipath=IPATH, opts=OPTS, src='multify.cxx', obj='multify_multify.obj')
-CompileLink(dll='multify.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'multify_multify.obj',
-             'libpandaexpress.dll',
-             'libpanda.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-IPATH=['panda/src/downloadertools']
-OPTS=['SSL', 'ZLIB', 'ZLIB', 'NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='pcompress.cxx', obj='pcompress_pcompress.obj')
-CompileLink(dll='pcompress.exe', opts=['ADVAPI', 'NSPR', 'ZLIB'], obj=[
-             'pcompress_pcompress.obj',
-             'libpandaexpress.dll',
-             'libpanda.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-CompileC(ipath=IPATH, opts=OPTS, src='pdecompress.cxx', obj='pdecompress_pdecompress.obj')
-CompileLink(dll='pdecompress.exe', opts=['ADVAPI', 'NSPR', 'ZLIB'], obj=[
-             'pdecompress_pdecompress.obj',
-             'libpandaexpress.dll',
-             'libpanda.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-IPATH=['panda/src/downloadertools']
-OPTS=['SSL', 'ZLIB', 'NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='pdecrypt.cxx', obj='pdecrypt_pdecrypt.obj')
-CompileLink(dll='pdecrypt.exe', opts=['ADVAPI', 'NSPR', 'SSL'], obj=[
-             'pdecrypt_pdecrypt.obj',
-             'libpandaexpress.dll',
-             'libpanda.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-CompileC(ipath=IPATH, opts=OPTS, src='pencrypt.cxx', obj='pencrypt_pencrypt.obj')
-CompileLink(dll='pencrypt.exe', opts=['ADVAPI', 'NSPR', 'SSL'], obj=[
-             'pencrypt_pencrypt.obj',
-             'libpandaexpress.dll',
-             'libpanda.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
-CompileC(ipath=IPATH, opts=OPTS, src='show_ddb.cxx', obj='show_ddb_show_ddb.obj')
-CompileLink(dll='show_ddb.exe', opts=['ADVAPI', 'NSPR'], obj=[
-             'show_ddb_show_ddb.obj',
-             'libpandaexpress.dll',
-             'libpanda.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
+if OMIT.count("SSL")==0:
+    IPATH=['panda/src/downloadertools']
+    OPTS=['SSL', 'ZLIB', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='apply_patch.cxx', obj='apply_patch_apply_patch.obj')
+    CompileLink(dll='apply_patch.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'apply_patch_apply_patch.obj',
+                 'libpandaexpress.dll',
+                 'libpanda.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='build_patch.cxx', obj='build_patch_build_patch.obj')
+    CompileLink(dll='build_patch.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'build_patch_build_patch.obj',
+                 'libpandaexpress.dll',
+                 'libpanda.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    IPATH=['panda/src/downloadertools']
+    OPTS=['SSL', 'ZLIB', 'ZLIB', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='check_adler.cxx', obj='check_adler_check_adler.obj')
+    CompileLink(dll='check_adler.exe', opts=['ADVAPI', 'NSPR', 'ZLIB'], obj=[
+                 'check_adler_check_adler.obj',
+                 'libpandaexpress.dll',
+                 'libpanda.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='check_crc.cxx', obj='check_crc_check_crc.obj')
+    CompileLink(dll='check_crc.exe', opts=['ADVAPI', 'NSPR', 'ZLIB'], obj=[
+                 'check_crc_check_crc.obj',
+                 'libpandaexpress.dll',
+                 'libpanda.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    IPATH=['panda/src/downloadertools']
+    OPTS=['SSL', 'ZLIB', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='check_md5.cxx', obj='check_md5_check_md5.obj')
+    CompileLink(dll='check_md5.exe', opts=['ADVAPI', 'NSPR', 'SSL'], obj=[
+                 'check_md5_check_md5.obj',
+                 'libpandaexpress.dll',
+                 'libpanda.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='multify.cxx', obj='multify_multify.obj')
+    CompileLink(dll='multify.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'multify_multify.obj',
+                 'libpandaexpress.dll',
+                 'libpanda.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    IPATH=['panda/src/downloadertools']
+    OPTS=['SSL', 'ZLIB', 'ZLIB', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='pcompress.cxx', obj='pcompress_pcompress.obj')
+    CompileLink(dll='pcompress.exe', opts=['ADVAPI', 'NSPR', 'ZLIB'], obj=[
+                 'pcompress_pcompress.obj',
+                 'libpandaexpress.dll',
+                 'libpanda.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='pdecompress.cxx', obj='pdecompress_pdecompress.obj')
+    CompileLink(dll='pdecompress.exe', opts=['ADVAPI', 'NSPR', 'ZLIB'], obj=[
+                 'pdecompress_pdecompress.obj',
+                 'libpandaexpress.dll',
+                 'libpanda.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    IPATH=['panda/src/downloadertools']
+    OPTS=['SSL', 'ZLIB', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='pdecrypt.cxx', obj='pdecrypt_pdecrypt.obj')
+    CompileLink(dll='pdecrypt.exe', opts=['ADVAPI', 'NSPR', 'SSL'], obj=[
+                 'pdecrypt_pdecrypt.obj',
+                 'libpandaexpress.dll',
+                 'libpanda.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='pencrypt.cxx', obj='pencrypt_pencrypt.obj')
+    CompileLink(dll='pencrypt.exe', opts=['ADVAPI', 'NSPR', 'SSL'], obj=[
+                 'pencrypt_pencrypt.obj',
+                 'libpandaexpress.dll',
+                 'libpanda.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='show_ddb.cxx', obj='show_ddb_show_ddb.obj')
+    CompileLink(dll='show_ddb.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'show_ddb_show_ddb.obj',
+                 'libpandaexpress.dll',
+                 'libpanda.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
 
 #
 # DIRECTORY: panda/src/glgsg/
@@ -4943,27 +4976,28 @@ CompileLIB(lib='libpalettizer.lib', obj=['palettizer_composite1.obj'])
 # DIRECTORY: pandatool/src/egg-mkfont/
 #
 
-IPATH=['pandatool/src/egg-mkfont', 'pandatool/src/palettizer']
-OPTS=['NSPR', 'FREETYPE']
-CompileC(ipath=IPATH, opts=OPTS, src='eggMakeFont.cxx', obj='egg-mkfont_eggMakeFont.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='rangeDescription.cxx', obj='egg-mkfont_rangeDescription.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='rangeIterator.cxx', obj='egg-mkfont_rangeIterator.obj')
-CompileLink(dll='egg-mkfont.exe', opts=['ADVAPI', 'NSPR', 'FREETYPE'], obj=[
-             'egg-mkfont_eggMakeFont.obj',
-             'egg-mkfont_rangeDescription.obj',
-             'egg-mkfont_rangeIterator.obj',
-             'libpalettizer.lib',
-             'libeggbase.lib',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libconverter.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
+if OMIT.count("FREETYPE")==0:
+    IPATH=['pandatool/src/egg-mkfont', 'pandatool/src/palettizer']
+    OPTS=['NSPR', 'FREETYPE']
+    CompileC(ipath=IPATH, opts=OPTS, src='eggMakeFont.cxx', obj='egg-mkfont_eggMakeFont.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='rangeDescription.cxx', obj='egg-mkfont_rangeDescription.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='rangeIterator.cxx', obj='egg-mkfont_rangeIterator.obj')
+    CompileLink(dll='egg-mkfont.exe', opts=['ADVAPI', 'NSPR', 'FREETYPE'], obj=[
+                 'egg-mkfont_eggMakeFont.obj',
+                 'egg-mkfont_rangeDescription.obj',
+                 'egg-mkfont_rangeIterator.obj',
+                 'libpalettizer.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libconverter.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
 
 #
 # DIRECTORY: pandatool/src/eggcharbase/
@@ -5606,32 +5640,11 @@ CompileLink(dll='bin2c.exe', opts=['ADVAPI', 'NSPR'], obj=[
 # DIRECTORY: pandatool/src/pstatserver/
 #
 
-IPATH=['pandatool/src/pstatserver']
-OPTS=['NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='pStatClientData.cxx', obj='pstatserver_pStatClientData.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='pStatGraph.cxx', obj='pstatserver_pStatGraph.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='pStatListener.cxx', obj='pstatserver_pStatListener.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='pStatMonitor.cxx', obj='pstatserver_pStatMonitor.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='pStatPianoRoll.cxx', obj='pstatserver_pStatPianoRoll.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='pStatReader.cxx', obj='pstatserver_pStatReader.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='pStatServer.cxx', obj='pstatserver_pStatServer.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='pStatStripChart.cxx', obj='pstatserver_pStatStripChart.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='pStatThreadData.cxx', obj='pstatserver_pStatThreadData.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='pStatView.cxx', obj='pstatserver_pStatView.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='pStatViewLevel.cxx', obj='pstatserver_pStatViewLevel.obj')
-CompileLIB(lib='libpstatserver.lib', obj=[
-             'pstatserver_pStatClientData.obj',
-             'pstatserver_pStatGraph.obj',
-             'pstatserver_pStatListener.obj',
-             'pstatserver_pStatMonitor.obj',
-             'pstatserver_pStatPianoRoll.obj',
-             'pstatserver_pStatReader.obj',
-             'pstatserver_pStatServer.obj',
-             'pstatserver_pStatStripChart.obj',
-             'pstatserver_pStatThreadData.obj',
-             'pstatserver_pStatView.obj',
-             'pstatserver_pStatViewLevel.obj',
-])
+if OMIT.count("NSPR")==0:
+    IPATH=['pandatool/src/pstatserver']
+    OPTS=['NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='pstatserver_composite1.cxx', obj='pstatserver_composite1.obj')
+    CompileLIB(lib='libpstatserver.lib', obj=[ 'pstatserver_composite1.obj' ])
 
 #
 # DIRECTORY: pandatool/src/softprogs/
@@ -5658,23 +5671,24 @@ CompileLink(opts=['ADVAPI', 'NSPR'], dll='softcvs.exe', obj=[
 # DIRECTORY: pandatool/src/text-stats/
 #
 
-IPATH=['pandatool/src/text-stats']
-OPTS=['NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='textMonitor.cxx', obj='text-stats_textMonitor.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='textStats.cxx', obj='text-stats_textStats.obj')
-CompileLink(opts=['ADVAPI', 'NSPR'], dll='text-stats.exe', obj=[
-             'text-stats_textMonitor.obj',
-             'text-stats_textStats.obj',
-             'libprogbase.lib',
-             'libpstatserver.lib',
-             'libpandatoolbase.lib',
-             'libpandaegg.dll',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
-])
+if OMIT.count("NSPR")==0:
+    IPATH=['pandatool/src/text-stats']
+    OPTS=['NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='textMonitor.cxx', obj='text-stats_textMonitor.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='textStats.cxx', obj='text-stats_textStats.obj')
+    CompileLink(opts=['ADVAPI', 'NSPR'], dll='text-stats.exe', obj=[
+                 'text-stats_textMonitor.obj',
+                 'text-stats_textStats.obj',
+                 'libprogbase.lib',
+                 'libpstatserver.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
 
 #
 # DIRECTORY: pandatool/src/vrmlprogs/
