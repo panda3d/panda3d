@@ -67,7 +67,7 @@
 //              the overhead associated with Cygwin fork() calls.
 
 #if $[eq $[PLATFORM], Win32]
-  #define BUILD_TYPE gmsvc  // temporary; should be msvc for non-Cygwin.
+  #define BUILD_TYPE msvc
 #elif $[eq $[PLATFORM], Cygwin]
   #define BUILD_TYPE gmsvc
 #else
