@@ -40,7 +40,7 @@ NurbsCurveResult(const NurbsBasisVector &basis,
   _composed.reserve(num_segments);
   for (int i = 0; i < num_segments; i++) {
     int vi = _basis.get_vertex_index(i);
-    nassertv(vi >= 0 && vi < num_vertices);
+    nassertv(vi >= 0 && vi + order - 1 < num_vertices);
 
     // Create a geometry matrix from our (up to) four involved vertices.
     LMatrix4f geom;
@@ -86,6 +86,7 @@ eval_segment_point(int segment, float t, LVecBase3f &point) const {
   LVecBase4f tvec(t*t2, t2, t, 1.0f);
 
   float weight = tvec.dot(_composed[segment].get_col(3));
+
   point.set(tvec.dot(_composed[segment].get_col(0)) / weight,
             tvec.dot(_composed[segment].get_col(1)) / weight,
             tvec.dot(_composed[segment].get_col(2)) / weight);

@@ -70,7 +70,7 @@ private:
 
   // We pre-compose the basis matrix and the geometry vectors, so we
   // have these handy for evaluation.  There is one entry in the
-  // _composed_vector for each entry in basis._segments.
+  // _composed for each entry in basis._segments.
   typedef pvector<LMatrix4f> ComposedGeom;
   ComposedGeom _composed;
 

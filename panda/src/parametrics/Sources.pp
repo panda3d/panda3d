@@ -20,6 +20,8 @@
     nurbsCurveInterface.I nurbsCurveInterface.h \
     nurbsCurveResult.I nurbsCurveResult.h \
     nurbsBasisVector.I nurbsBasisVector.h \
+    nurbsSurfaceEvaluator.I nurbsSurfaceEvaluator.h \
+    nurbsSurfaceResult.I nurbsSurfaceResult.h \
     nurbsVertex.h nurbsVertex.I \
     parametricCurve.h  \
     parametricCurveCollection.I parametricCurveCollection.h  \
@@ -33,9 +35,11 @@
     parametricCurveDrawer.cxx curveFitter.cxx hermiteCurve.cxx  \
     nurbsCurveDrawer.cxx \
     nurbsCurveEvaluator.cxx \
-    nurbsCurveResult.cxx \
     nurbsCurveInterface.cxx  \
+    nurbsCurveResult.cxx \
     nurbsBasisVector.cxx \
+    nurbsSurfaceEvaluator.cxx \
+    nurbsSurfaceResult.cxx \
     nurbsVertex.cxx \
     parametricCurve.cxx parametricCurveCollection.cxx  \
     piecewiseCurve.cxx \
@@ -54,6 +58,8 @@
     nurbsCurveInterface.I nurbsCurveInterface.h \
     nurbsCurveResult.I nurbsCurveResult.h \
     nurbsBasisVector.I nurbsBasisVector.h \
+    nurbsSurfaceEvaluator.I nurbsSurfaceEvaluator.h \
+    nurbsSurfaceResult.I nurbsSurfaceResult.h \
     nurbsVertex.h nurbsVertex.I \
     nurbsPPCurve.h \
     parametricCurve.h \
