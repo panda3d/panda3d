@@ -3405,7 +3405,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
            SrcCopyRect.bottom=TmpSurfYsize;
         }
 
-        hr=_pD3DDevice->CreateOffscreenPlainSurface(TmpSurfXsize,TmpSurfYsize,D3DFMT_A8R8G8B8,D3DPOOL_SYSTEMMEM, &pD3DSurf, NULL);
+        hr=_pD3DDevice->CreateOffscreenPlainSurface(TmpSurfXsize,TmpSurfYsize,D3DFMT_A8R8G8B8,D3DPOOL_MANAGED, &pD3DSurf, NULL);
         if(FAILED(hr)) {
            dxgsg9_cat.error() << "CreateImageSurface failed in copy_pixel_buffer()" << D3DERRORSTRING(hr);
            exit(1);
@@ -5197,7 +5197,7 @@ HRESULT CreateDX9Cursor(LPDIRECT3DDEVICE9 pd3dDevice, HCURSOR hCursor,BOOL bAddW
 
     // Create a surface for the cursor
     if( FAILED( hr = pd3dDevice->CreateOffscreenPlainSurface( dwWidth, dwHeightDest,
-        D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, &pCursorBitmap, NULL ) ) ) {
+        D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &pCursorBitmap, NULL ) ) ) {
         goto End;
     }
 

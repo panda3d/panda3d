@@ -911,7 +911,7 @@ choose_device(void) {
     LARGE_INTEGER *DrvVer = &adapter_info.DriverVersion;
 
     wdxdisplay9_cat.info()
-      << "D3D9." << (dxpipe->_bIsDX9 ?"1":"0") << " Adapter[" << i << "]: " << adapter_info.Description 
+      << "D3D9." << (dxpipe->_bIsDX9 ?"a":"b") << " Adapter[" << i << "]: " << adapter_info.Description 
       << ", Driver: " << adapter_info.Driver << ", DriverVersion: ("
       << HIWORD(DrvVer->HighPart) << "." << LOWORD(DrvVer->HighPart) << "."
       << HIWORD(DrvVer->LowPart) << "." << LOWORD(DrvVer->LowPart)
