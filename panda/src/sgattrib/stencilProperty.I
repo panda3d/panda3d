@@ -22,50 +22,17 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE StencilProperty::
-StencilProperty(StencilProperty::Mode mode, StencilProperty::Action action) :
+StencilProperty(StencilProperty::Mode mode, StencilProperty::Action pass_action, 
+                  StencilProperty::Action fail_action, StencilProperty::Action zfail_action,
+                  unsigned long refval, unsigned long funcmask, unsigned long writemask) :
   _mode(mode),
-  _action(action)
+  _pass_action(pass_action),
+  _fail_action(fail_action),
+  _zfail_action(zfail_action),
+  _refval(refval),
+  _funcmask(funcmask),
+  _writemask(writemask)
 {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: StencilProperty::set_mode
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void StencilProperty::
-set_mode(StencilProperty::Mode mode) {
-  _mode = mode;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: StencilProperty::get_mode
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE StencilProperty::Mode StencilProperty::
-get_mode() const {
-  return _mode;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: StencilProperty::set_action
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void StencilProperty::
-set_action(StencilProperty::Action action) {
-  _action = action;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: StencilProperty::get_action
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE StencilProperty::Action StencilProperty::
-get_action() const {
-  return _action;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,8 +42,17 @@ get_action() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int StencilProperty::
 compare_to(const StencilProperty &other) const {
-  if (_mode != other._mode) {
-    return (int)_mode - (int)other._mode;
-  }
-  return (int)_action - (int)other._action;
+
+  #define CMPVAL(VAL)                     \
+   if (VAL != other.VAL) {return (int)VAL - (int)other.VAL;}
+    
+  CMPVAL(_mode); 
+  CMPVAL(_pass_action);
+  CMPVAL(_fail_action);
+  CMPVAL(_zfail_action);
+  CMPVAL(_refval);
+  CMPVAL(_funcmask);
+  CMPVAL(_writemask);
+
+  return 0;
 }

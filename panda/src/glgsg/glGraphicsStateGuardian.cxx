@@ -3101,16 +3101,16 @@ issue_depth_write(const DepthWriteTransition *attrib) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 issue_stencil(const StencilTransition *attrib) {
-  //  activate();
-
   StencilProperty::Mode mode = attrib->get_mode();
   if (mode == StencilProperty::M_none) {
     enable_stencil_test(false);
 
   } else {
     enable_stencil_test(true);
-    call_glStencilFunc(get_stencil_func_type(mode));
-    call_glStencilOp(get_stencil_action_type(attrib->get_action()));
+    call_glStencilFunc(get_stencil_func_type(mode),attrib->get_reference_value(),attrib->get_func_mask());
+    call_glStencilOp(get_stencil_action_type(attrib->get_fail_action()),
+                     get_stencil_action_type(attrib->get_zfail_action()),
+                     get_stencil_action_type(attrib->get_pass_action()));
   }
   report_errors();
 }
@@ -4099,6 +4099,7 @@ get_depth_func_type(DepthTestProperty::Mode m) const
 GLenum GLGraphicsStateGuardian::
 get_stencil_func_type(StencilProperty::Mode m) const
 {
+  // TODO: should do this with a table, not a switch
   switch(m) {
   case StencilProperty::M_never: return GL_NEVER;
   case StencilProperty::M_less: return GL_LESS;
@@ -4124,13 +4125,22 @@ get_stencil_func_type(StencilProperty::Mode m) const
 GLenum GLGraphicsStateGuardian::
 get_stencil_action_type(StencilProperty::Action a) const
 {
+  // TODO: should do this with a table, not a switch
   switch(a) {
   case StencilProperty::A_keep: return GL_KEEP;
   case StencilProperty::A_zero: return GL_ZERO;
   case StencilProperty::A_replace: return GL_REPLACE;
-  case StencilProperty::A_increment: return GL_INCR;
-  case StencilProperty::A_decrement: return GL_DECR;
+  case StencilProperty::A_increment_clamp: return GL_INCR;
+  case StencilProperty::A_decrement_clamp: return GL_DECR;
   case StencilProperty::A_invert: return GL_INVERT;
+
+  case StencilProperty::A_increment:
+  case StencilProperty::A_decrement:
+      glgsg_cat.error()
+             << "wraparound incr/decr StencilProperty::Action not supported by OpenGL\n";
+      if(a == StencilProperty::A_increment)
+         return GL_INCR;
+       else return GL_DECR;
   }
   glgsg_cat.error()
     << "Invalid StencilProperty::Action value" << endl;

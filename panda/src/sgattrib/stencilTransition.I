@@ -22,9 +22,10 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE StencilTransition::
-StencilTransition(StencilProperty::Mode mode,
-                  StencilProperty::Action action) :
-  _value(mode, action)
+StencilTransition(StencilProperty::Mode mode, StencilProperty::Action pass_action, 
+                  StencilProperty::Action fail_action, StencilProperty::Action zfail_action,
+                  unsigned long refval, unsigned long funcmask, unsigned long writemask) :
+  _value(mode,pass_action,fail_action,zfail_action,refval,funcmask,writemask)
 {
 }
 
@@ -55,9 +56,48 @@ get_mode() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void StencilTransition::
-set_action(StencilProperty::Action action) {
-  _value.set_action(action);
+set_pass_action(StencilProperty::Action action) {
+  _value.set_pass_action(action);
   state_changed();
+}
+
+INLINE void StencilTransition::
+set_fail_action(StencilProperty::Action action) {
+  _value.set_fail_action(action);
+  state_changed();
+}
+
+INLINE void StencilTransition::
+set_zfail_action(StencilProperty::Action action) {
+  _value.set_zfail_action(action);
+  state_changed();
+}
+
+INLINE void StencilTransition::
+set_reference_value(unsigned long v) {
+  _value.set_reference_value(v);
+  state_changed();
+}
+
+INLINE void StencilTransition::
+set_func_mask(unsigned long m) {
+  _value.set_func_mask(m);
+  state_changed();
+}
+
+INLINE void StencilTransition::
+set_write_mask(unsigned long m) {
+  _value.set_write_mask(m);
+  state_changed();
+}
+
+INLINE void StencilTransition::
+set_stencil_state(StencilProperty::Mode mode, StencilProperty::Action pass_action, 
+                  StencilProperty::Action fail_action, StencilProperty::Action zfail_action,
+                  unsigned long refval, unsigned long refmask, unsigned long writemask) {
+ _value.set_stencil_state(mode,pass_action,fail_action,zfail_action,
+                          refval,refmask,writemask);
+ state_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,6 +106,36 @@ set_action(StencilProperty::Action action) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE StencilProperty::Action StencilTransition::
-get_action() const {
-  return _value.get_action();
+get_pass_action() const {
+  return _value.get_pass_action();
 }
+
+INLINE StencilProperty::Action StencilTransition::
+get_fail_action() const {
+  return _value.get_fail_action();
+}
+
+INLINE StencilProperty::Action StencilTransition::
+get_zfail_action() const {
+  return _value.get_zfail_action();
+}
+
+INLINE unsigned long StencilTransition::
+get_reference_value() const {
+  return _value.get_reference_value();
+}
+
+INLINE unsigned long StencilTransition::
+get_func_mask() const {
+  return _value.get_func_mask();
+}
+
+INLINE unsigned long StencilTransition::
+get_write_mask() const {
+  return _value.get_write_mask();
+}
+
+
+
+
+

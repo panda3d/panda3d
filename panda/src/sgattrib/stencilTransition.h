@@ -38,13 +38,37 @@
 class EXPCL_PANDA StencilTransition : public OnTransition {
 public:
   INLINE StencilTransition(StencilProperty::Mode mode = StencilProperty::M_none,
-                           StencilProperty::Action action = StencilProperty::A_keep);
+                           StencilProperty::Action pass_action = StencilProperty::A_replace,
+                           StencilProperty::Action fail_action = StencilProperty::A_keep,
+                           StencilProperty::Action zfail_action = StencilProperty::A_keep,
+                           unsigned long refval = 0,
+                           unsigned long funcmask = 0xFFFFFFFF,
+                           unsigned long writemask = 0xFFFFFFFF);
 
   INLINE void set_mode(StencilProperty::Mode mode);
   INLINE StencilProperty::Mode get_mode() const;
 
-  INLINE void set_action(StencilProperty::Action action);
-  INLINE StencilProperty::Action get_action() const;
+  INLINE void set_pass_action(StencilProperty::Action action);
+  INLINE StencilProperty::Action get_pass_action() const;
+
+  INLINE void set_fail_action(StencilProperty::Action action);
+  INLINE StencilProperty::Action get_fail_action() const;
+
+  INLINE void set_zfail_action(StencilProperty::Action action);
+  INLINE StencilProperty::Action get_zfail_action() const;
+
+  INLINE void set_reference_value(unsigned long v);
+  INLINE unsigned long get_reference_value() const;
+
+  INLINE void set_func_mask(unsigned long m);
+  INLINE unsigned long get_func_mask() const;
+
+  INLINE void set_write_mask(unsigned long m);
+  INLINE unsigned long get_write_mask() const;
+
+  INLINE void set_stencil_state(StencilProperty::Mode mode, StencilProperty::Action pass_action, 
+                                StencilProperty::Action fail_action, StencilProperty::Action zfail_action,
+                                unsigned long refval, unsigned long funcmask, unsigned long writemask);
 
   virtual NodeTransition *make_copy() const;
   virtual NodeTransition *make_initial() const;

@@ -284,9 +284,8 @@ call_glLightModelTwoSide(GLboolean twoside)
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void GLGraphicsStateGuardian::
-call_glStencilFunc(GLenum func) {
-  if (_stencil_func != func) {
-    _stencil_func = func;
+call_glStencilFunc(GLenum func,GLint ref,GLuint mask) {
+
 #ifdef GSG_VERBOSE
     glgsg_cat.debug() << "glStencilFunc(";
     switch (func) {
@@ -318,10 +317,9 @@ call_glStencilFunc(GLenum func) {
       glgsg_cat.debug(false) << "unknown, ";
       break;
     }
-    glgsg_cat.debug(false) << "1, 1)" << endl;
+    glgsg_cat.debug(false) << ref << mask << ")\n";
 #endif
-    glStencilFunc(func, 1, 1);
-  }
+    glStencilFunc(func, ref, mask);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -330,11 +328,9 @@ call_glStencilFunc(GLenum func) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void GLGraphicsStateGuardian::
-call_glStencilOp(GLenum op) {
-  if (_stencil_op != op) {
-    _stencil_op = op;
+call_glStencilOp(GLenum fail,GLenum zfail,GLenum zpass) {
 #ifdef GSG_VERBOSE
-    glgsg_cat.debug() << "glStencilOp(GL_KEEP, GL_KEEP, ";
+    glgsg_cat.debug() << "glStencilOp(fail, zfail, ";
     switch (op) {
     case GL_KEEP:
       glgsg_cat.debug(false) << "GL_KEEP)";
@@ -360,8 +356,7 @@ call_glStencilOp(GLenum op) {
     }
     glgsg_cat.debug(false) << endl;
 #endif
-    glStencilOp(GL_KEEP, GL_KEEP, op);
-  }
+    glStencilOp(fail,zfail,zpass);
 }
 
 ////////////////////////////////////////////////////////////////////

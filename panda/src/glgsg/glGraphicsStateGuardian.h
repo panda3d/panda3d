@@ -201,8 +201,8 @@ protected:
   INLINE void call_glLightModelAmbient(const Colorf& color);
   INLINE void call_glLightModelLocal(GLboolean local);
   INLINE void call_glLightModelTwoSide(GLboolean twoside);
-  INLINE void call_glStencilFunc(GLenum func);
-  INLINE void call_glStencilOp(GLenum op);
+  INLINE void call_glStencilFunc(GLenum func,GLint refval,GLuint mask);
+  INLINE void call_glStencilOp(GLenum fail,GLenum zfail,GLenum pass);
   INLINE void call_glClipPlane(GLenum plane, const double equation[4]);
   INLINE void call_glLineWidth(GLfloat width);
   INLINE void call_glPointSize(GLfloat size);

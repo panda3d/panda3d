@@ -67,8 +67,14 @@ operator << (ostream &out, StencilProperty::Action action) {
   case StencilProperty::A_increment:
     return out << "increment";
 
+  case StencilProperty::A_increment_clamp:
+    return out << "increment_clamp";
+
   case StencilProperty::A_decrement:
     return out << "decrement";
+
+  case StencilProperty::A_decrement_clamp:
+    return out << "decrement_clamp";
 
   case StencilProperty::A_invert:
     return out << "invert";
@@ -86,6 +92,7 @@ void StencilProperty::
 output(ostream &out) const {
   out << _mode;
   if (_mode != M_none) {
-    out << ":" << _action;
+    out << ":" << _pass_action << ":" << _fail_action << ":" << _zfail_action
+        << ":" << _refval << ": 0x" << (void*)_funcmask << ": 0x" << (void*)_writemask;
   }
 }
