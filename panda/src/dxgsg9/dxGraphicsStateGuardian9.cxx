@@ -28,8 +28,6 @@
 #include "graphicsEngine.h"
 #include "graphicsChannel.h"
 #include "lens.h"
-#include "perspectiveLens.h"
-#include "orthographicLens.h"
 #include "ambientLight.h"
 #include "directionalLight.h"
 #include "pointLight.h"
@@ -1047,64 +1045,30 @@ prepare_lens() {
     return false;
   }
 
-  // lets get the lens perspective matrix
+  // Start with the projection matrix from the lens.
   const LMatrix4f &projection_mat = _current_lens->get_projection_mat();
-  
+
   // The projection matrix must always be left-handed Y-up internally,
-  // even if our coordinate system of choice is otherwise.
+  // to match DirectX's convention, even if our coordinate system of
+  // choice is otherwise.
+  const LMatrix4f &convert_mat = 
+    LMatrix4f::convert_mat(CS_yup_left, _current_lens->get_coordinate_system());
+
+  // DirectX also uses a Z range of 0 to 1, whereas the Panda
+  // convention is for the projection matrix to produce a Z range of
+  // -1 to 1.  We have to rescale to compensate.
+  static const LMatrix4f rescale_mat
+    (1, 0, 0, 0,
+     0, 1, 0, 0,
+     0, 0, 0.5, 0,
+     0, 0, 0.5, 1);
+  
   LMatrix4f new_projection_mat =
-    LMatrix4f::convert_mat(CS_yup_left, _current_lens->get_coordinate_system()) *
-    projection_mat;
-  
-  float nearf = _current_lens->get_near();
-  float farf = _current_lens->get_far();
+    convert_mat * projection_mat * rescale_mat;
 
-  //dxgsg9_cat.debug() << new_projection_mat << endl;
-  
-  HRESULT hr;
-  if (false && _current_lens->is_of_type(PerspectiveLens::get_class_type())) {
-    /*
-    const LMatrix4f mat_temp;
-
-    float vfov = _current_lens->get_vfov();
-    float hfov = _current_lens->get_hfov();
-    float ar = _current_lens->get_aspect_ratio();
-    float nearf = _current_lens->get_near();
-    float farf = _current_lens->get_far();
-    double vfov_radian = vfov * 0.0174532925;
-
-    dxgsg9_cat.debug() << "hfov " << hfov << " vfov " << vfov << " ar " << ar << " near " << nearf << " far " << farf << endl;
-    D3DXMatrixPerspectiveFovLH( (D3DXMATRIX*)mat_temp.get_data(), vfov_radian, ar, nearf, farf );
-
-    hr = _pD3DDevice->SetTransform(D3DTS_PROJECTION,
-                                   (D3DMATRIX*)mat_temp.get_data());
-    dxgsg9_cat.debug() << mat_temp << endl;
-    */
-
-    new_projection_mat(2, 2) = farf / (farf-nearf);
-    new_projection_mat(3, 2) = -nearf * farf / (farf - nearf);
-
-    hr = _pD3DDevice->SetTransform(D3DTS_PROJECTION,
-                                   (D3DMATRIX*)new_projection_mat.get_data());
-    //dxgsg9_cat.debug() << new_projection_mat << endl;
-    //dxgsg9_cat.debug() << "using perspective projection" << endl;
-
-  } else if (false && _current_lens->is_of_type(OrthographicLens::get_class_type())) {
-    new_projection_mat(2, 2) = 1 / (farf - nearf);
-    new_projection_mat(3, 2) = -nearf / (farf - nearf);
-    
-    hr = _pD3DDevice->SetTransform(D3DTS_PROJECTION,
-                                   (D3DMATRIX*)new_projection_mat.get_data());
-    //dxgsg9_cat.debug() << new_projection_mat << endl;
-    //dxgsg9_cat.debug() << "using ortho projection" << endl;
-
-  } else {
-    hr = _pD3DDevice->SetTransform(D3DTS_PROJECTION,
-                                   (D3DMATRIX*)new_projection_mat.get_data());
-    //dxgsg9_cat.debug() << new_projection_mat << endl;
-    //dxgsg9_cat.debug() << "using matrix projection" << endl;
-  }
-
+  HRESULT hr = 
+    _pD3DDevice->SetTransform(D3DTS_PROJECTION,
+                              (D3DMATRIX*)new_projection_mat.get_data());
   return SUCCEEDED(hr);
 }
 

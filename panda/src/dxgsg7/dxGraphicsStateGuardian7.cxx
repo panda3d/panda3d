@@ -27,7 +27,6 @@
 #include "graphicsWindow.h"
 #include "graphicsChannel.h"
 #include "lens.h"
-#include "perspectiveLens.h"
 #include "ambientLight.h"
 #include "directionalLight.h"
 #include "pointLight.h"
@@ -802,40 +801,30 @@ prepare_lens() {
     return false;
   }
 
-  // lets get the lens perspective matrix
+  // Start with the projection matrix from the lens.
   const LMatrix4f &projection_mat = _current_lens->get_projection_mat();
 
   // The projection matrix must always be left-handed Y-up internally,
-  // even if our coordinate system of choice is otherwise.
-  LMatrix4f new_projection_mat =
-    LMatrix4f::convert_mat(CS_yup_left, _current_lens->get_coordinate_system()) *
-    projection_mat;
+  // to match DirectX's convention, even if our coordinate system of
+  // choice is otherwise.
+  const LMatrix4f &convert_mat = 
+    LMatrix4f::convert_mat(CS_yup_left, _current_lens->get_coordinate_system());
 
-  float vfov = _current_lens->get_vfov();
-  float nearf = _current_lens->get_near();
-  float farf = _current_lens->get_far();
-
-  //dxgsg7_cat.debug() << new_projection_mat << endl;
+  // DirectX also uses a Z range of 0 to 1, whereas the Panda
+  // convention is for the projection matrix to produce a Z range of
+  // -1 to 1.  We have to rescale to compensate.
+  static const LMatrix4f rescale_mat
+    (1, 0, 0, 0,
+     0, 1, 0, 0,
+     0, 0, 0.5, 0,
+     0, 0, 0.5, 1);
   
-  HRESULT hr;
-  if (_current_lens->get_type().get_name() == "PerspectiveLens") {
-    ((LPD3DMATRIX)new_projection_mat.get_data())->_33 = farf / (farf-nearf);
-    ((LPD3DMATRIX)new_projection_mat.get_data())->_43 = -nearf * farf / (farf - nearf);
+  LMatrix4f new_projection_mat =
+    convert_mat * projection_mat * rescale_mat;
 
-    hr = _pD3DDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION,
-                                   (D3DMATRIX*)new_projection_mat.get_data());
-    //dxgsg7_cat.debug() << new_projection_mat << endl;
-    //dxgsg7_cat.debug() << "using perspective projection" << endl;
-  }
-  else {
-    ((LPD3DMATRIX)new_projection_mat.get_data())->_33 = 1/(farf-nearf);
-    ((LPD3DMATRIX)new_projection_mat.get_data())->_43 = -nearf/(farf-nearf);
-    
+  HRESULT hr = 
     hr = _pD3DDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION,
                                    (LPD3DMATRIX)new_projection_mat.get_data());
-    //dxgsg7_cat.debug() << new_projection_mat << endl;
-    //dxgsg7_cat.debug() << "using ortho projection" << endl;
-  }
   return SUCCEEDED(hr);
 }
 

@@ -677,10 +677,6 @@ make_mesh_geom(Geom *geom, Lens *lens, LMatrix4f &rel_mat) {
     // dimensions so the Z coordinate remains meaningful.
     LPoint3f film(0.0f, 0.0f, 0.0f);
     lens->project(vert * rel_mat, film);
-    
-    // This might be necessary to compensate for DX's weird near plane
-    // definition.  Investigate further later.
-    //film[2] = ((film[2] + 1.0f) / 2.0f);
 
     new_coords.push_back(film);
   }
