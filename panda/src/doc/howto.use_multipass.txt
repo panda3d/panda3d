@@ -1,0 +1,123 @@
+MULTIPASS OVERVIEW
+
+Multipass rendering technically refers to any process in which the
+scene, or parts of the scene, are rendered more than once, and the
+results combined in some way to produce the output image.
+
+There are a number of ways to do this in Panda.  Instancing, for
+instance, is technically a form of multipass rendering, since the
+instanced object is rendered multiple times, each in a different
+position and/or state.  For instance, highlighting an object in pview
+with the 'h' key uses this weak form of multipass rendering to draw a
+red wireframe image around the highlighted object.
+
+This document doesn't deal with this or other simple forms of
+multipass rendering within a single scene graph; instead, it focuses
+on the specific form of multipass rendering in which a scene graph is
+rendered offscreen into a texture, and that texture is then applied to
+the primary scene in some meaningful way.
+
+
+OFFSCREEN BUFFERS
+
+To support offscreen rendering, Panda provies the GraphicsBuffer
+class, which works exactly like GraphicsWindow except it corresponds
+to some part of the framebuffer which is not presented in a window.
+In fact, both classes inherit from a common base class,
+GraphicsOutput, on which most of the interfaces for rendering are
+defined.
+
+There are a number of ways to make a GraphicsBuffer.  At the lowest
+level, you can simply call GraphicsEngine::make_buffer(), passing in
+the required dimensions of your buffer, similar to the way you might
+call GraphicsEngine::make_window().
+
+To create a buffer specifically for rendering into a texture for
+multipass, it's best to use the GraphicsOutput::make_texture_buffer()
+interface, for instance from your main window: 
+
+  GraphicsOutput *new_buffer = win->make_texture_buffer();
+
+This will create a buffer suitable for rendering offscreen into a
+texture.  It will make a number of appropriate preparations for you;
+for instance, it will ensure that the new buffer uses the same GSG as
+the source window; it will set up the new buffer for rendering to a
+texture, and it will order the new buffer within the GraphicsEngine so
+that its scene will be rendered before the scene in the main window.
+(And furthermore, the return value might not actually be a
+GraphicsBuffer pointer, particularly on platforms that don't support
+offscreen rendering.  In this case, it will return a ParasiteBuffer,
+which actually renders into the main window's back buffer before the
+window is cleared to draw the main frame.  But for the most part you
+can ignore this detail.)
+
+Once you have the buffer pointer, you can set up its scene just as you
+would any Panda window.  In particular, you must create at least one
+display region, to which you bind a camera and a lens, and then you
+must assign a scene to the camera (that is, the root of some scene
+graph, e.g. "render").
+
+  GraphicsLayer *layer = buffer->get_channel(0)->make_layer();
+  DisplayRegion *dr = layer->make_display_region();
+  PT(Camera) camera = new Camera("camera");
+  camera->set_lens(new PerspectiveLens());
+  camera->set_scene(render);
+  NodePath camera_np = render.attach_new_node(camera);
+  dr->set_camera(camera_np);
+
+You can also create any number of additional layers and/or display
+regions, as you choose; and you may set up the camera with any camera
+mask, initial state, or lens properties you require.  There's no need
+for the camera to be assigned to "render", specifically; it can render
+any scene you wish, including a sub-node within your render scene
+graph.
+
+The buffer created from make_texture_buffer() will have an associated
+Texture object, which will contain the output of the render and is
+suitable for applying to the scene in your main window.  (To satisfy
+the power-of-2 requirements for texture sizes on many graphics cards,
+you should ensure that your size parameters to make_texture_buffer()
+specified a power-of-2 size.)  You can extract this Texture and set
+various properties on it, then apply it to geometry:
+
+  Texture *tex = buffer->get_texture();
+  tex->set_minfilter(Texture::FT_linear_mipmap_linear);
+  screen.set_texture(tex);
+
+
+
+PER-CAMERA SCENE GRAPH PROPERTIES
+
+When there are multiple cameras viewing the same scene, you may need
+to adjust the camera properties differently on the different cameras
+if you don't want all the cameras to draw the scene in exactly the
+same way.
+
+Of course, each Camera is a separate node, and may be positioned or
+rotated differently from all the other Cameras, or they may be set up
+to share a common parent so that they always move together.
+
+You can use the camera mask to hide and show nodes on a per-camera
+basis.  Each camera has a 32-bit DrawMask associated with it, which is
+initially set to all bits on, but you can assign an arbitrary bit mask
+to each camera in use on a particular scene--typically you will assign
+each camera a unique single bit.  When you use NodePath::hide() and
+show() interfaces, you may specify an optional DrawMask value, which
+indicates the set of cameras for which you are hiding or showing the
+node (the default is all bits on, which means for all cameras).
+
+You can associate an initial state with the camera.  This state is
+applied to all nodes in the scene graph as if it were set on the root
+node.  This can be used to render the entire scene in a modified state
+(for instance, with textures disabled, or in wireframe mode).
+
+If you need more exotic control of the scene graph, such that
+particular nodes are rendered in a certain state with one camera but
+in a different state with another camera, you can use the tag_state
+interface on camera.  This uses the PandaNode tag system to associate
+tag values with state definitions.  The idea is to specify a tag_key
+string on the camera, and one or more tag_value strings, each with an
+associated RenderState pointer.  Then you may call
+node->set_tag(tag_key, tag_value) on any abitrary set of nodes; when
+these nodes are encountered in the scene graph during rendering, it
+will be as if they have the associated state set on them.
