@@ -156,6 +156,25 @@ seekoff(streamoff off, ios::seek_dir dir, int mode) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SubStreamBuf::seekpos
+//       Access: Public, Virtual
+//  Description: A variant on seekoff() to implement seeking within a
+//               stream.
+//
+//               The MSDN Library claims that it is necessary to
+//               redefine this only seekoff(), and not seekpos() as
+//               well, as the default implementation of seekpos() is
+//               supposed to map to seekoff() exactly as I am doing
+//               here; but in fact it must do something else, because
+//               seeking didn't work on Windows until I redefined this
+//               function as well.
+////////////////////////////////////////////////////////////////////
+streampos SubStreamBuf::
+seekpos(streampos pos, int mode) {
+  return seekoff(pos, ios::beg, mode);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SubStreamBuf::overflow
 //       Access: Protected, Virtual
 //  Description: Called by the system ostream implementation when its

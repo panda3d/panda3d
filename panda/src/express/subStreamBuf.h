@@ -34,6 +34,7 @@ public:
   void close();
 
   virtual streampos seekoff(streamoff off, ios::seek_dir dir, int mode);
+  virtual streampos seekpos(streampos pos, int mode);
 
 protected:
   virtual int overflow(int c);
