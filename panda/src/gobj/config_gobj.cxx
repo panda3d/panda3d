@@ -31,8 +31,8 @@
 #include "lens.h"
 #include "texture.h"
 
-#include <dconfig.h>
-#include <string_utils.h>
+#include "dconfig.h"
+#include "string_utils.h"
 
 Configure(config_gobj);
 NotifyCategoryDef(gobj, "");
@@ -125,15 +125,17 @@ const float default_far = config_gobj.GetFloat("default-far", 1000.0f);
 
 static BamTextureMode
 parse_texture_mode(const string &mode) {
-  if (mode == "fullpath") {
+  if (cmp_nocase(mode, "unchanged") == 0) {
+    return BTM_unchanged;
+  } else if (cmp_nocase(mode, "fullpath") == 0) {
     return BTM_fullpath;
-  } else if (mode == "relative") {
+  } else if (cmp_nocase(mode, "relative") == 0) {
     return BTM_relative;
-  } else if (mode == "basename") {
+  } else if (cmp_nocase(mode, "basename") == 0) {
     return BTM_basename;
   }
 
-  gobj_cat.error() << "Invalid bam-texture-mode: " << mode << "\n";
+  gobj_cat->error() << "Invalid bam-texture-mode: " << mode << "\n";
   return BTM_relative;
 }
 

@@ -19,8 +19,8 @@
 #ifndef CONFIG_GOBJ_H
 #define CONFIG_GOBJ_H
 
-#include <pandabase.h>
-#include <notifyCategoryProxy.h>
+#include "pandabase.h"
+#include "notifyCategoryProxy.h"
 
 NotifyCategoryDecl(gobj, EXPCL_PANDA, EXPTP_PANDA);
 
@@ -35,6 +35,7 @@ extern EXPCL_PANDA bool keep_geom_ram;
 extern EXPCL_PANDA bool retained_mode;
 
 enum BamTextureMode {
+  BTM_unchanged,
   BTM_fullpath,
   BTM_relative,
   BTM_basename

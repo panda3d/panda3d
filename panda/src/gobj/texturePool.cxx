@@ -32,7 +32,9 @@ TexturePool *TexturePool::_global_ptr = (TexturePool *)NULL;
 //  Description: The nonstatic implementation of has_texture().
 ////////////////////////////////////////////////////////////////////
 bool TexturePool::
-ns_has_texture(Filename filename) {
+ns_has_texture(const Filename &orig_filename) {
+  Filename filename(orig_filename);
+
   if (!fake_texture_image.empty()) {
     filename = fake_texture_image;
   }
@@ -63,7 +65,9 @@ ns_has_texture(Filename filename) {
 //  Description: The nonstatic implementation of load_texture().
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
-ns_load_texture(Filename filename) {
+ns_load_texture(const Filename &orig_filename) {
+  Filename filename(orig_filename);
+
   if (!fake_texture_image.empty()) {
     filename = fake_texture_image;
   }
@@ -94,6 +98,10 @@ ns_load_texture(Filename filename) {
     return NULL;
   }
 
+  if (bam_texture_mode == BTM_unchanged) {
+    tex->set_filename(orig_filename);
+  }
+
   _textures[filename] = tex;
   return tex;
 }
@@ -104,7 +112,11 @@ ns_load_texture(Filename filename) {
 //  Description: The nonstatic implementation of load_texture().
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
-ns_load_texture(Filename filename, Filename grayfilename) {
+ns_load_texture(const Filename &orig_filename, 
+                const Filename &orig_grayfilename) {
+  Filename filename(orig_filename);
+  Filename grayfilename(orig_grayfilename);
+
   if (!fake_texture_image.empty()) {
     return ns_load_texture(fake_texture_image);
   }
@@ -140,6 +152,11 @@ ns_load_texture(Filename filename, Filename grayfilename) {
     // This texture was not found.
     gobj_cat.error() << "Unable to read texture " << filename << "\n";
     return NULL;
+  }
+
+  if (bam_texture_mode == BTM_unchanged) {
+    tex->set_filename(orig_filename);
+    tex->set_alpha_filename(orig_grayfilename);
   }
 
   _textures[filename] = tex;

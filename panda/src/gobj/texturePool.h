@@ -56,9 +56,10 @@ PUBLISHED:
 private:
   INLINE TexturePool();
 
-  bool ns_has_texture(Filename filename);
-  Texture *ns_load_texture(Filename filename);
-  Texture *ns_load_texture(Filename filename, Filename grayfilename);
+  bool ns_has_texture(const Filename &orig_filename);
+  Texture *ns_load_texture(const Filename &orig_filename);
+  Texture *ns_load_texture(const Filename &orig_filename, 
+                           const Filename &orig_grayfilename);
   void ns_add_texture(Texture *texture);
   void ns_release_texture(Texture *texture);
   void ns_release_all_textures();

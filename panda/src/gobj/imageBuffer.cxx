@@ -47,6 +47,7 @@ write_datagram(BamWriter *, Datagram &me)
   Filename alpha_filename = get_alpha_filename();
 
   switch (bam_texture_mode) {
+  case BTM_unchanged:
   case BTM_fullpath:
     break;
 
