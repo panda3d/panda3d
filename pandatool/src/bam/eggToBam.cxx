@@ -25,6 +25,10 @@ EggToBam() :
     ("This program reads Egg files and outputs Bam files, the binary format "
      "suitable for direct loading of animation and models into Panda.");
 
+  // -f is always in effect for egg2bam.  It doesn't make sense to
+  // provide it as an option to the user.
+  remove_option("f");
+
   add_option
     ("tp", "path", 0, 
      "Add the indicated colon-delimited paths to the texture-path.  This "

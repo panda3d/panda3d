@@ -480,7 +480,7 @@ scan_scene_file(istream &in) {
 ////////////////////////////////////////////////////////////////////
 bool SoftCVS::
 cvs_add(const string &path) {
-  string command = _cvs_binary + " add " + path;
+  string command = _cvs_binary + " add -kb " + path;
   nout << command << "\n";
   int result = system(command.c_str());
 

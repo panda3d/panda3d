@@ -333,7 +333,7 @@ cvs_add(const Filename &filename) {
     return false;
   }
 
-  string command = _cvs_binary + " add " + filename.get_basename();
+  string command = _cvs_binary + " add -kb " + filename.get_basename();
   nout << command << "\n";
   int result = system(command.c_str());
 
