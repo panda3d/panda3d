@@ -359,7 +359,9 @@ determine_size() {
       // However, we make a special exception: if it would have fit
       // without rounding up the UV's, then screw rounding it up and
       // just leave it alone.
-      if (pal->_round_uvs) {
+      if ((_position._x_size > _placed._x_size ||
+           _position._y_size > _placed._y_size) &&
+          pal->_round_uvs) {
         compute_size_from_uvs(min_uv, max_uv);
         if (_position._x_size <= _placed._x_size &&
             _position._y_size <= _placed._y_size &&
