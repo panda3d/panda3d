@@ -757,11 +757,16 @@ reached_done_state() {
         }
       }
       _status_entry = _status_list[best_i];
+      _status_list.clear();
     }
 
     return false;
+  }
 
-  } else if (_download_dest == DD_none) {
+  // We don't need the list of previous failures any more--we've connected.
+  _status_list.clear();
+
+  if (_download_dest == DD_none) {
     // All done.
     return false;
     
@@ -806,7 +811,7 @@ run_try_next_proxy() {
     close_connection();
     reconsider_proxy();
     _state = S_connecting;
-    nassertr(_status_list.size() == _proxy_next_index - 1, false);
+
     return false;
   }
 
@@ -2170,7 +2175,6 @@ reset_for_new_request() {
 
   _last_status_code = 0;
   _status_entry = StatusEntry();
-  _status_list.clear();
 
   _response_type = RT_none;
   _redirect_trail.clear();

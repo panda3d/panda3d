@@ -510,7 +510,29 @@ INLINE void HTTPChannel::
 reset() {
   reset_for_new_request();
   reset_to_new();
+  _status_list.clear();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::preserve_status
+//       Access: Published
+//  Description: Preserves the previous status code (presumably a
+//               failure) from the previous connection attempt.  If
+//               the subsequent connection attempt also fails, the
+//               returned status code will be the better of the
+//               previous code and the current code.
+//
+//               This can be called to daisy-chain subsequent attempts
+//               to download the same document from different servers.
+//               After all servers have been attempted, the final
+//               status code will reflect the attempt that most nearly
+//               succeeded.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+preserve_status() {
+  _status_list.push_back(_status_entry);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::clear_extra_headers

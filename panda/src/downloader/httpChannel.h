@@ -147,6 +147,7 @@ PUBLISHED:
   void write_headers(ostream &out) const;
 
   INLINE void reset();
+  INLINE void preserve_status();
 
   INLINE void clear_extra_headers();
   INLINE void send_extra_header(const string &key, const string &value);
