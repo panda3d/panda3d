@@ -13,5 +13,5 @@
 #include "spriteParticleRenderer.cxx"
 #include "tangentRingEmitter.cxx"
 #include "zSpinParticle.cxx"
-#include "zSpinParticleFactory.cxx "
+#include "zSpinParticleFactory.cxx"
 
