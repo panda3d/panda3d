@@ -55,7 +55,6 @@ typedef int XIC;
 #if !defined(HAVE_GLXFBCONFIG) && defined(GLX_SGIX_fbconfig) && defined(GLX_SGIX_pbuffer)
   // If the system glx version isn't 1.3, but these were defined as
   // extensions, we can work with that.
-  #define GLX_RGBA_TYPE GLX_RGBA_TYPE_SGIX
   #define GLXFBConfig GLXFBConfigSGIX
   #define GLXPbuffer GLXPbufferSGIX
   #define glXChooseFBConfig glXChooseFBConfigSGIX

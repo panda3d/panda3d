@@ -332,6 +332,7 @@ typedef struct {
      the following to compile. */
 typedef struct __GLXFBConfigRec *GLXFBConfig;    
 typedef XID GLXPbuffer;
+typedef XID GLXWindow;
 
 #ifdef GLX_GLXEXT_PROTOTYPES
 extern GLXFBConfig * glXGetFBConfigs (Display *, int, int *);
