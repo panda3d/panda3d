@@ -1907,9 +1907,8 @@ static int binary_log_cap(const int x) {
 //               region from the framebuffer into texture memory
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-copy_texture(TextureContext *tc, const DisplayRegion *dr) {
-  nassertv(tc != NULL && dr != NULL);
-  Texture *tex = tc->_texture;
+copy_texture(Texture *tex, const DisplayRegion *dr) {
+  nassertv(tex != NULL && dr != NULL);
 
   int xo, yo, w, h;
 
@@ -1937,11 +1936,13 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr) {
   PixelBuffer *pb = tex->_pbuffer;
   pb->set_size(xo,yo,w,h);
 
+  TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
+  nassertv(tc != (TextureContext *)NULL);
   bind_texture(tc);
 
   GLP(CopyTexImage2D)(GL_TEXTURE_2D, 0,
-                   get_internal_image_format(pb->get_format()),
-                   xo, yo, w, h, pb->get_border());
+                      get_internal_image_format(pb->get_format()),
+                      xo, yo, w, h, pb->get_border());
 
   // Clear the internal texture state, since we've just monkeyed with it.
   modify_state(get_untextured_state());
@@ -1953,9 +1954,9 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-copy_texture(TextureContext *tc, const DisplayRegion *dr, const RenderBuffer &rb) {
+copy_texture(Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb) {
   set_read_buffer(rb);
-  copy_texture(tc, dr);
+  copy_texture(tex, dr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3969,8 +3970,7 @@ save_frame_buffer(const RenderBuffer &buffer,
   if (buffer._buffer_type & RenderBuffer::T_back) {
     // Save the color buffer.
     sfb->_back_rgba = new Texture;
-    TextureContext *tc = sfb->_back_rgba->prepare_now(_prepared_objects, this);
-    copy_texture(tc, dr, buffer);
+    copy_texture(sfb->_back_rgba, dr, buffer);
   }
 
   return sfb;

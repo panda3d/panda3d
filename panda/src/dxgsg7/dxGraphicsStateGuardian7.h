@@ -98,8 +98,8 @@ public:
   virtual void apply_texture(TextureContext *tc);
   virtual void release_texture(TextureContext *tc);
 
-  virtual void copy_texture(TextureContext *tc, const DisplayRegion *dr);
-  virtual void copy_texture(TextureContext *tc, const DisplayRegion *dr,
+  virtual void copy_texture(Texture *tex, const DisplayRegion *dr);
+  virtual void copy_texture(Texture *tex, const DisplayRegion *dr,
                             const RenderBuffer &rb);
 
   virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb);

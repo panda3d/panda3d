@@ -196,10 +196,13 @@ prepare_texture_now(Texture *tex, GraphicsStateGuardianBase *gsg) {
   // all shared anyway).
   TextureContext *tc = gsg->prepare_texture(tex);
 
-  bool prepared = _prepared_textures.insert(tc).second;
-  nassertr(prepared, tc);
+  if (tc != (TextureContext *)NULL) {
+    bool prepared = _prepared_textures.insert(tc).second;
+    nassertr(prepared, tc);
 
-  _total_texusage_pcollector.add_level(tc->estimate_texture_memory());
+    _total_texusage_pcollector.add_level(tc->estimate_texture_memory());
+  }
+
   return tc;
 }
 

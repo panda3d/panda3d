@@ -75,8 +75,8 @@ public:
                               GeomNodeContext *gnc);
   virtual void release_geom_node(GeomNodeContext *gnc);
 
-  virtual void copy_texture(TextureContext *tc, const DisplayRegion *dr);
-  virtual void copy_texture(TextureContext *tc, const DisplayRegion *dr,
+  virtual void copy_texture(Texture *tex, const DisplayRegion *dr);
+  virtual void copy_texture(Texture *tex, const DisplayRegion *dr,
                             const RenderBuffer &rb);
 
   virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb);

@@ -165,8 +165,8 @@ public:
   virtual void draw_trifan(GeomTrifan *geom, GeomContext *gc)=0;
   virtual void draw_sphere(GeomSphere *geom, GeomContext *gc)=0;
 
-  virtual void copy_texture(TextureContext *tc, const DisplayRegion *dr)=0;
-  virtual void copy_texture(TextureContext *tc, const DisplayRegion *dr,
+  virtual void copy_texture(Texture *tex, const DisplayRegion *dr)=0;
+  virtual void copy_texture(Texture *tex, const DisplayRegion *dr,
                             const RenderBuffer &rb)=0;
 
   virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb)=0;

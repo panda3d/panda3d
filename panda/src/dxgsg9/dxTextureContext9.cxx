@@ -1429,17 +1429,9 @@ IDirect3DTexture9 *DXTextureContext9::CreateTexture(DXScreenData &scrn) {
 #endif
 #endif
 
-    // Note: user may want to create an empty "texture" that will be written to by rendering and copy operations.
-    //       this will never have a backing store of main memory in panda fmt, and on disk in a file.
-    //       so for this case, you dont want to call FillDDSurf.
-    //       need a better way for user to indicate this usage than lack of ram_image, because it conflicts
-    //       with the multi-open case mentioned below
-
-    if(_texture->has_ram_image()) {
-        hr = FillDDSurfTexturePixels();
-        if(FAILED(hr)) {
-            goto error_exit;
-        }
+    hr = FillDDSurfTexturePixels();
+    if(FAILED(hr)) {
+      goto error_exit;
     }
 
     // PRINT_REFCNT(dxgsg9,scrn.pD3D9);
@@ -1458,27 +1450,12 @@ FillDDSurfTexturePixels(void) {
     HRESULT hr=E_FAIL;
     assert(IS_VALID_PTR(_texture));
 
-    // It is a mistake to insist that has_ram_image() be true before
-    // we try to load the texture.  This function only indicates
-    // whether the texture image is already present in main ram or
-    // not; it has nothing to do with whether get_ram_image() will
-    // fail.  When there is only one GSG in the world, has_ram_image()
-    // will generally be true whenever the texture has not been loaded
-    // before, but when there are multiple GSG's (for instance, if we
-    // close and reopen the main window), then has_ram_image() is
-    // largely irrelevant to the GSG.
-    /*
-    if(!_texture->has_ram_image()) {
-      dxgsg9_cat.warning() << "CreateTexture: tried to fill surface that has no ram image!\n";
-      return S_OK;
-    }
-    */
-
     PixelBuffer *pbuf = _texture->get_ram_image();
     if (pbuf == (PixelBuffer *)NULL) {
-      dxgsg9_cat.fatal() << "CreateTexture: get_ram_image() failed\n";
-      // The texture doesn't have an image to load.
-      return E_FAIL;
+      // The texture doesn't have an image to load.  That's ok; it
+      // might be a texture we've rendered to by frame buffer
+      // operations or something.
+      return S_OK;
     }
 
     assert(IS_VALID_PTR(_pD3DTexture9));

@@ -3490,68 +3490,10 @@ release_texture(TextureContext *tc) {
     delete gtc;
 }
 
-#if 1
-
 void DXGraphicsStateGuardian7::
-copy_texture(TextureContext *tc, const DisplayRegion *dr) {
-    dxgsg7_cat.fatal() << "DX copy_texture unimplemented!!!";
+copy_texture(Texture *tex, const DisplayRegion *dr) {
+    dxgsg7_cat.error() << "DX copy_texture unimplemented!!!";
 }
-
-#else
-static int logs[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048,
-    4096, 0};
-
-// This function returns the smallest power of two greater than or
-// equal to x.
-static int binary_log_cap(const int x) {
-    int i = 0;
-    for (; (x > logs[i]) && (logs[i] != 0); ++i);
-    if (logs[i] == 0)
-        return 4096;
-    return logs[i];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::copy_texture
-//       Access: Public, Virtual
-//  Description: Copy the pixel region indicated by the display
-//       region from the framebuffer into texture memory
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian7::
-copy_texture(TextureContext *tc, const DisplayRegion *dr) {
-
-    nassertv(tc != NULL && dr != NULL);
-
-    Texture *tex = tc->_texture;
-
-    // Determine the size of the grab from the given display region
-    // If the requested region is not a power of two, grab a region that is
-    // a power of two that contains the requested region
-    int xo, yo, req_w, req_h;
-    dr->get_region_pixels(xo, yo, req_w, req_h);
-    int w = binary_log_cap(req_w);
-    int h = binary_log_cap(req_h);
-    if (w != req_w || h != req_h) {
-        tex->_requested_w = req_w;
-        tex->_requested_h = req_h;
-        tex->_has_requested_size = true;
-    }
-
-    PixelBuffer *pb = tex->_pbuffer;
-
-    pb->set_xorg(xo);
-    pb->set_yorg(yo);
-    pb->set_xsize(w);
-    pb->set_ysize(h);
-
-
-    bind_texture(tc);
-    glCopyTexImage2D( GL_TEXTURE_2D, tex->get_level(),
-                      get_internal_image_format(pb->get_format()),
-                      pb->get_xorg(), pb->get_yorg(),
-                      pb->get_xsize(), pb->get_ysize(), pb->get_border() );
-}
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian7::copy_texture
@@ -3559,12 +3501,8 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian7::
-copy_texture(TextureContext *tc, const DisplayRegion *dr, const RenderBuffer &rb) {
-    dxgsg7_cat.fatal() << "DX copy_texture unimplemented!!!";
-    return;
-
-    set_read_buffer(rb);
-    copy_texture(tc, dr);
+copy_texture(Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb) {
+    dxgsg7_cat.error() << "DX copy_texture unimplemented!!!";
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -29,6 +29,7 @@
 #include "graphicsChannel.h"
 #include "lens.h"
 #include "perspectiveLens.h"
+#include "orthographicLens.h"
 #include "ambientLight.h"
 #include "directionalLight.h"
 #include "pointLight.h"
@@ -1040,17 +1041,17 @@ prepare_lens() {
     LMatrix4f::convert_mat(CS_yup_left, _current_lens->get_coordinate_system()) *
     projection_mat;
   
-  float vfov = _current_lens->get_vfov();
   float nearf = _current_lens->get_near();
   float farf = _current_lens->get_far();
 
   //dxgsg8_cat.debug() << new_projection_mat << endl;
   
   HRESULT hr;
-  if (_current_lens->get_type().get_name() == "PerspectiveLens") {
-#if 0
+  if (false && _current_lens->is_of_type(PerspectiveLens::get_class_type())) {
+    /*
     const LMatrix4f mat_temp;
 
+    float vfov = _current_lens->get_vfov();
     float hfov = _current_lens->get_hfov();
     float ar = _current_lens->get_aspect_ratio();
     float nearf = _current_lens->get_near();
@@ -1063,25 +1064,32 @@ prepare_lens() {
     hr = _pD3DDevice->SetTransform(D3DTS_PROJECTION,
                                    (D3DMATRIX*)mat_temp.get_data());
     dxgsg8_cat.debug() << mat_temp << endl;
-#endif
-    
-    ((D3DXMATRIX*)new_projection_mat.get_data())->_33 = farf / (farf-nearf);
-    ((D3DXMATRIX*)new_projection_mat.get_data())->_43 = -nearf * farf / (farf - nearf);
+    */
+
+    new_projection_mat(2, 2) = farf / (farf-nearf);
+    new_projection_mat(3, 2) = -nearf * farf / (farf - nearf);
 
     hr = _pD3DDevice->SetTransform(D3DTS_PROJECTION,
                                    (D3DMATRIX*)new_projection_mat.get_data());
     //dxgsg8_cat.debug() << new_projection_mat << endl;
     //dxgsg8_cat.debug() << "using perspective projection" << endl;
-  }
-  else {
-    ((D3DXMATRIX*)new_projection_mat.get_data())->_33 = 1/(farf-nearf);
-    ((D3DXMATRIX*)new_projection_mat.get_data())->_43 = -nearf/(farf-nearf);
+
+  } else if (false && _current_lens->is_of_type(OrthographicLens::get_class_type())) {
+    new_projection_mat(2, 2) = 1 / (farf - nearf);
+    new_projection_mat(3, 2) = -nearf / (farf - nearf);
     
     hr = _pD3DDevice->SetTransform(D3DTS_PROJECTION,
                                    (D3DMATRIX*)new_projection_mat.get_data());
     //dxgsg8_cat.debug() << new_projection_mat << endl;
     //dxgsg8_cat.debug() << "using ortho projection" << endl;
+
+  } else {
+    hr = _pD3DDevice->SetTransform(D3DTS_PROJECTION,
+                                   (D3DMATRIX*)new_projection_mat.get_data());
+    //dxgsg8_cat.debug() << new_projection_mat << endl;
+    //dxgsg8_cat.debug() << "using matrix projection" << endl;
   }
+
   return SUCCEEDED(hr);
 }
 
@@ -3021,17 +3029,19 @@ prepare_texture(Texture *tex) {
 void DXGraphicsStateGuardian8::
 apply_texture(TextureContext *tc) {
     if (tc==NULL) {
-        return;  // use enable_texturing to disable/enable
+      // The texture wasn't bound properly or something, so ensure
+      // texturing is disabled and just return.
+      enable_texturing(false);
+      return;
     }
+
     #ifdef DO_PSTATS
        add_to_texture_record(tc);
     #endif
 
-//  bind_texture(tc);
-
-//  specify_texture(tc->_texture);
-    // Note: if this code changes, make sure to change initialization SetTSS code in dx_init as well
-    // so DX TSS renderstate matches dxgsg state
+    // Note: if this code changes, make sure to change initialization
+    // SetTSS code in dx_init as well so DX TSS renderstate matches
+    // dxgsg state
 
     DXTextureContext8 *dtc = DCAST(DXTextureContext8, tc);
 
@@ -3057,7 +3067,6 @@ apply_texture(TextureContext *tc) {
             // Oops, we can't re-create the texture for some reason.
             dxgsg8_cat.error() << "Unable to re-create texture " << *dtc->_texture << endl;
 
-            release_texture(dtc);
             enable_texturing(false);
             return;
           }
@@ -3065,7 +3074,8 @@ apply_texture(TextureContext *tc) {
       dtc->clear_dirty_flags();
     } else {
        if(_pCurTexContext == dtc) {
-          return;  // tex already set (and possible problem in state-sorting?)
+          enable_texturing(true);
+          return;
        }
     }
 
@@ -3171,6 +3181,7 @@ apply_texture(TextureContext *tc) {
 #endif
 
     _pCurTexContext = dtc;   // enable_texturing needs this
+    enable_texturing(true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3189,29 +3200,33 @@ release_texture(TextureContext *tc) {
 // copies current display region in framebuffer to the texture
 // usually its more efficient to do SetRenderTgt
 void DXGraphicsStateGuardian8::
-copy_texture(TextureContext *tc, const DisplayRegion *dr) {
+copy_texture(Texture *tex, const DisplayRegion *dr) {
 
   HRESULT hr;
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
 
-  DXTextureContext8 *dtc = DCAST(DXTextureContext8, tc);
-  PixelBuffer *pb = dtc->_tex->_pbuffer;
+  PixelBuffer *pb = tex->_pbuffer;
   pb->set_size(0,0,w-xo,h-yo);
+
+  TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
+  if (tc == (TextureContext *)NULL) {
+    return;
+  }
+  DXTextureContext8 *dtc = DCAST(DXTextureContext8, tc);
 
   IDirect3DSurface8 *pTexSurfaceLev0,*pCurRenderTarget;
   hr = dtc->_pD3DTexture8->GetSurfaceLevel(0,&pTexSurfaceLev0);
   if(FAILED(hr)) {
     dxgsg8_cat.error() << "GetSurfaceLev failed in copy_texture" << D3DERRORSTRING(hr);
-    exit(1);
+    return;
   }
 
   hr = _pD3DDevice->GetRenderTarget(&pCurRenderTarget);
   if(FAILED(hr)) {
     dxgsg8_cat.error() << "GetRenderTgt failed in copy_texture" << D3DERRORSTRING(hr);
-    exit(1);
+    return;
   }
-
 
   RECT SrcRect;
 
@@ -3224,7 +3239,7 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr) {
   hr = _pD3DDevice->CopyRects(pCurRenderTarget,&SrcRect,1,pTexSurfaceLev0,NULL);
   if(FAILED(hr)) {
     dxgsg8_cat.error() << "CopyRects failed in copy_texture" << D3DERRORSTRING(hr);
-    exit(1);
+    return;
   }
 
   SAFE_RELEASE(pCurRenderTarget);
@@ -3238,9 +3253,9 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-copy_texture(TextureContext *tc, const DisplayRegion *dr, const RenderBuffer &rb) {
+copy_texture(Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb) {
     set_read_buffer(rb);
-    copy_texture(tc, dr);
+    copy_texture(tex, dr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3561,20 +3576,15 @@ void DXGraphicsStateGuardian8::SetTextureBlendMode(TextureApplyAttrib::Mode TexB
 ////////////////////////////////////////////////////////////////////
 INLINE void DXGraphicsStateGuardian8::
 enable_texturing(bool val) {
-//  if (_texturing_enabled == val) {  // this check is mostly for internal gsg calls, panda already screens out redundant state changes
-//        return;
-//  }
+  _texturing_enabled = val;
+  
+  if (!val) {
+    _pD3DDevice->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_DISABLE);
 
-    _texturing_enabled = val;
-
-//  assert(_pCurTexContext!=NULL);  we're definitely called with it NULL for both true and false
-//  I'm going to allow enabling texturing even if no tex has been set yet, seems to cause no probs
-
-    if (val == false) {
-        _pD3DDevice->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_DISABLE);
-    } else {
-          SetTextureBlendMode(_CurTexBlendMode,true);
-    }
+  } else {
+    nassertv(_pCurTexContext!=NULL);
+    SetTextureBlendMode(_CurTexBlendMode,true);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3643,7 +3653,6 @@ issue_texture(const TextureAttrib *attrib) {
   if (attrib->is_off()) {
     enable_texturing(false);
   } else {
-    enable_texturing(true);
     Texture *tex = attrib->get_texture();
     nassertv(tex != (Texture *)NULL);
 
@@ -4494,7 +4503,7 @@ save_frame_buffer(const RenderBuffer &buffer,
     if (buffer._buffer_type & RenderBuffer::T_back) {
         // Save the color buffer.
         sfb->_back_rgba = new Texture;
-        copy_texture(sfb->_back_rgba->prepare(this), dr, buffer);
+        copy_texture(sfb->_back_rgba, dr, buffer);
     }
 
     return sfb;

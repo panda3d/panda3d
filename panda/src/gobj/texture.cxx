@@ -502,26 +502,27 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
   }
 
   TextureContext *tc = prepared_objects->prepare_texture_now(this, gsg);
-  _contexts[prepared_objects] = tc;
+  if (tc != (TextureContext *)NULL) {
+    _contexts[prepared_objects] = tc;
 
-  // Now that we have a new TextureContext with zero dirty flags, our
-  // intersection of all dirty flags must be zero.  This doesn't mean
-  // that some other contexts aren't still dirty, but at least one
-  // context isn't.
-  _all_dirty_flags = 0;
+    // Now that we have a new TextureContext with zero dirty flags, our
+    // intersection of all dirty flags must be zero.  This doesn't mean
+    // that some other contexts aren't still dirty, but at least one
+    // context isn't.
+    _all_dirty_flags = 0;
 
-  if (!keep_texture_ram && !_keep_ram_image) {
-    // Once we have prepared the texture, we can generally safely
-    // remove the pixels from main RAM.  The GSG is now responsible
-    // for remembering what it looks like.
+    if (!keep_texture_ram && !_keep_ram_image) {
+      // Once we have prepared the texture, we can generally safely
+      // remove the pixels from main RAM.  The GSG is now responsible
+      // for remembering what it looks like.
 
-    if (gobj_cat.is_debug()) {
-      gobj_cat.debug()
-        << "Dumping RAM for texture " << get_name() << "\n";
+      if (gobj_cat.is_debug()) {
+        gobj_cat.debug()
+          << "Dumping RAM for texture " << get_name() << "\n";
+      }
+      _pbuffer->_image.clear();
     }
-    _pbuffer->_image.clear();
   }
-
   return tc;
 }
 
