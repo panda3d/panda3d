@@ -3408,7 +3408,30 @@ apply_texture_immediate(Texture *tex) {
     << pb->get_border() << ", " << (int)external_format << ", "
     << (int)type << ", " << tex->get_name() << ")\n";
 #endif
-  glTexImage2D( GL_TEXTURE_2D, tex->get_level(), internal_format,
+
+  if (!gl_ignore_mipmaps) {
+    bool use_mipmaps;
+    switch (tex->get_minfilter()) {
+    case Texture::FT_nearest_mipmap_nearest:
+    case Texture::FT_linear_mipmap_nearest:
+    case Texture::FT_nearest_mipmap_linear:
+    case Texture::FT_linear_mipmap_linear:
+      use_mipmaps = true;
+      break;
+
+    default:
+      use_mipmaps = false;
+      break;
+    }
+    if (use_mipmaps) {
+      gluBuild2DMipmaps(GL_TEXTURE_2D, internal_format,
+			pb->get_xsize(), pb->get_ysize(),
+			external_format, type, pb->_image);
+      return;
+    }
+  }
+
+  glTexImage2D( GL_TEXTURE_2D, 0, internal_format,
 		pb->get_xsize(), pb->get_ysize(), pb->get_border(),
 		external_format, type, pb->_image );
 }
