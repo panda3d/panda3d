@@ -398,9 +398,10 @@ class GravityWalker(DirectObject.DirectObject):
                 self.avatarNodePath.setFluidPos(Point3(
                         self.avatarNodePath.getPos()+step))
             self.avatarNodePath.setH(self.avatarNodePath.getH()+rotation)
-            messenger.send("avatarMoving")
         else:
             self.vel.set(0.0, 0.0, 0.0)
+        if self.moving or jump:
+            messenger.send("avatarMoving")
         return Task.cont
     
     def doDeltaPos(self):
