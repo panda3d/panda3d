@@ -26,21 +26,26 @@ class ClientRepository(DirectObject.DirectObject):
         self.parseDcFile(dcFileName)
         self.cache=CRCache.CRCache()
 
-        # Set this true to establish a connection to the server using
-        # the HTTPClient interface, which ultimately uses the OpenSSL
-        # socket library (even though SSL is not involved).  This is
-        # not as robust a socket library as NSPR's, but the HTTPClient
-        # interface does a good job of negotiating the connection over
-        # an HTTP proxy if one is in use.
+        # Set this to 'http' to establish a connection to the server
+        # using the HTTPClient interface, which ultimately uses the
+        # OpenSSL socket library (even though SSL is not involved).
+        # This is not as robust a socket library as NSPR's, but the
+        # HTTPClient interface does a good job of negotiating the
+        # connection over an HTTP proxy if one is in use.
 
-        # Set it false to use Panda's net interface
+        # Set it to 'nspr' to use Panda's net interface
         # (e.g. QueuedConnectionManager, etc.) to establish the
         # connection, which ultimately uses the NSPR socket library.
         # This is a much better socket library, but it may be more
         # than you need for most applications; and the proxy support
         # is weak.
-        self.directConnectHttp = base.config.GetBool('direct-connect-http', 0)
-        self.proxyConnectHttp = base.config.GetBool('proxy-connect-http', 1)
+
+        # Set it to 'default' to use the HTTPClient interface if a
+        # proxy is in place, but the NSPR interface if we don't have a
+        # proxy.
+        
+        self.connectMethod = base.config.GetString('connect-method', 'default')
+        self.connectHttp = None
 
         self.bootedIndex = None
         self.bootedText = None
@@ -81,11 +86,16 @@ class ClientRepository(DirectObject.DirectObject):
         """
 
         if self.hasProxy:
-            self.connectHttp = self.proxyConnectHttp
-            self.notify.info("Using proxy: %s" % (self.proxy.cStr()))
+            self.notify.info("Connecting to gameserver via proxy: %s" % (self.proxy.cStr()))
         else:
-            self.connectHttp = self.directConnectHttp
-            self.notify.info("Not connecting via proxy.");
+            self.notify.info("Connecting to gameserver directly (no proxy).");
+
+        if self.connectMethod == 'http':
+            self.connectHttp = 1
+        elif self.connectMethod == 'nspr':
+            self.connectHttp = 0
+        else:
+            self.connectHttp = self.hasProxy
         
         self.bootedIndex = None
         self.bootedText = None
@@ -98,7 +108,7 @@ class ClientRepository(DirectObject.DirectObject):
                          extraArgs = [ch, successCallback, successArgs,
                                       failureCallback, failureArgs])
         else:
-            self.notify.info("Connecting directly via NSPR interface.")
+            self.notify.info("Connecting via NSPR interface.")
             self.qcm = QueuedConnectionManager()
             # A big old 20 second timeout.
             gameServerTimeoutMs = base.config.GetInt("game-server-timeout-ms",
