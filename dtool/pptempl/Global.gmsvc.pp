@@ -6,8 +6,8 @@
 // Template.gmsvc.pp.
 //
 
-#if $[< $[PPREMAKE_VERSION],0.55]
-  #error You need at least ppremake version 0.56 to use BUILD_TYPE gmsvc.
+#if $[< $[PPREMAKE_VERSION],0.58]
+  #error You need at least ppremake version 0.58 to use BUILD_TYPE gmsvc.
 #endif
 
 #defun get_metalibs target,complete_libs
@@ -72,10 +72,11 @@
 #defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] /MD /Gi-
 #defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] /MD /Gi-
 
-#defer LDFLAGS_OPT1 /debug /incremental:no
-#defer LDFLAGS_OPT2 /debug /incremental:no
-#defer LDFLAGS_OPT3 /fixed:no
-#defer LDFLAGS_OPT4 /fixed:no
+// NODEFAULTLIB ensures static libs linked in will connect to the correct msvcrt, so no debug/release mixing occurs
+#defer LDFLAGS_OPT1 /debug /incremental:no /NODEFAULTLIB:MSVCRT.LIB /WARN:3
+#defer LDFLAGS_OPT2 /debug /incremental:no /NODEFAULTLIB:MSVCRT.LIB /WARN:3
+#defer LDFLAGS_OPT3 /fixed:no /NODEFAULTLIB:MSVCRTD.LIB /WARN:3
+#defer LDFLAGS_OPT4 /fixed:no /NODEFAULTLIB:MSVCRTD.LIB
 
 // $[dllext] will be "_d" for debug builds, and empty for non-debug
 // builds.  This is the extra bit of stuff we tack on to the end of a
@@ -97,8 +98,8 @@
 #defer STATIC_LIB_C++ $[STATIC_LIB_C]
 
 //#defer ver_resource $[directory]\ver.res
-//#defer SHARED_LIB_C link /nologo /dll $[LDFLAGS_OPT$[OPTIMIZE]] /OUT:"$[osfilename $[target]]" $[sources] "$[ver_resource]" $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] 
-#defer SHARED_LIB_C link /nologo /dll $[LDFLAGS_OPT$[OPTIMIZE]] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] 
+//#defer SHARED_LIB_C link /nologo /dll /VERBOSE:LIB $[LDFLAGS_OPT$[OPTIMIZE]] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] 
+#defer SHARED_LIB_C link /nologo /dll  $[LDFLAGS_OPT$[OPTIMIZE]] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] 
 #defer SHARED_LIB_C++ $[SHARED_LIB_C]
 
 #defer LINK_BIN_C link /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"

@@ -340,18 +340,23 @@ $[varname] = $[sources]
   #define target $[so_dir]/lib$[TARGET]$[dllext].dll
   #define sources $($[varname])
   #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
-  #define tmpverdatedirname $[directory]/$[subst /,-, $[target]]
-$[target] : $[sources] $[so_dir]/stamp $[dtool_ver_dir_cyg]/version.rc
-   // first generate builddate for rc compiler
-   // different .res names and mkdir used to solve multiproc build issues (have multiple verdate.h's and .res files)
-	mkdir -p $[tmpverdatedirname]
-	cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[decygwin %,%,$[tmpverdatedirname]]\verdate.h"
-	rc /n /i"$[decygwin %,%,$[tmpverdatedirname]]" /fo"$[target]-ver.res" $[filter /D%, $[flags]]  "$[dtool_ver_dir]\version.rc"
+  #define mybasename $[basename $[notdir $[target]]]  
+  #define tmpdirname_cyg $[directory]/$[mybasename]
+  #define tmpdirname_win $[directory]\$[mybasename]
+
+// not parallel (requires gmake 3.79) because of link.exe conflicts in TMP dir (see audiotraits dir)
+.NOTPARALLEL $[target] : $[sources] $[so_dir]/stamp $[dtool_ver_dir_cyg]/version.rc
+		// first generate builddate for rc compiler
+		mkdir -p $[tmpdirname_cyg]  // this dir-creation-stuff is leftover from trying to resolve parallel link difficulties
+        #define VER_RESOURCE "$[tmpdirname_win]\$[mybasename].res"
+		cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[tmpdirname_win]\verdate.h"
+		rc /n /i"$[tmpdirname_win]" /fo$[VER_RESOURCE] $[filter /D%, $[flags]]  "$[dtool_ver_dir]\version.rc"
   #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
-	$[SHARED_LIB_C++] "$[decygwin %,%,$[target]-ver.res]"
+	$[SHARED_LIB_C++] $[VER_RESOURCE]
   #else  
-	$[SHARED_LIB_C]   "$[decygwin %,%,$[target]-ver.res]"
+	$[SHARED_LIB_C] $[VER_RESOURCE]
   #endif
+
 
 $[so_dir]/lib$[TARGET]$[dllext].lib : $[so_dir]/lib$[TARGET]$[dllext].dll
 
