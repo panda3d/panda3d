@@ -42,4 +42,6 @@ extern istream cin;
 extern ostream cout;
 extern ostream cerr;
 
+typedef int streampos;
+
 #endif
