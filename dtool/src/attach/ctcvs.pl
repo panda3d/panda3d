@@ -323,7 +323,41 @@ sub CTCvsUncheckout {
 sub CTCvsIHave {
     &CTUDebug( "in CTCvsIHave\n" ) ;
     local( $ret ) = "" ;
-    print STDERR "I don't know how to do IHave yet!\n" ;
+    local( $proj ) = $_[0] ;
+    $proj =~ tr/a-z/A-Z/ ;
+    local( $line ) = "cd \$" . $proj . "; " ;
+    local( $serve ) = &CTCvsServerLine( $_[0], $_[2] ) ;
+    local( $ok ) = &CTCvsLogin( $serve ) ;
+    if ( $ok ) {
+	$line = $line . "cvs -n -d " . $serve . " update" ;
+	local( $hold ) = "";
+	local( *OUTPUT ) ;
+	open( OUTPUT, $line . " |" ) ;
+	while ( <OUTPUT> ) {
+	    $hold = $hold . $_ ;
+	}
+	close( OUTPUT ) ;
+	local( @lines ) = split( /\n/, $hold ) ;
+	local( $item ) ;
+	foreach $item ( @lines ) {
+	    if ( $item =~ /^\?/ ) {
+		# things that start with a ? are ignored
+	    } elsif ( $item =~ /^cvs/ ) {
+		# messages from the server are also ignored
+	    } elsif ( $item =~ /^P/ ) {
+		# messages from the server are also ignored
+	    } elsif ( $item =~ /^M/ ) {
+		# here's one we modified
+		local( @foo ) = split( / /, $item ) ;
+		$ret = $ret . $foo[1] . "\n" ;
+	    } else {
+		# don't what this means, better complain
+		local( @foo ) = split( / /, $item ) ;
+		print STDERR "got unknown update code '" . $foo[0] .
+		    "' for file '" . $foo[1] . "'\n" ;
+	    }
+	}
+    }
     &CTUDebug( "out of CTCvsIHave\n" ) ;
     $ret ;
 }
