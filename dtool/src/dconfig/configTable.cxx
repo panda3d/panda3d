@@ -141,14 +141,19 @@ void ConfigTable::ReadConfigFile() {
     int i = configpath.find_first_of(" ");
     ConfigString stmp = configpath.substr(0, i);
     if (ExecutionEnvironment::has_environment_variable(stmp)) {
-      string next_path = ExecutionEnvironment::get_environment_variable(stmp);
+      string path = ExecutionEnvironment::get_environment_variable(stmp);
 
-      while (!next_path.empty()) {
-        int j = next_path.find_first_of(" ");
-        Filename dir = Filename::from_os_specific(next_path.substr(0, j));
-        config_search.append_directory(dir);
-        next_path.erase(0, j);
-        CropString(next_path);
+      size_t p = 0;
+      while (p < path.length()) {
+        size_t q = path.find_first_of(" :", p);
+        if (q == string::npos) {
+          config_search.append_directory(Filename::from_os_specific(path.substr(p)));
+          break;
+        }
+        if (q != p) {
+          config_search.append_directory(Filename::from_os_specific(path.substr(p, q - p)));
+        }
+        p = q + 1;
       }
     }
     configpath.erase(0, i);
@@ -473,7 +478,8 @@ void ConfigTable::MicroConfig() {
                     if (microconfig_cat->is_spam())
                       microconfig_cat->spam()
                         << "got a microconfig configpath directive, "
-                        << "adding '" << rest << "' to the configpath"
+                        << "adding '" << rest << "' to the configpath (now '"
+                        << configpath << "')"
                         << endl;
                   } else {
                     configpath = rest;
@@ -602,10 +608,9 @@ void ConfigTable::MicroConfig() {
                                 << "'" << endl;
    }
    if (!cdir) {
-      ConfigPathDefault();
       if (microconfig_cat->is_spam())
         microconfig_cat->spam() << "no microconfig for configdir, "
-                                << "setting to default '" << configdir
+                                << "leaving empty: '" << configdir
                                 << "'" << endl;
    }
    if (!ccmt) {
