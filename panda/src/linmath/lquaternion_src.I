@@ -324,15 +324,13 @@ set_k(FLOATTYPE k) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LQuaternion)::
 normalize() {
-  FLOATTYPE l2 = (*this).dot(*this);
-  if (l2 == (FLOATTYPE)0.0f) {
+  FLOATTYPE length_squared = (*this).dot(*this);
+  if (length_squared == (FLOATTYPE)0.0f) {
     set(0.0f, 0.0f, 0.0f, 0.0f);
     return false;
-
-  } else if (!IS_THRESHOLD_EQUAL(l2, 1.0f, NEARLY_ZERO(FLOATTYPE) * NEARLY_ZERO(FLOATTYPE))) {
-    (*this) /= csqrt(l2);
+  } else if (!IS_THRESHOLD_EQUAL(length_squared, 1.0f, NEARLY_ZERO(FLOATTYPE))) {
+    (*this) /= csqrt(length_squared);
   }
-
   return true;
 }
 

@@ -131,11 +131,12 @@ output(ostream &out) const {
 void ForceNode::
 write_forces(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
-  out.width(indent); out<<""<<"_forces\n";
+  out.width(indent); out<<""<<"_forces ("<<_forces.size()<<" forces)"<<"\n";
   for (ForceVector::const_iterator i=_forces.begin();
        i != _forces.end();
        ++i) {
-    (*i)->write(out, indent+2);
+    out.width(indent+2); out<<""; out<<"(id "<<&(*i)<<" "<<(*i)->is_linear()<<")\n";
+    //#*#(*i)->write(out, indent+2);
   }
   #endif //] NDEBUG
 }
@@ -149,8 +150,10 @@ write_forces(ostream &out, unsigned int indent) const {
 void ForceNode::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
-  out.width(indent); out<<""; out<<"ForceNode\n";
-  write_forces(out, indent+2);
-  //PandaNode::write(out, indent+2);
+  out.width(indent); out<<""; out<<"ForceNode (id "<<this<<") ";
+  //#*#PandaNode::output(out);
+  out<<"\n";
+  //#*#write_forces(out, indent+2);
+  PandaNode::write(out, indent+4);
   #endif //] NDEBUG
 }

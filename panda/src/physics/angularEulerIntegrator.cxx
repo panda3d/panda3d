@@ -109,6 +109,7 @@ child_integrate(Physical *physical,
 
       // tally it into the accum vector, applying the inertial tensor.
       accum_vec += f;
+      cerr<<"global accum_vec"<<accum_vec<<"\n";
     }
 
     // local forces
@@ -129,6 +130,7 @@ child_integrate(Physical *physical,
 
       // tally it into the accum vectors
       accum_vec += f;
+      cerr<<"local accum_vec"<<accum_vec<<"\n";
     }
     assert(index == matrices.size());
 
@@ -136,10 +138,12 @@ child_integrate(Physical *physical,
     // this matrix represents how much force the object 'wants' applied to it
     // in any direction, among other things.
     accum_vec =  accum_vec * current_object->get_inertial_tensor();
+    cerr<<"tensor applied accum_vec"<<accum_vec<<"\n";
 
     // derive this into the angular velocity vector.
     LVector3f rot_vec = current_object->get_rotation();
     rot_vec += accum_vec * dt;
+    cerr<<"accum_vec * dt"<<(accum_vec * dt)<<"\n";
 
     // here's the trick.  we've been accumulating these forces as vectors
     // and treating them as vectors, but now we're going to treat them as pure
@@ -152,14 +156,10 @@ child_integrate(Physical *physical,
       LVector3f normalized_rot_vec = rot_vec;
       normalized_rot_vec *= 1.0f / len;
       LRotationf rot_quat = LRotationf(normalized_rot_vec, len);
-      assert(!(rot_quat[0]==0.0f && rot_quat[1]==0.0f && rot_quat[2]==0.0f && rot_quat[3]==0.0f));
 
       LOrientationf old_orientation = current_object->get_orientation();
-      assert(!(old_orientation[0]==0.0f && old_orientation[1]==0.0f && old_orientation[2]==0.0f && old_orientation[3]==0.0f));
       LOrientationf new_orientation = old_orientation * rot_quat;
-      assert(!(new_orientation[0]==0.0f && new_orientation[1]==0.0f && new_orientation[2]==0.0f && new_orientation[3]==0.0f));
       new_orientation.normalize();
-      assert(!(new_orientation[0]==0.0f && new_orientation[1]==0.0f && new_orientation[2]==0.0f && new_orientation[3]==0.0f));
 
       // and write the results back.
       current_object->set_orientation(new_orientation);
