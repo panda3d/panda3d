@@ -8,13 +8,15 @@
 
 #include <pandabase.h>
 
-#ifdef DO_PSTATS
 
 class PStatClient;
 class PStatCollectorDef;
 
-void initialize_collector_def(PStatClient *client, PStatCollectorDef *def);
+EXPCL_PANDA int get_current_pstat_major_version();
+EXPCL_PANDA int get_current_pstat_minor_version();
 
+#ifdef DO_PSTATS
+void initialize_collector_def(PStatClient *client, PStatCollectorDef *def);
 #endif  // DO_PSTATS
 
 #endif

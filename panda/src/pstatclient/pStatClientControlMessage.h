@@ -39,6 +39,8 @@ public:
   // Used for T_hello
   string _client_hostname;
   string _client_progname;
+  int _major_version;
+  int _minor_version;
 
   // Used for T_define_collectors
   vector<PStatCollectorDef *> _collectors;

@@ -14,7 +14,9 @@
     m
 
   #define SOURCES \
-    gtkStats.cxx gtkStats.h gtkStatsGuide.cxx gtkStatsGuide.h \
+    gtkStats.cxx gtkStats.h \
+    gtkStatsBadVersionWindow.cxx gtkStatsBadVersionWindow.h \
+    gtkStatsGuide.cxx gtkStatsGuide.h \
     gtkStatsLabel.cxx gtkStatsLabel.h gtkStatsMainWindow.cxx \
     gtkStatsMainWindow.h gtkStatsMonitor.cxx gtkStatsMonitor.h \
     gtkStatsPianoRoll.I gtkStatsPianoRoll.cxx gtkStatsPianoRoll.h \

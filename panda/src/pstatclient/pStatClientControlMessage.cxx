@@ -32,6 +32,8 @@ encode(Datagram &datagram) const {
   case T_hello:
     datagram.add_string(_client_hostname);
     datagram.add_string(_client_progname);
+    datagram.add_uint16(_major_version);
+    datagram.add_uint16(_minor_version);
     break;
 
   case T_define_collectors:
@@ -74,6 +76,13 @@ decode(const Datagram &datagram) {
   case T_hello:
     _client_hostname = source.get_string();
     _client_progname = source.get_string();
+    if (source.get_remaining_size() == 0) {
+      _major_version = 1;
+      _minor_version = 0;
+    } else {
+      _major_version = source.get_uint16();
+      _minor_version = source.get_uint16();
+    }
     break;
 
   case T_define_collectors:

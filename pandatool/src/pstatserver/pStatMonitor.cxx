@@ -43,6 +43,26 @@ hello_from(const string &hostname, const string &progname) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatMonitor::bad_version
+//       Access: Public
+//  Description: Called shortly after startup time with the greeting
+//               from the client.  In this case, the client seems to
+//               have an incompatible version and will be
+//               automatically disconnected; the server should issue a
+//               message to that effect.
+////////////////////////////////////////////////////////////////////
+void PStatMonitor::
+bad_version(const string &hostname, const string &progname,
+            int client_major, int client_minor,
+            int server_major, int server_minor) {
+  _client_known = true;
+  _client_hostname = hostname;
+  _client_progname = progname;
+  got_bad_version(client_major, client_minor,
+                  server_major, server_minor);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatMonitor::set_client_data
 //       Access: Public
 //  Description: Called by the PStatServer at setup time to set the
@@ -190,6 +210,21 @@ initialized() {
 ////////////////////////////////////////////////////////////////////
 void PStatMonitor::
 got_hello() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatMonitor::got_bad_version
+//       Access: Public, Virtual
+//  Description: Like got_hello(), this is called when the "hello"
+//               message has been received from the client.  At this
+//               time, the client's hostname and program name will be
+//               known.  However, the client appears to be an
+//               incompatible version and the connection will be
+//               terminated; the monitor should issue a message to
+//               that effect.
+////////////////////////////////////////////////////////////////////
+void PStatMonitor::
+got_bad_version(int, int, int, int) {
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -32,6 +32,8 @@ public:
 
   virtual void initialized();
   virtual void got_hello();
+  virtual void got_bad_version(int client_major, int client_minor,
+                               int server_major, int server_minor);
   virtual void new_collector(int collector_index);
   virtual void new_data(int thread_index, int frame_number);
   virtual void lost_connection();

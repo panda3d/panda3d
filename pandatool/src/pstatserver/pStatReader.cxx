@@ -10,6 +10,7 @@
 #include <pStatClientControlMessage.h>
 #include <pStatServerControlMessage.h>
 #include <pStatFrameData.h>
+#include <pStatProperties.h>
 #include <datagram.h>
 #include <datagramIterator.h>
 #include <connectionManager.h>
@@ -181,7 +182,21 @@ void PStatReader::
 handle_client_control_message(const PStatClientControlMessage &message) {
   switch (message._type) {
   case PStatClientControlMessage::T_hello:
-    _monitor->hello_from(message._client_hostname, message._client_progname);
+    {
+      int current_major_version = get_current_pstat_major_version();
+      int current_minor_version = get_current_pstat_minor_version();
+
+      if (message._major_version != current_major_version ||
+          (message._major_version == current_major_version &&
+           message._minor_version > current_minor_version)) {
+        _monitor->bad_version(message._client_hostname, message._client_progname,
+                              message._major_version, message._minor_version,
+                              current_major_version, current_minor_version);
+        _monitor->close();
+      } else {
+        _monitor->hello_from(message._client_hostname, message._client_progname);
+      }
+    }
     break;
 
   case PStatClientControlMessage::T_define_collectors:

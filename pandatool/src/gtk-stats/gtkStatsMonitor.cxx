@@ -6,6 +6,7 @@
 #include "gtkStatsMonitor.h"
 #include "gtkStatsWindow.h"
 #include "gtkStatsStripWindow.h"
+#include "gtkStatsBadVersionWindow.h"
 
 #include <luse.h>
 #include <pStatCollectorDef.h>
@@ -98,6 +99,25 @@ got_hello() {
   for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
     (*wi)->update_title();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsMonitor::got_bad_version
+//       Access: Public, Virtual
+//  Description: Like got_hello(), this is called when the "hello"
+//               message has been received from the client.  At this
+//               time, the client's hostname and program name will be
+//               known.  However, the client appears to be an
+//               incompatible version and the connection will be
+//               terminated; the monitor should issue a message to
+//               that effect.
+////////////////////////////////////////////////////////////////////
+void GtkStatsMonitor::
+got_bad_version(int client_major, int client_minor,
+                int server_major, int server_minor) {
+  new GtkStatsBadVersionWindow(this, client_major, client_minor,
+                               server_major, server_minor);
+  close_all_windows();
 }
 
 ////////////////////////////////////////////////////////////////////

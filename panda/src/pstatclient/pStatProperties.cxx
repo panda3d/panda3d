@@ -7,13 +7,44 @@
 #include "pStatCollectorDef.h"
 #include "pStatClient.h"
 
+////////////////////////////////////////////////////////////////////
+//     Function: get_current_pstat_major_version
+//  Description: Returns the current major version number of the
+//               PStats protocol.  This is the version number that
+//               will be reported by clients running this code, and
+//               that will be expected by servers running this code.
+//
+//               The major version numbers must match exactly in order
+//               for a communication to be successful.
+////////////////////////////////////////////////////////////////////
+int
+get_current_pstat_major_version() {
+  return 2;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_current_pstat_minor_version
+//  Description: Returns the current minor version number of the
+//               PStats protocol.  This is the version number that
+//               will be reported by clients running this code, and
+//               that will be expected by servers running this code.
+//
+//               The minor version numbers need not match exactly, but
+//               the server must be >= the client.
+////////////////////////////////////////////////////////////////////
+int
+get_current_pstat_minor_version() {
+  return 0;
+}
+
+
 #ifdef DO_PSTATS
 
 ////////////////////////////////////////////////////////////////////
 //
-// This file defines the predefined properties (color, sort, etc.) for
-// the various PStatCollectors that may be defined within Panda or
-// even elsewhere.
+// The rest of this file defines the predefined properties (color,
+// sort, etc.) for the various PStatCollectors that may be defined
+// within Panda or even elsewhere.
 //
 // It is a little strange to defined these properties here instead of
 // where the collectors are actually declared, but it's handy to have
@@ -136,6 +167,5 @@ initialize_collector_def(PStatClient *client, PStatCollectorDef *def) {
     }
   }
 }
-
 
 #endif // DO_PSTATS

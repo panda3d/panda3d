@@ -38,6 +38,9 @@ public:
   virtual ~PStatMonitor();
 
   void hello_from(const string &hostname, const string &progname);
+  void bad_version(const string &hostname, const string &progname,
+                   int client_major, int client_minor,
+                   int server_major, int server_minor);
   void set_client_data(PStatClientData *client_data);
 
 
@@ -65,6 +68,8 @@ public:
 
   virtual void initialized();
   virtual void got_hello();
+  virtual void got_bad_version(int client_major, int client_minor,
+                               int server_major, int server_minor);
   virtual void new_collector(int collector_index);
   virtual void new_thread(int thread_index);
   virtual void new_data(int thread_index, int frame_number);

@@ -24,6 +24,7 @@
     config_pstats.h pStatClient.I pStatClient.h \
     pStatClientControlMessage.h pStatCollector.I pStatCollector.h \
     pStatCollectorDef.h pStatFrameData.I pStatFrameData.h \
+    pStatProperties.h \
     pStatServerControlMessage.h pStatThread.I pStatThread.h \
     pStatTimer.I pStatTimer.h
 
