@@ -1407,6 +1407,17 @@ dx_setup()
 		  exit(1);
 	    }
 
+        // Clear the primary surface to black
+
+	    DX_DECLARE_CLEAN(DDBLTFX, bltfx)
+        hr = pPrimaryDDSurf->Blt(NULL,NULL,NULL,DDBLT_COLORFILL | DDBLT_WAIT,&bltfx);
+
+	    if( FAILED( hr )) {
+		  wdxdisplay_cat.fatal()
+	      << "wdxGraphicsWindow:: Blt to Black of Primary Surf failed! : result = " << ConvD3DErrorToString(hr) << endl;
+		  exit(1);
+	    }
+
 	    // Get the backbuffer, which was created along with the primary.
 	    DDSCAPS2 ddscaps = { DDSCAPS_BACKBUFFER, 0, 0, 0 };
 	    if( FAILED( hr = pPrimaryDDSurf->GetAttachedSurface( &ddscaps, &pBackDDSurf ) ) )
@@ -1482,6 +1493,16 @@ dx_setup()
 		Clipper->SetHWnd( 0, _mwindow );
 		pPrimaryDDSurf->SetClipper( Clipper );
 		Clipper->Release();
+
+        // Clear the primary surface to black
+	    DX_DECLARE_CLEAN(DDBLTFX, bltfx)
+        hr = pPrimaryDDSurf->Blt(NULL,NULL,NULL,DDBLT_COLORFILL | DDBLT_WAIT,&bltfx);
+
+	    if( FAILED( hr )) {
+		  wdxdisplay_cat.fatal()
+	      << "wdxGraphicsWindow:: Blt to Black of Primary Surf failed! : result = " << ConvD3DErrorToString(hr) << endl;
+		  exit(1);
+	    }
 	
 		// Setup a surface description to create a backbuffer. 
 		SurfaceDesc.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS;
