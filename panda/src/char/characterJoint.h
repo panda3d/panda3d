@@ -43,7 +43,7 @@ public:
 
   virtual PartGroup *make_copy() const;
 
-  virtual void update_internals(PartGroup *parent, bool self_changed,
+  virtual bool update_internals(PartGroup *parent, bool self_changed,
                                 bool parent_changed);
 
 PUBLISHED:

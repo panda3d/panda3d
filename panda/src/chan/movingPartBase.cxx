@@ -87,11 +87,19 @@ write_with_value(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MovingPartBase::do_update
 //       Access: Public, Virtual
-//  Description:
+//  Description: Recursively update this particular part and all of
+//               its descendents for the current frame.  This is not
+//               really public and is not intended to be called
+//               directly; it is called from the top of the tree by
+//               PartBundle::update().
+//
+//               The return value is true if any part has changed,
+//               false otherwise.
 ////////////////////////////////////////////////////////////////////
-void MovingPartBase::
+bool MovingPartBase::
 do_update(PartBundle *root, PartGroup *parent,
           bool parent_changed, bool anim_changed) {
+  bool any_changed = false;
   bool needs_update = anim_changed;
 
   // See if any of the channel values have changed since last time.
@@ -102,9 +110,9 @@ do_update(PartBundle *root, PartGroup *parent,
        ++bci) {
     AnimControl *control = (*bci);
     int channel_index = control->get_channel_index();
-    nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
+    nassertr(channel_index >= 0 && channel_index < (int)_channels.size(), false);
     AnimChannelBase *channel = _channels[channel_index];
-    nassertv(channel != (AnimChannelBase*)0L);
+    nassertr(channel != (AnimChannelBase*)0L, false);
 
     needs_update = control->channel_has_changed(channel);
   }
@@ -115,15 +123,19 @@ do_update(PartBundle *root, PartGroup *parent,
   }
 
   if (parent_changed || needs_update) {
-    update_internals(parent, needs_update, parent_changed);
+    any_changed = update_internals(parent, needs_update, parent_changed);
   }
 
   // Now recurse.
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
-    (*ci)->do_update(root, this, parent_changed || needs_update,
-                     anim_changed);
+    if ((*ci)->do_update(root, this, parent_changed || needs_update,
+                         anim_changed)) {
+      any_changed = true;
+    }
   }
+
+  return any_changed;
 }
 
 
@@ -134,9 +146,13 @@ do_update(PartBundle *root, PartGroup *parent,
 //               some ancestor has changed values.  It is a hook for
 //               derived classes to update whatever cache they may
 //               have that depends on these.
+//
+//               The return value is true if the part has changed as a
+//               result of the update, or false otherwise.
 ////////////////////////////////////////////////////////////////////
-void MovingPartBase::
+bool MovingPartBase::
 update_internals(PartGroup *, bool, bool) {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -344,11 +344,16 @@ advance_time(double time) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::update
 //       Access: Public
-//  Description:
+//  Description: Updates all the parts in the bundle to reflect the
+//               data for the current frame (as set in each of the
+//               AnimControls).
+//
+//               Returns true if any part has changed as a result of
+//               this, or false otherwise.
 ////////////////////////////////////////////////////////////////////
-void PartBundle::
+bool PartBundle::
 update() {
-  do_update(this, NULL, false, _anim_changed);
+  bool any_changed = do_update(this, NULL, false, _anim_changed);
 
   // Now update all the controls for next time.
   ChannelBlend::const_iterator cbi;
@@ -357,6 +362,8 @@ update() {
     control->mark_channels();
   }
   _anim_changed = false;
+
+  return any_changed;
 }
 
 

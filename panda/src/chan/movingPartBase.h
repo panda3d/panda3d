@@ -48,11 +48,11 @@ public:
   virtual void write_with_value(ostream &out, int indent_level) const;
   virtual void output_value(ostream &out) const=0;
 
-  virtual void do_update(PartBundle *root, PartGroup *parent,
+  virtual bool do_update(PartBundle *root, PartGroup *parent,
                          bool parent_changed, bool anim_changed);
 
   virtual void get_blend_value(const PartBundle *root)=0;
-  virtual void update_internals(PartGroup *parent, bool self_changed,
+  virtual bool update_internals(PartGroup *parent, bool self_changed,
                                 bool parent_changed);
 
 protected:

@@ -122,7 +122,7 @@ public:
   // bunch of friends.
 
   void advance_time(double time);
-  void update();
+  bool update();
   virtual void control_activated(AnimControl *control);
 
 protected:

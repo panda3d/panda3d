@@ -82,7 +82,7 @@ public:
                        const PartGroup *parent,
                        int hierarchy_match_flags = 0) const;
 
-  virtual void do_update(PartBundle *root, PartGroup *parent,
+  virtual bool do_update(PartBundle *root, PartGroup *parent,
                          bool parent_changed, bool anim_changed);
 
 protected:

@@ -350,15 +350,28 @@ write_with_value(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::do_update
 //       Access: Public, Virtual
-//  Description:
+//  Description: Recursively update this particular part and all of
+//               its descendents for the current frame.  This is not
+//               really public and is not intended to be called
+//               directly; it is called from the top of the tree by
+//               PartBundle::update().
+//
+//               The return value is true if any part has changed,
+//               false otherwise.
 ////////////////////////////////////////////////////////////////////
-void PartGroup::
+bool PartGroup::
 do_update(PartBundle *root, PartGroup *,
           bool parent_changed, bool anim_changed) {
+  bool any_changed = false;
+
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
-    (*ci)->do_update(root, this, parent_changed, anim_changed);
+    if ((*ci)->do_update(root, this, parent_changed, anim_changed)) {
+      any_changed = true;
+    }
   }
+
+  return any_changed;
 }
 
 

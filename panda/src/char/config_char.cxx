@@ -31,6 +31,41 @@ Configure(config_char);
 NotifyCategoryDef(char, "");
 
 ConfigureFn(config_char) {
+  init_libchar();
+}
+
+// The animation system, by default, only recomputes the characters'
+// vertices on frames for which there is some change in the animation
+// cycle.  Since this doesn't happen every frame, and since the
+// recomputing of vertices can take significant time, this might
+// result in irregular patterns of slow frames and fast frames,
+// resulting in an unsteady frame rate.  Sometimes it is preferable to
+// achieve a more even frame rate, even if the average frame rate is
+// slower overall.
+
+// Set even-animation to true to achieve this.  When this is true,
+// characters' vertices will be recomputed every frame, whether they
+// need it or not.  This will tend to balance out the frame rate so
+// that it is more uniformly slow.
+const bool even_animation = config_char.GetBool("even-animation", false);
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libchar
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libchar() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+
   Character::init_type();
   CharacterJoint::init_type();
   CharacterJointBundle::init_type();

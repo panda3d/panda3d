@@ -84,22 +84,40 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::update_internals
 //       Access: Public, Virtual
-//  Description:
+//  Description: This is called by do_update() whenever the part or
+//               some ancestor has changed values.  It is a hook for
+//               derived classes to update whatever cache they may
+//               have that depends on these.
+//
+//               The return value is true if the part has changed as a
+//               result of the update, or false otherwise.
+//
+//               In the case of a CharacterJoint, of course, it means
+//               to recompute the joint angles and associated
+//               transforms for this particular joint.
 ////////////////////////////////////////////////////////////////////
-void CharacterJoint::
-update_internals(PartGroup *parent, bool self_changed, bool) {
-  nassertv(parent != NULL);
+bool CharacterJoint::
+update_internals(PartGroup *parent, bool self_changed, bool parent_changed) {
+  nassertr(parent != (PartGroup *)NULL, false);
 
   bool net_changed = false;
   if (parent->is_of_type(CharacterJoint::get_class_type())) {
-    CharacterJoint *parent_joint = DCAST(CharacterJoint, parent);
+    // The joint is not a toplevel joint; its parent therefore affects
+    // its net transform.
+    if (parent_changed || self_changed) {
+      CharacterJoint *parent_joint = DCAST(CharacterJoint, parent);
+      
+      _net_transform = _value * parent_joint->_net_transform;
+      net_changed = true;
+    }
 
-    _net_transform = _value * parent_joint->_net_transform;
-    net_changed = true;
-
-  } else if (self_changed) {
-    _net_transform = _value;
-    net_changed = true;
+  } else {
+    // The joint *is* a toplevel joint, and the only thing that
+    // affects its net transform is the joint itself.
+    if (self_changed) {
+      _net_transform = _value;
+      net_changed = true;
+    }
   }
 
   if (net_changed && !_net_transform_arcs.empty()) {
@@ -141,6 +159,8 @@ update_internals(PartGroup *parent, bool self_changed, bool) {
       }
     }
   }
+
+  return self_changed || net_changed;
 }
 
 ////////////////////////////////////////////////////////////////////

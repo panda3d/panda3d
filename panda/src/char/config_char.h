@@ -27,4 +27,9 @@
 NotifyCategoryDecl(char, EXPCL_PANDA, EXPTP_PANDA);
 #endif
 
+// Configure variables for char package.
+extern const bool EXPCL_PANDA even_animation;
+
+extern EXPCL_PANDA void init_libchar();
+
 #endif

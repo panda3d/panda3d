@@ -19,16 +19,16 @@
 #ifndef CHARACTER_H
 #define CHARACTER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "computedVertices.h"
 
-#include <partBundleNode.h>
-#include <namedNode.h>
-#include <vector_PartGroupStar.h>
-#include <pointerTo.h>
-#include <geom.h>
-#include <pStatCollector.h>
+#include "partBundleNode.h"
+#include "namedNode.h"
+#include "vector_PartGroupStar.h"
+#include "pointerTo.h"
+#include "geom.h"
+#include "pStatCollector.h"
 
 class CharacterJointBundle;
 class ComputedVertices;

@@ -21,16 +21,16 @@
 #include "computedVertices.h"
 #include "config_char.h"
 
-#include <geomNode.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
-#include <pStatTimer.h>
-#include <geomNode.h>
-#include <animControl.h>
-#include <clockObject.h>
-#include <pStatTimer.h>
+#include "geomNode.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
+#include "pStatTimer.h"
+#include "geomNode.h"
+#include "animControl.h"
+#include "clockObject.h"
+#include "pStatTimer.h"
 
 TypeHandle Character::_type_handle;
 
@@ -140,11 +140,14 @@ update() {
   PStatTimer timer(_char_pcollector);
 
   // First, update all the joints and sliders.
-  get_bundle()->update();
+  bool any_changed = get_bundle()->update();
 
-  // Now update the vertices.
-  if (_computed_vertices != (ComputedVertices *)NULL) {
-    _computed_vertices->update(this);
+  // Now update the vertices, if we need to.  This is likely to be a
+  // slow operation.
+  if (any_changed || even_animation) {
+    if (_computed_vertices != (ComputedVertices *)NULL) {
+      _computed_vertices->update(this);
+    }
   }
 }
 
@@ -299,7 +302,7 @@ copy_geom(Geom *source, const Character *from) {
   PT(Geom) dest = source;
 
   source->get_coords(coords, index);
-  if ((coords != NULL) && (coords == (from->_cv._coords))) {
+  if ((coords != (void *)NULL) && (coords == (from->_cv._coords))) {
     if (dest == source) {
       dest = source->make_copy();
     }
