@@ -422,6 +422,8 @@ priv_instant() {
 
   if (_event_queue.empty()) {
     interval_done();
+  } else {
+    enqueue_done_event();
   }
 }
 
@@ -517,6 +519,8 @@ priv_finalize() {
 
   if (_event_queue.empty()) {
     interval_done();
+  } else {
+    enqueue_done_event();
   }
 }
 
@@ -690,15 +694,6 @@ pop_event() {
   nassertv(def._type == DT_ext_index);
 #endif
   _event_queue.pop_front();
-
-  // Really, we should set a flag to call this at the next call to
-  // service_event_queue(), instead of calling it immediately, because
-  // the just-popped event probably hasn't been processed yet.  But we
-  // can get away with calling this here for now because Python
-  // doesn't process C++ events immediately.
-  if (_state == S_final) {
-    interval_done();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1041,6 +1036,18 @@ enqueue_self_event(CInterval::EventType event_type, double t) {
   int time = double_to_int_time(t);
   _event_queue.push_back(EventQueueEntry(-1, event_type, time));
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CMetaInterval::enqueue_done_event
+//       Access: Private
+//  Description: Enqueues a special "event" that simply marks the end
+//               of processing of the interval; the interval's done
+//               event should be thrown now, if it is defined.
+////////////////////////////////////////////////////////////////////
+void CMetaInterval::
+enqueue_done_event() {
+  _event_queue.push_back(EventQueueEntry(-2, ET_finalize, 0));
+}
   
 ////////////////////////////////////////////////////////////////////
 //     Function: CMetaInterval::service_event_queue
@@ -1055,19 +1062,17 @@ enqueue_self_event(CInterval::EventType event_type, double t) {
 ////////////////////////////////////////////////////////////////////
 bool CMetaInterval::
 service_event_queue() {
-  if (_event_queue.empty()) {
-    // Return early if we're empty on entry, so we don't throw the
-    // done event more than once.
-    nassertr(!_processing_events, false);
-    return false;
-  }
-
   while (!_event_queue.empty()) {
     nassertr(!_processing_events, true);
     const EventQueueEntry &entry = _event_queue.front();
     if (entry._n == -1) {
       // Index -1 is a special code for *this* interval.
       priv_do_event(int_to_double_time(entry._time), entry._event_type);
+
+    } else if (entry._n == -2) {
+      // Index -2 is a special code to indicate the interval is now
+      // done, and its done event should be thrown.
+      interval_done();
 
     } else {
       nassertr(entry._n >= 0 && entry._n < (int)_defs.size(), false);
@@ -1090,13 +1095,8 @@ service_event_queue() {
     _event_queue.pop_front();
   }
 
-  if (_state == S_final) {
-    interval_done();
-  }
-
   // No more events on the queue.
   nassertr(!_processing_events, false);
-
   return false;
 }
 

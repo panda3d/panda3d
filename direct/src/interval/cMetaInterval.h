@@ -151,6 +151,7 @@ private:
   void enqueue_event(int n, CInterval::EventType event_type, bool is_initial,
                      int time = 0);
   void enqueue_self_event(CInterval::EventType event_type, double t = 0.0);
+  void enqueue_done_event();
   bool service_event_queue();
 
   int recompute_level(int n, int level_begin, int &level_end);
