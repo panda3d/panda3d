@@ -8,7 +8,6 @@ def findDialog(uniqueName):
     Returns the panel whose uniqueName is given.  This is mainly
     useful for debugging, to get a pointer to the current onscreen
     panel of a particular type.
-
     """
     if DirectDialog.AllDialogs.has_key(uniqueName):
         return DirectDialog.AllDialogs[uniqueName]
@@ -22,7 +21,6 @@ def cleanupDialog(uniqueName):
     that opening panel A should automatically close panel B, for
     instance.
     """
-        
     if DirectDialog.AllDialogs.has_key(uniqueName):
         # calling cleanup() will remove it out of the AllDialogs dict
         # This way it will get removed from the dict even it we did
