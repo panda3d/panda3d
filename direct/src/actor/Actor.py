@@ -619,7 +619,8 @@ class Actor(PandaObject, NodePath):
                     root=None, lodName=None):
         """drawInFront(self, string, int, string=None, key=None)
 
-        Arrange geometry so the frontPart is drawn in front of backPart.
+        Arrange geometry so the frontPart(s) are drawn in front of
+        backPart.
 
         If mode == 0, the geometry is simply arranged to be drawn in
         the correct order.

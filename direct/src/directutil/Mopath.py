@@ -26,8 +26,11 @@ class Mopath(PandaObject):
 		self.maxT = self.tNurbsCurve.getMaxT()
 	    else:
 		print 'Mopath: no valid curves in file: %s' % filename
+
+            nodePath.removeNode()
 	else:
 	    print 'Mopath: no data in file: %s' % filename
+        
 
     def reset(self):
 	self.maxT = 0.0
