@@ -71,7 +71,7 @@ def pause(delayTime):
             return cont
         else:
             # Time is up, return done
-            TaskManager.notify.debug('pause done: ' + self.name)
+            # TaskManager.notify.debug('pause done: ' + self.name)
             return done
     task = Task(func)
     task.name = 'pause'
@@ -82,7 +82,7 @@ def pause(delayTime):
 def release():
     def func(self):
         # A release is immediately done
-        TaskManager.notify.debug('release done: ' + self.name)
+        # TaskManager.notify.debug('release done: ' + self.name)
         return done
     task = Task(func)
     task.name = 'release'
@@ -97,7 +97,7 @@ def make_sequence(taskList):
     def func(self):
         # If we got to the end of the list, this sequence is done
         if (self.index >= len(self.taskList)):
-            TaskManager.notify.debug('sequence done: ' + self.name)
+            # TaskManager.notify.debug('sequence done: ' + self.name)
             return done
         else:
             task = self.taskList[self.index]
@@ -150,7 +150,7 @@ def make_loop(taskList):
     def func(self):
         # If we got to the end of the list, this sequence is done
         if (self.index >= len(self.taskList)):
-            TaskManager.notify.debug('sequence done, looping: ' + self.name)
+            # TaskManager.notify.debug('sequence done, looping: ' + self.name)
             self.prevIndex = -1
             self.index = 0
             return cont
@@ -235,7 +235,7 @@ def timeline(*timelineList):
                 self.sequenceDone = 1
                 # See if the timeline is done
                 if (lenTaskList == 0):
-                    TaskManager.notify.debug('timeline done: ' + self.name)
+                    # TaskManager.notify.debug('timeline done: ' + self.name)
                     return done
                 else:
                     return cont
@@ -273,7 +273,8 @@ class TaskManager:
         return self.spawnTaskNamed(task, name)
 
     def spawnTaskNamed(self, task, name):
-        TaskManager.notify.debug('spawning task named: ' + name)
+        if TaskManager.notify.getDebug():
+            TaskManager.notify.debug('spawning task named: ' + name)
         task.name = name
         task.setStartTimeFrame(self.currentTime, self.currentFrame)
         # search back from the end of the list until we find a
@@ -315,22 +316,26 @@ class TaskManager:
             self.removeTask(task)
 
     def removeTask(self, task):
-        TaskManager.notify.debug('removing task: ' + `task`)
+        if TaskManager.notify.getDebug():
+            TaskManager.notify.debug('removing task: ' + `task`)
+        removed = 0
         try:
             self.taskList.remove(task)
+            removed = 1
         except:
             pass
-        if task.uponDeath:
+        if (task.uponDeath and removed):
             task.uponDeath(task)
 
     def removeTasksNamed(self, taskName):
-        TaskManager.notify.debug('removing tasks named: ' + taskName)
-        removedTasks = []
+        if TaskManager.notify.getDebug():
+            TaskManager.notify.debug('removing tasks named: ' + taskName)
 
         # Find the tasks that match by name and make a list of them
+        removedTasks = []
         for task in self.taskList:
-            if (task.name == taskName):
-                removedTasks.append(task)
+           if (task.name == taskName):
+               removedTasks.append(task)
 
         # Now iterate through the tasks we need to remove and remove them
         for task in removedTasks:
@@ -352,7 +357,8 @@ class TaskManager:
         standard shell globbing characters like *, ?, and [].
 
         """
-        TaskManager.notify.debug('removing tasks matching: ' + taskPattern)
+        if TaskManager.notify.getDebug():
+            TaskManager.notify.debug('removing tasks matching: ' + taskPattern)
         removedTasks = []
 
         # Find the tasks that match by name and make a list of them
@@ -362,13 +368,14 @@ class TaskManager:
 
         # Now iterate through the tasks we need to remove and remove them
         for task in removedTasks:
-            self.removeTask(task)
+           self.removeTask(task)
 
         # Return the number of tasks removed
         return len(removedTasks)
 
     def step(self):
-        TaskManager.notify.debug('step')
+        if TaskManager.notify.getDebug():
+            TaskManager.notify.debug('step')
         self.currentTime, self.currentFrame = getTimeFrame()
         for task in self.taskList:
             task.setCurrentTimeFrame(self.currentTime, self.currentFrame)

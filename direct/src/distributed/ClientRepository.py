@@ -266,13 +266,14 @@ class ClientRepository(DirectObject.DirectObject):
         doId = di.getArg(STUint32)
         #print("Updating " + str(doId))
         # Find the DO
-        assert(self.doId2do.has_key(doId))
-        do = self.doId2do[doId]
-        # Find the cdc
-        assert(self.doId2cdc.has_key(doId))
-        cdc = self.doId2cdc[doId]
-        # Let the cdc finish the job
-        cdc.updateField(do, di)
+        do = self.doId2do.get(doId)
+        cdc = self.doId2cdc.get(doId)
+        if (do != None and cdc != None):
+            # Let the cdc finish the job
+            cdc.updateField(do, di)
+        else:
+            ClientRepository.notify.warning(
+                "Asked to update non-existent DistObj " + str(doId))
         return None
 
     def handleUnexpectedMsgType(self, msgType, di):

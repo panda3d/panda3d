@@ -7,7 +7,6 @@ __builtin__.base = ShowBase()
 
 # Make some global aliases for convenience
 __builtin__.ostream = Notify.out()
-__builtin__.run = base.run
 __builtin__.directNotify = directNotify
 
 # Set direct notify categories now that we have config
