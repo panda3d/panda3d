@@ -1,0 +1,91 @@
+// Filename: xFileDataObjectInteger.cxx
+// Created by:  drose (07Oct04)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#include "xFileDataObjectInteger.h"
+#include "string_utils.h"
+#include "indent.h"
+
+TypeHandle XFileDataObjectInteger::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObjectInteger::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+XFileDataObjectInteger::
+XFileDataObjectInteger(const XFileDataDef *data_def, int value) :
+  XFileDataObject(data_def),
+  _value(value)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObjectInteger::output_data
+//       Access: Public, Virtual
+//  Description: Writes a suitable representation of this node to an
+//               .x file in text mode.
+////////////////////////////////////////////////////////////////////
+void XFileDataObjectInteger::
+output_data(ostream &out) const {
+  out << _value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObjectInteger::write_data
+//       Access: Public, Virtual
+//  Description: Writes a suitable representation of this node to an
+//               .x file in text mode.
+////////////////////////////////////////////////////////////////////
+void XFileDataObjectInteger::
+write_data(ostream &out, int indent_level, const char *separator) const {
+  indent(out, indent_level)
+    << _value << separator << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObjectInteger::as_integer_value
+//       Access: Protected, Virtual
+//  Description: Returns the object's representation as an integer, if
+//               it has one.
+////////////////////////////////////////////////////////////////////
+int XFileDataObjectInteger::
+as_integer_value() const {
+  return _value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObjectInteger::as_double_value
+//       Access: Protected, Virtual
+//  Description: Returns the object's representation as a double, if
+//               it has one.
+////////////////////////////////////////////////////////////////////
+double XFileDataObjectInteger::
+as_double_value() const {
+  return _value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObjectInteger::as_string_value
+//       Access: Protected, Virtual
+//  Description: Returns the object's representation as a string, if
+//               it has one.
+////////////////////////////////////////////////////////////////////
+string XFileDataObjectInteger::
+as_string_value() const {
+  return format_string(_value);
+}

@@ -20,7 +20,8 @@
 #define XFILENODE_H
 
 #include "pandatoolbase.h"
-#include "typedReferenceCount.h"
+#include "typedObject.h"
+#include "referenceCount.h"
 #include "pointerTo.h"
 #include "namable.h"
 #include "notify.h"
@@ -29,16 +30,22 @@
 
 class XFile;
 class WindowsGuid;
+class XFileParseDataList;
+class XFileDataDef;
+class XFileDataObject;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : XFileNode
 // Description : A single node of an X file.  This may be either a
 //               template or a data node.
 ////////////////////////////////////////////////////////////////////
-class XFileNode : public TypedReferenceCount, public Namable {
+class XFileNode : public TypedObject, public Namable,
+                  virtual public ReferenceCount {
 public:
   XFileNode(XFile *x_file, const string &name);
   virtual ~XFileNode();
+
+  INLINE XFile *get_x_file() const;
 
   INLINE int get_num_children() const;
   INLINE XFileNode *get_child(int n) const;
@@ -52,6 +59,13 @@ public:
   virtual void clear();
 
   virtual void write_text(ostream &out, int indent_level) const;
+
+  typedef pmap<const XFileDataDef *, XFileDataObject *> PrevData;
+
+  virtual bool repack_data(XFileDataObject *object, 
+                           const XFileParseDataList &parse_data_list,
+                           PrevData &prev_data,
+                           size_t &index, size_t &sub_index) const;
 
 protected:
   XFile *_x_file;
@@ -67,9 +81,11 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedReferenceCount::init_type();
+    TypedObject::init_type();
+    ReferenceCount::init_type();
     register_type(_type_handle, "XFileNode",
-                  TypedReferenceCount::get_class_type());
+                  TypedObject::get_class_type(),
+                  ReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

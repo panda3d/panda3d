@@ -24,6 +24,7 @@
 #include "xFileNode.h"
 #include "xFileArrayDef.h"
 #include "xFileTemplate.h"
+#include "xFileDataObject.h"
 #include "pvector.h"
 #include "pointerTo.h"
 
@@ -67,6 +68,40 @@ public:
 
   virtual void write_text(ostream &out, int indent_level) const;
 
+  virtual bool repack_data(XFileDataObject *object, 
+                           const XFileParseDataList &parse_data_list,
+                           PrevData &prev_data,
+                           size_t &index, size_t &sub_index) const;
+
+private:
+  typedef PT(XFileDataObject) 
+    (XFileDataDef::*UnpackMethod)(const XFileParseDataList &parse_data_list, 
+                                  const PrevData &prev_data,
+                                  size_t &index, size_t &sub_index,
+                                  int separator_mask) const;
+
+  PT(XFileDataObject) 
+    unpack_integer_value(const XFileParseDataList &parse_data_list,
+                         const PrevData &prev_data,
+                         size_t &index, size_t &sub_index,
+                         int separator_mask) const;
+  PT(XFileDataObject) 
+    unpack_double_value(const XFileParseDataList &parse_data_list,
+                        const PrevData &prev_data,
+                        size_t &index, size_t &sub_index,
+                        int separator_mask) const;
+  PT(XFileDataObject) 
+    unpack_template_value(const XFileParseDataList &parse_data_list,
+                          const PrevData &prev_data,
+                          size_t &index, size_t &sub_index,
+                          int separator_mask) const;
+
+  PT(XFileDataObject) 
+    unpack_value(const XFileParseDataList &parse_data_list, int array_index,
+                 const PrevData &prev_data,
+                 size_t &index, size_t &sub_index, int separator_mask,
+                 UnpackMethod unpack_method) const;
+    
 private:
   Type _type;
   PT(XFileTemplate) _template;

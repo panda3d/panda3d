@@ -17,8 +17,54 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "xFileDataObject.h"
+#include "indent.h"
 
 TypeHandle XFileDataObject::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::Destructor
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+XFileDataObject::
+~XFileDataObject() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::add_element
+//       Access: Public, Virtual
+//  Description: Adds the indicated element as a nested data element,
+//               if this data object type supports it.  Returns true
+//               if added successfully, false if the data object type
+//               does not support nested data elements.
+////////////////////////////////////////////////////////////////////
+bool XFileDataObject::
+add_element(XFileDataObject *element) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::output_data
+//       Access: Public, Virtual
+//  Description: Writes a suitable representation of this node to an
+//               .x file in text mode.
+////////////////////////////////////////////////////////////////////
+void XFileDataObject::
+output_data(ostream &out) const {
+  out << "(" << get_type() << "::output_data() not implemented.)";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::write_data
+//       Access: Public, Virtual
+//  Description: Writes a suitable representation of this node to an
+//               .x file in text mode.
+////////////////////////////////////////////////////////////////////
+void XFileDataObject::
+write_data(ostream &out, int indent_level, const char *) const {
+  indent(out, indent_level)
+    << "(" << get_type() << "::write_data() not implemented.)\n";
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: XFileDataObject::as_integer_value
@@ -51,4 +97,38 @@ as_double_value() const {
 string XFileDataObject::
 as_string_value() const {
   return string();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::get_num_elements
+//       Access: Protected, Virtual
+//  Description: Returns the number of nested data elements within the
+//               object.  This may be, e.g. the size of the array, if
+//               it is an array.
+////////////////////////////////////////////////////////////////////
+int XFileDataObject::
+get_num_elements() const {
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::get_element
+//       Access: Protected, Virtual
+//  Description: Returns the nth nested data element within the
+//               object.
+////////////////////////////////////////////////////////////////////
+const XFileDataObject *XFileDataObject::
+get_element(int n) const {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::get_element
+//       Access: Protected, Virtual
+//  Description: Returns the nested data element within the
+//               object that has the indicated name.
+////////////////////////////////////////////////////////////////////
+const XFileDataObject *XFileDataObject::
+get_element(const string &name) const {
+  return NULL;
 }

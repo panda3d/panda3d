@@ -18,6 +18,12 @@
 
 #include "xFileDataDef.h"
 #include "indent.h"
+#include "xLexerDefs.h"
+#include "xFileParseData.h"
+#include "xFileDataObjectInteger.h"
+#include "xFileDataObjectDouble.h"
+#include "xFileDataObjectTemplate.h"
+#include "xFileDataObjectArray.h"
 
 TypeHandle XFileDataDef::_type_handle;
 
@@ -127,4 +133,292 @@ write_text(ostream &out, int indent_level) const {
   }
 
   out << ";\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataDef::repack_data
+//       Access: Public, Virtual
+//  Description: This is called on the template that defines an
+//               object, once the data for the object has been parsed.
+//               It is responsible for identifying which component of
+//               the template owns each data element, and packing the
+//               data elements appropriately back into the object.
+//
+//               It returns true on success, or false on an error
+//               (e.g. too many semicolons, not enough data elements,
+//               mismatched data type).
+////////////////////////////////////////////////////////////////////
+bool XFileDataDef::
+repack_data(XFileDataObject *object, 
+            const XFileParseDataList &parse_data_list,
+            XFileDataDef::PrevData &prev_data,
+            size_t &index, size_t &sub_index) const {
+  if (index >= parse_data_list._list.size()) {
+    xyyerror("Not enough data elements in structure.");
+    return false;
+  }
+
+  // We'll fill this in with the data value we pack, if any.
+  PT(XFileDataObject) data_value;
+
+  // What kind of data element are we expecting?
+  switch (_type) {
+  case T_word:
+  case T_dword:
+  case T_char:
+  case T_uchar:
+  case T_sword:
+  case T_sdword:
+    // Expected integer data.
+    data_value = unpack_value(parse_data_list, 0,
+                              prev_data, index, sub_index,
+                              XFileParseData::PF_semicolon,
+                              &XFileDataDef::unpack_integer_value);
+    break;
+
+  case T_float:
+  case T_double:
+    data_value = unpack_value(parse_data_list, 0,
+                              prev_data, index, sub_index,
+                              XFileParseData::PF_semicolon,
+                              &XFileDataDef::unpack_double_value);
+    break;
+
+  case T_template:
+    data_value = unpack_value(parse_data_list, 0,
+                              prev_data, index, sub_index,
+                              XFileParseData::PF_semicolon,
+                              &XFileDataDef::unpack_template_value);
+    break;
+
+  default:
+    {
+      const XFileParseData &parse_data = parse_data_list._list[index];
+      parse_data.yyerror("Unexpected data for " + get_name());
+    }
+    return false;
+  }
+
+  if (data_value != (XFileDataObject *)NULL) {
+    if (!object->add_element(data_value)) {
+      // This is really an internal error--this shouldn't happen.
+      const XFileParseData &parse_data = parse_data_list._list[index];
+      parse_data.yyerror("Data does not accept a nested element.");
+    }
+  }
+  prev_data[this] = data_value;
+
+  return XFileNode::repack_data(object, parse_data_list, 
+                                prev_data, index, sub_index);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataDef::unpack_integer_value
+//       Access: Private
+//  Description: Unpacks and returns the next sequential integer value
+//               from the parse_data_list.
+////////////////////////////////////////////////////////////////////
+PT(XFileDataObject) XFileDataDef::
+unpack_integer_value(const XFileParseDataList &parse_data_list,
+                     const XFileDataDef::PrevData &prev_data,
+                     size_t &index, size_t &sub_index,
+                     int separator_mask) const {
+  const XFileParseData &parse_data = parse_data_list._list[index];
+
+  PT(XFileDataObject) data_value;
+
+  if ((parse_data._parse_flags & XFileParseData::PF_int) != 0) {
+    nassertr(sub_index < parse_data._int_list.size(), false);
+    int value = parse_data._int_list[sub_index];
+    data_value = new XFileDataObjectInteger(this, value);
+    
+    sub_index++;
+    if (sub_index >= parse_data._int_list.size()) {
+      index++;
+      sub_index = 0;
+    }
+
+    if (separator_mask != 0) {
+      // Now consume a separator character.  These may be defined
+      // implicitly on an integer list.
+      if ((parse_data._parse_flags & separator_mask) == 0) {
+        // The separator we were looking for wasn't what was being
+        // used to delimit the list.  As a special exception, if we
+        // just reached the end of the list and the next token is a
+        // standalone separator that matches what we expect, take that
+        // one.
+        if (sub_index == 0 && index < parse_data_list._list.size() &&
+            parse_data_list._list[index]._parse_flags == separator_mask) {
+          // Bingo!  This is the special case--we incremented past
+          // the end of the list to a standalone separator.
+          index++;
+
+        } else {
+          // Some other case; the separator character we were
+          // expecting isn't to be found.
+          if ((separator_mask & XFileParseData::PF_semicolon) != 0) {
+            parse_data.yyerror("Semicolon expected.");
+          } else {
+            parse_data.yyerror("Comma expected.");
+          }
+        }
+      }
+    }
+
+  } else {
+    parse_data.yyerror("Expected integer data for " + get_name());
+  }
+
+  return data_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataDef::unpack_double_value
+//       Access: Private
+//  Description: Unpacks and returns the next sequential double value
+//               from the parse_data_list.
+////////////////////////////////////////////////////////////////////
+PT(XFileDataObject) XFileDataDef::
+unpack_double_value(const XFileParseDataList &parse_data_list,
+                    const XFileDataDef::PrevData &prev_data,
+                    size_t &index, size_t &sub_index,
+                    int separator_mask) const {
+  const XFileParseData &parse_data = parse_data_list._list[index];
+
+  PT(XFileDataObject) data_value;
+
+  if ((parse_data._parse_flags & XFileParseData::PF_double) != 0) {
+    if (separator_mask != 0 &&
+        (parse_data._parse_flags & separator_mask) == 0) {
+      if ((separator_mask & XFileParseData::PF_semicolon) != 0) {
+        parse_data.yyerror("Semicolon expected.");
+      } else {
+        parse_data.yyerror("Comma expected.");
+      }
+
+    } else {
+      nassertr(sub_index < parse_data._double_list.size(), false);
+      double value = parse_data._double_list[sub_index];
+      data_value = new XFileDataObjectDouble(this, value);
+      
+      sub_index++;
+      if (sub_index >= parse_data._double_list.size()) {
+        index++;
+        sub_index = 0;
+      }
+    }
+
+  } else if ((parse_data._parse_flags & XFileParseData::PF_int) != 0) {
+    if (separator_mask != 0 &&
+        (parse_data._parse_flags & separator_mask) == 0) {
+      if ((separator_mask & XFileParseData::PF_semicolon) != 0) {
+        parse_data.yyerror("Semicolon expected.");
+      } else {
+        parse_data.yyerror("Comma expected.");
+      }
+
+    } else {
+      nassertr(sub_index < parse_data._int_list.size(), false);
+      int value = parse_data._int_list[sub_index];
+      data_value = new XFileDataObjectDouble(this, value);
+      
+      sub_index++;
+      if (sub_index >= parse_data._int_list.size()) {
+        index++;
+        sub_index = 0;
+      }
+    }
+
+  } else {
+    parse_data.yyerror("Expected floating-point data for " + get_name());
+  }
+
+  return data_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataDef::unpack_template_value
+//       Access: Private
+//  Description: Unpacks a nested template object's data.
+////////////////////////////////////////////////////////////////////
+PT(XFileDataObject) XFileDataDef::
+unpack_template_value(const XFileParseDataList &parse_data_list,
+                      const XFileDataDef::PrevData &prev_data,
+                      size_t &index, size_t &sub_index,
+                      int separator_mask) const {
+  PT(XFileDataObjectTemplate) data_value = 
+    new XFileDataObjectTemplate(get_x_file(), get_name(), _template);
+
+  PrevData nested_prev_data(prev_data);
+  if (!_template->repack_data(data_value, parse_data_list, 
+                              nested_prev_data, index, sub_index)) {
+    return NULL;
+  }
+  
+  if (separator_mask != 0) {
+    // Also expect a trailing semicolon or comma.
+    if (index >= parse_data_list._list.size()) {
+      if ((separator_mask & XFileParseData::PF_semicolon) != 0) {
+        xyyerror("Semicolon expected.");
+      } else {
+        xyyerror("Comma expected.");
+      }
+      return NULL;
+    }
+
+    const XFileParseData &new_parse_data = parse_data_list._list[index];
+    if ((new_parse_data._parse_flags & XFileParseData::PF_any_data) != 0 ||
+        (new_parse_data._parse_flags & separator_mask) == 0) {
+      if ((separator_mask & XFileParseData::PF_semicolon) != 0) {
+        new_parse_data.yyerror("Semicolon expected.");
+      } else {
+        new_parse_data.yyerror("Comma expected.");
+      }
+      return false;
+    }
+    index++;
+  }
+
+  return data_value.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataDef::unpack_value
+//       Access: Private
+//  Description: Unpacks and returns the next sequential value, of the
+//               type supported by the unpack_method.  If the value
+//               is an array type, unpacks all the elements of the
+//               array.
+////////////////////////////////////////////////////////////////////
+PT(XFileDataObject) XFileDataDef::
+unpack_value(const XFileParseDataList &parse_data_list, int array_index,
+             const XFileDataDef::PrevData &prev_data,
+             size_t &index, size_t &sub_index, int separator_mask,
+             XFileDataDef::UnpackMethod unpack_method) const {
+  PT(XFileDataObject) data_value;
+  
+  if (array_index == (int)_array_def.size()) {
+    data_value = (this->*unpack_method)(parse_data_list, prev_data,
+                                        index, sub_index, separator_mask);
+
+  } else {
+    data_value = new XFileDataObjectArray(this);
+    int array_size = _array_def[array_index].get_size(prev_data);
+
+    for (int i = 0; i < array_size - 1; i++) {
+      PT(XFileDataObject) array_element = 
+        unpack_value(parse_data_list, array_index + 1,
+                     prev_data, index, sub_index,
+                     XFileParseData::PF_comma, unpack_method);
+      data_value->add_element(array_element);
+    }
+    PT(XFileDataObject) array_element = 
+      unpack_value(parse_data_list, array_index + 1,
+                   prev_data, index, sub_index,
+                   separator_mask, unpack_method);
+    data_value->add_element(array_element);
+  }
+
+  return data_value;
 }

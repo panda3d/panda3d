@@ -11,7 +11,7 @@
 #include "xParser.h"
 #include "indent.h"
 #include "string_utils.h"
-#include "notify.h"
+#include "config_xfile.h"
 
 static int yyinput(void);        // declared by flex.
 extern "C" int xyywrap();
@@ -22,13 +22,13 @@ extern "C" int xyywrap();
 
 // We'll increment line_number and col_number as we parse the file, so
 // that we can report the position of an error.
-static int line_number = 0;
-static int col_number = 0;
+int x_line_number = 0;
+int x_col_number = 0;
 
 // current_line holds as much of the current line as will fit.  Its
 // only purpose is for printing it out to report an error to the user.
 static const int max_error_width = 1024;
-static char current_line[max_error_width + 1];
+char x_current_line[max_error_width + 1];
 
 static int error_count = 0;
 static int warning_count = 0;
@@ -49,8 +49,8 @@ void
 x_init_lexer(istream &in, const string &filename) {
   inp = &in;
   x_filename = filename;
-  line_number = 0;
-  col_number = 0;
+  x_line_number = 0;
+  x_col_number = 0;
   error_count = 0;
   warning_count = 0;
 }
@@ -77,14 +77,20 @@ xyywrap(void) {
 
 void
 xyyerror(const string &msg) {
-  cerr << "\nError";
+  xyyerror(msg, x_line_number, x_col_number, x_current_line);
+}
+
+void
+xyyerror(const string &msg, int line_number, int col_number, 
+         const string &current_line) {
+  xfile_cat.error(false) << "\nError";
   if (!x_filename.empty()) {
-    cerr << " in " << x_filename;
+    xfile_cat.error(false) << " in " << x_filename;
   }
-  cerr 
+  xfile_cat.error(false) 
     << " at line " << line_number << ", column " << col_number << ":\n"
     << current_line << "\n";
-  indent(cerr, col_number-1) 
+  indent(xfile_cat.error(false), col_number-1) 
     << "^\n" << msg << "\n\n";
   
   error_count++;
@@ -92,14 +98,14 @@ xyyerror(const string &msg) {
 
 void
 xyywarning(const string &msg) {
-  cerr << "\nWarning";
+  xfile_cat.warning(false) << "\nWarning";
   if (!x_filename.empty()) {
-    cerr << " in " << x_filename;
+    xfile_cat.warning(false) << " in " << x_filename;
   }
-  cerr 
-    << " at line " << line_number << ", column " << col_number << ":\n"
-    << current_line << "\n";
-  indent(cerr, col_number-1) 
+  xfile_cat.warning(false) 
+    << " at line " << x_line_number << ", column " << x_col_number << ":\n"
+    << x_current_line << "\n";
+  indent(xfile_cat.warning(false), x_col_number-1) 
     << "^\n" << msg << "\n\n";
 
   warning_count++;
@@ -118,18 +124,18 @@ input_chars(char *buffer, int &result, int max_size) {
       buffer[result] = '\0';
     }
 
-    if (line_number == 0) {
+    if (x_line_number == 0) {
       // This is a special case.  If we are reading the very first bit
-      // from the stream, copy it into the current_line array.  This
-      // is because the \n.* rule below, which fills current_line
+      // from the stream, copy it into the x_current_line array.  This
+      // is because the \n.* rule below, which fills x_current_line
       // normally, doesn't catch the first line.
-      strncpy(current_line, xyytext, max_error_width);
-      current_line[max_error_width] = '\0';
-      line_number++;
-      col_number = 0;
+      strncpy(x_current_line, xyytext, max_error_width);
+      x_current_line[max_error_width] = '\0';
+      x_line_number++;
+      x_col_number = 0;
 
       // Truncate it at the newline.
-      char *end = strchr(current_line, '\n');
+      char *end = strchr(x_current_line, '\n');
       if (end != NULL) {
         *end = '\0';
       }
@@ -170,11 +176,11 @@ scan_quoted_string(char quote_mark) {
   // occurring at the start of the string, not at the end--somewhat
   // more convenient for the user.
 
-  // Instead of adjusting the global line_number and col_number
+  // Instead of adjusting the global x_line_number and x_col_number
   // variables, we'll operate on our own local variables for the
   // interim.
-  int line = line_number;
-  int col = col_number;
+  int line = x_line_number;
+  int col = x_col_number;
 
   int c;
   c = read_char(line, col);
@@ -274,8 +280,8 @@ scan_quoted_string(char quote_mark) {
     xyyerror("This quotation mark is unterminated.");
   }
 
-  line_number = line;
-  col_number = col;
+  x_line_number = line;
+  x_col_number = col;
 
   return result;
 }
@@ -290,11 +296,11 @@ scan_guid_string() {
   // occurring at the start of the string, not at the end--somewhat
   // more convenient for the user.
 
-  // Instead of adjusting the global line_number and col_number
+  // Instead of adjusting the global x_line_number and x_col_number
   // variables, we'll operate on our own local variables for the
   // interim.
-  int line = line_number;
-  int col = col_number;
+  int line = x_line_number;
+  int col = x_col_number;
 
   int num_digits = 0;
   int num_hyphens = 0;
@@ -311,8 +317,8 @@ scan_guid_string() {
       num_hyphens++;
 
     } else {
-      line_number = line;
-      col_number = col;
+      x_line_number = line;
+      x_col_number = col;
       xyyerror("Invalid character in GUID.");
       return string();
     }
@@ -335,19 +341,25 @@ scan_guid_string() {
     return string();
   }
 
-  line_number = line;
-  col_number = col;
+  x_line_number = line;
+  x_col_number = col;
 
   return result;
 }
 
 // Parses the text into a list of integers and returns them.
 static PTA_int
-parse_int_list(const string &text, const string &delimiter) {
+parse_int_list(const string &text, char delimiter) {
   PTA_int result;
 
   vector_string words;
-  tokenize(text, words, delimiter);
+
+  // The last character of text might be the delimiter.
+  if (!text.empty() && text[text.size() - 1] == delimiter) {
+    tokenize(text.substr(0, text.size() - 1), words, string(1, delimiter));
+  } else {
+    tokenize(text, words, string(1, delimiter));
+  }
 
   vector_string::const_iterator wi;
   for (wi = words.begin(); wi != words.end(); ++wi) {
@@ -361,11 +373,17 @@ parse_int_list(const string &text, const string &delimiter) {
 
 // Parses the text into a list of doubles and returns them.
 static PTA_double
-parse_double_list(const string &text, const string &delimiter) {
+parse_double_list(const string &text, char delimiter) {
   PTA_double result;
 
   vector_string words;
-  tokenize(text, words, delimiter);
+
+  // The last character of text might be the delimiter.
+  if (!text.empty() && text[text.size() - 1] == delimiter) {
+    tokenize(text.substr(0, text.size() - 1), words, string(1, delimiter));
+  } else {
+    tokenize(text, words, string(1, delimiter));
+  }
 
   vector_string::const_iterator wi;
   for (wi = words.begin(); wi != words.end(); ++wi) {
@@ -382,7 +400,7 @@ parse_double_list(const string &text, const string &delimiter) {
 // accept() is called below as each piece is pulled off and
 // accepted by the lexer; it increments the current column number.
 inline void accept() {
-  col_number += yyleng;
+  x_col_number += yyleng;
 }
 
 %}
@@ -399,10 +417,10 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   // New line.  Save a copy of the line so we can print it out for the
   // benefit of the user in case we get an error.
 
-  strncpy(current_line, xyytext+1, max_error_width);
-  current_line[max_error_width] = '\0';
-  line_number++;
-  col_number=0;
+  strncpy(x_current_line, xyytext+1, max_error_width);
+  x_current_line[max_error_width] = '\0';
+  x_line_number++;
+  x_col_number=0;
 
   // Return the whole line to the lexer, except the newline character,
   // which we eat.
@@ -541,7 +559,7 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 ({INTEGERNUM};)+ { 
   // An integer as part of a semicolon-delimited list.
   accept();
-  xyylval.int_list = parse_int_list(xyytext, ";");
+  xyylval.int_list = parse_int_list(xyytext, ';');
   xyylval.u.separator = ';';
 
   return TOKEN_INTEGER_LIST;
@@ -550,25 +568,43 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 ({REALNUM};)+ { 
   // A floating-point number as part of a semicolon-delimited list.
   accept(); 
-  xyylval.double_list = parse_double_list(xyytext, ";");
+  xyylval.double_list = parse_double_list(xyytext, ';');
   xyylval.u.separator = ';';
 
   return TOKEN_REALNUM_LIST;
 }
 
 ({INTEGERNUM},)+ { 
-  // An integer as part of a semicolon-delimited list.
+  // An integer as part of a comma-delimited list.
   accept();
-  xyylval.int_list = parse_int_list(xyytext, ",");
+  xyylval.int_list = parse_int_list(xyytext, ',');
   xyylval.u.separator = ',';
 
   return TOKEN_INTEGER_LIST;
 }
 
 ({REALNUM},)+ { 
-  // A floating-point number as part of a semicolon-delimited list.
+  // A floating-point number as part of a comma-delimited list.
   accept(); 
-  xyylval.double_list = parse_double_list(xyytext, ",");
+  xyylval.double_list = parse_double_list(xyytext, ',');
+  xyylval.u.separator = ',';
+
+  return TOKEN_REALNUM_LIST;
+}
+
+({INTEGERNUM},)+{INTEGERNUM} { 
+  // An integer as part of a comma-delimited list.
+  accept();
+  xyylval.int_list = parse_int_list(xyytext, ',');
+  xyylval.u.separator = ',';
+
+  return TOKEN_INTEGER_LIST;
+}
+
+({REALNUM},)+{REALNUM} { 
+  // A floating-point number as part of a comma-delimited list.
+  accept(); 
+  xyylval.double_list = parse_double_list(xyytext, ',');
   xyylval.u.separator = ',';
 
   return TOKEN_REALNUM_LIST;

@@ -21,6 +21,7 @@
 
 #include "pandatoolbase.h"
 #include "notify.h"
+#include "xFileNode.h"
 
 class XFileDataDef;
 
@@ -37,6 +38,8 @@ public:
   INLINE bool is_fixed_size() const;
   INLINE int get_fixed_size() const;
   INLINE XFileDataDef *get_dynamic_size() const;
+
+  int get_size(const XFileNode::PrevData &prev_data) const;
 
   void output(ostream &out) const;
 

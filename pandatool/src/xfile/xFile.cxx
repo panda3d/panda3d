@@ -20,7 +20,7 @@
 #include "xParserDefs.h"
 #include "xLexerDefs.h"
 #include "xFileTemplate.h"
-#include "xFileDataObject.h"
+#include "xFileDataObjectTemplate.h"
 #include "config_xfile.h"
 #include "standard_templates.h"
 #include "zStream.h"
@@ -250,12 +250,12 @@ find_template(const WindowsGuid &guid) const {
 //  Description: Returns the data object associated with the indicated
 //               name, if any, or NULL if none.
 ////////////////////////////////////////////////////////////////////
-XFileDataObject *XFile::
+XFileDataObjectTemplate *XFile::
 find_data_object(const string &name) const {
   XFileNode *child = find_descendent(name);
   if (child != (XFileNode *)NULL &&
-      child->is_of_type(XFileDataObject::get_class_type())) {
-    return DCAST(XFileDataObject, child);
+      child->is_of_type(XFileDataObjectTemplate::get_class_type())) {
+    return DCAST(XFileDataObjectTemplate, child);
   }
 
   return NULL;
@@ -267,13 +267,13 @@ find_data_object(const string &name) const {
 //  Description: Returns the data object associated with the indicated
 //               GUID, if any, or NULL if none.
 ////////////////////////////////////////////////////////////////////
-XFileDataObject *XFile::
+XFileDataObjectTemplate *XFile::
 find_data_object(const WindowsGuid &guid) const {
   NodesByGuid::const_iterator gi;
   gi = _nodes_by_guid.find(guid);
   if (gi != _nodes_by_guid.end() && 
-      (*gi).second->is_of_type(XFileDataObject::get_class_type())) {
-    return DCAST(XFileDataObject, (*gi).second);
+      (*gi).second->is_of_type(XFileDataObjectTemplate::get_class_type())) {
+    return DCAST(XFileDataObjectTemplate, (*gi).second);
   }
 
   return NULL;

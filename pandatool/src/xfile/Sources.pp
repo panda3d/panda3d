@@ -20,8 +20,12 @@
      xFileArrayDef.cxx xFileArrayDef.I xFileArrayDef.h \
      xFileDataDef.cxx xFileDataDef.I xFileDataDef.h \
      xFileDataObject.cxx xFileDataObject.I xFileDataObject.h \
+     xFileDataObjectArray.cxx xFileDataObjectArray.I xFileDataObjectArray.h \
+     xFileDataObjectDouble.cxx xFileDataObjectDouble.I xFileDataObjectDouble.h \
+     xFileDataObjectInteger.cxx xFileDataObjectInteger.I xFileDataObjectInteger.h \
      xFileDataObjectTemplate.cxx xFileDataObjectTemplate.I xFileDataObjectTemplate.h \
      xFileNode.cxx xFileNode.I xFileNode.h \
+     xFileParseData.cxx xFileParseData.I xFileParseData.h \
      xFileTemplate.cxx xFileTemplate.I xFileTemplate.h
 
 #end ss_lib_target

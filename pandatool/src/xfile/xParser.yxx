@@ -349,9 +349,7 @@ object:
 {
   XFileDataObjectTemplate *current_template = 
     DCAST(XFileDataObjectTemplate, current_node);
-  if (!current_template->finalize_parse_data()) {
-    yyerror("Invalid data for object.");
-  }
+  current_template->finalize_parse_data();
 
   $$ = current_node;
   current_node = $<u.node>4;
@@ -366,27 +364,11 @@ data_parts_list:
 data_part:
         TOKEN_OBRACE data_reference TOKEN_CBRACE
 {
-  if ($2 != (XFileNode *)NULL) {
-    if (!$2->is_of_type(XFileDataObjectTemplate::get_class_type())) {
-      // Actually, maybe you can--the docs aren't clear about this.
-      // But I don't think there's any real reason to.
-      yyerror("Can't reference primitive data type.");
-    } else {
-      XFileDataObjectTemplate *object = 
-        DCAST(XFileDataObjectTemplate, $2);
-      XFileDataObjectTemplate *current_template = 
-        DCAST(XFileDataObjectTemplate, current_node);
-      current_template->add_parse_object(object, true);
-    }
-  }
+  // nested references should be added as children too.
 }
 	| object
 {
-  XFileDataObjectTemplate *object = 
-    DCAST(XFileDataObjectTemplate, $1);
-  XFileDataObjectTemplate *current_template = 
-    DCAST(XFileDataObjectTemplate, current_node);
-  current_template->add_parse_object(object, false);
+  // nested objects are just quietly added as children.
 }
         | integer_list
 {
@@ -440,7 +422,7 @@ list_separator:
 data_reference:
         name
 {
-  XFileDataObject *data_object = x_file->find_data_object($1);
+  XFileDataObjectTemplate *data_object = x_file->find_data_object($1);
   if (data_object == (XFileDataObject *)NULL) {
     yyerror("Unknown data_object: " + $1);
   }
@@ -449,7 +431,7 @@ data_reference:
 }
 	| name class_id
 {
-  XFileDataObject *data_object = x_file->find_data_object($2);
+  XFileDataObjectTemplate *data_object = x_file->find_data_object($2);
   if (data_object == (XFileDataObject *)NULL) {
     yyerror("Unknown data_object: " + $1);
   } else {

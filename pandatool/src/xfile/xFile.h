@@ -27,7 +27,7 @@
 #include "pointerTo.h"
 
 class XFileTemplate;
-class XFileDataObject;
+class XFileDataObjectTemplate;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : XFile
@@ -51,8 +51,8 @@ public:
   XFileTemplate *find_template(const string &name) const;
   XFileTemplate *find_template(const WindowsGuid &guid) const;
 
-  XFileDataObject *find_data_object(const string &name) const;
-  XFileDataObject *find_data_object(const WindowsGuid &guid) const;
+  XFileDataObjectTemplate *find_data_object(const string &name) const;
+  XFileDataObjectTemplate *find_data_object(const WindowsGuid &guid) const;
 
   virtual void write_text(ostream &out, int indent_level) const;
 

@@ -18,6 +18,30 @@
 
 #include "xFileArrayDef.h"
 #include "xFileDataDef.h"
+#include "xFileDataObject.h"
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileArrayDef::get_size
+//       Access: Public
+//  Description: Returns the size of the array dimension.  If this is
+//               a fixed array, the size is trivial; if it is dynamic,
+//               the size is determined by looking up the dynamic_size
+//               element in the prev_data table (which lists all of
+//               the data values already defined at this scoping
+//               level).
+////////////////////////////////////////////////////////////////////
+int XFileArrayDef::
+get_size(const XFileNode::PrevData &prev_data) const {
+  if (is_fixed_size()) {
+    return _fixed_size;
+  } else {
+    XFileNode::PrevData::const_iterator pi;
+    pi = prev_data.find(_dynamic_size);
+    nassertr(pi != prev_data.end(), 0);
+    nassertr((*pi).second != (XFileDataObject *)NULL, 0);
+    return (*pi).second->i();
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: XFileArrayDef::output

@@ -23,8 +23,8 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE XFileDataObject::
-XFileDataObject(XFile *x_file, const string &name) : 
-  XFileNode(x_file, name)
+XFileDataObject(const XFileDataDef *data_def) :
+  _data_def(data_def)
 {
 }
 
@@ -34,7 +34,7 @@ XFileDataObject(XFile *x_file, const string &name) :
 //  Description: Returns the data object that this object is
 //               represented by, if any, or NULL if there is none.
 ////////////////////////////////////////////////////////////////////
-INLINE XFileDataDef *XFileDataObject::
+INLINE const XFileDataDef *XFileDataObject::
 get_data_def() const {
   return _data_def;
 }
@@ -116,6 +116,17 @@ operator string () const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::size
+//       Access: Public
+//  Description: Returns the number of nested data objects within this
+//               object.
+////////////////////////////////////////////////////////////////////
+INLINE int XFileDataObject::
+size() const {
+  return get_num_elements();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: XFileDataObject::operator [] (int)
 //       Access: Public
 //  Description: Returns the nth nested object within this object.
@@ -124,8 +135,9 @@ operator string () const {
 ////////////////////////////////////////////////////////////////////
 INLINE const XFileDataObject &XFileDataObject::
 operator [] (int n) const {
-  nassertr(n >= 0 && n < get_num_children(), *this);
-  return *DCAST(XFileDataObject, get_child(n));
+  const XFileDataObject *element = get_element(n);
+  nassertr(element != (XFileDataObject *)NULL, *this);
+  return *element;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,7 +149,13 @@ operator [] (int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE const XFileDataObject &XFileDataObject::
 operator [] (const string &name) const {
-  XFileNode *child = find_child(name);
-  nassertr(child != (XFileNode *)NULL, *this);
-  return *DCAST(XFileDataObject, child);
+  const XFileDataObject *element = get_element(name);
+  nassertr(element != (XFileDataObject *)NULL, *this);
+  return *element;
+}
+
+INLINE ostream &
+operator << (ostream &out, const XFileDataObject &data_object) {
+  data_object.output_data(out);
+  return out;
 }

@@ -20,10 +20,11 @@
 #define XFILEDATAOBJECT_H
 
 #include "pandatoolbase.h"
-#include "xFileNode.h"
-#include "xFileDataDef.h"
+#include "referenceCount.h"
 #include "pointerTo.h"
 #include "dcast.h"
+
+class XFileDataDef;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : XFileDataObject
@@ -31,11 +32,12 @@
 //               types of data elements that may be stored in the X
 //               file.
 ////////////////////////////////////////////////////////////////////
-class XFileDataObject : public XFileNode {
+class XFileDataObject : virtual public ReferenceCount {
 public:
-  INLINE XFileDataObject(XFile *x_file, const string &name);
+  INLINE XFileDataObject(const XFileDataDef *data_def = NULL);
+  virtual ~XFileDataObject();
 
-  INLINE XFileDataDef *get_data_def() const;
+  INLINE const XFileDataDef *get_data_def() const;
 
   INLINE int i() const;
   INLINE double d() const;
@@ -44,24 +46,35 @@ public:
   INLINE operator double () const;
   INLINE operator string () const;
 
+  INLINE int size() const;
   INLINE const XFileDataObject &operator [] (int n) const;
   INLINE const XFileDataObject &operator [] (const string &name) const;
+
+  virtual bool add_element(XFileDataObject *element);
+
+  virtual void output_data(ostream &out) const;
+  virtual void write_data(ostream &out, int indent_level,
+                          const char *separator) const;
 
 protected:
   virtual int as_integer_value() const;
   virtual double as_double_value() const;
   virtual string as_string_value() const;
 
-  PT(XFileDataDef) _data_def;
+  virtual int get_num_elements() const;
+  virtual const XFileDataObject *get_element(int n) const;
+  virtual const XFileDataObject *get_element(const string &name) const;
+
+  const XFileDataDef *_data_def;
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    XFileNode::init_type();
+    ReferenceCount::init_type();
     register_type(_type_handle, "XFileDataObject",
-                  XFileNode::get_class_type());
+                  ReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -71,6 +84,8 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+INLINE ostream &operator << (ostream &out, const XFileDataObject &data_object);
 
 #include "xFileDataObject.I"
 
