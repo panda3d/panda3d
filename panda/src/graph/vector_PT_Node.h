@@ -22,12 +22,12 @@
 //               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_DINKUM
-#define VV_PT_NODE std::_Vector_val<PT_Node, std::allocator<PT_Node> >
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VV_PT_NODE)
-#endif
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, std::vector<PT_Node>)
-typedef vector<PT_Node> vector_PT_Node;
+#define EXPCL EXPCL_PANDA
+#define EXPTP EXPTP_PANDA
+#define TYPE PT_Node
+#define NAME vector_PT_Node
+
+#include <vector_src.h>
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

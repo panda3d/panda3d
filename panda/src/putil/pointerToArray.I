@@ -239,37 +239,6 @@ insert(iterator position, size_type n, const Element &x) const {
   _ptr->insert(position, n, x);
 }
 
-#ifdef HAVE_MEMBER_TEMPLATES
-////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::insert
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-template<class Element>
-template<class InputIterator>
-INLINE void PointerToArray<Element>::
-insert(iterator position, InputIterator first, InputIterator last) const {
-  nassertv(_ptr != NULL);
-  nassertv(position >= _ptr->begin() &&
-	   position <= _ptr->end());
-  _ptr->insert(position, first, last);
-}
-#else
-////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::insert
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-template<class Element>
-INLINE void PointerToArray<Element>::
-insert(iterator position, const Element *first, const Element *last) const {
-  nassertv(_ptr != NULL);
-  nassertv(position >= _ptr->begin() &&
-	   position <= _ptr->end());
-  _ptr->insert(position, first, last);
-}
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::erase
 //       Access: Public

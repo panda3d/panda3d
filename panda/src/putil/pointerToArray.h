@@ -118,12 +118,12 @@ public:
   INLINE iterator insert(iterator position, const Element &x) const;
   INLINE void insert(iterator position, size_type n, const Element &x) const;
 
-#ifdef HAVE_MEMBER_TEMPLATES
-  template<class InputIterator>
-  INLINE void insert(iterator position, InputIterator first, InputIterator last) const;
-#else
-  INLINE void insert(iterator position, const Element *first, const Element *last) const;
-#endif
+  // We don't define the insert() method that accepts a pair of
+  // iterators to copy from.  That's problematic because of the whole
+  // member template thing.  If you really need this, use
+  // pta.v().insert(...); if you're doing this on a vector that has to
+  // be exported from the DLL, you should use
+  // insert_into_vector(pta.v(), ...).
 
   INLINE void erase(iterator position) const;
   INLINE void erase(iterator first, iterator last) const;
@@ -168,7 +168,6 @@ private:
   // don't really care.
   static vector<Element> _empty_array;
 };
-
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : ConstPointerToArray

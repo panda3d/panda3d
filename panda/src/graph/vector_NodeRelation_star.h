@@ -21,12 +21,12 @@ class NodeRelation;
 //               file, rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_DINKUM
-#define VV_NODERELATION_STAR std::_Vector_val<NodeRelation *, std::allocator<NodeRelation *> >
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VV_NODERELATION_STAR)
-#endif
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, std::vector<NodeRelation *>)
-typedef vector<NodeRelation *> vector_NodeRelation_star;
+#define EXPCL EXPCL_PANDA
+#define EXPTP EXPTP_PANDA
+#define TYPE NodeRelation *
+#define NAME vector_NodeRelation_star
+
+#include <vector_src.h>
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

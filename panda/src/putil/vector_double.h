@@ -19,12 +19,12 @@
 //               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_DINKUM
-#define VV_DOUBLE std::_Vector_val<double, std::allocator<double> >
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VV_DOUBLE)
-#endif
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, std::vector<double>)
-typedef vector<double> vector_double;
+#define EXPCL EXPCL_PANDA 
+#define EXPTP EXPTP_PANDA 
+#define TYPE double
+#define NAME vector_double
+
+#include <vector_src.h>
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

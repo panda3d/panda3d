@@ -7,6 +7,12 @@
 #include <mouseButton.h>
 #include <keyboardButton.h>
 
+#define EXPCL EXPCL_PANDA 
+#define EXPTP EXPTP_PANDA 
+#define TYPE GraphicsWindowInputDevice
+#define NAME vector_GraphicsWindowInputDevice
+
+#include <vector_src.cxx>
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

@@ -21,12 +21,12 @@ class TypedWritable;
 //               file, rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_DINKUM
-#define VV_TYPEDWRITABLE std::_Vector_val<TypedWritable *, std::allocator<TypedWritable *> >
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VV_TYPEDWRITABLE)
-#endif
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, std::vector<TypedWritable*>)
-typedef vector<TypedWritable*> vector_typedWritable;
+#define EXPCL EXPCL_PANDA 
+#define EXPTP EXPTP_PANDA 
+#define TYPE TypedWritable *
+#define NAME vector_typedWritable
+
+#include <vector_src.h>
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

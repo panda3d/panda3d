@@ -76,12 +76,12 @@ private:
 
 #include "graphicsWindowInputDevice.I"
 
-#ifdef HAVE_DINKUM
-#define VV_GRAPHICSWINDOWINPUTDEVICE std::_Vector_val<GraphicsWindowInputDevice, std::allocator<GraphicsWindowInputDevice> >
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VV_GRAPHICSWINDOWINPUTDEVICE)
-#endif
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, std::vector<GraphicsWindowInputDevice>)
-typedef vector<GraphicsWindowInputDevice> vector_GraphicsWindowInputDevice;
+#define EXPCL EXPCL_PANDA 
+#define EXPTP EXPTP_PANDA 
+#define TYPE GraphicsWindowInputDevice
+#define NAME vector_GraphicsWindowInputDevice
+
+#include <vector_src.h>
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

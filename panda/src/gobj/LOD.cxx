@@ -12,6 +12,13 @@
 #include <datagramIterator.h>
 #include <indent.h>
 
+#define EXPCL EXPCL_PANDA
+#define EXPTP EXPTP_PANDA
+#define TYPE LODSwitch
+#define NAME LODSwitchVector
+
+#include <vector_src.cxx>
+
 ////////////////////////////////////////////////////////////////////
 // Static variables
 ////////////////////////////////////////////////////////////////////

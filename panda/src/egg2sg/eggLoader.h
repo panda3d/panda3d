@@ -12,8 +12,10 @@
 
 #include <eggData.h>
 #include <eggTexture.h>
+#include <pt_EggTexture.h>
 #include <eggGroup.h>
 #include <eggMaterial.h>
+#include <pt_EggMaterial.h>
 #include <texture.h>
 #include <namedNode.h>
 #include <pt_NamedNode.h>
@@ -119,10 +121,10 @@ private:
   typedef set<PT(TextureApplyTransition), IndirectCompareTo<NodeTransition> > TextureApplies;
   TextureApplies _texture_applies;
 
-  typedef map<PT(EggTexture), TextureDef> Textures;
+  typedef map<PT_EggTexture, TextureDef> Textures;
   Textures _textures;
 
-  typedef map<CPT(EggMaterial), PT(MaterialTransition) > Materials;
+  typedef map<CPT_EggMaterial, PT(MaterialTransition) > Materials;
   Materials _materials;
   Materials _materials_bface;
 

@@ -46,11 +46,11 @@ class EXPCL_DTOOLCONFIG SymbolEnt {
 
 } // close Config namespace
 
-#ifdef HAVE_DINKUM
-#define VV_SYMBOLENT std::_Vector_val<Config::SymbolEnt, std::allocator<Config::SymbolEnt> >
-EXPORT_TEMPLATE_CLASS(EXPCL_DTOOL, EXPTP_DTOOL, VV_SYMBOLENT)
-#endif
-EXPORT_TEMPLATE_CLASS(EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG, std::vector<Config::SymbolEnt>);
+#define EXPCL EXPCL_DTOOLCONFIG 
+#define EXPTP EXPTP_DTOOLCONFIG 
+#define TYPE Config::SymbolEnt
+#define NAME vector_SymbolEnt
+#include "vector_src.h"
 
 namespace Config {
 

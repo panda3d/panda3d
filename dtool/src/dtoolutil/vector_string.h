@@ -19,12 +19,12 @@
 //               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_DINKUM
-#define VV_STRING std::_Vector_val<std::string, std::allocator<std::string> >
-EXPORT_TEMPLATE_CLASS(EXPCL_DTOOL, EXPTP_DTOOL, VV_STRING)
-#endif
-EXPORT_TEMPLATE_CLASS(EXPCL_DTOOL, EXPTP_DTOOL, std::vector<std::string>)
-typedef vector<string> vector_string;
+#define EXPCL EXPCL_DTOOL 
+#define EXPTP EXPTP_DTOOL 
+#define TYPE std::string
+#define NAME vector_string
+
+#include "vector_src.h"
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

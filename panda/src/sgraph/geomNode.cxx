@@ -212,7 +212,7 @@ void GeomNode::
 add_geoms_from(const GeomNode *other) {
   const PT(dDrawable) *geoms_begin = &other->_geoms[0];
   const PT(dDrawable) *geoms_end = geoms_begin + other->_geoms.size();
-  _geoms.insert(_geoms.end(), geoms_begin, geoms_end);
+  _geoms.v().insert(_geoms.end(), geoms_begin, geoms_end);
   mark_bound_stale();
 }
 

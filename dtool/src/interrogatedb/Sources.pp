@@ -20,8 +20,8 @@
     vector_int.h
 
   #define INSTALL_HEADERS \
-    interrogate_interface.h interrogate_request.h \
-    vector_int.h config_interrogatedb.h
+    interrogate_interface.h interrogate_request.h vector_int.h \
+    config_interrogatedb.h
 
 // These are temporary; they need not be installed in the future.  These are
 // necessary only when using template stopgap.

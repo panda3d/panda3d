@@ -58,12 +58,12 @@ protected:
   float _out;
 };
 
-#ifdef HAVE_DINKUM
-#define VV_LODSWITCH std::_Vector_val<LODSwitch, std::allocator<LODSwitch> >
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VV_LODSWITCH)
-#endif
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, std::vector<LODSwitch>)
-typedef vector<LODSwitch> LODSwitchVector;
+#define EXPCL EXPCL_PANDA
+#define EXPTP EXPTP_PANDA
+#define TYPE LODSwitch
+#define NAME LODSwitchVector
+
+#include <vector_src.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LOD

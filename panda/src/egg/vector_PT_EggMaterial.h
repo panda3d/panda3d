@@ -22,12 +22,12 @@
 //               file, rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_DINKUM
-#define VV_PT_EGGMATERIAL std::_Vector_val<PT_EggMaterial, std::allocator<PT_EggMaterial> >
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, VV_PT_EGGMATERIAL)
-#endif
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, std::vector<PT_EggMaterial>)
-typedef vector<PT_EggMaterial> vector_PT_EggMaterial;
+#define EXPCL EXPCL_PANDAEGG
+#define EXPTP EXPTP_PANDAEGG
+#define TYPE PT_EggMaterial
+#define NAME vector_PT_EggMaterial
+
+#include <vector_src.h>
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

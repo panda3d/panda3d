@@ -53,10 +53,27 @@ private:
   Morphs _morphs;
 };
 
+// Export all of the vectors.
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, std::vector<LVector3d>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, std::vector<LVector2d>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, std::vector<LVector4f>)
+#define EXPCL EXPCL_PANDAEGG 
+#define EXPTP EXPTP_PANDAEGG 
+#define TYPE LVector3d
+#define NAME vector_LVector3d
+#include <vector_src.h>
+
+#define EXPCL EXPCL_PANDAEGG 
+#define EXPTP EXPTP_PANDAEGG 
+#define TYPE LVector2d
+#define NAME vector_LVector2d
+#include <vector_src.h>
+
+#define EXPCL EXPCL_PANDAEGG 
+#define EXPTP EXPTP_PANDAEGG 
+#define TYPE LVector4f
+#define NAME vector_LVector4f
+#include <vector_src.h>
+
+// Now export each EggMorphList.
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorphList<LVector3d>)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorphList<LVector2d>)

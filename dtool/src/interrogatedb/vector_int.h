@@ -19,12 +19,12 @@
 //               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_DINKUM
-#define VV_INT std::_Vector_val<int, std::allocator<int> >
-EXPORT_TEMPLATE_CLASS(EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG, VV_INT)
-#endif
-EXPORT_TEMPLATE_CLASS(EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG, std::vector<int>)
-typedef vector<int> vector_int;
+#define EXPCL EXPCL_DTOOLCONFIG 
+#define EXPTP EXPTP_DTOOLCONFIG 
+#define TYPE int
+#define NAME vector_int
+
+#include <vector_src.h>
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

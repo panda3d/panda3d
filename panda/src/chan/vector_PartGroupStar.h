@@ -22,12 +22,12 @@
 //               vector again.
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_DINKUM
-#define VV_PARTGROUPSTAR std::_Vector_val<PartGroup *, std::allocator<PartGroup *> >
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VV_PARTGROUPSTAR)
-#endif
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, std::vector<PartGroup *>)
-typedef vector<PartGroup *> vector_PartGroupStar;
+#define EXPCL EXPCL_PANDA 
+#define EXPTP EXPTP_PANDA 
+#define TYPE PartGroup *
+#define NAME vector_PartGroupStar
+
+#include <vector_src.h>
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__
