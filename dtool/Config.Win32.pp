@@ -42,6 +42,9 @@
 // Do we have <alloca.h>?
 #define HAVE_ALLOCA_H
 
+// Do we have <minmax.h>?
+#define HAVE_MINMAX_H 1
+
 // Do we have <sys/types.h>?
 #define HAVE_SYS_TYPES_H 1
 

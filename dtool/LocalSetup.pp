@@ -177,7 +177,11 @@ $[undef] HAVE_ALLOCA_H
 #endif
 
 /* Define if you have the <minmax.h> header file.  */
+#if $[HAVE_MINMAX_H]
+$[define] HAVE_MINMAX_H 1
+#else
 $[undef] HAVE_MINMAX_H
+#endif
 
 /* Define if you have the <sstream> header file.  */
 #if $[HAVE_SSTREAM]
