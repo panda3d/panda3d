@@ -37,6 +37,13 @@ class ParticlePanel(AppShell):
         else:
             # Or create a new one if none given
             particles = Particles.Particles()
+            particles.setBirthRate(0.02)
+            particles.setLitterSize(10)
+            particles.setLitterSpread(0)
+            particles.setFactory("PointParticleFactory")
+            particles.setRenderer("PointParticleRenderer")
+            particles.setEmitter("SphereVolumeEmitter")
+            particles.enable()
             pe = ParticleEffect.ParticleEffect('effect-1', particles)
             self.particleEffect = pe
             pe.reparentTo(render)
