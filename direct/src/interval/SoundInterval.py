@@ -35,7 +35,10 @@ class SoundInterval(Interval):
                 if (duration == 0):
                     self.notify.warning('zero length duration!')
                 # MPG - hack for Miles bug
-                duration += 1.5
+                #duration += 1.5
+                # DCR - hack for Miles bug - adding 1.5 seconds caused
+                # problems for MG_neg_buzzer.wav
+                duration += min(duration * 0.4, 1.5)
             else:
                 # This will screw up any intervals that base their
                 # time on the duration of this sound interval
