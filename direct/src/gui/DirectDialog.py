@@ -81,7 +81,7 @@ class DirectDialog(DirectFrame):
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
-            ('dialogName',        None,          INITOPT),
+            ('dialogName',        'DirectDialog_' + `DirectDialog.PanelIndex`,  INITOPT),
             # Default position is slightly forward in Y, so as not to
             # intersect the near plane, which is incorrectly set to 0
             # in DX for some reason.
@@ -118,8 +118,9 @@ class DirectDialog(DirectFrame):
         # Initialize superclasses
         DirectFrame.__init__(self, parent)
 
-        if not self['dialogName']:
-            self['dialogName'] = 'DirectDialog_' + `DirectDialog.PanelIndex`
+        #if not self['dialogName']:
+        #    self['dialogName'] = 'DirectDialog_' + `DirectDialog.PanelIndex`
+
         # Clean up any previously existing panel with the same unique
         # name.  We don't allow any two panels with the same name to
         # coexist.
