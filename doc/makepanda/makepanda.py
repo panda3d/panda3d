@@ -1843,10 +1843,13 @@ default-directnotify-level warning
 
 model-path    .
 model-path    $THIS_PRC_DIR/..
+model-path    $THIS_PRC_DIR/../models
 sound-path    .
 sound-path    $THIS_PRC_DIR/..
+sound-path    $THIS_PRC_DIR/../models
 texture-path  .
 texture-path  $THIS_PRC_DIR/..
+texture-path  $THIS_PRC_DIR/../models
 
 # This enable the automatic creation of a TK window when running
 # Direct.
