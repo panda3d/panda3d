@@ -755,8 +755,12 @@ pack_object(PyObject *object) {
       int size = PySequence_Size(object);
       for (int i = 0; i < size; i++) {
         PyObject *element = PySequence_GetItem(object, i);
-        pack_object(element);
-        Py_DECREF(element);
+        if (element != (PyObject *)NULL) {
+          pack_object(element);
+          Py_DECREF(element);
+        } else {
+          cerr << "Unable to extract item " << i << " from sequence.\n";
+        }
       }
       pop();
 
@@ -1166,8 +1170,6 @@ clear_stack() {
 ////////////////////////////////////////////////////////////////////
 void DCPacker::
 pack_class_object(const DCClass *dclass, PyObject *object) {
-  PyObject *str = PyObject_Str(object);
-  Py_DECREF(str);
   push();
   while (more_nested_fields() && !_pack_error) {
     const DCField *field = get_current_field()->as_field();
