@@ -56,6 +56,9 @@ class Level:
         # entranceId to entrance entity
         self.entranceId2entity = {}
 
+        # dict of entId -> list of callbacks to be called upon creation
+        self.entId2createCallbacks = {}
+
         # this list contains the entIds of entities that we have actually
         # created, in order of creation
         self.createdEntIds = []
@@ -278,6 +281,21 @@ class Level:
         messenger.send(
             self.getEntityOfTypeCreateEvent(self.getEntityType(entId)),
             [entId])
+        # call any callbacks
+        if entId in self.entId2createCallbacks:
+            for callback in self.entId2createCallbacks[entId]:
+                callback()
+            del self.entId2createCallbacks[entId]
+
+    # Use to set a callback to be called when entity is created.
+    # If entity already exists, callback will be called immediately.
+    def setEntityCreateCallback(self, entId, callback):
+        ent = self.getEntity(entId)
+        if ent is not None:
+            callback()
+            return
+        self.entId2createCallbacks.setdefault(entId, [])
+        self.entId2createCallbacks[entId].append(callback)
 
     # these are events and handlers that are invoked as entities are destroyed
     def getEntityDestroyEvent(self, entId):
