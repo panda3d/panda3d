@@ -1,7 +1,7 @@
 
 // This package presently only builds on Windows.
 // We also require the network layer (queuedConnectionManager, etc.)
-#define BUILD_DIRECTORY $[and $[WINDOWS_PLATFORM],$[HAVE_NET]]
+#define BUILD_DIRECTORY $[and $[WINDOWS_PLATFORM],$[HAVE_NET],$[HAVE_DIRECTD]]
 
 //#define LOCAL_LIBS \
 //    directbase

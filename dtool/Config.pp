@@ -303,6 +303,12 @@
 // Do you want to build the Renderman interface?
 #define HAVE_RIB
 
+// Do you want to build the DirectD tools for starting Panda clients
+// remotely?  This only affects the direct tree.  Enabling this may
+// cause libdirect.dll to fail to load on Win98 clients.
+#define HAVE_DIRECTD
+
+
 // Is Mikmod installed?  How should we run the libmikmod-config program?
 #define MIKMOD_CONFIG libmikmod-config
 #defer HAVE_MIKMOD $[bintest $[MIKMOD_CONFIG]]
