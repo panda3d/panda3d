@@ -148,7 +148,8 @@ kill_particle(int) {
 Colorf PointParticleRenderer::
 create_color(const BaseParticle *p) {
   Colorf color;
-  float life_t, vel_t, parameterized_age;
+  float life_t, vel_t;
+  float parameterized_age = 1.0f;
   bool have_alpha_t = false;
 
   switch (_blend_type) {
@@ -163,16 +164,16 @@ create_color(const BaseParticle *p) {
 
   case PP_BLEND_LIFE:
     parameterized_age = p->get_parameterized_age();
-        life_t = parameterized_age;
+    life_t = parameterized_age;
     have_alpha_t = true;
 
     if (_blend_method == PP_BLEND_CUBIC)
       life_t = CUBIC_T(life_t);
-
+    
     color = LERP(life_t, _start_color, _end_color);
-
+    
     break;
-
+    
     //// Blending colors based on vel
 
   case PP_BLEND_VEL:
@@ -189,17 +190,17 @@ create_color(const BaseParticle *p) {
   // handle alpha channel
 
   if(_alpha_mode != PR_ALPHA_NONE) {
-        if(_alpha_mode == PR_ALPHA_USER) {
-                parameterized_age = get_user_alpha();
-        } else {
-                if(!have_alpha_t)
-                          parameterized_age = p->get_parameterized_age();
+    if(_alpha_mode == PR_ALPHA_USER) {
+      parameterized_age = get_user_alpha();
+    } else {
+      if(!have_alpha_t)
+        parameterized_age = p->get_parameterized_age();
 
-                if(_alpha_mode==PR_ALPHA_OUT) {
-                        parameterized_age=1.0f-parameterized_age;
-                }
-        }
-        color[3] = parameterized_age;
+      if(_alpha_mode==PR_ALPHA_OUT) {
+        parameterized_age=1.0f-parameterized_age;
+      }
+    }
+    color[3] = parameterized_age;
   }
 
   return color;

@@ -189,22 +189,17 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void Material::
 write(ostream &out, int indent_level) const {
-  bool any = false;
   if (has_ambient()) {
     indent(out, indent_level) << "ambient = " << get_ambient() << "\n";
-    any = true;
   }
   if (has_diffuse()) {
     indent(out, indent_level) << "diffuse = " << get_diffuse() << "\n";
-    any = true;
   }
   if (has_specular()) {
     indent(out, indent_level) << "specular = " << get_specular() << "\n";
-    any = true;
   }
   if (has_emission()) {
     indent(out, indent_level) << "emission = " << get_emission() << "\n";
-    any = true;
   }
   indent(out, indent_level) << "shininess = " << get_shininess() << "\n";
   indent(out, indent_level) << "local = " << get_local() << "\n";

@@ -326,14 +326,14 @@ enqueue_object(TypedWritable *object) {
   // We need to assign a unique index number to every object we write
   // out.  Has this object been assigned a number yet?
   int object_id;
-  bool already_written;
+  //  bool already_written;
 
   StateMap::iterator si = _state_map.find(object);
   if (si == _state_map.end()) {
     // No, it hasn't, so assign it the next number in sequence
     // arbitrarily.
     object_id = _next_object_id;
-    already_written = false;
+    //    already_written = false;
 
     // Make sure our object ID will fit within the PN_uint16 we have
     // allocated for it.
@@ -347,7 +347,7 @@ enqueue_object(TypedWritable *object) {
   } else {
     // Yes, it has; get the object ID.
     object_id = (*si).second._object_id;
-    already_written = (*si).second._written;
+    //    already_written = (*si).second._written;
   }
 
   _object_queue.push_back(object);
