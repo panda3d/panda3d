@@ -1397,10 +1397,10 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
 	pddsRender->GetDDInterface( (VOID**)&pDD );
 	pddsRender->Release();
 
-	ddsd.ddsCaps.dwCaps  = DDSCAPS_TEXTURE | DDSCAPS_3DDEVICE;
+	ddsd.ddsCaps.dwCaps  = DDSCAPS_TEXTURE;
 
 	ddsd.ddsCaps.dwCaps2 = DDSCAPS2_TEXTUREMANAGE  // Turn on texture management 
-						   | DDSCAPS2_HINTSTATIC;	 // BUGBUG:  is this ok for ALL textures?
+						   | DDSCAPS2_HINTSTATIC;  // BUGBUG:  is this ok for ALL textures?
 
 	// validate magfilter setting
 	// degrade filtering if no HW support
