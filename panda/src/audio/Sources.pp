@@ -37,7 +37,6 @@
     audio_gui_functor.h
 
   #define IGATESCAN audio.h
-
 #end lib_target
 
 #begin test_bin_target
