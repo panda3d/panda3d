@@ -424,8 +424,7 @@ support_overlay_window(bool flag) {
 void wdxGraphicsWindow8::
 close_window() {
   wdxdisplay8_cat.debug() << "wdx closed window\n";
-  if (multiple_windows)
-    _dxgsg->release_swap_chain(&_wcontext);
+  _dxgsg->release_swap_chain(&_wcontext);
   WinGraphicsWindow::close_window();
 }
 
@@ -674,6 +673,8 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
   RECT view_rect;
   HRESULT hr;
 
+  wdxdisplay8_cat.debug()<<"Display Width "<< dwRenderWidth<<" and PresParam Width "<<_wcontext.PresParams.BackBufferWidth<<"\n";
+
   // BUGBUG: need to change panda to put frame buffer properties with GraphicsWindow, not GSG!!
   int frame_buffer_mode = _gsg->get_properties().get_frame_buffer_mode();
   bool bWantStencil = ((frame_buffer_mode & FrameBufferProperties::FM_stencil) != 0);
@@ -842,7 +843,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
       pPresParams->SwapEffect = D3DSWAPEFFECT_DISCARD;
     }
 
-    //    assert((dwRenderWidth==pPresParams->BackBufferWidth)&&(dwRenderHeight==pPresParams->BackBufferHeight));
+    //assert((dwRenderWidth==pPresParams->BackBufferWidth)&&(dwRenderHeight==pPresParams->BackBufferHeight));
 
     hr = pD3D8->CreateDevice(Display.CardIDNum, D3DDEVTYPE_HAL, _hWnd,
                              dwBehaviorFlags, pPresParams, &Display.pD3DDevice);
@@ -1755,13 +1756,9 @@ open_window(void) {
   DXGraphicsStateGuardian8 *dxgsg;
   DCAST_INTO_R(dxgsg,_gsg,false);
   WindowProperties props;
+  bool discard_device = false;
 
   if(!choose_device()) {
-    return false;
-  }
-  if (dxgsg->get_pipe()->get_device() && !multiple_windows && !window_and_fullscreen) {
-    wdxdisplay8_cat.error() 
-      << "Could not create window; multiple window support not enabled.\n";
     return false;
   }
 
@@ -1777,36 +1774,44 @@ open_window(void) {
   // call may be an extension to create multiple windows on same device
   // In that case just create an additional swapchain for this window
 
-  if (dxgsg->get_pipe()->get_device() == NULL || window_and_fullscreen) {
-    wdxdisplay8_cat.debug() << "device is null \n";
-
-    if (!create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer))
-      return false;
-    dxgsg->get_pipe()->make_device((void*)(&_wcontext));
-    dxgsg->copy_pres_reset(&_wcontext);
-    if (multiple_windows) {
-      // then we have no choice but to waste a framebuffer
+  while(1) {
+    if (dxgsg->get_pipe()->get_device() == NULL || discard_device) {
+      wdxdisplay8_cat.debug() << "device is null or fullscreen\n";
+      
+      wdxdisplay8_cat.debug()<<"device width "<<_wcontext.DisplayMode.Width<<"\n";
+      if (!create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer)) {
+        // just crash here
+        wdxdisplay8_cat.error() << "fatal: must be trying to create two fullscreen windows: not supported\n";
+        exit(1); //return false;
+      }
+      dxgsg->get_pipe()->make_device((void*)(&_wcontext));
+      dxgsg->copy_pres_reset(&_wcontext);
       dxgsg->create_swap_chain(&_wcontext);
+      break;
+
+    } else {
+      // fill in the DXScreenData from dxdevice here and change the
+      // reference to hWnd.
+      wdxdisplay8_cat.debug() << "device is not null\n";
+
+      dxdev = (DXGraphicsDevice8*)dxgsg->get_pipe()->get_device();
+      props = get_properties();
+      memcpy(&_wcontext,&dxdev->_Scrn,sizeof(DXScreenData));
+
+      _wcontext.PresParams.Windowed = !is_fullscreen();
+      _wcontext.PresParams.hDeviceWindow = _wcontext.hWnd = _hWnd;
+      _wcontext.PresParams.BackBufferWidth = _wcontext.DisplayMode.Width = props.get_x_size();
+      _wcontext.PresParams.BackBufferHeight = _wcontext.DisplayMode.Height = props.get_y_size();
+      
+      wdxdisplay8_cat.debug()<<"device width "<<_wcontext.PresParams.BackBufferWidth<<"\n";
+      //wdxdisplay8_cat.debug()<<"debug pSwapChain "<<_wcontext.pSwapChain<<"\n";
+      if (!dxgsg->create_swap_chain(&_wcontext)) {
+        discard_device = true;
+        continue; // try again
+      }
+      init_resized_window();
+      break;
     }
-
-  } else {
-    // fill in the DXScreenData from dxdevice here and change the
-    // reference to hWnd.
-    wdxdisplay8_cat.debug() << "device is not null\n";
-
-    dxdev = (DXGraphicsDevice8*)dxgsg->get_pipe()->get_device();
-    props = get_properties();
-
-    memcpy(&_wcontext,&dxdev->_Scrn,sizeof(DXScreenData));
-    _wcontext.hWnd = _hWnd;
-    _wcontext.PresParams.hDeviceWindow = _hWnd;
-    _wcontext.PresParams.BackBufferWidth = props.get_x_size();
-    _wcontext.PresParams.BackBufferHeight = props.get_y_size();
-
-    //wdxdisplay8_cat.debug()<<"device width "<<_wcontext.PresParams.BackBufferWidth<<"\n";
-    //wdxdisplay8_cat.debug()<<"debug pSwapChain "<<_wcontext.pSwapChain<<"\n";
-    dxgsg->create_swap_chain(&_wcontext);
-    init_resized_window();
   }
   wdxdisplay8_cat.debug() << "swapchain is " << _wcontext.pSwapChain << "\n";
   return true;

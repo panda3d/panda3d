@@ -4541,35 +4541,45 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
 
 void DXGraphicsStateGuardian9::  
 set_context(DXScreenData *pNewContextData) {
-    // dont do copy from window since dx_init sets fields too.
-    // simpler to keep all of it in one place, so use ptr to window struct
-
-    assert(pNewContextData!=NULL);
-    _pScrn = pNewContextData;
-    _pD3DDevice = _pScrn->pD3DDevice;   //copy this one field for speed of deref
-    _pSwapChain = _pScrn->pSwapChain;   //copy this one field for speed of deref
- 
-    //wdxdisplay9_cat.debug() << "SwapChain = "<< _pSwapChain << "\n";
+  // dont do copy from window since dx_init sets fields too.
+  // simpler to keep all of it in one place, so use ptr to window struct
+  
+  assert(pNewContextData!=NULL);
+  _pScrn = pNewContextData;
+  _pD3DDevice = _pScrn->pD3DDevice;   //copy this one field for speed of deref
+  _pSwapChain = _pScrn->pSwapChain;   //copy this one field for speed of deref
+  
+  //wdxdisplay9_cat.debug() << "SwapChain = "<< _pSwapChain << "\n";
 }
 
-void DXGraphicsStateGuardian9::  
+bool DXGraphicsStateGuardian9::  
 create_swap_chain(DXScreenData *pNewContextData) {
-    // Instead of creating a device and rendering as d3ddevice->present()
-    // we should render using SwapChain->present(). This is done to support
-    // multiple windows rendering. For that purpose, we need to set additional
-    // swap chains here.
-
-    HRESULT hr;
-    hr = pNewContextData->pD3DDevice->CreateAdditionalSwapChain(&pNewContextData->PresParams, &pNewContextData->pSwapChain);
-    if (FAILED(hr))
-      wdxdisplay9_cat.debug() << "Swapchain creation failed :"<<D3DERRORSTRING(hr)<<"\n";
-    //    set_context(pNewContextData);
+  // Instead of creating a device and rendering as d3ddevice->present()
+  // we should render using SwapChain->present(). This is done to support
+  // multiple windows rendering. For that purpose, we need to set additional
+  // swap chains here.
+  
+  HRESULT hr;
+  hr = pNewContextData->pD3DDevice->CreateAdditionalSwapChain(&pNewContextData->PresParams, &pNewContextData->pSwapChain);
+  if (FAILED(hr)) {
+    wdxdisplay9_cat.debug() << "Swapchain creation failed :"<<D3DERRORSTRING(hr)<<"\n";
+    return false;
+  }
+  return true;
 }
 
-void DXGraphicsStateGuardian9::  
+bool DXGraphicsStateGuardian9::  
 release_swap_chain(DXScreenData *pNewContextData) {
-    // Release the swap chain on this DXScreenData
-    pNewContextData->pSwapChain->Release();
+  // Release the swap chain on this DXScreenData
+  HRESULT hr;
+  if (pNewContextData->pSwapChain) {
+    hr = pNewContextData->pSwapChain->Release();
+    if (FAILED(hr)) {
+      wdxdisplay9_cat.debug() << "Swapchain release failed:" << D3DERRORSTRING(hr) << "\n";
+      return false;
+    }
+  }
+  return true;
 }
 
 bool refill_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {

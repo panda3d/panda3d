@@ -362,8 +362,8 @@ public:
 
   void support_overlay_window(bool flag);
 
-  void create_swap_chain (DXScreenData *pNewContextData);
-  void release_swap_chain (DXScreenData *pNewContextData);
+  bool create_swap_chain (DXScreenData *pNewContextData);
+  bool release_swap_chain (DXScreenData *pNewContextData);
   void copy_pres_reset(DXScreenData *pNewContextData);
 
 private:

@@ -965,7 +965,14 @@ do_clear(const RenderBuffer &buffer) {
                                          _depth_clear_value, (DWORD)_stencil_clear_value);
     if(FAILED(hr)) {
         dxgsg8_cat.error() << "clear_buffer failed:  Clear returned " << D3DERRORSTRING(hr);
-        throw_event("panda3d-render-error");
+        // before throwing the event, lets try a 0 flag
+        dxgsg8_cat.error() << "trying with no flag\n";
+        hr = _pD3DDevice->Clear(0, NULL, D3DCLEAR_TARGET, _d3dcolor_clear_value,
+                                         _depth_clear_value, (DWORD)_stencil_clear_value);
+        if (FAILED(hr)) {
+          dxgsg8_cat.error() << "clear_buffer failed again:  Clear returned " << D3DERRORSTRING(hr);
+          //          throw_event("panda3d-render-error");
+        }
     }
     /* The following line will cause the background to always clear to a medium red
     _color_clear_value[0] = .5;
@@ -1001,7 +1008,7 @@ prepare_display_region() {
       dxgsg8_cat.error()
         << "SetViewport(" << l << ", " << u << ", " << w << ", " << h
         << ") failed" << D3DERRORSTRING(hr);
-#if 0
+#if 1
       D3DVIEWPORT8 vp_old;
       _pD3DDevice->GetViewport( &vp_old );
       dxgsg8_cat.error()
@@ -4541,7 +4548,7 @@ set_context(DXScreenData *pNewContextData) {
     //wdxdisplay8_cat.debug() << "SwapChain = "<< _pSwapChain << "\n";
 }
 
-void DXGraphicsStateGuardian8::  
+bool DXGraphicsStateGuardian8::  
 create_swap_chain(DXScreenData *pNewContextData) {
     // Instead of creating a device and rendering as d3ddevice->present()
     // we should render using SwapChain->present(). This is done to support
@@ -4550,17 +4557,25 @@ create_swap_chain(DXScreenData *pNewContextData) {
 
     HRESULT hr;
     hr = pNewContextData->pD3DDevice->CreateAdditionalSwapChain(&pNewContextData->PresParams, &pNewContextData->pSwapChain);
-    if (FAILED(hr))
+    if (FAILED(hr)) {
       wdxdisplay8_cat.debug() << "Swapchain creation failed :"<<D3DERRORSTRING(hr)<<"\n";
+      return false;
+    }
+    return true;
 }
 
-void DXGraphicsStateGuardian8::  
+bool DXGraphicsStateGuardian8::  
 release_swap_chain(DXScreenData *pNewContextData) {
     // Release the swap chain on this DXScreenData
   HRESULT hr;
-  hr = pNewContextData->pSwapChain->Release();
-  if (FAILED(hr))
-    wdxdisplay8_cat.debug() << "Swapchain release failed:" << D3DERRORSTRING(hr) << "\n";
+  if (pNewContextData->pSwapChain) {
+    hr = pNewContextData->pSwapChain->Release();
+    if (FAILED(hr)) {
+      wdxdisplay8_cat.debug() << "Swapchain release failed:" << D3DERRORSTRING(hr) << "\n";
+      return false;
+    }
+  }
+  return true;
 }
 
 bool refill_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
