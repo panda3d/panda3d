@@ -148,10 +148,3 @@ class Loader:
         sound = base.sfxManager.getSound(soundPath)
         return sound
 
-    def unloadSound(self, sound):
-        """unloadSound(self, sound)
-        """
-        if sound:
-            Loader.notify.debug("Unloading sound: %s" % (sound) )
-            del sound
-
