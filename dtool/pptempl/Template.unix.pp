@@ -166,6 +166,7 @@ clean :
 #if $[st_sources]
 	rm -rf $[st_dir]
 #endif
+	rm -f *.pyc *.pyo  // Also scrub out old generated Python code.
 
 // 'cleanall' is not much more thorough than 'clean': At the moment,
 // it also cleans up the bison and flex output, as well as the

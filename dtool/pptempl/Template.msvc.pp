@@ -204,6 +204,7 @@ clean :
 #if $[st_sources]
 	-rmdir /s /q $[st_dir]
 #endif
+	-del /f *.pyc *.pyo  // Also scrub out old generated Python code.
 
 // 'cleanall' is not much more thorough than 'clean': At the moment,
 // it also cleans up the bison and flex output, as well as the
