@@ -31,8 +31,8 @@ class FactoryParams;
 //               setting an alpha component to non-1 does not in
 //               itself make an object transparent; you must also
 //               enable transparency mode with a suitable
-//               TransparencyTransition.  Similarly, it is wasteful to
-//               render an object with a TransparencyTransition in
+//               TransparencyAttrib.  Similarly, it is wasteful to
+//               render an object with a TransparencyAttrib in
 //               effect unless you actually want it to be at least
 //               partially transparent (and it has alpha components
 //               less than 1).
@@ -40,13 +40,13 @@ class FactoryParams;
 class EXPCL_PANDA TransparencyAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
-    M_none,             // No transparency in effect.
-    M_alpha,            // Writes to depth buffer of transp objects disabled
-    M_alpha_sorted,     // Assumes transp objects are depth sorted
-    M_multisample,      // Source alpha values modified to 1.0 before writing
-    M_multisample_mask, // Source alpha values not modified
-    M_binary,           // Only writes pixels with alpha = 1.0
-    M_dual,             // 2-pass: draws opaque, then draws transparent
+    M_none,             // No transparency.
+    M_alpha,            // Normal transparency, panda will sort back-to-front.
+    M_notused,          // Unused placeholder.  Do not use this.
+    M_multisample,      // Uses ms buffer, alpha values modified to 1.0.
+    M_multisample_mask, // Uses ms buffer, alpha values not modified.
+    M_binary,           // Only writes pixels with alpha >= 0.5.
+    M_dual,             // opaque parts first, then sorted transparent parts.
   };
 
 private:

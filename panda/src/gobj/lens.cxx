@@ -105,6 +105,7 @@ clear() {
   _view_vector.set(0.0f, 1.0f, 0.0f);
   _up_vector.set(0.0f, 0.0f, 1.0f);
   _iod_offset = 0.0f;
+  _keystone.set(0.0f, 0.0f, 0.0f);
   _user_flags = 0;
   _comp_flags = CF_fov;
 
@@ -572,6 +573,66 @@ get_view_mat() const {
     ((Lens *)this)->compute_lens_mat();
   }
   return _lens_mat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::clear_view_mat
+//       Access: Published
+//  Description: Resets the lens transform to identity.
+////////////////////////////////////////////////////////////////////
+void Lens::
+clear_view_mat() {
+  _lens_mat = LMatrix4f::ident_mat();
+  adjust_user_flags(0, UF_view_vector | UF_view_hpr | UF_iod_offset | UF_view_mat);
+  adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv | CF_lens_mat_inv | CF_view_hpr | CF_view_vector | CF_iod_offset,
+                    CF_lens_mat);
+  throw_change_event();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::set_keystone
+//       Access: Published
+//  Description: Indicates the ratio of keystone correction to perform
+//               on the lens, in each of three axes.  This will build
+//               a special non-affine scale factor into the projection
+//               matrix that will compensate for keystoning of a
+//               projected image; this can be used to compensate for a
+//               projector that for physical reasons cannot be aimed
+//               directly at it screen.  The default value of 0, 0, 0
+//               indicates no keystone correction; specify a small
+//               value (usually in the range -1 .. 1) in one of the
+//               three axes to generate a keystone correction in that
+//               axis.
+////////////////////////////////////////////////////////////////////
+void Lens::
+set_keystone(const LVecBase3f &keystone) {
+  _keystone = keystone;
+  adjust_user_flags(0, UF_keystone);
+  adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv | CF_film_mat | CF_film_mat_inv, 0);
+  throw_change_event();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_keystone
+//       Access: Published
+//  Description: Returns the direction in which the lens is facing.
+////////////////////////////////////////////////////////////////////
+const LVecBase3f &Lens::
+get_keystone() const {
+  return _keystone;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::clear_keystone
+//       Access: Published
+//  Description: Resets the lens transform to identity.
+////////////////////////////////////////////////////////////////////
+void Lens::
+clear_keystone() {
+  _keystone = LVecBase3f(0.0f, 0.0f, 0.0f);
+  adjust_user_flags(UF_keystone, 0);
+  adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv | CF_film_mat | CF_film_mat_inv, 0);
+  throw_change_event();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1098,21 +1159,25 @@ extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point)
   {
     LVecBase4f full(point2d[0], point2d[1], -1.0f, 1.0f);
     full = projection_mat_inv.xform(full);
-    if (full[3] == 0.0f) {
-      return false;
-    }
 
-    float recip_full3 = 1.0f/full[3];
-    near_point.set(full[0] * recip_full3, full[1] * recip_full3, full[2] * recip_full3);
+    float recip_full3 = 1.0f / max(full[3], 0.001f);
+    near_point.set(full[0] * recip_full3, 
+                   full[1] * recip_full3, 
+                   full[2] * recip_full3);
   }
   {
     LVecBase4f full(point2d[0], point2d[1], 1.0f, 1.0f);
     full = projection_mat_inv.xform(full);
-    if (full[3] == 0.0f) {
-      return false;
-    }
-    float recip_full3 = 1.0f/full[3];
-    far_point.set(full[0] * recip_full3, full[1] * recip_full3, full[2] * recip_full3);
+
+    // We can truncate the weight factor at near 0.  If it goes too
+    // close to zero, or becomes negative, the far plane moves out
+    // past infinity and comes back in behind the lens, which is just
+    // crazy.  Truncating it to zero keeps the far plane from moving
+    // too far out.
+    float recip_full3 = 1.0f / max(full[3], 0.001f);
+    far_point.set(full[0] * recip_full3, 
+                  full[1] * recip_full3, 
+                  full[2] * recip_full3);
   }
   return true;
 }
@@ -1376,18 +1441,19 @@ compute_film_mat() {
   LVecBase2f film_size = get_film_size();
   LVector2f film_offset = get_film_offset();
 
-  /* this line triggers a VC7 opt bug, so explicitly set matrix below instead
-  _film_mat =
-    LMatrix4f::translate_mat(-film_offset[0], -film_offset[1], 0.0f) *
-    LMatrix4f::scale_mat(2.0f / film_size[0], 2.0f / film_size[1], 1.0f);
-   */ 
-
   float scale_x = 2.0f / film_size[0];
   float scale_y = 2.0f / film_size[1];
   _film_mat.set(scale_x,      0.0f,   0.0f,  0.0f,
                    0.0f,   scale_y,   0.0f,  0.0f,
                    0.0f,      0.0f,   1.0f,  0.0f,
         -film_offset[0] * scale_x, -film_offset[1] * scale_y, 0.0f,  1.0f);
+
+  if ((_user_flags & UF_keystone) != 0) {
+    _film_mat = LMatrix4f(csqrt(1.0f - _keystone[0] * _keystone[0]), 0.0f, 0.0f, _keystone[0],
+                          0.0f, csqrt(1.0f - _keystone[1] * _keystone[1]), 0.0f, _keystone[1],
+                          0.0f, 0.0f, csqrt(1.0f - _keystone[2] * _keystone[2]), _keystone[2],
+                          0.0f, 0.0f, 0.0f, 1.0f) * _film_mat;
+  }
 
   adjust_comp_flags(CF_film_mat_inv,
                     CF_film_mat);

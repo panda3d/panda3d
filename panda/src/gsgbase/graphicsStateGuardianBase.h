@@ -103,6 +103,8 @@ class Lens;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GraphicsStateGuardianBase : public TypedWritableReferenceCount {
 public:
+  virtual bool get_supports_multisample() const=0;
+
   // These functions will be queried by the GeomIssuer to determine if
   // it should issue normals, texcoords, and/or colors, based on the
   // GSG's current state.

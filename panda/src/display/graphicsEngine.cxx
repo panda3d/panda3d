@@ -1196,7 +1196,7 @@ do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
   _app.add_window(_app._window, window);
   
   display_cat.info()
-    << "Created " << window->get_type() << "\n";
+    << "Created " << window->get_type() << " " << (void *)window << "\n";
   
   // By default, try to open each window as it is added.
   window->request_open();
@@ -1230,6 +1230,11 @@ do_remove_window(GraphicsOutput *window) {
   // If the window happened to be controlled by the app thread, we
   // might as well close it now rather than waiting for next frame.
   _app.do_pending(this);
+
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "Removed " << window->get_type() << " " << (void *)window << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1450,6 +1455,19 @@ resort_windows() {
   _cdraw.sort();
   _draw.sort();
   _window.sort();
+
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "Windows resorted:";
+    Windows::const_iterator wi;
+    for (wi = _window.begin(); wi != _window.end(); ++wi) {
+      GraphicsOutput *win = (*wi);
+      display_cat.debug(false)
+        << " " << (void *)win;
+    }
+    display_cat.debug(false)
+      << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

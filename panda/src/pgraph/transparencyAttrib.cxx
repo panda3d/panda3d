@@ -68,10 +68,6 @@ output(ostream &out) const {
     out << "alpha";
     break;
 
-  case M_alpha_sorted:
-    out << "alpha sorted";
-    break;
-
   case M_multisample:
     out << "multisample";
     break;

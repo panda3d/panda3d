@@ -97,6 +97,15 @@ add_object(CullableObject *object) {
       object->_state = state->compose(get_binary_state());
       break;
 
+    case TransparencyAttrib::M_multisample:
+    case TransparencyAttrib::M_multisample_mask:
+      // The multisample modes are implemented using M_binary if the
+      // GSG in use doesn't support multisample.
+      if (!_gsg->get_supports_multisample()) {
+        object->_state = state->compose(get_binary_state());
+      }
+      break;
+
     case TransparencyAttrib::M_dual:
       if (m_dual) {
         // M_dual is implemented by drawing the opaque parts first,

@@ -281,8 +281,6 @@ protected:
 
 public:
   bool _supports_bgr;
-  bool _supports_multisample;
-  bool _supports_generate_mipmap;
 
   bool _supports_multitexture;
   PFNGLACTIVETEXTUREPROC _glActiveTexture;

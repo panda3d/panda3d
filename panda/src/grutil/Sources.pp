@@ -24,7 +24,8 @@
   #define INSTALL_HEADERS \
     cardMaker.I cardMaker.h \
     frameRateMeter.I frameRateMeter.h \
-    lineSegs.I lineSegs.h
+    lineSegs.I lineSegs.h \
+    multitexReducer.I multitexReducer.h
 
   #define IGATESCAN all
 

@@ -168,6 +168,20 @@ get_copy_texture_inverted() const {
   return _copy_texture_inverted;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_generate_mipmap
+//       Access: Published
+//  Description: Returns true if this particular GSG can generate
+//               mipmaps for a texture automatically, or if they must
+//               be generated in software.  If this is true, then
+//               mipmaps can safely be enabled for rendered textures
+//               (e.g. using the MultitexReducer).
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_generate_mipmap() const {
+  return _supports_generate_mipmap;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_scene

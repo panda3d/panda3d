@@ -44,14 +44,14 @@ ParasiteBuffer(GraphicsOutput *host, const string &name,
       << " on " << _host->get_name() << "\n";
   }
 
-  setup_copy_texture(_name);
-
   _x_size = x_size;
   _y_size = y_size;
   _has_size = true;
   _default_display_region->compute_pixels(_x_size, _y_size);
 
   _is_valid = true;
+
+  setup_copy_texture(_name);
 
   nassertv(_x_size <= host->get_x_size() && _y_size <= host->get_y_size());
 }

@@ -110,6 +110,11 @@ PUBLISHED:
 
   void set_view_mat(const LMatrix4f &view_mat);
   const LMatrix4f &get_view_mat() const;
+  void clear_view_mat();
+
+  void set_keystone(const LVecBase3f &keystone);
+  const LVecBase3f &get_keystone() const;
+  void clear_keystone();
   
   // These flags are passed in as the last parameter to control the
   // behavior of set_frustum_from_corners().  See the documentation
@@ -197,6 +202,7 @@ protected:
   LVecBase3f _view_hpr;
   LVector3f _view_vector, _up_vector;
   float _iod_offset;
+  LVecBase3f _keystone;
 
   LMatrix4f _film_mat, _film_mat_inv;
   LMatrix4f _lens_mat, _lens_mat_inv;
@@ -214,6 +220,7 @@ protected:
     UF_view_vector         = 0x0080,
     UF_iod_offset          = 0x0100,
     UF_view_mat            = 0x0200,
+    UF_keystone            = 0x0400,
   };
 
   enum CompFlags {

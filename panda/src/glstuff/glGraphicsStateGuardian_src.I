@@ -191,23 +191,15 @@ enable_scissor(bool val)
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 enable_multisample_alpha_one(bool val) {
-  if (_multisample_alpha_one_enabled != val) {
-    _multisample_alpha_one_enabled = val;
-#ifdef GL_SAMPLE_ALPHA_TO_ONE_SGIS
-    if (val) {
-#ifdef GSG_VERBOSE
-      GLCAT.spam()
-        << "glEnable(GL_SAMPLE_ALPHA_TO_ONE_SGIS)" << endl;
-#endif
-      GLP(Enable)(GL_SAMPLE_ALPHA_TO_ONE_SGIS);
-    } else {
-#ifdef GSG_VERBOSE
-      GLCAT.spam()
-        << "glDisable(GL_SAMPLE_ALPHA_TO_ONE_SGIS)" << endl;
-#endif
-      GLP(Disable)(GL_SAMPLE_ALPHA_TO_ONE_SGIS);
+  if (_supports_multisample) {
+    if (_multisample_alpha_one_enabled != val) {
+      _multisample_alpha_one_enabled = val;
+      if (val) {
+        GLP(Enable)(GL_SAMPLE_ALPHA_TO_ONE);
+      } else {
+        GLP(Disable)(GL_SAMPLE_ALPHA_TO_ONE);
+      }
     }
-#endif  // GL_SAMPLE_ALPHA_TO_ONE_SGIS
   }
 }
 
@@ -220,21 +212,11 @@ INLINE void CLP(GraphicsStateGuardian)::
 enable_multisample_alpha_mask(bool val) {
   if (_multisample_alpha_mask_enabled != val) {
     _multisample_alpha_mask_enabled = val;
-#ifdef GL_SAMPLE_ALPHA_TO_MASK_SGIS
     if (val) {
-#ifdef GSG_VERBOSE
-      GLCAT.spam()
-        << "glEnable(GL_SAMPLE_ALPHA_TO_MASK_SGIS)" << endl;
-#endif
-      GLP(Enable)(GL_SAMPLE_ALPHA_TO_MASK_SGIS);
+      GLP(Enable)(GL_SAMPLE_ALPHA_TO_COVERAGE);
     } else {
-#ifdef GSG_VERBOSE
-      GLCAT.spam()
-        << "glDisable(GL_SAMPLE_ALPHA_TO_MASK_SGIS)" << endl;
-#endif
-      GLP(Disable)(GL_SAMPLE_ALPHA_TO_MASK_SGIS);
+      GLP(Disable)(GL_SAMPLE_ALPHA_TO_COVERAGE);
     }
-#endif  // GL_SAMPLE_ALPHA_TO_MASK_SGIS
   }
 }
 

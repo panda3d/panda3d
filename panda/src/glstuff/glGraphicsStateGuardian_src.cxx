@@ -4345,15 +4345,7 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
     break;
     
   case TransparencyAttrib::M_alpha:
-  case TransparencyAttrib::M_alpha_sorted:
   case TransparencyAttrib::M_dual:
-    // Should we really have an "alpha" and an "alpha_sorted"
-    // mode, like Performer does?  (The difference is that
-    // "alpha_sorted" is with the write to the depth buffer
-    // disabled.)  Or should we just use the separate depth write
-    // transition to control this?  Doing it implicitly requires a
-    // bit more logic here and in the state management; for now we
-    // require the user to explicitly turn off the depth write.
     enable_multisample_alpha_one(false);
     enable_multisample_alpha_mask(false);
     enable_blend(true);

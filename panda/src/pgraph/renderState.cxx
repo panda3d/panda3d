@@ -1371,7 +1371,6 @@ determine_bin_index() {
     if (trans != (const TransparencyAttrib *)NULL) {
       switch (trans->get_mode()) {
       case TransparencyAttrib::M_alpha:
-      case TransparencyAttrib::M_alpha_sorted:
       case TransparencyAttrib::M_dual:
         // These transparency modes require special back-to-front sorting.
         bin_name = "transparent";

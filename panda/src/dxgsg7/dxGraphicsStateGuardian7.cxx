@@ -4590,7 +4590,6 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
     break;
 
   case TransparencyAttrib::M_alpha:
-  case TransparencyAttrib::M_alpha_sorted:
   case TransparencyAttrib::M_multisample:
   case TransparencyAttrib::M_multisample_mask:
   case TransparencyAttrib::M_dual:

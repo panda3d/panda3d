@@ -164,6 +164,13 @@ setup_copy_texture(const string &name) {
   _texture->set_wrapu(Texture::WM_clamp);
   _texture->set_wrapv(Texture::WM_clamp);
 
+  if (has_size()) {
+    // If we know our size now, go ahead and tell the texture.
+    PixelBuffer *pb = _texture->_pbuffer;
+    pb->set_xsize(get_x_size());
+    pb->set_ysize(get_y_size());
+  }
+
   _copy_texture = true;
 
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
@@ -587,6 +594,10 @@ end_frame() {
   // directly into texture memory don't need to do this; they will set
   // _copy_texture to false.
   if (_copy_texture) {
+    if (display_cat.is_debug()) {
+      display_cat.debug()
+        << "Copying texture for " << (void *)this << " at frame end.\n";
+    }
     PStatTimer timer(_copy_texture_pcollector);
     nassertv(has_texture());
     RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());

@@ -20,6 +20,7 @@
 #include "textNode.h"
 #include "multitexReducer.h"
 #include "configVariableBool.h"
+#include "texturePool.h"
 
 #ifndef HAVE_GETOPT
   #include "gnu_getopt.h"
@@ -108,24 +109,50 @@ event_2(CPT_Event event, void *) {
 void
 event_0(CPT_Event event, void *) {
   // 0: run hacky test.
-  static bool first = true;
+  static int count = 0;
 
-  if (first) {
+  static PT(TextureStage) ts;
+  if (ts == (TextureStage *)NULL) {
+    ts = new TextureStage("ts");
+  }
+
+  NodePath models = framework.get_models();
+
+  if (count == 0) {
     cerr << "applying scale\n";
-    framework.get_models().set_color_scale(0.7, 0.7, 0.1, 1.0);
-    first = false;
+    models.set_color_scale(0.7, 0.7, 0.1, 1.0);
 
   } else {
     cerr << "flattening\n";
     MultitexReducer mr;
     mr.set_use_geom(true);
-    
-    mr.scan(framework.get_models());
+    mr.scan(models);
     
     WindowFramework *wf = framework.get_window(0);
     GraphicsWindow *win = wf->get_graphics_window();
     mr.flatten(win);
+
+    if (count > 1) {
+      PT(Texture) tex = TexturePool::load_texture("maps/cmss12.rgb");
+      if (tex != (Texture *)NULL) {
+        cerr << "Reapplying\n";
+        
+        ts->set_mode(TextureStage::M_decal);
+        models.set_texture(ts, tex);
+     
+        if (count > 3 && (count % 2) == 1) {
+          cerr << "Reflattening\n";
+          MultitexReducer mr;
+          mr.scan(models);
+          
+          WindowFramework *wf = framework.get_window(0);
+          GraphicsWindow *win = wf->get_graphics_window();
+          mr.flatten(win);
+        }
+      }
+    }
   }
+  count++;
 }
 
 void 

@@ -92,6 +92,10 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   // Initially, we set this to false; a GSG that knows it has this
   // property should set it to true.
   _copy_texture_inverted = false;
+
+  // Similarly with these capabilities flags.
+  _supports_multisample = false;
+  _supports_generate_mipmap = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -101,6 +105,24 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
 ////////////////////////////////////////////////////////////////////
 GraphicsStateGuardian::
 ~GraphicsStateGuardian() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_multisample
+//       Access: Published, Virtual
+//  Description: Returns true if this particular GSG supports using
+//               the multisample bits to provide antialiasing, and
+//               also supports M_multisample and M_multisample_mask
+//               transparency modes.  If this is not true for a
+//               particular GSG, Panda will map the M_multisample
+//               modes to M_binary.
+//
+//               This method is declared virtual solely so that it can
+//               be queried from cullResult.cxx.
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+get_supports_multisample() const {
+  return _supports_multisample;
 }
 
 ////////////////////////////////////////////////////////////////////

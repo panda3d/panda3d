@@ -616,7 +616,7 @@ sort_unique() {
 template<class Key, class Compare>
 INLINE void ordered_vector<Key, Compare>::
 sort_nonunique() {
-  sort(begin(), end(), _compare);
+  stable_sort(begin(), end(), _compare);
 }
 
 ////////////////////////////////////////////////////////////////////

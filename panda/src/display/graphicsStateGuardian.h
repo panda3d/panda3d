@@ -84,6 +84,8 @@ PUBLISHED:
 
   INLINE int get_max_texture_stages() const;
   INLINE bool get_copy_texture_inverted() const;
+  virtual bool get_supports_multisample() const;
+  INLINE bool get_supports_generate_mipmap() const;
 
 public:
   INLINE bool set_scene(SceneSetup *scene_setup);
@@ -280,6 +282,8 @@ protected:
   PT(PreparedGraphicsObjects) _prepared_objects;
   int _max_texture_stages;
   bool _copy_texture_inverted;
+  bool _supports_multisample;
+  bool _supports_generate_mipmap;
 
 public:
   // Statistics

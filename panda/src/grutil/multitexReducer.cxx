@@ -418,11 +418,22 @@ scan_geom_node(GeomNode *node, const RenderState *state,
       int num_stages = ta->get_num_on_stages();
       for (int si = 0; si < num_stages; si++) {
         TextureStage *stage = ta->get_on_stage(si);
-        
-        stage_list.push_back(StageInfo(stage, ta, tma));
+        Texture *tex = ta->get_on_texture(stage);
+        PixelBuffer *tex_pbuffer = tex->_pbuffer;
+        if (tex_pbuffer != (PixelBuffer *)NULL &&
+            tex_pbuffer->get_xsize() != 0 &&
+            tex_pbuffer->get_ysize() != 0) {
+          stage_list.push_back(StageInfo(stage, ta, tma));
+
+        } else {
+          grutil_cat.info()
+            << "Ignoring invalid texture stage " << stage->get_name() << "\n";
+        }
       }
 
-      record_stage_list(stage_list, GeomInfo(state, geom_net_state, node, gi));
+      if (stage_list.size() >= 2) {
+        record_stage_list(stage_list, GeomInfo(state, geom_net_state, node, gi));
+      }
     }
   }
 }
