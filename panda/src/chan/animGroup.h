@@ -55,6 +55,7 @@ public:
 
   void sort_descendants();
 
+PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 
