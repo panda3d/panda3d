@@ -19,6 +19,7 @@ PUBLISHED:
 
   virtual void step(void);
   virtual void new_telemetry(LPoint3f&);
+  virtual void force_telemetry(LPoint3f&);
 
   LPoint3f get_pos(void) const;
   LVector3f get_vel(void) const;
@@ -31,6 +32,7 @@ PUBLISHED:
 
   virtual void step(void);
   virtual void new_telemetry(LPoint3f&);
+  virtual void force_telemetry(LPoint3f&);
 };
 
 class LinearPrediction : public Prediction {
@@ -40,6 +42,7 @@ PUBLISHED:
 
   virtual void step(void);
   virtual void new_telemetry(LPoint3f&);
+  virtual void force_telemetry(LPoint3f&);
 };
 
 #endif /* __PREDICTION_H__ */
