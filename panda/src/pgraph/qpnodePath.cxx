@@ -2856,6 +2856,15 @@ r_find_matches(qpNodePathCollection &result,
 void qpNodePath::
 r_adjust_all_priorities(PandaNode *node, int adjustment) {
   node->set_state(node->get_state()->adjust_all_priorities(adjustment));
+  if (node->is_geom_node()) {
+    qpGeomNode *gnode;
+    DCAST_INTO_V(gnode, node);
+
+    int num_geoms = gnode->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      gnode->set_geom_state(i, gnode->get_geom_state(i)->adjust_all_priorities(adjustment));
+    }
+  }
 
   PandaNode::Children cr = node->get_children();
   int num_children = cr.get_num_children();
