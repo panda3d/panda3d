@@ -337,8 +337,10 @@ class TaskManager:
                 # is not ready to go, we can return
                 break
             else:
+                TaskManager.notify.debug('__doLaterProcessor: spawning %s' % (dl))
                 removedTasks.append(dl)
-                self.__spawnTaskNamed(dl, dl.name)
+                dl.setStartTimeFrame(self.currentTime, self.currentFrame)
+                self.__addPendingTask(dl)
                 continue
         # Get the tasks we spawned this frame off the doLaterList
         if removedTasks:
@@ -347,7 +349,7 @@ class TaskManager:
 
     def __spawnDoLater(self, task):
         if TaskManager.notify.getDebug():
-            TaskManager.notify.debug('spawning doLater named: ' + task.name)
+            TaskManager.notify.debug('spawning doLater: %s' % (task))
         # Add this task to the nameDict
         nameList = ifAbsentPut(self.nameDict, task.name, [])
         nameList.append(task)
@@ -522,10 +524,11 @@ class TaskManager:
         # If this is the only task with that name, remove the dict entry
         tasksWithName = self.nameDict.get(taskName)
         if tasksWithName:
-            tasksWithName.remove(task)
-            if len(tasksWithName) == 0:
-                del self.nameDict[taskName]
-            return 1
+            if task in tasksWithName:
+                tasksWithName.remove(task)
+                if len(tasksWithName) == 0:
+                    del self.nameDict[taskName]
+                return 1
         return 0
 
     def __executeTask(self, task):
@@ -584,8 +587,12 @@ class TaskManager:
                 TaskManager.notify.debug('__stepThroughList: task is finished %s' % (task))
                 # Remove the task
                 if not task.isRemoved():
+                    TaskManager.notify.debug('__stepThroughList: task not removed %s' % (task))
                     task.remove()
                     task.finishTask(self.fVerbose)
+                    self.__removeTaskFromNameDict(task)
+                else:
+                    TaskManager.notify.debug('__stepThroughList: task already removed %s' % (task))
                     self.__removeTaskFromNameDict(task)
                 taskPriList.remove(i)
                 # Do not increment the iterator
