@@ -9,6 +9,7 @@
 
 #include "audio_manager.h"
 #include "config_audio.h"
+#include <config_util.h>
 
 #include <direct.h>
 
@@ -593,9 +594,9 @@ WinMusic* WinMusic::load_midi(Filename filename) {
     return ret;
   }
 
+  /*
   char szDir[_MAX_PATH];
   WCHAR wszDir[_MAX_PATH];
-  /*
   if (_getcwd(szDir, _MAX_PATH)==NULL) {
     audio_cat->error() << "could not getcwd" << endl;
     delete ret;
