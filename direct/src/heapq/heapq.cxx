@@ -7,6 +7,7 @@
 */
 
 #include <Python.h>
+#include "cTask.h"
 
 /* Prototypes */
 static PyObject * heappush(PyObject *self, PyObject *args);
@@ -124,15 +125,36 @@ _siftdown(PyObject *list, int startpos, int pos) {
     int parentpos, cmp;
 
     newitem = PySequence_GetItem(list,pos);
+
+    PyObject *newitemCTask_this = PyObject_GetAttrString(newitem, "this");
+    nassertr(newitemCTask_this != NULL, false);    
+    CTask *newitemCTask = (CTask *)PyInt_AsLong(newitemCTask_this);
+    Py_DECREF(newitemCTask_this);
+
     while (pos > startpos) {
         parentpos = (pos - 1) >> 1;
         parent = PyList_GetItem(list,parentpos);
 
+        /*
         cmp = PyObject_RichCompareBool(parent,newitem,Py_LE);
         if (cmp > 0)
             break;
         else if (cmp < 0)
             return -1;
+        */
+
+        PyObject *parentCTask_this = PyObject_GetAttrString(parent, "this");
+        nassertr(parentCTask_this != NULL, false);        
+        CTask *parentCTask = (CTask *)PyInt_AsLong(parentCTask_this);
+        Py_DECREF(parentCTask_this);
+
+        if (parentCTask->get_wake_time() <= newitemCTask->get_wake_time()) {
+          break;
+        } else {
+          return -1;
+        }
+
+
         Py_INCREF(parent);
         PyList_SetItem(list,pos,parent);
         pos = parentpos;
@@ -155,13 +177,34 @@ _siftup(PyObject *list, int pos) {
     while (childpos < endpos) {
         rightpos = childpos + 1;
         child = PySequence_Fast_GET_ITEM(list,childpos);
+
+        PyObject *childCTask_this = PyObject_GetAttrString(child, "this");
+        nassertr(childCTask_this != NULL, false);        
+        CTask *childCTask = (CTask *)PyInt_AsLong(childCTask_this);
+        Py_DECREF(childCTask_this);
+
+
         if (rightpos < endpos) {
             right = PySequence_Fast_GET_ITEM(list,rightpos);
+
+            PyObject *rightCTask_this = PyObject_GetAttrString(right, "this");
+            nassertr(rightCTask_this != NULL, false);    
+            CTask *rightCTask = (CTask *)PyInt_AsLong(rightCTask_this);
+            Py_DECREF(rightCTask_this);
+
+            /*
             cmp = PyObject_RichCompareBool(right,child,Py_LE);
             if (cmp > 0)
-                childpos = rightpos;
+              childpos = rightpos;
             else if (cmp < 0)
-                return -1;
+              return -1;
+            */
+
+            if (rightCTask->get_wake_time() <= childCTask->get_wake_time()) {
+              childpos = rightpos;
+            } else {
+              return -1;
+            }
         }
         child = PySequence_GetItem(list,childpos);
         PyList_SetItem(list,pos,child);

@@ -7,9 +7,18 @@
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_DIRECT
 
+
+#define OTHER_LIBS \
+  pandaexpress:m \
+  dconfig:c dtoolconfig:m \
+  dtoolutil:c dtoolbase:c dtool:m
+
 #begin metalib_target
   #define TARGET heapq
 
-  #define SOURCES heapq.c
+  #define LOCAL_LIBS \
+    task
+
+  #define SOURCES heapq.cxx
 #end metalib_target
 

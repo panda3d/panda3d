@@ -5,7 +5,8 @@
 # subset of PandaModules that we know is available immediately.
 # Methods that require more advanced C++ methods may import the
 # appropriate files within their own scope.
-from pandac.libpandaexpressModules import *
+# from pandac.libpandaexpressModules import *
+from pandac.libdirectModules import *
 
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.PythonUtil import *
@@ -63,9 +64,14 @@ def print_exc_plus():
             except:
                 print "<ERROR WHILE PRINTING VALUE>"
 
-class Task:
+# Here we inherit from CTask so that we can drop the expensive work
+# that the task does down into C++. The main reason to do this is
+# to move the compare operator for the heapq data structure.
+
+class Task(CTask):
     count = 0
     def __init__(self, callback, priority = 0):
+        CTask.__init__(self)
         # Unique ID for each task
         self.id = Task.count
         Task.count += 1
@@ -79,16 +85,14 @@ class Task:
             self.runningTotal = 0.0
             self.pstats = None
         self.extraArgs = None
-        # Used for doLaters
-        self.wakeTime = 0.0
 
     # Used for putting into the doLaterList
     # the heapq calls __cmp__ via the rich compare function
     def __cmp__(self, other):
         if isinstance(other, Task):
-            if self.wakeTime < other.wakeTime:
+            if self.getWakeTime() < other.getWakeTime():
                 return -1
-            elif self.wakeTime > other.wakeTime:
+            elif self.getWakeTime() > other.getWakeTime():
                 return 1
             # If the wakeTimes happen to be the same, just
             # sort them based on id
@@ -386,7 +390,7 @@ class TaskManager:
                 continue
             # If the time now is less than the start of the doLater + delay
             # then we are not ready yet, continue to next one
-            elif task.time < dl.wakeTime:
+            elif task.time < dl.getWakeTime():
                 # Since the list is sorted, the first one we get to, that
                 # is not ready to go, we can return
                 break
@@ -423,7 +427,7 @@ class TaskManager:
         # have been synced since the start of this frame
         currentTime = globalClock.getFrameTime()
         # Cache the time we should wake up for easier sorting
-        task.wakeTime = currentTime + delayTime
+        task.setWakeTime(currentTime + delayTime)
         # Push this onto the doLaterList. The heap maintains the sorting.
         heappush(self.__doLaterList, task)
         if self.fVerbose:
@@ -853,7 +857,7 @@ class TaskManager:
         sortedDoLaterList.sort()
         sortedDoLaterList.reverse()
         for task in sortedDoLaterList:
-            remainingTime = ((task.wakeTime) - self.currentTime)
+            remainingTime = ((task.getWakeTime()) - self.currentTime)
             if task.isRemoved():
                 taskName = '(R)' + task.name
             else:
