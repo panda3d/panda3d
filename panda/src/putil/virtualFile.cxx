@@ -67,7 +67,7 @@ read_file(Datagram &data) const {
     data.add_int8(byte);
     byte = in->get();
   }
-  bool failed = in->fail();
+  bool failed = in->fail() && !in->eof();
   delete in;
 
   if (failed) {
