@@ -20,6 +20,7 @@
     cycleData.h cycleData.I \
     cycleDataReader.h cycleDataReader.I \
     cycleDataWriter.h cycleDataWriter.I \
+    drawMask.h \
     factoryBase.I factoryBase.h \
     factoryParam.I factoryParam.h factoryParams.I \
     factoryParams.h \
@@ -91,6 +92,7 @@
     cycleData.h cycleData.I \
     cycleDataReader.h cycleDataReader.I \
     cycleDataWriter.h cycleDataWriter.I \
+    drawMask.h \
     factoryBase.I factoryBase.h factoryParam.I factoryParam.h \
     factoryParams.I factoryParams.h \
     firstOfPairCompare.I firstOfPairCompare.h \

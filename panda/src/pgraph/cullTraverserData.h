@@ -25,6 +25,7 @@
 #include "transformState.h"
 #include "geometricBoundingVolume.h"
 #include "pointerTo.h"
+#include "drawMask.h"
 
 class PandaNode;
 
@@ -54,7 +55,7 @@ public:
   INLINE void operator = (const CullTraverserData &copy);
   INLINE ~CullTraverserData();
 
-  INLINE bool is_in_view(PandaNode *node);
+  INLINE bool is_in_view(PandaNode *node, const DrawMask &camera_mask);
   void apply_transform_and_state(PandaNode *node);
 
   CPT(TransformState) _render_transform;

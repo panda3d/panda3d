@@ -107,6 +107,24 @@ INLINE PandaNode::CData::
 CData() {
   _state = RenderState::make_empty();
   _transform = TransformState::make_identity();
+  _draw_mask = DrawMask::all_on();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CData::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode::CData::
+CData(const PandaNode::CData &copy) :
+  _down(copy._down),
+  _stashed(copy._stashed),
+  _up(copy._up),
+  _paths(copy._paths),
+  _state(copy._state),
+  _transform(copy._transform),
+  _draw_mask(copy._draw_mask)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -235,6 +253,98 @@ get_child_sort(int n) const {
   CDReader cdata(_cycler);
   nassertr(n >= 0 && n < (int)cdata->_down.size(), -1);
   return cdata->_down[n].get_sort();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::stash_child
+//       Access: Published
+//  Description: Stashes the indicated child node.  This removes the
+//               child from the list of active children and puts it on
+//               a special list of stashed children.  This child node
+//               no longer contributes to the bounding volume of the
+//               PandaNode, and is not visited in normal traversals.
+//               It is invisible and uncollidable.  The child may
+//               later be restored by calling unstash_child().
+//
+//               This function returns true if the child node was
+//               successfully stashed, or false if it was not a child
+//               of the node in the first place (e.g. it was
+//               previously stashed).
+////////////////////////////////////////////////////////////////////
+INLINE bool PandaNode::
+stash_child(PandaNode *child_node) {
+  int child_index = find_child(child_node);
+  if (child_index < 0) {
+    return false;
+  }
+  stash_child(child_index);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::unstash_child
+//       Access: Published
+//  Description: Returns the indicated stashed node to normal child
+//               status.  This removes the child from the list of
+//               stashed children and puts it on the normal list of
+//               active children.  This child node once again
+//               contributes to the bounding volume of the PandaNode,
+//               and will be visited in normal traversals.  It is
+//               visible and collidable.
+//
+//               This function returns true if the child node was
+//               successfully stashed, or false if it was not a child
+//               of the node in the first place (e.g. it was
+//               previously stashed).
+////////////////////////////////////////////////////////////////////
+INLINE bool PandaNode::
+unstash_child(PandaNode *child_node) {
+  int stashed_index = find_stashed(child_node);
+  if (stashed_index < 0) {
+    return false;
+  }
+  unstash_child(stashed_index);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_num_stashed
+//       Access: Published
+//  Description: Returns the number of stashed nodes this node has.
+//               These are former children of the node that have been
+//               moved to the special stashed list via stash_child().
+////////////////////////////////////////////////////////////////////
+INLINE int PandaNode::
+get_num_stashed() const {
+  CDReader cdata(_cycler);
+  return cdata->_stashed.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_stashed
+//       Access: Published
+//  Description: Returns the nth stashed node of this node.  See
+//               get_num_stashed().
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode *PandaNode::
+get_stashed(int n) const {
+  CDReader cdata(_cycler);
+  nassertr(n >= 0 && n < (int)cdata->_stashed.size(), NULL);
+  return cdata->_stashed[n].get_child();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_stashed_sort
+//       Access: Published
+//  Description: Returns the sort index of the nth stashed node of this
+//               node (that is, the number that was passed to
+//               add_child()).  See get_num_stashed().
+////////////////////////////////////////////////////////////////////
+INLINE int PandaNode::
+get_stashed_sort(int n) const {
+  CDReader cdata(_cycler);
+  nassertr(n >= 0 && n < (int)cdata->_stashed.size(), -1);
+  return cdata->_stashed[n].get_sort();
 }
 
 
@@ -395,6 +505,37 @@ clear_transform() {
 INLINE void PandaNode::
 ls(ostream &out, int indent_level) const {
   r_list_descendants(out, indent_level);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_draw_mask
+//       Access: Published
+//  Description: Sets the hide/show bits of this particular node.
+//
+//               During the cull traversal, a node is not visited if
+//               none of its draw mask bits intersect with the
+//               camera's draw mask bits.  These masks can be used to
+//               selectively hide and show different parts of the
+//               scene graph from different cameras that are otherwise
+//               viewing the same scene.  See
+//               Camera::set_camera_mask().
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+set_draw_mask(DrawMask mask) {
+  CDWriter cdata(_cycler);
+  cdata->_draw_mask = mask;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_draw_mask
+//       Access: Published
+//  Description: Returns the hide/show bits of this particular node.
+//               See set_draw_mask().
+////////////////////////////////////////////////////////////////////
+INLINE DrawMask PandaNode::
+get_draw_mask() const {
+  CDReader cdata(_cycler);
+  return cdata->_draw_mask;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -50,8 +50,8 @@ class Fog;
 //               easily be copied and passed by value.  Their data is
 //               stored as a series of NodePathComponents that are
 //               stored on the nodes.  Holding a NodePath will keep a
-//               reference count to all the nodes in the chain.
-//               However, if any node in the chain is removed or
+//               reference count to all the nodes in the path.
+//               However, if any node in the path is removed or
 //               reparented (perhaps through a different NodePath),
 //               the NodePath will automatically be updated to reflect
 //               the changes.
@@ -375,14 +375,14 @@ PUBLISHED:
 
   // Variants on show and hide
   INLINE void show();
+  INLINE void show(DrawMask camera_mask);
   INLINE void hide();
-  INLINE void show_collision_solids();
-  INLINE void hide_collision_solids();
-  INLINE bool is_hidden() const;
-  qpNodePath get_hidden_ancestor() const;
+  INLINE void hide(DrawMask camera_mask);
+  INLINE bool is_hidden(DrawMask camera_mask = DrawMask::all_on()) const;
+  qpNodePath get_hidden_ancestor(DrawMask camera_mask = DrawMask::all_on()) const;
 
-  INLINE void stash();
-  INLINE void unstash();
+  INLINE bool stash();
+  INLINE bool unstash();
   INLINE bool is_stashed() const;
   qpNodePath get_stashed_ancestor() const;
 
@@ -404,7 +404,6 @@ private:
   CPT(TransformState) r_get_net_transform(qpNodePathComponent *comp) const;
   CPT(TransformState) r_get_partial_transform(qpNodePathComponent *comp, int n) const;
   void r_output(ostream &out, qpNodePathComponent *comp) const;
-  static int r_compare_to(const qpNodePathComponent *a, const qpNodePathComponent *v);
 
   PT(qpNodePathComponent) _head;
   ErrorType _error_type;

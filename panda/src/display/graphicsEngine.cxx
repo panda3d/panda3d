@@ -237,6 +237,7 @@ do_cull(CullHandler *cull_handler, const qpNodePath &camera,
 
   qpCullTraverser trav;
   trav.set_cull_handler(cull_handler);
+  trav.set_camera_mask(camera_node->get_camera_mask());
 
   // We will need both the camera transform (the net transform to the
   // camera from the scene) and the world transform (the camera

@@ -107,7 +107,7 @@ get_node() const {
 //     Function: qpNodePathComponent::is_top_node
 //       Access: Public
 //  Description: Returns true if this component represents the top
-//               node in the chain.
+//               node in the path.
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpNodePathComponent::
 is_top_node() const {
@@ -132,7 +132,7 @@ is_collapsed() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpNodePathComponent::get_length
 //       Access: Public
-//  Description: Returns the length of the chain.
+//  Description: Returns the length of the path.
 ////////////////////////////////////////////////////////////////////
 INLINE int qpNodePathComponent::
 get_length() const {
@@ -158,7 +158,7 @@ get_collapsed() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpNodePathComponent::set_next
 //       Access: Private
-//  Description: Sets the next pointer in the chain.
+//  Description: Sets the next pointer in the path.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpNodePathComponent::
 set_next(qpNodePathComponent *next) {
@@ -172,7 +172,7 @@ set_next(qpNodePathComponent *next) {
 //     Function: qpNodePathComponent::set_top_node
 //       Access: Private
 //  Description: Severs any connection to the next pointer in the
-//               chain and makes this component a top node.
+//               path and makes this component a top node.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpNodePathComponent::
 set_top_node() {

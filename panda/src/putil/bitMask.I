@@ -21,7 +21,7 @@ TypeHandle BitMask<WordType, num_bits>::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -33,7 +33,7 @@ BitMask() :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -45,7 +45,7 @@ BitMask(WordType init_value) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -57,7 +57,7 @@ BitMask(const BitMask<WordType, num_bits> &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::Copy Assignment Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -68,7 +68,7 @@ operator = (const BitMask<WordType, num_bits> &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::Named all_on constructor
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns a BitMask whose bits are all on.
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -81,7 +81,7 @@ all_on() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::Named all_on constructor
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns a BitMask whose bits are all off.
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -94,7 +94,7 @@ all_off() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::Named lower_on constructor
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns a BitMask whose lower num_bits bits are on.
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -112,7 +112,7 @@ lower_on(int on_bits) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::Named bit constructor
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns a BitMask with only the indicated bit on.
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -125,7 +125,7 @@ bit(int index) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -135,7 +135,7 @@ INLINE BitMask<WordType, num_bits>::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::get_num_bits
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of bits available to set in the
 //               bitmask.
 ////////////////////////////////////////////////////////////////////
@@ -147,7 +147,7 @@ get_num_bits() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::get_bit
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the nth bit is set, false if it is
 //               cleared.  index must be in the range [0,
 //               get_num_bits).
@@ -161,7 +161,7 @@ get_bit(int index) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::set_bit
-//       Access: Public
+//       Access: Published
 //  Description: Sets the nth bit on.  index must be in the range
 //               [0, get_num_bits).
 ////////////////////////////////////////////////////////////////////
@@ -174,7 +174,7 @@ set_bit(int index) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::clear_bit
-//       Access: Public
+//       Access: Published
 //  Description: Sets the nth bit off.  index must be in the range
 //               [0, get_num_bits).
 ////////////////////////////////////////////////////////////////////
@@ -187,7 +187,7 @@ clear_bit(int index) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::set_bit_to
-//       Access: Public
+//       Access: Published
 //  Description: Sets the nth bit either on or off, according to the
 //               indicated bool value.  index must be in the range [0,
 //               get_num_bits).
@@ -203,8 +203,20 @@ set_bit_to(int index, bool value) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BitMask::is_zero
+//       Access: Published
+//  Description: Returns true if the entire bitmask is zero, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+template<class WordType, int num_bits>
+INLINE bool BitMask<WordType, num_bits>::
+is_zero() const {
+  return (_word == 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BitMask::extract
-//       Access: Public
+//       Access: Published
 //  Description: Returns a word that represents only the indicated
 //               range of bits within this BitMask, shifted to the
 //               least-significant position.
@@ -218,7 +230,7 @@ extract(int low_bit, int size) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::store
-//       Access: Public
+//       Access: Published
 //  Description: Stores the indicated word into the indicated range of
 //               bits with this BitMask.
 ////////////////////////////////////////////////////////////////////
@@ -232,7 +244,7 @@ store(WordType value, int low_bit, int size) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::get_word
-//       Access: Public
+//       Access: Published
 //  Description: Returns the entire BitMask as a single word.
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -243,7 +255,7 @@ get_word() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::set_word
-//       Access: Public
+//       Access: Published
 //  Description: Sets the entire BitMask to the value indicated by the
 //               given word.
 ////////////////////////////////////////////////////////////////////
@@ -255,7 +267,7 @@ set_word(WordType value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::invert_in_place
-//       Access: Public
+//       Access: Published
 //  Description: Inverts all the bits in the BitMask.
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -266,7 +278,7 @@ invert_in_place() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::clear
-//       Access: Public
+//       Access: Published
 //  Description: Sets all the bits in the BitMask off.
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -277,7 +289,7 @@ clear() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::output
-//       Access: Public
+//       Access: Published
 //  Description: Writes the BitMask out as a binary or a hex number,
 //               according to the number of bits.
 ////////////////////////////////////////////////////////////////////
@@ -293,7 +305,7 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::output_binary
-//       Access: Public
+//       Access: Published
 //  Description: Writes the BitMask out as a binary number, with
 //               spaces every four bits.
 ////////////////////////////////////////////////////////////////////
@@ -310,7 +322,7 @@ output_binary(ostream &out, int spaces_every) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::output_hex
-//       Access: Public
+//       Access: Published
 //  Description: Writes the BitMask out as a hexadecimal number, with
 //               spaces every four digits.
 ////////////////////////////////////////////////////////////////////
@@ -334,7 +346,7 @@ output_hex(ostream &out, int spaces_every) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::write
-//       Access: Public
+//       Access: Published
 //  Description: Writes the BitMask out as a binary or a hex number,
 //               according to the number of bits.
 ////////////////////////////////////////////////////////////////////
@@ -346,7 +358,7 @@ write(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator ==
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -357,7 +369,7 @@ operator == (const BitMask<WordType, num_bits> &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator !=
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -368,7 +380,7 @@ operator != (const BitMask<WordType, num_bits> &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator <
-//       Access: Public
+//       Access: Published
 //  Description: The ordering operator is of limited usefulness with a
 //               BitMask, however, it has a definition which places
 //               all unique BitMasks into a unique ordering.  It may
@@ -385,7 +397,7 @@ operator < (const BitMask<WordType, num_bits> &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::compare_to
-//       Access: Public
+//       Access: Published
 //  Description: Returns a number less than zero if this BitMask sorts
 //               before the indicated other BitMask, greater than zero
 //               if it sorts after, or 0 if they are equivalent.  This
@@ -405,7 +417,7 @@ compare_to(const BitMask<WordType, num_bits> &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator &
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -418,7 +430,7 @@ operator & (const BitMask<WordType, num_bits> &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator |
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -431,7 +443,7 @@ operator | (const BitMask<WordType, num_bits> &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator ^
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -444,7 +456,7 @@ operator ^ (const BitMask<WordType, num_bits> &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator ~
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -457,7 +469,7 @@ operator ~ () const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator <<
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -470,7 +482,7 @@ operator << (int shift) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator >>
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -483,7 +495,7 @@ operator >> (int shift) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator &=
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -494,7 +506,7 @@ operator &= (const BitMask<WordType, num_bits> &other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator |=
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -505,7 +517,7 @@ operator |= (const BitMask<WordType, num_bits> &other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator ^=
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -516,7 +528,7 @@ operator ^= (const BitMask<WordType, num_bits> &other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator <<=
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
@@ -527,7 +539,7 @@ operator <<= (int shift) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator >>=
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>

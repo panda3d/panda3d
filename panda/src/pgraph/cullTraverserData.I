@@ -88,7 +88,13 @@ INLINE CullTraverserData::
 //               future nodes.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CullTraverserData::
-is_in_view(PandaNode *node) {
+is_in_view(PandaNode *node, const DrawMask &camera_mask) {
+  if ((node->get_draw_mask() & camera_mask).is_zero()) {
+    // If there are no draw bits in common with the camera, the node
+    // is out.
+    return false;
+  }
+
   if (_view_frustum == (GeometricBoundingVolume *)NULL) {
     // If the transform is valid, but we don't have a frustum, it's
     // always in.

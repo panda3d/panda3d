@@ -23,6 +23,7 @@
 
 #include "qplensNode.h"
 #include "qpnodePath.h"
+#include "drawMask.h"
 
 class DisplayRegion;
 
@@ -55,12 +56,17 @@ PUBLISHED:
   INLINE int get_num_display_regions() const;
   INLINE DisplayRegion *get_display_region(int n) const;
 
+  INLINE void set_camera_mask(DrawMask mask);
+  INLINE DrawMask get_camera_mask() const;
+
 private:
   void add_display_region(DisplayRegion *display_region);
   void remove_display_region(DisplayRegion *display_region);
 
   bool _active;
   qpNodePath _scene;
+
+  DrawMask _camera_mask;
 
   typedef pvector<DisplayRegion *> DisplayRegions;
   DisplayRegions _display_regions;

@@ -34,7 +34,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpNodePathComponent::get_next
 //       Access: Public
-//  Description: Returns the next component in the chain.
+//  Description: Returns the next component in the path.
 ////////////////////////////////////////////////////////////////////
 qpNodePathComponent *qpNodePathComponent::
 get_next() const {
@@ -46,7 +46,7 @@ get_next() const {
   // If the next component has been collapsed, transparently update
   // the pointer to get the actual node, and store the new pointer,
   // before we return.  Collapsing can happen at any time to any
-  // component in the chain and we have to deal with it.
+  // component in the path and we have to deal with it.
   if (next != (qpNodePathComponent *)NULL && next->is_collapsed()) {
     next = next->uncollapse();
     ((qpNodePathComponent *)this)->set_next(next);
@@ -86,8 +86,8 @@ fix_length() {
 //               the pointer it has been collapsed into.
 //
 //               Collapsing can happen at any time to any component in
-//               the chain and we have to deal with it.  It happens
-//               when a node is removed further up the chain that
+//               the path and we have to deal with it.  It happens
+//               when a node is removed further up the path that
 //               results in two instances becoming the same thing.
 ////////////////////////////////////////////////////////////////////
 qpNodePathComponent *qpNodePathComponent::

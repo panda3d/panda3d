@@ -31,7 +31,8 @@ TypeHandle qpCamera::_type_handle;
 qpCamera::
 qpCamera(const string &name) :
   qpLensNode(name),
-  _active(true)
+  _active(true),
+  _camera_mask(DrawMask::all_on())
 {
 }
 
@@ -44,7 +45,8 @@ qpCamera::
 qpCamera(const qpCamera &copy) :
   qpLensNode(copy),
   _active(copy._active),
-  _scene(copy._scene)
+  _scene(copy._scene),
+  _camera_mask(copy._camera_mask)
 {
 }
 
@@ -150,6 +152,9 @@ register_with_read_factory() {
 void qpCamera::
 write_datagram(BamWriter *manager, Datagram &dg) {
   qpLensNode::write_datagram(manager, dg);
+
+  dg.add_bool(_active);
+  dg.add_uint32(_camera_mask.get_word());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -182,4 +187,7 @@ make_from_bam(const FactoryParams &params) {
 void qpCamera::
 fillin(DatagramIterator &scan, BamReader *manager) {
   qpLensNode::fillin(scan, manager);
+
+  _active = scan.get_bool();
+  _camera_mask.set_word(scan.get_uint32());
 }

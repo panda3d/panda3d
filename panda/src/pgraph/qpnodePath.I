@@ -922,59 +922,67 @@ adjust_all_priorities(int adjustment) {
 //       Access: Published
 //  Description: Undoes the effect of a previous hide() on this node:
 //               makes the referenced node (and the entire subgraph
-//               below this node) visible.
+//               below this node) visible to all cameras.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpNodePath::
 show() {
-  nassertv(false);
+  nassertv(!is_empty());
+  node()->set_draw_mask(DrawMask::all_on());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::show
+//       Access: Published
+//  Description: Makes the referenced node visible just to the
+//               cameras whose camera_mask shares the indicated bits.
+//               That is, this sets the indicated bits in the
+//               node's draw mask.
+////////////////////////////////////////////////////////////////////
+INLINE void qpNodePath::
+show(DrawMask camera_mask) {
+  nassertv(!is_empty());
+  node()->set_draw_mask(node()->get_draw_mask() | camera_mask);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::hide
 //       Access: Published
 //  Description: Makes the referenced node (and the entire subgraph
-//               below this node) invisible to rendering.  It remains
-//               part of the scene graph, its bounding volume still
-//               contributes to its parent's bounding volume, and it
-//               will still be involved in collision tests.
+//               below this node) invisible to all cameras.  It
+//               remains part of the scene graph, its bounding volume
+//               still contributes to its parent's bounding volume,
+//               and it will still be involved in collision tests.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpNodePath::
 hide() {
-  nassertv(false);
+  nassertv(!is_empty());
+  node()->set_draw_mask(DrawMask::all_off());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpNodePath::show_collision_solids
+//     Function: qpNodePath::hide
 //       Access: Published
-//  Description: Shows all the collision solids at and below the
-//               referenced node.
+//  Description: Makes the referenced node invisible just to the
+//               cameras whose camera_mask shares the indicated bits.
+//               That is, this clears the indicated bits from the
+//               node's draw mask.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpNodePath::
-show_collision_solids() {
-  nassertv(false);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpNodePath::hide_collision_solids
-//       Access: Published
-//  Description: Hides all the collision solids at and below the
-//               referenced node.
-////////////////////////////////////////////////////////////////////
-INLINE void qpNodePath::
-hide_collision_solids() {
-  nassertv(false);
+hide(DrawMask camera_mask) {
+  nassertv(!is_empty());
+  node()->set_draw_mask(node()->get_draw_mask() & ~camera_mask);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::is_hidden
 //       Access: Published
-//  Description: Returns true if the referenced node is hidden either
-//               directly, or because some ancestor is hidden.
+//  Description: Returns true if the referenced node is hidden from
+//               the indicated camera(s) either directly, or because
+//               some ancestor is hidden.
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpNodePath::
-is_hidden() const {
-  nassertr(false, false);
-  return false;
+is_hidden(DrawMask camera_mask) const {
+  return !get_hidden_ancestor(camera_mask).is_empty();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -983,11 +991,13 @@ is_hidden() const {
 //  Description: Undoes the effect of a previous stash() on this
 //               node: makes the referenced node (and the entire
 //               subgraph below this node) once again part of the
-//               scene graph.
+//               scene graph.  Returns true if the node is unstashed,
+//               or false if it wasn't stashed to begin with.
 ////////////////////////////////////////////////////////////////////
-INLINE void qpNodePath::
+INLINE bool qpNodePath::
 unstash() {
-  nassertv(false);
+  nassertr(!is_singleton(), false);
+  return get_parent().node()->unstash_child(node());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1004,10 +1014,14 @@ unstash() {
 //               A stashed node cannot be located by a normal find()
 //               operation (although a special find string can still
 //               retrieve it).
+//
+//               Returns true if the node is successfully stashed, or
+//               false if it was already stashed.
 ////////////////////////////////////////////////////////////////////
-INLINE void qpNodePath::
+INLINE bool qpNodePath::
 stash() {
-  nassertv(false);
+  nassertr(!is_singleton(), false);
+  return get_parent().node()->stash_child(node());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1018,8 +1032,7 @@ stash() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpNodePath::
 is_stashed() const {
-  nassertr(false, false);
-  return false;
+  return !get_stashed_ancestor().is_empty();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1075,7 +1088,10 @@ operator < (const qpNodePath &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int qpNodePath::
 compare_to(const qpNodePath &other) const {
-  return r_compare_to(_head, other._head);
+  // Nowadays, the NodePathComponents at the head are pointerwise
+  // equivalent if and only iff the NodePaths are equivalent.  So we
+  // only have to compare pointers.
+  return _head - other._head;
 }
 
 

@@ -484,9 +484,7 @@ output(ostream &out) const {
     out << "(identity)";
 
   } else if (has_components()) {
-    if (components_given()) {
-      out << "c";
-    } else {
+    if (!components_given()) {
       out << "m";
     }
     char lead = '(';

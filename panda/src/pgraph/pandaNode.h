@@ -27,7 +27,7 @@
 #include "pipelineCycler.h"
 #include "renderState.h"
 #include "transformState.h"
-
+#include "drawMask.h"
 #include "typedWritable.h"
 #include "boundedObject.h"
 #include "namable.h"
@@ -88,13 +88,15 @@ PUBLISHED:
   void remove_child(int n);
   bool remove_child(PandaNode *child_node);
 
-  /*
-  bool stash_child(PandaNode *child);
-  bool unstash_child(PandaNode *child);
+  INLINE bool stash_child(PandaNode *child_node);
+  void stash_child(int child_index);
+  INLINE bool unstash_child(PandaNode *child_node);
+  void unstash_child(int stashed_index);
   INLINE int get_num_stashed() const;
   INLINE PandaNode *get_stashed(int n) const;
-  INLINE PandaNode *get_stashed_sort(int n) const;
-  */
+  INLINE int get_stashed_sort(int n) const;
+  int find_stashed(PandaNode *node) const;
+  void remove_stashed(int n);
 
   void remove_all_children();
 
@@ -110,6 +112,9 @@ PUBLISHED:
   INLINE void set_transform(const TransformState *transform);
   INLINE const TransformState *get_transform() const;
   INLINE void clear_transform();
+
+  INLINE void set_draw_mask(DrawMask mask);
+  INLINE DrawMask get_draw_mask() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
@@ -166,7 +171,7 @@ private:
   PT(qpNodePathComponent) get_generic_component();
   void delete_component(qpNodePathComponent *component);
   class CData;
-  void fix_chain_lengths(const CData *cdata);
+  void fix_path_lengths(const CData *cdata);
   void r_list_descendants(ostream &out, int indent_level) const;
 
 private:
@@ -204,24 +209,26 @@ private:
   // requested a qpNodePath for.  We don't keep reference counts; when
   // each qpNodePathComponent destructs, it removes itself from this
   // set.
-  typedef pset<qpNodePathComponent *> Chains;
+  typedef pset<qpNodePathComponent *> Paths;
   
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
   public:
     INLINE CData();
-    CData(const CData &copy);
+    INLINE CData(const CData &copy);
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
     virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
     Down _down;
+    Down _stashed;
     Up _up;
-    Chains _chains;
+    Paths _paths;
 
     CPT(RenderState) _state;
     CPT(TransformState) _transform;
+    DrawMask _draw_mask;
   };
 
   PipelineCycler<CData> _cycler;

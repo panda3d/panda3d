@@ -54,6 +54,7 @@ PUBLISHED:
   INLINE void set_bit(int index);
   INLINE void clear_bit(int index);
   INLINE void set_bit_to(int index, bool value);
+  INLINE bool is_zero() const;
 
   INLINE WordType extract(int low_bit, int size) const;
   INLINE void store(WordType value, int low_bit, int size);

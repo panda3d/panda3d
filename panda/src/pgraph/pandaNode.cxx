@@ -29,21 +29,6 @@ TypeHandle PandaNode::_type_handle;
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CData::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-PandaNode::CData::
-CData(const PandaNode::CData &copy) :
-  _down(copy._down),
-  _up(copy._up),
-  _chains(copy._chains),
-  _state(copy._state),
-  _transform(copy._transform)
-{
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::CData::make_copy
 //       Access: Public, Virtual
 //  Description:
@@ -63,6 +48,8 @@ void PandaNode::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
   manager->write_pointer(dg, _state);
   manager->write_pointer(dg, _transform);
+
+  dg.add_uint32(_draw_mask.get_word());
 
   // When we write a PandaNode, we write out its complete list of
   // child node pointers, but we only write out the parent node
@@ -96,11 +83,22 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
 
   // **** We should smarten up the writing of the sort number--most of
   // the time these will all be zero.
-  Down::const_iterator ci;
-  for (ci = _down.begin(); ci != _down.end(); ++ci) {
-    PandaNode *child_node = (*ci).get_child();
-    int sort = (*ci).get_sort();
+  Down::const_iterator di;
+  for (di = _down.begin(); di != _down.end(); ++di) {
+    PandaNode *child_node = (*di).get_child();
+    int sort = (*di).get_sort();
     manager->write_pointer(dg, child_node);
+    dg.add_int32(sort);
+  }
+
+  int num_stashed = _stashed.size();
+  nassertv(num_stashed == (int)(PN_uint16)num_stashed);
+  dg.add_uint16(num_stashed);
+
+  for (di = _stashed.begin(); di != _stashed.end(); ++di) {
+    PandaNode *stashed_node = (*di).get_child();
+    int sort = (*di).get_sort();
+    manager->write_pointer(dg, stashed_node);
     dg.add_int32(sort);
   }
 }
@@ -141,6 +139,13 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     (*di) = DownConnection(child_node, sort);
   }
 
+  // Get the stashed pointers.
+  for (di = _stashed.begin(); di != _stashed.end(); ++di) {
+    int sort = (*di).get_sort();
+    PT(PandaNode) stashed_node = DCAST(PandaNode, p_list[pi++]);
+    (*di) = DownConnection(stashed_node, sort);
+  }
+
   return pi;
 }
 
@@ -157,6 +162,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   manager->read_pointer(scan);
   manager->read_pointer(scan);
 
+  _draw_mask.set_word(scan.get_uint32());
+
   int num_parents = scan.get_uint16();
   // Read the list of parent nodes.  Push back a NULL for each one.
   _up.reserve(num_parents);
@@ -172,6 +179,15 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     manager->read_pointer(scan);
     int sort = scan.get_int32();
     _down.push_back(DownConnection(NULL, sort));
+  }
+
+  int num_stashed = scan.get_uint16();
+  // Read the list of stashed nodes.  Push back a NULL for each one.
+  _stashed.reserve(num_stashed);
+  for (int i = 0; i < num_stashed; i++) {
+    manager->read_pointer(scan);
+    int sort = scan.get_int32();
+    _stashed.push_back(DownConnection(NULL, sort));
   }
 }
 
@@ -460,10 +476,10 @@ find_child(PandaNode *node) const {
 
   // We have to search for the child by brute force, since we don't
   // know what sort index it was added as.
-  Down::const_iterator ci;
-  for (ci = cdata->_down.begin(); ci != cdata->_down.end(); ++ci) {
-    if ((*ci).get_child() == node) {
-      return ci - cdata->_down.begin();
+  Down::const_iterator di;
+  for (di = cdata->_down.begin(); di != cdata->_down.end(); ++di) {
+    if ((*di).get_child() == node) {
+      return di - cdata->_down.begin();
     }
   }
 
@@ -484,30 +500,28 @@ find_child(PandaNode *node) const {
 void PandaNode::
 add_child(PandaNode *child_node, int sort) {
   // Ensure the child_node is not deleted while we do this.
-  {
-    PT(PandaNode) keep_child = child_node;
-    remove_child(child_node);
-
-    CDWriter cdata(_cycler);
-    CDWriter cdata_child(child_node->_cycler);
-    
-    cdata->_down.insert(DownConnection(child_node, sort));
-    cdata_child->_up.insert(UpConnection(this));
-    
-    // We also have to adjust any qpNodePathComponents the child might
-    // have that reference the child as a top node.  Any other
-    // components we can leave alone, because we are making a new
-    // instance of the child.
-    Chains::iterator ci;
-    for (ci = cdata_child->_chains.begin();
-	 ci != cdata_child->_chains.end();
-	 ++ci) {
-      if ((*ci)->is_top_node()) {
-	(*ci)->set_next(get_generic_component());
-      }
+  PT(PandaNode) keep_child = child_node;
+  remove_child(child_node);
+  
+  CDWriter cdata(_cycler);
+  CDWriter cdata_child(child_node->_cycler);
+  
+  cdata->_down.insert(DownConnection(child_node, sort));
+  cdata_child->_up.insert(UpConnection(this));
+  
+  // We also have to adjust any qpNodePathComponents the child might
+  // have that reference the child as a top node.  Any other
+  // components we can leave alone, because we are making a new
+  // instance of the child.
+  Paths::iterator pi;
+  for (pi = cdata_child->_paths.begin();
+       pi != cdata_child->_paths.end();
+       ++pi) {
+    if ((*pi)->is_top_node()) {
+      (*pi)->set_next(get_generic_component());
     }
-    child_node->fix_chain_lengths(cdata_child);
   }
+  child_node->fix_path_lengths(cdata_child);
 
   // Mark the bounding volumes stale.
   force_bound_stale();
@@ -524,47 +538,44 @@ add_child(PandaNode *child_node, int sort) {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 remove_child(int n) {
-  PT(PandaNode) child_node;
-  {
-    CDWriter cdata(_cycler);
-    nassertv(n >= 0 && n < (int)cdata->_down.size());
-    
-    child_node = cdata->_down[n].get_child();
-    CDWriter cdata_child(child_node->_cycler);
-    
-    cdata->_down.erase(cdata->_down.begin() + n);
-    int num_erased = cdata_child->_up.erase(UpConnection(this));
-    nassertv(num_erased == 1);
-    
-    // Now sever any qpNodePathComponents on the child that reference
-    // this node.  If we have multiple of these, we have to collapse
-    // them together.
-    qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
-    Chains::iterator ci;
-    ci = cdata_child->_chains.begin();
-    while (ci != cdata_child->_chains.end()) {
-      Chains::iterator cnext = ci;
-      ++cnext;
-      if (!(*ci)->is_top_node() && (*ci)->get_next()->get_node() == this) {
-	if (collapsed == (qpNodePathComponent *)NULL) {
-	  (*ci)->set_top_node();
-	  collapsed = (*ci);
-	} else {
-	  // This is a different component that used to reference a
-	  // different instance, but now it's all just the same topnode.
-	  // We have to collapse this and the previous one together.
-	  // However, there might be some qpNodePaths out there that
-	  // still keep a pointer to this one, so we can't remove it
-	  // altogether.
-	  (*ci)->collapse_with(collapsed);
-	  cdata_child->_chains.erase(ci);
-	}
+  CDWriter cdata(_cycler);
+  nassertv(n >= 0 && n < (int)cdata->_down.size());
+  
+  PT(PandaNode) child_node = cdata->_down[n].get_child();
+  CDWriter cdata_child(child_node->_cycler);
+  
+  cdata->_down.erase(cdata->_down.begin() + n);
+  int num_erased = cdata_child->_up.erase(UpConnection(this));
+  nassertv(num_erased == 1);
+  
+  // Now sever any qpNodePathComponents on the child that reference
+  // this node.  If we have multiple of these, we have to collapse
+  // them together.
+  qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
+  Paths::iterator pi;
+  pi = cdata_child->_paths.begin();
+  while (pi != cdata_child->_paths.end()) {
+    Paths::iterator pnext = pi;
+    ++pnext;
+    if (!(*pi)->is_top_node() && (*pi)->get_next()->get_node() == this) {
+      if (collapsed == (qpNodePathComponent *)NULL) {
+        (*pi)->set_top_node();
+        collapsed = (*pi);
+      } else {
+        // This is a different component that used to reference a
+        // different instance, but now it's all just the same topnode.
+        // We have to collapse this and the previous one together.
+        // However, there might be some qpNodePaths out there that
+        // still keep a pointer to this one, so we can't remove it
+        // altogether.
+        (*pi)->collapse_with(collapsed);
+        cdata_child->_paths.erase(pi);
       }
-      ci = cnext;
     }
-    
-    child_node->fix_chain_lengths(cdata_child);
+    pi = pnext;
   }
+  
+  child_node->fix_path_lengths(cdata_child);
 
   // Mark the bounding volumes stale.
   force_bound_stale();
@@ -586,53 +597,51 @@ remove_child(PandaNode *child_node) {
   // Ensure the child_node is not deleted while we do this.
   PT(PandaNode) keep_child = child_node;
     
-  {
-    CDWriter cdata(_cycler);
-    CDWriter cdata_child(child_node->_cycler);
-    
-    // First, look for and remove this node from the child's parent
-    // list.
-    int num_erased = cdata_child->_up.erase(UpConnection(this));
-    if (num_erased == 0) {
-      // No such node; it wasn't our child to begin with.
-      return false;
-    }
-    
-    // Now sever any qpNodePathComponents on the child that reference
-    // this node.  If we have multiple of these, we have to collapse
-    // them together (see above).
-    qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
-    Chains::iterator ci;
-    ci = cdata_child->_chains.begin();
-    while (ci != cdata_child->_chains.end()) {
-      Chains::iterator cnext = ci;
-      ++cnext;
-      if (!(*ci)->is_top_node() && (*ci)->get_next()->get_node() == this) {
-	if (collapsed == (qpNodePathComponent *)NULL) {
-	  (*ci)->set_top_node();
-	  collapsed = (*ci);
-	} else {
-	  (*ci)->collapse_with(collapsed);
-	  cdata_child->_chains.erase(ci);
-	}
-      }
-      ci = cnext;
-    }
-    
-    child_node->fix_chain_lengths(cdata_child);
-    
-    // Now, look for and remove the child node from our down list.
-    Down::iterator di;
-    bool found = false;
-    for (di = cdata->_down.begin(); di != cdata->_down.end() && !found; ++di) {
-      if ((*di).get_child() == child_node) {
-	cdata->_down.erase(di);
-	found = true;
-      }
-    }
-
-    nassertr(found, false);
+  CDWriter cdata(_cycler);
+  CDWriter cdata_child(child_node->_cycler);
+  
+  // First, look for and remove this node from the child's parent
+  // list.
+  int num_erased = cdata_child->_up.erase(UpConnection(this));
+  if (num_erased == 0) {
+    // No such node; it wasn't our child to begin with.
+    return false;
   }
+  
+  // Now sever any qpNodePathComponents on the child that reference
+  // this node.  If we have multiple of these, we have to collapse
+  // them together (see above).
+  qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
+  Paths::iterator pi;
+  pi = cdata_child->_paths.begin();
+  while (pi != cdata_child->_paths.end()) {
+    Paths::iterator pnext = pi;
+    ++pnext;
+    if (!(*pi)->is_top_node() && (*pi)->get_next()->get_node() == this) {
+      if (collapsed == (qpNodePathComponent *)NULL) {
+        (*pi)->set_top_node();
+        collapsed = (*pi);
+      } else {
+        (*pi)->collapse_with(collapsed);
+        cdata_child->_paths.erase(pi);
+      }
+    }
+    pi = pnext;
+  }
+  
+  child_node->fix_path_lengths(cdata_child);
+  
+  // Now, look for and remove the child node from our down list.
+  Down::iterator di;
+  bool found = false;
+  for (di = cdata->_down.begin(); di != cdata->_down.end() && !found; ++di) {
+    if ((*di).get_child() == child_node) {
+      cdata->_down.erase(di);
+      found = true;
+    }
+  }
+  
+  nassertr(found, false);
 
   // Mark the bounding volumes stale.
   force_bound_stale();
@@ -644,46 +653,244 @@ remove_child(PandaNode *child_node) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::stash_child
+//       Access: Published
+//  Description: Stashes the indicated child node.  This removes the
+//               child from the list of active children and puts it on
+//               a special list of stashed children.  This child node
+//               no longer contributes to the bounding volume of the
+//               PandaNode, and is not visited in normal traversals.
+//               It is invisible and uncollidable.  The child may
+//               later be restored by calling unstash_child().
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+stash_child(int child_index) {
+  nassertv(child_index >= 0 && child_index < get_num_children());
+  PT(PandaNode) child_node = get_child(child_index);
+  int sort = get_child_sort(child_index);
+  
+  remove_child(child_index);
+  
+  CDWriter cdata(_cycler);
+  CDWriter cdata_child(child_node->_cycler);
+  
+  cdata->_stashed.insert(DownConnection(child_node, sort));
+  cdata_child->_up.insert(UpConnection(this));
+  
+  // We also have to adjust any qpNodePathComponents the child might
+  // have that reference the child as a top node.  Any other
+  // components we can leave alone, because we are making a new
+  // instance of the child.
+  Paths::iterator pi;
+  for (pi = cdata_child->_paths.begin();
+       pi != cdata_child->_paths.end();
+       ++pi) {
+    if ((*pi)->is_top_node()) {
+      (*pi)->set_next(get_generic_component());
+    }
+  }
+  child_node->fix_path_lengths(cdata_child);
+
+  // Mark the bounding volumes stale.
+  force_bound_stale();
+
+  // Call callback hooks.
+  children_changed();
+  child_node->parents_changed();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::unstash_child
+//       Access: Published
+//  Description: Returns the indicated stashed node to normal child
+//               status.  This removes the child from the list of
+//               stashed children and puts it on the normal list of
+//               active children.  This child node once again
+//               contributes to the bounding volume of the PandaNode,
+//               and will be visited in normal traversals.  It is
+//               visible and collidable.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+unstash_child(int stashed_index) {
+  nassertv(stashed_index >= 0 && stashed_index < get_num_stashed());
+  PT(PandaNode) child_node = get_stashed(stashed_index);
+  int sort = get_stashed_sort(stashed_index);
+  
+  remove_stashed(stashed_index);
+  
+  CDWriter cdata(_cycler);
+  CDWriter cdata_child(child_node->_cycler);
+  
+  cdata->_down.insert(DownConnection(child_node, sort));
+  cdata_child->_up.insert(UpConnection(this));
+  
+  // We also have to adjust any qpNodePathComponents the child might
+  // have that reference the child as a top node.  Any other
+  // components we can leave alone, because we are making a new
+  // instance of the child.
+  Paths::iterator pi;
+  for (pi = cdata_child->_paths.begin();
+       pi != cdata_child->_paths.end();
+       ++pi) {
+    if ((*pi)->is_top_node()) {
+      (*pi)->set_next(get_generic_component());
+    }
+  }
+  child_node->fix_path_lengths(cdata_child);
+
+  // Mark the bounding volumes stale.
+  force_bound_stale();
+
+  // Call callback hooks.
+  children_changed();
+  child_node->parents_changed();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::find_stashed
+//       Access: Published
+//  Description: Returns the index of the indicated stashed node, if
+//               it is a stashed child, or -1 if it is not.
+////////////////////////////////////////////////////////////////////
+int PandaNode::
+find_stashed(PandaNode *node) const {
+  CDReader cdata(_cycler);
+
+  // We have to search for the child by brute force, since we don't
+  // know what sort index it was added as.
+  Down::const_iterator di;
+  for (di = cdata->_stashed.begin(); di != cdata->_stashed.end(); ++di) {
+    if ((*di).get_child() == node) {
+      return di - cdata->_stashed.begin();
+    }
+  }
+
+  return -1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::remove_stashed
+//       Access: Published
+//  Description: Removes the nth stashed child from the node.  This is
+//               the only way to remove a child from the node that has
+//               previously been stashed, without unstashing it first.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+remove_stashed(int n) {
+  CDWriter cdata(_cycler);
+  nassertv(n >= 0 && n < (int)cdata->_stashed.size());
+  
+  PT(PandaNode) child_node = cdata->_stashed[n].get_child();
+  CDWriter cdata_child(child_node->_cycler);
+  
+  cdata->_stashed.erase(cdata->_stashed.begin() + n);
+  int num_erased = cdata_child->_up.erase(UpConnection(this));
+  nassertv(num_erased == 1);
+  
+  // Now sever any qpNodePathComponents on the child that reference
+  // this node.  If we have multiple of these, we have to collapse
+  // them together.
+  qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
+  Paths::iterator pi;
+  pi = cdata_child->_paths.begin();
+  while (pi != cdata_child->_paths.end()) {
+    Paths::iterator pnext = pi;
+    ++pnext;
+    if (!(*pi)->is_top_node() && (*pi)->get_next()->get_node() == this) {
+      if (collapsed == (qpNodePathComponent *)NULL) {
+        (*pi)->set_top_node();
+        collapsed = (*pi);
+      } else {
+        // This is a different component that used to reference a
+        // different instance, but now it's all just the same topnode.
+        // We have to collapse this and the previous one together.
+        // However, there might be some qpNodePaths out there that
+        // still keep a pointer to this one, so we can't remove it
+        // altogether.
+        (*pi)->collapse_with(collapsed);
+        cdata_child->_paths.erase(pi);
+      }
+    }
+    pi = pnext;
+  }
+  
+  child_node->fix_path_lengths(cdata_child);
+
+  // Mark the bounding volumes stale.
+  force_bound_stale();
+
+  // Call callback hooks.
+  children_changed();
+  child_node->parents_changed();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::remove_all_children
 //       Access: Published
-//  Description: Removes all the children from the node at once.
+//  Description: Removes all the children from the node at once,
+//               including stashed children.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 remove_all_children() {
-  {
-    CDWriter cdata(_cycler);
-    Down::iterator ci;
-    for (ci = cdata->_down.begin(); ci != cdata->_down.end(); ++ci) {
-      PT(PandaNode) child_node = (*ci).get_child();
-      {
-        CDWriter cdata_child(child_node->_cycler);
-        cdata_child->_up.erase(UpConnection(this));
-      
-        // Now sever any qpNodePathComponents on the child that
-        // reference this node.  If we have multiple of these, we have
-        // to collapse them together (see above).
-        qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
-        Chains::iterator ci;
-        ci = cdata_child->_chains.begin();
-        while (ci != cdata_child->_chains.end()) {
-          Chains::iterator cnext = ci;
-          ++cnext;
-          if (!(*ci)->is_top_node() && (*ci)->get_next()->get_node() == this) {
-            if (collapsed == (qpNodePathComponent *)NULL) {
-              (*ci)->set_top_node();
-              collapsed = (*ci);
-            } else {
-              (*ci)->collapse_with(collapsed);
-              cdata_child->_chains.erase(ci);
-            }
-          }
-          ci = cnext;
+  CDWriter cdata(_cycler);
+  Down::iterator di;
+  for (di = cdata->_down.begin(); di != cdata->_down.end(); ++di) {
+    PT(PandaNode) child_node = (*di).get_child();
+    CDWriter cdata_child(child_node->_cycler);
+    cdata_child->_up.erase(UpConnection(this));
+    
+    // Now sever any qpNodePathComponents on the child that
+    // reference this node.  If we have multiple of these, we have
+    // to collapse them together (see above).
+    qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
+    Paths::iterator pi;
+    pi = cdata_child->_paths.begin();
+    while (pi != cdata_child->_paths.end()) {
+      Paths::iterator pnext = pi;
+      ++pnext;
+      if (!(*pi)->is_top_node() && (*pi)->get_next()->get_node() == this) {
+        if (collapsed == (qpNodePathComponent *)NULL) {
+          (*pi)->set_top_node();
+          collapsed = (*pi);
+        } else {
+          (*pi)->collapse_with(collapsed);
+          cdata_child->_paths.erase(pi);
         }
-        
-        child_node->fix_chain_lengths(cdata_child);
       }
-      child_node->parents_changed();
+      pi = pnext;
     }
+    
+    child_node->fix_path_lengths(cdata_child);
+    child_node->parents_changed();
+  }
+  for (di = cdata->_stashed.begin(); di != cdata->_stashed.end(); ++di) {
+    PT(PandaNode) child_node = (*di).get_child();
+    CDWriter cdata_child(child_node->_cycler);
+    cdata_child->_up.erase(UpConnection(this));
+    
+    // Now sever any qpNodePathComponents on the child that
+    // reference this node.  If we have multiple of these, we have
+    // to collapse them together (see above).
+    qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
+    Paths::iterator pi;
+    pi = cdata_child->_paths.begin();
+    while (pi != cdata_child->_paths.end()) {
+      Paths::iterator pnext = pi;
+      ++pnext;
+      if (!(*pi)->is_top_node() && (*pi)->get_next()->get_node() == this) {
+        if (collapsed == (qpNodePathComponent *)NULL) {
+          (*pi)->set_top_node();
+          collapsed = (*pi);
+        } else {
+          (*pi)->collapse_with(collapsed);
+          cdata_child->_paths.erase(pi);
+        }
+      }
+      pi = pnext;
+    }
+    
+    child_node->fix_path_lengths(cdata_child);
+    child_node->parents_changed();
   }
 
   // Mark the bounding volumes stale.
@@ -896,51 +1103,59 @@ detach(qpNodePathComponent *child) {
   PandaNode *child_node = child->get_node();
   PandaNode *parent_node = child->get_next()->get_node();
   
-  {
-    // Break the qpNodePathComponent connection.
-    child->set_top_node();
-    
-    CDWriter cdata_child(child_node->_cycler);
-    CDWriter cdata_parent(parent_node->_cycler);
-    
-    // Any other components in the same child_node that previously
-    // referenced the same parent has now become invalid and must be
-    // collapsed into this one and removed from the chains set.
-    Chains::iterator ci;
-    ci = cdata_child->_chains.begin();
-    while (ci != cdata_child->_chains.end()) {
-      Chains::iterator cnext = ci;
-      ++cnext;
-      if ((*ci) != child && !(*ci)->is_top_node() && 
-	  (*ci)->get_next()->get_node() == parent_node) {
-	(*ci)->collapse_with(child);
-	cdata_child->_chains.erase(ci);
-      }
-      ci = cnext;
+  // Break the qpNodePathComponent connection.
+  child->set_top_node();
+  
+  CDWriter cdata_child(child_node->_cycler);
+  CDWriter cdata_parent(parent_node->_cycler);
+  
+  // Any other components in the same child_node that previously
+  // referenced the same parent has now become invalid and must be
+  // collapsed into this one and removed from the paths set.
+  Paths::iterator pi;
+  pi = cdata_child->_paths.begin();
+  while (pi != cdata_child->_paths.end()) {
+    Paths::iterator pnext = pi;
+    ++pnext;
+    if ((*pi) != child && !(*pi)->is_top_node() && 
+        (*pi)->get_next()->get_node() == parent_node) {
+      (*pi)->collapse_with(child);
+      cdata_child->_paths.erase(pi);
     }
-    
-    // Now look for the child and break the actual connection.
-    
-    // First, look for and remove the parent node from the child's up
-    // list.
-    int num_erased = cdata_child->_up.erase(UpConnection(parent_node));
-    nassertv(num_erased == 1);
-    
-    child_node->fix_chain_lengths(cdata_child);
-    
-    // Now, look for and remove the child node from the parent's down list.
-    Down::iterator di;
-    bool found = false;
-    for (di = cdata_parent->_down.begin(); 
-	 di != cdata_parent->_down.end() && !found; 
-	 ++di) {
-      if ((*di).get_child() == child_node) {
-	cdata_parent->_down.erase(di);
-	found = true;
-      }
-    }
-    nassertv(found);
+    pi = pnext;
   }
+  
+  // Now look for the child and break the actual connection.
+  
+  // First, look for and remove the parent node from the child's up
+  // list.
+  int num_erased = cdata_child->_up.erase(UpConnection(parent_node));
+  nassertv(num_erased == 1);
+  
+  child_node->fix_path_lengths(cdata_child);
+  
+  // Now, look for and remove the child node from the parent's down
+  // list.  We also check in the stashed list, in case the child node
+  // has been stashed.
+  Down::iterator di;
+  bool found = false;
+  for (di = cdata_parent->_down.begin(); 
+       di != cdata_parent->_down.end() && !found; 
+       ++di) {
+    if ((*di).get_child() == child_node) {
+      cdata_parent->_down.erase(di);
+      found = true;
+    }
+  }
+  for (di = cdata_parent->_stashed.begin(); 
+       di != cdata_parent->_stashed.end() && !found; 
+       ++di) {
+    if ((*di).get_child() == child_node) {
+      cdata_parent->_stashed.erase(di);
+      found = true;
+    }
+  }
+  nassertv(found);
 
   // Mark the bounding volumes stale.
   parent_node->force_bound_stale();
@@ -970,17 +1185,15 @@ reparent(qpNodePathComponent *new_parent, qpNodePathComponent *child, int sort) 
   PandaNode *child_node = child->get_node();
   PandaNode *parent_node = new_parent->get_node();
 
-  {
-    // Now reattach at the indicated sort position.
-    CDWriter cdata_parent(parent_node->_cycler);
-    CDWriter cdata_child(child_node->_cycler);
-    
-    cdata_parent->_down.insert(DownConnection(child_node, sort));
-    cdata_child->_up.insert(UpConnection(parent_node));
-    
-    cdata_child->_chains.insert(child);
-    child_node->fix_chain_lengths(cdata_child);
-  }
+  // Now reattach at the indicated sort position.
+  CDWriter cdata_parent(parent_node->_cycler);
+  CDWriter cdata_child(child_node->_cycler);
+  
+  cdata_parent->_down.insert(DownConnection(child_node, sort));
+  cdata_child->_up.insert(UpConnection(parent_node));
+  
+  cdata_child->_paths.insert(child);
+  child_node->fix_path_lengths(cdata_child);
 
   // Mark the bounding volumes stale.
   parent_node->force_bound_stale();
@@ -1008,13 +1221,13 @@ get_component(qpNodePathComponent *parent, PandaNode *child_node) {
     // First, walk through the list of qpNodePathComponents we already
     // have on the child, looking for one that already exists,
     // referencing the indicated parent component.
-    Chains::const_iterator ci;
-    for (ci = cdata_child->_chains.begin(); 
-         ci != cdata_child->_chains.end(); 
-         ++ci) {
-      if ((*ci)->get_next() == parent) {
+    Paths::const_iterator pi;
+    for (pi = cdata_child->_paths.begin(); 
+         pi != cdata_child->_paths.end(); 
+         ++pi) {
+      if ((*pi)->get_next() == parent) {
         // If we already have such a component, just return it.
-        return (*ci);
+        return (*pi);
       }
     }
   }
@@ -1027,7 +1240,7 @@ get_component(qpNodePathComponent *parent, PandaNode *child_node) {
     PT(qpNodePathComponent) child = 
       new qpNodePathComponent(child_node, parent);
     CDWriter cdata_child(child_node->_cycler);
-    cdata_child->_chains.insert(child);
+    cdata_child->_paths.insert(child);
     return child;
   } else {
     // They aren't related.  Return NULL.
@@ -1051,13 +1264,13 @@ get_top_component(PandaNode *child_node) {
 
     // Walk through the list of qpNodePathComponents we already have on
     // the child, looking for one that already exists as a top node.
-    Chains::const_iterator ci;
-    for (ci = cdata_child->_chains.begin(); 
-         ci != cdata_child->_chains.end(); 
-         ++ci) {
-      if ((*ci)->is_top_node()) {
+    Paths::const_iterator pi;
+    for (pi = cdata_child->_paths.begin(); 
+         pi != cdata_child->_paths.end(); 
+         ++pi) {
+      if ((*pi)->is_top_node()) {
         // If we already have such a component, just return it.
-        return (*ci);
+        return (*pi);
       }
     }
   }
@@ -1067,7 +1280,7 @@ get_top_component(PandaNode *child_node) {
   PT(qpNodePathComponent) child = 
     new qpNodePathComponent(child_node, (qpNodePathComponent *)NULL);
   CDWriter cdata_child(child_node->_cycler);
-  cdata_child->_chains.insert(child);
+  cdata_child->_paths.insert(child);
 
   return child;
 }
@@ -1076,7 +1289,7 @@ get_top_component(PandaNode *child_node) {
 //     Function: PandaNode::get_generic_component
 //       Access: Private
 //  Description: Returns a qpNodePathComponent referencing this node as
-//               a chain from the root.  It is only valid to call this
+//               a path from the root.  It is only valid to call this
 //               if there is an unambiguous path from the root;
 //               otherwise, a warning will be issued and one path will
 //               be chosen arbitrarily.
@@ -1115,7 +1328,7 @@ delete_component(qpNodePathComponent *component) {
   for (int i = 0; i < num_stages; i++) {
     if (_cycler.is_stage_unique(i)) {
       CData *cdata = _cycler.write_stage(i);
-      int num_erased = cdata->_chains.erase(component);
+      int num_erased = cdata->_paths.erase(component);
       max_num_erased = max(max_num_erased, num_erased);
       _cycler.release_write_stage(i, cdata);
     }
@@ -1124,7 +1337,7 @@ delete_component(qpNodePathComponent *component) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::fix_chain_lengths
+//     Function: PandaNode::fix_path_lengths
 //       Access: Private
 //  Description: Recursively fixes the _length member of each
 //               qpNodePathComponent at this level and below, after an
@@ -1132,25 +1345,30 @@ delete_component(qpNodePathComponent *component) {
 //               these up.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-fix_chain_lengths(const CData *cdata) {
+fix_path_lengths(const CData *cdata) {
   bool any_wrong = false;
 
-  Chains::const_iterator ci;
-  for (ci = cdata->_chains.begin(); ci != cdata->_chains.end(); ++ci) {
-    if ((*ci)->fix_length()) {
+  Paths::const_iterator pi;
+  for (pi = cdata->_paths.begin(); pi != cdata->_paths.end(); ++pi) {
+    if ((*pi)->fix_length()) {
       any_wrong = true;
     }
   }
   
-  // If any chains were updated, we have to recurse on all of our
-  // children, since any one of those chains might be shared by any of
+  // If any paths were updated, we have to recurse on all of our
+  // children, since any one of those paths might be shared by any of
   // our child nodes.
   if (any_wrong) {
     Down::const_iterator di;
     for (di = cdata->_down.begin(); di != cdata->_down.end(); ++di) {
       PandaNode *child_node = (*di).get_child();
       CDReader cdata_child(child_node->_cycler);
-      child_node->fix_chain_lengths(cdata_child);
+      child_node->fix_path_lengths(cdata_child);
+    }
+    for (di = cdata->_stashed.begin(); di != cdata->_stashed.end(); ++di) {
+      PandaNode *child_node = (*di).get_child();
+      CDReader cdata_child(child_node->_cycler);
+      child_node->fix_path_lengths(cdata_child);
     }
   }
 }
@@ -1171,12 +1389,10 @@ r_list_descendants(ostream &out, int indent_level) const {
   }
 
   // Also report the number of stashed nodes at this level.
-  /*
   int num_stashed = get_num_stashed();
   if (num_stashed != 0) {
     indent(out, indent_level) << "(" << num_stashed << " stashed)\n";
   }
-  */
 }
 
 ////////////////////////////////////////////////////////////////////

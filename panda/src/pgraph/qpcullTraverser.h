@@ -25,6 +25,7 @@
 #include "transformState.h"
 #include "geometricBoundingVolume.h"
 #include "pointerTo.h"
+#include "drawMask.h"
 
 class PandaNode;
 class CullHandler;
@@ -43,12 +44,13 @@ class EXPCL_PANDA qpCullTraverser {
 public:
   qpCullTraverser();
 
-  void set_initial_state(const RenderState *initial_state);
-  void set_camera_transform(const TransformState *camera_transform);
-  void set_render_transform(const TransformState *render_transform);
-  void set_view_frustum(GeometricBoundingVolume *view_frustum);
-  void set_guard_band(GeometricBoundingVolume *guard_band);
-  void set_cull_handler(CullHandler *cull_handler);
+  INLINE void set_initial_state(const RenderState *initial_state);
+  INLINE void set_camera_mask(const DrawMask &draw_mask);
+  INLINE void set_camera_transform(const TransformState *camera_transform);
+  INLINE void set_render_transform(const TransformState *render_transform);
+  INLINE void set_view_frustum(GeometricBoundingVolume *view_frustum);
+  INLINE void set_guard_band(GeometricBoundingVolume *guard_band);
+  INLINE void set_cull_handler(CullHandler *cull_handler);
 
   void traverse(PandaNode *root);
 
@@ -60,6 +62,7 @@ private:
                                CullableObject *decals);
 
   CPT(RenderState) _initial_state;
+  DrawMask _camera_mask;
   CPT(TransformState) _camera_transform;
   CPT(TransformState) _render_transform;
   PT(GeometricBoundingVolume) _view_frustum;

@@ -85,3 +85,33 @@ get_display_region(int n) const {
   nassertr(n >= 0 && n < (int)_display_regions.size(), (DisplayRegion *)NULL);
   return _display_regions[n];
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpCamera::set_camera_mask
+//       Access: Published
+//  Description: Changes the set of bits that represent the subset of
+//               the scene graph the camera will render.
+//
+//               During the cull traversal, a node is not visited if
+//               none of its draw mask bits intersect with the
+//               camera's camera mask bits.  These masks can be used
+//               to selectively hide and show different parts of the
+//               scene graph from different cameras that are otherwise
+//               viewing the same scene.
+////////////////////////////////////////////////////////////////////
+INLINE void qpCamera::
+set_camera_mask(DrawMask mask) {
+  _camera_mask = mask;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpCamera::get_camera_mask
+//       Access: Published
+//  Description: Returns the set of bits that represent the subset of
+//               the scene graph the camera will render.  See
+//               set_camera_mask().
+////////////////////////////////////////////////////////////////////
+INLINE DrawMask qpCamera::
+get_camera_mask() const {
+  return _camera_mask;
+}

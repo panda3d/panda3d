@@ -2051,14 +2051,25 @@ get_transparency() const {
 //     Function: qpNodePath::get_hidden_ancestor
 //       Access: Published
 //  Description: Returns the NodePath at or above the referenced node
-//               that is hidden, or an empty NodePath if no ancestor
-//               of the referenced node is hidden (and the node should
-//               be visible).
+//               that is hidden to the indicated camera(s), or an
+//               empty NodePath if no ancestor of the referenced node
+//               is hidden (and the node should be visible).
 ////////////////////////////////////////////////////////////////////
 qpNodePath qpNodePath::
-get_hidden_ancestor() const {
-  nassertr(false, qpNodePath());
-  return qpNodePath();
+get_hidden_ancestor(DrawMask camera_mask) const {
+  qpNodePathComponent *comp;
+  for (comp = _head; 
+       comp != (qpNodePathComponent *)NULL; 
+       comp = comp->get_next()) {
+    PandaNode *node = comp->get_node();
+    if ((node->get_draw_mask() & camera_mask).is_zero()) {
+      qpNodePath result;
+      result._head = comp;
+      return result;
+    }
+  }
+
+  return not_found();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2071,15 +2082,33 @@ get_hidden_ancestor() const {
 ////////////////////////////////////////////////////////////////////
 qpNodePath qpNodePath::
 get_stashed_ancestor() const {
-  nassertr(false, qpNodePath());
-  return qpNodePath();
+  qpNodePathComponent *comp = _head;
+  if (comp != (qpNodePathComponent *)NULL) {
+    qpNodePathComponent *next = comp->get_next();
+
+    while (next != (qpNodePathComponent *)NULL) {
+      PandaNode *node = comp->get_node();
+      PandaNode *parent_node = next->get_node();
+
+      if (parent_node->find_stashed(node) >= 0) {
+        qpNodePath result;
+        result._head = comp;
+        return result;
+      }
+
+      comp = next;
+      next = next->get_next();
+    }
+  }
+
+  return not_found();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::verify_complete
 //       Access: Published
 //  Description: Returns true if all of the nodes described in the
-//               qpNodePath are connected *and* the top node is the top
+//               qpNodePath are connected and the top node is the top
 //               of the graph, or false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool qpNodePath::
@@ -2102,7 +2131,7 @@ verify_complete() const {
     PandaNode *next_node = comp->get_node();
     nassertr(next_node != (const PandaNode *)NULL, false);
 
-    if (next_node->find_child(node) < 0) {
+    if (node->find_parent(next_node) < 0) {
       return false;
     }
 
@@ -2252,45 +2281,29 @@ r_get_partial_transform(qpNodePathComponent *comp, int n) const {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 r_output(ostream &out, qpNodePathComponent *comp) const {
+  PandaNode *node = comp->get_node();
   qpNodePathComponent *next = comp->get_next();
   if (next != (qpNodePathComponent *)NULL) {
     // This is not the head of the list; keep going up.
     r_output(out, next);
     out << "/";
+
+    PandaNode *parent_node = next->get_node();
+    if (parent_node->find_stashed(node) >= 0) {
+      // The node is stashed.
+      out << "@@";
+
+    } else if (node->find_parent(parent_node) < 0) {
+      // Oops, there's an error.  This shouldn't happen.
+      out << ".../";
+    }
   }
 
   // Now output this component.
-  PandaNode *node = comp->get_node();
   if (node->has_name()) {
     out << node->get_name();
   } else {
     out << "+" << node->get_type();
   }
   //  out << "[" << comp->get_length() << "]";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpNodePath::r_compare_to
-//       Access: Private, Static
-//  Description: The recursive implementation of compare_to().  Returns
-//               < 0 if a sorts before b, > 0 if b sorts before a, or
-//               == 0 if they are equivalent.
-////////////////////////////////////////////////////////////////////
-int qpNodePath::
-r_compare_to(const qpNodePathComponent *a, const qpNodePathComponent *b) {
-  if (a == b) {
-    return 0;
-
-  } else if (a == (const qpNodePathComponent *)NULL) {
-    return -1;
-
-  } else if (b == (const qpNodePathComponent *)NULL) {
-    return 1;
-
-  } else if (a->get_node() != b->get_node()) {
-    return a->get_node() - b->get_node();
-
-  } else {
-    return r_compare_to(a->get_next(), b->get_next());
-  }
 }
