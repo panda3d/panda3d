@@ -107,6 +107,7 @@ PUBLISHED:
                         const string &name);
 
   INLINE bool is_active() { return false; }
+  INLINE bool is_started() { return false; }
   INLINE void start() { }
   INLINE void stop() { }
 
