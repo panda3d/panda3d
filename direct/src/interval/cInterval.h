@@ -189,7 +189,7 @@ private:
 };
 
 INLINE ostream &operator << (ostream &out, const CInterval &ival);
-ostream &operator << (ostream &out, CInterval::State state);
+EXPCL_DIRECT ostream &operator << (ostream &out, CInterval::State state);
 
 #include "cInterval.I"
 
