@@ -87,6 +87,7 @@ MayaToEggConverter(const string &program_name) :
   _from_selection = false;
   _polygon_output = false;
   _polygon_tolerance = 0.01;
+  _respect_maya_double_sided = true;
   _transform_type = TT_model;
 }
 
@@ -1219,8 +1220,8 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
   string name = mesh.name().asChar();
 
   MObject mesh_object = mesh.object();
-  bool double_sided = false;
-  get_bool_attribute(mesh_object, "doubleSided", double_sided);
+  bool maya_double_sided = false;
+  get_bool_attribute(mesh_object, "doubleSided", maya_double_sided);
 
   if (mayaegg_cat.is_spam()) {
     mayaegg_cat.spam()
@@ -1281,13 +1282,17 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
   // will be different from world space.
   LMatrix4d vertex_frame_inv = egg_group->get_vertex_frame_inv();
 
-  // Save this modeling flag for the vertex color check later (see the
-  // comment below).
+  // Save these modeling flag for the a check below.
   bool egg_vertex_color = false;
+  bool egg_double_sided = false;
   if (egg_group->has_user_data(MayaEggGroupUserData::get_class_type())) {
-    egg_vertex_color = 
-      DCAST(MayaEggGroupUserData, egg_group->get_user_data())->_vertex_color;
+    MayaEggGroupUserData *user_data = 
+      DCAST(MayaEggGroupUserData, egg_group->get_user_data());
+    egg_vertex_color = user_data->_vertex_color;
+    egg_double_sided = user_data->_double_sided;
   }
+
+  bool double_sided = _respect_maya_double_sided ? maya_double_sided : egg_double_sided;
 
   while (!pi.isDone()) {
     EggPolygon *egg_poly = new EggPolygon;

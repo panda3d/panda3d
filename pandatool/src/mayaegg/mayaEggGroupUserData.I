@@ -25,6 +25,7 @@
 INLINE MayaEggGroupUserData::
 MayaEggGroupUserData() {
   _vertex_color = false;
+  _double_sided = false;
 }
 
 
@@ -36,7 +37,8 @@ MayaEggGroupUserData() {
 INLINE MayaEggGroupUserData::
 MayaEggGroupUserData(const MayaEggGroupUserData &copy) : 
   EggUserData(copy),
-  _vertex_color(copy._vertex_color)
+  _vertex_color(copy._vertex_color),
+  _double_sided(copy._double_sided)
 {
 }
 
@@ -50,4 +52,5 @@ INLINE void MayaEggGroupUserData::
 operator = (const MayaEggGroupUserData &copy) {
   EggUserData::operator = (copy);
   _vertex_color = copy._vertex_color;
+  _double_sided = copy._double_sided;
 }

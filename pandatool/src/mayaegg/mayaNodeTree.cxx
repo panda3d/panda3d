@@ -276,13 +276,18 @@ get_egg_group(MayaNodeDesc *node_desc) {
         egg_group->set_model_flag(true);
       }
       
-      // And "vertex-color" has meaning only to this converter.
+      // And "vertex-color" and "double-sided" have meaning only to
+      // this converter.
+      MayaEggGroupUserData *user_data = new MayaEggGroupUserData;
       if (egg_group->has_object_type("vertex-color")) {
         egg_group->remove_object_type("vertex-color");
-        MayaEggGroupUserData *user_data = new MayaEggGroupUserData;
         user_data->_vertex_color = true;
-        egg_group->set_user_data(user_data);
       }
+      if (egg_group->has_object_type("double-sided")) {
+        egg_group->remove_object_type("double-sided");
+        user_data->_double_sided = true;
+      }
+      egg_group->set_user_data(user_data);
     }
 
     node_desc->_egg_group = egg_group;

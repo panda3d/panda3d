@@ -55,6 +55,17 @@ MayaToEgg() :
      &MayaToEgg::dispatch_double, NULL, &_polygon_tolerance);
 
   add_option
+    ("bface", "", 0,
+     "Respect the Maya \"double sided\" rendering flag to indicate whether "
+     "polygons should be double-sided or single-sided.  Since this flag "
+     "is set to double-sided by default in Maya, it is often better to "
+     "ignore this flag (unless your modelers are diligent in turning it "
+     "off where it is not desired).  If this flag is not specified, the "
+     "default is to treat all polygons as single-sided, unless an "
+     "egg object type of \"double-sided\" is set.",
+     &MayaToEgg::dispatch_none, &_respect_maya_double_sided);
+
+  add_option
     ("trans", "type", 0,
      "Specifies which transforms in the Maya file should be converted to "
      "transforms in the egg file.  The option may be one of all, model, "
@@ -108,6 +119,7 @@ run() {
   // Copy in the command-line parameters.
   converter._polygon_output = _polygon_output;
   converter._polygon_tolerance = _polygon_tolerance;
+  converter._respect_maya_double_sided = _respect_maya_double_sided;
   converter._transform_type = _transform_type;
 
   // Copy in the path and animation parameters.

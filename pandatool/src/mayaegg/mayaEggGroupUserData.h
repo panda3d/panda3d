@@ -35,6 +35,7 @@ public:
   INLINE void operator = (const MayaEggGroupUserData &copy);
 
   bool _vertex_color;
+  bool _double_sided;
 
 public:
   static TypeHandle get_class_type() {

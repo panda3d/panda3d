@@ -39,6 +39,7 @@ protected:
   int _verbose;
   bool _polygon_output;
   double _polygon_tolerance;
+  bool _respect_maya_double_sided;
   MayaToEggConverter::TransformType _transform_type;
 };
 
