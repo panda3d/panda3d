@@ -1892,6 +1892,9 @@ class LevelEditor(NodePath, PandaObject):
     def setDNATargetOrientation(self, orientation):
         if (self.DNATarget != None) and (orientation != None):
             oldCode = self.DNATarget.getCode()[:-2]
+            # Suit walls only have two orientations!
+            if oldCode.find('wall_suit') >= 0:
+                orientation = 'u' + orientation[1]
             self.DNATarget.setCode(oldCode+orientation)
             self.replaceSelected()
             
@@ -4011,6 +4014,11 @@ class LevelStyleManager:
                 dnaList = self.getCatalogCodes(dnaType)
             elif (dnaType == 'sign'):
                 dnaList = [''] + self.getCatalogCodes(dnaType)
+            elif (dnaType == 'wall'):
+                # Add in suit walls here for now
+                dnaList = ([None] +
+                           self.getCatalogCodesSuffix(dnaType, '_ur') +
+                           self.getCatalogCodesSuffix('suit_wall', '_ur'))
             else:
                 dnaList = [None] + self.getCatalogCodesSuffix(dnaType, '_ur')
             # Add dnaCodes to attribute dictionary
@@ -4706,6 +4714,10 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             text = 'ADD STREET',
             command = self.addStreet)
         self.addStreetButton.pack(fill = X, padx = 20, pady = 10)
+        streets = map(lambda s: s[7:],
+                      self.styleManager.getCatalogCodes(
+            'street'))
+        streets.sort()
         self.streetSelector = Pmw.ComboBox(
             streetsPage,
             dropdown = 0,
@@ -4716,9 +4728,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             label_anchor = W,
             entry_width = 30,
             selectioncommand = self.setStreetModuleType,
-            scrolledlist_items = map(lambda s: s[7:],
-                                     self.styleManager.getCatalogCodes(
-            'street'))
+            scrolledlist_items = streets
             )
         self.streetModuleType = self.styleManager.getCatalogCode('street',0)
         self.streetSelector.selectitem(self.streetModuleType[7:])
@@ -4816,6 +4826,10 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             text = 'ADD LANDMARK BUILDING',
             command = self.addLandmark)
         self.addLandmarkBuildingButton.pack(fill = X, padx = 20, pady = 10)
+        bldgs = map(lambda s: s[14:],
+                    self.styleManager.getCatalogCodes(
+            'toon_landmark'))
+        bldgs.sort()
         self.landmarkBuildingSelector = Pmw.ComboBox(
             landmarkBuildingsPage,
             dropdown = 0,
@@ -4826,9 +4840,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             label_text = 'Bldg type:',
             entry_width = 30,
             selectioncommand = self.setLandmarkType,
-            scrolledlist_items = map(lambda s: s[14:],
-                                     self.styleManager.getCatalogCodes(
-            'toon_landmark'))
+            scrolledlist_items = bldgs
             )
         self.landmarkType = self.styleManager.getCatalogCode(
             'toon_landmark',0)
@@ -5018,6 +5030,8 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             text = 'ADD PROP',
             command = self.addProp)
         self.addPropsButton.pack(fill = X, padx = 20, pady = 10)
+        codes = self.styleManager.getCatalogCodes('prop')
+        codes.sort()
         self.propSelector = Pmw.ComboBox(
             propsPage,
             dropdown = 0,
@@ -5028,7 +5042,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             label_text = 'Prop type:',
             entry_width = 30,
             selectioncommand = self.setPropType,
-            scrolledlist_items = self.styleManager.getCatalogCodes('prop')
+            scrolledlist_items = codes
             )
         self.propType = self.styleManager.getCatalogCode('prop',0)
         self.propSelector.selectitem(
