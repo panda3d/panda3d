@@ -717,28 +717,58 @@ load_verify_locations(SSL_CTX *ctx, const Filename &ca_file) {
   // just read, and call the low-level routines to read the
   // certificates from the BIO.
   BIO *mbio = BIO_new_mem_buf((void *)data.data(), data.length());
+
+  // We have to be sure and clear the OpenSSL error state before we
+  // call this function, or it will get confused.
+  ERR_clear_error();
   inf = PEM_X509_INFO_read_bio(mbio, NULL, NULL, NULL);
   BIO_free(mbio);
 
   if (!inf) {
     // Could not scan certificates.
+    downloader_cat.info()
+      << "PEM_X509_INFO_read_bio() returned NULL.\n";
+#ifdef REPORT_SSL_ERRORS
+    ERR_print_errors_fp(stderr);
+#endif
     return 0;
+  }
+  
+  if (downloader_cat.is_spam()) {
+    downloader_cat.spam()
+      << "PEM_X509_INFO_read_bio() found " << sk_X509_INFO_num(inf)
+      << " entries.\n";
   }
 
   // Now add the certificates to the context.
   X509_STORE *store = ctx->cert_store;
 
   int count = 0;
-  for (int i = 0; i < sk_X509_INFO_num(inf); i++) {
+  int num_entries = sk_X509_INFO_num(inf);
+  for (int i = 0; i < num_entries; i++) {
     X509_INFO *itmp = sk_X509_INFO_value(inf, i);
 
     if (itmp->x509) {
       X509_STORE_add_cert(store, itmp->x509);
       count++;
+      if (downloader_cat.is_spam()) {
+        downloader_cat.spam()
+          << "Entry " << i << " is x509\n";
+      }
 
     } else if (itmp->crl) {
       X509_STORE_add_crl(store, itmp->crl);
       count++;
+      if (downloader_cat.is_spam()) {
+        downloader_cat.spam()
+          << "Entry " << i << " is crl\n";
+      }
+
+    } else {
+      if (downloader_cat.is_spam()) {
+        downloader_cat.spam()
+          << "Entry " << i << " is unknown type\n";
+      }
     }
   }
   sk_X509_INFO_pop_free(inf, X509_INFO_free);

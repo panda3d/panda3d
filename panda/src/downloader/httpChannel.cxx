@@ -793,11 +793,10 @@ run_proxy_reading_header() {
   if (get_status_code() == 407 && last_status != 407 && !_proxy.empty()) {
     // 407: not authorized to proxy.  Try to get the authorization.
     string authenticate_request = get_header_value("Proxy-Authenticate");
-    _proxy_auth = 
-      _client->generate_auth(_proxy, true, authenticate_request);
+    _proxy_auth = _client->generate_auth(_proxy, true, authenticate_request);
     if (_proxy_auth != (HTTPAuthorization *)NULL) {
       _proxy_realm = _proxy_auth->get_realm();
-      _proxy_username = _client->select_username(_proxy, false, _proxy_realm);
+      _proxy_username = _client->select_username(_proxy, true, _proxy_realm);
       if (!_proxy_username.empty()) {
         make_proxy_request_text();
 
