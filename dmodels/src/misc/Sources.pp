@@ -13,7 +13,7 @@
 
 #begin install_egg
   #define SOURCES \
-    gridBack.egg objectHandles.egg sphere.egg smiley.egg
+    gridBack.egg objectHandles.egg sphere.egg smiley.egg lilsmiley.egg
 #end install_egg
 
 #begin install_egg

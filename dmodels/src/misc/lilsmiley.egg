@@ -1,0 +1,30 @@
+<CoordinateSystem> { Z-Up }
+
+<Texture> smiley {
+  "../maps/lilsmiley.rgba"
+}
+<VertexPool> poly {
+  <Vertex> 0 {
+    -0.5 0 0.5
+    <UV> { 0 1 }
+  }
+  <Vertex> 1 {
+    0.5 0 0.5
+    <UV> { 1 1 }
+  }
+  <Vertex> 2 {
+    -0.5 0 -0.5
+    <UV> { 0 0 }
+  }
+  <Vertex> 3 {
+    0.5 0 -0.5
+    <UV> { 1 0 }
+  }
+}
+<Group> poly {
+  <Polygon> {
+    <TRef> { smiley }
+    <VertexRef> { 0 2 3 1 <Ref> { poly } }
+  }
+}
+
