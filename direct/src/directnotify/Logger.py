@@ -6,11 +6,6 @@ import time
 import math
 
 class Logger:
-
-    """Logger class: """
-    
-    # built-ins
-    
     def __init__(self, fileName="log"):
         """__init__(self)
         Logger constructor"""    
@@ -18,26 +13,26 @@ class Logger:
         self.__startTime = 0.0
         self.__logFile = None
         self.__logFileName = fileName
-
-    
-    # setters and getters
     
     def setTimeStamp(self, bool):
-        """setTimeStamp(self, int)
-        Toggle time stamp printing with log entries on and off"""
+        """
+        Toggle time stamp printing with log entries on and off
+        """
         self.__timeStamp = bool
 
     def getTimeStamp(self):
-        """getTimeStamp(self)
-        Return whether or not we are printing time stamps with log entries"""
+        """
+        Return whether or not we are printing time stamps with log entries
+        """
         return(self.__timeStamp)
 
 
     # logging control
    
     def resetStartTime(self):
-        """resetStartTime()
-        Reset the start time of the log file for time stamps"""
+        """
+        Reset the start time of the log file for time stamps
+        """
         self.__startTime = time.time()
 
     def log(self, entryString):
@@ -53,8 +48,9 @@ class Logger:
     # logging functions
     
     def __openLogFile(self):
-        """__openLogFile(self)
-        Open a file for logging error/warning messages"""
+        """
+        Open a file for logging error/warning messages
+        """
         self.resetStartTime()
         t = time.localtime(self.__startTime)
         st = time.strftime("%m-%d-%Y-%H-%M-%S", t)
@@ -62,14 +58,16 @@ class Logger:
         self.__logFile = open(logFileName, "w")
 
     def __closeLogFile(self):
-        """__closeLogFile(self)
-        Close the error/warning output file"""
+        """
+        Close the error/warning output file
+        """
         if (self.__logFile != None):
             self.__logFile.close()
 
     def __getTimeStamp(self):
-        """__getTimeStamp(self)
-        Return the offset between current time and log file startTime"""
+        """
+        Return the offset between current time and log file startTime
+        """
         t = time.time()
         dt = t - self.__startTime
         if (dt >= 86400):

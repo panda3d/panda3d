@@ -155,7 +155,6 @@ class ParticleEffect(NodePath):
         return self.forceGroupDict.get(name, None)
 
     def getForceGroupDict(self):
-        """getForceGroup()"""
         return self.forceGroupDict
 
     def saveConfig(self, filename):

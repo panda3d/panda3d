@@ -241,7 +241,6 @@ class ClockDelta(DirectObject.DirectObject):
         # by which the network time differs from 'now'.
         if bits == 16:
             diff = self.__signExtend(networkTime - ntime)
-
         else:
             # Assume the bits is either 16 or 32.  If it's 32, no need
             # to sign-extend.  32 bits gives us about 227 days of
@@ -273,8 +272,7 @@ class ClockDelta(DirectObject.DirectObject):
 
     def getRealNetworkTime(self, bits=16,
                            ticksPerSec=NetworkTimePrecision):
-        """getRealNetworkTime(self)
-
+        """
         Returns the current getRealTime() expressed as a network time.
         """
         return self.localToNetworkTime(self.globalClock.getRealTime(),
@@ -283,8 +281,7 @@ class ClockDelta(DirectObject.DirectObject):
 
     def getFrameNetworkTime(self, bits=16,
                             ticksPerSec=NetworkTimePrecision):
-        """getFrameNetworkTime(self)
-
+        """
         Returns the current getFrameTime() expressed as a network time.
         """
         return self.localToNetworkTime(self.globalClock.getFrameTime(),
@@ -298,15 +295,12 @@ class ClockDelta(DirectObject.DirectObject):
         Returns the amount of time elapsed (in seconds) on the client
         since the server message was sent.  Negative values are
         clamped to zero.
-        
         """
         now = self.globalClock.getFrameTime()
         dt = now - self.networkToLocalTime(networkTime, now, bits=bits,
                                            ticksPerSec=ticksPerSec)
 
         return max(dt, 0.0)
-
-
 
     ### Private functions ###
 
@@ -316,7 +310,6 @@ class ClockDelta(DirectObject.DirectObject):
         Preserves the lower NetworkTimeBits of the networkTime value,
         and extends the sign bit all the way up.
         """
-
         return ((networkTime & NetworkTimeMask) << NetworkTimeTopBits) >> NetworkTimeTopBits
 
 globalClockDelta = ClockDelta()

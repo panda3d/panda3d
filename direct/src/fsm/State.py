@@ -74,8 +74,6 @@ class State(DirectObject):
     # can transition to any other state
     Any = 'ANY'
 
-    """State class: """
-
     def __init__(self, name, enterFunc=None, exitFunc=None,
                  transitions=Any, inspectorPos = []):
         """__init__(self, string, func, func, string[], inspectorPos = [])
@@ -92,15 +90,12 @@ class State(DirectObject):
     # setters and getters
 
     def getName(self):
-        """getName(self)"""
         return(self.__name)
 
     def setName(self, stateName):
-        """setName(self, string)"""
         self.__name = stateName
 
     def getEnterFunc(self):
-        """getEnterFunc(self)"""
         return(self.__enterFunc)
 
     if __debug__:
@@ -130,11 +125,9 @@ class State(DirectObject):
         self.__enterFunc = stateEnterFunc
 
     def getExitFunc(self):
-        """getExitFunc(self)"""
         return(self.__exitFunc)
 
     def setExitFunc(self, stateExitFunc):
-        """setExitFunc(self, func)"""
         if __debug__:
             self.redefineFunc(self.__exitFunc, stateExitFunc, ExitFuncRedefineMap)
         self.__exitFunc = stateExitFunc
@@ -144,7 +137,7 @@ class State(DirectObject):
         return self.__transitions is State.Any
 
     def getTransitions(self):
-        """getTransitions(self)
+        """
         warning -- if the state transitions to any other state,
         returns an empty list (falsely implying that the state
         has no transitions)
@@ -188,34 +181,40 @@ class State(DirectObject):
     # support for HFSMs
 
     def getChildren(self):
-        """getChildren(self)
-        Return the list of child FSMs"""
+        """
+        Return the list of child FSMs
+        """
         return(self.__FSMList)
 
     def setChildren(self, FSMList):
         """setChildren(self, ClassicFSM[])
-        Set the children to given list of FSMs"""
+        Set the children to given list of FSMs
+        """
         self.__FSMList = FSMList
 
     def addChild(self, ClassicFSM):
-        """addChild(self, ClassicFSM)
-        Add the given ClassicFSM to list of child FSMs"""
+        """
+        Add the given ClassicFSM to list of child FSMs
+        """
         self.__FSMList.append(ClassicFSM)
 
     def removeChild(self, ClassicFSM):
-        """removeChild(self, ClassicFSM)
-        Remove the given ClassicFSM from list of child FSMs"""
+        """
+        Remove the given ClassicFSM from list of child FSMs
+        """
         if ClassicFSM in self.__FSMList:
             self.__FSMList.remove(ClassicFSM)
 
     def hasChildren(self):
-        """hasChildren(self)
-        Return true if state has child FSMs"""
+        """
+        Return true if state has child FSMs
+        """
         return len(self.__FSMList) > 0
 
     def __enterChildren(self, argList):
-        """__enterChildren(self, argList)
-        Enter all child FSMs"""
+        """
+        Enter all child FSMs
+        """
         for fsm in self.__FSMList:
             # Check to see if the child fsm is already in a state
             # if it is, politely request the initial state
@@ -233,8 +232,9 @@ class State(DirectObject):
                 fsm.enterInitialState()
 
     def __exitChildren(self, argList):
-        """__exitChildren(self, argList)
-        Exit all child FSMs"""
+        """
+        Exit all child FSMs
+        """
         for fsm in self.__FSMList:
             fsm.request((fsm.getFinalState()).getName())
 
@@ -242,9 +242,9 @@ class State(DirectObject):
     # basic State functionality
 
     def enter(self, argList=[]):
-        """enter(self)
-        Call the enter function for this state"""
-
+        """
+        Call the enter function for this state
+        """
         # enter child FSMs first. It is assumed these have a start
         # state that is safe to enter
         self.__enterChildren(argList)
@@ -253,8 +253,9 @@ class State(DirectObject):
             apply(self.__enterFunc, argList)
 
     def exit(self, argList=[]):
-        """exit(self)
-        Call the exit function for this state"""
+        """
+        Call the exit function for this state
+        """
         # first exit child FSMs
         self.__exitChildren(argList)
 
@@ -263,7 +264,6 @@ class State(DirectObject):
             apply(self.__exitFunc, argList)
 
     def __str__(self):
-        """__str__(self)"""
         return "State: name = %s, enter = %s, exit = %s, trans = %s, children = %s" %\
                (self.__name, self.__enterFunc, self.__exitFunc, self.__transitions, self.__FSMList)
 

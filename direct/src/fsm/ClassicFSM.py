@@ -115,7 +115,6 @@ class ClassicFSM(DirectObject):
         return(self.__name)
 
     def setName(self, name):
-        """setName(self, string)"""
         self.__name = name
 
     def getStates(self):
@@ -135,14 +134,12 @@ class ClassicFSM(DirectObject):
         return(self.__initialState)
 
     def setInitialState(self, initialStateName):
-        """setInitialState(self, string)"""
         self.__initialState = self.getStateNamed(initialStateName)
 
     def getFinalState(self):
         return(self.__finalState)
 
     def setFinalState(self, finalStateName):
-        """setFinalState(self, string)"""
         self.__finalState = self.getStateNamed(finalStateName)
 
     def requestFinalState(self):
@@ -155,8 +152,9 @@ class ClassicFSM(DirectObject):
     # lookup funcs
 
     def getStateNamed(self, stateName):
-        """getStateNamed(self, string)
-        Return the state with given name if found, issue warning otherwise"""
+        """
+        Return the state with given name if found, issue warning otherwise
+        """
         state = self.__states.get(stateName)
         if state:
             return state
@@ -211,7 +209,8 @@ class ClassicFSM(DirectObject):
 
     def __transition(self, aState, enterArgList=[], exitArgList=[]):
         """__transition(self, State, enterArgList, exitArgList)
-        Exit currentState and enter given one"""
+        Exit currentState and enter given one
+        """
         assert(not self.__internalStateInFlux)
         self.__internalStateInFlux = 1
         self.__exitCurrent(exitArgList)
@@ -220,7 +219,7 @@ class ClassicFSM(DirectObject):
 
     def request(self, aStateName, enterArgList=[], exitArgList=[],
                 force=0):
-        """request(self, string)
+        """
         Attempt transition from currentState to given one.
         Return true is transition exists to given state,
         false otherwise.
@@ -309,7 +308,7 @@ class ClassicFSM(DirectObject):
         self.request(aStateName, enterArgList, exitArgList, force=1)
 
     def conditional_request(self, aStateName, enterArgList=[], exitArgList=[]):
-        """request(self, string)
+        """
         'if this transition is defined, do it'
         Attempt transition from currentState to given one, if it exists.
         Return true if transition exists to given state,
@@ -318,7 +317,6 @@ class ClassicFSM(DirectObject):
         ClassicFSM transitions, letting the same fn be used for different states
         that may not have the same out transitions.
         """
-        
         assert(not self.__internalStateInFlux)
         if not self.__currentState:
             # Make this a warning for now

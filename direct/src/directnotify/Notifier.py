@@ -121,19 +121,22 @@ class Notifier:
         return 1 # to allow assert(myNotify.warning("blah"))
 
     def setWarning(self, bool):
-        """setWarning(self, int)
-        Enable/Disable the printing of warning messages"""
+        """
+        Enable/Disable the printing of warning messages
+        """
         self.__warning = bool
 
     def getWarning(self):
-        """getWarning(self)
-        Return whether the printing of warning messages is on or off"""
+        """
+        Return whether the printing of warning messages is on or off
+        """
         return(self.__warning)
 
     # debug funcs
     def debug(self, debugString):
-        """debug(self, string)
-        Issue the debug message if debug flag is on"""
+        """
+        Issue the debug message if debug flag is on
+        """
         if (self.__debug):
             string = (self.getTime() + self.__name + '(debug): ' + debugString)
             self.__log(string)
@@ -141,19 +144,22 @@ class Notifier:
         return 1 # to allow assert(myNotify.debug("blah"))
 
     def setDebug(self, bool):
-        """setDebug(self, int)
-        Enable/Disable the printing of debug messages"""
+        """
+        Enable/Disable the printing of debug messages
+        """
         self.__debug = bool
 
     def getDebug(self):
-        """getDebug(self)
-        Return whether the printing of debug messages is on or off"""
+        """
+        Return whether the printing of debug messages is on or off
+        """
         return(self.__debug)
 
     # info funcs
     def info(self, infoString):
-        """info(self, string)
-        Print the given informational string, if info flag is on"""
+        """
+        Print the given informational string, if info flag is on
+        """
         if (self.__info):
             string = (self.getTime() + self.__name + '(info): ' + infoString)
             self.__log(string)
@@ -162,7 +168,8 @@ class Notifier:
 
     def getInfo(self):
         """
-        Return whether the printing of info messages is on or off"""
+        Return whether the printing of info messages is on or off
+        """
         return(self.__info)
 
     def setInfo(self, bool):
@@ -173,19 +180,22 @@ class Notifier:
 
     # log funcs
     def __log(self, logEntry):
-        """__log(self, string)
-        Determine whether to send informational message to the logger"""
+        """
+        Determine whether to send informational message to the logger
+        """
         if (self.__logging):
             self.__logger.log(logEntry)
 
     def getLogging(self):
         """
-        Return 1 if logging enabled, 0 otherwise"""
+        Return 1 if logging enabled, 0 otherwise
+        """
         return (self.__logging)
 
     def setLogging(self, bool):
         """
-        Set the logging flag to int (1=on, 0=off)"""
+        Set the logging flag to int (1=on, 0=off)
+        """
         self.__logging = bool
 
     def __print(self, string):
