@@ -20,8 +20,9 @@
 
 
 #include "hashVal.h"
-
+#include "config_express.h"
 #include "crypto_utils.h"
+
 #include <md5.h>
 #include <hex.h>
 #include <files.h>
@@ -85,8 +86,19 @@ md5_a_file(const Filename &name, HashVal &ret) {
   MD5 md5;
 
   string fs = name.to_os_specific();
-  FileSource f(fs.c_str(), true,
-               new HashFilter(md5, new HexEncoder(new FileSink(os))));
+
+  try {
+    FileSource f(fs.c_str(), true,
+                 new HashFilter(md5, new HexEncoder(new FileSink(os))));
+  } catch (...) {
+    express_cat.warning()
+      << "Unable to read " << name << " to compute md5 hash.\n";
+    ret.hv[0] = 0;
+    ret.hv[1] = 0;
+    ret.hv[2] = 0;
+    ret.hv[3] = 0;
+    return;
+  }
 
   istringstream is(os.str());
 
