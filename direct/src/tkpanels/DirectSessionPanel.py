@@ -114,6 +114,14 @@ class DirectSessionPanel(AppShell):
             label = 'Toggle Widget Mode',
             command = direct.manipulationControl.toggleObjectHandlesMode)
         
+        self.directWidgetOnTop = BooleanVar()
+        self.directWidgetOnTop.set(0)
+        self.menuBar.addmenuitem('DIRECT', 'checkbutton',
+                                 'DIRECT Widget On Top',
+                                 label = 'Widget On Top',
+                                 variable = self.directWidgetOnTop,
+                                 command = self.toggleWidgetOnTop)
+
         # Get a handle to the menu frame
         menuFrame = self.menuFrame
 
@@ -597,6 +605,14 @@ class DirectSessionPanel(AppShell):
             direct.grid.enable()
         else:
             direct.grid.disable()
+
+    def toggleWidgetOnTop(self):
+        if self.directWidgetOnTop.get():
+            direct.widget.setBin('gui-popup', 0)
+            direct.widget.setDepthTest(0)
+        else:
+            direct.widget.clearBin()
+            direct.widget.setDepthTest(1)
 
     def selectedNodePathHook(self, nodePath):
         # Make sure node path is in nodePathDict
