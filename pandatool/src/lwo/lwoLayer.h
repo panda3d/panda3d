@@ -22,6 +22,8 @@
 ////////////////////////////////////////////////////////////////////
 class LwoLayer : public LwoChunk {
 public:
+  void make_generic();
+
   enum Flags {
     F_hidden   = 0x0001
   };

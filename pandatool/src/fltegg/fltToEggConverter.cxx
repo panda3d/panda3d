@@ -35,13 +35,14 @@ FltToEggConverter::
 FltToEggConverter(EggData &egg_data) : _egg_data(egg_data) {
   _tpc = PC_unchanged;
   _mpc = PC_unchanged;
+  _error = false;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FltToEggConverter::convert_flt
 //       Access: Public
-//  Description: Returns a newly-allocated EggData structure
-//               corresponding to the indicated flt structure.
+//  Description: Fills up the egg_data structure according to the
+//               indicated lwo structure.
 ////////////////////////////////////////////////////////////////////
 bool FltToEggConverter::
 convert_flt(const FltHeader *flt_header) {

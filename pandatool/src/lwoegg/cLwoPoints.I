@@ -1,0 +1,19 @@
+// Filename: cLwoPoints.I
+// Created by:  drose (25Apr01)
+// 
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLwoPoints::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE CLwoPoints::
+CLwoPoints(LwoToEggConverter *converter, const LwoPoints *points,
+	   CLwoLayer *layer) : 
+  _converter(converter),
+  _points(points),
+  _layer(layer)
+{
+}

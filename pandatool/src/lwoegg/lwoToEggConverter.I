@@ -1,0 +1,16 @@
+// Filename: lwoToEggConverter.I
+// Created by:  drose (25Apr01)
+// 
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: LwoToEggConverter::get_egg_root
+//       Access: Public
+//  Description: Returns a root node suitable for parenting egg
+//               structures to.
+////////////////////////////////////////////////////////////////////
+EggGroupNode *LwoToEggConverter::
+get_egg_root() const {
+  return &_egg_data;
+}

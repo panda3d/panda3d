@@ -11,6 +11,21 @@
 TypeHandle LwoLayer::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LwoLayer::make_generic
+//       Access: Public
+//  Description: Resets the layer's parameters to initial defaults for
+//               a generic layer created implicitly.
+////////////////////////////////////////////////////////////////////
+void LwoLayer::
+make_generic() {
+  _number = -1;
+  _flags = 0;
+  _pivot.set(0.0, 0.0, 0.0);
+  _name = "Generic";
+  _parent = -1;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LwoLayer::read_iff
 //       Access: Public, Virtual
 //  Description: Reads the data of the chunk in from the given input
