@@ -7,6 +7,7 @@ import Task
 # Interval events
 IVAL_NONE = 0
 IVAL_INIT = 1
+IVAL_STOP = 2
 
 class Interval(DirectObject):
     """Interval class: Base class for timeline functionality"""
@@ -98,6 +99,7 @@ class Interval(DirectObject):
         """ stop()
         """
         taskMgr.removeTasksNamed(self.name + '-play')
+        self.setT(self.curr_t, event = IVAL_STOP)
 	return self.curr_t
 
     def __playTask(self, task):
@@ -137,8 +139,14 @@ class Interval(DirectObject):
             tl, text = 'Time',
             min = 0, max = string.atof(fpformat.fix(self.duration, 2)),
             command = lambda t, s = self: s.setT(t))
-        es.onRelease = lambda s=self, es = es: s.setT(es.get(),
-                                                      event = IVAL_INIT)
+        # So when you drag scale with mouse its like you started a playback
+        def onPress(s=self,es=es):
+            # Kill playback task
+            taskMgr.removeTasksNamed(s.name + '-play')
+            # INIT interval
+            s.setT(es.get(), event = IVAL_INIT)
+        es.onPress = onPress
+        es.onRelease = lambda s=self: s.stop()
         es.onReturnRelease = lambda s=self, es = es: s.setT(es.get(),
                                                             event = IVAL_INIT)
         es.pack(expand = 1, fill = X)

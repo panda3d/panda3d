@@ -211,7 +211,7 @@ class Actor(PandaObject, NodePath):
         """getPartNames(self):
         Return list of Actor part names. If not an multipart actor,
         returns 'modelRoot' NOTE: returns parts of first LOD"""
-        return self.__partBundleDict[0].keys()
+        return self.__partBundleDict.values()[0].keys()
     
     def getGeomNode(self):
         """getGeomNode(self)
@@ -335,7 +335,7 @@ class Actor(PandaObject, NodePath):
 
         # get duration for named part only
         if (self.__animControlDict[lodName].has_key(partName)):        
-            animControl = self.__getAnimControl(animName, partName, lodName)
+            animControl = self.getAnimControl(animName, partName, lodName)
             if (animControl != None):
                 return animControl.getFrameRate()
         else:
@@ -357,7 +357,7 @@ class Actor(PandaObject, NodePath):
         if (animName==None):
             animName = self.getCurrentAnim(partName)
             
-        animControl = self.__getAnimControl(animName, partName, lodName)
+        animControl = self.getAnimControl(animName, partName, lodName)
         if (animControl != None):
             return animControl.getPlayRate()
         else:
@@ -382,7 +382,7 @@ class Actor(PandaObject, NodePath):
             for partName in partNames:
                 if (animName==None):
                     animName = self.getCurrentAnim(partName)          
-                animControl = self.__getAnimControl(animName, partName, lodName)
+                animControl = self.getAnimControl(animName, partName, lodName)
                 if (animControl != None):
                     animControl.setPlayRate(rate)
             
@@ -401,7 +401,7 @@ class Actor(PandaObject, NodePath):
 
         # get duration for named part only
         if (self.__animControlDict[lodName].has_key(partName)):        
-            animControl = self.__getAnimControl(animName, partName, lodName)
+            animControl = self.getAnimControl(animName, partName, lodName)
             if (animControl != None):
                 return (animControl.getNumFrames() / \
                         animControl.getFrameRate())
@@ -422,7 +422,7 @@ class Actor(PandaObject, NodePath):
         # loop through all anims for named part and find if any are playing
         if (self.__animControlDict[lodName].has_key(partName)):
             for animName in self.__animControlDict[lodName][partName].keys():
-                if (self.__getAnimControl(animName, partName, lodName).isPlaying()):
+                if (self.getAnimControl(animName, partName, lodName).isPlaying()):
                     return animName
         else:
             Actor.notify.warning("no part named %s" % (partName))
@@ -772,13 +772,13 @@ class Actor(PandaObject, NodePath):
             if (partName == None):
                 # loop all parts
                 for thisPart in animControlDict.keys():            
-                    animControl = self.__getAnimControl(animName, thisPart,
+                    animControl = self.getAnimControl(animName, thisPart,
                                                         lodName)
                     if (animControl != None):
                         animControl.play()
 
             else:
-                animControl = self.__getAnimControl(animName, partName,
+                animControl = self.getAnimControl(animName, partName,
                                                     lodName)
                 if (animControl != None):
                     animControl.play()
@@ -795,13 +795,13 @@ class Actor(PandaObject, NodePath):
             if (partName == None):
                 # loop all parts
                 for thisPart in animControlDict.keys():
-                    animControl = self.__getAnimControl(animName, thisPart,
+                    animControl = self.getAnimControl(animName, thisPart,
                                                         lodName)
                     if (animControl != None):
                         animControl.loop(restart)
             else:
                 # loop a specific part
-                animControl = self.__getAnimControl(animName, partName,
+                animControl = self.getAnimControl(animName, partName,
                                                     lodName)
                 if (animControl != None):
                     animControl.loop(restart)
@@ -816,21 +816,19 @@ class Actor(PandaObject, NodePath):
             if (partName==None):
                 # pose all parts
                 for thisPart in animControlDict.keys():
-                    animControl = self.__getAnimControl(animName, thisPart,
+                    animControl = self.getAnimControl(animName, thisPart,
                                                         lodName)
                     if (animControl != None):
                         animControl.pose(frame)
             else:
                 # pose a specific part
-                animControl = self.__getAnimControl(animName, partName,
+                animControl = self.getAnimControl(animName, partName,
                                                     lodName)
                 if (animControl != None):
                     animControl.pose(frame)
         
-    #private
-    
-    def __getAnimControl(self, animName, partName, lodName="lodRoot"):
-        """__getAnimControl(self, string, string, string="lodRoot")
+    def getAnimControl(self, animName, partName, lodName="lodRoot"):
+        """getAnimControl(self, string, string, string="lodRoot")
         Search the animControl dictionary indicated by lodName for
         a given anim and part. Return the animControl if present,
         or None otherwise

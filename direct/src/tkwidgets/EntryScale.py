@@ -36,6 +36,7 @@ class EntryScale(Pmw.MegaWidget):
         # Initialize some class variables
         self.value = self['initialValue']
         self.entryFormat = '%.2f'
+        self.fScaleCommand = 0
 
         # Create the components.
 
@@ -104,12 +105,8 @@ class EntryScale(Pmw.MegaWidget):
         self.scale.pack(side = 'left', expand = 1, fill = 'x')
         # Set scale to the middle of its range
         self.scale.set(self['initialValue'])
-        self.scale.bind('<Button-1>',
-                        lambda event, s = self:
-                        apply(s.onPress, s['callbackData']))
-        self.scale.bind('<ButtonRelease-1>',
-                        lambda event, s = self:
-                        apply(s.onRelease, s['callbackData']))
+        self.scale.bind('<Button-1>', self.__onPress)
+        self.scale.bind('<ButtonRelease-1>', self.__onRelease)
 
         self.maxLabel = self.createcomponent('maxLabel', (), None,
                                              Button, self.minMaxFrame,
@@ -174,6 +171,8 @@ class EntryScale(Pmw.MegaWidget):
         self.maxLabel['text'] = self['max']
 
     def _scaleCommand(self, strVal):
+        if not self.fScaleCommand:
+            return
         # convert scale val to float
         self.set(string.atof(strVal))
         """
@@ -213,7 +212,7 @@ class EntryScale(Pmw.MegaWidget):
         # Round by resolution
         if self['resolution'] is not None:
             newVal = round(newVal / self['resolution']) * self['resolution']
-        
+
         # Record updated value
         self.value = newVal
         # Update scale's position
@@ -234,9 +233,21 @@ class EntryScale(Pmw.MegaWidget):
         """ User redefinable callback executed on <Return> release in entry """
         pass
 
+    def __onPress(self, event):
+        # First execute onpress callback
+        apply(self.onPress, self['callbackData'])
+        # Now enable slider command
+        self.fScaleCommand = 1
+
     def onPress(self, *args):
         """ User redefinable callback executed on button press """
         pass
+
+    def __onRelease(self, event):
+        # Now disable slider command
+        self.fScaleCommand = 0
+        # First execute onpress callback
+        apply(self.onRelease, self['callbackData'])
 
     def onRelease(self, *args):
         """ User redefinable callback executed on button release """

@@ -25,8 +25,9 @@ class FunctionInterval(Interval):
 	""" updateFunc(t, event)
 	    Go to time t
 	"""
-        # Evaluate the function
-        self.function()
+        if event != IVAL_STOP:
+            # Evaluate the function
+            self.function()
 
 ### FunctionInterval subclass for throwing events ###
 class EventInterval(FunctionInterval):

@@ -1,11 +1,18 @@
 from PandaModules import *
 from DirectSessionGlobal import *
 from IntervalGlobal import *
+from Actor import *
 
 import Mopath
 
 boat = loader.loadModel('models/directmodels/smiley')
 boat.reparentTo(render)
+
+donald = Actor()
+donald.loadModel("phase_3/models/char/donald-wheel-mod")
+donald.loadAnims({"steer":"phase_3/models/char/donald-wheel-chan"})
+steerAnimControl = donald.getAnimControl('steer', 'modelRoot')
+donald.reparentTo(boat)
 
 dock = loader.loadModel('models/directmodels/smiley')
 dock.reparentTo(render)
@@ -20,6 +27,14 @@ boatMopath = MopathInterval(mp, boat, 'boatpath')
 boatTrack = Track([boatMopath], 'boattrack')
 BOAT_START = boatTrack.getIntervalStartTime('boatpath')
 BOAT_END = boatTrack.getIntervalEndTime('boatpath')
+
+# This will create an anim interval that is posed every frame
+donaldSteerInterval = AnimInterval(steerAnimControl)
+# This will create an anim interval that is started at t = 0 and then
+# loops for 10 seconds
+donaldLoopInterval = AnimInterval(steerAnimControl, loop = 1, duration = 10.0)
+donaldSteerTrack = Track([donaldSteerInterval, donaldLoopInterval],
+                         name = 'steerTrack')
 
 # Make the dock lerp up so that it's up when the boat reaches the end of
 # its mopath
@@ -48,7 +63,8 @@ waterDone = EventInterval('water-is-done')
 waterEventTrack = Track([waterDone])
 waterEventTrack.setIntervalStartTime('water-is-done', eventTime)
 
-mtrack = MultiTrack([boatTrack, dockTrack, soundTrack, waterEventTrack])
+mtrack = MultiTrack([boatTrack, dockTrack, soundTrack, waterEventTrack,
+                     donaldSteerTrack])
 # Print out MultiTrack parameters
 print(mtrack)
 

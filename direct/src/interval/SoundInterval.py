@@ -26,7 +26,7 @@ class SoundInterval(Interval):
 	""" updateFunc(t, event)
         Go to time t
 	"""
-        if(t == self.duration):
+        if (t == self.duration) or (event == IVAL_STOP):
             # Stop sound if necessary
 	    if (self.isPlaying == 1):
 		self.isPlaying = 0

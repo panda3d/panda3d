@@ -168,19 +168,20 @@ class Track(Interval):
 	    for ival, itime, itype, tStart, tEnd in self.ilist:
                 # Compare time with ival's start/end times
                 if (t < tStart):
-                    if self.prev_t > tStart:
+                    if (self.prev_t > tStart) and (event != IVAL_STOP):
                         # We just crossed the start of this interval
                         # going backwards (e.g. via the slider)
                         # Execute this interval at its start time
-                        ival.setT(0.0)
+                        ival.setT(0.0, event)
                     # Done checking intervals
                     break
                 elif (t >= tStart) and (t <= tEnd):
                     # Between start/end, record current interval
                     currentInterval = ival
                     # Make sure event == IVAL_INIT if entering new interval
-                    if ((self.prev_t < tStart) or
-                        (ival != self.currentInterval)):
+                    if ((event == IVAL_NONE) and
+                        ((self.prev_t < tStart) or
+                          (ival != self.currentInterval))):
                         event = IVAL_INIT
                     # Evaluate interval at interval relative time
                     currentInterval.setT(t - tStart, event)
@@ -188,13 +189,13 @@ class Track(Interval):
                     break
                 elif (t > tEnd):
                     # Crossing over interval end 
-                    if ((self.prev_t < tEnd) or
+                    if (((event == IVAL_NONE) and (self.prev_t < tEnd)) or
                         ((event == IVAL_INIT) and ival.getfOpenEnded())):
                         # If we've just crossed the end of this interval
                         # or its an INIT event after the interval's end
                         # and the interval is openended,
                         # then execute the interval at its end time
-                        ival.setT(ival.getDuration())
+                        ival.setT(ival.getDuration(), event)
                      # May not be the last, keep checking other intervals
             # Record current interval (may be None)
             self.currentInterval = currentInterval
