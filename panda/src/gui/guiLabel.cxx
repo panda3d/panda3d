@@ -6,6 +6,7 @@
 #include "guiLabel.h"
 
 #include <textNode.h>
+#include <transformTransition.h>
 
 void GuiLabel::recompute_transform(void) {
   switch (_type) {
@@ -17,6 +18,13 @@ void GuiLabel::recompute_transform(void) {
       n->set_transform(mat);
     }
     break;
+  case SIMPLE_TEXTURE:
+    {
+      LMatrix4f mat = LMatrix4f::scale_mat(_scale) *
+	LMatrix4f::translate_mat(_pos);
+      _internal->set_transition(new TransformTransition(mat));
+    }
+    break;
   default:
     gui_cat->warning() << "recompute_transform on invalid label type ("
 		       << _type << ")" << endl;
@@ -26,8 +34,60 @@ void GuiLabel::recompute_transform(void) {
 GuiLabel::~GuiLabel(void) {
 }
 
-GuiLabel* GuiLabel::make_simple_texture_label(void) {
-  return new GuiLabel();
+#include <textureTransition.h>
+#include <geomTristrip.h>
+
+GuiLabel* GuiLabel::make_simple_texture_label(Texture* texture) {
+  GuiLabel* ret = new GuiLabel();
+  ret->_type = SIMPLE_TEXTURE;
+  ret->_tex = texture;
+  ret->_geom = new NamedNode("GUI label");
+  GeomNode* n2 = new GeomNode();
+  ret->_internal = new RenderRelation(ret->_geom, n2);
+  ret->_internal->set_transition(new TextureTransition(texture));
+  GeomTristrip *geoset = new GeomTristrip;
+  PTA_int lengths(0);
+  lengths.push_back(4);
+  PTA_Vertexf verts;
+  float l, r, b, t;
+  {
+    // compute {l, r, b, t}
+    int xs = texture->_pbuffer->get_xsize();
+    int ys = texture->_pbuffer->get_ysize();
+    float ratio;
+
+    if (xs > ys) {
+      // horizontally dominant
+      ratio = ((float)ys) / ((float)xs);
+      ratio *= 0.5;
+      l = -0.5;
+      r = 0.5;
+      b = -ratio;
+      t = ratio;
+    } else {
+      // vertically dominant
+      ratio = ((float)xs) / ((float)ys);
+      ratio *= 0.5;
+      l = -ratio;
+      r = ratio;
+      b = -0.5;
+      t = 0.5;
+    }
+  }
+  verts.push_back(Vertexf::rfu(l, 0., t));
+  verts.push_back(Vertexf::rfu(l, 0., b));
+  verts.push_back(Vertexf::rfu(r, 0., t));
+  verts.push_back(Vertexf::rfu(r, 0., b));
+  geoset->set_num_prims(1);
+  geoset->set_lengths(lengths);
+  geoset->set_coords(verts, G_PER_VERTEX);
+  PTA_TexCoordf uvs;
+  uvs.push_back(TexCoordf(0., 1.));
+  uvs.push_back(TexCoordf(0., 0.));
+  uvs.push_back(TexCoordf(1., 1.));
+  uvs.push_back(TexCoordf(1., 0.));
+  geoset->set_texcoords(uvs, G_PER_VERTEX);
+  n2->add_geom(geoset);
 }
 
 GuiLabel* GuiLabel::make_simple_text_label(const string& text, Node* font) {
@@ -58,6 +118,36 @@ void GuiLabel::get_extents(float& l, float& r, float& b, float& t) {
       r = lr.dot(right);
       b = lr.dot(up);
       t = ul.dot(up);
+    }
+    break;
+  case SIMPLE_TEXTURE:
+    {
+      float xs = _tex->_pbuffer->get_xsize();
+      float ys = _tex->_pbuffer->get_ysize();
+      float ratio;
+      LVector3f ul, lr;
+
+      if (xs > ys) {
+	// horizontally dominant
+	ratio = ((float)ys) / ((float)xs);
+	ratio *= 0.5;
+	ul = LVector3f::rfu(-0.5, 0., ratio);
+	lr = LVector3f::rfu(0.5, 0., -ratio);
+      } else {
+	// vertically dominant
+	ratio = ((float)xs) / ((float)ys);
+	ratio *= 0.5;
+	ul = LVector3f::rfu(-ratio, 0., 0.5);
+	lr = LVector3f::rfu(ratio, 0., -0.5);
+      }
+      LMatrix4f mat = LMatrix4f::scale_mat(_scale) *
+	LMatrix4f::translate_mat(_pos);
+      ul = mat * ul;
+      lr = mat * lr;
+      l = ul.dot(ul.right());
+      r = lr.dot(lr.right());
+      b = lr.dot(lr.up());
+      t = ul.dot(ul.up());
     }
     break;
   default:

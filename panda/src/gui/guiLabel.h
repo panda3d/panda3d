@@ -12,6 +12,7 @@
 #include <node.h>
 #include <pt_Node.h>
 #include <renderRelation.h>
+#include <texture.h>
 
 // label-ish behavior for GUI objects (labels, buttons, rollovers)
 
@@ -23,6 +24,8 @@ private:
   LabelType _type;
   PT_Node _geom;
   RenderRelation* _arc;
+  Texture* _tex;
+  RenderRelation* _internal;
 
   float _scale;
   LVector3f _pos;
@@ -38,7 +41,7 @@ public:
   INLINE GuiLabel(void);
   virtual ~GuiLabel(void);
 
-  static GuiLabel* make_simple_texture_label(void);
+  static GuiLabel* make_simple_texture_label(Texture*);
   static GuiLabel* make_simple_text_label(const string&, Node*);
 
   void get_extents(float&, float&, float&, float&);

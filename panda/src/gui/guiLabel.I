@@ -4,7 +4,9 @@
 ////////////////////////////////////////////////////////////////////
 
 INLINE GuiLabel::GuiLabel(void) : _type(GuiLabel::NONE), _scale(1.),
-				  _pos(0., 0., 0.) {
+				  _pos(0., 0., 0.), _tex((Texture*)0L),
+				  _arc((RenderRelation*)0L),
+				  _internal((RenderRelation*)0L) {
 }
 
 INLINE Node* GuiLabel::get_geometry(void) const {
