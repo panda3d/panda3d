@@ -27,7 +27,7 @@ import PhysicsWalker
 class ShipPilot(PhysicsWalker.PhysicsWalker):
 
     notify = DirectNotifyGlobal.directNotify.newCategory("PhysicsWalker")
-    wantAvatarPhysicsIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
+    wantDebugIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
     
     useLifter = 0
     useHeightRay = 0
@@ -68,11 +68,17 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         self.avatarControlForwardSpeed=forward
         self.avatarControlJumpForce=0.0
         self.avatarControlReverseSpeed=reverse
-        self.avatarControlRotateSpeed=rotate
+        self.avatarControlRotateSpeed=0.3*rotate
 
     def getSpeeds(self):
         #assert(self.debugPrint("getSpeeds()"))
         return (self.__speed, self.__rotationSpeed)
+
+    def setShip(self, ship):
+        self.ship = ship
+        if ship is not None:
+            #self.setupShip()
+            self.avatarNodePath = self.setupPhysics(ship)
 
     def setupRay(self, floorBitmask, floorOffset):
         # This is a ray cast from your head down to detect floor polygons
@@ -192,14 +198,15 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         self.priorParentNp = fnp
         self.priorParent = priorParent
 
-        fn=ForceNode("viscosity")
-        fnp=NodePath(fn)
-        #fnp.reparentTo(physicsActor)
-        fnp.reparentTo(render)
-        self.avatarViscosity=LinearFrictionForce(0.0, 1.0, 0)
-        #self.avatarViscosity.setCoef(0.9)
-        fn.addForce(self.avatarViscosity)
-        self.phys.addLinearForce(self.avatarViscosity)
+        if 0:
+            fn=ForceNode("viscosity")
+            fnp=NodePath(fn)
+            #fnp.reparentTo(physicsActor)
+            fnp.reparentTo(render)
+            self.avatarViscosity=LinearFrictionForce(0.0, 1.0, 0)
+            #self.avatarViscosity.setCoef(0.9)
+            fn.addForce(self.avatarViscosity)
+            self.phys.addLinearForce(self.avatarViscosity)
 
         self.phys.attachLinearIntegrator(LinearEulerIntegrator())
         self.phys.attachPhysicalnode(physicsActor.node())
@@ -358,15 +365,24 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
                 tempCTrav.addCollider(self.cRayNodePath, self.cRayQueue)
         tempCTrav.traverse(render)
 
+    def displayDebugInfo(self):
+        """
+        For debug use.
+        """
+        onScreenDebug.add("w controls", "ShipPilot")
+
+        onScreenDebug.add("w ship", self.ship)
+        onScreenDebug.add("w isAirborne", self.isAirborne)
+
     def handleAvatarControls(self, task):
         """
         Check on the arrow keys and update the avatar.
         """
         if __debug__:
-            if self.wantAvatarPhysicsIndicator:
+            if self.wantDebugIndicator:
                 onScreenDebug.append("localAvatar pos = %s\n"%(base.localAvatar.getPos().pPrintValues(),))
                 onScreenDebug.append("localAvatar h = % 10.4f\n"%(base.localAvatar.getH(),))
-                onScreenDebug.append("localAvatar anim = %s\n"%(base.localAvatar.animFSM.getCurrentState().getName(),))
+                #onScreenDebug.append("localAvatar anim = %s\n"%(base.localAvatar.animFSM.getCurrentState().getName(),))
         #assert(self.debugPrint("handleAvatarControls(task=%s)"%(task,)))
         physObject=self.actorNode.getPhysicsObject()
         #rotAvatarToPhys=Mat3.rotateMatNormaxis(-self.avatarNodePath.getH(), Vec3.up())
@@ -390,9 +406,9 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         slideRight = 0#inputState.isSet("slideRight")
         jump = inputState.isSet("jump")
         # Determine what the speeds are based on the buttons:
-        self.__speed=(forward and self.avatarControlForwardSpeed or 
-                reverse and -self.avatarControlReverseSpeed)
-        avatarSlideSpeed=self.avatarControlForwardSpeed*0.5
+        self.__speed=(forward and self.ship.acceleration or 
+                reverse and -self.ship.reverseAcceleration)
+        avatarSlideSpeed=self.ship.acceleration*0.5
         #self.__slideSpeed=slide and (
         #        (turnLeft and -avatarSlideSpeed) or 
         #        (turnRight and avatarSlideSpeed))
@@ -400,8 +416,11 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
                 (slideLeft and -avatarSlideSpeed) or 
                 (slideRight and avatarSlideSpeed))
         self.__rotationSpeed=not slide and (
-                (turnLeft and self.avatarControlRotateSpeed) or
-                (turnRight and -self.avatarControlRotateSpeed))
+                (turnLeft and self.ship.turnRate) or
+                (turnRight and -self.ship.turnRate))
+           
+        if self.wantDebugIndicator:
+            self.displayDebugInfo()
 
         # How far did we move based on the amount of time elapsed?
         dt=ClockObject.getGlobalClock().getDt()
@@ -425,7 +444,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         #    # We must copy the vector to preserve it:
         #    self.__oldPosDelta=Vec3(posDelta)
         if __debug__:
-            if self.wantAvatarPhysicsIndicator:
+            if self.wantDebugIndicator:
                 onScreenDebug.add("posDelta1",
                     self.avatarNodePath.getPosDelta(render).pPrintValues())
                 
@@ -596,8 +615,8 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
             step=rotMat.xform(self.__vel)
 
-            newVector = self.acForce.getLocalVector()+Vec3(step*100.0)
-            maxLen = 500.0
+            newVector = self.acForce.getLocalVector()+Vec3(step)
+            maxLen = self.ship.maxSpeed
             if newVector.length() > maxLen:
                 newVector.normalize()
                 newVector *= maxLen
@@ -646,7 +665,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         assert(self.debugPrint("  velocity=%s"%(velocity,)))
         self.priorParent.setVector(Vec3(velocity))
         if __debug__:
-            if self.wantAvatarPhysicsIndicator:
+            if self.wantDebugIndicator:
                 onScreenDebug.add("velocity", velocity.pPrintValues())
     
     def reset(self):
@@ -699,7 +718,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
     
     if __debug__:
         def setupAvatarPhysicsIndicator(self):
-            if self.wantAvatarPhysicsIndicator:
+            if self.wantDebugIndicator:
                 indicator=loader.loadModelCopy('phase_5/models/props/dagger')
                 #self.walkControls.setAvatarPhysicsIndicator(indicator)
 
