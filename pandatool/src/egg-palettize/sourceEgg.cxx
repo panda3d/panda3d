@@ -71,10 +71,10 @@ get_textures(EggPalettize *prog) {
   EggTextureCollection::iterator ti;
   for (ti = tc.begin(); ti != tc.end(); ++ti) {
     EggTexture *eggtex = (*ti);
-    string name = eggtex->get_basename();
+    string name = eggtex->get_filename().get_basename();
     
     PTexture *texture = _attrib_file->get_texture(name);
-    texture->add_filename(*eggtex);
+    texture->add_filename(eggtex->get_filename());
 
     bool repeats = 
       eggtex->get_wrap_mode() == EggTexture::WM_repeat ||
@@ -289,14 +289,14 @@ update_trefs() {
 	  packing->get_omit() != OR_none) {
 	// This texture wasn't palettized, so just rename the
 	// reference to the new one.
-	eggtex->set_fullpath(_attrib_file->write_egg_filename(packing->get_new_filename()));
+	eggtex->set_filename(_attrib_file->write_egg_filename(packing->get_new_filename()));
 
       } else {
 	// This texture was palettized, so redirect the tref to point
 	// within the palette.
 	Palette *palette = packing->get_palette();
 	
-	eggtex->set_fullpath(_attrib_file->write_egg_filename(palette->get_filename()));
+	eggtex->set_filename(_attrib_file->write_egg_filename(palette->get_filename()));
 	
 	// Set the texture attributes to be uniform across all palettes.
 	eggtex->set_minfilter(EggTexture::FT_mipmap_trilinear);

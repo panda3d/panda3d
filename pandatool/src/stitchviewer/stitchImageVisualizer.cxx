@@ -116,6 +116,9 @@ setup() {
   ChanCfgOverrides override;
 
   override_chan_cfg(override);
+
+  // load display modules
+  GraphicsPipe::resolve_modules();
   
   // Create a window
   TypeHandle want_pipe_type = InteractiveGraphicsPipe::get_class_type();
