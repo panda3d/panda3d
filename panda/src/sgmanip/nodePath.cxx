@@ -2208,7 +2208,7 @@ prepare_scene(GraphicsStateGuardianBase *gsg) {
   // Use the ScenePrepareVisitor and fire off a traversal of the scene
   // beginning at the bottom node.  The ScenePrepareVisitor (defined
   // above) will call prepare() on each texture it finds in the scene
-  // graph at this point at below.
+  // graph at this point and below.
   ScenePrepareVisitor visitor;
   visitor._gsg = gsg;
 
