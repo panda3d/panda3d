@@ -56,7 +56,7 @@ template<class Thing, int max_size>
 INLINE int CircBuffer<Thing, max_size>::
 size() const {
   int diff = _in - _out;
-  return (diff >= 0) ? diff : max_size + 1 - diff;
+  return (diff >= 0) ? diff : max_size + 1 + diff;
 }
 
 ////////////////////////////////////////////////////////////////////
