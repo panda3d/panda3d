@@ -28,6 +28,9 @@ NotifyCategoryDecl(physics, EXPCL_PANDAPHYSICS, EXPTP_PANDAPHYSICS);
 
 extern EXPCL_PANDAPHYSICS void init_libphysics();
 
+// These macros get stripped out in a non-debug build (like asserts).
+// Use them like cout but with paranthesis aroud the cout input.
+// e.g. foo_debug("The value of bar is " << bar);
 #ifndef NDEBUG //[
   // Non-release build:
   #define PHYSICS_DEBUG
