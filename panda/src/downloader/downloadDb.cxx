@@ -67,6 +67,7 @@ output(ostream &out) const {
   out << "  Server DB file: " << _server_db._filename << endl;
   out << "============================================================" << endl;
   _server_db.output(out);
+  output_version_map(out);
   out << endl;
 }
 
@@ -935,8 +936,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
 add_version(const Filename &name, Hash hash, Version version) {
-  int name_code = atoi(name.get_fullpath().c_str());
-  add_version(name_code, hash, version);
+  add_version(name.get_fullpath(), hash, version);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -945,9 +945,9 @@ add_version(const Filename &name, Hash hash, Version version) {
 //  Description: Note: version numbers start at 1
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
-add_version(int name_code, Hash hash, Version version) {
-  // Try to find this name_code in the map
-  VersionMap::iterator i = _versions.find(name_code);
+add_version(const string &name, Hash hash, Version version) {
+  // Try to find this name in the map
+  VersionMap::iterator i = _versions.find(name);
   nassertv(version >= 1);
 
   // If we did not find it, put a new vector_ulong at this name_code
@@ -955,7 +955,7 @@ add_version(int name_code, Hash hash, Version version) {
     vector_ulong v;
     nassertv(version == 1);
     v.push_back(hash);
-    _versions[name_code] = v;
+    _versions[name] = v;
   } else {
     int size = (*i).second.size();
 
@@ -979,8 +979,17 @@ add_version(int name_code, Hash hash, Version version) {
 ////////////////////////////////////////////////////////////////////
 int DownloadDb::
 get_version(const Filename &name, Hash hash) {
-  int name_code = atoi(name.get_fullpath().c_str());
-  VersionMap::const_iterator vmi = _versions.find(name_code);
+  return get_version(name.get_fullpath(), hash);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::get_version
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+int DownloadDb::
+get_version(const string &name, Hash hash) {
+  VersionMap::const_iterator vmi = _versions.find(name);
   if (vmi == _versions.end()) {
     downloader_cat.debug()
       << "DownloadDb::get_version() - can't find: " << name << endl;
@@ -1007,7 +1016,12 @@ write_version_map(ofstream &write_stream) {
   vector_ulong::iterator i;
   _master_datagram.add_int32(_versions.size());
   for (vmi = _versions.begin(); vmi != _versions.end(); ++vmi) {
-    _master_datagram.add_int32((*vmi).first);
+    string name = (*vmi).first;
+    downloader_cat.debug()
+      << "DownloadDb::write_version_map() - writing file: "
+      << name << " of length: " << name.length() << endl;
+    _master_datagram.add_int32(name.length());
+    _master_datagram.append_data(name.c_str(), name.length());
     _master_datagram.add_int32((*vmi).second.size());
     for (i = (*vmi).second.begin(); i != (*vmi).second.end(); ++i)
       _master_datagram.add_uint64((*i));
@@ -1029,22 +1043,68 @@ read_version_map(ifstream &read_stream) {
   _master_datagram.append_data(buffer, sizeof(PN_int32));
   DatagramIterator di(_master_datagram);
   int num_entries = di.get_int32();
-  _master_datagram.clear();
+
   for (int i = 0; i < num_entries; i++) {
-    read_stream.read(buffer, 2 * sizeof(PN_int32)); 
-    _master_datagram.append_data(buffer, 2 * sizeof(PN_int32)); 
+
+    // Get the length of the file name
+    _master_datagram.clear();
+    read_stream.read(buffer, sizeof(PN_int32)); 
+    _master_datagram.append_data(buffer, sizeof(PN_int32)); 
     DatagramIterator di2(_master_datagram);
-    int name = di2.get_int32();
-    int length = di2.get_int32();   
+    int name_length = di2.get_int32();
+    downloader_cat.debug()
+      << "DownloadDb::read_version_map() - name length: " << name_length
+      << endl;
+
+    // Get the file name
+    _master_datagram.clear();
+    char *namebuffer = new char[name_length];
+    read_stream.read(namebuffer, name_length);
+    _master_datagram.append_data(namebuffer, name_length);
+    DatagramIterator di4(_master_datagram);
+    string name = di4.extract_bytes(name_length);
+    downloader_cat.debug()
+      << "DownloadDb::read_version_map() - name: " << name << endl;
+
+    // Get number of hash values for name
+    _master_datagram.clear();
+    read_stream.read(buffer, sizeof(PN_int32));
+    _master_datagram.append_data(buffer, sizeof(PN_int32));
+    DatagramIterator di5(_master_datagram);
+    int length = di5.get_int32();   
+    downloader_cat.debug()
+      << "DownloadDb::read_version_map() - number of values: " << length
+      << endl;
+
     for (int j = 0; j < length; j++) {
-      read_stream.read(buffer, sizeof(PN_uint64));
       _master_datagram.clear();
+      read_stream.read(buffer, sizeof(PN_uint64));
       _master_datagram.append_data(buffer, sizeof(PN_uint64));
       DatagramIterator di3(_master_datagram);
       int hash = di3.get_uint64();
       add_version(name, hash, j + 1);
     }
+    delete namebuffer;
   }
   delete buffer;
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::output_version_map
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void DownloadDb::
+output_version_map(ostream &out) const {
+  out << " Version Map: " << endl;
+  VersionMap::const_iterator vmi;
+  vector_ulong::const_iterator i;
+  for (vmi = _versions.begin(); vmi != _versions.end(); ++vmi) {
+    out << "  Filename: " << (*vmi).first;
+    for (i = (*vmi).second.begin(); i != (*vmi).second.end(); ++i)
+      out << " " << (*i);
+    out << endl;
+  }
+  out << endl;
 }

@@ -63,6 +63,7 @@ public:
   ~DownloadDb(void);
 
   void output(ostream &out) const;
+  void output_version_map(ostream &out) const;
 
   // Write a database file
   bool write_client_db(Filename &file);
@@ -202,10 +203,11 @@ public:
   static PN_uint32 _magic_number;  
 
   typedef vector<unsigned long> vector_ulong;
-  typedef map<int, vector_ulong> VersionMap;
+  typedef map<string, vector_ulong> VersionMap;
   void add_version(const Filename &name, Hash hash, Version version);
-  void add_version(int name_code, Hash hash, Version version);
+  void add_version(const string &name, Hash hash, Version version);
   int get_version(const Filename &name, Hash hash);
+  int get_version(const string &name, Hash hash);
 
 protected:
   void write_version_map(ofstream &write_stream);
