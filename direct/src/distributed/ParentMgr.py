@@ -42,6 +42,15 @@ class ParentMgr:
             self.notify.debug("performing wrtReparent of %s to '%s'" %
                               (repr(child), parentToken))
             child.wrtReparentTo(self.token2nodepath[parentToken])
+            
+            # Since you can only be under one parent at a time any time we
+            # see a successful request, let's clear you out of everybody
+            # else's pendingChildren
+            for key in self.pendingChildren.keys():
+                childList = self.pendingChildren[key]
+                if child in childList:
+                    # take him out of the list
+                    del childList[childList.index(child)]
         else:
             self.notify.warning(
                 "child %s requested reparent to '%s', not in list" %
