@@ -83,6 +83,9 @@ TextNode(const string &name) : NamedNode(name) {
   _ul3d.set(0.0, 0.0, 0.0);
   _lr3d.set(0.0, 0.0, 0.0);
   _num_rows = 0;
+
+  _freeze_level = 0;
+  _needs_rebuild = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -320,19 +323,16 @@ write(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::rebuild
-//       Access: Public, Scheme
+//     Function: TextNode::do_rebuild
+//       Access: Private
 //  Description: Removes any geometry previously defined in the geode,
 //               and fills it with new geometry that represents the
 //               current text string and all its accoutrements.
-//
-//               Normally, this function is called automatically
-//               whenever any of the parameters changes.  It should
-//               not need to be called explicitly unless something
-//               goes wrong.
 ////////////////////////////////////////////////////////////////////
 void TextNode::
-rebuild() {
+do_rebuild() {
+  _needs_rebuild = false;
+
   if (text_cat.is_debug()) {
     text_cat.debug()
       << "Rebuilding " << *this << " with '" << _text << "'\n";
@@ -478,7 +478,7 @@ rebuild() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::find_character_gsets
-//       Access: Protected
+//       Access: Private
 //  Description: Given that 'root' is a Node containing at least a
 //               polygon and a point which define the character's
 //               appearance and kern position, respectively,
@@ -522,7 +522,7 @@ find_character_gsets(Node *root, Geom *&ch, GeomPoint *&dot,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::find_characters
-//       Access: Protected
+//       Access: Private
 //  Description: Walk the hierarchy beginning at the indicated root
 //               and locate any nodes whose names are just integers.
 //               These are taken to be characters, and their
@@ -606,7 +606,7 @@ find_characters(Node *root) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::assemble_row
-//       Access: Protected
+//       Access: Private
 //  Description: Assembles the letters in the source string, up until
 //               the first newline or the end of the string into a
 //               single row (which is parented to 'dest'), and returns
@@ -657,7 +657,7 @@ assemble_row(const char *&source, Node *dest) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::assemble_text
-//       Access: Protected
+//       Access: Private
 //  Description: Constructs a hierarchy of nodes that contain the
 //               geometry representing the indicated source text, and
 //               returns it.  Also sets the ul, lr corners.
@@ -724,7 +724,7 @@ assemble_text(const char *source, LVector2f &ul, LVector2f &lr,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::make_frame
-//       Access: Protected
+//       Access: Private
 //  Description: Creates a frame around the text.
 ////////////////////////////////////////////////////////////////////
 Node *TextNode::
@@ -768,7 +768,7 @@ make_frame() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::make_card
-//       Access: Protected
+//       Access: Private
 //  Description: Creates a card behind the text.
 ////////////////////////////////////////////////////////////////////
 Node *TextNode::
@@ -814,7 +814,7 @@ make_card() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::make_card_with_border
-//       Access: Protected
+//       Access: Private
 //  Description: Creates a card behind the text with a specified border
 //               for button edge or what have you.
 ////////////////////////////////////////////////////////////////////

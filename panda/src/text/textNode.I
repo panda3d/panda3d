@@ -4,8 +4,67 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextNode::freeze
+//       Access: Public
+//  Description: Freezes the TextNode in its current state, so that
+//               updates will not immediately be displayed.  A series
+//               of state changes may then be applied in succession,
+//               which will not force the TextNode to be recomputed.
+//               When thaw() is later called, the TextNode will update
+//               itself exactly once to reflect all the state changes
+//               that were made.
+//
+//               freeze() and thaw() can nest.  Strictly speaking,
+//               each call to freeze() increments the current freeze
+//               level, while each call to thaw() decrements it.  The
+//               TextNode will only be updated when the current freeze
+//               level is zero.
+//
+//               The return value of freeze() is the freeze level
+//               *before* the freeze took place.  This number should
+//               match the return value of the matching thaw().
+////////////////////////////////////////////////////////////////////
+INLINE int TextNode::
+freeze() {
+  return _freeze_level++;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_freeze_level
+//       Access: Public
+//  Description: Returns the current freeze level.  The TextNode will
+//               not be updated visually unless this number is zero.
+//               See freeze().
+////////////////////////////////////////////////////////////////////
+INLINE int TextNode::
+get_freeze_level() const {
+  return _freeze_level;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::thaw
+//       Access: Public
+//  Description: Allows changes made since the last freeze() to be
+//               visible.  Strictly speaking, this actually decrements
+//               the freeze level, and updates the TextNode if the
+//               level reaches zero.  The return value is the new
+//               freeze level after adjusting.  See freeze().
+////////////////////////////////////////////////////////////////////
+INLINE int TextNode::
+thaw() {
+  nassertr(_freeze_level > 0, _freeze_level);
+  _freeze_level--;
+  
+  if (_freeze_level == 0 && _needs_rebuild) {
+    do_rebuild();
+  }
+
+  return _freeze_level;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_font
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Sets the font that will be used when making text.
 //               This is a model generated via egg-mkfont.
 ////////////////////////////////////////////////////////////////////
@@ -22,7 +81,7 @@ set_font(Node *font_def) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_font
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Returns the font currently in use.
 ////////////////////////////////////////////////////////////////////
 INLINE Node *TextNode::
@@ -85,7 +144,7 @@ get_align() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_wordwrap
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Sets the TextNode up to automatically wordwrap text
 //               that exceeds the indicated width.
 ////////////////////////////////////////////////////////////////////
@@ -98,7 +157,7 @@ set_wordwrap(float wordwrap) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::clear_wordwrap
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Removes the wordwrap setting from the TextNode.  Text
 //               will be as wide as it is.
 ////////////////////////////////////////////////////////////////////
@@ -110,7 +169,7 @@ clear_wordwrap() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::has_wordwrap
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
@@ -120,7 +179,7 @@ has_wordwrap() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_wordwrap
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE float TextNode::
@@ -130,7 +189,7 @@ get_wordwrap() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_text_color
-//       Access: Public, Scheme
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
@@ -140,7 +199,7 @@ set_text_color(float r, float g, float b, float a) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_text_color
-//       Access: Public, Scheme
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
@@ -152,7 +211,7 @@ set_text_color(const Colorf &text_color) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::clear_text_color
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Removes the text color specification; the text will
 //               be colored whatever it was in the source font file.
 ////////////////////////////////////////////////////////////////////
@@ -163,7 +222,7 @@ clear_text_color() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::has_text_color
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
@@ -173,7 +232,7 @@ has_text_color() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_text_color
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE Colorf TextNode::
@@ -183,7 +242,7 @@ get_text_color() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_frame_color
-//       Access: Public, Scheme
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
@@ -193,7 +252,7 @@ set_frame_color(float r, float g, float b, float a) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_frame_color
-//       Access: Public, Scheme
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
@@ -204,7 +263,7 @@ set_frame_color(const Colorf &frame_color) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_frame_color
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE Colorf TextNode::
@@ -214,7 +273,7 @@ get_frame_color() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_card_border
-//       Access: Public, Scheme
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
@@ -227,7 +286,7 @@ set_card_border(float size, float uv_portion) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::clear_card_border
-//       Access: Public, Scheme
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
@@ -238,7 +297,7 @@ clear_card_border() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_card_border_size
-//       Access: Public, Scheme
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE float TextNode::
@@ -248,7 +307,7 @@ get_card_border_size() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_card_border_uv_portion
-//       Access: Public, Scheme
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE float TextNode::
@@ -258,7 +317,7 @@ get_card_border_uv_portion() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::has_card_border
-//       Access: Public, Scheme
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
@@ -268,7 +327,7 @@ has_card_border() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_card_color
-//       Access: Public, Scheme
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
@@ -278,7 +337,7 @@ set_card_color(float r, float g, float b, float a) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_card_color
-//       Access: Public, Scheme
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
@@ -289,7 +348,7 @@ set_card_color(const Colorf &card_color) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_card_color
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE Colorf TextNode::
@@ -299,7 +358,7 @@ get_card_color() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_card_texture
-//       Access: Public, Scheme
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
@@ -311,7 +370,7 @@ set_card_texture(Texture *card_texture) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::clear_card_texture
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
@@ -323,7 +382,7 @@ clear_card_texture() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::has_card_texture
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
@@ -333,7 +392,7 @@ has_card_texture() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_card_texture
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TextNode::
@@ -343,7 +402,7 @@ get_card_texture() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_shadow_color
-//       Access: Public, Scheme
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
@@ -353,7 +412,7 @@ set_shadow_color(float r, float g, float b, float a) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_shadow_color
-//       Access: Public, Scheme
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
@@ -364,7 +423,7 @@ set_shadow_color(const Colorf &shadow_color) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_shadow_color
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE Colorf TextNode::
@@ -374,7 +433,7 @@ get_shadow_color() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_frame_as_margin
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Specifies that a border will be drawn around the text
 //               when it is next created.  The parameters are the
 //               amount of additional padding to insert between the
@@ -391,7 +450,7 @@ set_frame_as_margin(float left, float right, float bottom, float top) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_frame_actual
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Similar to set_frame_as_margin, except the frame is
 //               specified in actual coordinate units (relative to
 //               the text's origin), irrespective of the size of the
@@ -410,7 +469,7 @@ set_frame_actual(float left, float right, float bottom, float top) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::clear_frame
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Specifies that a border will not be drawn around the
 //               text.
 ////////////////////////////////////////////////////////////////////
@@ -422,7 +481,7 @@ clear_frame() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::has_frame
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
@@ -432,7 +491,7 @@ has_frame() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::is_frame_as_margin
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: If this is true, the frame was set via a call to
 //               set_frame_as_margin(), and the dimension of the frame
 //               as returned by get_frame_as_set() represent a margin
@@ -449,7 +508,7 @@ is_frame_as_margin() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_frame_as_set
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Returns the dimensions of the frame as set by
 //               set_frame_as_margin() or set_frame_actual().  Use
 //               is_frame_actual() to determine how to interpret the
@@ -464,7 +523,7 @@ get_frame_as_set() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_frame_actual
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Returns the actual dimensions of the frame around the
 //               text.  If the frame was set via set_frame_as_margin(),
 //               the result returned by this function reflects the
@@ -487,7 +546,7 @@ get_frame_actual() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_frame_line_width
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Specifies the thickness of the lines that will be
 //               used to draw the frame.
 ////////////////////////////////////////////////////////////////////
@@ -498,7 +557,7 @@ set_frame_line_width(float frame_width) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_frame_line_width
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Returns the thickness of the lines that will be
 //               used to draw the frame.
 ////////////////////////////////////////////////////////////////////
@@ -509,7 +568,7 @@ get_frame_line_width() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_frame_corners
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Enables or disables the drawing of corners for the
 //               frame.  These are extra points drawn at each of the
 //               four corners, to soften the ugly edges generated when
@@ -526,7 +585,7 @@ set_frame_corners(bool corners) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_frame_corners
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
@@ -536,7 +595,7 @@ get_frame_corners() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_card_as_margin
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Specifies that a (possibly opaque or semitransparent)
 //               card will be held behind the text when it is next
 //               created.  Like set_frame_as_margin, the parameters are
@@ -554,7 +613,7 @@ set_card_as_margin(float left, float right, float bottom, float top) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_card_actual
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Similar to set_card_as_margin, except the card is
 //               specified in actual coordinate units (relative to
 //               the text's origin), irrespective of the size of the
@@ -573,7 +632,7 @@ set_card_actual(float left, float right, float bottom, float top) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::clear_card
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Specifies that a card will not be drawn behind the
 //               text.
 ////////////////////////////////////////////////////////////////////
@@ -585,7 +644,7 @@ clear_card() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::has_card
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
@@ -595,7 +654,7 @@ has_card() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::is_card_as_margin
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: If this is true, the card was set via a call to
 //               set_card_as_margin(), and the dimension of the card
 //               as returned by get_card_as_set() represent a margin
@@ -612,7 +671,7 @@ is_card_as_margin() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_card_as_set
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Returns the dimensions of the card as set by
 //               set_card_as_margin() or set_card_actual().  Use
 //               is_card_actual() to determine how to interpret the
@@ -627,7 +686,7 @@ get_card_as_set() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_card_actual
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Returns the actual dimensions of the card around the
 //               text.  If the card was set via set_card_as_margin(),
 //               the result returned by this function reflects the
@@ -650,7 +709,7 @@ get_card_actual() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_card_transformed
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Returns the actual card dimensions, transformed by
 //               the matrix set by set_transform().  This returns the
 //               card dimensions in actual coordinates as seen by the
@@ -668,7 +727,7 @@ get_card_transformed() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_shadow
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Specifies that the text should be drawn with a
 //               shadow, by creating a second copy of the text and
 //               offsetting it slightly behind the first.
@@ -682,7 +741,7 @@ set_shadow(float xoffset, float yoffset) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::clear_shadow
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Specifies that a shadow will not be drawn behind the
 //               text.
 ////////////////////////////////////////////////////////////////////
@@ -694,7 +753,7 @@ clear_shadow() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::has_shadow
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
@@ -704,7 +763,7 @@ has_shadow() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_shadow
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Returns the offset of the shadow as set by
 //               set_shadow().  It is an error to call this if
 //               has_shadow() is false.
@@ -717,7 +776,7 @@ get_shadow() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_draw_order
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Sets the drawing order of text created by the
 //               TextMaker.  This is actually the draw order of the
 //               card and frame.  The shadow is drawn at
@@ -731,7 +790,7 @@ set_draw_order(int draw_order) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_draw_order
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE int TextNode::
@@ -741,7 +800,7 @@ get_draw_order() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_billboard
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Sets the flag indicating whether the text should be
 //               generated as a billboard object or not.  If this is
 //               true, the text will automatically billboard.
@@ -758,7 +817,7 @@ set_billboard(bool billboard) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_billboard
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
@@ -768,7 +827,7 @@ get_billboard() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_transform
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Sets an additional transform that is applied to the
 //               entire text paragraph.
 ////////////////////////////////////////////////////////////////////
@@ -780,7 +839,7 @@ set_transform(const LMatrix4f &transform) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_transform
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE LMatrix4f TextNode::
@@ -790,7 +849,7 @@ get_transform() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_coordinate_system
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Specifies the coordinate system in which the text
 //               will be generated.
 ////////////////////////////////////////////////////////////////////
@@ -802,7 +861,7 @@ set_coordinate_system(CoordinateSystem coordinate_system) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_coordinate_system
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE CoordinateSystem TextNode::
@@ -812,7 +871,7 @@ get_coordinate_system() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_text
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Changes the text that is displayed under the
 //               TextNode.
 ////////////////////////////////////////////////////////////////////
@@ -824,7 +883,7 @@ set_text(const string &text) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::clear_text
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Removes the text from the TextNode.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
@@ -835,7 +894,7 @@ clear_text() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::has_text
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
@@ -845,7 +904,7 @@ has_text() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_text
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE string TextNode::
@@ -854,8 +913,28 @@ get_text() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextNode::rebuild
+//       Access: Public
+//  Description: Updates the TextNode, if it is not frozen, or marks
+//               the TextNode as requiring an update if it is.
+//
+//               Normally, this function is called automatically
+//               whenever any of the parameters changes.  It should
+//               not need to be called explicitly unless something
+//               goes wrong.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+rebuild() {
+  if (_freeze_level <= 0) {
+    do_rebuild();
+  } else {
+    _needs_rebuild = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_left
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Returns the leftmost extent of the text in local 2-d
 //               coordinates, unmodified by the set_transform()
 //               matrix.
@@ -867,7 +946,7 @@ get_left() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_right
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Returns the rightmost extent of the text in local 2-d
 //               coordinates, unmodified by the set_transform()
 //               matrix.
@@ -879,7 +958,7 @@ get_right() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_bottom
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Returns the bottommost extent of the text in local
 //               2-d coordinates, unmodified by the set_transform()
 //               matrix.
@@ -891,7 +970,7 @@ get_bottom() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_top
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Returns the topmost extent of the text in local 2-d
 //               coordinates, unmodified by the set_transform()
 //               matrix.
@@ -903,7 +982,7 @@ get_top() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_height
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Returns the net height of the text in local 2-d
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
@@ -914,7 +993,7 @@ get_height() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_width
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Returns the net width of the text in local 2-d
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
@@ -925,7 +1004,7 @@ get_width() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_upper_left_3d
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Returns the upper-left extent of the text object,
 //               after it has been transformed into 3-d space by
 //               applying the set_transform() matrix.
@@ -937,7 +1016,7 @@ get_upper_left_3d() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_lower_right_3d
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Returns the lower-right extent of the text object,
 //               after it has been transformed into 3-d space by
 //               applying the set_transform() matrix.
@@ -949,7 +1028,7 @@ get_lower_right_3d() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_num_rows
-//       Access: Public, Scheme
+//       Access: Public
 //  Description: Returns the number of rows of text that were
 //               generated.  This counts word-wrapped rows as well as
 //               rows generated due to embedded newlines.

@@ -41,6 +41,10 @@ PUBLISHED:
   TextNode(const string &name = "");
   ~TextNode();
 
+  INLINE int freeze();
+  INLINE int get_freeze_level() const;
+  INLINE int thaw();
+
   INLINE void set_font(Node *font_def);
   INLINE Node *get_font() const;
 
@@ -159,6 +163,7 @@ PUBLISHED:
   
 
 private:
+  void do_rebuild();
   bool find_character_gsets(Node *root, Geom *&ch, GeomPoint *&dot,
 			    AllTransitionsWrapper &trans);
   void find_characters(Node *root);
@@ -233,6 +238,8 @@ private:
   LPoint2f _ul2d, _lr2d;
   LPoint3f _ul3d, _lr3d;
   int _num_rows;
+  int _freeze_level;
+  bool _needs_rebuild;
 
 public:
   static TypeHandle get_class_type() {
