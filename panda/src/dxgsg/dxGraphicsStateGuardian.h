@@ -252,16 +252,13 @@ public:
   virtual void set_color_clear_value(const Colorf& value);
 
 public:
-  // recreate_tex_callback needs these to be public
-  LPDIRECT3DDEVICE7 _pCurD3DDevice;  //this needs to be set every device iteration
-  LPDIRECTDRAW7 _pDD;
+  // recreate_tex_callback needs pDD,pD3DDevice to be public
   DXScreenData scrn;
 
 #ifndef USE_TEXFMTVEC
   LPDDPIXELFORMAT   _pTexPixFmts;
   int               _cNumTexPixFmts;
 #endif
-//  D3DDEVICEDESC7    _D3DDevDesc;
 
 protected:
   void free_pointers();            // free local internal buffers
@@ -281,20 +278,6 @@ protected:
   bool                  _dx_ready;
   HRESULT               _last_testcooplevel_result;
 
-/*
-  moved to per display data
-  bool                  _bIsTNLDevice;
-  LPDIRECTDRAWSURFACE7  _back;
-  LPDIRECTDRAWSURFACE7  _zbuf;
-  LPDIRECTDRAWSURFACE7  _pri;
-
-  LPDIRECT3D7           _d3d;
-  LPDIRECTDRAW7         _pDD;
-  RECT              _view_rect;
-  RECT              clip_rect;  
-*/
-  LPDIRECT3D7           _pCurD3D7;
-  LPDIRECTDRAW7         _pCurDD;
   bool                  _bShowFPSMeter;
 
   HDC               _front_hdc;

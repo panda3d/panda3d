@@ -494,8 +494,8 @@ dx_init( void) {
     assert(scrn.pddsPrimary!=NULL);
     assert(scrn.pddsBack!=NULL);
 
-    _pDD=scrn.pDD;  // save for speed of access
-    _pCurD3DDevice = scrn.pD3DDevice;
+//    _pDD=scrn.pDD;  // save for speed of access
+//    _pCurD3DDevice = scrn.pD3DDevice;
 
 /*    _pDD = context;
     scrn.pddsPrimary = pri;
@@ -593,13 +593,13 @@ dx_init( void) {
 #ifdef USE_TEXFMTVEC
     assert(scrn.TexPixFmts.size()==0);
 
-    if(FAILED(hr=_pCurD3DDevice->EnumTextureFormats(EnumTexFmtsCallback, &scrn.TexPixFmts))) {
+    if(FAILED(hr=scrn.pD3DDevice->EnumTextureFormats(EnumTexFmtsCallback, &scrn.TexPixFmts))) {
 #else
     _pTexPixFmts = new DDPIXELFORMAT[MAX_DX_TEXPIXFMTS];
     _cNumTexPixFmts = 0;
     assert(_pTexPixFmts!=NULL);
 
-    if(FAILED(hr=_pCurD3DDevice->EnumTextureFormats(EnumTexFmtsCallback, this))) {
+    if(FAILED(hr=scrn.pD3DDevice->EnumTextureFormats(EnumTexFmtsCallback, this))) {
 #endif
         if(hr==D3DERR_TEXTURE_NO_SUPPORT) {
             dxgsg_cat.error() << "EnumTextureFormats indicates No Texturing Support on this HW!, exiting...\n";
@@ -609,12 +609,6 @@ dx_init( void) {
         }
     }
 
-/*
-    if(FAILED(hr = pDevice->GetCaps(&scrn.D3DDevDesc))) {
-        dxgsg_cat.fatal() << "GetCaps failed on D3D Device! hr = " << ConvD3DErrorToString(hr) << endl;
-        exit(1);
-    }
-*/
     DX_DECLARE_CLEAN(DDCAPS,ddCaps);
     if (FAILED(hr = scrn.pDD->GetCaps(&ddCaps,NULL))) {
         dxgsg_cat.fatal() << "GetCaps failed on DDraw! hr = " << ConvD3DErrorToString(hr) << "\n";
