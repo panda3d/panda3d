@@ -250,7 +250,8 @@ class LevelSpec:
 
         def getSpecImportsModuleName(self):
             # name of module that should be imported by spec py file
-            return 'SpecImports'
+            # TODO: make this generic
+            return 'toontown.coghq.SpecImports'
 
         def getFilename(self):
             return self.filename
