@@ -264,7 +264,7 @@ open_buffer() {
       << "Created PBuffer " << _pbuffer << ", DC " << _pbuffer_dc << "\n";
 
     wglMakeCurrent(_pbuffer_dc, wglgsg->get_context(_pbuffer_dc));
-    wglgsg->report_gl_errors();
+    wglgsg->report_my_gl_errors();
 
     // Now that the pbuffer is created, we don't need the window any
     // more.
@@ -399,6 +399,12 @@ make_pbuffer() {
 
     iattrib_list[ni++] = WGL_STENCIL_BITS_ARB;
     iattrib_list[ni++] = pfd.cStencilBits;
+
+    // Match up properties.
+    iattrib_list[ni++] = WGL_DOUBLE_BUFFER_ARB;
+    iattrib_list[ni++] = ((pfd.dwFlags & PFD_DOUBLEBUFFER) != 0);
+    iattrib_list[ni++] = WGL_STEREO_ARB;
+    iattrib_list[ni++] = ((pfd.dwFlags & PFD_STEREO) != 0);
 
     // Terminate the lists.
     nassertr(ni < max_attrib_list && nf < max_attrib_list, NULL);

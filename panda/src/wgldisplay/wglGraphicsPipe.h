@@ -45,6 +45,7 @@ private:
   static int choose_pfnum(FrameBufferProperties &properties, HDC hdc);
   static int find_pixfmtnum(FrameBufferProperties &properties, HDC hdc,
                             bool bLookforHW);
+  static string format_pfd_flags(DWORD pfd_flags);
 
 public:
   static TypeHandle get_class_type() {

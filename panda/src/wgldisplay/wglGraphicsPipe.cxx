@@ -277,8 +277,8 @@ find_pixfmtnum(FrameBufferProperties &properties, HDC hdc,
           << "stencil = " << (int)(pfd.cStencilBits) << "\n";
       }
       wgldisplay_cat.debug()
-        << "flags = " << hex << (int)(pfd.dwFlags) << " (missing "
-        << (int)((~pfd.dwFlags) & dwReqFlags) << dec << ")\n";
+        << "flags = " << format_pfd_flags(pfd.dwFlags) << " (missing "
+        << format_pfd_flags((~pfd.dwFlags) & dwReqFlags) << ")\n";
     }
 
     if ((frame_buffer_mode & FrameBufferProperties::FM_alpha) != 0 && 
@@ -359,4 +359,53 @@ find_pixfmtnum(FrameBufferProperties &properties, HDC hdc,
   }
 
   return found_pfnum;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsPipe::format_pfd_flags
+//       Access: Private, Static
+//  Description: Returns pfd_flags formatted as a string in a
+//               user-friendly way.
+////////////////////////////////////////////////////////////////////
+string wglGraphicsPipe::
+format_pfd_flags(DWORD pfd_flags) {
+  struct FlagDef {
+    DWORD flag;
+    const char *name;
+  };
+  static FlagDef flag_def[] = {
+    { PFD_DRAW_TO_WINDOW, "PFD_DRAW_TO_WINDOW" },
+    { PFD_DRAW_TO_BITMAP, "PFD_DRAW_TO_BITMAP" },
+    { PFD_SUPPORT_GDI, "PFD_SUPPORT_GDI" },
+    { PFD_SUPPORT_OPENGL, "PFD_SUPPORT_OPENGL" },
+    { PFD_GENERIC_ACCELERATED, "PFD_GENERIC_ACCELERATED" },
+    { PFD_GENERIC_FORMAT, "PFD_GENERIC_FORMAT" },
+    { PFD_NEED_PALETTE, "PFD_NEED_PALETTE" },
+    { PFD_NEED_SYSTEM_PALETTE, "PFD_NEED_SYSTEM_PALETTE" },
+    { PFD_DOUBLEBUFFER, "PFD_DOUBLEBUFFER" },
+    { PFD_STEREO, "PFD_STEREO" },
+    { PFD_SWAP_LAYER_BUFFERS, "PFD_SWAP_LAYER_BUFFERS" },
+    { PFD_SWAP_COPY, "PFD_SWAP_COPY" },
+    { PFD_SWAP_EXCHANGE, "PFD_SWAP_EXCHANGE" },
+  };
+  static const int num_flag_defs = sizeof(flag_def) / sizeof(FlagDef);
+
+  ostringstream out;
+
+  const char *sep = "";
+  bool got_any = false;
+  for (int i = 0; i < num_flag_defs; i++) {
+    if (pfd_flags & flag_def[i].flag) {
+      out << sep << flag_def[i].name;
+      pfd_flags &= ~flag_def[i].flag;
+      sep = "|";
+      got_any = true;
+    }
+  }
+
+  if (pfd_flags != 0 || !got_any) {
+    out << sep << hex << "0x" << pfd_flags << dec;
+  }
+
+  return out.str();
 }
