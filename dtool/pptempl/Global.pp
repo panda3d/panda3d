@@ -525,7 +525,7 @@ Warning: Variable $[upcase $[tree]]_INSTALL is not set!
 #defer interrogate_spath $[install_parser_inc_dir:%=-S%] -S/usr/include
 
 #defer interrogate_options \
-    -DCPPPARSER -D__STDC__ -D__cplusplus $[SYSTEM_IGATE_FLAGS] \
+    -DCPPPARSER -D__STDC__=1 -D__cplusplus $[SYSTEM_IGATE_FLAGS] \
     $[interrogate_spath] $[interrogate_ipath] \
     $[CDEFINES_OPT$[OPTIMIZE]:%=-D%] \
     $[filter -D%,$[C++FLAGS]] \
