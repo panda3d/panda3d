@@ -1724,8 +1724,8 @@ CONFAUTOPRC="""
 # is found that works, unless the user specifically requests a
 # particular display type with the load-display directive.
 
-aux-display pandadx9
 aux-display pandagl
+aux-display pandadx9
 aux-display pandadx8
 aux-display pandadx7
 
@@ -1812,8 +1812,7 @@ CONFIGPRC="""
 # Uncomment one of the following lines to choose whether you should
 # run using OpenGL or DirectX rendering.
 
-#load-display pandagl
-#load-display pandadx8
+load-display pandagl
 
 # These control the placement and size of the default rendering window.
 
@@ -1891,8 +1890,16 @@ for pkg in (PACKAGES + ["extras"]):
                 CopyAllFiles(PREFIX+"/lib/",THIRDPARTY+"/linux-libs-a/"+pkg.lower()+"/lib/")
 
 if (sys.platform == "win32"):
-    CopyTree(PREFIX+'/python', 'thirdparty/win-python')
-    CopyFile(PREFIX+'/bin/',   'thirdparty/win-python/python22.dll')
+    CopyTree(PREFIX+'/python',         'thirdparty/win-python')
+    CopyFile(PREFIX+'/bin/',           'thirdparty/win-python/python22.dll')
+
+########################################################################
+##
+## Copy PMW into the build.
+##
+########################################################################
+
+CopyTree(PREFIX+'/pmw', 'thirdparty/pmw')
 
 ########################################################################
 ##
@@ -6211,8 +6218,8 @@ if (COMPLETE):
     CopyFile(PREFIX+'/', 'InstallerNotes')
     CopyFile(PREFIX+'/', 'LICENSE')
     CopyFile(PREFIX+'/', 'README')
-    CopyTree(PREFIX+'/samples', 'samples')
-    CopyTree(PREFIX+'/direct/src', 'direct/src')
+    CopyTree(PREFIX+'/samples',     'samples')
+    CopyTree(PREFIX+'/direct/src',  'direct/src')
     CopyTree(PREFIX+'/SceneEditor', 'SceneEditor')
 
 ##########################################################################################
