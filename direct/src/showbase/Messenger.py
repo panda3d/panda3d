@@ -20,6 +20,10 @@ class Messenger:
         """
         self.dict = {}
 
+        if __debug__:
+            self.isWatching=0
+            self.watching={}
+
         if (Messenger.notify == None):
             Messenger.notify = directNotify.newCategory("Messenger")
 
@@ -116,6 +120,13 @@ class Messenger:
         acceptorDict = self.dict.get(event)
         if not acceptorDict:
             return
+        if __debug__:
+            foundWatch=0
+            if self.isWatching:
+                for i in self.watching.keys():
+                    if str(event).find(i) >= 0:
+                        foundWatch=1
+                        break
         for object in acceptorDict.keys():
             # We have to make this apparently redundant check, because
             # it is possible that one object removes its own hooks
@@ -138,6 +149,13 @@ class Messenger:
                     # the event entry from the Messenger altogether
                     if (self.dict.has_key(event) and (len(self.dict[event]) == 0)):
                         del self.dict[event]
+
+                if __debug__:
+                    if foundWatch:
+                        print "Message: \"%s\" --> %s%s"%(
+                            event,
+                            self.__methodRepr(method),
+                            tuple(extraArgs + sentArgs))
 
                 # It is important to make the actual call here, after
                 # we have cleaned up the accept hook, because the
@@ -185,6 +203,25 @@ class Messenger:
     def toggleVerbose(self):
         Messenger.notify.setDebug(1 - Messenger.notify.getDebug())
 
+    if __debug__:
+        def watch(self, needle):
+            """
+            return a matching event (needle) if found (in haystack).
+            This is primarily a debugging tool.
+            """
+            if not self.watching.get(needle):
+                self.isWatching += 1
+                self.watching[needle]=1
+
+        def unwatch(self, needle):
+            """
+            return a matching event (needle) if found (in haystack).
+            This is primarily a debugging tool.
+            """
+            if self.watching.get(needle):
+                self.isWatching -= 1
+                del self.watching[needle]
+
     def find(self, needle):
         """
         return a matching event (needle) if found (in haystack).
@@ -218,6 +255,16 @@ class Messenger:
                         break
         return matches
 
+    def __methodRepr(self, method):
+        """
+        return string version of class.method or method.
+        """
+        if (type(method) == types.MethodType):
+            functionName = method.im_class.__name__ + '.' + method.im_func.__name__
+        else:
+            functionName = method.__name__
+        return functionName
+
     def __eventRepr(self, event):
         """
         Compact version of event, acceptor pairs
@@ -226,11 +273,7 @@ class Messenger:
         acceptorDict = self.dict[event]
         for object in acceptorDict.keys():
             method, extraArgs, persistent = acceptorDict[object]
-            if (type(method) == types.MethodType):
-                functionName = method.im_class.__name__ + '.' + method.im_func.__name__
-            else:
-                functionName = method.__name__
-            str = str + functionName + ' '
+            str = str + self.__methodRepr(method) + ' '
         str = str + '\n'
         return str
 
