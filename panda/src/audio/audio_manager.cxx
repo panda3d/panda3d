@@ -56,9 +56,9 @@ AudioManager::
 ////////////////////////////////////////////////////////////////////
 void AudioManager::
 set_update_func(AudioManager::UpdateFunc* func) {
-  if (_update_func != (AudioManager::UpdateFunc*)0L)
-    audio_cat->error() << "There maybe be more then one audio driver installed"
-               << endl;
+  if (_update_func) {
+    audio_error("There maybe be more then one audio driver installed");
+  }
   _update_func = func;
 }
 
@@ -86,7 +86,7 @@ copy_loopset() {
 void AudioManager::
 ns_update() {
   // handle looping
-  if (!_loopcopy) {
+  if (_loopcopy) {
     for (LoopSet::iterator i=_loopcopy->begin(); i!=_loopcopy->end(); ++i) {
       AudioSound* sound = *i;
       if (sound->status() == AudioSound::READY) {
@@ -174,12 +174,14 @@ ns_stop(AudioSound* sound) {
 void AudioManager::
 ns_set_loop(AudioSound* sound, bool state) {
   mutex_lock l(_manager_mutex);
-  if (_loopset == (LoopSet*)0L)
+  if (!_loopset) {
     _loopset = new LoopSet;
-  if (state)
+  }
+  if (state) {
     _loopset->insert(sound);
-  else if (_loopset->find(sound) != _loopset->end())
+  } else if (_loopset->find(sound) != _loopset->end()) {
     _loopset->erase(sound);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
