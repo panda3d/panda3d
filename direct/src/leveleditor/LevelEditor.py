@@ -42,13 +42,15 @@ NEIGHBORHOODS = ['toontown_central',
                  'donalds_dock',
                  'minnies_melody_land',
                  'the_burrrgh',
-                 'daisys_garden'
+                 'daisys_garden',
+                 'donalds_dreamland'
                  ]
 NEIGHBORHOOD_CODES = {'toontown_central': 'TT',
                       'donalds_dock': 'DD',
                       'minnies_melody_land': 'MM',
                       'the_burrrgh': 'BR',
-                      'daisys_garden': 'DG'
+                      'daisys_garden': 'DG',
+                      'donalds_dreamland': 'DL'
                       }
 OBJECT_SNAP_POINTS = {
     'street_5x20': [(Vec3(5.0,0,0), Vec3(0)),
@@ -178,6 +180,7 @@ except NameError:
     loadDNAFile(DNASTORE, 'phase_6/dna/storage_MM.dna', CSDefault, 1)
     loadDNAFile(DNASTORE, 'phase_8/dna/storage_BR.dna', CSDefault, 1)
     loadDNAFile(DNASTORE, 'phase_8/dna/storage_DG.dna', CSDefault, 1)
+    loadDNAFile(DNASTORE, 'phase_8/dna/storage_DL.dna', CSDefault, 1)
     __builtin__.dnaLoaded = 1
 
 # Precompute class types for type comparisons
@@ -2034,6 +2037,8 @@ class LevelEditor(NodePath, PandaObject):
             self.outputDir = 'TheBurrrgh'
         elif neighborhood == 'daisys_garden':
             self.outputDir = 'DaisysGarden'
+        elif neighborhood == 'donalds_dreamland':
+            self.outputDir = 'DonaldsDreamland'
         self.panel.editMenu.selectitem(neighborhood)
         self.styleManager.setEditMode(neighborhood)
         self.selectMap(neighborhood)
