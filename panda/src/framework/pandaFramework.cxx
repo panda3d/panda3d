@@ -99,6 +99,8 @@ open_framework(int &argc, char **&argv) {
   _is_open = true;
 
   reset_frame_rate();
+
+  _event_handler.add_hook("window-event", event_window_event, this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -781,8 +783,6 @@ do_enable_default_keys() {
   define_key(",", "change background color", event_comma, this);
   define_key("?", "", event_question, this);
   define_key("shift-/", "", event_question, this);
-
-  _event_handler.add_hook("window-event", event_window_event, this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -810,7 +810,7 @@ clear_text() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_esc
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for ESC or q key: close the current
 //               window (and exit the application if that was the last
 //               window).
@@ -846,7 +846,7 @@ event_esc(CPT_Event event, void *data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_f
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for f key: report and reset frame
 //               rate.
 ////////////////////////////////////////////////////////////////////
@@ -859,7 +859,7 @@ event_f(CPT_Event, void *data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_w
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for w key: toggle wireframe.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
@@ -875,7 +875,7 @@ event_w(CPT_Event event, void *) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_t
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for t key: toggle texture.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
@@ -891,7 +891,7 @@ event_t(CPT_Event event, void *) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_b
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for b key: toggle backface (two-sided
 //               rendering).
 ////////////////////////////////////////////////////////////////////
@@ -908,7 +908,7 @@ event_b(CPT_Event event, void *) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_i
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for i key: invert one-sided faces.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
@@ -924,7 +924,7 @@ event_i(CPT_Event event, void *) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_l
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for l key: toggle lighting.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
@@ -940,7 +940,7 @@ event_l(CPT_Event event, void *) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_c
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for c key: center the trackball over
 //               the scene, or over the highlighted part of the scene.
 ////////////////////////////////////////////////////////////////////
@@ -963,7 +963,7 @@ event_c(CPT_Event event, void *data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_C
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for shift-C key: toggle the showing
 //               of collision solids.
 ////////////////////////////////////////////////////////////////////
@@ -983,7 +983,7 @@ event_C(CPT_Event, void *data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_B
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for shift-B key: describe the
 //               bounding volume of the currently selected object, or
 //               the entire scene.
@@ -1002,7 +1002,7 @@ event_B(CPT_Event, void *data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_L
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for shift-L key: list the contents of
 //               the scene graph, or the highlighted node.
 ////////////////////////////////////////////////////////////////////
@@ -1020,7 +1020,7 @@ event_L(CPT_Event, void *data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_h
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for h key: toggle highlight mode.  In
 //               this mode, you can walk the scene graph with the
 //               arrow keys to highlight different nodes.
@@ -1038,7 +1038,7 @@ event_h(CPT_Event, void *data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_arrow_up
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for up arrow key: in highlight mode,
 //               move the highlight to the node's parent.
 ////////////////////////////////////////////////////////////////////
@@ -1056,7 +1056,7 @@ event_arrow_up(CPT_Event, void *data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_arrow_down
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for up arrow key: in highlight mode,
 //               move the highlight to the node's first child.
 ////////////////////////////////////////////////////////////////////
@@ -1074,7 +1074,7 @@ event_arrow_down(CPT_Event, void *data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_arrow_left
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for up arrow key: in highlight mode,
 //               move the highlight to the node's nearest sibling on
 //               the left.
@@ -1106,7 +1106,7 @@ event_arrow_left(CPT_Event, void *data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_arrow_right
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for up arrow key: in highlight mode,
 //               move the highlight to the node's nearest sibling on
 //               the right.
@@ -1139,7 +1139,7 @@ event_arrow_right(CPT_Event, void *data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_S
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for shift-S key: activate stats.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
@@ -1154,7 +1154,7 @@ event_S(CPT_Event, void *) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_f9
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for f9 key: take screenshot.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
@@ -1196,7 +1196,7 @@ event_f9(CPT_Event event, void *data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_comma
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for comma key: rotate background color.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
@@ -1222,7 +1222,7 @@ event_comma(CPT_Event event, void *) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_question
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for ? key: show the available keys.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
@@ -1277,7 +1277,7 @@ event_question(CPT_Event event, void *data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_window_event
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Default handler for window events: window resized or
 //               closed, etc.
 ////////////////////////////////////////////////////////////////////

@@ -565,11 +565,17 @@ wordwrap_text(const TextAssembler::TextString &text,
       // No characters got in at all.  This could only happen if the
       // wordwrap width is narrower than a single character, or if we
       // have a substantial number of leading spaces in a line.
-      q++;
-      next_start++;
-      while (next_start < text.size() && 
-             isbreakpoint(text[next_start]._character)) {
+
+      if (initial_width == 0.0f) {
+        // There was no leading whitespace on the line, so the
+        // character itself didn't fit within the margins.  Let it in
+        // anyway; what else can we do?
+        q++;
         next_start++;
+        while (next_start < text.size() && 
+               isbreakpoint(text[next_start]._character)) {
+          next_start++;
+        }
       }
     }
     

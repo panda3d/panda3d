@@ -250,96 +250,7 @@ press(const MouseWatcherParameter &param, bool background) {
             _cursor_position = _wtext.length();
             _cursor_stale = true;
           }
-          
-        } else if (!use_keystrokes && button.has_ascii_equivalent()) {
-          // This part of the code is deprecated and will be removed
-          // soon.  It only supports the old button up/down method of
-          // sending keystrokes, instead of the new keystroke method.
-          wchar_t key = button.get_ascii_equivalent();
-          if (isprint(key)) {
-            // A normal visible character.  Add a new character to the
-            // text entry, if there's room.
-            
-            if (get_max_chars() > 0 && (int)_wtext.length() >= get_max_chars()) {
-              overflow(param);
-            } else {
-              wstring new_text = 
-                _wtext.substr(0, _cursor_position) + key +
-                _wtext.substr(_cursor_position);
-
-              // Get a string to measure its length.  In normal mode,
-              // we measure the text itself.  In obscure mode, we
-              // measure a string of n asterisks.
-              wstring measure_text;
-              if (_obscure_mode) {
-                measure_text = get_display_wtext() + (wchar_t)'*';
-              } else {
-                measure_text = new_text;
-              }
-              
-              // Check the length.
-              bool too_long = false;
-              if (_max_width > 0.0f) {
-                TextNode *text_node = get_text_def(S_focus);
-                text_node->set_wtext(measure_text);
-                text_node->set_wordwrap(_max_width);
-                text_node->set_preserve_trailing_whitespace(true);
-                text_node->set_max_rows(_num_lines);
-
-                too_long = text_node->has_overflow();
-
-                if (!too_long) {
-                  // We must also ensure that the last line is not too
-                  // long (it might be, because of additional
-                  // whitespace on the end).
-                  wstring ww_text = text_node->get_wordwrapped_wtext();
-                  size_t last_line_start = ww_text.rfind('\n');
-                  if (last_line_start == string::npos) {
-                    last_line_start = 0;
-                  }
-                  wstring last_line = ww_text.substr(last_line_start);
-                  float last_line_width = text_node->calc_width(last_line);
-                  if (text_node->get_num_rows() == _num_lines) {
-                    // Mainly we only care about this if we're on
-                    // the very last line.
-                    too_long = (last_line_width > _max_width);
-                    
-                  } else {
-                    // If we're not on the very last line, the width
-                    // is still important, just so we don't allow an
-                    // infinite number of spaces to accumulate.
-                    // However, we must allow at least *one* space
-                    // on the end of a line.
-                    if (_wtext.length() >= 1 && 
-                        _wtext[_wtext.length() - 1] == ' ') {
-                      if (last_line_width > _max_width) {
-                        // In this case, however, it's not exactly
-                        // an overflow; we just want to reject the
-                        // space.
-                        return;
-                      }
-                    }
-                  }
-                }
-              }
-              
-              if (too_long) {
-                overflow(param);
-                
-              } else {
-                _wtext = new_text;
-                if (_obscure_mode) {
-                  _obscured_wtext = measure_text;
-                }
-                
-                _cursor_position++;
-                _cursor_stale = true;
-                _text_geom_stale = true;
-                type(param);
-              }
-            }
-          }
-        }
+        }          
       }
     }
   }
@@ -357,96 +268,147 @@ keystroke(const MouseWatcherParameter &param, bool background) {
   if (get_active()) {
     if (param.has_keycode()) {
       int keycode = param.get_keycode();
-          
-      if (use_keystrokes) {
 
-        if (!isascii(keycode) || isprint(keycode)) {
-          // A normal visible character.  Add a new character to the
-          // text entry, if there's room.
-          if (!_candidate_wtext.empty()) {
-            _candidate_wtext.clear();
-            _text_geom_stale = true;
-          }
-          wstring new_char(1, (wchar_t)keycode);
+      if (!isascii(keycode) || isprint(keycode)) {
+        // A normal visible character.  Add a new character to the
+        // text entry, if there's room.
+        if (!_candidate_wtext.empty()) {
+          _candidate_wtext.clear();
+          _text_geom_stale = true;
+        }
+        wstring new_char(1, (wchar_t)keycode);
 
-          if (get_max_chars() > 0 && (int)_wtext.length() >= get_max_chars()) {
-            overflow(param);
-          } else {
-            _cursor_position = min(_cursor_position, (int)_wtext.length());
-            wstring new_text = 
-              _wtext.substr(0, _cursor_position) + new_char +
-              _wtext.substr(_cursor_position);
+        if (get_max_chars() > 0 && (int)_wtext.length() >= get_max_chars()) {
+          // In max_chars mode, we consider it an overflow after we
+          // have exceeded a fixed number of characters, irrespective
+          // of the formatted width of those characters.
+          overflow(param);
+
+        } else {
+          _cursor_position = min(_cursor_position, (int)_wtext.length());
+          wstring new_text = 
+            _wtext.substr(0, _cursor_position) + new_char +
+            _wtext.substr(_cursor_position);
             
-            // Get a string to measure its length.  In normal mode,
-            // we measure the text itself.  In obscure mode, we
-            // measure a string of n asterisks.
-            wstring measure_text;
-            if (_obscure_mode) {
-              measure_text = get_display_wtext() + (wchar_t)'*';
-            } else {
-              measure_text = new_text;
+          // Get the new string to measure its length.  In normal
+          // mode, we measure the text itself.  In obscure mode, we
+          // measure a string of n asterisks.
+          wstring measure_text;
+          if (_obscure_mode) {
+            measure_text = get_display_wtext() + (wchar_t)'*';
+          } else {
+            measure_text = new_text;
+          }
+
+          // Now check the length.
+          bool too_long = false;
+          if (_max_width > 0.0f) {
+            TextNode *text_node = get_text_def(S_focus);
+            text_node->set_wtext(measure_text);
+            text_node->set_wordwrap(_max_width);
+            text_node->set_preserve_trailing_whitespace(true);
+            text_node->set_max_rows(_num_lines);
+              
+            too_long = text_node->has_overflow();
+              
+            if (!too_long && (text_node->get_num_rows() == _num_lines)) {
+              // If we've filled up all of the available lines, we
+              // must also ensure that the last line is not too long
+              // (it might be, because of additional whitespace on
+              // the end).
+              wstring ww_text = text_node->get_wordwrapped_wtext();
+              size_t last_line_start = ww_text.rfind('\n');
+              if (last_line_start == string::npos) {
+                last_line_start = 0;
+              }
+              wstring last_line = ww_text.substr(last_line_start);
+              float last_line_width = text_node->calc_width(last_line);
+              
+              too_long = (last_line_width > _max_width);
             }
 
-            // Check the length.
-            bool too_long = false;
-            if (_max_width > 0.0f) {
-              TextNode *text_node = get_text_def(S_focus);
-              text_node->set_wtext(measure_text);
-              text_node->set_wordwrap(_max_width);
-              text_node->set_preserve_trailing_whitespace(true);
-              text_node->set_max_rows(_num_lines);
-              
-              too_long = text_node->has_overflow();
-              
-              if (!too_long) {
-                // We must also ensure that the last line is not too
-                // long (it might be, because of additional
-                // whitespace on the end).
-                wstring ww_text = text_node->get_wordwrapped_wtext();
-                size_t last_line_start = ww_text.rfind('\n');
-                if (last_line_start == string::npos) {
-                  last_line_start = 0;
+            if (!too_long && keycode == ' ') {
+              // Even if we haven't filled up all of the available
+              // lines, we should reject a space that's typed at the
+              // end of the current line if it would make that line
+              // exceed the maximum width, just so we don't allow an
+              // infinite number of spaces to accumulate.
+
+              // First, we need to figure out our current position
+              // within the wordwrapped text, by skipping past the
+              // newlines.
+              wstring ww_text = text_node->get_wordwrapped_wtext();
+              int i = 0;
+              int current_pos = 0;
+              while (i < _cursor_position) {
+                nassertv(current_pos < (int)ww_text.length());
+                if (ww_text[current_pos] != '\n') {
+                  i++;
                 }
-                wstring last_line = ww_text.substr(last_line_start);
-                float last_line_width = text_node->calc_width(last_line);
-                if (text_node->get_num_rows() == _num_lines) {
-                  // Mainly we only care about this if we're on
-                  // the very last line.
-                  too_long = (last_line_width > _max_width);
-                  
-                } else {
-                  // If we're not on the very last line, the width
-                  // is still important, just so we don't allow an
-                  // infinite number of spaces to accumulate.
-                  // However, we must allow at least *one* space
-                  // on the end of a line.
-                  if (_wtext.length() >= 1 && 
-                      _wtext[_wtext.length() - 1] == ' ') {
-                    if (last_line_width > _max_width) {
-                      // In this case, however, it's not exactly
-                      // an overflow; we just want to reject the
-                      // space.
-                      return;
+                current_pos++;
+              }
+
+              // Is the user typing at the end of the line?  Scan for
+              // the next character that's not a space following the
+              // current position.
+              int p = current_pos + 1;
+              while (p < (int)ww_text.length() && ww_text[p] == ' ') {
+                p++;
+              }
+
+              if (p >= (int)ww_text.length() || ww_text[p] == '\n') {
+                // The user is typing at the end of the line.  But we
+                // must allow at least one space at the end of the
+                // line, so we only make any of the following checks
+                // if there are already multiple spaces at the end of
+                // the line.
+                if (p - 2 >= 0 && ww_text[p - 2] == ' ') {
+                  // Ok, the user is putting multiple spaces on the
+                  // end of a line; we need to make sure the line does
+                  // not grow too wide.  Get the beginning of the line
+                  // and measure its width.
+                  int q = current_pos;
+                  while (q >= 0 && ww_text[q] != '\n') {
+                    q--;
+                  }
+
+                  wstring current_line = ww_text.substr(q + 1, p - (q + 1));
+                  float current_line_width = text_node->calc_width(current_line);
+
+                  if (current_line_width > _max_width) {
+                    // We have to reject the space, but we don't treat
+                    // it as an overflow condition.  
+
+                    // If the user is typing over existing space
+                    // characters, we act as if the right-arrow key
+                    // were pressed instead, and advance the cursor to
+                    // the next position.  Otherwise, we just quietly
+                    // eat the space character.
+                    if (_cursor_position < (int)_wtext.length() && 
+                        _wtext[_cursor_position] == ' ') {
+                      _cursor_position++;
+                      _cursor_stale = true;
                     }
+                    return;
                   }
                 }
               }
             }
-
-            if (too_long) {
-              overflow(param);
+          }
+          
+          if (too_long) {
+            overflow(param);
               
-            } else {
-              _wtext = new_text;
-              if (_obscure_mode) {
-                _obscured_wtext = measure_text;
-              }
-              
-              _cursor_position += new_char.length();
-              _cursor_stale = true;
-              _text_geom_stale = true;
-              type(param);
+          } else {
+            _wtext = new_text;
+            if (_obscure_mode) {
+              _obscured_wtext = measure_text;
             }
+              
+            _cursor_position += new_char.length();
+            _cursor_stale = true;
+            _text_geom_stale = true;
+            type(param);
           }
         }
       }

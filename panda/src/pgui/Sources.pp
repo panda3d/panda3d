@@ -55,3 +55,21 @@
 
 #end lib_target
 
+
+#begin test_bin_target
+  #define TARGET test_pgentry
+
+  #define OTHER_LIBS $[OTHER_LIBS] pystub
+
+  #define LOCAL_LIBS \
+    framework putil collide pgraph chan text \
+    pnmimage pnmimagetypes event effects gobj display \
+    mathutil putil express dgraph device tform \
+    linmath pstatclient panda
+
+  #define UNIX_SYS_LIBS m
+
+  #define SOURCES \
+    test_pgentry.cxx
+
+#end test_bin_target

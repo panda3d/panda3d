@@ -307,7 +307,15 @@ get_render_2d() {
 const NodePath &WindowFramework::
 get_aspect_2d() {
   if (_aspect_2d.is_empty()) {
-    _aspect_2d = get_render_2d().attach_new_node(new PGTop("aspect_2d"));
+    PGTop *top = new PGTop("aspect_2d");
+    _aspect_2d = get_render_2d().attach_new_node(top);
+
+    // Tell the PGTop about our MouseWatcher object, so the PGui
+    // system can operate.
+    PandaNode *mouse_node = get_mouse().node();
+    if (mouse_node->is_of_type(MouseWatcher::get_class_type())) {
+      top->set_mouse_watcher(DCAST(MouseWatcher, mouse_node));
+    }
 
     float this_aspect_ratio = aspect_ratio;
     if (this_aspect_ratio == 0.0f) {
@@ -346,6 +354,9 @@ get_mouse() {
     // display region, if we have one.  This means the node we return
     // from get_mouse() is actually a MouseWatcher, but since it
     // presents the same interface as a Mouse, no one should mind.
+
+    // Another advantage to using a MouseWatcher is that it the PGTop
+    // of aspect2d likes it better.
     PT(MouseWatcher) mw = new MouseWatcher("watcher");
     mw->set_display_region(_display_region_3d);
     _mouse = mouse.attach_new_node(mw);

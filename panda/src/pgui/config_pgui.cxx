@@ -42,10 +42,6 @@ ConfigureFn(config_pgui) {
 // powerful but somewhat slower.
 const bool pgui_quick = config_pgui.GetBool("pgui-quick", true);
 
-// Temporary variable to support old-style button press/release for
-// pgentries, before keystrokes were implemented.
-const bool use_keystrokes = config_pgui.GetBool("use-keystrokes", true);
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpgui

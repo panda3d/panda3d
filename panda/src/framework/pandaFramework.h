@@ -119,6 +119,7 @@ protected:
   virtual void do_enable_default_keys();
   bool clear_text();
 
+public:
   static void event_esc(CPT_Event, void *data);
   static void event_f(CPT_Event, void *data);
   static void event_w(CPT_Event, void *data);
