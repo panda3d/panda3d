@@ -151,7 +151,7 @@ handle_entries() {
             << "Adjusting height by " << adjust << "\n";
         }
 
-        if (_current_velocity > 0.0f || adjust < -0.001f) {
+        if (_current_velocity > 0.0f || adjust) {
           // ...we have a vertical thrust,
           // ...or the node is above the floor, so it is airborne.
           float dt = ClockObject::get_global_clock()->get_dt();
@@ -170,6 +170,7 @@ handle_entries() {
           _current_velocity -= _gravity * dt;
           // Record the airborne height in case someone else needs it: 
           _airborne_height = -max_height + adjust;
+          assert(_airborne_height>=0.0f);
         }
 
         if (_airborne_height < 0.001f && _current_velocity < 0.001f) {
