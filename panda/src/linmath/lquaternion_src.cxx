@@ -108,13 +108,18 @@ set_hpr(const FLOATNAME(LVecBase3) &hpr) {
 
   (*this) = quat_h * quat_p * quat_r;
 
+  if (!temp_hpr_fix) {
+    // Compute the old, broken hpr.
+    (*this) = invert(quat_r) * quat_h * quat_p;
+  }
+
 #ifndef NDEBUG
   if (paranoid_hpr_quat) {
     FLOATNAME(LMatrix3) mat;
     compose_matrix(mat, FLOATNAME(LVecBase3)(1.0f, 1.0f, 1.0f), hpr);
     FLOATNAME(LQuaternion) compare;
     compare.set_from_matrix(mat);
-    if (!compare.almost_equal(*this)) {
+    if (!compare.almost_equal(*this) && !compare.almost_equal(-(*this))) {
       linmath_cat.warning()
         << "hpr-to-quat of " << hpr << " computed " << *this
         << " instead of " << compare << "\n";
@@ -132,6 +137,19 @@ set_hpr(const FLOATNAME(LVecBase3) &hpr) {
 ////////////////////////////////////////////////////////////////////
 FLOATNAME(LVecBase3) FLOATNAME(LQuaternion)::
 get_hpr() const {
+  if (!temp_hpr_fix) {
+    // With the old, broken hpr code in place, just go through the
+    // existing matrix decomposition code.  Not particularly speedy,
+    // but I don't want to bother with working out how to do it
+    // directly for code that hopefully won't need to last much
+    // longer.
+    FLOATNAME(LMatrix3) mat;
+    extract_to_matrix(mat);
+    FLOATNAME(LVecBase3) scale, hpr;
+    decompose_matrix(mat, scale, hpr);
+    return hpr;
+  }
+
   FLOATNAME(LVecBase3) hpr;
   FLOATTYPE N = (_v.data[0] * _v.data[0]) + (_v.data[1] * _v.data[1]) + (_v.data[2] * _v.data[2]) + (_v.data[3] * _v.data[3]);
   FLOATTYPE s = (N == 0.0f) ? 0.0f : (2.0f / N);
@@ -147,7 +165,7 @@ get_hpr() const {
   c3 = 1.0f - (yy + zz);
   c4 = xy + wz;
 
-  if (c1 == 0.0f) {  // (roll = 0 or 180) or (pitch = +/- 90
+  if (c1 == 0.0f) {  // (roll = 0 or 180) or (pitch = +/- 90)
     if (c2 >= 0.0f) {
       hpr[2] = 0.0f;
       ch = c3;

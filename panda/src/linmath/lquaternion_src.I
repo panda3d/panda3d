@@ -31,8 +31,8 @@ FLOATNAME(LQuaternion)() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LQuaternion)::
-FLOATNAME(LQuaternion)(const FLOATNAME(LQuaternion) &c) :
-  FLOATNAME(LVecBase4)(c)
+FLOATNAME(LQuaternion)(const FLOATNAME(LVecBase4) &copy) :
+  FLOATNAME(LVecBase4)(copy)
 {
 }
 
@@ -47,8 +47,24 @@ FLOATNAME(LQuaternion)(FLOATTYPE r, FLOATTYPE i, FLOATTYPE j, FLOATTYPE k) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::xform
+//       Access: Published
+//  Description: Transforms a 3-d vector by the indicated rotation
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LQuaternion)::
+xform(const FLOATNAME(LVecBase3) &v) const {
+  FLOATNAME(LQuaternion) v_quat(0.0f, v[0], v[1], v[2]);
+
+  FLOATNAME(LQuaternion) inv;
+  inv.invert_from(*this);
+  v_quat = (*this) * v_quat * inv;
+
+  return FLOATNAME(LVecBase3)(v_quat[1], v_quat[2], v_quat[3]);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LQuaternion::multiply
-//       Access: protected
+//       Access: Published
 //  Description: actual multiply call (non virtual)
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::
@@ -62,12 +78,22 @@ multiply(const FLOATNAME(LQuaternion)& rhs) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::unary -
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::
+operator - () const {
+  return FLOATNAME(LVecBase4)::operator - ();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LQuaternion::Multiply Operator
 //       Access: public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::
-operator *(const FLOATNAME(LQuaternion)& c) {
+operator *(const FLOATNAME(LQuaternion)& c) const {
   return multiply(c);
 }
 
@@ -278,12 +304,7 @@ normalize() {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LQuaternion)::
 invert_from(const FLOATNAME(LQuaternion) &other) {
-  FLOATTYPE norm = 1.0f / (other.dot(other));
-  set(other[0] * norm,
-      -other[1] * norm,
-      -other[2] * norm,
-      -other[3] * norm);
-
+  set(other._v.v._0, -other._v.v._1, -other._v.v._2, -other._v.v._3);
   return true;
 }
 
@@ -296,12 +317,9 @@ invert_from(const FLOATNAME(LQuaternion) &other) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LQuaternion)::
 invert_in_place() {
-  FLOATTYPE norm = 1.0f / ((*this).dot(*this));
-  set((*this)[0] * norm,
-      -(*this)[1] * norm,
-      -(*this)[2] * norm,
-      -(*this)[3] * norm);
-
+  _v.v._1 = -_v.v._1;
+  _v.v._2 = -_v.v._2;
+  _v.v._3 = -_v.v._3;
   return true;
 }
 

@@ -36,6 +36,15 @@ ConfigureFn(config_linmath) {
 // The default is true for now.
 const bool paranoid_hpr_quat = config_linmath.GetBool("paranoid-hpr-quat", true);
 
+// Set this true to compute hpr's correctly.  Presently, we apply
+// these in the wrong order, and roll is backwards relative to the
+// other two.  But we can't globally fix this because some of our old
+// tools, most notably egg-optchar, depend on the old broken behavior.
+// Until we are able to rewrite these tools into the new system, we
+// must keep the old behavior; setting this switch lets you use the
+// new, correct behavior but you don't get animated characters.
+const bool temp_hpr_fix = config_linmath.GetBool("temp-hpr-fix", false);
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_liblinmath
 //  Description: Initializes the library.  This must be called at

@@ -21,18 +21,22 @@
 // Description : This is the base quaternion class
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA FLOATNAME(LQuaternion) : public FLOATNAME(LVecBase4) {
-protected:
-  INLINE_LINMATH FLOATNAME(LQuaternion)
-    multiply(const FLOATNAME(LQuaternion)&) const;
-
 PUBLISHED:
   INLINE_LINMATH FLOATNAME(LQuaternion)();
-  INLINE_LINMATH FLOATNAME(LQuaternion)(const FLOATNAME(LQuaternion) &);
+  INLINE_LINMATH FLOATNAME(LQuaternion)(const FLOATNAME(LVecBase4) &copy);
   INLINE_LINMATH FLOATNAME(LQuaternion)(FLOATTYPE, FLOATTYPE, FLOATTYPE, FLOATTYPE);
 
   static FLOATNAME(LQuaternion) pure_imaginary(const FLOATNAME(LVector3) &);
 
-  INLINE_LINMATH FLOATNAME(LQuaternion) operator *(const FLOATNAME(LQuaternion) &);
+  INLINE_LINMATH FLOATNAME(LVecBase3)
+    xform(const FLOATNAME(LVecBase3) &v) const;
+
+  INLINE_LINMATH FLOATNAME(LQuaternion)
+    multiply(const FLOATNAME(LQuaternion) &rhs) const;
+
+  INLINE_LINMATH FLOATNAME(LQuaternion) operator - () const;
+
+  INLINE_LINMATH FLOATNAME(LQuaternion) operator *(const FLOATNAME(LQuaternion) &) const;
   INLINE_LINMATH FLOATNAME(LQuaternion)& operator *=(const FLOATNAME(LQuaternion) &);
 
   INLINE_LINMATH FLOATNAME(LMatrix3) operator *(const FLOATNAME(LMatrix3) &);
