@@ -11,8 +11,8 @@
 // duplicated in any form, in whole or in part,  without  the  prior
 // written consent of Walt Disney Imagineering Inc.
 ////////////////////////////////////////////////////////////////////
+#include "pandabase.h"
 #include "pointerTo.h"
-////#include "pandabase.h"
 
 #include "curveFitter.h"
 #include "config_parametrics.h"
@@ -20,7 +20,6 @@
 #include "nurbsCurve.h"
 #include "hermiteCurve.h"
 #include <algorithm>
-using namespace std;
 
 TypeHandle CurveFitter::_type_handle;
 
