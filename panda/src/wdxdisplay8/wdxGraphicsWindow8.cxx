@@ -298,6 +298,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         case WM_NCMOUSEMOVE: {
             if(!_props._bCursorIsVisible) {
                 if(!_cursor_in_windowclientarea) {
+//                  SetCursor(_pParentWindowGroup->_hMouseCursor);
                     ShowCursor(true);
                     _cursor_in_windowclientarea=true;
                 }
@@ -308,6 +309,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         case WM_NCMOUSELEAVE: {
             if(!_props._bCursorIsVisible) {
                 ShowCursor(false);
+//              SetCursor(NULL);
                 _cursor_in_windowclientarea=false;
             }
             break;
@@ -327,6 +329,11 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           _cursor_in_windowclientarea=false;
           if(!_props._bCursorIsVisible)
               ShowCursor(false);
+
+          HDC hDC=GetDC(hwnd);
+          PatBlt(hDC,_props._xorg,_props._yorg,_props._xsize,_props._ysize,BLACKNESS);
+          ReleaseDC(hwnd,hDC);
+
           break;
         }
 
@@ -747,8 +754,8 @@ void wdxGraphicsWindow::handle_windowed_resize(HWND hWnd,bool bDoDxReset) {
     _props._xorg = view_rect.left;  // _props origin should reflect upper left of view rectangle
     _props._yorg = view_rect.top;
 
-    DWORD xsize=(view_rect.right - view_rect.left);
-    DWORD ysize=(view_rect.bottom - view_rect.top);
+    DWORD xsize= RECT_XSIZE(view_rect);
+    DWORD ysize= RECT_YSIZE(view_rect);
 
     do {
         // change _props xsize,ysize
@@ -1021,7 +1028,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
 
     if (!wc_registered) {
       // We only need to register the window class once per session.
-      wc.hCursor = _hMouseCursor;
+      wc.hCursor = NULL;  //_hMouseCursor;
       wc.hbrBackground  = (HBRUSH)GetStockObject(BLACK_BRUSH);
       wc.lpszMenuName   = NULL;
       wc.lpszClassName  = WDX_WINDOWCLASSNAME;
@@ -1076,8 +1083,8 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
 
             xleft=win_rect.left;
             ytop= win_rect.top;
-            xsize=win_rect.right-win_rect.left;
-            ysize=win_rect.bottom-win_rect.top;
+            xsize=RECT_XSIZE(win_rect);
+            ysize=RECT_YSIZE(win_rect);
         }
 
         // BUGBUG: this sets window posns based on desktop arrangement of monitors (that is what GetMonInfo is for). 
@@ -1690,7 +1697,7 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
 
     // Create the Direct Draw Objects
     hr = (*_pParentWindowGroup->_pDDCreateEx)(&pDevInfo->guidDeviceIdentifier,(void **)&pDD, IID_IDirectDraw7, NULL);
-    if(hr != DD_OK) {
+    if(FAILED(hr)) {
           wdxdisplay_cat.fatal() << "DirectDrawCreateEx failed for device ("<<pDevInfo->cardID<< "): result = " << D3DERRORSTRING(hr);
           return false;
     }
@@ -2169,8 +2176,8 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
         view_rect.left=ul.x; view_rect.top=ul.y;
         view_rect.right=lr.x; view_rect.bottom=lr.y;
 
-        dwRenderWidth  = view_rect.right - view_rect.left;
-        dwRenderHeight = view_rect.bottom - view_rect.top;
+        dwRenderWidth  = RECT_XSIZE(view_rect);
+        dwRenderHeight = RECT_YSIZE(view_rect);
         _props._xorg = view_rect.left;  // _props should reflect view rectangle
         _props._yorg = view_rect.top;
         _props._xsize = dwRenderWidth;
@@ -2185,18 +2192,17 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
         }
     }  // end create windowed buffers
 
-    hr = Display.pD3DDevice->ResourceManagerDiscardBytes(0);
-    if(hr != DD_OK) {
-        wdxdisplay_cat.fatal() << "ResourceManagerDiscardBytes failed for device #" << Display.CardIDNum << ", " << D3DERRORSTRING(hr);
-    }
-
-    // clear to transparent black to get rid of visible garbage 
-    hr = Display.pD3DDevice->Clear(0,NULL,D3DCLEAR_TARGET,0,0.0,0);
-    if(hr != DD_OK) {
-        wdxdisplay_cat.fatal() << "init Clear() to black failed for device #" << Display.CardIDNum << ", " << D3DERRORSTRING(hr);
-    }
-
 //  ========================================================
+
+    // clear window to black
+    HDC hDC=GetDC(Display.hWnd);
+    PatBlt(hDC,_props._xorg,_props._yorg,_props._xsize,_props._ysize,BLACKNESS);
+    ReleaseDC(Display.hWnd,hDC);
+
+    hr = Display.pD3DDevice->ResourceManagerDiscardBytes(0);
+    if(FAILED(hr)) {
+        wdxdisplay_cat.error() << "ResourceManagerDiscardBytes failed for device #" << Display.CardIDNum << ", hr=" << D3DERRORSTRING(hr);
+    }
 
     resized(dwRenderWidth,dwRenderHeight);  // update panda channel/display rgn info
 
@@ -2205,7 +2211,7 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
     vp.Width=_props._xsize;  vp.Height=_props._ysize;
     vp.MinZ=0.0f;  vp.MaxZ =1.0f;
     hr = Display.pD3DDevice->SetViewport( &vp );
-    if(hr != DD_OK) {
+    if(FAILED(hr)) {
         wdxdisplay_cat.fatal() << "SetViewport failed for device #" << Display.CardIDNum << ", " << D3DERRORSTRING(hr);
         exit(1);
     }
