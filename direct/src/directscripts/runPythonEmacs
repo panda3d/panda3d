@@ -16,7 +16,7 @@ export HOME
 # attached to, e.g. $DTOOL, $PANDA, $DIRECT, etc.  These variable
 # names are discovered by parsing the $CTPROJS variable, which is made
 # up of a series of words like "DIRECT:personal PANDA:personal
-# DIRECT:install"; we simply pull off each word and get the part
+# DTOOL:install"; we simply pull off each word and get the part
 # preceding the colon.
 
 # That gives us an indirect reference: we end up with a variable that
