@@ -36,10 +36,7 @@ class ShowBase:
         self.config = ConfigConfigureGetConfigConfigShowbase
 
         if self.config.GetBool('use-vfs', 1):
-            try:  # temporary try .. except for old Pandas
-                vfs = VirtualFileSystem.getGlobalPtr()
-            except:
-                vfs = None
+            vfs = VirtualFileSystem.getGlobalPtr()
         else:
             vfs = None
 
@@ -581,11 +578,7 @@ class ShowBase:
         """ Returns the current window background color.  This assumes
         the window is set up to clear the color each frame (this is
         the normal setting). """
-        # Temporary try .. except for old Pandas.
-        try:
-            return VBase4(self.win.getClearColor())
-        except:
-            return VBase4(self.win.getGsg().getColorClearValue())
+        return VBase4(self.win.getClearColor())
 
     def setBackgroundColor(self, *args):
         """ Sets the window background color to the indicated value.
@@ -605,12 +598,7 @@ class ShowBase:
         else:
             raise TypeError, ('Invalid number of arguments: %d, expected 1, 3, or 4.' % numArgs)
             
-            
-        # Temporary try .. except for old Pandas.
-        try:
-            self.win.setClearColor(color)
-        except:
-            self.win.getGsg().setColorClearValue(color)
+        self.win.setClearColor(color)
                 
     def toggleBackface(self):
         if self.backfaceCullingEnabled:

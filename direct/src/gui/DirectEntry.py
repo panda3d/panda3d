@@ -99,7 +99,6 @@ class DirectEntry(DirectFrame):
         PGEntry.setCursorKeysActive(self.guiItem, self['cursorKeys'])
 
     def setObscureMode(self):
-        # Temporary try..except to support old Pandas.
         PGEntry.setObscureMode(self.guiItem, self['obscured'])
 
     def setBackgroundFocus(self):
