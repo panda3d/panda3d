@@ -26,7 +26,7 @@
 
 #end bin_target
 
-#begin noinst_bin_target
+#begin bin_target
   #define TARGET flt2egg
   #define LOCAL_LIBS flt fltegg eggbase progbase
 
@@ -39,4 +39,4 @@
   #define SOURCES \
     fltToEgg.cxx fltToEgg.h
 
-#end noinst_bin_target
+#end bin_target

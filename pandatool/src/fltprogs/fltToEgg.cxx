@@ -139,6 +139,7 @@ run() {
   }
 
   write_egg_file();
+  nout << "\n";
 }
 
 

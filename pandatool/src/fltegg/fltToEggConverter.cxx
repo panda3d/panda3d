@@ -200,7 +200,6 @@ void FltToEggConverter::
 convert_bead_id(const FltBeadID *flt_bead, FltToEggLevelState &state) {
   nout << "Don't know how to convert beads of type " << flt_bead->get_type()
        << "\n";
-  exit(1);
   EggGroup *egg_group = new EggGroup(flt_bead->get_id());
   state._egg_parent->add_child(egg_group);
 
@@ -222,7 +221,6 @@ void FltToEggConverter::
 convert_bead(const FltBead *flt_bead, FltToEggLevelState &state) {
   nout << "Don't know how to convert beads of type " << flt_bead->get_type()
        << "\n";
-  exit(1);
   EggGroup *egg_group = new EggGroup;
   state._egg_parent->add_child(egg_group);
 
@@ -611,9 +609,7 @@ convert_path(const Filename &orig_filename, const Filename &as_found,
   switch (path_convert) {
   case PC_relative:
     result = as_found;
-    if (!result.make_relative_to(rel_dir)) {
-      nout << "Cannot make " << result << " relative to " << rel_dir << "\n";
-    }
+    result.make_relative_to(rel_dir);
     return result;
 
   case PC_absolute:
@@ -627,9 +623,7 @@ convert_path(const Filename &orig_filename, const Filename &as_found,
 
   case PC_rel_abs:
     result = as_found;
-    if (!result.make_relative_to(rel_dir)) {
-      nout << "Cannot make " << result << " relative to " << rel_dir << "\n";
-    }
+    result.make_relative_to(rel_dir);
     result = Filename(rel_dir, result);
     return result;
 
