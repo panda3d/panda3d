@@ -22,6 +22,7 @@
 #include "geomTristrip.h"
 #include "transformState.h"
 #include "workingNodePath.h"
+#include "switchNode.h"
 
 TypeHandle ProjectionScreen::_type_handle;
 
@@ -135,10 +136,11 @@ void ProjectionScreen::
 set_projector(const NodePath &projector) {
   _projector_node = (LensNode *)NULL;
   _projector = projector;
-  _stale = true;
-  nassertv(!projector.is_empty() && 
-           projector.node()->is_of_type(LensNode::get_class_type()));
-  _projector_node = DCAST(LensNode, projector.node());
+  if (!projector.is_empty()) {
+    nassertv(projector.node()->is_of_type(LensNode::get_class_type()));
+    _projector_node = DCAST(LensNode, projector.node());
+    _stale = true;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -398,25 +400,51 @@ recompute_node(const WorkingNodePath &np, LMatrix4f &rel_mat,
     recompute_geom_node(np, rel_mat, computed_rel_mat);
   }
 
-  // Now recurse on children.
-  int num_children = node->get_num_children();
-  for (int i = 0; i < num_children; i++) {
-    PandaNode *child = node->get_child(i);
-
-    const TransformState *transform = child->get_transform();
-    if (!transform->is_identity()) {
-      // This child node has a transform; therefore, we must recompute
-      // the relative matrix from this point.
-      LMatrix4f new_rel_mat;
-      bool computed_new_rel_mat = false;
-      recompute_node(WorkingNodePath(np, child), new_rel_mat,
-                     computed_new_rel_mat);
-
-    } else {
-      // This child has no transform, so we can use the same transform
-      // space from before.
-      recompute_node(WorkingNodePath(np, child), rel_mat, computed_rel_mat);
+  if (node->is_exact_type(SwitchNode::get_class_type())) {
+    // We make a special case for switch nodes only.  Other kinds of
+    // selective child nodes, like LOD's and sequence nodes, will get
+    // all of their children traversed; switch nodes will only
+    // traverse the currently active child.
+    int i = DCAST(SwitchNode, node)->get_visible_child();
+    if (i >= 0 && i < node->get_num_children()) {
+      PandaNode *child = node->get_child(i);
+      recompute_child(WorkingNodePath(np, child), rel_mat, computed_rel_mat);
     }
+
+  } else {
+    // A non-switch node.  Recurse on all children.
+    int num_children = node->get_num_children();
+    for (int i = 0; i < num_children; i++) {
+      PandaNode *child = node->get_child(i);
+      recompute_child(WorkingNodePath(np, child), rel_mat, computed_rel_mat);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::recompute_child
+//       Access: Private
+//  Description: Works in conjunction with recompute_node() to recurse
+//               over the whole graph.  This is called on each child
+//               of a given node.
+////////////////////////////////////////////////////////////////////
+void ProjectionScreen::
+recompute_child(const WorkingNodePath &np, LMatrix4f &rel_mat,
+                bool &computed_rel_mat) {
+  PandaNode *child = np.node();
+
+  const TransformState *transform = child->get_transform();
+  if (!transform->is_identity()) {
+    // This child node has a transform; therefore, we must recompute
+    // the relative matrix from this point.
+    LMatrix4f new_rel_mat;
+    bool computed_new_rel_mat = false;
+    recompute_node(np, new_rel_mat, computed_new_rel_mat);
+    
+  } else {
+    // This child has no transform, so we can use the same transform
+    // space from before.
+    recompute_node(np, rel_mat, computed_rel_mat);
   }
 }
 

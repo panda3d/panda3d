@@ -89,6 +89,7 @@ private:
   void recompute_if_stale();
   void do_recompute(const NodePath &this_np);
   void recompute_node(const WorkingNodePath &np, LMatrix4f &rel_mat, bool &computed_rel_mat);
+  void recompute_child(const WorkingNodePath &np, LMatrix4f &rel_mat, bool &computed_rel_mat);
   void recompute_geom_node(const WorkingNodePath &np, LMatrix4f &rel_mat, bool &computed_rel_mat);
   void recompute_geom(Geom *geom, const LMatrix4f &rel_mat);
 
