@@ -2,7 +2,7 @@
 
 from DirectObject import *
 from IntervalGlobal import *
-import ClockObject
+from PandaModules import *
 import Task
 
 # Interval events
@@ -18,7 +18,7 @@ class Interval(DirectObject):
 
     playbackCounter = 0
 
-    clock = ClockObject.ClockObject.getGlobalClock()
+    clock = ClockObject.getGlobalClock()
 
     # Class methods
     def __init__(self, name, duration, openEnded=1, reverse=0):

@@ -1,4 +1,4 @@
-import ClockObject
+from PandaModules import *
 import Task
 
 class Timer:
@@ -8,7 +8,7 @@ class Timer:
     def __init__(self, name=None):
         """ __init__()
         """
-        self.clock = ClockObject.ClockObject.getGlobalClock()
+        self.clock = ClockObject.getGlobalClock()
         self.finalT = 0.0
         self.currT = 0.0
         if (name == None):
