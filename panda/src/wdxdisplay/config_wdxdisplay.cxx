@@ -16,8 +16,6 @@ ConfigureFn(config_wdxdisplay) {
   init_libwdxdisplay();
 }
 
-string IconFileName = config_wdxdisplay.GetString("win32-window-icon","");
-
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libwdxdisplay
 //  Description: Initializes the library.  This must be called at
@@ -42,4 +40,10 @@ init_libwdxdisplay() {
   GraphicsWindow::get_factory().register_factory(
 			wdxGraphicsWindow::get_class_type(),
 		    	wdxGraphicsWindow::make_wdxGraphicsWindow);
+}
+
+// cant use global var cleanly because global var static init executed after init_libwgl(), incorrectly reiniting var
+Filename get_icon_filename() {
+  string iconname = config_wdxdisplay.GetString("win32-window-icon","");
+  return ExecutionEnvironment::expand_string(iconname);
 }

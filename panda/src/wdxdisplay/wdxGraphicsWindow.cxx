@@ -1103,8 +1103,13 @@ void wdxGraphicsWindow::config(void) {
   wc.lpfnWndProc	= (WNDPROC) static_window_proc;
   wc.hInstance		= hinstance;
 
-  if(!IconFileName.empty()) {
-	  wc.hIcon = (HICON) LoadImage(NULL, IconFileName.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
+
+  string windows_icon_filename = get_icon_filename().to_os_specific();
+
+  if(!windows_icon_filename.empty()) {
+    // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings) 
+	// if icon is more than 8bpp
+	wc.hIcon = (HICON) LoadImage(NULL, windows_icon_filename.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
   } else {
 	  wc.hIcon = NULL; // use default app icon
   }
