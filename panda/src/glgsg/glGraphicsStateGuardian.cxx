@@ -34,6 +34,7 @@
 #include "directionalLight.h"
 #include "pointLight.h"
 #include "spotlight.h"
+#include "planeNode.h"
 #include "GL/glu.h"
 #include "textureAttrib.h"
 #include "lightAttrib.h"
@@ -128,9 +129,6 @@ issue_transformed_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
 ////////////////////////////////////////////////////////////////////
 GLGraphicsStateGuardian::
 GLGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
-  _clip_plane_enabled = (bool *)NULL;
-  _cur_clip_plane_enabled = (bool *)NULL;
-
   reset();
 }
 
@@ -256,18 +254,10 @@ reset() {
   glGetIntegerv(GL_MAX_LIGHTS, &max_lights);
   _max_lights = max_lights;
 
-  // Set up the clip plane id map
+  // Count the max number of clipping planes
   GLint max_clip_planes;
   glGetIntegerv(GL_MAX_CLIP_PLANES, &max_clip_planes);
   _max_clip_planes = max_clip_planes;
-  _available_clip_plane_ids = PTA(PlaneNode*)::empty_array(_max_clip_planes);
-  _clip_plane_enabled = new bool[_max_clip_planes];
-  _cur_clip_plane_enabled = new bool[_max_clip_planes];
-  int i;
-  for (i = 0; i < _max_clip_planes; i++) {
-    _available_clip_plane_ids[i] = NULL;
-    _clip_plane_enabled[i] = false;
-  }
 
   _current_projection_mat = LMatrix4f::ident_mat();
   _projection_mat_stack_count = 0;
@@ -3453,6 +3443,106 @@ end_bind_lights() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::slot_new_clip_plane
+//       Access: Protected, Virtual
+//  Description: This will be called by the base class before a
+//               particular clip plane id will be used for the first
+//               time.  It is intended to allow the derived class to
+//               reserve any additional resources, if required, for
+//               the new clip plane; and also to indicate whether the
+//               hardware supports this many simultaneous clipping
+//               planes.
+//
+//               The return value should be true if the additional
+//               plane is supported, or false if it is not.
+////////////////////////////////////////////////////////////////////
+bool GLGraphicsStateGuardian::
+slot_new_clip_plane(int plane_id) {
+  return (plane_id < _max_clip_planes);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::enable_clip_plane
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by a derived class to
+//               enable the indicated clip_plane id.  A specific
+//               PlaneNode will already have been bound to this id via
+//               bind_clip_plane().
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+enable_clip_plane(int plane_id, bool enable) {
+  if (enable) {
+    glEnable(get_clip_plane_id(plane_id));
+  } else {
+    glDisable(get_clip_plane_id(plane_id));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::begin_bind_clip_planes
+//       Access: Protected, Virtual
+//  Description: Called immediately before bind_clip_plane() is called,
+//               this is intended to provide the derived class a hook
+//               in which to set up some state (like transform) that
+//               might apply to several clip_planes.
+//
+//               The sequence is: begin_bind_clip_planes() will be called,
+//               then one or more bind_clip_plane() calls, then
+//               end_bind_clip_planes().
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+begin_bind_clip_planes() {
+  // We need to temporarily load a new matrix so we can define the
+  // clip_plane in a known coordinate system.  We pick the transform of the
+  // root.  (Alternatively, we could leave the current transform where
+  // it is and compute the clip_plane position relative to that transform
+  // instead of relative to the root, by composing with the matrix
+  // computed by _transform->invert_compose(render_transform).  But I
+  // think loading a completely new matrix is simpler.)
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glLoadMatrixf(_scene_setup->get_render_transform()->get_mat().get_data());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::bind_clip_plane
+//       Access: Protected, Virtual
+//  Description: Called the first time a particular clip_plane has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware clip_plane with the clip_plane's
+//               properties.
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+bind_clip_plane(PlaneNode *plane, int plane_id) {
+  GLenum id = get_clip_plane_id(plane_id);
+
+  NodePath plane_np(plane);
+  const LMatrix4f &plane_mat = plane_np.get_mat(_scene_setup->get_scene_root());
+  Planef xformed_plane = plane->get_plane() * plane_mat;
+
+  Planed double_plane(xformed_plane._a, xformed_plane._b, 
+                      xformed_plane._c, xformed_plane._d);
+  glClipPlane(id, double_plane.get_data());
+
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::end_bind_clip_planes
+//       Access: Protected, Virtual
+//  Description: Called after before bind_clip_plane() has been called one
+//               or more times (but before any geometry is issued or
+//               additional state is changed), this is intended to
+//               clean up any temporary changes to the state that may
+//               have been made by begin_bind_clip_planes().
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+end_bind_clip_planes() {
+  glMatrixMode(GL_MODELVIEW);
+  glPopMatrix();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::set_blend_mode
 //       Access: Protected, Virtual
 //  Description: Called after any of these three blending states have
@@ -3562,14 +3652,6 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 free_pointers() {
-  if (_clip_plane_enabled != (bool *)NULL) {
-    delete[] _clip_plane_enabled;
-    _clip_plane_enabled = (bool *)NULL;
-  }
-  if (_cur_clip_plane_enabled != (bool *)NULL) {
-    delete[] _cur_clip_plane_enabled;
-    _cur_clip_plane_enabled = (bool *)NULL;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3859,10 +3941,6 @@ dump_state(void)
       dump << "\t\t" << "GL_TEXTURE_2D " << _texturing_enabled << " " << (bool)glIsEnabled(GL_TEXTURE_2D) << "\n";
       dump << "\t\t" << "GL_DITHER " << _dither_enabled << " " << (bool)glIsEnabled(GL_DITHER) << "\n";
       dump << "\t\t" << "GL_STENCIL_TEST " << " " << (bool)glIsEnabled(GL_STENCIL_TEST) << "\n";
-      for(i = 0; i < _max_clip_planes; i++)
-        {
-          dump << "\t\t\t\t" << "GL_CLIP_PLANE" << i << " " << _clip_plane_enabled[i] << " " << (bool)glIsEnabled(GL_CLIP_PLANE0+i) << "\n";
-        }
       dump << "\t\t" << "GL_BLEND " << _blend_enabled << " " << (bool)glIsEnabled(GL_BLEND) << "\n";
       dump << "\t\t" << "GL_DEPTH_TEST " << _depth_test_enabled << " " << (bool)glIsEnabled(GL_DEPTH_TEST) << "\n";
       dump << "\t\t" << "GL_FOG " << _fog_enabled << " " << (bool)glIsEnabled(GL_FOG) << "\n";

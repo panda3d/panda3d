@@ -16,6 +16,7 @@
 #include "nodePathComponent.cxx"
 #include "nodePathLerps.cxx"
 #include "pandaNode.cxx"
+#include "planeNode.cxx"
 #include "pointLight.cxx"
 #include "renderAttrib.cxx"
 #include "renderEffect.cxx"

@@ -796,31 +796,6 @@ enable_scissor(bool val)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_clip_plane
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void GLGraphicsStateGuardian::
-enable_clip_plane(int clip_plane, bool val) {
-  if (_clip_plane_enabled[clip_plane] != val) {
-    _clip_plane_enabled[clip_plane] = val;
-    if (val) {
-#ifdef GSG_VERBOSE
-      glgsg_cat.debug()
-        << "glEnable(GL_CLIP_PLANE_" << clip_plane << ")" << endl;
-#endif
-      glEnable(get_clip_plane_id(clip_plane));
-    } else {
-#ifdef GSG_VERBOSE
-      glgsg_cat.debug()
-        << "glDisable(GL_CLIP_PLANE_" << clip_plane << ")" << endl;
-#endif
-      glDisable(get_clip_plane_id(clip_plane));
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_multisample_alpha_one
 //       Access:
 //  Description:

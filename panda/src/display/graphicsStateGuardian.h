@@ -35,6 +35,7 @@
 #include "transformState.h"
 #include "renderState.h"
 #include "light.h"
+#include "planeNode.h"
 #include "colorWriteAttrib.h"
 #include "colorBlendAttrib.h"
 #include "transparencyAttrib.h"
@@ -148,6 +149,7 @@ public:
   virtual void issue_color_write(const ColorWriteAttrib *attrib);
   virtual void issue_transparency(const TransparencyAttrib *attrib);
   virtual void issue_color_blend(const ColorBlendAttrib *attrib);
+  virtual void issue_clip_plane(const ClipPlaneAttrib *attrib);
 
   virtual void bind_light(PointLight *light, int light_id);
   virtual void bind_light(DirectionalLight *light, int light_id);
@@ -161,6 +163,14 @@ protected:
   virtual void enable_light(int light_id, bool enable);
   virtual void begin_bind_lights();
   virtual void end_bind_lights();
+
+  INLINE PlaneNode *get_clip_plane(int plane_id) const;
+  virtual bool slot_new_clip_plane(int plane_id);
+  virtual void enable_clip_planes(bool enable);
+  virtual void enable_clip_plane(int plane_id, bool enable);
+  virtual void begin_bind_clip_planes();
+  virtual void bind_clip_plane(PlaneNode *plane, int pane_id);
+  virtual void end_bind_clip_planes();
 
   virtual void set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
                               ColorBlendAttrib::Mode color_blend_mode,
@@ -199,6 +209,7 @@ protected:
 #endif
 
   static CPT(RenderState) get_unlit_state();
+  static CPT(RenderState) get_unclipped_state();
   static CPT(RenderState) get_untextured_state();
 
 protected:
@@ -233,6 +244,7 @@ protected:
   bool _scene_graph_color_stale;
   bool _vertex_colors_enabled;
   bool _lighting_enabled;
+  bool _clip_planes_enabled;
 
   enum ColorTransform {
     CT_offset  = 0x01,
@@ -284,6 +296,17 @@ private:
 
   pvector<LightInfo> _light_info;
   bool _lighting_enabled_this_frame;
+
+  class ClipPlaneInfo {
+  public:
+    INLINE ClipPlaneInfo();
+    PT(PlaneNode) _plane;
+    bool _enabled;
+    bool _next_enabled;
+  };
+
+  pvector<ClipPlaneInfo> _clip_plane_info;
+  bool _clip_planes_enabled_this_frame;
 
   // NOTE: on win32 another DLL (e.g. libpandadx.dll) cannot access
   // these sets directly due to exported template issue

@@ -28,6 +28,17 @@ LightInfo() {
   _next_enabled = false;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::ClipPlaneInfo::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsStateGuardian::ClipPlaneInfo::
+ClipPlaneInfo() {
+  _enabled = false;
+  _next_enabled = false;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::is_closed
@@ -339,4 +350,16 @@ INLINE Light *GraphicsStateGuardian::
 get_light(int light_id) const {
   nassertr(light_id >= 0 && light_id < (int)_light_info.size(), (Light *)NULL);
   return _light_info[light_id]._light;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_clip_plane
+//       Access: Protected
+//  Description: Returns the PlaneNode object that is bound to the
+//               indicated id, or NULL if no PlaneNode is bound.
+////////////////////////////////////////////////////////////////////
+INLINE PlaneNode *GraphicsStateGuardian::
+get_clip_plane(int plane_id) const {
+  nassertr(plane_id >= 0 && plane_id < (int)_clip_plane_info.size(), (PlaneNode *)NULL);
+  return _clip_plane_info[plane_id]._plane;
 }

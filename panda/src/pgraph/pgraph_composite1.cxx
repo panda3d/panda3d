@@ -3,6 +3,7 @@
 #include "billboardEffect.cxx"
 #include "binCullHandler.cxx"
 #include "camera.cxx"
+#include "clipPlaneAttrib.cxx"
 #include "colorAttrib.cxx"
 #include "colorBlendAttrib.cxx"
 #include "colorScaleAttrib.cxx"

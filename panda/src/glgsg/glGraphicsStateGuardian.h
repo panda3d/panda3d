@@ -123,7 +123,6 @@ public:
   virtual void issue_depth_offset(const DepthOffsetAttrib *attrib);
   //  virtual void issue_tex_gen(const TexGenAttrib *attrib);
   //  virtual void issue_stencil(const StencilAttrib *attrib);
-  //  virtual void issue_clip_plane(const ClipPlaneAttrib *attrib);
 
   virtual void bind_light(PointLight *light, int light_id);
   virtual void bind_light(DirectionalLight *light, int light_id);
@@ -152,6 +151,12 @@ protected:
   virtual void enable_light(int light_id, bool enable);
   virtual void begin_bind_lights();
   virtual void end_bind_lights();
+
+  virtual bool slot_new_clip_plane(int plane_id);
+  virtual void enable_clip_plane(int plane_id, bool enable);
+  virtual void begin_bind_clip_planes();
+  virtual void bind_clip_plane(PlaneNode *plane, int plane_id);
+  virtual void end_bind_clip_planes();
 
   virtual void set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
                               ColorBlendAttrib::Mode color_blend_mode,
@@ -202,7 +207,6 @@ protected:
   INLINE void enable_scissor(bool val);
   INLINE void enable_dither(bool val);
   INLINE void enable_stencil_test(bool val);
-  INLINE void enable_clip_plane(int clip_plane, bool val);
   INLINE void enable_multisample_alpha_one(bool val);
   INLINE void enable_multisample_alpha_mask(bool val);
   INLINE void enable_blend(bool val);
@@ -307,15 +311,10 @@ protected:
   int _decal_level;
 
   int _max_lights;
+  int _max_clip_planes;
 
   LMatrix4f _current_projection_mat;
   int _projection_mat_stack_count;
-
-  int _max_clip_planes;
-  PTA(PlaneNode *)_available_clip_plane_ids;  // pPlaneNode[_max_clip_planes]
-  bool *_clip_plane_enabled;              // bool[_max_clip_planes]
-  bool *_cur_clip_plane_enabled;          // bool[_max_clip_planes]
-  int _cur_clip_plane_id;
 
   CPT(DisplayRegion) _actual_display_region;
 

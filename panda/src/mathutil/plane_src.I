@@ -73,13 +73,29 @@ FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a, const FLOATNAME(LPoint3) &b,
 //               a point within the plane.
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATNAME(Plane)::
-FLOATNAME(Plane)(const FLOATNAME(LVector3) &normal, const FLOATNAME(LPoint3) &point) {
+FLOATNAME(Plane)(const FLOATNAME(LVector3) &normal, 
+                 const FLOATNAME(LPoint3) &point) {
   FLOATNAME(LVector3) p = normalize(normal);
 
   _a = p[0];
   _b = p[1];
   _c = p[2];
   _d = -dot(p, point);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Plane::Constructor
+//       Access: Public
+//  Description: Constructs a plane given the four terms of the plane
+//               equation.
+////////////////////////////////////////////////////////////////////
+INLINE_MATHUTIL FLOATNAME(Plane)::
+FLOATNAME(Plane)(FLOATTYPE a, FLOATTYPE b, FLOATTYPE c, FLOATTYPE d) :
+  _a(a),
+  _b(b),
+  _c(c),
+  _d(d)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -198,6 +214,30 @@ intersects_line(FLOATTYPE &t,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Plane::get_data
+//       Access: Public
+//  Description: Returns the address of the first of the four data
+//               elements in the plane equation.  The remaining
+//               elements occupy the next positions consecutively in
+//               memory.
+////////////////////////////////////////////////////////////////////
+INLINE_MATHUTIL const FLOATTYPE *FLOATNAME(Plane)::
+get_data() const {
+  return &_a;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Plane::get_num_components
+//       Access: Public
+//  Description: Returns the number of elements in the plane equation,
+//               four.
+////////////////////////////////////////////////////////////////////
+INLINE_MATHUTIL int FLOATNAME(Plane)::
+get_num_components() const {
+  return 4;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Plane::output
 //       Access: Public
 //  Description:
@@ -223,12 +263,18 @@ write(ostream &out, int indent_level) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL void FLOATNAME(Plane)::
-write_datagram(Datagram &dest)
-{
+write_datagram(Datagram &dest) const {
+#if FLOATTOKEN == 'f'
   dest.add_float32(_a);
   dest.add_float32(_b);
   dest.add_float32(_c);
   dest.add_float32(_d);
+#else
+  dest.add_float64(_a);
+  dest.add_float64(_b);
+  dest.add_float64(_c);
+  dest.add_float64(_d);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -237,10 +283,16 @@ write_datagram(Datagram &dest)
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL void FLOATNAME(Plane)::
-read_datagram(DatagramIterator &source)
-{
+read_datagram(DatagramIterator &source) {
+#if FLOATTOKEN == 'f'
   _a = source.get_float32();
   _b = source.get_float32();
   _c = source.get_float32();
   _d = source.get_float32();
+#else
+  _a = source.get_float64();
+  _b = source.get_float64();
+  _c = source.get_float64();
+  _d = source.get_float64();
+#endif
 }

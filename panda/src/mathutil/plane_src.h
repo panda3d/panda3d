@@ -24,10 +24,13 @@ class EXPCL_PANDA FLOATNAME(Plane) {
 PUBLISHED:
   INLINE_MATHUTIL FLOATNAME(Plane)(void);
   INLINE_MATHUTIL FLOATNAME(Plane)(const FLOATNAME(Plane) &copy);
-  INLINE_MATHUTIL FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a, const FLOATNAME(LPoint3) &b,
-                          const FLOATNAME(LPoint3) &c);
+  INLINE_MATHUTIL FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a, 
+                                   const FLOATNAME(LPoint3) &b,
+                                   const FLOATNAME(LPoint3) &c);
   INLINE_MATHUTIL FLOATNAME(Plane)(const FLOATNAME(LVector3) &normal,
-                          const FLOATNAME(LPoint3) &point);
+                                   const FLOATNAME(LPoint3) &point);
+  INLINE_MATHUTIL FLOATNAME(Plane)(FLOATTYPE a, FLOATTYPE b,
+                                   FLOATTYPE c, FLOATTYPE d);
 
   INLINE_MATHUTIL FLOATNAME(Plane)& operator = (const FLOATNAME(Plane)& copy);
 
@@ -47,11 +50,14 @@ PUBLISHED:
                               const FLOATNAME(LPoint3) &from,
                               const FLOATNAME(LVector3) &delta) const;
 
+  INLINE_MATHUTIL const FLOATTYPE *get_data() const;
+  INLINE_MATHUTIL int get_num_components() const;
+
   INLINE_MATHUTIL void output(ostream &out) const;
   INLINE_MATHUTIL void write(ostream &out, int indent_level = 0) const;
 
 public:
-  INLINE_MATHUTIL void write_datagram(Datagram &dest);
+  INLINE_MATHUTIL void write_datagram(Datagram &dest) const;
   INLINE_MATHUTIL void read_datagram(DatagramIterator &source);
 
 public:

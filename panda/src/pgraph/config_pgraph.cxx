@@ -22,6 +22,7 @@
 #include "ambientLight.h"
 #include "billboardEffect.h"
 #include "camera.h"
+#include "clipPlaneAttrib.h"
 #include "colorAttrib.h"
 #include "colorBlendAttrib.h"
 #include "colorScaleAttrib.h"
@@ -58,6 +59,7 @@
 #include "nodePath.h"
 #include "nodePathComponent.h"
 #include "pandaNode.h"
+#include "planeNode.h"
 #include "pointLight.h"
 #include "renderAttrib.h"
 #include "renderEffect.h"
@@ -160,6 +162,7 @@ init_libpgraph() {
   AmbientLight::init_type();
   BillboardEffect::init_type();
   Camera::init_type();
+  ClipPlaneAttrib::init_type();
   ColorAttrib::init_type();
   ColorBlendAttrib::init_type();
   ColorScaleAttrib::init_type();
@@ -195,6 +198,7 @@ init_libpgraph() {
   NodePath::init_type();
   NodePathComponent::init_type();
   PandaNode::init_type();
+  PlaneNode::init_type();
   PointLight::init_type();
   RenderAttrib::init_type();
   RenderEffect::init_type();
@@ -225,6 +229,7 @@ init_libpgraph() {
   AmbientLight::register_with_read_factory();
   BillboardEffect::register_with_read_factory();
   Camera::register_with_read_factory();
+  ClipPlaneAttrib::register_with_read_factory();
   ColorAttrib::register_with_read_factory();
   ColorBlendAttrib::register_with_read_factory();
   ColorScaleAttrib::register_with_read_factory();
@@ -246,6 +251,7 @@ init_libpgraph() {
   ModelNode::register_with_read_factory();
   ModelRoot::register_with_read_factory();
   PandaNode::register_with_read_factory();
+  PlaneNode::register_with_read_factory();
   PointLight::register_with_read_factory();
   RenderEffects::register_with_read_factory();
   RenderModeAttrib::register_with_read_factory();

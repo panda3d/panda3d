@@ -30,7 +30,9 @@
 #include "colorWriteAttrib.h"
 #include "textureAttrib.h"
 #include "lightAttrib.h"
+#include "clipPlaneAttrib.h"
 #include "light.h"
+#include "planeNode.h"
 #include "ambientLight.h"
 
 #include "clockObject.h"
@@ -152,8 +154,10 @@ reset() {
   _scene_graph_color_stale = false;
   _vertex_colors_enabled = true;
   _lighting_enabled = false;
-
   _lighting_enabled_this_frame = false;
+
+  _clip_planes_enabled = false;
+  _clip_planes_enabled_this_frame = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -432,6 +436,21 @@ begin_frame() {
     _lighting_enabled_this_frame = false;
   }
 
+  // Ditto for the clipping planes.
+  if (_clip_planes_enabled_this_frame) {
+    for (int i = 0; i < (int)_clip_plane_info.size(); i++) {
+      if (_clip_plane_info[i]._enabled) {
+        enable_clip_plane(i, false);
+        _clip_plane_info[i]._enabled = false;
+      }
+      _clip_plane_info[i]._plane = (PlaneNode *)NULL;
+    }
+
+    modify_state(get_unclipped_state());
+
+    _clip_planes_enabled_this_frame = false;
+  }
+
 #ifdef DO_PSTATS
   // For Pstats to track our current texture memory usage, we have to
   // reset the set of current textures each frame.
@@ -689,7 +708,7 @@ issue_color(const ColorAttrib *attrib) {
 //               light associated with the same id where possible, but
 //               reusing id's when necessary.  When it is no longer
 //               possible to reuse existing id's (e.g. all id's are in
-//               use), slot_light() is called to prepare the next
+//               use), slot_new_light() is called to prepare the next
 //               sequential light id.
 //
 //               It will call apply_light() each time a light is
@@ -862,6 +881,125 @@ issue_color_blend(const ColorBlendAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::issue_clip_plane
+//       Access: Public, Virtual
+//  Description: This is fundametically similar to issue_light(), with
+//               calls to slot_new_clip_plane(), apply_clip_plane(),
+//               and enable_clip_planes(), as appropriate.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+issue_clip_plane(const ClipPlaneAttrib *attrib) {
+  int i;
+  int max_planes = (int)_clip_plane_info.size();
+  for (i = 0; i < max_planes; i++) {
+    _clip_plane_info[i]._next_enabled = false;
+  }
+
+  bool any_bound = false;
+
+  int num_enabled = 0;
+  int num_planes = attrib->get_num_planes();
+  if (attrib->get_operation() == ClipPlaneAttrib::O_remove) {
+    num_planes = 0;
+  }
+  for (int li = 0; li < num_planes; li++) {
+    PlaneNode *plane = attrib->get_plane(li);
+    nassertv(plane != (PlaneNode *)NULL);
+
+    num_enabled++;
+
+    // Planeing should be enabled before we apply any planes.
+    enable_clip_planes(true);
+    _clip_planes_enabled = true;
+    _clip_planes_enabled_this_frame = true;
+
+    // Check to see if this plane has already been bound to an id
+    int cur_plane_id = -1;
+    for (i = 0; i < max_planes; i++) {
+      if (_clip_plane_info[i]._plane == plane) {
+        // Plane has already been bound to an id, we only need to
+        // enable the plane, not reapply it.
+        cur_plane_id = -2;
+        enable_clip_plane(i, true);
+        _clip_plane_info[i]._enabled = true;
+        _clip_plane_info[i]._next_enabled = true;
+        break;
+      }
+    }
+        
+    // See if there are any unbound plane ids
+    if (cur_plane_id == -1) {
+      for (i = 0; i < max_planes; i++) {
+        if (_clip_plane_info[i]._plane == (PlaneNode *)NULL) {
+          _clip_plane_info[i]._plane = plane;
+          cur_plane_id = i;
+          break;
+        }
+      }
+    }
+        
+    // If there were no unbound plane ids, see if we can replace
+    // a currently unused but previously bound id
+    if (cur_plane_id == -1) {
+      for (i = 0; i < max_planes; i++) {
+        if (!attrib->has_plane(_clip_plane_info[i]._plane)) {
+          _clip_plane_info[i]._plane = plane;
+          cur_plane_id = i;
+          break;
+        }
+      }
+    }
+
+    // If we *still* don't have a plane id, slot a new one.
+    if (cur_plane_id == -1) {
+      if (slot_new_clip_plane(max_planes)) {
+        cur_plane_id = max_planes;
+        _clip_plane_info.push_back(ClipPlaneInfo());
+        max_planes++;
+        nassertv(max_planes == (int)_clip_plane_info.size());
+      }
+    }
+        
+    if (cur_plane_id >= 0) {
+      enable_clip_plane(cur_plane_id, true);
+      _clip_plane_info[cur_plane_id]._enabled = true;
+      _clip_plane_info[cur_plane_id]._next_enabled = true;
+      
+      if (!any_bound) {
+        begin_bind_clip_planes();
+        any_bound = true;
+      }
+      
+      // This is the first time this frame that this plane has been
+      // bound to this particular id.
+      bind_clip_plane(plane, cur_plane_id);
+      
+    } else if (cur_plane_id == -1) {
+      gsg_cat.warning()
+        << "Failed to bind " << *plane << " to id.\n";
+    }
+  }
+
+  // Disable all unused planes
+  for (i = 0; i < max_planes; i++) {
+    if (!_clip_plane_info[i]._next_enabled) {
+      enable_clip_plane(i, false);
+      _clip_plane_info[i]._enabled = false;
+    }
+  }
+
+  // If no planes were enabled, disable clip planes in general.
+  if (num_enabled == 0) {
+    enable_clip_planes(false);
+    _clip_planes_enabled = false;
+  }
+
+  if (any_bound) {
+    end_bind_clip_planes();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::bind_light
 //       Access: Public, Virtual
 //  Description: Called the first time a particular light has been
@@ -977,6 +1115,90 @@ begin_bind_lights() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 end_bind_lights() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::slot_new_clip_plane
+//       Access: Protected, Virtual
+//  Description: This will be called by the base class before a
+//               particular clip plane id will be used for the first
+//               time.  It is intended to allow the derived class to
+//               reserve any additional resources, if required, for
+//               the new clip plane; and also to indicate whether the
+//               hardware supports this many simultaneous clipping
+//               planes.
+//
+//               The return value should be true if the additional
+//               plane is supported, or false if it is not.
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+slot_new_clip_plane(int plane_id) {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::enable_clip_planes
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by a derived class to
+//               enable or disable the use of clipping planes overall.
+//               This is called by issue_clip_plane() according to
+//               whether any planes are in use or not.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+enable_clip_planes(bool enable) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::enable_clip_plane
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by a derived class to
+//               enable the indicated plane id.  A specific PlaneNode
+//               will already have been bound to this id via
+//               bind_clip_plane().
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+enable_clip_plane(int plane_id, bool enable) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::begin_bind_clip_planes
+//       Access: Protected, Virtual
+//  Description: Called immediately before bind_clip_plane() is called,
+//               this is intended to provide the derived class a hook
+//               in which to set up some state (like transform) that
+//               might apply to several planes.
+//
+//               The sequence is: begin_bind_clip_planes() will be
+//               called, then one or more bind_clip_plane() calls,
+//               then end_bind_clip_planes().
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+begin_bind_clip_planes() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::bind_clip_plane
+//       Access: Public, Virtual
+//  Description: Called the first time a particular clipping plane has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware (or API) clipping plane
+//               with the plane's properties.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+bind_clip_plane(PlaneNode *plane, int plane_id) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::end_bind_clip_planes
+//       Access: Protected, Virtual
+//  Description: Called after before bind_clip_plane() has been called one
+//               or more times (but before any geometry is issued or
+//               additional state is changed), this is intended to
+//               clean up any temporary changes to the state that may
+//               have been made by begin_bind_clip_planes().
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+end_bind_clip_planes() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1244,6 +1466,20 @@ get_unlit_state() {
   static CPT(RenderState) state = NULL;
   if (state == (const RenderState *)NULL) {
     state = RenderState::make(LightAttrib::make_all_off());
+  }
+  return state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_unclipped_state
+//       Access: Protected, Static
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) GraphicsStateGuardian::
+get_unclipped_state() {
+  static CPT(RenderState) state = NULL;
+  if (state == (const RenderState *)NULL) {
+    state = RenderState::make(ClipPlaneAttrib::make_all_off());
   }
   return state;
 }

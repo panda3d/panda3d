@@ -14,6 +14,7 @@
     billboardEffect.I billboardEffect.h \
     binCullHandler.I binCullHandler.h \
     camera.I camera.h \
+    clipPlaneAttrib.I clipPlaneAttrib.h \
     colorAttrib.I colorAttrib.h \
     colorBlendAttrib.I colorBlendAttrib.h \
     colorScaleAttrib.I colorScaleAttrib.h \
@@ -64,6 +65,7 @@
     nodePathComponent.I nodePathComponent.h \
     nodePathLerps.h \
     pandaNode.I pandaNode.h \
+    planeNode.I planeNode.h \
     pointLight.I pointLight.h \
     renderAttrib.I renderAttrib.h \
     renderEffect.I renderEffect.h \
@@ -93,6 +95,7 @@
     billboardEffect.cxx \
     binCullHandler.cxx \
     camera.cxx \
+    clipPlaneAttrib.cxx \
     colorAttrib.cxx \
     colorBlendAttrib.cxx \
     colorScaleAttrib.cxx \
@@ -143,6 +146,7 @@
     nodePathComponent.cxx \
     nodePathLerps.cxx \
     pandaNode.cxx \
+    planeNode.cxx \
     pointLight.cxx \
     renderAttrib.cxx \
     renderEffect.cxx \
@@ -171,6 +175,7 @@
     billboardEffect.I billboardEffect.h \
     binCullHandler.I binCullHandler.h \
     camera.I camera.h \
+    clipPlaneAttrib.I clipPlaneAttrib.h \
     colorAttrib.I colorAttrib.h \
     colorBlendAttrib.I colorBlendAttrib.h \
     colorScaleAttrib.I colorScaleAttrib.h \
@@ -218,6 +223,7 @@
     nodePathComponent.I nodePathComponent.h \
     nodePathLerps.h \
     pandaNode.I pandaNode.h \
+    planeNode.I planeNode.h \
     pointLight.I pointLight.h \
     renderAttrib.I renderAttrib.h \
     renderEffect.I renderEffect.h \
