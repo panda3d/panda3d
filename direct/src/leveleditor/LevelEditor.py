@@ -2195,14 +2195,12 @@ class LevelEditor(NodePath, PandaObject):
             self.loadDNAFromFile(dnaFilename)
 
     def saveToSpecifiedDNAFile(self):
-        f = Filename('/alpha/DIRECT/LevelEditor/DNAFiles')
-        f.resolveFilename(getModelPath())
-        path = f.toOsSpecific()
+        path = os.path.expandvars('$DIRECT\\etc\\')
         if not os.path.isdir(path):
             print 'LevelEditor Warning: Invalid DNA save directory!'
             print 'Using: C:\\'
             path = 'C:\\'
-        dnaFilename = askopenfilename(
+        dnaFilename = asksaveasfilename(
             defaultextension = '.dna',
             filetypes = (('DNA Files', '*.dna'),('All files', '*')),
             initialdir = path,
@@ -2272,7 +2270,8 @@ class LevelEditor(NodePath, PandaObject):
 	self.createNewLevelGroup()
 
     def outputDNADefaultFile(self):
-        self.outputDNA(self.dnaOutputFile)
+        file = os.path.expandvars('$DIRECT\\etc\\' + self.dnaOutputFile)
+        self.outputDNA(file)
         
     def outputDNA(self,filename):
 	print 'Saving DNA to: ', filename

@@ -29,6 +29,10 @@
             childrenList.append(self.getChild(childNum))
         return childrenList
 
+    def printChildren(self):
+        for child in self.getChildrenAsList():
+            print child.getNodePathName()
+
     def toggleViz(self):
         if self.isHidden():
             self.show()
