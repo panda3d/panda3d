@@ -7,6 +7,12 @@ class DirectScrolledList(DirectFrame):
 
         self.index = 0
 
+        # If one were to want a scrolledList that makes and adds its items
+        #   as needed, simply pass in an items list of strings (type 'str')
+        #   and when that item is needed, itemMakeFunction will be called
+        #   with the text, the index, and itemMakeExtraArgs.  If itemMakeFunction
+        #   is not specified, it will create a DirectFrame with the text.
+        
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
