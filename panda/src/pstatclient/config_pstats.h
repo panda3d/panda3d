@@ -15,13 +15,13 @@
 NotifyCategoryDecl(pstats, EXPCL_PANDA, EXPTP_PANDA);
 
 extern EXPCL_PANDA string get_pstats_name();
-extern EXPCL_PANDA double get_pstats_max_rate();
+extern EXPCL_PANDA float get_pstats_max_rate();
 extern EXPCL_PANDA const string pstats_host; 
 extern EXPCL_PANDA const int pstats_port;
-extern EXPCL_PANDA const double pstats_target_frame_rate;
+extern EXPCL_PANDA const float pstats_target_frame_rate;
 
 extern EXPCL_PANDA const bool pstats_scroll_mode;
-extern EXPCL_PANDA const double pstats_history;
+extern EXPCL_PANDA const float pstats_history;
 
 extern EXPCL_PANDA void init_libpstatclient();
 

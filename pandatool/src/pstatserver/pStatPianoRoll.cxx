@@ -42,7 +42,7 @@ clear() {
 //               second data point turns it off (ends the bar).
 ////////////////////////////////////////////////////////////////////
 void PStatPianoRoll::BarBuilder::
-add_data_point(double time) {
+add_data_point(float time) {
   if (_color_bars.empty() || _color_bars.back()._end >= 0.0) {
     // This is an odd-numbered data point: start the bar.
     ColorBar bar;
@@ -63,7 +63,7 @@ add_data_point(double time) {
 //               by a corresponding end-bar data point.
 ////////////////////////////////////////////////////////////////////
 void PStatPianoRoll::BarBuilder::
-finish(double time) {
+finish(float time) {
   if (!_color_bars.empty() && _color_bars.back()._end < 0.0) {
     nout << "Warning: collector was left on at the end of the frame.\n";
     _color_bars.back()._end = time;
@@ -262,7 +262,7 @@ public:
     // -1 appear to be a very large positive integer, thus placing
     // collectors with a -1 sort value at the very end.
     return 
-      (unsigned int)_client_data->get_collector_def(a)._sort <
+      (unsigned int)_client_data->get_collector_def(a)._sort >
       (unsigned int)_client_data->get_collector_def(b)._sort;
   }
   const PStatClientData *_client_data;
@@ -287,8 +287,8 @@ compute_page(const PStatFrameData &frame_data) {
 
   int num_events = frame_data.get_num_events();
   for (int i = 0; i < num_events; i++) {
-    int collector_index = (frame_data.get_collector(i) & 0x7fff);
-    double time = frame_data.get_time(i);
+    int collector_index = frame_data.get_time_collector(i);
+    float time = frame_data.get_time(i);
     _page_data[collector_index].add_data_point(time);
   }
 
@@ -312,7 +312,7 @@ compute_page(const PStatFrameData &frame_data) {
   }
 
   // Finally, make sure all of the bars are closed.
-  double time = frame_data.get_end();
+  float time = frame_data.get_end();
   for (pi = _page_data.begin(); pi != _page_data.end(); ++pi) {
     (*pi).second.finish(time);
   }

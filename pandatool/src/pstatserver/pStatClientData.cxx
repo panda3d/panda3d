@@ -33,7 +33,7 @@ PStatClientData::
 ~PStatClientData() {
   Collectors::const_iterator ci;
   for (ci = _collectors.begin(); ci != _collectors.end(); ++ci) {
-    delete (*ci);
+    delete (*ci)._def;
   }
 }
 
@@ -85,7 +85,7 @@ get_num_collectors() const {
 bool PStatClientData::
 has_collector(int index) const {
   return (index >= 0 && index < (int)_collectors.size() &&
-	  _collectors[index] != (PStatCollectorDef *)NULL);
+	  _collectors[index]._def != (PStatCollectorDef *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -98,7 +98,7 @@ get_collector_def(int index) const {
   if (!has_collector(index)) {
     return _null_collector;
   }
-  return *_collectors[index];
+  return *_collectors[index]._def;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -111,7 +111,7 @@ get_collector_name(int index) const {
   if (!has_collector(index)) {
     return "Unknown";
   }
-  const PStatCollectorDef *def = _collectors[index];
+  const PStatCollectorDef *def = _collectors[index]._def;
   return def->_name;
 }
 
@@ -129,12 +129,40 @@ get_collector_fullname(int index) const {
     return "Unknown";
   }
 
-  const PStatCollectorDef *def = _collectors[index];
+  const PStatCollectorDef *def = _collectors[index]._def;
   if (def->_parent_index == 0) {
     return def->_name;
   } else {
     return get_collector_fullname(def->_parent_index) + ":" + def->_name;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClientData::set_collector_has_level
+//       Access: Public
+//  Description: Indicates whether the given collector has level data
+//               (and consequently, whether it should appear on the
+//               Levels menu).
+////////////////////////////////////////////////////////////////////
+void PStatClientData::
+set_collector_has_level(int index, bool flag) {
+  slot_collector(index);
+  nassertv(index >= 0 && index < (int)_collectors.size());
+  _collectors[index]._is_level = flag;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClientData::get_collector_has_level
+//       Access: Public
+//  Description: Returns whether the given collector has level data
+//               (and consequently, whether it should appear on the
+//               Levels menu).
+////////////////////////////////////////////////////////////////////
+bool PStatClientData::
+get_collector_has_level(int index) const {
+  return (index >= 0 && index < (int)_collectors.size() &&
+	  _collectors[index]._is_level);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -228,20 +256,15 @@ get_child_distance(int parent, int child) const {
 ////////////////////////////////////////////////////////////////////
 void PStatClientData::
 add_collector(PStatCollectorDef *def) {
-  // A sanity check on the index number.
-  nassertv(def->_index < 1000);
+  slot_collector(def->_index);
+  nassertv(def->_index >= 0 && def->_index < (int)_collectors.size());
 
-  // Make sure we have enough slots allocated.
-  while ((int)_collectors.size() <= def->_index) {
-    _collectors.push_back(NULL);
+  if (_collectors[def->_index]._def != (PStatCollectorDef *)NULL) {
+    // Free the old definition, if any.
+    delete _collectors[def->_index]._def;
   }
 
-  if (_collectors[def->_index] != (PStatCollectorDef *)NULL) {
-    // Free any old definition.
-    delete _collectors[def->_index];
-  }
-
-  _collectors[def->_index] = def;
+  _collectors[def->_index]._def = def;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -287,4 +310,23 @@ record_new_frame(int thread_index, int frame_number,
   define_thread(thread_index);
   nassertv(thread_index >= 0 && thread_index < (int)_threads.size());
   _threads[thread_index]._data->record_new_frame(frame_number, frame_data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClientData::slot_collector
+//       Access: Private
+//  Description: Makes sure there is an entry in the array for a
+//               collector with the given index number.
+////////////////////////////////////////////////////////////////////
+void PStatClientData::
+slot_collector(int collector_index) {
+  // A sanity check on the index number.
+  nassertv(collector_index < 1000);
+
+  while ((int)_collectors.size() <= collector_index) {
+    Collector collector;
+    collector._def = (PStatCollectorDef *)NULL;
+    collector._is_level = false;
+    _collectors.push_back(collector);
+  }
 }

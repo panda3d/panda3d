@@ -21,16 +21,21 @@ class GtkStatsStripChart;
 class GtkStatsStripWindow : public GtkStatsWindow {
 public:
   GtkStatsStripWindow(GtkStatsMonitor *monitor, int thread_index, 
-		      int collector_index, int chart_xsize, int chart_ysize);
+		      int collector_index, bool show_level,
+                      int chart_xsize, int chart_ysize);
 
   virtual void mark_dead();
+  virtual void new_collector();
   virtual void idle();
 
 protected:
   virtual void setup_menu();
+  void setup_scale_menu();
   virtual void menu_new_window();
-  void menu_hscale(double wpm);
-  void menu_vscale(double hz);
+  void menu_hscale(float wpm);
+  void menu_vscale(float max_height);
+  void menu_auto_vscale();
+  void menu_show_levels(int collector_index);
   void open_subchart(int collector_index);
 
 private:
@@ -40,11 +45,16 @@ private:
 private:
   int _thread_index;
   int _collector_index;
+  bool _show_level;
   bool _title_unknown;
+  bool _setup_scale_menu;
   
   Gtk::Label *_title_label;
   Gtk::Label *_frame_rate_label;
   GtkStatsStripChart *_chart;
+
+  Gtk::Menu *_scale_menu;
+  Gtk::Menu *_levels_menu;
 };
 
 

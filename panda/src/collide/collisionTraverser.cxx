@@ -19,7 +19,7 @@
 #include <pStatTimer.h>
 
 #ifndef CPPPARSER
-PStatCollector CollisionTraverser::_collisions_pcollector("App:Collisions", RGBColorf(1,0.5,0), 40);
+PStatCollector CollisionTraverser::_collisions_pcollector("App:Collisions");
 #endif
 
 ////////////////////////////////////////////////////////////////////

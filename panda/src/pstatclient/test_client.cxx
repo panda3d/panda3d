@@ -27,33 +27,34 @@ void signal_handler(int) {
 
 struct SampleData {
   const char *category;
-  RGBColorf color;
-  int min_ms;
-  int max_ms;
+  float min_ms;
+  float max_ms;
+  bool is_level;
 };
 
 SampleData dataset_zero[] = {
-  { "Draw", RGBColorf(0,0,1), 10, 10 },
-  { "Cull", RGBColorf(0,1,1), 5, 6 },
-  { "App", RGBColorf(1,0,0), 0, 5 },
+  { "Draw", 10, 10, false },
+  { "Cull", 5, 6, false },
+  { "App", 0, 5, false },
+  { "Texture memory", 1, 0.01, true },
   { NULL },
 };
 
 SampleData dataset_one[] = {
-  { "Draw", RGBColorf(0,0,1), 10, 12 },
-  { "Squeak", RGBColorf(1,1,0), 25, 30 },
+  { "Draw", 10, 12, false },
+  { "Squeak", 25, 30, false },
   { NULL },
 };
 
 SampleData dataset_two[] = {
-  { "Squeak", RGBColorf(1,1,0), 40, 45 },
-  { "Cull", RGBColorf(0,1,1), 20, 22 },
-  { "Draw", RGBColorf(0,0,1), 10, 20 },
-  { "Animation", RGBColorf(0.5,1,0.5), 0, 0 },
-  { "Animation:mickey", RGBColorf(0,0,0), 5, 6 },
-  { "Animation:donald", RGBColorf(0,0,0), 5, 6 },
-  { "Animation:goofy", RGBColorf(0,0,0), 5, 6 },
-  { "Animation:pluto", RGBColorf(0,0,0), 5, 6 },
+  { "Squeak", 40, 45, false },
+  { "Cull", 20, 22, false },
+  { "Draw", 10, 20, false },
+  { "Animation", 0, 0, false },
+  { "Animation:mickey", 5, 6, false },
+  { "Animation:donald", 5, 6, false },
+  { "Animation:goofy", 5, 6, false },
+  { "Animation:pluto", 5, 6, false },
   { NULL },
 };
 
@@ -65,7 +66,7 @@ SampleData *datasets[NUM_DATASETS] = {
 
 class WaitRequest {
 public:
-  double _time;
+  float _time;
   int _index;
   bool _start;
   
@@ -111,10 +112,10 @@ main(int argc, char *argv[]) {
     ds_index = atoi(argv[3]);
   } else {
     // Pick a random Dataset.
-    ds_index = (int)((double)NUM_DATASETS * rand() / (RAND_MAX + 1.0));
+    ds_index = (int)((float)NUM_DATASETS * rand() / (RAND_MAX + 1.0));
   }
   if (ds_index < 0 || ds_index >= NUM_DATASETS) {
-    nout << "Invalid datasets; choose a number in the range 0 to "
+    nout << "Invalid dataset; choose a number in the range 0 to "
 	 << NUM_DATASETS - 1 << "\n";
     exit(1);
   }
@@ -124,39 +125,49 @@ main(int argc, char *argv[]) {
   vector<PStatCollector> _collectors;
   int i = 0;
   while (ds[i].category != (const char *)NULL) {
-    _collectors.push_back(PStatCollector(ds[i].category, ds[i].color, i));
+    _collectors.push_back(PStatCollector(ds[i].category));
+    if (ds[i].is_level) {
+      _collectors[i].set_level(ds[i].min_ms);
+    }
     i++;
   }
   
   while (!user_interrupted && client->is_connected()) {
     client->get_main_thread().new_frame();
 
-    double total_ms = 0.0;
-    double now = client->get_clock().get_real_time();
+    float total_ms = 0.0;
+    float now = client->get_clock().get_real_time();
 
     typedef vector<WaitRequest> Wait;
     Wait wait;
 
     // Make up some random intervals to "wait".
-    for (i = 0; i < _collectors.size(); i++) {
-      // A bit of random jitter so the collectors might overlap some.
-      double jitter_ms = (5.0 * rand() / (RAND_MAX + 1.0));
+    for (i = 0; i < (int)_collectors.size(); i++) {
+      if (ds[i].is_level) {
+        // Make up an amount to add/delete to the level this frame.
+        float increment = ds[i].max_ms * (rand() / (RAND_MAX + 1.0) - 0.5);
+        _collectors[i].add_level(increment);
 
-      WaitRequest wr;
-      wr._time = now + jitter_ms / 1000.0;
-      wr._index = i;
-      wr._start = true;
-      wait.push_back(wr);
-
-      int ms_range = ds[i].max_ms - ds[i].min_ms;
-      double ms = (double)ds[i].min_ms + 
-	((double)ms_range * rand() / (RAND_MAX + 1.0));
-      now += ms / 1000.0;
-      total_ms += ms;
-
-      wr._time = now + jitter_ms / 1000.0;
-      wr._start = false;
-      wait.push_back(wr);
+      } else {
+        // A bit of random jitter so the collectors might overlap some.
+        float jitter_ms = (5.0 * rand() / (RAND_MAX + 1.0));
+        
+        WaitRequest wr;
+        wr._time = now + jitter_ms / 1000.0;
+        wr._index = i;
+        wr._start = true;
+        wait.push_back(wr);
+        
+        float ms_range = ds[i].max_ms - ds[i].min_ms;
+        float ms = (float)ds[i].min_ms + 
+          (ms_range * rand() / (RAND_MAX + 1.0));
+        now += ms / 1000.0;
+        total_ms += ms;
+        
+        wr._time = now + jitter_ms / 1000.0;
+        wr._start = false;
+        wait.push_back(wr);
+      }        
     }
 
     // Put the wait requests in order, to allow for the jitter, and

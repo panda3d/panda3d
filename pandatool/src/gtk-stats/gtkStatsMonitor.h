@@ -32,6 +32,7 @@ public:
 
   virtual void initialized();
   virtual void got_hello();
+  virtual void new_collector(int collector_index);
   virtual void new_data(int thread_index, int frame_number);
   virtual void lost_connection();
   virtual void idle();
@@ -46,6 +47,7 @@ public:
   Windows _windows;
 
   bool _destructing;
+  bool _new_collector;
 };
 
 #endif

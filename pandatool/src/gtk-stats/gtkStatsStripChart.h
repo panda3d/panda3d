@@ -37,7 +37,7 @@ public:
 
   Gdk_GC get_collector_gc(int collector_index);
 
-  // This signal is thrown when the user double-clicks on a label or
+  // This signal is thrown when the user float-clicks on a label or
   // on a band of color.
   SigC::Signal1<void, int> collector_picked;
 

@@ -14,7 +14,8 @@
     pStatCollector.I pStatCollector.h \
     pStatCollectorDef.cxx \
     pStatCollectorDef.h pStatFrameData.I pStatFrameData.cxx \
-    pStatFrameData.h pStatServerControlMessage.cxx \
+    pStatFrameData.h pStatProperties.cxx pStatProperties.h \
+    pStatServerControlMessage.cxx \
     pStatServerControlMessage.h \
     pStatThread.I pStatThread.h \
     pStatTimer.I pStatTimer.h
@@ -31,6 +32,11 @@
 #end lib_target
 
 #begin test_bin_target
+  #define LOCAL_LIBS \
+    pstatclient
+  #define OTHER_LIBS \
+    pystub
+
   #define TARGET test_client
 
   #define SOURCES \

@@ -30,7 +30,7 @@
 TypeHandle DirectRenderTraverser::_type_handle;
 
 #ifndef CPPPARSER
-PStatCollector DirectRenderTraverser::_draw_pcollector("Draw", RGBColorf(1,0,0), 20);
+PStatCollector DirectRenderTraverser::_draw_pcollector("Draw");
 #endif
 
 ////////////////////////////////////////////////////////////////////

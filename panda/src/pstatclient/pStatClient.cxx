@@ -14,6 +14,7 @@
 #include "pStatCollector.h"
 #include "pStatThread.h"
 #include "config_pstats.h"
+#include "pStatProperties.h"
 
 #include <algorithm>
 
@@ -24,6 +25,18 @@
 #endif
 
 PStatClient *PStatClient::_global_pstats = NULL;
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::PerThreadData::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PStatClient::PerThreadData::
+PerThreadData() {
+  _has_level = false;
+  _level = 0.0;
+  _nested_count = 0;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::Constructor
@@ -196,36 +209,55 @@ get_main_thread() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatClient::make_collector
+//     Function: PStatClient::make_collector_with_relname
 //       Access: Private
 //  Description: Returns a PStatCollector suitable for measuring
 //               categories with the indicated name.  This is normally
 //               called by a PStatCollector constructor.
+//
+//               The name may contain colons; if it does, it specifies
+//               a relative path to the client indicated by the parent
+//               index.
 ////////////////////////////////////////////////////////////////////
 PStatCollector PStatClient::
-make_collector(int parent_index, string fullname) {
-  if (fullname.empty()) {
-    fullname = "Unnamed";
+make_collector_with_relname(int parent_index, string relname) {
+  if (relname.empty()) {
+    relname = "Unnamed";
   }
 
   // Skip any colons at the beginning of the name.
   size_t start = 0;
-  while (start < fullname.size() && fullname[start] == ':') {
+  while (start < relname.size() && relname[start] == ':') {
     start++;
   }
   
   // If the name contains a colon (after the initial colon), it means
   // we are making a nested collector.
-  size_t colon = fullname.find(':', start);
-  if (colon != string::npos) {
-    string parent_name = fullname.substr(start, colon - start);
+  size_t colon = relname.find(':', start);
+  while (colon != string::npos) {
+    string parent_name = relname.substr(start, colon - start);
     PStatCollector parent_collector = 
-      make_collector(parent_index, parent_name);
-    return make_collector(parent_collector._index, fullname.substr(colon + 1));
+      make_collector_with_name(parent_index, parent_name);
+    parent_index = parent_collector._index;
+    relname = relname.substr(colon + 1);
+    colon = relname.find(':', start);
   }
 
-  string name = fullname.substr(start);
+  string name = relname.substr(start);
+  return make_collector_with_name(parent_index, name);
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::make_collector_with_name
+//       Access: Private
+//  Description: Returns a PStatCollector suitable for measuring
+//               categories with the indicated name.  This is normally
+//               called by a PStatCollector constructor.
+//
+//               The name should not contain colons.
+////////////////////////////////////////////////////////////////////
+PStatCollector PStatClient::
+make_collector_with_name(int parent_index, const string &name) {
   nassertr(parent_index >= 0 && parent_index < (int)_collectors.size(),
 	   PStatCollector());
 
@@ -251,51 +283,20 @@ make_collector(int parent_index, string fullname) {
   int new_index = _collectors.size();
   parent._children.insert(ThingsByName::value_type(name, new_index));
 
-  Collector collector;
+  // Extending the vector invalidates the parent reference, above.
+  _collectors.push_back(Collector());
+  Collector &collector = _collectors.back();
   collector._def = new PStatCollectorDef(new_index, name);
-  collector._def->_parent_index = parent_index;
 
-  // We need one nested_count for each thread.
-  while (collector._nested_count.size() < _threads.size()) {
-    collector._nested_count.push_back(0);
+  collector._def->set_parent(*_collectors[parent_index]._def);
+  initialize_collector_def(this, collector._def);
+
+  // We need one PerThreadData for each thread.
+  while (collector._per_thread.size() < _threads.size()) {
+    collector._per_thread.push_back(PerThreadData());
   }
-
-  _collectors.push_back(collector);
 
   return PStatCollector(this, new_index);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClient::make_collector
-//       Access: Private
-//  Description: This flavor of make_collector will make a new
-//               collector and automatically set up some of its
-//               properties.
-////////////////////////////////////////////////////////////////////
-PStatCollector PStatClient::
-make_collector(int parent_index, const string &fullname,
-	       const RGBColorf &suggested_color, int sort) {
-  PStatCollector c = make_collector(parent_index, fullname);
-  nassertr(c._client == this, PStatCollector());
-  nassertr(c._index >= 0 && c._index < (int)_collectors.size(), PStatCollector());
-
-  PStatCollectorDef *def = _collectors[c._index]._def;
-  nassertr(def != (PStatCollectorDef *)NULL, PStatCollector());
-
-  if (suggested_color != RGBColorf::zero() &&
-      def->_suggested_color != suggested_color) {
-    // We need to change the suggested color.
-    def->_suggested_color = suggested_color;
-    _collectors_reported = min(_collectors_reported, c._index);
-  }
-
-  if (sort != -1 && def->_sort != sort) {
-    // We need to change the sort.
-    def->_sort = sort;
-    _collectors_reported = min(_collectors_reported, c._index);
-  }
-
-  return c;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -329,12 +330,12 @@ make_thread(const string &name) {
 
   _threads.push_back(thread);
 
-  // We need an additional nested_count for this thread in all of the
+  // We need an additional PerThreadData for this thread in all of the
   // collectors.
   Collectors::iterator ci;
   for (ci = _collectors.begin(); ci != _collectors.end(); ++ci) {
-    (*ci)._nested_count.push_back(0);
-    nassertr((*ci)._nested_count.size() == _threads.size(), PStatThread());
+    (*ci)._per_thread.push_back(PerThreadData());
+    nassertr((*ci)._per_thread.size() == _threads.size(), PStatThread());
   }
 
   return PStatThread(this, new_index);
@@ -440,11 +441,11 @@ ns_disconnect() {
   
   Collectors::iterator ci;
   for (ci = _collectors.begin(); ci != _collectors.end(); ++ci) {
-    vector_int::iterator ii;
-    for (ii = (*ci)._nested_count.begin(); 
-	   ii != (*ci)._nested_count.end(); 
+    PerThread::iterator ii;
+    for (ii = (*ci)._per_thread.begin(); 
+         ii != (*ci)._per_thread.end(); 
 	 ++ii) {
-      (*ii) = 0;
+      (*ii)._nested_count = 0;
     }
   }
 }
@@ -464,20 +465,20 @@ ns_is_connected() const {
 //       Access: Private
 //  Description: Marks the indicated collector index as started.
 //               Normally you would not use this interface directly;
-//               instead, call pStatCollector::start().
+//               instead, call PStatCollector::start().
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
-start(int collector_index, int thread_index, double as_of) {
+start(int collector_index, int thread_index, float as_of) {
   nassertv(collector_index >= 0 && collector_index < (int)_collectors.size());
   nassertv(thread_index >= 0 && thread_index < (int)_threads.size());
 
   if (_threads[thread_index]._is_active) {
-    if (_collectors[collector_index]._nested_count[thread_index] == 0) {
+    if (_collectors[collector_index]._per_thread[thread_index]._nested_count == 0) {
       // This collector wasn't already started in this thread; record
       // a new data point.
       _threads[thread_index]._frame_data.add_start(collector_index, as_of);
     }
-    _collectors[collector_index]._nested_count[thread_index]++;
+    _collectors[collector_index]._per_thread[thread_index]._nested_count++;
   }
 }
 
@@ -486,15 +487,15 @@ start(int collector_index, int thread_index, double as_of) {
 //       Access: Private
 //  Description: Marks the indicated collector index as stopped.
 //               Normally you would not use this interface directly;
-//               instead, call pStatCollector::stop().
+//               instead, call PStatCollector::stop().
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
-stop(int collector_index, int thread_index, double as_of) {
+stop(int collector_index, int thread_index, float as_of) {
   nassertv(collector_index >= 0 && collector_index < (int)_collectors.size());
   nassertv(thread_index >= 0 && thread_index < (int)_threads.size());
 
   if (_threads[thread_index]._is_active) {
-    if (_collectors[collector_index]._nested_count[thread_index] == 0) {
+    if (_collectors[collector_index]._per_thread[thread_index]._nested_count == 0) {
       pstats_cat.warning()
 	<< "Collector " << get_collector_fullname(collector_index)
 	<< " was already stopped in thread " << get_thread_name(thread_index)
@@ -502,14 +503,62 @@ stop(int collector_index, int thread_index, double as_of) {
       return;
     }
     
-    _collectors[collector_index]._nested_count[thread_index]--;
+    _collectors[collector_index]._per_thread[thread_index]._nested_count--;
     
-    if (_collectors[collector_index]._nested_count[thread_index] == 0) {
+    if (_collectors[collector_index]._per_thread[thread_index]._nested_count == 0) {
       // This collector has now been completely stopped; record a new
       // data point.
       _threads[thread_index]._frame_data.add_stop(collector_index, as_of);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::clear_level
+//       Access: Private
+//  Description: Removes the level value from the indicated collector.
+//               The collector will no longer be reported as having
+//               any particular level value.
+//
+//               Normally you would not use this interface directly;
+//               instead, call PStatCollector::clear_level().
+////////////////////////////////////////////////////////////////////
+void PStatClient::
+clear_level(int collector_index, int thread_index) {
+  _collectors[collector_index]._per_thread[thread_index]._has_level = false;
+  _collectors[collector_index]._per_thread[thread_index]._level = 0.0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::set_level
+//       Access: Private
+//  Description: Sets the level value for the indicated collector to
+//               the given amount.
+//
+//               Normally you would not use this interface directly;
+//               instead, call PStatCollector::set_level().
+////////////////////////////////////////////////////////////////////
+void PStatClient::
+set_level(int collector_index, int thread_index, float level) {
+  _collectors[collector_index]._per_thread[thread_index]._has_level = true;
+  _collectors[collector_index]._per_thread[thread_index]._level = level;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::add_level
+//       Access: Private
+//  Description: Adds the given value (which may be negative) to the
+//               current value for the given collector.  If the
+//               collector does not already have a level value, it is
+//               initialized to 0.
+//
+//               Normally you would not use this interface directly;
+//               instead, call PStatCollector::add_level().
+////////////////////////////////////////////////////////////////////
+void PStatClient::
+add_level(int collector_index, int thread_index, float increment) {
+  _collectors[collector_index]._per_thread[thread_index]._has_level = true;
+  _collectors[collector_index]._per_thread[thread_index]._level += increment;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -542,28 +591,21 @@ new_frame(int thread_index) {
     return;
   }
 
-  double frame_start = _clock.get_real_time();
+  float frame_start = _clock.get_real_time();
 
   if (!thread._frame_data.is_empty()) {
     // Collector 0 is the whole frame.
     stop(0, thread_index, frame_start);
 
-    /*
-      We don't need to do this, since the stats server will do it.
-      Why should we waste our time?
-
-    // Make sure all of our Collectors have turned themselves off now
-    // at the end of the frame.
-    Collectors::iterator ci;
-    for (ci = _collectors.begin(); ci != _collectors.end(); ++ci) {
-      if ((*ci)._nested_count > 0) {
-	pstats_cat.warning()
-	  << "Collector " << get_collector_fullname((*ci)._def->_index)
-	  << " wasn't stopped!\n";
-	(*ci)._nested_count = 0;
+    // Fill up the level data for all the collectors who have level
+    // data for this thread.
+    int num_collectors = _collectors.size();
+    for (int i = 0; i < num_collectors; i++) {
+      const PerThreadData &ptd = _collectors[i]._per_thread[thread_index];
+      if (ptd._has_level) {
+        thread._frame_data.add_level(i, ptd._level);
       }
-    } */
-
+    }
     transmit_frame_data(thread_index);
   }
 
@@ -586,8 +628,8 @@ transmit_frame_data(int thread_index) {
     // We don't want to send too many packets in a hurry and flood the
     // server.  In fact, we don't want to send more than
     // _max_rate packets per second, per thread.
-    double min_packet_delay = 1.0 / _max_rate;
-    double now = _clock.get_real_time();
+    float min_packet_delay = 1.0 / _max_rate;
+    float now = _clock.get_real_time();
 
     if (now - _threads[thread_index]._last_packet > min_packet_delay) {
       nassertv(_got_udp_port);

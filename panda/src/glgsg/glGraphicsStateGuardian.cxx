@@ -115,7 +115,7 @@ issue_texcoord_gl(const Geom *geom, Geom::TexCoordIterator &tciterator) {
 
 static void
 issue_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
-           const GraphicsStateGuardianBase *) {
+               const GraphicsStateGuardianBase *) {
   const Colorf &color = geom->get_next_color(citerator);
   //  glgsg_cat.debug() << "Issuing color " << color << "\n";
   glColor4fv(color.get_data());
@@ -123,7 +123,7 @@ issue_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
 
 static void
 issue_transformed_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
-               const GraphicsStateGuardianBase *gsg) {
+                           const GraphicsStateGuardianBase *gsg) {
   const GLGraphicsStateGuardian *glgsg = DCAST(GLGraphicsStateGuardian, gsg);
   const Colorf &color = geom->get_next_color(citerator);
 
@@ -468,11 +468,24 @@ render_frame(const AllAttributesWrapper &initial_state) {
     << " --------------------------------------------" << endl;
 #endif
 
-  _lighting_enabled_this_frame = false;
-
   _win->begin_frame();
   report_errors();
   _decal_level = 0;
+  _lighting_enabled_this_frame = false;
+
+#ifdef DO_PSTATS
+  // For Pstats to track our current texture memory usage, we have to
+  // reset the set of current textures each frame.
+  clear_texture_record();
+
+  // But since we don't get sent a new issue_texture() unless our
+  // texture state has changed, we have to be sure to clear the
+  // current texture state now.  A bit unfortunate, but probably not
+  // measurably expensive.
+  NodeAttributes state;
+  state.set_attribute(TextureTransition::get_class_type(), new TextureAttribute);
+  set_state(state, false);
+#endif
 
   if (_clear_buffer_type != 0) {
     // First, clear the entire window.
@@ -723,10 +736,10 @@ draw_point(const GeomPoint *geom) {
   }
 
   GeomIssuer issuer(geom, this,
-            issue_vertex_gl,
-            issue_normal_gl,
-            issue_texcoord_gl,
-            issue_color);
+                    issue_vertex_gl,
+                    issue_normal_gl,
+                    issue_texcoord_gl,
+                    issue_color);
 
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
@@ -1224,10 +1237,10 @@ draw_polygon(const GeomPolygon *geom) {
   }
 
   GeomIssuer issuer(geom, this,
-            issue_vertex_gl,
-            issue_normal_gl,
-            issue_texcoord_gl,
-            issue_color);
+                    issue_vertex_gl,
+                    issue_normal_gl,
+                    issue_texcoord_gl,
+                    issue_color);
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
@@ -1295,10 +1308,10 @@ draw_tri(const GeomTri *geom) {
   }
 
   GeomIssuer issuer(geom, this,
-            issue_vertex_gl,
-            issue_normal_gl,
-            issue_texcoord_gl,
-            issue_color);
+                    issue_vertex_gl,
+                    issue_normal_gl,
+                    issue_texcoord_gl,
+                    issue_color);
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
@@ -1362,10 +1375,10 @@ draw_quad(const GeomQuad *geom) {
   }
 
   GeomIssuer issuer(geom, this,
-            issue_vertex_gl,
-            issue_normal_gl,
-            issue_texcoord_gl,
-            issue_color);
+                    issue_vertex_gl,
+                    issue_normal_gl,
+                    issue_texcoord_gl,
+                    issue_color);
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
@@ -1430,10 +1443,10 @@ draw_tristrip(const GeomTristrip *geom) {
   }
 
   GeomIssuer issuer(geom, this,
-            issue_vertex_gl,
-            issue_normal_gl,
-            issue_texcoord_gl,
-            issue_color);
+                    issue_vertex_gl,
+                    issue_normal_gl,
+                    issue_texcoord_gl,
+                    issue_color);
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
@@ -1519,10 +1532,10 @@ draw_trifan(const GeomTrifan *geom) {
   }
 
   GeomIssuer issuer(geom, this,
-            issue_vertex_gl,
-            issue_normal_gl,
-            issue_texcoord_gl,
-            issue_color);
+                    issue_vertex_gl,
+                    issue_normal_gl,
+                    issue_texcoord_gl,
+                    issue_color);
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
@@ -1700,6 +1713,7 @@ prepare_texture(Texture *tex) {
 void GLGraphicsStateGuardian::
 apply_texture(TextureContext *tc) {
   //  activate();
+  add_to_texture_record(tc);
   bind_texture(tc);
 
   /*
@@ -1754,7 +1768,7 @@ static int binary_log_cap(const int x) {
 //     Function: GLGraphicsStateGuardian::copy_texture
 //       Access: Public, Virtual
 //  Description: Copy the pixel region indicated by the display
-//       region from the framebuffer into texture memory
+//               region from the framebuffer into texture memory
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 copy_texture(TextureContext *tc, const DisplayRegion *dr) {
@@ -3496,20 +3510,20 @@ bind_texture(TextureContext *tc) {
 void GLGraphicsStateGuardian::
 specify_texture(Texture *tex) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, 
-          get_texture_wrap_mode(tex->get_wrapu()));
+                  get_texture_wrap_mode(tex->get_wrapu()));
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
-          get_texture_wrap_mode(tex->get_wrapv()));
+                  get_texture_wrap_mode(tex->get_wrapv()));
 
   if (gl_force_mipmaps) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
-            GL_LINEAR_MIPMAP_LINEAR);
+                    GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   } else {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
-            get_texture_filter_type(tex->get_minfilter()));
+                    get_texture_filter_type(tex->get_minfilter()));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-            get_texture_filter_type(tex->get_magfilter()));
+                    get_texture_filter_type(tex->get_magfilter()));
   }
   report_errors();
 }
@@ -3554,20 +3568,20 @@ apply_texture_immediate(Texture *tex) {
     if (use_mipmaps || gl_force_mipmaps) {
 #ifndef NDEBUG
       if (gl_show_mipmaps) {
-    build_phony_mipmaps(tex);
-    return;
+        build_phony_mipmaps(tex);
+        return;
       }
 #endif
       gluBuild2DMipmaps(GL_TEXTURE_2D, internal_format,
-            pb->get_xsize(), pb->get_ysize(),
-            external_format, type, pb->_image);
+                        pb->get_xsize(), pb->get_ysize(),
+                        external_format, type, pb->_image);
       return;
     }
   }
 
   glTexImage2D( GL_TEXTURE_2D, 0, internal_format,
-        pb->get_xsize(), pb->get_ysize(), pb->get_border(),
-        external_format, type, pb->_image );
+                pb->get_xsize(), pb->get_ysize(), pb->get_border(),
+                external_format, type, pb->_image );
   report_errors();
 }
 

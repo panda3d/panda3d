@@ -52,7 +52,7 @@ set_to_frame(int frame_number) {
 //               set_to_frame.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatView::
-set_to_time(double time) {
+set_to_time(float time) {
   set_to_frame(_thread_data->get_frame_at_time(time));
 }
 

@@ -55,6 +55,7 @@ public:
   INLINE string get_client_progname() const;
 
   PStatView &get_view(int thread_index);
+  PStatView &get_level_view(int collector_index, int thread_index);
 
 
   // The following virtual methods may be overridden by a derived
@@ -84,6 +85,8 @@ private:
 
   typedef map<int, PStatView> Views;
   Views _views;
+  typedef map<int, Views> LevelViews;
+  LevelViews _level_views;
 
   typedef map<int, RGBColorf> Colors;
   Colors _colors;

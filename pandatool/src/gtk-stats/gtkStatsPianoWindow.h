@@ -28,7 +28,7 @@ public:
 protected:
   virtual void setup_menu();
   virtual void menu_new_window();
-  void menu_hscale(double hz);
+  void menu_hscale(float hz);
 
 private:
   void layout_window(int chart_xsize, int chart_ysize);

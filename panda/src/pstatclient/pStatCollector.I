@@ -52,13 +52,11 @@ PStatCollector(PStatClient *client, int index) :
 //               otherwise, the global client is used.
 ////////////////////////////////////////////////////////////////////
 INLINE PStatCollector::
-PStatCollector(const string &name, const RGBColorf &suggested_color,
-	       int sort, PStatClient *client) {
+PStatCollector(const string &name, PStatClient *client) {
   if (client == (PStatClient *)NULL) {
     client = PStatClient::get_global_pstats();
   }
-  PStatCollector collector(client->make_collector(0, name, suggested_color, sort));
-  (*this) = collector;
+  (*this) = client->make_collector_with_relname(0, name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,12 +83,10 @@ PStatCollector(const string &name, const RGBColorf &suggested_color,
 //               as its parent.
 ////////////////////////////////////////////////////////////////////
 INLINE PStatCollector::
-PStatCollector(const PStatCollector &parent, const string &name, 
-	       const RGBColorf &suggested_color, int sort) {
+PStatCollector(const PStatCollector &parent, const string &name) {
   nassertv(parent._client != (PStatClient *)NULL);
-  PStatCollector collector(parent._client->make_collector
-			   (parent._index, name, suggested_color, sort));
-  (*this) = collector;
+  (*this) = 
+    parent._client->make_collector_with_relname(parent._index, name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -147,7 +143,7 @@ start(const PStatThread &thread) {
 //               a monotonically increasing series of time values.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
-start(const PStatThread &thread, double as_of) {
+start(const PStatThread &thread, float as_of) {
   _client->start(_index, thread._index, as_of);
 }
 
@@ -182,8 +178,86 @@ stop(const PStatThread &thread) {
 //               a monotonically increasing series of time values.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
-stop(const PStatThread &thread, double as_of) {
+stop(const PStatThread &thread, float as_of) {
   _client->stop(_index, thread._index, as_of);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::clear_level
+//       Access: Public
+//  Description: Removes the level setting associated with this
+//               collector for the main thread.  The collector
+//               will no longer show up on any level graphs in the
+//               main thread.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+clear_level() {
+  _client->clear_level(_index, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::clear_level
+//       Access: Public
+//  Description: Removes the level setting associated with this
+//               collector for the indicated thread.  The collector
+//               will no longer show up on any level graphs in this
+//               thread.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+clear_level(const PStatThread &thread) {
+  _client->clear_level(_index, thread._index);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::set_level
+//       Access: Public
+//  Description: Sets the level setting associated with this
+//               collector for the main thread to the indicated
+//               value.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+set_level(float level) {
+  _client->set_level(_index, 0, level);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::set_level
+//       Access: Public
+//  Description: Sets the level setting associated with this
+//               collector for the indicated thread to the indicated
+//               value.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+set_level(const PStatThread &thread, float level) {
+  _client->set_level(_index, thread._index, level);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::add_level
+//       Access: Public
+//  Description: Adds the indicated increment (which may be negative)
+//               to the level setting associated with this collector
+//               for the main thread.  If the collector did not
+//               already have a level setting for the main thread, it
+//               is initialized to 0.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+add_level(float increment) {
+  _client->add_level(_index, 0, increment);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::add_level
+//       Access: Public
+//  Description: Adds the indicated increment (which may be negative)
+//               to the level setting associated with this collector
+//               for the indicated thread.  If the collector did not
+//               already have a level setting for this thread, it is
+//               initialized to 0.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+add_level(const PStatThread &thread, float increment) {
+  _client->add_level(_index, thread._index, increment);
 }
 
 #endif  // DO_PSTATS

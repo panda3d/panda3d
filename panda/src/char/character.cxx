@@ -20,7 +20,7 @@
 TypeHandle Character::_type_handle;
 
 #ifndef CPPPARSER
-PStatCollector Character::_anim_pcollector("App:Animation", RGBColorf(1,0,1), 30);
+PStatCollector Character::_anim_pcollector("App:Animation");
 #endif
 
 ////////////////////////////////////////////////////////////////////

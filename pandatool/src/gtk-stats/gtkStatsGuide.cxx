@@ -24,7 +24,7 @@ GtkStatsGuide(PStatStripChart *chart) :
     get_style()->gtkobj()->fg_gc[GTK_WIDGET_STATE (GTK_WIDGET(gtkobj()))];
 
   Gdk_Font font = fg_gc.get_font();
-  int text_width = font.string_width("000");
+  int text_width = font.string_width("0000");
   set_usize(text_width, 0);
 }
 

@@ -29,8 +29,8 @@
 TypeHandle CullTraverser::_type_handle;
 
 #ifndef CPPPARSER
-PStatCollector CullTraverser::_cull_pcollector("Cull", RGBColorf(0,1,0), 10);
-PStatCollector CullTraverser::_draw_pcollector("Draw", RGBColorf(1,0,0), 20);
+PStatCollector CullTraverser::_cull_pcollector("Cull");
+PStatCollector CullTraverser::_draw_pcollector("Draw");
 #endif
 
 ////////////////////////////////////////////////////////////////////

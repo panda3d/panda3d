@@ -9,7 +9,7 @@
 #include <pStatCollector.h>
 
 #ifndef CPPPARSER
-PStatCollector _dgraph_pcollector("App:Data Graph", RGBColorf(0.5,0.8,0.4), 30);
+PStatCollector _dgraph_pcollector("App:Data graph");
 #endif
   
 ////////////////////////////////////////////////////////////////////

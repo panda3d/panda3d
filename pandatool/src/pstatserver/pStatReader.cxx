@@ -225,6 +225,18 @@ handle_client_udp_data(const Datagram &datagram) {
   PStatFrameData *frame_data = new PStatFrameData;
   frame_data->read_datagram(source);
 
+  // Check to see if any new collectors have level data.
+  int num_levels = frame_data->get_num_levels();
+  for (int i = 0; i < num_levels; i++) {
+    int collector_index = frame_data->get_level_collector(i);
+    if (!_client_data->get_collector_has_level(collector_index)) {
+      // This collector is now reporting level data, and it wasn't
+      // before.
+      _client_data->set_collector_has_level(collector_index, true);
+      _monitor->new_collector(collector_index);
+    }
+  }
+
   _client_data->record_new_frame(thread_index, frame_number, frame_data);
   _monitor->new_data(thread_index, frame_number);
 }

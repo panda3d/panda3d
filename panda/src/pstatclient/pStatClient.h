@@ -11,10 +11,10 @@
 #include "pStatFrameData.h"
 
 #include <clockObject.h>
-#include <vector_int.h>
 #include <luse.h>
+#include <map>
 
-#ifdef DO_PSTATS
+#ifdef HAVE_NET
 #include <connectionManager.h>
 #include <queuedConnectionReader.h>
 #include <connectionWriter.h>
@@ -43,8 +43,8 @@ public:
 
   INLINE void set_client_name(const string &name);
   INLINE string get_client_name() const;
-  INLINE void set_max_rate(double rate);
-  INLINE double get_max_rate() const;
+  INLINE void set_max_rate(float rate);
+  INLINE float get_max_rate() const;
 
   int get_num_collectors() const;
   PStatCollector get_collector(int index) const;
@@ -72,13 +72,16 @@ private:
   void ns_disconnect();
   bool ns_is_connected() const;
 
-  PStatCollector make_collector(int parent_index, string fullname);
-  PStatCollector make_collector(int parent_index, const string &fullname,
-				const RGBColorf &suggested_color, int sort);
+  PStatCollector make_collector_with_relname(int parent_index, string relname);
+  PStatCollector make_collector_with_name(int parent_index, const string &name);
   PStatThread make_thread(const string &name);
 
-  void start(int collector_index, int thread_index, double as_of);
-  void stop(int collector_index, int thread_index, double as_of);
+  void start(int collector_index, int thread_index, float as_of);
+  void stop(int collector_index, int thread_index, float as_of);
+
+  void clear_level(int collector_index, int thread_index);
+  void set_level(int collector_index, int thread_index, float level);
+  void add_level(int collector_index, int thread_index, float increment);
 
   void new_frame(int thread_index);
   void transmit_frame_data(int thread_index);
@@ -91,26 +94,44 @@ private:
   typedef map<string, int> ThingsByName;
   ThingsByName _threads_by_name;
 
+  // This is for the data that is per-collector, per-thread.  A vector
+  // of these is stored in each Collector object, below, indexed by
+  // thread index.
+  class PerThreadData {
+  public:
+    PerThreadData();
+    bool _has_level;
+    float _level;
+    int _nested_count;
+  };
+  typedef vector<PerThreadData> PerThread;
+
+  // This is where the meat of the Collector data is stored.  (All the
+  // stuff in PStatCollector and PStatCollectorDef is just fluff.)
   class Collector {
   public:
     PStatCollectorDef *_def;
-    vector_int _nested_count;
     ThingsByName _children;
+
+    PerThread _per_thread;
   };
   typedef vector<Collector> Collectors;
   Collectors _collectors;
 
+  // This defines a single thread, i.e. a separate chain of execution,
+  // independent of all other threads.  Timing and level data are
+  // maintained separately for each thread.
   class Thread {
   public:
     string _name;
     PStatFrameData _frame_data;
     bool _is_active;
     int _frame_number;
-    double _last_packet;
+    float _last_packet;
   };
-
   typedef vector<Thread> Threads;
   Threads _threads;
+
 
 private:
   // Networking stuff
@@ -137,7 +158,7 @@ private:
 
   string _hostname;
   string _client_name;
-  double _max_rate;
+  float _max_rate;
 
   static PStatClient *_global_pstats;
   friend class PStatCollector;

@@ -40,18 +40,18 @@ public:
   bool has_frame(int frame_number) const;
   const PStatFrameData &get_frame(int frame_number) const;
 
-  double get_latest_time() const;
-  double get_oldest_time() const;
-  const PStatFrameData &get_frame_at_time(double time) const;
-  int get_frame_number_at_time(double time, int hint = -1) const;
+  float get_latest_time() const;
+  float get_oldest_time() const;
+  const PStatFrameData &get_frame_at_time(float time) const;
+  int get_frame_number_at_time(float time, int hint = -1) const;
 
   const PStatFrameData &get_latest_frame() const;
 
-  double get_frame_rate(double time = 3.0) const;
+  float get_frame_rate(float time = 3.0) const;
 
 
-  void set_history(double time);
-  double get_history() const;
+  void set_history(float time);
+  float get_history() const;
 
   void record_new_frame(int frame_number, PStatFrameData *frame_data);
 
@@ -61,7 +61,7 @@ private:
   typedef deque<PStatFrameData *> Frames;
   Frames _frames;
   int _first_frame_number;
-  double _history;
+  float _history;
 
   static PStatFrameData _null_frame;
 };

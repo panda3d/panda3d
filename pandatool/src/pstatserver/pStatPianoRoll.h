@@ -39,11 +39,11 @@ public:
 
   void update();
 
-  INLINE void set_horizontal_scale(double time_width);
-  INLINE double get_horizontal_scale() const;
+  INLINE void set_horizontal_scale(float time_width);
+  INLINE float get_horizontal_scale() const;
 
-  INLINE int timestamp_to_pixel(double time) const;
-  INLINE double pixel_to_timestamp(int x) const;
+  INLINE int timestamp_to_pixel(float time) const;
+  INLINE float pixel_to_timestamp(int x) const;
 
 protected:
   void changed_size(int xsize, int ysize);
@@ -62,13 +62,13 @@ private:
 
   int _thread_index;
 
-  double _time_width;
-  double _start_time;
+  float _time_width;
+  float _start_time;
 
   class ColorBar {
   public:
-    double _start;
-    double _end;
+    float _start;
+    float _end;
   };
   typedef vector<ColorBar> ColorBars;
 
@@ -76,8 +76,8 @@ private:
   public:
     BarBuilder();
     void clear();
-    void add_data_point(double time);
-    void finish(double time);
+    void add_data_point(float time);
+    void finish(float time);
 
     bool _is_new;
     ColorBars _color_bars;

@@ -6,11 +6,20 @@
 #include "graphicsStateGuardian.h"
 #include "renderBuffer.h"
 #include "config_display.h"
+#include "textureContext.h"
 
 #include <clockObject.h>
 #include <geomNode.h>
 
 #include <algorithm>
+
+
+#ifndef CPPPARSER
+PStatCollector GraphicsStateGuardian::_total_texusage_pcollector("Texture usage");
+PStatCollector GraphicsStateGuardian::_active_texusage_pcollector("Texture usage:Active");
+PStatCollector GraphicsStateGuardian::_total_texmem_pcollector("Texture memory");
+PStatCollector GraphicsStateGuardian::_used_texmem_pcollector("Texture memory:In use");
+#endif
 
 TypeHandle GraphicsStateGuardian::_type_handle;
 TypeHandle GraphicsStateGuardian::GsgWindow::_type_handle;
@@ -420,7 +429,13 @@ end_decal(GeomNode *) {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
 mark_prepared_texture(TextureContext *tc) {
-  return _prepared_textures.insert(tc).second;
+  bool prepared = _prepared_textures.insert(tc).second;
+#ifdef DO_PSTATS
+  if (prepared) {
+    _total_texusage_pcollector.add_level(tc->estimate_texture_memory() / 1048576.0);
+  }
+#endif
+  return prepared;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -428,22 +443,62 @@ mark_prepared_texture(TextureContext *tc) {
 //       Access: Protected
 //  Description: This is intended to be called from within
 //               release_texture().  It removes the indicated
-//               TextureContext pointer from the _prepared_textures set,
-//               and returns true if it was successfully removed
+//               TextureContext pointer from the _prepared_textures
+//               set, and returns true if it was successfully removed
 //               (i.e. it had been in the set).
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
 unmark_prepared_texture(TextureContext *tc) {
-  return (_prepared_textures.erase(tc) != 0);
+  bool removed = (_prepared_textures.erase(tc) != 0);
+#ifdef DO_PSTATS
+  if (removed) {
+    _total_texusage_pcollector.add_level(-(tc->estimate_texture_memory() / 1048576.0));
+  }
+#endif
+  return removed;
 }
 
-void GraphicsStateGuardian::traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg) {
-	for (Textures::const_iterator ti = _prepared_textures.begin(); ti != _prepared_textures.end();
-		 ++ti) {
-		bool bResult=(*pertex_callbackfn)(*ti,callback_arg);
-		if(!bResult)
-		   return;
-	} 
+#ifdef DO_PSTATS
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::add_to_texture_record
+//       Access: Protected
+//  Description: Records that the indicated texture has been applied
+//               this frame, and thus must be present in current
+//               texture memory.  This function is only used to update
+//               the PStats current_texmem collector; it gets compiled
+//               out if we aren't using PStats.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+add_to_texture_record(TextureContext *tc) {
+  if (_current_textures.insert(tc).second) {
+    _active_texusage_pcollector.add_level(tc->estimate_texture_memory() / 1048576.0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::clear_texture_record
+//       Access: Protected
+//  Description: Empties the texture record at the beginning of the
+//               frame, in preparation for calling
+//               add_to_texture_record() each time a texture is
+//               applied.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+clear_texture_record() {
+  _current_textures.clear();
+  _active_texusage_pcollector.set_level(0);
+}
+#endif  // DO_PSTATS
+
+
+void GraphicsStateGuardian::
+traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg) {
+  for (Textures::const_iterator ti = _prepared_textures.begin(); ti != _prepared_textures.end();
+       ++ti) {
+    bool bResult=(*pertex_callbackfn)(*ti,callback_arg);
+    if(!bResult)
+      return;
+  } 
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -461,8 +516,8 @@ get_factory() {
   return (*_factory);
 }
 
-void GraphicsStateGuardian::read_priorities(void)
-{
+void GraphicsStateGuardian::
+read_priorities(void) {
   GsgFactory &factory = get_factory();
   if (factory.get_num_preferred() == 0) {
     Config::ConfigTable::Symbol::iterator i;

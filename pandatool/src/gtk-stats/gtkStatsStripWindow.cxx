@@ -7,7 +7,9 @@
 #include "gtkStatsStripChart.h"
 #include "gtkStatsGuide.h"
 
+#include <pStatCollectorDef.h>
 #include <string_utils.h>
+
 #include <stdio.h>  // for sprintf
 
 
@@ -21,15 +23,20 @@ using Gtk::Menu_Helpers::SeparatorElem;
 ////////////////////////////////////////////////////////////////////
 GtkStatsStripWindow::
 GtkStatsStripWindow(GtkStatsMonitor *monitor, int thread_index, 
-		    int collector_index, int chart_xsize, int chart_ysize) :
+		    int collector_index, bool show_level,
+                    int chart_xsize, int chart_ysize) :
   GtkStatsWindow(monitor),
   _thread_index(thread_index),
-  _collector_index(collector_index)
+  _collector_index(collector_index),
+  _show_level(show_level)
 {
   _title_unknown = false;
+  _setup_scale_menu = false;
 
   setup_menu();
   layout_window(chart_xsize, chart_ysize);
+
+  new_collector();  // To set up the menus in case we can.
   show();
 }
 
@@ -48,17 +55,52 @@ mark_dead() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripWindow::new_collector
+//       Access: Public, Virtual
+//  Description: Called when a new collector has become known.
+//
+//               For the GtkStatsStripWindow, this forces a rebuild of
+//               the menu that selects the collectors available for
+//               picking levels.
+////////////////////////////////////////////////////////////////////
+void GtkStatsStripWindow::
+new_collector() {
+  const PStatClientData *client_data = _monitor->get_client_data();
+  _levels_menu->items().clear();
+
+  int num_collectors = client_data->get_num_collectors();
+  for (int i = 0; i < num_collectors; i++) {
+    if (client_data->has_collector(i) &&
+        client_data->get_collector_has_level(i)) {
+      const PStatCollectorDef &def =
+        client_data->get_collector_def(i);
+
+      // Normally, we only put top-level entries on the menu.  The
+      // lower entries can take care of themselves.
+      if (def._parent_index == 0) {
+        _levels_menu->items().push_back
+          (MenuElem(client_data->get_collector_name(i),
+                    bind(slot(this, &GtkStatsStripWindow::menu_show_levels), i)));
+      }
+    }
+  }
+
+  setup_scale_menu();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsStripWindow::idle
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripWindow::
 idle() {
+  GtkStatsWindow::idle();
   _chart->update();
 
   const PStatThreadData *thread_data = _chart->get_view().get_thread_data();
   if (!thread_data->is_empty()) {
-    double frame_rate = thread_data->get_frame_rate();
+    float frame_rate = thread_data->get_frame_rate();
     char buffer[128];
     sprintf(buffer, "Frame rate: %0.1f Hz", frame_rate); 
     _frame_rate_label->set_text(buffer);
@@ -82,51 +124,102 @@ setup_menu() {
     
   speed_menu->items().push_back
     (MenuElem("1",  // 1 chart width scrolls by per minute.
-	      bind(slot(this, &GtkStatsStripWindow::menu_hscale), 1.0)));
+	      bind(slot(this, &GtkStatsStripWindow::menu_hscale), 1.0f)));
   speed_menu->items().push_back
     (MenuElem("2",  // 2 chart widths scroll by per minute.
-	      bind(slot(this, &GtkStatsStripWindow::menu_hscale), 2.0)));
+	      bind(slot(this, &GtkStatsStripWindow::menu_hscale), 2.0f)));
   speed_menu->items().push_back
     (MenuElem("3", 
-	      bind(slot(this, &GtkStatsStripWindow::menu_hscale), 3.0)));
+	      bind(slot(this, &GtkStatsStripWindow::menu_hscale), 3.0f)));
   speed_menu->items().push_back
     (MenuElem("6", 
-	      bind(slot(this, &GtkStatsStripWindow::menu_hscale), 6.0)));
+	      bind(slot(this, &GtkStatsStripWindow::menu_hscale), 6.0f)));
   speed_menu->items().push_back
     (MenuElem("12", 
-	      bind(slot(this, &GtkStatsStripWindow::menu_hscale), 12.0)));
+	      bind(slot(this, &GtkStatsStripWindow::menu_hscale), 12.0f)));
 
   _menu->items().push_back(MenuElem("Speed", *manage(speed_menu)));
 
 
-  Gtk::Menu *scale_menu = new Gtk::Menu;
+  _scale_menu = new Gtk::Menu;
+  _scale_menu->items().push_back
+    (MenuElem("Auto scale",
+	      slot(this, &GtkStatsStripWindow::menu_auto_vscale)));
 
-  scale_menu->items().push_back
-    (MenuElem("10000 ms (0.1 Hz)",
-	      bind(slot(this, &GtkStatsStripWindow::menu_vscale), 0.1)));
-  scale_menu->items().push_back
-    (MenuElem("1000 ms (1 Hz)",
-	      bind(slot(this, &GtkStatsStripWindow::menu_vscale), 1.0)));
-  scale_menu->items().push_back
-    (MenuElem("200 ms (5 Hz)",
-	      bind(slot(this, &GtkStatsStripWindow::menu_vscale), 5.0)));
-  scale_menu->items().push_back
-    (MenuElem("100 ms (10 Hz)",
-	      bind(slot(this, &GtkStatsStripWindow::menu_vscale), 10.0)));
-  scale_menu->items().push_back
-    (MenuElem("50.0 ms (20 Hz)",
-	      bind(slot(this, &GtkStatsStripWindow::menu_vscale), 20.0)));
-  scale_menu->items().push_back
-    (MenuElem("33.3 ms (30 Hz)",
-	      bind(slot(this, &GtkStatsStripWindow::menu_vscale), 30.0)));
-  scale_menu->items().push_back
-    (MenuElem("16.7 ms (60 Hz)",
-	      bind(slot(this, &GtkStatsStripWindow::menu_vscale), 60.0)));
-  scale_menu->items().push_back
-    (MenuElem("8.3 ms (120 Hz)",
-	      bind(slot(this, &GtkStatsStripWindow::menu_vscale), 120.0)));
+  _menu->items().push_back(MenuElem("Scale", *manage(_scale_menu)));
 
-  _menu->items().push_back(MenuElem("Scale", *manage(scale_menu)));
+  _levels_menu = new Gtk::Menu;
+  _menu->items().push_back(MenuElem("Levels", *manage(_levels_menu)));
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripWindow::setup_scale_menu
+//       Access: Protected
+//  Description: Sets up the options on the scale menu.  We can't do
+//               this until we have initialized the _chart member and
+//               we have gotten our first collector_index.
+////////////////////////////////////////////////////////////////////
+void GtkStatsStripWindow::
+setup_scale_menu() {
+  if (_setup_scale_menu) {
+    // Already done it.
+    return;
+  }
+
+  const PStatClientData *client_data = _monitor->get_client_data();
+  if (!client_data->has_collector(_collector_index)) {
+    // Can't set up the scale menu yet.
+    return;
+  }
+
+  const PStatCollectorDef &def = client_data->get_collector_def(_collector_index);
+  float base_scale = 1.0;
+  string unit_name = def._level_units;
+
+  if (_show_level) {
+    _chart->set_guide_bar_unit_name(unit_name);
+    _chart->set_guide_bar_units(PStatGraph::GBU_named);
+
+  } else {
+    _chart->set_guide_bar_units(PStatGraph::GBU_ms);
+  }
+
+  if (def._suggested_scale != 0.0) {
+    base_scale = def._suggested_scale;
+  } else if (!_show_level) {
+    base_scale = 1.0 / _chart->get_target_frame_rate();
+  }
+
+  static const float scales[] = {
+    50.0,
+    10.0,
+    5.0,
+    2.0,
+    1.0,
+    0.5,
+    0.2,
+    0.1,
+    0.02,
+  };
+  static const int num_scales = sizeof(scales) / sizeof(float);
+
+  for (int i = 0; i < num_scales; i++) {
+    float scale = base_scale * scales[i];
+    string label;
+
+    if (_show_level) {
+      label = _chart->format_number(scale, PStatGraph::GBU_named | PStatGraph::GBU_show_units, unit_name);
+    } else {
+      label = _chart->format_number(scale, PStatGraph::GBU_ms | PStatGraph::GBU_hz | PStatGraph::GBU_show_units);
+    }
+    
+    _scale_menu->items().push_back
+      (MenuElem(label,
+                bind(slot(this, &GtkStatsStripWindow::menu_vscale), scale)));
+  }
+
+  _setup_scale_menu = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -136,8 +229,9 @@ setup_menu() {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripWindow::
 menu_new_window() {
-  new GtkStatsStripWindow(_monitor, _thread_index, _collector_index,
-			  _chart->get_xsize(), _chart->get_ysize());
+  new GtkStatsStripWindow(_monitor, _thread_index, _collector_index, 
+                          _show_level,
+                          _chart->get_xsize(), _chart->get_ysize());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -151,7 +245,7 @@ menu_new_window() {
 //               The units is in chart width per minute.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripWindow::
-menu_hscale(double wpm) {
+menu_hscale(float wpm) {
   _chart->set_horizontal_scale(60.0 / wpm);
 }
 
@@ -161,11 +255,36 @@ menu_hscale(double wpm) {
 //  Description: Selects a new vertical scale for the strip chart.
 //               This is done from the menu called "Scale".
 //
-//               The units is in Hz.
+//               The units is in seconds, or whatever the units
+//               of choice are.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripWindow::
-menu_vscale(double hz) {
-  _chart->set_vertical_scale(1.0 / hz);
+menu_vscale(float max_height) {
+  _chart->set_vertical_scale(max_height);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripWindow::menu_auto_vscale
+//       Access: Protected
+//  Description: Selects a suitable vertical scale based on the data
+//               already visible in the chart.
+////////////////////////////////////////////////////////////////////
+void GtkStatsStripWindow::
+menu_auto_vscale() {
+  _chart->set_auto_vertical_scale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripWindow::menu_show_levels
+//       Access: Protected
+//  Description: Shows the level values known for the indicated
+//               collector.
+////////////////////////////////////////////////////////////////////
+void GtkStatsStripWindow::
+menu_show_levels(int collector_index) {
+  new GtkStatsStripWindow(_monitor, _thread_index, collector_index, 
+                          true,
+			  _chart->get_xsize(), _chart->get_ysize());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -180,7 +299,8 @@ menu_vscale(double hz) {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripWindow::
 open_subchart(int collector_index) {
-  new GtkStatsStripWindow(_monitor, _thread_index, collector_index,
+  new GtkStatsStripWindow(_monitor, _thread_index, collector_index, 
+                          _show_level,
 			  _chart->get_xsize(), _chart->get_ysize());
 }
 
@@ -224,10 +344,18 @@ layout_window(int chart_xsize, int chart_ysize) {
   frame->show();
   chart_table->attach(*manage(frame), 1, 2, 1, 2);
 
-  _chart = new GtkStatsStripChart(_monitor, 
-				  _monitor->get_view(_thread_index), 
-				  _collector_index,
-				  chart_xsize, chart_ysize);
+  if (_show_level) {
+    _chart = new GtkStatsStripChart(_monitor, 
+                                    _monitor->get_level_view(_collector_index, _thread_index), 
+                                    _collector_index,
+                                    chart_xsize, chart_ysize);
+  } else {
+    _chart = new GtkStatsStripChart(_monitor, 
+                                    _monitor->get_view(_thread_index), 
+                                    _collector_index,
+                                    chart_xsize, chart_ysize);
+  }
+
   _chart->collector_picked.
     connect(slot(this, &GtkStatsStripWindow::open_subchart));
   frame->add(*manage(_chart));
@@ -254,7 +382,16 @@ get_title_text() {
 
   const PStatClientData *client_data = _monitor->get_client_data();
   if (client_data->has_collector(_collector_index)) {
-    text = client_data->get_collector_name(_collector_index) + " time";
+    const PStatCollectorDef &def = client_data->get_collector_def(_collector_index);
+    if (_show_level) {
+      if (def._level_units.empty()) {
+        text = def._name;
+      } else {
+        text = def._name + " (" + def._level_units + ")";
+      }
+    } else {
+      text = def._name + " time";
+    }
   } else {
     _title_unknown = true;
   }

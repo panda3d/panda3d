@@ -46,6 +46,7 @@ mark_dead() {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsPianoWindow::
 idle() {
+  GtkStatsWindow::idle();
   _chart->update();
 }
 
@@ -62,28 +63,28 @@ setup_menu() {
 
   scale_menu->items().push_back
     (MenuElem("0.1 Hz",
-	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 0.1)));
+	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 0.1f)));
   scale_menu->items().push_back
     (MenuElem("1 Hz",
-	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 1.0)));
+	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 1.0f)));
   scale_menu->items().push_back
     (MenuElem("5 Hz",
-	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 5.0)));
+	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 5.0f)));
   scale_menu->items().push_back
     (MenuElem("10 Hz",
-	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 10.0)));
+	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 10.0f)));
   scale_menu->items().push_back
     (MenuElem("20 Hz",
-	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 20.0)));
+	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 20.0f)));
   scale_menu->items().push_back
     (MenuElem("30 Hz",
-	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 30.0)));
+	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 30.0f)));
   scale_menu->items().push_back
     (MenuElem("60 Hz",
-	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 60.0)));
+	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 60.0f)));
   scale_menu->items().push_back
     (MenuElem("120 Hz",
-	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 120.0)));
+	      bind(slot(this, &GtkStatsPianoWindow::menu_hscale), 120.0f)));
 
   _menu->items().push_back(MenuElem("Scale", *manage(scale_menu)));
 }
@@ -108,7 +109,7 @@ menu_new_window() {
 //               The units is in Hz.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsPianoWindow::
-menu_hscale(double hz) {
+menu_hscale(float hz) {
   _chart->set_horizontal_scale(1.0 / hz);
 }
 

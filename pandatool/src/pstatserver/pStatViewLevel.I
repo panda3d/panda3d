@@ -16,13 +16,13 @@ get_collector() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatViewLevel::get_time_alone
+//     Function: PStatViewLevel::get_value_alone
 //       Access: Public
-//  Description: Returns the total elapsed time spent by this
-//               Collector, not including any time spent in its child
-//               Collectors.
+//  Description: Returns the total level value (or elapsed time value)
+//               for this Collector, not including any values
+//               accounted for by its child Collectors.
 ////////////////////////////////////////////////////////////////////
-INLINE double PStatViewLevel::
-get_time_alone() const {
-  return _time_alone;
+INLINE float PStatViewLevel::
+get_value_alone() const {
+  return _value_alone;
 }

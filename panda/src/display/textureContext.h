@@ -29,6 +29,8 @@ class EXPCL_PANDA TextureContext : public TypedObject {
 public:
   INLINE TextureContext(Texture *tex);
 
+  virtual size_t estimate_texture_memory();
+
   // This cannot be a PT(Texture), because the texture and the GSG
   // both own their TextureContexts!  That would create a circular
   // reference count.

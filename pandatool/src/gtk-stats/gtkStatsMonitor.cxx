@@ -20,6 +20,7 @@
 GtkStatsMonitor::
 GtkStatsMonitor() {
   _destructing = false;
+  _new_collector = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -81,7 +82,7 @@ get_monitor_name() {
 void GtkStatsMonitor::
 initialized() {
   // Create a default window: a strip chart for the main thread.
-  new GtkStatsStripWindow(this, 0, 0, 400, 100);
+  new GtkStatsStripWindow(this, 0, 0, false, 400, 100);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,6 +98,22 @@ got_hello() {
   for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
     (*wi)->update_title();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsMonitor::new_collector
+//       Access: Public, Virtual
+//  Description: Called whenever a new Collector definition is
+//               received from the client.  Generally, the client will
+//               send all of its collectors over shortly after
+//               connecting, but there's no guarantee that they will
+//               all be received before the first frames are received.
+//               The monitor should be prepared to accept new Collector
+//               definitions midstream.
+////////////////////////////////////////////////////////////////////
+void GtkStatsMonitor::
+new_collector(int) {
+  _new_collector = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -142,6 +159,7 @@ idle() {
   for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
     (*wi)->idle();
   }
+  _new_collector = false;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -67,7 +67,7 @@ get_label_color(int n) const {
 //               placement of guide bars.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatGraph::
-set_target_frame_rate(double frame_rate) {
+set_target_frame_rate(float frame_rate) {
   if (_target_frame_rate != frame_rate) {
     _target_frame_rate = frame_rate;
     normal_guide_bars();
@@ -80,7 +80,7 @@ set_target_frame_rate(double frame_rate) {
 //  Description: Returns the indicated target frame rate in Hz.  See
 //               set_target_frame_rate().
 ////////////////////////////////////////////////////////////////////
-INLINE double PStatGraph::
+INLINE float PStatGraph::
 get_target_frame_rate() const {
   return _target_frame_rate;
 }
@@ -130,4 +130,28 @@ set_guide_bar_units(int guide_bar_units) {
 INLINE int PStatGraph::
 get_guide_bar_units() const {
   return _guide_bar_units;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatGraph::set_guide_bar_unit_name
+//       Access: Public
+//  Description: Sets the name of the units to be used for the guide
+//               bars if the units type is set to GBU_named |
+//               GBU_show_units.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatGraph::
+set_guide_bar_unit_name(const string &unit_name) {
+  _unit_name = unit_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatGraph::get_guide_bar_unit_name
+//       Access: Public
+//  Description: Returns the name of the units to be used for the guide
+//               bars if the units type is set to GBU_named |
+//               GBU_show_units.
+////////////////////////////////////////////////////////////////////
+INLINE const string &PStatGraph::
+get_guide_bar_unit_name() const {
+  return _unit_name;
 }

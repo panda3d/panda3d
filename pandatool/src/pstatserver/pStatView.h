@@ -27,7 +27,7 @@ public:
   PStatView();
   ~PStatView();
 
-  void constrain(int collector);
+  void constrain(int collector, bool show_level);
   void unconstrain();
 
   void set_thread_data(const PStatThreadData *thread_data);
@@ -36,10 +36,10 @@ public:
 
   void set_to_frame(const PStatFrameData &frame_data);
   INLINE void set_to_frame(int frame_number);
-  INLINE void set_to_time(double time);
+  INLINE void set_to_time(float time);
 
   bool all_collectors_known() const;
-  double get_net_time() const;
+  float get_net_value() const;
 
   const PStatViewLevel *get_top_level();
 
@@ -49,10 +49,14 @@ public:
   INLINE int get_level_index() const;
 
 private:
+  void update_time_data(const PStatFrameData &frame_data);
+  void update_level_data(const PStatFrameData &frame_data);
+
   void clear_levels();
   bool reset_level(PStatViewLevel *level);
 
   int _constraint;
+  bool _show_level;
   bool _all_collectors_known;
 
   typedef map<int, PStatViewLevel *> Levels;

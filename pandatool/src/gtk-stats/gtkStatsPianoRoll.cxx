@@ -115,7 +115,7 @@ begin_draw() {
   int num_guide_bars = get_num_guide_bars();
   for (int i = 0; i < num_guide_bars; i++) {
     const GuideBar &bar = get_guide_bar(i);
-    int x = (int)((double)get_xsize() * bar._height / get_horizontal_scale());
+    int x = (int)((float)get_xsize() * bar._height / get_horizontal_scale());
 
     if (x >= 5 && x <= get_xsize() - 5) {
       // Only draw it if it's not too close to either edge.
@@ -162,7 +162,7 @@ end_draw() {
   int num_guide_bars = get_num_guide_bars();
   for (int i = 0; i < num_guide_bars; i++) {
     const GuideBar &bar = get_guide_bar(i);
-    int x = (int)((double)get_xsize() * bar._height / get_horizontal_scale());
+    int x = (int)((float)get_xsize() * bar._height / get_horizontal_scale());
 
     if (x >= 5 && x <= get_xsize() - 5) {
       // Only draw it if it's not too close to either edge.

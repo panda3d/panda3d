@@ -28,7 +28,7 @@ GtkStatsLabel(PStatMonitor *monitor, int collector_index,
   _bg_color.set_rgb_p(rgb[0], rgb[1], rgb[2]);
 
   // Should our foreground be black or white?
-  double bright = 
+  float bright = 
     rgb[0] * 0.299 +
     rgb[1] * 0.587 +
     rgb[2] * 0.114;

@@ -23,9 +23,8 @@ class PStatView;
 // 	 Class : PStatStripChart
 // Description : This is an abstract class that presents the interface
 //               for drawing a basic strip-chart, showing the relative
-//               time elapsed over an interval of time for several
-//               different collectors, differentiated by bands of
-//               color.
+//               value over an interval of time for several different
+//               collectors, differentiated by bands of color.
 //
 //               This class just manages all the strip-chart logic;
 //               the actual nuts and bolts of drawing pixels is left
@@ -44,26 +43,27 @@ public:
   INLINE PStatView &get_view() const;
   INLINE int get_collector_index() const;
 
-  INLINE void set_horizontal_scale(double time_width);
-  INLINE double get_horizontal_scale() const;
-  INLINE void set_vertical_scale(double time_height);
-  INLINE void set_default_vertical_scale();
-  INLINE double get_vertical_scale() const;
+  INLINE void set_horizontal_scale(float time_width);
+  INLINE float get_horizontal_scale() const;
+  INLINE void set_vertical_scale(float value_height);
+  void set_default_vertical_scale();
+  void set_auto_vertical_scale();
+  INLINE float get_vertical_scale() const;
 
   INLINE void set_scroll_mode(bool scroll_mode);
   INLINE bool get_scroll_mode() const;
 
   int get_collector_under_pixel(int xpoint, int ypoint);
-  INLINE int timestamp_to_pixel(double time) const;
-  INLINE double pixel_to_timestamp(int x) const;
-  INLINE int height_to_pixel(double elapsed_time) const;
-  INLINE double pixel_to_height(int y) const;
+  INLINE int timestamp_to_pixel(float time) const;
+  INLINE float pixel_to_timestamp(int x) const;
+  INLINE int height_to_pixel(float value) const;
+  INLINE float pixel_to_height(int y) const;
 
 protected:
   class ColorData {
   public:
     int _collector_index;
-    double _net_time;
+    float _net_value;
   };
   typedef vector<ColorData> FrameData;
   typedef map<int, FrameData> Data;
@@ -101,9 +101,9 @@ private:
 
   int _level_index;
 
-  double _time_width;
-  double _start_time;
-  double _time_height;
+  float _time_width;
+  float _start_time;
+  float _value_height;
 };
 
 #include "pStatStripChart.I"

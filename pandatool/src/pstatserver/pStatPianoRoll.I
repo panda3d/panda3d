@@ -10,7 +10,7 @@
 //               horizontal axis represents.  This may force a redraw.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatPianoRoll::
-set_horizontal_scale(double time_width) {
+set_horizontal_scale(float time_width) {
   if (_time_width != time_width) {
     _time_width = time_width;
     normal_guide_bars();
@@ -24,7 +24,7 @@ set_horizontal_scale(double time_width) {
 //  Description: Returns the amount of total time the width of the
 //               horizontal axis represents.
 ////////////////////////////////////////////////////////////////////
-INLINE double PStatPianoRoll::
+INLINE float PStatPianoRoll::
 get_horizontal_scale() const {
   return _time_width;
 }
@@ -35,8 +35,8 @@ get_horizontal_scale() const {
 //  Description: Converts a timestamp to a horizontal pixel offset.
 ////////////////////////////////////////////////////////////////////
 INLINE int PStatPianoRoll::
-timestamp_to_pixel(double time) const {
-  return (int)((double)_xsize * (time - _start_time) / _time_width);
+timestamp_to_pixel(float time) const {
+  return (int)((float)_xsize * (time - _start_time) / _time_width);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,7 +44,7 @@ timestamp_to_pixel(double time) const {
 //       Access: Public
 //  Description: Converts a horizontal pixel offset to a timestamp.
 ////////////////////////////////////////////////////////////////////
-INLINE double PStatPianoRoll::
+INLINE float PStatPianoRoll::
 pixel_to_timestamp(int x) const {
-  return _time_width * (double)x / (double)_xsize + _start_time;
+  return _time_width * (float)x / (float)_xsize + _start_time;
 }

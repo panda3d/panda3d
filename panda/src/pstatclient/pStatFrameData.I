@@ -5,14 +5,36 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatFrameData::is_empty
+//     Function: PStatFrameData::is_time_empty
 //       Access: Public
-//  Description: Returns true if there are no data points in the frame
+//  Description: Returns true if there are no time events in the frame
 //               data, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool PStatFrameData::
+is_time_empty() const {
+  return _time_data.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatFrameData::is_level_empty
+//       Access: Public
+//  Description: Returns true if there are no levels indicated in the
+//               frame data, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool PStatFrameData::
+is_level_empty() const {
+  return _level_data.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatFrameData::is_empty
+//       Access: Public
+//  Description: Returns true if the FrameData has no time or level
+//               data.
+////////////////////////////////////////////////////////////////////
+INLINE bool PStatFrameData::
 is_empty() const {
-  return _data.empty();
+  return is_time_empty() && is_level_empty();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -23,7 +45,8 @@ is_empty() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatFrameData::
 clear() {
-  _data.clear();
+  _time_data.clear();
+  _level_data.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -33,11 +56,12 @@ clear() {
 //               data.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatFrameData::
-add_start(int index, double time) {
+add_start(int index, float time) {
+  nassertv((index & 0x7fff) == index);
   DataPoint dp;
   dp._index = index;
-  dp._time = time;
-  _data.push_back(dp);
+  dp._value = time;
+  _time_data.push_back(dp);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -47,11 +71,27 @@ add_start(int index, double time) {
 //               data.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatFrameData::
-add_stop(int index, double time) {
+add_stop(int index, float time) {
+  nassertv((index & 0x7fff) == index);
   DataPoint dp;
   dp._index = index | 0x8000;
-  dp._time = time;
-  _data.push_back(dp);
+  dp._value = time;
+  _time_data.push_back(dp);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatFrameData::add_level
+//       Access: Public
+//  Description: Adds a particular level value associated with a given
+//               collector to the frame data.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatFrameData::
+add_level(int index, float level) {
+  nassertv((index & 0xffff) == index);
+  DataPoint dp;
+  dp._index = index;
+  dp._value = level;
+  _level_data.push_back(dp);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,11 +101,11 @@ add_stop(int index, double time) {
 //               data.  This will generally be the time of the start
 //               of the frame.
 ////////////////////////////////////////////////////////////////////
-INLINE double PStatFrameData::
+INLINE float PStatFrameData::
 get_start() const {
   nassertr(!is_empty(), 0.0);
 
-  return _data.front()._time;
+  return _time_data.front()._value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,11 +115,11 @@ get_start() const {
 //               data.  This will generally be the time of the end
 //               of the frame.
 ////////////////////////////////////////////////////////////////////
-INLINE double PStatFrameData::
+INLINE float PStatFrameData::
 get_end() const {
   nassertr(!is_empty(), 0.0);
 
-  return _data.back()._time;
+  return _time_data.back()._value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,11 +127,11 @@ get_end() const {
 //       Access: Public
 //  Description: Returns the total time elapsed for the frame.
 ////////////////////////////////////////////////////////////////////
-INLINE double PStatFrameData::
+INLINE float PStatFrameData::
 get_net_time() const {
   nassertr(!is_empty(), 0.0);
 
-  return _data.back()._time - _data.front()._time;
+  return _time_data.back()._value - _time_data.front()._value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -102,23 +142,31 @@ get_net_time() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PStatFrameData::
 get_num_events() const {
-  return _data.size();
+  return _time_data.size();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatFrameData::get_collector
+//     Function: PStatFrameData::get_time_collector
 //       Access: Public
 //  Description: Returns the index of the collector associated with
-//               the nth event.  If this is the first time the
-//               collector appears in the event list, it indicates the
-//               collector has started; if it is the second time, it
-//               indicates the collector has stopped.  Similarly for
-//               repeated appearances of the same collector.
+//               the nth event.
 ////////////////////////////////////////////////////////////////////
 INLINE int PStatFrameData::
-get_collector(int n) const {
-  nassertr(n >= 0 && n < (int)_data.size(), 0);
-  return _data[n]._index;
+get_time_collector(int n) const {
+  nassertr(n >= 0 && n < (int)_time_data.size(), 0);
+  return _time_data[n]._index & 0x7fff;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatFrameData::is_start
+//       Access: Public
+//  Description: Returns true if the nth event represents a start
+//               event, or false if it represents a stop event.
+////////////////////////////////////////////////////////////////////
+INLINE bool PStatFrameData::
+is_start(int n) const {
+  nassertr(n >= 0 && n < (int)_time_data.size(), 0);
+  return (_time_data[n]._index & 0x8000) == 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -129,8 +177,42 @@ get_collector(int n) const {
 //               guaranteed to be shared among all events returned
 //               from a given client).
 ////////////////////////////////////////////////////////////////////
-INLINE double PStatFrameData::
+INLINE float PStatFrameData::
 get_time(int n) const {
-  nassertr(n >= 0 && n < (int)_data.size(), 0);
-  return _data[n]._time;
+  nassertr(n >= 0 && n < (int)_time_data.size(), 0);
+  return _time_data[n]._value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatFrameData::get_num_levels
+//       Access: Public
+//  Description: Returns the number of individual level values stored
+//               in the FrameData.
+////////////////////////////////////////////////////////////////////
+INLINE int PStatFrameData::
+get_num_levels() const {
+  return _level_data.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatFrameData::get_level_collector
+//       Access: Public
+//  Description: Returns the index of the collector associated with
+//               the nth level value.
+////////////////////////////////////////////////////////////////////
+INLINE int PStatFrameData::
+get_level_collector(int n) const {
+  nassertr(n >= 0 && n < (int)_level_data.size(), 0);
+  return _level_data[n]._index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatFrameData::get_level
+//       Access: Public
+//  Description: Returns the height of the nth level value.
+////////////////////////////////////////////////////////////////////
+INLINE float PStatFrameData::
+get_level(int n) const {
+  nassertr(n >= 0 && n < (int)_level_data.size(), 0);
+  return _level_data[n]._value;
 }

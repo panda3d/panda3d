@@ -30,8 +30,7 @@ public:
 
   virtual void update_title();
   virtual void mark_dead();
-  virtual void new_collector(int collector_index);
-  virtual void new_thread(int thread_index);
+  virtual void new_collector();
   virtual void idle();
 
 protected:

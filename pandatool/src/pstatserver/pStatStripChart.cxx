@@ -4,13 +4,14 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pStatStripChart.h"
+#include "pStatClientData.h"
+#include "pStatMonitor.h"
 
 #include <pStatFrameData.h>
 #include <pStatCollectorDef.h>
 #include <string_utils.h>
 #include <config_pstats.h>
 
-#include <stdio.h>  // for sprintf
 #include <algorithm>
 
 ////////////////////////////////////////////////////////////////////
@@ -32,10 +33,19 @@ PStatStripChart(PStatMonitor *monitor, PStatView &view,
   _cursor_pixel = 0;
 
   _time_width = 20.0;
-  _time_height = 1.0/10.0;
+  _value_height = 1.0/10.0;
   _start_time = 0.0;
 
   _level_index = 0;
+
+  const PStatClientData *client_data = _monitor->get_client_data();
+  if (client_data->has_collector(_collector_index)) {
+    const PStatCollectorDef &def = client_data->get_collector_def(_collector_index);
+    _unit_name = def._level_units;
+    if (!_unit_name.empty()) {
+      _guide_bar_units = GBU_named;
+    }
+  }
 
   set_default_vertical_scale();
 }
@@ -85,7 +95,7 @@ update() {
       _next_frame = latest;
       
       // Clean out the old data.
-      double oldest_time = 
+      float oldest_time = 
 	thread_data->get_frame(latest).get_start() - _time_width;
       
       Data::iterator di;
@@ -117,6 +127,66 @@ first_data() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatStripChart::set_default_vertical_scale
+//       Access: Public
+//  Description: Sets the vertical scale according to the suggested
+//               scale of the base collector, if any, or to center the
+//               target frame rate bar otherwise.
+////////////////////////////////////////////////////////////////////
+void PStatStripChart::
+set_default_vertical_scale() {
+  const PStatClientData *client_data = _monitor->get_client_data();
+  if (client_data->has_collector(_collector_index)) {
+    const PStatCollectorDef &def = 
+      client_data->get_collector_def(_collector_index);
+    if (def._suggested_scale != 0.0) {
+      set_vertical_scale(def._suggested_scale);
+      return;
+    }
+  }
+
+  set_vertical_scale(2.0 / get_target_frame_rate());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatStripChart::set_auto_vertical_scale
+//       Access: Public
+//  Description: Sets the vertical scale to make all the data visible.
+////////////////////////////////////////////////////////////////////
+void PStatStripChart::
+set_auto_vertical_scale() {
+  const PStatThreadData *thread_data = _view.get_thread_data();
+
+  float max_value = 0.0;
+
+  for (int x = 0; x <= _xsize; x++) {
+    float time = pixel_to_timestamp(x);
+    int frame_number = 
+      thread_data->get_frame_number_at_time(time, frame_number);
+
+    if (thread_data->has_frame(frame_number)) {
+      const FrameData &frame = get_frame_data(frame_number);
+      
+      float overall_value = 0.0;
+      FrameData::const_iterator fi;
+      for (fi = frame.begin(); fi != frame.end(); ++fi) {
+        const ColorData &cd = (*fi);
+        overall_value += cd._net_value;
+      }
+      max_value = max(max_value, overall_value);
+    }
+  }
+
+  // Ok, now we know what the max value visible in the chart is.
+  // Choose a scale that will show all of this sensibly.
+  if (max_value == 0.0) {
+    set_vertical_scale(1.0);
+  } else {
+    set_vertical_scale(max_value * 1.1);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatStripChart::get_collector_under_pixel
 //       Access: Public
 //  Description: Return the collector index associated with the
@@ -127,23 +197,23 @@ int PStatStripChart::
 get_collector_under_pixel(int xpoint, int ypoint) {
   // First, we need to know what frame it was; to know that, we need
   // to determine the time corresponding to the x pixel.
-  double time = pixel_to_timestamp(xpoint);
+  float time = pixel_to_timestamp(xpoint);
   
   // Now use that time to determine the frame.
   const PStatThreadData *thread_data = _view.get_thread_data();
   int frame_number = thread_data->get_frame_number_at_time(time);
 
   // And now we can determine which collector within the frame,
-  // based on the time height.
+  // based on the value height.
   const FrameData &frame = get_frame_data(frame_number);
-  double overall_time = 0.0;
+  float overall_value = 0.0;
   int y = get_ysize();
 
   FrameData::const_iterator fi;
   for (fi = frame.begin(); fi != frame.end(); ++fi) {
     const ColorData &cd = (*fi);
-    overall_time += cd._net_time;
-    y = height_to_pixel(overall_time);
+    overall_value += cd._net_value;
+    y = height_to_pixel(overall_value);
     if (y <= ypoint) {
       return cd._collector_index;
     }
@@ -179,18 +249,18 @@ get_frame_data(int frame_number) {
     const PStatViewLevel *child = level->get_child(i);
     ColorData cd;
     cd._collector_index = child->get_collector();
-    cd._net_time = child->get_net_time();
-    if (cd._net_time != 0.0) {
+    cd._net_value = child->get_net_value();
+    if (cd._net_value != 0.0) {
       data.push_back(cd);
     }
   }
 
-  // Also, there might be some time in the overall Collector that
+  // Also, there might be some value in the overall Collector that
   // wasn't included in all of the children.
   ColorData cd;
   cd._collector_index = level->get_collector();
-  cd._net_time = level->get_time_alone();
-  if (cd._net_time != 0.0) {
+  cd._net_value = level->get_value_alone();
+  if (cd._net_value != 0.0) {
     data.push_back(cd);
   }
 
@@ -218,7 +288,7 @@ changed_size(int xsize, int ysize) {
 	
       } else {
 	// Redraw the stats that were there before.
-	double old_start_time = _start_time;
+	float old_start_time = _start_time;
 	
 	// Back up a bit to draw the stuff to the right of the cursor.
 	_start_time -= _time_width;
@@ -366,7 +436,7 @@ public:
     // -1 appear to be a very large positive integer, thus placing
     // collectors with a -1 sort value at the very end.
     return 
-      (unsigned int)_client_data->get_collector_def(a)._sort <
+      (unsigned int)_client_data->get_collector_def(a)._sort >
       (unsigned int)_client_data->get_collector_def(b)._sort;
   }
   const PStatClientData *_client_data;
@@ -407,7 +477,7 @@ update_labels() {
 ////////////////////////////////////////////////////////////////////
 void PStatStripChart::
 normal_guide_bars() {
-  update_guide_bars(4, _time_height);
+  update_guide_bars(4, _value_height);
 }
 
 
@@ -468,7 +538,7 @@ draw_frames(int first_frame, int last_frame) {
       copy_region(slide_pixels, first_pixel, 0);
       first_pixel -= slide_pixels;
       last_pixel -= slide_pixels;
-      _start_time += (double)slide_pixels / (double)_xsize * _time_width;
+      _start_time += (float)slide_pixels / (float)_xsize * _time_width;
       draw_pixels(first_pixel, last_pixel);
 
     } else {
@@ -499,7 +569,7 @@ draw_pixels(int first_pixel, int last_pixel) {
       draw_cursor(x);
 
     } else {
-      double time = pixel_to_timestamp(x);
+      float time = pixel_to_timestamp(x);
       frame_number = thread_data->get_frame_number_at_time(time, frame_number);
       
       if (thread_data->has_frame(frame_number)) {

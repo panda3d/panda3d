@@ -18,7 +18,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 PStatGraph::GuideBar::
-GuideBar(double height, const string &label, bool is_target) :
+GuideBar(float height, const string &label, bool is_target) :
   _height(height),
   _label(label),
   _is_target(is_target)
@@ -98,6 +98,80 @@ get_guide_bar(int n) const {
 }
 
 
+////////////////////////////////////////////////////////////////////
+//     Function: PStatGraph::format_number
+//       Access: Public, Static
+//  Description: Returns a string representing the value nicely
+//               formatted for its range.
+////////////////////////////////////////////////////////////////////
+string PStatGraph::
+format_number(float value) {
+  char buffer[128];
+
+  if (value < 0.01) {
+    sprintf(buffer, "%0.4f", value);
+  } else if (value < 0.1) {
+    sprintf(buffer, "%0.3f", value);
+  } else if (value < 1.0) {
+    sprintf(buffer, "%0.2f", value);
+  } else if (value < 10.0) {
+    sprintf(buffer, "%0.1f", value);
+  } else {
+    sprintf(buffer, "%0.0f", value);
+  }
+
+  return buffer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatGraph::format_number
+//       Access: Public, Static
+//  Description: Returns a string representing the value nicely
+//               formatted for its range, including the units
+//               as indicated.
+////////////////////////////////////////////////////////////////////
+string PStatGraph::
+format_number(float value, int guide_bar_units, const string &unit_name) {
+  string label;
+
+  if ((guide_bar_units & GBU_named) != 0) {
+    // Units are whatever is specified by unit_name, not a time unit
+    // at all.
+    label = format_number(value);
+    if ((guide_bar_units & GBU_show_units) != 0 && !unit_name.empty()) {
+      label += " ";
+      label += unit_name;
+    }
+
+  } else {
+    // Units are either milliseconds or hz, or both.
+    if ((guide_bar_units & GBU_ms) != 0) {
+      float ms = value * 1000.0;
+      label += format_number(ms);
+      if ((guide_bar_units & GBU_show_units) != 0) {
+        label += " ms";
+      }
+    }
+    
+    if ((guide_bar_units & GBU_hz) != 0) {
+      float hz = 1.0 / value;
+
+      if ((guide_bar_units & GBU_ms) != 0) {
+        label += " (";
+      }
+      label += format_number(hz);
+      if ((guide_bar_units & GBU_show_units) != 0) {
+        label += " Hz";
+      }
+      if ((guide_bar_units & GBU_ms) != 0) {
+        label += ")";
+      }
+    }
+  }
+
+  return label;
+}
+
 // STL function object for sorting labels in order by the collector's
 // sort index, used in update_labels(), below.
 class SortCollectorLabels {
@@ -122,7 +196,7 @@ public:
 //  Description: Resets the list of guide bars.
 ////////////////////////////////////////////////////////////////////
 void PStatGraph::
-update_guide_bars(int num_bars, double scale) {
+update_guide_bars(int num_bars, float scale) {
   _guide_bars.clear();
 
   // We'd like to draw about num_bars bars on the chart.  But we also
@@ -133,9 +207,9 @@ update_guide_bars(int num_bars, double scale) {
   // Choose a suitable harmonic of the target frame rate near the
   // bottom part of the chart.
 
-  double bottom = (double)num_bars / scale;
+  float bottom = (float)num_bars / scale;
 
-  double harmonic;
+  float harmonic;
   if (_target_frame_rate < bottom) {
     // n * tfr
     harmonic = floor(bottom / _target_frame_rate + 0.5) * _target_frame_rate;
@@ -153,50 +227,24 @@ update_guide_bars(int num_bars, double scale) {
   _guide_bars_changed = true;
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatGraph::make_guide_bar
 //       Access: Protected
-//  Description: Makes a guide bar for the indicated frame rate.
+//  Description: Makes a guide bar for the indicated elapsed time or
+//               level units.
 ////////////////////////////////////////////////////////////////////
 PStatGraph::GuideBar PStatGraph::
-make_guide_bar(double time) const {
-  string label;
+make_guide_bar(float value) const {
+  string label = format_number(value, _guide_bar_units, _unit_name);
 
-  char buffer[128];
+  bool is_target = false;
 
-  if ((_guide_bar_units & GBU_ms) != 0) {
-    double ms = time * 1000.0;
-    if (ms < 10.0) {
-      sprintf(buffer, "%0.1f", ms);
-    } else {
-      sprintf(buffer, "%0.0f", ms);
-    }
-    label += buffer;
-    if ((_guide_bar_units & GBU_show_units) != 0) {
-      label += " ms";
-    }
+  if ((_guide_bar_units & GBU_named) == 0) {
+    // If it's a time unit, check to see if it matches our target
+    // frame rate.
+    float hz = 1.0 / value;
+    is_target = IS_NEARLY_EQUAL(hz, _target_frame_rate);
   }
 
-  if ((_guide_bar_units & GBU_hz) != 0) {
-    double frame_rate = 1.0 / time;
-    if (frame_rate < 10.0) {
-      sprintf(buffer, "%0.1f", frame_rate);
-    } else {
-      sprintf(buffer, "%0.0f", frame_rate);
-    }
-    if ((_guide_bar_units & GBU_ms) != 0) {
-      label += " (";
-    }
-    label += buffer;
-    if ((_guide_bar_units & GBU_show_units) != 0) {
-      label += " Hz";
-    }
-    if ((_guide_bar_units & GBU_ms) != 0) {
-      label += ")";
-    }
-  }
-
-  return GuideBar(time, label,
-		  IS_NEARLY_EQUAL(1.0 / time, _target_frame_rate));
+  return GuideBar(value, label, is_target);
 }

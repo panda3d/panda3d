@@ -17,7 +17,6 @@
 #include <pointerTo.h>
 #include <renderRelation.h>
 #include <pointerTo.h>
-
 #include <pStatCollector.h>
 
 #include <set>

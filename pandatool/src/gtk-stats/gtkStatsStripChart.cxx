@@ -174,13 +174,22 @@ draw_slice(int x, int frame_number) {
   // Start by clearing the band first.
   _pixmap.draw_line(_white_gc, x, 0, x, get_ysize());
 
-  double overall_time = 0.0;
+  float overall_time = 0.0;
   int y = get_ysize();
 
   FrameData::const_iterator fi;
   for (fi = frame.begin(); fi != frame.end(); ++fi) {
     const ColorData &cd = (*fi);
-    overall_time += cd._net_time;
+    overall_time += cd._net_value;
+
+    if (overall_time > get_vertical_scale()) {
+      // Off the top.  Go ahead and clamp it by hand, in case it's so
+      // far off the top we'd overflow the 16-bit pixel value.
+      _pixmap.draw_line(get_collector_gc(cd._collector_index), x, y, x, 0);
+      // And we can consider ourselves done now.
+      return;
+    }
+      
     int top_y = height_to_pixel(overall_time);
     _pixmap.draw_line(get_collector_gc(cd._collector_index), x, y, x, top_y);
     y = top_y;

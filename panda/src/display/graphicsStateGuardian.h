@@ -18,6 +18,7 @@
 #include <coordinateSystem.h>
 #include <factory.h>
 #include <renderTraverser.h>
+#include <pStatCollector.h>
 
 #include <list>
 
@@ -133,6 +134,17 @@ protected:
   bool mark_prepared_texture(TextureContext *tc);
   bool unmark_prepared_texture(TextureContext *tc);
 
+#ifdef DO_PSTATS
+  // These functions are used to update the current texture memory
+  // usage record in Pstats.
+  void add_to_texture_record(TextureContext *tc);
+  void clear_texture_record();
+  set<TextureContext *> _current_textures;
+#else
+  INLINE void add_to_texture_record(TextureContext *) { }
+  INLINE void clear_texture_record() { }
+#endif
+
 protected:
   int _buffer_mask;
   NodeAttributes _state;
@@ -157,6 +169,12 @@ protected:
   bool _normals_enabled;
 
   CoordinateSystem _coordinate_system;
+
+  // Statistics
+  static PStatCollector _total_texusage_pcollector;
+  static PStatCollector _active_texusage_pcollector;
+  static PStatCollector _total_texmem_pcollector;
+  static PStatCollector _used_texmem_pcollector;
 
 private:
   typedef set<TextureContext *> Textures;

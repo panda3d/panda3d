@@ -20,6 +20,7 @@ PStatCollectorDef() {
   _parent_index = 0;
   _suggested_color.set(0.0, 0.0, 0.0);
   _sort = -1;
+  _suggested_scale = 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -35,8 +36,23 @@ PStatCollectorDef(int index, const string &name) :
   _parent_index = 0;
   _suggested_color.set(0.0, 0.0, 0.0);
   _sort = -1;
+  _suggested_scale = 0.0;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollectorDef::set_parent
+//       Access: Public
+//  Description: This is normally called only by the PStatClient when
+//               the new PStatCollectorDef is created; it sets the
+//               parent of the CollectorDef and inherits whatever
+//               properties are appropriate.
+////////////////////////////////////////////////////////////////////
+void PStatCollectorDef::
+set_parent(const PStatCollectorDef &parent) {
+  _parent_index = parent._index;
+  _level_units = parent._level_units;
+  _suggested_scale = parent._suggested_scale;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatCollectorDef::write_datagram
@@ -51,6 +67,8 @@ write_datagram(Datagram &destination) const {
   destination.add_int16(_parent_index);
   _suggested_color.write_datagram(destination);
   destination.add_int16(_sort);
+  destination.add_string(_level_units);
+  destination.add_float32(_suggested_scale);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -64,8 +82,7 @@ read_datagram(DatagramIterator &source) {
   _name = source.get_string();
   _parent_index = source.get_int16();
   _suggested_color.read_datagram(source);
-
-  if (source.get_remaining_size() > 0) {
-    _sort = source.get_int16();
-  }
+  _sort = source.get_int16();
+  _level_units = source.get_string();
+  _suggested_scale = source.get_float32();
 }

@@ -61,7 +61,7 @@ new_data(int thread_index, int frame_number) {
       nout << "\rThread " 
 	   << get_client_data()->get_thread_name(thread_index)
 	   << " frame " << frame_number << ", "
-	   << view.get_net_time() * 1000.0 << " ms ("
+	   << view.get_net_value() * 1000.0 << " ms ("
 	   << thread_data->get_frame_rate() << " Hz):\n";
       const PStatViewLevel *level = view.get_top_level();
       int num_children = level->get_num_children();
@@ -113,7 +113,7 @@ show_level(const PStatViewLevel *level, int indent_level) {
 
   indent(nout, indent_level)
     << get_client_data()->get_collector_name(collector_index)
-    << " = " << level->get_net_time() * 1000.0 << " ms\n";
+    << " = " << level->get_net_value() * 1000.0 << " ms\n";
 
   int num_children = level->get_num_children();
   for (int i = 0; i < num_children; i++) {

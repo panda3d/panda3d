@@ -12,19 +12,19 @@
 #include <algorithm>
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatViewLevel::get_net_time
+//     Function: PStatViewLevel::get_net_value
 //       Access: Public
-//  Description: Returns the total elapsed time spent by this
-//               Collector, including all time spent in its child
-//               Collectors.
+//  Description: Returns the total level value (or elapsed time)
+//               represented by this Collector, including all values
+//               in its child Collectors.
 ////////////////////////////////////////////////////////////////////
-double PStatViewLevel::
-get_net_time() const {
-  double net = _time_alone;
+float PStatViewLevel::
+get_net_value() const {
+  float net = _value_alone;
 
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
-    net += (*ci)->get_net_time();
+    net += (*ci)->get_net_value();
   }
 
   return net;
@@ -66,9 +66,9 @@ sort_children(const PStatClientData *client_data) {
 //     Function: PStatViewLevel::get_num_children
 //       Access: Public
 //  Description: Returns the number of children of this
-//               Level/Collector.  These are the Collectors whose time
-//               is considered to be part of the total time of this
-//               level's Collector.
+//               Level/Collector.  These are the Collectors whose
+//               value is considered to be part of the total value of
+//               this level's Collector.
 ////////////////////////////////////////////////////////////////////
 int PStatViewLevel::
 get_num_children() const {

@@ -112,9 +112,9 @@ get_collector_color(int collector_index) {
 
   // We didn't have a color for the collector; make one up.
   RGBColorf random_color;
-  random_color[0] = (double)rand() / (double)RAND_MAX;
-  random_color[1] = (double)rand() / (double)RAND_MAX;
-  random_color[2] = (double)rand() / (double)RAND_MAX;
+  random_color[0] = (float)rand() / (float)RAND_MAX;
+  random_color[1] = (float)rand() / (float)RAND_MAX;
+  random_color[2] = (float)rand() / (float)RAND_MAX;
 
   ci = _colors.insert(Colors::value_type(collector_index, random_color)).first;
   return (*ci).second;
@@ -135,6 +135,33 @@ get_view(int thread_index) {
   if (vi == _views.end()) {
     vi = _views.insert(Views::value_type(thread_index, PStatView())).first;
     (*vi).second.set_thread_data(_client_data->get_thread_data(thread_index));
+  }
+  return (*vi).second;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatMonitor::get_level_view
+//       Access: Public
+//  Description: Returns a view on the level value (as opposed to
+//               elapsed time) for the given collector over the given
+//               thread.  If there is no such view already for the
+//               indicated thread, this will create one.
+////////////////////////////////////////////////////////////////////
+PStatView &PStatMonitor::
+get_level_view(int collector_index, int thread_index) {
+  LevelViews::iterator lvi;
+  lvi = _level_views.find(collector_index);
+  if (lvi == _level_views.end()) {
+    lvi = _level_views.insert(LevelViews::value_type(collector_index, Views())).first;
+  }
+  Views &views = (*lvi).second;
+  
+  Views::iterator vi;
+  vi = views.find(thread_index);
+  if (vi == views.end()) {
+    vi = views.insert(Views::value_type(thread_index, PStatView())).first;
+    (*vi).second.set_thread_data(_client_data->get_thread_data(thread_index));
+    (*vi).second.constrain(collector_index, true);
   }
   return (*vi).second;
 }

@@ -122,7 +122,7 @@ get_frame(int frame_number) const {
 //  Description: Returns the timestamp (in seconds elapsed since
 //               connection) of the latest available frame.
 ////////////////////////////////////////////////////////////////////
-double PStatThreadData::
+float PStatThreadData::
 get_latest_time() const {
   nassertr(!_frames.empty(), 0.0);
   return _frames.back()->get_start();
@@ -134,7 +134,7 @@ get_latest_time() const {
 //  Description: Returns the timestamp (in seconds elapsed since
 //               connection) of the oldest available frame.
 ////////////////////////////////////////////////////////////////////
-double PStatThreadData::
+float PStatThreadData::
 get_oldest_time() const {
   nassertr(!_frames.empty(), 0.0);
   return _frames.front()->get_start();
@@ -147,7 +147,7 @@ get_oldest_time() const {
 //               latest frame not later than the indicated time.
 ////////////////////////////////////////////////////////////////////
 const PStatFrameData &PStatThreadData::
-get_frame_at_time(double time) const {
+get_frame_at_time(float time) const {
   return get_frame(get_frame_number_at_time(time));
 }
 
@@ -162,7 +162,7 @@ get_frame_at_time(double time) const {
 //               which may speed the search for the frame.
 ////////////////////////////////////////////////////////////////////
 int PStatThreadData::
-get_frame_number_at_time(double time, int hint) const {
+get_frame_number_at_time(float time, int hint) const {
   hint -= _first_frame_number;
   if (hint >= 0 && hint < (int)_frames.size()) {
     if (_frames[hint] != (PStatFrameData *)NULL &&
@@ -211,8 +211,8 @@ get_latest_frame() const {
 //               of seconds, by counting up the number of frames
 //               elapsed in that time interval.
 ////////////////////////////////////////////////////////////////////
-double PStatThreadData::
-get_frame_rate(double time) const {
+float PStatThreadData::
+get_frame_rate(float time) const {
   if (_frames.empty()) {
     // No frames in the data at all; nothing to base the frame rate
     // on.
@@ -229,8 +229,8 @@ get_frame_rate(double time) const {
   }
   nassertr(_frames[now_i] != (PStatFrameData *)NULL, 0.0);
 
-  double now = _frames[now_i]->get_end();
-  double then = now - time;
+  float now = _frames[now_i]->get_end();
+  float then = now - time;
 
   int then_i = now_i;
   int last_good_i = now_i;
@@ -246,7 +246,7 @@ get_frame_rate(double time) const {
   nassertr(_frames[last_good_i] != (PStatFrameData *)NULL, 0.0);
 
   int num_frames = now_i - last_good_i + 1;
-  return (double)num_frames / (now - _frames[last_good_i]->get_start());
+  return (float)num_frames / (now - _frames[last_good_i]->get_start());
 }
 
 
@@ -259,7 +259,7 @@ get_frame_rate(double time) const {
 //               frame that may be queried is.
 ////////////////////////////////////////////////////////////////////
 void PStatThreadData::
-set_history(double time) {
+set_history(float time) {
   _history = time;
 }
 
@@ -271,7 +271,7 @@ set_history(double time) {
 //               new frame is added.  This affects how old the oldest
 //               frame that may be queried is.
 ////////////////////////////////////////////////////////////////////
-double PStatThreadData::
+float PStatThreadData::
 get_history() const {
   return _history;
 }
@@ -292,11 +292,11 @@ void PStatThreadData::
 record_new_frame(int frame_number, PStatFrameData *frame_data) {
   nassertv(frame_data != (PStatFrameData *)NULL);
   nassertv(!frame_data->is_empty());
-  double time = frame_data->get_start();
+  float time = frame_data->get_start();
 
   // First, remove all the old frames that fall outside of our
   // history window.
-  double oldest_allowable_time = time - _history;
+  float oldest_allowable_time = time - _history;
   while (!_frames.empty() && 
 	 (_frames.front() == (PStatFrameData *)NULL ||
 	  _frames.front()->is_empty() ||
