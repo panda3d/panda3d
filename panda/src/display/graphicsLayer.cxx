@@ -18,7 +18,7 @@
 
 #include "graphicsLayer.h"
 #include "graphicsChannel.h"
-#include "graphicsWindow.h"
+#include "graphicsOutput.h"
 #include "config_display.h"
 #include "notify.h"
 #include "mutexHolder.h"
@@ -222,11 +222,11 @@ get_channel() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::get_window
 //       Access: Published
-//  Description: Returns the GraphicsWindow that this layer is
+//  Description: Returns the GraphicsOutput that this layer is
 //               ultimately associated with, or NULL if no window is
 //               associated.
 ////////////////////////////////////////////////////////////////////
-GraphicsWindow *GraphicsLayer::
+GraphicsOutput *GraphicsLayer::
 get_window() const {
   MutexHolder holder(_lock);
   return (_channel != (GraphicsChannel *)NULL) ? _channel->get_window() : NULL;

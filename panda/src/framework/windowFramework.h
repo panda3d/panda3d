@@ -30,6 +30,7 @@
 #include "pointerTo.h"
 #include "pvector.h"
 #include "typedWritableReferenceCount.h"
+#include "graphicsWindow.h"
 
 class PandaFramework;
 class AmbientLight;

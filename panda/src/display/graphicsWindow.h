@@ -21,55 +21,26 @@
 
 #include "pandabase.h"
 
+#include "graphicsOutput.h"
 #include "graphicsWindowInputDevice.h"
 #include "windowProperties.h"
-#include "graphicsChannel.h"
-#include "graphicsPipe.h"
-#include "displayRegion.h"
-#include "graphicsStateGuardian.h"
-#include "clearableRegion.h"
-
-#include "typedWritableReferenceCount.h"
 #include "mouseData.h"
 #include "modifierButtons.h"
 #include "buttonEvent.h"
-#include "iterator_types.h"
 #include "notify.h"
 #include "pmutex.h"
 #include "filename.h"
-
 #include "pvector.h"
-#include "pdeque.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsWindow
-// Description : An output medium for receiving the results of
-//               rendering.  Typically this is a window on the
-//               computer desktop, but it may also be the entire
-//               desktop or console screen (i.e. a fullscreen window),
-//               or a window on another machine, or even a disk file.
-//
-//               The GraphicsWindow class handles all of the details
-//               about creating a window and its framebuffer, and
-//               managing the properties associated with the windowing
-//               system, such as position and size and keyboard/mouse
-//               input.  The actual rendering, and anything associated
-//               with the graphics context itself, is managed by the
-//               window's GraphicsStateGuardian.
-//
-//               GraphicsWindows are not actually writable to bam
-//               files, of course, but they may be passed as event
-//               parameters, so they inherit from
-//               TypedWritableReferenceCount instead of
-//               TypedReferenceCount for that convenience.
+// Description : A window, fullscreen or on a desktop, into which a
+//               graphics device sends its output for interactive
+//               display.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GraphicsWindow : public TypedWritableReferenceCount, public ClearableRegion {
+class EXPCL_PANDA GraphicsWindow : public GraphicsOutput {
 protected:
   GraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
-
-private:
-  GraphicsWindow(const GraphicsWindow &copy);
-  void operator = (const GraphicsWindow &copy);
 
 PUBLISHED:
   virtual ~GraphicsWindow();
@@ -80,26 +51,11 @@ PUBLISHED:
   WindowProperties get_rejected_properties() const;
   void request_properties(const WindowProperties &requested_properties);
   INLINE bool is_closed() const;
-  INLINE bool is_active() const;
+  virtual bool is_active() const;
   INLINE bool is_fullscreen() const;
 
   void set_window_event(const string &window_event);
   string get_window_event() const;
-
-  INLINE GraphicsStateGuardian *get_gsg() const;
-  INLINE GraphicsPipe *get_pipe() const;
-
-  GraphicsChannel *get_channel(int index);
-  void remove_channel(int index);
-
-  int get_max_channel_index() const;
-  bool is_channel_defined(int index) const;
-
-  int get_num_display_regions() const;
-  DisplayRegion *get_display_region(int n) const;
-
-  Filename take_screenshot(const string &prefix = "screenshot");
-  bool take_screenshot(const Filename &filename);
 
   // Mouse and keyboard routines
   int get_num_input_devices() const;
@@ -115,28 +71,10 @@ public:
 
   virtual int verify_window_sizes(int numsizes, int *dimen);
 
-  PT(DisplayRegion) make_scratch_display_region(int x_size, int y_size) const;
-
 public:
-  // These are not intended to be called directly by the user.
-  INLINE void win_display_regions_changed();
-
-public:
-  // It is an error to call any of the following methods from any
-  // thread other than the draw thread.  These methods are normally
-  // called by the GraphicsEngine.
-  virtual bool begin_frame();
-  void clear();
-  virtual void end_frame();
-
-  // This method is called in the draw thread prior to issuing any
-  // drawing commands for the window.
-  virtual void make_current();
-  virtual void release_gsg();
-
-  // These methods will be called within the app (main) thread.
-  virtual void begin_flip();
-  virtual void end_flip();
+  virtual void request_open();
+  virtual void request_close();
+  virtual void set_close_now();
 
   // It is an error to call any of the following methods from any
   // thread other than the window thread.  These methods are normally
@@ -145,13 +83,8 @@ public:
   virtual void set_properties_now(WindowProperties &properties);
 
 protected:
-  virtual void close_window();
-  virtual bool open_window();
-  virtual void reset_window(bool swapchain);
   virtual bool do_reshape_request(int x_origin, int y_origin,
                                   int x_size, int y_size);
-
-  void declare_channel(int index, GraphicsChannel *chan);
 
   // It is an error to call any of the following methods from any
   // thread other than the window thread.
@@ -163,26 +96,13 @@ protected:
   InputDevices _input_devices;
   Mutex _input_lock;
 
-  PT(GraphicsStateGuardian) _gsg;
-  PT(GraphicsPipe) _pipe;
-
-private:
-  INLINE void determine_display_regions() const;
-  void do_determine_display_regions();
-
 protected:
   WindowProperties _properties;
 
 private:
-  Mutex _lock; 
-  // protects _channels, _display_regions, and _requested_properties.
-
-  typedef pvector< PT(GraphicsChannel) > Channels;
-  Channels _channels;
-
-  typedef pvector<DisplayRegion *> DisplayRegions;
-  DisplayRegions _display_regions;
-  bool _display_regions_stale;
+  Mutex _properties_lock; 
+  // protects _requested_properties, _rejected_properties, and
+  // _window_event.
 
   WindowProperties _requested_properties;
   WindowProperties _rejected_properties;
@@ -193,9 +113,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
+    GraphicsOutput::init_type();
     register_type(_type_handle, "GraphicsWindow",
-                  TypedWritableReferenceCount::get_class_type());
+                  GraphicsOutput::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -204,9 +124,6 @@ public:
 
 private:
   static TypeHandle _type_handle;
-
-  friend class GraphicsPipe;
-  friend class GraphicsEngine;
 };
 
 #include "graphicsWindow.I"

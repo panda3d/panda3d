@@ -32,7 +32,7 @@
 
 class GraphicsEngine;
 class GraphicsStateGuardian;
-class GraphicsWindow;
+class GraphicsOutput;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NonlinearImager
@@ -163,7 +163,7 @@ private:
   Viewers _viewers;
   Screens _screens;
   GraphicsStateGuardian *_gsg;
-  GraphicsWindow *_win;
+  GraphicsOutput *_win;
 
   bool _stale;
 };

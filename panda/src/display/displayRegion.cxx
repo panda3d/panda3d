@@ -19,7 +19,7 @@
 
 #include "graphicsLayer.h"
 #include "graphicsChannel.h"
-#include "graphicsWindow.h"
+#include "graphicsOutput.h"
 #include "config_display.h"
 #include "displayRegion.h"
 #include "camera.h"
@@ -190,12 +190,9 @@ set_dimensions(float l, float r, float b, float t) {
   _b = b;
   _t = t;
 
-  const GraphicsWindow *win = get_window();
-  if (win != (GraphicsWindow *)NULL) {
-    WindowProperties properties = win->get_properties();
-    if (properties.has_size()) {
-      do_compute_pixels(properties.get_x_size(), properties.get_y_size());
-    }
+  const GraphicsOutput *win = get_window();
+  if (win != (GraphicsOutput *)NULL && win->has_size()) {
+    do_compute_pixels(win->get_x_size(), win->get_y_size());
   }
 }
 
@@ -228,11 +225,11 @@ get_channel() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_window
 //       Access: Published
-//  Description: Returns the GraphicsWindow that this DisplayRegion is
+//  Description: Returns the GraphicsOutput that this DisplayRegion is
 //               ultimately associated with, or NULL if no window is
 //               associated.
 ////////////////////////////////////////////////////////////////////
-GraphicsWindow *DisplayRegion::
+GraphicsOutput *DisplayRegion::
 get_window() const {
   MutexHolder holder(_lock);
   return (_layer != (GraphicsLayer *)NULL) ? _layer->get_window() : NULL;
@@ -324,21 +321,11 @@ set_active(bool active) {
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 compute_pixels() {
-  const GraphicsWindow *win = get_window();
-  if (win != (GraphicsWindow *)NULL) {
+  const GraphicsOutput *win = get_window();
+  if (win != (GraphicsOutput *)NULL) {
     MutexHolder holder(_lock);
-    WindowProperties properties = win->get_properties();
-    if (!properties.has_size()) {
-      // If the window doesn't know its size yet, maybe it will
-      // eventually be given the size it's requesting.
-      properties = win->get_requested_properties();
-    }
 
-    if (properties.has_size()) {
-      do_compute_pixels(properties.get_x_size(), properties.get_y_size());
-    } else {
-      do_compute_pixels(0, 0);
-    }
+    do_compute_pixels(win->get_x_size(), win->get_y_size());
   }
 }
 

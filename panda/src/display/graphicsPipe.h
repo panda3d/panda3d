@@ -25,16 +25,15 @@
 #include "typedReferenceCount.h"
 #include "pointerTo.h"
 #include "pmutex.h"
-#include "pvector.h"
 
 class HardwareChannel;
-class GraphicsWindow;
+class GraphicsOutput;
 class GraphicsStateGuardian;
 class FrameBufferProperties;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsPipe
-// Description : An object to create GraphicsWindows that share a
+// Description : An object to create GraphicsOutputs that share a
 //               particular 3-D API.  Normally, there will only be one
 //               GraphicsPipe in an application, although it is
 //               possible to have multiple of these at once if there
@@ -74,7 +73,7 @@ PUBLISHED:
 
 public:
   virtual int get_num_hw_channels();
-  virtual HardwareChannel *get_hw_channel(GraphicsWindow *window, int index);
+  virtual HardwareChannel *get_hw_channel(GraphicsOutput *window, int index);
 
   INLINE GraphicsDevice *get_device() const;
   virtual PT(GraphicsDevice) make_device(void *scrn = NULL);

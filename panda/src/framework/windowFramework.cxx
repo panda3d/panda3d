@@ -808,13 +808,23 @@ make_camera() {
   _cameras.push_back(camera);
 
   PT(Lens) lens = new PerspectiveLens;
-  WindowProperties properties = _window->get_properties();
-  if (!properties.has_size()) {
-    properties = _window->get_requested_properties();
+
+  if (aspect_ratio != 0.0f) {
+    // If we're given an explict aspect ratio, use it
+    lens->set_aspect_ratio(aspect_ratio);
+
+  } else {
+    // Otherwise, infer the aspect ratio from the window size.  This
+    // does assume we have square pixels on our output device.
+    WindowProperties properties = _window->get_properties();
+    if (!properties.has_size()) {
+      properties = _window->get_requested_properties();
+    }
+    if (properties.has_size()) {
+      lens->set_film_size(properties.get_x_size(), properties.get_y_size());
+    }
   }
-  if (properties.has_size()) {
-    lens->set_film_size(properties.get_x_size(), properties.get_y_size());
-  }
+
   camera->set_lens(lens);
   camera->set_scene(get_render());
   dr->set_camera(camera_np);

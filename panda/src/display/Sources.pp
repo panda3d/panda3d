@@ -22,12 +22,15 @@
     graphicsChannel.I graphicsChannel.h \
     graphicsEngine.I graphicsEngine.h \
     graphicsLayer.I  \
-    graphicsLayer.h graphicsPipe.I graphicsPipe.h  \
+    graphicsLayer.h \
+    graphicsOutput.I graphicsOutput.h \
+    graphicsPipe.I graphicsPipe.h  \
     graphicsPipeSelection.I graphicsPipeSelection.h \
     graphicsStateGuardian.I \
-    graphicsStateGuardian.h graphicsWindow.I \
+    graphicsStateGuardian.h \
     graphicsThreadingModel.I graphicsThreadingModel.h \
-    graphicsWindow.h graphicsWindowInputDevice.I  \
+    graphicsWindow.I graphicsWindow.h \
+    graphicsWindowInputDevice.I  \
     graphicsWindowInputDevice.h \
     graphicsDevice.h graphicsDevice.I \
     windowProperties.I windowProperties.h \
@@ -43,7 +46,9 @@
     frameBufferProperties.cxx \
     geomContext.cxx geomNodeContext.cxx graphicsChannel.cxx  \
     graphicsEngine.cxx \
-    graphicsLayer.cxx graphicsPipe.cxx \
+    graphicsLayer.cxx \
+    graphicsOutput.cxx \
+    graphicsPipe.cxx \
     graphicsPipeSelection.cxx \
     graphicsStateGuardian.cxx  \
     graphicsThreadingModel.cxx \
@@ -64,10 +69,12 @@
     graphicsChannel.I graphicsChannel.h \
     graphicsEngine.I graphicsEngine.h \
     graphicsLayer.I graphicsLayer.h \
+    graphicsOutput.I graphicsOutput.h \
     graphicsPipe.I graphicsPipe.h \
     graphicsPipeSelection.I graphicsPipeSelection.h \
     graphicsStateGuardian.I \
-    graphicsStateGuardian.h graphicsWindow.I graphicsWindow.h \
+    graphicsStateGuardian.h \
+    graphicsWindow.I graphicsWindow.h \
     graphicsThreadingModel.I graphicsThreadingModel.h \
     graphicsWindowInputDevice.I graphicsWindowInputDevice.h \
     graphicsDevice.I graphicsDevice.h \

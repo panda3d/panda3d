@@ -123,7 +123,7 @@ issue_transformed_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::uchar_bgr_to_rgb
+//     Function: uchar_bgr_to_rgb
 //  Description: Recopies the given array of pixels, converting from
 //               BGR to RGB arrangement.
 ////////////////////////////////////////////////////////////////////
@@ -140,7 +140,7 @@ uchar_bgr_to_rgb(unsigned char *dest, const unsigned char *source,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::uchar_bgra_to_rgba
+//     Function: uchar_bgra_to_rgba
 //  Description: Recopies the given array of pixels, converting from
 //               BGRA to RGBA arrangement.
 ////////////////////////////////////////////////////////////////////
@@ -155,6 +155,98 @@ uchar_bgra_to_rgba(unsigned char *dest, const unsigned char *source,
     dest += 4;
     source += 4;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ushort_bgr_to_rgb
+//  Description: Recopies the given array of pixels, converting from
+//               BGR to RGB arrangement.
+////////////////////////////////////////////////////////////////////
+static void
+ushort_bgr_to_rgb(unsigned short *dest, const unsigned short *source, 
+                  int num_pixels) {
+  for (int i = 0; i < num_pixels; i++) {
+    dest[0] = source[2];
+    dest[1] = source[1];
+    dest[2] = source[0];
+    dest += 3;
+    source += 3;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ushort_bgra_to_rgba
+//  Description: Recopies the given array of pixels, converting from
+//               BGRA to RGBA arrangement.
+////////////////////////////////////////////////////////////////////
+static void
+ushort_bgra_to_rgba(unsigned short *dest, const unsigned short *source, 
+                    int num_pixels) {
+  for (int i = 0; i < num_pixels; i++) {
+    dest[0] = source[2];
+    dest[1] = source[1];
+    dest[2] = source[0];
+    dest[3] = source[3];
+    dest += 4;
+    source += 4;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: fix_component_ordering
+//  Description: Reverses the order of the components within the
+//               image, to convert (for instance) GL_BGR to GL_RGB.
+//               Returns the PTA_uchar representing the converted
+//               image, or the original image if it is unchanged.
+////////////////////////////////////////////////////////////////////
+static PTA_uchar
+fix_component_ordering(GLenum external_format, PixelBuffer *pb) {
+  PTA_uchar new_image = pb->_image;
+
+  switch (external_format) {
+  case GL_RGB:
+    switch (pb->get_image_type()) {
+    case PixelBuffer::T_unsigned_byte:
+      new_image = PTA_uchar::empty_array(pb->_image.size());
+      uchar_bgr_to_rgb(new_image, pb->_image, pb->_image.size() / 3);
+      break;
+
+    case PixelBuffer::T_unsigned_short:
+      new_image = PTA_uchar::empty_array(pb->_image.size());
+      ushort_bgr_to_rgb((unsigned short *)new_image.p(), 
+                        (unsigned short *)pb->_image.p(), 
+                        pb->_image.size() / 6);
+      break;
+
+    default:
+      break;
+    }
+    break;
+
+  case GL_RGBA:
+    switch (pb->get_image_type()) {
+    case PixelBuffer::T_unsigned_byte:
+      new_image = PTA_uchar::empty_array(pb->_image.size());
+      uchar_bgra_to_rgba(new_image, pb->_image, pb->_image.size() / 4);
+      break;
+
+    case PixelBuffer::T_unsigned_short:
+      new_image = PTA_uchar::empty_array(pb->_image.size());
+      ushort_bgra_to_rgba((unsigned short *)new_image.p(), 
+                          (unsigned short *)pb->_image.p(), 
+                          pb->_image.size() / 8);
+      break;
+
+    default:
+      break;
+    }
+    break;
+
+  default:
+    break;
+  }
+
+  return new_image;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2023,16 +2115,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 
   // We may have to reverse the byte ordering of the image if GL
   // didn't do it for us.
-  if (external_format == GL_RGB && pb->get_image_type() == PixelBuffer::T_unsigned_byte) {
-    PTA_uchar new_image = PTA_uchar::empty_array(pb->_image.size());
-    uchar_bgr_to_rgb(new_image, pb->_image, pb->_image.size() / 3);
-    pb->_image = new_image;
-
-  } else if (external_format == GL_RGBA && pb->get_image_type() == PixelBuffer::T_unsigned_byte) {
-    PTA_uchar new_image = PTA_uchar::empty_array(pb->_image.size());
-    uchar_bgra_to_rgba(new_image, pb->_image, pb->_image.size() / 4);
-    pb->_image = new_image;
-  }
+  pb->_image = fix_component_ordering(external_format, pb);
 
   report_gl_errors();
   return true;
@@ -2829,32 +2912,21 @@ apply_texture_immediate(Texture *tex) {
 
   int xsize = pb->get_xsize();
   int ysize = pb->get_ysize();
-  int num_pixels = xsize * ysize;
 
   GLenum internal_format = get_internal_image_format(pb->get_format());
   GLenum external_format = get_external_image_format(pb->get_format());
   GLenum type = get_image_type(pb->get_image_type());
 
-  uchar *image = pb->_image;
-  uchar *locally_allocated_image = (uchar *)NULL;
+  PTA_uchar image = pb->_image;
   if (!gl_supports_bgr) {
     // If the GL doesn't claim to support BGR, we may have to reverse
-    // the byte ordering of the image.
-    if (external_format == GL_RGB && pb->get_image_type() == PixelBuffer::T_unsigned_byte) {
-      locally_allocated_image = new uchar[num_pixels * 3];
-      image = locally_allocated_image;
-      uchar_bgr_to_rgb(image, pb->_image, num_pixels);
-    } else if (external_format == GL_RGBA && pb->get_image_type() == PixelBuffer::T_unsigned_byte) {
-      locally_allocated_image = new uchar[num_pixels * 4];
-      image = locally_allocated_image;
-      uchar_bgra_to_rgba(image, pb->_image, num_pixels);
-    }
+    // the component ordering of the image.
+    image = fix_component_ordering(external_format, pb);
   }
 
 #ifndef NDEBUG
   int wanted_size = 
-    compute_gl_image_size(xsize, ysize,
-                          external_format, type);
+    compute_gl_image_size(xsize, ysize, external_format, type);
   nassertr(wanted_size == (int)pb->_image.size(), false);
 #endif  // NDEBUG
 
@@ -2888,9 +2960,6 @@ apply_texture_immediate(Texture *tex) {
         }
       report_gl_errors();
 
-      if (locally_allocated_image != (uchar *)NULL) {
-        delete[] locally_allocated_image;
-      }
       return true;
     }
   }
@@ -2909,9 +2978,6 @@ apply_texture_immediate(Texture *tex) {
                         ((error_string != (const GLubyte *)NULL) ? " : " : "") << endl;
   }
 
-  if (locally_allocated_image != (uchar *)NULL) {
-    delete[] locally_allocated_image;
-  }
   return true;
 }
 

@@ -211,7 +211,7 @@ make_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   PT(GraphicsWindow) window = pipe->make_window(gsg);
   if (window != (GraphicsWindow *)NULL) {
     MutexHolder holder(_lock);
-    _windows.insert(window);
+    _windows.insert(window.p());
 
     WindowRenderer *cull = get_window_renderer(threading_model.get_cull_name());
     WindowRenderer *draw = get_window_renderer(threading_model.get_draw_name());
@@ -263,9 +263,9 @@ make_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
 //               at a time.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsEngine::
-remove_window(GraphicsWindow *window) {
+remove_window(GraphicsOutput *window) {
   // First, make sure we know what this window is.
-  PT(GraphicsWindow) ptwin = window;
+  PT(GraphicsOutput) ptwin = window;
   size_t count;
   {
     MutexHolder holder(_lock);
@@ -291,7 +291,7 @@ void GraphicsEngine::
 remove_all_windows() {
   Windows::iterator wi;
   for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
-    GraphicsWindow *win = (*wi);
+    GraphicsOutput *win = (*wi);
     do_remove_window(win);
   }
 
@@ -314,7 +314,7 @@ void GraphicsEngine::
 reset_all_windows(bool swapchain) {
   Windows::iterator wi;
   for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
-    GraphicsWindow *win = (*wi);
+    GraphicsOutput *win = (*wi);
     //    if (win->is_active())
     win->reset_window(swapchain);
   }
@@ -477,7 +477,7 @@ void GraphicsEngine::
 cull_and_draw_together(const GraphicsEngine::Windows &wlist) {
   Windows::const_iterator wi;
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
-    GraphicsWindow *win = (*wi);
+    GraphicsOutput *win = (*wi);
     if (win->is_active()) {
       if (win->begin_frame()) {
         win->clear();
@@ -533,7 +533,7 @@ void GraphicsEngine::
 cull_bin_draw(const GraphicsEngine::Windows &wlist) {
   Windows::const_iterator wi;
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
-    GraphicsWindow *win = (*wi);
+    GraphicsOutput *win = (*wi);
     if (win->is_active()) {
       // This should be done in the draw thread, not here.
       if (win->begin_frame()) {
@@ -596,7 +596,7 @@ void GraphicsEngine::
 process_events(const GraphicsEngine::Windows &wlist) {
   Windows::const_iterator wi;
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
-    GraphicsWindow *win = (*wi);
+    GraphicsOutput *win = (*wi);
     win->process_events();
   }
 }
@@ -612,11 +612,11 @@ void GraphicsEngine::
 flip_windows(const GraphicsEngine::Windows &wlist) {
   Windows::const_iterator wi;
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
-    GraphicsWindow *win = (*wi);
+    GraphicsOutput *win = (*wi);
     win->begin_flip();
   }
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
-    GraphicsWindow *win = (*wi);
+    GraphicsOutput *win = (*wi);
     win->end_flip();
   }
 }
@@ -853,7 +853,7 @@ setup_gsg(GraphicsStateGuardian *gsg, SceneSetup *scene_setup) {
 //               _windows list itself.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-do_remove_window(GraphicsWindow *window) {
+do_remove_window(GraphicsOutput *window) {
   PT(GraphicsPipe) pipe = window->get_pipe();
   window->_pipe = (GraphicsPipe *)NULL;
 
@@ -967,7 +967,7 @@ add_gsg(GraphicsStateGuardian *gsg) {
 //               be a member of the WindowRenderer.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::WindowRenderer::
-add_window(Windows &wlist, GraphicsWindow *window) {
+add_window(Windows &wlist, GraphicsOutput *window) {
   MutexHolder holder(_wl_lock);
   wlist.insert(window);
 }
@@ -981,9 +981,9 @@ add_window(Windows &wlist, GraphicsWindow *window) {
 //               list for later closure.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::WindowRenderer::
-remove_window(GraphicsWindow *window) {
+remove_window(GraphicsOutput *window) {
   MutexHolder holder(_wl_lock);
-  PT(GraphicsWindow) ptwin = window;
+  PT(GraphicsOutput) ptwin = window;
 
   _cull.erase(ptwin);
 
@@ -1020,14 +1020,12 @@ remove_window(GraphicsWindow *window) {
     // thread.
 
     // Make sure the window isn't about to request itself open.
-    WindowProperties close_properties;
-    close_properties.set_open(false);
-    ptwin->request_properties(close_properties);
+    ptwin->request_close();
 
     // If the window is already open, move it to the _pending_close list so
     // it can be closed later.  We can't close it immediately, because
     // we might not have been called from the subthread.
-    if (!ptwin->is_closed()) {
+    if (ptwin->is_valid()) {
       _pending_close.insert(ptwin);
     }
 
@@ -1095,7 +1093,7 @@ do_release(GraphicsEngine *) {
   MutexHolder holder(_wl_lock);
   Windows::iterator wi;
   for (wi = _draw.begin(); wi != _draw.end(); ++wi) {
-    GraphicsWindow *win = (*wi);
+    GraphicsOutput *win = (*wi);
     win->release_gsg();
   }
 }
@@ -1107,14 +1105,11 @@ do_release(GraphicsEngine *) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::WindowRenderer::
 do_close(GraphicsEngine *engine) {
-  WindowProperties close_properties;
-  close_properties.set_open(false);
-
   MutexHolder holder(_wl_lock);
   Windows::iterator wi;
   for (wi = _window.begin(); wi != _window.end(); ++wi) {
-    GraphicsWindow *win = (*wi);
-    win->set_properties_now(close_properties);
+    GraphicsOutput *win = (*wi);
+    win->set_close_now();
   }
 
   // Also close all of the GSG's.
@@ -1149,24 +1144,21 @@ do_pending(GraphicsEngine *engine) {
     // Release any GSG's that were waiting.
     Windows::iterator wi;
     for (wi = _pending_release.begin(); wi != _pending_release.end(); ++wi) {
-      GraphicsWindow *win = (*wi);
+      GraphicsOutput *win = (*wi);
       win->release_gsg();
     }
     _pending_release.clear();
   }
 
   if (!_pending_close.empty()) {
-    WindowProperties close_properties;
-    close_properties.set_open(false);
-
     // Close any windows that were pending closure, but only if their
     // associated GSG has already been released.
     Windows new_pending_close;
     Windows::iterator wi;
     for (wi = _pending_close.begin(); wi != _pending_close.end(); ++wi) {
-      GraphicsWindow *win = (*wi);
+      GraphicsOutput *win = (*wi);
       if (win->get_gsg() == (GraphicsStateGuardian *)NULL) {
-        win->set_properties_now(close_properties);
+        win->set_close_now();
       } else {
         // If the GSG hasn't been released yet, we have to save the
         // close operation for next frame.

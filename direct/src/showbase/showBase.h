@@ -22,8 +22,8 @@
 #include "directbase.h"
 
 #include "eventHandler.h"
-#include "graphicsPipe.h"
 #include "graphicsWindow.h"
+#include "graphicsPipe.h"
 #include "animControl.h"
 #include "pointerTo.h"
 #include "dconfig.h"

@@ -20,6 +20,7 @@
 #define GLXGRAPHICSPIPE_H
 
 #include "pandabase.h"
+#include "graphicsWindow.h"
 #include "graphicsPipe.h"
 
 class glxGraphicsWindow;

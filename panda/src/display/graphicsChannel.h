@@ -28,14 +28,14 @@
 
 class GraphicsChannel;
 class GraphicsPipe;
-class GraphicsWindow;
+class GraphicsOutput;
 class CullHandler;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsChannel
 // Description : This represents a single hardware output.  Typically
-//               there is exactly one channel per window, but some
-//               implementations (e.g. SGI) support potentially
+//               there is exactly one channel per GraphicsOutput, but
+//               some implementations (e.g. SGI) support potentially
 //               several different video channel ports connected to
 //               different parts within a window.
 ////////////////////////////////////////////////////////////////////
@@ -44,7 +44,7 @@ protected:
   GraphicsChannel();
 
 public:
-  GraphicsChannel(GraphicsWindow *window);
+  GraphicsChannel(GraphicsOutput *window);
 
 private:
   GraphicsChannel(const GraphicsChannel &copy);
@@ -59,7 +59,7 @@ PUBLISHED:
   int get_num_layers() const;
   GraphicsLayer *get_layer(int index) const;
 
-  GraphicsWindow *get_window() const;
+  GraphicsOutput *get_window() const;
   GraphicsPipe *get_pipe() const;
 
   void set_active(bool active);
@@ -73,7 +73,7 @@ private:
 
 protected:
   Mutex _lock;
-  GraphicsWindow *_window;
+  GraphicsOutput *_window;
   bool _is_active;
 
   typedef ov_multiset< PT(GraphicsLayer), IndirectLess<GraphicsLayer> > GraphicsLayers;
@@ -99,7 +99,7 @@ public:
 private:
   static TypeHandle _type_handle;
 
-  friend class GraphicsWindow;
+  friend class GraphicsOutput;
   friend class GraphicsLayer;
 };
 

@@ -75,7 +75,7 @@ PUBLISHED:
   GraphicsWindow *make_window(GraphicsPipe *pipe,
                               GraphicsStateGuardian *gsg,
                               const GraphicsThreadingModel &threading_model);
-  bool remove_window(GraphicsWindow *window);
+  bool remove_window(GraphicsOutput *window);
   void remove_all_windows();
   void reset_all_windows(bool swapchain);
   bool is_empty() const;
@@ -97,7 +97,7 @@ public:
   };
 
 private:
-  typedef pset< PT(GraphicsWindow) > Windows;
+  typedef pset< PT(GraphicsOutput) > Windows;
   typedef pset< PT(GraphicsStateGuardian) > GSGs;
 
   void cull_and_draw_together(const Windows &wlist);
@@ -121,7 +121,7 @@ private:
 
   bool setup_gsg(GraphicsStateGuardian *gsg, SceneSetup *scene_setup);
 
-  void do_remove_window(GraphicsWindow *window);
+  void do_remove_window(GraphicsOutput *window);
   void terminate_threads();
 
   // The WindowRenderer class records the stages of the pipeline that
@@ -130,8 +130,8 @@ private:
   class WindowRenderer {
   public:
     void add_gsg(GraphicsStateGuardian *gsg);
-    void add_window(Windows &wlist, GraphicsWindow *window);
-    void remove_window(GraphicsWindow *window);
+    void add_window(Windows &wlist, GraphicsOutput *window);
+    void remove_window(GraphicsOutput *window);
     void do_frame(GraphicsEngine *engine);
     void do_flip(GraphicsEngine *engine);
     void do_release(GraphicsEngine *engine);

@@ -28,7 +28,7 @@
 #include "pvector.h"
 
 class GraphicsChannel;
-class GraphicsWindow;
+class GraphicsOutput;
 class GraphicsPipe;
 class CullHandler;
 
@@ -67,7 +67,7 @@ PUBLISHED:
   bool remove_dr(DisplayRegion *display_region);
 
   GraphicsChannel *get_channel() const;
-  GraphicsWindow *get_window() const;
+  GraphicsOutput *get_window() const;
   GraphicsPipe *get_pipe() const;
 
   void set_active(bool active);
@@ -109,7 +109,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class GraphicsChannel;
-  friend class GraphicsWindow;
+  friend class GraphicsOutput;
   friend class DisplayRegion;
 };
 

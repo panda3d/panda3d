@@ -31,7 +31,7 @@
 
 class GraphicsLayer;
 class GraphicsChannel;
-class GraphicsWindow;
+class GraphicsOutput;
 class GraphicsPipe;
 class CullHandler;
 class Camera;
@@ -64,7 +64,7 @@ PUBLISHED:
 
   GraphicsLayer *get_layer() const;
   GraphicsChannel *get_channel() const;
-  GraphicsWindow *get_window() const;
+  GraphicsOutput *get_window() const;
   GraphicsPipe *get_pipe() const;
 
   void set_camera(const NodePath &camera);

@@ -39,7 +39,7 @@ PandaFramework() :
   _is_open = false;
   _made_default_pipe = false;
   _data_root = NodePath("data");
-  _window_title = "Panda";
+  _window_title = window_title;
   _start_time = 0.0;
   _frame_count = 0;
   _wireframe_enabled = false;

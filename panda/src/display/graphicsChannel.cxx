@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "graphicsChannel.h"
-#include "graphicsWindow.h"
+#include "graphicsOutput.h"
 #include "graphicsLayer.h"
 #include "config_display.h"
 #include "mutexHolder.h"
@@ -42,10 +42,10 @@ GraphicsChannel() {
 //       Access: Public
 //  Description: This is public just so derived window types can
 //               easily call it.  Don't call it directly; instead, use
-//               GraphicsWindow::get_channel() to get a channel.
+//               GraphicsOutput::get_channel() to get a channel.
 ////////////////////////////////////////////////////////////////////
 GraphicsChannel::
-GraphicsChannel(GraphicsWindow *window)
+GraphicsChannel(GraphicsOutput *window)
   : _window(window)
 {
   _is_active = true;
@@ -201,14 +201,14 @@ get_layer(int index) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsChannel::get_window
 //       Access: Published
-//  Description: Returns the GraphicsWindow that this channel is
+//  Description: Returns the GraphicsOutput that this channel is
 //               associated with.  It is possible that the
-//               GraphicsWindow might have been deleted while an
+//               GraphicsOutput might have been deleted while an
 //               outstanding PT(GraphicsChannel) prevented all of its
 //               children channels from also being deleted; in this
 //               unlikely case, get_window() may return NULL.
 ////////////////////////////////////////////////////////////////////
-GraphicsWindow *GraphicsChannel::
+GraphicsOutput *GraphicsChannel::
 get_window() const {
   MutexHolder holder(_lock);
   return _window;
@@ -224,7 +224,7 @@ get_window() const {
 GraphicsPipe *GraphicsChannel::
 get_pipe() const {
   MutexHolder holder(_lock);
-  return (_window != (GraphicsWindow *)NULL) ? _window->get_pipe() : NULL;
+  return (_window != (GraphicsOutput *)NULL) ? _window->get_pipe() : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -274,7 +274,7 @@ window_resized(int x_size, int y_size) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsChannel::
 win_display_regions_changed() {
-  if (_window != (GraphicsWindow *)NULL) {
+  if (_window != (GraphicsOutput *)NULL) {
     _window->win_display_regions_changed();
   }
 }

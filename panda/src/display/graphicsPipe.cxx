@@ -98,7 +98,7 @@ get_num_hw_channels() {
 //               always return NULL.
 ////////////////////////////////////////////////////////////////////
 HardwareChannel *GraphicsPipe::
-get_hw_channel(GraphicsWindow *, int) {
+get_hw_channel(GraphicsOutput *, int) {
   return (HardwareChannel*)0L;
 }
 

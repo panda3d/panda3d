@@ -33,8 +33,9 @@ const int win_height = config_framework.GetInt("win-height", 480);
 const bool fullscreen = config_framework.GetBool("fullscreen", false);
 const bool undecorated = config_framework.GetBool("undecorated", false);
 const bool cursor_hidden = config_framework.GetBool("cursor-hidden", false);
-const float aspect_ratio = config_framework.GetFloat("aspect-ratio", 0.0f);
+const string window_title = config_framework.GetString("window-title", "Panda");
 
+const float aspect_ratio = config_framework.GetFloat("aspect-ratio", 0.0f);
 const bool show_frame_rate_meter = config_framework.GetBool("show-frame-rate-meter", false);
 
 // The default window background color.

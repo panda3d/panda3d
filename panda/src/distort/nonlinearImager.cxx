@@ -21,7 +21,7 @@
 
 #include "graphicsStateGuardian.h"
 #include "matrixLens.h"
-#include "graphicsWindow.h"
+#include "graphicsOutput.h"
 #include "graphicsEngine.h"
 #include "dcast.h"
 
@@ -257,7 +257,7 @@ get_screen_active(int index) const {
 ////////////////////////////////////////////////////////////////////
 int NonlinearImager::
 add_viewer(DisplayRegion *dr) {
-  GraphicsWindow *win = dr->get_window();
+  GraphicsOutput *win = dr->get_window();
   GraphicsStateGuardian *gsg = win->get_gsg();
   nassertr(_viewers.empty() || (gsg == _gsg && win == _win), -1);
   _gsg = gsg;

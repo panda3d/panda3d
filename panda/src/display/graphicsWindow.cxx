@@ -25,8 +25,6 @@
 #include "hardwareChannel.h"
 #include "throw_event.h"
 
-#include "pmap.h"
-
 TypeHandle GraphicsWindow::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -37,12 +35,12 @@ TypeHandle GraphicsWindow::_type_handle;
 //               GraphicsEngine::make_window() function.
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow::
-GraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
+GraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) :
+  GraphicsOutput(pipe, gsg)
+{
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
 #endif
-  _pipe = pipe;
-  _gsg = gsg;
 
   if (display_cat.is_debug()) {
     display_cat.debug()
@@ -58,32 +56,7 @@ GraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
   _properties.set_minimized(false);
   _properties.set_cursor_hidden(false);
 
-  _display_regions_stale = false;
   _window_event = "window-event";
-
-  // By default, windows are set up to clear color and depth.
-  set_clear_color_active(true);
-  set_clear_depth_active(true);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::Copy Constructor
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
-GraphicsWindow::
-GraphicsWindow(const GraphicsWindow &) {
-  nassertv(false);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::Copy Assignment Operator
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-operator = (const GraphicsWindow &) {
-  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,20 +66,6 @@ operator = (const GraphicsWindow &) {
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow::
 ~GraphicsWindow() {
-  // The window should be closed by the time we destruct.
-  nassertv(!_properties.get_open());
-
-  // And we shouldn't have a GraphicsPipe pointer anymore.
-  nassertv(_pipe == (GraphicsPipe *)NULL);
-
-  // We don't have to destruct our child channels explicitly, since
-  // they are all reference-counted and will go away when their
-  // pointers do.  However, we do need to zero out their pointers to
-  // us.
-  Channels::iterator ci;
-  for (ci = _channels.begin(); ci != _channels.end(); ++ci) {
-    (*ci)->_window = NULL;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -118,7 +77,7 @@ WindowProperties GraphicsWindow::
 get_properties() const {
   WindowProperties result;
   {
-    MutexHolder holder(_lock);
+    MutexHolder holder(_properties_lock);
     result = _properties;
   }
   return result;
@@ -136,7 +95,7 @@ WindowProperties GraphicsWindow::
 get_requested_properties() const {
   WindowProperties result;
   {
-    MutexHolder holder(_lock);
+    MutexHolder holder(_properties_lock);
     result = _requested_properties;
   }
   return result;
@@ -150,7 +109,7 @@ get_requested_properties() const {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 clear_rejected_properties() {
-  MutexHolder holder(_lock);
+  MutexHolder holder(_properties_lock);
   _rejected_properties.clear();
 }
 
@@ -167,7 +126,7 @@ WindowProperties GraphicsWindow::
 get_rejected_properties() const {
   WindowProperties result;
   {
-    MutexHolder holder(_lock);
+    MutexHolder holder(_properties_lock);
     result = _rejected_properties;
   }
   return result;
@@ -186,8 +145,20 @@ get_rejected_properties() const {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 request_properties(const WindowProperties &requested_properties) {
-  MutexHolder holder(_lock);
+  MutexHolder holder(_properties_lock);
   _requested_properties.add_properties(requested_properties);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::is_active
+//       Access: Published, Virtual
+//  Description: Returns true if the window is ready to be rendered
+//               into, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool GraphicsWindow::
+is_active() const {
+  // Make this smarter?
+  return _properties.get_open() && !_properties.get_minimized();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -204,7 +175,7 @@ request_properties(const WindowProperties &requested_properties) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 set_window_event(const string &window_event) {
-  MutexHolder holder(_lock);
+  MutexHolder holder(_properties_lock);
   _window_event = window_event;
 }
 
@@ -218,287 +189,9 @@ set_window_event(const string &window_event) {
 string GraphicsWindow::
 get_window_event() const {
   string result;
-  MutexHolder holder(_lock);
+  MutexHolder holder(_properties_lock);
   result = _window_event;
   return result;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::get_channel
-//       Access: Public
-//  Description: Returns a GraphicsChannel pointer that can be used to
-//               access the indicated channel number.  All windows
-//               have at least one channel, channel 0, which
-//               corresponds to the entire window.  If the hardware
-//               supports it, some kinds of windows may also have a
-//               number of hardware channels available at indices
-//               1..n, which will correspond to a subregion of the
-//               window.
-//
-//               This function returns a GraphicsChannel pointer if a
-//               channel is available, or NULL if it is not.  If
-//               called twice with the same index number, it will
-//               return the same pointer.
-////////////////////////////////////////////////////////////////////
-GraphicsChannel *GraphicsWindow::
-get_channel(int index) {
-  MutexHolder holder(_lock);
-  nassertr(index >= 0, NULL);
-
-  if (index < (int)_channels.size()) {
-    if (_channels[index] != (GraphicsChannel *)NULL) {
-      return _channels[index];
-    }
-  }
-
-  // This channel has never been requested before; define it.
-
-  PT(GraphicsChannel) chan;
-  if (index == 0) {
-    // Channel 0 is the default channel: the entire screen.
-    chan = new GraphicsChannel(this);
-  } else {
-    // Any other channel is some hardware-specific channel.
-    GraphicsPipe *pipe = _pipe;
-    if (pipe != (GraphicsPipe *)NULL) {
-      chan = _pipe->get_hw_channel(this, index);
-      if (chan == (GraphicsChannel *)NULL) {
-        display_cat.error()
-          << "GraphicsWindow::get_channel() - got a NULL channel" << endl;
-      } else {
-        if (chan->get_window() != this) {
-          chan = NULL;
-        }
-      }
-    }
-  }
-
-  if (chan != (GraphicsChannel *)NULL) {
-    declare_channel(index, chan);
-  }
-
-  return chan;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::remove_channel
-//       Access: Public
-//  Description: Deletes a GraphicsChannel that was previously created
-//               via a call to get_channel().  Note that the channel
-//               is not actually deleted until all pointers to it are
-//               cleared.
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-remove_channel(int index) {
-  MutexHolder holder(_lock);
-  if (index >= 0 && index < (int)_channels.size()) {
-    _channels[index].clear();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::get_max_channel_index
-//       Access: Public
-//  Description: Returns the largest channel index number yet created,
-//               plus 1.  All channels associated with this window
-//               will have an index number in the range [0,
-//               get_max_channel_index()).  This function, in
-//               conjunction with is_channel_defined(), below, may be
-//               used to determine the complete set of channels
-//               associated with the window.
-////////////////////////////////////////////////////////////////////
-int GraphicsWindow::
-get_max_channel_index() const {
-  int result;
-  {
-    MutexHolder holder(_lock);
-    result = _channels.size();
-  }
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::is_channel_defined
-//       Access: Public
-//  Description: Returns true if the channel with the given index
-//               number has already been defined, false if it hasn't.
-//               If this returns true, calling get_channel() on the
-//               given index number will return the channel pointer.
-//               If it returns false, calling get_channel() will
-//               create and return a new channel pointer.
-////////////////////////////////////////////////////////////////////
-bool GraphicsWindow::
-is_channel_defined(int index) const {
-  bool result;
-  {
-    MutexHolder holder(_lock);
-    if (index < 0 || index >= (int)_channels.size()) {
-      result = false;
-    } else {
-      result = (_channels[index] != (GraphicsChannel *)NULL);
-    }
-  }
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::get_num_display_regions
-//       Access: Published
-//  Description: Returns the number of active DisplayRegions that have
-//               been created within the various layers and channels
-//               of the window.
-////////////////////////////////////////////////////////////////////
-int GraphicsWindow::
-get_num_display_regions() const {
-  determine_display_regions();
-  int result;
-  {
-    MutexHolder holder(_lock);
-    result = _display_regions.size();
-  }
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::get_display_region
-//       Access: Published
-//  Description: Returns the nth active DisplayRegion of those that
-//               have been created within the various layers and
-//               channels of the window.  This may return NULL if n is
-//               out of bounds; particularly likely if the number of
-//               display regions has changed since the last call to
-//               get_num_display_regions().
-////////////////////////////////////////////////////////////////////
-DisplayRegion *GraphicsWindow::
-get_display_region(int n) const {
-  determine_display_regions();
-  DisplayRegion *result;
-  {
-    MutexHolder holder(_lock);
-    if (n >= 0 && n < (int)_display_regions.size()) {
-      result = _display_regions[n];
-    } else {
-      result = NULL;
-    }
-  }
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::take_screenshot
-//       Access: Published
-//  Description: Saves a screenshot of the window to a default
-//               filename, and returns the filename, or empty string
-//               if the screenshot failed.  The default filename is
-//               generated from the supplied prefix and from the
-//               Configrc variable screenshot-filename, which contains
-//               the following strings:
-//
-//                 %~p - the supplied prefix
-//                 %~f - the frame count
-//                 %~e - the value of screenshot-extension
-//                 All other % strings in strftime().
-////////////////////////////////////////////////////////////////////
-Filename GraphicsWindow::
-take_screenshot(const string &prefix) {
-  time_t now = time(NULL);
-  struct tm *ttm = localtime(&now);
-  int frame_count = ClockObject::get_global_clock()->get_frame_count();
-
-  static const int buffer_size = 1024;
-  char buffer[buffer_size];
-
-  ostringstream filename_strm;
-
-  size_t i = 0;
-  while (i < screenshot_filename.length()) {
-    char ch1 = screenshot_filename[i++];
-    if (ch1 == '%' && i < screenshot_filename.length()) {
-      char ch2 = screenshot_filename[i++];
-      if (ch2 == '~' && i < screenshot_filename.length()) {
-        char ch3 = screenshot_filename[i++];
-        switch (ch3) {
-        case 'p':
-          filename_strm << prefix;
-          break;
-
-        case 'f':
-          filename_strm << frame_count;
-          break;
-
-        case 'e':
-          filename_strm << screenshot_extension;
-          break;
-        }
-
-      } else {
-        // Use strftime() to decode the percent code.
-        char format[3] = {'%', ch2, '\0'};
-        if (strftime(buffer, buffer_size, format, ttm)) {
-          for (char *b = buffer; *b != '\0'; b++) {
-            switch (*b) {
-            case ' ':
-            case ':':
-            case '/':
-              filename_strm << '-';
-              break;
-
-            case '\n':
-              break;
-
-            default:
-              filename_strm << *b;
-            }
-          }
-        }
-      }
-    } else {
-      filename_strm << ch1;
-    }
-  }
-
-  Filename filename = filename_strm.str();
-  if (take_screenshot(filename)) {
-    return filename;
-  }
-  return Filename();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::take_screenshot
-//       Access: Published
-//  Description: Saves a screenshot of the window to the indicated
-//               filename.  Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
-bool GraphicsWindow::
-take_screenshot(const Filename &filename) {
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
-    return false;
-  }
-
-  WindowProperties props = get_properties();
-  if (!props.has_size()) {
-    return false;
-  }
-
-  int x_size = props.get_x_size();
-  int y_size = props.get_y_size();
-
-  PixelBuffer p(x_size, y_size, 3, 1, PixelBuffer::T_unsigned_byte,
-                PixelBuffer::F_rgb);
-
-  DisplayRegion dr(x_size, y_size);
-  RenderBuffer rb = _gsg->get_render_buffer(RenderBuffer::T_front);
-  if (!p.copy(_gsg, &dr, rb)) {
-    return false;
-  }
-
-  if (!p.write(filename)) {
-    return false;
-  }
-
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -653,157 +346,50 @@ int GraphicsWindow::
 verify_window_sizes(int numsizes, int *dimen) {
   return numsizes;
 }
-
+ 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::make_scratch_display_region
-//       Access: Public
-//  Description: Allocates and returns a temporary DisplayRegion that
-//               may be used to render offscreen into.  This
-//               DisplayRegion is not associated with any layer.
-//
-//               To allocate a normal DisplayRegion for rendering, use
-//               the interface provided in GraphicsLayer.
+//     Function: GraphicsWindow::request_open
+//       Access: Public, Virtual
+//  Description: This is called by the GraphicsEngine to request that
+//               the window (or whatever) open itself or, in general,
+//               make itself valid, at the next call to
+//               process_events().
 ////////////////////////////////////////////////////////////////////
-PT(DisplayRegion) GraphicsWindow::
-make_scratch_display_region(int x_size, int y_size) const {
-#ifndef NDEBUG
-  {
-    MutexHolder holder(_lock);
-    if (x_size > _properties.get_x_size() || 
-        y_size > _properties.get_y_size()) {
-      display_cat.error()
-        << "make_scratch_display_region(): requested region of size " 
-        << x_size << ", " << y_size << " is larger than window of size "
-        << _properties.get_x_size() << ", " << _properties.get_y_size()
-        << ".\n";
-      x_size = min(x_size, _properties.get_x_size());
-      y_size = min(y_size, _properties.get_y_size());
-    }
-  }
-#endif
-
-  PT(DisplayRegion) region = new DisplayRegion(x_size, y_size);
-  region->copy_clear_settings(*this);
-  return region;
+void GraphicsWindow::
+request_open() {
+  WindowProperties open_properties;
+  open_properties.set_open(true);
+  request_properties(open_properties);
 }
  
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::begin_frame
+//     Function: GraphicsWindow::request_close
 //       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
-bool GraphicsWindow::
-begin_frame() {
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
-    return false;
-  }
-
-  // Okay, we already have a GSG, so activate it.
-  make_current();
-  return _gsg->begin_frame();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::clear
-//       Access: Public
-//  Description: Clears the entire framebuffer before rendering,
-//               according to the settings of get_color_clear_active()
-//               and get_depth_clear_active() (inherited from
-//               ClearableRegion).
-//
-//               This function is called only within the draw thread.
+//  Description: This is called by the GraphicsEngine to request that
+//               the window (or whatever) close itself or, in general,
+//               make itself invalid, at the next call to
+//               process_events().  By that time we promise the gsg
+//               pointer will be cleared.
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
-clear() {
-  if (is_any_clear_active()) {
-    nassertv(_gsg != (GraphicsStateGuardian *)NULL);
-
-    int x_size, y_size;
-    {
-      MutexHolder holder(_lock);
-      x_size = _properties.get_x_size();
-      y_size = _properties.get_y_size();
-    }
-    PT(DisplayRegion) win_dr =
-      make_scratch_display_region(x_size, y_size);
-    DisplayRegionStack old_dr = _gsg->push_display_region(win_dr);
-    _gsg->clear(this);
-    _gsg->pop_display_region(old_dr);
-  }
+request_close() {
+  WindowProperties close_properties;
+  close_properties.set_open(false);
+  request_properties(close_properties);
 }
-
+ 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::end_frame
+//     Function: GraphicsWindow::set_close_now
 //       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
+//  Description: This is called by the GraphicsEngine to insist that
+//               the window be closed immediately.  This is only
+//               called from the window thread.
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
-end_frame() {
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
-  _gsg->end_frame();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::make_current
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               during begin_frame() to ensure the graphics context
-//               is ready for drawing.
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-make_current() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::release_gsg
-//       Access: Public
-//  Description: Releases the current GSG pointer, if it is currently
-//               held, and resets the GSG to NULL.  The window will be
-//               permanently unable to render; this is normally called
-//               only just before destroying the window.  This should
-//               only be called from within the draw thread.
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-release_gsg() {
-  _gsg.clear();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::begin_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after end_frame() has been called on all windows, to
-//               initiate the exchange of the front and back buffers.
-//
-//               This should instruct the window to prepare for the
-//               flip at the next video sync, but it should not wait.
-//
-//               We have the two separate functions, begin_flip() and
-//               end_flip(), to make it easier to flip all of the
-//               windows at the same time.
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-begin_flip() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::end_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after begin_flip() has been called on all windows, to
-//               finish the exchange of the front and back buffers.
-//
-//               This should cause the window to wait for the flip, if
-//               necessary.
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-end_flip() {
+set_close_now() {
+  WindowProperties close_properties;
+  close_properties.set_open(false);
+  set_properties_now(close_properties);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -825,7 +411,7 @@ process_events() {
     // bitmask after all.
     WindowProperties properties;
     {
-      MutexHolder holder(_lock);
+      MutexHolder holder(_properties_lock);
       properties = _requested_properties;
       _requested_properties.clear();
 
@@ -871,11 +457,15 @@ set_properties_now(WindowProperties &properties) {
       if (open_window()) {
         // When the window is first opened, force its size to be
         // broadcast to its display regions.
+        _x_size = _properties.get_x_size();
+        _y_size = _properties.get_y_size();
+        _has_size = true;
+        _is_valid = true;
+
         Channels::iterator ci;
         for (ci = _channels.begin(); ci != _channels.end(); ++ci) {
           GraphicsChannel *chan = (*ci);
-          chan->window_resized(_properties.get_x_size(), 
-                               _properties.get_y_size());
+          chan->window_resized(_x_size, _y_size);
         }
 
       } else {
@@ -893,6 +483,7 @@ set_properties_now(WindowProperties &properties) {
       // yet.
       nassertv(_gsg == (GraphicsStateGuardian *)NULL);
       close_window();
+      _is_valid = false;
     }
     return;
   }
@@ -947,43 +538,7 @@ set_properties_now(WindowProperties &properties) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::close_window
-//       Access: Protected, Virtual
-//  Description: Closes the window right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-close_window() {
-  display_cat.info()
-    << "Closing " << get_type() << "\n";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::reset_window
-//       Access: Protected, Virtual
-//  Description: resets the window framebuffer from its derived
-//               children. Does nothing here.
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-reset_window(bool swapchain) {
-  display_cat.info()
-    << "Resetting " << get_type() << "\n";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
-bool GraphicsWindow::
-open_window() {
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::open_window
+//     Function: GraphicsWindow::do_reshape_request
 //       Access: Protected, Virtual
 //  Description: Called from the window thread in response to a request
 //               from within the code (via request_properties()) to
@@ -1006,7 +561,7 @@ do_reshape_request(int x_origin, int y_origin, int x_size, int y_size) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 system_changed_properties(const WindowProperties &properties) {
-  MutexHolder holder(_lock);
+  MutexHolder holder(_properties_lock);
 
   if (properties.has_size()) {
     system_changed_size(properties.get_x_size(), properties.get_y_size());
@@ -1031,68 +586,14 @@ void GraphicsWindow::
 system_changed_size(int x_size, int y_size) {
   if (x_size != _properties.get_x_size() || 
       y_size != _properties.get_y_size()) {
+    _x_size = x_size;
+    _y_size = y_size;
+    _has_size = true;
+    
     Channels::iterator ci;
     for (ci = _channels.begin(); ci != _channels.end(); ++ci) {
       GraphicsChannel *chan = (*ci);
       chan->window_resized(x_size, y_size);
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::declare_channel
-//       Access: Protected
-//  Description: An internal function to add the indicated
-//               newly-created channel to the list at the indicated
-//               channel number.
-//
-//               The caller must grab and hold _lock before making
-//               this call.
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-declare_channel(int index, GraphicsChannel *chan) {
-  nassertv(index >= 0);
-  if (index >= (int)_channels.size()) {
-    _channels.reserve(index);
-    while (index >= (int)_channels.size()) {
-      _channels.push_back(NULL);
-    }
-  }
-
-  nassertv(index < (int)_channels.size());
-  _channels[index] = chan;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::do_determine_display_regions
-//       Access: Private
-//  Description: Recomputes the list of active DisplayRegions within
-//               the window.
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-do_determine_display_regions() {
-  MutexHolder holder(_lock);
-  _display_regions_stale = false;
-  _display_regions.clear();
-  Channels::const_iterator ci;
-  for (ci = _channels.begin(); ci != _channels.end(); ++ci) {
-    GraphicsChannel *chan = (*ci);
-    if (chan->is_active()) {
-      GraphicsChannel::GraphicsLayers::const_iterator li;
-      for (li = chan->_layers.begin(); li != chan->_layers.end(); ++li) {
-        GraphicsLayer *layer = (*li);
-        if (layer->is_active()) {
-          GraphicsLayer::DisplayRegions::const_iterator dri;
-          for (dri = layer->_display_regions.begin(); 
-               dri != layer->_display_regions.end(); 
-               ++dri) {
-            DisplayRegion *dr = (*dri);
-            if (dr->is_active()) {
-              _display_regions.push_back(dr);
-            }
-          }
-        }
-      }
     }
   }
 }
