@@ -33,7 +33,6 @@
 #endif
 
 #include <ddraw.h>
-
 #include <map>
 
 ////////////////////////////////////////////////////////////////////
@@ -47,6 +46,20 @@ TypeHandle wdxGraphicsWindow::_type_handle;
 #define DEFAULT_CURSOR IDC_ARROW
 
 typedef map<HWND,wdxGraphicsWindow *> HWND_PANDAWIN_MAP;
+
+// CardIDVec is used in DX7 lowmem card-classification pass so DX8 can
+// establish correspondence b/w DX7 mem info & DX8 device
+typedef struct {
+   HMONITOR hMon;
+   DWORD MaxAvailVidMem;
+   bool  bIsLowVidMemCard;
+   GUID  DX7_DeviceGUID;
+   DWORD VendorID,DeviceID;
+//   char  szDriver[MAX_DEVICE_IDENTIFIER_STRING];
+} CardID;
+
+typedef vector<CardID> CardIDVec;
+static CardIDVec *g_pCardIDVec=NULL;
 
 HWND_PANDAWIN_MAP hwnd_pandawin_map;
 wdxGraphicsWindow* global_wdxwinptr = NULL;  // need this for temporary windproc
@@ -69,7 +82,7 @@ LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam,LPARAM lparam)
 unsigned int hardcoded_modifier_buttons[NUM_MODIFIER_KEYS]={VK_SHIFT,VK_MENU,VK_CONTROL,VK_SPACE,VK_TAB,
                                          VK_UP,VK_DOWN,VK_LEFT,VK_RIGHT,VK_PRIOR,VK_NEXT,VK_HOME,VK_END,
                                          VK_INSERT,VK_DELETE,VK_ESCAPE};
-
+/*
 static DWORD BitDepth_2_DDBDMask(DWORD iBitDepth) {
     switch(iBitDepth) {
         case 16: return DDBD_16;
@@ -82,7 +95,7 @@ static DWORD BitDepth_2_DDBDMask(DWORD iBitDepth) {
     }
     return 0x0;
 }
-/*
+
 typedef enum {DBGLEV_FATAL,DBGLEV_ERROR,DBGLEV_WARNING,DBGLEV_INFO,DBGLEV_DEBUG,DBGLEV_SPAM
     } DebugLevels;
  
@@ -93,7 +106,7 @@ void PrintDBGStr(DebugLevels level,HRESULT hr,const char *msgstr) {
     assert(level<=DBGLEV_SPAM);
 
     pstrm=dbg_strms[level];
-    (*pstrm)->fatal() << "GetDisplayMode failed, result = " << ConvD3DErrorToString(hr) << endl;
+    (*pstrm)->fatal() << "GetDisplayMode failed, hr = " << ConvD3DErrorToString(hr) << endl;
 }
 */
 
@@ -140,7 +153,7 @@ extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *p
 //  ddsCaps.dwCaps |= DDSCAPS_VIDEOMEMORY; done internally by DX anyway
 
     if(FAILED(  hr = pDD->GetAvailableVidMem(&ddsCaps,&dwTotal,&dwFree))) {
-        wdxdisplay_cat.debug() << "GetAvailableVidMem failed : result = " << ConvD3DErrorToString(hr) << endl;
+        wdxdisplay_cat.debug() << "GetAvailableVidMem failed : hr = " << ConvD3DErrorToString(hr) << endl;
         exit(1);
     }
 
@@ -651,7 +664,7 @@ bool wdxGraphicsWindow::reset_device_resize_window(RECT &viewrect) {
     if(FAILED(hr)) {
         if(hr==D3DERR_OUTOFVIDEOMEMORY)
             return false;
-        wdxdisplay_cat.error() << "reset_device_resize_window Reset() failed, hr = " << D3DERRORSTRING(hr);
+        wdxdisplay_cat.error() << "reset_device_resize_window Reset() failed" << D3DERRORSTRING(hr);
         exit(1);
     }
 
@@ -1298,7 +1311,7 @@ verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
        DMI.pDDSD_Arr=DDSD_Arr;
     
        if(FAILED(hr = _dxgsg->scrn.pDD->EnumDisplayModes(DDEDM_REFRESHRATES,&ddsd_search,&DMI,EnumDisplayModesCallBack))) {
-           wdxdisplay_cat.fatal() << "resize() - EnumDisplayModes failed, result = " << ConvD3DErrorToString(hr) << endl;
+           wdxdisplay_cat.fatal() << "resize() - EnumDisplayModes failed, hr = " << ConvD3DErrorToString(hr) << endl;
            return 0;
        }
     
@@ -1337,6 +1350,137 @@ verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
 
    return num_valid_modes;
  #endif
+}
+
+BOOL WINAPI DX7_DriverEnumCallback( GUID* pGUID, TCHAR* strDesc,TCHAR* strName,VOID *argptr, HMONITOR hm) {
+//    #define PRNT(XX) ((XX!=NULL) ? XX : "NULL") 
+//    cout << "strDesc: "<< PRNT(strDesc) << "  strName: "<< PRNT(strName)<<endl;
+
+    CardID CurCardID;
+
+    ZeroMemory(&CurCardID,sizeof(CardID));
+
+    if(hm==NULL) {
+        CurCardID.hMon=MonitorFromWindow(GetDesktopWindow(),MONITOR_DEFAULTTOPRIMARY);
+    } else {
+        CurCardID.hMon=hm;
+    }
+    
+    if(pGUID!=NULL)
+        memcpy(&CurCardID.DX7_DeviceGUID,pGUID,sizeof(GUID));
+    
+    if(g_pCardIDVec==NULL) {
+       g_pCardIDVec= new CardIDVec;
+    }
+
+    g_pCardIDVec->push_back(CurCardID);
+    return DDENUMRET_OK;
+}
+    
+void wdxGraphicsWindowGroup::
+find_all_card_memavails(void) {
+    if(g_pCardIDVec!=NULL)  // we've already got the info
+        return;
+
+    #define DDRAW_NAME "ddraw.dll"
+
+    HINSTANCE hDDrawDLL = LoadLibrary(DDRAW_NAME);
+    if(hDDrawDLL == 0) {
+        wdxdisplay_cat.fatal() << "can't locate " << DDRAW_NAME <<"!\n";
+        exit(1);
+    }
+
+    LPDIRECTDRAWCREATEEX pDDCreateEx;
+
+    pDDCreateEx = (LPDIRECTDRAWCREATEEX) GetProcAddress(hDDrawDLL,"DirectDrawCreateEx");
+    if(pDDCreateEx == NULL) {
+        wdxdisplay_cat.fatal() << "GetProcAddr failed for DDCreateEx" << endl;
+        exit(1);
+    }
+
+    LPDIRECTDRAWENUMERATEEX pDDEnumEx = (LPDIRECTDRAWENUMERATEEX) GetProcAddress(hDDrawDLL,"DirectDrawEnumerateExA");
+    if(pDDEnumEx == NULL) {
+         wdxdisplay_cat.fatal() << "GetProcAddr failed for DirectDrawEnumerateEx! (win95 system?)\n";
+         exit(1);
+    }
+
+    HRESULT hr = (*pDDEnumEx)(DX7_DriverEnumCallback, NULL, DDENUM_ATTACHEDSECONDARYDEVICES | DDENUM_NONDISPLAYDEVICES);
+    if(FAILED(hr)) {
+       wdxdisplay_cat.fatal()   << "DirectDrawEnumerateEx failed" << D3DERRORSTRING(hr);
+       exit(1);
+    }
+
+    if(g_pCardIDVec==NULL) {
+      wdxdisplay_cat.error() << "DirectDrawEnumerateEx enum'ed no devices!\n";
+      return;
+    }
+
+    GUID ZeroGUID;
+    ZeroMemory(&ZeroGUID,sizeof(GUID));
+
+    if(g_pCardIDVec->size()>1) {
+        assert(IsEqualGUID(ZeroGUID,(*g_pCardIDVec)[0].DX7_DeviceGUID));
+        // delete enum of primary display (always the first), since it is duplicated by explicit entry
+        g_pCardIDVec->erase(g_pCardIDVec->begin());
+    }
+
+    for(UINT i=0;i<g_pCardIDVec->size();i++) {
+        LPDIRECTDRAW7 pDD;
+        BYTE ddd_space[sizeof(DDDEVICEIDENTIFIER2)+4];  //bug in DX7 requires 4 extra bytes for GetDeviceID
+        DDDEVICEIDENTIFIER2 *pDX7DeviceID=(DDDEVICEIDENTIFIER2 *)&ddd_space[0];
+        GUID *pGUID= &((*g_pCardIDVec)[i].DX7_DeviceGUID);
+
+        if(IsEqualGUID(*pGUID,ZeroGUID))
+            pGUID=NULL;
+
+        // Create the Direct Draw Object
+        hr = (*pDDCreateEx)(pGUID,(void **)&pDD, IID_IDirectDraw7, NULL);
+        if(FAILED(hr)) {
+              wdxdisplay_cat.fatal() << "DirectDrawCreateEx failed for device ("<< i << ")" << D3DERRORSTRING(hr);
+              continue;
+        }
+
+        ZeroMemory(ddd_space,sizeof(DDDEVICEIDENTIFIER2));
+
+        hr = pDD->GetDeviceIdentifier(pDX7DeviceID,0x0);
+        if(FAILED(hr)) {
+              wdxdisplay_cat.fatal() << "GetDeviceID failed for device ("<< i << ")" << D3DERRORSTRING(hr);
+              continue;
+        }
+
+        (*g_pCardIDVec)[i].DeviceID = pDX7DeviceID->dwDeviceId;
+        (*g_pCardIDVec)[i].VendorID = pDX7DeviceID->dwVendorId;
+    
+        // Get Current VidMem avail.  Note this is only an estimate, when we switch to fullscreen
+        // mode from desktop, more vidmem will be available (typically 1.2 meg).  I dont want
+        // to switch to fullscreen more than once due to the annoying monitor flicker, so try
+        // to figure out optimal mode using this estimate
+        DDSCAPS2 ddsGAVMCaps;
+        DWORD dwVidMemTotal,dwVidMemFree;
+        dwVidMemTotal=dwVidMemFree=0;
+        ZeroMemory(&ddsGAVMCaps,sizeof(DDSCAPS2));
+        ddsGAVMCaps.dwCaps = DDSCAPS_VIDEOMEMORY; //set internally by DX anyway, dont think this any different than 0x0
+        if(FAILED(hr = pDD->GetAvailableVidMem(&ddsGAVMCaps,&dwVidMemTotal,&dwVidMemFree))) {
+           wdxdisplay_cat.error() << "GetAvailableVidMem failed for device #"<< pDX7DeviceID->szDescription<< D3DERRORSTRING(hr);
+           // goto skip_device;
+           exit(1);  // probably want to exit, since it may be my fault
+        }
+    
+        pDD->Release();  // release DD obj, since this is all we needed it for
+        
+        // after SetDisplayMode, GetAvailVidMem totalmem seems to go down by 1.2 meg (contradicting above
+        // comment and what I think would be correct behavior (shouldnt FS mode release the desktop vidmem?),
+        // so this is the true value
+        (*g_pCardIDVec)[i].MaxAvailVidMem = dwVidMemTotal;
+        
+        #define LOWVIDMEMTHRESHOLD 3500000
+        #define CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD 1000000
+        
+        // assume buggy drivers (this means you, FireGL2) may return zero for dwVidMemTotal, so ignore value if its < CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD
+        (*g_pCardIDVec)[i].bIsLowVidMemCard = ((dwVidMemTotal>CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD) && (dwVidMemTotal< LOWVIDMEMTHRESHOLD));
+    }
+
+    FreeLibrary(hDDrawDLL);
 }
 
 /*
@@ -1447,7 +1591,7 @@ bool wdxGraphicsWindow::FindBestDepthFormat(DXScreenData &Display,D3DDISPLAYMODE
           if(hr==D3DERR_NOTAVAILABLE)
               continue;
 
-          wdxdisplay_cat.error() << "unexpected CheckDeviceFormat failure, hr=" << D3DERRORSTRING(hr);
+          wdxdisplay_cat.error() << "unexpected CheckDeviceFormat failure" << D3DERRORSTRING(hr);
           exit(1);
         }
 
@@ -1457,7 +1601,7 @@ bool wdxGraphicsWindow::FindBestDepthFormat(DXScreenData &Display,D3DDISPLAYMODE
                                            TestDepthFmt);
 
         if(FAILED(hr) && (hr!=D3DERR_NOTAVAILABLE)) {
-          wdxdisplay_cat.error() << "unexpected CheckDepthStencilMatch failure, hr=" << D3DERRORSTRING(hr);
+          wdxdisplay_cat.error() << "unexpected CheckDepthStencilMatch failure" << D3DERRORSTRING(hr);
           exit(1);
         }
 
@@ -1491,7 +1635,7 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
         D3DDISPLAYMODE dispmode;
         hr = _dxgsg->scrn.pD3D8->EnumAdapterModes(_dxgsg->scrn.CardIDNum,i,&dispmode);
         if(FAILED(hr)) {
-            wdxdisplay_cat.error() << "EnumAdapterDisplayMode failed for device #"<<_dxgsg->scrn.CardIDNum<<": result = " << D3DERRORSTRING(hr);
+            wdxdisplay_cat.error() << "EnumAdapterDisplayMode failed for device #"<<_dxgsg->scrn.CardIDNum<< D3DERRORSTRING(hr);
             exit(1); 
         }
 
@@ -1509,7 +1653,7 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
            if(hr==D3DERR_NOTAVAILABLE)
                continue;
              else {
-                 wdxdisplay_cat.error() << "CheckDeviceFormat failed for device #"<<_dxgsg->scrn.CardIDNum<<": result = " << D3DERRORSTRING(hr);
+                 wdxdisplay_cat.error() << "CheckDeviceFormat failed for device #"<<_dxgsg->scrn.CardIDNum << D3DERRORSTRING(hr);
                  exit(1); 
              }
         }
@@ -1575,7 +1719,7 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
          if(hr==D3DERR_INVALIDDEVICE) {
              wdxdisplay_cat.fatal() << "No DirectX 8 D3D-capable 3D hardware detected!  Exiting...\n";
          } else {
-             wdxdisplay_cat.fatal() << "GetDeviceCaps failed, hr = " << D3DERRORSTRING(hr);
+             wdxdisplay_cat.fatal() << "GetDeviceCaps failed" << D3DERRORSTRING(hr);
          }
          exit(1);
     }
@@ -1584,9 +1728,33 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
     memcpy(&_dxgsg->scrn.d3dcaps,&d3dcaps,sizeof(D3DCAPS8));  
     _dxgsg->scrn.CardIDNum=pDevInfo->cardID; 
 
+    _dxgsg->scrn.MaxAvailVidMem = 0xFFFFFFFF;
+    _dxgsg->scrn.bIsLowVidMemCard = false;
+
     if(d3dcaps.MaxStreams==0) {
-       wdxdisplay_cat.info() << "Note: video driver is a pre-DX8-class driver\n";
-    }
+       wdxdisplay_cat.info() << "Note: video driver is a pre-DX8-class driver, checking for low memory cards\n";
+       assert(IS_VALID_PTR(_pParentWindowGroup));
+
+       // look for low memory video cards
+       _pParentWindowGroup->find_all_card_memavails();
+
+       UINT IDnum;
+
+       // simple linear search
+       for(IDnum=0;IDnum<g_pCardIDVec->size();IDnum++) {
+//         wdxdisplay_cat.info() << "comparing '" << (*g_pCardIDVec)[IDnum].Driver << "' to '" << _dxgsg->scrn.DXDeviceID.Driver << "'\n";
+           if(//(stricmp((*g_pCardIDVec)[IDnum].szDriver,pDevInfo->szDriver)==0) &&
+              (pDevInfo->VendorID==(*g_pCardIDVec)[IDnum].VendorID) &&
+              (pDevInfo->DeviceID==(*g_pCardIDVec)[IDnum].DeviceID) &&
+              (pDevInfo->hMon==(*g_pCardIDVec)[IDnum].hMon))
+             break;
+       }
+
+       if(IDnum<g_pCardIDVec->size()) {
+           _dxgsg->scrn.MaxAvailVidMem = (*g_pCardIDVec)[IDnum].MaxAvailVidMem;
+           _dxgsg->scrn.bIsLowVidMemCard = (*g_pCardIDVec)[IDnum].bIsLowVidMemCard;
+       } else wdxdisplay_cat.error() << "Error: couldnt find a CardID match in DX7 info, assuming card is not a lowmem card\n";
+    } 
 
     if((bWantStencil) && (d3dcaps.StencilCaps==0x0)) {
             wdxdisplay_cat.fatal() << "Stencil ability requested, but device #" << pDevInfo->cardID << " (" << _dxgsg->scrn.DXDeviceID.Description<<"), has no stencil capability!\n";
@@ -1594,50 +1762,7 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
     }
     _dxgsg->scrn.bIsTNLDevice=((d3dcaps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT)!=0);
 
-#ifdef DO_LOWVIDMEM_CHKS
-    // only way to get vidmem estimate prior to device creation and displaymode changing on DX8 is to use DX7 ddraw
 
-    LPDIRECTDRAW7 pDD;
-
-    // Create the Direct Draw Objects
-    hr = (*_pParentWindowGroup->_pDDCreateEx)(&pDevInfo->guidDeviceIdentifier,(void **)&pDD, IID_IDirectDraw7, NULL);
-    if(FAILED(hr)) {
-          wdxdisplay_cat.fatal() << "DirectDrawCreateEx failed for device ("<<pDevInfo->cardID<< "): result = " << D3DERRORSTRING(hr);
-          return false;
-    }
-    
-    // Get Current VidMem avail.  Note this is only an estimate, when we switch to fullscreen
-    // mode from desktop, more vidmem will be available (typically 1.2 meg).  I dont want
-    // to switch to fullscreen more than once due to the annoying monitor flicker, so try
-    // to figure out optimal mode using this estimate
-    DDSCAPS2 ddsGAVMCaps;
-    DWORD dwVidMemTotal,dwVidMemFree;
-    dwVidMemTotal=dwVidMemFree=0;
-    ZeroMemory(&ddsGAVMCaps,sizeof(DDSCAPS2));
-    ddsGAVMCaps.dwCaps = DDSCAPS_VIDEOMEMORY; //set internally by DX anyway, dont think this any different than 0x0
-    if(FAILED(hr = pDD->GetAvailableVidMem(&ddsGAVMCaps,&dwVidMemTotal,&dwVidMemFree))) {
-       wdxdisplay_cat.error() << "GetAvailableVidMem failed for device #"<<pDevInfo->cardID<<": result = " << D3DERRORSTRING(hr);
-       // goto skip_device;
-       exit(1);  // probably want to exit, since it may be my fault
-    }
-
-    pDD->Release();  // release DD obj, since this is all we needed it for
-    
-    // after SetDisplayMode, GetAvailVidMem totalmem seems to go down by 1.2 meg (contradicting above
-    // comment and what I think would be correct behavior (shouldnt FS mode release the desktop vidmem?),
-    // so this is the true value
-    _dxgsg->scrn.MaxAvailVidMem = dwVidMemTotal;
-    
-    #define LOWVIDMEMTHRESHOLD 3500000
-    #define CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD 1000000
-    
-    // assume buggy drivers (this means you, FireGL2) may return zero for dwVidMemTotal, so ignore value if its < CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD
-    _dxgsg->scrn.bIsLowVidMemCard = ((dwVidMemTotal>CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD) && (dwVidMemTotal< LOWVIDMEMTHRESHOLD));
-
-#else
-    _dxgsg->scrn.bIsLowVidMemCard = false;
-    _dxgsg->scrn.MaxAvailVidMem = 350000000;
-#endif
 
     bool bNeedZBuffer = ((!(d3dcaps.RasterCaps & D3DPRASTERCAPS_ZBUFFERLESSHSR )) 
                          && (_props._mask & W_DEPTH));
@@ -1664,7 +1789,6 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
            return false;
         }
         
-        #ifdef DO_LOWVIDMEM_CHKS
         if(_dxgsg->scrn.bIsLowVidMemCard) {
                // hack: figuring out exactly what res to use is tricky, instead I will
                // just use 640x480 if we have < 3 meg avail
@@ -1675,7 +1799,7 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
                    pixFmt = D3DFMT_X1R5G5B5;
                else {
                    wdxdisplay_cat.fatal() << "Low Memory VidCard has no supported FullScreen 16bpp resolutions at "<< dwRenderWidth << "x" << dwRenderHeight   
-                   << " for device #" << pDevInfo->cardID << " (" << _dxgsg->scrn.DXDeviceID.Description<<"), skipping device...\n";
+                   << " for device #" << pDevInfo->cardID << " (" <<  _dxgsg->scrn.DXDeviceID.Description <<"), skipping device...\n";
                    return false;
                }
                dwRenderWidth=640;
@@ -1683,14 +1807,13 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
                dx_force_16bpptextures = true;
         
                if(wdxdisplay_cat.is_info())
-                   wdxdisplay_cat.info() << "Available VidMem (" << dwVidMemFree<<") is under " << LOWVIDMEMTHRESHOLD <<", using 640x480 16bpp rendertargets to save tex vidmem.\n";
+                   wdxdisplay_cat.info() << "Available VidMem (" << _dxgsg->scrn.MaxAvailVidMem << ") is under " << LOWVIDMEMTHRESHOLD <<", using 640x480 16bpp rendertargets to save tex vidmem.\n";
         }
-        #endif
     } else {
         D3DDISPLAYMODE dispmode;
         hr=pD3D8->GetAdapterDisplayMode(pDevInfo->cardID,&dispmode);
         if(FAILED(hr)) {
-            wdxdisplay_cat.fatal() << "GetAdapterDisplayMode(" << pDevInfo->cardID << ") failed, hr=" << D3DERRORSTRING(hr);
+            wdxdisplay_cat.fatal() << "GetAdapterDisplayMode(" << pDevInfo->cardID << ") failed" << D3DERRORSTRING(hr);
             exit(1);
         }
         pixFmt = dispmode.Format;
@@ -1719,7 +1842,7 @@ SetCoopLevelsAndDisplayModes(void) {
 
     if(!_props._fullscreen) {
         if(FAILED(hr = pScrn->pDD->SetCooperativeLevel(_hParentWindow, SCL_FPUFlag | DDSCL_NORMAL))) {
-            wdxdisplay_cat.fatal() << "SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
+            wdxdisplay_cat.fatal() << "SetCooperativeLevel failed" << ConvD3DErrorToString(hr) << endl;
             exit(1);
         }
         return; 
@@ -1739,7 +1862,7 @@ SetCoopLevelsAndDisplayModes(void) {
        // all ddraw objs need to have same focus window
        if(_windows.size()>1) {    
            if(FAILED(hr = pScrn->pDD->SetCooperativeLevel(_hParentWindow, DDSCL_SETFOCUSWINDOW))) {
-               wdxdisplay_cat.fatal() << "SetCooperativeLevel SetFocusWindow failed on device 0: result = " << ConvD3DErrorToString(hr) << endl;
+               wdxdisplay_cat.fatal() << "SetCooperativeLevel SetFocusWindow failed on device 0: hr = " << ConvD3DErrorToString(hr) << endl;
                exit(1);
            }
        }
@@ -1748,13 +1871,13 @@ SetCoopLevelsAndDisplayModes(void) {
        // so we do it, it really shouldnt be necessary if drivers werent buggy
        for(int jj=0;jj<2;jj++) {
            if(FAILED(hr = pScrn->pDD->SetCooperativeLevel(pScrn->hWnd, SCL_FLAGS))) {
-               wdxdisplay_cat.fatal() << "SetCooperativeLevel failed for device #"<< devnum<<": result = " << ConvD3DErrorToString(hr) << endl;
+               wdxdisplay_cat.fatal() << "SetCooperativeLevel failed for device #"<< devnum<<": hr = " << ConvD3DErrorToString(hr) << endl;
                exit(1);
            }
        }
     
        if(FAILED(hr = pScrn->pDD->TestCooperativeLevel())) {
-           wdxdisplay_cat.fatal() << "TestCooperativeLevel failed for device #"<< devnum<<": result = " << ConvD3DErrorToString(hr) << endl;
+           wdxdisplay_cat.fatal() << "TestCooperativeLevel failed for device #"<< devnum<<": hr = " << ConvD3DErrorToString(hr) << endl;
            wdxdisplay_cat.fatal() << "Full screen app failed to get exclusive mode on init, exiting..\n";
            exit(1);
        }
@@ -1763,7 +1886,7 @@ SetCoopLevelsAndDisplayModes(void) {
        // let driver choose default refresh rate (hopefully its >=60Hz)
        if(FAILED( hr = pScrn->pDD->SetDisplayMode( pScrn->dwRenderWidth, pScrn->dwRenderHeight,
                                             pScrn->dwFullScreenBitDepth, 0, 0 ))) {
-           wdxdisplay_cat.fatal() << "SetDisplayMode failed to set ("<<pScrn->dwRenderWidth<<"x"<<pScrn->dwRenderHeight<<"x"<<pScrn->dwFullScreenBitDepth<<") on device #"<< pScrn->CardIDNum<<": result = " << ConvD3DErrorToString(hr) << endl;
+           wdxdisplay_cat.fatal() << "SetDisplayMode failed to set ("<<pScrn->dwRenderWidth<<"x"<<pScrn->dwRenderHeight<<"x"<<pScrn->dwFullScreenBitDepth<<") on device #"<< pScrn->CardIDNum<<": hr = " << ConvD3DErrorToString(hr) << endl;
            exit(1);
        }
     
@@ -1775,7 +1898,7 @@ SetCoopLevelsAndDisplayModes(void) {
          /*
          #ifdef _DEBUG
           if(FAILED(hr = (*Disply).pDD->GetAvailableVidMem(&ddsGAVMCaps,&dwVidMemTotal,&dwVidMemFree))) {
-              wdxdisplay_cat.debug() << "GetAvailableVidMem failed : result = " << ConvD3DErrorToString(hr) << endl;
+              wdxdisplay_cat.debug() << "GetAvailableVidMem failed : hr = " << ConvD3DErrorToString(hr) << endl;
               exit(1);
           }
           wdxdisplay_cat.debug() << "after fullscreen switch: GetAvailableVidMem returns Total: " << dwVidMemTotal/1000000.0 << "  Free: " << dwVidMemFree/1000000.0 << endl;
@@ -1935,7 +2058,7 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
         hr = Display.pD3D8->GetAdapterDisplayMode(Display.CardIDNum, &dispmode); 
 
         if(FAILED(hr)) {
-            wdxdisplay_cat.fatal() << "GetAdapterDisplayMode failed result = " << D3DERRORSTRING(hr);
+            wdxdisplay_cat.fatal() << "GetAdapterDisplayMode failed" << D3DERRORSTRING(hr);
             exit(1);
         }
 
@@ -1962,7 +2085,7 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
                                  dwBehaviorFlags, pPresParams, &Display.pD3DDevice);
 
         if(FAILED(hr)) {
-            wdxdisplay_cat.fatal() << "D3D CreateDevice failed for device #" << Display.CardIDNum << ", " << D3DERRORSTRING(hr);
+            wdxdisplay_cat.fatal() << "D3D CreateDevice failed for device #" << Display.CardIDNum << D3DERRORSTRING(hr);
             exit(1);
         }
     }  // end create windowed buffers
@@ -1991,7 +2114,7 @@ Fallback_to_16bpp_buffers:
 
             dx_force_16bpp_zbuffer=true;
             if(wdxdisplay_cat.info())
-               wdxdisplay_cat.info() << "CreateDevice failed, retrying w/16bpp buffers on device #"<< Display.CardIDNum<< ", hr = " << D3DERRORSTRING(hr);
+               wdxdisplay_cat.info() << "CreateDevice failed, retrying w/16bpp buffers on device #"<< Display.CardIDNum << D3DERRORSTRING(hr);
             CreateScreenBuffersAndDevice(Display);
             return;
     } else {
@@ -2036,14 +2159,14 @@ void wdxGraphicsWindow::init_resized_window(void) {
 
     hr = pDisplay->pD3DDevice->ResourceManagerDiscardBytes(0);
     if(FAILED(hr)) {
-        wdxdisplay_cat.error() << "ResourceManagerDiscardBytes failed for device #" << pDisplay->CardIDNum << ", hr=" << D3DERRORSTRING(hr);
+        wdxdisplay_cat.error() << "ResourceManagerDiscardBytes failed for device #" << pDisplay->CardIDNum << D3DERRORSTRING(hr);
     }
 
     // Create the viewport
     D3DVIEWPORT8 vp = {0,0,_props._xsize,_props._ysize,0.0f,1.0f};
     hr = pDisplay->pD3DDevice->SetViewport( &vp );
     if(FAILED(hr)) {
-        wdxdisplay_cat.fatal() << "SetViewport failed for device #" << pDisplay->CardIDNum << ", " << D3DERRORSTRING(hr);
+        wdxdisplay_cat.fatal() << "SetViewport failed for device #" << pDisplay->CardIDNum << D3DERRORSTRING(hr);
         exit(1);
     }
 
@@ -2536,20 +2659,6 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
         exit(1);
     }
 
-    #define DDRAW_NAME "ddraw.dll"
-
-    _hDDrawDLL = LoadLibrary(DDRAW_NAME);
-    if(_hDDrawDLL == 0) {
-        wdxdisplay_cat.fatal() << "can't locate " << DDRAW_NAME <<"!\n";
-        exit(1);
-    }
-
-    _pDDCreateEx = (LPDIRECTDRAWCREATEEX) GetProcAddress(_hDDrawDLL,"DirectDrawCreateEx");
-    if(_pDDCreateEx == NULL) {
-        wdxdisplay_cat.fatal() << "Panda currently requires at least DirectX 7.0!\n";
-        exit(1);
-    }
-
     _hMouseCursor = NULL;
     _bLoadedCustomCursor = false;
 
@@ -2565,6 +2674,9 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
               exit(1);
           }
     }     
+
+    // Do all DX7 stuff first
+//  find_all_card_memavails();
 
     LPDIRECT3D8 pD3D8;
 
@@ -2609,6 +2721,7 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
 
     for(UINT i=0;i<_numAdapters;i++) {
         D3DADAPTER_IDENTIFIER8 adapter_info;
+        ZeroMemory(&adapter_info,sizeof(D3DADAPTER_IDENTIFIER8));
         hr = pD3D8->GetAdapterIdentifier(i,D3DENUM_NO_WHQL_LEVEL,&adapter_info);
         if(FAILED(hr)) {
             wdxdisplay_cat.fatal() << "D3D GetAdapterID failed" << D3DERRORSTRING(hr);
@@ -2624,13 +2737,22 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
             << " SubsysID: 0x" << (void*) adapter_info.SubSysId << " Revision: 0x"
             << (void*) adapter_info.Revision << endl;
 
+        HMONITOR hMon=pD3D8->GetAdapterMonitor(i);
+        if(hMon==NULL) {
+            wdxdisplay_cat.info() << "D3D8 Adapter[" << i << "]: seems to be disabled, skipping it\n";
+            continue;
+        }
+
         DXDeviceInfo devinfo;
         ZeroMemory(&devinfo,sizeof(devinfo));
         memcpy(&devinfo.guidDeviceIdentifier,&adapter_info.DeviceIdentifier,sizeof(GUID));
         strncpy(devinfo.szDescription,adapter_info.Description,MAX_DEVICE_IDENTIFIER_STRING);
         strncpy(devinfo.szDriver,adapter_info.Driver,MAX_DEVICE_IDENTIFIER_STRING);
-        devinfo.hMon=pD3D8->GetAdapterMonitor(i);
+        devinfo.VendorID=adapter_info.VendorId;
+        devinfo.DeviceID=adapter_info.DeviceId;
+        devinfo.hMon=hMon;
         devinfo.cardID=i;
+
         _DeviceInfoVec.push_back(devinfo);
     }
 
@@ -2666,6 +2788,17 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
 
     _DeviceInfoVec.clear();  // dont need this anymore
 
+    if(wdxdisplay_cat.is_debug() && (g_pCardIDVec!=NULL)) {
+      // print out the MaxAvailVidMems
+      for(UINT i=0;i<_windows.size();i++) {
+        D3DADAPTER_IDENTIFIER8 adapter_info;
+        pD3D8->GetAdapterIdentifier(_windows[i]->_dxgsg->scrn.CardIDNum,D3DENUM_NO_WHQL_LEVEL,&adapter_info);
+        wdxdisplay_cat.info() << "D3D8 Adapter[" << i << "]: " << adapter_info.Description 
+                              << ", MaxAvailVideoMem: " << _windows[i]->_dxgsg->scrn.MaxAvailVidMem
+                              << ", IsLowVidMemCard: " << (_windows[i]->_dxgsg->scrn.bIsLowVidMemCard ? "true" : "false") << endl;
+      }
+    }
+
     CreateWindows();  // creates win32 windows  (need to do this before Setting coopLvls and display modes, 
                       // but after we have all the monitor handles needed by CreateWindow()
 
@@ -2681,6 +2814,8 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
     for(UINT i=0;i<num_windows;i++) {
         _windows[i]->finish_window_setup();
     }
+
+    SAFE_DELETE(g_pCardIDVec);  // dont need this anymore
 
     for(UINT i=0;i<num_windows;i++) {
         _windows[i]->_dxgsg->SetDXReady(true);
@@ -2727,12 +2862,6 @@ wdxGraphicsWindowGroup::~wdxGraphicsWindowGroup() {
 
     if(_bLoadedCustomCursor && (_hMouseCursor!=NULL))
       DestroyCursor(_hMouseCursor);
-
-
-    if(_hDDrawDLL != NULL) {
-       FreeLibrary(_hDDrawDLL);
-       _hDDrawDLL = NULL;
-    }
 
     if(_hD3D8_DLL != NULL) {
        FreeLibrary(_hD3D8_DLL);

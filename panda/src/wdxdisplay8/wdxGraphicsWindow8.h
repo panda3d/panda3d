@@ -41,6 +41,7 @@ typedef struct {
    char    szDriver[MAX_DEVICE_IDENTIFIER_STRING];
    char    szDescription[MAX_DEVICE_IDENTIFIER_STRING];
    GUID    guidDeviceIdentifier;
+   DWORD   VendorID,DeviceID;
    HMONITOR hMon;
 } DXDeviceInfo;
 typedef vector<DXDeviceInfo> DXDeviceInfoVec;
@@ -151,6 +152,8 @@ public:
     wdxGraphicsWindowGroup(GraphicsPipe *pipe,int num_windows,GraphicsWindow::Properties *WinPropArray);
     ~wdxGraphicsWindowGroup();
 //    void SetCoopLevelsAndDisplayModes(void);
+protected:
+    void find_all_card_memavails(void);
 public:
     void CreateWindows(void);
     void make_windows(GraphicsPipe *,int num_windows,GraphicsWindow::Properties *pWinPropArray);
@@ -166,8 +169,7 @@ public:
     bool      _bIsDX81;
     DWORD      _numMonitors,_numAdapters;
     LPDIRECT3D8 _pD3D8;
-    HINSTANCE _hDDrawDLL,_hD3D8_DLL;
-    LPDIRECTDRAWCREATEEX  _pDDCreateEx;
+    HINSTANCE   _hD3D8_DLL;
     DXDeviceInfoVec _DeviceInfoVec;
 };
 
