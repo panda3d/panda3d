@@ -774,8 +774,9 @@ search_for_device(LPDIRECT3D8 pD3D8, DXDeviceInfo *device_info) {
   wdxGraphicsPipe8 *dxpipe;
   DCAST_INTO_R(dxpipe, _pipe, false);
 
-  DWORD dwRenderWidth = get_properties().get_x_size();
-  DWORD dwRenderHeight = get_properties().get_y_size();
+  WindowProperties properties = get_properties();
+  DWORD dwRenderWidth = properties.get_x_size();
+  DWORD dwRenderHeight = properties.get_y_size();
   HRESULT hr;
 
   assert(_dxgsg != NULL);
@@ -1038,6 +1039,27 @@ search_for_device(LPDIRECT3D8 pD3D8, DXDeviceInfo *device_info) {
   _dxgsg->scrn.DisplayMode.Format = pixFmt;
   _dxgsg->scrn.DisplayMode.RefreshRate = D3DPRESENT_RATE_DEFAULT;
   _dxgsg->scrn.hMon = device_info->hMon;
+
+  if (dwRenderWidth != properties.get_x_size() ||
+      dwRenderHeight != properties.get_y_size()) {
+    // This is probably not the best place to put this; I'm just putting
+    // it here for now because if dx_pick_best_screenres is true, the
+    // code above might have changed the size of the window
+    // unexpectedly.  This code gets called when make_gsg() is called,
+    // which means it is called in the draw thread, but this method
+    // should really be called from the window thread.  In DirectX those
+    // may always be the same threads anyway, so we may be all right.
+    // Still, it's a little strange that the window may change size
+    // after it has already been opened, at the time we create the GSG
+    // for it; it would be better if we could find a way to do this
+    // resolution-selection logic earlier, say at the time the window is
+    // created.
+    system_changed_size(dwRenderWidth, dwRenderHeight);
+    WindowProperties resized_props;
+    resized_props.set_size(dwRenderWidth, dwRenderHeight);
+    _properties.add_properties(resized_props);
+  }
+
   return true;
 }
 
