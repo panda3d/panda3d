@@ -914,11 +914,11 @@ class DirectSessionPanel(AppShell):
     def updateLightInfo(self, page = None):
         # Set main lighting button
         self.enableLights.set(
-            base.initialState.hasAttribute(LightTransition.getClassType()))
+            render.arc().hasTransition(LightTransition.getClassType()))
         # Set light specific info
         if self.activeLight:
             l = self.activeLight.getLight()
-            self.lightActive.set(direct.lights.la.isOn(l))
+            self.lightActive.set(direct.lights.lt.isOn(l))
             lightColor = l.getColor() * 255.0
             self.lightColor.set([lightColor[0], lightColor[1],
                                  lightColor[2], lightColor[3]], 0)
