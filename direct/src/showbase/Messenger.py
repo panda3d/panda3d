@@ -307,8 +307,7 @@ class Messenger:
         """
         str = event.ljust(32) + '\t'
         acceptorDict = self.dict[event]
-        for object in acceptorDict.keys():
-            method, extraArgs, persistent = acceptorDict[object]
+        for object, (method, extraArgs, persistent) in acceptorDict.items():
             str = str + self.__methodRepr(method) + ' '
         str = str + '\n'
         return str
