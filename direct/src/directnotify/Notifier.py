@@ -36,7 +36,38 @@ class Notifier:
         Print handling routine"""
         return "%s: info = %d, warning = %d, debug = %d, logging = %d" % \
                (self.__name, self.__info, self.__warning, self.__debug, self.__logging)
-    
+
+    # Severity funcs
+    def setSeverity(self, severity):
+        from NotifySeverity import *
+        if severity >= NSError:
+            self.setWarning(0)
+            self.setInfo(0)
+            self.setDebug(0)
+        elif severity == NSWarning:
+            self.setWarning(1)
+            self.setInfo(0)
+            self.setDebug(0)
+        elif severity == NSInfo:
+            self.setWarning(1)
+            self.setInfo(1)
+            self.setDebug(0)
+        elif severity <= NSDebug:
+            self.setWarning(1)
+            self.setInfo(1)
+            self.setDebug(1)
+
+    def getSeverity(self):
+        from NotifySeverity import *
+        if self.getDebug():
+            return NSDebug
+        elif self.getInfo():
+            return NSInfo
+        elif self.getWarning():
+            return NSWarning
+        else:
+            return NSError
+
     # error funcs
     def error(self, errorString, exception=StandardError):
         """error(self, string, Exception=StandardError)
