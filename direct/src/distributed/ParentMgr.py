@@ -39,7 +39,7 @@ class ParentMgr:
     def requestReparent(self, child, parentToken):
         if parentToken in self.token2nodepath.keys():
             # this parent has registered
-            self.notify.debug('performing wrtReparent of %s to %s' %
+            self.notify.debug("performing wrtReparent of %s to '%s'" %
                               (child, parentToken))
             child.wrtReparentTo(self.token2nodepath[parentToken])
         else:
@@ -53,10 +53,10 @@ class ParentMgr:
     def registerParent(self, token, parent):
         if token in self.token2nodepath.keys():
             self.notify.error(
-                'token %s already in the table, referencing %s' %
+                "token '%s' already in the table, referencing %s" %
                 (token, self.token2nodepath[token]))
 
-        self.notify.debug('registering %s as %s' % (parent, token))
+        self.notify.debug("registering %s as '%s'" % (parent, token))
         self.token2nodepath[token] = parent
 
         # if we have any pending children, add them
@@ -87,14 +87,14 @@ class ParentMgr:
                 # will happen in a single frame, and the net result will
                 # be that the toon will be in the right place when
                 # rendering starts.
-                self.notify.debug('performing reparent of %s to %s' %
+                self.notify.debug("performing reparent of %s to '%s'" %
                                   (child, token))
                 child.reparentTo(self.token2nodepath[token])
             del self.pendingChildren[token]
 
     def unregisterParent(self, token):
         if token not in self.token2nodepath.keys():
-            self.notify.warning('unknown token %s' % token)
+            self.notify.warning("unknown token '%s'" % token)
             return
         self.notify.debug("unregistering parent '%s'" % (token))
         del self.token2nodepath[token]
