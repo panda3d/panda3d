@@ -36,7 +36,13 @@ class ClientDistClass:
             self.constructor = eval(self.name + "." + self.name)
         except (NameError, AttributeError), e:
             self.notify.warning("%s.%s does not exist: %s" % (self.name, self.name, e))
-            self.constructor = None 
+            self.constructor = None
+
+        # If this assertion fails, you probably had an import error in
+        # a file named in your toon.dc file, or in some file included
+        # in a file named in your toon.dc file.
+        assert(self.constructor != None)
+        
         return
 
     def parseFields(self, dcClass):
