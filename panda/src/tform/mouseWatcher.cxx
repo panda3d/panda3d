@@ -50,6 +50,12 @@ MouseWatcher(const string &name) : DataNode(name) {
   _preferred_button_down_region = (MouseWatcherRegion *)NULL;
   _button_down = false;
   _eh = (EventHandler*)0L;
+
+  // When this flag is true, the mouse pointer is allowed to be
+  // "entered" into multiple regions simultaneously; when false, it
+  // will only be "within" multiple regions, but "entered" into the
+  // topmost of those.
+  _enter_multiple = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -190,7 +196,7 @@ remove_group(MouseWatcherGroup *group) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::get_over_regions
-//       Access: Private
+//       Access: Protected
 //  Description: Fills up the "regions" list with the set of regions
 //               that the indicated point is over, sorted in order by
 //               pointer.
@@ -238,7 +244,7 @@ get_over_regions(MouseWatcher::VRegions &regions, const LPoint2f &pos) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::get_preferred_region
-//       Access: Private, Static
+//       Access: Protected, Static
 //  Description: Returns the innermost region of all the regions
 //               indicated in the given vector (usually, the regions
 //               the mouse is over).  This is the "preferred" region
@@ -268,7 +274,7 @@ get_preferred_region(const MouseWatcher::VRegions &regions) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::set_current_regions
-//       Access: Private
+//       Access: Protected
 //  Description: Changes the "current" regions--the one we consider the
 //               mouse to be over--to the indicated list, and throws
 //               whatever events are appropriate because of that.
@@ -304,6 +310,10 @@ set_current_regions(MouseWatcher::VRegions &regions) {
       MouseWatcherRegion *old_region = (*old_ri);
       old_region->without(param);
       throw_event_pattern(_without_pattern, old_region, ButtonHandle::none());
+      if (_enter_multiple) {
+        old_region->exit(param);
+        throw_event_pattern(_leave_pattern, old_region, ButtonHandle::none());
+      }
       any_changes = true;
       ++old_ri;
 
@@ -327,6 +337,10 @@ set_current_regions(MouseWatcher::VRegions &regions) {
     MouseWatcherRegion *old_region = (*old_ri);
     old_region->without(param);
     throw_event_pattern(_without_pattern, old_region, ButtonHandle::none());
+    if (_enter_multiple) {
+      old_region->exit(param);
+      throw_event_pattern(_leave_pattern, old_region, ButtonHandle::none());
+    }
     any_changes = true;
     ++old_ri;
   }
@@ -341,38 +355,44 @@ set_current_regions(MouseWatcher::VRegions &regions) {
     for (ri = new_regions.begin(); ri != new_regions.end(); ++ri) {
       MouseWatcherRegion *new_region = (*ri);
       new_region->within(param);
-      throw_event_pattern(_within_pattern, new_region, ButtonHandle::none());
+      throw_event_pattern(_within_pattern, new_region, ButtonHandle::none()); 
+      if (_enter_multiple) {
+        new_region->enter(param);
+        throw_event_pattern(_enter_pattern, new_region, ButtonHandle::none());
+      }
     }
   }
 
-  // Determine which is the "preferred region", if any.  This is the
-  // topmost region that the mouse cursor is over, and the one that
-  // we are considered "entered" into.
-  MouseWatcherRegion *new_preferred_region = 
-    get_preferred_region(_current_regions);
-  
-  if (_button_down && new_preferred_region != _preferred_button_down_region) {
-    // If the button's being held down, we're only allowed to select
-    // the preferred button down region.
-    new_preferred_region = (MouseWatcherRegion *)NULL;
-  }
-  
-  if (new_preferred_region != _preferred_region) {
-    if (_preferred_region != (MouseWatcherRegion *)NULL) {
-      _preferred_region->exit(param);
-      throw_event_pattern(_leave_pattern, _preferred_region, ButtonHandle::none());
+  if (!_enter_multiple) {
+    // Determine which is the "preferred region", if any.  This is the
+    // topmost region that the mouse cursor is over, and the one that
+    // we are considered "entered" into.
+    MouseWatcherRegion *new_preferred_region = 
+      get_preferred_region(_current_regions);
+    
+    if (_button_down && new_preferred_region != _preferred_button_down_region) {
+      // If the button's being held down, we're only allowed to select
+      // the preferred button down region.
+      new_preferred_region = (MouseWatcherRegion *)NULL;
     }
-    _preferred_region = new_preferred_region;
-    if (_preferred_region != (MouseWatcherRegion *)NULL) {
-      _preferred_region->enter(param);
-      throw_event_pattern(_enter_pattern, _preferred_region, ButtonHandle::none());
+
+    if (new_preferred_region != _preferred_region) {
+      if (_preferred_region != (MouseWatcherRegion *)NULL) {
+        _preferred_region->exit(param);
+        throw_event_pattern(_leave_pattern, _preferred_region, ButtonHandle::none());
+      }
+      _preferred_region = new_preferred_region;
+      if (_preferred_region != (MouseWatcherRegion *)NULL) {
+        _preferred_region->enter(param);
+        throw_event_pattern(_enter_pattern, _preferred_region, ButtonHandle::none());
+      }
     }
   }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::clear_current_regions
-//       Access: Private
+//       Access: Protected
 //  Description: Empties the set of current regions.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
@@ -405,7 +425,7 @@ clear_current_regions() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::intersect_regions
-//       Access: Private, Static
+//       Access: Protected, Static
 //  Description: Sets result to be the intersection of the list of
 //               regions in regions_a and regions_b.  It is assumed
 //               that both vectors are already sorted in pointer
@@ -447,7 +467,7 @@ intersect_regions(MouseWatcher::VRegions &result,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::remove_region_from
-//       Access: Private, Static
+//       Access: Protected, Static
 //  Description: Removes the indicated region from the given vector.
 //               Assumes the vector is sorted in pointer order.
 ////////////////////////////////////////////////////////////////////
@@ -464,7 +484,7 @@ remove_region_from(MouseWatcher::VRegions &regions,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::remove_regions_from
-//       Access: Private, Static
+//       Access: Protected, Static
 //  Description: Removes all the regions in the indicated group from
 //               the given vector.  Assumes the vector is sorted in
 //               pointer order.
@@ -502,7 +522,7 @@ remove_regions_from(MouseWatcher::VRegions &regions,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::throw_event_for
-//       Access: Private
+//       Access: Protected
 //  Description: Throws an event associated with the indicated region,
 //               using the given pattern.
 ////////////////////////////////////////////////////////////////////
@@ -560,7 +580,7 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::press
-//       Access: Private
+//       Access: Protected
 //  Description: Records the indicated mouse or keyboard button as
 //               being depressed.
 ////////////////////////////////////////////////////////////////////
@@ -608,7 +628,7 @@ press(ButtonHandle button) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::release
-//       Access: Private
+//       Access: Protected
 //  Description: Records the indicated mouse or keyboard button as
 //               being released.
 ////////////////////////////////////////////////////////////////////
@@ -651,7 +671,7 @@ release(ButtonHandle button) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::global_keyboard_press
-//       Access: Private
+//       Access: Protected
 //  Description: Calls press() on all regions that are interested in
 //               receiving global keyboard events, except for the
 //               current region (which already received this one).
@@ -683,7 +703,7 @@ global_keyboard_press(const MouseWatcherParameter &param) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::global_keyboard_release
-//       Access: Private
+//       Access: Protected
 //  Description: Calls release() on all regions that are interested in
 //               receiving global keyboard events, except for the
 //               current region (which already received this one).

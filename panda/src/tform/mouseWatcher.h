@@ -113,7 +113,7 @@ public:
   bool add_group(MouseWatcherGroup *group);
   bool remove_group(MouseWatcherGroup *group);
 
-private:
+protected:
   typedef pvector< PT(MouseWatcherRegion) > VRegions;
   void get_over_regions(VRegions &regions, const LPoint2f &pos) const;
   static MouseWatcherRegion *get_preferred_region(const VRegions &regions);
@@ -150,6 +150,8 @@ private:
   PT(MouseWatcherRegion) _preferred_button_down_region;
   bool _button_down;
 
+  bool _enter_multiple;
+
   string _button_down_pattern;
   string _button_up_pattern;
   string _enter_pattern;
@@ -159,7 +161,7 @@ private:
 
   PT_NodeRelation _geometry;
 
-  EventHandler* _eh;
+  EventHandler *_eh;
 
   ModifierButtons _mods;
 
