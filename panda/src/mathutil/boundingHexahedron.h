@@ -43,6 +43,10 @@ public:
   INLINE_MATHUTIL BoundingHexahedron();
   BoundingHexahedron(const Frustumf &frustum, bool is_ortho,
                      CoordinateSystem cs = CS_default);
+  BoundingHexahedron(const LPoint3f &fll, const LPoint3f &flr,
+                     const LPoint3f &fur, const LPoint3f &ful,
+                     const LPoint3f &nll, const LPoint3f &nlr,
+                     const LPoint3f &nur, const LPoint3f &nul);
   virtual BoundingVolume *make_copy() const;
 
   virtual LPoint3f get_min() const;

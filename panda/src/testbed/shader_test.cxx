@@ -62,7 +62,7 @@ Configure(shader_test);
 ConfigureFn(shader_test) {
 }
 
-PT(ProjectionNode) tex_proj;
+PT(LensNode) tex_proj;
 PT(Trackball) tex_proj_trackball;
 PT(ProjtexShader) proj_shader;
 PT(ProjtexShadower) proj_shadow;
@@ -536,7 +536,7 @@ void shader_keys(EventHandler &eh) {
   tex->set_name("smiley.rgba");
 
   // Put the texture projector into the scene graph
-  tex_proj = new ProjectionNode("texture_projector");
+  tex_proj = new LensNode("texture_projector");
   RenderRelation* proj_arc = new RenderRelation(render, tex_proj);
 
   // Create a trackball to spin this around.
@@ -563,8 +563,8 @@ void shader_keys(EventHandler &eh) {
 #define DISPLAY_TEXPROJFRUST
 #ifdef DISPLAY_TEXPROJFRUST
   // Display a wireframe representation of the texture projector frustum
-  GeomLine* proj_geom =
-        (GeomLine *)tex_proj->get_projection()->make_geometry();
+  PT(Geom) proj_geom =
+        tex_proj->get_lens()->make_geometry();
   GeomNode* proj_geom_node = new GeomNode("proj_geometry");
   //JMC: Removed _drawable_vector.push_back call and added add_geom
   //call
@@ -603,8 +603,8 @@ void shader_keys(EventHandler &eh) {
 #ifdef DISPLAY_TEXPROJSPOTFRUST
   // Display a wireframe representation of the spotlight frustum
   Colorf color_red(1., 0., 0., 1.);
-  GeomLine* frust_geom =
-        (GeomLine *)tex_proj_spot->get_projection()->make_geometry(color_red);
+  PT(Geom) frust_geom =
+        tex_proj_spot->get_lens()->make_geometry(color_red);
   GeomNode* frust_geom_node = new GeomNode("frustum_geometry");
   //JMC: Removed _drawable_vector.push_back call and added add_geom
   //call

@@ -782,15 +782,15 @@ class DisplayRegionList(PandaObject):
 
     def setNearFar(self, near, far):
         for dr in self.displayRegionList:
-            dr.camNode.setNearFar(near, far)
+            dr.camLens.setNearFar(near, far)
     
     def setNear(self, near):
         for dr in self.displayRegionList:
-            dr.camNode.setNear(near)
+            dr.camLens.setNear(near)
     
     def setFar(self, far):
         for dr in self.displayRegionList:
-            dr.camNode.setFar(far)
+            dr.camLens.setFar(far)
 
     def setFov(self, hfov, vfov):
         for dr in self.displayRegionList:
@@ -850,7 +850,8 @@ class DisplayRegionContext:
     def __init__(self, win, cam, group):
         self.win = win
         self.cam = cam
-        self.camNode = self.cam.getNode(0)
+        self.camNode = self.cam.node()
+        self.camLens = self.camNode.getLens()
         self.group = group
         self.iRay = SelectionRay(self.cam)
         self.nearVec = Vec3(0)
@@ -889,44 +890,42 @@ class DisplayRegionContext:
     # The following take into consideration sideways displays
     def getHfov(self):
         if self.isSideways:
-            return self.camNode.getVfov()
+            return self.camLens.getVfov()
         else:
-            return self.camNode.getHfov()
+            return self.camLens.getHfov()
 
     def getVfov(self):
         if self.isSideways:
-            return self.camNode.getHfov()
+            return self.camLens.getHfov()
         else:
-            return self.camNode.getVfov()
+            return self.camLens.getVfov()
 
     def setHfov(self,hfov):
         if self.isSideways:
-            self.camNode.setVfov(hfov)
+            self.camLens.setFov(self.camLens.getHfov(), hfov)
         else:
-            self.camNode.setHfov(hfov)
+            self.camLens.setFov(hfov, self.camLens.getVfov())
 
     def setVfov(self,vfov):
         if self.isSideways:
-            self.camNode.setHfov(vfov)
+            self.camLens.setFov(vfov, self.camLens.getVfov())
         else:
-            self.camNode.setVfov(vfov)
+            self.camLens.setFov(self.camLens.getHfov(), vfov)
 
     def setFov(self,hfov,vfov):
         if self.isSideways:
-            self.camNode.setVfov(hfov)
-            self.camNode.setHfov(vfov)
+            self.camLens.setFov(vfov, hfov)
         else:
-            self.camNode.setHfov(hfov)
-            self.camNode.setVfov(vfov)
+            self.camLens.setFov(hfov, vfov)
             
     def camUpdate(self):
         # Window Data
         self.width = self.win.getWidth()
         self.height = self.win.getHeight()
-        self.near = self.camNode.getNear()
-        self.far = self.camNode.getFar()
-        self.fovH = self.camNode.getHfov()
-        self.fovV = self.camNode.getVfov()
+        self.near = self.camLens.getNear()
+        self.far = self.camLens.getFar()
+        self.fovH = self.camLens.getHfov()
+        self.fovV = self.camLens.getVfov()
         self.nearWidth = math.tan(deg2Rad(self.fovH * 0.5)) * self.near * 2.0
         self.nearHeight = math.tan(deg2Rad(self.fovV * 0.5)) * self.near * 2.0
         self.left = -self.nearWidth * 0.5

@@ -44,8 +44,6 @@
 #include "renderRelation.h"
 #include "camera.h"
 #include "frustum.h"
-#include "orthoProjection.h"
-#include "perspectiveProjection.h"
 #include "textNode.h"
 #include "colorMatrixTransition.h"
 #include "alphaTransformTransition.h"
@@ -101,121 +99,6 @@ PT_NamedNode sky = (NamedNode *)NULL;
 RenderRelation *sky_arc = (RenderRelation *)NULL;
 RenderRelation *flare_arc = (RenderRelation *)NULL;
 
-
-/*
-void
-setup_panda2d() {
-  static bool already_setup = false;
-  if (already_setup) {
-    nout << "Already have 2-d layer set up.\n";
-    return;
-  }
-  already_setup = true;
-  nout << "Setting up 2-d layer.\n";
-
-  render2d_top = new NamedNode("render2d_top");
-  render2d = new NamedNode("render2d");
-  render2d_arc = new RenderRelation(render2d_top, render2d);
-
-  // Set up some overrides to turn off certain properties which we
-  // probably won't need for 2-d objects.
-  render2d_arc->set_transition(new DepthTestTransition(DepthTestProperty::M_none), 1);
-  render2d_arc->set_transition(new DepthWriteTransition(DepthWriteTransition::off()), 1);
-  render2d_arc->set_transition(new LightTransition(LightTransition::all_off()), 1);
-  render2d_arc->set_transition(new MaterialTransition(MaterialTransition::off()), 1);
-  render2d_arc->set_transition(new CullFaceTransition(CullFaceProperty::M_cull_none), 1);
-
-  // Create a 2-d camera.
-  PT(Camera) cam2d = new Camera("cam2d");
-  new RenderRelation(render2d, cam2d);
-  cam2d->set_scene(render2d_top);
-
-  Frustumf frustum2d;
-  frustum2d.make_ortho_2D();
-  cam2d->set_projection(OrthoProjection(frustum2d));
-
-  // Now create a new layer.
-  GraphicsChannel *chan = main_win->get_channel(0);
-  nassertv(chan != (GraphicsChannel *)NULL);
-
-  GraphicsLayer *layer = chan->make_layer();
-  nassertv(layer != (GraphicsLayer *)NULL);
-
-  DisplayRegion *dr = layer->make_display_region();
-  nassertv(dr != (DisplayRegion *)NULL);
-  dr->set_camera(cam2d);
-
-
-  // Put some interesting things in the 2-d scene graph.
-  PT_Node font = loader.load_sync("ttf-comic");
-
-  if (font != (NamedNode *)NULL) {
-    label2d = new TextNode("label2d");
-    new RenderRelation(render2d, label2d);
-
-    LMatrix4f mat =
-      LMatrix4f::scale_mat(0.1) *
-      LMatrix4f::translate_mat(0.0, 0.0, 0.8);
-
-    label2d->set_transform(mat);
-    label2d->set_font(font.p());
-    label2d->set_card_color(0.5, 0.5, 0.5, 0.5);
-    label2d->set_card_as_margin(0.5, 0.5, 0.2, 0.2);
-    label2d->set_frame_color(1.0, 1.0, 1.0, 1.0);
-    label2d->set_frame_as_margin(0.5, 0.5, 0.2, 0.2);
-    label2d->set_align(TM_ALIGN_CENTER);
-    label2d->set_text_color(0.2, 0.5, 1.0, 1.0);
-    label2d->set_text("Now presenting Panda 2-D!");
-
-    MouseWatcherRegion *region =
-      new MouseWatcherRegion("label2d", label2d->get_card_transformed());
-    region->set_suppress_below(true);
-    mouse_watcher->add_region(region);
-
-  } else {
-    nout << "Couldn't load font ttf-comic\n";
-  }
-
-  PT_Node p2egg = loader.load_sync("panda2d");
-  if (p2egg != (NamedNode *)NULL) {
-    new RenderRelation(render2d, p2egg);
-  } else {
-    nout << "Couldn't find panda2d.egg\n";
-  }
-
-  // Load up a mouse cursor for fun.
-  PT_Node lilsmiley = loader.load_sync("lilsmiley");
-  if (lilsmiley != (NamedNode *)NULL) {
-    NamedNode *n2 = new NamedNode("cursor");
-    RenderRelation *s1_arc = new RenderRelation(render2d, n2);
-    RenderRelation *s2_arc = new RenderRelation(n2, lilsmiley);
-
-    // Make up a scale to make it 32x32 pixels (it starts out 1x1
-    // units).
-    LMatrix4f scale_mat = LMatrix4f::scale_mat(32.0 / main_win->get_width(), 1.0, 32.0 / main_win->get_height());
-    s2_arc->set_transition(new TransformTransition(scale_mat));
-    mouse_watcher->set_geometry(s1_arc);
-  } else {
-    nout << "Couldn't find lilsmiley.egg\n";
-  }
-}
-
-static void
-event_in_label2d(CPT_Event) {
-  // The mouse moved over the label.
-  nassertv(!label2d.is_null());
-
-  label2d->set_card_color(0.8, 0.2, 1.0, 1.0);
-}
-
-static void
-event_out_label2d(CPT_Event) {
-  // The mouse moved out from the label.
-  nassertv(!label2d.is_null());
-
-  label2d->set_card_color(0.5, 0.5, 0.5, 0.5);
-}
-*/
 
 static void
 clear_highlight() {

@@ -48,29 +48,30 @@ FrustumCullTraverser(ArcChain &arc_chain, Node *root,
     // DisplayRegion may have some override in effect, so we ask the
     // DisplayRegion instead of the GSG.
     const DisplayRegion *dr = _gsg->get_current_display_region();
-    ProjectionNode *camera = dr->get_cull_frustum();
-    if (camera != (const ProjectionNode *)NULL) {
-      const Projection *proj = camera->get_projection();
-      nassertv(proj != (const Projection *)NULL);
-      BoundingVolume *bv = proj->make_bounds();
+    LensNode *camera = dr->get_cull_frustum();
+    if (camera != (const LensNode *)NULL) {
+      const Lens *lens = camera->get_lens();
+      nassertv(lens != (const Lens *)NULL);
+      PT(BoundingVolume) bv = lens->make_bounds();
 
-      if (bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
+      if (bv != (BoundingVolume *)NULL &&
+          bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
         _view_frustum = DCAST(GeometricBoundingVolume, bv);
-      } else {
-        delete bv;
       }
     }
 
-    local_frustum = DCAST(GeometricBoundingVolume, _view_frustum->make_copy());
-    local_frustum->xform(rel_from_camera);
-    GraphicsStateGuardian::_frustum_cull_volumes_pcollector.add_level(1);
-    GraphicsStateGuardian::_frustum_cull_transforms_pcollector.add_level(1);
-
-    if (sgraphutil_cat.is_spam()) {
-      sgraphutil_cat.spam()
-        << "Beginning frustum cull, frustum is: " << *local_frustum << "\n"
-        << "Transform is:\n";
-      rel_from_camera.write(sgraphutil_cat.spam(false), 2);
+    if (_view_frustum != (GeometricBoundingVolume *)NULL) {
+      local_frustum = DCAST(GeometricBoundingVolume, _view_frustum->make_copy());
+      local_frustum->xform(rel_from_camera);
+      GraphicsStateGuardian::_frustum_cull_volumes_pcollector.add_level(1);
+      GraphicsStateGuardian::_frustum_cull_transforms_pcollector.add_level(1);
+      
+      if (sgraphutil_cat.is_spam()) {
+        sgraphutil_cat.spam()
+          << "Beginning frustum cull, frustum is: " << *local_frustum << "\n"
+          << "Transform is:\n";
+        rel_from_camera.write(sgraphutil_cat.spam(false), 2);
+      }
     }
   }
 
@@ -202,7 +203,7 @@ traverse(NodeRelation *arc, TransitionWrapper render_state,
 
           NodeTransitionWrapper ntw(TransformTransition::get_class_type());
           const DisplayRegion *dr = _gsg->get_current_display_region();
-          ProjectionNode *camera = dr->get_cull_frustum();
+          LensNode *camera = dr->get_cull_frustum();
           wrt(camera,
               arc->get_child(), _arc_chain.begin(), _arc_chain.end(),
               ntw, _graph_type);

@@ -23,7 +23,7 @@
 #include "planeNode.h"
 #include "modelNode.h"
 #include "modelRoot.h"
-#include "projectionNode.h"
+#include "lensNode.h"
 #include "switchNode.h"
 
 #include <dconfig.h>
@@ -60,7 +60,7 @@ init_libsgraph() {
   PlaneNode::init_type();
   ModelNode::init_type();
   ModelRoot::init_type();
-  ProjectionNode::init_type();
+  LensNode::init_type();
   SwitchNode::init_type();
 
   //Registration of writeable object's creation

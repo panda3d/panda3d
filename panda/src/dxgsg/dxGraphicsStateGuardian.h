@@ -137,9 +137,9 @@ public:
   virtual void prepare_display_region();
 
   virtual void render_frame();
-  virtual void render_scene(Node *root, ProjectionNode *projnode);
+  virtual void render_scene(Node *root, LensNode *projnode);
   virtual void render_subgraph(RenderTraverser *traverser,
-                   Node *subgraph, ProjectionNode *projnode,
+                   Node *subgraph, LensNode *projnode,
                    const AllTransitionsWrapper &net_trans);
   virtual void render_subgraph(RenderTraverser *traverser,
                    Node *subgraph,

@@ -59,7 +59,7 @@
 //Math/Matrix/Vector/Transformation stuff
 #include <transform2sg.h>
 #include <look_at.h>
-#include <perspectiveProjection.h>
+#include <perspectiveLens.h>
 #include <get_rel_pos.h>
 
 //Control/IO
@@ -75,7 +75,7 @@ Configure(min_herc);
 ConfigureFn(min_herc) {
 }
 
-PT(ProjectionNode) tex_proj;
+PT(LensNode) tex_proj;
 PT(Trackball) tex_proj_trackball;
 PT(ProjtexShader) proj_shader;
 PT(ProjtexShadower) proj_shadow;
@@ -350,7 +350,7 @@ void herc_keys(EventHandler &eh) {
   tex->set_wrapv(Texture::WM_clamp);
 
   // Put the texture projector into the scene graph
-  tex_proj = new ProjectionNode("texture_projector");
+  tex_proj = new LensNode("texture_projector");
   RenderRelation* proj_arc = new RenderRelation(render, tex_proj);
 
   // Create a trackball to spin this around.
@@ -375,8 +375,8 @@ void herc_keys(EventHandler &eh) {
   proj_shader->add_frustum(tex_proj);
 
   // Create a wireframe representation of the texture projector frustum
-  GeomLine* proj_geom =
-        (GeomLine *)tex_proj->get_projection()->make_geometry();
+  PT(Geom) proj_geom =
+    tex_proj->get_lens()->make_geometry();
   proj_geom_node = new GeomNode("proj_geometry");
   proj_geom_node->add_geom(proj_geom);
 

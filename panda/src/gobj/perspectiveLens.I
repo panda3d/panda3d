@@ -1,5 +1,5 @@
-// Filename: projectionNode.I
-// Created by:  drose (23May00)
+// Filename: perspectiveLens.I
+// Created by:  drose (18Feb99)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -17,42 +17,30 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ProjectionNode::Constructor
+//     Function: PerspectiveLens::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE ProjectionNode::
-ProjectionNode(const string &name) :
-  NamedNode(name)
-{
+INLINE PerspectiveLens::
+PerspectiveLens() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ProjectionNode::Copy Constructor
+//     Function: PerspectiveLens::Copy Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE ProjectionNode::
-ProjectionNode(const ProjectionNode &copy) :
-  NamedNode(copy),
-  _projection(copy._projection)
-{
+INLINE PerspectiveLens::
+PerspectiveLens(const PerspectiveLens &copy) : Lens(copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ProjectionNode::Copy Assignment Operator
+//     Function: PerspectiveLens::Copy Assignment Operator
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void ProjectionNode::
-operator = (const ProjectionNode &copy) {
-  NamedNode::operator = (copy);
-  _projection = copy._projection;
+INLINE void PerspectiveLens::
+operator = (const PerspectiveLens &copy) {
+  Lens::operator = (copy);
 }
-
-INLINE ostream &operator << (ostream &out, const ProjectionNode &projnode) {
-  projnode.output(out);
-  return out;
-}
-
 

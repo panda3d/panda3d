@@ -24,8 +24,8 @@
 #include <geomNode.h>
 #include <geomLinestrip.h>
 #include <boundingLine.h>
-#include <projectionNode.h>
-#include <projection.h>
+#include <lensNode.h>
+#include <lens.h>
 
 TypeHandle CollisionRay::_type_handle;
 
@@ -88,11 +88,11 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionRay::set_projection
+//     Function: CollisionRay::set_from_lens
 //       Access: Public
-//  Description: Accepts a ProjectionNode and a 2-d point in the range
+//  Description: Accepts a LensNode and a 2-d point in the range
 //               [-1,1].  Sets the CollisionRay so that it begins at
-//               the ProjectionNode's near plane and extends to
+//               the LensNode's near plane and extends to
 //               infinity, making it suitable for picking objects from
 //               the screen given a camera and a mouse location.
 //
@@ -100,15 +100,20 @@ output(ostream &out) const {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CollisionRay::
-set_projection(ProjectionNode *camera, const LPoint2f &point) {
-  Projection *proj = camera->get_projection();
+set_from_lens(LensNode *camera, const LPoint2f &point) {
+  Lens *lens = camera->get_lens();
 
   bool success = true;
-  if (!proj->extrude(point, _origin, _direction)) {
+  LPoint3f near_point, far_point;
+  if (!lens->extrude(point, near_point, far_point)) {
     _origin = LPoint3f::origin();
     _direction = LVector3f::forward();
     success = false;
+  } else {
+    _origin = near_point;
+    _direction = far_point - near_point;
   }
+
   mark_bound_stale();
   mark_viz_stale();
 

@@ -36,7 +36,7 @@ set_viz(Shader::Visualize* v) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int FrustumShader::
-add_frustum(ProjectionNode* frust) {
+add_frustum(LensNode* frust) {
   make_dirty();
   _frusta.push_back(frust);
   return (_frusta.size());
@@ -48,9 +48,9 @@ add_frustum(ProjectionNode* frust) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int FrustumShader::
-remove_frustum(ProjectionNode* frust) {
+remove_frustum(LensNode* frust) {
   make_dirty();
-  ProjectionVector::iterator i;
+  LensVector::iterator i;
   for (i = _frusta.begin(); i != _frusta.end(); ++i) {
     if ((*i) == frust) {
       _frusta.erase(i);

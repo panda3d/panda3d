@@ -1,4 +1,4 @@
-// Filename: orthoProjection.I
+// Filename: orthographicLens.I
 // Created by:  mike (18Feb99)
 //
 ////////////////////////////////////////////////////////////////////
@@ -17,25 +17,30 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OrthoProjection::Constructor
+//     Function: OrthographicLens::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE OrthoProjection::
-OrthoProjection(const Frustumf &frustum) : _frustum(frustum) {
+INLINE OrthographicLens::
+OrthographicLens() {
 }
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: OrthoProjection::get_frustum
+//     Function: OrthographicLens::Copy Constructor
 //       Access: Public
-//  Description: Returns the frustum that defines the perspective
-//               projection.
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const Frustumf &OrthoProjection::
-get_frustum() const {
-  return _frustum;
+INLINE OrthographicLens::
+OrthographicLens(const OrthographicLens &copy) : Lens(copy) {
 }
 
-
+////////////////////////////////////////////////////////////////////
+//     Function: OrthographicLens::Copy Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void OrthographicLens::
+operator = (const OrthographicLens &copy) {
+  Lens::operator = (copy);
+}
 

@@ -65,8 +65,8 @@ PUBLISHED:
   void set_camera(Camera *camera);
   INLINE Camera *get_camera() const;
 
-  INLINE void set_cull_frustum(ProjectionNode *cull_frustum);
-  INLINE ProjectionNode *get_cull_frustum() const;
+  INLINE void set_cull_frustum(LensNode *cull_frustum);
+  INLINE LensNode *get_cull_frustum() const;
 
   INLINE void set_active(bool active);
   INLINE bool is_active() const;
@@ -94,7 +94,7 @@ protected:
 
   GraphicsLayer *_layer;
   PT(Camera) _camera;
-  PT(ProjectionNode) _cull_frustum;
+  PT(LensNode) _cull_frustum;
 
   bool _active;
 

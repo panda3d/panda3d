@@ -28,8 +28,7 @@
 #include "transformTransition.h"
 #include "transparencyTransition.h"
 #include "renderTraverser.h"
-#include "orthoProjection.h"
-#include "perspectiveProjection.h"
+#include "lens.h"
 #include "get_rel_pos.h"
 #include "clockObject.h"
 #include "allTransitionsWrapper.h"
@@ -313,8 +312,8 @@ sub_render(const AllTransitionsWrapper &input_trans,
   nassertr(_light_node != (Node*) NULL, false);
 
   //First we need the light position
-  ProjectionNode *camera_node = gsg->get_current_projection_node();
-  PerspectiveProjection *pp = DCAST(PerspectiveProjection, camera_node->get_projection());
+  LensNode *camera_node = gsg->get_current_camera();
+  Lens *lens = camera_node->get_lens();
 
   LPoint3f light_pos = get_rel_pos(_light_node, camera_node);
 
@@ -336,7 +335,7 @@ sub_render(const AllTransitionsWrapper &input_trans,
   //doing everything in camera space, this should merely be the
   //distance between the camera and the near clipping plane projected
   //along Y into the screen
-  LPoint3f center = LPoint3f::origin() + LPoint3f::rfu(0,pp->get_frustum()._fnear,0);
+  LPoint3f center = LPoint3f::origin() + LPoint3f::rfu(0,lens->get_near(),0);
   center = center * inv_light_mat * modelview_mat;
 
   //Now lets get the vector from the light to the center.
@@ -354,7 +353,7 @@ sub_render(const AllTransitionsWrapper &input_trans,
   dot = (dot < 0.0f) ? -dot : dot;
 
   prepare_flares(delta, light_pos, dot);
-  prepare_blind(dot, pp->get_frustum()._fnear);
+  prepare_blind(dot, lens->get_near());
 
   render_children(_flare_arcs, input_trans, gsg);
   render_child(_blind_arc, input_trans, gsg);

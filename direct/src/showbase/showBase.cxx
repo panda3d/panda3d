@@ -40,8 +40,7 @@
 #include <lightTransition.h>
 #include <materialTransition.h>
 #include <camera.h>
-#include <frustum.h>
-#include <orthoProjection.h>
+#include <orthographicLens.h>
 #include <appTraverser.h>
 #include <get_config_path.h>
 #include <allTransitionsWrapper.h>
@@ -180,9 +179,10 @@ setup_panda_2d(GraphicsWindow *win, const string &graph_name) {
   Camera *cam2d = new Camera("cam2d");
   new RenderRelation(render2d, cam2d);
 
-  Frustumf frustum2d;
-  frustum2d.make_ortho(-1000.0f,1000.0f);
-  cam2d->set_projection(OrthoProjection(frustum2d));
+  PT(Lens) lens = new OrthographicLens;
+  lens->set_film_size(2.0);
+  lens->set_near_far(-1000.0f, 1000.0f);
+  cam2d->set_lens(lens);
 
   add_render_layer(win, render2d_top, cam2d);
 

@@ -32,14 +32,18 @@
 INLINE_LINMATH float csqrt(float v);
 INLINE_LINMATH float csin(float v);
 INLINE_LINMATH float ccos(float v);
+INLINE_LINMATH float ctan(float v);
 INLINE_LINMATH void  csincos(float v, float *pSinResult, float *pCosResult);  // does both at once (faster on x86)
 INLINE_LINMATH float cabs(float v);
+INLINE_LINMATH float catan(float v);
 INLINE_LINMATH float catan2(float y, float x);
 
 INLINE_LINMATH double csqrt(double v);
 INLINE_LINMATH double csin(double v);
 INLINE_LINMATH double ccos(double v);
+INLINE_LINMATH double ctan(double v);
 INLINE_LINMATH double cabs(double v);
+INLINE_LINMATH double catan(double v);
 INLINE_LINMATH double catan2(double y, double x);
 INLINE_LINMATH void   csincos(double v, double *pSinResult, double *pCosResult);  // does both at once (faster on x86)
 

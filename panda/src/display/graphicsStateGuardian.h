@@ -105,9 +105,9 @@ public:
   virtual void prepare_display_region()=0;
 
   virtual void render_frame()=0;
-  virtual void render_scene(Node *root, ProjectionNode *projnode)=0;
+  virtual void render_scene(Node *root, LensNode *projnode)=0;
   virtual void render_subgraph(RenderTraverser *traverser,
-                               Node *subgraph, ProjectionNode *projnode,
+                               Node *subgraph, LensNode *projnode,
                                const AllTransitionsWrapper &net_trans)=0;
   virtual void render_subgraph(RenderTraverser *traverser,
                                Node *subgraph,
@@ -136,7 +136,7 @@ public:
 
   RenderBuffer get_render_buffer(int buffer_type);
 
-  INLINE ProjectionNode *get_current_projection_node(void) const ;
+  INLINE LensNode *get_current_camera(void) const ;
   INLINE const Node* get_current_root_node(void) const;
 
   INLINE const DisplayRegion *get_current_display_region(void) const;
@@ -222,7 +222,7 @@ protected:
 
   // These must be set by render_scene().
   Node *_current_root_node;
-  ProjectionNode *_current_projection_node;
+  LensNode *_current_camera;
   CPT(DisplayRegion) _current_display_region;
 
   // This is used by wants_normals()

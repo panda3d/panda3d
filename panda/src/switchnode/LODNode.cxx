@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 #include "LODNode.h"
-#include "projectionNode.h"
+#include "lensNode.h"
 #include "config_switchnode.h"
 
 #include "graphicsStateGuardian.h"
@@ -92,8 +92,8 @@ compute_switch(RenderTraverser *trav) {
   // DisplayRegion may have some override in effect, so we ask the
   // DisplayRegion instead of the GSG.
   const DisplayRegion *dr = gsg->get_current_display_region();
-  ProjectionNode *camera = dr->get_cull_frustum();
-  if (camera != (ProjectionNode *)NULL) {
+  LensNode *camera = dr->get_cull_frustum();
+  if (camera != (LensNode *)NULL) {
     LPoint3f camera_pos(0, 0, 0);
 
     // Get the LOD center in camera space

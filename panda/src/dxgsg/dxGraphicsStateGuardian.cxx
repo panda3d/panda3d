@@ -20,7 +20,7 @@
 #include <directRenderTraverser.h>
 #include <cullTraverser.h>
 #include <displayRegion.h>
-#include <projectionNode.h>
+#include <lensNode.h>
 #include <camera.h>
 #include <renderBuffer.h>
 #include <geom.h>
@@ -28,14 +28,13 @@
 #include <geomIssuer.h>
 #include <graphicsWindow.h>
 #include <graphicsChannel.h>
-#include <projection.h>
+#include <lens.h>
 #include <get_rel_pos.h>
-#include <perspectiveProjection.h>
+#include <perspectiveLens.h>
 #include <ambientLight.h>
 #include <directionalLight.h>
 #include <pointLight.h>
 #include <spotlight.h>
-#include <projectionNode.h>
 #include <transformTransition.h>
 #include <colorTransition.h>
 #include <lightTransition.h>
@@ -1611,12 +1610,12 @@ report_texmgr_stats() {
 //     Function: DXGraphicsStateGuardian::render_scene
 //       Access: Public, Virtual
 //  Description: Renders an entire scene, from the root node of the
-//               scene graph, as seen from a particular ProjectionNode
+//               scene graph, as seen from a particular LensNode
 //               and with a given initial state.  This initial state
 //               may be modified during rendering.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-render_scene(Node *root, ProjectionNode *projnode) {
+render_scene(Node *root, LensNode *projnode) {
 #ifdef GSG_VERBOSE
     _pass_number = 0;
     dxgsg_cat.debug()
@@ -1639,27 +1638,30 @@ render_scene(Node *root, ProjectionNode *projnode) {
 //     Function: DXGraphicsStateGuardian::render_subgraph
 //       Access: Public, Virtual
 //  Description: Renders a subgraph of the scene graph as seen from a
-//               given projection node, and with a particular initial
+//               given lens node, and with a particular initial
 //               state.  This state may be modified by the render
 //               process.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 render_subgraph(RenderTraverser *traverser,
-                Node *subgraph, ProjectionNode *projnode,
+                Node *subgraph, LensNode *projnode,
                 const AllTransitionsWrapper &net_trans) {
-    ProjectionNode *old_projection_node = _current_projection_node;
-    _current_projection_node = projnode;
+    LensNode *old_camera = _current_camera;
+    _current_camera = projnode;
     LMatrix4f old_projection_mat = _current_projection_mat;
 
+    Lens *lens = projnode->get_lens();
+    const LMatrix4f &projection_mat = lens->get_projection_mat();
+
     // d3d is left-handed coord system
-    LMatrix4f projection_mat = projnode->get_projection()->get_projection_mat(CS_yup_left);
+    _current_projection_mat = 
+      LMatrix4f::convert_mat(CS_yup_left, lens->get_coordinate_system()) *
+      projection_mat;
+    _projection_mat_stack_count++;
 
 #if 0
-    dxgsg_cat.spam() << "cur projection matrix: " << projection_mat <<"\n";
+    dxgsg_cat.spam() << "cur projection matrix: " << _current_projection_mat <<"\n";
 #endif
-
-    _current_projection_mat = projection_mat;
-    _projection_mat_stack_count++;
 
 #ifdef _DEBUG
    {
@@ -1686,8 +1688,8 @@ render_subgraph(RenderTraverser *traverser,
     // We infer the modelview matrix by doing a wrt on the projection
     // node.
     LMatrix4f modelview_mat;
-    get_rel_mat(subgraph, _current_projection_node, modelview_mat);  //needs reversal from glgsg, probably due D3D LH coordsys
-//  get_rel_mat(_current_projection_node, subgraph, modelview_mat);
+    get_rel_mat(subgraph, _current_camera, modelview_mat);  //needs reversal from glgsg, probably due D3D LH coordsys
+//  get_rel_mat(_current_camera, subgraph, modelview_mat);
 
     if (_coordinate_system != CS_yup_left) {
         // Now we build the coordinate system conversion into the
@@ -1704,7 +1706,7 @@ render_subgraph(RenderTraverser *traverser,
 
     render_subgraph(traverser, subgraph, sub_trans);
 
-    _current_projection_node = old_projection_node;
+    _current_camera = old_camera;
     _current_projection_mat = old_projection_mat;
     _projection_mat_stack_count--;
 
@@ -1720,7 +1722,7 @@ render_subgraph(RenderTraverser *traverser,
 //     Function: DXGraphicsStateGuardian::render_subgraph
 //       Access: Public, Virtual
 //  Description: Renders a subgraph of the scene graph as seen from the
-//               current projection node, and with a particular
+//               current lens node, and with a particular
 //               initial state.  This state may be modified during the
 //               render process.
 ////////////////////////////////////////////////////////////////////
@@ -2484,8 +2486,8 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
         modelview_mat = ctatt->get_matrix();
 
     // get the camera information
-    float aspect_ratio;
-    aspect_ratio = _actual_display_region->get_camera()->get_aspect();
+    float aspect_ratio =
+      get_current_camera()->get_lens()->get_aspect_ratio();
 
     // null the world xform, so sprites are orthog to scrn  (but not necessarily camera pnt unless they lie along z-axis)
     _d3dDevice->SetTransform(D3DTRANSFORMSTATE_WORLD, &matIdentity);
@@ -4574,7 +4576,7 @@ apply_fog(Fog *fog) {
                 // properties.
                 float fog_start, fog_end;
                 fog->compute_linear_range(fog_start, fog_end,
-                                          _current_projection_node,
+                                          _current_camera,
                                           _coordinate_system);
 
                 _d3dDevice->SetRenderState( D3DRENDERSTATE_FOGSTART,
@@ -4647,7 +4649,7 @@ void DXGraphicsStateGuardian::apply_light( DirectionalLight* light ) {
     alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular().get_data());
 
     alight.dvDirection = *(D3DVECTOR *)
-                         (get_rel_forward( light, _current_projection_node, CS_yup_left).get_data());
+                         (get_rel_forward( light, _current_camera, CS_yup_left).get_data());
 
     alight.dvRange =  D3DLIGHT_RANGE_MAX;
     alight.dvFalloff =  1.0f;
@@ -4692,12 +4694,12 @@ void DXGraphicsStateGuardian::apply_light( Spotlight* light ) {
 
     // Position needs to specify x, y, z, and w
     // w == 1 implies non-infinite position
-    LPoint3f pos = get_rel_pos( light, _current_projection_node );
+    LPoint3f pos = get_rel_pos( light, _current_camera );
     LPoint4f fpos( pos[0], pos[1], pos[2], 1 );
     glLightfv( id, GL_POSITION, fpos.get_data() );
 
     glLightfv( id, GL_SPOT_DIRECTION,
-               get_rel_forward( light, _current_projection_node,
+               get_rel_forward( light, _current_camera,
                                 _coordinate_system ).get_data() );
     glLightf( id, GL_SPOT_EXPONENT, light->get_exponent() );
     glLightf( id, GL_SPOT_CUTOFF,

@@ -20,7 +20,7 @@
 #include "config_light.h"
 
 #include <renderRelation.h>
-#include <perspectiveProjection.h>
+#include <perspectiveLens.h>
 #include <texture.h>
 #include <geomNode.h>
 #include <geomTrifan.h>
@@ -39,7 +39,7 @@ TypeHandle Spotlight::_type_handle;
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-Spotlight::Spotlight(const string& name) : ProjectionNode(name)
+Spotlight::Spotlight(const string& name) : LensNode(name)
 {
   set_exponent(1);
 
@@ -84,17 +84,16 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 float Spotlight::get_cutoff_angle(void) const
 {
-  Projection* proj = ((ProjectionNode *)this)->get_projection();
-  Frustumf frustum;
+  Lens* proj = ((LensNode *)this)->get_lens();
   float cutoff = 0;
-  if (proj->get_type() == PerspectiveProjection::get_class_type()) {
-    frustum = ((PerspectiveProjection *)proj)->get_frustum();
-    cutoff = rad_2_deg(atan(frustum._t / frustum._fnear));
+  if (proj->get_type() == PerspectiveLens::get_class_type()) {
+    const LVecBase2f &fov = ((PerspectiveLens *)proj)->get_fov();
+    cutoff = fov[0];
   }
   else
     light_cat.error()
       << "Spotlight::get_cutoff_angle() - spotlight has a non "
-      << "perspective projection!" << endl;
+      << "perspective lens!" << endl;
   return cutoff;
 }
 

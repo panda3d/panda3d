@@ -26,22 +26,22 @@
 #include "directRenderTraverser.h"
 #include "cullTraverser.h"
 #include "displayRegion.h"
-#include "projectionNode.h"
+#include "lensNode.h"
 #include "camera.h"
 #include "renderBuffer.h"
 #include "geom.h"
 #include "geomIssuer.h"
 #include "graphicsWindow.h"
 #include "graphicsChannel.h"
-#include "projection.h"
+#include "lens.h"
 #include "get_rel_pos.h"
-#include "perspectiveProjection.h"
+#include "perspectiveLens.h"
 #include "ambientLight.h"
 #include "directionalLight.h"
 #include "pointLight.h"
 #include "spotlight.h"
 #include "GL/glu.h"
-#include "projectionNode.h"
+#include "lensNode.h"
 #include "transformTransition.h"
 #include "colorMatrixTransition.h"
 #include "alphaTransformTransition.h"
@@ -568,12 +568,12 @@ render_frame() {
 //     Function: GLGraphicsStateGuardian::render_scene
 //       Access: Public, Virtual
 //  Description: Renders an entire scene, from the root node of the
-//               scene graph, as seen from a particular ProjectionNode
+//               scene graph, as seen from a particular LensNode
 //               and with a given initial state.  This initial state
 //               may be modified during rendering.
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-render_scene(Node *root, ProjectionNode *projnode) {
+render_scene(Node *root, LensNode *projnode) {
 #ifdef GSG_VERBOSE
   _pass_number = 0;
   glgsg_cat.debug()
@@ -596,13 +596,13 @@ render_scene(Node *root, ProjectionNode *projnode) {
 //     Function: GLGraphicsStateGuardian::render_subgraph
 //       Access: Public, Virtual
 //  Description: Renders a subgraph of the scene graph as seen from a
-//               given projection node, and with a particular initial
+//               given lens node, and with a particular initial
 //               state.  This state may be modified by the render
 //               process.
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 render_subgraph(RenderTraverser *traverser,
-                Node *subgraph, ProjectionNode *projnode,
+                Node *subgraph, LensNode *projnode,
                 const AllTransitionsWrapper &net_trans) {
   // Calling activate() frequently seems to be intolerably expensive
   // on some platforms.  We'll limit ourselves for now to calling it
@@ -610,34 +610,37 @@ render_subgraph(RenderTraverser *traverser,
 
   //  activate();
 
-  ProjectionNode *old_projection_node = _current_projection_node;
-  _current_projection_node = projnode;
+  LensNode *old_camera = _current_camera;
+  _current_camera = projnode;
   LMatrix4f old_projection_mat = _current_projection_mat;
+
+  Lens *lens = projnode->get_lens();
+  const LMatrix4f &projection_mat = lens->get_projection_mat();
 
   // The projection matrix must always be right-handed Y-up, even if
   // our coordinate system of choice is otherwise, because certain GL
   // calls (specifically glTexGen(GL_SPHERE_MAP)) assume this kind of
-  // a coordinate system.  Sigh.  In order to implement a Z-up
-  // coordinate system, we'll store the Z-up conversion in the
-  // modelview matrix.
-  LMatrix4f projection_mat =
-    projnode->get_projection()->get_projection_mat(CS_yup_right);
-
-  _current_projection_mat = projection_mat;
+  // a coordinate system.  Sigh.  In order to implement a Z-up (or
+  // other arbitrary) coordinate system, we'll use a Y-up projection
+  // matrix, and store the conversion to our coordinate system of
+  // choice in the modelview matrix.
+  _current_projection_mat =
+    LMatrix4f::convert_mat(CS_yup_right, lens->get_coordinate_system()) *
+    projection_mat;
   _projection_mat_stack_count++;
 
   // We load the projection matrix directly.
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
-    << "glMatrixMode(GL_PROJECTION): " << projection_mat << endl;
+    << "glMatrixMode(GL_PROJECTION): " << _current_projection_mat << endl;
 #endif
   glMatrixMode(GL_PROJECTION);
   glLoadMatrixf(_current_projection_mat.get_data());
 
-  // We infer the modelview matrix by doing a wrt on the projection
+  // We infer the modelview matrix by doing a wrt on the lens
   // node.
   LMatrix4f modelview_mat;
-  get_rel_mat(subgraph, _current_projection_node, modelview_mat);
+  get_rel_mat(subgraph, _current_camera, modelview_mat);
 
   if (_coordinate_system != CS_yup_right) {
     // Now we build the coordinate system conversion into the
@@ -654,7 +657,7 @@ render_subgraph(RenderTraverser *traverser,
 
   render_subgraph(traverser, subgraph, sub_trans);
 
-  _current_projection_node = old_projection_node;
+  _current_camera = old_camera;
   _current_projection_mat = old_projection_mat;
   _projection_mat_stack_count--;
 
@@ -673,7 +676,7 @@ render_subgraph(RenderTraverser *traverser,
 //     Function: GLGraphicsStateGuardian::render_subgraph
 //       Access: Public, Virtual
 //  Description: Renders a subgraph of the scene graph as seen from the
-//               current projection node, and with a particular
+//               current lens node, and with a particular
 //               initial state.  This state may be modified during the
 //               render process.
 ////////////////////////////////////////////////////////////////////
@@ -999,40 +1002,8 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
     modelview_mat = ctatt->get_matrix();
 
   // get the camera information
-  float aspect_ratio = _actual_display_region->get_camera()->get_aspect();
-
-  // Note on DO_CHARLES_PROJECTION_MAT
-  // apparently adjusting the projection as done below is incorrect
-  // as long as the camera points forward at the view plane, no distortion/warping
-  // will be apparent, which is what this special projection was supposed to correct
-
-#ifdef DO_CHARLES_PROJECTION_MAT
-  // to assure that the scale between the two frustra stays the same
-  // (if they are different, sprites move at different speeds than the world),
-  // we have to apply the frustum inverse to the point, then render it in our
-  // own frustum.  Since the z values are identical and 1:1, we only need
-  // concern ourselves with the x and y mappings, which are conveniently linear.
-
-  float x_frustum_scale, y_frustum_scale;
-  float recip_x_frustum_scale, recip_y_frustum_scale;
-  float tnear, tfar, hfov;
-
-  // get the camera information
-  tnear = _actual_display_region->get_camera()->get_near();
-  tfar = _actual_display_region->get_camera()->get_far();
-  hfov = _actual_display_region->get_camera()->get_hfov();
-
-  // extract the left and top bounds of the current camera
-  x_frustum_scale = tanf(hfov * 0.5f * (3.1415926f / 180.0f)) * tnear;
-  recip_x_frustum_scale = 1.0f / x_frustum_scale;
-  y_frustum_scale = x_frustum_scale / aspect_ratio;
-  recip_y_frustum_scale = 1.0f / y_frustum_scale;
-
-  // load up our own matrices
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  glFrustum(-1.0f, 1.0f, -1.0f, 1.0f, tnear, tfar);
-#endif
+  float aspect_ratio = 
+    get_current_camera()->get_lens()->get_aspect_ratio();
 
   // load up our own matrices
   glMatrixMode(GL_MODELVIEW);
@@ -1123,21 +1094,8 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 
     // this mult converts to y-up cameraspace.
     cameraspace_vert = source_vert * modelview_mat;
-
-#ifdef DO_CHARLES_PROJECTION_MAT
-    float x,y,z;
-
-    // do the inverse transform on the cameraspace point.
-    x = cameraspace_vert[0] ;//* recip_x_frustum_scale;
-    y = cameraspace_vert[1] ;//* recip_y_frustum_scale;
-    z = cameraspace_vert[2];
-
-    // build the final object that will go into the vector.
-    ws._v.set(x, y, z);
-#else
     // build the final object that will go into the vector.
     ws._v.set(cameraspace_vert[0],cameraspace_vert[1],cameraspace_vert[2]);
-#endif
 
     if (color_overall == false)
       ws._c = geom->get_next_color(ci);
@@ -1234,10 +1192,6 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   if(alpha && _dithering_enabled)
      glEnable(GL_DITHER);
 
-#ifdef DO_CHARLES_PROJECTION_MAT
-  glMatrixMode(GL_PROJECTION);
-  glLoadMatrixf(_current_projection_mat.get_data());
-#endif
   report_errors();
   _draw_primitive_pcollector.stop();
 }
@@ -2465,7 +2419,7 @@ apply_fog(Fog *fog) {
     // object knows how to decode its parameters into camera-relative
     // properties.
     float onset, opaque;
-    fog->compute_linear_range(onset, opaque, _current_projection_node,
+    fog->compute_linear_range(onset, opaque, _current_camera,
                               _coordinate_system);
     call_glFogStart(onset);
     call_glFogEnd(opaque);
@@ -2511,7 +2465,7 @@ void GLGraphicsStateGuardian::apply_light( PointLight* light )
 
     // Position needs to specify x, y, z, and w
     // w == 1 implies non-infinite position
-  LPoint3f pos = get_rel_pos( light, _current_projection_node );
+  LPoint3f pos = get_rel_pos( light, _current_camera );
   LPoint4f fpos( pos[0], pos[1], pos[2], 1 );
   glLightfv( id, GL_POSITION, fpos.get_data() );
 
@@ -2570,7 +2524,7 @@ void GLGraphicsStateGuardian::apply_light( DirectionalLight* light )
 
     // Position needs to specify x, y, z, and w
     // w == 0 implies light is at infinity
-  LPoint3f dir = get_rel_forward( light, _current_projection_node,
+  LPoint3f dir = get_rel_forward( light, _current_camera,
                                   _coordinate_system );
   LPoint4f pos( -dir[0], -dir[1], -dir[2], 0 );
   glLightfv( id, GL_POSITION, pos.get_data() );
@@ -2628,12 +2582,12 @@ void GLGraphicsStateGuardian::apply_light( Spotlight* light )
 
     // Position needs to specify x, y, z, and w
     // w == 1 implies non-infinite position
-  LPoint3f pos = get_rel_pos( light, _current_projection_node );
+  LPoint3f pos = get_rel_pos( light, _current_camera );
   LPoint4f fpos( pos[0], pos[1], pos[2], 1 );
   glLightfv( id, GL_POSITION, fpos.get_data() );
 
   glLightfv( id, GL_SPOT_DIRECTION,
-             get_rel_forward( light, _current_projection_node,
+             get_rel_forward( light, _current_camera,
                               _coordinate_system ).get_data() );
   glLightf( id, GL_SPOT_EXPONENT, light->get_exponent() );
   glLightf( id, GL_SPOT_CUTOFF,

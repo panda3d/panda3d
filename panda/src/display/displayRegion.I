@@ -105,7 +105,7 @@ get_camera() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::set_cull_frustum
 //       Access: Public
-//  Description: Sets the ProjectionNode that will be used to perform
+//  Description: Sets the LensNode that will be used to perform
 //               view-frustum culling for this particular
 //               DisplayRegion.  Normally, this is the same as the
 //               camera (and is implicitly set when set_camera() is
@@ -115,18 +115,18 @@ get_camera() const {
 //               observed from a third-person perspective.
 ////////////////////////////////////////////////////////////////////
 INLINE void DisplayRegion::
-set_cull_frustum(ProjectionNode *cull_frustum) {
+set_cull_frustum(LensNode *cull_frustum) {
   _cull_frustum = cull_frustum;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_cull_frustum
 //       Access: Public
-//  Description: Returns the ProjectionNode that will be used to
+//  Description: Returns the LensNode that will be used to
 //               perform view-frustum culling for this particular
 //               DisplayRegion.  See set_cull_frustum().
 ////////////////////////////////////////////////////////////////////
-INLINE ProjectionNode *DisplayRegion::
+INLINE LensNode *DisplayRegion::
 get_cull_frustum() const {
   return _cull_frustum;
 }

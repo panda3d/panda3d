@@ -25,7 +25,7 @@
 
 #include <configurable.h>
 #include <namedNode.h>
-#include <projectionNode.h>
+#include <lensNode.h>
 #include <typedReferenceCount.h>
 #include <graphicsStateGuardian.h>
 #include <allAttributesWrapper.h>
@@ -120,14 +120,14 @@ public:
   virtual ~FrustumShader(void) { }
 
   INLINE int get_num_frusta(void) const { return _frusta.size(); }
-  INLINE int add_frustum(ProjectionNode* frust);
-  INLINE int remove_frustum(ProjectionNode* frust);
+  INLINE int add_frustum(LensNode* frust);
+  INLINE int remove_frustum(LensNode* frust);
 
-  typedef pvector<ProjectionNode *> ProjectionVector;
+  typedef pvector<LensNode *> LensVector;
 
 protected:
 
-  ProjectionVector                      _frusta;
+  LensVector                      _frusta;
 
 public:
 

@@ -34,6 +34,10 @@ INLINE_LINMATH float ccos(float v) {
   return cosf(v);
 }
 
+INLINE_LINMATH float ctan(float v) {
+  return tanf(v);
+}
+
 INLINE_LINMATH void
 sincosf(float v, float *pSinResult, float *pCosResult) {
 
@@ -84,6 +88,10 @@ INLINE_LINMATH float cabs(float v) {
   return fabs(v);
 }
 
+INLINE_LINMATH float catan(float v) {
+  return atanf(v);
+}
+
 INLINE_LINMATH float catan2(float y, float x) {
   return atan2f(y, x);
 }
@@ -100,8 +108,16 @@ INLINE_LINMATH double ccos(double v) {
   return cos(v);
 }
 
+INLINE_LINMATH double ctan(double v) {
+  return tan(v);
+}
+
 INLINE_LINMATH double cabs(double v) {
   return fabs(v);
+}
+
+INLINE_LINMATH double catan(double v) {
+  return atan(v);
 }
 
 INLINE_LINMATH double catan2(double y, double x) {

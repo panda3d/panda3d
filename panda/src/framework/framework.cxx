@@ -85,7 +85,7 @@
 #include "textNode.h"
 #include "depthTestTransition.h"
 #include "depthWriteTransition.h"
-#include "orthoProjection.h"
+#include "orthographicLens.h"
 #include "transparencyTransition.h"
 #include "bamReader.h"
 #include "collisionRay.h"
@@ -491,10 +491,9 @@ void setup_framerate(void) {
   PT(Camera) cam2d = new Camera("framerate_cam");
   new RenderRelation(framerate_node, cam2d);
   cam2d->set_scene(framerate_top);
-
-  Frustumf frustum2d;
-  frustum2d.make_ortho_2D();
-  cam2d->set_projection(OrthoProjection(frustum2d));
+  PT(Lens) lens = new OrthographicLens;
+  lens->set_film_size(2.0);
+  cam2d->set_lens(lens);
 
   // Now create a new layer
   // eventually this should be done through chanconfig'

@@ -18,7 +18,6 @@
 #include <pandabase.h>
 #include "directionalLight.h"
 
-#include <perspectiveProjection.h>
 #include <indent.h>
 
 ////////////////////////////////////////////////////////////////////

@@ -56,7 +56,7 @@ transform_vertices(Geom *geom, const LMatrix4f &mat) {
 
   geom->get_coords(coords, index);
 
-  if (coords != NULL) {
+  if (!coords.empty()) {
     // Look up the Geom's coords in our table--have we already
     // transformed this array?
     SourceVertices sv;

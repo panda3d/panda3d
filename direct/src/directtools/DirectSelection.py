@@ -487,8 +487,8 @@ class SelectionRay:
 
     def pick(self, targetNodePath, mouseX, mouseY):
         # Determine ray direction based upon the mouse coordinates
-        # Note! This has to be a cam object (of type ProjectionNode)
-        self.ray.setProjection( base.cam.node(), mouseX, mouseY )
+        # Note! This has to be a cam object (of type LensNode)
+        self.ray.setFromLens( base.camNode, mouseX, mouseY )
         self.ct.traverse( targetNodePath.node() )
         self.numEntries = self.cq.getNumEntries()
         self.cq.sortEntries()

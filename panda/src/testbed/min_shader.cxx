@@ -62,7 +62,7 @@
 //Math/Matrix/Vector/Transformation stuff
 #include <transform2sg.h>
 #include <look_at.h>
-#include <perspectiveProjection.h>
+#include <perspectiveLens.h>
 #include <geomLine.h>
 
 Configure(min_shader);
@@ -70,7 +70,7 @@ ConfigureFn(min_shader) {
 }
 
 //--------Projective texture stuff--------
-PT(ProjectionNode) tex_proj;
+PT(LensNode) tex_proj;
 PT(Trackball) tex_proj_trackball;
 PT(ProjtexShader) proj_shader;
 //--------Spotlight stuff-----------------
@@ -551,7 +551,7 @@ void setup_projtex(void)
   // Create a projected texture shader
 
   // Put the texture projector into the scene graph
-  tex_proj = new ProjectionNode("texture_projector");
+  tex_proj = new LensNode("texture_projector");
   RenderRelation* proj_arc = new RenderRelation(render, tex_proj);
 
   // Create a trackball to spin this around.
@@ -579,8 +579,8 @@ void setup_projtex(void)
 #define DISPLAY_TEXPROJFRUST
 #ifdef DISPLAY_TEXPROJFRUST
   // Display a wireframe representation of the texture projector frustum
-  GeomLine* proj_geom =
-        (GeomLine *)tex_proj->get_projection()->make_geometry();
+  PT(Geom) proj_geom =
+    tex_proj->get_lens()->make_geometry();
   GeomNode* proj_geom_node = new GeomNode("proj_geometry");
   proj_geom_node->add_geom(proj_geom);
   RenderRelation *prr = new RenderRelation(tex_proj, proj_geom_node);
@@ -599,10 +599,11 @@ void setup_spotlight(void)
   // Create a projected texture spotlight shader
   tex_proj_spot = new Spotlight("tex_proj_spotlight");
   //Push out the far clipping plane of the spotlight frustum
-  Frustumf f;
-  f.make_perspective(45.0f, 45.0f, f._fnear, 13);
-  PerspectiveProjection pp(f);
-  tex_proj_spot->set_projection(pp);
+  PT(Lens) lens = new PerspectiveLens;
+  lens->set_fov(45.0f);
+  lens->set_near(f._fnear);
+  lens->set_far(13.0f);
+  tex_proj_spot->set_lens(lens);
 
   spot_arc = new RenderRelation(render, tex_proj_spot, 10);
 
@@ -632,8 +633,8 @@ void setup_spotlight(void)
 #ifdef DISPLAY_TEXPROJSPOTFRUST
   // Display a wireframe representation of the spotlight frustum
   Colorf color_red(1., 0., 0., 1.);
-  GeomLine* frust_geom =
-        (GeomLine *)tex_proj_spot->get_projection()->make_geometry(color_red);
+  PT(Geom) frust_geom =
+    tex_proj_spot->get_lens()->make_geometry();
   GeomNode* frust_geom_node = new GeomNode("frustum_geometry");
   frust_geom_node->add_geom(frust_geom);
   RenderRelation *rr = new RenderRelation(tex_proj_spot, frust_geom_node);

@@ -736,12 +736,12 @@ class DirectSessionPanel(AppShell):
     def setNear(self, near):
         dr = self.activeDisplayRegion
         if dr:
-            dr.camNode.setNear(near)
+            dr.camLens.setNear(near)
 
     def setFar(self, far):
         dr = self.activeDisplayRegion
         if dr:
-            dr.camNode.setFar(far)
+            dr.camLens.setFar(far)
 
     def setHFov(self, hFov):
         dr = self.activeDisplayRegion

@@ -23,7 +23,7 @@
 
 #include "collisionSolid.h"
 
-class ProjectionNode;
+class LensNode;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : CollisionRay
@@ -63,8 +63,8 @@ PUBLISHED:
   INLINE void set_direction(float x, float y, float z);
   INLINE const LVector3f &get_direction() const;
 
-  bool set_projection(ProjectionNode *camera, const LPoint2f &point);
-  INLINE bool set_projection(ProjectionNode *camera, float px, float py);
+  bool set_from_lens(LensNode *camera, const LPoint2f &point);
+  INLINE bool set_from_lens(LensNode *camera, float px, float py);
 
 protected:
   virtual void recompute_bound();

@@ -83,8 +83,8 @@ class Spotlight;
 class AmbientLight;
 
 class DisplayRegion;
-class Projection;
-class ProjectionNode;
+class Lens;
+class LensNode;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsStateGuardianBase

@@ -263,7 +263,7 @@ traverse(Node *root,
   LMatrix4f rel_from_camera;
   NodeTransitionWrapper ntw(TransformTransition::get_class_type());
   const DisplayRegion *dr = _gsg->get_current_display_region();
-  ProjectionNode *camera = dr->get_cull_frustum();
+  LensNode *camera = dr->get_cull_frustum();
   wrt(camera, root, begin(), end(), ntw, get_graph_type());
   const TransformTransition *tt;
   if (get_transition_into(tt, ntw)) {

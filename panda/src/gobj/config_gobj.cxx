@@ -24,10 +24,10 @@
 #include "geomprimitives.h"
 #include "imageBuffer.h"
 #include "material.h"
-#include "orthoProjection.h"
-#include "perspectiveProjection.h"
+#include "orthographicLens.h"
+#include "perspectiveLens.h"
 #include "pixelBuffer.h"
-#include "projection.h"
+#include "lens.h"
 #include "texture.h"
 
 #include <dconfig.h>
@@ -176,10 +176,10 @@ ConfigureFn(config_gobj) {
   ImageBuffer::init_type();
   LOD::init_type();
   Material::init_type();
-  OrthoProjection::init_type();
-  PerspectiveProjection::init_type();
+  OrthographicLens::init_type();
+  PerspectiveLens::init_type();
   PixelBuffer::init_type();
-  Projection::init_type();
+  Lens::init_type();
   Texture::init_type();
   dDrawable::init_type();
 

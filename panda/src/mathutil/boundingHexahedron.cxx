@@ -60,6 +60,25 @@ BoundingHexahedron(const Frustumf &frustum, bool is_ortho,
   }
 }
 
+BoundingHexahedron::
+BoundingHexahedron(const LPoint3f &fll, const LPoint3f &flr,
+                   const LPoint3f &fur, const LPoint3f &ful,
+                   const LPoint3f &nll, const LPoint3f &nlr,
+                   const LPoint3f &nur, const LPoint3f &nul) {
+  _points[0] = fll;
+  _points[1] = flr;
+  _points[2] = fur;
+  _points[3] = ful;
+  _points[4] = nll;
+  _points[5] = nlr;
+  _points[6] = nur;
+  _points[7] = nul;
+
+  _flags = 0;
+  set_centroid();
+  set_planes();
+}
+
 BoundingVolume *BoundingHexahedron::
 make_copy() const {
   return new BoundingHexahedron(*this);

@@ -26,7 +26,7 @@
 #include <directionalLight.h>
 #include <renderRelation.h>
 #include <frustum.h>
-#include <perspectiveProjection.h>
+#include <perspectiveLens.h>
 #include <shaderTransition.h>
 #include <texture.h>
 #include <texturePool.h>
@@ -72,7 +72,7 @@ PT(RenderRelation) hide_ball_arc;
 bool follow_ball;
 PT(PlanarSlider) ball_slider;
 
-PT(ProjectionNode) tex_proj;
+PT(LensNode) tex_proj;
 PT(ProjtexShader) proj_shader;
 PT(GeomNode) proj_geom_node;
 PT(Trackball) tex_proj_trackball;
@@ -329,7 +329,7 @@ void setup_shaders(void) {
   // Projected texture shader
   Texture* tex = TexturePool::load_texture("smiley.rgba");
   assert(tex != (Texture*)0L);
-  tex_proj = new ProjectionNode("texture_projector");
+  tex_proj = new LensNode("texture_projector");
   RenderRelation* proj_arc = new RenderRelation(root, tex_proj);
   tex_proj_trackball = new Trackball("tex_proj_trackball");
   tex_proj_trackball->set_invert(false);
@@ -346,8 +346,8 @@ void setup_shaders(void) {
   proj_arc->set_transition(new TransformTransition(proj_mat));
   proj_shader = new ProjtexShader(tex);
   proj_shader->add_frustum(tex_proj);
-  GeomLine* proj_geom =
-    (GeomLine *)tex_proj->get_projection()->make_geometry();
+  PT(Geom) proj_geom =
+    tex_proj->get_lens()->make_geometry();
   proj_geom_node = new GeomNode("proj_geometry");
   proj_geom_node->add_geom(proj_geom);
   proj_shader->set_priority(150);
@@ -356,10 +356,11 @@ void setup_shaders(void) {
 
   // projected texture spotlight shader
   tex_proj_spot = new Spotlight("tex_proj_spotlight");
-  Frustumf f;
-  f.make_perspective(45.0f, 45.0f, f._fnear, 13);
-  PerspectiveProjection pp(f);
-  tex_proj_spot->set_projection(pp);
+  PT(Lens) lens = new PerspectiveLens;
+  lens->set_fov(45.0f);
+  lens->set_near(f._fnear);
+  lens->set_far(13.0f);
+  tex_proj_spot->set_lens(lens);
   RenderRelation* spot_arc = new RenderRelation(root, tex_proj_spot, 10);
   tex_spot_trackball = new Trackball("tex_spot_trackball");
   tex_spot_trackball->set_invert(false);

@@ -26,8 +26,8 @@
 #include <geomLinestrip.h>
 #include <geomNode.h>
 #include <pointerToArray.h>
-#include <projection.h>
-#include <projectionNode.h>
+#include <lens.h>
+#include <lensNode.h>
 #include <renderRelation.h>
 #include <transformTransition.h>
 

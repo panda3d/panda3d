@@ -112,9 +112,14 @@ class ShowBase:
             self.camList.append( camera.find('**/+Camera') )
         # Set the default camera
         self.cam = self.camera.find('**/+Camera')
-        # If you need to use the camera node, use camNode instead
-        # of calling cam.node() to save the FFI overhead
+
+        # If you need to get a handle to the camera node itself, use
+        # self.camNode.
         self.camNode = self.cam.node()
+        # If you need to adjust camera parameters, like fov or
+        # near/far clipping planes, use self.camLens
+        self.camLens = self.camNode.getLens()
+
         # Set up a 2-d layer for drawing things behind Gui labels.
         self.render2d = NodePath(setupPanda2d(self.win, "render2d"))
 
@@ -131,26 +136,13 @@ class ShowBase:
         self.aspect2d.setScale(1.0 / self.aspectRatio, 1.0, 1.0)
 
         # And let's enforce that aspect ratio on the camera.
-        hfov = self.camNode.getHfov()
-        vfov = hfov / self.aspectRatio
-        self.camNode.setFov(hfov, vfov)
+        self.camLens.setAspectRatio(self.aspectRatio)
 
         # It's important to know the bounds of the aspect2d screen.
         self.a2dTop = 1.0
         self.a2dBottom = -1.0
         self.a2dLeft = -self.aspectRatio
         self.a2dRight = self.aspectRatio
-
-        # Set up an auxiliary 3-d layer for rendering floating heads
-        # or other 3-d objects on top of text or widgets in the 2-d
-        # layer.  We set it up with a camera that specifically shares
-        # the projection with the default camera, so that when we
-        # change the default camera's parameters, it changes this one
-        # too.
-        self.renderAux = NodePath(NamedNode('renderAux'))
-        self.camAux = self.renderAux.attachNewNode(Camera('camAux'))
-        self.camAux.node().shareProjection(self.cam.node().getProjection())
-        addRenderLayer(self.win, self.renderAux.node(), self.camAux.node())
 
         # We create both a MouseAndKeyboard object and a MouseWatcher object
         # for the window.  The MouseAndKeyboard generates mouse events and
@@ -543,6 +535,10 @@ class ShowBase:
 
             self.oobeCamera = self.hidden.attachNewNode('oobeCamera')
             self.oobeCameraTrackball = self.oobeCamera.attachNewNode('oobeCameraTrackball')
+            self.oobeLens = PerspectiveLens()
+            self.oobeLens.setAspectRatio(self.aspectRatio)
+            self.oobeLens.setNearFar(0.1, 10000.0)
+            self.oobeLens.setFov(52.0)
             self.oobeControl = DataValve.Control()
             self.mouseValve.node().setControl(1, self.oobeControl)
             self.oobeTrackball = self.mouseValve.attachNewNode(Trackball('oobeTrackball'), 1)
@@ -555,6 +551,7 @@ class ShowBase:
             if self.oobeVis:
                 self.oobeVis.arc().setFinal(1)
             self.oobeCullFrustum = None
+            self.oobeCullFrustumVis = None
 
             # Make sure the MouseValve is monitoring the Control key.
             mods = ModifierButtons(self.mouseValve.node().getModifierButtons())
@@ -573,6 +570,7 @@ class ShowBase:
             if self.oobeVis:
                 self.oobeVis.reparentTo(self.hidden)
             self.cam.reparentTo(self.camera)
+            self.camNode.setLens(self.camLens)
             self.oobeCamera.reparentTo(self.hidden)
             self.oobeMode = 0            
         else:
@@ -592,8 +590,7 @@ class ShowBase:
             self.mouseValve.node().setFineControl(0, self.oobeButtonEventsType, self.onControl)
 
             # Make oobeCamera be a sibling of wherever camera is now.
-            cameraParent = NodePath(self.camera)
-            cameraParent.shorten(1)
+            cameraParent = self.camera.getParent()
             self.oobeCamera.reparentTo(cameraParent)
             self.oobeCamera.clearMat()
 
@@ -603,6 +600,7 @@ class ShowBase:
             self.oobeTrackball.node().setMat(mat)
 
             self.cam.reparentTo(self.oobeCameraTrackball)
+            self.camNode.setLens(self.oobeLens)
             if self.oobeVis:
                 self.oobeVis.reparentTo(self.camera)
             self.oobeMode = 1
@@ -623,9 +621,16 @@ class ShowBase:
 
         if self.oobeCullFrustum == None:
             # Enable OOBE culling.
-            pnode = ProjectionNode('oobeCull')
-            pnode.setProjection(self.camNode.getProjection())
+            pnode = LensNode('oobeCull')
+            pnode.setLens(self.camLens)
             self.oobeCullFrustum = self.camera.attachNewNode(pnode)
+
+            # Create a visible representation of the frustum.
+            geom = self.camLens.makeGeometry()
+            if geom != None:
+                gn = GeomNode('frustum')
+                gn.addGeom(geom)
+                self.oobeCullFrustumVis = self.oobeVis.attachNewNode(gn)
 
             # Assign each DisplayRegion shared by the camera to use
             # this cull frustum.
@@ -645,6 +650,10 @@ class ShowBase:
 
             self.oobeCullFrustum.removeNode()
             self.oobeCullFrustum = None
+
+            if self.oobeCullFrustumVis != None:
+                self.oobeCullFrustumVis.removeNode()
+                self.oobeCullFrustumVis = None
 
     def screenshot(self, namePrefix='screenshot'):
         # Get the current date and time to uniquify the image (down to the second)

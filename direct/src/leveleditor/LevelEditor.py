@@ -514,8 +514,8 @@ class LevelEditor(NodePath, PandaObject):
                                            'y-ring', 'y-disc',
                                            'z-post'])
         # Initialize camera
-        base.cam.node().setNear(1.0)
-        base.cam.node().setFar(3000)
+        base.camLens.setNear(1.0)
+        base.camLens.setFar(3000)
         direct.camera.setPos(0,-10,10)
         # Initialize drive mode
         self.configureDriveModeCollisionData()

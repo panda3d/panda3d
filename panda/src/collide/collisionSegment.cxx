@@ -24,8 +24,8 @@
 
 #include <geom.h>
 #include <geomNode.h>
-#include <projectionNode.h>
-#include <projection.h>
+#include <lensNode.h>
+#include <lens.h>
 
 #include <geomLine.h>
 #include <geometricBoundingVolume.h>
@@ -91,11 +91,11 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionSegment::set_projection
+//     Function: CollisionSegment::set_from_lens
 //       Access: Public
-//  Description: Accepts a ProjectionNode and a 2-d point in the range
+//  Description: Accepts a LensNode and a 2-d point in the range
 //               [-1,1].  Sets the CollisionSegment so that it begins at
-//               the ProjectionNode's near plane and extends to the
+//               the LensNode's near plane and extends to the
 //               far plane, making it suitable for picking objects
 //               from the screen given a camera and a mouse location.
 //
@@ -103,20 +103,15 @@ output(ostream &out) const {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CollisionSegment::
-set_projection(ProjectionNode *camera, const LPoint2f &point) {
-  Projection *proj = camera->get_projection();
+set_from_lens(LensNode *camera, const LPoint2f &point) {
+  Lens *proj = camera->get_lens();
 
   bool success = true;
-  LPoint3f origin;
-  LVector3f direction;
-  if (!proj->extrude(point, origin, direction)) {
-    origin = LPoint3f::origin();
-    direction = LVector3f::forward();
+  if (!proj->extrude(point, _a, _b)) {
+    _a = LPoint3f::origin();
+    _b = _a + LVector3f::forward();
     success = false;
   }
-
-  _a = origin;
-  _b = origin + direction;
 
   mark_bound_stale();
   mark_viz_stale();

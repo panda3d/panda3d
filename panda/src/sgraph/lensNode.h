@@ -1,4 +1,4 @@
-// Filename: camera.h
+// Filename: lensNode.h
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
@@ -15,70 +15,55 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
-#ifndef CAMERA_H
-#define CAMERA_H
+#ifndef LENSNODE_H
+#define LENSNODE_H
 //
 ////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////
 #include "pandabase.h"
 
-#include "lensNode.h"
-#include "pt_Node.h"
-#include "pvector.h"
-
-class DisplayRegion;
+#include "namedNode.h"
+#include "lens.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : Camera
-// Description :
+//       Class : LensNode
+// Description : A node that contains a Lens.  The most important
+//               example of this kind of node is a Camera, but other
+//               kinds of nodes also contain a lens (for instance, a
+//               Spotlight).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Camera : public LensNode {
+class EXPCL_PANDA LensNode : public NamedNode {
 PUBLISHED:
-  Camera(const string &name = "");
+  INLINE LensNode(const string &name = "");
 
 public:
-  Camera(const Camera &copy);
-  void operator = (const Camera &copy);
-  virtual ~Camera();
+  INLINE LensNode(const LensNode &copy);
+  INLINE void operator = (const LensNode &copy);
+
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent_level = 0) const;
 
   virtual Node *make_copy() const;
-  virtual bool safe_to_flatten() const;
-  virtual bool safe_to_transform() const;
-
-  //virtual void output(ostream &out) const;
-  virtual void config() { }
 
 PUBLISHED:
-  INLINE void set_active(bool active);
-  INLINE bool is_active() const;
+  INLINE void copy_lens(const Lens &lens);
+  INLINE void set_lens(Lens *lens);
+  INLINE Lens *get_lens();
 
-  INLINE void set_scene(Node *scene);
-  INLINE Node *get_scene() const;
+  bool is_in_view(const LPoint3f &pos);
 
-  int get_num_drs() const;
-  DisplayRegion *get_dr(int index) const;
-
-private:
-  void add_display_region(DisplayRegion *display_region);
-  void remove_display_region(DisplayRegion *display_region);
-
-  bool _active;
-  PT_Node _scene;
-
-  typedef pvector<DisplayRegion *> DisplayRegions;
-  DisplayRegions _display_regions;
-
-  static const std::string _CHANGE_CAM;
+protected:
+  PT(Lens) _lens;
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    LensNode::init_type();
-    register_type(_type_handle, "Camera",
-                  LensNode::get_class_type());
+    NamedNode::init_type();
+    register_type( _type_handle, "LensNode",
+                   NamedNode::get_class_type() );
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -86,11 +71,10 @@ public:
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
 private:
-  static TypeHandle _type_handle;
 
-friend class DisplayRegion;
+  static TypeHandle                       _type_handle;
 };
 
-#include "camera.I"
+#include "lensNode.I"
 
 #endif

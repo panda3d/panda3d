@@ -25,7 +25,7 @@
 #include <displayRegion.h>
 #include <graphicsWindow.h>
 #include <renderBuffer.h>
-#include <perspectiveProjection.h>
+#include <perspectiveLens.h>
 #include <look_at.h>
 #include <compose_matrix.h>
 #include <cullFaceTransition.h>
@@ -116,7 +116,7 @@ pre_apply(Node *node, const AllAttributesWrapper &init_state,
   state.clear_attribute(TransformTransition::get_class_type());
 
   // Get the current camera from the gsg
-  const ProjectionNode* camera = gsg->get_current_projection_node();
+  const LensNode* camera = gsg->get_current_camera();
 
   // Save the clear color.
   Colorf clear_color = gsg->get_color_clear_value();
@@ -158,15 +158,16 @@ pre_apply(Node *node, const AllAttributesWrapper &init_state,
     arc->set_transition(new TransformTransition(mat));
   }
 
-  // Build a ProjectionNode that represents a wide-angle view from the
+  // Build a LensNode that represents a wide-angle view from the
   // reflecting object towards the camera.
-  Frustumf frust;
-  frust.make_perspective_hfov(150.0f, 1.0f, _fnear, _ffar);
-  PerspectiveProjection projection(frust);
-  ProjectionNode* projnode = new ProjectionNode;
-  projnode->set_projection(projection);
+  PT(Lens) *lens = new PerspectiveLens;
+  lens->set_fov(150.0f);
+  lens->set_near(_fnear);
+  lens->set_far(_ffar);
+  LensNode *projnode = new LensNode;
+  projnode->set_lens(lens);
 
-  // How shall we rotate the ProjectionNode?
+  // How shall we rotate the LensNode?
   LMatrix4f r_mat;
 
   // Get camera pos in the coordinate space of the reflecting object

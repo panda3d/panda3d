@@ -122,7 +122,7 @@ pre_apply(Node *node, const AllAttributesWrapper &init_state,
 
   // Figure out where the highlight is relative to the object's center and
   // the light
-  const ProjectionNode* projnode = gsg->get_current_projection_node();
+  const LensNode* projnode = gsg->get_current_camera();
   LVector3f model_pos = get_rel_pos(node, projnode);
   LVector3f norm_model_pos = normalize(model_pos);
   LPoint3f light_pos = get_rel_pos(light, projnode);

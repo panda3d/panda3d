@@ -22,7 +22,7 @@
 //  Description: Creates an invalid ray.  This isn't terribly useful;
 //               it's expected that the user will subsequently adjust
 //               the ray via set_origin()/set_direction() or
-//               set_projection().
+//               set_from_lens().
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionRay::
 CollisionRay() :
@@ -135,15 +135,15 @@ get_direction() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionRay::set_projection
+//     Function: CollisionRay::set_from_lens
 //       Access: Public
-//  Description: Accepts a ProjectionNode and a 2-d point in the range
+//  Description: Accepts a LensNode and a 2-d point in the range
 //               [-1,1].  Sets the CollisionRay so that it begins at
-//               the ProjectionNode's near plane and extends to
+//               the LensNode's near plane and extends to
 //               infinity, making it suitable for picking objects from
 //               the screen given a camera and a mouse location.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionRay::
-set_projection(ProjectionNode *camera, float px, float py) {
-  return set_projection(camera, LPoint2f(px, py));
+set_from_lens(LensNode *camera, float px, float py) {
+  return set_from_lens(camera, LPoint2f(px, py));
 }

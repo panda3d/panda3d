@@ -23,7 +23,7 @@
 #include <graphicsStateGuardian.h>
 #include <displayRegion.h>
 #include <renderTraverser.h>
-#include <projectionNode.h>
+#include <lensNode.h>
 #include <look_at.h>
 #include <nodeTransitionWrapper.h>
 #include <wrt.h>
@@ -77,8 +77,8 @@ sub_render(NodeRelation *arc, const AllTransitionsWrapper &,
   // DisplayRegion may have some override in effect, so we ask the
   // DisplayRegion instead of the GSG.
   const DisplayRegion *dr = gsg->get_current_display_region();
-  ProjectionNode *camera = dr->get_cull_frustum();
-  nassertr(camera != (ProjectionNode *)NULL, true);
+  LensNode *camera = dr->get_cull_frustum();
+  nassertr(camera != (LensNode *)NULL, true);
 
   // And the relative coordinate space.
   LMatrix4f rel_mat;

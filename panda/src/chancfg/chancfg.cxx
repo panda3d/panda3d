@@ -23,7 +23,7 @@
 #include <hardwareChannel.h>
 #include <camera.h>
 #include <frustum.h>
-#include <perspectiveProjection.h>
+#include <perspectiveLens.h>
 #include <renderRelation.h>
 #include <transformTransition.h>
 #include <dSearchPath.h>
@@ -299,15 +299,17 @@ void ChanConfig::chan_eval(GraphicsWindow* win, WindowItem& W, LayoutItem& L,
          break;
      }
 
-     Frustumf frust;
-     frust.make_perspective(hFov, vFov, 1., 10000.);
-     cam->set_projection(PerspectiveProjection(frust));
+     PT(Lens) lens = new PerspectiveLens;
+     lens->set_fov(hFov, vFov);
+     lens->set_near_far(1.0f, 10000.0f);
+     cam->set_lens(lens);
+
      // hfov and vfov for camera are switched from what was specified
      // if the orientation is sideways.
      if (chancfg_cat->is_debug())
        chancfg_cat->debug() << "ChanEval:: camera hfov = "
-         << cam->get_hfov() << "  vfov = "
-         << cam->get_vfov() << endl;
+         << lens->get_hfov() << "  vfov = "
+         << lens->get_vfov() << endl;
      cam->set_scene(render);
 
      RenderRelation *tocam = new RenderRelation(camera[W.getCameraGroup(j)], cam);

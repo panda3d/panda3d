@@ -129,15 +129,17 @@ get_state() const {
 */
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_current_projection_node
+//     Function: GraphicsStateGuardian::get_current_camera
 //       Access: Public
 //  Description: Returns the node currently being used as the
-//               projection node (i.e. the camera) for this scene, as
-//               set by the last call to render_subgraph().
+//               camera for this scene, as set by the last call to
+//               render_subgraph().  This actually might be any kind
+//               of LensNode, not specifically a Camera node, although
+//               it will usually be a Camera.
 ////////////////////////////////////////////////////////////////////
-INLINE ProjectionNode *GraphicsStateGuardian::
-get_current_projection_node(void) const {
-  return _current_projection_node;
+INLINE LensNode *GraphicsStateGuardian::
+get_current_camera(void) const {
+  return _current_camera;
 }
 
 ////////////////////////////////////////////////////////////////////

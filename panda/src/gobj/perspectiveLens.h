@@ -1,5 +1,5 @@
-// Filename: orthoProjection.h
-// Created by:  mike (18Feb99)
+// Filename: perspectiveLens.h
+// Created by:  drose (18Feb99)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,37 +16,36 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef ORTHOPROJECTION_H
-#define ORTHOPROJECTION_H
+#ifndef PERSPECTIVELENS_H
+#define PERSPECTIVELENS_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include "projection.h"
-#include <frustum.h>
+#include "lens.h"
 
 
 ////////////////////////////////////////////////////////////////////
-//       Class : OrthoProjection
-// Description : An orthographic-type projection, with a frustum.
+//       Class : PerspectiveLens
+// Description : A perspective-type lens: a normal camera.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA OrthoProjection : public Projection {
+class EXPCL_PANDA PerspectiveLens : public Lens {
 PUBLISHED:
-  INLINE OrthoProjection(const Frustumf &frustum);
+  INLINE PerspectiveLens();
 
 public:
-  virtual Projection *make_copy() const;
-  virtual LMatrix4f get_projection_mat(CoordinateSystem cs = CS_default) const;
+  INLINE PerspectiveLens(const PerspectiveLens &copy);
+  INLINE void operator = (const PerspectiveLens &copy);
 
-  virtual Geom* make_geometry(const Colorf &color = Colorf(0.0f, 1.0f, 0.0f, 1.0f),
-                              CoordinateSystem cs = CS_default) const;
-
-  virtual BoundingVolume *make_bounds(CoordinateSystem cs = CS_default) const;
-
-  INLINE const Frustumf &get_frustum() const;
-
+public:
+  virtual PT(Lens) make_copy() const;
+  virtual bool is_linear() const;
 
 protected:
-  Frustumf _frustum;
+  virtual void compute_projection_mat();
+
+  virtual float fov_to_film(float fov, float focal_length, bool horiz) const;
+  virtual float fov_to_focal_length(float fov, float film_size, bool horiz) const;
+  virtual float film_to_fov(float film_size, float focal_length, bool horiz) const;
 
 public:
   virtual TypeHandle get_type() const {
@@ -57,17 +56,15 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    Projection::init_type();
-    register_type(_type_handle, "OrthoProjection",
-                  Projection::get_class_type());
+    Lens::init_type();
+    register_type(_type_handle, "PerspectiveLens",
+                  Lens::get_class_type());
   }
 
 private:
   static TypeHandle _type_handle;
 };
 
-#include "orthoProjection.I"
+#include "perspectiveLens.I"
 
 #endif
-
-

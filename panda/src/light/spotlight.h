@@ -29,7 +29,7 @@
 #include <namedNode.h>
 #include <frustum.h>
 #include "light.h"
-#include <projectionNode.h>
+#include <lensNode.h>
 
 ////////////////////////////////////////////////////////////////////
 // Defines
@@ -39,7 +39,7 @@
 //       Class : Spotlight
 // Description :
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Spotlight : public Light, public ProjectionNode
+class EXPCL_PANDA Spotlight : public Light, public LensNode
 {
   PUBLISHED:
 
@@ -91,10 +91,10 @@ class EXPCL_PANDA Spotlight : public Light, public ProjectionNode
     }
     static void init_type( void ) {
       Light::init_type();
-      ProjectionNode::init_type();
+      LensNode::init_type();
       register_type( _type_handle, "Spotlight",
                            Light::get_class_type(),
-                           ProjectionNode::get_class_type() );
+                           LensNode::get_class_type() );
     }
     virtual TypeHandle get_type( void ) const {
       return get_class_type();
