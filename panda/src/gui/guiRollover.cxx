@@ -74,8 +74,8 @@ void GuiRollover::adjust_region(void) {
     // adjust for graph transform
     LMatrix4f m;
     this->get_graph_mat(m);
-    LVector3f ul = LVector3f::rfu(_left, 0., _top);
-    LVector3f lr = LVector3f::rfu(_right, 0., _bottom);
+    LPoint3f ul = LVector3f::rfu(_left, 0., _top);
+    LPoint3f lr = LVector3f::rfu(_right, 0., _bottom);
     ul = m * ul;
     lr = m * lr;
     _left = ul.dot(LVector3f::rfu(1., 0., 0.));
