@@ -25,6 +25,7 @@
 #include "dxGeomNodeContext8.h"
 #include "dxTextureContext8.h"
 #include "d3dfont8.h"
+#include "config_dxgsg8.h"
 
 #include "graphicsStateGuardian.h"
 #include "geomprimitives.h"

@@ -24,6 +24,7 @@
 #include "dxgsg7base.h"
 #include "dxGeomNodeContext7.h"
 #include "dxTextureContext7.h"
+#include "config_dxgsg7.h"
 
 #include "graphicsStateGuardian.h"
 #include "geomprimitives.h"
@@ -36,6 +37,7 @@
 #include "textureApplyAttrib.h"
 #include "fog.h"
 #include "pointerToArray.h"
+#include "graphicsWindow.h"
 
 class Light;
 

@@ -25,6 +25,7 @@
 #include "dxGeomNodeContext9.h"
 #include "dxTextureContext9.h"
 #include "d3dfont9.h"
+#include "config_dxgsg9.h"
 
 #include "graphicsStateGuardian.h"
 #include "geomprimitives.h"

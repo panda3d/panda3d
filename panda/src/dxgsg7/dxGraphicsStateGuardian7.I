@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_dxgsg7.h"
-#include <graphicsWindow.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian7::enable_line_smooth
@@ -28,7 +26,7 @@ INLINE void DXGraphicsStateGuardian7::
 enable_line_smooth(bool val) {
   if(_line_smooth_enabled != val) {
     _line_smooth_enabled = val;
-  #ifdef NDEBUG
+  #ifndef NDEBUG
     {
         if(val && (_pScrn->D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ANTIALIASEDGES))
            dxgsg7_cat.error() << "no HW support for line smoothing!!\n";
@@ -47,16 +45,15 @@ enable_line_smooth(bool val) {
 INLINE void DXGraphicsStateGuardian7::
 enable_dither(bool val) {
   if (_dither_enabled != val) {
+    _dither_enabled = val;
 
-  #ifdef _DEBUG
+  #ifndef NDEBUG
     {
         if(val && !(_pScrn->D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_DITHER))
            dxgsg7_cat.error() << "no HW support for color dithering!!\n";
-        return;
     }
   #endif
 
-    _dither_enabled = val;
     _pScrn->pD3DDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, (DWORD)val);
   }
 }

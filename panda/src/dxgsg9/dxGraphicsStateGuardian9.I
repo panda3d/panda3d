@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-// for dxgsg9_cat stuff
-#include "config_dxgsg9.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::enable_line_smooth
@@ -28,9 +26,9 @@ INLINE void DXGraphicsStateGuardian9::
 enable_line_smooth(bool val) {
   if(_line_smooth_enabled != val) {
     _line_smooth_enabled = val;
-  #ifdef NDEBUG
+  #ifndef NDEBUG
     {
-        if(val && (_pScrn->d3dcaps.RasterCaps & D3DPRASTERCAPS_ANTIALIASEDGES))
+        if(val && (_pScrn->d3dcaps.LineCaps & D3DLINECAPS_ANTIALIAS))
            dxgsg9_cat.error() << "no HW support for line smoothing!!\n";
     }
   #endif
@@ -47,16 +45,15 @@ enable_line_smooth(bool val) {
 INLINE void DXGraphicsStateGuardian9::
 enable_dither(bool val) {
   if (_dither_enabled != val) {
+    _dither_enabled = val;
 
-  #ifdef _DEBUG
+  #ifndef NDEBUG
     {
         if(val && !(_pScrn->d3dcaps.RasterCaps & D3DPRASTERCAPS_DITHER))
            dxgsg9_cat.error() << "no HW support for color dithering!!\n";
-        return;
     }
   #endif
 
-    _dither_enabled = val;
     _pD3DDevice->SetRenderState(D3DRS_DITHERENABLE, (DWORD)val);
   }
 }
