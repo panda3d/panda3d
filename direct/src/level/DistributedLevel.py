@@ -16,6 +16,8 @@ class DistributedLevel(DistributedObject.DistributedObject,
     WantVisibility = config.GetBool('level-visibility', 1)
     HideZones = config.GetBool('level-hidezones', 1)
 
+    FloorCollPrefix = 'zoneFloor'
+
     def __init__(self, cr):
         DistributedObject.DistributedObject.__init__(self, cr)
         LevelBase.LevelBase.__init__(self)
@@ -66,6 +68,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         LevelBase.LevelBase.initializeLevel(self, self.doId,
                                             spec, self.scenarioIndex)
 
+        # all of the entities have been created now.
         # there should not be any pending reparents left at this point
         assert len(self.parent2ChildIds) == 0
         # make sure the zoneNums from the model match the zoneNums from
@@ -73,31 +76,6 @@ class DistributedLevel(DistributedObject.DistributedObject,
         assert sameElements(self.zoneNums, self.zoneNum2entId.keys())
 
         # load stuff
-
-        # fix up the floor collisions for walkable zones
-        for zoneNum in self.zoneNums:
-            zoneNode = self.zoneNum2node[zoneNum]
-
-            # if this is a walkable zone, fix up the model
-            floorColls = zoneNode.findAllMatches('**/+CollisionNode').asList()
-            if len(floorColls) > 0:
-                # rename the floor collision nodes, and make sure no other
-                # nodes under the ZoneNode have that name
-                floorCollName = '%s' % zoneNum
-                others = zoneNode.findAllMatches(
-                    '**/%s' % floorCollName).asList()
-                for other in others:
-                    other.setName('%s_renamed' % floorCollName)
-                for floorColl in floorColls:
-                    floorColl.setName(floorCollName)
-
-                # listen for zone enter events from floor collisions
-                def handleZoneEnter(collisionEntry,
-                                    self=self, zoneNum=zoneNum):
-                    # eat the collisionEntry
-                    self.toonEnterZone(zoneNum)
-                self.accept('enter%s' % floorCollName, handleZoneEnter)
-
         self.initVisibility()
 
     def createEntityCreator(self):
@@ -110,6 +88,13 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # load up the model ASAP so that we can get zone info out of it
         self.acceptOnce(self.getEntityTypeCreateEvent('levelMgr'),
                         self.handleLevelMgrCreated)
+        """ it would be nice to be able to do this, but this overrides the
+        handler in LevelBase. For now, just override the LevelBase handler
+        and call down.
+        # fix up the model wrt zone collisions
+        self.acceptOnce(self.getEntityTypeCreateEvent('zone'),
+                        self.handleAllZonesCreated)
+                        """
 
     def removeEntityCreationHandlers(self):
         LevelBase.LevelBase.removeEntityCreationHandlers(self)
@@ -155,6 +140,41 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
         # find the doorway nodes
         self.doorwayNum2Node = findNumberedNodes('Doorway')
+
+    def handleAllZonesCreated(self):
+        LevelBase.LevelBase.handleAllZonesCreated(self)
+        
+        # fix up the floor collisions for walkable zones before
+        # any entities get put under the model
+        for zoneNum in self.zoneNums:
+            zoneNode = self.zoneNum2node[zoneNum]
+
+            # if this is a walkable zone, fix up the model
+            allColls = zoneNode.findAllMatches('**/+CollisionNode').asList()
+            # which of them, if any, are floors?
+            floorColls = []
+            for coll in allColls:
+                bitmask = coll.node().getIntoCollideMask()
+                if not (bitmask & ToontownGlobals.FloorBitmask).isZero():
+                    floorColls.append(coll)
+            if len(floorColls) > 0:
+                # rename the floor collision nodes, and make sure no other
+                # nodes under the ZoneNode have that name
+                floorCollName = '%s%s' % (DistributedLevel.FloorCollPrefix,
+                                          zoneNum)
+                others = zoneNode.findAllMatches(
+                    '**/%s' % floorCollName).asList()
+                for other in others:
+                    other.setName('%s_renamed' % floorCollName)
+                for floorColl in floorColls:
+                    floorColl.setName(floorCollName)
+
+                # listen for zone enter events from floor collisions
+                def handleZoneEnter(collisionEntry,
+                                    self=self, zoneNum=zoneNum):
+                    # eat the collisionEntry
+                    self.toonEnterZone(zoneNum)
+                self.accept('enter%s' % floorCollName, handleZoneEnter)
 
     def announceGenerate(self):
         self.notify.debug('announceGenerate')
@@ -231,7 +251,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # been hidden
         self.curVisibleZoneNums = list2dict(self.zoneNums)
         # the UberZone is always visible, so it's not included in the
-        # viz lists
+        # zones' viz lists
         del self.curVisibleZoneNums[0]
         # we have not entered any zone yet
         self.curZoneNum = None
@@ -239,12 +259,15 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # listen for camera-ray/floor collision events
         def handleCameraRayFloorCollision(collEntry, self=self):
             name = collEntry.getIntoNode().getName()
-            try:
-                zoneNum = int(name)
-            except:
-                self.notify.warning('Invalid floor collision node: %s' % name)
-            else:
-                self.camEnterZone(zoneNum)
+            prefixLen = len(DistributedLevel.FloorCollPrefix)
+            if (name[:prefixLen] == DistributedLevel.FloorCollPrefix):
+                try:
+                    zoneNum = int(name[prefixLen:])
+                except:
+                    self.notify.debug('Invalid zone floor collision node: %s'
+                                      % name)
+                else:
+                    self.camEnterZone(zoneNum)
         self.accept('on-floor', handleCameraRayFloorCollision)
 
         # if no viz, listen to all the zones

@@ -88,6 +88,15 @@ class LevelBase:
     def setupEntityCreationHandlers(self):
         # set up any handlers for entity creation events
         # override if desired, but be sure to call down
+
+        # NOTE: we currently don't support a single object listening
+        # multiple times to a single event; therefore, anything that
+        # is listened for here cannot be listened for in a subclass
+        # as well; one will stomp the other. Therefore, until we figure
+        # out a better way to handle it, override any handlers defined
+        # in LevelBase and call down, instead of installing your own
+        # handler.
+
         self.acceptOnce(
             self.getEntityTypeCreateEvent('zone'),
             self.handleAllZonesCreated)
