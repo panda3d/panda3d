@@ -617,6 +617,9 @@ of the world, see INSTALL.txt in this directory.
     > ppremake
     > make install
 
+  - Note: if you get an error stating that 'ppremake' cannot be found,
+    make sure that you are attached to WINTOOLS:install and try again.
+
   After the make is done, kill your current tcsh window and open another 
   using your shortcut from before.
 
