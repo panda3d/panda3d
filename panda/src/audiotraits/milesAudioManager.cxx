@@ -269,25 +269,12 @@ void MilesAudioManager::
 uncache_a_sound() {
   audio_debug("MilesAudioManager::uncache_a_sound()");
   assert(is_valid());
-  SoundMap::iterator i;
-  
-  // Pick a caching scheme:
-  if (0) {
-    // uncache arbitrarily:
-    i = _sounds.begin();
-  } else if (0) {
-    // uncache randomly:
-    // (I may implement this later, along with run-time selection
-    // of caching mechanisms).
-    //i = _sounds[random from 0 to _sounds.size()-1];
-  } else {
-    // uncache least recently used:
-    assert(_lru.size()>0);
-    LRU::reference path=_lru.front();
-    i = _sounds.find(*path);
-    assert(i != _sounds.end());
-    _lru.pop_front();
-  }
+  // uncache least recently used:
+  assert(_lru.size()>0);
+  LRU::reference path=_lru.front();
+  SoundMap::iterator i = _sounds.find(*path);
+  assert(i != _sounds.end());
+  _lru.pop_front();
   
   if (i != _sounds.end()) {
     audio_debug("  uncaching \""<<i->first<<"\"");
