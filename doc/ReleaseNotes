@@ -1,0 +1,270 @@
+------------------------  RELEASE 2004-07-27  ------------------------
+
+Configuration, installation, and execution environments:
+
+  * We have moved to a new, more explicit naming convention for our
+    import statements.  Rather than installing all Python files into
+    one big flat namespace, we now import them from their appropriate
+    directories, e.g. "from direct.actor import Actor".
+
+  * "from ShowBaseGlobal import *" is replaced with "import
+    direct.directbase.DirectStart" and/or "from pandac.PandaModules
+    import *".
+
+  * The old "generatePythonCode" script has been replaced with a new
+    "genPyCode" script that automates the Python wrapper generation
+    process without requiring any special parameters.
+
+  * The old dependencies on environment variables have been removed.
+    There are no longer requirements for any environment variables to
+    be set in either the build process or the runtime environment
+    (although a few optional environment variables remain to allow
+    custom configuration).
+
+  * INSTALL document greatly enhanced for clarity.
+
+  * An automatic build script is now provided to further simplify
+    building Panda3D for Unix and Cygwin users.
+
+  * The old "Configrc" filename to identify runtime configuration
+    files is deprecated; configuration files should now be named
+    Config.prc, or in general, *.prc.  The system-default
+    configuration files are auto-generated as 20_panda.prc,
+    30_pandatool.prc, and 40_direct.prc (the numeric prefixes control
+    the order in which these are loaded at runtime).
+
+Rendering system:
+
+  * Some deprecated methods of CollisionEntry have been flagged to
+    raise an exception now; these are replaced with the newer
+    interfaces that can return a collision point in an arbitrary
+    coordinate system.
+
+  * Camera::set_cull_center() can be used for debugging culling by
+    setting the effective point of visibility culling different from
+    the actual point.  From Python, use base.oobeCull() to examine
+    this effect.
+
+  * Alt-Enter in pview toggles between fullscreen and windowed modes.
+
+  * Added experimental support for GL display lists.
+
+Scene graph:
+
+  * Exposed methods to directly retrieve and set the individual
+    vertices of a GeomNode from Python code.
+
+  * The new PortalNode defines the interface for Panda's new
+    cell-portal visibility system; each PortalNode is a window into
+    another zone, or a separate subgraph; the PortalNode can hide or
+    show the subset of its zone's geometry visible through its
+    "portal".
+
+  * The new PolylightNode applies a simple lighting-like effect
+    without actually using lighting; objects will brighten or darken
+    as a whole according to their proximity to the light.  Use
+    PolylightEffect to enable this effect.
+
+  * The new FadeLODNode works like ordinary LODNode, but the switches
+    are alpha-blended in over a short period of time rather than
+    popping immediately.
+
+Text display:
+
+  * Text now supports embedded mode changes--special characters to
+    switch fonts, colors, scale, etc. within a line or within a
+    paragraph.
+
+  * Windows IME is better supported by Panda/Direct widgets
+    (e.g. PGEntry and/or DirectEntry) in fullscreen mode as well as in
+    windowed mode.
+
+Model converters:
+
+  * dxf2egg and egg2dxf added to converters, as well as to inline
+    conversion supported via ptloadeder.
+
+
+
+------------------------  RELEASE 2004-03-29  ------------------------
+
+Miscellaneous:
+
+  * We once again support the Microsoft VC6 compiler.
+
+  * The "pstats" program is now provided in the Windows environment as
+    part of pandatool.  It is similar to "gtk-stats" on a Unix
+    environment, and can be used to view a real-time graph of
+    performance timing in a running Panda process.  See
+    panda/src/doc/howto.use_pstats.
+
+  * New session recording and playback support allows capturing user
+    and network input to a disk file, for replaying later, offline.
+    Use "record-session filename.boo" and "playback-session
+    filename.boo" in your Configrc file.
+
+  * The genPyCode script now uses PythonWare's SqueezeTool to
+    "squeeze" the large number of generated .py files into a single
+    shared library, for substantially improved startup times on
+    Windows.
+
+  * The Task system now has substantially reduced overhead when many
+    doLater's are waiting in the system.
+
+  * The png image file type is now supported.
+
+
+Rendering system:
+
+  * Introducing native DirectX9 graphics support, although we do not
+    yet support any features specific to DirectX9, such as
+    programmable shaders.
+
+  * DirectX7 and DirectX8 modules are now somewhat more robust.
+
+  * New support for offscreen rendering and render-to-a-texture, which
+    will become part of a general multipass-rendering interface.
+    Presently supported in OpenGL, with limited DirectX support.  Use
+    GraphicsWindow::make_texture_buffer() to make a buffer you can
+    render into and apply the result as a texture map to objects in
+    your scene.  The NonlinearImager in the distort directory is a
+    complex example of using this interface.
+
+  * Explicit support for the Mesa 3D library's software-based
+    offscreen rendering, allowing a Panda program to generate
+    offscreen images as a background process, independently of any
+    graphics card or desktop environment.
+
+  * GraphicsLayer and GraphicsWindow render order can now be easily
+    adjusted dynamically with set_sort() methods.
+
+  * Built-in frame rate meter can be activated by setting
+    "show-frame-rate-meter 1" in your Configrc file.
+
+
+Scene graph:
+
+  * New tag system on PandaNodes allows storing of arbitrary string
+    data on nodes, keyed by a string dictionary.  The
+    NodePath::get_net_tag() interface retrieves the data value for a
+    particular tag on a node or the nearest ancestor of the node.
+    NodePath::find() can search for a node in the scene graph with a
+    given tag or tag/value pair.
+
+  * Explicit shear transforms are now supported on nodes, as well as
+    in character animation tables.
+
+  * Characters now have an interface to control joint and slider
+    values dynamically, instead of strictly from an animation file.
+    Use Actor.exposeJoint() and/or Actor.controlJoint().
+
+  * Nurbs surfaces and curves can now be rendered directly by Panda,
+    which will tesselate them on the fly at some CPU cost.  This is a
+    modeling convenience only; it is not intended to be used for
+    production code.  Triangle strips are still the fastest way to
+    render complex surfaces.
+
+  * However, Rope.py is now provided as a high-level wrapper around
+    Panda's runtime NURBS curve evaluator; it can render dynamic
+    curves in a variety of ways.
+
+  * The egg library is now published to Python, allowing construction
+    of geometry on-the-fly by show code for convenience.  This is also
+    intended as a developer's convenience more than a production
+    feature.
+
+
+Text display:
+
+  * The special character \3 (ASCII 0x03) embedded in a text string
+    indicates the position of a soft hyphen when wordwrap mode is in
+    effect.  The character \4 (ASCII 0x04) serves as a hyphenless
+    invisible break point.
+
+  * A default font is compiled in even if the FreeType library is not
+    available.
+
+  * pnmtext library added for rendering text directly into an image.
+
+  * New egg-mkfont utility uses FreeType to generate static font
+    models that Panda clients without FreeType can use to render text.
+
+
+Collision and physics system:
+
+  * More robust collision interface, supporting NodePaths properly so
+    that collisions detected into (and from) particular instances of
+    nodes can be differentiated.  CollisionEntry has a much simpler
+    mechanism for getting the intersection point and normal in an
+    arbitrary coordinate space defined by a NodePath, instead of the
+    user having to convert the coordinate space by hand.
+
+  * New CollisionVisualizer object to visually show collisions as they
+    are tested and detected, useful for optimizing collision
+    performance.  Activate this with
+    base.cTrav.showCollisions(render).
+
+  * Implicit velocity system is now integrated with scene graph; the
+    relative velocity of moving nodes is automatically considered when
+    testing for most kinds of collisions.  Use
+    NodePath::set_fluid_pos() to indicate that a node is moving
+    fluidly to its new position and should test for collisions along
+    the way (as opposed to the more traditional NodePath::set_pos(),
+    which unconditionally sets the node to its new position).
+
+  * Introduction of "tube" collision shapes, sometimes called
+    "capsules" in other libraries.  It is a cylinder capped with
+    hemispheres.
+
+  * CollisionSolid::set_effective_normal() provides a way to define a
+    sloping surface with an apparently vertical normal, to prevent
+    characters standing on the surface from sliding down.
+
+  * Collision polygons now respect clipping planes.
+
+  * Many changes to physics system.
+
+
+HTTPClient and net systems:
+
+  * More verbose error reporting.
+
+  * Better support for proxy servers, including SOCKS5 proxies.
+
+
+Model converters:
+
+  * maya2egg converter now supports skeleton/morph animation files
+    fully, including soft-skinning, hard-skinning, and morphs (blend
+    shapes).  NURBS and polygon meshes are both supported.
+
+  * A new Maya plugin called libmayapview allows opening a Panda
+    window from within Maya to view how the scene will look once it
+    has been converted to Panda.
+
+  * New soft2egg converter supports models and animation stored in
+    SoftImage 4.3 files.  (Newer versions of SoftImage are not
+    supported.)
+
+  * New egg2flt program more or less reverses flt2egg.
+
+  * The ptloader Panda loader allows direct loading into Panda of most
+    model file types defined within pandatool: Maya, flt, and lwo.
+    Specify load-file-type ptloader in your Configrc file.
+
+  * New egg-optchar preprocessor improves character animation runtime
+    performance by eliminating unneeded joints.  It can also
+    reorganize a skeleton and/or expose joints for the show code's
+    convenience.
+
+  * New egg-qtess utility converts NURBS egg files to polygon egg
+    files with either a trivial interface for quick conversions or a
+    sophisticated parameter file for more precise control.  It
+    preserves soft-skinning and animation information.
+
+  * New visibility flag in egg format allows model files to define
+    invisible subtrees which will be initially stashed when loaded.
+
+  * The egg library now allows implicit forward references to vertex
+    pools, making it much easier to generate a valid egg file from a
+    third-party model format.
