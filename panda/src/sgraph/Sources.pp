@@ -37,7 +37,7 @@
   #define LOCAL_LIBS \
     sgraph mathutil graph putil
   #define OTHER_LIBS \
-    pystub
+    $[OTHER_LIBS] pystub
 
   #define SOURCES \
     test_sgraph.cxx
