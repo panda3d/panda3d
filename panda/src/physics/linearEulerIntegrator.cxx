@@ -67,6 +67,9 @@ child_integrate(Physical *physical,
   precompute_linear_matrices(physical, forces);
   const MatrixVector &matrices = get_precomputed_linear_matrices();
 
+  // Get the greater of the local or global viscosity:
+  float viscosityDamper=1.0f-physical->get_viscosity();
+
   // Loop through each object in the set.  This processing occurs in O(pf) time,
   // where p is the number of physical objects and f is the number of
   // forces.  Unfortunately, no precomputation of forces can occur, as
@@ -95,7 +98,6 @@ child_integrate(Physical *physical,
     LVector3f accel_vec;
     LVector3f vel_vec;
     
-    
     // reset the accumulation vectors for this object
     md_accum_vec.set(0.0f, 0.0f, 0.0f);
     non_md_accum_vec.set(0.0f, 0.0f, 0.0f);
@@ -122,6 +124,7 @@ child_integrate(Physical *physical,
       // now we go from force space to our object's space.
       f = cur_force->get_vector(current_object) * matrices[index++];
 
+      physics_spam("child_integrate "<<f);
       // tally it into the accum vectors.
       if (cur_force->get_mass_dependent() == true) {
         md_accum_vec += f;
@@ -144,6 +147,7 @@ child_integrate(Physical *physical,
       // go from force space to object space
       f = cur_force->get_vector(current_object) * matrices[index++];
 
+      physics_spam("child_integrate "<<f);
       // tally it into the accum vectors
       if (cur_force->get_mass_dependent() == true) {
         md_accum_vec += f;
@@ -160,7 +164,6 @@ child_integrate(Physical *physical,
     // we want 'a' in F = ma
     // get it by computing F / m
     nassertv(mass != 0.0f);
-
     accel_vec = md_accum_vec / mass;
     accel_vec += non_md_accum_vec;
 
@@ -180,12 +183,14 @@ child_integrate(Physical *physical,
     #else //][
     assert(current_object->get_position()==current_object->get_last_position());
     
+    accel_vec*=viscosityDamper;
+    
     // x = x + v * t + 0.5 * a * t * t
     pos += vel_vec * dt + 0.5 * accel_vec * dt * dt;
     // v = v + a * t
     vel_vec += accel_vec * dt;
     #endif //]
-
+    
     // and store them back.
     current_object->set_position(pos);
     current_object->set_velocity(vel_vec);

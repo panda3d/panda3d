@@ -32,6 +32,11 @@ extern EXPCL_PANDAPHYSICS void init_libphysics();
   // Non-release build:
   #define PHYSICS_DEBUG
 
+  #define physics_spam(msg) \
+  if (physics_cat.is_spam()) { \
+    physics_cat->spam() << msg << endl; \
+  } else {}
+
   #define physics_debug(msg) \
   if (physics_cat.is_debug()) { \
     physics_cat->debug() << msg << endl; \
@@ -42,13 +47,18 @@ extern EXPCL_PANDAPHYSICS void init_libphysics();
 
   #define physics_warning(msg) \
     physics_cat->warning() << msg << endl
+
+  #define physics_error(msg) \
+    physics_cat->error() << msg << endl
 #else //][
   // Release build:
   #undef PHYSICS_DEBUG
 
+  #define physics_spam(msg) ((void)0)
   #define physics_debug(msg) ((void)0)
   #define physics_info(msg) ((void)0)
   #define physics_warning(msg) ((void)0)
+  #define physics_error(msg) ((void)0)
 #endif //]
 
 #define audio_error(msg) \

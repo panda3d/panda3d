@@ -75,7 +75,7 @@ apply_linear_force(ColliderDef &def, const LVector3f &force) {
 
   NodePath np(def._node);
   CPT(TransformState) trans = np.get_net_transform();
-  adjustment=adjustment*trans->get_mat();
+  //adjustment=adjustment*trans->get_mat();
   physics_debug("  adjustment trn "<<adjustment<<" len "<<adjustment.length());
 
   adjustment=adjustment*actor->get_physics_object()->get_lcs();
