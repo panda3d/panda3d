@@ -216,3 +216,22 @@ get_fog() const {
   }
   return _fog;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_transparency
+//       Access: Public
+//  Description: This function is provided as an optimization, to
+//               speed up the render-time checking for the existance
+//               of a TransparencyAttrib on this state.  It returns a
+//               pointer to the TransparencyAttrib, if there is one,
+//               or NULL if there is not.
+////////////////////////////////////////////////////////////////////
+INLINE const TransparencyAttrib *RenderState::
+get_transparency() const {
+  if ((_flags & F_checked_transparency) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal transparency cache.
+    ((RenderState *)this)->determine_transparency();
+  }
+  return _transparency;
+}

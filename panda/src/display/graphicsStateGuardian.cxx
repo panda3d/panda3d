@@ -126,6 +126,7 @@ reset() {
 
   _state.clear();
   _qpstate = RenderState::make_empty();
+  _transform = TransformState::make_identity();
 
   _buffer_mask = 0;
   _color_clear_value.set(gsg_clear_r, gsg_clear_g, gsg_clear_b, 0.0);

@@ -29,6 +29,7 @@
 
 class GraphicsStateGuardianBase;
 class FogAttrib;
+class TransparencyAttrib;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : RenderState
@@ -92,6 +93,7 @@ public:
   INLINE int get_bin_index() const;
   INLINE int get_draw_order() const;
   INLINE const FogAttrib *get_fog() const;
+  INLINE const TransparencyAttrib *get_transparency() const;
 
   CPT(RenderState) issue_delta_modify(const RenderState *other, 
                                       GraphicsStateGuardianBase *gsg) const;
@@ -106,6 +108,7 @@ private:
   CPT(RenderState) do_invert_compose(const RenderState *other) const;
   void determine_bin_index();
   void determine_fog();
+  void determine_transparency();
 
 private:
   typedef pset<const RenderState *, IndirectLess<RenderState> > States;
@@ -167,10 +170,12 @@ private:
   // We also cache the pointer to some critical attribs stored in the
   // state, if they exist.
   const FogAttrib *_fog;
+  const TransparencyAttrib *_transparency;
 
   enum Flags {
     F_checked_bin_index    = 0x0001,
     F_checked_fog          = 0x0002,
+    F_checked_transparency = 0x0004,
   };
   short _flags;
 

@@ -982,7 +982,6 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   // will certainly look close enough.  Then, we transform to camera-space
   // by hand and apply the inverse frustum to the transformed point.
   // For some cracked out reason, this actually works.
-
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_sprite()" << endl;
 #endif
@@ -1009,31 +1008,16 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 
   Texture *tex = geom->get_texture();
   if(tex != NULL) {
-      // set up the texture-rendering state
-      NodeTransitions state;
-
-      TextureTransition *ta = new TextureTransition;
-      ta->set_on(tex);
-      state.set_transition(ta);
-
-      TextureApplyTransition *taa = new TextureApplyTransition;
-      taa->set_mode(TextureApplyProperty::M_modulate);
-      state.set_transition(taa);
-
-      modify_state(state);
-
-      tex_xsize = tex->_pbuffer->get_xsize();
-      tex_ysize = tex->_pbuffer->get_ysize();
+    // set up the texture-rendering state
+    modify_state(RenderState::make
+                 (TextureAttrib::make(tex),
+                  TextureApplyAttrib::make(TextureApplyAttrib::M_modulate)));
+    tex_xsize = tex->_pbuffer->get_xsize();
+    tex_ysize = tex->_pbuffer->get_ysize();
   }
 
   // save the modelview matrix
-  LMatrix4f modelview_mat;
-
-  const TransformTransition *ctatt;
-  if (!get_attribute_into(ctatt, this))
-    modelview_mat = LMatrix4f::ident_mat();
-  else
-    modelview_mat = ctatt->get_matrix();
+  const LMatrix4f &modelview_mat = _transform->get_mat();
 
   // get the camera information
 
@@ -1064,11 +1048,12 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   // the user can override alpha sorting if they want
   bool alpha = false;
 
-  if (geom->get_alpha_disable() == false) {
+  if (!geom->get_alpha_disable()) {
     // figure out if alpha's enabled (if not, no reason to sort)
-    const TransparencyTransition *ctratt;
-    if (get_attribute_into(ctratt, this))
-      alpha = (ctratt->get_mode() != TransparencyProperty::M_none);
+    const TransparencyAttrib *trans = _qpstate->get_transparency();
+    if (trans != (const TransparencyAttrib *)NULL) {
+      alpha = (trans->get_mode() != TransparencyAttrib::M_none);
+    }
   }
 
   // sort container and iterator
@@ -1094,7 +1079,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   bool theta_on = !(geom->get_theta_bind_type() == G_OFF);
 
   // x direction
-  if (x_overall == true)
+  if (x_overall)
     scaled_width = geom->_x_texel_ratio[0] * half_width;
   else {
     nassertv(((int)geom->_x_texel_ratio.size() >= geom->get_num_prims()));
@@ -1102,7 +1087,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   }
 
   // y direction
-  if (y_overall == true)
+  if (y_overall)
     scaled_height = geom->_y_texel_ratio[0] * half_height * aspect_ratio;
   else {
     nassertv(((int)geom->_y_texel_ratio.size() >= geom->get_num_prims()));
@@ -1111,7 +1096,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 
   // theta
   if (theta_on) {
-    if (theta_overall == true)
+    if (theta_overall)
       theta = geom->_theta[0];
     else {
       nassertv(((int)geom->_theta.size() >= geom->get_num_prims()));
@@ -1138,14 +1123,14 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
     // build the final object that will go into the vector.
     ws._v.set(cameraspace_vert[0],cameraspace_vert[1],cameraspace_vert[2]);
 
-    if (color_overall == false)
+    if (!color_overall)
       ws._c = geom->get_next_color(ci);
-    if (x_overall == false)
+    if (!x_overall)
       ws._x_ratio = *x_walk++;
-    if (y_overall == false)
+    if (!y_overall)
       ws._y_ratio = *y_walk++;
     if (theta_on) {
-      if (theta_overall == false)
+      if (!theta_overall)
         ws._theta = *theta_walk++;
     }
 
@@ -1160,13 +1145,13 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
     sort(cameraspace_vector.begin(), cameraspace_vector.end(),
          draw_sprite_vertex_less());
 
-     if(_dithering_enabled)
+     if (_dithering_enabled)
          glDisable(GL_DITHER);
   }
 
   Vertexf ul, ur, ll, lr;
 
-  if (color_overall == true)
+  if (color_overall)
     glColor4fv(geom->get_next_color(ci).get_data());
 
   ////////////////////////////////////////////////////////////////////////////

@@ -278,5 +278,6 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   LPoint3f aabb_center = _aabb_min + ((_aabb_max - _aabb_min) * 0.5f);
   float radius = (aabb_center - _aabb_min).length();
 
-  get_render_node()->set_bound(BoundingSphere(aabb_center, radius));
+  _point_primitive->set_bound(BoundingSphere(aabb_center, radius));
+  get_render_node()->mark_bound_stale();
 }

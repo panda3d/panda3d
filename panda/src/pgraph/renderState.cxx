@@ -21,6 +21,7 @@
 #include "cullBinAttrib.h"
 #include "cullBinManager.h"
 #include "fogAttrib.h"
+#include "transparencyAttrib.h"
 #include "config_pgraph.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -941,6 +942,22 @@ determine_fog() {
     _fog = DCAST(FogAttrib, attrib);
   }
   _flags |= F_checked_fog;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::determine_transparency
+//       Access: Private
+//  Description: This is the private implementation of get_transparency().
+////////////////////////////////////////////////////////////////////
+void RenderState::
+determine_transparency() {
+  const RenderAttrib *attrib = 
+    get_attrib(TransparencyAttrib::get_class_type());
+  _transparency = (const TransparencyAttrib *)NULL;
+  if (attrib != (const RenderAttrib *)NULL) {
+    _transparency = DCAST(TransparencyAttrib, attrib);
+  }
+  _flags |= F_checked_transparency;
 }
 
 ////////////////////////////////////////////////////////////////////
