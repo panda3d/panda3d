@@ -431,6 +431,10 @@ init_dx(  LPDIRECTDRAW7     context,
         dxgsg_cat.debug() << "device doesnt support full-screen anti-aliasing\n";
       }
     }
+
+    if(dx_force_backface_culling!=0) {
+      _d3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, dx_force_backface_culling);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4519,6 +4523,9 @@ issue_stencil(const StencilAttribute *attrib) {
 void DXGraphicsStateGuardian::
 issue_cull_face(const CullFaceAttribute *attrib) {
     
+    if(dx_force_backface_culling!=0) {
+        return;  // leave as initially set
+    }
 
     CullFaceProperty::Mode mode = attrib->get_mode();
 

@@ -35,6 +35,9 @@ extern bool dx_no_vertex_fog;
 extern bool dx_full_screen_antialiasing;
 extern float dx_fps_meter_update_interval;
 
+// this is really a debug flag, but I need at Opt4 for perf-measurement
+extern int dx_force_backface_culling;
+
 #ifdef _DEBUG
 extern float dx_global_miplevel_bias;
 extern bool dx_debug_view_mipmaps;

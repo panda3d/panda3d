@@ -55,12 +55,15 @@ bool dx_force_16bpp_screenbuffers = config_dxgsg.GetBool("dx-force-16bpp-screenb
 bool dx_show_fps_meter = config_dxgsg.GetBool("show-fps-meter", false);
 float dx_fps_meter_update_interval = max(0.5,config_dxgsg.GetFloat("fps-meter-update-interval", 1.7));
 
+// debugging flag
+// values are same as D3DCULL enumtype, 0 - no force, 1 - force none, 2 - force CW, 3 - force CCW
+int dx_force_backface_culling = config_dxgsg.GetInt("dx-force-backface-culling", 0);
+
 #ifdef _DEBUG
 bool dx_debug_view_mipmaps = config_dxgsg.GetBool("dx-debug-view-mipmaps", false);
 bool dx_force_16bpptextures = config_dxgsg.GetBool("dx-force-16bpptextures", false);
 bool dx_mipmap_everything = config_dxgsg.GetBool("dx-mipmap-everything", false);
 bool dx_force_anisotropic_filtering = config_dxgsg.GetBool("dx-force-anisotropic-filtering", false);
-
 #endif
 
 // note:  offset currently disabled since it wasnt working properly
