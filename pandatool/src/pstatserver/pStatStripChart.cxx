@@ -227,24 +227,46 @@ get_collector_under_pixel(int xpoint, int ypoint) {
 
   // Now use that time to determine the frame.
   const PStatThreadData *thread_data = _view.get_thread_data();
-  int frame_number = thread_data->get_frame_number_at_time(time);
 
   // And now we can determine which collector within the frame,
   // based on the value height.
-  const FrameData &frame = get_frame_data(frame_number);
-  float overall_value = 0.0;
-  int y = get_ysize();
+  if (_average_mode) {
+    float start_time = pixel_to_timestamp(xpoint);
+    int then_i = thread_data->get_frame_number_at_time(start_time - pstats_average_time);
+    int now_i = thread_data->get_frame_number_at_time(start_time, then_i);
 
-  FrameData::const_iterator fi;
-  for (fi = frame.begin(); fi != frame.end(); ++fi) {
-    const ColorData &cd = (*fi);
-    overall_value += cd._net_value;
-    y = height_to_pixel(overall_value);
-    if (y <= ypoint) {
-      return cd._collector_index;
+    FrameData fdata;
+    compute_average_pixel_data(fdata, then_i, now_i, start_time);
+    float overall_value = 0.0;
+    int y = get_ysize();
+    
+    FrameData::const_iterator fi;
+    for (fi = fdata.begin(); fi != fdata.end(); ++fi) {
+      const ColorData &cd = (*fi);
+      overall_value += cd._net_value;
+      y = height_to_pixel(overall_value);
+      if (y <= ypoint) {
+        return cd._collector_index;
+      }
+    }
+
+  } else {
+    int frame_number = thread_data->get_frame_number_at_time(time);
+    const FrameData &fdata = get_frame_data(frame_number);
+    float overall_value = 0.0;
+    int y = get_ysize();
+    
+    FrameData::const_iterator fi;
+    for (fi = fdata.begin(); fi != fdata.end(); ++fi) {
+      const ColorData &cd = (*fi);
+      overall_value += cd._net_value;
+      y = height_to_pixel(overall_value);
+      if (y <= ypoint) {
+        return cd._collector_index;
+      }
     }
   }
-
+    
   return -1;
 }
 
@@ -348,15 +370,16 @@ accumulate_frame_data(FrameData &fdata, const FrameData &additional,
   }
 
   while (ai != fdata.end() && bi != additional.end()) {
-    if ((*ai)._collector_index < (*bi)._collector_index) {
+    if ((*ai)._i < (*bi)._i) {
       // Here's a data value that's in data, but not in additional.
       result.push_back(*ai);
       ++ai;
 
-    } else if ((*bi)._collector_index < (*ai)._collector_index) {
+    } else if ((*bi)._i < (*ai)._i) {
       // Here's a data value that's in additional, but not in data.
       ColorData scaled;
       scaled._collector_index = (*bi)._collector_index;
+      scaled._i = (*bi)._i;
       scaled._net_value = (*bi)._net_value * weight;
       result.push_back(scaled);
       ++bi;
@@ -365,6 +388,7 @@ accumulate_frame_data(FrameData &fdata, const FrameData &additional,
       // Here's a data value that's in both.
       ColorData combined;
       combined._collector_index = (*ai)._collector_index;
+      combined._i = (*bi)._i;
       combined._net_value = (*ai)._net_value + (*bi)._net_value * weight;
       result.push_back(combined);
       ++ai;
@@ -382,6 +406,7 @@ accumulate_frame_data(FrameData &fdata, const FrameData &additional,
     // Here's a data value that's in additional, but not in data.
     ColorData scaled;
     scaled._collector_index = (*bi)._collector_index;
+    scaled._i = (*bi)._i;
     scaled._net_value = (*bi)._net_value * weight;
     result.push_back(scaled);
     ++bi;
@@ -431,7 +456,8 @@ get_frame_data(int frame_number) {
   for (int i = 0; i < num_children; i++) {
     const PStatViewLevel *child = level->get_child(i);
     ColorData cd;
-    cd._collector_index = child->get_collector();
+    cd._collector_index = (unsigned short)child->get_collector();
+    cd._i = (unsigned short)i;
     cd._net_value = child->get_net_value();
     if (cd._net_value != 0.0) {
       data.push_back(cd);
@@ -441,7 +467,8 @@ get_frame_data(int frame_number) {
   // Also, there might be some value in the overall Collector that
   // wasn't included in all of the children.
   ColorData cd;
-  cd._collector_index = level->get_collector();
+  cd._collector_index = (unsigned short)level->get_collector();
+  cd._i = (unsigned short)num_children;
   cd._net_value = level->get_value_alone();
   if (cd._net_value != 0.0) {
     data.push_back(cd);

@@ -82,7 +82,8 @@ public:
 protected:
   class ColorData {
   public:
-    int _collector_index;
+    unsigned short _collector_index;
+    unsigned short _i;
     float _net_value;
   };
   typedef pvector<ColorData> FrameData;
