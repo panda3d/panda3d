@@ -23,6 +23,7 @@
 #include "graphicsWindow.h"
 #include "pointerTo.h"
 #include "pset.h"
+#include "pStatCollector.h"
 
 class Pipeline;
 class DisplayRegion;
@@ -68,6 +69,9 @@ private:
 
   typedef pset<PT(GraphicsWindow)> Windows;
   Windows _windows;
+
+  static PStatCollector _cull_pcollector;
+  static PStatCollector _draw_pcollector;
 };
 
 #include "graphicsEngine.I"

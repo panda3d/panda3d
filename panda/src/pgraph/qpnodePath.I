@@ -706,18 +706,6 @@ set_pos(const qpNodePath &other, float x, float y, float z) {
   set_pos(other, LPoint3f(x, y, z));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: qpNodePath::get_pos
-//       Access: Published
-//  Description: Returns the relative position of the referenced node
-//               as seen from the other node.
-////////////////////////////////////////////////////////////////////
-INLINE LPoint3f qpNodePath::
-get_pos(const qpNodePath &other) const {
-  LMatrix4f mat = get_mat(other);
-  return mat.get_row3(3);
-}
-
 INLINE float qpNodePath::
 get_x(const qpNodePath &other) const {
   return get_pos(other)[0];

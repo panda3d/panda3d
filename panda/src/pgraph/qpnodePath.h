@@ -168,7 +168,7 @@ PUBLISHED:
 
   INLINE void set_scale(float scale);
   INLINE void set_scale(float sx, float sy, float sz);
-  void set_scale(const LVecBase3f &sv3);
+  void set_scale(const LVecBase3f &scale);
   void set_sx(float sx);
   void set_sy(float sy);
   void set_sz(float sz);
@@ -232,7 +232,7 @@ PUBLISHED:
   void set_x(const qpNodePath &other, float x);
   void set_y(const qpNodePath &other, float y);
   void set_z(const qpNodePath &other, float z);
-  INLINE LPoint3f get_pos(const qpNodePath &other) const;
+  LPoint3f get_pos(const qpNodePath &other) const;
   INLINE float get_x(const qpNodePath &other) const;
   INLINE float get_y(const qpNodePath &other) const;
   INLINE float get_z(const qpNodePath &other) const;

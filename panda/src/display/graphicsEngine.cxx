@@ -24,6 +24,13 @@
 #include "cullResult.h"
 #include "qpcullTraverser.h"
 #include "clockObject.h"
+#include "pStatTimer.h"
+#include "pStatClient.h"
+
+#ifndef CPPPARSER
+PStatCollector GraphicsEngine::_cull_pcollector("Cull");
+PStatCollector GraphicsEngine::_draw_pcollector("Draw");
+#endif  // CPPPARSER
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::Constructor
@@ -89,6 +96,7 @@ render_frame() {
   // **** This doesn't belong here; it really belongs in the Pipeline,
   // but here it is for now.
   ClockObject::get_global_clock()->tick();
+  PStatClient::main_tick();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -199,6 +207,9 @@ cull_bin_draw(GraphicsWindow *win, DisplayRegion *dr) {
 void GraphicsEngine::
 do_cull(CullHandler *cull_handler, const qpNodePath &camera,
         GraphicsStateGuardian *gsg) {
+  // Statistics
+  PStatTimer timer(_cull_pcollector);
+
   if (camera.is_empty()) {
     // No camera, no draw.
     return;
@@ -227,12 +238,12 @@ do_cull(CullHandler *cull_handler, const qpNodePath &camera,
   qpCullTraverser trav;
   trav.set_cull_handler(cull_handler);
 
-  // We will need both the camera transform (the net transform from
-  // the scene to the camera) and the world transform (the camera
-  // transform inverse, or the net transform from the camera to the
-  // scene).
-  CPT(TransformState) camera_transform = scene.get_transform(camera);
-  CPT(TransformState) world_transform = camera.get_transform(scene);
+  // We will need both the camera transform (the net transform to the
+  // camera from the scene) and the world transform (the camera
+  // transform inverse, or the net transform to the scene from the
+  // camera).
+  CPT(TransformState) camera_transform = camera.get_transform(scene);
+  CPT(TransformState) world_transform = scene.get_transform(camera);
 
   // The render transform is the same as the world transform, except
   // it is converted into the GSG's internal coordinate system.  This
@@ -247,7 +258,7 @@ do_cull(CullHandler *cull_handler, const qpNodePath &camera,
     render_transform = cs_transform->compose(render_transform);
   }
 
-  trav.set_camera_transform(scene.get_transform(camera));
+  trav.set_camera_transform(camera_transform);
   trav.set_render_transform(render_transform);
 
   if (qpview_frustum_cull) {
@@ -281,6 +292,9 @@ do_cull(CullHandler *cull_handler, const qpNodePath &camera,
 void GraphicsEngine::
 do_draw(CullResult *cull_result, GraphicsStateGuardian *gsg,
         DisplayRegion *dr) {
+  // Statistics
+  PStatTimer timer(_draw_pcollector);
+
   if (set_gsg_lens(gsg, dr)) {
     DisplayRegionStack old_dr = gsg->push_display_region(dr);
     gsg->prepare_display_region();

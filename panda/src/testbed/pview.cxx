@@ -35,6 +35,10 @@
 #include "dSearchPath.h"
 #include "loader.h"
 #include "auto_bind.h"
+#include "pStatClient.h"
+#include "notify.h"
+#include "qpnodePath.h"
+#include "cullBinManager.h"
 
 // These are in support of legacy data graph operations.
 #include "namedNode.h"
@@ -66,6 +70,12 @@ bool run_flag = true;
 static double start_time = 0.0;
 static int start_frame_count = 0;
 
+// A priority number high enough to override any model file settings.
+static const int override_priority = 100;
+
+// This is the main scene graph.
+qpNodePath render;
+
 void 
 report_frame_rate() {
   double now = ClockObject::get_global_clock()->get_frame_time();
@@ -95,15 +105,15 @@ make_pipe() {
   // load-display Configrc variable.
   GraphicsPipe::resolve_modules();
 
-  cerr << "Known pipe types:" << endl;
-  GraphicsPipe::get_factory().write_types(cerr, 2);
+  nout << "Known pipe types:" << endl;
+  GraphicsPipe::get_factory().write_types(nout, 2);
 
   PT(GraphicsPipe) pipe;
   pipe = GraphicsPipe::get_factory().
     make_instance(InteractiveGraphicsPipe::get_class_type());
 
   if (pipe == (GraphicsPipe*)0L) {
-    cerr << "No interactive pipe is available!  Check your Configrc!\n";
+    nout << "No interactive pipe is available!  Check your Configrc!\n";
     exit(1);
   }
 
@@ -204,7 +214,7 @@ get_models(PandaNode *parent, int argc, char *argv[]) {
     for (int i = 1; i < argc; i++) {
       Filename filename = argv[i];
       
-      cerr << "Loading " << filename << "\n";
+      nout << "Loading " << filename << "\n";
 
       // First, we always try to resolve a filename from the current
       // directory.  This means a local filename will always be found
@@ -213,10 +223,10 @@ get_models(PandaNode *parent, int argc, char *argv[]) {
 
       PT(PandaNode) node = loader.qpload_sync(filename);
       if (node == (PandaNode *)NULL) {
-        cerr << "Unable to load " << filename << "\n";
+        nout << "Unable to load " << filename << "\n";
 
       } else {
-        node->ls(cerr, 0);
+        node->ls(nout, 0);
         parent->add_child(node);
       }
     }
@@ -259,7 +269,79 @@ event_esc(CPT_Event) {
 
 void
 event_f(CPT_Event) {
+  // 'f' : report frame rate.
   report_frame_rate();
+}
+
+void
+event_t(CPT_Event) {
+  // 't' : toggle texture.
+  static bool texture_off = false;
+
+  texture_off = !texture_off;
+  if (texture_off) {
+    nout << "Disabling texturing.\n";
+    render.set_texture_off(override_priority);
+  } else {
+    nout << "Enabling texturing.\n";
+    render.clear_texture();
+  }
+}
+
+void
+event_w(CPT_Event) {
+  // 'w' : toggle wireframe.
+  static bool wireframe = false;
+
+  wireframe = !wireframe;
+  if (wireframe) {
+    nout << "Setting wireframe mode.\n";
+    render.set_render_mode_wireframe(override_priority);
+  } else {
+    nout << "Clearing wireframe mode.\n";
+    render.clear_render_mode();
+  }
+}
+
+void
+event_s(CPT_Event) {
+  // 's' : toggle state sorting by putting everything into an 'unsorted' bin.
+  static bool sorting_off = false;
+
+  sorting_off = !sorting_off;
+  if (sorting_off) {
+    nout << "Disabling state sorting.\n";
+    render.set_bin("unsorted", 0, override_priority);
+  } else {
+    nout << "Enabling state sorting.\n";
+    render.clear_bin();
+  }
+}
+
+void
+event_S(CPT_Event) {
+  // shift 'S' : active PStats.
+#ifdef DO_PSTATS
+  nout << "Connecting to stats host" << endl;
+  PStatClient::connect();
+#else
+  nout << "Stats host not supported." << endl;
+#endif
+}
+
+void
+event_A(CPT_Event) {
+  // shift 'A' : deactive PStats.
+#ifdef DO_PSTATS
+  if (PStatClient::is_connected()) {
+    nout << "Disconnecting from stats host" << endl;
+    PStatClient::disconnect();
+  } else {
+    nout << "Stats host is already disconnected." << endl;
+  }
+#else
+  nout << "Stats host not supported." << endl;
+#endif
 }
 
 int
@@ -275,9 +357,13 @@ main(int argc, char *argv[]) {
   PT(qpCamera) camera = make_camera(window);
 
   // Now we just need to make a scene graph for the camera to render.
-  PT(PandaNode) render = new PandaNode("render");
-  render->add_child(camera);
+  render = qpNodePath(new PandaNode("render"));
+  render.attach_new_node(camera);
   camera->set_scene(qpNodePath(render));
+
+  // We will take advantage of this bin if the user toggles state
+  // sorting, above, in event_s().
+  CullBinManager::get_global_ptr()->add_bin("unsorted", CullBinManager::BT_unsorted, 0);
 
   // Set up a data graph for tracking user input.  For now, this uses
   // the old-style graph interface.
@@ -290,16 +376,21 @@ main(int argc, char *argv[]) {
   event_handler.add_hook("escape", event_esc);
   event_handler.add_hook("q", event_esc);
   event_handler.add_hook("f", event_f);
+  event_handler.add_hook("t", event_t);
+  event_handler.add_hook("w", event_w);
+  event_handler.add_hook("s", event_s);
+  event_handler.add_hook("shift-s", event_S);
+  event_handler.add_hook("shift-a", event_A);
 
 
   // Put something in the scene graph to look at.
-  get_models(render, argc, argv);
+  get_models(render.node(), argc, argv);
 
   // If we happened to load up both a character file and its matching
   // animation file, attempt to bind them together now and start the
   // animations looping.
   AnimControlCollection anim_controls;
-  auto_bind(render, anim_controls, ~0);
+  auto_bind(render.node(), anim_controls, ~0);
   anim_controls.loop_all(true);
 
 

@@ -154,12 +154,22 @@ TransformState::
 ////////////////////////////////////////////////////////////////////
 bool TransformState::
 operator < (const TransformState &other) const {
-  bool components_given = (_flags & F_components_given) != 0;
-  bool other_components_given = (other._flags & F_components_given) != 0;
-  if (components_given != other_components_given) {
-    return components_given < other_components_given;
+  static const int significant_flags = 
+    (F_is_invalid | F_is_identity | F_components_given);
+
+  int flags = (_flags & significant_flags);
+  int other_flags = (other._flags & significant_flags);
+  if (flags != other_flags) {
+    return flags < other_flags;
   }
-  if (components_given) {
+
+  if ((_flags & (F_is_invalid | F_is_identity)) != 0) {
+    // All invalid transforms are equivalent to each other, and all
+    // identity transforms are equivalent to each other.
+    return 0;
+  }
+
+  if ((_flags & F_components_given) != 0) {
     // If the transform was specified componentwise, compare them
     // componentwise.
     int c = _pos.compare_to(other._pos);
@@ -196,6 +206,19 @@ make_identity() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::make_invalid
+//       Access: Published, Static
+//  Description: Constructs an invalid transform; for instance, the
+//               result of inverting a singular matrix.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) TransformState::
+make_invalid() {
+  TransformState *state = new TransformState;
+  state->_flags = F_is_invalid | F_singular_known | F_is_singular | F_components_known | F_mat_known;
+  return return_new(state);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::make_pos_hpr_scale
 //       Access: Published, Static
 //  Description: Makes a new TransformState with the specified
@@ -211,12 +234,12 @@ make_pos_hpr_scale(const LVecBase3f &pos, const LVecBase3f &hpr,
     return make_identity();
   }
 
-  TransformState *attrib = new TransformState;
-  attrib->_pos = pos;
-  attrib->_hpr = hpr;
-  attrib->_scale = scale;
-  attrib->_flags = F_components_given | F_components_known | F_has_components;
-  return return_new(attrib);
+  TransformState *state = new TransformState;
+  state->_pos = pos;
+  state->_hpr = hpr;
+  state->_scale = scale;
+  state->_flags = F_components_given | F_components_known | F_has_components;
+  return return_new(state);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -232,10 +255,10 @@ make_mat(const LMatrix4f &mat) {
     return make_identity();
   }
 
-  TransformState *attrib = new TransformState;
-  attrib->_mat = mat;
-  attrib->_flags = F_mat_known;
-  return return_new(attrib);
+  TransformState *state = new TransformState;
+  state->_mat = mat;
+  state->_flags = F_mat_known;
+  return return_new(state);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -283,7 +306,7 @@ set_hpr(const LVecBase3f &hpr) const {
 CPT(TransformState) TransformState::
 set_scale(const LVecBase3f &scale) const {
   nassertr(has_components(), this);
-  return make_pos_hpr_scale(get_pos(), get_scale(), get_hpr());
+  return make_pos_hpr_scale(get_pos(), get_hpr(), scale);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -311,6 +334,14 @@ compose(const TransformState *other) const {
   }
   if (other->is_identity()) {
     return this;
+  }
+
+  // If either transform is invalid, the result is invalid.
+  if (is_invalid()) {
+    return this;
+  }
+  if (other->is_invalid()) {
+    return other;
   }
 
   if (other == this) {
@@ -389,6 +420,14 @@ invert_compose(const TransformState *other) const {
   // Unlike compose(), the case of other->is_identity() is not quite as
   // trivial for invert_compose().
 
+  // If either transform is invalid, the result is invalid.
+  if (is_invalid()) {
+    return this;
+  }
+  if (other->is_invalid()) {
+    return other;
+  }
+
   if (other == this) {
     // a->invert_compose(a) always produces identity.
     return make_identity();
@@ -432,10 +471,18 @@ invert_compose(const TransformState *other) const {
 void TransformState::
 output(ostream &out) const {
   out << "T:";
-  if (is_identity()) {
+  if (is_invalid()) {
+    out << "(invalid)";
+
+  } else if (is_identity()) {
     out << "(identity)";
 
   } else if (has_components()) {
+    if (components_given()) {
+      out << "c";
+    } else {
+      out << "m";
+    }
     char lead = '(';
     if (!get_pos().almost_equal(LVecBase3f(0.0f, 0.0f, 0.0f))) {
       out << lead << "pos " << get_pos();
@@ -477,11 +524,11 @@ write(ostream &out, int indent_level) const {
 //  Description: This function is used to share a common TransformState
 //               pointer for all equivalent TransformState objects.
 //
-//               See the similar logic in RenderAttrib.  The idea is
-//               to create a new TransformState object and pass it
+//               See the similar logic in RenderState.  The idea is to
+//               create a new TransformState object and pass it
 //               through this function, which will share the pointer
-//               with a previously-created TransformState object if it is
-//               equivalent.
+//               with a previously-created TransformState object if it
+//               is equivalent.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 return_new(TransformState *state) {
@@ -517,6 +564,12 @@ return_new(TransformState *state) {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 do_compose(const TransformState *other) const {
+  nassertr((_flags & F_is_invalid) == 0, this);
+  nassertr((other->_flags & F_is_invalid) == 0, other);
+
+  // We should do this operation componentwise if both transforms were
+  // given componentwise.
+
   LMatrix4f new_mat = other->get_mat() * get_mat();
   return make_mat(new_mat);
 }
@@ -528,11 +581,20 @@ do_compose(const TransformState *other) const {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 do_invert_compose(const TransformState *other) const {
-  // Perhaps we should cache the inverse matrix operation separately,
-  // as a further optimization.
+  nassertr((_flags & F_is_invalid) == 0, this);
+  nassertr((other->_flags & F_is_invalid) == 0, other);
+
+  // We should do this operation componentwise if both transforms were
+  // given componentwise.
+
+  // Perhaps we should cache the result of the inverse matrix
+  // operation separately, as a further optimization.
 
   LMatrix4f new_mat;
-  new_mat.invert_from(get_mat());
+  bool invertible = new_mat.invert_from(get_mat());
+  if (!invertible) {
+    return make_invalid();
+  }
   new_mat = other->get_mat() * new_mat;
   return make_mat(new_mat);
 }
@@ -545,6 +607,7 @@ do_invert_compose(const TransformState *other) const {
 ////////////////////////////////////////////////////////////////////
 void TransformState::
 calc_singular() {
+  nassertv((_flags & F_is_invalid) == 0);
   bool singular = false;
 
   if (has_components()) {
@@ -569,6 +632,7 @@ calc_singular() {
 ////////////////////////////////////////////////////////////////////
 void TransformState::
 calc_components() {
+  nassertv((_flags & F_is_invalid) == 0);
   if ((_flags & F_is_identity) != 0) {
     _scale.set(1.0f, 1.0f, 1.0f);
     _hpr.set(0.0f, 0.0f, 0.0f);
@@ -601,6 +665,7 @@ calc_components() {
 ////////////////////////////////////////////////////////////////////
 void TransformState::
 calc_mat() {
+  nassertv((_flags & F_is_invalid) == 0);
   if ((_flags & F_is_identity) != 0) {
     _mat = LMatrix4f::ident_mat();
 
@@ -637,6 +702,11 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   if ((_flags & F_is_identity) != 0) {
     // Identity, nothing much to that.
     int flags = F_is_identity | F_singular_known;
+    dg.add_uint16(flags);
+
+  } else if ((_flags & F_is_invalid) != 0) {
+    // Invalid, nothing much to that either.
+    int flags = F_is_invalid | F_singular_known | F_is_singular | F_components_known | F_mat_known;
     dg.add_uint16(flags);
 
   } else if ((_flags & F_components_given) != 0) {

@@ -322,17 +322,17 @@ set_state(const qpNodePath &other, const RenderState *state) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::get_transform
 //       Access: Published
-//  Description: Returns the relative transform from this node to the
-//               other node; i.e. the transformation of the other node
-//               as seen from this node.
+//  Description: Returns the relative transform to this node from the
+//               other node; i.e. the transformation of this node
+//               as seen from the other node.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) qpNodePath::
 get_transform(const qpNodePath &other) const {
-  if (is_empty()) {
-    return other.get_net_transform();
-  }
   if (other.is_empty()) {
-    return get_net_transform()->invert_compose(TransformState::make_identity());
+    return get_net_transform();
+  }
+  if (is_empty()) {
+    return other.get_net_transform()->invert_compose(TransformState::make_identity());
   }
     
   nassertr(verify_complete(), TransformState::make_identity());
@@ -343,7 +343,7 @@ get_transform(const qpNodePath &other) const {
 
   CPT(TransformState) a_transform = r_get_partial_transform(_head, a_count);
   CPT(TransformState) b_transform = r_get_partial_transform(other._head, b_count);
-  return a_transform->invert_compose(b_transform);
+  return b_transform->invert_compose(a_transform);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -351,8 +351,8 @@ get_transform(const qpNodePath &other) const {
 //       Access: Published
 //  Description: Sets the transform object on this node, relative to
 //               the other node.  This computes a new transform object
-//               that has the indicated value when seen relative to
-//               the other node.
+//               that will have the indicated value when seen from the
+//               other node.
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 set_transform(const qpNodePath &other, const TransformState *transform) const {
@@ -361,7 +361,7 @@ set_transform(const qpNodePath &other, const TransformState *transform) const {
 
   // First, we perform a wrt to the parent, to get the conversion.
   qpNodePath parent = get_parent();
-  CPT(TransformState) rel_trans = parent.get_transform(other);
+  CPT(TransformState) rel_trans = other.get_transform(parent);
 
   CPT(TransformState) new_trans = rel_trans->compose(transform);
   set_transform(new_trans);
@@ -491,11 +491,11 @@ get_hpr(float roll) const {
 //               leaving translation and rotation untouched.
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
-set_scale(const LVecBase3f &sv3) {
+set_scale(const LVecBase3f &scale) {
   nassertv(!is_empty());
   CPT(TransformState) transform = get_transform();
   nassertv(transform->has_components());
-  set_transform(transform->set_scale(sv3));
+  set_transform(transform->set_scale(scale));
 }
 
 void qpNodePath::
@@ -792,6 +792,18 @@ set_z(const qpNodePath &other, float z) {
   LPoint3f pos = get_pos(other);
   pos[2] = z;
   set_pos(other, pos);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::get_pos
+//       Access: Published
+//  Description: Returns the relative position of the referenced node
+//               as seen from the other node.
+////////////////////////////////////////////////////////////////////
+LPoint3f qpNodePath::
+get_pos(const qpNodePath &other) const {
+  nassertr(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
+  return get_transform(other)->get_pos();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2254,7 +2266,7 @@ r_output(ostream &out, qpNodePathComponent *comp) const {
   } else {
     out << "+" << node->get_type();
   }
-  out << "[" << comp->get_length() << "]";
+  //  out << "[" << comp->get_length() << "]";
 }
 
 ////////////////////////////////////////////////////////////////////

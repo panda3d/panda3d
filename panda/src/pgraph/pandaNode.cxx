@@ -383,6 +383,9 @@ add_child(PandaNode *child_node, int sort) {
   }
 
   child_node->fix_chain_lengths();
+
+  // Mark the bounding volumes stale.
+  force_bound_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -430,6 +433,9 @@ remove_child(int n) {
   }
 
   child_node->fix_chain_lengths();
+
+  // Mark the bounding volumes stale.
+  force_bound_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -475,6 +481,9 @@ remove_child(PandaNode *child_node) {
   }
 
   child_node->fix_chain_lengths();
+
+  // Mark the bounding volumes stale.
+  force_bound_stale();
 
   CDWriter cdata(_cycler);
 
@@ -529,6 +538,9 @@ remove_all_children() {
 
     child_node->fix_chain_lengths();
   }
+
+  // Mark the bounding volumes stale.
+  force_bound_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -732,6 +744,9 @@ detach(qpNodePathComponent *child) {
 
   child_node->fix_chain_lengths();
 
+  // Mark the bounding volumes stale.
+  parent_node->force_bound_stale();
+
   // Now look for the child and break the actual connection.
 
   // First, look for and remove the parent node from the child's up
@@ -785,6 +800,9 @@ reparent(qpNodePathComponent *new_parent, qpNodePathComponent *child, int sort) 
 
   cdata_child->_chains.insert(child);
   child_node->fix_chain_lengths();
+
+  // Mark the bounding volumes stale.
+  parent_node->force_bound_stale();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -93,6 +93,18 @@ is_identity() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::is_invalid
+//       Access: Published
+//  Description: Returns true if the transform represents an invalid
+//               matrix, for instance the result of inverting a
+//               singular matrix, or false if the transform is valid.
+////////////////////////////////////////////////////////////////////
+INLINE bool TransformState::
+is_invalid() const {
+  return ((_flags & F_is_invalid) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::is_singular
 //       Access: Published
 //  Description: Returns true if the transform represents a singular
@@ -119,8 +131,10 @@ is_singular() const {
 //               that was constructed with a 4x4 may return true here
 //               if the matrix is a simple affine matrix with no skew.
 //
-//               If this returns true, you may safely call get_pos(),
-//               etc., to retrieve the components.
+//               If this returns true, you may safely call get_hpr()
+//               and get_scale() to retrieve the components.  (You
+//               may always safely call get_pos() whether this returns
+//               true or false.)
 ////////////////////////////////////////////////////////////////////
 INLINE bool TransformState::
 has_components() const {
@@ -129,15 +143,31 @@ has_components() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::components_given
+//       Access: Published
+//  Description: Returns true if the transform was specified
+//               componentwise, or false if it was specified with a
+//               general 4x4 matrix.  If this is true, the components
+//               returned by get_pos(), get_hpr(), and get_scale()
+//               will be exactly those that were set; otherwise, these
+//               functions will return computed values.
+////////////////////////////////////////////////////////////////////
+INLINE bool TransformState::
+components_given() const {
+  return ((_flags & F_components_given) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::has_pos
 //       Access: Published
 //  Description: Returns true if the transform's pos component can be
 //               extracted out separately.  This is generally always
-//               true.
+//               true, unless the transform is invalid
+//               (i.e. is_invalid() returns true).
 ////////////////////////////////////////////////////////////////////
 INLINE bool TransformState::
 has_pos() const {
-  return true;
+  return !is_invalid();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -166,6 +196,18 @@ has_scale() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::has_mat
+//       Access: Published
+//  Description: Returns true if the transform can be described as a
+//               matrix.  This is generally always true, unless
+//               is_invalid() is true.
+////////////////////////////////////////////////////////////////////
+INLINE bool TransformState::
+has_mat() const {
+  return !is_invalid();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::get_pos
 //       Access: Published
 //  Description: Returns the pos component of the transform.  It is an
@@ -174,6 +216,7 @@ has_scale() const {
 INLINE const LVecBase3f &TransformState::
 get_pos() const {
   check_components();
+  nassertr(has_pos(), _pos);
   return _pos;
 }
 
@@ -212,6 +255,7 @@ get_scale() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const LMatrix4f &TransformState::
 get_mat() const {
+  nassertr(has_mat(), LMatrix4f::ident_mat());
   check_mat();
   return _mat;
 }

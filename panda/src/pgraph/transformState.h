@@ -66,6 +66,7 @@ public:
 
 PUBLISHED:
   static CPT(TransformState) make_identity();
+  INLINE static CPT(TransformState) make_invalid();
   INLINE static CPT(TransformState) make_pos(const LVecBase3f &pos);
   INLINE static CPT(TransformState) make_hpr(const LVecBase3f &hpr);
   INLINE static CPT(TransformState) make_pos_hpr(const LVecBase3f &pos,
@@ -78,11 +79,14 @@ PUBLISHED:
   static CPT(TransformState) make_mat(const LMatrix4f &mat);
 
   INLINE bool is_identity() const;
+  INLINE bool is_invalid() const;
   INLINE bool is_singular() const;
   INLINE bool has_components() const;
+  INLINE bool components_given() const;
   INLINE bool has_pos() const;
   INLINE bool has_hpr() const;
   INLINE bool has_scale() const;
+  INLINE bool has_mat() const;
   INLINE const LVecBase3f &get_pos() const;
   INLINE const LVecBase3f &get_hpr() const;
   INLINE const LVecBase3f &get_scale() const;
@@ -149,6 +153,7 @@ private:
     F_components_known =  0x0010,
     F_has_components   =  0x0020,
     F_mat_known        =  0x0040,
+    F_is_invalid       =  0x0080,
   };
   LVecBase3f _pos, _hpr, _scale;
   LMatrix4f _mat;
