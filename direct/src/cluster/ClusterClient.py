@@ -354,7 +354,7 @@ class DummyClusterClient(DirectObject.DirectObject):
     def __init__(self):
         pass
 
-    def __call__(self, commandString, fLocally = 1, serverNum = None):
+    def __call__(self, commandString, fLocally = 1, serverList = None):
         if fLocally:
             # Execute locally
             exec( commandString, __builtins__ )
