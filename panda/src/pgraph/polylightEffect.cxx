@@ -36,13 +36,40 @@ TypeHandle PolylightEffect::_type_handle;
 CPT(RenderEffect) PolylightEffect::
 make() {
   PolylightEffect *effect = new PolylightEffect;
-  effect->enable();
-  effect->set_contrib(CPROXIMAL);
-  effect->set_weight(0.9);
+  effect->_contribution_type = CPROXIMAL;
+  effect->_weight = 0.9;
   effect->_effect_center = LPoint3f(0.0,0.0,0.0);
   return return_new(effect);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PolylightEffect::make
+//       Access: Published, Static
+//  Description: Constructs a new PolylightEffect object.
+////////////////////////////////////////////////////////////////////
+CPT(RenderEffect) PolylightEffect::
+make(float weight, Contrib_Type contrib, LPoint3f effect_center) {
+  PolylightEffect *effect = new PolylightEffect;
+  effect->_contribution_type = contrib;
+  effect->_weight = weight;
+  effect->_effect_center = effect_center;
+  return return_new(effect);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PolylightEffect::make
+//       Access: Published, Static
+//  Description: Constructs a new PolylightEffect object.
+////////////////////////////////////////////////////////////////////
+CPT(RenderEffect) PolylightEffect::
+make(float weight, Contrib_Type contrib, LPoint3f effect_center, LIGHTGROUP lights) {
+  PolylightEffect *effect = new PolylightEffect;
+  effect->_contribution_type = contrib;
+  effect->_weight = weight;
+  effect->_effect_center = effect_center;
+  effect->_lightgroup = lights;
+  return return_new(effect);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PolylightEffect::has_cull_callback
@@ -55,7 +82,7 @@ make() {
 ////////////////////////////////////////////////////////////////////
 bool PolylightEffect::
 has_cull_callback() const {
-  return is_enabled();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,11 +106,9 @@ void PolylightEffect::
 cull_callback(CullTraverser *, CullTraverserData &data,
               CPT(TransformState) &node_transform,
               CPT(RenderState) &node_state) const {
-  if (is_enabled()) {
-    CPT(RenderAttrib) poly_light_attrib = do_poly_light(&data, node_transform); 
-    CPT(RenderState) poly_light_state = RenderState::make(poly_light_attrib);
-    node_state = node_state->compose(poly_light_state); 
-  }
+  CPT(RenderAttrib) poly_light_attrib = do_poly_light(&data, node_transform); 
+  CPT(RenderState) poly_light_state = RenderState::make(poly_light_attrib);
+  node_state = node_state->compose(poly_light_state); 
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -104,82 +129,78 @@ do_poly_light(const CullTraverserData *data, const TransformState *node_transfor
   r = 1.0;
   g = 1.0;
   b = 1.0;
-  if (is_enabled()) {
-    LIGHTGROUP::const_iterator light_iter; 
-    // Cycle through all the lights in this effect's lightgroup
-    for (light_iter = _lightgroup.begin(); light_iter != _lightgroup.end(); light_iter++){
-      const PolylightNode *light = DCAST(PolylightNode,light_iter->second.node()); 
-      // light holds the current PolylightNode
-      if (light->is_enabled()) { // if enabled get all the properties
-        float light_radius = light->get_radius();
-        PolylightNode::Attenuation_Type light_attenuation = light->get_attenuation();
-        float light_a0 = light->get_a0();
-        float light_a1 = light->get_a1();
-        float light_a2 = light->get_a2();
-        if (light_a0 == 0 && light_a1 == 0 && light_a2 == 0) { // To prevent division by zero
-          light_a0 = 1.0;
-        }
-        Colorf light_color;
-        if (light->is_flickering()) { // If flickering, modify color
-          light_color = light->flicker();
-        } else {
-          light_color = light->get_color_scenegraph();
-        }
-        // Calculate the distance of the node from the light
-        //dist = light_iter->second->get_distance(data->_node_path.get_node_path());
-        const NodePath lightnp = light_iter->second;
-        LPoint3f point = data->_node_path.get_node_path().get_relative_point(lightnp,
-          light->get_pos());
-        dist = (point - _effect_center).length();
+  LIGHTGROUP::const_iterator light_iter; 
+  // Cycle through all the lights in this effect's lightgroup
+  for (light_iter = _lightgroup.begin(); light_iter != _lightgroup.end(); light_iter++){
+    const PolylightNode *light = DCAST(PolylightNode, (*light_iter).node()); 
+    // light holds the current PolylightNode
+    if (light->is_enabled()) { // if enabled get all the properties
+      float light_radius = light->get_radius();
+      PolylightNode::Attenuation_Type light_attenuation = light->get_attenuation();
+      float light_a0 = light->get_a0();
+      float light_a1 = light->get_a1();
+      float light_a2 = light->get_a2();
+      if (light_a0 == 0 && light_a1 == 0 && light_a2 == 0) { // To prevent division by zero
+        light_a0 = 1.0;
+      }
+      Colorf light_color;
+      if (light->is_flickering()) { // If flickering, modify color
+        light_color = light->flicker();
+      } else {
+        light_color = light->get_color_scenegraph();
+      }
+      // Calculate the distance of the node from the light
+      //dist = light_iter->second->get_distance(data->_node_path.get_node_path());
+      const NodePath lightnp = *light_iter;
+      LPoint3f point = data->_node_path.get_node_path().get_relative_point(lightnp,
+        light->get_pos());
+      dist = (point - _effect_center).length();
+       if (dist < light_radius) { // If node is in range of this light
+        if (light_attenuation == PolylightNode::ALINEAR) {
+          light_scale = (light_radius - dist)/light_radius;
+        } else if (light_attenuation == PolylightNode::AQUADRATIC) {
+          fd = 1.0 / (light_a0 + light_a1 * dist + light_a2 * dist * dist);
+          if (fd < 1.0) {
+            light_scale = fd;
+          } else {
+            light_scale = 1.0;
+          }
+       } else {
+           light_scale = 1.0;
+       }
+       // Keep accumulating each lights contribution... we divide by 
+       // number of lights later.
+         Rcollect += light_color[0] * light_scale;
+         Gcollect += light_color[1] * light_scale;
+         Bcollect += light_color[2] * light_scale;
+         num_lights++;
+      } // if dist< radius
+    } // if light is enabled
+  } // for all lights
 
-        if (dist < light_radius) { // If node is in range of this light
-          if (light_attenuation == PolylightNode::ALINEAR) {
-            light_scale = (light_radius - dist)/light_radius;
-          } else if (light_attenuation == PolylightNode::AQUADRATIC) {
-            fd = 1.0 / (light_a0 + light_a1 * dist + light_a2 * dist * dist);
-            if (fd < 1.0) {
-              light_scale = fd;
-            } else {
-              light_scale = 1.0;
-            }
-         } else {
-             light_scale = 1.0;
-         }
-         // Keep accumulating each lights contribution... we divide by 
-         // number of lights later.
-           Rcollect += light_color[0] * light_scale;
-           Gcollect += light_color[1] * light_scale;
-           Bcollect += light_color[2] * light_scale;
-           num_lights++;
-        } // if dist< radius
-      } // if light is enabled
-    } // for all lights
-  
 
-    if ( _contribution_type == CALL) {
-      // Sometimes to prevent snapping of color at light volume boundaries
-      // just divide total contribution by all the lights in the effect
-      // whether or not they contribute color
-      num_lights = _lightgroup.size();
-    }
-
-    if (num_lights == 0) {
-      no_lights_closeby = true;
-      num_lights = 1;
-    }
-    Rcollect /= num_lights;
-    Gcollect /= num_lights;
-    Bcollect /= num_lights;
-
-    if (!no_lights_closeby) {
-      //r = 1.0 + ((1.0 - _weight) + Rcollect * _weight);
-      //g = 1.0 + ((1.0 - _weight) + Gcollect * _weight);
-      //b = 1.0 + ((1.0 - _weight) + Bcollect * _weight);
-      r = _weight + Rcollect;
-      g = _weight + Gcollect;
-      b = _weight + Bcollect;
-    }
+  if ( _contribution_type == CALL) {
+    // Sometimes to prevent snapping of color at light volume boundaries
+    // just divide total contribution by all the lights in the effect
+    // whether or not they contribute color
+    num_lights = _lightgroup.size();
   }
+  if (num_lights == 0) {
+    no_lights_closeby = true;
+    num_lights = 1;
+  }
+  Rcollect /= num_lights;
+  Gcollect /= num_lights;
+  Bcollect /= num_lights;
+  if (!no_lights_closeby) {
+    //r = 1.0 + ((1.0 - _weight) + Rcollect * _weight);
+    //g = 1.0 + ((1.0 - _weight) + Gcollect * _weight);
+    //b = 1.0 + ((1.0 - _weight) + Bcollect * _weight);
+    r = _weight + Rcollect;
+    g = _weight + Gcollect;
+    b = _weight + Bcollect;
+  }
+
   return ColorScaleAttrib::make(LVecBase4f(r, g, b, 1.0));
 }
 
@@ -204,10 +225,6 @@ compare_to_impl(const RenderEffect *other) const {
   const PolylightEffect *ta;
   DCAST_INTO_R(ta, other, 0);
 
-  if (_enabled != ta->_enabled) {
-    return _enabled ? 1 : -1;
-  }
-
   if (_contribution_type != ta->_contribution_type) {
     return _contribution_type < ta->_contribution_type ? -1 : 1;
   }
@@ -221,5 +238,88 @@ compare_to_impl(const RenderEffect *other) const {
   }
  
   return 0;
+}
+
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PolylightEffect::add_light
+//       Access: Published
+//  Description: Add a PolylightNode object to this effect and return
+//               a new effect
+////////////////////////////////////////////////////////////////////
+CPT(RenderEffect) PolylightEffect::
+add_light(const NodePath &newlight) {
+  _lightgroup.push_back(newlight);
+  return make(_weight,_contribution_type, _effect_center, 
+  _lightgroup);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PolylightEffect::remove_light
+//       Access: Published
+//  Description: Remove a light from this effect. Return the new updated
+//               effect
+////////////////////////////////////////////////////////////////////
+CPT(RenderEffect) PolylightEffect::
+remove_light(const NodePath &newlight) {
+
+  LIGHTGROUP::iterator light_iter;
+  light_iter = find(_lightgroup.begin(),_lightgroup.end(), newlight); 
+  if(light_iter == _lightgroup.end()) {
+    cerr << "Light Not Found!\n";
+  } else {
+    // Remove light
+    _lightgroup.erase(light_iter);
+  }
+  return make(_weight, _contribution_type, _effect_center, 
+  _lightgroup);
+ 
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PolylightEffect::set_weight
+//       Access: Published
+//  Description: Set weight and return a new effect... the reason
+//               this couldnt be done through make was because
+//               that would return a new effect without the 
+//               lightgroup which is static and cant be accessed
+//               Here, we just pass that to the make
+////////////////////////////////////////////////////////////////////
+CPT(RenderEffect) PolylightEffect::
+set_weight(float w) {
+  return make(w,_contribution_type, _effect_center, 
+  _lightgroup);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PolylightEffect::set_contrib
+//       Access: Published
+//  Description: Set Contrib Type and return a new effect... the reason
+//               this couldnt be done through make was because
+//               that would return a new effect without the 
+//               lightgroup which is static and cant be accessed
+//               Here, we just pass that to the make
+////////////////////////////////////////////////////////////////////
+CPT(RenderEffect) PolylightEffect::
+set_contrib(Contrib_Type ct) {
+  return make(_weight, ct, _effect_center, 
+  _lightgroup);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PolylightEffect::set_effect_center
+//       Access: Published
+//  Description: Set weight and return a new effect... the reason
+//               this couldnt be done through make was because
+//               that would return a new effect without the 
+//               lightgroup which is static and cant be accessed
+//               Here, we just pass that to the make
+////////////////////////////////////////////////////////////////////
+CPT(RenderEffect) PolylightEffect::
+set_effect_center(LPoint3f ec) {
+  return make(_weight,_contribution_type, ec, 
+  _lightgroup);
 }
 

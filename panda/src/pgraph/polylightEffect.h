@@ -34,15 +34,13 @@
 //       Class : PolylightEffect
 // Description : A PolylightEffect can be used on a node to define a
 //               LightGroup  for that node. A LightGroup contains 
-//               Polylights which are essentially nodes that add 
+//               PolylightNodes which are essentially nodes that add 
 //               color to the polygons of a model based on distance.
 //               PolylightNode is a cheap way to get lighting effects
 //               specially for night scenes
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PolylightEffect : public RenderEffect {
-private:
-  INLINE PolylightEffect();
-  
+
 
 PUBLISHED:
   enum Contrib_Type {
@@ -50,18 +48,25 @@ PUBLISHED:
     CALL,
   };
 
+private:
+  INLINE PolylightEffect();
+  Contrib_Type _contribution_type;
+  float _weight;
+  typedef pvector< NodePath > LIGHTGROUP;
+  LIGHTGROUP _lightgroup;
+  LPoint3f _effect_center;
+
+PUBLISHED:
   static CPT(RenderEffect) make();
-  INLINE void enable();
-  INLINE void disable();
-  INLINE bool add_light(const string &lightname, const NodePath &newlight);
-  INLINE bool remove_light(const string &lightname);
-  INLINE bool remove_all();
-  INLINE bool set_weight(float w);
+  static CPT(RenderEffect) make(float weight, Contrib_Type contrib, LPoint3f effect_center);
+  static CPT(RenderEffect) make(float weight, Contrib_Type contrib, LPoint3f effect_center, LIGHTGROUP lights);
+  CPT(RenderEffect) add_light(const NodePath &newlight);
+  CPT(RenderEffect) remove_light(const NodePath &newlight);
+  CPT(RenderEffect) set_weight(float w);
+  CPT(RenderEffect) set_contrib(Contrib_Type c);
+  CPT(RenderEffect) set_effect_center(LPoint3f ec);
   INLINE float get_weight() const;
-  INLINE bool set_contrib(Contrib_Type type);  
   INLINE Contrib_Type get_contrib() const;
-  INLINE bool is_enabled()const;
-  INLINE void set_effect_center(LPoint3f effect_center);
   INLINE LPoint3f get_effect_center()const;
 
 public:
@@ -74,15 +79,6 @@ public:
 
 protected:
   virtual int compare_to_impl(const RenderEffect *other) const;
-
-private:
-  bool _enabled;
-  Contrib_Type _contribution_type;
-  float _weight;
-  typedef pmap<string, NodePath> LIGHTGROUP;
-  LIGHTGROUP _lightgroup;
-  LPoint3f _effect_center;
-  
 
 public:
   static TypeHandle get_class_type() {
