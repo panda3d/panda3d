@@ -89,6 +89,7 @@ class Actor(PandaObject, NodePath):
             # act like a normal contructor
 
             # create base hierarchy
+            self.gotName = 0
             self.assign(hidden.attachNewNode('actor'))
             self.setGeomNode(self.attachNewNode('actorGeom'))
             self.__LODNode = None
@@ -180,6 +181,7 @@ class Actor(PandaObject, NodePath):
             # copy the scene graph elements of other
             otherCopy = other.copyTo(hidden)
             # assign these elements to ourselve
+            self.gotName = other.gotName
             self.assign(otherCopy)
             self.setGeomNode(otherCopy.getChild(0))
             
@@ -1061,6 +1063,13 @@ class Actor(PandaObject, NodePath):
         if (bundle.isEmpty()):
             Actor.notify.warning("%s is not a character!" % (modelPath))
         else:
+            # Rename the node at the top of the hierarchy, if we
+            # haven't already, to make it easier to identify this
+            # actor in the scene graph.
+            if not self.gotName:
+                self.node().setName(bundle.node().getName())
+                self.gotName = 1
+                
             # we rename this node to make Actor copying easier
             bundle.node().setName(Actor.partPrefix + partName)
 
