@@ -75,7 +75,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void CharacterJoint::
 update_internals(PartGroup *parent, bool self_changed, bool) {
-  assert(parent != NULL);
+  nassertv(parent != NULL);
 
   bool net_changed = false;
   if (parent->is_of_type(CharacterJoint::get_class_type())) {

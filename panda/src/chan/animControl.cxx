@@ -42,7 +42,7 @@ AnimControl(PartBundle *part, AnimBundle *anim, int channel_index) {
 ////////////////////////////////////////////////////////////////////
 void AnimControl::
 play(const CPT_Event &stop_event) {
-  assert(get_num_frames() > 0);
+  nassertv(get_num_frames() > 0);
 
   if (get_play_rate() < 0.0) {
     play(get_num_frames()-1, 0, stop_event);
@@ -64,10 +64,10 @@ play(const CPT_Event &stop_event) {
 ////////////////////////////////////////////////////////////////////
 void AnimControl::
 play(int from, int to, const CPT_Event &stop_event) {
-  assert(get_num_frames() > 0);
+  nassertv(get_num_frames() > 0);
 
-  assert(from >= 0 && from < get_num_frames());
-  assert(to >= 0 && to < get_num_frames());
+  nassertv(from >= 0 && from < get_num_frames());
+  nassertv(to >= 0 && to < get_num_frames());
   _as_of_time = ClockObject::get_global_clock()->get_time();
   _playing = true;
 
@@ -90,7 +90,7 @@ play(int from, int to, const CPT_Event &stop_event) {
 ////////////////////////////////////////////////////////////////////
 void AnimControl::
 loop(bool restart) {
-  assert(get_num_frames() > 0);
+  nassertv(get_num_frames() > 0);
 
   _as_of_time = ClockObject::get_global_clock()->get_time();
   _playing = true;
@@ -118,10 +118,10 @@ loop(bool restart) {
 ////////////////////////////////////////////////////////////////////
 void AnimControl::
 loop(bool restart, int from, int to) {
-  assert(get_num_frames() > 0);
+  nassertv(get_num_frames() > 0);
 
-  assert(from >= 0 && from < get_num_frames());
-  assert(to >= 0 && to < get_num_frames());
+  nassertv(from >= 0 && from < get_num_frames());
+  nassertv(to >= 0 && to < get_num_frames());
   _as_of_time = ClockObject::get_global_clock()->get_time();
   _playing = true;
 
@@ -194,9 +194,9 @@ stop() {
 ////////////////////////////////////////////////////////////////////
 void AnimControl::
 pose(int frame) {
-  assert(get_num_frames() > 0);
+  nassertv(get_num_frames() > 0);
 
-  assert(frame >= 0 && frame < get_num_frames());
+  nassertv(frame >= 0 && frame < get_num_frames());
   _as_of_time = ClockObject::get_global_clock()->get_time();
   _playing = false;
 
@@ -267,7 +267,7 @@ remove_event(const string &event_name) {
 	  new_actions.insert(*ai);
 	}
       }
-      assert(p_removed == removed);
+      nassertr(p_removed == removed, removed);
       _actions.swap(new_actions);
     }
   }

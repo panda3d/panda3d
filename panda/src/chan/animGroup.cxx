@@ -27,7 +27,7 @@ TypeHandle AnimGroup::_type_handle;
 ////////////////////////////////////////////////////////////////////
 AnimGroup::
 AnimGroup(AnimGroup *parent, const string &name) : Namable(name) {
-  assert(parent != NULL);
+  nassertv(parent != NULL);
 
   parent->_children.push_back(this);
   _root = parent->_root;
@@ -52,7 +52,7 @@ get_num_children() const {
 ////////////////////////////////////////////////////////////////////
 AnimGroup *AnimGroup::
 get_child(int n) const {
-  assert(n >= 0 && n < _children.size());
+  nassertr(n >= 0 && n < _children.size(), NULL);
   return _children[n];
 }
 

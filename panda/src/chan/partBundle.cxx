@@ -145,7 +145,7 @@ clear_control_effects() {
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
 set_control_effect(AnimControl *control, float effect) {
-  assert(control->get_part() == this);
+  nassertv(control->get_part() == this);
 
   if (effect == 0.0) {
     // An effect of zero means to eliminate the control.
@@ -184,7 +184,7 @@ set_control_effect(AnimControl *control, float effect) {
 ////////////////////////////////////////////////////////////////////
 float PartBundle::
 get_control_effect(AnimControl *control) {
-  assert(control->get_part() == this);
+  nassertr(control->get_part() == this, 0.0);
 
   ChannelBlend::iterator cbi = _blend.find(control);
   if (cbi == _blend.end()) {
@@ -355,7 +355,7 @@ update() {
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
 control_activated(AnimControl *control) {
-  assert(control->get_part() == this);
+  nassertv(control->get_part() == this);
 
   // If (and only if) our blend type is BT_single, which means no
   // blending, then starting an animation implicitly enables it.

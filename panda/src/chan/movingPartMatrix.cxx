@@ -38,9 +38,9 @@ get_blend_value(const PartBundle *root) {
     AnimControl *control = (*blend.begin()).first;
 
     int channel_index = control->get_channel_index();
-    assert(channel_index >= 0 && channel_index < _channels.size());
+    nassertv(channel_index >= 0 && channel_index < _channels.size());
     ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
-    assert(channel != NULL);
+    nassertv(channel != NULL);
     
     channel->get_value(control->get_frame(), _value);
 
@@ -56,12 +56,12 @@ get_blend_value(const PartBundle *root) {
       for (cbi = blend.begin(); cbi != blend.end(); ++cbi) {
 	AnimControl *control = (*cbi).first;
 	float effect = (*cbi).second;
-	assert(effect != 0.0);
+	nassertv(effect != 0.0);
 	
 	int channel_index = control->get_channel_index();
-	assert(channel_index >= 0 && channel_index < _channels.size());
+	nassertv(channel_index >= 0 && channel_index < _channels.size());
 	ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
-	assert(channel != NULL);
+	nassertv(channel != NULL);
 	
 	ValueType v;
 	channel->get_value(control->get_frame(), v);
@@ -70,7 +70,7 @@ get_blend_value(const PartBundle *root) {
 	net += effect;
       }
       
-      assert(net != 0.0);
+      nassertv(net != 0.0);
       _value /= net;
 
     } else if (root->get_blend_type() == PartBundle::BT_normalized_linear) {
@@ -87,12 +87,12 @@ get_blend_value(const PartBundle *root) {
       for (cbi = blend.begin(); cbi != blend.end(); ++cbi) {
 	AnimControl *control = (*cbi).first;
 	float effect = (*cbi).second;
-	assert(effect != 0.0);
+	nassertv(effect != 0.0);
 	
 	int channel_index = control->get_channel_index();
-	assert(channel_index >= 0 && channel_index < _channels.size());
+	nassertv(channel_index >= 0 && channel_index < _channels.size());
 	ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
-	assert(channel != NULL);
+	nassertv(channel != NULL);
 	
 	ValueType v;
 	channel->get_value_no_scale(control->get_frame(), v);
@@ -104,7 +104,7 @@ get_blend_value(const PartBundle *root) {
 	net += effect;
       }
       
-      assert(net != 0.0);
+      nassertv(net != 0.0);
       _value /= net;
       scale /= net;
 

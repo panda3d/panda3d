@@ -1,5 +1,9 @@
 #include <pandabase.h>
-#include <getopt.h>
+#ifndef HAVE_GETOPT
+  #include <gnu_getopt.h>
+#else
+  #include <getopt.h>
+#endif
 #include <patchfile.h>
 #include <filename.h>
 

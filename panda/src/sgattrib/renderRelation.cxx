@@ -44,7 +44,7 @@ void RenderRelation::
 recompute_bound() {
   // First, compute the bounding volume around all of our children.
   NodeRelation::recompute_bound();
-  assert(_bound != (BoundingVolume *)NULL);
+  nassertv(_bound != (BoundingVolume *)NULL);
 
   // Now, if we have a transform transition on the arc, apply it to
   // the bounding volume.

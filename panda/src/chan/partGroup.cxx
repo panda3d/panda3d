@@ -26,7 +26,7 @@ TypeHandle PartGroup::_type_handle;
 ////////////////////////////////////////////////////////////////////
 PartGroup::
 PartGroup(PartGroup *parent, const string &name) : Namable(name) {
-  assert(parent != NULL);
+  nassertv(parent != NULL);
 
   parent->_children.push_back(this);
 }
@@ -94,7 +94,7 @@ get_num_children() const {
 ////////////////////////////////////////////////////////////////////
 PartGroup *PartGroup::
 get_child(int n) const {
-  assert(n >= 0 && n < _children.size());
+  nassertr(n >= 0 && n < _children.size(), NULL);
   return _children[n];
 }
 

@@ -11,6 +11,7 @@
 class EXPCL_PANDA MathNumbers {
 public:
   static const double pi;
+  static const double ln2;
 };
 
 #endif

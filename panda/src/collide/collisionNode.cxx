@@ -150,7 +150,7 @@ void CollisionNode::
 recompute_bound() {
   // First, get ourselves a fresh, empty bounding volume.
   BoundedObject::recompute_bound();
-  assert(_bound != (BoundingVolume *)NULL);
+  nassertv(_bound != (BoundingVolume *)NULL);
 
   // Now actually compute the bounding volume by putting it around all
   // of our solids' bounding volumes.

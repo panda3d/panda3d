@@ -1,4 +1,4 @@
-#define OTHER_LIBS interrogatedb dconfig dtoolutil dtoolbase
+#define OTHER_LIBS dtool
 
 #begin lib_target
   #define TARGET audio

@@ -67,9 +67,9 @@ do_update(PartBundle *root, PartGroup *parent,
        ++bci) {
     AnimControl *control = (*bci);
     int channel_index = control->get_channel_index();
-    assert(channel_index >= 0 && channel_index < _channels.size());
+    nassertv(channel_index >= 0 && channel_index < _channels.size());
     AnimChannelBase *channel = _channels[channel_index];
-    assert(channel != (AnimChannelBase*)0L);
+    nassertv(channel != (AnimChannelBase*)0L);
 
     needs_update = control->channel_has_changed(channel);
   }
@@ -123,7 +123,7 @@ pick_channel_index(list<int> &holes, int &next) const {
     ++ii_next;
 
     int hole = (*ii);
-    assert(hole >= 0 && hole < next);
+    nassertv(hole >= 0 && hole < next);
     if (hole < _channels.size() || 
 	_channels[hole] != (AnimChannelBase *)NULL) {
       // We can't accept this hole; we're using it!
@@ -161,7 +161,7 @@ bind_hierarchy(AnimGroup *anim, int channel_index) {
     _channels.push_back((AnimChannelBase*)0L);
   }
 
-  assert(_channels[channel_index] == (AnimChannelBase*)0L);
+  nassertv(_channels[channel_index] == (AnimChannelBase*)0L);
 
   if (anim == (AnimGroup*)0L) {
     // If we're binding to the NULL anim, it means actually to create
