@@ -33,8 +33,8 @@
 
 class NodePathCollection;
 class TextureCollection;
-class FindApproxLevel;
 class FindApproxPath;
+class FindApproxLevelEntry;
 class Texture;
 class Material;
 class Fog;
@@ -621,9 +621,9 @@ private:
   void find_matches(NodePathCollection &result,
                     FindApproxPath &approx_path,
                     int max_matches) const;
-  void r_find_matches(NodePathCollection &result,
-                      const FindApproxLevel &level,
-                      int max_matches, int num_levels_remaining) const;
+  void find_matches(NodePathCollection &result, 
+                    FindApproxLevelEntry *level,
+                    int max_matches) const;
 
   void r_adjust_all_priorities(PandaNode *node, int adjustment);
 

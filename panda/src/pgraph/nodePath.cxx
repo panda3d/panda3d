@@ -20,7 +20,6 @@
 #include "nodePathCollection.h"
 #include "findApproxPath.h"
 #include "findApproxLevelEntry.h"
-#include "findApproxLevel.h"
 #include "config_pgraph.h"
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
@@ -3701,64 +3700,97 @@ find_matches(NodePathCollection &result, FindApproxPath &approx_path,
       << "Attempt to extend an empty NodePath by: " << approx_path << ".\n";
     return;
   }
-  FindApproxLevelEntry start(WorkingNodePath(*this), approx_path);
-  nassertv(start._node_path.is_valid());
-  FindApproxLevel level;
-  level.add_entry(start);
-  r_find_matches(result, level, max_matches, _max_search_depth);
+
+  // We start with just one entry on the level.
+  FindApproxLevelEntry *level = 
+    new FindApproxLevelEntry(WorkingNodePath(*this), approx_path);
+  nassertv(level->_node_path.is_valid());
+
+  find_matches(result, level, max_matches);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::r_find_matches
+//     Function: NodePath::find_matches
 //       Access: Private
-//  Description: The recursive implementation of find_matches.
+//  Description: The fundamental implementation of find_matches(),
+//               given a starting level (a linked list of
+//               FindApproxLevelEntry objects).
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-r_find_matches(NodePathCollection &result,
-               const FindApproxLevel &level,
-               int max_matches, int num_levels_remaining) const {
-  if (pgraph_cat.is_debug()) {
-    pgraph_cat.debug()
-      << "r_find_matches(" << result << ", level, "
-      << max_matches << ", " << num_levels_remaining << ")\n";
-    level.write(pgraph_cat.debug(false));
-  }
+find_matches(NodePathCollection &result, FindApproxLevelEntry *level,
+             int max_matches) const {
+  
+  int num_levels_remaining = _max_search_depth;
 
-  // Go on to the next level.  If we exceeded the requested maximum
-  // depth (or if there are no more levels to visit), stop.
-  if (num_levels_remaining <= 0 || level._v.empty()) {
-    return;
-  }
-  num_levels_remaining--;
+  FindApproxLevelEntry *deleted_entries = NULL;
 
-  FindApproxLevel next_level;
-  bool okflag = true;
-
-  // For each node in the current level, build up the set of possible
-  // matches in the next level.
-  FindApproxLevel::Vec::const_iterator li;
-  for (li = level._v.begin(); li != level._v.end() && okflag; ++li) {
-    const FindApproxLevelEntry &entry = (*li);
-
-    if (entry.is_solution(0)) {
-      // Does this entry already represent a solution?
-      result.add_path(entry._node_path.get_node_path());
-    } else {
-      entry.consider_node(result, next_level, max_matches, 0);
+  while (num_levels_remaining > 0 && level != NULL) {
+    if (pgraph_cat.is_debug()) {
+      pgraph_cat.debug()
+        << "find_matches pass: " << result << ", "
+        << max_matches << ", " << num_levels_remaining << "\n";
+      level->write_level(pgraph_cat.debug(false), 4);
     }
 
-    if (max_matches > 0 && result.get_num_paths() >= max_matches) {
-      // Really, we just want to return here.  But returning from
-      // within the conditional within the for loop seems to sometimes
-      // cause a compiler fault in GCC.  We'll use a semaphore
-      // variable instead.
-      okflag = false;
+    num_levels_remaining--;
+
+    FindApproxLevelEntry *next_level = NULL;
+
+    // For each node in the current level, build up the set of possible
+    // matches in the next level.
+    FindApproxLevelEntry *entry = level;
+    while (entry != (FindApproxLevelEntry *)NULL) {
+      if (entry->consider_node(result, next_level, max_matches, 0)) {
+        // If we found the requisite number of matches, we can stop.
+        // Delete all remaining entries and return immediately.
+
+        while (entry != (FindApproxLevelEntry *)NULL) {
+          FindApproxLevelEntry *next = entry->_next;
+          delete entry;
+          entry = next;
+        }
+        while (next_level != (FindApproxLevelEntry *)NULL) {
+          FindApproxLevelEntry *next = next_level->_next;
+          delete next_level;
+          next_level = next;
+        }
+        while (deleted_entries != (FindApproxLevelEntry *)NULL) {
+          FindApproxLevelEntry *next = deleted_entries->_next;
+          delete deleted_entries;
+          deleted_entries = next;
+        }
+        return;
+      }
+
+      // Move the entry to the delete chain so we can delete it before
+      // we return from this method.  (We can't delete it immediately,
+      // because there might be WorkingNodePaths in the next_level
+      // that reference the WorkingNodePath object within the entry.)
+      FindApproxLevelEntry *next = entry->_next;
+      entry->_next = deleted_entries;
+      deleted_entries = entry;
+
+      entry = next;
     }
+    
+    // Make sure the remaining entries from this level are added to
+    // the delete chain.
+    while (entry != (FindApproxLevelEntry *)NULL) {
+      FindApproxLevelEntry *next = entry->_next;
+      entry->_next = deleted_entries;
+      deleted_entries = entry;
+
+      entry = next;
+    }
+
+    level = next_level;
   }
 
-  // Now recurse on the next level.
-  if (okflag) {
-    r_find_matches(result, next_level, max_matches, num_levels_remaining);
+  // Now it's safe to delete all entries on the delete chain.
+  while (deleted_entries != (FindApproxLevelEntry *)NULL) {
+    FindApproxLevelEntry *next = deleted_entries->_next;
+    delete deleted_entries;
+    deleted_entries = next;
   }
 }
 

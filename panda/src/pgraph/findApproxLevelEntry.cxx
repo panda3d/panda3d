@@ -19,6 +19,10 @@
 #include "findApproxLevelEntry.h"
 #include "nodePathCollection.h"
 #include "pandaNode.h"
+#include "indent.h"
+
+FindApproxLevelEntry *FindApproxLevelEntry::_deleted_chain = (FindApproxLevelEntry *)NULL;
+int FindApproxLevelEntry::_num_ever_allocated = 0;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -40,14 +44,49 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FindApproxLevelEntry::consider_node
+//     Function: FindApproxLevelEntry::write_level
 //       Access: Public
-//  Description:
+//  Description: Writes the entire level (a linked list of entries
+//               beginning at this entry).  For debugging only.
 ////////////////////////////////////////////////////////////////////
 void FindApproxLevelEntry::
-consider_node(NodePathCollection &result, FindApproxLevel &next_level,
+write_level(ostream &out, int indent_level) const {
+  for (const FindApproxLevelEntry *entry = this;
+       entry != (const FindApproxLevelEntry *)NULL;
+       entry = entry->_next) {
+    indent(out, indent_level);
+    out << *entry << "\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FindApproxLevelEntry::consider_node
+//       Access: Public
+//  Description: Considers the node represented by the entry for
+//               matching the find path.  If a solution is found, it
+//               is added to result; if the children of this node
+//               should be considered, the appropriate entries are
+//               added to next_level.
+//
+//               The return value is true if result now contains
+//               max_matches solutions, or false if we should keep
+//               looking.
+////////////////////////////////////////////////////////////////////
+bool FindApproxLevelEntry::
+consider_node(NodePathCollection &result, FindApproxLevelEntry *&next_level,
               int max_matches, int increment) const {
-  nassertv(_i + increment < _approx_path.get_num_components());
+  if (is_solution(increment)) {
+    // If the entry represents a solution, save it and we're done with
+    // the entry.
+    result.add_path(_node_path.get_node_path());
+    if (max_matches > 0 && result.get_num_paths() >= max_matches) { 
+      return true;
+    }
+
+    return false;
+  }
+
+  // If the entry is not itself a solution, consider its children.
 
   if (_approx_path.is_component_match_many(_i + increment)) {
     // Match any number, zero or more, levels of nodes.  This is the
@@ -64,32 +103,24 @@ consider_node(NodePathCollection &result, FindApproxLevel &next_level,
     // FindApproxLevelEntry objects.  Instead, we pass around the
     // increment parameter, which increments _i on the fly.
 
-    if (is_solution(increment + 1)) {
-      // Does this now represent a solution?
-      result.add_path(_node_path.get_node_path());
-      if (max_matches > 0 && result.get_num_paths() >= max_matches) { 
-        return;
-      }
-    } else {
-      consider_node(result, next_level, max_matches, increment + 1);
+    if (consider_node(result, next_level, max_matches, increment + 1)) {
+      return true;
     }
   }
 
   PandaNode *this_node = _node_path.node();
-  nassertv(this_node != (PandaNode *)NULL);
+  nassertr(this_node != (PandaNode *)NULL, false);
 
   bool stashed_only = next_is_stashed(increment);
 
   if (!stashed_only) {
     // Check the normal list of children.
-    int num_children = this_node->get_num_children();
+    PandaNode::Children children = this_node->get_children();
+    int num_children = children.get_num_children();
     for (int i = 0; i < num_children; i++) {
-      PandaNode *child_node = this_node->get_child(i);
+      PandaNode *child_node = children.get_child(i);
       
-      consider_next_step(result, child_node, next_level, max_matches, increment);
-      if (max_matches > 0 && result.get_num_paths() >= max_matches) {
-        return;
-      }
+      consider_next_step(child_node, next_level, increment);
     }
   }
 
@@ -99,12 +130,11 @@ consider_node(NodePathCollection &result, FindApproxLevel &next_level,
     for (int i = 0; i < num_stashed; i++) {
       PandaNode *stashed_node = this_node->get_stashed(i);
       
-      consider_next_step(result, stashed_node, next_level, max_matches, increment);
-      if (max_matches > 0 && result.get_num_paths() >= max_matches) {
-        return;
-      }
+      consider_next_step(stashed_node, next_level, increment);
     }
   }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -115,12 +145,9 @@ consider_node(NodePathCollection &result, FindApproxLevel &next_level,
 //               of the path.  If it matches, generates whatever
 //               additional entries are appropriate and stores them in
 //               next_level.
-//
-//               If a complete solution is found, stores it in result.
 ////////////////////////////////////////////////////////////////////
 void FindApproxLevelEntry::
-consider_next_step(NodePathCollection &result, PandaNode *child_node,
-                   FindApproxLevel &next_level, int max_matches,
+consider_next_step(PandaNode *child_node, FindApproxLevelEntry *&next_level, 
                    int increment) const {
   if (!_approx_path.return_hidden() &&
       child_node->get_draw_mask().is_zero()) {
@@ -139,17 +166,14 @@ consider_next_step(NodePathCollection &result, PandaNode *child_node,
     // And now we just add the next entry without incrementing its
     // path entry.
 
-    FindApproxLevelEntry next(*this, increment);
-    next._node_path = WorkingNodePath(_node_path, child_node);
-    next_level.add_entry(next);
+    next_level = new FindApproxLevelEntry
+      (*this, child_node, _i + increment, next_level);
 
   } else {
     if (_approx_path.matches_component(_i + increment, child_node)) {
       // That matched, and it consumes one path entry.
-      FindApproxLevelEntry next(*this, increment);
-      next._i++;
-      next._node_path = WorkingNodePath(_node_path, child_node);
-      next_level.add_entry(next);
+      next_level = new FindApproxLevelEntry
+        (*this, child_node, _i + increment + 1, next_level);
     }
   }
 }

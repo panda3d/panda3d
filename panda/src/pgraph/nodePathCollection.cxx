@@ -18,7 +18,7 @@
 
 #include "nodePathCollection.h"
 #include "findApproxPath.h"
-#include "findApproxLevel.h"
+#include "findApproxLevelEntry.h"
 
 #include "indent.h"
 
@@ -278,13 +278,14 @@ find_all_matches(const string &path) const {
   FindApproxPath approx_path;
   if (approx_path.add_string(path)) {
     if (!is_empty()) {
-      FindApproxLevel level;
+      FindApproxLevelEntry *level = NULL;
       for (int i = 0; i < get_num_paths(); i++) {
-        FindApproxLevelEntry start(get_path(i), approx_path);
-        level.add_entry(start);
+        FindApproxLevelEntry *start = 
+          new FindApproxLevelEntry(get_path(i), approx_path);
+        start->_next = level;
+        level = start;
       }
-      get_path(0).r_find_matches(result, level, -1,
-                                 NodePath::get_max_search_depth());
+      get_path(0).find_matches(result, level, -1);
     }
   }
 

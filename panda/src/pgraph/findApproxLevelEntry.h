@@ -24,7 +24,6 @@
 #include "findApproxPath.h"
 #include "workingNodePath.h"
 
-class FindApproxLevel;
 class NodePathCollection;
 
 ////////////////////////////////////////////////////////////////////
@@ -38,19 +37,33 @@ class FindApproxLevelEntry {
 public:
   INLINE FindApproxLevelEntry(const WorkingNodePath &node_path,
                               FindApproxPath &approx_path);
-  INLINE FindApproxLevelEntry(const FindApproxLevelEntry &copy, int increment = 0);
+  INLINE FindApproxLevelEntry(const FindApproxLevelEntry &parent,
+                              PandaNode *child_node, int i,
+                              FindApproxLevelEntry *next);
+  INLINE FindApproxLevelEntry(const FindApproxLevelEntry &copy);
   INLINE void operator = (const FindApproxLevelEntry &copy);
 
   INLINE bool next_is_stashed(int increment) const;
 
-  void consider_node(NodePathCollection &result, FindApproxLevel &next_level,
+  bool consider_node(NodePathCollection &result, 
+                     FindApproxLevelEntry *&next_level,
                      int max_matches, int increment) const;
-  void consider_next_step(NodePathCollection &result,
-                          PandaNode *child_node, FindApproxLevel &next_level,
-                          int max_matches, int increment) const;
+  void consider_next_step(PandaNode *child_node, 
+                          FindApproxLevelEntry *&next_level,
+                          int increment) const;
   INLINE bool is_solution(int increment) const;
 
+  // We will allocate and destroy thousands of these during a typical
+  // NodePath::find() or find_all_matches() operation.  As an
+  // optimization, then, we implement operator new and delete here to
+  // minimize this overhead.
+  INLINE void *operator new(size_t size);
+  INLINE void operator delete(void *ptr);
+
+  INLINE static int get_num_ever_allocated();
+
   void output(ostream &out) const;
+  void write_level(ostream &out, int indent_level) const;
 
   // _node_path represents the most recent node that we have
   // previously accepted as being a partial solution.
@@ -62,6 +75,11 @@ public:
   // solution.
   int _i;
   FindApproxPath &_approx_path;
+  FindApproxLevelEntry *_next;
+
+private:
+  static FindApproxLevelEntry *_deleted_chain;
+  static int _num_ever_allocated;
 };
 
 INLINE ostream &

@@ -41,7 +41,6 @@
     depthWriteAttrib.I depthWriteAttrib.h \
     directionalLight.I directionalLight.h \
     drawCullHandler.I drawCullHandler.h \
-    findApproxLevel.I findApproxLevel.h \
     findApproxLevelEntry.I findApproxLevelEntry.h \
     findApproxPath.I findApproxPath.h \
     fog.I fog.h \
@@ -129,7 +128,6 @@
     depthWriteAttrib.cxx \
     directionalLight.cxx \
     drawCullHandler.cxx \
-    findApproxLevel.cxx \
     findApproxLevelEntry.cxx \
     findApproxPath.cxx \
     fog.cxx \
@@ -267,7 +265,6 @@
     workingNodePath.I workingNodePath.h
 
 // No need to install these.
-//    findApproxLevel.I findApproxLevel.h \
 //    findApproxLevelEntry.I findApproxLevelEntry.h \
 //    findApproxPath.I findApproxPath.h \
 

@@ -32,7 +32,6 @@
 #include "directionalLight.cxx"
 #include "drawCullHandler.cxx"
 #include "findApproxPath.cxx"
-#include "findApproxLevel.cxx"
 #include "findApproxLevelEntry.cxx"
 #include "fog.cxx"
 #include "fogAttrib.cxx"
