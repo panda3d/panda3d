@@ -108,7 +108,6 @@ class ClassicFSM(DirectObject):
     # setters and getters
 
     def getName(self):
-        """getName(self)"""
         return(self.__name)
 
     def setName(self, name):
@@ -116,7 +115,6 @@ class ClassicFSM(DirectObject):
         self.__name = name
 
     def getStates(self):
-        """getStates(self)"""
         return(self.__states)
 
     def setStates(self, states):
@@ -124,11 +122,9 @@ class ClassicFSM(DirectObject):
         self.__states = states
 
     def addState(self, state):
-        """addState(state)"""
         self.__states.append(state)
 
     def getInitialState(self):
-        """getInitialState(self)"""
         return(self.__initialState)
 
     def setInitialState(self, initialStateName):
@@ -136,7 +132,6 @@ class ClassicFSM(DirectObject):
         self.__initialState = self.getStateNamed(initialStateName)
 
     def getFinalState(self):
-        """getFinalState(self)"""
         return(self.__finalState)
 
     def setFinalState(self, finalStateName):
@@ -147,7 +142,6 @@ class ClassicFSM(DirectObject):
         self.request(self.__finalState.getName())
 
     def getCurrentState(self):
-        """getCurrentState(self)"""
         return(self.__currentState)
 
 
