@@ -22,7 +22,12 @@
 #ifndef NDEBUG
 
 void *default_operator_new(size_t size) {
-  return malloc(size);
+  void *ptr = malloc(size);
+  if (ptr == (void *)NULL) {
+    cerr << "Out of memory!\n";
+    abort();
+  }
+  return ptr;
 }
 
 void default_operator_delete(void *ptr) {
