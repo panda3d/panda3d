@@ -24,7 +24,7 @@
 #ifndef DTOOLBASE_H
 #define DTOOLBASE_H
 
-#include <dtool_config.h>
+#include "dtool_config.h"
 
 #ifdef WIN32_VC
 /* These warning pragmas must appear before anything else for VC++ to

@@ -148,6 +148,9 @@ $[cdefine HAVE_NAMESPACE]
 /* Define if fstream::open() accepts a third parameter for umask. */
 $[cdefine HAVE_OPEN_MASK]
 
+/* Define if the some header file defines wchar_t. */
+$[cdefine HAVE_WCHAR_T]
+
 /* Define if the <string> header file defines wstring. */
 $[cdefine HAVE_WSTRING]
 

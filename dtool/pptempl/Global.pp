@@ -6,7 +6,6 @@
 // different kinds of build_types.
 //
 
-
 // We start off by defining a number of map variables.  These are
 // special variables that can be used to look up a particular named
 // scope according to a key (that is, according to the value of some
@@ -389,6 +388,8 @@
 
   #if $[WINDOWS_PLATFORM]
     #set alt_libs $[alt_libs] $[WIN_SYS_LIBS] $[components $[WIN_SYS_LIBS],$[active_component_libs] $[transitive_link]]
+  #elif $[OSX_PLATFORM]
+    #set alt_libs $[alt_libs] $[OSX_SYS_LIBS] $[components $[OSX_SYS_LIBS],$[active_component_libs] $[transitive_link]]
   #else
     #set alt_libs $[alt_libs] $[UNIX_SYS_LIBS] $[components $[UNIX_SYS_LIBS],$[active_component_libs] $[transitive_link]]
   #endif
@@ -485,6 +486,8 @@
   $[depend_libs]
 #end get_depend_libs
 
+
+// dtool/pptempl/Global.pp
 
 // Define a few directories that will be useful.
 

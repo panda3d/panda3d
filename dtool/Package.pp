@@ -55,8 +55,11 @@
 // True if we are building on some flavor of Windows.
 #define WINDOWS_PLATFORM $[or $[eq $[PLATFORM],Win32],$[eq $[PLATFORM],Cygwin]]
 
+// True if we are building on some flavor of OS X.
+#define OSX_PLATFORM $[or $[eq $[PLATFORM],Darwin],$[eq $[PLATFORM],osx]]
+
 // True if we are building on some flavor of Unix.
-#define UNIX_PLATFORM $[not $[WINDOWS_PLATFORM]]
+#define UNIX_PLATFORM $[and $[not $[WINDOWS_PLATFORM]],$[not $[OSX_PLATFORM]]]
 
 
 

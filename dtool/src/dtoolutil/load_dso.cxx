@@ -18,7 +18,26 @@
 
 #include "load_dso.h"
 
-#if defined(PENV_PS2)
+#if 1 || defined(PENV_OSX)
+// These are not used on Macintosh OS X
+
+void *
+load_dso(const Filename &) {
+  return (void *) NULL;
+}
+
+bool
+unload_dso(void *dso_handle) {
+ return false;
+}
+
+string
+load_dso_error() {
+  const char *message="load_dso_error() unsupported on PS2";
+  return message;
+}
+
+#elif defined(PENV_PS2)
 
 // The playstation2 can't do any of this stuff, so these functions are B O G U S
 

@@ -26,10 +26,12 @@
 
 #include <stdlib.h>
 
-#ifndef HAVE_GETOPT
-#include <gnu_getopt.h>
+#ifndef HAVE_GETOPT_LONG_ONLY
+  #include "gnu_getopt.h"
 #else
-#include <getopt.h>
+  #ifdef HAVE_GETOPT_H
+    #include <getopt.h>
+  #endif
 #endif
 
 

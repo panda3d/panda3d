@@ -80,6 +80,11 @@ using namespace std;
 #define TYPENAME
 #endif
 
+#ifndef HAVE_WCHAR_T
+// Some C++ libraries (os x 3.1) don't define this.
+typedef unsigned short wchar_t;
+#endif
+
 #ifndef HAVE_WSTRING
 // Some C++ libraries (gcc 2.95) don't define this.
 typedef basic_string<wchar_t> wstring;

@@ -1,5 +1,5 @@
 //
-// Config.pp
+// dtool/Config.pp
 //
 // This file defines certain configuration variables that are written
 // into the various make scripts.  It is processed by ppremake (along
@@ -43,10 +43,10 @@
 // store only the variable references themselves, and expand them when
 // the variable is later referenced.  It is very similar to the
 // relationship between := and = in GNU Make.
-//
+// dtool/Config.pp
+
 // In general, #defer is used in this file, to allow the user to
 // redefine critical variables in his or her own Config.pp file.
-
 
 
 
@@ -69,6 +69,8 @@
   #define BUILD_TYPE gmsvc
 #elif $[eq $[PLATFORM], Cygwin]
   #define BUILD_TYPE gmsvc
+#elif $[eq $[PLATFORM], osx]
+  #define BUILD_TYPE osx
 #else
   #define BUILD_TYPE unix
 #endif
@@ -461,6 +463,8 @@
   #define USE_COMPILER MIPS
 #elif $[eq $[PLATFORM], Linux]
   #define USE_COMPILER GCC
+#elif $[eq $[PLATFORM], osx]
+  #define USE_COMPILER GCC
 #endif
 
 
@@ -572,8 +576,13 @@
 // How to generate a static C or C++ library.  $[target] is the
 // name of the library to generate, and $[sources] is the list of .o
 // files that will go into the library.
-#defer STATIC_LIB_C ar cru $[target] $[sources]
-#defer STATIC_LIB_C++ ar cru $[target] $[sources]
+#if $[eq $[PLATFORM], osx]
+  #defer STATIC_LIB_C libtool -static -o $[target] $[sources]
+  #defer STATIC_LIB_C++ libtool -static -o $[target] $[sources]
+#else
+  #defer STATIC_LIB_C ar cru $[target] $[sources]
+  #defer STATIC_LIB_C++ ar cru $[target] $[sources]
+#endif
 
 // How to run ranlib, if necessary, after generating a static library.
 // $[target] is the name of the library.  Set this to the empty string
@@ -584,8 +593,13 @@
 // as above, and $[libs] is a space-separated list of dependent
 // libraries, and $[lpath] is a space-separated list of directories in
 // which those libraries can be found.
-#defer SHARED_LIB_C $[CC] -shared -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
-#defer SHARED_LIB_C++ $[CXX] -shared -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+#if $[eq $[PLATFORM], osx]
+  #defer SHARED_LIB_C $[CC] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+  #defer SHARED_LIB_C++ $[CXX] -dynamic -dynamiclib -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+#else
+  #defer SHARED_LIB_C $[CC] -shared -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+  #defer SHARED_LIB_C++ $[CXX] -shared -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+#endif
 
 // How to install a data file or executable file.  $[local] is the
 // local name of the file to install, and $[dest] is the name of the

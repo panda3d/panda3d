@@ -27,7 +27,7 @@
 // If our system getopt() doesn't come with getopt_long_only(), then use
 // the GNU flavor that we've got in tool for this purpose.
 #ifndef HAVE_GETOPT_LONG_ONLY
-#include "gnu_getopt.h"
+  #include "gnu_getopt.h"
 #else
   #ifdef HAVE_GETOPT_H
     #include <getopt.h>
