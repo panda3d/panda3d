@@ -27,7 +27,7 @@ class SoundInterval(Interval):
         # Record instance variables
         self.sound = sound
         self.loop = loop
-        self.wantSound = base.wantAnySound
+        self.wantSound = base.wantSfx
         # If no duration given use sound's duration as interval's duration
         if duration == 0.0:
             if self.wantSound:
