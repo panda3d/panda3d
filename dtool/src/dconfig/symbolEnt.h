@@ -44,7 +44,12 @@ class EXPCL_DTOOLCONFIG SymbolEnt {
       INLINE bool State(void) const;
 };
 
-EXPORT_TEMPLATE_CLASS(EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG, std::vector<SymbolEnt>);
+} // close Config namespace
+
+EXPORT_TEMPLATE_CLASS(EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG, std::vector<Config::SymbolEnt>);
+
+namespace Config {
+
 typedef std::vector<SymbolEnt> vector_SymbolEnt;
 
 #include "symbolEnt.I"
