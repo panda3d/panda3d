@@ -21,8 +21,11 @@
 
 #include "pandabase.h"
 
-#include "wglExtensions.h"
 #include "glgsg.h"
+
+// This must be included after we have included glgsg.h (which
+// includes gl.h).
+#include "wglext.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : wglGraphicsStateGuardian
@@ -57,17 +60,17 @@ private:
 public:
   bool _supports_pbuffer;
 
-  wglCreatePbufferARB_proc _wglCreatePbufferARB;
-  wglGetPbufferDCARB_proc _wglGetPbufferDCARB;
-  wglReleasePbufferDCARB_proc _wglReleasePbufferDCARB;
-  wglDestroyPbufferARB_proc _wglDestroyPbufferARB;
-  wglQueryPbufferARB_proc _wglQueryPbufferARB;
+  PFNWGLCREATEPBUFFERARBPROC _wglCreatePbufferARB;
+  PFNWGLGETPBUFFERDCARBPROC _wglGetPbufferDCARB;
+  PFNWGLRELEASEPBUFFERDCARBPROC _wglReleasePbufferDCARB;
+  PFNWGLDESTROYPBUFFERARBPROC _wglDestroyPbufferARB;
+  PFNWGLQUERYPBUFFERARBPROC _wglQueryPbufferARB;
 
   bool _supports_pixel_format;
 
-  wglGetPixelFormatAttribivARB_proc _wglGetPixelFormatAttribivARB;
-  wglGetPixelFormatAttribfvARB_proc _wglGetPixelFormatAttribfvARB;
-  wglChoosePixelFormatARB_proc _wglChoosePixelFormatARB;
+  PFNWGLGETPIXELFORMATATTRIBIVARBPROC _wglGetPixelFormatAttribivARB;
+  PFNWGLGETPIXELFORMATATTRIBFVARBPROC _wglGetPixelFormatAttribfvARB;
+  PFNWGLCHOOSEPIXELFORMATARBPROC _wglChoosePixelFormatARB;
 
 public:
   static TypeHandle get_class_type() {

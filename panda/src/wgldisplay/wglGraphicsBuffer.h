@@ -21,7 +21,11 @@
 
 #include "pandabase.h"
 #include "graphicsBuffer.h"
-#include "wglExtensions.h"
+#include "glgsg.h"
+
+// This must be included after we have included glgsg.h (which
+// includes gl.h).
+#include "wglext.h"
 
 #include <windows.h>
 

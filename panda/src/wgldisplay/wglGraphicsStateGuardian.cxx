@@ -66,15 +66,15 @@ reset() {
   _supports_pixel_format = has_extension("WGL_ARB_pixel_format");
 
   _wglCreatePbufferARB = 
-    (wglCreatePbufferARB_proc)wglGetProcAddress("wglCreatePbufferARB");
+    (PFNWGLCREATEPBUFFERARBPROC)wglGetProcAddress("wglCreatePbufferARB");
   _wglGetPbufferDCARB = 
-    (wglGetPbufferDCARB_proc)wglGetProcAddress("wglGetPbufferDCARB");
+    (PFNWGLGETPBUFFERDCARBPROC)wglGetProcAddress("wglGetPbufferDCARB");
   _wglReleasePbufferDCARB = 
-    (wglReleasePbufferDCARB_proc)wglGetProcAddress("wglReleasePbufferDCARB");
+    (PFNWGLRELEASEPBUFFERDCARBPROC)wglGetProcAddress("wglReleasePbufferDCARB");
   _wglDestroyPbufferARB = 
-    (wglDestroyPbufferARB_proc)wglGetProcAddress("wglDestroyPbufferARB");
+    (PFNWGLDESTROYPBUFFERARBPROC)wglGetProcAddress("wglDestroyPbufferARB");
   _wglQueryPbufferARB = 
-    (wglQueryPbufferARB_proc)wglGetProcAddress("wglQueryPbufferARB");
+    (PFNWGLQUERYPBUFFERARBPROC)wglGetProcAddress("wglQueryPbufferARB");
 
   if (_supports_pbuffer) {
     if (_wglCreatePbufferARB == NULL ||
@@ -89,11 +89,11 @@ reset() {
   }
 
   _wglGetPixelFormatAttribivARB =
-    (wglGetPixelFormatAttribivARB_proc)wglGetProcAddress("wglGetPixelFormatAttribivARB");
+    (PFNWGLGETPIXELFORMATATTRIBIVARBPROC)wglGetProcAddress("wglGetPixelFormatAttribivARB");
   _wglGetPixelFormatAttribfvARB =
-    (wglGetPixelFormatAttribfvARB_proc)wglGetProcAddress("wglGetPixelFormatAttribfvARB");
+    (PFNWGLGETPIXELFORMATATTRIBFVARBPROC)wglGetProcAddress("wglGetPixelFormatAttribfvARB");
   _wglChoosePixelFormatARB =
-    (wglChoosePixelFormatARB_proc)wglGetProcAddress("wglChoosePixelFormatARB");
+    (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress("wglChoosePixelFormatARB");
 
   if (_supports_pixel_format) {
     if (_wglGetPixelFormatAttribivARB == NULL ||
@@ -118,9 +118,23 @@ void wglGraphicsStateGuardian::
 get_extra_extensions() {
   // This is a little bit tricky, since the query function is itself
   // an extension.
-  typedef const GLubyte *(*wglGetExtensionsStringEXT_proc)(void);
-  wglGetExtensionsStringEXT_proc wglGetExtensionsStringEXT = 
-    (wglGetExtensionsStringEXT_proc)wglGetProcAddress("wglGetExtensionsStringEXT");
+
+  // Look for the ARB flavor first, which wants one parameter, the HDC
+  // of the drawing context.
+  PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB = 
+    (PFNWGLGETEXTENSIONSSTRINGARBPROC)wglGetProcAddress("wglGetExtensionsStringARB");
+  if (wglGetExtensionsStringARB != NULL) {
+    HDC hdc = wglGetCurrentDC();
+    if (hdc != 0) {
+      save_extensions((const char *)wglGetExtensionsStringARB(hdc));
+      return;
+    }
+  }
+
+  // If that failed, look for the EXT flavor, which wants no
+  // parameters.
+  PFNWGLGETEXTENSIONSSTRINGEXTPROC wglGetExtensionsStringEXT = 
+    (PFNWGLGETEXTENSIONSSTRINGEXTPROC)wglGetProcAddress("wglGetExtensionsStringEXT");
   if (wglGetExtensionsStringEXT != NULL) {
     save_extensions((const char *)wglGetExtensionsStringEXT());
   }
