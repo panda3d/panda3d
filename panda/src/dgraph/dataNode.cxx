@@ -58,7 +58,7 @@ transmit_data(const DataNodeTransmit inputs[],
     new_input.set_data(connect._input_index, data);
   }
 
-#ifndef NDEBUG
+  #ifndef NDEBUG
   if (dgraph_cat.is_spam()) {
     bool any_data = false;
     Wires::const_iterator wi;
@@ -77,11 +77,11 @@ transmit_data(const DataNodeTransmit inputs[],
       }
     }
   }
-#endif  // NDEBUG
+  #endif  // NDEBUG
 
   do_transmit_data(new_input, output);
 
-#ifndef NDEBUG
+  #ifndef NDEBUG
   if (dgraph_cat.is_spam()) {
     bool any_data = false;
     Wires::const_iterator wi;
@@ -100,7 +100,7 @@ transmit_data(const DataNodeTransmit inputs[],
       }
     }
   }
-#endif  // NDEBUG
+  #endif  // NDEBUG
 }
 
 ////////////////////////////////////////////////////////////////////

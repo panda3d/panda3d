@@ -44,7 +44,6 @@ KeyHeld() {
 float DriveInterface::KeyHeld::
 get_effect(float ramp_up_time, float ramp_down_time) {
   double elapsed = ClockObject::get_global_clock()->get_frame_time() - _changed_time;
-
   if (_down) {
     // We are currently holding down the key.  That means we base our
     // effect on the ramp_up_time.
@@ -55,7 +54,6 @@ get_effect(float ramp_up_time, float ramp_down_time) {
       float change = elapsed / ramp_up_time;
       _effect = min(_effect_at_change + change, 1.0f);
     }
-
   } else {
     // We are *not* currently holding down the key.  That means we
     // base our effect on the ramp_down_time.
@@ -67,7 +65,6 @@ get_effect(float ramp_up_time, float ramp_down_time) {
       _effect = max(_effect_at_change - change, 0.0f);
     }
   }
-
   return _effect;
 }
 
@@ -242,7 +239,6 @@ force_dgraph() {
 ////////////////////////////////////////////////////////////////////
 void DriveInterface::
 apply(double x, double y, bool any_button) {
-
   // First reset the speeds
   _speed = 0.0f;
   _rot_speed = 0.0f;
@@ -280,7 +276,6 @@ apply(double x, double y, bool any_button) {
 
     // Now, what's our rotational velocity?  This is based on the
     // mouse's horizontal position.
-
     float dead_zone_right = _horizontal_center + _horizontal_dead_zone;
     float dead_zone_left = _horizontal_center - _horizontal_dead_zone;
 

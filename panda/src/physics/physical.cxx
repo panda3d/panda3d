@@ -144,7 +144,7 @@ void Physical::
 write_physics_objects(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
-  out<<""<<"_physics_objects\n";
+  out<<""<<"_physics_objects ("<<_physics_objects.size()<<" forces)\n";
   for (PhysicsObjectVector::const_iterator i=_physics_objects.begin();
        i != _physics_objects.end();
        ++i) {
@@ -163,7 +163,7 @@ void Physical::
 write_linear_forces(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
-  out<<""<<"_linear_forces\n";
+  out<<""<<"_linear_forces ("<<_linear_forces.size()<<" forces)\n";
   for (LinearForceVector::const_iterator i=_linear_forces.begin();
        i != _linear_forces.end();
        ++i) {
@@ -182,7 +182,7 @@ void Physical::
 write_angular_forces(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
-  out<<""<<"_angular_forces\n";
+  out<<""<<"_angular_forces ("<<_angular_forces.size()<<" forces)\n";
   for (AngularForceVector::const_iterator i=_angular_forces.begin();
        i != _angular_forces.end();
        ++i) {

@@ -19,7 +19,7 @@
 #ifndef BUTTONHANDLE_H
 #define BUTTONHANDLE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ButtonHandle
