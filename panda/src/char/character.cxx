@@ -308,7 +308,7 @@ r_copy_char(PandaNode *dest, const PandaNode *source,
     const PandaNode *source_child = source->get_child(i);
     int source_sort = source->get_child_sort(i);
 
-    PandaNode *dest_child;
+    PT(PandaNode) dest_child;
     if (source_child->is_of_type(Character::get_class_type())) {
       // We make a special case for nodes of type Character.  If we
       // encounter one of these, we have a Character under a
