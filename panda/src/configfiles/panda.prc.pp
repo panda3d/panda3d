@@ -60,4 +60,36 @@ egg-object-type-seq24           <Switch> { 1 } <Scalar> fps { 24 }
 egg-object-type-seq12           <Switch> { 1 } <Scalar> fps { 12 }
 egg-object-type-indexed         <Scalar> indexed { 1 }
 
+# These are just shortcuts to define the Model and DCS flags, which
+# indicate nodes that should not be flattened out of the hierarchy
+# during the conversion process.  DCS goes one step further and
+# indicates that the node's transform is important and should be
+# preserved (DCS stands for Dynamic Coordinate System).
+egg-object-type-model           <Model> { 1 }
+egg-object-type-dcs             <DCS> { 1 }
+
+# The following define various kinds of collision geometry.  These
+# mark the geometry at this level and below as invisible collision
+# polygons, which can be used by Panda's collision system to detect
+# collisions more optimally than regular visible polygons.
+egg-object-type-barrier         <Collide> { Polyset descend }
+egg-object-type-sphere          <Collide> { Sphere descend }
+egg-object-type-tube            <Collide> { Tube descend }
+
+# As above, but these are flagged to be "intangible", so that they
+# will trigger an event but not stop an object from passing through.
+egg-object-type-trigger         <Collide> { Polyset descend intangible }
+egg-object-type-trigger-sphere  <Collide> { Sphere descend intangible }
+
+# "bubble" puts an invisible bubble around an object, but does not
+# otherwise remove the geometry.
+egg-object-type-bubble          <Collide> { Sphere keep descend }
+
+# "ghost" turns off the normal collide bit that is set on visible
+# geometry by default, so that if you are using visible geometry for
+# collisions, this particular geometry will not be part of those
+# collisions--it is ghostlike.
+egg-object-type-ghost           <Scalar> collide-mask { 0 }
+
+
 #end 20_panda.prc
