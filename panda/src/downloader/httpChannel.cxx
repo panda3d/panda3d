@@ -975,11 +975,15 @@ run_ssl_handshake() {
         << " / " << org_name << "\n";
     }
 
-    if (!verify_server(subject)) {
-      downloader_cat.info()
-        << "Server does not match any expected server.\n";
-      _state = S_failure;
-      return false;
+    if (_client->get_verify_ssl() != HTTPClient::VS_no_verify) {
+      // Check that the server is someone we expected to be talking
+      // to.
+      if (!verify_server(subject)) {
+        downloader_cat.info()
+          << "Server does not match any expected server.\n";
+        _state = S_failure;
+        return false;
+      }
     }
       
     X509_free(cert);
