@@ -20,5 +20,5 @@
 
 #end bin_target
 
-#define INSTALL_SCRIPTS ttf2egg
+#define INSTALL_SCRIPTS ttf2egg pfb2egg
 #define INSTALL_DATA T1-WGL4.enc
