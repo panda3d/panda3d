@@ -25,7 +25,10 @@
 #include <md5.h>
 #include <hex.h>
 #include <files.h>
-#include <string>
+
+// md5 defines this, but we'd rather do without it, because it
+// conflicts with a similar macro defined in NSPR.
+#undef IS_LITTLE_ENDIAN
 
 USING_NAMESPACE(CryptoPP);
 USING_NAMESPACE(std);

@@ -17,22 +17,3 @@
     glutGraphicsPipe.h glutGraphicsWindow.h
 
 #end lib_target
-
-#begin test_bin_target
-  #define TARGET test_glut
-  #define LOCAL_LIBS \
-    putil graph display mathutil gobj sgraph
-
-  #define SOURCES \
-    test_glut.cxx
-
-#end test_bin_target
-
-#begin test_bin_target
-  #define TARGET test_glut_win
-
-  #define SOURCES \
-    test_glut_win.cxx
-
-#end test_bin_target
-

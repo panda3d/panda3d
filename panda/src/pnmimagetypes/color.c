@@ -28,7 +28,7 @@
 
 #include  "color.h"
 
-#ifdef WIN32VC
+#ifdef WIN32_VC
 #include <malloc.h>
 #endif
 
@@ -43,7 +43,7 @@ void colr_color(register COLOR, register COLR);
 char *
 tempbuffer(unsigned len)                /* get a temporary buffer */
 {
-#ifndef WIN32VC
+#ifndef WIN32_VC
         extern char  *malloc(size_t), *realloc(void *, size_t);
 #endif
         static char  *tempbuf = NULL;

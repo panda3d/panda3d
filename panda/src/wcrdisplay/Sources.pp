@@ -28,7 +28,7 @@
 #begin test_bin_target
   #define TARGET test_wcr
   #define LOCAL_LIBS \
-    putil graph display mathutil gobj sgraph wcrdisplay crgsg
+    putil display mathutil gobj pgraph wcrdisplay crgsg
 
   #define SOURCES \
     test_wcr.cxx

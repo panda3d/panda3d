@@ -13,7 +13,7 @@
 #include "pgm.h"
 #include "libpgm.h"
 
-static void putus ARGS((unsigned short n, FILE* file));
+static void putus1 ARGS((unsigned short n, FILE* file));
 static void pgm_writepgmrowplain ARGS((FILE* file, gray* grayrow, int cols, gray maxval));
 #ifdef PBMPLUS_RAWBITS
 static void pgm_writepgmrowraw ARGS((FILE* file, gray* grayrow, int cols, gray maxval));
@@ -51,12 +51,12 @@ pgm_writepgminit( file, cols, rows, maxval, forceplain )
     }
 
 static void
-putus( n, file )
+putus1( n, file )
     unsigned short n;
     FILE* file;
     {
     if ( n >= 10 )
-        putus((unsigned short)( n / 10), file );
+        putus1((unsigned short)( n / 10), file );
     (void) putc( n % 10 + '0', file );
     }
 
@@ -101,8 +101,8 @@ pgm_writepgmrowplain(FILE* file,gray* grayrow,int cols,gray maxval)
         if ( *gP > maxval )
             pm_error( "value out of bounds (%u > %u)", *gP, maxval );
 #endif /*DEBUG*/
-/*        putus( (unsigned long) *gP, file ); */
-        putus( (unsigned short) *gP, file );
+/*        putus1( (unsigned long) *gP, file ); */
+        putus1( (unsigned short) *gP, file );
         charcount += 3;
         }
     if ( charcount > 0 )

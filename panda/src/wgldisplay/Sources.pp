@@ -28,7 +28,7 @@
 #begin test_bin_target
   #define TARGET test_wgl
   #define LOCAL_LIBS \
-    putil graph display mathutil gobj sgraph wgldisplay glgsg
+    putil display mathutil gobj pgraph wgldisplay glgsg
 
   #define SOURCES \
     test_wgl.cxx

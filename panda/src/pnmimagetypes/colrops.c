@@ -22,10 +22,12 @@
 
 #include "color.h"
 
+#ifndef NULL
 #define NULL            0
+#endif
 
 #define bmalloc malloc
-#ifndef WIN32VC
+#ifndef WIN32_VC
 extern char     *bmalloc(int);
 #else
 #include <malloc.h>
@@ -39,7 +41,7 @@ static BYTE     *g_mant = NULL, *g_nexp = NULL;
 static BYTE     (*g_bval)[256] = NULL;
 
 #ifndef pow
-#ifndef WIN32VC
+#ifndef WIN32_VC
 extern double   pow(double, double);
 #endif
 #endif

@@ -127,7 +127,7 @@
 #begin test_bin_target
   #define TARGET test_bamRead
   #define LOCAL_LIBS \
-    putil graph
+    putil pgraph
 
   #define SOURCES \
     test_bam.cxx test_bam.h test_bamRead.cxx
@@ -137,7 +137,7 @@
 #begin test_bin_target
   #define TARGET test_bamWrite
   #define LOCAL_LIBS \
-    putil graph
+    putil pgraph
 
   #define SOURCES \
     test_bam.cxx test_bam.h test_bamWrite.cxx
