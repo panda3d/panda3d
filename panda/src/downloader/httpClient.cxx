@@ -30,9 +30,7 @@
 #ifdef HAVE_SSL
 
 #include <openssl/rand.h>
-#ifdef REPORT_OPENSSL_ERRORS
 #include <openssl/err.h>
-#endif
 
 // Windows may define this macro inappropriately.
 #ifdef X509_NAME
@@ -1190,9 +1188,7 @@ load_verify_locations(SSL_CTX *ctx, const Filename &ca_file) {
 
   // We have to be sure and clear the OpenSSL error state before we
   // call this function, or it will get confused.
-#ifdef REPORT_OPENSSL_ERRORS
   ERR_clear_error();
-#endif
   inf = PEM_X509_INFO_read_bio(mbio, NULL, NULL, NULL);
   BIO_free(mbio);
 
