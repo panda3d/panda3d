@@ -14,6 +14,7 @@ import VectorWidgets
 import string
 import os
 import __builtin__
+import whrandom
 
 # Colors used by all color menus
 DEFAULT_COLORS = [
@@ -217,6 +218,8 @@ class LevelEditor(NodePath, PandaObject):
     # NPToplevel: Corresponding Node Path
     # DNAParent: Current DNA Node that new objects get added to
     # NPParent: Corresponding Node Path
+    # DNAVisGroup: Current DNAVisGroup that new objects get added to
+    # NPVisGroup: Corresponding Node Path
     # selectedDNARoot: DNA Node of currently selected object
     # selectedNPRoot: Corresponding Node Path
     # DNATarget: Subcomponent being modified by Pie Menu
@@ -237,7 +240,12 @@ class LevelEditor(NodePath, PandaObject):
         self.createInsertionMarker()
         # Create level Editor Panel
         self.panel = LevelEditorPanel(self)
-        
+
+        # Used to store whatever edges and points are loaded in the level
+        self.edgeDict = {}
+        self.pointDict = {}
+        self.cellDict = {}
+
         # Initialize LevelEditor variables DNAData, DNAToplevel, NPToplevel
         # DNAParent, NPParent, groupNum, lastAngle
         # Pass in the new toplevel group and don't clear out the old
@@ -416,6 +424,10 @@ class LevelEditor(NodePath, PandaObject):
         self.snapList = []
         # Last menu used
         self.activeMenu = None
+        # Reset path markers
+        self.resetPathMarkers()
+        # Reset battle cell markers
+        self.resetBattleCellMarkers()
 
     def deleteToplevel(self):
         # Destory old toplevel node path and DNA
@@ -440,6 +452,7 @@ class LevelEditor(NodePath, PandaObject):
         # Update parent pointers
         self.DNAParent = self.DNAToplevel
         self.NPParent = self.NPToplevel
+        self.VGParent = None
         # Update scene graph explorer
         # self.panel.sceneGraphExplorer.update()
 
@@ -1576,6 +1589,11 @@ class LevelEditor(NodePath, PandaObject):
  	newDNAToplevel = self.findDNANode(newNPToplevel)
         # Update toplevel variables
         self.createToplevel(newDNAToplevel, newNPToplevel)
+        # Create visible representations of all the paths and battle cells
+        self.createSuitPaths()
+        self.hideSuitPaths()
+        self.createBattleCells()
+        self.hideBattleCells()
 
     def outputDNADefaultFile(self):
         f = Filename(self.styleManager.stylePathPrefix +
@@ -1585,8 +1603,9 @@ class LevelEditor(NodePath, PandaObject):
         
     def outputDNA(self,filename):
 	print 'Saving DNA to: ', filename
-	self.DNAData.writeDna(Filename(filename),
-                              Notify.out(),DNASTORE)
+        binaryFilename = Filename(filename)
+        binaryFilename.setBinary()
+	self.DNAData.writeDna(binaryFilename, Notify.out(),DNASTORE)
         
     def saveColor(self):
         self.appendColorToColorPaletteFile(self.panel.colorEntry.get())
@@ -1785,52 +1804,59 @@ class LevelEditor(NodePath, PandaObject):
     def getLastAngle(self):
         return self.lastAngle
 
-    def placeSuitPoint(self):
-        v = self.getGridSnapIntersectionPoint()
-        marker = self.suitPointMarker.instanceTo(self.NPParent)
-        if (self.currentSuitPointType == DNASuitPoint.STREETPOINT):
+    def drawSuitEdge(self, edge, parent):
+        # Draw a line from start to end
+        edgeLine = LineNodePath(parent)
+        edgeLine.lineNode.setName('suitEdge')
+        edgeLine.setColor(VBase4(0.0, 0.0, 0.5 ,1))
+        edgeLine.setThickness(1)
+        edgeLine.reset()
+        # We need to draw the arrow relative to the parent, but the
+        # point positions are relative to the NPToplevel. So get the
+        # start and end positions relative to the parent, then draw
+        # the arrow using those points
+        tempNode = self.NPToplevel.attachNewNode('tempNode')
+        mat = self.NPToplevel.getMat(parent)
+        relStartPos = Point3(mat.xformPoint(edge.getStartPoint().getPos()))
+        relEndPos = Point3(mat.xformPoint(edge.getEndPoint().getPos()))
+        edgeLine.drawArrow(relStartPos,
+                           relEndPos,
+                           15, # arrow angle
+                           1) # arrow length
+        edgeLine.create()
+        return edgeLine
+
+    def drawSuitPoint(self, pos, type, parent):
+        marker = self.suitPointMarker.instanceTo(parent)
+        marker.setPos(pos)
+        if (type == DNASuitPoint.STREETPOINT):
             marker.setColor(0,0,0.6)
-        elif (self.currentSuitPointType == DNASuitPoint.FRONTDOORPOINT):
+            marker.setScale(0.25)
+        elif (type == DNASuitPoint.FRONTDOORPOINT):
             marker.setColor(0,0,1)
             marker.setScale(0.5)
-        elif (self.currentSuitPointType == DNASuitPoint.SIDEDOORPOINT):
+        elif (type == DNASuitPoint.SIDEDOORPOINT):
             marker.setColor(0,0.2,0.4)
             marker.setScale(0.5)
-
         # v is relative to the grid
-        marker.setPos(direct.grid, v)
+        return marker
+
+    def placeSuitPoint(self):
+        v = self.getGridSnapIntersectionPoint()
         # get the absolute pos relative to the top level. That is what gets stored in the point
-        absPos = marker.getPos(self.NPToplevel)
-        print 'Suit point: ' + str(absPos)
+        mat = direct.grid.getMat(self.NPToplevel)
+        absPos = Point3(mat.xformPoint(v))
+        print 'Suit point: ' + `absPos`
         # Store the point in the DNA. If this point is already in there, it returns
         # the existing point
         suitPoint = DNASTORE.storeSuitPoint(self.currentSuitPointType, absPos)
+        if not self.pointDict.has_key(suitPoint):
+            marker = self.drawSuitPoint(absPos, self.currentSuitPointType, self.NPToplevel)
+            self.pointDict[suitPoint] = marker
         self.currentSuitPointIndex = suitPoint.getIndex()
 
         if self.startSuitPoint:
             self.endSuitPoint = suitPoint
-
-            # Draw a line from start to end
-            edgeLine = LineNodePath(self.NPParent)
-            edgeLine.lineNode.setName('suitEdge')
-            edgeLine.setColor(VBase4(0.0, 0.0, 0.5 ,1))
-            edgeLine.setThickness(1)
-            edgeLine.reset()
-            # We need to draw the arrow relative to the parent, but the
-            # point positions are relative to the NPToplevel. So get the
-            # start and end positions relative to the parent, then draw
-            # the arrow using those points
-            tempNode = self.NPToplevel.attachNewNode('tempNode')
-            tempNode.setPos(self.startSuitPoint.getPos())
-            relStartPos = tempNode.getPos(self.NPParent)
-            tempNode.setPos(self.endSuitPoint.getPos())
-            relEndPos = tempNode.getPos(self.NPParent)
-            tempNode.remove()
-            edgeLine.drawArrow(relStartPos, relEndPos,
-                               15, # arrow angle
-                               1) # arrow length
-            edgeLine.create()
-            
             # Make a new dna edge
             if DNAClassEqual(self.DNAParent, DNA_VIS_GROUP):
                 zoneId = self.DNAParent.getName()
@@ -1838,10 +1864,13 @@ class LevelEditor(NodePath, PandaObject):
                 DNASTORE.storeSuitEdge(suitEdge)
                 # Add the edge to the current vis group so it can be written out
                 self.DNAParent.addSuitEdge(suitEdge)
+                # Draw a line to represent the edge
+                edgeLine = self.drawSuitEdge(suitEdge, self.NPParent)
+                # Store the line in a dict so we can hide/show them
+                self.edgeDict[suitEdge] = edgeLine
                 print 'Added dnaSuitEdge to zone: ' + zoneId
             else:
                 print 'Error: DNAParent is not a dnaVisGroup. Did not add edge'
-
             # Reset
             self.startSuitPoint = None
             self.endSuitPoint = None
@@ -1850,34 +1879,118 @@ class LevelEditor(NodePath, PandaObject):
             # First point, store it
             self.startSuitPoint = suitPoint
 
-    def placeBattleCell(self):
-        v = self.getGridSnapIntersectionPoint()
-        marker = self.battleCellMarker.instanceTo(self.NPParent)
-        # v is relative to the grid
-        marker.setPos(direct.grid, v)
+    def drawBattleCell(self, cell, parent):
+        marker = self.battleCellMarker.instanceTo(parent)
+        # Greenish
         marker.setColor(0.25,0.75,0.25,0.5)
-        # get the absolute pos relative to the top level. That is what gets stored in the point
-        absPos = marker.getPos(self.NPToplevel)
-        print 'Battle cell: ' + str(absPos)
+        marker.setPos(cell.getPos())
+        # scale to radius which is width/2
+        marker.setScale(cell.getWidth()/2.0,
+                        cell.getHeight()/2.0,
+                        1)
+        return marker
+
+    def placeBattleCell(self):
+        # Store the battle cell in the current vis group
+        if not DNAClassEqual(self.DNAParent, DNA_VIS_GROUP):
+            print 'Error: DNAParent is not a dnaVisGroup. Did not add battle cell'
+            return
+
+        v = self.getGridSnapIntersectionPoint()
+        mat = direct.grid.getMat(self.NPParent)
+        absPos = Point3(mat.xformPoint(v))
         if (self.currentBattleCellType == '20w 20l'):
-            marker.setScale(10,10,1)
             cell = DNABattleCell(20, 20, absPos)
         elif (self.currentBattleCellType == '20w 30l'):
-            marker.setScale(10,15,1)
             cell = DNABattleCell(20, 30, absPos)
         elif (self.currentBattleCellType == '30w 20l'):
-            marker.setScale(15,10,1)
             cell = DNABattleCell(30, 20, absPos)
         elif (self.currentBattleCellType == '30w 30l'):
-            marker.setScale(15,15,1)
             cell = DNABattleCell(30, 30, absPos)
         # Store the battle cell in the storage
         DNASTORE.storeBattleCell(cell)
+        # Draw the battle cell
+        marker = self.drawBattleCell(cell, self.NPParent)
+        # Keep a handy dict of the visible markers
+        self.cellDict[cell] = marker
         # Store the battle cell in the current vis group
-        if DNAClassEqual(self.DNAParent, DNA_VIS_GROUP):
-            self.DNAParent.addBattleCell(cell)
-        else:
-            print 'Error: DNAParent is not a dnaVisGroup. Did not add battle cell'
+        self.DNAParent.addBattleCell(cell)
+
+    def createSuitPaths(self):
+        # Points
+        numPoints = DNASTORE.getNumSuitPoints()
+        for i in range(numPoints):
+            point = DNASTORE.getSuitPoint(i)
+            marker = self.drawSuitPoint(point.getPos(), point.getPointType(), self.NPToplevel)
+            self.pointDict[point] = marker
+
+        # Edges
+        visGroups = self.getDNAVisGroups(self.NPToplevel)
+        for visGroup in visGroups:
+            np = visGroup[0]
+            dnaVisGroup = visGroup[1]
+            numSuitEdges = dnaVisGroup.getNumSuitEdges()
+            for i in range(numSuitEdges):
+                edge = dnaVisGroup.getSuitEdge(i)
+                edgeLine = self.drawSuitEdge(edge, np)
+                self.edgeDict[edge] = edgeLine
+
+    def resetPathMarkers(self):
+        for edge, edgeLine in self.edgeDict.items():
+            edgeLine.remove()
+        self.edgeDict = {}
+        for point, marker in self.pointDict.items():
+            marker.remove()
+        self.pointDict = {}
+                
+    def hideSuitPaths(self):
+        for edge, edgeLine in self.edgeDict.items():
+            edgeLine.hide()
+        for point, marker in self.pointDict.items():
+            marker.hide()
+
+    def showSuitPaths(self):
+        for edge, edgeLine in self.edgeDict.items():
+            edgeLine.show()
+        for point, marker in self.pointDict.items():
+            marker.show()
+
+    def createBattleCells(self):
+        # Edges
+        visGroups = self.getDNAVisGroups(self.NPToplevel)
+        for visGroup in visGroups:
+            np = visGroup[0]
+            dnaVisGroup = visGroup[1]
+            numCells = dnaVisGroup.getNumBattleCells()
+            for i in range(numCells):
+                cell = dnaVisGroup.getBattleCell(i)
+                marker = self.drawBattleCell(cell, np)
+                self.cellDict[cell] = marker
+
+    def resetBattleCellMarkers(self):
+        for cell, marker in self.cellDict.items():
+            marker.remove()
+        self.cellDict = {}
+
+    def hideBattleCells(self):
+        for cell, marker in self.cellDict.items():
+            marker.hide()
+
+    def showBattleCells(self):
+        for cell, marker in self.cellDict.items():
+            marker.show()
+    
+    def colorZones(self):
+        # Give each zone a random color to see them better
+        visGroups = self.getDNAVisGroups(self.NPToplevel)
+        for visGroup in visGroups:
+            np = visGroup[0]
+            np.setColor(0.5 + random()/2.0,
+                        0.5 + random()/2.0,
+                        0.5 + random()/2.0)
+            
+   
+
             
 class LevelStyleManager:
     """Class which reads in style files and manages class variables"""
@@ -2834,7 +2947,14 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         propsPage = notebook.add('Props')
         sceneGraphPage = notebook.add('SceneGraph')
 
-
+        self.fPaths = IntVar()
+        self.fPaths.set(0)
+        self.pathButton = Checkbutton(suitPathPage,
+                                      text = 'Show Paths',
+                                      width = 6,
+                                      variable = self.fPaths,
+                                      command = self.toggleSuitPaths)
+        self.pathButton.pack(side = 'top', expand = 1, fill = 'x')
         self.suitPointSelector = Pmw.ComboBox(
             suitPathPage,
             dropdown = 0,
@@ -2850,6 +2970,14 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.suitPointSelector.selectitem('street')
         self.suitPointSelector.pack(expand = 1, fill = 'both')
 
+        self.fCells = IntVar()
+        self.fCells.set(0)
+        self.cellButton = Checkbutton(battleCellPage,
+                                      text = 'Show Cells',
+                                      width = 6,
+                                      variable = self.fCells,
+                                      command = self.toggleBattleCells)
+        self.cellButton.pack(side = 'top', expand = 1, fill = 'x')
         self.battleCellSelector = Pmw.ComboBox(
             battleCellPage,
             dropdown = 0,
@@ -3098,6 +3226,18 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             direct.grid.enable()
         else:
             direct.grid.disable()
+
+    def toggleSuitPaths(self):
+        if self.fPaths.get():
+            self.levelEditor.showSuitPaths()
+        else:
+            self.levelEditor.hideSuitPaths()
+
+    def toggleBattleCells(self):
+        if self.fCells.get():
+            self.levelEditor.showBattleCells()
+        else:
+            self.levelEditor.hideBattleCells()
 
     def toggleXyzSnap(self):
         direct.grid.setXyzSnap(self.fXyzSnap.get())

@@ -109,19 +109,21 @@ class State(DirectObject):
     def enter(self, argList=[]):
         """enter(self)
         Call the enter function for this state"""
+
+        # enter child FSMs first. It is assumed these have a start
+        # state that is safe to enter 
+        self.__enterChildren(argList)
+        
         if (self.__enterFunc != None):
             apply(self.__enterFunc, argList)
-        
-        #enter child FSMs
-        self.__enterChildren(argList)
         
     def exit(self, argList=[]):
         """exit(self)
         Call the exit function for this state"""
-        #first exit child FSMs
+        # first exit child FSMs
         self.__exitChildren(argList)
 
-        #call exit function if it exists
+        # call exit function if it exists
         if (self.__exitFunc != None):
             apply(self.__exitFunc, argList)
         
