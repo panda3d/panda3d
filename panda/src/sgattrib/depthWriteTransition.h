@@ -39,6 +39,9 @@ public:
 
   virtual void issue(GraphicsStateGuardianBase *gsgbase);
 
+private:
+  static PT(NodeTransition) _initial;
+
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter* manager, Datagram &me);

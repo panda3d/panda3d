@@ -80,9 +80,6 @@ private:
   void r_build_subtrees(TypeRegistryNode *top, 
                         int bit_count, SubtreeMaskType bits);
 
-  TopInheritance::const_iterator
-  find_top_inherit(const TypeRegistryNode *base) const;
-
   static bool check_derived_from(const TypeRegistryNode *child,
                                  const TypeRegistryNode *base);
 

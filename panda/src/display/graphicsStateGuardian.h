@@ -33,8 +33,9 @@
 #include "factory.h"
 #include "renderTraverser.h"
 #include "pStatCollector.h"
+#include "allTransitionsWrapper.h"
 
-#include "plist.h"
+#include "pvector.h"
 
 class AllTransitionsWrapper;
 
@@ -82,6 +83,7 @@ PUBLISHED:
   void release_all_geoms();
 
   void clear_attribute(TypeHandle type);
+  NodeTransition *get_attribute(TypeHandle type) const;
 
 public:
   INLINE bool is_closed() const;
@@ -126,9 +128,11 @@ public:
 
   virtual void reset();
 
-  void set_state(const NodeTransitions &new_state, bool complete);
-  void set_state(const NodeTransitionCache &new_state, bool complete);
-  INLINE const NodeTransitions &get_state() const;
+  void modify_state(const NodeTransitions &new_state);
+  //  void modify_state(const NodeTransitionCache &new_state);
+  void set_state(const NodeTransitionCache &new_state);
+  INLINE void set_state(const AllTransitionsWrapper &new_state);
+  //  INLINE const NodeTransitionCache *get_state() const;
 
   RenderBuffer get_render_buffer(int buffer_type);
 
@@ -188,8 +192,20 @@ protected:
 #endif
 
 protected:
+  class StateInfo {
+  public:
+    INLINE StateInfo(TypeHandle type);
+    INLINE StateInfo(const NodeTransitions::value_type &value);
+    INLINE StateInfo(const NodeTransitionCache::value_type &value);
+    INLINE bool operator < (const StateInfo &other) const;
+
+    TypeHandle _type;
+    PT(NodeTransition) _trans;
+  };
+  typedef pvector<StateInfo> State;
+  State _state;
+
   int _buffer_mask;
-  NodeTransitions _state;
   Colorf _color_clear_value;
   float _depth_clear_value;
   bool _stencil_clear_value;
@@ -307,6 +323,10 @@ private:
   friend class GraphicsPipe;
   friend class GraphicsWindow;
 };
+
+template<class Transition>
+INLINE bool
+get_attribute_into(Transition *&ptr, GraphicsStateGuardian *gsg);
 
 #include "graphicsStateGuardian.I"
 

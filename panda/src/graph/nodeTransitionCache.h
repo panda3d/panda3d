@@ -66,18 +66,21 @@ public:
 private:
   typedef pmap<TypeHandle, NodeTransitionCacheEntry> Cache;
 public:
-  // STL-like definitions to allow read-only traversal of the
+  // STL-like definitions to allow read-write traversal of the
   // individual transitions.  Note that each of these is a
   // NodeTransitionCacheEntry, not simply a PT(NodeTransition).
   // Beware!  These are not safe to use outside of PANDA.DLL.
-  typedef Cache::const_iterator iterator;
+  typedef Cache::iterator iterator;
   typedef Cache::const_iterator const_iterator;
   typedef Cache::value_type value_type;
   typedef Cache::size_type size_type;
 
   INLINE_GRAPH size_type size() const;
+  INLINE_GRAPH iterator begin();
+  INLINE_GRAPH iterator end();
   INLINE_GRAPH const_iterator begin() const;
   INLINE_GRAPH const_iterator end() const;
+  INLINE_GRAPH iterator insert(iterator position, const value_type &item);
 
 
 public:

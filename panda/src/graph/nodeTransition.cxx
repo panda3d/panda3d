@@ -41,20 +41,33 @@ TypeHandle NodeTransition::_type_handle;
 ////////////////////////////////////////////////////////////////////
 int NodeTransition::
 compare_to(const NodeTransition &other) const {
-  if (this == &other) {
-    // Same pointer, no comparison necessary.
-    return 0;
-  }
-
   TypeHandle my_handle = get_handle();
   TypeHandle other_handle = other.get_handle();
 
   if (my_handle != other_handle) {
-    return
-      (my_handle < other_handle) ? -1 : 1;
+    return (my_handle < other_handle) ? -1 : 1;
 
   } else if (_priority != other._priority) {
     return _priority - other._priority;
+
+  } else {
+    return internal_compare_to(&other);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeTransition::compare_to_ignore_priority
+//       Access: Public
+//  Description: This is equivalent to compare_to() but it does not
+//               consider different priorities to be relevant.
+////////////////////////////////////////////////////////////////////
+int NodeTransition::
+compare_to_ignore_priority(const NodeTransition &other) const {
+  TypeHandle my_handle = get_handle();
+  TypeHandle other_handle = other.get_handle();
+
+  if (my_handle != other_handle) {
+    return (my_handle < other_handle) ? -1 : 1;
 
   } else {
     return internal_compare_to(&other);

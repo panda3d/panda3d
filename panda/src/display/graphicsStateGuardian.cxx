@@ -128,36 +128,29 @@ reset() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_state
+//     Function: GraphicsStateGuardian::modify_state
 //       Access: Public
-//  Description: Sets the graphics backend to the state represented by
-//               the indicated set of attributes.  Only the minimal
-//               number of graphics commands are issued--attributes
-//               which have not changed since the last call to
-//               set_state are detected and not issued again.
+//  Description: Applies the transitions indicated in the state set to
+//               the current state, and issues the changes to the
+//               graphics hardware.
 //
-//               If complete is true, it means that the supplied state
-//               is a complete description of the desired state--if an
-//               attribute is absent, it should be taken to be the
-//               same as the initial value for that attribute.  If
-//               complete is false, it means that the supplied state
-//               specifies only a subset of the desired state, and
-//               that absent attributes should remain unchanged.
+//               Any transitions not mentioned in new_state are left
+//               unchanged.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-set_state(const NodeTransitions &new_state, bool complete) {
+modify_state(const NodeTransitions &new_state) {
   PStatTimer timer(_set_state_pcollector);
 
   if (gsg_cat.is_debug()) {
     gsg_cat.debug() << "\n";
     gsg_cat.debug()
       << "Frame " << ClockObject::get_global_clock()->get_frame_count()
-      << ", setting to (complete = " << complete << ")\n";
+      << ", setting via NodeTransitions\n";
     new_state.write(gsg_cat.debug(false), 10);
   }
 
   NodeTransitions::const_iterator new_i;
-  NodeTransitions::iterator current_i;
+  State::iterator current_i;
 
   new_i = new_state.begin();
   current_i = _state.begin();
@@ -165,8 +158,8 @@ set_state(const NodeTransitions &new_state, bool complete) {
   while (new_i != new_state.end() && current_i != _state.end()) {
     TypeHandle new_type = (*new_i).first;
     NodeTransition *new_trans = (*new_i).second;
-    TypeHandle current_type = (*current_i).first;
-    PT(NodeTransition) &current_trans = (*current_i).second;
+    TypeHandle current_type = (*current_i)._type;
+    PT(NodeTransition) &current_trans = (*current_i)._trans;
 
     if (new_type < current_type) {
       // The user requested setting an attribute that we've never set
@@ -180,7 +173,9 @@ set_state(const NodeTransitions &new_state, bool complete) {
         record_state_change(new_type);
         new_trans->issue(this);
 
-        // And store the new value.
+        // And store the new value.  This is a terribly slow way to
+        // insert an element into a vector, but it happens only very
+        // rarely.
         current_i = _state.insert(current_i, *new_i);
         ++current_i;
       }
@@ -190,77 +185,66 @@ set_state(const NodeTransitions &new_state, bool complete) {
     } else if (current_type < new_type) {
       // Here's an attribute that we've set previously, but the user
       // didn't specify this time.
+      ++current_i;
 
-      if (complete) {
-        // If we're in the "complete state" model, that means this
-        // attribute should now get the default initial value.
-
-        if (gsg_cat.is_debug()) {
-          gsg_cat.debug()
-            << "Unissuing attrib " << *current_trans
-            << " (previously set, not now)\n";
-        }
-        record_state_change(current_type);
-
-        PT(NodeTransition) initial = current_trans->make_initial();
-        initial->issue(this);
-
-        NodeTransitions::iterator erase_i = current_i;
-        ++current_i;
-
-        _state.erase(erase_i);
-
-      } else {
-        ++current_i;
-      }
-
-    } else {  // current_type == new_type)
+    } else {  // current_type == new_type
 
       if (new_trans == (NodeTransition *)NULL) {
         // Here's an attribute that we've set previously, which
         // appears in the new list, but is NULL indicating it should
         // be removed.
-
-        if (complete) {
-          // Only remove it if we're in the "complete state" model.
-
-          if (gsg_cat.is_debug()) {
-            gsg_cat.debug()
-              << "Unissuing attrib " << *current_trans
-              << " (previously set, now NULL)\n";
-          }
-          record_state_change(current_type);
-
-          // Issue the initial attribute before clearing the state.
-          PT(NodeTransition) initial = current_trans->make_initial();
-          initial->issue(this);
-
-          NodeTransitions::iterator erase_i = current_i;
-          ++current_i;
-
-          _state.erase(erase_i);
-
-        } else {
-          ++current_i;
-        }
+        ++current_i;
         ++new_i;
+
+      } else if (current_trans == (NodeTransition *)NULL) {
+        // Here's a new attribute which we had previously set NULL,
+        // indicating the initial attribute.
+        if (gsg_cat.is_debug()) {
+          gsg_cat.debug()
+            << "Issuing previously NULL attrib " << *new_trans << "\n";
+        }
+        record_state_change(new_type);
+        new_trans->issue(this);
+        
+        // And store the new value.
+        current_trans = new_trans;
 
       } else {
         // Here's an attribute that we've set previously, and the user
         // asked us to set it again.  Issue the command only if the new
         // attribute is different from that which we'd set before.
-        if (new_trans->compare_to(*current_trans) != 0) {
-          if (gsg_cat.is_debug()) {
-            gsg_cat.debug()
-              << "Reissuing attrib " << *new_trans << "\n";
-            gsg_cat.debug()
-              << "Previous was " << *current_trans << "\n";
-          }
-          record_state_change(new_type);
-          new_trans->issue(this);
+        if (new_trans != current_trans) {
+          if (!compare_state_by_pointer &&
+              new_trans->compare_to_ignore_priority(*current_trans) == 0) {
+            // Oops, different pointers, same value.
 
-          // And store the new value.
-          current_trans = new_trans;
+            // Get an assignable reference to the source.  We modify
+            // the source in this way in a trivial manner--we replace
+            // the transition in the source with an identical one--in
+            // the hopes that this will reduce the need for future
+            // comparisons.
+            PT(NodeTransition) &new_trans_assign = 
+              (PT(NodeTransition) &)(*new_i).second;
+            new_trans_assign = current_trans;
+
+            if (gsg_cat.is_debug()) {
+              gsg_cat.debug()
+                << "Updating pointer for attrib " << *new_trans << "\n";
+            }
+
+          } else {
+            if (gsg_cat.is_debug()) {
+              gsg_cat.debug()
+                << "Reissuing attrib " << *new_trans << "\n";
+              gsg_cat.debug()
+                << "Previous was " << *current_trans << "\n";
+            }
+            record_state_change(new_type);
+            new_trans->issue(this);
+            
+            // And store the new value.
+            current_trans = new_trans;
+          }
 
         } else if (gsg_cat.is_debug()) {
           gsg_cat.debug()
@@ -289,69 +273,38 @@ set_state(const NodeTransitions &new_state, bool complete) {
       new_trans->issue(this);
 
       // And store the new value.
-      _state.insert(_state.end(), *new_i);
+      _state.push_back(*new_i);
     }
     ++new_i;
-  }
-
-  if (complete) {
-    while (current_i != _state.end()) {
-      // Here's an attribute that we've set previously, but the user
-      // didn't specify this time.
-      TypeHandle current_type = (*current_i).first;
-      PT(NodeTransition) &current_trans = (*current_i).second;
-
-      if (gsg_cat.is_debug()) {
-        gsg_cat.debug()
-          << "Unissuing attrib " << *current_trans
-          << " (previously set, end of list)\n";
-      }
-      record_state_change(current_type);
-
-      // If we're in the "complete state" model, that means this
-      // attribute should now get the default initial value.
-      PT(NodeTransition) initial = current_trans->make_initial();
-      initial->issue(this);
-
-      NodeTransitions::iterator erase_i = current_i;
-      ++current_i;
-
-      _state.erase(erase_i);
-    }
   }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_state
 //       Access: Public
-//  Description: Sets the graphics backend to the state represented by
-//               the indicated set of attributes.  Only the minimal
-//               number of graphics commands are issued--attributes
-//               which have not changed since the last call to
-//               set_state are detected and not issued again.
+//  Description: Applies the transitions indicated in the state set to
+//               the current state, and issues the changes to the
+//               graphics hardware.
 //
-//               If complete is true, it means that the supplied state
-//               is a complete description of the desired state--if an
-//               attribute is absent, it should be taken to be the
-//               same as the initial value for that attribute.  If
-//               complete is false, it means that the supplied state
-//               specifies only a subset of the desired state, and
-//               that absent attributes should remain unchanged.
+//               The state is taken to be a complete description of
+//               what the graphics state should be; any transitions
+//               not mentioned in new_state are implicitly reset to
+//               their initial values.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-set_state(const NodeTransitionCache &new_state, bool complete) {
+set_state(const NodeTransitionCache &new_state) {
   PStatTimer timer(_set_state_pcollector);
 
   if (gsg_cat.is_debug()) {
     gsg_cat.debug() << "\n";
     gsg_cat.debug()
       << "Frame " << ClockObject::get_global_clock()->get_frame_count()
-      << ", setting to (complete = " << complete << ")\n";
+      << ", setting to\n";
     new_state.write(gsg_cat.debug(false), 10);
   }
 
   NodeTransitionCache::const_iterator new_i;
-  NodeTransitions::iterator current_i;
+  State::iterator current_i;
 
   new_i = new_state.begin();
   current_i = _state.begin();
@@ -359,8 +312,8 @@ set_state(const NodeTransitionCache &new_state, bool complete) {
   while (new_i != new_state.end() && current_i != _state.end()) {
     TypeHandle new_type = (*new_i).first;
     NodeTransition *new_trans = (*new_i).second.get_trans();
-    TypeHandle current_type = (*current_i).first;
-    PT(NodeTransition) &current_trans = (*current_i).second;
+    TypeHandle current_type = (*current_i)._type;
+    PT(NodeTransition) &current_trans = (*current_i)._trans;
 
     if (new_type < current_type) {
       // The user requested setting an attribute that we've never set
@@ -374,7 +327,9 @@ set_state(const NodeTransitionCache &new_state, bool complete) {
         record_state_change(new_type);
         new_trans->issue(this);
 
-        // And store the new value.
+        // And store the new value.  This is a terribly slow way to
+        // insert an element into a vector, but it happens only very
+        // rarely.
         current_i = _state.insert(current_i, *new_i);
         ++current_i;
       }
@@ -385,9 +340,8 @@ set_state(const NodeTransitionCache &new_state, bool complete) {
       // Here's an attribute that we've set previously, but the user
       // didn't specify this time.
 
-      if (complete) {
-        // If we're in the "complete state" model, that means this
-        // attribute should now get the default initial value.
+      if (current_trans != (NodeTransition *)NULL) {
+        // This attribute should now get the default initial value.
 
         if (gsg_cat.is_debug()) {
           gsg_cat.debug()
@@ -399,25 +353,18 @@ set_state(const NodeTransitionCache &new_state, bool complete) {
         PT(NodeTransition) initial = current_trans->make_initial();
         initial->issue(this);
 
-        NodeTransitions::iterator erase_i = current_i;
-        ++current_i;
-
-        _state.erase(erase_i);
-
-      } else {
-        ++current_i;
+        current_trans = NULL;
       }
 
-    } else {  // current_type == new_type)
+      ++current_i;
+
+    } else {  // current_type == new_type
 
       if (new_trans == (NodeTransition *)NULL) {
         // Here's an attribute that we've set previously, which
         // appears in the new list, but is NULL indicating it should
         // be removed.
-
-        if (complete) {
-          // Only remove it if we're in the "complete state" model.
-
+        if (current_trans != (NodeTransition *)NULL) {
           if (gsg_cat.is_debug()) {
             gsg_cat.debug()
               << "Unissuing attrib " << *current_trans
@@ -429,42 +376,87 @@ set_state(const NodeTransitionCache &new_state, bool complete) {
           PT(NodeTransition) initial = current_trans->make_initial();
           initial->issue(this);
 
-          NodeTransitions::iterator erase_i = current_i;
-          ++current_i;
-
-          _state.erase(erase_i);
-
-        } else {
-          ++current_i;
+          current_trans = NULL;
         }
-        ++new_i;
 
+      } else if (current_trans == (NodeTransition *)NULL) {
+        // Here's a new attribute which we had previously set NULL,
+        // indicating the initial attribute.
+        if (gsg_cat.is_debug()) {
+          gsg_cat.debug()
+            << "Issuing previously NULL attrib " << *new_trans << "\n";
+        }
+        record_state_change(new_type);
+        new_trans->issue(this);
+        
+        // And store the new value.
+        current_trans = new_trans;
+        
       } else {
         // Here's an attribute that we've set previously, and the user
         // asked us to set it again.  Issue the command only if the new
         // attribute is different from that which we'd set before.
-        if (new_trans->compare_to(*current_trans) != 0) {
-          if (gsg_cat.is_debug()) {
-            gsg_cat.debug()
-              << "Reissuing attrib " << *new_trans << "\n";
-            gsg_cat.debug()
-              << "Previous was " << *current_trans << "\n";
-          }
-          record_state_change(new_type);
-          new_trans->issue(this);
+        if (new_trans != current_trans) {
+          if (!compare_state_by_pointer &&
+              new_trans->compare_to_ignore_priority(*current_trans) == 0) {
+            // Oops, different pointers, same value.
 
-          // And store the new value.
-          current_trans = new_trans;
+            // Get an assignable reference to the source.  We modify
+            // the source in this way in a trivial manner--we replace
+            // the transition in the source with an identical one--in
+            // the hopes that this will reduce the need for future
+            // comparisons.
+            NodeTransitionCacheEntry &new_trans_assign = 
+              (NodeTransitionCacheEntry &)(*new_i).second;
+            new_trans_assign.set_trans(current_trans);
+
+          } else {
+            if (gsg_cat.is_debug()) {
+              gsg_cat.debug()
+                << "Reissuing attrib " << *new_trans << "\n";
+              gsg_cat.debug()
+                << "Previous was " << *current_trans << "\n";
+            }
+            record_state_change(new_type);
+            new_trans->issue(this);
+            
+            // And store the new value.
+            current_trans = new_trans;
+          }
 
         } else if (gsg_cat.is_debug()) {
           gsg_cat.debug()
             << "Not reissuing unchanged attrib " << *new_trans << "\n";
         }
-
-        ++current_i;
-        ++new_i;
       }
+
+      ++current_i;
+      ++new_i;
     }
+  }
+
+  while (current_i != _state.end()) {
+    // Here's an attribute that we've set previously, but the user
+    // didn't specify this time.
+    TypeHandle current_type = (*current_i)._type;
+    PT(NodeTransition) &current_trans = (*current_i)._trans;
+    
+    if (current_trans != (NodeTransition *)NULL) {
+      if (gsg_cat.is_debug()) {
+        gsg_cat.debug()
+          << "Unissuing attrib " << *current_trans
+          << " (previously set, end of list)\n";
+      }
+      record_state_change(current_type);
+      
+      // This attribute should now get the default initial value.
+      PT(NodeTransition) initial = current_trans->make_initial();
+      initial->issue(this);
+
+      current_trans = NULL;
+    }
+    
+    ++current_i;
   }
 
   while (new_i != new_state.end()) {
@@ -483,35 +475,9 @@ set_state(const NodeTransitionCache &new_state, bool complete) {
       new_trans->issue(this);
 
       // And store the new value.
-      _state.insert(_state.end(), *new_i);
+      _state.push_back(*new_i);
     }
     ++new_i;
-  }
-
-  if (complete) {
-    while (current_i != _state.end()) {
-      // Here's an attribute that we've set previously, but the user
-      // didn't specify this time.
-      TypeHandle current_type = (*current_i).first;
-      PT(NodeTransition) &current_trans = (*current_i).second;
-
-      if (gsg_cat.is_debug()) {
-        gsg_cat.debug()
-          << "Unissuing attrib " << *current_trans
-          << " (previously set, end of list)\n";
-      }
-      record_state_change(current_type);
-
-      // If we're in the "complete state" model, that means this
-      // attribute should now get the default initial value.
-      PT(NodeTransition) initial = current_trans->make_initial();
-      initial->issue(this);
-
-      NodeTransitions::iterator erase_i = current_i;
-      ++current_i;
-
-      _state.erase(erase_i);
-    }
   }
 }
 
@@ -658,15 +624,42 @@ release_all_geoms() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 clear_attribute(TypeHandle type) {
-  NodeTransitions::iterator ai = _state.find(type);
-  if (ai != _state.end()) {
-    // The state is already set; get the initial value and reset it.
-    PT(NodeTransition) initial = (*ai).second->make_initial();
-    initial->issue(this);
+  // Look for the transition in our state vector.  We'll use STL's
+  // binary search functions to do this.
 
-    // Now remove the state entry from the set.
-    _state.erase(ai);
+  State::iterator si =
+    lower_bound(_state.begin(), _state.end(), StateInfo(type));
+
+  if (si != _state.end() && (*si)._type == type) {
+    // We found it.
+    PT(NodeTransition) &current_trans = (*si)._trans;
+
+    if (current_trans != (NodeTransition *)NULL) {
+      // The state was already set; get the initial value and reset it.
+      PT(NodeTransition) initial = current_trans->make_initial();
+      initial->issue(this);
+      current_trans = (NodeTransition *)NULL;
+    }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_attribute
+//       Access: Public
+//  Description: Returns the NodeTransition from the current state
+//               associated with the indicated type, or NULL if there
+//               is no such transition set.
+////////////////////////////////////////////////////////////////////
+NodeTransition *GraphicsStateGuardian::
+get_attribute(TypeHandle type) const {
+  State::const_iterator si =
+    lower_bound(_state.begin(), _state.end(), StateInfo(type));
+
+  if (si != _state.end() && (*si)._type == type) {
+    return (*si)._trans;
+  }
+
+  return (NodeTransition *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1062,9 +1055,10 @@ record_state_change(TypeHandle type) {
 
   // We can't use the get_class_type() methods since we don't have
   // those header files available yet.
-  if (type.get_name() == "TransformTransition") {
+  string name = type.get_name();
+  if (name == "TransformTransition") {
     _transform_state_pcollector.add_level(1);
-  } else if (type.get_name() == "TextureTransition") {
+  } else if (name == "TextureTransition") {
     _texture_state_pcollector.add_level(1);
   }
 }

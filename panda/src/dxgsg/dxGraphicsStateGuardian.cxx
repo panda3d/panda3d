@@ -732,7 +732,7 @@ render_frame() {
   // measurably expensive.
   NodeTransitions state;
   state.set_transition(new TextureTransition);
-  set_state(state, false);
+  modify_state(state);
 #endif
 
   HRESULT hr = _d3dDevice->BeginScene();
@@ -815,7 +815,7 @@ render_frame() {
         // same set of light pointers we had this frame.
         NodeTransitions state;
         state.set_transition(new LightTransition);
-        set_state(state, false);
+        modify_state(state);
 
         // All this work to undo the lighting state each frame doesn't seem
         // ideal--there may be a better way.  Maybe if the lights were just
@@ -1335,7 +1335,7 @@ wants_colors() const {
     // shouldn't bother issuing geometry color commands.
 
     const ColorTransition *catt;
-    if (!get_transition_into(catt, _state, ColorTransition::get_class_type())) {
+    if (!get_attribute_into(catt, this)) {
         // No scene graph color at all.
         return true;
     }
@@ -1835,7 +1835,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     LMatrix4f modelview_mat;
 
     const TransformTransition *ctatt;
-    if (!get_transition_into(ctatt, _state, TransformTransition::get_class_type()))
+    if (!get_attribute_into(ctatt, this)) {
         modelview_mat = LMatrix4f::ident_mat();
     else
         modelview_mat = ctatt->get_matrix();
@@ -1868,7 +1868,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     TextureApplyTransition *taa = new TextureApplyTransition(TextureApplyProperty::M_modulate);
     state.set_transition(taa);
 
-    set_state(state, false);
+    modify_state(state);
 
     // the user can override alpha sorting if they want
     bool alpha = false;
@@ -1876,8 +1876,8 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     if (!geom->get_alpha_disable()) {
         // figure out if alpha's enabled (if not, no reason to sort)
         const TransparencyTransition *ctratt;
-        if (get_transition_into(ctratt, _state, TransparencyTransition::get_class_type()))
-            alpha = true;
+        if (get_attribute_into(ctratt, this))
+          alpha = (ctratt->get_mode() != TransparencyProperty::M_none);
     }
 
     // inner loop vars
@@ -2330,7 +2330,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
         bool bDoGlobalSceneGraphColor=FALSE,bDoColor=(ColorBinding != G_OFF);
 
         // We should issue geometry colors only if the scene graph color is off.
-        if (get_transition_into(catt, _state, ColorTransition::get_class_type()) && !catt->is_off()) {
+        if (get_attribute_into(catt, this)) {
             if (!catt->is_real())
                 bDoColor=FALSE;  // this turns off any Geom colors
             else {
@@ -2731,7 +2731,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
         bool bDoGlobalSceneGraphColor=FALSE,bDoColor=(ColorBinding != G_OFF);
 
         // We should issue geometry colors only if the scene graph color is off.
-        if (get_transition_into(catt, _state, ColorTransition::get_class_type()) && !catt->is_off()) {
+        if (get_attribute_into(catt, this)) {
             if (!catt->is_real())
                 bDoColor=FALSE;  // this turns off any Geom colors
             else {
@@ -3547,7 +3547,7 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
     state.set_transition(dwa);
     state.set_transition(ta);
     state.set_transition(taa);
-    set_state(state, false);
+    modify_state(state);
 
     // We set up an orthographic projection that defines our entire
     // viewport to the range [0..1] in both dimensions.  Then, when we
@@ -3759,7 +3759,7 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
             break;
     }
 
-    set_state(state, false);
+    modify_state(state);
 
     enable_color_material(false);
     set_unpack_alignment(1);

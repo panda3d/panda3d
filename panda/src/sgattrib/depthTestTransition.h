@@ -52,7 +52,9 @@ protected:
   virtual void output_value(ostream &out) const;
   virtual void write_value(ostream &out, int indent_level) const;
 
+private:
   DepthTestProperty _value;
+  static PT(NodeTransition) _initial;
 
 public:
   static void register_with_read_factory();

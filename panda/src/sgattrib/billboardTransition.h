@@ -76,6 +76,7 @@ private:
   bool _eye_relative;
   bool _axial_rotate;
   float _offset;
+  static PT(NodeTransition) _initial;
 
 public:
   static void register_with_read_factory(void);

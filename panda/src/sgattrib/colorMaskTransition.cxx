@@ -20,6 +20,7 @@
 
 #include <indent.h>
 
+PT(NodeTransition) ColorMaskTransition::_initial;
 TypeHandle ColorMaskTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -41,7 +42,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *ColorMaskTransition::
 make_initial() const {
-  return new ColorMaskTransition;
+  if (_initial.is_null()) {
+    _initial = new ColorMaskTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////

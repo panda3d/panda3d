@@ -23,6 +23,7 @@
 #include <bamReader.h>
 #include <bamWriter.h>
 
+PT(NodeTransition) DepthWriteTransition::_initial;
 TypeHandle DepthWriteTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -44,7 +45,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *DepthWriteTransition::
 make_initial() const {
-  return new DepthWriteTransition;
+  if (_initial.is_null()) {
+    _initial = new DepthWriteTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -220,7 +220,7 @@ r_traverse(Node *node, const ArcChain &chain) {
         wrt_trans, RenderRelation::get_class_type());
     AllTransitionsWrapper complete_trans;
     complete_trans.compose_from(_trans, wrt_trans);
-    _gsg->set_state(complete_trans.get_transitions(), true);
+    _gsg->set_state(complete_trans.get_transitions());
 
     // Finally, draw the Geom.
     _gsg->prepare_display_region();

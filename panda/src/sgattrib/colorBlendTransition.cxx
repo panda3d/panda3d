@@ -20,6 +20,7 @@
 
 #include <indent.h>
 
+PT(NodeTransition) ColorBlendTransition::_initial;
 TypeHandle ColorBlendTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -41,7 +42,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *ColorBlendTransition::
 make_initial() const {
-  return new ColorBlendTransition;
+  if (_initial.is_null()) {
+    _initial = new ColorBlendTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////

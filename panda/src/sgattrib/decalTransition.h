@@ -51,6 +51,9 @@ public:
 
   virtual bool has_sub_render() const;
 
+private:
+  static PT(NodeTransition) _initial;
+
 public:
   static void register_with_read_factory(void);
   static TypedWritable *make_DecalTransition(const FactoryParams &params);

@@ -24,6 +24,7 @@
 #include <bamReader.h>
 #include <bamWriter.h>
 
+PT(NodeTransition) TextureApplyTransition::_initial;
 TypeHandle TextureApplyTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -45,7 +46,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *TextureApplyTransition::
 make_initial() const {
-  return new TextureApplyTransition;
+  if (_initial.is_null()) {
+    _initial = new TextureApplyTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////

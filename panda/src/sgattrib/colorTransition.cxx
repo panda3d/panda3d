@@ -24,6 +24,7 @@
 #include <bamReader.h>
 #include <bamWriter.h>
 
+PT(NodeTransition) ColorTransition::_initial;
 TypeHandle ColorTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -45,7 +46,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *ColorTransition::
 make_initial() const {
-  return new ColorTransition;
+  if (_initial.is_null()) {
+    _initial = new ColorTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////

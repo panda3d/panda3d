@@ -34,6 +34,7 @@
 #include <bamReader.h>
 #include <bamWriter.h>
 
+PT(NodeTransition) BillboardTransition::_initial;
 TypeHandle BillboardTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -54,7 +55,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *BillboardTransition::
 make_initial() const {
-  return new BillboardTransition;
+  if (_initial.is_null()) {
+    _initial = new BillboardTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////

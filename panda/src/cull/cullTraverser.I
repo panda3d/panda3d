@@ -37,7 +37,7 @@ draw_geom(GeomNode *geom_node, const AllTransitionsWrapper &initial_state) {
       << "Drawing " << *geom_node << " with state: " << initial_state << "\n";
   }
   nassertv(geom_node != (GeomNode *)NULL);
-  _gsg->set_state(initial_state.get_transitions(), true);
+  _gsg->set_state(initial_state);
   _gsg->prepare_display_region();
   geom_node->draw(_gsg);
 }

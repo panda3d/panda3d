@@ -392,7 +392,7 @@ clear(const RenderBuffer &buffer) {
   glgsg_cat.debug(false) << ")" << endl;
 #endif
 
-  set_state(state, false);
+  modify_state(state);
   glClear(mask);
 }
 
@@ -958,7 +958,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   LMatrix4f modelview_mat;
 
   const TransformTransition *ctatt;
-  if (!get_transition_into(ctatt, _state, TransformTransition::get_class_type()))
+  if (!get_attribute_into(ctatt, this))
     modelview_mat = LMatrix4f::ident_mat();
   else
     modelview_mat = ctatt->get_matrix();
@@ -1025,7 +1025,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   taa->set_mode(TextureApplyProperty::M_modulate);
   state.set_transition(taa);
 
-  set_state(state, false);
+  modify_state(state);
 
   // the user can override alpha sorting if they want
   bool alpha = false;
@@ -1033,8 +1033,8 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   if (geom->get_alpha_disable() == false) {
     // figure out if alpha's enabled (if not, no reason to sort)
     const TransparencyTransition *ctratt;
-    if (get_transition_into(ctratt, _state))
-      alpha = true;
+    if (get_attribute_into(ctratt, this))
+      alpha = (ctratt->get_mode() != TransparencyProperty::M_none);
   }
 
   // sort container and iterator
@@ -2061,7 +2061,7 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
   state.set_transition(dwa);
   state.set_transition(ta);
   state.set_transition(taa);
-  set_state(state, false);
+  modify_state(state);
 
   // We set up an orthographic projection that defines our entire
   // viewport to the range [0..1] in both dimensions.  Then, when we
@@ -2301,7 +2301,7 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
     break;
   }
 
-  set_state(state, false);
+  modify_state(state);
 
   set_unpack_alignment(1);
 
@@ -3511,8 +3511,7 @@ end_decal(GeomNode *base_geom) {
       // Finally, restore the depth write and color mask states to the
       // way they're supposed to be.
       DepthWriteTransition *depth_write;
-      if (get_transition_into(depth_write, _state,
-                             DepthWriteTransition::get_class_type())) {
+      if (get_attribute_into(depth_write, this)) {
         issue_depth_write(depth_write);
       }
 
@@ -3523,7 +3522,7 @@ end_decal(GeomNode *base_geom) {
         }
       } else {
         ColorMaskTransition *color_mask;
-        if (get_transition_into(color_mask, _state, ColorMaskTransition::get_class_type())) {
+        if (get_attribute_into(color_mask, this)) {
           issue_color_mask(color_mask);
         } else {
           glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);

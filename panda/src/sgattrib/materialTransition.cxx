@@ -25,6 +25,7 @@
 #include <bamReader.h>
 #include <bamWriter.h>
 
+PT(NodeTransition) MaterialTransition::_initial;
 TypeHandle MaterialTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -46,7 +47,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *MaterialTransition::
 make_initial() const {
-  return new MaterialTransition;
+  if (_initial.is_null()) {
+    _initial = new MaterialTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////

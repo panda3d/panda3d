@@ -42,12 +42,13 @@ protected:
   virtual MatrixTransition<LMatrix4f> *
   make_with_matrix(const LMatrix4f &matrix) const;
 
+private:
+  static PT(NodeTransition) _initial;
+
 public:
   static void register_with_read_factory(void);
 
   static TypedWritable *make_TransformTransition(const FactoryParams &params);
-
-protected:
 
 public:
   virtual TypeHandle get_type() const {

@@ -20,6 +20,7 @@
 
 #include <indent.h>
 
+PT(NodeTransition) PointShapeTransition::_initial;
 TypeHandle PointShapeTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -41,7 +42,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *PointShapeTransition::
 make_initial() const {
-  return new PointShapeTransition;
+  if (_initial.is_null()) {
+    _initial = new PointShapeTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////

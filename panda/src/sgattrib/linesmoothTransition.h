@@ -39,6 +39,9 @@ public:
 
   virtual void issue(GraphicsStateGuardianBase *gsgbase);
 
+private:
+  static PT(NodeTransition) _initial;
+
 public:
   virtual TypeHandle get_type() const {
     return get_class_type();

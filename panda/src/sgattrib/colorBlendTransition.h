@@ -48,7 +48,9 @@ protected:
   virtual void output_value(ostream &out) const;
   virtual void write_value(ostream &out, int indent_level) const;
 
+private:
   ColorBlendProperty _value;
+  static PT(NodeTransition) _initial;
 
 public:
   virtual TypeHandle get_type() const {

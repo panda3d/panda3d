@@ -22,6 +22,7 @@
 #include "indent.h"
 #include "dcast.h"
 
+PT(NodeTransition) AlphaTransformTransition::_initial;
 TypeHandle AlphaTransformTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -43,7 +44,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *AlphaTransformTransition::
 make_initial() const {
-  return new AlphaTransformTransition;
+  if (_initial.is_null()) {
+    _initial = new AlphaTransformTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////

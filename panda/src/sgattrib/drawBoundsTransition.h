@@ -19,10 +19,11 @@
 #ifndef DRAWBOUNDSTRANSITION_H
 #define DRAWBOUNDSTRANSITION_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <immediateTransition.h>
-#include <nodeTransitions.h>
+#include "immediateTransition.h"
+#include "nodeTransitions.h"
+#include "allTransitionsWrapper.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DrawBoundsTransition
@@ -46,8 +47,11 @@ public:
                           RenderTraverser *trav);
   virtual bool has_sub_render() const;
 
-  NodeTransitions _outside_attrib;
+private:
+  AllTransitionsWrapper _outside_attrib;
   NodeTransitions _inside_attrib;
+
+  static PT(NodeTransition) _initial;
 
 public:
   virtual TypeHandle get_type() const {

@@ -21,6 +21,7 @@
 #include "dcast.h"
 #include "indent.h"
 
+PT(NodeTransition) FogTransition::_initial;
 TypeHandle FogTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -42,7 +43,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *FogTransition::
 make_initial() const {
-  return new FogTransition;
+  if (_initial.is_null()) {
+    _initial = new FogTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -20,6 +20,7 @@
 
 #include <indent.h>
 
+PT(NodeTransition) TexGenTransition::_initial;
 TypeHandle TexGenTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -41,7 +42,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *TexGenTransition::
 make_initial() const {
-  return new TexGenTransition;
+  if (_initial.is_null()) {
+    _initial = new TexGenTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////

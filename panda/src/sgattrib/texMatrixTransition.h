@@ -43,6 +43,9 @@ protected:
   virtual MatrixTransition<LMatrix4f> *
   make_with_matrix(const LMatrix4f &matrix) const;
 
+private:
+  static PT(NodeTransition) _initial;
+
 public:
   virtual TypeHandle get_type() const {
     return get_class_type();

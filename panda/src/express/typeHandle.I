@@ -75,6 +75,36 @@ operator < (const TypeHandle &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeHandle::Ordering Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool TypeHandle::
+operator <= (const TypeHandle &other) const {
+  return (_index <= other._index);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeHandle::Ordering Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool TypeHandle::
+operator > (const TypeHandle &other) const {
+  return (_index > other._index);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeHandle::Ordering Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool TypeHandle::
+operator >= (const TypeHandle &other) const {
+  return (_index >= other._index);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::get_name
 //       Access: Public
 //  Description: Returns the name of the type.

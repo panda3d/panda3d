@@ -20,6 +20,7 @@
 
 #include <indent.h>
 
+PT(NodeTransition) TexMatrixTransition::_initial;
 TypeHandle TexMatrixTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -41,7 +42,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *TexMatrixTransition::
 make_initial() const {
-  return new TexMatrixTransition;
+  if (_initial.is_null()) {
+    _initial = new TexMatrixTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -19,6 +19,50 @@
 #include <notify.h>
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::StateInfo::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsStateGuardian::StateInfo::
+StateInfo(TypeHandle type) :
+  _type(type)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::StateInfo::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsStateGuardian::StateInfo::
+StateInfo(const NodeTransitions::value_type &value) :
+  _type(value.first), _trans(value.second)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::StateInfo::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsStateGuardian::StateInfo::
+StateInfo(const NodeTransitionCache::value_type &value) :
+  _type(value.first), _trans(value.second)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::StateInfo::Ordering operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::StateInfo::
+operator < (const StateInfo &other) const {
+  return _type < other._type;
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_render_traverser
 //       Access: Published
 //  Description: Sets the traverser that will be used to render the
@@ -54,18 +98,35 @@ is_closed() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_state
+//       Access: Public
+//  Description: Applies the transitions indicated in the state set to
+//               the current state, and issues the changes to the
+//               graphics hardware.
+//
+//               The state is taken to be a complete description of
+//               what the graphics state should be; any transitions
+//               not mentioned in new_state are implicitly reset to
+//               their initial values.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+set_state(const AllTransitionsWrapper &new_state) {
+  set_state(new_state.get_transitions());
+}
+
+/*
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_state
 //       Access: Public
 //  Description: Returns the current state of the GSG.  This state may
 //               be saved and used to restore the GSG to its current
-//               state later; however, this save/restore operation
-//               should be used with caution, as it could grow to be
-//               expensive.
+//               state later.
 ////////////////////////////////////////////////////////////////////
-INLINE const NodeTransitions &GraphicsStateGuardian::
+INLINE const NodeTransitionCache *GraphicsStateGuardian::
 get_state() const {
   return _state;
 }
+*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_current_projection_node
@@ -206,4 +267,22 @@ set_coordinate_system(CoordinateSystem cs) {
 INLINE CoordinateSystem GraphicsStateGuardian::
 get_coordinate_system() const {
   return _coordinate_system;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_attribute_into
+//  Description: This external template function is handy for
+//               extracting a transition of a particular type from the
+//               gsg's state.  It works like get_transition_into().
+////////////////////////////////////////////////////////////////////
+template<class Transition>
+INLINE bool
+get_attribute_into(Transition *&ptr, GraphicsStateGuardian *gsg) {
+  NodeTransition *nt = gsg->get_attribute(Transition::get_class_type());
+  if (nt == (NodeTransition *)NULL) {
+    ptr = (Transition *)NULL;
+    return false;
+  }
+  DCAST_INTO_R(ptr, nt, false);
+  return true;
 }

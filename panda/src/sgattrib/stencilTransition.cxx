@@ -20,6 +20,7 @@
 
 #include <indent.h>
 
+PT(NodeTransition) StencilTransition::_initial;
 TypeHandle StencilTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -41,7 +42,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *StencilTransition::
 make_initial() const {
-  return new StencilTransition;
+  if (_initial.is_null()) {
+    _initial = new StencilTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////

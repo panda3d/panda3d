@@ -31,6 +31,7 @@
 #include <renderTraverser.h>
 #include <geomSphere.h>
 
+PT(NodeTransition) DrawBoundsTransition::_initial;
 TypeHandle DrawBoundsTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -74,7 +75,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *DrawBoundsTransition::
 make_initial() const {
-  return new DrawBoundsTransition;
+  if (_initial.is_null()) {
+    _initial = new DrawBoundsTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -111,7 +115,7 @@ sub_render(NodeRelation *arc, const AllTransitionsWrapper &input_trans,
     new_ta->set_matrix(mat);
     _outside_attrib.set_transition(new_ta);
 
-    gsg->set_state(_outside_attrib, true);
+    gsg->set_state(_outside_attrib);
 
     if (vol.is_of_type(BoundingSphere::get_class_type())) {
       const BoundingSphere *sphere = DCAST(BoundingSphere, &vol);
@@ -126,7 +130,7 @@ sub_render(NodeRelation *arc, const AllTransitionsWrapper &input_trans,
       geom.set_num_prims(1);
 
       gsg->draw_sphere(&geom, NULL);
-      gsg->set_state(_inside_attrib, false);
+      gsg->modify_state(_inside_attrib);
       gsg->draw_sphere(&geom, NULL);
 
     } else {

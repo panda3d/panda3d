@@ -24,6 +24,7 @@
 #include <bamReader.h>
 #include <bamWriter.h>
 
+PT(NodeTransition) CullFaceTransition::_initial;
 TypeHandle CullFaceTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -45,7 +46,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *CullFaceTransition::
 make_initial() const {
-  return new CullFaceTransition;
+  if (_initial.is_null()) {
+    _initial = new CullFaceTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////

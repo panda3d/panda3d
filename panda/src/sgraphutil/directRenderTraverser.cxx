@@ -164,7 +164,7 @@ reached_node(Node *node, AllTransitionsWrapper &render_state,
 
   if (node->is_of_type(GeomNode::get_class_type())) {
     _gsg->_geom_nodes_pcollector.add_level(1);
-    _gsg->set_state(render_state.get_transitions(), true);
+    _gsg->set_state(render_state);
     // Make sure the current display region is still in effect.
     _gsg->prepare_display_region();
 
@@ -256,7 +256,7 @@ backward_arc(NodeRelation *arc, AllTransitionsWrapper &,
   mark_backward_arc(arc);
   if (level_state._decal_mode) {
     // Reset the state to redraw the base geometry.
-    _gsg->set_state(post.get_transitions(), true);
+    _gsg->set_state(post);
     _gsg->prepare_display_region();
     _gsg->end_decal(DCAST(GeomNode, arc->get_child()));
   }

@@ -20,6 +20,7 @@
 
 #include <indent.h>
 
+PT(NodeTransition) PolygonOffsetTransition::_initial;
 TypeHandle PolygonOffsetTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -41,7 +42,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *PolygonOffsetTransition::
 make_initial() const {
-  return new PolygonOffsetTransition;
+  if (_initial.is_null()) {
+    _initial = new PolygonOffsetTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////

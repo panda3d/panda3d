@@ -149,7 +149,7 @@ r_traverse(RenderRelation *arc, const QuickRenderLevelState &level_state) {
     AllTransitionsWrapper attrib;
     attrib.compose_from(_initial_state, trans);
 
-    _gsg->set_state(attrib.get_transitions(), true);
+    _gsg->set_state(attrib);
     gnode->draw(_gsg);
   }
 

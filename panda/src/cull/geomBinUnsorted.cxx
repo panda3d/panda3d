@@ -101,7 +101,7 @@ draw(CullTraverser *trav) {
     }
 
     if (cs->geom_size() != 0) {
-      gsg->set_state(cs->get_attributes().get_transitions(), true);
+      gsg->set_state(cs->get_attributes());
       gsg->prepare_display_region();
 
       CullState::geom_iterator gi;

@@ -24,6 +24,7 @@
 #include <bamWriter.h>
 #include <indent.h>
 
+PT(NodeTransition) DepthTestTransition::_initial;
 TypeHandle DepthTestTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -45,7 +46,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *DepthTestTransition::
 make_initial() const {
-  return new DepthTestTransition;
+  if (_initial.is_null()) {
+    _initial = new DepthTestTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -54,6 +54,9 @@ const bool pipe_spec_is_remote = config_display.Defined("pipe-machine")
                                  || config_display.GetBool("pipe-remote",
                                                            false);
 
+const bool compare_state_by_pointer =
+config_display.GetBool("compare-state-by-pointer", true);
+
 const float gsg_clear_r = config_display.GetFloat("gsg-clear-r", 0.0);
 const float gsg_clear_g = config_display.GetFloat("gsg-clear-g", 0.0);
 const float gsg_clear_b = config_display.GetFloat("gsg-clear-b", 0.0);

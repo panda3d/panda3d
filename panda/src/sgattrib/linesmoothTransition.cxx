@@ -18,6 +18,7 @@
 
 #include "linesmoothTransition.h"
 
+PT(NodeTransition) LinesmoothTransition::_initial;
 TypeHandle LinesmoothTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -39,7 +40,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *LinesmoothTransition::
 make_initial() const {
-  return new LinesmoothTransition;
+  if (_initial.is_null()) {
+    _initial = new LinesmoothTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////

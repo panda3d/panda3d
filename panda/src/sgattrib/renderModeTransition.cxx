@@ -20,6 +20,7 @@
 
 #include <indent.h>
 
+PT(NodeTransition) RenderModeTransition::_initial;
 TypeHandle RenderModeTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -41,7 +42,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *RenderModeTransition::
 make_initial() const {
-  return new RenderModeTransition;
+  if (_initial.is_null()) {
+    _initial = new RenderModeTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////

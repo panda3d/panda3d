@@ -55,6 +55,9 @@ protected:
   virtual void write_property(ostream &out, const PT_Node &prop,
                               int indent_level) const;
 
+private:
+  static PT(NodeTransition) _initial;
+
 public:
   virtual TypeHandle get_type() const {
     return get_class_type();

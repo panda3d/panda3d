@@ -35,6 +35,8 @@ extern const int pipe_spec_pipe_number;
 extern const bool pipe_spec_is_file;
 extern const bool pipe_spec_is_remote;
 
+extern const bool compare_state_by_pointer;
+
 extern const float gsg_clear_r;
 extern const float gsg_clear_g;
 extern const float gsg_clear_b;

@@ -20,6 +20,7 @@
 
 #include <indent.h>
 
+PT(NodeTransition) ClipPlaneTransition::_initial;
 TypeHandle ClipPlaneTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -41,7 +42,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *ClipPlaneTransition::
 make_initial() const {
-  return new ClipPlaneTransition;
+  if (_initial.is_null()) {
+    _initial = new ClipPlaneTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////

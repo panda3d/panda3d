@@ -66,7 +66,7 @@ private:
   typedef pmap<TypeHandle, PT(NodeTransition) > Transitions;
 
 public:
-  // STL-like definitions to allow read-only traversal of the
+  // STL-like definitions to allow read-write traversal of the
   // individual transitions.  Beware!  These are not safe to use
   // outside of PANDA.DLL.
   typedef Transitions::iterator iterator;

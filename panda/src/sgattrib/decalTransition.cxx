@@ -22,6 +22,7 @@
 #include <bamReader.h>
 #include <bamWriter.h>
 
+PT(NodeTransition) DecalTransition::_initial;
 TypeHandle DecalTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -43,7 +44,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodeTransition *DecalTransition::
 make_initial() const {
-  return new DecalTransition;
+  if (_initial.is_null()) {
+    _initial = new DecalTransition;
+  }
+  return _initial;
 }
 
 ////////////////////////////////////////////////////////////////////

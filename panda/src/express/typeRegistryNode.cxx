@@ -99,14 +99,17 @@ is_derived_from(const TypeRegistryNode *child, const TypeRegistryNode *base) {
 
   // First, we should check whether the subtree tops of the two nodes
   // inherit from each other.
-  const TypeRegistryNode *child_top = child->_inherit._top;
-  const TypeRegistryNode *base_top = base->_inherit._top;
+  TypeRegistryNode *child_top = child->_inherit._top;
+  TypeRegistryNode *base_top = base->_inherit._top;
 
   bool derives = false;
 
   // If child_top does not inherit from base_top, it follows that
   // child does not inherit from base.
-  TopInheritance::const_iterator ti = child_top->find_top_inherit(base_top);
+  TopInheritance::const_iterator ti = 
+    lower_bound(child_top->_top_inheritance.begin(), 
+                child_top->_top_inheritance.end(),
+                Inherit(base_top, 0, 0));
 
   while (ti != child_top->_top_inheritance.end() && 
          (*ti)._top == base_top &&
@@ -332,33 +335,6 @@ r_build_subtrees(TypeRegistryNode *top, int bit_count,
       }
     }      
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TypeRegistryNode::find_top_inherit
-//       Access: Private, Static
-//  Description: Finds the first element in the _top_inheritance array
-//               that matches the indicated base node.  If the base
-//               node does not appear in the _top_inheritance array
-//               (implying that this node does not inherit from the
-//               base node), returns _top_inheritance.end().
-////////////////////////////////////////////////////////////////////
-TypeRegistryNode::TopInheritance::const_iterator TypeRegistryNode::
-find_top_inherit(const TypeRegistryNode *base) const {
-  // If the need arises, we can make this a binary search to
-  // theoretically save even more time, since the list is already
-  // sorted.  However, the lists do tend to be short, and this
-  // function doesn't get called too awful much, so a linear search is
-  // not as bad as you might think.
-
-  TopInheritance::const_iterator ti;
-  for (ti = _top_inheritance.begin(); ti != _top_inheritance.end(); ++ti) {
-    if ((*ti)._top == base) {
-      return ti;
-    }
-  }
-
-  return _top_inheritance.end();
 }
  
 ////////////////////////////////////////////////////////////////////
