@@ -312,6 +312,8 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
 
   #define sources \
    $[patsubst %,$[%_obj],$[compile_sources]]
+  #define cc_ld $[or $[get_ld],$[CC]]
+  #define cxx_ld $[or $[get_ld],$[CC]]
 
   #define varname $[subst -,_,lib$[TARGET]_so]
 $[varname] = $[sources]
@@ -511,18 +513,13 @@ $[TARGET] : $[ODIR]/$[TARGET]
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define target $[ODIR]/$[TARGET]
 #define sources $($[varname])
-#define ld $[get_ld]
+#define cc_ld $[or $[get_ld],$[CC]]
+#define cxx_ld $[or $[get_ld],$[CC]]
 $[target] : $[sources] $[static_lib_dependencies]
-#if $[ld]
-  // If there's a custom linker defined for the target, we have to use it.
-$[TAB] $[ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
-#else
-  // Otherwise, we can use the normal linker.
-  #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
+#if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[LINK_BIN_C++]
-  #else
+#else
 $[TAB] $[LINK_BIN_C]
-  #endif
 #endif
 
 #define installed_files \
@@ -560,6 +557,8 @@ $[TARGET] : $[ODIR]/$[TARGET]
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define target $[ODIR]/$[TARGET]
 #define sources $($[varname])
+#define cc_ld $[or $[get_ld],$[CC]]
+#define cxx_ld $[or $[get_ld],$[CC]]
 $[target] : $[sources] $[static_lib_dependencies]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[LINK_BIN_C++]
