@@ -86,16 +86,23 @@ class ParticleEffect(NodePath):
         f.write('\n')
 
 	# Save all the forces to file
+	num = 0
+	for fg in self.forceGroupDict.values():
+	    target = 'f%d' % num
+	    num = num + 1
+	    f.write(target + ' = ForceGroup.ForceGroup(\'%s\')\n' % fg.getName())
+	    fg.printParams(f, target)	
+	    f.write('self.addForceGroup(%s)\n' % target)
 
         # Save all the particles to file
 	f.write('self.particlesDict = {}\n')
-	num = 1
+	num = 0
 	for p in self.particlesDict.values():
-	    target = 'particles%d' % num
+	    target = 'p%d' % num 
 	    num = num + 1
-	    f.write(target + ' = Particles.Particles(\'%s\')\n' % p.name)
+	    f.write(target + ' = Particles.Particles(\'%s\')\n' % p.getName())
 	    p.printParams(f, target)
-	    f.write('self.addParticles(' + target + ')\n')
+	    f.write('self.addParticles(%s)\n' % target)
 
         # Close the file
         f.close()

@@ -20,4 +20,4 @@ pe.addForceGroup(fg)
 pe.enable()
 
 # Particle Panel
-ParticlePanel.ParticlePanel(pe)
+pp = ParticlePanel.ParticlePanel(pe)
