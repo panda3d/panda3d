@@ -4,7 +4,7 @@
   #define TARGET maya2egg
 
   #define SOURCE maya2egg_script
-  #define COMMAND 's:xxx:$[MAYA_LOCATION]:g'
+  #define COMMAND s:xxx:$[MAYA_LOCATION]:g
 
 #end sed_bin_target
 
