@@ -47,7 +47,14 @@ public:
   int get_height() const;
   int get_ideal_width() const;
 
+  int get_collector_index() const;
+
+  void set_highlight(bool highlight);
+  bool get_highlight() const;
+
 private:
+  void set_mouse_within(bool mouse_within);
+
   void create_window(HWND parent_window);
   static void register_window_class(HINSTANCE application);
 
@@ -62,12 +69,15 @@ private:
   COLORREF _bg_color;
   COLORREF _fg_color;
   HBRUSH _bg_brush;
+  HBRUSH _highlight_brush;
 
   int _x;
   int _y;
   int _width;
   int _height;
   int _ideal_width;
+  bool _highlight;
+  bool _mouse_within;
 
   static int _left_margin, _right_margin;
   static int _top_margin, _bottom_margin;

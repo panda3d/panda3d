@@ -37,6 +37,8 @@ WinStatsLabelStack() {
   _width = 0;
   _height = 0;
   _ideal_width = 0;
+
+  _highlight_label = -1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -234,6 +236,26 @@ add_label(WinStatsMonitor *monitor, int thread_index, int collector_index,
 int WinStatsLabelStack::
 get_num_labels() const {
   return _labels.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsLabelStack::highlight_label
+//       Access: Public
+//  Description: Draws a highlight around the label representing the
+//               indicated collector, and removes the highlight from
+//               any other label.  Specify -1 to remove the highlight
+//               from all labels.
+////////////////////////////////////////////////////////////////////
+void WinStatsLabelStack::
+highlight_label(int collector_index) {
+  if (_highlight_label != collector_index) {
+    _highlight_label = collector_index;
+    Labels::iterator li;
+    for (li = _labels.begin(); li != _labels.end(); ++li) {
+      WinStatsLabel *label = (*li);
+      label->set_highlight(label->get_collector_index() == _highlight_label);
+    }
+  }
 }
 
 

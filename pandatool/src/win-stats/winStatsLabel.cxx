@@ -61,8 +61,10 @@ WinStatsLabel(WinStatsMonitor *monitor, int thread_index,
 
   if (bright >= 0.5) {
     _fg_color = RGB(0, 0, 0);
+    _highlight_brush = (HBRUSH)GetStockObject(BLACK_BRUSH);
   } else {
     _fg_color = RGB(255, 255, 255);
+    _highlight_brush = (HBRUSH)GetStockObject(WHITE_BRUSH);
   }
 
   _x = 0;
@@ -70,6 +72,8 @@ WinStatsLabel(WinStatsMonitor *monitor, int thread_index,
   _width = 0;
   _height = 0;
   _ideal_width = 0;
+  _highlight = false;
+  _mouse_within = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -179,6 +183,55 @@ get_ideal_width() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinStatsLabel::get_collector_index
+//       Access: Public
+//  Description: Returns the collector this label represents.
+////////////////////////////////////////////////////////////////////
+int WinStatsLabel::
+get_collector_index() const {
+  return _collector_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsLabel::set_highlight
+//       Access: Public
+//  Description: Enables or disables the visual highlight for this
+//               label.
+////////////////////////////////////////////////////////////////////
+void WinStatsLabel::
+set_highlight(bool highlight) {
+  if (_highlight != highlight) {
+    _highlight = highlight;
+    InvalidateRect(_window, NULL, TRUE);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsLabel::get_highlight
+//       Access: Public
+//  Description: Returns true if the visual highlight for this
+//               label is enabled.
+////////////////////////////////////////////////////////////////////
+bool WinStatsLabel::
+get_highlight() const {
+  return _highlight;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsLabel::set_mouse_within
+//       Access: Private
+//  Description: Used internally to indicate whether the mouse is
+//               within the label's window.
+////////////////////////////////////////////////////////////////////
+void WinStatsLabel::
+set_mouse_within(bool mouse_within) {
+  if (_mouse_within != mouse_within) {
+    _mouse_within = mouse_within;
+    InvalidateRect(_window, NULL, TRUE);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinStatsLabel::create_window
 //       Access: Private
 //  Description: Creates the window for this label.
@@ -265,6 +318,27 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     _monitor->open_strip_chart(_thread_index, _collector_index);
     return 0;
 
+  case WM_MOUSEMOVE: 
+    {
+      // When the mouse enters the label area, highlight the label.
+      set_mouse_within(true);
+
+      // Now we want to get a WM_MOUSELEAVE when the mouse leaves the
+      // graph window.
+      TRACKMOUSEEVENT tme = {
+        sizeof(TRACKMOUSEEVENT),
+        TME_LEAVE,
+        _window,
+        0
+      };
+      TrackMouseEvent(&tme);
+    }
+    break;
+
+  case WM_MOUSELEAVE: 
+    set_mouse_within(false);
+    break;
+
   case WM_PAINT:
     {
       PAINTSTRUCT ps;
@@ -272,6 +346,10 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
       RECT rect = { 0, 0, _width, _height };
       FillRect(hdc, &rect, _bg_brush);
+
+      if (_highlight || _mouse_within) {
+        FrameRect(hdc, &rect, _highlight_brush);
+      }
 
       HFONT hfnt = (HFONT)GetStockObject(ANSI_VAR_FONT); 
       SelectObject(hdc, hfnt);

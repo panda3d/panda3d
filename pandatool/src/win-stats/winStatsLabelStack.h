@@ -55,6 +55,8 @@ public:
                 int collector_index, bool use_fullname);
   int get_num_labels() const;
 
+  void highlight_label(int collector_index);
+
 private:
   void create_window(HWND parent_window);
   static void register_window_class(HINSTANCE application);
@@ -68,6 +70,7 @@ private:
   int _width;
   int _height;
   int _ideal_width;
+  int _highlight_label;
 
   typedef pvector<WinStatsLabel *> Labels;
   Labels _labels;

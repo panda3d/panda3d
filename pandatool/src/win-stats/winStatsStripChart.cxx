@@ -357,6 +357,27 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     break;
 
   case WM_MOUSEMOVE: 
+    if (_drag_mode == DM_none && _potential_drag_mode == DM_none) {
+      // When the mouse is over a color bar, highlight it.
+      PN_int16 x = LOWORD(lparam);
+      PN_int16 y = HIWORD(lparam);
+      _label_stack.highlight_label(get_collector_under_pixel(x, y));
+
+      // Now we want to get a WM_MOUSELEAVE when the mouse leaves the
+      // graph window.
+      TRACKMOUSEEVENT tme = {
+        sizeof(TRACKMOUSEEVENT),
+        TME_LEAVE,
+        _graph_window,
+        0
+      };
+      TrackMouseEvent(&tme);
+
+    } else {
+      // If the mouse is in some drag mode, stop highlighting.
+      _label_stack.highlight_label(-1);
+    }
+
     if (_drag_mode == DM_scale) {
       PN_int16 y = HIWORD(lparam);
       float ratio = 1.0f - ((float)y / (float)get_ysize());
@@ -380,6 +401,11 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       move_user_guide_bar(_drag_guide_bar, pixel_to_height(y));
       return 0;
     }
+    break;
+
+  case WM_MOUSELEAVE:
+    // When the mouse leaves the graph, stop highlighting.
+    _label_stack.highlight_label(-1);
     break;
 
   case WM_LBUTTONUP:
