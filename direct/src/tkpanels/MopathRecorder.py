@@ -9,6 +9,7 @@ import Pmw
 import Dial
 import Floater
 import EntryScale
+import __builtin__
 
 """
 To Add
@@ -705,19 +706,12 @@ class MopathRecorder(AppShell, PandaObject):
         return (3 * x) - (2 * t * x)
 
     def setPreRecordFunc(self, event):
-        try:
-            self.preRecordFunc = eval(
-                self.getVariable('Recording', 'Pre Record Func').get())
-            # Update widget to reflect new value
-            self.getVariable('Recording', 'PRF Active').set(1)
-        except NameError:
-            # See if you can find func in the globals dictionary
-            # Note: need to set __builtins__.func at command line
-            self.preRecordFunc = eval(
-                self.getVariable('Recording', 'Pre Record Func').get(),
-                globals())
-            # Update widget to reflect new value
-            self.getVariable('Recording', 'PRF Active').set(1)
+        # Note: If func is one defined at command prompt, need to set
+        # __builtins__.func = func at command line
+        self.preRecordFunc = eval(
+            self.getVariable('Recording', 'Pre Record Func').get())
+        # Update widget to reflect new value
+        self.getVariable('Recording', 'PRF Active').set(1)
 
     def recordPoint(self, time):
         # Call user define callback before recording point
@@ -792,10 +786,11 @@ class MopathRecorder(AppShell, PandaObject):
         widget.configure(max = maxT)
         widget.set(float(maxT))
         self.maxT = float(maxT)
-        # Widgets depending on number of knots
-        numKnots = self.xyzNurbsCurve.getNumKnots()
-        self.getWidget('Resample', 'Points Between Samples')['max'] = numKnots
-        self.getWidget('Resample', 'Num. Samples')['max'] = 2 * numKnots
+        # Widgets depending on number of samples
+        numSamples = self.xyzCurveFitter.getNumSamples()
+        self.getWidget('Resample', 'Points Between Samples')['max'] = (
+            numSamples)
+        self.getWidget('Resample', 'Num. Samples')['max'] = 3 * numSamples
 
     def selectRecordNodePathNamed(self, name):
         nodePath = None
@@ -990,6 +985,13 @@ class MopathRecorder(AppShell, PandaObject):
         self.xyzCurveFitter.desample(self.desampleFrequency)
         self.hprCurveFitter.desample(self.desampleFrequency)
         self.computeCurves()
+        # Get new point set based on newly created curve
+        self.createNewPointSet()
+        for i in range(self.xyzCurveFitter.getNumSamples()):
+            time = self.xyzCurveFitter.getSampleT(i)
+            pos = self.xyzCurveFitter.getSamplePoint(i)
+            hpr = self.hprCurveFitter.getSamplePoint(i)
+            self.pointSet.append([time, pos, hpr])
         # Resize curve to original duration
         self.setPathDurationTo(maxT)
 
@@ -1011,6 +1013,13 @@ class MopathRecorder(AppShell, PandaObject):
         self.hprCurveFitter.sample(
             self.hprNurbsCurve, self.numSamples, self.fEven)
         self.computeCurves()
+        # Get new point set based on newly created curve
+        self.createNewPointSet()
+        for i in range(self.xyzCurveFitter.getNumSamples()):
+            time = self.xyzCurveFitter.getSampleT(i)
+            pos = self.xyzCurveFitter.getSamplePoint(i)
+            hpr = self.hprCurveFitter.getSamplePoint(i)
+            self.pointSet.append([time, pos, hpr])
         # Resize curve to original duration
         self.setPathDurationTo(maxT)
 

@@ -1056,7 +1056,7 @@ class ParticlePanel(AppShell):
     def setSystemLitterSize(self, value):
 	self.particles.setLitterSize(int(value))
     def setSystemLitterSpread(self, value):
-	self.particles.setLitterSpread(value)
+	self.particles.setLitterSpread(int(value))
     def setSystemLifespan(self, value):
 	self.particles.setSystemLifespan(value)
     def toggleSystemLocalVelocity(self):
