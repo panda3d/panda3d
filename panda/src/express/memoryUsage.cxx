@@ -86,8 +86,9 @@ public:
 void MemoryUsage::TypeHistogram::
 show() const {
   // First, copy the relevant information to a vector so we can sort
-  // by counts.
-  pvector<TypeHistogramCountSorter> count_sorter;
+  // by counts.  Don't use a pvector.
+  typedef vector<TypeHistogramCountSorter, dallocator<TypeHistogramCountSorter> > CountSorter;
+  CountSorter count_sorter;
   Counts::const_iterator ci;
   for (ci = _counts.begin(); ci != _counts.end(); ++ci) {
     count_sorter.push_back
@@ -96,7 +97,7 @@ show() const {
 
   sort(count_sorter.begin(), count_sorter.end());
 
-  pvector<TypeHistogramCountSorter>::const_iterator vi;
+  CountSorter::const_iterator vi;
   for (vi = count_sorter.begin(); vi != count_sorter.end(); ++vi) {
     TypeHandle type = (*vi)._type;
     if (type == TypeHandle::none()) {
@@ -323,8 +324,12 @@ get_global_ptr() {
 void MemoryUsage::
 ns_record_pointer(ReferenceCount *ptr) {
   if (_track_memory_usage) {
+    // We have to protect modifications to the table from recursive
+    // calls by turning off _track_memory_usage while we adjust it.
+    _track_memory_usage = false;
     pair<Table::iterator, bool> insert_result =
       _table.insert(Table::value_type((void *)ptr, MemoryInfo()));
+    _track_memory_usage = true;
     
     // This shouldn't fail.
     assert(insert_result.first != _table.end());
@@ -448,8 +453,13 @@ ns_remove_pointer(ReferenceCount *ptr) {
 
     if (info._freeze_index == _freeze_index) {
       double now = TrueClock::get_ptr()->get_real_time();
+
+      // We have to protect modifications to the table from recursive
+      // calls by turning off _track_memory_usage while we adjust it.
+      _track_memory_usage = false;
       _trend_types.add_info(info.get_type(), info);
       _trend_ages.add_info(now - info._time, info);
+      _track_memory_usage = true;
     }
 
     if ((info._flags & (MemoryInfo::F_got_ref | MemoryInfo::F_got_void)) == 0) {
@@ -461,7 +471,11 @@ ns_remove_pointer(ReferenceCount *ptr) {
       }
       _total_size -= info._size;
 
+      // We have to protect modifications to the table from recursive
+      // calls by turning off _track_memory_usage while we adjust it.
+      _track_memory_usage = false;
       _table.erase(ti);
+      _track_memory_usage = true;
     }
   }
 }
@@ -476,8 +490,12 @@ ns_remove_pointer(ReferenceCount *ptr) {
 void MemoryUsage::
 ns_record_void_pointer(void *ptr, size_t size) {
   if (_track_memory_usage) {
+    // We have to protect modifications to the table from recursive
+    // calls by turning off _track_memory_usage while we adjust it.
+    _track_memory_usage = false;
     pair<Table::iterator, bool> insert_result =
       _table.insert(Table::value_type((void *)ptr, MemoryInfo()));
+    _track_memory_usage = true;
     
     // This shouldn't fail.
     assert(insert_result.first != _table.end());
@@ -556,7 +574,11 @@ ns_remove_void_pointer(void *ptr) {
       }
       _total_size -= info._size;
 
+      // We have to protect modifications to the table from recursive
+      // calls by turning off _track_memory_usage while we adjust it.
+      _track_memory_usage = false;
       _table.erase(ti);
+      _track_memory_usage = true;
     }
   }
 }
@@ -745,8 +767,13 @@ ns_freeze() {
 ////////////////////////////////////////////////////////////////////
 void MemoryUsage::
 ns_show_current_types() {
-  TypeHistogram hist;
+  nassertv(_track_memory_usage);
+  // We have to protect modifications to the table from recursive
+  // calls by turning off _track_memory_usage while we adjust it.
+  _track_memory_usage = false;
 
+  TypeHistogram hist;
+  
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
     MemoryInfo &info = (*ti).second;
@@ -756,6 +783,7 @@ ns_show_current_types() {
   }
 
   hist.show();
+  _track_memory_usage = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -778,6 +806,12 @@ ns_show_trend_types() {
 ////////////////////////////////////////////////////////////////////
 void MemoryUsage::
 ns_show_current_ages() {
+  nassertv(_track_memory_usage);
+
+  // We have to protect modifications to the table from recursive
+  // calls by turning off _track_memory_usage while we adjust it.
+  _track_memory_usage = false;
+
   AgeHistogram hist;
   double now = TrueClock::get_ptr()->get_real_time();
 
@@ -790,6 +824,8 @@ ns_show_current_ages() {
   }
 
   hist.show();
+
+  _track_memory_usage = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -863,8 +899,11 @@ consolidate_void_ptr(MemoryInfo &info) {
     _allocated_size -= info._size;
   }
     
-
+  // We have to protect modifications to the table from recursive
+  // calls by turning off _track_memory_usage while we adjust it.
+  _track_memory_usage = false;
   _table.erase(ti);
+  _track_memory_usage = true;
 }
 
 
