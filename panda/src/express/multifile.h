@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 
+#include "config_express.h"
 #include "subStream.h"
 #include "filename.h"
 #include "ordered_vector.h"
