@@ -1,3 +1,4 @@
+from ShowBaseGlobal import *
 from DirectGui import *
 from whrandom import *
 
@@ -42,7 +43,7 @@ def ouch(db):
     db.lerpPos(Point3(newX, 0, newZ), 1.0, task = 'runAway',
                blendType = 'easeOut')
 
-dl = DirectFrame(image = 'phase_4/maps/middayskyB.jpg')
+dl = DirectFrame(image = 'models/maps/noise.rgb')
 dl.setScale(.5)
 
 # Create a button with a background image, smiley as a geometry element,
@@ -51,7 +52,7 @@ dl.setScale(.5)
 dbArray = []
 for i in range(10):
     db = DirectButton(parent = dl,
-                      image = 'phase_4/maps/middayskyB.jpg',
+                      image = 'models/maps/noise.rgb',
                       geom = smiley,
                       text = ('Hi!', 'Ouch!', 'Bye!', 'ZZZZ!'),
                       scale = .15, relief = 'raised',
@@ -88,7 +89,7 @@ def printEntryText(text):
 # Here we create an entry, and specify everything up front
 # CALL de1.get() and de1.set('new text') to get and set entry contents
 de1 = DirectEntry(initialText = 'Hello, how are you?',
-                  image = 'phase_4/maps/middayskyB.jpg',
+                  image = 'models/maps/noise.rgb',
                   #image = 'phase_3/maps/toowntown-logo.jpg',
                   image_pos = (4.55, 0, -1.65),
                   image_scale = (5.5, 1, 2.55),
