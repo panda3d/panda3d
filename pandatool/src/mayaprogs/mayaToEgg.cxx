@@ -110,6 +110,9 @@ run() {
   if (_got_frame_inc) {
     converter.set_frame_inc(_frame_inc);
   }
+  if (_got_neutral_frame) {
+    converter.set_neutral_frame(_neutral_frame);
+  }
   if (_got_input_frame_rate) {
     converter.set_input_frame_rate(_input_frame_rate);
   }

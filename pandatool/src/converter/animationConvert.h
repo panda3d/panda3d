@@ -34,6 +34,7 @@ enum AnimationConvert {
   AC_flip,     // A flip (sequence) of static geometry models.
   AC_model,    // A character model, with joints.
   AC_chan,     // Animation tables for the above model.
+  AC_both,     // A character model and tables in the same file.
 };
 
 string format_animation_convert(AnimationConvert unit);

@@ -35,6 +35,7 @@ SomethingToEggConverter() {
   _start_frame = 0.0;
   _end_frame = 0.0;
   _frame_inc = 0.0;
+  _neutral_frame = 0.0;
   _input_frame_rate = 0.0;
   _output_frame_rate = 0.0;
   _control_flags = 0;

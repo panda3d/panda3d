@@ -80,6 +80,11 @@ public:
   INLINE double get_frame_inc() const;
   INLINE void clear_frame_inc();
 
+  INLINE void set_neutral_frame(double neutral_frame);
+  INLINE bool has_neutral_frame() const;
+  INLINE double get_neutral_frame() const;
+  INLINE void clear_neutral_frame();
+
   INLINE void set_input_frame_rate(double input_frame_rate);
   INLINE bool has_input_frame_rate() const;
   INLINE double get_input_frame_rate() const;
@@ -139,14 +144,16 @@ protected:
   double _start_frame;
   double _end_frame;
   double _frame_inc;
+  double _neutral_frame;
   double _input_frame_rate;   // frames per second
   double _output_frame_rate;  // frames per second
   enum ControlFlags {
     CF_start_frame        = 0x0001,
     CF_end_frame          = 0x0002,
     CF_frame_inc          = 0x0004,
-    CF_input_frame_rate   = 0x0008,
-    CF_output_frame_rate  = 0x0010,
+    CF_neutral_frame      = 0x0008,
+    CF_input_frame_rate   = 0x0010,
+    CF_output_frame_rate  = 0x0020,
   };
   int _control_flags;
 

@@ -73,11 +73,13 @@ protected:
   double _start_frame;
   double _end_frame;
   double _frame_inc;
+  double _neutral_frame;
   double _input_frame_rate;
   double _output_frame_rate;
   bool _got_start_frame;
   bool _got_end_frame;
   bool _got_frame_inc;
+  bool _got_neutral_frame;
   bool _got_input_frame_rate;
   bool _got_output_frame_rate;
 

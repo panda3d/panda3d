@@ -275,6 +275,55 @@ clear_frame_inc() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::set_neutral_frame
+//       Access: Public
+//  Description: Specifies the frame of animation to represent the
+//               neutral pose of the model.
+////////////////////////////////////////////////////////////////////
+INLINE void SomethingToEggConverter::
+set_neutral_frame(double neutral_frame) {
+  _neutral_frame = neutral_frame;
+  _control_flags |= CF_neutral_frame;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::has_neutral_frame
+//       Access: Public
+//  Description: Returns true if the neutral frame has been
+//               explicitly specified via set_neutral_frame(), or
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool SomethingToEggConverter::
+has_neutral_frame() const {
+  return (_control_flags & CF_neutral_frame) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::get_neutral_frame
+//       Access: Public
+//  Description: Returns the value set by a previous call to
+//               set_neutral_frame().  It is an error to call this if
+//               has_neutral_frame() returns false.
+////////////////////////////////////////////////////////////////////
+INLINE double SomethingToEggConverter::
+get_neutral_frame() const {
+  nassertr(has_neutral_frame(), 0.0);
+  return _neutral_frame;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::clear_neutral_frame
+//       Access: Public
+//  Description: Removes the value previously set by
+//               set_neutral_frame().
+////////////////////////////////////////////////////////////////////
+INLINE void SomethingToEggConverter::
+clear_neutral_frame() {
+  _neutral_frame = 0.0;
+  _control_flags &= ~CF_neutral_frame;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEggConverter::set_input_frame_rate
 //       Access: Public
 //  Description: Specifies the number of frames per second that is

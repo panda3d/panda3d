@@ -62,6 +62,7 @@ SomethingToEgg(const string &format_name,
   _got_start_frame = false;
   _got_end_frame = false;
   _got_frame_inc = false;
+  _got_neutral_frame = false;
   _got_input_frame_rate = false;
   _got_output_frame_rate = false;
   _texture_path_convert = SomethingToEggConverter::PC_unchanged;
@@ -107,7 +108,8 @@ add_animation_options() {
     ("a", "animation-mode", 40,
      "Specifies how animation from the " + _format_name + " file is "
      "converted to egg, if at all.  At present, the following keywords "
-     "are supported: none, pose, or flip.",
+     "are supported: none, pose, flip, model, chan, or both.  The default "
+     "is none, which means not to convert animation.",
      &SomethingToEgg::dispatch_animation_convert, NULL, &_animation_convert);
 
   add_option
@@ -120,7 +122,8 @@ add_animation_options() {
   add_option
     ("sf", "start-frame", 40,
      "Specifies the starting frame of animation to extract.  If omitted, "
-     "the first frame of the time slider will be used.",
+     "the first frame of the time slider will be used.  For -a pose, this "
+     "is the one frame of animation to extract.",
      &SomethingToEgg::dispatch_double, &_got_start_frame, &_start_frame);
 
   add_option
@@ -135,6 +138,14 @@ add_animation_options() {
      "this is taken from the time slider settings, or 1.0 if the time "
      "slider does not specify.",
      &SomethingToEgg::dispatch_double, &_got_frame_inc, &_frame_inc);
+
+  add_option
+    ("nf", "neutral-frame", 40,
+     "Specifies the frame number to use for the neutral pose.  The model "
+     "will be set to this frame before extracting out the neutral character.  "
+     "If omitted, the current frame of the model is used.  This is only "
+     "relevant for -a model or -a both.",
+     &SomethingToEgg::dispatch_double, &_got_neutral_frame, &_neutral_frame);
 
   add_option
     ("fri", "fps", 40,

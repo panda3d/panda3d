@@ -45,6 +45,9 @@ format_animation_convert(AnimationConvert convert) {
 
   case AC_chan:
     return "chan";
+
+  case AC_both:
+    return "both";
   }
   nout << "**unexpected AnimationConvert value: (" << (int)convert << ")**";
   return "**";
@@ -81,6 +84,9 @@ string_animation_convert(const string &str) {
 
   } else if (cmp_nocase(str, "chan") == 0) {
     return AC_chan;
+
+  } else if (cmp_nocase(str, "both") == 0) {
+    return AC_both;
 
   } else {
     return AC_invalid;
