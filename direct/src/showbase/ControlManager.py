@@ -5,7 +5,8 @@ from ShowBaseGlobal import *
 #from IntervalGlobal import *
 
 import Avatar
-import DevWalker
+if __debug__:
+    import DevWalker
 import DirectNotifyGlobal
 import GhostWalker
 import GravityWalker
@@ -23,11 +24,15 @@ class ControlManager:
     def __init__(self, avatar):
         self.avatar = avatar
         assert(self.debugPrint("ControlManager()"))
+        
+        self.enableJumpCounter = 1
+        
         self.swimControls=GravityWalker.GravityWalker(
                     gravity = -32.1740 * 2.0)
         #self.swimControls=NonPhysicsWalker.NonPhysicsWalker()
         self.ghostControls=GhostWalker.GhostWalker()
-        self.devControls=DevWalker.DevWalker()
+        if __debug__:
+            self.devControls=DevWalker.DevWalker()
         if self.wantAvatarPhysics:
             self.walkControls=GravityWalker.GravityWalker(
                     gravity = -32.1740 * 2.0) # * 2.0 is a hack;
@@ -143,15 +148,16 @@ class ControlManager:
             if self.isEnabled:
                 self.currentControls.enableAvatarControls()
 
-    def useDevControls(self):
-        assert(self.debugPrint("useDevControls()"))
-        if self.currentControls is not self.devControls:
-            self.currentControls.disableAvatarControls()
-            self.currentControls.setCollisionsActive(0)
-            self.devControls.setCollisionsActive(1)
-            self.currentControls = self.devControls
-            if self.isEnabled:
-                self.currentControls.enableAvatarControls()
+    if __debug__:
+        def useDevControls(self):
+            assert(self.debugPrint("useDevControls()"))
+            if self.currentControls is not self.devControls:
+                self.currentControls.disableAvatarControls()
+                self.currentControls.setCollisionsActive(0)
+                self.devControls.setCollisionsActive(1)
+                self.currentControls = self.devControls
+                if self.isEnabled:
+                    self.currentControls.enableAvatarControls()
 
     def delete(self):
         self.disable()
@@ -178,11 +184,12 @@ class ControlManager:
             toonJumpForce,
             toonReverseSpeed,
             toonRotateSpeed)
-        self.devControls.setWalkSpeed(
-            toonForwardSpeed,
-            toonJumpForce,
-            toonReverseSpeed,
-            toonRotateSpeed)
+        if __debug__:
+            self.devControls.setWalkSpeed(
+                toonForwardSpeed,
+                toonJumpForce,
+                toonReverseSpeed,
+                toonRotateSpeed)
     
     def getSpeeds(self):
         return self.currentControls.getSpeeds()
@@ -209,11 +216,12 @@ class ControlManager:
         self.ghostControls.disableAvatarControls()
         self.ghostControls.setCollisionsActive(0)
         
-        self.devControls.initializeCollisions(cTrav, self.avatar,
-                wallBitmask, floorBitmask, avatarRadius, floorOffset)
-        self.devControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
-        self.devControls.disableAvatarControls()
-        self.devControls.setCollisionsActive(0)
+        if __debug__:
+            self.devControls.initializeCollisions(cTrav, self.avatar,
+                    wallBitmask, floorBitmask, avatarRadius, floorOffset)
+            self.devControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
+            self.devControls.disableAvatarControls()
+            self.devControls.setCollisionsActive(0)
 
         self.walkControls.setCollisionsActive(1)
         self.walkControls.enableAvatarControls()
@@ -223,7 +231,8 @@ class ControlManager:
         self.walkControls.deleteCollisions()
         self.swimControls.deleteCollisions()
         self.ghostControls.deleteCollisions()
-        self.devControls.deleteCollisions()
+        if __debug__:
+            self.devControls.deleteCollisions()
 
     def collisionsOn(self):
         assert(self.debugPrint("collisionsOn()"))
@@ -247,13 +256,19 @@ class ControlManager:
         """
         Stop forcing the ctrl key to return 0's
         """
-        inputState.unforce("jump")
+        self.enableJumpCounter+=1
+        if self.enableJumpCounter:
+            assert self.enableJumpCounter == 1
+            self.enableJumpCounter = 1
+            inputState.unforce("jump")
 
     def disableAvatarJump(self):
         """
         Force the ctrl key to return 0's
         """
-        inputState.force("jump", 0)
+        self.enableJumpCounter-=1
+        if self.enableJumpCounter <= 0:
+            inputState.force("jump", 0)
     
     def monitor(self, foo):
         #assert(self.debugPrint("monitor()"))
