@@ -854,7 +854,7 @@ update_overall_attrib() {
 
   NType common_normal;
   CType common_color;
-  float common_pixel_size;
+  float common_pixel_size = 0.0;
 
   bool has_common_normal = false;
   bool has_common_color = false;
