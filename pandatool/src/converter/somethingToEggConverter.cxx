@@ -148,7 +148,7 @@ handle_external_reference(EggGroupNode *egg_parent,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEggConverter::convert_path
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: Converts the pathname reference by the source file as
 //               requested.  This may either make it absolute,
 //               relative, or leave it alone.

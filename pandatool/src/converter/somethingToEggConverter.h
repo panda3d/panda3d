@@ -83,7 +83,6 @@ public:
   INLINE Filename convert_model_path(const Filename &orig_filename,
                                      const DSearchPath &searchpath);
 
-protected:
   static Filename convert_path(const Filename &orig_filename,
                                const DSearchPath &searchpath,
                                const Filename &rel_dir,

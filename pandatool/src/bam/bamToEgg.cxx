@@ -41,6 +41,11 @@
 #include "colorMatrixTransition.h"
 #include "alphaTransformTransition.h"
 #include "textureTransition.h"
+#include "cullFaceTransition.h"
+#include "cullFaceProperty.h"
+#include "billboardTransition.h"
+#include "decalTransition.h"
+#include "somethingToEggConverter.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -56,6 +61,7 @@ GeomState() {
   _alpha_scale = 1.0;
   _alpha_offset = 0.0;
   _tex = (Texture *)NULL;
+  _bface = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -65,7 +71,7 @@ GeomState() {
 //               its corresponding ArcChain) into the GeomState.
 ////////////////////////////////////////////////////////////////////
 void BamToEgg::GeomState::
-get_net_state(Node *node, ArcChain &chain) {
+get_net_state(Node *node, ArcChain &chain, EggGroupNode *egg_parent) {
   AllTransitionsWrapper atw;
 
   wrt(node, chain.begin(), chain.end(),
@@ -76,6 +82,8 @@ get_net_state(Node *node, ArcChain &chain) {
   const TransformTransition *tt;
   if (get_transition_into(tt, atw)) {
     _mat = tt->get_matrix();
+    LMatrix4f inv = LCAST(float, egg_parent->get_vertex_frame_inv());
+    _mat = _mat * inv;
   }
 
   // Check for texture matrix.
@@ -104,28 +112,12 @@ get_net_state(Node *node, ArcChain &chain) {
       _tex = txt->get_texture();
     }
   }
-}
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamToEgg::GeomState::apply
-//       Access: Public
-//  Description: Applies the state to the indicated EggPrimitive, as
-//               appropriate.
-////////////////////////////////////////////////////////////////////
-void BamToEgg::GeomState::
-apply(EggPrimitive *egg_prim, 
-      EggTextureCollection &textures,
-      EggMaterialCollection &materials) {
-  if (_tex != (Texture *)NULL) {
-    if (_tex->has_name()) {
-      EggTexture temp("", _tex->get_name());
-      if (_tex->has_alpha_name()) {
-        temp.set_alpha_file(_tex->get_alpha_name());
-      }
-
-      EggTexture *egg_tex = 
-        textures.create_unique_texture(temp, ~EggTexture::E_tref_name);
-      egg_prim->set_texture(egg_tex);
+  // Check for bface.
+  const CullFaceTransition *cft;
+  if (get_transition_into(cft, atw)) {
+    if (cft->get_mode() == CullFaceProperty::M_cull_none) {
+      _bface = true;
     }
   }
 }
@@ -189,6 +181,19 @@ apply_color(EggVertex &egg_vert, const Colorf &color) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamToEgg::GeomState::apply_prim
+//       Access: Public
+//  Description: Applies generic, non-vertex-specific properties to
+//               the primitive.
+////////////////////////////////////////////////////////////////////
+void BamToEgg::GeomState::
+apply_prim(EggPrimitive *egg_prim) {
+  if (_bface) {
+    egg_prim->set_bface_flag(true);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamToEgg::Constructor
 //       Access: Public
 //  Description:
@@ -199,7 +204,7 @@ BamToEgg() :
 {
   add_texture_path_options();
   add_rel_dir_options();
-  add_search_path_options(false);
+  add_search_path_options(true);
 
   set_program_description
     ("This program converts native Panda Bam files to egg.  The conversion "
@@ -291,6 +296,7 @@ convert_node(Node *node, ArcChain &chain, EggGroupNode *egg_parent) {
     
     EggGroup *egg_group = new EggGroup(name);
     egg_parent->add_child(egg_group);
+    apply_arc_properties(egg_group, chain);
     
     recurse_nodes(node, chain, egg_group);
   }
@@ -310,6 +316,7 @@ convert_lod_node(LODNode *node, ArcChain &chain, EggGroupNode *egg_parent) {
 
   EggGroup *egg_group = new EggGroup(name);
   egg_parent->add_child(egg_group);
+  apply_arc_properties(egg_group, chain);
 
   int num_children = node->get_num_children(RenderRelation::get_class_type());
   int num_switches = node->get_num_switches();
@@ -354,9 +361,26 @@ convert_lod_node(LODNode *node, ArcChain &chain, EggGroupNode *egg_parent) {
 ////////////////////////////////////////////////////////////////////
 void BamToEgg::
 convert_geom_node(GeomNode *node, ArcChain &chain, EggGroupNode *egg_parent) {
+  bool parent_has_decal = false;
+  if (egg_parent->is_of_type(EggGroup::get_class_type())) {
+    EggGroup *pg = DCAST(EggGroup, egg_parent);
+    parent_has_decal = pg->get_decal_flag();
+  }
+
+  PT(EggGroup) egg_group = new EggGroup(node->get_name());
+  bool fancy_transitions = apply_arc_properties(egg_group, chain);
+  if (fancy_transitions || parent_has_decal) {
+    // If we have any fancy transitions on the arc, or if we're making
+    // decal geometry, we have to make a special node to hold the
+    // geometry (normally it would just appear within its parent).
+    egg_parent->add_child(egg_group.p());
+    egg_parent = egg_group;
+  }
+    
+
   // Get the state associated with this GeomNode.
   GeomState state;
-  state.get_net_state(node, chain);
+  state.get_net_state(node, chain, egg_parent);
 
   // Now get out all the various kinds of geometry.
   int num_geoms = node->get_num_geoms();
@@ -433,7 +457,8 @@ convert_geom_tri(GeomTri *geom, BamToEgg::GeomState &state, EggGroupNode *egg_pa
 
     EggPolygon *egg_poly = new EggPolygon;
     egg_parent->add_child(egg_poly);
-    state.apply(egg_poly, _textures, _materials);
+    apply_texture(egg_poly, state._tex);
+    state.apply_prim(egg_poly);
 
     for (int j = 0; j < 3; j++) {
       // Get per-vertex properties.
@@ -485,6 +510,196 @@ recurse_nodes(Node *node, ArcChain &chain, EggGroupNode *egg_parent) {
     next_chain.push_back(arc);
     convert_node(arc->get_child(), next_chain, egg_parent);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamToEgg::apply_texture
+//       Access: Public
+//  Description: Applies the texture, if any, to the indicated
+//               EggPrimitive.
+////////////////////////////////////////////////////////////////////
+void BamToEgg::
+apply_texture(EggPrimitive *egg_prim, Texture *tex) {
+  if (tex != (Texture *)NULL) {
+    if (tex->has_name()) {
+      Filename filename = SomethingToEggConverter::convert_path
+        (tex->get_name(), get_texture_path(), _make_rel_dir, 
+         _texture_path_convert);
+
+      EggTexture temp("", filename);
+      if (tex->has_alpha_name()) {
+        Filename alpha = SomethingToEggConverter::convert_path
+          (tex->get_alpha_name(), get_texture_path(), _make_rel_dir, 
+           _texture_path_convert);
+        temp.set_alpha_file(alpha);
+      }
+
+      switch (tex->get_minfilter()) {
+      case Texture::FT_nearest:
+        temp.set_minfilter(EggTexture::FT_nearest);
+        break;
+      case Texture::FT_linear:
+        temp.set_minfilter(EggTexture::FT_linear);
+        break;
+      case Texture::FT_nearest_mipmap_nearest:
+        temp.set_minfilter(EggTexture::FT_nearest_mipmap_nearest);
+        break;
+      case Texture::FT_linear_mipmap_nearest:
+        temp.set_minfilter(EggTexture::FT_linear_mipmap_nearest);
+        break;
+      case Texture::FT_nearest_mipmap_linear:
+        temp.set_minfilter(EggTexture::FT_nearest_mipmap_linear);
+        break;
+      case Texture::FT_linear_mipmap_linear:
+        temp.set_minfilter(EggTexture::FT_linear_mipmap_linear);
+        break;
+      }
+
+      switch (tex->get_magfilter()) {
+      case Texture::FT_nearest:
+        temp.set_magfilter(EggTexture::FT_nearest);
+        break;
+      case Texture::FT_linear:
+        temp.set_magfilter(EggTexture::FT_linear);
+        break;
+      default:
+        break;
+      }
+
+      switch (tex->get_wrapu()) {
+      case Texture::WM_clamp:
+        temp.set_wrap_u(EggTexture::WM_clamp);
+        break;
+      case Texture::WM_repeat:
+        temp.set_wrap_u(EggTexture::WM_repeat);
+        break;
+      }
+
+      switch (tex->get_wrapv()) {
+      case Texture::WM_clamp:
+        temp.set_wrap_v(EggTexture::WM_clamp);
+        break;
+      case Texture::WM_repeat:
+        temp.set_wrap_v(EggTexture::WM_repeat);
+        break;
+      }
+
+      PixelBuffer *pbuf = tex->get_ram_image();
+      if (pbuf != (PixelBuffer *)NULL) {
+        switch (pbuf->get_format()) {
+        case PixelBuffer::F_red:
+          temp.set_format(EggTexture::F_red);
+          break;
+        case PixelBuffer::F_green:
+          temp.set_format(EggTexture::F_green);
+          break;
+        case PixelBuffer::F_blue:
+          temp.set_format(EggTexture::F_blue);
+          break;
+        case PixelBuffer::F_alpha:
+          temp.set_format(EggTexture::F_alpha);
+          break;
+        case PixelBuffer::F_rgb:
+          temp.set_format(EggTexture::F_rgb);
+          break;
+        case PixelBuffer::F_rgb5:
+          temp.set_format(EggTexture::F_rgb5);
+          break;
+        case PixelBuffer::F_rgb8:
+          temp.set_format(EggTexture::F_rgb8);
+          break;
+        case PixelBuffer::F_rgb12:
+          temp.set_format(EggTexture::F_rgb12);
+          break;
+        case PixelBuffer::F_rgb332:
+          temp.set_format(EggTexture::F_rgb332);
+          break;
+        case PixelBuffer::F_rgba:
+          temp.set_format(EggTexture::F_rgba);
+          break;
+        case PixelBuffer::F_rgbm:
+          temp.set_format(EggTexture::F_rgbm);
+          break;
+        case PixelBuffer::F_rgba4:
+          temp.set_format(EggTexture::F_rgba4);
+          break;
+        case PixelBuffer::F_rgba5:
+          temp.set_format(EggTexture::F_rgba5);
+          break;
+        case PixelBuffer::F_rgba8:
+          temp.set_format(EggTexture::F_rgba8);
+          break;
+        case PixelBuffer::F_rgba12:
+          temp.set_format(EggTexture::F_rgba12);
+          break;
+        case PixelBuffer::F_luminance:
+          temp.set_format(EggTexture::F_luminance);
+          break;
+        case PixelBuffer::F_luminance_alpha:
+          temp.set_format(EggTexture::F_luminance_alpha);
+          break;
+        case PixelBuffer::F_luminance_alphamask:
+          temp.set_format(EggTexture::F_luminance_alphamask);
+          break;
+        default:
+          break;
+        }
+      }
+
+      EggTexture *egg_tex = 
+        _textures.create_unique_texture(temp, ~EggTexture::E_tref_name);
+      egg_prim->set_texture(egg_tex);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamToEgg::apply_arc_properties
+//       Access: Public
+//  Description: Applies any special properties that might be stored
+//               on the arc, like billboarding.  Returns true if any
+//               were applied, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool BamToEgg::
+apply_arc_properties(EggGroup *egg_group, ArcChain &chain) {
+  if (!chain.has_arcs()) {
+    return false;
+  }
+  NodeRelation *arc = chain.back();
+  bool any_applied = false;
+
+  BillboardTransition *bt;
+  if (get_transition_into(bt, arc)) {
+    if (bt->get_axial_rotate()) {
+      egg_group->set_billboard_type(EggGroup::BT_axis);
+      any_applied = true;
+
+    } else if (bt->get_eye_relative()) {
+      egg_group->set_billboard_type(EggGroup::BT_point_camera_relative);
+      any_applied = true;
+
+    } else {
+      egg_group->set_billboard_type(EggGroup::BT_point_world_relative);
+      any_applied = true;
+    }
+  }
+
+  const TransformTransition *tt;
+  if (get_transition_into(tt, arc)) {
+    LMatrix4f mat = tt->get_matrix();
+    egg_group->set_transform(LCAST(double, mat));
+    any_applied = true;
+  }
+
+  const DecalTransition *dt;
+  if (get_transition_into(dt, arc)) {
+    if (dt->is_on()) {
+      egg_group->set_decal_flag(true);
+      any_applied = true;
+    }
+  }
+
+  return true;
 }
 
 

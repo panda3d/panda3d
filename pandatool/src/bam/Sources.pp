@@ -40,7 +40,7 @@
 #begin bin_target
   #define TARGET bam2egg
   #define LOCAL_LIBS \
-    eggbase progbase
+    converter eggbase progbase
   #define OTHER_LIBS \
     egg:c pandaegg:m \
     parametrics:c collide:c chan:c char:c switchnode:c \
