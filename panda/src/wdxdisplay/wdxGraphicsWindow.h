@@ -75,6 +75,8 @@ public:
   virtual TypeHandle get_gsg_type() const;
   static GraphicsWindow* make_wdxGraphicsWindow(const FactoryParams &params);
 
+  void set_window_handle(HWND hwnd);
+
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   void process_events(void);
 
@@ -124,6 +126,7 @@ private:
   bool              _mouse_motion_enabled;
   bool              _mouse_passive_motion_enabled;
   bool              _mouse_entry_enabled;
+  bool              _ime_open;
   bool              _exiting_window;
   bool              _window_inactive;
   bool              _active_minimized_fullscreen;

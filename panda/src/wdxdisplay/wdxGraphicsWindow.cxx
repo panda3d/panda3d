@@ -257,6 +257,28 @@ void AtExitFn() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsWindow::set_window_handle
+//       Access: Public
+//  Description: This is called on the object once the actual Window
+//               has been created.  It gives the window handle of the
+//               created window so the wdxGraphicsWindow object can
+//               perform any additional initialization based on this.
+////////////////////////////////////////////////////////////////////
+void wdxGraphicsWindow::
+set_window_handle(HWND hwnd) {
+  // Tell the associated dxGSG about the window handle.
+  _dxgsg->scrn.hWnd = hwnd;
+
+  // Determine the initial open status of the IME.
+  _ime_open = false;
+  HIMC hIMC = ImmGetContext(hwnd);
+  if (hIMC != 0) {
+    _ime_open = (ImmGetOpenStatus(hIMC) != 0);
+    ImmReleaseContext(hwnd, hIMC);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: static_window_proc
 //       Access:
 //  Description:
@@ -322,63 +344,114 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                 handle_mouse_motion(x, y);
             }
             return 0;
-      #if 0
-        case WM_SYSCHAR:
-        case WM_CHAR:  // shouldnt receive WM_CHAR unless WM_KEYDOWN stops returning 0 and passes on to DefWindProc
-            break;
-      #endif
 
-        case WM_SYSKEYDOWN:
-        case WM_KEYDOWN: {
+    case WM_IME_NOTIFY:
+      if (wparam == IMN_SETOPENSTATUS) {
+        HIMC hIMC = ImmGetContext(hwnd);
+        nassertr(hIMC != 0, 0);
+        _ime_open = (ImmGetOpenStatus(hIMC) != 0);
+        ImmReleaseContext(hwnd, hIMC);
+      }
+      break;
 
-            POINT point;
+    case WM_IME_COMPOSITION:
+      if (lparam & GCS_RESULTSTR) {
+        if (!_input_devices.empty()) {
+          HIMC hIMC = ImmGetContext(hwnd);
+          nassertr(hIMC != 0, 0);
+          
+          static const int max_ime_result = 128;
+          static char ime_result[max_ime_result];
+          
+          // There's a rumor that ImmGetCompositionStringW() doesn't
+          // work for Win95 or Win98; for these OS's we must use
+          // ImmGetCompositionStringA().  How does this affect the
+          // returning of multibyte characters?
+          DWORD result_size =
+            ImmGetCompositionStringW(hIMC, GCS_RESULTSTR,
+                                     ime_result, max_ime_result);
+          ImmReleaseContext(hwnd, hIMC);
+          
+          // Add this string into the text buffer of the application.
+          
+          // ImmGetCompositionStringW() returns a string, but it's
+          // filled in with wstring data: every two characters defines a
+          // 16-bit unicode char.  The docs aren't clear on the
+          // endianness of this.  I guess it's safe to assume all Win32
+          // machines are little-endian.
+          for (DWORD i = 0; i < result_size; i += 2) {
+            int result = 
+              ((int)(unsigned char)ime_result[i + 1] << 8) | 
+              (unsigned char)ime_result[i];
+            _input_devices[0].keystroke(result);
+          }
+        }
+        return 0;
+      }
+      break;
 
-            GetCursorPos(&point);
-            ScreenToClient(hwnd, &point);
+    case WM_CHAR:
+      // Ignore WM_CHAR messages if we have the IME open, since
+      // everything will come in through WM_IME_COMPOSITION.  (It's
+      // supposed to come in through WM_CHAR, too, but there seems to
+      // be a bug in Win2000 in that it only sends question mark
+      // characters through here.)
+      if (!_ime_open && !_input_devices.empty()) {
+        _input_devices[0].keystroke(wparam);
+      }
+      break;
 
-          #ifdef NDEBUG
-               handle_keypress(lookup_key(wparam), point.x, point.y);
-          #else
-            // handle Cntrl-V paste from clipboard
-            if(!((wparam=='V') && (GetKeyState(VK_CONTROL) < 0))) {
-               handle_keypress(lookup_key(wparam), point.x, point.y);
-            } else {
-                HGLOBAL hglb; 
-                char    *lptstr; 
-            
-                if (!IsClipboardFormatAvailable(CF_TEXT)) 
-                   return 0; 
-            
-                if (!OpenClipboard(NULL)) 
-                   return 0; 
-             
-                hglb = GetClipboardData(CF_TEXT); 
-                if (hglb!=NULL) {
-                    lptstr = (char *) GlobalLock(hglb); 
-                    if(lptstr != NULL)  {
-                        char *pChar;
-                        for(pChar=lptstr;*pChar!=NULL;pChar++) {
-                           handle_keypress(KeyboardButton::ascii_key((uchar)*pChar), point.x, point.y);
-                        }
-                        GlobalUnlock(hglb); 
-                    } 
-                }
-                CloseClipboard(); 
+    case WM_SYSKEYDOWN:
+      // want to use defwindproc on Alt syskey so Alt-F4 works, etc
+      // but do want to bypass defwindproc F10 behavior (it activates
+      // the main menu, but we have none)
+      if (wparam == VK_F10) {
+        return 0;
+      }
+      break;
+
+    case WM_KEYDOWN: {
+      POINT point;
+
+      GetCursorPos(&point);
+      ScreenToClient(hwnd, &point);
+      handle_keypress(lookup_key(wparam), point.x, point.y);
+
+      // Handle Cntrl-V paste from clipboard.  Is there a better way
+      // to detect this hotkey?
+      if ((wparam=='V') && (GetKeyState(VK_CONTROL) < 0) && 
+          !_input_devices.empty()) {
+        HGLOBAL hglb;
+        char *lptstr;
+
+        if (!IsClipboardFormatAvailable(CF_TEXT))
+          return 0;
+
+        if (!OpenClipboard(NULL))
+          return 0;
+        
+        // Maybe we should support CF_UNICODETEXT if it is available
+        // too?
+        hglb = GetClipboardData(CF_TEXT);
+        if (hglb!=NULL) {
+          lptstr = (char *) GlobalLock(hglb);
+          if (lptstr != NULL)  {
+            char *pChar;
+            for(pChar=lptstr;*pChar!=NULL;pChar++) {
+              _input_devices[0].keystroke((uchar)*pChar);
             }
-          #endif
-            // want to use defwindproc on Alt syskey so Alt-F4 works, etc
-            // but do want to bypass defwindproc F10 behavior (it activates the
-            // main menu, but we have none)
-            if((msg==WM_SYSKEYDOWN)&&(wparam!=VK_F10))
-              break;
-             else return 0;
+            GlobalUnlock(hglb);
+          }
         }
+        CloseClipboard();
+      }
+      break;
+    }
 
-        case WM_SYSKEYUP:
-        case WM_KEYUP: {
-            handle_keyrelease(lookup_key(wparam));
-            return 0;
-        }
+    case WM_SYSKEYUP:
+    case WM_KEYUP:
+      handle_keyrelease(lookup_key(wparam));
+      break;
 
         case WM_LBUTTONDOWN:
             button = 0;
@@ -845,6 +918,7 @@ void wdxGraphicsWindow::reactivate_window(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wdxGraphicsWindow::wdxGraphicsWindow(GraphicsPipe* pipe) : GraphicsWindow(pipe) {
+   _ime_open = false;
    _pParentWindowGroup=NULL;
    _pParentWindowGroup=new wdxGraphicsWindowGroup(this);
 }
@@ -856,6 +930,7 @@ wdxGraphicsWindow::wdxGraphicsWindow(GraphicsPipe* pipe) : GraphicsWindow(pipe) 
 ////////////////////////////////////////////////////////////////////
 wdxGraphicsWindow::wdxGraphicsWindow(GraphicsPipe* pipe, const GraphicsWindow::Properties& props) 
                   : GraphicsWindow(pipe, props) {
+   _ime_open = false;
    _pParentWindowGroup=NULL;
    _pParentWindowGroup=new wdxGraphicsWindowGroup(this);
 }
@@ -1034,7 +1109,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
                 exit(1);
             }
 
-            _windows[devnum]->_dxgsg->scrn.hWnd = hWin;
+            _windows[devnum]->set_window_handle(hWin);
             if(devnum==0) {
                 _hParentWindow=hWin;
             }
@@ -1067,7 +1142,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
                          window_style, win_rect.left, win_rect.top, win_rect.right-win_rect.left,
                          win_rect.bottom-win_rect.top,
                          NULL, NULL, hProgramInstance, 0);
-        _windows[0]->_dxgsg->scrn.hWnd = _hParentWindow;
+        _windows[0]->set_window_handle(_hParentWindow);
     }
 
     if(_hParentWindow==NULL) {
@@ -2844,6 +2919,7 @@ make_windows(GraphicsPipe *pipe,int num_windows,GraphicsWindow::Properties *WinP
 wdxGraphicsWindow::wdxGraphicsWindow(GraphicsPipe* pipe, const GraphicsWindow::Properties &props, wdxGraphicsWindowGroup *pParentGroup)
                    : GraphicsWindow(pipe, props) {
     _pParentWindowGroup=pParentGroup;
+    _ime_open = false;
    // just call the GraphicsWindow constructor, have to hold off rest of init
 }
 
