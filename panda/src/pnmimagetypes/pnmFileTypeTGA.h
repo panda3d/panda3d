@@ -33,7 +33,7 @@ struct ImageHeader;
 
 
 /* Max number of colors allowed for colormapped output. */
-#define TGA_MAXCOLORS 256
+#define TGA_MAXCOLORS 257
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PNMFileTypeTGA
