@@ -370,7 +370,9 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
         if result >= 0 and \
            globalClockDelta.getUncertainty() != None:
             other = self.cr.doId2do.get(avId)
-            if other and hasattr(other, "d_returnResync"):
+            if (not other):
+                self.notify.info("Warning: couldn't find the avatar %d" % (avId))
+            elif hasattr(other, "d_returnResync"):
                 realTime = globalClock.getRealTime()
                 serverTime = realTime - globalClockDelta.getDelta()
                 self.notify.info("Returning resync for %s; local time is %s and server time is %s." % (
