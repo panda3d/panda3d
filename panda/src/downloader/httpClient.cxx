@@ -25,6 +25,7 @@
 #include "executionEnvironment.h"
 #include "httpBasicAuthorization.h"
 #include "httpDigestAuthorization.h"
+#include "globPattern.h"
 
 #ifdef HAVE_SSL
 
@@ -102,6 +103,8 @@ HTTPClient() {
   _ssl_ctx = (SSL_CTX *)NULL;
 
   set_proxy_spec(http_proxy);
+  set_direct_host_spec(http_direct_hosts);
+
   if (!http_proxy_username.empty()) {
     set_username("*proxy", "", http_proxy_username);
   }
@@ -251,11 +254,6 @@ set_proxy_spec(const string &proxy_spec) {
       url = URLSpec(spec.substr(equals + 1), true);
     }
 
-    if (!url.has_scheme()) {
-      // The default scheme for talking to proxies is HTTP.
-      url.set_scheme("http");
-    }
-
     add_proxy(scheme, url);
   }
 }
@@ -301,8 +299,8 @@ get_proxy_spec() const {
 //       Access: Published
 //  Description: Specifies the set of hosts that should be connected
 //               to directly, without using a proxy.  This is a
-//               semicolon-separated list of hostnames or ip addresses,
-//               that may contain wildcard characters ("*").
+//               semicolon-separated list of hostnames that may
+//               contain wildcard characters ("*").
 ////////////////////////////////////////////////////////////////////
 void HTTPClient::
 set_direct_host_spec(const string &direct_host_spec) {
@@ -325,21 +323,21 @@ set_direct_host_spec(const string &direct_host_spec) {
 //       Access: Published
 //  Description: Returns the set of hosts that should be connected
 //               to directly, without using a proxy, as a
-//               semicolon-separated list of hostnames or ip addresses,
-//               that may contain wildcard characters ("*").
+//               semicolon-separated list of hostnames that may
+//               contain wildcard characters ("*").
 ////////////////////////////////////////////////////////////////////
 string HTTPClient::
 get_direct_host_spec() const {
   string result;
 
-  vector_string::const_iterator si;
+  DirectHosts::const_iterator si;
   for (si = _direct_hosts.begin(); si != _direct_hosts.end(); ++si) {
-    const string &host = (*si);
+    const GlobPattern &host = (*si);
 
     if (!result.empty()) {
       result += ";";
     }
-    result += host;
+    result += host.get_pattern();
   }
 
   return result;
@@ -367,6 +365,8 @@ clear_proxy() {
 ////////////////////////////////////////////////////////////////////
 void HTTPClient::
 add_proxy(const string &scheme, const URLSpec &proxy) {
+  URLSpec proxy_url(proxy);
+
   // The scheme is always converted to lowercase.
   string lc_scheme;
   lc_scheme.reserve(scheme.length());
@@ -379,7 +379,18 @@ add_proxy(const string &scheme, const URLSpec &proxy) {
     lc_scheme = lc_scheme.substr(0, lc_scheme.length() - 1);
   }
 
-  _proxies_by_scheme[lc_scheme].push_back(proxy);
+  if (lc_scheme == "socks") {
+    // Scheme "socks" implies we talk to the proxy via the "socks"
+    // scheme, no matter what scheme the user actually specified.
+    proxy_url.set_scheme("socks");
+
+  } else if (!proxy_url.has_scheme()) {
+    // Otherwise, if the user didn't specify a scheme to talk to the
+    // proxy, the default is "http".
+    proxy_url.set_scheme("http");
+  }
+
+  _proxies_by_scheme[lc_scheme].push_back(proxy_url);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -414,7 +425,7 @@ add_direct_host(const string &hostname) {
     lc_hostname += tolower(*si);
   }
 
-  _direct_hosts.push_back(lc_hostname);
+  _direct_hosts.push_back(GlobPattern(lc_hostname));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -435,10 +446,9 @@ get_proxies_for_url(const URLSpec &url, pvector<URLSpec> &proxies) const {
   // First, check if the hostname matches any listed in direct_hosts.
   string hostname = url.get_server();
 
-  // TODO: This should be a glob match, not a literal match.
-  vector_string::const_iterator si;
+  DirectHosts::const_iterator si;
   for (si = _direct_hosts.begin(); si != _direct_hosts.end(); ++si) {
-    if ((*si) == hostname) {
+    if ((*si).matches(hostname)) {
       // It matches, so don't use any proxies.
       return;
     }

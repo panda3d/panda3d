@@ -82,6 +82,8 @@ config_downloader.GetBool("verify-ssl", true);
 // connections that don't specify otherwise.
 const string http_proxy =
 config_downloader.GetString("http-proxy", "");
+const string http_direct_hosts =
+config_downloader.GetString("http-direct-hosts", "");
 const string http_proxy_username =
 config_downloader.GetString("http-proxy-username", "");
 

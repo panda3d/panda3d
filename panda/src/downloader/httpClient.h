@@ -31,10 +31,10 @@
 #include "urlSpec.h"
 #include "httpAuthorization.h"
 #include "httpEnum.h"
+#include "globPattern.h"
 #include "pointerTo.h"
 #include "pvector.h"
 #include "pmap.h"
-#include "vector_string.h"
 
 #include <openssl/ssl.h>
 
@@ -136,7 +136,8 @@ private:
   typedef pvector<URLSpec> Proxies;
   typedef pmap<string, Proxies> ProxiesByScheme;
   ProxiesByScheme _proxies_by_scheme;
-  vector_string _direct_hosts;
+  typedef pvector<GlobPattern> DirectHosts;
+  DirectHosts _direct_hosts;
 
   HTTPEnum::HTTPVersion _http_version;
   VerifySSL _verify_ssl;
