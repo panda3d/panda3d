@@ -489,6 +489,12 @@ bool MayaToEggConverter::
 convert_hierarchy(EggGroupNode *egg_root) {
   MStatus status;
 
+  MItDag dag_iterator(MItDag::kDepthFirst, MFn::kTransform, &status);
+  if (!status) {
+    status.perror("MItDag constructor");
+    return false;
+  }
+
   if (_from_selection) {
     // Get only the selected geometry.
     MSelectionList selection;
@@ -504,13 +510,26 @@ convert_hierarchy(EggGroupNode *egg_root) {
       bool all_ok = true;
       unsigned int length = selection.length();
       for (unsigned int i = 0; i < length; i++) {
-        MDagPath dag_path;
-        status = selection.getDagPath(i, dag_path);
+        MDagPath root_path;
+        status = selection.getDagPath(i, root_path);
         if (!status) {
           status.perror("MSelectionList::getDagPath");
         } else {
-          if (!process_model_node(dag_path, egg_root)) {
-            all_ok = false;
+          // Now traverse through the selected dag path and all nested
+          // dag paths.
+          dag_iterator.reset(root_path);
+          while (!dag_iterator.isDone()) {
+            MDagPath dag_path;
+            status = dag_iterator.getPath(dag_path);
+            if (!status) {
+              status.perror("MItDag::getPath");
+            } else {
+              if (!process_model_node(dag_path, egg_root)) {
+                all_ok = false;
+              }
+            }
+            
+            dag_iterator.next();
           }
         }
       }
@@ -524,13 +543,7 @@ convert_hierarchy(EggGroupNode *egg_root) {
   }
 
   // Get the entire Maya scene.
-  
-  MItDag dag_iterator(MItDag::kDepthFirst, MFn::kTransform, &status);
-  if (!status) {
-    status.perror("MItDag constructor");
-    return false;
-  }
-  
+    
   // This while loop walks through the entire Maya hierarchy, one
   // node at a time.  Maya's MItDag object automatically performs a
   // depth-first traversal of its scene graph.
