@@ -7,34 +7,39 @@
     putil
 
   #define SOURCES \
-    cmath.I cmath.h compose_matrix.cxx compose_matrix.h  \
-    compose_matrix_src.I compose_matrix_src.h config_linmath.cxx \
-    config_linmath.h coordinateSystem.cxx coordinateSystem.h \
-    deg_2_rad.h ioPtaDatagramLinMath.I ioPtaDatagramLinMath.cxx \
-    ioPtaDatagramLinMath.h lcast_to.h lcast_to_src.h lcast_to_src.I \
-    lmatrix.cxx lmatrix.h lmatrix3.cxx lmatrix3.h lmatrix3_src.I \
-    lmatrix3_src.h lmatrix4.cxx lmatrix4.h lmatrix4_src.I \
+    cmath.I cmath.h compose_matrix.cxx compose_matrix.h \
+    compose_matrix_src.I compose_matrix_src.cxx compose_matrix_src.h \
+    config_linmath.cxx config_linmath.h coordinateSystem.cxx \
+    coordinateSystem.h dbl2fltnames.h dblnames.h deg_2_rad.h \
+    flt2dblnames.h fltnames.h ioPtaDatagramLinMath.I \
+    ioPtaDatagramLinMath.cxx ioPtaDatagramLinMath.h lcast_to.h \
+    lcast_to_src.h lcast_to_src.I lmatrix.cxx lmatrix.h lmatrix3.cxx \
+    lmatrix3.h lmatrix3_src.I lmatrix3_src.cxx lmatrix3_src.h \
+    lmatrix4.cxx lmatrix4.h lmatrix4_src.I lmatrix4_src.cxx \
     lmatrix4_src.h lorientation.cxx lorientation.h lorientation_src.I \
-    lorientation_src.h lpoint2.cxx lpoint2.h lpoint2_src.I \
-    lpoint2_src.h lpoint3.cxx lpoint3.h lpoint3_src.I lpoint3_src.h \
-    lpoint4.cxx lpoint4.h lpoint4_src.I lpoint4_src.h lquaternion.cxx \
-    lquaternion.h lquaternion_src.I lquaternion_src.h lrotation.cxx \
-    lrotation.h lrotation_src.I lrotation_src.h luse.I luse.N luse.cxx \
-    luse.h lvec2_ops.h lvec2_ops_src.I lvec2_ops_src.h lvec3_ops.h \
+    lorientation_src.cxx lorientation_src.h lpoint2.cxx lpoint2.h \
+    lpoint2_src.I lpoint2_src.cxx lpoint2_src.h lpoint3.cxx lpoint3.h \
+    lpoint3_src.I lpoint3_src.cxx lpoint3_src.h lpoint4.cxx lpoint4.h \
+    lpoint4_src.I lpoint4_src.cxx lpoint4_src.h lquaternion.cxx \
+    lquaternion.h lquaternion_src.I lquaternion_src.cxx \
+    lquaternion_src.h lrotation.cxx lrotation.h lrotation_src.I \
+    lrotation_src.cxx lrotation_src.h luse.I luse.N luse.cxx luse.h \
+    lvec2_ops.h lvec2_ops_src.I lvec2_ops_src.h lvec3_ops.h \
     lvec3_ops_src.I lvec3_ops_src.h lvec4_ops.h lvec4_ops_src.I \
     lvec4_ops_src.h lvecBase2.cxx lvecBase2.h lvecBase2_src.I \
-    lvecBase2_src.h lvecBase3.cxx lvecBase3.h lvecBase3_src.I \
-    lvecBase3_src.h lvecBase4.cxx lvecBase4.h lvecBase4_src.I \
-    lvecBase4_src.h lvector2.cxx lvector2.h lvector2_src.I \
+    lvecBase2_src.cxx lvecBase2_src.h lvecBase3.cxx lvecBase3.h \
+    lvecBase3_src.I lvecBase3_src.cxx lvecBase3_src.h lvecBase4.cxx \
+    lvecBase4.h lvecBase4_src.I lvecBase4_src.cxx lvecBase4_src.h \
+    lvector2.cxx lvector2.h lvector2_src.I lvector2_src.cxx \
     lvector2_src.h lvector3.cxx lvector3.h lvector3_src.I \
-    lvector3_src.h lvector4.cxx lvector4.h lvector4_src.I \
-    lvector4_src.h mathNumbers.cxx mathNumbers.h nearly_zero.h \
-    pta_Colorf.cxx pta_Colorf.h pta_Normalf.cxx pta_Normalf.h \
-    pta_TexCoordf.cxx pta_TexCoordf.h pta_Vertexf.cxx pta_Vertexf.h \
-    vector_Colorf.cxx vector_Colorf.h vector_LPoint2f.cxx \
-    vector_LPoint2f.h vector_LVecBase3f.cxx vector_LVecBase3f.h \
-    vector_Normalf.cxx vector_Normalf.h vector_TexCoordf.h \
-    vector_Vertexf.cxx vector_Vertexf.h
+    lvector3_src.cxx lvector3_src.h lvector4.cxx lvector4.h \
+    lvector4_src.I lvector4_src.cxx lvector4_src.h mathNumbers.cxx \
+    mathNumbers.h nearly_zero.h pta_Colorf.cxx pta_Colorf.h \
+    pta_Normalf.cxx pta_Normalf.h pta_TexCoordf.cxx pta_TexCoordf.h \
+    pta_Vertexf.cxx pta_Vertexf.h vector_Colorf.cxx vector_Colorf.h \
+    vector_LPoint2f.cxx vector_LPoint2f.h vector_LVecBase3f.cxx \
+    vector_LVecBase3f.h vector_Normalf.cxx vector_Normalf.h \
+    vector_TexCoordf.h vector_Vertexf.cxx vector_Vertexf.h
 
   #define INSTALL_HEADERS \
     cmath.I cmath.h compose_matrix.h compose_matrix_src.I \

@@ -17,9 +17,10 @@
     finiteBoundingVolume.cxx finiteBoundingVolume.h frustum.h \
     frustum_src.I frustum_src.h geometricBoundingVolume.I \
     geometricBoundingVolume.cxx geometricBoundingVolume.h look_at.cxx \
-    look_at.h look_at_src.I look_at_src.h omniBoundingVolume.I \
-    omniBoundingVolume.cxx omniBoundingVolume.h plane.cxx plane.h \
-    plane_src.I plane_src.h rotate_to.cxx rotate_to.h
+    look_at.h look_at_src.I look_at_src.cxx look_at_src.h \
+    omniBoundingVolume.I omniBoundingVolume.cxx omniBoundingVolume.h \
+    plane.cxx plane.h plane_src.I plane_src.cxx plane_src.h \
+    rotate_to.cxx rotate_to.h rotate_to_src.cxx
 
   #define INSTALL_HEADERS \
     boundingHexahedron.I boundingHexahedron.h boundingLine.I \
