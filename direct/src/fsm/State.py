@@ -109,6 +109,9 @@ class State(DirectObject):
     def redefineFunc(self, oldMethod, newMethod, map):
         if not FsmRedefine:
             return
+        # Methods are allowed to be None
+        if oldMethod is None:
+            return
         if map.has_key(oldMethod):
             # Get the list of states for the old function
             stateList = map[oldMethod]
