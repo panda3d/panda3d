@@ -103,6 +103,7 @@ underflow() {
       // Oops, we didn't read what we thought we would.
       if (read_count <= 0) {
         _is_closed = !BIO_should_retry(*_source);
+        gbump(num_bytes);
         return EOF;
       }
 

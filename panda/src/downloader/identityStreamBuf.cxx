@@ -111,6 +111,7 @@ underflow() {
     if (read_count != num_bytes) {
       // Oops, we didn't read what we thought we would.
       if (read_count == 0) {
+        gbump(num_bytes);
         return EOF;
       }
 
@@ -133,33 +134,24 @@ underflow() {
 ////////////////////////////////////////////////////////////////////
 size_t IdentityStreamBuf::
 read_chars(char *start, size_t length) {
+  size_t read_count = 0;
+
   if (!_has_content_length) {
     // If we have no restrictions on content length, read till end of
     // file.
     (*_source)->read(start, length);
-    length = (*_source)->gcount();
-
-    if (length == 0) {
-      // End of file; we're done.
-      if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
-        // An IdentityStreamBuf doesn't have a trailer, so we've already
-        // "read" it.
-        _doc->_state = HTTPChannel::S_read_trailer;
-      }
-    }
+    read_count = (*_source)->gcount();
 
   } else {
-    if (_bytes_remaining == 0) {
-      return 0;
-    }
-    
     // Extract some of the bytes remaining in the chunk.
-    
-    length = min(length, _bytes_remaining);
-    (*_source)->read(start, length);
-    length = (*_source)->gcount();
-    _bytes_remaining -= length;
-    
+
+    if (_bytes_remaining != 0) {
+      length = min(length, _bytes_remaining);
+      (*_source)->read(start, length);
+      read_count = (*_source)->gcount();
+      _bytes_remaining -= read_count;
+    }
+      
     if (_bytes_remaining == 0) {
       // We're done.
       if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
@@ -169,8 +161,20 @@ read_chars(char *start, size_t length) {
       }
     }
   }
+  
+  if (read_count == 0) {
+    if ((*_source)->is_closed()) {
+      // socket closed; we're done.
+      if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
+        // An IdentityStreamBuf doesn't have a trailer, so we've already
+        // "read" it.
+        _doc->_state = HTTPChannel::S_read_trailer;
+      }
+    }
+    return 0;
+  }
 
-  return length;
+  return read_count;
 }
 
 #endif  // HAVE_SSL

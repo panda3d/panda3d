@@ -75,3 +75,25 @@ INLINE BIO *BioPtr::
 get_bio() const {
   return _bio;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: BioPtr::get_server_name
+//       Access: Public
+//  Description: Returns the name of the server we are (or should be)
+//               connected to.
+////////////////////////////////////////////////////////////////////
+INLINE const string &BioPtr::
+get_server_name() const {
+  return _server_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BioPtr::get_port
+//       Access: Public
+//  Description: Returns the port on which we are (or should be)
+//               connected.
+////////////////////////////////////////////////////////////////////
+INLINE int BioPtr::
+get_port() const {
+  return _port;
+}

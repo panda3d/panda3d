@@ -52,6 +52,8 @@ public:
   INLINE BIO *get_bio() const;
 
   bool connect() const;
+  INLINE const string &get_server_name() const;
+  INLINE int get_port() const;
   
 private:
   BIO *_bio;

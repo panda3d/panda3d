@@ -35,6 +35,7 @@
 #include "bioStreamPtr.h"
 #include "pmap.h"
 #include "pointerTo.h"
+#include "config_downloader.h"
 #include <openssl/ssl.h>
 
 class HTTPClient;
@@ -57,11 +58,6 @@ class HTTPClient;
 class EXPCL_PANDAEXPRESS HTTPChannel : public VirtualFile {
 private:
   HTTPChannel(HTTPClient *client);
-
-  bool send_request(const string &method, const URLSpec &url, 
-                    const string &body);
-  bool send_request(const string &header, const string &body, 
-                    bool allow_reconnect);
 
 public:
   virtual ~HTTPChannel();
@@ -96,26 +92,48 @@ PUBLISHED:
   INLINE bool get_document(const URLSpec &url);
   INLINE bool get_header(const URLSpec &url);
 
+  INLINE void request_post_form(const URLSpec &url, const string &body);
+  INLINE void request_document(const URLSpec &url);
+  INLINE void request_header(const URLSpec &url);
+  bool run();
+
   ISocketStream *read_body();
 
 private:
-  bool establish_connection();
-  bool establish_http();
-  bool establish_https();
-  bool establish_http_proxy();
-  bool establish_https_proxy();
+  bool run_connecting();
+  bool run_proxy_ready();
+  bool run_proxy_request_sent();
+  bool run_proxy_reading_header();
+  bool run_setup_ssl();
+  bool run_ssl_handshake();
+  bool run_ready();
+  bool run_request_sent();
+  bool run_reading_header();
+  bool run_read_header();
+  bool run_begin_body();
+  bool run_reading_body();
+  bool run_read_body();
+  bool run_read_trailer();
 
-  bool make_https_connection();
+  void begin_request(const string &method, const URLSpec &url, 
+                     const string &body, bool nonblocking);
+
+  bool http_getline(string &str);
+  bool http_send(const string &str);
+  bool parse_http_response(const string &line);
+  bool parse_http_header();
+
+  INLINE void check_socket();
   bool verify_server(X509_NAME *subject) const;
 
   static string get_x509_name_component(X509_NAME *name, int nid);
   static bool x509_name_subset(X509_NAME *name_a, X509_NAME *name_b);
 
-  void make_header(string &header, const string &method, 
-                   const URLSpec &url, const string &body);
+  void make_header();
+  void make_proxy_request_text();
+  void make_request_text(const string &authorization);
+
   void set_url(const URLSpec &url);
-  void issue_request(const string &header, const string &body);
-  void read_http_response();
   void store_header_field(const string &field_name, const string &field_value);
   bool get_authorization(string &authorization,
                          const string &authenticate_request, 
@@ -129,7 +147,6 @@ private:
   static void show_send(const string &message);
 #endif
 
-  bool prepare_for_next(bool allow_reconnect);
   void free_bio();
 
   HTTPClient *_client;
@@ -137,18 +154,13 @@ private:
   PT(BioPtr) _bio;
   PT(BioStreamPtr) _source;
   bool _persistent_connection;
+  bool _nonblocking;
 
   URLSpec _url;
   string _method;
+  string _header;
+  string _body;
 
-  enum State {
-    S_new,
-    S_read_header,
-    S_started_body,
-    S_read_body,
-    S_read_trailer
-  };
-  State _state;
   int _read_index;
 
   HTTPClient::HTTPVersion _http_version;
@@ -162,6 +174,45 @@ private:
   Headers _headers;
 
   size_t _file_size;
+
+  // These members are used to maintain the current state while
+  // communicating with the server.  We need to store everything in
+  // the class object instead of using local variables because in the
+  // case of nonblocking I/O we have to be able to return to the
+  // caller after any I/O operation and resume later where we left
+  // off.
+  enum State {
+    S_new,
+    S_connecting,
+    S_proxy_ready,
+    S_proxy_request_sent,
+    S_proxy_reading_header,
+    S_setup_ssl,
+    S_ssl_handshake,
+    S_ready,
+    S_request_sent,
+    S_reading_header,
+    S_read_header,
+    S_begin_body,
+    S_reading_body,
+    S_read_body,
+    S_read_trailer,
+    S_failure
+  };
+  State _state;
+  State _done_state;
+  string _proxy_header;
+  string _proxy_request_text;
+  bool _proxy_tunnel;
+  string _request_text;
+  string _working_getline;
+  size_t _sent_so_far;
+  string _current_field_name;
+  string _current_field_value;
+  ISocketStream *_body_stream;
+  BIO *_sbio;
+  pset<URLSpec> _redirect_trail;
+  int _last_status_code;
 
   typedef pmap<string, string> Tokens;
   typedef pmap<string, Tokens> AuthenticationSchemes;

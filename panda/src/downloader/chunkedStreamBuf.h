@@ -47,10 +47,12 @@ protected:
 
 private:
   size_t read_chars(char *start, size_t length);
+  bool http_getline(string &str);
 
   PT(BioStreamPtr) _source;
   size_t _chunk_remaining;
   bool _done;
+  string _working_getline;
 
   PT(HTTPChannel) _doc;
   int _read_index;

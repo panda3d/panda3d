@@ -116,6 +116,7 @@ underflow() {
     if (read_count != num_bytes) {
       // Oops, we didn't read what we thought we would.
       if (read_count == 0) {
+        gbump(num_bytes);
         return EOF;
       }
 
@@ -146,16 +147,16 @@ read_chars(char *start, size_t length) {
     // Extract some of the bytes remaining in the chunk.
     length = min(length, _chunk_remaining);
     (*_source)->read(start, length);
-    length = (*_source)->gcount();
-    _chunk_remaining -= length;
-    return length;
+    size_t read_count = (*_source)->gcount();
+    _chunk_remaining -= read_count;
+    return read_count;
   }
 
   // Read the next chunk.
   string line;
-  getline(**_source, line);
-  if (!line.empty() && line[line.length() - 1] == '\r') {
-    line = line.substr(0, line.length() - 1);
+  if (!http_getline(line)) {
+    // EOF (or data unavailable) while trying to read the chunk size.
+    return 0;
   }
   size_t chunk_size = (size_t)strtol(line.c_str(), NULL, 16);
   if (chunk_size == 0) {
@@ -173,6 +174,42 @@ read_chars(char *start, size_t length) {
 
   _chunk_remaining = chunk_size;
   return read_chars(start, length);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ChunkedStreamBuf::http_getline
+//       Access: Private
+//  Description: Reads a single line from the stream.  Returns
+//               true if the line is successfully retrieved, or false
+//               if a complete line has not yet been received or if
+//               the connection has been closed.
+////////////////////////////////////////////////////////////////////
+bool ChunkedStreamBuf::
+http_getline(string &str) {
+  nassertr(!_source.is_null(), false);
+  int ch = (*_source)->get();
+  while (!(*_source)->eof() && !(*_source)->fail()) {
+    switch (ch) {
+    case '\n':
+      // end-of-line character, we're done.
+      if (downloader_cat.is_spam()) {
+        downloader_cat.spam() << "recv: " << _working_getline << "\n";
+      }
+      str = _working_getline;
+      _working_getline = string();
+      return true;
+
+    case '\r':
+      // Ignore CR characters.
+      break;
+
+    default:
+      _working_getline += (char)ch;
+    }
+    ch = (*_source)->get();
+  }
+
+  return false;
 }
 
 #endif  // HAVE_SSL

@@ -26,7 +26,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
 is_valid() const {
-  return (!_source.is_null() && (_status_code / 100) == 2);
+  return (!_source.is_null() && _state != S_failure && 
+          (_status_code / 100) == 2);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -192,7 +193,9 @@ get_file_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
 post_form(const URLSpec &url, const string &body) {
-  return send_request("POST", url, body);
+  begin_request("POST", url, body, false);
+  run();
+  return is_valid();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -203,7 +206,9 @@ post_form(const URLSpec &url, const string &body) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
 get_document(const URLSpec &url) {
-  return send_request("GET", url, string());
+  begin_request("GET", url, string(), false);
+  run();
+  return is_valid();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -217,5 +222,75 @@ get_document(const URLSpec &url) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
 get_header(const URLSpec &url) {
-  return send_request("HEAD", url, string());
+  begin_request("HEAD", url, string(), false);
+  run();
+  return is_valid();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::request_post_form
+//       Access: Published
+//  Description: Posts form data to a particular URL and retrieves the
+//               response, all using non-blocking I/O.  See
+//               request_document() and post_form().
+//
+//               It is important to note that you *must* call run()
+//               repeatedly after calling this method until run()
+//               returns false, and you may not call any other
+//               document posting or retrieving methods using the
+//               HTTPChannel object in the interim, or your form data
+//               may not get posted.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+request_post_form(const URLSpec &url, const string &body) {
+  begin_request("POST", url, body, true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::request_document
+//       Access: Published
+//  Description: Begins a non-blocking request to retrieve a given
+//               document.  This method will return immediately, even
+//               before a connection to the server has necessarily
+//               been established; you must then call run() from time
+//               to time until the return value of run() is false.
+//               Then you may check is_valid() and get_status_code()
+//               to determine the status of your request.
+//
+//               If a previous request had been pending, that request
+//               is discarded.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+request_document(const URLSpec &url) {
+  begin_request("GET", url, string(), true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::request_header
+//       Access: Published
+//  Description: Begins a non-blocking request to retrieve a given
+//               header.  See request_document() and get_header().
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+request_header(const URLSpec &url) {
+  begin_request("HEAD", url, string(), true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::check_socket
+//       Access: Private
+//  Description: Checks whether the connection to the server has been
+//               closed after a failed read.  If it has, issues a
+//               warning and calls free_bio().
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+check_socket() {
+  nassertv(!_source.is_null());
+  if ((*_source)->is_closed()) {
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug()
+        << "Lost connection to server unexpectedly during read.\n";
+    }
+    free_bio();
+  }
 }
