@@ -59,6 +59,10 @@ class ShowBase(DirectObject.DirectObject):
         self.wantDIRECT = self.config.GetBool('want-directtools', 0)
         self.wantStats = self.config.GetBool('want-stats', 0)
 
+        # Fill this in with a function to invoke when the user "exits"
+        # the program by closing the main window.
+        self.exitFunc = None
+
         taskMgr.taskTimerVerbose = self.config.GetBool('task-timer-verbose', 0)
         taskMgr.extendedExceptions = self.config.GetBool('extended-exceptions', 0)
         
@@ -1061,8 +1065,8 @@ class ShowBase(DirectObject.DirectObject):
         if win == self.win:
             if not properties.getOpen():
                 # If the user closes the main window, we should exit.
-                self.notify.info("User closed main window, exiting.")
-                sys.exit()
+                self.notify.info("User closed main window.")
+                self.userExit()
 
             if properties.getMinimized() and not self.mainWinMinimized:
                 # If the main window is minimized, throw an event to
@@ -1075,7 +1079,13 @@ class ShowBase(DirectObject.DirectObject):
                 # restart the music.
                 self.mainWinMinimized = 0
                 messenger.send('PandaRestarted')
-                
+
+    def userExit(self):
+        # The user has requested we exit the program.  Deal with this.
+        if self.exitFunc:
+            self.exitFunc()
+        self.notify.info("Exiting ShowBase.")
+        sys.exit()
 
     def run(self):
         self.taskMgr.run()
