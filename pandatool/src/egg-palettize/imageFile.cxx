@@ -31,6 +31,23 @@ ImageFile() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::make_shadow_image
+//       Access: Public
+//  Description: Sets up the ImageFile as a "shadow image" of a
+//               particular PaletteImage.  This is a temporary
+//               ImageFile that's used to read and write the shadow
+//               palette image, which is used to keep a working copy
+//               of the palette.
+////////////////////////////////////////////////////////////////////
+void ImageFile::
+make_shadow_image(const string &basename) {
+  _properties._color_type = pal->_shadow_color_type;
+  _properties._alpha_type = pal->_shadow_alpha_type;
+
+  set_filename(pal->_shadow_dirname, basename);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ImageFile::is_size_known
 //       Access: Public
 //  Description: Returns true if the size of the image file is known,
@@ -147,6 +164,20 @@ set_filename(PaletteGroup *group, const string &basename) {
     ++pi;
   }
 
+  set_filename(dirname, basename);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::set_filename
+//       Access: Public
+//  Description: Sets the filename, and if applicable, the
+//               alpha_filename, from the indicated basename.  The
+//               extension appropriate to the image file type
+//               specified in _color_type (and _alpha_type) is
+//               automatically applied.
+////////////////////////////////////////////////////////////////////
+void ImageFile::
+set_filename(const string &dirname, const string &basename) {
   _filename = Filename(dirname, basename);
 
   if (_properties._color_type != (PNMFileType *)NULL) {
@@ -155,7 +186,7 @@ set_filename(PaletteGroup *group, const string &basename) {
   }
 
   if (_properties._alpha_type != (PNMFileType *)NULL) {
-    _alpha_filename = _filename.get_fullpath_wo_extension() + "_alpha";
+    _alpha_filename = _filename.get_fullpath_wo_extension() + "_a";
     _alpha_filename.set_extension
       (_properties._alpha_type->get_suggested_extension());
   }

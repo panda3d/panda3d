@@ -165,7 +165,10 @@ PaletteImage(PalettePage *page, int index) :
   name << page->get_group()->get_name() << "_palette_" 
        << page->get_name() << "_" << index + 1;
 
-  set_filename(page->get_group(), name.str());
+  _basename = name.str();
+
+  set_filename(page->get_group(), _basename);
+  _shadow_image.make_shadow_image(_basename);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -308,8 +311,7 @@ resize_image(int x_size, int y_size) {
   // We already know we're going to be generating a new image from
   // scratch after this.
   _cleared_regions.clear();
-  unlink();
-  _new_image = true;
+  remove_image();
 
   // First, Save the current placement list, while simultaneously
   // clearing it.
@@ -399,8 +401,19 @@ reset_image() {
 
   _placements.clear();
   _cleared_regions.clear();
-  unlink();
-  _new_image = true;
+  remove_image();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteImage::setup_shadow_image
+//       Access: Public
+//  Description: Ensures the _shadow_image has the correct filename
+//               and image types, based on what was supplied on the
+//               command line and in the .txa file.
+////////////////////////////////////////////////////////////////////
+void PaletteImage::
+setup_shadow_image() {
+  _shadow_image.make_shadow_image(_basename);
 }
  
 ////////////////////////////////////////////////////////////////////
@@ -416,15 +429,13 @@ update_image(bool redo_all) {
   if (is_empty() && pal->_aggressively_clean_mapdir) {
     // If the palette image is 'empty', ensure that it doesn't exist.
     // No need to clutter up the map directory.
-    unlink();
-    _new_image = true;
+    remove_image();
     return;
   }
 
   if (redo_all) {
     // If we're redoing everything, throw out the old image anyway.
-    unlink();
-    _new_image = true;
+    remove_image();
   }
 
   // Do we need to update?
@@ -479,6 +490,10 @@ update_image(bool redo_all) {
   }
 
   write(_image);
+
+  if (pal->_shadow_color_type != (PNMFileType *)NULL) {
+    _shadow_image.write(_image);
+  }
 }
 
 
@@ -560,9 +575,15 @@ get_image() {
   }
 
   if (!_new_image) {
-    if (read(_image)) {
-      _got_image = true;
-      return;
+    if (pal->_shadow_color_type != (PNMFileType *)NULL) {
+      if (_shadow_image.read(_image)) {
+	_got_image = true;
+      }
+    } else {
+      if (read(_image)) {
+	_got_image = true;
+	return;
+      }
     }
   }
 
@@ -581,6 +602,20 @@ get_image() {
     TexturePlacement *placement = (*pi);
     placement->fill_image(_image);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteImage::remove_image
+//       Access: Private
+//  Description: Deletes the image file.
+////////////////////////////////////////////////////////////////////
+void PaletteImage::
+remove_image() {
+  unlink();
+  if (pal->_shadow_color_type != (PNMFileType *)NULL) {
+    _shadow_image.unlink();
+  }
+  _new_image = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -620,10 +655,16 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 
   writer->write_pointer(datagram, _page);
   datagram.add_uint32(_index);
+  datagram.add_string(_basename);
   datagram.add_bool(_new_image);
 
   // We don't write _got_image or _image.  These are loaded
   // per-session.
+
+  // We don't write _shadow_image.  This is just a runtime convenience
+  // for specifying the name of the shadow file, and we redefine this
+  // per-session (which allows us to pick up a new
+  // pal->_shadow_dirname if it changes).
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -665,7 +706,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
 //               allocate and return a new object with all the data
 //               read.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* PaletteImage::
+TypedWriteable *PaletteImage::
 make_PaletteImage(const FactoryParams &params) {
   PaletteImage *me = new PaletteImage;
   BamReader *manager;
@@ -702,5 +743,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   manager->read_pointer(scan, this);  // _page
 
   _index = scan.get_uint32();
+  _basename = scan.get_string();
   _new_image = scan.get_bool();
 }

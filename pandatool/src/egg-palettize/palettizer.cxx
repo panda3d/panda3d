@@ -183,6 +183,10 @@ read_txa_file(const Filename &txa_filename) {
     group->clear_depends();
   }
 
+  // Also reset _shadow_color_type.
+  _shadow_color_type = (PNMFileType *)NULL;
+  _shadow_alpha_type = (PNMFileType *)NULL;
+
   if (!_txa_file.read(txa_filename)) {
     exit(1);
   }
@@ -198,6 +202,23 @@ read_txa_file(const Filename &txa_filename) {
   for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
     PaletteGroup *group = (*gi).second;
     group->set_dependency_level(1);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Palettizer::all_params_set
+//       Access: Public
+//  Description: Called after all command line parameters have been
+//               set up, this is a hook to do whatever initialization
+//               is necessary.
+////////////////////////////////////////////////////////////////////
+void Palettizer::
+all_params_set() {
+  // Make sure the palettes have their shadow images set up properly.
+  Groups::iterator gi;
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    PaletteGroup *group = (*gi).second;
+    group->setup_shadow_images();
   }
 }
 

@@ -336,6 +336,23 @@ reset_images() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::setup_shadow_images
+//       Access: Public
+//  Description: Ensures that each PaletteImage's _shadow_image has
+//               the correct filename and image types, based on what
+//               was supplied on the command line and in the .txa
+//               file.
+////////////////////////////////////////////////////////////////////
+void PaletteGroup::
+setup_shadow_images() {
+  Pages::iterator pai;
+  for (pai = _pages.begin(); pai != _pages.end(); ++pai) {
+    PalettePage *page = (*pai).second;
+    page->setup_shadow_images();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PaletteGroup::update_images
 //       Access: Public
 //  Description: Regenerates each PaletteImage on this group that needs

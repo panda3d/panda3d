@@ -35,6 +35,7 @@ public:
 
   void report_pi() const;
   void read_txa_file(const Filename &txa_filename);
+  void all_params_set();
   void process_command_line_eggs(bool force_texture_read);
   void process_all(bool force_texture_read);
   void optimal_resize();

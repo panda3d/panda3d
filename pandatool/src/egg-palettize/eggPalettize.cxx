@@ -85,6 +85,16 @@ EggPalettize() : EggMultiFilter(true) {
      "palette group.",
      &EggPalettize::dispatch_string, &_got_map_dirname, &_map_dirname);
   add_option
+    ("ds", "dirname", 0, 
+     "The directory to write palette shadow images to.  These are working "
+     "copies of the palette images, useful when the palette image type is "
+     "a lossy-compression type like JPEG; you can avoid generational loss "
+     "of quality on the palette images with each pass through the palettes "
+     "by storing these extra shadow images in a lossless image type.  This "
+     "directory is only used if the :shadowtype keyword appears in the .txa "
+     "file.",
+     &EggPalettize::dispatch_filename, &_got_shadow_dirname, &_shadow_dirname);
+  add_option
     ("dr", "dirname", 0, 
      "The directory to make map filenames relative to when writing egg "
      "files.  If specified, this should be an initial substring of -dm.",
@@ -325,10 +335,15 @@ run() {
   if (_got_map_dirname) {
     pal->_map_dirname = _map_dirname;
   }
+  if (_got_shadow_dirname) {
+    pal->_shadow_dirname = _shadow_dirname;
+  }
   if (_got_rel_dirname) {
     pal->_rel_dirname = _rel_dirname;
     FilenameUnifier::set_rel_dirname(_rel_dirname);
   }
+
+  pal->all_params_set();
 
   Eggs::const_iterator ei;
   for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {

@@ -31,6 +31,8 @@ public:
   Filename _txa_filename;
   string _map_dirname;
   bool _got_map_dirname;
+  Filename _shadow_dirname;
+  bool _got_shadow_dirname;
   Filename _rel_dirname;
   bool _got_rel_dirname;
   string _default_groupname;

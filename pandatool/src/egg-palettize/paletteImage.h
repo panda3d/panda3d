@@ -44,12 +44,14 @@ public:
 
   void write_placements(ostream &out, int indent_level = 0) const;
   void reset_image();
+  void setup_shadow_image();
   void update_image(bool redo_all);
 
 private:
   bool find_hole(int &x, int &y, int x_size, int y_size) const;
   TexturePlacement *find_overlap(int x, int y, int x_size, int y_size) const;
   void get_image();
+  void remove_image();
 
   // The ClearedRegion object keeps track of TexturePlacements that
   // were recently removed and thus need to be set to black.
@@ -77,10 +79,13 @@ private:
 
   PalettePage *_page;
   int _index;
+  string _basename;
 
   bool _new_image;
   bool _got_image;
   PNMImage _image;
+
+  ImageFile _shadow_image;
 
   // The TypedWriteable interface follows.
 public:

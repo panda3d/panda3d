@@ -28,6 +28,8 @@ class ImageFile : public TypedWriteable {
 public:
   ImageFile();
 
+  void make_shadow_image(const string &basename);
+
   bool is_size_known() const;
   int get_x_size() const;
   int get_y_size() const;
@@ -38,6 +40,7 @@ public:
   void update_properties(const TextureProperties &properties);
 
   void set_filename(PaletteGroup *group, const string &basename);
+  void set_filename(const string &dirname, const string &basename);
   const Filename &get_filename() const;
   const Filename &get_alpha_filename() const;
   bool exists() const;
