@@ -44,7 +44,7 @@ public:
 
 private:
   typedef pvector<SoftFilename> SceneFiles;
-  typedef pmultipset<SoftFilename> ElementFiles;
+  typedef pmultiset<SoftFilename> ElementFiles;
 
   void traverse_root();
   void traverse_subdir(const Filename &directory);
