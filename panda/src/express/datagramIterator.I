@@ -386,8 +386,8 @@ get_be_uint16() {
 ////////////////////////////////////////////////////////////////////
 INLINE PN_uint32 DatagramIterator::
 get_be_uint32() {
-  nassertr(_datagram != (const Datagram *)NULL, 0.0);
-  nassertr(_current_index < _datagram->get_length(), 0.0);
+  nassertr(_datagram != (const Datagram *)NULL, 0);
+  nassertr(_current_index < _datagram->get_length(), 0);
 
   PN_uint32 tempvar;
   // Avoid reading junk data off the end of the datagram:
@@ -407,8 +407,8 @@ get_be_uint32() {
 ////////////////////////////////////////////////////////////////////
 INLINE PN_uint64 DatagramIterator::
 get_be_uint64() {
-  nassertr(_datagram != (const Datagram *)NULL, 0.0);
-  nassertr(_current_index < _datagram->get_length(), 0.0);
+  nassertr(_datagram != (const Datagram *)NULL, 0);
+  nassertr(_current_index < _datagram->get_length(), 0);
 
   PN_uint64 tempvar;
   // Avoid reading junk data off the end of the datagram:
