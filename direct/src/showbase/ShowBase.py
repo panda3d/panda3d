@@ -79,11 +79,7 @@ class ShowBase:
 
     def createAudioManager(self):
         if self.wantSound:
-            from AudioManagerGlobal import *
-            self.audioMgr = audioMgr
-            self.audioMgr.spawnUpdate()
-        else:
-            self.audioMgr = None
+            AudioManager.spawnUpdate()
             
     def createRootPanel(self):
         if self.wantTk:

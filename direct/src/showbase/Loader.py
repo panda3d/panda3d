@@ -16,9 +16,9 @@ class Loader:
         Loader constructor"""
         self.__base = base
         self.__loader = PandaLoader()
-        self.__texturePool = TexturePool()
-        self.__modelPool = ModelPool()
-        self.__audioPool = AudioPool()
+        #self.__texturePool = TexturePool()
+        #self.__modelPool = ModelPool()
+        #self.__audioPool = AudioPool()
         
     # model loading funcs
     def loadModel(self, modelPath):
@@ -39,7 +39,7 @@ class Loader:
         then attempt to load it from disk. Return a nodepath to
         the model if successful or None otherwise"""
         Loader.notify.info("Loading model once: %s" % (modelPath))
-        node = self.__modelPool.loadModel(modelPath)
+        node = ModelPool.loadModel(modelPath)
         if (node != None):
             nodePath = self.__base.hidden.attachNewNode(node)
         else:
@@ -65,7 +65,7 @@ class Loader:
         Attempt to load a texture from the given file path using
         TexturePool class. Returns None if not found"""
         Loader.notify.info("Loading texture: %s" % (texturePath) )
-        texture = self.__texturePool.loadTexture(texturePath)
+        texture = TexturePool.loadTexture(texturePath)
         return texture
 
     # sound loading funcs
@@ -74,7 +74,7 @@ class Loader:
         Attempt to load a sound from the given file path using
         Cary's sound class. Returns None if not found"""
         Loader.notify.info("Loading sound: %s" % (soundPath) )
-        sound = self.__audioPool.loadSound(soundPath)
+        sound = AudioPool.loadSound(soundPath)
         return sound
 
 

@@ -171,10 +171,6 @@ class FFIMethodArgumentTreeCollection:
         indent(file, nesting+2, 'numArgs = len(_args)\n')
         
     def outputOverloadedMethodFooter(self, file, nesting):
-        # If the overloaded function got all the way through the if statements
-        # it must have had the wrong number or type of arguments
-        indent(file, nesting+2, "raise TypeError, 'Invalid arguments'\n")
-
         # If this is a static method, we need to output a static version
         # If one is static, we assume they all are.
         # The current system does not support overloading static and non-static
@@ -209,12 +205,27 @@ class FFIMethodArgumentTreeCollection:
         self.outputOverloadedMethodHeader(file, nesting)
         numArgsKeys = self.treeDict.keys()
         numArgsKeys.sort()
-        for numArgs in numArgsKeys:
+        for i in range(len(numArgsKeys)):
+            numArgs = numArgsKeys[i]
             trees = self.treeDict[numArgs]
             for tree in trees:
-                indent(file, nesting+2, 'if (numArgs == ' + `numArgs` + '):\n')
+                # If this is the first case, output an if clause
+                if (i == 0):
+                    indent(file, nesting+2, 'if (numArgs == ' + `numArgs` + '):\n')
+                # If this is a subsequent first case, output an elif clause
+                else:
+                    indent(file, nesting+2, 'elif (numArgs == ' + `numArgs` + '):\n')
                 tree.setup()
                 tree.traverse(file, nesting+1)
+
+        # If the overloaded function got all the way through the if statements
+        # it must have had the wrong number or type of arguments
+        indent(file, nesting+2, "else:\n")
+        indent(file, nesting+3, "raise TypeError, 'Invalid number of arguments: ' + `numArgs` + ', expected one of: ")
+        for numArgs in numArgsKeys:
+            indent(file, 0, (`numArgs` + ' '))
+        indent(file, 0, "'\n")
+
         self.outputOverloadedMethodFooter(file, nesting)
 
 class FFIMethodArgumentTree:
@@ -268,11 +279,14 @@ class FFIMethodArgumentTree:
                     self.tree[typeDesc] = [subTree, None]
 
     def traverse(self, file, level=1):
+        oneTreeHasArgs = 0
+        typeNameList = []
         # Make a copy of the keys so we can sort them in place
         sortedKeys = self.tree.keys()
         # Sort the keys based on inheritance hierarchy, most generic classes first
         sortedKeys.sort(subclass)
-        for typeDesc in sortedKeys:
+        for i in range(len(sortedKeys)):
+            typeDesc = sortedKeys[i]
             # See if this takes no arguments
             if (typeDesc == 0):
                 # Output the function
@@ -280,16 +294,26 @@ class FFIMethodArgumentTree:
                 indent(file, level+2, 'return ')
                 methodSpec.outputOverloadedCall(file, self.classTypeDesc, 0)
             else:
+                # Specify that at least one of these trees had arguments
+                # so we know to output an else clause
+                oneTreeHasArgs = 1
                 typeName = getTypeName(self.classTypeDesc, typeDesc)
-                indent(file, level+2, 'if (isinstance(_args[' + `level-1` + '], '
-                       + typeName
-                       + '))')
+                typeNameList.append(typeName)
+                if (i == 0):
+                    indent(file, level+2, 'if (isinstance(_args[' + `level-1` + '], '
+                           + typeName
+                           + '))')
+                else:
+                    indent(file, level+2, 'elif (isinstance(_args[' + `level-1` + '], '
+                           + typeName
+                           + '))')                    
                 # If it is looking for a float, make it accept an integer too
                 if (typeName == 'types.FloatType'):
                     file.write(' or (isinstance(_args[' + `level-1` + '], '
                                + 'types.IntType'
                                + '))')
                 file.write(':\n')
+                # Get to the bottom of this chain
                 if (self.tree[typeDesc][0] != None):
                     self.tree[typeDesc][0].traverse(file, level+1)
                 else:
@@ -298,20 +322,11 @@ class FFIMethodArgumentTree:
                     indent(file, level+3, 'return ')
                     numArgs = level
                     methodSpec.outputOverloadedCall(file, self.classTypeDesc, numArgs)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        # Output an else clause if one of the trees had arguments
+        if oneTreeHasArgs:
+            indent(file, level+2, 'else:\n')
+            indent(file, level+3, "raise TypeError, 'Invalid argument " + `level-1` + ", expected one of: ")
+            for name in typeNameList:
+                indent(file, 0, ('<' + name + '> '))
+            indent(file, 0, "'\n")
 

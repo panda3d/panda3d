@@ -688,16 +688,20 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         indent(file, nesting+2, '\n')
 
     def outputEmptyConstructor(self, file, nesting):
-        # If there is no C++ constructor, we just output this
-        # empty one instead
+        """
+        If there is no C++ constructor, we output code for a runtime error
+        You really do not want to create a class with a null this pointer
+        """
         indent(file, nesting+1, 'def constructor(self):\n')
-        indent(file, nesting+2, 'pass\n')
+        indent(file, nesting+2, "raise RuntimeError, 'No C++ constructor defined for class: ' + self.__class__.__name__\n")
 
     def outputBaseDestructor(self, file, nesting):
-        # This destructor overwrites the builtin Python destructor
-        # using the __del__ method. This will get called whenever a
-        # Python object is garbage collected. We are going to overwrite
-        # it with special cleanup for Panda.
+        """
+        This destructor overwrites the builtin Python destructor
+        using the __del__ method. This will get called whenever a
+        Python object is garbage collected. We are going to overwrite
+        it with special cleanup for Panda.
+        """
         indent(file, nesting+1, 'def __del__(self):\n')
 
         # Reference counting is now handled in the C++ code
@@ -714,8 +718,10 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         indent(file, nesting+3, 'self.destructor()\n')
 
     def outputEmptyDestructor(self, file, nesting):
-        # If there is no C++ destructor, we just output this
-        # empty one instead
+        """
+        If there is no C++ destructor, we just output this
+        empty one instead
+        """
         indent(file, nesting+1, 'def destructor(self):\n')
         indent(file, nesting+2, 'pass\n')
 

@@ -86,7 +86,9 @@ class Messenger:
         Send this event, optionally passing in arguments
         """
         
-        Messenger.notify.debug('sent event: ' + event + ' sentArgs: ' + `sentArgs`)
+        # Do not print the new frame debug, it is too noisy!
+        if (event != 'NewFrame'):
+            Messenger.notify.debug('sent event: ' + event + ' sentArgs: ' + `sentArgs`)
 
         if self.dict.has_key(event):
             acceptorDict = self.dict[event]

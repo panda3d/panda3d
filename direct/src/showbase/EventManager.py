@@ -62,8 +62,10 @@ class EventManager:
                 eventParameterData = self.parseEventParameter(eventParameter)
                 paramList.append(eventParameterData)
 
-            EventManager.notify.debug('received C++ event named: ' + eventName +
-                                      ' parameters: ' + `paramList`)
+            # Do not print the new frame debug, it is too noisy!
+            if (eventName != 'NewFrame'):
+                EventManager.notify.debug('received C++ event named: ' + eventName +
+                                          ' parameters: ' + `paramList`)
 
 
             # Send the event, we used to send it with the event 
