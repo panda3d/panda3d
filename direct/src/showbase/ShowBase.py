@@ -5,6 +5,8 @@ from MessengerGlobal import *
 from TaskManagerGlobal import *
 from EventManagerGlobal import *
 from PythonUtil import *
+#from ParticleManagerGlobal import *
+#from PhysicsManagerGlobal import *
 import Task
 import EventManager
 import math
@@ -102,6 +104,9 @@ class ShowBase:
         self.messenger = messenger
 
         self.taskMgr = taskMgr
+
+	#self.particleMgr = particleMgr
+	#self.physicsMgr = physicsMgr
 
         self.createAudioManager()
         self.createRootPanel()
