@@ -29,6 +29,11 @@
 #define _BOOL 1
 #endif
 
+// Even though we don't include any Panda headers, it's safe to
+// include this one, since it only defines some macros that we need to
+// make this program platform-independent.
+#include "dtool_config.h"
+
 #ifdef HAVE_IOSTREAM
 // This will ask Maya 5.0 or better to use the new <iostream> library
 // instead of the old <iostream.h> library.
@@ -38,12 +43,6 @@
 #include <maya/MArgList.h>
 #include <maya/MPxCommand.h>
 #include <maya/MObject.h>
-
-// Even though we don't include any Panda headers, it's safe to
-// include this one, since it only defines some macros that we need to
-// make this program platform-independent.
-#include "dtool_config.h"
-
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MayaSavePview
