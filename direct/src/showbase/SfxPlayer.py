@@ -33,8 +33,10 @@ class SfxPlayer:
         Get the volume that a sound should be played at if it is
         localized at this node. We compute this wrt the camera
         """
-        d = node.getDistance(base.cam)
-        if d > self.cutoffDistance:
+        d = None
+        if not node.isEmpty():
+            d = node.getDistance(base.cam)
+        if d == None or d > self.cutoffDistance:
             volume = 0
         else:
             if SfxPlayer.UseInverseSquare:
