@@ -38,10 +38,9 @@ class OnscreenText(PandaObject, NodePath):
         self.assign(textNodePath)
 
         # position ourselves
-        self.setXY(x, y)
+        self.setPos(x, y)
 
-        # assume 4:3 aspect ratio
-        self.setScale( 0.069, 1.0, 0.069)
+        self.setScale(0.069)
 	self.isClean = 0
 	return None
 
@@ -66,13 +65,19 @@ class OnscreenText(PandaObject, NodePath):
         """
         self.node().setText(string)
 
-
-    def setXY(self, x, y):
+    def setScale(self, scale):
+        """setScale(self, float)
+        Override NodePath setScale to account for aspect ratio
+        """
+        # assume 4:3 aspect ratio
+        NodePath.setScale(self, scale, 1.0, scale * (4.0/3.0))
+        
+    def setPos(self, x, y):
         """setPos(self, float, float)
         Position the onscreen text in 2d screen space
         """
         # render2d has x across and z up
-        self.setPos(x, 0.0, y)
+        NodePath.setPos(self, x, 0.0, y)
 
     def setColor(self, color):
         self.textNode.setCardColor(color[0],color[1],color[2],color[3])

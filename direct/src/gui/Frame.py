@@ -1,11 +1,8 @@
 from ShowBaseGlobal import *
 from DirectObject import *
-import GuiManager
+from GuiGlobals import *
 import GuiFrame
 import Vec3
-
-guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node(), base.renderGui.node())
-font = (loader.loadModelOnce("phase_3/models/fonts/ttf-comic")).node()
 
 class Frame(DirectObject):
 

@@ -2,10 +2,7 @@ from ShowBaseGlobal import *
 from DirectObject import *
 from GuiGlobals import *
 import GuiSign
-import GuiManager
 import GuiLabel
-
-guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node(), base.renderGui.node())
 
 class Sign(DirectObject):
 

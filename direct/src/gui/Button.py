@@ -1,11 +1,9 @@
 from ShowBaseGlobal import *
 from DirectObject import *
 from GuiGlobals import *
-import GuiManager
 import GuiLabel
 import GuiButton
 
-guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node(), base.renderGui.node())
 
 class Button(DirectObject):
 

@@ -1,6 +1,10 @@
 # GuiGlobals.py : global info for the gui package
 
 from ShowBaseGlobal import *
+import GuiManager
+
+guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node(),
+                                      base.renderGui.node())
 
 font = loader.loadModelNode("models/fonts/ttf-comic")
 
@@ -10,3 +14,4 @@ def getDefaultFont():
 def setDefaultFont(newFont):
     global font
     font = newFont
+
