@@ -30,7 +30,10 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : XFileDataDef
 // Description : A definition of a single data element appearing
-//               within a template record.
+//               within a template record.  This class represents the
+//               *definition* of the data element (e.g. DWORD
+//               nVertices); see XFileDataObject for its *value*
+//               (e.g. 12).
 ////////////////////////////////////////////////////////////////////
 class XFileDataDef : public XFileNode {
 public:
@@ -49,12 +52,18 @@ public:
     T_template,
   };
 
-  INLINE XFileDataDef(Type type, const string &name, 
-                      XFileTemplate *xtemplate = NULL);
+  INLINE XFileDataDef(XFile *x_file, const string &name, 
+                      Type type, XFileTemplate *xtemplate = NULL);
   virtual ~XFileDataDef();
 
   virtual void clear();
   void add_array_def(const XFileArrayDef &array_def);
+
+  INLINE Type get_data_type() const;
+  INLINE XFileTemplate *get_template() const;
+
+  INLINE int get_num_array_defs() const;
+  INLINE const XFileArrayDef &get_array_def(int i) const; 
 
   virtual void write_text(ostream &out, int indent_level) const;
 

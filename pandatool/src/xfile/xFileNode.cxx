@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "xFileNode.h"
+#include "windowsGuid.h"
+#include "xFile.h"
 
 TypeHandle XFileNode::_type_handle;
 
@@ -26,7 +28,9 @@ TypeHandle XFileNode::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 XFileNode::
-XFileNode(const string &name) : Namable(name)
+XFileNode(XFile *x_file, const string &name) :
+  Namable(name),
+  _x_file(x_file)
 {
 }
 
@@ -58,6 +62,53 @@ find_child(const string &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: XFileNode::find_descendent
+//       Access: Public
+//  Description: Returns the first child or descendent found with the
+//               indicated name after a depth-first search, if any, or
+//               NULL if none.
+////////////////////////////////////////////////////////////////////
+XFileNode *XFileNode::
+find_descendent(const string &name) const {
+  XFileNode *child = find_child(name);
+  if (child != (XFileNode *)NULL) {
+    return child;
+  }
+
+  Children::const_iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    XFileNode *child = (*ci)->find_descendent(name);
+    if (child != (XFileNode *)NULL){ 
+      return child;
+    }
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileNode::has_guid
+//       Access: Public, Virtual
+//  Description: Returns true if this node has a GUID associated.
+////////////////////////////////////////////////////////////////////
+bool XFileNode::
+has_guid() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileNode::get_guid
+//       Access: Public, Virtual
+//  Description: If has_guid() returned true, returns the particular
+//               GUID associated with this node.
+////////////////////////////////////////////////////////////////////
+const WindowsGuid &XFileNode::
+get_guid() const {
+  static WindowsGuid empty;
+  return empty;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: XFileNode::add_child
 //       Access: Public, Virtual
 //  Description: Adds the indicated node as a child of this node.
@@ -67,6 +118,9 @@ add_child(XFileNode *node) {
   _children.push_back(node);
   if (node->has_name()) {
     _children_by_name[node->get_name()] = node;
+  }
+  if (node->has_guid()) {
+    _x_file->_nodes_by_guid[node->get_guid()] = node;
   }
 }
 

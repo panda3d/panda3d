@@ -21,6 +21,9 @@
 
 #include "pandatoolbase.h"
 #include "xFileNode.h"
+#include "xFileDataDef.h"
+#include "pointerTo.h"
+#include "dcast.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : XFileDataObject
@@ -30,8 +33,27 @@
 ////////////////////////////////////////////////////////////////////
 class XFileDataObject : public XFileNode {
 public:
-  INLINE XFileDataObject(const string &name);
-  
+  INLINE XFileDataObject(XFile *x_file, const string &name);
+
+  INLINE XFileDataDef *get_data_def() const;
+
+  INLINE int i() const;
+  INLINE double d() const;
+  INLINE string s() const;
+  INLINE operator int () const;
+  INLINE operator double () const;
+  INLINE operator string () const;
+
+  INLINE const XFileDataObject &operator [] (int n) const;
+  INLINE const XFileDataObject &operator [] (const string &name) const;
+
+protected:
+  virtual int as_integer_value() const;
+  virtual double as_double_value() const;
+  virtual string as_string_value() const;
+
+  PT(XFileDataDef) _data_def;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

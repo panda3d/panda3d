@@ -27,6 +27,7 @@
 #include "pointerTo.h"
 
 class XFileTemplate;
+class XFileDataObject;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : XFile
@@ -39,7 +40,6 @@ public:
   XFile();
   ~XFile();
 
-  virtual void add_child(XFileNode *node);
   virtual void clear();
 
   bool read(Filename filename);
@@ -50,6 +50,9 @@ public:
 
   XFileTemplate *find_template(const string &name) const;
   XFileTemplate *find_template(const WindowsGuid &guid) const;
+
+  XFileDataObject *find_data_object(const string &name) const;
+  XFileDataObject *find_data_object(const WindowsGuid &guid) const;
 
   virtual void write_text(ostream &out, int indent_level) const;
 
@@ -73,8 +76,8 @@ private:
   FormatType _format_type;
   FloatSize _float_size;
 
-  typedef pmap<WindowsGuid, XFileTemplate *> TemplatesByGuid;
-  TemplatesByGuid _templates_by_guid;
+  typedef pmap<WindowsGuid, XFileNode *> NodesByGuid;
+  NodesByGuid _nodes_by_guid;
 
   static PT(XFile) _standard_templates;
   
@@ -94,6 +97,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class XFileNode;
 };
 
 #include "xFile.I"

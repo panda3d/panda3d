@@ -20,6 +20,7 @@
 #include "xParserDefs.h"
 #include "xLexerDefs.h"
 #include "xFileTemplate.h"
+#include "xFileDataObject.h"
 #include "config_xfile.h"
 #include "standard_templates.h"
 #include "zStream.h"
@@ -36,7 +37,7 @@ PT(XFile) XFile::_standard_templates;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 XFile::
-XFile() : XFileNode("") {
+XFile() : XFileNode(this, "") {
   _major_version = 3;
   _minor_version = 2;
   _format_type = FT_text;
@@ -54,21 +55,6 @@ XFile::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFile::add_child
-//       Access: Public, Virtual
-//  Description: Adds the indicated node as a child of this node.
-////////////////////////////////////////////////////////////////////
-void XFile::
-add_child(XFileNode *node) {
-  XFileNode::add_child(node);
-
-  if (node->is_of_type(XFileTemplate::get_class_type())) {
-    XFileTemplate *xtemplate = DCAST(XFileTemplate, node);
-    _templates_by_guid[xtemplate->get_guid()] = xtemplate;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: XFile::clear
 //       Access: Public, Virtual
 //  Description: Removes all of the classes defined within the XFile
@@ -77,6 +63,8 @@ add_child(XFileNode *node) {
 void XFile::
 clear() {
   XFileNode::clear();
+
+  _nodes_by_guid.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -192,7 +180,7 @@ write(Filename filename) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     function: XFile::write
+//     Function: XFile::write
 //       Access: Public
 //  Description: Writes a parseable description of all the known
 //               nodes and templates to the stream.
@@ -241,15 +229,51 @@ find_template(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 XFileTemplate *XFile::
 find_template(const WindowsGuid &guid) const {
-  TemplatesByGuid::const_iterator gi;
-  gi = _templates_by_guid.find(guid);
-  if (gi != _templates_by_guid.end()) {
-    return (*gi).second;
+  NodesByGuid::const_iterator gi;
+  gi = _nodes_by_guid.find(guid);
+  if (gi != _nodes_by_guid.end() && 
+      (*gi).second->is_of_type(XFileTemplate::get_class_type())) {
+    return DCAST(XFileTemplate, (*gi).second);
   }
 
   const XFile *standard_templates = get_standard_templates();
   if (standard_templates != this) {
     return standard_templates->find_template(guid);
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFile::find_data_object
+//       Access: Public
+//  Description: Returns the data object associated with the indicated
+//               name, if any, or NULL if none.
+////////////////////////////////////////////////////////////////////
+XFileDataObject *XFile::
+find_data_object(const string &name) const {
+  XFileNode *child = find_descendent(name);
+  if (child != (XFileNode *)NULL &&
+      child->is_of_type(XFileDataObject::get_class_type())) {
+    return DCAST(XFileDataObject, child);
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFile::find_data_object
+//       Access: Public
+//  Description: Returns the data object associated with the indicated
+//               GUID, if any, or NULL if none.
+////////////////////////////////////////////////////////////////////
+XFileDataObject *XFile::
+find_data_object(const WindowsGuid &guid) const {
+  NodesByGuid::const_iterator gi;
+  gi = _nodes_by_guid.find(guid);
+  if (gi != _nodes_by_guid.end() && 
+      (*gi).second->is_of_type(XFileDataObject::get_class_type())) {
+    return DCAST(XFileDataObject, (*gi).second);
   }
 
   return NULL;

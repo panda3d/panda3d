@@ -19,3 +19,36 @@
 #include "xFileDataObject.h"
 
 TypeHandle XFileDataObject::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::as_integer_value
+//       Access: Protected, Virtual
+//  Description: Returns the object's representation as an integer, if
+//               it has one.
+////////////////////////////////////////////////////////////////////
+int XFileDataObject::
+as_integer_value() const {
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::as_double_value
+//       Access: Protected, Virtual
+//  Description: Returns the object's representation as a double, if
+//               it has one.
+////////////////////////////////////////////////////////////////////
+double XFileDataObject::
+as_double_value() const {
+  return 0.0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::as_string_value
+//       Access: Protected, Virtual
+//  Description: Returns the object's representation as a string, if
+//               it has one.
+////////////////////////////////////////////////////////////////////
+string XFileDataObject::
+as_string_value() const {
+  return string();
+}

@@ -23,6 +23,8 @@
 #include "xFileDataObject.h"
 #include "xFileTemplate.h"
 #include "pointerTo.h"
+#include "pta_int.h"
+#include "pta_double.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : XFileDataObjectTemplate
@@ -34,14 +36,48 @@
 ////////////////////////////////////////////////////////////////////
 class XFileDataObjectTemplate : public XFileDataObject {
 public:
-  XFileDataObjectTemplate(XFileTemplate *xtemplate, const string &name);
+  XFileDataObjectTemplate(XFile *x_file, const string &name,
+                          XFileTemplate *xtemplate);
 
   INLINE XFileTemplate *get_template() const;
 
   virtual void write_text(ostream &out, int indent_level) const;
 
+public:
+  void add_parse_object(XFileDataObjectTemplate *object, bool reference);
+  void add_parse_double(PTA_double double_list, char separator);
+  void add_parse_int(PTA_int int_list, char separator);
+  void add_parse_string(const string &str, char separator);
+  void add_parse_separator(char separator);
+  bool finalize_parse_data();
+
 private:
   PT(XFileTemplate) _template;
+
+  // This class is used to fill up the data as the values are parsed.
+  // It only has a temporary lifespan; it will be converted into
+  // actual data by finalize_parse_data().
+  enum ParseFlags {
+    PF_object     = 0x001,
+    PF_reference  = 0x002,
+    PF_double     = 0x004,
+    PF_int        = 0x008,
+    PF_string     = 0x010,
+    PF_comma      = 0x020,
+    PF_semicolon  = 0x040,
+  };
+
+  class ParseData {
+  public:
+    PT(XFileDataObjectTemplate) _object;
+    PTA_double _double_list;
+    PTA_int _int_list;
+    string _string;
+    int _parse_flags;
+  };
+
+  typedef pvector<ParseData> ParseDataList;
+  ParseDataList _parse_data_list;
   
 public:
   static TypeHandle get_class_type() {

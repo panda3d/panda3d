@@ -27,6 +27,9 @@
 #include "pvector.h"
 #include "pmap.h"
 
+class XFile;
+class WindowsGuid;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : XFileNode
 // Description : A single node of an X file.  This may be either a
@@ -34,12 +37,16 @@
 ////////////////////////////////////////////////////////////////////
 class XFileNode : public TypedReferenceCount, public Namable {
 public:
-  XFileNode(const string &name);
+  XFileNode(XFile *x_file, const string &name);
   virtual ~XFileNode();
 
   INLINE int get_num_children() const;
   INLINE XFileNode *get_child(int n) const;
   XFileNode *find_child(const string &name) const;
+  XFileNode *find_descendent(const string &name) const;
+
+  virtual bool has_guid() const;
+  virtual const WindowsGuid &get_guid() const;
 
   virtual void add_child(XFileNode *node);
   virtual void clear();
@@ -47,12 +54,14 @@ public:
   virtual void write_text(ostream &out, int indent_level) const;
 
 protected:
+  XFile *_x_file;
+  
   typedef pvector< PT(XFileNode) > Children;
   Children _children;
 
   typedef pmap<string, XFileNode *> ChildrenByName;
   ChildrenByName _children_by_name;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

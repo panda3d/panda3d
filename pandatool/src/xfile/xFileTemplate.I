@@ -18,16 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileTemplate::get_guid
-//       Access: Public
-//  Description: Returns the GUID associated with this template.
-////////////////////////////////////////////////////////////////////
-INLINE const WindowsGuid &XFileTemplate::
-get_guid() const {
-  return _guid;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: XFileTemplate::set_open
 //       Access: Public
 //  Description: Sets whether the template is considered "open" or

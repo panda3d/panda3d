@@ -32,10 +32,11 @@ class XFileDataDef;
 ////////////////////////////////////////////////////////////////////
 class XFileTemplate : public XFileNode {
 public:
-  XFileTemplate(const string &name, const WindowsGuid &guid);
+  XFileTemplate(XFile *x_file, const string &name, const WindowsGuid &guid);
   virtual ~XFileTemplate();
 
-  INLINE const WindowsGuid &get_guid() const;
+  virtual bool has_guid() const;
+  virtual const WindowsGuid &get_guid() const;
 
   virtual void clear();
   virtual void write_text(ostream &out, int indent_level) const;

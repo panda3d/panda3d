@@ -27,8 +27,8 @@ TypeHandle XFileTemplate::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 XFileTemplate::
-XFileTemplate(const string &name, const WindowsGuid &guid) : 
-  XFileNode(name),
+XFileTemplate(XFile *x_file, const string &name, const WindowsGuid &guid) : 
+  XFileNode(x_file, name),
   _guid(guid),
   _open(false)
 {
@@ -42,6 +42,26 @@ XFileTemplate(const string &name, const WindowsGuid &guid) :
 XFileTemplate::
 ~XFileTemplate() {
   clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileTemplate::has_guid
+//       Access: Public, Virtual
+//  Description: Returns true if this node has a GUID associated.
+////////////////////////////////////////////////////////////////////
+bool XFileTemplate::
+has_guid() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileTemplate::get_guid
+//       Access: Public, Virtual
+//  Description: Returns the GUID associated with this template.
+////////////////////////////////////////////////////////////////////
+const WindowsGuid &XFileTemplate::
+get_guid() const {
+  return _guid;
 }
 
 ////////////////////////////////////////////////////////////////////
