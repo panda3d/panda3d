@@ -19,12 +19,6 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath.NodePath):
             self.DeadReckoningFlag = 0
         return None
 
-    def generate(self):
-        # Turn on dead reckoning
-        #print ("Turning on dead reckoning!!!")
-        #self.deadReckoningOn()
-        pass
-
     def disable(self):
         self.reparentTo(hidden)
         DistributedObject.DistributedObject.disable(self)
@@ -32,6 +26,12 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath.NodePath):
     def delete(self):
         self.reparentTo(hidden)
         DistributedObject.DistributedObject.delete(self)
+
+    def generate(self):
+        # Turn on dead reckoning
+        #print ("Turning on dead reckoning!!!")
+        #self.deadReckoningOn()
+        DistributedObject.DistributedObject.generate(self)
 
     def deadReckoningOn(self):
         # Be sure that it isn't already on
