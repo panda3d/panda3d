@@ -82,10 +82,10 @@ fillin(Person* me, DatagramIterator& scan, BamReader* manager)
 }
 
 int Person::
-complete_pointers(vector_typedWritable& plist, BamReader *)
+complete_pointers(vector_typedWritable& p_list, BamReader *)
 {
-  _bro = (plist[0] == TypedWritable::Null) ? (Person*)NULL : DCAST(Person, plist[0]);
-  _sis = (plist[1] == TypedWritable::Null) ? (Person*)NULL : DCAST(Person, plist[1]);
+  _bro = (p_list[0] == TypedWritable::Null) ? (Person*)NULL : DCAST(Person, p_list[0]);
+  _sis = (p_list[1] == TypedWritable::Null) ? (Person*)NULL : DCAST(Person, p_list[1]);
   return 2;
 }
 
@@ -127,11 +127,11 @@ fillin(Parent* me, DatagramIterator& scan, BamReader* manager)
 }
 
 int Parent::
-complete_pointers(vector_typedWritable& plist, BamReader *manager)
+complete_pointers(vector_typedWritable& p_list, BamReader *manager)
 {
-  int start = Person::complete_pointers(plist, manager);
-  _son = (plist[start] == TypedWritable::Null) ? (Child*)NULL : DCAST(Child, plist[2]);
-  _daughter = (plist[start+1] == TypedWritable::Null) ? (Child*)NULL : DCAST(Child, plist[3]);
+  int start = Person::complete_pointers(p_list, manager);
+  _son = (p_list[start] == TypedWritable::Null) ? (Child*)NULL : DCAST(Child, p_list[2]);
+  _daughter = (p_list[start+1] == TypedWritable::Null) ? (Child*)NULL : DCAST(Child, p_list[3]);
   return start+2;
 }
 
@@ -187,11 +187,11 @@ fillin(Child* me, DatagramIterator& scan, BamReader* manager)
 }
 
 int Child::
-complete_pointers(vector_typedWritable& plist, BamReader *manager)
+complete_pointers(vector_typedWritable& p_list, BamReader *manager)
 {
-  int start = Person::complete_pointers(plist, manager);
-  _dad = (plist[start] == TypedWritable::Null) ? (Parent*)NULL : DCAST(Parent, plist[2]);
-  _mom = (plist[start+1] == TypedWritable::Null) ? (Parent*)NULL : DCAST(Parent, plist[3]);
+  int start = Person::complete_pointers(p_list, manager);
+  _dad = (p_list[start] == TypedWritable::Null) ? (Parent*)NULL : DCAST(Parent, p_list[2]);
+  _mom = (p_list[start+1] == TypedWritable::Null) ? (Parent*)NULL : DCAST(Parent, p_list[3]);
   return start+2;
 }
 
