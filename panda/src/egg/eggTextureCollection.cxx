@@ -46,6 +46,15 @@ operator = (const EggTextureCollection &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggTextureCollection::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+EggTextureCollection::
+~EggTextureCollection() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggTextureCollection::clear
 //       Access: Public
 //  Description: Removes all textures from the collection.

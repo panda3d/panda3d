@@ -46,6 +46,7 @@ public:
   EggTextureCollection();
   EggTextureCollection(const EggTextureCollection &copy);
   EggTextureCollection &operator = (const EggTextureCollection &copy);
+  ~EggTextureCollection();
 
   void clear();
 

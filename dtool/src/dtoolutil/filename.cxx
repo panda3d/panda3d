@@ -585,7 +585,8 @@ make_canonical() {
   }
 
   // Now restore the current working directory.
-  if (chdir(cwd.c_str()) < 0) {
+  string osdir = cwd.to_os_specific();
+  if (chdir(osdir.c_str()) < 0) {
     cerr << "Error!  Cannot change back to " << cwd << "\n";
   }
 

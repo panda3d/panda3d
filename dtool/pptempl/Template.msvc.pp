@@ -891,5 +891,13 @@ $[install_headers_dir]\$[CONFIG_HEADER] : $[CONFIG_HEADER]
 #sinclude $[TOPDIRPREFIX]LocalSetup.msvc.pp
 #sinclude $[TOPDIRPREFIX]LocalSetup.pp
 
+
+
+//////////////////////////////////////////////////////////////////////
+#elif $[or $[eq $[DIR_TYPE], models],$[eq $[DIR_TYPE], models_toplevel],$[eq $[DIR_TYPE], models_group]]
+//////////////////////////////////////////////////////////////////////
+
+#include $[THISDIRPREFIX]Template.models.pp
+
 //////////////////////////////////////////////////////////////////////
 #endif // DIR_TYPE
