@@ -45,7 +45,7 @@ typedef int intptr_t;
 //              There are two API groups in this class, they are:
 //              
 //                listen_to()
-//                client_ready()
+//                client_ready() or tell_server()
 //                wait_for_servers()
 //                server_ready()
 //              
@@ -82,7 +82,19 @@ PUBLISHED:
   //              A new connection will be created and closed.  If you
   //              want to send more than one command, you should use
   //              connect_to(), send_command(), and disconnect_from().
-  int client_ready(const string& client_host, int port, const string& cmd);
+  int client_ready(const string& server_host, int port, const string& cmd);
+
+  // Description: Tell the server to do the command cmd.
+  //              cmd is one of the following:
+  //                "k"    Kill the most recent application started with
+  //                       client_ready() or "!".
+  //                "q"    Tell the server to quit.
+  //                "!cmd" Exectue the cmd on the server (this is a dos shell
+  //                       command; if you want a bash command, include bash
+  //                       in the command e.g. "!bash pwd").  When you call
+  //                       client_ready(), it prefixes "!" for you.
+  //              A new connection will be created and closed.
+  int tell_server(const string& server_host, int port, const string& cmd);
 
   // Description: Call this function from the client after
   //              calling <count> client_ready() calls.

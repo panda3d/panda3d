@@ -146,11 +146,18 @@ DirectD::~DirectD() {
 }
 
 int 
-DirectD::client_ready(const string& client_host, int port,
+DirectD::client_ready(const string& server_host, int port,
     const string& cmd) {
   stringstream ss;
   ss<<"!"<<cmd;
-  send_one_message(client_host, port, ss.str());
+  send_one_message(server_host, port, ss.str());
+  return 0;
+}
+
+int 
+DirectD::tell_server(const string& server_host, int port,
+    const string& cmd) {
+  send_one_message(server_host, port, cmd);
   return 0;
 }
 
@@ -204,7 +211,6 @@ DirectD::server_ready(const string& client_host, int port) {
 void
 DirectD::start_app(const string& cmd) {
   nout<<"start_app(cmd="<<cmd<<")"<<endl;
-  kill_app();
   _app_pid=StartApp(cmd);
   nout<<"    _app_pid="<<_app_pid<<endl;
 }
