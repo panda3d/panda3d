@@ -169,7 +169,13 @@ convert_executable_pathname(const string &unix_style_pathname) {
 ////////////////////////////////////////////////////////////////////
 Filename::
 Filename(const Filename &dirname, const Filename &basename) {
-  (*this) = dirname.get_fullpath() + "/" + basename.get_fullpath();
+  if (dirname.empty()) {
+    (*this) = basename;
+  } else if (basename.empty()) {
+    (*this) = dirname;
+  } else {
+    (*this) = dirname.get_fullpath() + "/" + basename.get_fullpath();
+  }
   _flags = 0;
 }
 
