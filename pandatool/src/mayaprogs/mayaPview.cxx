@@ -21,6 +21,7 @@
 #include "eggData.h"
 #include "load_egg_file.h"
 #include "config_util.h"
+#include "textNode.h"
 
 // We must define this to prevent Maya from doubly-declaring its
 // MApiVersion string in this file as well as in libmayaegg.
@@ -63,7 +64,25 @@ doIt(const MArgList &) {
     return MS::kFailure;
   }
 
-  // We've successfully opened a window.
+  // We've successfully opened a window.  Let a couple of frames go by
+  // to ensure the window is fully open and ready before we try to
+  // render anything.  This is a kludge for now until we settle on
+  // what the appropriate startup behavior should be for these
+  // windows.
+  framework.do_frame();
+  framework.do_frame();
+
+  // Put up a "loading" message for the user's benefit.
+  NodePath aspect_2d = window->get_aspect_2d();
+  PT(TextNode) loading = new TextNode("loading");
+  NodePath loading_np = aspect_2d.attach_new_node(loading);
+  loading_np.set_scale(0.125f);
+  loading->set_text_color(1.0f, 1.0f, 1.0f, 1.0f);
+  loading->set_shadow_color(0.0f, 0.0f, 0.0f, 1.0f);
+  loading->set_shadow(0.04f, 0.04f);
+  loading->set_align(TextNode::A_center);
+  loading->set_text("Loading...");
+  framework.do_frame();
 
   window->enable_keyboard();
   window->setup_trackball();
@@ -73,6 +92,7 @@ doIt(const MArgList &) {
     return MS::kFailure;
   }
 
+  loading_np.remove_node();
   window->loop_animations();
 
   framework.main_loop();
@@ -153,6 +173,17 @@ convert(const NodePath &parent) {
 ////////////////////////////////////////////////////////////////////
 EXPCL_MISC MStatus 
 initializePlugin(MObject obj) {
+  // This code is just for debugging, to cause Notify to write its
+  // output to a log file we can inspect, so we can see the error
+  // messages output by DX7 or DX8 just before it does a panic exit
+  // (and thereby shuts down Maya and its output window).
+  /*
+  MultiplexStream *local_nout = new MultiplexStream();
+  Notify::ptr()->set_ostream_ptr(local_nout, 0);
+  local_nout->add_file(Filename("/c/Cygwin/home/drose/foo.log"));
+  local_nout->add_standard_output();
+  */
+
   MFnPlugin plugin(obj, "VR Studio", "1.0");
   MStatus status;
   status = plugin.registerCommand("pview", MayaPview::creator);
