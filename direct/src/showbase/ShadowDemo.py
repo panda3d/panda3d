@@ -39,8 +39,7 @@ class ShadowCaster:
         self.tex.setWrapv(Texture.WMBorderColor)
 
         # Set up a display region on this buffer, and create a camera.
-        layer = self.buffer.getChannel(0).makeLayer()
-        dr = layer.makeDisplayRegion()
+        dr = self.buffer.makeDisplayRegion()
         self.camera = Camera('shadowCamera')
         self.cameraPath = self.lightPath.attachNewNode(self.camera)
         self.camera.setScene(self.objectPath)
