@@ -574,7 +574,10 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
         # we should not have the uberZone in the list at this point
         assert not LevelConstants.UberZoneEntId in visibleZoneNums
-        
+
+        # this flag will prevent a network msg from being sent if
+        # the list of visible zones has not changed
+        vizZonesChanged = 1
         if DistributedLevel.HideZones:
             # figure out which zones are new and which are going invisible
             # use dicts because it's faster to use dict.has_key(x)
@@ -592,15 +595,24 @@ class DistributedLevel(DistributedObject.DistributedObject,
                     addedZoneNums.append(vz)
                 else:
                     removedZoneNums.append(vz)
-            # show the new, hide the old
-            DistributedLevel.notify.info('showing zones %s' % addedZoneNums)
-            for az in addedZoneNums:
-                self.showZone(az)
-            DistributedLevel.notify.info('hiding zones %s' % removedZoneNums)
-            for rz in removedZoneNums:
-                self.hideZone(rz)
 
-        self.setVisibility(visibleZoneNums.keys())
+            if (not addedZoneNums) and (not removedZoneNums):
+                DistributedLevel.notify.info(
+                    'visible zone list has not changed')
+                vizZonesChanged = 0
+            else:
+                # show the new, hide the old
+                DistributedLevel.notify.info('showing zones %s' %
+                                             addedZoneNums)
+                for az in addedZoneNums:
+                    self.showZone(az)
+                DistributedLevel.notify.info('hiding zones %s' %
+                                             removedZoneNums)
+                for rz in removedZoneNums:
+                    self.hideZone(rz)
+
+        if vizZonesChanged:
+            self.setVisibility(visibleZoneNums.keys())
 
         self.curZoneNum = zoneNum
         self.curVisibleZoneNums = visibleZoneNums
