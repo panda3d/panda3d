@@ -91,7 +91,7 @@ is_c_or_i_file(const Filename &filename) {
     
   return (extension == "c" || extension == "cc" || 
 	  extension == "cpp" || extension == "c++" || extension == "cxx" ||
-	  extension == "i");
+	  extension == "i" || extension == "t");
 }
 
 ////////////////////////////////////////////////////////////////////
