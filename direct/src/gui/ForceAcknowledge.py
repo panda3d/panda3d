@@ -32,6 +32,9 @@ class ForceAcknowledge(StateData.StateData):
 
     def exit(self):
 	"""exit(self)"""
+	if self.isLoaded == 0:
+	    return None
+
 	self.ignore("ForceAcknowledge-rollover")
 	self.ignore("ForceAcknowledge-ok")
 
@@ -40,6 +43,9 @@ class ForceAcknowledge(StateData.StateData):
 	
     def load(self):
 	"""load(self)"""
+	if self.isLoaded == 1:
+	    return None
+
 	# create a message
 	self.text = OnscreenText.OnscreenText("", 0.0, 0.25)
 	self.text.node().setAlign(0)
@@ -54,11 +60,15 @@ class ForceAcknowledge(StateData.StateData):
 	self.okButton.button.setUpRolloverEvent("ForceAcknowledge-rollover")
 	self.okButton.button.setDownRolloverEvent("ForceAcknowledge-ok")
 
-	self.exit()
 	self.isLoaded = 1
 	
     def unload(self):
 	"""unload(self)"""
+	if self.isLoaded == 0:
+	    return None
+	
+	self.exit()
+
 	# GUI
 	self.text.removeNode()
 	del(self.okButton)
