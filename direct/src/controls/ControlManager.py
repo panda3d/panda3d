@@ -51,6 +51,7 @@ class ControlManager:
         inputState.watch("turnLeft", "control-alt-arrow_left", "alt-arrow_left-up")
         inputState.watch("turnLeft", "shift-arrow_left", "arrow_left-up")
         inputState.watch("turnLeft", "mouse-look_left", "mouse-look_left-done")
+        inputState.watch("turnLeft", "force-turnLeft", "force-turnLeft-stop")
         
         inputState.watch("turnRight", "arrow_right", "arrow_right-up")
         inputState.watch("turnRight", "control-arrow_right", "arrow_right-up")
@@ -59,6 +60,7 @@ class ControlManager:
         inputState.watch("turnRight", "control-alt-arrow_right", "arrow_right-up")
         inputState.watch("turnRight", "shift-arrow_right", "arrow_right-up")
         inputState.watch("turnRight", "mouse-look_right", "mouse-look_right-done")
+        inputState.watch("turnRight", "force-turnRight", "force-turnRight-stop")
         
         inputState.watch("jump", "control", "control-up")
         
