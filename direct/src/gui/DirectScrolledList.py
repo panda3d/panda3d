@@ -175,7 +175,7 @@ class DirectScrolledList(DirectFrame):
             self.refresh()
         
 
-    def removeItem(self, item):
+    def removeItem(self, item, refresh=1):
         """
         Remove this item from the panel
         """
