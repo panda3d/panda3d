@@ -286,13 +286,16 @@ set_current_regions(MouseWatcher::VRegions &regions) {
   VRegions::const_iterator new_ri = regions.begin();
   VRegions::const_iterator old_ri = _current_regions.begin();
 
+  // Queue up all the new regions so we can send the within patterns
+  // all at once, after all of the without patterns have been thrown.
+  vector<MouseWatcherRegion *> new_regions;
+
   bool any_changes = false;
   while (new_ri != regions.end() && old_ri != _current_regions.end()) {
     if ((*new_ri) < (*old_ri)) {
       // Here's a new region that we didn't have last frame.
       MouseWatcherRegion *new_region = (*new_ri);
-      new_region->within(param);
-      throw_event_pattern(_within_pattern, new_region, ButtonHandle::none());
+      new_regions.push_back(new_region);
       any_changes = true;
       ++new_ri;
 
@@ -314,8 +317,7 @@ set_current_regions(MouseWatcher::VRegions &regions) {
   while (new_ri != regions.end()) {
     // Here's a new region that we didn't have last frame.
     MouseWatcherRegion *new_region = (*new_ri);
-    new_region->within(param);
-    throw_event_pattern(_within_pattern, new_region, ButtonHandle::none());
+    new_regions.push_back(new_region);
     any_changes = true;
     ++new_ri;
   }
@@ -334,9 +336,17 @@ set_current_regions(MouseWatcher::VRegions &regions) {
     // the new vector.
     _current_regions.swap(regions);
 
+    // And don't forget to throw all of the new regions' "within" events.
+    vector<MouseWatcherRegion *>::const_iterator ri;
+    for (ri = new_regions.begin(); ri != new_regions.end(); ++ri) {
+      MouseWatcherRegion *new_region = (*ri);
+      new_region->within(param);
+      throw_event_pattern(_within_pattern, new_region, ButtonHandle::none());
+    }
+
     // Determine which is the "preferred region", if any.  This is the
     // topmost region that the mouse cursor is over, and the one that
-    // we are considred "entered" into.
+    // we are considered "entered" into.
     MouseWatcherRegion *new_preferred_region = 
       get_preferred_region(_current_regions);
 
