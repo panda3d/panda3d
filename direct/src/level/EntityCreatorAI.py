@@ -48,8 +48,8 @@ class EntityCreatorAI:
         if not self.entType2Ctor.has_key(entType):
             EntityCreatorAI.notify.warning(
                 'createEntity(entType=%s, levelDoId=%s, '
-                'entId=%s, zoneId=%s): entType not found' %
-                (entType, levelDoId, entId, zoneId))
+                'entId=%s, zoneId=%s) not found' %
+                (entType, level.doId, entId, zoneId))
             return None
 
         if zoneId is None:
