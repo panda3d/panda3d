@@ -99,9 +99,7 @@ const bool unambiguous_graph = config_pgraph.GetBool("unambiguous-graph", false)
 // Set this true to double-check the componentwise transform compose
 // (or invert) operation against the equivalent matrix-based
 // operation.  This has no effect if NDEBUG is defined.
-
-// Default is true for now.
-const bool paranoid_compose = config_pgraph.GetBool("paranoid-compose", true);
+const bool paranoid_compose = config_pgraph.GetBool("paranoid-compose", false);
 
 // Set this true to perform componentwise compose and invert
 // operations at all.  If this is false, the compositions are computed

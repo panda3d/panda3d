@@ -32,9 +32,7 @@ ConfigureFn(config_linmath) {
 // Set this true to doublecheck the quaternion-hpr compose and
 // decompose operations against the quaternion-matrix and matrix-hpr
 // operations.  This only has effect if NDEBUG is not defined.
-
-// The default is true for now.
-const bool paranoid_hpr_quat = config_linmath.GetBool("paranoid-hpr-quat", true);
+const bool paranoid_hpr_quat = config_linmath.GetBool("paranoid-hpr-quat", false);
 
 // Set this true to compute hpr's correctly.  Presently, we apply
 // these in the wrong order, and roll is backwards relative to the
