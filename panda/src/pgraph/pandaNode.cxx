@@ -654,6 +654,7 @@ get_next_visible_child(int n) const {
 ////////////////////////////////////////////////////////////////////
 int PandaNode::
 find_child(PandaNode *node) const {
+  nassertr(node != (PandaNode *)NULL, -1);
   CDReader cdata(_cycler);
 
   // We have to search for the child by brute force, since we don't
@@ -681,6 +682,7 @@ find_child(PandaNode *node) const {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 add_child(PandaNode *child_node, int sort) {
+  nassertv(child_node != (PandaNode *)NULL);
   // Ensure the child_node is not deleted while we do this.
   PT(PandaNode) keep_child = child_node;
   remove_child(child_node);
@@ -738,6 +740,7 @@ remove_child(int n) {
 ////////////////////////////////////////////////////////////////////
 bool PandaNode::
 remove_child(PandaNode *child_node) {
+  nassertr(child_node != (PandaNode *)NULL, false);
   // First, look for the parent in the child's up list, to ensure the
   // child is known.
   int parent_index = child_node->find_parent(this);
@@ -777,6 +780,8 @@ remove_child(PandaNode *child_node) {
 ////////////////////////////////////////////////////////////////////
 bool PandaNode::
 replace_child(PandaNode *orig_child, PandaNode *new_child) {
+  nassertr(orig_child != (PandaNode *)NULL, false);
+  nassertr(new_child != (PandaNode *)NULL, false);
   // First, look for the parent in the child's up list, to ensure the
   // child is known.
   int parent_index = orig_child->find_parent(this);

@@ -101,6 +101,7 @@ INLINE qpNodePathComponent::
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *qpNodePathComponent::
 get_node() const {
+  nassertr(_node != (PandaNode *)NULL, _node);
   return _node;
 }
 

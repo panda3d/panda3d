@@ -228,14 +228,11 @@ get_error_type() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::node
 //       Access: Published
-//  Description: Returns the referenced node of the path, or NULL if the
-//               path is empty.
+//  Description: Returns the referenced node of the path.
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *qpNodePath::
 node() const {
-  if (is_empty()) {
-    return (PandaNode *)NULL;
-  }
+  nassertr(!is_empty(), (PandaNode *)NULL);
   return _head->get_node();
 }
 
