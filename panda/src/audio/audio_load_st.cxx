@@ -490,5 +490,7 @@ ConfigureFn(audio_load_st) {
 			   << "'" << endl;
       AudioPool::register_sample_loader(FORMATS[i].names[j], AudioLoadSt);
     }
+#else /* HAVE_SOXST */
+  audio_cat->info() << "HAVE_SOXST is not defined" << endl;
 #endif /* HAVE_SOXST */
 }
