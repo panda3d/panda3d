@@ -5,33 +5,37 @@ import os
 def findClassInModule(module, className, visited):
     # Make sure you have not already visited this module
     # to prevent recursion
-    if module in visited:
+    if visited.has_key(module):
         return None
     # Ok, clear to proceed, add this module to the visited list
-    visited.append(module)
+    visited[module] = 1
     # print ('visiting: ' + `module`)
-    # Look in this module for classes and other modules
-    for key in module.__dict__.keys():
-        value = module.__dict__[key]
-        # If this is a class
-        if ((key != "_") and (type(value) == types.ClassType)):
-            # See if the name matches
-            if value.__name__ == className:
-                # It does! We found our class
-                return [value, module.__dict__]
-        # Its a module, recursively look into its namespace
-        elif (type(value) == types.ModuleType):
-            ret =  findClassInModule(value, className, visited)
-            # If that recursion found it, return the goodies
-            if ret:
-                return ret
-            # Otherwise keep looking
+
+    # First see if we are in the dict at this level
+    classObj = module.__dict__.get(className)
+    if classObj and (type(classObj) == types.ClassType):
+        return [classObj, module.__dict__]
+
+    # Now filter out all the modules and iterate through them
+    moduleList = filter(lambda value: type(value) == types.ModuleType, module.__dict__.values())
+    for moduleObj in moduleList:
+        ret =  findClassInModule(moduleObj, className, visited)
+        # If that recursion found it, return the goodies
+        if ret:
+            return ret
+            
     # Well, after all that we did not find anything
     return None
 
 
 # Find a class named className somewhere in this namespace
 def findClass(namespace, className):
+
+    # First see if we are in the namespace
+    classObj = namespace.get(className)
+    if classObj and (type(classObj) == types.ClassType):
+        return [classObj, namespace]
+    
     for key in namespace.keys():
         value = namespace[key]
         # If we found a class, see if it matches classname
@@ -42,7 +46,7 @@ def findClass(namespace, className):
                 return [value, namespace]
         # Look in all the modules in this namespace
         elif (type(value) == types.ModuleType):
-            ret = findClassInModule(value, className, [])
+            ret = findClassInModule(value, className, {})
             # If we found it return the goodies
             if ret:
                 return ret
@@ -51,47 +55,37 @@ def findClass(namespace, className):
     return None
 
 
-def rebindClass(builtins, filename):
+def rebindClass(builtinGlobals, filename):
     file = open(filename, 'r')
     lines = file.readlines()
-    curLine = 0
-    found = 0
-    foundLine = -1
-    foundChar = -1
     for i in range(len(lines)):
         line = lines[i]
         if (line[0:6] == 'class '):
-            classHeader = line[6:]
+            # Chop off the "class " syntax and strip extra whitespace
+            classHeader = line[6:].strip()
             # Look for a open paren if it does inherit
             parenLoc = classHeader.find('(')
             if parenLoc > 0:
                 className = classHeader[:parenLoc]
-                print 'Rebinding class name: ' + className
-                found = 1
-                foundLine = i
-                foundChar = parenLoc
             else:
                 # Look for a colon if it does not inherit
                 colonLoc = classHeader.find(':')
                 if colonLoc > 0:
                     className = classHeader[:colonLoc]
-                    # print 'found className: ' + className
-                    found = 1
-                    foundLine = i
-                    foundChar = colonLoc
-
-    if not found:
-        print 'error: className not found'
-        return
+                else:
+                    print 'error: className not found'
+                    return
+            print 'Rebinding class name: ' + className
+            break
 
     # Store the original real class
-    res = findClass(builtins, className)
+    res = findClass(builtinGlobals, className)
     if res:
         realClass, realNameSpace = res
     else:
         # print ('Warning: could not find class, defining new class in builtins: ' + className)
         # Now execute that class def
-        # execfile(filename, builtins)
+        # execfile(filename, builtinGlobals)
         print ('Warning: Finder could not find class, try importing the file first')
         # Remove that temp file
         file.close()
@@ -104,18 +98,15 @@ def rebindClass(builtins, filename):
     file.close()
     os.remove(filename)
 
-    res = findClass(realNameSpace, className)
-    if res:
-        tmpClass, tmpNameSpace = res
-    else:
-        print ('Internal error redefining class: could not find temp class')
-        return
+    tmpClass = realNameSpace[className]
 
     # Copy the functions that we just redefined into the real class
     copyFuncs(tmpClass, realClass)
 
     # Now make sure the original class is in that namespace, not our temp one
     realNameSpace[className] = realClass
+
+    print ('    Finished rebind')
 
 
 def copyFuncs(fromClass, toClass):
