@@ -60,12 +60,14 @@
 #include "selectiveChildNode.h"
 #include "collisionNode.h"
 #include "collisionSphere.h"
+#include "collisionTube.h"
 #include "collisionPlane.h"
 #include "collisionPolygon.h"
 #include "parametricCurve.h"
 #include "nurbsCurve.h"
 #include "classicNurbsCurve.h"
 #include "nurbsCurveInterface.h"
+#include "look_at.h"
 
 #include <ctype.h>
 #include <algorithm>
@@ -1583,6 +1585,10 @@ make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
   case EggGroup::CST_sphere:
     make_collision_sphere(egg_group, cnode, start_group->get_collide_flags());
     break;
+
+  case EggGroup::CST_tube:
+    make_collision_tube(egg_group, cnode, start_group->get_collide_flags());
+    break;
   }
 
   if ((start_group->get_collide_flags() & EggGroup::CF_descend) != 0) {
@@ -1697,17 +1703,8 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
 
     for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
       EggVertex *vtx = (*vi);
-      if (vtx->get_num_dimensions() == 3) {
-        center += vtx->get_pos3();
-        num_vertices++;
-
-      } else if (vtx->get_num_dimensions() == 4) {
-        LPoint4d p4 = vtx->get_pos4();
-        if (p4[3] != 0.0) {
-          center += LPoint3d(p4[0], p4[1], p4[2]) / p4[3];
-          num_vertices++;
-        }
-      }
+      center += vtx->get_pos3();
+      num_vertices++;
     }
 
     if (num_vertices > 0) {
@@ -1720,19 +1717,9 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
       double radius2 = 0.0;
       for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
         EggVertex *vtx = (*vi);
-        if (vtx->get_num_dimensions() == 3) {
-          LPoint3d p3 = vtx->get_pos3();
-          LVector3d v = p3 * mat - center;
-          radius2 = max(radius2, v.length_squared());
-
-        } else if (vtx->get_num_dimensions() == 4) {
-          LPoint4d p4 = vtx->get_pos4();
-          if (p4[3] != 0.0) {
-            LPoint3d p3 = LPoint3d(p4[0], p4[1], p4[2]) / p4[3];
-            LVector3d v = p3 * mat - center;
-            radius2 = max(radius2, v.length_squared());
-          }
-        }
+        LPoint3d p3 = vtx->get_pos3();
+        LVector3d v = p3 * mat - center;
+        radius2 = max(radius2, v.length_squared());
       }
 
       float radius = sqrtf(radius2);
@@ -1740,6 +1727,208 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
         new CollisionSphere(LCAST(float, center), radius);
       apply_collision_flags(cssphere, flags);
       cnode->add_solid(cssphere);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::make_collision_tube
+//       Access: Private
+//  Description: Creates a single CollisionTube corresponding
+//               to the polygons associated with this group.
+////////////////////////////////////////////////////////////////////
+void EggLoader::
+make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
+                    EggGroup::CollideFlags flags) {
+  EggGroup *geom_group = find_collision_geometry(egg_group);
+  if (geom_group != (EggGroup *)NULL) {
+    // Collect all of the vertices.
+    pset<EggVertex *> vertices;
+
+    EggGroup::const_iterator ci;
+    for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
+      if ((*ci)->is_of_type(EggPrimitive::get_class_type())) {
+        EggPrimitive *prim = DCAST(EggPrimitive, *ci);
+        EggPrimitive::const_iterator pi;
+        for (pi = prim->begin(); pi != prim->end(); ++pi) {
+          vertices.insert(*pi);
+        }
+      }
+    }
+
+    // Now store the 3-d values in a vector for convenient access (and
+    // also determine the centroid).  We compute this in node space.
+    size_t num_vertices = vertices.size();
+    if (num_vertices != 0) {
+      LMatrix4d mat = egg_group->get_vertex_to_node();
+      pvector<LPoint3d> vpos;
+      vpos.reserve(num_vertices);
+      
+      LPoint3d center(0.0, 0.0, 0.0);
+      pset<EggVertex *>::const_iterator vi;
+      for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
+        EggVertex *vtx = (*vi);
+        LPoint3d pos = vtx->get_pos3() * mat;
+        vpos.push_back(pos);
+        center += vtx->get_pos3();
+      }
+      center /= (double)num_vertices;
+
+      // Now that we have the centroid, we have to try to figure out
+      // the cylinder's major axis.  Start by finding a point farthest
+      // from the centroid.
+      size_t i;
+      double radius2 = 0.0;
+      LPoint3d far_a = center;
+      for (i = 0; i < num_vertices; i++) {
+        double dist2 = (vpos[i] - center).length_squared();
+        if (dist2 > radius2) {
+          radius2 = dist2;
+          far_a = vpos[i];
+        }
+      }
+
+      // The point we have found above, far_a, must be one one of the
+      // endcaps.  Now find another point, far_b, that is the farthest
+      // from far_a.  This will be a point on the other endcap.
+      radius2 = 0.0;
+      LPoint3d far_b = center;
+      for (i = 0; i < num_vertices; i++) {
+        double dist2 = (vpos[i] - far_a).length_squared();
+        if (dist2 > radius2) {
+          radius2 = dist2;
+          far_b = vpos[i];
+        }
+      }
+
+      // Now we have far_a and far_b, one point on each endcap.
+      // However, these points are not necessarily centered on the
+      // endcaps, so we haven't figured out the cylinder's axis yet
+      // (the line between far_a and far_b will probably pass through
+      // the cylinder at an angle).
+
+      // So we still need to determine the full set of points in each
+      // endcap.  To do this, we pass back through the set of points,
+      // categorizing each point into either "endcap a" or "endcap b".
+      // We also leave a hefty chunk of points in the middle
+      // uncategorized; this helps prevent us from getting a little
+      // bit lopsided with points near the middle that may appear to
+      // be closer to the wrong endcap.
+      LPoint3d cap_a_center(0.0, 0.0, 0.0);
+      LPoint3d cap_b_center(0.0, 0.0, 0.0);
+      int num_a = 0;
+      int num_b = 0;
+
+      // This is the threshold length; points farther away from the
+      // center than this are deemed to be in one endcap or the other.
+      double center_length = (far_a - far_b).length() / 4.0;
+      double center_length2 = center_length * center_length;
+
+      for (i = 0; i < num_vertices; i++) {
+        double dist2 = (vpos[i] - center).length_squared();
+        if (dist2 > center_length2) {
+          // This point is farther away from the center than
+          // center_length; therefore it belongs in an endcap.
+          double dist_a2 = (vpos[i] - far_a).length_squared();
+          double dist_b2 = (vpos[i] - far_b).length_squared();
+          if (dist_a2 < dist_b2) {
+            // It's in endcap a.
+            cap_a_center += vpos[i];
+            num_a++;
+          } else {
+            // It's in endcap b.
+            cap_b_center += vpos[i];
+            num_b++;
+          }
+        }
+      }
+
+      if (num_a > 0 && num_b > 0) {
+        cap_a_center /= (double)num_a;
+        cap_b_center /= (double)num_b;
+
+
+        // Now we finally have the major axis of the cylinder.
+        LVector3d axis = cap_b_center - cap_a_center;
+        axis.normalize();
+
+        // If the axis is *almost* parallel with a major axis, assume
+        // it is meant to be exactly parallel.
+        if (IS_THRESHOLD_ZERO(axis[0], 0.01)) {
+          axis[0] = 0.0;
+        }
+        if (IS_THRESHOLD_ZERO(axis[1], 0.01)) {
+          axis[1] = 0.0;
+        }
+        if (IS_THRESHOLD_ZERO(axis[2], 0.01)) {
+          axis[2] = 0.0;
+        }
+        axis.normalize();
+
+        // Transform all of the points so that the major axis is along
+        // the Y axis, and the origin is the center.  This is very
+        // similar to the CollisionTube's idea of its canonical
+        // orientation (although not exactly the same, since it is
+        // centered on the origin instead of having point_a on the
+        // origin).  It makes it easier to determine the length and
+        // radius of the cylinder.
+        LMatrix4d mat;
+        look_at(mat, axis, LVector3d(0.0, 0.0, 1.0), CS_zup_right);
+        mat.set_row(3, center);
+        LMatrix4d inv_mat;
+        inv_mat.invert_from(mat);
+
+        for (i = 0; i < num_vertices; i++) {
+          vpos[i] = vpos[i] * inv_mat;
+        }
+
+        double max_radius2 = 0.0;
+
+        // Now determine the radius.
+        for (i = 0; i < num_vertices; i++) {
+          LVector2d v(vpos[i][0], vpos[i][2]);
+          double radius2 = v.length_squared();
+          if (radius2 > max_radius2) {
+            max_radius2 = radius2;
+          }
+        }
+
+        // And with the radius, we can determine the length.  We need
+        // to know the radius first because we want the round endcaps
+        // to enclose all points.
+        double min_y = 0.0;
+        double max_y = 0.0;
+
+        for (i = 0; i < num_vertices; i++) {
+          LVector2d v(vpos[i][0], vpos[i][2]);
+          double radius2 = v.length_squared();
+
+          if (vpos[i][1] < min_y) {
+            // Adjust the Y pos to account for the point's distance
+            // from the axis.
+            double factor = sqrt(max_radius2 - radius2);
+            min_y = min(min_y, vpos[i][1] + factor);
+
+          } else if (vpos[i][1] > max_y) {
+            double factor = sqrt(max_radius2 - radius2);
+            max_y = max(max_y, vpos[i][1] - factor);
+          }
+        }
+
+        double length = max_y - min_y;
+        double radius = sqrt(max_radius2);
+
+        // Finally, we have everything we need to define the cylinder.
+        LVector3d half = axis * (length / 2.0);
+        LPoint3d point_a = center - half;
+        LPoint3d point_b = center + half;
+
+        CollisionTube *cstube =
+          new CollisionTube(LCAST(float, point_a), LCAST(float, point_b),
+                            radius);
+        apply_collision_flags(cstube, flags);
+        cnode->add_solid(cstube);
+      }
     }
   }
 }
@@ -2028,6 +2217,9 @@ do_expand_object_type(EggGroup *egg_group, const pset<string> &expanded,
       
     } else if (cmp_nocase_uh(object_type, "sphere") == 0) {
       egg_syntax = "<Collide> { Sphere descend }";
+
+    } else if (cmp_nocase_uh(object_type, "tube") == 0) {
+      egg_syntax = "<Collide> { Tube descend }";
       
     } else if (cmp_nocase_uh(object_type, "trigger") == 0) {
       egg_syntax = "<Collide> { Polyset descend intangible }";

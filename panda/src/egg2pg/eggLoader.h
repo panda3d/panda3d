@@ -112,6 +112,8 @@ private:
                               EggGroup::CollideFlags flags);
   void make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
                              EggGroup::CollideFlags flags);
+  void make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
+                           EggGroup::CollideFlags flags);
   void apply_collision_flags(CollisionSolid *solid,
                              EggGroup::CollideFlags flags);
   EggGroup *find_collision_geometry(EggGroup *egg_group);
