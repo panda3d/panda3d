@@ -571,7 +571,6 @@ update_labels() {
   _labels.clear();
 
   int num_children = level->get_num_children();
-  cerr << "num_children = " << num_children << "\n";
   for (int i = 0; i < num_children; i++) {
     const PStatViewLevel *child = level->get_child(i);
     int collector = child->get_collector();
