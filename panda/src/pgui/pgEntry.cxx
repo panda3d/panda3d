@@ -189,7 +189,7 @@ press(const MouseWatcherParameter &param, bool background) {
                  (background && get_background_focus())) {
         // Keyboard button.
         if (!_candidate_wtext.empty()) {
-          _candidate_wtext.clear();
+          _candidate_wtext = wstring();
           _text_geom_stale = true;
         }
 
@@ -273,7 +273,7 @@ keystroke(const MouseWatcherParameter &param, bool background) {
         // A normal visible character.  Add a new character to the
         // text entry, if there's room.
         if (!_candidate_wtext.empty()) {
-          _candidate_wtext.clear();
+          _candidate_wtext = wstring();
           _text_geom_stale = true;
         }
         wstring new_char(1, (wchar_t)keycode);
