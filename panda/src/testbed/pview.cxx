@@ -306,15 +306,10 @@ main(int argc, char *argv[]) {
   // Tick the clock once so we won't count the time spent loading up
   // files, above, in our frame rate average.
   ClockObject::get_global_clock()->tick();
-  start_time = ClockObject::get_global_clock()->get_frame_time();
-  start_frame_count = ClockObject::get_global_clock()->get_frame_count();
-
 
   // This is our main update loop.  Loop here until someone
   // (e.g. event_esc) sets run_flag to false.
-  ClockObject *clock = ClockObject::get_global_clock();
   while (run_flag) {
-    clock->tick();
     traverse_data_graph(data_root);
     event_handler.process_events();
     engine->render_frame();
