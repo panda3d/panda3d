@@ -187,6 +187,13 @@ get_num_fields() const {
 ////////////////////////////////////////////////////////////////////
 DCField *DCClass::
 get_field(int n) const {
+  #ifndef NDEBUG //[
+  if (n < 0 || n >= (int)_fields.size()) {
+    write(cerr, 0);
+    cerr<<"n:"<<n<<" _fields.size():"<<(int)_fields.size()<<endl;
+    // __asm { int 3 }
+  }
+  #endif //]
   nassertr_always(n >= 0 && n < (int)_fields.size(), NULL);
   return _fields[n];
 }
@@ -258,6 +265,44 @@ get_inherited_field(int n) const {
     n -= psize;
   }
   return get_field(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Published
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void DCClass::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<""<<"DCClass";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Published
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void DCClass::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""<<"DCClass:\n";
+  
+  out.width(indent+2); out<<""<<"_name "<<_name<<"\n";
+  out.width(indent+2); out<<""<<"_is_struct "<<_is_struct<<"\n";
+  out.width(indent+2); out<<""<<"_bogus_class "<<_bogus_class<<"\n";
+  out.width(indent+2); out<<""<<"_number "<<_number<<"\n";
+
+  //typedef pvector<DCClass *> Parents;
+  //Parents _parents;
+  //typedef pvector<DCField *> Fields;
+  //Fields _fields;
+  //typedef pmap<string, DCField *> FieldsByName;
+  //FieldsByName _fields_by_name;
+  #endif //] NDEBUG
 }
 
 #ifdef HAVE_PYTHON
@@ -353,7 +398,7 @@ receive_update_broadcast_required(PyObject *distobj, DatagramIterator &di) const
   packer.set_unpack_data(di.get_remaining_bytes());
 
   int num_fields = get_num_inherited_fields();
-  for (int i = 0; i < num_fields && !PyErr_Occurred(); i++) {
+  for (int i = 0; i < num_fields && !PyErr_Occurred(); ++i) {
     DCField *field = get_inherited_field(i);
     DCAtomicField *atom = field->as_atomic_field();
     if (atom != (DCAtomicField *)NULL &&
@@ -388,7 +433,7 @@ receive_update_all_required(PyObject *distobj, DatagramIterator &di) const {
   packer.set_unpack_data(di.get_remaining_bytes());
 
   int num_fields = get_num_inherited_fields();
-  for (int i = 0; i < num_fields && !PyErr_Occurred(); i++) {
+  for (int i = 0; i < num_fields && !PyErr_Occurred(); ++i) {
     DCField *field = get_inherited_field(i);
     DCAtomicField *atom = field->as_atomic_field();
     if (atom != (DCAtomicField *)NULL && atom->is_required()) {
@@ -417,7 +462,7 @@ receive_update_other(PyObject *distobj, DatagramIterator &di) const {
   PStatTimer timer(((DCClass *)this)->_class_update_pcollector);
 #endif
   int num_fields = di.get_uint16();
-  for (int i = 0; i < num_fields && !PyErr_Occurred(); i++) {
+  for (int i = 0; i < num_fields && !PyErr_Occurred(); ++i) {
     receive_update(distobj, di);
   }
 }
@@ -704,11 +749,10 @@ ai_format_update(const string &field_name, int do_id,
 ////////////////////////////////////////////////////////////////////
 Datagram DCClass::
 ai_format_generate(PyObject *distobj, int do_id, 
-                   int zone_id, CHANNEL_TYPE district_channel_id, CHANNEL_TYPE from_channel_id,
+                   int parent_id, int zone_id,
+                   CHANNEL_TYPE district_channel_id, CHANNEL_TYPE from_channel_id,
                    PyObject *optional_fields) const {
-
   DCPacker packer;
-
 
   packer.RAW_PACK_CHANNEL(district_channel_id);
   packer.RAW_PACK_CHANNEL(from_channel_id);
@@ -722,13 +766,19 @@ ai_format_generate(PyObject *distobj, int do_id,
     packer.raw_pack_uint16(STATESERVER_OBJECT_GENERATE_WITH_REQUIRED);
   }
   
+  // Parent is a bit overloaded; this parent is not about inheritance,
+  // this one is about the visibility container parent, i.e. the zone
+  // parent:
+  if (parent_id) { // if wantOtpServer:
+    packer.raw_pack_uint32(parent_id);
+  }
   packer.raw_pack_uint32(zone_id);
   packer.raw_pack_uint16(_number);
   packer.raw_pack_uint32(do_id);
 
   // Specify all of the required fields.
   int num_fields = get_num_inherited_fields();
-  for (int i = 0; i < num_fields; i++) {
+  for (int i = 0; i < num_fields; ++i) {
     DCField *field = get_inherited_field(i);
     if (field->is_required() && field->as_molecular_field() == NULL) {
       packer.begin_pack(field);
@@ -744,7 +794,7 @@ ai_format_generate(PyObject *distobj, int do_id,
     int num_optional_fields = PySequence_Size(optional_fields);
     packer.raw_pack_uint16(num_optional_fields);
 
-    for (int i = 0; i < num_optional_fields; i++) {
+    for (int i = 0; i < num_optional_fields; ++i) {
       PyObject *py_field_name = PySequence_GetItem(optional_fields, i);
       string field_name = PyString_AsString(py_field_name);
       Py_XDECREF(py_field_name);
