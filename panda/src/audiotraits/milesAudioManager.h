@@ -27,6 +27,7 @@
 #include "mss.h"
 #include "pset.h"
 #include "pmap.h"
+#include "pdeque.h"
 
 class MilesAudioSound;
 
@@ -52,9 +53,12 @@ public:
   bool get_active();
 
 private:
-  // The sound cache/pool:
+  // The sound cache:
   typedef pmap<string, HAUDIO > SoundMap;
   SoundMap _sounds;
+  // The Least Recently Used mechanism:
+  typedef pdeque<const string* > LRU;
+  LRU _lru;
   // The offspring of this manager:
   typedef pset<MilesAudioSound* > AudioSet;
   AudioSet _soundsOnLoan;
@@ -73,6 +77,7 @@ private:
   // Tell the manager that the sound dtor was called.
   void release_sound(MilesAudioSound* audioSound);
   
+  void most_recently_used(const string& path);
   void uncache_a_sound();
 
   // utility function that should be moved to another class:

@@ -24,6 +24,7 @@
 #include "milesAudioManager.h"
 #include "config_audio.h"
 #include "config_util.h"
+#include <algorithm>
 
 int MilesAudioManager::_active_managers;
 HDLSFILEID MilesAudioManager::_dls_field;
@@ -103,6 +104,7 @@ MilesAudioManager() {
   // either way.
   ++_active_managers;
   audio_debug("  _active_managers="<<_active_managers);
+  assert(is_valid());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -140,7 +142,22 @@ MilesAudioManager::
 ////////////////////////////////////////////////////////////////////
 bool MilesAudioManager::
 is_valid() {
-  return _is_valid;
+  bool check=true;
+  if (_sounds.size() != _lru.size()) {
+    audio_debug("--sizes--");
+    check=false;
+  } else {
+    LRU::const_iterator i=_lru.begin();
+    for (; i != _lru.end(); ++i) {
+      SoundMap::const_iterator smi=_sounds.find(**i);
+      if (smi == _sounds.end()) {
+        audio_debug("--"<<**i<<"--");
+        check=false;
+        break;
+      }
+    }
+  }
+  return _is_valid && check;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -167,6 +184,7 @@ load(Filename file_name) {
 PT(AudioSound) MilesAudioManager::
 get_sound(const string& file_name) {
   audio_debug("MilesAudioManager::get_sound(file_name=\""<<file_name<<"\")");
+  assert(is_valid());
   Filename path = file_name;
   path.resolve_filename(get_sound_path());
   audio_debug("  resolved file_name is '"<<path<<"'");
@@ -193,6 +211,7 @@ get_sound(const string& file_name) {
       if (!ib.second) {
         // The insert failed.
         audio_debug("  failed map insert of "<<path);
+        assert(is_valid());
         return 0;
       }
       // Set si, so that we can get a reference to the path 
@@ -200,6 +219,7 @@ get_sound(const string& file_name) {
       si=ib.first;
     }
   }
+  most_recently_used((*si).first);
   // Create an AudioSound from the sound:
   PT(AudioSound) audioSound = 0;
   if (audio) {
@@ -211,6 +231,7 @@ get_sound(const string& file_name) {
     audioSound=milesAudioSound;
   }
   audio_debug("  returning 0x" << (void*)audioSound);
+  assert(is_valid());
   return audioSound;
 }
 
@@ -223,14 +244,20 @@ void MilesAudioManager::
 uncache_sound(const string& file_name) {
   audio_debug("MilesAudioManager::uncache_sound(file_name=\""
       <<file_name<<"\")");
+  assert(is_valid());
   Filename path = file_name;
   path.resolve_filename(get_sound_path());
   audio_debug("  path=\""<<path<<"\"");
   SoundMap::iterator i=_sounds.find(path);
   if (i != _sounds.end()) {
+    assert(_lru.size()>0);
+    LRU::iterator lru_i=find(_lru.begin(), _lru.end(), &(i->first));
+    assert(lru_i != _lru.end());
+    _lru.erase(lru_i);
     AIL_quick_unload(i->second);
     _sounds.erase(i);
   }
+  assert(is_valid());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -241,11 +268,52 @@ uncache_sound(const string& file_name) {
 void MilesAudioManager::
 uncache_a_sound() {
   audio_debug("MilesAudioManager::uncache_a_sound()");
-  SoundMap::iterator i = _sounds.begin();
+  assert(is_valid());
+  SoundMap::iterator i;
+  
+  // Pick a caching scheme:
+  if (0) {
+    // uncache arbitrarily:
+    i = _sounds.begin();
+  } else if (0) {
+    // uncache randomly:
+    // (I may implement this later, along with run-time selection
+    // of caching mechanisms).
+    //i = _sounds[random from 0 to _sounds.size()-1];
+  } else {
+    // uncache least recently used:
+    assert(_lru.size()>0);
+    LRU::reference path=_lru.front();
+    i = _sounds.find(*path);
+    assert(i != _sounds.end());
+    _lru.pop_front();
+  }
+  
   if (i != _sounds.end()) {
     audio_debug("  uncaching \""<<i->first<<"\"");
+    AIL_quick_unload(i->second);
     _sounds.erase(i);
   }
+  assert(is_valid());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::most_recently_used
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+most_recently_used(const string& path) {
+  audio_debug("MilesAudioManager::most_recently_used(path=\""
+      <<path<<"\")");
+  LRU::iterator i=find(_lru.begin(), _lru.end(), &path);
+  if (i != _lru.end()) {
+    _lru.erase(i);
+  }
+  // At this point, path should not exist in the _lru:
+  assert(find(_lru.begin(), _lru.end(), &path) == _lru.end());
+  _lru.push_back(&path);
+  assert(is_valid());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -256,11 +324,14 @@ uncache_a_sound() {
 void MilesAudioManager::
 clear_cache() {
   audio_debug("MilesAudioManager::clear_cache()");
+  assert(is_valid());
   SoundMap::iterator i=_sounds.begin();
   for (; i!=_sounds.end(); ++i) {
     AIL_quick_unload(i->second);
   }
   _sounds.clear();
+  _lru.clear();
+  assert(is_valid());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -272,11 +343,12 @@ void MilesAudioManager::
 set_cache_limit(int count) {
   audio_debug("MilesAudioManager::set_cache_limit(count="
       <<count<<")");
-  while (count < _cache_limit) {
+  assert(is_valid());
+  while (_lru.size() > count) {
     uncache_a_sound();
-    --_cache_limit;
   }
   _cache_limit=count;
+  assert(is_valid());
 }
 
 ////////////////////////////////////////////////////////////////////
