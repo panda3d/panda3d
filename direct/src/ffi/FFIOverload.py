@@ -3,11 +3,13 @@ from PythonUtil import *
 from types import *
 import string
 import FFIConstants
+import FFISpecs
 
 """
 Things that are not supported:
  - Overloading a function based on an enum being differentiated from an int
- - Type names from C++ cannot begin with __enum__
+ - Type names from C++ cannot have __enum__ in their name
+ - Overloading static and non-static methods with the same name
 """
 
 AT_not_atomic = 0
@@ -52,10 +54,16 @@ def getTypeName(classTypeDesc, typeDesc):
             # Convert the void type to None type... I guess...
             # So far we do not have any code that uses this
             return 'types.NoneType'
+
+        else:
+            FFIConstants.notify.error("Unknown atomicType: " + typeDesc.atomicType)
         
     # If the type is an enum, we really want to treat it like an int
-    # To handle this, the type will have __enum__ prepended to the name
-    elif (typeName[0:8] == '__enum__'):
+    # To handle this, the type will have __enum__ in the name
+    # Usually it will start the typeName, but some typeNames have the
+    # surrounding class as part of their name
+    # like BoundedObject.__enum__BoundingVolumeType
+    elif (typeName.find('__enum__') >= 0):
         return 'types.IntType'
 
     # If it was not atomic or enum, it must be a class which is a
@@ -146,15 +154,44 @@ class FFIMethodArgumentTreeCollection:
         self.methodDict = {}
         self.treeDict = {}
         
-    def outputOverloadedMethodHeader(self, file):
-        indent(file, 1, 'def ' +  self.methodSpecList[0].name
-                   + '(self, *_args):\n')
-        indent(file, 2, 'numArgs = len(_args)\n')
+    def outputOverloadedMethodHeader(self, file, nesting):
+        # If one is static, we assume they all are.
+        # The current system does not support overloading static and non-static
+        # methods with the same name
+        # Constructors are not treated as static. They are special because
+        # they are not really constructors, they are instance methods that fill
+        # in the this pointer.
+        if (self.methodSpecList[0].isStatic() and 
+            (not self.methodSpecList[0].isConstructor())):
+                indent(file, nesting+1, 'def ' +
+                       self.methodSpecList[0].name + '(*_args):\n')
+        else:
+            indent(file, nesting+1, 'def ' +
+                   self.methodSpecList[0].name + '(self, *_args):\n')
+        indent(file, nesting+2, 'numArgs = len(_args)\n')
         
-    def outputOverloadedMethodFooter(self, file):
+    def outputOverloadedMethodFooter(self, file, nesting):
         # If the overloaded function got all the way through the if statements
         # it must have had the wrong number or type of arguments
-        indent(file, 2, "raise TypeError, 'Invalid arguments'\n\n")
+        indent(file, nesting+2, "raise TypeError, 'Invalid arguments'\n")
+
+        # If this is a static method, we need to output a static version
+        # If one is static, we assume they all are.
+        # The current system does not support overloading static and non-static
+        # methods with the same name
+        # Constructors are not treated as static. They are special because
+        # they are not really constructors, they are instance methods that fill
+        # in the this pointer.
+
+        if (self.methodSpecList[0].isStatic() and
+            (not self.methodSpecList[0].isConstructor())):
+                self.outputOverloadedStaticFooter(file, nesting)
+        indent(file, nesting+1, '\n')
+
+    def outputOverloadedStaticFooter(self, file, nesting):
+        indent(file, nesting+1, self.methodSpecList[0].name + ' = '
+                   + FFIConstants.staticModuleName + '.' + FFIConstants.staticModuleName
+                   + '(' + self.methodSpecList[0].name + ')\n')
     
     def setup(self):
         for method in self.methodSpecList:
@@ -169,16 +206,16 @@ class FFIMethodArgumentTreeCollection:
         
     def generateCode(self, file, nesting):
         self.setup()
-        self.outputOverloadedMethodHeader(file)
+        self.outputOverloadedMethodHeader(file, nesting)
         numArgsKeys = self.treeDict.keys()
         numArgsKeys.sort()
         for numArgs in numArgsKeys:
             trees = self.treeDict[numArgs]
             for tree in trees:
-                indent(file, 2, 'if (numArgs == ' + `numArgs` + '):\n')
+                indent(file, nesting+2, 'if (numArgs == ' + `numArgs` + '):\n')
                 tree.setup()
-                tree.traverse(file)
-        self.outputOverloadedMethodFooter(file)
+                tree.traverse(file, nesting+1)
+        self.outputOverloadedMethodFooter(file, nesting)
 
 class FFIMethodArgumentTree:
     """
@@ -241,7 +278,7 @@ class FFIMethodArgumentTree:
                 # Output the function
                 methodSpec = self.tree[0][1]
                 indent(file, level+2, 'return ')
-                methodSpec.outputOverloadedCall(file, 0)
+                methodSpec.outputOverloadedCall(file, self.classTypeDesc, 0)
             else:
                 typeName = getTypeName(self.classTypeDesc, typeDesc)
                 indent(file, level+2, 'if (isinstance(_args[' + `level-1` + '], '
@@ -260,7 +297,7 @@ class FFIMethodArgumentTree:
                     methodSpec = self.tree[typeDesc][1]
                     indent(file, level+3, 'return ')
                     numArgs = level
-                    methodSpec.outputOverloadedCall(file, numArgs)
+                    methodSpec.outputOverloadedCall(file, self.classTypeDesc, numArgs)
 
 
 

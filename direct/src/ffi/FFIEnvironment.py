@@ -5,6 +5,7 @@ class FFIEnvironment:
         self.types = {}
         self.globalFunctions = []
         self.globalValues = []
+        self.manifests = []
     
     def addType(self, typeDescriptor, name):
         if self.types.has_key(name):
@@ -21,3 +22,5 @@ class FFIEnvironment:
         self.globalFunctions.append(typeDescriptor)
     def addGlobalValue(self, typeDescriptor):
         self.globalValues.append(typeDescriptor)
+    def addManifest(self, typeDescriptor):
+        self.manifests.append(typeDescriptor)

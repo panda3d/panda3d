@@ -44,6 +44,9 @@ def outputGlobalFileImports(file, methodList):
     # Print the standard header
     file.write(FFIConstants.generatedHeader)
 
+    # Import Python's builtin types
+    file.write('import types\n')
+
     # Import the C modules
     for CModuleName in FFIConstants.CodeModuleNameList:
         file.write('import ' + CModuleName + '\n')
@@ -370,7 +373,10 @@ class FFIInterrogateDatabase:
         # Prepend lib to the module name it reports because that will be the name of
         # the Python module we import. This is apparently stems from a makefile
         # discrepency in the way we build the libraries
-        moduleName = 'lib' + interrogate_function_module_name(functionIndex)
+        if interrogate_function_has_module_name(functionIndex):
+            moduleName = 'lib' + interrogate_function_module_name(functionIndex)
+        else:
+            moduleName = None
         typeIndex = functionIndex
 
         # Look at the Python wrappers for this function
@@ -497,6 +503,8 @@ class FFIInterrogateDatabase:
                 # funcSpec.name = FFIRename.methodNameFromCppName(
                 #    interrogate_function_name(funcIndex))
                 funcSpec.typeDescriptor = typeDesc
+                # Flag this function as being a constructor
+                funcSpec.constructor = 1
                 funcSpec.index = funcIndex            
                 funcSpecs.append(funcSpec)
         return funcSpecs
@@ -528,7 +536,9 @@ class FFIInterrogateDatabase:
     def constructGlobal(self, globalIndex):
         # We really do not need the descriptor for the value, just
         # the getter and setter
-        # descriptor = self.typeIndexMap[interrogate_element_type(globalIndex)]
+        # typeIndex = interrogate_element_type(globalIndex)
+        # descriptor = self.constructDescriptor(typeIndex)
+        
         if interrogate_element_has_getter(globalIndex):
             getterIndex = interrogate_element_getter(globalIndex)
             getter = self.constructGlobalFunction(getterIndex)
@@ -602,6 +612,46 @@ class FFIInterrogateDatabase:
             newGlob = self.constructGlobal(globalIndex)
             self.environment.addGlobalValue(newGlob)
 
+
+    def constructManifest(self, manifestIndex):
+        descriptor = None
+        intValue = None
+        getter = None
+
+        if interrogate_manifest_has_type(manifestIndex):
+            typeIndex = interrogate_manifest_get_type(manifestIndex)
+            descriptor = self.constructDescriptor(typeIndex)
+
+        definition = interrogate_manifest_definition(manifestIndex)
+
+        # See if this manifest is an int. There are shortcuts if it is.
+        # If it does have an int value, there will be no getter, we will
+        # just output the value in the generated code
+        if interrogate_manifest_has_int_value(manifestIndex):
+            intValue = interrogate_manifest_get_int_value(manifestIndex)
+        else:
+            # See if this manifest has a getter
+            if interrogate_manifest_has_getter(manifestIndex):
+                getterIndex = interrogate_manifest_getter(manifestIndex)
+                getter = self.constructGlobalFunction(getterIndex)
+
+        manifestSpec = FFISpecs.ManifestSpecification()
+        manifestSpec.typeDescriptor = descriptor
+        manifestSpec.definition = definition
+        manifestSpec.intValue = intValue
+        manifestSpec.getter = getter
+        cppName = interrogate_manifest_name(manifestIndex)
+        manifestSpec.name = FFIRename.classNameFromCppName(cppName)
+        return manifestSpec
+
+    def addManifestSymbols(self):
+        numManifests = interrogate_number_of_manifests()
+        for i in range(numManifests):
+            manifestIndex = interrogate_get_manifest(i)
+            newManifest = self.constructManifest(manifestIndex)
+            self.environment.addManifest(newManifest)
+
+
     def generateCode(self, codeDir, extensionsDir):
         FFIConstants.notify.info( 'Generating static class...')
         generateStaticClass(codeDir)
@@ -627,11 +677,16 @@ class FFIInterrogateDatabase:
         # Output all the imports based on this list of functions
         outputGlobalFileImports(globalFile, globalFunctions)
 
+        FFIConstants.notify.info( 'Generating global value code...')
         for type in self.environment.globalValues:
             type.generateGlobalCode(globalFile)
             
         FFIConstants.notify.info( 'Generating global function code...')
         for type in self.environment.globalFunctions:
+            type.generateGlobalCode(globalFile)
+
+        FFIConstants.notify.info( 'Generating manifest code...')
+        for type in self.environment.manifests:
             type.generateGlobalCode(globalFile)
 
         globalFile.close()
@@ -640,7 +695,7 @@ class FFIInterrogateDatabase:
         importFile = constructImportFile(codeDir)
         outputImportFileImports(importFile, self.environment.types.values())
 
-        
+        FFIConstants.notify.info( 'Compiling code...')
         compileall.compile_dir(codeDir)
         
 
@@ -652,4 +707,9 @@ class FFIInterrogateDatabase:
         self.addGlobalValues()
         FFIConstants.notify.info( 'Adding global functions...')
         self.addGlobalFunctions()
+        FFIConstants.notify.info( 'Adding manifests symbols...')
+        self.addManifestSymbols()
+        FFIConstants.notify.info( 'Adding environment types...')
         self.addEnvironmentTypes()
+
+

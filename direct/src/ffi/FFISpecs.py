@@ -12,6 +12,18 @@ class FunctionSpecification:
         self.typeDescriptor = None
         self.index = 0
         self.overloaded = 0
+        # Is this function a constructor
+        self.constructor = 0
+
+    def isConstructor(self):
+        return self.constructor
+
+    def isStatic(self):
+        for arg in self.typeDescriptor.argumentTypes:
+            if arg.isThis:
+                return 0
+        # No args were this pointers, must be static
+        return 1
 
     def outputTypeChecking(self, methodClass, args, file, nesting):
         """
@@ -73,13 +85,26 @@ class FunctionSpecification:
         else:
             return self.name
             
-    def outputOverloadedCall(self, file, numArgs):
+    def outputOverloadedCall(self, file, classTypeDesc, numArgs):
         """
         Write the function call to call this overloaded method
         For example:
           self.overloaded_setPos_ptrNodePath_float_float_float(_args[0], _args[1], _args[2])
+        If it is a class (static) method, call the class method
+          Class.overloaded_setPos_ptrNodePath_float_float_float(_args[0], _args[1], _args[2])
+
+        Constructors are not treated as static. They are special because
+        they are not really constructors, they are instance methods that fill
+        in the this pointer.
+          
+        These do not get indented because they are not the beginning of the line
+
         """
-        indent(file, 0, 'self.' + self.getFinalName() + '(')
+        if (self.isStatic() and not self.isConstructor()):
+            indent(file, 0, classTypeDesc.foreignTypeName + '.' + self.getFinalName() + '(')
+        else:
+            indent(file, 0, 'self.' + self.getFinalName() + '(')
+            
         for i in range(numArgs):
             file.write('_args[' + `i` + ']')
             if (i != (numArgs - 1)):
@@ -230,11 +255,6 @@ class GlobalFunctionSpecification(FunctionSpecification):
 class MethodSpecification(FunctionSpecification):
     def __init__(self):
         FunctionSpecification.__init__(self)
-    def isStatic(self):
-        for arg in self.typeDescriptor.argumentTypes:
-            if arg.isThis:
-                return 0
-        return 1
 
     def generateConstructorCode(self, methodClass, file, nesting):
         self.outputConstructorHeader(methodClass, file, nesting)
@@ -483,6 +503,47 @@ class GlobalValueSpecification:
         if self.setter:
             self.setter.generateGlobalCode(file)
         indent(file, 0, '\n')
+
+
+# Manifest symbols
+class ManifestSpecification:
+    def __init__(self):
+        self.name = ''
+        
+        # We are not currently using the type descriptor
+        self.typeDescriptor = None
+
+        # To be filled in with a GlobalFunctionSpecification
+        # if this manifest has one
+        self.getter = None
+
+        # Manifests that have int values have their int value defined
+        # instead of having to call a getter (because there are so many of them)
+        self.intValue = None
+
+        # The string definition of this manifest
+        self.definition = None
+        
+    def generateGlobalCode(self, file):
+        # Note, if the manifest has no value and no getter we do not output anything
+        # even though they may be defined in the C++ sense. Without any values
+        # they are pretty useless in Python
+
+        # If it has an int value, just output that instead of bothering
+        # with a getter
+        if (self.intValue != None):
+            indent(file, 0, '# Manifest: ' + self.name + '\n')
+            indent(file, 0, (self.name + ' = ' + `self.intValue` + '\n'))
+            indent(file, 0, '\n')
+
+        elif self.definition:
+            indent(file, 0, ('# Manifest: ' + self.name + ' definition: ' +
+                             self.definition + '\n'))
+            # Out put the getter
+            if self.getter:
+                self.getter.generateGlobalCode(file)
+            indent(file, 0, '\n')
+            
 
 class MethodArgumentSpecification:
     def __init__(self):
