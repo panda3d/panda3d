@@ -148,7 +148,7 @@ read_prc(istream &in) {
 
   in.read(buffer, buffer_size);
   size_t count = in.gcount();
-  while (count != 0 && !in.fail() && !in.eof()) {
+  while (count != 0) {
     char *buffer_end = buffer + count;
 
     // Look for the first line in the buffer..
@@ -178,8 +178,16 @@ read_prc(istream &in) {
       prev_line = string(start, length);
     }
 
-    in.read(buffer, buffer_size);
-    count = in.gcount();
+    if (in.fail() || in.eof()) {
+      // If we got a failure reading the buffer last time, don't keep
+      // reading again.  Irix seems to require this test; otherwise,
+      // it repeatedly returns the same text at the end of the file.
+      count = 0;
+
+    } else {
+      in.read(buffer, buffer_size);
+      count = in.gcount();
+    }
   }
 
   if (!prev_line.empty()) {
