@@ -12,7 +12,7 @@
   // We don't have any components if we're linking the GL library
   // directly into Panda.
   #define COMPONENT_LIBS \
-      glgsg glxdisplay  \
+      glgsg glxdisplay mesadisplay  \
       wgldisplay
 #endif
 
