@@ -141,6 +141,7 @@ class DistributedObject(PandaObject):
         Sends a message to the world after the object has been
         generated and all of its required fields filled in.
         """
+        assert(self.notify.debug('announceGenerate(): %s' % (self.doId)))
         self.activeState = ESGenerated
         messenger.send(self.uniqueName("generate"), [self])
 
@@ -148,6 +149,7 @@ class DistributedObject(PandaObject):
         """disable(self)
         Inheritors should redefine this to take appropriate action on disable
         """
+        assert(self.notify.debug('disable(): %s' % (self.doId)))
         self.activeState = ESDisabled
         self.__callbacks = {}
 
@@ -169,6 +171,7 @@ class DistributedObject(PandaObject):
         """delete(self)
         Inheritors should redefine this to take appropriate action on delete
         """
+        assert(self.notify.debug('delete(): %s' % (self.doId)))
         try:
             self.DistributedObject_deleted
         except:
@@ -180,6 +183,7 @@ class DistributedObject(PandaObject):
         """generate(self)
         Inheritors should redefine this to take appropriate action on generate
         """
+        assert(self.notify.debug('generate()'))
         self.activeState = ESGenerating
 
     def generateInit(self):
@@ -294,23 +298,40 @@ class DistributedObject(PandaObject):
         else:
             self.notify.warning("Got unexpected context from AI: %s" % (context))
         
-    def doBarrierWait(self, context):
-        # This message is sent by the AI to tell us the context number
-        # for the current barrier.  When the client is done handling
-        # whatever it should handle in its current state, it should
-        # call doneBarrier(), which will send the context number back
-        # to the AI.
-        self.__barrierContext = context
+    def setBarrierData(self, data):
+        # This message is sent by the AI to tell us the barriers and
+        # avIds for which the AI is currently waiting.  The client
+        # needs to look up its pending context in the table (and
+        # ignore the other contexts).  When the client is done
+        # handling whatever it should handle in its current state, it
+        # should call doneBarrier(), which will send the context
+        # number back to the AI.
+        dg = Datagram(data)
+        dgi = DatagramIterator(dg)
+        while dgi.getRemainingSize() > 0:
+            context = dgi.getUint16()
+            numToons = dgi.getUint16()
+            for i in range(numToons):
+                avId = dgi.getUint32()
+                if avId == toonbase.localToon.doId:
+                    # We found localToon's Id; stop here.
+                    self.__barrierContext = context
+                    assert(self.notify.debug('setBarrierData(%s)' % (context)))
+                    return
+                
+        assert(self.notify.debug('setBarrierData(%s)' % (None)))
+        self.__barrierContext = None
         
     def doneBarrier(self):
         # Tells the AI we have finished handling our task.
+        assert(self.notify.debug('doneBarrier(%s)' % (self.__barrierContext)))
 
         # If this is None, it either means we have called
         # doneBarrier() twice, or we have not received a barrier
         # context from the AI.  I think in either case it's ok to
         # silently ignore the error.
         if self.__barrierContext != None:
-            self.sendUpdate("doBarrierReady", [self.__barrierContext])
+            self.sendUpdate("setBarrierReady", [self.__barrierContext])
             self.__barrierContext = None
         
         
