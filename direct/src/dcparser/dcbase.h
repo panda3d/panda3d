@@ -75,7 +75,9 @@ using namespace std;
 // Panda defines some assert-type macros.  We map those to the
 // standard assert macro outside of Panda.
 #define nassertr(condition, return_value) assert(condition)
+#define nassertr_always(condition, return_value) assert(condition)
 #define nassertv(condition) assert(condition)
+#define nassertv_always(condition) assert(condition)
 
 // Panda defines these export symbols for building DLL's.  Outside of
 // Panda, we assume we're not putting this code in a DLL, so we define

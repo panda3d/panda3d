@@ -90,7 +90,9 @@ private:
   typedef pvector<DCField *> Fields;
   Fields _fields;
 
+#ifdef HAVE_PYTHON
   PyObject *_class_def;
+#endif
 
 public:
   // These members are built up during parsing for the convenience of
