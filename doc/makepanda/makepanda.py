@@ -1522,10 +1522,10 @@ def CompileBAM(preconv, bam, egg):
     dotexe = ".exe"
     if (sys.platform != "win32"): dotexe = ""
     if (egg[-4:]==".flt"):
-        oscmd(PREFIX + "/built/bin/flt2egg" + dotexe + " -pr " + preconv + " -o " + PREFIX + "/tmp/tmp.egg" + " " + egg)
-        oscmd(PREFIX + "/built/bin/egg2bam" + dotexe + " -o " + bam + " " + PREFIX + "/tmp/tmp.egg")
+        oscmd(PREFIX + "/bin/flt2egg" + dotexe + " -pr " + preconv + " -o " + PREFIX + "/tmp/tmp.egg" + " " + egg)
+        oscmd(PREFIX + "/bin/egg2bam" + dotexe + " -o " + bam + " " + PREFIX + "/tmp/tmp.egg")
     else:
-        oscmd(PREFIX + "/built/bin/egg2bam" + dotexe + " -pr " + preconv + " -o " + bam + " " + egg)
+        oscmd(PREFIX + "/bin/egg2bam" + dotexe + " -pr " + preconv + " -o " + bam + " " + egg)
 
 ##########################################################################################
 #
