@@ -21,6 +21,7 @@
 #include "colorAttrib.h"
 #include "texMatrixAttrib.h"
 #include "colorScaleAttrib.h"
+#include "accumulatedAttribs.h"
 
 #include "geomNode.h"
 #include "pointerTo.h"
@@ -29,291 +30,14 @@
 #include "plist.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::AccumulatedAttribs::write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void SceneGraphReducer::AccumulatedAttribs::
-write(ostream &out, int attrib_types, int indent_level) const {
-  if ((attrib_types & TT_transform) != 0) {
-    _transform->write(out, indent_level);
-  }
-  if ((attrib_types & TT_color) != 0) {
-    if (_color == (const RenderAttrib *)NULL) {
-      indent(out, indent_level) << "no color\n";
-    } else {
-      _color->write(out, indent_level);
-    }
-  }
-  if ((attrib_types & TT_color_scale) != 0) {
-    if (_color_scale == (const RenderAttrib *)NULL) {
-      indent(out, indent_level) << "no color scale\n";
-    } else {
-      _color_scale->write(out, indent_level);
-    }
-  }
-  if ((attrib_types & TT_tex_matrix) != 0) {
-    if (_tex_matrix == (const RenderAttrib *)NULL) {
-      indent(out, indent_level) << "no tex matrix\n";
-    } else {
-      _tex_matrix->write(out, indent_level);
-    }
-  }
-  if ((attrib_types & TT_other) != 0) {
-    _other->write(out, indent_level);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::AccumulatedAttribs::collect
-//       Access: Public
-//  Description: Collects the state and transform from the indicated
-//               node and adds it to the accumulator, removing it from
-//               the node.
-////////////////////////////////////////////////////////////////////
-void SceneGraphReducer::AccumulatedAttribs::
-collect(PandaNode *node, int attrib_types) {
-  if ((attrib_types & TT_transform) != 0) {
-    // Collect the node's transform.
-    nassertv(_transform != (TransformState *)NULL);
-    _transform = _transform->compose(node->get_transform());
-    node->set_transform(TransformState::make_identity());
-  }
-
-  if ((attrib_types & TT_color) != 0) {
-    const RenderAttrib *node_attrib = 
-      node->get_attrib(ColorAttrib::get_class_type());
-    if (node_attrib != (const RenderAttrib *)NULL) {
-      // The node has a color attribute; apply it.
-      if (_color == (const RenderAttrib *)NULL) {
-        _color = node_attrib;
-      } else {
-        _color = _color->compose(node_attrib);
-      }
-      node->clear_attrib(ColorAttrib::get_class_type());
-    }
-  }
-
-  if ((attrib_types & TT_color_scale) != 0) {
-    const RenderAttrib *node_attrib = 
-      node->get_attrib(ColorScaleAttrib::get_class_type());
-    if (node_attrib != (const RenderAttrib *)NULL) {
-      // The node has a color scale attribute; apply it.
-      if (_color_scale == (const RenderAttrib *)NULL) {
-        _color_scale = node_attrib;
-      } else {
-        _color_scale = _color_scale->compose(node_attrib);
-      }
-      node->clear_attrib(ColorScaleAttrib::get_class_type());
-    }
-  }
-
-  if ((attrib_types & TT_tex_matrix) != 0) {
-    const RenderAttrib *node_attrib = 
-      node->get_attrib(TexMatrixAttrib::get_class_type());
-    if (node_attrib != (const RenderAttrib *)NULL) {
-      // The node has a tex matrix attribute; apply it.
-      if (_tex_matrix == (const RenderAttrib *)NULL) {
-        _tex_matrix = node_attrib;
-      } else {
-        _tex_matrix = _tex_matrix->compose(node_attrib);
-      }
-      node->clear_attrib(TexMatrixAttrib::get_class_type());
-    }
-  }
-
-  if ((attrib_types & TT_transform) != 0) {
-    // Collect everything else.
-    nassertv(_other != (RenderState *)NULL);
-    _other = _other->compose(node->get_state());
-    node->set_state(RenderState::make_empty());
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::AccumulatedAttribs::apply_to_node
-//       Access: Public
-//  Description: Stores the indicated attributes in the node's
-//               transform and state information; does not attempt to
-//               apply the properties to the vertices.  Clears the
-//               attributes from the accumulator for future
-//               traversals.
-////////////////////////////////////////////////////////////////////
-void SceneGraphReducer::AccumulatedAttribs::
-apply_to_node(PandaNode *node, int attrib_types) {
-  if ((attrib_types & TT_transform) != 0) {
-    node->set_transform(_transform->compose(node->get_transform()));
-    _transform = TransformState::make_identity();
-  }
-
-  if ((attrib_types & TT_color) != 0) {
-    if (_color != (RenderAttrib *)NULL) {
-      const RenderAttrib *node_attrib =
-        node->get_attrib(ColorAttrib::get_class_type());
-      if (node_attrib != (RenderAttrib *)NULL) {
-        node->set_attrib(_color->compose(node_attrib));
-      } else {
-        node->set_attrib(_color);
-      }
-      _color = (RenderAttrib *)NULL;
-    }
-  }
-
-  if ((attrib_types & TT_color_scale) != 0) {
-    if (_color_scale != (RenderAttrib *)NULL) {
-      const RenderAttrib *node_attrib =
-        node->get_attrib(ColorScaleAttrib::get_class_type());
-      if (node_attrib != (RenderAttrib *)NULL) {
-        node->set_attrib(_color_scale->compose(node_attrib));
-      } else {
-        node->set_attrib(_color_scale);
-      }
-      _color_scale = (RenderAttrib *)NULL;
-    }
-  }
-
-  if ((attrib_types & TT_tex_matrix) != 0) {
-    if (_tex_matrix != (RenderAttrib *)NULL) {
-      const RenderAttrib *node_attrib =
-        node->get_attrib(TexMatrixAttrib::get_class_type());
-      if (node_attrib != (RenderAttrib *)NULL) {
-        node->set_attrib(_tex_matrix->compose(node_attrib));
-      } else {
-        node->set_attrib(_tex_matrix);
-      }
-      _tex_matrix = (RenderAttrib *)NULL;
-    }
-  }
-
-  if ((attrib_types & TT_other) != 0) {
-    node->set_state(_other->compose(node->get_state()));
-    _other = RenderState::make_empty();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::AccumulatedAttribs::apply_to_vertices
-//       Access: Public
-//  Description: Applies the indicated attributes to the node so that
-//               they do not need to be stored as separate attributes
-//               any more.
-////////////////////////////////////////////////////////////////////
-void SceneGraphReducer::AccumulatedAttribs::
-apply_to_vertices(PandaNode *node, int attrib_types, 
-                  GeomTransformer &transformer) {
-  if (node->is_geom_node()) {
-    if (pgraph_cat.is_debug()) {
-      pgraph_cat.debug()
-        << "Transforming geometry.\n";
-    }
-
-    // We treat GeomNodes as a special case, since we can apply more
-    // than just a transform matrix and so we can share vertex arrays
-    // across different GeomNodes.
-    GeomNode *gnode = DCAST(GeomNode, node);
-    if ((attrib_types & TT_transform) != 0) {
-      if (!_transform->is_identity()) {
-        transformer.transform_vertices(gnode, _transform->get_mat());
-      }
-    }
-    if ((attrib_types & TT_color) != 0) {
-      if (_color != (const RenderAttrib *)NULL) {
-        const ColorAttrib *ca = DCAST(ColorAttrib, _color);
-        if (ca->get_color_type() == ColorAttrib::T_flat) {
-          transformer.set_color(gnode, ca->get_color());
-        }
-      }
-    }
-    if ((attrib_types & TT_color_scale) != 0) {
-      if (_color_scale != (const RenderAttrib *)NULL) {
-        const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, _color_scale);
-        if (csa->get_scale() != LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)) {
-          transformer.transform_colors(gnode, csa->get_scale());
-        }
-      }
-    }
-    if ((attrib_types & TT_tex_matrix) != 0) {
-      if (_tex_matrix != (const RenderAttrib *)NULL) {
-        const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, _tex_matrix);
-        if (tma->get_mat() != LMatrix4f::ident_mat()) {
-          transformer.transform_texcoords(gnode, tma->get_mat());
-        }
-      }
-    }
-    if ((attrib_types & TT_other) != 0) {
-      if (!_other->is_empty()) {
-        transformer.apply_state(gnode, _other);
-      }
-    }
-
-  } else {
-    // This handles any kind of node other than a GeomNode.
-    if ((attrib_types & TT_transform) != 0) {
-      node->xform(_transform->get_mat());
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-SceneGraphReducer::
-SceneGraphReducer() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-SceneGraphReducer::
-~SceneGraphReducer() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::apply_attribs
-//       Access: Public
-//  Description: Walks the scene graph, accumulating attribs of
-//               the indicated types, applying them to the vertices,
-//               and removing them from the scene graph.  This has a
-//               performance optimization benefit in itself, but is
-//               especially useful to pave the way for a call to
-//               flatten() and greatly improve the effectiveness of
-//               the flattening operation.
-//
-//               Multiply instanced geometry is duplicated before the
-//               attribs are applied.
-//
-//               Of course, this operation does make certain dynamic
-//               operations impossible.
-////////////////////////////////////////////////////////////////////
-void SceneGraphReducer::
-apply_attribs(PandaNode *node, int attrib_types) {
-  AccumulatedAttribs trans;
-
-  trans._transform = TransformState::make_identity();
-  trans._color = (ColorAttrib *)NULL;
-  trans._color_scale = (ColorScaleAttrib *)NULL;
-  trans._tex_matrix = (TexMatrixAttrib *)NULL;
-  trans._other = RenderState::make_empty();
-
-  r_apply_attribs(node, attrib_types, trans);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphReducer::flatten
-//       Access: Public
+//       Access: Published
 //  Description: Simplifies the graph by removing unnecessary nodes
 //               and nodes.
 //
 //               In general, a node (and its parent node) is a
 //               candidate for removal if the node has no siblings and
-//               the node and node have no special properties.  The
-//               definition of what, precisely, is a 'special
-//               property' may be extended by subclassing from this
-//               type and redefining consider_node() appropriately.
+//               the node has no special properties.
 //
 //               If combine_siblings is true, sibling nodes may also
 //               be collapsed into a single node.  This will further
@@ -365,8 +89,8 @@ flatten(PandaNode *root, bool combine_siblings) {
 //  Description: The recursive implementation of apply_attribs().
 ////////////////////////////////////////////////////////////////////
 void SceneGraphReducer::
-r_apply_attribs(PandaNode *node, int attrib_types,
-                SceneGraphReducer::AccumulatedAttribs trans) {
+r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
+                int attrib_types, GeomTransformer &transformer) {
   if (pgraph_cat.is_debug()) {
     pgraph_cat.debug()
       << "r_apply_attribs(" << *node << "), node's attribs are:\n";
@@ -375,13 +99,14 @@ r_apply_attribs(PandaNode *node, int attrib_types,
     node->get_effects()->write(pgraph_cat.debug(false), 2);
   }
 
-  trans.collect(node, attrib_types);
+  AccumulatedAttribs next_attribs(attribs);
+  next_attribs.collect(node, attrib_types);
 
   if (pgraph_cat.is_debug()) {
     pgraph_cat.debug()
       << "Got attribs from " << *node << "\n"
       << "Accumulated attribs are:\n";
-    trans.write(pgraph_cat.debug(false), attrib_types, 2);
+    next_attribs.write(pgraph_cat.debug(false), attrib_types, 2);
   }
 
   // Check to see if we can't propagate any of these attribs past
@@ -405,6 +130,7 @@ r_apply_attribs(PandaNode *node, int attrib_types,
     }
     apply_types |= TT_transform;
   }
+  apply_types |= node->get_unsafe_to_apply_attribs();
 
   // Also, check the children of this node.  If any of them indicates
   // it is not safe to modify its transform, we must drop our
@@ -429,10 +155,10 @@ r_apply_attribs(PandaNode *node, int attrib_types,
   }
 
   // Directly store whatever attributes we must,
-  trans.apply_to_node(node, attrib_types & apply_types);
+  next_attribs.apply_to_node(node, attrib_types & apply_types);
 
   // And apply the rest to the vertices.
-  trans.apply_to_vertices(node, attrib_types, _transformer);
+  node->apply_attribs_to_vertices(next_attribs, attrib_types, transformer);
 
   // Do we need to copy any children to flatten instances?
   bool resist_copy = false;
@@ -473,14 +199,14 @@ r_apply_attribs(PandaNode *node, int attrib_types,
   if (resist_copy) {
     // If any of our children should have been copied but weren't, we
     // need to drop the state here before continuing.
-    trans.apply_to_node(node, attrib_types);
+    next_attribs.apply_to_node(node, attrib_types);
   }
 
   // Now it's safe to traverse through all of our children.
   nassertv(num_children == node->get_num_children());
   for (i = 0; i < num_children; i++) {
     PandaNode *child_node = node->get_child(i);
-    r_apply_attribs(child_node, attrib_types, trans);
+    r_apply_attribs(child_node, next_attribs, attrib_types, transformer);
   }
 }
 
@@ -637,12 +363,10 @@ flatten_siblings(PandaNode *parent_node) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphReducer::consider_child
-//       Access: Protected, Virtual
+//       Access: Protected
 //  Description: Decides whether or not the indicated child node is a
 //               suitable candidate for removal.  Returns true if the
-//               node may be removed, false if it should be kept.  This
-//               function may be extended in a user class to protect
-//               special kinds of nodes from deletion.
+//               node may be removed, false if it should be kept.
 ////////////////////////////////////////////////////////////////////
 bool SceneGraphReducer::
 consider_child(PandaNode *grandparent_node, PandaNode *parent_node, 
@@ -671,7 +395,7 @@ consider_child(PandaNode *grandparent_node, PandaNode *parent_node,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphReducer:c:onsider_siblings
-//       Access: Protected, Virtual
+//       Access: Protected
 //  Description: Decides whether or not the indicated sibling nodes
 //               should be collapsed into a single node or not.
 //               Returns true if the nodes may be collapsed, false if
@@ -688,14 +412,11 @@ consider_siblings(PandaNode *parent_node, PandaNode *child1,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphReducer::do_flatten_child
-//       Access: Protected, Virtual
+//       Access: Protected
 //  Description: Collapses together the indicated parent node and
 //               child node and leaves the result attached to the
 //               grandparent.  The return value is true if the node is
 //               successfully collapsed, false if we chickened out.
-//
-//               This function may be extended in a user class to
-//               handle special kinds of nodes.
 ////////////////////////////////////////////////////////////////////
 bool SceneGraphReducer::
 do_flatten_child(PandaNode *grandparent_node, PandaNode *parent_node, 
@@ -730,7 +451,7 @@ do_flatten_child(PandaNode *grandparent_node, PandaNode *parent_node,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphReducer::do_flatten_siblings
-//       Access: Protected, Virtual
+//       Access: Protected
 //  Description: Performs the work of collapsing two sibling nodes
 //               together into a single node, leaving the resulting
 //               node attached to the parent.
@@ -779,7 +500,7 @@ do_flatten_siblings(PandaNode *parent_node, PandaNode *child1,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphReducer::collapse_nodes
-//       Access: Protected, Virtual
+//       Access: Protected
 //  Description: Collapses the two nodes into a single node, if
 //               possible.  The 'siblings' flag is true if the two
 //               nodes are siblings nodes; otherwise, node1 is a
@@ -787,9 +508,6 @@ do_flatten_siblings(PandaNode *parent_node, PandaNode *child1,
 //               node, which may be either one of the source nodes, or
 //               a new node altogether, or it may be NULL to indicate
 //               that the collapse operation could not take place.
-//
-//               This function may be extended in a user class to
-//               handle combining special kinds of nodes.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) SceneGraphReducer::
 collapse_nodes(PandaNode *node1, PandaNode *node2, bool siblings) {
@@ -799,7 +517,7 @@ collapse_nodes(PandaNode *node1, PandaNode *node2, bool siblings) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphReducer::choose_name
-//       Access: Protected, Virtual
+//       Access: Protected
 //  Description: Chooses a suitable name for the collapsed node, based
 //               on the names of the two sources nodes.
 ////////////////////////////////////////////////////////////////////

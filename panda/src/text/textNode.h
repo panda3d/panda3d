@@ -38,22 +38,19 @@ class StringDecoder;
 //               represent the indicated text.
 //
 //               The TextNode may be used in one of two ways.
-//               Naively, it may be parented to the scene graph
-//               directly; used in this way, you can optionally call
-//               freeze() and thaw() between changing many parameters
-//               in the text at once, to avoid unnecessary expensive
-//               regeneration with each parameter change.  However, it
-//               will work, if slowly, even if you never call freeze()
-//               and thaw().
+//               Naively, it may simply be parented directly into the
+//               scene graph and rendered as if it were a GeomNode; in
+//               this mode, the actual polygon geometry that renders
+//               the text is not directly visible or accessible, but
+//               remains hidden within the TextNode.
 //
 //               The second way TextNode may be used is as a text
-//               generator.  To use it in this way, call freeze() once
-//               on the TextNode when you create it, and never call
-//               thaw().  Do not parent the TextNode to the scene
-//               graph; instea, set the properties of the text and
-//               call generate() to return a node which you may parent
-//               wherever you like.  Each time you call generate() a
-//               new node is returned.
+//               generator.  To use it in this way, do not parent the
+//               TextNode to the scene graph; instead, set the
+//               properties of the text and call generate() to return
+//               an ordinary node, containing ordinary geometry, which
+//               you may use however you like.  Each time you call
+//               generate() a new node is returned.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TextNode : public PandaNode {
 PUBLISHED:
@@ -71,9 +68,8 @@ PUBLISHED:
     E_utf8,
     E_unicode
   };
-
+ 
   INLINE int freeze();
-  INLINE int get_freeze_level() const;
   INLINE int thaw();
 
   INLINE void set_font(TextFont *font);
@@ -188,9 +184,6 @@ PUBLISHED:
 
   virtual void write(ostream &out, int indent_level = 0) const;
 
-  INLINE void rebuild(bool needs_measure);
-  INLINE void measure();
-
   // The following functions return information about the text that
   // was last built (and is currently visible).
   INLINE float get_left() const;
@@ -206,6 +199,7 @@ PUBLISHED:
   INLINE int get_num_rows() const;
 
   PT(PandaNode) generate();
+  INLINE void update();
 
 public:
   // Direct support for wide-character strings.
@@ -222,11 +216,28 @@ public:
   wstring decode_text(const string &text) const;
 
   // From parent class PandaNode
-  virtual void xform(const LMatrix4f &mat);
+  virtual int get_unsafe_to_apply_attribs() const;
+  virtual void apply_attribs_to_vertices(const AccumulatedAttribs &attribs,
+                                         int attrib_types,
+                                         GeomTransformer &transformer);
+  virtual CPT(TransformState)
+    calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+                      bool &found_any,
+                      const TransformState *transform) const;
+
+  virtual bool has_cull_callback() const;
+  virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
+
+  virtual BoundingVolume *recompute_internal_bound();
 
 private:
   wstring decode_text_impl(StringDecoder &decoder) const;
   int expand_amp_sequence(StringDecoder &decoder) const;
+
+  INLINE void invalidate_no_measure();
+  INLINE void invalidate_with_measure();
+  INLINE void check_rebuild() const;
+  INLINE void check_measure() const;
 
   void do_rebuild();
   void do_measure();
@@ -246,6 +257,7 @@ private:
   PT(PandaNode) make_card_with_border();
 
   PT(TextFont) _font;
+  PT(PandaNode) _internal_geom;
 
   Encoding _encoding;
   float _slant;
@@ -271,6 +283,8 @@ private:
     F_expand_amp       =  0x0800,
     F_got_text         =  0x1000,
     F_got_wtext        =  0x2000,
+    F_needs_rebuild    =  0x4000,
+    F_needs_measure    =  0x8000,
   };
 
   int _flags;
@@ -296,8 +310,6 @@ private:
   LPoint2f _ul2d, _lr2d;
   LPoint3f _ul3d, _lr3d;
   int _num_rows;
-  int _freeze_level;
-  bool _needs_rebuild;
 
 public:
   static Encoding _default_encoding;

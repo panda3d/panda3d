@@ -20,70 +20,25 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::freeze
 //       Access: Published
-//  Description: Freezes the TextNode in its current state, so that
-//               updates will not immediately be displayed.  A series
-//               of state changes may then be applied in succession,
-//               which will not force the TextNode to be recomputed.
-//               When thaw() is later called, the TextNode will update
-//               itself exactly once to reflect all the state changes
-//               that were made.
-//
-//               freeze() and thaw() can nest.  Strictly speaking,
-//               each call to freeze() increments the current freeze
-//               level, while each call to thaw() decrements it.  The
-//               TextNode will only be updated when the current freeze
-//               level is zero.
-//
-//               The return value of freeze() is the freeze level
-//               *before* the freeze took place.  This number should
-//               match the return value of the matching thaw().
+//  Description: This method is deprecated and no longer does
+//               anything.  It is included for historical purposes
+//               only and will shortly be removed.
 ////////////////////////////////////////////////////////////////////
 INLINE int TextNode::
 freeze() {
-  if (text_cat.is_debug()) {
-    text_cat.debug()
-      << "Freezing " << this->get_name() << ", level = "
-      << _freeze_level << "\n";
-  }
-  return _freeze_level++;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_freeze_level
-//       Access: Published
-//  Description: Returns the current freeze level.  The TextNode will
-//               not be updated visually unless this number is zero.
-//               See freeze().
-////////////////////////////////////////////////////////////////////
-INLINE int TextNode::
-get_freeze_level() const {
-  return _freeze_level;
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::thaw
 //       Access: Published
-//  Description: Allows changes made since the last freeze() to be
-//               visible.  Strictly speaking, this actually decrements
-//               the freeze level, and updates the TextNode if the
-//               level reaches zero.  The return value is the new
-//               freeze level after adjusting.  See freeze().
+//  Description: This method is deprecated and no longer does
+//               anything.  It is included for historical purposes
+//               only and will shortly be removed.
 ////////////////////////////////////////////////////////////////////
 INLINE int TextNode::
 thaw() {
-  if (text_cat.is_debug()) {
-    text_cat.debug()
-      << "Thawing " << this->get_name() << ", level = "
-      << _freeze_level-1 << "\n";
-  }
-  nassertr(_freeze_level > 0, _freeze_level);
-  _freeze_level--;
-
-  if (_freeze_level == 0 && _needs_rebuild) {
-    do_rebuild();
-  }
-
-  return _freeze_level;
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -95,7 +50,7 @@ INLINE void TextNode::
 set_font(TextFont *font) {
   if (_font != font) {
     _font = font;
-    rebuild(true);
+    invalidate_with_measure();
   }
 }
 
@@ -193,7 +148,7 @@ INLINE void TextNode::
 set_slant(float slant) {
   if (_slant != slant) {
     _slant = slant;
-    rebuild(true);
+    invalidate_with_measure();
   }
 }
 
@@ -216,7 +171,7 @@ INLINE void TextNode::
 set_align(TextNode::Alignment align_type) {
   if (_align != align_type) {
     _align = align_type;
-    rebuild(true);
+    invalidate_with_measure();
   }
 }
 
@@ -241,7 +196,7 @@ set_wordwrap(float wordwrap) {
   if (!has_wordwrap() || _wordwrap_width != wordwrap) {
     _flags |= F_has_wordwrap;
     _wordwrap_width = wordwrap;
-    rebuild(true);
+    invalidate_with_measure();
   }
 }
 
@@ -255,7 +210,7 @@ INLINE void TextNode::
 clear_wordwrap() {
   if (has_wordwrap()) {
     _flags &= ~F_has_wordwrap;
-    rebuild(true);
+    invalidate_with_measure();
   }
 }
 
@@ -299,7 +254,7 @@ set_text_color(const Colorf &text_color) {
   if (!has_text_color() || _text_color != text_color) {
     _text_color = text_color;
     _flags |= F_has_text_color;
-    rebuild(false);
+    invalidate_no_measure();
   }
 }
 
@@ -313,7 +268,7 @@ INLINE void TextNode::
 clear_text_color() {
   if (has_text_color()) {
     _flags &= ~F_has_text_color;
-    rebuild(false);
+    invalidate_no_measure();
   }
 }
 
@@ -356,7 +311,7 @@ INLINE void TextNode::
 set_frame_color(const Colorf &frame_color) {
   if (_frame_color != frame_color) {
     _frame_color = frame_color;
-    rebuild(false);
+    invalidate_no_measure();
   }
 }
 
@@ -381,7 +336,7 @@ set_card_border(float size, float uv_portion) {
     _flags |= F_has_card_border;
     _card_border_size = size;
     _card_border_uv_portion = uv_portion;
-    rebuild(false);
+    invalidate_no_measure();
   }
 }
 
@@ -394,7 +349,7 @@ INLINE void TextNode::
 clear_card_border() {
   if (has_card_border()) {
     _flags &= ~F_has_card_border;
-    rebuild(false);
+    invalidate_no_measure();
   }
 }
 
@@ -447,7 +402,7 @@ INLINE void TextNode::
 set_card_color(const Colorf &card_color) {
   if (_card_color != card_color) {
     _card_color = card_color;
-    rebuild(false);
+    invalidate_no_measure();
   }
 }
 
@@ -474,7 +429,7 @@ set_card_texture(Texture *card_texture) {
     if (!has_card_texture() || _card_texture != card_texture) {
       _flags |= F_has_card_texture;
       _card_texture = card_texture;
-      rebuild(false);
+      invalidate_no_measure();
     }
   }
 }
@@ -489,7 +444,7 @@ clear_card_texture() {
   if (has_card_texture()) {
     _flags &= ~F_has_card_texture;
     _card_texture = NULL;
-    rebuild(false);
+    invalidate_no_measure();
   }
 }
 
@@ -532,7 +487,7 @@ INLINE void TextNode::
 set_shadow_color(const Colorf &shadow_color) {
   if (_shadow_color != shadow_color) {
     _shadow_color = shadow_color;
-    rebuild(false);
+    invalidate_no_measure();
   }
 }
 
@@ -560,7 +515,7 @@ set_frame_as_margin(float left, float right, float bottom, float top) {
   _flags |= (F_has_frame | F_frame_as_margin);
   _frame_ul.set(left, top);
   _frame_lr.set(right, bottom);
-  rebuild(false);
+  invalidate_no_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -579,7 +534,7 @@ set_frame_actual(float left, float right, float bottom, float top) {
   _flags &= ~F_frame_as_margin;
   _frame_ul.set(left, top);
   _frame_lr.set(right, bottom);
-  rebuild(false);
+  invalidate_no_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -591,7 +546,7 @@ set_frame_actual(float left, float right, float bottom, float top) {
 INLINE void TextNode::
 clear_frame() {
   _flags &= ~F_has_frame;
-  rebuild(false);
+  invalidate_no_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -650,10 +605,11 @@ INLINE LVecBase4f TextNode::
 get_frame_actual() const {
   nassertr(has_frame(), LVecBase4f(0.0, 0.0, 0.0, 0.0));
   if (is_frame_as_margin()) {
-    return LVecBase4f(get_left() - _frame_ul[0],
-                      get_right() + _frame_lr[0],
-                      get_bottom() - _frame_lr[1],
-                      get_top() + _frame_ul[1]);
+    check_measure();
+    return LVecBase4f(_ul2d[0] - _frame_ul[0],
+                      _lr2d[0] + _frame_lr[0],
+                      _lr2d[1] - _frame_lr[1],
+                      _ul2d[1] + _frame_ul[1]);
   } else {
     return get_frame_as_set();
   }
@@ -723,7 +679,7 @@ set_card_as_margin(float left, float right, float bottom, float top) {
   _flags |= (F_has_card | F_card_as_margin);
   _card_ul.set(left, top);
   _card_lr.set(right, bottom);
-  rebuild(false);
+  invalidate_no_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -742,7 +698,7 @@ set_card_actual(float left, float right, float bottom, float top) {
   _flags &= ~F_card_as_margin;
   _card_ul.set(left, top);
   _card_lr.set(right, bottom);
-  rebuild(false);
+  invalidate_no_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -754,7 +710,7 @@ set_card_actual(float left, float right, float bottom, float top) {
 INLINE void TextNode::
 clear_card() {
   _flags &= ~F_has_card;
-  rebuild(false);
+  invalidate_no_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -816,13 +772,15 @@ get_card_as_set() const {
 INLINE LVecBase4f TextNode::
 get_card_actual() const {
   if (!has_card()) {
-    return LVecBase4f(get_left(), get_right(), get_bottom(), get_top());
+    check_measure();
+    return LVecBase4f(_ul2d[0], _lr2d[0], _lr2d[1], _ul2d[1]);
 
   } else if (is_card_as_margin()) {
-    return LVecBase4f(get_left() - _card_ul[0],
-                      get_right() + _card_lr[0],
-                      get_bottom() - _card_lr[1],
-                      get_top() + _card_ul[1]);
+    check_measure();
+    return LVecBase4f(_ul2d[0] - _card_ul[0],
+                      _lr2d[0] + _card_lr[0],
+                      _lr2d[1] - _card_lr[1],
+                      _ul2d[1] + _card_ul[1]);
   } else {
     return get_card_as_set();
   }
@@ -857,7 +815,7 @@ INLINE void TextNode::
 set_shadow(float xoffset, float yoffset) {
   _flags |= F_has_shadow;
   _shadow_offset.set(xoffset, yoffset);
-  rebuild(false);
+  invalidate_no_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -869,7 +827,7 @@ set_shadow(float xoffset, float yoffset) {
 INLINE void TextNode::
 clear_shadow() {
   _flags &= ~F_has_shadow;
-  rebuild(false);
+  invalidate_no_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -911,7 +869,7 @@ get_shadow() const {
 INLINE void TextNode::
 set_bin(const string &bin) {
   _bin = bin;
-  rebuild(false);
+  invalidate_no_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -967,7 +925,7 @@ get_bin() const {
 INLINE int TextNode::
 set_draw_order(int draw_order) {
   _draw_order = draw_order;
-  rebuild(false);
+  invalidate_no_measure();
   return _draw_order + 3;
 }
 
@@ -990,7 +948,7 @@ get_draw_order() const {
 INLINE void TextNode::
 set_transform(const LMatrix4f &transform) {
   _transform = transform;
-  rebuild(true);
+  invalidate_with_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1012,7 +970,7 @@ get_transform() const {
 INLINE void TextNode::
 set_coordinate_system(CoordinateSystem coordinate_system) {
   _coordinate_system = coordinate_system;
-  rebuild(true);
+  invalidate_with_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1033,9 +991,11 @@ get_coordinate_system() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_text(const string &text) {
-  _text = text;
-  _flags = (_flags | F_got_text) & ~F_got_wtext;
-  rebuild(true);
+  if (!has_text() || _text != text) {
+    _text = text;
+    _flags = (_flags | F_got_text) & ~F_got_wtext;
+    invalidate_with_measure();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1048,7 +1008,7 @@ clear_text() {
   _text = string();
   _wtext = wstring();
   _flags |= (F_got_text | F_got_wtext);
-  rebuild(true);
+  invalidate_with_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1089,7 +1049,7 @@ INLINE void TextNode::
 append_text(const string &text) {
   _text = get_text() + text;
   _flags = (_flags | F_got_text) & ~F_got_wtext;
-  rebuild(true);
+  invalidate_with_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1103,7 +1063,7 @@ INLINE void TextNode::
 append_char(int character) {
   _wtext = get_wtext() + wstring(1, (wchar_t)character);
   _flags = (_flags | F_got_wtext) & ~F_got_text;
-  rebuild(true);
+  invalidate_with_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1160,48 +1120,6 @@ calc_width(const string &line) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::rebuild
-//       Access: Published
-//  Description: Updates the TextNode, if it is not frozen, or marks
-//               the TextNode as requiring an update if it is.  If the
-//               text is currently frozen, nothing will be done until
-//               it is thawed, unless needs_measure is true, in which
-//               case the text will be re-measured even if it is
-//               currently frozen.
-//
-//               Normally, this function is called automatically
-//               whenever any of the parameters changes.  It should
-//               not need to be called explicitly unless something
-//               goes wrong.
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-rebuild(bool needs_measure) {
-  if (_freeze_level <= 0) {
-    do_rebuild();
-  } else {
-    _needs_rebuild = true;
-
-    if (needs_measure) {
-      measure();
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::measure
-//       Access: Published
-//  Description: Measures the extent of the text as it will be placed,
-//               without actually placing it.  Normally, this function
-//               is called automatically whenever any of the
-//               parameters changes.  It should not need to be called
-//               explicitly unless something goes wrong.
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-measure() {
-  do_measure();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_left
 //       Access: Published
 //  Description: Returns the leftmost extent of the text in local 2-d
@@ -1210,6 +1128,7 @@ measure() {
 ////////////////////////////////////////////////////////////////////
 INLINE float TextNode::
 get_left() const {
+  check_measure();
   return _ul2d[0];
 }
 
@@ -1222,6 +1141,7 @@ get_left() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float TextNode::
 get_right() const {
+  check_measure();
   return _lr2d[0];
 }
 
@@ -1234,6 +1154,7 @@ get_right() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float TextNode::
 get_bottom() const {
+  check_measure();
   return _lr2d[1];
 }
 
@@ -1246,6 +1167,7 @@ get_bottom() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float TextNode::
 get_top() const {
+  check_measure();
   return _ul2d[1];
 }
 
@@ -1257,7 +1179,8 @@ get_top() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float TextNode::
 get_height() const {
-  return get_top() - get_bottom();
+  check_measure();
+  return _ul2d[1] - _lr2d[1];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1268,7 +1191,8 @@ get_height() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float TextNode::
 get_width() const {
-  return get_right() - get_left();
+  check_measure();
+  return _lr2d[0] - _ul2d[0];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1280,6 +1204,7 @@ get_width() const {
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3f TextNode::
 get_upper_left_3d() const {
+  check_measure();
   return _ul3d;
 }
 
@@ -1292,6 +1217,7 @@ get_upper_left_3d() const {
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3f TextNode::
 get_lower_right_3d() const {
+  check_measure();
   return _lr3d;
 }
 
@@ -1304,7 +1230,21 @@ get_lower_right_3d() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int TextNode::
 get_num_rows() const {
+  check_measure();
   return _num_rows;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::update
+//       Access: Published
+//  Description: Can be called after the TextNode has been fully
+//               configured, to force the node to recompute its text
+//               immediately, rather than waiting for it to be drawn.
+//               This call is optional.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+update() {
+  check_rebuild();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1317,9 +1257,11 @@ get_num_rows() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_wtext(const wstring &wtext) {
-  _wtext = wtext;
-  _flags = (_flags | F_got_wtext) & ~F_got_text;
-  rebuild(true);
+  if (!has_text() || _wtext != wtext) {
+    _wtext = wtext;
+    _flags = (_flags | F_got_wtext) & ~F_got_text;
+    invalidate_with_measure();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1347,7 +1289,7 @@ INLINE void TextNode::
 append_wtext(const wstring &wtext) {
   _wtext = get_wtext() + wtext;
   _flags = (_flags | F_got_wtext) & ~F_got_text;
-  rebuild(true);
+  invalidate_with_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1377,4 +1319,61 @@ wordwrap_to(const wstring &wtext, float wordwrap_width,
             bool preserve_trailing_whitespace) const {
   nassertr(_font != (TextFont *)NULL, wtext);
   return _font->wordwrap_to(wtext, wordwrap_width, preserve_trailing_whitespace);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::invalidate_no_measure
+//       Access: Private
+//  Description: Called internally whenever some state on the TextNode
+//               changes, requiring the internal geometry to be
+//               recomputed, but which will not result in a change in
+//               the size or shape of the text (for instance, the text
+//               color changes).
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+invalidate_no_measure() {
+  _flags |= F_needs_rebuild;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::invalidate_with_measure
+//       Access: Private
+//  Description: Called internally whenever some state on the TextNode
+//               changes, requiring the internal geometry to be
+//               recomputed, and which will may result in a change in
+//               the size or shape of the text (for instance, the text
+//               scale changes).
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+invalidate_with_measure() {
+  _flags |= (F_needs_rebuild | F_needs_measure);
+  mark_bound_stale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::check_rebuild
+//       Access: Private
+//  Description: Called internally to call do_rebuild() if necessary
+//               (that is, if the internal geometry has changed
+//               recently).
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+check_rebuild() const {
+  if ((_flags & F_needs_rebuild) != 0) {
+    ((TextNode *)this)->do_rebuild();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::check_measure
+//       Access: Private
+//  Description: Called internally to call do_measure() if necessary;
+//               this will remeasure the text without necessarily
+//               rebuilding it.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+check_measure() const {
+  if ((_flags & F_needs_measure) != 0) {
+    ((TextNode *)this)->do_measure();
+  }
 }

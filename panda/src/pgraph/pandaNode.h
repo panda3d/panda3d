@@ -45,6 +45,8 @@ class CullTraverser;
 class CullTraverserData;
 class Light;
 class FactoryParams;
+class AccumulatedAttribs;
+class GeomTransformer;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PandaNode
@@ -71,10 +73,19 @@ public:
   virtual bool safe_to_transform() const;
   virtual bool safe_to_modify_transform() const;
   virtual bool safe_to_combine() const;
+  virtual bool safe_to_flatten_below() const;
   virtual bool preserve_name() const;
+  virtual int get_unsafe_to_apply_attribs() const;
+  virtual void apply_attribs_to_vertices(const AccumulatedAttribs &attribs,
+                                         int attrib_types,
+                                         GeomTransformer &transformer);
   virtual void xform(const LMatrix4f &mat);
   virtual PandaNode *combine_with(PandaNode *other); 
-
+  virtual CPT(TransformState)
+    calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+                      bool &found_any,
+                      const TransformState *transform) const;
+  
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
   virtual bool has_selective_visibility() const;

@@ -779,7 +779,6 @@ TextNode *PGItem::
 get_text_node() {
   if (_text_node == (TextNode *)NULL) {
     _text_node = new TextNode("pguiText");
-    _text_node->freeze();
     _text_node->set_text_color(0.0f, 0.0f, 0.0f, 1.0f);
 
     // The default TextNode is aligned to the left, for the

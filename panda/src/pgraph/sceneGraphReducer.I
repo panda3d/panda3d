@@ -18,39 +18,58 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::AccumulatedAttribs::Constructor
-//       Access: Public
+//     Function: SceneGraphReducer::Constructor
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE SceneGraphReducer::AccumulatedAttribs::
-AccumulatedAttribs() {
+INLINE SceneGraphReducer::
+SceneGraphReducer() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::AccumulatedAttribs::Copy Constructor
-//       Access: Public
+//     Function: SceneGraphReducer::Destructor
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE SceneGraphReducer::AccumulatedAttribs::
-AccumulatedAttribs(const SceneGraphReducer::AccumulatedAttribs &copy) :
-  _transform(copy._transform),
-  _color(copy._color),
-  _color_scale(copy._color_scale),
-  _tex_matrix(copy._tex_matrix),
-  _other(copy._other)
-{
+INLINE SceneGraphReducer::
+~SceneGraphReducer() {
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::apply_attribs
+//       Access: Published
+//  Description: Walks the scene graph, accumulating attribs of
+//               the indicated types, applying them to the vertices,
+//               and removing them from the scene graph.  This has a
+//               performance optimization benefit in itself, but is
+//               especially useful to pave the way for a call to
+//               flatten() and greatly improve the effectiveness of
+//               the flattening operation.
+//
+//               Multiply instanced geometry is duplicated before the
+//               attribs are applied.
+//
+//               Of course, this operation does make certain dynamic
+//               operations impossible.
+////////////////////////////////////////////////////////////////////
+INLINE void SceneGraphReducer::
+apply_attribs(PandaNode *node, int attrib_types) {
+  AccumulatedAttribs attribs;
+  r_apply_attribs(node, attribs, attrib_types, _transformer);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::AccumulatedAttribs::Copy Assignment
-//       Access: Public
-//  Description:
+//     Function: SceneGraphReducer::apply_attribs
+//       Access: Published
+//  Description: This flavor of apply_attribs() can be called
+//               recursively from within another flatten process
+//               (e.g. from PandaNode::apply_attribs_to_vertices()).
+//               The parameters were presumably received from a parent
+//               SceneGraphReducer object.
 ////////////////////////////////////////////////////////////////////
-INLINE void SceneGraphReducer::AccumulatedAttribs::
-operator = (const SceneGraphReducer::AccumulatedAttribs &copy) {
-  _transform = copy._transform;
-  _color = copy._color;
-  _color_scale = copy._color_scale;
-  _tex_matrix = copy._tex_matrix;
-  _other = copy._other;
+INLINE void SceneGraphReducer::
+apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
+              int attrib_types, GeomTransformer &transformer) {
+  r_apply_attribs(node, attribs, attrib_types, transformer);
 }

@@ -2788,8 +2788,8 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point) {
   nassertr_always(!is_empty(), false);
 
   bool found_any = false;
-  r_calc_tight_bounds(node(), min_point, max_point, found_any, 
-                      TransformState::make_identity());
+  node()->calc_tight_bounds(min_point, max_point, found_any, 
+                            TransformState::make_identity());
 
   return found_any;
 }
@@ -3187,58 +3187,6 @@ r_force_recompute_bounds(PandaNode *node) {
   int num_children = cr.get_num_children();
   for (int i = 0; i < num_children; i++) {
     r_force_recompute_bounds(cr.get_child(i));
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::r_calc_tight_bounds
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void NodePath::
-r_calc_tight_bounds(PandaNode *node, LPoint3f &min_point, LPoint3f &max_point,
-                    bool &found_any, const TransformState *transform) {
-  CPT(TransformState) next_transform = 
-    transform->compose(node->get_transform());
-  if (node->is_geom_node()) {
-    GeomNode *gnode;
-    DCAST_INTO_V(gnode, node);
-
-    const LMatrix4f &mat = next_transform->get_mat();
-    int num_geoms = gnode->get_num_geoms();
-    for (int i = 0; i < num_geoms; i++) {
-      Geom *geom = gnode->get_geom(i);
-      Geom::VertexIterator vi = geom->make_vertex_iterator();
-      int num_prims = geom->get_num_prims();
-
-      for (int p = 0; p < num_prims; p++) {
-        int length = geom->get_length(p);
-        for (int v = 0; v < length; v++) {
-          Vertexf vertex = geom->get_next_vertex(vi) * mat;
-          
-          if (found_any) {
-            min_point.set(min(min_point[0], vertex[0]),
-                          min(min_point[1], vertex[1]),
-                          min(min_point[2], vertex[2]));
-            max_point.set(max(max_point[0], vertex[0]),
-                          max(max_point[1], vertex[1]),
-                          max(max_point[2], vertex[2]));
-          } else {
-            min_point = vertex;
-            max_point = vertex;
-            found_any = true;
-          }
-        }
-      }
-    }
-  }
-
-  // Now consider children.
-  PandaNode::Children cr = node->get_children();
-  int num_children = cr.get_num_children();
-  for (int i = 0; i < num_children; i++) {
-    r_calc_tight_bounds(cr.get_child(i), min_point, max_point,
-                        found_any, next_transform);
   }
 }
 

@@ -23,10 +23,13 @@
 #include "transformState.h"
 #include "renderAttrib.h"
 #include "renderState.h"
+#include "accumulatedAttribs.h"
 #include "geomTransformer.h"
 
 #include "typedObject.h"
 #include "pointerTo.h"
+
+class PandaNode;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : SceneGraphReducer
@@ -41,8 +44,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA SceneGraphReducer {
 PUBLISHED:
-  SceneGraphReducer();
-  virtual ~SceneGraphReducer();
+  INLINE SceneGraphReducer();
+  INLINE ~SceneGraphReducer();
 
   enum AttribTypes {
     TT_transform       = 0x001,
@@ -52,53 +55,35 @@ PUBLISHED:
     TT_other           = 0x010,
   };
 
-  void apply_attribs(PandaNode *node, int attrib_types = ~0);
+  INLINE void apply_attribs(PandaNode *node, int attrib_types = ~0);
+  INLINE void apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
+                            int attrib_types, GeomTransformer &transformer);
 
   int flatten(PandaNode *root, bool combine_siblings);
 
 protected:
-  class AccumulatedAttribs {
-  public:
-    INLINE AccumulatedAttribs();
-    INLINE AccumulatedAttribs(const AccumulatedAttribs &copy);
-    INLINE void operator = (const AccumulatedAttribs &copy);
-
-    void write(ostream &out, int attrib_types, int indent_level) const;
-
-    void collect(PandaNode *node, int attrib_types);
-    void apply_to_node(PandaNode *node, int attrib_types);
-    void apply_to_vertices(PandaNode *node, int attrib_types,
-                           GeomTransformer &transfomer);
-
-    CPT(TransformState) _transform;
-    CPT(RenderAttrib) _color;
-    CPT(RenderAttrib) _color_scale;
-    CPT(RenderAttrib) _tex_matrix;
-    CPT(RenderState) _other;
-  };
-
-  void r_apply_attribs(PandaNode *node, int attrib_types,
-                       AccumulatedAttribs trans);
+  void r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
+                       int attrib_types, GeomTransformer &transformer);
 
   int r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
                 bool combine_siblings);
   int flatten_siblings(PandaNode *parent_node);
 
-  virtual bool consider_child(PandaNode *grandparent_node,
-                              PandaNode *parent_node, PandaNode *child_node);
-  virtual bool consider_siblings(PandaNode *parent_node, PandaNode *child1,
-                                 PandaNode *child2);
+  bool consider_child(PandaNode *grandparent_node,
+                      PandaNode *parent_node, PandaNode *child_node);
+  bool consider_siblings(PandaNode *parent_node, PandaNode *child1,
+                         PandaNode *child2);
 
-  virtual bool do_flatten_child(PandaNode *grandparent_node, 
-                                PandaNode *parent_node, PandaNode *child_node);
+  bool do_flatten_child(PandaNode *grandparent_node, 
+                        PandaNode *parent_node, PandaNode *child_node);
 
-  virtual PandaNode *do_flatten_siblings(PandaNode *parent_node, 
-                                         PandaNode *child1, PandaNode *child2);
+  PandaNode *do_flatten_siblings(PandaNode *parent_node, 
+                                 PandaNode *child1, PandaNode *child2);
 
-  virtual PT(PandaNode) collapse_nodes(PandaNode *node1, PandaNode *node2, 
-                                       bool siblings);
-  virtual void choose_name(PandaNode *preserve, PandaNode *source1, 
-                           PandaNode *source2);
+  PT(PandaNode) collapse_nodes(PandaNode *node1, PandaNode *node2, 
+                               bool siblings);
+  void choose_name(PandaNode *preserve, PandaNode *source1, 
+                   PandaNode *source2);
 
 private:
   GeomTransformer _transformer;

@@ -542,9 +542,6 @@ private:
   void r_adjust_all_priorities(PandaNode *node, int adjustment);
 
   void r_force_recompute_bounds(PandaNode *node);
-  void r_calc_tight_bounds(PandaNode *node,
-                           LPoint3f &min_point, LPoint3f &max_point,
-                           bool &found_any, const TransformState *transform);
 
   typedef pset<Texture *> Textures;
   Texture *r_find_texture(PandaNode *node, const RenderState *state,

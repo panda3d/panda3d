@@ -1,3 +1,4 @@
+#include "accumulatedAttribs.cxx"
 #include "ambientLight.cxx"
 #include "bamFile.cxx"
 #include "billboardEffect.cxx"

@@ -30,11 +30,17 @@
 #include "notify.h"
 #include "transformState.h"
 #include "colorAttrib.h"
+#include "colorScaleAttrib.h"
 #include "cullBinAttrib.h"
 #include "textureAttrib.h"
 #include "transparencyAttrib.h"
 #include "sceneGraphReducer.h"
 #include "indent.h"
+#include "cullTraverser.h"
+#include "cullTraverserData.h"
+#include "geometricBoundingVolume.h"
+#include "accumulatedAttribs.h"
+#include "dcast.h"
 
 #include <stdio.h>
 #include <ctype.h>
@@ -83,9 +89,6 @@ TextNode(const string &name) : PandaNode(name) {
   _ul3d.set(0.0f, 0.0f, 0.0f);
   _lr3d.set(0.0f, 0.0f, 0.0f);
   _num_rows = 0;
-
-  _freeze_level = 0;
- _needs_rebuild = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -302,6 +305,9 @@ generate() {
   _ul3d = _ul3d * _transform;
   _lr3d = _lr3d * _transform;
 
+  // Incidentally, that means we don't need to measure the text now.
+  _flags &= ~F_needs_measure;
+
 
   // Now deal with all the decorations.
 
@@ -462,15 +468,212 @@ decode_text(const string &text) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::xform
+//     Function: TextNode::get_unsafe_to_apply_attribs
 //       Access: Public, Virtual
-//  Description: Transforms the contents of this PandaNode by the
-//               indicated matrix, if it means anything to do so.  For
-//               most kinds of PandaNodes, this does nothing.
+//  Description: Returns the union of all attributes from
+//               SceneGraphReducer::AttribTypes that may not safely be
+//               applied to the vertices of this node.  If this is
+//               nonzero, these attributes must be dropped at this
+//               node as a state change.
+//
+//               This is a generalization of safe_to_transform().
+////////////////////////////////////////////////////////////////////
+int TextNode::
+get_unsafe_to_apply_attribs() const {
+  // We have no way to apply these kinds of attributes to our
+  // TextNode, so insist they get dropped into the PandaNode's basic
+  // state.
+  return 
+    SceneGraphReducer::TT_tex_matrix | 
+    SceneGraphReducer::TT_other;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::apply_attribs_to_vertices
+//       Access: Public, Virtual
+//  Description: Applies whatever attributes are specified in the
+//               AccumulatedAttribs object (and by the attrib_types
+//               bitmask) to the vertices on this node, if
+//               appropriate.  If this node uses geom arrays like a
+//               GeomNode, the supplied GeomTransformer may be used to
+//               unify shared arrays across multiple different nodes.
+//
+//               This is a generalization of xform().
 ////////////////////////////////////////////////////////////////////
 void TextNode::
-xform(const LMatrix4f &mat) {
-  _transform *= mat;
+apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
+                          GeomTransformer &transformer) {
+  if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
+    const LMatrix4f &mat = attribs._transform->get_mat();
+    _transform *= mat;
+
+    if ((_flags & F_needs_measure) == 0) {
+      // If we already have a measure, transform it too.  We don't
+      // need to invalidate the 2-d parts, since that's not affected
+      // by the transform anyway.
+      _ul3d = _ul3d * mat;
+      _lr3d = _lr3d * mat;
+    }
+  }
+  if ((attrib_types & SceneGraphReducer::TT_color) != 0) {
+    if (attribs._color != (const RenderAttrib *)NULL) {
+      const ColorAttrib *ca = DCAST(ColorAttrib, attribs._color);
+      if (ca->get_color_type() == ColorAttrib::T_flat) {
+        const Colorf &c = ca->get_color();
+        _text_color = c;
+        _frame_color = c;
+        _card_color = c;
+        _shadow_color = c;
+        _flags |= F_has_text_color;
+      }
+    }
+  }
+  if ((attrib_types & SceneGraphReducer::TT_color_scale) != 0) {
+    if (attribs._color_scale != (const RenderAttrib *)NULL) {
+      const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attribs._color_scale);
+      const LVecBase4f &s = csa->get_scale();
+      if (s != LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)) {
+        _text_color[0] *= s[0];
+        _text_color[1] *= s[1];
+        _text_color[2] *= s[2];
+        _text_color[3] *= s[3];
+        _frame_color[0] *= s[0];
+        _frame_color[1] *= s[1];
+        _frame_color[2] *= s[2];
+        _frame_color[3] *= s[3];
+        _card_color[0] *= s[0];
+        _card_color[1] *= s[1];
+        _card_color[2] *= s[2];
+        _card_color[3] *= s[3];
+        _shadow_color[0] *= s[0];
+        _shadow_color[1] *= s[1];
+        _shadow_color[2] *= s[2];
+        _shadow_color[3] *= s[3];
+      }
+    }
+  }
+
+  // Now propagate the attributes down to our already-generated
+  // geometry, if we have any.
+  if ((_flags & F_needs_rebuild) == 0 && 
+      _internal_geom != (PandaNode *)NULL) {
+    SceneGraphReducer gr;
+    gr.apply_attribs(_internal_geom, attribs, attrib_types, transformer);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::calc_tight_bounds
+//       Access: Public, Virtual
+//  Description: This is used to support
+//               NodePath::calc_tight_bounds().  It is not intended to
+//               be called directly, and it has nothing to do with the
+//               normal Panda bounding-volume computation.
+//
+//               If the node contains any geometry, this updates
+//               min_point and max_point to enclose its bounding box.
+//               found_any is to be set true if the node has any
+//               geometry at all, or left alone if it has none.  This
+//               method may be called over several nodes, so it may
+//               enter with min_point, max_point, and found_any
+//               already set.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) TextNode::
+calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
+                  const TransformState *transform) const {
+  CPT(TransformState) next_transform = 
+    PandaNode::calc_tight_bounds(min_point, max_point, found_any, transform);
+
+  check_rebuild();
+
+  if (_internal_geom != (PandaNode *)NULL) {
+    _internal_geom->calc_tight_bounds(min_point, max_point, 
+                                      found_any, next_transform);
+  }
+
+  return next_transform;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::has_cull_callback
+//       Access: Protected, Virtual
+//  Description: Should be overridden by derived classes to return
+//               true if cull_callback() has been defined.  Otherwise,
+//               returns false to indicate cull_callback() does not
+//               need to be called for this node during the cull
+//               traversal.
+////////////////////////////////////////////////////////////////////
+bool TextNode::
+has_cull_callback() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::cull_callback
+//       Access: Protected, Virtual
+//  Description: If has_cull_callback() returns true, this function
+//               will be called during the cull traversal to perform
+//               any additional operations that should be performed at
+//               cull time.  This may include additional manipulation
+//               of render state or additional visible/invisible
+//               decisions, or any other arbitrary operation.
+//
+//               By the time this function is called, the node has
+//               already passed the bounding-volume test for the
+//               viewing frustum, and the node's transform and state
+//               have already been applied to the indicated
+//               CullTraverserData object.
+//
+//               The return value is true if this node should be
+//               visible, or false if it should be culled.
+////////////////////////////////////////////////////////////////////
+bool TextNode::
+cull_callback(CullTraverser *trav, CullTraverserData &data) {
+  check_rebuild();
+  if (_internal_geom != (PandaNode *)NULL) {
+    // Render the text with this node.
+    CullTraverserData next_data(data, _internal_geom);
+    trav->traverse(next_data);
+  }
+
+  // Now continue to render everything else below this node.
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::recompute_internal_bound
+//       Access: Protected, Virtual
+//  Description: Called when needed to recompute the node's
+//               _internal_bound object.  Nodes that contain anything
+//               of substance should redefine this to do the right
+//               thing.
+////////////////////////////////////////////////////////////////////
+BoundingVolume *TextNode::
+recompute_internal_bound() {
+  // First, get ourselves a fresh, empty bounding volume.
+  BoundingVolume *bound = PandaNode::recompute_internal_bound();
+  nassertr(bound != (BoundingVolume *)NULL, bound);
+
+  GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bound);
+
+  // Now enclose the bounding box around the text.  We can do this
+  // without actually generating the text, if we have at least
+  // measured it.
+  check_measure();
+
+  LPoint3f vertices[8];
+  vertices[0].set(_ul3d[0], _ul3d[1], _ul3d[2]);
+  vertices[1].set(_ul3d[0], _ul3d[1], _lr3d[2]);
+  vertices[2].set(_ul3d[0], _lr3d[1], _ul3d[2]);
+  vertices[3].set(_ul3d[0], _lr3d[1], _lr3d[2]);
+  vertices[4].set(_lr3d[0], _ul3d[1], _ul3d[2]);
+  vertices[5].set(_lr3d[0], _ul3d[1], _lr3d[2]);
+  vertices[6].set(_lr3d[0], _lr3d[1], _ul3d[2]);
+  vertices[7].set(_lr3d[0], _lr3d[1], _lr3d[2]);
+
+  gbv->around(vertices, vertices + 8);
+
+  return bound;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -596,23 +799,8 @@ expand_amp_sequence(StringDecoder &decoder) const {
 ////////////////////////////////////////////////////////////////////
 void TextNode::
 do_rebuild() {
-  _needs_rebuild = false;
-
-  remove_all_children();
-
-  PT(PandaNode) new_text = generate();
-  if (new_text != (PandaNode *)NULL) {
-    add_child(new_text);
-
-    /*
-    // And we flatten one more time, to remove the new node itself if
-    // possible (it might be an unneeded node above multiple
-    // children).  This flatten operation should be fairly
-    // lightweight; it's already pretty flat.
-    SceneGraphReducer gr(RenderRelation::get_class_type());
-    gr.flatten(this, false);
-    */
-  }
+  _flags &= ~(F_needs_rebuild | F_needs_measure);
+  _internal_geom = generate();
 }
 
 
@@ -625,6 +813,8 @@ do_rebuild() {
 ////////////////////////////////////////////////////////////////////
 void TextNode::
 do_measure() {
+  _flags &= ~F_needs_measure;
+
   _ul2d.set(0.0f, 0.0f);
   _lr2d.set(0.0f, 0.0f);
   _ul3d.set(0.0f, 0.0f, 0.0f);

@@ -44,8 +44,15 @@ protected:
 public:
   virtual ~GeomNode();
   virtual PandaNode *make_copy() const;
+  virtual void apply_attribs_to_vertices(const AccumulatedAttribs &attribs,
+                                         int attrib_types,
+                                         GeomTransformer &transformer);
   virtual void xform(const LMatrix4f &mat);
   virtual PandaNode *combine_with(PandaNode *other); 
+  virtual CPT(TransformState)
+    calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+                      bool &found_any,
+                      const TransformState *transform) const;
 
 PUBLISHED:
   INLINE int get_num_geoms() const;

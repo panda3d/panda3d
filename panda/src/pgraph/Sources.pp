@@ -8,6 +8,7 @@
   #define TARGET pgraph
   
   #define SOURCES \
+    accumulatedAttribs.I accumulatedAttribs.h \
     alphaTestAttrib.I alphaTestAttrib.h \  
     ambientLight.I ambientLight.h \
     bamFile.I bamFile.h \
@@ -91,6 +92,7 @@
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
   #define INCLUDED_SOURCES \
+    accumulatedAttribs.cxx \
     alphaTestAttrib.cxx \  
     ambientLight.cxx \
     bamFile.cxx \
@@ -173,6 +175,7 @@
     workingNodePath.cxx
 
   #define INSTALL_HEADERS \
+    accumulatedAttribs.I accumulatedAttribs.h \
     alphaTestAttrib.I alphaTestAttrib.h \  
     ambientLight.I ambientLight.h \
     bamFile.I bamFile.h \

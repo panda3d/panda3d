@@ -18,6 +18,8 @@
 
 #include "geomNode.h"
 #include "geomTransformer.h"
+#include "sceneGraphReducer.h"
+#include "accumulatedAttribs.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "datagram.h"
@@ -155,6 +157,62 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::apply_attribs_to_vertices
+//       Access: Public, Virtual
+//  Description: Applies whatever attributes are specified in the
+//               AccumulatedAttribs object (and by the attrib_types
+//               bitmask) to the vertices on this node, if
+//               appropriate.  If this node uses geom arrays like a
+//               GeomNode, the supplied GeomTransformer may be used to
+//               unify shared arrays across multiple different nodes.
+//
+//               This is a generalization of xform().
+////////////////////////////////////////////////////////////////////
+void GeomNode::
+apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
+                          GeomTransformer &transformer) {
+  if (pgraph_cat.is_debug()) {
+    pgraph_cat.debug()
+      << "Transforming geometry.\n";
+  }
+
+  if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
+    if (!attribs._transform->is_identity()) {
+      transformer.transform_vertices(this, attribs._transform->get_mat());
+    }
+  }
+  if ((attrib_types & SceneGraphReducer::TT_color) != 0) {
+    if (attribs._color != (const RenderAttrib *)NULL) {
+      const ColorAttrib *ca = DCAST(ColorAttrib, attribs._color);
+      if (ca->get_color_type() == ColorAttrib::T_flat) {
+        transformer.set_color(this, ca->get_color());
+      }
+    }
+  }
+  if ((attrib_types & SceneGraphReducer::TT_color_scale) != 0) {
+    if (attribs._color_scale != (const RenderAttrib *)NULL) {
+      const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attribs._color_scale);
+      if (csa->get_scale() != LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)) {
+        transformer.transform_colors(this, csa->get_scale());
+      }
+    }
+  }
+  if ((attrib_types & SceneGraphReducer::TT_tex_matrix) != 0) {
+    if (attribs._tex_matrix != (const RenderAttrib *)NULL) {
+      const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, attribs._tex_matrix);
+      if (tma->get_mat() != LMatrix4f::ident_mat()) {
+        transformer.transform_texcoords(this, tma->get_mat());
+      }
+    }
+  }
+  if ((attrib_types & SceneGraphReducer::TT_other) != 0) {
+    if (!attribs._other->is_empty()) {
+      transformer.apply_state(this, attribs._other);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::xform
 //       Access: Public, Virtual
 //  Description: Transforms the contents of this node by the indicated
@@ -198,6 +256,59 @@ combine_with(PandaNode *other) {
   }
 
   return PandaNode::combine_with(other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::calc_tight_bounds
+//       Access: Public, Virtual
+//  Description: This is used to support
+//               NodePath::calc_tight_bounds().  It is not intended to
+//               be called directly, and it has nothing to do with the
+//               normal Panda bounding-volume computation.
+//
+//               If the node contains any geometry, this updates
+//               min_point and max_point to enclose its bounding box.
+//               found_any is to be set true if the node has any
+//               geometry at all, or left alone if it has none.  This
+//               method may be called over several nodes, so it may
+//               enter with min_point, max_point, and found_any
+//               already set.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) GeomNode::
+calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
+                  const TransformState *transform) const {
+  CPT(TransformState) next_transform = 
+    PandaNode::calc_tight_bounds(min_point, max_point, found_any, transform);
+
+  const LMatrix4f &mat = next_transform->get_mat();
+  int num_geoms = get_num_geoms();
+  for (int i = 0; i < num_geoms; i++) {
+    Geom *geom = get_geom(i);
+    Geom::VertexIterator vi = geom->make_vertex_iterator();
+    int num_prims = geom->get_num_prims();
+    
+    for (int p = 0; p < num_prims; p++) {
+      int length = geom->get_length(p);
+      for (int v = 0; v < length; v++) {
+        Vertexf vertex = geom->get_next_vertex(vi) * mat;
+        
+        if (found_any) {
+          min_point.set(min(min_point[0], vertex[0]),
+                        min(min_point[1], vertex[1]),
+                        min(min_point[2], vertex[2]));
+          max_point.set(max(max_point[0], vertex[0]),
+                        max(max_point[1], vertex[1]),
+                        max(max_point[2], vertex[2]));
+        } else {
+          min_point = vertex;
+          max_point = vertex;
+          found_any = true;
+        }
+      }
+    }
+  }
+
+  return next_transform;
 }
 
 ////////////////////////////////////////////////////////////////////

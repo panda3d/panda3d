@@ -23,6 +23,8 @@
 #include "bamWriter.h"
 #include "indent.h"
 #include "geometricBoundingVolume.h"
+#include "sceneGraphReducer.h"
+#include "accumulatedAttribs.h"
 
 
 TypeHandle PandaNode::_type_handle;
@@ -502,6 +504,18 @@ safe_to_combine() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::safe_to_flatten_below
+//       Access: Public, Virtual
+//  Description: Returns true if a flatten operation may safely
+//               continue past this node, or false if it should drop
+//               all attributes here and stop.
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+safe_to_flatten_below() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::preserve_name
 //       Access: Public, Virtual
 //  Description: Returns true if the node's name has extrinsic meaning
@@ -511,6 +525,42 @@ safe_to_combine() const {
 bool PandaNode::
 preserve_name() const {
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_unsafe_to_apply_attribs
+//       Access: Public, Virtual
+//  Description: Returns the union of all attributes from
+//               SceneGraphReducer::AttribTypes that may not safely be
+//               applied to the vertices of this node.  If this is
+//               nonzero, these attributes must be dropped at this
+//               node as a state change.
+//
+//               This is a generalization of safe_to_transform().
+////////////////////////////////////////////////////////////////////
+int PandaNode::
+get_unsafe_to_apply_attribs() const {
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::apply_attribs_to_vertices
+//       Access: Public, Virtual
+//  Description: Applies whatever attributes are specified in the
+//               AccumulatedAttribs object (and by the attrib_types
+//               bitmask) to the vertices on this node, if
+//               appropriate.  If this node uses geom arrays like a
+//               GeomNode, the supplied GeomTransformer may be used to
+//               unify shared arrays across multiple different nodes.
+//
+//               This is a generalization of xform().
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
+                          GeomTransformer &transformer) {
+  if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
+    xform(attribs._transform->get_mat());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -566,6 +616,41 @@ combine_with(PandaNode *other) {
 
   // We're something other than an ordinary PandaNode.  Don't combine.
   return (PandaNode *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::calc_tight_bounds
+//       Access: Public, Virtual
+//  Description: This is used to support
+//               NodePath::calc_tight_bounds().  It is not intended to
+//               be called directly, and it has nothing to do with the
+//               normal Panda bounding-volume computation.
+//
+//               If the node contains any geometry, this updates
+//               min_point and max_point to enclose its bounding box.
+//               found_any is to be set true if the node has any
+//               geometry at all, or left alone if it has none.  This
+//               method may be called over several nodes, so it may
+//               enter with min_point, max_point, and found_any
+//               already set.
+//
+//               This function is recursive, and the return value is
+//               the transform after it has been modified by this
+//               node's transform.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) PandaNode::
+calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
+                  const TransformState *transform) const {
+  CPT(TransformState) next_transform = transform->compose(get_transform());
+
+  Children cr = get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    cr.get_child(i)->calc_tight_bounds(min_point, max_point,
+                                       found_any, next_transform);
+  }
+
+  return next_transform;
 }
 
 ////////////////////////////////////////////////////////////////////
