@@ -319,6 +319,7 @@ get_category(const string &fullname) {
 ////////////////////////////////////////////////////////////////////
 ostream &Notify::
 out() {
+  ptr()->_ostream_ptr->flush();
   return *(ptr()->_ostream_ptr);
 }
 
