@@ -132,6 +132,13 @@ class GlobalFunctionSpecification(FunctionSpecification):
         self.outputHeader(file)
         self.outputBody(file)
         self.outputFooter(file)
+
+    # Use generateCode when creating a global (non-class) function
+    def generateGlobalDowncastCode(self, file):
+        self.outputHeader(file)
+        self.outputBody(file, 0) # no downcast
+        self.outputFooter(file)
+
     # Use generateMethodCode when creating a global->class function
     def generateMethodCode(self, methodClass, file, nesting):
         self.outputMethodHeader(methodClass, file, nesting)
@@ -149,7 +156,8 @@ class GlobalFunctionSpecification(FunctionSpecification):
             if (i < (len(argTypes)-1)):
                 file.write(', ')
         file.write('):\n')
-    def outputBody(self, file):
+        
+    def outputBody(self, file, needsDowncast=1):
         # The method body will look something like
         #     returnValue = PandaGlobal.method(arg)
         #     returnObject = NodePath()
@@ -167,7 +175,7 @@ class GlobalFunctionSpecification(FunctionSpecification):
                 file.write(', ')
         file.write(')\n')
         returnType = self.typeDescriptor.returnType.recursiveTypeDescriptor()
-        returnType.generateReturnValueWrapper(file, self.typeDescriptor.userManagesMemory, 1, 1)
+        returnType.generateReturnValueWrapper(file, self.typeDescriptor.userManagesMemory, needsDowncast, 1)
         
     def outputFooter(self, file):
         indent(file, 0, '\n')

@@ -158,6 +158,7 @@ class ShowBase:
         self.trackball.reparentTo(self.dataUnused)
         self.mouse2cam.reparentTo(self.dataUnused)
         self.mouseInterface = None
+        self.mouseInterfaceNode = None
 
     def setMouseOnArc(self, newArc):
         self.mouse2cam.node().setArc(newArc)
@@ -170,6 +171,7 @@ class ShowBase:
         self.trackball.reparentTo(self.dataUnused)
         # Update the mouseInterface to point to the drive
         self.mouseInterface = self.drive
+        self.mouseInterfaceNode = self.mouseInterface.getBottomNode()
         self.drive.node().reset()
         self.drive.reparentTo(self.mouseWatcher)
         # Hookup the drive to the camera
@@ -185,6 +187,7 @@ class ShowBase:
         self.drive.reparentTo(self.dataUnused)
         # Update the mouseInterface to point to the trackball
         self.mouseInterface = self.trackball
+        self.mouseInterfaceNode = self.mouseInterface.getBottomNode()
         # Hookup the trackball to the camera
         self.trackball.reparentTo(self.mouseWatcher)
         self.mouse2cam.reparentTo(self.trackball)
