@@ -47,10 +47,12 @@ public:
   // This is the normal AnimGroup constructor.
   AnimGroup(AnimGroup *parent, const string &name);
 
+PUBLISHED:
   int get_num_children() const;
   AnimGroup *get_child(int n) const;
   AnimGroup *find_child(const string &name) const;
 
+public:
   virtual TypeHandle get_value_type() const;
 
   void sort_descendants();
