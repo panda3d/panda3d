@@ -1114,13 +1114,13 @@ class LevelEditor(NodePath, PandaObject):
         currentMode = self.editMode
         self.createColorMenus()
         # Reset to current mode
-        if self.editMode == 'ToontownCentral':
+        if self.editMode == 'toontownCentral':
             self.useToontownCentralColors()
-        elif self.editMode == 'DonaldsDock':
+        elif self.editMode == 'donaldsDock':
             self.useDonaldsDockColors()
-        elif self.editMode == 'MinniesMelodyLand':
+        elif self.editMode == 'minniesMelodyLand':
             self.useMinniesMelodyLandColors()
-        elif self.editMode == 'TheBurrrgh':
+        elif self.editMode == 'theBurrrgh':
             self.useTheBurrrghColors()
 
     def createCorniceMenu(self):
