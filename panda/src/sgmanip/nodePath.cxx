@@ -2496,7 +2496,7 @@ set_two_sided(bool two_sided, int priority) {
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 get_two_sided() const {
-  nassertr(has_arcs(), NULL);
+  nassertr(has_arcs(), false);
 
   const CullFaceTransition *cft;
   if (get_transition_into(cft, arc())) {
@@ -2642,7 +2642,7 @@ set_transparency(bool transparency, int priority) {
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 get_transparency() const {
-  nassertr(has_arcs(), NULL);
+  nassertr(has_arcs(), false);
 
   const TransparencyTransition *tt;
   if (get_transition_into(tt, arc())) {

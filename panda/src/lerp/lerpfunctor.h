@@ -67,7 +67,7 @@ protected:
 public:
   virtual ~SimpleLerpFunctor(void);
   SimpleLerpFunctor<value>& operator=(const SimpleLerpFunctor<value>&);
-  virtual void operator()(float) = 0;
+  virtual void operator()(float);
 
 PUBLISHED:
   static TypeHandle get_class_type(void) {
