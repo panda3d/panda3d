@@ -35,6 +35,7 @@ class EditMgr(Entity):
     type = 'editMgr'
     attribs = (
         ('requestSave', None),
+        ('requestNewEntity', None),
         ('insertEntity', None),
         ('removeEntity', None),
         )

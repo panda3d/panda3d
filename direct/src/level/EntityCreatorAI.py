@@ -2,7 +2,7 @@
 
 import EntityCreatorBase
 import LogicGateAI
-import EditMgr
+import EditMgrAI
 import LevelMgrAI
 import ZoneEntityAI
 from PythonUtil import Functor
@@ -43,7 +43,7 @@ class EntityCreatorAI(EntityCreatorBase.EntityCreatorBase):
 
         self.privRegisterTypes({
             'cutScene': nothing,
-            'editMgr': Functor(cLE, EditMgr.EditMgr),
+            'editMgr': Functor(cLE, EditMgrAI.EditMgrAI),
             'levelMgr': Functor(cLE, LevelMgrAI.LevelMgrAI),
             'logicGate': Functor(cLE, LogicGateAI.LogicGateAI),
             'nodepath': nothing,
