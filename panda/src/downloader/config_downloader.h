@@ -40,5 +40,7 @@ extern const int patcher_buffer_size;
 
 extern const bool early_random_seed;
 extern const bool verify_ssl;
+extern const string http_proxy;
+extern const string http_proxy_username;
 
 #endif

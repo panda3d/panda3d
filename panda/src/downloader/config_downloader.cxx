@@ -78,6 +78,13 @@ config_downloader.GetBool("early-random-seed", true);
 const bool verify_ssl =
 config_downloader.GetBool("verify-ssl", true);
 
+// This specifies the proxy that we will contact for all HTTP
+// connections that don't specify otherwise.
+const string http_proxy =
+config_downloader.GetString("http-proxy", "");
+const string http_proxy_username =
+config_downloader.GetString("http-proxy-username", "");
+
 ConfigureFn(config_downloader) {
 #ifdef HAVE_SSL
   HTTPChannel::init_type();

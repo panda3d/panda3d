@@ -55,6 +55,11 @@ HTTPClient() {
   _verify_ssl = verify_ssl ? VS_normal : VS_no_verify;
   _ssl_ctx = (SSL_CTX *)NULL;
 
+  _proxy = URLSpec(http_proxy, 1);
+  if (!http_proxy_username.empty()) {
+    set_username("*proxy", "", http_proxy_username);
+  }
+
   // The first time we create an HTTPClient, we must initialize the
   // OpenSSL library.
   if (!_ssl_initialized) {
@@ -69,10 +74,6 @@ HTTPClient() {
 ////////////////////////////////////////////////////////////////////
 HTTPClient::
 HTTPClient(const HTTPClient &copy) {
-  // We can initialize these to default values because the operator =
-  // function will copy them in a second.
-  _http_version = HV_11;
-  _verify_ssl = verify_ssl ? VS_normal : VS_no_verify;
   _ssl_ctx = (SSL_CTX *)NULL;
 
   (*this) = copy;
@@ -88,6 +89,7 @@ operator = (const HTTPClient &copy) {
   _proxy = copy._proxy;
   _http_version = copy._http_version;
   _verify_ssl = copy._verify_ssl;
+  _usernames = copy._usernames;
   clear_expected_servers();
 
   ExpectedServers::const_iterator ei;
