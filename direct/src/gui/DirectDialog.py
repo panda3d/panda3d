@@ -105,7 +105,7 @@ class DirectDialog(DirectFrame):
             ('topPad',            0.06,          INITOPT),
             ('midPad',            0.12,          INITOPT),
             ('sidePad',           0.,            INITOPT),
-            ('buttonPadSF',       1.05,          INITOPT),
+            ('buttonPadSF',       1.1,          INITOPT),
             # Alpha of fade screen behind dialog
             ('fadeScreen',        0,             None),
             ('command',           None,          None),
