@@ -7,10 +7,10 @@ build ppremake if you want to build a version of ppremake that can
 correctly decode Cygwin-style pathnames into Windows-style pathnames.
 
 (1) If the file "configure" exists, skip to step (4), below.  This is
-    the normal case; you have unpacked a tarball that includes the
-    normal autoconf files already generated for you.  You can now
-    successfully build the tree without having autoconf installed on
-    your own machine.
+    the normal case; you must have unpacked an archive file that
+    includes the normal autoconf files already generated for you.  You
+    can now successfully build the tree without having autoconf
+    installed on your own machine.
 
     Otherwise, you must have checked this tree directly out from CVS.
     Since the autoconf-generated files are not part of the source
@@ -19,10 +19,13 @@ correctly decode Cygwin-style pathnames into Windows-style pathnames.
   (2) Install autoconf and/or automake, if they are not already
       installed.  If you are building on a Linux machine, you probably
       already have these installed.  If you are running on Cygwin, you
-      may need to explicitly check the "autoconf" install option in
-      order to install these scripts.
+      may need to re-run the Cygwin install program and explicitly
+      check the "autoconf" option in order to install these scripts.
+      Also, if you are on Cygwin, you will need to ensure that gcc is
+      installed.
 
-  (3) Run the following commands within the ppremake directory:
+  (3) Run the following commands within the ppremake directory, in
+      order:
 
       aclocal
       autoheader
