@@ -240,6 +240,29 @@ void AtExitFn() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsWindow::set_window_handle
+//       Access: Public
+//  Description: This is called on the object once the actual Window
+//               has been created.  It gives the window handle of the
+//               created window so the wdxGraphicsWindow object can
+//               perform any additional initialization based on this.
+////////////////////////////////////////////////////////////////////
+void wdxGraphicsWindow::
+set_window_handle(HWND hwnd) {
+  // Tell the associated dxGSG about the window handle.
+  _dxgsg->scrn.hWnd = hwnd;
+
+  // Determine the initial open status of the IME.
+  _ime_open = false;
+  _ime_active = false;
+  HIMC hIMC = ImmGetContext(hwnd);
+  if (hIMC != 0) {
+    _ime_open = (ImmGetOpenStatus(hIMC) != 0);
+    ImmReleaseContext(hwnd, hIMC);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: static_window_proc
 //       Access:
 //  Description:
@@ -365,65 +388,162 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           set_cursor_visibility(true);
           break;
         }
-
-      #if 0
-        case WM_SYSCHAR:
-        case WM_CHAR:  // shouldnt receive WM_CHAR unless WM_KEYDOWN stops returning 0 and passes on to DefWindProc
-            break;
-      #endif
-
-        case WM_SYSKEYDOWN:
-        case WM_KEYDOWN: {
-
-            POINT point;
-
-            GetCursorPos(&point);
-            ScreenToClient(hwnd, &point);
-
-          #ifdef NDEBUG
-               handle_keypress(lookup_key(wparam), point.x, point.y);
-          #else
-            // handle Cntrl-V paste from clipboard
-            if(!((wparam=='V') && (GetKeyState(VK_CONTROL) < 0))) {
-               handle_keypress(lookup_key(wparam), point.x, point.y);
-            } else {
-                HGLOBAL hglb; 
-                char    *lptstr; 
-            
-                if (!IsClipboardFormatAvailable(CF_TEXT)) 
-                   return 0; 
-            
-                if (!OpenClipboard(NULL)) 
-                   return 0; 
-             
-                hglb = GetClipboardData(CF_TEXT); 
-                if (hglb!=NULL) {
-                    lptstr = (char *) GlobalLock(hglb); 
-                    if(lptstr != NULL)  {
-                        char *pChar;
-                        for(pChar=lptstr;*pChar!=NULL;pChar++) {
-                           handle_keypress(KeyboardButton::ascii_key((uchar)*pChar), point.x, point.y);
-                        }
-                        GlobalUnlock(hglb); 
-                    } 
-                }
-                CloseClipboard(); 
+    
+        case WM_IME_NOTIFY:
+          if (wparam == IMN_SETOPENSTATUS) {
+            HIMC hIMC = ImmGetContext(hwnd);
+            nassertr(hIMC != 0, 0);
+            _ime_open = (ImmGetOpenStatus(hIMC) != 0);
+            if (!_ime_open) {
+              _ime_active = false;  // Sanity enforcement.
             }
-          #endif
-            // want to use defwindproc on Alt syskey so Alt-F4 works, etc
-            // but do want to bypass defwindproc F10 behavior (it activates the
-            // main menu, but we have none)
-            if((msg==WM_SYSKEYDOWN)&&(wparam!=VK_F10))
-              break;
-             else return 0;
-        }
-
-        case WM_SYSKEYUP:
-        case WM_KEYUP: {
-            handle_keyrelease(lookup_key(wparam));
+            ImmReleaseContext(hwnd, hIMC);
+          }
+          break;
+    
+        case WM_IME_STARTCOMPOSITION:
+          // In case we're running fullscreen mode, we have to turn on
+          // explicit DX support for overlay windows now, so we'll be able
+          // to see the IME window.
+          _dxgsg->support_overlay_window(true);
+          _ime_active = true;
+          break;
+    
+        case WM_IME_ENDCOMPOSITION:
+          // Turn off the support for overlay windows, since we're done
+          // with the IME window for now and it just slows things down.
+          _dxgsg->support_overlay_window(false);
+          _ime_active = false;
+          break;
+    
+        case WM_IME_COMPOSITION:
+          if (lparam & GCS_RESULTSTR) {
+            if (!_input_devices.empty()) {
+              HIMC hIMC = ImmGetContext(hwnd);
+              nassertr(hIMC != 0, 0);
+              
+              static const int max_ime_result = 128;
+              static char ime_result[max_ime_result];
+    
+              if (_ime_composition_w) {
+                // Since ImmGetCompositionStringA() doesn't seem to work
+                // for Win2000 (it always returns question mark
+                // characters), we have to use ImmGetCompositionStringW()
+                // on this OS.  This is actually the easier of the two
+                // functions to use.
+    
+                DWORD result_size =
+                  ImmGetCompositionStringW(hIMC, GCS_RESULTSTR,
+                                           ime_result, max_ime_result);
+    
+                // Add this string into the text buffer of the application.
+              
+                // ImmGetCompositionStringW() returns a string, but it's
+                // filled in with wstring data: every two characters defines a
+                // 16-bit unicode char.  The docs aren't clear on the
+                // endianness of this.  I guess it's safe to assume all Win32
+                // machines are little-endian.
+                for (DWORD i = 0; i < result_size; i += 2) {
+                  int result = 
+                    ((int)(unsigned char)ime_result[i + 1] << 8) | 
+                    (unsigned char)ime_result[i];
+                  _input_devices[0].keystroke(result);
+                }
+              } else {
+                // On the other hand, ImmGetCompositionStringW() doesn't
+                // work on Win95 or Win98; for these OS's we must use
+                // ImmGetCompositionStringA().
+                DWORD result_size =
+                  ImmGetCompositionStringA(hIMC, GCS_RESULTSTR,
+                                           ime_result, max_ime_result);
+    
+                // ImmGetCompositionStringA() returns an encoded ANSI
+                // string, which we now have to map to wide-character
+                // Unicode.
+                static const int max_wide_result = 128;
+                static wchar_t wide_result[max_wide_result];
+    
+                int wide_size =
+                  MultiByteToWideChar(CP_ACP, 0,
+                                      ime_result, result_size,
+                                      wide_result, max_wide_result);
+                if (wide_size == 0) {
+                  PrintErrorMessage(LAST_ERROR);
+                }
+                for (int i = 0; i < wide_size; i++) {
+                  _input_devices[0].keystroke(wide_result[i]);
+                }
+              }
+    
+              ImmReleaseContext(hwnd, hIMC);
+            }
             return 0;
+          }
+          break;
+    
+        case WM_CHAR:
+          // Ignore WM_CHAR messages if we have the IME open, since
+          // everything will come in through WM_IME_COMPOSITION.  (It's
+          // supposed to come in through WM_CHAR, too, but there seems to
+          // be a bug in Win2000 in that it only sends question mark
+          // characters through here.)
+          if (!_ime_open && !_input_devices.empty()) {
+            _input_devices[0].keystroke(wparam);
+          }
+          break;
+    
+        case WM_SYSKEYDOWN:
+          // want to use defwindproc on Alt syskey so Alt-F4 works, etc
+          // but do want to bypass defwindproc F10 behavior (it activates
+          // the main menu, but we have none)
+          if (wparam == VK_F10) {
+            return 0;
+          }
+          break;
+    
+        case WM_KEYDOWN: {
+          POINT point;
+    
+          GetCursorPos(&point);
+          ScreenToClient(hwnd, &point);
+          handle_keypress(lookup_key(wparam), point.x, point.y);
+    
+          // Handle Cntrl-V paste from clipboard.  Is there a better way
+          // to detect this hotkey?
+          if ((wparam=='V') && (GetKeyState(VK_CONTROL) < 0) && 
+              !_input_devices.empty()) {
+            HGLOBAL hglb;
+            char *lptstr;
+    
+            if (!IsClipboardFormatAvailable(CF_TEXT))
+              return 0;
+    
+            if (!OpenClipboard(NULL))
+              return 0;
+            
+            // Maybe we should support CF_UNICODETEXT if it is available
+            // too?
+            hglb = GetClipboardData(CF_TEXT);
+            if (hglb!=NULL) {
+              lptstr = (char *) GlobalLock(hglb);
+              if (lptstr != NULL)  {
+                char *pChar;
+                for(pChar=lptstr;*pChar!=NULL;pChar++) {
+                  _input_devices[0].keystroke((uchar)*pChar);
+                }
+                GlobalUnlock(hglb);
+              }
+            }
+            CloseClipboard();
+          }
+          break;
         }
-
+    
+        case WM_SYSKEYUP:
+        case WM_KEYUP:
+          handle_keyrelease(lookup_key(wparam));
+          break;
+  
         case WM_LBUTTONDOWN:
             button = 0;
         case WM_MBUTTONDOWN:
@@ -938,6 +1058,7 @@ void wdxGraphicsWindow::reactivate_window(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wdxGraphicsWindow::wdxGraphicsWindow(GraphicsPipe* pipe) : GraphicsWindow(pipe) {
+   _ime_active = false;
    _pParentWindowGroup=NULL;
    _pParentWindowGroup=new wdxGraphicsWindowGroup(this);
 }
@@ -949,6 +1070,7 @@ wdxGraphicsWindow::wdxGraphicsWindow(GraphicsPipe* pipe) : GraphicsWindow(pipe) 
 ////////////////////////////////////////////////////////////////////
 wdxGraphicsWindow::wdxGraphicsWindow(GraphicsPipe* pipe, const GraphicsWindow::Properties& props) 
                   : GraphicsWindow(pipe, props) {
+   _ime_open = false;
    _pParentWindowGroup=NULL;
    _pParentWindowGroup=new wdxGraphicsWindowGroup(this);
 }
@@ -1194,7 +1316,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
             exit(1);
         }
 
-        _windows[devnum]->_dxgsg->scrn.hWnd = hWin;
+        _windows[devnum]->set_window_handle(hWin);
         _windows[devnum]->_dxgsg->scrn.pProps = &_windows[devnum]->_props;
 
         if(devnum==0)
@@ -1229,7 +1351,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
                          window_style, 
                          win_rect.left, win_rect.top, win_rect.right-win_rect.left,win_rect.bottom-win_rect.top,
                          NULL, NULL, hProgramInstance, 0);
-        _windows[0]->_dxgsg->scrn.hWnd = _hParentWindow;
+        _windows[0]->set_window_handle(_hParentWindow);
     }
 
     if(_hParentWindow==NULL) {
@@ -1294,6 +1416,20 @@ void wdxGraphicsWindow::config_window(wdxGraphicsWindowGroup *pParentGroup) {
     }
     _dxgsg = DCAST(DXGraphicsStateGuardian, _gsg);
     _dxgsg->scrn.bIsDX81 = pParentGroup->_bIsDX81;
+
+    // Check the version of the OS we are running.  If we are running
+    // win2000, we must use ImmGetCompositionStringW() to report the
+    // characters returned by the IME, since WM_CHAR and
+    // ImmGetCompositionStringA() both just return question marks.
+    // However, this function doesn't work for Win98; on this OS, we
+    // have to use ImmGetCompositionStringA() instead, which returns an
+    // encoded string in shift-jis (which we then have to decode).
+    
+    // For now, this is user-configurable, to allow testing of this code
+    // on both OS's.  After we verify that truth of the above claim, we
+    // should base this decision on GetVersionEx() or maybe
+    // VerifyVersionInfo().
+    _ime_composition_w = ime_composition_w;
 }
 
 void wdxGraphicsWindow::finish_window_setup(void) {
@@ -2705,15 +2841,25 @@ TypeHandle wdxGraphicsWindow::get_type(void) const {
 ////////////////////////////////////////////////////////////////////
 ButtonHandle wdxGraphicsWindow::
 lookup_key(WPARAM wparam) const {
+    // First, check for a few buttons that we filter out when the IME
+    // window is open.
+    if (!_ime_active) {
+      switch(wparam) {
+      case VK_BACK: return KeyboardButton::backspace();
+      case VK_DELETE: return KeyboardButton::del();
+      case VK_ESCAPE: return KeyboardButton::escape();
+      case VK_SPACE: return KeyboardButton::space();
+      case VK_UP: return KeyboardButton::up();
+      case VK_DOWN: return KeyboardButton::down();
+      case VK_LEFT: return KeyboardButton::left();
+      case VK_RIGHT: return KeyboardButton::right();
+      }
+    }
+
+    // Now check for the rest of the buttons, including the ones that
+    // we allow through even when the IME window is open.
     switch(wparam) {
-        case VK_BACK: return KeyboardButton::backspace();
         case VK_TAB: return KeyboardButton::tab();
-        case VK_ESCAPE: return KeyboardButton::escape();
-        case VK_SPACE: return KeyboardButton::space();
-        case VK_UP: return KeyboardButton::up();
-        case VK_DOWN: return KeyboardButton::down();
-        case VK_LEFT: return KeyboardButton::left();
-        case VK_RIGHT: return KeyboardButton::right();
         case VK_PRIOR: return KeyboardButton::page_up();
         case VK_NEXT: return KeyboardButton::page_down();
         case VK_HOME: return KeyboardButton::home();
@@ -2731,7 +2877,6 @@ lookup_key(WPARAM wparam) const {
         case VK_F11: return KeyboardButton::f11();
         case VK_F12: return KeyboardButton::f12();
         case VK_INSERT: return KeyboardButton::insert();
-        case VK_DELETE: return KeyboardButton::del();
         case VK_CAPITAL: return KeyboardButton::caps_lock();
         case VK_NUMLOCK: return KeyboardButton::num_lock();
         case VK_SCROLL: return KeyboardButton::scroll_lock();
@@ -2755,44 +2900,21 @@ lookup_key(WPARAM wparam) const {
 
         default:
             int key = MapVirtualKey(wparam, 2);
-            if(isascii(key) && key != 0) {
-                bool bCapsLockDown=((GetKeyState(VK_CAPITAL) & 0x1)!=0);
-                bool bShiftUp = (GetKeyState(VK_SHIFT) >= 0);
-                if(bShiftUp) {
-                    if(bCapsLockDown) 
-                        key = toupper(key);
-                    else key = tolower(key);
-                } else {
-                    switch(key) {
-                        // these keys are unaffected by capslock
-                        case '1': key = '!'; break;
-                        case '2': key = '@'; break;
-                        case '3': key = '#'; break;
-                        case '4': key = '$'; break;
-                        case '5': key = '%'; break;
-                        case '6': key = '^'; break;
-                        case '7': key = '&'; break;
-                        case '8': key = '*'; break;
-                        case '9': key = '('; break;
-                        case '0': key = ')'; break;
-                        case '-': key = '_'; break;
-                        case '=': key = '+'; break;
-                        case ',': key = '<'; break;
-                        case '.': key = '>'; break;
-                        case '/': key = '?'; break;
-                        case ';': key = ':'; break;
-                        case '\'': key = '"'; break;
-                        case '[': key = '{'; break;
-                        case ']': key = '}'; break;
-                        case '\\': key = '|'; break;
-                        case '`': key = '~'; break;
-                        default:
-                            if(bCapsLockDown) 
-                                key = tolower(key);
-                            else key = toupper(key);
-                    }
-                }
-                return KeyboardButton::ascii_key((uchar)key);
+            if (isascii(key) && key != 0) {
+              // We used to try to remap lowercase to uppercase keys
+              // here based on the state of the shift and/or caps lock
+              // keys.  But that's a mistake, and doesn't allow for
+              // international or user-defined keyboards; let Windows
+              // do that mapping.
+
+              // Nowadays, we make a distinction between a "button"
+              // and a "keystroke".  A button corresponds to a
+              // physical button on the keyboard and has a down and up
+              // event associated.  A keystroke may or may not
+              // correspond to a physical button, but will be some
+              // Unicode character and will not have a corresponding
+              // up event.
+              return KeyboardButton::ascii_key(tolower(key));
             }
             break;
     }
@@ -3095,6 +3217,7 @@ make_windows(GraphicsPipe *pipe,int num_windows,GraphicsWindow::Properties *WinP
 wdxGraphicsWindow::wdxGraphicsWindow(GraphicsPipe* pipe, const GraphicsWindow::Properties &props, wdxGraphicsWindowGroup *pParentGroup)
                    : GraphicsWindow(pipe, props) {
     _pParentWindowGroup=pParentGroup;
+    _ime_open = false;
    // just call the GraphicsWindow constructor, have to hold off rest of init
 }
 

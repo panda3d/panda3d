@@ -297,6 +297,7 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
 
     ZeroMemory(&scrn,sizeof(DXScreenData));
     _bDXisReady = false;
+    _overlay_windows_supported = false;
 
     _pFvfBufBasePtr = NULL;
     _index_buf=NULL;
@@ -741,6 +742,53 @@ dx_init(HCURSOR hMouseCursor) {
     cfa->issue(this);
 
     PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: dxGraphicsStateGuardian::support_overlay_window
+//       Access: Public
+//  Description: Specifies whether dialog windows placed on top of the
+//               dx rendering window should be supported.  This
+//               requires a bit of extra overhead, so it should only
+//               be activated when necessary; however, if it is not
+//               activated, a window that pops up over the fullscreen
+//               DX window (like a dialog box, or particularly like
+//               the IME composition or candidate windows) may not be
+//               visible.
+//
+//               This is not necessary when running in windowed mode,
+//               but it does no harm.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+support_overlay_window(bool flag) {
+  // How is this supposed to be done in DX8?
+
+  /*
+  if (_overlay_windows_supported && !flag) {
+    // Disable support for overlay windows.
+    _overlay_windows_supported = false;
+    
+    if (dx_full_screen) {
+      scrn.pddsPrimary->SetClipper(NULL);
+    }
+
+  } else if (!_overlay_windows_supported && flag) {
+    // Enable support for overlay windows.
+    _overlay_windows_supported = true;
+
+    if (dx_full_screen) {
+      // Create a Clipper object to blt the whole screen.
+      LPDIRECTDRAWCLIPPER Clipper;
+      
+      if (scrn.pDD->CreateClipper(0, &Clipper, NULL) == DD_OK) {
+        Clipper->SetHWnd(0, scrn.hWnd);
+        scrn.pddsPrimary->SetClipper(Clipper);
+      }
+      scrn.pDD->FlipToGDISurface();
+      Clipper->Release();
+    }
+  }
+  */
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -2,6 +2,7 @@
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
+#define WIN_SYS_LIBS Imm32.lib
 #define USE_DX yes
 
 #begin lib_target

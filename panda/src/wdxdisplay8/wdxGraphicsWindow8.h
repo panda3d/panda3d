@@ -68,6 +68,8 @@ public:
   virtual TypeHandle get_gsg_type() const;
   static GraphicsWindow* make_wdxGraphicsWindow(const FactoryParams &params);
 
+  void set_window_handle(HWND hwnd);
+
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   void process_events(void);
 
@@ -110,6 +112,9 @@ private:
   typedef enum { NotAdjusting,MovingOrResizing,Resizing } WindowAdjustType;
   WindowAdjustType  _WindowAdjustingType;
   bool              _bSizeIsMaximized;
+  bool              _ime_open;
+  bool              _ime_active;
+  bool              _ime_composition_w;
   bool              _exiting_window;
   bool              _window_inactive;
   bool              _active_minimized_fullscreen;

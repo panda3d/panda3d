@@ -313,6 +313,8 @@ protected:
   // Color/Alpha Matrix Transition stuff
   INLINE void transform_color(Colorf &InColor,D3DCOLOR &OutColor);
 
+  bool _overlay_windows_supported;
+
   // vars for frames/sec meter
   DWORD _start_time;
   DWORD _start_frame_count;
@@ -341,6 +343,8 @@ public:
 
   void  show_frame();
   void dx_init(HCURSOR hMouseCursor);
+
+  void support_overlay_window(bool flag);
   
 private:
   static TypeHandle _type_handle;

@@ -37,6 +37,12 @@ int dx_preferred_deviceID = config_wdxdisplay.GetInt("dx-preferred-device-id", -
 // if true, use ddraw's GetAvailVidMem to fail if driver says it has too little video mem
 bool dx_do_vidmemsize_check = config_wdxdisplay.GetBool("do-vidmemsize-check", true);
 
+// For now, set this true to use the IME correctly on Win2000, or
+// false on Win98.  This is temporary; once we have been able to
+// verify that this distinction is actually necessary, we can replace
+// this config variable with an actual OS detection.
+bool ime_composition_w = config_wdxdisplay.GetBool("ime-composition-w", true);
+
 extern void AtExitFn(void);
 
 ////////////////////////////////////////////////////////////////////
