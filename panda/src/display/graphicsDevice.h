@@ -21,10 +21,10 @@
 
 #include "pandabase.h"
 
-#include "graphicsPipe.h"
-#include "graphicsStateGuardian.h"
-
 #include "typedReferenceCount.h"
+
+class GraphicsPipe;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsDevice
 // Description : An abstract device object that is part of Graphics
@@ -48,7 +48,7 @@ PUBLISHED:
   INLINE GraphicsPipe *get_pipe() const;
 
 protected:
-  PT(GraphicsPipe) _pipe;
+  GraphicsPipe *_pipe;
 
 public:
   static TypeHandle get_class_type() {

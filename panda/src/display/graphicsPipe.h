@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 
+#include "graphicsDevice.h"
 #include "typedReferenceCount.h"
 #include "pointerTo.h"
 #include "pmutex.h"
@@ -28,7 +29,6 @@
 
 class HardwareChannel;
 class GraphicsWindow;
-class GraphicsDevice;
 class GraphicsStateGuardian;
 class FrameBufferProperties;
 
