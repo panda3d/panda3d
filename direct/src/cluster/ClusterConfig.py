@@ -11,18 +11,81 @@ import string
 # Note: If server chan-config consists of multiple display regions
 # each display region can have an additional offset as specified in
 # DirectCamConfig.py
-ClientConfigs = {'mono-modelcave-pipe0': [ [Vec3(0),Vec3(0)] ],
-                 'single-server': [ [Vec3(0),Vec3(0)] ],
-                 'two-server'   : [ [Vec3(0),Vec3(-60,0,0)],
-                                    [Vec3(0),Vec3(60,0,0)]
-                                    ],
-                 'cavetest'     : [ [Vec3(0), Vec3(0)],
-                                    [Vec3(0), Vec3(0)],
-                                    [Vec3(0), Vec3(0)],
-                                    [Vec3(0), Vec3(0)]
-                                    ],
-                 }
-
+ClientConfigs = {
+    'mono-modelcave-pipe0': [{'pos' : Vec3(0),
+                              'hpr' : Vec3(0)}
+                             ],
+    'single-server'       : [{'pos' : Vec3(0),
+                              'hpr' : Vec3(0)}
+                             ],
+    'two-server'          : [{'pos' : Vec3(0),
+                              'hpr' : Vec3(-60,0,0)},
+                             {'pos' : Vec3(0),
+                              'hpr' : Vec3(60,0,0)}
+                             ],
+    'cavetest'            : [{'pos' : Vec3(-0.105, -0.020, 5.000),
+                              'hpr' : Vec3(51.213, 0.000, 0.000),
+                              'focal length' : 0.809,
+                              'film size' : (1.000, 0.831),
+                              'film offset' : (0.000, 0.173),
+                              },
+                             {'pos' : Vec3(-0.105, -0.020, 5.000),
+                              'hpr' : Vec3(-0.370, 0.000, 0.000),
+                              'focal length' : 0.815,
+                              'film size' : (1.000, 0.831),
+                              'film offset' : (0.000, 0.173),
+                              },
+                             {'pos' : Vec3(-0.105, -0.020, 5.000),
+                              'hpr' : Vec3(-51.675, 0.000, 0.000),
+                              'focal length' : 0.820,
+                              'film size' : (1.000, 0.830),
+                              'film offset' : (-0.000, 0.173),
+                              },
+                             {'pos' : Vec3(0.105, -0.020, 5.000),
+                              'hpr' : Vec3(51.675, 0.000, 0.000),
+                              'focal length' : 0.820,
+                              'film size' : (1.000, 0.830),
+                              'film offset' : (0.000, 0.173),
+                              },
+                             ],
+    'cavetest-all'        : [{'pos' : Vec3(-0.105, -0.020, 5.000),
+                              'hpr' : Vec3(51.213, 0.000, 0.000),
+                              'focal length' : 0.809,
+                              'film size' : (1.000, 0.831),
+                              'film offset' : (0.000, 0.173),
+                              },
+                             {'pos' : Vec3(-0.105, -0.020, 5.000),
+                              'hpr' : Vec3(-0.370, 0.000, 0.000),
+                              'focal length' : 0.815,
+                              'film size' : (1.000, 0.831),
+                              'film offset' : (0.000, 0.173),
+                              },
+                             {'pos' : Vec3(-0.105, -0.020, 5.000),
+                              'hpr' : Vec3(-51.675, 0.000, 0.000),
+                              'focal length' : 0.820,
+                              'film size' : (1.000, 0.830),
+                              'film offset' : (-0.000, 0.173),
+                              },
+                             {'pos' : Vec3(0.105, -0.020, 5.000),
+                              'hpr' : Vec3(51.675, 0.000, 0.000),
+                              'focal length' : 0.820,
+                              'film size' : (1.000, 0.830),
+                              'film offset' : (0.000, 0.173),
+                              },
+                             {'pos' : Vec3(0.105, -0.020, 5.000),
+                              'hpr' : Vec3(0.370, 0.000, 0.000),
+                              'focal length' : 0.815,
+                              'film size' : (1.000, 0.831),
+                              'film offset' : (0.000, 0.173),
+                              },
+                             {'pos' : Vec3(0.105, -0.020, 5.000),
+                              'hpr' : Vec3(-51.213, 0.000, 0.000),
+                              'focal length' : 0.809,
+                              'film size' : (1.000, 0.831),
+                              'film offset' : (-0.000, 0.173),
+                              },
+                             ],
+    }
 
 def createClusterManager():
     # setup camera offsets based on cluster-config
@@ -35,9 +98,10 @@ def createClusterManager():
         return None
     # Get display config for each server in the cluster
     displayConfigs = []
-    configData = ClientConfigs[clusterConfig]
-    numConfigs = len(configData)
+    configList = ClientConfigs[clusterConfig]
+    numConfigs = len(configList)
     for i in range(numConfigs):
+        configData = configList[i]
         serverConfigName = 'display%d' % i
         serverString = base.config.GetString(serverConfigName, '')
         if serverString == '':
@@ -53,14 +117,21 @@ def createClusterManager():
             else:
                 # Use default port
                 port = CLUSTER_PORT
-            displayConfigs.append(ClusterConfigItem(
+            cci = ClusterConfigItem(
                 serverConfigName,
                 serverName,
-                # Pos Offset
-                configData[i][0],
-                # Hpr Offset
-                configData[i][1],
-                port))
+                port)
+            # Init Cam Offset
+            pos = configData.get('pos', Vec3(0))
+            hpr = configData.get('hpr', Vec3(0))
+            cci.setCamOffset(pos, hpr)
+            # Init Frustum if specified
+            fl = configData.get('focalLength', None)
+            fs = configData.get('filmSize', None)
+            fo = configData.get('filmOffset', None)
+            if fl and fs and fo:
+                cci.setCamFrustum(fl, fs, fo)
+            displayConfigs.append(cci)
     # Create Cluster Managers (opening connections to servers)
     # Are the servers going to be synced?
     synced = base.config.GetBool('sync-display', 0)

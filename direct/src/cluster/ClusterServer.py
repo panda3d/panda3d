@@ -35,6 +35,7 @@ class ClusterServer(DirectObject.DirectObject):
         print self.tcpRendezvous
         self.cameraGroup = cameraGroup
         self.camera = camera
+        self.lens = camera.node().getLens()
         self.qcl.addConnection(self.tcpRendezvous)
         self.msgHandler = MsgHandler(ClusterServer.MSG_NUM,self.notify)
         self.startListenerPollTask()
@@ -89,39 +90,52 @@ class ClusterServer(DirectObject.DirectObject):
         return availGetVal
 
     def handleCamOffset(self,dgi):
-            x=dgi.getFloat32()
-            y=dgi.getFloat32()
-            z=dgi.getFloat32()
-            h=dgi.getFloat32()
-            p=dgi.getFloat32()
-            r=dgi.getFloat32()
-            self.notify.debug(('  new offset=%f %f %f  %f %f %f' %
-                              (x,y,z,h,p,r)))
-            self.posOffset = Vec3(x,y,z)
-            self.hprOffset = Vec3(h,p,r)
+        x=dgi.getFloat32()
+        y=dgi.getFloat32()
+        z=dgi.getFloat32()
+        h=dgi.getFloat32()
+        p=dgi.getFloat32()
+        r=dgi.getFloat32()
+        self.notify.debug(('  new offset=%f %f %f  %f %f %f' %
+                           (x,y,z,h,p,r)))
+        self.posOffset = Vec3(x,y,z)
+        self.hprOffset = Vec3(h,p,r)
+        
+    def handleCamFrustum(self,dgi):
+        focalLength=dgi.getFloat32()
+        filmSize=(dgi.getFloat32(), dgi.getFloat32())
+        filmOffset=(dgi.getFloat32(),dgi.getFloat32())
+        self.notify.debug('  fl, fs, fo=%f, (%f, %f), (%f, %f)' %
+                          (focalLength, filmSize[0], filmSize[1],
+                           filmOffset[0], filmOffset[1]))
+        self.lens.setFocalLength(focalLength)
+        self.lens.setFilmSize(filmSize[0], filmSize[1])
+        self.lens.setFilmOffset(filmOffset[0], filmOffset[1])
 
     def handleCamMovement(self,dgi):
-            x=dgi.getFloat32()
-            y=dgi.getFloat32()
-            z=dgi.getFloat32()
-            h=dgi.getFloat32()
-            p=dgi.getFloat32()
-            r=dgi.getFloat32()
-            self.notify.debug(('  new position=%f %f %f  %f %f %f' %
-                              (x,y,z,h,p,r)))
-            finalX = x + self.posOffset[0]
-            finalY = y + self.posOffset[1]
-            finalZ = z + self.posOffset[2]
-            finalH = h + self.hprOffset[0]
-            finalP = p + self.hprOffset[1]
-            finalR = r + self.hprOffset[2]
-            self.cameraGroup.setPosHpr(render,finalX,finalY,finalZ,
-                                       finalH,finalP,finalR)
-
+        x=dgi.getFloat32()
+        y=dgi.getFloat32()
+        z=dgi.getFloat32()
+        h=dgi.getFloat32()
+        p=dgi.getFloat32()
+        r=dgi.getFloat32()
+        self.notify.debug(('  new position=%f %f %f  %f %f %f' %
+                           (x,y,z,h,p,r)))
+        finalX = x + self.posOffset[0]
+        finalY = y + self.posOffset[1]
+        finalZ = z + self.posOffset[2]
+        finalH = h + self.hprOffset[0]
+        finalP = p + self.hprOffset[1]
+        finalR = r + self.hprOffset[2]
+        self.cameraGroup.setPosHpr(render,finalX,finalY,finalZ,
+                                   finalH,finalP,finalR)
+        
     def handleDatagram(self, datagram):
-        (type, dgi) = msgHandler.nonBlockingRead(self.qcr)
+        (type, dgi) = self.msgHandler.nonBlockingRead(self.qcr)
         if type==CLUSTER_CAM_OFFSET:
             self.handleCamOffset(dgi)
+        elif type==CLUSTER_CAM_FRUSTUM:
+            self.handleCamFrustum(dgi)
         elif type==CLUSTER_POS_UPDATE:
             self.handleCamMovement(dgi)
         elif type==CLUSTER_SWAP_READY:

@@ -11,12 +11,26 @@ from ClusterMsgs import *
 import time
 
 class ClusterConfigItem:
-    def __init__(self, serverFunction, serverName, pos, hpr, port):
+    def __init__(self, serverFunction, serverName, port):
         self.serverName = serverName
         self.serverFunction = serverFunction
-        self.xyz = pos
-        self.hpr = hpr
         self.port = port
+        # Camera Offset
+        self.xyz = Vec3(0)
+        self.hpr = Vec3(0)
+        # Camera Frustum Data
+        self.fFrustum = 0
+        self.focalLength = None
+        self.filmSize = None
+        self.filmOffset = None
+    def setCamOffset(self, xyz, hpr):
+        self.xyz = xyz
+        self.hpr = hpr
+    def setCamFrustum(self, focalLength, filmSize, filmOffset):
+        self.fFrustum = 1
+        self.focalLength = focalLength
+        self.filmSize = filmSize
+        self.filmOffset = filmOffset
 
 class DisplayConnection:
     def __init__(self,qcm,serverName,port,msgHandler):
@@ -41,6 +55,18 @@ class DisplayConnection:
              (self.msgHandler.packetNumber,xyz[0],xyz[1],xyz[2],
              hpr[0],hpr[1],hpr[2])) )
         datagram = self.msgHandler.makeCamOffsetDatagram(xyz, hpr)
+        self.cw.send(datagram, self.tcpConn)
+
+    def sendCamFrustum(self,focalLength, filmSize, filmOffset):
+        ClusterManager.notify.debug("send cam frustum...")
+        ClusterManager.notify.debug(
+            (("packet %d" % self.msgHandler.packetNumber) +
+             (" fl, fs, fo=%0.3f, (%0.3f, %0.3f), (%0.3f, %0.3f)" %
+              (focalLength, filmSize[0], filmSize[1],
+               filmOffset[0], filmOffset[1])))
+            )
+        datagram = self.msgHandler.makeCamFrustumDatagram(
+            focalLength, filmSize, filmOffset)
         self.cw.send(datagram, self.tcpConn)
 
     def sendMoveCam(self,xyz,hpr):
@@ -84,6 +110,10 @@ class ClusterManager(DirectObject.DirectObject):
                                      serverConfig.port)) )
             else:
                 server.sendCamOffset(serverConfig.xyz,serverConfig.hpr)
+                if serverConfig.fFrustum:
+                    server.sendCamFrustum(serverConfig.focalLength,
+                                          serverConfig.filmSize,
+                                          serverConfig.filmOffset)
                 self.serverList.append(server)
         self.startMoveCamTask()
 
