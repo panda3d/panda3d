@@ -1537,7 +1537,7 @@ case 52:
 #line 465 "dcParser.yxx"
 {
   yyval.u.field = current_atomic;
-  current_atomic = new DCAtomicField(yyvsp[-1].str);
+  current_atomic = new DCAtomicField(yyvsp[-1].str, current_class);
 }
     break;
 case 53:
@@ -2289,7 +2289,7 @@ case 165:
 case 166:
 #line 1156 "dcParser.yxx"
 {
-  current_molecular = new DCMolecularField(yyvsp[-1].str);
+  current_molecular = new DCMolecularField(yyvsp[-1].str, current_class);
 }
     break;
 case 167:
