@@ -127,6 +127,7 @@ def make_loop(taskList):
         # If we got to the end of the list, this sequence is done
         if (self.index >= len(self.taskList)):
             TaskManager.notify.debug('sequence done, looping: ' + self.name)
+            self.prevIndex = -1
             self.index = 0
             return cont
         else:
