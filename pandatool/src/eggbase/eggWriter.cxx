@@ -89,7 +89,7 @@ EggWriter(bool allow_last_param, bool allow_stdout) :
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggWriter::add_normals_options();
+//     Function: EggWriter::add_normals_options
 //       Access: Public
 //  Description: Adds -no, -np, etc. as valid options for this
 //               program.  If the user specifies one of the options on
@@ -127,7 +127,7 @@ add_normals_options() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggWriter::add_transform_options();
+//     Function: EggWriter::add_transform_options
 //       Access: Public
 //  Description: Adds -TS, -TT, etc. as valid options for this
 //               program.  If the user specifies one of the options on

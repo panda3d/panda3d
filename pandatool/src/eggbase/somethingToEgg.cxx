@@ -36,6 +36,21 @@ SomethingToEgg(const string &format_name,
      "Specify the coordinate system of the input " + _format_name +
      " file.  Normally, this can inferred from the file itself.");
 
+  _input_units = DU_invalid;
+  _output_units = DU_invalid;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEgg::add_units_options
+//       Access: Public
+//  Description: Adds -ui and -uo as valid options for this program.
+//               If the user specifies -uo and -ui, or just -uo and
+//               the program specifies -ui by setting _input_units,
+//               the indicated units conversion will be automatically
+//               applied before writing out the egg file.
+////////////////////////////////////////////////////////////////////
+void SomethingToEgg::
+add_units_options() {
   add_option
     ("ui", "units", 40, 
      "Specify the units of the input " + _format_name +
@@ -49,11 +64,6 @@ SomethingToEgg(const string &format_name,
      "necessary to make the appropriate units conversion; otherwise, "
      "the vertices will be left as they are.",
      &SomethingToEgg::dispatch_units, NULL, &_output_units);
-
-  _input_units = DU_invalid;
-  _output_units = DU_invalid;
-
-  add_transform_options();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -16,7 +16,9 @@ FltToEgg::
 FltToEgg() :
   SomethingToEgg("MultiGen", ".flt")
 {
+  add_units_options();
   add_normals_options();
+  add_transform_options();
 
   set_program_description
     ("This program converts MultiGen OpenFlight (.flt) files to egg.  Most "

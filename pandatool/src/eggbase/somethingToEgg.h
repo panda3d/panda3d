@@ -26,6 +26,8 @@ public:
 		 bool allow_last_param = true,
 		 bool allow_stdout = true);
 
+  void add_units_options();
+
 protected:
   void apply_units_scale(EggData &data);
 
