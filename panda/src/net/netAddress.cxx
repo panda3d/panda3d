@@ -71,26 +71,87 @@ set_localhost(int port) {
 ////////////////////////////////////////////////////////////////////
 bool NetAddress::
 set_host(const string &hostname, int port) {
-  char buf[PR_NETDB_BUF_SIZE];
-  PRHostEnt host;
-  PRStatus result =
-    PR_GetHostByName(hostname.c_str(), buf, PR_NETDB_BUF_SIZE, &host);
-  if (result != PR_SUCCESS) {
-    pprerror("PR_GetHostByName");
-    net_cat.error()
-      << "Unable to look up hostname " << hostname << ".\n";
-    return false;
+  // If the hostname appears to be a dot-separated IPv4 address, then
+  // parse it directly and store it.  Some OS system libraries
+  // (notably Win95) can't parse this themselves.
+  union {
+    PRUint32 l;
+    unsigned char n[4];
+  } ipaddr;
+  int ni = 0;
+  bool is_ip = true;
+  size_t p = 0;
+  size_t q = 0;
+  unsigned int num = 0;
+
+  while (p < hostname.length() && ni < 4 && is_ip) {
+    if (hostname[p] == '.' && p > q) {
+      // Now we have a number between q and p.
+      ipaddr.n[ni] = (unsigned char)num;
+      p++;
+      q = p;
+      num = 0;
+      ni++;
+
+      if (num >= 256 || ni >= 4) {
+	is_ip = false;
+      }
+
+    } else if (isdigit(hostname[p])) {
+      num = 10 * num + (unsigned int)(hostname[p] - '0');
+      p++;
+      if (num >= 256) {
+	is_ip = false;
+      }
+    } else {
+      is_ip = false;
+    }
   }
 
-  PRIntn next = PR_EnumerateHostEnt(0, &host, port, &_addr);
+  if (p == hostname.length() && ni < 4 && is_ip && p > q) {
+    ipaddr.n[ni] = (unsigned char)num;
+    ni++;
+    
+    if (num >= 256) {
+      is_ip = false;
+    }
+  }
 
-  if (next == -1) {
-    pprerror("PR_EnumerateHostEnt");
-    return false;
-  } else if (next == 0) {
-    net_cat.error()
-      << "No addresses available for " << hostname << ".\n";
-    return false;
+  if (p == hostname.length() && ni == 4 && is_ip) {
+    net_cat.debug()
+      << "Parsed IP " << (int)ipaddr.n[0] << "." << (int)ipaddr.n[1]
+      << "." << (int)ipaddr.n[2] << "." << (int)ipaddr.n[3] << "\n";
+
+    memset(&_addr, 0, sizeof(PRNetAddr));
+    _addr.inet.family = AF_INET;
+    _addr.inet.port = PR_htons(port);
+    _addr.inet.ip = ipaddr.l;
+
+  } else {
+    // If it's not a numeric IPv4 address, pass the whole thing on to
+    // GetHostByName and let NSPR deal with it.
+
+    char buf[PR_NETDB_BUF_SIZE];
+    PRHostEnt host;
+    PRStatus result =
+      PR_GetHostByName(hostname.c_str(), buf, PR_NETDB_BUF_SIZE, &host);
+    if (result != PR_SUCCESS) {
+      pprerror("PR_GetHostByName");
+      net_cat.error()
+	<< "Unable to look up hostname " << hostname << ".\n";
+      return false;
+    }
+    
+    PRIntn next = PR_EnumerateHostEnt(0, &host, port, &_addr);
+    
+    if (next == -1) {
+      pprerror("PR_EnumerateHostEnt");
+      return false;
+    } else if (next == 0) {
+      net_cat.error()
+	<< "No addresses available for " << hostname << ".\n";
+      return false;
+    }
   }
 
   return true;
