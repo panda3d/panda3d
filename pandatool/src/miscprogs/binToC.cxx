@@ -90,7 +90,9 @@ run() {
   string table_type = "const unsigned char ";
   string length_type = "const int ";
   if (_for_string) {
-    table_type = "const char ";
+    // Actually, declaring the table as "const char" causes VC7 to
+    // yell about truncating all of the values >= 0x80.
+    // table_type = "const char ";
     length_type = "const size_t ";
   }
 
