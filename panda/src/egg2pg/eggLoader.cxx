@@ -1957,7 +1957,7 @@ make_primitive(EggPrimitive *egg_prim, EggLoader::Primitives &primitives) {
     primitive = new qpGeomTristrips;
   }
 
-  if (primitive == NULL) {
+  if (primitive == (qpGeomPrimitive *)NULL) {
     // Don't know how to make this kind of primitive.
     return;
   }

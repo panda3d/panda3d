@@ -24,9 +24,9 @@
 ////////////////////////////////////////////////////////////////////
 EggRenderState::
 EggRenderState(EggLoader &loader) :
-  _loader(loader),
   _state(RenderState::make_empty()),
-  _hidden(false)
+  _hidden(false),
+  _loader(loader)
 {
 }
 
