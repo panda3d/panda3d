@@ -71,8 +71,7 @@ EggTopstrip() {
   add_option
     ("r", "file.egg", 0,
      "Read the animation channel from the indicated egg file.  If this "
-     "is not specified, the first egg file named on the command line is "
-     "used.",
+     "is not specified, each egg file will supply its own animation channel.",
      &EggTopstrip::dispatch_filename, NULL, &_channel_filename);
 
   _invert_transform = true;
@@ -161,7 +160,7 @@ run() {
     int num_children = root_joint->get_num_children();
     for (int i = 0; i < num_children; i++) {
       EggJointData *joint_data = root_joint->get_child(i);
-      strip_anim(joint_data, from_model, top_joint);
+      strip_anim(char_data, joint_data, from_model, from_char, top_joint);
     }
 
     // We also need to transform the vertices for any models involved
@@ -231,7 +230,9 @@ check_transform_channels() {
 //               joint_data.
 ////////////////////////////////////////////////////////////////////
 void EggTopstrip::
-strip_anim(EggJointData *joint_data, int from_model, EggJointData *top_joint) {
+strip_anim(EggCharacterData *char_data, EggJointData *joint_data,
+           int from_model, EggCharacterData *from_char,
+           EggJointData *top_joint) {
   int num_models = joint_data->get_num_models();
   for (int i = 0; i < num_models; i++) {
     int model = (from_model < 0) ? i : from_model;
@@ -243,8 +244,8 @@ strip_anim(EggJointData *joint_data, int from_model, EggJointData *top_joint) {
         return;
       }
 
-      int num_into_frames = joint_data->get_num_frames(i);
-      int num_from_frames = top_joint->get_num_frames(model);
+      int num_into_frames = char_data->get_num_frames(i);
+      int num_from_frames = from_char->get_num_frames(model);
 
       int num_frames = max(num_into_frames, num_from_frames);
 

@@ -26,6 +26,7 @@
 
 #include "pvector.h"
 
+class EggCharacterData;
 class EggJointData;
 class EggJointPointer;
 
@@ -44,7 +45,8 @@ public:
   void run();
   void check_transform_channels();
 
-  void strip_anim(EggJointData *joint_data, int from_model,
+  void strip_anim(EggCharacterData *char_data, EggJointData *joint_data,
+                  int from_model, EggCharacterData *from_char,
                   EggJointData *top_joint);
   void strip_anim_vertices(EggNode *egg_node, int into_model,
                            int from_model, EggJointData *top_joint);
