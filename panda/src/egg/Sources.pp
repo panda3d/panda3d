@@ -7,50 +7,54 @@
   #define TARGET egg
   #define LOCAL_LIBS \
     linmath putil
+    
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
   #define SOURCES \
-    config_egg.cxx config_egg.h eggAnimData.I eggAnimData.cxx eggAnimData.h \
-    eggAttributes.I eggAttributes.cxx eggAttributes.h eggBin.cxx \
-    eggBin.h eggBinMaker.cxx eggBinMaker.h eggComment.I eggComment.cxx \
-    eggComment.h eggCoordinateSystem.I eggCoordinateSystem.cxx \
-    eggCoordinateSystem.h eggCurve.I eggCurve.cxx eggCurve.h eggData.I \
-    eggData.cxx eggData.h eggExternalReference.I \
-    eggExternalReference.cxx eggExternalReference.h eggFilenameNode.I \
-    eggFilenameNode.cxx eggFilenameNode.h eggGroup.I eggGroup.cxx \
-    eggGroup.h eggGroupNode.I eggGroupNode.cxx eggGroupNode.h \
-    eggGroupUniquifier.h eggGroupUniquifier.cxx \
-    eggMaterial.I eggMaterial.cxx eggMaterial.h \
-    eggMaterialCollection.I eggMaterialCollection.cxx \
-    eggMaterialCollection.h \
-    eggMiscFuncs.I \
-    eggMiscFuncs.cxx eggMiscFuncs.h \
-    eggMorph.I eggMorph.h eggMorphList.cxx eggMorphList.I eggMorphList.h \
-    eggNamedObject.I eggNamedObject.cxx \
-    eggNamedObject.h eggNameUniquifier.cxx eggNameUniquifier.h \
-    eggNode.I eggNode.cxx eggNode.h eggNurbsCurve.I \
-    eggNurbsCurve.cxx eggNurbsCurve.h eggNurbsSurface.I \
-    eggNurbsSurface.cxx eggNurbsSurface.h eggObject.I eggObject.cxx \
-    eggObject.h eggParameters.cxx eggParameters.h eggPoint.I \
-    eggPoint.cxx eggPoint.h eggPolygon.I eggPolygon.cxx eggPolygon.h \
-    eggPoolUniquifier.cxx eggPoolUniquifier.h \
-    eggPrimitive.I eggPrimitive.cxx eggPrimitive.h \
-    eggRenderMode.I eggRenderMode.cxx \
-    eggRenderMode.h eggSAnimData.I \
-    eggSAnimData.cxx eggSAnimData.h eggSurface.I eggSurface.cxx \
-    eggSurface.h eggSwitchCondition.cxx eggSwitchCondition.h eggTable.I \
-    eggTable.cxx eggTable.h eggTexture.I eggTexture.cxx eggTexture.h \
-    eggTextureCollection.I eggTextureCollection.cxx \
-    eggTextureCollection.h eggUtilities.I eggUtilities.cxx \
-    eggUtilities.h eggVertex.I eggVertex.cxx eggVertex.h \
-    eggVertexPool.I eggVertexPool.cxx eggVertexPool.h eggXfmAnimData.I \
-    eggXfmAnimData.cxx eggXfmAnimData.h eggXfmSAnim.I eggXfmSAnim.cxx \
-    eggXfmSAnim.h parserDefs.h parser.yxx lexerDefs.h lexer.lxx \
-    pt_EggMaterial.cxx pt_EggMaterial.h \
-    vector_PT_EggMaterial.cxx vector_PT_EggMaterial.h \
-    pt_EggTexture.cxx pt_EggTexture.h \
-    vector_PT_EggTexture.cxx vector_PT_EggTexture.h \
-    pt_EggVertex.cxx pt_EggVertex.h \
-    vector_PT_EggVertex.cxx vector_PT_EggVertex.h
+     config_egg.h eggAnimData.I eggAnimData.h eggAttributes.I  \
+     eggAttributes.h eggBin.h eggBinMaker.h eggComment.I  \
+     eggComment.h eggCoordinateSystem.I eggCoordinateSystem.h  \
+     eggCurve.I eggCurve.h eggData.I eggData.h  \
+     eggExternalReference.I eggExternalReference.h  \
+     eggFilenameNode.I eggFilenameNode.h eggGroup.I eggGroup.h  \
+     eggGroupNode.I eggGroupNode.h eggGroupUniquifier.h  \
+     eggMaterial.I eggMaterial.h eggMaterialCollection.I  \
+     eggMaterialCollection.h eggMiscFuncs.I eggMiscFuncs.h  \
+     eggMorph.I eggMorph.h eggMorphList.I eggMorphList.h  \
+     eggNamedObject.I eggNamedObject.h eggNameUniquifier.h  \
+     eggNode.I eggNode.h eggNurbsCurve.I eggNurbsCurve.h  \
+     eggNurbsSurface.I eggNurbsSurface.h eggObject.I eggObject.h  \
+     eggParameters.h eggPoint.I eggPoint.h eggPolygon.I  \
+     eggPolygon.h eggPoolUniquifier.h eggPrimitive.I  \
+     eggPrimitive.h eggRenderMode.I eggRenderMode.h  \
+     eggSAnimData.I eggSAnimData.h eggSurface.I eggSurface.h  \
+     eggSwitchCondition.h eggTable.I eggTable.h eggTexture.I  \
+     eggTexture.h eggTextureCollection.I eggTextureCollection.h  \
+     eggUtilities.I eggUtilities.h eggVertex.I eggVertex.h  \
+     eggVertexPool.I eggVertexPool.h eggXfmAnimData.I  \
+     eggXfmAnimData.h eggXfmSAnim.I eggXfmSAnim.h parserDefs.h  \
+     parser.yxx lexerDefs.h lexer.lxx pt_EggMaterial.h  \
+     vector_PT_EggMaterial.h pt_EggTexture.h  \
+     vector_PT_EggTexture.h pt_EggVertex.h vector_PT_EggVertex.h
+
+  #define INCLUDED_SOURCES \
+     config_egg.cxx eggAnimData.cxx eggAttributes.cxx eggBin.cxx  \
+     eggBinMaker.cxx eggComment.cxx eggCoordinateSystem.cxx  \
+     eggCurve.cxx eggData.cxx eggExternalReference.cxx  \
+     eggFilenameNode.cxx eggGroup.cxx eggGroupNode.cxx  \
+     eggGroupUniquifier.cxx eggMaterial.cxx  \
+     eggMaterialCollection.cxx eggMiscFuncs.cxx eggMorphList.cxx  \
+     eggNamedObject.cxx eggNameUniquifier.cxx eggNode.cxx  \
+     eggNurbsCurve.cxx eggNurbsSurface.cxx eggObject.cxx  \
+     eggParameters.cxx eggPoint.cxx eggPolygon.cxx  \
+     eggPoolUniquifier.cxx eggPrimitive.cxx eggRenderMode.cxx  \
+     eggSAnimData.cxx eggSurface.cxx eggSwitchCondition.cxx  \
+     eggTable.cxx eggTexture.cxx eggTextureCollection.cxx  \
+     eggUtilities.cxx eggVertex.cxx eggVertexPool.cxx  \
+     eggXfmAnimData.cxx eggXfmSAnim.cxx xx xx pt_EggMaterial.cxx  \
+     vector_PT_EggMaterial.cxx pt_EggTexture.cxx  \
+     vector_PT_EggTexture.cxx pt_EggVertex.cxx  \
+     vector_PT_EggVertex.cxx 
 
   #define INSTALL_HEADERS \
     eggAnimData.I eggAnimData.h \
