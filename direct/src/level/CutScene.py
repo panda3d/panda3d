@@ -80,7 +80,7 @@ def foo1(self, track, subjectNodePath, duration):
 
 def doorUnlock(self, track, subjectNodePath, duration):
     assert(self.debugPrint(
-            "foo1(track=%s, subjectNodePath=%s, duration=%s)"%(
+            "doorUnlock(track=%s, subjectNodePath=%s, duration=%s)"%(
             track, subjectNodePath, duration)))
     track.append(Sequence(
         Func(toonbase.localToon.stopUpdateSmartCamera),
@@ -169,13 +169,15 @@ class CutScene(BasicEntities.NodePathEntity, DirectObject.DirectObject):
             track = Parallel(name = trackName)
             track = self.getEffect(self, track, self.subjectNodePath, self.duration)
             track = self.getMotion(self, track, self.subjectNodePath, self.duration)
-            track = Sequence(Wait(0.8), track)
+            track = Sequence(Wait(0.4), track)
             track.start(0.0)
+            assert(self.debugPrint("starting track=%s"%(track,)))
             self.track = track
         else:
             if self.track:
-                self.track.finish()
+                self.track.pause()
                 self.track = None
+                toonbase.localToon.startUpdateSmartCamera()
     
     def setStartStop(self, event):
         assert(self.debugPrint("setStartStop(event=%s)"%(event,)))
