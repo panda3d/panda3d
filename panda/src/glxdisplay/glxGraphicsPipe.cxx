@@ -18,6 +18,7 @@
 
 #include "glxGraphicsPipe.h"
 #include "glxGraphicsWindow.h"
+#include "glxGraphicsBuffer.h"
 #include "glxGraphicsStateGuardian.h"
 #include "config_glxdisplay.h"
 #include "frameBufferProperties.h"
@@ -198,6 +199,20 @@ make_window(GraphicsStateGuardian *gsg) {
   }
 
   return new glxGraphicsWindow(this, gsg);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsPipe::make_buffer
+//       Access: Protected, Virtual
+//  Description: Creates a new offscreen buffer on the pipe, if possible.
+////////////////////////////////////////////////////////////////////
+PT(GraphicsBuffer) glxGraphicsPipe::
+make_buffer(GraphicsStateGuardian *gsg, int x_size, int y_size, bool want_texture) {
+  if (!_is_valid) {
+    return NULL;
+  }
+
+  return new glxGraphicsBuffer(this, gsg, x_size, y_size, want_texture);
 }
 
 ////////////////////////////////////////////////////////////////////

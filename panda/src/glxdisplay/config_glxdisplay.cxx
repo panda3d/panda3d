@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_glxdisplay.h"
+#include "glxGraphicsBuffer.h"
 #include "glxGraphicsPipe.h"
 #include "glxGraphicsWindow.h"
 #include "glxGraphicsStateGuardian.h"
@@ -46,6 +47,7 @@ init_libglxdisplay() {
   }
   initialized = true;
 
+  glxGraphicsBuffer::init_type();
   glxGraphicsPipe::init_type();
   glxGraphicsWindow::init_type();
   glxGraphicsStateGuardian::init_type();
