@@ -492,9 +492,18 @@ INLINE void LQuaternionBase<NumType>::
 set_hpr(const LVecBase3<NumType> &hpr) {
   LQuaternionBase<NumType> quat_h, quat_p, quat_r;
 
-  quat_h.set(ccos(hpr[0]), 0, csin(hpr[0]), 0);
-  quat_p.set(ccos(hpr[1]), csin(hpr[1]), 0, 0);
-  quat_r.set(ccos(hpr[2]), 0, 0, csin(hpr[2]));
+  LVector3<NumType> v = LVector3<NumType>::up();
+  NumType a = deg_2_rad(hpr[0] * 0.5);
+  NumType s = csin(a);
+  quat_h.set(ccos(a), v[0] * s, v[1] * s, v[2] * s);
+  v = LVector3<NumType>::right();
+  a = deg_2_rad(hpr[1] * 0.5);
+  s = csin(a);
+  quat_p.set(ccos(a), v[0] * s, v[1] * s, v[2] * s);
+  v = LVector3<NumType>::forward();
+  a = deg_2_rad(hpr[2] * 0.5);
+  s = csin(a);
+  quat_r.set(ccos(a), v[0] * s, v[1] * s, v[2] * s);
 
   (*this) = quat_h * quat_p * quat_r;
 }
@@ -508,27 +517,48 @@ set_hpr(const LVecBase3<NumType> &hpr) {
 template<class NumType>
 INLINE LVecBase3<NumType> LQuaternionBase<NumType>::
 get_hpr() const {
-  NumType sint = (2.0 * _r * _j) - (2.0 * _i * _k);
-  NumType cost = csqrt(1 - sint * sint);
+  NumType heading, pitch, roll;
+  NumType N = (_r * _r) + (_i * _i) + (_j * _j) + (_k * _k);
+  NumType s = (N == 0) ? 0 : (2. / N);
+  NumType xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz, c1, c2, c3, c4;
+  NumType cr, sr, cp, sp, ch, sh;
 
-  NumType sinv, cosv, sinf, cosf;
+  xs = _i * s;   ys = _j * s;   zs = _k * s;
+  wx = _r * xs;  wy = _r * ys;  wz = _r * zs;
+  xx = _i * xs;  xy = _i * ys;  xz = _i * zs;
+  yy = _j * ys;  yz = _j * zs;  zz = _k * zs;
+  c1 = xz - wy;
+  c2 = 1. - (xx + yy);
+  c3 = 1. - (yy + zz);
+  c4 = xy + wz;
 
-  if (cost != 0.0) {
-    sinv = ((2.0 * _j * _k) + (2.0 * _r * _i)) / cost;
-    cosv = (1.0 - (2.0 * _i * _i) - (2.0 * _j * _j)) / cost;
-    sinf = (1.0 - (2.0 * _i * _i) - (2.0 * _j * _j)) / cost;
-    cosf = (1.0 - (2.0 * _j * _j) - (2.0 * _k * _k)) / cost;
-    
+  if (c1 == 0.) {  // (roll = 0 or 180) or (pitch = +/- 90
+    if (c2 >= 0.) {
+      roll = 0.;
+      ch = c3;
+      sh = c4;
+      cp = c2;
+    } else {
+      roll = 180.;
+      ch = -c3;
+      sh = -c4;
+      cp = -c2;
+    }
   } else {
-    sinv = ((2.0 * _r * _i) - (2.0 * _j * _k));
-    cosv = 1.0 - (2.0 * _i * _i) - (2.0 * _k * _k);
-    sinf = 0.0;
-    cosf = 1.0;
+    // this should work all the time, but the above saves some trig operations
+    roll = catan2(-c1, c2);
+    sr = csin(roll);
+    cr = ccos(roll);
+    roll = rad_2_deg(roll);
+    ch = (cr * c3) + (sr * (xz + wy));
+    sh = (cr * c4) + (sr * (yz - wx));
+    cp = (cr * c2) - (sr * c1);
   }
+  sp = yz + wx;
+  heading = rad_2_deg(catan2(sh, ch));
+  pitch = rad_2_deg(catan2(sp, cp));
 
-  return LVecBase3<NumType>(rad_2_deg(atan2(sinv, cosv)),
-			    rad_2_deg(atan2(sint, cost)),
-			    rad_2_deg(atan2(sinf, cosf)));
+  return LVecBase3<NumType>(heading, pitch, roll);
 }
 
 ////////////////////////////////////////////////////////////////////
