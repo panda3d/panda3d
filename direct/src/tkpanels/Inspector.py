@@ -81,11 +81,12 @@ class Inspector:
         keys = self.namedParts()
         keys.sort()
         for each in keys:
-            if not callable(eval('self.object.' + each)):
-                self._partsList.append(each)  
+            self._partsList.append(each)
+            #if not callable(eval('self.object.' + each)):
+            #    self._partsList.append(each)  
 
     def initializePartNames(self):
-        self._partNames = ['self'] + map(lambda each: str(each), self._partsList)
+        self._partNames = ['up'] + map(lambda each: str(each), self._partsList)
 
     def title(self):
         "Subclasses may override."
@@ -95,7 +96,17 @@ class Inspector:
         return dir(self.object)
 
     def stringForPartNumber(self, partNumber):
-        return str(self.partNumber(partNumber))
+        object = self.partNumber(partNumber)
+        doc = None
+        if callable(object):
+            try:
+                doc = object.__doc__
+            except:
+                pass
+        if doc:
+            return (str(object) + '\n' + str(doc))
+        else:
+            return str(object)
 
     def partNumber(self, partNumber):
         if partNumber == 0:
@@ -124,7 +135,7 @@ class ModuleInspector(Inspector):
 
 class ClassInspector(Inspector):
     def namedParts(self):
-        return ['__bases__',  '__dict__']
+        return ['__bases__'] + self.object.__dict__.keys()
 
     def title(self):
         return self.object.__name__ + ' Class'
@@ -132,6 +143,8 @@ class ClassInspector(Inspector):
 class InstanceInspector(Inspector):
     def title(self):
         return self.object.__class__.__name__
+    def namedParts(self):
+        return ['__class__'] + dir(self.object)
 
 ###
     
@@ -254,9 +267,7 @@ class InspectorWindow:
     def listSelectionChanged(self, event):
         partNumber = self.selectedIndex()
         if partNumber == None:
-            #string = ''
             partNumber = 0
-        #else:
         string = self.topInspector().stringForPartNumber(partNumber)
         self.textWidget.delete('1.0', END)
         self.textWidget.insert(END, string)

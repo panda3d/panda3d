@@ -1,7 +1,27 @@
-import pdb
+
+import getopt
+import sys
+
+# If you run this from the command line you can pass in the hood codes
+# you want to load. For example:
+#    ppython LevelEditor.py DD TT BR
+#
+if sys.argv[1:]:
+    try:
+        opts, pargs = getopt.getopt(sys.argv[1:], '')
+        hoods = pargs
+    except Exception, e:
+        print e
+# If you do not run from the command line, we just load all of them
+# or you can hack this up for your own purposes.
+else:
+    hoods = ['TT', 'DD', 'BR', 'DG', 'DL', 'MM']
+
+print "Loading LevelEditor for hoods: ", hoods
+
+from DirectSessionGlobal import *
 from PandaObject import *
 from PieMenu import *
-#from OnscreenText import *
 from GuiGlobals import *
 from Tkinter import *
 from DirectGeometry import *
@@ -38,22 +58,25 @@ BUILDING_TYPES = ['10_10', '20', '10_20', '20_10', '10_10_10',
                   '4_21', '3_22', '4_13_8', '3_13_9', '10',
                   '12_8', '13_9_8'
                   ]
+
 # The list of neighborhoods to edit
-NEIGHBORHOODS = [
-    'toontown_central',
-    'donalds_dock',
-    'minnies_melody_land',
-    'the_burrrgh',
-    'daisys_garden',
-    'donalds_dreamland',
-    ]
-NEIGHBORHOOD_CODES = {'toontown_central': 'TT',
-                      'donalds_dock': 'DD',
-                      'minnies_melody_land': 'MM',
-                      'the_burrrgh': 'BR',
-                      'daisys_garden': 'DG',
-                      'donalds_dreamland': 'DL'
-                      }
+hoodIds = {'TT' : 'toontown_central',
+           'DD' : 'donalds_dock',
+           'MM' : 'minnies_melody_land',
+           'BR' : 'the_burrrgh',
+           'DG' : 'daisys_garden',
+           'DL' : 'donalds_dreamland',
+           }
+NEIGHBORHOODS = []
+NEIGHBORHOOD_CODES = {}
+for hoodId in hoods:
+    if hoodIds.has_key(hoodId):
+        hoodName = hoodIds[hoodId]
+        NEIGHBORHOOD_CODES[hoodName] = hoodId
+        NEIGHBORHOODS.append(hoodName)
+    else:
+        print 'Error: no hood defined for: ', hoodId
+
 OBJECT_SNAP_POINTS = {
     'street_5x20': [(Vec3(5.0,0,0), Vec3(0)),
                     (Vec3(0), Vec3(0))],
@@ -177,12 +200,18 @@ except NameError:
     # Load the generic storage file
     loadDNAFile(DNASTORE, 'phase_4/dna/storage.dna', CSDefault, 1)
     # Load all the neighborhood specific storage files
-    loadDNAFile(DNASTORE, 'phase_4/dna/storage_TT.dna', CSDefault, 1)
-    loadDNAFile(DNASTORE, 'phase_6/dna/storage_DD.dna', CSDefault, 1)
-    loadDNAFile(DNASTORE, 'phase_6/dna/storage_MM.dna', CSDefault, 1)
-    loadDNAFile(DNASTORE, 'phase_8/dna/storage_BR.dna', CSDefault, 1)
-    loadDNAFile(DNASTORE, 'phase_8/dna/storage_DG.dna', CSDefault, 1)
-    loadDNAFile(DNASTORE, 'phase_8/dna/storage_DL.dna', CSDefault, 1)
+    if 'TT' in hoods:
+        loadDNAFile(DNASTORE, 'phase_4/dna/storage_TT.dna', CSDefault, 1)
+    if 'DD' in hoods:
+        loadDNAFile(DNASTORE, 'phase_6/dna/storage_DD.dna', CSDefault, 1)
+    if 'MM' in hoods:
+        loadDNAFile(DNASTORE, 'phase_6/dna/storage_MM.dna', CSDefault, 1)
+    if 'BR' in hoods:
+        loadDNAFile(DNASTORE, 'phase_8/dna/storage_BR.dna', CSDefault, 1)
+    if 'DG' in hoods:
+        loadDNAFile(DNASTORE, 'phase_8/dna/storage_DG.dna', CSDefault, 1)
+    if 'DL' in hoods:
+        loadDNAFile(DNASTORE, 'phase_8/dna/storage_DL.dna', CSDefault, 1)
     __builtin__.dnaLoaded = 1
 
 # Precompute class types for type comparisons
@@ -469,8 +498,8 @@ class LevelEditor(NodePath, PandaObject):
         self.vgpanel = None
         # Start off enabled
         self.enable()
-        # Editing toontown_central
-        self.setEditMode('toontown_central')
+        # Editing the first hood id on the list
+        self.setEditMode(NEIGHBORHOODS[0])
 
         # SUIT POINTS
         # Create a sphere model to show suit points
@@ -1165,7 +1194,7 @@ class LevelEditor(NodePath, PandaObject):
             self.DNATarget = dnaObject
             if direct.fControl:
                 menuMode = 'prop_color'
-            if direct.fShift:
+            elif direct.fShift:
                 menuMode = 'sign_texture'
                 self.DNATarget = DNAGetChildOfClass(dnaObject, DNA_SIGN)
                 self.DNATargetParent = dnaObject
@@ -3984,12 +4013,11 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             label_text = 'Prop type:',
             entry_width = 30,
             selectioncommand = self.setPropType,
-            scrolledlist_items = map(lambda s: s[5:],
-                                     self.styleManager.getCatalogCodes('prop'))
+            scrolledlist_items = self.styleManager.getCatalogCodes('prop')
             )
         self.propType = self.styleManager.getCatalogCode('prop',0)
         self.propSelector.selectitem(
-            self.styleManager.getCatalogCode('prop',0)[5:])
+            self.styleManager.getCatalogCode('prop',0))
         self.propSelector.pack(expand = 1, fill = 'both')
 
 
@@ -4518,7 +4546,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.levelEditor.addLandmark(self.landmarkType)
 
     def setPropType(self,name):
-        self.propType = 'prop_' + name
+        self.propType = name
         self.levelEditor.setCurrent('prop_texture', self.propType)
         
     def addProp(self):
@@ -4773,3 +4801,5 @@ class VisGroupsEditor(Pmw.MegaToplevel):
             self.balloon.configure(state = 'none')
 
         
+l = LevelEditor()
+run()
