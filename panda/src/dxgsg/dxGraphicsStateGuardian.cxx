@@ -5345,11 +5345,26 @@ issue_stencil(const StencilTransition *attrib) {
         enable_stencil_test(false);
     } else {
         enable_stencil_test(true);
+        D3DSTENCILOP pass_op = get_stencil_action_type(attrib->get_pass_action());
+        D3DSTENCILOP fail_op = get_stencil_action_type(attrib->get_fail_action());
+        D3DSTENCILOP zfail_op = get_stencil_action_type(attrib->get_zfail_action());
+
+        #ifdef _DEBUG
+           if(!(_D3DDevDesc.dwStencilCaps & (1<<(pass_op-1)))) {
+               dxgsg_cat.warning() << "driver doesnt support pass stencil operation: " << pass_op << endl;
+           }
+           if(!(_D3DDevDesc.dwStencilCaps & (1<<(fail_op-1)))) {
+               dxgsg_cat.warning() << "driver doesnt support fail stencil operation: " << fail_op << endl;
+           }
+           if(!(_D3DDevDesc.dwStencilCaps & (1<<(zfail_op-1)))) {
+               dxgsg_cat.warning() << "driver doesnt support zfail stencil operation: " << zfail_op << endl;
+           }
+        #endif
         // TODO: need to cache all these
         _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILFUNC, get_stencil_func_type(mode));
-        _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILPASS, get_stencil_action_type(attrib->get_pass_action()));
-        _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILFAIL, get_stencil_action_type(attrib->get_fail_action()));
-        _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILZFAIL, get_stencil_action_type(attrib->get_zfail_action()));
+        _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILPASS, pass_op);
+        _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILFAIL, fail_op);
+        _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILZFAIL, zfail_op);
         _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILREF, attrib->get_reference_value());
         _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILMASK, attrib->get_func_mask());
         _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILWRITEMASK, attrib->get_write_mask());

@@ -3111,6 +3111,10 @@ issue_stencil(const StencilTransition *attrib) {
     call_glStencilOp(get_stencil_action_type(attrib->get_fail_action()),
                      get_stencil_action_type(attrib->get_zfail_action()),
                      get_stencil_action_type(attrib->get_pass_action()));
+    #ifdef _DEBUG
+      if (attrib->get_write_mask() != 0xFFFFFFFF)
+          glgsg_cat.warning() << "OpenGL doesnt support stencil writemasks!\n";
+    #endif
   }
   report_errors();
 }
