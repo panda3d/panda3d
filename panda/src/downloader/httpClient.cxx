@@ -31,7 +31,9 @@
 #endif
 
 bool HTTPClient::_ssl_initialized = false;
-SSL_CTX *HTTPClient::_ssl_ctx = NULL;
+
+// Never freed.
+X509_STORE *HTTPClient::_x509_store = NULL;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -41,8 +43,12 @@ SSL_CTX *HTTPClient::_ssl_ctx = NULL;
 ////////////////////////////////////////////////////////////////////
 HTTPClient::
 ~HTTPClient() {
-  // Since the context is temporarily shared among all clients.
-  //  SSL_CTX_free(_ssl_ctx);
+  // Before we can free the context, we must remove the X509_STORE
+  // pointer from it, so it won't be destroyed along with it (this
+  // object is shared among all contexts).
+  nassertv(_ssl_ctx->cert_store == _x509_store);
+  _ssl_ctx->cert_store = NULL;
+  SSL_CTX_free(_ssl_ctx);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -126,11 +132,6 @@ make_ctx() {
     initialize_ssl();
   }
 
-  if (_ssl_ctx != (SSL_CTX *)NULL) {
-    // Since the context is temporarily shared among all clients.
-    return;
-  }
-
   _ssl_ctx = SSL_CTX_new(SSLv23_client_method());
 
 #if defined(SSL_097) && !defined(NDEBUG)
@@ -144,20 +145,32 @@ make_ctx() {
   // Insist on verifying servers if we are configured to.
   set_verify_ssl(verify_ssl);
 
-  // Load in any default certificates listed in the Configrc file.
-  Config::ConfigTable::Symbol cert_files;
-  config_express.GetAll("ssl-certificates", cert_files);
-  
-  // When we use GetAll(), we might inadvertently read duplicate
-  // lines.  Filter them out with a set.
-  pset<string> already_read;
-  
-  Config::ConfigTable::Symbol::iterator si;
-  for (si = cert_files.begin(); si != cert_files.end(); ++si) {
-    string cert_file = (*si).Val();
-    if (already_read.insert(cert_file).second) {
-      Filename filename = Filename::from_os_specific(ExecutionEnvironment::expand_string(cert_file));
-      load_certificates(filename);
+  if (_x509_store != (X509_STORE *)NULL) {
+    // If we've already created an x509 store object, use it for this
+    // context.
+    SSL_CTX_set_cert_store(_ssl_ctx, _x509_store);
+
+  } else {
+    // Create the first x509 store object, and fill it up with our
+    // certificates.
+    _x509_store = X509_STORE_new();
+    SSL_CTX_set_cert_store(_ssl_ctx, _x509_store);
+
+    // Load in any default certificates listed in the Configrc file.
+    Config::ConfigTable::Symbol cert_files;
+    config_express.GetAll("ssl-certificates", cert_files);
+    
+    // When we use GetAll(), we might inadvertently read duplicate
+    // lines.  Filter them out with a set.
+    pset<string> already_read;
+    
+    Config::ConfigTable::Symbol::iterator si;
+    for (si = cert_files.begin(); si != cert_files.end(); ++si) {
+      string cert_file = (*si).Val();
+      if (already_read.insert(cert_file).second) {
+        Filename filename = Filename::from_os_specific(ExecutionEnvironment::expand_string(cert_file));
+        load_certificates(filename);
+      }
     }
   }
 }

@@ -39,14 +39,18 @@ class Filename;
 ////////////////////////////////////////////////////////////////////
 //       Class : HTTPClient
 // Description : Handles contacting an HTTP server and retrieving a
-//               document.
+//               document.  Each HTTPClient object represents a
+//               separate context; it is up to the programmer whether
+//               one HTTPClient should be used to retrieve all
+//               documents, or a separate one should be created each
+//               time.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS HTTPClient {
 PUBLISHED:
   INLINE HTTPClient();
   INLINE HTTPClient(const HTTPClient &copy);
   INLINE void operator = (const HTTPClient &copy);
-  INLINE ~HTTPClient();
+  ~HTTPClient();
 
   INLINE void set_proxy(const URLSpec &proxy);
   INLINE const URLSpec &get_proxy() const;
@@ -85,12 +89,10 @@ private:
 
   URLSpec _proxy;
   bool _verify_ssl;
+  SSL_CTX *_ssl_ctx;
 
   static bool _ssl_initialized;
-
-  // This is temporarily static, shared among all clients, to work
-  // around the loading certificates problem.
-  static SSL_CTX *_ssl_ctx;
+  static X509_STORE *_x509_store;
 };
 
 #include "httpClient.I"
