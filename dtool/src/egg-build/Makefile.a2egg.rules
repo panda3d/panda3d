@@ -1,0 +1,55 @@
+#
+# Makefile rules for compiling Alias character models.
+#
+
+ifeq ($(ALIAS_VERSION),7)
+  VERSION_SUFFIX = -v7
+endif
+
+ifeq ($(WIRE_NAME),)
+  WIRE_NAME = $(CHAR_NAME)
+endif
+
+ifeq ($(WIRE_PATTERN),)
+  WIRE_PATTERN = $(WIRE_NAME)*.wire
+endif
+
+ifeq ($(WIRE_DIR),)
+  ifeq ($(MODEL_TYPE),)
+    WIRE_DIR = $(ALIAS_SOURCE_ROOT)/models/$(DIR_NAME)
+  else
+    WIRE_DIR = $(ALIAS_SOURCE_ROOT)/models/$(DIR_NAME)/$(MODEL_TYPE)
+  endif
+endif
+
+ifeq ($(CHAN_DIR),)
+  CHAN_DIR = $(ALIAS_SOURCE_ROOT)/channels/$(DIR_NAME)/$(ANIM)
+endif
+
+ifneq ($(TESS_LEVELS)$(QTESS_LEVELS),)
+  # If we are tesselating, we must force the nurbs model generation.
+  ifeq ($(NURBS_OPTS),)
+    NURBS_OPTS = $(A2E_OPTS)
+  endif
+endif
+
+# We'll always use version 8 a2egg to get out the static model.  Version 7
+# has some problems with clusters.
+A2EGG = a2egg$(VERSION_SUFFIX)
+
+# But we'll use version 7, if requested, to get out the animation, which is
+# necessary for some version 7 animations.
+A2EGG_CHAN = a2egg-chan$(VERSION_SUFFIX)
+
+MAKE_POLY_MODEL = a2egg -m $@ $(POLY_OPTS) $(WIRE_FILE)
+MAKE_NURBS_MODEL = a2egg -n -s -m $@ $(NURBS_OPTS) $(WIRE_FILE)
+
+A2E_RULE = $(UNOPT)$(EGG_NAME)-$(MODEL).egg : $(WIRE_FILE)
+A2E = $(A2EGG) -m $@ $(A2E_OPTS)
+
+A2C_RULE = $(UNOPT)$(CHAN_FILE_PREFIX)$(ANIM)$(CHAN_FILE_SUFFIX).egg : $(FIND_CHAN_FILES)
+
+A2C = $(A2EGG_CHAN) -c $@ $(A2C_OPTS)
+
+include $(DTOOL)/inc/Makefile.char-egg.rules
+

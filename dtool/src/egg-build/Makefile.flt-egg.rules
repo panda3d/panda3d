@@ -1,0 +1,166 @@
+#
+# Makefile rules for compiling Multigen scene models into egg, and
+# then into pfb's (or whatever).  This uses rflt2egg (in $DWDTOOL/bin) to
+# automatically resolve and convert referenced files.
+#
+
+include $(DTOOL)/inc/Makefile.inst-egg.vars
+
+ifeq ($(RFLT2EGG),)
+  RFLT2EGG = rflt2egg
+endif
+
+ifeq ($(EGG_PALETTIZE),)
+  EGG_PALETTIZE = egg-palettize
+endif
+
+ifeq ($(EGG_COMBINE),)
+  EGG_COMBINE = egg-combine
+endif
+
+ifeq ($(EGG_TEXTURES),)
+  EGG_TEXTURES = egg-textures
+endif
+
+ifeq ($(PFICONV),)
+  PFICONV = pficonv -m
+endif
+
+ifeq ($(PFI_DIR),)
+  PFI_DIR = $(FLT_PFI_DIR)
+endif
+
+ifeq ($(INSTALL_DIR),)
+  INSTALL_DIR = $(INSTALL_ROOT)/models/$(SCENE_DIR)
+endif
+
+ifeq ($(EGG_NAME),)
+  EGG_NAME = $(SCENE)
+endif
+
+ifeq ($(BUILD_MODELS),)
+  BUILD_MODELS = $(EGG_NAME)
+endif
+
+ifeq ($(SCENE_DIR),)
+  SCENE_DIR = snarf
+endif
+
+# This helps out some of the generic option variables that are used for
+# both chars and scenes.
+CHAR_NAME = $(SCENE)
+
+ifneq ($(PALETTE_NAME),)
+  # If the palette name is nonempty, make sure it doesn't contain slashes.
+  PALETTE_NAME := $(subst /,-,$(PALETTE_NAME))
+endif
+
+UNPAL_EGG_DIR = $(SCENE_DIR)
+
+ifneq ($(PALETTE_NAME),)
+  PAL_EGG_DIR = $(MG_BUILD_DIR)/pal
+else
+  PAL_EGG_DIR = $(UNPAL_EGG_DIR)
+endif
+
+# INSTALL_FROM_DIR is the name of the subdirectory from which the
+# final egg files will be installed.  If unspecified, it defaults to
+# either PAL_EGG_DIR.  This can be used to apply a last-minute
+# operation on the egg file within the makefile.
+ifeq ($(INSTALL_FROM_DIR),)
+  INSTALL_FROM_DIR = $(PAL_EGG_DIR)
+endif
+
+# BUILD_NAMES is the filename, without directory, of each of BUILD_MODELS.
+# Often this will be the same, but it is allowed to specified a relative
+# filename on each BUILD_MODEL.
+BUILD_NAMES := $(notdir $(BUILD_MODELS))
+
+TEST_EGG_FILES := $(patsubst %,rflt2egg-%.egg,$(BUILD_MODELS))
+SHOW_RFLT2EGG_FILES := $(patsubst %,show-rflt2egg-%.egg,$(BUILD_MODELS))
+UNPAL_EGG_FILES := $(patsubst %,$(UNPAL_EGG_DIR)/%.egg,$(BUILD_MODELS))
+PAL_EGG_FILES := $(patsubst %,$(PAL_EGG_DIR)/%.egg,$(BUILD_NAMES))
+INSTALL_INST_FILES := $(patsubst %,$(INSTALL_DIR)/%.$(INST),$(BUILD_NAMES))
+
+.PHONY: pfb clean cleanall all_dirs check-palette
+.PHONY: $(TEST_EGG_FILES) $(SHOW_RFLT2EGG_FILES)
+
+pfb: all_dirs check-palette $(INSTALL_INST_FILES)
+all_dirs: maps $(INSTALL_DIR)
+rflt2egg: $(SHOW_RFLT2EGG_FILES)
+
+ifneq ($(PALETTE_NAME),)
+all_dirs: pal
+endif
+
+# This is a phony rule which invokes rflt2egg to freshen up an egg file from
+# its .flt sources.
+$(TEST_EGG_FILES) : rflt2egg-%.egg : 
+	@$(RFLT2EGG) -F $(MG_SOURCE_ROOT) $(RFLT2EGG_OPTS) $(patsubst rflt2egg-%,$(UNPAL_EGG_DIR)/%,$@)
+
+# This is another phony rule, just like the above except it doesn't squelch
+# the rflt2egg command.  Handy for debugging.
+$(SHOW_RFLT2EGG_FILES) : show-rflt2egg-%.egg : 
+	@echo ""
+	@echo  $(patsubst show-rflt2egg-%,$(UNPAL_EGG_DIR)/%,$@)
+	$(RFLT2EGG) -vv -F $(MG_SOURCE_ROOT) $(RFLT2EGG_OPTS) $(patsubst show-rflt2egg-%,$(UNPAL_EGG_DIR)/%,$@)
+
+# We need to have a command here so make won't optimize it out.  Make doesn't
+# know about the side-effect of $(TEST_EGG_FILES), above, on this target.
+$(UNPAL_EGG_FILES) : $(UNPAL_EGG_DIR)/%.egg : rflt2egg-%.egg
+	@echo ""
+
+
+#
+# Palettizing.
+#
+ifneq ($(PALETTE_NAME),)
+
+PT_FILES := $(patsubst %.egg,%.pt,$(UNPAL_EGG_FILES))
+$(PT_FILES) : %.pt : %.egg
+	touch $@
+
+$(PAL_EGG_FILES) : $(PT_FILES)
+	$(EGG_PALETTIZE) -t -de $(PAL_EGG_DIR) -dm $(INSTALL_ROOT)/maps $(PALETTIZE_OPTS) $(TEXATTRIB_DIR)/$(PALETTE_NAME).txa $(patsubst %.pt,$(MG_BUILD_DIR)/%.egg,$^)
+
+endif
+
+
+
+$(INSTALL_INST_FILES) : $(INSTALL_DIR)/%.$(INST) : $(INSTALL_FROM_DIR)/%.egg
+	$(INSTALL_EGG_ACTION)
+
+
+clean:
+# Not really much we can do here.
+
+cleanall: clean
+# Or here.
+
+pal:
+	@test -d $(MG_BUILD_DIR)/pal || mkdir -p $(MG_BUILD_DIR)/pal
+
+maps:
+	@test -d $(BUILD_DIR)/maps || mkdir -p $(BUILD_DIR)/maps
+
+$(INSTALL_DIR) :
+	@test -d $@ || mkdir -p $@
+
+ifneq ($(PALETTE_NAME),)
+check-palette: $(TEXATTRIB_DIR)/$(PALETTE_NAME).pi
+$(TEXATTRIB_DIR)/$(PALETTE_NAME).pi : $(TEXATTRIB_DIR)/$(PALETTE_NAME).txa
+	$(EGG_PALETTIZE) -t $(PALETTIZE_OPTS) $<
+$(TEXATTRIB_DIR)/$(PALETTE_NAME).txa :
+	@echo $@
+else
+check-palette:
+endif
+	
+
+show-models:
+	@echo UNPAL_EGG_DIR is $(UNPAL_EGG_DIR)
+	@echo UNPAL_EGG_FILES is $(UNPAL_EGG_FILES)
+
+
+show-palette-name:
+	@echo palette_name is $(PALETTE_NAME)

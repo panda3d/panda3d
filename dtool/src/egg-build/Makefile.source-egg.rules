@@ -1,0 +1,211 @@
+#
+# Makefile rules for converting egg files which were originally hand-crafted
+# into pfb's.
+#
+
+include $(DTOOL)/inc/Makefile.inst-egg.vars
+
+ifeq ($(EGG_RESTRUCTURE),)
+  EGG_RESTRUCTURE = egg-restructure
+endif
+
+ifeq ($(EGG_PALETTIZE),)
+  EGG_PALETTIZE = egg-palettize
+endif
+
+ifeq ($(EGG_COMBINE),)
+  EGG_COMBINE = egg-combine
+endif
+
+ifeq ($(EGG_TEXTURES),)
+  EGG_TEXTURES = egg-textures
+endif
+
+ifeq ($(PFICONV),)
+  PFICONV = pficonv -m
+endif
+
+ifeq ($(INSTALL_DIR),)
+  INSTALL_DIR = $(INSTALL_ROOT)/models/$(SCENE_DIR)
+endif
+
+ifeq ($(EGG_NAME),)
+  EGG_NAME = $(SCENE)
+endif
+
+ifeq ($(BUILD_MODELS),)
+  BUILD_MODELS = $(EGG_NAME)
+endif
+
+ifeq ($(SCENE_DIR),)
+  SCENE_DIR = snarf
+endif
+
+ifeq ($(PFI_DIR),)
+  PFI_DIR = $(FLT_PFI_DIR)
+endif
+
+ifeq ($(SOURCE_DIR),)
+  SOURCE_DIR = $(EGG_SOURCE_ROOT)/$(SCENE_DIR)
+endif
+
+# This helps out some of the generic option variables that are used for
+# both chars and scenes.
+CHAR_NAME = $(SCENE)
+
+# If we have RESTRUCTURE_OPTS set, then we must generate the model file into
+# the unstructure directory, and restructure it into the current directory.
+# Otherwise, we just generate it directly into the current directory.
+ifneq ($(RESTRUCTURE_OPTS),)
+  INIT_EGG_DIR = unstructure
+  UNPAL_EGG_DIR = $(SCENE_DIR)
+else
+  INIT_EGG_DIR = $(SCENE_DIR)
+  UNPAL_EGG_DIR = $(SCENE_DIR)
+endif
+
+ifneq ($(PALETTIZE_OPTS),)
+  PAL_EGG_DIR = pal
+else
+  PAL_EGG_DIR = $(UNPAL_EGG_DIR)
+endif
+
+ifneq ($(MAKE_PFI),)
+  PFI_EGG_DIR = pfi
+  EGG2INST_OPTS = -t
+else
+  PFI_EGG_DIR = $(PAL_EGG_DIR)
+endif
+
+# INSTALL_FROM_DIR is the name of the subdirectory from which the final
+# egg files will be installed.  If unspecified, it defaults to either
+# PAL_EGG_DIR or PFI_EGG_DIR, depending on whether pfi's are built.  This
+# can be used to apply a last-minute operation on the egg file within the
+# makefile.
+ifeq ($(INSTALL_FROM_DIR),)
+  INSTALL_FROM_DIR = $(PFI_EGG_DIR)
+endif
+
+# BUILD_NAMES is the filename, without directory, of each of BUILD_MODELS.
+# Often this will be the same, but it is allowed to specified a relative
+# filename on each BUILD_MODEL.
+BUILD_NAMES := $(notdir $(BUILD_MODELS))
+
+INIT_EGG_FILES := $(patsubst %,$(INIT_EGG_DIR)/%.egg,$(BUILD_MODELS))
+UNPAL_EGG_FILES := $(patsubst %,$(UNPAL_EGG_DIR)/%.egg,$(BUILD_MODELS))
+PAL_EGG_FILES := $(patsubst %,$(PAL_EGG_DIR)/%.egg,$(BUILD_NAMES))
+PFI_EGG_FILES := $(patsubst %,$(PFI_EGG_DIR)/%.egg,$(BUILD_NAMES))
+INSTALL_INST_FILES := $(patsubst %,$(INSTALL_DIR)/%.$(INST),$(BUILD_NAMES))
+
+ifneq ($(PALETTIZE_TOGETHER),)
+  # If we only have one file, don't attempt to palettize it together with
+  # itself.  PALETTIZE_TOGETHER only makes sense if we have multiple files.
+  ifeq ($(words $(PAL_EGG_FILES)),1)
+    PALETTIZE_TOGETHER :=
+  endif
+endif
+
+.PHONY: egg pfb clean cleanall all_dirs
+
+egg: all_dirs $(UNPAL_EGG_FILES)
+pfb: egg $(INSTALL_INST_FILES)
+all_dirs: maps $(SCENE_DIR) $(INSTALL_DIR)
+
+ifneq ($(RESTRUCTURE_OPTS),)
+all_dirs: unstructure
+endif
+
+ifneq ($(PALETTIZE_OPTS),)
+all_dirs: pal
+endif
+
+ifneq ($(MAKE_PFI),)
+all_dirs: pfi $(PFI_DIR)
+endif
+
+# This is the basic rule.  If the including makefile doesn't specify anything
+# else, we use this rule to build our egg file.
+$(INIT_EGG_DIR)/%.egg : $(SOURCE_DIR)/%.egg
+	cp $< $@
+
+#
+# Restructuring.
+#
+ifneq ($(RESTRUCTURE_OPTS),)
+$(UNPAL_EGG_FILES) : $(UNPAL_EGG_DIR)/%.egg : $(INIT_EGG_DIR)/%.egg
+	$(EGG_RESTRUCTURE) -o $@ $(RESTRUCTURE_OPTS) $<
+endif
+
+#
+# Palettizing.
+#
+ifneq ($(PALETTIZE_OPTS),)
+ifneq ($(PALETTIZE_TOGETHER),)
+
+# If there are multiple files and the user so requested, palettize them all
+# together.
+$(UNPAL_EGG_DIR)/$(EGG_NAME)-combine.egg : $(UNPAL_EGG_FILES)
+	$(EGG_COMBINE) -o $@ $^
+
+$(PAL_EGG_DIR)/$(EGG_NAME)-combine.egg : $(UNPAL_EGG_DIR)/$(EGG_NAME)-combine.egg
+	$(EGG_PALETTIZE) -o $@ $(PALETTIZE_OPTS) -p $(EGG_NAME)-palette. $<
+
+$(PAL_EGG_FILES) : $(PAL_EGG_DIR)/$(EGG_NAME)-combine.egg
+	$(EGG_COMBINE) -x -p $(PAL_EGG_DIR)/ $<
+
+else
+
+# If there's only one file, or the user didn't request a group palettizing,
+# palettize them separately.
+ifeq ($(BUILD_MODELS),$(BUILD_NAMES))
+  # If none of the build models had directories, we can do it this way.
+$(PAL_EGG_FILES) : $(PAL_EGG_DIR)/%.egg : $(UNPAL_EGG_DIR)/%.egg
+	$(EGG_PALETTIZE) -o $@ $(PALETTIZE_OPTS) -p $(patsubst $(PAL_EGG_DIR)/%.egg,%,$@)-palette. $<
+
+else
+  # Otherwise, we have an error.  Don't put a rule for the palettized files,
+  # so the make will stop.
+endif
+
+endif
+endif
+
+ifneq ($(MAKE_PFI),)
+$(PFI_EGG_FILES) : $(PFI_EGG_DIR)/%.egg : $(PAL_EGG_DIR)/%.egg
+	$(EGG_TEXTURES) -o $@ -d $(PFI_DIR)/$(PFI_PREFIX) -e pfi -n -p "$(PFICONV) %o %n" $<
+endif
+
+$(INSTALL_INST_FILES) : $(INSTALL_DIR)/%.$(INST) : $(INSTALL_FROM_DIR)/%.egg
+	$(INSTALL_EGG_ACTION)
+
+
+clean:
+# Not really much we can do here.
+
+cleanall: clean
+# Or here.
+
+unstructure:
+	mkdir unstructure
+
+pal:
+	mkdir pal
+
+pfi:
+	mkdir pfi
+
+maps:
+	mkdir maps
+
+ifneq ($(SCENE_DIR),.)
+$(SCENE_DIR) :
+	mkdir -p $@
+endif
+
+$(INSTALL_DIR) :
+	mkdir -p $@
+
+ifneq ($(PFI_DIR),$(INSTALL_DIR))
+$(PFI_DIR) :
+	mkdir -p $@
+endif
