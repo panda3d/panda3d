@@ -173,7 +173,7 @@
 #defer STATIC_LIB_C++ $[STATIC_LIB_C]
 
 // if we're attached, use dllbase.txt.  otherwise let OS loader resolve dll addrspace collisions
-#if $[ne $[DTOOL_INSTALL],]
+#if $[ne $[DTOOL],]
 // use predefined bases to speed dll loading and simplify debugging
 #defer DLLNAMEBASE lib$[TARGET]$[dllext]
 #defer DLLBASEADDRFILENAME dllbase.txt
