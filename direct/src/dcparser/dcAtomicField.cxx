@@ -22,26 +22,6 @@
 
 #include <math.h>
 
-ostream &
-operator << (ostream &out, const DCAtomicField::ElementType &et) {
-  out << et._type;
-  if (et._divisor != 1) {
-    out << " / " << et._divisor;
-  }
-  if (!et._name.empty()) {
-    out << " " << et._name;
-  }
-  if (et._has_default_value) {
-    out << " = <" << hex;
-    string::const_iterator si;
-    for (si = et._default_value.begin(); si != et._default_value.end(); ++si) {
-      out << setw(2) << setfill('0') << (int)(unsigned char)(*si);
-    }
-    out << dec << ">";
-  }
-  return out;
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::ElementType::Constructor
 //       Access: Public
@@ -227,6 +207,32 @@ end_array() {
 
   default:
     return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::ElementType::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void DCAtomicField::ElementType::
+output(ostream &out, bool brief) const {
+  out << _type;
+  if (_divisor != 1) {
+    out << " / " << _divisor;
+  }
+  if (!brief) {
+    if (!_name.empty()) {
+      out << " " << _name;
+    }
+    if (_has_default_value) {
+      out << " = <" << hex;
+      string::const_iterator si;
+      for (si = _default_value.begin(); si != _default_value.end(); ++si) {
+        out << setw(2) << setfill('0') << (int)(unsigned char)(*si);
+      }
+      out << dec << ">";
+    }
   }
 }
 
@@ -586,16 +592,17 @@ DCAtomicField() {
 //               the indicated output stream.
 ////////////////////////////////////////////////////////////////////
 void DCAtomicField::
-write(ostream &out, int indent_level) const {
+write(ostream &out, bool brief, int indent_level) const {
   indent(out, indent_level)
     << _name << "(";
 
   if (!_elements.empty()) {
     Elements::const_iterator ei = _elements.begin();
-    out << (*ei);
+    (*ei).output(out, brief);
     ++ei;
     while (ei != _elements.end()) {
-      out << ", " << (*ei);
+      out << ", ";
+      (*ei).output(out, brief);
       ++ei;
     }
   }
@@ -626,7 +633,11 @@ write(ostream &out, int indent_level) const {
     out << " ownsend";
   }
 
-  out << ";  // field " << _number << "\n";
+  out << ";";
+  if (!brief) {
+    out << "  // field " << _number;
+  }
+  out << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////

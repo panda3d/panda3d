@@ -128,7 +128,7 @@ read(istream &in, const string &filename) {
 //               written, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool DCFile::
-write(Filename filename) const {
+write(Filename filename, bool brief) const {
   ofstream out;
 
 #ifdef WITHIN_PANDA
@@ -142,34 +142,27 @@ write(Filename filename) const {
     cerr << "Can't open " << filename << " for output.\n";
     return false;
   }
-  return write(out, filename);
+  return write(out, brief);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCFile::write
 //       Access: Published
 //  Description: Writes a parseable description of all the known
-//               distributed classes to the file.  The filename
-//               parameter is optional and is only used when reporting
-//               errors.
+//               distributed classes to the stream.
 //
 //               Returns true if the description is successfully
 //               written, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool DCFile::
-write(ostream &out, const string &filename) const {
+write(ostream &out, bool brief) const {
   Classes::const_iterator ci;
   for (ci = _classes.begin(); ci != _classes.end(); ++ci) {
-    (*ci)->write(out);
+    (*ci)->write(out, brief, 0);
     out << "\n";
   }
 
-  if (out.fail()) {
-    cerr << "I/O error writing " << filename << ".\n";
-    return false;
-  }
-
-  return true;
+  return !out.fail();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -189,7 +189,7 @@ DCClass::
 //               the indicated output stream.
 ////////////////////////////////////////////////////////////////////
 void DCClass::
-write(ostream &out, int indent_level) const {
+write(ostream &out, bool brief, int indent_level) const {
   indent(out, indent_level)
     << "dclass " << _name;
 
@@ -202,11 +202,16 @@ write(ostream &out, int indent_level) const {
       ++pi;
     }
   }
-  out << " {  // index " << _number << "\n";
+
+  out << " {";
+  if (!brief) {
+    out << "  // index " << _number;
+  }
+  out << "\n";
 
   Fields::const_iterator fi;
   for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
-    (*fi)->write(out, indent_level + 2);
+    (*fi)->write(out, brief, indent_level + 2);
   }
 
   indent(out, indent_level) << "};\n";

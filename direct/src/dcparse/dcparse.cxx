@@ -16,16 +16,74 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <dcbase.h>
-#include <dcFile.h>
+#include "dcbase.h"
+#include "dcFile.h"
+
+#ifndef HAVE_GETOPT
+#include <gnu_getopt.h>
+#else
+#include <getopt.h>
+#endif
+
+void
+usage() {
+  cerr << 
+    "\n"
+    "Usage:\n\n"
+    "dcparse [-v | -b]  [file1 file2 ...]\n"
+    "dcparse -h\n\n";
+}
+
+void
+help() {
+  usage();
+  cerr << 
+    "This program reads one or more DC files, which are used to describe the\n"
+    "communication channels in the distributed class system.  By default,\n"
+    "the file(s) are read and concatenated, and a single hash code is printed\n"
+    "corresponding to the file's contents.\n\n"
+
+    "With -b, this writes a brief version of the file to standard output\n"
+    "instead.  With -v, this writes a more verbose version.\n\n";
+}
 
 int
 main(int argc, char *argv[]) {
+  extern char *optarg;
+  extern int optind;
+  const char *optstr = "bvh";
+
+  bool dump_verbose = false;
+  bool dump_brief = false;
+
+  int flag = getopt(argc, argv, optstr);
+
+  while (flag != EOF) {
+    switch (flag) {
+    case 'b':
+      dump_brief = true;
+      break;
+
+    case 'v':
+      dump_verbose = true;
+      break;
+
+    case 'h':
+      help();
+      exit(1);
+
+    default:
+      exit(1);
+    }
+    flag = getopt(argc, argv, optstr);
+  }
+
+  argc -= (optind-1);
+  argv += (optind-1);
+
   if (argc < 2) {
-    cerr <<
-      "dcparse - a simple program to read one or more .dc files and report their\n"
-      "contents to standard output.\n\n";
-    return (1);
+    usage();
+    exit(1);
   }
 
   DCFile file;
@@ -35,12 +93,15 @@ main(int argc, char *argv[]) {
     }
   }
 
-  if (!file.write(cout, "standard output")) {
-    return (1);
-  }
+  if (dump_verbose || dump_brief) {
+    if (!file.write(cout, dump_brief)) {
+      return (1);
+    }
 
-  long hash = file.get_hash();
-  cerr << "File hash is " << hash << "\n";
+  } else {
+    long hash = file.get_hash();
+    cerr << "File hash is " << hash << "\n";
+  }
 
   return (0);
 }

@@ -40,7 +40,7 @@ PUBLISHED:
 
 public:
   virtual ~DCField();
-  virtual void write(ostream &out, int indent_level = 0) const=0;
+  virtual void write(ostream &out, bool brief, int indent_level) const=0;
   virtual void generate_hash(HashGenerator &hash) const;
 
 public:

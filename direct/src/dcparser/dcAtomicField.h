@@ -56,7 +56,7 @@ PUBLISHED:
 
 public:
   DCAtomicField();
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void write(ostream &out, bool brief, int indent_level) const;
   virtual void generate_hash(HashGenerator &hash) const;
 
 public:
@@ -73,6 +73,8 @@ public:
     bool add_default_value(const string &str);
     bool add_default_value_literal(const string &str);
     bool end_array();
+
+    void output(ostream &out, bool brief) const;
 
     DCSubatomicType _type;
     string _name;

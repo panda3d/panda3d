@@ -77,7 +77,7 @@ DCMolecularField() {
 //               the indicated output stream.
 ////////////////////////////////////////////////////////////////////
 void DCMolecularField::
-write(ostream &out, int indent_level) const {
+write(ostream &out, bool brief, int indent_level) const {
   indent(out, indent_level) << _name;
 
   if (!_fields.empty()) {
@@ -89,8 +89,12 @@ write(ostream &out, int indent_level) const {
       ++fi;
     }
   }
-
-  out << ";  // field " << _number << "\n";
+  
+  out << ";";
+  if (!brief) {
+    out << "  // field " << _number;
+  }
+  out << "\n";
 }
 
 

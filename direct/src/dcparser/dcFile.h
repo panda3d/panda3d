@@ -37,8 +37,8 @@ PUBLISHED:
   bool read(Filename filename);
   bool read(istream &in, const string &filename = string());
 
-  bool write(Filename filename) const;
-  bool write(ostream &out, const string &filename = string()) const;
+  bool write(Filename filename, bool brief) const;
+  bool write(ostream &out, bool brief) const;
 
   int get_num_classes();
   DCClass *get_class(int n);

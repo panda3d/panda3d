@@ -48,7 +48,7 @@ public:
   DCClass();
   ~DCClass();
 
-  void write(ostream &out, int indent_level = 0) const;
+  void write(ostream &out, bool brief, int indent_level) const;
   void generate_hash(HashGenerator &hash) const;
 
   bool add_field(DCField *field);
