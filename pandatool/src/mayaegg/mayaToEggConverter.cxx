@@ -41,6 +41,7 @@
 #include <maya/MDagPath.h>
 #include <maya/MFnCamera.h>
 #include <maya/MFnDagNode.h>
+#include <maya/MFnTransform.h>
 #include <maya/MFnLight.h>
 #include <maya/MFnNurbsSurface.h>
 #include <maya/MFnNurbsCurve.h>
@@ -764,24 +765,69 @@ process_chan_node(const MDagPath &dag_path, EggGroupNode *egg_root) {
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
 get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
+  MStatus status;
+  MObject transformNode = dag_path.transform(&status);
+  if (!status && status.statusCode() == MStatus::kInvalidParameter) {
+    // This node has no transform - i.e., it's the world node
+    return;
+  }
+
+  // A special case: if the group is a billboard, we center the
+  // transform on the rotate pivot and ignore whatever transform might
+  // be there.
+  if (egg_group->get_billboard_type() != EggGroup::BT_none) {
+    MFnTransform transform(transformNode, &status);
+    if (!status) {
+      status.perror("MFnTransform constructor");
+      return;
+    }
+
+    MPoint pivot = transform.rotatePivot(MSpace::kObject, &status);
+    if (!status) {
+      status.perror("Can't get rotate pivot");
+      return;
+    }
+
+    // We need to convert the pivot to world coordinates.
+    // Unfortunately, Maya can only tell it to us in local
+    // coordinates.
+    MMatrix mat = dag_path.inclusiveMatrix(&status);
+    if (!status) {
+      status.perror("Can't get coordinate space for pivot");
+      return;
+    }
+    LMatrix4d n2w(mat[0][0], mat[0][1], mat[0][2], mat[0][3],
+                  mat[1][0], mat[1][1], mat[1][2], mat[1][3],
+                  mat[2][0], mat[2][1], mat[2][2], mat[2][3],
+                  mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
+    LPoint3d p3d(pivot[0], pivot[1], pivot[2]);
+    p3d = p3d * n2w;
+
+    if (egg_group->get_parent() != (EggGroupNode *)NULL) {
+      // Now convert the pivot point into the group's parent's space.
+      p3d = p3d * egg_group->get_parent()->get_vertex_frame_inv();
+    }
+
+    cerr << egg_group->get_name() 
+         << "\n  " << p3d
+         << "\n";
+
+    egg_group->clear_transform();
+    egg_group->add_translate(p3d);
+    return;
+  }
+
   if (_ignore_transforms) {
     return;
   }
 
-  MStatus status;
-  MObject transformNode = dag_path.transform(&status);
-  // This node has no transform - i.e., it's the world node
-  if (!status && status.statusCode() == MStatus::kInvalidParameter) {
-    return;
-  }
-
-  MFnDagNode transform(transformNode, &status);
+  MFnDagNode dagNode(transformNode, &status);
   if (!status) {
     status.perror("MFnDagNode constructor");
     return;
   }
 
-  MTransformationMatrix matrix(transform.transformationMatrix());
+  MTransformationMatrix matrix(dagNode.transformationMatrix());
 
   if (mayaegg_cat.is_spam()) {
     mayaegg_cat.spam()
@@ -1279,6 +1325,14 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
     status.perror("MFnMesh::getConnectedShaders");
   }
 
+  // We will need to transform all vertices from world coordinate
+  // space into the vertex space appropriate to this node.  Usually,
+  // this is the same thing as world coordinate space, and this matrix
+  // will be identity; but if the node is under an instance
+  // (particularly, for instance, a billboard) then the vertex space
+  // will be different from world space.
+  LMatrix4d vertex_frame_inv = egg_group->get_vertex_frame_inv();
+
   while (!pi.isDone()) {
     EggPolygon *egg_poly = new EggPolygon;
     egg_group->add_child(egg_poly);
@@ -1318,6 +1372,7 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
       for (i = 0; i < num_verts; i++) {
         MPoint p = pi.point(i, MSpace::kWorld);
         LPoint3d p3d(p[0], p[1], p[2]);
+        p3d = p3d * vertex_frame_inv;
         centroid += p3d;
       }
       centroid /= (double)num_verts;
@@ -1328,6 +1383,7 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
 
       MPoint p = pi.point(i, MSpace::kWorld);
       LPoint3d p3d(p[0], p[1], p[2]);
+      p3d = p3d * vertex_frame_inv;
       vert.set_pos(p3d);
 
       MVector n;
@@ -1335,7 +1391,9 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
       if (!status) {
         status.perror("MItMeshPolygon::getNormal");
       } else {
-        vert.set_normal(LVector3d(n[0], n[1], n[2]));
+        LVector3d n3d(n[0], n[1], n[2]);
+        n3d = n3d * vertex_frame_inv;
+        vert.set_normal(n3d);
       }
 
       if (shader != (MayaShader *)NULL && shader->has_projection()) {
@@ -1587,6 +1645,15 @@ r_get_egg_group(const string &name, const MDagPath &dag_path,
     }
     if (get_enum_attribute(dag_object, "eggObjectTypes3", object_type)) {
       egg_group->add_object_type(object_type);
+    }
+
+    // We treat the object type "billboard" as a special case: we
+    // apply this one right away and also flag the group as an
+    // instance.
+    if (egg_group->has_object_type("billboard")) {    
+      egg_group->remove_object_type("billboard");
+      egg_group->set_group_type(EggGroup::GT_instance);
+      egg_group->set_billboard_type(EggGroup::BT_axis);
     }
   }
 
