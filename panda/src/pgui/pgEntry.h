@@ -48,10 +48,12 @@ public:
   virtual void draw_item(PGTop *top, GraphicsStateGuardian *gsg, 
                          const AllTransitionsWrapper &trans);
 
-  virtual void press(const MouseWatcherParameter &param);
+  virtual void press(const MouseWatcherParameter &param, bool background);
 
   virtual void accept(const MouseWatcherParameter &param);
   virtual void overflow(const MouseWatcherParameter &param);
+  virtual void type(const MouseWatcherParameter &param);
+  virtual void erase(const MouseWatcherParameter &param);
 
 PUBLISHED:
   enum State {
@@ -81,6 +83,9 @@ PUBLISHED:
   INLINE Node *get_cursor_def();
   INLINE void clear_cursor_def();
 
+  INLINE void set_cursor_keys_active(bool flag);
+  INLINE bool get_cursor_keys_active() const;
+
   void set_text_def(int state, TextNode *node);
   TextNode *get_text_def(int state) const;
 
@@ -89,9 +94,13 @@ PUBLISHED:
 
   INLINE static string get_accept_prefix();
   INLINE static string get_overflow_prefix();
+  INLINE static string get_type_prefix();
+  INLINE static string get_erase_prefix();
 
   INLINE string get_accept_event(const ButtonHandle &button) const;
   INLINE string get_overflow_event() const;
+  INLINE string get_type_event() const;
+  INLINE string get_erase_event() const;
 
 private:
   void slot_text_def(int state);
@@ -141,6 +150,8 @@ private:
 
   double _blink_start;
   double _blink_rate;
+
+  bool _cursor_keys_active;
 
 public:
   static TypeHandle get_class_type() {

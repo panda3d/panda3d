@@ -17,6 +17,7 @@
     pgMouseWatcherParameter.I pgMouseWatcherParameter.h \
     pgFrameStyle.I pgFrameStyle.h \
     pgItem.I pgItem.h \
+    pgMouseWatcherBackground.h \
     pgMouseWatcherRegion.I pgMouseWatcherRegion.h \
     pgTop.I pgTop.h \
     pgWaitBar.I pgWaitBar.h
@@ -29,6 +30,7 @@
     pgMouseWatcherParameter.cxx \
     pgFrameStyle.cxx \
     pgItem.cxx \
+    pgMouseWatcherBackground.cxx \
     pgMouseWatcherRegion.cxx \
     pgTop.cxx \
     pgWaitBar.cxx
@@ -40,6 +42,7 @@
     pgMouseWatcherParameter.I pgMouseWatcherParameter.h \
     pgFrameStyle.I pgFrameStyle.h \
     pgItem.I pgItem.h \
+    pgMouseWatcherBackground.h \
     pgMouseWatcherRegion.I pgMouseWatcherRegion.h \
     pgTop.I pgTop.h \
     pgWaitBar.I pgWaitBar.h

@@ -77,8 +77,11 @@ public:
   virtual void exit(const MouseWatcherParameter &param);
   virtual void focus_in();
   virtual void focus_out();
-  virtual void press(const MouseWatcherParameter &param);
-  virtual void release(const MouseWatcherParameter &param);
+  virtual void press(const MouseWatcherParameter &param, bool background);
+  virtual void release(const MouseWatcherParameter &param, bool background);
+
+  static void background_press(const MouseWatcherParameter &param);
+  static void background_release(const MouseWatcherParameter &param);
 
 PUBLISHED:
   INLINE void set_frame(float left, float right, float bottom, float top);
@@ -95,6 +98,9 @@ PUBLISHED:
 
   virtual void set_focus(bool focus);
   INLINE bool get_focus() const;
+
+  void set_background_focus(bool focus);
+  INLINE bool get_background_focus() const;
 
   int get_num_state_defs() const;
   void clear_state_def(int state);
@@ -147,8 +153,9 @@ private:
   LVecBase4f _frame;
   int _state;
   enum Flags {
-    F_active  = 0x01,
-    F_focus   = 0x02,
+    F_active             = 0x01,
+    F_focus              = 0x02,
+    F_background_focus   = 0x04,
   };
   int _flags;
 
@@ -171,6 +178,9 @@ private:
 
   static PT(TextNode) _text_node;
   static PGItem *_focus_item;
+
+  typedef pset<PGItem *> BackgroundFocus;
+  static BackgroundFocus _background_focus;
 
 public:
   static TypeHandle get_class_type() {

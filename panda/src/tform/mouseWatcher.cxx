@@ -399,8 +399,7 @@ global_keyboard_press(const MouseWatcherParameter &param) {
   for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
     MouseWatcherRegion *region = (*ri);
 
-    if (region != _current_region &&
-        region->get_active() && region->get_keyboard()) {
+    if (region != _current_region && region->get_keyboard()) {
       region->press(param);
     }
   }
@@ -412,8 +411,7 @@ global_keyboard_press(const MouseWatcherParameter &param) {
     for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
       MouseWatcherRegion *region = (*ri);
 
-      if (region != _current_region &&
-          region->get_active() && region->get_keyboard()) {
+      if (region != _current_region && region->get_keyboard()) {
         region->press(param);
       }
     }
@@ -433,8 +431,7 @@ global_keyboard_release(const MouseWatcherParameter &param) {
   for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
     MouseWatcherRegion *region = (*ri);
 
-    if (region != _current_region &&
-        region->get_active() && region->get_keyboard()) {
+    if (region != _current_region && region->get_keyboard()) {
       region->release(param);
     }
   }
@@ -446,8 +443,7 @@ global_keyboard_release(const MouseWatcherParameter &param) {
     for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
       MouseWatcherRegion *region = (*ri);
 
-      if (region != _current_region &&
-          region->get_active() && region->get_keyboard()) {
+      if (region != _current_region && region->get_keyboard()) {
         region->release(param);
       }
     }

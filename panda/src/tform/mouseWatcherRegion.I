@@ -118,7 +118,10 @@ get_sort() const {
 //     Function: MouseWatcherRegion::set_active
 //       Access: Published
 //  Description: Sets whether the region is active or not.  If it is
-//               not active, the MouseWatcher will totally ignore it.
+//               not active, the MouseWatcher will never consider the
+//               mouse to be over the region.  The region might still
+//               receive keypress events if its set_keyboard() flag is
+//               true.
 ////////////////////////////////////////////////////////////////////
 INLINE void MouseWatcherRegion::
 set_active(bool active) {

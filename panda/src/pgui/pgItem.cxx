@@ -39,6 +39,7 @@
 TypeHandle PGItem::_type_handle;
 PT(TextNode) PGItem::_text_node;
 PGItem *PGItem::_focus_item = (PGItem *)NULL;
+PGItem::BackgroundFocus PGItem::_background_focus;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PGItem::Constructor
@@ -65,6 +66,7 @@ PGItem::
   nassertv(_region->_item == this);
   _region->_item = (PGItem *)NULL;
 
+  set_background_focus(false);
   if (_focus_item == this) {
     _focus_item = (PGItem *)NULL;
   }
@@ -282,11 +284,13 @@ focus_out() {
 //               is within the region.
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-press(const MouseWatcherParameter &param) {
-  PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
-  string event = get_press_event(param.get_button());
-  play_sound(event);
-  throw_event(event, EventParameter(ep));
+press(const MouseWatcherParameter &param, bool background) {
+  if (!background) {
+    PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
+    string event = get_press_event(param.get_button());
+    play_sound(event);
+    throw_event(event, EventParameter(ep));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -297,11 +301,47 @@ press(const MouseWatcherParameter &param) {
 //               press() is released.
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-release(const MouseWatcherParameter &param) {
-  PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
-  string event = get_release_event(param.get_button());
-  play_sound(event);
-  throw_event(event, EventParameter(ep));
+release(const MouseWatcherParameter &param, bool background) {
+  if (!background) {
+    PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
+    string event = get_release_event(param.get_button());
+    play_sound(event);
+    throw_event(event, EventParameter(ep));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::background_press
+//       Access: Public, Static
+//  Description: Calls press() on all the PGItems with background
+//               focus.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+background_press(const MouseWatcherParameter &param) {
+  BackgroundFocus::const_iterator fi;
+  for (fi = _background_focus.begin(); fi != _background_focus.end(); ++fi) {
+    PGItem *item = *fi;
+    if (!item->get_focus()) {
+      item->press(param, true);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::background_release
+//       Access: Public, Static
+//  Description: Calls release() on all the PGItems with background
+//               focus.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+background_release(const MouseWatcherParameter &param) {
+  BackgroundFocus::const_iterator fi;
+  for (fi = _background_focus.begin(); fi != _background_focus.end(); ++fi) {
+    PGItem *item = *fi;
+    if (!item->get_focus()) {
+      item->release(param, true);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -372,6 +412,33 @@ set_focus(bool focus) {
     }
   }
   _region->set_keyboard(focus);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::set_background_focus
+//       Access: Published
+//  Description: Sets the background_focus flag for this item.  When
+//               background_focus is enabled, the item will receive
+//               keypress events even if it is not in focus; in fact,
+//               even if it is not onscreen.  Unlike normal focus,
+//               many items may have background_focus simultaneously.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+set_background_focus(bool focus) {
+  if (focus != get_background_focus()) {
+    if (focus) {
+      // Activate background focus.
+      _flags |= F_background_focus;
+      bool inserted = _background_focus.insert(this).second;
+      nassertv(inserted);
+
+    } else {
+      // Deactivate background focus.
+      _flags &= ~F_background_focus;
+      size_t num_erased = _background_focus.erase(this);
+      nassertv(num_erased == 1);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -148,6 +148,17 @@ get_focus() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_background_focus
+//       Access: Published
+//  Description: Returns whether background_focus is currently
+//               enabled.  See set_background_focus().
+////////////////////////////////////////////////////////////////////
+INLINE bool PGItem::
+get_background_focus() const {
+  return (_flags & F_background_focus) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGItem::get_id
 //       Access: Published
 //  Description: Returns the unique ID assigned to this PGItem.  This

@@ -120,14 +120,14 @@ exit(const MouseWatcherParameter &param) {
 //               is within the region.
 ////////////////////////////////////////////////////////////////////
 void PGButton::
-press(const MouseWatcherParameter &param) {
+press(const MouseWatcherParameter &param, bool background) {
   if (has_click_button(param.get_button())) {
     if (get_active()) {
       _button_down = true;
       set_state(S_depressed);
     }
   }
-  PGItem::press(param);
+  PGItem::press(param, background);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -135,13 +135,10 @@ press(const MouseWatcherParameter &param) {
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever a
 //               mouse or keyboard button previously depressed with
-//               press() is release.  The bool is_within flag is
-//               true if the button was released while the mouse was
-//               still within the region, or false if it was released
-//               outside the region.
+//               press() is released.
 ////////////////////////////////////////////////////////////////////
 void PGButton::
-release(const MouseWatcherParameter &param) {
+release(const MouseWatcherParameter &param, bool background) {
   if (has_click_button(param.get_button())) {
     _button_down = false;
     if (get_active()) {
@@ -153,7 +150,7 @@ release(const MouseWatcherParameter &param) {
       }
     }
   }
-  PGItem::release(param);
+  PGItem::release(param, background);
 }
 
 ////////////////////////////////////////////////////////////////////

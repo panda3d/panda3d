@@ -22,6 +22,7 @@
 #include "pgMouseWatcherParameter.h"
 #include "pgMouseWatcherGroup.h"
 #include "pgItem.h"
+#include "pgMouseWatcherBackground.h"
 #include "pgMouseWatcherRegion.h"
 #include "pgTop.h"
 #include "pgWaitBar.h"
@@ -59,6 +60,7 @@ init_libpgui() {
   PGMouseWatcherParameter::init_type();
   PGMouseWatcherGroup::init_type();
   PGItem::init_type();
+  PGMouseWatcherBackground::init_type();
   PGMouseWatcherRegion::init_type();
   PGTop::init_type();
   PGWaitBar::init_type();

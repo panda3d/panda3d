@@ -58,6 +58,8 @@ PGEntry(const string &name) : PGItem(name)
   _cursor_def = new RenderRelation(_text_render_root, cursor);
   _cursor_visible = true;
 
+  _cursor_keys_active = true;
+
   update_state();
 }
 
@@ -154,7 +156,7 @@ draw_item(PGTop *top, GraphicsStateGuardian *gsg,
 //               is within the region.
 ////////////////////////////////////////////////////////////////////
 void PGEntry::
-press(const MouseWatcherParameter &param) {
+press(const MouseWatcherParameter &param, bool background) {
   if (get_active()) {
     if (param.has_button()) {
       ButtonHandle button = param.get_button();
@@ -165,7 +167,8 @@ press(const MouseWatcherParameter &param) {
         // Mouse button; set focus.
         set_focus(true);
         
-      } else if (get_focus()) {
+      } else if ((!background && get_focus()) || 
+                 (background && get_background_focus())) {
         // Keyboard button.
         _cursor_position = min(_cursor_position, (int)_text.length());
         _blink_start = ClockObject::get_global_clock()->get_frame_time();
@@ -180,6 +183,7 @@ press(const MouseWatcherParameter &param) {
             _cursor_position--;
             _cursor_stale = true;
             _text_geom_stale = true;
+            erase(param);
           }
           
         } else if (button == KeyboardButton::del()) {
@@ -187,27 +191,36 @@ press(const MouseWatcherParameter &param) {
           if (_cursor_position < (int)_text.length()) {
             _text.erase(_text.begin() + _cursor_position);
             _text_geom_stale = true;
+            erase(param);
           }
           
         } else if (button == KeyboardButton::left()) {
-          // Left arrow.  Move the cursor position to the left.
-          _cursor_position = max(_cursor_position - 1, 0);
-          _cursor_stale = true;
+          if (_cursor_keys_active) {
+            // Left arrow.  Move the cursor position to the left.
+            _cursor_position = max(_cursor_position - 1, 0);
+            _cursor_stale = true;
+          }
           
         } else if (button == KeyboardButton::right()) {
-          // Right arrow.  Move the cursor position to the right.
-          _cursor_position = min(_cursor_position + 1, (int)_text.length());
-          _cursor_stale = true;
+          if (_cursor_keys_active) {
+            // Right arrow.  Move the cursor position to the right.
+            _cursor_position = min(_cursor_position + 1, (int)_text.length());
+            _cursor_stale = true;
+          }
           
         } else if (button == KeyboardButton::home()) {
-          // Home.  Move the cursor position to the beginning.
-          _cursor_position = 0;
-          _cursor_stale = true;
+          if (_cursor_keys_active) {
+            // Home.  Move the cursor position to the beginning.
+            _cursor_position = 0;
+            _cursor_stale = true;
+          }
           
         } else if (button == KeyboardButton::end()) {
-          // End.  Move the cursor position to the end.
-          _cursor_position = _text.length();
-          _cursor_stale = true;
+          if (_cursor_keys_active) {
+            // End.  Move the cursor position to the end.
+            _cursor_position = _text.length();
+            _cursor_stale = true;
+          }
           
         } else if (button.has_ascii_equivalent()) {
           char key = button.get_ascii_equivalent();
@@ -288,6 +301,7 @@ press(const MouseWatcherParameter &param) {
                 _cursor_position++;
                 _cursor_stale = true;
                 _text_geom_stale = true;
+                type(param);
               }
             }
           }
@@ -295,7 +309,7 @@ press(const MouseWatcherParameter &param) {
       }
     }
   }
-  PGItem::press(param);
+  PGItem::press(param, background);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -330,6 +344,34 @@ overflow(const MouseWatcherParameter &param) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::type
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever the
+//               user extends the text by typing.
+////////////////////////////////////////////////////////////////////
+void PGEntry::
+type(const MouseWatcherParameter &param) {
+  PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
+  string event = get_type_event();
+  play_sound(event);
+  throw_event(event, EventParameter(ep));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::erase
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever the
+//               user erase characters in the text.
+////////////////////////////////////////////////////////////////////
+void PGEntry::
+erase(const MouseWatcherParameter &param) {
+  PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
+  string event = get_erase_event();
+  play_sound(event);
+  throw_event(event, EventParameter(ep));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGEntry::setup
 //       Access: Published
 //  Description: Sets up the entry for normal use.  The width is the
@@ -349,7 +391,28 @@ setup(float width, int num_lines) {
   TextNode *text_node = get_text_def(S_focus);
   float line_height = text_node->get_line_height();
 
-  LVecBase4f frame(0.0, width, -0.3 * line_height - (line_height * (num_lines - 1)), line_height);
+  // Define determine the four corners of the frame.
+  LPoint3f ll(0.0, 0.0, -0.3 * line_height - (line_height * (num_lines - 1)));
+  LPoint3f ur(width, 0.0, line_height);
+  LPoint3f lr(ur[0], 0.0, ll[2]);
+  LPoint3f ul(ll[0], 0.0, ur[2]);
+
+  // Transform each corner by the TextNode's transform.
+  LMatrix4f mat = text_node->get_transform();
+  ll = ll * mat;
+  ur = ur * mat;
+  lr = lr * mat;
+  ul = ul * mat;
+
+  // And get the new minmax to define the frame.  We do all this work
+  // instead of just using the lower-left and upper-right corners,
+  // just in case the text was rotated.
+  LVecBase4f frame;
+  frame[0] = min(min(ll[0], ur[0]), min(lr[0], ul[0]));
+  frame[1] = max(max(ll[0], ur[0]), max(lr[0], ul[0]));
+  frame[2] = min(min(ll[2], ur[2]), min(lr[2], ul[2]));
+  frame[3] = max(max(ll[2], ur[2]), max(lr[2], ul[2]));
+
   switch (text_node->get_align()) {
   case TM_ALIGN_LEFT:
     // The default case.
@@ -583,8 +646,8 @@ update_cursor() {
     float line_height = _last_text_def->get_line_height();
 
     LVecBase3f trans(_ww_lines[row]._left + width, 0.0, -line_height * row);
-    LMatrix4f pos = LMatrix4f::translate_mat(trans);
-    _cursor_def->set_transition(new TransformTransition(pos));
+    LMatrix4f mat = LMatrix4f::translate_mat(trans) * node->get_transform();
+    _cursor_def->set_transition(new TransformTransition(mat));
 
     _cursor_stale = false;
   }

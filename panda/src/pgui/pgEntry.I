@@ -203,6 +203,30 @@ clear_cursor_def() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::set_cursor_keys_active
+//       Access: Published
+//  Description: Sets whether the arrow keys (and home/end) control
+//               movement of the cursor.  If true, they are active; if
+//               false, they are ignored.
+////////////////////////////////////////////////////////////////////
+INLINE void PGEntry:: 
+set_cursor_keys_active(bool flag) {
+  _cursor_keys_active = flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_cursor_keys_active
+//       Access: Published
+//  Description: Returns whether the arrow keys are currently set to
+//               control movement of the cursor; see
+//               set_cursor_keys_active().
+////////////////////////////////////////////////////////////////////
+INLINE bool PGEntry:: 
+get_cursor_keys_active() const {
+  return _cursor_keys_active;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGEntry::get_accept_prefix
 //       Access: Published, Static
 //  Description: Returns the prefix that is used to define the accept
@@ -227,6 +251,30 @@ get_overflow_prefix() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_type_prefix
+//       Access: Published, Static
+//  Description: Returns the prefix that is used to define the type
+//               event for all PGEntries.  The type event is the
+//               concatenation of this string followed by get_id().
+////////////////////////////////////////////////////////////////////
+INLINE string PGEntry::
+get_type_prefix() {
+  return "type-";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_erase_prefix
+//       Access: Published, Static
+//  Description: Returns the prefix that is used to define the erase
+//               event for all PGEntries.  The erase event is the
+//               concatenation of this string followed by get_id().
+////////////////////////////////////////////////////////////////////
+INLINE string PGEntry::
+get_erase_prefix() {
+  return "erase-";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGEntry::get_accept_event
 //       Access: Published
 //  Description: Returns the event name that will be thrown when the
@@ -248,4 +296,26 @@ get_accept_event(const ButtonHandle &button) const {
 INLINE string PGEntry::
 get_overflow_event() const {
   return "overflow-" + get_id();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_type_event
+//       Access: Published
+//  Description: Returns the event name that will be thrown whenever
+//               the user extends the text by typing.
+////////////////////////////////////////////////////////////////////
+INLINE string PGEntry::
+get_type_event() const {
+  return "type-" + get_id();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_erase_event
+//       Access: Published
+//  Description: Returns the event name that will be thrown whenever
+//               the user erases characters in the text.
+////////////////////////////////////////////////////////////////////
+INLINE string PGEntry::
+get_erase_event() const {
+  return "erase-" + get_id();
 }

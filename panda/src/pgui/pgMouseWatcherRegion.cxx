@@ -84,7 +84,7 @@ exit(const MouseWatcherParameter &param) {
 void PGMouseWatcherRegion::
 press(const MouseWatcherParameter &param) {
   if (_item != (PGItem *)NULL) {
-    _item->press(param);
+    _item->press(param, false);
   }
 }
 
@@ -98,6 +98,6 @@ press(const MouseWatcherParameter &param) {
 void PGMouseWatcherRegion::
 release(const MouseWatcherParameter &param) {
   if (_item != (PGItem *)NULL) {
-    _item->release(param);
+    _item->release(param, false);
   }
 }
