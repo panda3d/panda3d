@@ -40,6 +40,30 @@ get_proxy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::set_http_version
+//       Access: Published
+//  Description: Specifies the version of HTTP that the client uses to
+//               identify itself to the server.  The default is HV_11,
+//               or HTTP 1.0; you can set this to HV_10 (HTTP 1.0) to
+//               request the server use the older interface.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPClient::
+set_http_version(HTTPClient::HTTPVersion version) {
+  _http_version = version;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::get_http_version
+//       Access: Published
+//  Description: Returns the client's current setting for HTTP
+//               version.  See set_http_version().
+////////////////////////////////////////////////////////////////////
+INLINE HTTPClient::HTTPVersion HTTPClient::
+get_http_version() const {
+  return _http_version;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::set_verify_ssl
 //       Access: Published
 //  Description: Specifies whether the client will insist on verifying
@@ -67,4 +91,38 @@ set_verify_ssl(bool verify_ssl) {
 INLINE bool HTTPClient::
 get_verify_ssl() const {
   return _verify_ssl;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::get_document
+//       Access: Published
+//  Description: Opens the named document for reading, or if body is
+//               nonempty, posts data for a particular URL and
+//               retrieves the response.  Returns a new HTTPDocument
+//               object whether the document is successfully read or
+//               not; you can test is_valid() and get_return_code() to
+//               determine whether the document was retrieved.
+////////////////////////////////////////////////////////////////////
+INLINE PT(HTTPDocument) HTTPClient::
+get_document(const URLSpec &url, const string &body) {
+  const char *method = "GET";
+  if (!body.empty()) {
+    method = "POST";
+  }
+
+  return make_request(method, url, body);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::get_header
+//       Access: Published
+//  Description: Like get_document(), except only the header
+//               associated with the file is retrieved.  This may be
+//               used to test for existence of the file; it might also
+//               return the size of the file (if the server gives us
+//               this information).
+////////////////////////////////////////////////////////////////////
+INLINE PT(HTTPDocument) HTTPClient::
+get_header(const URLSpec &url) {
+  return make_request("HEAD", url, string());
 }

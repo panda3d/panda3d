@@ -57,10 +57,13 @@ PUBLISHED:
   INLINE const string &get_status_string() const;
   string get_header_value(const string &key) const;
 
+  INLINE size_t get_file_size() const;
+
   void write_headers(ostream &out) const;
 
 private:
   void read_headers();
+  void determine_content_length();
 
   IBioStream *_source;
 
@@ -70,6 +73,8 @@ private:
 
   typedef pmap<string, string> Headers;
   Headers _headers;
+
+  size_t _file_size;
 
 
 public:
@@ -88,6 +93,7 @@ public:
 
 private:
   static TypeHandle _type_handle;
+  friend class ChunkedStreamBuf;
 };
 
 #include "httpDocument.I"

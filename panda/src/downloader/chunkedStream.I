@@ -32,8 +32,9 @@ IChunkedStream() : istream(&_buf) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE IChunkedStream::
-IChunkedStream(istream *source, bool owns_source) : istream(&_buf) {
-  open(source, owns_source);
+IChunkedStream(istream *source, bool owns_source, 
+               HTTPDocument *doc) : istream(&_buf) {
+  open(source, owns_source, doc);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -42,9 +43,9 @@ IChunkedStream(istream *source, bool owns_source) : istream(&_buf) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE IChunkedStream &IChunkedStream::
-open(istream *source, bool owns_source) {
+open(istream *source, bool owns_source, HTTPDocument *doc) {
   clear(0);
-  _buf.open_read(source, owns_source);
+  _buf.open_read(source, owns_source, doc);
   return *this;
 }
 

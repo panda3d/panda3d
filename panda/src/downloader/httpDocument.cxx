@@ -31,9 +31,12 @@ TypeHandle HTTPDocument::_type_handle;
 ////////////////////////////////////////////////////////////////////
 HTTPDocument::
 HTTPDocument(BIO *bio, bool owns_bio) {
+  _file_size = 0;
+
   if (bio != (BIO *)NULL) {
     _source = new IBioStream(bio, owns_bio);
     read_headers();
+    determine_content_length();
 
   } else {
     _source = (IBioStream *)NULL;
@@ -94,7 +97,8 @@ is_regular_file() const {
 //  Description: Opens the document for reading.  Returns a newly
 //               allocated istream on success (which you should
 //               eventually delete when you are done reading).
-//               Returns NULL on failure.
+//               Returns NULL on failure.  This may only be called
+//               once for a particular HTTPDocument.
 ////////////////////////////////////////////////////////////////////
 istream *HTTPDocument::
 open_read_file() const {
@@ -109,14 +113,13 @@ open_read_file() const {
     (*si) = tolower(*si);
   }
 
+  istream *result = _source;
   if (transfer_coding == "chunked") {
-    return new IChunkedStream(_source, false);
-
-  } else {
-    istream *result = _source;
-    ((HTTPDocument *)this)->_source = (IBioStream *)NULL;
-    return result;
+    result = new IChunkedStream(_source, true, (HTTPDocument *)this);
   }
+
+  ((HTTPDocument *)this)->_source = (IBioStream *)NULL;
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -255,5 +258,20 @@ read_headers() {
 
   // A blank line terminates the headers.
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::determine_content_length
+//       Access: Private
+//  Description: Determines the file size based on the Content-Length
+//               field if it has been supplied.
+////////////////////////////////////////////////////////////////////
+void HTTPDocument::
+determine_content_length() {
+  string content_length = get_header_value("Content-Length");
+  if (!content_length.empty()) {
+    _file_size = atoi(content_length.c_str());
+  }
+}
+
 
 #endif  // HAVE_SSL

@@ -23,6 +23,8 @@
 
 #include "chunkedStreamBuf.h"
 
+class HTTPDocument;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : IChunkedStream
 // Description : An input stream object that reads data from a source
@@ -34,9 +36,11 @@
 class EXPCL_PANDAEXPRESS IChunkedStream : public istream {
 public:
   INLINE IChunkedStream();
-  INLINE IChunkedStream(istream *source, bool owns_source);
+  INLINE IChunkedStream(istream *source, bool owns_source, 
+                        HTTPDocument *doc = NULL);
 
-  INLINE IChunkedStream &open(istream *source, bool owns_source);
+  INLINE IChunkedStream &open(istream *source, bool owns_source, 
+                              HTTPDocument *doc = NULL);
   INLINE IChunkedStream &close();
 
 private:

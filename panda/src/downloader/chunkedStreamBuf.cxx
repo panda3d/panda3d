@@ -64,14 +64,26 @@ ChunkedStreamBuf::
 ////////////////////////////////////////////////////////////////////
 //     Function: ChunkedStreamBuf::open_read
 //       Access: Public
-//  Description:
+//  Description: If the document pointer is non-NULL, it will be
+//               updated with the length of the file as it is derived
+//               from the chunked encoding.
 ////////////////////////////////////////////////////////////////////
 void ChunkedStreamBuf::
-open_read(istream *source, bool owns_source) {
+open_read(istream *source, bool owns_source, HTTPDocument *doc) {
   _source = source;
   _owns_source = owns_source;
   _chunk_remaining = 0;
   _done = false;
+  _doc = doc;
+
+  if (_doc != (HTTPDocument *)NULL) {
+    _doc->_file_size = 0;
+
+    // Read a little bit from the file to get the first chunk (and
+    // therefore the file size, or at least the size of the first
+    // chunk).
+    underflow();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -155,6 +167,10 @@ read_chars(char *start, size_t length) {
     // Last chunk; we're done.
     _done = true;
     return 0;
+  }
+
+  if (_doc != (HTTPDocument *)NULL) {
+    _doc->_file_size += (size_t)chunk_size;
   }
 
   _chunk_remaining = (size_t)chunk_size;

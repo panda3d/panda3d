@@ -16,15 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_downloader.h"
 
-#include <error_utils.h>
-#include <filename.h>
+#include "downloader.h"
+#include "config_downloader.h"
+#include "urlSpec.h"
+#include "error_utils.h"
+#include "filename.h"
 
 #include <errno.h>
 #include <math.h>
-
-#include "downloader.h"
 
 #if !defined(WIN32_VC)
   #include <sys/time.h>
@@ -92,12 +92,11 @@ Downloader::
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int Downloader::
-connect_to_server_by_proxy(const string &proxy_name, uint proxy_port,
-                           const string &server_name) {
-  if (connect_to_server(proxy_name, proxy_port) != EU_success) {
+connect_to_server_by_proxy(const URLSpec &proxy, const string &server_name) {
+  if (connect_to_server(proxy.get_server(), proxy.get_port()) != EU_success) {
     downloader_cat.error()
       << "Downloader::connect_to_server_by_proxy() - could not connect to: "
-      << proxy_name << endl;
+      << proxy << endl;
     return EU_error_abort;
   }
   
@@ -544,7 +543,7 @@ run(void) {
   }
 
   // Attempt to receive the bytes from the socket
-  int fret;
+  int fret = 0;
   // Handle the case of a fast connection
   if (_receive_size > (ulong)MAX_RECEIVE_BYTES) {
     int repeat = (int)(_receive_size / MAX_RECEIVE_BYTES);
@@ -667,7 +666,7 @@ run_to_ram(void) {
   }
 
   // Attempt to receive the bytes from the socket
-  int fret;
+  int fret = 0;
   // Handle the case of a fast connection
   if (_receive_size > (ulong)MAX_RECEIVE_BYTES) {
     int repeat = (int)(_receive_size / MAX_RECEIVE_BYTES);

@@ -60,6 +60,15 @@ PUBLISHED:
   INLINE void set_proxy(const URLSpec &proxy);
   INLINE const URLSpec &get_proxy() const;
 
+  enum HTTPVersion {
+    HV_10,  // HTTP 1.0
+    HV_11,  // HTTP 1.1
+  };
+
+  INLINE void set_http_version(HTTPVersion version);
+  INLINE HTTPVersion get_http_version() const;
+  string get_http_version_string() const;
+
   bool load_certificates(const Filename &filename);
 
   INLINE void set_verify_ssl(bool verify_ssl);
@@ -68,22 +77,27 @@ PUBLISHED:
   bool add_expected_server(const string &server_attributes);
   void clear_expected_servers();
 
-  PT(HTTPDocument) get_document(const URLSpec &url, const string &body = string());
+  INLINE PT(HTTPDocument) get_document(const URLSpec &url,
+                                       const string &body = string());
+  INLINE PT(HTTPDocument) get_header(const URLSpec &url);
 
 private:
   void make_ctx();
   static void initialize_ssl();
   static int load_verify_locations(SSL_CTX *ctx, const Filename &ca_file);
 
-  BIO *get_http(const URLSpec &url, const string &body);
-  BIO *get_https(const URLSpec &url, const string &body);
-  BIO *get_http_proxy(const URLSpec &url, const string &body);
-  BIO *get_https_proxy(const URLSpec &url, const string &body);
+  PT(HTTPDocument) make_request(const string &method, const URLSpec &url, 
+                                const string &body);
+
+  BIO *get_http(const string &method, const URLSpec &url, const string &body);
+  BIO *get_https(const string &method, const URLSpec &url, const string &body);
+  BIO *get_http_proxy(const string &method, const URLSpec &url, const string &body);
+  BIO *get_https_proxy(const string &method, const URLSpec &url, const string &body);
 
   BIO *make_https_connection(BIO *bio, const URLSpec &url) const;
-  void send_get_request(BIO *bio, 
-                        const string &path, const string &server, 
-                        const string &body) const;
+  void send_request(BIO *bio, const string &method,
+                    const string &path, const string &server, 
+                    const string &body) const;
   bool verify_server(X509_NAME *subject) const;
 
   static X509_NAME *parse_x509_name(const string &source);
@@ -101,6 +115,7 @@ private:
 #endif
 
   URLSpec _proxy;
+  HTTPVersion _http_version;
   bool _verify_ssl;
 
   // List of allowable SSL servers to connect to.  If the list is

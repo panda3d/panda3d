@@ -37,6 +37,8 @@
   #include <resolv.h>
 #endif
 
+class URLSpec;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : Downloader
 // Description :
@@ -46,8 +48,7 @@ PUBLISHED:
   Downloader(void);
   virtual ~Downloader(void);
 
-  int connect_to_server_by_proxy(const string &proxy_name, uint proxy_port,
-                const string &server_name);
+  int connect_to_server_by_proxy(const URLSpec &proxy, const string &server_name);
   int connect_to_server(const string &name, uint port=80);
   void disconnect_from_server(void);
 

@@ -64,3 +64,17 @@ INLINE const string &HTTPDocument::
 get_status_string() const {
   return _status_string;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::get_file_size
+//       Access: Published
+//  Description: Returns the size of the file, if it is known.
+//               Returns 0 if the file size is not known.  This may
+//               increase as the file is read due to the nature of
+//               HTTP/1.1 requests which can change their minds
+//               midstream about how much data they're sending you.
+////////////////////////////////////////////////////////////////////
+INLINE size_t HTTPDocument::
+get_file_size() const {
+  return _file_size;
+}

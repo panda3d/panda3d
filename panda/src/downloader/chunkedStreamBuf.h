@@ -20,6 +20,8 @@
 #define CHUNKEDSTREAMBUF_H
 
 #include "pandabase.h"
+#include "httpDocument.h"
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ChunkedStreamBuf
@@ -31,7 +33,7 @@ public:
   ChunkedStreamBuf();
   virtual ~ChunkedStreamBuf();
 
-  void open_read(istream *source, bool owns_source);
+  void open_read(istream *source, bool owns_source, HTTPDocument *doc);
   void close_read();
 
 protected:
@@ -44,6 +46,8 @@ private:
   bool _owns_source;
   size_t _chunk_remaining;
   bool _done;
+
+  PT(HTTPDocument) _doc;
 };
 
 #endif

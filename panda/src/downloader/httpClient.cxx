@@ -43,6 +43,7 @@ X509_STORE *HTTPClient::_x509_store = NULL;
 ////////////////////////////////////////////////////////////////////
 HTTPClient::
 HTTPClient() {
+  _http_version = HV_11;
   _verify_ssl = verify_ssl;
   make_ctx();
 }
@@ -54,6 +55,9 @@ HTTPClient() {
 ////////////////////////////////////////////////////////////////////
 HTTPClient::
 HTTPClient(const HTTPClient &copy) {
+  // We can initialize these to default values because the operator =
+  // function will copy them in a second.
+  _http_version = HV_11;
   _verify_ssl = verify_ssl;
   make_ctx();
 
@@ -68,6 +72,7 @@ HTTPClient(const HTTPClient &copy) {
 void HTTPClient::
 operator = (const HTTPClient &copy) {
   _proxy = copy._proxy;
+  _http_version = copy._http_version;
   set_verify_ssl(copy._verify_ssl);
   clear_expected_servers();
 
@@ -97,6 +102,25 @@ HTTPClient::
 
   // Free all of the expected server definitions.
   clear_expected_servers();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::get_http_version_string
+//       Access: Published
+//  Description: Returns the current HTTP version setting as a string,
+//               e.g. "HTTP/1.0" or "HTTP/1.1".
+////////////////////////////////////////////////////////////////////
+string HTTPClient::
+get_http_version_string() const {
+  switch (_http_version) {
+  case HV_10:
+    return "HTTP/1.0";
+
+  case HV_11:
+    return "HTTP/1.1";
+  }
+
+  return "unknown";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -183,36 +207,6 @@ clear_expected_servers() {
   _expected_servers.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_document
-//       Access: Published
-//  Description: Opens the named document for reading, or if body is
-//               nonempty, posts data for a particular URL and
-//               retrieves the response.  Returns a new HTTPDocument
-//               object whether the document is successfully read or
-//               not; you can test is_valid() and get_return_code() to
-//               determine whether the document was retrieved.
-////////////////////////////////////////////////////////////////////
-PT(HTTPDocument) HTTPClient::
-get_document(const URLSpec &url, const string &body) {
-  BIO *bio;
-
-  if (_proxy.empty()) {
-    if (url.get_scheme() == "https") {
-      bio = get_https(url, body);
-    } else {
-      bio = get_http(url, body);
-    }
-  } else {
-    if (url.get_scheme() == "https") {
-      bio = get_https_proxy(url, body);
-    } else {
-      bio = get_http_proxy(url, body);
-    }
-  }    
-
-  return new HTTPDocument(bio, true);
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::make_ctx
@@ -380,13 +374,43 @@ load_verify_locations(SSL_CTX *ctx, const Filename &ca_file) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::make_request
+//       Access: Private
+//  Description: Chooses a suitable mechanism to handle this request,
+//               based on whether it is an http or https request, and
+//               according to whether we have a proxy in place.
+//               Issues the request and returns an HTTPDocument that
+//               represents the results.
+////////////////////////////////////////////////////////////////////
+PT(HTTPDocument) HTTPClient::
+make_request(const string &method, const URLSpec &url, const string &body) {
+  BIO *bio;
+
+  if (_proxy.empty()) {
+    if (url.get_scheme() == "https") {
+      bio = get_https(method, url, body);
+    } else {
+      bio = get_http(method, url, body);
+    }
+  } else {
+    if (url.get_scheme() == "https") {
+      bio = get_https_proxy(method, url, body);
+    } else {
+      bio = get_http_proxy(method, url, body);
+    }
+  }    
+
+  return new HTTPDocument(bio, true);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::get_https
 //       Access: Private
 //  Description: Opens the indicated URL directly as an ordinary http
 //               document.
 ////////////////////////////////////////////////////////////////////
 BIO *HTTPClient::
-get_http(const URLSpec &url, const string &body) {
+get_http(const string &method, const URLSpec &url, const string &body) {
   ostringstream server;
   server << url.get_server() << ":" << url.get_port();
   string server_str = server.str();
@@ -405,7 +429,7 @@ get_http(const URLSpec &url, const string &body) {
     return NULL;
   }
 
-  send_get_request(bio, url.get_path(), url.get_server(), body);
+  send_request(bio, method, url.get_path(), url.get_server(), body);
   return bio;
 }
 
@@ -416,7 +440,7 @@ get_http(const URLSpec &url, const string &body) {
 //               document.
 ////////////////////////////////////////////////////////////////////
 BIO *HTTPClient::
-get_https(const URLSpec &url, const string &body) {
+get_https(const string &method, const URLSpec &url, const string &body) {
   ostringstream server;
   server << url.get_server() << ":" << url.get_port();
   string server_str = server.str();
@@ -438,7 +462,7 @@ get_https(const URLSpec &url, const string &body) {
   BIO *sbio = make_https_connection(bio, url);
 
   if (sbio != (BIO *)NULL) {
-    send_get_request(sbio, url.get_path(), url.get_server(), body);
+    send_request(sbio, method, url.get_path(), url.get_server(), body);
   }
   return sbio;
 }
@@ -450,7 +474,7 @@ get_https(const URLSpec &url, const string &body) {
 //               http document.
 ////////////////////////////////////////////////////////////////////
 BIO *HTTPClient::
-get_http_proxy(const URLSpec &url, const string &body) {
+get_http_proxy(const string &method, const URLSpec &url, const string &body) {
   ostringstream proxy_server;
   proxy_server << _proxy.get_server() << ":" << _proxy.get_port();
   string proxy_server_str = proxy_server.str();
@@ -470,7 +494,7 @@ get_http_proxy(const URLSpec &url, const string &body) {
     return NULL;
   }
 
-  send_get_request(bio, url, url.get_server(), body);
+  send_request(bio, method, url, url.get_server(), body);
   return bio;
 }
 
@@ -481,7 +505,7 @@ get_http_proxy(const URLSpec &url, const string &body) {
 //               document.
 ////////////////////////////////////////////////////////////////////
 BIO *HTTPClient::
-get_https_proxy(const URLSpec &url, const string &body) {
+get_https_proxy(const string &method, const URLSpec &url, const string &body) {
   // First, ask the proxy to open a connection for us.
   ostringstream proxy_server;
   proxy_server << _proxy.get_server() << ":" << _proxy.get_port();
@@ -505,7 +529,7 @@ get_https_proxy(const URLSpec &url, const string &body) {
   {
     ostringstream request;
     request 
-      << "CONNECT " << url.get_authority() << " HTTP/1.1\r\n"
+      << "CONNECT " << url.get_authority() << " " << get_http_version_string()
       << "\r\n";
     string request_str = request.str();
 
@@ -540,7 +564,7 @@ get_https_proxy(const URLSpec &url, const string &body) {
         // us.)
         if ((doc->get_status_code() / 100) == 4) {
           BIO_free_all(bio);
-          return get_http_proxy(url, body);
+          return get_http_proxy(method, url, body);
         }
       }
       return NULL;
@@ -557,7 +581,7 @@ get_https_proxy(const URLSpec &url, const string &body) {
   BIO *sbio = make_https_connection(bio, url);
 
   if (sbio != (BIO *)NULL) {
-    send_get_request(sbio, url.get_path(), url.get_server(), body);
+    send_request(sbio, method, url.get_path(), url.get_server(), body);
   }
   return sbio;
 }
@@ -630,7 +654,7 @@ make_https_connection(BIO *bio, const URLSpec &url) const {
 
     downloader_cat.info()
       << "Server is " << common_name << " from " << org_unit_name
-      << " of " << org_name << "\n";
+      << " / " << org_name << "\n";
 
     if (!verify_server(subject)) {
       downloader_cat.info()
@@ -824,33 +848,29 @@ certificate signing
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::send_get_request
+//     Function: HTTPClient::send_request
 //       Access: Private
-//  Description: Sends the appropriate GET or POST request to the
-//               server on the indicated connection.
+//  Description: Sends the appropriate GET or POST (or whatever)
+//               request to the server on the indicated connection.
 ////////////////////////////////////////////////////////////////////
 void HTTPClient::
-send_get_request(BIO *bio, 
-                 const string &path, const string &server, 
-                 const string &body) const {
+send_request(BIO *bio, const string &method, 
+             const string &path, const string &server,
+             const string &body) const {
   ostringstream request;
 
-  if (body.empty()) {
+  request 
+    << method << " " << path << " " << get_http_version_string() << "\r\n";
+
+  if (_http_version > HV_10) {
     request 
-      << "GET " << path << " HTTP/1.1\r\n"
       << "Host: " << server << "\r\n"
-      << "Connection: close\r\n"
-      << "\r\n";
-  } else {
-    request 
-      << "POST " << path << " HTTP/1.1\r\n"
-      << "Host: " << server << "\r\n"
-      << "Connection: close\r\n"
-      << "Content-type: application/x-www-form-urlencoded\r\n"
-      << "Content-Length: " << body.length() << "\r\n"
-      << "\r\n"
-      << body;
+      << "Connection: close\r\n";
   }
+
+  request
+    << "\r\n" 
+    << body;
 
   string request_str = request.str();
 #ifndef NDEBUG
