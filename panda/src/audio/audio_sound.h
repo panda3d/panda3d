@@ -38,7 +38,7 @@ protected:
 
   friend class AudioPool;
   friend class AudioManager;
-public:
+PUBLISHED:
   virtual ~AudioSound(void);
   INLINE bool operator==(const AudioSound&) const;
   INLINE bool operator!=(const AudioSound&) const;
