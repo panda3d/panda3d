@@ -37,6 +37,7 @@ public:
 		    const CollisionSolid *into) const;
 
   virtual void xform(const LMatrix4f &mat);
+  virtual LPoint3f get_collision_origin() const;
 
   virtual void output(ostream &out) const;
 

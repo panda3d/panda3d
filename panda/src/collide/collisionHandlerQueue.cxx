@@ -13,14 +13,17 @@ class CollisionEntrySorter {
 public:
   CollisionEntrySorter(CollisionEntry *entry) {
     _entry = entry;
-    _dist = (entry->get_from_intersection_point() - LPoint3f::origin()).length();
+    LVector3f vec = 
+      entry->get_from_intersection_point() - 
+      entry->get_from()->get_collision_origin();
+    _dist2 = vec.length_squared();
   }
   bool operator < (const CollisionEntrySorter &other) const {
-    return _dist < other._dist;
+    return _dist2 < other._dist2;
   }
 
   CollisionEntry *_entry;
-  double _dist;
+  float _dist2;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -62,7 +65,9 @@ add_entry(CollisionEntry *entry) {
 //       Access: Public
 //  Description: Sorts all the detected collisions front-to-back by
 //               from_intersection_point() so that those intersection
-//               points closest to the origin appear first.
+//               points closest to the collider's origin (e.g., the
+//               center of the CollisionSphere, or the point_a of a
+//               CollisionSegment) appear first.
 ////////////////////////////////////////////////////////////////////
 void CollisionHandlerQueue::
 sort_entries() {
@@ -80,7 +85,9 @@ sort_entries() {
   sort(sorter.begin(), sorter.end());
   nassertv(sorter.size() == _entries.size());
 
-  // Now that they're sorted, get them back.
+  // Now that they're sorted, get them back.  We do this in two steps,
+  // building up a temporary vector first, so we don't accidentally
+  // delete all the entries when the pointers go away.
   Entries sorted_entries;
   sorted_entries.reserve(sorter.size());
   Sorter::const_iterator si;

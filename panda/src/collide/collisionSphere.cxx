@@ -61,6 +61,19 @@ xform(const LMatrix4f &mat) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionSphere::get_collision_origin
+//       Access: Public, Virtual
+//  Description: Returns the point in space deemed to be the "origin"
+//               of the solid for collision purposes.  The closest
+//               intersection point to this origin point is considered
+//               to be the most significant.
+////////////////////////////////////////////////////////////////////
+LPoint3f CollisionSphere::
+get_collision_origin() const {
+  return get_center();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionSphere::output
 //       Access: Public, Virtual
 //  Description: 

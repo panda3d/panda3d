@@ -42,6 +42,7 @@ public:
   virtual ~CollisionSolid();
 
   virtual CollisionSolid *make_copy()=0;
+  virtual LPoint3f get_collision_origin() const=0;
 
 PUBLISHED:
   INLINE void set_tangible(bool tangible);
