@@ -69,10 +69,6 @@ class LogicGateAI(Entity.Entity, PandaObject.PandaObject):
     if __debug__:
         notify = DirectNotifyGlobal.directNotify.newCategory(
                 'LogicGateAI')
-    __attribs__ = (
-        'input_input1_bool', 'input_input2_bool',
-        'isInput1', 'isInput2', 'logicType', 'output',
-        )
     logicTests={
         "and": andTest,
         "or": orTest,

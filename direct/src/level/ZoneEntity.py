@@ -4,13 +4,6 @@ import ZoneEntityBase
 import BasicEntities
 
 class ZoneEntity(ZoneEntityBase.ZoneEntityBase, BasicEntities.NodePathAttribs):
-    __delAttribs__ = (
-        'parent', 'pos', 'hpr',
-        )
-    __attribs__ = (
-        'description', 'modelZoneNum',
-        )
-    
     def __init__(self, level, entId):
         ZoneEntityBase.ZoneEntityBase.__init__(self, level, entId)
 

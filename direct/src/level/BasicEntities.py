@@ -9,9 +9,6 @@ class NodePathAttribs:
     """Derive from this class to give an entity the behavior of a
     NodePath, without necessarily deriving from NodePath. Derived class
     must implement getNodePath()."""
-    __attribs__ = (
-        'parent', 'pos', 'hpr',
-        )
     def initNodePathAttribs(self, doReparent=1):
         """Call this after the entity has been initialized"""
         self.callSetters('pos','x','y','z',
@@ -38,9 +35,6 @@ class NodePathAttribs:
     def setSz(self, *args): self.getNodePath().setSz(*args)
     
 class privNodePathImpl(NodePath.NodePath):
-    __attribs__ = (
-        'parent', 'pos', 'hpr',
-        )
     def __init__(self, name):
         node = hidden.attachNewNode(name)
         NodePath.NodePath.__init__(self, node)
