@@ -680,10 +680,15 @@ class Actor(PandaObject, NodePath):
         # Get a handle to the joint.
         joint = bundle.findChild(jointName)
 
+        if node == None:
+            node = self.attachNewNode(jointName)
+
         if (joint):
             joint.addNetTransform(node.node())
         else:
             Actor.notify.warning("no joint named %s!" % (jointName))
+
+        return node
 
     def stopJoint(self, partName, jointName, lodName="lodRoot"):
         """stopJoint(self, string, string, key="lodRoot")
