@@ -195,7 +195,9 @@ setup_panda_2d(GraphicsWindow *win, const string &graph_name) {
 
   add_render_layer(win, render2d_top, cam2d);
 
-  return NodePath(render2d_arc);
+  NodePath render2d_np = NodePath();
+  render2d_np.extend_by(render2d_arc);
+  return render2d_np;
 }
 
 // Create an auxiliary scene graph starting at the indicated node,
