@@ -255,6 +255,9 @@ private:
 template<class Key, class Compare = less<Key> >
 class ov_set : public ordered_vector<Key, Compare> {
 public:
+  typedef ordered_vector<Key, Compare>::ITERATOR ITERATOR;
+  typedef ordered_vector<Key, Compare>::VALUE_TYPE VALUE_TYPE;
+
   INLINE ov_set(const Compare &compare = Compare());
   INLINE ov_set(const ov_set<Key, Compare> &copy);
   INLINE ov_set<Key, Compare> &operator = (const ov_set<Key, Compare> &copy);
@@ -275,6 +278,9 @@ public:
 template<class Key, class Compare = less<Key> >
 class ov_multiset : public ordered_vector<Key, Compare> {
 public:
+  typedef ordered_vector<Key, Compare>::ITERATOR ITERATOR;
+  typedef ordered_vector<Key, Compare>::VALUE_TYPE VALUE_TYPE;
+
   INLINE ov_multiset(const Compare &compare = Compare());
   INLINE ov_multiset(const ov_multiset<Key, Compare> &copy);
   INLINE ov_multiset<Key, Compare> &operator = (const ov_multiset<Key, Compare> &copy);
