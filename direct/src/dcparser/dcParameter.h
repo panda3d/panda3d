@@ -20,7 +20,7 @@
 #define DCPARAMETER_H
 
 #include "dcbase.h"
-#include "dcPackerInterface.h"
+#include "dcField.h"
 
 class DCSimpleParameter;
 class DCClassParameter;
@@ -39,7 +39,7 @@ class HashGenerator;
 //               which has the same properties as the referenced type,
 //               but a different name.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DIRECT DCParameter : public DCPackerInterface {
+class EXPCL_DIRECT DCParameter : public DCField {
 protected:
   DCParameter();
   DCParameter(const DCParameter &copy);
@@ -47,6 +47,7 @@ public:
   virtual ~DCParameter();
 
 PUBLISHED:
+  virtual DCParameter *as_parameter();
   virtual DCSimpleParameter *as_simple_parameter();
   virtual DCClassParameter *as_class_parameter();
   virtual DCArrayParameter *as_array_parameter();
@@ -60,7 +61,7 @@ public:
   void set_typedef(const DCTypedef *dtypedef);
 
   void output(ostream &out, bool brief) const;
-  void write(ostream &out, bool brief, int indent_level) const;
+  virtual void write(ostream &out, bool brief, int indent_level) const;
   virtual void output_instance(ostream &out, const string &prename, 
                                const string &name, const string &postname) const=0;
   void output_typedef_name(ostream &out, const string &prename, 

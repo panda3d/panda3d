@@ -267,12 +267,12 @@ dclass_fields:
         | dclass_fields molecular_field
         | dclass_fields unnamed_parameter ';'
 {
-  current_class->add_parameter($2);
+  current_class->add_field($2);
 }
         | dclass_fields named_parameter
 {
-  if (!current_class->add_parameter($2)) {
-    yyerror("Duplicate parameter name: " + $2->get_name());
+  if (!current_class->add_field($2)) {
+    yyerror("Duplicate field name: " + $2->get_name());
   }
 }
         ;

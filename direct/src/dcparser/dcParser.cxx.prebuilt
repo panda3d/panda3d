@@ -1240,14 +1240,14 @@ case 28:
 case 33:
 #line 269 "dcParser.yxx"
 {
-  current_class->add_parameter(yyvsp[-1].u.parameter);
+  current_class->add_field(yyvsp[-1].u.parameter);
 }
     break;
 case 34:
 #line 273 "dcParser.yxx"
 {
-  if (!current_class->add_parameter(yyvsp[0].u.parameter)) {
-    yyerror("Duplicate parameter name: " + yyvsp[0].u.parameter->get_name());
+  if (!current_class->add_field(yyvsp[0].u.parameter)) {
+    yyerror("Duplicate field name: " + yyvsp[0].u.parameter->get_name());
   }
 }
     break;

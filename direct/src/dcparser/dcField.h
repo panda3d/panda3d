@@ -25,6 +25,7 @@
 
 class DCAtomicField;
 class DCMolecularField;
+class DCParameter;
 class HashGenerator;
 
 ////////////////////////////////////////////////////////////////////
@@ -33,11 +34,16 @@ class HashGenerator;
 //               or molecular.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DIRECT DCField : public DCPackerInterface {
+public:
+  DCField(const string &name = string());
+  virtual ~DCField();
+
 PUBLISHED:
   int get_number() const;
 
   virtual DCAtomicField *as_atomic_field();
   virtual DCMolecularField *as_molecular_field();
+  virtual DCParameter *as_parameter();
 
   string format_data(const string &packed_data);
   string parse_string(const string &formatted_string);
@@ -55,8 +61,6 @@ PUBLISHED:
 #endif 
 
 public:
-  DCField(const string &name);
-  virtual ~DCField();
   virtual void write(ostream &out, bool brief, int indent_level) const=0;
   virtual void generate_hash(HashGenerator &hashgen) const;
 

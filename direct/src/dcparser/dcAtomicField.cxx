@@ -25,81 +25,13 @@
 #include <math.h>
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::Constructor
-//       Access: Public
-//  Description: The type parameter should be a newly-allocated DCParameter
-//               object; it will eventually be freed with delete when
-//               this object destructs.
-////////////////////////////////////////////////////////////////////
-DCAtomicField::ElementType::
-ElementType(DCParameter *param) {
-  _param = param;
-  _has_default_value = false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::Copy Constructor
+//     Function: DCAtomicField::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-DCAtomicField::ElementType::
-ElementType(const DCAtomicField::ElementType &copy) :
-  _param(copy._param->make_copy()),
-  _default_value(copy._default_value),
-  _has_default_value(copy._has_default_value)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DCAtomicField::ElementType::
-operator = (const DCAtomicField::ElementType &copy) {
-  delete _param;
-  _param = copy._param->make_copy();
-  _default_value = copy._default_value;
-  _has_default_value = copy._has_default_value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-DCAtomicField::ElementType::
-~ElementType() {
-  delete _param;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::set_default_value
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void DCAtomicField::ElementType::
-set_default_value(const string &default_value) {
-  _default_value = default_value;
-  _has_default_value = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::output
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void DCAtomicField::ElementType::
-output(ostream &out, bool brief) const {
-  _param->output(out, brief);
-
-  if (!brief && _has_default_value) {
-    out << " = ";
-    DCPacker packer;
-    packer.begin_unpack(_default_value, _param);
-    packer.unpack_and_format(out);
-    packer.end_unpack();
-  }
+DCAtomicField::
+DCAtomicField(const string &name) : DCField(name) {
+  _flags = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -334,16 +266,6 @@ compare_flags(const DCAtomicField &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-DCAtomicField::
-DCAtomicField(const string &name) : DCField(name) {
-  _flags = 0;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::write
 //       Access: Public, Virtual
 //  Description: Generates a parseable description of the object to
@@ -460,4 +382,82 @@ add_element(const DCAtomicField::ElementType &element) {
 void DCAtomicField::
 add_flag(enum Flags flag) {
   _flags |= flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::ElementType::Constructor
+//       Access: Public
+//  Description: The type parameter should be a newly-allocated DCParameter
+//               object; it will eventually be freed with delete when
+//               this object destructs.
+////////////////////////////////////////////////////////////////////
+DCAtomicField::ElementType::
+ElementType(DCParameter *param) {
+  _param = param;
+  _has_default_value = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::ElementType::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+DCAtomicField::ElementType::
+ElementType(const DCAtomicField::ElementType &copy) :
+  _param(copy._param->make_copy()),
+  _default_value(copy._default_value),
+  _has_default_value(copy._has_default_value)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::ElementType::Copy Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DCAtomicField::ElementType::
+operator = (const DCAtomicField::ElementType &copy) {
+  delete _param;
+  _param = copy._param->make_copy();
+  _default_value = copy._default_value;
+  _has_default_value = copy._has_default_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::ElementType::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DCAtomicField::ElementType::
+~ElementType() {
+  delete _param;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::ElementType::set_default_value
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void DCAtomicField::ElementType::
+set_default_value(const string &default_value) {
+  _default_value = default_value;
+  _has_default_value = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::ElementType::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void DCAtomicField::ElementType::
+output(ostream &out, bool brief) const {
+  _param->output(out, brief);
+
+  if (!brief && _has_default_value) {
+    out << " = ";
+    DCPacker packer;
+    packer.begin_unpack(_default_value, _param);
+    packer.unpack_and_format(out);
+    packer.end_unpack();
+  }
 }

@@ -33,6 +33,9 @@ class DCParameter;
 //               be treated as a unit.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DIRECT DCMolecularField : public DCField {
+public:
+  DCMolecularField(const string &name);
+
 PUBLISHED:
   virtual DCMolecularField *as_molecular_field();
 
@@ -40,8 +43,6 @@ PUBLISHED:
   DCAtomicField *get_atomic(int n) const;
 
 public:
-  DCMolecularField(const string &name);
-
   void add_atomic(DCAtomicField *atomic);
 
   virtual void write(ostream &out, bool brief, int indent_level) const;

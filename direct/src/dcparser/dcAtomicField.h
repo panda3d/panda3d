@@ -36,6 +36,9 @@
 //               remote procedure method.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DIRECT DCAtomicField : public DCField {
+public:
+  DCAtomicField(const string &name);
+
 PUBLISHED:
   virtual DCAtomicField *as_atomic_field();
 
@@ -62,7 +65,6 @@ PUBLISHED:
   bool compare_flags(const DCAtomicField &other) const;
   
 public:
-  DCAtomicField(const string &name);
   virtual void write(ostream &out, bool brief, int indent_level) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
 

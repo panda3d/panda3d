@@ -24,8 +24,17 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCMolecularField::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+DCMolecularField::
+DCMolecularField(const string &name) : DCField(name) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCMolecularField::as_molecular_field
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Returns the same field pointer converted to a
 //               molecular field pointer, if this is in fact a
 //               molecular field; otherwise, returns NULL.
@@ -37,7 +46,7 @@ as_molecular_field() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCMolecularField::get_num_atomics
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of atomic fields that make up this
 //               molecular field.
 ////////////////////////////////////////////////////////////////////
@@ -48,7 +57,7 @@ get_num_atomics() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCMolecularField::get_atomic
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth atomic field that makes up this
 //               molecular field.  This may or may not be a field of
 //               this particular class; it might be defined in a
@@ -58,15 +67,6 @@ DCAtomicField *DCMolecularField::
 get_atomic(int n) const {
   nassertr(n >= 0 && n < (int)_fields.size(), NULL);
   return _fields[n];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCMolecularField::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-DCMolecularField::
-DCMolecularField(const string &name) : DCField(name) {
 }
 
 ////////////////////////////////////////////////////////////////////

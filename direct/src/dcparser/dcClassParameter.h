@@ -51,7 +51,6 @@ public:
 
 private:
   DCClass *_dclass;
-  int _num_fields;
 };
 
 #endif

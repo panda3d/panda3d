@@ -22,6 +22,31 @@
 #include "dcmsgtypes.h"
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCField::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+DCField::
+DCField(const string &name) : DCPackerInterface(name) {
+  _number = 0;
+  _has_nested_fields = true;
+  _num_nested_fields = 0;
+  _pack_type = PT_field;
+
+  _has_fixed_byte_size = true;
+  _fixed_byte_size = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::Destructor
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+DCField::
+~DCField() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCField::get_number
 //       Access: Published
 //  Description: Returns a unique index number associated with this
@@ -55,6 +80,16 @@ as_atomic_field() {
 DCMolecularField *DCField::
 as_molecular_field() {
   return (DCMolecularField *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::as_parameter
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DCParameter *DCField::
+as_parameter() {
+  return (DCParameter *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -277,31 +312,6 @@ ai_format_update(int do_id, int to_id, int from_id, PyObject *args) const {
 }
 #endif  // HAVE_PYTHON
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-DCField::
-DCField(const string &name) : DCPackerInterface(name) {
-  _number = 0;
-  _has_nested_fields = true;
-  _num_nested_fields = 0;
-  _pack_type = PT_field;
-
-  _has_fixed_byte_size = true;
-  _fixed_byte_size = 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-DCField::
-~DCField() {
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCField::generate_hash
