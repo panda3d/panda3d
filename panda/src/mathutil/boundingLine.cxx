@@ -43,7 +43,11 @@ xform(const LMatrix4f &mat) {
   if (!is_empty() && !is_infinite()) {
     _origin = _origin * mat;
     _vector = _vector * mat;
-    _vector.normalize();
+    if (!_vector.normalize()) {
+      // If we just scaled the line down to nothing, it becomes an
+      // empty volume.
+      _flags |= F_empty;
+    }
   }
 }
 
