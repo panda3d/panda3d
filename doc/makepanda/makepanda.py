@@ -247,7 +247,7 @@ DTOOLDEFAULTS=[
     ("LINK_IN_GL",                     'UNDEF',                  'UNDEF'),
     ("LINK_IN_PHYSICS",                'UNDEF',                  'UNDEF'),
     ("DEFAULT_PATHSEP",                '";"',                    '":"'),
-    ("DEFAULT_PRC_DIR",                '"<auto>"',               '"<auto>"'),
+    ("DEFAULT_PRC_DIR",                '"<auto>/etc"',           '"<auto>/etc"'),
     ("PRC_DIR_ENVVARS",                '"PANDA_PRC_DIR"',        '"PANDA_PRC_DIR"'),
     ("PRC_PATH_ENVVARS",               '"PANDA_PRC_PATH"',       '"PANDA_PRC_PATH"'),
     ("PRC_PATTERNS",                   '"*.prc"',                '"*.prc"'),
@@ -452,7 +452,6 @@ def usage(problem):
     print "  --v2 X            (set the minor version number)"
     print "  --v3 X            (set the sequence version number)"
     print "  --lzma            (use lzma compression when building installer)"
-    print "  --prc X           (absolute path where panda look for 'Config.prc')"
     print ""
     for pkg in PACKAGES:
         p = pkg.lower()
@@ -820,6 +819,8 @@ MakeDirectory(PREFIX)
 MakeDirectory(PREFIX+"/bin")
 MakeDirectory(PREFIX+"/lib")
 MakeDirectory(PREFIX+"/etc")
+MakeDirectory(PREFIX+"/pandac")
+MakeDirectory(PREFIX+"/pandac/input")
 MakeDirectory(PREFIX+"/include")
 MakeDirectory(PREFIX+"/include/parser-inc")
 MakeDirectory(PREFIX+"/include/parser-inc/openssl")
@@ -1230,7 +1231,7 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, fil
         sys.exit("syntax error in Interrogate directive")
     ALLIN.append(outd)
     ipath = [PREFIX+"/tmp"] + ipath + [PREFIX+"/include"]
-    outd = PREFIX+"/etc/"+outd
+    outd = PREFIX+"/pandac/input/"+outd
     outc = PREFIX+"/tmp/"+outc
     paths = xpaths(src+"/",files,"")
     dep = CxxCalcDependenciesAll(paths, ipath)
@@ -1288,7 +1289,7 @@ def InterrogateModule(outc=0, module=0, library=0, files=0):
     if ((outc==0)|(module==0)|(library==0)|(files==0)):
         sys.exit("syntax error in InterrogateModule directive")
     outc = PREFIX+"/tmp/"+outc
-    files = xpaths(PREFIX+"/etc/",files,"")
+    files = xpaths(PREFIX+"/pandac/input/",files,"")
     if (older(outc, files)):
         global VERBOSE
         if VERBOSE >= 1:
@@ -1642,7 +1643,7 @@ ConditionalWriteFile(PREFIX+'/include/dtool_config.h',conf)
 #
 ##########################################################################################
 
-CopyFile(PREFIX+'/', 'doc/Config.prc')
+CopyFile(PREFIX+'/etc/', 'doc/Config.prc')
 
 ##########################################################################################
 #
@@ -6040,13 +6041,13 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'FFTW'], dll='stitch-image.exe', obj=[
 #
 ##########################################################################################
 
-if (older(PREFIX+'/lib/pandac/PandaModules.pyz',xpaths(PREFIX+"/etc/",ALLIN,""))):
-    ALLTARGETS.append(PREFIX+'/lib/pandac/PandaModules.pyz')
+if (older(PREFIX+'/pandac/PandaModules.pyz',xpaths(PREFIX+"/pandac/input/",ALLIN,""))):
+    ALLTARGETS.append(PREFIX+'/pandac/PandaModules.pyz')
     if (sys.platform=="win32"):
         oscmd(PREFIX+"/bin/genpycode.exe")
     else:
         oscmd(PREFIX+"/bin/genpycode")
-    updatefiledate(PREFIX+'/lib/pandac/PandaModules.pyz')
+    updatefiledate(PREFIX+'/pandac/PandaModules.pyz')
 
 ########################################################################
 ##
