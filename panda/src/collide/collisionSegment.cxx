@@ -1,0 +1,111 @@
+// Filename: collisionSegment.cxx
+// Created by:  drose (30Jan01)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "collisionSegment.h"
+#include "collisionHandler.h"
+#include "collisionEntry.h"
+#include "config_collide.h"
+
+#include <geom.h>
+#include <geomNode.h>
+#include <geomLine.h>
+#include <geometricBoundingVolume.h>
+
+TypeHandle CollisionSegment::_type_handle;
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSegment::make_copy
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CollisionSolid *CollisionSegment::
+make_copy() {
+  return new CollisionSegment(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSegment::test_intersection
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int CollisionSegment::
+test_intersection(CollisionHandler *record, const CollisionEntry &entry,
+		  const CollisionSolid *into) const {
+  return into->test_intersection_from_segment(record, entry);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSegment::xform
+//       Access: Public, Virtual
+//  Description: Transforms the solid by the indicated matrix.
+////////////////////////////////////////////////////////////////////
+void CollisionSegment::
+xform(const LMatrix4f &mat) {
+  _a = _a * mat;
+  _b = _b * mat;
+  clear_viz_arcs();
+  mark_bound_stale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSegment::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CollisionSegment::
+output(ostream &out) const {
+  out << "segment, a (" << _a << "), b (" << _b << ")";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSegment::recompute_bound
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CollisionSegment::
+recompute_bound() {
+  BoundedObject::recompute_bound();
+
+  if (_bound->is_of_type(GeometricBoundingVolume::get_class_type())) {
+    GeometricBoundingVolume *gbound;
+    DCAST_INTO_V(gbound, _bound);
+
+    // This makes the assumption that _a and _b are laid out
+    // sequentially in memory.  It works because that's they way
+    // they're defined in the class.
+    nassertv(&_a + 1 == &_b);
+    gbound->around(&_a, &_b + 1);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSegment::recompute_viz
+//       Access: Public, Virtual
+//  Description: Rebuilds the geometry that will be used to render a
+//               visible representation of the collision solid.
+////////////////////////////////////////////////////////////////////
+void CollisionSegment::
+recompute_viz(Node *parent) {
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "Recomputing viz for " << *this << " on " << *parent << "\n";
+  }
+
+  GeomLine *segment = new GeomLine;
+  PTA_Vertexf verts;
+  PTA_Colorf colors;
+  verts.push_back(_a);
+  verts.push_back(_b);
+  colors.push_back(Colorf(1.0, 1.0, 1.0, 1.0));
+  segment->set_coords(verts, G_PER_VERTEX);
+  segment->set_colors(colors, G_OVERALL);
+
+  segment->set_num_prims(1);
+
+  GeomNode *viz = new GeomNode("viz-segment");
+  viz->add_geom(segment);
+  add_other_viz(parent, viz);
+}

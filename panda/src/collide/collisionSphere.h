@@ -51,6 +51,9 @@ protected:
   virtual int
   test_intersection_from_ray(CollisionHandler *record,
 			     const CollisionEntry &entry) const;
+  virtual int
+  test_intersection_from_segment(CollisionHandler *record,
+				 const CollisionEntry &entry) const;
 
   virtual void recompute_viz(Node *parent);
 

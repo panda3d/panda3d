@@ -20,7 +20,9 @@
     collisionNode.cxx collisionNode.h collisionPlane.I \
     collisionPlane.cxx collisionPlane.h collisionPolygon.I \
     collisionPolygon.cxx collisionPolygon.h collisionRay.I \
-    collisionRay.cxx collisionRay.h collisionSolid.I collisionSolid.cxx \
+    collisionRay.cxx collisionRay.h collisionSegment.I \
+    collisionSegment.cxx collisionSegment.h \
+    collisionSolid.I collisionSolid.cxx \
     collisionSolid.h collisionSphere.I collisionSphere.cxx \
     collisionSphere.h collisionTraverser.I collisionTraverser.cxx \
     collisionTraverser.h config_collide.cxx config_collide.h
@@ -34,6 +36,7 @@
     collisionHandlerQueue.h collisionLevelState.I collisionLevelState.h \
     collisionNode.I collisionNode.h collisionPlane.I collisionPlane.h \
     collisionPolygon.I collisionPolygon.h collisionRay.I collisionRay.h \
+    collisionSegment.I collisionSegment.h \
     collisionSolid.I collisionSolid.h collisionSphere.I \
     collisionSphere.h collisionTraverser.I collisionTraverser.h
 

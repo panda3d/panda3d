@@ -6,6 +6,9 @@
 #include "collisionSolid.h"
 #include "config_collide.h"
 #include "collisionEntry.h"
+#include "collisionSphere.h"
+#include "collisionRay.h"
+#include "collisionSegment.h"
 
 #include <renderRelation.h>
 #include <geomNode.h>
@@ -93,30 +96,71 @@ write(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::test_intersection_from_sphere
-//       Access: Public, Virtual
+//       Access: Protected, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 int CollisionSolid::
 test_intersection_from_sphere(CollisionHandler *,
 			      const CollisionEntry &) const {
-  collide_cat.warning()
-    << get_type() << "::test_intersection_from_sphere() called!\n";
+  report_undefined_intersection_test(CollisionSphere::get_class_type(),
+				     get_type());
   return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::test_intersection_from_ray
-//       Access: Public, Virtual
+//       Access: Protected, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 int CollisionSolid::
 test_intersection_from_ray(CollisionHandler *,
 			   const CollisionEntry &) const {
-  collide_cat.warning()
-    << get_type() << "::test_intersection_from_ray() called!\n";
+  report_undefined_intersection_test(CollisionRay::get_class_type(),
+				     get_type());
   return 0;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::test_intersection_from_segment
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int CollisionSolid::
+test_intersection_from_segment(CollisionHandler *,
+			       const CollisionEntry &) const {
+  report_undefined_intersection_test(CollisionSegment::get_class_type(),
+				     get_type());
+  return 0;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::report_undefined_intersection_test
+//       Access: Protected, Static
+//  Description: Outputs a message the first time an intersection test
+//               is attempted that isn't defined, and explains a bit
+//               about what it means.
+////////////////////////////////////////////////////////////////////
+void CollisionSolid::
+report_undefined_intersection_test(TypeHandle from_type, TypeHandle into_type) {
+#ifndef NDEBUG
+  typedef map<TypeHandle, TypeHandle> Reported;
+  static Reported reported;
+
+  if (reported.insert(Reported::value_type(from_type, into_type)).second) {
+    collide_cat.error()
+      << "Invalid attempt to detect collision from " << from_type << " into " 
+      << into_type << "!\n"
+
+      "This means that a " << from_type << " object attempted to test for a\n"
+      "intersection into a " << into_type << " object.  This intersection\n"
+      "test has not yet been defined; it is possible the " << into_type << "\n"
+      "object is not intended to be collidable.  Consider calling\n"
+      "set_into_collide_mask(0) on the " << into_type << " object, or\n"
+      "set_from_collide_mask(0) on the " << from_type << " object.\n"; 
+  }
+#endif
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::clear_viz_arcs

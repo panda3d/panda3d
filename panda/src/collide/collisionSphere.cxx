@@ -5,6 +5,7 @@
 
 #include "collisionSphere.h"
 #include "collisionRay.h"
+#include "collisionSegment.h"
 #include "collisionHandler.h"
 #include "collisionEntry.h"
 #include "config_collide.h"
@@ -166,6 +167,52 @@ test_intersection_from_ray(CollisionHandler *record,
     into_intersection_point = from_origin + t2 * from_direction;
   } else {
     into_intersection_point = from_origin + t1 * from_direction;
+  }
+  new_entry->set_into_intersection_point(into_intersection_point);
+
+  record->add_entry(new_entry);
+  return 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSphere::test_intersection_from_segment
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int CollisionSphere::
+test_intersection_from_segment(CollisionHandler *record,
+			       const CollisionEntry &entry) const {
+  const CollisionSegment *segment;
+  DCAST_INTO_R(segment, entry.get_from(), 0);
+
+  LPoint3f from_a = segment->get_point_a() * entry.get_wrt_space();
+  LVector3f from_b = segment->get_point_b() * entry.get_wrt_space();
+  LVector3f from_direction = from_b - from_a;
+
+  double t1, t2;
+  if (!intersects_line(t1, t2, from_a, from_direction)) {
+    // No intersection.
+    return 0;
+  }
+
+  if (t2 < 0.0 || t1 > 1.0) { 
+    // Both intersection points are before the start of the segment or
+    // after the end of the segment.
+    return 0;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << *entry.get_from_node() << " into " 
+      << *entry.get_into_node() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LPoint3f into_intersection_point;
+  if (t1 < 0.0) {
+    into_intersection_point = from_a + t2 * from_direction;
+  } else {
+    into_intersection_point = from_b + t1 * from_direction;
   }
   new_entry->set_into_intersection_point(into_intersection_point);
 

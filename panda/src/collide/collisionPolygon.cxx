@@ -8,6 +8,7 @@
 #include "collisionEntry.h"
 #include "collisionSphere.h"
 #include "collisionRay.h"
+#include "collisionSegment.h"
 #include "config_collide.h"
 
 #include <boundingSphere.h>
@@ -324,6 +325,56 @@ test_intersection_from_ray(CollisionHandler *record,
   }
 
   LPoint3f plane_point = from_origin + t * from_direction;
+  if (!is_inside(to_2d(plane_point))) {
+    // Outside the polygon's perimeter.
+    return 0;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << *entry.get_from_node() << " into " 
+      << *entry.get_into_node() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  new_entry->set_into_intersection_point(plane_point);
+
+  record->add_entry(new_entry);
+  return 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::test_intersection_from_segment
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int CollisionPolygon::
+test_intersection_from_segment(CollisionHandler *record,
+			       const CollisionEntry &entry) const {
+  if (_points.size() < 3) {
+    return 0;
+  }
+
+  const CollisionSegment *segment;
+  DCAST_INTO_R(segment, entry.get_from(), 0);
+
+  LPoint3f from_a = segment->get_point_a() * entry.get_wrt_space();
+  LPoint3f from_b = segment->get_point_b() * entry.get_wrt_space();
+  LPoint3f from_direction = from_b - from_a;
+
+  float t;
+  if (!get_plane().intersects_line(t, from_a, from_direction)) {
+    // No intersection.
+    return 0;
+  }
+
+  if (t < 0.0 || t > 1.0) { 
+    // The intersection point is before the start of the segment or
+    // after the end of the segment.
+    return 0;
+  }
+
+  LPoint3f plane_point = from_a + t * from_direction;
   if (!is_inside(to_2d(plane_point))) {
     // Outside the polygon's perimeter.
     return 0;

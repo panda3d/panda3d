@@ -4,19 +4,20 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_collide.h"
-#include "collisionNode.h"
-#include "collisionSolid.h"
-#include "collisionSphere.h"
-#include "collisionPlane.h"
-#include "collisionPolygon.h"
-#include "collisionRay.h"
 #include "collisionEntry.h"
 #include "collisionHandler.h"
 #include "collisionHandlerEvent.h"
+#include "collisionHandlerFloor.h"
 #include "collisionHandlerPhysical.h"
 #include "collisionHandlerPusher.h"
-#include "collisionHandlerFloor.h"
 #include "collisionHandlerQueue.h"
+#include "collisionNode.h"
+#include "collisionPlane.h"
+#include "collisionPolygon.h"
+#include "collisionRay.h"
+#include "collisionSegment.h"
+#include "collisionSolid.h"
+#include "collisionSphere.h"
 
 #include <dconfig.h>
 
@@ -24,11 +25,39 @@ Configure(config_collide);
 NotifyCategoryDef(collide, "");
 
 ConfigureFn(config_collide) {
+  init_libcollide();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libcollide
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libcollide() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+
+  CollisionEntry::init_type();
+  CollisionHandler::init_type();
+  CollisionHandlerEvent::init_type();
+  CollisionHandlerFloor::init_type();
+  CollisionHandlerPhysical::init_type();
+  CollisionHandlerPusher::init_type();
+  CollisionHandlerQueue::init_type();
   CollisionNode::init_type();
-  CollisionSolid::init_type();
-  CollisionSphere::init_type();
   CollisionPlane::init_type();
   CollisionPolygon::init_type();
+  CollisionRay::init_type();
+  CollisionSegment::init_type();
+  CollisionSolid::init_type();
+  CollisionSphere::init_type();
 
   //Registration of writeable object's creation
   //functions with BamReader's factory
@@ -36,13 +65,4 @@ ConfigureFn(config_collide) {
   CollisionPlane::register_with_read_factory();
   CollisionPolygon::register_with_read_factory();
   CollisionSphere::register_with_read_factory();
-  CollisionRay::init_type();
-  CollisionEntry::init_type();
-  CollisionHandler::init_type();
-  CollisionHandlerEvent::init_type();
-  CollisionHandlerPhysical::init_type();
-  CollisionHandlerPusher::init_type();
-  CollisionHandlerFloor::init_type();
-  CollisionHandlerQueue::init_type();
 }
-

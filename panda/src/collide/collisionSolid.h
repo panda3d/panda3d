@@ -68,6 +68,13 @@ protected:
   virtual int
   test_intersection_from_ray(CollisionHandler *record,
 			     const CollisionEntry &entry) const;
+  virtual int
+  test_intersection_from_segment(CollisionHandler *record,
+				 const CollisionEntry &entry) const;
+
+  static void
+  report_undefined_intersection_test(TypeHandle from_type,
+				     TypeHandle into_type);
 
   INLINE void mark_viz_stale();
   void clear_viz_arcs();
@@ -109,8 +116,9 @@ public:
 private:
   static TypeHandle _type_handle;
 
-friend class CollisionSphere;
-friend class CollisionRay;
+  friend class CollisionSphere;
+  friend class CollisionRay;
+  friend class CollisionSegment;
 };
 
 INLINE ostream &operator << (ostream &out, const CollisionSolid &cs) {
