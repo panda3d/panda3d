@@ -112,9 +112,9 @@ class FSM(DirectObject):
         if (aState in self.__states):
             FSM.notify.debug("entering %s" % aState.getName())
             self.__currentState = aState
-            aState.enter(argList)
             messenger.send(self.getName() + '_' +
                            aState.getName() + '_entered')
+            aState.enter(argList)
         else:
             FSM.notify.error("enter: no such state")
 

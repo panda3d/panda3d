@@ -14,6 +14,9 @@ class ClientDistClass:
         self.number2CDU = self.createNumber2CDUDict(self.allCDU)
         self.name2CDU = self.createName2CDUDict(self.allCDU)
         self.allRequiredCDU = self.listRequiredCDU(self.allCDU)
+        # Import the class, and store the constructor
+        exec("import " + self.name)
+        self.constructor = eval(self.name + "." + self.name)
         return None
 
     def parseFields(self, dcClass):
@@ -25,7 +28,7 @@ class ClientDistClass:
     def createAllCDU(self, allFields):
         allCDU = []
         for i in allFields:
-            allCDU.append(ClientDistUpdate.ClientDistUpdate(i))
+            allCDU.append(ClientDistUpdate.ClientDistUpdate(self, i))
         return allCDU
 
     def createNumber2CDUDict(self, allCDU):

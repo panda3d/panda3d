@@ -1,21 +1,28 @@
 """ClientDistUpdate module: contains the ClientDistUpdate class"""
 
 import DirectNotifyGlobal
-import Avatar
-import DistributedToon
 import Datagram
 from MsgTypes import *
 
 class ClientDistUpdate:
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientDistUpdate")
 
-    def __init__(self, dcField):
+    def __init__(self, cdc, dcField):
+        self.cdc = cdc
         self.field = dcField
         self.number = dcField.getNumber()
         self.name = dcField.getName()
         self.types = []
         self.divisors = []
-        self.deriveTypesFromParticle(dcField)        
+        self.deriveTypesFromParticle(dcField)
+        # Figure out our function pointer
+        exec("import " + cdc.name)
+        try:
+            self.func = eval(cdc.name + "." + cdc.name + "." + self.name)
+        except:
+            ClientDistUpdate.notify.warning(cdc.name + "." + self.name +
+                                            " does not exist")
+            self.func = None
         return None
 
     def deriveTypesFromParticle(self, dcField):
@@ -37,7 +44,7 @@ class ClientDistUpdate:
 
     def updateField(self, cdc, do, di):
 
-        func = eval(cdc.name + "." + cdc.name + "." + self.name)
+        #func = eval(cdc.name + "." + cdc.name + "." + self.name)
         #print("Calling: " + cdc.name + "." + cdc.name + "." + self.name +
         #      " for do " + str(do.getDoId()))
 
@@ -45,7 +52,7 @@ class ClientDistUpdate:
         args = self.extractArgs(di)
 
         # Apply the function to the object with the arguments
-        apply(func, [do] + args)
+        apply(self.func, [do] + args)
 
         return None
 

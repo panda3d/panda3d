@@ -8,16 +8,16 @@ import Task
 import DirectNotifyGlobal
 import ClientDistClass
 import CRCache
+import Datagram
 # The repository must import all known types of Distributed Objects
-import DistributedObject
-import DistributedToon
+#import DistributedObject
+#import DistributedToon
 import DirectObject
 
 class ClientRepository(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientRepository")
 
-    def __init__(self, dcFileName, AIClientFlag=0):
-        self.AIClientFlag=AIClientFlag
+    def __init__(self, dcFileName):
         self.number2cdc={}
         self.name2cdc={}
         self.doId2do={}
@@ -94,11 +94,8 @@ class ClientRepository(DirectObject.DirectObject):
         # Look up the cdc
         cdc = self.number2cdc[classId]
         # Create a new distributed object, and put it in the dictionary
-        distObj = self.generateWithRequiredFields(cdc,
-                                                  eval(cdc.name + \
-                                                       "." + \
-                                                       cdc.name),
-                                                  doId, di)
+        distObj = self.generateWithRequiredFields(cdc, doId, di)
+        # Call "generate" for the dist obj
         distObj.generate()
         return None
 
@@ -110,15 +107,12 @@ class ClientRepository(DirectObject.DirectObject):
         # Look up the cdc
         cdc = self.number2cdc[classId]
         # Create a new distributed object, and put it in the dictionary
-        distObj = self.generateWithRequiredOtherFields(cdc,
-                                                       eval(cdc.name + \
-                                                            "." + \
-                                                            cdc.name),
-                                                       doId, di)
+        distObj = self.generateWithRequiredOtherFields(cdc, doId, di)
+        # Call "generate" for the distObj
         distObj.generate()
         return None
 
-    def generateWithRequiredFields(self, cdc, constructor, doId, di):
+    def generateWithRequiredFields(self, cdc, doId, di):
         # Is it in our dictionary? 
         if self.doId2do.has_key(doId):
             # If so, just update it.
@@ -139,7 +133,7 @@ class ClientRepository(DirectObject.DirectObject):
         # If it is not in the dictionary or the cache, then...
         else:
             # Construct a new one
-            distObj = constructor(self)
+            distObj = cdc.constructor(self)
             # Assign it an Id
             distObj.doId = doId
             # Update the required fields
@@ -150,7 +144,7 @@ class ClientRepository(DirectObject.DirectObject):
             
         return distObj
 
-    def generateWithRequiredOtherFields(self, cdc, constructor, doId, di):
+    def generateWithRequiredOtherFields(self, cdc, doId, di):
         # Is it in our dictionary? 
         if self.doId2do.has_key(doId):
             # If so, just update it.
@@ -171,7 +165,7 @@ class ClientRepository(DirectObject.DirectObject):
         # If it is not in the dictionary or the cache, then...
         else:
             # Construct a new one
-            distObj = constructor(self)
+            distObj = cdc.constructor(self)
             # Assign it an Id
             distObj.doId = doId
             # Update the required fields
@@ -242,6 +236,36 @@ class ClientRepository(DirectObject.DirectObject):
         cdc = self.doId2cdc[doId]
         # Let the cdc finish the job
         cdc.updateField(do, di)
+        return None
+
+    def handleUnexpectedMsgType(self, msgType, di):
+        ClientRepository.notify.warning(
+            "Ignoring unexpected message type: " +
+            str(msgType) +
+            " in state: " +
+            self.fsm.getCurrentState().getName())
+        return None
+
+    def sendSetShardMsg(self, shardId):
+        datagram = Datagram.Datagram()
+        # Add message type
+        datagram.addUint16(CLIENT_SET_SHARD)
+        # Add shard id
+        datagram.addUint32(shardId)
+        # send the message
+        self.send(datagram)
+        return None
+
+    def sendSetZoneMsg(self, zoneId):
+        datagram = Datagram.Datagram()
+        # Add message type
+        datagram.addUint16(CLIENT_SET_ZONE)
+        # Add zone id
+        datagram.addUint16(zoneId)
+
+        # send the message
+        self.send(datagram)
+        return None
         
     def sendUpdate(self, do, fieldName, args):
         # Get the DO id
