@@ -93,6 +93,17 @@ has_user_data() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggObject::has_user_data
+//       Access: Public
+//  Description: Returns true if the user data pointer has been set
+//               and is of the indicated type, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggObject::
+has_user_data(TypeHandle type) const {
+  return !_user_data.is_null() && _user_data->is_of_type(type);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggObject::clear_user_data
 //       Access: Public
 //  Description: Resets the user data pointer to NULL.

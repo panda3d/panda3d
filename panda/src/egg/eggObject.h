@@ -40,6 +40,7 @@ public:
   INLINE void set_user_data(EggUserData *user_data);
   INLINE EggUserData *get_user_data() const;
   INLINE bool has_user_data() const;
+  INLINE bool has_user_data(TypeHandle type) const;
   INLINE void clear_user_data();
 
 private:
