@@ -147,7 +147,7 @@
 #define PYTHON_IPATH /usr/local/include/python1.6
 #define PYTHON_LPATH
 #define PYTHON_FPATH
-#define PYTHON_FRAMEWORK Python
+#define PYTHON_FRAMEWORK
 #defer HAVE_PYTHON $[isdir $[PYTHON_IPATH]]
 
 // Do you want to enable the "in_interpreter" global variable?  This
