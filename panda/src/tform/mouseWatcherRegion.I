@@ -6,7 +6,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherRegion::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE MouseWatcherRegion::
@@ -15,13 +15,14 @@ MouseWatcherRegion(const string &name, float left, float right,
   Namable(name),
   _frame(left, right, bottom, top)
 {
+  _sort = 0;
   _active = true;
   _suppress_below = true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherRegion::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE MouseWatcherRegion::
@@ -29,13 +30,14 @@ MouseWatcherRegion(const string &name, const LVecBase4f &frame) :
   Namable(name),
   _frame(frame)
 {
+  _sort = 0;
   _active = true;
   _suppress_below = false;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherRegion::set_frame
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void MouseWatcherRegion::
@@ -45,7 +47,7 @@ set_frame(float left, float right, float bottom, float top) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherRegion::set_frame
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void MouseWatcherRegion::
@@ -56,7 +58,7 @@ set_frame(const LVecBase4f &frame) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherRegion::get_frame
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE const LVecBase4f &MouseWatcherRegion::
@@ -66,7 +68,7 @@ get_frame() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherRegion::get_area
-//       Access: Public
+//       Access: Published
 //  Description: Returns the area of the rectangular region.
 ////////////////////////////////////////////////////////////////////
 INLINE float MouseWatcherRegion::
@@ -75,8 +77,35 @@ get_area() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherRegion::set_sort
+//       Access: Published
+//  Description: Changes the sorting order of this particular region.
+//               The sorting order is used to resolve conflicts in the
+//               case of overlapping region; the region with the
+//               highest sort value will be preferred, and between
+//               regions of the same sort value, the smallest region
+//               will be preferred.  The default sorting order, if
+//               none is explicitly specified, is 0.
+////////////////////////////////////////////////////////////////////
+INLINE void MouseWatcherRegion::
+set_sort(int sort) {
+  _sort = sort;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherRegion::get_sort
+//       Access: Published
+//  Description: Returns the current sorting order of this region.
+//               See set_sort().
+////////////////////////////////////////////////////////////////////
+INLINE int MouseWatcherRegion::
+get_sort() const {
+  return _sort;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherRegion::set_active
-//       Access: Public
+//       Access: Published
 //  Description: Sets whether the region is active or not.  If it is
 //               not active, the MouseWatcher will totally ignore it.
 ////////////////////////////////////////////////////////////////////
@@ -87,7 +116,7 @@ set_active(bool active) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherRegion::get_active
-//       Access: Public
+//       Access: Published
 //  Description: Returns whether the region is active or not.  See
 //               set_active().
 ////////////////////////////////////////////////////////////////////
@@ -98,7 +127,7 @@ get_active() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherRegion::set_suppress_below
-//       Access: Public
+//       Access: Published
 //  Description: Sets the suppress_below flag.  When this is true, and
 //               the region is active, then whenever the mouse is
 //               within the region the MouseWatcher will suppress any
@@ -112,11 +141,25 @@ set_suppress_below(bool suppress_below) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherRegion::get_suppress_below
-//       Access: Public
+//       Access: Published
 //  Description: Returns the suppress_below flag.  See
 //               set_suppress_below().
 ////////////////////////////////////////////////////////////////////
 INLINE bool MouseWatcherRegion::
 get_suppress_below() const {
   return _suppress_below;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherRegion::Ordering Operator
+//       Access: Public
+//  Description: Returns true if this region should be preferred over
+//               the other region when they overlap, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool MouseWatcherRegion::
+operator < (const MouseWatcherRegion &other) const {
+  if (_sort != other._sort) {
+    return _sort > other._sort;
+  }
+  return _area < other._area;
 }

@@ -25,7 +25,7 @@ TypeHandle MouseWatcher::_button_events_type;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::Constructor
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 MouseWatcher::
@@ -38,7 +38,7 @@ MouseWatcher(const string &name) : DataNode(name) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::Destructor
-//       Access: Public, Scheme
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 MouseWatcher::
@@ -47,7 +47,7 @@ MouseWatcher::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::add_region
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Adds the indicated region to the set of regions that
 //               are to be watched.  Returns true if it was
 //               successfully added, or false if it was already on the
@@ -60,7 +60,7 @@ add_region(MouseWatcherRegion *region) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::has_region
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns true if the indicated region has already been
 //               added to the MouseWatcher, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -71,7 +71,7 @@ has_region(MouseWatcherRegion *region) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::remove_region 
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Removes the indicated region from the Watcher.
 //               Returns true if it was successfully removed, or false
 //               if it wasn't there in the first place.
@@ -88,15 +88,37 @@ remove_region(MouseWatcherRegion *region) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::find_region 
+//       Access: Published
+//  Description: Returns a pointer to the first region found with the
+//               indicated name.  If multiple regions share the same
+//               name, the one that is returned is indeterminate.
+////////////////////////////////////////////////////////////////////
+MouseWatcherRegion *MouseWatcher::
+find_region(const string &name) const {
+  Regions::const_iterator ri;
+  for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
+    MouseWatcherRegion *region = (*ri);
+    if (region->get_name() == name) {
+      return region;
+    }
+  }
+
+  return (MouseWatcherRegion *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::get_over_region 
-//       Access: Public, Scheme
-//  Description: Returns the smallest region the indicated point is
-//               over, or NULL if it is over no region.
+//       Access: Published
+//  Description: Returns the preferred region the mouse is over.  In
+//               the case of overlapping regions, the region with the
+//               largest sort order is preferred; if two regions have
+//               the same sort order, then the smaller region is
+//               preferred.
 ////////////////////////////////////////////////////////////////////
 MouseWatcherRegion *MouseWatcher::
 get_over_region(const LPoint2f &pos) const {
   MouseWatcherRegion *over_region = (MouseWatcherRegion *)NULL;
-  float over_area = 0.0;
 
   Regions::const_iterator ri;
   for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
@@ -107,11 +129,10 @@ get_over_region(const LPoint2f &pos) const {
 	pos[0] >= frame[0] && pos[0] <= frame[1] &&
 	pos[1] >= frame[2] && pos[1] <= frame[3]) {
 
-      // We're over this region.  Is it the smallest?
+      // We're over this region.  Is it preferred to the other one?
       if (over_region == (MouseWatcherRegion *)NULL ||
-	  region->get_area() < over_area) {
+	  *region < *over_region) {
 	over_region = region;
-	over_area = region->get_area();
       }
     }
   }
@@ -122,7 +143,7 @@ get_over_region(const LPoint2f &pos) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::output
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
@@ -133,7 +154,7 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::write
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::

@@ -28,6 +28,9 @@ PUBLISHED:
   INLINE const LVecBase4f &get_frame() const;
   INLINE float get_area() const;
 
+  INLINE void set_sort(int sort);
+  INLINE int get_sort() const;
+
   INLINE void set_active(bool active);
   INLINE bool get_active() const;
 
@@ -37,9 +40,13 @@ PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
+public:
+  INLINE bool operator < (const MouseWatcherRegion &other) const;
+
 private:
   LVecBase4f _frame;
   float _area;
+  int _sort;
 
   bool _active;
   bool _suppress_below;

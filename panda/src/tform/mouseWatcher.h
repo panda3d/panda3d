@@ -45,6 +45,7 @@ PUBLISHED:
   bool add_region(MouseWatcherRegion *region);
   bool has_region(MouseWatcherRegion *region) const;
   bool remove_region(MouseWatcherRegion *region);
+  MouseWatcherRegion *find_region(const string &name) const;
 
   INLINE bool has_mouse() const;
   INLINE const LPoint2f &get_mouse() const;

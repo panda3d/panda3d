@@ -6,7 +6,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::has_mouse
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns true if the mouse is anywhere within the
 //               window, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -17,7 +17,7 @@ has_mouse() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::get_mouse
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: It is only valid to call this if has_mouse() returns
 //               true.  If so, this returns the current position of
 //               the mouse within the window.
@@ -33,7 +33,7 @@ get_mouse() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::get_mouse_x
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: It is only valid to call this if has_mouse() returns
 //               true.  If so, this returns the current X position of
 //               the mouse within the window.
@@ -46,7 +46,7 @@ get_mouse_x() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::get_mouse_y
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: It is only valid to call this if has_mouse() returns
 //               true.  If so, this returns the current Y position of
 //               the mouse within the window.
@@ -59,7 +59,7 @@ get_mouse_y() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::is_over_region 
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns true if the mouse is over any rectangular
 //               region, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -70,7 +70,7 @@ is_over_region() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::is_over_region 
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns true if the mouse is over any rectangular
 //               region, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -81,7 +81,7 @@ is_over_region(float x, float y) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::is_over_region 
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns true if the mouse is over any rectangular
 //               region, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -92,7 +92,7 @@ is_over_region(const LPoint2f &pos) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::get_over_region 
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns the smallest region the mouse is currently
 //               over, or NULL if it is over no region.
 ////////////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ get_over_region() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::get_over_region 
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns the smallest region the indicated point is
 //               over, or NULL if it is over no region.
 ////////////////////////////////////////////////////////////////////
@@ -114,7 +114,7 @@ get_over_region(float x, float y) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::set_button_down_pattern
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Sets the pattern string that indicates how the event
 //               names are generated when a button is depressed.  This
 //               is a string that may contain any of the following:
@@ -133,7 +133,7 @@ set_button_down_pattern(const string &pattern) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::get_button_down_pattern
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns the string that indicates how event names are
 //               generated when a button is depressed.  See
 //               set_button_down_pattern().
@@ -145,7 +145,7 @@ get_button_down_pattern() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::set_button_up_pattern
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Sets the pattern string that indicates how the event
 //               names are generated when a button is released.  See
 //               set_button_down_pattern().
@@ -157,7 +157,7 @@ set_button_up_pattern(const string &pattern) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::get_button_up_pattern
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns the string that indicates how event names are
 //               generated when a button is released.  See
 //               set_button_down_pattern().
@@ -169,7 +169,7 @@ get_button_up_pattern() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::set_enter_pattern
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Sets the pattern string that indicates how the event
 //               names are generated when the mouse wanders over a
 //               region.  See set_button_down_pattern().
@@ -181,7 +181,7 @@ set_enter_pattern(const string &pattern) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::get_enter_pattern
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns the string that indicates how event names are
 //               generated when the mouse wanders over a region.  See
 //               set_button_down_pattern().
@@ -193,7 +193,7 @@ get_enter_pattern() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::set_leave_pattern
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Sets the pattern string that indicates how the event
 //               names are generated when the mouse leaves a region.
 //               See set_button_down_pattern().
@@ -205,7 +205,7 @@ set_leave_pattern(const string &pattern) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::get_leave_pattern
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns the string that indicates how event names are
 //               generated when the mouse leaves a region.  See
 //               set_button_down_pattern().
@@ -217,7 +217,7 @@ get_leave_pattern() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::set_geometry
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Sets the arc that will be transformed each frame by
 //               the mouse's coordinates.  It will also be hidden when
 //               the mouse goes outside the window.  This can be used
@@ -231,7 +231,7 @@ set_geometry(NodeRelation *arc) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::has_geometry
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns true if a software mouse pointer has been
 //               setup via set_geometry(), or false otherwise.  See
 //               set_geometry().
@@ -243,7 +243,7 @@ has_geometry() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::get_geometry
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns the arc that has been set as the software
 //               mouse pointer, or NULL if no arc has been set.  See
 //               has_geometry() and set_geometry().
@@ -255,7 +255,7 @@ get_geometry() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::clear_geometry
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Stops the use of the software cursor set up via
 //               set_geometry().
 ////////////////////////////////////////////////////////////////////
