@@ -187,11 +187,7 @@ protected:
   void set_draw_buffer(const RenderBuffer &rb);
   void set_read_buffer(const RenderBuffer &rb);
 
-  DWORD _CurFVFType;
-  // for storage of the flexible vertex format
-  BYTE *_pCurFvfBufPtr,*_pFvfBufBasePtr;
   INLINE void add_to_FVFBuf(void *data,  size_t bytes) ;
-  WORD *_index_buf;  // base of malloced array
 
   bool                  _bDXisReady;
   HRESULT               _last_testcooplevel_result;
@@ -258,8 +254,11 @@ protected:
   Normalf   p_normal;  // still used to hold G_OVERALL, G_PER_PRIM values
   TexCoordf p_texcoord;
   D3DCOLOR  _curD3Dcolor;
-  DWORD     _curFVFflags;
   DWORD     _perPrim,_perVertex,_perComp;   //  these hold DrawLoopFlags bitmask values
+  DWORD     _CurFVFType;
+  // for storage of the flexible vertex format
+  BYTE *_pCurFvfBufPtr,*_pFvfBufBasePtr;
+  WORD *_index_buf;  // base of malloced array
 
   bool  _issued_color_enabled;      // WBD ADDED
   bool  _enable_all_color;

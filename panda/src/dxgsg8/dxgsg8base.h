@@ -127,8 +127,8 @@ typedef enum {
     A8_FLAG =           FLG(8),
     A8R3G3B2_FLAG =     FLG(9),
     X4R4G4B4_FLAG =     FLG(10),
-    A2B10G10R10_FLAG =  FLG(12),
-//  G16R16_FLAG =       FLG(13),  leaving this 1 out to fit in 32 bits
+    A2B10G10R10_FLAG =  FLG(11),
+    G16R16_FLAG =       FLG(12),
     A8P8_FLAG =         FLG(13),
     P8_FLAG =           FLG(14),
     L8_FLAG =           FLG(15),

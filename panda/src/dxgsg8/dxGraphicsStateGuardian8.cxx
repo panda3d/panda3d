@@ -218,6 +218,7 @@ void make_D3DFORMAT_map(void) {
     INSERT_ELEM(A8R3G3B2);
     INSERT_ELEM(X4R4G4B4);
     INSERT_ELEM(A2B10G10R10);
+    INSERT_ELEM(G16R16);
     INSERT_ELEM(A8P8);
     INSERT_ELEM(P8);
     INSERT_ELEM(L8);
@@ -1907,6 +1908,14 @@ draw_prim_setup(const Geom *geom) {
          } else if(ColorBinding == G_OVERALL){
             GET_NEXT_COLOR();
 
+/*
+    Colorf tempcolor = geom->get_next_color(ci);                                    
+    if(!_color_transform_required) {                                                
+        _curD3Dcolor = Colorf_to_D3DCOLOR(tempcolor);                               
+    } else {                                                                        
+        transform_color(tempcolor,_curD3Dcolor);                                    
+    }
+*/
             _perVertex &= ~PER_COLOR;
             _perPrim &= ~PER_COLOR;
             _perComp &= ~PER_COLOR;
@@ -2003,11 +2012,11 @@ draw_prim_inner_loop(int nVerts, const Geom *geom, ushort perFlags) {
             }
         }
 
-        if (_curFVFflags & D3DFVF_NORMAL)
+        if (_CurFVFType & D3DFVF_NORMAL)
             add_to_FVFBuf((void *)&p_normal, 3*sizeof(float));
-        if (_curFVFflags & D3DFVF_DIFFUSE)
+        if (_CurFVFType & D3DFVF_DIFFUSE)
             add_DWORD_to_FVFBuf(_curD3Dcolor);
-        if (_curFVFflags & D3DFVF_TEXCOUNT_MASK)
+        if (_CurFVFType & D3DFVF_TEXCOUNT_MASK)
             add_to_FVFBuf((void *)&p_texcoord, sizeof(TexCoordf));
     }
 }

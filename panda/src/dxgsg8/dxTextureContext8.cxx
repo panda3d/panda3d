@@ -1507,7 +1507,7 @@ FillDDSurfTexturePixels(void) {
     Lev0Filter = D3DX_FILTER_LINEAR | D3DX_FILTER_DITHER;
 
     // filtering may be done here if texture if targetsize!=origsize
-    hr=D3DXLoadSurfaceFromMemory(pMipLevel0,(PALETTEENTRY*)NULL,(RECT*)NULL,(LPCVOID) pbuf,_PixBufD3DFmt,
+    hr=D3DXLoadSurfaceFromMemory(pMipLevel0,(PALETTEENTRY*)NULL,(RECT*)NULL,(LPCVOID) pbuf->_image.p(),_PixBufD3DFmt,
                                  OrigWidth*cNumColorChannels,(PALETTEENTRY*)NULL,&SrcSize,Lev0Filter,(D3DCOLOR)0x0);
     if(FAILED(hr)) {
        dxgsg_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", D3DXLoadSurfFromMem returns hr = " << D3DERRORSTRING(hr);
