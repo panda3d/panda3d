@@ -942,8 +942,16 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         self.updateFrameStyle()
 
     def setFrameColor(self):
-        color = self['frameColor']
+        # this might be a single color or a list of colors
+        colors = self['frameColor']
+        if type(colors[0]) == types.IntType or \
+           type(colors[0]) == types.FloatType:
+            colors = (colors,)
         for i in range(self['numStates']):
+            if i >= len(colors):
+                color = colors[-1]
+            else:
+                color = colors[i]
             self.frameStyle[i].setColor(color[0], color[1], color[2], color[3])
         self.updateFrameStyle()
 
