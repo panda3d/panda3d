@@ -62,10 +62,10 @@ PStatClient() :
   // We always have a collector at index 0 named "Frame".  This tracks
   // the total frame time and is the root of all other collectors.  We
   // have to make this one by hand since it's the root.
-  Collector collector;
-  collector._def = new PStatCollectorDef(0, "Frame");
-  collector._def->_parent_index = 0;
-  collector._def->_suggested_color.set(0.5, 0.5, 0.5);
+  Collector collector(0, "Frame");
+  //collector._def = new PStatCollectorDef(0, "Frame");
+  //collector._def->_parent_index = 0;
+  //collector._def->_suggested_color.set(0.5, 0.5, 0.5);
   _collectors.push_back(collector);
 
   // We also always have a thread at index 0 named "Main".
@@ -98,21 +98,6 @@ get_collector(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatClient::get_collector_def
-//       Access: Published
-//  Description: Returns the definition body of the nth collector.
-////////////////////////////////////////////////////////////////////
-const PStatCollectorDef &PStatClient::
-get_collector_def(int index) const {
-#ifndef NDEBUG
-  static PStatCollectorDef bogus;
-  nassertr(index >= 0 && index < (int)_collectors.size(), bogus);
-#endif
-
-  return *_collectors[index]._def;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::get_collector_name
 //       Access: Published
 //  Description: Returns the name of the indicated collector.
@@ -121,8 +106,7 @@ string PStatClient::
 get_collector_name(int index) const {
   nassertr(index >= 0 && index < (int)_collectors.size(), string());
 
-  const PStatCollectorDef *def = _collectors[index]._def;
-  return def->_name;
+  return _collectors[index].get_name();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,11 +121,12 @@ string PStatClient::
 get_collector_fullname(int index) const {
   nassertr(index >= 0 && index < (int)_collectors.size(), string());
 
-  const PStatCollectorDef *def = _collectors[index]._def;
-  if (def->_parent_index == 0) {
-    return def->_name;
+  int parent_index = _collectors[index].get_parent_index();
+  if (parent_index == 0) {
+    return _collectors[index].get_name();
   } else {
-    return get_collector_fullname(def->_parent_index) + ":" + def->_name;
+    return get_collector_fullname(parent_index) + ":" + 
+      _collectors[index].get_name();
   }
 }
 
@@ -315,7 +300,7 @@ make_collector_with_name(int parent_index, const string &name) {
   // A special case: if we asked for a child the same name as its
   // parent, we really meant the parent.  That is, "Frame:Frame" is
   // really the same collector as "Frame".
-  if (parent._def->_name == name) {
+  if (parent.get_name() == name) {
     return PStatCollector(this, parent_index);
   }
 
@@ -333,12 +318,13 @@ make_collector_with_name(int parent_index, const string &name) {
   parent._children.insert(ThingsByName::value_type(name, new_index));
 
   // Extending the vector invalidates the parent reference, above.
-  _collectors.push_back(Collector());
-  Collector &collector = _collectors.back();
-  collector._def = new PStatCollectorDef(new_index, name);
+  _collectors.push_back(Collector(parent_index, name));
 
-  collector._def->set_parent(*_collectors[parent_index]._def);
-  initialize_collector_def(this, collector._def);
+  Collector &collector = _collectors.back();
+
+  // collector._def = new PStatCollectorDef(new_index, name);
+  // collector._def->set_parent(*_collectors[parent_index]._def);
+  // initialize_collector_def(this, collector._def);
 
   // We need one PerThreadData for each thread.
   while (collector._per_thread.size() < _threads.size()) {
@@ -406,7 +392,7 @@ is_active(int collector_index, int thread_index) const {
   nassertr(thread_index >= 0 && thread_index < (int)_threads.size(), false);
 
   return (client_is_connected() &&
-          _collectors[collector_index]._def->_is_active &&
+          _collectors[collector_index].is_active() &&
           _threads[thread_index]._is_active);
 }
 
@@ -424,7 +410,7 @@ is_started(int collector_index, int thread_index) const {
   nassertr(collector_index >= 0 && collector_index < (int)_collectors.size(), false);
   nassertr(thread_index >= 0 && thread_index < (int)_threads.size(), false);
 
-  return (_collectors[collector_index]._def->_is_active &&
+  return (_collectors[collector_index].is_active() &&
           _threads[thread_index]._is_active &&
           _collectors[collector_index]._per_thread[thread_index]._nested_count != 0);
 }
@@ -444,7 +430,7 @@ start(int collector_index, int thread_index) {
 #endif
 
   if (client_is_connected() && 
-      _collectors[collector_index]._def->_is_active &&
+      _collectors[collector_index].is_active() &&
       _threads[thread_index]._is_active) {
     if (_collectors[collector_index]._per_thread[thread_index]._nested_count == 0) {
       // This collector wasn't already started in this thread; record
@@ -471,7 +457,7 @@ start(int collector_index, int thread_index, float as_of) {
 #endif
 
   if (client_is_connected() && 
-      _collectors[collector_index]._def->_is_active &&
+      _collectors[collector_index].is_active() &&
       _threads[thread_index]._is_active) {
     if (_collectors[collector_index]._per_thread[thread_index]._nested_count == 0) {
       // This collector wasn't already started in this thread; record
@@ -497,7 +483,7 @@ stop(int collector_index, int thread_index) {
 #endif
 
   if (client_is_connected() && 
-      _collectors[collector_index]._def->_is_active &&
+      _collectors[collector_index].is_active() &&
       _threads[thread_index]._is_active) {
     if (_collectors[collector_index]._per_thread[thread_index]._nested_count == 0) {
       pstats_cat.warning()
@@ -533,7 +519,7 @@ stop(int collector_index, int thread_index, float as_of) {
 #endif
 
   if (client_is_connected() &&
-      _collectors[collector_index]._def->_is_active &&
+      _collectors[collector_index].is_active() &&
       _threads[thread_index]._is_active) {
     if (_collectors[collector_index]._per_thread[thread_index]._nested_count == 0) {
       pstats_cat.warning()
@@ -565,7 +551,7 @@ stop(int collector_index, int thread_index, float as_of) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 clear_level(int collector_index, int thread_index) {
-  if (_collectors[collector_index]._def->_is_active) {
+  if (_collectors[collector_index].is_active()) {
     _collectors[collector_index]._per_thread[thread_index]._has_level = false;
     _collectors[collector_index]._per_thread[thread_index]._level = 0.0;
   }
@@ -582,8 +568,8 @@ clear_level(int collector_index, int thread_index) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 set_level(int collector_index, int thread_index, float level) {
-  if (client_is_connected() && _collectors[collector_index]._def->_is_active) {
-    level *= _collectors[collector_index]._def->_factor;
+  if (client_is_connected() && _collectors[collector_index].is_active()) {
+    level *= get_collector_def(collector_index)->_factor;
     _collectors[collector_index]._per_thread[thread_index]._has_level = true;
     _collectors[collector_index]._per_thread[thread_index]._level = level;
   }
@@ -602,8 +588,8 @@ set_level(int collector_index, int thread_index, float level) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 add_level(int collector_index, int thread_index, float increment) {
-  if (client_is_connected() && _collectors[collector_index]._def->_is_active) {
-    increment *= _collectors[collector_index]._def->_factor;
+  if (client_is_connected() && _collectors[collector_index].is_active()) {
+    increment *= get_collector_def(collector_index)->_factor;
     _collectors[collector_index]._per_thread[thread_index]._has_level = true;
     _collectors[collector_index]._per_thread[thread_index]._level += increment;
   }
@@ -620,7 +606,23 @@ add_level(int collector_index, int thread_index, float increment) {
 float PStatClient::
 get_level(int collector_index, int thread_index) const {
   return _collectors[collector_index]._per_thread[thread_index]._level /
-    _collectors[collector_index]._def->_factor;
+    get_collector_def(collector_index)->_factor;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::Collector::make_def
+//       Access: Private
+//  Description: Creates the new PStatCollectorDef for this collector.
+////////////////////////////////////////////////////////////////////
+void PStatClient::Collector::
+make_def(const PStatClient *client, int this_index) {
+  _def = new PStatCollectorDef(this_index, _name);
+  if (_parent_index != this_index) {
+    const PStatCollectorDef *parent_def = 
+      client->_collectors[_parent_index].get_def(client, _parent_index);
+    _def->set_parent(*parent_def);
+  }
+  initialize_collector_def(client, _def);
 }
 
 #endif // DO_PSTATS

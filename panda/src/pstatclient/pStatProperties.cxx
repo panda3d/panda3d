@@ -236,7 +236,7 @@ initialize_collector_def_from_table(const string &fullname, PStatCollectorDef *d
 //               by name; if one is found, the properties are applied.
 ////////////////////////////////////////////////////////////////////
 void
-initialize_collector_def(PStatClient *client, PStatCollectorDef *def) {
+initialize_collector_def(const PStatClient *client, PStatCollectorDef *def) {
   string fullname;
 
   if (def->_index == 0) {

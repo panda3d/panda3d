@@ -29,7 +29,7 @@ EXPCL_PANDA int get_current_pstat_major_version();
 EXPCL_PANDA int get_current_pstat_minor_version();
 
 #ifdef DO_PSTATS
-void initialize_collector_def(PStatClient *client, PStatCollectorDef *def);
+void initialize_collector_def(const PStatClient *client, PStatCollectorDef *def);
 #endif  // DO_PSTATS
 
 #endif

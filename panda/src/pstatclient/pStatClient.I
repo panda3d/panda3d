@@ -83,6 +83,18 @@ get_num_collectors() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::get_collector_def
+//       Access: Published
+//  Description: Returns the definition body of the nth collector.
+////////////////////////////////////////////////////////////////////
+INLINE PStatCollectorDef *PStatClient::
+get_collector_def(int index) const {
+  nassertr(index >= 0 && index < (int)_collectors.size(), NULL);
+
+  return _collectors[index].get_def(this, index);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::get_num_threads
 //       Access: Published
 //  Description: Returns the total number of threads the Client
@@ -237,4 +249,66 @@ get_impl() {
 INLINE const PStatClientImpl *PStatClient::
 get_impl() const {
   return ((PStatClient *)this)->get_impl();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::Collector::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PStatClient::Collector::
+Collector(int parent_index, const string &name) :
+  _def(NULL),
+  _parent_index(parent_index),
+  _name(name)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::Collector::get_parent_index
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE int PStatClient::Collector::
+get_parent_index() const {
+  return _parent_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::Collector::get_name
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE const string &PStatClient::Collector::
+get_name() const {
+  return _name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::Collector::is_active
+//       Access: Public
+//  Description: Returns true if the indicated collector has been
+//               designated as active, false otherwise.  This might
+//               return initially false until the collector def has
+//               actually been created.
+////////////////////////////////////////////////////////////////////
+INLINE bool PStatClient::Collector::
+is_active() const {
+  return _def != (PStatCollectorDef *)NULL && _def->_is_active;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::Collector::get_def
+//       Access: Public
+//  Description: Returns the PStatCollectorDef that contains all of
+//               the information about the collector.  If this object
+//               has not yet been created, creates it.
+////////////////////////////////////////////////////////////////////
+INLINE PStatCollectorDef *PStatClient::Collector::
+get_def(const PStatClient *client, int this_index) const {
+  if (_def == (PStatCollectorDef *)NULL) {
+    ((Collector *)this)->make_def(client, this_index);
+  }
+
+  return _def;
 }

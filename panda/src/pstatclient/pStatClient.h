@@ -23,6 +23,7 @@
 
 #include "pStatFrameData.h"
 #include "pStatClientImpl.h"
+#include "pStatCollectorDef.h"
 #include "luse.h"
 #include "pmap.h"
 
@@ -61,7 +62,7 @@ PUBLISHED:
 
   INLINE int get_num_collectors() const;
   PStatCollector get_collector(int index) const;
-  const PStatCollectorDef &get_collector_def(int index) const;
+  INLINE PStatCollectorDef *get_collector_def(int index) const;
   string get_collector_name(int index) const;
   string get_collector_fullname(int index) const;
 
@@ -132,9 +133,28 @@ private:
   // stuff in PStatCollector and PStatCollectorDef is just fluff.)
   class Collector {
   public:
-    PStatCollectorDef *_def;
-    ThingsByName _children;
+    INLINE Collector(int parent_index, const string &name);
+    INLINE int get_parent_index() const;
+    INLINE const string &get_name() const;
+    INLINE bool is_active() const;
+    INLINE PStatCollectorDef *get_def(const PStatClient *client, int this_index) const;
+      
+  private:
+    void make_def(const PStatClient *client, int this_index);
 
+  private:
+    // This pointer is initially NULL, and will be filled in when it
+    // is first needed.
+    PStatCollectorDef *_def;
+
+    // This data is used to create the PStatCollectorDef when it is
+    // needed.
+    int _parent_index;
+    string _name;
+
+  public:
+    // Relations to other collectors.
+    ThingsByName _children;
     PerThread _per_thread;
   };
   typedef pvector<Collector> Collectors;

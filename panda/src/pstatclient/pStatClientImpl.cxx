@@ -370,7 +370,7 @@ report_new_collectors() {
     PStatClientControlMessage message;
     message._type = PStatClientControlMessage::T_define_collectors;
     while (_collectors_reported < (int)_client->_collectors.size()) {
-      message._collectors.push_back(_client->_collectors[_collectors_reported]._def);
+      message._collectors.push_back(_client->get_collector_def(_collectors_reported));
       _collectors_reported++;
     }
 
