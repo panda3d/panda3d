@@ -181,7 +181,6 @@ class Placer(AppShell):
                                          text = 'X', relief = FLAT,
                                          value = 0.0,
                                          label_foreground = 'Red')
-        self.posX['command'] = self.xform
         self.posX['commandData'] = ['x']
         self.posX['preCallback'] = self.xformStart
         self.posX['postCallback'] = self.xformStop
@@ -193,7 +192,6 @@ class Placer(AppShell):
                                          text = 'Y', relief = FLAT,
                                          value = 0.0,
                                          label_foreground = '#00A000')
-        self.posY['command'] = self.xform
         self.posY['commandData'] = ['y']
         self.posY['preCallback'] = self.xformStart
         self.posY['postCallback'] = self.xformStop
@@ -205,7 +203,6 @@ class Placer(AppShell):
                                          text = 'Z', relief = FLAT,
                                          value = 0.0,
                                          label_foreground = 'Blue')
-        self.posZ['command'] = self.xform
         self.posZ['commandData'] = ['z']
         self.posZ['preCallback'] = self.xformStart
         self.posZ['postCallback'] = self.xformStop
@@ -235,7 +232,6 @@ class Placer(AppShell):
                                          text = 'H', value = 0.0,
                                          relief = FLAT,
                                          label_foreground = 'blue')
-        self.hprH['command'] = self.xform
         self.hprH['commandData'] = ['h']
         self.hprH['preCallback'] = self.xformStart
         self.hprH['postCallback'] = self.xformStop
@@ -248,7 +244,6 @@ class Placer(AppShell):
                                          text = 'P', value = 0.0,
                                          relief = FLAT,
                                          label_foreground = 'red')
-        self.hprP['command'] = self.xform
         self.hprP['commandData'] = ['p']
         self.hprP['preCallback'] = self.xformStart
         self.hprP['postCallback'] = self.xformStop
@@ -261,7 +256,6 @@ class Placer(AppShell):
                                          text = 'R', value = 0.0,
                                          relief = FLAT,
                                          label_foreground = '#00A000')
-        self.hprR['command'] = self.xform
         self.hprR['commandData'] = ['r']
         self.hprR['preCallback'] = self.xformStart
         self.hprR['postCallback'] = self.xformStop
@@ -308,7 +302,6 @@ class Placer(AppShell):
                                            min = 0.0001, value = 1.0,
                                            resetValue = 1.0,
                                            label_foreground = 'Red')
-        self.scaleX['command'] = self.xform
         self.scaleX['commandData'] = ['sx']
         self.scaleX['callbackData'] = ['sx']
         self.scaleX['preCallback'] = self.xformStart
@@ -322,7 +315,6 @@ class Placer(AppShell):
                                            min = 0.0001, value = 1.0,
                                            resetValue = 1.0,
                                            label_foreground = '#00A000')
-        self.scaleY['command'] = self.xform
         self.scaleY['commandData'] = ['sy']
         self.scaleY['callbackData'] = ['sy']
         self.scaleY['preCallback'] = self.xformStart
@@ -336,7 +328,6 @@ class Placer(AppShell):
                                            min = 0.0001, value = 1.0,
                                            resetValue = 1.0,
                                            label_foreground = 'Blue')
-        self.scaleZ['command'] = self.xform
         self.scaleZ['commandData'] = ['sz']
         self.scaleZ['callbackData'] = ['sz']
         self.scaleZ['preCallback'] = self.xformStart
@@ -348,6 +339,18 @@ class Placer(AppShell):
         # Set up placer for inital node path
         self.selectNodePathNamed('init')
         self.selectRefNodePathNamed('parent')
+        # Update place to reflect initial state
+        self.updatePlacer()
+        # Now that you're done setting up, attach commands
+        self.posX['command'] = self.xform
+        self.posY['command'] = self.xform
+        self.posZ['command'] = self.xform
+        self.hprH['command'] = self.xform
+        self.hprP['command'] = self.xform
+        self.hprR['command'] = self.xform
+        self.scaleX['command'] = self.xform
+        self.scaleY['command'] = self.xform
+        self.scaleZ['command'] = self.xform
 
 
     ### WIDGET OPERATIONS ###
@@ -371,6 +374,14 @@ class Placer(AppShell):
         self.hprR['text'] = namePrefix + 'R'
         # Update temp cs and initialize widgets
         self.updatePlacer()
+
+    def setScalingMode(self):
+        if self['nodePath']:
+            scale = self['nodePath'].getScale()
+            if ((scale[0] != scale[1]) or
+                (scale[0] != scale[2]) or
+                (scale[1] != scale[2])):
+                self.scalingMode.set('Scale Free')
 
     def selectNodePathNamed(self, name):
         nodePath = None
@@ -424,6 +435,8 @@ class Placer(AppShell):
                 self.updatePlacer()
             # Record initial position
             self.updateResetValues(self['nodePath'])
+            # Set scaling mode based on node path's current scale
+            self.setScalingMode()
         else:
             # Flash entry
             self.nodePathMenuEntry.configure(background = 'Pink')
