@@ -38,7 +38,7 @@
 #defer phase_prefix $[if $[PHASE],phase_$[PHASE]/]
 
 #defer install_model_dir $[install_dir]/$[phase_prefix]$[INSTALL_TO]
-#define filter_dirs $[TARGET_DIR(filter_egg optchar_egg)]
+#define filter_dirs $[TARGET_DIR(filter_egg filter_char_egg optchar_egg)]
 
 #defer source_prefix $[SOURCE_DIR:%=%/]
 
@@ -287,14 +287,14 @@ $[TAB]multify xf $[source] -C $[DATABASE]
     #define scene $[SCENE_PREFIX]$[MODEL].1-0.dsc
     #define source $[DATABASE]/SCENES/$[scene]
 $[target] : $[source]
-$[TAB]soft2egg $[SOFT2EGG_OPTS] -p -M $[target] -N $[CHAR_NAME] -d $[DATABASE] -s $[scene] -t $[soft_maps_dir]
+$[TAB]soft -D libsoftegg soft2egg $[SOFT2EGG_OPTS] -p -M $[target] -N $[CHAR_NAME] -d $[DATABASE] -t $[DATABASE]/PICTURES -s $[scene]
   #endif
   #if $[NURBS_MODEL]
     #define target $[EGG_PREFIX]$[NURBS_MODEL].egg
     #define scene $[SCENE_PREFIX]$[MODEL].1-0.dsc
     #define source $[DATABASE]/SCENES/$[scene]
 $[target] : $[source]
-$[TAB]soft2egg $[SOFT2EGG_OPTS] -n -M $[target] -N $[CHAR_NAME] -d $[DATABASE] -s $[scene] -t $[soft_maps_dir]
+$[TAB]soft -D libsoftegg soft2egg $[SOFT2EGG_OPTS] -n -M $[target] -N $[CHAR_NAME] -d $[DATABASE] -t $[DATABASE]/PICTURES -s $[scene]
   #endif
 
 #end soft_char_egg
@@ -312,7 +312,7 @@ $[TAB]soft2egg $[SOFT2EGG_OPTS] -n -M $[target] -N $[CHAR_NAME] -d $[DATABASE] -
       #set end $[word 2,$[$[anim]_frames]]
     #endif
 $[target] : $[source]
-$[TAB]soft2egg $[SOFT2EGG_OPTS] -a -A $[target] -N $[CHAR_NAME] -d $[DATABASE] -s $[scene] $[begin:%=-b%] $[end:%=-e%]
+$[TAB]soft -D libsoftegg soft2egg $[SOFT2EGG_OPTS] -a -A $[target] -N $[CHAR_NAME] -d $[DATABASE] -s $[scene] $[begin:%=-b%] $[end:%=-e%]
   #end anim
 #end soft_char_egg
 
