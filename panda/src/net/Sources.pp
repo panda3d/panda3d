@@ -105,3 +105,12 @@
 
 #end test_bin_target
 
+#begin test_bin_target
+  #define TARGET fake_http_server
+  #define LOCAL_LIBS net
+  #define OTHER_LIBS $[OTHER_LIBS] pystub
+
+  #define SOURCES \
+    fake_http_server.cxx
+
+#end test_bin_target
