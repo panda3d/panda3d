@@ -79,7 +79,9 @@ if (not outputDir):
     FFIConstants.notify.info('Setting output directory to current directory')
     outputDir = '.'
 elif (not os.path.exists(outputDir)):
-    FFIConstants.notify.error('Directory does not exists: ' + outputDir)
+    FFIConstants.notify.info('Directory does not exist, creating: ' + outputDir)
+    os.mkdir(outputDir)
+    FFIConstants.notify.info('Setting output directory to: ' + outputDir)
 else:
     FFIConstants.notify.info('Setting output directory to: ' + outputDir)
 
