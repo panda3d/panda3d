@@ -103,7 +103,7 @@ PUBLISHED:
       TRFIDENTITY,
       TRFTRANSPOSE,
       TRFINVERSE,
-      TRFINVERSE_TRANSPOSE,
+      TRFINVERSETRANSPOSE,
   };
 
   CgShader(const string &name, const string &v_s , const string &f_s);
