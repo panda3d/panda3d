@@ -54,11 +54,11 @@ class GraphicsStateGuardian;
 //               seen by a normal perspective camera that exists in
 //               the world (that is, under render).
 //
-//               There also exists in the theater one or more
-//               (possibly nonlinear) cameras, called viewers, that
-//               observe these screens.  Each of these viewers is
-//               associated with a single DisplayRegion, where the
-//               final results are presented.
+//               There also exist in the theater one or more (possibly
+//               nonlinear) cameras, called viewers, that observe
+//               these screens.  Each of these viewers is associated
+//               with a single DisplayRegion, where the final results
+//               are presented.
 //
 //
 //               There are several different LensNode (Camera) objects
