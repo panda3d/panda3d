@@ -62,6 +62,7 @@ PUBLISHED:
   bool end_repack();
 
   bool seek(const string &field_name);
+  bool seek(int seek_index);
 
   INLINE bool has_nested_fields() const;
   INLINE int get_num_nested_fields() const;

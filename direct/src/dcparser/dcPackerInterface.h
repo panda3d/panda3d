@@ -75,6 +75,7 @@ public:
 
 PUBLISHED:
   INLINE const string &get_name() const;
+  int find_seek_index(const string &name) const;
 
   virtual DCField *as_field();
   virtual const DCField *as_field() const;

@@ -295,25 +295,52 @@ end_repack() {
 ////////////////////////////////////////////////////////////////////
 bool DCPacker::
 seek(const string &field_name) {
+  if (_catalog == (DCPackerCatalog *)NULL) {
+    _catalog = _root->get_catalog();
+    _live_catalog = _catalog->get_live_catalog(_unpack_data, _unpack_length);
+  }
+  nassertr(_catalog != (DCPackerCatalog *)NULL, false);
+  if (_live_catalog == NULL) {
+    _pack_error = true;
+    return false;
+  }
+  
+  int seek_index = _live_catalog->find_entry_by_name(field_name);
+  if (seek_index < 0) {
+    // The field was not known.
+    _pack_error = true;
+    return false;
+  }
+
+  return seek(seek_index);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::seek
+//       Access: Published
+//  Description: Seeks to the field indentified by seek_index, which
+//               was returned by an earlier call to
+//               DCField::find_seek_index() to get the index of some
+//               nested field.  Also see the version of seek() that
+//               accepts a field name.
+//
+//               Returns true if successful, false if the field is not
+//               known (or if the packer is in an invalid mode).
+////////////////////////////////////////////////////////////////////
+bool DCPacker::
+seek(int seek_index) {
+  if (_catalog == (DCPackerCatalog *)NULL) {
+    _catalog = _root->get_catalog();
+    _live_catalog = _catalog->get_live_catalog(_unpack_data, _unpack_length);
+  }
+  nassertr(_catalog != (DCPackerCatalog *)NULL, false);
+  if (_live_catalog == NULL) {
+    _pack_error = true;
+    return false;
+  }
+  
   if (_mode == M_unpack) {
-    if (_catalog == (DCPackerCatalog *)NULL) {
-      _catalog = _root->get_catalog();
-      _live_catalog = _catalog->get_live_catalog(_unpack_data, _unpack_length);
-    }
-    nassertr(_catalog != (DCPackerCatalog *)NULL, false);
-    if (_live_catalog == NULL) {
-      _pack_error = true;
-      return false;
-    }
-
-    int entry_index = _live_catalog->find_entry_by_name(field_name);
-    if (entry_index < 0) {
-      // The field was not known.
-      _pack_error = true;
-      return false;
-    }
-
-    const DCPackerCatalog::Entry &entry = _live_catalog->get_entry(entry_index);
+    const DCPackerCatalog::Entry &entry = _live_catalog->get_entry(seek_index);
 
     // If we are seeking, we don't need to remember our current stack
     // position.
@@ -322,7 +349,7 @@ seek(const string &field_name) {
     _current_parent = entry._parent;
     _current_field_index = entry._field_index;
     _num_nested_fields = _current_parent->get_num_nested_fields();
-    _unpack_p = _live_catalog->get_begin(entry_index);
+    _unpack_p = _live_catalog->get_begin(seek_index);
 
     // We don't really need _push_marker and _pop_marker now, except
     // that we should set _push_marker in case we have just seeked to
@@ -342,19 +369,7 @@ seek(const string &field_name) {
       _pack_error = true;
       return false;
     }
-    if (_live_catalog == NULL) {
-      _pack_error = true;
-      return false;
-    }
-
-    int entry_index = _live_catalog->find_entry_by_name(field_name);
-    if (entry_index < 0) {
-      // The field was not known.
-      _pack_error = true;
-      return false;
-    }
-
-    const DCPackerCatalog::Entry &entry = _live_catalog->get_entry(entry_index);
+    const DCPackerCatalog::Entry &entry = _live_catalog->get_entry(seek_index);
 
     if (entry._parent->as_switch_parameter() != (DCSwitchParameter *)NULL) {
       // If the parent is a DCSwitch, that can only mean that the
@@ -366,7 +381,7 @@ seek(const string &field_name) {
       return false;
     }
 
-    size_t begin = _live_catalog->get_begin(entry_index);
+    size_t begin = _live_catalog->get_begin(seek_index);
     if (begin < _unpack_p) {
       // Whoops, we are seeking fields out-of-order.  That means we
       // need to write the entire record and start again. 
@@ -384,7 +399,7 @@ seek(const string &field_name) {
         return false;
       }
 
-      begin = _live_catalog->get_begin(entry_index);
+      begin = _live_catalog->get_begin(seek_index);
     }
 
     // Now copy the bytes from _unpack_p to begin from the
@@ -398,12 +413,12 @@ seek(const string &field_name) {
     _current_parent = entry._parent;
     _current_field_index = entry._field_index;
     _num_nested_fields = 1;
-    _unpack_p = _live_catalog->get_end(entry_index);
+    _unpack_p = _live_catalog->get_end(seek_index);
 
     // Set up push_marker and pop_marker so we won't try to advance
     // beyond this field.
     _push_marker = begin;
-    _pop_marker = _live_catalog->get_end(entry_index);
+    _pop_marker = _live_catalog->get_end(seek_index);
 
     return true;
   }

@@ -72,6 +72,26 @@ DCPackerInterface::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::find_seek_index
+//       Access: Published
+//  Description: Returns the index number to be passed to a future
+//               call to DCPacker::seek() to seek directly to the
+//               named field without having to look up the field name
+//               in a table later, or -1 if the named field cannot be
+//               found.
+//
+//               If the named field is nested within a switch or some
+//               similar dynamic structure that reveals different
+//               fields based on the contents of the data, this
+//               mechanism cannot be used to pre-fetch the field index
+//               number--you must seek for the field by name.
+////////////////////////////////////////////////////////////////////
+int DCPackerInterface::
+find_seek_index(const string &name) const {
+  return get_catalog()->find_entry_by_name(name);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::as_field
 //       Access: Published, Virtual
 //  Description: 
