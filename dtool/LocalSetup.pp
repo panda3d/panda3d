@@ -223,6 +223,9 @@ $[cdefine HAVE_MALLOC_H]
 /* Define if you have the <alloca.h> header file.  */
 $[cdefine HAVE_ALLOCA_H]
 
+/* Define if you have the <locale.h> header file.  */
+$[cdefine HAVE_LOCALE_H]
+
 /* Define if you have the <minmax.h> header file.  */
 $[cdefine HAVE_MINMAX_H]
 

@@ -108,6 +108,10 @@
 #include <io.h>
 #endif
 
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
+
 #ifdef HAVE_MINMAX_H
 #include <minmax.h>
 #endif

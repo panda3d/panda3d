@@ -101,6 +101,9 @@
 // Do we have <alloca.h>?
 #define HAVE_ALLOCA_H 1
 
+// Do we have <locale.h>?
+#define HAVE_LOCALE_H 1
+
 // Do we have <minmax.h>?
 #define HAVE_MINMAX_H
 
