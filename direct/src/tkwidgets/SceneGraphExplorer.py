@@ -4,7 +4,7 @@ from Tree import *
 import Pmw
 
 DEFAULT_MENU_ITEMS = ['Select', 'Deselect', 'Flash', 'Toggle Vis',
-                      'Isolate', 'Show All', 'Delete']
+                      'Isolate', 'Show All', 'Place', 'Delete']
 
 class SceneGraphExplorer(Pmw.MegaWidget):
     "Graphical display of a scene graph"

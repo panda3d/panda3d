@@ -5,6 +5,8 @@ from DirectSelection import *
 from DirectGrid import *
 from DirectGeometry import *
 from DirectLights import *
+from DirectSessionPanel import *
+import Placer
 import OnscreenText
 import types
 import __builtin__
@@ -17,6 +19,7 @@ class DirectSession(PandaObject):
         # Establish a global pointer to the direct object early on
         # so dependant classes can access it in their code
         __builtin__.direct = self
+        self.fEnabled = 0
         self.drList = DisplayRegionList()
         self.dr = self.drList[0]
         self.camera = self.dr.camera
@@ -76,6 +79,7 @@ class DirectSession(PandaObject):
             ['SGENodePath_Isolate', self.isolate],
             ['SGENodePath_Toggle Vis', self.toggleVis],
             ['SGENodePath_Show All', self.showAllDescendants],
+            ['SGENodePath_Place', Placer.place],
             ['SGENodePath_Delete', self.removeNodePath],
             ]
         self.keyEvents = ['left', 'right', 'up', 'down',
@@ -87,6 +91,9 @@ class DirectSession(PandaObject):
         self.mouseEvents = ['mouse1', 'mouse1-up',
                             'mouse2', 'mouse2-up',
                             'mouse3', 'mouse3-up']
+
+        if base.wantTk:
+            self.panel = DirectSessionPanel(parent = tkroot)
 
     def enable(self):
         # Make sure old tasks are shut down

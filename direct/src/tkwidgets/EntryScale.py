@@ -78,7 +78,7 @@ class EntryScale(Pmw.MegaWidget):
         # Create the EntryScale's min max labels
         self.minLabel = self.createcomponent('minLabel', (), None,
                                              Button, self.minMaxFrame,
-                                             #command = self.askForMin,
+                                             command = self.askForMin,
                                              text = `self['min']`,
                                              relief = FLAT,
                                              width = 5,
@@ -102,7 +102,7 @@ class EntryScale(Pmw.MegaWidget):
 
         self.maxLabel = self.createcomponent('maxLabel', (), None,
                                              Button, self.minMaxFrame,
-                                             #command = self.askForMax,
+                                             command = self.askForMax,
                                              text = `self['max']`,
                                              relief = FLAT,
                                              width = 5,

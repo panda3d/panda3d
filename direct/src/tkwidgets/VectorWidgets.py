@@ -222,6 +222,20 @@ class VectorEntry(Pmw.MegaWidget):
         self._floaters.set(self.get()[:])
         self._floaters.show()
 
+class Vector2Entry(VectorEntry):
+    def __init__(self, parent = None, **kw):
+        # Initialize options for the class
+        optiondefs = (
+            ('dim',    2,       Pmw.INITOPT),
+            ('fGroup_labels',   ('X','Y','Z'),  None),
+            )
+        self.defineoptions(kw, optiondefs)
+        # Initialize the superclass, make sure dim makes it to superclass
+        VectorEntry.__init__(self, parent, dim = self['dim'])
+        # Needed because this method checks if self.__class__ is myClass
+        # where myClass is the argument passed into inialiseoptions
+        self.initialiseoptions(Vector2Entry)
+
 class Vector3Entry(VectorEntry):
     def __init__(self, parent = None, **kw):
         # Initialize options for the class

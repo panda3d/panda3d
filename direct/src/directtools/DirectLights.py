@@ -69,8 +69,10 @@ class DirectLights(NodePath):
 
     def addLight(self, light):
         # Attach node to self
-        # MRM: This doesn't work for spotlights!
-        nodePath = self.attachNewNode(light.upcastToNamedNode())
+        if isinstance(light, Spotlight):
+            nodePath = self.attachNewNode(light.upcastToProjectionNode())
+        else:
+            nodePath = self.attachNewNode(light.upcastToNamedNode())
         name = light.getName()
         # Store it in the lists
         self.lightList.append(light)

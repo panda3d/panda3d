@@ -11,7 +11,9 @@ import Pmw
 import sys, string
 import ProgressBar
 
-class AppShell(Pmw.MegaToplevel, PandaObject):
+# Inherit from MegaWidget instead of Toplevel so you can pass in a toplevel
+# to use as a container if you wish.  If no toplevel passed in, create one
+class AppShell(Pmw.MegaWidget, PandaObject):
     appversion      = '1.0'
     appname         = 'Generic Application Frame'
     copyright       = ('Copyright 2001 Walt Disney Imagineering.' +
@@ -39,10 +41,16 @@ class AppShell(Pmw.MegaToplevel, PandaObject):
             ('usestatusarea',  self.usestatusarea,  Pmw.INITOPT),
             )
         self.defineoptions(kw, optiondefs)
+        # If no toplevel passed in, create one
+        if parent == None:
+            self.parent = Toplevel()
+        else:
+            self.parent = parent
         # Initialize the base class
-        Pmw.MegaToplevel.__init__(self, parent)
+        Pmw.MegaWidget.__init__(self, self.parent)
         # Set window size
-        self.geometry('%dx%d' % (self.frameWidth, self.frameHeight))
+        self.parent.geometry('%dx%d' % (self.frameWidth, self.frameHeight))
+        self.parent.title(self['title'])
         # Get handle to the toplevels hull
         self._hull = self.component('hull')
         # Initialize the application
@@ -53,6 +61,8 @@ class AppShell(Pmw.MegaToplevel, PandaObject):
         self.focus_set()
         # initialize our options
         self.initialiseoptions(AppShell)
+
+        self.pack(fill = BOTH, expand = 1)
         
     def __createInterface(self):
         self.__createBalloon()
@@ -176,7 +186,7 @@ class AppShell(Pmw.MegaToplevel, PandaObject):
         self.about.focus_set()
        
     def quit(self):
-        self.destroy()
+        self.parent.destroy()
 
     ### USER METHODS ###
     # To be overridden
