@@ -342,6 +342,10 @@ initiate(const string &file_name, Filename file_dest,
                                 first_byte, last_byte, total_bytes,
 				partial_content);
 
+  _tfirst = 0.0;
+  _tlast = 0.0;
+  _got_any_data = false;
+
   return DS_success;
 }
 
@@ -392,6 +396,9 @@ run(void) {
     _current_status->reset();
     // Reset the flag
     _recompute_buffer = false;
+    // Reset the statistics
+    _tfirst = t0;
+    _current_status->_total_bytes = 0;
 
   } else if (_current_status->_bytes_in_buffer + _receive_size > 
 						_disk_buffer_size) {
