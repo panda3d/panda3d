@@ -6,27 +6,25 @@ from DirectObject import *
 import DirectNotifyGlobal
 
 class StateData(DirectObject):
-
-    """StateData class: """
+    """
+    A StateData is a base class for a single state within a Finite
+    State Machine (FSM).
+    """
 
     notify = DirectNotifyGlobal.directNotify.newCategory('StateData')
 
     def __init__(self, doneEvent):
-        """__init__(self, Event)
-        """
         self.doneEvent = doneEvent
         self.doneStatus = None
         self.isLoaded = 0
         self.isEntered = 0
     
     def enter(self):
-        """enter(self)
-
+        """
         Enters the StateData.  This makes it active in whatever sense
         this applies.  Returns true if this is a change (i.e. it was
         not previously entered), or false if this is the same (i.e. it
         was already entered).
-
         """
         if self.isEntered:
             return 0
@@ -37,8 +35,7 @@ class StateData(DirectObject):
         return 1
 
     def exit(self):
-        """exit(self)
-
+        """
         Exits the StateData.  Returns true if this is a change
         (i.e. it was previously entered), or false if this is the same
         (i.e. it was already exited).
@@ -50,14 +47,12 @@ class StateData(DirectObject):
         return 1
 
     def load(self):
-        """load(self)
-
+        """
         Loads the StateData.  This loads whatever assets are needed
         from disk, and otherwise prepares the StateData for being
         entered, without actually entering it.  Returns true if this
         is a change (i.e. it was not already loaded), or false if this
         is the same (i.e. it was previously loaded).
-        
         """
         if self.isLoaded:
             return 0
@@ -67,14 +62,12 @@ class StateData(DirectObject):
         return 1
 
     def unload(self):
-        """unload(self)
-
+        """
         Unloads the StateData.  This frees whatever assets were loaded
         by load(), and generally makes the memory usage for this thing
         be as small as possible.  Some StateData-derived classes can
         load and unload repeatedly; others are useless once they have
         been unloaded.
-        
         """
         if not self.isLoaded:
             return 0
@@ -85,6 +78,9 @@ class StateData(DirectObject):
         return 1
 
     def getDoneStatus(self):
-        """getDoneStatus(self)
+        """
+        The done status of a state data may be anything.  It is common
+        practice to return a Python dictionary or a string; the default
+        value is None.
         """
         return self.doneStatus
