@@ -422,6 +422,18 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
         _num_channels++;
       }
 
+    } else if ((_num_channels == 2 || _num_channels == 4) && num_extra_samples == 0) {
+      // If we have a 2- or 4-channel image but the extra samples are
+      // not declared, assume it was written out by a broken TIFF
+      // implementation and that the extra channel is really mean to
+      // be alpha.
+      unassoc_alpha_sample = _num_channels - 1;
+      if (pnmimage_tiff_cat.is_debug()) {
+        pnmimage_tiff_cat.debug()
+          << "Assuming last channel of " << spp
+          << "-color image is meant to represent alpha.\n";
+      }
+
     } else {
       pnmimage_tiff_cat.error()
         << "Cannot handle " << spp << "-color image (with " 
@@ -771,6 +783,7 @@ write_data(xel *array, xelval *alpha) {
   struct tiff * tif;
   short photometric = 0;
   short samplesperpixel = 0;
+  unsigned short extra_samples[1] = { EXTRASAMPLE_UNASSALPHA };
   short bitspersample = 0;
   int bytesperrow = 0;
   unsigned char* buf;
@@ -896,6 +909,9 @@ write_data(xel *array, xelval *alpha) {
   TIFFSetField( tif, TIFFTAG_IMAGEDESCRIPTION,
                 "Generated via pnmimage.\n" );
   TIFFSetField( tif, TIFFTAG_SAMPLESPERPIXEL, samplesperpixel );
+  if (has_alpha()) {
+    TIFFSetField(tif, TIFFTAG_EXTRASAMPLES, 1, extra_samples);
+  }
   TIFFSetField( tif, TIFFTAG_ROWSPERSTRIP, tiff_rowsperstrip );
   /* TIFFSetField( tif, TIFFTAG_STRIPBYTECOUNTS, _y_size / tiff_rowsperstrip ); */
   TIFFSetField( tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG );
