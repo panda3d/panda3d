@@ -2,6 +2,7 @@ import types
 import string
 import re
 import math
+import operator
 
 def ifAbsentPut(dict, key, newValue):
     """
@@ -345,3 +346,15 @@ def shortestDestAngle(src, dest):
     Example: (shortest-dest-angle 50. -170.) --> 190.
     """
     return (src + (reduceAngle(reduceAngle(dest) - reduceAngle(src))))
+
+def binaryRepr(number, max_length = 32):
+    # This will only work reliably for relatively small numbers.
+    # Increase the value of max_length if you think you're going
+    # to use long integers
+    assert number < 2L << max_length
+    shifts = map (operator.rshift, max_length * [number], \
+                  range (max_length - 1, -1, -1))
+    digits = map (operator.mod, shifts, max_length * [2])
+    if not digits.count (1): return 0
+    digits = digits [digits.index (1):]
+    return string.join (map (repr, digits), '')
