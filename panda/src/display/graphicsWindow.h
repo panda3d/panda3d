@@ -168,6 +168,8 @@ PUBLISHED:
 public:
   virtual void begin_frame();
   virtual void end_frame();
+  virtual void deactivate_window(void);
+  virtual void reactivate_window(void);
 
   // Statistics
   static PStatCollector _app_pcollector;

@@ -600,3 +600,7 @@ void GraphicsWindow::read_priorities(void) {
     }
   }
 }
+
+void GraphicsWindow::deactivate_window(void) { return; }
+void GraphicsWindow::reactivate_window(void) { return; }
+
