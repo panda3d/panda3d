@@ -397,6 +397,23 @@ do_fullscreen_resize(int x_size, int y_size) {
   return bResizeSucceeded;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsWindow8::support_overlay_window
+//       Access: Protected, Virtual
+//  Description: Some windows graphics contexts (e.g. DirectX)
+//               require special support to enable the displaying of
+//               an overlay window (particularly the IME window) over
+//               the fullscreen graphics window.  This is a hook for
+//               the window to enable or disable that mode when
+//               necessary.
+////////////////////////////////////////////////////////////////////
+void wdxGraphicsWindow8::
+support_overlay_window(bool flag) {
+  if (_dxgsg != (DXGraphicsStateGuardian8 *)NULL) {
+    _dxgsg->support_overlay_window(flag);
+  }
+}
+
 #if 1
 //////////////////////////////////////////////////////////////////
 //     Function: WinGraphicsWindow::window_proc
@@ -454,19 +471,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
            EndPaint(hwnd, &ps);
            return 0;
         }
-
-        case WM_IME_STARTCOMPOSITION:
-          // In case we're running fullscreen mode, we have to turn on
-          // explicit DX support for overlay windows now, so we'll be able
-          // to see the IME window.
-          _dxgsg->support_overlay_window(true);
-          break;
-
-        case WM_IME_ENDCOMPOSITION:
-          // Turn off the support for overlay windows, since we're done
-          // with the IME window for now and it just slows things down.
-          _dxgsg->support_overlay_window(false);
-          break;
 
         case WM_ENTERSIZEMOVE:
              if(_dxgsg!=NULL) 
@@ -1718,16 +1722,20 @@ reset_window(bool swapchain) {
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow8::
 open_window(void) {
+  cerr << "open_window()\n";
   PT(DXGraphicsDevice8) dxdev;
   DXGraphicsStateGuardian8 *dxgsg;
   DCAST_INTO_R(dxgsg,_gsg,false);
   WindowProperties props;
 
   if(!choose_device()) {
-      return false;
-  }
-  if (dxgsg->get_pipe()->get_device() && !multiple_windows)
     return false;
+  }
+  if (dxgsg->get_pipe()->get_device() && !multiple_windows) {
+    wdxdisplay8_cat.error() 
+      << "Could not create window; multiple window support not enabled.\n";
+    return false;
+  }
 
   wdxdisplay8_cat.debug() << "_wcontext.hWnd is " << _wcontext.hWnd << "\n";
   if (!WinGraphicsWindow::open_window()) {
@@ -1745,12 +1753,14 @@ open_window(void) {
     create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer);
     dxgsg->get_pipe()->make_device((void*)(&_wcontext));
     dxgsg->copy_pres_reset(&_wcontext);
-    if (multiple_windows) // then we have no choice but to waist a framebuffer
+    if (multiple_windows) {
+      // then we have no choice but to waste a framebuffer
       dxgsg->create_swap_chain(&_wcontext);
-  }
-  else {
+    }
 
-    // fill in the DXScreenData from dxdevice here and change the reference to hWnd.
+  } else {
+    // fill in the DXScreenData from dxdevice here and change the
+    // reference to hWnd.
     dxdev = (DXGraphicsDevice8*)dxgsg->get_pipe()->get_device();
     props = get_properties();
 
@@ -1764,12 +1774,10 @@ open_window(void) {
 
     init_resized_window();
 
-
     if (wdxdisplay8_cat.is_debug()) {
       wdxdisplay8_cat.debug() << "Current device is " << dxdev << "\n";
-      
-      dxgsg->create_swap_chain(&_wcontext);
     }
+    dxgsg->create_swap_chain(&_wcontext);
   }
   wdxdisplay8_cat.debug() << "swapchain is " << _wcontext.pSwapChain << "\n";
   return true;

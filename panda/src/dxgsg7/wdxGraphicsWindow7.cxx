@@ -405,6 +405,23 @@ do_fullscreen_resize(int x_size, int y_size) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsWindow7::support_overlay_window
+//       Access: Protected, Virtual
+//  Description: Some windows graphics contexts (e.g. DirectX)
+//               require special support to enable the displaying of
+//               an overlay window (particularly the IME window) over
+//               the fullscreen graphics window.  This is a hook for
+//               the window to enable or disable that mode when
+//               necessary.
+////////////////////////////////////////////////////////////////////
+void wdxGraphicsWindow7::
+support_overlay_window(bool flag) {
+  if (_dxgsg != (DXGraphicsStateGuardian7 *)NULL) {
+    _dxgsg->support_overlay_window(flag);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsWindow7::set_to_temp_rendertarget
 //       Access: Private
 //  Description: Constructs a temporary tiny render target for the d3d

@@ -441,6 +441,20 @@ reconsider_fullscreen_size(DWORD &, DWORD &, DWORD &) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::support_overlay_window
+//       Access: Protected, Virtual
+//  Description: Some windows graphics contexts (e.g. DirectX)
+//               require special support to enable the displaying of
+//               an overlay window (particularly the IME window) over
+//               the fullscreen graphics window.  This is a hook for
+//               the window to enable or disable that mode when
+//               necessary.
+////////////////////////////////////////////////////////////////////
+void WinGraphicsWindow::
+support_overlay_window(bool) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinGraphicsWindow::open_fullscreen_window
 //       Access: Private
 //  Description: Creates a fullscreen-style window.
@@ -818,10 +832,12 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         break;
         
       case WM_IME_STARTCOMPOSITION:
+        support_overlay_window(true);
         _ime_active = true;
         break;
         
       case WM_IME_ENDCOMPOSITION:
+        support_overlay_window(false);
         _ime_active = false;
         break;
         

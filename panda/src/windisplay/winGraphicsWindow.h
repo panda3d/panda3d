@@ -73,6 +73,8 @@ protected:
   virtual void reconsider_fullscreen_size(DWORD &x_size, DWORD &y_size, 
                                           DWORD &bitdepth);
 
+  virtual void support_overlay_window(bool flag);
+
 private:
   bool open_fullscreen_window();
   bool open_regular_window();

@@ -55,6 +55,7 @@ protected:
   virtual void fullscreen_restored(WindowProperties &properties);
   virtual void handle_reshape();
   virtual bool do_fullscreen_resize(int x_size, int y_size);
+  virtual void support_overlay_window(bool flag);
 
 private:
   //  bool set_to_temp_rendertarget();

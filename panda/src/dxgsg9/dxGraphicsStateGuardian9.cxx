@@ -927,7 +927,7 @@ support_overlay_window(bool flag) {
     _overlay_windows_supported = false;
 
     if (dx_full_screen) {
-      _pScrn->pddsPrimary->SetClipper(NULL);
+      _pD3DDevicesPrimary->SetClipper(NULL);
     }
 
   } else if (!_overlay_windows_supported && flag) {

@@ -754,14 +754,11 @@ search_for_valid_displaymode(DXScreenData &scrn,
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsPipew8::make_device
 //       Access: Public, Virtual
-//  Description: Creates a new device.  ??????
+//  Description: Creates a new reference to a particular hardware
+//               device and associates it with the pipe.
 ////////////////////////////////////////////////////////////////////
-
 PT(GraphicsDevice) wdxGraphicsPipe8::
 make_device(void *scrn) {
-
-  // FrameBufferProperties really belongs as part of the window/renderbuffer specification
-  // put here because of GLX multithreading requirement
   PT(DXGraphicsDevice8) device = new DXGraphicsDevice8(this);
   device->_pScrn = (DXScreenData*) scrn;
   device->_pD3DDevice = device->_pScrn->pD3DDevice;

@@ -5134,19 +5134,19 @@ void DXGraphicsStateGuardian7::show_frame(void) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian7::
 support_overlay_window(bool flag) {
-  if (_overlay_windows_supported && !flag) {
+  if (!flag) {
     // Disable support for overlay windows.
     _overlay_windows_supported = false;
 
-    if (_pScrn->bIsFullScreen) {
+    if (_pScrn != (DXScreenData *)NULL && _pScrn->bIsFullScreen) {
       _pScrn->pddsPrimary->SetClipper(NULL);
     }
 
-  } else if (!_overlay_windows_supported && flag) {
+  } else {
     // Enable support for overlay windows.
     _overlay_windows_supported = true;
 
-    if (_pScrn->bIsFullScreen) {
+    if (_pScrn != (DXScreenData *)NULL && _pScrn->bIsFullScreen) {
       // Create a Clipper object to blt the whole screen.
       LPDIRECTDRAWCLIPPER Clipper;
 
