@@ -35,7 +35,8 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         
         # initialize our NodePath essence.
         NodePath.__init__(self, aspect2d.attachNewNode(panelName))
-
+        NodePath.hide(self)
+        
     def cleanupPanel(self, uniqueName):
         """cleanupPanel(self, string uniqueName)
 
@@ -114,10 +115,6 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         self.panelButtons = []
         self.panelText = []
 
-        centerX = (rect[0] + rect[1]) / 2.0
-        centerY = (rect[2] + rect[3]) / 2.0
-        self.setPos(centerX, 0, centerY)
-
         if isinstance(geom, types.StringType):
             # If 'geom' is a string, it's the name of a model to load.
             self.panelGeom = loader.loadModelCopy(geom)
@@ -126,9 +123,20 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
             # Otherwise, it's a model to instance.
             self.panelGeom = geom.instanceTo(self)
 
+        # Set up the panel as its own mouse region so mouse clicks on
+        # the panel don't inadvertently drive the toon around.
+        self.geomRect = geomRect
+        self.panelRegion = MouseWatcherRegion(uniqueName, 0, 0, 0, 0)
+        self.panelRegion.setRelative(self.panelGeom,
+                                     geomRect[0], geomRect[1],
+                                     geomRect[2], geomRect[3])
+
+        centerX = (rect[0] + rect[1]) / 2.0
+        centerY = (rect[2] + rect[3]) / 2.0
+        self.setPos(centerX, 0, centerY)
+
         # Scale and position the geometry to fill up our desired
         # rectangle.
-
         gCenterX = (geomRect[0] + geomRect[1]) / 2.0
         gCenterY = (geomRect[2] + geomRect[3]) / 2.0
 
@@ -151,14 +159,6 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
             self.panelGeom.setY(100)
             self.panelGeom.arc().setTransition(dw, 2)
 
-        # Set up the panel as its own mouse region so mouse clicks on
-        # the panel don't inadvertently drive the toon around.
-        self.panelRegion = MouseWatcherRegion(uniqueName, 0, 0, 0, 0)
-        self.panelRegion.setRelative(self.panelGeom,
-                                     geomRect[0], geomRect[1],
-                                     geomRect[2], geomRect[3])
-        base.mouseWatcher.node().addRegion(self.panelRegion)
-
     def cleanup(self):
         """cleanup(self):
 
@@ -173,20 +173,48 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         if not self.panelSetup:
             return 0
 
+        self.hide()
+        
         for button in self.panelButtons:
             button.cleanup()
-            self.ignore(button.getName() + '-down-rollover')
 
         for text in self.panelText:
             text.cleanup()
-
-        base.mouseWatcher.node().removeRegion(self.panelRegion)
 
         if not self.isEmpty():
             self.removeNode()
 
         self.panelSetup = 0
         return 1
+
+    def show(self):
+        """show(self):
+        Show everything and hang hooks
+        """
+        NodePath.show(self)
+
+        # show the buttons that are meant to be shown
+        for button in self.panelButtons:
+            if button.func != None:
+                self.accept(button.getName() + '-down-rollover', button.func)
+            if button.panelManage:
+                button.manage(self)
+                
+        base.mouseWatcher.node().addRegion(self.panelRegion)
+        
+    def hide(self):
+        """hide(self):
+        Hide everything and remove hooks
+        """
+        NodePath.hide(self)
+
+        # hide the shown buttons and remove all hooks
+        for button in self.panelButtons:        
+            self.ignore(button.getName() + '-down-rollover')
+            if button.panelManage:
+                button.unmanage()
+                
+        base.mouseWatcher.node().removeRegion(self.panelRegion)
 
     def makeButton(self, name,
                    func = None,
@@ -233,12 +261,9 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
 
         self.panelButtons.append(button)
         
-        if manage:
-            button.manage(self)
-
-        if func != None:
-            self.accept(buttonName + '-down-rollover', func)
-
+        button.panelManage = manage
+        button.func = func
+        
         return button
 
     def makeText(self, text = '',
@@ -312,9 +337,14 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         
         """
         NodePath.setPos(self, x, y, z)
+
         for button in self.panelButtons:
             if button.managed:
                 button.unmanage()
                 button.manage(self)
+
+        self.panelRegion.setRelative(self.panelGeom,
+                                     self.geomRect[0], self.geomRect[1],
+                                     self.geomRect[2], self.geomRect[3])
 
 
