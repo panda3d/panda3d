@@ -759,7 +759,7 @@ is_regular_file() const {
 
   DWORD results = GetFileAttributes(os_specific.c_str());
   if (results != -1) {
-    isreg = (results == FILE_ATTRIBUTE_NORMAL);
+    isreg = ((results & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE)) == 0);
   }
 
 #else  // WIN32_VC
