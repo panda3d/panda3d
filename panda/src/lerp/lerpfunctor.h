@@ -41,12 +41,11 @@ private:
 
 template <class value>
 class SimpleLerpFunctor : public LerpFunctor {
-private:
+protected:
   value _start;
   value _end;
   value _diff_cache;
 
-protected:
   value interpolate(float);
   SimpleLerpFunctor(value start, value end) : LerpFunctor(), _start(start),
 					      _end(end), _diff_cache(end-start)

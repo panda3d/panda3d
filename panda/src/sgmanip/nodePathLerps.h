@@ -87,6 +87,8 @@ PUBLISHED:
 		 float ez, NodePath wrt)
     : LVecBase3fLerpFunctor(LVecBase3f(sx, sy, sz), LVecBase3f(ex, ey, ez)),
       _node_path(np), _is_wrt(true), _wrt_path(wrt) {}
+  void take_shortest(void);
+  void take_longest(void);
 
 public:
   HprLerpFunctor(const HprLerpFunctor&);
@@ -260,6 +262,8 @@ PUBLISHED:
       _pend(pex, pey, pez), _pdiff_cache(_pend-_pstart),
       _hstart(hsx, hsy, hsz), _hend(hex, hey, hez),
       _hdiff_cache(_hend - _hstart), _is_wrt(true), _wrt_path(wrt) {}
+  void take_shortest(void);
+  void take_longest(void);
 
 public:
   PosHprLerpFunctor(const PosHprLerpFunctor&);
@@ -343,6 +347,8 @@ PUBLISHED:
       _hdiff_cache(_hend-_hstart), _sstart(ssx, ssy, ssz),
       _send(sex, sey, sez), _sdiff_cache(_send-_sstart), _is_wrt(true),
       _wrt_path(wrt) {}
+  void take_shortest(void);
+  void take_longest(void);
 
 public:
   PosHprScaleLerpFunctor(const PosHprScaleLerpFunctor&);

@@ -37,6 +37,26 @@ void PosLerpFunctor::operator()(float t) {
 HprLerpFunctor::HprLerpFunctor(const HprLerpFunctor& c)
   : LVecBase3fLerpFunctor(c), _node_path(c._node_path) {}
 
+void HprLerpFunctor::take_shortest(void) {
+  // so long as these are actually degrees
+  for (int i=0; i!=3; ++i)
+    if (this->_diff_cache[i] < -180.)
+      _start[i] -= 360.;
+    else if (this->_diff_cache[i] > 180.)
+      _start[i] += 360.;
+  this->_diff_cache = this->_end - this->_start;
+}
+
+void HprLerpFunctor::take_longest(void) {
+  // so long as these are actually degrees
+  for (int i=0; i!=3; ++i)
+    if ((this->_diff_cache[i] < 0.) && (this->_diff_cache[i] > -180.))
+      _start[i] -= 360.;
+    else if ((this->_diff_cache[i] >= 0.) && (this->_diff_cache[i] < 180))
+      _start[i] += 360.;
+  this->_diff_cache = this->_end - this->_start;
+}
+
 HprLerpFunctor::~HprLerpFunctor(void)
 {
 }
@@ -95,6 +115,26 @@ void ColorLerpFunctor::operator()(float t) {
 PosHprLerpFunctor::PosHprLerpFunctor(const PosHprLerpFunctor& c)
   : LerpFunctor(c), _node_path(c._node_path) {}
 
+void PosHprLerpFunctor::take_shortest(void) {
+  // so long as these are actually degrees
+  for (int i=0; i!=3; ++i)
+    if (this->_hdiff_cache[i] < -180.)
+      _hstart[i] -= 360.;
+    else if (this->_hdiff_cache[i] > 180.)
+      _hstart[i] += 360.;
+  this->_hdiff_cache = this->_hend - this->_hstart;
+}
+
+void PosHprLerpFunctor::take_longest(void) {
+  // so long as these are actually degrees
+  for (int i=0; i!=3; ++i)
+    if ((this->_hdiff_cache[i] < 0.) && (this->_hdiff_cache[i] > -180.))
+      _hstart[i] -= 360.;
+    else if ((this->_hdiff_cache[i] >= 0.) && (this->_hdiff_cache[i] < 180))
+      _hstart[i] += 360.;
+  this->_hdiff_cache = this->_hend - this->_hstart;
+}
+
 PosHprLerpFunctor::~PosHprLerpFunctor(void)
 {
 }
@@ -122,6 +162,26 @@ void PosHprLerpFunctor::operator()(float t) {
 
 PosHprScaleLerpFunctor::PosHprScaleLerpFunctor(const PosHprScaleLerpFunctor& c)
   : LerpFunctor(c), _node_path(c._node_path) {}
+
+void PosHprScaleLerpFunctor::take_shortest(void) {
+  // so long as these are actually degrees
+  for (int i=0; i!=3; ++i)
+    if (this->_hdiff_cache[i] < -180.)
+      _hstart[i] -= 360.;
+    else if (this->_hdiff_cache[i] > 180.)
+      _hstart[i] += 360.;
+  this->_hdiff_cache = this->_hend - this->_hstart;
+}
+
+void PosHprScaleLerpFunctor::take_longest(void) {
+  // so long as these are actually degrees
+  for (int i=0; i!=3; ++i)
+    if ((this->_hdiff_cache[i] < 0.) && (this->_hdiff_cache[i] > -180.))
+      _hstart[i] -= 360.;
+    else if ((this->_hdiff_cache[i] >= 0.) && (this->_hdiff_cache[i] < 180))
+      _hstart[i] += 360.;
+  this->_hdiff_cache = this->_hend - this->_hstart;
+}
 
 PosHprScaleLerpFunctor::~PosHprScaleLerpFunctor(void)
 {
