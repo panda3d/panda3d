@@ -50,6 +50,8 @@ HTTPChannel(HTTPClient *client) :
   _client(client)
 {
   _persistent_connection = false;
+  _connect_timeout = connect_timeout;
+  _blocking_connect = false;
   _download_throttle = false;
   _max_bytes_per_second = downloader_byte_rate;
   _seconds_per_update = downloader_frequency;
@@ -273,6 +275,8 @@ run() {
       }
       
       _state = S_connecting;
+      _started_connecting_time = 
+        ClockObject::get_global_clock()->get_real_time();
     }
 
     if (downloader_cat.is_spam()) {
@@ -283,6 +287,10 @@ run() {
     switch (_state) {
     case S_connecting:
       repeat_later = run_connecting();
+      break;
+      
+    case S_connecting_wait:
+      repeat_later = run_connecting_wait();
       break;
       
     case S_proxy_ready:
@@ -593,23 +601,8 @@ run_connecting() {
   _status_string = string();
   if (BIO_do_connect(*_bio) <= 0) {
     if (BIO_should_retry(*_bio)) {
-
-      /* Put a block here for now. */
-      int fd = -1;
-      BIO_get_fd(*_bio, &fd);
-      if (fd < 0) {
-        downloader_cat.warning()
-          << "nonblocking socket BIO has no file descriptor.\n";
-      } else {
-        downloader_cat.spam()
-          << "waiting to connect.\n";
-        fd_set wset;
-        FD_ZERO(&wset);
-        FD_SET(fd, &wset);
-        select(fd + 1, NULL, &wset, NULL, NULL);
-      }        
-
-      return true;
+      _state = S_connecting_wait;
+      return false;
     }
     downloader_cat.info()
       << "Could not connect to " << _bio->get_server_name() << ":" 
@@ -617,7 +610,6 @@ run_connecting() {
 #ifdef REPORT_SSL_ERRORS
     ERR_print_errors_fp(stderr);
 #endif
-    free_bio();
     _state = S_failure;
     return false;
   }
@@ -636,6 +628,72 @@ run_connecting() {
   }
   return false;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::run_connecting_wait
+//       Access: Private
+//  Description: Here we have begun to establish a nonblocking
+//               connection, but we got a come-back-later message, so
+//               we are waiting for the socket to finish connecting.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+run_connecting_wait() {
+  int fd = -1;
+  BIO_get_fd(*_bio, &fd);
+  if (fd < 0) {
+    downloader_cat.warning()
+      << "nonblocking socket BIO has no file descriptor.\n";
+    _state = S_failure;
+    return false;
+  }
+
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << "waiting to connect to " << _url.get_server() << ":" 
+      << _url.get_port() << ".\n";
+  }
+  fd_set wset;
+  FD_ZERO(&wset);
+  FD_SET(fd, &wset);
+  struct timeval tv;
+  if (get_blocking_connect()) {
+    // Since we'll be blocking on this connect, fill in the timeout
+    // into the structure.
+    tv.tv_sec = (int)_connect_timeout;
+    tv.tv_usec = (int)((_connect_timeout - tv.tv_sec) * 1000000.0);
+  } else {
+    // We won't block on this connect, so select() for 0 time.
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
+  }
+  int errcode = select(fd + 1, NULL, &wset, NULL, &tv);
+  if (errcode < 0) {
+    downloader_cat.warning()
+      << "Error in select.\n";
+    _state = S_failure;
+    return false;
+  }
+  
+  if (errcode == 0) {
+    // Nothing's happened so far; come back later.
+    if (get_blocking_connect() ||
+        (ClockObject::get_global_clock()->get_real_time() - 
+         _started_connecting_time > get_connect_timeout())) {
+      // Time to give up.
+      downloader_cat.info()
+        << "Timeout connecting to " << _url.get_server() << ":" 
+        << _url.get_port() << ".\n";
+      _state = S_failure;
+      return false;
+    }
+    return true;
+  }
+  
+  // The socket is now ready for writing.
+  _state = S_connecting;
+  return false;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::run_proxy_ready

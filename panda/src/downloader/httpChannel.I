@@ -186,6 +186,65 @@ get_persistent_connection() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::set_connect_timeout
+//       Access: Published
+//  Description: Sets the maximum length of time, in seconds, that the
+//               channel will wait before giving up on establishing a
+//               TCP connection.
+//
+//               At the present, this is used only for the nonblocking
+//               interfaces (e.g. begin_get_document(),
+//               begin_connect_to()), but it is used whether
+//               set_blocking_connect() is true or false.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+set_connect_timeout(double connect_timeout) {
+  _connect_timeout = connect_timeout;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_connect_timeout
+//       Access: Published
+//  Description: Returns the length of time, in seconds, to wait for a
+//               new nonblocking socket to connect.  See
+//               set_connect_timeout().
+////////////////////////////////////////////////////////////////////
+INLINE double HTTPChannel::
+get_connect_timeout() const {
+  return _connect_timeout;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::set_blocking_connect
+//       Access: Published
+//  Description: If this flag is true, a socket connect will block
+//               even for nonblocking I/O calls like
+//               begin_get_document(), begin_connect_to(), etc.  If
+//               false, a socket connect will not block for
+//               nonblocking I/O calls, but will block for blocking
+//               I/O calls (get_document(), connect_to(), etc.).
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+set_blocking_connect(bool blocking_connect) {
+  _blocking_connect = blocking_connect;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_blocking_connect
+//       Access: Published
+//  Description: If this flag is true, a socket connect will block
+//               even for nonblocking I/O calls like
+//               begin_get_document(), begin_connect_to(), etc.  If
+//               false, a socket connect will not block for
+//               nonblocking I/O calls, but will block for blocking
+//               I/O calls (get_document(), connect_to(), etc.).
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPChannel::
+get_blocking_connect() const {
+  return _blocking_connect;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::set_download_throttle
 //       Access: Published
 //  Description: Specifies whether nonblocking downloads (via

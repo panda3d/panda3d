@@ -87,6 +87,11 @@ PUBLISHED:
   INLINE void set_persistent_connection(bool persistent_connection);
   INLINE bool get_persistent_connection() const;
 
+  INLINE void set_connect_timeout(double timeout_seconds);
+  INLINE double get_connect_timeout() const;
+  INLINE void set_blocking_connect(bool blocking_connect);
+  INLINE bool get_blocking_connect() const;
+
   INLINE void set_download_throttle(bool download_throttle);
   INLINE bool get_download_throttle() const;
 
@@ -136,6 +141,7 @@ private:
 
   bool reached_done_state();
   bool run_connecting();
+  bool run_connecting_wait();
   bool run_proxy_ready();
   bool run_proxy_request_sent();
   bool run_proxy_reading_header();
@@ -196,6 +202,8 @@ private:
   PT(BioPtr) _bio;
   PT(BioStreamPtr) _source;
   bool _persistent_connection;
+  double _connect_timeout;
+  bool _blocking_connect;
   bool _download_throttle;
   double _max_bytes_per_second;
   double _max_updates_per_second;
@@ -256,6 +264,7 @@ private:
   enum State {
     S_new,
     S_connecting,
+    S_connecting_wait,
     S_proxy_ready,
     S_proxy_request_sent,
     S_proxy_reading_header,
@@ -273,6 +282,7 @@ private:
   };
   State _state;
   State _done_state;
+  double _started_connecting_time;
   bool _started_download;
   string _proxy_header;
   string _proxy_request_text;

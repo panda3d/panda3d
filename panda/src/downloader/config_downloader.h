@@ -42,5 +42,6 @@ extern const bool early_random_seed;
 extern const bool verify_ssl;
 extern const string http_proxy;
 extern const string http_proxy_username;
+extern const double connect_timeout;
 
 #endif

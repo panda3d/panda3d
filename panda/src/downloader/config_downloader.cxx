@@ -85,6 +85,11 @@ config_downloader.GetString("http-proxy", "");
 const string http_proxy_username =
 config_downloader.GetString("http-proxy-username", "");
 
+// This is the default amount of time to wait for a connection, in
+// seconds.  It is presently only used for nonblocking sockets.
+const double connect_timeout =
+config_downloader.GetDouble("connect-timeout", 5.0);
+
 ConfigureFn(config_downloader) {
 #ifdef HAVE_SSL
   HTTPChannel::init_type();
