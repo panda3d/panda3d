@@ -26,7 +26,7 @@
 #include "datagramSink.h"
 #include "pdeque.h"
 
-class PipelineCyclerBase;
+struct PipelineCyclerBase;
 
 // A handy macro for writing PointerToArrays.
 #define WRITE_PTA(Manager, dest, Write_func, array)  \

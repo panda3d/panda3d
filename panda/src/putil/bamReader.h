@@ -33,7 +33,7 @@
 
 #include <algorithm>
 
-class PipelineCyclerBase;
+struct PipelineCyclerBase;
 
 
 // A handy macro for reading PointerToArrays.
