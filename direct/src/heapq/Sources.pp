@@ -5,7 +5,7 @@
 // under Windows).
 
 #define DIR_TYPE metalib
-#define BUILDING_DLL BUILDING_DIRECT
+//#define BUILDING_DLL BUILDING_DIRECT
 
 
 #define OTHER_LIBS \
