@@ -36,6 +36,12 @@
 #include <math.h>
 #include "lmatrix.h"
 #include "lvector3.h"
+#include "lvector2.h"
+#include "lpoint3.h"
+#include "lpoint2.h"
+#include "lmat_ops.h"
+#include "lvec2_ops.h"
+#include "lvec3_ops.h"
 
 #include "fltnames.h"
 #include "compose_matrix_src.h"
