@@ -959,6 +959,82 @@ static void test16(GuiManager* mgr, Node* font) {
   ch1->start_behavior();
 }
 
+static void test17(GuiManager* mgr, Node* font) {
+  GuiLabel* nl1 = GuiLabel::make_simple_text_label("next", font);
+  GuiLabel* nl2 = GuiLabel::make_simple_text_label("next", font);
+  GuiLabel* nl3 = GuiLabel::make_simple_text_label("next", font);
+  GuiButton* nb = new GuiButton("next_button", nl1, nl2, nl3);
+  nb->set_scale(0.1);
+  nb->set_pos(LVector3f::rfu(0.25, 0., -0.25));
+  GuiLabel* pl1 = GuiLabel::make_simple_text_label("prev", font);
+  GuiLabel* pl2 = GuiLabel::make_simple_text_label("prev", font);
+  GuiLabel* pl3 = GuiLabel::make_simple_text_label("prev", font);
+  GuiButton* pb = new GuiButton("prev_button", pl1, pl2, pl3);
+  pb->set_scale(0.1);
+  pb->set_pos(LVector3f::rfu(-0.25, 0., -0.25));
+  nb->set_behavior_event("demo-event-thing");
+  pb->set_behavior_event("demo-event-thing");
+  ch1 = new GuiChooser("chooser", pb, nb);
+  GuiLabel* l1 = GuiLabel::make_simple_text_label("hyena", font);
+  GuiSign* s1 = new GuiSign("hyena", l1);
+  s1->set_scale(0.1);
+  GuiLabel* l2 = GuiLabel::make_simple_text_label("dingo", font);
+  GuiSign* s2 = new GuiSign("dingo", l2);
+  s2->set_scale(0.1);
+  GuiLabel* l3 = GuiLabel::make_simple_text_label("jackal", font);
+  GuiSign* s3 = new GuiSign("jackal", l3);
+  s3->set_scale(0.1);
+  GuiLabel* l4 = GuiLabel::make_simple_text_label("wolf", font);
+  GuiSign* s4 = new GuiSign("wolf", l4);
+  s4->set_scale(0.1);
+  GuiLabel* l5 = GuiLabel::make_simple_text_label("fox", font);
+  GuiSign* s5 = new GuiSign("fox", l5);
+  s5->set_scale(0.1);
+  float w, w1, w2;
+  w1 = l1->get_width();
+  w2 = l2->get_width();
+  w = (w1>w2)?w1:w2;
+  w2 = l3->get_width();
+  w = (w>w2)?w:w2;
+  w2 = l4->get_width();
+  w = (w>w2)?w:w2;
+  w2 = l5->get_width();
+  w = (w>w2)?w:w2;
+  l1->set_width(w);
+  l2->set_width(w);
+  l3->set_width(w);
+  l4->set_width(w);
+  l5->set_width(w);
+  nl1->set_background_color(0., 0., 0., 1.);
+  nl2->set_background_color(0., 0., 0., 1.);
+  nl3->set_background_color(0., 0., 0., 1.);
+  nl2->set_foreground_color(1., 0., 0., 1.);
+  nl3->set_foreground_color(1., 1., 1., 0.5);
+  pl1->set_background_color(0., 0., 0., 1.);
+  pl2->set_background_color(0., 0., 0., 1.);
+  pl3->set_background_color(0., 0., 0., 1.);
+  pl2->set_foreground_color(1., 0., 0., 1.);
+  pl3->set_foreground_color(1., 1., 1., 0.5);
+  l1->set_background_color(0., 0., 0., 1.);
+  l2->set_background_color(0., 0., 0., 1.);
+  l3->set_background_color(0., 0., 0., 1.);
+  l4->set_background_color(0., 0., 0., 1.);
+  l5->set_background_color(0., 0., 0., 1.);
+  ch1->add_item(s1);
+  ch1->add_item(s2);
+  ch1->add_item(s3);
+  ch1->add_item(s4);
+  ch1->add_item(s5);
+  PT_Node panel = ModelPool::load_model("phase_3/models/props/panel");
+  GuiLabel* bgl = GuiLabel::make_model_label(panel);
+  GuiBackground *bg = new GuiBackground("bg", ch1, bgl);
+  bg->set_color(1., 0., 1., 1.);
+  bg->thaw();
+  bg->manage(mgr, event_handler);
+  mgr->recompute_priorities();
+  ch1->start_behavior();
+}
+
 static void setup_gui(void) {
   GuiManager* mgr = GuiManager::get_ptr(main_win, mak, (Node*)0L);
   PT_Node font = ModelPool::load_model("ttf-comic");
@@ -996,7 +1072,9 @@ static void setup_gui(void) {
   // test 15
   //  test15(mgr, font);
   // test 16
-  test16(mgr, font);
+  //  test16(mgr, font);
+  // test 17
+  test17(mgr, font);
 }
 
 static void event_2(CPT_Event) {
@@ -1091,7 +1169,7 @@ static void event_3(CPT_Event) {
 }
 */
 
-// for test 14-16
+// for test 14-17
 static void event_3(CPT_Event) {
   ch1->move_prev();
 }
@@ -1111,7 +1189,7 @@ static void event_4(CPT_Event) {
 }
 */
 
-// for test 14-16
+// for test 14-17
 static void event_4(CPT_Event) {
   ch1->move_next();
 }
@@ -1125,9 +1203,9 @@ void gui_keys(EventHandler&) {
   have_dlight = true;
 
   event_handler.add_hook("2", event_2);
-  // for tests 7-16
+  // for tests 7-17
   event_handler.add_hook("3", event_3);
-  // for test 11-16
+  // for test 11-17
   event_handler.add_hook("4", event_4);
   event_handler.add_hook("demo-event-thing", event_demo);
 }
