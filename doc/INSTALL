@@ -657,8 +657,10 @@ run-time behavior.
 Create a file called Configrc in the $INSTALL_DIR/etc directory.  By
 convention, your custom Configrc file should not have any extension,
 not even the extension ".txt"; this differentiates it from the
-standard Configrc files which are installed into the $INSTALL_DIR/etc
-file.
+standard Configrc files which are also installed into the
+$INSTALL_DIR/etc file (and having no extension causes your file to be
+loaded first, so your personal settings will override those in the
+other files).
 
 For now, add just the line:
 
