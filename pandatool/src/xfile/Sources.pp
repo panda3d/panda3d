@@ -9,26 +9,48 @@
     dtoolbase:c dtool:m
 
   #define USE_PACKAGES zlib
+
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx   
     
   #define SOURCES \
-     config_xfile.h config_xfile.cxx \
-     standard_templates.cxx standard_templates.h \
-     windowsGuid.cxx windowsGuid.h \
+     config_xfile.h \
+     standard_templates.h \
+     windowsGuid.h \
+     xFile.I xFile.h \
+     xFileArrayDef.I xFileArrayDef.h \
+     xFileDataDef.I xFileDataDef.h \
+     xFileDataNode.I xFileDataNode.h \
+     xFileDataNodeReference.I xFileDataNodeReference.h \
+     xFileDataNodeTemplate.I xFileDataNodeTemplate.h \
+     xFileDataObject.I xFileDataObject.h \
+     xFileDataObjectArray.I xFileDataObjectArray.h \
+     xFileDataObjectDouble.I xFileDataObjectDouble.h \
+     xFileDataObjectInteger.I xFileDataObjectInteger.h \
+     xFileDataObjectString.I xFileDataObjectString.h \
+     xFileNode.I xFileNode.h \
+     xFileParseData.I xFileParseData.h \
+     xFileTemplate.I xFileTemplate.h \
      xLexer.lxx xLexerDefs.h \
-     xParser.yxx xParserDefs.h \
-     xFile.cxx xFile.I xFile.h \
-     xFileArrayDef.cxx xFileArrayDef.I xFileArrayDef.h \
-     xFileDataDef.cxx xFileDataDef.I xFileDataDef.h \
-     xFileDataObject.cxx xFileDataObject.I xFileDataObject.h \
-     xFileDataObjectArray.cxx xFileDataObjectArray.I xFileDataObjectArray.h \
-     xFileDataObjectDouble.cxx xFileDataObjectDouble.I xFileDataObjectDouble.h \
-     xFileDataObjectInteger.cxx xFileDataObjectInteger.I xFileDataObjectInteger.h \
-     xFileDataObjectString.cxx xFileDataObjectString.I xFileDataObjectString.h \
-     xFileDataNode.cxx xFileDataNode.I xFileDataNode.h \
-     xFileDataNodeReference.cxx xFileDataNodeReference.I xFileDataNodeReference.h \
-     xFileDataNodeTemplate.cxx xFileDataNodeTemplate.I xFileDataNodeTemplate.h \
-     xFileNode.cxx xFileNode.I xFileNode.h \
-     xFileParseData.cxx xFileParseData.I xFileParseData.h \
-     xFileTemplate.cxx xFileTemplate.I xFileTemplate.h
+     xParser.yxx xParserDefs.h
+
+  #define INCLUDED_SOURCES \
+     config_xfile.cxx \
+     standard_templates.cxx \
+     windowsGuid.cxx\
+     xFile.cxx \
+     xFileArrayDef.cxx \
+     xFileDataDef.cxx \
+     xFileDataNode.cxx \
+     xFileDataNodeReference.cxx \
+     xFileDataNodeTemplate.cxx \
+     xFileDataObject.cxx \
+     xFileDataObjectArray.cxx \
+     xFileDataObjectDouble.cxx \
+     xFileDataObjectInteger.cxx \
+     xFileDataObjectString.cxx \
+     xFileNode.cxx \
+     xFileParseData.cxx \
+     xFileTemplate.cxx
+
 
 #end ss_lib_target
