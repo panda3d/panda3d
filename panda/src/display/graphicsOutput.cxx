@@ -859,39 +859,33 @@ end_frame() {
     _flip_ready = true;
   }
 
+  // In one-shot mode, we request the GraphicsEngine to delete the
+  // window after we have rendered a frame.
   if (_one_shot) {
-    // In one-shot mode, we request the GraphicsEngine to delete the
-    // window after we have rendered a frame.
-    _active = false;
-    _delete_flag = true;
-
-    // We have to be sure to remove all of the display regions
-    // immediately, so that circular reference counts can be cleared
-    // up (each display region keeps a pointer to a CullResult, which
-    // can hold all sorts of pointers).
-    remove_all_display_regions();
-
-
-    // If we were rendering directly to texture, we can't delete the
-    // buffer until the texture is gone too.
-    if (_rtm_mode == RTM_bind_texture) {
-      _hold_texture = _texture;
-    }
-
-    // Also, when show-buffers mode is enabled, we want to keep the
+    // But when show-buffers mode is enabled, we want to keep the
     // window around until the user has a chance to see the texture.
-    // Same story: we'll hold it until the texture is gone.  In this
-    // case we also keep the active flag true, so the window will
-    // repaint when needed.
-    if (show_buffers) {
-      _hold_texture = _texture;
-      _active = true;
+    // So we don't do most of the following in show-buffers mode.
+    if (!show_buffers) {
+      _active = false;
+      _delete_flag = true;
+      
+      // We have to be sure to remove all of the display regions
+      // immediately, so that circular reference counts can be cleared
+      // up (each display region keeps a pointer to a CullResult,
+      // which can hold all sorts of pointers).
+      remove_all_display_regions();
+      
+      // If we were rendering directly to texture, we can't delete the
+      // buffer until the texture is gone too.
+      if (_rtm_mode == RTM_bind_texture) {
+        _hold_texture = _texture;
+      }
     }
 
     // We have to be sure to clear the _texture pointer, though, or
     // we'll end up holding a reference to it forever.
     _texture = NULL;
-
+    
     // And we need to stop trying to copy to the texture.
     _rtm_mode = RTM_none;
   }
