@@ -129,6 +129,11 @@ PUBLISHED:
   // resize the window to the given size
   virtual void resize(unsigned int xsize,unsigned int ysize);  
 
+  virtual void swap();
+
+public:
+  virtual void resized(const unsigned int, const unsigned int);
+
   // see if window sizes are supported (i.e. in fullscrn mode)
   // 
   // note: it might be better to implement some sort of query
@@ -137,11 +142,6 @@ PUBLISHED:
   //       on most cards, assuming they handle the std sizes the app
   //       knows about.
   virtual unsigned int verify_window_sizes(unsigned int numsizes,unsigned int *dimen);
-
-  virtual void swap();
-
-public:
-  virtual void resized(const unsigned int, const unsigned int);
 
   INLINE virtual void set_draw_callback(Callback *c);
   INLINE virtual void set_idle_callback(Callback *c);
