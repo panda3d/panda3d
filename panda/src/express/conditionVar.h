@@ -26,11 +26,11 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ConditionVar
-// Description : A condition variable, used to implement a more
-//               sophisticated kind of thread synchronization that is
-//               possible with a simple mutex.  A condition variable
-//               can be used to "wake up" a thread when some arbitrary
-//               condition has changed.
+// Description : A condition variable, usually used to communicate
+//               information about changing state to a thread that is
+//               waiting for something to happen.  A condition
+//               variable can be used to "wake up" a thread when some
+//               arbitrary condition has changed.
 //
 //               A condition variable is associated with a single
 //               mutex, and several condition variables may share the
