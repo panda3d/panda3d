@@ -306,6 +306,8 @@ class ShowBase:
         using the indicated window.  This should only be called once
         per application.
         """
+
+        print 'setup mouse'
         
         # We create both a MouseAndKeyboard object and a MouseWatcher object
         # for the window.  The MouseAndKeyboard generates mouse events and
