@@ -357,7 +357,10 @@ keystroke(const MouseWatcherParameter &param, bool background) {
           // A normal visible character.  Add a new character to the
           // text entry, if there's room.
 
-          string new_char(1, (char)keycode);
+          // Encode the character.  This might expand it to two or
+          // three bytes, or it might remain a one-byte character.
+          TextNode *text_node = get_text_def(S_focus);
+          string new_char = text_node->encode_wchar(keycode);
             
           if (get_max_chars() > 0 && (int)_text.length() >= get_max_chars()) {
             overflow(param);
