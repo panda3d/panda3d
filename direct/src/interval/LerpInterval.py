@@ -113,7 +113,7 @@ class LerpHprInterval(LerpInterval):
 	    name = 'LerpHprInterval-%d' % LerpHprInterval.lerpHprNum
 	    LerpHprInterval.lerpHprNum += 1
         # Initialize superclass
-	LerpInterval.__init__(self, name, duration, functorFunc, blendType) 
+	LerpInterval.__init__(self, name, duration, functorFunc, blendType)
 
 class LerpScaleInterval(LerpInterval):
 
