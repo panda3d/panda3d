@@ -262,7 +262,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
     png_set_palette_to_rgb(_png);
     _maxval = 255;
     _num_channels = 3;
-    return;
+    break;
 
   default:
     pnmimage_png_cat.error()
