@@ -69,8 +69,6 @@ public:
              const GraphicsWindow::Properties& props);
   virtual ~wglGraphicsWindow();
 
-  virtual bool supports_update() const;
-  virtual void update();
   virtual void end_frame();
   virtual void swap();
   virtual int get_depth_bitwidth();
@@ -111,7 +109,6 @@ private:
   bool              _bIsLowVidMemCard;
   bool              _bLoadedCustomCursor;
 
-  bool              _window_inactive;
   bool              _active_minimized_fullscreen;
   bool              _return_control_to_app;
   bool              _exiting_window;

@@ -60,8 +60,6 @@ public:
   wdxGraphicsWindow(GraphicsPipe* pipe,const GraphicsWindow::Properties& props,wdxGraphicsWindowGroup *pParentGroup);
 
   virtual ~wdxGraphicsWindow(void);
-  virtual bool supports_update() const;
-  virtual void update(void);
   virtual void end_frame( void );
 
   virtual TypeHandle get_gsg_type() const;

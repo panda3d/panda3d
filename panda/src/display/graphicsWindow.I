@@ -418,6 +418,19 @@ get_button_event(int device) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::get_window_active
+//       Access: Public
+//  Description: Returns true if the window is currently active and
+//               ready to be rendered into, or false otherwise.  This
+//               state is normally updated only by the GSG, or by the
+//               window itself.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsWindow::
+get_window_active() const {
+  return _window_active;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::win_display_regions_changed
 //       Access: Public
 //  Description: Intended to be called when the active state on a

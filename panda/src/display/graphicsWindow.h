@@ -180,8 +180,6 @@ PUBLISHED:
   INLINE bool has_pointer(int device) const;
   INLINE bool has_keyboard(int device) const;
 
-  virtual void process_events(void) { return; };   // process window events
-
 public:
   INLINE const MouseData &get_mouse_data(int device) const;
   INLINE bool has_button_event(int device) const;
@@ -197,8 +195,12 @@ public:
   virtual void begin_frame();
   void clear();
   virtual void end_frame();
-  virtual void deactivate_window(void);
-  virtual void reactivate_window(void);
+
+  virtual void process_events();
+
+  INLINE bool get_window_active() const;
+  virtual void deactivate_window();
+  virtual void reactivate_window();
 
   INLINE void win_display_regions_changed();
 
@@ -228,6 +230,7 @@ protected:
   int _frame_number;
 
   bool _is_synced;
+  bool _window_active;
 
 protected:
 

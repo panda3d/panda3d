@@ -105,7 +105,7 @@ void wglGraphicsWindow::DestroyMe(bool bAtExitFnCalled) {
   if (!bAtExitFnCalled) {
       // to do gl releases, we need to have the context be current
       if ((_hdc!=NULL)&&(_context!=NULL)) {
-          // need to bypass make_current() since it checks _window_inactive which we need to ignore
+          // need to bypass make_current() since it checks _window_active which we need to ignore
           HGLRC current_context = wglGetCurrentContext();
           HDC current_dc = wglGetCurrentDC();
 
@@ -332,7 +332,7 @@ void wglGraphicsWindow::config() {
     _PandaPausedTimer = NULL;
     _context = NULL;
     _hdc = NULL;
-    _window_inactive = false;
+    _window_active = true;
     _pCurrent_display_settings = NULL;
     _mwindow = NULL;
     _gsg = NULL;
@@ -1298,11 +1298,11 @@ void INLINE process_1_event() {
 }
 
 void INLINE wglGraphicsWindow::process_events() {
-  if (_window_inactive) {
+  if (!_window_active) {
       // Get 1 msg at a time until no more are left and we block and sleep,
-      // or message changes _return_control_to_app or _window_inactive status
+      // or message changes _return_control_to_app or !_window_active status
 
-      while(_window_inactive && (!_return_control_to_app)) {
+      while(!_window_active && (!_return_control_to_app)) {
           process_1_event();
       }
       _return_control_to_app = false;
@@ -1318,60 +1318,12 @@ void INLINE wglGraphicsWindow::process_events() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::supports_update
-//       Access: Public, Virtual
-//  Description: Returns true if this particular kind of
-//               GraphicsWindow supports use of the update() function
-//               to update the graphics one frame at a time, so that
-//               the window does not need to be the program's main
-//               loop.  Returns false if the only way to update the
-//               window is to call main_loop().
-////////////////////////////////////////////////////////////////////
-bool wglGraphicsWindow::
-supports_update() const {
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: update
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void wglGraphicsWindow::update() {
-#ifdef DO_PSTATS
-  _show_code_pcollector.stop();
-
-  if (!_window_inactive) {
-      PStatClient::main_tick();
-  }
-#endif
-
-  process_events();
-
-  if (_window_inactive) {
-      // note _window_inactive must be checked after process_events is called, to avoid draw_callback being called
-      if (_idle_callback)
-          call_idle_callback();
-      return;
-  }
-
-  call_draw_callback(true);
-
-  if (_idle_callback)
-    call_idle_callback();
-
-#ifdef DO_PSTATS
-  _show_code_pcollector.start();
-#endif
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: make_current
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::make_current() {
-  if ((_hdc==NULL)||(_context==NULL)||(_window_inactive)) {
+  if ((_hdc==NULL)||(_context==NULL)||(!_window_active)) {
       return;  // we're only allow unmake_current() to set this to NULL
   }
 
@@ -1474,7 +1426,7 @@ void wglGraphicsWindow::deactivate_window() {
     // current policy is to suspend minimized or deactivated fullscreen windows, but leave
     // regular windows running normally
 
-   if ((!_props._fullscreen) || _exiting_window || _window_inactive || _active_minimized_fullscreen) {
+   if ((!_props._fullscreen) || _exiting_window || !_window_active || _active_minimized_fullscreen) {
        #ifdef _DEBUG
           if (wgldisplay_cat.is_spam())
             wgldisplay_cat.spam()  << "deactivate_window called, but ignored in current mode"  << endl;
@@ -1488,7 +1440,7 @@ void wglGraphicsWindow::deactivate_window() {
        if (wgldisplay_cat.is_spam())
            wgldisplay_cat.spam() << "WGL window deactivated, releasing gl context and waiting...\n";
 
-      _window_inactive = true;
+      _window_active = false;
       unmake_current();
    } else {
        _active_minimized_fullscreen = true;
@@ -1528,11 +1480,11 @@ void wglGraphicsWindow::deactivate_window() {
 }
 
 void wglGraphicsWindow::reactivate_window() {
-    if (_window_inactive) {
+    if (!_window_active) {
         if (wgldisplay_cat.is_spam())
             wgldisplay_cat.spam() << "WGL window re-activated...\n";
 
-        _window_inactive = false;
+        _window_active = true;
 
         if (_PandaPausedTimer!=NULL) {
             KillTimer(_mwindow,_PandaPausedTimer);
@@ -1936,7 +1888,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     break;
 
     case WM_TIMER:
-      if ((wparam==_PandaPausedTimer) && _window_inactive) {
+      if ((wparam==_PandaPausedTimer) && !_window_active) {
          //wgldisplay_cat.spam() << "returning control to app\n";
           _return_control_to_app = true;
          // throw_event("PandaPaused");

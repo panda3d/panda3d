@@ -148,6 +148,7 @@ GraphicsWindow(GraphicsPipe *pipe) : Configurable() {
   _idle_callback = NULL;
   _frame_number = 0;
   _is_synced = false;
+  _window_active = true;
   _display_regions_stale = false;
 }
 
@@ -168,6 +169,7 @@ GraphicsWindow(GraphicsPipe *pipe,
   _draw_callback = NULL;
   _idle_callback = NULL;
   _is_synced = false;
+  _window_active = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -328,15 +330,6 @@ is_channel_defined(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::flag_redisplay
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-flag_redisplay() {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::declare_channel
 //       Access: Protected
 //  Description: An internal function to add the indicated
@@ -389,64 +382,6 @@ do_determine_display_regions() {
   }
 
   _display_regions_stale = false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::register_draw_function
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-register_draw_function(GraphicsWindow::vfn f) {
-  _draw_function = f;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::register_idle_function
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-register_idle_function(GraphicsWindow::vfn f) {
-  _idle_function = f;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called by the GSG before
-//               beginning processing for a given frame.  It should do
-//               whatever setup is required.
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-begin_frame() {
-  _gsg->begin_frame();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::clear
-//       Access: Public
-//  Description: Invokes the GSG to clear the entire contents of the
-//               window prior to drawing into it.  This is normally
-//               called only by the draw process at the beginning of
-//               the frame.
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-clear() {
-  _gsg->clear_framebuffer();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called by the GSG after
-//               processing is completed for a given frame.  It should
-//               do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-end_frame() {
-  _gsg->end_frame();
-  _frame_number++;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -514,6 +449,106 @@ void GraphicsWindow::
 unmake_current(void) {
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::flag_redisplay
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+flag_redisplay() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::register_draw_function
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+register_draw_function(GraphicsWindow::vfn f) {
+  _draw_function = f;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::register_idle_function
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+register_idle_function(GraphicsWindow::vfn f) {
+  _idle_function = f;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::begin_frame
+//       Access: Public, Virtual
+//  Description: This function will be called by the GSG before
+//               beginning processing for a given frame.  It should do
+//               whatever setup is required.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+begin_frame() {
+  _gsg->begin_frame();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::clear
+//       Access: Public
+//  Description: Invokes the GSG to clear the entire contents of the
+//               window prior to drawing into it.  This is normally
+//               called only by the draw process at the beginning of
+//               the frame.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+clear() {
+  _gsg->clear_framebuffer();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::end_frame
+//       Access: Public, Virtual
+//  Description: This function will be called by the GSG after
+//               processing is completed for a given frame.  It should
+//               do whatever finalization is required.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+end_frame() {
+  _gsg->end_frame();
+  _frame_number++;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::process_events
+//       Access: Public, Virtual
+//  Description: Do whatever processing is necessary to ensure that
+//               the window responds to user events.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+process_events() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::deactivate_window
+//       Access: Public, Virtual
+//  Description: Indicates the window should stop rendering
+//               temporarily, and does whatever else is associated
+//               with that.  This is normally called only by the
+//               GraphicsWindow itself, or by the GSG.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+deactivate_window() {
+  _window_active = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::reactivate_window
+//       Access: Public, Virtual
+//  Description: Restores the normal window rendering behavior after a
+//               previous call to deactivate_window().
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+reactivate_window() {
+  _window_active = true;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::make_gsg
@@ -659,7 +694,3 @@ get_depth_bitwidth(void) {
     display_cat.warning() << "get_depth_bitwidth() unimplemented by " << get_type() << endl; 
     return -1;
 }
-
-void GraphicsWindow::deactivate_window(void) { return; }
-void GraphicsWindow::reactivate_window(void) { return; }
-

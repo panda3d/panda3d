@@ -618,7 +618,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             //    think of to make this work is to have the timer periodically check for restored
             //    coop level
 
-            //    if(_props._fullscreen && _window_inactive) {
+            //    if(_props._fullscreen && !_window_active) {
             //          if(_dxgsg!=NULL)
             //              _dxgsg->CheckCooperativeLevel(DO_REACTIVATE_WINDOW);
             //           else reactivate_window();
@@ -736,7 +736,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             //    windowed apps currently run regardless of if its window is in the foreground
             //    so we cannot rely on window messages to reawaken app
 
-            if((wparam==_PandaPausedTimer) && (_window_inactive||_active_minimized_fullscreen)) {
+            if((wparam==_PandaPausedTimer) && (!_window_active||_active_minimized_fullscreen)) {
                 assert(_dxgsg!=NULL);
                 _dxgsg->CheckCooperativeLevel(DO_REACTIVATE_WINDOW);
 
@@ -901,7 +901,7 @@ void wdxGraphicsWindow::deactivate_window(void) {
     // current policy is to suspend minimized or deactivated fullscreen windows, but leave
     // regular windows running normally
 
-   if(_window_inactive || _exiting_window || _active_minimized_fullscreen) {
+   if(!_window_active || _exiting_window || _active_minimized_fullscreen) {
        #ifdef _DEBUG
           if(wdxdisplay_cat.is_spam())
             wdxdisplay_cat.spam()  << "deactivate_window called, but ignored in current mode\n";
@@ -918,7 +918,7 @@ void wdxGraphicsWindow::deactivate_window(void) {
        if(wdxdisplay_cat.is_spam())
            wdxdisplay_cat.spam() << "WDX window deactivated, waiting...\n";
 
-       _window_inactive = true;
+       _window_active = false;
    }
 
    if(_props._fullscreen) {
@@ -949,7 +949,7 @@ void wdxGraphicsWindow::deactivate_window(void) {
 }
 
 void wdxGraphicsWindow::reactivate_window(void) {
-    if(_window_inactive) {
+    if(!_window_active) {
     
         // first see if dx cooperative level is OK for reactivation
     //    if(!_dxgsg->CheckCooperativeLevel())
@@ -958,7 +958,7 @@ void wdxGraphicsWindow::reactivate_window(void) {
         if(wdxdisplay_cat.is_spam())
             wdxdisplay_cat.spam() << "WDX window re-activated...\n";
     
-        _window_inactive = false;
+        _window_active = true;
     
         if(_PandaPausedTimer!=NULL) {
             KillTimer(_dxgsg->scrn.hWnd,_PandaPausedTimer);
@@ -1263,7 +1263,7 @@ void wdxGraphicsWindow::config_window(wdxGraphicsWindowGroup *pParentGroup) {
     _hdc = NULL;
     _gsg = _dxgsg = NULL;
     _exiting_window = false;
-    _window_inactive = false;
+    _window_active = true;
     _return_control_to_app = false;
     _active_minimized_fullscreen = false;
 
@@ -2545,21 +2545,6 @@ handle_keyrelease(ButtonHandle key) {
     }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow::supports_update
-//       Access: Public, Virtual
-//  Description: Returns true if this particular kind of
-//               GraphicsWindow supports use of the update() function
-//               to update the graphics one frame at a time, so that
-//               the window does not need to be the program's main
-//               loop.  Returns false if the only way to update the
-//               window is to call main_loop().
-////////////////////////////////////////////////////////////////////
-bool wdxGraphicsWindow::
-supports_update() const {
-    return true;
-}
-
 void INLINE process_1_event(void) {
   MSG msg;
 
@@ -2576,11 +2561,11 @@ void INLINE process_1_event(void) {
 }
 
 void INLINE wdxGraphicsWindow::process_events(void) {
-  if(_window_inactive) {
+  if(!_window_active) {
       // Get 1 msg at a time until no more are left and we block and sleep,
-      // or message changes _return_control_to_app or _window_inactive status
+      // or message changes _return_control_to_app or _window_active status
 
-      while(_window_inactive && (!_return_control_to_app)) {
+      while(!_window_active && (!_return_control_to_app)) {
           process_1_event();
       }
       _return_control_to_app = false;
@@ -2593,39 +2578,6 @@ void INLINE wdxGraphicsWindow::process_events(void) {
           process_1_event();
       }
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: update
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow::update(void) {
-#ifdef DO_PSTATS
-  _show_code_pcollector.stop();
-
-  if(!_window_inactive) {
-      PStatClient::main_tick();
-  }
-#endif
-
-  process_events();
-
-  if(_window_inactive) {
-      // note _window_inactive must be checked after process_events is called, to avoid draw_callback being called
-      if(_idle_callback)
-          call_idle_callback();
-      return;
-  }
-
-  call_draw_callback(true);
-
-  if(_idle_callback)
-    call_idle_callback();
-
-#ifdef DO_PSTATS
-  _show_code_pcollector.start();
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
