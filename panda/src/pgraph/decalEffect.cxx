@@ -1,5 +1,5 @@
-// Filename: decalAttrib.cxx
-// Created by:  drose (04Mar02)
+// Filename: decalEffect.cxx
+// Created by:  drose (14Mar02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,113 +16,113 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "decalAttrib.h"
+#include "decalEffect.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 
-TypeHandle DecalAttrib::_type_handle;
+TypeHandle DecalEffect::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DecalAttrib::make
+//     Function: DecalEffect::make
 //       Access: Published, Static
-//  Description: Constructs a new DecalAttrib object.
+//  Description: Constructs a new DecalEffect object.
 ////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) DecalAttrib::
+CPT(RenderEffect) DecalEffect::
 make() {
-  DecalAttrib *attrib = new DecalAttrib;
-  return return_new(attrib);
+  DecalEffect *effect = new DecalEffect;
+  return return_new(effect);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DecalAttrib::compare_to_impl
+//     Function: DecalEffect::compare_to_impl
 //       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived DecalAttrib
+//  Description: Intended to be overridden by derived DecalEffect
 //               types to return a unique number indicating whether
-//               this DecalAttrib is equivalent to the other one.
+//               this DecalEffect is equivalent to the other one.
 //
-//               This should return 0 if the two DecalAttrib objects
+//               This should return 0 if the two DecalEffect objects
 //               are equivalent, a number less than zero if this one
 //               should be sorted before the other one, and a number
 //               greater than zero otherwise.
 //
-//               This will only be called with two DecalAttrib
+//               This will only be called with two DecalEffect
 //               objects whose get_type() functions return the same.
 ////////////////////////////////////////////////////////////////////
-int DecalAttrib::
-compare_to_impl(const RenderAttrib *other) const {
-  // All DecalAttribs are equivalent--there are no properties to
+int DecalEffect::
+compare_to_impl(const RenderEffect *other) const {
+  // All DecalEffects are equivalent--there are no properties to
   // store.
   return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DecalAttrib::make_default_impl
+//     Function: DecalEffect::make_default_impl
 //       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived DecalAttrib
+//  Description: Intended to be overridden by derived DecalEffect
 //               types to specify what the default property for a
-//               DecalAttrib of this type should be.
+//               DecalEffect of this type should be.
 //
-//               This should return a newly-allocated DecalAttrib of
+//               This should return a newly-allocated DecalEffect of
 //               the same type that corresponds to whatever the
-//               standard default for this kind of DecalAttrib is.
+//               standard default for this kind of DecalEffect is.
 ////////////////////////////////////////////////////////////////////
-RenderAttrib *DecalAttrib::
+RenderEffect *DecalEffect::
 make_default_impl() const {
-  return new DecalAttrib;
+  return new DecalEffect;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DecalAttrib::register_with_read_factory
+//     Function: DecalEffect::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type
-//               DecalAttrib.
+//               DecalEffect.
 ////////////////////////////////////////////////////////////////////
-void DecalAttrib::
+void DecalEffect::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DecalAttrib::write_datagram
+//     Function: DecalEffect::write_datagram
 //       Access: Public, Virtual
 //  Description: Writes the contents of this object to the datagram
 //               for shipping out to a Bam file.
 ////////////////////////////////////////////////////////////////////
-void DecalAttrib::
+void DecalEffect::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  RenderAttrib::write_datagram(manager, dg);
+  RenderEffect::write_datagram(manager, dg);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DecalAttrib::make_from_bam
+//     Function: DecalEffect::make_from_bam
 //       Access: Protected, Static
 //  Description: This function is called by the BamReader's factory
-//               when a new object of type DecalAttrib is encountered
-//               in the Bam file.  It should create the DecalAttrib
+//               when a new object of type DecalEffect is encountered
+//               in the Bam file.  It should create the DecalEffect
 //               and extract its information from the file.
 ////////////////////////////////////////////////////////////////////
-TypedWritable *DecalAttrib::
+TypedWritable *DecalEffect::
 make_from_bam(const FactoryParams &params) {
-  DecalAttrib *attrib = new DecalAttrib;
+  DecalEffect *effect = new DecalEffect;
   DatagramIterator scan;
   BamReader *manager;
 
   parse_params(params, scan, manager);
-  attrib->fillin(scan, manager);
+  effect->fillin(scan, manager);
 
-  return attrib;
+  return effect;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DecalAttrib::fillin
+//     Function: DecalEffect::fillin
 //       Access: Protected
 //  Description: This internal function is called by make_from_bam to
 //               read in all of the relevant data from the BamFile for
-//               the new DecalAttrib.
+//               the new DecalEffect.
 ////////////////////////////////////////////////////////////////////
-void DecalAttrib::
+void DecalEffect::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  RenderAttrib::fillin(scan, manager);
+  RenderEffect::fillin(scan, manager);
 }

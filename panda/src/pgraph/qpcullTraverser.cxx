@@ -20,7 +20,6 @@
 #include "cullTraverserData.h"
 #include "transformState.h"
 #include "renderState.h"
-#include "billboardAttrib.h"
 #include "cullHandler.h"
 #include "dcast.h"
 #include "qpgeomNode.h"
@@ -116,8 +115,8 @@ traverse(PandaNode *node, const CullTraverserData &data) {
 ////////////////////////////////////////////////////////////////////
 void qpCullTraverser::
 traverse_below(PandaNode *node, const CullTraverserData &data) {
-  const RenderState *node_state = node->get_state();
-  if (node_state->has_decal()) {
+  const RenderEffects *node_effects = node->get_effects();
+  if (node_effects->has_decal()) {
     start_decal(node, data);
     
   } else {
@@ -161,7 +160,7 @@ void qpCullTraverser::
 start_decal(PandaNode *node, const CullTraverserData &data) {
   if (!node->is_geom_node()) {
     pgraph_cat.error()
-      << "DecalAttrib applied to " << *node << ", not a GeomNode.\n";
+      << "DecalEffect applied to " << *node << ", not a GeomNode.\n";
     return;
   }
 

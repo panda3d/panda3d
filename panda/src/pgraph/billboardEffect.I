@@ -1,5 +1,5 @@
-// Filename: billboardAttrib.I
-// Created by:  drose (27Feb02)
+// Filename: billboardEffect.I
+// Created by:  drose (14Mar02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,136 +18,136 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardAttrib::Constructor
+//     Function: BillboardEffect::Constructor
 //       Access: Private
-//  Description: Use BillboardAttrib::make() to construct a new
-//               BillboardAttrib object.
+//  Description: Use BillboardEffect::make() to construct a new
+//               BillboardEffect object.
 ////////////////////////////////////////////////////////////////////
-INLINE BillboardAttrib::
-BillboardAttrib() {
+INLINE BillboardEffect::
+BillboardEffect() {
   _off = true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardAttrib::make_axis
+//     Function: BillboardEffect::make_axis
 //       Access: Published, Static
 //  Description: A convenience function to make a typical
 //               axis-rotating billboard.
 ////////////////////////////////////////////////////////////////////
-INLINE CPT(RenderAttrib) BillboardAttrib::
+INLINE CPT(RenderEffect) BillboardEffect::
 make_axis() {
   return make(LVector3f::up(), false, true, 
               0.0f, qpNodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardAttrib::make_point_eye
+//     Function: BillboardEffect::make_point_eye
 //       Access: Published, Static
 //  Description: A convenience function to make a typical
 //               eye-relative point-rotating billboard.
 ////////////////////////////////////////////////////////////////////
-INLINE CPT(RenderAttrib) BillboardAttrib::
+INLINE CPT(RenderEffect) BillboardEffect::
 make_point_eye() {
   return make(LVector3f::up(), true, false,
               0.0f, qpNodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardAttrib::make_point_world
+//     Function: BillboardEffect::make_point_world
 //       Access: Published, Static
 //  Description: A convenience function to make a typical
 //               world-relative point-rotating billboard.
 ////////////////////////////////////////////////////////////////////
-INLINE CPT(RenderAttrib) BillboardAttrib::
+INLINE CPT(RenderEffect) BillboardEffect::
 make_point_world() {
   return make(LVector3f::up(), false, false,
               0.0f, qpNodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardAttrib::is_off
+//     Function: BillboardEffect::is_off
 //       Access: Published
-//  Description: Returns true if the BillboardAttrib is an 'off'
-//               BillboardAttrib, indicating that it does not enable
-//               billboarding.  This kind of BillboardAttrib isn't
+//  Description: Returns true if the BillboardEffect is an 'off'
+//               BillboardEffect, indicating that it does not enable
+//               billboarding.  This kind of BillboardEffect isn't
 //               particularly useful and isn't normally created or
 //               stored in the graph; it might be implicitly
 //               discovered as the result of a
 //               qpNodePath::get_rel_state().
 ////////////////////////////////////////////////////////////////////
-INLINE bool BillboardAttrib::
+INLINE bool BillboardEffect::
 is_off() const {
   return _off;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardAttrib::get_up_vector
+//     Function: BillboardEffect::get_up_vector
 //       Access: Published
 //  Description: Returns the up vector in effect for this billboard.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVector3f &BillboardAttrib::
+INLINE const LVector3f &BillboardEffect::
 get_up_vector() const {
   return _up_vector;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardAttrib::get_eye_relative
+//     Function: BillboardEffect::get_eye_relative
 //       Access: Published
 //  Description: Returns true if this billboard interprets the up
 //               vector relative to the camera, or false if it is
 //               relative to the world.
 ////////////////////////////////////////////////////////////////////
-INLINE bool BillboardAttrib::
+INLINE bool BillboardEffect::
 get_eye_relative() const {
   return _eye_relative;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardAttrib::get_axial_rotate
+//     Function: BillboardEffect::get_axial_rotate
 //       Access: Published
 //  Description: Returns true if this billboard rotates only around
 //               the axis of the up vector, or false if it rotates
 //               freely in three dimensions.
 ////////////////////////////////////////////////////////////////////
-INLINE bool BillboardAttrib::
+INLINE bool BillboardEffect::
 get_axial_rotate() const {
   return _axial_rotate;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardAttrib::get_offset
+//     Function: BillboardEffect::get_offset
 //       Access: Published
 //  Description: Returns the distance toward the camera (or the
 //               look_at_point) the billboard is moved towards, after
 //               rotating.  This can be used to ensure the billboard
 //               is not obscured by nearby geometry.
 ////////////////////////////////////////////////////////////////////
-INLINE float BillboardAttrib::
+INLINE float BillboardEffect::
 get_offset() const {
   return _offset;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardAttrib::get_look_at
+//     Function: BillboardEffect::get_look_at
 //       Access: Published
 //  Description: Returns the node this billboard will rotate to look
 //               towards.  If this is empty, it means the billboard
 //               will rotate towards the current camera node, wherever
 //               that might be.
 ////////////////////////////////////////////////////////////////////
-INLINE const qpNodePath &BillboardAttrib::
+INLINE const qpNodePath &BillboardEffect::
 get_look_at() const {
   return _look_at;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardAttrib::get_look_at_point
+//     Function: BillboardEffect::get_look_at_point
 //       Access: Published
 //  Description: Returns the point, relative to the look_at node,
 //               towards which the billboard will rotate.  Normally
 //               this is (0, 0, 0).
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &BillboardAttrib::
+INLINE const LPoint3f &BillboardEffect::
 get_look_at_point() const {
   return _look_at_point;
 }

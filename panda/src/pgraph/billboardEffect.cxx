@@ -1,5 +1,5 @@
-// Filename: billboardAttrib.cxx
-// Created by:  drose (27Feb02)
+// Filename: billboardEffect.cxx
+// Created by:  drose (14Mar02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,42 +16,54 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "billboardAttrib.h"
+#include "billboardEffect.h"
 #include "look_at.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 
-TypeHandle BillboardAttrib::_type_handle;
+TypeHandle BillboardEffect::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardAttrib::make
+//     Function: BillboardEffect::make
 //       Access: Published, Static
-//  Description: Constructs a new BillboardAttrib object with the
+//  Description: Constructs a new BillboardEffect object with the
 //               indicated properties.
 ////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) BillboardAttrib::
+CPT(RenderEffect) BillboardEffect::
 make(const LVector3f &up_vector, bool eye_relative,
      bool axial_rotate, float offset, const qpNodePath &look_at,
      const LPoint3f &look_at_point) {
-  BillboardAttrib *attrib = new BillboardAttrib;
-  attrib->_up_vector = up_vector;
-  attrib->_eye_relative = eye_relative;
-  attrib->_axial_rotate = axial_rotate;
-  attrib->_offset = offset;
-  attrib->_look_at = look_at;
-  attrib->_look_at_point = look_at_point;
-  attrib->_off = false;
-  return return_new(attrib);
+  BillboardEffect *effect = new BillboardEffect;
+  effect->_up_vector = up_vector;
+  effect->_eye_relative = eye_relative;
+  effect->_axial_rotate = axial_rotate;
+  effect->_offset = offset;
+  effect->_look_at = look_at;
+  effect->_look_at_point = look_at_point;
+  effect->_off = false;
+  return return_new(effect);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardAttrib::output
+//     Function: BillboardEffect::safe_to_combine
+//       Access: Public, Virtual
+//  Description: Returns true if this kind of effect can safely be
+//               combined with sibling nodes that share the exact same
+//               effect, or false if this is not a good idea.
+////////////////////////////////////////////////////////////////////
+bool BillboardEffect::
+safe_to_combine() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BillboardEffect::output
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void BillboardAttrib::
+void BillboardEffect::
 output(ostream &out) const {
   out << get_type() << ":";
   if (is_off()) {
@@ -82,13 +94,13 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardAttrib::do_billboard
+//     Function: BillboardEffect::do_billboard
 //       Access: Public
 //  Description: Computes the appropriate transform to apply to the
 //               billboarded geometry, given its current net
 //               transform, and the camera's inverse net transform.
 ////////////////////////////////////////////////////////////////////
-CPT(TransformState) BillboardAttrib::
+CPT(TransformState) BillboardEffect::
 do_billboard(const TransformState *net_transform,
              const TransformState *camera_transform) const {
   // Determine the relative transform to our camera (or other look_at
@@ -141,23 +153,23 @@ do_billboard(const TransformState *net_transform,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardAttrib::compare_to_impl
+//     Function: BillboardEffect::compare_to_impl
 //       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived BillboardAttrib
+//  Description: Intended to be overridden by derived BillboardEffect
 //               types to return a unique number indicating whether
-//               this BillboardAttrib is equivalent to the other one.
+//               this BillboardEffect is equivalent to the other one.
 //
-//               This should return 0 if the two BillboardAttrib objects
+//               This should return 0 if the two BillboardEffect objects
 //               are equivalent, a number less than zero if this one
 //               should be sorted before the other one, and a number
 //               greater than zero otherwise.
 //
-//               This will only be called with two BillboardAttrib
+//               This will only be called with two BillboardEffect
 //               objects whose get_type() functions return the same.
 ////////////////////////////////////////////////////////////////////
-int BillboardAttrib::
-compare_to_impl(const RenderAttrib *other) const {
-  const BillboardAttrib *ta;
+int BillboardEffect::
+compare_to_impl(const RenderEffect *other) const {
+  const BillboardEffect *ta;
   DCAST_INTO_R(ta, other, 0);
 
   if (_axial_rotate != ta->_axial_rotate) {
@@ -185,41 +197,41 @@ compare_to_impl(const RenderAttrib *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardAttrib::make_default_impl
+//     Function: BillboardEffect::make_default_impl
 //       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived BillboardAttrib
+//  Description: Intended to be overridden by derived BillboardEffect
 //               types to specify what the default property for a
-//               BillboardAttrib of this type should be.
+//               BillboardEffect of this type should be.
 //
-//               This should return a newly-allocated BillboardAttrib of
+//               This should return a newly-allocated BillboardEffect of
 //               the same type that corresponds to whatever the
-//               standard default for this kind of BillboardAttrib is.
+//               standard default for this kind of BillboardEffect is.
 ////////////////////////////////////////////////////////////////////
-RenderAttrib *BillboardAttrib::
+RenderEffect *BillboardEffect::
 make_default_impl() const {
-  return new BillboardAttrib;
+  return new BillboardEffect;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardAttrib::register_with_read_factory
+//     Function: BillboardEffect::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type
-//               BillboardAttrib.
+//               BillboardEffect.
 ////////////////////////////////////////////////////////////////////
-void BillboardAttrib::
+void BillboardEffect::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardAttrib::write_datagram
+//     Function: BillboardEffect::write_datagram
 //       Access: Public, Virtual
 //  Description: Writes the contents of this object to the datagram
 //               for shipping out to a Bam file.
 ////////////////////////////////////////////////////////////////////
-void BillboardAttrib::
+void BillboardEffect::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  RenderAttrib::write_datagram(manager, dg);
+  RenderEffect::write_datagram(manager, dg);
 
   dg.add_bool(_off);
   _up_vector.write_datagram(dg);
@@ -233,35 +245,35 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardAttrib::make_from_bam
+//     Function: BillboardEffect::make_from_bam
 //       Access: Protected, Static
 //  Description: This function is called by the BamReader's factory
-//               when a new object of type BillboardAttrib is encountered
-//               in the Bam file.  It should create the BillboardAttrib
+//               when a new object of type BillboardEffect is encountered
+//               in the Bam file.  It should create the BillboardEffect
 //               and extract its information from the file.
 ////////////////////////////////////////////////////////////////////
-TypedWritable *BillboardAttrib::
+TypedWritable *BillboardEffect::
 make_from_bam(const FactoryParams &params) {
-  BillboardAttrib *attrib = new BillboardAttrib;
+  BillboardEffect *effect = new BillboardEffect;
   DatagramIterator scan;
   BamReader *manager;
 
   parse_params(params, scan, manager);
-  attrib->fillin(scan, manager);
+  effect->fillin(scan, manager);
 
-  return attrib;
+  return effect;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardAttrib::fillin
+//     Function: BillboardEffect::fillin
 //       Access: Protected
 //  Description: This internal function is called by make_from_bam to
 //               read in all of the relevant data from the BamFile for
-//               the new BillboardAttrib.
+//               the new BillboardEffect.
 ////////////////////////////////////////////////////////////////////
-void BillboardAttrib::
+void BillboardEffect::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  RenderAttrib::fillin(scan, manager);
+  RenderEffect::fillin(scan, manager);
 
   _off = scan.get_bool();
   _up_vector.read_datagram(scan);

@@ -1,5 +1,5 @@
-// Filename: decalAttrib.h
-// Created by:  drose (04Mar02)
+// Filename: decalEffect.h
+// Created by:  drose (14Mar02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,29 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef DECALATTRIB_H
-#define DECALATTRIB_H
+#ifndef DECALEFFECT_H
+#define DECALEFFECT_H
 
 #include "pandabase.h"
 
-#include "renderAttrib.h"
+#include "renderEffect.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : DecalAttrib
+//       Class : DecalEffect
 // Description : Applied to a GeomNode to indicate that the children
 //               of this GeomNode are coplanar and should be drawn as
 //               decals (eliminating Z-fighting).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DecalAttrib : public RenderAttrib {
+class EXPCL_PANDA DecalEffect : public RenderEffect {
 private:
-  INLINE DecalAttrib();
+  INLINE DecalEffect();
 
 PUBLISHED:
-  static CPT(RenderAttrib) make();
+  static CPT(RenderEffect) make();
 
 protected:
-  virtual int compare_to_impl(const RenderAttrib *other) const;
-  virtual RenderAttrib *make_default_impl() const;
+  virtual int compare_to_impl(const RenderEffect *other) const;
+  virtual RenderEffect *make_default_impl() const;
 
 public:
   static void register_with_read_factory();
@@ -53,9 +53,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    RenderAttrib::init_type();
-    register_type(_type_handle, "DecalAttrib",
-                  RenderAttrib::get_class_type());
+    RenderEffect::init_type();
+    register_type(_type_handle, "DecalEffect",
+                  RenderEffect::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -66,7 +66,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "decalAttrib.I"
+#include "decalEffect.I"
 
 #endif
 

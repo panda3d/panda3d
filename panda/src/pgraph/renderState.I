@@ -163,53 +163,13 @@ get_override(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderState::get_billboard
-//       Access: Public
-//  Description: This function is provided as an optimization, to
-//               speed up the render-time checking for the existance
-//               of a BillboardAttrib on this state.  It returns a
-//               pointer to the BillboardAttrib, if there is one, or
-//               NULL if there is not.
-////////////////////////////////////////////////////////////////////
-INLINE const BillboardAttrib *RenderState::
-get_billboard() const {
-  if ((_flags & F_checked_billboard) == 0) {
-    // We pretend this function is const, even though it transparently
-    // modifies the internal billboard cache.
-    ((RenderState *)this)->determine_billboard();
-  }
-  return _billboard;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::has_decal
-//       Access: Public
-//  Description: This function is provided as an optimization, to
-//               speed up the render-time checking for the existance
-//               of a DecalAttrib on this state.  It returns true if a
-//               DecalAttrib exists, false otherwise.  Note that since
-//               there is no additional information stored on the
-//               DecalAttrib, there's no point in returning it if it
-//               exists.
-////////////////////////////////////////////////////////////////////
-INLINE bool RenderState::
-has_decal() const {
-  if ((_flags & F_checked_decal) == 0) {
-    // We pretend this function is const, even though it transparently
-    // modifies the internal decal cache.
-    ((RenderState *)this)->determine_decal();
-  }
-  return ((_flags & F_has_decal) != 0);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: RenderState::get_bin_index
 //       Access: Public
 //  Description: Returns the bin index indicated by the CullBinAttrib,
 //               if any, associated by this state (or the default bin
-//               index if there is no CullBinAttrib).  As in
-//               get_billboard(), above, this function is provided as
-//               an optimization.
+//               index if there is no CullBinAttrib).  This function
+//               is provided as an optimization for determining this
+//               at render time.
 ////////////////////////////////////////////////////////////////////
 INLINE int RenderState::
 get_bin_index() const {

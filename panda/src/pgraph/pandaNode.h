@@ -26,6 +26,7 @@
 #include "cycleDataWriter.h"
 #include "pipelineCycler.h"
 #include "renderState.h"
+#include "renderEffects.h"
 #include "transformState.h"
 #include "drawMask.h"
 #include "typedWritable.h"
@@ -106,9 +107,18 @@ PUBLISHED:
   INLINE bool has_attrib(TypeHandle type) const;
   INLINE void clear_attrib(TypeHandle type);
 
+  INLINE void set_effect(const RenderEffect *effect);
+  INLINE const RenderEffect *get_effect(TypeHandle type) const;
+  INLINE bool has_effect(TypeHandle type) const;
+  INLINE void clear_effect(TypeHandle type);
+
   INLINE void set_state(const RenderState *state);
   INLINE const RenderState *get_state() const;
   INLINE void clear_state();
+
+  INLINE void set_effects(const RenderEffects *effects);
+  INLINE const RenderEffects *get_effects() const;
+  INLINE void clear_effects();
 
   INLINE void set_transform(const TransformState *transform);
   INLINE const TransformState *get_transform() const;
@@ -245,6 +255,7 @@ private:
     Paths _paths;
 
     CPT(RenderState) _state;
+    CPT(RenderEffects) _effects;
     CPT(TransformState) _transform;
     DrawMask _draw_mask;
   };

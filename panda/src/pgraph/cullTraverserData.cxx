@@ -22,6 +22,7 @@
 #include "pandaNode.h"
 #include "colorAttrib.h"
 #include "textureAttrib.h"
+#include "billboardEffect.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::apply_transform_and_state
@@ -67,11 +68,11 @@ apply_transform_and_state(qpCullTraverser *trav, PandaNode *node) {
     }
   }
 
-  const RenderState *node_state = node->get_state();
-  _state = _state->compose(node_state);
+  _state = _state->compose(node->get_state());
 
-  const BillboardAttrib *billboard = node_state->get_billboard();
-  if (billboard != (const BillboardAttrib *)NULL) {
+  const RenderEffects *node_effects = node->get_effects();
+  const BillboardEffect *billboard = node_effects->get_billboard();
+  if (billboard != (const BillboardEffect *)NULL) {
     // Got to apply a billboard transform here.
     CPT(TransformState) billboard_transform = 
       billboard->do_billboard(_net_transform, trav->get_camera_transform());

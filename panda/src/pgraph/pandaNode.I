@@ -106,6 +106,7 @@ get_parent() const {
 INLINE PandaNode::CData::
 CData() {
   _state = RenderState::make_empty();
+  _effects = RenderEffects::make_empty();
   _transform = TransformState::make_identity();
   _draw_mask = DrawMask::all_on();
 }
@@ -122,6 +123,7 @@ CData(const PandaNode::CData &copy) :
   _up(copy._up),
   _paths(copy._paths),
   _state(copy._state),
+  _effects(copy._effects),
   _transform(copy._transform),
   _draw_mask(copy._draw_mask)
 {
@@ -410,6 +412,61 @@ clear_attrib(TypeHandle type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_effect
+//       Access: Published
+//  Description: Adds the indicated render effect to the scene
+//               graph on this node.  If there was already an effect
+//               of the same type, it is replaced.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+set_effect(const RenderEffect *effect) {
+  CDWriter cdata(_cycler);
+  cdata->_effects = cdata->_effects->add_effect(effect);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_effect
+//       Access: Published
+//  Description: Returns the render effect of the indicated type,
+//               if it is defined on the node, or NULL if it is not.
+////////////////////////////////////////////////////////////////////
+INLINE const RenderEffect *PandaNode::
+get_effect(TypeHandle type) const {
+  CDReader cdata(_cycler);
+  int index = cdata->_effects->find_effect(type);
+  if (index >= 0) {
+    return cdata->_effects->get_effect(index);
+  }
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::has_effect
+//       Access: Published
+//  Description: Returns true if there is a render effect of the
+//               indicated type defined on this node, or false if
+//               there is not.
+////////////////////////////////////////////////////////////////////
+INLINE bool PandaNode::
+has_effect(TypeHandle type) const {
+  CDReader cdata(_cycler);
+  int index = cdata->_effects->find_effect(type);
+  return (index >= 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::clear_effect
+//       Access: Published
+//  Description: Removes the render effect of the given type from
+//               this node.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+clear_effect(TypeHandle type) {
+  CDWriter cdata(_cycler);
+  cdata->_effects = cdata->_effects->remove_effect(type);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::set_state
 //       Access: Published
 //  Description: Sets the complete RenderState that will be applied to
@@ -455,6 +512,43 @@ clear_state() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_effects
+//       Access: Published
+//  Description: Sets the complete RenderEffects that will be applied
+//               this node.  This completely replaces whatever has
+//               been set on this node via repeated calls to
+//               set_attrib().
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+set_effects(const RenderEffects *effects) {
+  CDWriter cdata(_cycler);
+  cdata->_effects = effects;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_effects
+//       Access: Published
+//  Description: Returns the complete RenderEffects that will be
+//               applied to this node.
+////////////////////////////////////////////////////////////////////
+INLINE const RenderEffects *PandaNode::
+get_effects() const {
+  CDReader cdata(_cycler);
+  return cdata->_effects;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::clear_effects
+//       Access: Published
+//  Description: Resets this node to have no render effects.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+clear_effects() {
+  CDWriter cdata(_cycler);
+  cdata->_effects = RenderEffects::make_empty();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::set_transform
 //       Access: Published
 //  Description: Sets the transform that will be applied to this node
@@ -463,10 +557,8 @@ clear_state() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::
 set_transform(const TransformState *transform) {
-  {
-    CDWriter cdata(_cycler);
-    cdata->_transform = transform;
-  }
+  CDWriter cdata(_cycler);
+  cdata->_transform = transform;
   mark_bound_stale();
 }
 

@@ -18,7 +18,7 @@
 
 #include "config_pgraph.h"
 
-#include "billboardAttrib.h"
+#include "billboardEffect.h"
 #include "qpcamera.h"
 #include "colorAttrib.h"
 #include "colorWriteAttrib.h"
@@ -29,7 +29,7 @@
 #include "cullBinUnsorted.h"
 #include "qpcullTraverser.h"
 #include "cullableObject.h"
-#include "decalAttrib.h"
+#include "decalEffect.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
 #include "qpgeomNode.h"
@@ -40,6 +40,8 @@
 #include "qpnodePathComponent.h"
 #include "pandaNode.h"
 #include "renderAttrib.h"
+#include "renderEffect.h"
+#include "renderEffects.h"
 #include "renderState.h"
 #include "selectiveChildNode.h"
 #include "qpsequenceNode.h"
@@ -79,7 +81,7 @@ init_libpgraph() {
   }
   initialized = true;
 
-  BillboardAttrib::init_type();
+  BillboardEffect::init_type();
   qpCamera::init_type();
   ColorAttrib::init_type();
   ColorWriteAttrib::init_type();
@@ -90,7 +92,7 @@ init_libpgraph() {
   CullBinUnsorted::init_type();
   qpCullTraverser::init_type();
   CullableObject::init_type();
-  DecalAttrib::init_type();
+  DecalEffect::init_type();
   DepthTestAttrib::init_type();
   DepthWriteAttrib::init_type();
   qpGeomNode::init_type();
@@ -101,6 +103,8 @@ init_libpgraph() {
   qpNodePathComponent::init_type();
   PandaNode::init_type();
   RenderAttrib::init_type();
+  RenderEffect::init_type();
+  RenderEffects::init_type();
   RenderState::init_type();
   SelectiveChildNode::init_type();
   qpSequenceNode::init_type();
@@ -109,13 +113,13 @@ init_libpgraph() {
   TransformState::init_type();
   TransparencyAttrib::init_type();
 
-  BillboardAttrib::register_with_read_factory();
+  BillboardEffect::register_with_read_factory();
   qpCamera::register_with_read_factory();
   ColorAttrib::register_with_read_factory();
   ColorWriteAttrib::register_with_read_factory();
   CullBinAttrib::register_with_read_factory();
   CullFaceAttrib::register_with_read_factory();
-  DecalAttrib::register_with_read_factory();
+  DecalEffect::register_with_read_factory();
   DepthTestAttrib::register_with_read_factory();
   DepthWriteAttrib::register_with_read_factory();
   qpGeomNode::register_with_read_factory();
@@ -123,6 +127,7 @@ init_libpgraph() {
   qpLODNode::register_with_read_factory();
   MaterialAttrib::register_with_read_factory();
   PandaNode::register_with_read_factory();
+  RenderEffects::register_with_read_factory();
   RenderState::register_with_read_factory();
   qpSequenceNode::register_with_read_factory();
   TextureApplyAttrib::register_with_read_factory();

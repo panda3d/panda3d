@@ -27,7 +27,7 @@
 #include "textureAttrib.h"
 #include "materialAttrib.h"
 #include "cullFaceAttrib.h"
-#include "billboardAttrib.h"
+#include "billboardEffect.h"
 #include "transparencyAttrib.h"
 #include "materialPool.h"
 #include "look_at.h"
@@ -1981,10 +1981,10 @@ do_billboard_point_world(const qpNodePath &camera, float offset) {
 void qpNodePath::
 set_billboard_axis(float offset) {
   nassertv(!is_empty());
-  CPT(RenderAttrib) billboard = BillboardAttrib::make
+  CPT(RenderEffect) billboard = BillboardEffect::make
     (LVector3f::up(), false, true, 
      offset, qpNodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
-  node()->set_attrib(billboard);
+  node()->set_effect(billboard);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1998,10 +1998,10 @@ set_billboard_axis(float offset) {
 void qpNodePath::
 set_billboard_point_eye(float offset) {
   nassertv(!is_empty());
-  CPT(RenderAttrib) billboard = BillboardAttrib::make
+  CPT(RenderEffect) billboard = BillboardEffect::make
     (LVector3f::up(), true, false,
      offset, qpNodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
-  node()->set_attrib(billboard);
+  node()->set_effect(billboard);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2014,33 +2014,33 @@ set_billboard_point_eye(float offset) {
 void qpNodePath::
 set_billboard_point_world(float offset) {
   nassertv(!is_empty());
-  CPT(RenderAttrib) billboard = BillboardAttrib::make
+  CPT(RenderEffect) billboard = BillboardEffect::make
     (LVector3f::up(), false, false,
      offset, qpNodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
-  node()->set_attrib(billboard);
+  node()->set_effect(billboard);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::clear_billboard
 //       Access: Published
-//  Description: Removes any billboard attributes from the node.
+//  Description: Removes any billboard effect from the node.
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 clear_billboard() {
   nassertv(!is_empty());
-  node()->clear_attrib(BillboardAttrib::get_class_type());
+  node()->clear_effect(BillboardEffect::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::has_billboard
 //       Access: Published
-//  Description: Returns true if there is any billboard attribute on
+//  Description: Returns true if there is any billboard effect on
 //               the node.
 ////////////////////////////////////////////////////////////////////
 bool qpNodePath::
 has_billboard() const {
   nassertr(!is_empty(), false);
-  return node()->has_attrib(BillboardAttrib::get_class_type());
+  return node()->has_effect(BillboardEffect::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////

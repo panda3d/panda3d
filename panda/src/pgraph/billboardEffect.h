@@ -1,5 +1,5 @@
-// Filename: billboardAttrib.h
-// Created by:  drose (27Feb02)
+// Filename: billboardEffect.h
+// Created by:  drose (14Mar02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,35 +16,35 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef BILLBOARDATTRIB_H
-#define BILLBOARDATTRIB_H
+#ifndef BILLBOARDEFFECT_H
+#define BILLBOARDEFFECT_H
 
 #include "pandabase.h"
 
-#include "renderAttrib.h"
+#include "renderEffect.h"
 #include "luse.h"
 #include "qpnodePath.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : BillboardAttrib
+//       Class : BillboardEffect
 // Description : Indicates that geometry at this node should
 //               automatically rotate to face the camera, or any other
 //               arbitrary node.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BillboardAttrib : public RenderAttrib {
+class EXPCL_PANDA BillboardEffect : public RenderEffect {
 private:
-  INLINE BillboardAttrib();
+  INLINE BillboardEffect();
 
 PUBLISHED:
-  static CPT(RenderAttrib) make(const LVector3f &up_vector,
+  static CPT(RenderEffect) make(const LVector3f &up_vector,
                                 bool eye_relative,
                                 bool axial_rotate,
                                 float offset,
                                 const qpNodePath &look_at,
                                 const LPoint3f &look_at_point);
-  INLINE static CPT(RenderAttrib) make_axis();
-  INLINE static CPT(RenderAttrib) make_point_eye();
-  INLINE static CPT(RenderAttrib) make_point_world();
+  INLINE static CPT(RenderEffect) make_axis();
+  INLINE static CPT(RenderEffect) make_point_eye();
+  INLINE static CPT(RenderEffect) make_point_world();
 
   INLINE bool is_off() const;
   INLINE const LVector3f &get_up_vector() const;
@@ -55,14 +55,15 @@ PUBLISHED:
   INLINE const LPoint3f &get_look_at_point() const;
 
 public:
+  virtual bool safe_to_combine() const;
   virtual void output(ostream &out) const;
 
   CPT(TransformState) do_billboard(const TransformState *net_transform,
                                    const TransformState *camera_transform) const;
 
 protected:
-  virtual int compare_to_impl(const RenderAttrib *other) const;
-  virtual RenderAttrib *make_default_impl() const;
+  virtual int compare_to_impl(const RenderEffect *other) const;
+  virtual RenderEffect *make_default_impl() const;
 
 private:
   bool _off;
@@ -86,9 +87,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    RenderAttrib::init_type();
-    register_type(_type_handle, "BillboardAttrib",
-                  RenderAttrib::get_class_type());
+    RenderEffect::init_type();
+    register_type(_type_handle, "BillboardEffect",
+                  RenderEffect::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -99,7 +100,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "billboardAttrib.I"
+#include "billboardEffect.I"
 
 #endif
 

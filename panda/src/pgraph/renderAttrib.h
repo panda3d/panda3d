@@ -36,6 +36,16 @@ class GraphicsStateGuardianBase;
 //               geometry.  This includes TextureAttrib, ColorAttrib,
 //               etc.
 //
+//               RenderAttrib represents render attributes that always
+//               propagate down to the leaves without regard to the
+//               particular node they are assigned to.  A RenderAttrib
+//               will have the same effect on a leaf node whether it
+//               is assigned to the graph at the leaf or several nodes
+//               above.  This is different from RenderEffect, which
+//               represents a particular render property that is
+//               applied immediately to the node on which it is
+//               encountered, like billboarding or decaling.
+//
 //               You should not attempt to create or modify a
 //               RenderAttrib directly; instead, use the make() method
 //               of the appropriate kind of attrib you want.  This

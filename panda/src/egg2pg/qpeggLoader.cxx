@@ -26,11 +26,11 @@
 #include "textureAttrib.h"
 #include "textureApplyAttrib.h"
 #include "texturePool.h"
-#include "billboardAttrib.h"
+#include "billboardEffect.h"
 #include "cullFaceAttrib.h"
 #include "cullBinAttrib.h"
 #include "transparencyAttrib.h"
-#include "decalAttrib.h"
+#include "decalEffect.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
 #include "materialAttrib.h"
@@ -197,8 +197,8 @@ reparent_decals() {
         }
       }
 
-      // Finally, set the DecalAttrib on the base geometry.
-      geom_parent.node()->set_attrib(DecalAttrib::make());
+      // Finally, set the DecalEffect on the base geometry.
+      geom_parent.node()->set_effect(DecalEffect::make());
     }
   }
 }
@@ -1428,15 +1428,15 @@ create_group_arc(EggGroup *egg_group, PandaNode *parent, PandaNode *node) {
   // If the group has a billboard flag, apply that.
   switch (egg_group->get_billboard_type()) {
   case EggGroup::BT_point_camera_relative:
-    node->set_attrib(BillboardAttrib::make_point_eye());
+    node->set_effect(BillboardEffect::make_point_eye());
     break;
 
   case EggGroup::BT_point_world_relative:
-    node->set_attrib(BillboardAttrib::make_point_world());
+    node->set_effect(BillboardEffect::make_point_world());
     break;
 
   case EggGroup::BT_axis:
-    node->set_attrib(BillboardAttrib::make_axis());
+    node->set_effect(BillboardEffect::make_axis());
     break;
 
   case EggGroup::BT_none:

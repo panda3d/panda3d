@@ -1,5 +1,5 @@
-// Filename: decalAttrib.I
-// Created by:  drose (04Mar02)
+// Filename: decalEffect.I
+// Created by:  drose (14Mar02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,11 +18,11 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DecalAttrib::Constructor
+//     Function: DecalEffect::Constructor
 //       Access: Private
-//  Description: Use DecalAttrib::make() to construct a new
-//               DecalAttrib object.
+//  Description: Use DecalEffect::make() to construct a new
+//               DecalEffect object.
 ////////////////////////////////////////////////////////////////////
-INLINE DecalAttrib::
-DecalAttrib() {
+INLINE DecalEffect::
+DecalEffect() {
 }

@@ -6,7 +6,7 @@
   #define TARGET pgraph
   
   #define SOURCES \
-    billboardAttrib.h billboardAttrib.I \
+    billboardEffect.h billboardEffect.I \
     binCullHandler.h binCullHandler.I \
     qpcamera.h qpcamera.I \
     colorAttrib.h colorAttrib.I \
@@ -23,7 +23,7 @@
     qpcullTraverser.h qpcullTraverser.I \
     cullTraverserData.h cullTraverserData.I \
     cullableObject.h cullableObject.I \
-    decalAttrib.h decalAttrib.I \
+    decalEffect.h decalEffect.I \
     depthTestAttrib.h depthTestAttrib.I \
     depthWriteAttrib.h depthWriteAttrib.I \
     drawCullHandler.h drawCullHandler.I \
@@ -39,6 +39,8 @@
     qpnodePathComponent.h qpnodePathComponent.I \
     pandaNode.h pandaNode.I \
     renderAttrib.h renderAttrib.I \
+    renderEffect.h renderEffect.I \
+    renderEffects.h renderEffects.I \
     renderState.h renderState.I \
     selectiveChildNode.h selectiveChildNode.I \
     qpsequenceNode.h qpsequenceNode.I \
@@ -49,7 +51,7 @@
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
   #define INCLUDED_SOURCES \
-    billboardAttrib.cxx \
+    billboardEffect.cxx \
     binCullHandler.cxx \
     qpcamera.cxx \
     colorAttrib.cxx \
@@ -66,7 +68,7 @@
     qpcullTraverser.cxx \
     cullTraverserData.cxx \
     cullableObject.cxx \
-    decalAttrib.cxx \
+    decalEffect.cxx \
     depthTestAttrib.cxx \
     depthWriteAttrib.cxx \
     drawCullHandler.cxx \
@@ -82,6 +84,8 @@
     qpnodePathComponent.cxx \
     pandaNode.cxx \
     renderAttrib.cxx \
+    renderEffect.cxx \
+    renderEffects.cxx \
     renderState.cxx \
     selectiveChildNode.cxx \
     qpsequenceNode.cxx \
@@ -97,7 +101,7 @@
   #endif
 
   #define INSTALL_HEADERS \
-    billboardAttrib.h billboardAttrib.I \
+    billboardEffect.h billboardEffect.I \
     binCullHandler.h binCullHandler.I \
     qpcamera.h qpcamera.I \
     colorAttrib.h colorAttrib.I \
@@ -114,7 +118,7 @@
     qpcullTraverser.h qpcullTraverser.I \
     cullTraverserData.h cullTraverserData.I \
     cullableObject.h cullableObject.I \
-    decalAttrib.h decalAttrib.I \
+    decalEffect.h decalEffect.I \
     depthTestAttrib.h depthTestAttrib.I \
     depthWriteAttrib.h depthWriteAttrib.I \
     drawCullHandler.h drawCullHandler.I \
@@ -127,6 +131,8 @@
     qpnodePathComponent.h qpnodePathComponent.I \
     pandaNode.h pandaNode.I \
     renderAttrib.h renderAttrib.I \
+    renderEffect.h renderEffect.I \
+    renderEffects.h renderEffects.I \
     renderState.h renderState.I \
     selectiveChildNode.h selectiveChildNode.I \
     qpsequenceNode.h qpsequenceNode.I \

@@ -47,6 +47,7 @@ make_copy() const {
 void PandaNode::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
   manager->write_pointer(dg, _state);
+  manager->write_pointer(dg, _effects);
   manager->write_pointer(dg, _transform);
 
   dg.add_uint32(_draw_mask.get_word());
@@ -67,10 +68,12 @@ int PandaNode::CData::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = CycleData::complete_pointers(p_list, manager);
 
-  // Get the state and transform pointers.
+  // Get the state, effects, and transform pointers.
   _state = DCAST(RenderState, p_list[pi++]);
+  _effects = DCAST(RenderEffects, p_list[pi++]);
   _transform = DCAST(TransformState, p_list[pi++]);
 
+  // Get the parent and child pointers.
   pi += complete_up_list(_up, p_list + pi, manager);
   pi += complete_down_list(_down, p_list + pi, manager);
   pi += complete_down_list(_stashed, p_list + pi, manager);
@@ -87,12 +90,14 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  // Read the state and transform pointers.
+  // Read the state, effects, and transform pointers.
+  manager->read_pointer(scan);
   manager->read_pointer(scan);
   manager->read_pointer(scan);
 
   _draw_mask.set_word(scan.get_uint32());
 
+  // Read the parent and child pointers.
   fillin_up_list(_up, scan, manager);
   fillin_down_list(_down, scan, manager);
   fillin_down_list(_stashed, scan, manager);
@@ -304,6 +309,7 @@ PandaNode(const PandaNode &copy) :
   CDReader copy_cdata(copy._cycler);
   CDWriter cdata(_cycler);
   cdata->_state = copy_cdata->_state;
+  cdata->_effects = copy_cdata->_effects;
   cdata->_transform = copy_cdata->_transform;
 }
 
@@ -989,6 +995,9 @@ write(ostream &out, int indent_level) const {
   if (!cdata->_state->is_empty()) {
     out << " " << *cdata->_state;
   }
+  if (!cdata->_effects->is_empty()) {
+    out << " " << *cdata->_effects;
+  }
   out << "\n";
 }
 
@@ -1159,8 +1168,6 @@ r_copy_subgraph(PandaNode::InstanceMap &inst_map) const {
   }
 
   copy->r_copy_children(this, inst_map);
-  copy->set_state(get_state());
-  copy->set_transform(get_transform());
   return copy;
 }
 
@@ -1527,6 +1534,9 @@ r_list_descendants(ostream &out, int indent_level) const {
   }
   if (!cdata->_state->is_empty()) {
     out << " " << *cdata->_state;
+  }
+  if (!cdata->_effects->is_empty()) {
+    out << " " << *cdata->_effects;
   }
   out << "\n";
 

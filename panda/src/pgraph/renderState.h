@@ -28,7 +28,6 @@
 #include "ordered_vector.h"
 
 class GraphicsStateGuardianBase;
-class BillboardAttrib;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : RenderState
@@ -89,8 +88,6 @@ PUBLISHED:
   void write(ostream &out, int indent_level) const;
 
 public:
-  INLINE const BillboardAttrib *get_billboard() const;
-  INLINE bool has_decal() const;
   INLINE int get_bin_index() const;
   INLINE int get_draw_order() const;
 
@@ -105,8 +102,6 @@ private:
   static CPT(RenderState) return_new(RenderState *state);
   CPT(RenderState) do_compose(const RenderState *other) const;
   CPT(RenderState) do_invert_compose(const RenderState *other) const;
-  void determine_billboard();
-  void determine_decal();
   void determine_bin_index();
 
 private:
@@ -161,19 +156,13 @@ private:
   typedef ov_set<Attribute> Attributes;
   Attributes _attributes;
 
-  // We cache the pointer to the some critical attributes stored in
-  // the state, if they exist.
-  const BillboardAttrib *_billboard;
-  
-  // We also cache the index to the associated GeomBin.
+  // We cache the index to the associated CullBin, if there happens to
+  // be a CullBinAttrib in the state.
   int _bin_index;
   int _draw_order;
 
   enum Flags {
-    F_checked_billboard    = 0x0001,
-    F_checked_bin_index    = 0x0002,
-    F_checked_decal        = 0x0004,
-    F_has_decal            = 0x0008,
+    F_checked_bin_index    = 0x0001,
   };
   short _flags;
 

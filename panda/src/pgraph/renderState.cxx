@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "renderState.h"
-#include "billboardAttrib.h"
 #include "transparencyAttrib.h"
 #include "cullBinAttrib.h"
 #include "cullBinManager.h"
@@ -866,36 +865,6 @@ do_invert_compose(const RenderState *other) const {
   }
 
   return return_new(new_state);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::determine_billboard
-//       Access: Private
-//  Description: This is the private implementation of
-//               get_billboard().
-////////////////////////////////////////////////////////////////////
-void RenderState::
-determine_billboard() {
-  const RenderAttrib *attrib = get_attrib(BillboardAttrib::get_class_type());
-  _billboard = (const BillboardAttrib *)NULL;
-  if (attrib != (const RenderAttrib *)NULL) {
-    _billboard = DCAST(BillboardAttrib, attrib);
-  }
-  _flags |= F_checked_billboard;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::determine_decal
-//       Access: Private
-//  Description: This is the private implementation of has_decal().
-////////////////////////////////////////////////////////////////////
-void RenderState::
-determine_decal() {
-  const RenderAttrib *attrib = get_attrib(DecalAttrib::get_class_type());
-  if (attrib != (const RenderAttrib *)NULL) {
-    _flags |= F_has_decal;
-  }
-  _flags |= F_checked_decal;
 }
 
 ////////////////////////////////////////////////////////////////////

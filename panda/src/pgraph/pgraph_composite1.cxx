@@ -1,4 +1,4 @@
-#include "billboardAttrib.cxx"
+#include "billboardEffect.cxx"
 #include "binCullHandler.cxx"
 #include "qpcamera.cxx"
 #include "colorAttrib.cxx"
