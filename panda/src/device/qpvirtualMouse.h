@@ -73,7 +73,7 @@ public:
   }
   static void init_type() {
     qpDataNode::init_type();
-    register_type(_type_handle, "qpMouseAndKeyboard",
+    register_type(_type_handle, "qpVirtualMouse",
                   qpDataNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
