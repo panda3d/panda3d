@@ -15,7 +15,7 @@ GuiItem::GuiItem(const string& name) : Namable(name), _added_hooks(false),
 				       _scale(1.), _left(-1.), _right(1.),
 				       _bottom(-1.), _top(1.),
 				       _pos(0., 0., 0.),
-				       _mgr((GuiManager*)0L) {
+				       _mgr((GuiManager*)0L), _pri(P_Normal) {
 }
 
 GuiItem::~GuiItem(void) {

@@ -11,11 +11,15 @@
 #include <eventHandler.h>
 
 class EXPCL_PANDA GuiItem : public TypedReferenceCount, public Namable {
+PUBLISHED:
+  enum Priority { P_Low, P_Normal, P_High };
+
 protected:
   bool _added_hooks;
   float _scale, _left, _right, _bottom, _top;
   LVector3f _pos;
   GuiManager* _mgr;
+  Priority _pri;
 
   INLINE GuiItem(void);
   virtual void recompute_frame(void) = 0;
@@ -29,6 +33,7 @@ PUBLISHED:
 
   virtual void set_scale(float) = 0;
   virtual void set_pos(const LVector3f&) = 0;
+  INLINE void set_priority(const Priority);
 
   INLINE float get_scale(void) const;
   INLINE LVector3f get_pos(void) const;
@@ -37,6 +42,7 @@ PUBLISHED:
   INLINE float get_bottom(void) const;
   INLINE float get_top(void) const;
   INLINE LVector4f get_frame(void) const;
+  INLINE Priority get_priority(void) const;
 
   INLINE void recompute(void);
 
