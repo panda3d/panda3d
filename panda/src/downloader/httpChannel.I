@@ -384,19 +384,6 @@ reset() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::post_form
-//       Access: Published
-//  Description: Posts form data to a particular URL and retrieves the
-//               response.
-////////////////////////////////////////////////////////////////////
-INLINE bool HTTPChannel::
-post_form(const URLSpec &url, const string &body) {
-  begin_request(HTTPEnum::M_post, url, body, false, 0, 0);
-  run();
-  return is_valid();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::get_document
 //       Access: Published
 //  Description: Opens the named document for reading, if available.
@@ -443,6 +430,58 @@ get_header(const URLSpec &url) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::post_form
+//       Access: Published
+//  Description: Posts form data to a particular URL and retrieves the
+//               response.
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPChannel::
+post_form(const URLSpec &url, const string &body) {
+  begin_request(HTTPEnum::M_post, url, body, false, 0, 0);
+  run();
+  return is_valid();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::put_document
+//       Access: Published
+//  Description: Uploads the indicated body to the server to replace
+//               the indicated URL, if the server allows this.
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPChannel::
+put_document(const URLSpec &url, const string &body) {
+  begin_request(HTTPEnum::M_put, url, body, false, 0, 0);
+  run();
+  return is_valid();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::delete_document
+//       Access: Published
+//  Description: Requests the server to remove the indicated URL.
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPChannel::
+delete_document(const URLSpec &url) {
+  begin_request(HTTPEnum::M_delete, url, string(), false, 0, 0);
+  run();
+  return is_valid();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_trace
+//       Access: Published
+//  Description: Sends a TRACE message to the server, which should
+//               return back the same message as the server received
+//               it, allowing inspection of proxy hops, etc.
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPChannel::
+get_trace(const URLSpec &url) {
+  begin_request(HTTPEnum::M_trace, url, string(), false, 0, 0);
+  run();
+  return is_valid();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::connect_to
 //       Access: Published
 //  Description: Establish a direct connection to the server and port
@@ -459,25 +498,6 @@ connect_to(const URLSpec &url) {
   begin_request(HTTPEnum::M_connect, url, string(), false, 0, 0);
   run();
   return is_connection_ready();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::begin_post_form
-//       Access: Published
-//  Description: Posts form data to a particular URL and retrieves the
-//               response, all using non-blocking I/O.  See
-//               begin_get_document() and post_form().
-//
-//               It is important to note that you *must* call run()
-//               repeatedly after calling this method until run()
-//               returns false, and you may not call any other
-//               document posting or retrieving methods using the
-//               HTTPChannel object in the interim, or your form data
-//               may not get posted.
-////////////////////////////////////////////////////////////////////
-INLINE void HTTPChannel::
-begin_post_form(const URLSpec &url, const string &body) {
-  begin_request(HTTPEnum::M_post, url, body, true, 0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -525,6 +545,25 @@ begin_get_subdocument(const URLSpec &url, size_t first_byte,
 INLINE void HTTPChannel::
 begin_get_header(const URLSpec &url) {
   begin_request(HTTPEnum::M_head, url, string(), true, 0, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::begin_post_form
+//       Access: Published
+//  Description: Posts form data to a particular URL and retrieves the
+//               response, all using non-blocking I/O.  See
+//               begin_get_document() and post_form().
+//
+//               It is important to note that you *must* call run()
+//               repeatedly after calling this method until run()
+//               returns false, and you may not call any other
+//               document posting or retrieving methods using the
+//               HTTPChannel object in the interim, or your form data
+//               may not get posted.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+begin_post_form(const URLSpec &url, const string &body) {
+  begin_request(HTTPEnum::M_post, url, body, true, 0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////

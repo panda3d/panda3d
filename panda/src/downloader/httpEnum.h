@@ -47,7 +47,10 @@ public:
     M_get,
     M_head,
     M_post,
-    M_connect
+    M_put,
+    M_delete,
+    M_trace,
+    M_connect,
   };
 };
 

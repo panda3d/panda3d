@@ -109,18 +109,21 @@ PUBLISHED:
 
   INLINE void reset();
 
-  INLINE bool post_form(const URLSpec &url, const string &body);
   INLINE bool get_document(const URLSpec &url);
   INLINE bool get_subdocument(const URLSpec &url, 
                               size_t first_byte, size_t last_byte);
   INLINE bool get_header(const URLSpec &url);
+  INLINE bool post_form(const URLSpec &url, const string &body);
+  INLINE bool put_document(const URLSpec &url, const string &body);
+  INLINE bool delete_document(const URLSpec &url);
+  INLINE bool get_trace(const URLSpec &url);
   INLINE bool connect_to(const URLSpec &url);
 
-  INLINE void begin_post_form(const URLSpec &url, const string &body);
   INLINE void begin_get_document(const URLSpec &url);
   INLINE void begin_get_subdocument(const URLSpec &url, 
                                     size_t first_byte, size_t last_byte);
   INLINE void begin_get_header(const URLSpec &url);
+  INLINE void begin_post_form(const URLSpec &url, const string &body);
   bool run();
   INLINE void begin_connect_to(const URLSpec &url);
 

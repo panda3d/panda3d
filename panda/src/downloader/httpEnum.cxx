@@ -39,6 +39,18 @@ operator << (ostream &out, HTTPEnum::Method method) {
     out << "POST";
     break;
 
+  case HTTPEnum::M_put:
+    out << "PUT";
+    break;
+
+  case HTTPEnum::M_delete:
+    out << "DELETE";
+    break;
+
+  case HTTPEnum::M_trace:
+    out << "TRACE";
+    break;
+
   case HTTPEnum::M_connect:
     out << "CONNECT";
     break;
