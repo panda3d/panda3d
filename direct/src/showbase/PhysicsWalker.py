@@ -315,7 +315,7 @@ class PhysicsWalker(DirectObject.DirectObject):
 
     def avatarPhysicsIndicator(self, task):
         #assert(self.debugPrint("avatarPhysicsIndicator()"))
-        # Velosity:
+        # Velocity:
         self.physVelocityIndicator.setPos(self.avatarNodePath, 0.0, 0.0, 6.0)
         physObject=self.actorNode.getPhysicsObject()
         a=physObject.getVelocity()
@@ -458,7 +458,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         #    self.priorParent.setVector(Vec3.zero())
         #    # We must copy the vector to preserve it:
         #    self.__oldPosDelta=Vec3(posDelta)
-        if 1 and __debug__:
+        if __debug__:
             if self.wantAvatarPhysicsIndicator:
                 onScreenDebug.add("posDelta1",
                     self.avatarNodePath.getPosDelta(render).pPrintValues())
@@ -720,13 +720,13 @@ class PhysicsWalker(DirectObject.DirectObject):
 
     def enableAvatarJump(self):
         """
-        Force the ctrl key to return 0's
+        Stop forcing the ctrl key to return 0's
         """
         inputState.unforce("jump")
 
     def disableAvatarJump(self):
         """
-        Stop forcing the ctrl key to return 0's
+        Force the ctrl key to return 0's
         """
         inputState.force("jump", 0)
 
