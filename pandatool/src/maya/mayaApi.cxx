@@ -157,10 +157,46 @@ open_api(string program_name) {
 
     _global_api = new MayaApi(program_name);
 
+    // Try to compare the string-formatted runtime version number with
+    // the numeric compile-time version number, so we can sanity check
+    // our runtime environment.  (Sure would be nice if Maya provided
+    // an apples-to-apples comparison for us.)
+    
+    // According to the Maya specs, the numeric value is derived by
+    // taking the Maya version number and deleting the '.' characters,
+    // while also ignoring everything after the second dot (and, for
+    // some reason, appending a 0).  Let's invert this to make a
+    // string for comparison.
+    ostringstream strm;
+    strm << (MAYA_API_VERSION / 100) << "."
+         << (MAYA_API_VERSION / 10) % 10;
+
+    string compiled_version = strm.str();
+
+    // Also, truncate off the bugfix version from the runtime string.
+    string runtime_version = MGlobal::mayaVersion().asChar();
+    string simple_runtime_version = runtime_version;
+    size_t dot = simple_runtime_version.find('.');
+    if (dot != string::npos) {
+      dot = simple_runtime_version.find('.', dot + 1);
+      if (dot != string::npos) {
+        simple_runtime_version = simple_runtime_version.substr(0, dot);
+      }
+    }
+
     if (maya_cat.is_debug()) {
       maya_cat.debug()
-        << "Using Maya library version " << MGlobal::mayaVersion().asChar()
-        << ".\n";
+        << "Compiled with Maya library version " << compiled_version
+        << " (" << MAYA_API_VERSION << "); running with library version "
+        << runtime_version << ".\n";
+    }
+
+    if (compiled_version != simple_runtime_version) {
+      maya_cat.warning()
+        << "This program was compiled using Maya version " << compiled_version
+        << ", but you are now running it with Maya version "
+        << simple_runtime_version
+        << ".  The program may crash or produce incorrect results.\n";
     }
   }
 
