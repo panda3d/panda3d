@@ -141,7 +141,7 @@ void GuiManager::add_label(GuiLabel* label) {
 }
 
 void GuiManager::remove_region(GuiRegion* region) {
-  RegionSet::const_iterator ri;
+  RegionSet::iterator ri;
   ri = _regions.find(region);
   if (ri == _regions.end())
     gui_cat->warning() << "tried removing region ('" << *region
@@ -153,7 +153,7 @@ void GuiManager::remove_region(GuiRegion* region) {
 }
 
 void GuiManager::remove_label(GuiLabel* label) {
-  LabelSet::const_iterator li;
+  LabelSet::iterator li;
   li = _labels.find(label);
   if (li == _labels.end())
     gui_cat->warning() << "label (0x" << (void*)label
