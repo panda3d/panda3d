@@ -75,6 +75,11 @@ PUBLISHED:
     INLINE void operator = (const Properties &copy);
     INLINE ~Properties();
 
+    // all these methods essentially do nothing since they do not get passed down to the gsg
+    // and maybe should be removed or commented out until they do, since
+    // they modify parameters that usually require re-creation of the window
+    // except for set_size(), which is superseded by resize(), which actually works.
+
     INLINE void set_origin(int xorg, int yorg);
     INLINE void set_size(int xsize, int ysize);
     INLINE void set_title(const string &title);
@@ -120,6 +125,7 @@ PUBLISHED:
   INLINE int get_height() const;
   INLINE int get_xorg() const;
   INLINE int get_yorg() const;
+  INLINE bool is_fullscreen() const;
 
   // # of z bits/pixel.  purpose is to adjust camera near plane if have fewer z bits
   virtual int get_depth_bitwidth(void);  
