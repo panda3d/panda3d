@@ -18,6 +18,7 @@
 
 #include "config_mayaegg.h"
 #include "mayaEggGroupUserData.h"
+#include "mayaNodeDesc.h"
 
 #include "dconfig.h"
 
@@ -45,5 +46,6 @@ init_libmayaegg() {
   initialized = true;
 
   MayaEggGroupUserData::init_type();
+  MayaNodeDesc::init_type();
 }
 
