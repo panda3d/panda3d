@@ -6,6 +6,7 @@
 #include "pnmImage.h"
 #include "pnmReader.h"
 #include "pnmWriter.h"
+#include "config_pnmimage.h"
 
 extern "C" {
 #include "../pnm/pnm.h"
@@ -399,6 +400,9 @@ get_channel_val(int x, int y, int channel) const {
     return get_alpha_val(x, y);
 
   default:
+    pnmimage_cat.error()
+      << "Invalid request for channel " << channel << " in "
+      << get_num_channels() << "-channel image.\n";
     nassertr(false, 0);
     return 0;
   }

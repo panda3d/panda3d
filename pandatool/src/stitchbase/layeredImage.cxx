@@ -53,39 +53,39 @@ get_nlevels() const {
 
 int LayeredImage::TileManager::
 get_level_width(int level) const {
-  assert(level >= 0 && level < _levels.size());
+  assert(level >= 0 && level < (int)_levels.size());
   return _levels[level]._width;
 }
 
 int LayeredImage::TileManager::
 get_level_height(int level) const {
-  assert(level >= 0 && level < _levels.size());
+  assert(level >= 0 && level < (int)_levels.size());
   return _levels[level]._height;
 }
 
 int LayeredImage::TileManager::
 get_ntiles(int level) const {
-  assert(level >= 0 && level < _levels.size());
+  assert(level >= 0 && level < (int)_levels.size());
   return _levels[level]._ntile_rows * _levels[level]._ntile_cols;
 }
 
 int LayeredImage::TileManager::
 get_tile_left(int level, int tile) const {
-  int ntile_rows = _levels[level]._ntile_rows;
+  //  int ntile_rows = _levels[level]._ntile_rows;
   int ntile_cols = _levels[level]._ntile_cols;
 
-  int r = tile / ntile_cols;
+  //  int r = tile / ntile_cols;
   int c = tile % ntile_cols;
   return c * TILE_WIDTH;
 }
 
 int LayeredImage::TileManager::
 get_tile_top(int level, int tile) const {
-  int ntile_rows = _levels[level]._ntile_rows;
+  //  int ntile_rows = _levels[level]._ntile_rows;
   int ntile_cols = _levels[level]._ntile_cols;
 
   int r = tile / ntile_cols;
-  int c = tile % ntile_cols;
+  //  int c = tile % ntile_cols;
   return r * TILE_HEIGHT;
 }
 
@@ -728,7 +728,7 @@ xcf_save_tile(const LayeredImage::TileManager &tm, int level, int tile) {
     int i = 0;
     for (int y = yoff; y < yoff + ysize; y++) {
       for (int x = xoff; x < xoff + xsize; x++) {
-	array[i++] = tm._data->get_channel_val(tm._channel, x, y);
+	array[i++] = tm._data->get_channel_val(x, y, tm._channel);
       }
     }
     assert(i == size);
