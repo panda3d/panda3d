@@ -6,9 +6,13 @@
   #define OTHER_LIBS \
     linmath:c panda:m dconfig:c dtool:m pystub
 
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
+    
   #define SOURCES \
-    cvsCopy.cxx cvsCopy.h cvsSourceDirectory.cxx cvsSourceDirectory.h \
-    cvsSourceTree.cxx cvsSourceTree.h
+    cvsCopy.h cvsSourceDirectory.h cvsSourceTree.h  
+
+  #define INCLUDED_SOURCES \
+    cvsCopy.cxx cvsSourceDirectory.cxx cvsSourceTree.cxx
 
   #define INSTALL_HEADERS \
     cvsCopy.h
