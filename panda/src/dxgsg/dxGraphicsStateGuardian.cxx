@@ -395,7 +395,7 @@ init_dx(  LPDIRECTDRAW7     context,
 
 	// Antialiasing.
 	enable_line_smooth(false);
-	enable_multisample(true);
+//	enable_multisample(true);
 
 	// technically DX7's front-end has no limit on the number of lights, but it's simpler for
 	// this implementation to set a small GL-like limit to make the light array traversals short
@@ -4742,8 +4742,8 @@ issue_transparency(const TransparencyAttribute *attrib ) {
 
 	switch (mode) {
 		case TransparencyProperty::M_none:
-			enable_multisample_alpha_one(false);
-			enable_multisample_alpha_mask(false);
+//			enable_multisample_alpha_one(false);
+//			enable_multisample_alpha_mask(false);
 			enable_blend(false);
 			enable_alpha_test(false);
 			break;
@@ -4756,27 +4756,27 @@ issue_transparency(const TransparencyAttribute *attrib ) {
 			// implicitly requires a bit more logic here and in the state
 			// management; for now we require the user to explicitly turn off
 			// the depth write.
-			enable_multisample_alpha_one(false);
-			enable_multisample_alpha_mask(false);
+//			enable_multisample_alpha_one(false);
+//			enable_multisample_alpha_mask(false);
 			enable_blend(true);
 			enable_alpha_test(false);
 			call_dxBlendFunc(D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA);
 			break;
 		case TransparencyProperty::M_multisample:
-			enable_multisample_alpha_one(true);
-			enable_multisample_alpha_mask(true);
+//			enable_multisample_alpha_one(true);
+//			enable_multisample_alpha_mask(true);
 			enable_blend(false);
 			enable_alpha_test(false);
 			break;
 		case TransparencyProperty::M_multisample_mask:
-			enable_multisample_alpha_one(false);
-			enable_multisample_alpha_mask(true);
+//			enable_multisample_alpha_one(false);
+//			enable_multisample_alpha_mask(true);
 			enable_blend(false);
 			enable_alpha_test(false);
 			break;
 		case TransparencyProperty::M_binary:
-			enable_multisample_alpha_one(false);
-			enable_multisample_alpha_mask(false);
+//			enable_multisample_alpha_one(false);
+//			enable_multisample_alpha_mask(false);
 			enable_blend(false);
 			enable_alpha_test(true);
 			call_dxAlphaFunc(D3DCMP_EQUAL, 1);

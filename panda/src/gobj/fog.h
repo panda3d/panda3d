@@ -29,12 +29,12 @@ PUBLISHED:
   enum Mode {
     M_linear,                   // f = (end - z) / (end - start)
     M_exponential,              // f = e^(-density * z)
-    M_super_exponential,        // f = e^(-density * z)^2
-    M_spline,                   // Not implemented yet
+    M_exponential_squared       // f = e^((-density * z)^2)
   };
 
-  Fog(Mode mode = M_linear, int hardware_bits = 8);
-  ~Fog();
+  Fog(Mode mode = M_linear, int bits_per_color_channel = 8);
+
+  INLINE ~Fog(void) {};
 
   INLINE Mode get_mode(void) const;
   INLINE void set_mode(Mode mode);
@@ -44,13 +44,9 @@ PUBLISHED:
 
   INLINE void get_range(float &onset, float &opaque) const;
   INLINE void set_range(float onset, float opaque);
- 
-  INLINE void get_offsets(float &onset, float &opaque) const;
-  INLINE void set_offsets(float onset, float opaque);
 
-  INLINE float get_start(void) const;
-  INLINE float get_end(void) const;
   INLINE float get_density(void) const;
+  INLINE void set_density(float fDensity);
 
   void output(ostream &out) const;
 
@@ -62,12 +58,10 @@ protected:
 
 protected:
   Mode			_mode;
-  int			_hardware_bits;
+  int			_bits_per_color_channel;
   Colorf		_color;
-  float			_onset;
-  float			_opaque;
-  float			_onset_offset;
-  float			_opaque_offset;
+  float			_onset_distance;
+  float			_opaque_distance;
   float 		_density;
 
 public:

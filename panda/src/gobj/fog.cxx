@@ -11,7 +11,6 @@
 #include "fog.h"
 
 #include <mathNumbers.h>
-
 #include <stddef.h>
 
 ////////////////////////////////////////////////////////////////////
@@ -28,11 +27,8 @@ operator << (ostream &out, Fog::Mode mode) {
   case Fog::M_exponential:
     return out << "exponential";
 
-  case Fog::M_super_exponential:
-    return out << "super_exponential";
-
-  case Fog::M_spline:
-    return out << "spline";
+  case Fog::M_exponential_squared:
+    return out << "exponential-squared";
   }
 
   return out << "**invalid**(" << (int)mode << ")";
@@ -43,25 +39,25 @@ operator << (ostream &out, Fog::Mode mode) {
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-Fog::Fog(Mode mode, int hardware_bits) {
-  _hardware_bits = hardware_bits;
+Fog::Fog(Mode mode, int bits_per_color_channel) {
+  _bits_per_color_channel = bits_per_color_channel;
   set_mode(mode);
-  set_color(Colorf(1.0, 1.0, 1.0, 1.0));
+  set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
   set_range(0.0f, 100.0f);
-  set_offsets(0.0f, 0.0f);
-  compute_density();
+  
+  _density = 0.5f;
+//  compute_density();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Fog::Destructor 
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-Fog::~Fog(void) {
-}
+#if 0
+// this fn tries to 'match' exponential to linear fog by computing a exponential density
+// factor such that exponential fog matches linear fog at the linear fog's 'fog-end' distance.
+// usefulness of this is debatable since the exponential fog that matches will be very very
+// close to observer, and it's harder to guess a good end fog distance than it is to manipulate
+// the [0.0,1.0] density range directly, so taking this out
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Fog::set_mode
+//     Function: Fog::compute_density
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -73,21 +69,20 @@ void Fog::compute_density(void) {
     break;
   case M_exponential:
     // Multiplier = ln(2^bits)
-    opaque_multiplier = MathNumbers::ln2 * _hardware_bits;
-    _density = opaque_multiplier / (_opaque + _opaque_offset);
+	// attempt to compute density based on full
+    opaque_multiplier = MathNumbers::ln2 * _bits_per_color_channel;
+    _density = opaque_multiplier / _opaque_distance;
     break;
-  case M_super_exponential:
-    // Multiplier = ln(squrt(2^bits))
-    opaque_multiplier = 0.5f * MathNumbers::ln2 * _hardware_bits;
+  case M_exponential_squared:
+    // Multiplier = ln(sqrt(2^bits))
+    opaque_multiplier = 0.5f * MathNumbers::ln2 * _bits_per_color_channel;
     opaque_multiplier *= opaque_multiplier;
-    _density = opaque_multiplier / (_opaque + _opaque_offset);
-    break;
-  case M_spline:
-    // *** What's this?
+    _density = opaque_multiplier / _opaque_distance;
     break;
   }
 }
 
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Fog::output
@@ -98,14 +93,12 @@ void Fog::
 output(ostream &out) const {
   out << "fog:" << _mode;
   switch (_mode) {
-  case M_linear: 
+	  case M_linear: 
     break;
   case M_exponential:
-  case M_super_exponential:
-    out << "(" << _hardware_bits << "," << _density
-	<< "," << _opaque << "," << _opaque_offset << ")";
-    break;
-  case M_spline:
+  case M_exponential_squared:
+    out << "(" << _bits_per_color_channel << "," << _density
+	<< "," << _opaque_distance << ")";
     break;
   };
 }

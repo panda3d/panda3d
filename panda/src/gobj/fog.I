@@ -1,5 +1,5 @@
 // Filename: fog.I
-// Created by:  mike (05Feb99)
+// Created by: krisg (05Feb01)
 // 
 ////////////////////////////////////////////////////////////////////
 
@@ -20,7 +20,7 @@ INLINE Fog::Mode Fog::get_mode(void) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Fog::set_mode(Mode mode) {
   _mode = mode;
-  compute_density();
+//  compute_density();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -47,8 +47,8 @@ INLINE void Fog::set_color(const Colorf &color) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void Fog::get_range(float &onset, float &opaque) const {
-  onset = _onset;
-  opaque = _opaque;
+  onset = _onset_distance;
+  opaque = _opaque_distance;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,48 +57,9 @@ INLINE void Fog::get_range(float &onset, float &opaque) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void Fog::set_range(float onset, float opaque) {
-  _onset = onset;
-  _opaque = opaque;
-  compute_density();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Fog::get_offsets
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void Fog::get_offsets(float &onset, float &opaque) const {
-  onset = _onset_offset;
-  opaque = _opaque_offset;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Fog::set_offsets
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void Fog::set_offsets(float onset, float opaque) {
-  _onset_offset = onset;
-  _opaque_offset = opaque;
-  compute_density();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Fog::get_start
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE float Fog::get_start(void) const {
-  return _onset + _onset_offset;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Fog::get_end
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE float Fog::get_end(void) const {
-  return _opaque + _opaque_offset;
+  _onset_distance = onset;
+  _opaque_distance = opaque;
+//  compute_density();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -108,6 +69,11 @@ INLINE float Fog::get_end(void) const {
 ////////////////////////////////////////////////////////////////////
 INLINE float Fog::get_density(void) const {
   return _density;
+}
+
+INLINE void Fog::set_density(float fDensity) {
+  assert((fDensity >= 0.0) && (fDensity <= 1.0));
+  _density = fDensity;
 }
 
 ////////////////////////////////////////////////////////////////////
