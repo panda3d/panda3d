@@ -406,6 +406,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         turnRight = inputState.isSet("turnRight")
         slide = inputState.isSet("slide")
         jump = inputState.isSet("jump")
+        pie = inputState.isSet("pie")
         # Determine what the speeds are based on the buttons:
         self.__speed=(forward and self.avatarControlForwardSpeed or 
                 reverse and -self.avatarControlReverseSpeed)
@@ -415,6 +416,14 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.__rotationSpeed=not slide and (
                 (turnLeft and self.avatarControlRotateSpeed) or
                 (turnRight and -self.avatarControlRotateSpeed))
+
+        # No moving allowed while throwing a pie.
+        if pie:
+            self.__speed = 0
+            self.__slideSpeed = 0
+            self.__rotationSpeed = 0
+            jump = 0
+
         # How far did we move based on the amount of time elapsed?
         dt=min(ClockObject.getGlobalClock().getDt(), 0.1)
 
