@@ -51,10 +51,15 @@ using namespace std;
 using namespace std;
 #endif
 
-#define INLINE inline
 #define TYPENAME typename
 
 #if defined(WIN32_VC) && !defined(LINK_ALL_STATIC)
+
+#ifdef TEST_INLINING
+#define INLINE __forceinline
+#else
+#define INLINE inline
+#endif
 // This macro must be used to export an instantiated template class
 // from a DLL.  If the template class name itself contains commas, it
 // may be necessary to first define a macro for the class name, to
@@ -63,6 +68,7 @@ using namespace std;
   exptp template class expcl classname;
 #else
 #define EXPORT_TEMPLATE_CLASS(expcl, exptp, classname)
+#define INLINE inline
 #endif
 
 // We define the macro PUBLISHED to mark C++ methods that are to be

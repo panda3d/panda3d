@@ -61,6 +61,7 @@
 
 #defer CFLAGS_SHARED
 #defer OPTFLAGS /O2 /Ob1 /Ogity /G6
+//#defer OPTFLAGS /O2 /G6  (this is actually equivalent to above)
 
 #defer CDEFINES_OPT1 _DEBUG
 #defer CDEFINES_OPT2 _DEBUG
@@ -96,7 +97,13 @@
 #defer interrogate_ipath $[decygwin %,-I"%",$[target_ipath]]
 #defer interrogate_spath $[decygwin %,-S"%",$[install_parser_inc_dir]]
 
-#defer extra_cflags /W3 /EHsc /Zm250 /DWIN32_VC /DWIN32
+#if $[TEST_INLINING]
+#define WARNING_LEVEL_FLAG /W4 /DTEST_INLINING
+#else
+#define WARNING_LEVEL_FLAG /W3
+#endif
+
+#defer extra_cflags /EHsc /Zm250 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG]
 
 #defer COMPILE_C cl /nologo /c /Fo"$[osfilename $[target]]" $[decygwin %,/I"%",$[ipath]] $[flags] $[extra_cflags] $[source]
 #defer COMPILE_C++ $[COMPILE_C]
