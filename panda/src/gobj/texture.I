@@ -27,7 +27,7 @@ get_level() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_wrapu
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Texture::WrapMode Texture::
@@ -37,7 +37,7 @@ get_wrapu() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_wrapv
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Texture::WrapMode Texture::
@@ -47,7 +47,7 @@ get_wrapv() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_minfilter
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Texture::FilterType Texture::
@@ -57,7 +57,7 @@ get_minfilter() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_magfilter
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Texture::FilterType Texture::
@@ -67,7 +67,7 @@ get_magfilter() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_anisotropic_degree
-//       Access: Public
+//       Access: Published
 //  Description: Returns the degree of anisotropic filtering that
 //               should be applied to the texture.  Normally, this is
 //               1, to indicate that anisotropic filtering should be

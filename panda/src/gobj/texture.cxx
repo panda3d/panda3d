@@ -98,7 +98,7 @@ consider_rescale(PNMImage &pnmimage, const string &name) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Constructor
-//       Access:
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Texture::
@@ -115,7 +115,7 @@ Texture() : ImageBuffer() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Destructor 
-//       Access:
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Texture::
@@ -125,7 +125,7 @@ Texture::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: read
-//       Access:
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool Texture::
@@ -148,7 +148,7 @@ read(const string& name) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: read
-//       Access:
+//       Access: Published
 //  Description: Combine a 3-component image with a grayscale image
 //		 to get a 4-component image
 ////////////////////////////////////////////////////////////////////
@@ -201,7 +201,7 @@ read(const string &name, const string &gray) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: write 
-//       Access:
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool Texture::write(const string& name) const
@@ -211,7 +211,7 @@ bool Texture::write(const string& name) const
 
 ////////////////////////////////////////////////////////////////////
 //     Function: load
-//       Access:
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool Texture::load(const PNMImage& pnmimage)
@@ -226,7 +226,7 @@ bool Texture::load(const PNMImage& pnmimage)
 
 ////////////////////////////////////////////////////////////////////
 //     Function: store
-//       Access:
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool Texture::store(PNMImage& pnmimage) const
@@ -343,11 +343,11 @@ void Texture::draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: set_wrapu 
-//       Access:
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void Texture::set_wrapu(WrapMode wrap)
-{
+void Texture::
+set_wrapu(Texture::WrapMode wrap) {
   if (_wrapu != wrap) {
     unprepare();
     _wrapu = wrap;
@@ -356,11 +356,11 @@ void Texture::set_wrapu(WrapMode wrap)
 
 ////////////////////////////////////////////////////////////////////
 //     Function: set_wrapv
-//       Access:
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void Texture::set_wrapv(WrapMode wrap)
-{
+void Texture::
+set_wrapv(Texture::WrapMode wrap) {
   if (_wrapv != wrap) {
     unprepare();
     _wrapv = wrap;
@@ -369,11 +369,11 @@ void Texture::set_wrapv(WrapMode wrap)
 
 ////////////////////////////////////////////////////////////////////
 //     Function: set_minfilter
-//       Access:
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void Texture::set_minfilter(FilterType filter)
-{
+void Texture::
+set_minfilter(Texture::FilterType filter) {
   if (_minfilter != filter) {
     unprepare();
     _minfilter = filter;
@@ -382,11 +382,11 @@ void Texture::set_minfilter(FilterType filter)
 
 ////////////////////////////////////////////////////////////////////
 //     Function: set_magfilter
-//       Access:
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void Texture::set_magfilter(FilterType filter)
-{
+void Texture::
+set_magfilter(Texture::FilterType filter) {
   if (_magfilter != filter) {
     unprepare();
     _magfilter = filter;
@@ -395,7 +395,7 @@ void Texture::set_magfilter(FilterType filter)
 
 ////////////////////////////////////////////////////////////////////
 //     Function: set_anisotropic_degree
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the level of anisotropic filtering to apply
 //               to the texture.  Normally, this is 1, to indicate
 //               anisotropic filtering is disabled.  This may be set

@@ -27,7 +27,7 @@ class PNMImage;
 // Description : 2D texture class
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Texture : public ImageBuffer {
-public:
+PUBLISHED:
   enum FilterType {
     // Mag Filter and Min Filter
 
@@ -88,14 +88,16 @@ public:
   INLINE bool has_ram_image(void) const {
     return !_pbuffer->_image.empty();
   }
- 
-  void set_wrapu( WrapMode wrap );
-  void set_wrapv( WrapMode wrap );
-  void set_minfilter( FilterType filter );
-  void set_magfilter( FilterType filter );
-  void set_anisotropic_degree(int anisotropic_degree);
 
   INLINE int get_level() const;
+
+PUBLISHED: 
+  void set_wrapu(WrapMode wrap);
+  void set_wrapv(WrapMode wrap);
+  void set_minfilter(FilterType filter);
+  void set_magfilter(FilterType filter);
+  void set_anisotropic_degree(int anisotropic_degree);
+
   INLINE WrapMode get_wrapu() const;
   INLINE WrapMode get_wrapv() const;
   INLINE FilterType get_minfilter() const;
