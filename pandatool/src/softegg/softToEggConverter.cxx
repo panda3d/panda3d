@@ -2005,6 +2005,7 @@ cleanup_soft_skin()
         // hard skin this vertex
         joint->ref_vertex( vert, 1.0f );
       }
+      /*
       else {    
         membership = joint->get_vertex_membership(vert);
         if ( membership == 0 ) {
@@ -2016,6 +2017,7 @@ cleanup_soft_skin()
           joint->ref_vertex( vert, 1.0f );
         }
       }
+      */
     }
   }
   return true;
