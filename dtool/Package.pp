@@ -92,6 +92,11 @@
 #set NSPR_LIBS $[NSPR_LIBS]
 #set HAVE_NSPR $[HAVE_NSPR]
 
+#set SSL_IPATH $[unixfilename $[SSL_IPATH]]
+#set SSL_LPATH $[unixfilename $[SSL_LPATH]]
+#set SSL_LIBS $[SSL_LIBS]
+#set HAVE_SSL $[HAVE_SSL]
+
 #set CRYPTO_IPATH $[unixfilename $[CRYPTO_IPATH]]
 #set CRYPTO_LPATH $[unixfilename $[CRYPTO_LPATH]]
 #set CRYPTO_LIBS $[CRYPTO_LIBS]

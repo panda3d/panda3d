@@ -196,6 +196,12 @@
 #define STL_CFLAGS
 #define STL_LIBS
 
+// Is OpenSSL installed, and where?
+#define SSL_IPATH /usr/local/ssl/include
+#define SSL_LPATH /usr/local/ssl/lib
+#define SSL_LIBS ssl crypto
+#defer HAVE_SSL $[libtest $[SSL_LPATH],$[SSL_LIBS]]
+
 // Is Crypto++ installed, and where?
 #define CRYPTO_IPATH /usr/include/crypto++
 #define CRYPTO_LPATH /usr/lib

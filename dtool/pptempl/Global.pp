@@ -91,6 +91,13 @@
   #define nspr_libs $[NSPR_LIBS]
 #endif
 
+#if $[HAVE_SSL]
+  #define ssl_ipath $[wildcard $[SSL_IPATH]]
+  #define ssl_lpath $[wildcard $[SSL_LPATH]]
+  #define ssl_cflags $[SSL_CFLAGS]
+  #define ssl_libs $[SSL_LIBS]
+#endif
+
 #if $[HAVE_CRYPTO]
   #define crypto_ipath $[wildcard $[CRYPTO_IPATH]]
   #define crypto_lpath $[wildcard $[CRYPTO_LPATH]]

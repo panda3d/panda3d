@@ -28,6 +28,9 @@ $[cdefine HAVE_MAYA]
 /* Define if we have NSPR installed.  */
 $[cdefine HAVE_NSPR]
 
+/* Define if we have OpenSSL installed.  */
+$[cdefine HAVE_SSL]
+
 /* Define if we have crypto++ installed.  */
 $[cdefine HAVE_CRYPTO]
 
