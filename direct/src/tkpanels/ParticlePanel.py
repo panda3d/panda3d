@@ -37,7 +37,8 @@ class ParticlePanel(AppShell):
             self.particleEffect = particleEffect
         else:
             # Or create a new one if none given
-            pe = ParticleEffect.ParticleEffect('effect-1')
+	    particles = Particles.Particles()
+            pe = ParticleEffect.ParticleEffect('effect-1', particles)
             self.particleEffect = pe
             pe.reparentTo(render)
             pe.enable()

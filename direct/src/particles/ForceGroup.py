@@ -3,17 +3,19 @@ from DirectObject import *
 from PhysicsManagerGlobal import *
 
 import ForceNode
+import DirectNotifyGlobal
 
 class ForceGroup(DirectObject):
 
-    forceNum = 1
+    notify = DirectNotifyGlobal.directNotify.newCategory('ForceGroup')
+    id = 1
 
     def __init__(self, name = None):
 	"""__init__(self)"""
 
 	if (name == None):
-	    self.name = 'ForceGroup-%d' % self.forceNum
-	    self.forceNum = self.forceNum + 1
+	    self.name = 'ForceGroup-%d' % ForceGroup.id 
+	    ForceGroup.id += 1
 	else:
 	    self.name = name
 
@@ -24,7 +26,13 @@ class ForceGroup(DirectObject):
 	self.particleEffect = None
 	
 	# Default to enabled
-	self.enable()
+	#self.enable()
+
+    def cleanup(self):
+	self.disable()
+	self.nodePath.removeNode()
+	self.node = None
+	self.particleEffect = None
 
     def enable(self):
 	"""enable(self)

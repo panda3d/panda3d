@@ -67,7 +67,17 @@ class Particles(ParticleSystem.ParticleSystem):
 
 	# Enable particles by default
 	self.fEnabled = 0
-	self.enable()
+	#self.enable()
+
+    def cleanup(self):
+	self.disable()
+	self.setRenderParent(self.node)
+	self.node.removePhysical(self)
+	self.nodePath.removeNode()
+	self.node = None
+	self.factory = None
+	self.renderer = None
+	self.emitter = None
 
     def enable(self):
 	"""enable()"""
@@ -85,6 +95,9 @@ class Particles(ParticleSystem.ParticleSystem):
 
     def isEnabled(self):
         return self.fEnabled
+
+    def getNode(self):
+	return self.node
 
     def setFactory(self, type):
 	"""setFactory(type)"""

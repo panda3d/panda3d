@@ -14,7 +14,6 @@ class Interval(DirectObject):
 
     # create Interval DirectNotify category
     notify = directNotify.newCategory("Interval")
-    #notify.setDebug(1)
 
     playbackCounter = 0
 

@@ -10,7 +10,7 @@ class ParticleEffect(NodePath):
     notify = DirectNotifyGlobal.directNotify.newCategory('ParticleEffect')
     id = 1 
 
-    def __init__(self, name=None):
+    def __init__(self, name=None, particles=None):
 	"""__init__()"""
 	NodePath.__init__(self)
 	if (name == None):
@@ -25,7 +25,17 @@ class ParticleEffect(NodePath):
 	self.particlesDict = {}
 	self.forceGroupDict = {}
         # The effect's particle system
-	self.addParticles(Particles.Particles())
+	if (particles != None):
+	    self.addParticles(particles)
+
+    def cleanup(self):
+	for f in self.forceGroupDict.values():
+	    f.cleanup()
+	for p in self.particlesDict.values():
+	    p.cleanup()
+	forceGroupDict = {}
+	particlesDict = {}
+	self.removeNode()
 
     def enable(self):
 	"""enable()"""
