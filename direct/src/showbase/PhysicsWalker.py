@@ -27,7 +27,7 @@ import math
 class PhysicsWalker(DirectObject.DirectObject):
 
     notify = DirectNotifyGlobal.directNotify.newCategory("PhysicsWalker")
-    wantAvatarPhysicsIndicator = base.config.GetBool('want-avatar-physics-indicator', 1)
+    wantAvatarPhysicsIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
 
     # special methods
     def __init__(self, gravity = -32.1740, standableGround=0.707,
@@ -286,8 +286,9 @@ class PhysicsWalker(DirectObject.DirectObject):
         """
         Check on the arrow keys and update the avatar.
         """
-        onScreenDebug.append("localToon pos = %s\n"%(toonbase.localToon.getPos().pPrintValues(),))
-        onScreenDebug.append("localToon hpr = %s\n"%(toonbase.localToon.getHpr().pPrintValues(),))
+        if self.wantAvatarPhysicsIndicator:
+            onScreenDebug.append("localToon pos = %s\n"%(toonbase.localToon.getPos().pPrintValues(),))
+            onScreenDebug.append("localToon hpr = %s\n"%(toonbase.localToon.getHpr().pPrintValues(),))
         #assert(self.debugPrint("handleAvatarControls(task=%s)"%(task,)))
         physObject=self.actorNode.getPhysicsObject()
         #rotAvatarToPhys=Mat3.rotateMatNormaxis(-self.avatarNodePath.getH(), Vec3.up())
@@ -559,17 +560,12 @@ class PhysicsWalker(DirectObject.DirectObject):
     
     def setPriorParentVector(self):
         assert(self.debugPrint("doDeltaPos()"))
-        if 0:
-            posDelta = self.avatarNodePath.getPosDelta(render)
-            assert(self.debugPrint("  posDelta=%s"%(posDelta,)))
-            self.priorParent.setVector(Vec3(posDelta))
-            onScreenDebug.append("posDelta = %s\n"%(posDelta,))
-        else:
-            print "self.__oldDt", self.__oldDt, "self.__oldPosDelta", self.__oldPosDelta
-            velocity = self.__oldPosDelta*(1/self.__oldDt)
-            assert(self.debugPrint("  __oldPosDelta=%s"%(self.__oldPosDelta,)))
-            assert(self.debugPrint("  velocity=%s"%(velocity,)))
-            self.priorParent.setVector(Vec3(velocity))
+        print "self.__oldDt", self.__oldDt, "self.__oldPosDelta", self.__oldPosDelta
+        velocity = self.__oldPosDelta*(1/self.__oldDt)
+        assert(self.debugPrint("  __oldPosDelta=%s"%(self.__oldPosDelta,)))
+        assert(self.debugPrint("  velocity=%s"%(velocity,)))
+        self.priorParent.setVector(Vec3(velocity))
+        if self.wantAvatarPhysicsIndicator:
             onScreenDebug.add("velocity", velocity.pPrintValues())
     
     def resetPhys(self):
