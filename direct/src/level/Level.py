@@ -34,31 +34,22 @@ class Level:
     UberZoneEntId = 0
 
     def __init__(self):
-        self.spec = None
+        self.levelSpec = None
 
-    def initializeLevel(self, levelId, spec, scenarioIndex):
+    def initializeLevel(self, levelId, levelSpec, scenarioIndex):
         """ subclass should call this as soon as it has located
         its spec data """
         self.levelId = levelId
-        self.spec = spec
+        self.levelSpec = levelSpec
         self.scenarioIndex = scenarioIndex
 
-        # create a complete set of global and scenario-specific entity specs
-        globalEntities = self.spec['globalEntities']
-        scenarioEntities = self.spec['scenarios'][self.scenarioIndex][0]
-        entId2spec = {}
-        entId2spec.update(globalEntities)
-        entId2spec.update(scenarioEntities)
-        self.entId2spec = entId2spec
+        self.levelSpec.setScenario(self.scenarioIndex)
 
         # create some handy tables
 
         # entity type -> list of entIds
-        self.entType2ids = {}
-        for entId, spec in self.entId2spec.items():
-            entType = spec['type']
-            self.entType2ids.setdefault(entType, [])
-            self.entType2ids[entType].append(entId)
+        self.entType2ids = self.levelSpec.getEntType2ids(
+            self.levelSpec.getAllEntIds())
 
         # there should be one and only one levelMgr
         assert len(self.entType2ids['levelMgr']) == 1
@@ -83,10 +74,8 @@ class Level:
             del self.createdEntities
         if hasattr(self, 'entities'):
             del self.entities
-        if hasattr(self, 'entId2spec'):
-            del self.entId2spec
-        if hasattr(self, 'spec'):
-            del self.spec
+        if hasattr(self, 'levelSpec'):
+            del self.levelSpec
 
     def createEntityCreator(self):
         self.notify.error(
@@ -131,7 +120,7 @@ class Level:
 
     def createEntity(self, entId):
         assert not self.entities.has_key(entId)
-        spec = self.entId2spec[entId]
+        spec = self.levelSpec.getEntitySpec(entId)
         self.notify.debug('creating %s %s' % (spec['type'], entId))
         entity = self.entityCreator.createEntity(entId)
         # NOTE: the entity is not considered to really be created until
@@ -156,7 +145,7 @@ class Level:
         entities; this is called directly by Entity.
         """
         entId = entity.entId
-        spec = self.entId2spec[entId]
+        spec = self.levelSpec.getEntitySpec(entId)
         # on initialization, set items directly on entity
         for key,value in spec.items():
             if key in ('type', 'name', 'comment',):
@@ -170,7 +159,7 @@ class Level:
         return self.entities.get(entId)
 
     def getEntityType(self, entId):
-        return self.entId2spec[entId]['type']
+        return self.levelSpec.getEntityType(entId)
 
     def getZoneId(self, dummy=None, zoneNum=None, entId=None):
         """look up network zoneId by zoneNum or entId"""

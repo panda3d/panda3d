@@ -64,11 +64,11 @@ class DistributedLevel(DistributedObject.DistributedObject,
     def levelAnnounceGenerate(self):
         pass
 
-    def initializeLevel(self, spec):
-        """subclass should call this as soon as it's located its spec data.
+    def initializeLevel(self, levelSpec):
+        """subclass should call this as soon as it's located its level spec.
         Must be called after obj has been generated."""
         Level.Level.initializeLevel(self, self.doId,
-                                    spec, self.scenarioIndex)
+                                    levelSpec, self.scenarioIndex)
 
         # all of the entities have been created now.
         # there should not be any pending reparents left at this point
@@ -287,7 +287,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
             return
 
         zoneEntId = self.zoneNum2entId[zoneNum]
-        zoneSpec = self.entId2spec[zoneEntId]
+        zoneSpec = self.levelSpec.getEntitySpec(zoneEntId)
         # use dicts to efficiently ensure that there are no duplicates
         visibleZoneNums = list2dict([zoneNum])
         visibleZoneNums.update(list2dict(zoneSpec['visibility']))
@@ -352,12 +352,12 @@ class DistributedLevel(DistributedObject.DistributedObject,
     if __debug__:
         # if someone has edited the level, we'll get the full up-to-date
         # spec in this message
-        def setSpecOverride(self, specStr):
-            if self.spec is not None:
+        def setLevelSpecOverride(self, specStr):
+            if self.levelSpec is not None:
                 return
 
             try:
-                self.spec = eval(specStr)
+                self.levelSpec = eval(specStr)
             except Exception, e:
                 print ('Exception in %s(%s):\n\t%s' %
                        (lineInfo()[2], specStr, e))

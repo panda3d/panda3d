@@ -17,11 +17,11 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         Level.Level.__init__(self)
         self.uberZoneId = zoneId
 
-    def generate(self, spec):
+    def generate(self, levelSpec):
         self.notify.debug('generate')
         DistributedObjectAI.DistributedObjectAI.generate(self)
 
-        self.initializeLevel(spec)
+        self.initializeLevel(levelSpec)
 
         self.sendUpdate('setZoneIds', [self.zoneIds])
         self.sendUpdate('setStartTimestamp', [self.startTimestamp])
@@ -32,19 +32,21 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         self.destroyLevel()
         DistributedObjectAI.DistributedObjectAI.delete(self)
 
-    def initializeLevel(self, spec):
+    def initializeLevel(self, levelSpec):
         # record the level's start time so that we can sync the clients
         self.startTime = globalClock.getRealTime()
         self.startTimestamp = globalClockDelta.localToNetworkTime(
             self.startTime, bits=32)
 
         # choose a scenario
-        wc = WeightedChoice.WeightedChoice(spec['scenarios'], 1)
-        scenario = wc.choose()
-        scenarioIndex = spec['scenarios'].index(scenario)
+        # make list of lists: [(weight, scenarioIndex), ...]
+        lol = zip(levelSpec.getScenarioWeights(),
+                  range(levelSpec.getNumScenarios()))
+        wc = WeightedChoice.WeightedChoice(lol)
+        scenarioIndex = wc.choose()[1]
 
         Level.Level.initializeLevel(self, self.doId,
-                                    spec, scenarioIndex)
+                                    levelSpec, scenarioIndex)
 
     def createEntityCreator(self):
         """Create the object that will be used to create Entities.
@@ -56,7 +58,7 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         # this func is called before the entity has been created; look
         # into the spec data, since we can't yet get a handle on the
         # object itself at this point
-        spec = self.entId2spec[entId]
+        spec = self.levelSpec.getEntitySpec(entId)
         type = spec['type']
         if type == 'zone':
             if not hasattr(self, 'zoneNum2zoneId'):
@@ -85,11 +87,11 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
 
             # send a copy of the entire spec for any new users that
             # might come in
-            ##self.sendUpdate('setSpecOverride', [repr(self.spec)])
+            ##self.sendUpdate('setSpecOverride', [repr(self.levelSpec)])
 
-        def getCurrentSpec(self):
+        def getCurrentLevelSpec(self):
             """returns the complete, current spec, including any edits"""
-            return self.spec
+            return self.levelSpec
 
         """
         def getSpecOverride(self):
