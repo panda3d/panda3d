@@ -1435,13 +1435,23 @@ search_for_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
             << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
             << " at " << dwRenderWidth << "x" << dwRenderHeight << " for device #" << _wcontext.CardIDNum <<endl;
 
+          // if it failed because of a size constraints (for non-default case), try with default size
+          if (!bUseDefaultSize) {
+            wdxdisplay9_cat.info() << "was not a default: but trying 800x600 size in verbose mode\n";
+            dwRenderWidth=800;
+            dwRenderHeight=600;
+          }
+
           // run it again in verbose mode to get more dbg info to log
           dxpipe->search_for_valid_displaymode(_wcontext,dwRenderWidth, dwRenderHeight,
                                        bNeedZBuffer, bWantStencil,
                                        &_wcontext.SupportedScreenDepthsMask,
                                        &bCouldntFindValidZBuf,
                                        &pixFmt, dx_force_16bpp_zbuffer, true);
-          return false;
+
+          // if still D3DFMT_UNKNOWN return false
+          if (pixFmt == D3DFMT_UNKNOWN)
+            return false;
         }
       }
     } else {
