@@ -6,7 +6,7 @@
 #begin lib_target
   #define TARGET egg
   #define LOCAL_LIBS \
-    linmath putil
+    mathutil linmath putil
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 

@@ -18,6 +18,7 @@
 
 #include "eggPolygon.h"
 #include "eggGroupNode.h"
+#include "plane.h"
 
 #include "indent.h"
 
@@ -28,7 +29,7 @@ TypeHandle EggPolygon::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPolygon::cleanup
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Cleans up modeling errors in whatever context this
 //               makes sense.  For instance, for a polygon, this calls
 //               remove_doubled_verts(true).  For a point, it calls
@@ -46,7 +47,7 @@ cleanup() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPolygon::calculate_normal
-//       Access: Public
+//       Access: Published
 //  Description: Calculates the true polygon normal--the vector
 //               pointing out of the front of the polygon--based on
 //               the vertices.  This does not return or change the
@@ -90,8 +91,54 @@ calculate_normal(Normald &result, CoordinateSystem cs) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggPolygon::is_planar
+//       Access: Published
+//  Description: Returns true if all of the polygon's vertices lie
+//               within the same plane, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggPolygon::
+is_planar() const {
+  Normald normal;
+  if (!calculate_normal(normal)) {
+    // A degenerate polygon--all of the vertices are within one line,
+    // or all in the same point--is technically planar.  Not sure if
+    // this is a useful return value or not.
+    return true;
+  }
+
+  // There should be at least one vertex (actually, at least three)
+  // since we have already shown that the polygon is nondegenerate.
+  nassertr(!empty(), false);
+
+  // Create a plane perpendicular to the polygon's normal, containing
+  // the first vertex.
+  const_iterator vi = begin();
+  LVecBase3d first_point = (*vi)->get_pos3();
+  Planed plane(normal, first_point);
+
+  // And check that all of the remaining vertices are sufficiently
+  // close to the plane.
+  ++vi;
+  while (vi != end()) {
+    LVecBase3d this_point = (*vi)->get_pos3();
+    if (!this_point.almost_equal(first_point)) {
+      double dist = plane.dist_to_plane(this_point);
+      double tol = dist / length(this_point - first_point);
+      if (!IS_THRESHOLD_ZERO(tol, 0.0001)) {
+        // Nope, too far away--the polygon is nonplanar.
+        return false;
+      }
+      ++vi;
+    }
+  }
+
+  // All vertices are close enough to pass.
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggPolygon::triangulate_in_place
-//       Access: Public
+//       Access: Published
 //  Description: Subdivides the polygon into triangles and adds those
 //               triangles to the parent group node in place of the
 //               original polygon.  Returns a pointer to the original
@@ -117,7 +164,7 @@ triangulate_in_place(bool convex_also) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPolygon::write
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Writes the polygon to the indicated output stream in
 //               Egg format.
 ////////////////////////////////////////////////////////////////////
@@ -417,9 +464,12 @@ triangulate_poly(EggGroupNode *container, bool convex_also) {
 
   // It's a convex polygon.
   if (!convex_also) {
-    container->add_child(this);
-
-    return true;
+    // Make sure that it's also coplanar.  If it's not, we should
+    // triangulate it anyway.
+    if (is_planar()) {
+      container->add_child(this);
+      return true;
+    }
   }
 
   v0 = 0;
