@@ -14,9 +14,6 @@
 #begin metalib_target
   #define TARGET heapq
 
-  #define LOCAL_LIBS \
-    task
-
   #define SOURCES heapq.cxx
 #end metalib_target
 

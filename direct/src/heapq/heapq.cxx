@@ -10,7 +10,6 @@
 */
 
 #include <Python.h>
-#include "cTask.h"
 
 /* Prototypes */
 static PyObject * heappush(PyObject *self, PyObject *args);
@@ -129,10 +128,12 @@ _siftdown(PyObject *list, int startpos, int pos) {
 
     newitem = PySequence_GetItem(list,pos);
 
-    PyObject *newitemCTask_this = PyObject_GetAttrString(newitem, "this");
-    nassertr(newitemCTask_this != NULL, false);    
-    CTask *newitemCTask = (CTask *)PyInt_AsLong(newitemCTask_this);
-    Py_DECREF(newitemCTask_this);
+    PyObject *newitem_wakeTime_obj = PyObject_GetAttrString(newitem, "wakeTime");
+    double newitem_wakeTime = 0.0;
+    if (newitem_wakeTime_obj != NULL) {
+      newitem_wakeTime = PyFloat_AS_DOUBLE(newitem_wakeTime_obj);
+      Py_DECREF(newitem_wakeTime_obj);
+    }
 
     while (pos > startpos) {
         parentpos = (pos - 1) >> 1;
@@ -146,12 +147,14 @@ _siftdown(PyObject *list, int startpos, int pos) {
             return -1;
         */
 
-        PyObject *parentCTask_this = PyObject_GetAttrString(parent, "this");
-        nassertr(parentCTask_this != NULL, false);        
-        CTask *parentCTask = (CTask *)PyInt_AsLong(parentCTask_this);
-        Py_DECREF(parentCTask_this);
+        PyObject *parent_wakeTime_obj = PyObject_GetAttrString(parent, "wakeTime");
+        double parent_wakeTime = 0.0;
+        if (parent_wakeTime_obj != NULL) {
+          parent_wakeTime = PyFloat_AS_DOUBLE(parent_wakeTime_obj);
+          Py_DECREF(parent_wakeTime_obj);
+        }
 
-        if (parentCTask->get_wake_time() <= newitemCTask->get_wake_time()) {
+        if (parent_wakeTime <= newitem_wakeTime) {
           break;
         }
 
@@ -177,19 +180,23 @@ _siftup(PyObject *list, int pos) {
         rightpos = childpos + 1;
         child = PySequence_Fast_GET_ITEM(list,childpos);
 
-        PyObject *childCTask_this = PyObject_GetAttrString(child, "this");
-        nassertr(childCTask_this != NULL, false);        
-        CTask *childCTask = (CTask *)PyInt_AsLong(childCTask_this);
-        Py_DECREF(childCTask_this);
+        PyObject *child_wakeTime_obj = PyObject_GetAttrString(child, "wakeTime");
+        double child_wakeTime = 0.0;
+        if (child_wakeTime_obj != NULL) {
+          child_wakeTime = PyFloat_AS_DOUBLE(child_wakeTime_obj);
+          Py_DECREF(child_wakeTime_obj);
+        }
 
 
         if (rightpos < endpos) {
             right = PySequence_Fast_GET_ITEM(list,rightpos);
 
-            PyObject *rightCTask_this = PyObject_GetAttrString(right, "this");
-            nassertr(rightCTask_this != NULL, false);    
-            CTask *rightCTask = (CTask *)PyInt_AsLong(rightCTask_this);
-            Py_DECREF(rightCTask_this);
+            PyObject *right_wakeTime_obj = PyObject_GetAttrString(right, "wakeTime");
+            double right_wakeTime = 0.0;
+            if (right_wakeTime_obj != NULL) {
+              right_wakeTime = PyFloat_AS_DOUBLE(right_wakeTime_obj);
+              Py_DECREF(right_wakeTime_obj);
+            }
 
             /*
             cmp = PyObject_RichCompareBool(right,child,Py_LE);
@@ -199,7 +206,7 @@ _siftup(PyObject *list, int pos) {
               return -1;
             */
 
-            if (rightCTask->get_wake_time() <= childCTask->get_wake_time()) {
+            if (right_wakeTime <= child_wakeTime) {
               childpos = rightpos;
             }
         }
