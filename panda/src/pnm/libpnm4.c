@@ -224,19 +224,19 @@ pr_dump( p, out, colormap, type, copy_flag )
         switch ( colormap->type )
             {
             case RMT_EQUAL_RGB:
-            if ( fwrite( colormap->map[0], 1, colormap->length, out ) !=
+            if ( fwrite( colormap->map[0], 1, colormap->length, out ) != (size_t)
                  colormap->length )
                 return PIX_ERR;
-            if ( fwrite( colormap->map[1], 1, colormap->length, out ) !=
+            if ( fwrite( colormap->map[1], 1, colormap->length, out ) != (size_t)
                  colormap->length )
                 return PIX_ERR;
-            if ( fwrite( colormap->map[2], 1, colormap->length, out ) !=
+            if ( fwrite( colormap->map[2], 1, colormap->length, out ) != (size_t)
                  colormap->length )
                 return PIX_ERR;
             break;
 
             case RMT_RAW:
-            if ( fwrite( colormap->map[0], 1, colormap->length, out ) !=
+            if ( fwrite( colormap->map[0], 1, colormap->length, out ) != (size_t)
                  colormap->length )
                 return PIX_ERR;
             break;
@@ -247,13 +247,13 @@ pr_dump( p, out, colormap, type, copy_flag )
         {
         case RT_STANDARD:
         case RT_FORMAT_RGB:
-        if ( fwrite( p->pr_data->md_image, 1, h.ras_length, out ) !=
+        if ( fwrite( p->pr_data->md_image, 1, h.ras_length, out ) != (size_t)
              h.ras_length )
             return PIX_ERR;
         break;
 
         case RT_BYTE_ENCODED:
-        if ( fwrite( beimage, 1, besize, out ) != besize )
+        if ( fwrite( beimage, 1, besize, out ) !=  (size_t) besize )
             {
             free( beimage );
             return PIX_ERR;
@@ -328,9 +328,9 @@ pr_load_colormap( in, hP, colormap )
                 free( colormap->map[1] );
                 return PIX_ERR;
                 }
-            if ( fread( colormap->map[0], 1, colormap->length, in ) != colormap->length ||
-                 fread( colormap->map[1], 1, colormap->length, in ) != colormap->length ||
-                 fread( colormap->map[2], 1, colormap->length, in ) != colormap->length )
+            if ( fread( colormap->map[0], 1, colormap->length, in ) != (size_t) colormap->length ||
+                 fread( colormap->map[1], 1, colormap->length, in ) != (size_t) colormap->length ||
+                 fread( colormap->map[2], 1, colormap->length, in ) != (size_t) colormap->length )
                 {
                 free( colormap->map[0] );
                 free( colormap->map[1] );
@@ -345,7 +345,7 @@ pr_load_colormap( in, hP, colormap )
             if ( colormap->map[0] == NULL )
                 return PIX_ERR;
             colormap->map[2] = colormap->map[1] = colormap->map[0];
-            if ( fread( colormap->map[0], 1, hP->ras_maplength, in ) != hP->ras_maplength )
+            if ( fread( colormap->map[0], 1, hP->ras_maplength, in ) != (size_t) hP->ras_maplength )
                 {
                 free( colormap->map[0] );
                 return PIX_ERR;
@@ -395,7 +395,7 @@ pr_load_image( in, hP, colormap )
         case RT_FORMAT_RGB:
         /* Ignore hP->ras_length. */
         i = p->pr_size.y * p->pr_data->md_linebytes;
-        if ( fread( p->pr_data->md_image, 1, i, in ) != i )
+        if ( fread( p->pr_data->md_image, 1, i, in ) != (size_t) i )
             {
             mem_free( p );
             return NULL;
@@ -409,7 +409,7 @@ pr_load_image( in, hP, colormap )
             mem_free( p );
             return NULL;
             }
-        if ( fread( beimage, 1, hP->ras_length, in ) != hP->ras_length )
+        if ( fread( beimage, 1, hP->ras_length, in ) != (size_t) hP->ras_length )
             {
             mem_free( p );
             free( beimage );
