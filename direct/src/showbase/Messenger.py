@@ -65,22 +65,23 @@ class Messenger:
             if (len(acceptorDict) == 0):
                 del self.dict[event]
     
-    def ignoreAll(self, object):
-        """ ignoreAll(self, DirectObject)
-        Make this object no longer respond to any events it was accepting
-        Useful for cleanup
-        """
-        if Messenger.notify.getDebug():
-            Messenger.notify.debug(`object` + '\n now ignoring all events')
-        for event, acceptorDict in self.dict.items():
-            # If this object is there, delete it from the dictionary
-            if acceptorDict.has_key(object):
-                del acceptorDict[object]
-                # If this dictionary is now empty, remove the event
-                # entry from the Messenger alltogether
-                if (len(acceptorDict) == 0):
-                    del self.dict[event]
-
+##     ### moved into DirectObject for speed
+##     ###
+##     def ignoreAll(self, object):
+##         """ ignoreAll(self, DirectObject)
+##         Make this object no longer respond to any events it was accepting
+##         Useful for cleanup
+##         """
+##         if Messenger.notify.getDebug():
+##             Messenger.notify.debug(`object` + '\n now ignoring all events')
+##         for event, acceptorDict in self.dict.items():
+##             # If this object is there, delete it from the dictionary
+##             if acceptorDict.has_key(object):
+##                 del acceptorDict[object]
+##                 # If this dictionary is now empty, remove the event
+##                 # entry from the Messenger alltogether
+##                 if (len(acceptorDict) == 0):
+##                     del self.dict[event]
 
     def isAccepting(self, event, object):
         """ isAccepting(self, string, DirectOject)        
@@ -120,19 +121,26 @@ class Messenger:
             # We have to make this apparently redundant check, because
             # it is possible that one object removes its own hooks
             # in response to a handler called by a previous object.
-            callList = acceptorDict.get(object)
-            if callList:
-                method, extraArgs, persistent = callList
+            #
+            # NOTE: there is no danger of skipping over objects due to
+            # modifications to acceptorDict, since the for..in above
+            # iterates over a list of objects that is created once at
+            # the start
+            callInfo = acceptorDict.get(object)
+            if callInfo:
+                method, extraArgs, persistent = callInfo
                 apply(method, (extraArgs + sentArgs))
                 # If this object was only accepting this event once,
                 # remove it from the dictionary
                 if not persistent:
+                    # notify the object that the event has been triggered
+                    object._INTERNAL_acceptOnceExpired(event)
                     # We need to check this because the apply above might
                     # have done an ignore.
                     if acceptorDict.has_key(object):
                         del acceptorDict[object]
-                    # If the dictionary at this event is now empty, remove the event
-                    # entry from the Messenger alltogether
+                    # If the dictionary at this event is now empty, remove
+                    # the event entry from the Messenger altogether
                     if (self.dict.has_key(event) and (len(self.dict[event]) == 0)):
                         del self.dict[event]
 
@@ -170,7 +178,7 @@ class Messenger:
                     params[0] = newMethod
                     # Found it retrun true
                     retFlag += 1
-        # didnt find that method, return false
+        # didn't find that method, return false
         return retFlag
     
     def toggleVerbose(self):
