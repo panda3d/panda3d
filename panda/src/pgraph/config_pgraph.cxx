@@ -96,6 +96,8 @@ const bool m_dual = config_pgraph.GetBool("m-dual", true);
 const bool m_dual_opaque = config_pgraph.GetBool("m-dual-opaque", true);
 // Set this false to disable just the transparent part of M_dual.
 const bool m_dual_transparent = config_pgraph.GetBool("m-dual-transparent", true);
+// Set this true to flash any objects that use M_dual, for debugging.
+const bool m_dual_flash = config_pgraph.GetBool("m-dual-flash", false);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpgraph

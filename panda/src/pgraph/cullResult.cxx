@@ -21,6 +21,7 @@
 #include "alphaTestAttrib.h"
 #include "transparencyAttrib.h"
 #include "renderState.h"
+#include "clockObject.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullResult::make_next
@@ -209,6 +210,10 @@ get_binary_state() {
   return state;
 }
 
+#ifndef NDEBUG
+static const double m_dual_flash_rate = 1.0;  // 1 state change per second
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CullResult::get_dual_transparent_state
 //       Access: Private
@@ -223,6 +228,20 @@ get_dual_transparent_state() {
                               TransparencyAttrib::make(TransparencyAttrib::M_alpha),
                               RenderState::get_max_priority());
   }
+
+#ifndef NDEBUG
+  if (m_dual_flash) {
+    int cycle = (int)(ClockObject::get_global_clock()->get_real_time() * m_dual_flash_rate);
+    if ((cycle & 1) == 0) {
+      static CPT(RenderState) flash_state = NULL;
+      if (flash_state == (const RenderState *)NULL) {
+        flash_state = state->add_attrib(ColorScaleAttrib::make(LVecBase4f(0.8f, 0.2f, 0.2f, 1.0f)));
+      }
+      return flash_state;
+    }
+  }
+#endif  // NDEBUG
+
   return state;
 }
 
@@ -240,5 +259,19 @@ get_dual_opaque_state() {
                               TransparencyAttrib::make(TransparencyAttrib::M_none),
                               RenderState::get_max_priority());
   }
+
+#ifndef NDEBUG
+  if (m_dual_flash) {
+    int cycle = (int)(ClockObject::get_global_clock()->get_real_time() * m_dual_flash_rate);
+    if ((cycle & 1) == 0) {
+      static CPT(RenderState) flash_state = NULL;
+      if (flash_state == (const RenderState *)NULL) {
+        flash_state = state->add_attrib(ColorScaleAttrib::make(LVecBase4f(0.2f, 0.2f, 0.8f, 1.0f)));
+      }
+      return flash_state;
+    }
+  }
+#endif  // NDEBUG
+
   return state;
 }

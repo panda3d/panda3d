@@ -32,6 +32,7 @@ extern const bool unambiguous_graph;
 extern const bool m_dual;
 extern const bool m_dual_opaque;
 extern const bool m_dual_transparent;
+extern const bool m_dual_flash;
 
 extern EXPCL_PANDA void init_libpgraph();
 
