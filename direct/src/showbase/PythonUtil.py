@@ -266,9 +266,9 @@ def doc(obj):
        (isinstance(obj, types.FunctionType)):
         print obj.__doc__
 
-def adjust(parent = None, **kw):
+def adjust(command = None, parent = None, **kw):
     """
-    adjust(parent = None, **kw)
+    adjust(command = None, parent = None, **kw)
     Popup and entry scale to adjust a parameter
     
     Accepts any EntryScale keyword argument.  Typical arguments include:
@@ -297,6 +297,9 @@ def adjust(parent = None, **kw):
     if not parent:
         parent = Toplevel()
         parent.title('Parameter Adjust')
+    # Set command if specified
+    if command:
+        kw['command'] = command
     es = apply(EntryScale.EntryScale, (parent,), kw)
     es.pack(expand = 1, fill = X)
     es.parent = parent

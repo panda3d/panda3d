@@ -1,0 +1,71 @@
+                            HOWTO USE ADJUST()
+
+What is adjust?  
+
+BASIC:
+
+Its a simple function that allows you to quickly pop up a slider to adjust
+a value.  Example:
+
+myVal = 0.0
+def setMyVal(x):
+   global myVal
+   myVal = x
+   print myVal
+
+adjust(setMyVal)
+
+this will print out the current value of the slider
+
+ADVANCED:
+
+You can use keyword arguments to configure the slider during or after
+creation, or you can configure the slider interactively
+
+Useful keywords include:
+
+   min         # min value of the slider
+   max         # max value of the slider
+   resolution  # slider resolution
+   text        # slider label
+
+To set during creation call:
+
+adjust(setMyVal, min = -10.0, max = 1000.0, resolution = 1.0, text = 'Fancy')
+
+To set after creation:
+
+es = adjust()
+es['command'] = setMyVal
+es['min'] = -1000.0
+es['max'] = 10.0
+es['resolution'] = 1.0
+es['text'] = 'Fancy2'
+
+To configure interactively, right click (mouse button 3) on various parts
+of the slider to change settings.  Click on:
+
+   from label -> to set min
+   to label -> to set max
+   slider -> to set resolution
+   label -> to set slider label
+
+You can pack multiple sliders into a single panel:
+
+from Tkinter import *
+
+def func1(x):
+   print '1:', x
+
+def func2(x):
+   print '2:', x
+
+def func3(x):
+   print '3:', x
+
+tl = Toplevel()
+tl.title('Fancy-multi-adjust')
+
+adjust(func1, parent = tl, text = 'One')
+adjust(func2, parent = tl, text = 'Two')
+adjust(func3, parent = tl, text = 'Three')
