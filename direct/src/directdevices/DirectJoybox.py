@@ -71,27 +71,17 @@ class DirectJoybox(PandaObject):
         # Accept button events
         self.acceptSwitchModeEvent()
         self.acceptUprightCameraEvent()
-        # If moving widget update wrt info
-        if self.nodePath.id() == direct.widget.id():
-            # Kill follow task
-            taskMgr.removeTasksNamed('followSelectedNodePath')
-            # Record relationship between selected nodes and widget
-            direct.selected.getWrtAll()                    
         # Update task
         taskMgr.spawnMethodNamed(self.updateTask, self.name + '-updateTask')
     
     def disable(self):
         taskMgr.removeTasksNamed(self.name + '-updateTask')
-        if self.nodePath.id() == direct.widget.id():
-            # Restart followSelectedNodePath task
-            direct.manipulationControl.spawnFollowSelectedNodePathTask()
+        # Ignore button events
         self.ignoreSwitchModeEvent()
         self.ignoreUprightCameraEvent()
 
     def destroy(self):
         self.disable()
-        self.ignore('selectedNodePath')
-        self.ignore('deselectNodePath')
         self.tempCS.removeNode()
 
     def addButtonEvents(self):
@@ -105,26 +95,6 @@ class DirectJoybox(PandaObject):
     
     def setNodePath(self, nodePath):
         self.nodePath = nodePath
-        if self.nodePath.id() == direct.widget.id():
-            # Kill follow task
-            taskMgr.removeTasksNamed('followSelectedNodePath')
-            # Record relationship between selected nodes and widget
-            direct.selected.getWrtAll()
-            # Watch for newly selected objects
-            self.accept('selectedNodePath', self.selectionHook)
-            # Watch for deselections
-            self.accept('deselectNodePath', self.selectionHook)
-        else:
-            self.ignore('selectedNodePath')
-            self.ignore('deselectNodePath')
-
-    def selectionHook(self, dnp):
-        if direct.selected.getSelectedAsList():
-            print 'enable'
-            self.enable()
-        else:
-            print 'disable'
-            self.disable()
 
     def getNodePath(self):
         return self.nodePath
@@ -146,16 +116,6 @@ class DirectJoybox(PandaObject):
     def updateTask(self, state):
         self.updateVals()
         self.updateFunc()
-        if self.nodePath.id() == direct.widget.id():
-            if direct.manipulationControl.fSetCoa:
-                # Update coa based on current widget position
-                direct.selected.last.mCoa2Dnp.assign(
-                    direct.widget.getMat(direct.selected.last))
-                # Update wrt info
-                direct.selected.getWrtAll()                    
-            else:
-                # Move the objects with the widget
-                direct.selected.moveWrtWidgetAll()
         return Task.cont
     
     def updateVals(self):

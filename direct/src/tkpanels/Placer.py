@@ -4,7 +4,7 @@
 from PandaObject import *
 from Tkinter import *
 from AppShell import *
-from DirectGeometry import relHpr
+from DirectGeometry import *
 import Pmw
 import Dial
 import Floater
@@ -13,9 +13,6 @@ import Floater
 TODO:
 Task to monitor pose
 """
-
-ZERO_VEC = Vec3(0)
-UNIT_VEC = Vec3(1)
 
 class Placer(AppShell):
     # Override class variables here
