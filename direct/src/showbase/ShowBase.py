@@ -183,16 +183,17 @@ class ShowBase:
         of windows that are to be updated every frame.
 
         """
-        pipe = makeGraphicsPipe()
-        chanConfig = makeGraphicsWindow(pipe, self.render.arc())
-        win = chanConfig.getWin()
 
         if self.pipe == None:
-            self.pipe = pipe
+            self.pipe = makeGraphicsPipe()
+            self.pipeList.append(self.pipe)
+
+        chanConfig = makeGraphicsWindow(self.pipe, self.render.arc())
+        win = chanConfig.getWin()
+
         if self.win == None:
             self.win = win
 
-        self.pipeList.append(pipe)
         self.winList.append(win)
 
         self.getCameras(chanConfig)
