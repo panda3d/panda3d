@@ -275,7 +275,7 @@ run(void) {
       //cout << "ADD: " << ADD_length << endl;
 
       while (bytes_left > 0) {
-        PN_uint32 bytes_this_time = (int)min(bytes_left, buflen);
+        PN_uint32 bytes_this_time = (PN_uint32) min(bytes_left, (PN_uint32) buflen);
         _patch_stream.read(_buffer->_buffer, bytes_this_time);
         _write_stream.write(_buffer->_buffer, bytes_this_time);
         bytes_left -= bytes_this_time;
@@ -313,7 +313,7 @@ run(void) {
       PN_uint32 bytes_left = (PN_uint32)COPY_length;
 
       while (bytes_left > 0) {
-        PN_uint32 bytes_this_time = (int)min(bytes_left, buflen);
+        PN_uint32 bytes_this_time = (PN_uint32) min(bytes_left, (PN_uint32) buflen);
         _origfile_stream.read(_buffer->_buffer, bytes_this_time);
         _write_stream.write(_buffer->_buffer, bytes_this_time);
         bytes_left -= bytes_this_time;
@@ -673,7 +673,7 @@ build(Filename &file_orig, Filename &file_new) {
   PN_uint32 new_pos = 0;
   PN_uint32 ADD_offset = new_pos; // this is the offset for the start of ADD operations
 
-  if(length_new >= _footprint_length)
+  if(((PN_uint32) length_new) >= _footprint_length)
   {
     while (new_pos < (length_new - _footprint_length)) {
 
