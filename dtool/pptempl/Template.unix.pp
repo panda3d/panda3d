@@ -176,9 +176,9 @@
 // NUMBER_OF_PROCESSORS, which should be set by NT.  Maybe this isn't
 // a good idea to do all the time, but you can always disable it by
 // explicitly unsetting NUMBER_OF_PROCESSORS, or by setting it to 1.
-#if $[NUMBER_OF_PROCESSORS]
-MAKEFLAGS := -j$[NUMBER_OF_PROCESSORS]
-#endif
+//#if $[NUMBER_OF_PROCESSORS]
+//MAKEFLAGS := -j$[NUMBER_OF_PROCESSORS]
+//#endif
 
 // The 'all' rule makes all the stuff in the directory except for the
 // test_bin_targets.  It doesn't do any installation, however.
