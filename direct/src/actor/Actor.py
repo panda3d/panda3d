@@ -2,6 +2,7 @@
 
 from PandaObject import *
 import LODNode
+import types
 
 class Actor(PandaObject, NodePath):
     """
@@ -1086,14 +1087,19 @@ class Actor(PandaObject, NodePath):
                 # Get all parts
                 animDictItems = animControlDict.items()
             else:
-                # Get a specific part
-                animDict = animControlDict.get(partName)
-                if animDict == None:
-                    # part was not present
-                    Actor.notify.warning("couldn't find part: %s" % (partName))
-                    animDictItems = []
+                if isinstance(partName, types.StringType):
+                    partNameList = [partName]
                 else:
-                    animDictItems = [(partName, animDict)]
+                    partNameList = partName
+                    
+                animDictItems = []
+                for partName in partNameList:
+                    animDict = animControlDict.get(partName)
+                    if animDict == None:
+                        # part was not present
+                        Actor.notify.warning("couldn't find part: %s" % (partName))
+                    else:
+                        animDictItems.append((partName, animDict))
                 
             if animName == None:
                 # get all playing animations

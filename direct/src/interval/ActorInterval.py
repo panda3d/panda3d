@@ -34,7 +34,8 @@ class ActorInterval(Interval.Interval):
     def __init__(self, actor, animName, loop=0, duration=None,
                  startTime=None, endTime=None,
                  startFrame=None, endFrame=None,
-                 playRate=1.0, name=None, forceUpdate=0):
+                 playRate=1.0, name=None, forceUpdate=0,
+                 partName=None, lodName=None):
         """__init__(name)
         """
         # Generate unique id
@@ -43,7 +44,8 @@ class ActorInterval(Interval.Interval):
         # Record class specific variables
         self.actor = actor
         self.animName = animName
-        self.controls = self.actor.getAnimControls(self.animName)
+        self.controls = self.actor.getAnimControls(
+            self.animName, partName = partName, lodName = lodName)
         self.loopAnim = loop
         self.forceUpdate = forceUpdate
 
