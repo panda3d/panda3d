@@ -235,14 +235,20 @@ void GuiChooser::unmanage(void) {
 }
 
 void GuiChooser::set_scale(float f) {
+  for (ItemVector::iterator i=_items.begin(); i!=_items.end(); ++i)
+    (*i)->set_scale(f);
   GuiBehavior::set_scale(f);
 }
 
 void GuiChooser::set_scale(float x, float y, float z) {
+  for (ItemVector::iterator i=_items.begin(); i!=_items.end(); ++i)
+    (*i)->set_scale(x, y, z);
   GuiBehavior::set_scale(x, y, z);
 }
 
 void GuiChooser::set_pos(const LVector3f& p) {
+  for (ItemVector::iterator i=_items.begin(); i!=_items.end(); ++i)
+    (*i)->set_pos(p);
   GuiBehavior::set_pos(p);
 }
 
