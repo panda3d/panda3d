@@ -595,6 +595,7 @@ WinMusic* WinMusic::load_midi(Filename filename) {
 
   char szDir[_MAX_PATH];
   WCHAR wszDir[_MAX_PATH];
+  /*
   if (_getcwd(szDir, _MAX_PATH)==NULL) {
     audio_cat->error() << "could not getcwd" << endl;
     delete ret;
@@ -609,14 +610,23 @@ WinMusic* WinMusic::load_midi(Filename filename) {
     ret = (WinMusic*)0L;
     return ret;
   }
+  */
 
   DMUS_OBJECTDESC fdesc;
   fdesc.guidClass = CLSID_DirectMusicSegment;
   fdesc.dwSize = sizeof(DMUS_OBJECTDESC);
   // MULTI_TO_WIDE(filename.to_os_specific().c_str(), fdesc.wszFileName);
+  if (!(filename.resolve_filename(get_sound_path()))) {
+    audio_cat->error() << "could not find '" << filename << "' on sound path"
+		       << endl;
+    loader->Release();
+    delete ret;
+    ret = (WinMusic*)0L;
+    return ret;
+  }
   MULTI_TO_WIDE(fdesc.wszFileName, filename.to_os_specific().c_str());
-  // fdesc.dwValidData = DMUS_OBJ_CLASS | DMUS_OBJ_FILENAME | DMUS_OBJ_FULLPATH;
-  fdesc.dwValidData = DMUS_OBJ_CLASS | DMUS_OBJ_FILENAME;
+  fdesc.dwValidData = DMUS_OBJ_CLASS | DMUS_OBJ_FILENAME | DMUS_OBJ_FULLPATH;
+  //  fdesc.dwValidData = DMUS_OBJ_CLASS | DMUS_OBJ_FILENAME;
   result = loader->GetObject(&fdesc, IID_IDirectMusicSegment2,
 			     (void**)&(ret->_music));
   if (FAILED(result)) {
