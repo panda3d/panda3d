@@ -224,7 +224,6 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         Activate the arrow keys, etc.
         """
         assert(self.debugPrint("enableAvatarControls"))
-        print id(self), "NPW.enableAvatarControls()"
         assert self.collisionsActive
 
         taskName = "AvatarControls%s"%(id(self),)
@@ -238,7 +237,6 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         Ignore the arrow keys, etc.
         """
         assert(self.debugPrint("disableAvatarControls"))
-        print id(self), "NPW.disableAvatarControls()"
         taskName = "AvatarControls%s"%(id(self),)
         taskMgr.remove(taskName)
     

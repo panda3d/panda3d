@@ -693,7 +693,6 @@ class PhysicsWalker(DirectObject.DirectObject):
         Activate the arrow keys, etc.
         """
         assert(self.debugPrint("enableAvatarControls()"))
-        print id(self), "PW.enableAvatarControls()"
         assert self.collisionsActive
 
         if __debug__:
@@ -713,7 +712,6 @@ class PhysicsWalker(DirectObject.DirectObject):
         Ignore the arrow keys, etc.
         """
         assert(self.debugPrint("disableAvatarControls()"))
-        print id(self), "PW.disableAvatarControls()"
         taskName = "AvatarControls%s"%(id(self),)
         taskMgr.remove(taskName)
 

@@ -533,7 +533,6 @@ class GravityWalker(DirectObject.DirectObject):
         Activate the arrow keys, etc.
         """
         assert(self.debugPrint("enableAvatarControls()"))
-        print id(self), "GW.enableAvatarControls()"
         assert self.collisionsActive
 
         if __debug__:
@@ -568,7 +567,6 @@ class GravityWalker(DirectObject.DirectObject):
         Ignore the arrow keys, etc.
         """
         assert(self.debugPrint("disableAvatarControls()"))
-        print id(self), "GW.disableAvatarControls()"
         if self.controlsTask:
             self.controlsTask.remove()
             self.controlsTask = None

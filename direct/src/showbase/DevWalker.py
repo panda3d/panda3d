@@ -127,7 +127,6 @@ class DevWalker(DirectObject.DirectObject):
         Activate the arrow keys, etc.
         """
         assert(self.debugPrint("enableAvatarControls"))
-        print id(self), "DW.enableAvatarControls()"
 
         if self.task:
             # remove any old
@@ -141,7 +140,6 @@ class DevWalker(DirectObject.DirectObject):
         Ignore the arrow keys, etc.
         """
         assert(self.debugPrint("disableAvatarControls"))
-        print id(self), "DW.disableAvatarControls()"
         if self.task:
             self.task.remove()
             self.task = None
