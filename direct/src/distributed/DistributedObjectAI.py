@@ -278,11 +278,18 @@ class DistributedObjectAI(DirectObject.DirectObject):
         if not wantOtpServer:
             parentId = 0
         # Make the dclass do the hard work
-        dg = self.dclass.aiFormatGenerate(
-                self, self.doId, parentId, zoneId,
-                repository.serverId,
-                repository.ourChannel,
-                optionalFields)
+        if not wantOtpServer:
+            dg = self.dclass.aiFormatGenerate(
+                    self, self.doId, 0, zoneId,
+                    repository.districtId,
+                    repository.ourChannel,
+                    optionalFields)
+        else:
+            dg = self.dclass.aiFormatGenerate(
+                    self, self.doId, parentId, zoneId,
+                    repository.serverId,
+                    repository.ourChannel,
+                    optionalFields)
         repository.send(dg)
             
     def initFromServerResponse(self, valDict):
