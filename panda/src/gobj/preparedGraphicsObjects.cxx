@@ -24,7 +24,7 @@
 #include "mutexHolder.h"
 
 PStatCollector PreparedGraphicsObjects::_total_texusage_pcollector("Texture usage");
-PStatCollector PreparedGraphicsObjects::_total_buffers_pcollector("Vertex Buffers");
+PStatCollector PreparedGraphicsObjects::_total_buffers_pcollector("Vertex buffers");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PreparedGraphicsObjects::Constructor
@@ -512,7 +512,10 @@ prepare_data_now(qpGeomVertexArrayData *data, GraphicsStateGuardianBase *gsg) {
     bool prepared = _prepared_datas.insert(dc).second;
     nassertr(prepared, dc);
 
-    _total_buffers_pcollector.add_level(dc->get_num_bytes());
+    // The size has already been counted by
+    // GraphicsStateGuardian::add_to_data_record(); we don't need to
+    // count it again here.
+    //_total_buffers_pcollector.add_level(dc->get_num_bytes());
   }
 
   return dc;

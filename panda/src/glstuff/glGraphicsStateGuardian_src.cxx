@@ -2357,12 +2357,14 @@ prepare_data(qpGeomVertexArrayData *data) {
     CLP(DataContext) *gdc = new CLP(DataContext)(data);
     _glGenBuffers(1, &gdc->_index);
 
-    add_to_data_record(gdc);
+    /*
     _glBindBuffer(GL_ARRAY_BUFFER, gdc->_index);
     _glBufferData(GL_ARRAY_BUFFER, gdc->get_data()->get_num_bytes(),
                   gdc->get_data()->get_data(), 
                   get_usage(gdc->get_data()->get_usage_hint()));
+    add_to_data_record(gdc);
     gdc->mark_loaded();
+    */
     
     report_my_gl_errors();
     return gdc;
@@ -2383,9 +2385,9 @@ apply_data(DataContext *dc) {
 
   CLP(DataContext) *gdc = DCAST(CLP(DataContext), dc);
 
-  add_to_data_record(gdc);
   _glBindBuffer(GL_ARRAY_BUFFER, gdc->_index);
   
+  add_to_data_record(gdc);
   if (gdc->was_modified()) {
     if (GLCAT.is_debug()) {
       GLCAT.debug()

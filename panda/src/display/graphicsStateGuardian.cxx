@@ -47,8 +47,8 @@ PStatCollector GraphicsStateGuardian::_total_texusage_pcollector("Texture usage"
 PStatCollector GraphicsStateGuardian::_active_texusage_pcollector("Texture usage:Active");
 PStatCollector GraphicsStateGuardian::_total_geom_pcollector("Prepared Geoms");
 PStatCollector GraphicsStateGuardian::_active_geom_pcollector("Prepared Geoms:Active");
-PStatCollector GraphicsStateGuardian::_total_buffers_pcollector("Vertex Buffers");
-PStatCollector GraphicsStateGuardian::_active_buffers_pcollector("Vertex Buffers:Active");
+PStatCollector GraphicsStateGuardian::_total_buffers_pcollector("Vertex buffers");
+PStatCollector GraphicsStateGuardian::_active_buffers_pcollector("Vertex buffers:Active");
 PStatCollector GraphicsStateGuardian::_total_geom_node_pcollector("Prepared GeomNodes");
 PStatCollector GraphicsStateGuardian::_active_geom_node_pcollector("Prepared GeomNodes:Active");
 PStatCollector GraphicsStateGuardian::_total_texmem_pcollector("Texture memory");
@@ -1443,6 +1443,7 @@ init_frame_pstats() {
   if (PStatClient::is_connected()) {
     _current_textures.clear();
     _current_geoms.clear();
+    _current_datas.clear();
     _active_texusage_pcollector.clear_level();
     _active_geom_pcollector.clear_level();
     _active_geom_node_pcollector.clear_level();
@@ -1506,11 +1507,13 @@ add_to_geom_record(GeomContext *gc) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 add_to_data_record(DataContext *dc) {
-  if (PStatClient::is_connected()) {
-    if (dc != (DataContext *)NULL && _current_datas.insert(dc).second) {
-      int delta = dc->get_data()->get_num_bytes() - dc->get_num_bytes();
-      _total_buffers_pcollector.add_level(delta);
-      _active_buffers_pcollector.add_level(dc->get_data()->get_num_bytes());
+  if (dc != (DataContext *)NULL) {
+    int delta = dc->get_data()->get_num_bytes() - dc->get_num_bytes();
+    _total_buffers_pcollector.add_level(delta);
+    if (PStatClient::is_connected()) {
+      if (_current_datas.insert(dc).second) {
+        _active_buffers_pcollector.add_level(dc->get_data()->get_num_bytes());
+      }
     }
   }
 }

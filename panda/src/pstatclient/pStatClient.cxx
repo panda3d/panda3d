@@ -551,10 +551,8 @@ stop(int collector_index, int thread_index, float as_of) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 clear_level(int collector_index, int thread_index) {
-  if (_collectors[collector_index].is_active()) {
-    _collectors[collector_index]._per_thread[thread_index]._has_level = false;
-    _collectors[collector_index]._per_thread[thread_index]._level = 0.0;
-  }
+  _collectors[collector_index]._per_thread[thread_index]._has_level = false;
+  _collectors[collector_index]._per_thread[thread_index]._level = 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -568,11 +566,13 @@ clear_level(int collector_index, int thread_index) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 set_level(int collector_index, int thread_index, float level) {
-  if (client_is_connected() && _collectors[collector_index].is_active()) {
-    level *= get_collector_def(collector_index)->_factor;
-    _collectors[collector_index]._per_thread[thread_index]._has_level = true;
-    _collectors[collector_index]._per_thread[thread_index]._level = level;
-  }
+  // We don't want to condition this on whether the client is already
+  // connected or the collector is already active, since we might
+  // connect the client later, and we will want to have an accurate
+  // value at that time.
+  level *= get_collector_def(collector_index)->_factor;
+  _collectors[collector_index]._per_thread[thread_index]._has_level = true;
+  _collectors[collector_index]._per_thread[thread_index]._level = level;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -588,11 +588,9 @@ set_level(int collector_index, int thread_index, float level) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 add_level(int collector_index, int thread_index, float increment) {
-  if (client_is_connected() && _collectors[collector_index].is_active()) {
-    increment *= get_collector_def(collector_index)->_factor;
-    _collectors[collector_index]._per_thread[thread_index]._has_level = true;
-    _collectors[collector_index]._per_thread[thread_index]._level += increment;
-  }
+  increment *= get_collector_def(collector_index)->_factor;
+  _collectors[collector_index]._per_thread[thread_index]._has_level = true;
+  _collectors[collector_index]._per_thread[thread_index]._level += increment;
 }
 
 ////////////////////////////////////////////////////////////////////
