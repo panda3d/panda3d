@@ -73,21 +73,23 @@ class ControlManager:
 
     def useSwimControls(self):
         assert(self.debugPrint("useSwimControls()"))
-        self.currentControls.disableAvatarControls()
-        self.currentControls.collisionsOff()
-        self.currentControls = self.swimControls
-        self.currentControls.collisionsOn()
-        if self.isEnabled:
-            self.currentControls.enableAvatarControls()
+        if self.currentControls is not self.swimControls:
+            self.currentControls.disableAvatarControls()
+            self.currentControls.setCollisionsActive(0)
+            self.swimControls.setCollisionsActive(1)
+            self.currentControls = self.swimControls
+            if self.isEnabled:
+                self.currentControls.enableAvatarControls()
 
     def useWalkControls(self):
         assert(self.debugPrint("useWalkControls()"))
-        self.currentControls.disableAvatarControls()
-        self.currentControls.collisionsOff()
-        self.currentControls = self.walkControls
-        self.currentControls.collisionsOn()
-        if self.isEnabled:
-            self.currentControls.enableAvatarControls()
+        if self.currentControls is not self.walkControls:
+            self.currentControls.disableAvatarControls()
+            self.currentControls.setCollisionsActive(0)
+            self.walkControls.setCollisionsActive(1)
+            self.currentControls = self.walkControls
+            if self.isEnabled:
+                self.currentControls.enableAvatarControls()
 
     def delete(self):
         self.disable()

@@ -25,10 +25,7 @@ import math
 class GravityWalker(DirectObject.DirectObject):
 
     notify = DirectNotifyGlobal.directNotify.newCategory("GravityWalker")
-    wantAvatarPhysicsIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
-    
-    useLifter = 1
-    useHeightRay = 0
+    wantDebugIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
     
     # special methods
     def __init__(self, gravity = -32.1740, standableGround=0.707,
@@ -69,7 +66,7 @@ class GravityWalker(DirectObject.DirectObject):
     
     def spawnTest(self):
         assert(self.debugPrint("\n\nspawnTest()\n"))
-        if not self.wantAvatarPhysicsIndicator:
+        if not self.wantDebugIndicator:
             return
         from PandaModules import *
         from IntervalGlobal import *
@@ -146,30 +143,50 @@ class GravityWalker(DirectObject.DirectObject):
 
         self.lifter.addCollider(self.cRayNodePath, self.avatarNodePath)
 
-    def setupSphere(self, bitmask, avatarRadius):
+    def setupWallSphere(self, bitmask, avatarRadius):
         """
         Set up the collision sphere
         """
         # This is a sphere on the ground to detect barrier collisions
         self.avatarRadius = avatarRadius
-        centerHeight = avatarRadius
-        if self.useHeightRay:
-            centerHeight *= 2.0
-        self.cSphere = CollisionSphere(0.0, 0.0, centerHeight-0.01, avatarRadius)
-        cSphereNode = CollisionNode('GW.cSphereNode')
+        self.cSphere = CollisionSphere(0.0, 0.0, avatarRadius, avatarRadius)
+        cSphereNode = CollisionNode('GW.cWallSphereNode')
         cSphereNode.addSolid(self.cSphere)
-        self.cSphereNodePath = self.avatarNodePath.attachNewNode(cSphereNode)
-        self.cSphereBitMask = bitmask
+        cSphereNodePath = self.avatarNodePath.attachNewNode(cSphereNode)
 
         cSphereNode.setFromCollideMask(bitmask)
         cSphereNode.setIntoCollideMask(BitMask32.allOff())
 
         # set up collision mechanism
-        self.pusher = CollisionHandlerPusher()
-        self.pusher.setInPattern("enter%in")
-        self.pusher.setOutPattern("exit%in")
+        handler = CollisionHandlerPusher()
+        handler.setInPattern("enter%in")
+        handler.setOutPattern("exit%in")
 
-        self.pusher.addCollider(self.cSphereNodePath, self.avatarNodePath)
+        handler.addCollider(cSphereNodePath, self.avatarNodePath)
+        self.pusher = handler
+        self.cWallSphereNodePath = cSphereNodePath
+
+    def setupFloorSphere(self, bitmask, avatarRadius):
+        """
+        Set up the collision sphere
+        """
+        # This is a sphere on the ground to detect barrier collisions
+        self.avatarRadius = avatarRadius
+        self.cSphere = CollisionSphere(0.0, 0.0, avatarRadius-0.1, avatarRadius)
+        cSphereNode = CollisionNode('GW.cFloorSphereNode')
+        cSphereNode.addSolid(self.cSphere)
+        cSphereNodePath = self.avatarNodePath.attachNewNode(cSphereNode)
+
+        cSphereNode.setFromCollideMask(bitmask)
+        cSphereNode.setIntoCollideMask(BitMask32.allOff())
+
+        # set up collision mechanism
+        handler = CollisionHandlerEvent()
+        handler.setInPattern("enter%in")
+        handler.setOutPattern("exit%in")
+
+        self.event = handler
+        self.cFloorSphereNodePath = cSphereNodePath
 
     def initializeCollisions(self, collisionTraverser, avatarNodePath, 
             wallBitmask, floorBitmask, 
@@ -186,7 +203,8 @@ class GravityWalker(DirectObject.DirectObject):
         self.floorOffset = 0.0
 
         self.setupRay(floorBitmask, self.floorOffset)
-        self.setupSphere(wallBitmask|floorBitmask, avatarRadius)
+        self.setupWallSphere(wallBitmask, avatarRadius)
+        self.setupFloorSphere(floorBitmask, avatarRadius)
 
         self.setCollisionsActive(1)
 
@@ -198,22 +216,20 @@ class GravityWalker(DirectObject.DirectObject):
         indicator is a NodePath
         """
         assert(self.debugPrint("setAvatarPhysicsIndicator()"))
-        self.cSphereNodePath.show()
+        self.cWallSphereNodePath.show()
 
     def deleteCollisions(self):
         assert(self.debugPrint("deleteCollisions()"))
         del self.cTrav
 
-        if self.useHeightRay:
-            del self.cRayQueue
-            self.cRayNodePath.removeNode()
-            del self.cRayNodePath
-
         del self.cSphere
-        self.cSphereNodePath.removeNode()
-        del self.cSphereNodePath
+        self.cWallSphereNodePath.removeNode()
+        del self.cWallSphereNodePath
+        self.cFloorSphereNodePath.removeNode()
+        del self.cFloorSphereNodePath
 
         del self.pusher
+        del self.event
         del self.lifter
 
     def setCollisionsActive(self, active = 1):
@@ -221,10 +237,12 @@ class GravityWalker(DirectObject.DirectObject):
         if self.collisionsActive != active:
             self.collisionsActive = active
             if active:
-                self.cTrav.addCollider(self.cSphereNodePath, self.pusher)
+                self.cTrav.addCollider(self.cWallSphereNodePath, self.pusher)
+                self.cTrav.addCollider(self.cFloorSphereNodePath, self.event)
                 self.cTrav.addCollider(self.cRayNodePath, self.lifter)
             else:
-                self.cTrav.removeCollider(self.cSphereNodePath)
+                self.cTrav.removeCollider(self.cWallSphereNodePath)
+                self.cTrav.removeCollider(self.cFloorSphereNodePath)
                 self.cTrav.removeCollider(self.cRayNodePath)
                 # Now that we have disabled collisions, make one more pass
                 # right now to ensure we aren't standing in a wall.
@@ -243,7 +261,8 @@ class GravityWalker(DirectObject.DirectObject):
         """
         assert(self.debugPrint("oneTimeCollide()"))
         tempCTrav = CollisionTraverser()
-        tempCTrav.addCollider(self.cSphereNodePath, self.pusher)
+        tempCTrav.addCollider(self.cWallSphereNodePath, self.pusher)
+        tempCTrav.addCollider(self.cFloorSphereNodePath, self.event)
         tempCTrav.addCollider(self.cRayNodePath, self.lifter)
         tempCTrav.traverse(render)
     
@@ -296,7 +315,7 @@ class GravityWalker(DirectObject.DirectObject):
             self.rotationSpeed = 0
             jump = 0
 
-        if 0:
+        if self.wantDebugIndicator:
             onScreenDebug.add("airborneHeight", self.lifter.getAirborneHeight()) #*#
             onScreenDebug.add("falling", self.falling) #*#
             onScreenDebug.add("isOnGround", self.lifter.isOnGround()) #*#
@@ -375,7 +394,7 @@ class GravityWalker(DirectObject.DirectObject):
         assert(self.debugPrint("  velocity=%s"%(velocity,)))
         self.priorParent.setVector(Vec3(velocity))
         if __debug__:
-            if self.wantAvatarPhysicsIndicator:
+            if self.wantDebugIndicator:
                 onScreenDebug.add("velocity", velocity.pPrintValues())
 
     def enableAvatarControls(self):
