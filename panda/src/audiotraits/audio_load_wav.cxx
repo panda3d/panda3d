@@ -20,11 +20,13 @@ void AudioDestroyWav(AudioTraits::SampleClass* sample) {
 }
 
 void AudioLoadWav(AudioTraits::SampleClass** sample,
+		  AudioTraits::PlayingClass** state,
 		  AudioTraits::PlayerClass** player,
 		  AudioTraits::DeleteSampleFunc** destroy, Filename filename) {
   *sample = MikModSample::load_wav(filename);
   if (*sample == (AudioTraits::SampleClass*)0L)
     return;
+  *state = *sample->get_state();
   *player = MikModSamplePlayer::get_instance();
   *destroy = AudioDestroyWav;
 }
@@ -40,11 +42,13 @@ void AudioDestroyWav(AudioTraits::SampleClass* sample) {
 }
 
 void AudioLoadWav(AudioTraits::SampleClass** sample,
+		  AudioTraits::PlayingClass** state,
 		  AudioTraits::PlayerClass** player,
 		  AudioTraits::DeleteSampleFunc** destroy, Filename filename) {
   *sample = WinSample::load_wav(filename);
   if (*sample == (AudioTraits::SampleClass*)0L)
     return;
+  *state = *sample->get_state();
   *player = WinPlayer::get_instance();
   *destroy = AudioDestroyWav;
 }
@@ -53,14 +57,20 @@ void AudioLoadWav(AudioTraits::SampleClass** sample,
 
 #ifdef AUDIO_USE_LINUX
 
+#include "audio_linux_traits.h"
+
 void AudioDestroyWav(AudioTraits::SampleClass* sample) {
-  delete sample;
+  LinuxSample::destroy(sample);
 }
 
 void AudioLoadWav(AudioTraits::SampleClass** sample,
+		  AudioTraits::PlayingClass** state,
 		  AudioTraits::PlayerClass** player,
 		  AudioTraits::DeleteSampleFunc** destroy, Filename) {
+  audio_cat->error() << "Linux driver does not natively support WAV."
+		     << "  Try the 'st' loader." << endl;
   *sample = (AudioTraits::SampleClass*)0L;
+  *state = (AudioTraits::PlayingClass*)0L;
   *player = (AudioTraits::PlayerClass*)0L;
   *destroy = AudioDestroyWav;
 }
@@ -77,11 +87,11 @@ void AudioDestroyWav(AudioTraits::SampleClass* sample) {
 }
 
 void AudioLoadWav(AudioTraits::SampleClass** sample,
+		  AudioTraits::PlayingClass** state,
 		  AudioTraits::PlayerClass** player,
 		  AudioTraits::DeleteSampleFunc** destroy, Filename) {
-  audio_cat->error() << "Linux driver does not natively support WAV."
-		     << "  Try the 'st' loader." << endl;
   *sample = new NullSample();
+  *state = new NullPlaying();
   *player = new NullPlayer();
   *destroy = AudioDestroyWav;
 }

@@ -11,6 +11,8 @@
 #ifndef __AUDIO_NULL_TRAITS_H__
 #define __AUDIO_NULL_TRAITS_H__
 
+class NullPlaying;
+
 class EXPCL_PANDA NullSample : public AudioTraits::SampleClass {
 public:
   INLINE NullSample(void);
@@ -26,6 +28,12 @@ public:
   virtual ~NullMusic(void);
 
   virtual AudioTraits::MusicClass::MusicStatus status(void);
+};
+
+class EXPCL_PANDA NullPlaying : public AudioTraits::PlayingClass {
+public:
+  INLINE NullPlaying(void);
+  virtual ~NullPlaying(void);
 };
 
 class EXPCL_PANDA NullPlayer : public AudioTraits::PlayerClass {

@@ -243,6 +243,10 @@ AudioTraits::SampleClass::SampleStatus LinuxSample::status(void) {
   return AudioTraits::SampleClass::READY;
 }
 
+LinuxPlaying* LinuxSample::get_state(void) {
+  return new LinuxPlaying();
+}
+
 void LinuxSample::destroy(AudioTraits::SampleClass* sample) {
   delete sample;
 }
@@ -257,6 +261,21 @@ LinuxMusic::~LinuxMusic(void) {
 
 AudioTraits::MusicClass::MusicStatus LinuxMusic::status(void) {
   return AudioTraits::MusicClass::READY;
+}
+
+LinuxPlaying* LinuxMusic::get_state(void) {
+  return new LinuxPlaying();
+}
+
+void LinuxMusic::destroy(AudioTraits::MusicClass* music) {
+  delete music;
+}
+
+LinuxPlaying::~LinuxPlaying(void) {
+}
+
+AudioTraits::PlayingClass::PlayingStatus LinuxPlaying::status(void) {
+  return AudioTraits::PlayingClass::BAD;
 }
 
 LinuxPlayer* LinuxPlayer::_global_instance = (LinuxPlayer*)0L;

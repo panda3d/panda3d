@@ -14,6 +14,8 @@
 #include <filename.h>
 #include <mikmod.h>
 
+class MikModPlaying;
+
 class EXPCL_PANDA MikModSample : public AudioTraits::SampleClass {
 private:
   SAMPLE* _sample;
@@ -28,6 +30,7 @@ public:
 public:
   // used by the readers
   static MikModSample* load_wav(Filename);
+  virtual MikModPlaying* get_state(void);
   static void destroy(AudioTraits::SampleClass*);
   // used by the players
   virtual void set_voice(int);
@@ -57,7 +60,14 @@ public:
   // used by the readers
   static MikModMidi* load_midi(Filename);
   static void destroy(AudioTraits::MusicClass*);
+  virtual MikModPlaying* get_state(void);
 };
+
+class EXPCL_PANDA MikModPlaying : public AudioTraits::PlayingClass {
+public:
+  MikModPlaying(void);
+  ~MikModPlaying(void);
+}
 
 class EXPCL_PANDA MikModSamplePlayer : public AudioTraits::PlayerClass {
 public:

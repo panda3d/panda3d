@@ -443,6 +443,10 @@ WinSample* WinSample::load_raw(unsigned char* data, unsigned long size) {
   }
 }
 
+WinPlaying* WinSample::get_state(void) {
+  return new WinPlaying();
+}
+
 void WinSample::destroy(AudioTraits::SampleClass* sample) {
   delete sample;
 }
@@ -638,12 +642,19 @@ WinMusic* WinMusic::load_midi(Filename filename) {
   return ret;
 }
 
+WinPlaying* WinMusic::get_state(void) {
+  return new WinPlaying();
+}
+
 void WinMusic::destroy(AudioTraits::MusicClass* music) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "in WinMusic::destroy()" << endl;
   delete music;
   if (audio_cat->is_debug())
     audio_cat->debug() << "out of WinMusic::destroy()" << endl;
+}
+
+WinPlaying::~WinPlaying(void) {
 }
 
 WinPlayer* WinPlayer::_global_instance = (WinPlayer*)0L;

@@ -156,6 +156,10 @@ MikModSample* MikModSample::load_wav(Filename filename) {
   return new MikModSample(sample);
 }
 
+MikModPlaying* MikModSample::get_state(void) {
+  return new MikModPlaying();
+}
+
 void MikModSample::destroy(AudioTraits::SampleClass* sample) {
   delete sample;
 }
@@ -197,12 +201,22 @@ MikModMidi* MikModMidi::load_midi(Filename) {
   return new MikModMidi();
 }
 
+MikModPlaying* MikModMidi::get_state(void) {
+  return new MikModPlaying();
+}
+
 void MikModMidi::destroy(AudioTraits::MusicClass* music) {
   delete music;
 }
 
 AudioTraits::MusicClass::MusicStatus MikModMidi::status(void) {
   return READY;
+}
+
+MikModPlaying::MikModPlaying(void) : AudioTraits::PlayingClass() {
+}
+
+MikModPlaying::~MikModPlaying(void) {
 }
 
 MikModSamplePlayer* MikModSamplePlayer::_global_instance =

@@ -386,11 +386,13 @@ void AudioDestroySt(AudioTraits::SampleClass* sample) {
 }
 
 void AudioLoadSt(AudioTraits::SampleClass** sample,
+		 AudioTraits::PlayingClass** state,
 		 AudioTraits::PlayerClass** player,
 		 AudioTraits::DeleteSampleFunc** destroy, Filename) {
   audio_cat->warning() << "MikMod doesn't support reading raw data yet"
 		       << endl;
   *sample = (AudioTraits::SampleClass*)0L;
+  *state = (AudioTraits::PlayingClass*)0L;
   *player = (AudioTraits::PlayerClass*)0L;
   *destroy = AudioDestroySt;
 }
@@ -402,10 +404,11 @@ void AudioLoadSt(AudioTraits::SampleClass** sample,
 #include "audio_win_traits.h"
 
 void AudioDestroySt(AudioTraits::SampleClass* sample) {
-  delete sample;
+  WinSample::destroy(sample);
 }
 
 void AudioLoadSt(AudioTraits::SampleClass** sample,
+		 AudioTraits::PlayingClass** state,
 		 AudioTraits::PlayerClass** player,
 		 AudioTraits::DeleteSampleFunc** destroy, Filename filename) {
 #ifdef HAVE_SOXST
@@ -414,11 +417,13 @@ void AudioLoadSt(AudioTraits::SampleClass** sample,
   read_file(filename, &buf, len);
   if (buf != (unsigned char*)0L) {
     *sample = WinSample::load_raw(buf, len);
+    *state = ((WinSample*)(*sample))->get_state();
     *player = WinPlayer::get_instance();
     *destroy = AudioDestroySt;
   }
 #else /* HAVE_SOXST */
   *sample = (AudioTraits::SampleClass*)0L;
+  *state = (AudioTraits::PlayingClass*)0L;
   *player = (AudioTraits::PlayerClass*)0L;
   *destroy = AudioDestroySt;
 #endif /* HAVE_SOXST */
@@ -431,10 +436,11 @@ void AudioLoadSt(AudioTraits::SampleClass** sample,
 #include "audio_linux_traits.h"
 
 void AudioDestroySt(AudioTraits::SampleClass* sample) {
-  delete sample;
+  LinuxSample::destroy(sample);
 }
 
 void AudioLoadSt(AudioTraits::SampleClass** sample,
+		 AudioTraits::PlayingClass** state,
 		 AudioTraits::PlayerClass** player,
 		 AudioTraits::DeleteSampleFunc** destroy, Filename filename) {
 #ifdef HAVE_SOXST
@@ -443,11 +449,13 @@ void AudioLoadSt(AudioTraits::SampleClass** sample,
   read_file(filename, &buf, len);
   if (buf != (byte*)0L) {
     *sample = LinuxSample::load_raw(buf, len);
+    *state = ((LinuxSample*)(*sample))->get_state();
     *player = LinuxPlayer::get_instance();
     *destroy = AudioDestroySt;
   }
 #else /* HAVE_SOXST */
   *sample = (AudioTraits::SampleClass*)0L;
+  *state = (AudioTraits::PlayingClass*)0L;
   *player = (AudioTraits::PlayerClass*)0L;
   *destroy = AudioDestroySt;
 #endif /* HAVE_SOXST */
@@ -465,9 +473,11 @@ void AudioDestroySt(AudioTraits::SampleClass* sample) {
 }
 
 void AudioLoadSt(AudioTraits::SampleClass** sample,
+		 AudioTraits::PlayingClass** state,
 		 AudioTraits::PlayerClass** player,
 		 AudioTraits::DeleteSampleFunc** destroy, Filename) {
   *sample = new NullSample();
+  *state = new NullPlaying();
   *player = new NullPlayer();
   *destroy = AudioDestroySt;
 }

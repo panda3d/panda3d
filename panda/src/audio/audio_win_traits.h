@@ -16,6 +16,8 @@
 #include <dsound.h>
 #include <dmusici.h>
 
+class WinPlaying;
+
 class EXPCL_PANDA WinSample : public AudioTraits::SampleClass {
 private:
   LPDIRECTSOUNDBUFFER _channel;
@@ -33,6 +35,7 @@ public:
   void  unlock(void);
   static WinSample* load_wav(Filename);
   static WinSample* load_raw(unsigned char*, unsigned long);
+  virtual WinPlaying* get_state(void);
   static void destroy(AudioTraits::SampleClass*);
   // these are used by the player
   INLINE LPDIRECTSOUNDBUFFER get_channel(void);
@@ -55,10 +58,17 @@ public:
   virtual AudioTraits::MusicClass::MusicStatus status(void);
   // these are used by the loaders
   static WinMusic* load_midi(Filename);
+  virtual WinPlaying* get_state(void);
   static void destroy(AudioTraits::MusicClass*);
   // these are used by the players
   INLINE IDirectMusicPerformance* get_performance(void);
   INLINE IDirectMusicSegment* get_music(void);
+};
+
+class EXPCL_PANDA WinPlaying : public AudioTraits::PlayingClass {
+public:
+  INLINE WinPlaying(void);
+  ~WinPlaying(void);
 };
 
 class EXPCL_PANDA WinPlayer : public AudioTraits::PlayerClass {

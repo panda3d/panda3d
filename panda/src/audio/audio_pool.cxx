@@ -78,6 +78,7 @@ AudioSample* AudioPool::ns_load_sample(Filename filename) {
   }
   audio_cat.info() << "Loading sample " << filename << "\n";
   AudioTraits::SampleClass* sample = (AudioTraits::SampleClass*)0L;
+  AudioTraits::PlayingClass* state = (AudioTraits::PlayingClass*)0L;
   AudioTraits::PlayerClass* player = (AudioTraits::PlayerClass*)0L;
   AudioTraits::DeleteSampleFunc* destroy = (AudioTraits::DeleteSampleFunc*)0L;
   string ext = filename.get_extension();
@@ -89,16 +90,16 @@ AudioSample* AudioPool::ns_load_sample(Filename filename) {
 		       << "'" << endl;
     return (AudioSample*)0L;
   }
-  (*((*sli).second))(&sample, &player, &destroy, filename);
+  (*((*sli).second))(&sample, &state, &player, &destroy, filename);
   if ((sample == (AudioTraits::SampleClass*)0L) ||
+      (state == (AudioTraits::PlayingClass*)0L) ||
       (player == (AudioTraits::PlayerClass*)0L) ||
       (destroy == (AudioTraits::DeleteSampleFunc*)0L)) {
     audio_cat->error() << "could not load '" << filename << "'" << endl;
     return (AudioSample*)0L;
   }
-  PT(AudioSample) the_sample = new AudioSample(sample,
-					       (AudioTraits::PlayingClass*)0L,
-					       player, destroy, filename);
+  PT(AudioSample) the_sample = new AudioSample(sample, state, player, destroy,
+					       filename);
   _samples[filename] = the_sample;
   return the_sample;
 }
@@ -178,6 +179,7 @@ AudioMusic* AudioPool::ns_load_music(Filename filename) {
   }
   audio_cat.info() << "Loading music " << filename << "\n";
   AudioTraits::MusicClass* music = (AudioTraits::MusicClass*)0L;
+  AudioTraits::PlayingClass* state = (AudioTraits::PlayingClass*)0L;
   AudioTraits::PlayerClass* player = (AudioTraits::PlayerClass*)0L;
   AudioTraits::DeleteMusicFunc* destroy = (AudioTraits::DeleteMusicFunc*)0L;
   string ext = filename.get_extension();
@@ -189,16 +191,16 @@ AudioMusic* AudioPool::ns_load_music(Filename filename) {
 		       << "'" << endl;
     return (AudioMusic*)0L;
   }
-  (*((*sli).second))(&music, &player, &destroy, filename);
+  (*((*sli).second))(&music, &state, &player, &destroy, filename);
   if ((music == (AudioTraits::MusicClass*)0L) ||
+      (state == (AudioTraits::PlayingClass*)0L) ||
       (player == (AudioTraits::PlayerClass*)0L) ||
       (destroy == (AudioTraits::DeleteMusicFunc*)0L)) {
     audio_cat->error() << "could not load '" << filename << "'" << endl;
     return (AudioMusic*)0L;
   }
-  PT(AudioMusic) the_music = new AudioMusic(music,
-					    (AudioTraits::PlayingClass*)0L,
-					    player, destroy, filename);
+  PT(AudioMusic) the_music = new AudioMusic(music, state, player, destroy,
+					    filename);
   _music[filename] = the_music;
   return the_music;
 }

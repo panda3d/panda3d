@@ -3,11 +3,14 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-INLINE NullSample::NullSample(void) {
+INLINE NullSample::NullSample(void) : AudioTraits::SampleClass() {
 }
 
-INLINE NullMusic::NullMusic(void) {
+INLINE NullMusic::NullMusic(void) : AudioTraits::MusicClass() {
 }
 
-INLINE NullPlayer::NullPlayer(void) {
+INLINE NullPlaying::NullPlaying(void) : AudioTraits::PlayingClass() {
+}
+
+INLINE NullPlayer::NullPlayer(void) : AudioTraits::PlayerClass() {
 }

@@ -48,6 +48,9 @@ AudioTraits::MusicClass::MusicStatus NullMusic::status(void) {
   return READY;
 }
 
+NullPlaying::~NullPlaying(void) {
+}
+
 NullPlayer::~NullPlayer(void) {
 }
 

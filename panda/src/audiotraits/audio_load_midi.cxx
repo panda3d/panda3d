@@ -19,11 +19,13 @@ void AudioDestroyMidi(AudioTraits::MusicClass* music) {
 }
 
 void AudioLoadMidi(AudioTraits::MusicClass** music,
+		   AudioTraits::PlayingClass** state,
 		   AudioTraits::PlayerClass** player,
 		   AudioTraits::DeleteMusicFunc** destroy, Filename filename) {
   *music = MikModMidi::load_midi(filename);
   if (*music == (AudioTraits::MusicClass*)0L)
     return;
+  *state = *music->get_state();
   *player = MikModMidiPlayer::get_instance();
   *destroy = AudioDestroyMidi;
 }
@@ -39,31 +41,35 @@ void AudioDestroyMidi(AudioTraits::MusicClass* music) {
 }
 
 void AudioLoadMidi(AudioTraits::MusicClass** music,
+		   AudioTraits::PlayingClass** state,
 		   AudioTraits::PlayerClass** player,
 		   AudioTraits::DeleteMusicFunc** destroy, Filename filename) {
   *music = WinMusic::load_midi(filename);
   if (*music == (AudioTraits::MusicClass*)0L)
     return;
+  *state = *music->get_state();
   *player = WinPlayer::get_instance();
   *destroy = AudioDestroyMidi;
-  audio_cat->debug() << "sanity check: music = " << (void*)*music
-		     << "  player = " << (void*)*player << "  destroy = "
-		     << (void*)*destroy << endl;
 }
+
 #else /* AUDIO_USE_WIN32 */
 
 #ifdef AUDIO_USE_LINUX
 
+#include "audio_linux_traits.h"
+
 void AudioDestroyMidi(AudioTraits::MusicClass* music) {
-  delete music;
+  LinuxMusic::destroy(music);
 }
 
 void AudioLoadMidi(AudioTraits::MusicClass** music,
+		   AudioTraits::PlayingClass** state,
 		   AudioTraits::PlayerClass** player,
 		   AudioTraits::DeleteMusicFunc** destroy, Filename) {
   audio_cat->warning() << "linux doesn't support reading midi data yet"
 		       << endl;
   *music = (AudioTraits::MusicClass*)0L;
+  *state = (AudioTraits::PlayingClass*)0L;
   *player = (AudioTraits::PlayerClass*)0L;
   *destroy = AudioDestroyMidi;
 }
@@ -80,9 +86,11 @@ void AudioDestroyMidi(AudioTraits::MusicClass* music) {
 }
 
 void AudioLoadMidi(AudioTraits::MusicClass** music,
+		   AudioTraits::PlayingClass** state,
 		   AudioTraits::PlayerClass** player,
 		   AudioTraits::DeleteMusicFunc** destroy, Filename) {
   *music = new NullMusic();
+  *state = new NullPlaying();
   *player = new NullPlayer();
   *destroy = AudioDestroyMidi;
 }

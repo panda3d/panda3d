@@ -3,15 +3,19 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-INLINE LinuxSample::LinuxSample(Buffer* b) : _data(b) {
+INLINE LinuxSample::LinuxSample(Buffer* b) : AudioTraits::SampleClass(),
+					     _data(b) {
 }
 
 INLINE Buffer* LinuxSample::get_data(void) {
   return _data;
 }
 
-INLINE LinuxMusic::LinuxMusic(void) {
+INLINE LinuxMusic::LinuxMusic(void) : AudioTraits::MusicClass() {
 }
 
-INLINE LinuxPlayer::LinuxPlayer(void) {
+INLINE LinuxPlaying::LinuxPlaying(void) : AudioTraits::PlayingClass() {
+}
+
+INLINE LinuxPlayer::LinuxPlayer(void) : AudioTraits::PlayerClass() {
 }

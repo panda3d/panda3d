@@ -57,6 +57,8 @@ public:
   }
 };
 
+class LinuxPlaying;
+
 class EXPCL_PANDA LinuxSample : public AudioTraits::SampleClass {
 private:
   Buffer* _data;
@@ -67,10 +69,11 @@ public:
   virtual float length(void);
   virtual AudioTraits::SampleClass::SampleStatus status(void);
 
-  static void destroy(AudioTraits::SampleClass*);
 public:
   // used by the loader
   static LinuxSample* load_raw(byte*, unsigned long);
+  virtual LinuxPlaying* get_state(void);
+  static void destroy(AudioTraits::SampleClass*);
   // used by the players
   INLINE Buffer* get_data(void);
 };
@@ -81,6 +84,17 @@ public:
   virtual ~LinuxMusic(void);
 
   virtual AudioTraits::MusicClass::MusicStatus status(void);
+public:
+  virtual LinuxPlaying* get_state(void);
+  static void destroy(AudioTraits::MusicClass*);
+};
+
+class EXPCL_PANDA LinuxPlaying : public AudioTraits::PlayingClass {
+public:
+  INLINE LinuxPlaying(void);
+  virtual ~LinuxPlaying(void);
+
+  virtual AudioTraits::PlayingClass::PlayingStatus status(void);
 };
 
 class EXPCL_PANDA LinuxPlayer : public AudioTraits::PlayerClass {

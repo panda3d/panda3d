@@ -36,6 +36,7 @@ private:
   MusicMap _music;
 public:
   typedef void SampleLoadFunc(AudioTraits::SampleClass**,
+			      AudioTraits::PlayingClass**,
 			      AudioTraits::PlayerClass**,
 			      AudioTraits::DeleteSampleFunc**, Filename);
 
@@ -47,6 +48,7 @@ public:
   static void register_sample_loader(const string&, SampleLoadFunc*);
 
   typedef void MusicLoadFunc(AudioTraits::MusicClass**,
+			     AudioTraits::PlayingClass**,
 			     AudioTraits::PlayerClass**,
 			     AudioTraits::DeleteMusicFunc**, Filename);
 
