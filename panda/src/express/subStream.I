@@ -35,6 +35,9 @@ ISubStream() : istream(&_buf) {
 //               start total characters.  The character at "end"
 //               within the source will never be read; this will
 //               appear to be EOF.
+//
+//               If end is zero, it indicates that the ISubStream will
+//               continue until the end of the source stream.
 ////////////////////////////////////////////////////////////////////
 INLINE void ISubStream::
 open(istream *source, streampos start, streampos end) {
@@ -46,7 +49,7 @@ open(istream *source, streampos start, streampos end) {
 //     Function: ISubStream::close
 //       Access: Public
 //  Description: Resets the SubStream to empty, but does not actually
-//               close its source istream.
+//               close the source istream.
 ////////////////////////////////////////////////////////////////////
 INLINE void ISubStream::
 close() {

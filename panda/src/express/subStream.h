@@ -29,6 +29,10 @@
 //               stream will be the "start" character from the source
 //               istream; just before the file pointer reaches the
 //               "end" character, eof is returned.
+//
+//               The source stream must be one that we can randomly
+//               seek within.  The resulting ISubStream will also
+//               support arbitrary seeks.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS ISubStream : public istream {
 public:
