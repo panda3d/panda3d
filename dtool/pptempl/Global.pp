@@ -217,12 +217,6 @@
   #define maya_libs $[MAYA_LIBS]
 #endif
 
-#if $[HAVE_IPC]
-  #define ipc_ipath $[wildcard $[IPC_IPATH]]
-  #define ipc_lpath $[wildcard $[IPC_LPATH]]
-  #define ipc_libs $[IPC_LIBS]
-#endif
-
 #if $[HAVE_NET]
   #define net_ipath $[wildcard $[NET_IPATH]]
   #define net_lpath $[wildcard $[NET_LPATH]]

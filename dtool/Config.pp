@@ -307,14 +307,16 @@
 #define MIKMOD_CONFIG libmikmod-config
 #defer HAVE_MIKMOD $[bintest $[MIKMOD_CONFIG]]
 
-// Do you want to build in support for threading (inter-process
-// control)?  What additional libraries are required?  Currently, this
-// requires NSPR to compile correctly.
-#define IPC_IPATH
-#define IPC_LPATH
-#define IPC_LIBS
-//#defer HAVE_IPC $[HAVE_NSPR]
-#define HAVE_IPC
+// Do you want to build in support for threading (multiprocessing)?
+// Building in support for threading will enable Panda to take
+// advantage of multiple CPU's if you have them (and if the OS
+// supports kernel threads running on different CPU's), but it will
+// slightly slow down Panda for the single CPU case, so this is not
+// enabled by default.
+
+// Currently, threading support requires NSPR, so you should not
+// define this true unless you have NSPR installed.
+#define HAVE_THREADS
 
 // Do you want to build the network interface?  What additional libraries
 // are required?  Currently, this requires NSPR.

@@ -85,8 +85,8 @@ $[cdefine HAVE_SOXST]
 /* Define if we want to use mikmod for audio.  */
 $[cdefine HAVE_MIKMOD]
 
-/* Define if we want to compile the ipc code.  */
-$[cdefine HAVE_IPC]
+/* Define if we want to compile the threading code.  */
+$[cdefine HAVE_THREADS]
 
 /* Define if we want to compile the net code.  */
 $[cdefine HAVE_NET]

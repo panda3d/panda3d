@@ -165,10 +165,7 @@
 #set MIKMOD_CONFIG $[MIKMOD_CONFIG]
 #set HAVE_MIKMOD $[HAVE_MIKMOD]
 
-#set IPC_IPATH $[unixfilename $[IPC_IPATH]]
-#set IPC_LPATH $[unixfilename $[IPC_LPATH]]
-#set IPC_LIBS $[IPC_LIBS]
-#set HAVE_IPC $[HAVE_IPC]
+#set HAVE_THREADS $[HAVE_THREADS]
 
 #set NET_IPATH $[unixfilename $[NET_IPATH]]
 #set NET_LPATH $[unixfilename $[NET_LPATH]]
