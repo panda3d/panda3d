@@ -72,7 +72,10 @@ get_frame_rate() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int AnimControl::
 get_frame() const {
-  return (int)(_frame + 0.0001);
+  // We have to use floor() here instead of simply casting the number
+  // to an integer, becase the frame number might have become
+  // negative.
+  return (int)floor(_frame + 0.0001);
 }
 
 ////////////////////////////////////////////////////////////////////

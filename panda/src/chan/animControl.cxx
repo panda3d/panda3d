@@ -382,7 +382,12 @@ advance_time(double time) {
         do_actions_backward(orig_frame-1, new_frame);
       } else {
         if (do_actions_backward(orig_frame-1, 0)) {
-          _frame = _frame - (int)(_frame / num_frames) * num_frames;
+          // floor() is correct here, instead of simply an integer
+          // cast, because we are using floating-point arithmetic
+          // anyway (no need to convert to integer format and back
+          // again), and because we need correct behavior when the
+          // frame number is negative.
+          _frame = _frame - floor(_frame / num_frames) * num_frames;
           new_frame = get_frame();
           do_actions_backward(get_num_frames(), new_frame);
         }
@@ -394,7 +399,12 @@ advance_time(double time) {
         do_actions_forward(orig_frame+1, new_frame);
       } else {
         if (do_actions_forward(orig_frame+1, get_num_frames()-1)) {
-          _frame = _frame - (int)(_frame / num_frames) * num_frames;
+          // floor() is correct here, instead of simply an integer
+          // cast, because we are using floating-point arithmetic
+          // anyway (no need to convert to integer format and back
+          // again), and because we need correct behavior when the
+          // frame number is negative.
+          _frame = _frame - floor(_frame / num_frames) * num_frames;
           new_frame = get_frame();
           do_actions_forward(0, new_frame);
         }
