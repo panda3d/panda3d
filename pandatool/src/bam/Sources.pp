@@ -42,8 +42,9 @@
   #define LOCAL_LIBS \
     eggbase progbase
   #define OTHER_LIBS \
+    egg:c pandaegg:m \
     parametrics:c collide:c chan:c char:c switchnode:c \
-    cull:c loader:c egg:c sgraphutil:c sgattrib:c \
+    cull:c loader:c sgraphutil:c sgattrib:c \
     sgraph:c pnmimagetypes:c \
     graph:c putil:c linmath:c express:c panda:m pandaexpress:m \
     interrogatedb:c dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
