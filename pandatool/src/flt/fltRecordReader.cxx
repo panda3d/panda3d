@@ -23,8 +23,6 @@
 
 #include <assert.h>
 
-static const int header_size = 4;
-
 ////////////////////////////////////////////////////////////////////
 //     Function: FltRecordReader::Constructor
 //       Access: Public

@@ -25,8 +25,6 @@
 
 #include <assert.h>
 
-static const int header_size = 4;
-
 // Don't attempt to write more than this number of bytes in one
 // record.  If the record requires more than this, use continuation
 // records.
