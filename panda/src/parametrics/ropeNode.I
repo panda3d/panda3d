@@ -29,8 +29,11 @@ CData() {
   _uv_mode = RopeNode::UV_none;
   _u_dominant = true;
   _uv_scale = 1.0f;
+  _normal_mode = RopeNode::NM_none;
+  _tube_up = LVector3f::up();
   _use_vertex_color = false;
   _num_subdiv = 10;
+  _num_slices = 5;
   _thickness = 1.0f;
 }
 
@@ -46,8 +49,11 @@ CData(const RopeNode::CData &copy) :
   _uv_mode(copy._uv_mode),
   _u_dominant(copy._u_dominant),
   _uv_scale(copy._uv_scale),
+  _normal_mode(copy._normal_mode),
+  _tube_up(copy._tube_up),
   _use_vertex_color(copy._use_vertex_color),
   _num_subdiv(copy._num_subdiv),
+  _num_slices(copy._num_slices),
   _thickness(copy._thickness)
 {
 }
@@ -153,23 +159,6 @@ get_uv_direction() const {
 //     Function: set_uv_scale
 //       Access: Published
 //  Description: Specifies an additional scaling factor to apply to
-//               generated UV's for the rope.  This is a deprecated
-//               interface; use set_uv_scale() that accepts a single
-//               float, instead.
-////////////////////////////////////////////////////////////////////
-INLINE void RopeNode::
-set_uv_scale(const LVecBase2f &uv_scale) {
-  if (get_uv_direction()) {
-    set_uv_scale(uv_scale[0]);
-  } else {
-    set_uv_scale(uv_scale[1]);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: set_uv_scale
-//       Access: Published
-//  Description: Specifies an additional scaling factor to apply to
 //               generated UV's along the rope.  This scale factor is
 //               applied in whichever direction is along the rope, as
 //               specified by set_uv_direction().
@@ -190,6 +179,64 @@ INLINE float RopeNode::
 get_uv_scale() const {
   CDReader cdata(_cycler);
   return cdata->_uv_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: set_normal_mode
+//       Access: Published
+//  Description: Specifies the kind of normals to generate for the
+//               rope.  This is only applicable when the RenderMode is
+//               set to RM_tube; in the other render modes, normals
+//               are never generated.
+////////////////////////////////////////////////////////////////////
+INLINE void RopeNode::
+set_normal_mode(RopeNode::NormalMode normal_mode) {
+  CDWriter cdata(_cycler);
+  cdata->_normal_mode = normal_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_normal_mode
+//       Access: Published
+//  Description: Returns the kind of normals to generate for the rope.
+//               This is only applicable when the RenderMode is set to
+//               RM_tube.
+////////////////////////////////////////////////////////////////////
+INLINE RopeNode::NormalMode RopeNode::
+get_normal_mode() const {
+  CDReader cdata(_cycler);
+  return cdata->_normal_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: set_tube_up
+//       Access: Published
+//  Description: Specifies a normal vector, generally perpendicular to
+//               the main axis of the starting point of the curve,
+//               that controls the "top" of the curve, when RenderMode
+//               is RM_tube.  This is used to orient the vertices that
+//               make up the tube.  If this vector is too nearly
+//               parallel with the starting direction of the curve,
+//               there may be a tendency for the whole tube to
+//               gimble-lock around its primary axis.
+////////////////////////////////////////////////////////////////////
+INLINE void RopeNode::
+set_tube_up(const LVector3f &tube_up) {
+  CDWriter cdata(_cycler);
+  cdata->_tube_up = tube_up;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_tube_up
+//       Access: Published
+//  Description: Returns the normal vector used to control the "top"
+//               of the curve, when RenderMode is RM_tube.  See
+//               set_tube_up().
+////////////////////////////////////////////////////////////////////
+INLINE const LVector3f &RopeNode::
+get_tube_up() const {
+  CDReader cdata(_cycler);
+  return cdata->_tube_up;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -244,6 +291,39 @@ INLINE int RopeNode::
 get_num_subdiv() const {
   CDReader cdata(_cycler);
   return cdata->_num_subdiv;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: set_num_slices
+//       Access: Published
+//  Description: Specifies the number of radial subdivisions to make
+//               if RenderMode is RM_tube.  It is ignored in the other
+//               render modes.
+//
+//               Increasing this number increases the roundness of a
+//               cross-section of the tube.  The minimum value for a
+//               dimensional tube is 3; setting it to 2 will get you a
+//               thin piece of tape (which is similar to RM_billboard,
+//               except it won't rotate to face the camera).
+////////////////////////////////////////////////////////////////////
+INLINE void RopeNode::
+set_num_slices(int num_slices) {
+  nassertv(num_slices >= 0);
+  CDWriter cdata(_cycler);
+  cdata->_num_slices = num_slices;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_num_slices
+//       Access: Published
+//  Description: Returns the number of radial subdivisions to make if
+//               RenderMode is RM_tube.  It is ignored in the other
+//               render modes.  See set_num_slices().
+////////////////////////////////////////////////////////////////////
+INLINE int RopeNode::
+get_num_slices() const {
+  CDReader cdata(_cycler);
+  return cdata->_num_slices;
 }
 
 ////////////////////////////////////////////////////////////////////

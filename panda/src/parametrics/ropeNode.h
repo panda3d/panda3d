@@ -59,7 +59,10 @@ PUBLISHED:
 
     // Render the rope as a continuous triangle strip oriented to be
     // perpendicular to the view vector.
-    RM_billboard
+    RM_billboard,
+
+    // Render the rope as a hollow tube extruded along its length.
+    RM_tube
   };
 
   enum UVMode {
@@ -83,6 +86,14 @@ PUBLISHED:
     UV_distance2,
   };
 
+  enum NormalMode {
+    // Don't generate normals.
+    NM_none,
+
+    // Generate vertex (smooth-shaded) normals.
+    NM_vertex
+  };
+
   INLINE void set_curve(NurbsCurveEvaluator *curve);
   INLINE NurbsCurveEvaluator *get_curve() const;
 
@@ -95,15 +106,23 @@ PUBLISHED:
   INLINE void set_uv_direction(bool u_dominant);
   INLINE bool get_uv_direction() const;
 
-  INLINE void set_uv_scale(const LVecBase2f &uv_scale);
   INLINE void set_uv_scale(float scale);
   INLINE float get_uv_scale() const;
+
+  INLINE void set_normal_mode(NormalMode normal_mode);
+  INLINE NormalMode get_normal_mode() const;
+
+  INLINE void set_tube_up(const LVector3f &tube_up);
+  INLINE const LVector3f &get_tube_up() const;
 
   INLINE void set_use_vertex_color(bool flag);
   INLINE bool get_use_vertex_color() const;
 
   INLINE void set_num_subdiv(int num_subdiv);
   INLINE int get_num_subdiv() const;
+
+  INLINE void set_num_slices(int num_slices);
+  INLINE int get_num_slices() const;
 
   INLINE void set_thickness(float thickness);
   INLINE float get_thickness() const;
@@ -116,9 +135,44 @@ protected:
 private:
   BoundingVolume *do_recompute_bound(const NodePath &rel_to);
   void render_thread(CullTraverser *trav, CullTraverserData &data, 
-                     NurbsCurveResult *result);
+                     NurbsCurveResult *result) const;
   void render_billboard(CullTraverser *trav, CullTraverserData &data, 
-                        NurbsCurveResult *result);
+                        NurbsCurveResult *result) const;
+  void render_tube(CullTraverser *trav, CullTraverserData &data, 
+                   NurbsCurveResult *result) const;
+
+  class CurveVertex {
+  public:
+    LPoint3f _p;
+    Colorf _c;
+    float _t;
+  };
+  typedef pvector<CurveVertex> CurveSegment;
+  typedef pvector<CurveSegment> CurveSegments;
+
+  void get_connected_segments(CurveSegments &curve_segments,
+                              const NurbsCurveResult *result) const;
+
+  void compute_thread_vertices(PTA_Vertexf &verts, PTA_TexCoordf &uvs, 
+                               PTA_Colorf &colors,
+                               const CurveSegments &curve_segments) const;
+  void compute_billboard_vertices(PTA_Vertexf &verts, PTA_TexCoordf &uvs, 
+                                  PTA_Colorf &colors,
+                                  const LVector3f &camera_vec,
+                                  const CurveSegments &curve_segments,
+                                  NurbsCurveResult *result) const;
+  void compute_tube_vertices(PTA_Vertexf &verts, PTA_Normalf &normals,
+                             PTA_TexCoordf &uvs, PTA_Colorf &colors,
+                             int &num_verts_per_slice,
+                             const CurveSegments &curve_segments,
+                             NurbsCurveResult *result) const;
+
+  static void compute_tangent(LVector3f &tangent, const CurveSegment &segment,
+                              size_t j, NurbsCurveResult *result);
+  static float compute_uv_t(float &dist, const UVMode &uv_mode,
+                            float uv_scale, const CurveSegment &segment,
+                            size_t j);
+
 
 private:
   // This is the data that must be cycled between pipeline stages.
@@ -135,8 +189,11 @@ private:
     UVMode _uv_mode;
     bool _u_dominant;
     float _uv_scale;
+    NormalMode _normal_mode;
+    LVector3f _tube_up;
     bool _use_vertex_color;
     int _num_subdiv;
+    int _num_slices;
     float _thickness;
   };
 

@@ -165,6 +165,10 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
         case RM_billboard:
           render_billboard(trav, data, result);
           break;
+          
+        case RM_tube:
+          render_tube(trav, data, result);
+          break;
         }
       }
     }
@@ -265,89 +269,45 @@ do_recompute_bound(const NodePath &rel_to) {
 ////////////////////////////////////////////////////////////////////
 void RopeNode::
 render_thread(CullTraverser *trav, CullTraverserData &data, 
-              NurbsCurveResult *result) {
-  UVMode uv_mode = get_uv_mode();
-  float uv_scale = get_uv_scale();
-  bool u_dominant = get_uv_direction();
-  bool use_vertex_color = get_use_vertex_color();
+              NurbsCurveResult *result) const {
+  CurveSegments curve_segments;
+  get_connected_segments(curve_segments, result);
+
+  // Now we have stored one or more sequences of vertices down the
+  // center strips.  Go back through and calculate the vertices on
+  // either side.
 
   PTA_Vertexf verts;
   PTA_TexCoordf uvs;
   PTA_Colorf colors;
+
+  compute_thread_vertices(verts, uvs, colors, curve_segments);
+
+  // Finally, build the lengths array to make them into proper
+  // line strips.
+
   PTA_int lengths;
+  int num_prims = 0;
 
-  int num_verts = get_num_subdiv() + 1;
-  int num_segments = result->get_num_segments();
-  float dist = 0.0f;
-  for (int segment = 0; segment < num_segments; segment++) {
-    LPoint3f last_point;
-    for (int i = 0; i < num_verts; i++) {
-      float t = (float)i / (float)(num_verts - 1);
-      LPoint3f point;
-      result->eval_segment_point(segment, t, point);
-      verts.push_back(point);
+  CurveSegments::const_iterator si;
+  for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
+    const CurveSegment &segment = (*si);
 
-      if (use_vertex_color) {
-        Colorf color;
-        result->eval_segment_extended_points(segment, t, 0, &color[0], 4),
-        colors.push_back(color);
-      }
-
-      t = result->get_segment_t(segment, t);
-      switch (uv_mode) {
-      case UV_none:
-        break;
-        
-      case UV_parametric:
-        if (u_dominant) {
-          uvs.push_back(TexCoordf(t * uv_scale, 0.0f));
-        } else {
-          uvs.push_back(TexCoordf(0.0f, t * uv_scale));
-        }
-        break;
-
-      case UV_distance:
-        if (i != 0) {
-          LVector3f vec = point - last_point;
-          dist += vec.length();
-        }
-        if (u_dominant) {
-          uvs.push_back(TexCoordf(dist * uv_scale, 0.0f));
-        } else {
-          uvs.push_back(TexCoordf(0.0f, dist * uv_scale));
-        }
-        break;
-
-      case UV_distance2:
-        if (i != 0) {
-          LVector3f vec = point - last_point;
-          dist += vec.length_squared();
-        }
-        if (u_dominant) {
-          uvs.push_back(TexCoordf(dist * uv_scale, 0.0f));
-        } else {
-          uvs.push_back(TexCoordf(0.0f, dist * uv_scale));
-        }
-        break;
-      }
-
-      last_point = point;
-    }
-    lengths.push_back(num_verts);
+    lengths.push_back(segment.size());
+    num_prims++;
   }
   
   PT(GeomLinestrip) geom = new GeomLinestrip;
   geom->set_width(get_thickness());
-  geom->set_num_prims(num_segments);
+  geom->set_num_prims(num_prims);
   geom->set_coords(verts);
-  if (uv_mode != UV_none) {
+  if (get_uv_mode() != UV_none) {
     geom->set_texcoords(uvs, G_PER_VERTEX);
   }
 
-  if (use_vertex_color) {
+  if (get_use_vertex_color()) {
     geom->set_colors(colors, G_PER_VERTEX);
   } else {
-    colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
     geom->set_colors(colors, G_OVERALL);
   }
   geom->set_lengths(lengths);
@@ -365,11 +325,11 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
 //               perpendicular to the camera plane.
 //
 //               In this mode, thickness is in spatial units, and
-//               determines the with of the triangle strips.
+//               determines the width of the triangle strips.
 ////////////////////////////////////////////////////////////////////
 void RopeNode::
 render_billboard(CullTraverser *trav, CullTraverserData &data, 
-                 NurbsCurveResult *result) {
+                 NurbsCurveResult *result) const {
   const TransformState *net_transform = data._net_transform;
   const TransformState *camera_transform = trav->get_camera_transform();
 
@@ -377,142 +337,48 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
     net_transform->invert_compose(camera_transform);
   LVector3f camera_vec = LVector3f::forward() * rel_transform->get_mat();
 
-  float thickness = get_thickness();
-  float radius = thickness * 0.5f;
-  UVMode uv_mode = get_uv_mode();
-  bool u_dominant = get_uv_direction();
-  float uv_scale = get_uv_scale();
-
-  // We can't just build one tristrip per segment.  Instead, we should
-  // build one continuous tristrip for all connected segments, so we
-  // can stitch them together properly at the seams.
-
-  int num_verts = get_num_subdiv() + 1;
-  int num_segments = result->get_num_segments();
-
-  vector_Vertexf center_verts;
-  vector_int center_lengths;
-  vector_float center_t;
-
-  LPoint3f point;
-  int cur_length = 0;
-  for (int segment = 0; segment < num_segments; segment++) {
-    LPoint3f first_point;
-    result->eval_segment_point(segment, 0.0f, first_point);
-    if (cur_length == 0 || point != first_point) {
-      // If the first point of this segment is different from the last
-      // point of the previous segment, end the tristrip and store the
-      // point.
-      if (cur_length != 0) {
-        center_lengths.push_back(cur_length);
-      }
-      center_verts.push_back(first_point);
-      center_t.push_back(result->get_segment_t(segment, 0.0f));
-      cur_length = 1;
-    }
-
-    // Store all the remaining points in this segment.
-    for (int i = 1; i < num_verts; i++) {
-      float t = (float)i / (float)(num_verts - 1);
-      result->eval_segment_point(segment, t, point);
-      center_verts.push_back(point);
-      center_t.push_back(result->get_segment_t(segment, t));
-      cur_length++;
-    }
-  }
-  if (cur_length != 0) {
-    center_lengths.push_back(cur_length);
-  }
+  CurveSegments curve_segments;
+  get_connected_segments(curve_segments, result);
 
   // Now we have stored one or more sequences of vertices down the
-  // center strips.  Go back and convert them into actual tristrips.
+  // center strips.  Go back through and calculate the vertices on
+  // either side.
 
   PTA_Vertexf verts;
   PTA_TexCoordf uvs;
   PTA_Colorf colors;
+
+  compute_billboard_vertices(verts, uvs, colors, camera_vec, 
+                             curve_segments, result);
+
+  // Finally, build the lengths array to make them into proper
+  // triangle strips.  We don't need a vindex array here, since the
+  // vertices just happened to end up in tristrip order.
+
   PTA_int lengths;
-
-  int vi = 0;
   int num_prims = 0;
-  float dist = 0.0f;
-  for (int i = 0; i < (int)center_lengths.size(); i++) {
-    int length = center_lengths[i];
-    for (int j = 0; j < length; j++) {
-      const Vertexf &point = center_verts[vi + j];
-      float t = center_t[vi + j];
-      LVector3f tangent;
-      // Rather than evaluating the curve for the tangent, we derive
-      // it from the neighboring points.  This gives us better
-      // behavior at the endpoints, where the tangent might go to
-      // zero.
-      if (j == 0) {
-        tangent = center_verts[vi + j + 1] - point;
-      } else if (j == length - 1) {
-        tangent = point - center_verts[vi + j - 1];
-      } else {
-        tangent = center_verts[vi + j + 1] - center_verts[vi + j - 1];
-      }
-      LVector3f cross = normalize(tangent.cross(camera_vec));
-      cross *= radius;
-      verts.push_back(point + cross);
-      verts.push_back(point - cross);
-      switch (uv_mode) {
-      case UV_none:
-        break;
 
-      case UV_parametric:
-        if (u_dominant) {
-          uvs.push_back(TexCoordf(t * uv_scale, 1.0f));
-          uvs.push_back(TexCoordf(t * uv_scale, 0.0f));
-        } else {
-          uvs.push_back(TexCoordf(1.0f, t * uv_scale));
-          uvs.push_back(TexCoordf(0.0f, t * uv_scale));
-        }
-        break;
+  CurveSegments::const_iterator si;
+  for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
+    const CurveSegment &segment = (*si);
 
-      case UV_distance:
-        if (j != 0) {
-          LVector3f vec = point - center_verts[vi + j - 1];
-          dist += vec.length();
-        }
-        if (u_dominant) {
-          uvs.push_back(TexCoordf(dist * uv_scale, 1.0f));
-          uvs.push_back(TexCoordf(dist * uv_scale, 0.0f));
-        } else {
-          uvs.push_back(TexCoordf(1.0f, dist * uv_scale));
-          uvs.push_back(TexCoordf(0.0f, dist * uv_scale));
-        }
-        break;
-
-      case UV_distance2:
-        if (j != 0) {
-          LVector3f vec = point - center_verts[vi + j - 1];
-          dist += vec.length_squared();
-        }
-        if (u_dominant) {
-          uvs.push_back(TexCoordf(dist * uv_scale, 1.0f));
-          uvs.push_back(TexCoordf(dist * uv_scale, 0.0f));
-        } else {
-          uvs.push_back(TexCoordf(1.0f, dist * uv_scale));
-          uvs.push_back(TexCoordf(0.0f, dist * uv_scale));
-        }
-        break;
-      }
-    }
-    vi += length;
-    lengths.push_back(length * 2);
+    lengths.push_back(segment.size() * 2);
     num_prims++;
   }
 
-  colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+  // And create a Geom for the rendering.
   
   PT(Geom) geom = new GeomTristrip;
   geom->set_num_prims(num_prims);
   geom->set_coords(verts);
-  if (uv_mode != UV_none) {
+  if (get_uv_mode() != UV_none) {
     geom->set_texcoords(uvs, G_PER_VERTEX);
   }
-  geom->set_colors(colors, G_OVERALL);
+  if (get_use_vertex_color()) {
+    geom->set_colors(colors, G_PER_VERTEX);
+  } else {
+    geom->set_colors(colors, G_OVERALL);
+  }
   geom->set_lengths(lengths);
   
   CullableObject *object = new CullableObject(geom, data._state,
@@ -520,6 +386,399 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
   trav->get_cull_handler()->record_object(object);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: RopeNode::render_tube
+//       Access: Private
+//  Description: Draws the rope in RM_tube mode.  This draws a hollow
+//               tube centered around the string.
+//
+//               In this mode, thickness is in spatial units, and
+//               determines the diameter of the tube.
+////////////////////////////////////////////////////////////////////
+void RopeNode::
+render_tube(CullTraverser *trav, CullTraverserData &data, 
+            NurbsCurveResult *result) const {
+  CurveSegments curve_segments;
+  get_connected_segments(curve_segments, result);
+
+  // Now, we build up a table of vertices, in a series of rings
+  // around the circumference of the tube.
+
+  int num_slices = get_num_slices();
+  int num_verts_per_slice;
+
+  PTA_Vertexf verts;
+  PTA_Normalf normals;
+  PTA_TexCoordf uvs;
+  PTA_Colorf colors;
+
+  compute_tube_vertices(verts, normals, uvs, colors,
+                        num_verts_per_slice, curve_segments, result);
+
+  // Finally, go back one more time and build up the vindex array, to
+  // tie all the triangle strips together.
+
+  PTA_ushort vindex;
+  PTA_int lengths;
+
+  int num_prims = 0;
+  int vi = 0;
+  CurveSegments::const_iterator si;
+  for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
+    const CurveSegment &segment = (*si);
+
+    for (int s = 0; s < num_slices; ++s) {
+      int s1 = (s + 1) % num_verts_per_slice;
+
+      for (size_t j = 0; j < segment.size(); ++j) {
+        vindex.push_back((vi + j) * num_verts_per_slice + s);
+        vindex.push_back((vi + j) * num_verts_per_slice + s1);
+      }
+
+      lengths.push_back(segment.size() * 2);
+      num_prims++;
+    }
+    vi += (int)segment.size();
+  }
+
+  // And create a Geom for the rendering.
+  
+  PT(Geom) geom = new GeomTristrip;
+  geom->set_num_prims(num_prims);
+  geom->set_coords(verts, vindex);
+  if (get_uv_mode() != UV_none) {
+    geom->set_texcoords(uvs, G_PER_VERTEX, vindex);
+  }
+
+  if (get_normal_mode() == NM_vertex) {
+    geom->set_normals(normals, G_PER_VERTEX, vindex);
+  }
+
+  if (get_use_vertex_color()) {
+    geom->set_colors(colors, G_PER_VERTEX, vindex);
+  } else {
+    geom->set_colors(colors, G_OVERALL);
+  }
+  geom->set_lengths(lengths);
+
+  CullableObject *object = new CullableObject(geom, data._state,
+                                              data._render_transform);
+  trav->get_cull_handler()->record_object(object);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RopeNode::get_connected_segments
+//       Access: Private
+//  Description: Evaluates the string of vertices along the curve, and
+//               also breaks them up into connected segments.
+//
+//               Since the NurbsCurveEvaluator describes the curve as
+//               a sequence of possibly-connected piecewise continuous
+//               segments, this means joining together some adjacent
+//               segments from the NurbsCurveEvaluator into a single
+//               CurveSegment, if they happen to be connected (as most
+//               will be).
+////////////////////////////////////////////////////////////////////
+void RopeNode::
+get_connected_segments(RopeNode::CurveSegments &curve_segments,
+                       const NurbsCurveResult *result) const {
+  int num_verts = get_num_subdiv() + 1;
+  int num_segments = result->get_num_segments();
+  bool use_vertex_color = get_use_vertex_color();
+
+  CurveSegment *curve_segment = NULL;
+  LPoint3f last_point;
+
+  for (int segment = 0; segment < num_segments; ++segment) {
+    LPoint3f point;
+    result->eval_segment_point(segment, 0.0f, point);
+
+    if (curve_segment == (CurveSegment *)NULL || 
+        !point.almost_equal(last_point)) {
+      // If the first point of this segment is different from the last
+      // point of the previous segment, end the previous segment and
+      // begin a new one.
+      curve_segments.push_back(CurveSegment());
+      curve_segment = &curve_segments.back();
+
+      CurveVertex vtx;
+      vtx._p = point;
+      vtx._t = result->get_segment_t(segment, 0.0f);
+      if (use_vertex_color) {
+        result->eval_segment_extended_points(segment, 0.0f, 0, &vtx._c[0], 4);
+      }
+
+      curve_segment->push_back(vtx);
+    }
+
+    // Store all the remaining points in this segment.
+    for (int i = 1; i < num_verts; ++i) {
+      float t = (float)i / (float)(num_verts - 1);
+
+      CurveVertex vtx;
+      result->eval_segment_point(segment, t, vtx._p);
+      vtx._t = result->get_segment_t(segment, t);
+      if (use_vertex_color) {
+        result->eval_segment_extended_points(segment, t, 0, &vtx._c[0], 4);
+      }
+
+      curve_segment->push_back(vtx);
+
+      last_point = vtx._p;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RopeNode::compute_thread_vertices
+//       Access: Private
+//  Description: Calculates the vertices for a RM_thread render.  This
+//               just copies the vertices more-or-less directly into
+//               the array.
+////////////////////////////////////////////////////////////////////
+void RopeNode::
+compute_thread_vertices(PTA_Vertexf &verts, PTA_TexCoordf &uvs, 
+                        PTA_Colorf &colors,
+                        const RopeNode::CurveSegments &curve_segments) const {
+  UVMode uv_mode = get_uv_mode();
+  float uv_scale = get_uv_scale();
+  bool u_dominant = get_uv_direction();
+  bool use_vertex_color = get_use_vertex_color();
+
+  float dist = 0.0f;
+  CurveSegments::const_iterator si;
+  for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
+    const CurveSegment &segment = (*si);
+    for (size_t j = 0; j < segment.size(); ++j) {
+      verts.push_back(segment[j]._p);
+
+      if (use_vertex_color) {
+        colors.push_back(segment[j]._c);
+      }
+
+      float uv_t = compute_uv_t(dist, uv_mode, uv_scale, segment, j);
+
+      if (uv_mode != UV_none) {
+        if (u_dominant) {
+          uvs.push_back(TexCoordf(uv_t, 0.0f));
+        } else {
+          uvs.push_back(TexCoordf(0.0f, uv_t));
+        }
+      }
+    }
+  }
+
+  if (!use_vertex_color) {
+    colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RopeNode::compute_billboard_vertices
+//       Access: Private
+//  Description: Calculates the vertices for a RM_billboard render.  This
+//               puts a pair of vertices on either side of each
+//               computed point in curve_segments.
+////////////////////////////////////////////////////////////////////
+void RopeNode::
+compute_billboard_vertices(PTA_Vertexf &verts, PTA_TexCoordf &uvs, 
+                           PTA_Colorf &colors, const LVector3f &camera_vec,
+                           const RopeNode::CurveSegments &curve_segments,
+                           NurbsCurveResult *result) const {
+  float thickness = get_thickness();
+  float radius = thickness * 0.5f;
+  UVMode uv_mode = get_uv_mode();
+  float uv_scale = get_uv_scale();
+  bool u_dominant = get_uv_direction();
+  bool use_vertex_color = get_use_vertex_color();
+
+  float dist = 0.0f;
+  CurveSegments::const_iterator si;
+  for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
+    const CurveSegment &segment = (*si);
+    for (size_t j = 0; j < segment.size(); ++j) {
+      LVector3f tangent;
+      compute_tangent(tangent, segment, j, result);
+
+      LVector3f normal = cross(tangent, camera_vec);
+      normal.normalize();
+
+      verts.push_back(segment[j]._p + normal * radius);
+      verts.push_back(segment[j]._p - normal * radius);
+
+      if (use_vertex_color) {
+        colors.push_back(segment[j]._c);
+        colors.push_back(segment[j]._c);
+      }
+
+      float uv_t = compute_uv_t(dist, uv_mode, uv_scale, segment, j);
+
+      if (uv_mode != UV_none) {
+        if (u_dominant) {
+          uvs.push_back(TexCoordf(uv_t, 1.0f));
+          uvs.push_back(TexCoordf(uv_t, 0.0f));
+        } else {
+          uvs.push_back(TexCoordf(1.0f, uv_t));
+          uvs.push_back(TexCoordf(0.0f, uv_t));
+        }
+      }
+    }
+  }
+
+  if (!use_vertex_color) {
+    colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RopeNode::compute_tube_vertices
+//       Access: Private
+//  Description: Calculates the vertices for a RM_tube render.  This
+//               puts a ring of vertices around each computed point in
+//               curve_segments.
+////////////////////////////////////////////////////////////////////
+void RopeNode::
+compute_tube_vertices(PTA_Vertexf &verts, PTA_Normalf &normals,
+                      PTA_TexCoordf &uvs, PTA_Colorf &colors,
+                      int &num_verts_per_slice,
+                      const RopeNode::CurveSegments &curve_segments,
+                      NurbsCurveResult *result) const {
+  int num_slices = get_num_slices();
+  num_verts_per_slice = num_slices;
+
+  float thickness = get_thickness();
+  float radius = thickness * 0.5f;
+  UVMode uv_mode = get_uv_mode();
+  float uv_scale = get_uv_scale();
+  bool u_dominant = get_uv_direction();
+  NormalMode normal_mode = get_normal_mode();
+  bool use_vertex_color = get_use_vertex_color();
+
+  // If we are generating UV's, we will need to duplicate the vertices
+  // along the seam so that the UV's go through the whole range of
+  // 0..1 instead of reflecting in the last polygon before the seam.
+  if (uv_mode != UV_none) {
+    ++num_verts_per_slice;
+  }
+
+  LVector3f up = get_tube_up();
+
+  float dist = 0.0f;
+  CurveSegments::const_iterator si;
+  for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
+    const CurveSegment &segment = (*si);
+    for (size_t j = 0; j < segment.size(); ++j) {
+      LVector3f tangent;
+      compute_tangent(tangent, segment, j, result);
+
+      LVector3f normal = cross(tangent, up);
+      normal.normalize();
+      up = cross(normal, tangent);
+
+      LMatrix3f rotate = LMatrix3f::rotate_mat(360.0f / (float)num_slices,
+                                               tangent);
+
+      float uv_t = compute_uv_t(dist, uv_mode, uv_scale, segment, j);
+
+      for (int s = 0; s < num_verts_per_slice; ++s) {
+        verts.push_back(segment[j]._p + normal * radius);
+
+        if (normal_mode == NM_vertex) {
+          normals.push_back(normal);
+        }
+
+        if (use_vertex_color) {
+          colors.push_back(segment[j]._c);
+        }
+
+        normal = normal * rotate;
+
+        if (uv_mode != UV_none) {
+          float uv_s = (float)s / (float)num_slices;
+          if (u_dominant) {
+            uvs.push_back(TexCoordf(uv_t, uv_s));
+          } else {
+            uvs.push_back(TexCoordf(uv_s, uv_t));
+          }
+        }
+      }
+    }
+  }
+
+  if (!use_vertex_color) {
+    colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RopeNode::compute_tangent
+//       Access: Private, Static
+//  Description: Computes the tangent to the curve at the indicated
+//               point in the segment.
+////////////////////////////////////////////////////////////////////
+void RopeNode::
+compute_tangent(LVector3f &tangent, const RopeNode::CurveSegment &segment, 
+                size_t j, NurbsCurveResult *result) {
+  // First, try to evaluate the tangent at the curve.  This gives
+  // better results at the ends at the endpoints where the tangent
+  // does not go to zero.
+
+  /*
+    Actually, on second thought this looks terrible.
+
+  if (result->eval_tangent(segment[j]._t, tangent)) {
+    if (!tangent.almost_equal(LVector3f::zero())) {
+      return;
+    }
+  }
+  */
+
+  // If that failed (or produced a zero tangent), then derive the
+  // tangent from the neighboring points instead.
+  if (j == 0) {
+    tangent = segment[j + 1]._p - segment[j]._p;
+  } else if (j == segment.size() - 1) {
+    tangent = segment[j]._p - segment[j - 1]._p;
+  } else {
+    tangent = segment[j + 1]._p - segment[j - 1]._p;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RopeNode::compute_uv_t
+//       Access: Private, Static
+//  Description: Computes the texture coordinate along the curve for
+//               the indicated point in the segment.
+////////////////////////////////////////////////////////////////////
+float RopeNode::
+compute_uv_t(float &dist, const RopeNode::UVMode &uv_mode,
+             float uv_scale, const RopeNode::CurveSegment &segment,
+             size_t j) {
+  switch (uv_mode) {
+  case UV_none:
+    return 0.0f;
+    
+  case UV_parametric:
+    return segment[j]._t * uv_scale;
+    
+  case UV_distance:
+    if (j != 0) {
+      LVector3f vec = segment[j]._p - segment[j - 1]._p;
+      dist += vec.length();
+    }
+    return dist * uv_scale;
+    
+  case UV_distance2:
+    if (j != 0) {
+      LVector3f vec = segment[j]._p - segment[j - 1]._p;
+      dist += vec.length_squared();
+    }
+    return dist * uv_scale;
+  }
+
+  return 0.0f;
+}
+  
 ////////////////////////////////////////////////////////////////////
 //     Function: RopeNode::register_with_read_factory
 //       Access: Public, Static
