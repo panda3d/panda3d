@@ -21,7 +21,8 @@
     audio.h audio_manager.h audio_music.h audio_pool.I audio_pool.h \
     audio_sample.I audio_sample.h audio_trait.h audio_mikmod_traits.h \
     audio_win_traits.I audio_win_traits.h audio_null_traits.I \
-    audio_null_traits.h audio_linux_traits.I audio_linux_traits.h
+    audio_null_traits.h audio_linux_traits.I audio_linux_traits.h \
+    audio_music.I config_audio.h
 
   #define IGATESCAN audio.h
 
