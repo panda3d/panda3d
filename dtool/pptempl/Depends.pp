@@ -86,7 +86,11 @@
     // Add the bison- and flex-generated .cxx files to the compile
     // list, too.  These never get added to composite files, though,
     // mainly because they tend to be very large files themselves.
-    #set cxx_sources $[cxx_sources] $[patsubst %.yxx,%.cxx,$[yxx_sources]] $[patsubst %.lxx,%.cxx,$[lxx_sources]]
+    #foreach source_file $[yxx_sources] $[lxx_sources]
+      #define generated_file $[patsubst %.yxx %.lxx,%.cxx,$[source_file]]
+      #define $[generated_file]_sources $[source_file]
+      #set cxx_sources $[cxx_sources] $[generated_file]
+    #end source_file
     #define compile_sources $[c_sources] $[cxx_sources] $[yxx_sources] $[lxx_sources]
   #end metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
 

@@ -89,6 +89,8 @@
   // static or dynamic targets, let's eliminate so_sources and just
   // use st_sources for simplicity.
   #define st_sources $[compile_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]
+  #define yxx_st_sources $[yxx_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]
+  #define lxx_st_sources $[lxx_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]
   #define dep_sources_1 $[get_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]
   
   // These are the source files that our dependency cache file will
@@ -135,7 +137,7 @@
 
 // This is the set of files we might copy into *.prebuilt, if we have
 // bison and flex (or copy from *.prebuilt if we don't have them).
-#define bison_prebuilt $[patsubst %.yxx,%.h,$[yxx_sources]] $[patsubst %.yxx,%.cxx,$[yxx_sources]] $[patsubst %.lxx,%.cxx,$[lxx_sources]]
+#define bison_prebuilt $[patsubst %.yxx,%.h,$[yxx_st_sources]] $[patsubst %.yxx,%.cxx,$[yxx_st_sources]] $[patsubst %.lxx,%.cxx,$[lxx_st_sources]]
 
 // Pre-compiled headers are one way to speed the compilation of many
 // C++ source files that include similar headers, but it turns out a
@@ -198,8 +200,8 @@ $[TAB] rm -f *.pyc *.pyo // Also scrub out old generated Python code.
 // it also cleans up the bison and flex output, as well as the
 // dependency cache file.
 cleanall : clean
-#if $[yxx_sources] $[lxx_sources]
-$[TAB] rm -f $[patsubst %.yxx %.lxx,%.cxx,$[yxx_sources] $[lxx_sources]]
+#if $[yxx_st_sources] $[lxx_st_sources]
+$[TAB] rm -f $[patsubst %.yxx %.lxx,%.cxx,$[yxx_st_sources] $[lxx_st_sources]]
 #endif
 #if $[ne $[DEPENDENCY_CACHE_FILENAME],]
 $[TAB] rm -f $[DEPENDENCY_CACHE_FILENAME]
@@ -269,7 +271,9 @@ $[TAB] rm -f $[sort $[installed_igate_files]]
 #if $[HAVE_BISON]
 prebuild-bison : $[patsubst %,%.prebuilt,$[bison_prebuilt]]
 clean-prebuild-bison : 
+#if $[bison_prebuilt]
 $[TAB] rm -f $[sort $[patsubst %,%.prebuilt,$[bison_prebuilt]]]
+#endif
 #endif
 
 // We need a rule for each directory we might need to make.  This
