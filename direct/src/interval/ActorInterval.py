@@ -53,8 +53,13 @@ class ActorInterval(Interval):
 	    return
         # Update animation based upon current time
         # Pose or stop anim
-        if (t >= self.getDuration()):
+        if (t >= (self.startTime + self.getDuration())):
             self.actor.stop()
+            currT = (self.actor.getFrameRate(self.animName) *
+                         (self.startTime + self.getDuration()))
+            frame = int(round(currT)) % self.numFrames
+            # Pose anim
+            self.actor.pose(self.animName, frame)
             if self.loop:
                 self.ignore(self.stopEvent)
         elif self.loop == 1:
@@ -62,9 +67,7 @@ class ActorInterval(Interval):
                 # Determine the current frame
                 currT = (self.actor.getFrameRate(self.animName) *
                          (self.startTime + t))
-                print t, currT
-                frame = int(currT) % self.numFrames
-                print frame
+                frame = int(round(currT)) % self.numFrames
                 # Pose anim
                 self.actor.pose(self.animName, frame)
                 # And start loop, restart flag says continue from current frame
@@ -74,7 +77,7 @@ class ActorInterval(Interval):
             # Determine the current frame
             currT = (self.actor.getFrameRate(self.animName) *
                      (self.startTime + t))
-            frame = int(currT) % self.numFrames
+            frame = int(round(currT)) % self.numFrames
             # Pose anim
             self.actor.pose(self.animName, frame)
             
