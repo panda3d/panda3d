@@ -16,6 +16,7 @@
 #include <throw_event.h>
 #include <eventParameter.h>
 #include <filename.h>
+#include <stdio.h>
 
 ////////////////////////////////////////////////////////////////////
 // Defines
