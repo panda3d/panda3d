@@ -751,7 +751,7 @@ class TaskManager:
         str = str + '---------------------------------------------------------------\n'
         for pri, taskList in self.pendingTaskDict.items():
             for task in taskList:
-                remainingTime = ((task.starttime + task.delayTime) - self.currentTime)
+                remainingTime = ((task.starttime) - self.currentTime)
                 if task.isRemoved():
                     taskName = '(PR)' + task.name
                 else:
