@@ -15,6 +15,7 @@
 #include "guiBehavior.h"
 #include "guiBackground.h"
 #include "guiChooser.h"
+#include "guiCollection.h"
 
 #include <dconfig.h>
 
@@ -33,6 +34,7 @@ ConfigureFn(config_gui) {
   GuiListBox::init_type();
   GuiBackground::init_type();
   GuiChooser::init_type();
+  GuiCollection::init_type();
 }
 
 float simple_text_margin_top =

@@ -20,7 +20,8 @@
     guiListBox.h guiListBox.I guiListBox.cxx \
     guiBackground.h guiBackground.I guiBackground.cxx \
     guiBehavior.h guiBehavior.I guiBehavior.cxx \
-    guiChooser.h guiChooser.I guiChooser.cxx
+    guiChooser.h guiChooser.I guiChooser.cxx \
+    guiCollection.h guiCollection.I guiCollection.cxx
 
   #define INSTALL_HEADERS \
     guiManager.h guiManager.I \
@@ -34,7 +35,8 @@
     guiListBox.h guiListBox.I \
     guiBackground.h guiBackground.I \
     guiBehavior.h guiBehavior.I \
-    guiChooser.h guiChooser.I
+    guiChooser.h guiChooser.I \
+    guiCollection.h guiCollection.I
 
   #define IGATESCAN \
     guiManager.h guiManager.I \
@@ -48,6 +50,7 @@
     guiListBox.h guiListBox.I \
     guiBackground.h guiBackground.I \
     guiBehavior.h guiBehavior.I \
-    guiChooser.h guiChooser.I
+    guiChooser.h guiChooser.I \
+    guiCollection.h guiCollection.I
 
 #end lib_target

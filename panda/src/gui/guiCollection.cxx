@@ -13,7 +13,7 @@ void GuiCollection::recompute_frame(void) {
   freeze();
 
   for (Items::iterator i=_items.begin(); i!=_items.end(); ++i)
-    (*i)->recompute_frame();
+    (*i)->recompute();
 
   thaw();
 }
@@ -52,7 +52,7 @@ int GuiCollection::thaw(void) {
 
 void GuiCollection::add_item(GuiItem* item) {
   bool found = false;
-  for (Items.iterator i=_items.begin(); i!=_items.end(); ++i)
+  for (Items::iterator i=_items.begin(); i!=_items.end(); ++i)
     if ((*i) == item)
       found = true;
   if (!found)
@@ -61,10 +61,61 @@ void GuiCollection::add_item(GuiItem* item) {
 }
 
 void GuiCollection::remove_item(GuiItem* item) {
-  Items::iterator i = _items.find(item);
+  Items::iterator i;
+  for (i=_items.begin(); i!=_items.end(); ++i)
+    if ((*i) == item)
+      break;
   if (i == _items.end())
     return;
   item->unmanage();
   _items.erase(i);
   this->recompute();
+}
+
+void GuiCollection::manage(GuiManager* mgr, EventHandler& eh) {
+  if (!_added_hooks)
+    _added_hooks = true;
+  if (_mgr == (GuiManager*)0L) {
+    for (Items::iterator i=_items.begin(); i!=_items.end(); ++i)
+      (*i)->manage(mgr, eh);
+    GuiItem::manage(mgr, eh);
+  } else
+    gui_cat->warning() << "tried to manage collection (0x" << (void*)this
+		       << ") that is already managed" << endl;
+}
+
+void GuiCollection::unmanage(void) {
+  for (Items::iterator i=_items.begin(); i!=_items.end(); ++i)
+    (*i)->unmanage();
+  GuiItem::unmanage();
+}
+
+void GuiCollection::set_scale(float f) {
+  for (Items::iterator i=_items.begin(); i!=_items.end(); ++i)
+    (*i)->set_scale(f * (*i)->get_scale());
+  GuiItem::set_scale(f);
+  this->recompute_frame();
+}
+
+void GuiCollection::set_pos(const LVector3f& p) {
+  LVector3f delta = p - this->get_pos();
+  for (Items::iterator i=_items.begin(); i!=_items.end(); ++i)
+    (*i)->set_pos((*i)->get_pos() + delta);
+  GuiItem::set_pos(p);
+  this->recompute_frame();
+}
+
+void GuiCollection::set_priority(GuiItem* it, const GuiItem::Priority p) {
+  for (Items::iterator i=_items.begin(); i!=_items.end(); ++i)
+    (*i)->set_priority(it, p);
+}
+
+void GuiCollection::output(ostream& os) const {
+  GuiItem::output(os);
+  os << "  Collection data:" << endl;
+  Items::const_iterator i;
+  for (i=_items.begin(); i!=_items.end(); ++i)
+    os << "    item - 0x" << (void*)(*i) << endl;
+  for (i=_items.begin(); i!=_items.end(); ++i)
+    os << *(*i);
 }
