@@ -163,7 +163,7 @@ class MopathRecorder(AppShell, PandaObject):
             self.accept(event, method)
 
     def createInterface(self):
-        interior = self.interior()
+	interior = self.interior()
         # FILE MENU
         # Get a handle on the file menu so commands can be inserted
         # before quit item

@@ -4,6 +4,7 @@ src/actor
 src/directtools
 src/directdevices
 src/directnotify
+src/directutil
 src/distributed
 src/ffi
 src/fsm
