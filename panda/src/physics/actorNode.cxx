@@ -92,18 +92,13 @@ transform_changed() {
   // get the transform
   CPT(TransformState) transform = get_transform();
 
-  // extract the position
-  LPoint3f pos;
-  transform->get_mat().get_row3(pos,3);
-
   // extract the orientation
   if (_mass_center->get_oriented() == true) {
-    LOrientationf orientation(transform->get_mat());
-    _mass_center->set_orientation(orientation);
+    _mass_center->set_orientation(transform->get_quat());
   }
 
   // apply
-  _mass_center->set_position(pos);
+  _mass_center->set_position(transform->get_pos());
 }
 
 ////////////////////////////////////////////////////////////////////
