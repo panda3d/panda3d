@@ -12,7 +12,7 @@ class EntityTypeRegistry:
     def __init__(self, entityTypeModule=EntityTypes):
         """pass in a module that contains EntityType classes"""
         # maps entity typename to type class
-        self.name2typeClass = {}
+        self.typeName2class = {}
         
         # get a list of the entity type classes in the type module
         classes = []
@@ -28,17 +28,17 @@ class EntityTypeRegistry:
         # attribute descriptor lists for each concrete Entity type class
         for c in classes:
             # if this is a concrete Entity type, add it to the dict
-            if c.__dict__.has_key('name'):
-                if self.name2typeClass.has_key(c.name):
+            if c.__dict__.has_key('type'):
+                if self.typeName2class.has_key(c.type):
                     EntityTypeRegistry.notify.debug(
                         "replacing %s with %s for type '%s'" %
-                        (self.name2typeClass[c.name], c, c.name))
-                self.name2typeClass[c.name] = c
+                        (self.typeName2class[c.type], c, c.type))
+                self.typeName2class[c.type] = c
 
             self.privCompileAttribDescs(c)
 
     def getAttributeDescriptors(self, entityTypeName):
-        return self.name2typeClass[entityTypeName]._attribDescs
+        return self.typeName2class[entityTypeName]._attribDescs
 
     def privCompileAttribDescs(self, entTypeClass):
         # has someone already compiled the info?
@@ -83,7 +83,7 @@ class EntityTypeRegistry:
         attribDescs = []
         if c.__dict__.has_key('attribs'):
             for attrib in c.attribs:
-                desc = AttribDesc.AttribDesc(attrib)
+                desc = AttribDesc.AttribDesc(*attrib)
                 
                 # if we picked up an attribute with the same name from a base
                 # class, this overrides it
