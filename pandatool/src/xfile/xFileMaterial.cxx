@@ -263,7 +263,7 @@ read_material_data(const Datagram &raw_data) {
   _has_material = true;
 
   if (di.get_remaining_size() != 0) {
-    cerr << "Ignoring " << di.get_remaining_size()
+    nout << "Ignoring " << di.get_remaining_size()
          << " trailing MeshMaterial.\n";
   }
 
@@ -287,7 +287,7 @@ read_texture_data(const Datagram &raw_data) {
   _has_texture = true;
 
   if (di.get_remaining_size() != 0) {
-    cerr << "Ignoring " << di.get_remaining_size()
+    nout << "Ignoring " << di.get_remaining_size()
          << " trailing MeshMaterial.\n";
   }
   return true;

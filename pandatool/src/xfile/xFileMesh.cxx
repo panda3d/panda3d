@@ -275,7 +275,7 @@ create_polygons(EggGroupNode *egg_parent, XFileToEggConverter *converter) {
       int vertex_index = (*vi)._vertex_index;
       int normal_index = (*vi)._normal_index;
       if (vertex_index < 0 || vertex_index >= (int)_vertices.size()) {
-        cerr << "Vertex index out of range in Mesh.\n";
+        nout << "Vertex index out of range in Mesh.\n";
         return false;
       }
       XFileVertex *vertex = _vertices[vertex_index];
@@ -556,7 +556,7 @@ read_mesh_data(const Datagram &raw_data) {
   }
 
   if (di.get_remaining_size() != 0) {
-    cerr << "Ignoring " << di.get_remaining_size() << " trailing Mesh.\n";
+    nout << "Ignoring " << di.get_remaining_size() << " trailing Mesh.\n";
   }
 
   return true;
@@ -586,7 +586,7 @@ read_normal_data(const Datagram &raw_data) {
   int num_faces = di.get_int32();
 
   if (num_faces != _faces.size()) {
-    cerr << "Incorrect number of faces in MeshNormals.\n";
+    nout << "Incorrect number of faces in MeshNormals.\n";
     return false;
   }
 
@@ -594,7 +594,7 @@ read_normal_data(const Datagram &raw_data) {
     XFileFace *face = _faces[i];
     int num_vertices = di.get_int32();
     if (num_vertices != face->_vertices.size()) {
-      cerr << "Incorrect number of vertices for face in MeshNormals.\n";
+      nout << "Incorrect number of vertices for face in MeshNormals.\n";
       return false;
     }
     for (int j = 0; j < num_vertices; j++) {
@@ -603,7 +603,7 @@ read_normal_data(const Datagram &raw_data) {
   }
 
   if (di.get_remaining_size() != 0) {
-    cerr << "Ignoring " << di.get_remaining_size()
+    nout << "Ignoring " << di.get_remaining_size()
          << " trailing MeshNormals.\n";
   }
 
@@ -625,7 +625,7 @@ read_color_data(const Datagram &raw_data) {
   for (i = 0; i < num_colors; i++) {
     unsigned int vertex_index = di.get_int32();
     if (vertex_index < 0 || vertex_index >= _vertices.size()) {
-      cerr << "Vertex index out of range in MeshVertexColors.\n";
+      nout << "Vertex index out of range in MeshVertexColors.\n";
       return false;
     }
     XFileVertex *vertex = _vertices[vertex_index];
@@ -637,7 +637,7 @@ read_color_data(const Datagram &raw_data) {
   }
 
   if (di.get_remaining_size() != 0) {
-    cerr << "Ignoring " << di.get_remaining_size()
+    nout << "Ignoring " << di.get_remaining_size()
          << " trailing MeshVertexColors.\n";
   }
 
@@ -656,7 +656,7 @@ read_uv_data(const Datagram &raw_data) {
 
   int num_vertices = di.get_int32();
   if (num_vertices != _vertices.size()) {
-    cerr << "Wrong number of vertices in MeshTextureCoords.\n";
+    nout << "Wrong number of vertices in MeshTextureCoords.\n";
     return false;
   }
 
@@ -669,7 +669,7 @@ read_uv_data(const Datagram &raw_data) {
   }
 
   if (di.get_remaining_size() != 0) {
-    cerr << "Ignoring " << di.get_remaining_size()
+    nout << "Ignoring " << di.get_remaining_size()
          << " trailing MeshTextureCoords.\n";
   }
 
@@ -690,7 +690,7 @@ read_material_list_data(const Datagram &raw_data) {
   unsigned int num_faces = di.get_int32();
 
   if (num_faces > _faces.size()) {
-    cerr << "Too many faces in MaterialList.\n";
+    nout << "Too many faces in MaterialList.\n";
     return false;
   }
 
@@ -712,7 +712,7 @@ read_material_list_data(const Datagram &raw_data) {
   }
 
   if (di.get_remaining_size() != 0) {
-    cerr << "Ignoring " << di.get_remaining_size()
+    nout << "Ignoring " << di.get_remaining_size()
          << " trailing MeshMaterialList.\n";
   }
 

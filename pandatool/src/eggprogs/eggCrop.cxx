@@ -74,7 +74,7 @@ post_command_line() {
 void EggCrop::
 run() {
   int num_removed = strip_prims(&_data);
-  cerr << "Removed " << num_removed << " primitives.\n";
+  nout << "Removed " << num_removed << " primitives.\n";
 
   _data.remove_unused_vertices();
   write_egg_file();

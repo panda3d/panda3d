@@ -263,14 +263,6 @@ extract_ancillary(FltRecordReader &reader) {
   }
   _transform_steps.push_back(DCAST(FltTransformRecord, step));
 
-  /*
-  cerr << "Added transform step: " << step->get_type() << "\n";
-  cerr << "Net matrix is:\n";
-  _transform.write(cerr, 2);
-  cerr << "Step is:\n";
-  step->get_matrix().write(cerr, 2);
-  */
-
   return true;
 }
 
