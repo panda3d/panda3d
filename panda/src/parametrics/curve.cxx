@@ -711,6 +711,12 @@ get_2ndtangent(double t, LVecBase3f &tangent2) const {
 bool PiecewiseCurve::
 adjust_point(double t,
              float px, float py, float pz) {
+  if (parametrics_cat.is_debug()) {
+    parametrics_cat.debug()
+      << "Adjusting point at " << t << " to " << px << " " << py << " "
+      << pz << "\n";
+  }
+      
   const ParametricCurve *curve;
   bool result = find_curve(curve, t);
 
@@ -1494,7 +1500,14 @@ compute_seg_col(int c,
                 const LMatrix4f &G,
                 const LMatrix4f &GB,
                 LMatrix4f &T, LMatrix4f &P) {
-  int keep_orig = (rtype & RT_KEEP_ORIG);
+  bool keep_orig = ((rtype & RT_KEEP_ORIG) != 0);
+
+  if (parametrics_cat.is_debug()) {
+    parametrics_cat.debug()
+      << "Computing col " << c << " type " << (rtype & RT_BASE_TYPE)
+      << " at " << t << " keep_orig = " << keep_orig
+      << " v = " << v << "\n";
+  }
 
   switch (rtype & RT_BASE_TYPE) {
     // RT_point defines the point on the curve at t.  This is the vector
@@ -1503,7 +1516,10 @@ compute_seg_col(int c,
     T.set_col(c, LVecBase4f(t*t*t, t*t, t, 1.0));
     if (keep_orig) {
       LVecBase4f ov = GB * LVecBase4f(t*t*t, t*t, t, 1.0);
-
+      if (parametrics_cat.is_debug()) {
+	parametrics_cat.debug()
+	  << "orig point = " << ov << "\n";
+      }
       P.set_col(c, ov);
     } else {
       P.set_col(c, v);
@@ -1516,6 +1532,10 @@ compute_seg_col(int c,
     T.set_col(c, LVecBase4f(3.0*t*t, 2.0*t, 1.0, 0.0));
     if (keep_orig) {
       LVecBase4f ov = GB * LVecBase4f(3.0*t*t, 2.0*t, 1.0, 0.0);
+      if (parametrics_cat.is_debug()) {
+	parametrics_cat.debug()
+	  << "orig tangent = " << ov << "\n";
+      }
       P.set_col(c, ov);
     } else {
       P.set_col(c, v);
@@ -1527,6 +1547,10 @@ compute_seg_col(int c,
   case RT_CV:
     T.set_col(c, Bi.get_col(c));
     if (keep_orig) {
+      if (parametrics_cat.is_debug()) {
+	parametrics_cat.debug()
+	  << "orig CV = " << G.get_col(c) << "\n";
+      }
       P.set_col(c, G.get_col(c));
     } else {
       P.set_col(c, v);
