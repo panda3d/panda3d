@@ -309,8 +309,8 @@ update_trefs() {
 	}
 	
 	// Set the texture attributes to be uniform across all palettes.
-	eggtex->set_minfilter(EggTexture::FT_mipmap_trilinear);
-	eggtex->set_magfilter(EggTexture::FT_bilinear);
+	eggtex->set_minfilter(EggTexture::FT_linear_mipmap_linear);
+	eggtex->set_magfilter(EggTexture::FT_linear);
 	eggtex->set_format(EggTexture::F_rgba8);
 	eggtex->set_wrap_mode(EggTexture::WM_clamp);
 	eggtex->set_wrap_u(EggTexture::WM_clamp);
