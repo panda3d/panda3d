@@ -240,7 +240,9 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
                    drawOrder = None,
                    font = None,
                    pos = (0, 0),
-                   geomRect = None):
+                   geomRect = None,
+                   supportInactive = 0,
+                   inactive = 0):
         """makeButton(self, ...)
 
         Creates a button on the panel.  The return value is the button
@@ -274,7 +276,9 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
                                drawOrder = drawOrder,
                                font = font,
                                pos = pos,
-                               geomRect = geomRect)
+                               geomRect = geomRect,
+                               supportInactive = supportInactive,
+                               inactive = inactive)
 
         self.panelButtons.append(button)
         

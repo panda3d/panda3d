@@ -16,15 +16,21 @@ class Button(DirectObject):
                  pos = (0, 0),
                  geomRect = None,
                  supportInactive = 0,
+                 inactive = 0,
                  upStyle = Label.ButtonUp,
                  litStyle = Label.ButtonLit,
                  downStyle = Label.ButtonDown,
                  inactiveStyle = Label.ButtonInactive):
         self.name = name
         self.width = width
+        
         # if no label given, use the button name
         if (label == None):
             label = self.name
+
+        self.inactive = inactive
+        if inactive:
+            supportInactive = 1
 
         # check to see if this is an actual guiLabel or just text
         if (type(label) == type('')):
@@ -125,6 +131,15 @@ class Button(DirectObject):
         self.lDown.setWidth(width)
         self.lInactive.setWidth(width)
 
+    def setInactive(self, inactive):
+        self.inactive = inactive
+        if self.managed:
+            self.button.exit()
+            if self.inactive:
+                self.button.inactive()
+            else:
+                self.button.up()
+
     def manage(self, nodepath = aspect2d):
         if nodepath:
             self.button.manage(guiMgr, base.eventMgr.eventHandler,
@@ -132,6 +147,10 @@ class Button(DirectObject):
         else:
             self.button.manage(guiMgr, base.eventMgr.eventHandler)
         self.managed = 1
+
+        if self.inactive:
+            self.button.exit()
+            self.button.inactive()
 
     def unmanage(self):
         self.button.unmanage()

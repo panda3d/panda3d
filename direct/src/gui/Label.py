@@ -92,7 +92,7 @@ def textLabelAndText(string, style,
     elif style == ButtonInactive:
         # When the button is inactive, it's gray on gray.
         text.setTextColor(0.4, 0.4, 0.4, 1.0)
-        text.setCardColor(0.6, 0.6, 0.6, 1.0)
+        text.setCardColor(0.9, 0.9, 0.9, 1.0)
         
     elif style == Sign:
         # For a sign, we want red text with no background card.
