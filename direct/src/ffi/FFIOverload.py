@@ -136,29 +136,33 @@ def inheritsFrom(type1, type2):
         return 0
 
 def getInheritanceLevel(type, checkNested = 1):
-    #    if (len(type.parentTypes) == 0):
-    #        return 0
-    ##if type.isNested:
-    ##    level = 1+getInheritanceLevel(type.outerType, 0)
-    ##else:
-    ##    level = 0
-    level = 0
+    # If this is a nested type, return the inheritance level of the outer type.
     if type.isNested:
-        offset = getInheritanceLevel(type.outerType, 0)
+        # Check the level of your outer class
+        # pass the checkNested flag as 0 to prevent an infinite loop
+        # between the parent and child
+        level = getInheritanceLevel(type.outerType, 0)
     else:
-        offset = 0
+        level = 0
+
     for parentType in type.parentTypes:
+        # Add 1 because you are one level higher than your parent
         level = max(level, 1+getInheritanceLevel(parentType))
+
     if checkNested:
         for nestedType in type.nestedTypes:
-            level = max(level, 1+getInheritanceLevel(nestedType))
-    return level + offset
+            # Do not add 1 to your nested types
+            level = max(level, getInheritanceLevel(nestedType))
+
+    return level
 
 def inheritanceLevelSort(type1, type2):
     level1 = getInheritanceLevel(type1)
     level2 = getInheritanceLevel(type2)
     if (level1 == level2):
-        return 0
+        # If they are equal in the inheritance,
+        # sort them alphabetically by their type name
+        return cmp(type1.foreignTypeName, type2.foreignTypeName)
     elif (level1 < level2):
         return -1
     elif (level1 > level2):
