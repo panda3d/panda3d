@@ -153,9 +153,8 @@ ChanConfig make_graphics_window(GraphicsPipe *pipe,
   WindowCallback *wcb =
     new WindowCallback(pipe, render, &initial_state);
 
-  // Set draw and idle callbacks
+  // Set draw callback.  Currently there is no reason to use the idle callback.
   main_win->set_draw_callback(wcb);
-  main_win->set_idle_callback(wcb);
 
   return chan_config;
 }
