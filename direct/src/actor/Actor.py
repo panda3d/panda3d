@@ -543,6 +543,28 @@ class Actor(PandaObject, NodePath):
         # we must have found none, or gotten an error
         return None
 
+    def getCurrentFrame(self, animName=None, partName=None):
+        """getCurrentAnim(self, string=None)
+        Return the anim current playing on the actor. If part not
+        specified return current anim of first part in dictionary.
+        NOTE: only returns info for the first LOD"""
+        if animName == None:
+            animName = self.getCurrentAnim(partName)
+
+        lodName = self.__animControlDict.keys()[0]
+        if (partName==None):
+            partName = self.__animControlDict[lodName].keys()[0]
+
+        # check the part name
+        if (self.__animControlDict[lodName].has_key(partName)):
+            animControl = self.getAnimControl(animName, partName, lodName)
+            return animControl.getFrame()
+        else:
+            Actor.notify.warning("no part named %s" % (partName))
+
+        # we must have found none, or gotten an error
+        return None
+
 
     # arranging
 
