@@ -1787,7 +1787,11 @@ define_atomic_type(InterrogateType &itype, CPPSimpleType *cpptype) {
     break;
 
   case CPPSimpleType::T_int:
-    itype._atomic_token = AT_int;
+    if ((cpptype->_flags & CPPSimpleType::F_longlong) != 0) {
+      itype._atomic_token = AT_longlong;
+    } else {
+      itype._atomic_token = AT_int;
+    }
     break;
 
   case CPPSimpleType::T_float:

@@ -41,11 +41,16 @@ class FunctionSpecification:
                 typeName = FFIOverload.getTypeName(methodClass, typeDesc)
 
                 # Special case:
-                # If it is looking for a float, accept an int as well
+                # If it is looking for a float or a long, accept an int as well
                 # C++ will cast it properly, and it is much more convenient
                 if (typeName == 'types.FloatType'):
                     indent(file, nesting, 'assert((isinstance(' +
                            methodArgSpec.name + ', types.FloatType) or isinstance(' +
+                           methodArgSpec.name + ', types.IntType)))\n')
+
+                elif (typeName == 'types.LongType'):
+                    indent(file, nesting, 'assert((isinstance(' +
+                           methodArgSpec.name + ', types.LongType) or isinstance(' +
                            methodArgSpec.name + ', types.IntType)))\n')
 
                 elif typeDesc.__class__ != FFITypes.PyObjectTypeDescriptor:

@@ -242,6 +242,9 @@ write_function_instance(ostream &out, InterfaceMaker::Function *func,
   string parameter_list;
   string container;
   vector_string pexprs;
+  string extra_convert;
+  string extra_param_check;
+  string extra_cleanup;
 
   // Make one pass through the parameter list.  We will output a
   // one-line temporary variable definition for each parameter, while
@@ -282,6 +285,24 @@ write_function_instance(ostream &out, InterfaceMaker::Function *func,
       format_specifiers += "O";
       parameter_list += ", &" + param_name;
       pexpr_string = "(PyObject_IsTrue(" + param_name + ")!=0)";
+
+    } else if (TypeManager::is_unsigned_longlong(type)) {
+      out << "PyObject *" << param_name;
+      format_specifiers += "O";
+      parameter_list += ", &" + param_name;
+      extra_convert += " PyObject *" + param_name + "_long = PyNumber_Long(" + param_name + ");";
+      extra_param_check += "|| (" + param_name + "_long == NULL)";
+      pexpr_string = "PyLong_AsUnsignedLongLong(" + param_name + "_long)";
+      extra_cleanup += " Py_XDECREF(" + param_name + "_long);";
+
+    } else if (TypeManager::is_longlong(type)) {
+      out << "PyObject *" << param_name;
+      format_specifiers += "O";
+      parameter_list += ", &" + param_name;
+      extra_convert += " PyObject *" + param_name + "_long = PyNumber_Long(" + param_name + ");";
+      extra_param_check += "|| (" + param_name + "_long == NULL)";
+      pexpr_string = "PyLong_AsLongLong(" + param_name + "_long)";
+      extra_cleanup += " Py_XDECREF(" + param_name + "_long);";
 
     } else if (TypeManager::is_integer(type)) {
       out << "int " << param_name;
@@ -326,17 +347,30 @@ write_function_instance(ostream &out, InterfaceMaker::Function *func,
 
   out << "  if (PyArg_ParseTuple(args, \"" << format_specifiers
       << "\"" << parameter_list << ")) {\n";
+
+  if (!extra_convert.empty()) {
+    out << "   " << extra_convert << "\n";
+  }
+
+  if (!extra_param_check.empty()) {
+    out << "    if (" << extra_param_check.substr(3) << ") {\n";
+    if (!extra_cleanup.empty()) {
+      out << "     " << extra_cleanup << "\n";
+    }
+    out << "      PyErr_SetString(PyExc_TypeError, \"Invalid parameters.\");\n"
+        << "      return (PyObject *)NULL;\n"
+        << "    }\n";
+  }
   
   if (track_interpreter) {
     out << "    in_interpreter = 0;\n";
   }
-  
+
   if (!remap->_void_return && 
       remap->_return_type->new_type_is_atomic_string()) {
     // Treat strings as a special case.  We don't want to format the
     // return expression.
     string return_expr = remap->call_function(out, 4, false, container, pexprs);
-    
     CPPType *type = remap->_return_type->get_orig_type();
     out << "    ";
     type->output_instance(out, "return_value", &parser);
@@ -344,6 +378,9 @@ write_function_instance(ostream &out, InterfaceMaker::Function *func,
     
     if (track_interpreter) {
       out << "    in_interpreter = 1;\n";
+    }
+    if (!extra_cleanup.empty()) {
+      out << "   " << extra_cleanup << "\n";
     }
     
     return_expr = manage_return_value(out, 4, remap, "return_value");
@@ -356,6 +393,9 @@ write_function_instance(ostream &out, InterfaceMaker::Function *func,
       if (track_interpreter) {
         out << "    in_interpreter = 1;\n";
       }
+      if (!extra_cleanup.empty()) {
+        out << "   " << extra_cleanup << "\n";
+      }
       test_assert(out, 4);
       out << "    return Py_BuildValue(\"\");\n";
       
@@ -366,6 +406,9 @@ write_function_instance(ostream &out, InterfaceMaker::Function *func,
       out << " = " << return_expr << ";\n";
       if (track_interpreter) {
         out << "    in_interpreter = 1;\n";
+      }
+      if (!extra_cleanup.empty()) {
+        out << "   " << extra_cleanup << "\n";
       }
       
       return_expr = manage_return_value(out, 4, remap, "return_value");
@@ -402,6 +445,14 @@ pack_return_value(ostream &out, int indent_level,
         << "return PyString_FromStringAndSize("
         << return_expr << ".data(), " << return_expr << ".length());\n";
     }
+
+  } else if (TypeManager::is_unsigned_longlong(type)) {
+    indent(out, indent_level)
+      << "return PyLong_FromUnsignedLongLong(" << return_expr << ");\n";
+
+  } else if (TypeManager::is_longlong(type)) {
+    indent(out, indent_level)
+      << "return PyLong_FromLongLong(" << return_expr << ");\n";
 
   } else if (TypeManager::is_integer(type)) {
     indent(out, indent_level)

@@ -85,7 +85,9 @@ enum AtomicToken {
   // convention wrappers, atomic string means (const char *); for
   // other calling convention wrappers, atomic string means whatever
   // the native string representation is.
-  AT_string = 7
+  AT_string = 7,
+
+  AT_longlong = 8
 };
 
 EXPCL_DTOOLCONFIG void interrogate_add_search_directory(const char *dirname);

@@ -20,6 +20,7 @@ AT_bool = 4
 AT_char = 5
 AT_void = 6
 AT_string = 7
+AT_longlong = 8
 
 def cullOverloadedMethods(fullMethodDict):
     """
@@ -64,6 +65,9 @@ def getTypeName(classTypeDesc, typeDesc):
         elif ((typeDesc.atomicType == AT_float) or
             (typeDesc.atomicType == AT_double)):
             return 'types.FloatType'
+
+        elif ((typeDesc.atomicType == AT_longlong)):
+            return 'types.LongType'
 
         # Strings are treated as Python strings
         elif ((typeDesc.atomicType == AT_string)):
@@ -416,8 +420,9 @@ class FFIMethodArgumentTree:
                     # Otherwise, we'll check the particular type of
                     # the object.
                     condition = '(isinstance(_args[' + `level` + '], ' + typeName + '))'
-                    # If it is looking for a float, make it accept an integer too
-                    if (typeName == 'types.FloatType'):
+                    # If it is looking for a float or a long, make it
+                    # accept an integer too
+                    if (typeName == 'types.FloatType' or typeName == 'types.LongType'):
                         condition += (' or (isinstance(_args[' + `level` + '], '
                                       + 'types.IntType'
                                       + '))')

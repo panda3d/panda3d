@@ -489,6 +489,7 @@ is_bool(CPPType *type) {
           simple_type->_type == CPPSimpleType::T_bool;
       }
     }
+    break;
 
   default:
     break;
@@ -523,6 +524,67 @@ is_integer(CPPType *type) {
            simple_type->_type == CPPSimpleType::T_int);
       }
     }
+    break;
+
+  default:
+    break;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_unsigned_longlong
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is an unsigned
+//               "long long" type or larger, or at least a 64-bit
+//               unsigned integer.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_unsigned_longlong(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_unsigned_longlong(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_simple:
+    {
+      CPPSimpleType *simple_type = type->as_simple_type();
+      if (simple_type != (CPPSimpleType *)NULL) {
+        return (simple_type->_type == CPPSimpleType::T_int && 
+                (simple_type->_flags & (CPPSimpleType::F_longlong | CPPSimpleType::F_unsigned)) == (CPPSimpleType::F_longlong | CPPSimpleType::F_unsigned));
+      }
+    }
+    break;
+
+  default:
+    break;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_longlong
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is the "long long"
+//               type or larger, or at least a 64-bit integer, whether
+//               signed or unsigned.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_longlong(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_longlong(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_simple:
+    {
+      CPPSimpleType *simple_type = type->as_simple_type();
+      if (simple_type != (CPPSimpleType *)NULL) {
+        return (simple_type->_type == CPPSimpleType::T_int && 
+                (simple_type->_flags & CPPSimpleType::F_longlong) != 0);
+      }
+    }
+    break;
 
   default:
     break;
@@ -553,6 +615,7 @@ is_float(CPPType *type) {
            simple_type->_type == CPPSimpleType::T_double);
       }
     }
+    break;
 
   default:
     break;
@@ -609,10 +672,13 @@ is_reference_count(CPPType *type) {
         }
       }
     }
+    break;
 
   default:
-    return false;
+    break;
   }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

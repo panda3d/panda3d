@@ -56,6 +56,7 @@ class BaseTypeDescriptor:
         # AT_char = 5
         # AT_void = 6
         # AT_string = 7
+        # AT_longlong = 8
         # By default this type is not atomic
         self.atomicType = 0
 
