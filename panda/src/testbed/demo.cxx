@@ -126,7 +126,7 @@ setup_panda2d() {
 
   if (font != (NamedNode *)NULL) {
     label2d = new TextNode("label2d");
-    RenderRelation *text_arc = new RenderRelation(render2d, label2d);
+    new RenderRelation(render2d, label2d);
 
     LMatrix4f mat =
       LMatrix4f::scale_mat(0.1) *
@@ -153,7 +153,7 @@ setup_panda2d() {
 
   PT_Node p2egg = loader.load_sync("panda2d");
   if (p2egg != (NamedNode *)NULL) {
-    RenderRelation *arc = new RenderRelation(render2d, p2egg);
+    new RenderRelation(render2d, p2egg);
   } else {
     nout << "Couldn't find panda2d.egg\n";
   }

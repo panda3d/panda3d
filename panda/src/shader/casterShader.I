@@ -23,7 +23,6 @@ int CasterShader::add_caster(NamedNode* node)
 int CasterShader::remove_caster(NamedNode* node)
 {
   make_dirty();
-  int found = 0;
   NamedNodeVector::iterator i;
   for (i = _casters.begin(); i != _casters.end(); ++i) {
     if ((*i) == node) {

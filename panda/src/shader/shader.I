@@ -43,7 +43,6 @@ add_frustum(ProjectionNode* frust) {
 INLINE int FrustumShader::
 remove_frustum(ProjectionNode* frust) {
   make_dirty();
-  int found = 0;
   ProjectionVector::iterator i;
   for (i = _frusta.begin(); i != _frusta.end(); ++i) {
     if ((*i) == frust) {
