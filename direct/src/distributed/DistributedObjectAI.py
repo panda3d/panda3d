@@ -68,12 +68,23 @@ class DistributedObjectAI(DirectObject.DirectObject):
             assert(self.notify.debug('delete(): %s' % (self.__dict__.get("doId"))))
 
             if not self._DOAI_requestedDelete:
+                # this logs every delete that was not requested by us.
+                # TODO: this currently prints warnings for deletes of objects
+                # that we did not create. We need to add a 'locally created'
+                # flag to every object to filter these out.
+                """
                 DistributedObjectAI.notify.warning(
                     'delete() called but requestDelete never called for %s: %s'
                     % (self.__dict__.get('doId'), self.__class__.__name__))
+                    """
+                """
+                # print a stack trace so we can detect whether this is the
+                # result of a network msg.
+                # this is slow.
                 from direct.showbase.PythonUtil import StackTrace
                 DistributedObjectAI.notify.warning(
                     'stack trace: %s' % StackTrace())
+                    """
             self._DOAI_requestedDelete = False
 
             # Clean up all the pending barriers.
