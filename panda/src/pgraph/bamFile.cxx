@@ -162,7 +162,7 @@ resolve() {
 //       Access: Public
 //  Description: Attempts to open the indicated file for writing.  If
 //               another file by the same name already exists, it will
-//               be silently truncated.  Returns true if successful,
+//               be silently removed.  Returns true if successful,
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool BamFile::
