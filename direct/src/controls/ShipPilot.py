@@ -76,7 +76,9 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
 
     def setAvatar(self, ship):
         self.ship = ship
-        if ship is not None:
+        if ship is None:
+            self.takedownPhysics()
+        else:
             #self.setupShip()
             self.setupPhysics(ship)
             
@@ -180,11 +182,22 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
 
         self.pusher.addCollider(self.cSphereNodePath, self.avatarNodePath)
 
+    def takedownPhysics(self):
+        assert(self.debugPrint("takedownPhysics()"))
+        if hasattr(self, "phys"):
+            del self.phys
+            for i in self.nodes:
+                i.removeNode()
+
     def setupPhysics(self, avatarNodePath):
         assert(self.debugPrint("setupPhysics()"))
         if avatarNodePath is None:
             return
         assert not avatarNodePath.isEmpty()
+
+        self.takedownPhysics()
+        self.nodes = []
+        self.phys=PhysicsManager.PhysicsManager()
 
         if 0:
             # Connect to Physics Manager:
@@ -204,14 +217,6 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             self.actorNode = physicsActor.node()
             self.actorNode.getPhysicsObject().setOriented(1)
             self.actorNode.getPhysical(0).setViscosity(0.1)
-
-        if hasattr(self, "phys"):
-            del self.phys
-            for i in self.nodes:
-                i.removeNode()
-
-        self.nodes = []
-        self.phys=PhysicsManager.PhysicsManager()
         
         fn=ForceNode("ship gravity")
         fnp=NodePath(fn)
@@ -480,6 +485,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             #    self.phys.debugOutput())
             onScreenDebug.add("orientation",
                 self.actorNode.getPhysicsObject().getOrientation().pPrintValues())
+            #print "ship orientation:", self.actorNode.getPhysicsObject().getOrientation().pPrintValues()
 
             momentumForce = self.momentumForce.getLocalVector()
             onScreenDebug.add("w momentumForce vec",
