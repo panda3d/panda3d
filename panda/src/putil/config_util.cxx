@@ -28,7 +28,6 @@
 #include "mouseButton.h"
 #include "factoryParam.h"
 #include "datagram.h"
-#include "writable.h"
 #include "typedWritable.h"
 #include "typedWritableReferenceCount.h"
 #include "writableParam.h"
@@ -54,7 +53,6 @@ ConfigureFn(config_util) {
   MouseButton::init_mouse_buttons();
   FactoryParam::init_type();
   Datagram::init_type();
-  Writable::init_type();
   TypedWritable::init_type();
   WritableParam::init_type();
   BamReaderParam::init_type();

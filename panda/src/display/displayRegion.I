@@ -92,14 +92,14 @@ get_layer() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_qpcamera
+//     Function: DisplayRegion::get_camera
 //       Access: Public
 //  Description: Returns the camera associated with this
 //               DisplayRegion, or NULL if no camera is associated.
 ////////////////////////////////////////////////////////////////////
-INLINE const qpNodePath &DisplayRegion::
-get_qpcamera() const {
-  return _qpcamera;
+INLINE const NodePath &DisplayRegion::
+get_camera() const {
+  return _camera;
 }
 
 ////////////////////////////////////////////////////////////////////

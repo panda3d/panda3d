@@ -17,14 +17,14 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_collide.h"
-#include "qpcollisionEntry.h"
-#include "qpcollisionHandler.h"
-#include "qpcollisionHandlerEvent.h"
-#include "qpcollisionHandlerFloor.h"
-#include "qpcollisionHandlerPhysical.h"
-#include "qpcollisionHandlerPusher.h"
-#include "qpcollisionHandlerQueue.h"
-#include "qpcollisionNode.h"
+#include "collisionEntry.h"
+#include "collisionHandler.h"
+#include "collisionHandlerEvent.h"
+#include "collisionHandlerFloor.h"
+#include "collisionHandlerPhysical.h"
+#include "collisionHandlerPusher.h"
+#include "collisionHandlerQueue.h"
+#include "collisionNode.h"
 #include "collisionPlane.h"
 #include "collisionPolygon.h"
 #include "collisionRay.h"
@@ -56,14 +56,14 @@ init_libcollide() {
   }
   initialized = true;
 
-  qpCollisionEntry::init_type();
-  qpCollisionHandler::init_type();
-  qpCollisionHandlerEvent::init_type();
-  qpCollisionHandlerFloor::init_type();
-  qpCollisionHandlerPhysical::init_type();
-  qpCollisionHandlerPusher::init_type();
-  qpCollisionHandlerQueue::init_type();
-  qpCollisionNode::init_type();
+  CollisionEntry::init_type();
+  CollisionHandler::init_type();
+  CollisionHandlerEvent::init_type();
+  CollisionHandlerFloor::init_type();
+  CollisionHandlerPhysical::init_type();
+  CollisionHandlerPusher::init_type();
+  CollisionHandlerQueue::init_type();
+  CollisionNode::init_type();
   CollisionPlane::init_type();
   CollisionPolygon::init_type();
   CollisionRay::init_type();
@@ -73,7 +73,7 @@ init_libcollide() {
 
   //Registration of writeable object's creation
   //functions with BamReader's factory
-  qpCollisionNode::register_with_read_factory();
+  CollisionNode::register_with_read_factory();
   CollisionPlane::register_with_read_factory();
   CollisionPolygon::register_with_read_factory();
   CollisionRay::register_with_read_factory();

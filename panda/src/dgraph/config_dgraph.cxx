@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_dgraph.h"
-#include "qpdataNode.h"
+#include "dataNode.h"
 
 #include <dconfig.h>
 
@@ -25,5 +25,5 @@ Configure(config_dgraph);
 NotifyCategoryDef(dgraph, "");
 
 ConfigureFn(config_dgraph) {
-  qpDataNode::init_type();
+  DataNode::init_type();
 }

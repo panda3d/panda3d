@@ -76,7 +76,7 @@ resolve_filename(Filename &path) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) LoaderFileTypeBam::
-qpload_file(const Filename &path, bool report_errors) const {
+load_file(const Filename &path, bool report_errors) const {
   BamFile bam_file;
   if (!bam_file.open_read(path, report_errors)) {
     return NULL;

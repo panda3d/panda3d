@@ -19,6 +19,7 @@
 #include "pandabase.h"
 #include "notify.h"
 
+#include "typedWritable.h"
 #include "config_util.h"
 #include "bam.h"
 #include "bamWriter.h"

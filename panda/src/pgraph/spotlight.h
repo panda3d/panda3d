@@ -65,7 +65,7 @@ public:
   bool make_image(Texture *texture, float radius);
 
 protected:
-  virtual void fill_viz_geom(qpGeomNode *viz_geom);
+  virtual void fill_viz_geom(GeomNode *viz_geom);
 
 private:
   CPT(RenderState) get_viz_state();

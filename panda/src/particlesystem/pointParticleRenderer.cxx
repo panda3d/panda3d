@@ -18,7 +18,7 @@
 
 #include "pointParticleRenderer.h"
 #include "boundingSphere.h"
-#include "qpgeomNode.h"
+#include "geomNode.h"
 
 ////////////////////////////////////////////////////////////////////
 //    Function : PointParticleRenderer
@@ -116,7 +116,7 @@ init_geoms(void) {
   _point_primitive->set_num_prims(0);
   _point_primitive->set_size(_point_size);
   
-  qpGeomNode *render_node = get_render_node();
+  GeomNode *render_node = get_render_node();
   render_node->remove_all_geoms();
   render_node->add_geom(_point_primitive, _render_state);
 }

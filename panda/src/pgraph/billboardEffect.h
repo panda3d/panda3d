@@ -23,7 +23,7 @@
 
 #include "renderEffect.h"
 #include "luse.h"
-#include "qpnodePath.h"
+#include "nodePath.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BillboardEffect
@@ -40,7 +40,7 @@ PUBLISHED:
                                 bool eye_relative,
                                 bool axial_rotate,
                                 float offset,
-                                const qpNodePath &look_at,
+                                const NodePath &look_at,
                                 const LPoint3f &look_at_point);
   INLINE static CPT(RenderEffect) make_axis();
   INLINE static CPT(RenderEffect) make_point_eye();
@@ -51,7 +51,7 @@ PUBLISHED:
   INLINE bool get_eye_relative() const;
   INLINE bool get_axial_rotate() const;
   INLINE float get_offset() const;
-  INLINE const qpNodePath &get_look_at() const;
+  INLINE const NodePath &get_look_at() const;
   INLINE const LPoint3f &get_look_at_point() const;
 
 public:
@@ -71,7 +71,7 @@ private:
   bool _eye_relative;
   bool _axial_rotate;
   float _offset;
-  qpNodePath _look_at;
+  NodePath _look_at;
   LPoint3f _look_at_point;
 
 public:

@@ -265,7 +265,7 @@ process_request() {
   while (!_token_board->_waiting.empty()) {
     PT(LoaderToken) tok = _token_board->_waiting.front();
     _token_board->_waiting.pop_front();
-    tok->_node = qpload_file(tok->_path);
+    tok->_node = load_file(tok->_path);
     if (tok->_node == NULL) {
       loader_cat.error()
         << "Loader::callback() - couldn't find file: "
@@ -298,11 +298,11 @@ process_request() {
 //               NULL if the file cannot be loaded.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) Loader::
-qpload_file(const Filename &filename) const {
+load_file(const Filename &filename) const {
   string extension = filename.get_extension();
 
   if (extension.empty()) {
-    return qpload_unknown_file_type(filename);
+    return load_unknown_file_type(filename);
   }
 
   LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
@@ -331,7 +331,7 @@ qpload_file(const Filename &filename) const {
       << requested_filename << "\n";
   }
 
-  PT(PandaNode) result = requested_type->qpload_file(requested_filename, true);
+  PT(PandaNode) result = requested_type->load_file(requested_filename, true);
   return result;
 }
 
@@ -355,7 +355,7 @@ public:
 //               any file type.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) Loader::
-qpload_unknown_file_type(const Filename &filename) const {
+load_unknown_file_type(const Filename &filename) const {
   typedef pvector<LoaderConsiderFile> Files;
   Files files;
 
@@ -416,7 +416,7 @@ qpload_unknown_file_type(const Filename &filename) const {
 
   for (fi = files.begin(); fi != files.end(); ++fi) {
     const LoaderConsiderFile &consider = (*fi);
-    PT(PandaNode) result = consider._type->qpload_file(consider._path, false);
+    PT(PandaNode) result = consider._type->load_file(consider._path, false);
     if (result != (PandaNode *)NULL) {
       return result;
     }

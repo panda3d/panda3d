@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pgMouseWatcherBackground.h"
-#include "qppgItem.h"
+#include "pgItem.h"
 
 TypeHandle PGMouseWatcherBackground::_type_handle;
 
@@ -52,7 +52,7 @@ PGMouseWatcherBackground::
 ////////////////////////////////////////////////////////////////////
 void PGMouseWatcherBackground::
 press(const MouseWatcherParameter &param) {
-  qpPGItem::background_press(param);
+  PGItem::background_press(param);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -64,7 +64,7 @@ press(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGMouseWatcherBackground::
 release(const MouseWatcherParameter &param) {
-  qpPGItem::background_release(param);
+  PGItem::background_release(param);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,5 +75,5 @@ release(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGMouseWatcherBackground::
 keystroke(const MouseWatcherParameter &param) {
-  qpPGItem::background_keystroke(param);
+  PGItem::background_keystroke(param);
 }

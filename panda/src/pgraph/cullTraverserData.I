@@ -23,7 +23,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE CullTraverserData::
-CullTraverserData(const qpNodePath &start,
+CullTraverserData(const NodePath &start,
                   const TransformState *render_transform,
                   const TransformState *net_transform,
                   const RenderState *state,
@@ -62,7 +62,7 @@ CullTraverserData(const CullTraverserData &parent, PandaNode *child) :
 ////////////////////////////////////////////////////////////////////
 INLINE CullTraverserData::
 CullTraverserData(const CullTraverserData &copy) :
-  _node_path(qpNodePath())
+  _node_path(NodePath())
 {
   nassertv(false);
 }

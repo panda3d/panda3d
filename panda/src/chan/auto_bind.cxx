@@ -18,16 +18,16 @@
 
 
 #include "auto_bind.h"
-#include "qpanimBundleNode.h"
-#include "qppartBundleNode.h"
+#include "animBundleNode.h"
+#include "partBundleNode.h"
 #include "config_chan.h"
 #include "string_utils.h"
 
-typedef pset<qpAnimBundleNode *> qpAnimNodes;
-typedef pmap<string, qpAnimNodes> qpAnims;
+typedef pset<AnimBundleNode *> AnimNodes;
+typedef pmap<string, AnimNodes> Anims;
 
-typedef pset<qpPartBundleNode *> qpPartNodes;
-typedef pmap<string, qpPartNodes> qpParts;
+typedef pset<PartBundleNode *> PartNodes;
+typedef pmap<string, PartNodes> Parts;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -38,16 +38,16 @@ typedef pmap<string, qpPartNodes> qpParts;
 //               sense.
 ////////////////////////////////////////////////////////////////////
 static void
-qpbind_anims(const qpPartNodes &parts, const qpAnimNodes &anims,
+bind_anims(const PartNodes &parts, const AnimNodes &anims,
            AnimControlCollection &controls,
            int hierarchy_match_flags) {
 
-  qpPartNodes::const_iterator pni;
+  PartNodes::const_iterator pni;
 
   for (pni = parts.begin(); pni != parts.end(); ++pni) {
     PartBundle *part = (*pni)->get_bundle();
 
-    qpAnimNodes::const_iterator ani;
+    AnimNodes::const_iterator ani;
     for (ani = anims.begin(); ani != anims.end(); ++ani) {
       AnimBundle *anim = (*ani)->get_bundle();
 
@@ -96,13 +96,13 @@ qpbind_anims(const qpPartNodes &parts, const qpAnimNodes &anims,
 //               PartBundles and AnimBundles.
 ////////////////////////////////////////////////////////////////////
 static void 
-r_find_bundles(PandaNode *node, qpAnims &anims, qpParts &parts) {
-  if (node->is_of_type(qpAnimBundleNode::get_class_type())) {
-    qpAnimBundleNode *bn = DCAST(qpAnimBundleNode, node);
+r_find_bundles(PandaNode *node, Anims &anims, Parts &parts) {
+  if (node->is_of_type(AnimBundleNode::get_class_type())) {
+    AnimBundleNode *bn = DCAST(AnimBundleNode, node);
     anims[bn->get_bundle()->get_name()].insert(bn);
     
-  } else if (node->is_of_type(qpPartBundleNode::get_class_type())) {
-    qpPartBundleNode *bn = DCAST(qpPartBundleNode, node);
+  } else if (node->is_of_type(PartBundleNode::get_class_type())) {
+    PartBundleNode *bn = DCAST(PartBundleNode, node);
     parts[bn->get_bundle()->get_name()].insert(bn);
   }
 
@@ -127,14 +127,14 @@ void
 auto_bind(PandaNode *root_node, AnimControlCollection &controls,
           int hierarchy_match_flags) {
   // First, locate all the bundles in the subgraph.
-  qpAnims anims;
-  qpParts parts;
+  Anims anims;
+  Parts parts;
   r_find_bundles(root_node, anims, parts);
 
   // Now, match up the bundles by name.
 
-  qpAnims::const_iterator ai = anims.begin();
-  qpParts::const_iterator pi = parts.begin();
+  Anims::const_iterator ai = anims.begin();
+  Parts::const_iterator pi = parts.begin();
 
   while (ai != anims.end() && pi != parts.end()) {
     if ((*ai).first < (*pi).first) {
@@ -147,7 +147,7 @@ auto_bind(PandaNode *root_node, AnimControlCollection &controls,
 
     } else {
       // But here we have (at least one) match!
-      qpbind_anims((*pi).second, (*ai).second, controls,
+      bind_anims((*pi).second, (*ai).second, controls,
                    hierarchy_match_flags);
       ++pi;
 

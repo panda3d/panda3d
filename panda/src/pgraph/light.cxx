@@ -74,13 +74,13 @@ Light::
 //               the Light.  This is used during the cull traversal to
 //               render the Lights that have been made visible.
 ////////////////////////////////////////////////////////////////////
-qpGeomNode *Light::
+GeomNode *Light::
 get_viz() {
   CDReader cdata(_cycler);
   if (cdata->_viz_geom_stale) {
     CDWriter cdata_w(_cycler, cdata);
 
-    cdata_w->_viz_geom = new qpGeomNode("viz");
+    cdata_w->_viz_geom = new GeomNode("viz");
     fill_viz_geom(cdata_w->_viz_geom);
     cdata_w->_viz_geom_stale = false;
   }
@@ -94,7 +94,7 @@ get_viz() {
 //               for rendering this light.
 ////////////////////////////////////////////////////////////////////
 void Light::
-fill_viz_geom(qpGeomNode *) {
+fill_viz_geom(GeomNode *) {
 }
 
 ////////////////////////////////////////////////////////////////////

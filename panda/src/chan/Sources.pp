@@ -10,7 +10,7 @@
 
   #define SOURCES \
     animBundle.I animBundle.h \
-    qpanimBundleNode.I qpanimBundleNode.h \
+    animBundleNode.I animBundleNode.h \
     animChannel.I animChannel.h animChannelBase.I  \
     animChannelBase.h animChannelMatrixXfmTable.I  \
     animChannelMatrixXfmTable.h animChannelScalarTable.I  \
@@ -20,25 +20,25 @@
     config_chan.h movingPartBase.I movingPartBase.h  \
     movingPartMatrix.I movingPartMatrix.h movingPartScalar.I  \
     movingPartScalar.h partBundle.I partBundle.N partBundle.h  \
-    qppartBundleNode.I qppartBundleNode.h \
+    partBundleNode.I partBundleNode.h \
     partGroup.I partGroup.h  \
     vector_PartGroupStar.h 
 
   #define INCLUDED_SOURCES  \
     animBundle.cxx \
-    qpanimBundleNode.cxx \
+    animBundleNode.cxx \
     animChannel.cxx  \
     animChannelBase.cxx animChannelMatrixXfmTable.cxx  \
     animChannelScalarTable.cxx animControl.cxx  \
     animControlCollection.cxx animGroup.cxx auto_bind.cxx  \
     config_chan.cxx movingPartBase.cxx movingPartMatrix.cxx  \
     movingPartScalar.cxx partBundle.cxx \
-    qppartBundleNode.cxx \
+    partBundleNode.cxx \
     partGroup.cxx vector_PartGroupStar.cxx 
 
   #define INSTALL_HEADERS \
     animBundle.I animBundle.h \
-    qpanimBundleNode.I qpanimBundleNode.h \
+    animBundleNode.I animBundleNode.h \
     animChannel.I animChannel.h animChannelBase.I animChannelBase.h \
     animChannelFixed.I animChannelFixed.h animChannelMatrixXfmTable.I \
     animChannelMatrixXfmTable.h animChannelScalarTable.I \
@@ -48,7 +48,7 @@
     movingPart.I movingPart.h movingPartBase.I \
     movingPartBase.h movingPartMatrix.I movingPartMatrix.h \
     movingPartScalar.I movingPartScalar.h partBundle.I partBundle.h \
-    qppartBundleNode.I qppartBundleNode.h \
+    partBundleNode.I partBundleNode.h \
     partGroup.I partGroup.h \
     vector_PartGroupStar.h
     

@@ -10,35 +10,35 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
   #define SOURCES  \
-    qpbuttonThrower.h \
+    buttonThrower.h \
     config_tform.h \
-    qpdriveInterface.I qpdriveInterface.h \
-    qpmouseWatcher.I qpmouseWatcher.h \
+    driveInterface.I driveInterface.h \
+    mouseWatcher.I mouseWatcher.h \
     mouseWatcherGroup.h \
     mouseWatcherParameter.I mouseWatcherParameter.h \
     mouseWatcherRegion.I mouseWatcherRegion.h \
-    qptrackball.h \
-    qptransform2sg.h  
+    trackball.h \
+    transform2sg.h  
      
   #define INCLUDED_SOURCES  \
-    qpbuttonThrower.cxx \
+    buttonThrower.cxx \
     config_tform.cxx \
-    qpdriveInterface.cxx \
-    qpmouseWatcher.cxx \
+    driveInterface.cxx \
+    mouseWatcher.cxx \
     mouseWatcherGroup.cxx \
     mouseWatcherParameter.cxx mouseWatcherRegion.cxx  \
-    qptrackball.cxx \
-    qptransform2sg.cxx 
+    trackball.cxx \
+    transform2sg.cxx 
 
   #define INSTALL_HEADERS \
-    qpbuttonThrower.h \
-    qpdriveInterface.I qpdriveInterface.h \
-    qpmouseWatcher.I qpmouseWatcher.h \
+    buttonThrower.h \
+    driveInterface.I driveInterface.h \
+    mouseWatcher.I mouseWatcher.h \
     mouseWatcherGroup.h \
     mouseWatcherParameter.I mouseWatcherParameter.h \
     mouseWatcherRegion.I mouseWatcherRegion.h \
-    qptrackball.h \
-    qptransform2sg.h
+    trackball.h \
+    transform2sg.h
 
   #define IGATESCAN all
 

@@ -20,8 +20,8 @@
 #define WINDOWFRAMEWORK_H
 
 #include "pandabase.h"
-#include "qpnodePath.h"
-#include "qpcamera.h"
+#include "nodePath.h"
+#include "camera.h"
 #include "graphicsWindow.h"
 #include "animControlCollection.h"
 #include "filename.h"
@@ -49,24 +49,24 @@ protected:
 public:
   INLINE PandaFramework *get_panda_framework() const;
   INLINE GraphicsWindow *get_graphics_window() const;
-  const qpNodePath &get_camera_group();
+  const NodePath &get_camera_group();
 
   INLINE int get_num_cameras() const;
-  INLINE qpCamera *get_camera(int n) const;
+  INLINE Camera *get_camera(int n) const;
 
-  const qpNodePath &get_render();
-  const qpNodePath &get_render_2d();
-  const qpNodePath &get_mouse();
+  const NodePath &get_render();
+  const NodePath &get_render_2d();
+  const NodePath &get_mouse();
 
   void enable_keyboard();
   void setup_trackball();
 
-  bool load_models(const qpNodePath &parent,
+  bool load_models(const NodePath &parent,
                    int argc, char *argv[], int first_arg = 1);
-  bool load_models(const qpNodePath &parent,
+  bool load_models(const NodePath &parent,
                    const pvector<Filename> &files);
-  qpNodePath load_model(const qpNodePath &parent, Filename filename);
-  qpNodePath load_default_model(const qpNodePath &parent);
+  NodePath load_model(const NodePath &parent, Filename filename);
+  NodePath load_default_model(const NodePath &parent);
   void loop_animations();
 
   void set_wireframe(bool enable);
@@ -80,22 +80,22 @@ public:
   INLINE bool get_lighting() const;
 
 protected:
-  PT(qpCamera) make_camera();
+  PT(Camera) make_camera();
   void setup_lights();
 
 private:
   PandaFramework *_panda_framework;
   PT(GraphicsWindow) _window;
 
-  qpNodePath _camera_group;
-  typedef pvector< PT(qpCamera) > Cameras;
+  NodePath _camera_group;
+  typedef pvector< PT(Camera) > Cameras;
   Cameras _cameras;
 
-  qpNodePath _render;
-  qpNodePath _render_2d;
+  NodePath _render;
+  NodePath _render_2d;
   AnimControlCollection _anim_controls;
 
-  qpNodePath _mouse;
+  NodePath _mouse;
 
   AmbientLight *_alight;
   DirectionalLight *_dlight;

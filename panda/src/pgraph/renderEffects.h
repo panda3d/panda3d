@@ -28,6 +28,7 @@
 #include "ordered_vector.h"
 
 class BillboardEffect;
+class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : RenderEffects

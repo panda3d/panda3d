@@ -57,7 +57,7 @@ get_num_cameras() const {
 //       Access: Public
 //  Description: Returns the nth camera associated with the window.
 ////////////////////////////////////////////////////////////////////
-INLINE qpCamera *WindowFramework::
+INLINE Camera *WindowFramework::
 get_camera(int n) const {
   nassertr(n >= 0 && n < (int)_cameras.size(), NULL);
   return _cameras[n];

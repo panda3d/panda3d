@@ -239,7 +239,7 @@ make_image(Texture *texture, float radius) {
 //               for rendering this light.
 ////////////////////////////////////////////////////////////////////
 void Spotlight::
-fill_viz_geom(qpGeomNode *viz_geom) {
+fill_viz_geom(GeomNode *viz_geom) {
   Lens *lens = get_lens();
   if (lens == (Lens *)NULL) {
     return;

@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cullTraverserData.h"
-#include "qpcullTraverser.h"
+#include "cullTraverser.h"
 #include "config_pgraph.h"
 #include "pandaNode.h"
 #include "colorAttrib.h"
@@ -33,7 +33,7 @@
 //               billboards, etc.
 ////////////////////////////////////////////////////////////////////
 void CullTraverserData::
-apply_transform_and_state(qpCullTraverser *trav) {
+apply_transform_and_state(CullTraverser *trav) {
   const TransformState *node_transform = node()->get_transform();
   if (!node_transform->is_identity()) {
     _render_transform = _render_transform->compose(node_transform);
@@ -107,7 +107,7 @@ is_in_view_impl() {
   int result = _view_frustum->contains(node_gbv);
   if (result == BoundingVolume::IF_no_intersection) {
     // No intersection at all.  Cull.
-    if (!qpfake_view_frustum_cull) {
+    if (!fake_view_frustum_cull) {
       return false;
     }
 

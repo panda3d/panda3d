@@ -21,8 +21,8 @@
 
 #include "pandabase.h"
 
-#include "qppgTop.h"
-#include "qpcullTraverser.h"
+#include "pgTop.h"
+#include "cullTraverser.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PGCullTraverser
@@ -33,11 +33,11 @@
 //               that PGItems can know how to register their regions
 //               with the current MouseWatcherGroup.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGCullTraverser : public qpCullTraverser {
+class EXPCL_PANDA PGCullTraverser : public CullTraverser {
 public:
-  INLINE PGCullTraverser(qpPGTop *top, qpCullTraverser *trav);
+  INLINE PGCullTraverser(PGTop *top, CullTraverser *trav);
 
-  qpPGTop *_top;
+  PGTop *_top;
   int _sort_index;
 
 public:
@@ -45,9 +45,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    qpCullTraverser::init_type();
+    CullTraverser::init_type();
     register_type(_type_handle, "PGCullTraverser",
-                  qpCullTraverser::get_class_type());
+                  CullTraverser::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -20,7 +20,7 @@
 
 #include "boundingSphere.h"
 #include "geom.h"
-#include "qpnodePath.h"
+#include "nodePath.h"
 #include "dcast.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -97,12 +97,12 @@ make_copy(void) {
 //               Texture and UV range from the GeomNode.
 ////////////////////////////////////////////////////////////////////
 void SpriteParticleRenderer::
-set_from_node(const qpNodePath &node_path) {
+set_from_node(const NodePath &node_path) {
   nassertv(!node_path.is_empty());
 
   // The bottom node must be a GeomNode.  If it is not, find the first
   // GeomNode beneath it.
-  qpNodePath geom_node_path = node_path;
+  NodePath geom_node_path = node_path;
   if (!geom_node_path.node()->is_geom_node()) {
     geom_node_path = node_path.find("**/+GeomNode");
     if (geom_node_path.is_empty()) {
@@ -111,7 +111,7 @@ set_from_node(const qpNodePath &node_path) {
       return;
     }
   }
-  qpGeomNode *gnode = DCAST(qpGeomNode, geom_node_path.node());
+  GeomNode *gnode = DCAST(GeomNode, geom_node_path.node());
 
   // Get the texture off the node.  We'll take just the first texture.
   Texture *tex = geom_node_path.find_texture("*");
@@ -234,7 +234,7 @@ void SpriteParticleRenderer::
 init_geoms(void) {
   _sprite_primitive->set_num_prims(0);
 
-  qpGeomNode *render_node = get_render_node();
+  GeomNode *render_node = get_render_node();
   render_node->remove_all_geoms();
   render_node->add_geom(_sprite_primitive, _render_state);
 }

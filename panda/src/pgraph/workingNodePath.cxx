@@ -41,16 +41,16 @@ get_num_nodes() const {
 //               get_node_path(), this returns the NodePathComponent
 //               representing the NodePath.
 ////////////////////////////////////////////////////////////////////
-PT(qpNodePathComponent) WorkingNodePath::
+PT(NodePathComponent) WorkingNodePath::
 r_get_node_path() const {
   if (_next == (WorkingNodePath *)NULL) {
     return _start;
   }
 
-  nassertr(_start == (qpNodePathComponent *)NULL, NULL);
+  nassertr(_start == (NodePathComponent *)NULL, NULL);
   nassertr(_node != (PandaNode *)NULL, NULL);
 
-  PT(qpNodePathComponent) comp = _next->r_get_node_path();
-  nassertr(comp != (qpNodePathComponent *)NULL, NULL);
+  PT(NodePathComponent) comp = _next->r_get_node_path();
+  nassertr(comp != (NodePathComponent *)NULL, NULL);
   return PandaNode::get_component(comp, _node);
 }

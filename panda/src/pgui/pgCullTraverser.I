@@ -23,8 +23,8 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 PGCullTraverser::
-PGCullTraverser(qpPGTop *top, qpCullTraverser *trav) :
-  qpCullTraverser(*trav),
+PGCullTraverser(PGTop *top, CullTraverser *trav) :
+  CullTraverser(*trav),
   _top(top)
 {
   _sort_index = 0;

@@ -20,7 +20,7 @@
 #include "config_pgraph.h"
 
 #include "indent.h"
-#include "qpgeomNode.h"
+#include "geomNode.h"
 #include "geom.h"
 #include "geomprimitives.h"
 #include "transformState.h"
@@ -211,7 +211,7 @@ collect_statistics(PandaNode *node, bool under_instance) {
   }
 
   if (node->is_geom_node()) {
-    collect_statistics(DCAST(qpGeomNode, node));
+    collect_statistics(DCAST(GeomNode, node));
   }
 
   int num_children = node->get_num_children();
@@ -228,8 +228,8 @@ collect_statistics(PandaNode *node, bool under_instance) {
 //               statistics.
 ////////////////////////////////////////////////////////////////////
 void SceneGraphAnalyzer::
-collect_statistics(qpGeomNode *geom_node) {
-  nassertv(geom_node != (qpGeomNode *)NULL);
+collect_statistics(GeomNode *geom_node) {
+  nassertv(geom_node != (GeomNode *)NULL);
 
   _num_geom_nodes++;
 

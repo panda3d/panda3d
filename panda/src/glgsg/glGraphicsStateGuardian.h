@@ -32,7 +32,7 @@
 #include "depthTestAttrib.h"
 #include "textureApplyAttrib.h"
 #include "pointerToArray.h"
-#include "qpfog.h"
+#include "fog.h"
 
 #ifdef WIN32_VC
 // Must include windows.h before gl.h on NT
@@ -89,8 +89,8 @@ public:
   virtual void apply_texture(TextureContext *tc);
   virtual void release_texture(TextureContext *tc);
 
-  virtual GeomNodeContext *prepare_geom_node(qpGeomNode *node);
-  virtual void draw_geom_node(qpGeomNode *node, const RenderState *state,
+  virtual GeomNodeContext *prepare_geom_node(GeomNode *node);
+  virtual void draw_geom_node(GeomNode *node, const RenderState *state,
                               GeomNodeContext *gnc);
   virtual void release_geom_node(GeomNodeContext *gnc);
 
@@ -107,7 +107,7 @@ public:
                                  const RenderBuffer &rb);
 
   virtual void apply_material(const Material *material);
-  void apply_fog(qpFog *fog);
+  void apply_fog(Fog *fog);
 
   virtual void issue_transform(const TransformState *transform);
   virtual void issue_tex_matrix(const TexMatrixAttrib *attrib);
@@ -241,7 +241,7 @@ protected:
   GLenum get_internal_image_format(PixelBuffer::Format format);
   GLint get_texture_apply_mode_type(TextureApplyAttrib::Mode am) const;
   GLenum get_depth_func_type(DepthTestAttrib::Mode m) const;
-  GLenum get_fog_mode_type(qpFog::Mode m) const;
+  GLenum get_fog_mode_type(Fog::Mode m) const;
 
   static CPT(RenderState) get_untextured_state();
 

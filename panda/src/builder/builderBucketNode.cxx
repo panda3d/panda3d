@@ -19,7 +19,7 @@
 #include "builderFuncs.h"
 #include "builderBucketNode.h"
 
-#include "qpgeomNode.h"
+#include "geomNode.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderBucketNode::add_prim
@@ -58,7 +58,7 @@ add_prim(const BuilderPrimI &prim) {
 //               Returns the number of Geoms created.
 ////////////////////////////////////////////////////////////////////
 int BuilderBucketNode::
-build(qpGeomNode *geom_node) const {
+build(GeomNode *geom_node) const {
   int count = 0;
 
   {

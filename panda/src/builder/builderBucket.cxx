@@ -21,7 +21,7 @@
 #include "builderBucket.h"
 #include "builderFuncs.h"
 #include "builderMisc.h"
-#include "qpgeomNode.h"
+#include "geomNode.h"
 
 
 BuilderBucket *BuilderBucket::_default_bucket = NULL;
@@ -34,7 +34,7 @@ BuilderBucket *BuilderBucket::_default_bucket = NULL;
 ////////////////////////////////////////////////////////////////////
 BuilderBucket::
 BuilderBucket() {
-  _qpnode = NULL;
+  _node = NULL;
   (*this) = (*get_default_bucket());
 }
 
@@ -46,7 +46,7 @@ BuilderBucket() {
 ////////////////////////////////////////////////////////////////////
 BuilderBucket::
 BuilderBucket(const BuilderBucket &copy) {
-  _qpnode = NULL;
+  _node = NULL;
   (*this) = copy;
 }
 
@@ -67,7 +67,7 @@ operator = (const BuilderBucket &copy) {
   set_texcoords(copy._texcoords);
   set_colors(copy._colors);
 
-  _qpnode = copy._qpnode;
+  _node = copy._node;
   _drawBin = copy._drawBin;
   _drawOrder = copy._drawOrder;
 
@@ -103,7 +103,7 @@ make_copy() const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BuilderBucket::qpmake_geom_node
+//     Function: BuilderBucket::make_geom_node
 //       Access: Public, Virtual
 //  Description: Called by the builder when it is time to create a new
 //               GeomNode.  This function should allocate and return a
@@ -111,9 +111,9 @@ make_copy() const {
 //               may redefine it to return a subclass of GeomNode, or
 //               to do some initialization to the node.
 ////////////////////////////////////////////////////////////////////
-qpGeomNode *BuilderBucket::
-qpmake_geom_node() {
-  return new qpGeomNode("");
+GeomNode *BuilderBucket::
+make_geom_node() {
+  return new GeomNode("");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -163,8 +163,8 @@ operator < (const BuilderBucket &other) const {
     return get_name() < other.get_name();
   }
 
-  if (_qpnode != other._qpnode) {
-    return _qpnode < other._qpnode;
+  if (_node != other._node) {
+    return _node < other._node;
   }
 
   if (_coords != other._coords)
@@ -197,8 +197,8 @@ void BuilderBucket::
 output(ostream &out) const {
   out << "Bucket \"" << get_name() << "\"";
 
-  if (_qpnode != (PandaNode *)NULL) {
-    out << " attached to " << *_qpnode << "\n";
+  if (_node != (PandaNode *)NULL) {
+    out << " attached to " << *_node << "\n";
   }
   out << "\n";
 
@@ -245,7 +245,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 BuilderBucket::
 BuilderBucket(int) {
-  _qpnode = NULL;
+  _node = NULL;
 
   _drawBin = -1;
   _drawOrder = 0;

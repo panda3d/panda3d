@@ -16,31 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-//This file just holds the Magic Number, Major and Minor version
-//numbers that are common to both BamWriter and BamReader.
+// This file just holds the Magic Number, Major and Minor version
+// numbers that are common to both BamWriter and BamReader.
 
 #ifndef _BAM_H
 #define _BAM_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-//The magic number for a BAM file and a carriage return and newline
-//for detecting files damaged due to ASCII/Binary conversion
+// The magic number for a BAM file.  It includes a carriage return and
+// newline character to help detect files damaged due to faulty
+// ASCII/Binary conversion.
 static const string _bam_header = string("pbj\0\n\r", 6);
 
-static const unsigned short _bam_major_ver = 3;
+static const unsigned short _bam_major_ver = 4;
 // Bumped to major version 2 on 7/6/00 due to major changes in Character.
 // Bumped to major version 3 on 12/8/00 to change float64's to float32's.
+// Bumped to major version 4 on 4/10/02 to store new scene graph.
 
-static const unsigned short _bam_minor_ver = 7;
-// Bumped to minor version 1 on 12/15/00 to add FFT-style channel
-// compression.
-// Bumped to minor version 2 on 2/15/01 to add ModelNode::_preserve_transform.
-// Bumped to minor version 3 on 4/11/01 to support correctly ordered children.
-// Bumped to minor version 4 on 12/11/01 to transpose quaternions.
-// Bumped to minor version 5 on 12/13/01 to remove obsolete fields from Texture.
-// Bumped to minor version 6 on 5/16/02 to add ImageBuffer::_filename.
-// Bumped to minor version 7 on 5/19/02 to add CharacterJoint::_net_transform_nodes, etc.
+static const unsigned short _bam_minor_ver = 0;
 
 
 #endif

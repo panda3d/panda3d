@@ -19,14 +19,15 @@
 #ifndef ANIMGROUP_H
 #define ANIMGROUP_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <typedWritableReferenceCount.h>
-#include <pointerTo.h>
-#include <namable.h>
+#include "typedWritableReferenceCount.h"
+#include "pointerTo.h"
+#include "namable.h"
 
 class AnimBundle;
 class BamReader;
+class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AnimGroup

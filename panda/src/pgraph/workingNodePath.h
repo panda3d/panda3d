@@ -21,8 +21,8 @@
 
 #include "pandabase.h"
 
-#include "qpnodePath.h"
-#include "qpnodePathComponent.h"
+#include "nodePath.h"
+#include "nodePathComponent.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : WorkingNodePath
@@ -48,23 +48,23 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA WorkingNodePath {
 public:
-  INLINE WorkingNodePath(const qpNodePath &start);
+  INLINE WorkingNodePath(const NodePath &start);
   INLINE WorkingNodePath(const WorkingNodePath &parent, PandaNode *child);
   INLINE ~WorkingNodePath();
 
-  INLINE qpNodePath get_node_path() const;
+  INLINE NodePath get_node_path() const;
   INLINE PandaNode *node() const;
 
   int get_num_nodes() const;
 
 private:
-  PT(qpNodePathComponent) r_get_node_path() const;
+  PT(NodePathComponent) r_get_node_path() const;
 
   // Either one or the other of these pointers will be filled in, but
   // never both.  We maintain a linked list of WorkingNodePath
   // objects, with a NodePathComponent at the head of the list.
   const WorkingNodePath *_next;
-  PT(qpNodePathComponent) _start;
+  PT(NodePathComponent) _start;
 
   PandaNode *_node;
 };

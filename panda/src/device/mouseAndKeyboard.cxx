@@ -23,16 +23,16 @@
 #include "dataNodeTransmit.h"
 #include "graphicsWindow.h"
 
-TypeHandle qpMouseAndKeyboard::_type_handle;
+TypeHandle MouseAndKeyboard::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpMouseAndKeyboard::Constructor
+//     Function: MouseAndKeyboard::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-qpMouseAndKeyboard::
-qpMouseAndKeyboard(GraphicsWindow *window, int device, const string &name) :
-  qpDataNode(name),
+MouseAndKeyboard::
+MouseAndKeyboard(GraphicsWindow *window, int device, const string &name) :
+  DataNode(name),
   _window(window),
   _device(device)
 {
@@ -46,7 +46,7 @@ qpMouseAndKeyboard(GraphicsWindow *window, int device, const string &name) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpMouseAndKeyboard::do_transmit_data
+//     Function: MouseAndKeyboard::do_transmit_data
 //       Access: Protected, Virtual
 //  Description: The virtual implementation of transmit_data().  This
 //               function receives an array of input parameters and
@@ -58,7 +58,7 @@ qpMouseAndKeyboard(GraphicsWindow *window, int device, const string &name) :
 //               the index numbers returned by the define_output()
 //               calls.
 ////////////////////////////////////////////////////////////////////
-void qpMouseAndKeyboard::
+void MouseAndKeyboard::
 do_transmit_data(const DataNodeTransmit &, DataNodeTransmit &output) {
   if (_window->has_button_event(_device)) {
     // Fill up the button events.

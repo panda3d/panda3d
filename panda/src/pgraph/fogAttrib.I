@@ -35,7 +35,7 @@ FogAttrib() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool FogAttrib::
 is_off() const {
-  return _fog == (const qpFog *)NULL;
+  return _fog == (const Fog *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,7 +45,7 @@ is_off() const {
 //               returns the fog that is associated.  Otherwise,
 //               return NULL.
 ////////////////////////////////////////////////////////////////////
-INLINE qpFog *FogAttrib::
+INLINE Fog *FogAttrib::
 get_fog() const {
   return _fog;
 }

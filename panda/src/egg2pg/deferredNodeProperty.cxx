@@ -18,7 +18,7 @@
 
 #include "deferredNodeProperty.h"
 
-#include "qpcollisionNode.h"
+#include "collisionNode.h"
 #include "pandaNode.h"
 #include "dcast.h"
 
@@ -83,8 +83,8 @@ compose(const DeferredNodeProperty &other) {
 ////////////////////////////////////////////////////////////////////
 void DeferredNodeProperty::
 apply_to_node(PandaNode *node) {
-  if (node->is_of_type(qpCollisionNode::get_class_type())) {
-    qpCollisionNode *cnode = DCAST(qpCollisionNode, node);
+  if (node->is_of_type(CollisionNode::get_class_type())) {
+    CollisionNode *cnode = DCAST(CollisionNode, node);
     if ((_flags & F_has_from_collide_mask) != 0) {
       cnode->set_from_collide_mask(_from_collide_mask);
     }

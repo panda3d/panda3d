@@ -74,7 +74,7 @@ get_scene() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsStateGuardian::
 modify_state(const RenderState *state) {
-  _qpstate = _qpstate->issue_delta_modify(state, this);
+  _state = _state->issue_delta_modify(state, this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -91,7 +91,7 @@ modify_state(const RenderState *state) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsStateGuardian::
 set_state(const RenderState *state) {
-  _qpstate = _qpstate->issue_delta_set(state, this);
+  _state = _state->issue_delta_set(state, this);
 }
 
 ////////////////////////////////////////////////////////////////////

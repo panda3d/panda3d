@@ -25,7 +25,7 @@
 #include "partGroup.h"
 #include "animControl.h"
 
-class qpCharacter;
+class Character;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CharacterJointBundle
@@ -40,7 +40,7 @@ public:
   CharacterJointBundle(const string &name = "");
 
 PUBLISHED:
-  INLINE qpCharacter *get_qpnode() const;
+  INLINE Character *get_node() const;
 
 public:
   virtual PartGroup *make_copy() const;

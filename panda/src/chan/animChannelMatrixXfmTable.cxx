@@ -319,13 +319,6 @@ fillin(DatagramIterator& scan, BamReader* manager)
 
   } else {
     // Compressed channels.
-    if (manager->get_file_minor_ver() < 1) {
-      chan_cat.error()
-        << "Cannot read old-style quantized channels.\n";
-      clear_all_tables();
-      return;
-    }
-
     if (!read_compressed_channels) {
       chan_cat.info()
         << "Not reading compressed animation channels.\n";
@@ -334,11 +327,6 @@ fillin(DatagramIterator& scan, BamReader* manager)
     }
 
     FFTCompressor compressor;
-    if (manager->get_file_minor_ver() < 4) {
-      //  Prior to bam version 3.4, the quaternion code had been
-      //  inadvertently transposed.
-      compressor.set_transpose_quats(true);
-    }
     compressor.read_header(scan);
 
     int i;

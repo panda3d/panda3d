@@ -22,7 +22,7 @@
 #include "dxgsg8base.h"
 
 #include "geomNodeContext.h"
-#include "qpgeomNode.h"
+#include "geomNode.h"
 #include "pvector.h"
 
 typedef struct {
@@ -38,7 +38,7 @@ typedef struct {
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXGeomNodeContext : public GeomNodeContext {
 public:
-  INLINE DXGeomNodeContext(qpGeomNode *node);
+  INLINE DXGeomNodeContext(GeomNode *node);
   ~DXGeomNodeContext();
 
   // A list of the dynamic Geoms within the GeomNode; these aren't

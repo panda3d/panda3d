@@ -23,7 +23,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE PGMouseWatcherGroup::
-PGMouseWatcherGroup(qpPGTop *top) : _qptop(top) {
+PGMouseWatcherGroup(PGTop *top) : _top(top) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -34,7 +34,7 @@ PGMouseWatcherGroup(qpPGTop *top) : _qptop(top) {
 //               object.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGMouseWatcherGroup::
-clear_top(qpPGTop *top) {
-  nassertv(_qptop == top);
-  _qptop = (qpPGTop *)NULL;
+clear_top(PGTop *top) {
+  nassertv(_top == top);
+  _top = (PGTop *)NULL;
 }

@@ -1,7 +1,7 @@
 
-#include "qpcardMaker.cxx"
+#include "cardMaker.cxx"
 #include "config_grutil.cxx"
-#include "qplineSegs.cxx"
+#include "lineSegs.cxx"
  
  
      

@@ -36,7 +36,7 @@ class GriddedFilename {
 public:
   Filename _filename;
   int _count;
-  qpNodePath _model;
+  NodePath _model;
 };
 typedef pvector<GriddedFilename> GriddedFilenames;
 
@@ -227,7 +227,7 @@ load_gridded_models(WindowFramework *window,
   // separate from the scene graph.  Also count up the total number of
   // models we'll be putting in the grid.
   int grid_count = 0;
-  qpNodePath models("models");
+  NodePath models("models");
   GriddedFilenames::iterator fi;
   for (fi = filenames.begin(); fi != filenames.end(); ++fi) {
     GriddedFilename &gf = (*fi);
@@ -264,7 +264,7 @@ load_gridded_models(WindowFramework *window,
   int passnum = 0;
   bool loaded_any;
 
-  qpNodePath render = window->get_render();
+  NodePath render = window->get_render();
   do {
     loaded_any = false;
 
@@ -276,7 +276,7 @@ load_gridded_models(WindowFramework *window,
         // position on the grid.
 
         string model_name = format_string(++model_count);
-        qpNodePath model = render.attach_new_node(model_name);
+        NodePath model = render.attach_new_node(model_name);
         gf._model.copy_to(model);
 
         gridded_file_info info;

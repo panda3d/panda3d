@@ -40,7 +40,7 @@ PUBLISHED:
 
   void resolve_filename(Filename &filename) const;
 
-  INLINE PT(PandaNode) qpload_sync(const Filename &filename) const;
+  INLINE PT(PandaNode) load_sync(const Filename &filename) const;
 
   uint request_load(const Filename &filename, const string &event_name);
   bool check_load(uint id);
@@ -51,8 +51,8 @@ private:
   static bool _file_types_loaded;
 
   virtual bool process_request(void);
-  PT(PandaNode) qpload_file(const Filename &filename) const;
-  PT(PandaNode) qpload_unknown_file_type(const Filename &filename) const;
+  PT(PandaNode) load_file(const Filename &filename) const;
+  PT(PandaNode) load_unknown_file_type(const Filename &filename) const;
   void resolve_unknown_file_type(Filename &filename) const;
 
   typedef TokenBoard<LoaderToken> LoaderTokenBoard;

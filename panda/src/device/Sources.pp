@@ -9,36 +9,36 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
   #define SOURCES \
-    qpanalogNode.I qpanalogNode.h \
-    qpbuttonNode.I qpbuttonNode.h  \
+    analogNode.I analogNode.h \
+    buttonNode.I buttonNode.h  \
     clientAnalogDevice.I clientAnalogDevice.h clientBase.I  \
     clientBase.h clientButtonDevice.I clientButtonDevice.h  \
     clientDevice.I clientDevice.h clientDialDevice.I  \
     clientDialDevice.h clientTrackerDevice.I  \
     clientTrackerDevice.h config_device.h \
-    qpdialNode.I qpdialNode.h  \
+    dialNode.I dialNode.h  \
     mouseAndKeyboard.h \
     trackerData.I trackerData.h \
-    qptrackerNode.I qptrackerNode.h \
-    qpvirtualMouse.h
+    trackerNode.I trackerNode.h \
+    virtualMouse.h
 
   #define INCLUDED_SOURCES \
-    qpanalogNode.cxx \
-    qpbuttonNode.cxx \
+    analogNode.cxx \
+    buttonNode.cxx \
     clientAnalogDevice.cxx  \
     clientBase.cxx clientButtonDevice.cxx clientDevice.cxx  \
     clientDialDevice.cxx clientTrackerDevice.cxx  \
     config_device.cxx \
     dialNode.cxx \
-    qpdialNode.cxx \
+    dialNode.cxx \
     mouseAndKeyboard.cxx \
     trackerData.cxx \
-    qptrackerNode.cxx \
-    qpvirtualMouse.cxx
+    trackerNode.cxx \
+    virtualMouse.cxx
 
   #define INSTALL_HEADERS \
-    qpanalogNode.I qpanalogNode.h \
-    qpbuttonNode.I qpbuttonNode.h \
+    analogNode.I analogNode.h \
+    buttonNode.I buttonNode.h \
     clientAnalogDevice.I clientAnalogDevice.h \
     clientBase.I clientBase.h \
     clientButtonDevice.I clientButtonDevice.h \
@@ -47,10 +47,10 @@
     clientTrackerDevice.I clientTrackerDevice.h \
     config_device.h \
     mouseAndKeyboard.h \
-    qpdialNode.I qpdialNode.h  \
+    dialNode.I dialNode.h  \
     trackerData.I trackerData.h \
-    qptrackerNode.I qptrackerNode.h \
-    qpvirtualMouse.h
+    trackerNode.I trackerNode.h \
+    virtualMouse.h
 
   #define IGATESCAN all
 

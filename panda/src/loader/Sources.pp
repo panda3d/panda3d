@@ -12,17 +12,17 @@
     bamFile.I bamFile.h config_loader.h loader.I loader.h  \
     loaderFileType.h loaderFileTypeBam.h  \
     loaderFileTypeRegistry.h \
-    qpmodelPool.I qpmodelPool.h  
+    modelPool.I modelPool.h  
      
   #define INCLUDED_SOURCES  \
     bamFile.cxx config_loader.cxx loader.cxx loaderFileType.cxx  \
     loaderFileTypeBam.cxx loaderFileTypeRegistry.cxx  \
-    qpmodelPool.cxx
+    modelPool.cxx
 
   #define INSTALL_HEADERS \
     bamFile.I bamFile.h loader.I loader.h loaderFileType.h \
     loaderFileTypeBam.h loaderFileTypeRegistry.h \
-    qpmodelPool.I qpmodelPool.h  
+    modelPool.I modelPool.h  
 
   #define IGATESCAN all
 

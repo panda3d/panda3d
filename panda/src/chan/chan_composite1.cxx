@@ -5,7 +5,7 @@
 #include "movingPartMatrix.cxx"
 #include "movingPartScalar.cxx"
 #include "partBundle.cxx"
-#include "qppartBundleNode.cxx"
+#include "partBundleNode.cxx"
 #include "partGroup.cxx"
 #include "vector_PartGroupStar.cxx"
 

@@ -60,7 +60,7 @@ private:
   typedef pmap<int, PT(TextGlyph)> Glyphs;
   Glyphs _glyphs;
   float _font_height;
-  PT(PandaNode) _qpfont;
+  PT(PandaNode) _font;
 
 public:
   static TypeHandle get_class_type() {

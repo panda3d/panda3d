@@ -29,7 +29,7 @@
 #include "drawMask.h"
 
 class PandaNode;
-class qpCullTraverser;
+class CullTraverser;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CullTraverserData
@@ -47,7 +47,7 @@ class qpCullTraverser;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CullTraverserData {
 public:
-  INLINE CullTraverserData(const qpNodePath &start,
+  INLINE CullTraverserData(const NodePath &start,
                            const TransformState *render_transform,
                            const TransformState *net_transform,
                            const RenderState *state,
@@ -66,7 +66,7 @@ public:
   INLINE PandaNode *node() const;
 
   INLINE bool is_in_view(const DrawMask &camera_mask);
-  void apply_transform_and_state(qpCullTraverser *trav);
+  void apply_transform_and_state(CullTraverser *trav);
 
   WorkingNodePath _node_path;
   CPT(TransformState) _render_transform;

@@ -20,7 +20,7 @@
 #include "clockObject.h"
 #include "pStatClient.h"
 #include "eventQueue.h"
-#include "qpdataGraphTraverser.h"
+#include "dataGraphTraverser.h"
 #include "interactiveGraphicsPipe.h"
 #include "config_framework.h"
 
@@ -35,7 +35,7 @@ PandaFramework() :
 {
   _is_open = false;
   _made_default_pipe = false;
-  _data_root = qpNodePath("data");
+  _data_root = NodePath("data");
   _window_title = "Panda";
   _start_time = 0.0;
   _frame_count = 0;
@@ -366,7 +366,7 @@ enable_default_keys() {
 bool PandaFramework::
 do_frame() {
   nassertr(_is_open, false);
-  qpDataGraphTraverser dg_trav;
+  DataGraphTraverser dg_trav;
   dg_trav.traverse(_data_root.node());
   _event_handler.process_events();
   _engine.render_frame();

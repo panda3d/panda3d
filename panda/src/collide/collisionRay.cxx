@@ -17,14 +17,14 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "collisionRay.h"
-#include "qpcollisionHandler.h"
-#include "qpcollisionEntry.h"
+#include "collisionHandler.h"
+#include "collisionEntry.h"
 #include "config_collide.h"
 #include "geom.h"
-#include "qpgeomNode.h"
+#include "geomNode.h"
 #include "geomLinestrip.h"
 #include "boundingLine.h"
-#include "qplensNode.h"
+#include "lensNode.h"
 #include "lens.h"
 #include "datagram.h"
 #include "datagramIterator.h"
@@ -50,7 +50,7 @@ make_copy() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionRay::
-test_intersection(qpCollisionHandler *record, const qpCollisionEntry &entry,
+test_intersection(CollisionHandler *record, const CollisionEntry &entry,
                   const CollisionSolid *into) const {
   return into->test_intersection_from_ray(record, entry);
 }
@@ -94,9 +94,9 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionRay::set_from_lens
 //       Access: Public
-//  Description: Accepts a qpLensNode and a 2-d point in the range
+//  Description: Accepts a LensNode and a 2-d point in the range
 //               [-1,1].  Sets the CollisionRay so that it begins at
-//               the qpLensNode's near plane and extends to
+//               the LensNode's near plane and extends to
 //               infinity, making it suitable for picking objects from
 //               the screen given a camera and a mouse location.
 //
@@ -104,7 +104,7 @@ output(ostream &out) const {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CollisionRay::
-set_from_lens(qpLensNode *camera, const LPoint2f &point) {
+set_from_lens(LensNode *camera, const LPoint2f &point) {
   Lens *lens = camera->get_lens();
 
   bool success = true;

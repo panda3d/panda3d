@@ -18,14 +18,14 @@
 
 
 #include "collisionPlane.h"
-#include "qpcollisionHandler.h"
-#include "qpcollisionEntry.h"
+#include "collisionHandler.h"
+#include "collisionEntry.h"
 #include "collisionSphere.h"
 #include "collisionRay.h"
 #include "config_collide.h"
 
 #include "pointerToArray.h"
-#include "qpgeomNode.h"
+#include "geomNode.h"
 #include "geom.h"
 #include "datagram.h"
 #include "datagramIterator.h"
@@ -52,7 +52,7 @@ make_copy() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionPlane::
-test_intersection(qpCollisionHandler *, const qpCollisionEntry &,
+test_intersection(CollisionHandler *, const CollisionEntry &,
                   const CollisionSolid *) const {
   // Planes cannot currently be intersected from, only into.  Do not
   // add a CollisionPlane to a CollisionTraverser.
@@ -118,8 +118,8 @@ recompute_bound() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionPlane::
-test_intersection_from_sphere(qpCollisionHandler *record,
-                              const qpCollisionEntry &entry) const {
+test_intersection_from_sphere(CollisionHandler *record,
+                              const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), 0);
 
@@ -139,7 +139,7 @@ test_intersection_from_sphere(qpCollisionHandler *record,
       << "intersection detected from " << *entry.get_from_node() << " into "
       << entry.get_into_node_path() << "\n";
   }
-  PT(qpCollisionEntry) new_entry = new qpCollisionEntry(entry);
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
   LVector3f into_normal = get_normal() * entry.get_inv_wrt_space();
   float into_depth = from_radius - dist;
@@ -157,8 +157,8 @@ test_intersection_from_sphere(qpCollisionHandler *record,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionPlane::
-test_intersection_from_ray(qpCollisionHandler *record,
-                           const qpCollisionEntry &entry) const {
+test_intersection_from_ray(CollisionHandler *record,
+                           const CollisionEntry &entry) const {
   const CollisionRay *ray;
   DCAST_INTO_R(ray, entry.get_from(), 0);
 
@@ -181,7 +181,7 @@ test_intersection_from_ray(qpCollisionHandler *record,
       << "intersection detected from " << *entry.get_from_node() << " into "
       << entry.get_into_node_path() << "\n";
   }
-  PT(qpCollisionEntry) new_entry = new qpCollisionEntry(entry);
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
   LPoint3f into_intersection_point = from_origin + t * from_direction;
   new_entry->set_into_intersection_point(into_intersection_point);

@@ -27,7 +27,7 @@
 #include "pmap.h"
 
 class PandaNode;
-class qpGeomNode;
+class GeomNode;
 class Geom;
 class Texture;
 
@@ -48,7 +48,7 @@ public:
 
 private:
   void collect_statistics(PandaNode *node, bool under_instance);
-  void collect_statistics(qpGeomNode *geom_node);
+  void collect_statistics(GeomNode *geom_node);
   void collect_statistics(Geom *geom);
   void collect_statistics(Texture *texture);
 

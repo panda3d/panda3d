@@ -28,6 +28,7 @@
 #include "pset.h"
 
 class GraphicsStateGuardianBase;
+class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TransformState

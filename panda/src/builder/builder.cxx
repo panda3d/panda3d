@@ -22,7 +22,7 @@
 #include "pmap.h"
 #include "builder.h"
 #include "pandaNode.h"
-#include "qpgeomNode.h"
+#include "geomNode.h"
 #include "dcast.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -66,12 +66,12 @@ Builder::
 // with the same Node pointer have different names, then they should
 // be given two different GeomNodes.
 
-class qpNodeMap : public Namable {
+class NodeMap : public Namable {
 public:
-  qpNodeMap(PandaNode *node, const BuilderBucket *bucket)
+  NodeMap(PandaNode *node, const BuilderBucket *bucket)
     : _node(node), _bucket(bucket) { }
 
-  bool operator < (const qpNodeMap &other) const {
+  bool operator < (const NodeMap &other) const {
     if (_node != other._node) {
       return _node < other._node;
     }
@@ -113,9 +113,9 @@ public:
 //               have different names, then two different GeomNodes
 //               are created, one with each name.
 ////////////////////////////////////////////////////////////////////
-qpGeomNode *Builder::
-qpbuild(const string &default_name) {
-  typedef pmap<qpNodeMap, qpGeomNode *> GeomNodeMap;
+GeomNode *Builder::
+build(const string &default_name) {
+  typedef pmap<NodeMap, GeomNode *> GeomNodeMap;
   GeomNodeMap geom_nodes;
 
   // First, build all the Geoms and create GeomNodes for them.  Each
@@ -126,15 +126,15 @@ qpbuild(const string &default_name) {
        i != _buckets.end();
        ++i) {
     BuilderBucket *bucket = (*i).get_bucket();
-    PandaNode *node = bucket->_qpnode;
+    PandaNode *node = bucket->_node;
     //    const string &name = bucket->get_name();
-    qpGeomNode *geom_node = NULL;
+    GeomNode *geom_node = NULL;
 
-    if (node!=NULL && node->is_of_type(qpGeomNode::get_class_type())) {
+    if (node!=NULL && node->is_of_type(GeomNode::get_class_type())) {
       // The node is a GeomNode.  In this case, we simply use that
       // node.  We can't separate them out by name in this case; we'll
       // just assign to it the first nonempty name we encounter.
-      geom_node = DCAST(qpGeomNode, node);
+      geom_node = DCAST(GeomNode, node);
 
       // Since the caller already created this GeomNode and passed it
       // in, we'll leave it up to the caller to name the node and set
@@ -142,15 +142,15 @@ qpbuild(const string &default_name) {
 
     } else {
       // The node is not a GeomNode, so look it up in the map.
-      GeomNodeMap::iterator f = geom_nodes.find(qpNodeMap(node, bucket));
+      GeomNodeMap::iterator f = geom_nodes.find(NodeMap(node, bucket));
       if (f != geom_nodes.end()) {
         geom_node = (*f).second;
 
       } else {
         // No such node/name combination.  Create a new one.
-        geom_node = bucket->qpmake_geom_node();
+        geom_node = bucket->make_geom_node();
         if (geom_node != NULL) {
-          geom_nodes[qpNodeMap(node, bucket)] = geom_node;
+          geom_nodes[NodeMap(node, bucket)] = geom_node;
         }
       }
     }
@@ -164,15 +164,15 @@ qpbuild(const string &default_name) {
   // group nodes.  Save out the geom_node associated with a NULL Node;
   // this one is returned from this function.
 
-  qpGeomNode *base_geom_node = NULL;
+  GeomNode *base_geom_node = NULL;
 
   GeomNodeMap::iterator gi;
 
   for (gi = geom_nodes.begin();
        gi != geom_nodes.end();
        ++gi) {
-    const qpNodeMap &nm = (*gi).first;
-    qpGeomNode *geom_node = (*gi).second;
+    const NodeMap &nm = (*gi).first;
+    GeomNode *geom_node = (*gi).second;
 
     PandaNode *node = nm._node;
     const string &name = nm._bucket->get_name();

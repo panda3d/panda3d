@@ -66,7 +66,7 @@ const bool cull_sorting = config_display.GetBool("cull-sorting", true);
 
 // This is normally true; set it false to disable view-frustum culling
 // (primarily useful for debugging).
-const bool qpview_frustum_cull = config_display.GetBool("view-frustum-cull", true);
+const bool view_frustum_cull = config_display.GetBool("view-frustum-cull", true);
 
 const float gsg_clear_r = config_display.GetFloat("gsg-clear-r", 0.0);
 const float gsg_clear_g = config_display.GetFloat("gsg-clear-g", 0.0);

@@ -23,7 +23,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE DXGeomNodeContext::
-DXGeomNodeContext(qpGeomNode *node) : GeomNodeContext(node)
+DXGeomNodeContext(GeomNode *node) : GeomNodeContext(node)
 {
   _num_verts = 0;
 /*

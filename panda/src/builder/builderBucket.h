@@ -36,7 +36,7 @@
 
 class Geom;
 class PandaNode;
-class qpGeomNode;
+class GeomNode;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : BuilderBucket
@@ -64,7 +64,7 @@ public:
   virtual ~BuilderBucket();
 
   virtual BuilderBucket *make_copy() const;
-  virtual qpGeomNode *qpmake_geom_node();
+  virtual GeomNode *make_geom_node();
   virtual Geom *done_geom(Geom *geom);
   void add_attrib(const RenderAttrib *attrib);
 
@@ -86,7 +86,7 @@ public:
 
   virtual void output(ostream &out) const;
 
-  PandaNode *_qpnode;
+  PandaNode *_node;
 
   short _drawBin;
   unsigned int _drawOrder;

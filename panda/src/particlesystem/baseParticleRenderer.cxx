@@ -29,7 +29,7 @@
 BaseParticleRenderer::
 BaseParticleRenderer(ParticleRendererAlphaMode alpha_mode) :
   _alpha_mode(PR_NOT_INITIALIZED_YET) {
-  _render_node = new qpGeomNode("BaseParticleRenderer render node");
+  _render_node = new GeomNode("BaseParticleRenderer render node");
 
   _user_alpha = 1.0f;
 
@@ -44,7 +44,7 @@ BaseParticleRenderer(ParticleRendererAlphaMode alpha_mode) :
 BaseParticleRenderer::
 BaseParticleRenderer(const BaseParticleRenderer& copy) :
   _alpha_mode(PR_ALPHA_NONE) {
-  _render_node = new qpGeomNode("BaseParticleRenderer render node");
+  _render_node = new GeomNode("BaseParticleRenderer render node");
 
   _user_alpha = copy._user_alpha;
 

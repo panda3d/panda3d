@@ -19,12 +19,12 @@
 #ifndef PARTGROUP_H
 #define PARTGROUP_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <typedWritableReferenceCount.h>
-#include <pointerTo.h>
-#include <namable.h>
-#include <typedef.h>
+#include "typedWritableReferenceCount.h"
+#include "pointerTo.h"
+#include "namable.h"
+#include "typedef.h"
 
 #include "plist.h"
 
@@ -32,6 +32,7 @@ class AnimControl;
 class AnimGroup;
 class PartBundle;
 class BamReader;
+class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PartGroup
@@ -130,7 +131,6 @@ private:
   static TypeHandle _type_handle;
 
   friend class Character;
-  friend class qpCharacter;
 };
 
 #include "partGroup.I"

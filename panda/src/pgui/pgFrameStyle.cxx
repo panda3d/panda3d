@@ -19,11 +19,11 @@
 #include "pgFrameStyle.h"
 #include "geomTristrip.h"
 #include "geomTrifan.h"
-#include "qpgeomNode.h"
+#include "geomNode.h"
 #include "pandaNode.h"
 #include "transparencyAttrib.h"
 #include "pointerTo.h"
-#include "qpnodePath.h"
+#include "nodePath.h"
 
 ostream &
 operator << (ostream &out, PGFrameStyle::Type type) {
@@ -109,32 +109,32 @@ xform(const LMatrix4f &mat) {
 //               The return value is the generated NodePath, if any,
 //               or an empty NodePath if nothing is generated.
 ////////////////////////////////////////////////////////////////////
-qpNodePath PGFrameStyle::
-generate_into(const qpNodePath &parent, const LVecBase4f &frame) {
+NodePath PGFrameStyle::
+generate_into(const NodePath &parent, const LVecBase4f &frame) {
   PT(PandaNode) new_node;
 
   switch (_type) {
   case T_none:
-    return qpNodePath();
+    return NodePath();
 
   case T_flat:
-    new_node = qpgenerate_flat_geom(frame);
+    new_node = generate_flat_geom(frame);
     break;
 
   case T_bevel_out:
-    new_node = qpgenerate_bevel_geom(frame, false);
+    new_node = generate_bevel_geom(frame, false);
     break;
 
   case T_bevel_in:
-    new_node = qpgenerate_bevel_geom(frame, true);
+    new_node = generate_bevel_geom(frame, true);
     break;
 
   case T_groove:
-    new_node = qpgenerate_groove_geom(frame, true);
+    new_node = generate_groove_geom(frame, true);
     break;
 
   case T_ridge:
-    new_node = qpgenerate_groove_geom(frame, false);
+    new_node = generate_groove_geom(frame, false);
     break;
 
   default:
@@ -151,14 +151,14 @@ generate_into(const qpNodePath &parent, const LVecBase4f &frame) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGFrameStyle::qpgenerate_flat_geom
+//     Function: PGFrameStyle::generate_flat_geom
 //       Access: Private
-//  Description: Generates the qpGeomNode appropriate to a T_flat
+//  Description: Generates the GeomNode appropriate to a T_flat
 //               frame.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) PGFrameStyle::
-qpgenerate_flat_geom(const LVecBase4f &frame) {
-  PT(qpGeomNode) gnode = new qpGeomNode("flat");
+generate_flat_geom(const LVecBase4f &frame) {
+  PT(GeomNode) gnode = new GeomNode("flat");
   Geom *geom = new GeomTristrip;
   gnode->add_geom(geom);
 
@@ -189,13 +189,13 @@ qpgenerate_flat_geom(const LVecBase4f &frame) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGFrameStyle::qpgenerate_bevel_geom
+//     Function: PGFrameStyle::generate_bevel_geom
 //       Access: Private
-//  Description: Generates the qpGeomNode appropriate to a T_bevel_in or
+//  Description: Generates the GeomNode appropriate to a T_bevel_in or
 //               T_bevel_out frame.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) PGFrameStyle::
-qpgenerate_bevel_geom(const LVecBase4f &frame, bool in) {
+generate_bevel_geom(const LVecBase4f &frame, bool in) {
   //
   // Colors:
   //
@@ -253,7 +253,7 @@ qpgenerate_bevel_geom(const LVecBase4f &frame, bool in) {
   //                                            * *
   //                                              0
 
-  PT(qpGeomNode) gnode = new qpGeomNode("bevel");
+  PT(GeomNode) gnode = new GeomNode("bevel");
 
   float left = frame[0];
   float right = frame[1];
@@ -349,13 +349,13 @@ qpgenerate_bevel_geom(const LVecBase4f &frame, bool in) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGFrameStyle::qpgenerate_groove_geom
+//     Function: PGFrameStyle::generate_groove_geom
 //       Access: Private
-//  Description: Generates the qpGeomNode appropriate to a T_groove or
+//  Description: Generates the GeomNode appropriate to a T_groove or
 //               T_ridge frame.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) PGFrameStyle::
-qpgenerate_groove_geom(const LVecBase4f &frame, bool in) {
+generate_groove_geom(const LVecBase4f &frame, bool in) {
   //
   // Colors:
   //
@@ -454,7 +454,7 @@ qpgenerate_groove_geom(const LVecBase4f &frame, bool in) {
   //                                                    * *
   //                                                      0
 
-  PT(qpGeomNode) gnode = new qpGeomNode("groove");
+  PT(GeomNode) gnode = new GeomNode("groove");
 
   float left = frame[0];
   float right = frame[1];

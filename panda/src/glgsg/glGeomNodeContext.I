@@ -23,7 +23,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GLGeomNodeContext::
-GLGeomNodeContext(qpGeomNode *node) :
+GLGeomNodeContext(GeomNode *node) :
   GeomNodeContext(node)
 {
   _index = 0;

@@ -20,7 +20,7 @@
 // #include reference, and please don't bother us about it.  The line
 // must be exactly as shown.
 /* okcircular */
-#include "qpcharacter.h"
+#include "character.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterJointBundle::Copy Constructor
@@ -35,12 +35,12 @@ CharacterJointBundle(const CharacterJointBundle &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CharacterJointBundle::get_qpnode
+//     Function: CharacterJointBundle::get_node
 //       Access: Public
 //  Description: Returns the Character node associated with this
 //               PartBundle.
 ////////////////////////////////////////////////////////////////////
-INLINE qpCharacter *CharacterJointBundle::
-get_qpnode() const {
-  return DCAST(qpCharacter, PartBundle::get_qpnode());
+INLINE Character *CharacterJointBundle::
+get_node() const {
+  return DCAST(Character, PartBundle::get_node());
 }

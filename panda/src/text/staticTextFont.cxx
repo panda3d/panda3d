@@ -21,7 +21,7 @@
 
 #include "geom.h"
 #include "geomPoint.h"
-#include "qpgeomNode.h"
+#include "geomNode.h"
 #include "renderState.h"
 #include "dcast.h"
 
@@ -37,7 +37,7 @@ TypeHandle StaticTextFont::_type_handle;
 StaticTextFont::
 StaticTextFont(PandaNode *font_def) {
   nassertv(font_def != (PandaNode *)NULL);
-  _qpfont = font_def;
+  _font = font_def;
   _glyphs.clear();
 
   find_characters(font_def, RenderState::make_empty());
@@ -191,7 +191,7 @@ find_character_gsets(PandaNode *root, Geom *&ch, GeomPoint *&dot,
   CPT(RenderState) next_net_state = net_state->compose(root->get_state());
 
   if (root->is_geom_node()) {
-    qpGeomNode *geode = DCAST(qpGeomNode, root);
+    GeomNode *geode = DCAST(GeomNode, root);
 
     for (int i = 0; i < geode->get_num_geoms(); i++) {
       dDrawable *geom = geode->get_geom(i);

@@ -24,7 +24,7 @@
 #include "luse.h"
 
 class PandaNode;
-class qpNodePath;
+class NodePath;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PGFrameStyle
@@ -62,12 +62,12 @@ PUBLISHED:
 
 public:
   bool xform(const LMatrix4f &mat);
-  qpNodePath generate_into(const qpNodePath &parent, const LVecBase4f &frame);
+  NodePath generate_into(const NodePath &parent, const LVecBase4f &frame);
 
 private:
-  PT(PandaNode) qpgenerate_flat_geom(const LVecBase4f &frame);
-  PT(PandaNode) qpgenerate_bevel_geom(const LVecBase4f &frame, bool in);
-  PT(PandaNode) qpgenerate_groove_geom(const LVecBase4f &frame, bool in);
+  PT(PandaNode) generate_flat_geom(const LVecBase4f &frame);
+  PT(PandaNode) generate_bevel_geom(const LVecBase4f &frame, bool in);
+  PT(PandaNode) generate_groove_geom(const LVecBase4f &frame, bool in);
 
 private:
   Type _type;

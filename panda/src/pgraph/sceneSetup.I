@@ -35,7 +35,7 @@ SceneSetup() {
 //  Description: Specifies the root node of the scene.
 ////////////////////////////////////////////////////////////////////
 INLINE void SceneSetup::
-set_scene_root(const qpNodePath &scene_root) {
+set_scene_root(const NodePath &scene_root) {
   _scene_root = scene_root;
 }
 
@@ -44,7 +44,7 @@ set_scene_root(const qpNodePath &scene_root) {
 //       Access: Public
 //  Description: Returns the root node of the scene.
 ////////////////////////////////////////////////////////////////////
-INLINE const qpNodePath &SceneSetup::
+INLINE const NodePath &SceneSetup::
 get_scene_root() const {
   return _scene_root;
 }
@@ -55,7 +55,7 @@ get_scene_root() const {
 //  Description: Specifies the NodePath to the camera.
 ////////////////////////////////////////////////////////////////////
 INLINE void SceneSetup::
-set_camera_path(const qpNodePath &camera_path) {
+set_camera_path(const NodePath &camera_path) {
   _camera_path = camera_path;
 }
 
@@ -64,7 +64,7 @@ set_camera_path(const qpNodePath &camera_path) {
 //       Access: Public
 //  Description: Returns the NodePath to the camera.
 ////////////////////////////////////////////////////////////////////
-INLINE const qpNodePath &SceneSetup::
+INLINE const NodePath &SceneSetup::
 get_camera_path() const {
   return _camera_path;
 }
@@ -75,7 +75,7 @@ get_camera_path() const {
 //  Description: Specifies the camera used to render the scene.
 ////////////////////////////////////////////////////////////////////
 INLINE void SceneSetup::
-set_camera_node(const qpCamera *camera_node) {
+set_camera_node(const Camera *camera_node) {
   _camera_node = camera_node;
 }
 
@@ -84,7 +84,7 @@ set_camera_node(const qpCamera *camera_node) {
 //       Access: Public
 //  Description: Returns the camera used to render the scene.
 ////////////////////////////////////////////////////////////////////
-INLINE const qpCamera *SceneSetup::
+INLINE const Camera *SceneSetup::
 get_camera_node() const {
   return _camera_node;
 }

@@ -23,7 +23,7 @@
 
 #include "collisionSolid.h"
 
-class qpLensNode;
+class LensNode;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : CollisionRay
@@ -45,8 +45,8 @@ public:
   virtual CollisionSolid *make_copy();
 
   virtual int
-  test_intersection(qpCollisionHandler *record,
-                    const qpCollisionEntry &entry,
+  test_intersection(CollisionHandler *record,
+                    const CollisionEntry &entry,
                     const CollisionSolid *into) const;
 
   virtual void xform(const LMatrix4f &mat);
@@ -63,8 +63,8 @@ PUBLISHED:
   INLINE void set_direction(float x, float y, float z);
   INLINE const LVector3f &get_direction() const;
 
-  bool set_from_lens(qpLensNode *camera, const LPoint2f &point);
-  INLINE bool set_from_lens(qpLensNode *camera, float px, float py);
+  bool set_from_lens(LensNode *camera, const LPoint2f &point);
+  INLINE bool set_from_lens(LensNode *camera, float px, float py);
 
 protected:
   virtual BoundingVolume *recompute_bound();

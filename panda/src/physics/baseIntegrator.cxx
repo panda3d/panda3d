@@ -19,7 +19,7 @@
 #include "baseIntegrator.h"
 #include "physicalNode.h"
 #include "forceNode.h"
-#include "qpnodePath.h"
+#include "nodePath.h"
 
 ////////////////////////////////////////////////////////////////////
 //    Function : BaseIntegrator
@@ -67,14 +67,14 @@ precompute_linear_matrices(Physical *physical,
   _precomputed_linear_matrices.clear();
   _precomputed_linear_matrices.reserve(global_force_vec_size + local_force_vec_size);
 
-  qpNodePath physical_np(physical_node);
+  NodePath physical_np(physical_node);
 
   // tally the global xforms
   for (i = 0; i < global_force_vec_size; i++) {
     force_node = forces[i]->get_force_node();
     nassertv(force_node != (ForceNode *) NULL);
 
-    qpNodePath force_np(force_node);
+    NodePath force_np(force_node);
     _precomputed_linear_matrices.push_back(physical_np.get_mat(force_node));
   }
 
@@ -86,7 +86,7 @@ precompute_linear_matrices(Physical *physical,
     force_node = force_vector[i]->get_force_node();
     nassertv(force_node != (ForceNode *) NULL);
 
-    qpNodePath force_np(force_node);
+    NodePath force_np(force_node);
     _precomputed_linear_matrices.push_back(physical_np.get_mat(force_node));
   }
 }
@@ -119,14 +119,14 @@ precompute_angular_matrices(Physical *physical,
   _precomputed_angular_matrices.clear();
   _precomputed_angular_matrices.reserve(global_force_vec_size + local_force_vec_size);
 
-  qpNodePath physical_np(physical_node);
+  NodePath physical_np(physical_node);
 
   // tally the global xforms
   for (i = 0; i < global_force_vec_size; i++) {
     force_node = forces[i]->get_force_node();
     nassertv(force_node != (ForceNode *) NULL);
 
-    qpNodePath force_np(force_node);
+    NodePath force_np(force_node);
     _precomputed_angular_matrices.push_back(physical_np.get_mat(force_node));
   }
 
@@ -138,7 +138,7 @@ precompute_angular_matrices(Physical *physical,
     force_node = force_vector[i]->get_force_node();
     nassertv(force_node != (ForceNode *) NULL);
 
-    qpNodePath force_np(force_node);
+    NodePath force_np(force_node);
     _precomputed_angular_matrices.push_back(physical_np.get_mat(force_node));
   }
 }

@@ -1,8 +1,8 @@
 
-#include "qpmouseWatcher.cxx"
+#include "mouseWatcher.cxx"
 #include "mouseWatcherGroup.cxx"
 #include "mouseWatcherParameter.cxx"
 #include "mouseWatcherRegion.cxx"
-#include "qptrackball.cxx"
-#include "qptransform2sg.cxx"
+#include "trackball.cxx"
+#include "transform2sg.cxx"
 

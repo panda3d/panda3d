@@ -22,7 +22,7 @@
 #include "graphicsWindow.h"
 #include "config_display.h"
 #include "displayRegion.h"
-#include "qpcamera.h"
+#include "camera.h"
 #include "dcast.h"
 
 
@@ -35,7 +35,7 @@ DisplayRegion::
 DisplayRegion(GraphicsLayer *layer) :
   _l(0.), _r(1.), _b(0.), _t(1.),
   _layer(layer),
-  _camera_node((qpCamera *)NULL),
+  _camera_node((Camera *)NULL),
   _active(true)
 {
 }
@@ -50,7 +50,7 @@ DisplayRegion(GraphicsLayer *layer, const float l,
               const float r, const float b, const float t) :
   _l(l), _r(r), _b(b), _t(t),
   _layer(layer),
-  _camera_node((qpCamera *)NULL),
+  _camera_node((Camera *)NULL),
   _active(true)
 {
 }
@@ -67,7 +67,7 @@ DisplayRegion(int xsize, int ysize) :
   _l(0.), _r(1.), _b(0.), _t(1.),
   _pl(0), _pr(xsize), _pb(0), _pt(ysize),
   _layer((GraphicsLayer *)NULL),
-  _camera_node((qpCamera *)NULL),
+  _camera_node((Camera *)NULL),
   _active(true)
 {
 }
@@ -99,7 +99,7 @@ operator = (const DisplayRegion&) {
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
 ~DisplayRegion() {
-  set_qpcamera(qpNodePath());
+  set_camera(NodePath());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -161,7 +161,7 @@ get_pipe() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_qpcamera
+//     Function: DisplayRegion::set_camera
 //       Access: Public
 //  Description: Sets the camera that is associated with this
 //               DisplayRegion.  There is a one-to-one association
@@ -169,30 +169,30 @@ get_pipe() const {
 //               was already associated with a different
 //               DisplayRegion, that association is removed.
 //
-//               The camera is actually set via a qpNodePath, which
+//               The camera is actually set via a NodePath, which
 //               clarifies which instance of the camera (if there
 //               happen to be multiple instances) we should use.
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
-set_qpcamera(const qpNodePath &camera) {
-  qpCamera *camera_node = (qpCamera *)NULL;
+set_camera(const NodePath &camera) {
+  Camera *camera_node = (Camera *)NULL;
   if (!camera.is_empty()) {
     DCAST_INTO_V(camera_node, camera.node());
   }
 
   if (camera_node != _camera_node) {
-    if (_camera_node != (qpCamera *)NULL) {
+    if (_camera_node != (Camera *)NULL) {
       // We need to tell the old camera we're not using him anymore.
       _camera_node->remove_display_region(this);
     }
     _camera_node = camera_node;
-    if (_camera_node != (qpCamera *)NULL) {
+    if (_camera_node != (Camera *)NULL) {
       // Now tell the new camera we are using him.
       _camera_node->add_display_region(this);
     }
   }
 
-  _qpcamera = camera;
+  _camera = camera;
 }
 
 ////////////////////////////////////////////////////////////////////

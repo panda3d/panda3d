@@ -20,10 +20,12 @@
 #define __TYPED_WRITABLE_
 
 #include "typedObject.h"
-#include "writable.h"
 #include "vector_typedWritable.h"
 
 class BamReader;
+class BamWriter;
+class Datagram;
+class DatagramIterator;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TypedWritable
@@ -57,14 +59,9 @@ PUBLISHED:
 
 public:
   static void init_type() {
-    // We no longer derive from Writable, but we continue to record
-    // that derivation for now, just to keep bam files consistent
-    // until we move to bam version 4.0.
     TypedObject::init_type();
-    Writable::init_type();
     register_type(_type_handle, "TypedWritable",
-                  TypedObject::get_class_type(),
-                  Writable::get_class_type());
+                  TypedObject::get_class_type());
     TypeRegistry::ptr()->record_alternate_name(_type_handle, "TypedWriteable");
   }
   virtual TypeHandle get_type() const {

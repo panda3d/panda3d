@@ -40,10 +40,11 @@
 #include "pointerToArray.h"
 #include "notify.h"
 
-class qpNodePathComponent;
-class qpCullTraverser;
+class NodePathComponent;
+class CullTraverser;
 class CullTraverserData;
 class Light;
+class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PandaNode
@@ -74,7 +75,7 @@ public:
   virtual PandaNode *combine_with(PandaNode *other); 
 
   virtual bool has_cull_callback() const;
-  virtual bool cull_callback(qpCullTraverser *trav, CullTraverserData &data);
+  virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
   virtual bool has_selective_visibility() const;
   virtual int get_first_visible_child() const;
   virtual int get_next_visible_child(int n) const;
@@ -191,19 +192,19 @@ protected:
 private:
   class CData;
 
-  // parent-child manipulation for qpNodePath support.  Don't try to
+  // parent-child manipulation for NodePath support.  Don't try to
   // call these directly.
-  static PT(qpNodePathComponent) attach(qpNodePathComponent *parent, 
+  static PT(NodePathComponent) attach(NodePathComponent *parent, 
                                        PandaNode *child, int sort);
-  static void detach(qpNodePathComponent *child);
-  static void reparent(qpNodePathComponent *new_parent,
-                       qpNodePathComponent *child, int sort);
-  static PT(qpNodePathComponent) get_component(qpNodePathComponent *parent,
+  static void detach(NodePathComponent *child);
+  static void reparent(NodePathComponent *new_parent,
+                       NodePathComponent *child, int sort);
+  static PT(NodePathComponent) get_component(NodePathComponent *parent,
                                               PandaNode *child);
-  static PT(qpNodePathComponent) get_top_component(PandaNode *child,
+  static PT(NodePathComponent) get_top_component(PandaNode *child,
                                                    bool force);
-  PT(qpNodePathComponent) get_generic_component(bool accept_ambiguity);
-  void delete_component(qpNodePathComponent *component);
+  PT(NodePathComponent) get_generic_component(bool accept_ambiguity);
+  void delete_component(NodePathComponent *component);
   static void sever_connection(PandaNode *parent_node, PandaNode *child_node);
   static void new_connection(PandaNode *parent_node, PandaNode *child_node);
   void fix_path_lengths(const CData *cdata);
@@ -240,12 +241,12 @@ private:
   };
   typedef ov_set<UpConnection> Up;
 
-  // We also maintain a set of qpNodePathComponents in the node.  This
+  // We also maintain a set of NodePathComponents in the node.  This
   // represents the set of instances of this node that we have
-  // requested a qpNodePath for.  We don't keep reference counts; when
-  // each qpNodePathComponent destructs, it removes itself from this
+  // requested a NodePath for.  We don't keep reference counts; when
+  // each NodePathComponent destructs, it removes itself from this
   // set.
-  typedef pset<qpNodePathComponent *> Paths;
+  typedef pset<NodePathComponent *> Paths;
   
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
@@ -363,8 +364,8 @@ private:
   static TypeHandle _type_handle;
 
   friend class PandaNode::Children;
-  friend class qpNodePath;
-  friend class qpNodePathComponent;
+  friend class NodePath;
+  friend class NodePathComponent;
   friend class WorkingNodePath;
 };
 

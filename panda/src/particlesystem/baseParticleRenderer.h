@@ -23,7 +23,7 @@
 #include "referenceCount.h"
 #include "physicsObject.h"
 #include "renderState.h"
-#include "qpgeomNode.h"
+#include "geomNode.h"
 
 #include "particleCommonFuncs.h"
 #include "baseParticle.h"
@@ -36,7 +36,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS BaseParticleRenderer : public ReferenceCount {
 private:
-  PT(qpGeomNode) _render_node;
+  PT(GeomNode) _render_node;
 
   float _user_alpha;
 
@@ -72,7 +72,7 @@ PUBLISHED:
 
   virtual ~BaseParticleRenderer(void);
 
-  INLINE qpGeomNode *get_render_node(void) const;
+  INLINE GeomNode *get_render_node(void) const;
 
   INLINE void set_alpha_mode(ParticleRendererAlphaMode am);
   INLINE ParticleRendererAlphaMode get_alpha_mode(void) const;

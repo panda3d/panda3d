@@ -1,0 +1,1090 @@
+// Filename: nodePath.I
+// Created by:  drose (25Feb02)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::Default Constructor
+//       Access: Published
+//  Description: This constructs an empty NodePath with no nodes.
+////////////////////////////////////////////////////////////////////
+INLINE NodePath::
+NodePath() :
+  _error_type(ET_ok)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::Constructor
+//       Access: Published
+//  Description: This constructs a new NodePath with a single
+//               node.  An ordinary, unattached PandaNode is created
+//               with the indicated name.
+////////////////////////////////////////////////////////////////////
+INLINE NodePath::
+NodePath(const string &top_node_name) :
+  _error_type(ET_ok)
+{
+  PandaNode *top_node = new PandaNode(top_node_name);
+  _head = top_node->get_generic_component(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::Constructor
+//       Access: Published
+//  Description: This constructs a NodePath for the indicated node.
+//               If the node does not have any parents, this creates a
+//               singleton NodePath; otherwise, it automatically finds
+//               the path from the node to the root.  If the node has
+//               multiple paths to the root, one path is chosen
+//               arbitrarily and a warning message is printed (but see
+//               also NodePath::any_path(), below).
+////////////////////////////////////////////////////////////////////
+INLINE NodePath::
+NodePath(PandaNode *node) :
+  _error_type(ET_ok)
+{
+  if (node != (PandaNode *)NULL) {
+    _head = node->get_generic_component(false);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::any_path named constructor
+//       Access: Published, Static
+//  Description: Returns a new NodePath that represents any arbitrary
+//               path from the root to the indicated node.  This is
+//               the same thing that would be returned by
+//               NodePath(node), except that no warning is issued if
+//               the path is ambiguous.
+////////////////////////////////////////////////////////////////////
+INLINE NodePath NodePath::
+any_path(PandaNode *node) {
+  NodePath result;
+  if (node != (PandaNode *)NULL) {
+    result._head = node->get_generic_component(true);
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::Constructor
+//       Access: Published
+//  Description: Constructs a NodePath with the indicated parent
+//               NodePath and child node; the child node must be a
+//               stashed or unstashed child of the parent.
+////////////////////////////////////////////////////////////////////
+INLINE NodePath::
+NodePath(const NodePath &parent, PandaNode *child_node) :
+  _error_type(ET_fail)
+{
+  nassertv(!parent.is_empty());
+  nassertv(child_node != (PandaNode *)NULL);
+  _head = PandaNode::get_component(parent._head, child_node);
+  nassertv(_head != (NodePathComponent *)NULL);
+
+  if (_head != (NodePathComponent *)NULL) {
+    _error_type = ET_ok;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::Copy Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE NodePath::
+NodePath(const NodePath &copy) :
+  _head(copy._head),
+  _error_type(copy._error_type)
+{
+  uncollapse_head();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::Copy Assignment Operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+operator = (const NodePath &copy) {
+  _head = copy._head;
+  _error_type = copy._error_type;
+  uncollapse_head();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::not_found named constructor
+//       Access: Published, Static
+//  Description: Creates a NodePath with the ET_not_found error type
+//               set.
+////////////////////////////////////////////////////////////////////
+INLINE NodePath NodePath::
+not_found() {
+  NodePath result;
+  result._error_type = ET_not_found;
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::removed named constructor
+//       Access: Published, Static
+//  Description: Creates a NodePath with the ET_removed error type
+//               set.
+////////////////////////////////////////////////////////////////////
+INLINE NodePath NodePath::
+removed() {
+  NodePath result;
+  result._error_type = ET_removed;
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::fail named constructor
+//       Access: Published, Static
+//  Description: Creates a NodePath with the ET_fail error type
+//               set.
+////////////////////////////////////////////////////////////////////
+INLINE NodePath NodePath::
+fail() {
+  NodePath result;
+  result._error_type = ET_fail;
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_max_search_depth
+//       Access: Published, Static
+//  Description: Certain operations, such as find() or
+//               find_all_matches(), require a traversal of the scene
+//               graph to search for the target node or nodes.  This
+//               traversal does not attempt to detect cycles, so an
+//               arbitrary cap is set on the depth of the traversal as
+//               a poor man's cycle detection, in the event that a
+//               cycle has inadvertently been introduced into the
+//               scene graph.
+//
+//               There may be other reasons you'd want to truncate a
+//               search before the bottom of the scene graph has been
+//               reached.  In any event, this function sets the limit
+//               on the number of levels that a traversal will
+//               continue, and hence the maximum length of a path that
+//               may be returned by a traversal.
+//
+//               This is a static method, and so changing this
+//               parameter affects all of the NodePaths in the
+//               universe.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_max_search_depth(int max_search_depth) {
+  _max_search_depth = max_search_depth;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_max_search_depth
+//       Access: Published, Static
+//  Description: Returns the current setting of the search depth
+//               limit.  See set_max_search_depth.
+////////////////////////////////////////////////////////////////////
+INLINE int NodePath::
+get_max_search_depth() {
+  return _max_search_depth;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::is_empty
+//       Access: Published
+//  Description: Returns true if the NodePath contains no nodes.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+is_empty() const {
+  uncollapse_head();
+  return (_head == (NodePathComponent *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::is_singleton
+//       Access: Published
+//  Description: Returns true if the NodePath contains exactly one
+//               node.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+is_singleton() const {
+  uncollapse_head();
+  return (_head != (NodePathComponent *)NULL && _head->is_top_node());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_error_type
+//       Access: Published
+//  Description: If is_empty() is true, this returns a code that
+//               represents the reason why the NodePath is empty.
+////////////////////////////////////////////////////////////////////
+INLINE NodePath::ErrorType NodePath::
+get_error_type() const {
+  return _error_type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::node
+//       Access: Published
+//  Description: Returns the referenced node of the path.
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode *NodePath::
+node() const {
+  nassertr_always(!is_empty(), (PandaNode *)NULL);
+  return _head->get_node();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_key
+//       Access: Published
+//  Description: Returns an integer that is guaranteed to be the same
+//               for all NodePaths that represent the same node
+//               instance, and different for all NodePaths that
+//               represent a different node instance.  
+//
+//               The same key will be returned for a particular
+//               instance as long as at least one NodePath exists that
+//               represents that instance; if all NodePaths for a
+//               particular instance destruct and a new one is later
+//               created, it may have a different index.  However, a
+//               given key will never be reused for a different
+//               instance (unless the app has been running long enough
+//               that we overflow the integer key value).
+//
+//               There are a few special case circumstances that can
+//               cause the key for a particular instance to be
+//               changed.  These all involve different instances being
+//               collapsed into the same instance by some scene graph
+//               operation (for instance, detaching a node below an
+//               instanced node).
+////////////////////////////////////////////////////////////////////
+INLINE int NodePath::
+get_key() const {
+  if (is_empty()) {
+    return 0;
+  }
+  return _head->get_key();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_num_children
+//       Access: Published
+//  Description: Returns the number of children of the referenced node.
+////////////////////////////////////////////////////////////////////
+INLINE int NodePath::
+get_num_children() const {
+  nassertr_always(!is_empty(), 0);
+  return _head->get_node()->get_num_children();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_child
+//       Access: Published
+//  Description: Returns a NodePath representing the nth child of the
+//               referenced node.
+////////////////////////////////////////////////////////////////////
+INLINE NodePath NodePath::
+get_child(int n) const {
+  nassertr(n >= 0 && n < get_num_children(), NodePath());
+  NodePath child;
+  child._head = PandaNode::get_component(_head, _head->get_node()->get_child(n));
+  return child;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_parent
+//       Access: Published
+//  Description: Returns true if the referenced node has a parent;
+//               i.e. the NodePath chain contains at least two nodes.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+has_parent() const {
+  return !is_empty() && !is_singleton();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_parent
+//       Access: Published
+//  Description: Returns the NodePath to the parent of the referenced
+//               node: that is, this NodePath, shortened by one node.
+////////////////////////////////////////////////////////////////////
+INLINE NodePath NodePath::
+get_parent() const {
+  nassertr(has_parent(), NodePath::fail());
+  NodePath parent;
+  parent._head = _head->get_next();
+  return parent;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::attach_new_node
+//       Access: Published
+//  Description: Creates an ordinary PandaNode and attaches it below
+//               the current NodePath, returning a new NodePath that
+//               references it.
+////////////////////////////////////////////////////////////////////
+INLINE NodePath NodePath::
+attach_new_node(const string &name, int sort) const {
+  nassertr(verify_complete(), NodePath::fail());
+  nassertr_always(!is_empty(), *this);
+
+  return attach_new_node(new PandaNode(name), sort);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::ls
+//       Access: Published
+//  Description: Lists the hierarchy at and below the referenced node.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+ls() const {
+  ls(nout);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::ls
+//       Access: Published
+//  Description: Lists the hierarchy at and below the referenced node.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+ls(ostream &out, int indent_level) const {
+  if (is_empty()) {
+    out << "(empty)\n";
+  } else {
+    node()->ls(out, indent_level);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_state
+//       Access: Published
+//  Description: Returns the complete state object set on this node.
+////////////////////////////////////////////////////////////////////
+INLINE const RenderState *NodePath::
+get_state() const {
+  nassertr_always(!is_empty(), RenderState::make_empty());
+  return node()->get_state();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_state
+//       Access: Published
+//  Description: Changes the complete state object on this node.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_state(const RenderState *state) const {
+  nassertv_always(!is_empty());
+  node()->set_state(state);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_net_state
+//       Access: Published
+//  Description: Returns the net state on this node from the root.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(RenderState) NodePath::
+get_net_state() const {
+  uncollapse_head();
+  return r_get_net_state(_head);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_transform
+//       Access: Published
+//  Description: Returns the complete transform object set on this node.
+////////////////////////////////////////////////////////////////////
+INLINE const TransformState *NodePath::
+get_transform() const {
+  nassertr_always(!is_empty(), TransformState::make_identity());
+  return node()->get_transform();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_transform
+//       Access: Published
+//  Description: Changes the complete transform object on this node.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_transform(const TransformState *transform) const {
+  nassertv_always(!is_empty());
+  node()->set_transform(transform);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_net_transform
+//       Access: Published
+//  Description: Returns the net transform on this node from the root.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) NodePath::
+get_net_transform() const {
+  uncollapse_head();
+  return r_get_net_transform(_head);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_pos
+//       Access: Published
+//  Description: Sets the translation component of the transform,
+//               leaving rotation and scale untouched.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_pos(float x, float y, float z) {
+  set_pos(LPoint3f(x, y, z));
+}
+
+INLINE float NodePath::
+get_x() const {
+  return get_pos()[0];
+}
+
+INLINE float NodePath::
+get_y() const {
+  return get_pos()[1];
+}
+
+INLINE float NodePath::
+get_z() const {
+  return get_pos()[2];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_hpr
+//       Access: Published
+//  Description: Sets the rotation component of the transform,
+//               leaving translation and scale untouched.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_hpr(float h, float p, float r) {
+  set_hpr(LVecBase3f(h, p, r));
+}
+
+INLINE float NodePath::
+get_h() const {
+  return get_hpr()[0];
+}
+
+INLINE float NodePath::
+get_p() const {
+  return get_hpr()[1];
+}
+
+INLINE float NodePath::
+get_r() const {
+  return get_hpr()[2];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_scale
+//       Access: Published
+//  Description: Sets the scale component of the transform,
+//               leaving translation and rotation untouched.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_scale(float scale) {
+  set_scale(LVecBase3f(scale, scale, scale));
+}
+
+INLINE void NodePath::
+set_scale(float sx, float sy, float sz) {
+  set_scale(LVecBase3f(sx, sy, sz));
+}
+
+INLINE float NodePath::
+get_sx() const {
+  return get_scale()[0];
+}
+
+INLINE float NodePath::
+get_sy() const {
+  return get_scale()[1];
+}
+
+INLINE float NodePath::
+get_sz() const {
+  return get_scale()[2];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_pos_hpr
+//       Access: Published
+//  Description: Sets the translation and rotation component of the
+//               transform, leaving scale untouched.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_pos_hpr(float x, float y, float z, float h, float p, float r) {
+  set_pos_hpr(LVecBase3f(x, y, z), LVecBase3f(h, p, r));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_hpr_scale
+//       Access: Published
+//  Description: Sets the rotation and scale components of the
+//               transform, leaving translation untouched.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_hpr_scale(float h, float p, float r, float sx, float sy, float sz) {
+  set_hpr_scale(LVecBase3f(h, p, r), LVecBase3f(sx, sy, sz));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_pos_hpr_scale
+//       Access: Published
+//  Description: Completely replaces the transform with new
+//               translation, rotation, and scale components.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_pos_hpr_scale(float x, float y, float z, float h, float p, float r,
+                  float sx, float sy, float sz) {
+  set_pos_hpr_scale(LVecBase3f(x, y, z), LVecBase3f(h, p, r),
+                    LVecBase3f(sx, sy, sz));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_mat
+//       Access: Published
+//  Description: Completely removes any transform from the referenced
+//               node.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+clear_mat() {
+  nassertv_always(!is_empty());
+  node()->clear_transform();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_mat
+//       Access: Published
+//  Description: Returns true if a non-identity transform matrix has
+//               been applied to the referenced node, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+has_mat() const {
+  nassertr_always(!is_empty(), false);
+  return !node()->get_transform()->is_identity();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_mat
+//       Access: Published
+//  Description: Returns the transform matrix that has been applied to
+//               the referenced node, or the identity matrix if no
+//               matrix has been applied.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4f &NodePath::
+get_mat() const {
+  nassertr_always(!is_empty(), LMatrix4f::ident_mat());
+
+  return node()->get_transform()->get_mat();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_color_scale
+//       Access: Published
+//  Description: Sets the color scale component of the transform
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_color_scale(float sr, float sg, float sb, float sa) {
+  set_color_scale(LVecBase4f(sr, sg, sb, sa));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_sr
+//       Access: Published
+//  Description: Sets the red scale component of the transform
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_sr(float sr) {
+  LVecBase4f new_scale = get_color_scale();
+  new_scale[0] = sr;
+
+  set_color_scale(new_scale);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_sg
+//       Access: Published
+//  Description: Sets the alpha scale component of the transform
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_sg(float sg) {
+  LVecBase4f new_scale = get_color_scale();
+  new_scale[1] = sg;
+
+  set_color_scale(new_scale);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_sb
+//       Access: Published
+//  Description: Sets the blue scale component of the transform
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_sb(float sb) {
+  LVecBase4f new_scale = get_color_scale();
+  new_scale[2] = sb;
+
+  set_color_scale(new_scale);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_sa
+//       Access: Published
+//  Description: Sets the alpha scale component of the transform
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_sa(float sa) {
+  LVecBase4f new_scale = get_color_scale();
+  new_scale[3] = sa;
+
+  set_color_scale(new_scale);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_sr
+//       Access: Published
+//  Description: Gets the red scale component of the transform
+////////////////////////////////////////////////////////////////////
+INLINE float NodePath::
+get_sr() const {
+  return get_color_scale()[0];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_sg
+//       Access: Published
+//  Description: Gets the green scale component of the transform
+////////////////////////////////////////////////////////////////////
+INLINE float NodePath::
+get_sg() const {
+  return get_color_scale()[1];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_sb
+//       Access: Published
+//  Description: Gets the blue scale component of the transform
+////////////////////////////////////////////////////////////////////
+INLINE float NodePath::
+get_sb() const {
+  return get_color_scale()[2];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_sa
+//       Access: Published
+//  Description: Gets the alpha scale component of the transform
+////////////////////////////////////////////////////////////////////
+INLINE float NodePath::
+get_sa() const {
+  return get_color_scale()[3];
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::look_at
+//       Access: Published
+//  Description: Sets the transform on this NodePath so that it
+//               rotates to face the indicated point in space.  This
+//               will overwrite any previously existing scale on the
+//               node, although it will preserve any translation.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+look_at(float x, float y, float z) {
+  look_at(LPoint3f(x, y, z));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::heads_up
+//       Access: Published
+//  Description: Behaves like look_at(), but with a strong preference
+//               to keeping the up vector oriented in the indicated
+//               "up" direction.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+heads_up(float x, float y, float z) {
+  heads_up(LPoint3f(x, y, z));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_pos
+//       Access: Published
+//  Description: Sets the translation component of the transform,
+//               relative to the other node.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_pos(const NodePath &other, float x, float y, float z) {
+  set_pos(other, LPoint3f(x, y, z));
+}
+
+INLINE float NodePath::
+get_x(const NodePath &other) const {
+  return get_pos(other)[0];
+}
+
+INLINE float NodePath::
+get_y(const NodePath &other) const {
+  return get_pos(other)[1];
+}
+
+INLINE float NodePath::
+get_z(const NodePath &other) const {
+  return get_pos(other)[2];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_hpr
+//       Access: Published
+//  Description: Sets the rotation component of the transform,
+//               relative to the other node.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_hpr(const NodePath &other, float h, float p, float r) {
+  set_hpr(other, LPoint3f(h, p, r));
+}
+
+INLINE float NodePath::
+get_h(const NodePath &other) const {
+  return get_hpr(other)[0];
+}
+
+INLINE float NodePath::
+get_p(const NodePath &other) const {
+  return get_hpr(other)[1];
+}
+
+INLINE float NodePath::
+get_r(const NodePath &other) const {
+  return get_hpr(other)[2];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_scale
+//       Access: Published
+//  Description: Sets the scale component of the transform,
+//               relative to the other node.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_scale(const NodePath &other, float sx, float sy, float sz) {
+  set_scale(other, LPoint3f(sx, sy, sz));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_scale
+//       Access: Published
+//  Description: Returns the relative scale of the referenced node
+//               as seen from the other node.
+////////////////////////////////////////////////////////////////////
+INLINE float NodePath::
+get_sx(const NodePath &other) const {
+  return get_scale(other)[0];
+}
+
+INLINE float NodePath::
+get_sy(const NodePath &other) const {
+  return get_scale(other)[1];
+}
+
+INLINE float NodePath::
+get_sz(const NodePath &other) const {
+  return get_scale(other)[2];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_pos_hpr
+//       Access: Published
+//  Description: Sets the translation and rotation component of the
+//               transform, relative to the other node.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_pos_hpr(const NodePath &other,
+            float x, float y, float z,
+            float h, float p, float r) {
+  set_pos_hpr(other, LVecBase3f(x, y, z), LVecBase3f(h, p, r));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_hpr_scale
+//       Access: Published
+//  Description: Sets the rotation and scale components of the
+//               transform, leaving translation untouched.  This, or
+//               set_pos_hpr_scale, is the preferred way to update a
+//               transform when both hpr and scale are to be changed.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_hpr_scale(const NodePath &other,
+	      float h, float p, float r, float sx, float sy, float sz) {
+  set_hpr_scale(other, LVecBase3f(h, p, r), LVecBase3f(sx, sy, sz));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_pos_hpr_scale
+//       Access: Published
+//  Description: Completely replaces the transform with new
+//               translation, rotation, and scale components, relative
+//               to the other node.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_pos_hpr_scale(const NodePath &other,
+                  float x, float y, float z,
+                  float h, float p, float r,
+                  float sx, float sy, float sz) {
+  set_pos_hpr_scale(other, LVecBase3f(x, y, z), LVecBase3f(h, p, r),
+                    LVecBase3f(sx, sy, sz));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::look_at
+//       Access: Published
+//  Description: Sets the hpr on this NodePath so that it rotates to
+//               face the indicated point in space, which is relative
+//               to the other NodePath.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+look_at(const NodePath &other, float x, float y, float z) {
+  look_at(other, LPoint3f(x, y, z));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::heads_up
+//       Access: Published
+//  Description: Behaves like look_at(), but with a strong preference
+//               to keeping the up vector oriented in the indicated
+//               "up" direction.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+heads_up(const NodePath &other, float x, float y, float z) {
+  heads_up(other, LPoint3f(x, y, z));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_distance
+//       Access: Published
+//  Description: Returns the straight-line distance between this
+//               referenced node's coordinate frame's origin, and that
+//               of the other node's origin.
+////////////////////////////////////////////////////////////////////
+INLINE float NodePath::
+get_distance(const NodePath &other) const {
+  LPoint3f pos = get_pos(other);
+  return length(LVector3f(pos));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::adjust_all_priorities
+//       Access: Published
+//  Description: Adds the indicated adjustment amount (which may be
+//               negative) to the priority for all transitions on the
+//               referenced node, and for all nodes in the subgraph
+//               below.  This can be used to force these nodes not to
+//               be overridden by a high-level state change above.  If
+//               the priority would drop below zero, it is set to
+//               zero.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+adjust_all_priorities(int adjustment) {
+  nassertv_always(!is_empty());
+  r_adjust_all_priorities(node(), adjustment);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::show
+//       Access: Published
+//  Description: Undoes the effect of a previous hide() on this node:
+//               makes the referenced node (and the entire subgraph
+//               below this node) visible to all cameras.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+show() {
+  nassertv_always(!is_empty());
+  node()->set_draw_mask(DrawMask::all_on());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::show
+//       Access: Published
+//  Description: Makes the referenced node visible just to the
+//               cameras whose camera_mask shares the indicated bits.
+//               That is, this sets the indicated bits in the
+//               node's draw mask.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+show(DrawMask camera_mask) {
+  nassertv_always(!is_empty());
+  node()->set_draw_mask(node()->get_draw_mask() | camera_mask);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::hide
+//       Access: Published
+//  Description: Makes the referenced node (and the entire subgraph
+//               below this node) invisible to all cameras.  It
+//               remains part of the scene graph, its bounding volume
+//               still contributes to its parent's bounding volume,
+//               and it will still be involved in collision tests.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+hide() {
+  nassertv_always(!is_empty());
+  node()->set_draw_mask(DrawMask::all_off());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::hide
+//       Access: Published
+//  Description: Makes the referenced node invisible just to the
+//               cameras whose camera_mask shares the indicated bits.
+//               That is, this clears the indicated bits from the
+//               node's draw mask.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+hide(DrawMask camera_mask) {
+  nassertv_always(!is_empty());
+  node()->set_draw_mask(node()->get_draw_mask() & ~camera_mask);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::is_hidden
+//       Access: Published
+//  Description: Returns true if the referenced node is hidden from
+//               the indicated camera(s) either directly, or because
+//               some ancestor is hidden.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+is_hidden(DrawMask camera_mask) const {
+  return !get_hidden_ancestor(camera_mask).is_empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::unstash
+//       Access: Published
+//  Description: Undoes the effect of a previous stash() on this
+//               node: makes the referenced node (and the entire
+//               subgraph below this node) once again part of the
+//               scene graph.  Returns true if the node is unstashed,
+//               or false if it wasn't stashed to begin with.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+unstash() {
+  nassertr(!is_singleton(), false);
+  return get_parent().node()->unstash_child(node());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::stash
+//       Access: Published
+//  Description: Removes the referenced node (and the entire subgraph
+//               below this node) from the scene graph in any normal
+//               sense.  The node will no longer be visible and is not
+//               tested for collisions; furthermore, no normal scene
+//               graph traversal will visit the node.  The node's
+//               bounding volume no longer contributes to its parent's
+//               bounding volume.
+//
+//               A stashed node cannot be located by a normal find()
+//               operation (although a special find string can still
+//               retrieve it).
+//
+//               Returns true if the node is successfully stashed, or
+//               false if it was already stashed.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+stash() {
+  nassertr(!is_singleton(), false);
+  return get_parent().node()->stash_child(node());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::is_stashed
+//       Access: Published
+//  Description: Returns true if the referenced node is stashed either
+//               directly, or because some ancestor is stashed.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+is_stashed() const {
+  return !get_stashed_ancestor().is_empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::operator ==
+//       Access: Published
+//  Description: Returns true if the two paths are equivalent; that
+//               is, if they contain the same list of nodes in the same
+//               order.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+operator == (const NodePath &other) const {
+  return (compare_to(other) == 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::operator !=
+//       Access: Published
+//  Description: Returns true if the two paths are not equivalent.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+operator != (const NodePath &other) const {
+  return (compare_to(other) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::operator <
+//       Access: Published
+//  Description: Returns true if this NodePath sorts before the other
+//               one, false otherwise.  The sorting order of two
+//               nonequivalent NodePaths is consistent but undefined,
+//               and is useful only for storing NodePaths in a sorted
+//               container like an STL set.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+operator < (const NodePath &other) const {
+  return (compare_to(other) < 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::compare_to
+//       Access: Published
+//  Description: Returns a number less than zero if this NodePath
+//               sorts before the other one, greater than zero if it
+//               sorts after, or zero if they are equivalent.
+//
+//               Two NodePaths are considered equivalent if they
+//               consist of exactly the same list of nodes in the same
+//               order.  Otherwise, they are different; different
+//               NodePaths will be ranked in a consistent but
+//               undefined ordering; the ordering is useful only for
+//               placing the NodePaths in a sorted container like an
+//               STL set.
+////////////////////////////////////////////////////////////////////
+INLINE int NodePath::
+compare_to(const NodePath &other) const {
+  uncollapse_head();
+  other.uncollapse_head();
+
+  // Nowadays, the NodePathComponents at the head are pointerwise
+  // equivalent if and only if the NodePaths are equivalent.  So we
+  // only have to compare pointers.
+  return _head - other._head;
+}
+
+
+INLINE ostream &operator << (ostream &out, const NodePath &node_path) {
+  node_path.output(out);
+  return out;
+}
+

@@ -1,8 +1,8 @@
     
 #include "config_pgui.cxx"
-#include "qppgButton.cxx"
+#include "pgButton.cxx"
 #include "pgCullTraverser.cxx"
-#include "qppgEntry.cxx"
+#include "pgEntry.cxx"
 #include "pgMouseWatcherGroup.cxx"
 #include "pgMouseWatcherParameter.cxx"
 

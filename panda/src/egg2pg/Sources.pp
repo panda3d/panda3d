@@ -12,26 +12,25 @@
 
   #define SOURCES \
     animBundleMaker.h \
-    qpcharacterMaker.h \
+    characterMaker.h \
     computedVerticesMaker.I computedVerticesMaker.h \
     computedVerticesMakerEntity.I computedVerticesMakerEntity.h \
     config_egg2pg.h \
     deferredNodeProperty.h \
     eggBinner.h \
-    eggLoaderBase.h \
-    qpeggLoader.h \
-    qpload_egg_file.h \
+    eggLoader.h \
+    load_egg_file.h \
     loaderFileTypeEgg.h
 
   #define INCLUDED_SOURCES \
     animBundleMaker.cxx \
-    qpcharacterMaker.cxx \
+    characterMaker.cxx \
     computedVerticesMaker.cxx \
     config_egg2pg.cxx \
     deferredNodeProperty.cxx \
     eggBinner.cxx \
-    qpeggLoader.cxx \
-    qpload_egg_file.cxx \
+    eggLoader.cxx \
+    load_egg_file.cxx \
     loaderFileTypeEgg.cxx
 
   #if $[DONT_COMBINE_PGRAPH]    
@@ -41,6 +40,6 @@
   #endif
 
   #define INSTALL_HEADERS \
-    qpload_egg_file.h config_egg2pg.h
+    load_egg_file.h config_egg2pg.h
 
 #end lib_target

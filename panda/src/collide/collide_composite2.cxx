@@ -5,6 +5,6 @@
 #include "collisionSegment.cxx"
 #include "collisionSolid.cxx"
 #include "collisionSphere.cxx"
-#include "qpcollisionTraverser.cxx"
+#include "collisionTraverser.cxx"
 
 

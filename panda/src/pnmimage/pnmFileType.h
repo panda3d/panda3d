@@ -19,15 +19,16 @@
 #ifndef PNMFILETYPE_H
 #define PNMFILETYPE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pnmimage_base.h"
 
-#include <typedObject.h>
-#include <typedWritable.h>
+#include "typedObject.h"
+#include "typedWritable.h"
 
 class PNMReader;
 class PNMWriter;
+class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PNMFileType

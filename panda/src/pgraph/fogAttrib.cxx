@@ -32,7 +32,7 @@ TypeHandle FogAttrib::_type_handle;
 //               rendering the indicated fog onto geometry.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) FogAttrib::
-make(qpFog *fog) {
+make(Fog *fog) {
   FogAttrib *attrib = new FogAttrib;
   attrib->_fog = fog;
   return return_new(attrib);
@@ -161,7 +161,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   TypedWritable *fog = p_list[pi++];
   if (fog != (TypedWritable *)NULL) {
-    _fog = DCAST(qpFog, fog);
+    _fog = DCAST(Fog, fog);
   }
 
   return pi;

@@ -24,6 +24,8 @@
 #include "renderAttrib.h"
 #include "luse.h"
 
+class FactoryParams;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : ColorAttrib
 // Description : Indicates what color should be applied to renderable

@@ -18,13 +18,13 @@
 
 #include "config_tform.h"
 
-#include "qpdriveInterface.h"
-#include "qpbuttonThrower.h"
-#include "qpmouseWatcher.h"
+#include "driveInterface.h"
+#include "buttonThrower.h"
+#include "mouseWatcher.h"
 #include "mouseWatcherGroup.h"
 #include "mouseWatcherRegion.h"
-#include "qptrackball.h"
-#include "qptransform2sg.h"
+#include "trackball.h"
+#include "transform2sg.h"
 
 #include <dconfig.h>
 
@@ -44,11 +44,11 @@ const double drive_horizontal_ramp_up_time = config_tform.GetDouble("drive-horiz
 const double drive_horizontal_ramp_down_time = config_tform.GetDouble("drive-horizontal-ramp-down-time", 0.0);
 
 ConfigureFn(config_tform) {
-  qpDriveInterface::init_type();
-  qpButtonThrower::init_type();
-  qpMouseWatcher::init_type();
+  DriveInterface::init_type();
+  ButtonThrower::init_type();
+  MouseWatcher::init_type();
   MouseWatcherGroup::init_type();
   MouseWatcherRegion::init_type();
-  qpTrackball::init_type();
-  qpTransform2SG::init_type();
+  Trackball::init_type();
+  Transform2SG::init_type();
 }

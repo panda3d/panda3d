@@ -9,18 +9,18 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 
   #define SOURCES \
-    qpcardMaker.I qpcardMaker.h \
+    cardMaker.I cardMaker.h \
     config_grutil.h \
-    qplineSegs.I qplineSegs.h
+    lineSegs.I lineSegs.h
     
   #define INCLUDED_SOURCES \
-    qpcardMaker.cxx \
+    cardMaker.cxx \
     config_grutil.cxx \
-    qplineSegs.cxx
+    lineSegs.cxx
 
   #define INSTALL_HEADERS \
-    qpcardMaker.I qpcardMaker.h \
-    qplineSegs.I qplineSegs.h
+    cardMaker.I cardMaker.h \
+    lineSegs.I lineSegs.h
 
   #define IGATESCAN all
 

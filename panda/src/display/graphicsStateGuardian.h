@@ -92,8 +92,8 @@ public:
   virtual void apply_texture(TextureContext *tc);
   virtual void release_texture(TextureContext *tc);
 
-  virtual GeomNodeContext *prepare_geom_node(qpGeomNode *node);
-  virtual void draw_geom_node(qpGeomNode *node, const RenderState *state,
+  virtual GeomNodeContext *prepare_geom_node(GeomNode *node);
+  virtual void draw_geom_node(GeomNode *node, const RenderState *state,
                               GeomNodeContext *gnc);
   virtual void release_geom_node(GeomNodeContext *gnc);
 
@@ -217,7 +217,7 @@ protected:
 protected:
   PT(SceneSetup) _scene_setup;
 
-  CPT(RenderState) _qpstate;
+  CPT(RenderState) _state;
   CPT(TransformState) _transform;
 
   int _buffer_mask;

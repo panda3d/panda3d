@@ -21,7 +21,7 @@
 
 #include "parametricCurveCollection.h"
 
-#include "qplineSegs.h"
+#include "lineSegs.h"
 #include "pandaNode.h"
 
 #include "typedObject.h"
@@ -41,8 +41,8 @@ PUBLISHED:
   void clear_curves();
   ParametricCurveCollection *get_curves();
 
-  qpGeomNode *get_geom_node();
-  qpGeomNode *detach_geom_node();
+  GeomNode *get_geom_node();
+  GeomNode *detach_geom_node();
 
   void set_num_segs(float num_segs);
   float get_num_segs() const;
@@ -70,13 +70,13 @@ private:
   static void get_tick_marks(const LVecBase3f &tangent, LVecBase3f &t1, LVecBase3f &t2);
 
 protected:
-  PT(qpGeomNode) _geom_node;
+  PT(GeomNode) _geom_node;
   PT(ParametricCurveCollection) _curves;
   bool _frame_accurate;
 
 private:
   float _num_segs;
-  qpLineSegs _lines, _ticks;
+  LineSegs _lines, _ticks;
   bool _drawn;
   float _num_ticks;
   float _tick_scale;

@@ -37,7 +37,7 @@ CullableObject(CullableObject *next) :
 ////////////////////////////////////////////////////////////////////
 INLINE CullableObject::
 CullableObject(const CullTraverserData &data,
-               qpGeomNode *geom_node, int i,
+               GeomNode *geom_node, int i,
                CullableObject *next) :
   _geom(geom_node->get_geom(i)),
   _state(data._state->compose(geom_node->get_geom_state(i))),

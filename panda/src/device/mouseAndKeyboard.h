@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 
-#include "qpdataNode.h"
+#include "dataNode.h"
 #include "buttonEventList.h"
 #include "linmath_events.h"
 #include "pointerTo.h"
@@ -47,9 +47,9 @@
 //               EventThrower to the MouseAndKeyboard object;
 //               otherwise, the events will be discarded.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA qpMouseAndKeyboard : public qpDataNode {
+class EXPCL_PANDA MouseAndKeyboard : public DataNode {
 PUBLISHED:
-  qpMouseAndKeyboard(GraphicsWindow *window, int device,
+  MouseAndKeyboard(GraphicsWindow *window, int device,
                      const string &name);
 
 protected:
@@ -75,9 +75,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    qpDataNode::init_type();
-    register_type(_type_handle, "qpMouseAndKeyboard",
-                  qpDataNode::get_class_type());
+    DataNode::init_type();
+    register_type(_type_handle, "MouseAndKeyboard",
+                  DataNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -17,22 +17,22 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pandaNode.h"
-#include "qpnodePath.h"
+#include "nodePath.h"
 
 int 
 main(int argc, char *argv[]) {
-  qpNodePath h("h");
-  qpNodePath n1("n1");
-  qpNodePath n2("n2");
+  NodePath h("h");
+  NodePath n1("n1");
+  NodePath n2("n2");
 
   PT(PandaNode) node = new PandaNode("node");
 
-  qpNodePath t1 = h.attach_new_node(node);
+  NodePath t1 = h.attach_new_node(node);
   t1.reparent_to(n1);
 
-  t1 = qpNodePath();
+  t1 = NodePath();
 
-  qpNodePath t2 = h.attach_new_node(node);
+  NodePath t2 = h.attach_new_node(node);
   t2.reparent_to(n2);
   return 0;
 }

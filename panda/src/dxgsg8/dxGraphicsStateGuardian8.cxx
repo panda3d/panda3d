@@ -45,7 +45,7 @@
 #include "renderModeAttrib.h"
 #include "fogAttrib.h"
 #include "depthOffsetAttrib.h"
-#include "qpfog.h"
+#include "fog.h"
 
 #ifdef DO_PSTATS
 #include "pStatTimer.h"
@@ -1759,7 +1759,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
 
     if (!geom->get_alpha_disable()) {
       // figure out if alpha's enabled (if not, no reason to sort)
-      const TransparencyAttrib *trans = _qpstate->get_transparency();
+      const TransparencyAttrib *trans = _state->get_transparency();
       if (trans != (const TransparencyAttrib *)NULL) {
         alpha = (trans->get_mode() != TransparencyAttrib::M_none);
       }
@@ -3183,12 +3183,12 @@ void DXGraphicsStateGuardian::apply_material( const Material* material ) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-apply_fog(qpFog *fog) {
+apply_fog(Fog *fog) {
 
     if(_doFogType==None)
       return;
 
-    qpFog::Mode panda_fogmode = fog->get_mode();
+    Fog::Mode panda_fogmode = fog->get_mode();
     D3DFOGMODE d3dfogmode = get_fog_mode_type(panda_fogmode);
 
 
@@ -3203,7 +3203,7 @@ apply_fog(qpFog *fog) {
     // if not WFOG, then docs say we need to adjust values to range [0,1]
 
     switch (panda_fogmode) {
-        case qpFog::M_linear:
+        case Fog::M_linear:
             {
                 float onset, opaque;
                 fog->get_linear_range(onset, opaque);
@@ -3214,8 +3214,8 @@ apply_fog(qpFog *fog) {
                                             *((LPDWORD) (&opaque)) );
             }
             break;
-        case qpFog::M_exponential:
-        case qpFog::M_exponential_squared:
+        case Fog::M_exponential:
+        case Fog::M_exponential_squared:
             {
                 // Exponential fog is always camera-relative.
                 float fog_density = fog->get_exp_density();
@@ -3493,8 +3493,8 @@ void DXGraphicsStateGuardian::
 issue_fog(const FogAttrib *attrib) {
   if (!attrib->is_off()) {
     enable_fog(true);
-    qpFog *fog = attrib->get_fog();
-    nassertv(fog != (qpFog *)NULL);
+    Fog *fog = attrib->get_fog();
+    nassertv(fog != (Fog *)NULL);
     apply_fog(fog);
   } else {
     enable_fog(false);
@@ -3525,7 +3525,7 @@ bind_light(PointLight *light, int light_id) {
   // Get the light in "world coordinates".  This means the light in
   // the coordinate space of the camera, converted to DX's coordinate
   // system.
-  qpNodePath light_np(light);
+  NodePath light_np(light);
   const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_camera_path());
   LMatrix4f rel_mat = light_mat * LMatrix4f::convert_mat(CS_yup_left, CS_default);
   LPoint3f pos = light->get_point() * rel_mat;
@@ -3566,7 +3566,7 @@ bind_light(DirectionalLight *light, int light_id) {
   // Get the light in "world coordinates".  This means the light in
   // the coordinate space of the camera, converted to DX's coordinate
   // system.
-  qpNodePath light_np(light);
+  NodePath light_np(light);
   const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_camera_path());
   LMatrix4f rel_mat = light_mat * LMatrix4f::convert_mat(CS_yup_left, CS_default);
   LVector3f dir = light->get_direction() * rel_mat;
@@ -3610,7 +3610,7 @@ bind_light(Spotlight *light, int light_id) {
   // Get the light in "world coordinates".  This means the light in
   // the coordinate space of the camera, converted to DX's coordinate
   // system.
-  qpNodePath light_np(light);
+  NodePath light_np(light);
   const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_camera_path());
   LMatrix4f rel_mat = light_mat * LMatrix4f::convert_mat(CS_yup_left, CS_default);
   LPoint3f pos = lens->get_nodal_point() * rel_mat;
@@ -3990,13 +3990,13 @@ get_depth_func_type(DepthTestAttrib::Mode m) const {
 //  Description: Maps from the fog types to gl version
 ////////////////////////////////////////////////////////////////////
 INLINE D3DFOGMODE DXGraphicsStateGuardian::
-get_fog_mode_type(qpFog::Mode m) const {
+get_fog_mode_type(Fog::Mode m) const {
   switch (m) {
-  case qpFog::M_linear:
+  case Fog::M_linear:
     return D3DFOG_LINEAR;
-  case qpFog::M_exponential: 
+  case Fog::M_exponential: 
     return D3DFOG_EXP;
-  case qpFog::M_exponential_squared:
+  case Fog::M_exponential_squared:
     return D3DFOG_EXP2;
   }
   dxgsg_cat.error() << "Invalid Fog::Mode value" << endl;
@@ -4758,7 +4758,7 @@ HRESULT SetViewMatrix( D3DMATRIX& mat, D3DXVECTOR3& vFrom, D3DXVECTOR3& vAt,
 //               contents of the node.
 ////////////////////////////////////////////////////////////////////
 GeomNodeContext *DXGraphicsStateGuardian::
-prepare_geom_node(qpGeomNode *node) {
+prepare_geom_node(GeomNode *node) {
   dxgsg_cat.error() << "prepare_geom_node unimplemented for DX8!\n";
   return NULL;
 }
@@ -4770,7 +4770,7 @@ prepare_geom_node(qpGeomNode *node) {
 //               prepare_geom_node().
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-draw_geom_node(qpGeomNode *node, const RenderState *state,
+draw_geom_node(GeomNode *node, const RenderState *state,
                GeomNodeContext *gnc) {
   return;  // unimplemented
 }

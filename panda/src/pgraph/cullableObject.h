@@ -26,7 +26,7 @@
 #include "transformState.h"
 #include "pointerTo.h"
 #include "referenceCount.h"
-#include "qpgeomNode.h"
+#include "geomNode.h"
 #include "cullTraverserData.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -40,7 +40,7 @@ class EXPCL_PANDA CullableObject {
 public:
   INLINE CullableObject(CullableObject *next = NULL);
   INLINE CullableObject(const CullTraverserData &data,
-                        qpGeomNode *geom_node, int i,
+                        GeomNode *geom_node, int i,
                         CullableObject *next = NULL);
   INLINE CullableObject(Geom *geom, const RenderState *state,
                         const TransformState *transform,

@@ -21,7 +21,7 @@
     stringDecoder.I stringDecoder.h \
     textFont.I textFont.h \
     textGlyph.I textGlyph.h \
-    qptextNode.I qptextNode.h qptextNode.cxx
+    textNode.I textNode.h textNode.cxx
 
   #define INCLUDED_SOURCES \
     config_text.cxx \
@@ -43,7 +43,7 @@
     stringDecoder.I stringDecoder.h \
     textFont.I textFont.h \
     textGlyph.I textGlyph.h \
-    qptextNode.I qptextNode.h
+    textNode.I textNode.h
 
   #define IGATESCAN all
 

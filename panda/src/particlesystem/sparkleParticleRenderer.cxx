@@ -19,7 +19,7 @@
 #include "sparkleParticleRenderer.h"
 
 #include "boundingSphere.h"
-#include "qpgeomNode.h"
+#include "geomNode.h"
 
 ////////////////////////////////////////////////////////////////////
 //    Function : SparkleParticleRenderer
@@ -147,7 +147,7 @@ void SparkleParticleRenderer::
 init_geoms(void) {
   _line_primitive->set_num_prims(0);
 
-  qpGeomNode *render_node = get_render_node();
+  GeomNode *render_node = get_render_node();
   render_node->remove_all_geoms();
   render_node->add_geom(_line_primitive, _render_state);
 }

@@ -36,7 +36,7 @@ get_graphics_engine() {
 //               graph of nodes that is traversed to control the
 //               inputs from user devices like the mouse and keyboard.
 ////////////////////////////////////////////////////////////////////
-INLINE const qpNodePath &PandaFramework::
+INLINE const NodePath &PandaFramework::
 get_data_root() const {
   return _data_root;
 }

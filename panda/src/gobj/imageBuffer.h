@@ -80,13 +80,12 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    // This indicates an inheritance from dDrawable, even though we
-    // don't any more.  When we upgrade to Bam version 4.0 we will
-    // change this.
-    dDrawable::init_type();
+    ReferenceCount::init_type();
+    WritableConfigurable::init_type();
     Namable::init_type();
     register_type(_type_handle, "ImageBuffer",
-                  dDrawable::get_class_type(),
+                  ReferenceCount::get_class_type(),
+                  WritableConfigurable::get_class_type(),
                   Namable::get_class_type());
   }
   virtual TypeHandle get_type() const {

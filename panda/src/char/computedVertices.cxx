@@ -19,7 +19,7 @@
 
 #include "computedVertices.h"
 #include "characterJoint.h"
-#include "qpcharacter.h"
+#include "character.h"
 #include "config_char.h"
 
 #include "datagram.h"
@@ -57,7 +57,7 @@ VertexTransform(const VertexTransform &copy) :
 template<class ValueType, class MorphType>
 static void
 compute_morphs(ValueType *table, const pvector<MorphType> &morph_list,
-               qpCharacter *character) {
+               Character *character) {
   pvector<MorphType>::const_iterator mli;
   for (mli = morph_list.begin(); mli != morph_list.end(); ++mli) {
     const MorphType &morph = (*mli);
@@ -136,8 +136,8 @@ read_datagram(DatagramIterator &source)
 //               etc., and the current positions of all of the joints.
 ////////////////////////////////////////////////////////////////////
 void ComputedVertices::
-update(qpCharacter *character) {
-  nassertv(character != (qpCharacter *)NULL);
+update(Character *character) {
+  nassertv(character != (Character *)NULL);
   nassertv(character->_cv._coords.size() == _orig_coords.size());
   nassertv(character->_cv._norms.size() == _orig_norms.size());
   nassertv(character->_cv._texcoords.size() == _orig_texcoords.size());
@@ -238,8 +238,8 @@ update(qpCharacter *character) {
 //               etc. arrays.
 ////////////////////////////////////////////////////////////////////
 void ComputedVertices::
-make_orig(qpCharacter *character) {
-  nassertv(character != (qpCharacter *)NULL);
+make_orig(Character *character) {
+  nassertv(character != (Character *)NULL);
 
   if (character->_cv._coords.empty()) {
     _orig_coords.clear();
@@ -276,7 +276,7 @@ make_orig(qpCharacter *character) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void ComputedVertices::
-write(ostream &out, qpCharacter *character) const {
+write(ostream &out, Character *character) const {
   VertexTransforms::const_iterator vti;
 
   out << "ComputedVertices:\n";

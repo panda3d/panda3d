@@ -9,7 +9,7 @@
     ambientLight.I ambientLight.h \
     billboardEffect.I billboardEffect.h \
     binCullHandler.I binCullHandler.h \
-    qpcamera.I qpcamera.h \
+    camera.I camera.h \
     colorAttrib.I colorAttrib.h \
     colorBlendAttrib.I colorBlendAttrib.h \
     colorScaleAttrib.I colorScaleAttrib.h \
@@ -23,7 +23,7 @@
     cullFaceAttrib.I cullFaceAttrib.h \
     cullHandler.I cullHandler.h \
     cullResult.I cullResult.h \
-    qpcullTraverser.I qpcullTraverser.h \
+    cullTraverser.I cullTraverser.h \
     cullTraverserData.I cullTraverserData.h \
     cullableObject.I cullableObject.h \
     decalEffect.I decalEffect.h \
@@ -32,26 +32,26 @@
     depthWriteAttrib.I depthWriteAttrib.h \
     directionalLight.I directionalLight.h \
     drawCullHandler.I drawCullHandler.h \
-    qpfindApproxLevel.I qpfindApproxLevel.h \
-    qpfindApproxLevelEntry.I qpfindApproxLevelEntry.h \
-    qpfindApproxPath.I qpfindApproxPath.h \
-    qpfog.I qpfog.h \
+    findApproxLevel.I findApproxLevel.h \
+    findApproxLevelEntry.I findApproxLevelEntry.h \
+    findApproxPath.I findApproxPath.h \
+    fog.I fog.h \
     fogAttrib.I fogAttrib.h \
-    qpgeomNode.I qpgeomNode.h \
-    qpgeomTransformer.I qpgeomTransformer.h \
-    qplensNode.I qplensNode.h \
+    geomNode.I geomNode.h \
+    geomTransformer.I geomTransformer.h \
+    lensNode.I lensNode.h \
     light.I light.h \
     lightAttrib.I lightAttrib.h \
     lightLensNode.I lightLensNode.h \
     lightNode.I lightNode.h \
-    qplodNode.I qplodNode.h \
+    lodNode.I lodNode.h \
     materialAttrib.I materialAttrib.h \
-    qpmodelNode.I qpmodelNode.h \
-    qpmodelRoot.I qpmodelRoot.h \
-    qpnodePath.I qpnodePath.h qpnodePath.cxx \
-    qpnodePathCollection.I qpnodePathCollection.h \
-    qpnodePathComponent.I qpnodePathComponent.h \
-    qpnodePathLerps.h \
+    modelNode.I modelNode.h \
+    modelRoot.I modelRoot.h \
+    nodePath.I nodePath.h nodePath.cxx \
+    nodePathCollection.I nodePathCollection.h \
+    nodePathComponent.I nodePathComponent.h \
+    nodePathLerps.h \
     pandaNode.I pandaNode.h \
     pointLight.I pointLight.h \
     renderAttrib.I renderAttrib.h \
@@ -60,10 +60,10 @@
     renderModeAttrib.I renderModeAttrib.h \
     renderState.I renderState.h \
     sceneGraphAnalyzer.h \
-    qpsceneGraphReducer.I qpsceneGraphReducer.h \
+    sceneGraphReducer.I sceneGraphReducer.h \
     sceneSetup.I sceneSetup.h \
     selectiveChildNode.I selectiveChildNode.h \
-    qpsequenceNode.I qpsequenceNode.h \
+    sequenceNode.I sequenceNode.h \
     showBoundsEffect.I showBoundsEffect.h \
     spotlight.I spotlight.h \
     texMatrixAttrib.I texMatrixAttrib.h \
@@ -79,7 +79,7 @@
     ambientLight.cxx \
     billboardEffect.cxx \
     binCullHandler.cxx \
-    qpcamera.cxx \
+    camera.cxx \
     colorAttrib.cxx \
     colorBlendAttrib.cxx \
     colorScaleAttrib.cxx \
@@ -93,7 +93,7 @@
     cullFaceAttrib.cxx \
     cullHandler.cxx \
     cullResult.cxx \
-    qpcullTraverser.cxx \
+    cullTraverser.cxx \
     cullTraverserData.cxx \
     cullableObject.cxx \
     decalEffect.cxx \
@@ -102,26 +102,26 @@
     depthWriteAttrib.cxx \
     directionalLight.cxx \
     drawCullHandler.cxx \
-    qpfindApproxLevel.cxx \
-    qpfindApproxLevelEntry.cxx \
-    qpfindApproxPath.cxx \
-    qpfog.cxx \
+    findApproxLevel.cxx \
+    findApproxLevelEntry.cxx \
+    findApproxPath.cxx \
+    fog.cxx \
     fogAttrib.cxx \
-    qpgeomNode.cxx \
-    qpgeomTransformer.cxx \
-    qplensNode.cxx \
+    geomNode.cxx \
+    geomTransformer.cxx \
+    lensNode.cxx \
     light.cxx \
     lightAttrib.cxx \
     lightLensNode.cxx \
     lightNode.cxx \
-    qplodNode.cxx \
+    lodNode.cxx \
     materialAttrib.cxx \
-    qpmodelNode.cxx \
-    qpmodelRoot.cxx \
-    qpnodePath.cxx \
-    qpnodePathCollection.cxx \
-    qpnodePathComponent.cxx \
-    qpnodePathLerps.cxx \
+    modelNode.cxx \
+    modelRoot.cxx \
+    nodePath.cxx \
+    nodePathCollection.cxx \
+    nodePathComponent.cxx \
+    nodePathLerps.cxx \
     pandaNode.cxx \
     pointLight.cxx \
     renderAttrib.cxx \
@@ -130,10 +130,10 @@
     renderModeAttrib.cxx \
     renderState.cxx \
     sceneGraphAnalyzer.cxx \
-    qpsceneGraphReducer.cxx \
+    sceneGraphReducer.cxx \
     sceneSetup.cxx \
     selectiveChildNode.cxx \
-    qpsequenceNode.cxx \
+    sequenceNode.cxx \
     showBoundsEffect.cxx \
     spotlight.cxx \
     texMatrixAttrib.cxx \
@@ -154,7 +154,7 @@
     ambientLight.I ambientLight.h \
     billboardEffect.I billboardEffect.h \
     binCullHandler.I binCullHandler.h \
-    qpcamera.I qpcamera.h \
+    camera.I camera.h \
     colorAttrib.I colorAttrib.h \
     colorBlendAttrib.I colorBlendAttrib.h \
     colorScaleAttrib.I colorScaleAttrib.h \
@@ -168,7 +168,7 @@
     cullFaceAttrib.I cullFaceAttrib.h \
     cullHandler.I cullHandler.h \
     cullResult.I cullResult.h \
-    qpcullTraverser.I qpcullTraverser.h \
+    cullTraverser.I cullTraverser.h \
     cullTraverserData.I cullTraverserData.h \
     cullableObject.I cullableObject.h \
     decalEffect.I decalEffect.h \
@@ -177,23 +177,23 @@
     depthWriteAttrib.I depthWriteAttrib.h \
     directionalLight.I directionalLight.h \
     drawCullHandler.I drawCullHandler.h \
-    qpfog.I qpfog.h \
+    fog.I fog.h \
     fogAttrib.I fogAttrib.h \
-    qpgeomNode.I qpgeomNode.h \
-    qpgeomTransformer.I qpgeomTransformer.h \
-    qplensNode.I qplensNode.h \
+    geomNode.I geomNode.h \
+    geomTransformer.I geomTransformer.h \
+    lensNode.I lensNode.h \
     light.I light.h \
     lightAttrib.I lightAttrib.h \
     lightLensNode.I lightLensNode.h \
     lightNode.I lightNode.h \
-    qplodNode.I qplodNode.h \
+    lodNode.I lodNode.h \
     materialAttrib.I materialAttrib.h \
-    qpmodelNode.I qpmodelNode.h \
-    qpmodelRoot.I qpmodelRoot.h \
-    qpnodePath.I qpnodePath.h \
-    qpnodePathCollection.I qpnodePathCollection.h \
-    qpnodePathComponent.I qpnodePathComponent.h \
-    qpnodePathLerps.h \
+    modelNode.I modelNode.h \
+    modelRoot.I modelRoot.h \
+    nodePath.I nodePath.h \
+    nodePathCollection.I nodePathCollection.h \
+    nodePathComponent.I nodePathComponent.h \
+    nodePathLerps.h \
     pandaNode.I pandaNode.h \
     pointLight.I pointLight.h \
     renderAttrib.I renderAttrib.h \
@@ -202,10 +202,10 @@
     renderModeAttrib.I renderModeAttrib.h \
     renderState.I renderState.h \
     sceneGraphAnalyzer.h \
-    qpsceneGraphReducer.I qpsceneGraphReducer.h \
+    sceneGraphReducer.I sceneGraphReducer.h \
     sceneSetup.I sceneSetup.h \
     selectiveChildNode.I selectiveChildNode.h \
-    qpsequenceNode.I qpsequenceNode.h \
+    sequenceNode.I sequenceNode.h \
     showBoundsEffect.I showBoundsEffect.h \
     spotlight.I spotlight.h \
     texMatrixAttrib.I texMatrixAttrib.h \
@@ -217,9 +217,9 @@
     workingNodePath.I workingNodePath.h
 
 // No need to install these.
-//    qpfindApproxLevel.I qpfindApproxLevel.h \
-//    qpfindApproxLevelEntry.I qpfindApproxLevelEntry.h \
-//    qpfindApproxPath.I qpfindApproxPath.h \
+//    findApproxLevel.I findApproxLevel.h \
+//    findApproxLevelEntry.I findApproxLevelEntry.h \
+//    findApproxPath.I findApproxPath.h \
 
   #define IGATESCAN all
 

@@ -32,7 +32,7 @@
 #include "colorAttrib.h"
 #include "renderModeAttrib.h"
 #include "transparencyAttrib.h"
-#include "qpgeomNode.h"
+#include "geomNode.h"
 
 TypeHandle CollisionSolid::_type_handle;
 
@@ -77,11 +77,11 @@ CollisionSolid::
 //               traversal to render the CollisionNodes that have been
 //               made visible.
 ////////////////////////////////////////////////////////////////////
-qpGeomNode *CollisionSolid::
+GeomNode *CollisionSolid::
 get_viz() {
   if (_viz_geom_stale) {
-    if (_viz_geom == (qpGeomNode *)NULL) {
-      _viz_geom = new qpGeomNode("viz");
+    if (_viz_geom == (GeomNode *)NULL) {
+      _viz_geom = new GeomNode("viz");
     } else {
       _viz_geom->remove_all_geoms();
     }
@@ -117,8 +117,8 @@ write(ostream &out, int indent_level) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionSolid::
-test_intersection_from_sphere(qpCollisionHandler *,
-                              const qpCollisionEntry &) const {
+test_intersection_from_sphere(CollisionHandler *,
+                              const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionSphere::get_class_type(),
                                      get_type());
   return 0;
@@ -130,8 +130,8 @@ test_intersection_from_sphere(qpCollisionHandler *,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionSolid::
-test_intersection_from_ray(qpCollisionHandler *,
-                           const qpCollisionEntry &) const {
+test_intersection_from_ray(CollisionHandler *,
+                           const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionRay::get_class_type(),
                                      get_type());
   return 0;
@@ -143,8 +143,8 @@ test_intersection_from_ray(qpCollisionHandler *,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionSolid::
-test_intersection_from_segment(qpCollisionHandler *,
-                               const qpCollisionEntry &) const {
+test_intersection_from_segment(CollisionHandler *,
+                               const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionSegment::get_class_type(),
                                      get_type());
   return 0;

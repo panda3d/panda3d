@@ -19,9 +19,9 @@
 #include "windowFramework.h"
 #include "pandaFramework.h"
 #include "mouseAndKeyboard.h"
-#include "qpbuttonThrower.h"
-#include "qptrackball.h"
-#include "qptransform2sg.h"
+#include "buttonThrower.h"
+#include "trackball.h"
+#include "transform2sg.h"
 #include "dSearchPath.h"
 #include "filename.h"
 #include "loader.h"
@@ -119,7 +119,7 @@ close_window() {
 //               in the scene graph.  This node may be moved around to
 //               represent the viewpoint.
 ////////////////////////////////////////////////////////////////////
-const qpNodePath &WindowFramework::
+const NodePath &WindowFramework::
 get_camera_group() {
   if (_camera_group.is_empty()) {
     _camera_group = get_render().attach_new_node("camera_group");
@@ -132,10 +132,10 @@ get_camera_group() {
 //       Access: Public
 //  Description: Returns the root of the 3-d scene graph.
 ////////////////////////////////////////////////////////////////////
-const qpNodePath &WindowFramework::
+const NodePath &WindowFramework::
 get_render() {
   if (_render.is_empty()) {
-    _render = qpNodePath("render");
+    _render = NodePath("render");
 
     // This is maybe here temporarily, and maybe not.
     _render.set_two_sided(0);
@@ -148,10 +148,10 @@ get_render() {
 //       Access: Public
 //  Description: Returns the root of the 2-d scene graph.
 ////////////////////////////////////////////////////////////////////
-const qpNodePath &WindowFramework::
+const NodePath &WindowFramework::
 get_render_2d() {
   if (_render_2d.is_empty()) {
-    _render_2d = qpNodePath("render_2d");
+    _render_2d = NodePath("render_2d");
   }
   return _render_2d;
 }
@@ -162,12 +162,12 @@ get_render_2d() {
 //  Description: Returns the node in the data graph corresponding to
 //               the mouse associated with this window.
 ////////////////////////////////////////////////////////////////////
-const qpNodePath &WindowFramework::
+const NodePath &WindowFramework::
 get_mouse() {
   if (_mouse.is_empty()) {
-    qpNodePath data_root = _panda_framework->get_data_root();
-    qpMouseAndKeyboard *mouse_node = 
-      new qpMouseAndKeyboard(_window, 0, "mouse");
+    NodePath data_root = _panda_framework->get_data_root();
+    MouseAndKeyboard *mouse_node = 
+      new MouseAndKeyboard(_window, 0, "mouse");
     _mouse = data_root.attach_new_node(mouse_node);
   }
   return _mouse;
@@ -185,9 +185,9 @@ enable_keyboard() {
     return;
   }
 
-  qpNodePath mouse = get_mouse();
+  NodePath mouse = get_mouse();
 
-  PT(qpButtonThrower) bt = new qpButtonThrower("kb-events");
+  PT(ButtonThrower) bt = new ButtonThrower("kb-events");
   ModifierButtons mods;
   mods.add_button(KeyboardButton::shift());
   mods.add_button(KeyboardButton::control());
@@ -209,14 +209,14 @@ setup_trackball() {
     return;
   }
 
-  qpNodePath mouse = get_mouse();
-  qpNodePath camera = get_camera_group();
+  NodePath mouse = get_mouse();
+  NodePath camera = get_camera_group();
 
-  PT(qpTrackball) trackball = new qpTrackball("trackball");
+  PT(Trackball) trackball = new Trackball("trackball");
   trackball->set_pos(LVector3f::forward() * 50.0);
   mouse.attach_new_node(trackball);
 
-  PT(qpTransform2SG) tball2cam = new qpTransform2SG("tball2cam");
+  PT(Transform2SG) tball2cam = new Transform2SG("tball2cam");
   tball2cam->set_node(camera.node());
   trackball->add_child(tball2cam);
 
@@ -234,7 +234,7 @@ setup_trackball() {
 //               false if at least one of them had an error.
 ////////////////////////////////////////////////////////////////////
 bool WindowFramework::
-load_models(const qpNodePath &parent, int argc, char *argv[], int first_arg) {
+load_models(const NodePath &parent, int argc, char *argv[], int first_arg) {
   pvector<Filename> files;
 
   for (int i = first_arg; i < argc && argv[i] != (char *)NULL; i++) {
@@ -254,15 +254,15 @@ load_models(const qpNodePath &parent, int argc, char *argv[], int first_arg) {
 //               false if at least one of them had an error.
 ////////////////////////////////////////////////////////////////////
 bool WindowFramework::
-load_models(const qpNodePath &parent, const pvector<Filename> &files) {
+load_models(const NodePath &parent, const pvector<Filename> &files) {
   bool all_ok = true;
 
-  qpNodePath render = get_render();
+  NodePath render = get_render();
 
   pvector<Filename>::const_iterator fi;
   for (fi = files.begin(); fi != files.end(); ++fi) {
     const Filename &filename = (*fi);
-    qpNodePath model = load_model(parent, filename);
+    NodePath model = load_model(parent, filename);
     if (model.is_empty()) {
       all_ok = false;
     }
@@ -278,8 +278,8 @@ load_models(const qpNodePath &parent, const pvector<Filename> &files) {
 //               NodePath, or the empty NodePath if the model could
 //               not be loaded.
 ////////////////////////////////////////////////////////////////////
-qpNodePath WindowFramework::
-load_model(const qpNodePath &parent, Filename filename) {
+NodePath WindowFramework::
+load_model(const NodePath &parent, Filename filename) {
   nout << "Loading " << filename << "\n";
   
   // First, we always try to resolve a filename from the current
@@ -289,10 +289,10 @@ load_model(const qpNodePath &parent, Filename filename) {
   filename.resolve_filename(local_path);
   
   Loader loader;
-  PT(PandaNode) node = loader.qpload_sync(filename);
+  PT(PandaNode) node = loader.load_sync(filename);
   if (node == (PandaNode *)NULL) {
     nout << "Unable to load " << filename << "\n";
-    return qpNodePath::not_found();
+    return NodePath::not_found();
   }    
 
   return parent.attach_new_node(node);
@@ -306,8 +306,8 @@ load_model(const qpNodePath &parent, Filename filename) {
 //               to look at for testing, when no other models are
 //               provided.
 ////////////////////////////////////////////////////////////////////
-qpNodePath WindowFramework::
-load_default_model(const qpNodePath &parent) {
+NodePath WindowFramework::
+load_default_model(const NodePath &parent) {
   PTA_Vertexf coords;
   PTA_TexCoordf uvs;
   PTA_Normalf norms;
@@ -341,7 +341,7 @@ load_default_model(const qpNodePath &parent) {
     state = state->add_attrib(TextureAttrib::make(tex));
   }
   
-  qpGeomNode *geomnode = new qpGeomNode("tri");
+  GeomNode *geomnode = new GeomNode("tri");
   geomnode->add_geom(geom, state);
 
   return parent.attach_new_node(geomnode);
@@ -375,7 +375,7 @@ set_wireframe(bool enable) {
     return;
   }
 
-  qpNodePath render = get_render();
+  NodePath render = get_render();
 
   if (enable) {
     render.set_render_mode_wireframe(override_priority);
@@ -402,7 +402,7 @@ set_texture(bool enable) {
     return;
   }
 
-  qpNodePath render = get_render();
+  NodePath render = get_render();
 
   if (!enable) {
     render.set_texture_off(override_priority);
@@ -425,7 +425,7 @@ set_two_sided(bool enable) {
     return;
   }
 
-  qpNodePath render = get_render();
+  NodePath render = get_render();
 
   if (enable) {
     render.set_two_sided(true, override_priority);
@@ -449,7 +449,7 @@ set_lighting(bool enable) {
     return;
   }
 
-  qpNodePath render = get_render();
+  NodePath render = get_render();
 
   if (enable) {
     if (!_got_lights) {
@@ -469,7 +469,7 @@ set_lighting(bool enable) {
 //       Access: Protected
 //  Description: Makes a new 3-d camera for the window.
 ////////////////////////////////////////////////////////////////////
-PT(qpCamera) WindowFramework::
+PT(Camera) WindowFramework::
 make_camera() {
   // Get the first channel on the window.  This will be the only
   // channel on non-SGI hardware.
@@ -482,15 +482,15 @@ make_camera() {
   PT(DisplayRegion) dr = layer->make_display_region();
 
   // Finally, we need a camera to associate with the display region.
-  PT(qpCamera) camera = new qpCamera("camera");
-  qpNodePath camera_np = get_camera_group().attach_new_node(camera);
+  PT(Camera) camera = new Camera("camera");
+  NodePath camera_np = get_camera_group().attach_new_node(camera);
   _cameras.push_back(camera);
 
   PT(Lens) lens = new PerspectiveLens;
   lens->set_film_size(_window->get_width(), _window->get_height());
   camera->set_lens(lens);
   camera->set_scene(get_render());
-  dr->set_qpcamera(camera_np);
+  dr->set_camera(camera_np);
 
   return camera;
 }
@@ -507,8 +507,8 @@ setup_lights() {
     return;
   }
 
-  qpNodePath camera_group = get_camera_group();
-  qpNodePath light_group = camera_group.attach_new_node("lights");
+  NodePath camera_group = get_camera_group();
+  NodePath light_group = camera_group.attach_new_node("lights");
 
   _alight = new AmbientLight("ambient");
   _alight->set_color(Colorf(0.2f, 0.2f, 0.2f, 1.0f));

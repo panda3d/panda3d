@@ -47,7 +47,7 @@ public:
   void add_prim(const BuilderPrim &prim);
   void add_prim(const BuilderPrimI &prim);
 
-  void show_normals(qpGeomNode *node);
+  void show_normals(GeomNode *node);
 
 private:
   void add_normal(const BuilderV &center, const BuilderN &normal);

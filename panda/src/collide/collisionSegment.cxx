@@ -18,13 +18,13 @@
 
 
 #include "collisionSegment.h"
-#include "qpcollisionHandler.h"
-#include "qpcollisionEntry.h"
+#include "collisionHandler.h"
+#include "collisionEntry.h"
 #include "config_collide.h"
 
 #include "geom.h"
-#include "qplensNode.h"
-#include "qpgeomNode.h"
+#include "lensNode.h"
+#include "geomNode.h"
 #include "lens.h"
 #include "geomLine.h"
 #include "geometricBoundingVolume.h"
@@ -52,7 +52,7 @@ make_copy() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionSegment::
-test_intersection(qpCollisionHandler *record, const qpCollisionEntry &entry,
+test_intersection(CollisionHandler *record, const CollisionEntry &entry,
                   const CollisionSolid *into) const {
   return into->test_intersection_from_segment(record, entry);
 }
@@ -96,9 +96,9 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSegment::set_from_lens
 //       Access: Public
-//  Description: Accepts a qpLensNode and a 2-d point in the range
+//  Description: Accepts a LensNode and a 2-d point in the range
 //               [-1,1].  Sets the CollisionSegment so that it begins at
-//               the qpLensNode's near plane and extends to the
+//               the LensNode's near plane and extends to the
 //               far plane, making it suitable for picking objects
 //               from the screen given a camera and a mouse location.
 //
@@ -106,7 +106,7 @@ output(ostream &out) const {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CollisionSegment::
-set_from_lens(qpLensNode *camera, const LPoint2f &point) {
+set_from_lens(LensNode *camera, const LPoint2f &point) {
   Lens *proj = camera->get_lens();
 
   bool success = true;

@@ -37,7 +37,7 @@
 #include "pmap.h"
 
 class ComputedVertices;
-class qpCharacterMaker;
+class CharacterMaker;
 class EggNode;
 class EggVertex;
 
@@ -78,8 +78,8 @@ public:
                    const LMatrix3d &transform);
   int add_color(const Colorf &color, const EggMorphColorList &morphs);
 
-  ComputedVertices *make_computed_vertices(qpCharacter *character,
-                                           qpCharacterMaker &char_maker);
+  ComputedVertices *make_computed_vertices(Character *character,
+                                           CharacterMaker &char_maker);
 
   void write(ostream &out) const;
 

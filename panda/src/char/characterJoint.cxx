@@ -263,11 +263,6 @@ write_datagram(BamWriter *manager, Datagram &me)
   NodeList::iterator ni;
   MovingPartMatrix::write_datagram(manager, me);
 
-  // Legacy.  We don't store the list of arcs any more.  Remove this
-  // when we go to bam version 4.0.
-  me.add_uint16(0);
-  me.add_uint16(0);
-
   me.add_uint16(_net_transform_nodes.size());
   for(ni = _net_transform_nodes.begin(); 
       ni != _net_transform_nodes.end(); 
@@ -298,26 +293,14 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   int i;
   MovingPartMatrix::fillin(scan, manager);
 
-  // Remove this when we go to bam 4.0.
-  int num_net_arcs = scan.get_uint16();
-  nassertv(num_net_arcs == 0);
-  int num_local_arcs = scan.get_uint16();
-  nassertv(num_local_arcs == 0);
-
-  if (manager->get_file_minor_ver() < 7) {
-    // No _node lists before version 3.7.
-    _num_net_nodes = 0;
-    _num_local_nodes = 0;
-  } else {
-    _num_net_nodes = scan.get_uint16();
-    for(i = 0; i < _num_net_nodes; i++) {
-      manager->read_pointer(scan);
-    }
-    
-    _num_local_nodes = scan.get_uint16();
-    for(i = 0; i < _num_local_nodes; i++) {
-      manager->read_pointer(scan);
-    }
+  _num_net_nodes = scan.get_uint16();
+  for(i = 0; i < _num_net_nodes; i++) {
+    manager->read_pointer(scan);
+  }
+  
+  _num_local_nodes = scan.get_uint16();
+  for(i = 0; i < _num_local_nodes; i++) {
+    manager->read_pointer(scan);
   }
 
   _initial_net_transform_inverse.read_datagram(scan);

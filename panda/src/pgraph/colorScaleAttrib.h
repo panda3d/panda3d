@@ -24,6 +24,8 @@
 #include "renderAttrib.h"
 #include "luse.h"
 
+class FactoryParams;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : ColorScaleAttrib
 // Description : Applies a scale to colors in the scene graph and on

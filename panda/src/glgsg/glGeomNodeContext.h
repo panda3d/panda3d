@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 #include "geomNodeContext.h"
-#include "qpgeomNode.h"
+#include "geomNode.h"
 #include "pvector.h"
 
 #ifdef WIN32_VC
@@ -39,7 +39,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAGL GLGeomNodeContext : public GeomNodeContext {
 public:
-  INLINE GLGeomNodeContext(qpGeomNode *node);
+  INLINE GLGeomNodeContext(GeomNode *node);
 
   // The GL display list index that draws the contents of this
   // GeomNode.

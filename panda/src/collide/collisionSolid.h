@@ -26,13 +26,13 @@
 #include "luse.h"
 #include "pointerTo.h"
 #include "renderState.h"
-#include "qpgeomNode.h"
+#include "geomNode.h"
 
-class qpCollisionHandler;
-class qpCollisionEntry;
+class CollisionHandler;
+class CollisionEntry;
 class CollisionSphere;
-class qpGeomNode;
-class qpCollisionNode;
+class GeomNode;
+class CollisionNode;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : CollisionSolid
@@ -63,13 +63,13 @@ PUBLISHED:
 
 public:
   virtual int
-  test_intersection(qpCollisionHandler *record,
-                    const qpCollisionEntry &entry,
+  test_intersection(CollisionHandler *record,
+                    const CollisionEntry &entry,
                     const CollisionSolid *into) const=0;
 
   virtual void xform(const LMatrix4f &mat)=0;
 
-  qpGeomNode *get_viz();
+  GeomNode *get_viz();
 
 PUBLISHED:
   virtual void output(ostream &out) const;
@@ -77,14 +77,14 @@ PUBLISHED:
 
 protected:
   virtual int
-  test_intersection_from_sphere(qpCollisionHandler *record,
-                                const qpCollisionEntry &entry) const;
+  test_intersection_from_sphere(CollisionHandler *record,
+                                const CollisionEntry &entry) const;
   virtual int
-  test_intersection_from_ray(qpCollisionHandler *record,
-                             const qpCollisionEntry &entry) const;
+  test_intersection_from_ray(CollisionHandler *record,
+                             const CollisionEntry &entry) const;
   virtual int
-  test_intersection_from_segment(qpCollisionHandler *record,
-                                 const qpCollisionEntry &entry) const;
+  test_intersection_from_segment(CollisionHandler *record,
+                                 const CollisionEntry &entry) const;
 
   static void
   report_undefined_intersection_test(TypeHandle from_type,
@@ -97,7 +97,7 @@ protected:
   CPT(RenderState) get_wireframe_viz_state();
   CPT(RenderState) get_other_viz_state();
 
-  PT(qpGeomNode) _viz_geom;
+  PT(GeomNode) _viz_geom;
   bool _viz_geom_stale;
   bool _tangible;
 

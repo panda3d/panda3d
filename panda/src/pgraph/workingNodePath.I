@@ -26,7 +26,7 @@
 //               NodePath.
 ////////////////////////////////////////////////////////////////////
 INLINE WorkingNodePath::
-WorkingNodePath(const qpNodePath &start) {
+WorkingNodePath(const NodePath &start) {
   nassertv(!start.is_empty());
   _next = (WorkingNodePath *)NULL;
   _start = start._head;
@@ -44,7 +44,7 @@ WorkingNodePath(const qpNodePath &start) {
 INLINE WorkingNodePath::
 WorkingNodePath(const WorkingNodePath &parent, PandaNode *child) {
   _next = &parent;
-  _start = (qpNodePathComponent *)NULL;
+  _start = (NodePathComponent *)NULL;
   _node = child;
 }
 
@@ -63,11 +63,11 @@ INLINE WorkingNodePath::
 //  Description: Constructs and returns an actual NodePath that
 //               represents the same path we have just traversed.
 ////////////////////////////////////////////////////////////////////
-INLINE qpNodePath WorkingNodePath::
+INLINE NodePath WorkingNodePath::
 get_node_path() const {
-  qpNodePath result;
+  NodePath result;
   result._head = r_get_node_path();
-  nassertr(result._head != (qpNodePathComponent *)NULL, qpNodePath::fail());
+  nassertr(result._head != (NodePathComponent *)NULL, NodePath::fail());
   return result;
 }
 

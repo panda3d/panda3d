@@ -23,7 +23,7 @@
 
 #include "windowFramework.h"
 
-#include "qpnodePath.h"
+#include "nodePath.h"
 #include "eventHandler.h"
 #include "graphicsPipe.h"
 #include "graphicsEngine.h"
@@ -48,7 +48,7 @@ public:
 
   GraphicsPipe *get_default_pipe();
   INLINE GraphicsEngine *get_graphics_engine();
-  INLINE const qpNodePath &get_data_root() const;
+  INLINE const NodePath &get_data_root() const;
   INLINE EventHandler &get_event_handler();
 
   INLINE void set_window_title(const string &title);
@@ -106,7 +106,7 @@ private:
   PT(GraphicsPipe) _default_pipe;
   GraphicsEngine _engine;
 
-  qpNodePath _data_root;
+  NodePath _data_root;
   EventHandler _event_handler;
 
   typedef pvector<WindowFramework *> Windows;

@@ -110,7 +110,7 @@ remove_texture(Texture *node_texture) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureCollection::add_textures_from
 //       Access: Published
-//  Description: Adds all the qpTextures indicated in the other
+//  Description: Adds all the Textures indicated in the other
 //               collection to this texture.  The other textures are simply
 //               appended to the end of the textures in this list;
 //               duplicates are not automatically removed.
@@ -127,7 +127,7 @@ add_textures_from(const TextureCollection &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureCollection::remove_textures_from
 //       Access: Published
-//  Description: Removes from this collection all of the qpTextures
+//  Description: Removes from this collection all of the Textures
 //               listed in the other collection.
 ////////////////////////////////////////////////////////////////////
 void TextureCollection::

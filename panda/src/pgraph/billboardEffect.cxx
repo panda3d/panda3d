@@ -33,7 +33,7 @@ TypeHandle BillboardEffect::_type_handle;
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) BillboardEffect::
 make(const LVector3f &up_vector, bool eye_relative,
-     bool axial_rotate, float offset, const qpNodePath &look_at,
+     bool axial_rotate, float offset, const NodePath &look_at,
      const LPoint3f &look_at_point) {
   BillboardEffect *effect = new BillboardEffect;
   effect->_up_vector = up_vector;
@@ -240,7 +240,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_float32(_offset);
   _look_at_point.write_datagram(dg);
 
-  // *** We don't write out the _look_at qpNodePath right now.  Maybe
+  // *** We don't write out the _look_at NodePath right now.  Maybe
   // we should.
 }
 

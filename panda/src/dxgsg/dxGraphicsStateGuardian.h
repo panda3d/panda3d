@@ -32,7 +32,7 @@
 #include "depthTestAttrib.h"
 #include "renderModeAttrib.h"
 #include "textureApplyAttrib.h"
-#include "qpfog.h"
+#include "fog.h"
 #include "pointerToArray.h"
 
 class Light;
@@ -86,8 +86,8 @@ public:
   virtual void draw_trifan(GeomTrifan *geom, GeomContext *gc);
   virtual void draw_sphere(GeomSphere *geom, GeomContext *gc);
 
-  virtual GeomNodeContext *prepare_geom_node(qpGeomNode *node);
-  virtual void draw_geom_node(qpGeomNode *node, const RenderState *state,
+  virtual GeomNodeContext *prepare_geom_node(GeomNode *node);
+  virtual void draw_geom_node(GeomNode *node, const RenderState *state,
                               GeomNodeContext *gnc);
   virtual void release_geom_node(GeomNodeContext *gnc);
 
@@ -108,7 +108,7 @@ public:
                                  const RenderBuffer &rb);
 
   virtual void apply_material(const Material *material);
-  virtual void apply_fog(qpFog *fog);
+  virtual void apply_fog(Fog *fog);
 
   virtual void issue_transform(const TransformState *transform);
   virtual void issue_tex_matrix(const TexMatrixAttrib *attrib);
@@ -206,7 +206,7 @@ protected:
 
   INLINE D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm) const;
   INLINE D3DCMPFUNC get_depth_func_type(DepthTestAttrib::Mode m) const;
-  INLINE D3DFOGMODE get_fog_mode_type(qpFog::Mode m) const;
+  INLINE D3DFOGMODE get_fog_mode_type(Fog::Mode m) const;
 
   INLINE void enable_primitive_clipping(bool val);
   INLINE void enable_alpha_test(bool val);

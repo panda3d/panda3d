@@ -27,7 +27,7 @@
 #include "pset.h"
 
 class GeomNode;
-class qpGeomNode;
+class GeomNode;
 
 
 ///////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ public:
   INLINE bool operator == (const BuilderBucketNode &other) const;
   INLINE bool operator != (const BuilderBucketNode &other) const;
 
-  int build(qpGeomNode *geom_node) const;
+  int build(GeomNode *geom_node) const;
 
 protected:
   typedef pmultiset<BuilderPrim, less<BuilderPrim> > Prims;

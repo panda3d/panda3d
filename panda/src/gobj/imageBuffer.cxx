@@ -90,13 +90,7 @@ write_datagram(BamWriter *, Datagram &me)
 ////////////////////////////////////////////////////////////////////
 void ImageBuffer::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  if (manager->get_file_minor_ver() < 6) {
-    // No _filename before bams 3.6.
-    set_filename(scan.get_string());
-    set_name(_filename.get_basename_wo_extension());
-  } else {
-    set_name(scan.get_string());
-    set_filename(scan.get_string());
-  }
+  set_name(scan.get_string());
+  set_filename(scan.get_string());
   set_alpha_filename(scan.get_string());
 }

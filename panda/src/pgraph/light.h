@@ -27,7 +27,7 @@
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
 #include "pipelineCycler.h"
-#include "qpgeomNode.h"
+#include "geomNode.h"
 
 class PandaNode;
 class GraphicsStateGuardianBase;
@@ -60,10 +60,10 @@ public:
   virtual void write(ostream &out, int indent_level) const=0;
   virtual void bind(GraphicsStateGuardianBase *gsg, int light_id)=0;
 
-  qpGeomNode *get_viz();
+  GeomNode *get_viz();
 
 protected:
-  virtual void fill_viz_geom(qpGeomNode *viz_geom);
+  virtual void fill_viz_geom(GeomNode *viz_geom);
   INLINE void mark_viz_stale();
 
 private:
@@ -78,7 +78,7 @@ private:
 
     Colorf _color;
 
-    PT(qpGeomNode) _viz_geom;
+    PT(GeomNode) _viz_geom;
     bool _viz_geom_stale;
   };
 

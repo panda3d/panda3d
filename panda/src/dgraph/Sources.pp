@@ -10,20 +10,20 @@
   
   #define SOURCES \
     config_dgraph.h \
-    qpdataGraphTraverser.I qpdataGraphTraverser.h \
-    qpdataNode.I qpdataNode.h \
+    dataGraphTraverser.I dataGraphTraverser.h \
+    dataNode.I dataNode.h \
     dataNodeTransmit.I dataNodeTransmit.h
     
  #define INCLUDED_SOURCES \
     config_dgraph.cxx \
-    qpdataGraphTraverser.cxx \
-    qpdataNode.cxx \
+    dataGraphTraverser.cxx \
+    dataNode.cxx \
     dataNodeTransmit.cxx
 
   #define INSTALL_HEADERS \
     config_dgraph.h \
-    qpdataGraphTraverser.I qpdataGraphTraverser.h \
-    qpdataNode.I qpdataNode.h \
+    dataGraphTraverser.I dataGraphTraverser.h \
+    dataNode.I dataNode.h \
     dataNodeTransmit.I dataNodeTransmit.h
 
   #define IGATESCAN \

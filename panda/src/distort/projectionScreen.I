@@ -28,7 +28,7 @@
 //               geometry within the ProjectionScreen.
 ////////////////////////////////////////////////////////////////////
 INLINE void ProjectionScreen::
-set_projector(qpLensNode *projector) {
+set_projector(LensNode *projector) {
   _projector = projector;
   _stale = true;
 }
@@ -41,7 +41,7 @@ set_projector(qpLensNode *projector) {
 //               projector for this screen, or NULL if no LensNode is
 //               associated.
 ////////////////////////////////////////////////////////////////////
-INLINE qpLensNode *ProjectionScreen::
+INLINE LensNode *ProjectionScreen::
 get_projector() const {
   return _projector;
 }

@@ -30,7 +30,7 @@
 #include "baseParticleRenderer.h"
 #include "baseParticle.h"
 
-class qpNodePath;
+class NodePath;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SpriteParticleRenderer
@@ -88,7 +88,7 @@ PUBLISHED:
 
   INLINE SourceType get_source_type() const;
 
-  void set_from_node(const qpNodePath &node_path);
+  void set_from_node(const NodePath &node_path);
 
   INLINE void set_texture(Texture *tex);
   INLINE void set_ll_uv(const TexCoordf &ll_uv);

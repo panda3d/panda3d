@@ -40,17 +40,6 @@ get_node() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PartBundle::get_qpnode
-//       Access: Published
-//  Description: Returns the PartBundleNode associated with this
-//               PartBundle.
-////////////////////////////////////////////////////////////////////
-INLINE qpPartBundleNode *PartBundle::
-get_qpnode() const {
-  return _qpnode;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::control_begin
 //       Access: Public
 //  Description: Returns an iterator that can be used to traverse the

@@ -22,8 +22,8 @@
 #include "pandabase.h"
 
 #include "referenceCount.h"
-#include "qpnodePath.h"
-#include "qpcamera.h"
+#include "nodePath.h"
+#include "camera.h"
 #include "transformState.h"
 #include "lens.h"
 #include "pointerTo.h"
@@ -38,14 +38,14 @@ class EXPCL_PANDA SceneSetup : public ReferenceCount {
 public:
   INLINE SceneSetup();
 
-  INLINE void set_scene_root(const qpNodePath &scene_root);
-  INLINE const qpNodePath &get_scene_root() const;
+  INLINE void set_scene_root(const NodePath &scene_root);
+  INLINE const NodePath &get_scene_root() const;
 
-  INLINE void set_camera_path(const qpNodePath &camera_path);
-  INLINE const qpNodePath &get_camera_path() const;
+  INLINE void set_camera_path(const NodePath &camera_path);
+  INLINE const NodePath &get_camera_path() const;
 
-  INLINE void set_camera_node(const qpCamera *camera_node);
-  INLINE const qpCamera *get_camera_node() const;
+  INLINE void set_camera_node(const Camera *camera_node);
+  INLINE const Camera *get_camera_node() const;
 
   INLINE void set_lens(const Lens *lens);
   INLINE const Lens *get_lens() const;
@@ -60,9 +60,9 @@ public:
   INLINE const TransformState *get_render_transform() const;
 
 private:
-  qpNodePath _scene_root;
-  qpNodePath _camera_path;
-  CPT(qpCamera) _camera_node;
+  NodePath _scene_root;
+  NodePath _camera_path;
+  CPT(Camera) _camera_node;
   CPT(Lens) _lens;
   CPT(TransformState) _camera_transform;
   CPT(TransformState) _world_transform;

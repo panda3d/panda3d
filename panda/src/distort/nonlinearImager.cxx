@@ -37,14 +37,14 @@ NonlinearImager::
 NonlinearImager(DisplayRegion *dr) {
   _dr = dr;
 
-  _internal_camera = new qpCamera("NonlinearImager");
+  _internal_camera = new Camera("NonlinearImager");
   _internal_camera->set_lens(new MatrixLens);
   _internal_scene_node = new PandaNode("screens");
-  _internal_scene = qpNodePath(_internal_scene_node);
+  _internal_scene = NodePath(_internal_scene_node);
   _internal_camera->set_scene(_internal_scene);
 
-  qpNodePath camera_np = _internal_scene.attach_new_node(_internal_camera);
-  _dr->set_qpcamera(camera_np);
+  NodePath camera_np = _internal_scene.attach_new_node(_internal_camera);
+  _dr->set_camera(camera_np);
 
   // Enable face culling on the wireframe mesh.  This will help us to
   // cull out invalid polygons that result from vertices crossing a
@@ -61,8 +61,8 @@ NonlinearImager(DisplayRegion *dr) {
 ////////////////////////////////////////////////////////////////////
 NonlinearImager::
 ~NonlinearImager() {
-  _internal_camera->set_scene(qpNodePath());
-  _dr->set_qpcamera(qpNodePath());
+  _internal_camera->set_scene(NodePath());
+  _dr->set_camera(NodePath());
   remove_all_screens();
 }
 
@@ -105,9 +105,9 @@ add_screen(ProjectionScreen *screen) {
   // If the LensNode associated with the ProjectionScreen is an actual
   // Camera, then it has a scene associated.  Otherwise, the user will
   // have to specify the scene later.
-  qpLensNode *projector = screen->get_projector();
-  if (projector->is_of_type(qpCamera::get_class_type())) {
-    qpCamera *camera = DCAST(qpCamera, projector);
+  LensNode *projector = screen->get_projector();
+  if (projector->is_of_type(Camera::get_class_type())) {
+    Camera *camera = DCAST(Camera, projector);
     new_screen._scene = camera->get_scene();
   }
 
@@ -212,7 +212,7 @@ set_size(int index, int width, int height) {
 //               screen.
 ////////////////////////////////////////////////////////////////////
 void NonlinearImager::
-set_source(int index, qpLensNode *source, const qpNodePath &scene) {
+set_source(int index, LensNode *source, const NodePath &scene) {
   nassertv(index >= 0 && index < (int)_screens.size());
   _screens[index]._source = source;
   _screens[index]._scene = scene;
@@ -230,7 +230,7 @@ set_source(int index, qpLensNode *source, const qpNodePath &scene) {
 //               Camera itself.
 ////////////////////////////////////////////////////////////////////
 void NonlinearImager::
-set_source(int index, qpCamera *source) {
+set_source(int index, Camera *source) {
   nassertv(index >= 0 && index < (int)_screens.size());
   _screens[index]._source = source;
   _screens[index]._scene = source->get_scene();
@@ -284,7 +284,7 @@ recompute() {
     }
   }
 
-  if (_camera != (qpLensNode *)NULL && _camera->get_lens() != (Lens *)NULL) {
+  if (_camera != (LensNode *)NULL && _camera->get_lens() != (Lens *)NULL) {
     _camera_lens_change = _camera->get_lens()->get_last_change();
   }
   _stale = false;
@@ -319,7 +319,7 @@ render() {
 ////////////////////////////////////////////////////////////////////
 void NonlinearImager::
 recompute_if_stale() {
-  if (_camera != (qpLensNode *)NULL && 
+  if (_camera != (LensNode *)NULL && 
       _camera->get_lens() != (Lens *)NULL) {
     UpdateSeq lens_change = _camera->get_lens()->get_last_change();
     if (_stale || lens_change != _camera_lens_change) {
@@ -349,7 +349,7 @@ void NonlinearImager::
 recompute_screen(NonlinearImager::Screen &screen) {
   screen._mesh.remove_node();
   screen._texture.clear();
-  if (_camera == (qpLensNode *)NULL || !screen._active) {
+  if (_camera == (LensNode *)NULL || !screen._active) {
     // Not much we can do without a camera.
     return;
   }
@@ -378,7 +378,7 @@ recompute_screen(NonlinearImager::Screen &screen) {
 ////////////////////////////////////////////////////////////////////
 void NonlinearImager::
 render_screen(NonlinearImager::Screen &screen) {
-  if (screen._source == (qpLensNode *)NULL) {
+  if (screen._source == (LensNode *)NULL) {
     distort_cat.error()
       << "No source lens specified for screen " << screen._screen->get_name()
       << "\n";

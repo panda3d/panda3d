@@ -30,6 +30,7 @@
 class GraphicsStateGuardianBase;
 class FogAttrib;
 class TransparencyAttrib;
+class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : RenderState

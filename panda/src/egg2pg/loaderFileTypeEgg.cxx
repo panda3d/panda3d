@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "loaderFileTypeEgg.h"
-#include "qpload_egg_file.h"
+#include "load_egg_file.h"
 
 #include "eggData.h"
 
@@ -70,7 +70,7 @@ resolve_filename(Filename &path) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) LoaderFileTypeEgg::
-qpload_file(const Filename &path, bool) const {
-  PT(PandaNode) result = qpload_egg_file(path);
+load_file(const Filename &path, bool) const {
+  PT(PandaNode) result = load_egg_file(path);
   return result;
 }

@@ -17,10 +17,10 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "computedVerticesMaker.h"
-#include "qpcharacterMaker.h"
+#include "characterMaker.h"
 
 #include "characterJoint.h"
-#include "qpcharacter.h"
+#include "character.h"
 #include "computedVertices.h"
 #include "eggNode.h"
 #include "eggGroup.h"
@@ -319,7 +319,7 @@ add_color(const Colorf &color, const EggMorphColorList &morphs) {
 //               returns it.
 ////////////////////////////////////////////////////////////////////
 ComputedVertices *ComputedVerticesMaker::
-make_computed_vertices(qpCharacter *character, qpCharacterMaker &char_maker) {
+make_computed_vertices(Character *character, CharacterMaker &char_maker) {
   // We must first build up a set of all the unique kinds of vertex
   // transforms.
   typedef pset<ComputedVertices::VertexTransform> VertexTransforms;

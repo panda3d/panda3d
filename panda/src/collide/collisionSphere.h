@@ -37,8 +37,8 @@ public:
   virtual CollisionSolid *make_copy();
 
   virtual int
-  test_intersection(qpCollisionHandler *record,
-                    const qpCollisionEntry &entry,
+  test_intersection(CollisionHandler *record,
+                    const CollisionEntry &entry,
                     const CollisionSolid *into) const;
 
   virtual void xform(const LMatrix4f &mat);
@@ -60,14 +60,14 @@ protected:
 
 protected:
   virtual int
-  test_intersection_from_sphere(qpCollisionHandler *record,
-                                const qpCollisionEntry &entry) const;
+  test_intersection_from_sphere(CollisionHandler *record,
+                                const CollisionEntry &entry) const;
   virtual int
-  test_intersection_from_ray(qpCollisionHandler *record,
-                             const qpCollisionEntry &entry) const;
+  test_intersection_from_ray(CollisionHandler *record,
+                             const CollisionEntry &entry) const;
   virtual int
-  test_intersection_from_segment(qpCollisionHandler *record,
-                                 const qpCollisionEntry &entry) const;
+  test_intersection_from_segment(CollisionHandler *record,
+                                 const CollisionEntry &entry) const;
 
   virtual void fill_viz_geom();
 

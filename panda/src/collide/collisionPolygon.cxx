@@ -18,8 +18,8 @@
 
 
 #include "collisionPolygon.h"
-#include "qpcollisionHandler.h"
-#include "qpcollisionEntry.h"
+#include "collisionHandler.h"
+#include "collisionEntry.h"
 #include "collisionSphere.h"
 #include "collisionRay.h"
 #include "collisionSegment.h"
@@ -27,7 +27,7 @@
 
 #include "boundingSphere.h"
 #include "pointerToArray.h"
-#include "qpgeomNode.h"
+#include "geomNode.h"
 #include "geom.h"
 #include "datagram.h"
 #include "datagramIterator.h"
@@ -126,7 +126,7 @@ verify_points(const LPoint3f *begin, const LPoint3f *end) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionPolygon::
-test_intersection(qpCollisionHandler *, const qpCollisionEntry &,
+test_intersection(CollisionHandler *, const CollisionEntry &,
                   const CollisionSolid *into) const {
   // Polygons cannot currently be intersected from, only into.  Do not
   // add a CollisionPolygon to a CollisionTraverser.
@@ -231,8 +231,8 @@ recompute_bound() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionPolygon::
-test_intersection_from_sphere(qpCollisionHandler *record,
-                              const qpCollisionEntry &entry) const {
+test_intersection_from_sphere(CollisionHandler *record,
+                              const CollisionEntry &entry) const {
   if (_points.size() < 3) {
     return 0;
   }
@@ -321,7 +321,7 @@ test_intersection_from_sphere(qpCollisionHandler *record,
       << "intersection detected from " << *entry.get_from_node() << " into "
       << entry.get_into_node_path() << "\n";
   }
-  PT(qpCollisionEntry) new_entry = new qpCollisionEntry(entry);
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
   LVector3f into_normal = get_normal() * entry.get_inv_wrt_space();
   float into_depth = from_radius - dist;
@@ -339,8 +339,8 @@ test_intersection_from_sphere(qpCollisionHandler *record,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionPolygon::
-test_intersection_from_ray(qpCollisionHandler *record,
-                           const qpCollisionEntry &entry) const {
+test_intersection_from_ray(CollisionHandler *record,
+                           const CollisionEntry &entry) const {
   if (_points.size() < 3) {
     return 0;
   }
@@ -373,7 +373,7 @@ test_intersection_from_ray(qpCollisionHandler *record,
       << "intersection detected from " << *entry.get_from_node() << " into "
       << entry.get_into_node_path() << "\n";
   }
-  PT(qpCollisionEntry) new_entry = new qpCollisionEntry(entry);
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
   new_entry->set_into_intersection_point(plane_point);
 
@@ -387,8 +387,8 @@ test_intersection_from_ray(qpCollisionHandler *record,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionPolygon::
-test_intersection_from_segment(qpCollisionHandler *record,
-                               const qpCollisionEntry &entry) const {
+test_intersection_from_segment(CollisionHandler *record,
+                               const CollisionEntry &entry) const {
   if (_points.size() < 3) {
     return 0;
   }
@@ -423,7 +423,7 @@ test_intersection_from_segment(qpCollisionHandler *record,
       << "intersection detected from " << *entry.get_from_node() << " into "
       << entry.get_into_node_path() << "\n";
   }
-  PT(qpCollisionEntry) new_entry = new qpCollisionEntry(entry);
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
   new_entry->set_into_intersection_point(plane_point);
 

@@ -22,7 +22,7 @@
 #include "pvector.h"
 
 class BuilderBucket;
-class qpGeomNode;
+class GeomNode;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ expand(const PrimType &prim, BuilderBucket &bucket,
 template<class InputIterator>
 int
 mesh_and_build(InputIterator first, InputIterator last,
-               BuilderBucket &bucket, qpGeomNode *geom_node);
+               BuilderBucket &bucket, GeomNode *geom_node);
 
 
 

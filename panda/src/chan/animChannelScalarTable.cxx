@@ -258,12 +258,6 @@ fillin(DatagramIterator& scan, BamReader* manager)
 
   } else {
     // Compressed channels.
-    if (manager->get_file_minor_ver() < 1) {
-      chan_cat.error()
-        << "Cannot read old-style quantized channels.\n";
-      return;
-    }
-
     // Did we write them as discrete or continuous channel values?
     int index_length = scan.get_uint8();
 

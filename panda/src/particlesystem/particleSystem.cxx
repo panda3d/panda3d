@@ -25,7 +25,7 @@
 #include "physicalNode.h"
 #include "nearly_zero.h"
 #include "transformState.h"
-#include "qpnodePath.h"
+#include "nodePath.h"
 
 #include "config_particlesystem.h"
 #include "particleSystem.h"
@@ -170,14 +170,14 @@ birth_particle(void) {
   // get the location of the new particle.
   LPoint3f new_pos, world_pos;
   LVector3f new_vel;
-  qpGeomNode *render_node;
+  GeomNode *render_node;
 
   _emitter->generate(new_pos, new_vel);
   render_node = _renderer->get_render_node();
 
   // go from birth space to render space
-  qpNodePath physical_np(get_physical_node());
-  qpNodePath render_np(render_node);
+  NodePath physical_np(get_physical_node());
+  NodePath render_np(render_node);
   const LMatrix4f &birth_to_render_xform = physical_np.get_mat(render_np);
   world_pos = new_pos * birth_to_render_xform;
 
@@ -268,8 +268,8 @@ spawn_child_system(BaseParticle *bp) {
   // down to the new child.
   parent->add_child(new_pn);
 
-  qpNodePath parent_np(parent);
-  qpNodePath physical_np(get_physical_node());
+  NodePath parent_np(parent);
+  NodePath physical_np(get_physical_node());
 
   const LMatrix4f &old_system_to_parent_xform = physical_np.get_mat(parent_np);
 

@@ -26,7 +26,7 @@
 #include "eggXfmSAnim.h"
 #include "eggGroupNode.h"
 #include "animBundle.h"
-#include "qpanimBundleNode.h"
+#include "animBundleNode.h"
 #include "animChannelMatrixXfmTable.h"
 #include "animChannelScalarTable.h"
 
@@ -65,13 +65,13 @@ AnimBundleMaker(EggTable *root) : _root(root) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleMaker::make_qpnode
+//     Function: AnimBundleMaker::make_node
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-qpAnimBundleNode *AnimBundleMaker::
-make_qpnode() {
-  return new qpAnimBundleNode("", make_bundle());
+AnimBundleNode *AnimBundleMaker::
+make_node() {
+  return new AnimBundleNode("", make_bundle());
 }
 
 ////////////////////////////////////////////////////////////////////

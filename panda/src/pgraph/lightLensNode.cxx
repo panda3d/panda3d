@@ -31,7 +31,7 @@ TypeHandle LightLensNode::_type_handle;
 ////////////////////////////////////////////////////////////////////
 LightLensNode::
 LightLensNode(const string &name) : 
-  qpLensNode(name) 
+  LensNode(name) 
 {
 }
 
@@ -43,7 +43,7 @@ LightLensNode(const string &name) :
 LightLensNode::
 LightLensNode(const LightLensNode &copy) : 
   Light(copy),
-  qpLensNode(copy)
+  LensNode(copy)
 {
 }
 
@@ -76,7 +76,7 @@ as_light() {
 ////////////////////////////////////////////////////////////////////
 void LightLensNode::
 output(ostream &out) const {
-  qpLensNode::output(out);
+  LensNode::output(out);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -86,7 +86,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void LightLensNode::
 write(ostream &out, int indent_level) const {
-  qpLensNode::write(out, indent_level);
+  LensNode::write(out, indent_level);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,7 +97,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void LightLensNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  qpLensNode::write_datagram(manager, dg);
+  LensNode::write_datagram(manager, dg);
   Light::write_datagram(manager, dg);
 }
 
@@ -110,6 +110,6 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 ////////////////////////////////////////////////////////////////////
 void LightLensNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  qpLensNode::fillin(scan, manager);
+  LensNode::fillin(scan, manager);
   Light::fillin(scan, manager);
 }

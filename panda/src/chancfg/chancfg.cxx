@@ -21,7 +21,7 @@
 #include "displayRegion.h"
 #include "graphicsChannel.h"
 #include "hardwareChannel.h"
-#include "qpcamera.h"
+#include "camera.h"
 #include "frustum.h"
 #include "perspectiveLens.h"
 #include "dSearchPath.h"
@@ -206,10 +206,10 @@ SetupFOV ChanResolveFOV(SetupFOV& fov, float sizeX, float sizeY) {
   return ret;
 }
 
-void qpChanConfig::chan_eval(GraphicsWindow* win, WindowItem& W, LayoutItem& L, 
+void ChanConfig::chan_eval(GraphicsWindow* win, WindowItem& W, LayoutItem& L, 
                            SVec& S,
                            ChanViewport& V, int hw_offset, int xsize, int ysize,
-                           const qpNodePath &render, bool want_cameras) {
+                           const NodePath &render, bool want_cameras) {
   int i = min(L.GetNumRegions(), int(S.size()));
   int j;
   SVec::iterator k;
@@ -243,8 +243,8 @@ void qpChanConfig::chan_eval(GraphicsWindow* win, WindowItem& W, LayoutItem& L,
                                 v2.bottom(), v2.top());
    if (want_cameras && camera[0] != (PandaNode *)NULL) {
      // now make a camera for it
-     PT(qpCamera) cam = new qpCamera("");
-     dr->set_qpcamera(qpNodePath(cam));
+     PT(Camera) cam = new Camera("");
+     dr->set_camera(NodePath(cam));
      _display_region.push_back(dr);
      SetupFOV fov = (*k).getFOV();
      // The distinction between ConsoleSize and DisplaySize
@@ -322,7 +322,7 @@ void qpChanConfig::chan_eval(GraphicsWindow* win, WindowItem& W, LayoutItem& L,
   return;
 }
 
-qpChanConfig::qpChanConfig(GraphicsPipe* pipe, std::string cfg, const qpNodePath &render,
+ChanConfig::ChanConfig(GraphicsPipe* pipe, std::string cfg, const NodePath &render,
                        ChanCfgOverrides& overrides) {
   ReadChanConfigData();
   // check to make sure we know everything we need to
@@ -465,10 +465,10 @@ qpChanConfig::qpChanConfig(GraphicsPipe* pipe, std::string cfg, const qpNodePath
               float ll, rr, bb, tt;
               dr->get_dimensions(ll, rr, bb, tt);
               nout << "        (" << ll << " " << rr << " " << bb << " " << tt << ")" << endl
-                   << "        camera = " << dr->get_qpcamera() << endl;
-              qpNodePath cmm = dr->get_qpcamera();
+                   << "        camera = " << dr->get_camera() << endl;
+              NodePath cmm = dr->get_camera();
               if (!cmm.is_empty()) {
-                qpCamera *cmm_node = DCAST(qpCamera, cmm.node());
+                Camera *cmm_node = DCAST(Camera, cmm.node());
                   nout << "          active = " << cmm_node->is_active() << endl;
                   int num_cam_drs = cmm_node->get_num_display_regions();
                   for (int cd = 0; cd < num_cam_drs; cd++) 

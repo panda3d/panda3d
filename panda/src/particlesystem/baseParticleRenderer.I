@@ -21,7 +21,7 @@
 //       Class : Public
 // Description : Query the geomnode pointer
 ////////////////////////////////////////////////////////////////////
-INLINE qpGeomNode *BaseParticleRenderer::
+INLINE GeomNode *BaseParticleRenderer::
 get_render_node(void) const {
   return _render_node;
 }

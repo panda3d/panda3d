@@ -47,10 +47,10 @@
 #include "renderModeAttrib.h"
 #include "fogAttrib.h"
 #include "depthOffsetAttrib.h"
-#include "qpfog.h"
+#include "fog.h"
 #include "clockObject.h"
 #include "string_utils.h"
-#include "qpnodePath.h"
+#include "nodePath.h"
 #include "dcast.h"
 #include "pvector.h"
 
@@ -785,7 +785,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 
   if (!geom->get_alpha_disable()) {
     // figure out if alpha's enabled (if not, no reason to sort)
-    const TransparencyAttrib *trans = _qpstate->get_transparency();
+    const TransparencyAttrib *trans = _state->get_transparency();
     if (trans != (const TransparencyAttrib *)NULL) {
       alpha = (trans->get_mode() != TransparencyAttrib::M_none);
     }
@@ -1582,7 +1582,7 @@ release_texture(TextureContext *tc) {
 //               contents of the node.
 ////////////////////////////////////////////////////////////////////
 GeomNodeContext *GLGraphicsStateGuardian::
-prepare_geom_node(qpGeomNode *node) {
+prepare_geom_node(GeomNode *node) {
 #if 0  // temporarily disabled until we bring to new scene graph
 
   // Make sure we have at least some static Geoms in the GeomNode;
@@ -1679,7 +1679,7 @@ prepare_geom_node(qpGeomNode *node) {
 //               prepare_geom_node().
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-draw_geom_node(qpGeomNode *node, const RenderState *state,
+draw_geom_node(GeomNode *node, const RenderState *state,
                GeomNodeContext *gnc) {
 #if 0  // temporarily disabled until we bring to new scene graph
   if (gnc == (GeomNodeContext *)NULL) {
@@ -1998,11 +1998,11 @@ void GLGraphicsStateGuardian::apply_material(const Material *material) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-apply_fog(qpFog *fog) {
-  qpFog::Mode fmode = fog->get_mode();
+apply_fog(Fog *fog) {
+  Fog::Mode fmode = fog->get_mode();
   call_glFogMode(get_fog_mode_type(fmode));
 
-  if (fmode == qpFog::M_linear) {
+  if (fmode == Fog::M_linear) {
     float onset, opaque;
     fog->get_linear_range(onset, opaque);
     call_glFogStart(onset);
@@ -2213,8 +2213,8 @@ void GLGraphicsStateGuardian::
 issue_fog(const FogAttrib *attrib) {
   if (!attrib->is_off()) {
     enable_fog(true);
-    qpFog *fog = attrib->get_fog();
-    nassertv(fog != (qpFog *)NULL);
+    Fog *fog = attrib->get_fog();
+    nassertv(fog != (Fog *)NULL);
     apply_fog(fog);
   } else {
     enable_fog(false);
@@ -2262,7 +2262,7 @@ bind_light(PointLight *light, int light_id) {
 
   // Position needs to specify x, y, z, and w
   // w == 1 implies non-infinite position
-  qpNodePath light_np(light);
+  NodePath light_np(light);
   const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_scene_root());
   LPoint3f pos = light->get_point() * light_mat;
 
@@ -2303,7 +2303,7 @@ bind_light(DirectionalLight *light, int light_id) {
 
   // Position needs to specify x, y, z, and w.
   // w == 0 implies light is at infinity
-  qpNodePath light_np(light);
+  NodePath light_np(light);
   const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_scene_root());
   LVector3f dir = light->get_direction() * light_mat;
   LPoint4f fdir(-dir[0], -dir[1], -dir[2], 0);
@@ -2348,7 +2348,7 @@ bind_light(Spotlight *light, int light_id) {
 
   // Position needs to specify x, y, z, and w
   // w == 1 implies non-infinite position
-  qpNodePath light_np(light);
+  NodePath light_np(light);
   const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_scene_root());
   LPoint3f pos = lens->get_nodal_point() * light_mat;
   LVector3f dir = lens->get_view_vector() * light_mat;
@@ -3280,19 +3280,19 @@ get_depth_func_type(DepthTestAttrib::Mode m) const
 //  Description: Maps from the fog types to gl version
 ////////////////////////////////////////////////////////////////////
 GLenum GLGraphicsStateGuardian::
-get_fog_mode_type(qpFog::Mode m) const {
+get_fog_mode_type(Fog::Mode m) const {
   switch(m) {
-  case qpFog::M_linear: return GL_LINEAR;
-  case qpFog::M_exponential: return GL_EXP;
-  case qpFog::M_exponential_squared: return GL_EXP2;
+  case Fog::M_linear: return GL_LINEAR;
+  case Fog::M_exponential: return GL_EXP;
+  case Fog::M_exponential_squared: return GL_EXP2;
     /*
       #ifdef GL_FOG_FUNC_SGIS
-      case qpFog::M_spline: return GL_FOG_FUNC_SGIS;
+      case Fog::M_spline: return GL_FOG_FUNC_SGIS;
       #endif
     */
 
   default:
-    glgsg_cat.error() << "Invalid qpFog::Mode value" << endl;
+    glgsg_cat.error() << "Invalid Fog::Mode value" << endl;
     return GL_EXP;
   }
 }

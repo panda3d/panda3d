@@ -23,6 +23,8 @@
 
 #include "renderAttrib.h"
 
+class FactoryParams;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : CullBinAttrib
 // Description : Assigns geometry to a particular bin by name.  The

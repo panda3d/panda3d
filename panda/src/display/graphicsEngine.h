@@ -59,7 +59,7 @@ private:
   void cull_bin_draw();
   void cull_bin_draw(GraphicsWindow *win, DisplayRegion *dr);
 
-  PT(SceneSetup) setup_scene(const qpNodePath &camera, 
+  PT(SceneSetup) setup_scene(const NodePath &camera, 
                              GraphicsStateGuardian *gsg);
   void do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
                GraphicsStateGuardian *gsg);

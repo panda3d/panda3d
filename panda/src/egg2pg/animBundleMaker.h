@@ -29,7 +29,7 @@ class EggXfmSAnim;
 class EggSAnimData;
 class AnimGroup;
 class AnimBundle;
-class qpAnimBundleNode;
+class AnimBundleNode;
 class AnimChannelScalarTable;
 class AnimChannelMatrixXfmTable;
 
@@ -42,7 +42,7 @@ class EXPCL_PANDAEGG AnimBundleMaker {
 public:
   AnimBundleMaker(EggTable *root);
 
-  qpAnimBundleNode *make_qpnode();
+  AnimBundleNode *make_node();
 
 private:
   AnimBundle *make_bundle();

@@ -133,7 +133,7 @@ reset() {
   _frame_buffer_stack_level = 0;
   _lens_stack_level = 0;
 
-  _qpstate = RenderState::make_empty();
+  _state = RenderState::make_empty();
   _transform = TransformState::make_identity();
 
   _buffer_mask = 0;
@@ -342,7 +342,7 @@ release_texture(TextureContext *) {
 //               contents of the node.
 ////////////////////////////////////////////////////////////////////
 GeomNodeContext *GraphicsStateGuardian::
-prepare_geom_node(qpGeomNode *) {
+prepare_geom_node(GeomNode *) {
   return (GeomNodeContext *)NULL;
 }
 
@@ -353,7 +353,7 @@ prepare_geom_node(qpGeomNode *) {
 //               prepare_geom_node().
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-draw_geom_node(qpGeomNode *node, const RenderState *state,
+draw_geom_node(GeomNode *node, const RenderState *state,
                GeomNodeContext *) {
 #if 0   // temporarily disabled until ported to new scene graph
   int num_geoms = node->get_num_geoms();

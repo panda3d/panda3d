@@ -19,11 +19,12 @@
 #ifndef ANIMBUNDLE_H
 #define ANIMBUNDLE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "animGroup.h"
+#include "pointerTo.h"
 
-#include <pointerTo.h>
+class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AnimBundle

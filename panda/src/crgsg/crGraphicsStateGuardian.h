@@ -98,8 +98,8 @@ public:
   virtual void apply_texture(TextureContext *tc);
   virtual void release_texture(TextureContext *tc);
 
-  virtual GeomNodeContext *prepare_geom_node(qpGeomNode *node);
-  virtual void draw_geom_node(qpGeomNode *node, const RenderState *state,
+  virtual GeomNodeContext *prepare_geom_node(GeomNode *node);
+  virtual void draw_geom_node(GeomNode *node, const RenderState *state,
                               GeomNodeContext *gnc);
   virtual void release_geom_node(GeomNodeContext *gnc);
 
@@ -121,7 +121,7 @@ public:
                                  const NodeTransitions& na=NodeTransitions());
 
   virtual void apply_material(const Material *material);
-  void apply_fog(qpFog *fog);
+  void apply_fog(Fog *fog);
 
   virtual void issue_transform(const TransformState *transform);
   virtual void issue_tex_matrix(const TexMatrixAttrib *attrib);

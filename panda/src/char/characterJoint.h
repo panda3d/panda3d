@@ -78,7 +78,7 @@ public:
   // for the CharacterMaker's convenenience while creating the
   // character.  It does not store any meaningful value after
   // creation is complete.
-  PT(PandaNode) _qpgeom_node;
+  PT(PandaNode) _geom_node;
 
   // These are filled in as the joint animates.
   LMatrix4f _net_transform;
@@ -102,7 +102,6 @@ private:
   static TypeHandle _type_handle;
 
   friend class Character;
-  friend class qpCharacter;
 };
 
 #endif

@@ -37,7 +37,7 @@ extern const bool pipe_spec_is_remote;
 
 extern const bool compare_state_by_pointer;
 extern const bool cull_sorting;
-extern const bool qpview_frustum_cull;
+extern const bool view_frustum_cull;
 
 extern const float gsg_clear_r;
 extern const float gsg_clear_g;

@@ -22,13 +22,13 @@
 #include "pandabase.h"
 
 #include "light.h"
-#include "qplensNode.h"
+#include "lensNode.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LightLensNode
 // Description : A derivative of Light and of LensNode.  
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA LightLensNode : public Light, public qpLensNode {
+class EXPCL_PANDA LightLensNode : public Light, public LensNode {
 PUBLISHED:
   LightLensNode(const string &name);
 
@@ -57,10 +57,10 @@ public:
   }
   static void init_type() {
     Light::init_type();
-    qpLensNode::init_type();
+    LensNode::init_type();
     register_type(_type_handle, "LightLensNode",
                   Light::get_class_type(),
-                  qpLensNode::get_class_type());
+                  LensNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

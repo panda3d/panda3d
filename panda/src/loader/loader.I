@@ -23,9 +23,9 @@
 //  Description: Loads the file immediately, waiting for it to complete.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(PandaNode) Loader::
-qpload_sync(const Filename &filename) const {
+load_sync(const Filename &filename) const {
   if (!_file_types_loaded) {
     load_file_types();
   }
-  return qpload_file(filename);
+  return load_file(filename);
 }

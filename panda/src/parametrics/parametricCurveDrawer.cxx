@@ -36,7 +36,7 @@ ParametricCurveDrawer() {
   _num_segs = 100.0;
   _num_ticks = 0.0f;
   _frame_accurate = false;
-  _geom_node = new qpGeomNode("pcd");
+  _geom_node = new GeomNode("pcd");
   _drawn = false;
 }
 
@@ -128,7 +128,7 @@ get_curves() {
 //               the GeomNode, and the GeomNode will be emptied when the
 //               drawer destructs.  Also see detach_geom_node().
 ////////////////////////////////////////////////////////////////////
-qpGeomNode *ParametricCurveDrawer::
+GeomNode *ParametricCurveDrawer::
 get_geom_node() {
   return _geom_node;
 }
@@ -144,13 +144,13 @@ get_geom_node() {
 //               will return this new GeomNode which will be empty until
 //               the next call to draw().
 ////////////////////////////////////////////////////////////////////
-qpGeomNode *ParametricCurveDrawer::
+GeomNode *ParametricCurveDrawer::
 detach_geom_node() {
   if (!_drawn) {
     draw();
   }
-  PT(qpGeomNode) g = _geom_node;
-  _geom_node = new qpGeomNode("pcd");
+  PT(GeomNode) g = _geom_node;
+  _geom_node = new GeomNode("pcd");
   _drawn = false;
   return g;
 }

@@ -29,7 +29,7 @@
 #include "graphicsPipe.h"
 #include "graphicsWindow.h"
 #include "pandaNode.h"
-#include "qpnodePath.h"
+#include "nodePath.h"
 
 #include "pmap.h"
 
@@ -103,7 +103,7 @@ extern ChanCfgOverrides ChanOverrideNone;
 
 typedef pvector<SetupItem> SVec;
 
-class EXPCL_PANDA qpChanConfig
+class EXPCL_PANDA ChanConfig
 {
 private:
   std::vector< PT(PandaNode) > _group_node;
@@ -112,9 +112,9 @@ private:
   PT(GraphicsWindow) _graphics_window;
   void chan_eval(GraphicsWindow* win, WindowItem& W, LayoutItem& L, 
          SVec& S, ChanViewport& V, int hw_offset, 
-         int xsize, int ysize, const qpNodePath &render, bool want_cameras);
+         int xsize, int ysize, const NodePath &render, bool want_cameras);
 PUBLISHED:
-  qpChanConfig(GraphicsPipe*, std::string, const qpNodePath &render,
+  ChanConfig(GraphicsPipe*, std::string, const NodePath &render,
     ChanCfgOverrides& = ChanOverrideNone);
   INLINE PandaNode *get_group_node(const int node_index) const;
   INLINE int get_group_membership(const int dr_index) const;

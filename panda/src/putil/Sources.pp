@@ -48,7 +48,7 @@
     typedWritableReferenceCount.h updateSeq.I updateSeq.h \
     vector_double.h vector_float.h vector_typedWritable.h \
     vector_ushort.h vector_writable.h \
-    writable.I writable.h writableConfigurable.h \
+    writableConfigurable.h \
     writableParam.I writableParam.h 
     
  #define INCLUDED_SOURCES \
@@ -77,7 +77,7 @@
     typedWritableReferenceCount.cxx updateSeq.cxx \
     vector_double.cxx vector_float.cxx \
     vector_typedWritable.cxx \
-    vector_ushort.cxx vector_writable.cxx writable.cxx \
+    vector_ushort.cxx vector_writable.cxx \
     writableConfigurable.cxx writableParam.cxx 
 
   #define INSTALL_HEADERS \
@@ -116,8 +116,8 @@
     typedWritable.h typedWritableReferenceCount.I \
     typedWritableReferenceCount.h updateSeq.I updateSeq.h \
     vector_double.h vector_float.h vector_typedWritable.h \
-    vector_ushort.h vector_writable.h writable.I \
-    writable.h writableConfigurable.h writableParam.I \
+    vector_ushort.h vector_writable.h \
+    writableConfigurable.h writableParam.I \
     writableParam.h
 
   #define IGATESCAN all

@@ -11,44 +11,44 @@
 
   #define SOURCES  \
     config_pgui.h \
-    qppgButton.I qppgButton.h \
+    pgButton.I pgButton.h \
     pgCullTraverser.I pgCullTraverser.h \
-    qppgEntry.I qppgEntry.h \
+    pgEntry.I pgEntry.h \
     pgMouseWatcherGroup.I pgMouseWatcherGroup.h \
     pgMouseWatcherParameter.I pgMouseWatcherParameter.h \
     pgFrameStyle.I pgFrameStyle.h \
-    qppgItem.I qppgItem.h \
+    pgItem.I pgItem.h \
     pgMouseWatcherBackground.h \
     pgMouseWatcherRegion.I pgMouseWatcherRegion.h \
-    qppgTop.I qppgTop.h \
-    qppgWaitBar.I qppgWaitBar.h
+    pgTop.I pgTop.h \
+    pgWaitBar.I pgWaitBar.h
     
   #define INCLUDED_SOURCES  \
     config_pgui.cxx \
-    qppgButton.cxx \
+    pgButton.cxx \
     pgCullTraverser.cxx \
-    qppgEntry.cxx \
+    pgEntry.cxx \
     pgMouseWatcherGroup.cxx \
     pgMouseWatcherParameter.cxx \
     pgFrameStyle.cxx \
-    qppgItem.cxx \
+    pgItem.cxx \
     pgMouseWatcherBackground.cxx \
     pgMouseWatcherRegion.cxx \
-    qppgTop.cxx \
-    qppgWaitBar.cxx
+    pgTop.cxx \
+    pgWaitBar.cxx
 
   #define INSTALL_HEADERS \
-    qppgButton.I qppgButton.h \
+    pgButton.I pgButton.h \
     pgCullTraverser.I pgCullTraverser.h \
-    qppgEntry.I qppgEntry.h \
+    pgEntry.I pgEntry.h \
     pgMouseWatcherGroup.I pgMouseWatcherGroup.h \
     pgMouseWatcherParameter.I pgMouseWatcherParameter.h \
     pgFrameStyle.I pgFrameStyle.h \
-    qppgItem.I qppgItem.h \
+    pgItem.I pgItem.h \
     pgMouseWatcherBackground.h \
     pgMouseWatcherRegion.I pgMouseWatcherRegion.h \
-    qppgTop.I qppgTop.h \
-    qppgWaitBar.I qppgWaitBar.h
+    pgTop.I pgTop.h \
+    pgWaitBar.I pgWaitBar.h
     
 
   #define IGATESCAN all

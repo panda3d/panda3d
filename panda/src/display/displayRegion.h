@@ -21,7 +21,7 @@
 #include "pandabase.h"
 
 #include "referenceCount.h"
-#include "qpnodePath.h"
+#include "nodePath.h"
 #include "cullResult.h"
 #include "pointerTo.h"
 
@@ -32,7 +32,7 @@ class GraphicsChannel;
 class GraphicsWindow;
 class GraphicsPipe;
 class CullHandler;
-class qpCamera;
+class Camera;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DisplayRegion
@@ -65,8 +65,8 @@ PUBLISHED:
   GraphicsWindow *get_window() const;
   GraphicsPipe *get_pipe() const;
 
-  void set_qpcamera(const qpNodePath &camera);
-  INLINE const qpNodePath &get_qpcamera() const;
+  void set_camera(const NodePath &camera);
+  INLINE const NodePath &get_camera() const;
 
   INLINE void set_active(bool active);
   INLINE bool is_active() const;
@@ -96,8 +96,8 @@ protected:
   int _pt;
 
   GraphicsLayer *_layer;
-  qpNodePath _qpcamera;
-  qpCamera *_camera_node;
+  NodePath _camera;
+  Camera *_camera_node;
 
   bool _active;
 

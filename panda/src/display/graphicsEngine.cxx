@@ -22,7 +22,7 @@
 #include "drawCullHandler.h"
 #include "binCullHandler.h"
 #include "cullResult.h"
-#include "qpcullTraverser.h"
+#include "cullTraverser.h"
 #include "clockObject.h"
 #include "pStatTimer.h"
 #include "pStatClient.h"
@@ -138,7 +138,7 @@ cull_and_draw_together(GraphicsWindow *win, DisplayRegion *dr) {
   GraphicsStateGuardian *gsg = win->get_gsg();
   nassertv(gsg != (GraphicsStateGuardian *)NULL);
 
-  PT(SceneSetup) scene_setup = setup_scene(dr->get_qpcamera(), gsg);
+  PT(SceneSetup) scene_setup = setup_scene(dr->get_camera(), gsg);
   if (setup_gsg(gsg, scene_setup)) {
     DisplayRegionStack old_dr = gsg->push_display_region(dr);
     gsg->prepare_display_region();
@@ -194,7 +194,7 @@ cull_bin_draw(GraphicsWindow *win, DisplayRegion *dr) {
     cull_result = new CullResult(gsg);
   }
 
-  PT(SceneSetup) scene_setup = setup_scene(dr->get_qpcamera(), gsg);
+  PT(SceneSetup) scene_setup = setup_scene(dr->get_camera(), gsg);
   if (scene_setup != (SceneSetup *)NULL) {
     BinCullHandler cull_handler(cull_result);
     do_cull(&cull_handler, scene_setup, gsg);
@@ -218,13 +218,13 @@ cull_bin_draw(GraphicsWindow *win, DisplayRegion *dr) {
 //               reason.
 ////////////////////////////////////////////////////////////////////
 PT(SceneSetup) GraphicsEngine::
-setup_scene(const qpNodePath &camera, GraphicsStateGuardian *gsg) {
+setup_scene(const NodePath &camera, GraphicsStateGuardian *gsg) {
   if (camera.is_empty()) {
     // No camera, no draw.
     return NULL;
   }
 
-  qpCamera *camera_node;
+  Camera *camera_node;
   DCAST_INTO_R(camera_node, camera.node(), NULL);
 
   if (!camera_node->is_active()) {
@@ -238,7 +238,7 @@ setup_scene(const qpNodePath &camera, GraphicsStateGuardian *gsg) {
     return NULL;
   }
 
-  qpNodePath scene_root = camera_node->get_scene();
+  NodePath scene_root = camera_node->get_scene();
   if (scene_root.is_empty()) {
     // No scene, no draw.
     return NULL;
@@ -288,13 +288,13 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
   // Statistics
   PStatTimer timer(_cull_pcollector);
 
-  qpCullTraverser trav;
+  CullTraverser trav;
   trav.set_cull_handler(cull_handler);
   trav.set_depth_offset_decals(gsg->depth_offset_decals());
   trav.set_scene(scene_setup);
   trav.set_camera_mask(scene_setup->get_camera_node()->get_camera_mask());
 
-  if (qpview_frustum_cull) {
+  if (view_frustum_cull) {
     // If we're to be performing view-frustum culling, determine the
     // bounding volume associated with the current viewing frustum.
 

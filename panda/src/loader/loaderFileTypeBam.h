@@ -35,7 +35,7 @@ public:
   virtual string get_extension() const;
 
   virtual void resolve_filename(Filename &path) const;
-  virtual PT(PandaNode) qpload_file(const Filename &path, bool report_errors) const;
+  virtual PT(PandaNode) load_file(const Filename &path, bool report_errors) const;
 
 public:
   static TypeHandle get_class_type() {

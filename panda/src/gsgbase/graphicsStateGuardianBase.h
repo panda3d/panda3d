@@ -31,7 +31,7 @@ class GraphicsWindow;
 
 class GeomContext;
 class GeomNodeContext;
-class qpGeomNode;
+class GeomNode;
 class Geom;
 class GeomPoint;
 class GeomLine;
@@ -108,8 +108,8 @@ public:
   virtual void apply_texture(TextureContext *tc)=0;
   virtual void release_texture(TextureContext *tc)=0;
 
-  virtual GeomNodeContext *prepare_geom_node(qpGeomNode *node)=0;
-  virtual void draw_geom_node(qpGeomNode *node, const RenderState *state,
+  virtual GeomNodeContext *prepare_geom_node(GeomNode *node)=0;
+  virtual void draw_geom_node(GeomNode *node, const RenderState *state,
                               GeomNodeContext *gnc)=0;
   virtual void release_geom_node(GeomNodeContext *gnc)=0;
 

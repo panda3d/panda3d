@@ -20,7 +20,7 @@
 
 #include "ambientLight.h"
 #include "billboardEffect.h"
-#include "qpcamera.h"
+#include "camera.h"
 #include "colorAttrib.h"
 #include "colorBlendAttrib.h"
 #include "colorScaleAttrib.h"
@@ -30,27 +30,27 @@
 #include "cullBinAttrib.h"
 #include "cullBinBackToFront.h"
 #include "cullBinUnsorted.h"
-#include "qpcullTraverser.h"
+#include "cullTraverser.h"
 #include "cullableObject.h"
 #include "decalEffect.h"
 #include "depthOffsetAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
 #include "directionalLight.h"
-#include "qpfog.h"
+#include "fog.h"
 #include "fogAttrib.h"
-#include "qpgeomNode.h"
-#include "qplensNode.h"
+#include "geomNode.h"
+#include "lensNode.h"
 #include "light.h"
 #include "lightAttrib.h"
 #include "lightLensNode.h"
 #include "lightNode.h"
-#include "qplodNode.h"
+#include "lodNode.h"
 #include "materialAttrib.h"
-#include "qpmodelNode.h"
-#include "qpmodelRoot.h"
-#include "qpnodePath.h"
-#include "qpnodePathComponent.h"
+#include "modelNode.h"
+#include "modelRoot.h"
+#include "nodePath.h"
+#include "nodePathComponent.h"
 #include "pandaNode.h"
 #include "pointLight.h"
 #include "renderAttrib.h"
@@ -59,7 +59,7 @@
 #include "renderModeAttrib.h"
 #include "renderState.h"
 #include "selectiveChildNode.h"
-#include "qpsequenceNode.h"
+#include "sequenceNode.h"
 #include "showBoundsEffect.h"
 #include "spotlight.h"
 #include "texMatrixAttrib.h"
@@ -67,7 +67,7 @@
 #include "textureAttrib.h"
 #include "transformState.h"
 #include "transparencyAttrib.h"
-#include "qpnodePathLerps.h"
+#include "nodePathLerps.h"
 
 #include "dconfig.h"
 
@@ -81,7 +81,7 @@ ConfigureFn(config_pgraph) {
 // Set this true to cause culling to be performed by rendering the
 // object in red wireframe, rather than actually culling it.  This
 // helps make culling errors obvious.
-const bool qpfake_view_frustum_cull = config_pgraph.GetBool("fake-view-frustum-cull", false);
+const bool fake_view_frustum_cull = config_pgraph.GetBool("fake-view-frustum-cull", false);
 
 // Set this true to make ambiguous path warning messages generate an
 // assertion failure instead of just a warning (which can then be
@@ -106,7 +106,7 @@ init_libpgraph() {
 
   AmbientLight::init_type();
   BillboardEffect::init_type();
-  qpCamera::init_type();
+  Camera::init_type();
   ColorAttrib::init_type();
   ColorBlendAttrib::init_type();
   ColorScaleAttrib::init_type();
@@ -116,27 +116,27 @@ init_libpgraph() {
   CullBinAttrib::init_type();
   CullBinBackToFront::init_type();
   CullBinUnsorted::init_type();
-  qpCullTraverser::init_type();
+  CullTraverser::init_type();
   CullableObject::init_type();
   DecalEffect::init_type();
   DepthOffsetAttrib::init_type();
   DepthTestAttrib::init_type();
   DepthWriteAttrib::init_type();
   DirectionalLight::init_type();
-  qpFog::init_type();
+  Fog::init_type();
   FogAttrib::init_type();
-  qpGeomNode::init_type();
-  qpLensNode::init_type();
+  GeomNode::init_type();
+  LensNode::init_type();
   Light::init_type();
   LightAttrib::init_type();
   LightLensNode::init_type();
   LightNode::init_type();
-  qpLODNode::init_type();
+  LODNode::init_type();
   MaterialAttrib::init_type();
-  qpModelNode::init_type();
-  qpModelRoot::init_type();
-  qpNodePath::init_type();
-  qpNodePathComponent::init_type();
+  ModelNode::init_type();
+  ModelRoot::init_type();
+  NodePath::init_type();
+  NodePathComponent::init_type();
   PandaNode::init_type();
   PointLight::init_type();
   RenderAttrib::init_type();
@@ -145,7 +145,7 @@ init_libpgraph() {
   RenderModeAttrib::init_type();
   RenderState::init_type();
   SelectiveChildNode::init_type();
-  qpSequenceNode::init_type();
+  SequenceNode::init_type();
   ShowBoundsEffect::init_type();
   Spotlight::init_type();
   TexMatrixAttrib::init_type();
@@ -153,18 +153,18 @@ init_libpgraph() {
   TextureAttrib::init_type();
   TransformState::init_type();
   TransparencyAttrib::init_type();
-  qpPosLerpFunctor::init_type();
-  qpHprLerpFunctor::init_type();
-  qpScaleLerpFunctor::init_type();
-  qpPosHprLerpFunctor::init_type();
-  qpHprScaleLerpFunctor::init_type();
-  qpPosHprScaleLerpFunctor::init_type();
-  qpColorLerpFunctor::init_type();
-  qpColorScaleLerpFunctor::init_type();
+  PosLerpFunctor::init_type();
+  HprLerpFunctor::init_type();
+  ScaleLerpFunctor::init_type();
+  PosHprLerpFunctor::init_type();
+  HprScaleLerpFunctor::init_type();
+  PosHprScaleLerpFunctor::init_type();
+  ColorLerpFunctor::init_type();
+  ColorScaleLerpFunctor::init_type();
 
   AmbientLight::register_with_read_factory();
   BillboardEffect::register_with_read_factory();
-  qpCamera::register_with_read_factory();
+  Camera::register_with_read_factory();
   ColorAttrib::register_with_read_factory();
   ColorBlendAttrib::register_with_read_factory();
   ColorScaleAttrib::register_with_read_factory();
@@ -176,21 +176,21 @@ init_libpgraph() {
   DepthTestAttrib::register_with_read_factory();
   DepthWriteAttrib::register_with_read_factory();
   DirectionalLight::register_with_read_factory();
-  qpFog::register_with_read_factory();
+  Fog::register_with_read_factory();
   FogAttrib::register_with_read_factory();
-  qpGeomNode::register_with_read_factory();
-  qpLensNode::register_with_read_factory();
+  GeomNode::register_with_read_factory();
+  LensNode::register_with_read_factory();
   LightAttrib::register_with_read_factory();
-  qpLODNode::register_with_read_factory();
+  LODNode::register_with_read_factory();
   MaterialAttrib::register_with_read_factory();  
-  qpModelNode::register_with_read_factory();
-  qpModelRoot::register_with_read_factory();
+  ModelNode::register_with_read_factory();
+  ModelRoot::register_with_read_factory();
   PandaNode::register_with_read_factory();
   PointLight::register_with_read_factory();
   RenderEffects::register_with_read_factory();
   RenderModeAttrib::register_with_read_factory();
   RenderState::register_with_read_factory();
-  qpSequenceNode::register_with_read_factory();
+  SequenceNode::register_with_read_factory();
   ShowBoundsEffect::register_with_read_factory();
   Spotlight::register_with_read_factory();
   TexMatrixAttrib::register_with_read_factory();

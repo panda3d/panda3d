@@ -22,7 +22,7 @@
 #include "pandabase.h"
 
 #include "renderAttrib.h"
-#include "qpfog.h"
+#include "fog.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FogAttrib
@@ -33,11 +33,11 @@ private:
   INLINE FogAttrib();
 
 PUBLISHED:
-  static CPT(RenderAttrib) make(qpFog *fog);
+  static CPT(RenderAttrib) make(Fog *fog);
   static CPT(RenderAttrib) make_off();
 
   INLINE bool is_off() const;
-  INLINE qpFog *get_fog() const;
+  INLINE Fog *get_fog() const;
 
 public:
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
@@ -48,7 +48,7 @@ protected:
   virtual RenderAttrib *make_default_impl() const;
 
 private:
-  PT(qpFog) _fog;
+  PT(Fog) _fog;
 
 public:
   static void register_with_read_factory();

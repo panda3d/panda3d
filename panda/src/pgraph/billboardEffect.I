@@ -37,7 +37,7 @@ BillboardEffect() {
 INLINE CPT(RenderEffect) BillboardEffect::
 make_axis() {
   return make(LVector3f::up(), false, true, 
-              0.0f, qpNodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
+              0.0f, NodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ make_axis() {
 INLINE CPT(RenderEffect) BillboardEffect::
 make_point_eye() {
   return make(LVector3f::up(), true, false,
-              0.0f, qpNodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
+              0.0f, NodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ make_point_eye() {
 INLINE CPT(RenderEffect) BillboardEffect::
 make_point_world() {
   return make(LVector3f::up(), false, false,
-              0.0f, qpNodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
+              0.0f, NodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -73,7 +73,7 @@ make_point_world() {
 //               particularly useful and isn't normally created or
 //               stored in the graph; it might be implicitly
 //               discovered as the result of a
-//               qpNodePath::get_rel_state().
+//               NodePath::get_rel_state().
 ////////////////////////////////////////////////////////////////////
 INLINE bool BillboardEffect::
 is_off() const {
@@ -135,7 +135,7 @@ get_offset() const {
 //               will rotate towards the current camera node, wherever
 //               that might be.
 ////////////////////////////////////////////////////////////////////
-INLINE const qpNodePath &BillboardEffect::
+INLINE const NodePath &BillboardEffect::
 get_look_at() const {
   return _look_at;
 }

@@ -638,15 +638,8 @@ make_Texture(const FactoryParams &params) {
   string name;
   Filename filename, alpha_filename;
 
-  if (manager->get_file_minor_ver() < 6) {
-    // No _filename before bams 3.6.
-    filename = scan.get_string();
-    name = filename.get_basename_wo_extension();
-  } else {
-    name = scan.get_string();
-    filename = scan.get_string();
-  }
-
+  name = scan.get_string();
+  filename = scan.get_string();
   alpha_filename = scan.get_string();
 
   PT(Texture) me;
@@ -692,17 +685,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   //makes the assumption that the only data being written is
   //the name
 
-  if (manager->get_file_minor_ver() < 5) {
-    // Obsolete parameter.
-    scan.get_uint32();
-  }
   _wrapu = (enum WrapMode) scan.get_uint8();
   _wrapv = (enum WrapMode) scan.get_uint8();
   _minfilter = (enum FilterType) scan.get_uint8();
   _magfilter = (enum FilterType) scan.get_uint8();
-  if (manager->get_file_minor_ver() < 5) {
-    scan.get_uint16();
-  }
   _anisotropic_degree = scan.get_int16();
 
   if (scan.get_remaining_size() > 0) {
