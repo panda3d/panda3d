@@ -801,7 +801,11 @@ handle_endif_command() {
   nest->pop(this);
 
   if (nest->_block != _block_nesting) {
-    cerr << "If block not closed within scoping block.\n";
+    if (nest->_block != (BlockNesting *)NULL) {
+      cerr << "If block not closed within scoping block " << nest->_block->_name << ".\n";
+    } else {
+      cerr << "If block not closed within scoping block " << _block_nesting->_name << ".\n";
+    }
     return false;
   }
 
@@ -1106,15 +1110,15 @@ handle_output_command() {
   nest->push(this);
 
   if (!_in_for) {
-    string filename = trim_blanks(_scope->expand_string(nest->_name));
+    Filename filename = trim_blanks(_scope->expand_string(nest->_name));
     if (filename.empty()) {
       cerr << "Attempt to output to empty filename\n";
       return false;
     }
     
-    if (filename[0] != '/') {
+    if (filename.is_local()) {
       string prefix = _scope->expand_variable("DIRPREFIX");
-      filename = prefix + filename;
+      filename = Filename(prefix, filename);
     }
 
     nest->_params = filename;
@@ -1157,7 +1161,7 @@ handle_end_command() {
   nest->pop(this);
 
   if (nest->_if != _if_nesting) {
-    cerr << "If block not closed within scoping block.\n";
+    cerr << "If block not closed within scoping block " << name << ".\n";
     return false;
   }
 
@@ -1436,7 +1440,13 @@ handle_mkdir_command() {
     vector<string>::const_iterator wi;
     for (wi = words.begin(); wi != words.end(); ++wi) {
       Filename dirname(*wi);
-      Filename filename(*wi, "file");
+
+      if (dirname.is_local()) {
+        string prefix = _scope->expand_variable("DIRPREFIX");
+        dirname = Filename(prefix, dirname);
+      }
+
+      Filename filename(dirname, "file");
       if (!filename.make_dir()) {
         if (!dirname.is_directory()) {
           cerr << "Unable to create directory " << dirname << "\n";

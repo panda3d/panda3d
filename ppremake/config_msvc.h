@@ -80,5 +80,5 @@
  **         Also be sure to change the version number        **
  **             at the beginning of configure.in.            **
  ****************                              ****************/
-#define VERSION "1.1"
+#define VERSION "1.11"
 /****************  UPDATE VERSION NUMBER HERE  ****************/

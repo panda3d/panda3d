@@ -498,6 +498,7 @@ read_depends_file(PPNamedScopes *named_scopes) {
     }
     
     named_scopes->set_current(_dirname);
+    current_output_directory = this;
     PPCommandFile depends(_scope);
     if (!depends.read_file(depends_filename)) {
       cerr << "Error reading dependency definition file "

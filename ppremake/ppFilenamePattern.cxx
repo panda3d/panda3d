@@ -167,7 +167,21 @@ transform(const string &filename,
       return _prefix;
     } else {
       string body = transform_from.extract_body(filename);
-      return _prefix + body + _suffix;
+      string result = _prefix + body;
+
+      // Now the suffix might contain more % characters.  Replace all
+      // of them.
+      size_t p = 0;
+      size_t pct = _suffix.find(PATTERN_WILDCARD, p);
+      while (pct != string::npos) {
+        result += _suffix.substr(p, pct - p);
+        result += body;
+        p = pct + 1;
+        pct = _suffix.find(PATTERN_WILDCARD, p);
+      }
+      result += _suffix.substr(p);
+
+      return result;
     }
   }
 

@@ -104,7 +104,12 @@ read_source(const string &root) {
   }
 
   // Now cd to the source root and get the actual path.
-  string osdir = trydir.to_os_specific();
+  string osdir;
+#ifdef HAVE_CYGWIN
+  osdir = trydir;
+#else
+  osdir = trydir.to_os_specific();
+#endif
   if (chdir(osdir.c_str()) < 0) {
     perror("chdir");
     return false;

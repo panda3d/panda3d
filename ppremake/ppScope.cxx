@@ -2023,7 +2023,7 @@ string PPScope::
 expand_patsubst(const string &params, bool separate_words) {
   // Split the string up into tokens based on the commas.
   vector<string> tokens;
-  tokenize_params(params, tokens, true);
+  tokenize_params(params, tokens, false);
 
   if (tokens.size() < 3) {
     cerr << "patsubst requires at least three parameters.\n";
@@ -2039,9 +2039,9 @@ expand_patsubst(const string &params, bool separate_words) {
   // only if separate_words is true.
   vector<string> words;
   if (separate_words) {
-    tokenize_whitespace(tokens.back(), words);
+    tokenize_whitespace(expand_string(tokens.back()), words);
   } else {
-    words.push_back(tokens.back());
+    words.push_back(expand_string(tokens.back()));
   }
 
   // Build up a vector of from/to patterns.
@@ -2053,10 +2053,10 @@ expand_patsubst(const string &params, bool separate_words) {
   size_t i;
   for (i = 0; i < tokens.size() - 1; i += 2) {
     // Each "from" pattern might be a collection of patterns separated
-    // by spaces.
+    // by spaces, and it is expanded immediately.
     from.push_back(Patterns());
     vector<string> froms;
-    tokenize_whitespace(tokens[i], froms);
+    tokenize_whitespace(expand_string(tokens[i]), froms);
     vector<string>::const_iterator fi;
     for (fi = froms.begin(); fi != froms.end(); ++fi) {
       PPFilenamePattern pattern(*fi);
@@ -2068,8 +2068,14 @@ expand_patsubst(const string &params, bool separate_words) {
       from.back().push_back(pattern);
     }
 
-    // However, the corresponding "to" pattern is just one pattern.
-    to.push_back(PPFilenamePattern(tokens[i + 1]));
+    // However, the corresponding "to" pattern is just one pattern,
+    // and it is expanded immediately only if it does not contain a
+    // wildcard character.
+    PPFilenamePattern to_pattern(tokens[i + 1]);
+    if (!to_pattern.has_wildcard()) {
+      to_pattern = PPFilenamePattern(expand_string(tokens[i + 1]));
+    }
+    to.push_back(to_pattern);
   }
   size_t num_patterns = from.size();
   assert(num_patterns == to.size());
@@ -2082,7 +2088,8 @@ expand_patsubst(const string &params, bool separate_words) {
       for (pi = from[i].begin(); pi != from[i].end() && !matched; ++pi) {
         if ((*pi).matches(*wi)) {
           matched = true;
-          (*wi) = to[i].transform(*wi, (*pi));
+          string transformed = to[i].transform(*wi, (*pi));
+          (*wi) = expand_string(transformed);
         }
       }
     }
