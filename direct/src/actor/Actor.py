@@ -275,9 +275,12 @@ class Actor(PandaObject, NodePath):
                 for animName, file, animControl in animInfo:
                     print '    Anim:', animName
                     print '      File:', file
-                    print ('      NumFrames: %d PlayRate: %0.2f' %
-                           (animControl.getNumFrames(),
-                            animControl.getPlayRate()))
+                    if animControl == None:
+                        print ' (not loaded)'
+                    else:
+                        print ('      NumFrames: %d PlayRate: %0.2f' %
+                               (animControl.getNumFrames(),
+                                animControl.getPlayRate()))
 
     def cleanup(self):
         """cleanup(self)
@@ -317,7 +320,7 @@ class Actor(PandaObject, NodePath):
     def getPartNames(self):
         """getPartNames(self):
         Return list of Actor part names. If not an multipart actor,
-        returns 'modelRoot' NOTE: returns parts of first LOD"""
+        returns 'modelRoot' NOTE: returns parts of arbitrary LOD"""
         return self.__partBundleDict.values()[0].keys()
     
     def getGeomNode(self):
@@ -428,10 +431,12 @@ class Actor(PandaObject, NodePath):
     def update(self, lod=0):
         """ update(lod)
         """
-        if (lod < len(self.__partBundleDict.values())):
-            partBundles = self.__partBundleDict.values()[lod].values()
+        lodnames = self.getLODNames()
+        if (lod < len(lodnames)):
+            partBundles = self.__partBundleDict[lodnames[lod]].values()
             for partBundle in partBundles:
-                partBundle.node().update()
+                # print "updating: %s" % (partBundle.node())
+                partBundle.node().updateToNow()
         else:
             self.notify.warning('update() - no lod: %d' % lod)
     
