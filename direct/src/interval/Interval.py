@@ -20,6 +20,7 @@ class Interval(DirectObject):
 	self.name = name
 	self.duration = duration
 	self.clock = ClockObject.ClockObject.getGlobalClock()
+	self.curr_t = 0.0
 
     def getName(self):
 	""" getName()
@@ -59,12 +60,14 @@ class Interval(DirectObject):
         """ stop()
         """
         taskMgr.removeTasksNamed(self.name + '-play')
+	return self.curr_t
 
     def __playTask(self, task):
         """ __playTask(task)
         """
         t = self.clock.getFrameTime()
         te = (t - self.startT) * self.scale
+	self.curr_t = te
         if (te <= self.playDuration):
 	    if (self.firstTime):
 		self.setT(te, entry=1)
