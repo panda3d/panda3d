@@ -29,6 +29,10 @@
 #pragma warning (disable : 4503)
 /* C4305: truncation from 'const double' to 'float' */
 #pragma warning (disable : 4305)
+/* C4250: 'myclass' : inherits 'baseclass::member' via dominance */
+#pragma warning (disable : 4250)
+/* C4355: 'this' : used in base member initializer list */
+#pragma warning (disable : 4355)
 
 #endif  /* WIN32_VC */
 
