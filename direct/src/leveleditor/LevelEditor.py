@@ -867,7 +867,9 @@ class LevelEditor(NodePath, PandaObject):
             targetClass = self.targetDNAObject.__class__.getClassType()
             if ((targetClass.eq(DNAWall.getClassType())) |
                 (targetClass.eq(DNAWindows.getClassType())) |
-                (targetClass.eq(DNACornice.getClassType()))):
+                (targetClass.eq(DNACornice.getClassType()))
+                (targetClass.eq(DNAProp.getClassType()))
+                ):
                 self.panel.setCurrentColor(self.targetDNAObject.getColor())
         
 	# What kind of menu is it?
