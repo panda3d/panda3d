@@ -1,0 +1,4 @@
+#! /bin/sh
+MAYA_LOCATION=xxx
+export MAYA_LOCATION
+exec `dirname $0`/maya2egg_bin $*

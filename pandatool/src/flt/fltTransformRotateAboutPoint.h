@@ -1,0 +1,57 @@
+// Filename: fltTransformRotateAboutPoint.h
+// Created by:  drose (30Aug00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#ifndef FLTTRANSFORMROTATEABOUTPOINT_H
+#define FLTTRANSFORMROTATEABOUTPOINT_H
+
+#include <pandatoolbase.h>
+
+#include "fltTransformRecord.h"
+
+////////////////////////////////////////////////////////////////////
+// 	 Class : FltTransformRotateAboutPoint
+// Description : A transformation that rotates about a particular axis
+//               in space, defined by a point and vector.
+////////////////////////////////////////////////////////////////////
+class FltTransformRotateAboutPoint : public FltTransformRecord {
+public:
+  FltTransformRotateAboutPoint(FltHeader *header);
+
+  void set(const LPoint3d &center, const LVector3f &axis, float angle);
+
+  const LPoint3d &get_center() const;
+  const LVector3f &get_axis() const;
+  float get_angle() const;
+
+private:
+  void recompute_matrix();
+
+  LPoint3d _center;
+  LVector3f _axis;
+  float _angle;
+
+protected:
+  virtual bool extract_record(FltRecordReader &reader);
+  virtual bool build_record(FltRecordWriter &writer) const;
+
+public:
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    FltTransformRecord::init_type();
+    register_type(_type_handle, "FltTransformRotateAboutPoint",
+		  FltTransformRecord::get_class_type());
+  }
+
+private:
+  static TypeHandle _type_handle;
+};
+
+#endif

@@ -1,0 +1,23 @@
+// Filename: gtkStatsServer.h
+// Created by:  drose (14Jul00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#ifndef GTKSTATSSERVER_H
+#define GTKSTATSSERVER_H
+
+#include <pandatoolbase.h>
+
+#include <pStatServer.h>
+
+
+////////////////////////////////////////////////////////////////////
+// 	 Class : GtkStatsServer
+// Description : 
+////////////////////////////////////////////////////////////////////
+class GtkStatsServer : public PStatServer {
+public:
+  virtual PStatMonitor *make_monitor();
+};
+
+#endif

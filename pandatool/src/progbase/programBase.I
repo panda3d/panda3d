@@ -1,0 +1,16 @@
+// Filename: programBase.I
+// Created by:  drose (28Jun00)
+// 
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::show_text
+//       Access: Public
+//  Description: Formats the indicated text to stderr with the known
+//               _terminal_width.
+////////////////////////////////////////////////////////////////////
+INLINE void ProgramBase::
+show_text(const string &text) {
+  show_text("", 0, text);
+}

@@ -1,0 +1,648 @@
+// Filename: fltRecord.cxx
+// Created by:  drose (24Aug00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "fltRecord.h"
+#include "fltRecordReader.h"
+#include "fltRecordWriter.h"
+#include "fltHeader.h"
+#include "fltGroup.h"
+#include "fltObject.h"
+#include "fltFace.h"
+#include "fltVertexList.h"
+#include "fltLOD.h"
+#include "fltInstanceDefinition.h"
+#include "fltInstanceRef.h"
+#include "fltUnsupportedRecord.h"
+#include "fltExternalReference.h"
+
+#include <indent.h>
+
+TypeHandle FltRecord::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+FltRecord::
+FltRecord(FltHeader *header) :
+  _header(header)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+FltRecord::
+~FltRecord() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::get_num_children
+//       Access: Public
+//  Description: Returns the number of child records of this record.  This
+//               reflects the normal scene graph hierarchy.
+////////////////////////////////////////////////////////////////////
+int FltRecord::
+get_num_children() const {
+  return _children.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::get_child
+//       Access: Public
+//  Description: Returns the nth child of this record.
+////////////////////////////////////////////////////////////////////
+FltRecord *FltRecord::
+get_child(int n) const {
+  nassertr(n >= 0 && n < (int)_children.size(), (FltRecord *)NULL);
+  return _children[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::clear_children
+//       Access: Public
+//  Description: Removes all children from this record.
+////////////////////////////////////////////////////////////////////
+void FltRecord::
+clear_children() {
+  _children.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::add_child
+//       Access: Public
+//  Description: Adds a new child to the end of the list of children
+//               for this record.
+////////////////////////////////////////////////////////////////////
+void FltRecord::
+add_child(FltRecord *child) {
+  _children.push_back(child);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::get_num_subfaces
+//       Access: Public
+//  Description: Returns the number of subface records of this record.
+//               Normally, subfaces will only be present on object
+//               records, although it is logically possible for them to
+//               appear anywhere.
+////////////////////////////////////////////////////////////////////
+int FltRecord::
+get_num_subfaces() const {
+  return _subfaces.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::get_subface
+//       Access: Public
+//  Description: Returns the nth subface of this record.
+////////////////////////////////////////////////////////////////////
+FltRecord *FltRecord::
+get_subface(int n) const {
+  nassertr(n >= 0 && n < (int)_subfaces.size(), (FltRecord *)NULL);
+  return _subfaces[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::clear_subfaces
+//       Access: Public
+//  Description: Removes all subfaces from this record.
+////////////////////////////////////////////////////////////////////
+void FltRecord::
+clear_subfaces() {
+  _subfaces.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::add_subface
+//       Access: Public
+//  Description: Adds a new subface to the end of the list of subfaces
+//               for this record.
+////////////////////////////////////////////////////////////////////
+void FltRecord::
+add_subface(FltRecord *subface) {
+  _subfaces.push_back(subface);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::get_num_ancillary
+//       Access: Public
+//  Description: Returns the number of unsupported ancillary records
+//               of this record.  These are ancillary records that
+//               appeared following this record in the flt file but that
+//               aren't directly understood by the flt
+//               loader--normally, an ancillary record is examined and
+//               decoded on the spot, and no pointer to it is kept.
+////////////////////////////////////////////////////////////////////
+int FltRecord::
+get_num_ancillary() const {
+  return _ancillary.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::get_ancillary
+//       Access: Public
+//  Description: Returns the nth unsupported ancillary record of this
+//               record.  See get_num_ancillary().
+////////////////////////////////////////////////////////////////////
+FltRecord *FltRecord::
+get_ancillary(int n) const {
+  nassertr(n >= 0 && n < (int)_ancillary.size(), (FltRecord *)NULL);
+  return _ancillary[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::clear_ancillary
+//       Access: Public
+//  Description: Removes all unsupported ancillary records from this
+//               record.  See get_num_ancillary().
+////////////////////////////////////////////////////////////////////
+void FltRecord::
+clear_ancillary() {
+  _ancillary.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::add_ancillary
+//       Access: Public
+//  Description: Adds a new unsupported ancillary record to the end of
+//               the list of ancillary records for this record.  This
+//               record will be written to the flt file following this
+//               record, without attempting to understand what is in it.
+//
+//               Normally, there is no reason to use this function; if
+//               the data stored in the FltRecord requires one or more
+//               ancillary record, the appropriate records will
+//               automatically be generated when the record is written.
+//               This function is only required to output a record
+//               whose type is not supported by the flt loader.  But
+//               it would be better to extend the flt loader to know
+//               about this new kind of data record.
+////////////////////////////////////////////////////////////////////
+void FltRecord::
+add_ancillary(FltRecord *ancillary) {
+  _ancillary.push_back(ancillary);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::has_comment
+//       Access: Public
+//  Description: Returns true if this record has a nonempty comment,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool FltRecord::
+has_comment() const {
+  return !_comment.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::get_comment
+//       Access: Public
+//  Description: Retrieves the comment for this record.
+////////////////////////////////////////////////////////////////////
+const string &FltRecord::
+get_comment() const {
+  return _comment;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::clear_comment
+//       Access: Public
+//  Description: Removes the comment for this record.
+////////////////////////////////////////////////////////////////////
+void FltRecord::
+clear_comment() {
+  _comment = "";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::set_comment
+//       Access: Public
+//  Description: Changes the comment for this record.
+////////////////////////////////////////////////////////////////////
+void FltRecord::
+set_comment(const string &comment) {
+  _comment = comment;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::output
+//       Access: Public
+//  Description: Writes a quick one-line description of the record, but
+//               not its children.  This is a human-readable
+//               description, primarily for debugging; to write a flt
+//               file, use FltHeader::write_flt().
+////////////////////////////////////////////////////////////////////
+void FltRecord::
+output(ostream &out) const {
+  out << get_type();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::write
+//       Access: Public
+//  Description: Writes a multiple-line description of the record and
+//               all of its children.  This is a human-readable
+//               description, primarily for debugging; to write a flt
+//               file, use FltHeader::write_flt().
+////////////////////////////////////////////////////////////////////
+void FltRecord::
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level) << *this;
+  write_children(out, indent_level);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::write_children
+//       Access: Protected
+//  Description: Assuming the current write position has been left at
+//               the end of the last line of the record description,
+//               writes out the list of children.
+////////////////////////////////////////////////////////////////////
+void FltRecord::
+write_children(ostream &out, int indent_level) const {
+  if (!_ancillary.empty()) {
+    out << " + " << _ancillary.size() << " ancillary";
+  }
+  if (!_subfaces.empty()) {
+    out << " [";
+    Records::const_iterator ci;
+    for (ci = _subfaces.begin(); ci != _subfaces.end(); ++ci) {
+      out << " " << *(*ci);
+    }
+    out << " ]";
+  }
+  if (!_children.empty()) {
+    out << " {\n";
+    Records::const_iterator ci;
+    for (ci = _children.begin(); ci != _children.end(); ++ci) {
+      (*ci)->write(out, indent_level + 2);
+    }
+    indent(out, indent_level) << "}\n";
+  } else {
+    out << "\n";
+  }
+}
+
+  /*
+  virtual void write(ostream &out) const;
+  virtual void build_record(Datagram &datagram) const;
+  */
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::is_ancillary
+//       Access: Protected, Static
+//  Description: Returns true if the indicated opcode corresponds to
+//               an ancillary record type, false otherwise.  In
+//               general, this function is used to identify ancillary
+//               records that are not presently supported by the
+//               FltReader; these will be ignored.  Normally,
+//               ancillary records will be detected and processed by
+//               extract_ancillary().
+////////////////////////////////////////////////////////////////////
+bool FltRecord::
+is_ancillary(FltOpcode opcode) {
+  switch (opcode) {
+  case FO_comment:
+  case FO_long_id:
+  case FO_replicate:
+  case FO_road_zone:
+  case FO_transform_matrix:
+  case FO_rotate_about_edge:
+  case FO_translate:
+  case FO_scale:
+  case FO_rotate_about_point:
+  case FO_rotate_and_scale:
+  case FO_put:
+  case FO_general_matrix:
+  case FO_vector:
+  case FO_bounding_box:
+  case FO_bounding_sphere:
+  case FO_bounding_cylinder:
+  case FO_bv_center:
+  case FO_bv_orientation:
+  case FO_vertex_palette:
+  case FO_vertex_c:
+  case FO_vertex_cn:
+  case FO_vertex_cnu:
+  case FO_vertex_cu:
+  case FO_color_palette:
+  case FO_color_name_palette:
+  case FO_15_material:
+  case FO_texture:
+  case FO_eyepoint_palette:
+  case FO_light_definition:
+    return true;
+
+  case FO_header:
+  case FO_group:
+  case FO_object:
+  case FO_face:
+  case FO_dof:
+  case FO_vertex_list:
+  case FO_morph_list:
+  case FO_bsp:
+  case FO_external_ref:
+  case FO_lod:
+  case FO_sound:
+  case FO_light_source:
+  case FO_road_segment:
+  case FO_road_path:
+  case FO_clip_region:
+  case FO_text:
+  case FO_switch:
+    return false;
+
+  case FO_push:
+  case FO_pop:
+  case FO_push_face:
+  case FO_pop_face:
+  case FO_push_attribute:
+  case FO_pop_attribute:
+  case FO_instance:
+  case FO_instance_ref:
+    return false;
+
+  default:
+    nout << "Don't know whether " << opcode << " is ancillary.\n";
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::create_new_record
+//       Access: Protected
+//  Description: Creates a new FltRecord corresponding to the opcode.
+//               If the opcode is unknown, creates a
+//               FltUnsupportedRecord.
+////////////////////////////////////////////////////////////////////
+FltRecord *FltRecord::
+create_new_record(FltOpcode opcode) const {
+  switch (opcode) {
+  case FO_group:
+    return new FltGroup(_header);
+
+  case FO_object:
+    return new FltObject(_header);
+
+  case FO_face:
+    return new FltFace(_header);
+
+  case FO_vertex_list:
+    return new FltVertexList(_header);
+
+  case FO_lod:
+    return new FltLOD(_header);
+
+  case FO_instance:
+    return new FltInstanceDefinition(_header);
+
+  case FO_instance_ref:
+    return new FltInstanceRef(_header);
+
+  case FO_external_ref:
+    return new FltExternalReference(_header);
+
+  default:
+    nout << "Unsupported record " << opcode << "\n";
+    return new FltUnsupportedRecord(_header);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::read_record_and_children
+//       Access: Protected
+//  Description: Extracts this record information from the current
+//               record presented in the reader, then advances the
+//               reader and continues to read any children, if
+//               present.  On return, the reader is position on the
+//               next sibling record to this record.
+//
+//               Returns FE_ok if successful, otherwise on error.
+////////////////////////////////////////////////////////////////////
+FltError FltRecord::
+read_record_and_children(FltRecordReader &reader) {
+  if (!extract_record(reader)) {
+    nout << "Could not extract record for " << *this << "\n";
+    return FE_invalid_record;
+  }
+  FltError result = reader.advance();
+  if (result == FE_end_of_file) {
+    return FE_ok;
+  } else if (result != FE_ok) {
+    return result;
+  }
+
+  while (true) {
+    if (extract_ancillary(reader)) {
+      // Ok, a known ancillary record.  Fine.
+
+    } else if (reader.get_opcode() == FO_push) {
+      // A push begins a new list of children.
+      result = reader.advance();
+      if (result != FE_ok) {
+	return result;
+      }
+      
+      while (reader.get_opcode() != FO_pop) {
+	PT(FltRecord) child = create_new_record(reader.get_opcode());
+	FltError result = child->read_record_and_children(reader);
+	if (result != FE_ok) {
+	  return result;
+	}
+
+	if (child->is_of_type(FltInstanceDefinition::get_class_type())) {
+	  // A special case for an instance definition.  These
+	  // shouldn't appear in the hierarchy, but should instead be
+	  // added directly to the header.
+	  _header->add_instance(DCAST(FltInstanceDefinition, child));
+
+	} else {
+	  add_child(child);
+	}
+
+	if (reader.eof() || reader.error()) {
+	  return FE_end_of_file;
+	}
+      }
+
+    } else if (reader.get_opcode() == FO_push_face) {
+      // A push subface begins a new list of subfaces.
+      result = reader.advance();
+      if (result != FE_ok) {
+	return result;
+      }
+      
+      while (reader.get_opcode() != FO_pop_face) {
+	PT(FltRecord) subface = create_new_record(reader.get_opcode());
+	FltError result = subface->read_record_and_children(reader);
+	if (result != FE_ok) {
+	  return result;
+	}
+	add_subface(subface);
+	if (reader.eof() || reader.error()) {
+	  return FE_end_of_file;
+	}
+      }
+
+    } else if (is_ancillary(reader.get_opcode())) {
+      // An unsupported ancillary record.  Skip it.
+      PT(FltRecord) ancillary = create_new_record(reader.get_opcode());
+      ancillary->extract_record(reader);
+      _ancillary.push_back(ancillary);
+
+    } else {
+      // None of the above: we're done.
+      return FE_ok;
+    }
+
+    // Skip to the next record.  If that's the end, fine.
+    result = reader.advance();
+    if (result == FE_end_of_file) {
+      return FE_ok;
+    } else if (result != FE_ok) {
+      return result;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::extract_record
+//       Access: Protected, Virtual
+//  Description: Fills in the information in this record based on the
+//               information given in the indicated datagram, whose
+//               opcode has already been read.  Returns true on
+//               success, false if the datagram is invalid.
+////////////////////////////////////////////////////////////////////
+bool FltRecord::
+extract_record(FltRecordReader &) {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::extract_ancillary
+//       Access: Protected, Virtual
+//  Description: Checks whether the given record, which follows this
+//               record sequentially in the file, is an ancillary record
+//               of this record.  If it is, extracts the relevant
+//               information and returns true; otherwise, leaves it
+//               alone and returns false.
+////////////////////////////////////////////////////////////////////
+bool FltRecord::
+extract_ancillary(FltRecordReader &reader) {
+  if (reader.get_opcode() == FO_comment) {
+    _comment = reader.get_iterator().get_remaining_bytes();
+    return true;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::write_record_and_children
+//       Access: Protected, Virtual
+//  Description: Writes this record out to the flt file, along with all
+//               of its ancillary records and children records.  Returns
+//               FE_ok on success, or something else on error.
+////////////////////////////////////////////////////////////////////
+FltError FltRecord::
+write_record_and_children(FltRecordWriter &writer) const {
+  // First, write the record.
+  if (!build_record(writer)) {
+    return FE_bad_data;
+  }
+
+  FltError result = writer.advance();
+  if (result != FE_ok) {
+    return result;
+  }
+
+  // Then the ancillary data.
+  result = write_ancillary(writer);
+  if (result != FE_ok) {
+    return result;
+  }
+  Records::const_iterator ci;
+  for (ci = _ancillary.begin(); ci != _ancillary.end(); ++ci) {
+    if (!(*ci)->build_record(writer)) {
+      return FE_bad_data;
+    }
+    result = writer.advance();
+    if (result != FE_ok) {
+      return result;
+    }
+  }
+
+  // Any subfaces?
+  if (!_subfaces.empty()) {
+    result = writer.write_record(FO_push_face);
+    if (result != FE_ok) {
+      return result;
+    }
+
+    for (ci = _subfaces.begin(); ci != _subfaces.end(); ++ci) {
+      (*ci)->write_record_and_children(writer);
+    }
+
+    result = writer.write_record(FO_pop_face);
+    if (result != FE_ok) {
+      return result;
+    }
+  }
+
+  // Finally, write all the children.
+  if (!_children.empty()) {
+    result = writer.write_record(FO_push);
+    if (result != FE_ok) {
+      return result;
+    }
+
+    for (ci = _children.begin(); ci != _children.end(); ++ci) {
+      (*ci)->write_record_and_children(writer);
+    }
+
+    result = writer.write_record(FO_pop);
+    if (result != FE_ok) {
+      return result;
+    }
+  }
+
+  return FE_ok;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::build_record
+//       Access: Protected, Virtual
+//  Description: Fills up the current record on the FltRecordWriter with
+//               data for this record, but does not advance the
+//               writer.  Returns true on success, false if there is
+//               some error.
+////////////////////////////////////////////////////////////////////
+bool FltRecord::
+build_record(FltRecordWriter &) const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::write_ancillary
+//       Access: Protected, Virtual
+//  Description: Writes whatever ancillary records are required for
+//               this record.  Returns FE_ok on success, or something
+//               else if there is some error.
+////////////////////////////////////////////////////////////////////
+FltError FltRecord::
+write_ancillary(FltRecordWriter &writer) const {
+  if (!_comment.empty()) {
+    Datagram dc(_comment);
+    FltError result = writer.write_record(FO_comment, dc);
+    if (result != FE_ok) {
+      return result;
+    }
+  }
+  return FE_ok;
+}

@@ -1,0 +1,6 @@
+// Filename: pandatoolbase.cc
+// Created by:  drose (15Sep00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "pandatoolbase.h"

@@ -1,0 +1,32 @@
+#begin bin_target
+  #define TARGET bam-info
+  #define LOCAL_LIBS \
+    eggbase progbase config compiler
+  #define OTHER_LIBS \
+    loader:c egg:c sgraphutil:c sgattrib:c sgraph:c pnmimagetypes:c \
+    graph:c putil:c express:c panda:m interrogatedb:c dtool:m
+  #define UNIX_SYS_LIBS \
+    m
+
+  #define SOURCES \
+    bamInfo.cxx bamInfo.h
+
+  #define INSTALL_HEADERS \
+
+#end bin_target
+
+#begin bin_target
+  #define TARGET egg2bam
+  #define LOCAL_LIBS \
+    eggbase progbase config compiler
+  #define OTHER_LIBS \
+    loader:c egg2sg:c builder:c egg:c pnmimagetypes:c graph:c putil:c \
+    express:c panda:m interrogatedb:c dtool:m
+  #define UNIX_SYS_LIBS \
+    m
+
+  #define SOURCES \
+    eggToBam.cxx eggToBam.h
+
+#end bin_target
+

@@ -1,0 +1,16 @@
+// Filename: fltVertex.I
+// Created by:  drose (30Aug00)
+// 
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltVertex::has_color
+//       Access: Public
+//  Description: Returns true if the vertex has a primary color
+//               indicated, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool FltVertex::
+has_color() const {
+  return (_flags & F_no_color) == 0;
+}

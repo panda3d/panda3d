@@ -1,0 +1,69 @@
+// Filename: pStatMonitor.I
+// Created by:  drose (14Jul00)
+// 
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatMonitor::get_client_data
+//       Access: Public
+//  Description: Returns the client data associated with this monitor.
+////////////////////////////////////////////////////////////////////
+INLINE const PStatClientData *PStatMonitor::
+get_client_data() const {
+  return _client_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatMonitor::get_collector_name
+//       Access: Public
+//  Description: Returns the name of the indicated collector, if it is
+//               known.
+////////////////////////////////////////////////////////////////////
+INLINE string PStatMonitor::
+get_collector_name(int collector_index) {
+  if (!_client_data.is_null() && 
+      _client_data->has_collector(collector_index)) {
+    return _client_data->get_collector_name(collector_index);
+  }
+  return "Unknown";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatMonitor::is_client_known
+//       Access: Public
+//  Description: Returns true if we've yet received the "hello"
+//               message from the client indicating its name, etc.
+////////////////////////////////////////////////////////////////////
+INLINE bool PStatMonitor::
+is_client_known() const {
+  return _client_known;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatMonitor::get_client_hostname
+//       Access: Public
+//  Description: Returns the hostname of the client we're connected
+//               to, if known.  This may not be known immediately at
+//               creation time, but should be learned shortly
+//               thereafter when we receive the client's "hello"
+//               message.  See is_client_known().
+////////////////////////////////////////////////////////////////////
+INLINE string PStatMonitor::
+get_client_hostname() const {
+  return _client_hostname;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatMonitor::get_client_progname
+//       Access: Public
+//  Description: Returns the program name of the client we're
+//               connected to, if known.  This may not be known
+//               immediately at creation time, but should be learned
+//               shortly thereafter when we receive the client's
+//               "hello" message.  See is_client_known().
+////////////////////////////////////////////////////////////////////
+INLINE string PStatMonitor::
+get_client_progname() const {
+  return _client_progname;
+}
