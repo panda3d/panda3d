@@ -245,12 +245,12 @@ class FFIMethodArgumentTreeCollection:
     def setup(self):
         for method in self.methodSpecList:
             numArgs = len(method.typeDescriptor.thislessArgTypes())
-            numArgsList = ifAbsentPut(self.methodDict, numArgs, [])
+            numArgsList = self.methodDict.setdefault(numArgs, [])
             numArgsList.append(method)
         for numArgs in self.methodDict.keys():
             methodList = self.methodDict[numArgs]
             tree = FFIMethodArgumentTree(self.classTypeDesc, methodList)
-            treeList = ifAbsentPut(self.treeDict, numArgs, [])
+            treeList = self.treeDict.setdefault(numArgs, [])
             treeList.append(tree)
 
     def generateCode(self, file, nesting):

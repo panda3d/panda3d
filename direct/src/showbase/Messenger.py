@@ -44,7 +44,7 @@ class Messenger:
                                    + '\n extraArgs: ' + `extraArgs`
                                    + '\n persistent: ' + `persistent`)
             
-        acceptorDict = ifAbsentPut(self.dict, event, {})
+        acceptorDict = self.dict.setdefault(event, {})
         acceptorDict[object] = [method, extraArgs, persistent]
 
     def ignore(self, event, object):

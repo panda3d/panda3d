@@ -752,7 +752,7 @@ class FFIInterrogateDatabase:
         # Generate overloading
         overloadedGlobalFunctions = {}
         for methodSpec in globalFunctions:
-            methodList = ifAbsentPut(overloadedGlobalFunctions, methodSpec.name, [])
+            methodList = overloadedGlobalFunctions.setdefault(methodSpec.name, [])
             methodList.append(methodSpec)
 
         overloadedGlobalFunctions = FFIOverload.cullOverloadedMethods(overloadedGlobalFunctions)

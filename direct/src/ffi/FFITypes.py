@@ -329,7 +329,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         through them and see which are overloaded
         { className : {methodName : [methodSpec, methodSpec, methodSpec]}}
         """
-        methodList = ifAbsentPut(self.overloadedClassMethods, methodSpec.name, [])
+        methodList = self.overloadedClassMethods.setdefault(methodSpec.name, [])
         methodList.append(methodSpec)
     
 
@@ -339,7 +339,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         through them and see which are overloaded
         { className : {methodName : [methodSpec, methodSpec, methodSpec]}}
         """
-        methodList = ifAbsentPut(self.overloadedInstanceMethods, methodSpec.name, [])
+        methodList = self.overloadedInstanceMethods.setdefault(methodSpec.name, [])
         methodList.append(methodSpec)
 
 

@@ -4,15 +4,14 @@ import re
 import math
 import operator
 
-def ifAbsentPut(dict, key, newValue):
-    """
-    If dict has key, return the value, otherwise insert the newValue and return it
-    """
-    if dict.has_key(key):
-        return dict[key]
-    else:
-        dict[key] = newValue
-        return newValue
+
+# NOTE: ifAbsentPut has been replaced with Python's dictionary's builtin setdefault
+# before:
+#     ifAbsentPut(dict, key, defaultValue)
+# after:
+#     dict.setdefault(key, defaultValue)
+# Please use setdefault instead -- Joe
+
 
 def unique(L1, L2):
     """Return a list containing all items in 'L1' that are not in 'L2'"""

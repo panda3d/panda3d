@@ -29,12 +29,12 @@ class DirectObject:
 
     def accept(self, event, method, extraArgs=[]):
         self.__initEvents()
-        ifAbsentPut(self.events, event, None)
+        self.events.setdefault(event, None)
         messenger.accept(event, self, method, extraArgs, 1)
 
     def acceptOnce(self, event, method, extraArgs=[]):
         self.__initEvents()
-        ifAbsentPut(self.events, event, None)
+        self.events.setdefault(event, None)
         messenger.accept(event, self, method, extraArgs, 0)
 
     def _INTERNAL_acceptOnceExpired(self, event):
