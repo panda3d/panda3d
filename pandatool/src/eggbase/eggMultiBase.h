@@ -43,6 +43,7 @@ public:
 
 protected:
   void append_command_comment(EggData &_data);
+  static void append_command_comment(EggData &_data, const string &comment);
 
   virtual PT(EggData) read_egg(const Filename &filename);
 

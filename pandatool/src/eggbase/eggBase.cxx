@@ -144,6 +144,21 @@ post_command_line() {
 ////////////////////////////////////////////////////////////////////
 void EggBase::
 append_command_comment(EggData &data) {
-  string comment = get_exec_command();
+  append_command_comment(data, get_exec_command());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggBase::append_command_comment
+//       Access: Protected, Static
+//  Description: Inserts a comment into the beginning of the indicated
+//               egg file corresponding to the command line that
+//               invoked this program.
+//
+//               Normally this function is called automatically when
+//               appropriate by EggWriter, and it's not necessary to
+//               call it explicitly.
+////////////////////////////////////////////////////////////////////
+void EggBase::
+append_command_comment(EggData &data, const string &comment) {
   data.insert(data.begin(), new EggComment("", comment));
 }

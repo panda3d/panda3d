@@ -53,6 +53,7 @@ public:
 protected:
   virtual bool post_command_line();
   void append_command_comment(EggData &_data);
+  static void append_command_comment(EggData &_data, const string &comment);
 
 protected:
   bool _got_coordinate_system;

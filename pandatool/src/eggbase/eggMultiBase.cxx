@@ -55,49 +55,27 @@ EggMultiBase() {
 //               invoked this program.
 //
 //               Normally this function is called automatically when
-//               appropriate by EggMultiFilter, and it's not necessary
-//               to call it explicitly.
+//               appropriate by EggWriter, and it's not necessary to
+//               call it explicitly.
 ////////////////////////////////////////////////////////////////////
 void EggMultiBase::
 append_command_comment(EggData &data) {
-  string comment;
+  append_command_comment(data, get_exec_command());
+}
 
-  comment = _program_name;
-  Args::const_iterator ai;
-  for (ai = _program_args.begin(); ai != _program_args.end(); ++ai) {
-    const string &arg = (*ai);
-
-    // First, check to see if the string is shell-acceptable.
-    bool legal = true;
-    string::const_iterator si;
-    for (si = arg.begin(); legal && si != arg.end(); ++si) {
-      switch (*si) {
-      case ' ':
-      case '\n':
-      case '\t':
-      case '*':
-      case '?':
-      case '\\':
-      case '(':
-      case ')':
-      case '|':
-      case '&':
-      case '<':
-      case '>':
-      case '"':
-      case ';':
-      case '$':
-        legal = false;
-      }
-    }
-
-    if (legal) {
-      comment += " " + arg;
-    } else {
-      comment += " '" + arg + "'";
-    }
-  }
-
+////////////////////////////////////////////////////////////////////
+//     Function: EggMultiBase::append_command_comment
+//       Access: Protected, Static
+//  Description: Inserts a comment into the beginning of the indicated
+//               egg file corresponding to the command line that
+//               invoked this program.
+//
+//               Normally this function is called automatically when
+//               appropriate by EggWriter, and it's not necessary to
+//               call it explicitly.
+////////////////////////////////////////////////////////////////////
+void EggMultiBase::
+append_command_comment(EggData &data, const string &comment) {
   data.insert(data.begin(), new EggComment("", comment));
 }
 
