@@ -49,10 +49,11 @@ PUBLISHED:
   INLINE int get_num_nested_fields() const;
   INLINE bool more_nested_fields() const;
 
+  INLINE DCPackType get_pack_type() const;
+
   void push();
   void pop();
 
-  INLINE DCPackType get_pack_type() const;
   INLINE void pack_double(double value);
   INLINE void pack_int(int value);
   INLINE void pack_int64(PN_int64 value);
