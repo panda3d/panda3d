@@ -29,7 +29,14 @@ class ShadowPlacer(DirectObject.DirectObject):
         """
         assert self.debugPrint("setup()")
         assert not shadowNodePath.isEmpty()
-        
+
+        if not cTrav:
+            # set up the shadow collision traverser
+            if not base.shadowTrav:
+                # set up the shadow collision traverser
+                base.shadowTrav = CollisionTraverser()
+            cTrav = base.shadowTrav
+
         self.cTrav = cTrav
         self.shadowNodePath = shadowNodePath
 
