@@ -968,7 +968,7 @@ class LevelEditor(NodePath, PandaObject):
         # Create new building
         newDNAFlatBuilding = DNAFlatBuilding()
         self.setRandomBuildingStyle(newDNAFlatBuilding,
-                                    name = 'b0_'+buildingType + '_DNARoot')
+                                    name = 'tb0:'+buildingType + '_DNARoot')
         # Initialize its position and hpr
         newDNAFlatBuilding.setPos(VBase3(0))
         newDNAFlatBuilding.setHpr(VBase3(0))
@@ -985,7 +985,7 @@ class LevelEditor(NodePath, PandaObject):
         # And create new landmark building
         block=self.getNextLandmarkBlock()
         newDNALandmarkBuilding = DNALandmarkBuilding(
-            'b'+block+'_'+landmarkType + '_DNARoot')
+            'tb'+block+':'+landmarkType + '_DNARoot')
         newDNALandmarkBuilding.setCode(landmarkType)
         newDNALandmarkBuilding.setPos(VBase3(0))
         newDNALandmarkBuilding.setHpr(VBase3(0))
@@ -2276,15 +2276,19 @@ class LevelEditor(NodePath, PandaObject):
                         0.5 + random()/2.0,
                         0.5 + random()/2.0)
     
+    def getBlockFromName(self, name):
+        block=name[2:name.find(':')]
+        return block
+    
     def addToLandmarkBlock(self):
         dnaRoot=self.selectedDNARoot
         if dnaRoot and self.lastLandmarkBuildingDNA:
             if DNAClassEqual(dnaRoot, DNA_FLAT_BUILDING):
                 n=dnaRoot.getName()
-                n=n[n.find('_'):]
+                n=n[n.find(':'):]
                 block=self.lastLandmarkBuildingDNA.getName()
-                block=block[1:block.find('_')]
-                dnaRoot.setName('b'+block+n)
+                block=block[2:block.find(':')]
+                dnaRoot.setName('tb'+block+n)
                 self.replaceSelected()
                 # If we're highlighting the landmark blocks:
                 if self.showLandmarkBlockToggleGroup:
@@ -2294,12 +2298,12 @@ class LevelEditor(NodePath, PandaObject):
                     np.setColor(1,0,0,1)
 
     def findHighestLandmarkBlock(self, dnaRoot, npRoot):
-        npc=npRoot.findAllMatches("**/*_toon_landmark_*")
+        npc=npRoot.findAllMatches("**/*:toon_landmark_*")
         highest=0
         for i in range(npc.getNumPaths()):
             path=npc.getPath(i)
             block=path.getName()
-            block=int(block[1:block.find('_')])
+            block=int(block[2:block.find(':')])
             if (block > highest):
                 highest=block
         # Make a list of flat building names, outside of the
@@ -2326,12 +2330,12 @@ class LevelEditor(NodePath, PandaObject):
                 name=child.getName()
                 if name.find('toon_landmark_')==0:
                     block=block+1
-                    child.setName('b'+str(block)+'_'+name)
+                    child.setName('tb'+str(block)+':'+name)
             elif DNAClassEqual(child, DNA_FLAT_BUILDING):
                 # Flat buildings:
                 name=child.getName()
                 if (name in self.flatNames):
-                    child.setName('b0_'+name)
+                    child.setName('tb0:'+name)
             else:
                 block = self.convertToLandmarkBlocks(block, child)
         return block
@@ -2340,12 +2344,12 @@ class LevelEditor(NodePath, PandaObject):
         """
         un-block flat buildings (set them to block zero).
         """
-        npc=self.NPToplevel.findAllMatches("**/b"+block+"_*_DNARoot")
+        npc=self.NPToplevel.findAllMatches("**/tb"+block+":*_DNARoot")
         for i in range(npc.getNumPaths()):
             nodePath=npc.getPath(i)            
             name=nodePath.getName()
-            if name[name.find('_'):][:15] != '_toon_landmark_':
-                name='b0'+name[name.find('_'):]
+            if name[name.find(':'):][:15] != ':toon_landmark_':
+                name='tb0'+name[name.find(':'):]
                 dna=self.findDNANode(nodePath)
                 dna.setName(name)
                 nodePath=self.replace(nodePath, dna)
@@ -2359,9 +2363,9 @@ class LevelEditor(NodePath, PandaObject):
         if dna:
             name=dna.getName()
             # Get the underscore index within the name:
-            usIndex=name.find('_')
-            if name[usIndex:][:15] == '_toon_landmark_':
-                block=name[1:usIndex]
+            usIndex=name.find(':')
+            if name[usIndex:][:15] == ':toon_landmark_':
+                block=name[2:usIndex]
                 self.lastLandmarkBuildingDNA=None
                 self.revertLandmarkBlock(block)
     
@@ -2371,17 +2375,17 @@ class LevelEditor(NodePath, PandaObject):
             if not self.showLandmarkBlockToggleGroup:
                 group=[]
                 block=dna.getName()
-                block=block[1:block.find('_')]
+                block=block[2:block.find(':')]
 
                 # Get current landmark buildings:
-                npc=self.NPToplevel.findAllMatches("**/b"+block+"_*_DNARoot")
+                npc=self.NPToplevel.findAllMatches("**/tb"+block+":*_DNARoot")
                 for i in range(npc.getNumPaths()):
                     nodePath=npc.getPath(i)
                     group.append(nodePath)
                     nodePath.setColor(1,0,0,1)
 
                 # Get block zero buildings (i.e. non-blocked):
-                npc=self.NPToplevel.findAllMatches("**/b0_*_DNARoot")
+                npc=self.NPToplevel.findAllMatches("**/tb0:*_DNARoot")
                 for i in range(npc.getNumPaths()):
                     nodePath=npc.getPath(i)
                     group.append(nodePath)
