@@ -21,6 +21,7 @@
 #include "dcParameter.h"
 #include "hashGenerator.h"
 #include "dcindent.h"
+#include "dcPacker.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSwitch::Constructor
