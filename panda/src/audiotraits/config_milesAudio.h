@@ -20,6 +20,8 @@
 #define CONFIG_MILESAUDIO_H
 
 #include "pandabase.h"
+
+#ifdef HAVE_RAD_MSS //[
 #include "notifyCategoryProxy.h"
 #include "dconfig.h"
 
@@ -27,5 +29,7 @@ ConfigureDecl(config_milesAudio, EXPCL_MILES_AUDIO, EXPTP_MILES_AUDIO);
 NotifyCategoryDecl(milesAudio, EXPCL_MILES_AUDIO, EXPTP_MILES_AUDIO);
 
 extern EXPCL_MILES_AUDIO void init_libMilesAudio();
+
+#endif //]
 
 #endif // CONFIG_MILESAUDIO_H

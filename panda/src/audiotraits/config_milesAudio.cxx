@@ -16,6 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "pandabase.h"
+#ifdef HAVE_RAD_MSS //[
+
 #include "config_milesAudio.h"
 #include "milesAudioManager.h"
 #include "milesAudioSound.h"
@@ -43,6 +46,8 @@ init_libMilesAudio() {
     return;
   }
   initialized = true;
-  
+
   AudioManager::register_AudioManager_creator(Create_AudioManager);
 }
+
+#endif //]
