@@ -1126,11 +1126,15 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         
       case WM_IME_COMPOSITION:
         if (ime_aware) {
+
           // If the ime window is not marked as active at this point, we
           // must be in the process of closing it down (in close_ime), and
           // we don't want to send the current composition string in that
           // case.  But we do need to return 0 to tell windows not to try
           // to send the composition string through WM_CHAR messages.
+          if (!_ime_active)
+            return 0;
+
           HIMC hIMC = ImmGetContext(hwnd);
           nassertr(hIMC != 0, 0);
           
@@ -1150,24 +1154,22 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             // functions to use.
             
             if (lparam & GCS_RESULTSTR) {
-              if (_ime_active) {
-                windisplay_cat.debug() << "GCS_RESULTSTR\n";
-                result_size = ImmGetCompositionStringW(hIMC, GCS_RESULTSTR,
-                                                       ime_result, max_ime_result);
+              windisplay_cat.debug() << "GCS_RESULTSTR\n";
+              result_size = ImmGetCompositionStringW(hIMC, GCS_RESULTSTR,
+                                                     ime_result, max_ime_result);
               
-                // Add this string into the text buffer of the application.
+              // Add this string into the text buffer of the application.
               
-                // ImmGetCompositionStringW() returns a string, but it's
-                // filled in with wstring data: every two characters defines a
-                // 16-bit unicode char.  The docs aren't clear on the
-                // endianness of this.  I guess it's safe to assume all Win32
-                // machines are little-endian.
-                for (DWORD i = 0; i < result_size; i += 2) {
-                  int result =
-                    ((int)(unsigned char)ime_result[i + 1] << 8) |
-                    (unsigned char)ime_result[i];
-                  _input_devices[0].keystroke(result);
-                }
+              // ImmGetCompositionStringW() returns a string, but it's
+              // filled in with wstring data: every two characters defines a
+              // 16-bit unicode char.  The docs aren't clear on the
+              // endianness of this.  I guess it's safe to assume all Win32
+              // machines are little-endian.
+              for (DWORD i = 0; i < result_size; i += 2) {
+                int result =
+                  ((int)(unsigned char)ime_result[i + 1] << 8) |
+                  (unsigned char)ime_result[i];
+                _input_devices[0].keystroke(result);
               }
             }
             if (lparam & GCS_COMPSTR) {
@@ -1204,7 +1206,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
               _input_devices[0].candidate(can_t, min(cursor_pos, delta_start), max(cursor_pos, delta_start), cursor_pos);
             }
           } else {
-            if ((lparam & GCS_RESULTSTR) && _ime_active) {
+            if (lparam & GCS_RESULTSTR) {
               // On the other hand, ImmGetCompositionStringW() doesn't
               // work on Win95 or Win98; for these OS's we must use
               // ImmGetCompositionStringA().
