@@ -2031,7 +2031,7 @@ expand_patsubst(const string &params, bool separate_words) {
   }
 
   if ((tokens.size() % 2) != 1) {
-    cerr << "subst requires an odd number of parameters.\n";
+    cerr << "patsubst requires an odd number of parameters.\n";
     return string();
   }
 
