@@ -26,6 +26,7 @@
 #include "audioManager.h"
 class FmodAudioSound;
 #include "filename.h"
+#include "pdeque.h"
 #include "pmap.h"
 #include "pset.h"
 
@@ -47,6 +48,12 @@ public:
   virtual void clear_cache();
   virtual void set_cache_limit(int);
   virtual int get_cache_limit();
+
+  // Indicates that the given sound was the most recently used.
+  void most_recently_used(const string& path);
+
+  // Uncaches the least recently used sound.
+  void uncache_a_sound();
 
   virtual void set_volume(float);
   virtual float get_volume();
@@ -74,8 +81,13 @@ private:
   // The offspring of this manager:
   AudioSet _soundsOnLoan;
 
+  // The Least Recently Used mechanism:
+  typedef pdeque<string> LRU;
+  LRU _lru;
+
   void release_sound(FmodAudioSound *audioSound);
 
+  int _cache_limit;
   static int _active_managers;
   bool _is_valid;
   bool _active;

@@ -53,8 +53,10 @@ FmodAudioManager() {
   audio_debug("  audio_volume="<<audio_volume);
 
   _active = audio_active;
+  _cache_limit = audio_cache_limit;
 
   // Initialize FMOD, if this is the first manager created.
+  _is_valid = true;
   if (_active_managers == 0) {
     do {
       audio_debug("Initializing FMOD for real.");
@@ -65,14 +67,15 @@ FmodAudioManager() {
 	_is_valid = false;
 	break;
       }
+      
       if (FSOUND_Init(44100, 32, 0) == 0) {
 	audio_error("Fmod initialization failure.");
 	_is_valid = false;
 	break;
       }
+
     }
     while(0);
-    _is_valid = true;
   }
 
   // increment regardless of whether an error has occured -- the
@@ -110,8 +113,22 @@ FmodAudioManager::
 ////////////////////////////////////////////////////////////////////
 bool FmodAudioManager::
 is_valid() {
-  // verify the cache and LRU list here.
-  return true;
+  bool check=true;
+  if (_sounds.size() != _lru.size()) {
+    audio_debug("--sizes--");
+    check=false;
+  } else {
+    LRU::const_iterator i=_lru.begin();
+    for (; i != _lru.end(); ++i) {
+      SoundMap::const_iterator smi=_sounds.find(*i);
+      if (smi == _sounds.end()) {
+        audio_debug("--"<<*i<<"--");
+        check=false;
+        break;
+      }
+    }
+  }
+  return _is_valid && check;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -159,6 +176,10 @@ get_sound(const string &file_name) {
     new_entry.stale = true;
 
     // Add to the cache
+    while (_sounds.size() >= (unsigned int)_cache_limit) {
+      uncache_a_sound();
+    }
+
     si = _sounds.insert(SoundMap::value_type(path, new_entry)).first;
 
     // It's important that we assign entry to the address of the entry
@@ -193,6 +214,7 @@ get_sound(const string &file_name) {
     return 0;
   }
   inc_refcount(path);
+  most_recently_used(path);
 
   // determine length of sound
   float length = (float)FSOUND_Stream_GetLengthMs(stream) * 0.001f;
@@ -218,8 +240,16 @@ get_sound(const string &file_name) {
 void FmodAudioManager::
 uncache_sound(const string& file_name) {
   audio_debug("FmodAudioManager::uncache_sound(\""<<file_name<<"\")");
-  Filename path = file_name;
   assert(is_valid());
+  Filename path = file_name;
+
+  if (use_vfs) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    vfs->resolve_filename(path, get_sound_path());
+  } else {
+    path.resolve_filename(get_sound_path());
+  }
+  audio_debug("  path=\""<<path<<"\"");
   SoundMap::iterator itor = _sounds.find(path);
   if (itor == _sounds.end()) {
     audio_error("FmodAudioManager::uncache_sound: no such entry "<<file_name);
@@ -227,18 +257,67 @@ uncache_sound(const string& file_name) {
   }
 
   // Mark the entry as stale -- when its refcount reaches zero, it will
-  // be removed from the cache.  If the refcount is already zero, it can be
-  // purged right now!
+  // be removed from the cache.
   SoundCacheEntry *entry = &(*itor).second;
   if (entry->refcount == 0) {
+    // If the refcount is already zero, it can be
+    // purged right now!
     audio_debug("FmodAudioManager::uncache_sound: purging "<<path
 		<< " from the cache.");
     delete [] entry->data;
+
+    // Erase the sound from the LRU list as well.
+    assert(_lru.size()>0);
+    LRU::iterator lru_i=find(_lru.begin(), _lru.end(), itor->first);
+    assert(lru_i != _lru.end());
+    _lru.erase(lru_i);
     _sounds.erase(itor);
   } else {
     entry->stale = true;
   }
 
+  assert(is_valid());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::uncache_a_sound
+//       Access: Public
+//  Description: Uncaches the least recently used sound.
+////////////////////////////////////////////////////////////////////
+void FmodAudioManager::
+uncache_a_sound() {
+  audio_debug("FmodAudioManager::uncache_a_sound()");
+  assert(is_valid());
+  // uncache least recently used:
+  assert(_lru.size()>0);
+  LRU::reference path=_lru.front();
+  SoundMap::iterator i = _sounds.find(path);
+  assert(i != _sounds.end());
+  _lru.pop_front();
+
+  if (i != _sounds.end()) {
+    audio_debug("  uncaching \""<<i->first<<"\"");
+    uncache_sound(path);
+  }
+  assert(is_valid());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::most_recently_used
+//       Access: Public
+//  Description: Indicates that the given sound was the most recently used.
+////////////////////////////////////////////////////////////////////
+void FmodAudioManager::
+most_recently_used(const string& path) {
+  audio_debug("FmodAudioManager::most_recently_used(path=\""
+      <<path<<"\")");
+  LRU::iterator i=find(_lru.begin(), _lru.end(), path);
+  if (i != _lru.end()) {
+    _lru.erase(i);
+  }
+  // At this point, path should not exist in the _lru:
+  assert(find(_lru.begin(), _lru.end(), path) == _lru.end());
+  _lru.push_back(path);
   assert(is_valid());
 }
 
@@ -249,6 +328,7 @@ uncache_sound(const string& file_name) {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 clear_cache() {
+  audio_debug("FmodAudioManager::clear_cache()");
   // Mark all cache entries as stale.  Delete those which already have 
   // refcounts of zero.
 
@@ -262,7 +342,14 @@ clear_cache() {
       audio_debug("FmodAudioManager::clear_cache: purging "<< (*itor).first
 		  << " from the cache.");
       delete [] entry->data;
+
+      // Erase the sound from the LRU list as well.
+      assert(_lru.size()>0);
+      LRU::iterator lru_i=find(_lru.begin(), _lru.end(), itor->first);
+      assert(lru_i != _lru.end());
+      _lru.erase(lru_i);
       _sounds.erase(itor);
+
       itor = _sounds.begin();
     } else {
       entry->stale = true;
@@ -277,8 +364,17 @@ clear_cache() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
-set_cache_limit(int) {
-  // intentionally blank.
+set_cache_limit(int count) {
+  audio_debug("FmodAudioManager::set_cache_limit(count="
+      <<count<<")");
+  assert(is_valid());
+  
+  while (_lru.size() > (unsigned int) count) {
+    uncache_a_sound();
+  }
+
+  _cache_limit = count;
+  assert(is_valid());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -288,8 +384,9 @@ set_cache_limit(int) {
 ////////////////////////////////////////////////////////////////////
 int FmodAudioManager::
 get_cache_limit() {
-  // intentionally blank.
-  return 0;
+  audio_debug("FmodAudioManager::get_cache_limit() returning "
+	      <<_cache_limit);
+  return _cache_limit;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -377,16 +474,17 @@ stop_all_sounds(void) {
 void FmodAudioManager::
 inc_refcount(const string& file_name) {
   Filename path = file_name;
-  SoundMap::iterator itor = _sounds.find(path.to_os_specific());
-  if (itor != _sounds.end()) {
-    SoundCacheEntry *entry = &(*itor).second;
-    entry->refcount++;
-    entry->stale = false; // definitely not stale!
-    audio_debug("FmodAudioManager: "<<path<<" has a refcount of "
-		<< entry->refcount);
-  } else {
+  SoundMap::iterator itor = _sounds.find(path);
+  if (itor == _sounds.end()) {
     audio_debug("FmodAudioManager::inc_refcount: no such file "<<path);
+    return;
   }
+
+  SoundCacheEntry *entry = &(*itor).second;
+  entry->refcount++;
+  entry->stale = false; // definitely not stale!
+  audio_debug("FmodAudioManager: "<<path<<" has a refcount of "
+	      << entry->refcount);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -399,7 +497,7 @@ inc_refcount(const string& file_name) {
 void FmodAudioManager::
 dec_refcount(const string& file_name) {
   Filename path = file_name;
-  SoundMap::iterator itor = _sounds.find(path.to_os_specific());
+  SoundMap::iterator itor = _sounds.find(path);
   if (itor != _sounds.end()) {
     SoundCacheEntry *entry = &(*itor).second;
     entry->refcount--;
@@ -408,6 +506,12 @@ dec_refcount(const string& file_name) {
     if (entry->refcount == 0 && entry->stale) {
       audio_debug("FmodAudioManager::dec_refcount: purging "<<path<< " from the cache.");
       delete [] entry->data;
+
+      // Erase the sound from the LRU list as well.
+      assert(_lru.size()>0);
+      LRU::iterator lru_i=find(_lru.begin(), _lru.end(), itor->first);
+      assert(lru_i != _lru.end());
+      _lru.erase(lru_i);
       _sounds.erase(itor);
     }
   } else {
