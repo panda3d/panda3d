@@ -77,7 +77,7 @@ public:
   void close_all_windows();
   bool all_windows_closed() const;
 
-  const NodePath &get_models();
+  NodePath &get_models();
 
   void report_frame_rate(ostream &out) const;
   void reset_frame_rate();

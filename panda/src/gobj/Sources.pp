@@ -10,7 +10,6 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
   #define SOURCES \
-    LOD.I LOD.h \
     boundedObject.I boundedObject.h \
     config_gobj.h drawable.h \
     geom.I geom.h \
@@ -33,7 +32,6 @@
     textureStage.I textureStage.h
     
   #define INCLUDED_SOURCES \
-    LOD.cxx \
     boundedObject.cxx \
     config_gobj.cxx drawable.cxx geom.cxx  \
     geomContext.cxx \
@@ -48,7 +46,6 @@
     texCoordName.cxx textureStage.cxx
 
   #define INSTALL_HEADERS \
-    LOD.I LOD.h \
     boundedObject.I boundedObject.h \
     config_gobj.h \
     drawable.h geom.I geom.h \

@@ -44,11 +44,6 @@ enum BamTextureMode {
 extern EXPCL_PANDA BamTextureMode bam_texture_mode;
 extern EXPCL_PANDA const string fake_texture_image;
 
-extern EXPCL_PANDA const bool debug_number_mode;
-extern EXPCL_PANDA const int select_LOD_number;
-extern EXPCL_PANDA const int minimum_LOD_number;
-extern EXPCL_PANDA const bool debug_LOD_mode;
-
 extern const float default_near;
 extern const float default_far;
 extern const float default_fov;

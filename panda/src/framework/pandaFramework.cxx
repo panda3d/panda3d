@@ -447,7 +447,7 @@ all_windows_closed() const {
 //               be instanced to each window's render tree as the
 //               window is created.
 ////////////////////////////////////////////////////////////////////
-const NodePath &PandaFramework::
+NodePath &PandaFramework::
 get_models() {
   if (_models.is_empty()) {
     _models = NodePath("models");

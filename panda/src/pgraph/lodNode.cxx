@@ -33,6 +33,26 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LODNode::CData::check_limits
+//       Access: Public
+//  Description: Ensures that the _lowest and _highest members are set
+//               appropriately after a change to the set of switches.
+////////////////////////////////////////////////////////////////////
+void LODNode::CData::
+check_limits() {
+  _lowest = 0;
+  _highest = 0;
+  for (size_t i = 1; i < _switch_vector.size(); ++i) {
+    if (_switch_vector[i].get_out() > _switch_vector[_lowest].get_out()) {
+      _lowest = i;
+    }
+    if (_switch_vector[i].get_in() < _switch_vector[_highest].get_in()) {
+      _highest = i;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LODNode::CData::write_datagram
 //       Access: Public, Virtual
 //  Description: Writes the contents of this object to the datagram
@@ -40,7 +60,16 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void LODNode::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
-  _lod.write_datagram(dg);
+  _center.write_datagram(dg);
+
+  dg.add_uint16(_switch_vector.size());
+
+  SwitchVector::const_iterator si;
+  for (si = _switch_vector.begin();
+       si != _switch_vector.end();
+       ++si) {
+    (*si).write_datagram(dg);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -52,7 +81,24 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
 ////////////////////////////////////////////////////////////////////
 void LODNode::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  _lod.read_datagram(scan);
+  _center.read_datagram(scan);
+
+  _switch_vector.clear();
+
+  int num_switches = scan.get_uint16();
+  _switch_vector.reserve(num_switches);
+  for (int i = 0; i < num_switches; i++) {
+    Switch sw(0, 0);
+    sw.read_datagram(scan);
+
+    if (manager->get_file_minor_ver() < 13) {
+      // Before bam version 4.13, we stored the square of the
+      // switching distance in the bam files.
+      sw.set_range(sqrtf(sw.get_in()), sqrtf(sw.get_out()));
+    }
+
+    _switch_vector.push_back(sw);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,7 +139,20 @@ safe_to_combine() const {
 void LODNode::
 xform(const LMatrix4f &mat) {
   CDWriter cdata(_cycler);
-  cdata->_lod.xform(mat);
+
+  cdata->_center = cdata->_center * mat;
+
+  // We'll take just the length of the y axis as the matrix's scale.
+  LVector3f y;
+  mat.get_row3(y, 1);
+  float factor = y.length();
+
+  SwitchVector::iterator si;
+  for (si = cdata->_switch_vector.begin(); 
+       si != cdata->_switch_vector.end(); 
+       ++si) {
+    (*si).rescale(factor);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -131,26 +190,15 @@ has_cull_callback() const {
 ////////////////////////////////////////////////////////////////////
 bool LODNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
-  if (data._net_transform->is_singular()) {
-    // If we're under a singular transform, we can't compute the LOD;
-    // select none of them instead.
-    select_child(get_num_children());
-
-  } else { 
-    CDReader cdata(_cycler);
-    LPoint3f camera_pos(0, 0, 0);
-
-    // Get the LOD center in camera space
-    CPT(TransformState) rel_transform =
-      trav->get_camera_transform()->invert_compose(data._net_transform);
-    LPoint3f center = cdata->_lod._center * rel_transform->get_mat();
-    
-    // Determine which child to traverse
-    int index = cdata->_lod.compute_child(camera_pos, center);
-    select_child(index);
+  int index = compute_child(trav, data);
+  if (index >= 0 && index < get_num_children()) {
+    CullTraverserData next_data(data, get_child(index));
+    trav->traverse(next_data);
   }
 
-  return true;
+  // Now return false indicating that we have already taken care of
+  // the traversal from here.
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -160,10 +208,90 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 ////////////////////////////////////////////////////////////////////
 void LODNode::
 output(ostream &out) const {
-  SelectiveChildNode::output(out);
+  PandaNode::output(out);
   CDReader cdata(_cycler);
   out << " ";
-  cdata->_lod.output(out);
+  if (cdata->_switch_vector.empty()) {
+    out << "no switches.";
+  } else {
+    SwitchVector::const_iterator si;
+    si = cdata->_switch_vector.begin();
+    out << "(" << (*si).get_in() << "/" << (*si).get_out() << ")";
+    ++si;
+    while (si != cdata->_switch_vector.end()) {
+      out << " (" << (*si).get_in() << "/" << (*si).get_out() << ")";
+      ++si;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::is_lod_node
+//       Access: Published, Virtual
+//  Description: A simple downcast check.  Returns true if this kind
+//               of node happens to inherit from LODNode, false
+//               otherwise.
+//
+//               This is provided as a a faster alternative to calling
+//               is_of_type(LODNode::get_class_type()).
+////////////////////////////////////////////////////////////////////
+bool LODNode::
+is_lod_node() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::compute_child
+//       Access: Protected
+//  Description: Determines which child should be visible according to
+//               the current camera position.  If a child is visible,
+//               returns its index number; otherwise, returns -1.
+////////////////////////////////////////////////////////////////////
+int LODNode::
+compute_child(CullTraverser *trav, CullTraverserData &data) {
+  if (data._net_transform->is_singular()) {
+    // If we're under a singular transform, we can't compute the LOD;
+    // select none of them instead.
+    return -1;
+  }
+   
+  CDReader cdata(_cycler);
+
+  if (cdata->_got_force_switch) {
+    return cdata->_force_switch;
+  }
+  
+  // Get the LOD center in camera space
+  //  CPT(TransformState) rel_transform =
+  //    trav->get_camera_transform()->invert_compose(data._net_transform);
+
+  CPT(TransformState) rel_transform = 
+    trav->get_scene()->get_cull_center().get_net_transform()->
+    invert_compose(data._net_transform);
+
+  LPoint3f center = cdata->_center * rel_transform->get_mat();
+
+  // Determine which child to traverse
+  float dist = dot(center, LVector3f::forward());
+
+  for (int index = 0; index < (int)cdata->_switch_vector.size(); index++) {
+    if (cdata->_switch_vector[index].in_range(dist)) { 
+      if (pgraph_cat.is_debug()) {
+        pgraph_cat.debug()
+          << data._node_path << " at distance " << dist << ", selected child "
+          << index << "\n";
+      }
+
+      return index;
+    }
+  }
+
+  if (pgraph_cat.is_debug()) {
+    pgraph_cat.debug()
+      << data._node_path << " at distance " << dist << ", no children in range.\n";
+  }
+
+  return -1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -185,7 +313,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void LODNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  SelectiveChildNode::write_datagram(manager, dg);
+  PandaNode::write_datagram(manager, dg);
   manager->write_cdata(dg, _cycler);
 }
 
@@ -218,6 +346,6 @@ make_from_bam(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void LODNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  SelectiveChildNode::fillin(scan, manager);
+  PandaNode::fillin(scan, manager);
   manager->read_cdata(scan, _cycler);
 }

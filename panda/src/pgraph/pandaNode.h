@@ -193,6 +193,7 @@ PUBLISHED:
   INLINE const BoundingVolume &get_internal_bound() const;
 
   virtual bool is_geom_node() const;
+  virtual bool is_lod_node() const;
   virtual Light *as_light();
 
 protected:

@@ -27,6 +27,7 @@
 #include "transformState.h"
 #include "geomNode.h"
 #include "geom.h"
+#include "lodNode.h"
 #include "nodePath.h"
 #include "pStatTimer.h"
 #include "indent.h"
@@ -592,6 +593,14 @@ r_traverse(CollisionLevelState &level_state) {
     // If it's a switch node or sequence node, visit just the one
     // visible child.
     int index = node->get_visible_child();
+    if (index >= 0 && index < node->get_num_children()) {
+      CollisionLevelState next_state(level_state, node->get_child(index));
+      r_traverse(next_state);
+    }
+
+  } else if (node->is_lod_node()) {
+    // If it's an LODNode, visit the lowest level of detail.
+    int index = DCAST(LODNode, node)->get_lowest_switch();
     if (index >= 0 && index < node->get_num_children()) {
       CollisionLevelState next_state(level_state, node->get_child(index));
       r_traverse(next_state);
