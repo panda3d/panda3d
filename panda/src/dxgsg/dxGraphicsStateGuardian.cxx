@@ -4088,6 +4088,9 @@ issue_color_transform(const ColorMatrixAttribute *attrib) {
     // so we dont have to do this comparison
     if (_current_color_mat == LMatrix4f::ident_mat()) { 
         _color_transform_enabled = false;
+        if(_issued_color_enabled) {
+             _issued_color_D3DCOLOR = Colorf_to_D3DCOLOR(_issued_color);
+        }
     } else {
         _color_transform_enabled = true;
         if(_issued_color_enabled) {
@@ -4108,6 +4111,9 @@ issue_alpha_transform(const AlphaTransformAttribute *attrib) {
 
     if ((_current_alpha_offset == 0.0f) && (_current_alpha_scale == 1.0f)) {
         _alpha_transform_enabled = false;
+        if(_issued_color_enabled) {
+             _issued_color_D3DCOLOR = Colorf_to_D3DCOLOR(_issued_color);
+        }
     } else {
         _alpha_transform_enabled = true;
         if(_issued_color_enabled) {
