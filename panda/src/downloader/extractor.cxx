@@ -101,6 +101,7 @@ initiate(Filename &source_file, const Filename &rel_path) {
 ////////////////////////////////////////////////////////////////////
 int Extractor::
 run(void) {
+  nassertr(_mfile != NULL, ES_error);
   // See if there is anything left in the source file
   if (_read_all_input == false) {
     _read_stream.read(_buffer->_buffer, _buffer->get_length());
@@ -119,6 +120,7 @@ run(void) {
     _read_stream.close();
     _source_file.unlink();
     delete _mfile;
+    _mfile = NULL;
     return ES_success;
   }
   return ES_ok;

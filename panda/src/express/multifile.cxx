@@ -300,17 +300,23 @@ write_to_multifile(ofstream &write_stream) {
 bool Multifile::Memfile::
 write(char *&start, int &size, const Filename &rel_path) {
   // Make sure we've got a complete header first
-  if (parse_header(start, size) == false) 
+  if (parse_header(start, size) == false) {
+    if (express_cat.is_debug())
+      express_cat.debug()
+	<< "Multifile::Memfile::write() - parse_header() == false" 
+	<< endl;
     return false;
+  }
 
   // Try to open the file for writing
   if (_file_open == false) {
     Filename name = rel_path.get_fullpath() + _name.get_fullpath();
     name.set_binary();
     name.make_dir();
-    express_cat.debug()
-      << "Multifile::Memfile::write() - Opening mem file: " << name
-      << " for writing" << endl;
+    if (express_cat.is_debug())
+      express_cat.debug()
+        << "Multifile::Memfile::write() - Opening mem file: " << name
+        << " for writing" << endl;
     if ((_file_open = name.open_write(_write_stream)) == false) {
       express_cat.error()
         << "Multfile::Memfile::write() - Couldn't open file: "
@@ -366,6 +372,8 @@ Multifile(void) {
 Multifile::
 ~Multifile(void) {
   _files.erase(_files.begin(), _files.end());
+  if (_current_mfile != NULL)
+    delete _current_mfile;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -584,16 +592,14 @@ write(char *&start, int &size, const Filename &rel_path) {
   if (parse_header(start, size) == false)
     return false;
 
-  //if (_current_mfile == (Memfile *)0L)
-  //  _current_mfile = new Memfile;
-
   while (_num_mfiles > 0) {
-    if (_current_mfile == NULL)
+    if (_current_mfile == NULL) {
       _current_mfile = new Memfile;
+    }
     if (_current_mfile->write(start, size, rel_path) == true) {
       _num_mfiles--;
       delete _current_mfile;
-   //   _current_mfile->reset();
+      _current_mfile = NULL;
     } else
       return false;
   }
