@@ -1,5 +1,5 @@
-
-import Task
+from direct.task.TaskManagerGlobal import *
+import direct.task.Task
 import random
 
 numTasks = 10000
