@@ -253,7 +253,7 @@
 // Is libtiff installed, and where?
 #define TIFF_IPATH
 #define TIFF_LPATH
-#define TIFF_LIBS tiff
+#define TIFF_LIBS tiff z
 #defer HAVE_TIFF $[libtest $[TIFF_LPATH],$[TIFF_LIBS]]
 
 
