@@ -487,8 +487,7 @@ attempt_read(int length, DownloadStatus &status, int &bytes_read) {
     // Make the request for length bytes
     int bytes;
     int ans = safe_receive(_socket, status, length,
-//					(long)downloader_timeout, bytes); 
-					8, bytes);
+					(long)downloader_timeout, bytes); 
     bytes_read += bytes;
 
     switch (ans) {
