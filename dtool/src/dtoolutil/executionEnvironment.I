@@ -48,7 +48,7 @@ get_environment_variable(const string &var) {
 ////////////////////////////////////////////////////////////////////
 INLINE void ExecutionEnvironment::
 set_environment_variable(const string &var, const string &value) {
-  return get_ptr()->ns_set_environment_variable(var, value);
+  get_ptr()->ns_set_environment_variable(var, value);
 }
 
 ////////////////////////////////////////////////////////////////////

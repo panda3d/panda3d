@@ -134,9 +134,6 @@ $[cdefine WORDS_BIGENDIAN]
 /* Define if the C++ compiler uses namespaces.  */
 $[cdefine HAVE_NAMESPACE]
 
-/* Define if the C++ iostream library supports ios::binary.  */
-$[cdefine HAVE_IOS_BINARY]
-
 /* Define if fstream::open() accepts a third parameter for umask. */
 $[cdefine HAVE_OPEN_MASK]
 
@@ -165,8 +162,15 @@ $[cdefine HAVE_GETOPT_LONG_ONLY]
 /* Define if you have ioctl(TIOCGWINSZ) to determine terminal width. */
 $[cdefine IOCTL_TERMINAL_WIDTH]
 
-/* Do the compiler or the system headers define a "streamsize" typedef? */
+/* Do the system headers define a "streamsize" typedef? */
 $[cdefine HAVE_STREAMSIZE]
+
+/* Do the system headers define key ios typedefs like ios::openmode
+   and ios::fmtflags? */
+$[cdefine HAVE_IOS_TYPEDEFS]
+
+/* Define if the C++ iostream library defines ios::binary.  */
+$[cdefine HAVE_IOS_BINARY]
 
 /* Can we safely call getenv() at static init time? */
 $[cdefine STATIC_INIT_GETENV]

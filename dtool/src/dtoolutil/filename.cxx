@@ -1171,7 +1171,7 @@ bool Filename::
 open_read(ifstream &stream) const {
   assert(is_text() || is_binary());
 
-  ios::openmode open_mode = ios::in;
+  ios_openmode open_mode = ios::in;
 
 #ifdef HAVE_IOS_BINARY
   // For some reason, some systems (like Irix) don't define
@@ -1206,7 +1206,7 @@ bool Filename::
 open_write(ofstream &stream, bool truncate) const {
   assert(is_text() || is_binary());
 
-  ios::openmode open_mode = ios::out;
+  ios_openmode open_mode = ios::out;
 
   if (truncate) {
     open_mode |= ios::trunc;
@@ -1256,7 +1256,7 @@ bool Filename::
 open_append(ofstream &stream) const {
   assert(is_text() || is_binary());
 
-  ios::openmode open_mode = ios::app;
+  ios_openmode open_mode = ios::app;
 
 #ifdef HAVE_IOS_BINARY
   // For some reason, some systems (like Irix) don't define
@@ -1292,7 +1292,7 @@ bool Filename::
 open_read_write(fstream &stream) const {
   assert(is_text() || is_binary());
 
-  ios::openmode open_mode = ios::in | ios::out;
+  ios_openmode open_mode = ios::in | ios::out;
 
 #ifdef HAVE_IOS_BINARY
   // For some reason, some systems (like Irix) don't define

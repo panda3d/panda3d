@@ -17,9 +17,6 @@
 // Does the C++ compiler support namespaces?
 #define HAVE_NAMESPACE 1
 
-// Does the C++ compiler support ios::binary?
-#define HAVE_IOS_BINARY
-
 // How about the typename keyword?
 #define HAVE_TYPENAME 1
 
@@ -45,8 +42,12 @@
 // Can we determine the terminal width by making an ioctl(TIOCGWINSZ) call?
 #define IOCTL_TERMINAL_WIDTH 1
 
-// Do the compiler or the system headers define a "streamsize" typedef?
+// Do the system headers define a "streamsize" typedef?  How about the
+// ios::binary enumerated value?  And other ios typedef symbols like
+// ios::openmode and ios::fmtflags?
 #define HAVE_STREAMSIZE
+#define HAVE_IOS_BINARY
+#define HAVE_IOS_TYPEDEFS
 
 // Can we safely call getenv() at static init time?
 #define STATIC_INIT_GETENV 1

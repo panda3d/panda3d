@@ -109,18 +109,18 @@ get_ostream_ptr() const {
 //               case this does nothing.  But the flag is available in
 //               case any extended types want to make use of it.
 ////////////////////////////////////////////////////////////////////
-ios::fmtflags Notify::
+ios_fmtflags Notify::
 get_literal_flag() {
   static bool got_flag = false;
-  static ios::fmtflags flag;
+  static ios_fmtflags flag;
 
   if (!got_flag) {
 #ifndef HAVE_IOSTREAM
     flag = ios::bitalloc();
 #else
-    // We lost bitalloc in the new iostream?  This feature will just be
-    // disabled for now.  No big deal.
-    flag = (ios::fmtflags)0;
+    // We lost bitalloc in the new iostream?  Ok, this feature will
+    // just be disabled for now.  No big deal.
+    flag = (ios_fmtflags)0;
 #endif
     got_flag = true;
   }

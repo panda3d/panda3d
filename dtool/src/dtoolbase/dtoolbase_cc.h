@@ -74,6 +74,19 @@ using namespace std;
 #define TYPENAME
 #endif
 
+#ifndef HAVE_STREAMSIZE
+// Some compilers (notably SGI) don't define this for us
+typedef int streamsize;
+#endif /* HAVE_STREAMSIZE */
+
+#ifndef HAVE_IOS_TYPEDEFS
+typedef int ios_openmode;
+typedef int ios_fmtflags;
+#else
+typedef ios::openmode ios_openmode;
+typedef ios::fmtflags ios_fmtflags;
+#endif
+
 
 #if defined(WIN32_VC) && defined(FORCE_INLINING)
 // If FORCE_INLINING is defined, we use the keyword __forceinline,

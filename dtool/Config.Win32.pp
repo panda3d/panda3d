@@ -45,8 +45,12 @@
 // Can we determine the terminal width by making an ioctl(TIOCGWINSZ) call?
 #define IOCTL_TERMINAL_WIDTH
 
-// Do the compiler or the system headers define a "streamsize" typedef?
+// Do the system headers define a "streamsize" typedef?  How about the
+// ios::binary enumerated value?  And other ios typedef symbols like
+// ios::openmode and ios::fmtflags?
 #define HAVE_STREAMSIZE 1
+#define HAVE_IOS_BINARY 1
+#define HAVE_IOS_TYPEDEFS 1
 
 // Can we safely call getenv() at static init time?
 #define STATIC_INIT_GETENV 1

@@ -97,10 +97,19 @@ public:
 // lexer.
 
 struct cppyyltype {
+  // Bison expects these members to be part of this struct.
   int first_line;
   int first_column;
   int last_line;
   int last_column;
+
+  // Early versions of bison (1.25 and earlier) expected these members
+  // to be in this struct as well.
+  int timestamp;
+  char *text;
+
+  // The remaining members are added for this application and have no
+  // meaning to bison.
   CPPFile file;
 };
 #define YYLTYPE cppyyltype

@@ -75,7 +75,7 @@ PUBLISHED:
   static Notify *ptr();
 
 public:
-  static ios::fmtflags get_literal_flag();
+  static ios_fmtflags get_literal_flag();
 
   bool assert_failure(const char *expression, int line,
                       const char *source_file);
