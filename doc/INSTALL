@@ -681,23 +681,26 @@ Panda is compiled and is only used at build time.  The prc files are
 read in every time Panda is started and control the way Panda behaves
 at runtime.
 
-The system-defined prc files begin with the underscore character, so
-that they sort to the top of the list and are read first (and so that
-you may define one or more additional files that are read afterwards
-and that will therefore override the values specified in these system
-files).
+The system-defined prc files begin with digits, so that they sort to
+the top of the list and are read first (and so that you may define one
+or more additional files that are read afterwards and that will
+therefore override the values specified in these system files).  The
+digits also imply an ordering between the prc files.  We recommend
+that you name your own prc file(s) beginning with letters, unless for
+some reason you need a file to be loaded before one of the
+system-defined prc files.
 
-We suggest creating a file in $INSTALL_DIR/etc called Config.prc,
-where you will put your own custom configuration options.  For
+We suggest creating a file in $INSTALL_DIR/etc called Config.prc, into
+which you will put your own custom configuration options.  For
 instance, if you want to run using OpenGL instead of the Windows
 default of DirectX9, you can add the line:
 
 load-display pandagl
 
 to your Config.prc file.  If you choose not to do this at this time,
-you can just leave this file empty for now; we do recommend creating
-at least an empty Config.prc file as a placeholder into which you can
-add your custom configuration options later.
+you can just leave this file empty for now; however, we do recommend
+creating at least an empty Config.prc file as a placeholder into which
+you can add your custom configuration options later.
 
 The complete list of available configuration options is very large and
 is not fully documented; but there are other documents that list
