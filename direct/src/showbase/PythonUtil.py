@@ -25,7 +25,10 @@ def apropos(obj, str = None, fOverloaded = 0, width = None,
             fTruncate = 1, lineWidth = 75):
     if type(obj) == types.InstanceType:
         print "***************************INSTANCE INFO*****************************"
-    dict = obj.__dict__
+    if type(obj) == types.DictionaryType:
+        dict = obj
+    else:
+        dict = obj.__dict__
     if width:
         maxWidth = width
     else:
@@ -80,4 +83,9 @@ def apropos(obj, str = None, fOverloaded = 0, width = None,
 def aproposAll(obj):
     apropos(obj, fOverloaded = 1, fTruncate = 0)
     
+
+def doc(obj):
+    if (isinstance(obj, types.MethodType)) or \
+       (isinstance(obj, types.FunctionType)):
+        print obj.__doc__
 

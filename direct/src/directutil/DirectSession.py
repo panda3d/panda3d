@@ -1,4 +1,6 @@
 from PandaObject import *
+from DirectGeometry import *
+import OnscreenText
 import math
 
 class DisplayRegionContext(PandaObject):
@@ -51,7 +53,7 @@ class DisplayRegionContext(PandaObject):
         self.mouseDeltaY = self.mouseY - self.mouseLastY
         # Continue the task
         return Task.cont
-        
+
 class DirectSession(PandaObject):
     def __init__(self):
         self.contextList = []
@@ -62,49 +64,79 @@ class DirectSession(PandaObject):
         self.selectedNodePaths = {}
         self.lastSelected = None
 
+        self.readout = OnscreenText.OnscreenText( '', 0.1, -0.95 )
+        # self.readout.textNode.setCardColor(0.5, 0.5, 0.5, 0.5)
+        self.readout.reparentTo( hidden )
+
+        self.createBBox()
+
+        # self.createObjectHandles()
+        # self.useObjectHandles()
+        
         self.bboxList = []
 
         self.fControl = 0
         self.fAlt = 0
         self.fShift = 0
         
-        """"
-    def createBBox(self):
-	bbox = hidden.attachNewNode(NamedNode())
-	bbox.setName('bbox')
-	bboxLines = GridLine new: bbox.
-	bboxLines color: (VBase4 new: 1.0 y: 0.0 z: 0.0 w: 1.0).
-	bboxLines thickness: 0.5.
+    def createBBox(self, parent = hidden):
+        # Create a line segments object for the bbox
+	bbox = self.bbox = LineNodePath(parent)
+	#bbox.setName('bbox')
+        bbox.setColor( VBase4( 1., 0., 0., 1. ) )
+	bbox.setThickness( 0.5 )
 
-	"Bottom face"
-	bboxLines moveTo: 0.0 y: 0.0 z: 0.0.
-	bboxLines drawTo: 1.0 y: 0.0 z: 0.0.
-	bboxLines drawTo: 1.0 y: 1.0 z: 0.0.
-	bboxLines drawTo: 0.0 y: 1.0 z: 0.0.
-	bboxLines drawTo: 0.0 y: 0.0 z: 0.0.
+        # Bottom face
+	bbox.drawTo( 0.0, 0.0, 0.0 )
+	bbox.drawTo( 1.0, 0.0, 0.0 )
+	bbox.drawTo( 1.0, 1.0, 0.0 )
+	bbox.drawTo( 0.0, 1.0, 0.0 )
+	bbox.drawTo( 0.0, 0.0, 0.0 )
 
-	"Front Edge/Top face"
-	bboxLines drawTo: 0.0 y: 0.0 z: 1.0.
-	bboxLines drawTo: 1.0 y: 0.0 z: 1.0.
-	bboxLines drawTo: 1.0 y: 1.0 z: 1.0.
-	bboxLines drawTo: 0.0 y: 1.0 z: 1.0.
-	bboxLines drawTo: 0.0 y: 0.0 z: 1.0.
+	# Front Edge/Top face
+	bbox.drawTo( 0.0, 0.0, 1.0 )
+	bbox.drawTo( 1.0, 0.0, 1.0 )
+	bbox.drawTo( 1.0, 1.0, 1.0 )
+	bbox.drawTo( 0.0, 1.0, 1.0 )
+	bbox.drawTo( 0.0, 0.0, 1.0 )
 
-	"Three remaining edges"
-	bboxLines moveTo: 1.0 y: 0.0 z: 0.0.
-	bboxLines drawTo: 1.0 y: 0.0 z: 1.0.
-	bboxLines moveTo: 1.0 y: 1.0 z: 0.0.
-	bboxLines drawTo: 1.0 y: 1.0 z: 1.0.
-	bboxLines moveTo: 0.0 y: 1.0 z: 0.0.
-	bboxLines drawTo: 0.0 y: 1.0 z: 1.0.
+	# Three remaining edges
+	bbox.moveTo( Point3( 1.0, 0.0, 0.0 ) )
+	bbox.drawTo( 1.0, 0.0, 1.0 )
+	bbox.moveTo( Point3( 1.0, 1.0, 0.0 ) )
+	bbox.drawTo( 1.0, 1.0, 1.0 )
+	bbox.moveTo( Point3( 0.0, 1.0, 0.0 ) )
+	bbox.drawTo( 0.0, 1.0, 1.0 )
 
-	bboxLines create: bboxLines lineNode.! !
-        """
+	bbox.create()
 
-class Line(NodePath, LineSegs):
-    def __init__(self):
-        LineSegs.__init__(self)
+    def createObjectHandles(self):
+	oh = self.objectHandles = hidden.attachNewNode( NamedNode('objectHandles') )
+	ohLines = LineNodePath( oh )
+	ohLines.setColor( VBase4( 1.0, 0.0, 1.0, 1.0) )
+	ohLines.setThickness( 3.0 )
 
+	"InnerRing"
+	ohLines.moveTo( 0.8, 0.0, 0.0 )
+        for ang in range(10, 360, 10):
+            ohLines.drawTo( (0.8 * math.cos(deg2Rad(ang))),
+                            (0.8 * math.sin(deg2Rad(ang))),
+                            0.0 )
+
+	"Outer Ring" 
+	ohLines.moveTo( 1.2, 0.0, 0.0 )
+        for ang in range(0, 360, 10):
+            ohLines.drawTo( (1.2 * math.cos(deg2Rad(ang))),
+                            (1.2 * math.sin(deg2Rad(ang))),
+                            0.0 )
+
+	ohLines.moveTo( 0.0, 0.0, 0.0 )
+	ohLines.drawTo( 0.0, 0.0, 1.5 )
+
+	ohLines.create()
+
+
+        
 
 
 

@@ -554,7 +554,7 @@ Currently-active file is at the head of the list.")
   (define-key py-shell-map "\C-c-" 'py-up-exception)
   (define-key py-shell-map "\C-c=" 'py-down-exception)
   ;; VR STUDIO ENHANCEMENTS
-  (define-key py-shell-map "\C-d"  'delete-char)
+  (define-key py-shell-map "\C-d"  'comint-delchar-or-maybe-python-resume)
   (define-key py-shell-map "\C-c\C-r" 'python-resume)
   (define-key py-shell-map "\C-c\C-s" 'pyd-shell)
   )
@@ -3146,6 +3146,15 @@ These are Python temporary files awaiting execution."
 (add-hook 'kill-emacs-hook 'py-kill-emacs-hook)
 
 ;; VR STUDIO ENHANCEMENT
+(defun comint-delchar-or-maybe-python-resume (arg)
+  "Delete ARG characters forward or send a python-resume to subprocess.
+  Sends a python-resume only if point is at the end of the buffer and there is no input."
+  (interactive "p")
+  (let ((proc (get-buffer-process (current-buffer))))
+    (if (and (eobp) proc (= (point) (marker-position (process-mark proc))))
+	(python-resume)
+      (delete-char arg))))
+
 ;; Function to try to resume panda mainloop
 (defun python-resume ()
   (interactive)
