@@ -48,14 +48,27 @@
 /* C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data */
 #pragma warning (disable : 4244)
 
-/*
-#if _MSC_VER < 1300
-#pragma message("VC 6.0")
+#if _MSC_VER >= 1300
+#define USING_MSVC7
+//#pragma message("VC 7.0")
 #else 
-#pragma message("VC 7.0")
+// #pragma message("VC 6.0")
 #endif
-*/
 
+// Use NODEFAULT to optimize a switch() stmt to tell MSVC to automatically go to the final untested case 
+// after it has failed all the other cases (i.e. 'assume at least one of the cases is always true')
+#ifdef _DEBUG
+# define NODEFAULT  default: assert(0);
+#else
+# define NODEFAULT  default: __assume(0);   // special VC keyword
+#endif
+
+#else /* if !WIN32_VC */
+#ifdef _DEBUG
+# define NODEFAULT   default: assert(0);
+#else
+# define NODEFAULT
+#endif
 #endif  /* WIN32_VC */
 
 #if defined(USE_UNKNOWN_ALLOCATOR) && !defined(UNKNOWN_ALLOCATOR)
