@@ -6,6 +6,8 @@
     egg:c loader:c linmath:c putil:c express:c pnmimage:c pnmimagetypes:c \
     pandaegg:m panda:m pandaexpress:m \
     dtoolutil:c dconfig:c dtool:m pystub
+  #define UNIX_SYS_LIBS \
+    m
 
   #define SOURCES \
     config_egg_palettize.cxx config_egg_palettize.h \
