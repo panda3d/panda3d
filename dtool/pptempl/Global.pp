@@ -236,6 +236,12 @@
   #define rad_mss_libs $[RAD_MSS_LIBS]
 #endif
 
+#if $[HAVE_FMOD]
+  #define fmod_ipath $[wildcard $[FMOD_IPATH]]
+  #define fmod_lpath $[wildcard $[FMOD_LPATH]]
+  #define fmod_libs $[FMOD_LIBS]
+#endif
+
 #if $[HAVE_CHROMIUM]
   #define chromium_ipath $[wildcard $[CHROMIUM_IPATH]]
   #define chromium_lpath $[wildcard $[CHROMIUM_LPATH]]

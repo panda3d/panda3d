@@ -19,6 +19,9 @@ $[cdefine HAVE_PYTHON]
 /* Define if we have RAD game tools, Miles Sound System installed.  */
 $[cdefine HAVE_RAD_MSS]
 
+/* Define if we have FMOD installed. */
+$[cdefine HAVE_FMOD]
+
 /* Define if we have Freetype 2.0 or better available. */
 $[cdefine HAVE_FREETYPE]
 

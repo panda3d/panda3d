@@ -365,6 +365,13 @@
 #define RAD_MSS_LIBS Mss32
 #defer HAVE_RAD_MSS $[libtest $[RAD_MSS_LPATH],$[RAD_MSS_LIBS]]
 
+// Info for the Fmod audio engine
+// note this may be overwritten in wintools Config.pp
+#define FMOD_IPATH
+#define FMOD_LPATH
+#define FMOD_LIBS fmod
+#defer HAVE_FMOD $[libtest $[FMOD_LPATH],$[FMOD_LIBS]]
+
 // Info for http://www.sourceforge.net/projects/chromium
 // note this may be overwritten in wintools Config.pp
 #define CHROMIUM_IPATH /usr/include/chromium/include

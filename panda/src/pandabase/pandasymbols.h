@@ -52,6 +52,14 @@
   #define EXPTP_MILES_AUDIO extern
 #endif
 
+#ifdef BUILDING_FMOD_AUDIO
+  #define EXPCL_FMOD_AUDIO __declspec(dllexport)
+  #define EXPTP_FMOD_AUDIO
+#else
+  #define EXPCL_FMOD_AUDIO __declspec(dllimport)
+  #define EXPTP_FMOD_AUDIO extern
+#endif
+
 #ifdef BUILDING_PANDA
   #define EXPCL_PANDA __declspec(dllexport)
   #define EXPTP_PANDA

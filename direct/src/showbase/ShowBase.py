@@ -210,6 +210,8 @@ class ShowBase(DirectObject.DirectObject):
         del self.win
         del self.winList
         del self.pipe
+        del self.musicManager
+        del self.sfxManagerList
 
         try:
             direct.panel.destroy()

@@ -184,6 +184,11 @@
 #set RAD_MSS_LIBS $[RAD_MSS_LIBS]
 #set HAVE_RAD_MSS $[HAVE_RAD_MSS]
 
+#set FMOD_IPATH $[unixfilename $[FMOD_IPATH]]
+#set FMOD_LPATH $[unixfilename $[FMOD_LPATH]]
+#set FMOD_LIBS $[FMOD_LIBS]
+#set HAVE_FMOD $[HAVE_FMOD]
+
 #set CHROMIUM_IPATH $[unixfilename $[CHROMIUM_IPATH]]
 #set CHROMIUM_LPATH $[unixfilename $[CHROMIUM_LPATH]]
 #set CHROMIUM_LIBS $[CHROMIUM_LIBS]

@@ -21,6 +21,26 @@
 
 #end lib_target
 
+#begin lib_target
+  #define TARGET fmod_audio
+  #define BUILD_TARGET $[HAVE_FMOD]
+  #define USE_PACKAGES fmod
+  #define BUILDING_DLL BUILDING_FMOD_AUDIO
+  #define LOCAL_LIBS audio
+  #define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32.lib advapi32.lib winmm.lib
+
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx
+
+  #define SOURCES \
+      config_fmodAudio.h \
+      fmodAudioManager.h \
+      fmodAudioSound.I fmodAudioSound.h
+
+  #define INCLUDED_SOURCES \
+      config_fmodAudio.cxx fmodAudioManager.cxx fmodAudioSound.cxx
+
+#end lib_target
+
 //#begin lib_target
 //  #define TARGET audio_linux
 //  #define BUILDING_DLL BUILDING_MISC
