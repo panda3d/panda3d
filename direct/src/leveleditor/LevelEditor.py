@@ -3414,7 +3414,7 @@ class LevelStyleManager:
         keys.sort()
         styles = map(lambda x, d = dictionary: d[x], keys)
         sf = 0.1
-        aspectRatio = (direct.dr.width/float(direct.dr.height))
+        aspectRatio = (direct.dr.getWidth()/float(direct.dr.getHeight()))
         for i in range(numItems):
             # Get the node
             node = self.createBaselineStyleSample(styles[i])
@@ -3537,7 +3537,7 @@ class LevelStyleManager:
         keys.sort()
         styles = map(lambda x, d = dictionary: d[x], keys)
         sf = 0.03
-        aspectRatio = (direct.dr.width/float(direct.dr.height))
+        aspectRatio = (direct.dr.getWidth()/float(direct.dr.getHeight()))
         for i in range(numItems):
             # Get the node
             node = self.createWallStyleSample(styles[i])
@@ -3739,7 +3739,7 @@ class LevelStyleManager:
         keys.sort()
         styles = map(lambda x, d = dictionary: d[x], keys)
         sf = 0.02
-        aspectRatio = (direct.dr.width/float(direct.dr.height))
+        aspectRatio = (direct.dr.getWidth()/float(direct.dr.getHeight()))
         for i in range(numItems):
             # Get the node
             node = self.createBuildingStyleSample(styles[i])
@@ -3952,7 +3952,7 @@ class LevelStyleManager:
         newColorMenu = hidden.attachNewNode(menuName + 'Menu')
         # Compute the angle per item
         angle = deg2Rad(360.0/float(numItems))
-        aspectRatio = (direct.dr.width / float(direct.dr.height))
+        aspectRatio = (direct.dr.getWidth() / float(direct.dr.getHeight()))
         # Attach the color chips to the new menu and adjust sizes
         for i in range (numItems):
             # Create a text node--just a card, really--of the right color.
@@ -4034,7 +4034,7 @@ class LevelStyleManager:
         newMenu = hidden.attachNewNode(dnaType + 'Menu')
         # Compute angle increment per item
         angle = deg2Rad(360.0/numItems)
-        aspectRatio = direct.dr.width /float(direct.dr.height)
+        aspectRatio = direct.dr.getWidth() /float(direct.dr.getHeight())
         # Add items
         for i in range(0, numItems):
             if dnaList[i]:
@@ -4069,7 +4069,7 @@ class LevelStyleManager:
         newMenu = hidden.attachNewNode(dnaType + 'Menu')
         # Compute angle per item
         angle = deg2Rad(360.0/numItems)
-        aspectRatio = direct.dr.width/float(direct.dr.height)
+        aspectRatio = direct.dr.getWidth()/float(direct.dr.getHeight())
         # Add items
         for i in range (numItems):
             # Create text node for each item
