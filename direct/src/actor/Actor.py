@@ -80,7 +80,8 @@ class Actor(PandaObject, NodePath):
         # create data structures
         self.__partBundleDict = {}
         self.__animControlDict = {}
-
+        self.__controlJoints = {}
+        
         self.__LODNode = None
 
         if (other == None):
@@ -709,6 +710,48 @@ class Actor(PandaObject, NodePath):
             joint.clearLocalTransforms()
         else:
             Actor.notify.warning("no joint named %s!" % (jointName))
+
+    def controlJoint(self, node, partName, jointName, lodName="lodRoot"):
+        """controlJoint(self, NodePath, string, string, key="lodRoot")
+
+        The converse of exposeJoint: this associates the joint with
+        the indicated node, so that the joint transform will be copied
+        from the node to the joint each frame.  This can be used for
+        programmer animation of a particular joint at runtime.
+
+        This must be called before any animations are played.  Once an
+        animation has been loaded and bound to the character, it will
+        be too late to add a new control during that animation.
+        """
+        if (self.__partBundleDict.has_key(lodName)):
+            partBundleDict = self.__partBundleDict[lodName]
+        else:
+            Actor.notify.warning("no lod named: %s" % (lodName))
+            return None
+
+        if (partBundleDict.has_key(partName)):
+            bundle = partBundleDict[partName].node().getBundle()
+        else:
+            Actor.notify.warning("no part named %s!" % (partName))
+            return None
+
+        joint = bundle.findChild(jointName)
+        if joint == None:
+            Actor.notify.warning("no joint named %s!" % (jointName))
+            return None
+
+        if node == None:
+            node = self.attachNewNode(jointName)
+
+        # Store a dictionary of jointName : node to list the controls
+        # requested for joints.  The controls will actually be applied
+        # later, when we load up the animations in bindAnim().
+        if self.__controlJoints.has_key(bundle):
+            self.__controlJoints[bundle][jointName] = node
+        else:
+            self.__controlJoints[bundle] = { jointName : node }
+
+        return node
             
     def instance(self, path, part, jointName, lodName="lodRoot"):
         """instance(self, NodePath, string, string, key="lodRoot")
@@ -1246,13 +1289,20 @@ class Actor(PandaObject, NodePath):
         animBundle = \
                    (anim.find("**/+AnimBundleNode").node()).getBundle()
 
-        # cleanup after ourselves
-        anim.removeNode()
+        bundle = self.__partBundleDict[lodName][partName].node().getBundle()
+
+        # Are there any controls requested for joints in this bundle?
+        # If so, apply them.
+        controlDict = self.__controlJoints.get(bundle, None)
+        if controlDict:
+            for jointName, node in controlDict.items():
+                if node:
+                    joint = animBundle.makeChildDynamic(jointName)
+                    if joint:
+                        joint.setValueNode(node.node())
 
         # bind anim
-        bundleNode = (
-            self.__partBundleDict[lodName][partName]).node()
-        animControl = (bundleNode.getBundle()).bindAnim(animBundle, -1)
+        animControl = bundle.bindAnim(animBundle, -1)
 
         if (animControl == None):
             Actor.notify.error("Null AnimControl: %s" % (animName))
