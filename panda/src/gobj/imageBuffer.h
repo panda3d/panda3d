@@ -57,15 +57,27 @@ PUBLISHED:
   INLINE bool has_alpha_filename() const;
   INLINE const Filename &get_alpha_filename() const;
 
+  INLINE bool has_fullpath() const;
+  INLINE const Filename &get_fullpath() const;
+  INLINE bool has_alpha_fullpath() const;
+  INLINE const Filename &get_alpha_fullpath() const;
+
 public:
   INLINE void set_filename(const Filename &filename);
   INLINE void clear_filename();
   INLINE void set_alpha_filename(const Filename &alpha_filename);
   INLINE void clear_alpha_filename();
 
+  INLINE void set_fullpath(const Filename &fullpath);
+  INLINE void clear_fullpath();
+  INLINE void set_alpha_fullpath(const Filename &alpha_fullpath);
+  INLINE void clear_alpha_fullpath();
+
 private:
   Filename _filename;
   Filename _alpha_filename;
+  Filename _fullpath;
+  Filename _alpha_fullpath;
 
 public:
   //Abstract class, so no factory methods for Reading and Writing

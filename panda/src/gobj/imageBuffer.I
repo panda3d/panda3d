@@ -31,10 +31,9 @@ has_filename() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ImageBuffer::get_filename
 //       Access: Published
-//  Description: Returns the filename that has been set.  Use
-//               this in conjunction with get_name() to get the names
-//               of the file(s) that were loaded into the buffer.  See
-//               set_filename().
+//  Description: Returns the filename that has been set.  This is the
+//               name of the file as it was requested.  Also see
+//               get_fullpath().
 ////////////////////////////////////////////////////////////////////
 INLINE const Filename &ImageBuffer::
 get_filename() const {
@@ -55,14 +54,61 @@ has_alpha_filename() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ImageBuffer::get_alpha_filename
 //       Access: Published
-//  Description: Returns the alpha_filename that has been set.  Use
-//               this in conjunction with get_name() to get the names
-//               of the file(s) that were loaded into the buffer.  See
-//               set_alpha_filename().
+//  Description: Returns the alpha_filename that has been set.  If
+//               this is set, it represents the name of the alpha
+//               component, which is stored in a separate file.  See
+//               also get_filename(), and get_alpha_fullpath().
 ////////////////////////////////////////////////////////////////////
 INLINE const Filename &ImageBuffer::
 get_alpha_filename() const {
   return _alpha_filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageBuffer::has_fullpath
+//       Access: Published
+//  Description: Returns true if the fullpath has been set and
+//               is available.  See set_fullpath().
+////////////////////////////////////////////////////////////////////
+INLINE bool ImageBuffer::
+has_fullpath() const {
+  return !_fullpath.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageBuffer::get_fullpath
+//       Access: Published
+//  Description: Returns the fullpath that has been set.  This is the
+//               full path to the file as it was found along the
+//               texture search path.
+////////////////////////////////////////////////////////////////////
+INLINE const Filename &ImageBuffer::
+get_fullpath() const {
+  return _fullpath;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageBuffer::has_alpha_fullpath
+//       Access: Published
+//  Description: Returns true if the alpha_fullpath has been set and
+//               is available.  See set_alpha_fullpath().
+////////////////////////////////////////////////////////////////////
+INLINE bool ImageBuffer::
+has_alpha_fullpath() const {
+  return !_alpha_fullpath.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageBuffer::get_alpha_fullpath
+//       Access: Published
+//  Description: 
+//               Returns the alpha_fullpath that has been set.  This
+//               is the full path to the alpha part of the image file
+//               as it was found along the texture search path.
+////////////////////////////////////////////////////////////////////
+INLINE const Filename &ImageBuffer::
+get_alpha_fullpath() const {
+  return _alpha_fullpath;
 }
 
 
@@ -126,4 +172,53 @@ set_alpha_filename(const Filename &alpha_filename) {
 INLINE void ImageBuffer::
 clear_alpha_filename() {
   _alpha_filename = Filename();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageBuffer::set_fullpath
+//       Access: Public
+//  Description: Sets the full pathname to the file that contains the
+//               image's contents, as found along the search path.
+//               Normally, this is set automatically when the image is
+//               loaded, for instance via Texture::read().
+////////////////////////////////////////////////////////////////////
+INLINE void ImageBuffer::
+set_fullpath(const Filename &fullpath) {
+  _fullpath = fullpath;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageBuffer::clear_fullpath
+//       Access: Public
+//  Description: Removes the alpha fullpath, if it was previously set.
+//               See set_fullpath().
+////////////////////////////////////////////////////////////////////
+INLINE void ImageBuffer::
+clear_fullpath() {
+  _fullpath = Filename();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageBuffer::set_alpha_fullpath
+//       Access: Public
+//  Description: Sets the full pathname to the file that contains the
+//               image's alpha channel contents, as found along the
+//               search path.  Normally, this is set automatically
+//               when the image is loaded, for instance via
+//               Texture::read().
+////////////////////////////////////////////////////////////////////
+INLINE void ImageBuffer::
+set_alpha_fullpath(const Filename &alpha_fullpath) {
+  _alpha_fullpath = alpha_fullpath;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageBuffer::clear_alpha_fullpath
+//       Access: Public
+//  Description: Removes the alpha fullpath, if it was previously set.
+//               See set_alpha_fullpath().
+////////////////////////////////////////////////////////////////////
+INLINE void ImageBuffer::
+clear_alpha_fullpath() {
+  _alpha_fullpath = Filename();
 }

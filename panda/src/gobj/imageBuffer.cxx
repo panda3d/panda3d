@@ -48,18 +48,24 @@ write_datagram(BamWriter *, Datagram &me)
 
   switch (bam_texture_mode) {
   case BTM_unchanged:
+    break;
+
   case BTM_fullpath:
+    filename = get_fullpath();
+    alpha_filename = get_alpha_fullpath();
     break;
 
   case BTM_relative:
-    filename.find_on_searchpath(get_texture_path());
-    filename.find_on_searchpath(get_model_path());
+    filename = get_fullpath();
+    alpha_filename = get_alpha_fullpath();
+    filename.find_on_searchpath(get_texture_path()) ||
+      filename.find_on_searchpath(get_model_path());
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
         << "Texture file " << get_filename() << " found as " << filename << "\n";
     }
-    alpha_filename.find_on_searchpath(get_texture_path());
-    alpha_filename.find_on_searchpath(get_model_path());
+    alpha_filename.find_on_searchpath(get_texture_path()) ||
+      alpha_filename.find_on_searchpath(get_model_path());
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
         << "Alpha image " << get_alpha_filename() << " found as " << alpha_filename << "\n";

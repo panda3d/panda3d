@@ -166,22 +166,30 @@ Texture::
 //  Description: Reads the texture from the indicated filename.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-read(const Filename &name) {
-  PNMImage pnmimage;
+read(const Filename &fullpath) {
+  PNMImage image;
 
-  if (!pnmimage.read(name)) {
+  if (!image.read(fullpath)) {
     gobj_cat.error()
-      << "Texture::read() - couldn't read: " << name << endl;
+      << "Texture::read() - couldn't read: " << fullpath << endl;
     return false;
   }
 
-  // Check to see if we need to scale it.
-  consider_rescale(pnmimage, name);
+  if (!has_name()) {
+    set_name(fullpath.get_basename_wo_extension());
+  }
+  if (!has_filename()) {
+    set_filename(fullpath);
+    clear_alpha_filename();
+  }
 
-  set_name(name.get_basename_wo_extension());
-  set_filename(name);
-  clear_alpha_filename();
-  return load(pnmimage);
+  set_fullpath(fullpath);
+  clear_alpha_fullpath();
+
+  // Check to see if we need to scale it.
+  consider_rescale(image, get_name());
+
+  return load(image);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -191,51 +199,60 @@ read(const Filename &name) {
 //               to get a 4-component image
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-read(const Filename &name, const Filename &gray) {
-  PNMImage pnmimage;
-  if (!pnmimage.read(name)) {
+read(const Filename &fullpath, const Filename &alpha_fullpath) {
+  PNMImage image;
+  if (!image.read(fullpath)) {
     gobj_cat.error()
-      << "Texture::read() - couldn't read: " << name << endl;
+      << "Texture::read() - couldn't read: " << fullpath << endl;
     return false;
   }
 
-  PNMImage grayimage;
-  if (!grayimage.read(gray)) {
+  PNMImage alpha_image;
+  if (!alpha_image.read(alpha_fullpath)) {
     gobj_cat.error()
-      << "Texture::read() - couldn't read: " << gray << endl;
+      << "Texture::read() - couldn't read: " << alpha_fullpath << endl;
     return false;
   }
 
-  consider_rescale(pnmimage, name);
+  if (!has_name()) {
+    set_name(fullpath.get_basename_wo_extension());
+  }
+  if (!has_filename()) {
+    set_filename(fullpath);
+    set_alpha_filename(alpha_fullpath);
+  }
+
+  set_fullpath(fullpath);
+  set_alpha_fullpath(alpha_fullpath);
+
+  consider_rescale(image, get_name());
 
   // The grayscale (alpha channel) image must be the same size as the
   // main image.
-  if (pnmimage.get_x_size() != grayimage.get_x_size() ||
-      pnmimage.get_y_size() != grayimage.get_y_size()) {
+  if (image.get_x_size() != alpha_image.get_x_size() ||
+      image.get_y_size() != alpha_image.get_y_size()) {
     gobj_cat.info()
-      << "Automatically rescaling " << gray << " from "
-      << grayimage.get_x_size() << " by " << grayimage.get_y_size() << " to "
-      << pnmimage.get_x_size() << " by " << pnmimage.get_y_size() << "\n";
+      << "Automatically rescaling " << alpha_fullpath.get_basename()
+      << " from " << alpha_image.get_x_size() << " by " 
+      << alpha_image.get_y_size() << " to " << image.get_x_size()
+      << " by " << image.get_y_size() << "\n";
 
-    PNMImage scaled(pnmimage.get_x_size(), pnmimage.get_y_size(),
-                    grayimage.get_num_channels(),
-                    grayimage.get_maxval(), grayimage.get_type());
-    scaled.quick_filter_from(grayimage);
-    grayimage = scaled;
+    PNMImage scaled(image.get_x_size(), image.get_y_size(),
+                    alpha_image.get_num_channels(),
+                    alpha_image.get_maxval(), alpha_image.get_type());
+    scaled.quick_filter_from(alpha_image);
+    alpha_image = scaled;
   }
 
   // Make the original image a 4-component image
-  pnmimage.add_alpha();
-  for (int x = 0; x < pnmimage.get_x_size(); x++) {
-    for (int y = 0; y < pnmimage.get_y_size(); y++) {
-      pnmimage.set_alpha(x, y, grayimage.get_gray(x, y));
+  image.add_alpha();
+  for (int x = 0; x < image.get_x_size(); x++) {
+    for (int y = 0; y < image.get_y_size(); y++) {
+      image.set_alpha(x, y, alpha_image.get_gray(x, y));
     }
   }
 
-  set_name(name.get_basename_wo_extension());
-  set_filename(name);
-  set_alpha_filename(gray);
-  return load(pnmimage);
+  return load(image);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -519,19 +536,14 @@ PixelBuffer *Texture::
 get_ram_image() {
   if (!has_ram_image() && has_filename()) {
     // Now we have to reload the texture image.
-    string name = get_name();
     gobj_cat.info()
-      << "Reloading texture " << name << "\n";
+      << "Reloading texture " << get_name() << "\n";
     
-    if (has_alpha_filename()) {
-      read(get_filename(), get_alpha_filename());
+    if (has_alpha_fullpath()) {
+      read(get_fullpath(), get_alpha_fullpath());
     } else {
-      read(get_filename());
+      read(get_fullpath());
     }
-
-    // Just in case the read operation changed our name, we should
-    // change it back.
-    set_name(name);
   }
 
   if (has_ram_image()) {
@@ -688,9 +700,6 @@ make_Texture(const FactoryParams &params) {
 
   } else {
     me->set_name(name);
-    if (gobj_cat.is_debug()) {
-      gobj_cat->debug() << "Created texture " << me->get_name() << endl;
-    }
     me->fillin(scan, manager);
   }
   return me;

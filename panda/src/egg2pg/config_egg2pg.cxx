@@ -52,15 +52,6 @@ bool egg_flatten_siblings = config_egg2pg.GetBool("egg-flatten-siblings", false)
 
 bool egg_show_collision_solids = config_egg2pg.GetBool("egg-show-collision-solids", false);
 
-// When this is true, keep texture pathnames exactly the same as they
-// appeared in the egg file, in particular leaving them as relative
-// paths, rather than letting them reflect the full path at which they
-// were found.  This is particularly useful when generating bam files.
-// However, if the same texture is named by two different relative
-// paths, these will still be collapsed into one texture (using one of
-// the relative paths, chosen arbitrarily).
-bool egg_keep_texture_pathnames = config_egg2pg.GetBool("egg-keep-texture-pathnames", false);
-
 // When this is true, a <NurbsCurve> entry appearing in an egg file
 // will load a ClassicNurbsCurve object instead of the default, a
 // NurbsCurve object.  This only makes a difference when the NURBS++

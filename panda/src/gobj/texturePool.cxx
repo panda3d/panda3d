@@ -74,12 +74,12 @@ ns_load_texture(const Filename &orig_filename) {
 
   if (use_vfs) {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    vfs->resolve_filename(filename, get_texture_path());
-    vfs->resolve_filename(filename, get_model_path());
+    vfs->resolve_filename(filename, get_texture_path()) ||
+      vfs->resolve_filename(filename, get_model_path());
 
   } else {
-    filename.resolve_filename(get_texture_path());
-    filename.resolve_filename(get_model_path());
+    filename.resolve_filename(get_texture_path()) ||
+      filename.resolve_filename(get_model_path());
   }
 
   Textures::const_iterator ti;
@@ -94,13 +94,13 @@ ns_load_texture(const Filename &orig_filename) {
   PT(Texture) tex = new Texture;
   if (!tex->read(filename)) {
     // This texture was not found.
-    gobj_cat.error() << "Unable to read texture " << filename << "\n";
+    gobj_cat.error()
+      << "Unable to read texture " << filename << "\n";
     return NULL;
   }
 
-  if (bam_texture_mode == BTM_unchanged) {
-    tex->set_filename(orig_filename);
-  }
+  // Set the original filename, before we searched along the path.
+  tex->set_filename(orig_filename);
 
   _textures[filename] = tex;
   return tex;
@@ -113,9 +113,9 @@ ns_load_texture(const Filename &orig_filename) {
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
 ns_load_texture(const Filename &orig_filename, 
-                const Filename &orig_grayfilename) {
+                const Filename &orig_alpha_filename) {
   Filename filename(orig_filename);
-  Filename grayfilename(orig_grayfilename);
+  Filename alpha_filename(orig_alpha_filename);
 
   if (!fake_texture_image.empty()) {
     return ns_load_texture(fake_texture_image);
@@ -123,18 +123,18 @@ ns_load_texture(const Filename &orig_filename,
 
   if (use_vfs) {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    vfs->resolve_filename(filename, get_texture_path());
-    vfs->resolve_filename(filename, get_model_path());
+    vfs->resolve_filename(filename, get_texture_path()) ||
+      vfs->resolve_filename(filename, get_model_path());
 
-    vfs->resolve_filename(grayfilename, get_texture_path());
-    vfs->resolve_filename(grayfilename, get_model_path());
+    vfs->resolve_filename(alpha_filename, get_texture_path()) ||
+      vfs->resolve_filename(alpha_filename, get_model_path());
 
   } else {
-    filename.resolve_filename(get_texture_path());
-    filename.resolve_filename(get_model_path());
+    filename.resolve_filename(get_texture_path()) ||
+      filename.resolve_filename(get_model_path());
 
-    grayfilename.resolve_filename(get_texture_path());
-    grayfilename.resolve_filename(get_model_path());
+    alpha_filename.resolve_filename(get_texture_path()) ||
+      alpha_filename.resolve_filename(get_model_path());
   }
 
   Textures::const_iterator ti;
@@ -145,19 +145,18 @@ ns_load_texture(const Filename &orig_filename,
   }
 
   gobj_cat.info()
-    << "Loading texture " << filename << " and grayscale texture "
-    << grayfilename << endl;
+    << "Loading texture " << filename << " and alpha component "
+    << alpha_filename << endl;
   PT(Texture) tex = new Texture;
-  if (!tex->read(filename, grayfilename)) {
+  if (!tex->read(filename, alpha_filename)) {
     // This texture was not found.
     gobj_cat.error() << "Unable to read texture " << filename << "\n";
     return NULL;
   }
 
-  if (bam_texture_mode == BTM_unchanged) {
-    tex->set_filename(orig_filename);
-    tex->set_alpha_filename(orig_grayfilename);
-  }
+  // Set the original filenames, before we searched along the path.
+  tex->set_filename(orig_filename);
+  tex->set_alpha_filename(orig_alpha_filename);
 
   _textures[filename] = tex;
   return tex;

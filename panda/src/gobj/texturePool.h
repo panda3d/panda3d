@@ -44,7 +44,7 @@ PUBLISHED:
   INLINE static bool verify_texture(const string &filename);
   INLINE static Texture *load_texture(const string &filename);
   INLINE static Texture *load_texture(const string &filename,
-                                      const string &grayfilename);
+                                      const string &alpha_filename);
   INLINE static void add_texture(Texture *texture);
   INLINE static void release_texture(Texture *texture);
   INLINE static void release_all_textures();
@@ -59,7 +59,7 @@ private:
   bool ns_has_texture(const Filename &orig_filename);
   Texture *ns_load_texture(const Filename &orig_filename);
   Texture *ns_load_texture(const Filename &orig_filename, 
-                           const Filename &orig_grayfilename);
+                           const Filename &orig_alpha_filename);
   void ns_add_texture(Texture *texture);
   void ns_release_texture(Texture *texture);
   void ns_release_all_textures();

@@ -487,15 +487,6 @@ load_texture(TextureDef &def, const EggTexture *egg_tex) {
     return false;
   }
 
-  if (egg_keep_texture_pathnames) {
-    tex->set_filename(egg_tex->get_filename());
-    if (egg_tex->has_alpha_file()) {
-      tex->set_alpha_filename(egg_tex->get_alpha_file());
-    } else {
-      tex->clear_alpha_filename();
-    }
-  }
-
   apply_texture_attributes(tex, egg_tex);
   CPT(RenderAttrib) apply = get_texture_apply_attributes(egg_tex);
 
