@@ -629,12 +629,12 @@ GEOMETRY ENTRIES
     This works in conjunction with bin, above, to further refine the
     order in which this polygon is drawn, relative to other geometry
     in the same bin.  If (and only if) the bin type named in the bin
-    scalar is a GeomBinFixed, this draw_order is used to define the
+    scalar is a CullBinFixed, this draw_order is used to define the
     fixed order that all geometry in the same will be rendered, from
     smaller numbers to larger numbers.
 
     If no bin scalar is specified, the default is a bin named "fixed",
-    which is a GeomBinFixed object that always exists by default.
+    which is a CullBinFixed object that always exists by default.
 
 
   <Scalar> visibility { hidden | normal }
@@ -691,82 +691,18 @@ GEOMETRY ENTRIES
 PARAMETRIC DESCRIPTION ENTRIES
 
 The following entries define parametric curves and surfaces.
-Generally, the player supports these only in the abstract; they're not
+Generally, Panda supports these only in the abstract; they're not
 geometry in the true sense but do exist in the scene graph and may
-have specific meaning to the show code.  However, the player can
-create visible representations of these parametrics to aid
-visualization.
+have specific meaning to the application.  However, Panda can create
+visible representations of these parametrics to aid visualization.
 
-These entries might also have meaning to tools outside of the player,
-such as a smart polygon mesher.
+These entries might also have meaning to external tools outside of an
+interactive Panda session, such as a smart polygon mesher.
 
 In general, dynamic attributes such as morphs and joint assignment are
-legal for the control vertices of the following parametrics, but the
-player doesn't support them and will always create static curves and
-surfaces.  Non-player tools, however, may respect them.
-
-
-<BezierCurve> name {
-    [attributes]
-
-    [ <TLengths> { t1 t2 t3 ... } ]
-    <VertexRef> { indices <Ref> { pool-name } }
-}
-
-  A Bezier curve will generally be used to describe a motion path
-  (though NURBS curves can be used for this purpose as well; see
-  below).  The player translates <BezierCurve> entries into Hermite
-  curves internally.
-
-  Bezier curves can have any number of dimensions from one to three.
-  Accordingly, the referenced vertices may be defined for x, x y, or x
-  y z.  All vertices should be defined over the same number of
-  dimensions.
-
-  A Bezier curve consists of a sequence of curve segments defined by
-  four vertices taken three at a time.  The first four vertices define
-  the first curve segment, the vertices four through seven define the
-  second curve segment, and so on.  The total number of vertices must
-  be one more than a multiple of three.
-
-  <TLengths> is a list of (n-1)/3 values, where n is the number of
-  Bezier control vertices.  Each value corresponds to the length in
-  parametric space of the corresponding curve segment; the total curve
-  is defined over the parametric range [0,sum(TLengths)].  If this
-  entry is omitted, the curve will be defined over the range [0,1].
-
-  The following attributes may be defined:
-
-  <Scalar> type { curve-type }
-
-    This defines the semanting meaning of this curve, either XYZ, HPR,
-    or T.  If the type is XYZ, the curve will automatically be
-    transformed between Y-up and Z-up if necessary; otherwise, it will
-    be left alone.
-
-  <Scalar> subdiv { num-segments }
-
-    If this scalar is given and nonzero, the player will create a
-    visible representation of the curve when the scene is loaded.  The
-    number represents the number of line segments to draw to
-    approximate the curve.
-
-  <RGBA> { r g b a [morph-list] }
-
-    This specifies the color of the overall curve.
-
-
-  Bezier control vertices may also be given color and/or morph
-  attributes (though the player ignores these), but <Normal> and <UV>
-  entries do not apply to Bezier vertices.
-
-  Each control vertex may optionally be given a continuity type,
-  defined with a "<Scalar> continuity-type { type }" within the
-  <Vertex> entry.  The type may be one of Cut, Free, G1, or Smooth.
-  This enforces the respective continuity restriction on the
-  neighboring vertices.
-
-
+legal for the control vertices of the following parametrics, but Panda
+itself doesn't support them and will always create static curves and
+surfaces.  External tools, however, may respect them.
 
 <NURBSCurve> {
     [attributes] 
@@ -776,10 +712,8 @@ surfaces.  Non-player tools, however, may respect them.
     <VertexRef> { indices <Ref> { pool-name } }
 }
 
-  A NURBS curve is a more general parametric than a Bezier curve.  It
-  can be used within the show anywhere a Bezier might have been used,
-  though a NURBS curve as the player creates it is more difficult to
-  modify at runtime.
+  A NURBS curve is a general parametric curve.  It is often used to
+  represent a motion path, e.g. for a camera or an object.
 
   The order is equal to the degree of the polynomial basis plus 1.  It
   must be an integer in the range [1,4].
@@ -793,9 +727,30 @@ surfaces.  Non-player tools, however, may respect them.
   only three coordinates are given, it specifies a curve in two
   dimensions plus a homogeneous coordinate (x y w).
 
-  The valid attributes are the same for a <NURBSCurve> as that for a
-  <BezierCurve>, above.  Similarly, NURBS vertices may be given color
-  and/or morph attributes.
+  The following attributes may be defined:
+
+  <Scalar> type { curve-type }
+
+    This defines the semanting meaning of this curve, either XYZ, HPR,
+    or T.  If the type is XYZ, the curve will automatically be
+    transformed between Y-up and Z-up if necessary; otherwise, it will
+    be left alone.
+
+  <Scalar> subdiv { num-segments }
+
+    If this scalar is given and nonzero, Panda will create a visible
+    representation of the curve when the scene is loaded.  The number
+    represents the number of line segments to draw to approximate the
+    curve.
+
+  <RGBA> { r g b a [morph-list] }
+
+    This specifies the color of the overall curve.
+
+
+  NURBS control vertices may also be given color and/or morph
+  attributes (though Panda ignores these), but <Normal> and <UV>
+  entries do not apply to NURBS vertices.
 
 
 
@@ -821,7 +776,7 @@ surfaces.  Non-player tools, however, may respect them.
   attributes may also include <NURBSCurve> and <Trim> entries; see
   below.
 
-  To have the player create a visualization of a NURBS surface, the
+  To have Panda create a visualization of a NURBS surface, the
   following two attributes should be defined as well:
 
   <Scalar> U-subdiv { u-num-segments }
@@ -1033,9 +988,9 @@ GROUPING ENTRIES
 
     If the visibility of a group is set to "hidden", the primitives
     nested within that group are not generated as a normally visible
-    primitive.  If the Configrc variable egg-suppress-hidden is set to
-    true, the primitives are not converted at all; otherwise, they are
-    converted as a "stashed" node.
+    primitive.  If the Config.prc variable egg-suppress-hidden is set
+    to true, the primitives are not converted at all; otherwise, they
+    are converted as a "stashed" node.
 
   <Scalar> decal { boolean-value }
 
@@ -1341,8 +1296,8 @@ GROUPING ENTRIES
   A table is a set of animated values for joints.  A tree of tables
   with the same structure as the corresponding tree of joints must be
   defined for each character to be animated.  Such a tree is placed
-  under a <Bundle> node, which provides a handle within the player to
-  the tree as a whole.
+  under a <Bundle> node, which provides a handle within Panda to the
+  tree as a whole.
 
   Bundles may only contain tables; tables may contain more tables,
   bundles, or any one of the following (<Scalar> entries are optional,
@@ -1397,9 +1352,9 @@ GROUPING ENTRIES
 
     This is a variant on the <Xfm$Anim> entry, where each column of
     the table is entered as a separate <S$Anim> table.  This syntax
-    reflects an attempt in the old player development to save memory
-    by not requiring repetition of values for columns that did not
-    change value during an animation sequence.
+    reflects an attempt to simplify the description by not requiring
+    repetition of values for columns that did not change value during
+    an animation sequence.
 
 
   <VertexAnim> name { 
