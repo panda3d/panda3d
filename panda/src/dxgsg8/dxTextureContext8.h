@@ -21,6 +21,8 @@
 
 #include <pandabase.h>
 
+//#define DO_CUSTOM_CONVERSIONS
+
 #define WIN32_LEAN_AND_MEAN
 #ifndef STRICT
 // enable strict type checking in windows.h, see msdn
@@ -28,27 +30,41 @@
 #endif
 
 #include <windows.h>
-
 #include <ddraw.h>
 
 #define D3D_OVERLOADS   //  get D3DVECTOR '+' operator, etc from d3dtypes.h
 #include <d3d8.h>
+#include <d3dx8.h>
+#include <dxerr8.h>
 #undef WIN32_LEAN_AND_MEAN
 
+
 #ifndef D3DERRORSTRING
-#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__"), hr=" <<  DXGetErrorString8(HRESULT) << ": " << DXGetErrorDescription8(HRESULT) << endl
+#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DXGetErrorString8(HRESULT) << ": " << DXGetErrorDescription8(HRESULT) << endl
 #endif
 
 #include <texture.h>
 #include <textureContext.h>
 
-//#define USE_TEXFMTVEC  // doesnt work now, crashes in destructor
-
-#ifdef USE_TEXFMTVEC
-typedef pvector<DDPIXELFORMAT> DDPixelFormatVec;
-#else
-#define MAX_DX_TEXPIXFMTS 20    // should be enough for any card
-#endif
+typedef struct {
+      LPDIRECT3DDEVICE8 pD3DDevice;
+      LPDIRECT3D8       pD3D8;
+      HWND              hWnd;
+      HMONITOR          hMon;
+      RECT              view_rect,clip_rect;
+      DWORD             MaxAvailVidMem;
+      bool              bIsLowVidMemCard;
+      bool              bIsTNLDevice;
+      bool              bIsDX81;
+      ushort            depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly
+      ushort            CardIDNum;  // adapter ID
+      DWORD             dwSupportedScreenDepthsMask;
+      DWORD             SupportedTexFmtsMask;
+      D3DCAPS8          d3dcaps;
+      D3DDISPLAYMODE    DisplayMode;
+      D3DPRESENT_PARAMETERS PresParams;  // not redundant with DisplayMode since width/height must be 0 for windowed mode
+      D3DADAPTER_IDENTIFIER8 DXDeviceID;
+} DXScreenData;
 
 ////////////////////////////////////////////////////////////////////
 //   Class : DXTextureContext
@@ -62,23 +78,19 @@ public:
   DXTextureContext(Texture *tex);
   ~DXTextureContext();
 
-  LPDIRECTDRAWSURFACE7  _surface;
+  IDirect3DTexture8  *_pD3DTexture8;
   Texture *_tex;            // ptr to parent, primarily for access to namestr
-
-//  static is_unused_texpixelformat(DDPIXELFORMAT *)
-
-#ifdef USE_TEXFMTVEC
-  LPDIRECTDRAWSURFACE7 CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, DDPixelFormatVec &TexFmts,LPD3DDEVICEDESC7 pD3DDevDesc);
-#else
-  LPDIRECTDRAWSURFACE7 CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, DDPIXELFORMAT *pTexFmts,LPD3DDEVICEDESC7 pD3DDevDesc);
-#endif
+  IDirect3DTexture8 *CreateTexture(DXScreenData &scrn);
 
   bool _bHasMipMaps;
+
+#ifdef DO_CUSTOM_CONVERSIONS
   DWORD _PixBufConversionType;  // enum ConversionType
+#endif
 
   // must be public since called from global callback fns
   void DeleteTexture(void);
-  HRESULT FillDDSurfTexturePixels(void);
+  HRESULT FillDDSurfTexturePixels(DWORD TargetWidth,DWORD TargetHeight,D3DFORMAT PixBufD3DFmt);
 
 protected:
     unsigned int get_bits_per_pixel(PixelBuffer::Format format, int *alphbits);
@@ -101,6 +113,7 @@ private:
   static TypeHandle _type_handle;
 };
 
+extern HRESULT ConvertD3DSurftoPixBuf(IDirect3DSurface8 *pD3DSurf8,PixelBuffer *pixbuf);
 
 #endif
 

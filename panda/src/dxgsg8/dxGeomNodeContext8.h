@@ -35,18 +35,24 @@
 #define D3D_OVERLOADS   //  get D3DVECTOR '+' operator, etc from d3dtypes.h
 #include <d3d8.h>
 
+#if D3D_SDK_VERSION != 220
+#error you have DX 8.0 headers, not DX 8.1, you need to install newer MS Platform SDK!
+#endif
+
 #if DIRECT3D_VERSION != 0x0800
 #error DX8.1 headers not available, you need to install newer MS Platform SDK!
 #endif
 
-#if D3D_SDK_VERSION != 220
-#error you have DX 8.0 headers, not DX 8.1, you need to install newer MS Platform SDK!
+#ifndef D3DCAPS3_ALPHA_FULLSCREEN_FLIP_OR_DISCARD
+#error you have pre-release DX8.1 headers, you need to install newer MS Platform SDK!
 #endif
 
 typedef struct {
      DWORD nVerts;
      D3DPRIMITIVETYPE primtype;
 } DPInfo;
+
+// empty shell unimplemented for DX8 right now
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DXGeomNodeContext
@@ -66,8 +72,11 @@ public:
   // but we will want a way to know if VB has already been xformed by ProcessVerts this frame
   // if multiple geomnodes share VBs
 
+/*  unimplemented right now
   LPDIRECT3DVERTEXBUFFER7 _pVB;
   LPDIRECT3DVERTEXBUFFER7 _pXformed_VB;
+*/  
+  
 
   int _start_index;   // starting offset of this geom's verts within the VB
   int _num_verts;     // number of verts used by this geomcontext within the VB

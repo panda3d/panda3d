@@ -22,6 +22,7 @@ TypeHandle DXGeomNodeContext::_type_handle;
 
 DXGeomNodeContext::~DXGeomNodeContext()
 {
+/*
    if(_pXformed_VB!=NULL)
        _pXformed_VB->Release();
    _pXformed_VB=NULL;
@@ -29,5 +30,6 @@ DXGeomNodeContext::~DXGeomNodeContext()
    if(_pVB!=NULL)
        _pVB->Release();
    _pVB=NULL;
+*/   
 }
 

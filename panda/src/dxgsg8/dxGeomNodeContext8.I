@@ -26,6 +26,8 @@ INLINE DXGeomNodeContext::
 DXGeomNodeContext(GeomNode *node) : GeomNodeContext(node)
 {
   _num_verts = 0;
+/*
   _pVB = NULL;
   _pXformed_VB = NULL;
+*/  
 }

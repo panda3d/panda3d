@@ -16,11 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONFIG_DXGSG_H
-#define CONFIG_DXGSG_H
+#ifndef CONFIG_DXGSG8_H
+#define CONFIG_DXGSG8_H
 
 #include <pandabase.h>
 #include <notifyCategoryProxy.h>
+#include <d3d8.h>
 
 NotifyCategoryDecl(dxgsg, EXPCL_PANDADX, EXPTP_PANDADX);
 
@@ -34,6 +35,9 @@ extern float dx_fps_meter_update_interval;
 extern bool dx_auto_normalize_lighting;
 extern bool dx_use_rangebased_fog;
 extern const bool link_tristrips;
+extern DWORD dx_multisample_antialiasing_level;
+extern bool dx_use_triangle_mipgen_filter;
+extern const char *D3DFormatStr(D3DFORMAT fmt);
 
 // debug flags we might want to use in full optimized build
 extern bool dx_ignore_mipmaps;

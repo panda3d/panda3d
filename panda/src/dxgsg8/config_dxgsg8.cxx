@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_dxgsg.h"
-#include "dxGraphicsStateGuardian.h"
-#include "dxSavedFrameBuffer.h"
-#include "dxTextureContext.h"
+#include "config_dxgsg8.h"
+#include "dxGraphicsStateGuardian8.h"
+#include "dxSavedFrameBuffer8.h"
+#include "dxTextureContext8.h"
 
 #include <dconfig.h>
 
@@ -40,9 +40,8 @@ bool dx_full_screen = config_dxgsg.GetBool("dx-full-screen", false);
 //  irrespective of the video refresh.
 bool dx_sync_video = config_dxgsg.GetBool("sync-video", true);
 
-// enable this to turn on full-screen anti-aliasing, if the HW supports it
-// this var is also used in wdxGraphicsWindows.cxx
-bool dx_full_screen_antialiasing = config_dxgsg.GetBool("dx-antialias", false);
+// Set Level of MultiSampling to be used, if HW supports it.  Valid values are 2-16.
+DWORD dx_multisample_antialiasing_level = (DWORD) config_dxgsg.GetInt("dx-multisample-antialiasing-level", 0);
 
 // Configure this true to perform a cull traversal over the geometry
 // by default, false otherwise.  The cull traversal provides support
@@ -51,6 +50,9 @@ bool dx_cull_traversal = config_dxgsg.GetBool("dx-cull-traversal", true);
 
 // if true, if card only supports per-vertex fog, it will be treated as no-HW fog capability
 bool dx_no_vertex_fog = config_dxgsg.GetBool("dx-no-vertex-fog", false);
+
+// if true, triangle filter will be used to generate mipmap levels instead of default box filter
+bool dx_use_triangle_mipgen_filter = config_dxgsg.GetBool("dx-use-triangle-mipgen-filter", false);
 
 // Configure this true to cause all lighting normals to automatically
 // be normalized by the CPU before rendering.  This is
@@ -138,3 +140,57 @@ init_libdxgsg() {
     (DXGraphicsStateGuardian::get_class_type(),
      DXGraphicsStateGuardian::make_DXGraphicsStateGuardian);
 }
+
+const char *D3DFormatStr(D3DFORMAT fmt) {
+
+#define CASESTR(XX) case XX: return #XX;
+
+  switch(fmt) {
+    CASESTR(D3DFMT_UNKNOWN);
+    CASESTR(D3DFMT_R8G8B8);
+    CASESTR(D3DFMT_A8R8G8B8);
+    CASESTR(D3DFMT_X8R8G8B8);
+    CASESTR(D3DFMT_R5G6B5);
+    CASESTR(D3DFMT_X1R5G5B5);
+    CASESTR(D3DFMT_A1R5G5B5);
+    CASESTR(D3DFMT_A4R4G4B4);
+    CASESTR(D3DFMT_R3G3B2);
+    CASESTR(D3DFMT_A8);
+    CASESTR(D3DFMT_A8R3G3B2);
+    CASESTR(D3DFMT_X4R4G4B4);
+    CASESTR(D3DFMT_A2B10G10R10);
+    CASESTR(D3DFMT_G16R16);
+    CASESTR(D3DFMT_A8P8);
+    CASESTR(D3DFMT_P8);
+    CASESTR(D3DFMT_L8);
+    CASESTR(D3DFMT_A8L8);
+    CASESTR(D3DFMT_A4L4);
+    CASESTR(D3DFMT_V8U8);
+    CASESTR(D3DFMT_L6V5U5);
+    CASESTR(D3DFMT_X8L8V8U8);
+    CASESTR(D3DFMT_Q8W8V8U8);
+    CASESTR(D3DFMT_V16U16);
+    CASESTR(D3DFMT_W11V11U10);
+    CASESTR(D3DFMT_A2W10V10U10);
+    CASESTR(D3DFMT_UYVY);
+    CASESTR(D3DFMT_YUY2);
+    CASESTR(D3DFMT_DXT1);
+    CASESTR(D3DFMT_DXT2);
+    CASESTR(D3DFMT_DXT3);
+    CASESTR(D3DFMT_DXT4);
+    CASESTR(D3DFMT_DXT5);
+    CASESTR(D3DFMT_D16_LOCKABLE);
+    CASESTR(D3DFMT_D32);
+    CASESTR(D3DFMT_D15S1);
+    CASESTR(D3DFMT_D24S8);
+    CASESTR(D3DFMT_D16);
+    CASESTR(D3DFMT_D24X8);
+    CASESTR(D3DFMT_D24X4S4);
+    CASESTR(D3DFMT_VERTEXDATA);
+    CASESTR(D3DFMT_INDEX16);
+    CASESTR(D3DFMT_INDEX32);
+  }
+
+  return "Invalid D3DFORMAT";
+}
+

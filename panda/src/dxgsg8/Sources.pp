@@ -6,7 +6,7 @@
 
 #if $[BUILD_DX8]
 #begin lib_target
-  #define TARGET dxgsg
+  #define TARGET dxgsg8
   #define LOCAL_LIBS \
     cull gsgmisc gsgbase gobj sgattrib sgraphutil graph display light \
     putil linmath sgraph mathutil pnmimage event

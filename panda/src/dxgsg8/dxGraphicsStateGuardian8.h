@@ -38,40 +38,49 @@
 #include <pointerToArray.h>
 #include <planeNode.h>
 
-#include "dxGeomNodeContext.h"
-#include "dxTextureContext.h"
+#include "dxGeomNodeContext8.h"
+#include "dxTextureContext8.h"
 #include <vector>
 
-extern char * ConvD3DErrorToString(const HRESULT &error);   // defined in wdxGraphicsPipe.cxx
+#define FLG(NN) (1<<NN)
+#define MAX_POSSIBLE_TEXFMTS 32
+typedef enum {
+    R8G8B8_FLAG =       FLG(0),
+    A8R8G8B8_FLAG =     FLG(1),
+    X8R8G8B8_FLAG =     FLG(2),
+    R5G6B5_FLAG =       FLG(3),
+    X1R5G5B5_FLAG =     FLG(4),
+    A1R5G5B5_FLAG =     FLG(5),
+    A4R4G4B4_FLAG =     FLG(6),
+    R3G3B2_FLAG =       FLG(7),
+    A8_FLAG =           FLG(8),
+    A8R3G3B2_FLAG =     FLG(9),
+    X4R4G4B4_FLAG =     FLG(10),
+    A2B10G10R10_FLAG =  FLG(12),
+//  G16R16_FLAG =       FLG(13),  leaving this 1 out to fit in 32 bits
+    A8P8_FLAG =         FLG(13),
+    P8_FLAG =           FLG(14),
+    L8_FLAG =           FLG(15),
+    A8L8_FLAG =         FLG(16),
+    A4L4_FLAG =         FLG(17),
+    V8U8_FLAG =         FLG(18),
+    L6V5U5_FLAG =       FLG(19),
+    X8L8V8U8_FLAG =     FLG(20),
+    Q8W8V8U8_FLAG =     FLG(21),
+    V16U16_FLAG =       FLG(22),
+    W11V11U10_FLAG =    FLG(23),
+    A2W10V10U10_FLAG =  FLG(24),
+    UYVY_FLAG =         FLG(25),
+    YUY2_FLAG =         FLG(26),
+    DXT1_FLAG =         FLG(27),
+    DXT2_FLAG =         FLG(28),
+    DXT3_FLAG =         FLG(29),
+    DXT4_FLAG =         FLG(30),
+    DXT5_FLAG =         FLG(31)
+} D3DFORMAT_FLAG;
 
-// for dwSupportedScreenDepthsMask
-#define X1R5G5B5_FLAG 0x1
-#define R5G6B5_FLAG   0x2
-#define X8R8G8B8_FLAG 0x4
-#define R8G8B8_FLAG   0x8
-
-typedef struct {
-      LPDIRECT3DDEVICE8 pD3DDevice;
-      LPDIRECT3D8       pD3D8;
-      LPDIRECTDRAWSURFACE7 pddsPrimary,pddsBack,pddsZBuf;
-      HWND              hWnd;
-      HMONITOR          hMon;
-      RECT              view_rect,clip_rect;
-      DWORD             MaxAvailVidMem;
-      bool              bIsLowVidMemCard;
-      bool              bIsTNLDevice;
-      ushort            depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly
-      ushort            CardIDNum;  // adapter ID
-      DWORD             dwSupportedScreenDepthsMask;
-      D3DCAPS8          d3dcaps;
-      D3DDISPLAYMODE    DisplayMode;
-      D3DPRESENT_PARAMETERS PresParams;  // not redundant with DisplayMode since width/height must be 0 for windowed mode
-#ifdef USE_TEXFMTVEC
-      DDPixelFormatVec  TexPixFmts;
-#endif
-      D3DADAPTER_IDENTIFIER8 DXDeviceID;
-} DXScreenData;
-// typedef vector<DXScreenData> ScreenDataVector;
+#define IS_16BPP_FORMAT(FMT) (((FMT)>=D3DFMT_R5G6B5)&&((FMT)<=D3DFMT_A1R5G5B5))
+#define IS_STENCIL_FORMAT(FMT) (((FMT)==D3DFMT_D24S8) || ((FMT)==D3DFMT_D15S1) || ((FMT)==D3DFMT_D24X4S4))
 
 class PlaneNode;
 class Light;
@@ -94,10 +103,14 @@ INLINE ostream &operator << (ostream &out, GLenum v) {
     ZeroMemory(&var, sizeof(type)); \
     var.dwSize = sizeof(type);
 
-// #define DEBUG_RELEASES
+#define SAFE_DELETE(p)       { if(p) { delete (p);     (p)=NULL; } }
+#define SAFE_DELETE_ARRAY(p) { if(p) { delete[] (p);   (p)=NULL; } }
 
 // this is bDoDownToZero argument to RELEASE()
 #define RELEASE_DOWN_TO_ZERO true
+#define RELEASE_ONCE false
+
+// #define DEBUG_RELEASES
 
 #ifdef DEBUG_RELEASES
 #define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)             \
@@ -263,15 +276,8 @@ public:
 
 public:
   // recreate_tex_callback needs these to be public
-  LPDIRECT3DDEVICE7 _pCurD3DDevice;  //this needs to be set every device iteration
-  LPDIRECTDRAW7 _pDD;
+//  LPDIRECT3DDEVICE7 _pCurD3DDevice;  //this needs to be set every device iteration
   DXScreenData scrn;
-
-#ifndef USE_TEXFMTVEC
-  LPDDPIXELFORMAT   _pTexPixFmts;
-  int               _cNumTexPixFmts;
-#endif
-//  D3DDEVICEDESC7    _D3DDevDesc;
 
 protected:
   void free_pointers();            // free local internal buffers
@@ -290,24 +296,8 @@ protected:
 
   bool                  _dx_ready;
   HRESULT               _last_testcooplevel_result;
-
-/*
-  moved to per display data
-  bool                  _bIsTNLDevice;
-  LPDIRECTDRAWSURFACE7  _back;
-  LPDIRECTDRAWSURFACE7  _zbuf;
-  LPDIRECTDRAWSURFACE7  _pri;
-
-  LPDIRECT3D7           _d3d;
-  LPDIRECTDRAW7         _pDD;
-  RECT              _view_rect;
-  RECT              clip_rect;  
-*/
-  LPDIRECT3D7           _pCurD3D7;
-  LPDIRECTDRAW7         _pCurDD;
   bool                  _bShowFPSMeter;
-
-  HDC               _front_hdc;
+//  HDC               _front_hdc;
   DXTextureContext  *_pCurTexContext;
 
   bool              _bTransformIssued;  // decaling needs to tell when a transform has been issued
@@ -331,10 +321,10 @@ protected:
 */  
 
   INLINE void enable_color_material(bool val);
-  INLINE void enable_clip_plane(int clip_plane, bool val);
+  INLINE void enable_clip_plane(int clip_plane_id, bool val);
   INLINE void enable_fog(bool val);
   INLINE void enable_zwritemask(bool val);
-  INLINE void set_shademode(D3DSHADEMODE val);
+  INLINE void enable_gouraud_shading(bool val);
 
   INLINE D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm) const;
   INLINE D3DCMPFUNC get_depth_func_type(DepthTestProperty::Mode m) const;
@@ -375,7 +365,8 @@ protected:
   Colorf _issued_color;           // WBD ADDED
   D3DCOLOR _issued_color_D3DCOLOR;           // WBD ADDED
   D3DCOLOR _d3dcolor_clear_value;
-  D3DSHADEMODE _CurShadeMode;
+//  D3DSHADEMODE _CurShadeMode;
+  bool _bGouraudShadingOn;
 
   bool _bDrawPrimDoSetupVertexBuffer;       // if true, draw methods just copy vertex data into pCurrentGeomContext
   DXGeomNodeContext *_pCurrentGeomContext;  // used in vertex buffer setup
@@ -408,8 +399,8 @@ protected:
   float _material_emission;
 
   typedef enum {None,
-                PerVertexFog=D3DRENDERSTATE_FOGVERTEXMODE,
-                PerPixelFog=D3DRENDERSTATE_FOGTABLEMODE
+                PerVertexFog=D3DRS_FOGVERTEXMODE,
+                PerPixelFog=D3DRS_FOGTABLEMODE
                } DxgsgFogType;
   DxgsgFogType _doFogType;
   bool _fog_enabled;
@@ -523,15 +514,13 @@ public:
           RECT  viewrect); */
   void dx_init(void);
   
-  friend HRESULT CALLBACK EnumTexFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param );
-
 private:
   static TypeHandle _type_handle;
 };
 
 #define ISPOW2(X) (((X) & ((X)-1))==0)
 
-#include "dxGraphicsStateGuardian.I"
+#include "dxGraphicsStateGuardian8.I"
 
 #endif
 

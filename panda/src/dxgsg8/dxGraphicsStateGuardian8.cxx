@@ -60,8 +60,8 @@
 #include <pStatCollector.h>
 #endif
 
-#include "config_dxgsg.h"
-#include "dxGraphicsStateGuardian.h"
+#include "config_dxgsg8.h"
+#include "dxGraphicsStateGuardian8.h"
 
 // disable nameless struct 'warning'
 #pragma warning (disable : 4201)
@@ -78,11 +78,6 @@
 #define DISABLE_POLYGON_OFFSET_DECALING
 // currently doesnt work well enough in toontown models for us to use
 // prob is when viewer gets close to decals, they disappear into wall poly, need to investigate
-
-// test non-optimized general geom pipe for all models
-// apparently DPStrided faults for some color G_OVERALL cases, so comment out for now
-// not clear that it is actually faster in practice, it may even be slightly slower
-#define DONT_USE_DRAWPRIMSTRIDED
 
 //const int VERT_BUFFER_SIZE = (8*1024L);
 // For sparkle particles, we can have 4 vertices per sparkle, and a
@@ -107,9 +102,7 @@ typedef enum { NothingSet=0,NormalOnly,ColorOnly,Normal_Color,TexCoordOnly,
 #define PER_COLOR    ColorOnly
 #define PER_TEXCOORD TexCoordOnly
 
-// technically DX7's front-end has no limit on the number of lights, but it's simpler for
-// this implementation to set a small GL-like limit to make the light array traversals short
-// and so I dont have to write code that reallocs light arrays
+// DX8's SW front-end has no limit on the number of lights, but HW is usually limited to 8
 #define DXGSG_MAX_LIGHTS 8
 
 static D3DMATRIX matIdentity;
@@ -122,9 +115,9 @@ static DWORD cVertcount=0;
 static DWORD cTricount=0;
 static DWORD cGeomcount=0;
 
-static LPDIRECTDRAWSURFACE7 pLastTexture=NULL;
+static IDirect3DTexture8 *pLastTexture=NULL;
 static DWORD cDP_noTexChangeCount=0;
-static LPDIRECT3DDEVICE7 global_pD3DDevice = NULL;
+static LPDIRECT3DDEVICE8 global_pD3DDevice = NULL;
 
 static void CountDPs(DWORD nVerts,DWORD nTris) {
     cDPcount++;
@@ -139,11 +132,13 @@ static void CountDPs(DWORD nVerts,DWORD nTris) {
 #define CountDPs(nv,nt)
 #endif
 
-#define MY_D3DRGBA(r,g,b,a) ((D3DCOLOR) D3DRGBA(r,g,b,a))
+#define MY_D3DRGBA(r,g,b,a) ((D3DCOLOR) D3DCOLOR_COLORVALUE(r,g,b,a))
 
 #if defined(DO_PSTATS) || defined(PRINT_TEXSTATS)
 static bool bTexStatsRetrievalImpossible=false;
 #endif
+
+HRESULT CreateDX8Cursor(LPDIRECT3DDEVICE8 pd3dDevice, HCURSOR hCursor,BOOL bAddWatermark);
 
 //#define Colorf_to_D3DCOLOR(out_color) (MY_D3DRGBA((out_color)[0], (out_color)[1], (out_color)[2], (out_color)[3]))
 
@@ -198,6 +193,47 @@ Colorf_to_D3DCOLOR(const Colorf &cColorf) {
 #else //!_X86_
    return MY_D3DRGBA(cColorf[0], cColorf[1], cColorf[2], cColorf[3]);
 #endif //!_X86_
+}
+
+map<D3DFORMAT_FLAG,D3DFORMAT> g_D3DFORMATmap;
+
+void make_D3DFORMAT_map(void) {
+  if(g_D3DFORMATmap.size()!=0)
+    return;
+
+#define INSERT_ELEM(XX)  g_D3DFORMATmap[XX##_FLAG] = D3DFMT_##XX;
+
+    INSERT_ELEM(R8G8B8);
+    INSERT_ELEM(A8R8G8B8);
+    INSERT_ELEM(X8R8G8B8);
+    INSERT_ELEM(R5G6B5);
+    INSERT_ELEM(X1R5G5B5);
+    INSERT_ELEM(A1R5G5B5);
+    INSERT_ELEM(A4R4G4B4);
+    INSERT_ELEM(R3G3B2);
+    INSERT_ELEM(A8);
+    INSERT_ELEM(A8R3G3B2);
+    INSERT_ELEM(X4R4G4B4);
+    INSERT_ELEM(A2B10G10R10);
+    INSERT_ELEM(A8P8);
+    INSERT_ELEM(P8);
+    INSERT_ELEM(L8);
+    INSERT_ELEM(A8L8);
+    INSERT_ELEM(A4L4);
+    INSERT_ELEM(V8U8);
+    INSERT_ELEM(L6V5U5);
+    INSERT_ELEM(X8L8V8U8);
+    INSERT_ELEM(Q8W8V8U8);
+    INSERT_ELEM(V16U16);
+    INSERT_ELEM(W11V11U10);
+    INSERT_ELEM(A2W10V10U10);
+    INSERT_ELEM(UYVY);
+    INSERT_ELEM(YUY2);
+    INSERT_ELEM(DXT1);
+    INSERT_ELEM(DXT2);
+    INSERT_ELEM(DXT3);
+    INSERT_ELEM(DXT4);
+    INSERT_ELEM(DXT5);
 }
 
 void DXGraphicsStateGuardian::
@@ -282,7 +318,7 @@ void DXGraphicsStateGuardian::FillFPSMeterTexture(void) {
 
     // init it to transparent black
     if(FAILED( hr = _fpsmeter_font_surf->Lock( NULL, &ddsd,  DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL ))) {
-        dxgsg_cat.error() << "fps meter creation failed, Lock() failed on texture! hr = " << ConvD3DErrorToString(hr) << "\n";
+        dxgsg_cat.error() << "fps meter creation failed, Lock() failed on texture! hr = " << D3DERRORSTRING(hr);
         _bShowFPSMeter = false;
         return;
     }
@@ -292,7 +328,7 @@ void DXGraphicsStateGuardian::FillFPSMeterTexture(void) {
     // draw FPS text using GDI
     HDC hDC;
     if(FAILED( hr = _fpsmeter_font_surf->GetDC(&hDC))) {
-        dxgsg_cat.error() << "fps meter creation failed, GetDC failed on fps font surface! hr = " << ConvD3DErrorToString(hr) << "\n";
+        dxgsg_cat.error() << "fps meter creation failed, GetDC failed on fps font surface! hr = " << D3DERRORSTRING(hr);
         _bShowFPSMeter = false;
         return;
     }
@@ -325,7 +361,7 @@ void DXGraphicsStateGuardian::FillFPSMeterTexture(void) {
 
     // GDI writes 0x00 for alpha, have to make letter pixels opaque again
     if(FAILED( hr = _fpsmeter_font_surf->Lock( NULL, &ddsd,  DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL ))) {
-        dxgsg_cat.error() << "fps meter creation failed, Lock() failed on texture! hr = " << ConvD3DErrorToString(hr) << "\n";
+        dxgsg_cat.error() << "fps meter creation failed, Lock() failed on texture! hr = " << D3DERRORSTRING(hr);
         _bShowFPSMeter = false;
         return;
     }
@@ -374,6 +410,8 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
     // non-dx obj values inited here should not change if resize is 
     // called and dx objects need to be recreated (otherwise they
     // belong in dx_init, with other renderstate
+
+    make_D3DFORMAT_map();
 
     ZeroMemory(&matIdentity,sizeof(D3DMATRIX));
     matIdentity._11 = matIdentity._22 = matIdentity._33 = matIdentity._44 = 1.0f;
@@ -457,20 +495,6 @@ free_dxgsg_objects(void) {
     RELEASE(scrn.pddsPrimary,dxgsg,"primary surface",false);
 }
 
-HRESULT CALLBACK EnumTexFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param ) {
-    // wont build if its a member fn, so had to do this stuff
-#ifdef USE_TEXFMTVEC
-    DDPixelFormatVec *pPixFmtVec =  (DDPixelFormatVec *) param;
-    pPixFmtVec->push_back(*pddpf);
-#else
-    DXGraphicsStateGuardian *mystate = (DXGraphicsStateGuardian *) param;
-    assert(mystate->_cNumTexPixFmts < MAX_DX_TEXPIXFMTS);
-    memcpy( &(mystate->_pTexPixFmts[mystate->_cNumTexPixFmts]), pddpf, sizeof(DDPIXELFORMAT) );
-    mystate->_cNumTexPixFmts++;
-#endif
-    return DDENUMRET_OK;
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::reset
 //       Access: Public, Virtual
@@ -478,56 +502,34 @@ HRESULT CALLBACK EnumTexFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param ) {
 //               set up.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-dx_init( void) {
-/*   
-         LPDIRECTDRAW7     context,
-          LPDIRECTDRAWSURFACE7  pri,
-          LPDIRECTDRAWSURFACE7  back,
-          LPDIRECTDRAWSURFACE7  zbuf,
-          LPDIRECT3D7          pD3D,
-          LPDIRECT3DDEVICE7    pDevice,
-          RECT viewrect) */ 
+dx_init(void) {
+
     assert(scrn.pDD!=NULL);
     assert(scrn.pD3D!=NULL);
     assert(scrn.pD3DDevice!=NULL);
-    assert(scrn.pddsPrimary!=NULL);
-    assert(scrn.pddsBack!=NULL);
 
-    _pDD=scrn.pDD;  // save for speed of access
     _pCurD3DDevice = scrn.pD3DDevice;
 
-/*    _pDD = context;
-    scrn.pddsPrimary = pri;
-    scrn.pddsBack = back;
-    scrn.pddsZBuf = zbuf;
-    scrn.pD3D = pD3D;
-    scrn.pD3DDevice = pDevice;
-    _view_rect = viewrect;
-*/  
-
     ZeroMemory(&_lmodel_ambient,sizeof(Colorf));
-    scrn.pD3DDevice->SetRenderState( D3DRENDERSTATE_AMBIENT, 0x0);
+    scrn.pD3DDevice->SetRenderState( D3DRS_AMBIENT, 0x0);
 
     _light_enabled = (bool *)NULL;
     _cur_light_enabled = (bool *)NULL;
+
+    // bugbug: rewrite clipplane stuff
     _clip_plane_enabled = (bool *)NULL;
     _cur_clip_plane_enabled = (bool *)NULL;
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CLIPPLANEENABLE , 0x0);
+    scrn.pD3DDevice->SetRenderState(D3DRS_CLIPPLANEENABLE , 0x0);
 
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CLIPPING, true);
+    scrn.pD3DDevice->SetRenderState(D3DRS_CLIPPING, true);
     _clipping_enabled = true;
 
-    _CurShadeMode =  D3DSHADE_FLAT;
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, _CurShadeMode);
+    _bGouraudShadingOn = false;
+    scrn.pD3DDevice->SetRenderState(D3DRS_COLORVERTEX, _bGouraudShadingOn);
 
     _depth_test_enabled = true; 
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, _depth_test_enabled);
+    scrn.pD3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, _depth_test_enabled);
 
-    // need to free these properly
-#ifndef USE_TEXFMTVEC
-    _cNumTexPixFmts = 0;
-    _pTexPixFmts = NULL;
-#endif
     _pCurTexContext = NULL;
 
     //Color and alpha transform variables
@@ -536,30 +538,27 @@ dx_init( void) {
     _color_transform_required = _color_transform_enabled || _alpha_transform_enabled;
 
     _current_color_mat = LMatrix4f::ident_mat();
-    _current_alpha_offset = 0;
-    _current_alpha_scale = 1;
-
-    // none of these are implemented
-    //_multisample_enabled = false;
-    //_point_smooth_enabled = false;
+    _current_alpha_offset = 0.0f;
+    _current_alpha_scale = 1.0f;
 
     _line_smooth_enabled = false;
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_EDGEANTIALIAS, false);
+    scrn.pD3DDevice->SetRenderState(D3DRS_EDGEANTIALIAS, false);
 
     _color_material_enabled = false;
     _normals_enabled = false;
     
     _depth_test_enabled = D3DZB_FALSE;
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ZENABLE, D3DZB_FALSE);
+    scrn.pD3DDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 
     _blend_enabled = false;
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, (DWORD)_blend_enabled);
+    scrn.pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, (DWORD)_blend_enabled);
 
-    scrn.pD3DDevice->GetRenderState(D3DRENDERSTATE_SRCBLEND, (DWORD*)&_blend_source_func);
-    scrn.pD3DDevice->GetRenderState(D3DRENDERSTATE_DESTBLEND, (DWORD*)&_blend_dest_func);
+    // just use whatever d3d defaults to here
+    scrn.pD3DDevice->GetRenderState(D3DRS_SRCBLEND, (DWORD*)&_blend_source_func);
+    scrn.pD3DDevice->GetRenderState(D3DRS_DESTBLEND, (DWORD*)&_blend_dest_func);
 
     _fog_enabled = false;
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_FOGENABLE, _fog_enabled);
+    scrn.pD3DDevice->SetRenderState(D3DRS_FOGENABLE, _fog_enabled);
 
     _decal_level = 0;
     _current_projection_mat = LMatrix4f::ident_mat();
@@ -568,13 +567,15 @@ dx_init( void) {
     _enable_all_color = true;
 
 //  GL stuff that hasnt been translated to DX
+    // none of these are implemented
+    //_multisample_enabled = false;         // bugbug:  translate this to dx_multisample_antialiasing_level?
+    //_point_smooth_enabled = false;
+
 //    _scissor_enabled = false;
 //    _multisample_alpha_one_enabled = false;
 //    _multisample_alpha_mask_enabled = false;
 //    _line_width = 1.0f;
 //    _point_size = 1.0f;
-
-    assert(scrn.pddsBack!=NULL);  // dxgsg is always double-buffered right now
 
 #ifdef COUNT_DRAWPRIMS
      global_pD3DDevice = pDevice;
@@ -589,128 +590,101 @@ dx_init( void) {
 
     HRESULT hr;
 
-#ifdef USE_TEXFMTVEC
-    assert(scrn.TexPixFmts.size()==0);
-
-    if(FAILED(hr=_pCurD3DDevice->EnumTextureFormats(EnumTexFmtsCallback, &scrn.TexPixFmts))) {
-#else
-    _pTexPixFmts = new DDPIXELFORMAT[MAX_DX_TEXPIXFMTS];
     _cNumTexPixFmts = 0;
-    assert(_pTexPixFmts!=NULL);
 
-    if(FAILED(hr=_pCurD3DDevice->EnumTextureFormats(EnumTexFmtsCallback, this))) {
-#endif
-        if(hr==D3DERR_TEXTURE_NO_SUPPORT) {
-            dxgsg_cat.error() << "EnumTextureFormats indicates No Texturing Support on this HW!, exiting...\n";
-            exit(1);
-        } else {
-            dxgsg_cat.error() << "EnumTextureFormats failed! hr = " << ConvD3DErrorToString(hr) << endl;
-        }
-    }
-
-/*
-    if(FAILED(hr = pDevice->GetCaps(&scrn.D3DDevDesc))) {
-        dxgsg_cat.fatal() << "GetCaps failed on D3D Device! hr = " << ConvD3DErrorToString(hr) << endl;
-        exit(1);
-    }
-*/
-    DX_DECLARE_CLEAN(DDCAPS,ddCaps);
-    if (FAILED(hr = scrn.pDD->GetCaps(&ddCaps,NULL))) {
-        dxgsg_cat.fatal() << "GetCaps failed on DDraw! hr = " << ConvD3DErrorToString(hr) << "\n";
-        exit(1);
+    for(i=0;i<MAX_POSSIBLE_TEXFMTS;i++) {
+      DWORD fmtflag=D3DFMT_FLAG(1<<i);
+      // look for all possible DX8 texture fmts
+      hr = Display.pD3D8->CheckDeviceFormat(Display.CardIDNum,D3DDEVTYPE_HAL,Display.DisplayMode.Format,
+                                            0x0,D3DRTYPE_TEXTURE,g_D3DFORMATmap[fmtflag]);
+      if(SUCCEEDED(hr)){
+        SupportedTexFmtsMask|=fmtflag;
+        _cNumTexPixFmts++;
+      }
     }
 
     // s3 virge drivers sometimes give crap values for these
-    if(scrn.D3DDevDesc.dwMaxTextureWidth==0)
-       scrn.D3DDevDesc.dwMaxTextureWidth=256;
+    if(scrn.d3dcaps.dwMaxTextureWidth==0)
+       scrn.d3dcaps.dwMaxTextureWidth=256;
 
-    if(scrn.D3DDevDesc.dwMaxTextureHeight==0)
-       scrn.D3DDevDesc.dwMaxTextureHeight=256;
+    if(scrn.d3dcaps.dwMaxTextureHeight==0)
+       scrn.d3dcaps.dwMaxTextureHeight=256;
 
-//  shouldve already been set
-//    sc_bIsTNLDevice = (IsEqualGUID(scrn.D3DDevDesc.deviceGUID,IID_IDirect3DTnLHalDevice)!=0);
-
-    if ((dx_decal_type==GDT_offset) && !(scrn.D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ZBIAS)) {
-#ifdef _DEBUG
-        // dx7 doesnt support PLANEMASK renderstate
-#if(DIRECT3D_VERSION < 0x700)
-        dxgsg_cat.debug() << "dx-decal-type 'offset' not supported by hardware, switching to decal masking\n";
-#else
-        dxgsg_cat.debug() << "dx-decal-type 'offset' not supported by hardware, switching to decal double-draw blend-based masking\n";
-#endif
-#endif
-#if(DIRECT3D_VERSION < 0x700)
-        dx_decal_type = GDT_mask;
-#else
-        dx_decal_type = GDT_blend;
-#endif
+    if ((dx_decal_type==GDT_offset) && !(scrn.d3dcaps.dwRasterCaps & D3DPRASTERCAPS_ZBIAS)) {
+        if(scrn.d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_COLORWRITEENABLE) {
+         if(dxgsg_cat.is_debug()
+            dxgsg_cat.debug() << "dx-decal-type 'offset' not supported by hardware, switching to mask type decals\n";
+         dx_decal_type = GDT_mask;
+     } else {
+         if(dxgsg_cat.is_debug()
+            dxgsg_cat.debug() << "dx-decal-type 'offset' not supported by hardware, switching to decal double-draw blend-based masking\n";
+         dx_decal_type = GDT_blend;
     }
 
 #ifdef DISABLE_POLYGON_OFFSET_DECALING
-#ifdef _DEBUG
-    dxgsg_cat.spam() << "polygon-offset decaling disabled in dxgsg, switching to double-draw decaling\n";
+    if(dx_decal_type==GDT_offset) {
+        if(dxgsg_cat.is_spam()
+           dxgsg_cat.spam() << "polygon-offset decaling disabled in dxgsg, switching to double-draw decaling\n";
+
+        if(scrn.d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_COLORWRITEENABLE) {
+         if(dxgsg_cat.is_debug()
+            dxgsg_cat.debug() << "using dx-decal-type 'GDT_mask'\n";
+         dx_decal_type = GDT_mask;
+        } else {
+         if(dxgsg_cat.is_debug()
+            dxgsg_cat.debug() << "dx-decal-type 'mask' not supported by hardware, switching to GDT_blend\n";
+         dx_decal_type = GDT_blend;
+        }
+    }
 #endif
 
-#if(DIRECT3D_VERSION < 0x700)
-    dx_decal_type = GDT_mask;
-#else
-    dx_decal_type = GDT_blend;
-#endif
-#endif
-
-    if ((dx_decal_type==GDT_mask) && !(scrn.D3DDevDesc.dpcTriCaps.dwMiscCaps & D3DPMISCCAPS_MASKPLANES)) {
-#ifdef _DEBUG
-        dxgsg_cat.debug() << "No hardware support for colorwrite disabling, switching to dx-decal-type 'mask' to 'blend'\n";
-#endif
-        dx_decal_type = GDT_blend;
+    if (((dx_decal_type==GDT_blend)||(dx_decal_type==GDT_mask)) && !(scrn.d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_MASKZ)) {
+        dxgsg_cat.error() << "dx-decal-types mask&blend impossible to implement, no hardware support for Z-masking, decals will not appear correctly!\n";
     }
 
-    if (((dx_decal_type==GDT_blend)||(dx_decal_type==GDT_mask)) && !(scrn.D3DDevDesc.dpcTriCaps.dwMiscCaps & D3DPMISCCAPS_MASKZ)) {
-        dxgsg_cat.error() << "dx-decal-type mask impossible to implement, no hardware support for Z-masking, decals will not appear correctly!\n";
+#define REQUIRED_DESTBLENDCAPS (D3DPBLENDCAPS_ZERO|D3DPBLENDCAPS_ONE| D3DPBLENDCAPS_SRCALPHA)
+#define REQUIRED_SRCBLENDCAPS  (D3DPBLENDCAPS_ZERO|D3DPBLENDCAPS_ONE| D3DPBLENDCAPS_INVSRCALPHA)
+
+    if (((scrn.d3dcaps.SrcBlendCaps & REQUIRED_SRCBLENDCAPS)!=REQUIRED_SRCBLENDCAPS) ||
+        ((scrn.d3dcaps.DestBlendCaps & REQUIRED_DESTBLENDCAPS)!=REQUIRED_DESTBLENDCAPS)) {
+        dxgsg_cat.error() << "device is missing alpha blending capabilities, blending may not work correctly: SrcBlendCaps: 0x"<< (void*) scrn.D3DDevDesc.SrcBlendCaps << "  DestBlendCaps: "<< (void*) scrn.D3DDevDesc.DestBlendCaps << endl;
     }
 
-//#define REQUIRED_BLENDCAPS (D3DPBLENDCAPS_ZERO|D3DPBLENDCAPS_ONE|D3DPBLENDCAPS_SRCCOLOR|D3DPBLENDCAPS_INVSRCCOLOR| \
-//                            D3DPBLENDCAPS_SRCALPHA|D3DPBLENDCAPS_INVSRCALPHA | D3DPBLENDCAPS_DESTALPHA|D3DPBLENDCAPS_INVDESTALPHA|D3DPBLENDCAPS_DESTCOLOR|D3DPBLENDCAPS_INVDESTCOLOR)
-// voodoo3 doesnt support commented out ones, & we dont need them now
+// just 'require' bilinear with mip nearest.  
+#define REQUIRED_TEXFILTERCAPS (D3DPTFILTERCAPS_MAGFLINEAR | D3DPTFILTERCAPS_MIPFPOINT | D3DPTFILTERCAPS_MINFLINEAR)
 
-#define REQUIRED_BLENDCAPS (D3DPBLENDCAPS_ZERO|D3DPBLENDCAPS_ONE|  /*D3DPBLENDCAPS_SRCCOLOR|D3DPBLENDCAPS_INVSRCCOLOR| */ \
-                            D3DPBLENDCAPS_SRCALPHA|D3DPBLENDCAPS_INVSRCALPHA /* | D3DPBLENDCAPS_DESTALPHA|D3DPBLENDCAPS_INVDESTALPHA|D3DPBLENDCAPS_DESTCOLOR|D3DPBLENDCAPS_INVDESTCOLOR*/)
-
-    if (((scrn.D3DDevDesc.dpcTriCaps.dwSrcBlendCaps & REQUIRED_BLENDCAPS)!=REQUIRED_BLENDCAPS) ||
-        ((scrn.D3DDevDesc.dpcTriCaps.dwDestBlendCaps & REQUIRED_BLENDCAPS)!=REQUIRED_BLENDCAPS)) {
-        dxgsg_cat.error() << "device is missing alpha blending capabilities, blending may not work correctly: SrcBlendCaps: 0x"<< (void*) scrn.D3DDevDesc.dpcTriCaps.dwSrcBlendCaps << "  DestBlendCaps: "<< (void*) scrn.D3DDevDesc.dpcTriCaps.dwDestBlendCaps << endl;
+    if ((scrn.d3dcaps.TextureFilterCaps & REQUIRED_TEXFILTERCAPS)!=REQUIRED_TEXFILTERCAPS) {
+        dxgsg_cat.error() << "device is missing texture bilinear filtering capability, textures may appear blocky!  TextureFilterCaps: 0x"<< (void*) scrn.d3dcaps.TextureFilterCaps << endl;
     }
 
-    if (!(scrn.D3DDevDesc.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_TRANSPARENCY)) {
-        dxgsg_cat.error() << "device is missing texture transparency capability, transparency may not work correctly!  TextureCaps: 0x"<< (void*) scrn.D3DDevDesc.dpcTriCaps.dwTextureCaps << endl;
-    }
+#define TRILINEAR_MIPMAP_TEXFILTERCAPS (D3DPTFILTERCAPS_MIPFLINEAR | D3DPTFILTERCAPS_MINFLINEAR)
 
-    // just require trilinear.  if it can do that, it can probably do all the lesser point-sampling variations too
-#define REQUIRED_TEXFILTERCAPS (D3DPTFILTERCAPS_MAGFLINEAR |  D3DPTFILTERCAPS_MINFLINEAR | D3DPTFILTERCAPS_LINEAR)
-    if ((scrn.D3DDevDesc.dpcTriCaps.dwTextureFilterCaps & REQUIRED_TEXFILTERCAPS)!=REQUIRED_TEXFILTERCAPS) {
-        dxgsg_cat.error() << "device is missing texture bilinear filtering capability, textures may appear blocky!  TextureFilterCaps: 0x"<< (void*) scrn.D3DDevDesc.dpcTriCaps.dwTextureFilterCaps << endl;
-    }
-#define REQUIRED_MIPMAP_TEXFILTERCAPS (D3DPTFILTERCAPS_MIPFLINEAR | D3DPTFILTERCAPS_LINEARMIPLINEAR)
-
-    if (!(ddCaps.ddsCaps.dwCaps & DDSCAPS_MIPMAP)) {
-        dxgsg_cat.debug() << "device does not have mipmap texturing filtering capability!   TextureFilterCaps: 0x"<< (void*) scrn.D3DDevDesc.dpcTriCaps.dwTextureFilterCaps << endl;
+    // give a warning if we dont at least have bilinear + nearest mip filtering
+    if (!(scrn.d3dcaps.TextureCaps & D3DPTEXTURECAPS_MIPMAP)) {
+        if(dxgsg_cat.is_debug()
+           dxgsg_cat.debug() << "device does not have mipmap texturing filtering capability! TextureFilterCaps: 0x"<< (void*) scrn.d3dcaps.TextureFilterCaps << endl;
         dx_ignore_mipmaps = TRUE;
-    } else if ((scrn.D3DDevDesc.dpcTriCaps.dwTextureFilterCaps & REQUIRED_MIPMAP_TEXFILTERCAPS)!=REQUIRED_MIPMAP_TEXFILTERCAPS) {
-        dxgsg_cat.debug() << "device is missing tri-linear mipmap filtering capability, texture mipmaps may not supported! TextureFilterCaps: 0x"<< (void*) scrn.D3DDevDesc.dpcTriCaps.dwTextureFilterCaps << endl;
+    } else if ((scrn.d3dcaps.dwTextureFilterCaps & REQUIRED_MIPMAP_TEXFILTERCAPS)!=REQUIRED_MIPMAP_TEXFILTERCAPS) {
+        if(dxgsg_cat.is_debug()
+           dxgsg_cat.debug() << "device is missing tri-linear mipmap filtering capability, textures may look crappy\n";
+    } else if(scrn.d3dcaps.DevCaps & D3DDEVCAPS_SEPARATETEXTUREMEMORIES) {
+        // this cap is pretty much voodoo2-specific
+        // turn off trilinear filtering on voodoo2 since it doubles the reqd texture memory, degrade to mip point filtering
+        scrn.d3dcaps.TextureFilterCaps &= (~D3DPTFILTERCAPS_MIPFLINEAR);
     }
 
 #define REQUIRED_TEXBLENDCAPS (D3DTEXOPCAPS_MODULATE | D3DTEXOPCAPS_SELECTARG1 | D3DTEXOPCAPS_SELECTARG2)
-    if ((scrn.D3DDevDesc.dwTextureOpCaps & REQUIRED_TEXBLENDCAPS)!=REQUIRED_TEXBLENDCAPS) {
-        dxgsg_cat.error() << "device is missing some required texture blending capabilities, texture blending may not work properly! TextureOpCaps: 0x"<< (void*) scrn.D3DDevDesc.dwTextureOpCaps << endl;
+    if ((scrn.d3dcaps.TextureOpCaps & REQUIRED_TEXBLENDCAPS)!=REQUIRED_TEXBLENDCAPS) {
+        dxgsg_cat.error() << "device is missing some required texture blending capabilities, texture blending may not work properly! TextureOpCaps: 0x"<< (void*) scrn.d3dcaps.TextureOpCaps << endl;
     }
 
-    if(scrn.D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_FOGTABLE) {
+    if(scrn.d3dcaps.RasterCaps & D3DPRASTERCAPS_FOGTABLE) {
         // watch out for drivers that emulate per-pixel fog with per-vertex fog (Riva128, Matrox Millen G200)
         // some of these require gouraud-shading to be set to work, as if you were using vertex fog
         _doFogType=PerPixelFog;
     } else {
         // every card is going to have vertex fog, since it's implemented in d3d runtime
-        assert((scrn.D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_FOGVERTEX )!=0);
+        assert((scrn.d3dcaps.RasterCaps & D3DPRASTERCAPS_FOGVERTEX )!=0);
 
         // vtx fog may look crappy if you have large polygons in the foreground and they get clipped,
         // so you may want to disable it
@@ -721,8 +695,8 @@ dx_init( void) {
             _doFogType = PerVertexFog;
 
             // range-based fog only works with vertex fog in dx7/8
-            if(dx_use_rangebased_fog && (scrn.D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_FOGRANGE))
-                scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_RANGEFOGENABLE, true);
+            if(dx_use_rangebased_fog && (scrn.d3dcaps.RasterCaps & D3DPRASTERCAPS_FOGRANGE))
+                scrn.pD3DDevice->SetRenderState(D3DRS_RANGEFOGENABLE, true);
         }
     }
 
@@ -730,37 +704,34 @@ dx_init( void) {
 
     // Lighting, let's turn it off by default
     _lighting_enabled = false;
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_LIGHTING, _lighting_enabled);
+    scrn.pD3DDevice->SetRenderState(D3DRS_LIGHTING, _lighting_enabled);
 
     // turn on dithering if the rendertarget is < 8bits/color channel
-    DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd_back);
-    scrn.pddsBack->GetSurfaceDesc(&ddsd_back);
-    _dither_enabled = (!dx_no_dithering) && ((ddsd_back.ddpfPixelFormat.dwRGBBitCount < 24) &&
-                       (scrn.D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_DITHER));
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, _dither_enabled);
+    _dither_enabled = (!dx_no_dithering) && IS_16BPP_FMT(scrn.PresParams.BackBufferFormat)
+                      && (scrn.d3dcaps.RasterCaps & D3DPRASTERCAPS_DITHER));
+    scrn.pD3DDevice->SetRenderState(D3DRS_DITHERENABLE, _dither_enabled);
 
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CLIPPING,true);
+    scrn.pD3DDevice->SetRenderState(D3DRS_CLIPPING,true);
 
     // Stencil test is off by default
     _stencil_test_enabled = false;
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_STENCILENABLE, _stencil_test_enabled);
+    scrn.pD3DDevice->SetRenderState(D3DRS_STENCILENABLE, _stencil_test_enabled);
 
     // Antialiasing.
     enable_line_smooth(false);
 //  enable_multisample(true);
 
     _current_fill_mode = RenderModeProperty::M_filled;
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, D3DFILL_SOLID);
+    scrn.pD3DDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);
+    scrn.pD3DDevice->SetRenderState(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);  // Use the diffuse vertex color. 
 
-    // technically DX7's front-end has no limit on the number of lights, but it's simpler for
-    // this implementation to set a small GL-like limit to make the light array traversals short
-    // and so I dont have to write code that reallocs light arrays
-    assert((scrn.D3DDevDesc.dwMaxActiveLights==0) ||  // 0 means infinite lights
-           (DXGSG_MAX_LIGHTS <= scrn.D3DDevDesc.dwMaxActiveLights));
-
-    _max_lights = DXGSG_MAX_LIGHTS;
+    if(scrn.d3dcaps.dwMaxActiveLights==0) {  
+        // 0 indicates no limit on # of lights, but we use DXGSG_MAX_LIGHTS anyway for now
+        _max_lights = DXGSG_MAX_LIGHTS;
+    } else {
+        _max_lights = min(DXGSG_MAX_LIGHTS,scrn.d3dcaps.dwMaxActiveLights);
+    }
 
     _available_light_ids = PTA(Light*)::empty_array(_max_lights);
     _light_enabled = new bool[_max_lights];
@@ -773,10 +744,13 @@ dx_init( void) {
     }
 
     if(dx_auto_normalize_lighting)
-         scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_NORMALIZENORMALS, true);
+         scrn.pD3DDevice->SetRenderState(D3DRS_NORMALIZENORMALS, true);
 
-    // Set up the clip plane id map
-    _max_clip_planes = D3DMAXUSERCLIPPLANES;
+    // Set up the clip plane id map  (need to rewrite this)
+    if(scrn.d3dcaps.MaxUserClipPlanes==0)
+        _max_clip_planes = D3DMAXUSERCLIPPLANES;
+      else _max_clip_planes = scrn.d3dcaps.MaxUserClipPlanes;
+
     _available_clip_plane_ids = PTA(PlaneNode*)::empty_array(_max_clip_planes);
     _clip_plane_enabled = new bool[_max_clip_planes];
     _cur_clip_plane_enabled = new bool[_max_clip_planes];
@@ -812,139 +786,44 @@ dx_init( void) {
     scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_ADDRESSV,get_texture_wrap_mode(_CurTexWrapModeV));
 
 #ifdef _DEBUG
-    if ((scrn.D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_MIPMAPLODBIAS) &&
+    if ((scrn.d3dcaps.RasterCaps & D3DPRASTERCAPS_MIPMAPLODBIAS) &&
         (dx_global_miplevel_bias!=0.0f)) {
         scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MIPMAPLODBIAS, *((LPDWORD) (&dx_global_miplevel_bias)) );
     }
 #endif
 
-    if(dx_full_screen_antialiasing) {
-      if(scrn.D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ANTIALIASSORTINDEPENDENT) {
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ANTIALIAS,D3DANTIALIAS_SORTINDEPENDENT);
-        if(dxgsg_cat.is_debug()) 
-            dxgsg_cat.debug() << "enabling full-screen anti-aliasing\n";
-      } else {
-        if(dxgsg_cat.is_debug()) 
-            dxgsg_cat.debug() << "device doesnt support full-screen anti-aliasing\n";
-      }
-    }
-
 #ifndef NDEBUG
     if(dx_force_backface_culling!=0) {
       if((dx_force_backface_culling > 0) &&
          (dx_force_backface_culling < D3DCULL_FORCE_DWORD)) {
-             scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, dx_force_backface_culling);
+             scrn.pD3DDevice->SetRenderState(D3DRS_CULLMODE, dx_force_backface_culling);
       } else {
           dx_force_backface_culling=0;
           if(dxgsg_cat.is_debug()) 
               dxgsg_cat.debug() << "error, invalid value for dx-force-backface-culling\n";
       }
     }
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, dx_force_backface_culling);
+    scrn.pD3DDevice->SetRenderState(D3DRS_CULLMODE, dx_force_backface_culling);
 #else
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+    scrn.pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 #endif
 
     _alpha_func = D3DCMP_ALWAYS;
     _alpha_func_ref = 0;
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, _alpha_func);
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, _alpha_func_ref);
+    scrn.pD3DDevice->SetRenderState(D3DRS_ALPHAFUNC, _alpha_func);
+    scrn.pD3DDevice->SetRenderState(D3DRS_ALPHAREF, _alpha_func_ref);
     _alpha_test_enabled = false;
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, _alpha_test_enabled);
+    scrn.pD3DDevice->SetRenderState(D3DRS_ALPHATESTENABLE, _alpha_test_enabled);
 
+    // this is a new DX8 state that lets you do additional operations other than ADD (e.g. subtract/max/min)
+    // must check (scrn.d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_BLENDOP) (yes on GF2/Radeon85, no on TNT)
+    scrn.pD3DDevice->SetRenderState(D3DRS_BLENDOP,D3DBLENDOP_ADD);
 
+    hr = CreateDX8Cursor(scrn.pD3DDevice,_hCursor,true);
+    if(FAILED(hr))
+        dxgsg_cat.error() << "CreateDX8Cursor failed!\n";
 
-
-      // all this must be moved to dx_init, since we need to create DX surface 
-    string windows_icon_filename = get_icon_filename().to_os_specific();
-    string windows_mono_cursor_filename = get_mono_cursor_filename().to_os_specific();
-    string windows_color_cursor_filename = get_color_cursor_filename().to_os_specific();
-
-    if(!windows_icon_filename.empty()) {
-        // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
-        // if icon is more than 8bpp
-
-        // loads a .ico fmt file
-        wc.hIcon = (HICON) LoadImage(NULL, windows_icon_filename.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE );
-
-        if(wc.hIcon==NULL) {
-            wdxdisplay_cat.warning() << "windows icon filename '" << windows_icon_filename << "' not found!!\n";
-        }
-    } else {
-        wc.hIcon = NULL; // use default app icon
-    }
-
-
-    if(!windows_color_cursor_filename.empty()) {
-        // card support for full color non-black/white GDI cursors varies greatly.  if the cursor is not supported,
-        // it is rendered in software by GDI, which causes a flickering effect (because it's not synced 
-        // with flip?).  GDI transparently masks the lack of HW support so there is no easy way for app to detect
-        // if HW cursor support exists.  alternatives are to tie cursor motion to frame rate using DDraw blts
-        // or overlays (this is done automatically by DX8 runtime mouse cursor support), or to have separate thread draw cursor 
-        // (sync issues?).  instead we do mono cursor  unless card is known to support 256 color cursors
-        bool bSupportsColorCursor=true;
-    
-        /* if any card doesnt support color, dont load it*/
-        for(int w=0;w<_windows.size();w++)
-            bSupportsColorCursor &= supports_color_cursors(_windows[w]->_dxgsg->scrn.DXDeviceID);
-    
-        if(bSupportsColorCursor) {
-            DWORD load_flags = LR_LOADFROMFILE;
-    
-            if(dx_full_screen) {
-                // I think cursors should use LR_CREATEDIBSECTION since they should not be mapped to the device palette (in the case of 256-color cursors)
-                // since they are not going to be used on the desktop
-                load_flags |= LR_CREATEDIBSECTION;
-            }
-    
-            // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
-            // if icon is more than 8bpp
-
-            // loads a .cur fmt file. 
-            _hMouseCursor = (HCURSOR) LoadImage(NULL, windows_color_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, load_flags );
-    
-            if(_hMouseCursor==NULL) {
-                wdxdisplay_cat.warning() << "windows color cursor filename '" << windows_color_cursor_filename << "' not found!!\n";
-                goto try_mono_cursor;
-
-            }
-
-/*          dont need these anymore since we are do mousestuff before window creation    
-            SetClassLongPtr(_mwindow, GCLP_HCURSOR, (LONG_PTR) hNewMouseCursor);
-            SetCursor(hNewMouseCursor);
-    
-            if(_bLoadedCustomCursor)
-               DestroyCursor(_hMouseCursor);
-*/             
-            _bLoadedCustomCursor=true;
-        }
-    }
-
-    try_mono_cursor:
-
-    if((!_bLoadedCustomCursor) && (!windows_mono_cursor_filename.empty())) {
-        // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
-        // if icon is more than 8bpp
-
-        DWORD load_flags = LR_LOADFROMFILE;
-
-        if(dx_full_screen) {
-            // I think cursors should use LR_CREATEDIBSECTION since they should not be mapped to the device palette (in the case of 256-color cursors)
-            // since they are not going to be used on the desktop
-            load_flags |= LR_CREATEDIBSECTION;
-        }
-        // loads a .cur fmt file. 
-        _hMouseCursor = (HCURSOR) LoadImage(NULL, windows_mono_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, load_flags);
-
-        if(_hMouseCursor==NULL) {
-            wdxdisplay_cat.warning() << "windows mono cursor filename '" << windows_mono_cursor_filename << "' not found!!\n";
-        } else _bLoadedCustomCursor=true;
-    }
-
-    if(!_bLoadedCustomCursor) 
-      _hMouseCursor = LoadCursor(NULL, DEFAULT_CURSOR);
-
-
+    #if 0
     // need to release this better, so dx_init can be called multiple times
     if(_bShowFPSMeter) {
         _start_time = timeGetTime();
@@ -1016,7 +895,7 @@ dx_init( void) {
 
         // could handle this case less wastefully by creating font texture w/multiple rows, 
         // so its naturally square
-        if(scrn.D3DDevDesc.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_SQUAREONLY ) {
+        if(scrn.d3dcaps.TextureCaps & D3DPTEXTURECAPS_SQUAREONLY ) {
             if(texdim_y> texdim_x)
               texdim_x = texdim_y;
             texdim_y = texdim_x;
@@ -1034,7 +913,7 @@ dx_init( void) {
 
         // Create a new surface for the texture
         if(FAILED( hr = scrn.pDD->CreateSurface( &ddsd, &_fpsmeter_font_surf, NULL ) )) {
-            dxgsg_cat.error() << "CreateSurface() failed for fpsmeter font!  hr = " << ConvD3DErrorToString(hr) << "\n";
+            dxgsg_cat.error() << "CreateSurface() failed for fpsmeter font!  hr = " << D3DERRORSTRING(hr);
             _bShowFPSMeter = false;
             return;
         }
@@ -1058,6 +937,9 @@ dx_init( void) {
 
         SetFPSMeterPosition(scrn.view_rect);
     }
+    #else
+        _bShowFPSMeter = false;
+    #endif
 
     // Make sure the DX state matches all of our initial attribute states.
     PT(DepthTestTransition) dta = new DepthTestTransition;
@@ -1086,24 +968,28 @@ clear(const RenderBuffer &buffer) {
     nassertv(buffer._gsg == this);
     int buffer_type = buffer._buffer_type;
 
-    int flags = 0;
+    DWORD flags = 0;
 
-    if (buffer_type & RenderBuffer::T_depth) {
+    if(buffer_type & RenderBuffer::T_depth) {
         flags |=  D3DCLEAR_ZBUFFER;
-        assert(scrn.pddsZBuf!=NULL);
+        assert(scrn.pPresParams.EnableAutoDepthStencil);
     }
-    if (buffer_type & RenderBuffer::T_back)       //set appropriate flags
-        flags |=  D3DCLEAR_TARGET;
-    if (buffer_type & RenderBuffer::T_stencil)
-        flags |=  D3DCLEAR_STENCIL;
 
-    HRESULT  hr = scrn.pD3DDevice->Clear(0, NULL, flags, _d3dcolor_clear_value,
-                                    (D3DVALUE) _depth_clear_value, (DWORD)_stencil_clear_value);
-    if (hr != DD_OK)
-        dxgsg_cat.error() << "clear_buffer failed:  Clear returned " << ConvD3DErrorToString(hr) << endl;
-    /*  The following line will cause the background to always clear to a medium red
+    if(buffer_type & RenderBuffer::T_back)       //set appropriate flags
+        flags |=  D3DCLEAR_TARGET;
+
+    if(buffer_type & RenderBuffer::T_stencil) {
+        flags |=  D3DCLEAR_STENCIL;
+        assert(scrn.pPresParams.EnableAutoDepthStencil && IS_STENCIL_FORMAT(AutoDepthStencilFormat));
+    }
+
+    HRESULT hr = scrn.pD3DDevice->Clear(0, NULL, flags, _d3dcolor_clear_value,
+                                         _depth_clear_value, (DWORD)_stencil_clear_value);
+    if(FAILED(hr))
+        dxgsg_cat.error() << "clear_buffer failed:  Clear returned " << D3DERRORSTRING(hr);
+    /* The following line will cause the background to always clear to a medium red
     _color_clear_value[0] = .5;
-    /*  The following lines will cause the background color to cycle from black to red.
+    /* The following lines will cause the background color to cycle from black to red.
     _color_clear_value[0] += .001;
      if (_color_clear_value[0] > 1.0f) _color_clear_value[0] = 0.0f;
      */
@@ -1129,17 +1015,16 @@ clear(const RenderBuffer &buffer, const DisplayRegion *region) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian::
-enable_light(int light, bool val) {
-    if (_light_enabled[light] != val) {
-        _light_enabled[light] = val;
-        HRESULT res = scrn.pD3DDevice->LightEnable( light, val  );
+enable_light(int light_id, bool val) {
+    if (_light_enabled[light_id] != val) {
+        _light_enabled[light_id] = val;
+        HRESULT hr = scrn.pD3DDevice->LightEnable( light_id, val  );
 
 #ifdef GSG_VERBOSE
-        dxgsg_cat.debug()
-        << "LightEnable(" << light << "=" << val << ")" << endl;
+        dxgsg_cat.debug() << "LightEnable(" << light_id << "=" << val << ")" << endl;
 #endif
 
-        return(res == DD_OK);
+        return(hr == DD_OK);
     }
     return TRUE;
 }
@@ -1232,15 +1117,15 @@ void DXGraphicsStateGuardian::set_clipper(RECT cliprect) {
 #endif
 
 #if defined(_DEBUG) || defined(COUNT_DRAWPRIMS)
-typedef enum {DrawPrim,DrawIndexedPrim,DrawPrimStrided} DP_Type;
-static const char *DP_Type_Strs[3] = {"DrawPrimitive","DrawIndexedPrimitive","DrawPrimitiveStrided"};
+typedef enum {DrawPrim,DrawIndexedPrim} DP_Type;
+static const char *DP_Type_Strs[3] = {"DrawPrimitive","DrawIndexedPrimitive"};
 
 void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,LPDIRECTDRAW7 pDD,DWORD nVerts,DWORD nTris) {
         if(FAILED(hr)) {
             // loss of exclusive mode is not a real DrawPrim problem, ignore it
             HRESULT testcooplvl_hr = pDD->TestCooperativeLevel();
             if((testcooplvl_hr != DDERR_NOEXCLUSIVEMODE)||(testcooplvl_hr != DDERR_EXCLUSIVEMODEALREADYSET)) {
-                dxgsg_cat.fatal() << DP_Type_Strs[dptype] << "() failed: result = " << ConvD3DErrorToString(hr) << endl;
+                dxgsg_cat.fatal() << DP_Type_Strs[dptype] << "() failed: result = " << D3DERRORSTRING(hr);
                 exit(1);
             }
         }
@@ -1283,13 +1168,13 @@ render_frame() {
   HRESULT hr = scrn.pD3DDevice->BeginScene();
 
   if(FAILED(hr)) {
-    if((hr==DDERR_SURFACELOST)||(hr==DDERR_SURFACEBUSY)) {
+    if((hr==D3DERR_DEVICELOST)||(hr==DDERR_SURFACELOST)||(hr==DDERR_SURFACEBUSY)) {
           if(dxgsg_cat.is_debug())
-              dxgsg_cat.debug() << "BeginScene returns " << ConvD3DErrorToString(hr) << endl;
+              dxgsg_cat.debug() << "BeginScene returns " << D3DERRORSTRING(hr);
 
           CheckCooperativeLevel();
     } else {
-        dxgsg_cat.error() << "BeginScene failed, unhandled error hr == " << ConvD3DErrorToString(hr) << endl;
+        dxgsg_cat.error() << "BeginScene failed, unhandled error hr == " << D3DERRORSTRING(hr);
         exit(1);
     }
     return;
@@ -1400,33 +1285,32 @@ render_frame() {
         #ifdef MAKE_FPSMETER_TRANSPARENT    
            call_dxBlendFunc(D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA);
            if(!_blend_enabled)
-              scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, true);
+              scrn.pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
         #else
            if(_blend_enabled)
-               scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, false);
+               scrn.pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
         #endif
         
-        if (_CurShadeMode != D3DSHADE_FLAT) {
-            scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, D3DSHADE_FLAT);
-        }
+        if(_bGouraudShadingOn)
+            scrn.pD3DDevice->SetRenderState(D3DRS_COLORVERTEX, false);
 
         DWORD saved_zfunc;
-        scrn.pD3DDevice->GetRenderState(D3DRENDERSTATE_ZFUNC,&saved_zfunc);
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ZFUNC,D3DCMP_ALWAYS);
+        scrn.pD3DDevice->GetRenderState(D3DRS_ZFUNC,&saved_zfunc);
+        scrn.pD3DDevice->SetRenderState(D3DRS_ZFUNC,D3DCMP_ALWAYS);
 
         DWORD saved_fill_state;
         if(_current_fill_mode != RenderModeProperty::M_filled) {
-            scrn.pD3DDevice->GetRenderState(D3DRENDERSTATE_FILLMODE, &saved_fill_state);
-            scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, D3DFILL_SOLID);
+            scrn.pD3DDevice->GetRenderState(D3DRS_FILLMODE, &saved_fill_state);
+            scrn.pD3DDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
         }
 
     
         DWORD saved_clipping_state,saved_cull_state;
-        scrn.pD3DDevice->GetRenderState(D3DRENDERSTATE_CULLMODE, &saved_cull_state);
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+        scrn.pD3DDevice->GetRenderState(D3DRS_CULLMODE, &saved_cull_state);
+        scrn.pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
     
-        scrn.pD3DDevice->GetRenderState(D3DRENDERSTATE_CLIPPING, &saved_clipping_state);
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CLIPPING, false);
+        scrn.pD3DDevice->GetRenderState(D3DRS_CLIPPING, &saved_clipping_state);
+        scrn.pD3DDevice->SetRenderState(D3DRS_CLIPPING, false);
         
         // ignore lighting state since verts are post-xform
     
@@ -1463,7 +1347,7 @@ render_frame() {
     
         hr = scrn.pD3DDevice->SetTexture(0, _fpsmeter_font_surf);
         if(FAILED(hr)) {
-           dxgsg_cat.error() << "SetTexture failed in draw fps meter, result = " << ConvD3DErrorToString(hr) << endl;
+           dxgsg_cat.error() << "SetTexture failed in draw fps meter, result = " << D3DERRORSTRING(hr);
            exit(1);
         }
     
@@ -1473,16 +1357,16 @@ render_frame() {
     
         #ifdef MAKE_FPSMETER_TRANSPARENT    
           if(!_blend_enabled)
-              scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, false);
+              scrn.pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
         #else
           if(_blend_enabled)
-              scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, true);
+              scrn.pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
         #endif
         
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ZFUNC, saved_zfunc);
+        scrn.pD3DDevice->SetRenderState(D3DRS_ZFUNC, saved_zfunc);
     
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CLIPPING, saved_clipping_state);
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, saved_cull_state);
+        scrn.pD3DDevice->SetRenderState(D3DRS_CLIPPING, saved_clipping_state);
+        scrn.pD3DDevice->SetRenderState(D3DRS_CULLMODE, saved_cull_state);
     
         scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, saved_magfilter);
         scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, saved_minfilter);
@@ -1492,12 +1376,11 @@ render_frame() {
         scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, saved_alphaop);
         scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, saved_alphaarg1);
 
-        if (_CurShadeMode != D3DSHADE_FLAT) {
-            scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, _CurShadeMode);
-        }
+        if(_bGouraudShadingOn)
+            scrn.pD3DDevice->SetRenderState(D3DRS_COLORVERTEX, true);
 
         if(_current_fill_mode != RenderModeProperty::M_filled) {
-            scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, saved_fill_state);            
+            scrn.pD3DDevice->SetRenderState(D3DRS_FILLMODE, saved_fill_state);            
         }
 
         scrn.pD3DDevice->SetTexture(0, ((_pCurTexContext != NULL) ? _pCurTexContext->_surface : NULL));
@@ -1534,11 +1417,11 @@ render_frame() {
   if(FAILED(hr)) {
     if((hr==DDERR_SURFACELOST)||(hr==DDERR_SURFACEBUSY)) {
           if(dxgsg_cat.is_debug())
-              dxgsg_cat.debug() << "EndScene returns " << ConvD3DErrorToString(hr) << endl;
+              dxgsg_cat.debug() << "EndScene returns " << D3DERRORSTRING(hr);
 
           CheckCooperativeLevel();
     } else {
-       dxgsg_cat.error() << "EndScene failed, unhandled error hr == " << ConvD3DErrorToString(hr) << endl;
+       dxgsg_cat.error() << "EndScene failed, unhandled error hr == " << D3DERRORSTRING(hr);
        exit(1);
     }
     return;
@@ -1655,13 +1538,13 @@ report_texmgr_stats() {
     
       ddsCaps.dwCaps = DDSCAPS_VIDEOMEMORY | DDSCAPS_PRIMARYSURFACE | DDSCAPS_3DDEVICE;
       if(FAILED(  hr = scrn.pDD->GetAvailableVidMem(&ddsCaps,&dwVidTotal,&dwVidFree))) {
-            dxgsg_cat.debug() << "report_texmgr GetAvailableVidMem for VIDMEM failed : result = " << ConvD3DErrorToString(hr) << endl;
+            dxgsg_cat.debug() << "report_texmgr GetAvailableVidMem for VIDMEM failed : result = " << D3DERRORSTRING(hr);
             exit(1);
       }
     
       ddsCaps.dwCaps = DDSCAPS_TEXTURE;
       if(FAILED(  hr = scrn.pDD->GetAvailableVidMem(&ddsCaps,&dwTexTotal,&dwTexFree))) {
-            dxgsg_cat.debug() << "report_texmgr GetAvailableVidMem for TEXTURE failed : result = " << ConvD3DErrorToString(hr) << endl;
+            dxgsg_cat.debug() << "report_texmgr GetAvailableVidMem for TEXTURE failed : result = " << D3DERRORSTRING(hr);
             exit(1);
       }
   }
@@ -1681,7 +1564,7 @@ report_texmgr_stats() {
                   bTexStatsRetrievalImpossible=true;
               }
           } else {
-              dxgsg_cat.error() << "d3ddev->GetInfo(TEXTUREMANAGER) failed to get tex stats: result = " << ConvD3DErrorToString(hr) << endl;
+              dxgsg_cat.error() << "d3ddev->GetInfo(TEXTUREMANAGER) failed to get tex stats: result = " << D3DERRORSTRING(hr);
               return;
           }
       }
@@ -1713,7 +1596,7 @@ report_texmgr_stats() {
             ZeroMemory(&texappinfo,sizeof(D3DDEVINFO_TEXTURING));
             hr = scrn.pD3DDevice->GetInfo(D3DDEVINFOID_TEXTURING,&texappinfo,sizeof(D3DDEVINFO_TEXTURING));
             if (hr!=D3D_OK) {
-                dxgsg_cat.error() << "GetInfo(TEXTURING) failed : result = " << ConvD3DErrorToString(hr) << endl;
+                dxgsg_cat.error() << "GetInfo(TEXTURING) failed : result = " << D3DERRORSTRING(hr);
                 return;
             } else {
                 dxgsg_cat.spam()
@@ -2065,11 +1948,11 @@ draw_prim_setup(const Geom *geom) {
    // (note, TNT does the right thing tho).  So I guess we must do gouraud shading for all fog rendering for now
    // note that if _doFogType==None, _fog_enabled will always be false
 
-   D3DSHADEMODE needed_shademode = 
+   bool bDoGouraudShading = 
        (((_perVertex & (PER_COLOR | (wants_normals() ? PER_NORMAL : 0))) || _fog_enabled) ?
-        D3DSHADE_GOURAUD : D3DSHADE_FLAT);
+        true : false);
 
-   set_shademode(needed_shademode);
+   set_shademode(bDoGouraudShading);
 
    return vertex_size;
 }
@@ -2223,27 +2106,9 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
     geom->get_colors(colors,bind,cindexes);
     geom->get_texcoords(texcoords,bind,tindexes);
 
-    GeomVertFormat GeomVrtFmt=FlatVerts;
-
-    // first determine if we're indexed or non-indexed
-
-    if ((vindexes!=NULL)&&(cindexes!=NULL)&&(tindexes!=NULL)&&(nindexes!=NULL)) {
-        GeomVrtFmt=IndexedVerts;
-    } else if (!((vindexes==NULL)&&(cindexes==NULL)&&(tindexes==NULL)&&(nindexes==NULL)))
-        GeomVrtFmt=MixedFmtVerts;
-
-#ifdef DONT_USE_DRAWPRIMSTRIDED
-    GeomVrtFmt=MixedFmtVerts;
-#else
-    if(_bDrawPrimDoSetupVertexBuffer) {
-      GeomVrtFmt=MixedFmtVerts;
-    }
-#endif
-
     // for Indexed Prims and mixed indexed/non-indexed prims, we will use old pipeline for now
     // need to add code to handle fully indexed mode (and handle cases with index arrays of different lengths,
     // values (may only be possible to handle certain cases without reverting to old pipeline)
-    if (GeomVrtFmt!=FlatVerts) {
 
         _perVertex = 0x0; 
         _perPrim = 0;
@@ -2265,58 +2130,11 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
         } else {
             COPYVERTDATA_2_VERTEXBUFFER(D3DPT_POINTLIST,nPrims);
         }
-    } else {  // setup for strided
-
-        size_t vertex_size = draw_prim_setup(geom);
-
-        // new code only handles non-indexed pointlists (is this enough?)
-        nassertv((vindexes==NULL)&&(cindexes==NULL)&&(tindexes==NULL)&&(nindexes==NULL));
-
-        D3DDRAWPRIMITIVESTRIDEDDATA dps_data;
-        memset(&dps_data,0,sizeof(D3DDRAWPRIMITIVESTRIDEDDATA));
-
-        dps_data.position.lpvData = (VOID*)coords;
-        dps_data.position.dwStride = sizeof(D3DVECTOR);
-
-        if (_curFVFflags & D3DFVF_NORMAL) {
-            dps_data.normal.lpvData = (VOID*)norms;
-            dps_data.normal.dwStride = sizeof(D3DVECTOR);
-        }
-
-        if (_curFVFflags & D3DFVF_DIFFUSE) {
-            _pCurFvfBufPtr=_pFvfBufBasePtr;
-
-            dps_data.diffuse.lpvData = (VOID*)_pFvfBufBasePtr;
-            dps_data.diffuse.dwStride = sizeof(D3DCOLOR);
-
-            // Geom nodes store floats for colors, drawprim requires ARGB dwords
-            // BUGBUG: eventually this hack every-frame all-colors conversion needs
-            // to be done only once as part of a vertex buffer
-
-            if(_color_transform_required) {
-                for (int i=0;i<nPrims;i++) {
-                    D3DCOLOR RGBA_color;
-                    transform_color(colors[i],RGBA_color);
-                    add_DWORD_to_FVFBuf(RGBA_color);
-                }
-            } else
-             for (int i=0;i<nPrims;i++) {
-                Colorf out_color=colors[i];
-                add_DWORD_to_FVFBuf(Colorf_to_D3DCOLOR(out_color));
-             }
-        }
-
-        if (_curFVFflags & D3DFVF_TEXCOUNT_MASK) {
-            dps_data.textureCoords[0].lpvData = (VOID*)texcoords;
-            dps_data.textureCoords[0].dwStride = sizeof(TexCoordf);
-        }
-
-        HRESULT hr = scrn.pD3DDevice->DrawPrimitiveStrided(D3DPT_POINTLIST, _curFVFflags, &dps_data, nPrims, NULL);
-        TestDrawPrimFailure(DrawPrimStrided,hr,scrn.pDD,nPrims,0);
-    }
+   
 
     _pCurFvfBufPtr = NULL;
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_line
@@ -2339,20 +2157,22 @@ draw_line(GeomLine* geom, GeomContext *gc) {
 
     if (!bPrintedMsg && (geom->get_width()!=1.0f)) {
         bPrintedMsg=TRUE;
-        dxgsg_cat.warning() << "DX does not support drawing lines with a non-1.0f pixel width, setting width to 1.0f!\n";
+        if(dxgsg_cat.is_debug())
+            dxgsg_cat.debug() << "DX does not support drawing lines with a non-1.0f pixel width, setting width to 1.0f!\n";
     }
 #endif
 
     int nPrims = geom->get_num_prims();
 
     if (nPrims==0) {
-        dxgsg_cat.warning() << "draw_line() called with ZERO vertices!!" << endl;
+        if(dxgsg_cat.is_debug())
+           dxgsg_cat.debug() << "draw_line() called with ZERO vertices!!" << endl;
         return;
     }
 
-    assert(geom->get_binding(G_COORD) == G_PER_VERTEX);
     _perVertex = 0x0;
-    _perPrim = _perComp = 0x0;
+    _perPrim = 0x0;
+    _perComp = 0x0;
 
     switch(geom->get_binding(G_NORMAL)) {
         case G_PER_VERTEX:
@@ -2378,13 +2198,13 @@ draw_line(GeomLine* geom, GeomContext *gc) {
 
     size_t vertex_size = draw_prim_setup(geom);
 
-    char *_tmp_fvf = NULL;
+    BYTE *_tmp_fvfOverrunBuf = NULL;
     nassertv(_pCurFvfBufPtr == NULL);    // make sure the storage pointer is clean.
 //  nassertv(nPrims * 2 * vertex_size < VERT_BUFFER_SIZE);
 
     if (nPrims * 2 * vertex_size > VERT_BUFFER_SIZE) {
         // bugbug: need cleaner way to handle tmp buffer size overruns (malloc/realloc?)
-        _pCurFvfBufPtr = _tmp_fvf = new char[nPrims * 2 * vertex_size];
+        _pCurFvfBufPtr = _tmp_fvfOverrunBuf = new BYTE[nPrims * 2 * vertex_size];
     } else  _pCurFvfBufPtr = _pFvfBufBasePtr;            // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
 
     for (int i = 0; i < nPrims; i++) {
@@ -2398,18 +2218,20 @@ draw_line(GeomLine* geom, GeomContext *gc) {
 
     HRESULT hr;
 
-    DWORD vertCount = nPrims<<1;
+    DWORD nVerts = nPrims<<1;
 
     if(!_bDrawPrimDoSetupVertexBuffer) {
-        if (_tmp_fvf == NULL)
-            hr = scrn.pD3DDevice->DrawPrimitive(D3DPT_LINELIST, _curFVFflags, _pFvfBufBasePtr, vertCount, NULL);
-        else {
-            hr = scrn.pD3DDevice->DrawPrimitive(D3DPT_LINELIST, _curFVFflags, _tmp_fvf, vertCount, NULL);
-            delete [] _tmp_fvf;
+        if (_tmp_fvfOverrunBuf == NULL) {
+            nassertv((nVerts*vertex_size) == (_pCurFvfBufPtr-_pFvfBufBasePtr));
+            hr = scrn.pD3DDevice->DrawPrimitive(D3DPT_LINELIST, _curFVFflags, _pFvfBufBasePtr, nVerts, NULL);
+        } else {
+            nassertv((nVerts*vertex_size) == (_pCurFvfBufPtr-_tmp_fvfOverrunBuf));
+            hr = scrn.pD3DDevice->DrawPrimitive(D3DPT_LINELIST, _curFVFflags, _tmp_fvfOverrunBuf, nVerts, NULL);
+            delete [] _tmp_fvfOverrunBuf;
         }
-        TestDrawPrimFailure(DrawPrim,hr,scrn.pDD,vertCount,0);
+        TestDrawPrimFailure(DrawPrim,hr,scrn.pDD,nVerts,0);
     } else {
-        COPYVERTDATA_2_VERTEXBUFFER(D3DPT_LINELIST,vertCount);
+        COPYVERTDATA_2_VERTEXBUFFER(D3DPT_LINELIST,nVerts);
     }
 
     _pCurFvfBufPtr = NULL;
@@ -2437,6 +2259,7 @@ draw_linestrip(GeomLinestrip* geom, GeomContext *gc) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_linestrip_base(Geom* geom, GeomContext *gc, bool bConnectEnds) {
+// Note draw_linestrip_base() may be called from non-line draw_fns to support wireframe mode
 
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug() << "draw_linestrip()" << endl;
@@ -2446,17 +2269,18 @@ draw_linestrip_base(Geom* geom, GeomContext *gc, bool bConnectEnds) {
     DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
 
     int nPrims = geom->get_num_prims();
-    const int *plen = geom->get_lengths();
+    const int *pLengthArr = geom->get_lengths();
 
-    if (nPrims==0) {
-        dxgsg_cat.warning() << "draw_linestrip() called with ZERO vertices!!" << endl;
+    if(nPrims==0) {
+        if(dxgsg_cat.is_debug())
+            dxgsg_cat.debug() << "draw_linestrip() called with ZERO vertices!!" << endl;
         return;
     }
 
-    assert(geom->get_binding(G_COORD) == G_PER_VERTEX);
     _perVertex = 0x0;
+    _perPrim = 0x0;
+    _perComp = 0x0;
 
-    _perPrim = _perComp = 0;
     switch(geom->get_binding(G_NORMAL)) {
         case G_PER_VERTEX:
             _perVertex |=  PER_NORMAL;
@@ -2482,18 +2306,26 @@ draw_linestrip_base(Geom* geom, GeomContext *gc, bool bConnectEnds) {
     size_t vertex_size = draw_prim_setup(geom);
     ushort perFlags = _perVertex | _perComp;
 
+    bool bPerPrimColor = ((_perPrim & PER_COLOR)!=0);
+    bool bPerPrimNormal = ((_perPrim & PER_NORMAL)!=0);
+
+    DWORD nVerts;
+
+    if(pLengthArr==NULL) // we've been called by draw_quad, which has no lengths array
+      nVerts=4;
+
     for (int i = 0; i < nPrims; i++) {
-        if (_perPrim & PER_COLOR) {
+        if (bPerPrimColor) {
             GET_NEXT_COLOR();
         }
 
-        int nVerts;
+        if (bPerPrimNormal) {
+            p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
+        }
 
-        if(plen!=NULL) {
-            nVerts= *(plen++);
+        if(pLengthArr!=NULL) {
+            nVerts= *(pLengthArr++);
             nassertv(nVerts >= 2);
-        } else {
-            nVerts=4;  // we've been called by draw_quad, which has no lengths array
         }
 
         nassertv(_pCurFvfBufPtr == NULL);   // make sure the storage pointer is clean.
@@ -2508,6 +2340,8 @@ draw_linestrip_base(Geom* geom, GeomContext *gc, bool bConnectEnds) {
              _pCurFvfBufPtr+=vertex_size;
              nVerts++;
         }
+
+        nassertv((nVerts*vertex_size) == (_pCurFvfBufPtr-_pFvfBufBasePtr));
 
         if(!_bDrawPrimDoSetupVertexBuffer) {
             HRESULT hr = scrn.pD3DDevice->DrawPrimitive(D3DPT_LINESTRIP, _curFVFflags, _pFvfBufBasePtr, nVerts, NULL);
@@ -2959,7 +2793,7 @@ draw_polygon(GeomPolygon *geom, GeomContext *gc) {
 
    // wireframe polygon will be drawn as linestrip, otherwise draw as multi-tri trifan
    DWORD rstate;
-   scrn.pD3DDevice->GetRenderState(D3DRENDERSTATE_FILLMODE, &rstate);
+   scrn.pD3DDevice->GetRenderState(D3DRS_FILLMODE, &rstate);
    if(rstate==D3DFILL_WIREFRAME) {
        draw_linestrip_base(geom,gc,true);
    } else {
@@ -2983,13 +2817,14 @@ draw_quad(GeomQuad *geom, GeomContext *gc) {
 
    // wireframe quad will be drawn as linestrip, otherwise draw as multi-tri trifan
    DWORD rstate;
-   scrn.pD3DDevice->GetRenderState(D3DRENDERSTATE_FILLMODE, &rstate);
+   scrn.pD3DDevice->GetRenderState(D3DRS_FILLMODE, &rstate);
    if(rstate==D3DFILL_WIREFRAME) {
        draw_linestrip_base(geom,gc,true);
    } else {
        draw_multitri(geom, D3DPT_TRIANGLEFAN);
    }
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_tri
@@ -3029,49 +2864,37 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
     geom->get_normals(norms,NormalBinding,nindexes);
     geom->get_colors(colors,ColorBinding,cindexes);
     geom->get_texcoords(texcoords,TexCoordBinding,tindexes);
-
-    GeomVertFormat GeomVrtFmt=FlatVerts;
-
-    // first determine if we're indexed or non-indexed
-
-    if ((vindexes!=NULL)&&(cindexes!=NULL)&&(tindexes!=NULL)&&(nindexes!=NULL)) {
-        GeomVrtFmt=IndexedVerts;
-        //make sure array sizes are consistent, we can only pass 1 size to DrawIPrm
-//      nassertv(coords.size==norms.size);      nassertv(coords.size==colors.size);     nassertv(coords.size==texcoords.size);  need to assert only if we have this w/same binding
-        // indexed mode requires all used norms,colors,texcoords,coords array be the same
-        // length, or 0 or 1 (dwStride==0), also requires all elements to use the same index array
-    } else if (!((vindexes==NULL)&&(cindexes==NULL)&&(tindexes==NULL)&&(nindexes==NULL)))
-        GeomVrtFmt=MixedFmtVerts;
-
-#ifdef DONT_USE_DRAWPRIMSTRIDED
-    GeomVrtFmt=MixedFmtVerts;
-#else
-    if(_bDrawPrimDoSetupVertexBuffer) {
-      GeomVrtFmt=MixedFmtVerts;
-    }
-#endif
-
-    // for Indexed Prims and mixed indexed/non-indexed prims, we will use old pipeline for now
-    // need to add code to handle fully indexed mode (and handle cases with index arrays of different lengths,
-    // values (may only be possible to handle certain cases without reverting to old pipeline)
-    if (GeomVrtFmt!=FlatVerts) {
+        
         // this is the old geom setup, it reformats every vtx into an output array passed to d3d
 
         _perVertex = 0x0;
         _perPrim = 0x0;
 
-        if(NormalBinding == G_PER_VERTEX)   
-          _perVertex |= PER_NORMAL;
-         else if(NormalBinding == G_PER_PRIM) 
-                 _perPrim |= PER_NORMAL;
+        bool bUseTexCoordOnlyLoop = ((ColorBinding != G_PER_VERTEX) &&
+                                     (NormalBinding == G_OFF) &&
+                                     (TexCoordBinding != G_OFF));
 
-        if(ColorBinding == G_PER_PRIM)  
+        bool bPerPrimNormal;
+        bool bPerPrimColor=((_perPrim & PER_COLOR)!=0);
+
+        if(bUseTexCoordOnlyLoop) {
+           _perVertex |= PER_TEXCOORD;  // TexCoords are either G_OFF or G_PER_VERTEX 
+        } else {
+            if(NormalBinding == G_PER_VERTEX)   
+                _perVertex |= PER_NORMAL;
+            else if(NormalBinding == G_PER_PRIM) 
+                    _perPrim |= PER_NORMAL;
+
+            bPerPrimNormal=((_perPrim & PER_NORMAL)!=0);
+
+            if(TexCoordBinding == G_PER_VERTEX) 
+               _perVertex |= PER_TEXCOORD;
+        } 
+
+        if(bPerPrimColor)
            _perPrim |= PER_COLOR;
           else if(ColorBinding == G_PER_VERTEX)    
                  _perVertex |= PER_COLOR;
-
-        if (TexCoordBinding == G_PER_VERTEX) 
-           _perVertex |= PER_TEXCOORD;
 
         size_t vertex_size = draw_prim_setup(geom);
 
@@ -3082,20 +2905,23 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
         // iterate through the triangle primitive
 
         for (uint i = 0; i < nPrims; i++) {
-            if (_perPrim & PER_COLOR) {
+            if(bPerPrimColor) {  // remember color might be G_OVERALL too!
                 GET_NEXT_COLOR();
             }
 
-            if (_perPrim & PER_NORMAL)
-                p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
-
-
-            if(_perVertex==TexCoordOnly)
+            if(bUseTexCoordOnlyLoop) {
                draw_prim_inner_loop_coordtexonly(3, geom);   
-             else draw_prim_inner_loop(3, geom, _perVertex);
+            } else {
+                if(bPerPrimNormal)
+                    p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
+
+                draw_prim_inner_loop(3, geom, _perVertex);
+            }
         }
 
         DWORD nVerts=nPrims*3;
+
+        nassertv((nVerts*vertex_size) == (_pCurFvfBufPtr-_pFvfBufBasePtr));
 
         if(!_bDrawPrimDoSetupVertexBuffer) {
             hr = scrn.pD3DDevice->DrawPrimitive(D3DPT_TRIANGLELIST, _curFVFflags, _pFvfBufBasePtr, nVerts, NULL);
@@ -3105,197 +2931,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
         }
 
         _pCurFvfBufPtr = NULL;
-    } else {
 
-        // new geom setup that uses strided DP calls to avoid making an extra pass over the data
-
-        D3DDRAWPRIMITIVESTRIDEDDATA dps_data;
-        memset(&dps_data,0,sizeof(D3DDRAWPRIMITIVESTRIDEDDATA));
-
-#ifdef _DEBUG
-        nassertv(!geom->uses_components());  // code ignores lengths array
-        nassertv(geom->get_binding(G_COORD) == G_PER_VERTEX);
-#endif
-
-        D3DPRIMITIVETYPE primtype=D3DPT_TRIANGLELIST;
-
-        DWORD fvf_flags = D3DFVF_XYZ;
-        dps_data.position.lpvData = (VOID*)coords;
-        dps_data.position.dwStride = sizeof(D3DVECTOR);
-
-        // see fog comment in draw_prim_setup
-        D3DSHADEMODE NeededShadeMode = (_fog_enabled) ? D3DSHADE_GOURAUD : D3DSHADE_FLAT;
-
-        const DWORD dwVertsperPrim=3;
-
-        if ((NormalBinding != G_OFF) && wants_normals()) {
-
-            dps_data.normal.lpvData = (VOID*)norms;
-            dps_data.normal.dwStride = sizeof(D3DVECTOR);
-
-#ifdef _DEBUG
-            nassertv(geom->get_num_vertices_per_prim()==3);
-            nassertv( nPrims*dwVertsperPrim*sizeof(D3DVECTOR) <= D3DMAXNUMVERTICES*sizeof(WORD));
-            if (NormalBinding==G_PER_VERTEX)
-                nassertv(norms.size()>=nPrims*dwVertsperPrim);
-#endif
-
-            fvf_flags |= D3DFVF_NORMAL;
-            NeededShadeMode = D3DSHADE_GOURAUD;
-
-            Normalf *pExpandedNormalArray = (Normalf *)_index_buf;  // BUGBUG:  need to use real permanent buffers for this conversion
-            if (NormalBinding==G_PER_PRIM) {
-                // must use tmp array to duplicate-expand per-prim norms to per-vert norms
-                Normalf *pOutVec = pExpandedNormalArray;
-                Normalf *pInVec=norms;
-
-                nassertv(norms.size()>=nPrims);
-
-                for (uint i=0;i<nPrims;i++,pInVec++,pOutVec+=dwVertsperPrim) {
-                    *pOutVec     = *pInVec;
-                    *(pOutVec+1) = *pInVec;
-                    *(pOutVec+2) = *pInVec;
-                }
-
-                dps_data.normal.lpvData = (VOID*)pExpandedNormalArray;
-
-            } else if (NormalBinding==G_OVERALL) {
-                // copy the one global color in, set stride to 0
-                *pExpandedNormalArray=norms[0];
-                dps_data.normal.lpvData = (VOID*)pExpandedNormalArray;
-                dps_data.normal.dwStride = 0;
-            }
-        }
-
-        ColorTransition *catt=NULL;
-        bool bDoGlobalSceneGraphColor=FALSE,bDoColor=(ColorBinding != G_OFF);
-
-        // We should issue geometry colors only if the scene graph color is off.
-        if (get_attribute_into(catt, this)) {
-            if (!catt->is_real())
-                bDoColor=FALSE;  // this turns off any Geom colors
-            else {
-                ColorBinding=G_OVERALL;
-                bDoGlobalSceneGraphColor=TRUE;
-            }
-        }
-
-        if (bDoColor || bDoGlobalSceneGraphColor) {
-            D3DCOLOR *pOutColor,*pConvertedColorArray;
-            Colorf *pInColor=colors;
-            pOutColor = pConvertedColorArray = (D3DCOLOR *)_pFvfBufBasePtr;
-
-#ifdef _DEBUG
-            nassertv( nPrims*dwVertsperPrim*sizeof(D3DCOLOR) <= VERT_BUFFER_SIZE);
-#endif
-
-            fvf_flags |= D3DFVF_DIFFUSE;
-
-            dps_data.diffuse.lpvData = (VOID*)pConvertedColorArray;
-            dps_data.diffuse.dwStride = sizeof(D3DCOLOR);
-
-            if (ColorBinding==G_PER_PRIM) {
-                // must use tmp array to expand per-prim info to per-vert info
-
-                // Geom nodes store floats for colors, drawprim requires ARGB dwords
-                // BUGBUG: eventually this hack every-frame all-colors conversion needs
-                // to be done only once as part of a vertex buffer
-
-                if (NeededShadeMode!=D3DSHADE_FLAT) {
-                    // but if lighting enabled, we need to color every vert since shading will be GOURAUD
-
-                    if(!_color_transform_required) {
-                        for (uint i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsperPrim) {
-                            D3DCOLOR newcolr = Colorf_to_D3DCOLOR(*pInColor);
-                            *pOutColor     = newcolr;
-                            *(pOutColor+1) = newcolr;
-                            *(pOutColor+2) = newcolr;
-                        }
-                     } else {
-                        for (uint i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsperPrim) {
-                            D3DCOLOR newcolr;
-                            transform_color(*pInColor,newcolr);
-
-                            *pOutColor     = newcolr;
-                            *(pOutColor+1) = newcolr;
-                            *(pOutColor+2) = newcolr;
-                        }
-                    }
-                } else {
-                    // dont write 2nd,3rd colors in output buffer, these are not used in flat shading
-                    // MAKE SURE ShadeMode never set to GOURAUD after this!
-
-                    if(!_color_transform_required) {
-                        for (uint i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsperPrim) {
-                            *pOutColor = Colorf_to_D3DCOLOR(*pInColor);
-                        }
-                     } else {
-                        for (uint i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsperPrim) {
-                            transform_color(*pInColor,*pOutColor);
-                        }
-                    }
-                }
-            } else if (ColorBinding==G_PER_VERTEX) {
-                NeededShadeMode = D3DSHADE_GOURAUD;
-
-                // want to do this conversion once in retained mode
-                DWORD cNumColors=nPrims*dwVertsperPrim;
-
-                    if(!_color_transform_required) {
-                        for (uint i=0;i<cNumColors;i++,pInColor++,pOutColor++) {
-                            *pOutColor = Colorf_to_D3DCOLOR(*pInColor);
-                        }
-                     } else {
-                        for (uint i=0;i<cNumColors;i++,pInColor++,pOutColor++) {
-                            transform_color(*pInColor,*pOutColor);
-                        }
-                    }
-            } else {
-#ifdef _DEBUG
-                nassertv(ColorBinding==G_OVERALL);
-#endif
-                // copy the one global color in, set stride to 0
-
-                if(!_color_transform_required) {
-                    if (bDoGlobalSceneGraphColor) {
-                        Colorf colr = catt->get_color();
-                        *pConvertedColorArray = Colorf_to_D3DCOLOR(colr);
-                    } else {
-                        *pConvertedColorArray = Colorf_to_D3DCOLOR(*pInColor);
-                    }
-                } else {
-                    if (bDoGlobalSceneGraphColor) {
-                        Colorf colr = catt->get_color();
-                        transform_color(colr,*pConvertedColorArray);
-                    } else {
-                        transform_color(*pInColor,*pConvertedColorArray);
-                    }
-                }
-
-                dps_data.diffuse.dwStride = 0;
-            }
-        }
-
-        if ((TexCoordBinding != G_OFF) && _texturing_enabled) {
-
-#ifdef _DEBUG
-            nassertv(TexCoordBinding == G_PER_VERTEX);  // only sensible choice for a tri
-#endif
-
-            dps_data.textureCoords[0].lpvData = (VOID*)texcoords;
-            dps_data.textureCoords[0].dwStride = sizeof(TexCoordf);
-            fvf_flags |= (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
-        }
-
-        set_shademode(NeededShadeMode);
-
-        DWORD nVerts = nPrims*dwVertsperPrim;
-
-        hr = scrn.pD3DDevice->DrawPrimitiveStrided(primtype, fvf_flags, &dps_data, nVerts, NULL);
-        TestDrawPrimFailure(DrawPrimStrided,hr,scrn.pDD,nVerts,nPrims);
-
-        _pCurFvfBufPtr = NULL;
-    }
 
 ///////////////////////////
 #if 0
@@ -3385,89 +3021,73 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
     geom->get_colors(colors,ColorBinding,cindexes);
     geom->get_texcoords(texcoords,TexCoordBinding,tindexes);
 
-    GeomVertFormat GeomVrtFmt;
-
-#ifdef DONT_USE_DRAWPRIMSTRIDED
-    GeomVrtFmt=MixedFmtVerts;
-#else
-    GeomVrtFmt=FlatVerts;
-
-    if(!geom->uses_components()) {
-       GeomVrtFmt=MixedFmtVerts; // dont need efficiency here, just use simpler codepath
-    } else {
-        // first determine if we're indexed or non-indexed
-        if((vindexes!=NULL)&&(cindexes!=NULL)&&(tindexes!=NULL)&&(nindexes!=NULL)) {
-            GeomVrtFmt=IndexedVerts;
-            //make sure array sizes are consistent, we can only pass 1 size to DrawIPrm
-            //      nassertv(coords.size==norms.size);      nassertv(coords.size==colors.size);     nassertv(coords.size==texcoords.size);  need to assert only if we have this w/same binding
-            // indexed mode requires all used norms,colors,texcoords,coords array be the same
-            // length, or 0 or 1 (dwStride==0), also requires all elements to use the same index array
-        } else if (!((vindexes==NULL)&&(cindexes==NULL)&&(tindexes==NULL)&&(nindexes==NULL)))
-            GeomVrtFmt=MixedFmtVerts;
-    }
-
-    if(_bDrawPrimDoSetupVertexBuffer) {
-      GeomVrtFmt=MixedFmtVerts;
-    }
-#endif
-
-    // for Indexed Prims and mixed indexed/non-indexed prims, we will use old pipeline
-    // cant handle indexed prims because usually have different index arrays for different components,
-    // and DrIdxPrmStrd only accepts 1 index array for all components
-    if (GeomVrtFmt!=FlatVerts) {
+    {
+        size_t vertex_size = draw_prim_setup(geom);
 
         // this is the old geom setup, it reformats every vtx into an output array passed to d3d
         _perVertex = 0x0;
-        _perPrim = _perComp = 0;
+        _perPrim = 0x0;
+        _perComp = 0x0;
 
-        switch (NormalBinding) {
-            case G_OFF:
-                break;
-            case G_PER_VERTEX:
-                _perVertex |= PER_NORMAL;
-                break;
-            case G_PER_PRIM:
-                _perPrim |= PER_NORMAL;
-                break;
-            case G_PER_COMPONENT:
-                _perComp |= PER_NORMAL;
-                break;
-        }
+        bool bIsTriList=(trilisttype==D3DPT_TRIANGLESTRIP);
+        bool bPerPrimColor=false;
+        bool bPerPrimNormal;
+        bool bUseTexCoordOnlyLoop = (((ColorBinding == G_OVERALL) || (ColorBinding == G_PER_PRIM)) &&
+                                     (NormalBinding == G_OFF) &&
+                                     (TexCoordBinding != G_OFF));
 
-        switch (ColorBinding) {
-            case G_PER_PRIM:
+        if(bUseTexCoordOnlyLoop) {
+           if(ColorBinding == G_PER_PRIM) {
                 _perPrim |= PER_COLOR;
-                break;
-            case G_PER_COMPONENT:
-                _perComp |= PER_COLOR;
-                break;
-            case G_PER_VERTEX:
-                _perVertex |= PER_COLOR;
-                break;
+                 bPerPrimColor=true;
+           }
+        } else {
+            switch (NormalBinding) {
+                case G_PER_VERTEX:
+                    _perVertex |= PER_NORMAL;
+                    break;
+                case G_PER_PRIM:
+                    _perPrim |= PER_NORMAL;
+                    break;
+                case G_PER_COMPONENT:
+                    _perComp |= PER_NORMAL;
+                    break;
+            }
+
+            bPerPrimNormal=((_perPrim & PER_NORMAL)!=0);            
+
+            if (TexCoordBinding == G_PER_VERTEX)
+                _perVertex |= PER_TEXCOORD;
+
+            switch (ColorBinding) {
+                case G_PER_PRIM:
+                    _perPrim |= PER_COLOR;
+                    break;
+                case G_PER_COMPONENT:
+                    _perComp |= PER_COLOR;
+                    break;
+                case G_PER_VERTEX:
+                    _perVertex |= PER_COLOR;
+                    break;
+            }
         }
-
-        if (TexCoordBinding == G_PER_VERTEX)
-            _perVertex |= PER_TEXCOORD;
-
-        size_t vertex_size = draw_prim_setup(geom);
 
         // iterate through the triangle primitives
 
-        for (uint i = 0; i < nPrims; i++) {
+        int nVerts;
+        if(pLengthArr==NULL) {
+           // we've been called by draw_quad, which has no lengths array
+           nVerts=4;
+        }
 
-            if (_perPrim & PER_COLOR) {
-                GET_NEXT_COLOR();
-            }
-            if (_perPrim & PER_NORMAL)
-                p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
-            
-            int nVerts;
+        for (uint i = 0; i < nPrims; i++) {
 
             if(pLengthArr!=NULL) {
               nVerts = *(pLengthArr++);
-            } else {
-              // we've been called by draw_quad, which has no lengths array
-              nVerts=4;
+            } 
+
+            if(bPerPrimColor) {  // remember color might be G_OVERALL too!
+                GET_NEXT_COLOR();
             }
 
 #ifdef _DEBUG
@@ -3478,32 +3098,40 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
             _pCurFvfBufPtr = _pFvfBufBasePtr;            // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
 
             if(_perComp==0x0) {
-                 if(_perVertex==TexCoordOnly)
+                 if(bUseTexCoordOnlyLoop) {  
                     draw_prim_inner_loop_coordtexonly(nVerts, geom);   
-                   else draw_prim_inner_loop(nVerts, geom, _perVertex);
+                 } else {
+                     if (bPerPrimNormal)
+                         p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
+
+                     draw_prim_inner_loop(nVerts, geom, _perVertex);
+                 }
             } else {
-                    if(trilisttype==D3DPT_TRIANGLESTRIP) {
-                       // in flat shade mode, D3D strips color using the 1st vertex. 
-                       // (note: differs from OGL, which always uses last vtx for strips&fans
+                if(bPerPrimNormal)
+                    p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
 
-                            // Store all but last 2 verts
-                            draw_prim_inner_loop(nVerts-2, geom, _perVertex | _perComp);
+                if(bIsTriList) {
+                   // in flat shade mode, D3D strips color using the 1st vertex. 
+                   // (note: differs from OGL, which always uses last vtx for strips&fans
 
-                            // _perComp attribs should not be fetched for last 2 verts
-                            draw_prim_inner_loop(2, geom, _perVertex);
-                    } else {
-                       // in flat shade mode, D3D fans color using the 2nd vertex. 
-                       // (note: differs from OGL, which always uses last vtx for strips&fans
-                       // _perComp attribs should not be fetched for first & last verts, they will
-                       // be associated with middle n-2 verts
+                    // Store all but last 2 verts
+                    draw_prim_inner_loop(nVerts-2, geom, _perVertex | _perComp);
 
-                            draw_prim_inner_loop(1, geom, _perVertex);
+                    // _perComp attribs should not be fetched for last 2 verts
+                    draw_prim_inner_loop(2, geom, _perVertex);
+                } else {
+                   // in flat shade mode, D3D fans color using the 2nd vertex. 
+                   // (note: differs from OGL, which always uses last vtx for strips&fans
+                   // _perComp attribs should not be fetched for first & last verts, they will
+                   // be associated with middle n-2 verts
 
-                            draw_prim_inner_loop(nVerts-2, geom, _perVertex | _perComp);
-
-                            draw_prim_inner_loop(1, geom, _perVertex);
-                    }
+                    draw_prim_inner_loop(1, geom, _perVertex);
+                    draw_prim_inner_loop(nVerts-2, geom, _perVertex | _perComp);
+                    draw_prim_inner_loop(1, geom, _perVertex);
+                }
             }
+
+            assert((nVerts*vertex_size) == (_pCurFvfBufPtr-_pFvfBufBasePtr));
 
             if(!_bDrawPrimDoSetupVertexBuffer) {
                 hr = scrn.pD3DDevice->DrawPrimitive(trilisttype,  _curFVFflags, _pFvfBufBasePtr, nVerts, NULL);
@@ -3514,251 +3142,8 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 
             _pCurFvfBufPtr = NULL;
         }
-    } else {
-
-        // new geom setup that uses strided DP calls to avoid making an extra pass over the data
-
-        D3DDRAWPRIMITIVESTRIDEDDATA dps_data;
-        memset(&dps_data,0,sizeof(D3DDRAWPRIMITIVESTRIDEDDATA));
-
-#ifdef _DEBUG
-        nassertv(geom->uses_components());
-        nassertv(geom->get_binding(G_COORD) == G_PER_VERTEX);
-#endif
-
-        DWORD fvf_flags = D3DFVF_XYZ;
-        dps_data.position.lpvData = (VOID*)coords;
-        dps_data.position.dwStride = sizeof(D3DVECTOR);
-
-        D3DSHADEMODE NeededShadeMode = D3DSHADE_FLAT;
-
-        DWORD cTotalVerts=0;
-
-        for (uint i=0;i<nPrims;i++) {
-            cTotalVerts+= pLengthArr[i];
-        }
-
-        const DWORD cNumMoreVertsthanTris=2;
-
-        if((NormalBinding != G_OFF) && wants_normals()) {
-
-            dps_data.normal.lpvData = (VOID*)norms;
-            dps_data.normal.dwStride = sizeof(D3DVECTOR);
-
-#ifdef _DEBUG
-            nassertv(geom->get_num_more_vertices_than_components()==2);
-            nassertv(NormalBinding!=G_PER_COMPONENT); // makes no sense, unimplementable for strips since normals always shared across tris
-            nassertv( cTotalVerts*sizeof(D3DVECTOR) <= D3DMAXNUMVERTICES*sizeof(WORD));
-            if(NormalBinding==G_PER_VERTEX)
-                nassertv(norms.size()>=cTotalVerts);
-#endif
-            fvf_flags |= D3DFVF_NORMAL;
-            NeededShadeMode = D3DSHADE_GOURAUD;
-
-            Normalf *pExpandedNormalArray = (Normalf *)_index_buf;  // BUGBUG:  need to use real permanent buffers instead of _indexbuf hack
-
-            if(NormalBinding==G_PER_PRIM) {
-                // we have 1 normal per strip
-                // must use tmp array to duplicate-expand per-prim norms to per-vert norms
-                Normalf *pOutVec = pExpandedNormalArray;
-                Normalf *pInVec=norms;
-                const uint *pLengths=pLengthArr;
-
-                nassertv(norms.size()>=nPrims);
-
-                for (uint i=0;i<nPrims;i++,pInVec++,pLengths++) {
-                    for (uint j=0;j<(*pLengths);j++,pOutVec++) {
-                        *pOutVec = *pInVec;
-                    }
-                }
-
-                dps_data.normal.lpvData = (VOID*)pExpandedNormalArray;
-
-            } else if(NormalBinding==G_OVERALL) {
-                // copy the one global color in, set stride to 0
-                *pExpandedNormalArray=norms[0];
-                dps_data.normal.lpvData = (VOID*)pExpandedNormalArray;
-                dps_data.normal.dwStride = 0;
-            }
-        }
-
-        ColorTransition *catt=NULL;
-        bool bDoGlobalSceneGraphColor=FALSE,bDoColor=(ColorBinding != G_OFF);
-
-        // We should issue geometry colors only if the scene graph color is off.
-        if (get_attribute_into(catt, this)) {
-            if (!catt->is_real())
-                bDoColor=FALSE;  // this turns off any Geom colors
-            else {
-                ColorBinding=G_OVERALL;
-                bDoGlobalSceneGraphColor=TRUE;
-            }
-        }
-
-        if (bDoColor || bDoGlobalSceneGraphColor) {
-            D3DCOLOR *pOutColor,*pConvertedColorArray;
-            Colorf *pInColor=colors;
-            pOutColor = pConvertedColorArray = (D3DCOLOR *)_pFvfBufBasePtr;
-
-#ifdef _DEBUG
-            nassertv( cTotalVerts*sizeof(D3DCOLOR) <= VERT_BUFFER_SIZE);
-#endif
-
-            fvf_flags |= D3DFVF_DIFFUSE;
-
-            dps_data.diffuse.lpvData = (VOID*)pConvertedColorArray;
-            dps_data.diffuse.dwStride = sizeof(D3DCOLOR);
-
-            if (ColorBinding==G_PER_VERTEX) {
-                NeededShadeMode = D3DSHADE_GOURAUD;
-
-                if(!_color_transform_required) {
-                    for (uint i=0;i<cTotalVerts;i++,pInColor++,pOutColor++) {
-                        *pOutColor = Colorf_to_D3DCOLOR(*pInColor);
-                    }
-                } else {
-                    for (uint i=0;i<cTotalVerts;i++,pInColor++,pOutColor++) {
-                        transform_color(*pInColor,*pOutColor);
-                    }
-                }
-            } else if (ColorBinding==G_PER_PRIM) {
-                // must use tmp array to expand per-prim info to per-vert info
-                // eventually want to do this conversion once in retained mode
-                // have one color per strip, need 1 color per vert
-
-                // could save 2 clr writes per strip/fan in flat shade mode but not going to bother here
-
-                if(!_color_transform_required) {
-                    for (uint j=0;j<nPrims;j++,pInColor++) {
-                        D3DCOLOR lastcolr = Colorf_to_D3DCOLOR(*pInColor);
-                        DWORD cStripLength=pLengthArr[j];
-                        for (uint i=0;i<cStripLength;i++,pOutColor++) {
-                            *pOutColor = lastcolr;
-                        }
-                    }
-                } else {
-                    for (uint j=0;j<nPrims;j++,pInColor++) {
-                        D3DCOLOR lastcolr;
-                        transform_color(*pInColor,lastcolr);
-                        DWORD cStripLength=pLengthArr[j];
-                        for (uint i=0;i<cStripLength;i++,pOutColor++) {
-                            *pOutColor = lastcolr;
-                        }
-                    }
-                }
-            } else if (ColorBinding==G_PER_COMPONENT) {
-                // have a color per tri, need a color per vert (2 more than #tris)
-                // want to do this conversion once in retained mode
-                nassertv(colors.size() >= cTotalVerts-nPrims*cNumMoreVertsthanTris);
-
-                #define MULTITRI_COLORCOPY_LOOP                                       \
-                    DWORD cCurStripColorCnt=pLengthArr[j]-cNumMoreVertsthanTris;      \
-                    for (uint i=0;i<cCurStripColorCnt;i++,pInColor++,pOutColor++)
-
-                #define COLOR_CONVERT_COPY_STMT  {*pOutColor = Colorf_to_D3DCOLOR(*pInColor);}
-                #define COLOR_CONVERT_XFORM_STMT {transform_color(*pInColor,*pOutColor);}
-
-                #define COMPONENT_COLOR_COPY_LOOPS(COLOR_COPYSTMT)  {                        \
-                    if (NeededShadeMode == D3DSHADE_FLAT) {                                  \
-                        /* FLAT shade mode.  for tristrips, skip writing last 2 verts.  */   \
-                        /* for trifans, skip first and last verts                       */   \
-                        if (trilisttype==D3DPT_TRIANGLESTRIP) {                              \
-                            for (uint j=0;j<nPrims;j++) {                                    \
-                                MULTITRI_COLORCOPY_LOOP {                                    \
-                                   COLOR_COPYSTMT;                                           \
-                                }                                                            \
-                                pOutColor+=cNumMoreVertsthanTris;                            \
-                            }                                                                \
-                        } else {  /* trifan */                                               \
-                            for (uint j=0;j<nPrims;j++) {                                    \
-                                pOutColor++;                                                 \
-                                MULTITRI_COLORCOPY_LOOP {                                    \
-                                   COLOR_COPYSTMT;                                           \
-                                }                                                            \
-                                pOutColor++;                                                 \
-                            }                                                                \
-                        }                                                                    \
-                    } else {  /* GOURAUD shademode (due to presence of normals) */           \
-                        if (trilisttype==D3DPT_TRIANGLESTRIP) {                              \
-                            for (uint j=0;j<nPrims;j++) {                                    \
-                                MULTITRI_COLORCOPY_LOOP {                                    \
-                                   COLOR_COPYSTMT;                                           \
-                                }                                                            \
-                                DWORD lastcolr = *(pOutColor-1);                             \
-                                *pOutColor++ = lastcolr;                                     \
-                                *pOutColor++ = lastcolr;                                     \
-                            }                                                                \
-                        } else {  /* trifan */                                               \
-                            for (uint j=0;j<nPrims;j++) {                                    \
-                                COLOR_COPYSTMT;                                              \
-                                pOutColor++;                                                 \
-                                MULTITRI_COLORCOPY_LOOP {                                    \
-                                   COLOR_COPYSTMT;                                           \
-                                }                                                            \
-                                *pOutColor++ = *(pOutColor-1);                               \
-                            }                                                                \
-                        }                                                                    \
-                    }                                                                        \
-                  }
-
-                if(!_color_transform_required) {
-                  COMPONENT_COLOR_COPY_LOOPS(COLOR_CONVERT_COPY_STMT);
-                } else {
-                  COMPONENT_COLOR_COPY_LOOPS(COLOR_CONVERT_XFORM_STMT);
-                }
-            } else {
-#ifdef _DEBUG
-                nassertv(ColorBinding==G_OVERALL);
-#endif
-                // copy the one global color in, set stride to 0
-
-                if(!_color_transform_required) {
-                    if (bDoGlobalSceneGraphColor) {
-                        Colorf colr = catt->get_color();
-                        *pConvertedColorArray = Colorf_to_D3DCOLOR(colr);
-                    } else {
-                        *pConvertedColorArray = Colorf_to_D3DCOLOR(*pInColor);
-                    }
-                } else {
-                    if (bDoGlobalSceneGraphColor) {
-                        Colorf colr = catt->get_color();
-                        transform_color(colr,*pConvertedColorArray);
-                    } else {
-                        transform_color(*pInColor,*pConvertedColorArray);
-                    }
-                }
-
-                dps_data.diffuse.dwStride = 0;
-            }
-        }
-
-        if ((TexCoordBinding != G_OFF) && _texturing_enabled) {
-
-#ifdef _DEBUG
-            nassertv(TexCoordBinding == G_PER_VERTEX);  // only sensible choice for a tri
-#endif
-
-            dps_data.textureCoords[0].lpvData = (VOID*)texcoords;
-            dps_data.textureCoords[0].dwStride = sizeof(TexCoordf);
-            fvf_flags |= (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
-        }
-
-        set_shademode(NeededShadeMode);
-
-        for (uint j=0;j<nPrims;j++) {
-            const uint cCurNumStripVerts = pLengthArr[j];
-
-            hr = scrn.pD3DDevice->DrawPrimitiveStrided(trilisttype, fvf_flags, &dps_data, cCurNumStripVerts, NULL);
-            TestDrawPrimFailure(DrawPrimStrided,hr,scrn.pDD,cCurNumStripVerts,cCurNumStripVerts-2);
-
-            dps_data.position.lpvData = (VOID*)(((char*) dps_data.position.lpvData) + cCurNumStripVerts*dps_data.position.dwStride);
-            dps_data.diffuse.lpvData = (VOID*)(((char*) dps_data.diffuse.lpvData) + cCurNumStripVerts*dps_data.diffuse.dwStride);
-            dps_data.normal.lpvData = (VOID*)(((char*) dps_data.normal.lpvData) + cCurNumStripVerts*dps_data.normal.dwStride);
-            dps_data.textureCoords[0].lpvData = (VOID*)(((char*) dps_data.textureCoords[0].lpvData) + cCurNumStripVerts*dps_data.textureCoords[0].dwStride);
-        }
-
-        nassertv(_pCurFvfBufPtr == NULL);
     }
+
 }
 
 //-----------------------------------------------------------------------------
@@ -4086,11 +3471,7 @@ prepare_texture(Texture *tex) {
     apply_texture_immediate(tex);
 #else
 
-#ifdef USE_TEXFMTVEC
-    if (dtc->CreateTexture(scrn.pD3DDevice,scrn.TexPixFmts,&scrn.D3DDevDesc) == NULL) {
-#else
-    if (dtc->CreateTexture(scrn.pD3DDevice,_cNumTexPixFmts,_pTexPixFmts,&scrn.D3DDevDesc) == NULL) {
-#endif
+    if (dtc->CreateTexture(scrn) == NULL) {
         delete dtc;
         return NULL;
     }
@@ -4146,11 +3527,8 @@ apply_texture(TextureContext *tc) {
           }
     
           dtc->DeleteTexture();
-#ifdef USE_TEXFMTVEC
-          if (dtc->CreateTexture(scrn.pD3DDevice,scrn.TexPixFmts,&scrn.D3DDevDesc) == NULL) {
-#else
-          if (dtc->CreateTexture(scrn.pD3DDevice,_cNumTexPixFmts,_pTexPixFmts,&scrn.D3DDevDesc) == NULL) {
-#endif
+          if (dtc->CreateTexture(scrn) == NULL) {
+
             // Oops, we can't re-create the texture for some reason.
             dxgsg_cat.error() << "Unable to re-create texture " << *dtc->_texture << endl;
     
@@ -4508,8 +3886,6 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
 void DXGraphicsStateGuardian::
 copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 
-    extern HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf);
-
     nassertv(pb != NULL && dr != NULL);
 
     int xo, yo, w, h;
@@ -4521,17 +3897,25 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
     nassertv(w==pb->get_xsize());
     nassertv(h==pb->get_ysize());
 
-/*
-    set_pack_alignment(1);
-    glReadPixels( pb->get_xorg() + xo, pb->get_yorg() + yo,
-                  pb->get_xsize(), pb->get_ysize(),
-                  get_external_image_format(pb->get_format()),
-                  get_image_type(pb->get_image_type()),
-                  pb->_image.p() );
-*/
+    IDirect3DSurface8 *pD3DSurf;
+    HRESULT hr;
 
+    // just handling front and backbuf for now, not textures yet
+    if(_cur_read_pixel_buffer & RenderBuffer::T_back) {
+       hr=GetBackBuffer(0,D3DBACKBUFFER_TYPE_MONO,&pD3DSurf);
+    } else {
+       hr=GetFrontBuffer(&pD3DSurf);
+    }
 
-    (void) ConvertDDSurftoPixBuf(pb,((_cur_read_pixel_buffer & RenderBuffer::T_back) ? scrn.pddsBack : scrn.pddsPrimary));
+    if(FAILED(hr)) {
+        dxgsg_cat.error() << "copy_pixel_buffer: " << ((_cur_read_pixel_buffer & RenderBuffer::T_back) ? "GetBackBuffer" : "GetFrontBuffer") 
+                          << " failed, hr = " << D3DERRORSTRING(hr);
+        exit(1);
+    }
+
+    (void) ConvertD3DSurftoPixBuf(pD3DSurf,pb);
+
+    SAFE_RELEASE(pD3DSurf);
 
     nassertv(!pb->_image.empty());
 }
@@ -4710,10 +4094,10 @@ apply_fog(Fog *fog) {
 
 
     // should probably avoid doing redundant SetRenderStates, but whatever
-    scrn.pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)_doFogType, d3dfogmode);
+    scrn.pD3DDevice->SetRenderState((D3DRSTYPE)_doFogType, d3dfogmode);
 
     const Colorf &fog_colr = fog->get_color();
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_FOGCOLOR,
+    scrn.pD3DDevice->SetRenderState(D3DRS_FOGCOLOR,
                    MY_D3DRGBA(fog_colr[0], fog_colr[1], fog_colr[2], 0.0f));  // Alpha bits are not used
 
     // do we need to adjust fog start/end values based on D3DPRASTERCAPS_WFOG/D3DPRASTERCAPS_ZFOG ?
@@ -4731,9 +4115,9 @@ apply_fog(Fog *fog) {
                                           _current_camera,
                                           _coordinate_system);
 
-                scrn.pD3DDevice->SetRenderState( D3DRENDERSTATE_FOGSTART,
+                scrn.pD3DDevice->SetRenderState( D3DRS_FOGSTART,
                                             *((LPDWORD) (&fog_start)) );
-                scrn.pD3DDevice->SetRenderState( D3DRENDERSTATE_FOGEND,
+                scrn.pD3DDevice->SetRenderState( D3DRS_FOGEND,
                                             *((LPDWORD) (&fog_end)) );
             }
             break;
@@ -4742,7 +4126,7 @@ apply_fog(Fog *fog) {
             {
                 // Exponential fog is always camera-relative.
                 float fog_density = fog->get_exp_density();
-                scrn.pD3DDevice->SetRenderState( D3DRENDERSTATE_FOGDENSITY,
+                scrn.pD3DDevice->SetRenderState( D3DRS_FOGDENSITY,
                             *((LPDWORD) (&fog_density)) );
             }
             break;
@@ -4812,7 +4196,7 @@ void DXGraphicsStateGuardian::apply_light( DirectionalLight* light ) {
 
     HRESULT res = scrn.pD3DDevice->SetLight(_cur_light_id, &alight);
 //    scrn.pD3DDevice->LightEnable( _cur_light_id, TRUE );
-//    scrn.pD3DDevice->SetRenderState( D3DRENDERSTATE_LIGHTING, TRUE );
+//    scrn.pD3DDevice->SetRenderState( D3DRS_LIGHTING, TRUE );
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5171,11 +4555,11 @@ issue_render_mode(const RenderModeTransition *attrib) {
 
     switch (mode) {
         case RenderModeProperty::M_filled:
-            scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, D3DFILL_SOLID);
+            scrn.pD3DDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
             break;
 
         case RenderModeProperty::M_wireframe:
-            scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, D3DFILL_WIREFRAME);
+            scrn.pD3DDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
             break;
 
         default:
@@ -5490,11 +4874,11 @@ issue_depth_test(const DepthTestTransition *attrib) {
 
     if (mode == DepthTestProperty::M_none) {
         _depth_test_enabled = false;
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ZENABLE, D3DZB_FALSE);
+        scrn.pD3DDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
     } else {
         _depth_test_enabled = true;
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ZENABLE, D3DZB_TRUE);
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ZFUNC, get_depth_func_type(mode));
+        scrn.pD3DDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+        scrn.pD3DDevice->SetRenderState(D3DRS_ZFUNC, get_depth_func_type(mode));
     }
 }
 
@@ -5528,13 +4912,13 @@ issue_stencil(const StencilTransition *attrib) {
            }
         #endif
         // TODO: need to cache all these
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_STENCILFUNC, get_stencil_func_type(mode));
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_STENCILPASS, pass_op);
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_STENCILFAIL, fail_op);
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_STENCILZFAIL, zfail_op);
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_STENCILREF, attrib->get_reference_value());
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_STENCILMASK, attrib->get_func_mask());
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_STENCILWRITEMASK, attrib->get_write_mask());
+        scrn.pD3DDevice->SetRenderState(D3DRS_STENCILFUNC, get_stencil_func_type(mode));
+        scrn.pD3DDevice->SetRenderState(D3DRS_STENCILPASS, pass_op);
+        scrn.pD3DDevice->SetRenderState(D3DRS_STENCILFAIL, fail_op);
+        scrn.pD3DDevice->SetRenderState(D3DRS_STENCILZFAIL, zfail_op);
+        scrn.pD3DDevice->SetRenderState(D3DRS_STENCILREF, attrib->get_reference_value());
+        scrn.pD3DDevice->SetRenderState(D3DRS_STENCILMASK, attrib->get_func_mask());
+        scrn.pD3DDevice->SetRenderState(D3DRS_STENCILWRITEMASK, attrib->get_write_mask());
     }
 }
 
@@ -5556,17 +4940,17 @@ issue_cull_face(const CullFaceTransition *attrib) {
 
     switch (mode) {
         case CullFaceProperty::M_cull_none:
-            scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+            scrn.pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
             break;
         case CullFaceProperty::M_cull_clockwise:
-            scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CW);
+            scrn.pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
             break;
         case CullFaceProperty::M_cull_counter_clockwise:
-            scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
+            scrn.pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
             break;
         case CullFaceProperty::M_cull_all:
             dxgsg_cat.warning() << "M_cull_all is invalid for DX GSG renderer, using CULL_CCW \n";
-            scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
+            scrn.pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
             break;
         default:
             dxgsg_cat.error()
@@ -5641,7 +5025,7 @@ issue_clip_plane(const ClipPlaneTransition *attrib) {
         _cur_clip_plane_enabled[_cur_clip_plane_id] = true;
         const Planef clip_plane = plane_node->get_plane();
         
-        D3DVALUE equation[4];
+        float equation[4];
         equation[0] = clip_plane._a;
         equation[1] = clip_plane._b;
         equation[2] = clip_plane._c;
@@ -5798,7 +5182,7 @@ begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib) {
 
         // Just draw the base geometry normally.
         base_geom->draw(this);
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ZBIAS, POLYGON_OFFSET_MULTIPLIER * _decal_level); // _decal_level better not be higher than 8!
+        scrn.pD3DDevice->SetRenderState(D3DRS_ZBIAS, POLYGON_OFFSET_MULTIPLIER * _decal_level); // _decal_level better not be higher than 8!
     } else
  #endif
 
@@ -5854,7 +5238,7 @@ end_decal(GeomNode *base_geom) {
 #ifndef DISABLE_POLYGON_OFFSET_DECALING
     if (dx_decal_type == GDT_offset) {
         // Restore the Zbias offset.
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ZBIAS, POLYGON_OFFSET_MULTIPLIER * _decal_level); // _decal_level better not be higher than 8!
+        scrn.pD3DDevice->SetRenderState(D3DRS_ZBIAS, POLYGON_OFFSET_MULTIPLIER * _decal_level); // _decal_level better not be higher than 8!
     } else
 #endif
     {  // for GDT_mask
@@ -5881,7 +5265,7 @@ end_decal(GeomNode *base_geom) {
 #if(DIRECT3D_VERSION < 0x700)
             else {  // dx7 doesn't support planemask rstate
                 // note: not saving current planemask val, assumes this is always all 1's.  should be ok
-                scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_PLANEMASK,0x0);  // note PLANEMASK is supposedly obsolete for DX7
+                scrn.pD3DDevice->SetRenderState(D3DRS_PLANEMASK,0x0);  // note PLANEMASK is supposedly obsolete for DX7
             }
 #endif
             // Note: For DX8, use D3DRS_COLORWRITEENABLE  (check D3DPMISCCAPS_COLORWRITEENABLE first)
@@ -5905,7 +5289,7 @@ end_decal(GeomNode *base_geom) {
             }
 #if(DIRECT3D_VERSION < 0x700)
             else {
-                scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_PLANEMASK,0xFFFFFFFF);  // this is unlikely to work due to poor driver support
+                scrn.pD3DDevice->SetRenderState(D3DRS_PLANEMASK,0xFFFFFFFF);  // this is unlikely to work due to poor driver support
             }
 #endif
             enable_texturing(was_textured);
@@ -6319,7 +5703,7 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
           if(dxgsg_cat.is_spam())
                 dxgsg_cat.spam() << "dx_cleanup -  Restoring original desktop DisplayMode\n";
           if(FAILED(hr)) {
-                dxgsg_cat.error() << "dx_cleanup -  RestoreDisplayMode failed, hr = " << ConvD3DErrorToString(hr) << endl;
+                dxgsg_cat.error() << "dx_cleanup -  RestoreDisplayMode failed, hr = " << D3DERRORSTRING(hr);
           }
         }
 
@@ -6385,7 +5769,7 @@ dx_setup_after_resize(RECT viewrect, HWND mwindow) {
     HRESULT hr;
 
     if (FAILED(hr = scrn.pDD->CreateSurface( &ddsd, &scrn.pddsPrimary, NULL ))) {
-        dxgsg_cat.fatal() << "resize() - CreateSurface failed for primary : result = " << ConvD3DErrorToString(hr) << endl;
+        dxgsg_cat.fatal() << "resize() - CreateSurface failed for primary : result = " << D3DERRORSTRING(hr);
         exit(1);
     }
 
@@ -6396,7 +5780,7 @@ dx_setup_after_resize(RECT viewrect, HWND mwindow) {
     
         if (FAILED(hr = scrn.pDD->CreateClipper( 0, &Clipper, NULL ))) {
             dxgsg_cat.fatal()
-            << "CreateClipper after resize failed : result = " << ConvD3DErrorToString(hr) << endl;
+            << "CreateClipper after resize failed : result = " << D3DERRORSTRING(hr);
             exit(1);
         }
         // Associate the clipper with our window. Note that, afterwards, the
@@ -6415,7 +5799,7 @@ dx_setup_after_resize(RECT viewrect, HWND mwindow) {
     PRINTVIDMEM(scrn.pDD,&ddsd_back.ddsCaps,"resize backbuffer surf");
 
     if (FAILED(hr = scrn.pDD->CreateSurface( &ddsd_back, &scrn.pddsBack, NULL ))) {
-        dxgsg_cat.fatal() << "resize() - CreateSurface failed for backbuffer : result = " << ConvD3DErrorToString(hr) << endl;
+        dxgsg_cat.fatal() << "resize() - CreateSurface failed for backbuffer : result = " << D3DERRORSTRING(hr);
         exit(1);
     }
 
@@ -6423,18 +5807,18 @@ dx_setup_after_resize(RECT viewrect, HWND mwindow) {
 
     // Recreate and attach a z-buffer.
     if (FAILED(hr = scrn.pDD->CreateSurface( &ddsd_zbuf, &scrn.pddsZBuf, NULL ))) {
-        dxgsg_cat.fatal() << "resize() - CreateSurface failed for Z buffer: result = " << ConvD3DErrorToString(hr) << endl;
+        dxgsg_cat.fatal() << "resize() - CreateSurface failed for Z buffer: result = " << D3DERRORSTRING(hr);
         exit(1);
     }
 
     // Attach the z-buffer to the back buffer.
     if ((hr = scrn.pddsBack->AddAttachedSurface( scrn.pddsZBuf ) ) != DD_OK) {
-        dxgsg_cat.fatal() << "resize() - AddAttachedSurface failed : result = " << ConvD3DErrorToString(hr) << endl;
+        dxgsg_cat.fatal() << "resize() - AddAttachedSurface failed : result = " << D3DERRORSTRING(hr);
         exit(1);
     }
 
     if ((hr = scrn.pD3DDevice->SetRenderTarget(scrn.pddsBack,0x0) ) != DD_OK) {
-        dxgsg_cat.fatal() << "resize() - SetRenderTarget failed : result = " << ConvD3DErrorToString(hr) << endl;
+        dxgsg_cat.fatal() << "resize() - SetRenderTarget failed : result = " << D3DERRORSTRING(hr);
         exit(1);
     }
 
@@ -6443,7 +5827,7 @@ dx_setup_after_resize(RECT viewrect, HWND mwindow) {
     hr = scrn.pD3DDevice->SetViewport( &vp );
     if (hr != DD_OK) {
         dxgsg_cat.fatal()
-        << "SetViewport failed : result = " << ConvD3DErrorToString(hr) << endl;
+        << "SetViewport failed : result = " << D3DERRORSTRING(hr);
         exit(1);
     }
 
@@ -6476,12 +5860,7 @@ bool recreate_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
      // Re-fill the contents of textures and vertex buffers
      // which just got restored now.
 
-     LPDIRECTDRAWSURFACE7 ddtex = 
-#ifdef USE_TEXFMTVEC
-        dtc->CreateTexture(dxgsg->scrn.pD3DDevice,scrn.TexPixFmts,&dxgsg->scrn.D3DDevDesc);
-#else
-        dtc->CreateTexture(dxgsg->scrn.pD3DDevice,dxgsg->_cNumTexPixFmts,dxgsg->_pTexPixFmts,&dxgsg->scrn.D3DDevDesc);
-#endif
+     LPDIRECTDRAWSURFACE7 ddtex = dtc->CreateTexture(dxgsg->scrn);
      return ddtex!=NULL;
 }
 
@@ -6524,7 +5903,7 @@ HRESULT DXGraphicsStateGuardian::RestoreAllVideoSurfaces(void) {
   // note: could go through and just restore surfs that return IsLost() true
   // apparently that isnt as reliable w/some drivers tho
   if (FAILED(hr = scrn.pDD->RestoreAllSurfaces() )) {
-        dxgsg_cat.fatal() << "RestoreAllSurfs failed : result = " << ConvD3DErrorToString(hr) << endl;
+        dxgsg_cat.fatal() << "RestoreAllSurfs failed : result = " << D3DERRORSTRING(hr);
     exit(1);
   }
 
@@ -6589,7 +5968,7 @@ void DXGraphicsStateGuardian::show_full_screen_frame(void) {
     if((hr == DDERR_SURFACELOST) || (hr == DDERR_SURFACEBUSY)) {
       CheckCooperativeLevel();
     } else {
-      dxgsg_cat.error() << "show_frame() - Flip failed w/unexpected error code: " << ConvD3DErrorToString(hr) << endl;
+      dxgsg_cat.error() << "show_frame() - Flip failed w/unexpected error code: " << D3DERRORSTRING(hr);
       exit(1);
     }
   }
@@ -6631,7 +6010,7 @@ void DXGraphicsStateGuardian::show_windowed_frame(void) {
   if (dx_sync_video) {
     HRESULT hr = scrn.pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
     if(hr != DD_OK) {
-      dxgsg_cat.error() << "WaitForVerticalBlank() failed : " << ConvD3DErrorToString(hr) << endl;
+      dxgsg_cat.error() << "WaitForVerticalBlank() failed : " << D3DERRORSTRING(hr);
       exit(1);
     }
   }
@@ -6640,7 +6019,7 @@ void DXGraphicsStateGuardian::show_windowed_frame(void) {
     if((hr == DDERR_SURFACELOST) || (hr == DDERR_SURFACEBUSY)) {
       CheckCooperativeLevel();
     } else {
-      dxgsg_cat.error() << "show_frame() - Blt failed : " << ConvD3DErrorToString(hr) << endl;
+      dxgsg_cat.error() << "show_frame() - Blt failed : " << D3DERRORSTRING(hr);
       exit(1);
     }
   }
@@ -6686,10 +6065,10 @@ bool DXGraphicsStateGuardian::CheckCooperativeLevel(bool bDoReactivateWindow) {
             // This means that the desktop mode has changed
             // need to destroy all of dx stuff and recreate everything
             // back again, which is a big hit
-            dxgsg_cat.error() << "detected display mode change in TestCoopLevel, must recreate all DDraw surfaces, D3D devices, this is not handled yet. hr == " << ConvD3DErrorToString(hr) << endl;
+            dxgsg_cat.error() << "detected display mode change in TestCoopLevel, must recreate all DDraw surfaces, D3D devices, this is not handled yet. hr == " << D3DERRORSTRING(hr);
             exit(1);
         } else if(FAILED(hr)) {
-            dxgsg_cat.error() << "unexpected return code from TestCoopLevel: " << ConvD3DErrorToString(hr) << endl;
+            dxgsg_cat.error() << "unexpected return code from TestCoopLevel: " << D3DERRORSTRING(hr);
             exit(1);
         }
     } else {
@@ -6715,11 +6094,11 @@ bool DXGraphicsStateGuardian::CheckCooperativeLevel(bool bDoReactivateWindow) {
             // This means that the desktop mode has changed
             // need to destroy all of dx stuff and recreate everything
             // back again, which is a big hit
-            dxgsg_cat.error() << "detected desktop display mode change in TestCoopLevel, must recreate all DDraw surfaces & D3D devices, this is not handled yet.  " << ConvD3DErrorToString(hr) << endl;
+            dxgsg_cat.error() << "detected desktop display mode change in TestCoopLevel, must recreate all DDraw surfaces & D3D devices, this is not handled yet.  " << D3DERRORSTRING(hr);
             _win->close_window();
             exit(1);
           } else if((hr!=DDERR_NOEXCLUSIVEMODE) && (hr!=DDERR_EXCLUSIVEMODEALREADYSET)) {
-                      dxgsg_cat.error() << "unexpected return code from TestCoopLevel: " << ConvD3DErrorToString(hr) << endl;
+                      dxgsg_cat.error() << "unexpected return code from TestCoopLevel: " << D3DERRORSTRING(hr);
                       exit(1);
                   }
     }
@@ -7226,7 +6605,7 @@ prepare_geom_node(GeomNode *node) {
 
   hr=pD3D->CreateVertexBuffer(&VBdesc,&pD3DVertexBuffer,0x0);
   if(FAILED(hr)) {
-    dxgsg_cat.error() << "error creating vertex buffer: " << ConvD3DErrorToString(hr) << endl;
+    dxgsg_cat.error() << "error creating vertex buffer: " << D3DERRORSTRING(hr);
     delete dx_gnc;
     exit(1);
   }
@@ -7243,7 +6622,7 @@ prepare_geom_node(GeomNode *node) {
 
       hr=pD3D->CreateVertexBuffer(&VBdesc,&pD3DVertexBuffer,0x0);
       if(FAILED(hr)) {
-          dxgsg_cat.error() << "error creating xformed vertex buffer: " << ConvD3DErrorToString(hr) << endl;
+          dxgsg_cat.error() << "error creating xformed vertex buffer: " << D3DERRORSTRING(hr);
           delete dx_gnc;
           exit(1);
       }
@@ -7262,7 +6641,7 @@ prepare_geom_node(GeomNode *node) {
 
   hr=dx_gnc->_pVB->Lock(dwVBFlags,&pVertData,NULL);
   if(FAILED(hr)) {
-        dxgsg_cat.error() << "error locking vertex buffer: " << ConvD3DErrorToString(hr) << endl;
+        dxgsg_cat.error() << "error locking vertex buffer: " << D3DERRORSTRING(hr);
         delete dx_gnc;
         exit(1);
   }
@@ -7295,7 +6674,7 @@ prepare_geom_node(GeomNode *node) {
 
   hr=dx_gnc->_pVB->Unlock();
   if(FAILED(hr)) {
-      dxgsg_cat.error() << "error unlocking vertex buffer: " << ConvD3DErrorToString(hr) << endl;
+      dxgsg_cat.error() << "error unlocking vertex buffer: " << D3DERRORSTRING(hr);
       delete dx_gnc;
       exit(1);
   }
@@ -7304,7 +6683,7 @@ prepare_geom_node(GeomNode *node) {
 
   hr=dx_gnc->_pVB->Optimize(scrn.pD3DDevice,0x0);
   if(FAILED(hr)) {
-      dxgsg_cat.error() << "error optimizing vertex buffer: " << ConvD3DErrorToString(hr) << endl;
+      dxgsg_cat.error() << "error optimizing vertex buffer: " << D3DERRORSTRING(hr);
       delete dx_gnc;
       exit(1);
   }
@@ -7371,7 +6750,7 @@ draw_geom_node(GeomNode *node, GeomNodeContext *gnc) {
       VBdesc.dwSize=sizeof(VBdesc);
       hr=dx_gnc->_pVB->GetVertexBufferDesc(&VBdesc);   // would be useful to keep fvf in vertbuf struct to avoid having to do this
       if(FAILED(hr)) {
-        dxgsg_cat.error() << "error in getvbdesc: " << ConvD3DErrorToString(hr) << endl;
+        dxgsg_cat.error() << "error in getvbdesc: " << D3DERRORSTRING(hr);
         exit(1);
       }
     
@@ -7381,13 +6760,13 @@ draw_geom_node(GeomNode *node, GeomNodeContext *gnc) {
     
       hr=dx_gnc->_pXformed_VB->ProcessVertices(PVOp,0,dx_gnc->_num_verts,dx_gnc->_pVB,0,scrn.pD3DDevice,0x0);
       if(FAILED(hr)) {
-        dxgsg_cat.error() << "error in ProcessVertices: " << ConvD3DErrorToString(hr) << endl;
+        dxgsg_cat.error() << "error in ProcessVertices: " << D3DERRORSTRING(hr);
         exit(1);
       }
 
       // disable clipping, since VB is already xformed and clipped
       if(_clipping_enabled)
-          scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CLIPPING, false);
+          scrn.pD3DDevice->SetRenderState(D3DRS_CLIPPING, false);
   }
 
   // assume we need gouraud for now.  we can make this more complex to select flat conditionally later
@@ -7415,7 +6794,7 @@ draw_geom_node(GeomNode *node, GeomNodeContext *gnc) {
   }
 
   if((!scrn.bIsTNLDevice) && _clipping_enabled)
-      scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CLIPPING, true);
+      scrn.pD3DDevice->SetRenderState(D3DRS_CLIPPING, true);
 
   // Also draw all the dynamic Geoms.
   for (i = 0; i < dx_gnc->_other_geoms.size(); i++) {
@@ -7449,4 +6828,155 @@ release_geom_node(GeomNodeContext *gnc) {
     dx_gnc->_node->clear_gsg(this);
     delete dx_gnc;  // should release vertex buffer
   }
+}
+
+HRESULT CreateDX8Cursor(LPDIRECT3DDEVICE8 pd3dDevice, HCURSOR hCursor,BOOL bAddWatermark) {
+// copied directly from dxsdk SetDeviceCursor
+    HRESULT hr = E_FAIL;
+    ICONINFO iconinfo;
+    LPDIRECT3DSURFACE8 pCursorBitmap = NULL;
+    HDC hdcColor = NULL;
+    HDC hdcMask = NULL;
+    HDC hdcScreen = NULL;
+    BITMAP bm;
+    DWORD dwWidth,dwHeightSrc,dwHeightDest;
+    COLORREF crColor,crMask;
+    UINT x,y;
+    BITMAPINFO bmi;
+    COLORREF* pcrArrayColor = NULL;
+    COLORREF* pcrArrayMask = NULL;
+    DWORD* pBitmap;
+    HGDIOBJ hgdiobjOld;
+    BOOL bBWCursor;
+
+    ZeroMemory( &iconinfo, sizeof(iconinfo) );
+    if( !GetIconInfo( hCursor, &iconinfo ) )
+        goto End;
+
+    if (0 == GetObject((HGDIOBJ)iconinfo.hbmMask, sizeof(BITMAP), (LPVOID)&bm))
+        goto End;
+    dwWidth = bm.bmWidth;
+    dwHeightSrc = bm.bmHeight;
+
+    if( iconinfo.hbmColor == NULL ) {
+        bBWCursor = TRUE;
+        dwHeightDest = dwHeightSrc / 2;
+    } else {
+        bBWCursor = FALSE;
+        dwHeightDest = dwHeightSrc;
+    }
+
+    // Create a surface for the cursor
+    if( FAILED( hr = pd3dDevice->CreateImageSurface( dwWidth, dwHeightDest, 
+        D3DFMT_A8R8G8B8, &pCursorBitmap ) ) ) {
+        goto End;
+    }
+
+    pcrArrayMask = new DWORD[dwWidth * dwHeightSrc];
+
+    ZeroMemory(&bmi, sizeof(bmi));
+    bmi.bmiHeader.biSize = sizeof(bmi.bmiHeader);
+    bmi.bmiHeader.biWidth = dwWidth;
+    bmi.bmiHeader.biHeight = dwHeightSrc;
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;
+    bmi.bmiHeader.biCompression = BI_RGB;
+
+    hdcScreen = GetDC( NULL );
+    hdcMask = CreateCompatibleDC( hdcScreen );
+    if( hdcMask == NULL )
+    {
+        hr = E_FAIL;
+        goto End;
+    }
+    hgdiobjOld = SelectObject(hdcMask, iconinfo.hbmMask);
+    GetDIBits(hdcMask, iconinfo.hbmMask, 0, dwHeightSrc, 
+        pcrArrayMask, &bmi, DIB_RGB_COLORS);
+    SelectObject(hdcMask, hgdiobjOld);
+
+    if (!bBWCursor)
+    {
+        pcrArrayColor = new DWORD[dwWidth * dwHeightDest];
+        hdcColor = CreateCompatibleDC( GetDC( NULL ) );
+        if( hdcColor == NULL )
+        {
+            hr = E_FAIL;
+            goto End;
+        }
+        SelectObject(hdcColor, iconinfo.hbmColor);
+        GetDIBits(hdcColor, iconinfo.hbmColor, 0, dwHeightDest, 
+            pcrArrayColor, &bmi, DIB_RGB_COLORS);
+    }
+
+    // Transfer cursor image into the surface
+    D3DLOCKED_RECT lr;
+    pCursorBitmap->LockRect( &lr, NULL, 0 );
+    pBitmap = (DWORD*)lr.pBits;
+    for( y = 0; y < dwHeightDest; y++ )
+    {
+        for( x = 0; x < dwWidth; x++ )
+        {
+            if (bBWCursor)
+            {
+                crColor = pcrArrayMask[dwWidth*(dwHeightDest-1-y) + x];
+                crMask = pcrArrayMask[dwWidth*(dwHeightSrc-1-y) + x];
+            }
+            else
+            {
+                crColor = pcrArrayColor[dwWidth*(dwHeightDest-1-y) + x];
+                crMask = pcrArrayMask[dwWidth*(dwHeightDest-1-y) + x];
+            }
+            if (crMask == 0)
+                pBitmap[dwWidth*y + x] = 0xff000000 | crColor;
+            else
+                pBitmap[dwWidth*y + x] = 0x00000000;
+
+            // It may be helpful to make the D3D cursor look slightly 
+            // different from the Windows cursor so you can distinguish 
+            // between the two when developing/testing code.  When
+            // bAddWatermark is TRUE, the following code adds some
+            // small grey "D3D" characters to the upper-left corner of
+            // the D3D cursor image.
+            if( bAddWatermark && x < 12 && y < 5 )
+            {
+                // 11.. 11.. 11.. .... CCC0
+                // 1.1. ..1. 1.1. .... A2A0
+                // 1.1. .1.. 1.1. .... A4A0
+                // 1.1. ..1. 1.1. .... A2A0
+                // 11.. 11.. 11.. .... CCC0
+
+                const WORD wMask[5] = { 0xccc0, 0xa2a0, 0xa4a0, 0xa2a0, 0xccc0 };
+                if( wMask[y] & (1 << (15 - x)) )
+                {
+                    pBitmap[dwWidth*y + x] |= 0xff808080;
+                }
+            }
+        }
+    }
+    pCursorBitmap->UnlockRect();
+
+    // Set the device cursor
+    if( FAILED( hr = pd3dDevice->SetCursorProperties( iconinfo.xHotspot, 
+        iconinfo.yHotspot, pCursorBitmap ) ) )
+    {
+        goto End;
+    }
+
+    hr = S_OK;
+
+End:
+    if( iconinfo.hbmMask != NULL )
+        DeleteObject( iconinfo.hbmMask );
+    if( iconinfo.hbmColor != NULL )
+        DeleteObject( iconinfo.hbmColor );
+    if( hdcScreen != NULL )
+        ReleaseDC( NULL, hdcScreen );
+    if( hdcColor != NULL )
+        DeleteDC( hdcColor );
+    if( hdcMask != NULL )
+        DeleteDC( hdcMask );
+    SAFE_DELETE_ARRAY( pcrArrayColor );
+    SAFE_DELETE_ARRAY( pcrArrayMask );
+    SAFE_RELEASE( pCursorBitmap );
+    return hr;
 }

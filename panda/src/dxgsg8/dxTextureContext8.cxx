@@ -1,5 +1,5 @@
-// Filename: dxTextureContext.cxx
-// Created by:  drose (07Oct99)
+// Filename: dxTextureContext8.cxx
+// Created by:  georges (02Feb02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,28 +18,48 @@
 
 #include <assert.h>
 #include <time.h>
-#include "dxTextureContext.h"
-#include "config_dxgsg.h"
-#include "dxGraphicsStateGuardian.h"
-#include "pnmImage.h"
+#include "dxTextureContext8.h"
+#include "config_dxgsg8.h"
+#include "dxGraphicsStateGuardian8.h"
+//#include "pnmImage.h"
+#include "d3dx8tex.h"
 
 //#define FORCE_16bpp_1555
+static const DWORD g_LowByteMask = 0x000000FF;
 
+#define PANDA_BGRA_ORDER
+
+#ifdef PANDA_BGRA_ORDER
+// assume Panda uses byte-order BGRA/LA to store pixels, which when read into little-endian word is ARGB/AL
+// these macros GET from PixelBuffer, (wont work from DDSurface)
+#define GET_RED_BYTE(PIXEL_DWORD)  ((BYTE)((PIXEL_DWORD >> 16) & g_LowByteMask))
+#define GET_BLUE_BYTE(PIXEL_DWORD) ((BYTE)((PIXEL_DWORD)       & g_LowByteMask))
+#else 
+// otherwise Panda uses int ABGR (big-endian RGBA order), (byte-order RGBA or RGB)
+#define GET_RED_BYTE(PIXEL_DWORD)  ((BYTE)(PIXEL_DWORD         & g_LowByteMask))
+#define GET_BLUE_BYTE(PIXEL_DWORD) ((BYTE)((PIXEL_DWORD >> 16) & g_LowByteMask))
+#endif
+
+#define GET_GREEN_BYTE(PIXEL_DWORD) ((BYTE)((PIXEL_DWORD >> 8) & g_LowByteMask))
+#define GET_ALPHA_BYTE(PIXEL_DWORD) ((BYTE)(((DWORD)PIXEL_DWORD) >> 24))  // unsigned >> shifts in 0's, so dont need to mask off upper bits
+
+#ifdef DO_CUSTOM_CONVERSIONS
 typedef enum {
-    None,Conv32to32,Conv32to32_NoAlpha,Conv32to24,Conv32to16_0555,
+    None,Conv32to32,Conv32to32_NoAlpha,Conv32to24,Conv32to16_X555,
     Conv32to16_1555,Conv32to16_0565,Conv32to16_4444,Conv24to32,Conv24to24,
-    Conv24to16_0555,Conv24to16_0565,ConvLum16to16_1555,ConvLum16to16_4444,
-    ConvLum16to32,ConvLum16to16,ConvLum8to8,ConvLum8to24,ConvLum8to32,ConvLum8to16_0555,ConvLum8to16_0565,
-    ConvAlpha8to16_4444,ConvAlpha8to32,ConvAlpha8to8
+    Conv24to16_X555,Conv24to16_0565,ConvLum16to16_1555,ConvLum16to16_4444,
+    ConvLum16to32,ConvLum16to16,ConvLum8to8,ConvLum8to24,ConvLum8to32,ConvLum8to16_X555,ConvLum8to16_0565,ConvLum8to16_A8L8,
+    ConvAlpha8to16_4444,ConvAlpha8to32,ConvAlpha8to8,ConvAlpha8to16_A8L8
 } ConversionType;
 
 #ifndef NDEBUG
-char *ConvNameStrs[] = {"None","Conv32to32","Conv32to32_NoAlpha","Conv32to24","Conv32to16_0555",
-    "Conv32to16_1555","Conv32to16_0565","Conv32to16_4444","Conv24to32","Conv24to24",
-    "Conv24to16_0555","Conv24to16_0565","ConvLum16to16_1555","ConvLum16to16_4444",
-    "ConvLum16to32","ConvLum16to16","ConvLum8to8","ConvLum8to24","ConvLum8to32",
-    "ConvLum8to16_0555","ConvLum8to16_0565","ConvAlpha8to16_4444","ConvAlpha8to32","ConvAlpha8to8"
+char *ConvNameStrs[] = {"None","Conv32to32","Conv32to32_NoAlpha","Conv32to24","Conv32to16_X555",
+    "Conv32to16_1555","Conv32to16_0565","Conv32to16_4444","Conv24to32","Conv24to24","Conv24to16_X555","Conv24to16_0565",
+    "ConvLum16to16_1555","ConvLum16to16_4444","ConvLum16to32","ConvLum16to16","ConvLum8to8","ConvLum8to24","ConvLum8to32",
+    "ConvLum8to16_X555","ConvLum8to16_0565","ConvLum8to16_A8L8",
+    "ConvAlpha8to16_4444","ConvAlpha8to32","ConvAlpha8to8","ConvAlpha8to16_A8L8"
 };
+#endif
 #endif
 
 char *PandaFilterNameStrs[] = {"FT_nearest","FT_linear","FT_nearest_mipmap_nearest","FT_linear_mipmap_nearest",
@@ -145,12 +165,12 @@ get_bits_per_pixel(PixelBuffer::Format format, int *alphbits) {
     switch(format) {
         case PixelBuffer::F_alpha:
             *alphbits = 8;
-            return 8;
         case PixelBuffer::F_color_index:
         case PixelBuffer::F_red:
         case PixelBuffer::F_green:
         case PixelBuffer::F_blue:
         case PixelBuffer::F_rgb332:
+            return 8;
         case PixelBuffer::F_luminance_alphamask:
             *alphbits = 1;
             return 16;
@@ -173,10 +193,10 @@ get_bits_per_pixel(PixelBuffer::Format format, int *alphbits) {
             return 24;
         case PixelBuffer::F_rgba8:
         case PixelBuffer::F_rgba:
-            *alphbits = 8;
-            return 32;
         case PixelBuffer::F_rgbm:
-            *alphbits = 1;
+            if(format==PixelBuffer::F_rgbm)   // does this make any sense?
+             *alphbits = 1;
+            else *alphbits = 8;
             return 32;
         case PixelBuffer::F_rgb12:
             return 36;
@@ -187,6 +207,9 @@ get_bits_per_pixel(PixelBuffer::Format format, int *alphbits) {
     return 8;
 }
 
+/*   // This is superseded by D3DXLoadSurfaceFromMemory(), but keep this stuff around in case its needed
+
+#ifdef DO_CUSTOM_CONVERSIONS
 HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWSURFACE7 pDDSurf) {
     HRESULT hr;
     DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd);
@@ -200,6 +223,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
         dxgsg_cat.error() << "CreateTexture failed: _surface->Lock() failed on texture! hr = " << ConvD3DErrorToString(hr) << "\n";
         return hr;
     }
+
     //pbuf contains raw ARGB in PixelBuffer byteorder
 
     DWORD lPitch = ddsd.lPitch;
@@ -210,70 +234,72 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
         case Conv32to32:
         case Conv32to32_NoAlpha: {
 
-                DWORD *pSrcWord = (DWORD *) pbuf;
-                DWORD *pDstWord;
-                DWORD dwAlphaMaskOff = (ConvNeeded==Conv32to32_NoAlpha) ? 0x00FFFFFF : 0xFFFFFFFF;
+#ifdef PANDA_BGRA_ORDER
+                if(ConvNeeded==Conv32to32) {
+                    memcpy(pDDSurfBytes,(BYTE*) pbuf,dwOrigWidth*dwOrigHeight*sizeof(DWORD));
+                } else {
+                    DWORD *pSrcWord = (DWORD *) pbuf;
+                    DWORD *pDstWord;
+
+                    // need to set all pixels alpha to 0xFF
+                    for(DWORD y=0; y<dwOrigHeight; y++,pDDSurfBytes+=ddsd.lPitch) {
+                        pDstWord = (DWORD*)pDDSurfBytes;
+                        for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord++,pDstWord++) {
+                            *pDstWord = *pSrcWord | 0xFF000000;
+                        }
+                    }
+                }
+#else
+                DWORD *pDstWord,*pSrcWord = (DWORD *) pbuf;
+                DWORD dwAlphaMaskOn = (ConvNeeded==Conv32to32_NoAlpha) ? 0xFF000000 : 0x0;
 
                 for(DWORD y=0; y<dwOrigHeight; y++,pDDSurfBytes+=ddsd.lPitch) {
                     pDstWord = (DWORD*)pDDSurfBytes;
-
                     for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord++,pDstWord++) {
                         DWORD dwPixel = *pSrcWord;
 
-                  // pixel buffer is in ABGR format(it stores big-endian RGBA)
-                  // need to change byte order to ARGB
-#if 0
-                        BYTE r,g,b,a;
-                        a = (BYTE)((dwPixel>>24));   // unsigned >>, no need to &
-                        b = (BYTE)((dwPixel>>16)&0x000000ff);
-                        g = (BYTE)((dwPixel>> 8)&0x000000ff);
-                        r = (BYTE)((dwPixel    )&0x000000ff);
+                        // pixel buffer is in ABGR format(it stores big-endian RGBA)
+                        // need to change byte order to ARGB
 
-                        *pDstWord = (a << 24) | (r << 16)| (g << 8) | b;
-#else
                         BYTE r,b;
-                  // simpler: just swap r & b
-                        b = (BYTE)((dwPixel>>16)&0x000000ff);
-                        r = (BYTE)((dwPixel    )&0x000000ff);
-                        *pDstWord = ((dwPixel & 0xff00ff00) | (r<<16) | b) & dwAlphaMaskOff;
-#endif
+                        // just swap r & b
+                        b = GET_BLUE_BYTE(dwPixel);
+                        r = GET_RED_BYTE(dwPixel);
+                        *pDstWord = ((dwPixel & 0xff00ff00) | (r<<16) | b) | dwAlphaMaskOn;
                     }
                 }
+#endif
                 break;
             }
 
         case Conv32to16_1555:
-        case Conv32to16_0555: {
+        case Conv32to16_X555: {
                 DWORD *pSrcWord = (DWORD *) pbuf;
                 WORD *pDstWord;
-                DWORD dwAlphaMaskOff = (ConvNeeded==Conv32to16_0555) ? 0x7FFF : 0xFFFF;
+
+                unsigned short dwAlphaMaskOn = (ConvNeeded==Conv32to16_X555) ? 0x8000 : 0x0;
 
                 assert(ddsd.ddpfPixelFormat.dwRBitMask==0x7C00);
-          // for some reason, bits are 'in-order' when converting to 16bit
 
-          // just handle 1/15 alpha/rgb
                 for(DWORD y=0; y<dwOrigHeight; y++,pDDSurfBytes+=ddsd.lPitch) {
                     pDstWord = (WORD*)pDDSurfBytes;
 
                     for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord++,pDstWord++) {
                         BYTE r,g,b;
-                        DWORD abit,dwPixel = *pSrcWord;
+                        DWORD dwPixel = *pSrcWord;
+                        unsigned short abit;
 
-                  // pixel buffer is in ABGR format (orig fmt designed for big-endian RGBA)
-                  // need to change byte order to ARGB
+                        // just look at most-signf-bit for alpha.  (alternately, could
+                        // convert any non-zero alpha to full transparent)
 
-                        abit = ((dwPixel>>16) & 0x00008000);  // just copy high bit
+                        abit = ((dwPixel>>16) & 0x00008000) | dwAlphaMaskOn;  // just copy high bit
+                        g = GET_GREEN_BYTE(dwPixel) >> 3;
+                        b = GET_BLUE_BYTE(dwPixel) >> 3;
+                        r = GET_RED_BYTE(dwPixel) >> 3;
 
-                  // just look at most-signf-bit for alpha.  (alternately, could
-                  // convert any non-zero alpha to full transparent)
+                        // truncates 8 bit values to 5 bit (or 1 for alpha)
 
-                        b = (BYTE)((dwPixel>>16) & 0x000000ff)    >> 3;
-                        g = (BYTE)((dwPixel>> 8) & 0x000000ff)    >> 3;
-                        r = (BYTE)((dwPixel    ) & 0x000000ff)    >> 3;
-
-                  // code truncates 8 bit values to 5 bit (or 1 for alpha)
-
-                        *pDstWord = (abit | (r << 10)| (g << 5) | b) & dwAlphaMaskOff;
+                        *pDstWord = (abit | (r << 10)| (g << 5) | b);
                     }
                 }
                 break;
@@ -284,9 +310,8 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                 WORD *pDstWord;
 
                 assert(ddsd.ddpfPixelFormat.dwRBitMask==0xF800);
-          // for some reason, bits are 'in-order' when converting to 16bit
+                // for some reason, bits are 'in-order' when converting to 16bit
 
-          // just handle 1/15 alpha/rgb
                 for(DWORD y=0; y<dwOrigHeight; y++,pDDSurfBytes+=ddsd.lPitch) {
                     pDstWord = (WORD*)pDDSurfBytes;
 
@@ -294,51 +319,14 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                         BYTE r,g,b;
                         DWORD dwPixel = *pSrcWord;
 
-                  // pixel buffer is in ABGR format (orig fmt designed for big-endian RGBA)
-                  // need to change byte order to ARGB
-
-                  // just look at most-signf-bit for alpha.  (alternately, could
-                  // convert any non-zero alpha to full transparent)
-
-                        b = (BYTE)((dwPixel>>16) & 0x000000ff)    >> 3;
-                        g = (BYTE)((dwPixel>> 8) & 0x000000ff)    >> 2;
-                        r = (BYTE)((dwPixel    ) & 0x000000ff)    >> 3;
-
-                  // code truncates 8 bit values to 5 bit (or 1 for alpha)
-
+                        g = GET_GREEN_BYTE(dwPixel) >> 2;
+                        b = GET_BLUE_BYTE(dwPixel) >> 3;
+                        r = GET_RED_BYTE(dwPixel) >> 3;
                         *pDstWord = ((r << 11)| (g << 5) | b);
                     }
                 }
                 break;
             }
-
-
-        case Conv32to24: {
-
-                DWORD *pSrcWord = (DWORD *) pbuf;
-                BYTE *pDstWord;
-
-                for(DWORD y=0; y<dwOrigHeight; y++,pDDSurfBytes+=ddsd.lPitch) {
-                    pDstWord = (BYTE*)pDDSurfBytes;
-
-                    for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord++,pDstWord+=3) {
-                  // pixel buffer is in ABGR format(it stores big-endian RGBA)
-                  // need to change byte order to ARGB
-                        BYTE r,g,b;
-                        DWORD dwPixel = *pSrcWord;
-
-                        b = (BYTE)((dwPixel>>16) & 0x000000ff);
-                        g = (BYTE)((dwPixel>> 8) & 0x000000ff);
-                        r = (BYTE)((dwPixel    ) & 0x000000ff);
-
-                        *pDstWord     = r;
-                        *(pDstWord+1) = g;
-                        *(pDstWord+2) = b;
-                    }
-                }
-                break;
-            }
-
 
         case Conv32to16_4444: {
                 DWORD *pSrcWord = (DWORD *) pbuf;
@@ -354,13 +342,10 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                         BYTE r,g,b,a;
                         DWORD dwPixel = *pSrcWord;
 
-                  // pixel buffer is in ABGR format (orig fmt designed for big-endian RGBA)
-                  // need to change byte order to ARGB
-
-                        a = (BYTE)((dwPixel>>24))                   >> 4;
-                        b = (BYTE)((dwPixel>>16) & 0x000000ff)      >> 4;
-                        g = (BYTE)((dwPixel>> 8) & 0x000000ff)      >> 4;
-                        r = (BYTE)((dwPixel    ) & 0x000000ff)      >> 4;
+                        a = GET_ALPHA_BYTE(dwPixel)  >> 4;
+                        g = GET_GREEN_BYTE(dwPixel)  >> 4;
+                        b = GET_BLUE_BYTE(dwPixel)   >> 4;
+                        r = GET_RED_BYTE(dwPixel)    >> 4;
 
                         *pDstWord = (a << 12) | (r << 8)| (g << 4) | b;
                     }
@@ -368,19 +353,43 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                 break;
             }
 
+        case Conv32to24: {
 
-        case Conv24to24: {
-
-                BYTE *pSrcWord = (BYTE *) pbuf;
+                DWORD *pSrcWord = (DWORD *) pbuf;
                 BYTE *pDstWord;
 
+                for(DWORD y=0; y<dwOrigHeight; y++,pDDSurfBytes+=ddsd.lPitch) {
+                    pDstWord = (BYTE*)pDDSurfBytes;
+
+                    for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord++,pDstWord+=3) {
+                        BYTE r,g,b;
+                        DWORD dwPixel = *pSrcWord;
+
+                        r = GET_RED_BYTE(dwPixel);
+                        g = GET_GREEN_BYTE(dwPixel);
+                        b = GET_BLUE_BYTE(dwPixel);
+
+                        *pDstWord     = r;
+                        *(pDstWord+1) = g;
+                        *(pDstWord+2) = b;
+                    }
+                }
+                break;
+            }
+
+
+        case Conv24to24: {
+            #ifdef PANDA_BGRA_ORDER
+                memcpy(pDDSurfBytes,(BYTE*)pbuf,dwOrigHeight*dwOrigWidth*3);
+            #else
+                BYTE *pSrcWord = (BYTE *) pbuf;
+                BYTE *pDstWord;
+            
                 for(DWORD y=0; y<dwOrigHeight; y++,pDDSurfBytes += ddsd.lPitch) {
                     pDstWord = (BYTE*)pDDSurfBytes;
 
                     for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord+=3,pDstWord+=3) {
                         BYTE r,g,b;
-                        // pixel buffer is in ABGR format(it stores big-endian RGBA)
-                        // need to change byte order to ARGB
 
                         b = *pSrcWord;
                         g = *(pSrcWord+1);
@@ -391,10 +400,11 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                         *(pDstWord+2) = b;
                     }
                 }
+             #endif
                 break;
             }
 
-        case Conv24to16_0555: {
+        case Conv24to16_X555: {
                 BYTE *pSrcWord = (BYTE *) pbuf;
                 WORD *pDstWord;
 
@@ -407,15 +417,16 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                     for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord+=3,pDstWord++) {
                         BYTE r,g,b;
 
-                     // pixel buffer is in ABGR format (orig fmt designed for big-endian RGBA)
-                     // need to change byte order to ARGB
+                    #ifdef PANDA_BGRA_ORDER
+                        b = *pSrcWord       >> 3;
+                        r = *(pSrcWord+2)   >> 3;
+                    #else
                         r = *pSrcWord       >> 3;
+                        b = *(pSrcWord+2)   >> 3;                   
+                    #endif
                         g = *(pSrcWord+1)   >> 3;
-                        b = *(pSrcWord+2)   >> 3;
 
-                     // code truncates 8 bit values to 5 bit, leaves high bit as 0
-
-                        *pDstWord = (r << 10)| (g << 5) | b;
+                        *pDstWord = 0x8000 | (r << 10)| (g << 5) | b;
                     }
                 }
                 break;
@@ -426,7 +437,6 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                 WORD *pDstWord;
 
                 assert(ddsd.ddpfPixelFormat.dwRBitMask==0xF800);
-             // for some reason, bits are 'in-order' when converting to 16bit
 
                 for(DWORD y=0; y<dwOrigHeight; y++,pDDSurfBytes += ddsd.lPitch) {
                     pDstWord = (WORD*)pDDSurfBytes;
@@ -434,22 +444,23 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                     for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord+=3,pDstWord++) {
                         BYTE r,g,b;
 
-                     // pixel buffer is in ABGR format (orig fmt designed for big-endian RGBA)
-                     // need to change byte order to ARGB
+                    #ifdef PANDA_BGRA_ORDER
+                        b = *pSrcWord       >> 3;
+                        g = *(pSrcWord+1)   >> 2;
+                        r = *(pSrcWord+2)   >> 3;
+                    #else
                         r = *pSrcWord       >> 3;
                         g = *(pSrcWord+1)   >> 2;
                         b = *(pSrcWord+2)   >> 3;
-
-                     // code truncates 8 bit values to 5 bit, leaves high bit as 0
-
-                        *pDstWord = (r << 11)| (g << 5) | b;
+                    #endif
+                     // code truncates 8 bit values to 5 bit
+                     *pDstWord = (r << 11)| (g << 5) | b;                   
                     }
                 }
                 break;
             }
 
         case Conv24to32: {
-
                 BYTE *pSrcWord = (BYTE *) pbuf;
                 DWORD *pDstWord;
 
@@ -458,25 +469,25 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
 
                     for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord+=3,pDstWord++) {
                         BYTE r,g,b;
-                  // pixel buffer is in ABGR format(it stores big-endian RGBA)
-                  // need to change byte order to ARGB
+                        // pixel buffer is in ABGR format(it stores big-endian RGBA)
+                        // need to change byte order to ARGB
 
-                  // bugbug?  swapping doesnt work  I dont understand why must
-                  // swap bytes for 32-bit RGBA (herc) but not here in 24bit,
-                  // where they seem to be in correct order in pixelbuffer
-
+                    #ifdef PANDA_BGRA_ORDER
+                        b = *pSrcWord;
+                        r = *(pSrcWord+2);
+                    #else
                         r = *pSrcWord;
-                        g = *(pSrcWord+1);
                         b = *(pSrcWord+2);
+                    #endif
+                        g = *(pSrcWord+1);
 
-                        *pDstWord = 0xFF000000 | (r << 16)| (g << 8) | b;
+                        *pDstWord = 0xFF000000 | (r << 16) | (g << 8) | b;
                     }
                 }
                 break;
             }
 
         case ConvLum16to32: {
-
                 WORD *pSrcWord = (WORD *) pbuf;
                 DWORD *pDstWord;
 
@@ -484,15 +495,14 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                     pDstWord = (DWORD *)pDDSurfBytes;
 
                     for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord++,pDstWord++) {
-                  // pixel buffer is in ABGR format(it stores big-endian RGBA)
-                  // need to change byte order to ARGB
+                        // pixel buffer is in ABGR format(it stores big-endian RGBA)
+                        // need to change byte order to ARGB
                         DWORD dwPixel=*pSrcWord;
-                        BYTE r,a;
+                        BYTE lum,a;
 
                         a = dwPixel >> 8;
-                        r = dwPixel & 0xFF;
-
-                        *pDstWord = (a<<24)| (r << 16)| (r << 8) | r;
+                        lum = dwPixel & 0xFF;
+                        *pDstWord = (a<<24) | lum | (lum << 8) | (lum << 16);
                     }
                 }
                 break;
@@ -509,13 +519,13 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
 
                     for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord++,pDstWord++) {
                         DWORD dwPixel=*pSrcWord;
-                        BYTE r,a;
+                        BYTE lum,a;
                         dwPixel = *pSrcWord;
 
-                        a = (BYTE)(dwPixel>>8)           >> 4;
-                        r = (BYTE)(dwPixel & 0x000000ff) >> 4;
+                        a =   (BYTE)(dwPixel>>8)           >> 4;
+                        lum = (BYTE)(dwPixel & 0x000000ff) >> 4;
 
-                        *pDstWord = (a << 12) | (r << 8)| (r << 4) | r;
+                        *pDstWord = (a << 12) | lum | (lum << 4)| (lum << 8);
                     }
                 }
                 break;
@@ -531,30 +541,30 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                     pDstWord = (WORD*)pDDSurfBytes;
 
                     for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord++,pDstWord++) {
-                        DWORD dwPixel=*pSrcWord;
-                        BYTE r;
+                        WORD dwPixel=*pSrcWord;
+                        BYTE lum;
 
-                        r = (BYTE)(dwPixel & 0x000000ff) >> 3;
+                        lum = (BYTE)(dwPixel & 0x00FF) >> 3;
 
-                        *pDstWord = (dwPixel & 0x8000) | (r << 10)| (r << 5) | r;
+                        *pDstWord = (dwPixel & 0x8000) | lum | (lum << 5) | (lum << 10);
                     }
                 }
                 break;
             }
 
         case ConvLum16to16: {
-            // AL bytes are in same order
+                // All bytes are in same order?
                 CopyMemory(pDDSurfBytes,pbuf,dwOrigWidth*dwOrigHeight*2);
                 break;
             }
 
         case ConvLum8to16_0565:
-        case ConvLum8to16_0555: {
+        case ConvLum8to16_X555: {
                 BYTE *pSrcWord = (BYTE *) pbuf;
                 WORD *pDstWord;
                 DWORD FarShift,OrVal,MiddleRoundShift;
 
-                if(ConvNeeded==ConvLum8to16_0555) {
+                if(ConvNeeded==ConvLum8to16_X555) {
                     FarShift=10;  OrVal=0x8000;  // turn on alpha bit, just in case
                     MiddleRoundShift = 3;
                     assert(ddsd.ddpfPixelFormat.dwRBitMask==0x7C00);
@@ -574,7 +584,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                         r = (BYTE) dwPixel >> 3;
                         GrnVal = (BYTE) dwPixel >> MiddleRoundShift;
 
-                  // code truncates 8 bit values to 5 bit  (set alpha=1 for opaque)
+                        // code truncates 8 bit values to 5 bit  (set alpha=1 for opaque)
 
                         *pDstWord = ((r << FarShift)| (GrnVal << 5) | r) | OrVal;
                     }
@@ -599,15 +609,14 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                     for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord++,pDstWord++) {
                         DWORD dwPixel=*pSrcWord;
 
-                        *pDstWord = 0xFF000000 | (dwPixel<<16) | (dwPixel<<8) | dwPixel;
+                        *pDstWord = 0xFF000000 | dwPixel | (dwPixel << 8) | (dwPixel<<16);
                     }
                 }
                 break;
             }
 
         case ConvLum8to24: {
-
-          // this is kind of a waste of space, but we trade it for lum resolution
+                // this is kind of a waste of space, but we trade it for lum resolution
                 BYTE *pSrcWord = (BYTE *) pbuf;
                 BYTE *pDstWord;
 
@@ -625,9 +634,38 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                 break;
             }
 
-        case ConvAlpha8to32: {
+       case ConvLum8to16_A8L8: {
+                // wastes space, since alpha is just fully opaque, but Lum-only may not be avail
+                BYTE *pSrcWord = (BYTE *) pbuf;
+                WORD *pDstWord;
 
-              //  waste of space, but this is only place we can get 8bits alpha resolution
+                for(DWORD y=0; y<dwOrigHeight; y++,pDDSurfBytes += ddsd.lPitch) {
+                    pDstWord = (DWORD *)pDDSurfBytes;
+
+                    for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord++,pDstWord++) {
+                        *pDstWord = 0xFF00 | *pSrcWord;   // add fully-opaque alpha
+                    }
+                }
+                break;
+        }
+
+        case ConvAlpha8to16_A8L8: {
+            // need to investigate why alpha-only A8 surfaces dont work on voodoo's
+                BYTE *pSrcWord = (BYTE *) pbuf;
+                WORD *pDstWord;
+
+                for(DWORD y=0; y<dwOrigHeight; y++,pDDSurfBytes += ddsd.lPitch) {
+                    pDstWord = (DWORD *)pDDSurfBytes;
+
+                    for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord++,pDstWord++) {
+                        *pDstWord = *pSrcWord | 0x00FF;   // add full white
+                    }
+                }
+                break;
+        }
+
+        case ConvAlpha8to32: {
+              //  huge waste of space, but this may be only fmt where we get 8bits alpha resolution
                 BYTE *pSrcWord = (BYTE *) pbuf;
                 DWORD *pDstWord;
 
@@ -636,7 +674,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
 
                     for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord++,pDstWord++) {
                         // OR alpha with full white
-                        *pDstWord = (*pSrcWord << 24) | 0xFFFFFF;
+                        *pDstWord = (*pSrcWord << 24) | 0x00FFFFFF;
                     }
                 }
                 break;
@@ -669,34 +707,46 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
 
     return S_OK;
 }
+#endif
+*/
 
-HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) {
-
+// still need custom conversion since d3d/d3dx has no way to convert arbitrary fmt to ARGB in-memory user buffer
+HRESULT ConvertD3DSurftoPixBuf(IDirect3DSurface8 *pD3DSurf8,PixelBuffer *pixbuf) {
     HRESULT hr;
-    DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd);
-
     DWORD dwNumComponents=pixbuf->get_num_components();
 
     assert(pixbuf->get_component_width()==sizeof(BYTE));   // cant handle anything else now
     assert(pixbuf->get_image_type()==PixelBuffer::T_unsigned_byte);   // cant handle anything else now
     assert((dwNumComponents==3) || (dwNumComponents==4));  // cant handle anything else now
+    assert(pD3DSurf8!=NULL);
 
     BYTE *pbuf=pixbuf->_image.p();
 
-    if(IsBadWritePtr(pDDSurf,sizeof(DWORD))) {
-        dxgsg_cat.error() << "ConvertDDSurftoPixBuf failed: bad pDDSurf ptr value (" << ((void*)pDDSurf) << ")\n";
+    if(IsBadWritePtr(pD3DSurf8,sizeof(DWORD))) {
+        dxgsg_cat.error() << "ConvertDDSurftoPixBuf failed: bad pD3DSurf ptr value (" << ((void*)pD3DSurf8) << ")\n";
         exit(1);
     }
 
-    if(FAILED( hr = pDDSurf->Lock( NULL, &ddsd,  DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL ))) {
-        dxgsg_cat.error() << "ConvertDDSurftoPixBuf Lock() failed! hr = " << ConvD3DErrorToString(hr) << "\n";
+    D3DLOCKED_RECT LockedRect;
+    D3DSURFACE_DESC SurfDesc;
+
+    hr = pD3DSurf8->GetDesc(&SurfDesc);
+
+    hr = pD3DSurf8->LockRect(&LockedRect,(CONST RECT*)NULL,(D3DLOCK_READONLY | D3DLOCK_NO_DIRTY_UPDATE /* | D3DLOCK_NOSYSLOCK */));
+    if(FAILED(hr)) {
+        dxgsg_cat.error() << "ConvertDDSurftoPixBuf LockRect() failed! hr = " << D3DERRORSTRING(hr);
         return hr;
     }
 
     DWORD dwXWindowOffset=0,dwYWindowOffset=0;
-    DWORD dwCopyWidth=ddsd.dwWidth,dwCopyHeight=ddsd.dwHeight;
+    DWORD dwCopyWidth=SurfDesc.Width,dwCopyHeight=SurfDesc.Height;
 
-   // get window offset so we know where to start grabbing pixels
+/*
+
+  bugbug: need to test scrngrab for windowed case.  do I need to do the clientrect stuff?
+  
+   // get window offset so we know where to start grabbing pixels.  note for
+   // fullscreen primary no clipper will be attached, that 'error' should be ignored
     LPDIRECTDRAWCLIPPER pDDClipper;
     hr = pDDSurf->GetClipper(&pDDClipper);
 
@@ -727,61 +777,127 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
 
         pDDClipper->Release();  // dec ref cnt
     }
-
+*/
     //make sure there's enough space in the pixbuf, its size must match (especially xsize)
    // or scanlines will be too long
 
-    if(!((dwCopyWidth==pixbuf->get_xsize()) && (dwCopyHeight<=pixbuf->get_ysize()))) {
-        pDDSurf->Unlock(NULL);
+    if(!((dwCopyWidth==pixbuf->get_xsize()) && (dwCopyHeight<=(DWORD)pixbuf->get_ysize()))) {
+        pD3DSurf8->UnlockRect();
+        dxgsg_cat.error() << "ConvertDDSurftoPixBuf, PixBuf size does not match display surface!\n";
         assert(0);
-        dxgsg_cat.error() << "ConvertDDSurftoPixBuf, PixBuf incorrect size to hold display surface!\n";
         return E_FAIL;
     }
 
-    // others not handled yet
-    assert((ddsd.ddpfPixelFormat.dwRGBBitCount==32)||(ddsd.ddpfPixelFormat.dwRGBBitCount==16)||(ddsd.ddpfPixelFormat.dwRGBBitCount==24));
+    // ones not listed not handled yet
+    assert((SurfDesc.Format==D3DFMT_A8R8G8B8)||(SurfDesc.Format==D3DFMT_X8R8G8B8)||(SurfDesc.Format==D3DFMT_R8G8B8)||
+           (SurfDesc.Format==D3DFMT_R5G6B5)||(SurfDesc.Format==D3DFMT_X1R5G5B5)||(SurfDesc.Format==D3DFMT_A1R5G5B5)||
+           (SurfDesc.Format==D3DFMT_A4R4G4B4));
 
     //pbuf contains raw ARGB in PixelBuffer byteorder
 
-    DWORD lPitch = ddsd.lPitch;
-    BYTE* pDDSurfBytes = (BYTE*)ddsd.lpSurface;
+    DWORD BytePitch = LockedRect.Pitch;
+    BYTE* pSurfBytes = (BYTE*)LockedRect.pBits;
 
-    if(dwNumComponents==4) {
-        DWORD *pDstWord = (DWORD *) pbuf;
-        switch(ddsd.ddpfPixelFormat.dwRGBBitCount) {
+    // writes out last line in DDSurf first in PixelBuf, so Y line order precedes inversely
 
-            case 32: {
+    if(dxgsg_cat.is_debug()) {
+        dxgsg_cat.debug() << "ConvertD3DSurftoPixBuf converting " << D3DFormatStr(SurfDesc.Format) << "bpp DDSurf to " 
+                          <<  dwNumComponents << "-channel panda PixelBuffer\n";
+    }
+
+    DWORD *pDstWord = (DWORD *) pbuf;
+    BYTE *pDstByte = (BYTE *) pbuf;
+
+    switch(SurfDesc.Format) {
+        case D3DFMT_A8R8G8B8:
+        case D3DFMT_X8R8G8B8: {
+            if(dwNumComponents==4) {
                     DWORD *pSrcWord;
-
-                    pDDSurfBytes+=ddsd.lPitch*(dwYWindowOffset+dwCopyHeight-1);
-                    for(DWORD y=0; y<dwCopyHeight; y++,pDDSurfBytes-=ddsd.lPitch) {
-                        pSrcWord = ((DWORD*)pDDSurfBytes)+dwXWindowOffset;
-                        for(DWORD x=0; x<dwCopyWidth; x++,pSrcWord++,pDstWord++) {
-                            BYTE r,g,b;
-                            DWORD dwPixel = *pSrcWord;
-
-                            // pixel buffer is in ABGR format(it stores big-endian RGBA)
-                            // need to change byte order from ARGB
-
-                            // simpler: just swap r & b
-                            r = (BYTE)((dwPixel>>16)&0x000000ff);
-                            g = (BYTE)((dwPixel>> 8)&0x000000ff);
-                            b = (BYTE)((dwPixel    )&0x000000ff);
-
-                            *pDstWord = (dwPixel & 0xff00ff00) | (r<<16) | b;
+                   #ifdef PANDA_BGRA_ORDER 
+                    BYTE *pDstLine = (BYTE*)pDstWord;
+                   #endif
+                   
+                        pSurfBytes+=BytePitch*(dwYWindowOffset+dwCopyHeight-1);
+                        for(DWORD y=0; y<dwCopyHeight; y++,pSurfBytes-=BytePitch) {
+                            pSrcWord = ((DWORD*)pSurfBytes)+dwXWindowOffset;
+                            #ifdef PANDA_BGRA_ORDER 
+                                memcpy(pDstLine,pSrcWord,BytePitch);
+                                pDstLine+=BytePitch;
+                            #else
+                                for(DWORD x=0; x<dwCopyWidth; x++,pSrcWord++,pDstWord++) {
+                                      DWORD dwPixel = *pSrcWord;
+                                      BYTE r,b;
+                                    
+                                      // DDsurf is in ARGB
+                                      r=  (BYTE) ((dwPixel >> 16) & g_LowByteMask);
+                                      b = (BYTE)  (dwPixel & g_LowByteMask);
+    
+                                      // want to write out ABGR
+                                      *pDstWord = (dwPixel & 0xFF00FF00) | (b<<16) | r;
+                                }
+                            #endif
                         }
+            } else {
+                // 24bpp pixbuf case (numComponents==3)
+                DWORD *pSrcWord;
+                pSurfBytes+=BytePitch*(dwYWindowOffset+dwCopyHeight-1);
+                for(DWORD y=0; y<dwCopyHeight; y++,pSurfBytes-=BytePitch) {
+                    pSrcWord = ((DWORD*)pSurfBytes)+dwXWindowOffset;
+
+                    for(DWORD x=0; x<dwCopyWidth; x++,pSrcWord++) {
+                        BYTE r,g,b;
+                        DWORD dwPixel = *pSrcWord;
+
+                        r = (BYTE)((dwPixel>>16) & g_LowByteMask);
+                        g = (BYTE)((dwPixel>> 8) & g_LowByteMask);
+                        b = (BYTE)((dwPixel    ) & g_LowByteMask);
+
+                        #ifdef PANDA_BGRA_ORDER
+                            *pDstByte++ = b;
+                            *pDstByte++ = g;
+                            *pDstByte++ = r;                            
+                        #else
+                            *pDstByte++ = r;
+                            *pDstByte++ = g;
+                            *pDstByte++ = b;
+                        #endif
                     }
-                    break;
                 }
+            }
+            break;
+        }
 
-            case 24: {
-                    BYTE *pSrcByte;
+        case D3DFMT_R8G8B8: {
+                BYTE *pSrcByte;
+                pSurfBytes+=BytePitch*(dwYWindowOffset+dwCopyHeight-1);
 
-                    pDDSurfBytes+=ddsd.lPitch*(dwYWindowOffset+dwCopyHeight-1);
-                    for(DWORD y=0; y<dwCopyHeight; y++,pDDSurfBytes-=ddsd.lPitch) {
-                        pSrcByte = pDDSurfBytes+dwXWindowOffset*3*sizeof(BYTE);
+                if(dwNumComponents==4) {
+                    for(DWORD y=0; y<dwCopyHeight; y++,pSurfBytes-=BytePitch) {
+                        pSrcByte = pSurfBytes+dwXWindowOffset*3*sizeof(BYTE);
                         for(DWORD x=0; x<dwCopyWidth; x++,pDstWord++) {
                             DWORD r,g,b;
+
+                            b = *pSrcByte++;
+                            g = *pSrcByte++;
+                            r = *pSrcByte++;
+
+                            #ifdef PANDA_BGRA_ORDER                             
+                               *pDstWord = 0xFF000000 | (r << 16) | (g << 8) | b;
+                            #else
+                               *pDstWord = 0xFF000000 | (b << 16) | (g << 8) | r;                           
+                            #endif
+                        }
+                    }
+                } else {
+                    // 24bpp pixbuf case (numComponents==3)
+                    for(DWORD y=0; y<dwCopyHeight; y++,pSurfBytes-=BytePitch) {
+                        pSrcByte = pSurfBytes+dwXWindowOffset*3*sizeof(BYTE);
+                     #ifdef PANDA_BGRA_ORDER 
+                        memcpy(pDstByte,pSrcByte,BytePitch);
+                        pDstByte+=BytePitch;
+                     #else
+                        for(DWORD x=0; x<dwCopyWidth; x++) {
+                            BYTE r,g,b;
 
                             // pixel buffer is in ABGR format(it stores big-endian RGBA)
                             // need to change byte order from ARGB
@@ -790,50 +906,57 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
                             g = *pSrcByte++;
                             r = *pSrcByte++;
 
-                            *pDstWord = 0xFF000000 | (r << 16) | (g << 8) | b;
+                            *pDstByte++ = r;
+                            *pDstByte++ = g;
+                            *pDstByte++ = b;
                         }
+                      #endif
                     }
-                    break;
+                }
+                break;
+        }
+
+        case D3DFMT_R5G6B5:
+        case D3DFMT_X1R5G5B5:
+        case D3DFMT_A1R5G5B5:
+        case D3DFMT_A4R4G4B4: {
+                WORD  *pSrcWord;
+                // handle 0555,1555,0565,4444 in same loop
+
+                BYTE redshift,greenshift,blueshift;
+                DWORD redmask,greenmask,bluemask;
+
+                if(SurfDesc.Format==D3DFMT_R5G6B5) {
+                    redshift=(11-3);
+                    redmask=0xF800;
+                    greenmask=0x07E0;
+                    greenshift=(5-2);
+                    bluemask=0x001F;
+                    blueshift=3;
+                } else if(SurfDesc.Format==D3DFMT_A4R4G4B4) {
+                    redmask=0x0F00;
+                    redshift=4;
+                    greenmask=0x00F0;
+                    greenshift=0;
+                    bluemask=0x000F;
+                    blueshift=4;
+                } else {  // 1555 or x555
+                    redmask=0x7C00;
+                    redshift=(10-3);
+                    greenmask=0x03E0;
+                    greenshift=(5-3);
+                    bluemask=0x001F;
+                    blueshift=3;
                 }
 
-            case 16: {
+                pSurfBytes+=BytePitch*(dwYWindowOffset+dwCopyHeight-1);
+                if(dwNumComponents==4) {
+                    // Note: these 16bpp loops ignore input alpha completely (alpha is set to fully opaque in pixbuf!)
+                    //       if we need to capture alpha, probably need to make separate loops for diff 16bpp fmts
+                    //       for best speed
 
-                    assert((ddsd.ddpfPixelFormat.dwRBitMask==0xF800)  ||  // 565
-                           (ddsd.ddpfPixelFormat.dwRBitMask==0x0F00)  ||  // 4444
-                           (ddsd.ddpfPixelFormat.dwRBitMask==0x7C00));    // 555 or 1555
-
-                    WORD  *pSrcWord;
-                    // handle 0555,1555,0565 in same loop
-                    BYTE redshift,greenshift,blueshift;
-                    DWORD redmask,greenmask,bluemask;
-
-                    if(ddsd.ddpfPixelFormat.dwRBitMask==0xF800) {
-                        redshift=(11-3);
-                        redmask=0xF800;
-                        greenmask=0x07E0;
-                        greenshift=(5-2);
-                        bluemask=0x001F;
-                        blueshift=3;
-                    } else if(ddsd.ddpfPixelFormat.dwRBitMask==0x7C00) {
-                        redmask=0x7C00;
-                        redshift=(10-3);
-                        greenmask=0x03E0;
-                        greenshift=(5-3);
-                        bluemask=0x001F;
-                        blueshift=3;
-                    } else {
-                        assert(ddsd.ddpfPixelFormat.dwRBitMask==0x0F00);
-                        redmask=0x0F00;
-                        redshift=4;
-                        greenmask=0x00F0;
-                        greenshift=0;
-                        bluemask=0x000F;
-                        blueshift=4;
-                    }
-
-                    pDDSurfBytes+=ddsd.lPitch*(dwYWindowOffset+dwCopyHeight-1);
-                    for(DWORD y=0; y<dwCopyHeight; y++,pDDSurfBytes-=ddsd.lPitch) {
-                        pSrcWord = ((WORD*)pDDSurfBytes)+dwXWindowOffset;
+                    for(DWORD y=0; y<dwCopyHeight; y++,pSurfBytes-=BytePitch) {
+                        pSrcWord = ((WORD*)pSurfBytes)+dwXWindowOffset;
                         for(DWORD x=0; x<dwCopyWidth; x++,pSrcWord++,pDstWord++) {
                             WORD dwPixel = *pSrcWord;
                             BYTE r,g,b;
@@ -842,105 +965,19 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
                             g = (dwPixel & greenmask) >> greenshift;
                             r = (dwPixel & redmask) >> redshift;
 
-                            *pDstWord = 0xFF000000 | (b << 16) | (g << 8) | r;
+                            // alpha is just set to 0xFF
+
+                            #ifdef PANDA_BGRA_ORDER
+                              *pDstWord = 0xFF000000 | (r << 16) | (g << 8) | b;
+                            #else
+                              *pDstWord = 0xFF000000 | (b << 16) | (g << 8) | r;   
+                            #endif
                         }
                     }
-                }
-                break;
-        }
-    } else {  // convert to 24bpp pixbuf
-        BYTE *pDstByte = (BYTE *) pbuf;
-        switch(ddsd.ddpfPixelFormat.dwRGBBitCount) {
-
-            case 32: {
-                    DWORD *pSrcWord;
-
-                    pDDSurfBytes+=ddsd.lPitch*(dwYWindowOffset+dwCopyHeight-1);
-                    for(DWORD y=0; y<dwCopyHeight; y++,pDDSurfBytes-=ddsd.lPitch) {
-                        pSrcWord = ((DWORD*)pDDSurfBytes)+dwXWindowOffset;
-
-                        for(DWORD x=0; x<dwCopyWidth; x++,pSrcWord++) {
-                            BYTE r,g,b;
-                            DWORD dwPixel = *pSrcWord;
-
-                            // pixel buffer is in ABGR format(it stores big-endian RGBA)
-                            // need to change byte order to ARGB
-
-                            // simpler: just swap r & b
-                            r = (BYTE)((dwPixel>>16)&0x000000ff);
-                            g = (BYTE)((dwPixel>> 8)&0x000000ff);
-                            b = (BYTE)((dwPixel    )&0x000000ff);
-
-                            *pDstByte++ = r;
-                            *pDstByte++ = g;
-                            *pDstByte++ = b;
-                        }
-                    }
-                    break;
-                }
-
-            case 24: {
-                        BYTE *pSrcByte;
-
-                        pDDSurfBytes+=ddsd.lPitch*(dwYWindowOffset+dwCopyHeight-1);
-                        for(DWORD y=0; y<dwCopyHeight; y++,pDDSurfBytes-=ddsd.lPitch) {
-                            pSrcByte = pDDSurfBytes+dwXWindowOffset*3*sizeof(BYTE);
-                            for(DWORD x=0; x<dwCopyWidth; x++) {
-                                BYTE r,g,b;
-
-                                // pixel buffer is in ABGR format(it stores big-endian RGBA)
-                                // need to change byte order from ARGB
-
-                                b = *pSrcByte++;
-                                g = *pSrcByte++;
-                                r = *pSrcByte++;
-
-                                *pDstByte++ = r;
-                                *pDstByte++ = g;
-                                *pDstByte++ = b;
-                            }
-                        }
-                        break;
-                    }
-
-            case 16: {  // handle 555,1555,565,4444 cases  (not 8-8 yet)
-
-                    assert((ddsd.ddpfPixelFormat.dwRBitMask==0xF800)  ||  // 565
-                           (ddsd.ddpfPixelFormat.dwRBitMask==0x0F00)  ||  // 4444
-                           (ddsd.ddpfPixelFormat.dwRBitMask==0x7C00));    // 555 or 1555
-
-                    WORD  *pSrcWord;
-                        // handle 0555,1555,0565 in same loop
-                    BYTE redshift,greenshift,blueshift;
-                    DWORD redmask,greenmask,bluemask;
-
-                    if(ddsd.ddpfPixelFormat.dwRBitMask==0xF800) {
-                        redshift=(11-3);
-                        redmask=0xF800;
-                        greenmask=0x07E0;
-                        greenshift=(5-2);
-                        bluemask=0x001F;
-                        blueshift=3;
-                    } else if(ddsd.ddpfPixelFormat.dwRBitMask==0x7C00) {
-                        redmask=0x7C00;
-                        redshift=(10-3);
-                        greenmask=0x03E0;
-                        greenshift=(5-3);
-                        bluemask=0x001F;
-                        blueshift=3;
-                    } else {
-                        assert(ddsd.ddpfPixelFormat.dwRBitMask==0x0F00);
-                        redmask=0x0F00;
-                        redshift=4;
-                        greenmask=0x00F0;
-                        greenshift=0;
-                        bluemask=0x000F;
-                        blueshift=4;
-                    }
-
-                    pDDSurfBytes+=ddsd.lPitch*(dwYWindowOffset+dwCopyHeight-1);
-                    for(DWORD y=0; y<dwCopyHeight; y++,pDDSurfBytes-=ddsd.lPitch) {
-                        pSrcWord = ((WORD*)pDDSurfBytes)+dwXWindowOffset;
+                } else {
+                    // 24bpp pixbuf case (numComponents==3)
+                    for(DWORD y=0; y<dwCopyHeight; y++,pSurfBytes-=BytePitch) {
+                        pSrcWord = ((WORD*)pSurfBytes)+dwXWindowOffset;
                         for(DWORD x=0; x<dwCopyWidth; x++,pSrcWord++) {
                             WORD dwPixel = *pSrcWord;
                             BYTE r,g,b;
@@ -949,63 +986,47 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
                             g = (dwPixel & greenmask) >> greenshift;
                             r = (dwPixel & redmask) >> redshift;
 
-                            *pDstByte++ = r;
-                            *pDstByte++ = g;
-                            *pDstByte++ = b;
+                            #ifdef PANDA_BGRA_ORDER
+                                *pDstByte++ = b;
+                                *pDstByte++ = g;
+                                *pDstByte++ = r;
+                            #else
+                                *pDstByte++ = r;
+                                *pDstByte++ = g;
+                                *pDstByte++ = b;                            
+                            #endif
                         }
                     }
                 }
                 break;
         }
+
+        default:
+            dxgsg_cat.error() << "ConvertD3DSurftoPixBuf: unsupported D3DFORMAT!\n";
     }
 
-
-    pDDSurf->Unlock(NULL);
-
+    pD3DSurf8->UnlockRect();
     return S_OK;
 }
 
 //-----------------------------------------------------------------------------
-// Name: CreateTextureFromBitmap()
-// Desc: Use a bitmap to create a texture for the specified device. This code
-//       gets the attributes of the texture from the bitmap, creates the
+// Name: CreateTexture()
+// Desc: Use panda texture's pixelbuffer to create a texture for the specified device. 
+//       This code gets the attributes of the texture from the bitmap, creates the
 //       texture, and then copies the bitmap into the texture.
 //-----------------------------------------------------------------------------
-LPDIRECTDRAWSURFACE7 DXTextureContext::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, 
-#ifdef USE_TEXFMTVEC
-                                        DDPixelFormatVec &TexFmts,LPD3DDEVICEDESC7 pD3DDevDesc)
-#else
-                                        int cNumTexPixFmts, DDPIXELFORMAT *pTexFmts,LPD3DDEVICEDESC7 pD3DDevDesc)
-#endif
-   {
+IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
     HRESULT hr;
-    int i,cNumAlphaBits;     //  number of alpha bits in texture pixfmt
-    DDPIXELFORMAT *pDesiredPixFmt;
-    LPDIRECTDRAWSURFACE7 pddsRender;
-    LPDIRECTDRAW7        pDD = NULL;
-    ConversionType ConvNeeded;
+    int cNumAlphaBits;     //  number of alpha bits in texture pixfmt
+    D3DFORMAT PixBufD3DFmt;
+    D3DFORMAT TargetPixFmt=D3DFMT_UNKNOWN;
+    bool bNeedLuminance = false;
 
     assert(_texture!=NULL);
 
     PixelBuffer *pbuf = _texture->_pbuffer;
-
-#ifdef USE_TEXFMTVEC
-    int cNumTexPixFmts=TexturePixelFormats.size();
-#endif
-    DDPIXELFORMAT *pTexPixFmts = new DDPIXELFORMAT[cNumTexPixFmts];
-
-    // make local copy of array so I can muck with it during searches for this texture fmt
-    // (such as marking pixfmts that no search will be interested in)
-    // probably should do this faster way
-
-#ifdef USE_TEXFMTVEC
-    memcpy(pTexPixFmts,&TexturePixelFormats[0],cNumTexPixFmts*sizeof(DDPIXELFORMAT));
-#else
-    memcpy(pTexPixFmts,pTexFmts,cNumTexPixFmts*sizeof(DDPIXELFORMAT));
-#endif
-
     // bpp indicates requested fmt, not pixbuf fmt
-    DWORD bpp = get_bits_per_pixel(pbuf->get_format(), &cNumAlphaBits);
+    DWORD target_bpp = get_bits_per_pixel(pbuf->get_format(), &cNumAlphaBits);
     PixelBuffer::Type pixbuf_type = pbuf->get_image_type();
     DWORD cNumColorChannels = pbuf->get_num_components();
 
@@ -1019,56 +1040,53 @@ LPDIRECTDRAWSURFACE7 DXTextureContext::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevic
 
     DWORD dwOrigWidth  = (DWORD)pbuf->get_xsize();
     DWORD dwOrigHeight = (DWORD)pbuf->get_ysize();
-
-    // Use the device caps so we can check if the device has any constraints
-    // when using textures. 
-
-    assert((pD3DDevDesc->dwMaxTextureWidth>0) && (pD3DDevDesc->dwMaxTextureHeight>0));
-
-    // Setup the new surface desc for the texture. Note how we are using the
-    // texture manage attribute, so Direct3D does alot of dirty work for us
-    DDSURFACEDESC2 ddsd;
-    ZeroMemory( &ddsd, sizeof(DDSURFACEDESC2) );
-    ddsd.dwSize          = sizeof(DDSURFACEDESC2);
-    ddsd.dwFlags         =  DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH
-                            | DDSD_PIXELFORMAT ;
-
-    ddsd.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
-
-    // setup ddpf to match against avail fmts
-
-    ddsd.ddpfPixelFormat.dwFlags = DDPF_RGB;
-
+    
     if((pbuf->get_format() == PixelBuffer::F_luminance_alpha)||
        (pbuf->get_format() == PixelBuffer::F_luminance_alphamask) ||
        (pbuf->get_format() == PixelBuffer::F_luminance)) {
-        ddsd.ddpfPixelFormat.dwFlags = DDPF_LUMINANCE;
+        bNeedLuminance = true;
     }
 
-    ddsd.ddpfPixelFormat.dwRGBBitCount = bpp;
-
-    if(cNumAlphaBits) {
-        if(bpp == 8 && cNumAlphaBits == 8) { // handle special case:  Alpha only buffer
-            ddsd.dwFlags |= DDPF_ALPHA;
-            ddsd.dwAlphaBitDepth = 8;
-            ddsd.ddpfPixelFormat.dwAlphaBitDepth = 8;
-            ddsd.ddpfPixelFormat.dwFlags = DDPF_ALPHA;
-            ddsd.ddpfPixelFormat.dwRGBAlphaBitMask = 0xff;
-        } else {
-            ddsd.ddpfPixelFormat.dwFlags |= DDPF_ALPHAPIXELS;
-            if(cNumAlphaBits == 8)
-                ddsd.ddpfPixelFormat.dwRGBAlphaBitMask = 0xff000000;
-            else if(cNumAlphaBits == 4)
-                ddsd.ddpfPixelFormat.dwRGBAlphaBitMask = 0xf000;
+    if(cNumAlphaBits>0) {
+        if(cNumColorChannels==3) {
+            dxgsg_cat.error() << "ERROR: texture " << _tex->get_name() << " has no inherent alpha channel, but alpha format is requested (that would be wasteful)!\n";
+            exit(1);
         }
     }
 
-    ddsd.dwWidth         = dwOrigWidth;
-    ddsd.dwHeight        = dwOrigHeight;
+#ifndef DO_CUSTOM_CONVERSIONS
+    // figure out what 'D3DFMT' the PixelBuffer is in, so D3DXLoadSurfFromMem knows how to perform copy
+    PixBufD3DFmt=D3DFMT_UNKNOWN;
 
-    if(!ISPOW2(ddsd.dwWidth) || !ISPOW2(ddsd.dwHeight)) {
-        dxgsg_cat.error() << "ERROR: texture dimensions are not a power of 2 for " << _tex->get_name() << "!!!!! \n";
-        #ifdef _DEBUG
+    switch(cNumColorChannels) {
+        case 1:  
+            if(cNumAlphaBits>0)
+                PixBufD3DFmt=D3DFMT_A8;
+            else if(bNeedLuminance)
+                   PixBufD3DFmt=D3DFMT_L8;
+            break;
+        case 2:
+            assert(bNeedLuminance && (cNumAlphaBits>0));
+            PixBufD3DFmt=D3DFMT_A8L8;
+            break;
+        case 3:
+            PixBufD3DFmt=D3DFMT_R8G8B8;
+            break;
+        case 4:
+            PixBufD3DFmt=D3DFMT_A8R8G8B8;
+            break;
+    }
+
+    // make sure we handled all the possible cases
+    assert(PixBufD3DFmt!=D3DFMT_UNKNOWN);
+#endif
+
+    DWORD TargetWidth=dwOrigWidth;
+    DWORD TargetHeight=dwOrigHeight;
+
+    if(!ISPOW2(dwOrigWidth) || !ISPOW2(dwOrigHeight)) {
+        dxgsg_cat.error() << "ERROR: texture dimensions are not a power of 2 for " << _tex->get_name() << "! Please rescale them so it doesnt have to be done at runtime.\n";
+        #ifndef NDEBUG
           exit(1);  // want to catch badtexsize errors
         #else
           goto error_exit;
@@ -1078,38 +1096,38 @@ LPDIRECTDRAWSURFACE7 DXTextureContext::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevic
     bool bShrinkOriginal;
     bShrinkOriginal=false;
 
-    if((dwOrigWidth>pD3DDevDesc->dwMaxTextureWidth)||(dwOrigHeight>pD3DDevDesc->dwMaxTextureHeight)) {
+    if((dwOrigWidth>scrn.d3dcaps.MaxTextureWidth)||(dwOrigHeight>scrn.d3dcaps.MaxTextureHeight)) {
         #ifdef _DEBUG
-           dxgsg_cat.error() << "WARNING: " <<_tex->get_name() << ": Image size exceeds max texture dimensions of (" << pD3DDevDesc->dwMaxTextureWidth << "," << pD3DDevDesc->dwMaxTextureHeight << ") !!\n"
-           << "Scaling "<< _tex->get_name() << " ("<< dwOrigWidth<<"," <<dwOrigHeight << ") => ("<<  pD3DDevDesc->dwMaxTextureWidth << "," << pD3DDevDesc->dwMaxTextureHeight << ") !\n";
+           dxgsg_cat.error() << "WARNING: " <<_tex->get_name() << ": Image size exceeds max texture dimensions of (" << scrn.d3dcaps.MaxTextureWidth << "," << scrn.d3dcaps.MaxTextureHeight << ") !!\n"
+           << "Scaling "<< _tex->get_name() << " ("<< dwOrigWidth<<"," <<dwOrigHeight << ") => ("<<  scrn.d3dcaps.MaxTextureWidth << "," << scrn.d3dcaps.MaxTextureHeight << ") !\n";
         #endif
 
-        if(dwOrigWidth>pD3DDevDesc->dwMaxTextureWidth)
-            ddsd.dwWidth=pD3DDevDesc->dwMaxTextureWidth;
-        if(dwOrigHeight>pD3DDevDesc->dwMaxTextureHeight)
-            ddsd.dwHeight=pD3DDevDesc->dwMaxTextureHeight;
+        if(dwOrigWidth>scrn.d3dcaps.MaxTextureWidth)
+            TargetWidth=scrn.d3dcaps.MaxTextureWidth;
+        if(dwOrigHeight>scrn.d3dcaps.MaxTextureHeight)
+            TargetHeight=scrn.d3dcaps.MaxTextureHeight;
         bShrinkOriginal=true;
     }
 
     // checks for SQUARE reqmt (nvidia riva128 needs this)
-    if((ddsd.dwWidth != ddsd.dwHeight) && (pD3DDevDesc->dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_SQUAREONLY )) {
-
+    if((TargetWidth != TargetHeight) && (scrn.d3dcaps.TextureCaps & D3DPTEXTURECAPS_SQUAREONLY)) {
         // assume pow2 textures.   sum exponents, divide by 2 rounding down to get sq size
         int i,width_exp,height_exp;
-        for(i=ddsd.dwWidth,width_exp=0;i>1;width_exp++,i>>=1);
-        for(i=ddsd.dwHeight,height_exp=0;i>1;height_exp++,i>>=1);
-        ddsd.dwHeight = ddsd.dwWidth = 1<<((width_exp+height_exp)>>1);
+        for(i=TargetWidth,width_exp=0;i>1;width_exp++,i>>=1);
+        for(i=TargetHeight,height_exp=0;i>1;height_exp++,i>>=1);
+        TargetHeight = TargetWidth = 1<<((width_exp+height_exp)>>1);
         bShrinkOriginal=true;
 
 #ifdef _DEBUG
-        dxgsg_cat.debug() << "Scaling "<< _tex->get_name() << " ("<< dwOrigWidth<<"," <<dwOrigHeight << ") => ("<< ddsd.dwWidth<<"," << ddsd.dwHeight << ") to meet HW square texture reqmt\n";
+        dxgsg_cat.debug() << "Scaling "<< _tex->get_name() << " ("<< dwOrigWidth<<"," <<dwOrigHeight << ") => ("<< TargetWidth<<"," << TargetHeight << ") to meet HW square texture reqmt\n";
 #endif
     }
-
+/*
+    // we now use D3DXLoadSurfFromMem to do resizing as well as fmt conversion
     if(bShrinkOriginal) {
         // need 2 add checks for errors
         PNMImage pnmi_src;
-        PNMImage *pnmi = new PNMImage(ddsd.dwWidth, ddsd.dwHeight, cNumColorChannels);
+        PNMImage *pnmi = new PNMImage(TargetWidth, TargetHeight, cNumColorChannels);
         pbuf->store(pnmi_src);
         pnmi->quick_filter_from(pnmi_src,0,0);
 
@@ -1119,78 +1137,62 @@ LPDIRECTDRAWSURFACE7 DXTextureContext::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevic
         dwOrigHeight = (DWORD)pbuf->get_ysize();
         delete pnmi;
     }
+*/
 
-#if 0
-//#ifdef _DEBUG
-// easier to use dxcapsviewer instead of this
-    { static BOOL bPrinted=FALSE;
-        if(!bPrinted) {
-            dxgsg_cat.debug() << "Gfx card supported TexFmts:\n";
-            for(i=0;i<cNumTexPixFmts;i++) {
-                DebugPrintPixFmt(&pTexPixFmts[i]);
-            }
-            bPrinted=TRUE;
-        }
-    }
-#endif
-
-    // first search for an exact match
-    pDesiredPixFmt = &ddsd.ddpfPixelFormat;
-
-    LPDDPIXELFORMAT pCurPixFmt;
     char *szErrorMsg;
 
-    szErrorMsg = "CreateTexture failed: couldn't find compatible Tex DDPIXELFORMAT!\n";
+    szErrorMsg = "CreateTexture failed: couldn't find compatible device Texture Pixel Format for input texture!\n";
 
     if(dxgsg_cat.is_spam())
-        dxgsg_cat.spam() << "CreateTexture handling bitdepth: " << bpp << " alphabits: " << cNumAlphaBits << "\n";
+        dxgsg_cat.spam() << "CreateTexture handling target bitdepth: " << target_bpp << " alphabits: " << cNumAlphaBits << "\n";
 
-    // Mark formats I dont want to deal with
-    for(i=0,pCurPixFmt=pTexPixFmts;i<cNumTexPixFmts;i++,pCurPixFmt++) {
-        if(( pCurPixFmt->dwFlags & (DDPF_BUMPLUMINANCE|DDPF_BUMPDUDV) )  ||
-           ( pCurPixFmt->dwFourCC != 0 ) ||
-           ((cNumAlphaBits==0) && (pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS))) {
+    // I could possibly replace some of this logic with D3DXCheckTextureRequirements(), but
+    // it wouldnt handle all my specialized low-memory cases perfectly
 
-            // Make sure to skip any FourCC formats, bump formats
-            // they are not handled by this code yet
+#ifdef DO_CUSTOM_CONVERSIONS
+    ConversionType ConvNeeded;
 
-            // note: I'm screening out alpha if no alpha requested, so
-            // search fails if 32-rgba avail, but not 32-bit rgb
-            // I could recode for that case too, hopefully this case will not pop up
+#define CONVTYPE_STMT ConvNeeded=CONV
+#else
+#define CONVTYPE_STMT
+#endif
 
-            pCurPixFmt->dwRGBBitCount+=1;  // incr so it wont be an exact match anymore
-        }
-    }
+#define CHECK_FOR_FMT(FMT,CONV)  \
+                    if(scrn.SupportedTexFmtsMask & FMT##_FLAG) {   \
+                        CONVTYPE_STMT;                             \
+                        TargetPixFmt=D3DFMT_##FMT;                 \
+                        goto found_matching_format; }
 
-    // handle each bitdepth separately
+    // handle each target bitdepth separately.  might be less confusing to reorg by cNumColorChannels (input type, rather
+    // than desired 1st target)
+    switch(target_bpp) {  
 
-    switch(bpp) {  // bpp is REQUESTED bpp, not what exists in the pixbuf array
+    // IMPORTANT NOTE:
+    // target_bpp is REQUESTED bpp, not what exists in the pixbuf array (the pixbuf array contains cNumColorChannels*8bits)
 
         case 32:
+            if(!((cNumColorChannels==3) || (cNumColorChannels==4))) 
+                break; //bail
 
-#ifdef _DEBUG
-            if(!dx_force_16bpptextures)
-#endif
-                for(i=0,pCurPixFmt=pTexPixFmts;i<cNumTexPixFmts;i++,pCurPixFmt++) {
-                    if((pCurPixFmt->dwRGBBitCount==32) &&
-                       (((pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)!=0)==(cNumAlphaBits!=0))) {
-                  // we should have a match
-                        assert(pCurPixFmt->dwRGBAlphaBitMask==0xFF000000);
-                        ConvNeeded=((cNumColorChannels==3) ? Conv24to32 : Conv32to32);
-                        goto found_matching_format;
-                        break;
-                    }
+            if(!dx_force_16bpptextures) {
+                if(cNumColorChannels==4) {
+                    CHECK_FOR_FMT(A8R8G8B8,Conv32to32);
+                } else {
+                    CHECK_FOR_FMT(A8R8G8B8,Conv24to32);
                 }
+            }
 
             if(cNumAlphaBits>0) {
+                assert(cNumColorChannels==4);
+
             // no 32-bit fmt, look for 16 bit w/alpha  (1-15)
 
             // 32 bit RGBA was requested, but only 16 bit alpha fmts are avail
             // by default, convert to 4-4-4-4 which has 4-bit alpha for blurry edges
             // if we know tex only needs 1 bit alpha (i.e. for a mask), use 1555 instead
 
-                ConversionType ConvTo1=Conv32to16_4444,ConvTo2=Conv32to16_1555;
-                DWORD dwAlphaMask1=0xF000,dwAlphaMask2=0x8000;
+//                ConversionType ConvTo1=Conv32to16_4444,ConvTo2=Conv32to16_1555;
+//                DWORD dwAlphaMask1=0xF000,dwAlphaMask2=0x8000;
             // assume ALPHAMASK is x8000 and RGBMASK is x7fff to simplify 32->16 conversion
             // this should be true on most cards.
 
@@ -1198,250 +1200,128 @@ LPDIRECTDRAWSURFACE7 DXTextureContext::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevic
                 if(cNumAlphaBits==1)
 #endif
                 {
-                    ConvTo1=Conv32to16_1555;
-                    dwAlphaMask1=0x8000;
+                    CHECK_FOR_FMT(A1R5G5B5,Conv32to16_1555);
                 }
 
-                for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
-                    if((pCurPixFmt->dwRGBBitCount==16) && (pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)
-                       && (pCurPixFmt->dwRGBAlphaBitMask==dwAlphaMask1)) {
-                        ConvNeeded=ConvTo1;
-                        goto found_matching_format;
-                    }
-                }
+                // normally prefer 4444 due to better alpha channel resolution
+                CHECK_FOR_FMT(A4R4G4B4,Conv32to16_4444);
+                CHECK_FOR_FMT(A1R5G5B5,Conv32to16_1555);
 
-#ifdef FORCE_16bpp_1555
-                break;
-#endif
-
-                for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
-                    if((pCurPixFmt->dwRGBBitCount==16) && (pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)
-                       && (pCurPixFmt->dwRGBAlphaBitMask==dwAlphaMask2)) {
-                        ConvNeeded=ConvTo2;
-                        goto found_matching_format;
-                    }
-                }
-
-            // at this point, bail.  dont worry about converting to non-alpha formats yet,
-            // I think this will be a very rare case
+                // at this point, bail.  dont worry about converting to non-alpha formats yet,
+                // I think this will be a very rare case
                 szErrorMsg = "CreateTexture failed: couldn't find compatible Tex DDPIXELFORMAT! no available 16 or 32-bit alpha formats!\n";
-            }
+            } else {
+                // convert 3 or 4 channel to closest 16bpp color fmt
 
+                if(cNumColorChannels==3) {
+                    CHECK_FOR_FMT(R5G6B5,Conv24to16_4444);
+                    CHECK_FOR_FMT(X1R5G5B5,Conv24to16_X555);
+                } else {
+                    CHECK_FOR_FMT(R5G6B5,Conv32to16_4444);
+                    CHECK_FOR_FMT(X1R5G5B5,Conv32to16_X555);
+                }
+            }
             break;
 
         case 24:
-
-            assert(cNumAlphaBits==0);  // dont know how to handle non-zero alpha for 24bit total
-
-            if(!dx_force_16bpptextures)
-                for(i=0,pCurPixFmt=pTexPixFmts;i<cNumTexPixFmts;i++,pCurPixFmt++) {
-                    if((pCurPixFmt->dwFlags & DDPF_RGB)&&(pCurPixFmt->dwRGBBitCount==24)) {
-                        ConvNeeded=((cNumColorChannels==3) ? Conv24to24 : Conv32to24);
-                        goto found_matching_format;
-                    }
-                }
+            assert(cNumColorChannels==3);
 
             if(!dx_force_16bpptextures) {
+                CHECK_FOR_FMT(R8G8B8,Conv24to24);
+
                 // no 24-bit fmt.  look for 32 bit fmt  (note: this is memory-hogging choice
                 // instead I could look for memory-conserving 16-bit fmt).
-                // check mask to ensure ARGB, not RGBA (which I am not handling here)
-                for(i=0,pCurPixFmt=pTexPixFmts;i<cNumTexPixFmts;i++,pCurPixFmt++) {
-                    if((pCurPixFmt->dwRGBBitCount==32) && (pCurPixFmt->dwFlags & DDPF_RGB)
-                       && ((pCurPixFmt->dwRBitMask|pCurPixFmt->dwGBitMask|pCurPixFmt->dwBBitMask)==0xFFFFFF)
-                      ) {
-                    // I'm allowing alpha formats here.  will set alpha to opaque
-                        ConvNeeded=((cNumColorChannels==3) ? Conv24to32 : Conv32to32_NoAlpha);
-                        goto found_matching_format;
-                    }
-                }
+
+                CHECK_FOR_FMT(X8R8G8B8,Conv24to32);
             }
 
-          // no 24-bit or 32 fmt.  look for 16 bit fmt
-            for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
-              // assume RGBMASK is x7fff to simplify 32->16 conversion, should be true on most cards.
-                if((pCurPixFmt->dwFlags & DDPF_RGB) && (pCurPixFmt->dwRGBBitCount==16)
-                   && !(pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)) {  // no alpha fmts
-                        // if numchan==4,this means user has requested we throw away the input alpha channel
-                    if(pCurPixFmt->dwGBitMask==0x7E0) {
-                            // assumes GBitMask is the biggest one, if we have 16 bit 3-channel
-                        ConvNeeded=((cNumColorChannels==3) ? Conv24to16_0565 : Conv32to16_0565);
-                    } else {
-                        assert((pCurPixFmt->dwRBitMask|pCurPixFmt->dwGBitMask|pCurPixFmt->dwBBitMask)==0x7FFF);
-                        ConvNeeded=((cNumColorChannels==3) ? Conv24to16_0555 : Conv32to16_0555);
-                    }
-                    goto found_matching_format;
-                }
-            }
-
-          // at this point, bail.
+             // no 24-bit or 32 fmt.  look for 16 bit fmt (higher res 565 1st)
+            CHECK_FOR_FMT(R5G6B5,Conv24to16_0565);
+            CHECK_FOR_FMT(X1R5G5B5,Conv24to16_X555);
             break;
 
         case 16:
+            if(bNeedLuminance) {
+                assert(cNumAlphaBits>0);
+                assert(cNumColorChannels==2);
 
-            if(ddsd.ddpfPixelFormat.dwFlags & DDPF_LUMINANCE) {
-           // look for native lum fmt
+                CHECK_FOR_FMT(A8L8,ConvLum16to16);
+                    
                 if(!dx_force_16bpptextures) {
-                    for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
-                        if((pCurPixFmt->dwRGBBitCount==16) && (pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS) &&
-                           (pCurPixFmt->dwFlags & DDPF_LUMINANCE)) {
-                            ConvNeeded=ConvLum16to16;
-                            goto found_matching_format;
-                        }
-                    }
-
-           // else look for 32bpp ARGB
-                    for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
-                        if((pCurPixFmt->dwRGBBitCount==32) && (pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS) &&
-                           (pCurPixFmt->dwFlags & DDPF_RGB)) {
-                            ConvNeeded=ConvLum16to32;
-                            goto found_matching_format;
-                        }
-                    }
+                    CHECK_FOR_FMT(A8R8G8B8,ConvLum16to32);
                 }
 
-           // find compatible 16bpp fmt
-                ConversionType ConvTo1=ConvLum16to16_4444,ConvTo2=ConvLum16to16_1555;
-                DWORD dwAlphaMask1=0xF000,dwAlphaMask2=0x8000;
-            // assume ALPHAMASK is x8000 and RGBMASK is x7fff to simplify 32->16 conversion
-            // this should be true on most cards.
-
-#ifndef FORCE_16bpp_1555
+              #ifndef FORCE_16bpp_1555
                 if(cNumAlphaBits==1)
-#endif
+              #endif
                 {
-                    ConvTo1=ConvLum16to16_1555;
-                    dwAlphaMask1=0x8000;
+                    CHECK_FOR_FMT(A1R5G5B5,ConvLum16to16_1555);
                 }
 
-                for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
-                    if((pCurPixFmt->dwRGBBitCount==16) && (pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)
-                       && (pCurPixFmt->dwRGBAlphaBitMask==dwAlphaMask1)) {
-                        ConvNeeded=ConvTo1;
-                        goto found_matching_format;
-                    }
-                }
-
-#ifdef FORCE_16bpp_1555
-                break;
-#endif
-
-                for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
-                    if((pCurPixFmt->dwRGBBitCount==16) && (pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)
-                       && (pCurPixFmt->dwRGBAlphaBitMask==dwAlphaMask2)) {
-                        ConvNeeded=ConvTo2;
-                        goto found_matching_format;
-                    }
-                }
-
-            } else
-
+                // normally prefer 4444 due to better alpha channel resolution
+                CHECK_FOR_FMT(A4R4G4B4,ConvLum16to16_4444);
+                CHECK_FOR_FMT(A1R5G5B5,ConvLum16to16_1555);
+            } else {
+               assert((cNumColorChannels==3)||(cNumColorChannels==4));
           // look for compatible 16bit fmts, if none then give up
           // (dont worry about other bitdepths for 16 bit)
-
-                for(i=0,pCurPixFmt=pTexPixFmts;i<cNumTexPixFmts;i++,pCurPixFmt++) {
-
-                    if((pCurPixFmt->dwRGBBitCount==16)&&(pCurPixFmt->dwFlags & DDPF_RGB)) {
-                        switch(cNumAlphaBits) {
-                            case 0:
-                                if(!(pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)) {
-                            // if numchan==4,this means user has requested we throw away the input alpha channel
-                                    if(pCurPixFmt->dwGBitMask==0x7E0) {
-                                // assumes GBitMask is the biggest one, if we have 16 bit 3-channel
-                                        ConvNeeded=((cNumColorChannels==3) ? Conv24to16_0565 : Conv32to16_0565);
-                                    } else {
-                                        assert((pCurPixFmt->dwRBitMask|pCurPixFmt->dwGBitMask|pCurPixFmt->dwBBitMask)==0x7FFF);
-                                        ConvNeeded=((cNumColorChannels==3) ? Conv24to16_0555 : Conv32to16_0555);
-                                    }
-                                    goto found_matching_format;
-                                }
-                                break;
-                            case 1:
-                                if((pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)&&
-                                   (pCurPixFmt->dwRGBAlphaBitMask==0x8000)) {
-                                    ConvNeeded=Conv32to16_1555;
-                                    goto found_matching_format;
-                                }
-                                break;
-                            case 4:
-                                if((pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)&&
-                                   (pCurPixFmt->dwRGBAlphaBitMask==0xF000)) {
-                                    ConvNeeded=Conv32to16_4444;
-                                    goto found_matching_format;
-                                }
-                                break;
-                        }
-                    }
+                switch(cNumAlphaBits) {
+                    case 0:
+                      if(cNumColorChannels==3) {
+                          CHECK_FOR_FMT(R5G6B5,Conv24to16_0565);
+                          CHECK_FOR_FMT(X1R5G5B5,Conv24to16_X555);
+                      } else {
+                          assert(cNumColorChannels==4);
+                        // it could be 4 if user asks us to throw away the alpha channel
+                          CHECK_FOR_FMT(R5G6B5,Conv32to16_0565);
+                          CHECK_FOR_FMT(X1R5G5B5,Conv32to16_X555);
+                      }
+                      break;
+                    case 1:
+                      // app specifically requests 1-5-5-5 F_rgba5 case, where you explicitly want 1-5-5-5 fmt, as opposed
+                      // to F_rgbm, which could use 32bpp ARGB.  fail if this particular fmt not avail.
+                      assert(cNumColorChannels==4);  
+                      CHECK_FOR_FMT(X1R5G5B5,Conv32to16_X555);
+                      break;
+                    case 4:
+                      // app specifically requests 4-4-4-4 F_rgba4 case, as opposed to F_rgba, which could use 32bpp ARGB
+                      assert(cNumColorChannels==4);  
+                      CHECK_FOR_FMT(A4R4G4B4,Conv32to16_4444);
+                      break;
+                    default: assert(0);  // problem in get_bits_per_pixel()?
                 }
-
-            break;
-
+            }
         case 8:
-            if(ddsd.ddpfPixelFormat.dwFlags & DDPF_LUMINANCE) {
-              // look for native lum fmt
+            if(bNeedLuminance) {
+                assert(cNumAlphaBits>0);   // dont bother handling those other 8bit lum fmts like 4-4, since 16 8-8 is usually supported too
+                assert(cNumColorChannels==1);
 
-                assert(cNumAlphaBits==0);  // dont handle those other 8bit lum fmts like 4-4, since 16 8-8 is usually supported too
-                if(!dx_force_16bpptextures)
-                {
-                    for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
-                        if((pCurPixFmt->dwRGBBitCount==8) && (pCurPixFmt->dwFlags & DDPF_LUMINANCE) &&
-                           (pCurPixFmt->dwLuminanceBitMask==0xFF)) {
-                            ConvNeeded=ConvLum8to8;
-                            goto found_matching_format;
-                        }
-                    }
+                // look for native lum fmt first
+                CHECK_FOR_FMT(L8,ConvLum8to8);
+                CHECK_FOR_FMT(L8,ConvLum8to16_A8L8);
 
-              // else look for 24bpp RGB
-                    for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
-                        if((pCurPixFmt->dwRGBBitCount==24) && (pCurPixFmt->dwFlags & DDPF_RGB)) {
-                            ConvNeeded=ConvLum8to24;
-                            goto found_matching_format;
-                        }
-                    }
-
-              // else look for 32bpp RGB
-                    for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
-                        if((pCurPixFmt->dwRGBBitCount==32) && (pCurPixFmt->dwFlags & DDPF_RGB)) {
-                            ConvNeeded=ConvLum8to32;
-                            goto found_matching_format;
-                        }
-                    }
+                if(!dx_force_16bpptextures) {
+                    CHECK_FOR_FMT(R8G8B8,ConvLum8to24);
+                    CHECK_FOR_FMT(X8R8G8B8,ConvLum8to32);
                 }
 
-                // find compatible 16bpp fmt, just look for any 565, then 0555
-                DWORD dwMasks[2] = {0xF800, 0x7C00};
-                ConversionType ConvType[2] = {ConvLum8to16_0565,ConvLum8to16_0555};
+                CHECK_FOR_FMT(R5G6B5,ConvLum8to16_0565);
+                CHECK_FOR_FMT(X1R5G5B5,ConvLum8to16_X555);
 
-                for(DWORD modenum=0;modenum<2;modenum++)
-                    for(i=0,pCurPixFmt=&pTexPixFmts[0];i<cNumTexPixFmts;i++,pCurPixFmt++) {
-                        if((pCurPixFmt->dwRGBBitCount==16) && (pCurPixFmt->dwFlags & DDPF_RGB)
-                           && (!(pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS))
-                           && (pCurPixFmt->dwRBitMask==dwMasks[modenum])) {
-                            ConvNeeded=ConvType[modenum];
-                            goto found_matching_format;
-                        }
-                    }
-            } else if(ddsd.ddpfPixelFormat.dwFlags & DDPF_ALPHA) {
-                // look for 32-bit ARGB, else 16-4444.
-                // skip 8bit alpha only, because I think only voodoo supports it
-                // and the voodoo support isn't the kind of blending model we need 
-                // w/color assumed to be white (but need to verify this)
-                for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
-                        if((pCurPixFmt->dwRGBBitCount==32) && (pCurPixFmt->dwFlags & DDPF_RGB) &&
-                           (pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)) {
-                            ConvNeeded=ConvAlpha8to32;
-                            goto found_matching_format;
-                        }
+            } else if(cNumAlphaBits==8) {
+                // look for 16bpp A8L8, else 32-bit ARGB, else 16-4444.
+
+                // skip 8bit alpha only (D3DFMT_A8), because I think only voodoo supports it
+                // and the voodoo support isn't the kind of blending model we need somehow
+                // (is it that voodoo assumes color is white?  isnt that what we do in ConvAlpha8to32 anyway?)
+
+                CHECK_FOR_FMT(A8L8,ConvAlpha8to16_A8L8);
+
+                if(!dx_force_16bpptextures) {
+                    CHECK_FOR_FMT(A8R8G8B8,ConvAlpha8to32);
                 }
 
-                for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
-                        if((pCurPixFmt->dwRGBBitCount==16) 
-                           && (pCurPixFmt->dwFlags & DDPF_RGB)
-                           && (pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)
-                           && (pCurPixFmt->dwRGBAlphaBitMask==0xF000)) {
-                            ConvNeeded=ConvAlpha8to16_4444;
-                            goto found_matching_format;
-                        }
-                }
+                CHECK_FOR_FMT(A8L8,ConvAlpha8to16_4444);
             }
             break;
 
@@ -1451,28 +1331,12 @@ LPDIRECTDRAWSURFACE7 DXTextureContext::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevic
 
     // if we've gotten here, haven't found a match
 
-    dxgsg_cat.error() << szErrorMsg << ";  requested tex bitdepth: " << bpp << "\n";
+    dxgsg_cat.error() << szErrorMsg << endl;
     goto error_exit;
 
     ///////////////////////////////////////////////////////////
 
-    found_matching_format:
-
-    ddsd.ddpfPixelFormat = *pCurPixFmt;
-
-    // Get the device's render target, so we can then use the render target to
-    // get a ptr to a DDraw object. We need the DirectDraw interface for
-    // creating surfaces.
-
-    pd3dDevice->GetRenderTarget( &pddsRender );
-    pddsRender->GetDDInterface( (VOID**)&pDD );
-    pddsRender->Release();
-
-    ddsd.ddsCaps.dwCaps  = DDSCAPS_TEXTURE;
-
-    ddsd.ddsCaps.dwCaps2 = DDSCAPS2_TEXTUREMANAGE  // Turn on texture management
-                           | DDSCAPS2_HINTSTATIC;  // BUGBUG:  is this ok for ALL textures?
-
+ found_matching_format:
     // validate magfilter setting
     // degrade filtering if no HW support
 
@@ -1480,12 +1344,13 @@ LPDIRECTDRAWSURFACE7 DXTextureContext::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevic
 
     ft =_tex->get_magfilter();
     if((ft!=Texture::FT_linear) && ft!=Texture::FT_nearest) {
-        if(ft==Texture::FT_nearest_mipmap_nearest)
+    // mipmap settings make no sense for magfilter
+        if(ft==Texture::FT_nearest_mipmap_nearest)    
             ft=Texture::FT_nearest;
         else ft=Texture::FT_linear;
     }
 
-    if((ft==Texture::FT_linear) && !(pD3DDevDesc->dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_LINEAR))
+    if((ft==Texture::FT_linear) && !(scrn.d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFLINEAR))
         ft=Texture::FT_nearest;
     _tex->set_magfilter(ft);
 
@@ -1504,8 +1369,9 @@ LPDIRECTDRAWSURFACE7 DXTextureContext::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevic
 
         if(dx_mipmap_everything) {  // debug toggle, ok to leave in since its just a creation cost
            _bHasMipMaps=TRUE;
-           if(ft != Texture::FT_linear_mipmap_linear) {
-               dxgsg_cat.spam() << "Forcing mipmap filtering on DX texture [" << _tex->get_name() << "]\n";
+           if(dxgsg_cat.is_spam()) {
+               if(ft != Texture::FT_linear_mipmap_linear) 
+                   dxgsg_cat.spam() << "Forcing trilinear mipmapping on DX texture [" << _tex->get_name() << "]\n";
            }
            ft = Texture::FT_linear_mipmap_linear;
            _tex->set_minfilter(ft);
@@ -1518,26 +1384,32 @@ LPDIRECTDRAWSURFACE7 DXTextureContext::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevic
         ft=Texture::FT_linear;
     }
 
-    assert((pD3DDevDesc->dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_NEAREST)!=0);
+    assert((scrn.d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFPOINT)!=0);
 
+#define TRILINEAR_MIPMAP_TEXFILTERCAPS (D3DPTFILTERCAPS_MIPFLINEAR | D3DPTFILTERCAPS_MINFLINEAR)
+
+    // do any other filter type degradations necessary 
     switch(ft) {
-        case Texture::FT_nearest_mipmap_linear:
-            if(!(pD3DDevDesc->dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_LINEARMIPNEAREST))
-                ft=Texture::FT_nearest_mipmap_nearest;
-            break;
-        case Texture::FT_linear_mipmap_nearest:
-            if(!(pD3DDevDesc->dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_MIPLINEAR))
-                ft=Texture::FT_nearest_mipmap_nearest;
-            break;
         case Texture::FT_linear_mipmap_linear:
-            if(!(pD3DDevDesc->dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_LINEARMIPLINEAR)) {
-                if(pD3DDevDesc->dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_MIPLINEAR)
-                    ft=Texture::FT_linear_mipmap_nearest;
+            if((scrn.d3dcaps.TextureFilterCaps & TRILINEAR_MIPMAP_TEXFILTERCAPS)!=TRILINEAR_MIPMAP_TEXFILTERCAPS) {
+               if(scrn.d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR) 
+                   ft=Texture::FT_linear_mipmap_nearest;
                 else ft=Texture::FT_nearest_mipmap_nearest;  // if you cant do linear in a level, you probably cant do linear b/w levels, so just do nearest-all
             }
             break;
+        case Texture::FT_nearest_mipmap_linear:
+            // if we dont have bilinear, do nearest_nearest
+            if(!((scrn.d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MIPFPOINT) &&
+                 (scrn.d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR)))
+                ft=Texture::FT_nearest_mipmap_nearest;
+            break;
+        case Texture::FT_linear_mipmap_nearest:
+            // if we dont have mip linear, do nearest_nearest
+            if(!(scrn.d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MIPFLINEAR))
+                ft=Texture::FT_nearest_mipmap_nearest;
+            break;
         case Texture::FT_linear:
-            if(!(pD3DDevDesc->dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_LINEAR))
+            if(!(scrn.d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR))
                 ft=Texture::FT_nearest;
             break;
     }
@@ -1547,84 +1419,121 @@ LPDIRECTDRAWSURFACE7 DXTextureContext::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevic
     uint aniso_degree;
 
     aniso_degree=1;
-    if(pD3DDevDesc->dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ANISOTROPY) {
+    if(scrn.d3dcaps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY) {
         aniso_degree=_tex->get_anisotropic_degree();
-        if((aniso_degree>pD3DDevDesc->dwMaxAnisotropy)
-#ifdef _DEBUG
-           || dx_force_anisotropic_filtering
-#endif
-          )
-            aniso_degree=pD3DDevDesc->dwMaxAnisotropy;
+        if((aniso_degree>scrn.d3dcaps.MaxAnisotropy) || dx_force_anisotropic_filtering)
+            aniso_degree=scrn.d3dcaps.MaxAnisotropy;
     }
     _tex->set_anisotropic_degree(aniso_degree);
+
 #ifdef _DEBUG
     dxgsg_cat.spam() << "CreateTexture: setting aniso degree for "<< _tex->get_name() << " to: " << aniso_degree << endl;
 #endif
 
+    UINT cMipLevelCount;
+
     if(_bHasMipMaps) {
-       // We dont specify mipmapcount, so CreateSurface will auto-create surfs
-       // for all mipmaps down to 1x1 (if driver supports deep-mipmaps, otherwise Nx1)
-        ddsd.ddsCaps.dwCaps |= (DDSCAPS_MIPMAP | DDSCAPS_COMPLEX);
-        dxgsg_cat.debug() << "CreateTexture: generating mipmaps for "<< _tex->get_name() << endl;
-    }
+        cMipLevelCount=0;  // tell CreateTex to alloc space for all mip levels down to 1x1
 
-    if(pD3DDevDesc->dwDevCaps & D3DDEVCAPS_SEPARATETEXTUREMEMORIES) {
-        // must assign a texture to a specific stage
-        // for now I'm just going to use stage 0 for all
-        ddsd.dwTextureStage=0;
-        ddsd.dwFlags |= DDSD_TEXTURESTAGE;
-    }
-
-    PRINTVIDMEM(pDD,&ddsd.ddsCaps,"texture surf (includes AGP mem)");
-
-    // Create a new surface for the texture
-    if(FAILED( hr = pDD->CreateSurface( &ddsd, &_surface, NULL ) )) {
-        dxgsg_cat.error() << "CreateTexture failed: pDD->CreateSurface() failed!  hr = " << ConvD3DErrorToString(hr) << "\n";
+        if(dxgsg_cat.is_debug())
+            dxgsg_cat.debug() << "CreateTexture: generating mipmaps for "<< _tex->get_name() << endl;
+    } else cMipLevelCount=1;
+    
+    if(FAILED( hr = scrn.pD3DDevice->CreateTexture(TargetWidth,TargetHeight,cMipLevelCount,0x0,
+                                                   TargetPixFmt,D3DPOOL_MANAGED,&_pD3DTexture8) )) {
+        dxgsg_cat.error() << "pD3DDevice->CreateTexture() failed!  hr = " << D3DERRORSTRING(hr);
         goto error_exit;
     }
 
-
-#ifdef _DEBUG
-    dxgsg_cat.debug() << "CreateTexture: "<< _tex->get_name() <<" converted " << ConvNameStrs[ConvNeeded] << " \n";
+#ifdef DO_CUSTOM_CONVERSIONS
+    _PixBufConversionType=ConvNeeded;
 #endif
 
-    _PixBufConversionType=ConvNeeded;
+#ifdef _DEBUG
+#ifdef DO_CUSTOM_CONVERSIONS
+    dxgsg_cat.debug() << "CreateTexture: "<< _tex->get_name() <<" converting " << ConvNameStrs[ConvNeeded] << " \n";
+#else
+    dxgsg_cat.debug() << "CreateTexture: "<< _tex->get_name() <<" converting " << D3DFormatStr(PixBufD3DFmt) << " => " << D3DFormatStr(TargetPixFmt) << endl;
+#endif
+#endif
 
-    hr = FillDDSurfTexturePixels();
+    hr = FillDDSurfTexturePixels(TargetWidth,TargetHeight,PixBufD3DFmt);
     if(FAILED(hr)) {
         goto error_exit;
     }
 
-    // Done with DDraw
-    pDD->Release();
-
-    delete [] pTexPixFmts;
-
     // Return the newly created texture
-    return _surface;
+    return _pD3DTexture8;
 
   error_exit:
+    ULONG refcnt;
 
-    if(pDD!=NULL)
-        pDD->Release();
-    if(_surface!=NULL) {
-        _surface->Release();
-        _surface = NULL;
-    }
-
-    delete [] pTexPixFmts;
+    RELEASE(_pD3DTexture8,dxgsg,"texture",RELEASE_ONCE);
     return NULL;
 }
 
 HRESULT DXTextureContext::
-FillDDSurfTexturePixels(void) {
-    
+FillDDSurfTexturePixels(DWORD TargetWidth,DWORD TargetHeight,D3DFORMAT PixBufD3DFmt) {
+    HRESULT hr=E_FAIL;
     PixelBuffer *pbuf = _texture->get_ram_image();
     if (pbuf == (PixelBuffer *)NULL) {
       dxgsg_cat.fatal() << "CreateTexture: get_ram_image() failed\n";
       // The texture doesn't have an image to load.
       return E_FAIL;
     }
+
+    assert(_pD3DTexture8!=NULL);
+
+    DWORD OrigWidth  = (DWORD) pbuf->get_xsize();
+    DWORD OrigHeight = (DWORD) pbuf->get_ysize();
+    DWORD cNumColorChannels = pbuf->get_num_components();
+
+    IDirect3DSurface8 *pMipLevel0;
+    hr=_pD3DTexture8->GetSurfaceLevel(0,&pMipLevel0);
+    if(FAILED(hr)) {
+       dxgsg_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", GetSurfaceLevel returns hr = " << D3DERRORSTRING(hr);
+       return E_FAIL;
+    }
+
+    RECT SrcSize;
+    SrcSize.left = SrcSize.top = 0;
+    SrcSize.right = OrigWidth;
+    SrcSize.bottom = OrigHeight;
+
+    DWORD Lev0Filter,MipFilterFlags;
+
+    // need filtering if size changes, (also if bitdepth reduced (need dithering)??)
+    Lev0Filter = D3DX_FILTER_LINEAR | D3DX_FILTER_DITHER;
+
+    // filtering may be done here if texture if targetsize!=origsize
+    hr=D3DXLoadSurfaceFromMemory(pMipLevel0,(PALETTEENTRY*)NULL,(RECT*)NULL,(LPCVOID) pbuf,PixBufD3DFmt,
+                                 OrigWidth*cNumColorChannels,(PALETTEENTRY*)NULL,&SrcSize,Lev0Filter,(D3DCOLOR)0x0);
+    if(FAILED(hr)) {
+       dxgsg_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", D3DXLoadSurfFromMem returns hr = " << D3DERRORSTRING(hr);
+       goto exit_FillDDSurf;
+    }
+
+    if(_bHasMipMaps) {
+        if(!dx_use_triangle_mipgen_filter) 
+          MipFilterFlags = D3DX_FILTER_BOX;
+         else MipFilterFlags = D3DX_FILTER_TRIANGLE;
+
+    //    MipFilterFlags|= D3DX_FILTER_DITHER;
+
+        hr=D3DXFilterTexture(_pD3DTexture8,(PALETTEENTRY*)NULL,0,MipFilterFlags);
+        if(FAILED(hr)) {
+            dxgsg_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", D3DXFilterTex returns hr = " << D3DERRORSTRING(hr);
+            goto exit_FillDDSurf;
+        }
+    }
+
+ exit_FillDDSurf:
+    ULONG refcnt;
+    RELEASE(pMipLevel0,dxgsg,"texture",RELEASE_ONCE);
+    return hr;
+
+/*  old, custom conversion and mipmap-generation stuff
+
 
     HRESULT hr = ConvertPixBuftoDDSurf((ConversionType)_PixBufConversionType,pbuf->_image.p(),_surface);
     if(FAILED(hr)) {
@@ -1726,7 +1635,7 @@ FillDDSurfTexturePixels(void) {
 
             hr = pCurDDSurf->GetAttachedSurface(&ddsCaps, &pMipLevel_DDSurf);
             if(FAILED(hr)) {
-                dxgsg_cat.error() << "CreateTexture failed creating mipmaps: GetAttachedSurf hr = " << ConvD3DErrorToString(hr) << "\n";
+                dxgsg_cat.error() << "CreateTexture failed creating mipmaps: GetAttachedSurf hr = " << D3DERRORSTRING(hr);
                 delete [] pMipMapPixBufSpace;
                 pCurDDSurf->Release();
                 return hr;
@@ -1781,7 +1690,7 @@ FillDDSurfTexturePixels(void) {
 
                 hr = pTexturePrev->GetDC(&hTexDC);
                 if(FAILED(hr)) {
-                    dxgsg_cat.error() << "GetDC failed hr = " << ConvD3DErrorToString(hr) << "\n";
+                    dxgsg_cat.error() << "GetDC failed hr = " << D3DERRORSTRING(hr);
                     break;
                 }
 
@@ -1823,7 +1732,7 @@ FillDDSurfTexturePixels(void) {
                 hr = pTexturePrev->ReleaseDC(hTexDC);
 
                 if(FAILED(hr)) {
-                    dxgsg_cat.error() << "tex ReleaseDC failed for mip "<<i<<" hr = " << ConvD3DErrorToString(hr) << "\n";
+                    dxgsg_cat.error() << "tex ReleaseDC failed for mip "<<i<<" hr = " << D3DERRORSTRING(hr);
                     break;
                 }
 
@@ -1838,7 +1747,7 @@ FillDDSurfTexturePixels(void) {
                 ddsCaps.dwCaps2 = DDSCAPS2_MIPMAPSUBLEVEL;
                 hr = pTexturePrev->GetAttachedSurface(&ddsCaps, &pTextureCurrent);
                 if(FAILED(hr)) {
-                    dxgsg_cat.error() << " failed displaying mipmaps: GetAttachedSurf hr = " << ConvD3DErrorToString(hr) << "\n";
+                    dxgsg_cat.error() << " failed displaying mipmaps: GetAttachedSurf hr = " << D3DERRORSTRING(hr);
                 }
                         // done with the previous texture
                 pTexturePrev->Release();
@@ -1862,7 +1771,8 @@ FillDDSurfTexturePixels(void) {
         }
 #endif
     }
-    return S_OK;
+    return S_OK;    
+*/  
 }
 
 
@@ -1879,6 +1789,8 @@ DeleteTexture( ) {
 
     ULONG refcnt;
 
+    RELEASE(_pD3DTexture8,dxgsg,"texture",RELEASE_ONCE);
+/*
 #ifdef DEBUG_RELEASES
     if(_surface) {
         LPDIRECTDRAW7 pDD;
@@ -1890,8 +1802,10 @@ DeleteTexture( ) {
         PRINTREFCNT(pDD,"after DeleteTex, IDDraw7");
     }
 #else
-    RELEASE(_surface,dxgsg,"texture",false);
-#endif
+
+    RELEASE(_pD3DSurf8,dxgsg,"texture",false);
+ #endif
+*/ 
 }
 
 
@@ -1903,12 +1817,12 @@ DeleteTexture( ) {
 DXTextureContext::
 DXTextureContext(Texture *tex) :
 TextureContext(tex) {
-//#ifdef NDEBUG
+
     if(dxgsg_cat.is_spam()) {
        dxgsg_cat.spam() << "Creating DX texture [" << tex->get_name() << "], minfilter(" << PandaFilterNameStrs[tex->get_minfilter()] << "), magfilter("<<PandaFilterNameStrs[tex->get_magfilter()] << "), anisodeg(" << tex->get_anisotropic_degree() << ")\n";
     }
-//#endif
-    _surface = NULL;
+
+    _pD3DTexture8 = NULL;
     _bHasMipMaps = FALSE;
     _tex = tex;
 }

@@ -6,7 +6,7 @@
 
 #if $[BUILD_DX8]
 #begin lib_target
-  #define TARGET wdxdisplay
+  #define TARGET wdxdisplay8
   #define LOCAL_LIBS \
     dxgsg
     

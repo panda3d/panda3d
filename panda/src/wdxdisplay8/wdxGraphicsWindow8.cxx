@@ -20,13 +20,12 @@
 #include <time.h>
 #include <math.h>
 #include <tchar.h>
-#include "wdxGraphicsWindow.h"
-#include "wdxGraphicsPipe.h"
-#include "config_wdxdisplay.h"
+#include "wdxGraphicsWindow8.h"
+#include "wdxGraphicsPipe8.h"
+#include "config_wdxdisplay8.h"
 
 #include <keyboardButton.h>
 #include <mouseButton.h>
-
 #include <throw_event.h>
 
 #ifdef DO_PSTATS
@@ -901,11 +900,10 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
     wc.hInstance      = hProgramInstance;
     wc.hCursor      = NULL;  // for DX8 we handle the cursor messages ourself
 
-#if 0
+
   // all this must be moved to dx_init, since we need to create DX surface 
     string windows_icon_filename = get_icon_filename().to_os_specific();
-    string windows_mono_cursor_filename = get_mono_cursor_filename().to_os_specific();
-    string windows_color_cursor_filename = get_color_cursor_filename().to_os_specific();
+
 
     if(!windows_icon_filename.empty()) {
         // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
@@ -921,6 +919,8 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
         wc.hIcon = NULL; // use default app icon
     }
 
+    // Note: dx_init() uses the cursor handle to create the dx cursor surface
+    string windows_color_cursor_filename = get_color_cursor_filename().to_os_specific();
 
     if(!windows_color_cursor_filename.empty()) {
         // card support for full color non-black/white GDI cursors varies greatly.  if the cursor is not supported,
@@ -931,9 +931,12 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
         // (sync issues?).  instead we do mono cursor  unless card is known to support 256 color cursors
         bool bSupportsColorCursor=true;
     
+        #if 0 
+          // remove this check for now, since dx8 should emulate color cursors
         /* if any card doesnt support color, dont load it*/
-        for(int w=0;w<_windows.size();w++)
-            bSupportsColorCursor &= supports_color_cursors(_windows[w]->_dxgsg->scrn.DXDeviceID);
+         for(int w=0;w<_windows.size();w++)
+               bSupportsColorCursor &= supports_color_cursors(_windows[w]->_dxgsg->scrn.DXDeviceID);
+        #endif
     
         if(bSupportsColorCursor) {
             DWORD load_flags = LR_LOADFROMFILE;
@@ -956,43 +959,37 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
 
             }
 
-/*          dont need these anymore since we are do mousestuff before window creation    
-            SetClassLongPtr(_mwindow, GCLP_HCURSOR, (LONG_PTR) hNewMouseCursor);
-            SetCursor(hNewMouseCursor);
-    
-            if(_bLoadedCustomCursor)
-               DestroyCursor(_hMouseCursor);
-*/             
             _bLoadedCustomCursor=true;
         }
     }
 
     try_mono_cursor:
 
-    if((!_bLoadedCustomCursor) && (!windows_mono_cursor_filename.empty())) {
-        // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
-        // if icon is more than 8bpp
-
-        DWORD load_flags = LR_LOADFROMFILE;
-
-        if(dx_full_screen) {
-            // I think cursors should use LR_CREATEDIBSECTION since they should not be mapped to the device palette (in the case of 256-color cursors)
-            // since they are not going to be used on the desktop
-            load_flags |= LR_CREATEDIBSECTION;
+    if(!_bLoadedCustomCursor) {
+        string windows_mono_cursor_filename = get_mono_cursor_filename().to_os_specific();
+        
+        if(!windows_mono_cursor_filename.empty()) {
+            // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
+            // if icon is more than 8bpp
+    
+            DWORD load_flags = LR_LOADFROMFILE;
+    
+            if(dx_full_screen) {
+                // I think cursors should use LR_CREATEDIBSECTION since they should not be mapped to the device palette (in the case of 256-color cursors)
+                // since they are not going to be used on the desktop
+                load_flags |= LR_CREATEDIBSECTION;
+            }
+            // loads a .cur fmt file. 
+            _hMouseCursor = (HCURSOR) LoadImage(NULL, windows_mono_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, load_flags);
+    
+            if(_hMouseCursor==NULL) {
+                wdxdisplay_cat.warning() << "windows mono cursor filename '" << windows_mono_cursor_filename << "' not found!!\n";
+            } else _bLoadedCustomCursor=true;
         }
-        // loads a .cur fmt file. 
-        _hMouseCursor = (HCURSOR) LoadImage(NULL, windows_mono_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, load_flags);
-
-        if(_hMouseCursor==NULL) {
-            wdxdisplay_cat.warning() << "windows mono cursor filename '" << windows_mono_cursor_filename << "' not found!!\n";
-        } else _bLoadedCustomCursor=true;
     }
 
     if(!_bLoadedCustomCursor) 
       _hMouseCursor = LoadCursor(NULL, DEFAULT_CURSOR);
-
-
-#endif
 
     if (!wc_registered) {
       // We only need to register the window class once per session.
@@ -1609,6 +1606,10 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevin
          exit(1);
     }
 
+    if(d3dcaps.MaxStreams==0) {
+       wdxdisplay_cat.info() << "Warning: video driver predates DX8\n";
+    }
+
     if(bWantStencil & (d3dcaps.StencilCaps==0x0)) {
        wdxdisplay_cat.fatal() << "Stencil ability requested, but device #" << pDevInfo->cardID << " (" << _dxgsg->scrn.DXDeviceID.szDescription<<"), has no stencil capability!\n";
        exit(1);
@@ -1901,7 +1902,7 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
 //    LPDIRECTDRAW7 pDD=Display.pDD;
 //    D3DDEVICEDESC7 *pD3DDevDesc=&Display.D3DDevDesc;
     LPD3DCAPS8 pD3Dcaps = &Display.d3dcaps;
-
+    D3DPRESENT_PARAMETERS* pPresParams = &Display.PresParams;
     LPDIRECTDRAWSURFACE7 pPrimaryDDSurf,pBackDDSurf,pZDDSurf;
     LPDIRECT3DDEVICE7 pD3DDevice;
     RECT view_rect;
@@ -1946,8 +1947,6 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
     }
 */  
 
-    ResourceManagerDiscardBytes(0);
-
 //   DX_DECLARE_CLEAN(DDCAPS,DDCaps);
 //   pDD->GetCaps(&DDCaps,NULL);
 
@@ -1986,7 +1985,6 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
         }
     }
 
-    D3DPRESENT_PARAMETERS* pPresParams = &Display.PresParams;
     pPresParams->Windowed = dx_full_screen;
     DWORD dwBehaviorFlags=0x0;
   
@@ -2061,8 +2059,6 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
         hr = pD3D8->CreateDevice(Display.CardIDNum, D3DDEVTYPE_HAL, _pParentWindowGroup->_hParentWindow,   
                                  dwBehaviorFlags, pPresParams, &Display.pD3DDevice);
 
-        #define IS_16BPP_FORMAT(FMT) (((FMT)>=D3DFMT_R5G6B5)&&((FMT)<=D3DFMT_A1R5G5B5))
-        
         if(FAILED(hr)) {
             wdxdisplay_cat.fatal() << "D3D CreateDevice failed for device #" << Display.CardIDnum << ", " << D3DERRORSTRING(hr);
 
@@ -2130,6 +2126,11 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
             exit(1);
         }
     }  // end create windowed buffers
+
+    hr = Display.pD3DDevice->ResourceManagerDiscardBytes(0);
+    if(hr != DD_OK) {
+        wdxdisplay_cat.fatal() << "ResourceManagerDiscardBytes failed for device #" << Display.CardIDnum << ", " << D3DERRORSTRING(hr);
+    }
 
     // clear to transparent black to get rid of visible garbage 
     hr = Display.pD3DDevice->Clear(0,NULL,D3DCLEAR_TARGET,0,0.0,0);
