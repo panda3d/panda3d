@@ -209,12 +209,23 @@ ParticleSystemManager ps_manager;
 
 PT(ParticleSystem) particle_system = new ParticleSystem(PARTICLE_SYSTEM_POOL_SIZE);
 
+static int particles_added = 0;
+
+/*
 #if defined POINT_PARTICLES
   PT(PointParticleFactory) pf = new PointParticleFactory;
 #elif defined ZSPIN_PARTICLES
   PT(ZSpinParticleFactory) pf = new ZSpinParticleFactory;
 #elif defined ORIENTED_PARTICLES
   PT(OrientedParticleFactory) pf = new OrientedParticleFactory;
+#endif
+*/
+#if defined POINT_PARTICLES
+  PT(BaseParticleFactory) pf = new PointParticleFactory;
+#elif defined ZSPIN_PARTICLES
+  PT(BaseParticleFactory) pf = new ZSpinParticleFactory;
+#elif defined ORIENTED_PARTICLES
+  PT(BaseParticleFactory) pf = new OrientedParticleFactory;
 #endif
 
 #if defined GEOM_PARTICLE_RENDERER
@@ -271,11 +282,10 @@ event_csn_update(CPT_Event) {
 
 static void
 event_add_particles(CPT_Event) {
-  static initialized = 0;
 
   // guard against additional "P" presses (bad things happen)
-  if(initialized) return;
-  initialized = 1;
+  if(particles_added) return;
+  particles_added = 1;
 
   // renderer setup
   #ifdef PARTICLE_RENDERER_ALPHA_MODE
@@ -364,6 +374,7 @@ event_add_particles(CPT_Event) {
   #endif
 
   // factory setup
+
   #ifdef PARTICLE_FACTORY_LIFESPAN_BASE
     pf->set_lifespan_base(PARTICLE_FACTORY_LIFESPAN_BASE);
   #endif
@@ -560,9 +571,43 @@ event_more_particles(CPT_Event) {
     0,
   };
 
+  if(!particles_added) return;
+
   if (0 == sizes[index]) index = 0;
   set_pool_size(sizes[index]);
   index++;
+}
+
+static void
+event_switch_particle_factory_type(CPT_Event) {
+  static int index = 0;
+
+  if(!particles_added) return;
+
+  cout << "Switching to a";
+
+  switch (index) {
+    case 0:
+      cout << " point";
+      pf = new PointParticleFactory;
+      particle_system->set_factory(pf);
+      break;
+    case 1:
+      cout << " z-spin";
+      pf = new ZSpinParticleFactory;
+      particle_system->set_factory(pf);
+      break;
+    case 2:
+      cout << "n oriented";
+      pf = new OrientedParticleFactory;
+      particle_system->set_factory(pf);
+      break;
+  }
+
+  cout << " particle factory" << endl;
+
+  index++;
+  if (index > 2) index = 0;
 }
 
 void demo_keys(EventHandler&) {
@@ -571,6 +616,7 @@ void demo_keys(EventHandler&) {
 
   event_handler.add_hook("p", event_add_particles);
   event_handler.add_hook("m", event_more_particles);
+  event_handler.add_hook(",", event_switch_particle_factory_type);
 }
 
 int main(int argc, char *argv[]) {

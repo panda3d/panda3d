@@ -54,8 +54,12 @@ ParticleSystem(int pool_size) :
   _render_parent = new NamedNode("ParticleSystem default render parent");
 
   set_emitter(new SphereSurfaceEmitter);
+
   set_renderer(new PointParticleRenderer);
-  set_factory(new PointParticleFactory);
+
+  //set_factory(new PointParticleFactory);
+  _factory = new PointParticleFactory;
+  clear_physics_objects();
 
   set_pool_size(pool_size);
 }
@@ -401,41 +405,33 @@ resize_pool(int size) {
   } else {
     // subtract elements
     delta = -delta;
-    if (delta >= _physics_objects.size()) {
-#ifdef PSDEBUG
-      cout << "Weird... do we have a negative pool size??" << endl;
-#endif
-      _physics_objects.erase(_physics_objects.begin(), _physics_objects.end());
-      _free_particle_fifo.clear();
-    } else {
-      for (i = 0; i < delta; i++) {
-        int delete_index = _physics_objects.size()-1;
-        BaseParticle *bp = (BaseParticle *) _physics_objects[delete_index].p();
+    for (i = 0; i < delta; i++) {
+      int delete_index = _physics_objects.size()-1;
+      BaseParticle *bp = (BaseParticle *) _physics_objects[delete_index].p();
 
-        if (bp->get_alive()) {
+      if (bp->get_alive()) {
 #ifdef PSDEBUG
-          cout << "WAS ALIVE" << endl;
+        cout << "WAS ALIVE" << endl;
 #endif
-          kill_particle(delete_index);
-          _free_particle_fifo.pop_back();
-        } else {
+        kill_particle(delete_index);
+        _free_particle_fifo.pop_back();
+      } else {
 #ifdef PSDEBUG
-          cout << "WAS NOT ALIVE" << endl;
+        cout << "WAS NOT ALIVE" << endl;
 #endif
-          deque<int>::iterator i;
-          i = find(_free_particle_fifo.begin(), _free_particle_fifo.end(), delete_index);
-          if (i != _free_particle_fifo.end()) {
-            _free_particle_fifo.erase(i);
-          }
-#ifdef PSDEBUG
-          else {
-            cout << "particle not found in free FIFO!!!!!!!!" << endl;
-          }
-#endif
+        deque<int>::iterator i;
+        i = find(_free_particle_fifo.begin(), _free_particle_fifo.end(), delete_index);
+        if (i != _free_particle_fifo.end()) {
+          _free_particle_fifo.erase(i);
         }
-
-        _physics_objects.pop_back();
+#ifdef PSDEBUG
+        else {
+          cout << "particle not found in free FIFO!!!!!!!!" << endl;
+        }
+#endif
       }
+
+      _physics_objects.pop_back();
     }
   }
 
@@ -523,6 +519,7 @@ update(float dt) {
 #ifdef PARTICLE_SYSTEM_UPDATE_SENTRIES
   cout << "particle update complete" << endl;
 #endif
+
 }
 
 #ifdef PSSANITYCHECK
