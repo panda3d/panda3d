@@ -5,19 +5,14 @@
   #define TARGET distort
   #define LOCAL_LIBS \
     sgraphutil sgraph sgattrib gobj linmath
-    
-  #define COMBINED_SOURCES $[TARGET]_composite1.cxx
 
-  #define SOURCES config_distort.h \
-    projectionScreen.h projectionScreen.I \
-    cylindricalLens.h cylindricalLens.I \
-    fisheyeLens.h fisheyeLens.I \
-    nonlinearImager.h nonlinearImager.I \
-    pSphereLens.h pSphereLens.I
-
-  #define INCLUDED_SOURCES \
-    config_distort.cxx cylindricalLens.cxx fisheyeLens.cxx nonlinearImager.cxx \
-    projectionScreen.cxx pSphereLens.cxx 
+  #define SOURCES \
+    config_distort.cxx config_distort.h \
+    cylindricalLens.cxx cylindricalLens.h cylindricalLens.I \
+    fisheyeLens.cxx fisheyeLens.h fisheyeLens.I \
+    nonlinearImager.cxx nonlinearImager.h nonlinearImager.I \
+    pSphereLens.cxx pSphereLens.h pSphereLens.I \
+    projectionScreen.cxx projectionScreen.h projectionScreen.I
 
   #define INSTALL_HEADERS
 
