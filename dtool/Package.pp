@@ -77,14 +77,14 @@
 // directory.  This file might redefine any of the variables defined
 // above.
 #if $[ne $[PPREMAKE_CONFIG],]
-  #set PPREMAKE_CONFIG $[unixfilename $[PPREMAKE_CONFIG]]
+  #define PPREMAKE_CONFIG $[unixfilename $[PPREMAKE_CONFIG]]
   #print Reading $[PPREMAKE_CONFIG]
   #include $[PPREMAKE_CONFIG]
 
 #elif $[wildcard $[unixfilename $[INSTALL_DIR]]/Config.pp]
   // If the PPREMAKE_CONFIG variable is not, but there exists a
   // Config.pp in the compiled-in INSTALL_DIR, use that one by default.
-  #set PPREMAKE_CONFIG $[unixfilename $[INSTALL_DIR]]/Config.pp
+  #define PPREMAKE_CONFIG $[unixfilename $[INSTALL_DIR]]/Config.pp
   #print Reading $[PPREMAKE_CONFIG]
   #include $[PPREMAKE_CONFIG]
 
