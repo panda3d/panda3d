@@ -1116,10 +1116,11 @@ class MopathRecorder(AppShell, PandaObject):
             return
         self.fAdjustingValues = 1
         # Widgets depending on max T
-        maxT = '%.2f' % self.curveCollection.getMaxT()
+        maxT = self.curveCollection.getMaxT()
+        maxT_text = '%0.2f' % maxT
         # Playback controls
-        self.getWidget('Playback', 'Time').configure(max = maxT)
-        self.getVariable('Resample', 'Path Duration').set(maxT)
+        self.getWidget('Playback', 'Time').configure(max = maxT_text)
+        self.getVariable('Resample', 'Path Duration').set(maxT_text)
         # Refine widgets
         widget = self.getWidget('Refine Page', 'Refine From')
         widget.configure(max = maxT)
@@ -1247,6 +1248,7 @@ class MopathRecorder(AppShell, PandaObject):
     def playbackGoTo(self, time):
         if self.curveCollection == None:
             return
+        print time
         self.playbackTime = CLAMP(time, 0.0, self.maxT)
         if self.curveCollection != None:
             pos = Point3(0)
