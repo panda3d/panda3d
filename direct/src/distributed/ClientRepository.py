@@ -219,7 +219,8 @@ class ClientRepository(DirectObject.DirectObject):
             del(self.doId2cdc[doId])
             # Sanity check the dictionaries
             assert(len(self.doId2do) == len(self.doId2cdc))
-            # Delete the object itself
+            # Disable and Delete the object itself
+            obj.disable()
             obj.delete()
         # If it is in the cache, remove it.
         elif self.cache.contains(doId):
