@@ -103,7 +103,7 @@ FmodAudioManager() {
   audio_debug("  _active_managers="<<_active_managers);
 
   if (_is_valid)  {
-    assert(is_valid());    
+    nassertv(is_valid());    
   }
 }
 
@@ -164,7 +164,7 @@ get_sound(const string &file_name, bool positional) {
      return get_null_sound();
   }
 
-  assert(is_valid());
+  nassertr(is_valid(), NULL);
   Filename path = file_name;
 
   if (use_vfs) {
@@ -188,7 +188,9 @@ get_sound(const string &file_name, bool positional) {
     SoundCacheEntry new_entry;
     new_entry.data = load(path, new_entry.size);
     if (!new_entry.data) {
-      audio_error("FmodAudioManager::load failed.");
+      audio_cat.error()
+        << "FmodAudioManager::load(" << file_name << ", " << positional
+        << ") failed.\n";
       return get_null_sound();
     }
     new_entry.refcount = 0;
@@ -196,6 +198,7 @@ get_sound(const string &file_name, bool positional) {
 
     // Add to the cache
     while (_sounds.size() >= (unsigned int)_cache_limit) {
+      nassertr(is_valid(), NULL);
       uncache_a_sound();
     }
 
@@ -207,7 +210,7 @@ get_sound(const string &file_name, bool positional) {
     // is about to go out of scope.
     entry = &(*si).second;
   }
-  assert(entry != NULL);
+  nassertr(entry != NULL, NULL);
   
   // Create an FMOD object from the memory-mapped file.  Here remains
   // one last vestige of special-case MIDI code: apparently, FMOD
@@ -244,7 +247,9 @@ get_sound(const string &file_name, bool positional) {
                                 flags, 0, entry->size);
   }
   if (stream == NULL) {
-    audio_error("FmodAudioManager::get_sound failed.");
+    audio_cat.error()
+      << "FmodAudioManager::get_sound(" << file_name << ", " << positional
+      << ") failed.\n";
     return get_null_sound();
   }
   inc_refcount(path);
@@ -265,7 +270,7 @@ get_sound(const string &file_name, bool positional) {
   audioSound = fmodAudioSound;
   
   audio_debug("  returning 0x" << (void*)audioSound);
-  assert(is_valid());
+  nassertr(is_valid(), NULL);
   audio_debug("GOO!");
   return audioSound;
 }
@@ -278,7 +283,7 @@ get_sound(const string &file_name, bool positional) {
 void FmodAudioManager::
 uncache_sound(const string& file_name) {
   audio_debug("FmodAudioManager::uncache_sound(\""<<file_name<<"\")");
-  assert(is_valid());
+  nassertv(is_valid());
   Filename path = file_name;
 
   if (use_vfs) {
@@ -305,16 +310,16 @@ uncache_sound(const string& file_name) {
     delete [] entry->data;
 
     // Erase the sound from the LRU list as well.
-    assert(_lru.size()>0);
+    nassertv(_lru.size()>0);
     LRU::iterator lru_i=find(_lru.begin(), _lru.end(), itor->first);
-    assert(lru_i != _lru.end());
+    nassertv(lru_i != _lru.end());
     _lru.erase(lru_i);
     _sounds.erase(itor);
   } else {
     entry->stale = true;
   }
 
-  assert(is_valid());
+  nassertv(is_valid());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -325,19 +330,19 @@ uncache_sound(const string& file_name) {
 void FmodAudioManager::
 uncache_a_sound() {
   audio_debug("FmodAudioManager::uncache_a_sound()");
-  assert(is_valid());
+  nassertv(is_valid());
   // uncache least recently used:
-  assert(_lru.size()>0);
+  nassertv(_lru.size()>0);
   LRU::reference path=_lru.front();
   SoundMap::iterator i = _sounds.find(path);
-  assert(i != _sounds.end());
+  nassertv(i != _sounds.end());
   _lru.pop_front();
 
   if (i != _sounds.end()) {
     audio_debug("  uncaching \""<<i->first<<"\"");
     uncache_sound(path);
   }
-  assert(is_valid());
+  nassertv(is_valid());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -354,9 +359,9 @@ most_recently_used(const string& path) {
     _lru.erase(i);
   }
   // At this point, path should not exist in the _lru:
-  assert(find(_lru.begin(), _lru.end(), path) == _lru.end());
+  nassertv(find(_lru.begin(), _lru.end(), path) == _lru.end());
   _lru.push_back(path);
-  assert(is_valid());
+  nassertv(is_valid());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -382,9 +387,9 @@ clear_cache() {
       delete [] entry->data;
 
       // Erase the sound from the LRU list as well.
-      assert(_lru.size()>0);
+      nassertv(_lru.size()>0);
       LRU::iterator lru_i=find(_lru.begin(), _lru.end(), itor->first);
-      assert(lru_i != _lru.end());
+      nassertv(lru_i != _lru.end());
       _lru.erase(lru_i);
       _sounds.erase(itor);
 
@@ -404,12 +409,13 @@ clear_cache() {
 void FmodAudioManager::
 set_cache_limit(unsigned int count) {
   audio_debug("FmodAudioManager::set_cache_limit(count="<<count<<")");
-  assert(is_valid());
+  nassertv(is_valid());
   while (_lru.size() > count) {
+    nassertv(is_valid());
     uncache_a_sound();
   }
   _cache_limit = count;
-  assert(is_valid());
+  nassertv(is_valid());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -527,7 +533,7 @@ reduce_sounds_playing_to(unsigned int count) {
   int limit = _sounds_playing.size() - count;
   while (limit-- > 0) {
     SoundsPlaying::iterator sound = _sounds_playing.begin();
-    assert(sound != _sounds_playing.end());
+    nassertv(sound != _sounds_playing.end());
     (**sound).stop();
   }
 }
@@ -764,9 +770,9 @@ dec_refcount(const string& file_name) {
       delete [] entry->data;
 
       // Erase the sound from the LRU list as well.
-      assert(_lru.size()>0);
+      nassertv(_lru.size()>0);
       LRU::iterator lru_i=find(_lru.begin(), _lru.end(), itor->first);
-      assert(lru_i != _lru.end());
+      nassertv(lru_i != _lru.end());
       _lru.erase(lru_i);
       _sounds.erase(itor);
     }

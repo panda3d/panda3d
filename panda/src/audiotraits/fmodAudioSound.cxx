@@ -80,7 +80,7 @@ FmodAudioSound(FmodAudioManager* manager, FSOUND_STREAM *audio_data,
   _vel[0] = 0.0f; _vel[1] = 0.0f; _vel[2] = 0.0f;
   nassertv(!file_name.empty());
   nassertv(audio_data != NULL);
-  fmod_audio_debug("FmodAudioSound(manager=0x"<<(void*)&manager
+  fmod_audio_debug("FmodAudioSound(manager="<<(void*)&manager
         <<", file_name="<<file_name<<")");
 }
 
@@ -401,7 +401,6 @@ get_finished_event() const {
 //  Description: Get name of sound file
 ////////////////////////////////////////////////////////////////////
 const string& FmodAudioSound::get_name() const {
-  fmod_audio_debug("get_name() returning "<<_file_name);
   return _file_name;
 }
 
