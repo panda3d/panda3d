@@ -47,7 +47,7 @@ void PopCorrection::new_target(LPoint3f& target, LVector3f&) {
 
 LerpCorrection::LerpCorrection(LPoint3f& start, LVector3f& s_vel)
   : Correction(start, s_vel), prev_p(start), save_p(start), have_both(false),
-    time(0.) {
+    time(0.), dur(0.5) {
 }
 
 LerpCorrection::~LerpCorrection(void) {
@@ -55,9 +55,8 @@ LerpCorrection::~LerpCorrection(void) {
 
 void LerpCorrection::step(void) {
   if (have_both) {
-    if (time < 0.5) {
-      // half second lerp
-      float tmp = time * 2.;
+    if (time < dur) {
+      float tmp = time / dur;
       LVector3f vtmp = save_p - prev_p;
       _curr_p = (tmp * vtmp) + prev_p;
       time += ClockObject::get_global_clock()->get_dt();
@@ -80,11 +79,19 @@ void LerpCorrection::new_target(LPoint3f& target, LVector3f&) {
   }
 }
 
+void LerpCorrection::set_duration(float d) {
+  dur = d;
+}
+
+float LerpCorrection::get_duration(void) const {
+  return dur;
+}
+
 /////////////////////////////////////////////////////////////////////
 
 SplineCorrection::SplineCorrection(LPoint3f& start, LVector3f& s_vel)
   : Correction(start, s_vel), have_both(false), prev_p(start), save_p(start),
-    prev_v(s_vel), save_v(s_vel), time(0.) {
+    prev_v(s_vel), save_v(s_vel), time(0.), dur(0.5) {
 }
 
 SplineCorrection::~SplineCorrection(void) {
@@ -92,9 +99,8 @@ SplineCorrection::~SplineCorrection(void) {
 
 void SplineCorrection::step(void) {
   if (have_both) {
-    if (time < 0.5) {
-      // half second lerp
-      float tmp = time * 2.;
+    if (time < dur) {
+      float tmp = time / dur;
       _curr_p = (tmp * tmp * tmp * A) + (tmp * tmp * B) + (tmp * C) + D;
       _curr_v = (3. * tmp * tmp * A) + (2. * tmp * B) + C;
       time += ClockObject::get_global_clock()->get_dt();
@@ -127,4 +133,12 @@ void SplineCorrection::new_target(LPoint3f& target, LVector3f& v_target) {
     D = prev_p;
     have_both = true;
   }
+}
+
+void SplineCorrection::set_duration(float d) {
+  dur = d;
+}
+
+float SplineCorrection::get_duration(void) const {
+  return dur;
 }
