@@ -62,6 +62,7 @@ main(int argc, char *argv[]) {
 
   CollisionTraverser ct;
   PT(CollisionHandlerPusher) chp = new CollisionHandlerPusher;
+  chp->add_collider(aa, a_aa);
   ct.add_collider(aa, chp);
 
   ct.traverse(r);

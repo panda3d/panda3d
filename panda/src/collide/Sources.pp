@@ -54,6 +54,7 @@
   #define TARGET test_collide
   #define LOCAL_LIBS \
     collide
+  #define OTHER_LIBS $[OTHER_LIBS] pystub
 
   #define SOURCES \
     test_collide.cxx
