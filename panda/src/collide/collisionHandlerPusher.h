@@ -40,6 +40,7 @@ PUBLISHED:
 
 protected:
   virtual bool handle_entries();
+  virtual void apply_linear_force(ColliderDef &def, const LVector3f &force);
 
 private:
   bool _horizontal;

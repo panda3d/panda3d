@@ -90,7 +90,6 @@ handle_entries() {
         << "CollisionHandlerPusher doesn't know about "
         << *from_node << ", disabling.\n";
       okflag = false;
-
     } else {
       ColliderDef &def = (*ci).second;
       if (!def.is_valid()) {
@@ -98,7 +97,6 @@ handle_entries() {
           << "Removing invalid collider " << *from_node << " from "
           << get_type() << "\n";
         _colliders.erase(ci);
-
       } else {
         // How to apply multiple shoves from different solids onto the
         // same collider?  One's first intuition is to vector sum all
@@ -119,14 +117,13 @@ handle_entries() {
           
           if (!entry->has_from_surface_normal() ||
               !entry->has_from_depth()) {
-#ifndef NDEBUG          
+            #ifndef NDEBUG          
             if (collide_cat.is_debug()) {
               collide_cat.debug()
                 << "Cannot shove on " << *from_node << " for collision into "
                 << *entry->get_into_node() << "; no normal/depth information.\n";
             }
-#endif
-            
+            #endif            
           } else {
             // Shove it just enough to clear the volume.
             if (entry->get_from_depth() != 0.0f) {
@@ -145,14 +142,14 @@ handle_entries() {
               sd._valid = true;
               sd._entry = entry;
               
-#ifndef NDEBUG          
+              #ifndef NDEBUG          
               if (collide_cat.is_debug()) {
                 collide_cat.debug()
                   << "Shove on " << *from_node << " from "
                   << *entry->get_into_node() << ": " << sd._vector
                   << " times " << sd._length << "\n";
               }
-#endif
+              #endif
               
               shoves.push_back(sd);
             }
@@ -237,20 +234,22 @@ handle_entries() {
           
           // Now we can determine the net shove.
           LVector3f net_shove(0.0f, 0.0f, 0.0f);
+          LVector3f force_normal(0.0f, 0.0f, 0.0f);
           for (si = shoves.begin(); si != shoves.end(); ++si) {
             const ShoveData &sd = (*si);
             if (sd._valid) {
               net_shove += sd._vector * sd._length;
+              force_normal += sd._vector;
             }
           }
 
-#ifndef NDEBUG          
+          #ifndef NDEBUG          
           if (collide_cat.is_debug()) {
             collide_cat.debug()
               << "Net shove on " << *from_node << " is: "
               << net_shove << "\n";
           }
-#endif
+          #endif
           
           if (def._node != (PandaNode *)NULL) {
             // If we are adjusting a plain PandaNode, get the
@@ -267,10 +266,20 @@ handle_entries() {
             def.get_mat(mat);
             def.set_mat(LMatrix4f::translate_mat(net_shove) * mat);
           }
+          apply_linear_force(def, force_normal);
         }
       }
     }
   }
 
   return okflag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerPusher::apply_linear_force
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CollisionHandlerPusher::
+apply_linear_force(ColliderDef &, const LVector3f &) {
 }

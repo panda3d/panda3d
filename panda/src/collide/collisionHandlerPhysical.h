@@ -45,14 +45,13 @@ public:
   virtual bool end_group();
 
 PUBLISHED:
-  void add_collider_drive(CollisionNode *node, DriveInterface *drive_interface);
   void add_collider_node(CollisionNode *node, PandaNode *target);
   bool remove_collider(CollisionNode *node);
   bool has_collider(CollisionNode *node) const;
   void clear_colliders();
 
-protected:
-  virtual bool handle_entries()=0;
+  // add_collider_drive() is becoming obsolete.  If you need let, let us know.
+  void add_collider_drive(CollisionNode *node, DriveInterface *drive_interface);
 
 protected:
   typedef pvector< PT(CollisionEntry) > Entries;
@@ -75,6 +74,8 @@ protected:
   typedef pmap<PT(CollisionNode), ColliderDef> Colliders;
   Colliders _colliders;
 
+  virtual bool handle_entries()=0;
+  virtual void apply_linear_force(ColliderDef &def, const LVector3f &force)=0;
 
 public:
   static TypeHandle get_class_type() {

@@ -34,10 +34,8 @@ void CollisionHandlerPhysical::ColliderDef::
 get_mat(LMatrix4f &mat) const {
   if (_node != (PandaNode *)NULL) {
     mat = _node->get_transform()->get_mat();
-
   } else if (_drive_interface != (DriveInterface *)NULL) {
     mat = _drive_interface->get_mat();
-
   } else {
     collide_cat.error()
       << "Invalid CollisionHandlerPhysical::ColliderDef\n";
@@ -54,11 +52,9 @@ void CollisionHandlerPhysical::ColliderDef::
 set_mat(const LMatrix4f &mat) {
   if (_node != (PandaNode *)NULL) {
     _node->set_transform(TransformState::make_mat(mat));
-
   } else if (_drive_interface != (DriveInterface *)NULL) {
     _drive_interface->set_mat(mat);
     _drive_interface->force_dgraph();
-
   } else {
     collide_cat.error()
       << "Invalid CollisionHandlerPhysical::ColliderDef\n";

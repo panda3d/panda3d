@@ -142,6 +142,7 @@ handle_entries() {
             mat(3, 2) += adjust;
             def.set_mat(mat);
           }
+          apply_linear_force(def, LVector3f(0.0f, 0.0f, adjust));
         } else {
           if (collide_cat.is_spam()) {
             collide_cat.spam()
@@ -153,4 +154,13 @@ handle_entries() {
   }
 
   return okflag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerFloor::apply_linear_force
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CollisionHandlerFloor::
+apply_linear_force(ColliderDef &def, const LVector3f &force) {
 }
