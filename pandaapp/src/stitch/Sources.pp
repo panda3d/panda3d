@@ -3,7 +3,7 @@
   #define LOCAL_LIBS \
     stitchbase
   #define OTHER_LIBS \
-    progbase \
+    progbase converter \
     pnmimage:c mathutil:c linmath:c putil:c panda:m \
     express:c pandaexpress:m pystub dtoolconfig dtool
 
@@ -19,7 +19,7 @@
   #define LOCAL_LIBS \
     stitchbase
   #define OTHER_LIBS \
-    progbase \
+    progbase converter \
     pnmimagetypes:c pnmimage:c linmath:c putil:c panda:m \
     express:c pandaexpress:m pystub dtoolconfig dtool
 
@@ -33,7 +33,7 @@
   #define LOCAL_LIBS \
     stitchviewer stitchbase
   #define OTHER_LIBS \
-    progbase \
+    progbase converter \
     device:c tform:c graph:c dgraph:c sgraph:c gobj:c sgattrib:c \
     event:c chancfg:c display:c sgraphutil:c light:c \
     pnmimagetypes:c pnmimage:c putil:c express:c \

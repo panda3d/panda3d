@@ -2,7 +2,7 @@
   #define TARGET stitchviewer
   #define LOCAL_LIBS stitchbase
   #define OTHER_LIBS \
-    stitchbase \
+    progbase converter \
     device:c tform:c graph:c dgraph:c sgraph:c gobj:c pnmimage:c \
     sgattrib:c event:c chancfg:c display:c sgraphutil:c light:c putil:c \
     express:c panda:m
