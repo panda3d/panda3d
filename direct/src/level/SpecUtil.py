@@ -10,7 +10,7 @@ import types
 
 """
 TO CREATE A NEW SPEC:
-import SpecUtil
+from direct.level import SpecUtil
 from toontown.coghq import FactoryEntityTypes
 SpecUtil.makeNewSpec('$TOONTOWN/src/coghq/FactoryMockupSpec.py', 'phase_9/models/cogHQ/SelbotLegFactory', FactoryEntityTypes)
 """
@@ -27,13 +27,13 @@ def makeNewSpec(filename, modelPath, entTypeModule=EntityTypes):
 
 """
 FOR SAME LEVEL MODEL PATH:
-import SpecUtil
+from direct.level import SpecUtil
 from toontown.coghq import SellbotLegFactorySpec
 from toontown.coghq import FactoryEntityTypes
 SpecUtil.updateSpec(SellbotLegFactorySpec, FactoryEntityTypes)
 
 FOR DIFFERENT LEVEL MODEL PATH:
-import SpecUtil
+from direct.level import SpecUtil
 from toontown.coghq import SellbotLegFactorySpec
 from toontown.coghq import FactoryEntityTypes
 SpecUtil.updateSpec(SellbotLegFactorySpec, FactoryEntityTypes, '/i/beta/toons/maya/work/CogHeadquarters/CogFactoriesInteriors/AllFactories/LegFactory/SelbotLegFactory_v##s#.mb')

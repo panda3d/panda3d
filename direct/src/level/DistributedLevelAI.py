@@ -38,6 +38,7 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
 
         self.initializeLevel(levelSpec)
 
+        # self.zoneIds comes from LevelMgrAI
         self.sendUpdate('setZoneIds', [self.zoneIds])
         self.sendUpdate('setStartTimestamp', [self.startTimestamp])
         # this is no longer used
@@ -57,13 +58,14 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
     def getEntranceId(self):
         return self.entranceId
 
-    def delete(self):
+    def delete(self, deAllocZone=True):
         self.notify.debug('delete')
         if __dev__:
             self.removeAutosaveTask()
         self.destroyLevel()
         self.ignoreAll()
-        self.air.deallocateZone(self.zoneId)
+        if deAllocZone:
+            self.air.deallocateZone(self.zoneId)
         DistributedObjectAI.DistributedObjectAI.delete(self)
 
     def initializeLevel(self, levelSpec):
