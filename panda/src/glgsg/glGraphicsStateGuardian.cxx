@@ -939,13 +939,7 @@ draw_sprite(const GeomSprite *geom) {
     modelview_mat = ctatt->get_matrix();
 
   // get the camera information
-  float tnear, tfar, hfov, aspect_ratio;
-  tnear = _actual_display_region->get_camera()->get_near();
-  tfar = _actual_display_region->get_camera()->get_far();
-  hfov = _actual_display_region->get_camera()->get_hfov();
-  aspect_ratio = _actual_display_region->get_camera()->get_aspect();
-
-  // load up our own matrices
+  float aspect_ratio = _actual_display_region->get_camera()->get_aspect();
 
   // Note on DO_CHARLES_PROJECTION_MAT
   // apparently adjusting the projection as done below is incorrect
@@ -961,17 +955,26 @@ draw_sprite(const GeomSprite *geom) {
 	
 	  float x_frustum_scale, y_frustum_scale;
 	  float recip_x_frustum_scale, recip_y_frustum_scale;
+	  float tnear, tfar, hfov;
+
+	  // get the camera information
+	  tnear = _actual_display_region->get_camera()->get_near();
+	  tfar = _actual_display_region->get_camera()->get_far();
+	  hfov = _actual_display_region->get_camera()->get_hfov();
 	
 	  // extract the left and top bounds of the current camera
 	  x_frustum_scale = tanf(hfov * 0.5f * (3.1415926f / 180.0f)) * tnear;
 	  recip_x_frustum_scale = 1.0f / x_frustum_scale;
 	  y_frustum_scale = x_frustum_scale / aspect_ratio;
 	  recip_y_frustum_scale = 1.0f / y_frustum_scale;
+
+	  // load up our own matrices
 	  glMatrixMode(GL_PROJECTION);
 	  glLoadIdentity();
 	  glFrustum(-1.0f, 1.0f, -1.0f, 1.0f, tnear, tfar);
   #endif
   
+  // load up our own matrices
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
