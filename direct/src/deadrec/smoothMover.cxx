@@ -24,7 +24,7 @@ SmoothMover::SmoothMode SmoothMover::_smooth_mode = SmoothMover::SM_off;
 SmoothMover::PredictionMode SmoothMover::_prediction_mode = SmoothMover::PM_off;
 double SmoothMover::_delay = 0.2;
 double SmoothMover::_max_position_age = 0.25;
-double SmoothMover::_reset_velocity_age = 0.5;
+double SmoothMover::_reset_velocity_age = 0.3;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::Constructor
