@@ -46,6 +46,7 @@ PGEntry(const string &name) : PGItem(name)
   _cursor_stale = true;
   _max_chars = 0;
   _max_width = 0.0;
+  _num_lines = 1;
   _last_text_def = (TextNode *)NULL;
   _text_geom_stale = true;
   _blink_start = 0.0;
@@ -220,14 +221,64 @@ press(const MouseWatcherParameter &param) {
                 _text.substr(0, _cursor_position) + key +
                 _text.substr(_cursor_position);
               
-              // Check the width.
-              bool too_wide = false;
-              if (get_max_width() > 0.0) {
+              // Check the length.
+              bool too_long = false;
+              if (_max_width > 0.0) {
                 TextNode *text_node = get_text_def(S_focus);
-                too_wide = (text_node->calc_width(new_text) > get_max_width());
+                if (_num_lines <= 1) {
+                  // If we have only one line, we can check the length
+                  // by simply measuring the width of the text.
+                  too_long = (text_node->calc_width(new_text) > _max_width);
+
+                } else {
+                  // If we have multiple lines, we have to check the
+                  // length by wordwrapping it and counting up the
+                  // number of lines.
+                  string ww_text = text_node->wordwrap_to(new_text, _max_width, true);
+                  int num_lines = 1;
+                  size_t last_line_start = 0;
+                  for (size_t p = 0;
+                       p < ww_text.length() && !too_long;
+                       ++p) {
+                    if (ww_text[p] == '\n') {
+                      last_line_start = p + 1;
+                      num_lines++;
+                      too_long = (num_lines > _num_lines);
+                    }
+                  }
+
+                  if (!too_long) {
+                    // We must also ensure that the last line is not too
+                    // long (it might be, because of additional
+                    // whitespace on the end).
+                    string last_line = ww_text.substr(last_line_start);
+                    float last_line_width = text_node->calc_width(last_line);
+                    if (num_lines == _num_lines) {
+                      // Mainly we only care about this if we're on
+                      // the very last line.
+                      too_long = (last_line_width > _max_width);
+
+                    } else {
+                      // If we're not on the very last line, the width
+                      // is still important, just so we don't allow an
+                      // infinite number of spaces to accumulate.
+                      // However, we must allow at least *one* space
+                      // on the end of a line.
+                      if (_text.length() >= 1 && 
+                          _text[_text.length() - 1] == ' ') {
+                        if (last_line_width > _max_width) {
+                          // In this case, however, it's not exactly
+                          // an overflow; we just want to reject the
+                          // space.
+                          return;
+                        }
+                      }
+                    }
+                  }
+                }
               }
               
-              if (too_wide) {
+              if (too_long) {
                 overflow(param);
                 
               } else {
@@ -280,20 +331,22 @@ overflow(const MouseWatcherParameter &param) {
 //       Access: Published
 //  Description: Sets up the entry for normal use.  The width is the
 //               maximum width of characters that will be typed, and
-//               determines the size of the entry, based on the
-//               TextNode in effect.
+//               num_lines is the integer number of lines of text of
+//               the entry.  Both of these together determine the size
+//               of the entry, based on the TextNode in effect.
 ////////////////////////////////////////////////////////////////////
 void PGEntry::
-setup(float width) {
+setup(float width, int num_lines) {
   set_text(string());
   _cursor_position = 0;
   set_max_chars(0);
   set_max_width(width);
+  set_num_lines(num_lines);
 
   TextNode *text_node = get_text_def(S_focus);
-  float height = text_node->get_line_height();
+  float line_height = text_node->get_line_height();
 
-  LVecBase4f frame(0.0, width, -0.3 * height, height);
+  LVecBase4f frame(0.0, width, -0.3 * line_height - (line_height * (num_lines - 1)), line_height);
   switch (text_node->get_align()) {
   case TM_ALIGN_LEFT:
     // The default case.
@@ -329,8 +382,8 @@ setup(float width) {
   clear_cursor_def();
   LineSegs ls;
   ls.set_color(0.0, 0.0, 0.0, 1.0);
-  ls.move_to(0.0, 0.0, -0.15 * height);
-  ls.draw_to(0.0, 0.0, 0.85 * height);
+  ls.move_to(0.0, 0.0, -0.15 * line_height);
+  ls.draw_to(0.0, 0.0, 0.85 * line_height);
   new RenderRelation(get_cursor_def(), ls.create());
 
   // An underscore cursor would work too.
@@ -437,7 +490,53 @@ update_text() {
   if (_text_geom_stale || node != _last_text_def) {
     // We need to regenerate.
     _last_text_def = node;
-    _last_text_def->set_text(_text);
+
+    if (_max_width > 0.0 && _num_lines > 1) {
+      // Fold the text into multiple lines.
+      string ww_text = _last_text_def->wordwrap_to(_text, _max_width, true);
+
+      // And chop the lines up into pieces.
+      _ww_lines.clear();
+      size_t p = 0;
+      size_t q = ww_text.find('\n');
+      while (q != string::npos) {
+        _ww_lines.push_back(WWLine());
+        WWLine &line = _ww_lines.back();
+        line._str = ww_text.substr(p, q - p);
+
+        // Get the left edge of the text at this line.
+        line._left = 0.0;
+        if (_last_text_def->get_align() != TM_ALIGN_LEFT) {
+          _last_text_def->set_text(line._str);
+          line._left = _last_text_def->get_left();
+        }
+
+        p = q + 1;
+        q = ww_text.find('\n', p);
+      }
+      _ww_lines.push_back(WWLine());
+      WWLine &line = _ww_lines.back();
+      line._str = ww_text.substr(p);
+      
+      // Get the left edge of the text at this line.
+      line._left = 0.0;
+      if (_last_text_def->get_align() != TM_ALIGN_LEFT) {
+        _last_text_def->set_text(line._str);
+        line._left = _last_text_def->get_left();
+      }
+
+      _last_text_def->set_text(ww_text);
+
+    } else {
+      // Only one line.
+      _ww_lines.clear();
+      _ww_lines.push_back(WWLine());
+      WWLine &line = _ww_lines.back();
+      line._str = _text;
+
+      _last_text_def->set_text(_text);
+      line._left = _last_text_def->get_left();
+    }
 
     if (_current_text_arc != (NodeRelation *)NULL) {
       remove_arc(_current_text_arc);
@@ -445,7 +544,6 @@ update_text() {
     PT_Node text = _last_text_def->generate();
     _current_text_arc = new RenderRelation(_text_render_root, text);
     _text_geom_stale = false;
-    _text_left = _last_text_def->get_left();
     _cursor_stale = true;
   }
 }
@@ -465,10 +563,23 @@ update_cursor() {
 
     _cursor_position = min(_cursor_position, (int)_text.length());
 
-    float width = 
-      _last_text_def->calc_width(_text.substr(0, _cursor_position));
+    // Determine the row and column of the cursor.
+    int row = 0;
+    int column = _cursor_position;
+    while (row + 1 < (int)_ww_lines.size() &&
+           column > (int)_ww_lines[row]._str.length()) {
+      column -= _ww_lines[row]._str.length();
+      row++;
+    }
 
-    LVecBase3f trans(_text_left + width, 0.0, 0.0);
+    nassertv(row >= 0 && row < (int)_ww_lines.size());
+    nassertv(column >= 0 && column <= (int)_ww_lines[row]._str.length());
+
+    float width = 
+      _last_text_def->calc_width(_ww_lines[row]._str.substr(0, column));
+    float line_height = _last_text_def->get_line_height();
+
+    LVecBase3f trans(_ww_lines[row]._left + width, 0.0, -line_height * row);
     LMatrix4f pos = LMatrix4f::translate_mat(trans);
     _cursor_def->set_transition(new TransformTransition(pos));
 

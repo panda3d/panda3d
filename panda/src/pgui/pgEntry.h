@@ -60,7 +60,7 @@ PUBLISHED:
     S_inactive
   };
 
-  void setup(float width);
+  void setup(float width, int num_lines);
 
   INLINE void set_text(const string &text);
   INLINE const string &get_text() const;
@@ -72,6 +72,8 @@ PUBLISHED:
   INLINE int get_max_chars() const;
   INLINE void set_max_width(float max_width);
   INLINE float get_max_width() const;
+  INLINE void set_num_lines(int num_lines);
+  INLINE int get_num_lines() const;
 
   INLINE void set_blink_rate(float blink_rate);
   INLINE float get_blink_rate() const;
@@ -104,6 +106,7 @@ private:
 
   int _max_chars;
   float _max_width;
+  int _num_lines;
 
   typedef pvector< PT(TextNode) > TextDefs;
   TextDefs _text_defs;
@@ -116,8 +119,18 @@ private:
   // is generated.
   NodeRelation *_current_text_arc;
   TextNode *_last_text_def;
-  float _text_left;
   bool _text_geom_stale;
+
+  // This is a list of each row of text in the entry, after it has
+  // been wordwrapped by update_text().  It's used by update_cursor()
+  // to compute the correct cursor position.
+  class WWLine {
+  public:
+    string _str;
+    float _left;
+  };
+  typedef pvector<WWLine> WWLines;
+  WWLines _ww_lines;
 
   // This is the arc above the node that represents the cursor
   // geometry.  It is also attached to the above node, and is

@@ -161,6 +161,24 @@ get_id() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGItem::set_id
+//       Access: Published
+//  Description: Set the unique ID assigned to this PGItem.  It is the
+//               user's responsibility to ensure that this ID is
+//               unique.
+//
+//               Normally, this should not need to be called, as the
+//               PGItem will assign itself an ID when it is created,
+//               but this function allows the user to decide to
+//               redefine the ID to be something possibly more
+//               meaningful.
+////////////////////////////////////////////////////////////////////
+INLINE void PGItem::
+set_id(const string &id) {
+  _region->set_name(id);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGItem::get_enter_prefix
 //       Access: Published, Static
 //  Description: Returns the prefix that is used to define the enter

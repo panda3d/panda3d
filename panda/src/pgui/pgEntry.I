@@ -105,10 +105,16 @@ get_max_chars() const {
 //               number of characters; also set_max_chars().
 //
 //               If this is 0, there is no limit.
+//
+//               If _num_lines is more than 1, rather than being a
+//               fixed width on the whole entry, this becomes instead
+//               the wordwrap width (and the width limit on the entry
+//               is essentially _max_width * _num_lines).
 ////////////////////////////////////////////////////////////////////
 INLINE void PGEntry:: 
 set_max_width(float max_width) {
   _max_width = max_width;
+  _text_geom_stale = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -121,6 +127,31 @@ set_max_width(float max_width) {
 INLINE float PGEntry:: 
 get_max_width() const {
   return _max_width;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::set_num_lines
+//       Access: Published
+//  Description: Sets the number of lines of text the PGEntry will
+//               use.  This only has meaning if _max_width is not 0;
+//               _max_width indicates the wordwrap width of each line.
+////////////////////////////////////////////////////////////////////
+INLINE void PGEntry:: 
+set_num_lines(int num_lines) {
+  nassertv(num_lines >= 1);
+  _num_lines = num_lines;
+  _text_geom_stale = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_num_lines
+//       Access: Published
+//  Description: Returns the number of lines of text the PGEntry will
+//               use, if _max_width is not 0.  See set_num_lines().
+////////////////////////////////////////////////////////////////////
+INLINE int PGEntry:: 
+get_num_lines() const {
+  return _num_lines;
 }
 
 ////////////////////////////////////////////////////////////////////

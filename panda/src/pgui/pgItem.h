@@ -102,6 +102,8 @@ PUBLISHED:
   void set_frame_style(int state, const PGFrameStyle &style);
 
   INLINE const string &get_id() const;
+  INLINE void set_id(const string &id);
+
   INLINE static string get_enter_prefix();
   INLINE static string get_exit_prefix();
   INLINE static string get_press_prefix();
