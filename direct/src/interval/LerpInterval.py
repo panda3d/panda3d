@@ -30,6 +30,9 @@ class LerpInterval(Interval):
                                   self.blendType)
         # Evaluate the lerp
         self.lerp.setT(t)
+        # Print debug information
+        self.notify.debug('LerpInterval.updateFunc() - %s: t = %f' %
+                          (self.name, t))
 
     def getBlend(self, blendType):
         """__getBlend(self, string)
@@ -285,6 +288,10 @@ class LerpFunctionInterval(Interval):
             data = (self.fromData * (1 - bt)) + (self.toData * bt)
             # Evaluate function
             apply(self.function, [data] + self.extraArgs)
+        # Print debug information
+        self.notify.debug('LerpFunctionInterval.updateFunc() - %s: t = %f' %
+                          (self.name, t))
+            
     def getBlend(self, blendType):
         """__getBlend(self, string)
         Return the C++ blend class corresponding to blendType string

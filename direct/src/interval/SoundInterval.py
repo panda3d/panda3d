@@ -70,3 +70,9 @@ class SoundInterval(Interval):
 		AudioManager.setLoop(self.sound, 1)
             # Accept event to kill sound
             self.accept(self.stopEvent, lambda s = self: AudioManager.stop(s.sound))
+        # Print debug information
+        self.notify.debug('SoundInterval.updateFunc() - %s: t = %f' %
+                          (self.name, t))
+            
+
+

@@ -65,7 +65,8 @@ class ActorInterval(Interval):
         # Pose anim
         self.actor.pose(self.animName, frame)
         # Print debug information
-        self.notify.debug('goToT() - pose to frame: %d' % frame)
+        self.notify.debug('ActorInterval.goToT() - %s pose to frame: %d' %
+                          (self.name,frame))
         return frame
 
     def updateFunc(self, t, event = IVAL_NONE):
@@ -73,7 +74,7 @@ class ActorInterval(Interval):
 	    Go to time t
 	"""
 	if (self.actor.isEmpty()):
-	    self.notify.warning('updateFunc() - empty actor!')
+	    self.notify.warning('updateFunc() - %s empty actor!' % self.name)
 	    return
         # Update animation based upon current time
         # Pose or stop anim
@@ -84,7 +85,8 @@ class ActorInterval(Interval):
                 self.ignore(self.stopEvent)
             # Print debug information
 	    self.notify.debug(
-                'updateFunc() - stoping at frame: ' +
+                'ActorInterval.updateFunc() - %s stoping at frame: ' %
+                self.name +
                 '%d Num frames: %d' % (frame, self.numFrames))
         elif self.loop == 1:
             if event == IVAL_INIT:
@@ -94,7 +96,9 @@ class ActorInterval(Interval):
                 self.actor.loop(self.animName, restart=0)
                 self.accept(self.stopEvent, self.actor.stop)
                 # Print debug information
-                self.notify.debug('updateFunc() - IVAL_INIT looping anim')
+                self.notify.debug(
+                    'ActorInterval.updateFunc() - IVAL_INIT %s looping anim' %
+                    self.name)
         else:
             # Pose anim
             self.goToT(t)

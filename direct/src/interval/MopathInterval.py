@@ -27,3 +27,7 @@ class MopathInterval(Interval):
 	    Go to time t
 	"""
         self.mopath.goTo(self.node, t)
+        # Print debug information
+        self.notify.debug('MopathInterval.updateFunc() - %s: t = %f' %
+                          (self.name, t))
+
