@@ -1073,8 +1073,6 @@ streampos Multifile::Subfile::
 write_data(ostream &write, istream *read, streampos fpos) {
   nassertr(write.tellp() == fpos, fpos);
 
-  _data_start = fpos;
-
   istream *source = _source;
   ifstream source_file;
   if (source == (istream *)NULL && !_source_filename.empty()) {
@@ -1100,6 +1098,7 @@ write_data(ostream &write, istream *read, streampos fpos) {
       _flags |= SF_data_invalid;
     } else {
       // Read the data from the original Multifile.
+      read->seekg(_data_start);
       for (size_t p = 0; p < _data_length; p++) {
         int byte = read->get();
         if (read->eof() || read->fail()) {
@@ -1122,6 +1121,10 @@ write_data(ostream &write, istream *read, streampos fpos) {
       byte = source->get();
     }
   }
+
+  // We can't set _data_start until down here, after we have read the
+  // Subfile.  (In case we are running during repack()).
+  _data_start = fpos;
 
   _source = (istream *)NULL;
   _source_filename = Filename();
