@@ -2,6 +2,7 @@
 
 from PandaModules import *
 
+import types
 import OnscreenText
 import DirectUtil
 
@@ -38,7 +39,11 @@ class OnScreenDebug:
                 # frame (key roughly equals value):
                 #isNew = "was"
                 isNew = "~"
-            self.onScreenText.appendText("%20s %s %-44s\n"%(k, isNew, v[1]))
+            value = v[1]
+            if type(value) == types.FloatType:
+                value = "% 10.4f"%(value,)
+            # else: other types will be converted to str by the "%s"
+            self.onScreenText.appendText("%20s %s %-44s\n"%(k, isNew, value))
         self.onScreenText.appendText(self.text)
         self.frame += 1
 
