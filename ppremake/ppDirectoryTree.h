@@ -9,6 +9,7 @@
 #include "ppremake.h"
 
 #include <map>
+#include <vector>
 
 class PPNamedScopes;
 class PPDirectory;
@@ -23,14 +24,20 @@ class PPDependableFile;
 ////////////////////////////////////////////////////////////////////
 class PPDirectoryTree {
 public:
-  PPDirectoryTree();
+  PPDirectoryTree(PPDirectoryTree *main_tree = NULL);
   ~PPDirectoryTree();
 
+  PPDirectoryTree *get_main_tree();
+
+  void set_fullpath(const string &fullpath);
   bool scan_source(PPNamedScopes *named_scopes);
   bool scan_depends(PPNamedScopes *named_scopes);
+  bool scan_extra_depends(const string &dependable_header_dirs,
+                          const string &cache_filename);
 
   int count_source_files() const;
   PPDirectory *get_root() const;
+  const string &get_fullpath() const;
 
   string get_complete_tree() const;
 
@@ -44,13 +51,18 @@ public:
   void update_file_dependencies(const string &cache_filename);
 
 private:
+  PPDirectoryTree *_main_tree;
   PPDirectory *_root;
+  string _fullpath;
 
   typedef map<string, PPDirectory *> Dirnames;
   Dirnames _dirnames;
 
   typedef map<string, PPDependableFile *> Dependables;
   Dependables _dependables;
+
+  typedef vector<PPDirectoryTree *> RelatedTrees;
+  RelatedTrees _related_trees;
 
   friend class PPDirectory;
 };

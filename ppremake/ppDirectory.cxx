@@ -180,6 +180,20 @@ get_path() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPDirectory::get_fullpath
+//       Access: Public
+//  Description: Returns the full path to this particular directory.
+//               This does not include a trailing slash.
+////////////////////////////////////////////////////////////////////
+string PPDirectory::
+get_fullpath() const {
+  if (_parent == (PPDirectory *)NULL) {
+    return _tree->get_fullpath();
+  }
+  return _tree->get_fullpath() + "/" + get_path();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPDirectory::get_rel_to
 //       Access: Public
 //  Description: Returns the relative path to the other directory from
@@ -192,6 +206,11 @@ get_rel_to(const PPDirectory *other) const {
 
   if (a == b) {
     return ".";
+  }
+
+  if (a->_tree != b->_tree) {
+    // If they're in different trees, just return the full path to b.
+    return b->get_fullpath();
   }
 
   string prefix, postfix;
@@ -332,14 +351,31 @@ get_dependable_file(const string &filename, bool is_header) {
   _dependables.insert(Dependables::value_type(filename, dependable));
 
   if (is_header) {
-    bool unique = _tree->_dependables.insert
+    PPDirectoryTree *main_tree = _tree->get_main_tree();
+    bool unique = main_tree->_dependables.insert
       (PPDirectoryTree::Dependables::value_type(filename, dependable)).second;
     
     if (!unique) {
-      cerr << "Warning: source file " << dependable->get_pathname()
-           << " may be confused with "
-           << _tree->find_dependable_file(filename)->get_pathname()
-           << ".\n";
+      PPDependableFile *other = main_tree->find_dependable_file(filename);
+      if (_tree != main_tree) {
+        // Both files are in external dependable trees.
+        cerr << "Warning: header file " << dependable->get_fullpath()
+             << " may be confused with " << other->get_fullpath()
+             << ".\n";
+
+      } else if (other->get_directory()->get_tree() != _tree) {
+        // This file is a source file in this tree, while the other
+        // one is an external file.
+        cerr << "Warning: source file " << dependable->get_pathname()
+             << " may be confused with " << other->get_fullpath()
+             << ".\n";
+
+      } else {
+        // Both files are within the same source tree.
+        cerr << "Warning: source file " << dependable->get_pathname()
+             << " may be confused with " << other->get_pathname()
+             << ".\n";
+      }
     }
   }
 
@@ -397,7 +433,8 @@ report_reverse_depends() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PPDirectory::r_scan
 //       Access: Private
-//  Description: The recursive implementation of scan_source().
+//  Description: The recursive implementation of
+//               PPDirectoryTree::scan_source().
 ////////////////////////////////////////////////////////////////////
 bool PPDirectory::
 r_scan(const string &prefix) {
@@ -406,8 +443,7 @@ r_scan(const string &prefix) {
     root_name = prefix.substr(0, prefix.length() - 1);
   }
 
-  // Collect all the filenames in the directory in this vector first,
-  // so we can sort them.
+  // Collect all the filenames in the directory in this vector first.
   vector<string> filenames;
   if (!root_name.scan_directory(filenames)) {
     cerr << "Unable to scan directory " << root_name << "\n";
@@ -430,6 +466,38 @@ r_scan(const string &prefix) {
           return false;
         }
       }
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPDirectory::scan_extra_depends
+//       Access: Private
+//  Description: The recursive implementation of
+//               PPDirectoryTree::scan_extra_depends().  This simply
+//               adds each *.h or *.I file in the directory as a
+//               dependable file.  It is assumed to be called for an
+//               external directory named by DEPENDABLE_HEADER_DIRS.
+////////////////////////////////////////////////////////////////////
+bool PPDirectory::
+scan_extra_depends(const string &cache_filename) {
+  Filename root_name = get_fullpath();
+
+  vector<string> filenames;
+  if (!root_name.scan_directory(filenames)) {
+    cerr << "Unable to scan directory " << root_name << "\n";
+    return false;
+  }
+
+  vector<string>::const_iterator fi;
+  for (fi = filenames.begin(); fi != filenames.end(); ++fi) {
+    string filename = (*fi);
+
+    if (!filename.empty() && filename[0] != '.' &&
+        filename != cache_filename) {
+      get_dependable_file(filename, true);
     }
   }
 
@@ -690,7 +758,7 @@ update_file_dependencies(const string &cache_filename) {
 
   } else {
     // Open up the dependency cache file in the directory.
-    Filename cache_pathname(get_path(), cache_filename);
+    Filename cache_pathname(get_fullpath(), cache_filename);
     cache_pathname.set_text();
     cache_pathname.unlink();
 

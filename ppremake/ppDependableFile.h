@@ -35,6 +35,7 @@ public:
   PPDirectory *get_directory() const;
   const string &get_filename() const;
   string get_pathname() const;
+  string get_fullpath() const;
   string get_dirpath() const;
 
   bool exists();

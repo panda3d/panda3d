@@ -73,7 +73,7 @@ update_from_cache(const vector<string> &words) {
   time_t mtime = strtol(words[1].c_str(), (char **)NULL, 10);
   if (mtime == get_mtime()) {
     // The modification matches; preserve the cache information.
-    PPDirectoryTree *tree = _directory->get_tree();
+    PPDirectoryTree *tree = _directory->get_tree()->get_main_tree();
 
     _dependencies.clear();
     vector<string>::const_iterator wi;
@@ -171,6 +171,16 @@ get_filename() const {
 string PPDependableFile::
 get_pathname() const {
   return _directory->get_path() + "/" + _filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPDependableFile::get_fullpath
+//       Access: Public
+//  Description: Returns the full pathname to this particular filename.
+////////////////////////////////////////////////////////////////////
+string PPDependableFile::
+get_fullpath() const {
+  return _directory->get_fullpath() + "/" + _filename;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -351,19 +361,19 @@ compute_dependencies(string &circularity) {
 
   if ((_flags & F_from_cache) == 0) {
     // Now open the file and scan it for #include statements.
-    ifstream in(get_pathname().c_str());
+    ifstream in(get_fullpath().c_str());
     if (!in) {
       // Can't read the file, or the file doesn't exist.  Interesting.
       if (exists()) {
-        cerr << "Warning: dependent file " << get_pathname() 
+        cerr << "Warning: dependent file " << get_fullpath() 
              << " exists but cannot be read.\n";
       } else {
-        cerr << "Warning: dependent file " << get_pathname() 
+        cerr << "Warning: dependent file " << get_fullpath() 
              << " does not exist.\n";
       }
 
     } else {
-      PPDirectoryTree *tree = _directory->get_tree();
+      PPDirectoryTree *tree = _directory->get_tree()->get_main_tree();
       
       bool okcircular = false;
       string line;
@@ -442,7 +452,7 @@ stat_file() {
 
   _flags |= F_statted;
   struct stat st;
-  Filename pathname(get_pathname());
+  Filename pathname(get_fullpath());
   string ospath = pathname.to_os_specific();
   if (stat(ospath.c_str(), &st) < 0) {
     // The file doesn't exist!

@@ -5,6 +5,7 @@
 
 #include "ppDirectoryTree.h"
 #include "ppDirectory.h"
+#include "tokenize.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PPDirectoryTree::Constructor
@@ -12,7 +13,13 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PPDirectoryTree::
-PPDirectoryTree() {
+PPDirectoryTree(PPDirectoryTree *main_tree) {
+  if (main_tree == NULL) {
+    _main_tree = this;
+  } else {
+    _main_tree = main_tree;
+  }
+
   _root = new PPDirectory(this);
 }
 
@@ -24,6 +31,35 @@ PPDirectoryTree() {
 PPDirectoryTree::
 ~PPDirectoryTree() {
   delete _root;
+
+  RelatedTrees::iterator ri;
+  for (ri = _related_trees.begin(); ri != _related_trees.end(); ++ri) {
+    delete (*ri);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPDirectoryTree::get_main_tree
+//       Access: Public
+//  Description: Returns the PPDirectoryTree that represents the
+//               actual source hierarchy.  If the return value is
+//               something other than this, it indicates that this
+//               tree is an external dependable tree.
+////////////////////////////////////////////////////////////////////
+PPDirectoryTree *PPDirectoryTree::
+get_main_tree() {
+  return _main_tree;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPDirectoryTree::set_fullpath
+//       Access: Public
+//  Description: Indicates the full path to the root of this
+//               particular tree.
+////////////////////////////////////////////////////////////////////
+void PPDirectoryTree::
+set_fullpath(const string &fullpath) {
+  _fullpath = fullpath;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -65,6 +101,52 @@ scan_depends(PPNamedScopes *named_scopes) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPDirectoryTree::scan_extra_depends
+//       Access: Public
+//  Description: Accepts the value of DEPENDABLE_HEADER_DIRS, which
+//               was presumably set by the various Config.pp and/or
+//               Depends.pp scripts that were read in, and treats each
+//               named filename there as the name of a directory that
+//               contains header files in a separate but related tree,
+//               for which we also need to generate dependency rules
+//               in this tree.
+////////////////////////////////////////////////////////////////////
+bool PPDirectoryTree::
+scan_extra_depends(const string &dependable_header_dirs,
+                   const string &cache_filename) {
+  bool okflag = true;
+
+  vector<string> dirnames;
+  tokenize_whitespace(dependable_header_dirs, dirnames);
+
+  // Sort dirnames and remove duplicates.
+  sort(dirnames.begin(), dirnames.end());
+  dirnames.erase(unique(dirnames.begin(), dirnames.end()), dirnames.end());
+
+  vector<string>::const_iterator ni;
+  for (ni = dirnames.begin(); ni != dirnames.end(); ++ni) {
+    string dirname = (*ni);
+
+    if (dirname[0] != '/') {
+      // Insist that the external dirname be a full pathname.
+      dirname = _fullpath + "/" + dirname;
+    }
+
+    // Now we need to make up a different tree for each external
+    // dirname.
+    PPDirectoryTree *tree = new PPDirectoryTree(this);
+    tree->set_fullpath(dirname);
+    _related_trees.push_back(tree);
+
+    if (!tree->get_root()->scan_extra_depends(cache_filename)) {
+      okflag = false;
+    }
+  }  
+
+  return okflag;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPDirectoryTree::count_source_files
 //       Access: Public
 //  Description: Returns the number of directories within the tree
@@ -83,6 +165,16 @@ count_source_files() const {
 PPDirectory *PPDirectoryTree::
 get_root() const {
   return _root;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPDirectoryTree::get_fullpath
+//       Access: Public
+//  Description: Returns the full path to the root of the tree.
+////////////////////////////////////////////////////////////////////
+const string &PPDirectoryTree::
+get_fullpath() const {
+  return _fullpath;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -197,5 +289,10 @@ read_file_dependencies(const string &cache_filename) {
 void PPDirectoryTree::
 update_file_dependencies(const string &cache_filename) {
   _root->update_file_dependencies(cache_filename);
+
+  RelatedTrees::iterator ri;
+  for (ri = _related_trees.begin(); ri != _related_trees.end(); ++ri) {
+    (*ri)->update_file_dependencies(cache_filename);
+  }
 }
 

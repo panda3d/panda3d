@@ -38,6 +38,7 @@ public:
   const string &get_dirname() const;
   int get_depends_index() const;
   string get_path() const;
+  string get_fullpath() const;
   string get_rel_to(const PPDirectory *other) const;
 
   PPCommandFile *get_source() const;
@@ -58,6 +59,7 @@ private:
   typedef set<PPDirectory *> Depends;
 
   bool r_scan(const string &prefix);
+  bool scan_extra_depends(const string &cache_filename);
   bool read_source_file(const string &prefix, PPNamedScopes *named_scopes);
   bool read_depends_file(PPNamedScopes *named_scopes);
   bool resolve_dependencies();

@@ -116,11 +116,13 @@ read_source(const string &root) {
   }
 
   _root = get_cwd();
+  _tree.set_fullpath(_root);
   cerr << "Root is " << _root << "\n";
 
   _def_scope = new PPScope(&_named_scopes);
   _def_scope->define_variable("PACKAGEFILE", package_file);
   _def_scope->define_variable("TOPDIR", _root);
+  _def_scope->define_variable("DEPENDABLE_HEADER_DIRS", "");
   _defs = new PPCommandFile(_def_scope);
 
   if (!_defs->read_file(PACKAGE_FILENAME)) {
@@ -162,6 +164,15 @@ read_source(const string &root) {
   }
 
   if (!_tree.scan_depends(&_named_scopes)) {
+    return false;
+  }
+
+  string dependable_header_dirs = 
+    _def_scope->expand_variable("DEPENDABLE_HEADER_DIRS");
+  string cache_filename = 
+    _def_scope->expand_variable("DEPENDENCY_CACHE_FILENAME");
+
+  if (!_tree.scan_extra_depends(dependable_header_dirs, cache_filename)) {
     return false;
   }
 

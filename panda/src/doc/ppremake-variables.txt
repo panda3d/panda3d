@@ -154,6 +154,13 @@ $DTOOL/pptempl/System.pp:
     Like $[DEPEND_DIRS], this is set by the $[DEPENDS_FILE] script,
     and has a different value within each source directory.
 
+  $[DEPENDABLE_HEADER_DIRS] - the list of directories outside of the
+    current source tree in which additional header files ("dependable
+    headers") may be found.  This is used to implement inter-package
+    dependencies.  Any files found in the directories named here are
+    deemed to be dependable headers, and the $[depdencies] variable
+    will include these files.
+
 
 The following functions are built into the ppremake executable.  In
 general, these operate on one word or a group of words separated by
