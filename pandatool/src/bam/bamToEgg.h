@@ -65,40 +65,6 @@ private:
 
   EggTexture *get_egg_texture(Texture *tex);
 
-
-  /*
-  class GeomState {
-  public:
-    GeomState();
-    void get_net_state(Node *node, ArcChain &chain, EggGroupNode *egg_parent);
-
-    void apply_vertex(EggVertex &egg_vert, const Vertexf &vertex);
-    void apply_normal(EggVertex &egg_vert, const Normalf &normal);
-    void apply_uv(EggVertex &egg_vert, const TexCoordf &uv);
-    void apply_color(EggVertex &egg_vert, const Colorf &color);
-
-    void apply_prim(EggPrimitive *egg_prim);
-
-    LMatrix4f _mat;
-    LMatrix4f _tex_mat;
-    LMatrix4f _color_mat;
-    float _alpha_scale;
-    float _alpha_offset;
-    Texture *_tex;
-    bool _bface;
-  };
-
-  void convert_node(Node *node, ArcChain &chain, EggGroupNode *egg_parent);
-  void convert_lod_node(LODNode *node, ArcChain &chain, EggGroupNode *egg_parent);
-  void convert_geom_node(GeomNode *node, ArcChain &chain, EggGroupNode *egg_parent);
-  void convert_geom_tri(GeomTri *geom, GeomState &state, EggGroupNode *egg_parent);
-
-  void recurse_nodes(Node *node, ArcChain &chain, EggGroupNode *egg_parent);
-
-  void apply_texture(EggPrimitive *egg_prim, Texture *tex);
-  bool apply_arc_properties(EggGroup *egg_group, ArcChain &chain);
-  */
-
   EggVertexPool *_vpool;
   EggTextureCollection _textures;
   EggMaterialCollection _materials;
