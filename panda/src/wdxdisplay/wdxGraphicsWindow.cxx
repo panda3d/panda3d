@@ -921,7 +921,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
         bool bSupportsColorCursor=true;
     
         /* if any card doesnt support color, dont load it*/
-        for(int w=0;w<_windows.size();w++)
+        for(DWORD w=0;w<_windows.size();w++)
             bSupportsColorCursor &= supports_color_cursors(_windows[w]->_dxgsg->scrn.DXDeviceID);
     
         if(bSupportsColorCursor) {
@@ -1009,7 +1009,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
 
         // extra windows must be parented to the first so app doesnt minimize when user selects them
 
-        for(int devnum=0;devnum<_windows.size();devnum++) {
+        for(DWORD devnum=0;devnum<_windows.size();devnum++) {
             MONITORINFO minfo;
             ZeroMemory(&minfo, sizeof(MONITORINFO));
             minfo.cbSize = sizeof(MONITORINFO);
@@ -1075,7 +1075,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
         exit(1);
     }
 
-    for(int devnum=0;devnum<_windows.size();devnum++) {
+    for(DWORD devnum=0;devnum<_windows.size();devnum++) {
         wdxGraphicsWindow *pWDXWin = _windows[devnum];
         // for use by the window_proc
         hwnd_pandawin_map[pWDXWin->_dxgsg->scrn.hWnd] = pWDXWin;
@@ -1723,7 +1723,7 @@ SetCoopLevelsAndDisplayModes(void) {
        SCL_FLAGS |= DDSCL_SETDEVICEWINDOW;
     }
 
-    for(int devnum=0;devnum<_windows.size();devnum++) {
+    for(DWORD devnum=0;devnum<_windows.size();devnum++) {
        DXScreenData *pScrn=&_windows[devnum]->_dxgsg->scrn;
 
        // need to set focus/device windows for multimon
@@ -2714,13 +2714,13 @@ wdxGraphicsWindowGroup::wdxGraphicsWindowGroup(wdxGraphicsWindow *OneWindow) {
 
 void wdxGraphicsWindowGroup::initWindowGroup(void) {
     HRESULT hr;
-    int i;
+    unsigned int i;
 
     assert(_windows.size()>0);
     _hOldForegroundWindow=GetForegroundWindow();
     _bClosingAllWindows= false;
 
-    int num_windows=_windows.size();
+    unsigned int num_windows=_windows.size();
 
     #define DDRAW_NAME "ddraw.dll"
 
@@ -2735,7 +2735,7 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
 
     // can only get multimon HW acceleration in fullscrn on DX7
 
-    int numMonitors = GetSystemMetrics(SM_CMONITORS);
+    unsigned int numMonitors = GetSystemMetrics(SM_CMONITORS);
 
     if(numMonitors < num_windows) {
         if(numMonitors==0) {
@@ -2779,13 +2779,13 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
         _windows[i]->config_window(this);
     }
 
-    int good_device_count=0;
+    DWORD good_device_count=0;
 
     if(num_windows==1) {
         if(_windows[0]->search_for_device(0,NULL))
             good_device_count=1;
     } else {
-        for(int devnum=0;devnum<_DeviceInfoVec.size() && (good_device_count < num_windows);devnum++) {
+        for(DWORD devnum=0;devnum<_DeviceInfoVec.size() && (good_device_count < num_windows);devnum++) {
             if(_windows[devnum]->search_for_device(devnum,&(_DeviceInfoVec[devnum])))
                 good_device_count++;
         }
@@ -2851,7 +2851,7 @@ wdxGraphicsWindowGroup::~wdxGraphicsWindowGroup() {
     // this fn must be called before windows are actually closed
     _bClosingAllWindows= true;
 
-    for(int i=0;i<_windows.size();i++) {
+    for(DWORD i=0;i<_windows.size();i++) {
         _windows[i]->close_window();
     }
 
