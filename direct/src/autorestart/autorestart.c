@@ -34,6 +34,7 @@
 #include <fcntl.h>
 #include <time.h>
 #include <signal.h>
+#include <stdlib.h>
 
 char **params = NULL;
 char *logfile_name = NULL;
