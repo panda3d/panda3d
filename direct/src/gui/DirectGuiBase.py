@@ -663,7 +663,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             ('borderWidth',    (.1,.1),      self.setBorderWidth),
             ('frameSize',      None,         self.setFrameSize),
             ('frameColor',     (.8,.8,.8,1), self.setFrameColor),
-            ('pad',            (.25,.15),    self.resetFrameSize),
+            ('pad',            (0,0),    self.resetFrameSize),
             # Override button id (beware! your name may not be unique!)
             ('guiId',          None,         INITOPT),
             # Initial pos/scale of the widget
