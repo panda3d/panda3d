@@ -1,4 +1,5 @@
 from DirectGui import *
+from whrandom import *
 
 # EXAMPLE CODE
 # Load a model
@@ -48,10 +49,15 @@ def expand(event):
 def ouch(event):
     taskMgr.removeTasksNamed('shrink')
     taskMgr.removeTasksNamed('expand')
+    taskMgr.removeTasksNamed('runAway')
     db.component('geom0').setScale(db.component('geom2').getScale()[0])
     db.component('geom1').setScale(db.component('geom2').getScale()[0])
     db['text2_text'] = 'Ouch!'
     db['geom2_color'] = Vec4(1,0,0,1)
+    newX = -1.0 + random() * 2.0
+    newZ = -1.0 + random() * 2.0
+    db.lerpPos(Point3(newX, 0, newZ), 1.0, task = 'runAway',
+               blendType = 'easeOut')
 
 # Bind the commands
 db.bind(ENTER, shrink)
