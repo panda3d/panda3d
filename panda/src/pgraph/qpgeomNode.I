@@ -112,6 +112,7 @@ add_geom(Geom *geom, const RenderState *state) {
   CDWriter cdata(_cycler);
 
   cdata->_geoms.push_back(GeomEntry(geom, state));
+  mark_bound_stale();
   return cdata->_geoms.size() - 1;
 }
 
@@ -126,6 +127,7 @@ remove_geom(int n) {
   nassertv(n >= 0 && n < (int)cdata->_geoms.size());
 
   cdata->_geoms.erase(cdata->_geoms.begin() + n);
+  mark_bound_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,4 +139,5 @@ INLINE void qpGeomNode::
 remove_all_geoms() {
   CDWriter cdata(_cycler);
   cdata->_geoms.clear();
+  mark_bound_stale();
 }

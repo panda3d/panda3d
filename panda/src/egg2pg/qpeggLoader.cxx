@@ -1008,7 +1008,6 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
     break;
 
   default:
-    bucket.add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_none));
     break;
   }
 
@@ -1050,9 +1049,6 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
     // The primitive is marked with backface culling disabled--we want
     // to see both sides.
     bucket.add_attrib(CullFaceAttrib::make(CullFaceAttrib::M_cull_none));
-
-  } else {
-    bucket.add_attrib(CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise));
   }
 }
 

@@ -53,6 +53,16 @@ get_child() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::DownConnection::set_child
+//       Access: Public
+//  Description: This is only called by PandaNode::replace_child().
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::DownConnection::
+set_child(PandaNode *child) {
+  _child = child;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::DownConnection::get_sort
 //       Access: Public
 //  Description: 
@@ -152,6 +162,16 @@ Children(const PandaNode::Children &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::Children::Copy Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::Children::
+operator = (const PandaNode::Children &copy) {
+  _cdata = copy._cdata;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Children::get_num_children
 //       Access: Public
 //  Description: Returns the number of children of the node.
@@ -170,6 +190,48 @@ INLINE PandaNode *PandaNode::Children::
 get_child(int n) const {
   nassertr(n >= 0 && n < (int)_cdata->_down.size(), NULL);
   return _cdata->_down[n].get_child();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::ChildrenCopy::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode::ChildrenCopy::
+ChildrenCopy(const PandaNode::ChildrenCopy &copy) :
+  _list(copy._list)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::ChildrenCopy::Copy Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::ChildrenCopy::
+operator = (const PandaNode::ChildrenCopy &copy) {
+  _list = copy._list;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::ChildrenCopy::get_num_children
+//       Access: Public
+//  Description: Returns the number of children of the node.
+////////////////////////////////////////////////////////////////////
+INLINE int PandaNode::ChildrenCopy::
+get_num_children() const {
+  return _list.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::ChildrenCopy::get_child
+//       Access: Public
+//  Description: Returns the nth child of the node.
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode *PandaNode::ChildrenCopy::
+get_child(int n) const {
+  nassertr(n >= 0 && n < (int)_list.size(), NULL);
+  return _list[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -713,5 +775,21 @@ INLINE PandaNode::Children PandaNode::
 get_children() const {
   CDReader cdata(_cycler);
   return Children(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_children_copy
+//       Access: Public
+//  Description: Returns an object that can be used to walk through
+//               the list of children of the node.  Unlike
+//               get_children(), this function actually returns an
+//               object that protects you from self-modifying loops,
+//               because it makes and returns a copy of the complete
+//               children list.
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode::ChildrenCopy PandaNode::
+get_children_copy() const {
+  CDReader cdata(_cycler);
+  return ChildrenCopy(cdata);
 }
 

@@ -28,9 +28,39 @@
 template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &cycler) :
-  _cycler(cycler)
+  _cycler(&cycler)
 {
-  _pointer = _cycler.write();
+  _pointer = _cycler->write();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataWriter::Copy Constructor (full)
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataWriter<CycleDataType>::
+CycleDataWriter(const CycleDataWriter<CycleDataType> &copy) :
+  _cycler(copy._cycler),
+  _pointer(copy._pointer)
+{
+  nassertv(_pointer != (CycleDataType *)NULL);
+  _cycler->increment_write(_pointer);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataWriter::Copy Assigment (full)
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE void CycleDataWriter<CycleDataType>::
+operator = (const CycleDataWriter<CycleDataType> &copy) {
+  _cycler = copy._cycler;
+  _pointer = copy._pointer;
+
+  nassertv(_pointer != (CycleDataType *)NULL);
+  _cycler->increment_write(_pointer);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -46,7 +76,7 @@ template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &cycler, 
                 CycleDataWriter<CycleDataType> &take_from) :
-  _cycler(cycler),
+  _cycler(&cycler),
   _pointer(take_from._pointer)
 {
   take_from._pointer = (CycleDataType *)NULL;
@@ -64,9 +94,9 @@ template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &cycler,
                 CycleDataReader<CycleDataType> &take_from) :
-  _cycler(cycler)
+  _cycler(&cycler)
 {
-  _pointer = _cycler.elevate_read(take_from.take_pointer());
+  _pointer = _cycler->elevate_read(take_from.take_pointer());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -78,7 +108,7 @@ template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 ~CycleDataWriter() {
   if (_pointer != (CycleDataType *)NULL) {
-    _cycler.release_write(_pointer);
+    _cycler->release_write(_pointer);
   }
 }
 
@@ -91,7 +121,7 @@ INLINE CycleDataWriter<CycleDataType>::
 template<class CycleDataType>
 INLINE CycleDataType *CycleDataWriter<CycleDataType>::
 operator -> () {
-  nassertr(_pointer != (CycleDataType *)NULL, _cycler.cheat());
+  nassertr(_pointer != (CycleDataType *)NULL, _cycler->cheat());
   return _pointer;
 }
 
@@ -104,7 +134,7 @@ operator -> () {
 template<class CycleDataType>
 INLINE const CycleDataType *CycleDataWriter<CycleDataType>::
 operator -> () const {
-  nassertr(_pointer != (CycleDataType *)NULL, _cycler.cheat());
+  nassertr(_pointer != (CycleDataType *)NULL, _cycler->cheat());
   return _pointer;
 }
 
@@ -117,7 +147,7 @@ operator -> () const {
 template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 operator CycleDataType * () {
-  nassertr(_pointer != (CycleDataType *)NULL, _cycler.cheat());
+  nassertr(_pointer != (CycleDataType *)NULL, _cycler->cheat());
   return _pointer;
 }
 
@@ -133,6 +163,29 @@ template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &cycler) {
   _pointer = cycler.write();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataWriter::Copy Constructor (trivial)
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataWriter<CycleDataType>::
+CycleDataWriter(const CycleDataWriter<CycleDataType> &copy) :
+  _pointer(copy._pointer)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataWriter::Copy Assigment (trivial)
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE void CycleDataWriter<CycleDataType>::
+operator = (const CycleDataWriter<CycleDataType> &copy) {
+  _pointer = copy._pointer;
 }
 
 ////////////////////////////////////////////////////////////////////

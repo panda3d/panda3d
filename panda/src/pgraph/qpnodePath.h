@@ -477,8 +477,8 @@ PUBLISHED:
   bool calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point);
 
   int flatten_light();
-  int flatten_medium(int max_children = 1);
-  int flatten_strong(int max_children = 1);
+  int flatten_medium();
+  int flatten_strong();
 
   bool write_bam_file(const string &filename) const;
 

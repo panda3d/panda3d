@@ -70,6 +70,10 @@ ConfigureFn(config_pgraph) {
 // helps make culling errors obvious.
 const bool qpfake_view_frustum_cull = config_pgraph.GetBool("fake-view-frustum-cull", false);
 
+// Set this true to make ambiguous path warning messages generate an
+// assertion failure instead of just a warning (which can then be
+// trapped with assert-abort).
+const bool unambiguous_graph = config_pgraph.GetBool("unambiguous-graph", false);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpgraph

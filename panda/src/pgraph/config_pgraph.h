@@ -27,6 +27,7 @@ ConfigureDecl(config_pgraph, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pgraph, EXPCL_PANDA, EXPTP_PANDA);
 
 extern const bool qpfake_view_frustum_cull;
+extern const bool unambiguous_graph;
 
 extern EXPCL_PANDA void init_libpgraph();
 

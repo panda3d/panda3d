@@ -37,6 +37,7 @@ PUBLISHED:
   static CPT(RenderEffect) make();
 
 protected:
+  virtual bool safe_to_combine() const;
   virtual int compare_to_impl(const RenderEffect *other) const;
   virtual RenderEffect *make_default_impl() const;
 

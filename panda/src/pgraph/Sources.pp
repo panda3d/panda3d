@@ -35,6 +35,7 @@
     qpfog.I qpfog.h \
     fogAttrib.I fogAttrib.h \
     qpgeomNode.I qpgeomNode.h \
+    qpgeomTransformer.I qpgeomTransformer.h \
     qplensNode.I qplensNode.h \
     qplodNode.I qplodNode.h \
     materialAttrib.I materialAttrib.h \
@@ -47,6 +48,7 @@
     renderEffects.I renderEffects.h \
     renderModeAttrib.I renderModeAttrib.h \
     renderState.I renderState.h \
+    qpsceneGraphReducer.I qpsceneGraphReducer.h \
     selectiveChildNode.I selectiveChildNode.h \
     qpsequenceNode.I qpsequenceNode.h \
     texMatrixAttrib.I texMatrixAttrib.h \
@@ -86,6 +88,7 @@
     qpfog.cxx \
     fogAttrib.cxx \
     qpgeomNode.cxx \
+    qpgeomTransformer.cxx \
     qplensNode.cxx \
     qplodNode.cxx \
     materialAttrib.cxx \
@@ -98,6 +101,7 @@
     renderEffects.cxx \
     renderModeAttrib.cxx \
     renderState.cxx \
+    qpsceneGraphReducer.cxx \
     selectiveChildNode.cxx \
     qpsequenceNode.cxx \
     texMatrixAttrib.cxx \
@@ -139,6 +143,7 @@
     qpfog.I qpfog.h \
     fogAttrib.I fogAttrib.h \
     qpgeomNode.I qpgeomNode.h \
+    qpgeomTransformer.I qpgeomTransformer.h \
     qplensNode.I qplensNode.h \
     qplodNode.I qplodNode.h \
     materialAttrib.I materialAttrib.h \
@@ -151,6 +156,7 @@
     renderEffects.I renderEffects.h \
     renderModeAttrib.I renderModeAttrib.h \
     renderState.I renderState.h \
+    qpsceneGraphReducer.I qpsceneGraphReducer.h \
     selectiveChildNode.I selectiveChildNode.h \
     qpsequenceNode.I qpsequenceNode.h \
     texMatrixAttrib.I texMatrixAttrib.h \

@@ -378,6 +378,9 @@ main(int argc, char *argv[]) {
   render.attach_new_node(camera);
   camera->set_scene(render);
 
+  // This is maybe here temporarily, and maybe not.
+  render.set_two_sided(0);
+
   // Set up a data graph for tracking user input.
   PT(PandaNode) data_root = new PandaNode("data_root");
   PandaNode *mouse = setup_mouse(data_root, window);

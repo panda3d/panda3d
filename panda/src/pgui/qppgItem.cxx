@@ -23,6 +23,7 @@
 #include "config_pgui.h"
 
 #include "pandaNode.h"
+#include "qpsceneGraphReducer.h"
 #include "throw_event.h"
 #include "string_utils.h"
 #include "qpnodePath.h"
@@ -122,11 +123,9 @@ xform(const LMatrix4f &mat) {
       // Apply the matrix to the previous transform.
       node->set_transform(node->get_transform()->compose(TransformState::make_mat(mat)));
 
-      /*
       // Now flatten the transform into the subgraph.
-      SceneGraphReducer gr;
-      gr.apply_transitions(arc);
-      */
+      qpSceneGraphReducer gr;
+      gr.apply_attribs(node);
     }
 
     // Transform the frame style too.

@@ -40,6 +40,9 @@ template<class CycleDataType>
 class CycleDataWriter {
 public:
   INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler);
+  INLINE CycleDataWriter(const CycleDataWriter<CycleDataType> &copy);
+  INLINE void operator = (const CycleDataWriter<CycleDataType> &copy);
+
   INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler, CycleDataWriter<CycleDataType> &take_from);
   INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler, CycleDataReader<CycleDataType> &take_from);
 
@@ -53,7 +56,7 @@ public:
 private:
 #ifdef DO_PIPELINING
   // This is the data stored for a real pipelining implementation.
-  PipelineCycler<CycleDataType> &_cycler;
+  PipelineCycler<CycleDataType> *_cycler;
   CycleDataType *_pointer;
 #else  // !DO_PIPELINING
   // This is all we need for the trivial, do-nothing implementation.

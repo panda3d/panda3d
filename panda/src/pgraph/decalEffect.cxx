@@ -36,6 +36,18 @@ make() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DecalEffect::safe_to_combine
+//       Access: Public, Virtual
+//  Description: Returns true if this kind of effect can safely be
+//               combined with sibling nodes that share the exact same
+//               effect, or false if this is not a good idea.
+////////////////////////////////////////////////////////////////////
+bool DecalEffect::
+safe_to_combine() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DecalEffect::compare_to_impl
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by derived DecalEffect

@@ -19,11 +19,8 @@
 #include "qpload_egg_file.h"
 #include "qpeggLoader.h"
 #include "config_egg2pg.h"
-
-/*
-#include "sceneGraphReducer.h"
+#include "qpsceneGraphReducer.h"
 #include "renderRelation.h"
-*/
 
 static PT(PandaNode)
 load_from_loader(qpEggLoader &loader) {
@@ -37,13 +34,11 @@ load_from_loader(qpEggLoader &loader) {
     return NULL;
   }
 
-  /*
-  if (loader._root != (NamedNode *)NULL && egg_flatten) {
-    SceneGraphReducer gr(RenderRelation::get_class_type());
+  if (loader._root != (PandaNode *)NULL && egg_flatten) {
+    qpSceneGraphReducer gr;
     int num_reduced = gr.flatten(loader._root, egg_flatten_siblings);
-    egg2pg_cat.info() << "Flattened " << num_reduced << " arcs.\n";
+    egg2pg_cat.info() << "Flattened " << num_reduced << " nodes.\n";
   }
-  */
 
   return loader._root;
 }

@@ -27,6 +27,79 @@
 
 TypeHandle PandaNode::_type_handle;
 
+// 
+// We go through some considerable effort in this class to ensure that
+// NodePaths are kept consistent as we attach and detach nodes.  We
+// must enforce the following rules:
+//
+// 1) Each NodePath (i.e. chain of NodePathComponents) represents a
+// complete unbroken chain from a PandaNode to the root of the graph.
+//
+// 2) Each NodePathComponent chain is unique.  There are no two
+// different NodePathComponents that reference the same path to the
+// root.
+//
+// 3) If a PandaNode with no parents is attached to a new parent, all
+// NodePaths that previously indicated this node as the root of graph
+// must now be updated to include the complete chain to the new root.
+//
+// 4) If a PandaNode with other parents is attached to a new parent,
+// any previously existing NodePaths are not affected.
+//
+// 5) If a PandaNode is disconnected from its parent, and it has no
+// other parents, all NodePaths that previously passed through this
+// node to the old parent must now be updated to indicate this node is
+// now the root.
+//
+// 6) If a PandaNode is disconnected from its parent, and it has at
+// least one other parent, all NodePaths that previously passed
+// through this node to the old parent must now be updated to pass
+// through one of the other parents instead.
+//
+// Rules (5) and (6) can especially complicate things because they
+// introduce the possibility that two formerly distinct NodePaths are
+// now equivalent, which violates rule (2).  For example, if A is the
+// top of the graph with children B and C, and D is instanced to both
+// B and C, and E is a child of D, there might be two different
+// NodePaths to D: A/B/D/E and A/C/D/E.  If you then break the
+// connection between D and E, both NodePaths must now become just the
+// singleton E.
+//
+// Unfortunately, we cannot simply remove one of the extra
+// NodePathComponents, because there may be any number of NodePath
+// objects that reference them.  Instead, we define the concept of
+// "collapsed" NodePathComponents, which means one NodePathComponent
+// can be "collapsed" into a different one so that any attempt to
+// reference the first actually retrieves the second, rather like a
+// symbolic link in the file system.  When the NodePath traverses its
+// component chain, it will pass right over the collapsed component in
+// favor of the one it has been collapsed into.
+//
+
+
+//
+// There are two different interfaces here for making and breaking
+// parent-child connections: the fundamental PandaNode interface, via
+// add_child() and remove_child() (and related functions), and the
+// NodePath support interface, via attach(), detach(), and reparent().
+// They both do essentially the same thing, but with slightly
+// different inputs.  Both are responsible for keeping all NodePaths
+// up-to-date according to the above rules.
+//
+// The NodePath support interface functions are strictly called from
+// within the NodePath class, and are used to implement
+// NodePath::reparent_to() and NodePath::remove_node(), etc.  The
+// fundamental interface, on the other hand, is designed to be called
+// directly by the user.
+//
+// The fundamental interface has a slightly lower overhead because it
+// does not need to create a NodePathComponent chain where one does
+// not already exist; however, the NodePath support interface is more
+// useful when the NodePath already does exist, because it ensures
+// that the particular NodePath calling it is kept appropriately
+// up-to-date.
+//
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::CData::make_copy
@@ -261,6 +334,20 @@ fillin_down_list(PandaNode::Down &down_list,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::ChildrenCopy::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+PandaNode::ChildrenCopy::
+ChildrenCopy(const PandaNode::CDReader &cdata) {
+  Children cr(cdata);
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    _list.push_back(cr.get_child(i));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Constructor
 //       Access: Published
 //  Description:
@@ -394,6 +481,18 @@ safe_to_transform() const {
 bool PandaNode::
 safe_to_combine() const {
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::preserve_name
+//       Access: Public, Virtual
+//  Description: Returns true if the node's name has extrinsic meaning
+//               and must be preserved across a flatten operation,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+preserve_name() const {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -577,20 +676,8 @@ add_child(PandaNode *child_node, int sort) {
   
   cdata->_down.insert(DownConnection(child_node, sort));
   cdata_child->_up.insert(UpConnection(this));
-  
-  // We also have to adjust any qpNodePathComponents the child might
-  // have that reference the child as a top node.  Any other
-  // components we can leave alone, because we are making a new
-  // instance of the child.
-  Paths::iterator pi;
-  for (pi = cdata_child->_paths.begin();
-       pi != cdata_child->_paths.end();
-       ++pi) {
-    if ((*pi)->is_top_node()) {
-      (*pi)->set_next(get_generic_component());
-    }
-  }
-  child_node->fix_path_lengths(cdata_child);
+
+  new_connection(this, child_node);
 
   // Mark the bounding volumes stale.
   force_bound_stale();
@@ -616,35 +703,8 @@ remove_child(int n) {
   cdata->_down.erase(cdata->_down.begin() + n);
   int num_erased = cdata_child->_up.erase(UpConnection(this));
   nassertv(num_erased == 1);
-  
-  // Now sever any qpNodePathComponents on the child that reference
-  // this node.  If we have multiple of these, we have to collapse
-  // them together.
-  qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
-  Paths::iterator pi;
-  pi = cdata_child->_paths.begin();
-  while (pi != cdata_child->_paths.end()) {
-    Paths::iterator pnext = pi;
-    ++pnext;
-    if (!(*pi)->is_top_node() && (*pi)->get_next()->get_node() == this) {
-      if (collapsed == (qpNodePathComponent *)NULL) {
-        (*pi)->set_top_node();
-        collapsed = (*pi);
-      } else {
-        // This is a different component that used to reference a
-        // different instance, but now it's all just the same topnode.
-        // We have to collapse this and the previous one together.
-        // However, there might be some qpNodePaths out there that
-        // still keep a pointer to this one, so we can't remove it
-        // altogether.
-        (*pi)->collapse_with(collapsed);
-        cdata_child->_paths.erase(pi);
-      }
-    }
-    pi = pnext;
-  }
-  
-  child_node->fix_path_lengths(cdata_child);
+
+  sever_connection(this, child_node);
 
   // Mark the bounding volumes stale.
   force_bound_stale();
@@ -659,67 +719,114 @@ remove_child(int n) {
 //       Access: Published
 //  Description: Removes the indicated child from the node.  Returns
 //               true if the child was removed, false if it was not
-//               already a child of the node.
+//               already a child of the node.  This will also
+//               successfully remove the child if it had been stashed.
 ////////////////////////////////////////////////////////////////////
 bool PandaNode::
 remove_child(PandaNode *child_node) {
-  // Ensure the child_node is not deleted while we do this.
-  PT(PandaNode) keep_child = child_node;
-    
-  CDWriter cdata(_cycler);
-  CDWriter cdata_child(child_node->_cycler);
-  
-  // First, look for and remove this node from the child's parent
-  // list.
-  int num_erased = cdata_child->_up.erase(UpConnection(this));
-  if (num_erased == 0) {
-    // No such node; it wasn't our child to begin with.
+  // First, look for the parent in the child's up list, to ensure the
+  // child is known.
+  int parent_index = child_node->find_parent(this);
+  if (parent_index < 0) {
+    // Nope, no relation.
     return false;
   }
-  
-  // Now sever any qpNodePathComponents on the child that reference
-  // this node.  If we have multiple of these, we have to collapse
-  // them together (see above).
-  qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
-  Paths::iterator pi;
-  pi = cdata_child->_paths.begin();
-  while (pi != cdata_child->_paths.end()) {
-    Paths::iterator pnext = pi;
-    ++pnext;
-    if (!(*pi)->is_top_node() && (*pi)->get_next()->get_node() == this) {
-      if (collapsed == (qpNodePathComponent *)NULL) {
-        (*pi)->set_top_node();
-        collapsed = (*pi);
-      } else {
-        (*pi)->collapse_with(collapsed);
-        cdata_child->_paths.erase(pi);
-      }
-    }
-    pi = pnext;
+
+  int child_index = find_child(child_node);
+  if (child_index >= 0) {
+    // The child exists; remove it.
+    remove_child(child_index);
+    return true;
+  }
+
+  int stashed_index = find_stashed(child_node);
+  if (stashed_index >= 0) {
+    // The child has been stashed; remove it.
+    remove_stashed(stashed_index);
+    return true;
+  }
+
+  // Never heard of this child.  This shouldn't be possible, because
+  // the parent was in the child's up list, above.  Must be some
+  // internal error.
+  nassertr(false, false);
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::replace_child
+//       Access: Published
+//  Description: Searches for the orig_child node in the node's list
+//               of children, and replaces it with the new_child
+//               instead.  Returns true if the replacement is made, or
+//               false if the node is not a child.
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+replace_child(PandaNode *orig_child, PandaNode *new_child) {
+  // First, look for the parent in the child's up list, to ensure the
+  // child is known.
+  int parent_index = orig_child->find_parent(this);
+  if (parent_index < 0) {
+    // Nope, no relation.
+    return false;
+  }
+
+  if (orig_child == new_child) {
+    // Trivial no-op.
+    return true;
   }
   
-  child_node->fix_path_lengths(cdata_child);
-  
-  // Now, look for and remove the child node from our down list.
-  Down::iterator di;
-  bool found = false;
-  for (di = cdata->_down.begin(); di != cdata->_down.end() && !found; ++di) {
-    if ((*di).get_child() == child_node) {
-      cdata->_down.erase(di);
-      found = true;
+  // Don't let orig_child be destructed yet.
+  PT(PandaNode) keep_orig_child = orig_child;
+
+  int child_index = find_child(orig_child);
+  if (child_index >= 0) {
+    // The child exists; replace it.
+    CDWriter cdata(_cycler);
+    DownConnection &down = cdata->_down[child_index];
+    nassertr(down.get_child() == orig_child, false);
+    down.set_child(new_child);
+
+  } else {
+    int stashed_index = find_stashed(orig_child);
+    if (stashed_index >= 0) {
+      // The child has been stashed; remove it.
+      CDWriter cdata(_cycler);
+      DownConnection &down = cdata->_stashed[stashed_index];
+      nassertr(down.get_child() == orig_child, false);
+      down.set_child(new_child);
+
+    } else {
+      // Never heard of this child.  This shouldn't be possible, because
+      // the parent was in the child's up list, above.  Must be some
+      // internal error.
+      nassertr(false, false);
+      return false;
     }
   }
+
+  // Now adjust the bookkeeping on both children.
+
+  CDWriter cdata_orig_child(orig_child->_cycler);
+  CDWriter cdata_new_child(new_child->_cycler);
   
-  nassertr(found, false);
+  cdata_new_child->_up.insert(UpConnection(this));
+  int num_erased = cdata_orig_child->_up.erase(UpConnection(this));
+  nassertr(num_erased == 1, false);
+
+  sever_connection(this, orig_child);
+  orig_child->parents_changed();
+
+  new_connection(this, new_child);
+  new_child->parents_changed();
 
   // Mark the bounding volumes stale.
   force_bound_stale();
-
-  // Call callback hooks.
   children_changed();
-  child_node->parents_changed();
+
   return true;
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::stash_child
@@ -745,20 +852,8 @@ stash_child(int child_index) {
   
   cdata->_stashed.insert(DownConnection(child_node, sort));
   cdata_child->_up.insert(UpConnection(this));
-  
-  // We also have to adjust any qpNodePathComponents the child might
-  // have that reference the child as a top node.  Any other
-  // components we can leave alone, because we are making a new
-  // instance of the child.
-  Paths::iterator pi;
-  for (pi = cdata_child->_paths.begin();
-       pi != cdata_child->_paths.end();
-       ++pi) {
-    if ((*pi)->is_top_node()) {
-      (*pi)->set_next(get_generic_component());
-    }
-  }
-  child_node->fix_path_lengths(cdata_child);
+
+  new_connection(this, child_node);
 
   // Mark the bounding volumes stale.
   force_bound_stale();
@@ -792,20 +887,8 @@ unstash_child(int stashed_index) {
   
   cdata->_down.insert(DownConnection(child_node, sort));
   cdata_child->_up.insert(UpConnection(this));
-  
-  // We also have to adjust any qpNodePathComponents the child might
-  // have that reference the child as a top node.  Any other
-  // components we can leave alone, because we are making a new
-  // instance of the child.
-  Paths::iterator pi;
-  for (pi = cdata_child->_paths.begin();
-       pi != cdata_child->_paths.end();
-       ++pi) {
-    if ((*pi)->is_top_node()) {
-      (*pi)->set_next(get_generic_component());
-    }
-  }
-  child_node->fix_path_lengths(cdata_child);
+
+  new_connection(this, child_node);
 
   // Mark the bounding volumes stale.
   force_bound_stale();
@@ -838,11 +921,39 @@ find_stashed(PandaNode *node) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::add_stashed
+//       Access: Published
+//  Description: Adds a new child to the node, directly as a stashed
+//               child.  The child is not added in the normal sense,
+//               but will be revealed if unstash_child() is called on
+//               it later.
+//
+//               If the same child is added to a node more than once,
+//               the previous instance is first removed.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+add_stashed(PandaNode *child_node, int sort) {
+  // Ensure the child_node is not deleted while we do this.
+  PT(PandaNode) keep_child = child_node;
+  remove_child(child_node);
+  
+  CDWriter cdata(_cycler);
+  CDWriter cdata_child(child_node->_cycler);
+  
+  cdata->_stashed.insert(DownConnection(child_node, sort));
+  cdata_child->_up.insert(UpConnection(this));
+
+  new_connection(this, child_node);
+
+  // Call callback hooks.
+  children_changed();
+  child_node->parents_changed();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::remove_stashed
 //       Access: Published
-//  Description: Removes the nth stashed child from the node.  This is
-//               the only way to remove a child from the node that has
-//               previously been stashed, without unstashing it first.
+//  Description: Removes the nth stashed child from the node.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 remove_stashed(int n) {
@@ -855,35 +966,8 @@ remove_stashed(int n) {
   cdata->_stashed.erase(cdata->_stashed.begin() + n);
   int num_erased = cdata_child->_up.erase(UpConnection(this));
   nassertv(num_erased == 1);
-  
-  // Now sever any qpNodePathComponents on the child that reference
-  // this node.  If we have multiple of these, we have to collapse
-  // them together.
-  qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
-  Paths::iterator pi;
-  pi = cdata_child->_paths.begin();
-  while (pi != cdata_child->_paths.end()) {
-    Paths::iterator pnext = pi;
-    ++pnext;
-    if (!(*pi)->is_top_node() && (*pi)->get_next()->get_node() == this) {
-      if (collapsed == (qpNodePathComponent *)NULL) {
-        (*pi)->set_top_node();
-        collapsed = (*pi);
-      } else {
-        // This is a different component that used to reference a
-        // different instance, but now it's all just the same topnode.
-        // We have to collapse this and the previous one together.
-        // However, there might be some qpNodePaths out there that
-        // still keep a pointer to this one, so we can't remove it
-        // altogether.
-        (*pi)->collapse_with(collapsed);
-        cdata_child->_paths.erase(pi);
-      }
-    }
-    pi = pnext;
-  }
-  
-  child_node->fix_path_lengths(cdata_child);
+
+  sever_connection(this, child_node);
 
   // Mark the bounding volumes stale.
   force_bound_stale();
@@ -907,29 +991,8 @@ remove_all_children() {
     PT(PandaNode) child_node = (*di).get_child();
     CDWriter cdata_child(child_node->_cycler);
     cdata_child->_up.erase(UpConnection(this));
-    
-    // Now sever any qpNodePathComponents on the child that
-    // reference this node.  If we have multiple of these, we have
-    // to collapse them together (see above).
-    qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
-    Paths::iterator pi;
-    pi = cdata_child->_paths.begin();
-    while (pi != cdata_child->_paths.end()) {
-      Paths::iterator pnext = pi;
-      ++pnext;
-      if (!(*pi)->is_top_node() && (*pi)->get_next()->get_node() == this) {
-        if (collapsed == (qpNodePathComponent *)NULL) {
-          (*pi)->set_top_node();
-          collapsed = (*pi);
-        } else {
-          (*pi)->collapse_with(collapsed);
-          cdata_child->_paths.erase(pi);
-        }
-      }
-      pi = pnext;
-    }
-    
-    child_node->fix_path_lengths(cdata_child);
+
+    sever_connection(this, child_node);
     child_node->parents_changed();
   }
   cdata->_down.clear();
@@ -938,29 +1001,8 @@ remove_all_children() {
     PT(PandaNode) child_node = (*di).get_child();
     CDWriter cdata_child(child_node->_cycler);
     cdata_child->_up.erase(UpConnection(this));
-    
-    // Now sever any qpNodePathComponents on the child that
-    // reference this node.  If we have multiple of these, we have
-    // to collapse them together (see above).
-    qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
-    Paths::iterator pi;
-    pi = cdata_child->_paths.begin();
-    while (pi != cdata_child->_paths.end()) {
-      Paths::iterator pnext = pi;
-      ++pnext;
-      if (!(*pi)->is_top_node() && (*pi)->get_next()->get_node() == this) {
-        if (collapsed == (qpNodePathComponent *)NULL) {
-          (*pi)->set_top_node();
-          collapsed = (*pi);
-        } else {
-          (*pi)->collapse_with(collapsed);
-          cdata_child->_paths.erase(pi);
-        }
-      }
-      pi = pnext;
-    }
-    
-    child_node->fix_path_lengths(cdata_child);
+
+    sever_connection(this, child_node);
     child_node->parents_changed();
   }
   cdata->_stashed.clear();
@@ -968,6 +1010,69 @@ remove_all_children() {
   // Mark the bounding volumes stale.
   force_bound_stale();
   children_changed();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::steal_children
+//       Access: Published
+//  Description: Moves all the children from the other node onto this
+//               node.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+steal_children(PandaNode *other) {
+  if (other == this) {
+    // Trivial.
+    return;
+  }
+
+  // We do this through the high-level interface for convenience.
+  // This could begin to be a problem if we have a node with hundreds
+  // of children to copy; this could break down the ov_set.insert()
+  // method, which is an O(n^2) operation.  If this happens, we should
+  // rewrite this to do a simpler add_child() operation that involves
+  // push_back() instead of insert(), and then sort the down list at
+  // the end.
+
+  int num_children = other->get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    PandaNode *child_node = other->get_child(i);
+    int sort = other->get_child_sort(i);
+    add_child(child_node, sort);
+  }
+  int num_stashed = other->get_num_stashed();
+  for (int i = 0; i < num_stashed; i++) {
+    PandaNode *child_node = other->get_stashed(i);
+    int sort = other->get_stashed_sort(i);
+    add_stashed(child_node, sort);
+  }
+
+  other->remove_all_children();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::copy_children
+//       Access: Published
+//  Description: Makes another instance of all the children of the
+//               other node, copying them to this node.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+copy_children(PandaNode *other) {
+  if (other == this) {
+    // Trivial.
+    return;
+  }
+  int num_children = other->get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    PandaNode *child_node = other->get_child(i);
+    int sort = other->get_child_sort(i);
+    add_child(child_node, sort);
+  }
+  int num_stashed = other->get_num_stashed();
+  for (int i = 0; i < num_stashed; i++) {
+    PandaNode *child_node = other->get_stashed(i);
+    int sort = other->get_stashed_sort(i);
+    add_stashed(child_node, sort);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1191,6 +1296,7 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map) {
   CDReader from_cdata(from->_cycler);
   Down::const_iterator di;
   for (di = from_cdata->_down.begin(); di != from_cdata->_down.end(); ++di) {
+    int sort = (*di).get_sort();
     PandaNode *source_child = (*di).get_child();
     PT(PandaNode) dest_child;
 
@@ -1207,7 +1313,7 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map) {
       inst_map[source_child] = dest_child;
     }
 
-    add_child(dest_child);
+    add_child(dest_child, sort);
   }
 }
 
@@ -1230,7 +1336,7 @@ attach(qpNodePathComponent *parent, PandaNode *child_node, int sort) {
   if (child == (qpNodePathComponent *)NULL) {
     // The child was not already attached to the parent, so get a new
     // component.
-    child = get_top_component(child_node);
+    child = get_top_component(child_node, true);
   }
 
   reparent(parent, child, sort);
@@ -1403,9 +1509,14 @@ get_component(qpNodePathComponent *parent, PandaNode *child_node) {
 //               this for a node that has parents, unless you are
 //               about to create a new instance (and immediately
 //               reconnect the qpNodePathComponent elsewhere).
+//
+//               If force is true, this will always return something,
+//               even if it needs to create a new top component;
+//               otherwise, if force is false, it will return NULL if
+//               there is not already a top component available.
 ////////////////////////////////////////////////////////////////////
 PT(qpNodePathComponent) PandaNode::
-get_top_component(PandaNode *child_node) {
+get_top_component(PandaNode *child_node, bool force) {
   {
     CDReader cdata_child(child_node->_cycler);
 
@@ -1420,6 +1531,12 @@ get_top_component(PandaNode *child_node) {
         return (*pi);
       }
     }
+  }
+
+  if (!force) {
+    // If we don't care to force the point, return NULL to indicate
+    // there's not already a top component.
+    return NULL;
   }
 
   // We don't already have such a qpNodePathComponent; create and
@@ -1445,17 +1562,28 @@ PT(qpNodePathComponent) PandaNode::
 get_generic_component() {
   int num_parents = get_num_parents();
   if (num_parents == 0) {
-    return get_top_component(this);
+    // No parents; no ambiguity.  This is the root.
+    return get_top_component(this, true);
+  } 
+
+  PT(qpNodePathComponent) result;
+  if (num_parents == 1) {
+    // Only one parent; no ambiguity.
+    PT(qpNodePathComponent) parent = get_parent(0)->get_generic_component();
+    result = get_component(parent, this);
 
   } else {
-    if (num_parents != 1) {
-      pgraph_cat.warning()
-        << *this << " has " << num_parents
-        << " parents; choosing arbitrary path to root.\n";
-    }
+    // Oops, multiple parents; the NodePath is ambiguous.
+    pgraph_cat.warning()
+      << *this << " has " << num_parents
+      << " parents; choosing arbitrary path to root.\n";
+  
     PT(qpNodePathComponent) parent = get_parent(0)->get_generic_component();
-    return get_component(parent, this);
+    result = get_component(parent, this);
+    nassertr(!unambiguous_graph, result);
   }
+
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1480,7 +1608,106 @@ delete_component(qpNodePathComponent *component) {
       _cycler.release_write_stage(i, cdata);
     }
   }
-  nassertv(max_num_erased == 1);
+
+  // This may legitimately be zero if we are deleting a collapsed NodePath.
+  //  nassertv(max_num_erased == 1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::sever_connection
+//       Access: Private, Static
+//  Description: This is called internally when a parent-child
+//               connection is broken to update the NodePathComponents
+//               that reflected this connection.
+//
+//               It severs any NodePathComponents on the child node
+//               that reference the indicated parent node.  If the
+//               child node has additional parents, chooses one of
+//               them arbitrarily instead.  Collapses together
+//               instances below this node that used to differentiate
+//               on some instance above the old parent.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+sever_connection(PandaNode *parent_node, PandaNode *child_node) {
+  CDWriter cdata_child(child_node->_cycler);
+  qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
+
+  Paths::iterator pi;
+  pi = cdata_child->_paths.begin();
+  while (pi != cdata_child->_paths.end()) {
+    Paths::iterator pnext = pi;
+    ++pnext;
+    if (!(*pi)->is_top_node() && 
+        (*pi)->get_next()->get_node() == parent_node) {
+      if (collapsed == (qpNodePathComponent *)NULL) {
+
+        // This is the first component we've found that references
+        // this node.  Should we sever it or reattach it?
+        if (child_node->get_num_parents() == 0) {
+          // If the node no longer has any parents, all of its paths will be
+          // severed here.  Collapse them all with the existing top
+          // component if there is one.
+          collapsed = get_top_component(child_node, false);
+          
+        } else {
+          // If the node still has one parent, all of its paths that
+          // referenced the old parent will be combined with the remaining
+          // parent.  If there are multiple parents, choose one arbitrarily
+          // to combine with.
+          collapsed = child_node->get_generic_component();
+        }
+
+        if (collapsed == (qpNodePathComponent *)NULL) {
+          // Sever the component here; there's nothing to attach it
+          // to.
+          (*pi)->set_top_node();
+          collapsed = (*pi);
+
+        } else {
+          // Collapse the new component with the pre-existing
+          // component.
+          (*pi)->collapse_with(collapsed);
+          cdata_child->_paths.erase(pi);
+        }
+
+      } else {
+        // This is the second (or later) component we've found that
+        // references this node.  We should collapse it with the first
+        // one.
+        (*pi)->collapse_with(collapsed);
+        cdata_child->_paths.erase(pi);
+      }
+    }
+    pi = pnext;
+  }
+  child_node->fix_path_lengths(cdata_child);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::new_connection
+//       Access: Private, Static
+//  Description: This is called internally when a parent-child
+//               connection is establshed to update the
+//               NodePathComponents that might be involved.
+//
+//               It adjusts any NodePathComponents the child has that
+//               reference the child as a top node.  Any other
+//               components we can leave alone, because we are making
+//               a new instance of the child.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+new_connection(PandaNode *parent_node, PandaNode *child_node) {
+  CDWriter cdata_child(child_node->_cycler);
+
+  Paths::iterator pi;
+  for (pi = cdata_child->_paths.begin();
+       pi != cdata_child->_paths.end();
+       ++pi) {
+    if ((*pi)->is_top_node()) {
+      (*pi)->set_next(parent_node->get_generic_component());
+    }
+  }
+  child_node->fix_path_lengths(cdata_child);
 }
 
 ////////////////////////////////////////////////////////////////////

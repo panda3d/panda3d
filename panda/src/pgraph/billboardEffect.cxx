@@ -47,15 +47,15 @@ make(const LVector3f &up_vector, bool eye_relative,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardEffect::safe_to_combine
+//     Function: BillboardEffect::safe_to_transform
 //       Access: Public, Virtual
-//  Description: Returns true if this kind of effect can safely be
-//               combined with sibling nodes that share the exact same
-//               effect, or false if this is not a good idea.
+//  Description: Returns true if it is generally safe to transform
+//               this particular kind of RenderEffect by calling the
+//               xform() method, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool BillboardEffect::
-safe_to_combine() const {
-  return true;
+safe_to_transform() const {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

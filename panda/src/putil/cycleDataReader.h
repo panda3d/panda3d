@@ -41,6 +41,7 @@ class CycleDataReader {
 public:
   INLINE CycleDataReader(const PipelineCycler<CycleDataType> &cycler);
   INLINE CycleDataReader(const CycleDataReader<CycleDataType> &copy);
+  INLINE void operator = (const CycleDataReader<CycleDataType> &copy);
 
   INLINE ~CycleDataReader();
 
@@ -53,7 +54,7 @@ public:
 private:
 #ifdef DO_PIPELINING
   // This is the data stored for a real pipelining implementation.
-  const PipelineCycler<CycleDataType> &_cycler;
+  const PipelineCycler<CycleDataType> *_cycler;
   const CycleDataType *_pointer;
   CycleDataType *_write_pointer;
 #else  // !DO_PIPELINING

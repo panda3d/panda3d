@@ -38,7 +38,7 @@ PUBLISHED:
   };
 
 private:
-  INLINE CullFaceAttrib(Mode mode = M_cull_none);
+  INLINE CullFaceAttrib(Mode mode = M_cull_clockwise);
 
 PUBLISHED:
   static CPT(RenderAttrib) make(Mode mode);

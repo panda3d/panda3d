@@ -33,6 +33,7 @@
 #include "cullBinAttrib.h"
 #include "textureAttrib.h"
 #include "transparencyAttrib.h"
+#include "qpsceneGraphReducer.h"
 #include "indent.h"
 
 #include <stdio.h>
@@ -362,11 +363,9 @@ generate() {
   // applying them to the vertices.
 
   if (text_flatten) {
-    /* ****
-    SceneGraphReducer gr(RenderRelation::get_class_type());
-    gr.apply_transitions(root_arc);
+    qpSceneGraphReducer gr;
+    gr.apply_attribs(root);
     gr.flatten(root, true);
-    */
   }
 
   return root;

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "qpgeomNode.h"
+#include "qpgeomTransformer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "datagram.h"
@@ -151,6 +152,73 @@ qpGeomNode::
 PandaNode *qpGeomNode::
 make_copy() const {
   return new qpGeomNode(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomNode::xform
+//       Access: Public, Virtual
+//  Description: Transforms the contents of this node by the indicated
+//               matrix, if it means anything to do so.  For most
+//               kinds of nodes, this does nothing.
+//
+//               For a GeomNode, this does the right thing, but it is
+//               better to use a GeomTransformer instead, since it
+//               will share the new arrays properly between different
+//               GeomNodes.
+////////////////////////////////////////////////////////////////////
+void qpGeomNode::
+xform(const LMatrix4f &mat) {
+  qpGeomTransformer transformer;
+  transformer.transform_vertices(this, mat);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomNode::combine_with
+//       Access: Public, Virtual
+//  Description: Collapses this node with the other node, if possible,
+//               and returns a pointer to the combined node, or NULL
+//               if the two nodes cannot safely be combined.
+//
+//               The return value may be this, other, or a new node
+//               altogether.
+//
+//               This function is called from GraphReducer::flatten(),
+//               and need not deal with children; its job is just to
+//               decide whether to collapse the two nodes and what the
+//               collapsed node should look like.
+////////////////////////////////////////////////////////////////////
+PandaNode *qpGeomNode::
+combine_with(PandaNode *other) {
+  if (is_exact_type(get_class_type()) &&
+      other->is_exact_type(get_class_type())) {
+    // Two GeomNodes can combine by moving Geoms from one to the other.
+    qpGeomNode *gother = DCAST(qpGeomNode, other);
+    add_geoms_from(gother);
+    return this;
+  }
+
+  return PandaNode::combine_with(other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomNode::add_geoms_from
+//       Access: Published
+//  Description: Copies the Geoms (and their associated RenderStates)
+//               from the indicated GeomNode into this one.
+////////////////////////////////////////////////////////////////////
+void qpGeomNode::
+add_geoms_from(const qpGeomNode *other) {
+  CDReader cdata_other(other->_cycler);
+  CDWriter cdata(_cycler);
+
+  Geoms::const_iterator gi;
+  for (gi = cdata_other->_geoms.begin(); 
+       gi != cdata_other->_geoms.end(); 
+       ++gi) {
+    const GeomEntry &entry = (*gi);
+    cdata->_geoms.push_back(entry);
+  }
+  mark_bound_stale();
 }
 
 ////////////////////////////////////////////////////////////////////

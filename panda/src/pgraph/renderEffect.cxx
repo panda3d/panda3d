@@ -72,8 +72,7 @@ RenderEffect::
 //       Access: Public, Virtual
 //  Description: Returns true if it is generally safe to transform
 //               this particular kind of RenderEffect by calling the
-//               xform() method, false otherwise.  For instance, it's
-//               usually a bad idea to attempt to xform a Character.
+//               xform() method, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool RenderEffect::
 safe_to_transform() const {
@@ -89,7 +88,7 @@ safe_to_transform() const {
 ////////////////////////////////////////////////////////////////////
 bool RenderEffect::
 safe_to_combine() const {
-  return false;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -36,6 +36,7 @@
 #include "luse.h"
 #include "ordered_vector.h"
 #include "pointerTo.h"
+#include "pointerToArray.h"
 #include "notify.h"
 
 class qpNodePathComponent;
@@ -67,6 +68,7 @@ public:
   virtual bool safe_to_flatten() const;
   virtual bool safe_to_transform() const;
   virtual bool safe_to_combine() const;
+  virtual bool preserve_name() const;
   virtual void xform(const LMatrix4f &mat);
   virtual PandaNode *combine_with(PandaNode *other); 
 
@@ -89,18 +91,24 @@ PUBLISHED:
   void add_child(PandaNode *child_node, int sort = 0);
   void remove_child(int n);
   bool remove_child(PandaNode *child_node);
+  bool replace_child(PandaNode *orig_child, PandaNode *new_child);
 
   INLINE bool stash_child(PandaNode *child_node);
   void stash_child(int child_index);
   INLINE bool unstash_child(PandaNode *child_node);
   void unstash_child(int stashed_index);
+
   INLINE int get_num_stashed() const;
   INLINE PandaNode *get_stashed(int n) const;
   INLINE int get_stashed_sort(int n) const;
   int find_stashed(PandaNode *node) const;
+
+  void add_stashed(PandaNode *child_node, int sort = 0);
   void remove_stashed(int n);
 
   void remove_all_children();
+  void steal_children(PandaNode *other);
+  void copy_children(PandaNode *other);
 
   INLINE void set_attrib(const RenderAttrib *attrib, int override = 0);
   INLINE const RenderAttrib *get_attrib(TypeHandle type) const;
@@ -173,6 +181,8 @@ protected:
   BoundedObject _internal_bound;
 
 private:
+  class CData;
+
   // parent-child manipulation for qpNodePath support.  Don't try to
   // call these directly.
   static PT(qpNodePathComponent) attach(qpNodePathComponent *parent, 
@@ -182,10 +192,12 @@ private:
                        qpNodePathComponent *child, int sort);
   static PT(qpNodePathComponent) get_component(qpNodePathComponent *parent,
                                               PandaNode *child);
-  static PT(qpNodePathComponent) get_top_component(PandaNode *child);
+  static PT(qpNodePathComponent) get_top_component(PandaNode *child,
+                                                   bool force);
   PT(qpNodePathComponent) get_generic_component();
   void delete_component(qpNodePathComponent *component);
-  class CData;
+  static void sever_connection(PandaNode *parent_node, PandaNode *child_node);
+  static void new_connection(PandaNode *parent_node, PandaNode *child_node);
   void fix_path_lengths(const CData *cdata);
   void r_list_descendants(ostream &out, int indent_level) const;
 
@@ -195,6 +207,7 @@ private:
     INLINE DownConnection(PandaNode *child, int sort);
     INLINE bool operator < (const DownConnection &other) const;
     INLINE PandaNode *get_child() const;
+    INLINE void set_child(PandaNode *child);
     INLINE int get_sort() const;
 
   private:
@@ -273,6 +286,7 @@ public:
   public:
     INLINE Children(const CDReader &cdata);
     INLINE Children(const Children &copy);
+    INLINE void operator = (const Children &copy);
 
     INLINE int get_num_children() const;
     INLINE PandaNode *get_child(int n) const;
@@ -282,6 +296,24 @@ public:
   };
 
   INLINE Children get_children() const;
+
+  // This interface *does* protect you from self-modifying loops, by
+  // copying the list of children.
+  class EXPCL_PANDA ChildrenCopy {
+  public:
+    ChildrenCopy(const CDReader &cdata);
+    INLINE ChildrenCopy(const ChildrenCopy &copy);
+    INLINE void operator = (const ChildrenCopy &copy);
+
+    INLINE int get_num_children() const;
+    INLINE PandaNode *get_child(int n) const;
+
+  private:
+    typedef PTA(PT(PandaNode)) List;
+    List _list;
+  };
+
+  INLINE ChildrenCopy get_children_copy() const;
 
 public:
   static void register_with_read_factory();

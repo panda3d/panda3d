@@ -38,6 +38,7 @@
 #include "plist.h"
 #include "boundingSphere.h"
 #include "qpgeomNode.h"
+#include "qpsceneGraphReducer.h"
 
 // stack seems to overflow on Intel C++ at 7000.  If we need more than 
 // 7000, need to increase stack size.
@@ -2403,10 +2404,8 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point) {
 int qpNodePath::
 flatten_light() {
   nassertr(!is_empty(), 0);
-  /*
-  SceneGraphReducer gr(_graph_type);
-  gr.apply_transitions(arc());
-  */
+  qpSceneGraphReducer gr;
+  gr.apply_attribs(node());
 
   return 0;
 }
@@ -2436,17 +2435,13 @@ flatten_light() {
 //               The return value is the number of arcs removed.
 ////////////////////////////////////////////////////////////////////
 int qpNodePath::
-flatten_medium(int max_children) {
+flatten_medium() {
   nassertr(!is_empty(), 0);
-  /*
-  SceneGraphReducer gr(_graph_type);
-  gr.set_max_children(max_children);
-  gr.apply_transitions(arc());
+  qpSceneGraphReducer gr;
+  gr.apply_attribs(node());
   int num_removed = gr.flatten(node(), false);
 
   return num_removed;
-  */
-  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2467,17 +2462,13 @@ flatten_medium(int max_children) {
 //               because of less-effective culling.
 ////////////////////////////////////////////////////////////////////
 int qpNodePath::
-flatten_strong(int max_children) {
+flatten_strong() {
   nassertr(!is_empty(), 0);
-  /*
-  SceneGraphReducer gr(_graph_type);
-  gr.set_max_children(max_children);
-  gr.apply_transitions(arc());
+  qpSceneGraphReducer gr;
+  gr.apply_attribs(node());
   int num_removed = gr.flatten(node(), true);
 
   return num_removed;
-  */
-  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////

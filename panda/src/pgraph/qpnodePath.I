@@ -159,6 +159,7 @@ fail() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpNodePath::
 is_empty() const {
+  uncollapse_head();
   return (_head == (qpNodePathComponent *)NULL);
 }
 
@@ -272,6 +273,7 @@ attach_new_node(const string &name, int sort) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpNodePath::
 output(ostream &out) const {
+  uncollapse_head();
   if (_head == (qpNodePathComponent *)NULL) {
     out << "(empty)";
   } else {
@@ -1113,6 +1115,9 @@ operator < (const qpNodePath &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int qpNodePath::
 compare_to(const qpNodePath &other) const {
+  uncollapse_head();
+  other.uncollapse_head();
+
   // Nowadays, the NodePathComponents at the head are pointerwise
   // equivalent if and only iff the NodePaths are equivalent.  So we
   // only have to compare pointers.

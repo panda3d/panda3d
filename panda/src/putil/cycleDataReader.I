@@ -28,9 +28,9 @@
 template<class CycleDataType>
 INLINE CycleDataReader<CycleDataType>::
 CycleDataReader(const PipelineCycler<CycleDataType> &cycler) :
-  _cycler(cycler)
+  _cycler(&cycler)
 {
-  _pointer = _cycler.read();
+  _pointer = _cycler->read();
   _write_pointer = (CycleDataType *)NULL;
 }
 
@@ -47,10 +47,29 @@ CycleDataReader(const CycleDataReader<CycleDataType> &copy) :
   _write_pointer(copy._write_pointer)
 {
   nassertv(_pointer != (const CycleDataType *)NULL);
-  // We cannot copy-construct a CycleDataReader that has elevated
-  // itself to a write pointer.
+  // We cannot copy a CycleDataReader that has elevated itself to a
+  // write pointer.
   nassertv(_write_pointer == (const CycleDataType *)NULL);
-  _cycler.increment_read(_pointer);
+  _cycler->increment_read(_pointer);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataReader::Copy Assignment (full)
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE void CycleDataReader<CycleDataType>::
+operator = (const CycleDataReader<CycleDataType> &copy) {
+  _cycler = copy._cycler;
+  _pointer = copy._pointer;
+  _write_pointer = copy._write_pointer;
+
+  nassertv(_pointer != (const CycleDataType *)NULL);
+  // We cannot copy a CycleDataReader that has elevated itself to a
+  // write pointer.
+  nassertv(_write_pointer == (const CycleDataType *)NULL);
+  _cycler->increment_read(_pointer);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -65,9 +84,9 @@ INLINE CycleDataReader<CycleDataType>::
     // If the _write_pointer is non-NULL, then someone called
     // elevate_to_write() at some point, and we now actually hold a
     // write pointer, not a read pointer.
-    ((PipelineCycler<CycleDataType> &)_cycler).release_write(_write_pointer);
+    ((PipelineCycler<CycleDataType> *)_cycler)->release_write(_write_pointer);
   } else if (_pointer != (CycleDataType *)NULL) {
-    _cycler.release_read(_pointer);
+    _cycler->release_read(_pointer);
   }
 }
 
@@ -80,7 +99,7 @@ INLINE CycleDataReader<CycleDataType>::
 template<class CycleDataType>
 INLINE const CycleDataType *CycleDataReader<CycleDataType>::
 operator -> () const {
-  nassertr(_pointer != (const CycleDataType *)NULL, _cycler.cheat());
+  nassertr(_pointer != (const CycleDataType *)NULL, _cycler->cheat());
   return _pointer;
 }
 
@@ -93,7 +112,7 @@ operator -> () const {
 template<class CycleDataType>
 INLINE CycleDataReader<CycleDataType>::
 operator const CycleDataType * () const {
-  nassertr(_pointer != (const CycleDataType *)NULL, _cycler.cheat());
+  nassertr(_pointer != (const CycleDataType *)NULL, _cycler->cheat());
   return _pointer;
 }
 
@@ -113,7 +132,7 @@ take_pointer() {
   const CycleDataType *pointer = _pointer;
   _pointer = (CycleDataType *)NULL;
   _write_pointer = (CycleDataType *)NULL;
-  nassertr(pointer != (const CycleDataType *)NULL, _cycler.cheat());
+  nassertr(pointer != (const CycleDataType *)NULL, _cycler->cheat());
   return pointer;
 }
 
@@ -160,6 +179,17 @@ INLINE CycleDataReader<CycleDataType>::
 CycleDataReader(const CycleDataReader<CycleDataType> &copy) :
   _pointer(copy._pointer)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataReader::Copy Assignment (trivial)
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE void CycleDataReader<CycleDataType>::
+operator = (const CycleDataReader<CycleDataType> &copy) {
+  _pointer = copy._pointer;
 }
 
 ////////////////////////////////////////////////////////////////////

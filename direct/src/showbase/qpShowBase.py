@@ -216,6 +216,7 @@ class ShowBase:
         rendering 3-d geometry.
         """
         self.render = NodePath('render')
+        self.render.setTwoSided(0)
 
     def setupRender2d(self):
         """setupRender2d(self)

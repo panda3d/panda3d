@@ -44,6 +44,8 @@ protected:
 public:
   virtual ~qpGeomNode();
   virtual PandaNode *make_copy() const;
+  virtual void xform(const LMatrix4f &mat);
+  virtual PandaNode *combine_with(PandaNode *other); 
 
 PUBLISHED:
   INLINE int get_num_geoms() const;
@@ -52,6 +54,7 @@ PUBLISHED:
   INLINE void set_geom_state(int n, const RenderState *state);
 
   INLINE int add_geom(Geom *geom, const RenderState *state = RenderState::make_empty());
+  void add_geoms_from(const qpGeomNode *other);
   INLINE void remove_geom(int n);
   INLINE void remove_all_geoms();
 
@@ -118,6 +121,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class PandaNode::Children;
+  friend class qpGeomTransformer;
 };
 
 #include "qpgeomNode.I"

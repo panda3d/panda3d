@@ -66,21 +66,27 @@ output(ostream &out) const {
   switch (get_mode()) {
   case M_none:
     out << "none";
+    break;
 
   case M_alpha:
     out << "alpha";
+    break;
 
   case M_alpha_sorted:
     out << "alpha sorted";
+    break;
 
   case M_multisample:
     out << "multisample";
+    break;
 
   case M_multisample_mask:
     out << "multisample mask";
+    break;
 
   case M_binary:
     out << "binary";
+    break;
   }
 }
 

@@ -55,7 +55,7 @@ PUBLISHED:
   INLINE const LPoint3f &get_look_at_point() const;
 
 public:
-  virtual bool safe_to_combine() const;
+  virtual bool safe_to_transform() const;
   virtual void output(ostream &out) const;
 
   CPT(TransformState) do_billboard(const TransformState *net_transform,
