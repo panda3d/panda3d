@@ -23,6 +23,7 @@
 #include "colorAttrib.h"
 #include "cullFaceAttrib.h"
 #include "cullBin.h"
+#include "cullBinAttrib.h"
 #include "cullBinBackToFront.h"
 #include "cullBinUnsorted.h"
 #include "qpgeomNode.h"
@@ -68,6 +69,7 @@ init_libpgraph() {
   ColorAttrib::init_type();
   CullFaceAttrib::init_type();
   CullBin::init_type();
+  CullBinAttrib::init_type();
   CullBinBackToFront::init_type();
   CullBinUnsorted::init_type();
   qpGeomNode::init_type();

@@ -4123,6 +4123,13 @@ get_texture_wrap_mode(Texture::WrapMode wm) {
     return GL_CLAMP;
   case Texture::WM_repeat:
     return GL_REPEAT;
+
+  case Texture::WM_mirror:
+  case Texture::WM_mirror_once:
+  case Texture::WM_border_color:
+    // These are unsupported for now.
+    return GL_REPEAT;
+
   case Texture::WM_invalid:
     break;
   }

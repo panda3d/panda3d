@@ -12,6 +12,7 @@
     colorAttrib.h colorAttrib.I \
     config_pgraph.h \
     cullBin.h cullBin.I \
+    cullBinAttrib.h cullBinAttrib.I \
     cullBinBackToFront.h cullBinBackToFront.I \
     cullBinManager.h cullBinManager.I \
     cullBinUnsorted.h cullBinUnsorted.I \
@@ -44,6 +45,7 @@
     colorAttrib.cxx \
     config_pgraph.cxx \
     cullBin.cxx \
+    cullBinAttrib.cxx \
     cullBinBackToFront.cxx \
     cullBinManager.cxx \
     cullBinUnsorted.cxx \
@@ -81,6 +83,7 @@
     colorAttrib.h colorAttrib.I \
     config_pgraph.h \
     cullBin.h cullBin.I \
+    cullBinAttrib.h cullBinAttrib.I \
     cullBinBackToFront.h cullBinBackToFront.I \
     cullBinManager.h cullBinManager.I \
     cullBinUnsorted.h cullBinUnsorted.I \

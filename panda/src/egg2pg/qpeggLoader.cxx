@@ -26,6 +26,7 @@
 #include "texturePool.h"
 #include "billboardAttrib.h"
 #include "cullFaceAttrib.h"
+#include "cullBinAttrib.h"
 #include "transparencyAttrib.h"
 #include "qpgeomNode.h"
 #include "string_utils.h"
@@ -995,7 +996,7 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
     const TextureDef &def = _textures[egg_tex];
     if (def._texture != (const RenderAttrib *)NULL) {
       bucket.add_attrib(def._texture);
-      //      bucket._trans.set_transition(def._apply);
+      //      bucket.add_attrib(def._apply);
 
       // If neither the primitive nor the texture specified an alpha
       // mode, assume it should be alpha'ed if the texture has an
@@ -1016,7 +1017,7 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
   if (egg_prim->has_material()) {
     MaterialTransition *mt = get_material_transition(egg_prim->get_material(),
                                                      egg_prim->get_bface_flag());
-    bucket._trans.set_transition(mt);
+    bucket.add_attrib(mt);
   }
   */
 
@@ -1072,11 +1073,11 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
   /*
   switch (dwm) {
   case EggRenderMode::DWM_on:
-    bucket._trans.set_transition(new DepthWriteTransition);
+    bucket.add_attrib(new DepthWriteTransition);
     break;
 
   case EggRenderMode::DWM_off:
-    bucket._trans.set_transition(new DepthWriteTransition(DepthWriteTransition::off()));
+    bucket.add_attrib(new DepthWriteTransition(DepthWriteTransition::off()));
     break;
 
   default:
@@ -1087,11 +1088,11 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
   /*
   switch (dtm) {
   case EggRenderMode::DTM_on:
-    bucket._trans.set_transition(new DepthTestTransition(DepthTestProperty::M_less));
+    bucket.add_attrib(new DepthTestTransition(DepthTestProperty::M_less));
     break;
 
   case EggRenderMode::DTM_off:
-    bucket._trans.set_transition(new DepthTestTransition(DepthTestProperty::M_none));
+    bucket.add_attrib(new DepthTestTransition(DepthTestProperty::M_none));
     break;
 
   default:
@@ -1099,14 +1100,13 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
   }
   */
 
-  /*
   if (has_bin) {
-    bucket._trans.set_transition(new GeomBinTransition(bin, draw_order));
+    bucket.add_attrib(CullBinAttrib::make(bin, draw_order));
 
   } else if (has_draw_order) {
-    bucket._trans.set_transition(new GeomBinTransition("fixed", draw_order));
+    bucket.add_attrib(CullBinAttrib::make("fixed", draw_order));
   }
-  */
+ 
 
   if (egg_prim->get_bface_flag()) {
     // The primitive is marked with backface culling disabled--we want

@@ -19,6 +19,7 @@
 #include "renderState.h"
 #include "billboardAttrib.h"
 #include "transparencyAttrib.h"
+#include "cullBinAttrib.h"
 #include "cullBinManager.h"
 #include "config_pgraph.h"
 #include "bamReader.h"
@@ -863,19 +864,21 @@ determine_billboard() {
 //     Function: RenderState::determine_bin_index
 //       Access: Private
 //  Description: This is the private implementation of
-//               get_bin_index().
+//               get_bin_index() and get_draw_order().
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_bin_index() {
   string bin_name;
+  _draw_order = 0;
 
-  /*
   const RenderAttrib *attrib = get_attrib(CullBinAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
     const CullBinAttrib *bin_attrib = DCAST(CullBinAttrib, attrib);
+    bin_name = bin_attrib->get_bin_name();
+    _draw_order = bin_attrib->get_draw_order();
   }
-  */
-  {
+
+  if (bin_name.empty()) {
     // No explicit bin is specified; put in the in the default bin,
     // either opaque or transparent, based on the transparency
     // setting.
@@ -896,7 +899,6 @@ determine_bin_index() {
       }
     }
   }
-
 
   CullBinManager *bin_manager = CullBinManager::get_global_ptr();
   _bin_index = bin_manager->find_bin(bin_name);

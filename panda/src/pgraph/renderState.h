@@ -89,6 +89,7 @@ PUBLISHED:
 public:
   INLINE const BillboardAttrib *get_billboard() const;
   INLINE int get_bin_index() const;
+  INLINE int get_draw_order() const;
 
   CPT(RenderState) issue_delta_modify(const RenderState *other, 
                                       GraphicsStateGuardianBase *gsg) const;
@@ -161,6 +162,7 @@ private:
   
   // We also cache the index to the associated GeomBin.
   int _bin_index;
+  int _draw_order;
 
   enum Flags {
     F_checked_billboard    = 0x0001,

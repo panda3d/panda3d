@@ -171,11 +171,11 @@ get_billboard() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::get_bin_index
 //       Access: Public
-//  Description: Returns the bin index indicated by the CullBinAttrib
-//               transition, if any, associated by this state (or the
-//               default bin index if there is no CullBinAttrib).  As
-//               in get_billboard(), above, this function is provided
-//               as an optimization.
+//  Description: Returns the bin index indicated by the CullBinAttrib,
+//               if any, associated by this state (or the default bin
+//               index if there is no CullBinAttrib).  As in
+//               get_billboard(), above, this function is provided as
+//               an optimization.
 ////////////////////////////////////////////////////////////////////
 INLINE int RenderState::
 get_bin_index() const {
@@ -185,4 +185,21 @@ get_bin_index() const {
     ((RenderState *)this)->determine_bin_index();
   }
   return _bin_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_draw_order
+//       Access: Public
+//  Description: Returns the draw order indicated by the
+//               CullBinAttrib, if any, associated by this state (or 0
+//               if there is no CullBinAttrib).  See get_bin_index().
+////////////////////////////////////////////////////////////////////
+INLINE int RenderState::
+get_draw_order() const {
+  if ((_flags & F_checked_bin_index) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal draw_order cache.
+    ((RenderState *)this)->determine_bin_index();
+  }
+  return _draw_order;
 }

@@ -4,6 +4,7 @@
 #include "colorAttrib.cxx"
 #include "config_pgraph.cxx"
 #include "cullBin.cxx"
+#include "cullBinAttrib.cxx"
 #include "cullBinBackToFront.cxx"
 #include "cullBinManager.cxx"
 #include "cullBinUnsorted.cxx"
