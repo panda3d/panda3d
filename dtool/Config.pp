@@ -313,6 +313,11 @@
 #define GTKMM_CONFIG gtkmm-config
 #defer HAVE_GTKMM $[bintest $[GTKMM_CONFIG]]
 
+// Do we have Freetype 2.0 (or better)?  If available, this package is
+// used to generate dynamic in-the-world text from font files.
+#define FREETYPE_CONFIG freetype-config
+#defer HAVE_FREETYPE $[bintest $[FREETYPE_CONFIG]]
+
 // Is Maya installed?  This matters only to programs in PANDATOOL.
 #define MAYA_LOCATION /usr/aw/maya3.0
 #defer HAVE_MAYA $[isdir $[MAYA_LOCATION]]

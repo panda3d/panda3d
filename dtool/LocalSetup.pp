@@ -37,6 +37,9 @@ $[cdefine TRACK_IN_INTERPRETER]
 /* Define if we have RAD game tools, Miles Sound System installed.  */
 $[cdefine HAVE_RAD_MSS]
 
+/* Define if we have Freetype 2.0 or better available. */
+$[cdefine HAVE_FREETYPE]
+
 /* Define if we have NSPR installed.  */
 $[cdefine HAVE_NSPR]
 

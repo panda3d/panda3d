@@ -185,6 +185,13 @@
   #define gtkmm_libs $[GTKMM_LIBS]
 #endif
 
+#if $[HAVE_FREETYPE]
+  #define freetype_ipath $[wildcard $[FREETYPE_IPATH]]
+  #define freetype_lpath $[wildcard $[FREETYPE_LPATH]]
+  #define freetype_cflags $[FREETYPE_CFLAGS]
+  #define freetype_libs $[FREETYPE_LIBS]
+#endif
+
 #if $[and $[HAVE_MAYA],$[MAYA_LOCATION]]
   #define maya_ipath $[MAYA_LOCATION]/include
   #define maya_lpath $[MAYA_LOCATION]/lib
@@ -423,6 +430,9 @@
   #if $[ne $[USE_GTKMM] $[components $[USE_GTKMM],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[gtkmm_cflags]
   #endif 
+  #if $[ne $[USE_FREETYPE] $[components $[USE_FREETYPE],$[active_component_libs]],]
+    #set alt_cflags $[alt_cflags] $[freetype_cflags]
+  #endif 
   #if $[ne $[USE_MAYA] $[components $[USE_MAYA],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[maya_cflags]
   #endif
@@ -487,6 +497,9 @@
   #endif
   #if $[ne $[USE_GTKMM] $[components $[USE_GTKMM],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[gtkmm_ipath]
+  #endif 
+  #if $[ne $[USE_FREETYPE] $[components $[USE_FREETYPE],$[active_component_libs]],]
+    #set alt_ipath $[alt_ipath] $[freetype_ipath]
   #endif 
   #if $[ne $[USE_MAYA] $[components $[USE_MAYA],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[maya_ipath]
@@ -556,6 +569,9 @@
   #if $[ne $[USE_GTKMM] $[components $[USE_GTKMM],$[active_component_libs] $[transitive_link]],]
     #set alt_lpath $[alt_lpath] $[gtkmm_lpath]
   #endif 
+  #if $[ne $[USE_FREETYPE] $[components $[USE_FREETYPE],$[active_component_libs] $[transitive_link]],]
+    #set alt_lpath $[alt_lpath] $[freetype_lpath]
+  #endif 
   #if $[ne $[USE_MAYA] $[components $[USE_MAYA],$[active_component_libs] $[transitive_link]],]
     #set alt_lpath $[alt_lpath] $[maya_lpath]
   #endif
@@ -621,6 +637,9 @@
   #endif
   #if $[ne $[USE_GTKMM] $[components $[USE_GTKMM],$[active_component_libs] $[transitive_link]],]
     #set alt_libs $[alt_libs] $[gtkmm_libs]
+  #endif 
+  #if $[ne $[USE_FREETYPE] $[components $[USE_FREETYPE],$[active_component_libs] $[transitive_link]],]
+    #set alt_libs $[alt_libs] $[freetype_libs]
   #endif 
   #if $[ne $[USE_MAYA] $[components $[USE_MAYA],$[active_component_libs] $[transitive_link]],]
     #set alt_libs $[alt_libs] $[maya_libs]

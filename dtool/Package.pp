@@ -161,6 +161,9 @@
 #set GTKMM_CONFIG $[GTKMM_CONFIG]
 #set HAVE_GTKMM $[HAVE_GTKMM]
 
+#set FREETYPE_CONFIG $[FREETYPE_CONFIG]
+#set HAVE_FREETYPE $[HAVE_FREETYPE]
+
 #set MAYA_LOCATION $[MAYA_LOCATION]
 #set HAVE_MAYA $[HAVE_MAYA]
 
@@ -184,6 +187,16 @@
   #define GTKMM_IPATH $[unique $[patsubst -I%,%,$[filter -I%,$[cflags]]]]
   #define GTKMM_LPATH $[unique $[patsubst -L%,%,$[filter -L%,$[libs]]]]
   #define GTKMM_LIBS $[patsubst -l%,%,$[filter -l%,$[libs]]]
+#endif
+
+#if $[and $[HAVE_FREETYPE],$[FREETYPE_CONFIG]]
+  #define cflags $[shell $[FREETYPE_CONFIG] --cflags]
+  #define libs $[shell $[FREETYPE_CONFIG] --libs]
+
+  #define FREETYPE_CFLAGS $[filter-out -I%,$[cflags]]
+  #define FREETYPE_IPATH $[unique $[patsubst -I%,%,$[filter -I%,$[cflags]]]]
+  #define FREETYPE_LPATH $[unique $[patsubst -L%,%,$[filter -L%,$[libs]]]]
+  #define FREETYPE_LIBS $[patsubst -l%,%,$[filter -l%,$[libs]]]
 #endif
 
 
