@@ -29,7 +29,8 @@ class PPDirectory;
 class PPDependableFile {
 public:
   PPDependableFile(PPDirectory *directory, const string &filename);
-  void update_from_cache(const vector<string> &words);
+  bool update_from_cache(const vector<string> &words);
+  void clear_cache();
   void write_cache(ostream &out);
 
   PPDirectory *get_directory() const;
@@ -51,6 +52,7 @@ public:
   string get_circularity();
 
   bool was_examined() const;
+  bool was_cached() const;
 
 private:
   void update_dependencies();
@@ -67,6 +69,7 @@ private:
     F_statted     = 0x008,
     F_exists      = 0x010,
     F_from_cache  = 0x020,
+    F_bad_cache   = 0x040,
   };
   int _flags;
   string _circularity;

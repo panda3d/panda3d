@@ -60,8 +60,11 @@ PPDependableFile(PPDirectory *directory, const string &filename) :
 //               cached modification time against the file's actual
 //               modification time, and storing the cached
 //               dependencies if they match.
+//
+//               The return value is true if the cache is valid, false
+//               if something appears to be wrong.
 ////////////////////////////////////////////////////////////////////
-void PPDependableFile::
+bool PPDependableFile::
 update_from_cache(const vector<string> &words) {
   // Shouldn't call this once the file has actually been read.
   assert((_flags & F_updated) == 0);
@@ -69,44 +72,63 @@ update_from_cache(const vector<string> &words) {
   assert((_flags & F_from_cache) == 0);
   assert(words.size() >= 2);
 
-  // The second parameter is the cached modification time.
-  time_t mtime = strtol(words[1].c_str(), (char **)NULL, 10);
-  if (mtime == get_mtime()) {
-    // The modification matches; preserve the cache information.
-    PPDirectoryTree *tree = _directory->get_tree();
+  if (!exists()) {
+    // The file doesn't even exist; clearly the cache is bad.
+    _flags |= F_bad_cache;
 
-    _dependencies.clear();
-    vector<string>::const_iterator wi;
-    for (wi = words.begin() + 2; wi != words.end(); ++wi) {
-      string dirpath = (*wi);
+  } else {
+    // The second parameter is the cached modification time.
+    time_t mtime = strtol(words[1].c_str(), (char **)NULL, 10);
+    if (mtime == get_mtime()) {
+      // The modification matches; preserve the cache information.
+      PPDirectoryTree *tree = _directory->get_tree();
 
-      Dependency dep;
-      dep._okcircular = false;
+      _dependencies.clear();
+      vector<string>::const_iterator wi;
+      for (wi = words.begin() + 2; wi != words.end(); ++wi) {
+        string dirpath = (*wi);
 
-      if (dirpath.length() > 1 && dirpath[0] == '/') {
-        // If the first character is '/', it means that the file has
-        // been marked okcircular.
-        dep._okcircular = true;
-        dirpath = dirpath.substr(1);
-      }
+        Dependency dep;
+        dep._okcircular = false;
 
-      if (dirpath.length() > 2 && dirpath.substr(0, 2) == "*/") {
-        // This is an extra include file, not a file in this source
-        // tree.
-        _extra_includes.push_back(dirpath.substr(2));
+        if (dirpath.length() > 1 && dirpath[0] == '/') {
+          // If the first character is '/', it means that the file has
+          // been marked okcircular.
+          dep._okcircular = true;
+          dirpath = dirpath.substr(1);
+        }
 
-      } else {
-        dep._file = 
-          tree->get_dependable_file_by_dirpath(dirpath, false);
-        if (dep._file != (PPDependableFile *)NULL) {
-          _dependencies.push_back(dep);
+        if (dirpath.length() > 2 && dirpath.substr(0, 2) == "*/") {
+          // This is an extra include file, not a file in this source
+          // tree.
+          _extra_includes.push_back(dirpath.substr(2));
+
+        } else {
+          dep._file = 
+            tree->get_dependable_file_by_dirpath(dirpath, false);
+          if (dep._file != (PPDependableFile *)NULL) {
+            _dependencies.push_back(dep);
+          }
         }
       }
-    }
 
-    _flags |= F_from_cache;
-    sort(_dependencies.begin(), _dependencies.end());
+      _flags |= F_from_cache;
+      sort(_dependencies.begin(), _dependencies.end());
+    }
   }
+
+  return ((_flags & F_bad_cache) == 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPDependableFile::clear_cache
+//       Access: Public
+//  Description: Forgets the cache we just read.
+////////////////////////////////////////////////////////////////////
+void PPDependableFile::
+clear_cache() {
+  _dependencies.clear();
+  _flags &= ~(F_bad_cache | F_from_cache);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -318,6 +340,17 @@ was_examined() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPDependableFile::was_cached
+//       Access: Public
+//  Description: Returns true if this file was found in the cache,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PPDependableFile::
+was_cached() const {
+  return ((_flags & F_from_cache) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPDependableFile::update_dependencies
 //       Access: Private
 //  Description: Builds up the dependency list--the list of files this
@@ -375,6 +408,7 @@ compute_dependencies(string &circularity) {
       } else {
         cerr << "Warning: dependent file " << filename
              << " does not exist.\n";
+        _flags |= F_bad_cache;
       }
 
     } else {
@@ -427,6 +461,12 @@ compute_dependencies(string &circularity) {
     // with an "okcircular" comment.
     if (!(*di)._okcircular) {
       circ = (*di)._file->compute_dependencies(circularity);
+      if (((*di)._file->_flags & F_bad_cache) != 0) {
+        // If our dependent file had a broken cache, our own cache is
+        // suspect.
+        _flags |= F_bad_cache;
+      }
+
       if (circ != (PPDependableFile *)NULL) {
         // Oops, a circularity.  Silly user.
         circularity = get_dirpath() + " => " + circularity;
@@ -441,6 +481,19 @@ compute_dependencies(string &circularity) {
 
   _flags = (_flags & ~F_updating) | F_updated;
   sort(_dependencies.begin(), _dependencies.end());
+
+  if ((_flags & (F_bad_cache | F_from_cache)) == (F_bad_cache | F_from_cache)) {
+    // Our cache is suspect.  Re-read the file to flush the cache.
+    if (verbose || true) {
+      cerr << "Dependency cache for \"" << get_fullpath() << "\" is suspect.\n";
+    }
+
+    clear_cache();
+    _flags &= ~F_updated;
+
+    return compute_dependencies(circularity);
+  }
+
   return circ;
 }
 

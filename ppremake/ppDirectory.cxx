@@ -23,6 +23,8 @@
 #include <sys/types.h>
 #endif
 
+#include <sys/stat.h>
+
 #include <algorithm>
 #include <assert.h>
 
@@ -30,6 +32,9 @@
 #include <direct.h>
 #include <windows.h>
 #endif
+
+// How new must a pp.dep cache file be before we will believe it?
+static const int max_cache_minutes = 60;
 
 PPDirectory *current_output_directory = (PPDirectory *)NULL;
 
@@ -715,26 +720,86 @@ read_file_dependencies(const string &cache_filename) {
   cache_pathname.set_text();
   ifstream in;
 
-  if (!cache_pathname.open_read(in)) {
-    // Can't read it.  Maybe it's not there.  No problem.
+  // Does the cache file exist, and is it recent enough?  We don't
+  // trust old cache files on principle.
+
+  string os_specific = cache_pathname.to_os_specific();
+  time_t now = time(NULL);
+
+#ifdef WIN32_VC
+  struct _stat this_buf;
+  bool this_exists = false;
+
+  if (_stat(os_specific.c_str(), &this_buf) == 0) {
+    this_exists = true;
+  }
+#else  // WIN32_VC
+  struct stat this_buf;
+  bool this_exists = false;
+
+  if (stat(os_specific.c_str(), &this_buf) == 0) {
+    this_exists = true;
+  }
+#endif
+
+  if (!this_exists) {
+    // The cache file doesn't exist.  That's OK.
     if (verbose) {
-      cerr << "Couldn't read \"" << cache_pathname << "\"\n";
-    }
-  } else {
-    if (verbose) {
-      cerr << "Loading cache \"" << cache_pathname << "\"\n";
+      cerr << "No cache file: \"" << cache_pathname << "\"\n";
     }
 
-    string line;
-    getline(in, line);
-    while (!in.fail() && !in.eof()) {
-      vector<string> words;
-      tokenize_whitespace(line, words);
-      if (words.size() >= 2) {
-        PPDependableFile *file = get_dependable_file(words[0], false);
-        file->update_from_cache(words);
+  } else if (this_buf.st_mtime < now - 60 * max_cache_minutes) {
+    // It exists, but it's too old.
+    if (verbose) {
+      cerr << "Cache file too old: \"" << cache_pathname << "\"\n";
+    }
+
+  } else {
+    // It exists and is new enough; use it.
+    if (!cache_pathname.open_read(in)) {
+      cerr << "Couldn't read \"" << cache_pathname << "\"\n";
+  
+    } else {
+      if (verbose) {
+        cerr << "Loading cache \"" << cache_pathname << "\"\n";
       }
+
+      bool okcache = true;
+      
+      string line;
       getline(in, line);
+      while (!in.fail() && !in.eof()) {
+        vector<string> words;
+        tokenize_whitespace(line, words);
+        if (words.size() >= 2) {
+          PPDependableFile *file = get_dependable_file(words[0], false);
+          if (!file->update_from_cache(words)) {
+            // Hey, we asked for an invalid or absent file.  Phooey.
+            // Invalidate the cache, and also make sure that this
+            // particular file (which maybe doesn't even exist) isn't
+            // mentioned in the cache file any more.
+            Dependables::iterator di;
+            di = _dependables.find(words[0]);
+            if (di != _dependables.end()) {
+              _dependables.erase(di);
+            }
+
+            okcache = false;
+            break;
+          }
+        }
+        getline(in, line);
+      }
+
+      if (!okcache) {
+        if (verbose || true) {
+          cerr << "Cache \"" << cache_pathname << "\" is stale.\n";
+        }
+        Dependables::iterator di;
+        for (di = _dependables.begin(); di != _dependables.end(); ++di) {
+          (*di).second->clear_cache();
+        }
+      }
     }
   }
     
@@ -773,9 +838,8 @@ update_file_dependencies(const string &cache_filename) {
     cache_pathname.unlink();
 
     // If we have no files, don't bother writing the cache.
+    bool wrote_anything = false;
     if (!_dependables.empty()) {
-      bool wrote_anything = false;
-      
       ofstream out;
       if (!cache_pathname.open_write(out)) {
         cerr << "Cannot update cache dependency file " << cache_pathname << "\n";
@@ -792,7 +856,7 @@ update_file_dependencies(const string &cache_filename) {
       Dependables::const_iterator di;
       for (di = _dependables.begin(); di != _dependables.end(); ++di) {
         PPDependableFile *file = (*di).second;
-        if (file->was_examined() || external_tree) {
+        if (file->was_examined() || (external_tree && file->was_cached())) {
           if (file->is_circularity()) {
             cerr << "Warning: circular #include directives:\n"
                  << "  " << file->get_circularity() << "\n";
@@ -803,12 +867,12 @@ update_file_dependencies(const string &cache_filename) {
       }
       
       out.close();
+    }
       
-      if (!wrote_anything) {
-        // Well, if we didn't write anything, remove the cache file
-        // after all.
-        cache_pathname.unlink();
-      }
+    if (!wrote_anything) {
+      // Well, if we didn't write anything, remove the cache file
+      // after all.
+      cache_pathname.unlink();
     }
   }
     
