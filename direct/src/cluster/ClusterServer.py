@@ -21,8 +21,8 @@ class ClusterServer(DirectObject.DirectObject):
     MSG_NUM = 2000000
 
     def __init__(self,cameraJig,camera):
-        global clusterServerPort, clusterSyncFlag, clusterDaemonClient, clusterDaemonPort
-        print clusterServerPort, clusterSyncFlag, clusterDaemonClient, clusterDaemonPort
+        global clusterServerPort, clusterSyncFlag
+        global clusterDaemonClient, clusterDaemonPort
         # Store information about the cluster's camera
         self.cameraJig = cameraJig
         self.camera = camera
@@ -52,7 +52,6 @@ class ClusterServer(DirectObject.DirectObject):
         if clusterSyncFlag:
             self.startSwapCoordinator()
             base.win.setSync(1)
-        print 'DAEMON'
         # Send verification of startup to client
         self.daemon = DirectD()
         # These must be passed in as bootstrap arguments and stored in
@@ -65,7 +64,6 @@ class ClusterServer(DirectObject.DirectObject):
             clusterDaemonPort
         except NameError:
             clusterDaemonPort = CLUSTER_DAEMON_PORT
-        print 'SERVER READY'
         self.daemon.serverReady(clusterDaemonClient, clusterDaemonPort)
 
     def startListenerPollTask(self):

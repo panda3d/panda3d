@@ -6,6 +6,7 @@ from ClusterConfig import *
 import DirectNotifyGlobal
 import DirectObject
 import Task
+import os
 
 class ClusterClient(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory("ClusterClient")
@@ -13,27 +14,28 @@ class ClusterClient(DirectObject.DirectObject):
 
     def __init__(self, configList, clusterSyncFlag):
         # First start up servers using direct daemon
-        clusterDaemonClient = base.config.GetString(
-            'cluster-daemon-client', 'localhost')
+        # What is the name of the client machine?
+        clusterDaemonClient = os.popen('uname -n').read()
+        clusterDaemonClient.replace('\n', '')
+        # What daemon port are we using to communicate between client/servers
         clusterDaemonPort = base.config.GetInt(
             'cluster-daemon-port', CLUSTER_DAEMON_PORT)
+        # Create a daemon
         self.daemon = DirectD()
-        print 'LISTEN'
+        # Start listening for the response
         self.daemon.listenTo(clusterDaemonPort)
+        # Contact server daemons and start up remote server application
         for serverConfig in configList:
             serverCommand = (SERVER_STARTUP_STRING %
                              (serverConfig.serverPort,
                               clusterSyncFlag,
                               clusterDaemonClient,
                               clusterDaemonPort))
-            print 'BOOTSTRAP', serverCommand
             self.daemon.clientReady(serverConfig.serverName,
                                     clusterDaemonPort,
                                     serverCommand)
-        print 'WAITING'
         if not self.daemon.waitForServers(len(configList)):
-            print 'ERROR'
-        print 'DONE'
+            print 'Cluster Client, no response from servers'
         self.qcm=QueuedConnectionManager()
         self.serverList = []
         self.msgHandler = ClusterMsgHandler(ClusterClient.MGR_NUM, self.notify)
