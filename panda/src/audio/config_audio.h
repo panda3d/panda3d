@@ -22,6 +22,10 @@
 #include <pandabase.h>
 #include <notifyCategoryProxy.h>
 
+#ifdef WIN32_VC
+#pragma warning (disable : 4231)
+#endif
+
 NotifyCategoryDecl(audio, EXPCL_PANDA, EXPTP_PANDA);
 
 extern EXPCL_PANDA bool audio_active;
