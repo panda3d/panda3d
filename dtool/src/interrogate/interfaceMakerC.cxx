@@ -192,8 +192,10 @@ write_function_instance(ostream &out, InterfaceMaker::Function *func,
 
   write_function_header(out, func, remap, true);
   out << " {\n";
-    
-  //  write_spam_message(def_index, out);
+
+  if (generate_spam) {
+    write_spam_message(out, remap);
+  }
     
   string return_expr = 
     remap->call_function(out, 2, true, "param0");

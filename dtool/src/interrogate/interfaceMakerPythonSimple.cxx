@@ -233,8 +233,10 @@ write_function_instance(ostream &out, InterfaceMaker::Function *func,
 
   out << "PyObject *\n"
       << remap->_wrapper_name << "(PyObject *, PyObject *args) {\n";
-    
-  //  write_spam_message(def_index, out);
+
+  if (generate_spam) {
+    write_spam_message(out, remap);
+  }
 
   string format_specifiers;
   string parameter_list;

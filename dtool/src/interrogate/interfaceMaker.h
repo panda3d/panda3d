@@ -138,6 +138,7 @@ protected:
 
   void output_ref(ostream &out, int indent_level, FunctionRemap *remap, 
                   const string &varname) const;
+  void write_spam_message(ostream &out, FunctionRemap *remap) const;
 
 protected:
   InterrogateModuleDef *_def;

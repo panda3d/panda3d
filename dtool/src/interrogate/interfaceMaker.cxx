@@ -754,3 +754,19 @@ hash_function_signature(FunctionRemap *remap) {
 
   remap->_hash = hash;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMaker::write_spam_message
+//       Access: Protected
+//  Description: Generates a string to output a spammy message to
+//               notify indicating we have just called this function.
+////////////////////////////////////////////////////////////////////
+void InterfaceMaker::
+write_spam_message(ostream &out, FunctionRemap *remap) const {
+  out <<
+    "  if (interrogatedb_cat.is_spam()) {\n"
+    "    interrogatedb_cat.spam() << \"";
+  remap->write_orig_prototype(out, 0);
+  out << "\\n\";\n"
+    "  }\n";
+}
