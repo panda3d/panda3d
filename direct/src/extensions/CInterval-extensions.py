@@ -11,7 +11,7 @@
         # Overridden from the C++ function to call privPostEvent
         # afterward.  We do this by renaming the C++ function in
         # FFIRename.
-        self.__cSetT(t)
+        self._priv__cSetT(t)
         self.privPostEvent()
 
     def play(self, t0 = 0.0, duration = None, scale = 1.0):
