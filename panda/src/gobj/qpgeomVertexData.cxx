@@ -18,14 +18,14 @@
 
 #include "qpgeomVertexData.h"
 #include "qpgeomVertexCacheManager.h"
+#include "pStatTimer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "pset.h"
 
 TypeHandle qpGeomVertexData::_type_handle;
 
-// Temporarily not a member of the class.
-static PStatCollector _munge_pcollector("Cull:Munge:Data");
+PStatCollector qpGeomVertexData::_munge_data_pcollector("Cull:Munge:Data");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::Default Constructor
@@ -126,55 +126,6 @@ get_num_vertices() const {
   // Look up the answer on the first array (since any array will do).
   int stride = _format->get_array(0)->get_stride();
   return cdata->_arrays[0].size() / stride;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::set_num_vertices
-//       Access: Published
-//  Description: Sets the length of the array to n vertices in all of
-//               the various arrays (presumably by adding vertices).
-//               The new vertex data is uninitialized.
-////////////////////////////////////////////////////////////////////
-void qpGeomVertexData::
-set_num_vertices(int n) {
-  CDWriter cdata(_cycler);
-  nassertv(_format->get_num_arrays() == (int)cdata->_arrays.size());
-
-  bool any_changed = false;
-
-  for (size_t i = 0; i < cdata->_arrays.size(); i++) {
-    int stride = _format->get_array(i)->get_stride();
-    int delta = n - (cdata->_arrays[i].size() / stride);
-
-    if (delta != 0) {
-      any_changed = true;
-      if (cdata->_arrays[i].get_ref_count() > 1) {
-        // Copy-on-write: the array is already reffed somewhere else,
-        // so we're just going to make a copy.
-        PTA_uchar new_array;
-        new_array.reserve(n * stride);
-        new_array.insert(new_array.end(), n * stride, uchar());
-        memcpy(new_array, cdata->_arrays[i], 
-               min((size_t)(n * stride), cdata->_arrays[i].size()));
-        cdata->_arrays[i] = new_array;
-
-      } else {
-        // We've got the only reference to the array, so we can change
-        // it directly.
-        if (delta > 0) {
-          cdata->_arrays[i].insert(cdata->_arrays[i].end(), delta * stride, uchar());
-          
-        } else {
-          cdata->_arrays[i].erase(cdata->_arrays[i].begin() + n * stride, 
-                                  cdata->_arrays[i].end());
-        }
-      }
-    }
-  }
-
-  if (any_changed) {
-    clear_cache();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -304,7 +255,7 @@ convert_to(const qpGeomVertexFormat *new_format) const {
     gobj_cat.debug()
       << "Converting " << num_vertices << " vertices.\n";
   }
-  PStatTimer timer(_munge_pcollector);
+  PStatTimer timer(_munge_data_pcollector);
 
   PT(qpGeomVertexData) new_data = new qpGeomVertexData(new_format);
 
@@ -449,7 +400,8 @@ set_data(int array, const qpGeomVertexDataType *data_type,
     int array_size = (int)cdata->_arrays[array].size();
     if (element + data_type->get_total_bytes() > array_size) {
       // Whoops, we need more vertices!
-      set_num_vertices(vertex + 1);
+      CDWriter cdataw(_cycler, cdata);
+      do_set_num_vertices(vertex + 1, cdataw);
     }
   }
 
@@ -753,6 +705,52 @@ remove_cache_entry(const qpGeomVertexFormat *modifier) const {
     cdata->_converted_cache.erase(ci);
   }
   ((qpGeomVertexData *)this)->_cycler.release_write_stage(0, cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::do_set_num_vertices
+//       Access: Private
+//  Description: The private implementation of set_num_vertices().
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::
+do_set_num_vertices(int n, CDWriter &cdata) {
+  nassertv(_format->get_num_arrays() == (int)cdata->_arrays.size());
+
+  bool any_changed = false;
+
+  for (size_t i = 0; i < cdata->_arrays.size(); i++) {
+    int stride = _format->get_array(i)->get_stride();
+    int delta = n - (cdata->_arrays[i].size() / stride);
+
+    if (delta != 0) {
+      any_changed = true;
+      if (cdata->_arrays[i].get_ref_count() > 1) {
+        // Copy-on-write: the array is already reffed somewhere else,
+        // so we're just going to make a copy.
+        PTA_uchar new_array;
+        new_array.reserve(n * stride);
+        new_array.insert(new_array.end(), n * stride, uchar());
+        memcpy(new_array, cdata->_arrays[i], 
+               min((size_t)(n * stride), cdata->_arrays[i].size()));
+        cdata->_arrays[i] = new_array;
+
+      } else {
+        // We've got the only reference to the array, so we can change
+        // it directly.
+        if (delta > 0) {
+          cdata->_arrays[i].insert(cdata->_arrays[i].end(), delta * stride, uchar());
+          
+        } else {
+          cdata->_arrays[i].erase(cdata->_arrays[i].begin() + n * stride, 
+                                  cdata->_arrays[i].end());
+        }
+      }
+    }
+  }
+
+  if (any_changed) {
+    clear_cache();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

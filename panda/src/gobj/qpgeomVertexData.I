@@ -29,6 +29,19 @@ get_format() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::set_num_vertices
+//       Access: Published
+//  Description: Sets the length of the array to n vertices in all of
+//               the various arrays (presumably by adding vertices).
+//               The new vertex data is uninitialized.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexData::
+set_num_vertices(int n) {
+  CDWriter cdata(_cycler);
+  do_set_num_vertices(n, cdata);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::get_num_arrays
 //       Access: Published
 //  Description: Returns the number of individual arrays stored within

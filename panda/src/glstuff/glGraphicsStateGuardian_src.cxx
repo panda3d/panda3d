@@ -2079,20 +2079,18 @@ void CLP(GraphicsStateGuardian)::
 draw_tristrips(const qpGeomTristrips *primitive) {
   setup_antialias_polygon();
 
-  int min_vertex = primitive->get_min_vertex();
-  int max_vertex = primitive->get_max_vertex();
   CPTA_ushort vertices = primitive->get_flat_last_vertices();
   CPTA_int ends = primitive->get_ends();
+  CPTA_ushort mins = primitive->get_mins();
+  CPTA_ushort maxs = primitive->get_maxs();
+  nassertv(mins.size() == ends.size() && maxs.size() == ends.size());
 
-  int num_primitives = primitive->get_num_primitives();
-  int start = 0;
-  for (CPTA_int::const_iterator pi = ends.begin(); pi != ends.end(); ++pi) {
-    int end = (*pi);
-
+  unsigned int start = 0;
+  for (size_t i = 0; i < ends.size(); i++) {
     _glDrawRangeElements(GL_TRIANGLE_STRIP, 
-                         min_vertex, max_vertex, end - start,
+                         mins[i], maxs[i], ends[i] - start,
                          GL_UNSIGNED_SHORT, vertices + start);
-    start = end;
+    start = ends[i];
   }
 
   report_my_gl_errors();

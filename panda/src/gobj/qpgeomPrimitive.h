@@ -68,8 +68,22 @@ PUBLISHED:
   virtual PT(qpGeomPrimitive) make_copy() const=0;
 
   enum ShadeModel {
-    SM_smooth,
-    SM_uniform,
+    // SM_smooth: vertices within a single face have different
+    // colors/normals that should be smoothed across the face.  This
+    // primitive should be rendered with SmoothModelAttrib::M_smooth.
+    SM_smooth,  
+
+    // SM_uniform: all vertices across all faces have the same colors
+    // and normals.  It doesn't matter which ShadeModelAttrib mode is
+    // used to render this primitive.
+    SM_uniform, 
+
+    // SM_flat_(first,last)_vertex: each face within the primitive
+    // might have a different color/normal than the other faces, but
+    // across a particular face there is only one color/normal.  Each
+    // face's color/normal is taken from the (first, last) vertex of
+    // the face.  This primitive should be rendered with
+    // SmoothModelAttrib::M_flat.
     SM_flat_first_vertex,
     SM_flat_last_vertex,
   };
@@ -88,16 +102,21 @@ PUBLISHED:
   INLINE CPTA_ushort get_flat_first_vertices() const;
   INLINE CPTA_ushort get_flat_last_vertices() const;
   PTA_ushort modify_vertices();
-  void set_vertices(PTA_ushort vertices);
+  void set_vertices(CPTA_ushort vertices);
 
   INLINE CPTA_int get_ends() const;
   PTA_int modify_ends();
-  void set_ends(PTA_int ends);
+  void set_ends(CPTA_int ends);
+
+  INLINE CPTA_ushort get_mins() const;
+  INLINE CPTA_ushort get_maxs() const;
 
   int get_num_bytes() const;
 
   INLINE int get_min_vertex() const;
+  INLINE int get_min_vertex(int i) const;
   INLINE int get_max_vertex() const;
+  INLINE int get_max_vertex(int i) const;
 
   virtual int get_num_vertices_per_primitive() const;
   virtual int get_min_num_vertices_per_primitive() const;
@@ -146,6 +165,8 @@ private:
     PTA_ushort _vertices;
     CPTA_ushort _rotated_vertices;
     PTA_int _ends;
+    PTA_ushort _mins;
+    PTA_ushort _maxs;
 
     bool _got_minmax;
     unsigned short _min_vertex;

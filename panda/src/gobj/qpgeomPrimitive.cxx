@@ -28,7 +28,7 @@
 
 TypeHandle qpGeomPrimitive::_type_handle;
 
-PStatCollector qpGeomPrimitive::_rotate_pcollector("Cull:Rotate");
+PStatCollector qpGeomPrimitive::_rotate_pcollector("Draw:Rotate");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::Constructor
@@ -100,6 +100,20 @@ add_vertex(int vertex) {
   if (cdata->_got_minmax) {
     cdata->_min_vertex = min(cdata->_min_vertex, short_vertex);
     cdata->_max_vertex = max(cdata->_max_vertex, short_vertex);
+
+    if (get_num_vertices_per_primitive() == 0) {
+      // Complex primitives also update their per-primitive minmax.
+      size_t pi = cdata->_ends.size();
+      if (pi < cdata->_mins.size()) {
+        cdata->_mins[pi] = min(cdata->_mins[pi], short_vertex);
+        cdata->_maxs[pi] = max(cdata->_maxs[pi], short_vertex);
+      } else {
+        cdata->_mins.push_back(short_vertex);
+        cdata->_maxs.push_back(short_vertex);
+      }
+      nassertv((cdata->_mins.size() == cdata->_ends.size() + 1) &&
+               (cdata->_maxs.size() == cdata->_ends.size() + 1));
+    }
   }
 }
 
@@ -126,6 +140,20 @@ add_consecutive_vertices(int start, int num_vertices) {
   if (cdata->_got_minmax) {
     cdata->_min_vertex = min(cdata->_min_vertex, short_start);
     cdata->_max_vertex = max(cdata->_max_vertex, short_end);
+
+    if (get_num_vertices_per_primitive() == 0) {
+      // Complex primitives also update their per-primitive minmax.
+      size_t pi = cdata->_ends.size();
+      if (pi < cdata->_mins.size()) {
+        cdata->_mins[pi] = min(cdata->_mins[pi], short_start);
+        cdata->_maxs[pi] = max(cdata->_maxs[pi], short_end);
+      } else {
+        cdata->_mins.push_back(short_start);
+        cdata->_maxs.push_back(short_end);
+      }
+      nassertv((cdata->_mins.size() == cdata->_ends.size() + 1) &&
+               (cdata->_maxs.size() == cdata->_ends.size() + 1));
+    }
   }
 }
 
@@ -156,6 +184,11 @@ close_primitive() {
 #endif
     cdata->_ends.push_back((int)cdata->_vertices.size());
 
+    if (cdata->_got_minmax) {
+      nassertv((cdata->_mins.size() == cdata->_ends.size()) &&
+               (cdata->_maxs.size() == cdata->_ends.size()));
+    }
+
   } else {
     // This is a simple primitive type like a triangle: each primitive
     // uses the same number of vertices.  Assert that we added the
@@ -177,6 +210,9 @@ clear_vertices() {
   cdata->_vertices.clear();
   cdata->_rotated_vertices.clear();
   cdata->_ends.clear();
+  cdata->_mins.clear();
+  cdata->_maxs.clear();
+  cdata->_got_minmax = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -192,6 +228,7 @@ modify_vertices() {
   clear_cache();
   CDWriter cdata(_cycler);
   cdata->_rotated_vertices.clear();
+  cdata->_got_minmax = false;
   return cdata->_vertices;
 }
 
@@ -203,11 +240,12 @@ modify_vertices() {
 //               the ends list with set_ends() at the same time.
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
-set_vertices(PTA_ushort vertices) {
+set_vertices(CPTA_ushort vertices) {
   clear_cache();
   CDWriter cdata(_cycler);
-  cdata->_vertices = vertices;
+  cdata->_vertices = (PTA_ushort &)vertices;
   cdata->_rotated_vertices.clear();
+  cdata->_got_minmax = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -226,6 +264,8 @@ PTA_int qpGeomPrimitive::
 modify_ends() {
   clear_cache();
   CDWriter cdata(_cycler);
+  cdata->_rotated_vertices.clear();
+  cdata->_got_minmax = false;
   return cdata->_ends;
 }
 
@@ -242,10 +282,12 @@ modify_ends() {
 //               have the same number of vertices, it is not needed.
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
-set_ends(PTA_int ends) {
+set_ends(CPTA_int ends) {
   clear_cache();
   CDWriter cdata(_cycler);
-  cdata->_ends = ends;
+  cdata->_ends = (PTA_int &)ends;
+  cdata->_rotated_vertices.clear();
+  cdata->_got_minmax = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -257,7 +299,7 @@ set_ends(PTA_int ends) {
 int qpGeomPrimitive::
 get_num_bytes() const {
   CDReader cdata(_cycler);
-  return cdata->_vertices.size() * sizeof(short) +
+  return (cdata->_vertices.size() + cdata->_mins.size() + cdata->_maxs.size()) * sizeof(short) +
     cdata->_ends.size() * sizeof(int) + sizeof(qpGeomPrimitive);
 }
 
@@ -633,10 +675,54 @@ recompute_minmax() {
   if (cdata->_vertices.empty()) {
     cdata->_min_vertex = 0;
     cdata->_max_vertex = 0;
+    cdata->_mins.clear();
+    cdata->_maxs.clear();
+
+  } else if (get_num_vertices_per_primitive() == 0) {
+    // This is a complex primitive type like a triangle strip; compute
+    // the minmax of each primitive (as well as the overall minmax).
+    cdata->_mins = PTA_ushort::empty_array(cdata->_ends.size());
+    cdata->_maxs = PTA_ushort::empty_array(cdata->_ends.size());
+    
+    int pi = 0;
+    int vi = 0;
+    int num_vertices = (int)cdata->_vertices.size();
+    
+    unsigned short vertex = cdata->_vertices[vi];
+    cdata->_min_vertex = vertex;
+    cdata->_mins[pi] = vertex;
+    cdata->_max_vertex = vertex;
+    cdata->_maxs[pi] = vertex;
+    
+    ++vi;
+    while (vi < num_vertices) {
+      unsigned short vertex = cdata->_vertices[vi];
+      cdata->_min_vertex = min(cdata->_min_vertex, vertex);
+      cdata->_max_vertex = max(cdata->_max_vertex, vertex);
+      
+      if (vi == cdata->_ends[pi]) {
+        ++pi;
+        if (pi < (int)cdata->_ends.size()) {
+          cdata->_mins[pi] = vertex;
+          cdata->_maxs[pi] = vertex;
+        }
+      } else {
+        nassertv(pi < (int)cdata->_ends.size());
+        cdata->_mins[pi] = min(cdata->_mins[pi], vertex);
+        cdata->_maxs[pi] = max(cdata->_maxs[pi], vertex);
+      }
+      
+      ++vi;
+    }
+
   } else {
+    // This is a simple primitive type like a triangle; just compute
+    // the overall minmax.
     PTA_ushort::const_iterator ii = cdata->_vertices.begin();
     cdata->_min_vertex = (*ii);
     cdata->_max_vertex = (*ii);
+    cdata->_mins.clear();
+    cdata->_maxs.clear();
     
     ++ii;
     while (ii != cdata->_vertices.end()) {

@@ -145,7 +145,7 @@ get_flat_last_vertices() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::get_vertices
+//     Function: qpGeomPrimitive::get_ends
 //       Access: Published
 //  Description: Returns a const pointer to the primitive ends
 //               array so application code can read it directly.  Do
@@ -160,6 +160,40 @@ INLINE CPTA_int qpGeomPrimitive::
 get_ends() const {
   CDReader cdata(_cycler);
   return cdata->_ends;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_mins
+//       Access: Published
+//  Description: Returns a const pointer to the primitive mins
+//               array so application code can read it directly.  Do
+//               not attempt to modify the returned array; use
+//               modify_mins() or set_mins() for this.
+//
+//               Note that simple primitive types, like triangles, do
+//               not have a mins array.
+////////////////////////////////////////////////////////////////////
+INLINE CPTA_ushort qpGeomPrimitive::
+get_mins() const {
+  CDReader cdata(_cycler);
+  return cdata->_mins;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_maxs
+//       Access: Published
+//  Description: Returns a const pointer to the primitive maxs
+//               array so application code can read it directly.  Do
+//               not attempt to modify the returned array; use
+//               modify_maxs() or set_maxs() for this.
+//
+//               Note that simple primitive types, like triangles, do
+//               not have a maxs array.
+////////////////////////////////////////////////////////////////////
+INLINE CPTA_ushort qpGeomPrimitive::
+get_maxs() const {
+  CDReader cdata(_cycler);
+  return cdata->_maxs;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -178,6 +212,22 @@ get_min_vertex() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_min_vertex
+//       Access: Published
+//  Description: Returns the minimum vertex index number used by the
+//               ith primitive in this object.
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeomPrimitive::
+get_min_vertex(int i) const {
+  CDReader cdata(_cycler);
+  if (!cdata->_got_minmax) {
+    ((qpGeomPrimitive *)this)->recompute_minmax();
+  }
+  nassertr(i >= 0 && i < (int)cdata->_mins.size(), -1);
+  return cdata->_mins[i];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::get_max_vertex
 //       Access: Published
 //  Description: Returns the maximum vertex index number used by the
@@ -190,6 +240,22 @@ get_max_vertex() const {
     ((qpGeomPrimitive *)this)->recompute_minmax();
   }
   return cdata->_max_vertex;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_max_vertex
+//       Access: Published
+//  Description: Returns the maximum vertex index number used by the
+//               ith primitive in this object.
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeomPrimitive::
+get_max_vertex(int i) const {
+  CDReader cdata(_cycler);
+  if (!cdata->_got_minmax) {
+    ((qpGeomPrimitive *)this)->recompute_minmax();
+  }
+  nassertr(i >= 0 && i < (int)cdata->_maxs.size(), -1);
+  return cdata->_maxs[i];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -228,6 +294,8 @@ CData(const qpGeomPrimitive::CData &copy) :
   _vertices(copy._vertices),
   _rotated_vertices(copy._rotated_vertices),
   _ends(copy._ends),
+  _mins(copy._mins),
+  _maxs(copy._maxs),
   _got_minmax(copy._got_minmax),
   _min_vertex(copy._min_vertex),
   _max_vertex(copy._max_vertex)

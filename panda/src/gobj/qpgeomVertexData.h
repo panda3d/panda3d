@@ -28,6 +28,7 @@
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
 #include "pipelineCycler.h"
+#include "pStatCollector.h"
 #include "pointerTo.h"
 #include "pmap.h"
 #include "pvector.h"
@@ -69,7 +70,7 @@ PUBLISHED:
   INLINE const qpGeomVertexFormat *get_format() const;
 
   int get_num_vertices() const;
-  void set_num_vertices(int n);
+  INLINE void set_num_vertices(int n);
   void clear_vertices();
 
   INLINE int get_num_arrays() const;
@@ -136,6 +137,11 @@ private:
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
+
+private:
+  void do_set_num_vertices(int n, CDWriter &cdata);
+
+  static PStatCollector _munge_data_pcollector;
 
 public:
   static void register_with_read_factory();
