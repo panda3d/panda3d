@@ -401,6 +401,16 @@ class Actor(PandaObject, NodePath):
         """hasLOD(self)
         Return 1 if the actor has LODs, 0 otherwise"""
         return self.__hasLOD
+
+    def update(self, lod=0):
+	""" update(lod)
+	"""
+	if (lod < len(self.__partBundleDict.values())):
+	    partBundles = self.__partBundleDict.values()[lod].values()
+	    for partBundle in partBundles:
+	    	partBundle.node().update()
+	else:
+	    self.notify.warning('update() - no lod: %d' % lod)
     
     def getFrameRate(self, animName=None, partName=None):
         """getFrameRate(self, string, string=None)
