@@ -143,7 +143,7 @@ public:
       _fn = fn;
       // create the thread, decide it's priority, if it's detached, and if it's
       // a kernel thread, etc
-      _thread = PR_CreateThread(PR_USER_THREAD, thread_wrapper, this,
+      _thread = PR_CreateThread(PR_SYSTEM_THREAD, thread_wrapper, this,
 				priority_map(pri), PR_GLOBAL_BOUND_THREAD,
 				det?PR_UNJOINABLE_THREAD:PR_JOINABLE_THREAD,
 				256*1024);
