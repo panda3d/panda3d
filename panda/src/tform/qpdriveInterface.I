@@ -498,29 +498,3 @@ INLINE bool qpDriveInterface::
 get_force_mouse() const {
   return _force_mouse;
 }
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpDriveInterface::set_mat
-//       Access: Published
-//  Description: Stores the indicated transform in the qpDriveInterface.
-//               This is a transform in global space, regardless of
-//               the rel_to node.
-////////////////////////////////////////////////////////////////////
-INLINE void qpDriveInterface::
-set_mat(const LMatrix4f &mat) {
-  _mat = mat;
-  reextract();
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpDriveInterface::get_mat
-//       Access: Published
-//  Description: Fills mat with the net transformation applied by the
-//               current state.
-////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &qpDriveInterface::
-get_mat() const {
-  return _mat;
-}

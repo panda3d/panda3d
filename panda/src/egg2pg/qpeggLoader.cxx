@@ -125,7 +125,7 @@ qpEggLoader(const EggData &data) :
 ////////////////////////////////////////////////////////////////////
 void qpEggLoader::
 build_graph() {
-  //  _deferred_arcs.clear();
+  _deferred_nodes.clear();
 
   // First, bin up the LOD nodes.
   EggBinner binner;
@@ -141,7 +141,7 @@ build_graph() {
 
   reparent_decals();
 
-  //  apply_deferred_arcs(_root);
+  apply_deferred_nodes(_root, DeferredNodeProperty());
 }
 
 
@@ -1453,31 +1453,29 @@ create_group_arc(EggGroup *egg_group, PandaNode *parent, PandaNode *node) {
     _decals.insert(node);
   }
 
-  /*
   // If the group specified some property that should propagate down
-  // to the leaves, we have to remember this arc and apply the
+  // to the leaves, we have to remember this node and apply the
   // property later, after we've created the actual geometry.
-  DeferredArcProperty def;
+  DeferredNodeProperty def;
   if (egg_group->has_collide_mask()) {
     def._from_collide_mask = egg_group->get_collide_mask();
     def._into_collide_mask = egg_group->get_collide_mask();
     def._flags |=
-      DeferredArcProperty::F_has_from_collide_mask |
-      DeferredArcProperty::F_has_into_collide_mask;
+      DeferredNodeProperty::F_has_from_collide_mask |
+      DeferredNodeProperty::F_has_into_collide_mask;
   }
   if (egg_group->has_from_collide_mask()) {
     def._from_collide_mask = egg_group->get_from_collide_mask();
-    def._flags |= DeferredArcProperty::F_has_from_collide_mask;
+    def._flags |= DeferredNodeProperty::F_has_from_collide_mask;
   }
   if (egg_group->has_into_collide_mask()) {
     def._into_collide_mask = egg_group->get_into_collide_mask();
-    def._flags |= DeferredArcProperty::F_has_into_collide_mask;
+    def._flags |= DeferredNodeProperty::F_has_into_collide_mask;
   }
 
   if (def._flags != 0) {
-    _deferred_arcs[arc] = def;
+    _deferred_nodes[node] = def;
   }
-  */
 
   return node;
 }
@@ -1884,19 +1882,31 @@ create_collision_polygons(qpCollisionNode *cnode, EggPolygon *egg_poly,
 }
 
 
-/*
 ////////////////////////////////////////////////////////////////////
-//     Function: qpEggLoader::apply_deferred_arcs
+//     Function: qpEggLoader::apply_deferred_nodes
 //       Access: Private
 //  Description: Walks back over the tree and applies the
-//               DeferredArcProperties that were saved up along the
+//               DeferredNodeProperties that were saved up along the
 //               way.
 ////////////////////////////////////////////////////////////////////
 void qpEggLoader::
-apply_deferred_arcs(Node *root) {
-  DeferredArcTraverser trav(_deferred_arcs);
+apply_deferred_nodes(PandaNode *node, const DeferredNodeProperty &prop) {
+  DeferredNodeProperty next_prop(prop);
 
-  df_traverse(root, trav, NullAttribWrapper(), DeferredArcProperty(),
-              PandaNode::get_class_type());
+  // Do we have a DeferredNodeProperty associated with this node?
+  DeferredNodes::const_iterator dni;
+  dni = _deferred_nodes.find(node);
+
+  if (dni != _deferred_nodes.end()) {
+    const DeferredNodeProperty &def = (*dni).second;
+    next_prop.compose(def);
+  }
+
+  // Now apply the accumulated state to the node.
+  next_prop.apply_to_node(node);
+
+  int num_children = node->get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    apply_deferred_nodes(node->get_child(i), next_prop);
+  }
 }
-*/

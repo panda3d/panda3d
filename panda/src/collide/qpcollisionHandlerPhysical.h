@@ -45,8 +45,8 @@ public:
   virtual bool end_group();
 
 PUBLISHED:
-  void add_collider(qpCollisionNode *node, qpDriveInterface *drive_interface);
-  void add_collider(qpCollisionNode *node, PandaNode *target);
+  void add_collider_drive(qpCollisionNode *node, qpDriveInterface *drive_interface);
+  void add_collider_node(qpCollisionNode *node, PandaNode *target);
   bool remove_collider(qpCollisionNode *node);
   bool has_collider(qpCollisionNode *node) const;
   void clear_colliders();

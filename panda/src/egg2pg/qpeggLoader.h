@@ -21,6 +21,8 @@
 
 #include "pandabase.h"
 
+#include "eggLoaderBase.h"
+#include "deferredNodeProperty.h"
 #include "eggData.h"
 #include "eggTexture.h"
 #include "pt_EggTexture.h"
@@ -34,8 +36,6 @@
 #include "lmatrix.h"
 #include "indirectCompareTo.h"
 #include "textureAttrib.h"
-
-#include "eggLoaderBase.h"
 
 class EggNode;
 class EggBin;
@@ -121,10 +121,7 @@ private:
                                  EggGroup *parent_group,
                                  EggGroup::CollideFlags flags);
 
-  /*
-  void apply_deferred_arcs(PandaNode *root);
-  */
-
+  void apply_deferred_nodes(PandaNode *node, const DeferredNodeProperty &prop);
 
   Builder _builder;
 
@@ -138,9 +135,7 @@ private:
   typedef pset<PandaNode *> Decals;
   Decals _decals;
 
-  /*
-  DeferredArcs _deferred_arcs;
-  */
+  DeferredNodes _deferred_nodes;
 
 public:
   PT(PandaNode) _root;

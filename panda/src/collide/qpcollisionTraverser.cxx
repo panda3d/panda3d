@@ -236,7 +236,7 @@ traverse(const qpNodePath &root) {
     (*hi).first->begin_group();
   }
 
-  //  r_traverse(root.node(), level_state);
+  r_traverse(root.node(), level_state);
 
   hi = _handlers.begin();
   while (hi != _handlers.end()) {

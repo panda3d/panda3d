@@ -130,7 +130,7 @@ end_group() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpCollisionHandlerPhysical::add_collider
+//     Function: qpCollisionHandlerPhysical::add_collider_drive
 //       Access: Public
 //  Description: Adds a new collider to the list with a qpDriveInterface
 //               pointer that needs to be told about the collider's
@@ -138,12 +138,12 @@ end_group() {
 //               new qpDriveInterface pointer.
 ////////////////////////////////////////////////////////////////////
 void qpCollisionHandlerPhysical::
-add_collider(qpCollisionNode *node, qpDriveInterface *drive_interface) {
+add_collider_drive(qpCollisionNode *node, qpDriveInterface *drive_interface) {
   _colliders[node].set_drive_interface(drive_interface);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpCollisionHandlerPhysical::add_collider
+//     Function: qpCollisionHandlerPhysical::add_collider_node
 //       Access: Public
 //  Description: Adds a new collider to the list with a PandaNode
 //               pointer that will be updated with the collider's
@@ -151,7 +151,7 @@ add_collider(qpCollisionNode *node, qpDriveInterface *drive_interface) {
 //               new PandaNode pointer.
 ////////////////////////////////////////////////////////////////////
 void qpCollisionHandlerPhysical::
-add_collider(qpCollisionNode *node, PandaNode *target) {
+add_collider_node(qpCollisionNode *node, PandaNode *target) {
   _colliders[node].set_node(target);
 }
 

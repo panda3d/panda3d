@@ -15,6 +15,7 @@
     computedVerticesMaker.I computedVerticesMaker.h \
     computedVerticesMakerEntity.I computedVerticesMakerEntity.h \
     config_egg2pg.h \
+    deferredNodeProperty.h \
     eggBinner.h \
     eggLoaderBase.h \
     qpeggLoader.h \
@@ -26,6 +27,7 @@
     qpcharacterMaker.cxx \
     computedVerticesMaker.cxx \
     config_egg2pg.cxx \
+    deferredNodeProperty.cxx \
     eggBinner.cxx \
     qpeggLoader.cxx \
     qpload_egg_file.cxx

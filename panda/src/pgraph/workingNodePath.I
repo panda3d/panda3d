@@ -28,6 +28,7 @@
 INLINE WorkingNodePath::
 WorkingNodePath(const qpNodePath &start) {
   nassertv(!start.is_empty());
+  _next = (WorkingNodePath *)NULL;
   _start = start._head;
   _node = start.node();
 }
@@ -43,6 +44,7 @@ WorkingNodePath(const qpNodePath &start) {
 INLINE WorkingNodePath::
 WorkingNodePath(const WorkingNodePath &parent, PandaNode *child) {
   _next = &parent;
+  _start = (qpNodePathComponent *)NULL;
   _node = child;
 }
 

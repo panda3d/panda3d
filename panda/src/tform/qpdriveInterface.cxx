@@ -203,6 +203,31 @@ set_force_roll(float force_roll) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpDriveInterface::set_mat
+//       Access: Published
+//  Description: Stores the indicated transform in the qpDriveInterface.
+//               This is a transform in global space, regardless of
+//               the rel_to node.
+////////////////////////////////////////////////////////////////////
+void qpDriveInterface::
+set_mat(const LMatrix4f &mat) {
+  _mat = mat;
+  reextract();
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpDriveInterface::get_mat
+//       Access: Published
+//  Description: Returns the net transformation applied by the
+//               current state.
+////////////////////////////////////////////////////////////////////
+const LMatrix4f &qpDriveInterface::
+get_mat() const {
+  return _mat;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpDriveInterface::force_dgraph
 //       Access: Public
 //  Description: This is a special kludge for qpDriveInterface to allow
