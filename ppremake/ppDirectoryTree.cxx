@@ -8,6 +8,8 @@
 #include "ppDependableFile.h"
 #include "tokenize.h"
 
+#include <algorithm>
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PPDirectoryTree::Constructor
 //       Access: Public

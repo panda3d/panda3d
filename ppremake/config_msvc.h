@@ -80,7 +80,7 @@
 #define PACKAGE "ppremake"
 
 /* The default value of INSTALL_DIR within ppremake. */
-#define INSTALL_DIR "C:\\Panda3d"
+#define INSTALL_DIR "C:/Panda3d"
 
 /****************  UPDATE VERSION NUMBER HERE  ****************
  **         Also be sure to change the version number        **
