@@ -1,4 +1,4 @@
-#define OTHER_LIBS interrogatedb dconfig dtoolutil dtoolbase
+#define OTHER_LIBS dtool
 
 #define BUILDING_DLL BUILDING_SHADER
 
