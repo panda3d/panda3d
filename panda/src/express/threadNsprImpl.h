@@ -37,7 +37,7 @@ class Thread;
 //       Class : ThreadNsprImpl
 // Description : Uses NSPR to implement a thread.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ThreadNsprImpl {
+class EXPCL_PANDAEXPRESS ThreadNsprImpl {
 public:
   INLINE ThreadNsprImpl(Thread *parent_obj);
   INLINE ~ThreadNsprImpl();

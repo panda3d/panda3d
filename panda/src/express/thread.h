@@ -37,7 +37,7 @@
 //               will automatically be destructed if no other pointers
 //               are referencing it.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Thread : public ReferenceCount {
+class EXPCL_PANDAEXPRESS Thread : public ReferenceCount {
 public:
   INLINE Thread(const string &name);
   virtual ~Thread();

@@ -29,7 +29,7 @@
 //               others to guarantee that a multibyte value is changed
 //               in one atomic operation.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AtomicAdjust {
+class EXPCL_PANDAEXPRESS AtomicAdjust {
 public:
   INLINE static int inc(int &var);
   INLINE static int dec(int &var);

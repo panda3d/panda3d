@@ -32,7 +32,7 @@
 //       Class : AtomicAdjustNsprImpl
 // Description : Uses NSPR to implement atomic adjustments.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AtomicAdjustNsprImpl {
+class EXPCL_PANDAEXPRESS AtomicAdjustNsprImpl {
 public:
   INLINE static int inc(int &var);
   INLINE static int dec(int &var);

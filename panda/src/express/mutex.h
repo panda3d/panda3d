@@ -30,7 +30,7 @@
 //               other threads trying to grab the mutex will block
 //               until the holding thread releases it.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Mutex {
+class EXPCL_PANDAEXPRESS Mutex {
 public:
   INLINE Mutex();
   INLINE ~Mutex();

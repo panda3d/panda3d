@@ -32,7 +32,7 @@
 //       Class : MutexNsprImpl
 // Description : Uses NSPR to implement a mutex.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MutexNsprImpl {
+class EXPCL_PANDAEXPRESS MutexNsprImpl {
 public:
   INLINE MutexNsprImpl();
   INLINE ~MutexNsprImpl();

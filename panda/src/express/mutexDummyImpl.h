@@ -32,7 +32,7 @@
 //               control.  This does nothing but assert that the same
 //               process does not try to grab the mutex twice.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MutexDummyImpl {
+class EXPCL_PANDAEXPRESS MutexDummyImpl {
 public:
   INLINE MutexDummyImpl();
   INLINE ~MutexDummyImpl();
