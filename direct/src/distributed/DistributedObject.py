@@ -244,6 +244,21 @@ class DistributedObject(PandaObject):
 
         return context
 
+    def getCurrentContexts(self):
+        # Returns a list of the currently outstanding contexts created
+        # by getCallbackContext().
+        return self.__callbacks.keys()
+
+    def getCallback(self, context):
+        # Returns the callback that was passed in to the previous
+        # call to getCallbackContext.
+        return self.__callbacks[context][0]
+
+    def getCallbackArgs(self, context):
+        # Returns the extraArgs that were passed in to the previous
+        # call to getCallbackContext.
+        return self.__callbacks[context][1]
+
     def doCallbackContext(self, context, args):
         # This is called after the AI has responded to the message
         # sent via getCallbackContext(), above.  The context number is
