@@ -4,7 +4,7 @@ import GuiChooser
 import GuiManager
 import GuiButton
 
-guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node(), base.renderGui.node())
+guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node(), base.render2d.node())
 
 class Chooser(DirectObject):
 

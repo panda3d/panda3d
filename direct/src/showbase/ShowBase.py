@@ -92,9 +92,6 @@ class ShowBase:
         self.a2dLeft = -self.aspectRatio
         self.a2dRight = self.aspectRatio
 
-        # Set up another 2-d layer for drawing the Gui labels themselves.
-        self.renderGui = NodePath(setupPanda2d(self.win, "renderGui"))
-
         # Set up an auxiliary 3-d layer for rendering floating heads
         # or other 3-d objects on top of text or widgets in the 2-d
         # layer.  We set it up with a camera that specifically shares

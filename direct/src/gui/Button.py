@@ -88,8 +88,12 @@ class Button(DirectObject):
         self.l3.thaw()
         self.button.thaw()
         
-    def manage(self):
-        self.button.manage(guiMgr, base.eventMgr.eventHandler)
+    def manage(self, nodepath = None):
+        if nodepath:
+            self.button.manage(guiMgr, base.eventMgr.eventHandler,
+                               nodepath.node())
+        else:
+            self.button.manage(guiMgr, base.eventMgr.eventHandler)
         self.managed = 1
 
     def unmanage(self):
@@ -108,3 +112,5 @@ class Button(DirectObject):
     def setScale(self, scale):
         self.button.setScale(scale)
 
+    def setDrawOrder(self, drawOrder):
+        self.button.setDrawOrder(drawOrder)
