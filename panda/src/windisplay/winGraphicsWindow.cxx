@@ -981,15 +981,17 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
         windisplay_cat.debug() << "hwnd = " << hwnd << " and GetFocus = " << GetFocus() << endl;
         _ime_hWnd = ImmGetDefaultIMEWnd(hwnd);
-        if (SendMessage(_ime_hWnd, WM_IME_CONTROL, IMC_CLOSESTATUSWINDOW, 0))
+        if (::SendMessage(_ime_hWnd, WM_IME_CONTROL, IMC_CLOSESTATUSWINDOW, 0))
+        //if (::SendMessage(hwnd, WM_IME_CONTROL, IMC_CLOSESTATUSWINDOW, 0))
           windisplay_cat.debug() << "SendMessage failed for " << _ime_hWnd << endl;
         else
           windisplay_cat.debug() << "SendMessage Succeeded for " << _ime_hWnd << endl;
-
+        
         windisplay_cat.debug() << "wparam is " << wparam << ", lparam is " << lparam << endl;
         lparam &= ~ISC_SHOWUIALL;
         if (ImmIsUIMessage(_ime_hWnd, msg, wparam, lparam))
           windisplay_cat.debug() << "wparam is " << wparam << ", lparam is " << lparam << endl;
+        
         break;
 
         
@@ -1048,8 +1050,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
           ImmReleaseContext(hwnd, hIMC);
         }
-        else if (0) {
-        //else if (_ime_open && (wparam == IMN_OPENCANDIDATE)) {
+        /*
+        else if (_ime_open && (wparam == IMN_OPENCANDIDATE)) {
           HIMC hIMC = ImmGetContext(hwnd);
           nassertr(hIMC != 0, 0);
           DWORD need_byte;
@@ -1072,6 +1074,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           //_input_devices[0].candidate(candidate_str, 0, 0);
           ImmReleaseContext(hwnd, hIMC);
         }
+        */
         break;
         
       case WM_IME_STARTCOMPOSITION:
@@ -1150,8 +1153,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           HIMC hIMC = ImmGetContext(hwnd);
           nassertr(hIMC != 0, 0);
           
-          const int max_t = 128;
-          char can_t[max_t];
+          const int max_t = 256;
+          wchar_t can_t[max_t];
           DWORD result_size = 0;
           size_t start, end;
 
@@ -1161,17 +1164,19 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           */
 
           result_size = ImmGetCompositionStringW(hIMC, GCS_CURSORPOS, can_t, max_t);
-          start = result_size&0xffff;
-          windisplay_cat.debug() << "got cursorpos at " << start << endl;
+          end = result_size&0xffff;
+          windisplay_cat.debug() << "got cursorpos at " << end << endl;
 
           result_size = ImmGetCompositionStringW(hIMC, GCS_DELTASTART, can_t, max_t);
-          end = result_size&0xffff;
-          windisplay_cat.debug() << "got deltastart at " << end << endl;
+          start = result_size&0xffff;
+          windisplay_cat.debug() << "got deltastart at " << start << endl;
           
           result_size = ImmGetCompositionStringW(hIMC, GCS_COMPSTR, can_t, max_t);
           windisplay_cat.debug() << "got compstr of size " << result_size << endl;
+
+          can_t[result_size/sizeof(wchar_t)] = '\0';
           
-          _input_devices[0].candidate((wchar_t*)can_t, start, end);
+          _input_devices[0].candidate(can_t, start, end);
 
           ImmReleaseContext(hwnd, hIMC);
           return 0;
