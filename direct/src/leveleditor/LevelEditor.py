@@ -2,6 +2,7 @@ import pdb
 from PandaObject import *
 from PieMenu import *
 from OnscreenText import *
+from GuiGlobals import *
 from Tkinter import *
 from DirectGeometry import *
 from SceneGraphExplorer import *
@@ -1179,7 +1180,7 @@ class LevelEditor(NodePath, PandaObject):
                 self.panel.setCurrentColor(state)
                 self.panel.setResetColor(state)
             elif string.find(menuMode, 'orientation') >= 0:
-                state = self.DNATarget.getCode()[-3:]
+                state = self.DNATarget.getCode()[-2:]
             elif menuMode == 'building_width' >= 0:
                 state = self.DNATarget.getWidth()
             elif menuMode == 'window_count' >= 0:
@@ -1349,8 +1350,8 @@ class LevelEditor(NodePath, PandaObject):
         
     def setDNATargetOrientation(self, orientation):
         if (self.DNATarget != None) and (orientation != None):
-            oldCode = self.DNATarget.getCode()[:-3]
-            self.DNATarget.setCode(oldCode + '_' + orientation)
+            oldCode = self.DNATarget.getCode()[:-2]
+            self.DNATarget.setCode(oldCode+orientation)
             self.replaceSelected()
             
     def setBuildingStyle(self, style):
@@ -2989,19 +2990,25 @@ class LevelStyleManager:
         aspectRatio = (direct.dr.width / float(direct.dr.height))
         # Attach the color chips to the new menu and adjust sizes
         for i in range (numItems):
-            # Create the node and set its color
-            node = OnscreenText('    ')
-            node.setColor(colorList[i])
-            bounds = node.getBounds()
-            center = bounds.getCenter()
-            center = center * (sf * node.getScale()[0])
+            # Create a text node--just a card, really--of the right color.
+            tn = TextNode()
+            tn.freeze()
+            tn.setFont(getDefaultFont())
+            tn.setTransform(Mat4.scaleMat(0.07, 0.07, 0.07 * aspectRatio))
+            tn.setCardColor(colorList[i])
+            tn.setCardActual(0, 1.1111, 0, 0.8333)
+            tn.setText(' ')
+            tn.thaw()
+
             # Reposition it
-            node.setPos((radius * math.cos(i * angle)) - center[0],
-                        (radius * aspectRatio * math.sin(i * angle)) -
-                        center[2])
-            node.setScale(node.getScale() * sf)
-            # Add it to the wallColorMenu
-            node.reparentTo(newColorMenu)
+            card = tn.getCardTransformed()
+            center = (card[1] - card[0], card[3] - card[2])
+
+            node = newColorMenu.attachNewNode(tn)
+            node.setScale(sf)
+            node.setPos(radius * math.cos(i * angle) - center[0], 0.0,
+                        ((radius * aspectRatio * math.sin(i * angle)) -
+                         center[1]))
         # Scale the whole shebang down by 0.5
         newColorMenu.setScale(0.5)
         # Create and return resulting pie menu
@@ -3094,24 +3101,28 @@ class LevelStyleManager:
         aspectRatio = direct.dr.width/float(direct.dr.height)
         # Add items
         for i in range (numItems):
-            # Create onscreen text node for each item
+            # Create text node for each item
             if (textList[i] != None):
-                node = OnscreenText(str(textList[i]))
-            else:
-                node = None
-            if node:
+                tn = TextNode()
+                tn.freeze()
+                tn.setFont(getDefaultFont())
+                tn.setTransform(Mat4.scaleMat(0.07, 0.07, 0.07 * aspectRatio))
+                tn.setTextColor(0, 0, 0, 1)
+                tn.setCardColor(1, 1, 1, 1)
+                tn.setCardAsMargin(0.1, 0.1, 0.1, 0.1)
+                tn.setText(str(textList[i]))
+                tn.thaw()
+
                 # Reposition it
-                bounds = node.getBounds()
-                center = bounds.getCenter()
-                center = center * (sf * node.getScale()[0])
-                node.freeze()
-                node.setPos(radius * math.cos(i * angle) - center[0],
+                card = tn.getCardTransformed()
+                center = (card[1] - card[0], card[3] - card[2])
+
+                node = newMenu.attachNewNode(tn)
+                node.setScale(sf)
+                node.setPos(radius * math.cos(i * angle) - center[0], 0.0,
                             ((radius * aspectRatio * math.sin(i * angle)) -
-                             center[2]))
-                node.setScale(node.getScale() * sf)
-                node.thaw()
-                # Add it to the newMenu
-                node.reparentTo(newMenu)
+                            center[1]))
+
         # Scale the whole shebang down by 0.5
         newMenu.setScale(0.5)
         # Create and return a pie menu
