@@ -195,7 +195,7 @@ class Notifier:
         """
         print string
 
-    def debugStateCall(self, obj=None):
+    def debugStateCall(self, obj=None, fsmMemberName='fsm'):
         """
         If this notify is in debug mode, print the time of the 
         call followed by the [fsm state] notifier category and
@@ -204,7 +204,7 @@ class Notifier:
         if (self.__debug):
             state = ''
             if obj is not None:
-                if hasattr(obj, 'fsm'):
+                if hasattr(obj, fsmMemberName) and obj.fsm.getCurrentState() is not None:
                     #state = "%s=%s"%(obj.fsm.getName(), obj.fsm.getCurrentState().getName())
                     state = obj.fsm.getCurrentState().getName()
             string = ":%s [%-7s] %s %s.%s"%(
