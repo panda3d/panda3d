@@ -2703,10 +2703,13 @@ expand_dependencies(const string &params) {
   vector<string> filenames;
   tokenize_whitespace(expand_string(params), filenames);
 
+  PPDirectory *directory = get_directory();
+  assert(directory != (PPDirectory *)NULL);
+
   vector<string> results;
   vector<string>::const_iterator fi;
   for (fi = filenames.begin(); fi != filenames.end(); ++fi) {
-    PPDependableFile *file = _directory->get_dependable_file(*fi, false);
+    PPDependableFile *file = directory->get_dependable_file(*fi, false);
     assert(file != (PPDependableFile *)NULL);
 
     vector<PPDependableFile *> files;
@@ -2721,6 +2724,9 @@ expand_dependencies(const string &params) {
       results.push_back(rel_filename);
     }
   }
+
+  sort(results.begin(), results.end());
+  results.erase(unique(results.begin(), results.end()), results.end());
 
   string result = repaste(results, " ");
   return result;
