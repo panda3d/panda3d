@@ -35,14 +35,16 @@
   #define LOCAL_LIBS $[LOCAL_LIBS] pandagl pandadx
 #end test_bin_target
 
-#begin test_bin_target
-  #define TARGET demo_multimon
+#if $[HAVE_DX]
+  #begin test_bin_target
+    #define TARGET demo_multimon
 
-  #define SOURCES \
-    demo.cxx
+    #define SOURCES \
+      demo.cxx
 
-  #define LOCAL_LIBS $[LOCAL_LIBS] pandadx framework_multimon
-#end test_bin_target
+    #define LOCAL_LIBS $[LOCAL_LIBS] pandadx framework_multimon
+  #end test_bin_target
+#endif
 
 #begin test_bin_target
   #define TARGET downloader
