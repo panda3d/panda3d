@@ -54,7 +54,7 @@ init(void)
   }
 
   if (!_source->get_datagram(header)) {
-    util_cat->error()
+    bam_cat.error()
       << "Unable to read Bam header.\n";
     return false;
   }
@@ -68,16 +68,16 @@ init(void)
   // *newer*, we can't safely load the file.
   if (_file_major != _bam_major_ver || _file_minor > _bam_minor_ver)
   {
-    util_cat->error()
+    bam_cat.error()
       << "Bam file is version " << _file_major << "." << _file_minor
       << ".\n";
 
     if (_bam_minor_ver == 0) {
-      util_cat.error()
+      bam_cat.error()
 	<< "This program can only load version " 
 	<< _bam_major_ver << ".0 bams.\n";
     } else {
-      util_cat.error()
+      bam_cat.error()
 	<< "This program can only load version " 
 	<< _bam_major_ver << ".0 through " 
 	<< _bam_major_ver << "." << _bam_minor_ver << " bams.\n";
@@ -86,12 +86,12 @@ init(void)
     return false;
   }
 
-  if (util_cat->is_debug()) {
-    util_cat->debug() 
+  if (bam_cat.is_debug()) {
+    bam_cat.debug() 
       << "Bam file is version " << _file_major << "." << _file_minor
       << ".\n";
     if (_file_minor != _bam_minor_ver) {
-      util_cat.debug()
+      bam_cat.debug()
 	<< "(Current version is " << _bam_major_ver << "." << _bam_minor_ver
 	<< ".)\n";
     }
@@ -116,6 +116,10 @@ read_handle(DatagramIterator& scan)
   {
     //This indicates an object that should have already been read in,
     //so return TypeHandle::none() to indicate this.
+    if (bam_cat.is_spam()) {
+      bam_cat.spam()
+	<< "Reading previously read TypeHandle.\n";
+    }
     return TypeHandle::none();
   }
 
@@ -131,7 +135,7 @@ read_handle(DatagramIterator& scan)
       //This is a new type we've never heard of before so register it
       //with the type registry
       type = TypeRegistry::ptr()->register_dynamic_type(name);
-      util_cat.warning()
+      bam_cat.warning()
 	<< "Bam file contains objects of unknown type: " << type << "\n";
       new_type = true;
     }
@@ -145,13 +149,18 @@ read_handle(DatagramIterator& scan)
 	TypeRegistry::ptr()->record_derivation(type, parent_type);
       } else {
 	if (type.get_parent_towards(parent_type) != parent_type) {
-	  util_cat.warning()
+	  bam_cat.warning()
 	    << "Bam file indicates a derivation of " << type 
 	    << " from " << parent_type << " which is no longer true.\n";
 	}
       }
     }
     
+  }
+
+  if (bam_cat.is_spam()) {
+    bam_cat.spam()
+      << "Reading TypeHandle for " << _index_map[id] << ".\n";
   }
 
   return _index_map[id];
@@ -182,6 +191,11 @@ read_object(void)
 
   if (!_source->get_datagram(packet)) {
     // The datagram source is empty.
+
+    if (bam_cat.is_debug()) {
+      bam_cat.debug()
+	<< "Reached end of bam source.\n";
+    }
     return TypedWriteable::Null;
   }
 
@@ -219,16 +233,23 @@ read_object(void)
     //value otherwise
     _created_objs[objId];
     _created_objs[objId] = _factory->make_instance_more_general(type, list);
+
     //Just some sanity checks
-    if (_created_objs[objId] == (TypedWriteable *)NULL)
-    {
-      util_cat->error() << "Failed to create a " << type.get_name() << endl;
-    }
-    else if (_created_objs[objId]->get_type() != type)
-    {
-      util_cat->warning() << "Attempted to create a " << type.get_name() \
-			  << " but a " << _created_objs[objId]->get_type().get_name() \
-			  << " was created instead." << endl;
+    if (_created_objs[objId] == (TypedWriteable *)NULL) {
+      bam_cat.error() 
+	<< "Unable to create an object of type " << type << endl;
+
+    } else if (_created_objs[objId]->get_type() != type) {
+      bam_cat.warning()
+	<< "Attempted to create a " << type.get_name() \
+	<< " but a " << _created_objs[objId]->get_type() \
+	<< " was created instead." << endl;
+
+    } else {
+      if (bam_cat.is_spam()) {
+	bam_cat.spam()
+	  << "Read a " << _created_objs[objId]->get_type() << "\n";
+      }
     }
   }
 
@@ -299,7 +320,7 @@ register_finalize(TypedWriteable *whom)
 {
   if (whom == TypedWriteable::Null)
   {
-    util_cat->error() << "Can't register a null pointer to finalize!" << endl;
+    bam_cat.error() << "Can't register a null pointer to finalize!" << endl;
     return;
   }
   _finalize_list.insert(whom);
@@ -315,7 +336,7 @@ finalize_now(TypedWriteable *whom)
 {
   if (whom == TypedWriteable::Null)
   {
-    util_cat->error() << "Can't finalize null pointer!" << endl;
+    bam_cat.error() << "Can't finalize null pointer!" << endl;
     return;
   }
   if (_finalize_list.find(whom) != _finalize_list.end())
@@ -325,9 +346,26 @@ finalize_now(TypedWriteable *whom)
   }
   else
   {
-    util_cat->warning() << "Request to finalize object of type " 
+    bam_cat.warning() << "Request to finalize object of type " 
 			<< whom->get_type().get_name() << " failed" 
 			<< endl;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::empty_queue
+//       Access: Private
+//  Description: For every objId in the queue, reads an object
+//               from the datagram source
+////////////////////////////////////////////////////////////////////
+void BamReader::
+empty_queue(void) {
+  size_t num_reads = _deferred_reads.size();
+  _deferred_reads.clear();
+
+  while (num_reads > 0) {
+    read_object();
+    num_reads--;
   }
 }
 
@@ -351,14 +389,19 @@ finalize_this(TypedWriteable *whom)
 void BamReader::
 finalize(void)
 {
+  if (bam_cat.is_debug()) {
+    bam_cat.debug()
+      << "Finalizing bam source\n";
+  }
+
   Finalize::iterator fi = _finalize_list.begin();
   while(fi != _finalize_list.end())
   {
     if (*fi == TypedWriteable::Null)
     {
-      util_cat->error() << "Spun off into the weeds. "
-			<< "somehow a null was registered to be "
-			<< "finalized." << endl;
+      bam_cat.error() << "Spun off into the weeds. "
+		       << "somehow a null was registered to be "
+		       << "finalized." << endl;
       _finalize_list.erase(fi);
     }
     else
@@ -480,7 +523,7 @@ resolve(void)
     else
     {
       // nassertv(objReferencesComplete);
-      util_cat.warning()
+      bam_cat.warning()
 	<< "Unable to complete " << (*whom).first->get_type() << "\n";
       whom++;
     }

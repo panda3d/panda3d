@@ -14,6 +14,7 @@ class DSearchPath;
 
 ConfigureDecl(config_util, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(util, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(bam, EXPCL_PANDA, EXPTP_PANDA);
 
 // Actually, we can't determine this config variable the normal way,
 // because we must be able to access it at static init time.  Instead

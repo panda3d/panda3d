@@ -99,22 +99,6 @@ queue(PN_uint16 objId)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BamReader::empty_queue
-//       Access: Private
-//  Description: For every objId in the queue, reads an object
-//               from the datagram source
-////////////////////////////////////////////////////////////////////
-INLINE void BamReader::
-empty_queue(void)
-{
-  while(!_deferred_reads.empty())
-  {
-    _deferred_reads.pop_front();
-    (void)read_object();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: BamReader::clear_queue
 //       Access: Private
 //  Description: Clears all pending object reads

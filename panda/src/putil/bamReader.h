@@ -103,7 +103,7 @@ private:
 
 private:
   INLINE void queue(PN_uint16);
-  INLINE void empty_queue(void);
+  void empty_queue(void);
   INLINE void clear_queue(void);
   void finalize_this(TypedWriteable *whom);
   void finalize(void);
@@ -112,6 +112,7 @@ private:
   typedef map<int, TypedWriteable*> Created;
   typedef map<TypedWriteable*, vector_ushort> Requests;
   typedef set<TypedWriteable*> Finalize;
+  typedef deque<PN_uint16> DeferredReads;
  
   static WriteableFactory *_factory;
 
@@ -123,7 +124,7 @@ private:
   //Map of Objects that need pointers completed, to the
   //object ID of the objects they need
   Requests _deferred_pointers;
-  deque<PN_uint16> _deferred_reads;
+  DeferredReads _deferred_reads;
 
   //Keep track of all objects needing to be finalized
   Finalize _finalize_list;

@@ -26,6 +26,7 @@
 
 ConfigureDef(config_util);
 NotifyCategoryDef(util, "");
+NotifyCategoryDef(bam, util_cat);
 
 ConfigureFn(config_util) {
 //  ClockObject::init_ptr();
