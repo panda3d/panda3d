@@ -150,6 +150,7 @@ get_ptr() {
 ////////////////////////////////////////////////////////////////////
 void ExecutionEnvironment::
 read_environment_variables() {
+#ifdef PREREAD_ENVIRONMENT
 #if defined(HAVE_PROC_SELF_ENVIRON)
   // In Linux, and possibly in other systems, we might not be able to
   // use getenv() at static init time.  However, we may be lucky and
@@ -188,6 +189,7 @@ read_environment_variables() {
 #else
   cerr << "Warning: environment variables unavailable to dconfig.\n";
 #endif
+#endif // PREREAD_ENVIRONMENT
 }
 
 ////////////////////////////////////////////////////////////////////
