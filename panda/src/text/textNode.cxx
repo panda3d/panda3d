@@ -172,7 +172,7 @@ wordwrap_to(const string &text, float wordwrap_width) const {
     float width = 0.0;
     while (q < text.length() && text[q] != '\n' && width <= wordwrap_width) {
       if (isspace(text[q])) {
-  any_spaces = true;
+	any_spaces = true;
       }
 
       width += calc_width(text[q]);
@@ -184,7 +184,7 @@ wordwrap_to(const string &text, float wordwrap_width) const {
       // back up to the end of the last complete word.
 
       while (q > p && !isspace(text[q])) {
-  q--;
+	q--;
       }
     }
 
@@ -205,7 +205,7 @@ wordwrap_to(const string &text, float wordwrap_width) const {
       q++;
       next_start++;
       while (next_start < text.length() && isblank(text[next_start])) {
-  next_start++;
+	next_start++;
       }
     }
 
