@@ -11,8 +11,8 @@
 int
 main() {
   /*
-  LVector3d a(1.0, 0.0, 0.0);
-  LVector3d b = normalize(LVector3d(0.5, 0.5, 0.0));
+  LVector3d a(1.0f, 0.0f, 0.0f);
+  LVector3d b = normalize(LVector3d(0.5, 0.5, 0.0f));
 
   LMatrix3d rot;
   rotate_to(rot, a, b);

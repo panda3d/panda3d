@@ -255,6 +255,91 @@ clear() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_mat
+//       Access: Public
+//  Description: Returns the matrix that describes the coordinate
+//               space of the bottom node, relative to the other
+//               path's bottom node's coordinate space.
+////////////////////////////////////////////////////////////////////
+LMatrix4f NodePath::
+get_mat(const NodePath &other) const {
+  NodeTransitionWrapper ntw(TransformTransition::get_class_type());
+
+  if (is_empty() && other.is_empty()) {
+    return LMatrix4f::ident_mat();
+
+  } else if (is_empty()) {
+    wrt(NULL, other.node(), other.begin(), other.end(),
+	ntw, _graph_type);
+
+  } else if (other.is_empty()) {
+    wrt(node(), begin(), end(), (Node *)NULL, ntw, _graph_type);
+
+  } else {
+    wrt(node(), begin(), end(),
+	other.node(), other.begin(), other.end(),
+	ntw, _graph_type);
+  }
+
+  const TransformTransition *tt;
+  if (!get_transition_into(tt, ntw)) {
+    // No relative transform.
+    return LMatrix4f::ident_mat();
+  } else {
+    return tt->get_matrix();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_mat
+//       Access: Public
+//  Description: Converts the indicated matrix from the other's
+//               coordinate space to the local coordinate space, and
+//               applies it to the arc.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_mat(const NodePath &other, const LMatrix4f &mat) {
+  nassertv_always(has_arcs());
+
+#ifndef NDEBUG
+  if (_graph_type == DataRelation::get_class_type()) {
+    sgmanip_cat.warning()
+      << "Setting transform on data graph arc.\n"
+      << "(This is probably meaningless.  Did you mean to do this to the bottom node?)\n";
+  }
+#endif
+
+  NodeRelation *darc = arc();
+
+  // First, we perform a wrt to the node's parent, to get the
+  // conversion matrix.
+  NodeTransitionWrapper ntw(TransformTransition::get_class_type());
+  ForwardIterator from = begin();
+  ++from;
+
+  if (other.is_empty()) {
+    wrt(NULL, darc->get_parent(), from, end(), ntw, _graph_type);
+  } else {
+    wrt(other.node(), other.begin(), other.end(),
+	darc->get_parent(), from, end(),
+	ntw, _graph_type);
+  }
+
+  LMatrix4f new_mat,*new_mat_ptr;
+  const TransformTransition *tt;
+
+  if (!get_transition_into(tt, ntw)) {
+    // No relative transform.
+	  new_mat_ptr = (LMatrix4f*)&mat;
+  } else {
+	  new_mat.multiply(mat,tt->get_matrix());
+	  new_mat_ptr = &new_mat;
+  }
+
+  darc->set_transition(new TransformTransition(*new_mat_ptr));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_children
 //       Access: Public
 //  Description: Returns the set of all child nodes of the bottom
@@ -1294,9 +1379,10 @@ get_scale() const {
 
   // Extract the axes from the matrix.
   LVector3f x, y, z;
-  x = mat.get_row3(0);
-  y = mat.get_row3(1);
-  z = mat.get_row3(2);
+  mat.get_row3(x,0);
+  mat.get_row3(y,1);
+  mat.get_row3(z,2);
+  
 
   // Now return the lengths of these axes as the scale.
   return LVecBase3f(length(x), length(y), length(z));
@@ -1321,7 +1407,7 @@ set_color_scale(const LVecBase4f &sv4) {
 #endif
 
   NodeRelation *darc = _head->get_arc();
-  if (sv4[0] != 1 || sv4[1] != 1 || sv4[2] != 1) {
+  if (sv4[0] != 1.0f || sv4[1] != 1.0f || sv4[2] != 1.0f) {
     LMatrix4f mat = LMatrix4f::scale_mat(sv4[0], sv4[1], sv4[2]);
     darc->set_transition(new ColorMatrixTransition(mat));
   }
@@ -1330,7 +1416,7 @@ set_color_scale(const LVecBase4f &sv4) {
   }
 
   if (sv4[3] != 1) {
-    darc->set_transition(new AlphaTransformTransition(0, sv4[3]));
+    darc->set_transition(new AlphaTransformTransition(0.0f, sv4[3]));
   }
   else {
     darc->clear_transition(AlphaTransformTransition::get_class_type());
@@ -1346,7 +1432,7 @@ set_color_scale(const LVecBase4f &sv4) {
 ////////////////////////////////////////////////////////////////////
 LVecBase4f NodePath::
 get_color_scale() const {
-  nassertr(has_arcs(), LVecBase4f(1,1,1,1));
+  nassertr(has_arcs(), LVecBase4f(1.0f,1.0f,1.0f,1.0f));
 
   LVecBase4f scale;
 
@@ -1354,9 +1440,9 @@ get_color_scale() const {
   const ColorMatrixTransition *ct;
   if (!get_transition_into(ct, darc)) {
     // No relative transform.
-    scale[0] = 1;
-    scale[1] = 1;
-    scale[2] = 1;
+    scale[0] = 1.0f;
+    scale[1] = 1.0f;
+    scale[2] = 1.0f;
   }
   else
   {
@@ -1369,7 +1455,7 @@ get_color_scale() const {
 
   const AlphaTransformTransition *att;
   if (!get_transition_into(att, darc)) {
-    scale[3] = 1;
+    scale[3] = 1.0f;
   }
   else {
     scale[3] = att->get_scale();
@@ -1486,20 +1572,34 @@ look_at_preserve_scale(const LPoint3f &point, const LVector3f &up) {
 
   // Extract the axes from the matrix.
   LVector3f x, y, z;
-  x = mat.get_row3(0);
-  y = mat.get_row3(1);
-  z = mat.get_row3(2);
+
+  mat.get_row3(x,0);
+  mat.get_row3(y,1);
+  mat.get_row3(z,2);
 
   // The lengths of the axes defines the scale.
-  LVecBase3f scale(length(x), length(y), length(z));
-  LPoint3f pos = mat.get_row3(3);
 
+  float scale_0 = length(x);
+  float scale_1 = length(y);
+  float scale_2 = length(z);
+
+  LPoint3f pos;
+  mat.get_row3(pos,3);
   ::look_at(mat, point - pos, up);
 
   // Now reapply the scale and position.
-  mat.set_row(0, mat.get_row3(0) * scale[0]);
-  mat.set_row(1, mat.get_row3(1) * scale[1]);
-  mat.set_row(2, mat.get_row3(2) * scale[2]);
+
+  mat.get_row3(x,0);
+  mat.get_row3(y,1);
+  mat.get_row3(z,2);  
+
+  x *= scale_0;
+  y *= scale_1;
+  z *= scale_2;
+
+  mat.set_row(0, x);
+  mat.set_row(1, y);
+  mat.set_row(2, z);
   mat.set_row(3, pos);
   set_mat(mat);
 }
@@ -1521,20 +1621,33 @@ heads_up_preserve_scale(const LPoint3f &point, const LVector3f &up) {
 
   // Extract the axes from the matrix.
   LVector3f x, y, z;
-  x = mat.get_row3(0);
-  y = mat.get_row3(1);
-  z = mat.get_row3(2);
+  mat.get_row3(x,0);
+  mat.get_row3(y,1);
+  mat.get_row3(z,2);
+
+  float scale_0 = length(x);
+  float scale_1 = length(y);
+  float scale_2 = length(z);
 
   // The lengths of the axes defines the scale.
-  LVecBase3f scale(length(x), length(y), length(z));
-  LPoint3f pos = mat.get_row3(3);
+  LPoint3f pos;
+  mat.get_row3(pos,3);
 
   ::heads_up(mat, point - pos, up);
 
   // Now reapply the scale and position.
-  mat.set_row(0, mat.get_row3(0) * scale[0]);
-  mat.set_row(1, mat.get_row3(1) * scale[1]);
-  mat.set_row(2, mat.get_row3(2) * scale[2]);
+
+  mat.get_row3(x,0);
+  mat.get_row3(y,1);
+  mat.get_row3(z,2);  
+
+  x *= scale_0;
+  y *= scale_1;
+  z *= scale_2;
+
+  mat.set_row(0, x);
+  mat.set_row(1, y);
+  mat.set_row(2, z);
   mat.set_row(3, pos);
   set_mat(mat);
 }
@@ -1691,9 +1804,9 @@ get_scale(const NodePath &other) const {
 
   // Extract the axes from the matrix.
   LVector3f x, y, z;
-  x = mat.get_row3(0);
-  y = mat.get_row3(1);
-  z = mat.get_row3(2);
+  mat.get_row3(x,0);
+  mat.get_row3(y,1);
+  mat.get_row3(z,2);
 
   // Now return the lengths of these axes as the scale.
   return LVecBase3f(length(x), length(y), length(z));
@@ -1731,90 +1844,6 @@ set_pos_hpr_scale(const NodePath &other,
   LMatrix4f mat;
   compose_matrix(mat, scale, hpr, pos);
   set_mat(other, mat);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_mat
-//       Access: Public
-//  Description: Converts the indicated matrix from the other's
-//               coordinate space to the local coordinate space, and
-//               applies it to the arc.
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_mat(const NodePath &other, const LMatrix4f &mat) {
-  nassertv_always(has_arcs());
-
-#ifndef NDEBUG
-  if (_graph_type == DataRelation::get_class_type()) {
-    sgmanip_cat.warning()
-      << "Setting transform on data graph arc.\n"
-      << "(This is probably meaningless.  Did you mean to do this to the bottom node?)\n";
-  }
-#endif
-
-  LMatrix4f new_mat;
-
-  NodeRelation *darc = arc();
-
-  // First, we perform a wrt to the node's parent, to get the
-  // conversion matrix.
-  NodeTransitionWrapper ntw(TransformTransition::get_class_type());
-  ForwardIterator from = begin();
-  ++from;
-
-  if (other.is_empty()) {
-    wrt(NULL, darc->get_parent(), from, end(), ntw, _graph_type);
-  } else {
-    wrt(other.node(), other.begin(), other.end(),
-	darc->get_parent(), from, end(),
-	ntw, _graph_type);
-  }
-
-  const TransformTransition *tt;
-  if (!get_transition_into(tt, ntw)) {
-    // No relative transform.
-    new_mat = mat;
-  } else {
-    new_mat = mat * tt->get_matrix();
-  }
-
-  darc->set_transition(new TransformTransition(new_mat));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_mat
-//       Access: Public
-//  Description: Returns the matrix that describes the coordinate
-//               space of the bottom node, relative to the other
-//               path's bottom node's coordinate space.
-////////////////////////////////////////////////////////////////////
-LMatrix4f NodePath::
-get_mat(const NodePath &other) const {
-  NodeTransitionWrapper ntw(TransformTransition::get_class_type());
-
-  if (is_empty() && other.is_empty()) {
-    return LMatrix4f::ident_mat();
-
-  } else if (is_empty()) {
-    wrt(NULL, other.node(), other.begin(), other.end(),
-	ntw, _graph_type);
-
-  } else if (other.is_empty()) {
-    wrt(node(), begin(), end(), (Node *)NULL, ntw, _graph_type);
-
-  } else {
-    wrt(node(), begin(), end(),
-	other.node(), other.begin(), other.end(),
-	ntw, _graph_type);
-  }
-
-  const TransformTransition *tt;
-  if (!get_transition_into(tt, ntw)) {
-    // No relative transform.
-    return LMatrix4f::ident_mat();
-  } else {
-    return tt->get_matrix();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1883,13 +1912,17 @@ look_at_preserve_scale(const NodePath &other, const LPoint3f &point,
 
   // Extract the axes from the matrix.
   LVector3f x, y, z;
-  x = mat.get_row3(0);
-  y = mat.get_row3(1);
-  z = mat.get_row3(2);
+  mat.get_row3(x,0);
+  mat.get_row3(y,1);
+  mat.get_row3(z,2);
 
   // The lengths of the axes defines the scale.
-  LVecBase3f scale(length(x), length(y), length(z));
-  LPoint3f pos = mat.get_row3(3);
+  float scale_0 = length(x);
+  float scale_1 = length(y);
+  float scale_2 = length(z);
+ 
+  LPoint3f pos;
+  mat.get_row3(pos,3);
 
   NodePath parent(*this);
   parent.shorten(1);
@@ -1898,9 +1931,18 @@ look_at_preserve_scale(const NodePath &other, const LPoint3f &point,
   ::look_at(mat, rel_point - pos, up);
 
   // Now reapply the scale and position.
-  mat.set_row(0, mat.get_row3(0) * scale[0]);
-  mat.set_row(1, mat.get_row3(1) * scale[1]);
-  mat.set_row(2, mat.get_row3(2) * scale[2]);
+
+  mat.get_row3(x,0);
+  mat.get_row3(y,1);
+  mat.get_row3(z,2);  
+
+  x *= scale_0;
+  y *= scale_1;
+  z *= scale_2;
+
+  mat.set_row(0, x);
+  mat.set_row(1, y);
+  mat.set_row(2, z);
   mat.set_row(3, pos);
   set_mat(mat);
 }
@@ -1923,13 +1965,17 @@ heads_up_preserve_scale(const NodePath &other, const LPoint3f &point,
 
   // Extract the axes from the matrix.
   LVector3f x, y, z;
-  x = mat.get_row3(0);
-  y = mat.get_row3(1);
-  z = mat.get_row3(2);
+  mat.get_row3(x,0);
+  mat.get_row3(y,1);
+  mat.get_row3(z,2);
 
   // The lengths of the axes defines the scale.
-  LVecBase3f scale(length(x), length(y), length(z));
-  LPoint3f pos = mat.get_row3(3);
+  float scale_0 = length(x);
+  float scale_1 = length(y);
+  float scale_2 = length(z);
+ 
+  LPoint3f pos;
+  mat.get_row3(pos,3);
 
   NodePath parent(*this);
   parent.shorten(1);
@@ -1938,9 +1984,17 @@ heads_up_preserve_scale(const NodePath &other, const LPoint3f &point,
   ::heads_up(mat, rel_point - pos, up);
 
   // Now reapply the scale and position.
-  mat.set_row(0, mat.get_row3(0) * scale[0]);
-  mat.set_row(1, mat.get_row3(1) * scale[1]);
-  mat.set_row(2, mat.get_row3(2) * scale[2]);
+  mat.get_row3(x,0);
+  mat.get_row3(y,1);
+  mat.get_row3(z,2);  
+
+  x *= scale_0;
+  y *= scale_1;
+  z *= scale_2;
+
+  mat.set_row(0, x);
+  mat.set_row(1, y);
+  mat.set_row(2, z);
   mat.set_row(3, pos);
   set_mat(mat);
 }
@@ -1997,7 +2051,7 @@ get_color() const {
   sgmanip_cat.warning()
     << "get_color() called on " << *this << " which has no color set.\n";
   
-  return Colorf(0.0, 0.0, 0.0, 0.0);
+  return Colorf(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////

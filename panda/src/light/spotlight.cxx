@@ -134,9 +134,9 @@ bool Spotlight::make_image(Texture* texture, float radius)
       float D = dist_from_center;
       if (D <= radius)
         intensity = 1.0f;
-      else if (D < 1.0f)
+	  else if (D < 1.0f)
         intensity = pow(cos((D-radius) / 
-		(1-radius) * (MathNumbers::pi/2.0f)), _exponent);
+		(1.0f-radius) * (MathNumbers::pi_f*0.5f)), _exponent);
       else
         intensity = 0;
 
@@ -176,7 +176,7 @@ make_geometry(float intensity, float length, int num_facets)
   diffuse[3] = intensity;
   Colorf black(0.0, 0.0, 0.0, intensity);
   float radius = length * (float)tan(deg_2_rad(get_cutoff_angle()));
-  float ang_inc = 6.2831853 / (float)num_facets;
+  float ang_inc = 2.0f*MathNumbers::pi_f / (float)num_facets;
   int num_verts = num_facets + 1;
   int num_indices = num_facets + 2;
   LVector3f offset(0.0, length, 0.0);

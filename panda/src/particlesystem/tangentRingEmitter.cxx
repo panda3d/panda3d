@@ -52,12 +52,12 @@ make_copy(void) {
 ////////////////////////////////////////////////////////////////////
 void TangentRingEmitter::
 assign_initial_position(LPoint3f& pos) {
-  float theta = NORMALIZED_RAND() * 2.0f * MathNumbers::pi;
+  float theta = NORMALIZED_RAND() * 2.0f * MathNumbers::pi_f;
 
   _x = cosf(theta);
   _y = sinf(theta);
 
-  pos.set(_radius * _x, _radius * _y, 0);
+  pos.set(_radius * _x, _radius * _y, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,5 +67,5 @@ assign_initial_position(LPoint3f& pos) {
 ////////////////////////////////////////////////////////////////////
 void TangentRingEmitter::
 assign_initial_velocity(LVector3f& vel) {
-  vel.set(-_y, _x, 0);
+  vel.set(-_y, _x, 0.0f);
 }

@@ -21,13 +21,13 @@ _rotate_to(FLOATNAME(LMatrix3) &mat,
   if (sin_theta < 0.0001) {
     // The vectors are collinear.
 
-    if (cos_theta < 0.0) {
+    if (cos_theta < 0.0f) {
       // The vectors are opposite; choose an arbitrary axis
       // perpendicular to a.
       FLOATNAME(LVector3) absa(fabs(a[0]), fabs(a[1]), fabs(a[2]));
       FLOATNAME(LVector3) lca(0., 0., 0.);
       lca[absa[0]<=absa[1] ? absa[0]<=absa[2] ? 0 : 2
-	 : absa[1]<=absa[2] ? 1 : 2] = 1.0;
+	 : absa[1]<=absa[2] ? 1 : 2] = 1.0f;
       
       axis = normalize(a.cross(lca));
     } else {
@@ -44,7 +44,7 @@ _rotate_to(FLOATNAME(LMatrix3) &mat,
   FLOATTYPE y = axis[1];
   FLOATTYPE z = axis[2];
     
-  FLOATTYPE t = 1.0 - cos_theta;
+  FLOATTYPE t = 1.0f - cos_theta;
 
   mat(0, 0) = t * x * x + cos_theta;
   mat(0, 1) = t * x * y + sin_theta * z;

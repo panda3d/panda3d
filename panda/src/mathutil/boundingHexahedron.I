@@ -14,7 +14,7 @@ get_num_points() const {
 
 INLINE_MATHUTIL LPoint3f BoundingHexahedron::
 get_point(int n) const {
-  nassertr(n >= 0 && n < num_points, LPoint3f(0.0, 0.0, 0.0));
+  nassertr(n >= 0 && n < num_points, LPoint3f(0.0f, 0.0f, 0.0f));
   return _points[n];
 }
 

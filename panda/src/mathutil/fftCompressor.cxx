@@ -285,6 +285,11 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
     // If quality level is at least 104, we don't even convert hpr at
     // all.
     vector_float h, p, r;
+
+    h.reserve(length);
+    p.reserve(length);
+    r.reserve(length);
+
     for (int i = 0; i < length; i++) {
       h.push_back(array[i][0]);
       p.push_back(array[i][1]);
@@ -339,6 +344,11 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
 
   vector_float qr, qi, qj, qk;
 
+  qr.reserve(length);
+  qi.reserve(length);
+  qj.reserve(length);
+  qk.reserve(length);
+
   for (int i = 0; i < length; i++) {
     LMatrix3f mat;
     compose_matrix(mat, LVecBase3f(1.0, 1.0, 1.0), array[i]);
@@ -371,14 +381,14 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
       bool success = decompose_matrix(mat2, scale, hpr);
       nassertv(success);
       if (!array[i].almost_equal(hpr, 0.001) || 
-	  !scale.almost_equal(LVecBase3f(1.0, 1.0, 1.0), 0.001)) {
-	mathutil_cat.debug()
-	  << "Converted hpr to quaternion incorrectly!\n"
-	  << "  Source hpr: " << array[i] << "\n"
-	  << "  Quaternion: " << rot << "\n" 
-	  << "  Which represents: hpr " << hpr << " scale "
-	  << scale << "\n";
-      }
+		  !scale.almost_equal(LVecBase3f(1.0, 1.0, 1.0), 0.001)) {
+		  mathutil_cat.debug()
+		      << "Converted hpr to quaternion incorrectly!\n"
+			  << "  Source hpr: " << array[i] << "\n"
+			  << "  Quaternion: " << rot << "\n" 
+			  << "  Which represents: hpr " << hpr << " scale "
+			  << scale << "\n";
+	  }
     }
 
     qr.push_back(rot.get_r());
@@ -452,6 +462,8 @@ read_reals(DatagramIterator &di, vector_float &array) {
   int length = di.get_int32();
 
   if (_quality > 100) {
+    array.reserve(array.size() + length);
+ 
     // Special case: lossless output.
     for (int i = 0; i < length; i++) {
       array.push_back(di.get_float32());
@@ -530,7 +542,7 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
     if (okflag) {
       nassertr(h.size() == p.size() && p.size() == r.size(), false);
       for (int i = 0; i < (int)h.size(); i++) {
-	array.push_back(LVecBase3f(h[i], p[i], r[i]));
+		  array.push_back(LVecBase3f(h[i], p[i], r[i]));
       }
     }
 

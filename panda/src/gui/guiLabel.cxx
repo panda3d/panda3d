@@ -13,15 +13,33 @@ TypeHandle GuiLabel::_type_handle;
 
 void GuiLabel::recompute_transform(void) {
   this->freeze();
-  switch (_type) {
-  case SIMPLE_TEXT:
-    {
+
+/*
       LMatrix4f mat = LMatrix4f::scale_mat(LVector3f::rfu(_scale_x, _scale_y,
 							  _scale_z)) *
 	LMatrix4f::scale_mat(_scale) *
-	LMatrix4f::scale_mat(LVector3f::rfu((_mirror_x?-1.:1.), 1.,
-					    (_mirror_y?-1.:1.))) *
+	  LMatrix4f::scale_mat(LVector3f::rfu((_mirror_x?-1.0f:1.0f), 1.0f,
+						  (_mirror_y?-1.0f:1.0f))) *
 	LMatrix4f::translate_mat(_pos);
+*/	
+  // optimize the above calculation
+  LVector3f scalevec1 = LVector3f::rfu(_scale_x*_scale, _scale_y*_scale, _scale_z*_scale);
+  LVector3f scalevec2 =  LVector3f::rfu((_mirror_x?-1.0f:1.0f), 
+										1.0f,
+										(_mirror_y?-1.0f:1.0f));
+
+  scalevec1._v.v._0 *= scalevec2._v.v._0;
+  scalevec1._v.v._1 *= scalevec2._v.v._1;
+  scalevec1._v.v._2 *= scalevec2._v.v._2;
+
+  LMatrix4f mat(scalevec1._v.v._0, 0.0f, 0.0f, 0.0f,
+				0.0f, scalevec1._v.v._1, 0.0f, 0.0f, 
+				0.0f, 0.0f, scalevec1._v.v._2, 0.0f,
+				_pos._v.v._0, _pos._v.v._1, _pos._v.v._2, 1.0f);
+
+  switch (_type) {
+  case SIMPLE_TEXT:
+    {
       TextNode* n = DCAST(TextNode, _geom);
       n->set_transform(mat);
     }
@@ -30,12 +48,6 @@ void GuiLabel::recompute_transform(void) {
   case SIMPLE_CARD:
   case L_NULL:
     {
-      LMatrix4f mat = LMatrix4f::scale_mat(LVector3f::rfu(_scale_x, _scale_y,
-							  _scale_z)) *
-	LMatrix4f::scale_mat(_scale) *
-	LMatrix4f::scale_mat(LVector3f::rfu((_mirror_x?-1.:1.), 1.,
-					    (_mirror_y?-1.:1.))) *
-	LMatrix4f::translate_mat(_pos);
       _internal->set_transition(new TransformTransition(mat));
     }
     break;
@@ -43,12 +55,26 @@ void GuiLabel::recompute_transform(void) {
     {
       float w=_have_width?_scale*_width:_scale;
       float h=_have_height?_scale*_height:_scale;
+
+/*
       LMatrix4f mat = LMatrix4f::scale_mat(LVector3f::rfu(_scale_x, _scale_y,
 							  _scale_z)) *
-	LMatrix4f::scale_mat(LVector3f::rfu(w, 1., h)) *
-	LMatrix4f::scale_mat(LVector3f::rfu((_mirror_x?-1.:1.), 1.,
-					    (_mirror_y?-1.:1.))) *
+	LMatrix4f::scale_mat(LVector3f::rfu(w, 1.0f, h)) *
+	LMatrix4f::scale_mat(LVector3f::rfu((_mirror_x?-1.0f:1.0f), 1.0f,
+					    (_mirror_y?-1.0f:1.0f))) *
 	LMatrix4f::translate_mat(_pos + _model_pos);
+*/	
+      // optimize above calculation
+	  LVector3f scalevec3 = LVector3f::rfu(w, 1.0f, h);
+
+	  mat._m.m._00 *= scalevec3._v.v._0;
+	  mat._m.m._11 *= scalevec3._v.v._1;
+	  mat._m.m._22 *= scalevec3._v.v._2;
+
+	  mat._m.m._30 += _model_pos._v.v._0;
+	  mat._m.m._31 += _model_pos._v.v._1;
+	  mat._m.m._32 += _model_pos._v.v._2;
+
       _internal->set_transition(new TransformTransition(mat));
     }
     break;
@@ -83,7 +109,7 @@ void GuiLabel::set_properties(void) {
 	  float h = v[3] - v[2];
 	  if (_have_width) {
 	    w = _width - w;
-	    w *= 0.5;
+	    w *= 0.5f;
 	    v[1] += w;
 	    v[0] -= w;
 	  } else {
@@ -92,7 +118,7 @@ void GuiLabel::set_properties(void) {
 	  }
 	  if (_have_height) {
 	    h = _height - h;
-	    h *= 0.5;
+	    h *= 0.5f;
 	    v[3] += h;
 	    v[2] -= h;
 	  } else {
@@ -118,7 +144,7 @@ void GuiLabel::set_properties(void) {
     if (_have_foreground) {
       _internal->set_transition(new ColorTransition(_foreground));
       TransparencyProperty::Mode mode;
-      if (_foreground[3] != 1.)
+      if (_foreground[3] != 1.0f)
 	mode = TransparencyProperty::M_alpha;
       else
 	mode = TransparencyProperty::M_none;
@@ -126,13 +152,13 @@ void GuiLabel::set_properties(void) {
     }
     {
       float w, h;
-      w = _have_width?(_width * 0.5):0.5;
-      h = _have_height?(_height * 0.5):0.5;
+      w = _have_width?(_width * 0.5f):0.5f;
+      h = _have_height?(_height * 0.5f):0.5f;
       PTA_Vertexf verts;
-      verts.push_back(Vertexf::rfu(-w, 0., h));
-      verts.push_back(Vertexf::rfu(-w, 0., -h));
-      verts.push_back(Vertexf::rfu(w, 0., h));
-      verts.push_back(Vertexf::rfu(w, 0., -h));
+      verts.push_back(Vertexf::rfu(-w, 0.0f, h));
+      verts.push_back(Vertexf::rfu(-w, 0.0f, -h));
+      verts.push_back(Vertexf::rfu(w, 0.0f, h));
+      verts.push_back(Vertexf::rfu(w, 0.0f, -h));
       _gset->set_coords(verts, G_PER_VERTEX);
     }
     break;
@@ -174,33 +200,33 @@ GuiLabel* GuiLabel::make_simple_texture_label(Texture* texture) {
     if (xs > ys) {
       // horizontally dominant
       ratio = ((float)ys) / ((float)xs);
-      ratio *= 0.5;
-      l = -0.5;
-      r = 0.5;
+      ratio *= 0.5f;
+      l = -0.5f;
+      r = 0.5f;
       b = -ratio;
       t = ratio;
     } else {
       // vertically dominant
       ratio = ((float)xs) / ((float)ys);
-      ratio *= 0.5;
+      ratio *= 0.5f;
       l = -ratio;
       r = ratio;
-      b = -0.5;
-      t = 0.5;
+      b = -0.5f;
+      t = 0.5f;
     }
   }
-  verts.push_back(Vertexf::rfu(l, 0., t));
-  verts.push_back(Vertexf::rfu(l, 0., b));
-  verts.push_back(Vertexf::rfu(r, 0., t));
-  verts.push_back(Vertexf::rfu(r, 0., b));
+  verts.push_back(Vertexf::rfu(l, 0.0f, t));
+  verts.push_back(Vertexf::rfu(l, 0.0f, b));
+  verts.push_back(Vertexf::rfu(r, 0.0f, t));
+  verts.push_back(Vertexf::rfu(r, 0.0f, b));
   geoset->set_num_prims(1);
   geoset->set_lengths(lengths);
   geoset->set_coords(verts, G_PER_VERTEX);
   PTA_TexCoordf uvs;
-  uvs.push_back(TexCoordf(0., 1.));
-  uvs.push_back(TexCoordf(0., 0.));
-  uvs.push_back(TexCoordf(1., 1.));
-  uvs.push_back(TexCoordf(1., 0.));
+  uvs.push_back(TexCoordf(0.0f, 1.0f));
+  uvs.push_back(TexCoordf(0.0f, 0.0f));
+  uvs.push_back(TexCoordf(1.0f, 1.0f));
+  uvs.push_back(TexCoordf(1.0f, 0.0f));
   geoset->set_texcoords(uvs, G_PER_VERTEX);
   n2->add_geom(geoset);
   ret->_gset = geoset;
@@ -224,8 +250,8 @@ GuiLabel* GuiLabel::make_simple_text_label(const string& text, TextFont* font,
   n->set_text(text);
   if (tex != (Texture*)0L)
     n->set_card_texture(tex);
-  ret->set_scale(1.);
-  ret->set_pos(LVector3f(0., 0., 0.));
+  ret->set_scale(1.0f);
+  ret->set_pos(LVector3f(0.0f, 0.0f, 0.0f));
   ret->recompute_transform();
   return ret;
 }
@@ -242,10 +268,10 @@ GuiLabel* GuiLabel::make_simple_card_label(void) {
   PTA_int lengths(0);
   lengths.push_back(4);
   PTA_Vertexf verts;
-  verts.push_back(Vertexf::rfu(-0.5, 0., 0.5));
-  verts.push_back(Vertexf::rfu(-0.5, 0., -0.5));
-  verts.push_back(Vertexf::rfu(0.5, 0., 0.5));
-  verts.push_back(Vertexf::rfu(0.5, 0., -0.5));
+  verts.push_back(Vertexf::rfu(-0.5f, 0.0f, 0.5f));
+  verts.push_back(Vertexf::rfu(-0.5f, 0.0f, -0.5f));
+  verts.push_back(Vertexf::rfu(0.5f, 0.0f, 0.5f));
+  verts.push_back(Vertexf::rfu(0.5f, 0.0f, -0.5f));
   geoset->set_num_prims(1);
   geoset->set_lengths(lengths);
   geoset->set_coords(verts, G_PER_VERTEX);
@@ -286,8 +312,8 @@ GuiLabel* GuiLabel::make_model_label(Node* geom, float left, float right,
   GuiLabel* ret = new GuiLabel();
   ret->_type = MODEL;
   ret->_geom = new NamedNode("GUI label");
-  ret->_model_pos = LVector3f::rfu(-(left + right) * 0.5, 0.,
-				   -(bottom + top) * 0.5);
+  ret->_model_pos = LVector3f::rfu(-(left + right) * 0.5f, 0.0f,
+				   -(bottom + top) * 0.5f);
   ret->_model_width = right - left;
   ret->_model_height = top - bottom;
   ret->_internal = new RenderRelation(ret->_geom, geom);
@@ -365,24 +391,47 @@ void GuiLabel::get_extents(float& l, float& r, float& b, float& t) {
       LVector3f ul, lr;
 
       if (xs > ys) {
-	// horizontally dominant
-	ratio = ((float)ys) / ((float)xs);
-	ratio *= 0.5;
-	ul = LVector3f::rfu(-0.5, 0., ratio);
-	lr = LVector3f::rfu(0.5, 0., -ratio);
+		// horizontally dominant
+		ratio = ((float)ys) / ((float)xs);
+		ratio *= 0.5f;
+		ul = LVector3f::rfu(-0.5f, 0.0f, ratio);
+		lr = LVector3f::rfu(0.5f, 0.0f, -ratio);
       } else {
-	// vertically dominant
-	ratio = ((float)xs) / ((float)ys);
-	ratio *= 0.5;
-	ul = LVector3f::rfu(-ratio, 0., 0.5);
-	lr = LVector3f::rfu(ratio, 0., -0.5);
+		// vertically dominant
+		ratio = ((float)xs) / ((float)ys);
+		ratio *= 0.5f;
+		ul = LVector3f::rfu(-ratio, 0.0f, 0.5f);
+		lr = LVector3f::rfu(ratio, 0.0f, -0.5f);
       }
+
+/*
       LMatrix4f mat = LMatrix4f::scale_mat(LVector3f::rfu(_scale_x, _scale_y,
 							  _scale_z)) *
 	LMatrix4f::scale_mat(_scale) *
 	LMatrix4f::translate_mat(_pos);
-      ul = ul * mat;
-      lr = lr * mat;
+	
+    ul = ul * mat;
+    lr = lr * mat;	
+*/	
+	  // optimize above
+
+      LVector3f scalevec1 = LVector3f::rfu(_scale_x*_scale, _scale_y*_scale, _scale_z*_scale);
+	  LVector3f scalevec2 = LVector3f::rfu((_mirror_x?-1.0f:1.0f), 
+											1.0f,
+											(_mirror_y?-1.0f:1.0f));
+
+	  scalevec1._v.v._0 *= scalevec2._v.v._0;
+	  scalevec1._v.v._1 *= scalevec2._v.v._1;
+	  scalevec1._v.v._2 *= scalevec2._v.v._2;
+
+	  ul._v.v._0 = scalevec1._v.v._0 * ul._v.v._0 + _pos._v.v._0;
+	  ul._v.v._1 = scalevec1._v.v._1 * ul._v.v._1 + _pos._v.v._1;
+	  ul._v.v._2 = scalevec1._v.v._2 * ul._v.v._2 + _pos._v.v._2;
+
+	  lr._v.v._0 = scalevec1._v.v._0 * lr._v.v._0 + _pos._v.v._0;
+	  lr._v.v._1 = scalevec1._v.v._1 * lr._v.v._1 + _pos._v.v._1;
+	  lr._v.v._2 = scalevec1._v.v._2 * lr._v.v._2 + _pos._v.v._2;
+
       l = ul.dot(ul.right());
       r = lr.dot(lr.right());
       b = lr.dot(lr.up());
@@ -391,42 +440,42 @@ void GuiLabel::get_extents(float& l, float& r, float& b, float& t) {
     break;
   case SIMPLE_CARD:
     {
-      float x = _pos.dot(LVector3f::rfu(1., 0., 0.));
-      float y = _pos.dot(LVector3f::rfu(0., 0., 1.));
-      l = _have_width?-(_width*0.5):-0.5;
-      r = _have_width?(_width*0.5):0.5;
+      float x = _pos.dot(LVector3f::rfu(1.0f, 0.0f, 0.0f));
+      float y = _pos.dot(LVector3f::rfu(0.0f, 0.0f, 1.0f));
+      l = _have_width?-(_width*0.5f):-0.5f;
+      r = _have_width?(_width*0.5f):0.5f;
       l += x;
       r += x;
-      b = _have_height?-(_height*0.5):-0.5;
-      t = _have_height?(_height*0.5):0.5;
+      b = _have_height?-(_height*0.5f):-0.5f;
+      t = _have_height?(_height*0.5f):0.5f;
       b += y;
       t += y;
     }
     break;
   case L_NULL:
     {
-      float x = _pos.dot(LVector3f::rfu(1., 0., 0.));
-      float y = _pos.dot(LVector3f::rfu(0., 0., 1.));
-      l = _have_width?-(_width*0.5):-0.000005;
-      r = _have_width?(_width*0.5):0.000005;
+      float x = _pos.dot(LVector3f::rfu(1.0f, 0.0f, 0.0f));
+      float y = _pos.dot(LVector3f::rfu(0.0f, 0.0f, 1.0f));
+      l = _have_width?-(_width*0.5f):-0.000005f;
+      r = _have_width?(_width*0.5f):0.000005f;
       l += x;
       r += x;
-      b = _have_height?-(_height*0.5):-0.000005;
-      t = _have_height?(_height*0.5):0.000005;
+      b = _have_height?-(_height*0.5f):-0.000005f;
+      t = _have_height?(_height*0.5f):0.000005f;
       b += y;
       t += y;
     }
     break;
   case MODEL:
     {
-      float x = _pos.dot(LVector3f::rfu(1., 0., 0.));
-      float y = _pos.dot(LVector3f::rfu(0., 0., 1.));
-      l = _have_width?-(_width*_model_width*0.5):-(_model_width*0.5);
-      r = _have_width?(_width*_model_width*0.5):(_model_width*0.5);
+      float x = _pos.dot(LVector3f::rfu(1.0f, 0.0f, 0.0f));
+      float y = _pos.dot(LVector3f::rfu(0.0f, 0.0f, 1.0f));
+      l = _have_width?-(_width*_model_width*0.5f):-(_model_width*0.5f);
+      r = _have_width?(_width*_model_width*0.5f):(_model_width*0.5f);
       l += x;
       r += x;
-      b = _have_height?-(_height*_model_height*0.5):-(_model_height*0.5);
-      t = _have_height?(_height*_model_height*0.5):(_model_height*0.5);
+      b = _have_height?-(_height*_model_height*0.5f):-(_model_height*0.5f);
+      t = _have_height?(_height*_model_height*0.5f):(_model_height*0.5f);
       b += y;
       t += y;
     }
@@ -434,8 +483,8 @@ void GuiLabel::get_extents(float& l, float& r, float& b, float& t) {
   default:
     gui_cat->warning()
       << "trying to get extents from something I don't know how to" << endl;
-    l = b = 0.;
-    r = t = 1.;
+    l = b = 0.0f;
+    r = t = 1.0f;
   }
 }
 
@@ -454,21 +503,21 @@ float GuiLabel::get_width(void) {
     break;
   case SIMPLE_TEXTURE:
     gui_cat->warning() << "tried to get width from a texture label" << endl;
-    w = 1.;
+    w = 1.0f;
     break;
   case SIMPLE_CARD:
-    w = _have_width?_width:1.;
+    w = _have_width?_width:1.0f;
     break;
   case MODEL:
     w = _have_width?(_width*_model_width):_model_width;
     break;
   case L_NULL:
-    w = _have_width?_width:0.00001;
+    w = _have_width?_width:0.00001f;
     break;
   default:
     gui_cat->warning()
       << "trying to get width from something I don't know how to" << endl;
-    w = 1.;
+    w = 1.0f;
   }
   return w;
 }
@@ -488,10 +537,10 @@ float GuiLabel::get_height(void) {
     break;
   case SIMPLE_TEXTURE:
     gui_cat->warning() << "tried to get height from a texture label" << endl;
-    h = 1.;
+    h = 1.0f;
     break;
   case SIMPLE_CARD:
-    h = _have_height?_height:1.;
+    h = _have_height?_height:1.0f;
     break;
   case MODEL:
     h = _have_height?(_height*_model_height):_model_height;
@@ -502,7 +551,7 @@ float GuiLabel::get_height(void) {
   default:
     gui_cat->warning()
       << "trying to get height from something I don't know how to" << endl;
-    h = 1.;
+    h = 1.0f;
   }
   return h;
 }
@@ -513,7 +562,7 @@ void GuiLabel::set_foreground_color(const Colorf& color) {
 }
 
 void GuiLabel::set_background_color(const Colorf& color) {
-  static Colorf zero(0., 0., 0., 0.);
+  static Colorf zero(0.0f, 0.0f, 0.0f, 0.0f);
 
   _background = color;
   _have_background = (color != zero);

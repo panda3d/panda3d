@@ -20,9 +20,9 @@ TypeHandle Trackball::_pixel_xyz_type;
 TypeHandle Trackball::_button_events_type;
 TypeHandle Trackball::_transform_type;
 
-#define B1_MASK 1
-#define B2_MASK 2
-#define B3_MASK 4
+#define B1_MASK 0x1
+#define B2_MASK 0x2
+#define B3_MASK 0x4
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::Constructor
@@ -54,8 +54,6 @@ Trackball(const string &name) : DataNode(name) {
   _attrib.set_attribute(_transform_type, _transform);
 }
 
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::Destructor
 //       Access: Public, Scheme
@@ -64,8 +62,6 @@ Trackball(const string &name) : DataNode(name) {
 Trackball::
 ~Trackball() {
 }
-
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::reset
@@ -438,7 +434,7 @@ reextract() {
     m = _orig * rel_mat;
   }
 
-  _translation = m.get_row3(3);
+  m.get_row3(_translation,3);
   _rotation = m;
   _rotation.set_row(3, LVecBase3f(0.0, 0.0, 0.0));
 }

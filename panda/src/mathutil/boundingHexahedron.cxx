@@ -19,7 +19,7 @@ BoundingHexahedron(const Frustumf &frustum, bool is_ortho,
     cs = default_coordinate_system;
   }
 
-  float fs = 1.0;
+  float fs = 1.0f;
   if (!is_ortho) {
     fs = frustum._ffar / frustum._fnear;
   }
@@ -54,8 +54,8 @@ make_copy() const {
 
 LPoint3f BoundingHexahedron::
 get_min() const {
-  nassertr(!is_empty(), LPoint3f(0.0, 0.0, 0.0));
-  nassertr(!is_infinite(), LPoint3f(0.0, 0.0, 0.0));
+  nassertr(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
+  nassertr(!is_infinite(), LPoint3f(0.0f, 0.0f, 0.0f));
   int i;
   LPoint3f m = _points[0];
   for (i = 1; i < num_points; i++) {
@@ -68,8 +68,8 @@ get_min() const {
 
 LPoint3f BoundingHexahedron::
 get_max() const {
-  nassertr(!is_empty(), LPoint3f(0.0, 0.0, 0.0));
-  nassertr(!is_infinite(), LPoint3f(0.0, 0.0, 0.0));
+  nassertr(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
+  nassertr(!is_infinite(), LPoint3f(0.0f, 0.0f, 0.0f));
   int i;
   LPoint3f m = _points[0];
   for (i = 1; i < num_points; i++) {
@@ -82,8 +82,8 @@ get_max() const {
 
 LPoint3f BoundingHexahedron::
 get_approx_center() const {
-  nassertr(!is_empty(), LPoint3f(0.0, 0.0, 0.0));
-  nassertr(!is_infinite(), LPoint3f(0.0, 0.0, 0.0));
+  nassertr(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
+  nassertr(!is_infinite(), LPoint3f(0.0f, 0.0f, 0.0f));
   return _centroid;
 }
 
@@ -201,7 +201,7 @@ contains_point(const LPoint3f &point) const {
     // the planes.
     for (int i = 0; i < num_planes; i++) {
       const Planef &p = _planes[i];
-      if (p.dist_to_plane(point) > 0.0) {
+      if (p.dist_to_plane(point) > 0.0f) {
 	return IF_no_intersection;
       }
     }
@@ -222,8 +222,8 @@ contains_lineseg(const LPoint3f &a, const LPoint3f &b) const {
     // are in front of any one plane.
     for (int i = 0; i < num_planes; i++) {
       const Planef &p = _planes[i];
-      if (p.dist_to_plane(a) > 0.0 ||
-	  p.dist_to_plane(b) > 0.0) {
+      if (p.dist_to_plane(a) > 0.0f ||
+	  p.dist_to_plane(b) > 0.0f) {
 	return IF_no_intersection;
       }
     }

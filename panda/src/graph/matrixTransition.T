@@ -185,7 +185,7 @@ internal_compare_to(const NodeTransition *other) const {
   // For now, we compare componentwise.  It makes paranoid_wrt more
   // sensible, and it doesn't seem to make a big different to
   // performance.
-  return _matrix.compare_to(ot->_matrix, 0.00001);
+  return _matrix.compare_to(ot->_matrix, 0.00001f);
 
   // Uncomment this line instead to compare matrices pointerwise.
   //  return this - other;
@@ -201,7 +201,7 @@ internal_compare_to(const NodeTransition *other) const {
 template<class Matrix>
 void MatrixTransition<Matrix>::
 internal_generate_hash(GraphHashGenerator &hash) const {
-  _matrix.generate_hash(hash, 0.00001);
+  _matrix.generate_hash(hash, 0.00001f);
 }
 
 ////////////////////////////////////////////////////////////////////

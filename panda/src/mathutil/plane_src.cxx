@@ -35,13 +35,13 @@ FLOATNAME(LPoint3) FLOATNAME(Plane)::
 get_point() const {
   // Choose the denominator based on the largest axis in the normal.
   if (cabs(_a) >= cabs(_b) && cabs(_a) >= cabs(_c)) {
-    nassertr(_a != 0.0, FLOATNAME(LPoint3)(0.0, 0.0, 0.0));
-    return FLOATNAME(LPoint3)(-_d / _a, 0.0, 0.0);
+    nassertr(_a != 0.0f, FLOATNAME(LPoint3)(0.0f, 0.0f, 0.0f));
+    return FLOATNAME(LPoint3)(-_d / _a, 0.0f, 0.0f);
   } else if (cabs(_b) >= cabs(_c)) {
-    nassertr(_b != 0.0, FLOATNAME(LPoint3)(0.0, 0.0, 0.0));
-    return FLOATNAME(LPoint3)(0.0, -_d / _b, 0.0);
+    nassertr(_b != 0.0f, FLOATNAME(LPoint3)(0.0f, 0.0f, 0.0f));
+    return FLOATNAME(LPoint3)(0.0f, -_d / _b, 0.0f);
   } else {
-    nassertr(_c != 0.0, FLOATNAME(LPoint3)(0.0, 0.0, 0.0));
-    return FLOATNAME(LPoint3)(0.0, 0.0, -_d / _c);
+    nassertr(_c != 0.0f, FLOATNAME(LPoint3)(0.0f, 0.0f, 0.0f));
+    return FLOATNAME(LPoint3)(0.0f, 0.0f, -_d / _c);
   }
 }

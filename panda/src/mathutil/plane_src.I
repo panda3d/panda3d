@@ -12,10 +12,10 @@
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATNAME(Plane)::
 FLOATNAME(Plane)(void) {
-  _a = 0.0; 
-  _b = 0.0; 
-  _c = 1.0; 
-  _d = 0.0;
+  _a = 0.0f; 
+  _b = 0.0f; 
+  _c = 1.0f; 
+  _d = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -166,9 +166,9 @@ intersects_line(FLOATNAME(LPoint3) &intersection_point,
 //               function returns false and leaves t undefined.  If
 //               there is an intersection with the plane, the function
 //               returns true and sets t to the parametric value that
-//               defines the point of intersection.  That is, t == 0.0
+//               defines the point of intersection.  That is, t == 0.0f
 //               implies that the intersection occurred exactly at
-//               point from, and t == 1.0 implies at point from +
+//               point from, and t == 1.0f implies at point from +
 //               delta, with other values of t accordingly.
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL bool FLOATNAME(Plane)::

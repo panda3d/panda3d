@@ -61,25 +61,34 @@ sub_render(NodeRelation *arc, const AllAttributesWrapper &,
     rel_mat = tt->get_matrix();
   }
 
-  LVector3f camera_pos = -rel_mat.get_row3(3);
-  LVector3f up = _up_vector;
+  LVector3f camera_pos,up;
+
+  CoordinateSystem coordsys = gsg->get_coordinate_system();
 
   // If this is an eye-relative Billboard, then (a) the up vector is
   // relative to the camera, not to the world, and (b) the look
   // direction is towards the plane that contains the camera,
   // perpendicular to the forward direction, not directly to the
   // camera.
+
+
   if (_eye_relative) {
     up = _up_vector * rel_mat;
-    camera_pos = LVector3f::forward(gsg->get_coordinate_system()) * rel_mat;
+    camera_pos = LVector3f::forward(coordsys) * rel_mat;
+  } else {
+//	  camera_pos= -rel_mat.get_row3(pos,3);
+  	  camera_pos._v.v._0 = -rel_mat._m.m._30;
+  	  camera_pos._v.v._1 = -rel_mat._m.m._31;
+  	  camera_pos._v.v._2 = -rel_mat._m.m._32;
+	  up = _up_vector;
   }
 
   // Now determine the rotation matrix for the Billboard.
   LMatrix4f rotate;
   if (_axial_rotate) {
-    heads_up(rotate, camera_pos, up, gsg->get_coordinate_system());
+    heads_up(rotate, camera_pos, up, coordsys);
   } else {
-    look_at(rotate, camera_pos, up, gsg->get_coordinate_system());
+    look_at(rotate, camera_pos, up, coordsys);
   }
 
   // And finally, apply the rotation transform to the set of

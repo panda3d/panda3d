@@ -58,7 +58,7 @@ assign_initial_position(LPoint3f& pos) {
 
   z = SPREAD(_radius);
   r = sqrtf((_radius * _radius) - (z * z));
-  theta = NORMALIZED_RAND() * 2.0f * MathNumbers::pi;
+  theta = NORMALIZED_RAND() * 2.0f * MathNumbers::pi_f;
 
   t = NORMALIZED_RAND();
 

@@ -19,7 +19,7 @@ BaseParticleRenderer(ParticleRendererAlphaMode alpha_mode) :
   _alpha_mode(PR_NOT_INITIALIZED_YET) {
   _render_node = new GeomNode("BaseParticleRenderer render node");
 
-  _user_alpha = 1.0;
+  _user_alpha = 1.0f;
 
   update_alpha_mode(alpha_mode);
 }

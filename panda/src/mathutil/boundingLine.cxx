@@ -18,8 +18,8 @@ make_copy() const {
 
 LPoint3f BoundingLine::
 get_approx_center() const {
-  nassertr(!is_empty(), LPoint3f(0.0, 0.0, 0.0));
-  nassertr(!is_infinite(), LPoint3f(0.0, 0.0, 0.0));
+  nassertr(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
+  nassertr(!is_infinite(), LPoint3f(0.0f, 0.0f, 0.0f));
   return (get_point_a() + get_point_b()) / 2.0;
 }
 
@@ -94,21 +94,21 @@ contains_sphere(const BoundingSphere *sphere) const {
 
 float BoundingLine::
 sqr_dist_to_line(const LPoint3f &point) const {
-  nassertr(!point.is_nan(), 0.0);
-  nassertr(!is_empty() && !is_infinite(), 0.0);
-  nassertr(!_vector.almost_equal(LVector3f(0.0, 0.0, 0.0)), 0.0);
+  nassertr(!point.is_nan(), 0.0f);
+  nassertr(!is_empty() && !is_infinite(), 0.0f);
+  nassertr(!_vector.almost_equal(LVector3f(0.0f, 0.0f, 0.0f)), 0.0f);
 
   // The formula for the distance from a point to the line based on
   // the quadratic equation.
 
   float A = dot(_vector, _vector);
-  nassertr(A != 0.0, 0.0);
+  nassertr(A != 0.0f, 0.0f);
   LVector3f fc = _origin - point;
   float B = 2.0 * dot(_vector, fc);
   float fc_d2 = dot(fc, fc);
 
   float r2 = fc_d2 - B*B / 4.0*A;
 
-  nassertr(!cnan(r2), 0.0);
+  nassertr(!cnan(r2), 0.0f);
   return r2;
 }

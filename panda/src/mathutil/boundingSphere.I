@@ -26,8 +26,8 @@ get_center() const {
 
 INLINE_MATHUTIL float BoundingSphere::
 get_radius() const {
-  nassertr(!is_empty(), 0.0);
-  nassertr(!is_infinite(), 0.0);
+  nassertr(!is_empty(), 0.0f);
+  nassertr(!is_infinite(), 0.0f);
   return _radius;
 }
 

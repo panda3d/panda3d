@@ -66,7 +66,8 @@ xform(const LMatrix4f &mat) {
   _center = _center * mat;
 
   // We'll take just the length of the y axis as the matrix's scale.
-  LVector3f y = mat.get_row3(1);
+  LVector3f y;
+  mat.get_row3(y,1);
   float factor_squared = y.length_squared();
   
   LODSwitchVector::iterator si;

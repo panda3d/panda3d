@@ -56,7 +56,7 @@ make_copy(void) {
 ////////////////////////////////////////////////////////////////////
 void RingEmitter::
 assign_initial_position(LPoint3f& pos) {
-  float theta = NORMALIZED_RAND() * 2.0f * MathNumbers::pi;
+  float theta = NORMALIZED_RAND() * 2.0f * MathNumbers::pi_f;
   _cos_theta = cosf(theta);
   _sin_theta = sinf(theta);
 
@@ -73,7 +73,7 @@ assign_initial_position(LPoint3f& pos) {
 ////////////////////////////////////////////////////////////////////
 void RingEmitter::
 assign_initial_velocity(LVector3f& vel) {
-  float vel_z = sinf(_aoe * (MathNumbers::pi / 180.0f));
+  float vel_z = sinf(deg_2_rad(_aoe));
   float abs_diff = fabs(1.0f - (vel_z * vel_z));
   float root_mag_minus_z_squared = sqrtf(abs_diff);
 

@@ -18,12 +18,15 @@ get_rel_pos(const Node *node, const Node *relative_to,
   NodeTransitionWrapper ntw(TransformTransition::get_class_type());
   wrt(node, relative_to, ntw, graph_type);
   const TransformTransition *tt;
+
   if (!get_transition_into(tt, ntw)) {
     // No relative transform.
     return LPoint3f(0.0, 0.0, 0.0);
   }
 
-  return tt->get_matrix().get_row3(3);
+  LVector3f pos;
+  tt->get_matrix().get_row3(pos,3);
+  return pos;
 }
 
 ////////////////////////////////////////////////////////////////////
