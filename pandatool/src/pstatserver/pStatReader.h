@@ -27,10 +27,16 @@
 #include <connectionReader.h>
 #include <connectionWriter.h>
 #include <referenceCount.h>
+#include <circBuffer.h>
 
 class PStatServer;
 class PStatMonitor;
 class PStatClientControlMessage;
+class PStatFrameData;
+
+// This is the maximum number of frame records that will be queued up
+// from this particular client between processing loops.
+static const int queued_frame_records = 500;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PStatReader
@@ -58,6 +64,7 @@ private:
 
   void handle_client_control_message(const PStatClientControlMessage &message);
   void handle_client_udp_data(const Datagram &datagram);
+  void dequeue_frame_data();
 
 private:
   PStatServer *_manager;
@@ -71,6 +78,15 @@ private:
   PT(PStatClientData) _client_data;
 
   string _hostname;
+
+  class FrameData {
+  public:
+    int _thread_index;
+    int _frame_number;
+    PStatFrameData *_frame_data;
+  };
+  typedef CircBuffer<FrameData, queued_frame_records> QueuedFrameData;
+  QueuedFrameData _queued_frame_data;
 };
 
 #endif

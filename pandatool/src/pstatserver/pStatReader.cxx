@@ -122,6 +122,7 @@ lost_connection() {
 ////////////////////////////////////////////////////////////////////
 void PStatReader::
 idle() {
+  dequeue_frame_data();
   _monitor->idle();
 }
 
@@ -267,24 +268,49 @@ handle_client_udp_data(const Datagram &datagram) {
     nassertv(initial_byte == 0);
   }
 
-  int thread_index = source.get_uint16();
-  int frame_number = source.get_uint32();
-  PStatFrameData *frame_data = new PStatFrameData;
-  frame_data->read_datagram(source, _client_data);
-
-  // Check to see if any new collectors have level data.
-  int num_levels = frame_data->get_num_levels();
-  for (int i = 0; i < num_levels; i++) {
-    int collector_index = frame_data->get_level_collector(i);
-    if (!_client_data->get_collector_has_level(collector_index)) {
-      // This collector is now reporting level data, and it wasn't
-      // before.
-      _client_data->set_collector_has_level(collector_index, true);
-      _monitor->new_collector(collector_index);
-    }
+  if (!_queued_frame_data.full()) {
+    FrameData data;
+    data._thread_index = source.get_uint16();
+    data._frame_number = source.get_uint32();
+    data._frame_data = new PStatFrameData;
+    data._frame_data->read_datagram(source, _client_data);
+    
+    // Queue up the data till we're ready to handle it in a
+    // single-threaded way.
+    _queued_frame_data.push_back(data);
   }
+}
 
-  _client_data->record_new_frame(thread_index, frame_number, frame_data);
-  _monitor->new_data(thread_index, frame_number);
+////////////////////////////////////////////////////////////////////
+//     Function: PStatReader::dequeue_frame_data
+//       Access: Private
+//  Description: Called during the idle loop to pull out all the frame
+//               data that we might have read while the threaded
+//               reader was running.
+////////////////////////////////////////////////////////////////////
+void PStatReader::
+dequeue_frame_data() {
+  while (!_queued_frame_data.empty()) {
+    const FrameData &data = _queued_frame_data.front();
+
+    // Check to see if any new collectors have level data.
+    int num_levels = data._frame_data->get_num_levels();
+    for (int i = 0; i < num_levels; i++) {
+      int collector_index = data._frame_data->get_level_collector(i);
+      if (!_client_data->get_collector_has_level(collector_index)) {
+        // This collector is now reporting level data, and it wasn't
+        // before.
+        _client_data->set_collector_has_level(collector_index, true);
+        _monitor->new_collector(collector_index);
+      }
+    }
+
+    _client_data->record_new_frame(data._thread_index, 
+                                   data._frame_number, 
+                                   data._frame_data);
+    _monitor->new_data(data._thread_index, data._frame_number);
+
+    _queued_frame_data.pop_front();
+  }
 }
 
