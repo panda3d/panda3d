@@ -70,7 +70,9 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatFrameData::
 add_start(int index, float time) {
+#ifdef _DEBUG
   nassertv((index & 0x7fff) == index);
+#endif
   DataPoint dp;
   dp._index = index;
   dp._value = time;
@@ -85,7 +87,9 @@ add_start(int index, float time) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatFrameData::
 add_stop(int index, float time) {
+#ifdef _DEBUG
   nassertv((index & 0x7fff) == index);
+#endif
   DataPoint dp;
   dp._index = index | 0x8000;
   dp._value = time;
@@ -100,7 +104,9 @@ add_stop(int index, float time) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatFrameData::
 add_level(int index, float level) {
+#ifdef _DEBUG
   nassertv((index & 0xffff) == index);
+#endif
   DataPoint dp;
   dp._index = index;
   dp._value = level;

@@ -557,8 +557,10 @@ is_active(int collector_index, int thread_index) const {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 start(int collector_index, int thread_index) {
+#ifdef _DEBUG
   nassertv(collector_index >= 0 && collector_index < (int)_collectors.size());
   nassertv(thread_index >= 0 && thread_index < (int)_threads.size());
+#endif
 
   if (_collectors[collector_index]._def->_is_active &&
       _threads[thread_index]._is_active) {
@@ -581,8 +583,10 @@ start(int collector_index, int thread_index) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 start(int collector_index, int thread_index, float as_of) {
+#ifdef _DEBUG
   nassertv(collector_index >= 0 && collector_index < (int)_collectors.size());
   nassertv(thread_index >= 0 && thread_index < (int)_threads.size());
+#endif
 
   if (_collectors[collector_index]._def->_is_active &&
       _threads[thread_index]._is_active) {
@@ -604,8 +608,10 @@ start(int collector_index, int thread_index, float as_of) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 stop(int collector_index, int thread_index) {
+#ifdef _DEBUG
   nassertv(collector_index >= 0 && collector_index < (int)_collectors.size());
   nassertv(thread_index >= 0 && thread_index < (int)_threads.size());
+#endif
 
   if (_collectors[collector_index]._def->_is_active &&
       _threads[thread_index]._is_active) {
@@ -637,8 +643,10 @@ stop(int collector_index, int thread_index) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 stop(int collector_index, int thread_index, float as_of) {
+#ifdef _DEBUG
   nassertv(collector_index >= 0 && collector_index < (int)_collectors.size());
   nassertv(thread_index >= 0 && thread_index < (int)_threads.size());
+#endif
 
   if (_collectors[collector_index]._def->_is_active &&
       _threads[thread_index]._is_active) {
