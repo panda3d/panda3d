@@ -350,9 +350,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         SET_MOUSE_COORD(x,LOWORD(lparam));
         SET_MOUSE_COORD(y,HIWORD(lparam));
     
-        if(wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) {
-            handle_mouse_motion(x, y);
-        } 
+        handle_mouse_motion(x, y);
         return 0;
     
     // if cursor is invisible, make it visible when moving in the window bars,etc
