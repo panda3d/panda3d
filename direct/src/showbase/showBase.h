@@ -39,8 +39,6 @@ EXPCL_DIRECT NodePath setup_panda_2d(GraphicsWindow *win, const string &name);
 EXPCL_DIRECT void add_render_layer(GraphicsWindow *win, Node *render_top,
 				   Camera *camera);
 
-EXPCL_DIRECT void direct_traverse_data_graph(Node *node);
-
 EXPCL_DIRECT void toggle_wireframe(NodeAttributes &initial_state);
 EXPCL_DIRECT void toggle_texture(NodeAttributes &initial_state);
 EXPCL_DIRECT void toggle_backface(NodeAttributes &initial_state);
