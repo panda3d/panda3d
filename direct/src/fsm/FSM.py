@@ -207,7 +207,7 @@ class FSM(DirectObject):
                                   exitArgList)
                 return 1
         else:
-            FSM.notify.warning("[%s]: no transition exists from %s to %s" %
+            FSM.notify.debug("[%s]: no transition exists from %s to %s" %
                                (self.__name,
                                 self.__currentState.getName(),
                                 aStateName))
