@@ -5,9 +5,8 @@
 
 #include "dcMolecularField.h"
 #include "dcAtomicField.h"
-#include "indent.h"
+#include "dcindent.h"
 
-#include <assert.h>
 
 
 ////////////////////////////////////////////////////////////////////
@@ -43,7 +42,7 @@ get_num_atomics() const {
 ////////////////////////////////////////////////////////////////////
 DCAtomicField *DCMolecularField::
 get_atomic(int n) const {
-  assert(n >= 0 && n < (int)_fields.size());
+  nassertr(n >= 0 && n < (int)_fields.size(), NULL);
   return _fields[n];
 }
 

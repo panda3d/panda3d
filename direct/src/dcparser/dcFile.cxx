@@ -7,7 +7,6 @@
 #include "dcParserDefs.h"
 #include "dcLexerDefs.h"
 
-#include <assert.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCFile::Constructor
@@ -146,7 +145,7 @@ get_num_classes() {
 ////////////////////////////////////////////////////////////////////
 DCClass *DCFile::
 get_class(int n) {
-  assert(n >= 0 && n < (int)_classes.size());
+  nassertr(n >= 0 && n < (int)_classes.size(), NULL);
   return _classes[n];
 }
 

@@ -35,6 +35,8 @@ enum DCSubatomicType {
   ST_int32array,
   ST_uint16array,
   ST_uint32array,
+
+  ST_invalid
 };
 END_PUBLISH
 

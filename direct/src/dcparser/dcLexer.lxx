@@ -9,9 +9,8 @@
 #include "dcLexerDefs.h"
 #include "dcParserDefs.h"
 #include "dcParser.h"
-#include "indent.h"
+#include "dcindent.h"
 
-#include <assert.h>
 
 static int yyinput(void);        // declared by flex.
 extern "C" int dcyywrap();
@@ -109,7 +108,7 @@ dcyywarning(const string &msg) {
 // stdio FILE pointer.  This is flex-specific.
 static void
 input_chars(char *buffer, int &result, int max_size) {
-  assert(inp != NULL);
+  nassertv(inp != NULL);
   if (*inp) {
     inp->read(buffer, max_size);
     result = inp->gcount();

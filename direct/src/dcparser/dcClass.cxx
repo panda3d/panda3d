@@ -4,9 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dcClass.h"
-#include "indent.h"
-
-#include <assert.h>
+#include "dcindent.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCClass::get_number
@@ -50,7 +48,7 @@ has_parent() const {
 ////////////////////////////////////////////////////////////////////
 DCClass *DCClass::
 get_parent() const {
-  assert(has_parent());
+  nassertr(has_parent(), NULL);
   return _parents.front();
 }
 
@@ -75,7 +73,7 @@ get_num_fields() {
 ////////////////////////////////////////////////////////////////////
 DCField *DCClass::
 get_field(int n) {
-  assert(n >= 0 && n < (int)_fields.size());
+  nassertr(n >= 0 && n < (int)_fields.size(), NULL);
   return _fields[n];
 }
 

@@ -1,9 +1,11 @@
-// Filename: indent.cxx
+// Filename: dcindent.cxx
 // Created by:  drose (05May00)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "indent.h"
+#include "dcindent.h"
+
+#ifndef WITHIN_PANDA
 
 ////////////////////////////////////////////////////////////////////
 //     Function: indent 
@@ -16,3 +18,5 @@ indent(ostream &out, int indent_level) {
   }
   return out;
 }
+
+#endif

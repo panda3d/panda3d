@@ -1,16 +1,20 @@
-// Filename: indent.h
+// Filename: dcindent.h
 // Created by:  drose (16Jan99)
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef INDENT_H
-#define INDENT_H
+#ifndef DCINDENT_H
+#define DCINDENT_H
 
 #include "dcbase.h"
 
-// We rename indent() so it won't clash with the similar function
-// defined in Panda.
-#define indent dcindent
+#ifdef WITHIN_PANDA
+// If we're compiling this within Panda, we use the function defined
+// there.
+#include <indent.h>
+
+#else
+// Otherwise, we must define it for ourselves.
 
 ////////////////////////////////////////////////////////////////////
 //     Function: indent
@@ -23,7 +27,6 @@
 ostream &
 indent(ostream &out, int indent_level);
 
-#endif
+#endif  // WITHIN_PANDA
 
- 
-
+#endif  // DCINDENT_H

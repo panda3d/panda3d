@@ -4,9 +4,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dcAtomicField.h"
-#include "indent.h"
+#include "dcindent.h"
 
-#include <assert.h>
 
 ostream &
 operator << (ostream &out, const DCAtomicField::ElementType &et) {
@@ -47,7 +46,7 @@ get_num_elements() const {
 ////////////////////////////////////////////////////////////////////
 DCSubatomicType DCAtomicField::
 get_element_type(int n) const {
-  assert(n >= 0 && n < (int)_elements.size());
+  nassertr(n >= 0 && n < (int)_elements.size(), ST_invalid);
   return _elements[n]._type;
 }
 
@@ -62,7 +61,7 @@ get_element_type(int n) const {
 ////////////////////////////////////////////////////////////////////
 int DCAtomicField::
 get_element_divisor(int n) const {
-  assert(n >= 0 && n < (int)_elements.size());
+  nassertr(n >= 0 && n < (int)_elements.size(), 1);
   return _elements[n]._divisor;
 }
 

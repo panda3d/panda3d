@@ -52,6 +52,9 @@ operator << (ostream &out, DCSubatomicType type) {
 
   case ST_uint32array:
     return out << "uint32array";
+
+  case ST_invalid:
+    return out << "invalid";
   }
 
   return out << "invalid type: " << (int)type;
