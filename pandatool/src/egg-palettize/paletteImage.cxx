@@ -531,9 +531,10 @@ update_image(bool redo_all) {
     !_cleared_regions.empty();
 
   Placements::iterator pi;
-  for (pi = _placements.begin(); 
-       pi != _placements.end() && !needs_update; 
-       ++pi) {
+  // We must continue to walk through all of the textures on the
+  // palette, even after we discover the palette requires an update,
+  // so we can determine which source images need to be recopied.
+  for (pi = _placements.begin(); pi != _placements.end(); ++pi) {
     TexturePlacement *placement = (*pi);
 
     if (!placement->is_filled()) {
