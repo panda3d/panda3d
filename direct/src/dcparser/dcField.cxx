@@ -516,7 +516,7 @@ client_format_update(int do_id, PyObject *args) const {
 
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
-//     Function: DCField::al_format_update
+//     Function: DCField::ai_format_update
 //       Access: Published
 //  Description: Generates a datagram containing the message necessary
 //               to send an update for the indicated distributed
