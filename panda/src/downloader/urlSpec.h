@@ -20,6 +20,7 @@
 #define URLSPEC_H
 
 #include "pandabase.h"
+#include "notify.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : URLSpec
@@ -66,6 +67,12 @@ PUBLISHED:
   void set_query(const string &query);
 
   void set_url(const string &url);
+
+  INLINE operator const string & () const;
+  INLINE const char *c_str() const;
+  INLINE bool empty() const;
+  INLINE size_t length() const;
+  INLINE char operator [] (int n) const;
 
   void output(ostream &out) const;
 

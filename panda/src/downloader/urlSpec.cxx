@@ -471,7 +471,7 @@ output(ostream &out) const {
 string URLSpec::
 quote(const string &source, const string &safe) {
   ostringstream result;
-  result << hex << setw(2) << setfill('0');
+  result << hex << setfill('0');
 
   for (string::const_iterator si = source.begin(); si != source.end(); ++si) {
     char ch = (*si);
@@ -495,7 +495,7 @@ quote(const string &source, const string &safe) {
 
       } else {
         // Otherwise, escape it.
-        result << "0x" << ch;
+        result << '%' << setw(2) << (int)ch;
       }
     }
   }
@@ -512,7 +512,7 @@ quote(const string &source, const string &safe) {
 string URLSpec::
 quote_plus(const string &source, const string &safe) {
   ostringstream result;
-  result << hex << setw(2) << setfill('0');
+  result << hex << setfill('0');
 
   for (string::const_iterator si = source.begin(); si != source.end(); ++si) {
     char ch = (*si);
@@ -540,7 +540,7 @@ quote_plus(const string &source, const string &safe) {
 
       } else {
         // Otherwise, escape it.
-        result << "0x" << ch;
+        result << '%' << setw(2) << (int)ch;
       }
     }
   }
@@ -559,27 +559,27 @@ string URLSpec::
 unquote(const string &source) {
   string result;
 
-  string::const_iterator si = source.begin();
-  while (si != source.end()) {
-    if ((*si) == '%') {
-      ++si;
+  size_t p = 0;
+  while (p < source.length()) {
+    if (source[p] == '%' && p + 2 < source.length()) {
       int hex = 0;
-      while (si != source.end() && isxdigit(*si)) {
+      p++;
+      for (int i = 0; i < 2; i++) {
         int value;
-        char ch = *si;
+        char ch = source[p + i];
         if (isdigit(ch)) {
           value = ch - '0';
         } else {
           value = tolower(ch) - 'a';
         }
-        hex = (hex << 8) | value;
-        ++si;
+        hex = (hex << 4) | value;
       }
       result += (char)hex;
+      p += 2;
 
     } else {
-      result += (*si);
-      ++si;
+      result += source[p];
+      p++;
     }
   }
 
@@ -597,30 +597,31 @@ string URLSpec::
 unquote_plus(const string &source) {
   string result;
 
-  string::const_iterator si = source.begin();
-  while (si != source.end()) {
-    if ((*si) == '%') {
-      ++si;
+  size_t p = 0;
+  while (p < source.length()) {
+    if (source[p] == '%' && p + 2 < source.length()) {
       int hex = 0;
-      while (si != source.end() && isxdigit(*si)) {
+      p++;
+      for (int i = 0; i < 2; i++) {
         int value;
-        char ch = *si;
+        char ch = source[p + i];
         if (isdigit(ch)) {
           value = ch - '0';
         } else {
           value = tolower(ch) - 'a';
         }
-        hex = (hex << 8) | value;
-        ++si;
+        hex = (hex << 4) | value;
       }
       result += (char)hex;
+      p += 2;
 
-    } else if ((*si) == '+') {
+    } else if (source[p] == '+') {
       result += ' ';
+      p++;
 
     } else {
-      result += (*si);
-      ++si;
+      result += source[p];
+      p++;
     }
   }
 

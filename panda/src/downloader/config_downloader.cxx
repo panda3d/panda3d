@@ -16,9 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <dconfig.h>
-#include <get_config_path.h>
+#include "dconfig.h"
+#include "get_config_path.h"
 #include "config_downloader.h"
+#include "httpDocument.h"
 
 
 Configure(config_downloader);
@@ -62,4 +63,5 @@ const int patcher_buffer_size =
         config_downloader.GetInt("patcher-buffer-size", 4096);
 
 ConfigureFn(config_downloader) {
+  HTTPDocument::init_type();
 }
