@@ -114,7 +114,7 @@ empty_output_buffer (j_compress_ptr cinfo)
 {
   my_dest_ptr dest = (my_dest_ptr) cinfo->dest;
 
-  if (!dest->outfile->write(dest->buffer, OUTPUT_BUF_SIZE))
+  if (!dest->outfile->write((const char *)dest->buffer, OUTPUT_BUF_SIZE))
     ERREXIT(cinfo, JERR_FILE_WRITE);
 
   dest->pub.next_output_byte = dest->buffer;
@@ -141,7 +141,7 @@ term_destination (j_compress_ptr cinfo)
 
   /* Write any data remaining in the buffer */
   if (datacount > 0) {
-    if (!dest->outfile->write(dest->buffer, datacount))
+    if (!dest->outfile->write((const char *)dest->buffer, datacount))
       ERREXIT(cinfo, JERR_FILE_WRITE);
   }
   dest->outfile->flush();

@@ -121,7 +121,7 @@ fill_input_buffer (j_decompress_ptr cinfo)
   my_src_ptr src = (my_src_ptr) cinfo->src;
   size_t nbytes;
 
-  src->infile->read(src->buffer, INPUT_BUF_SIZE);
+  src->infile->read((char *)src->buffer, INPUT_BUF_SIZE);
   nbytes = src->infile->gcount();
 
   if (nbytes <= 0) {
