@@ -1,7 +1,7 @@
 """EntityCreator.py: contains methods for creation of Entities"""
 
 from PythonUtil import Functor
-import PlatformEntity
+#import PlatformEntity
 import BasicEntities
 
 def nothing(level, entId):
