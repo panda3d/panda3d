@@ -550,10 +550,16 @@ open_regular_window() {
   //  WS_CLIPSIBLINGS styles. Additionally, the window class attribute
   //  should not include the CS_PARENTDC style.
   DWORD window_style = 
-    WS_POPUP | WS_SYSMENU | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-  
-  if (!_properties.has_undecorated() || !_properties.get_undecorated()) {
-    window_style |= WS_OVERLAPPEDWINDOW;
+    WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+
+  if (!_properties.get_undecorated()) {
+    window_style |= (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
+
+    if (!_properties.get_fixed_size()) {
+      window_style |= (WS_SIZEBOX | WS_MAXIMIZEBOX);
+    } else {
+      window_style |= WS_BORDER;
+    }
   }
 
   if (!_properties.has_origin()) {
