@@ -249,6 +249,7 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
                    func = None,
                    manage = 1,
                    label = None,
+                   labels = None,
                    scale = 0.1,
                    width = None,
                    align = None,
@@ -280,7 +281,7 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
 
         assert self.panelSetup
 
-        if label == None:
+        if (label == None) and (labels == None):
             label = name
         if drawOrder == None:
             drawOrder = self.panelDrawOrder + 10
@@ -291,6 +292,7 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
             
         button = Button.Button(buttonName,
                                label = label,
+                               labels = labels,
                                scale = scale,
                                width = width,
                                align = align,
