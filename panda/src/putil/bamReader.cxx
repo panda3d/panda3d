@@ -86,6 +86,7 @@ init(void)
     return false;
   }
 
+#ifndef NDEBUG
   if (bam_cat.is_debug()) {
     bam_cat.debug() 
       << "Bam file is version " << _file_major << "." << _file_minor
@@ -96,6 +97,7 @@ init(void)
 	<< ".)\n";
     }
   }
+#endif
 
   return true;
 }
@@ -116,10 +118,12 @@ read_handle(DatagramIterator& scan)
   {
     //This indicates an object that should have already been read in,
     //so return TypeHandle::none() to indicate this.
+#ifndef NDEBUG
     if (bam_cat.is_spam()) {
       bam_cat.spam()
 	<< "Reading previously read TypeHandle.\n";
     }
+#endif
     return TypeHandle::none();
   }
 
@@ -158,10 +162,12 @@ read_handle(DatagramIterator& scan)
     
   }
 
+#ifndef NDEBUG
   if (bam_cat.is_spam()) {
     bam_cat.spam()
       << "Reading TypeHandle for " << _index_map[id] << ".\n";
   }
+#endif
 
   return _index_map[id];
 }
@@ -192,10 +198,12 @@ read_object(void)
   if (!_source->get_datagram(packet)) {
     // The datagram source is empty.
 
+#ifndef NDEBUG
     if (bam_cat.is_debug()) {
       bam_cat.debug()
 	<< "Reached end of bam source.\n";
     }
+#endif
     return TypedWriteable::Null;
   }
 
@@ -246,15 +254,38 @@ read_object(void)
 	<< " was created instead." << endl;
 
     } else {
+#ifndef NDEBUG
       if (bam_cat.is_spam()) {
 	bam_cat.spam()
 	  << "Read a " << _created_objs[objId]->get_type() << "\n";
       }
+#endif
     }
   }
 
+#ifndef NDEBUG
+  if (bam_cat.is_spam()) {
+    bam_cat.spam()
+      << "Emptying queue.\n";
+  }
+#endif
   empty_queue();
-  return _created_objs[objId];
+
+  TypedWriteable *object = _created_objs[objId];
+
+#ifndef NDEBUG
+  if (bam_cat.is_spam()) {
+    if (object == (TypedWriteable *)NULL) {
+      bam_cat.spam()
+	<< "Returning NULL\n";
+    } else {
+      bam_cat.spam()
+	<< "Returning object of type " << object->get_type() << "\n";
+    }
+  }
+#endif
+
+  return object;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -403,10 +434,12 @@ finalize_this(TypedWriteable *whom)
 void BamReader::
 finalize(void)
 {
+#ifndef NDEBUG
   if (bam_cat.is_debug()) {
     bam_cat.debug()
       << "Finalizing bam source\n";
   }
+#endif
 
   Finalize::iterator fi = _finalize_list.begin();
   while(fi != _finalize_list.end())
