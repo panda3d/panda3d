@@ -91,9 +91,6 @@
 // interface)?
 #define HAVE_SYS_SOUNDCARD_H
 
-// Do we use the Miles sound interface instead of the default DirectSound-based interface
-#define USE_RAD_MSS yes
-
 // Do we have RTTI (and <typeinfo>)?
 #define HAVE_RTTI 1
 
