@@ -134,7 +134,7 @@
 // should add to our -L list, from the context of a particular target.
 #defer lpath $[sort $[complete_lpath]] $[other_trees:%=%/lib] $[get_lpath]
 
-// And $[libs] is the set of libraries we will link with.
+// $[libs] is the set of libraries we will link with.
 #defer libs $[unique $[actual_local_libs:%=%$[dllext]] $[patsubst %:c,,%:m %,%$[dllext],$[OTHER_LIBS]] $[get_libs]]
 
 // This is the set of files we might copy into *.prebuilt, if we have
