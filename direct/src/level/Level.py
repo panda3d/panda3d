@@ -37,8 +37,8 @@ class Level:
         self.initialized = 0
 
     def initializeLevel(self, levelId, levelSpec, scenarioIndex):
-        """ subclass should call this as soon as it has located
-        its spec data """
+        """subclass should call this as soon as it has located
+        its spec data"""
         self.levelId = levelId
         self.levelSpec = levelSpec
         self.scenarioIndex = scenarioIndex
@@ -205,7 +205,7 @@ class Level:
         if __debug__:
             if entId in self.entities:
                 self.notify.warning(
-                    'entity %s already in entity table... '
+                    'entity %s already in entity table... '%(entId)+
                     'make sure distributedEntity is calling down to '
                     'Entity.destroy!')
         self.entities[entId] = entity
