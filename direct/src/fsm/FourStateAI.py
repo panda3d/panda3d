@@ -134,6 +134,11 @@ class FourStateAI:
                            names[0],
                           )
         self.fsm.enterInitialState()
+
+    def delete(self):
+        assert(self.debugPrint("delete()"))
+        del self.states
+        del self.fsm
     
     def getInitialState(self):
         return self.stateIndex
@@ -164,10 +169,11 @@ class FourStateAI:
         self.isOn = isOn
         self.distributeStateChange()
         if self.durations[stateIndex] is not None:
+            assert self.doLaterTask is None
             self.doLaterTask=taskMgr.doMethodLater(
                 self.durations[stateIndex],
                 self.switchToNextStateTask,
-                self.uniqueName('enterStateN-timer'))
+                "enterStateN-timer-%s"%id(self))
     
     def exitStateN(self):
         if self.doLaterTask:
