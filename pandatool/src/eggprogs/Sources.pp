@@ -21,11 +21,11 @@
 
 #end bin_target
 
-#begin noinst_bin_target
+#begin test_bin_target
   #define LOCAL_LIBS eggcharbase $[LOCAL_LIBS]
   #define TARGET egg-topstrip
 
   #define SOURCES \
     eggTopstrip.cxx eggTopstrip.h
 
-#end noinst_bin_target
+#end test_bin_target
