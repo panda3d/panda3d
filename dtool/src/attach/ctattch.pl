@@ -417,7 +417,7 @@ sub CTAttachCompute {
       foreach $item ( keys %localcmd ) {
       $envcmd{$item} = $localcmd{$item} ;
       }
-      foreach $item ( keys %localdo ) {
+      for ($item = 0; $item < $localdocnt; $item++) {
       $envdo{$docnt} = $localdo{$item} ;
       $docnt++ ;
       }
@@ -492,7 +492,7 @@ sub CTAttachWriteScript {
            }
        }
    }
-   foreach $item ( keys %envdo ) {
+   for ($item = 0; $item < $docnt; $item++) {
       print OUTFILE $envdo{$item} . "\n" ;
       if ( $ctdebug ) {
         print OUTFILE "echo doing '" . $envdo{$item} . "'\n" ;
