@@ -50,7 +50,7 @@ def lerpBackgroundColor(r,g,b,duration):
     t = taskMgr.add(lerpColor, 'lerpBackgroundColor')
     t.time = 0.0
     t.duration = duration
-    t.sc = base.win.getGsg().getColorClearValue()
+    t.sc = base.getBackgroundColor()
     t.ec = VBase4(r,g,b,1)
 
 # Set direct drawing style for an object

@@ -886,7 +886,7 @@ class DirectSessionPanel(AppShell):
             self.updateGridInfo()
             
     def updateEnvironmentInfo(self):
-        bkgrdColor = base.win.getGsg().getColorClearValue() * 255.0
+        bkgrdColor = base.getBackgroundColor() * 255.0
         self.backgroundColor.set([bkgrdColor[0],
                                   bkgrdColor[1],
                                   bkgrdColor[2],
