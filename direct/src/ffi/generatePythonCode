@@ -13,7 +13,12 @@ generatePythonCode [opts] -i libtool libcode1 libcode2 ...
 Generates Python code for the C++ libraries listed.
 
 Example:
- generatePythonCode -v -d $DIRECT/lib/py -e $DIRECT/src/all/python -i libdtool libpandaexpress libpanda libdirect
+Linux:
+  ppython -d generatePythonCode -v -d $DIRECT/lib/py -e $DIRECT/src/extensions -i libdtool libpandaexpress libpanda libdirect
+
+Windows:
+  ppython -d generatePythonCode -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtool libpandaexpress libpanda libdirect
+
 
 Options:
   -h          print this message
