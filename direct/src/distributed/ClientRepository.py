@@ -95,7 +95,7 @@ class ClientRepository(DirectObject.DirectObject):
         if self.qcm.resetConnectionAvailable():
             resetConnectionPointer = PointerToConnection()
             if self.qcm.getResetConnection(resetConnectionPointer):
-                self.fsm.request("noConnection")
+                self.loginFSM.request("noConnection")
         return None
 
     def handleDatagram(self, datagram):
@@ -279,8 +279,10 @@ class ClientRepository(DirectObject.DirectObject):
         ClientRepository.notify.warning(
             "Ignoring unexpected message type: " +
             str(msgType) +
-            " in state: " +
-            self.fsm.getCurrentState().getName())
+            " login state: " +
+            self.loginFSM.getCurrentState().getName() +
+            " game state: " +
+            self.gameFSM.getCurrentState().getName())
         return None
 
     def sendSetShardMsg(self, shardId):

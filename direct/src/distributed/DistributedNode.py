@@ -24,7 +24,7 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath.NodePath):
         DistributedObject.DistributedObject.disable(self)
 
     def delete(self):
-        self.reparentTo(hidden)
+        self.removeNode()
         DistributedObject.DistributedObject.delete(self)
 
     def generate(self):
