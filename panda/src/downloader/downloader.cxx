@@ -765,6 +765,7 @@ parse_header(DownloadStatus *status) {
 
   string bufstr((char *)status->_start, status->_bytes_in_buffer);
   size_t p  = 0;
+  bool redirect = false;
   while (p < bufstr.length()) {
     // Server sends out CR LF (\r\n) as newline delimiter
     size_t nl = bufstr.find("\015\012", p);
@@ -784,7 +785,6 @@ parse_header(DownloadStatus *status) {
 
     // The first line of the response should say whether
     // got an error or not
-    bool redirect = false;
     if (status->_first_line_complete == false) {
       status->_first_line_complete = true;
       int parse_ret = parse_http_response(component);
