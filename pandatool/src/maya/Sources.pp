@@ -38,7 +38,8 @@
   #define SOURCES \
     global_parameters.cxx global_parameters.h mayaFile.cxx mayaFile.h \
     mayaShader.cxx mayaShader.h mayaShaders.cxx mayaShaders.h \
-    mayaToEgg.cxx mayaToEgg.h maya_funcs.I maya_funcs.cxx maya_funcs.h
+    mayaToEgg.cxx mayaToEgg.h maya_funcs.I maya_funcs.cxx maya_funcs.h \
+    post_maya_include.h pre_maya_include.h
 
 #end bin_target
 
