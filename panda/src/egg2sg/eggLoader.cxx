@@ -788,6 +788,7 @@ apply_texture_apply_attributes(TextureApplyTransition *apply,
   } else {
     switch (egg_tex->get_env_type()) {
     case EggTexture::ET_modulate:
+    case EggTexture::ET_unspecified:
       apply->set_mode(TextureApplyProperty::M_modulate);
       break;
       
