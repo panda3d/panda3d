@@ -2601,7 +2601,7 @@ expand_minus(const string &params) {
   int num_words = words.size();
 
   if (num_words == 1) {
-    // Simular unary minus by setting the first operand to 0.
+    // Simulate unary minus by setting the first operand to 0.
     results[0] = 0.0;
     
   } else if (num_words != 2) {

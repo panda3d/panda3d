@@ -45,6 +45,8 @@ protected:
   bool handle_endif_command();
 
   bool handle_begin_command();
+  bool handle_while_command();
+  bool handle_for_command();
   bool handle_forscopes_command();
   bool handle_foreach_command();
   bool handle_formap_command();
@@ -59,6 +61,7 @@ protected:
   bool handle_sinclude_command();
   bool handle_call_command();
   bool handle_error_command();
+  bool handle_mkdir_command();
 
   bool handle_defer_command();
   bool handle_define_command();
@@ -68,6 +71,8 @@ protected:
   bool handle_push_command();
 
   bool include_file(Filename filename);
+  bool replay_while(const string &name);
+  bool replay_for(const string &name, const vector<string> &words);
   bool replay_forscopes(const string &name);
   bool replay_foreach(const string &varname, const vector<string> &words);
   bool replay_formap(const string &varname, const string &mapvar);
@@ -111,6 +116,10 @@ private:
 
   enum BlockState {
     BS_begin,
+    BS_while,
+    BS_nested_while,
+    BS_for,
+    BS_nested_for,
     BS_forscopes,
     BS_nested_forscopes,
     BS_foreach,
@@ -157,7 +166,7 @@ private:
     IfNesting *_if;
     WriteState *_write_state;
     PPScope *_scope;
-    string _filename;
+    string _params;
     ostrstream _output;
     vector<string> _words;
     int _flags;

@@ -491,6 +491,11 @@ end_read() {
       cerr << "Unclosed begin " << _block_nesting->_name << "\n";
       break;
 
+    case BS_while:
+    case BS_nested_while:
+      cerr << "Unclosed while " << _block_nesting->_name << "\n";
+      break;
+
     case BS_forscopes:
     case BS_nested_forscopes:
       cerr << "Unclosed forscopes " << _block_nesting->_name << "\n";
@@ -597,6 +602,12 @@ handle_command(const string &line) {
   } else if (_command == "begin") {
     return handle_begin_command();
 
+  } else if (_command == "while") {
+    return handle_while_command();
+
+  } else if (_command == "for") {
+    return handle_for_command();
+
   } else if (_command == "forscopes") {
     return handle_forscopes_command();
 
@@ -644,6 +655,9 @@ handle_command(const string &line) {
 
   } else if (_command == "error") {
     return handle_error_command();
+
+  } else if (_command == "mkdir") {
+    return handle_mkdir_command();
 
   } else if (_command == "defer") {
     return handle_defer_command();
@@ -827,6 +841,70 @@ handle_begin_command() {
   PPScope *named_scope = _scope->get_named_scopes()->make_scope(name);
   named_scope->set_parent(_scope);
   _scope = named_scope;
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::handle_while_command
+//       Access: Protected
+//  Description: Handles the #while command: repeat a block of
+//               commands while a condition is true (nonempty).
+//               Unlike many of the other block commands, this does
+//               not begin a new scope.
+////////////////////////////////////////////////////////////////////
+bool PPCommandFile::
+handle_while_command() {
+  BlockState state = _in_for ? BS_nested_while : BS_while;
+  string name = trim_blanks(_params);
+  BlockNesting *nest = new BlockNesting(state, name);
+  nest->push(this);
+
+  if (!_in_for) {
+    _in_for = true;
+    _saved_lines.clear();
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::handle_for_command
+//       Access: Protected
+//  Description: Handles the #for command: repeat a block of
+//               commands with a loop variable iterating over a range
+//               of numeric values.
+////////////////////////////////////////////////////////////////////
+bool PPCommandFile::
+handle_for_command() {
+  // We get the name of the variable out first.
+  size_t p = _scope->scan_to_whitespace(_params);
+  string name = _params.substr(0, p);
+
+  if (name.empty()) {
+    cerr << "#for without varname\n";
+    return false;
+  }
+
+  // The rest is the comma-delimited range of values.
+  vector<string> words;
+  _scope->tokenize_params(_params.substr(p), words, true);
+  if (words.size() != 2 && words.size() != 3) {
+    cerr << "Invalid numeric range: '" << _params.substr(p) 
+         << "' for #for " << name << "\n";
+    return false;
+  }
+
+  BlockState state = _in_for ? BS_nested_for : BS_for;
+  BlockNesting *nest = new BlockNesting(state, name);
+  nest->push(this);
+
+  if (!_in_for) {
+    _in_for = true;
+    _saved_lines.clear();
+
+    nest->_words.swap(words);
+  }
 
   return true;
 }
@@ -1034,12 +1112,12 @@ handle_output_command() {
       return false;
     }
     
-    string prefix = _scope->expand_variable("DIRPREFIX");
     if (filename[0] != '/') {
+      string prefix = _scope->expand_variable("DIRPREFIX");
       filename = prefix + filename;
     }
 
-    nest->_filename = filename;
+    nest->_params = filename;
 
     // Generate an in-memory copy of the file first.
     _write_state = new WriteState(*_write_state);
@@ -1083,7 +1161,21 @@ handle_end_command() {
     return false;
   }
 
-  if (nest->_state == BS_forscopes) {
+  if (nest->_state == BS_while) {
+    // Now replay all of the saved lines.
+    _in_for = false;
+    if (!replay_while(nest->_name)) {
+      return false;
+    }
+
+  } else if (nest->_state == BS_for) {
+    // Now replay all of the saved lines.
+    _in_for = false;
+    if (!replay_for(nest->_name, nest->_words)) {
+      return false;
+    }
+
+  } else if (nest->_state == BS_forscopes) {
     // Now replay all of the saved lines.
     _in_for = false;
     if (!replay_forscopes(nest->_name)) {
@@ -1126,7 +1218,7 @@ handle_end_command() {
   } else if (nest->_state == BS_output) {
     if (!_in_for) {
       if (!nest->_output) {
-        cerr << "Error while writing " << nest->_filename << "\n";
+        cerr << "Error while writing " << nest->_params << "\n";
         return false;
       }
 
@@ -1135,7 +1227,7 @@ handle_end_command() {
 
       nest->_output << ends;
       const char *generated_file = nest->_output.str();
-      if (!compare_output(generated_file, nest->_filename,
+      if (!compare_output(generated_file, nest->_params,
                           (nest->_flags & OF_notouch) != 0)) {
         return false;
       }
@@ -1325,6 +1417,34 @@ handle_error_command() {
     cerr << message << "\n";
   }
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::handle_mkdir_command
+//       Access: Protected
+//  Description: Handles the #mkdir command: create a directory or
+//               directories.
+////////////////////////////////////////////////////////////////////
+bool PPCommandFile::
+handle_mkdir_command() {
+  vector<string> words;
+  tokenize_whitespace(_scope->expand_string(_params), words);
+
+  if (words.empty()) {
+    cerr << "No directory name specifed to #mkdir.\n";
+  } else {
+    vector<string>::const_iterator wi;
+    for (wi = words.begin(); wi != words.end(); ++wi) {
+      Filename dirname(*wi, ".");
+      if (!dirname.make_dir()) {
+        if (!dirname.is_directory()) {
+          cerr << "Unable to create directory " << *wi << "\n";
+        }
+      }
+    }
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1570,6 +1690,118 @@ include_file(Filename filename) {
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::replay_while
+//       Access: Protected
+//  Description: Replays all the lines that were saved during a
+//               previous #while..#end block.
+////////////////////////////////////////////////////////////////////
+bool PPCommandFile::
+replay_while(const string &name) {
+  assert(!_in_for);
+
+  bool okflag = true;
+
+  vector<string> lines;
+  lines.swap(_saved_lines);
+
+  // Remove the #end command.  This will fail if someone makes an #end
+  // command that spans multiple lines.  Don't do that.
+  assert(!lines.empty());
+  lines.pop_back();
+
+  // Now replay all of the saved lines.
+  BlockNesting *saved_block = _block_nesting;
+  IfNesting *saved_if = _if_nesting;
+
+  while (!_scope->expand_string(name).empty()) {
+    vector<string>::const_iterator li;
+    for (li = lines.begin(); li != lines.end() && okflag; ++li) {
+      okflag = read_line(*li);
+    }
+  }
+
+  if (saved_block != _block_nesting || saved_if != _if_nesting) {
+    cerr << "Misplaced #end or #endif.\n";
+    okflag = false;
+  }
+
+  return okflag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::replay_for
+//       Access: Protected
+//  Description: Replays all the lines that were saved during a
+//               previous #for..#end block.
+////////////////////////////////////////////////////////////////////
+bool PPCommandFile::
+replay_for(const string &name, const vector<string> &words) {
+  assert(!_in_for);
+
+  bool okflag = true;
+
+  vector<string> lines;
+  lines.swap(_saved_lines);
+
+  // Remove the #end command.  This will fail if someone makes an #end
+  // command that spans multiple lines.  Don't do that.
+  assert(!lines.empty());
+  lines.pop_back();
+
+  // Expand the variable name.
+  string varname = _scope->expand_string(name);
+
+  // Get out the numeric range.
+  int range[3] = {0, 0, 1};
+  assert(words.size() <= 3);
+  for (int i = 0; i < (int)words.size(); i++) {
+    const char *param = words[i].c_str();
+    char *n;
+    range[i] = strtol(param, &n, 10);
+    if (n == param) {
+      cerr << "Invalid integer in #for: " << param << "\n";
+      return false;
+    }
+  }
+
+  if (range[2] == 0) {
+    cerr << "Step by zero in #for " << name << "\n";
+    return false;
+  }
+
+  // Now replay all of the saved lines.
+  BlockNesting *saved_block = _block_nesting;
+  IfNesting *saved_if = _if_nesting;
+  int index_var;
+
+  if (range[2] > 0) {
+    for (index_var = range[0]; index_var <= range[1]; index_var += range[2]) {
+      _scope->define_variable(varname, _scope->format_int(index_var));
+      vector<string>::const_iterator li;
+      for (li = lines.begin(); li != lines.end() && okflag; ++li) {
+        okflag = read_line(*li);
+      }
+    }
+  } else {
+    for (index_var = range[0]; index_var >= range[1]; index_var += range[2]) {
+      _scope->define_variable(varname, _scope->format_int(index_var));
+      vector<string>::const_iterator li;
+      for (li = lines.begin(); li != lines.end() && okflag; ++li) {
+        okflag = read_line(*li);
+      }
+    }
+  }
+  _scope->define_variable(varname, _scope->format_int(index_var));
+
+  if (saved_block != _block_nesting || saved_if != _if_nesting) {
+    cerr << "Misplaced #end or #endif.\n";
+    okflag = false;
+  }
+
+  return okflag;
 }
 
 ////////////////////////////////////////////////////////////////////
