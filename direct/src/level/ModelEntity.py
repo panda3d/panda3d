@@ -24,7 +24,8 @@ class ModelEntity(BasicEntities.NodePathEntity):
                 self.model.reparentTo(self)
 
         # HACK SDN: special code for moving crate wall collisions down
-        if self.modelPath == "phase_9/models/cogHQ/woodCrateB.bam":
+        if self.modelPath in ("phase_9/models/cogHQ/woodCrateB.bam",
+                              "phase_9/models/cogHQ/metal_crateB.bam"):
             # move walls down
             cNode = self.find("**/wall")
             cNode.setZ(-.75)
