@@ -37,6 +37,14 @@ class MetaInterval(CMetaInterval):
             interruptible = kw['interruptible']
             del kw['interruptible']
 
+        # A duration keyword specifies the duration the interval will
+        # appear to have for the purposes of computing the start time
+        # for subsequent intervals in a sequence or track.
+        self.phonyDuration = -1
+        if kw.has_key('duration'):
+            self.phonyDuration = kw['duration']
+            del kw['duration']
+
         if kw:
             self.notify.error("Unexpected keyword parameters: %s" % (kw.keys()))
 
@@ -123,23 +131,23 @@ class MetaInterval(CMetaInterval):
 
     # Functions to define sequence, parallel, and track behaviors:
     
-    def addSequence(self, list, relTime, relTo):
+    def addSequence(self, list, relTime, relTo, duration):
         # Adds the given list of intervals to the MetaInterval to be
         # played one after the other.
         self.pushLevel(relTime, relTo)
         for ival in list:
             self.addInterval(ival, 0.0, PREVIOUS_END)
-        self.popLevel()
+        self.popLevel(duration)
 
-    def addParallel(self, list, relTime, relTo):
+    def addParallel(self, list, relTime, relTo, duration):
         # Adds the given list of intervals to the MetaInterval to be
         # played simultaneously.
         self.pushLevel(relTime, relTo)
         for ival in list:
             self.addInterval(ival, 0.0, TRACK_START)
-        self.popLevel()
+        self.popLevel(duration)
 
-    def addTrack(self, list, relTime, relTo):
+    def addTrack(self, list, relTime, relTo, duration):
         # Adds a "track list".  This is a list of tuples of the form:
         #
         #   ( <delay>, <Interval>,
@@ -173,7 +181,7 @@ class MetaInterval(CMetaInterval):
 
             else:
                 self.notify.error("Not a tuple in Track: %s" % (tuple,))
-        self.popLevel()
+        self.popLevel(duration)
 
     def addInterval(self, ival, relTime, relTo):
         # Adds the given interval to the MetaInterval.
@@ -390,17 +398,17 @@ class MetaInterval(CMetaInterval):
 
 class Sequence(MetaInterval):
     def applyIvals(self, meta, relTime, relTo):
-        meta.addSequence(self.ivals, relTime, relTo)
+        meta.addSequence(self.ivals, relTime, relTo, self.phonyDuration)
 
 class Parallel(MetaInterval):
     def applyIvals(self, meta, relTime, relTo):
-        meta.addParallel(self.ivals, relTime, relTo)
+        meta.addParallel(self.ivals, relTime, relTo, self.phonyDuration)
 
 class Track(MetaInterval):
     def applyIvals(self, meta, relTime, relTo):
-        meta.addTrack(self.ivals, relTime, relTo)
+        meta.addTrack(self.ivals, relTime, relTo, self.phonyDuration)
 
 # Temporary for backward compatibility.
 class MultiTrack(MetaInterval):
     def applyIvals(self, meta, relTime, relTo):
-        meta.addParallel(self.ivals, relTime, relTo)
+        meta.addParallel(self.ivals, relTime, relTo, self.phonyDuration)

@@ -200,15 +200,22 @@ add_ext_index(int ext_index, const string &name, double duration,
 //       Access: Published
 //  Description: Finishes a level marked by a previous call to
 //               push_level(), and returns to the previous level.
+//
+//               If the duration is not negative, it represents a
+//               phony duration to assign to the level, for the
+//               purposes of sequencing later intervals.  Otherwise,
+//               the level's duration is computed based on the
+//               intervals within the level.
 ////////////////////////////////////////////////////////////////////
 int CMetaInterval::
-pop_level() {
+pop_level(double duration) {
   nassertr(_event_queue.empty() && !_processing_events, -1);
   nassertr(_current_nesting_level > 0, -1);
 
   _defs.push_back(IntervalDef());
   IntervalDef &def = _defs.back();
   def._type = DT_pop_level;
+  def._ext_duration = duration;
   _current_nesting_level--;
   mark_dirty();
 
@@ -1203,9 +1210,14 @@ recompute_level(int n, int level_begin, int &level_end) {
   }
 
   if (n < (int)_defs.size()) {
+    IntervalDef &def = _defs[n];
+    // If we have a pop record, check it for a phony duration.
+    if (def._ext_duration >= 0.0) {
+      level_end = level_begin + double_to_int_time(def._ext_duration);
+    }
+
     // The final pop "begins" at the level end time, just for clarity
     // on output.
-    IntervalDef &def = _defs[n];
     def._actual_begin_time = level_end;
   }
 

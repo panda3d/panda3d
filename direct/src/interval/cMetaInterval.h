@@ -55,7 +55,7 @@ PUBLISHED:
   int add_ext_index(int ext_index, const string &name,
                     double duration, bool open_ended,
                     double rel_time, RelativeStart rel_to);
-  int pop_level();
+  int pop_level(double duration = -1.0);
 
   bool set_interval_start_time(const string &name, double rel_time, 
                                RelativeStart rel_to = RS_level_begin);
