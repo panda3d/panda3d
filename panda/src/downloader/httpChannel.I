@@ -212,6 +212,36 @@ get_persistent_connection() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::set_allow_proxy
+//       Access: Published
+//  Description: If this is true (the normal case), the HTTPClient
+//               will be consulted for information about the proxy to
+//               be used for each connection via this HTTPChannel.  If
+//               this has been set to false by the user, then all
+//               connections will be made directly, regardless of the
+//               proxy settings indicated on the HTTPClient.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+set_allow_proxy(bool allow_proxy) {
+  _allow_proxy = allow_proxy;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_allow_proxy
+//       Access: Published
+//  Description: If this is true (the normal case), the HTTPClient
+//               will be consulted for information about the proxy to
+//               be used for each connection via this HTTPChannel.  If
+//               this has been set to false by the user, then all
+//               connections will be made directly, regardless of the
+//               proxy settings indicated on the HTTPClient.
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPChannel::
+get_allow_proxy() const {
+  return _allow_proxy;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::set_connect_timeout
 //       Access: Published
 //  Description: Sets the maximum length of time, in seconds, that the

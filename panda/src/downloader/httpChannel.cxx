@@ -43,6 +43,7 @@ HTTPChannel(HTTPClient *client) :
 {
   _proxy_next_index = 0;
   _persistent_connection = false;
+  _allow_proxy = true;
   _connect_timeout = connect_timeout;
   _http_timeout = http_timeout;
   _blocking_connect = false;
@@ -1794,7 +1795,9 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
   // Get the set of proxies that are appropriate for this URL.
   _proxies.clear();
   _proxy_next_index = 0;
-  _client->get_proxies_for_url(url.get_url(), _proxies);
+  if (get_allow_proxy()) {
+    _client->get_proxies_for_url(url.get_url(), _proxies);
+  }
 
   // If we still have a live connection to a proxy that is on the
   // list, that proxy should be moved immediately to the front of the

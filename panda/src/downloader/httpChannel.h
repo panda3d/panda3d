@@ -91,6 +91,9 @@ PUBLISHED:
   INLINE void set_persistent_connection(bool persistent_connection);
   INLINE bool get_persistent_connection() const;
 
+  INLINE void set_allow_proxy(bool allow_proxy);
+  INLINE bool get_allow_proxy() const;
+
   INLINE void set_connect_timeout(double timeout_seconds);
   INLINE double get_connect_timeout() const;
   INLINE void set_blocking_connect(bool blocking_connect);
@@ -221,6 +224,7 @@ private:
   PT(BioPtr) _bio;
   PT(BioStreamPtr) _source;
   bool _persistent_connection;
+  bool _allow_proxy;
   double _connect_timeout;
   double _http_timeout;
   bool _blocking_connect;
