@@ -120,7 +120,7 @@ class ClientRepository(DirectObject.DirectObject):
         elif self.connectMethod == 'nspr':
             self.connectHttp = 0
         else:
-            self.connectHttp = self.hasProxy
+            self.connectHttp = (self.hasProxy or serverList[0].getScheme() == 'https')
 
         self.bootedIndex = None
         self.bootedText = None
