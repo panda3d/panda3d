@@ -46,6 +46,7 @@ public:
 
   virtual void set_time_units(int unit_mask);
   virtual void set_scroll_speed(float scroll_speed);
+  virtual void clicked_label(int collector_index);
   void set_vertical_scale(float value_height);
 
 protected:

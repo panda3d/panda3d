@@ -55,6 +55,7 @@ public:
 
   INLINE PStatView &get_view() const;
   INLINE int get_collector_index() const;
+  void set_collector_index(int collector_index);
 
   INLINE void set_horizontal_scale(float time_width);
   INLINE float get_horizontal_scale() const;

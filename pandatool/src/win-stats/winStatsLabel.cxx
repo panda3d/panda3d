@@ -18,6 +18,7 @@
 
 #include "winStatsLabel.h"
 #include "winStatsMonitor.h"
+#include "winStatsGraph.h"
 
 int WinStatsLabel::_left_margin = 2;
 int WinStatsLabel::_right_margin = 2;
@@ -33,9 +34,10 @@ const char * const WinStatsLabel::_window_class_name = "label";
 //  Description:
 ////////////////////////////////////////////////////////////////////
 WinStatsLabel::
-WinStatsLabel(WinStatsMonitor *monitor, int thread_index, 
-              int collector_index, bool use_fullname) :
+WinStatsLabel(WinStatsMonitor *monitor, WinStatsGraph *graph,
+              int thread_index, int collector_index, bool use_fullname) :
   _monitor(monitor),
+  _graph(graph),
   _thread_index(thread_index),
   _collector_index(collector_index)
 {
@@ -315,16 +317,16 @@ LONG WinStatsLabel::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
   case WM_LBUTTONDBLCLK:
-    _monitor->open_strip_chart(_thread_index, _collector_index);
+    _graph->clicked_label(_collector_index);
     return 0;
-
+    
   case WM_MOUSEMOVE: 
     {
       // When the mouse enters the label area, highlight the label.
       set_mouse_within(true);
-
+      
       // Now we want to get a WM_MOUSELEAVE when the mouse leaves the
-      // graph window.
+      // label.
       TRACKMOUSEEVENT tme = {
         sizeof(TRACKMOUSEEVENT),
         TME_LEAVE,

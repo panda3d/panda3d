@@ -154,6 +154,35 @@ set_scroll_speed(float scroll_speed) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinStatsStripChart::clicked_label
+//       Access: Public, Virtual
+//  Description: Called when the user single-clicks on a label.
+////////////////////////////////////////////////////////////////////
+void WinStatsStripChart::
+clicked_label(int collector_index) {
+  if (collector_index < 0) {
+    // Clicking on whitespace in the graph is the same as clicking on
+    // the top label.
+    collector_index = get_collector_index();
+  }
+
+  if (collector_index == get_collector_index() && collector_index != 0) {
+    // Clicking on the top label means to go up to the parent level.
+    const PStatClientData *client_data = 
+      WinStatsGraph::_monitor->get_client_data();
+    if (client_data->has_collector(collector_index)) {
+      const PStatCollectorDef &def =
+        client_data->get_collector_def(collector_index);
+      set_collector_index(def._parent_index);
+    }
+
+  } else {
+    // Clicking on any other label means to focus on that.
+    set_collector_index(collector_index);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinStatsStripChart::set_vertical_scale
 //       Access: Public
 //  Description: Changes the value the height of the vertical axis
@@ -180,7 +209,7 @@ update_labels() {
 
   _label_stack.clear_labels();
   for (int i = 0; i < get_num_labels(); i++) {
-    _label_stack.add_label(WinStatsGraph::_monitor, _thread_index,
+    _label_stack.add_label(WinStatsGraph::_monitor, this, _thread_index,
                            get_label_collector(i), false);
   }
   _labels_changed = false;
@@ -423,6 +452,17 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       }
       _drag_mode = DM_none;
       ReleaseCapture();
+      return 0;
+    }
+    break;
+
+  case WM_LBUTTONDBLCLK:
+    {
+      // Double-clicking on a color bar in the graph is the same as
+      // double-clicking on the corresponding label.
+      PN_int16 x = LOWORD(lparam);
+      PN_int16 y = HIWORD(lparam);
+      clicked_label(get_collector_under_pixel(x, y));
       return 0;
     }
     break;

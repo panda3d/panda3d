@@ -59,6 +59,7 @@ public:
   virtual void set_time_units(int unit_mask);
   virtual void set_scroll_speed(float scroll_speed);
   void user_guide_bars_changed();
+  virtual void clicked_label(int collector_index);
 
 protected:
   void close();

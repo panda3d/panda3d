@@ -30,8 +30,6 @@ const char * const WinStatsLabelStack::_window_class_name = "stack";
 ////////////////////////////////////////////////////////////////////
 WinStatsLabelStack::
 WinStatsLabelStack() {
-  _window = 0;
-
   _x = 0;
   _y = 0;
   _width = 0;
@@ -186,6 +184,18 @@ get_label_height(int label_index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinStatsLabelStack::get_label_collector_index
+//       Access: Public
+//  Description: Returns the collector index associated with the
+//               indicated label.
+////////////////////////////////////////////////////////////////////
+int WinStatsLabelStack::
+get_label_collector_index(int label_index) const {
+  nassertr(label_index >= 0 && label_index < (int)_labels.size(), -1);
+  return _labels[label_index]->get_collector_index();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinStatsLabelStack::clear_labels
 //       Access: Public
 //  Description: Removes the set of labels and starts a new set.
@@ -207,15 +217,15 @@ clear_labels() {
 //               new label index.
 ////////////////////////////////////////////////////////////////////
 int WinStatsLabelStack::
-add_label(WinStatsMonitor *monitor, int thread_index, int collector_index,
-          bool use_fullname) {
+add_label(WinStatsMonitor *monitor, WinStatsGraph *graph,
+          int thread_index, int collector_index, bool use_fullname) {
   int yp = _height;
   if (!_labels.empty()) {
     WinStatsLabel *top_label = _labels.back();
     yp = top_label->get_y() - top_label->get_height();
   }
   WinStatsLabel *label = 
-    new WinStatsLabel(monitor, thread_index, collector_index, use_fullname);
+    new WinStatsLabel(monitor, graph, thread_index, collector_index, use_fullname);
   if (_window) {
     label->setup(_window);
     label->set_pos(0, yp, _width);

@@ -45,6 +45,7 @@ public:
   virtual void changed_graph_size(int graph_xsize, int graph_ysize);
 
   virtual void set_time_units(int unit_mask);
+  virtual void clicked_label(int collector_index);
   void set_horizontal_scale(float time_width);
 
 protected:
@@ -62,6 +63,7 @@ protected:
                                        int width, int height);
 
 private:
+  int get_collector_under_pixel(int xpoint, int ypoint);
   void update_labels();
   void draw_guide_bar(HDC hdc, const GuideBar &bar);
   void draw_guide_label(HDC hdc, int y, const PStatGraph::GuideBar &bar);

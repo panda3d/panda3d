@@ -24,6 +24,7 @@
 #include <windows.h>
 
 class WinStatsMonitor;
+class WinStatsGraph;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : WinStatsLabel
@@ -34,8 +35,8 @@ class WinStatsMonitor;
 ////////////////////////////////////////////////////////////////////
 class WinStatsLabel {
 public:
-  WinStatsLabel(WinStatsMonitor *monitor, int thread_index, 
-                int collector_index, bool use_fullname);
+  WinStatsLabel(WinStatsMonitor *monitor, WinStatsGraph *graph,
+                int thread_index, int collector_index, bool use_fullname);
   ~WinStatsLabel();
 
   void setup(HWND parent_window);
@@ -62,6 +63,7 @@ private:
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
   WinStatsMonitor *_monitor;
+  WinStatsGraph *_graph;
   int _thread_index;
   int _collector_index;
   string _text;

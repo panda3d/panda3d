@@ -175,6 +175,15 @@ user_guide_bars_changed() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::clicked_label
+//       Access: Public, Virtual
+//  Description: Called when the user single-clicks on a label.
+////////////////////////////////////////////////////////////////////
+void WinStatsGraph::
+clicked_label(int collector_index) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinStatsGraph::close
 //       Access: Protected
 //  Description: Should be called when the user closes the associated
@@ -576,7 +585,7 @@ register_graph_window_class(HINSTANCE application) {
   WNDCLASS wc;
 
   ZeroMemory(&wc, sizeof(WNDCLASS));
-  wc.style = 0;
+  wc.style = CS_DBLCLKS;
   wc.lpfnWndProc = (WNDPROC)static_graph_window_proc;
   wc.hInstance = application;
   wc.hCursor = LoadCursor(NULL, IDC_ARROW);

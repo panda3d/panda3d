@@ -118,6 +118,18 @@ set_time_units(int unit_mask) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinStatsPianoRoll::clicked_label
+//       Access: Public, Virtual
+//  Description: Called when the user single-clicks on a label.
+////////////////////////////////////////////////////////////////////
+void WinStatsPianoRoll::
+clicked_label(int collector_index) {
+  if (collector_index >= 0) {
+    WinStatsGraph::_monitor->open_strip_chart(WinStatsGraph::_thread_index, collector_index);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinStatsPianoRoll::set_horizontal_scale
 //       Access: Public
 //  Description: Changes the amount of time the width of the
@@ -254,6 +266,27 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     break;
 
   case WM_MOUSEMOVE: 
+    if (_drag_mode == DM_none && _potential_drag_mode == DM_none) {
+      // When the mouse is over a color bar, highlight it.
+      PN_int16 x = LOWORD(lparam);
+      PN_int16 y = HIWORD(lparam);
+      _label_stack.highlight_label(get_collector_under_pixel(x, y));
+
+      // Now we want to get a WM_MOUSELEAVE when the mouse leaves the
+      // graph window.
+      TRACKMOUSEEVENT tme = {
+        sizeof(TRACKMOUSEEVENT),
+        TME_LEAVE,
+        _graph_window,
+        0
+      };
+      TrackMouseEvent(&tme);
+
+    } else {
+      // If the mouse is in some drag mode, stop highlighting.
+      _label_stack.highlight_label(-1);
+    }
+
     if (_drag_mode == DM_scale) {
       PN_int16 x = LOWORD(lparam);
       float ratio = (float)x / (float)get_xsize();
@@ -279,6 +312,11 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
     break;
 
+  case WM_MOUSELEAVE:
+    // When the mouse leaves the graph, stop highlighting.
+    _label_stack.highlight_label(-1);
+    break;
+
   case WM_LBUTTONUP:
     if (_drag_mode == DM_scale) {
       _drag_mode = DM_none;
@@ -294,6 +332,17 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       }
       _drag_mode = DM_none;
       ReleaseCapture();
+      return 0;
+    }
+    break;
+
+  case WM_LBUTTONDBLCLK:
+    {
+      // Double-clicking on a color bar in the graph is the same as
+      // double-clicking on the corresponding label.
+      PN_int16 x = LOWORD(lparam);
+      PN_int16 y = HIWORD(lparam);
+      clicked_label(get_collector_under_pixel(x, y));
       return 0;
     }
     break;
@@ -383,6 +432,28 @@ consider_drag_start(int mouse_x, int mouse_y, int width, int height) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinStatsPianoRoll::get_collector_under_pixel
+//       Access: Private
+//  Description: Returns the collector index associated with the
+//               indicated vertical row, or -1.
+////////////////////////////////////////////////////////////////////
+int WinStatsPianoRoll::
+get_collector_under_pixel(int xpoint, int ypoint) {
+  if (_label_stack.get_num_labels() == 0) {
+    return -1;
+  }
+
+  // Assume all of the labels are the same height.
+  int height = _label_stack.get_label_height(0);
+  int row = (get_ysize() - ypoint) / height;
+  if (row >= 0 && row < _label_stack.get_num_labels()) {
+    return _label_stack.get_label_collector_index(row);
+  } else {
+    return -1;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinStatsPianoRoll::update_labels
 //       Access: Private
 //  Description: Resets the list of labels.
@@ -392,7 +463,7 @@ update_labels() {
   _label_stack.clear_labels();
   for (int i = 0; i < get_num_labels(); i++) {
     int label_index = 
-      _label_stack.add_label(WinStatsGraph::_monitor, 
+      _label_stack.add_label(WinStatsGraph::_monitor, this,
                              WinStatsGraph::_thread_index,
                              get_label_collector(i), true);
   }

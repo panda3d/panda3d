@@ -20,10 +20,10 @@
 #include "pStatClientData.h"
 #include "pStatMonitor.h"
 
-#include <pStatFrameData.h>
-#include <pStatCollectorDef.h>
-#include <string_utils.h>
-#include <config_pstats.h>
+#include "pStatFrameData.h"
+#include "pStatCollectorDef.h"
+#include "string_utils.h"
+#include "config_pstats.h"
 
 #include <algorithm>
 
@@ -138,6 +138,23 @@ update() {
 bool PStatStripChart::
 first_data() const {
   return _first_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatStripChart::set_collector_index
+//       Access: Public
+//  Description: Changes the collector represented by this strip
+//               chart.  This may force a redraw.
+////////////////////////////////////////////////////////////////////
+void PStatStripChart::
+set_collector_index(int collector_index) {
+  if (_collector_index != collector_index) {
+    _collector_index = collector_index;
+    _title_unknown = true;
+    _data.clear();
+    force_redraw();
+    update_labels();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

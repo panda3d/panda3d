@@ -26,6 +26,7 @@
 
 class WinStatsLabel;
 class WinStatsMonitor;
+class WinStatsGraph;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : WinStatsLabelStack
@@ -49,10 +50,11 @@ public:
 
   int get_label_y(int label_index) const;
   int get_label_height(int label_index) const;
+  int get_label_collector_index(int label_index) const;
 
   void clear_labels();
-  int add_label(WinStatsMonitor *monitor, int thread_index,
-                int collector_index, bool use_fullname);
+  int add_label(WinStatsMonitor *monitor, WinStatsGraph *graph,
+                int thread_index, int collector_index, bool use_fullname);
   int get_num_labels() const;
 
   void highlight_label(int collector_index);
