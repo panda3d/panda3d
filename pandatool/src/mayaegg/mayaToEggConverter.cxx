@@ -152,6 +152,18 @@ get_extension() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::get_additional_extensions
+//       Access: Public, Virtual
+//  Description: Returns a space-separated list of extension, in
+//               addition to the one returned by get_extension(), that
+//               are recognized by this converter.
+////////////////////////////////////////////////////////////////////
+string MayaToEggConverter::
+get_additional_extensions() const {
+  return "ma";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MayaToEggConverter::convert_file
 //       Access: Public, Virtual
 //  Description: Handles the reading of the input file and converting

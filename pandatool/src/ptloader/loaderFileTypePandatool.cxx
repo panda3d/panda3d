@@ -67,6 +67,18 @@ get_extension() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypePandatool::get_additional_extensions
+//       Access: Public, Virtual
+//  Description: Returns a space-separated list of extension, in
+//               addition to the one returned by get_extension(), that
+//               are recognized by this converter.
+////////////////////////////////////////////////////////////////////
+string LoaderFileTypePandatool::
+get_additional_extensions() const {
+  return _converter->get_additional_extensions();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LoaderFileTypePandatool::resolve_filename
 //       Access: Public, Virtual
 //  Description: Searches for the indicated filename on whatever paths

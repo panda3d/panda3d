@@ -70,6 +70,7 @@ public:
 
   virtual string get_name() const;
   virtual string get_extension() const;
+  virtual string get_additional_extensions() const;
 
   virtual bool convert_file(const Filename &filename);
   bool convert_maya(bool from_selection);

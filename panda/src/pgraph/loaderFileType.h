@@ -43,6 +43,7 @@ public:
 
   virtual string get_name() const=0;
   virtual string get_extension() const=0;
+  virtual string get_additional_extensions() const;
 
   virtual PT(PandaNode) load_file(const Filename &path, bool report_errors) const;
 

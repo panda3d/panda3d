@@ -94,4 +94,21 @@
     mayaPview.cxx mayaPview.h
 
 #end lib_target
-  
+
+#begin lib_target
+  #define USE_PACKAGES maya
+  #define TARGET mayaloader
+  #define BUILDING_DLL BUILDING_MISC
+  #define LOCAL_LIBS \
+    mayaegg ptloader converter pandatoolbase
+  #define OTHER_LIBS \
+    egg2pg:c builder:c egg:c pandaegg:m \
+    mathutil:c linmath:c putil:c panda:m \
+    express:c pandaexpress:m \
+    dtoolconfig dtool \
+    $[if $[UNIX_PLATFORM],OpenMayalib]
+
+  #define SOURCES \
+    config_mayaloader.cxx
+
+#end lib_target

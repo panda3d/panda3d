@@ -91,6 +91,18 @@ set_egg_data(EggData *egg_data, bool owns_egg_data) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::get_additional_extensions
+//       Access: Public, Virtual
+//  Description: Returns a space-separated list of extension, in
+//               addition to the one returned by get_extension(), that
+//               are recognized by this converter.
+////////////////////////////////////////////////////////////////////
+string SomethingToEggConverter::
+get_additional_extensions() const {
+  return string();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEggConverter::handle_external_reference
 //       Access: Public
 //  Description: Handles an external reference in the source file.  If

@@ -19,9 +19,9 @@
 #ifndef CONFIG_PTLOADER_H
 #define CONFIG_PTLOADER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 ConfigureDecl(config_ptloader, EXPCL_PTLOADER, EXPTP_PTLOADER);
 

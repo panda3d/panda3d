@@ -19,7 +19,7 @@
 #ifndef LOADERFILETYPEREGISTRY_H
 #define LOADERFILETYPEREGISTRY_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pvector.h"
 #include "pmap.h"
@@ -44,11 +44,15 @@ public:
   int get_num_types() const;
   LoaderFileType *get_type(int n) const;
 
-  LoaderFileType *get_type_from_extension(const string &extension) const;
+  LoaderFileType *get_type_from_extension(const string &extension);
 
   void write_types(ostream &out, int indent_level = 0) const;
 
   void register_type(LoaderFileType *type);
+  void register_deferred_type(const string &extension, const string &library);
+
+private:
+  void record_extension(const string &extension, LoaderFileType *type);
 
 private:
   typedef pvector<LoaderFileType *> Types;
@@ -56,6 +60,9 @@ private:
 
   typedef pmap<string, LoaderFileType *> Extensions;
   Extensions _extensions;
+
+  typedef pmap<string, string> DeferredTypes;
+  DeferredTypes _deferred_types;
 
   static LoaderFileTypeRegistry *_global_ptr;
 };

@@ -20,8 +20,8 @@
 #include "loaderFileType.h"
 #include "config_pgraph.h"
 
-#include <string_utils.h>
-#include <indent.h>
+#include "string_utils.h"
+#include "indent.h"
 
 #include <algorithm>
 
@@ -88,11 +88,41 @@ get_type(int n) const {
 //               the extension matches no known file types.
 ////////////////////////////////////////////////////////////////////
 LoaderFileType *LoaderFileTypeRegistry::
-get_type_from_extension(const string &extension) const {
+get_type_from_extension(const string &extension) {
+  string dcextension = downcase(extension);
+
   Extensions::const_iterator ei;
-  ei = _extensions.find(downcase(extension));
+  ei = _extensions.find(dcextension);
   if (ei == _extensions.end()) {
-    // Nothing matches that extension.
+    // Nothing matches that extension.  Do we have a deferred type?
+
+    DeferredTypes::iterator di;
+    di = _deferred_types.find(dcextension);
+    if (di != _deferred_types.end()) {
+      // We do!  Try to load the deferred library on-the-fly.  Note
+      // that this is a race condition if we support threaded loading;
+      // this whole function needs to be protected from multiple
+      // entry.
+      Filename dlname = Filename::dso_filename("lib" + (*di).second + ".so");
+      _deferred_types.erase(di);
+
+      loader_cat->info()
+        << "loading file type module: " << dlname.to_os_specific() << endl;
+      void *tmp = load_dso(dlname);
+      if (tmp == (void *)NULL) {
+        loader_cat->info()
+          << "Unable to load: " << load_dso_error() << endl;
+        return NULL;
+      }
+
+      // Now try again to find the LoaderFileType.
+      ei = _extensions.find(dcextension);
+    }
+  }
+
+  if (ei == _extensions.end()) {
+    // Nothing matches that extension, even after we've checked for a
+    // deferred type description.
     return NULL;
   }
 
@@ -119,6 +149,16 @@ write_types(ostream &out, int indent_level) const {
         << "  ." << type->get_extension() << "\n";
     }
   }
+
+  if (!_deferred_types.empty()) {
+    indent(out, indent_level) << "Also available:";
+    DeferredTypes::const_iterator di;
+    for (di = _deferred_types.begin(); di != _deferred_types.end(); ++di) {
+      const string &extension = (*di).first;
+      out << " ." << extension;
+    }
+    out << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,7 +170,7 @@ void LoaderFileTypeRegistry::
 register_type(LoaderFileType *type) {
   // Make sure we haven't already registered this type.
   if (find(_types.begin(), _types.end(), type) != _types.end()) {
-    loader_cat.warning()
+    loader_cat->info()
       << "Attempt to register LoaderFileType " << type->get_name()
       << " (" << type->get_type() << ") more than once.\n";
     return;
@@ -138,14 +178,77 @@ register_type(LoaderFileType *type) {
 
   _types.push_back(type);
 
-  string extension = downcase(type->get_extension());
-  Extensions::const_iterator ei;
-  ei = _extensions.find(extension);
-  if (ei != _extensions.end()) {
-    loader_cat.warning()
-      << "Multiple LoaderFileTypes registered that use the extension "
-      << extension << "\n";
-  } else {
-    _extensions.insert(Extensions::value_type(extension, type));
+  record_extension(type->get_extension(), type);
+
+  vector_string words;
+  extract_words(type->get_additional_extensions(), words);
+  vector_string::const_iterator wi;
+  for (wi = words.begin(); wi != words.end(); ++wi) {
+    record_extension(*wi, type);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypeRegistry::register_deferred_type
+//       Access: Public
+//  Description: Records a type associated with a particular extension
+//               to be loaded in the future.  The named library will
+//               be dynamically loaded the first time files of this
+//               extension are loaded; presumably this library will
+//               call register_type() when it initializes, thus making
+//               the extension loadable.
+////////////////////////////////////////////////////////////////////
+void LoaderFileTypeRegistry::
+register_deferred_type(const string &extension, const string &library) {
+  string dcextension = downcase(extension);
+
+  Extensions::const_iterator ei;
+  ei = _extensions.find(dcextension);
+  if (ei != _extensions.end()) {
+    // We already have a loader for this type; no need to register
+    // another one.
+    loader_cat->info()
+      << "Attempt to register loader library " << library
+      << " (" << dcextension << ") when extension is already known.\n";
+    return;
+  }
+
+  DeferredTypes::const_iterator di;
+  di = _deferred_types.find(dcextension);
+  if (di != _deferred_types.end()) {
+    if ((*di).second == library) {
+      loader_cat->info()
+        << "Attempt to register loader library " << library
+        << " (" << dcextension << ") more than once.\n";
+      return;
+    } else {
+      loader_cat->info()
+        << "Multiple libraries registered that use the extension "
+        << dcextension << "\n";
+    }
+  }
+
+  _deferred_types[dcextension] = library;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypeRegistry::record_extension
+//       Access: Private
+//  Description: Records a filename extension recognized by a loader
+//               file type.
+////////////////////////////////////////////////////////////////////
+void LoaderFileTypeRegistry::
+record_extension(const string &extension, LoaderFileType *type) {
+  string dcextension = downcase(extension);
+  Extensions::const_iterator ei;
+  ei = _extensions.find(dcextension);
+  if (ei != _extensions.end()) {
+    loader_cat->info()
+      << "Multiple LoaderFileTypes registered that use the extension "
+      << dcextension << "\n";
+  } else {
+    _extensions.insert(Extensions::value_type(dcextension, type));
+  }
+
+  _deferred_types.erase(dcextension);
 }
