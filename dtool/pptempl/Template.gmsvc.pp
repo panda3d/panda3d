@@ -846,7 +846,7 @@ $[TAB] $[COMPILE_C++]
 $[install_bin_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_bin_dir]
-$[TAB] cp -f $[local] $[dest]/
+$[TAB] chmod +x $[local]; cp -f $[local] $[dest]/
 #end file
 
 #foreach file $[install_headers]
