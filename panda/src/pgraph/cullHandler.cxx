@@ -21,6 +21,7 @@
 #include "geom.h"
 #include "transformState.h"
 #include "renderState.h"
+#include "notify.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullHandler::Destructor
@@ -46,7 +47,8 @@ CullHandler::
 ////////////////////////////////////////////////////////////////////
 void CullHandler::
 record_object(CullableObject *object) {
-  cerr << *object->_geom << " " << *object->_transform << " " << *object->_state << "\n";
+  nout << *object->_geom << " " << *object->_transform << " " 
+       << *object->_state << "\n";
   delete object;
 }
 
