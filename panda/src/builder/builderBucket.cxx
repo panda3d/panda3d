@@ -235,7 +235,7 @@ output(ostream &out) const {
 
   TexCoords::const_iterator ti;
   for (ti = _texcoords.begin(); ti != _texcoords.end(); ++ti) {
-    out << "_texcoords[\"" << (*ti).first << "\"] = " 
+    out << "_texcoords[\"" << (*ti).first->get_name() << "\"] = " 
         << (void *)(*ti).second << "\n";
   }
 
