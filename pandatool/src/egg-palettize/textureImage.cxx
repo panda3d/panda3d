@@ -833,7 +833,7 @@ write_scale_info(ostream &out, int indent_level) {
         << " " << source->get_num_channels();
   }
 
-  if (!_placement.empty()) {
+  if (!_placement.empty() && is_size_known()) {
     out << " new " << get_x_size() << " " << get_y_size()
         << " " << get_num_channels();
 
@@ -864,8 +864,9 @@ write_scale_info(ostream &out, int indent_level) {
       indent(out, indent_level + 2)
         << "copied to "
         << FilenameUnifier::make_user_filename(image->get_filename());
-      if (image->get_x_size() != get_x_size() ||
-          image->get_y_size() != get_y_size()) {
+      if (image->is_size_known() && is_size_known() &&
+          (image->get_x_size() != get_x_size() ||
+           image->get_y_size() != get_y_size())) {
         out << " at size " << image->get_x_size() << " "
             << image->get_y_size();
         if (source != (SourceTextureImage *)NULL &&
