@@ -20,9 +20,6 @@
 #include "config_pgraph.h"
 #include "bamFile.h"
 
-#include "config_util.h"
-#include "config_express.h"
-#include "virtualFileSystem.h"
 #include "dcast.h"
 
 TypeHandle LoaderFileTypeBam::_type_handle;
@@ -54,25 +51,6 @@ get_name() const {
 string LoaderFileTypeBam::
 get_extension() const {
   return "bam";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeBam::resolve_filename
-//       Access: Public, Virtual
-//  Description: Searches for the indicated filename on whatever paths
-//               are appropriate to this file type, and updates it if
-//               it is found.
-////////////////////////////////////////////////////////////////////
-void LoaderFileTypeBam::
-resolve_filename(Filename &path) const {
-  if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    vfs->resolve_filename(path, get_bam_path());
-    vfs->resolve_filename(path, get_model_path());
-  } else {
-    path.resolve_filename(get_bam_path());
-    path.resolve_filename(get_model_path());
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

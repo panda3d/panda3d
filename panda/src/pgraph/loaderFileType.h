@@ -25,6 +25,7 @@
 #include "filename.h"
 #include "pandaNode.h"
 #include "pointerTo.h"
+#include "dSearchPath.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LoaderFileType
@@ -43,7 +44,6 @@ public:
   virtual string get_name() const=0;
   virtual string get_extension() const=0;
 
-  virtual void resolve_filename(Filename &path) const;
   virtual PT(PandaNode) load_file(const Filename &path, bool report_errors) const;
 
 public:

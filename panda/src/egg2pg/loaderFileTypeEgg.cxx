@@ -53,18 +53,6 @@ get_extension() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeEgg::resolve_filename
-//       Access: Public, Virtual
-//  Description: Searches for the indicated filename on whatever paths
-//               are appropriate to this file type, and updates it if
-//               it is found.
-////////////////////////////////////////////////////////////////////
-void LoaderFileTypeEgg::
-resolve_filename(Filename &path) const {
-  EggData::resolve_egg_filename(path);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LoaderFileTypeEgg::load_file
 //       Access: Public, Virtual
 //  Description:

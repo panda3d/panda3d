@@ -59,7 +59,7 @@ public:
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Loader::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Loader::
@@ -69,7 +69,7 @@ Loader() : AsyncUtility() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Loader::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Loader::
@@ -79,44 +79,111 @@ Loader::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Loader::resolve_filename
-//       Access: Public
-//  Description: Looks for the given filename somewhere on the various
-//               model paths.  (The filename extension is used to
-//               determine which model paths are searched.)  If the
-//               filename is found, updates the Filename to indicate
-//               the full path; otherwise, leaves the Filename alone.
-//
-//               It is not necessary to call this before loading a
-//               model; this is just a useful thing to have in case
-//               you want to look for a file without loading it
-//               immediately.
+//     Function: Loader::find_all_files
+//       Access: Published
+//  Description: Searches along the model path for the given file
+//               name, and fills up the results list with all possible
+//               matches and their associated types, in order.
 ////////////////////////////////////////////////////////////////////
-void Loader::
-resolve_filename(Filename &filename) const {
-  if (filename.is_fully_qualified()) {
-    return;
+int Loader::
+find_all_files(const Filename &filename, Loader::Results &results) const {
+  if (!_file_types_loaded) {
+    load_file_types();
   }
-
   string extension = filename.get_extension();
 
-  if (extension.empty()) {
-    resolve_unknown_file_type(filename);
-    return;
+  int num_added = 0;
+
+  if (!extension.empty()) {
+    // If the extension is not empty, it specifies a single file type.
+    LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
+    LoaderFileType *requested_type =
+      reg->get_type_from_extension(extension);
+
+    if (requested_type != (LoaderFileType *)NULL) {
+      if (!filename.is_local()) {
+        // Global filename, take it as it is.
+        results.add_file(filename, requested_type);
+        num_added++;
+
+      } else {
+        // Local filename, search along the path.
+        DSearchPath::Results files;
+        if (use_vfs) {
+          VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+          num_added = vfs->find_all_files(filename, get_model_path(), files);
+        } else {
+          num_added = get_model_path().find_all_files(filename, files);
+        }
+        
+        for (int i = 0; i < num_added; i++) {
+          results.add_file(files.get_file(i), requested_type);
+        }
+      }
+    }
+
+  } else {
+    // If the extension *is* empty, we have to search for all possible
+    // file types.
+    LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
+    int num_types = reg->get_num_types();
+
+    if (!filename.is_local()) {
+      // Global filename, take it as it is.
+      for (int t = 0; t < num_types; t++) {
+        LoaderFileType *type = reg->get_type(t);
+        Filename file(filename);
+        file.set_extension(type->get_extension());
+          
+        if (use_vfs) {
+          VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+          if (vfs->exists(file)) {
+            results.add_file(file, type);
+            num_added++;
+          }
+        } else {
+          if (file.exists()) {
+            results.add_file(file, type);
+            num_added++;
+          }
+        }
+      }
+
+    } else {
+      // Local filename, look it up on the model path.
+      const DSearchPath &model_path = get_model_path();
+      int num_dirs = model_path.get_num_directories();
+      for (int i = 0; i < num_dirs; i++) {
+        const Filename &directory = model_path.get_directory(i);
+        
+        for (int t = 0; t < num_types; t++) {
+          LoaderFileType *type = reg->get_type(t);
+          Filename file(directory, filename);
+          file.set_extension(type->get_extension());
+          
+          if (use_vfs) {
+            VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+            if (vfs->exists(file)) {
+              results.add_file(file, type);
+              num_added++;
+            }
+          } else {
+            if (file.exists()) {
+              results.add_file(file, type);
+              num_added++;
+            }
+          }
+        }
+      }
+    }
   }
 
-  LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
-  LoaderFileType *requested_type =
-    reg->get_type_from_extension(extension);
-
-  if (requested_type != (LoaderFileType *)NULL) {
-    requested_type->resolve_filename(filename);
-  }
+  return num_added;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Loader::request_load
-//       Access: Public
+//       Access: Published
 //  Description: Requests an asynchronous load of a file.  The request
 //               will be queued and served by the asynchronous thread.
 //               If event_name is nonempty, it is the name of the
@@ -192,7 +259,7 @@ request_load(const Filename &filename, const string &event_name) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Loader::check_load
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the indicated load-request has
 //               completed and not yet been fetched, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -203,7 +270,7 @@ check_load(uint id) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Loader::fetch_load
-//       Access: Public
+//       Access: Published
 //  Description: Returns the Node associated with the indicated id
 //               number (returned by a previous call to request_load),
 //               or NULL if the request has not yet completed.
@@ -301,203 +368,44 @@ process_request() {
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) Loader::
 load_file(const Filename &filename) const {
-  string extension = filename.get_extension();
-
-  if (extension.empty()) {
-    return load_unknown_file_type(filename);
-  }
-
-  LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
-  LoaderFileType *requested_type =
-    reg->get_type_from_extension(extension);
-
-  if (requested_type == (LoaderFileType *)NULL) {
+  // First, look for the file along the search path.
+  Results results;
+  int num_files = find_all_files(filename, results);
+  if (num_files == 0) {
+    // Couldn't find the file.  Either it doesn't exist, or it's an
+    // unknown file type.  Report a useful message either way.
+    string extension = filename.get_extension();
+    if (!extension.empty()) {
+      LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
+      LoaderFileType *requested_type =
+        reg->get_type_from_extension(extension);
+      if (requested_type == (LoaderFileType *)NULL) {
+        loader_cat.error()
+          << "Extension of file " << filename
+          << " is unrecognized; cannot load.\n";
+        loader_cat.error(false)
+          << "Currently known scene file types are:\n";
+        reg->write_types(loader_cat.error(false), 2);
+        return NULL;
+      }
+    }
     loader_cat.error()
-      << "Extension of file " << filename
-      << " is unrecognized; cannot load.\n";
-    loader_cat.error(false)
-      << "Currently known scene file types are:\n";
-    reg->write_types(loader_cat.error(false), 2);
+      << "Couldn't load file " << filename << ": not found on model path.\n";
     return NULL;
   }
 
-  Filename requested_filename = filename;
-  if (!requested_filename.is_fully_qualified()) {
-    // Ask the loader type to look for the file along its paths.
-    requested_type->resolve_filename(requested_filename);
-  }
-
-  if (loader_cat.is_debug()) {
-    loader_cat.debug()
-      << "Loading " << requested_type->get_name() << " file: "
-      << requested_filename << "\n";
-  }
-
-  PT(PandaNode) result = requested_type->load_file(requested_filename, true);
-  return result;
-}
-
-class LoaderConsiderFile {
-public:
-  Filename _path;
-  LoaderFileType *_type;
-
-  bool operator < (const LoaderConsiderFile &other) const {
-    return _path.compare_timestamps(other._path) > 0;
-  }
-};
-
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::load_unknown_file_type
-//       Access: Private
-//  Description: Attempts to guess which file is meant when a file
-//               with no extension is given.  Looks around for a file
-//               with a suitable extension for each of our known file
-//               types, and loads the most recent file available of
-//               any file type.
-////////////////////////////////////////////////////////////////////
-PT(PandaNode) Loader::
-load_unknown_file_type(const Filename &filename) const {
-  typedef pvector<LoaderConsiderFile> Files;
-  Files files;
-
-  // First, build up a list of all of the possible files it could be.
-  LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
-  int num_types = reg->get_num_types();
-
-  if (num_types == 0) {
-    loader_cat.error()
-      << "Can't load file " << filename
-      << "; no scene file types are known.\n";
-    return (PandaNode *)NULL;
-  }
-
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-
-  for (int i = 0; i < num_types; i++) {
-    LoaderConsiderFile consider;
-    consider._type = reg->get_type(i);
-    consider._path = filename;
-    consider._path.set_extension(consider._type->get_extension());
-
-    if (!consider._path.is_fully_qualified()) {
-      // Ask the loader type to look for the file along its paths.
-      consider._type->resolve_filename(consider._path);
-    }
-
-    if (use_vfs) {
-      if (vfs->exists(consider._path)) {
-        files.push_back(consider);
-      }
-    } else {
-      if (consider._path.exists()) {
-        files.push_back(consider);
-      }
-    }
-  }
-
-  if (files.empty()) {
-    loader_cat.error()
-      << "Couldn't find file " << filename << " as:\n";
-    for (int i = 0; i < num_types; i++) {
-      Filename p = filename;
-      p.set_extension(reg->get_type(i)->get_extension());
-      loader_cat.error(false)
-        << "  " << p << "\n";
-    }
-    return (PandaNode *)NULL;
-  }
-
-  // Now sort the list into order by timestamp, from newest to oldest.
-  sort(files.begin(), files.end());
-
-  // And try to load each file one at a time.
-  Files::const_iterator fi;
-
-  if (loader_cat.is_debug()) {
-    loader_cat.debug()
-      << "Loading " << filename << ", one of " << files.size()
-      << " possible types:\n";
-    for (fi = files.begin(); fi != files.end(); ++fi) {
-      loader_cat.debug(false)
-        << "  " << (*fi)._path << "\n";
-    }
-  }
-
-  for (fi = files.begin(); fi != files.end(); ++fi) {
-    const LoaderConsiderFile &consider = (*fi);
-    PT(PandaNode) result = consider._type->load_file(consider._path, false);
+  for (int i = 0; i < num_files; i++) {
+    const Filename &path = results.get_file(i);
+    LoaderFileType *type = results.get_file_type(i);
+    PT(PandaNode) result = type->load_file(path, true);
     if (result != (PandaNode *)NULL) {
       return result;
     }
-    if (loader_cat.is_debug()) {
-      loader_cat.debug()
-        << "Couldn't read " << consider._type->get_name()
-        << " file " << consider._path << "\n";
-    }
   }
 
+  // None of the matching files could be loaded.  Oh well.
   loader_cat.error()
-    << "Cannot read " << files.front()._path << "\n";
-
-  return (PandaNode *)NULL;
+    << "Couldn't load file " << filename << ": all matching files on model path invalid.\n";
+  return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::resolve_unknown_file_type
-//       Access: Private
-//  Description: Attempts to guess which file is meant when a file
-//               with no extension is given.  Looks around for a file
-//               with a suitable extension for each of our known file
-//               types, and updates the filename if a suitable match
-//               is found.
-////////////////////////////////////////////////////////////////////
-void Loader::
-resolve_unknown_file_type(Filename &filename) const {
-  typedef pvector<LoaderConsiderFile> Files;
-  Files files;
-
-  // First, build up a list of all of the possible files it could be.
-  LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
-  int num_types = reg->get_num_types();
-
-  if (num_types == 0) {
-    // No known file types!
-    return;
-  }
-
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-
-  for (int i = 0; i < num_types; i++) {
-    LoaderConsiderFile consider;
-    consider._type = reg->get_type(i);
-    consider._path = filename;
-    consider._path.set_extension(consider._type->get_extension());
-
-    if (!consider._path.is_fully_qualified()) {
-      // Ask the loader type to look for the file along its paths.
-      consider._type->resolve_filename(consider._path);
-    }
-
-    if (use_vfs) {
-      if (vfs->exists(consider._path)) {
-        files.push_back(consider);
-      }
-    } else {
-      if (consider._path.exists()) {
-        files.push_back(consider);
-      }
-    }
-  }
-
-  if (files.empty()) {
-    // Couldn't find it anywhere.
-    return;
-  }
-
-  // Now sort the list into order by timestamp, from newest to oldest.
-  sort(files.begin(), files.end());
-
-  // And get the first one.
-  filename = files.front()._path;
-}

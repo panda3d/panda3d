@@ -18,8 +18,103 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Loader::Results::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Loader::Results::
+Results() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::Results::Copy Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Loader::Results::
+Results(const Loader::Results &copy) :
+  _files(copy._files)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::Results::Copy Assignment Operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void Loader::Results::
+operator = (const Loader::Results &copy) {
+  _files = copy._files;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::Results::Destructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Loader::Results::
+~Results() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::Results::clear
+//       Access: Published
+//  Description: Removes all the files from the list.
+////////////////////////////////////////////////////////////////////
+INLINE void Loader::Results::
+clear() {
+  _files.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::Results::get_num_files
+//       Access: Published
+//  Description: Returns the number of files on the result list.
+////////////////////////////////////////////////////////////////////
+INLINE int Loader::Results::
+get_num_files() const {
+  return _files.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::Results::get_file
+//       Access: Published
+//  Description: Returns the nth file on the result list.
+////////////////////////////////////////////////////////////////////
+INLINE const Filename &Loader::Results::
+get_file(int n) const {
+  nassertr(n >= 0 && n < (int)_files.size(), _files[0]._path);
+  return _files[n]._path;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::Results::get_file_type
+//       Access: Published
+//  Description: Returns the file type of the nth file on the result
+//               list.
+////////////////////////////////////////////////////////////////////
+INLINE LoaderFileType *Loader::Results::
+get_file_type(int n) const {
+  nassertr(n >= 0 && n < (int)_files.size(), NULL);
+  return _files[n]._type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::Results::add_file
+//       Access: Published
+//  Description: Adds a new file to the result list.
+////////////////////////////////////////////////////////////////////
+INLINE void Loader::Results::
+add_file(const Filename &file, LoaderFileType *type) {
+  ConsiderFile cf;
+  cf._path = file;
+  cf._type = type;
+  _files.push_back(cf);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Loader::load_sync
-//       Access: Public
+//       Access: Published
 //  Description: Loads the file immediately, waiting for it to complete.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(PandaNode) Loader::

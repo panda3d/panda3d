@@ -25,8 +25,10 @@
 #include "filename.h"
 #include "tokenBoard.h"
 #include "asyncUtility.h"
+#include "dSearchPath.h"
 
 class LoaderToken;
+class LoaderFileType;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Loader
@@ -34,11 +36,38 @@ class LoaderToken;
 //               threading
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Loader : public AsyncUtility {
+private:
+  class ConsiderFile {
+  public:
+    Filename _path;
+    LoaderFileType *_type;
+  };
+
 PUBLISHED:
+  class EXPCL_PANDA Results {
+  PUBLISHED:
+    INLINE Results();
+    INLINE Results(const Results &copy);
+    INLINE void operator = (const Results &copy);
+    INLINE ~Results();
+
+    INLINE void clear();
+    INLINE int get_num_files() const;
+    INLINE const Filename &get_file(int n) const;
+    INLINE LoaderFileType *get_file_type(int n) const;
+
+  public:
+    INLINE void add_file(const Filename &file, LoaderFileType *type);
+
+  private:
+    typedef pvector<ConsiderFile> Files;
+    Files _files;
+  };
+
   Loader();
   ~Loader();
 
-  void resolve_filename(Filename &filename) const;
+  int find_all_files(const Filename &filename, Results &results) const;
 
   INLINE PT(PandaNode) load_sync(const Filename &filename) const;
 
@@ -52,8 +81,6 @@ private:
 
   virtual bool process_request(void);
   PT(PandaNode) load_file(const Filename &filename) const;
-  PT(PandaNode) load_unknown_file_type(const Filename &filename) const;
-  void resolve_unknown_file_type(Filename &filename) const;
 
   typedef TokenBoard<LoaderToken> LoaderTokenBoard;
   LoaderTokenBoard *_token_board;

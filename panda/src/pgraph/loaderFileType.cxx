@@ -39,20 +39,6 @@ LoaderFileType::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileType::resolve_filename
-//       Access: Public, Virtual
-//  Description: Searches for the indicated filename on whatever paths
-//               are appropriate to this file type, and updates it if
-//               it is found.  It is not necessary to call this before
-//               calling load_file(), but it doesn't hurt; this is
-//               useful for when the loader needs to know the full
-//               pathname to the exact file it will be loading.
-////////////////////////////////////////////////////////////////////
-void LoaderFileType::
-resolve_filename(Filename &) const {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LoaderFileType::load_file
 //       Access: Public, Virtual
 //  Description:

@@ -23,6 +23,7 @@
 
 #include "virtualFile.h"
 #include "filename.h"
+#include "dSearchPath.h"
 #include "pointerTo.h"
 #include "pmap.h"
 #include "config_express.h"
@@ -65,9 +66,10 @@ PUBLISHED:
   PT(VirtualFile) get_file(const Filename &filename) const;
   PT(VirtualFile) find_file(const Filename &filename, 
                             const DSearchPath &searchpath) const;
-  bool resolve_filename(Filename &filename,
-                        const DSearchPath &searchpath,
+  bool resolve_filename(Filename &filename, const DSearchPath &searchpath,
                         const string &default_extension = string()) const;
+  int find_all_files(const Filename &filename, const DSearchPath &searchpath,
+                     DSearchPath::Results &results) const;
 
   INLINE bool exists(const Filename &filename) const;
   INLINE bool is_directory(const Filename &filename) const;

@@ -409,6 +409,37 @@ resolve_filename(Filename &filename,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::find_all_files
+//       Access: Public
+//  Description: Searches all the directories in the search list for
+//               the indicated file, in order.  Fills up the results
+//               list with *all* of the matching filenames found, if
+//               any.  Returns the number of matches found.
+//
+//               It is the responsibility of the the caller to clear
+//               the results list first; otherwise, the newly-found
+//               files will be appended to the list.
+////////////////////////////////////////////////////////////////////
+int VirtualFileSystem::
+find_all_files(const Filename &filename, const DSearchPath &searchpath,
+               DSearchPath::Results &results) const {
+  int num_added = 0;
+
+  if (filename.is_local()) {
+    int num_directories = searchpath.get_num_directories();
+    for (int i = 0; i < num_directories; i++) {
+      Filename match(searchpath.get_directory(i), filename);
+      if (exists(match)) {
+        results.add_file(match);
+        num_added++;
+      }
+    }
+  }
+
+  return num_added;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::write
 //       Access: Published
 //  Description: 
