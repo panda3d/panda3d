@@ -60,6 +60,8 @@ public:
   INLINE Thing &back();
   INLINE void push_back(const Thing &t);
 
+  INLINE void clear();
+
 private:
   Thing _array[max_size+1];
   int _in, _out;

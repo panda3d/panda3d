@@ -217,3 +217,14 @@ push_back(const Thing &t) {
     _in = (_in+1)%(max_size+1);
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CircBuffer::clear
+//       Access: Public
+//  Description: Removes all items from the queue.
+////////////////////////////////////////////////////////////////////
+template<class Thing, int max_size>
+INLINE void CircBuffer<Thing, max_size>::
+clear() {
+  _in = _out = 0;
+}
