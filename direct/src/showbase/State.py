@@ -8,15 +8,16 @@ class State(DirectObject):
 
     """State class: """
 
-    def __init__(self, name, enterFunc=None, exitFunc=None, transitions=[]):
-        """__init__(self, string, func, func, string[])
+    def __init__(self, name, enterFunc=None, exitFunc=None, transitions=[],
+                 inspectorPos = []):
+        """__init__(self, string, func, func, string[], inspectorPos = [])
         State constructor: takes name, enter func, exit func, and
         a list of states it can transition to."""
         self.setName(name)
         self.setEnterFunc(enterFunc)
         self.setExitFunc(exitFunc)
         self.setTransitions(transitions)
-        self.setDefaultPosition([])
+        self.setInspectorPos(inspectorPos)
         self.__FSMList = None
 
 
@@ -54,13 +55,13 @@ class State(DirectObject):
         """setTransitions(self, string[])"""
         self.__transitions = stateTransitions
 
-    def getDefaultPosition(self):
-        """getDefaultPosition(self)"""
-        return(self.__defaultPosition)
+    def getInspectorPos(self):
+        """getInspectorPos(self)"""
+        return(self.__inspectorPos)
 
-    def setDefaultPosition(self, defaultPosition):
-        """setDefaultPosition(self, x, y)"""
-        self.__defaultPosition = defaultPosition
+    def setInspectorPos(self, inspectorPos):
+        """setInspectorPos(self, [x, y])"""
+        self.__inspectorPos = inspectorPos
 
 
     # support for HFSMs
