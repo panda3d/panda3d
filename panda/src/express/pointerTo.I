@@ -366,7 +366,7 @@ p() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
-INLINE TYPENAME PointerTo<T> &PointerTo<T>::
+INLINE PointerTo<T> &PointerTo<T>::
 operator = (To *ptr) {
   reassign(ptr);
   return *this;
@@ -378,7 +378,7 @@ operator = (To *ptr) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
-INLINE TYPENAME PointerTo<T> &PointerTo<T>::
+INLINE PointerTo<T> &PointerTo<T>::
 operator = (const PointerTo<T> &copy) {
   reassign((const PointerToBase<T> &)copy);
   return *this;

@@ -309,7 +309,7 @@ operator >= (const ordered_vector<Key, Compare> &other) const {
 //               the insert operation has taken place.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE TYPENAME pair<TYPENAME ordered_vector<Key, Compare>::ITERATOR, bool> ordered_vector<Key, Compare>::
+INLINE pair<TYPENAME ordered_vector<Key, Compare>::ITERATOR, bool> ordered_vector<Key, Compare>::
 insert_unique(const TYPENAME ordered_vector<Key, Compare>::VALUE_TYPE &key) {
   ITERATOR position = find_insert_position(begin(), end(), key);
 #ifdef NDEBUG
