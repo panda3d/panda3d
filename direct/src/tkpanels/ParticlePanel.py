@@ -454,6 +454,10 @@ class ParticlePanel(AppShell):
                            'Radius of ring',
                            command = self.setEmitterRingRadius,
                            min = 0.01)
+        self.createFloater(ringPage, 'Ring Emitter', 'Radius Spread',
+                           'Variation in radius of ring',
+                           command = self.setEmitterRingRadiusSpread,
+                           min = 0.0)
         self.ringCustomFrame = Frame(ringPage)
         self.createAngleDial(self.ringCustomFrame, 'Ring Emitter', 'Angle',
                              'Particle launch angle',
@@ -479,6 +483,10 @@ class ParticlePanel(AppShell):
                            'Radius of ring',
                            command = self.setEmitterTangentRingRadius,
                            min = 0.01)
+        self.createFloater(tangentRingPage, 'Tangent Ring Emitter',
+                           'Radius Spread',
+                           'Variation in radius of ring',
+                           command = self.setEmitterTangentRingRadiusSpread)
         self.emitterNotebook.pack(fill = X)
 
         ## RENDERER PAGE WIDGETS ##
@@ -493,7 +501,8 @@ class ParticlePanel(AppShell):
         self.createOptionMenu(rendererPage,
                               'Renderer', 'Alpha Mode',
                               "alpha setting over particles' lifetime",
-                              ('NO_ALPHA','ALPHA_OUT','ALPHA_IN','ALPHA_USER'),
+                              ('NO_ALPHA','ALPHA_IN','ALPHA_OUT',
+                               'ALPHA_IN_OUT', 'ALPHA_USER'),
                               self.setRendererAlphaMode)
 
         self.createSlider(
@@ -1272,6 +1281,8 @@ class ParticlePanel(AppShell):
         elif isinstance(emitter, RingEmitter):
             radius = emitter.getRadius()
             self.getWidget('Ring Emitter', 'Radius').set(radius, 0)
+            radiusSpread = emitter.getRadiusSpread()
+            self.getWidget('Ring Emitter', 'Radius Spread').set(radiusSpread,0)
             angle = emitter.getAngle()
             self.getWidget('Ring Emitter', 'Angle').set(angle, 0)
         elif isinstance(emitter, SphereVolumeEmitter):
@@ -1283,6 +1294,9 @@ class ParticlePanel(AppShell):
         elif isinstance(emitter, TangentRingEmitter):
             radius = emitter.getRadius()
             self.getWidget('Tangent Ring Emitter', 'Radius').set(radius, 0)
+            radiusSpread = emitter.getRadiusSpread()
+            self.getWidget('Tangent Ring Emitter', 'Radius Spread').set(
+                radiusSpread,0)
     # All #
     def setEmissionType(self, newType = None):
         if newType:
@@ -1383,6 +1397,8 @@ class ParticlePanel(AppShell):
     # Ring #
     def setEmitterRingRadius(self, radius):
         self.particles.emitter.setRadius(radius)
+    def setEmitterRingRadiusSpread(self, radiusSpread):
+        self.particles.emitter.setRadiusSpread(radiusSpread)
     def setEmitterRingLaunchAngle(self, angle):
         self.particles.emitter.setAngle(angle)
     # Sphere surface #
@@ -1394,6 +1410,8 @@ class ParticlePanel(AppShell):
     # Tangent ring #
     def setEmitterTangentRingRadius(self, radius):
         self.particles.emitter.setRadius(radius)
+    def setEmitterTangentRingRadiusSpread(self, radiusSpread):
+        self.particles.emitter.setRadiusSpread(radiusSpread)
 
     ## RENDERER PAGE ##
     def selectRendererType(self, type):
@@ -1410,6 +1428,8 @@ class ParticlePanel(AppShell):
             aMode = 'ALPHA_OUT'
         elif alphaMode == BaseParticleRenderer.PRALPHAIN:
             aMode = 'ALPHA_IN'
+        elif alphaMode == BaseParticleRenderer.PRALPHAINOUT:
+            aMode = 'ALPHA_IN_OUT'
         elif alphaMode == BaseParticleRenderer.PRALPHAUSER:
             aMode = 'ALPHA_USER'
         self.getVariable('Renderer', 'Alpha Mode').set(aMode)
@@ -1527,6 +1547,8 @@ class ParticlePanel(AppShell):
             aMode = BaseParticleRenderer.PRALPHAOUT
         elif alphaMode == 'ALPHA_IN':
             aMode = BaseParticleRenderer.PRALPHAIN
+        elif alphaMode == 'ALPHA_IN_OUT':
+            aMode = BaseParticleRenderer.PRALPHAINOUT
         elif alphaMode == 'ALPHA_USER':
             aMode = BaseParticleRenderer.PRALPHAUSER
         self.particles.renderer.setAlphaMode(aMode)
