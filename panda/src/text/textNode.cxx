@@ -39,6 +39,8 @@
 ////////////////////////////////////////////////////////////////////
 TypeHandle TextNode::_type_handle;
 
+TextNode::Encoding TextNode::_default_encoding;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::Constructor
 //       Access: Published
@@ -46,7 +48,7 @@ TypeHandle TextNode::_type_handle;
 ////////////////////////////////////////////////////////////////////
 TextNode::
 TextNode(const string &name) : NamedNode(name) {
-  _encoding = E_iso8859;
+  _encoding = _default_encoding;
   _slant = 0.0f;
 
   _flags = 0;
@@ -99,29 +101,7 @@ TextNode::
 void TextNode::
 set_text(const string &text) {
   _text = text;
-  switch (_encoding) {
-  case E_utf8:
-    {
-      StringUtf8Decoder decoder(_text);
-      decode_wtext(decoder);
-    }
-    break;
-
-  case E_unicode:
-    {
-      StringUnicodeDecoder decoder(_text);
-      decode_wtext(decoder);
-    }
-    break;
-
-  case E_iso8859:
-  default:
-    {
-      StringDecoder decoder(_text);
-      decode_wtext(decoder);
-    }
-  };
-
+  _wtext = decode_text(text);
   rebuild(true);
 }
 
@@ -394,15 +374,102 @@ generate() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::decode_wtext
+//     Function: TextNode::encode_wchar
+//       Access: Public
+//  Description: Encodes a single wide char into a one-, two-, or
+//               three-byte string, according to the current encoding
+//               system in effect.
+////////////////////////////////////////////////////////////////////
+string TextNode::
+encode_wchar(wchar_t ch) const {
+  switch (_encoding) {
+  case E_iso8859:
+    if (isascii(ch)) {
+      return string(1, (char)ch);
+    } else {
+      return ".";
+    }
+
+  case E_utf8:
+    if (ch < 0x80) {
+      return string(1, (char)ch);
+    } else if (ch < 0x800) {
+      return 
+        string(1, (char)(ch >> 6) | 0xc0) +
+        string(1, (char)(ch & 0x3f) | 0x80);
+    } else {
+      return 
+        string(1, (char)(ch >> 12) | 0xe0) +
+        string(1, (char)((ch >> 6) & 0x3f) | 0x80) +
+        string(1, (char)(ch & 0x3f) | 0x80);
+    }
+
+  case E_unicode:
+    return
+      string(1, (char)(ch >> 8)) + 
+      string(1, (char)(ch & 0xff));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::encode_wtext
+//       Access: Public
+//  Description: Encodes a wide-text string into a single-char string,
+//               accoding to the current encoding.
+////////////////////////////////////////////////////////////////////
+string TextNode::
+encode_wtext(const wstring &text) const {
+  string result;
+
+  for (wstring::const_iterator pi = text.begin(); pi != text.end(); ++pi) {
+    result += encode_wchar(*pi);
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::decode_text
+//       Access: Public
+//  Description: Returns the given wstring decoded to a single-byte
+//               string, via the current encoding system.
+////////////////////////////////////////////////////////////////////
+wstring TextNode::
+decode_text(const string &text) const {
+  switch (_encoding) {
+  case E_utf8:
+    {
+      StringUtf8Decoder decoder(text);
+      return decode_text_impl(decoder);
+    }
+    break;
+
+  case E_unicode:
+    {
+      StringUnicodeDecoder decoder(text);
+      return decode_text_impl(decoder);
+    }
+    break;
+
+  case E_iso8859:
+  default:
+    {
+      StringDecoder decoder(text);
+      return decode_text_impl(decoder);
+    }
+  };
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::decode_text_impl
 //       Access: Private
 //  Description: Decodes the eight-bit stream from the indicated
 //               decoder, storing the decoded unicode characters in
 //               _wtext.
 ////////////////////////////////////////////////////////////////////
-void TextNode::
-decode_wtext(StringDecoder &decoder) {
-  _wtext.erase(_wtext.begin(), _wtext.end());
+wstring TextNode::
+decode_text_impl(StringDecoder &decoder) const {
+  wstring result;
   bool expand_amp = get_expand_amp();
 
   wchar_t character = decoder.get_next_character();
@@ -412,9 +479,11 @@ decode_wtext(StringDecoder &decoder) {
       // character.
       character = expand_amp_sequence(decoder);
     }
-    _wtext += character;
+    result += character;
     character = decoder.get_next_character();
   }
+
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -427,7 +496,7 @@ decode_wtext(StringDecoder &decoder) {
 //               character, do the expansion and return the character.
 ////////////////////////////////////////////////////////////////////
 int TextNode::
-expand_amp_sequence(StringDecoder &decoder) {
+expand_amp_sequence(StringDecoder &decoder) const {
   int result = 0;
 
   int character = decoder.get_next_character();

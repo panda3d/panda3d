@@ -1060,9 +1060,9 @@ get_text() const {
 //               or 0.0 if the character is not known.
 ////////////////////////////////////////////////////////////////////
 INLINE float TextNode::
-calc_width(char ch) const {
+calc_width(int character) const {
   nassertr(_font != (TextFont *)NULL, 0.0);
-  return _font->calc_width(ch);
+  return _font->calc_width(character);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1075,7 +1075,7 @@ calc_width(char ch) const {
 INLINE float TextNode::
 calc_width(const string &line) const {
   nassertr(_font != (TextFont *)NULL, 0.0);
-  return _font->calc_width(line);
+  return _font->calc_width(decode_text(line));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1091,7 +1091,7 @@ INLINE string TextNode::
 wordwrap_to(const string &text, float wordwrap_width,
             bool preserve_trailing_whitespace) const {
   nassertr(_font != (TextFont *)NULL, text);
-  return _font->wordwrap_to(text, wordwrap_width, preserve_trailing_whitespace);
+  return encode_wtext(_font->wordwrap_to(decode_text(text), wordwrap_width, preserve_trailing_whitespace));
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -191,7 +191,7 @@ PUBLISHED:
   INLINE bool has_text() const;
   INLINE string get_text() const;
 
-  INLINE float calc_width(char ch) const;
+  INLINE float calc_width(int character) const;
   INLINE float calc_width(const string &line) const;
   INLINE string wordwrap_to(const string &text, float wordwrap_width,
                             bool preserve_trailing_whitespace) const;
@@ -217,9 +217,14 @@ PUBLISHED:
 
   PT_Node generate();
 
+public:
+  string encode_wchar(wchar_t ch) const;
+  string encode_wtext(const wstring &text) const;
+  wstring decode_text(const string &text) const;
+
 private:
-  void decode_wtext(StringDecoder &decoder);
-  int expand_amp_sequence(StringDecoder &decoder);
+  wstring decode_text_impl(StringDecoder &decoder) const;
+  int expand_amp_sequence(StringDecoder &decoder) const;
 
   void do_rebuild();
   void do_measure();
@@ -289,6 +294,9 @@ private:
   int _num_rows;
   int _freeze_level;
   bool _needs_rebuild;
+
+public:
+  static Encoding _default_encoding;
 
 public:
   static TypeHandle get_class_type() {
