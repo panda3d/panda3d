@@ -295,7 +295,7 @@ bool CollisionSphere::
 intersects_line(double &t1, double &t2,
                 const LPoint3f &from, const LVector3f &delta) const {
   // Solve the equation for the intersection of a line with a sphere
-  // using the quadratic formula.
+  // using the quadratic equation.
 
   // A line segment from f to f+d is defined as all P such that
   // P = f + td for 0 <= t <= 1.
@@ -320,7 +320,7 @@ intersects_line(double &t1, double &t2,
   // Solving for t using the quadratic equation gives us the point of
   // intersection along the line segment.  Actually, there are two
   // solutions (since it is quadratic): one for the front of the
-  // sphere, and one for the back.  In the case there the line is
+  // sphere, and one for the back.  In the case where the line is
   // tangent to the sphere, there is only one solution (and the
   // radical is zero).
 
