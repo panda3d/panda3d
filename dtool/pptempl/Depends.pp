@@ -133,7 +133,7 @@
   // Sources.pp.
   #define DEPEND_DIRS \
     $[sort $[EXTRA_DEPENDS] $[all_libs $[DIRNAME],$[get_depend_libs]]]
-  #set DEPENDABLE_HEADERS $[sort $[DEPENDABLE_HEADERS]]
+  #set DEPENDABLE_HEADERS $[sort $[DEPENDABLE_HEADERS] $[EXTRA_DEPENDABLE_HEADERS]]
 #endif
 
 #endif // DIR_TYPE
