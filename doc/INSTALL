@@ -541,16 +541,13 @@ properly.  Alternatively, you may make these definitions in the
 registry.
 
   path C:\Panda3d\bin;C:\Panda3d\lib;%PATH%
-  set PANDA_ROOT=c:\
+  set PANDA_ROOT=C:\
 
-Setting PANDA_ROOT is optional; this specifies the default drive Panda
+Setting PANDA_ROOT is optional; it specifies the default drive Panda
 will search for file references.  (Panda internally uses a Unix-like
 filename convention, which does not use leading drive letters.  See
 the bullet points in the Cygwin section, above, describing the rules
 Panda uses to map its Unix-like filenames to Windows filenames.)
-
-By default, ppremake looks for a local Config.pp file within the
-install directory (e.g. C:\Panda3d).
 
 Now make a directory for building Panda.  This may be different from
 the directory, above, that holds the installed Panda files; or it may
@@ -560,9 +557,8 @@ same directory, C:\Panda3d.
 Now set up your personal Config.pp file to control your local
 configuration settings, as described above.  By default, ppremake will
 look for this file in the root of the install directory,
-e.g. C:\Panda3d\Config.pp; but if you want to put it somewhere else
-you should define the variable PPREMAKE_CONFIG to indicate its full
-path.
+e.g. C:\Panda3d\Config.pp; if you want to put it somewhere else you
+should define the variable PPREMAKE_CONFIG to its full path.
 
 Add the appropriate lines to your Config.pp to define the correct
 paths to the various packages you have installed on your system.  See
