@@ -19,7 +19,7 @@ class DirectNodePath(NodePath):
         # and its center of action (COA)
         self.mCoa2Dnp = Mat4()
         self.mCoa2Dnp.assign(Mat4.identMat())
-        self.mCoa2Dnp.setRow(3, Vec4(center[0], center[1], center[2], 1))
+        #self.mCoa2Dnp.setRow(3, Vec4(center[0], center[1], center[2], 1))
         # Transform from nodePath to widget
         self.mDnp2Widget = Mat4()
         self.mDnp2Widget.assign(Mat4.identMat())
