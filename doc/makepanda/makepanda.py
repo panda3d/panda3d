@@ -5764,7 +5764,7 @@ for VER in ["5","6"]:
                  'libdtool.dll',
     ])
     CompileC(ipath=IPATH, opts=OPTS, src='mayaPview.cxx', obj='mayapview'+VER+'_mayaPview.obj')
-    CompileLink(dll='libmayapview'+VER+'.dll',                 opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
+    CompileLink(dll='libmayapview'+VER+'.dlm', opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
                  'mayapview'+VER+'_mayaPview.obj',
                  'libmayaegg'+VER+'.lib',
                  'libmaya'+VER+'.lib',
@@ -5782,7 +5782,7 @@ for VER in ["5","6"]:
            'pandatool/src/cvscopy']
     OPTS=['MAYA'+VER, 'NSPR']
     CompileC(ipath=IPATH, opts=OPTS, src='mayaSavePview.cxx', obj='mayasavepview'+VER+'_mayaSavePview.obj')
-    CompileLink(dll='libmayasavepview.dll',                 opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
+    CompileLink(dll='libmayasavepview.dlm', opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
                  'mayasavepview'+VER+'_mayaSavePview.obj',
     ])
     CompileC(ipath=IPATH, opts=OPTS, src='mayaToEgg.cxx', obj='maya2egg'+VER+'_mayaToEgg.obj')
@@ -5802,7 +5802,7 @@ for VER in ["5","6"]:
                  'libpystub.dll',
     ])
     CompileC(ipath=IPATH, opts=OPTS, src='mayaCopy.cxx', obj='mayacopy'+VER+'_mayaCopy.obj')
-    CompileLink(dll='mayacopy'+VER+'.exe',                 opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
+    CompileLink(dll='mayacopy'+VER+'.exe',  opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
                  'mayacopy'+VER+'_mayaCopy.obj',
                  'libcvscopy.lib',
                  'libmaya'+VER+'.lib',

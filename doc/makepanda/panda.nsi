@@ -62,6 +62,7 @@ Section "${FULLNAME}" SecCore
         SetOutPath $INSTDIR\bin
         File /r ${PANDA}\bin\*.dll
         File /nonfatal /r ${PANDA}\bin\*.dle
+        File /nonfatal /r ${PANDA}\bin\*.dlo
         File /nonfatal /r ${PANDA}\bin\*.dlm
         SetOutPath $INSTDIR\etc
         File /r ${PANDA}\etc\*
