@@ -99,6 +99,22 @@ else:
         # The source directory exists; therefore, we are in case (1b).
         __path__[0] = srcDir
 
+        def checkDirEnv(name, defaultPath):
+            """
+            If the environment variable already exists, do nothing.
+            If it is not set and defaultPath is a dir, set name to defaultPath.
+            """
+            if os.getenv(name) is None:
+                if os.path.isdir(defaultPath):
+                    os.environ[name]=defaultPath
+                    print "%s was not set, setting it to %s"%(name, os.getenv(name))
+
+        checkDirEnv("PANDA_ROOT", "c:/cygwin")
+        # checkDirEnv("PANDA_ROOT", "/usr/local/panda")
+        checkDirEnv("TTMODELS", "c:/ttmodels")
+        checkDirEnv("PMOCKUP", "c:/pmockup")
+        checkDirEnv("GWMODELS", "c:/gwmodels")
+        # checkDirEnv("TTMODELS", "~/ttmodels")
     else:
         # The source directory does not exist, so we must be in case
         # (2).  Leave well enough alone.
