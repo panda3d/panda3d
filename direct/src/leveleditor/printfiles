@@ -35,6 +35,7 @@ echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/ntpath.py
 echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/random.py
 echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/getopt.py
 echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/fpformat.py
+echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/bisect.py
 
 # Libraries
 echo $WINTOOLS/lib

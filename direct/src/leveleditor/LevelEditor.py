@@ -1585,7 +1585,7 @@ class LevelEditor(NodePath, PandaObject):
         #newDNASign.setScale(VBase3(2.0, 1.0, 2.0))
 
         baseline = DNASignBaseline('baseline')
-        baseline.setCode("comic")
+        baseline.setCode("ImpressBT")
         baseline.setColor(VBase4(0.0, 0.0, 0.0, 1.0))
         #baseline.setKern(1.0);
         #baseline.setWiggle(30.0);
