@@ -1,0 +1,12 @@
+turn*organization: WDI
+turn.editor: emacs
+
+Emacs*foreground:			#00c0ff
+Emacs*background:			#002040
+Emacs*pointerColor:			yellow
+Emacs*cursorColor:			yellow
+Emacs*highlight.attributeForeground:	white
+Emacs*highlight.attributeBackground:	black
+Emacs*font: 				8x13
+Emacs.geometry:				80x77+616+6
+Emacs*bitmapIcon:			on

@@ -1,0 +1,52 @@
+OVERVIEW
+
+	The ClientBase class (and subsequent children) were created to
+solve the problem of interfaces to device API's that don't match up
+well with panda (especially the DataGraph), and to allow for threading
+of the polling of these devices in a manageable way.
+
+    
+	To use, simply create an instance of the particular client
+that you need.  In most cases, this will be VrpnClient, when you
+create the client you will specify the name of the server that is
+controlling the devices. 
+
+	After you have created it, you can tell it to "add" whatever
+kind of device that you are interested in.  When you do this it will
+setup the connection to that device and prepare itself to poll that
+device.  (If you have asynchronous-clients $t in you config file, and
+call fork_asynchronous_thread(), then a thread will be created to
+continuously poll the device(s) in the background for you).  Whenever
+you want, possibly, new data from the device simply call the
+appropriate get function.
+
+INTERFACE TO DATAGRAPH
+
+	The interface to the data graph in panda is fairly simple, and
+best explained through an existing example.  The DataGraph is
+traversed every frame, and each node in it, should defined as a
+sub-class of DataNode.  Any sub-class of DataNode should have a method
+called transmit_data.  Each traversal transmit_data will be called on
+each node.  Those nodes will, if they are devices, package up their
+data and send it down the line to the next node, or, if they are
+tforms, take the incoming data, and put that data in some usable form
+on the scene graph.  For Clients to fit in, a sub-class of DataNode
+should be defined that takes a pointer to a ClientBase object, and
+calls the appropriate add and get functions as necessary for whatever
+kind of device is appropriate.   
+
+EXAMPLE
+	TrackerNode inherits from DataNode and takes a ClientBase,
+tracker name and sensor number as paramaters at creation.  On
+creation, it calls add_remote_tracker() on the Client object.  When
+transmit_data() is called, it calls get_tracker_data() and sends that
+data down the line.
+
+	TrackerTransform inherits from DataNode.  When transmit_data()
+is called, it grabs the postion and orientation information as sent to
+it from a TrackerNode above it, and creates a matrix from that data
+and sends that matrix down the line.
+
+	Transform2SG inherits from DataNode.  When transmit_data() is
+called, it grabs the matrix as sent to it by some DataNode above it
+and stuffs that matrix onto a speficied arc in the SceneGraph.

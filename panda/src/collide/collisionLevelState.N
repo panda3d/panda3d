@@ -1,0 +1,1 @@
+ignoreinvolved ColliderDef

@@ -1,0 +1,50 @@
+// Filename: LinearRandomForce.cxx
+// Created by:  charles (19Jun00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "linearRandomForce.h"
+
+TypeHandle LinearRandomForce::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//    Function : LinearRandomForce
+//      Access : Protected
+// Description : vector constructor
+////////////////////////////////////////////////////////////////////
+LinearRandomForce::
+LinearRandomForce(float a, bool mass) :
+  LinearForce(a, mass) {
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : LinearRandomForce
+//      Access : Protected
+// Description : copy constructor
+////////////////////////////////////////////////////////////////////
+LinearRandomForce::
+LinearRandomForce(const LinearRandomForce &copy) :
+  LinearForce(copy) {
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : ~LinearRandomForce
+//      Access : public
+// Description : destructor
+////////////////////////////////////////////////////////////////////
+LinearRandomForce::
+~LinearRandomForce(void) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : bounded_rand
+//       Access : Protected
+//  Description : Returns a float in [0, 1]
+////////////////////////////////////////////////////////////////////
+float LinearRandomForce::
+bounded_rand(void) {
+  int val = rand() & 0x7fffffff;
+  float f_val = (float) val / (float) 0x7fffffff;
+
+  return f_val;
+}

@@ -1,0 +1,7 @@
+forcetype Notify
+forcetype NotifyCategory
+forcetype NotifySeverity
+
+ignoremember set_assert_handler
+ignoremember get_assert_handler
+ignoremember AssertHandler

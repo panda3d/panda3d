@@ -1,0 +1,69 @@
+// Filename: LinearSinkForce.cxx
+// Created by:  charles (21Jun00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "linearSinkForce.h"
+
+TypeHandle LinearSinkForce::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//    Function : LinearSinkForce
+//      Access : Public
+// Description : Simple constructor
+////////////////////////////////////////////////////////////////////
+LinearSinkForce::
+LinearSinkForce(const LPoint3f& p, FalloffType f, float r, float a, 
+	  bool mass) :
+  LinearDistanceForce(p, f, r, a, mass) {
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : LinearSinkForce
+//      Access : Public
+// Description : Simple constructor
+////////////////////////////////////////////////////////////////////
+LinearSinkForce::
+LinearSinkForce(void) :
+  LinearDistanceForce(LPoint3f(0.0f, 0.0f, 0.0f), FT_ONE_OVER_R_SQUARED, 
+		1.0f, 1.0f, true) {
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : LinearSinkForce
+//      Access : Public
+// Description : copy constructor
+////////////////////////////////////////////////////////////////////
+LinearSinkForce::
+LinearSinkForce(const LinearSinkForce &copy) :
+  LinearDistanceForce(copy) {
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : ~LinearSinkForce
+//      Access : Public
+// Description : Simple destructor
+////////////////////////////////////////////////////////////////////
+LinearSinkForce::
+~LinearSinkForce(void) {
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : make_copy
+//      Access : Public
+// Description : copier
+////////////////////////////////////////////////////////////////////
+LinearForce *LinearSinkForce::
+make_copy(void) {
+  return new LinearSinkForce(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_child_vector
+//      Access : Public
+// Description : virtual force query
+////////////////////////////////////////////////////////////////////
+LVector3f LinearSinkForce::
+get_child_vector(const PhysicsObject *po) {
+  return (get_force_center() - po->get_position()) * get_scalar_term();
+}

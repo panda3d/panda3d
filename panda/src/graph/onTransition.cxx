@@ -1,0 +1,120 @@
+// Filename: onTransition.cxx
+// Created by:  drose (22Mar00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "onTransition.h"
+#include "onAttribute.h"
+
+#include <indent.h>
+
+TypeHandle OnTransition::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: OnTransition::compose
+//       Access: Public, Virtual
+//  Description: Returns a new transition that corresponds to the
+//               composition of this transition with the second
+//               transition (which must be of an equivalent type).
+//               This may return the same pointer as either source
+//               transition.  Applying the transition returned from
+//               this function to an attribute attribute will produce
+//               the same effect as applying each transition
+//               separately.
+////////////////////////////////////////////////////////////////////
+NodeTransition *OnTransition::
+compose(const NodeTransition *other) const {
+  const OnTransition *ot;
+  DCAST_INTO_R(ot, other, NULL);
+
+  if (ot->_priority < _priority) {
+    // The other transition is too low-priority; the result is
+    // unchanged.
+    return (OnTransition *)this;
+  }
+
+  // In any other case, for an OnTransition, the result is the same
+  // as the second operand.
+  return (OnTransition *)ot;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OnTransition::invert
+//       Access: Public, Virtual
+//  Description: Returns a new transition that corresponds to the
+//               inverse of this transition.  If the transition was
+//               identity, this may return the same pointer.  Returns
+//               NULL if the transition cannot be inverted.
+////////////////////////////////////////////////////////////////////
+NodeTransition *OnTransition::
+invert() const {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OnTransition::apply
+//       Access: Public, Virtual
+//  Description: Returns a new attribute (or possibly the same
+//               attribute) that represents the effect of applying this
+//               indicated transition to the indicated attribute.  The
+//               source attribute may be NULL, indicating the initial
+//               attribute.
+////////////////////////////////////////////////////////////////////
+NodeAttribute *OnTransition::
+apply(const NodeAttribute *attrib) const {
+  OnAttribute *result;
+  if (attrib == (const NodeAttribute *)NULL) {
+    DCAST_INTO_R(result, make_attrib(), NULL);
+  } else {
+    DCAST_INTO_R(result, (NodeAttribute *)attrib, NULL);
+  }    
+
+  if (_priority < result->_priority) {
+    // The priority is too low to affect the attribute.
+    return result;
+  }
+
+  if (result->get_count() > 1) {
+    // Copy on write.
+    DCAST_INTO_R(result, result->make_copy(), NULL);
+  }
+
+  result->_priority = _priority;
+  result->set_value_from(this);
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OnTransition::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void OnTransition::
+output(ostream &out) const {
+  output_value(out);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OnTransition::write
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void OnTransition::
+write(ostream &out, int indent_level) const {
+  write_value(out, indent_level);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OnTransition::internal_compare_to
+//       Access: Protected, Virtual
+//  Description: Returns a number < 0 if this transition sorts before
+//               the other transition, > 0 if it sorts after, 0 if
+//               they are equivalent (except for priority).
+////////////////////////////////////////////////////////////////////
+int OnTransition::
+internal_compare_to(const NodeTransition *other) const {
+  const OnTransition *ot;
+  DCAST_INTO_R(ot, other, false);
+
+  return compare_values(ot);
+}

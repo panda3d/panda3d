@@ -1,0 +1,26 @@
+// Filename: graphicsChannel.I
+// Created by:  frang (07Mar99)
+// 
+////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsChannel::set_active
+//       Access: Public
+//  Description: Sets the active flag on the channel.  If the channel
+//               is marked as inactive, nothing will be rendered.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsChannel::
+set_active(bool active) {
+  _is_active = active;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsChannel::is_active
+//       Access: Public
+//  Description: Returns the active flag on the channel.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsChannel::
+is_active() const {
+  return _is_active;
+}
+

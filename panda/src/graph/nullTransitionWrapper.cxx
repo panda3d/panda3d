@@ -1,0 +1,7 @@
+// Filename: nullTransitionWrapper.cxx
+// Created by:  drose (22Mar00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "nullTransitionWrapper.h"
+

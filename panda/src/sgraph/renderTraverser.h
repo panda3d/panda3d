@@ -1,0 +1,70 @@
+// Filename: renderTraverser.h
+// Created by:  drose (12Apr00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#ifndef RENDERTRAVERSER_H
+#define RENDERTRAVERSER_H
+
+#include <pandabase.h>
+
+#include <typeHandle.h>
+#include <typedReferenceCount.h>
+
+class GraphicsStateGuardian;
+class Node;
+class AllAttributesWrapper;
+class AllTransitionsWrapper;
+
+////////////////////////////////////////////////////////////////////
+//       Class : RenderTraverser
+// Description : This is the abstract base class that defines the
+//               interface for any number of different kinds of
+//               specialized traversers that walk over the scene graph
+//               and render it with a given GraphicsStateGuardian,
+//               such as DirectRenderTraverser and CullTraverser.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA RenderTraverser : public TypedReferenceCount {
+public:
+  INLINE RenderTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type);
+
+  INLINE GraphicsStateGuardian *get_gsg() const;
+  INLINE TypeHandle get_graph_type() const;
+  
+  virtual void traverse(Node *root, 
+			const AllAttributesWrapper &initial_state,
+			const AllTransitionsWrapper &net_trans)=0;
+
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent_level = 0) const;
+
+protected:
+  GraphicsStateGuardian *_gsg;
+  TypeHandle _graph_type;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TypedReferenceCount::init_type();
+    register_type(_type_handle, "RenderTraverser",
+                  TypedReferenceCount::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+ 
+private:
+  static TypeHandle _type_handle;
+};
+
+INLINE ostream &operator << (ostream &out, const RenderTraverser &rt) {
+  rt.output(out);
+  return out;
+}
+
+#include "renderTraverser.I"
+
+#endif

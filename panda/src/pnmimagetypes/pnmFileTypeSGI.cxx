@@ -1,0 +1,122 @@
+// Filename: pnmFileTypeSGI.cxx
+// Created by:  drose (17Jun00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "pnmFileTypeSGI.h"
+#include "config_pnmimagetypes.h"
+#include "sgi.h"
+
+static const char * const extensions[] = {
+  "rgb", "rgba", "sgi"
+};
+static const int num_extensions = sizeof(extensions) / sizeof(const char *);
+
+TypeHandle PNMFileTypeSGI::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeSGI::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PNMFileTypeSGI::
+PNMFileTypeSGI() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeSGI::get_name
+//       Access: Public, Virtual
+//  Description: Returns a few words describing the file type.
+////////////////////////////////////////////////////////////////////
+string PNMFileTypeSGI::
+get_name() const {
+  return "SGI RGB";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeSGI::get_num_extensions
+//       Access: Public, Virtual
+//  Description: Returns the number of different possible filename
+//               extensions associated with this particular file type.
+////////////////////////////////////////////////////////////////////
+int PNMFileTypeSGI::
+get_num_extensions() const {
+  return num_extensions;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeSGI::get_extension
+//       Access: Public, Virtual
+//  Description: Returns the nth possible filename extension
+//               associated with this particular file type, without a
+//               leading dot.
+////////////////////////////////////////////////////////////////////
+string PNMFileTypeSGI::
+get_extension(int n) const {
+  nassertr(n >= 0 && n < num_extensions, string());
+  return extensions[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeSGI::get_suggested_extension
+//       Access: Public, Virtual
+//  Description: Returns a suitable filename extension (without a
+//               leading dot) to suggest for files of this type, or
+//               empty string if no suggestions are available.
+////////////////////////////////////////////////////////////////////
+string PNMFileTypeSGI::
+get_suggested_extension() const {
+  return "rgb";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeSGI::has_magic_number
+//       Access: Public, Virtual
+//  Description: Returns true if this particular file type uses a
+//               magic number to identify it, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PNMFileTypeSGI::
+has_magic_number() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeSGI::matches_magic_number
+//       Access: Public, Virtual
+//  Description: Returns true if the indicated "magic number" byte
+//               stream (the initial few bytes read from the file)
+//               matches this particular file type, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PNMFileTypeSGI::
+matches_magic_number(const string &magic_number) const {
+  nassertr(magic_number.size() >= 2, false);
+  int mn =
+    ((unsigned char)magic_number[0] << 8) |
+    ((unsigned char)magic_number[1]);
+  return (mn == SGI_MAGIC);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeSGI::make_reader
+//       Access: Public, Virtual
+//  Description: Allocates and returns a new PNMReader suitable for
+//               reading from this file type, if possible.  If reading
+//               from this file type is not supported, returns NULL.
+////////////////////////////////////////////////////////////////////
+PNMReader *PNMFileTypeSGI::
+make_reader(FILE *file, bool owns_file, const string &magic_number) {
+  return new Reader(this, file, owns_file, magic_number);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeSGI::make_writer
+//       Access: Public, Virtual
+//  Description: Allocates and returns a new PNMWriter suitable for
+//               reading from this file type, if possible.  If writing
+//               files of this type is not supported, returns NULL.
+////////////////////////////////////////////////////////////////////
+PNMWriter *PNMFileTypeSGI::
+make_writer(FILE *file, bool owns_file) {
+  return new Writer(this, file, owns_file);
+}
+

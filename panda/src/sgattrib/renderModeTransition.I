@@ -1,0 +1,57 @@
+// Filename: renderModeTransition.I
+// Created by:  drose (22Mar00)
+// 
+////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderModeTransition::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE RenderModeTransition::
+RenderModeTransition(RenderModeProperty::Mode mode, double line_width) :
+  _value(mode, line_width)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderModeTransition::set_mode
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void RenderModeTransition::
+set_mode(RenderModeProperty::Mode mode) {
+  _value.set_mode(mode);
+  state_changed();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderModeTransition::get_mode
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE RenderModeProperty::Mode RenderModeTransition::
+get_mode() const {
+  return _value.get_mode();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderModeTransition::set_line_width
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void RenderModeTransition::
+set_line_width(double line_width) {
+  _value.set_line_width(line_width);
+  state_changed();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderModeTransition::get_line_width
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE double RenderModeTransition::
+get_line_width() const {
+  return _value.get_line_width();
+}

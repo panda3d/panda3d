@@ -1,0 +1,171 @@
+// Filename: queuedReturn.I
+// Created by:  drose (25Feb00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "config_net.h"
+
+#include <algorithm>
+
+////////////////////////////////////////////////////////////////////
+//     Function: QueuedReturn::set_max_queue_size
+//       Access: Public
+//  Description: Sets the maximum size the queue is allowed to grow
+//               to.  This is primarily for a sanity check; this is a
+//               limit beyond which we can assume something bad has
+//               happened.
+//
+//               It's also a crude check against unfortunate seg
+//               faults due to the queue filling up and quietly
+//               consuming all available memory.
+////////////////////////////////////////////////////////////////////
+template<class Thing>
+void QueuedReturn<Thing>::
+set_max_queue_size(int max_size) {
+  PR_Lock(_mutex);
+  _max_queue_size = max_size;
+  PR_Unlock(_mutex);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: QueuedReturn::get_max_queue_size
+//       Access: Public
+//  Description: Returns the maximum size the queue is allowed to grow
+//               to.  See set_max_queue_size().
+////////////////////////////////////////////////////////////////////
+template<class Thing>
+int QueuedReturn<Thing>::
+get_max_queue_size() const {
+  return _max_queue_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: QueuedReturn::get_current_queue_size
+//       Access: Public
+//  Description: Returns the current number of things in the queue.
+////////////////////////////////////////////////////////////////////
+template<class Thing>
+int QueuedReturn<Thing>::
+get_current_queue_size() const {
+  PR_Lock(_mutex);
+  int size = _things.size();
+  PR_Unlock(_mutex);
+  return size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: QueuedReturn::Constructor
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class Thing>
+QueuedReturn<Thing>::
+QueuedReturn() {
+  _mutex = PR_NewLock();
+  _available = false;
+  _max_queue_size = get_net_max_response_queue();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: QueuedReturn::Destructor
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class Thing>
+QueuedReturn<Thing>::
+~QueuedReturn() {
+  PR_DestroyLock(_mutex);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: QueuedReturn::thing_available
+//       Access: Protected
+//  Description: Returns true if a thing is available on the queue;
+//               call get_thing() to extract the thing.
+////////////////////////////////////////////////////////////////////
+template<class Thing>
+INLINE bool QueuedReturn<Thing>::
+thing_available() const {
+  return _available;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: QueuedReturn::get_thing
+//       Access: Protected
+//  Description: If a previous call to thing_available() returned
+//               true, this function will return the thing that has
+//               become available.
+//
+//               The return value is true if a thing was
+//               successfully returned, or false if there was, in
+//               fact, no thing available.  (This may happen if
+//               there are multiple threads accessing the
+//               QueuedReturn).
+////////////////////////////////////////////////////////////////////
+template<class Thing>
+bool QueuedReturn<Thing>::
+get_thing(Thing &result) {
+  PR_Lock(_mutex);
+  if (_things.empty()) {
+    // Huh.  Nothing after all.
+    _available = false;
+    PR_Unlock(_mutex);
+    return false;
+  }
+
+  result = _things.front();
+  _things.pop_front();
+  _available = !_things.empty();
+  PR_Unlock(_mutex);
+  return true;
+}
+  
+////////////////////////////////////////////////////////////////////
+//     Function: QueuedReturn::enqueue_thing
+//       Access: Protected
+//  Description: Adds a new thing to the queue for later retrieval.
+//               Returns true if successful, false if the queue is
+//               full (i.e. has reached _max_queue_size).
+////////////////////////////////////////////////////////////////////
+template<class Thing>
+bool QueuedReturn<Thing>::
+enqueue_thing(const Thing &thing) {
+  PR_Lock(_mutex);
+  bool enqueue_ok = (_things.size() < _max_queue_size);
+  if (enqueue_ok) {
+    _things.push_back(thing);
+  }
+  _available = true;
+  PR_Unlock(_mutex);
+
+  return enqueue_ok;
+}
+  
+////////////////////////////////////////////////////////////////////
+//     Function: QueuedReturn::enqueue_unique_thing
+//       Access: Protected
+//  Description: The same as enqueue_thing(), except the queue is
+//               first checked that it doesn't already have something
+//               like thing.  The return value is true if the enqueue
+//               operation was successful, false if the queue was full
+//               or the thing was already on the queue.
+////////////////////////////////////////////////////////////////////
+template<class Thing>
+bool QueuedReturn<Thing>::
+enqueue_unique_thing(const Thing &thing) {
+  PR_Lock(_mutex);
+  bool enqueue_ok = (_things.size() < _max_queue_size);
+  if (enqueue_ok) {
+    if (find(_things.begin(), _things.end(), thing) == _things.end()) {
+      // It wasn't there already; add it now.
+      _things.push_back(thing);
+    } else {
+      // It was already there; return false to indicate this.
+      enqueue_ok = false;
+    }
+  }
+  _available = true;
+  PR_Unlock(_mutex);
+
+  return enqueue_ok;
+}

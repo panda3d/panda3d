@@ -1,0 +1,34 @@
+// Filename: vec3DataTransition.cxx
+// Created by:  drose (27Mar00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "vec3DataTransition.h"
+#include "vec3DataAttribute.h"
+
+// Tell GCC that we'll take care of the instantiation explicitly here.
+#ifdef __GNUC__
+#pragma implementation
+#endif
+
+TypeHandle Vec3DataTransition::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: Vec3DataTransition::make_copy
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+NodeTransition *Vec3DataTransition::
+make_copy() const {
+  return new Vec3DataTransition(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Vec3DataTransition::make_attrib
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+NodeAttribute *Vec3DataTransition::
+make_attrib() const {
+  return new Vec3DataAttribute;
+}

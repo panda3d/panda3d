@@ -1,0 +1,379 @@
+// Filename: pixelBuffer.I
+// Created by:  drose (05Feb99)
+// 
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PixelBuffer::
+PixelBuffer(void) : ImageBuffer()
+{
+  _xsize = 0;
+  _ysize = 0;
+  _xorg = 0;
+  _yorg = 0;
+  _border = 0;
+  _format = F_rgb;
+  _type = T_unsigned_byte;
+  _components = 3;
+  _component_width = 1;
+  _image = PTA_uchar();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PixelBuffer::
+PixelBuffer(int xsize, int ysize, int components, int component_width,
+	    Type type, Format format) : 
+  ImageBuffer() 
+{
+  _xsize = xsize;
+  _ysize = ysize;
+  _xorg = 0;
+  _yorg = 0;
+  _border = 0;
+  _components = components;
+  _component_width = component_width;
+  _type = type;
+  _format = format;
+  _image = PTA_uchar(_xsize * _ysize * _components * _component_width);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::Copy Constructor 
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PixelBuffer::
+PixelBuffer(const PixelBuffer &copy) : 
+  _xsize(copy._xsize),
+  _ysize(copy._ysize),
+  _xorg(copy._xorg),
+  _yorg(copy._yorg),
+  _border(copy._border),
+  _components(copy._components),
+  _component_width(copy._component_width),
+  _format(copy._format),
+  _type(copy._type),
+  _image(copy._image)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::Copy Assignment Operator 
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void PixelBuffer::
+operator = (const PixelBuffer &copy) {
+  _xsize = copy._xsize;
+  _ysize = copy._ysize;
+  _xorg = copy._xorg;
+  _yorg = copy._yorg;
+  _border = copy._border;
+  _components = copy._components;
+  _component_width = copy._component_width;
+  _format = copy._format;
+  _type = copy._type;
+  _image = copy._image;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: rgb_buffer
+//       Access: Public
+//  Description: Constructs a PixelBuffer suitable for RGB
+////////////////////////////////////////////////////////////////////
+INLINE PixelBuffer PixelBuffer::
+rgb_buffer(int xsize, int ysize) {
+  return PixelBuffer(xsize, ysize, 3, sizeof(uchar), T_unsigned_byte, 
+		     F_rgb);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: rgba_buffer
+//       Access: Public
+//  Description: Constructs a PixelBuffer suitable for RGBA
+////////////////////////////////////////////////////////////////////
+INLINE PixelBuffer PixelBuffer::
+rgba_buffer(int xsize, int ysize) {
+  return PixelBuffer(xsize, ysize, 4, sizeof(uchar), T_unsigned_byte, 
+		     F_rgba);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: depth_buffer
+//       Access: Public
+//  Description: Constructs a PixelBuffer suitable for depth maps
+////////////////////////////////////////////////////////////////////
+INLINE PixelBuffer PixelBuffer::
+depth_buffer(int xsize, int ysize) {
+  return PixelBuffer(xsize, ysize, 1, sizeof(float), T_float, 
+		     F_depth_component);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: stencil_buffer
+//       Access: Public
+//  Description: Constructs a PixelBuffer suitable for stencil buffers
+////////////////////////////////////////////////////////////////////
+INLINE PixelBuffer PixelBuffer::
+stencil_buffer(int xsize, int ysize) {
+  return PixelBuffer(xsize, ysize, 1, sizeof(uchar), T_unsigned_byte, 
+		     F_stencil_index);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::Destructor 
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PixelBuffer::
+~PixelBuffer(void) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::set_xsize
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void PixelBuffer::set_xsize(int size)
+{
+  if (_xsize != size && size > 1) {
+    _xsize = size;
+    make_dirty();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::set_ysize
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void PixelBuffer::set_ysize(int size)
+{
+  if (_ysize != size && size > 1) {
+    _ysize = size;
+    make_dirty();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::set_xorg
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void PixelBuffer::set_xorg(int org)
+{
+  if (_xorg != org && org >= 0) {
+    _xorg = org;
+    make_dirty();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::set_yorg
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void PixelBuffer::set_yorg(int org)
+{
+  if (_yorg != org && org >= 0) {
+    _yorg = org;
+    make_dirty();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::set_format
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void PixelBuffer::
+set_format(PixelBuffer::Format format)
+{
+  if (_format != format) {
+    _format = format;
+    make_dirty();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::get_xsize
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int PixelBuffer::
+get_xsize() const {
+  return _xsize;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::get_ysize
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int PixelBuffer::
+get_ysize() const {
+  return _ysize;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::get_xorg
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int PixelBuffer::
+get_xorg() const {
+  return _xorg;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::get_yorg
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int PixelBuffer::
+get_yorg() const {
+  return _yorg;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::get_border
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int PixelBuffer::
+get_border() const {
+  return _border;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::get_num_components
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int PixelBuffer::
+get_num_components() const {
+  return _components;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::get_component_width
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int PixelBuffer::
+get_component_width() const {
+  return _component_width;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::get_format
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PixelBuffer::Format PixelBuffer::
+get_format() const {
+  return _format;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::get_image_type
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PixelBuffer::Type PixelBuffer::
+get_image_type() const {
+  return _type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::set_uchar_rgb_texel
+//       Access: Public
+//  Description: This is only valid when the PixelBuffer is an RGB
+//               buffer with uchar components.
+////////////////////////////////////////////////////////////////////
+INLINE void PixelBuffer::
+set_uchar_rgb_texel(const uchar color[3], int x, int y, int width)
+{
+  int i = y * 3 * width + x * 3;
+  _image[i] = color[0];
+  _image[i+1] = color[1];
+  _image[i+2] = color[2];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::store_unsigned_byte
+//       Access: Private
+//  Description: This is used by load() to store the next consecutive
+//               component value into the indicated element of the
+//               array, which is taken to be an array of unsigned
+//               bytes.
+////////////////////////////////////////////////////////////////////
+INLINE void PixelBuffer::
+store_unsigned_byte(int &index, double value) {
+  nassertv(index >= 0 && index < _image.size());
+  _image[index++] = (uchar)(value * 255.0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::store_unsigned_short
+//       Access: Private
+//  Description: This is used by load() to store the next consecutive
+//               component value into the indicated element of the
+//               array, which is taken to be an array of unsigned
+//               shorts.
+////////////////////////////////////////////////////////////////////
+INLINE void PixelBuffer::
+store_unsigned_short(int &index, double value) {
+  nassertv(index >= 0 && index+1 < _image.size());
+  union {
+    ushort us;
+    uchar uc[2];
+  } v;
+  v.us = (ushort)(value * 65535.0);
+  _image[index++] = v.uc[0];
+  _image[index++] = v.uc[1];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::get_unsigned_byte
+//       Access: Private
+//  Description: This is used by store() to retieve the next
+//               consecutive component value from the indicated
+//               element of the array, which is taken to be an array
+//               of unsigned bytes.
+////////////////////////////////////////////////////////////////////
+INLINE double PixelBuffer::
+get_unsigned_byte(int &index) const {
+  nassertr(index >= 0 && index < _image.size(), 0.0);
+  return (double)_image[index++] / 255.0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::get_unsigned_short
+//       Access: Private
+//  Description: This is used by store() to retieve the next
+//               consecutive component value from the indicated
+//               element of the array, which is taken to be an array
+//               of unsigned shorts.
+////////////////////////////////////////////////////////////////////
+INLINE double PixelBuffer::
+get_unsigned_short(int &index) const {
+  nassertr(index >= 0 && index+1 < _image.size(), 0.0);
+  union {
+    ushort us;
+    uchar uc[2];
+  } v;
+  v.uc[0] = _image[index++];
+  v.uc[1] = _image[index++];
+  return (double)v.us / 65535.0;
+}

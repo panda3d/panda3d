@@ -1,0 +1,67 @@
+#### Makefile for binaries.  Any fields commented out are optional.
+#### Generated automatically by ppremake 0.20 from Sources.pp.
+################################# DO NOT EDIT ###########################
+
+#### Target's name:
+TARGET = test_gsgbase
+
+# Standard .o file conversion information.
+
+#### Pull in standard .o make variables
+include $(DTOOL)/inc/Makefile.o.vars
+
+#### Lex files 
+LFILES = 
+LEX = flex
+LFLAGS =   -olex.yy.c
+LEXTENSION = yy.cxx
+# LSUBST =
+
+#### Yacc files 
+YFILES = 
+YACC = bison
+YFLAGS = -y -d 
+YEXTENSION = tab.cxx
+# YSUBST =
+
+#### C files 
+CFILES = 
+# CFLAGS =
+
+#### C++ files 
+C++FILES = test_gsgbase.cxx
+C++FLAGS += 
+
+#### Pull in deferred-target files built in other packages
+DEFERRED_FILES = framework
+
+#### Additional search directories for C/C++ header files:
+# IPATH :=
+
+#### Location to put .o files:
+# ODIR = 
+
+#### Source file dependencies (unnecessary with clearmake)
+# foo.c: foo.h
+
+#### The .o action is here.
+include $(DTOOL)/inc/Makefile.o.rules
+
+#### Pull in standard binary make variables.
+include $(DTOOL)/inc/Makefile.bin.vars
+
+#### Other files and lib.  Include $(ODIR) in any .o names.
+# OFILES = 
+WHEN_NO_DEFER_LIBS = -lgsgbase
+WHEN_DEFER_LIBS = fillinhere
+LIBS = -linterrogatedb -ldconfig -ldtoolutil -ldtoolbase
+SYSLIBS = 
+
+#### Additional search directories for lib:
+# LPATH :=
+
+#### Other linker flags. 
+# LDFLAGS = 
+
+#### The bin action is here.
+include $(DTOOL)/inc/Makefile.bin.rules

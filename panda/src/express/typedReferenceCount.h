@@ -1,0 +1,52 @@
+// Filename: typedReferenceCount.h
+// Created by:  drose (08Feb99)
+//
+
+#ifndef TYPEDREFERENCECOUNT_H
+#define TYPEDREFERENCECOUNT_H
+
+#include <pandabase.h>
+
+#include "typeHandle.h"
+#include "referenceCount.h"
+
+////////////////////////////////////////////////////////////////////
+// 	 Class : TypedReferenceCount
+// Description : A base class for things which need to inherit from
+//               both TypedObject and from ReferenceCount.  It's
+//               convenient to define this intermediate base class
+//               instead of multiply inheriting from the two classes
+//               each time they are needed, so that we can sensibly
+//               pass around pointers to things which are both
+//               TypedObjects and ReferenceCounters.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDAEXPRESS TypedReferenceCount : public TypedObject, public ReferenceCount {
+public:
+  INLINE TypedReferenceCount();
+  INLINE TypedReferenceCount(const TypedReferenceCount &copy);
+  INLINE void operator = (const TypedReferenceCount &copy);
+
+public:
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TypedObject::init_type();
+    ReferenceCount::init_type();
+    register_type(_type_handle, "TypedReferenceCount",
+		  TypedObject::get_class_type(),
+		  ReferenceCount::get_class_type());
+  }
+
+private:
+  static TypeHandle _type_handle;
+};
+
+#include "typedReferenceCount.I"
+
+#endif
+ 

@@ -1,0 +1,53 @@
+// Filename: nodePathBase.I
+// Created by:  drose (06Mar00)
+// 
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathBase::ArcComponent::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE NodePathBase::ArcComponent::
+ArcComponent(NodeRelation *arc, ArcComponent *next) :
+  _arc(arc),
+  _next(next)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathBase::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE NodePathBase::
+NodePathBase(TypeHandle graph_type) :
+  _graph_type(graph_type)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathBase::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE NodePathBase::
+NodePathBase(const NodePathBase &copy) :
+  _head(copy._head),
+  _top_node(copy._top_node),
+  _graph_type(copy._graph_type)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathBase::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void NodePathBase::
+operator = (const NodePathBase &copy) {
+  _head = copy._head;
+  _top_node = copy._top_node;
+  _graph_type = copy._graph_type;
+}

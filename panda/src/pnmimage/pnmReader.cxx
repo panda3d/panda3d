@@ -1,0 +1,91 @@
+// Filename: pnmReader.cxx
+// Created by:  drose (14Jun00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "pnmReader.h"
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMReader::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PNMReader::
+~PNMReader() {
+  if (_owns_file) {
+    pm_close(_file);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMReader::read_data
+//       Access: Public, Virtual
+//  Description: Reads in an entire image all at once, storing it in
+//               the pre-allocated _x_size * _y_size array and alpha
+//               pointers.  (If the image type has no alpha channel,
+//               alpha is ignored.)  Returns the number of rows
+//               correctly read.
+//
+//               Derived classes need not override this if they
+//               instead provide supports_read_row() and read_row(),
+//               below.
+////////////////////////////////////////////////////////////////////
+int PNMReader::
+read_data(xel *array, xelval *alpha) {
+  if (!is_valid()) {
+    return 0;
+  }
+
+  int y;
+  for (y = 0; y < _y_size; y++) {
+    if (!read_row(array + y * _x_size, alpha + y * _x_size)) {
+      return y;
+    }
+  }
+
+  return _y_size;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMReader::supports_read_row
+//       Access: Public, Virtual
+//  Description: Returns true if this particular PNMReader is capable
+//               of returning the data one row at a time, via repeated
+//               calls to read_row().  Returns false if the only way
+//               to read from this file is all at once, via
+//               read_data().
+////////////////////////////////////////////////////////////////////
+bool PNMReader::
+supports_read_row() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMReader::read_row
+//       Access: Public, Virtual
+//  Description: If supports_read_row(), above, returns true, this
+//               function may be called repeatedly to read the image,
+//               one horizontal row at a time, beginning from the top.
+//               Returns true if the row is successfully read, false
+//               if there is an error or end of file.
+////////////////////////////////////////////////////////////////////
+bool PNMReader::
+read_row(xel *, xelval *) {
+  return false;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMReader::supports_stream_read
+//       Access: Public, Virtual
+//  Description: Returns true if this particular PNMReader can read
+//               from a general stream (including pipes, etc.), or
+//               false if the reader must occasionally fseek() on its
+//               input stream, and thus only disk streams are
+//               supported.
+////////////////////////////////////////////////////////////////////
+bool PNMReader::
+supports_stream_read() const {
+  return false;
+}

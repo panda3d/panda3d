@@ -1,0 +1,80 @@
+// Filename: eggFilenameNode.I
+// Created by:  drose (11Feb99)
+// 
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFilenameNode::Default constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE EggFilenameNode::
+EggFilenameNode() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFilenameNode::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE EggFilenameNode::
+EggFilenameNode(const string &node_name, const string &filename) : 
+  EggNode(node_name), Filename(filename) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFilenameNode::Copy constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE EggFilenameNode::
+EggFilenameNode(const EggFilenameNode &copy) :
+  EggNode(copy), Filename(copy) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFilenameNode::Copy assignment operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE EggFilenameNode &EggFilenameNode::
+operator = (const EggFilenameNode &copy) {
+  EggNode::operator = (copy);
+  Filename::operator = (copy);
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFilenameNode::Assignment operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE EggFilenameNode &EggFilenameNode::
+operator = (const string &filename) {
+  Filename::operator = (filename);
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFilenameNode::Assignment operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE EggFilenameNode &EggFilenameNode::
+operator = (const char *filename) {
+  Filename::operator = (filename);
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFilenameNode::Assignment operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE EggFilenameNode &EggFilenameNode::
+operator = (const Filename &filename) {
+  Filename::operator = (filename);
+  return *this;
+}
+

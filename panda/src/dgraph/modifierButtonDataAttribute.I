@@ -1,0 +1,56 @@
+// Filename: modifierButtonDataAttribute.I
+// Created by:  drose (27Mar00)
+// 
+////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModifierButtonDataAttribute::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ModifierButtonDataAttribute::
+ModifierButtonDataAttribute() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModifierButtonDataAttribute::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ModifierButtonDataAttribute::
+ModifierButtonDataAttribute(const ModifierButtonDataAttribute &copy) :
+  NodeAttribute(copy),
+  _mods(copy._mods)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModifierButtonDataAttribute::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ModifierButtonDataAttribute::
+operator = (const ModifierButtonDataAttribute &copy) {
+  NodeAttribute::operator = (copy);
+  _mods = copy._mods;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModifierButtonDataAttribute::set_mods
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ModifierButtonDataAttribute::
+set_mods(const ModifierButtons &mods) {
+  _mods = mods;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModifierButtonDataAttribute::set_mods
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE const ModifierButtons &ModifierButtonDataAttribute::
+get_mods() const {
+  return _mods;
+}

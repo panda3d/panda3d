@@ -1,0 +1,26 @@
+// Filename: lightTransition.I
+// Created by:  drose (24Mar00)
+// 
+////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+//     Function: LightTransition::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE LightTransition::
+LightTransition() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LightTransition::all_off
+//       Access: Public
+//  Description: This named constructor returns a LightTransition
+//               that's preconfigured to disable all lights below it.
+////////////////////////////////////////////////////////////////////
+INLINE LightTransition LightTransition::
+all_off() {
+  LightTransition t;
+  t.set_default_dir(TD_off);
+  return t;
+}

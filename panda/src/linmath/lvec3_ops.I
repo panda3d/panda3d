@@ -1,0 +1,92 @@
+// Filename: lvec3_ops.I
+// Created by:  drose (08Mar00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include <math.h>
+
+#include "nearly_zero.h"
+
+////////////////////////////////////////////////////////////////////
+//     Function: scalar * LVecBase3
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class NumType, class NumType2>
+INLINE LVecBase3<NumType> 
+operator * (NumType2 scalar, const LVecBase3<NumType> &a) {
+  return a * scalar;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: scalar * LPoint3
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class NumType, class NumType2>
+INLINE LPoint3<NumType> 
+operator * (NumType2 scalar, const LPoint3<NumType> &a) {
+  return a * scalar;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: scalar * LVector3
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class NumType, class NumType2>
+INLINE LVector3<NumType> 
+operator * (NumType2 scalar, const LVector3<NumType> &a) {
+  return a * scalar;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: dot product of LVecBase3
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+INLINE NumType
+dot(const LVecBase3<NumType> &a, const LVecBase3<NumType> &b) {
+  return a.dot(b);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: cross product of LVecBase3
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+INLINE LVecBase3<NumType>
+cross(const LVecBase3<NumType> &a, const LVecBase3<NumType> &b) {
+  return a.cross(b);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: cross product of LVector3
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+INLINE LVector3<NumType>
+cross(const LVector3<NumType> &a, const LVector3<NumType> &b) {
+  return LVector3<NumType>(a.cross(b));
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: length of a vector
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+INLINE NumType
+length(const LVector3<NumType> &a) {
+  return a.length();
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: normalize
+//  Description: Returns a normalized vector from the given vector.
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+INLINE LVector3<NumType>
+normalize(const LVector3<NumType> &v) {
+  LVector3<NumType> v1 = v;
+  v1.normalize();
+  return v1;
+}

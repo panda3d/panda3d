@@ -1,0 +1,757 @@
+// Filename: nodeRelation.cxx
+// Created by:  drose (26Oct98)
+// 
+
+#include "nodeRelation.h"
+#include "node.h"
+#include "config_graph.h"
+
+#include <boundingSphere.h>
+#include <notify.h>
+
+
+TypeHandle NodeRelation::_type_handle;
+
+LastGraphUpdate last_graph_update;
+
+Factory<NodeRelation> *NodeRelation::_factory = NULL;
+
+// Following are a handful of local template functions that provide
+// support for manipulating the list of arcs on nodes.  They are
+// template functions because they work as well on UpRelationArcs as
+// as they do on DownRelationArcs, which are slightly different things
+// (DownRelationArcs are reference-counting).
+
+////////////////////////////////////////////////////////////////////
+//     Function: verify_arc_list
+//  Description: A local template function that verifies that the list
+//               of arcs (either UpRelationArcs or DownRelationArcs)
+//               is correctly sorted, if paranoid_graph is set.
+//               Otherwise, it does nothing.
+////////////////////////////////////////////////////////////////////
+#ifdef NDEBUG
+template<class Iterator>
+INLINE void
+verify_arc_list(Iterator, Iterator) {
+}
+#else  // NDEBUG
+template<class Iterator>
+static void
+verify_arc_list(Iterator begin, Iterator end) {
+  if (paranoid_graph) {
+    if (begin < end) {
+      Iterator i = begin;
+      int sort = (*i)->get_sort();
+      ++i;
+      while (i < end) {
+	nassertv(sort <= (*i)->get_sort());
+	sort = (*i)->get_sort();
+	++i;
+      }
+    }
+  }
+}
+#endif  // NDEBUG
+
+////////////////////////////////////////////////////////////////////
+//     Function: find_insert_position
+//  Description: A local template function that performs a binary
+//               search on the arcs list (either UpRelationArcs or
+//               DownRelationArcs) and finds the place to insert the
+//               indicated arc.
+//
+//               This place will be at the end of the similarly-sorted
+//               arcs.
+////////////////////////////////////////////////////////////////////
+template<class Iterator>
+static Iterator
+r_find_insert_position(Iterator begin, Iterator end, NodeRelation *arc) {
+  if (begin == end) {
+    // The list is empty; the insert position is the end of the list.
+    return end;
+  }
+
+  Iterator center = begin + (end - begin) / 2;
+  nassertr(center < end, end);
+
+  if ((*center)->get_sort() > arc->get_sort()) {
+    // Insert before the center.
+    return r_find_insert_position(begin, center, arc);
+
+  } else { // (*center)->get_sort() <= arc->get_sort();
+    // Insert after the center.
+    return r_find_insert_position(center + 1, end, arc);
+  }
+}
+
+template<class Iterator>
+static Iterator
+find_insert_position(Iterator begin, Iterator end, NodeRelation *arc) {
+  Iterator result = r_find_insert_position(begin, end, arc);
+#ifndef NDEBUG
+  // Verify the result.
+  if (paranoid_graph) {
+    // If there is a node before the indicated position, it must have
+    // a sort value either less than or equal to this arc's value.
+    if (begin < result) {
+      nassertr((*(result - 1))->get_sort() <= arc->get_sort(), result);
+    }
+
+    // If there is a node after the indicated position, it must have a
+    // sort value greater than this arc's value.
+    if (result < end) {
+      nassertr((*result)->get_sort() > arc->get_sort(), result);
+    }
+  }
+#endif
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: find_arc
+//  Description: A local template function that performs a binary
+//               search on the arcs list (either UpRelationArcs or
+//               DownRelationArcs) and finds the arc's position within
+//               the list.  It returns end if the arc is not within
+//               the list.
+////////////////////////////////////////////////////////////////////
+template<class Iterator>
+static Iterator
+find_arc(Iterator begin, Iterator end, NodeRelation *arc) {
+  if (begin == end) {
+    // The list is empty; the arc is not on the list.
+    return end;
+  }
+
+  Iterator center = begin + (end - begin) / 2;
+  nassertr(center < end, end);
+
+  if ((*center)->get_sort() > arc->get_sort()) {
+    // It must be before the center.
+    return find_arc(begin, center, arc);
+
+  } else if ((*center)->get_sort() < arc->get_sort()) {
+    // It must be after the center.
+    return find_arc(center + 1, end, arc);
+
+  } else {
+    // The center's sort matches the arc's sort.  It could be either
+    // before or after the center.  First try after.
+    Iterator i = center;
+    while (i < end && (*i)->get_sort() == arc->get_sort()) {
+      if ((*i) == arc) {
+	return i;
+      }
+      ++i;
+    }
+
+    // No, try before.
+    i = center;
+    --i;
+    while (i >= begin && (*i)->get_sort() == arc->get_sort()) {
+      if ((*i) == arc) {
+	return i;
+      }
+      --i;
+    }
+
+    // No such arc!
+    return end;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: internal_insert_arc
+//  Description: A local template function that inserts the arc into
+//               its appropriate place in the list and returns true if
+//               successful, false if there was some kind of error.
+////////////////////////////////////////////////////////////////////
+template<class ArcList>
+static bool
+internal_insert_arc(ArcList &alist, NodeRelation *arc) {
+  nassertr(arc != (NodeRelation *)NULL, false);
+
+  TYPENAME ArcList::iterator position = 
+    find_insert_position(alist.begin(), alist.end(), arc);
+  nassertr(position >= alist.begin() && position <= alist.end(), false);
+
+  /*
+  if (graph_cat.is_debug()) {
+    if (position == alist.end()) {
+      graph_cat.debug()
+	<< "Inserting " << *arc << " at end\n";
+    } else {
+      graph_cat.debug()
+	<< "Inserting " << *arc << " before " << *(*position) << "\n";
+    }
+  }
+  */
+
+  alist.insert(position, arc);
+  verify_arc_list(alist.begin(), alist.end());
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: internal_remove_arc
+//  Description: A local template function that removes the arc from
+//               its place in the list and returns true if successful,
+//               false if there was some kind of error.
+////////////////////////////////////////////////////////////////////
+template<class ArcList>
+static bool
+internal_remove_arc(ArcList &alist, NodeRelation *arc) {
+  nassertr(arc != (NodeRelation *)NULL, false);
+
+  TYPENAME ArcList::iterator position = 
+    find_arc(alist.begin(), alist.end(), arc);
+  nassertr(position >= alist.begin() && position <= alist.end(), false);
+  nassertr(position != alist.end(), false);
+
+  /*
+  if (graph_cat.is_debug()) {
+    TYPENAME ArcList::iterator next = position + 1;
+    if (next == list.end()) {
+      graph_cat.debug()
+	<< "Removing " << *arc << " from end\n";
+    } else {
+      graph_cat.debug()
+	<< "Removing " << *arc << " from before " << *(*next) << "\n";
+    }
+  }
+  */
+
+  alist.erase(position);
+  verify_arc_list(alist.begin(), alist.end());
+
+  return true;
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::Copy Constructor
+//       Access: Private
+//  Description: It's not legal to copy a NodeRelation.
+////////////////////////////////////////////////////////////////////
+NodeRelation::
+NodeRelation(const NodeRelation &) {
+  graph_cat.error()
+    << "NodeRelation copy constructor called!\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::Copy Assignment Operator
+//       Access: Private
+//  Description: It's not legal to copy a NodeRelation.
+////////////////////////////////////////////////////////////////////
+void NodeRelation::
+operator = (const NodeRelation &) {
+  graph_cat.error()
+    << "NodeRelation copy assignment operator called!\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+NodeRelation::
+~NodeRelation() {
+  // An attached arc should never be deleted.  If this assertion
+  // fails, it's most likely that someone attempted to explicitly
+  // delete an arc.  You should use remove_arc() instead.
+  nassertv(!_attached);
+
+  _transitions.remove_all_from_arc(this);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::output
+//       Access: Public
+//  Description: Writes a brief description of the arc to the
+//               indicated output stream.  This function is called by
+//               the << operator.
+////////////////////////////////////////////////////////////////////
+void NodeRelation::
+output(ostream &out) const {
+  if (_parent == (Node*)NULL) {
+    out << "(null)";
+  } else {
+    out << *_parent;
+  }
+  out << " -> ";
+  if (_child == (Node*)NULL) {
+    out << "(null)";
+  } else {
+    out << *_child;
+  }
+
+  if (!_attached) {
+    out << " (unattached)";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::copy_transitions_from
+//       Access: Public
+//  Description: Copies all of the transitions stored on the other arc
+//               to this arc.  Any existing transitions on this arc,
+//               for which there was not a corresponding transition of
+//               the same type on the other arc, are left undisturbed.
+////////////////////////////////////////////////////////////////////
+void NodeRelation::
+copy_transitions_from(const NodeRelation *arc) {
+  copy_transitions_from(arc->_transitions);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::compose_transitions_from
+//       Access: Public
+//  Description: Similar to copy_transitions_from(), except that if
+//               the same type of transition exists on both arcs, the
+//               composition of the two is stored.  The result
+//               represents the same set of transitions that would
+//               result from composing the two individual sets of
+//               transitions.
+////////////////////////////////////////////////////////////////////
+void NodeRelation::
+compose_transitions_from(const NodeRelation *arc) {
+  compose_transitions_from(arc->_transitions);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::copy_transitions_from
+//       Access: Public
+//  Description: Copies all of the transitions stored in the indicated
+//               set to this arc.  Any existing transitions on this
+//               arc, for which there was not a corresponding
+//               transition of the same type on the other arc, are
+//               left undisturbed.
+////////////////////////////////////////////////////////////////////
+void NodeRelation::
+copy_transitions_from(const NodeTransitions &trans) {
+  if (!trans.is_empty()) {
+    _transitions.copy_transitions_from(trans, this);
+  
+    // Now mark that *all* transitions have changed, even though many
+    // of them might not have, because we're not really sure.
+    _net_transitions.clear();
+    NodeTransitions::const_iterator ti;
+    for (ti = _transitions.begin(); ti != _transitions.end(); ++ti) {
+      changed_transition((*ti).first);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::compose_transitions_from
+//       Access: Public
+//  Description: Similar to copy_transitions_from(), except that if
+//               the same type of transition exists in both places,
+//               the composition of the two is stored.  The result
+//               represents the same set of transitions that would
+//               result from composing the two individual sets of
+//               transitions.
+////////////////////////////////////////////////////////////////////
+void NodeRelation::
+compose_transitions_from(const NodeTransitions &trans) {
+  if (!trans.is_empty()) {
+    _transitions.compose_transitions_from(trans, this);
+  
+    // Now mark that *all* transitions have changed, even though many
+    // of them might not have, because we're not really sure.
+    _net_transitions.clear();
+    NodeTransitions::const_iterator ti;
+    for (ti = _transitions.begin(); ti != _transitions.end(); ++ti) {
+      changed_transition((*ti).first);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::sub_render_trans
+//       Access: Public
+//  Description: Calls sub_render() on each transition assigned to the
+//               arc.  Returns true if all transitions returned true,
+//               false if any returned false.
+////////////////////////////////////////////////////////////////////
+bool NodeRelation::
+sub_render_trans(const AllAttributesWrapper &attrib,
+		 AllTransitionsWrapper &trans,
+		 GraphicsStateGuardianBase *gsgbase) {
+  bool all_true = true;
+  NodeTransitions::const_iterator ti;
+  for (ti = _transitions.begin(); ti != _transitions.end(); ++ti) {
+    if (!(*ti).second->sub_render(this, attrib, trans, gsgbase)) {
+      all_true = false;
+    }
+  }
+
+  return all_true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::has_sub_render_trans
+//       Access: Public
+//  Description: Returns true if any transition on the arc has a
+//               sub_render() function.
+////////////////////////////////////////////////////////////////////
+bool NodeRelation::
+has_sub_render_trans() const {
+  NodeTransitions::const_iterator ti;
+  for (ti = _transitions.begin(); ti != _transitions.end(); ++ti) {
+    if ((*ti).second->has_sub_render()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::make_arc
+//       Access: Public, Static
+//  Description: This function is passed to the Factory to make a new
+//               NodeRelation by type.  Don't try to call this
+//               function directly.
+////////////////////////////////////////////////////////////////////
+NodeRelation *NodeRelation::
+make_arc(const FactoryParams &) {
+  return new NodeRelation(NodeRelation::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::attach
+//       Access: Protected
+//  Description: Makes the arc an official part of the graph by
+//               informing the nodes that it connects of its
+//               existence.  It is an error to attach an arc that has
+//               already been attached.
+//
+//               It is also an error to attach an arc that is not
+//               grounded at both ends.
+////////////////////////////////////////////////////////////////////
+void NodeRelation::
+attach() {
+  nassertv(_parent != (Node*)NULL);
+  nassertv(_child != (Node*)NULL);
+  nassertv(!_attached);
+
+  _attached = true;
+  
+  bool inserted_one = internal_insert_arc(_parent->_children[_type], this);
+  bool inserted_two = internal_insert_arc(_child->_parents[_type], this);
+  nassertv(inserted_one && inserted_two);
+
+  // Blow out the cache and increment the current update sequence.
+  _net_transitions.clear();
+  ++last_graph_update[_type];
+
+  _parent->force_bound_stale();
+  mark_bound_stale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::detach
+//       Access: Protected
+//  Description: Removes the arc from the graph.  The arc remains and
+//               still refers to its connected nodes, but the nodes
+//               themselves no longer know about the arc.  It is an
+//               error to detach an arc that is not already attached.
+//
+//               detach() returns a PointerTo for the arc itself.
+//               This is useful not so much for the return value
+//               itself, but more to prevent the arc from destructing
+//               until detach() returns, since the arc will destruct
+//               when its last reference count is removed, and it is
+//               generally a bad idea to destruct a class within its
+//               own method.
+////////////////////////////////////////////////////////////////////
+PT(NodeRelation) NodeRelation::
+detach() {
+  PT(NodeRelation) result = this;
+
+  nassertr(_parent != (Node*)NULL, result);
+  nassertr(_child != (Node*)NULL, result);
+  nassertr(_attached, result);
+
+  force_bound_stale();
+
+  bool removed_one = internal_remove_arc(_parent->_children[_type], this);
+  bool removed_two = internal_remove_arc(_child->_parents[_type], this);
+
+  nassertr(removed_one, result);
+  nassertr(removed_two, result);
+
+  _attached = false;
+
+  // Blow out the cache and increment the current update sequence.
+  _net_transitions.clear();
+  ++last_graph_update[_type];
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::detach_below
+//       Access: Protected
+//  Description: This is a special method that is only called from the
+//               Node destructor.  It detaches the arc, but does not
+//               remove it from its parent's arc list, which is
+//               presumably about to be destroyed anyway.
+////////////////////////////////////////////////////////////////////
+PT(NodeRelation) NodeRelation::
+detach_below() {
+  PT(NodeRelation) result = this;
+
+  nassertr(_parent != (Node*)NULL, result);
+  nassertr(_child != (Node*)NULL, result);
+  nassertr(_attached, result);
+
+  force_bound_stale();
+
+  bool removed = internal_remove_arc(_child->_parents[_type], this);
+
+  nassertr(removed, result);
+
+  _attached = false;
+
+  // Blow out the cache and increment the current update sequence.
+  _net_transitions.clear();
+  ++last_graph_update[_type];
+
+  return result;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::changed_transition
+//       Access: Public, Virtual
+//  Description: This is called by set_transition() or
+//               clear_transition() whenever a transition is added,
+//               updated, or removed from the arc.  It is just a
+//               callback to the arc so it can decide whether it needs
+//               to update any internal data as a response to this
+//               adjustment (for instance, by marking the bounding
+//               sphere stale).
+////////////////////////////////////////////////////////////////////
+void NodeRelation::
+changed_transition(TypeHandle trans_type) {
+  if (_net_transitions != (NodeTransitionCache *)NULL) {
+    _net_transitions->clear_transition(trans_type);
+  }
+  last_graph_update[get_type()]++;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::propagate_stale_bound
+//       Access: Protected, Virtual
+//  Description: Called by BoundedObject::mark_bound_stale(), this
+//               should make sure that all bounding volumes that
+//               depend on this one are marked stale also.
+////////////////////////////////////////////////////////////////////
+void NodeRelation::
+propagate_stale_bound() {
+  // Mark all of our parent arcs stale as well.
+  Node *node = _parent;
+  nassertv(node != (Node*)NULL);
+
+  UpRelations::const_iterator uri;
+  uri = node->_parents.find(get_type());
+  if (uri != node->_parents.end()) {
+    const UpRelationPointers &urp = (*uri).second;
+    
+    UpRelationPointers::const_iterator urpi;
+    for (urpi = urp.begin(); urpi != urp.end(); ++urpi) {
+      (*urpi)->mark_bound_stale();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::recompute_bound
+//       Access: Protected, Virtual
+//  Description: Recomputes the dynamic bounding volume for this arc
+//               (and all of its descendants).
+////////////////////////////////////////////////////////////////////
+void NodeRelation::
+recompute_bound() {
+  // First, get ourselves a fresh, empty bounding volume.
+  BoundedObject::recompute_bound();
+  nassertv(_bound != (BoundingVolume*)NULL);
+
+  // Now actually compute the bounding volume by putting it around all
+  // of our child bounding volumes.
+  vector<const BoundingVolume *> child_volumes;
+
+  Node *node = _child;
+  nassertv(node != (Node*)NULL);
+
+  child_volumes.push_back(&node->get_bound());
+
+  DownRelations::const_iterator dri;
+  dri = node->_children.find(get_type());
+  if (dri != node->_children.end()) {
+    const DownRelationPointers &drp = (*dri).second;
+    
+    DownRelationPointers::const_iterator drpi;
+    for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
+      child_volumes.push_back(&(*drpi)->get_bound());
+    }
+  }
+
+  bool success = 
+    _bound->around(child_volumes.begin(), child_volumes.end());
+
+#ifndef NDEBUG
+  if (!success) {
+    graph_cat.error()
+      << "Unable to recompute bounding volume for " << *this << ":\n"
+      << "Cannot put " << _bound->get_type() << " around:\n";
+    for (int i = 0; i < (int)child_volumes.size(); i++) {
+      graph_cat.error(false)
+	<< "  " << *child_volumes[i] << "\n";
+    }
+  }
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::write_datagram
+//       Access: Public
+//  Description: Function to write the important information in
+//               the particular object to a Datagram
+////////////////////////////////////////////////////////////////////
+void NodeRelation::
+write_datagram(BamWriter *manager, Datagram &me)
+{
+  //Write out the "dynamic" type
+  manager->write_handle(me, _type);
+
+  //We should always be attached if we are trying to write out
+  nassertv(_attached);
+  //Neither the Child nor the Parent should be NULL
+  nassertv(get_parent() != Node::Null && get_child() != Node::Null);
+
+  //Write out the pointer to my parent
+  manager->write_pointer(me, _parent);
+  //Write out the pointer to my child
+  manager->write_pointer(me, _child);
+
+  //Write out the sort relation for this object
+  me.add_uint16(_sort);
+
+  //Now write out all the Transitions on this arc
+  me.add_uint16(_transitions.size());
+  NodeTransitions::iterator ci;
+  for(ci = _transitions.begin(); ci != _transitions.end(); ci++)
+  {
+    manager->write_pointer(me, (*ci).second);
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::complete_pointers
+//       Access: Public
+//  Description: Takes in a vector of pointes to TypedWriteable
+//               objects that correspond to all the requests for 
+//               pointers that this object made to BamReader.
+////////////////////////////////////////////////////////////////////
+int NodeRelation::
+complete_pointers(vector_typedWriteable &plist, BamReader*)
+{
+  nassertr(plist[0] != TypedWriteable::Null &&
+	   plist[1] != TypedWriteable::Null, 0);
+  _parent = DCAST(Node, plist[0]);
+  _child = DCAST(Node, plist[1]);
+  
+  //Let attach do the work of connecting to the
+  //parent and child nodes, and telling them about
+  //myself
+  attach();
+
+  //The rest of this is the list of Transitions
+  for(int i = 2; i < _num_transitions + 2; i++)
+  {
+    //Ignore Null pointers.  This SHOULD mean that
+    //we have received a Transition that the current
+    //version doesn't know about, so we want to be able
+    //to gracefully handle new functionality being thrown
+    //at old code
+    if (plist[i] == TypedWriteable::Null)
+    {
+      graph_cat->warning() << get_type().get_name() 
+			   << "Ignoring null Transition" << endl;
+    }
+    else
+    {
+      //Let set_transition do the work for storing
+      //a reference to this transition, determing it's
+      //exact type, telling the transition about me, etc...
+      set_transition(DCAST(NodeTransition, plist[i]));
+    }
+  }
+  return _num_transitions+2;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::make_NodeRelation
+//       Access: Protected
+//  Description: Factory method to generate a NodeRelation object
+////////////////////////////////////////////////////////////////////
+TypedWriteable* NodeRelation::
+make_NodeRelation(const FactoryParams &params)
+{
+  NodeRelation *me = new NodeRelation;
+  BamReader *manager;
+  Datagram packet;
+
+  parse_params(params, manager, packet);
+  DatagramIterator scan(packet);
+
+  me->fillin(scan, manager);
+  return me;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::fillin
+//       Access: Protected
+//  Description: Function that reads out of the datagram (or asks
+//               manager to read) all of the data that is needed to
+//               re-create this object and stores it in the appropiate
+//               place
+////////////////////////////////////////////////////////////////////
+void NodeRelation::
+fillin(DatagramIterator& scan, BamReader* manager)
+{
+  _type = manager->read_handle(scan);
+  //Read in my parent
+  manager->read_pointer(scan, this);
+  //Read in my child
+  manager->read_pointer(scan, this);
+  //Get my sort relation
+  _sort = scan.get_uint16();
+
+  //Now read in all of my transitions
+  _num_transitions = scan.get_uint16();
+  for(int i = 0; i < _num_transitions; i++)
+  {
+    manager->read_pointer(scan, this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::register_with_factory
+//       Access: Public, Static
+//  Description: Factory method to generate a NodeRelation object
+////////////////////////////////////////////////////////////////////
+void NodeRelation::
+register_with_read_factory(void)
+{
+  BamReader::get_factory()->register_factory(get_class_type(), make_NodeRelation);
+}

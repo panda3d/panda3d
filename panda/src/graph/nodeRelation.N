@@ -1,0 +1,2 @@
+ignoremember create_typed_arc
+ignoremember register_with_factory

@@ -1,0 +1,39 @@
+// Filename: computedVertices.I
+// Created by:  drose (01Mar99)
+// 
+////////////////////////////////////////////////////////////////////
+
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ComputedVertices::VertexTransform::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ComputedVertices::VertexTransform::
+VertexTransform() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ComputedVertices::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ComputedVertices::
+ComputedVertices() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ComputedVertices::VertexTransform::Ordering operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool ComputedVertices::VertexTransform::
+operator < (const ComputedVertices::VertexTransform &other) const {
+  if (_joint_index != other._joint_index) {
+    return _joint_index < other._joint_index;
+  }
+  return _effect < other._effect;
+}
+
+

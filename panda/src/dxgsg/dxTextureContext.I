@@ -1,0 +1,18 @@
+// Filename: dxTextureContext.I
+// Created by:  drose (07Oct99)
+// 
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXTextureContext::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE DXTextureContext::
+DXTextureContext(Texture *tex) :
+  TextureContext(tex)
+{
+  _index = 0;
+  _priority = 0.5; // For keeping resident in texture memory 
+}

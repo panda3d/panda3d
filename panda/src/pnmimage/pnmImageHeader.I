@@ -1,0 +1,191 @@
+// Filename: pnmImageHeader.I
+// Created by:  drose (15Jun00)
+// 
+////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PNMImageHeader::
+PNMImageHeader() {
+  _x_size = 0;
+  _y_size = 0;
+  _num_channels = 0;
+  _maxval = 255;
+  _type = (PNMFileType *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PNMImageHeader::
+PNMImageHeader(const PNMImageHeader &copy) :
+  _x_size(copy._x_size),
+  _y_size(copy._y_size),
+  _num_channels(copy._num_channels),
+  _maxval(copy._maxval),
+  _type(copy._type)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImageHeader::
+operator = (const PNMImageHeader &copy) {
+  _x_size = copy._x_size;
+  _y_size = copy._y_size;
+  _num_channels = copy._num_channels;
+  _maxval = copy._maxval;
+  _type = copy._type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PNMImageHeader::
+~PNMImageHeader() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::get_color_type
+//       Access: Public
+//  Description: Returns the image type of the image, as an enumerated
+//               value.  This is really just the number of channels
+//               cast to the enumerated type.
+////////////////////////////////////////////////////////////////////
+INLINE PNMImageHeader::ColorType PNMImageHeader::
+get_color_type() const {
+  nassertr(_num_channels >= 1 && _num_channels <= 4, CT_invalid);
+  return (ColorType)_num_channels;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::get_num_channels
+//       Access: Public
+//  Description: Returns the number of channels in the image.
+////////////////////////////////////////////////////////////////////
+INLINE int PNMImageHeader::
+get_num_channels() const {
+  nassertr(_num_channels >= 1 && _num_channels <= 4, 0);
+  return _num_channels;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::is_grayscale
+//       Access: Public, Static
+//  Description: This static variant of is_grayscale() returns true if
+//               the indicated image type represents a grayscale
+//               image, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool PNMImageHeader::
+is_grayscale(PNMImageHeader::ColorType color_type) {
+  return (color_type == CT_grayscale || color_type == CT_two_channel);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::is_grayscale
+//       Access: Public
+//  Description: Returns false if the image is a full-color image, and
+//               has red, green, and blue components; true if it is a
+//               grayscale image and has only a gray component.  (The
+//               gray color is actually stored in the blue channel,
+//               and the red and green channels are ignored.)
+////////////////////////////////////////////////////////////////////
+INLINE bool PNMImageHeader::
+is_grayscale() const {
+  return is_grayscale(get_color_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::has_alpha
+//       Access: Public, Static
+//  Description: This static variant of has_alpha() returns true if
+//               the indicated image type includes an alpha channel,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool PNMImageHeader::
+has_alpha(PNMImageHeader::ColorType color_type) {
+  return (color_type == CT_two_channel || color_type == CT_four_channel);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::has_alpha
+//       Access: Public
+//  Description: Returns true if the image includes an alpha channel,
+//               false otherwise.  Unlike is_grayscale(), if this
+//               returns false it is an error to call any of the
+//               functions accessing the alpha channel.
+////////////////////////////////////////////////////////////////////
+INLINE bool PNMImageHeader::
+has_alpha() const {
+  return has_alpha(get_color_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::get_maxval
+//       Access: Public
+//  Description: Returns the maximum channel value allowable for any
+//               pixel in this image; for instance, 255 for a typical
+//               8-bit-per-channel image.  A pixel with this value is
+//               full on.
+////////////////////////////////////////////////////////////////////
+INLINE xelval PNMImageHeader::
+get_maxval() const {
+  return _maxval;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::get_x_size
+//       Access: Public
+//  Description: Returns the number of pixels in the X direction.
+//               This is one more than the largest allowable X
+//               coordinate.
+////////////////////////////////////////////////////////////////////
+INLINE int PNMImageHeader::
+get_x_size() const {
+  return _x_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::get_y_size
+//       Access: Public
+//  Description: Returns the number of pixels in the Y direction.
+//               This is one more than the largest allowable Y
+//               coordinate.
+////////////////////////////////////////////////////////////////////
+INLINE int PNMImageHeader::
+get_y_size() const {
+  return _y_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::has_type
+//       Access: Public
+//  Description: Returns true if the PNMImageHeader knows what type it
+//               is, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool PNMImageHeader::
+has_type() const {
+  return _type != (PNMFileType *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::get_type
+//       Access: Public
+//  Description: If the file type is known (e.g. has_type() returns
+//               true), returns its PNMFileType pointer; otherwise,
+//               returns NULL.
+////////////////////////////////////////////////////////////////////
+INLINE PNMFileType *PNMImageHeader::
+get_type() const {
+  return _type;
+}

@@ -1,0 +1,1264 @@
+
+Egg files can, naturally, describe many properties of a scene: simple
+geometry, including special effects and collision surfaces, characters
+including skeletons, morphs, and multiple-joint assignments, and
+character animation tables.  Traditionally the scene descriptions,
+character descriptions, and animation tables have been stored in three
+different kinds of egg files (and, in the old player, parsed by
+different egg loaders, which didn't even accept the same syntax); this
+distinction is no longer as important.  There is only one egg loader,
+and a single egg file can contain elements of all three.
+
+
+Egg files consist of a series of sequential and hierarchically-nested
+entries.  In general, the syntax of each entry is:
+
+<Entry-type> name { contents }
+
+Where the name is optional (and in many cases, ignored anyway) and the
+syntax of the contents is determined by the entry-type.  The name (and
+strings in general) may be either quoted with double quotes or
+unquoted.  Newlines are treated like any other whitespace, and case is
+not significant.  The angle brackets are literally a part of the entry
+keyword.  (Square brackets and ellipses in this document are used to
+indicate optional pieces, and are not literally part of the syntax.)
+
+The name field is always syntactically allowed between an entry
+keyword and its opening brace, even if it will be ignored.  In the
+syntax lines given below, the name is not shown if it will be ignored.
+
+Comments may be delimited using either the C++-style // ... or the
+C-style /* ... */.  C comments do not nest.  There is also a <Comment>
+entry type, of the form:
+
+<Comment> { text }
+
+<Comment> entries are slightly different, in that tools which read and
+write egg files will preserve the text within <Comment> entries, but
+they may not preserve comments delimited by // or /* */.  Special
+characters and keywords within a <Comment> entry should be quoted;
+it's safest to quote the entire comment.
+
+
+
+LOCAL INFORMATION ENTRIES
+
+These nodes contain information relevant to the current level of
+nesting only.
+
+<Scalar> name { value }
+<Char*> name { value }
+
+  Scalars can appear in various contexts.  They are always optional,
+  and specify some attribute value relevant to the current context.
+  The scalar name is the name of the attribute; different attribute
+  names are meaningful in different contexts.  The value is either a
+  numeric or a (quoted or unquoted) string value; the interpretation
+  as a number or as a string depends on the nature of the named
+  attribute.  Because of a syntactic accident with the way Egg
+  evolved, <Scalar> and <Char*> are lexically the same and both can
+  represent either a string or a number.
+
+
+
+GLOBAL INFORMATION ENTRIES
+
+These nodes contain information relevant to the file as a whole.  They
+can be nested along with geometry nodes, but this nesting is
+irrelevant and the only significant placement rule is that they should
+appear before they are referenced.
+
+
+<CoordinateSystem> { string }
+
+  This is a new kind of node introduced for the new player.  The old
+  player used a Y-up coordinate system, so all modeling was done with
+  Y-up and egg files used Y-up implicitly.  Since we have adopted a
+  Z-up coordinate system with the new player, it becomes necessary to
+  make a distinction.  The contents of this entry are either the
+  string "Y-up" or "Z-up" to indicate the coordinate system used in
+  the egg file; the egg loader will automatically make a conversion if
+  necessary.  By convention, this entry should only appear at the
+  beginning of the file.  If it is omitted, Y-up is assumed.
+
+
+<Texture> name { filename [scalars] }
+
+  This describes a texture file that can be referenced later with
+  <TRef> { name }.  It is not necessary to make a <Texture> entry for
+  each texture to be used; a texture may also be referenced directly
+  by the geometry via an abbreviated inline <Texture> entry, but a
+  separate <Texture> entry is the only way to specify anything other
+  than the default texture attributes.
+
+  The filename may be a relative path, in which case it is relative to
+  the directory in which the current egg file was found.  If no
+  directory prefix is specified, the current egg file's directory is
+  searched first, and then $PFPATH is searched.
+
+  The following attributes are presently implemented for textures:
+
+  <Scalar> format { format-definition }
+
+    This defines the load format of the image file.  The
+    format-definition is one of:
+
+    RGBA, RGBA12, RGBA8, RGBA4,
+    RGB, RGB12, RGB8, RGB5, RGB332,
+    LUMINANCE_ALPHA,
+    RED, GREEN, BLUE, ALPHA, LUMINANCE
+
+    RGB12 and RGBA12 specify 48-bit texels with or without alpha;
+    RGB8 and RGBA8 specify 32-bit texels, and RGB5 and RGBA4 specify
+    16-bit texels.  Otherwise, the size of the texels is determined by
+    the width of the components in the image file.
+
+    The number of components of the image file must match the format
+    specified; otherwise, it is an error and the format specification
+    is ignored.
+
+  <Scalar> wrap { repeat-definition }
+  <Scalar> wrapu { repeat-definition }
+  <Scalar> wrapv { repeat-definition }
+
+    This defines the behavior of the texture image outside of the
+    normal (u,v) range 0.0 - 1.0.  It is "REPEAT" to repeat the
+    texture to infinity, "CLAMP" not to.  The wrapping behavior may be
+    specified independently for each axis via "wrapu" and "wrapv", or
+    it may be specified for both simultaneously via "wrap".
+
+  <Scalar> minfilter { filter-type }
+  <Scalar> magfilter { filter-type }
+  <Scalar> magfilteralpha { filter-type }
+  <Scalar> magfiltercolor { filter-type }
+
+    This specifies the type of filter applied when minimizing or
+    maximizing.  Filter-type may be one of:
+
+      POINT
+      LINEAR
+      BILINEAR
+      TRILINEAR
+      MIPMAP_POINT
+      MIPMAP_LINEAR
+      MIPMAP_BILINEAR
+      MIPMAP_TRILINEAR
+      ADD_DETAIL
+      MODULATE_DETAIL
+
+  <Scalar> envtype { environment-type }
+
+    This specifies the type of texture environment to create; i.e. it
+    controls the way in which textures apply to models.
+    Environment-type may be one of:
+
+      MODULATE
+      DECAL
+
+  <Scalar> alpha { alpha-type }
+
+    This specifies whether and what type of transparency will be
+    performed.  Alpha-type may be one of:
+
+      OFF
+      ON
+      BLEND
+      BLEND_NO_OCCLUDE
+      MS
+      MS_MASK
+
+    If alpha-type is OFF, it means not to enable transparency, even if
+    the image filename ends in .rgba or the format is RGBA12.  If
+    alpha-type is ON, it means to enable the default transparency,
+    even if the image filename does not end in .rgba.  If alpha-type
+    is any of the other options, it specifies the type of transparency
+    to be enabled.
+
+  <Scalar> draw_order { number }
+
+    This specifies the fixed drawing order of all polygons with this
+    texture applied, in the absence of a drawing order specified on
+    the polygon itself.  See the description for draw-order under
+    polygon attributes.
+
+  <Transform> { transform-definition }
+
+    This specifies a 2-d transformation that is applied to the UV's of
+    a surface to generate the texture coordinates.
+
+    The transform syntax is similar to that for groups, except it
+    defines a 2-d 3x3 matrix.  The definition may be any sequence of
+    zero or more of the following.  Transformations are post
+    multiplied in the order they are encountered to produce a net
+    transformation matrix.
+
+    <Translate> { x y }
+    <Rotate> { degrees }
+    <Scale> { x y }
+
+    <Matrix3> {
+      00 01 02
+      10 11 12
+      20 21 22
+    }
+
+    The transform definition might also include the following scalar:
+
+    <Scalar> animated { 1 }
+
+    If this is set, it indicates the matrix may be animated by a
+    matrix channel, like a joint.  At present, this flag is not used;
+    eventually, it may be used to define an arbitrary texture
+    coordinate animation.
+
+
+<Material> name { [scalars] }
+
+  This defines a set of material attributes that may later be
+  referenced with <MRef> { name }.
+
+  At present, no material attributes have been implemented.
+
+
+<VertexPool> name { vertices }
+
+  A vertex pool is a set of vertices.  All geometry is created by
+  referring to vertices by number in a particular vertex pool.  There
+  may be one or several vertex pools in an egg file, but all vertices
+  that make up a single polygon must come from the same vertex pool.
+  The body of a <VertexPool> entry is simply a list of one or more
+  <Vertex> entries, as follows:
+
+
+  <Vertex> number { x [y [z [w]]] [attributes] }
+
+    A <Vertex> entry is only valid within a vertex pool definition.
+    The number is the index by which this vertex will be referenced.
+    It is optional; if it is omitted, the vertices are implicitly
+    numbered consecutively beginning at one.  If the number is
+    supplied, the vertices need not be consecutive.
+
+    Normally, vertices are three-dimensional (with coordinates x, y,
+    and z); however, in certain cases vertices may have fewer or more
+    dimensions, up to four.  This is particularly true of vertices
+    used as control vertices of NURBS curves and surfaces.  If more
+    coordinates are supplied than needed, the extra coordinates are
+    ignored; if fewer are supplied than needed, the missing
+    coordinates are assumed to be 0.
+
+    The vertex's coordinates are always given in world space,
+    regardless of any transforms before the vertex pool or before the
+    referencing geometry.  If the vertex is referenced by geometry
+    under a transform, the egg loader will do an inverse transform to
+    move the vertex into the proper coordinate space without changing
+    its position in world space.  One exception is geometry under an
+    <Instance> node; in this case the vertex coordinates are given in
+    the space of the <Instance> node.  (Another exception is a
+    <DynamicVertexPool>; see below.)
+
+    In neither case does it make a difference whether the vertex pool
+    is itself declared under a transform or an <Instance> node.
+
+    While each vertex must at least have a position, it may also have
+    a color, normal, pair of UV coordinates, and/or a set of morph
+    offsets.  Furthermore, the color, normal, and UV coordinates may
+    themselves have morph offsets.  Thus, the [attributes] in the
+    syntax line above may be replaced with zero or more of the
+    following entries:
+
+
+
+    <Dxyz> target { x y z }
+
+    This specifies the offset of this vertex for the named morph
+    target.  See the "MORPH DESCRIPTION ENTRIES" header, below.
+
+
+    <Normal> { x y z [morph-list] }
+
+    This specifies the surface normal of the vertex.  If omitted, the
+    vertex will have no normal.  Normals may also be morphed;
+    morph-list here is thus an optional list of <DNormal> entries,
+    similar to the above.
+
+
+    <RGBA> { r g b a [morph-list] }
+
+    This specifies the four-valued color of the vertex.  Each
+    component is in the range 0.0 to 1.0.  A vertex color, if
+    specified for all vertices of the polygon, overrides the polygon's
+    color.  If neither color is given, the default is white
+    (1 1 1 1).  The morph-list is an optional list of <DRGBA> entries.
+
+
+    <UV> { u v [morph-list] }
+
+    This gives the texture coordinates of the vertex.  This must be
+    specified if a texture is to be mapped onto this geometry.  As
+    before, morph-list is an optional list of <DUV> entries.
+
+
+    In addition to the above, when the vertex serves as a control
+    vertex for a parametric curve the following attributes may be
+    supplied:
+
+
+    <Char*> continuity-type { type }
+
+    This has meaning for a Bezier curve only.  It indicates the type
+    of continuity that should be forced for the given CV: cut, free,
+    g1, or smooth.  This only applies to the end CV's of each curve
+    segment: every third CV.
+
+
+<DynamicVertexPool> name { vertices }
+
+  A dynamic vertex pool is similar to a vertex pool in most respects,
+  except that each vertex might be animated by substituting in values
+  from a <VertexAnim> table.  Also, the vertices defined within a
+  dynamic vertex pool are given in local coordinates, instead of world
+  coordinates.
+
+  The presence of a dynamic vertex pool makes sense only within a
+  character model, and a single dynamic vertex pool may not span
+  multiple characters.  Each dynamic vertex pool creates a DynVerts
+  object within the character by the same name; this name is used
+  later when matching up the corresponding <VertexAnim>.
+  
+
+
+
+GEOMETRY ENTRIES
+
+<Polygon> name { 
+    [attributes] 
+    <VertexRef> { 
+        indices 
+        <Ref> { pool-name } 
+    } 
+}
+
+  A polygon consists of a sequence of vertices from a single vertex
+  pool.  Vertices are identified by pool-name and index number within
+  the pool; indices is a list of vertex numbers within the given
+  vertex pool.  Vertices are listed in counterclockwise order.
+  Although the vertices must all come from the same vertex pool, they
+  may have been assigned to arbitrarily many different joints
+  regardless of joint connectivity (there is no "straddle-polygon"
+  limitation).  See Joints, below.
+
+  The polygon syntax is quite verbose, and there isn't any way to
+  specify a set of attributes that applies to a group of polygons--the
+  attributes list must be repeated for each polygon.  This is why egg
+  files tend to be very large.
+
+  The following attributes may be specified for polygons:
+
+  <TRef> { texture-name }
+
+    This refers to a named <Texture> entry given earlier.  It applies
+    the given texture to the polygon.  This requires that all the
+    polygon's vertices have been assigned texture coordinates.
+
+
+  <Texture> { filename }
+
+    This is another way to apply a texture to a polygon.  The
+    <Texture> entry is defined "inline" to the polygon, instead of
+    referring to a <Texture> entry given earlier.  There is no way to
+    specify texture attributes given this form.
+
+    There's no advantage to this syntax for texture mapping.  It's
+    supported only because it's required by some egg files.
+
+
+  <MRef> { material-name }
+
+    This applies the material properties defined in the earlier
+    <Material> entry to the polygon.
+
+
+  <Normal> { x y z [morph-list] }
+
+    This defines a polygon surface normal.  The polygon normal will be
+    used unless all vertices also have a normal.  If no normal is
+    defined, none will be supplied.  The polygon normal, like the
+    vertex normal, may be morphed by specifying a series of <DNormal>
+    entries.
+
+
+  <RGBA> { r g b a [morph-list] }
+
+    This defines the polygon's color, which will be used unless all
+    vertices also have a color.  If no color is defined, the default
+    is white (1 1 1 1).  The color may be morphed with a series of
+    <DRGBA> entries.
+
+
+  <BFace> { boolean-value }
+
+    This defines whether the polygon will be rendered double-sided
+    (i.e. its back face will be visible).  By default, this option is
+    disabled, and polygons are one-sided; specifying a nonzero value
+    disables backface culling for this particular polygon and allows
+    it to be viewed from either side.
+    
+
+  <Scalar> draw_order { number }
+
+    This defines the fixed drawing order of this polygon.  Drawing
+    order is very important when using certain kinds of transparency.
+    Normally, Performer will draw all opaque objects first, then all
+    transparent objects from back to front.  Sometimes the
+    back-to-front sorting can fail, especially in the case of a small
+    polygon immediately in front of a large polygon.  In this case, it
+    may be necessary to explicitly give the order in which the
+    polygons should be drawn.
+
+    All objects with a given draw-order will be drawn before all
+    objects with a higher draw-order.  Objects with a zero or
+    unspecified draw-order will be drawn first if they are opaque, and
+    in order from back to front if they are transparent.  A negative
+    draw-order is not allowed.
+
+
+<PointLight> name { 
+    [attributes] 
+    <VertexRef> { 
+        indices 
+        <Ref> { pool-name } 
+    } 
+}
+
+  A PointLight is a set of single points.  One point is drawn for each
+  vertex listed in the <VertexRef>.  Normals, textures, and colors may
+  be specified for PointLights, as well as draw-order, plus one
+  additional attribute valid only for PointLights and Lines:
+
+  <Scalar> thick { number }
+
+    This specifies the size of the PointLight (or the width of a
+    line), in pixels, when it is rendered.  This may be a
+    floating-point number, which is meaningful only when antialiasing
+    is in effect.  The default is 1.0.
+
+
+
+<Line> name { 
+    [attributes] 
+    <VertexRef> { 
+        indices 
+        <Ref> { pool-name } 
+    } 
+}
+
+  A Line is a connected set of line segments.  The listed N vertices
+  define a series of N-1 line segments, drawn between vertex 0 and
+  vertex 1, vertex 1 and vertex 2, etc.  As with a PointLight,
+  normals, textures, colors, draw-order, and the "thick" attribute are
+  all valid.
+
+
+
+PARAMETRIC DESCRIPTION ENTRIES
+
+The following entries define parametric curves and surfaces.
+Generally, the player supports these only in the abstract; they're not
+geometry in the true sense but do exist in the scene graph and may
+have specific meaning to the show code.  However, the player can
+create visible representations of these parametrics to aid
+visualization.
+
+These entries might also have meaning to tools outside of the player,
+such as a smart polygon mesher.
+
+In general, dynamic attributes such as morphs and joint assignment are
+legal for the control vertices of the following parametrics, but the
+player doesn't support them and will always create static curves and
+surfaces.  Non-player tools, however, may respect them.
+
+
+<BezierCurve> name {
+    [attributes]
+
+    [ <TLengths> { t1 t2 t3 ... } ]
+    <VertexRef> { indices <Ref> { pool-name } }
+}
+
+  A Bezier curve will generally be used to describe a motion path
+  (though NURBS curves can be used for this purpose as well; see
+  below).  The player translates <BezierCurve> entries into Hermite
+  curves internally.
+
+  Bezier curves can have any number of dimensions from one to three.
+  Accordingly, the referenced vertices may be defined for x, x y, or x
+  y z.  All vertices should be defined over the same number of
+  dimensions.
+
+  A Bezier curve consists of a sequence of curve segments defined by
+  four vertices taken three at a time.  The first four vertices define
+  the first curve segment, the vertices four through seven define the
+  second curve segment, and so on.  The total number of vertices must
+  be one more than a multiple of three.
+
+  <TLengths> is a list of (n-1)/3 values, where n is the number of
+  Bezier control vertices.  Each value corresponds to the length in
+  parametric space of the corresponding curve segment; the total curve
+  is defined over the parametric range [0,sum(TLengths)].  If this
+  entry is omitted, the curve will be defined over the range [0,1].
+
+  The following attributes may be defined:
+
+  <Char*> type { curve-type }
+
+    This defines the semanting meaning of this curve, either XYZ, HPR,
+    or T.  If the type is XYZ, the curve will automatically be
+    transformed between Y-up and Z-up if necessary; otherwise, it will
+    be left alone.
+
+  <Scalar> subdiv { num-segments }
+
+    If this scalar is given and nonzero, the player will create a
+    visible representation of the curve when the scene is loaded.  The
+    number represents the number of line segments to draw to
+    approximate the curve.
+
+  <RGBA> { r g b a [morph-list] }
+
+    This specifies the color of the overall curve.
+
+
+  Bezier control vertices may also be given color and/or morph
+  attributes (though the player ignores these), but <Normal> and <UV>
+  entries do not apply to Bezier vertices.
+
+  Each control vertex may optionally be given a continuity type,
+  defined with a "<Char*> continuity-type { type }" within the
+  <Vertex> entry.  The type may be one of Cut, Free, G1, or Smooth.
+  This enforces the respective continuity restriction on the
+  neighboring vertices.
+
+
+
+<NURBSCurve> {
+    [attributes] 
+
+    <Order> { order }
+    <Knots> { knot-list }
+    <VertexRef> { indices <Ref> { pool-name } }
+}
+
+  A NURBS curve is a more general parametric than a Bezier curve.  It
+  can be used within the show anywhere a Bezier might have been used,
+  though a NURBS curve as the player creates it is more difficult to
+  modify at runtime.
+
+  The order is equal to the degree of the polynomial basis plus 1.  It
+  must be an integer in the range [1,4].
+
+  The number of vertices must be equal to the number of knots minus the
+  order.
+
+  Each control vertex of a NURBS is defined in homogeneous space with
+  four coordinates x y z w (to convert to 3-space, divide x, y, and z
+  by w).  The last coordinate is always the homogeneous coordinate; if
+  only three coordinates are given, it specifies a curve in two
+  dimensions plus a homogeneous coordinate (x y w).
+
+  The valid attributes are the same for a <NURBSCurve> as that for a
+  <BezierCurve>, above.  Similarly, NURBS vertices may be given color
+  and/or morph attributes.
+
+
+
+<NURBSSurface> name {
+    [attributes] 
+
+    <Order> { u-order v-order }
+    <U-knots> { u-knot-list }
+    <V-knots> { v-knot-list }
+
+    <VertexRef> { 
+        indices 
+        <Ref> { pool-name } 
+    } 
+}
+
+  A NURBS surface is an extension of a NURBS curve into two parametric
+  dimensions, u and v.  NURBS surfaces may be given the same set of
+  attributes assigned to polygons, except for normals: <TRef>,
+  <Texture>, <MRef>, <RGBA>, and draw-order are all valid attributes
+  for NURBS.  NURBS vertices, similarly, may be colored or morphed,
+  but <Normal> and <UV> entries do not apply to NURBS vertices.  The
+  attributes may also include <NURBSCurve> and <Trim> entries; see
+  below.
+
+  To have the player create a visualization of a NURBS surface, the
+  following two attributes should be defined as well:
+
+  <Scalar> U-subdiv { u-num-segments }
+  <Scalar> V-subdiv { v-num-segments }
+
+    These define the number of subdivisions to make in the U and V
+    directions to represent the surface.  A uniform subdivision is
+    always made, and trim curves are not respected (though they will
+    be drawn in if the trim curves themselves also have a subiv
+    parameter).  This is only intended as a cheesy visualization.
+
+
+  The same sort of restrictions on order and knots applies to NURBS
+  surfaces as do to NURBS curves.  The order and knot description may
+  be different in each dimension.
+
+  The surface must have u-num * v-num vertices, where u-num is the
+  number of u-knots minus the u-order, and v-num is the number of
+  v-knots minus the v-order.  All vertices must come from the same
+  vertex pool.  The nth (zero-based) index number defines control
+  vertex (u, v) of the surface, where n = (v * u-num) + u.  Thus, it
+  is the u coordinate which changes faster.
+
+  As with the NURBS curve, each control vertex is defined in
+  homogeneous space with four coordinates x y z w.
+
+
+  A NURBS may also contain curves on its surface.  These are one or
+  more nested <NURBSCurve> entries included with the attributes; these
+  curves are defined in the two-dimensional parametric space of the
+  surface.  Thus, these curve vertices should have only two dimensions
+  plus the homogeneous coordinate: u v w.  A curve-on-surface has no
+  intrinsic meaning to the surface, unless it is defined within a
+  <Trim> entry, below.
+
+  Finally, a NURBS may be trimmed by one or more trim curves.  These
+  are special curves on the surface which exclude certain areas from
+  the NURBS surface definition.  The inside is specified using two
+  rules: an odd winding rule that states that the inside consists of
+  all regions for which an infinite ray from any point in the region
+  will intersect the trim curve an odd number of times, and a curve
+  orientation rule that states that the inside consists of the regions
+  to the left as the curve is traced.
+
+  Each trim curve contains one or more loops, and each loop contains
+  one or more NURBS curves.  The curves of a loop connect in a
+  head-to-tail fashion and must be explicitly closed.
+
+  The trim curve syntax is as follows:
+
+  <Trim> {
+    <Loop> {
+      <NURBSCurve> {
+        <Order> { order }
+	<Knots> { knot-list }
+
+	<VertexRef> { indices <Ref> { pool-name } }
+      }
+      [ <NURBSCurve> { ... } ... ]
+    }
+    [ <Loop> { ... } ... ]
+  }
+
+
+
+
+MORPH DESCRIPTION ENTRIES
+
+Morphs are linear interpolations of attribute values at run time,
+according to values read from an animation table.  In general, vertex
+positions, surface normals, texture coordinates, and colors may be
+morphed.
+
+A morph target is defined by giving a net morph offset for a series of
+vertex or polygon attributes; this offset is the value that will be
+added to the attribute when the morph target has the value 1.0.  At
+run time, the morph target's value may be animated to any scalar value
+(but generally between 0.0 and 1.0); the corresponding fraction of the
+offset is added to the attribute each frame.
+
+There is no explicit morph target definition; a morph target exists
+solely as the set of all offsets that share the same target name.
+Formerly, the target name must have been a nonnegative integer, but
+this restriction no longer applies.
+
+The following types of morph offsets may be defined, within their
+corresponding attribute entries (an older, still supported, syntax
+defined the target name after the first curly brace, instead of before
+it):
+
+<Dxyz> target { x y z }
+
+  A position delta, valid within a <Vertex> entry or a <CV> entry.
+  The given offset vector, scaled by the morph target's value, is
+  added to the vertex or CV position each frame.
+
+
+<DNormal> target { x y z }
+
+  A normal delta, similar to the position delta, valid within a
+  <Normal> entry (for vertex or polygon normals).  The given offset
+  vector, scaled by the morph target's value, is added to the normal
+  vector each frame.
+
+
+<DUV> target { u v }
+
+  A texture-coordinate delta, valid within a <UV> entry (within a
+  <Vertex> entry).  The given 2-valued offset vector, scaled by the
+  morph target's value, is added to the vertex's texture coordinates
+  each frame.
+
+
+<DRGBA> target { r g b a }
+
+  A color delta, valid within an <RGBA> entry (for vertex or polygon
+  colors).  The given 4-valued offset vector, scaled by the morph
+  target's value, is added to the color value each frame.
+
+
+
+
+GROUPING ENTRIES
+
+<Group> name { group-body }
+
+  A <Group> node is the primary means of providing structure to the egg
+  file.  Groups can contain vertex pools and polygons, as well as
+  other groups.  The egg loader translates <Group> nodes directly into
+  pfGroup nodes in the scene graph.  In addition, the following
+  entries can be given specifically within a <Group> node to specify
+  attributes of the group:
+
+  GROUP BINARY ATTRIBUTES
+  
+  These attributes may be either on or off; they are off by default.
+  They are turned on by specifying a non-zero "boolean-value".
+
+  <DCS> { boolean-value }
+
+    This indicates that this group contains geometry that might need
+    to be repositioned interactively relative to the rest of the
+    scene.  The egg loader interprets this by creating a pfDCS node
+    instead of a pfGroup node.  This also implies <Model>, below.
+
+  <TexList> { boolean-value }
+
+    This indicates that this group contains geometry whose textures
+    might need to be separately managed.  A special xpfTexListNode is
+    created for this group.  This also implies <Model>.
+
+  <Model> { boolean-value }
+
+    This indicates that the show code might need a pointer to this
+    particular group.  If any nodes in the egg file have the <Model>
+    flag set, the egg loader creates an xpfModelRoot node as the root
+    node of the file, which keeps a short list of all the nodes with
+    the <Model> flag set.  This allows quick access to these nodes by
+    the show code at run time.  In the old player this also implied
+    <DCS>, but it doesn't any more.
+
+
+  <Dart> { boolean-value }
+  <Global> { boolean-value }
+
+    These two attributes are lexically equivalent, and indicate that
+    this group begins a character.  An xpfCharacter node will be created
+    for this group.
+
+  <Dart> { dart-type }
+
+    This is another syntax for the <Dart> flag.  The dart-type string
+    should be one of either "async" or "sync".  This tells the egg
+    loader to optimize the character for asynchronous or synchronous
+    animation, respectively.  In the absence of this dart-type, the
+    egg loader will choose the most general.
+
+  <Switch> { boolean-value }
+
+    This attribute indicates that the child nodes of this group
+    represent a series of animation frames that should be
+    consecutively displayed.  In the absence of an "fps" scalar for
+    the group (see below), the egg loader creates a pfSwitch node, and
+    it the responsibility of the show code to perform the switching.
+    If an fps scalar is defined and is nonzero, the egg loader creates
+    a pfSequence node instead, which automatically cycles through its
+    children.
+
+
+  GROUP SCALARS
+
+  <Scalar> fps { frame-rate }
+
+    This specifies the rate of animation for a pfSequence (created
+    when the Switch flag is specified, see above).  A value of zero
+    indicates a pfSwitch should be created instead.
+
+  <Scalar> no_fog { boolean-value }
+
+    This specifies that geometry at or below this node should not be
+    affected by fog.  It will be created with the appropriate GeoState
+    to have fog disabled.
+
+  <Scalar> draw_order { number }
+
+    This specifies the drawing order for all polygons at or below this
+    node that do not explicitly set their own drawing order.  See the
+    description of draw-order for geometry attributes, above.
+
+  <Scalar> write_through { boolean-value }
+
+    If this is present and boolean-value is non-zero, it places the
+    geometry at this level and below in a special drawing bin that is
+    drawn first and with the z-buffer set to write-through.  This is
+    an optimization to avoid the initial screen clear when rendering a
+    completely enclosed scene; the flag should be set on the enclosing
+    geometry, which must be convex.
+
+  <Scalar> post_lp { boolean-value }
+
+    If this is present and boolean-value is non-zero, it places the
+    geometry at this level and below in a drawing bin that is drawn
+    after everything else in the scene, including light points.  This
+    must be done particularly for semitransparent geometry which must
+    not obscure light points.
+
+  <Scalar> decal { boolean-value }
+
+    If this is present and boolean-value is non-zero, it indicates
+    that the geometry *below* this level is coplanar with the geometry
+    *at* this level, and the geometry below is to be drawn as a decal
+    onto the geometry at this level.  This means the geometry below
+    this level will be rendered "on top of" this geometry, but without
+    the Z-fighting artifacts one might expect without the use of the
+    decal flag.
+
+  <Scalar> collide-mask { value }
+  <Scalar> from-collide-mask { value }
+  <Scalar> into-collide-mask { value }
+
+      Sets the CollideMasks on the collision nodes and geometry nodes
+      created at or below this group to the indicated values.  These
+      are bits that indicate which objects can collide with which
+      other objects.  Setting "collide-mask" is equivalent to setting
+      both "from-collide-mask" and "into-collide-mask" to the same
+      value.
+
+      The value may be an ordinary decimal integer, or a hex number in
+      the form 0x000, or a binary number in the form 0b000.
+
+
+  OTHER GROUP ATTRIBUTES
+
+  <Billboard> { type }
+
+    This entry indicates that all geometry defined at or below this
+    group level is part of a billboard that will rotate to face the
+    camera.  Type is either "axis" or "point", describing the type of
+    rotation.
+
+    Billboards rotate about their local axis.  In the case of a Y-up
+    file, the billboards rotate about the Y axis; in a Z-up file, they
+    rotate about the Z axis.  Point-rotation billboards rotate about
+    the origin.
+
+    There is an implicit <Instance> around billboard geometry.  This
+    means that the geometry within a billboard is not specified in
+    world coordinates, but in the local billboard space.  Thus, a
+    vertex drawn at point 0,0,0 will appear to be at the pivot point
+    of the billboard, not at the origin of the scene.
+
+  <SwitchCondition> {
+     <Distance> { 
+        in out [fade] <Vertex> { x y z }
+     }
+  }
+
+    The subtree beginning at this node and below represents a single
+    level of detail for a particular model.  Sibling nodes represent
+    the additional levels of detail.  The geometry at this node will
+    be visible when the point (x, y, z) is closer than "in" units, but
+    further than "out" units, from the camera.  If "fade" is
+    specified, it enables fade-LOD, and specifies the distance over
+    which to fade between this level of detail and the next-closer
+    one.
+
+
+  <Collide> name { type [flags] }
+
+    This entry indicates that geometry defined at this group level is
+    actually an invisible collision surface, and is not true geometry.
+    The geometry is used to define the extents of the collision
+    surface.  If there is no geometry defined at this level, then a
+    child is searched for with the same collision type specified, and
+    its geometry is used to define the extent of the collision
+    surface (unless the "descend" flag is given; see below).
+
+    Valid types so far are:
+
+    Plane
+    
+      The geometry represents an infinite plane.  The first polygon
+      found in the group will define the plane.
+
+    Polygon
+
+      The geometry represents a single polygon.  The first polygon is
+      used.
+
+    Polyset
+
+      The geometry represents a complex shape made up of several
+      polygons.  This collision type should not be overused, as it
+      provides the least optimization benefit.
+
+    Sphere
+
+      The geometry represents a sphere.  The vertices in the group are
+      averaged together to determine the sphere's center and radius.
+
+    InverseSphere
+
+      The geometry represents a sphere with the normal inverted, to
+      make a hollow spherical shell.
+
+    Geode
+
+      The geometry is not a collision surface after all, but is in
+      fact true geometry.  This is intended to be used in conjunction
+      with one or more flags to define collision properties for normal
+      geometry.
+
+
+
+    The flags may be any zero or more of:
+
+    event
+
+      Throws the name of the <Collide> entry, or the name of the
+      surface if the <Collide> entry has no name, as an event whenever
+      an avatar strikes the solid.  This is the default if the
+      <Collide> entry has a name.
+
+    intangible
+
+      Rather than being a solid collision surface, the defined surface
+      represents a boundary.  The name of the surface will be thrown
+      as an event when an avatar crosses into the interior, and
+      name-out will be thrown when an avater exits.
+
+    descend
+
+      Instead of creating only one collision object of the given type,
+      each group descended from this node that contains geometry will
+      define a new collision object of the given type.  The event
+      name, if any, will also be inherited from the top node and
+      shared among all the collision objects.
+
+    keep
+ 
+      Don't discard the visible geometry after using it to define a
+      collision surface; create both an invisible collision surface
+      and the visible geometry.
+
+    solid
+
+      This has meaning only when the type is Polygon or Polyset.  This
+      creates the polygon(s) as "solid" polygons, meaning no mover is
+      allowed to occupy the space immediately behind them.  In the
+      absence of this flag, once a mover passes completely through a
+      polygon it is considered no longer intersecting with it.
+
+    center
+
+      Sets the collide-center property on the collision solid, so that
+      it collides with the center point of each mover, disregarding
+      the mover's radius.  This implies "solid".
+
+    turnstile
+
+      Sets the turnstile property on the collision solid, so that
+      movers approaching from behind the solid will smoothly pass
+      through instead of being forcefully yanked to the front.  This
+      is intended to implement a one-way wall, through which players
+      can go forwards but not back.  Presently, this is only
+      implemented for planes, polygons, and polysets.
+
+
+  <ObjectType> { type }
+
+    This is a short form to indicate one of several pre-canned sets of
+    attributes.  Type may be any word, and a Config definition will be
+    searched for by the name "egg-object-type-word", where "word" is
+    the type word.  This definition may contain any arbitrary egg
+    syntax to be parsed in at this group level.
+
+    A number of predefined ObjectType definitions are provided:
+
+    barrier
+
+      This is equivalent to <Collide> { Polyset descend }.  The
+      geometry defined at this root and below defines an invisible
+      collision solid.
+
+    solidpoly
+
+      This is equivalent to <Collide> { Polyset descend solid }.  See
+      the description of the "solid" property, above.
+
+    turnstile
+
+      This is equivalent to <Collide> { Polyset descend turnstile }.  See
+      the description of the "turnstile" property, above.
+
+    trigger
+
+      This is equivalent to <Collide> { Polyset descend intangible }.
+      The geometry defined at this root and below defines an invisible
+      trigger surface.
+
+    eye-trigger
+
+      Equivalent to <Collide> { Polyset descend intangible center }.
+      This defines a trigger polygon whose point of collision is the
+      center of the mover; presumably this polygon will be used to
+      trigger visibility events.
+
+    bubble
+
+      Equivalent to <Collide> { Sphere keep descend }.  A collision
+      bubble is placed around the geometry, which is otherwise
+      unchanged.
+
+    missile
+
+      Equivalent to <Collide> missile { Sphere keep descend event }.  The
+      geometry defined at this root and below defines a missile
+      object, which will be surrounded by a collision sphere and named
+      "missile".
+
+    ghost
+
+      Equivalent to <Scalar> collide-mask { 0 }.  It means that the
+      geometry beginning at this node and below should never be
+      collided with--characters will pass through it.
+
+    backstage
+
+      This has no equivalent; it is treated as a special case.  It
+      means that the geometry at this node and below should not be
+      translated.  This will normally be used on scale references and
+      other modelling tools.
+
+
+
+  <Transform> { transform-definition }
+
+    This specifies a matrix transform at this group level.  This
+    defines a local coordinate space for this group and its
+    descendents.  Vertices are still specified in world coordinates
+    (in a vertex pool), but any geometry assigned to this group will
+    be inverse transformed to move its vertices to the local space.
+
+    The transform definition may be any sequence of zero or more of
+    the following.  Transformations are post multiplied in the order
+    they are encountered to produce a net transformation matrix.
+
+    <Translate> { x y z }
+    <RotX> { degrees }
+    <RotY> { degrees }
+    <RotZ> { degrees }
+    <Rotate> { degrees x y z }
+    <Scale> { x y z }
+
+    <Matrix3> {
+      00 01 02
+      10 11 12
+      20 21 22
+    }    
+
+    <Matrix4> {
+      00 01 02 03
+      10 11 12 13
+      20 21 22 23
+      30 31 32 33
+    }
+
+
+  <VertexRef> { indices <Ref> { pool-name } }
+
+    This moves geometry created from the named vertices into the
+    current group, regardless of the group in which the geometry is
+    actually defined.  See the <Joint> description, below.
+
+
+<Instance> name { group-body }
+
+  An <Instance> node is exactly like a <Group> node, except that
+  vertices referenced by geometry created under the <Instance> node
+  are not assumed to be given in world coordinates, but are instead
+  given in the local space of the <Instance> node itself (including
+  any transforms given to the node).
+
+  In other words, geometry under an <Instance> node is defined in
+  local coordinates.  In principle, similar geometry can be created
+  under several different <Instance> nodes, and thus can be positioned
+  in a different place in the scene each instance.  This doesn't
+  necessarily imply the use of shared geometry in the Performer scene
+  graph, but see the <Ref> syntax, below.
+
+  This is particularly useful in conjunction with a <File> entry, to
+  load external file references at places other than the origin.
+
+  A special syntax of <Instance> entries does actually create shared
+  geometry in the scene graph.  The syntax is:
+
+<Instance> name {
+  <Ref> { group-name } 
+  [ <Ref> { group-name } ... ]
+}
+
+  In this case, the referenced group name will appear as a duplicate
+  instance in this part of the tree.  Local transforms can be applied
+  and are relative to the reference group's transform.
+
+
+<Joint> name { [transform] [ref-list] [joint-list] }
+
+  A joint is a highly specialized kind of grouping node.  A tree of
+  joints is used to specify the skeletal structure of an animated
+  character.
+
+  A joint may only contain one of three things.  It may contain a
+  <Transform> entry, as above, which defines the joint's unanimated
+  (rest) position; it may contain lists of assigned vertices or CV's;
+  and it may contain other joints.
+
+  A tree of <Joint> nodes only makes sense within a character
+  definition, which is created by applying the <DART> flag to a group.
+  See <DART>, above.
+
+  The vertex assignment is crucial.  This is how the geometry of a
+  character is made to move with the joints.  The character's geometry
+  is actually defined outside the joint tree, and each vertex must be
+  assigned to one or more joints within the tree.
+
+  This is done with zero or more <VertexRef> entries per joint, as the
+  following:
+
+  <VertexRef> { indices [<Scalar> membership { m }] <Ref> { pool-name } }
+
+  This is syntactically similar to the way vertices are assigned to
+  polygons.  Each <VertexRef> entry can assign vertices from only one
+  vertex pool (but there may be many <VertexRef> entries per joint).
+  Indices is a list of vertex numbers from the specied vertex pool, in
+  an arbitrary order.
+
+  The membership scalar is optional.  If specified, it is a value
+  between 0.0 and 1.0 that indicates the fraction of dominance this
+  joint has over the vertices.  This is used to implement
+  soft-skinning, so that each vertex may have partial ownership in
+  several joints.
+
+  The <VertexRef> entry may also be given to ordinary <Group> nodes.
+  In this case, it treats the geometry as if it was parented under the
+  group in the first place.  Non-total membership assignments are
+  meaningless.
+
+
+<Bundle> name { table-list }
+<Table> name { table-body }
+
+  A table is a set of animated values for joints.  A tree of tables
+  with the same structure as the corresponding tree of joints must be
+  defined for each character to be animated.  Such a tree is placed
+  under a <Bundle> node, which provides a handle within the player to
+  the tree as a whole.
+
+  Bundles may only contain tables; tables may contain more tables,
+  bundles, or any one of the following (<Scalar> and <Char*> entries
+  are optional, and default as shown):
+
+  <S$Anim> name { 
+      <Scalar> fps { 24 }
+      <V> { values }
+  }
+
+    This is a table of scalar values, one per frame.  This may be
+    applied to a morph slider, for instance.
+
+
+  <Xfm$Anim> name {
+      <Scalar> fps { 24 }
+      <Char*> order { sphrt }
+      <Char*> contents { ijkphrxyz }
+      <V> { values }
+  }
+
+    This is a table of matrix transforms, one per frame, such as may
+    be applied to a joint.  The "contents" string consists of a subset
+    of the letters "ijkphrxyz", where each letter corresponds to a
+    column of the table; <V> is a list of numbers of length(contents)
+    * num_frames.  Each letter of the contents string corresponds to a
+    type of transformation:
+
+      i, j, k - scale in x, y, z directions, respectively
+      p, h, r - rotate by pitch, heading, roll
+      x, y, z - translate in x, y, z directions
+
+    The net transformation matrix specified by each row of the table
+    is defined as the net effect of each of the individual columns'
+    transform, according to the corresponding letter in the contents
+    string.  The order the transforms are applied is defined by the
+    order string:
+
+      s       - all scale transforms
+      p, h, r - individual rotate transforms
+      t       - all translation transforms
+
+
+  <Xfm$Anim_S$> name {
+      <Scalar> fps { 24 }
+      <Char*> order { sphrt }
+      <S$Anim> i { ... }
+      <S$Anim> j { ... }
+      ...
+  }
+
+    This is a variant on the <Xfm$Anim> entry, where each column of
+    the table is entered as a separate <S$Anim> table.  This syntax
+    reflects an attempt in the old player development to save memory
+    by not requiring repetition of values for columns that did not
+    change value during an animation sequence.
+
+
+  <VertexAnim> name { 
+      <Scalar> width { table-width }
+      <Scalar> fps { 24 }
+      <V> { values }
+  }
+
+    This is a table of vertex positions, normals, texture coordinates,
+    or colors.  These values will be subsituted at runtime for the
+    corresponding values in a <DynamicVertexPool>.  The name of the
+    table should be "coords", "norms", "texCoords", or "colors",
+    according to the type of values defined.  The number table-width
+    is the number of floats in each row of the table.  In the case of
+    a coords or norms table, this must be 3 times the number of
+    vertices in the corresponding dynamic vertex pool.  (For texCoords
+    and colors, this number must be 2 times and 4 times, respectively.)
+
+
+
+MISCELLANEOUS
+
+<File> { filename }
+
+  This includes a copy of the referenced egg file at the current
+  point.  This is usually placed under an <Instance> node, so that the
+  current transform will apply to the geometry in the external file.
+  The extension ".egg" is implied if it is omitted.
+
+  As with texture filenames, the filename may be a relative path, in
+  which case it is relative to the directory in which the current egg
+  file was found.  If no directory prefix is specified, the current
+  egg file's directory is searched first, and then $PFPATH is
+  searched.
+

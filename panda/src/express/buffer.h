@@ -1,0 +1,39 @@
+// Filename: buffer.h
+// Created by:  mike (09Jan97)
+//
+////////////////////////////////////////////////////////////////////
+//
+#ifndef BUFFER_H
+#define BUFFER_H
+//
+////////////////////////////////////////////////////////////////////
+// Includes
+////////////////////////////////////////////////////////////////////
+#include <pandabase.h>
+#include "typedef.h"
+#include "referenceCount.h"
+
+////////////////////////////////////////////////////////////////////
+//       Class : Buffer 
+// Description :
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDAEXPRESS Buffer : public ReferenceCount {
+public:
+  Buffer(int size);
+  ~Buffer();
+
+  INLINE int get_length(void) const;
+
+#ifndef CPPPARSER
+// hidden from interrogate
+public:
+  char *_buffer;
+#endif
+
+private:
+  int _length;
+};
+
+#include "buffer.I"
+
+#endif

@@ -1,0 +1,75 @@
+forcetype LVecBase2<float>
+forcetype LVecBase3<float>
+forcetype LVecBase4<float>
+
+forcetype LPoint2<float>
+forcetype LPoint3<float>
+forcetype LPoint4<float>
+forcetype LVector2<float>
+forcetype LVector3<float>
+forcetype LVector4<float>
+
+forcetype LMatrix3<float>
+forcetype LMatrix4<float>
+
+forcetype LPoint2f
+forcetype LPoint3f
+forcetype LPoint4f
+
+forcetype LVector2f
+forcetype LVector3f
+forcetype LVector4f
+
+forcetype Vertexf
+forcetype Normalf
+forcetype TexCoordf
+forcetype Colorf
+forcetype RGBColorf
+
+forcetype LMatrix3f
+forcetype LMatrix4f
+
+forcetype LVecBase2<double>
+forcetype LVecBase3<double>
+forcetype LVecBase4<double>
+
+forcetype LPoint2<double>
+forcetype LPoint3<double>
+forcetype LPoint4<double>
+forcetype LVector2<double>
+forcetype LVector3<double>
+forcetype LVector4<double>
+
+forcetype LMatrix3<double>
+forcetype LMatrix4<double>
+
+forcetype LPoint2d
+forcetype LPoint3d
+forcetype LPoint4d
+
+forcetype LVector2d
+forcetype LVector3d
+forcetype LVector4d
+
+forcetype Vertexd
+forcetype Normald
+forcetype TexCoordd
+forcetype Colord
+forcetype RGBColord
+
+forcetype LMatrix3d
+forcetype LMatrix4d
+
+forcetype LQuaternionBase<float>
+forcetype LQuaternionBase<double>
+forcetype LRotation<float>
+forcetype LRotation<double>
+forcetype LOrientation<float>
+forcetype LOrientation<double>
+
+forcetype LQuaternionf
+forcetype LRotationf
+forcetype LOrientationf
+forcetype LQuaterniond
+forcetype LRotationd
+forcetype LOrientationd

@@ -1,0 +1,3 @@
+ignorefile boundedObject.h
+
+forcetype PT_Node

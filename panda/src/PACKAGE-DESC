@@ -1,0 +1,212 @@
+Quick descriptions of the packages:
+
+audio -
+    Audio API for panda
+builder - 
+    A tool to create Geoms and GeomNodes from a pile of unconnected
+    triangles or polygons.  It separates geometry according to state
+    (texturing, normals, etc.), discovers connections where they exist
+    and tries to build nearly-optimal tristrips.
+chan -
+    Animation channels.  This defines the various kinds of
+    AnimChannels that may be defined, as well as the MovingPart class
+    which binds to the channels and plays the animation.  This is a
+    support library for char, as well as any other libraries that want
+    to define objects whose values change over time.
+chancfg - 
+    This package contains the code for the 'channel configuration' system.
+    This is responsible for asking for a window to be opened, possibly binding
+    'pipe video' channels to it, and dividing it up into Display Regions.
+chat -
+    Implementation of a text-entry system along the bottom edge of the
+    window, along with any other support functions for an online chat
+    system that might be required.
+collide -
+    This package contains the classes that control and detect collisions
+configfiles -
+    This package contains the housekeeping and configuration files needed by
+    things like attach, and emacs.
+cull -
+    This package contains the Cull Traverser.  The cull traversal collects all
+    state changes specified, and removes unneccesary state change requests.  Also
+    does all the depth sorting for proper alphaing.
+device -
+    Device drivers, such as mouse and keyboard, trackers, etc...  The 
+    base class for using various device APIs is here.
+dgraph -
+    Defines and manages the data graph, which is the hierarchy of
+    devices, tforms, and any other things which might have an input or
+    an output and need to execute every frame.
+display -
+    Abstract display classes, including pipes, windows, channels, and
+    display regions
+doc -
+    Documentation that doesn't fit in any of the packages
+downloader -
+    Tool to allow automatic download of files in the background
+dxgsg - 
+    Handles all communication with the DirectX backend, and manages state
+    to minimize redundant state changes.
+effects -
+    Various graphics effects that aren't shaders.  I.E Lens Flares
+egg -
+    A.k.a. the "egg library", this reads, writes, and manipulates egg
+    files.  It knows nothing about the scene graph structure in the
+    rest of the player; it lives in its own little egg world.
+egg2sg -
+    A.k.a. the "egg loader", this converts the egg structure read from
+    the egg library, above, to a scene graph structure, suitable for
+    rendering.
+event -
+    Tools for throwing, handling and receiving events
+framework -
+    A simple, stupid framework around which to write a simple, stupid
+    demo program.  Handy for quickly writing programs that open a
+    window and display the OmniTriangle.
+glgsg -
+    Handles all communication with the GL backend, and manages state
+    to minimize redundant state changes.
+glidedisplay - (defunct)
+    This package contains the code to manage pipes/windows/channels on glide
+    hardware.
+glidegsg - (defunct)
+    This package contains the GSG for the glide backend.  All glide calls
+    should live in here.
+glutdisplay -
+    Glut specific display classes.  This uses the Glut library to open
+    a window and manage keyboard and mouse events.  Glut has the
+    advantage of being widely ported, but unfortunately it needs to
+    control the main loop and so limits the kind of programs you can
+    write.
+glxdisplay -
+    X windows display classes that replace Glut functionality.
+gobj -
+    Graphical non-scene-graph objects, such as textures and geometry primitives
+graph -
+    Defines the basic graph operations that are not specific to scene
+    graphs.  This includes nodes, relations, transitions, and
+    attributes.
+gsg -
+    The base definition for the GraphicsStateGuardian.  This is the
+    abstract base class for all backend specifications.
+gsgbase -
+    Base GSG class defined to avoid cyclical dependency build
+gsgmisc -
+    Some utility functions for gsg that could not live in the same
+    directory for circular dependency reasons.
+ipc -
+    This package contains the abstraction/adaptation layer for: mutexes,
+    semiphores, condition variables, threads, and files.
+light -
+    Lights needed to be their own package to avoid multiple inheritance
+    problems.  All concrete light types are both lights and nodes.
+linmath -
+    Linear algebra library.
+loader -
+    Tool for loading various kinds of files into Graph structures.
+    Can be done asynchronously
+mathutil -
+    Math utility functions, such as frustum and plane
+net -
+    Net connection classes
+panda -
+    Builds the libpanda shared library.  This is a single library that
+    encapsulates most of the packages in Panda, especially those that
+    are considered essential to Panda's basic functionality.  On
+    Windows platforms, the individual packages are not themselves
+    built into shared libraries; the single LIBPANDA.DLL is the only
+    library file.  On Unix platforms, the individual packages are each
+    built into their own shared library files, and a trivial
+    libpanda.so is built that unifies all of them.
+pandadx -
+    As above, for the DirectX libraries.  This includes all of the
+    packages, in addition to those in libpanda, that are required for
+    rendering on a DirectX platform.  This also includes
+    Windows-specific libraries.
+pandaegg -
+    As above, for the egg reader.  This includes all of the packages,
+    in addition to those in libpanda, that are required for reading
+    egg files into the scene graph.
+pandagl -
+    As above, for the OpenGL libraries.  This includes all of the
+    packages, in addition to those in libpanda, that are required for
+    rendering on an OpenGL platform, with the exception of Glut.
+pandaglut -
+    As above, for the OpenGL Glut libraries.
+pandaphysics - 
+    As above, for the physics/particle systems libraries.
+pandarib -
+    As above, for the Renderman non-realtime renderer.
+particlesystem -
+    Tool for doing particle systems.  Contains various kinds of particles,
+    emiters, factories and renderers.
+physics -
+    Base classes for physical objects and forces.  Also contains the
+    physics manager class
+pnm -
+    A more-or-less intact version of the NetPBM package, compiled as a
+    single library.  This is a support library for pnmimage.
+pnmimage -
+    Reads and writes image files in various formats, by using the pnm
+    and tiff libraries.
+pstats -
+    Package for gathering performance statistics
+ps2display - (defunct)
+    Playstation 2 display classes.
+p2gsg - (defunct)
+    Play station 2 specific rendering backend.
+ribdisplay -
+    RIB-specific "display" classes.  These don't actually open
+    windows, but actually specify filenames.
+ribgsg -
+    The RIB-specific rendering backend.  Writing a frame to this
+    backend causes a RIB file to be produced, which can be used to
+    render the scene offline.
+sgattrib -
+    Scene graph attributes and transitions (state information)
+sgidisplay - 
+    This package contains the code to manage pipes/windows/channels on SGI
+    hardware.
+sgiglutdisplay - 
+    This package contains the code to manage pipes/windows/channels on SGI
+    hardware for GLUT
+sgiglxdisplay -
+    SGI specific X windows display classes that replace Glut functionality.
+sgmanip -
+    High-level tools for manipulation of scene graphs.  This primarily
+    defines NodePath, the principle interface for high-level scripting
+    languages into the scene graph.
+sgraph -
+    Graph operations and nodes that are specific to render-type scene
+    graphs.  This includes GeomNode, Camera, etc.
+sgraphutil -
+    Handy utility functions for working with scene graphs.
+shader -
+    Shaders that generate special effects by modifying the render
+    traversal and computing multiple passes.
+stats - (defunct)
+    Package for gathering performance stats
+statsdisplay - (defunct)
+    Package for remotely displaying the perfomance stats on a running program
+switchnode -
+    Package of nodes that switch out geometry underneath them based on
+    various conditions.
+testbed -
+    C test programs, that primarily link with framework.
+text - 
+    Package for generating renderable text using textured polygons.
+tform -
+    Data transforming objects that live in the data graph and convert
+    raw data (as read from an input device, for instance) to something
+    more useful.
+tiff -
+    Another support library for pnmimage.
+util -
+    This package contains all the little fiddley things that are atomic to
+    just about all the code.  Things like: config, ref count, notify, etc.
+vrpn - 
+    Defines the specific client code for interfacing to the VRPN API.
+wdxdisplay -
+    Windows DirectX specific display classes
+wgldisplay -
+    Windows OpenGL specific display classes

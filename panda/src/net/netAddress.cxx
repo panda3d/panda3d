@@ -1,0 +1,168 @@
+// Filename: netAddress.cxx
+// Created by:  drose (08Feb00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "netAddress.h"
+#include "pprerror.h"
+#include "config_net.h"
+
+#include <prio.h>
+#include <prnetdb.h>
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: NetAddress::Constructor
+//       Access: Public
+//  Description: Constructs an unspecified address.
+////////////////////////////////////////////////////////////////////
+NetAddress::
+NetAddress() {
+  PR_InitializeNetAddr(PR_IpAddrLoopback, 0, &_addr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NetAddress::Constructor
+//       Access: Public
+//  Description: Constructs an address from a given PRNetAddr.
+//               Normally, this constructor should not be used by user
+//               code; instead, create a default NetAddress and use
+//               one of the set_*() functions to set up an address.
+////////////////////////////////////////////////////////////////////
+NetAddress::
+NetAddress(const PRNetAddr &addr) : _addr(addr) {
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: NetAddress::set_any
+//       Access: Public
+//  Description: Sets the address up to refer to a particular port,
+//               but not to any particular IP.  Returns true if
+//               successful, false otherwise (currently, this only
+//               returns true).
+////////////////////////////////////////////////////////////////////
+bool NetAddress::
+set_any(int port) {
+  PR_InitializeNetAddr(PR_IpAddrAny, port, &_addr);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NetAddress::set_localhost
+//       Access: Public
+//  Description: Sets the address up to refer to a particular port,
+//               on this host.
+////////////////////////////////////////////////////////////////////
+bool NetAddress::
+set_localhost(int port) {
+  PR_InitializeNetAddr(PR_IpAddrLoopback, port, &_addr);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NetAddress::set_host
+//       Access: Public
+//  Description: Sets the address up to refer to a particular port
+//               on a particular host.  Returns true if the hostname
+//               is known, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool NetAddress::
+set_host(const string &hostname, int port) {
+  char buf[PR_NETDB_BUF_SIZE];
+  PRHostEnt host;
+  PRStatus result =
+    PR_GetHostByName(hostname.c_str(), buf, PR_NETDB_BUF_SIZE, &host);
+  if (result != PR_SUCCESS) {
+    pprerror("PR_GetHostByName");
+    return false;
+  }
+
+  PRIntn next = PR_EnumerateHostEnt(0, &host, port, &_addr);
+
+  if (next == -1) {
+    pprerror("PR_EnumerateHostEnt");
+    return false;
+  } else if (next == 0) {
+    net_cat.error()
+      << "No addresses available for " << hostname << ".\n";
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NetAddress::clear
+//       Access: Public
+//  Description: Resets the NetAddress to its initial state.
+////////////////////////////////////////////////////////////////////
+void NetAddress::
+clear() {
+  PR_InitializeNetAddr(PR_IpAddrLoopback, 0, &_addr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NetAddress::get_port
+//       Access: Public
+//  Description: Returns the port number to which this address refers.
+////////////////////////////////////////////////////////////////////
+int NetAddress::
+get_port() const {
+  return PR_ntohs(_addr.inet.port);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NetAddress::set_port
+//       Access: Public
+//  Description: Resets the port number without otherwise changing the
+//               address.
+////////////////////////////////////////////////////////////////////
+void NetAddress::
+set_port(int port) {
+  PR_InitializeNetAddr(PR_IpAddrNull, port, &_addr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NetAddress::get_ip
+//       Access: Public
+//  Description: Returns the IP address to which this address refers,
+//               formatted as a string.
+////////////////////////////////////////////////////////////////////
+string NetAddress::
+get_ip() const {
+  static const int buf_len = 1024;
+  char buf[buf_len];
+
+  PRStatus result = 
+    PR_NetAddrToString(&_addr, buf, buf_len);
+  if (result != PR_SUCCESS) {
+    pprerror("PR_NetAddrToString");
+    return "error";
+  }
+
+  return string(buf);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: NetAddress::get_addr
+//       Access: Public
+//  Description: Returns the PRNetAddr for this address.
+////////////////////////////////////////////////////////////////////
+PRNetAddr *NetAddress::
+get_addr() const {
+  return (PRNetAddr *)&_addr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NetAddress::output
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void NetAddress::
+output(ostream &out) const {
+  out << get_ip();
+}

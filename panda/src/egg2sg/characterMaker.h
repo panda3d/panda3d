@@ -1,0 +1,77 @@
+// Filename: characterMaker.h
+// Created by:  drose (23Feb99)
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef CHARACTERMAKER_H
+#define CHARACTERMAKER_H
+
+#include <pandabase.h>
+
+#include "computedVerticesMaker.h"
+
+#include <vector_PartGroupStar.h>
+#include <typedef.h>
+
+#include <string>
+#include <map>
+
+class EggNode;
+class EggGroup;
+class EggGroupNode;
+class EggPrimitive;
+class PartGroup;
+class CharacterJointBundle;
+class Character;
+class CharacterSlider;
+class MovingPartBase;
+class NamedNode;
+class EggLoader;
+
+///////////////////////////////////////////////////////////////////
+// 	 Class : CharacterMaker
+// Description : Converts an EggGroup hierarchy, beginning with a
+//               group with <Dart> set, to a character node with
+//               joints.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDAEGG CharacterMaker {
+public:
+  CharacterMaker(EggGroup *root, EggLoader &loader);
+
+  Character *make_node();
+
+  PartGroup *egg_to_part(EggNode *egg_node) const;
+  int egg_to_index(EggNode *egg_node) const;
+  NamedNode *part_to_node(PartGroup *part) const;
+
+  int create_slider(const string &name);
+
+private:
+  CharacterJointBundle *make_bundle();
+  void build_joint_hierarchy(EggNode *egg_node, PartGroup *part);
+  void parent_joint_nodes(PartGroup *part);
+
+  void make_geometry(EggNode *egg_node);
+
+  void make_static_primitive(EggPrimitive *egg_primitive,
+			     EggGroupNode *prim_home);
+  void make_dynamic_primitive(EggPrimitive *egg_primitive,
+			      EggGroupNode *prim_home);
+  EggGroupNode *determine_primitive_home(EggPrimitive *egg_primitive);
+
+  typedef map<EggNode *, int> NodeMap;
+  NodeMap _node_map;
+
+  typedef vector_PartGroupStar Parts;
+  Parts _parts;
+
+  EggLoader &_loader;
+  EggGroup *_egg_root;
+  Character *_character_node;
+  CharacterJointBundle *_bundle;
+  ComputedVerticesMaker _comp_verts_maker;
+  PartGroup *_morph_root;
+  PartGroup *_skeleton_root;
+};
+
+#endif

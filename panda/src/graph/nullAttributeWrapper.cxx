@@ -1,0 +1,6 @@
+// Filename: nullAttributeWrapper.cxx
+// Created by:  drose (22Mar00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "nullAttributeWrapper.h"

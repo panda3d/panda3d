@@ -1,0 +1,20 @@
+// Filename: colorProperty.cxx
+// Created by:  drose (22Mar00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "colorProperty.h"
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorProperty::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void ColorProperty::
+output(ostream &out) const {
+  if (is_real()) {
+    out << "rgba(" << get_color() << ")";
+  } else {
+    out << "uncolor";
+  }
+}

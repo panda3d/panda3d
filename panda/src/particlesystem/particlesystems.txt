@@ -1,0 +1,158 @@
+// Panda Particle System Documentation
+// Charles Nicholson, Intern-at-large.  7/17/00
+
+
+-------------------
+NOTE:
+-------------------
+
+Oriented particles are not yet a good idea.  Stick to point particles.
+
+
+Particle Systems:
+-----------------
+
+Panda3d has particle system support, allowing users to set up dynamic
+particle systems for special effects.  Link with libparticlesystem.so
+and include the necessary/appropriate headers (detailed below)
+
+The particle system layout is as follows:
+
+----------------------------------------------------------------------
+Classes:
+----------------------------------------------------------------------
+
+ParticleSystem- This is the big one you want to make/use.
+		All of the pluggable/swappable components are
+		stored and managed in here.
+
+ParticleSystemManager- This manages all particle systems and should be
+		       updated once per frame in the data-flow graph.
+
+BaseParticleRenderer- pure virtual abstract base class for the pluggable
+		      renderers
+
+PointParticleRenderer- Renderer for drawing particles as point primitives.
+
+GeomParticleRenderer- Renderer for drawing particles as geometric instances
+		      in the scene graph
+
+SparkleParticleRenderer- Renderer for drawing particles as sparkles 
+			 (axial lines, looking better than they sound).
+
+SpriteParticleRenderer- Renderer for drawing particles as sprites
+			(uses panda Textures).
+
+BaseParticleEmitter- pure virtual abstract base class for the pluggable
+		     emitters
+
+PointEmitter- point particle emitter (0d)
+LineEmitter- line particle emitter (1d)
+RectangleEmitter- rectangle emitter (2d)
+BoxEmitter- rectangular prism emitter (3d)
+RingEmitter- circle emitter (2d)
+DiscEmitter- disc emitter (2d)
+SphereVolumeEmitter- Sphere emitter (3d)
+SphereSurfaceEmitter- Sphere emitter (3d)
+
+BaseParticleFactory- pure virtual abstract base class for the pluggable
+		     factories
+
+PointParticleFactory- factory for point particles (orientation-independent)
+
+OrientedParticleFactory- factory for oriented particles (angular 
+			 velocity and orientation)
+
+----------------------------------------------------------------------
+Usage:
+----------------------------------------------------------------------
+
+To function properly, a particle system must have 'plugged in' to it
+3 things: a renderer, and emitter, and a factory.
+
+The factory is responsible for creating typed particles and assigning
+lifespan and orientation.
+
+The emitter is responsible for generating an initial position and
+velocity to each particle.
+
+The renderer is responsible for taking a set of particles and inserting
+them properly into the scene graph.
+
+All of these are reference-counted, so it's ok to assign and forget.
+
+Particle systems REALLY should be attached to a ParticleSystemManager.
+The ParticleSystem/ParticleSystemManager setup is analagous to the 
+Physical/PhysicsManager setup with the exception of the fact that there
+really isn't a need (as far as i've seen, anyway) to have more than one
+ParticleSystemManager at all.  Simply attach all of your systems to the
+manager, call update on the manager with the elapsed time each frame, and
+you should be happy.
+
+Particle systems can grow older and die if you want them too, the manager
+is responsible for aging and killing systems.
+
+Inserting a particle system into the scene graph can be a little tricky,
+as there are two nodes that each system interacts with.  Each system needs
+to have assigned to it a birth parent node and a render parent node.
+
+The birth parent node, accessed with set/get_birth_node, is the node that
+the system looks to when transforming a newly-born particle into world-space.
+If i wanted to attach a particle system to jafar's hands or herc's head, for
+instance, i would call set_birth_node on the appropriate node.  This only
+needs to be set once, but take care that the node doesn't get destroyed (BAD
+things happen...).
+
+The render parent node, accessed with set/get_render_parent_node, is the
+node under which the currently plugged-in renderer will display its contents.
+If you want your particles rendered into the world with global coordinates and
+no transforms, call set with 'render'.  Otherwise, each particle will undergo
+the current set of transforms in the scene graph before being rendered.
+
+One functionality of particle systems is their ability to, if specified,
+spawn entirely new particle systems on the death of each particle.  This
+is a useful setup to create effects like fireworks or sparks.  These spawning
+systems need a little extra information, and take a little more work, but
+are pretty cool.  You'll probably want your spawned systems to die of age
+(as opposed to explicit kill), so be sure to set your template system with
+the system_grows_older flag as true, but you might not.
+
+Things you need to do (note here that the word template is overloaded, i 
+don't mean C++ templates but the particle system templates, instances 
+of which will be allocated at particle death time):
+  1. Create your template system(s, multiple systems are supported and
+     picked at random when it becomes time to create a new system).  This
+     entails creating a unique renderer for each one.  Factories and emitters
+     can be shared if you want, this is fine.
+  2. call set_template_system_flag(true) on each template system.
+  3. call add_spawn_template on your spawnING system once for each template.
+  4. call set_spawn_on_death_flag on your spawnING system.
+  5. call set_spawn_render_node on your spawnING system.  This call is VERY
+     important, as it explicitly specifies the node under which each newly-
+     spawned system will render (as you can't tell each spawnED system where
+     to render, the parent system needs to know this information...).
+
+The particle system that spawnS the new systems will attach them to the
+ParticleSystemManager that it is currently attached to, and processing and
+rendering for the new systems begins on the current frame.
+
+----------------------------------------------------------------------
+Files:
+----------------------------------------------------------------------
+
+If you need a particle system, include <particleSystem.h>.
+
+If you need an emitter, include ___Emitter.h, where ___ is one of:
+  point, line, box, rectangle, ring, disc, sphereVolume, sphereSurface
+
+If you want all of the emitters, include <emitters.h>
+
+If you need a renderer, include ___ParticleRenderer.h, where ___ is one of:
+  point, geom, sparkle, sprite
+
+If you need a factory, include ___ParticleFactory.h, where ___ is one of:
+  point, oriented
+
+If you want all of the particles, include <particles.h>
+
+-charles nicholson

@@ -1,0 +1,34 @@
+// Filename: modifierButtonDataTransition.I
+// Created by:  drose (27Mar00)
+// 
+////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModifierButtonDataTransition::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ModifierButtonDataTransition::
+ModifierButtonDataTransition() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModifierButtonDataTransition::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ModifierButtonDataTransition::
+ModifierButtonDataTransition(const ModifierButtonDataTransition &copy) :
+  NodeTransition(copy)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModifierButtonDataTransition::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ModifierButtonDataTransition::
+operator = (const ModifierButtonDataTransition &copy) {
+  NodeTransition::operator = (copy);
+}

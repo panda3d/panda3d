@@ -1,0 +1,81 @@
+// Filename: mouseButton.cxx
+// Created by:  drose (01Mar00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "mouseButton.h"
+#include "buttonRegistry.h"
+
+#include <stdio.h>
+#include <notify.h>
+
+static const int num_mouse_buttons = 3;
+
+static ButtonHandle _buttons[num_mouse_buttons];
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseButton::button
+//       Access: Public, Static
+//  Description: Returns the ButtonHandle associated with the
+//               particular numbered mouse button (zero-based), if
+//               there is one, or ButtonHandle::none() if there is
+//               not.
+////////////////////////////////////////////////////////////////////
+ButtonHandle MouseButton::
+button(int button_number) {
+  if (button_number >= 0 && button_number < num_mouse_buttons) {
+    return _buttons[button_number];
+  }
+  return ButtonHandle::none();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseButton::one
+//       Access: Public, Static
+//  Description: Returns the ButtonHandle associated with the
+//               first mouse button.
+////////////////////////////////////////////////////////////////////
+ButtonHandle MouseButton::
+one() {
+  return _buttons[0];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseButton::two
+//       Access: Public, Static
+//  Description: Returns the ButtonHandle associated with the
+//               second mouse button.
+////////////////////////////////////////////////////////////////////
+ButtonHandle MouseButton::
+two() {
+  return _buttons[1];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseButton::three
+//       Access: Public, Static
+//  Description: Returns the ButtonHandle associated with the
+//               third mouse button.
+////////////////////////////////////////////////////////////////////
+ButtonHandle MouseButton::
+three() {
+  return _buttons[2];
+}
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: MouseButton::init_mouse_buttons
+//       Access: Public, Static
+//  Description: This is intended to be called only once, by the
+//               static initialization performed in config_util.cxx.
+////////////////////////////////////////////////////////////////////
+void MouseButton::
+init_mouse_buttons() {
+  char numstr[20];
+
+  for (int i = 0; i < num_mouse_buttons; i++) {
+    sprintf(numstr, "mouse%d", i + 1);
+    nassertv(strlen(numstr) < 20);
+
+    ButtonRegistry::ptr()->register_button(_buttons[i], numstr);
+  }
+}

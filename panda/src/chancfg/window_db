@@ -1,0 +1,112 @@
+;; Filename: chan_db
+;; Created by:  cary (07Feb99)
+;; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Copyright (C) 1992,93,94,95,96,97  Walt Disney Imagineering, Inc.
+;; 
+;; These  coded  instructions,  statements,  data   structures   and
+;; computer  programs contain unpublished proprietary information of
+;; Walt Disney Imagineering and are protected by  Federal  copyright
+;; law.  They may  not be  disclosed to third  parties  or copied or
+;; duplicated in any form, in whole or in part,  without  the  prior
+;; written consent of Walt Disney Imagineering Inc.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+
+;;;*Description
+;;; The window config database.
+;;;
+;;; The window config specifies globally how the window is to be configured,
+;;; it's default size, which layouts and setups to use, etc.
+;;;
+;;; Abbreviations used below are:
+;;;    PVC - Pipe Video Chanel
+;;;    DVR - Dynamic Video Resolution
+;;;    ofs - offset
+;;;    rgn - region
+;;;
+;;; The format for a config is:
+;;;     window  use  use  PVC lay-  set-   default  bor- cur-
+;;;      name   PVC  DVR  ofs outs  ups     size    der  sor
+;;;    (string (bool bool int (---) (---) (int int) bool bool))
+;;;
+;;;    * In order to have DVR, we must also be using Pipe Video Channels
+;;;    * If Pipe Video Channels are being used, we do not need the default size
+;;;    * If Pipe Video Channels are being used, the PVC offset will give the
+;;;      first chanel number to be used for channels that allow default
+;;;      assignment (see setup below).
+;;;    * Setups is an arbitrarilly long list of setup specs.  Any region that
+;;;      does not have a coresponding setup, does not get configured.
+;;;.
+
+;;;*Public
+
+(single (#f #f 0 layout1x1 (setup-mono-plain) (640 480) #t #t))
+(single-stereo (#f #f 0 layout1x1 (setup-stereo-plain) (640 480) #t #f))
+(single-pronto (#f #f 0 layout1x1 (setup-mono-plain) (720 486) #t #f))
+(single-pronto-widescreen (#f #f 0 layout1x1 (setup-pronto-plain) (720 486) #t
+                           #f))
+(pronto+god (#f #f 0 layout1x2 (setup-mono-plain setup-mono-plain) (720 972)
+             #t #t))
+(pronto-widescreen+god (#f #f 0 layout1x2 (setup-pronto-plain setup-mono-plain)
+                        (720 972) #t #t))
+(fakecave3 (#f #f 0 layout3x1 (setup-mono-plain setup-mono-plain
+                               setup-mono-plain) (720 320) #t #t))
+(fakecave3+god (#f #f 0 layout3x2-1+3x1 (setup-mono-plain setup-mono-plain
+                                         setup-mono-plain setup-mono-wide)
+                (720 640) #t #t))
+(fakecave5 (#f #f 0 layout5x1 (setup-mono-plain setup-mono-plain
+                               setup-mono-plain setup-mono-plain
+                               setup-mono-plain) (1280 341) #t #t))
+(cave (#t #t 1 layout3x2-0last (setup-mono-left setup-stereo-left
+                                setup-stereo-left setup-stereo-left
+                                setup-mono-left) (1920 960) #t #f))
+(mono-cave (#t #t 1 layout3x2-0last (setup-mono-left setup-mono-left
+                                     setup-mono-left setup-mono-left
+                                     setup-mono-left) (1920 960) #t #f))
+(supercave (#t #t 1 layout3x2-0last (setup-stereo-plain setup-stereo-plain
+                                     setup-stereo-plain setup-stereo-plain
+                                     setup-stereo-plain) (1920 960) #t #f))
+(hmd-ship (#t #t 4 layout2x2 (setup-mono-hmd setup-mono-hmd setup-mono-hmd
+                              setup-mono-hmd) (1280 960) #t #f))
+(square-fakehmd (#f #f 0 layout2x2 (setup-mono-hmd setup-mono-hmd
+                                    setup-mono-hmd setup-mono-hmd) (1280 960)
+                 #t #f))
+(pirates-fakecave (#f #f 0 layout4x1 (setup-mono-plain setup-mono-plain
+                                      setup-mono-plain setup-mono-plain)
+                   (1280 240) #t #t))
+(pirates-small-cave (#t #t 0 layout2x2 (setup-stereo-plain setup-stereo-plain
+                                        setup-stereo-plain setup-stereo-plain)
+                     (1280 960) #t #f))
+(pirates-small-cave+demigod (#t #t 0 layout2x3-1+2x2 (setup-stereo-plain
+                                                      setup-stereo-plain
+                                                      setup-stereo-plain
+                                                      setup-stereo-plain
+                                                      setup-mono-wide-vptrim)
+                             (1280 1440) #t #f))
+(pirates-small-cave+god (#t #t 0 layout2x4-1+2x2 (setup-stereo-plain
+                                                  setup-stereo-plain
+                                                  setup-stereo-plain
+                                                  setup-stereo-plain
+                                                  setup-mono-wide-vptrim2)
+                         (1280 1920) #t #f))
+(pirates-large-cave (#t #t 0 layout2x2 (setup-stereo-plain setup-stereo-plain
+                                        setup-stereo-plain setup-stereo-plain)
+                     (1600 1200) #t #f))
+(multipass-tile (#f #f 0 layout4x4 (setup-mono-plain setup-mono-plain
+                                    setup-mono-plain setup-mono-plain
+                                    setup-mono-plain setup-mono-plain
+                                    setup-mono-plain setup-mono-plain
+                                    setup-mono-plain setup-mono-plain
+                                    setup-mono-plain setup-mono-plain
+                                    setup-mono-plain setup-mono-plain
+                                    setup-mono-plain setup-mono-plain)
+                               (720 320) #t #t))
+
+;;;*Private
+
+(square-test (#f #f 0 layout2x2 (setup-mono-plain setup-mono-left
+	                         setup-mono-right setup-mono-down) (800 800)
+                 #f #f))
+(two-frame (#f #f 0 layout2x1 (setup-mono-plain setup-mono-plain) (600 300)
+            #f #f))

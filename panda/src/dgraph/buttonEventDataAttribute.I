@@ -1,0 +1,76 @@
+// Filename: buttonEventDataAttribute.I
+// Created by:  drose (27Mar00)
+// 
+////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventDataAttribute::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ButtonEventDataAttribute::
+ButtonEventDataAttribute() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventDataAttribute::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ButtonEventDataAttribute::
+ButtonEventDataAttribute(const ButtonEventDataAttribute &copy) :
+  NodeAttribute(copy),
+  _buttons(copy._buttons)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventDataAttribute::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ButtonEventDataAttribute::
+operator = (const ButtonEventDataAttribute &copy) {
+  NodeAttribute::operator = (copy);
+  _buttons = copy._buttons;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventDataAttribute::begin
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ButtonEventDataAttribute::const_iterator ButtonEventDataAttribute::
+begin() const {
+  return _buttons.begin();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventDataAttribute::end
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ButtonEventDataAttribute::const_iterator ButtonEventDataAttribute::
+end() const {
+  return _buttons.end();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventDataAttribute::clear
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ButtonEventDataAttribute::
+clear() {
+  _buttons.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventDataAttribute::clear
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ButtonEventDataAttribute::
+push_back(const ButtonEvent &event) {
+  _buttons.push_back(event);
+}

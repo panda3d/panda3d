@@ -1,0 +1,422 @@
+// Filename: allTransitionsWrapper.I
+// Created by:  drose (21Mar00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "nodeRelation.h"
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE AllTransitionsWrapper::
+AllTransitionsWrapper() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE AllTransitionsWrapper::
+AllTransitionsWrapper(const AllTransitionsWrapper &copy) :
+  _cache(copy._cache)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void AllTransitionsWrapper::
+operator = (const AllTransitionsWrapper &copy) {
+  _cache = copy._cache;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE AllTransitionsWrapper::
+~AllTransitionsWrapper() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::init_from
+//       Access: Public, Static
+//  Description: This is a named constructor that creates an empty
+//               AllTransitionsWrapper ready to access the same type
+//               of NodeTransition as the other.
+////////////////////////////////////////////////////////////////////
+INLINE AllTransitionsWrapper AllTransitionsWrapper::
+init_from(const AllTransitionsWrapper &) {
+  return AllTransitionsWrapper();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::init_from
+//       Access: Public, Static
+//  Description: This is a named constructor that creates an empty
+//               AllTransitionsWrapper ready to access the same type
+//               of NodeTransition as the other.
+////////////////////////////////////////////////////////////////////
+INLINE AllTransitionsWrapper AllTransitionsWrapper::
+init_from(const AllAttributesWrapper &) {
+  return AllTransitionsWrapper();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::is_empty
+//       Access: Public
+//  Description: Returns true if there are no Transitions stored in
+//               the wrapper, or false if there are any (even identity)
+//               Transitions.
+////////////////////////////////////////////////////////////////////
+INLINE bool AllTransitionsWrapper::
+is_empty() const {
+  return 
+    (_cache == (NodeTransitionCache *)NULL) ||
+    _cache->is_empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::set_transition
+//       Access: Public
+//  Description: This flavor of set_transition() accepts a specific
+//               TypeHandle, indicating the type of transition that we
+//               are setting, and a NodeTransition pointer indicating
+//               the value of the transition.  The NodeTransition may
+//               be NULL indicating that the transition should be
+//               cleared.  If the NodeTransition is not NULL, it must
+//               match the type indicated by the TypeHandle.
+//
+//               The return value is a pointer to the *previous*
+//               transition in the set, if any, or NULL if there was
+//               none.
+////////////////////////////////////////////////////////////////////
+INLINE PT(NodeTransition) AllTransitionsWrapper::
+set_transition(TypeHandle handle, NodeTransition *trans) {
+  if (_cache == (NodeTransitionCache *)NULL) {
+    _cache = new NodeTransitionCache;
+  }
+  return _cache->set_transition(handle, trans);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapperset_transition
+//       Access: Public
+//  Description: This flavor of set_transition() accepts a pointer to
+//               a NodeTransition only.  It infers the type of the
+//               NodeTransition from the pointer.  However, it is not
+//               valid to pass a NULL pointer to this flavor of
+//               set_transition; if the pointer might be NULL, use the
+//               above flavor instead (or just call clear_transition).
+////////////////////////////////////////////////////////////////////
+INLINE PT(NodeTransition) AllTransitionsWrapper::
+set_transition(NodeTransition *trans) {
+  nassertr(trans != (NodeTransition *)NULL, NULL);
+  nassertr(trans->get_handle() != TypeHandle::none(), NULL);
+  return set_transition(trans->get_handle(), trans);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::clear_transition
+//       Access: Public
+//  Description: Removes any transition associated with the indicated
+//               handle from the set.
+//
+//               The return value is a pointer to the previous
+//               transition in the set, if any, or NULL if there was
+//               none.
+////////////////////////////////////////////////////////////////////
+INLINE PT(NodeTransition) AllTransitionsWrapper::
+clear_transition(TypeHandle handle) {
+  if (_cache == (NodeTransitionCache *)NULL) {
+    return NULL;
+  }
+  return _cache->clear_transition(handle);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::has_transition
+//       Access: Public
+//  Description: Returns true if a transition associated with the
+//               indicated handle has been stored in the wrapper, or
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool AllTransitionsWrapper::
+has_transition(TypeHandle handle) const {
+  if (_cache == (NodeTransitionCache *)NULL) {
+    return false;
+  }
+  return _cache->has_transition(handle);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::get_transition
+//       Access: Public
+//  Description: Returns the transition associated with the indicated
+//               handle, or NULL if no such transition has been stored
+//               in the wrapper.
+////////////////////////////////////////////////////////////////////
+INLINE NodeTransition *AllTransitionsWrapper::
+get_transition(TypeHandle handle) const {
+  if (_cache == (NodeTransitionCache *)NULL) {
+    return NULL;
+  }
+  return _cache->get_transition(handle);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::get_transitions
+//       Access: Public
+//  Description: Returns the entire cache of transitions.  You
+//               shouldn't modify this, or probably even store it for
+//               any length of time.
+////////////////////////////////////////////////////////////////////
+INLINE const NodeTransitionCache &AllTransitionsWrapper::
+get_transitions() const {
+  static NodeTransitionCache empty_transitions;
+
+  if (_cache == (NodeTransitionCache *)NULL) {
+    return empty_transitions;
+  }
+  return *_cache;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::is_identity
+//       Access: Public
+//  Description: Returns true if the wrapper represents an identity
+//               transition.
+////////////////////////////////////////////////////////////////////
+INLINE bool AllTransitionsWrapper::
+is_identity() const {
+  if (_cache == (NodeTransitionCache *)NULL) {
+    return true;
+  }
+  return _cache->is_identity();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::compare_to
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE int AllTransitionsWrapper::
+compare_to(const AllTransitionsWrapper &other) const {
+  if (_cache == other._cache) {
+    return 0;
+  }
+  if (_cache == (NodeTransitionCache *)NULL) {
+    return -1;
+  }
+  if (other._cache == (NodeTransitionCache *)NULL) {
+    return 1;
+  }
+
+  return _cache->compare_to(*other._cache);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::make_identity
+//       Access: Public
+//  Description: Resets the wrapper to the empty set.
+////////////////////////////////////////////////////////////////////
+INLINE void AllTransitionsWrapper::
+make_identity() {
+  _cache = (NodeTransitionCache *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::extract_from
+//       Access: Public
+//  Description: Sets the wrapper to the set of transitions contained
+//               on the arc.
+////////////////////////////////////////////////////////////////////
+INLINE void AllTransitionsWrapper::
+extract_from(const NodeRelation *arc) {
+  nassertv(arc != (NodeRelation *)NULL);
+  if (arc->_transitions.is_empty()) {
+    _cache = (NodeTransitionCache *)NULL;
+  } else {
+    _cache = new NodeTransitionCache(arc->_transitions);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::store_to
+//       Access: Public
+//  Description: Stores all the transitions in the wrapper to the arc.
+////////////////////////////////////////////////////////////////////
+INLINE void AllTransitionsWrapper::
+store_to(NodeRelation *arc) const {
+  nassertv(arc != (NodeRelation *)NULL);
+  NodeTransitionCache::store_to(_cache, arc, arc->_transitions);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::compose_in_place
+//       Access: Public
+//  Description: Sets this transition to the composition of this
+//               transition and the following one.
+////////////////////////////////////////////////////////////////////
+INLINE void AllTransitionsWrapper::
+compose_in_place(const AllTransitionsWrapper &other) {
+  _cache = NodeTransitionCache::compose(_cache, other._cache);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::invert_in_place
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void AllTransitionsWrapper::
+invert_in_place() {
+  _cache = NodeTransitionCache::invert(_cache);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::invert_compose_in_place
+//       Access: Public
+//  Description: Sets this transition to the composition of this
+//               transition and the following one.
+////////////////////////////////////////////////////////////////////
+INLINE void AllTransitionsWrapper::
+invert_compose_in_place(const AllTransitionsWrapper &other) {
+  _cache = NodeTransitionCache::invert_compose(_cache, other._cache);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::extract_from_cache
+//       Access: Public
+//  Description: Sets this wrapper to the set of transitions indicated
+//               in the cache on the arc.  Also returns the arc's
+//               top_subtree indication.
+////////////////////////////////////////////////////////////////////
+INLINE Node *AllTransitionsWrapper::
+extract_from_cache(const NodeRelation *arc) {
+  _cache = arc->_net_transitions;
+  return arc->_top_subtree;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::store_to_cache
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void AllTransitionsWrapper::
+store_to_cache(NodeRelation *arc, Node *top_subtree) {
+  arc->_top_subtree = top_subtree;
+  arc->_net_transitions = 
+    NodeTransitionCache::c_union(arc->_net_transitions, _cache);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::is_cache_verified
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool AllTransitionsWrapper::
+is_cache_verified(UpdateSeq) const {
+  // We can't ever know if all elements in the set are verified,
+  // because the set might not be complete.
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::set_computed_verified
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void AllTransitionsWrapper::
+set_computed_verified(UpdateSeq now) {
+  _cache = NodeTransitionCache::set_computed_verified(_cache, now);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::cached_compose
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void AllTransitionsWrapper::
+cached_compose(const AllTransitionsWrapper &cache, 
+	       const AllTransitionsWrapper &value,
+	       UpdateSeq now) {
+  _cache = NodeTransitionCache::cached_compose(_cache, cache._cache,
+					       value._cache, now);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::size
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE AllTransitionsWrapper::size_type AllTransitionsWrapper::
+size() const {
+  if (_cache == (NodeTransitionCache *)NULL) {
+    return 0;
+  }
+  return _cache->size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::begin
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE AllTransitionsWrapper::const_iterator AllTransitionsWrapper::
+begin() const {
+  if (_cache == (NodeTransitionCache *)NULL) {
+    return _empty_cache.begin();
+  }
+  return _cache->begin();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::end
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE AllTransitionsWrapper::const_iterator AllTransitionsWrapper::
+end() const {
+  if (_cache == (NodeTransitionCache *)NULL) {
+    // We intentionally return begin() instead of end() here, just in
+    // case the "empty" cache accidentally gets something added to it.
+    return _empty_cache.begin();
+  }
+  return _cache->end();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_transition_into
+//  Description: This external template function is handy for
+//               extracting a transition of a particular type from the
+//               set.  If the transition exists, it is automatically
+//               downcasted to the correct type and stored in the
+//               pointer given in the first parameter, and the return
+//               value is true.  If the transition does not exist, the
+//               pointer is filled with NULL and the return value is
+//               false.
+////////////////////////////////////////////////////////////////////
+template<class Transition>
+INLINE bool 
+get_transition_into(Transition *&ptr, const AllTransitionsWrapper &trans,
+		    TypeHandle transition_type) {
+  NodeTransition *nt = trans.get_transition(transition_type);
+  if (nt == (NodeTransition *)NULL) {
+    ptr = (Transition *)NULL;
+    return false;
+  }
+  DCAST_INTO_R(ptr, nt, false);
+  return true;
+}
+
+template<class Transition>
+INLINE bool 
+get_transition_into(Transition *&ptr, const AllTransitionsWrapper &trans) {
+  return get_transition_into(ptr, trans, Transition::get_class_type());
+}

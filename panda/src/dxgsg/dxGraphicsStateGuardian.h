@@ -1,0 +1,442 @@
+// Filename: dxGraphicsStateGuardian.h
+// Created by:  mike (02Feb99)
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef DXGRAPHICSSTATEGUARDIAN_H
+#define DXGRAPHICSSTATEGUARDIAN_H
+
+//#define GSG_VERBOSE
+
+#include <pandabase.h>
+
+#include <graphicsStateGuardian.h>
+#include <geomprimitives.h>
+#include <texture.h>
+#include <pixelBuffer.h>
+#include <displayRegion.h>
+#include <material.h>
+#include <textureApplyProperty.h>
+#include <depthTestProperty.h>
+#include <stencilProperty.h>
+#include <fog.h>
+
+#include <colorMatrixAttribute.h>
+#include <colorMatrixTransition.h>
+#include <alphaTransformAttribute.h>
+#include <alphaTransformTransition.h>
+
+#include "dxTextureContext.h"
+
+extern char * ConvD3DErrorToString(const HRESULT &error);   // defined in wdxGraphicsPipe.cxx
+
+#ifdef PENV_WIN32
+// Must include windows.h before gl.h on NT
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#undef WIN32_LEAN_AND_MEAN
+#endif
+
+#include <ddraw.h>
+#include <d3d.h>
+
+#include <pointerToArray.h>
+
+class PlaneNode;
+class Light;
+
+#ifdef GSG_VERBOSE
+ostream &output_gl_enum(ostream &out, GLenum v);
+INLINE ostream &operator << (ostream &out, GLenum v) {
+  return output_gl_enum(out, v);
+}
+#endif
+
+#define DX_DECLARE_CLEAN(type, var) \
+    type var;                       \
+    ZeroMemory(&var, sizeof(type));  \
+    var.dwSize = sizeof(type);   
+
+#define RELEASE(object) if (object!=NULL) {object->Release(); object = NULL;}
+
+#ifdef _DEBUG
+extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *pMsg);
+#define PRINTVIDMEM(pDD,pCaps,pMsg) dbgPrintVidMem(pDD,pCaps,pMsg)
+#else
+#define PRINTVIDMEM(pDD,pCaps,pMsg)
+#endif
+
+const int VERT_BUFFER_SIZE = (8*1024L);
+
+////////////////////////////////////////////////////////////////////
+// 	 Class : DXGraphicsStateGuardian
+// Description : A GraphicsStateGuardian specialized for rendering
+//               into DX.  There should be no DX calls
+//               outside of this object.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDADX DXGraphicsStateGuardian : public GraphicsStateGuardian {
+public:
+  DXGraphicsStateGuardian(GraphicsWindow *win);
+  ~DXGraphicsStateGuardian();
+
+  virtual void reset();
+
+  virtual void clear(const RenderBuffer &buffer);
+  virtual void clear(const RenderBuffer &buffer, const DisplayRegion* region);
+
+  virtual void prepare_display_region();
+
+  virtual void render_frame(const AllAttributesWrapper &initial_state);
+  virtual void render_scene(Node *root, const ProjectionNode *projnode,
+			    const AllAttributesWrapper &initial_state);
+  virtual void render_subgraph(RenderTraverser *traverser, 
+			       Node *subgraph, const ProjectionNode *projnode,
+			       const AllAttributesWrapper &initial_state,
+			       const AllTransitionsWrapper &net_trans);
+  virtual void render_subgraph(RenderTraverser *traverser,
+			       Node *subgraph,
+			       const AllAttributesWrapper &initial_state,
+			       const AllTransitionsWrapper &net_trans);
+
+  virtual void draw_point(const GeomPoint *geom);
+  virtual void draw_line(const GeomLine *geom);
+  virtual void draw_linestrip(const GeomLinestrip *geom);
+  virtual void draw_sprite(const GeomSprite *geom);
+  virtual void draw_polygon(const GeomPolygon *geom);
+  virtual void draw_quad(const GeomQuad *geom);
+  virtual void draw_tri(const GeomTri *geom);
+  virtual void draw_tristrip(const GeomTristrip *geom);
+  virtual void draw_trifan(const GeomTrifan *geom);
+  virtual void draw_sphere(const GeomSphere *geom);
+
+  virtual TextureContext *prepare_texture(Texture *tex);
+  virtual void apply_texture(TextureContext *tc);
+  virtual void release_texture(TextureContext *tc);
+
+  virtual void copy_texture(TextureContext *tc, const DisplayRegion *dr);
+  virtual void copy_texture(TextureContext *tc, const DisplayRegion *dr,
+                            const RenderBuffer &rb);
+  virtual void draw_texture(TextureContext *tc, const DisplayRegion *dr);
+  virtual void draw_texture(TextureContext *tc, const DisplayRegion *dr,
+                            const RenderBuffer &rb);
+
+  virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb);
+  virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
+			 	const DisplayRegion *dr);
+
+  virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr);
+  virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
+                                 const RenderBuffer &rb);
+  virtual void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
+				 const NodeAttributes& na=NodeAttributes());
+  virtual void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
+                                 const RenderBuffer &rb,
+				 const NodeAttributes& na=NodeAttributes());
+
+  virtual void apply_material(Material* material);
+  virtual void apply_fog(Fog *fog);
+
+  virtual void apply_light(PointLight* light);
+  virtual void apply_light(DirectionalLight* light);
+  virtual void apply_light(Spotlight* light);
+  virtual void apply_light(AmbientLight* light);
+
+  virtual void issue_transform(const TransformAttribute *attrib);
+  virtual void issue_tex_matrix(const TexMatrixAttribute *attrib);
+  virtual void issue_color(const ColorAttribute *attrib);
+  virtual void issue_color_transform(const ColorMatrixAttribute *);
+  virtual void issue_alpha_transform(const AlphaTransformAttribute *);
+  virtual void issue_texture(const TextureAttribute *attrib);
+  virtual void issue_light(const LightAttribute *attrib);
+  virtual void issue_material(const MaterialAttribute *attrib);
+  virtual void issue_render_mode(const RenderModeAttribute *attrib);
+  virtual void issue_color_blend(const ColorBlendAttribute *attrib);
+  virtual void issue_texture_apply(const TextureApplyAttribute *attrib);
+  virtual void issue_color_mask(const ColorMaskAttribute *attrib);
+  virtual void issue_depth_test(const DepthTestAttribute *attrib);
+  virtual void issue_depth_write(const DepthWriteAttribute *attrib);
+  virtual void issue_tex_gen(const TexGenAttribute *attrib);
+  virtual void issue_cull_face(const CullFaceAttribute *attrib);
+  virtual void issue_stencil(const StencilAttribute *attrib);
+  virtual void issue_clip_plane(const ClipPlaneAttribute *attrib);
+  virtual void issue_transparency(const TransparencyAttribute *attrib);
+  virtual void issue_fog(const FogAttribute *attrib);
+  virtual void issue_linesmooth(const LinesmoothAttribute *attrib);
+
+  virtual bool wants_normals(void) const;
+  virtual bool wants_texcoords(void) const;
+  virtual bool wants_colors(void) const;
+
+  virtual void begin_decal(GeomNode *base_geom);
+  virtual void end_decal(GeomNode *base_geom);
+
+  virtual float compute_distance_to(const LPoint3f &point) const;
+  
+  void reset_ambient();
+
+protected:
+  void free_pointers();
+  virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
+						 CPT(DisplayRegion) dr);
+  virtual void restore_frame_buffer(SavedFrameBuffer *frame_buffer);
+
+  INLINE void activate();
+
+  void set_draw_buffer(const RenderBuffer &rb);
+  void set_read_buffer(const RenderBuffer &rb);
+
+  void bind_texture(TextureContext *tc);
+  void specify_texture(Texture *tex);
+  void apply_texture_immediate(DXTextureContext *tc);
+
+  // for storage of the flexible vertex format
+  void *_fvf_buf;
+  void *_sav_fvf;
+  INLINE void add_to_FVF(void *data,  size_t bytes) ;
+  
+  bool				_dx_ready;
+  LPDIRECTDRAWSURFACE7  _back;
+  LPDIRECTDRAWSURFACE7  _zbuf;
+  LPDIRECT3D7          _d3d;
+  LPDIRECT3DDEVICE7    _d3dDevice;
+  LPDIRECTDRAWSURFACE7  _pri;
+  LPDIRECTDRAW7		_pDD;
+  RECT				  _view_rect;
+  RECT				  clip_rect;
+  HDC				_hdc;
+  int               _cNumTexPixFmts;
+  LPDDPIXELFORMAT   _pTexPixFmts;
+  DXTextureContext  *_pCurTexContext;
+
+  bool _color_transform_enabled;
+  bool _alpha_transform_enabled;
+
+  void set_clipper(RECT cliprect);
+
+  INLINE void set_pack_alignment(int alignment);
+  INLINE void set_unpack_alignment(int alignment);
+
+  INLINE void enable_multisample_alpha_one(bool val);
+  INLINE void enable_multisample_alpha_mask(bool val);
+  INLINE void enable_multisample(bool val);
+  INLINE void enable_color_material(bool val);
+  INLINE void enable_clip_plane(int clip_plane, bool val);
+  INLINE void enable_fog(bool val);
+
+#ifdef WBD_GL_MODE
+  void print_gfx_visual();
+  INLINE void call_glClearColor(GLclampf red, GLclampf green, GLclampf blue,
+				GLclampf alpha);
+  INLINE void call_glClearDepth(GLclampd depth);
+  INLINE void call_glClearStencil(GLint s);
+  INLINE void call_glClearAccum(GLclampf red, GLclampf green, GLclampf blue,
+				GLclampf alpha);
+  INLINE void call_glDrawBuffer(GLenum mode);
+  INLINE void call_glReadBuffer(GLenum mode);
+  INLINE void call_glShadeModel(GLenum mode);
+  INLINE void call_glCullFace(GLenum mode);
+  INLINE void call_glViewport(GLint x, GLint y, GLsizei width, GLsizei height);
+  INLINE void call_glLightModelAmbient(const Colorf& color);
+  INLINE void call_glLightModelLocal(GLboolean local);
+  INLINE void call_glLightModelTwoSide(GLboolean twoside);
+  INLINE void call_glMaterialAmbient(bool twoside, const Colorf& color);
+  INLINE void call_glMaterialDiffuse(bool twoside, const Colorf& color);
+  INLINE void call_glMaterialAmbientDiffuse(bool twoside, const Colorf& color);
+  INLINE void call_glMaterialSpecular(bool twoside, const Colorf& color);
+  INLINE void call_glMaterialShininess(bool twoside, float shininess);
+  INLINE void call_glMaterialEmission(bool twoside, const Colorf& color);
+  INLINE void call_glStencilFunc(GLenum func);
+  INLINE void call_glStencilOp(GLenum op);
+  INLINE void call_glClipPlane(GLenum plane, const double equation[4]);
+  INLINE void call_glLineWidth(GLfloat width);
+  INLINE void call_glPointSize(GLfloat size);
+  INLINE void call_glDepthMask(GLboolean mask);
+  INLINE void call_glFogMode(GLint mode);
+  INLINE void call_glFogStart(GLfloat start);
+  INLINE void call_glFogEnd(GLfloat end);
+  INLINE void call_glFogDensity(GLfloat density);
+  INLINE void call_glFogColor(const Colorf &color);
+  INLINE void call_glPolygonMode(GLenum mode);
+
+  INLINE GLenum get_light_id(int index) const;
+  INLINE GLenum get_clip_plane_id(int index) const;
+
+  GLenum get_image_type(PixelBuffer::Type type);
+  GLenum get_external_image_format(PixelBuffer::Format format);
+  GLenum get_internal_image_format(PixelBuffer::Format format);
+  GLint get_texture_apply_mode_type( TextureApplyProperty::Mode am ) const;
+
+  GLenum _draw_buffer_mode;
+  GLenum _read_buffer_mode;
+  GLenum _shade_model_mode;
+  GLboolean _lmodel_local;
+  GLboolean _lmodel_twoside;
+  GLenum _polygon_mode;
+  GLenum _stencil_func;
+  GLenum _stencil_op;
+
+
+#else 
+/*  INLINE void enable_multisample_alpha_one(bool val);
+  INLINE void enable_multisample_alpha_mask(bool val);
+  INLINE void enable_multisample(bool val, LPDIRECT3DDEVICE7 d3dDevice);
+*/ 
+  INLINE void enable_alpha_test(bool val);
+  INLINE void enable_line_smooth(bool val);
+  INLINE void enable_blend(bool val);
+  INLINE void enable_point_smooth(bool val);
+  INLINE void enable_texturing(bool val);
+  INLINE void call_dxLightModelAmbient(const Colorf& color);
+  INLINE void call_dxAlphaFunc(D3DCMPFUNC func, DWORD ref);
+  INLINE void call_dxBlendFunc(D3DBLEND sfunc, D3DBLEND dfunc);
+  INLINE void enable_lighting(bool val);
+  INLINE void enable_dither(bool val);
+  INLINE void enable_stencil_test(bool val);
+  bool enable_light(int light, bool val);
+
+  D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm);
+  D3DTEXTUREMAGFILTER get_texture_filter_type(Texture::FilterType ft);
+  D3DCMPFUNC get_depth_func_type(DepthTestProperty::Mode m) const;
+  D3DCMPFUNC get_stencil_func_type(StencilProperty::Mode m) const;
+  D3DSTENCILOP get_stencil_action_type(StencilProperty::Action a) const;
+  D3DFOGMODE get_fog_mode_type(Fog::Mode m) const;
+
+  void draw_prim_inner_loop(int loops, const Geom *geom);
+  void draw_prim_inner_loop2(int loops, const Geom *geom, short& per);
+  size_t draw_prim_setup(const Geom *geom) ;
+  void draw_multitri(const Geom *geom, D3DPRIMITIVETYPE tri_id);
+
+  //   for drawing primitives
+  Colorf	p_color;
+  Normalf	p_normal;
+  Vertexf	p_vertex;
+  TexCoordf p_texcoord;
+  D3DCOLOR  p_colr;
+
+  int       p_flags;
+  short     perPrim;
+  short     perVertex;
+  short     perComp;
+
+  // iterators for primitives
+  Geom::VertexIterator vi; 
+  Geom::NormalIterator ni;
+  Geom::TexCoordIterator ti;
+  Geom::ColorIterator ci;
+
+
+#endif		// WBD_GL_MODE
+
+  float  _clear_color_red, _clear_color_green, _clear_color_blue,_clear_color_alpha;
+  double _clear_depth;
+  int    _clear_stencil;
+  float  _clear_accum_red, _clear_accum_green, _clear_accum_blue,_clear_accum_alpha;
+  int _scissor_x;
+  int _scissor_y;
+  int _scissor_width;
+  int _scissor_height;
+  int _viewport_x;
+  int _viewport_y;
+  int _viewport_width;
+  int _viewport_height;
+  Colorf _lmodel_ambient;
+  float _material_ambient;
+  float _material_diffuse;
+  float _material_specular;
+  float _material_shininess;
+  float _material_emission;
+  float _line_width;
+  float _point_size;
+  bool  _depth_mask;
+  int   _fog_mode;
+  float _fog_start;
+  float _fog_end;
+  float _fog_density;
+  float _fog_color;
+  float _alpha_func_ref;
+  D3DCMPFUNC  _alpha_func;
+  D3DBLEND _blend_source_func;
+  D3DBLEND _blend_dest_func;
+
+  int _pack_alignment;
+  int _unpack_alignment;
+
+  bool  _issued_color_enabled;		// WBD ADDED
+  D3DCOLOR _issued_color;			// WBD ADDED
+
+  bool _multisample_enabled;
+  bool _line_smooth_enabled;
+  bool _point_smooth_enabled;
+  bool* _light_enabled;      // bool[_max_lights]
+  bool _color_material_enabled;
+  bool _lighting_enabled;
+  bool _texturing_enabled;
+  bool _dither_enabled;
+  bool _stencil_test_enabled;
+  bool* _clip_plane_enabled;      // bool[_max_clip_planes]
+  bool _multisample_alpha_one_enabled;
+  bool _multisample_alpha_mask_enabled;
+  bool _blend_enabled;
+  bool _depth_test_enabled;
+  bool _fog_enabled;
+  bool _alpha_test_enabled;
+  int _decal_level;
+
+  PTA(Light*) _available_light_ids;
+  int _max_lights;
+  bool* _cur_light_enabled;
+  int _cur_light_id;
+  Colorf _cur_ambient_light;
+  LMatrix4f _current_projection_mat;
+  int _projection_mat_stack_count;
+
+  PTA(PlaneNode*) _available_clip_plane_ids;
+  int _max_clip_planes;
+  bool* _cur_clip_plane_enabled; 
+  int _cur_clip_plane_id;
+
+  CPT(DisplayRegion) _actual_display_region;
+
+  LMatrix4f _current_color_mat;
+  float _current_alpha_offset;
+  float _current_alpha_scale;
+
+  int _pass_number;
+
+public:
+  static GraphicsStateGuardian*
+  make_DXGraphicsStateGuardian(const FactoryParams &params);
+
+  static TypeHandle get_class_type(void);
+  static void init_type(void);
+  virtual TypeHandle get_type(void) const;
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+  LPDIRECT3DDEVICE7 GetD3DDevice()  {  return _d3dDevice; }
+  LPDIRECTDRAW7 GetDDInterface()  {  return _pDD; }
+  LPDIRECTDRAWSURFACE7 GetBackBuffer()  {  return _back; }
+  LPDIRECTDRAWSURFACE7 GetZBuffer()  {  return _zbuf; }
+  INLINE void  Set_HDC(HDC hdc)  {  _hdc = hdc;  }
+  void adjust_view_rect(int x, int y);
+  INLINE void SetDXStatus(bool stat)  {  _dx_ready = stat; }
+
+  void  dx_cleanup();
+  void  dx_setup_after_resize(RECT viewrect,HWND mwindow) ;
+  void  show_frame();
+  void  init_dx(  LPDIRECTDRAW7		context,
+		  LPDIRECTDRAWSURFACE7  pri,
+		  LPDIRECTDRAWSURFACE7  back,
+		  LPDIRECTDRAWSURFACE7  zbuf,
+		  LPDIRECT3D7          d3d,
+		  LPDIRECT3DDEVICE7    d3dDevice,
+		  RECT  viewrect);
+   friend HRESULT CALLBACK DXGraphicsStateGuardian::EnumTexFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param );
+
+private:
+  static TypeHandle _type_handle;
+};
+
+#include "dxGraphicsStateGuardian.I"
+
+#endif
+

@@ -1,0 +1,31 @@
+// Filename: renderTraverser.cxx
+// Created by:  drose (12Apr00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "renderTraverser.h"
+
+#include <indent.h>
+
+TypeHandle RenderTraverser::_type_handle;
+
+  
+////////////////////////////////////////////////////////////////////
+//     Function: RenderTraverser::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void RenderTraverser::
+output(ostream &out) const {
+  out << get_type();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderTraverser::write
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void RenderTraverser::
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level) << *this << "\n";
+}

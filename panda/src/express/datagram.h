@@ -1,0 +1,111 @@
+// Filename: datagram.h
+// Created by:  drose (06Jun00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#ifndef DATAGRAM_H
+#define DATAGRAM_H
+
+#include <pandabase.h>
+
+#include "numeric_types.h"
+#include "typeHandle.h"
+#include "littleEndian.h"
+#include "bigEndian.h"
+
+#include <string>
+
+////////////////////////////////////////////////////////////////////
+// 	 Class : Datagram
+// Description : An ordered list of data elements, formatted in memory
+//               for transmission over a socket or writing to a data
+//               file.
+//
+//               Data elements should be added one at a time, in
+//               order, to the Datagram.  The nature and contents of
+//               the data elements are totally up to the user.  When a
+//               Datagram has been transmitted and received, its data
+//               elements may be extracted using a DatagramIterator;
+//               it is up to the caller to know the correct type of
+//               each data element in order.
+//
+//               A Datagram is itself headerless; it is simply a
+//               collection of data elements.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDAEXPRESS Datagram : public TypedObject {
+public:
+  INLINE Datagram();
+  INLINE Datagram(const void *data, size_t size);
+  INLINE Datagram(const string &data);
+  INLINE Datagram(const Datagram &copy);
+  INLINE void operator = (const Datagram &copy);
+
+  virtual ~Datagram();
+
+  virtual void clear();
+  void dump_hex(ostream &out) const;
+
+  INLINE void add_bool(bool b);
+  INLINE void add_int8(PN_int8 int8);
+  INLINE void add_uint8(PN_uint8 uint8);
+
+  // The default numeric packing is little-endian.
+  INLINE void add_int16(PN_int16 int16);
+  INLINE void add_int32(PN_int32 int32);
+  INLINE void add_int64(PN_int64 int64);
+  INLINE void add_uint16(PN_uint16 uint16);
+  INLINE void add_uint32(PN_uint32 uint32);
+  INLINE void add_uint64(PN_uint64 uint64);
+  INLINE void add_float32(float float32);
+  INLINE void add_float64(PN_float64 float64);
+
+  // These functions pack numbers big-endian, in case that's desired.
+  INLINE void add_be_int16(PN_int16 int16);
+  INLINE void add_be_int32(PN_int32 int32);
+  INLINE void add_be_int64(PN_int64 int64);
+  INLINE void add_be_uint16(PN_uint16 uint16);
+  INLINE void add_be_uint32(PN_uint32 uint32);
+  INLINE void add_be_uint64(PN_uint64 uint64);
+  INLINE void add_be_float32(float float32);
+  INLINE void add_be_float64(PN_float64 float64);
+
+  INLINE void add_string(const string &str);
+  INLINE void add_fixed_string(const string &str, size_t size);
+
+  INLINE void pad_bytes(size_t size);
+  INLINE void append_data(const void *data, size_t size);
+  INLINE void append_data(const string &data);
+
+  INLINE const string &get_message() const;
+  INLINE const void *get_data() const;
+  INLINE size_t get_length() const;
+
+  INLINE bool operator == (const Datagram &other) const;
+  INLINE bool operator != (const Datagram &other) const;
+  INLINE bool operator < (const Datagram &other) const;
+
+private:
+  string _message;
+
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TypedObject::init_type();
+    register_type(_type_handle, "Datagram",
+		  TypedObject::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
+};
+
+#include "datagram.I"
+
+#endif

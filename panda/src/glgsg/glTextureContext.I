@@ -1,0 +1,18 @@
+// Filename: glTextureContext.I
+// Created by:  drose (07Oct99)
+// 
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLTextureContext::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE GLTextureContext::
+GLTextureContext(Texture *tex) :
+  TextureContext(tex)
+{
+  _index = 0;
+  _priority = 0.5; // For keeping resident in texture memory 
+}

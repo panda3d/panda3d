@@ -1,0 +1,55 @@
+// Filename: projectionNode.cxx
+// Created by:  mike (09Jan97)
+//
+////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////
+// Includes
+////////////////////////////////////////////////////////////////////
+#include "projectionNode.h"
+#include <frustum.h>
+#include <perspectiveProjection.h>
+
+////////////////////////////////////////////////////////////////////
+// Static variables
+////////////////////////////////////////////////////////////////////
+TypeHandle ProjectionNode::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProjectionNode::make_copy
+//       Access: Public, Virtual
+//  Description: Returns a newly-allocated Node that is a shallow copy
+//               of this one.  It will be a different Node pointer,
+//               but its internal data may or may not be shared with
+//               that of the original Node.
+////////////////////////////////////////////////////////////////////
+Node *ProjectionNode::
+make_copy() const {
+  return new ProjectionNode(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: set_projection 
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+void ProjectionNode::set_projection( const Projection& projection )
+{
+    _projection = projection.make_copy();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_projection 
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+const Projection* ProjectionNode::get_projection( void ) const
+{
+  if (_projection == NULL) {
+    // If we have no projection yet, just return a default projection.
+    Frustumf f;
+    static PerspectiveProjection default_projection(f);
+    return &default_projection;
+  }
+  return _projection;
+}

@@ -1,0 +1,179 @@
+// Filename: directRenderTraverser.cxx
+// Created by:  drose (18Feb99)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "directRenderTraverser.h"
+#include "config_sgraphutil.h"
+#include "frustumCullTraverser.h"
+
+#include <geomNode.h>
+#include <graphicsStateGuardian.h>
+#include <geometricBoundingVolume.h>
+#include <projectionNode.h>
+#include <projection.h>
+#include <colorTransition.h>
+#include <renderModeTransition.h>
+#include <textureTransition.h>
+#include <transformTransition.h>
+#include <allAttributesWrapper.h>
+#include <allTransitionsWrapper.h>
+#include <decalTransition.h>
+#include <decalAttribute.h>
+#include <pStatTimer.h>
+
+TypeHandle DirectRenderTraverser::_type_handle;
+PStatCollector DirectRenderTraverser::_draw_pcollector =
+  PStatCollector("Draw", RGBColorf(1,0,0), 20);
+
+////////////////////////////////////////////////////////////////////
+//     Function: DirectRenderTraverser::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+DirectRenderTraverser::
+DirectRenderTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type) :
+  RenderTraverser(gsg, graph_type)
+{
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: DirectRenderTraverser::Destructor
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+DirectRenderTraverser::
+~DirectRenderTraverser() {
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: DirectRenderTraverser::traverse
+//       Access: Public, Virtual
+//  Description: This performs a normal, complete render traversal
+//               using this DirectRenderTraverser object.
+////////////////////////////////////////////////////////////////////
+void DirectRenderTraverser::
+traverse(Node *root, 
+	 const AllAttributesWrapper &initial_state,
+	 const AllTransitionsWrapper &net_trans) {
+  // Statistics
+  PStatTimer timer(_draw_pcollector);
+
+  AllAttributesWrapper render_state;
+  render_state.apply_from(initial_state, net_trans);
+
+  DirectRenderLevelState level_state;
+
+  DecalAttribute *decal_attrib;
+  if (get_attribute_into(decal_attrib, render_state,
+			 DecalTransition::get_class_type())) {
+    level_state._decal_mode = decal_attrib->is_on();
+  }
+
+  fc_traverse(root, *this, render_state, level_state,
+	      _gsg, _graph_type);
+
+  if (level_state._decal_mode && 
+      root->is_of_type(GeomNode::get_class_type())) {
+    // Close the decal.
+    _gsg->end_decal(DCAST(GeomNode, root));
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: DirectRenderTraverser::reached_node 
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool DirectRenderTraverser::
+reached_node(Node *node, AllAttributesWrapper &render_state,
+	     DirectRenderLevelState &level_state) {
+  if (implicit_app_traversal) {
+    node->app_traverse();
+  }
+  node->draw_traverse();
+
+  level_state._decal_mode = false;
+
+  AllTransitionsWrapper new_trans;
+
+  if (!node->sub_render(render_state, new_trans, _gsg)) {
+    return false;
+  }
+  render_state.apply_in_place(new_trans);
+
+  if (node->is_of_type(GeomNode::get_class_type())) {
+    _gsg->set_state(render_state.get_attributes(), true);
+    // Make sure the current display region is still in effect.
+    _gsg->prepare_display_region();
+
+    GeomNode *geom = DCAST(GeomNode, node); 
+
+    // We must make decals a special case, because they're so strange.
+    DecalAttribute *decal_attrib;
+    if (get_attribute_into(decal_attrib, render_state,
+			   DecalTransition::get_class_type())) {
+      level_state._decal_mode = decal_attrib->is_on();
+    }
+
+    if (level_state._decal_mode) {
+      _gsg->begin_decal(geom);
+
+    } else {
+      geom->draw(_gsg);
+    }
+  }
+  
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DirectRenderTraverser::forward_arc
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool DirectRenderTraverser::
+forward_arc(NodeRelation *arc, AllTransitionsWrapper &trans,
+	    AllAttributesWrapper &, AllAttributesWrapper &post,
+	    DirectRenderLevelState &) {
+  bool carry_on = true;
+
+  // Go through all the transitions on the arc and sub_render() on
+  // each one.  For most transition types, this will be a no-op and
+  // return true.  For Shader types, this will fire off another render
+  // and return false.
+
+  AllTransitionsWrapper::const_iterator nti;
+  for (nti = trans.begin(); nti != trans.end(); ++nti) {
+    NodeTransition *t = (*nti).second.get_trans();
+    AllTransitionsWrapper new_trans;
+    if (!t->sub_render(arc, post, new_trans, _gsg)) {
+      carry_on = false;
+    }
+    post.apply_in_place(new_trans);
+  }
+
+  return carry_on;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: DirectRenderTraverser::backward_arc
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DirectRenderTraverser::
+backward_arc(NodeRelation *arc, AllTransitionsWrapper &,
+	     AllAttributesWrapper &, AllAttributesWrapper &post,
+	     const DirectRenderLevelState &level_state) {
+  if (level_state._decal_mode) {
+    // Reset the state to redraw the base geometry.
+    _gsg->set_state(post.get_attributes(), true);
+    _gsg->prepare_display_region();
+    _gsg->end_decal(DCAST(GeomNode, arc->get_child()));
+  }
+}
+

@@ -1,0 +1,15 @@
+// Filename: depthWriteAttribute.I
+// Created by:  drose (31Mar00)
+// 
+////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+//     Function: DepthWriteAttribute::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE DepthWriteAttribute::
+DepthWriteAttribute() : OnOffAttribute(true) {
+  // The default value for DepthWriteAttribute is true: write to the
+  // depth buffer.
+}

@@ -1,0 +1,187 @@
+To install Panda3D on WinNT or Win98:
+-------------------------------------
+Notes:
+  Lines preceeded by "#" are comments.
+  Lines preceeded by ">" are instructions to be typed on the command line. 
+  On WinNT, make sure your system clock is not set to GMT (only worry about
+    this if your makedepend seems out of sync, i.e. you constantly reinstall
+    old files over more current ones).
+  Opengl appears to be installed with the os for both WinNT and Win98, but I
+    read somewhere that we might want to do our own version control for
+    this eventually using "VerInstallFile" to install our own version of
+    OpenGl (At any rate, "HAVE_GL" defaults to true in the .cshrc file.
+  "Touch" doesn't work on WinNT or Win98 currently.
+  Make sure you run ftp in "binary" mode to fetch tarballs.
+  "ftp" doesn't currently read "backspace" in rxvt, so you'll just have to be
+    precise at the ftp prompt for now ("delete" doesn't work either).
+    If this really bugs you, you can create a shortcut on the Desktop to
+    "tcsh.exe" and run ftp properly from there rather than from rxvt.
+  Occasionally, a freshly opened shell will hang in the middle of attaching
+    or something.  If this happens, go ahead and kill the tcsh process (or
+    ftp or rxvt process) using the Task Manager and try again.
+  Make sure your machine has enough disk space - I'd start with the largest
+    open space on any of your partitions.
+  Make sure your machine has networking (IP, gateway, etc.) so you can use
+    ftp to get to dumbo.
+
+Step 1: Install Visual C++ (v6.0)
+  # On WinNT, you will be prompted to register environment variables for
+  # running the compiler from the command line - do it.
+  # I also recommend installing the full MSDN Library documentation.
+
+Step 2: Install Cygwin (v1.0)
+  # Install Cygwin from the cd  
+  # To get things started, you can run a bash shell by going to the "Start"
+  # button at the bottom left of your screen, selecting "Programs",
+  # "Cygwin" and "bash".  I usually run "tcsh" at the bash prompt to make 
+  # things easier.
+  # Set up the Cygwin environment:
+    # Check for directories /bin /etc /tmp /usr and create them using 
+    # mkdir if they don't exist.  Also make the following directories:
+      > mkdir /mscommon
+      > mkdir /msvc98
+    # Mount directories (This assumes VC++ was installed in C:\Program Files):
+      > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio/Common /mscommon
+      > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio/VC98 /msvc98
+    # Create some links expected by the attach scripts:
+      > mkdir /usr/local
+      > mkdir /usr/local/bin
+      > ln -s /contrib/bin/tcsh /bin/csh
+      > ln -s /contrib/bin/perl /usr/local/bin/perl
+      > ln -s /bin/bash /usr/local/bin/bash
+
+Step 3: Install winpandatools
+  # Winpandatools currently includes rxvt, glut, and nspr, as well as
+  # .cshrc, Configrc, the .vspec files, and Squeak.
+  # Get /for/program/tarballs/winpandatools.tgz using ftp.
+  # While your're here you can also grab tool.tgz, panda.tgz, and direct.tgz
+  > cd /
+  > tar zxvf winpandatools.tgz
+  # Create a HOME directory:
+    > mkdir /usr/<yourname>
+    > cp /usr/local/winpandatools/.cshrc /usr/<yourname>
+    > cp /usr/local/winpandatools/Configrc /usr/<yourname>
+  # On Windows for some reason I couldn't tar these links up properly so
+  # you'll need to create them by hand:
+    > ln -s /usr/local/squeak/Squeak.exe /usr/local/bin/squeak
+    > ln -s /usr/local/squeak/Squeak.exe /usr/local/bin/headlessSqueak
+    # On WinNT:
+      > cp /usr/local/winpandatools/winNT/libnspr3.* /usr/lib/
+    # On Win98:
+      > cp /usr/local/winpandatools/win98/libnspr3.* /usr/lib/
+
+Step 4: (Optional) Build NSPR
+  # Skip this step if you don't care to mess with nspr code.
+  # Winpandatools contains prebuilt nspr libraries, but if you want to build
+  # your own, do the following:
+  # Grab the tarball /for/program/tarballs/nspr.tgz and install it in 
+  # /usr/local
+  > cd /usr/local
+  > tar zxvf nspr.tgz
+  > source /usr/local/mozilla/nsprpub/env.sh
+  > cd /usr/local/buildtools/windows
+  > install.bat
+  # To build optimized:
+    > setenv BUILD_OPT 1
+    > unsetenv MOZ_DEBUG
+  # On WinNT only:
+    > cd /bin
+    > ln -s /usr/local/buildtools/windows/Cygwin/bin/nsinstall.exe .
+  > cd /usr/local/mozilla/nsprpub
+  # If you want nspr to use the debug runtime library:
+    > setenv USE_DEBUG_RTL 1
+  > make release
+  > cd /usr/lib
+  # Remove the pre-built libs that came from winpandatools:
+    > rm libnspr3.dll libnspr3.lib
+  # On WinNT:
+    > ln -s /usr/local/mozilla/dist/WINNT4.0_OPT.OBJ/libnspr3.dll .
+    > ln -s /usr/local/mozilla/dist/WINNT4.0_OPT.OBJ/libnspr3.lib .
+  # On Win98:
+    > ln -s /usr/local/mozilla/dist/WIN954.0_OPT.OBJ/libnspr3.dll .
+    > ln -s /usr/local/mozilla/dist/WIN954.0_OPT.OBJ/libnspr3.lib .
+
+Step 5: Set $HOME environment variable 
+  # On WinNT use the Registry:
+    # Select "My Computer" icon from the desktop.
+    # Select "Control Panel" icon.
+    # Select "System" icon.
+    # Select "Environment" tab.
+    # Create the variable "HOME" with the value "/usr/<yourname>".
+    # Click the "Set" button.
+    # Click the "Apply" button.
+    # Now open a new shell to get the changes.
+  # On Win98 use AUTOEXEC.BAT:
+    # Change the "HOME=/usr/<yourname>" line in 
+    # /usr/local/winpandatools/AUTOEXEC.BAT
+    > cp /usr/local/winpandatools/AUTOEXEC.BAT C:
+    # Note: if you want to edit your existing AUTOEXEC.BAT, you need
+    # to use "edit.exe" in order to generate the correct "newline"
+    # character (^M).
+  # Note: We've seen a problem where we can't source ~/.cshrc if the home
+  # directory /usr/<name> does not match the user name exactly.  To be safe,
+  # be sure and name your home directory to be /usr/<username>.
+
+Step 6: Create a shortcut to rxvt
+  # Using Windows file access, "Find" rxvt.exe (it's in 
+  # /usr/local/winpandatools/).
+  # Drag the rxvt.exe icon to the Desktop.
+  # Click the right mouse button on the rxvt.exe icon on the Desktop
+  # and select "Properties".
+  # Select the "Shortcut" tab.
+  # Set "Target" to be C:\Cygwin\usr\local\winpandatools\rxvt.exe -fn courier
+  #   -sl 10000 -bg bisque -e tcsh -l
+  # Select "OK".
+  # Note: You need to install $TOOL before the shortcut will be able to
+  # attach to $TOOL correctly (Step 7).
+
+Step 7: Grab the tarballs
+  > mkdir /install
+  > cd /install
+  # Get tool.tgz, panda.tgz, and direct.tgz from /for/program/tarballs
+  # or copy them if they have already been ftp'd over.
+  > tar zxvf tool.tgz
+  > tar zxvf panda.tgz
+  > tar zxvf direct.tgz
+ 
+Step 8: Build $TOOL
+  # Now you must use the rxvt shortcut to open a shell - it should attach
+  # to $TOOL automatically.
+  # You can ignore the tcsh warnings (don't recognize "xterm") - this is
+  # a Cygwin - rxvt conflict that's not trivial to resolve.
+  # Choose which optimize level you want:
+  #  setenv OPTIMIZE 1 (default) - fast build, runs slower
+  #  setenv OPTIMIZE 2 (recommended) - slower build, faster, has asserts
+  #  setenv OPTIMIZE 3 - debug symbols, but no asserts
+  #  setenv OPTIMIZE 4 (release mode) - no debug symbols
+  > setenv OPTIMIZE 2
+  > cd $TOOL
+  > ctmake
+
+Step 9: (Optional) Install DirectX
+  # Install DirectX 7.0 (by default into C:\mssdk).
+  > cp C:/mssdk/include/*.* /msvc98/Include/
+  > cp C:/mssdk/lib/d3dim.lib /msvc98/Lib/
+  > cp C:/mssdk/lib/ddraw.lib /msvc98/Lib/
+  # Add the following to ~/.cshrc:
+    # setenv HAVE_DX yes
+
+Step 9: Build $PANDA 
+  > cta panda
+  > cd $PANDA
+  > ctmake install-configfiles
+  # Now you need to attach again, so start over with a new shell.
+  > exit
+  # Open a new shell using the rxvt shortcut.
+  > cta panda
+  > cd $PANDA
+  > ctmake
+  # You can now run "demo" to test the install and build - you should
+  # see a window pop up with a triangle in it.  To see the triangle with
+  # a texture on it, you'll need to be in $PANDA/src/all/testbed/ when
+  # you run "demo".
+
+Step 10: Build $DIRECT
+  > cta direct
+  > cd $DIRECT
+  > ctmake

@@ -1,0 +1,84 @@
+// Filename: eggXfmAnimData.h
+// Created by:  drose (19Feb99)
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef EGGXFMANIMDATA_H
+#define EGGXFMANIMDATA_H
+
+#include <pandabase.h>
+
+#include "eggAnimData.h"
+
+class EggXfmSAnim;
+
+////////////////////////////////////////////////////////////////////
+// 	 Class : EggXfmAnimData
+// Description : Corresponding to an <Xfm$Anim> entry, this stores a
+//               two-dimensional table with up to nine columns, one
+//               for each component of a transformation.  This is an
+//               older syntax of egg anim table, not often used
+//               currently--it's replaced by EggXfmSAnim.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDAEGG EggXfmAnimData : public EggAnimData {
+public:
+  INLINE EggXfmAnimData(const string &name = "",
+			CoordinateSystem cs = CS_default);
+  EggXfmAnimData(const EggXfmSAnim &convert_from);
+
+  INLINE EggXfmAnimData(const EggXfmAnimData &copy);
+  INLINE EggXfmAnimData &operator = (const EggXfmAnimData &copy);
+
+  INLINE void set_order(const string &order);
+  INLINE void clear_order();
+  INLINE bool has_order() const;
+  INLINE const string &get_order() const;
+
+  INLINE void set_contents(const string &contents);
+  INLINE void clear_contents();
+  INLINE bool has_contents() const;
+  INLINE const string &get_contents() const;
+
+  INLINE CoordinateSystem get_coordinate_system() const;
+
+  INLINE int get_num_rows() const;
+  INLINE int get_num_cols() const;
+  INLINE double get_value(int row, int col) const;
+
+  void get_value(int row, LMatrix4d &mat) const;
+
+  virtual void write(ostream &out, int indent_level) const;
+
+protected:
+  virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
+			   CoordinateSystem to_cs);
+  virtual void r_mark_coordsys(CoordinateSystem cs);
+
+private:
+  string _order;
+  string _contents;
+  CoordinateSystem _coordsys;
+
+public:
+
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    EggAnimData::init_type();
+    register_type(_type_handle, "EggXfmAnimData",
+                  EggAnimData::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+ 
+private:
+  static TypeHandle _type_handle;
+};
+
+#include "eggXfmAnimData.I"
+
+#endif
+

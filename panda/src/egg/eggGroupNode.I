@@ -1,0 +1,113 @@
+// Filename: eggGroupNode.I
+// Created by:  drose (16Jan99)
+// 
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::begin
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE EggGroupNode::iterator EggGroupNode::
+begin() const {
+  return _children.begin();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::end
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE EggGroupNode::iterator EggGroupNode::
+end() const {
+  return _children.end();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::rbegin
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE EggGroupNode::reverse_iterator EggGroupNode::
+rbegin() const {
+  return _children.rbegin();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::rend
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE EggGroupNode::reverse_iterator EggGroupNode::
+rend() const {
+  return _children.rend();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::empty
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool EggGroupNode::
+empty() const {
+  return _children.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::size
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE EggGroupNode::size_type EggGroupNode::
+size() const {
+  return _children.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::insert
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE EggGroupNode::iterator EggGroupNode::
+insert(iterator position, PT(EggNode) x) {
+  prepare_add_child(x);
+  return _children.insert((Children::iterator &)position, x);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::erase
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE EggGroupNode::iterator EggGroupNode::
+erase(iterator position) {
+  prepare_remove_child(*position);
+  return _children.erase((Children::iterator &)position);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::replace
+//       Access: Public
+//  Description: Replaces the node at the indicated position with
+//               the indicated node.  It is an error to call this
+//               with an invalid position iterator (e.g. end()).
+////////////////////////////////////////////////////////////////////
+INLINE void EggGroupNode::
+replace(iterator position, PT(EggNode) x) {
+  nassertv(position != end());
+
+  prepare_remove_child(*position);
+  prepare_add_child(x);
+  *(Children::iterator &)position = x;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::clear
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void EggGroupNode::
+clear() {
+  erase(begin(), end());
+}

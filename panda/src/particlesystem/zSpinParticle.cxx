@@ -1,0 +1,101 @@
+// Filename: zSpinParticle.cxx
+// Created by:  charles (16Aug00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "zSpinParticle.h"
+
+////////////////////////////////////////////////////////////////////
+//    Function : ZSpinParticle
+//      Access : public
+// Description : constructor
+////////////////////////////////////////////////////////////////////
+ZSpinParticle::
+ZSpinParticle(void) :
+  BaseParticle() {
+  _cur_theta = 0.0f;
+  _initial_theta = 0.0f;
+  _target_theta = 0.0f;
+  _positive_increment = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : ZSpinParticle
+//      Access : public
+// Description : copy constructor
+////////////////////////////////////////////////////////////////////
+ZSpinParticle::
+ZSpinParticle(const ZSpinParticle &copy) :
+  BaseParticle(copy) {
+  _cur_theta = copy._cur_theta;
+  _initial_theta = copy._initial_theta;
+  _target_theta = copy._target_theta;
+  _positive_increment = copy._positive_increment;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : ~ZSpinParticle
+//      Access : public, virtual
+// Description : destructor
+////////////////////////////////////////////////////////////////////
+ZSpinParticle::
+~ZSpinParticle(void) {
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : make_copy
+//      Access : public, virtual
+// Description : dynamic copier
+////////////////////////////////////////////////////////////////////
+PhysicsObject *ZSpinParticle::
+make_copy(void) const {
+  return new ZSpinParticle(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : init
+//      Access : public, virtual
+// Description : 
+////////////////////////////////////////////////////////////////////
+void ZSpinParticle::
+init(void) {
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : update
+//      Access : public, virtual
+// Description :
+////////////////////////////////////////////////////////////////////
+void ZSpinParticle::
+update(void) {
+  float t = get_parameterized_age();
+
+  if (_positive_increment)
+    _cur_theta = _initial_theta + (t * (fabs(_target_theta - _initial_theta)));
+  else
+    _cur_theta = _initial_theta - (t * (fabs(_target_theta - _initial_theta)));
+
+  if (_cur_theta >= 360.0f)
+    _cur_theta -= 360.0f;
+  else if (_cur_theta < 0.0f)
+    _cur_theta += 360.0f;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : die
+//      Access : public, virtual
+// Description :
+////////////////////////////////////////////////////////////////////
+void ZSpinParticle::
+die(void) {
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_theta
+//      Access : public, virtual
+// Description :
+////////////////////////////////////////////////////////////////////
+float ZSpinParticle::
+get_theta(void) const {
+  return _cur_theta;
+}

@@ -1,0 +1,16 @@
+// Filename: nodePathCollection.I
+// Created by:  drose (06Mar00)
+// 
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::ls
+//       Access: Public
+//  Description: Lists all the nodes at and below each node in the
+//               collection hierarchically.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePathCollection::
+ls() const {
+  ls(nout);
+}

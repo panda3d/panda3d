@@ -1,0 +1,16 @@
+// Filename: polygonOffsetProperty.cxx
+// Created by:  jason (12Jul00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "polygonOffsetProperty.h"
+
+////////////////////////////////////////////////////////////////////
+//     Function: PolygonOffsetProperty::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PolygonOffsetProperty::
+output(ostream &out) const {
+  out << "Units " << _units << " Factor " << _factor << endl;
+}

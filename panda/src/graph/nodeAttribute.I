@@ -1,0 +1,149 @@
+// Filename: nodeAttribute.I
+// Created by:  drose (20Mar00)
+// 
+////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeAttribute::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE NodeAttribute::
+NodeAttribute() {
+  _priority = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeAttribute::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE NodeAttribute::
+NodeAttribute(const NodeAttribute &copy) :
+  TypedReferenceCount(copy),
+  _priority(copy._priority)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeAttribute::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void NodeAttribute::
+operator = (const NodeAttribute &copy) {
+  TypedReferenceCount::operator = (copy);
+  _priority = copy._priority;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeAttribute::Equality Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool NodeAttribute::
+operator == (const NodeAttribute &other) const {
+  return compare_to(other) == 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeAttribute::Inequality Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool NodeAttribute::
+operator != (const NodeAttribute &other) const {
+  return compare_to(other) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeAttribute::Inequality Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool NodeAttribute::
+operator < (const NodeAttribute &other) const {
+  return compare_to(other) < 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeAttribute::Inequality Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool NodeAttribute::
+operator <= (const NodeAttribute &other) const {
+  return compare_to(other) <= 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeAttribute::Inequality Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool NodeAttribute::
+operator > (const NodeAttribute &other) const {
+  return compare_to(other) > 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeAttribute::Inequality Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool NodeAttribute::
+operator >= (const NodeAttribute &other) const {
+  return compare_to(other) >= 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeAttribute::compare_to
+//       Access: Public
+//  Description: This function works like strcmp(): it compares the
+//               two attributes and returns a number less than zero
+//               if this attribute sorts before the other one, equal
+//               to zero if they are equivalent, or greater than zero
+//               if this attribute sorts after the other one.
+//
+//               This imposes an arbitrary sorting order across all
+//               attributes, whose sole purpose is to allow grouping
+//               of equivalent attributes together in STL structures
+//               like maps and sets.
+////////////////////////////////////////////////////////////////////
+INLINE int NodeAttribute::
+compare_to(const NodeAttribute &other) const {
+  TypeHandle my_handle = get_handle();
+  TypeHandle other_handle = other.get_handle();
+
+  if (my_handle == other_handle) {
+    return internal_compare_to(&other);
+
+  } else {
+    return 
+      (my_handle < other_handle) ? -1 : 1;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeAttribute::set_priority
+//       Access: Public
+//  Description: Changes the priority associated with this attribute.
+//               The attribute will not be affected by transitions
+//               with a lower priority.
+////////////////////////////////////////////////////////////////////
+INLINE void NodeAttribute::
+set_priority(int priority) {
+  _priority = priority;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeAttribute::get_priority
+//       Access: Public
+//  Description: Returns the priority associated with this attribute.
+//               Normally this is of limited value; the priority is
+//               meaningful primarily on the transitions.
+////////////////////////////////////////////////////////////////////
+INLINE int NodeAttribute::
+get_priority() const {
+  return _priority;
+}

@@ -1,0 +1,34 @@
+// Filename: buttonEventDataTransition.I
+// Created by:  drose (27Mar00)
+// 
+////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventDataTransition::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ButtonEventDataTransition::
+ButtonEventDataTransition() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventDataTransition::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ButtonEventDataTransition::
+ButtonEventDataTransition(const ButtonEventDataTransition &copy) :
+  NodeTransition(copy)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventDataTransition::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ButtonEventDataTransition::
+operator = (const ButtonEventDataTransition &copy) {
+  NodeTransition::operator = (copy);
+}

@@ -1,0 +1,13 @@
+ignorefile config_display.h displayRegion.h displayRegion.I
+ignorefile displayRegionStack.h displayRegionStack.I frameBufferStack.h
+ignorefile frameBufferStack.I graphicsChannel.h graphicsChannel.I
+ignorefile graphicsStateGuardian.h graphicsStateGuardian.I
+ignorefile hardwareChannel.h hardwareChannel.I interactiveGraphicsPipe.h
+ignorefile interactiveGraphicsPipe.I noninteractiveGraphicsPipe.h
+ignorefile noninteractiveGraphicsPipe.I renderBuffer.h savedFrameBuffer.h
+ignorefile savedFrameBuffer.I textureContext.h textureContext.I
+
+ignoremember _factory
+ignoremember make_window
+
+forcetype PointerTo<GraphicsPipe>

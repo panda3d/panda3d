@@ -1,0 +1,16 @@
+// Filename: alphaTransformProperty.cxx
+// Created by:  jason (01Aug00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "alphaTransformProperty.h"
+
+////////////////////////////////////////////////////////////////////
+//     Function: AlphaTransformProperty::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void AlphaTransformProperty::
+output(ostream &out) const {
+  out << "Offset " << _offset << " Scale " << _scale << endl;
+}
