@@ -135,7 +135,7 @@
 // What additional options should be passed to interrogate when
 // generating either of the above two interfaces?  Generally, you
 // probably don't want to mess with this.
-#define INTERROGATE_OPTIONS -fnames -string -refcount -assert -promiscuous
+#define INTERROGATE_OPTIONS -fnames -string -refcount -assert
 
 // Is Python installed, and should Python interfaces be generated?  If
 // Python is installed, which directory is it in?  (If the directory
