@@ -47,6 +47,7 @@ parse(const string &line) {
   size_t colon = line.find(':');
   if (colon == string::npos) {
     nout << "Colon required.\n";
+    return false;
   }
 
   // Chop up the first part of the string (preceding the colon) into
