@@ -254,9 +254,12 @@ stop() {
 ////////////////////////////////////////////////////////////////////
 void AnimControl::
 pose(int frame) {
-  nassertv(get_num_frames() > 0);
+  int num_frames = get_num_frames();
+  nassertv(num_frames > 0);
 
-  nassertv(frame >= 0 && frame < get_num_frames());
+  // Modulo the number of frames.
+  frame = frame - cfloor(frame / num_frames) * num_frames;
+  nassertv(frame >= 0 && frame < num_frames);
   _as_of_time = ClockObject::get_global_clock()->get_frame_time();
   _playing = false;
 
