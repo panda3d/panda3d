@@ -90,8 +90,8 @@ upload_data() {
 
   int data_size = get_data()->get_data_size_bytes();
   
-  if (dxgsg8_cat.is_debug()) {
-    dxgsg8_cat.debug()
+  if (dxgsg8_cat.is_spam()) {
+    dxgsg8_cat.spam()
       << "copying " << data_size
       << " bytes into index buffer " << _ibuffer << "\n";
   }

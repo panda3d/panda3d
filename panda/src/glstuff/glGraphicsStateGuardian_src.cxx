@@ -364,12 +364,78 @@ reset() {
   get_extra_extensions();
   report_extensions();
 
+  _supports_vertex_blend = has_extension("GL_ARB_vertex_blend");
+
+  if (_supports_vertex_blend) {
+    _glWeightPointerARB = (PFNGLWEIGHTPOINTERARBPROC)
+      get_extension_func(GLPREFIX_QUOTED, "WeightPointerARB");
+    _glVertexBlendARB = (PFNGLVERTEXBLENDARBPROC)
+      get_extension_func(GLPREFIX_QUOTED, "VertexBlendARB");
+
+    if (_glWeightPointerARB == NULL || _glVertexBlendARB == NULL) {
+      GLCAT.warning()
+        << "Vertex blending advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
+      _supports_vertex_blend = false;
+    }
+  }
+
+  if (_supports_vertex_blend) {
+    GLP(Enable)(GL_WEIGHT_SUM_UNITY_ARB);
+
+    GLint max_vertex_units;
+    GLP(GetIntegerv)(GL_MAX_VERTEX_UNITS_ARB, &max_vertex_units);
+    _max_vertex_transforms = max_vertex_units;
+    GLCAT.debug()
+      << "max vertex transforms = " << _max_vertex_transforms << "\n";
+  }
+
+  _supports_matrix_palette = has_extension("GL_ARB_matrix_palette");
+
+  if (_supports_matrix_palette) {
+    _glCurrentPaletteMatrixARB = (PFNGLCURRENTPALETTEMATRIXARBPROC)
+      get_extension_func(GLPREFIX_QUOTED, "CurrentPaletteMatrixARB");
+    _glMatrixIndexPointerARB = (PFNGLMATRIXINDEXPOINTERARBPROC)
+      get_extension_func(GLPREFIX_QUOTED, "MatrixIndexPointerARB");
+
+    if (_glCurrentPaletteMatrixARB == NULL || _glMatrixIndexPointerARB == NULL) {
+      GLCAT.warning()
+        << "Matrix palette advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
+      _supports_matrix_palette = false;
+    }
+  }
+
+  /*
+    The matrix_palette support in this module is completely untested
+    (because I don't happen to have a card handy whose driver supports
+    this extension), so I have this ConfigVariable set to
+    unconditionally set this flag off for now, to protect the unwary.
+    When we have shown that the code works, we should remove this bit.
+    In the meantime, you must put both "matrix-palette 1" and
+    "gl-matrix-palette 1" in your Config.prc to exercise the new
+    code. */
+  if (!ConfigVariableBool("gl-matrix-palette", false, PRC_DESC("Temporary hack variable protecting untested code.  See glGraphicsStateGuardian_src.cxx."))) {
+    if (_supports_matrix_palette) {
+      GLCAT.debug() << "Forcing off matrix palette support.\n";
+    }
+    _supports_matrix_palette = false;
+  }
+
+  if (_supports_matrix_palette) {
+    GLint max_palette_matrices;
+    GLP(GetIntegerv)(GL_MAX_PALETTE_MATRICES_ARB, &max_palette_matrices);
+    _max_vertex_transform_indices = max_palette_matrices;
+    GLCAT.debug()
+      << "max vertex transform indices = " << _max_vertex_transform_indices << "\n";
+  }
+
+  _supports_draw_range_elements = false;
+
   if (is_at_least_version(1, 2)) {
     _supports_draw_range_elements = true;
     _glDrawRangeElements = (PFNGLDRAWRANGEELEMENTSPROC)
       get_extension_func(GLPREFIX_QUOTED, "DrawRangeElements");
 
-  } else if (has_extension("EXT_draw_range_elements")) {
+  } else if (has_extension("GL_EXT_draw_range_elements")) {
     _supports_draw_range_elements = true;
     _glDrawRangeElements = (PFNGLDRAWRANGEELEMENTSPROC)
       get_extension_func(GLPREFIX_QUOTED, "DrawRangeElementsEXT");
@@ -720,6 +786,9 @@ reset() {
   _last_max_stage_index = 0;
   _auto_antialias_mode = false;
   _render_mode = RenderModeAttrib::M_filled;
+
+  _transform_stale = false;
+  _vertex_blending_enabled = false;
 
   report_my_gl_errors();
 
@@ -2084,9 +2153,93 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
     }
   }
 
+  const qpGeomVertexAnimationSpec &animation = 
+    vertex_data->get_format()->get_animation();
+  bool hardware_animation = (animation.get_animation_type() == qpGeomVertexAnimationSpec::AT_hardware);
+  if (hardware_animation) {
+    // Set up the transform matrices for vertex blending.
+    GLP(Enable)(GL_VERTEX_BLEND_ARB);
+    _glVertexBlendARB(animation.get_num_transforms() - 1);
+    
+    const TransformPalette *palette = vertex_data->get_transform_palette();
+    if (palette != (TransformPalette *)NULL) {
+      if (animation.get_indexed_transforms()) {
+        // We are loading the indexed matrix palette.  The ARB decided
+        // to change this interface from that for the list of
+        // nonindexed matrices, to make it easier to load an arbitrary
+        // number of matrices.
+        GLP(Enable)(GL_MATRIX_PALETTE_ARB);
+
+        GLP(MatrixMode)(GL_MATRIX_PALETTE_ARB);
+
+        for (int i = 0; i < palette->get_num_transforms(); ++i) {
+          LMatrix4f mat;
+          palette->get_transform(i)->mult_matrix(mat, _transform->get_mat());
+          _glCurrentPaletteMatrixARB(i);
+          GLP(LoadMatrixf)(mat.get_data());
+        }
+
+        // Presumably loading the matrix palette does not step on the
+        // GL_MODELVIEW matrix?
+
+      } else {
+        // We are loading the list of nonindexed matrices.  This is a
+        // little clumsier.
+
+        if (_supports_matrix_palette) {
+          GLP(Disable)(GL_MATRIX_PALETTE_ARB);
+        }
+
+        // GL_MODELVIEW0 and 1 are different than the rest.
+        int i = 0;
+        if (i < palette->get_num_transforms()) {
+          LMatrix4f mat;
+          palette->get_transform(i)->mult_matrix(mat, _transform->get_mat());
+          GLP(MatrixMode)(GL_MODELVIEW0_ARB);
+          GLP(LoadMatrixf)(mat.get_data());
+          ++i;
+        }
+        if (i < palette->get_num_transforms()) {
+          LMatrix4f mat;
+          palette->get_transform(i)->mult_matrix(mat, _transform->get_mat());
+          GLP(MatrixMode)(GL_MODELVIEW1_ARB);
+          GLP(LoadMatrixf)(mat.get_data());
+          ++i;
+        }
+        while (i < palette->get_num_transforms()) {
+          LMatrix4f mat;
+          palette->get_transform(i)->mult_matrix(mat, _transform->get_mat());
+          GLP(MatrixMode)(GL_MODELVIEW2_ARB + i - 2);
+          GLP(LoadMatrixf)(mat.get_data());
+          ++i;
+        }
+        
+        // Setting the GL_MODELVIEW0 matrix steps on the world matrix,
+        // so we have to set a flag to reload the world matrix later.
+        _transform_stale = true;
+      }
+    }
+    _vertex_blending_enabled = true;
+    
+  } else {
+    // We're not using vertex blending.
+    if (_vertex_blending_enabled) {
+      GLP(Disable)(GL_VERTEX_BLEND_ARB);
+      if (_supports_matrix_palette) {
+        GLP(Disable)(GL_MATRIX_PALETTE_ARB);
+      }
+      _vertex_blending_enabled = false;
+    }
+
+    if (_transform_stale) {
+      GLP(MatrixMode)(GL_MODELVIEW);
+      GLP(LoadMatrixf)(_transform->get_mat().get_data());
+    }
+  }
+
   if (geom->get_usage_hint() == qpGeomUsageHint::UH_static && 
       _vertex_data->get_usage_hint() == qpGeomUsageHint::UH_static &&
-      display_lists) {
+      display_lists && (!hardware_animation || display_list_animation)) {
     // If the geom claims to be totally static, try to build it into
     // a display list.
     GeomContext *gc = ((qpGeom *)geom)->prepare_now(get_prepared_objects(), this);
@@ -2105,8 +2258,10 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 #ifdef DO_PSTATS
       _vertices_display_list_pcollector.add_level(ggc->_num_verts);
 #endif
-      
+
       // And now we don't need to do anything else for this geom.
+      _geom_display_list = 0;
+      end_draw_primitives();
       return false;
     }
     
@@ -2217,6 +2372,42 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
     ++stage_index;
   }
   _last_max_stage_index = max_stage_index;
+
+  if (_supports_vertex_blend) {
+    if (hardware_animation) {
+      // Issue the weights and/or transform indices for vertex blending.
+      if (_vertex_data->get_array_info(InternalName::get_transform_weight(),
+                                       array_data, num_values, numeric_type, 
+                                       start, stride)) {
+        const unsigned char *client_pointer = setup_array_data(array_data);
+        _glWeightPointerARB(num_values, get_numeric_type(numeric_type), 
+                            stride, client_pointer + start);
+        GLP(EnableClientState)(GL_WEIGHT_ARRAY_ARB);
+      } else {
+        GLP(DisableClientState)(GL_WEIGHT_ARRAY_ARB);
+      }
+
+      if (animation.get_indexed_transforms()) {
+        // Issue the matrix palette indices.
+        if (_vertex_data->get_array_info(InternalName::get_transform_index(),
+                                         array_data, num_values, numeric_type, 
+                                         start, stride)) {
+          const unsigned char *client_pointer = setup_array_data(array_data);
+          _glMatrixIndexPointerARB(num_values, get_numeric_type(numeric_type), 
+                              stride, client_pointer + start);
+          GLP(EnableClientState)(GL_MATRIX_INDEX_ARRAY_ARB);
+        } else {
+          GLP(DisableClientState)(GL_MATRIX_INDEX_ARRAY_ARB);
+        }
+      }
+
+    } else {
+      GLP(DisableClientState)(GL_WEIGHT_ARRAY_ARB);
+      if (_supports_matrix_palette) {
+        GLP(DisableClientState)(GL_MATRIX_INDEX_ARRAY_ARB);
+      }
+    }
+  }
 
   return true;
 }
@@ -2335,6 +2526,20 @@ end_draw_primitives() {
     }      
   }
   _geom_display_list = 0;
+
+  // Clean up the vertex blending state.
+  if (_vertex_blending_enabled) {
+    GLP(Disable)(GL_VERTEX_BLEND_ARB);
+    if (_supports_matrix_palette) {
+      GLP(Disable)(GL_MATRIX_PALETTE_ARB);
+    }
+    _vertex_blending_enabled = false;
+  }
+  
+  if (_transform_stale) {
+    GLP(MatrixMode)(GL_MODELVIEW);
+    GLP(LoadMatrixf)(_transform->get_mat().get_data());
+  }
 
   GraphicsStateGuardian::end_draw_primitives();
 }
@@ -2585,8 +2790,8 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
   
   add_to_vertex_buffer_record(gvbc);
   if (gvbc->was_modified()) {
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
         << "copying " << gvbc->get_data()->get_data_size_bytes()
         << " bytes into vertex buffer " << gvbc->_index << "\n";
     }
@@ -2716,8 +2921,8 @@ apply_index_buffer(IndexBufferContext *ibc) {
   
   add_to_index_buffer_record(gibc);
   if (gibc->was_modified()) {
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
         << "copying " << gibc->get_data()->get_data_size_bytes()
         << " bytes into index buffer " << gibc->_index << "\n";
     }
@@ -3081,6 +3286,7 @@ issue_transform(const TransformState *transform) {
   DO_PSTATS_STUFF(_transform_state_pcollector.add_level(1));
   GLP(MatrixMode)(GL_MODELVIEW);
   GLP(LoadMatrixf)(transform->get_mat().get_data());
+  _transform_stale = false;
 
   _transform = transform;
   if (_auto_rescale_normal) {

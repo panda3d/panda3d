@@ -314,6 +314,9 @@ protected:
   bool _auto_antialias_mode;
   RenderModeAttrib::Mode _render_mode;
 
+  bool _transform_stale;
+  bool _vertex_blending_enabled;
+
   CPT(DisplayRegion) _actual_display_region;
 #ifdef HAVE_CGGL
   PT(CgShader) _cg_shader; // The current CgShader object
@@ -332,6 +335,14 @@ protected:
   pset<string> _extensions;
 
 public:
+  bool _supports_vertex_blend;
+  PFNGLWEIGHTPOINTERARBPROC _glWeightPointerARB;
+  PFNGLVERTEXBLENDARBPROC _glVertexBlendARB;
+
+  bool _supports_matrix_palette;
+  PFNGLCURRENTPALETTEMATRIXARBPROC _glCurrentPaletteMatrixARB;
+  PFNGLMATRIXINDEXPOINTERARBPROC _glMatrixIndexPointerARB;
+
   bool _supports_draw_range_elements;
   PFNGLDRAWRANGEELEMENTSPROC _glDrawRangeElements;
 

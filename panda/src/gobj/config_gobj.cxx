@@ -99,16 +99,17 @@ ConfigVariableBool retained_mode
           "in the experimental Geom rewrite."));
 
 ConfigVariableBool vertex_buffers
-("vertex-buffers", false,
+("vertex-buffers", true,
  PRC_DESC("Set this true to allow the use of vertex buffers (or buffer "
           "objects, as OpenGL dubs them) for rendering vertex data.  This "
-          "can greatly improve rendering performance, especially on "
+          "can greatly improve rendering performance on "
           "higher-end graphics cards, at the cost of some additional "
           "graphics memory (which might otherwise be used for textures "
-          "or offscreen buffers)."));
+          "or offscreen buffers).  On lower-end graphics cards this will "
+          "make little or no difference."));
 
 ConfigVariableBool display_lists
-("display-lists", false,
+("display-lists", true,
  PRC_DESC("Set this true to allow the use of OpenGL display lists for "
           "rendering static geometry.  On some systems, this can result "
           "in a performance improvement over vertex buffers alone; on "
@@ -118,7 +119,7 @@ ConfigVariableBool display_lists
           "on dynamic geometry (e.g. soft-skinned animation)."));
 
 ConfigVariableBool hardware_animated_vertices
-("hardware-animated-vertices", false,
+("hardware-animated-vertices", true,
  PRC_DESC("Set this true to allow the transforming of soft-skinned "
           "animated vertices via hardware, if supported, or false always "
           "to perform the vertex animation via software within Panda.  "
@@ -132,15 +133,24 @@ ConfigVariableBool hardware_animated_vertices
 ConfigVariableBool matrix_palette
 ("matrix-palette", false,
  PRC_DESC("Set this true to allow the use of the matrix palette when "
-          "animating vertices in hardware (if hardware-animated-vertices "
-          "is also true).  The matrix palette is not supported by all "
-          "devices, but if it is, using it can allow animation of more "
-          "sophisticated meshes in hardware, and it can also improve the "
+          "animating vertices in hardware.  The matrix palette is "
+          "not supported by all devices, but if it is, using "
+          "it can allow animation of more sophisticated meshes "
+          "in hardware, and it can also improve the "
           "performance of animating some simpler meshes.  Without "
           "this option, certain meshes will have to be animated in "
           "software.  However, this option is not enabled by default, "
           "because its support seems to be buggy in certain drivers "
           "(ATI FireGL T2 8.103 in particular.)"));
+
+ConfigVariableBool display_list_animation
+("display-list-animation", false,
+ PRC_DESC("Set this true to allow the use of OpenGL display lists for "
+          "rendering animated geometry (when the geometry is animated "
+          "by the hardware).  This is not on by default because there "
+          "appear to be some driver issues with this on my FireGL T2, "
+          "but it should be perfectly doable in principle, and might get "
+          "you a small performance boost."));
 
 ConfigVariableBool connect_triangle_strips
 ("connect-triangle-strips", true,
