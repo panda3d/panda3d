@@ -217,9 +217,9 @@ sub make_bsc_file() {
     close(OUTFILE);
     close(FILES);
     
-    $bscmake_str="bscmake /o ".$outputfilepath." @".$cmdfilepath."\n";
-    
-    &myexecstr($bscmake_str,"bscmake failed!!!", "DO_LOG","NT cmd");  
+    # vc7 dirs are not in path env-var by default
+    $bscmake_str="C:\\PROGRA~1\\Microsoft Visual Studio .NET\\Vc7\\BIN\\bscmake.exe /o ".$outputfilepath." @".$cmdfilepath."\n";
+    &myexecstr($bscmake_str,"bscmake failed!!!","DO_LOG","NT cmd");
 
     &myexecstr("copy ".$outputfilepath." ".$inst_dirs[$DEBUGNUM], "copy of ".$outputfilepath." failed!!", "DO_LOG","NT cmd");
     unlink($cmdfilepath);
