@@ -33,7 +33,7 @@ class Entity(DirectObject):
             self.level.onEntityDestroy(self.entId)
         else:
             Entity.notify.warning('Entity %s destroyed after level??' %
-                                  self.entid)
+                                  self.entId)
         del self.level
         del self.entId
         
