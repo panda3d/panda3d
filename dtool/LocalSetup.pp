@@ -12,49 +12,79 @@
 #print
 #print Configuring support for the following optional third-party packages:
 #if $[HAVE_NSPR]
-#print - NSPR
+#print + NSPR
+#else
+#print - Did not find NSPR
 #endif
 #if $[HAVE_SSL]
-#print - OpenSSL
+#print + OpenSSL
+#else
+#print - Did not find OpenSSL
 #endif
 #if $[HAVE_JPEG]
-#print - libjpeg
+#print + libjpeg
+#else
+#print - Did not find libjpeg
 #endif
 #if $[HAVE_PNG]
-#print - libpng
+#print + libpng
+#else
+#print - Did not find libpng
 #endif
 #if $[HAVE_TIFF]
-#print - libtiff
+#print + libtiff
+#else
+#print - Did not find libtiff
 #endif
 #if $[HAVE_FFTW]
-#print - fftw
+#print + fftw
+#else
+#print - Did not find fftw
 #endif
 #if $[HAVE_CG]
-#print - Nvidia Cg High Level Shading Language
+#print + Nvidia Cg High Level Shading Language
+#else
+#print - Did not find Nvidia Cg High Level Shading Language
 #endif
 #if $[HAVE_CGGL]
-#print - Cg OpenGL API
+#print + Cg OpenGL API
+#else
+#print - Did not find Cg OpenGL API
 #endif
 #if $[HAVE_VRPN]
-#print - VRPN
+#print + VRPN
+#else
+#print - Did not find VRPN
 #endif
 #if $[HAVE_ZLIB]
-#print - zlib
+#print + zlib
+#else
+#print - Did not find zlib
 #endif
 #if $[HAVE_RAD_MSS]
-#print - Miles Sound System
+#print + Miles Sound System
+#else
+#print - Did not find Miles Sound System
 #endif
 #if $[HAVE_FMOD]
-#print - FMOD sound library
+#print + FMOD sound library
+#else
+#print - Did not find FMOD sound library
 #endif
 #if $[HAVE_FREETYPE]
-#print - Freetype
+#print + Freetype
+#else
+#print - Did not find Freetype
 #endif
 #if $[HAVE_GL]
-#print - OpenGL
+#print + OpenGL
+#else
+#print - Did not find OpenGL
 #endif
 #if $[HAVE_DX]
-#print - DirectX
+#print + DirectX
+#else
+#print - Did not find DirectX
 #endif
 
 #print
