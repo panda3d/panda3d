@@ -1643,9 +1643,11 @@ PandaNode *EggLoader::
 create_group_arc(EggGroup *egg_group, PandaNode *parent, PandaNode *node) {
   parent->add_child(node);
 
-  // If the group had a transform, apply it to the arc.
+  // If the group had a transform, apply it to the node.
   if (egg_group->has_transform()) {
-    node->set_transform(make_transform(egg_group));
+    CPT(TransformState) transform = make_transform(egg_group);
+    node->set_transform(transform);
+    node->set_prev_transform(transform);
   }
 
   // If the group has a billboard flag, apply that.
