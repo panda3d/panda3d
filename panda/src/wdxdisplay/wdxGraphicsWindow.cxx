@@ -2773,9 +2773,6 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
             wdxdisplay_cat.fatal() << "couldn't find enough devices attached to meet multi window reqmt of " << num_windows << endl;
             exit(1);
         }
-    } else {
-        DXDeviceInfo devinfo;
-        ZeroMemory(&devinfo,sizeof(devinfo));
     }
 
     for(i=0;i<num_windows;i++) {
