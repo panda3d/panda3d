@@ -1,6 +1,8 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolutil:c dtoolbase:c dtool:m
 #define DIRECTORY_IF_NET yes
+#define DIRECTORY_IF_NSPR yes
 #define USE_NET yes
+#define USE_NSPR yes
 
 #begin lib_target
   #define TARGET net
