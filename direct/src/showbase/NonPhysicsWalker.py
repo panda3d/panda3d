@@ -26,16 +26,16 @@ class NonPhysicsWalker(DirectObject.DirectObject):
     # special methods
     def __init__(self):
         DirectObject.DirectObject.__init__(self)
-        self.forwardButton=0
-        self.reverseButton=0
-        self.jumpButton=0
-        self.leftButton=0
-        self.rightButton=0
+        #self.forwardButton=0
+        #self.reverseButton=0
+        #self.jumpButton=0
+        #self.leftButton=0
+        #self.rightButton=0
         self.speed=0.0
         self.rotationSpeed=0.0
         self.vel=Vec3(0.0, 0.0, 0.0)
         self.stopThisFrame = 0
-        self.fSlide = 0
+        #self.fSlide = 0
 
     def setWalkSpeed(self, forward, jump, reverse, rotate):
         assert(self.debugPrint("setWalkSpeed()"))
@@ -62,24 +62,24 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         # Set up the collision sphere
         # This is a sphere on the ground to detect barrier collisions
         self.cSphere = CollisionSphere(0.0, 0.0, 0.0, avatarRadius)
-        self.cSphereNode = CollisionNode('cSphereNode')
-        self.cSphereNode.addSolid(self.cSphere)
-        self.cSphereNodePath = avatarNodePath.attachNewNode(self.cSphereNode)
+        cSphereNode = CollisionNode('cSphereNode')
+        cSphereNode.addSolid(self.cSphere)
+        self.cSphereNodePath = avatarNodePath.attachNewNode(cSphereNode)
         self.cSphereBitMask = wallCollideMask
 
-        self.cSphereNode.setFromCollideMask(self.cSphereBitMask)
-        self.cSphereNode.setIntoCollideMask(BitMask32.allOff())
+        cSphereNode.setFromCollideMask(self.cSphereBitMask)
+        cSphereNode.setIntoCollideMask(BitMask32.allOff())
 
         # Set up the collison ray
         # This is a ray cast from your head down to detect floor polygons
         # A toon is about 4.0 feet high, so start it there
         self.cRay = CollisionRay(0.0, 0.0, 4.0, 0.0, 0.0, -1.0)
-        self.cRayNode = CollisionNode('cRayNode')
-        self.cRayNode.addSolid(self.cRay)
-        self.cRayNodePath = avatarNodePath.attachNewNode(self.cRayNode)
+        cRayNode = CollisionNode('cRayNode')
+        cRayNode.addSolid(self.cRay)
+        self.cRayNodePath = avatarNodePath.attachNewNode(cRayNode)
         self.cRayBitMask = floorCollideMask
-        self.cRayNode.setFromCollideMask(self.cRayBitMask)
-        self.cRayNode.setIntoCollideMask(BitMask32.allOff())
+        cRayNode.setFromCollideMask(self.cRayBitMask)
+        cRayNode.setIntoCollideMask(BitMask32.allOff())
 
         # set up wall collision mechanism
         self.pusher = CollisionHandlerPusher()
@@ -111,12 +111,10 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         del self.cTrav
 
         del self.cSphere
-        del self.cSphereNode
         self.cSphereNodePath.removeNode()
         del self.cSphereNodePath
 
         del self.cRay
-        del self.cRayNode
         self.cRayNodePath.removeNode()
         del self.cRayNodePath
 
@@ -125,8 +123,8 @@ class NonPhysicsWalker(DirectObject.DirectObject):
 
     def collisionsOff(self):
         assert(self.debugPrint("collisionsOff"))
-        self.cTrav.removeCollider(self.cSphereNode)
-        self.cTrav.removeCollider(self.cRayNode)
+        self.cTrav.removeCollider(self.cSphereNodePath)
+        self.cTrav.removeCollider(self.cRayNodePath)
 
         # Now that we have disabled collisions, make one more pass
         # right now to ensure we aren't standing in a wall.
@@ -134,8 +132,8 @@ class NonPhysicsWalker(DirectObject.DirectObject):
 
     def collisionsOn(self):
         assert(self.debugPrint("collisionsOn"))
-        self.cTrav.addCollider(self.cSphereNode, self.pusher)
-        self.cTrav.addCollider(self.cRayNode, self.lifter)
+        self.cTrav.addCollider(self.cSphereNodePath, self.pusher)
+        self.cTrav.addCollider(self.cRayNodePath, self.lifter)
 
     def oneTimeCollide(self):
         """
@@ -144,24 +142,31 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         have been disabled.
         """
         tempCTrav = CollisionTraverser()
-        tempCTrav.addCollider(self.cSphereNode, self.pusher)
-        tempCTrav.addCollider(self.cRayNode, self.lifter)
+        tempCTrav.addCollider(self.cSphereNodePath, self.pusher)
+        tempCTrav.addCollider(self.cRayNodePath, self.lifter)
         tempCTrav.traverse(render)
 
     def handleAvatarControls(self, task):
         """
         Check on the arrow keys and update the avatar.
         """
+        # get the button states:
+        forward = inputState.isSet("forward")
+        reverse = inputState.isSet("reverse")
+        turnLeft = inputState.isSet("turnLeft")
+        turnRight = inputState.isSet("turnRight")
+        slide = inputState.isSet("slide")
+        #jump = inputState.isSet("jump")
         # Determine what the speeds are based on the buttons:
-        self.speed=(self.forwardButton and self.avatarControlForwardSpeed or 
-                    self.reverseButton and -self.avatarControlReverseSpeed)
+        self.speed=(forward and self.avatarControlForwardSpeed or 
+                    reverse and -self.avatarControlReverseSpeed)
         # Should fSlide be renamed slideButton?
-        self.slideSpeed=self.fSlide and (
-                (self.leftButton and -self.avatarControlForwardSpeed) or 
-                (self.rightButton and self.avatarControlForwardSpeed))
-        self.rotationSpeed=not self.fSlide and (
-                (self.leftButton and self.avatarControlRotateSpeed) or
-                (self.rightButton and -self.avatarControlRotateSpeed))
+        self.slideSpeed=slide and (
+                (turnLeft and -self.avatarControlForwardSpeed) or 
+                (turnRight and self.avatarControlForwardSpeed))
+        self.rotationSpeed=not slide and (
+                (turnLeft and self.avatarControlRotateSpeed) or
+                (turnRight and -self.avatarControlRotateSpeed))
         # How far did we move based on the amount of time elapsed?
         dt=min(ClockObject.getGlobalClock().getDt(), 0.1)
         # Check to see if we're moving at all:
@@ -197,23 +202,23 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         """
         assert(self.debugPrint("enableAvatarControls"))
         print id(self), "NPW.enableAvatarControls()"
-        self.accept("control-arrow_left", self.moveTurnLeft, [1])
-        self.accept("control-arrow_left-up", self.moveTurnLeft, [0])
-        self.accept("control-arrow_right", self.moveTurnRight, [1])
-        self.accept("control-arrow_right-up", self.moveTurnRight, [0])
-        self.accept("control-arrow_up", self.moveForward, [1])
-        self.accept("control-arrow_up-up", self.moveForward, [0])
-        self.accept("control-arrow_down", self.moveInReverse, [1])
-        self.accept("control-arrow_down-up", self.moveInReverse, [0])
+        #self.accept("control-arrow_left", self.moveTurnLeft, [1])
+        #self.accept("control-arrow_left-up", self.moveTurnLeft, [0])
+        #self.accept("control-arrow_right", self.moveTurnRight, [1])
+        #self.accept("control-arrow_right-up", self.moveTurnRight, [0])
+        #self.accept("control-arrow_up", self.moveForward, [1])
+        #self.accept("control-arrow_up-up", self.moveForward, [0])
+        #self.accept("control-arrow_down", self.moveInReverse, [1])
+        #self.accept("control-arrow_down-up", self.moveInReverse, [0])
         
-        self.accept("arrow_left", self.moveTurnLeft, [1])
-        self.accept("arrow_left-up", self.moveTurnLeft, [0])
-        self.accept("arrow_right", self.moveTurnRight, [1])
-        self.accept("arrow_right-up", self.moveTurnRight, [0])
-        self.accept("arrow_up", self.moveForward, [1])
-        self.accept("arrow_up-up", self.moveForward, [0])
-        self.accept("arrow_down", self.moveInReverse, [1])
-        self.accept("arrow_down-up", self.moveInReverse, [0])
+        #self.accept("arrow_left", self.moveTurnLeft, [1])
+        #self.accept("arrow_left-up", self.moveTurnLeft, [0])
+        #self.accept("arrow_right", self.moveTurnRight, [1])
+        #self.accept("arrow_right-up", self.moveTurnRight, [0])
+        #self.accept("arrow_up", self.moveForward, [1])
+        #self.accept("arrow_up-up", self.moveForward, [0])
+        #self.accept("arrow_down", self.moveInReverse, [1])
+        #self.accept("arrow_down-up", self.moveInReverse, [0])
         
         self.collisionsOn()
 
@@ -228,89 +233,89 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         Ignore the arrow keys, etc.
         """
         assert(self.debugPrint("disableAvatarControls"))
-        print id(self), "NPW.enableAvatarControls()"
+        print id(self), "NPW.disableAvatarControls()"
         taskName = "AvatarControls%s"%(id(self),)
         taskMgr.remove(taskName)
 
-        self.ignore("control")
-        self.ignore("control-up")
-        self.ignore("control-arrow_left")
-        self.ignore("control-arrow_left-up")
-        self.ignore("control-arrow_right")
-        self.ignore("control-arrow_right-up")
-        self.ignore("control-arrow_up")
-        self.ignore("control-arrow_up-up")
-        self.ignore("control-arrow_down")
-        self.ignore("control-arrow_down-up")
-
-        self.ignore("arrow_left")
-        self.ignore("arrow_left-up")
-        self.ignore("arrow_right")
-        self.ignore("arrow_right-up")
-        self.ignore("arrow_up")
-        self.ignore("arrow_up-up")
-        self.ignore("arrow_down")
-        self.ignore("arrow_down-up")
+        #self.ignore("control")
+        #self.ignore("control-up")
+        #self.ignore("control-arrow_left")
+        #self.ignore("control-arrow_left-up")
+        #self.ignore("control-arrow_right")
+        #self.ignore("control-arrow_right-up")
+        #self.ignore("control-arrow_up")
+        #self.ignore("control-arrow_up-up")
+        #self.ignore("control-arrow_down")
+        #self.ignore("control-arrow_down-up")
+        
+        #self.ignore("arrow_left")
+        #self.ignore("arrow_left-up")
+        #self.ignore("arrow_right")
+        #self.ignore("arrow_right-up")
+        #self.ignore("arrow_up")
+        #self.ignore("arrow_up-up")
+        #self.ignore("arrow_down")
+        #self.ignore("arrow_down-up")
         
         self.collisionsOff()
 
         # reset state
-        self.moveTurnLeft(0)
-        self.moveTurnRight(0)
-        self.moveForward(0)
-        self.moveInReverse(0)
-        self.moveJumpLeft(0)
-        self.moveJumpRight(0)
-        self.moveJumpForward(0)
-        self.moveJumpInReverse(0)
-        self.moveJump(0)
+        #self.moveTurnLeft(0)
+        #self.moveTurnRight(0)
+        #self.moveForward(0)
+        #self.moveInReverse(0)
+        #self.moveJumpLeft(0)
+        #self.moveJumpRight(0)
+        #self.moveJumpForward(0)
+        #self.moveJumpInReverse(0)
+        #self.moveJump(0)
 
-    def moveTurnLeft(self, isButtonDown):
-        self.leftButton=isButtonDown
+    #def moveTurnLeft(self, isButtonDown):
+    #    self.leftButton=isButtonDown
+    #
+    #def moveTurnRight(self, isButtonDown):
+    #    self.rightButton=isButtonDown
+    #
+    #def moveForward(self, isButtonDown):
+    #    self.forwardButton=isButtonDown
 
-    def moveTurnRight(self, isButtonDown):
-        self.rightButton=isButtonDown
+    #def moveInReverse(self, isButtonDown):
+    #    self.reverseButton=isButtonDown
+    #
+    #def moveJumpLeft(self, isButtonDown):
+    #    self.jumpButton=isButtonDown
+    #    self.leftButton=isButtonDown
+    #
+    #def moveJumpRight(self, isButtonDown):
+    #    self.jumpButton=isButtonDown
+    #    self.rightButton=isButtonDown
+    #
+    #def moveJumpForward(self, isButtonDown):
+    #    self.jumpButton=isButtonDown
+    #    self.forwardButton=isButtonDown
+    #
+    #def moveJumpInReverse(self, isButtonDown):
+    #    self.jumpButton=isButtonDown
+    #    self.reverseButton=isButtonDown
+    #
+    #def moveJump(self, isButtonDown):
+    #    self.jumpButton=isButtonDown
+    #
+    #def toggleSlide(self):
+    #    self.fSlide = not self.fSlide
 
-    def moveForward(self, isButtonDown):
-        self.forwardButton=isButtonDown
-
-    def moveInReverse(self, isButtonDown):
-        self.reverseButton=isButtonDown
-
-    def moveJumpLeft(self, isButtonDown):
-        self.jumpButton=isButtonDown
-        self.leftButton=isButtonDown
-
-    def moveJumpRight(self, isButtonDown):
-        self.jumpButton=isButtonDown
-        self.rightButton=isButtonDown
-
-    def moveJumpForward(self, isButtonDown):
-        self.jumpButton=isButtonDown
-        self.forwardButton=isButtonDown
-
-    def moveJumpInReverse(self, isButtonDown):
-        self.jumpButton=isButtonDown
-        self.reverseButton=isButtonDown
-
-    def moveJump(self, isButtonDown):
-        self.jumpButton=isButtonDown
-
-    def toggleSlide(self):
-        self.fSlide = not self.fSlide
-
-    def enableSlideMode(self):
-        self.accept("control-up", self.toggleSlide)
-
-    def disableSlideMode(self):
-        self.fSlide = 0
-        self.ignore("control-up")
-
-    def slideLeft(self, isButtonDown):
-        self.slideLeftButton=isButtonDown
-
-    def slideRight(self, isButtonDown):
-        self.slideRightButton=isButtonDown
+    #def enableSlideMode(self):
+    #    self.accept("control-up", self.toggleSlide)
+    #
+    #def disableSlideMode(self):
+    #    self.fSlide = 0
+    #    self.ignore("control-up")
+    #
+    #def slideLeft(self, isButtonDown):
+    #    self.slideLeftButton=isButtonDown
+    #
+    #def slideRight(self, isButtonDown):
+    #    self.slideRightButton=isButtonDown
     
     if __debug__:
         def debugPrint(self, message):

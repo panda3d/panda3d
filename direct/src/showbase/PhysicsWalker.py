@@ -46,16 +46,16 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.__oldContact=None
         self.__oldPosDelta=Vec3(0)
         self.__oldDt=0
-        self.__forwardButton=0
-        self.__reverseButton=0
-        self.__jumpButton=0
-        self.__leftButton=0
-        self.__rightButton=0
+        #self.__forwardButton=0
+        #self.__reverseButton=0
+        #self.__jumpButton=0
+        #self.__leftButton=0
+        #self.__rightButton=0
         self.__speed=0.0
         self.__rotationSpeed=0.0
         self.__slideSpeed=0.0
         self.__vel=Vec3(0.0)
-        self.__slideButton = 0
+        #self.__slideButton = 0
         
         self.isAirborne = 0
         self.highMark = 0
@@ -129,13 +129,13 @@ class PhysicsWalker(DirectObject.DirectObject):
         # Set up the collision sphere
         # This is a sphere on the ground to detect barrier collisions
         self.cSphere = CollisionSphere(0.0, 0.0, avatarRadius, avatarRadius)
-        self.cSphereNode = CollisionNode('cSphereNode')
-        self.cSphereNode.addSolid(self.cSphere)
-        self.cSphereNodePath = avatarNodePath.attachNewNode(self.cSphereNode)
+        cSphereNode = CollisionNode('cSphereNode')
+        cSphereNode.addSolid(self.cSphere)
+        self.cSphereNodePath = avatarNodePath.attachNewNode(cSphereNode)
         self.cSphereBitMask = wallBitmask|floorBitmask
 
-        self.cSphereNode.setFromCollideMask(self.cSphereBitMask)
-        self.cSphereNode.setIntoCollideMask(BitMask32.allOff())
+        cSphereNode.setFromCollideMask(self.cSphereBitMask)
+        cSphereNode.setIntoCollideMask(BitMask32.allOff())
 
         # set up collision mechanism
         self.pusher = PhysicsCollisionHandler()
@@ -192,7 +192,7 @@ class PhysicsWalker(DirectObject.DirectObject):
 
         # activate the collider with the traverser and pusher
         self.collisionsOn()
-        self.pusher.addColliderNode(self.cSphereNode, avatarNodePath.node())
+        self.pusher.addCollider(self.cSphereNodePath, avatarNodePath)
         
         self.avatarNodePath = avatarNodePath
 
@@ -259,7 +259,6 @@ class PhysicsWalker(DirectObject.DirectObject):
         del self.cTrav
 
         del self.cSphere
-        del self.cSphereNode
         self.cSphereNodePath.removeNode()
         del self.cSphereNodePath
 
@@ -267,14 +266,14 @@ class PhysicsWalker(DirectObject.DirectObject):
 
     def collisionsOff(self):
         assert(self.debugPrint("collisionsOff()"))
-        self.cTrav.removeCollider(self.cSphereNode)
+        self.cTrav.removeCollider(self.cSphereNodePath)
         # Now that we have disabled collisions, make one more pass
         # right now to ensure we aren't standing in a wall.
         self.oneTimeCollide()
 
     def collisionsOn(self):
         assert(self.debugPrint("collisionsOn()"))
-        self.cTrav.addCollider(self.cSphereNode, self.pusher)
+        self.cTrav.addCollider(self.cSphereNodePath, self.pusher)
 
     def oneTimeCollide(self):
         """
@@ -284,7 +283,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         """
         assert(self.debugPrint("oneTimeCollide()"))
         tempCTrav = CollisionTraverser()
-        tempCTrav.addCollider(self.cSphereNode, self.pusher)
+        tempCTrav.addCollider(self.cSphereNodePath, self.pusher)
         tempCTrav.traverse(render)
 
     def handleAvatarControls(self, task):
@@ -309,15 +308,22 @@ class PhysicsWalker(DirectObject.DirectObject):
             self.avatarNodePath.setZ(50.0)
             self.resetPhys()
 
+        # get the button states:
+        forward = inputState.isSet("forward")
+        reverse = inputState.isSet("reverse")
+        turnLeft = inputState.isSet("turnLeft")
+        turnRight = inputState.isSet("turnRight")
+        slide = inputState.isSet("slide")
+        jump = inputState.isSet("jump")
         # Determine what the speeds are based on the buttons:
-        self.__speed=(self.__forwardButton and self.avatarControlForwardSpeed or 
-                self.__reverseButton and -self.avatarControlReverseSpeed)
-        self.__slideSpeed=self.__slideButton and (
-                (self.__leftButton and -self.avatarControlForwardSpeed) or 
-                (self.__rightButton and self.avatarControlForwardSpeed))
-        self.__rotationSpeed=not self.__slideButton and (
-                (self.__leftButton and self.avatarControlRotateSpeed) or
-                (self.__rightButton and -self.avatarControlRotateSpeed))
+        self.__speed=(forward and self.avatarControlForwardSpeed or 
+                reverse and -self.avatarControlReverseSpeed)
+        self.__slideSpeed=slide and (
+                (turnLeft and -self.avatarControlForwardSpeed) or 
+                (turnRight and self.avatarControlForwardSpeed))
+        self.__rotationSpeed=not slide and (
+                (turnLeft and self.avatarControlRotateSpeed) or
+                (turnRight and -self.avatarControlRotateSpeed))
         # How far did we move based on the amount of time elapsed?
         dt=min(ClockObject.getGlobalClock().getDt(), 0.1)
 
@@ -432,15 +438,15 @@ class PhysicsWalker(DirectObject.DirectObject):
                         messenger.send("jumpLand")
                     self.priorParent.setVector(Vec3.zero())
                     self.isAirborne = 0
-                elif self.__jumpButton:
+                elif jump:
                     #print "jump"
-                    self.__jumpButton=0
+                    #self.__jumpButton=0
                     messenger.send("jumpStart")
-                    jump=Vec3(contact+Vec3.up())
-                    #jump=Vec3(rotAvatarToPhys.xform(jump))
-                    jump.normalize()
-                    jump*=self.avatarControlJumpForce
-                    physObject.addImpulse(Vec3(jump))
+                    jumpVec=Vec3(contact+Vec3.up())
+                    #jumpVec=Vec3(rotAvatarToPhys.xform(jumpVec))
+                    jumpVec.normalize()
+                    jumpVec*=self.avatarControlJumpForce
+                    physObject.addImpulse(Vec3(jumpVec))
                     self.isAirborne = 1 # Avoid double impulse before fully airborne.
             onScreenDebug.add("isAirborne", "%d"%(self.isAirborne,))
         else:
@@ -459,9 +465,9 @@ class PhysicsWalker(DirectObject.DirectObject):
                             messenger.send("jumpHardLand")
                         else:
                             messenger.send("jumpLand")
-                    elif self.__jumpButton:
+                    elif jump:
                         self.jumpCount+=1
-                        self.__jumpButton=0
+                        #self.__jumpButton=0
                         messenger.send("jumpStart")
                         jump=Vec3(contact+Vec3.up())
                         #jump=Vec3(rotAvatarToPhys.xform(jump))
@@ -524,103 +530,104 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.actorNode.setContactVector(Vec3.zero())
         return Task.cont
 
-    def handleAvatarControls_wip(self, task):
-        """
-        Check on the arrow keys and update the avatar.
-        """
-        #assert(self.debugPrint("handleAvatarControls(task=%s)"%(task,)))
-        physObject=self.actorNode.getPhysicsObject()
-        #rotAvatarToPhys=Mat3.rotateMatNormaxis(-self.avatarNodePath.getH(), Vec3.up())
-        #rotPhysToAvatar=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
-        contact=self.actorNode.getContactVector()
-        
-        # hack fix for falling through the floor:
-        if contact==Vec3.zero() and self.avatarNodePath.getZ()<-50.0:
-            # reset:
-            self.avatarNodePath.setPos(Vec3(0.0, 0.0, 20.0))
-
-        # Determine what the speeds are based on the buttons:
-        self.__speed=(self.__forwardButton and self.avatarControlForwardSpeed or 
-                    self.__reverseButton and -self.avatarControlReverseSpeed)
-        self.__slideSpeed=self.__slideButton and (
-                (self.__leftButton and -self.avatarControlForwardSpeed) or 
-                (self.__rightButton and self.avatarControlForwardSpeed))
-        self.__rotationSpeed=not self.__slideButton and (
-                (self.__leftButton and self.avatarControlRotateSpeed) or
-                (self.__rightButton and -self.avatarControlRotateSpeed))
-        # How far did we move based on the amount of time elapsed?
-        dt=min(ClockObject.getGlobalClock().getDt(), 0.1)
-
-        doPhysics=1
-        if not contact.almostEqual(Vec3.zero()):
-            contactLength = contact.length()
-            contact.normalize()
-            angle=contact.dot(Vec3.up())
-            if angle>self.__standableGround:
-                # ...avatar is on standable ground.
-                #print "standableGround"
-                if self.__oldContact==Vec3.zero():
-                    if contactLength>self.__hardLandingForce:
-                        # ...avatar was airborne.
-                        messenger.send("jumpHardLand")
-                    else:
-                        messenger.send("jumpLand")
-                if self.__jumpButton:
-                    self.__jumpButton=0
-                    messenger.send("jumpStart")
-                    jump=Vec3(contact+Vec3.up())
-                    #jump=Vec3(rotAvatarToPhys.xform(jump))
-                    jump.normalize()
-                    jump*=self.avatarControlJumpForce
-                    physObject.addImpulse(Vec3(jump))
-                else:
-                    physObject.setVelocity(Vec3(0.0))
-                    self.__vel.set(0.0, 0.0, 0.0)
-                    doPhysics=0
-        if contact!=self.__oldContact:
-            # We must copy the vector to preserve it:
-            self.__oldContact=Vec3(contact)
-        #print "doPhysics", doPhysics
-        #print "contact", contact
-        if doPhysics:
-            self.phys.doPhysics(dt)
-        # Check to see if we're moving at all:
-        if self.__speed or self.__slideSpeed or self.__rotationSpeed:
-            distance = dt * self.__speed
-            slideDistance = dt * self.__slideSpeed
-            rotation = dt * self.__rotationSpeed
-
-            #debugTempH=self.avatarNodePath.getH()
-            assert self.avatarNodePath.getHpr().almostEqual(physObject.getOrientation().getHpr(), 0.0001)
-            assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
-
-            # update pos:
-            # Take a step in the direction of our previous heading.
-            self.__vel=Vec3(Vec3.forward() * distance + 
-                          Vec3.right() * slideDistance)
-            # rotMat is the rotation matrix corresponding to
-            # our previous heading.
-            rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
-            step=rotMat.xform(self.__vel)
-            physObject.setPosition(Point3(
-                physObject.getPosition()+step))
-            # update hpr:
-            o=physObject.getOrientation()
-            r=LOrientationf()
-            r.setHpr(Vec3(rotation, 0.0, 0.0))
-            physObject.setOrientation(o*r)
-            # sync the change:
-            self.actorNode.updateTransform()
-
-            assert self.avatarNodePath.getHpr().almostEqual(physObject.getOrientation().getHpr(), 0.0001)
-            assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
-            #assert self.avatarNodePath.getH()==debugTempH-rotation
-            messenger.send("avatarMoving")
-        else:
-            self.__vel.set(0.0, 0.0, 0.0)
-        # Clear the contact vector so we can tell if we contact something next frame:
-        self.actorNode.setContactVector(Vec3.zero())
-        return Task.cont
+    #def handleAvatarControls_wip(self, task):
+    #    """
+    #    Check on the arrow keys and update the avatar.
+    #    """
+    #    #assert(self.debugPrint("handleAvatarControls(task=%s)"%(task,)))
+    #    physObject=self.actorNode.getPhysicsObject()
+    #    #rotAvatarToPhys=Mat3.rotateMatNormaxis(-self.avatarNodePath.getH(), Vec3.up())
+    #    #rotPhysToAvatar=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
+    #    contact=self.actorNode.getContactVector()
+    #    
+    #    # hack fix for falling through the floor:
+    #    if contact==Vec3.zero() and self.avatarNodePath.getZ()<-50.0:
+    #        # reset:
+    #        self.avatarNodePath.setPos(Vec3(0.0, 0.0, 20.0))
+    #
+    #    # Determine what the speeds are based on the buttons:
+    #    buttons = inputState.state
+    #    self.__speed=(buttons["forward"] and self.avatarControlForwardSpeed or 
+    #                self.__reverseButton and -self.avatarControlReverseSpeed)
+    #    self.__slideSpeed=self.__slideButton and (
+    #            (self.__leftButton and -self.avatarControlForwardSpeed) or 
+    #            (self.__rightButton and self.avatarControlForwardSpeed))
+    #    self.__rotationSpeed=not self.__slideButton and (
+    #            (inputState.isSet("turnLeft") and self.avatarControlRotateSpeed) or
+    #            (self.__rightButton and -self.avatarControlRotateSpeed))
+    #    # How far did we move based on the amount of time elapsed?
+    #    dt=min(ClockObject.getGlobalClock().getDt(), 0.1)
+    #
+    #    doPhysics=1
+    #    if not contact.almostEqual(Vec3.zero()):
+    #        contactLength = contact.length()
+    #        contact.normalize()
+    #        angle=contact.dot(Vec3.up())
+    #        if angle>self.__standableGround:
+    #            # ...avatar is on standable ground.
+    #            #print "standableGround"
+    #            if self.__oldContact==Vec3.zero():
+    #                if contactLength>self.__hardLandingForce:
+    #                    # ...avatar was airborne.
+    #                    messenger.send("jumpHardLand")
+    #                else:
+    #                    messenger.send("jumpLand")
+    #            if self.__jumpButton:
+    #                self.__jumpButton=0
+    #                messenger.send("jumpStart")
+    #                jump=Vec3(contact+Vec3.up())
+    #                #jump=Vec3(rotAvatarToPhys.xform(jump))
+    #                jump.normalize()
+    #               jump*=self.avatarControlJumpForce
+    #                physObject.addImpulse(Vec3(jump))
+    #            else:
+    #                physObject.setVelocity(Vec3(0.0))
+    #                self.__vel.set(0.0, 0.0, 0.0)
+    #                doPhysics=0
+    #    if contact!=self.__oldContact:
+    #        # We must copy the vector to preserve it:
+    #        self.__oldContact=Vec3(contact)
+    #    #print "doPhysics", doPhysics
+    #    #print "contact", contact
+    #    if doPhysics:
+    #        self.phys.doPhysics(dt)
+    #    # Check to see if we're moving at all:
+    #    if self.__speed or self.__slideSpeed or self.__rotationSpeed:
+    #        distance = dt * self.__speed
+    #        slideDistance = dt * self.__slideSpeed
+    #        rotation = dt * self.__rotationSpeed
+    #
+    #        #debugTempH=self.avatarNodePath.getH()
+    #        assert self.avatarNodePath.getHpr().almostEqual(physObject.getOrientation().getHpr(), 0.0001)
+    #        assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
+    #
+    #        # update pos:
+    #        # Take a step in the direction of our previous heading.
+    #        self.__vel=Vec3(Vec3.forward() * distance + 
+    #                      Vec3.right() * slideDistance)
+    #        # rotMat is the rotation matrix corresponding to
+    #        # our previous heading.
+    #        rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
+    #        step=rotMat.xform(self.__vel)
+    #        physObject.setPosition(Point3(
+    #            physObject.getPosition()+step))
+    #        # update hpr:
+    #        o=physObject.getOrientation()
+    #        r=LOrientationf()
+    #        r.setHpr(Vec3(rotation, 0.0, 0.0))
+    #        physObject.setOrientation(o*r)
+    #        # sync the change:
+    #        self.actorNode.updateTransform()
+    #
+    #        assert self.avatarNodePath.getHpr().almostEqual(physObject.getOrientation().getHpr(), 0.0001)
+    #        assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
+    #        #assert self.avatarNodePath.getH()==debugTempH-rotation
+    #        messenger.send("avatarMoving")
+    #    else:
+    #        self.__vel.set(0.0, 0.0, 0.0)
+    #    # Clear the contact vector so we can tell if we contact something next frame:
+    #    self.actorNode.setContactVector(Vec3.zero())
+    #    return Task.cont
     
     def doDeltaPos(self):
         assert(self.debugPrint("doDeltaPos()"))
@@ -648,11 +655,11 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.highMark = 0
         self.actorNode.setContactVector(Vec3.zero())
 
-    def getForwardButton(self):
-        return self.__forwardButton
+    #def getForwardButton(self):
+    #    return self.__forwardButton
     
-    def getReverseButton(self):
-        return self.__reverseButton
+    #def getReverseButton(self):
+    #    return self.__reverseButton
 
     def enableAvatarControls(self):
         """
@@ -660,25 +667,25 @@ class PhysicsWalker(DirectObject.DirectObject):
         """
         assert(self.debugPrint("enableAvatarControls()"))
         print id(self), "PW.enableAvatarControls()"
-        self.accept("control", self.moveJump, [1])
-        self.accept("control-up", self.moveJump, [0])
-        self.accept("control-arrow_left", self.moveJumpLeft, [1])
-        self.accept("control-arrow_left-up", self.moveJumpLeft, [0])
-        self.accept("control-arrow_right", self.moveJumpRight, [1])
-        self.accept("control-arrow_right-up", self.moveJumpRight, [0])
-        self.accept("control-arrow_up", self.moveJumpForward, [1])
-        self.accept("control-arrow_up-up", self.moveJumpForward, [0])
-        self.accept("control-arrow_down", self.moveJumpInReverse, [1])
-        self.accept("control-arrow_down-up", self.moveJumpInReverse, [0])
-        
-        self.accept("arrow_left", self.moveTurnLeft, [1])
-        self.accept("arrow_left-up", self.moveTurnLeft, [0])
-        self.accept("arrow_right", self.moveTurnRight, [1])
-        self.accept("arrow_right-up", self.moveTurnRight, [0])
-        self.accept("arrow_up", self.moveForward, [1])
-        self.accept("arrow_up-up", self.moveForward, [0])
-        self.accept("arrow_down", self.moveInReverse, [1])
-        self.accept("arrow_down-up", self.moveInReverse, [0])
+        #self.accept("control", self.moveJump, [1])
+        #self.accept("control-up", self.moveJump, [0])
+        #self.accept("control-arrow_left", self.moveJumpLeft, [1])
+        #self.accept("control-arrow_left-up", self.moveJumpLeft, [0])
+        #self.accept("control-arrow_right", self.moveJumpRight, [1])
+        #self.accept("control-arrow_right-up", self.moveJumpRight, [0])
+        #self.accept("control-arrow_up", self.moveJumpForward, [1])
+        #self.accept("control-arrow_up-up", self.moveJumpForward, [0])
+        #self.accept("control-arrow_down", self.moveJumpInReverse, [1])
+        #self.accept("control-arrow_down-up", self.moveJumpInReverse, [0])
+        #
+        #self.accept("arrow_left", self.moveTurnLeft, [1])
+        #self.accept("arrow_left-up", self.moveTurnLeft, [0])
+        #self.accept("arrow_right", self.moveTurnRight, [1])
+        #self.accept("arrow_right-up", self.moveTurnRight, [0])
+        #self.accept("arrow_up", self.moveForward, [1])
+        #self.accept("arrow_up-up", self.moveForward, [0])
+        #self.accept("arrow_down", self.moveInReverse, [1])
+        #self.accept("arrow_down-up", self.moveInReverse, [0])
         
         self.collisionsOn()
 
@@ -706,25 +713,25 @@ class PhysicsWalker(DirectObject.DirectObject):
         taskName = "AvatarControlsIndicator%s"%(id(self),)
         taskMgr.remove(taskName)
 
-        self.ignore("control")
-        self.ignore("control-up")
-        self.ignore("control-arrow_left")
-        self.ignore("control-arrow_left-up")
-        self.ignore("control-arrow_right")
-        self.ignore("control-arrow_right-up")
-        self.ignore("control-arrow_up")
-        self.ignore("control-arrow_up-up")
-        self.ignore("control-arrow_down")
-        self.ignore("control-arrow_down-up")
-
-        self.ignore("arrow_left")
-        self.ignore("arrow_left-up")
-        self.ignore("arrow_right")
-        self.ignore("arrow_right-up")
-        self.ignore("arrow_up")
-        self.ignore("arrow_up-up")
-        self.ignore("arrow_down")
-        self.ignore("arrow_down-up")
+        #self.ignore("control")
+        #self.ignore("control-up")
+        #self.ignore("control-arrow_left")
+        #self.ignore("control-arrow_left-up")
+        #self.ignore("control-arrow_right")
+        #self.ignore("control-arrow_right-up")
+        #self.ignore("control-arrow_up")
+        #self.ignore("control-arrow_up-up")
+        #self.ignore("control-arrow_down")
+        #self.ignore("control-arrow_down-up")
+        #
+        #self.ignore("arrow_left")
+        #self.ignore("arrow_left-up")
+        #self.ignore("arrow_right")
+        #self.ignore("arrow_right-up")
+        #self.ignore("arrow_up")
+        #self.ignore("arrow_up-up")
+        #self.ignore("arrow_down")
+        #self.ignore("arrow_down-up")
         
         self.collisionsOff()
 
@@ -733,60 +740,60 @@ class PhysicsWalker(DirectObject.DirectObject):
             self.ignore("f3")
 
         # reset state
-        self.moveTurnLeft(0)
-        self.moveTurnRight(0)
-        self.moveForward(0)
-        self.moveInReverse(0)
-        self.moveJumpLeft(0)
-        self.moveJumpRight(0)
-        self.moveJumpForward(0)
-        self.moveJumpInReverse(0)
-        self.moveJump(0)
-        self.moveSlide(0)
+        #self.moveTurnLeft(0)
+        #self.moveTurnRight(0)
+        #self.moveForward(0)
+        #self.moveInReverse(0)
+        #self.moveJumpLeft(0)
+        #self.moveJumpRight(0)
+        #self.moveJumpForward(0)
+        #self.moveJumpInReverse(0)
+        #self.moveJump(0)
+        #self.moveSlide(0)
 
-    def moveTurnLeft(self, isButtonDown):
-        assert(self.debugPrint("moveTurnLeft(isButtonDown=%s)"%(isButtonDown,)))
-        self.__leftButton=isButtonDown
+    #def moveTurnLeft(self, isButtonDown):
+    #    assert(self.debugPrint("moveTurnLeft(isButtonDown=%s)"%(isButtonDown,)))
+    #    self.__leftButton=isButtonDown
+    #
+    #def moveTurnRight(self, isButtonDown):
+    #    assert(self.debugPrint("moveTurnRight(isButtonDown=%s)"%(isButtonDown,)))
+    #    self.__rightButton=isButtonDown
+    #
+    #def moveForward(self, isButtonDown):
+    #    assert(self.debugPrint("moveForward(isButtonDown=%s)"%(isButtonDown,)))
+    #    self.__forwardButton=isButtonDown
+    #
+    #def moveInReverse(self, isButtonDown):
+    #    assert(self.debugPrint("moveInReverse(isButtonDown=%s)"%(isButtonDown,)))
+    #    self.__reverseButton=isButtonDown
+    #
+    #def moveJumpLeft(self, isButtonDown):
+    #    assert(self.debugPrint("moveJumpLeft(isButtonDown=%s)"%(isButtonDown,)))
+    #    self.__jumpButton=isButtonDown
+    #    self.__leftButton=isButtonDown
 
-    def moveTurnRight(self, isButtonDown):
-        assert(self.debugPrint("moveTurnRight(isButtonDown=%s)"%(isButtonDown,)))
-        self.__rightButton=isButtonDown
+    #def moveJumpRight(self, isButtonDown):
+    #    assert(self.debugPrint("moveJumpRight(isButtonDown=%s)"%(isButtonDown,)))
+    #    self.__jumpButton=isButtonDown
+    #    self.__rightButton=isButtonDown
 
-    def moveForward(self, isButtonDown):
-        assert(self.debugPrint("moveForward(isButtonDown=%s)"%(isButtonDown,)))
-        self.__forwardButton=isButtonDown
+    #def moveJumpForward(self, isButtonDown):
+    #    assert(self.debugPrint("moveJumpForward(isButtonDown=%s)"%(isButtonDown,)))
+    #    self.__jumpButton=isButtonDown
+    #    self.__forwardButton=isButtonDown
 
-    def moveInReverse(self, isButtonDown):
-        assert(self.debugPrint("moveInReverse(isButtonDown=%s)"%(isButtonDown,)))
-        self.__reverseButton=isButtonDown
+    #def moveJumpInReverse(self, isButtonDown):
+    #    assert(self.debugPrint("moveJumpInReverse(isButtonDown=%s)"%(isButtonDown,)))
+    #    self.__jumpButton=isButtonDown
+    #    self.__reverseButton=isButtonDown
 
-    def moveJumpLeft(self, isButtonDown):
-        assert(self.debugPrint("moveJumpLeft(isButtonDown=%s)"%(isButtonDown,)))
-        self.__jumpButton=isButtonDown
-        self.__leftButton=isButtonDown
-
-    def moveJumpRight(self, isButtonDown):
-        assert(self.debugPrint("moveJumpRight(isButtonDown=%s)"%(isButtonDown,)))
-        self.__jumpButton=isButtonDown
-        self.__rightButton=isButtonDown
-
-    def moveJumpForward(self, isButtonDown):
-        assert(self.debugPrint("moveJumpForward(isButtonDown=%s)"%(isButtonDown,)))
-        self.__jumpButton=isButtonDown
-        self.__forwardButton=isButtonDown
-
-    def moveJumpInReverse(self, isButtonDown):
-        assert(self.debugPrint("moveJumpInReverse(isButtonDown=%s)"%(isButtonDown,)))
-        self.__jumpButton=isButtonDown
-        self.__reverseButton=isButtonDown
-
-    def moveJump(self, isButtonDown):
-        assert(self.debugPrint("moveJump()"))
-        self.__jumpButton=isButtonDown
-
-    def moveSlide(self, isButtonDown):
-        assert(self.debugPrint("moveSlide(isButtonDown=%s)"%(isButtonDown,)))
-        self.__slideButton=isButtonDown
+    #def moveJump(self, isButtonDown):
+    #    assert(self.debugPrint("moveJump()"))
+    #    self.__jumpButton=isButtonDown
+    #
+    #def moveSlide(self, isButtonDown):
+    #    assert(self.debugPrint("moveSlide(isButtonDown=%s)"%(isButtonDown,)))
+    #    self.__slideButton=isButtonDown
     
     if __debug__:
         def debugPrint(self, message):
