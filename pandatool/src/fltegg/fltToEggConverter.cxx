@@ -336,10 +336,6 @@ setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
   // Now examine the vertices.
   EggVertices::const_iterator vi;
 
-  if (flt_geom->has_color()) {
-    egg_prim->set_color(flt_geom->get_color());
-  }
-
   bool use_vertex_color = true;
   bool keep_normals = true;
   switch (flt_geom->_light_mode) {
@@ -377,18 +373,37 @@ setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
     }
   }
 
+  // Get the alpha value based on the object's "transparency".
+  double a = 1.0 - (flt_geom->_transparency / 65536.0);
+  Colorf face_color;
+  
+  if (flt_geom->has_color()) {
+    // And make sure to set the transparency correctly.
+    face_color = flt_geom->get_color();
+    face_color[3] = a;
+    egg_prim->set_color(face_color);
+  }
+
   if (use_vertex_color) {
     // If we're to use vertex color instead of the face color, remove
     // the face color to eliminate any ambiguity.
-    if (flt_geom->has_color()) {
-      // Also, if some of our vertices don't have a color, set them to
-      // use the face color.
-      for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
-	if (!(*vi)->has_color()) {
-	  (*vi)->set_color(flt_geom->get_color());
+    egg_prim->clear_color();
+
+    // Also, make sure the transparency is set correctly across all
+    // vertices.
+    for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
+      EggVertex *vertex = (*vi);
+      if (vertex->has_color()) {
+	Colorf vertex_color = vertex->get_color();
+	vertex_color[3] = a;
+	vertex->set_color(vertex_color);
+      } else {
+	if (flt_geom->has_color()) {
+	  // If a vertex doesn't have a color but the face does, set
+	  // the vertex to use the face color.
+	  vertex->set_color(face_color);
 	}
       }
-      egg_prim->clear_color();
     }
 
   } else {
