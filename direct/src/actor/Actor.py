@@ -85,6 +85,8 @@ class Actor(PandaObject, NodePath):
         self.__partBundleDict = {}
         self.__animControlDict = {}
 
+        self.__LODNode = None
+
         if (other == None):
             # act like a normal contructor
 
@@ -92,7 +94,6 @@ class Actor(PandaObject, NodePath):
             self.gotName = 0
             self.assign(hidden.attachNewNode('actor'))
             self.setGeomNode(self.attachNewNode('actorGeom'))
-            self.__LODNode = None
             self.__hasLOD = 0
             
             # load models
@@ -282,14 +283,16 @@ class Actor(PandaObject, NodePath):
         Actor cleanup function
         """
         self.stop()
-        self.__partBundleDict = None
-        self.__animControlDict = None
-        self.__geomNode = None
-        self.__LODNode = None
+        del self.__partBundleDict
+        del self.__animControlDict
+        self.__geomNode.removeNode()
+        del self.__geomNode
+        if self.__LODNode:
+            self.__LODNode.removeNode()
+        del self.__LODNode
         self.__hasLOD = 0
         if not self.isEmpty():
             self.removeNode()
-        
     # accessing
 
     def getAnimControlDict(self):
@@ -1093,10 +1096,12 @@ class Actor(PandaObject, NodePath):
                 
             if (lodName!="lodRoot"):
                 # instance to appropriate node under LOD switch
-                bundle = bundle.instanceTo(
-                    self.__LODNode.find("**/" + str(lodName)))
+                #bundle = bundle.instanceTo(
+                #    self.__LODNode.find("**/" + str(lodName)))
+                bundle.reparentTo(self.__LODNode.find("**/" + str(lodName)))
             else:
-                bundle = bundle.instanceTo(self.__geomNode)
+                #bundle = bundle.instanceTo(self.__geomNode)
+                bundle.reparentTo(self.__geomNode)
 
             if (needsDict):
                 bundleDict[partName] = bundle

@@ -38,16 +38,16 @@ class DirectWaitBar(DirectFrame):
             textoptiondefs = ()
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs + textoptiondefs)
-
         # Initialize superclasses
         DirectFrame.__init__(self, parent)
-
         self.barStyle = PGFrameStyle()
-
         # Call option initialization functions
         self.initialiseoptions(DirectWaitBar)
-
         self.updateBarStyle()
+
+    def destroy(self):
+        del self.barStyle
+        DirectFrame.destroy(self)
         
     def setRange(self):
         self.guiItem.setRange(self['range'])

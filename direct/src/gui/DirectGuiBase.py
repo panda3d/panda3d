@@ -148,11 +148,6 @@ class DirectGuiBase(PandaObject.PandaObject):
         # no components with this group have been created.
         # self._dynamicGroups = ()
 
-    # Looks like they are being deleted, add this back in if
-    # we need to check again
-    #def __del__(self):
-    #    print 'Bye'
-
     def defineoptions(self, keywords, optionDefs, dynamicGroups = ()):
         """ defineoptions(keywords, optionDefs, dynamicGroups = {}) """
         # Create options, providing the default value and the method
@@ -613,7 +608,8 @@ class DirectGuiBase(PandaObject.PandaObject):
         del(self._optionInfo)
         del(self._hookDict)
         del(self.__componentInfo)
-
+        del self.postInitialiseFuncList
+        
     def bind(self, event, command, extraArgs = []):
         """
         Bind the command (which should expect one arg) to the specified
@@ -935,11 +931,16 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         # Destroy children
         for child in self.getChildrenAsList():
             messenger.send(DESTROY + child.getName())
-        # Call superclass destruction method (clears out hooks)
-        DirectGuiBase.destroy(self)
+        del self.frameStyle
         # Get rid of node path
         self.removeNode()
-
+        for nodePath in self.stateNodePath:
+            nodePath.removeNode()
+        del self.stateNodePath
+        del self.guiItem
+        # Call superclass destruction method (clears out hooks)
+        DirectGuiBase.destroy(self)
+        
     def printConfig(self, indent = 0):
         space = ' ' * indent
         print space + self.guiId

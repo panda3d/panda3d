@@ -36,13 +36,13 @@ class DistributedObject(PandaObject):
             self.deleteImminent = 0
         return None
 
-#    def __del__(self):
-#        """
-#        For debugging purposes, this just prints out what got deleted
-#        """
-#        DistributedObject.notify.debug("Destructing: " + self.__class__.__name__ +
-#                                       " id: " + str(self.doId))
-#        PandaObject.__del__(self)
+    #def __del__(self):
+    #    """
+    #    For debugging purposes, this just prints out what got deleted
+    #    """
+    #    DistributedObject.notify.debug("Destructing: " + self.__class__.__name__ +
+    #                                   " id: " + str(self.doId))
+    #    PandaObject.__del__(self)
 
     def setNeverDisable(self, bool):
         assert((bool == 1) or (bool == 0))

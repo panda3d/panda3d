@@ -6,6 +6,9 @@ class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI):
     def __init__(self, air):
         DistributedObjectAI.DistributedObjectAI.__init__(self, air)
 
+    def delete(self):
+        DistributedObjectAI.DistributedObjectAI.delete(self)
+
     ### setParent ###
 
     def d_setParent(self, parentString):
