@@ -909,6 +909,23 @@ def mostDerivedLast(classList):
         return result
     classList.sort(compare)
 
+def clampScalar(value, a, b):
+    # calling this ought to be faster than calling both min and max
+    if a < b:
+        if value < a:
+            return a
+        elif value > b:
+            return b
+        else:
+            return value
+    else:
+        if value < b:
+            return b
+        elif value > a:
+            return a
+        else:
+            return value
+
 def weightedChoice(choiceList, rng=random.random, sum=None):
     """given a list of (weight,item) pairs, chooses an item based on the
     weights. rng must return 0..1. if you happen to have the sum of the
