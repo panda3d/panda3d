@@ -3,6 +3,7 @@ from Tkinter import *
 from Tree import *
 import Pmw
 
+# changing these strings requires changing DirectSession.py SGE_ strs too!
 DEFAULT_MENU_ITEMS = [
     'Update Explorer',
     'Separator',
@@ -69,13 +70,13 @@ class SceneGraphExplorer(Pmw.MegaWidget, PandaObject):
             'parentLabel',
             (), None,
             Label, (interior,),
-            text = 'Active Parent: ',
+            text = 'Active Reparent Target: ',
             anchor = W, justify = LEFT)
         self._label.pack(fill = X)
 
         # Add update parent label
         def updateLabel(nodePath = None, s = self):
-            s._label['text'] = 'Active Parent: ' + nodePath.getName()
+            s._label['text'] = 'Active Reparent Target: ' + nodePath.getName()
         self.accept('DIRECT_activeParent', updateLabel)
 
         # Add update hook

@@ -135,7 +135,7 @@ class DirectSession(PandaObject):
             # Scene graph explorer functions
             ['SGE_Select', self.select],
             ['SGE_Deselect', self.deselect],
-            ['SGE_Set Parent', self.setActiveParent],
+            ['SGE_Set Reparent Target', self.setActiveParent],
             ['SGE_Reparent', self.reparent],
             ['SGE_WRT Reparent', lambda np, s=self: s.reparent(np, fWrt = 1)],
             ['SGE_Flash', self.flash],
