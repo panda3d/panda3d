@@ -59,7 +59,7 @@ class MultiTrack(Interval.Interval):
     def stop(self):
 	""" stop()
 	"""
-	taskMgr.removeMethodsNamed(self.name + '-play')
+	taskMgr.removeTasksNamed(self.name + '-play')
 
     def __playTask(self, task):
 	""" __playTask(task)
