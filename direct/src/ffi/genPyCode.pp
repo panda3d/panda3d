@@ -95,7 +95,7 @@ if parent not in sys.path:
 
 import direct.showbase.FindCtaPaths
 
-#endif
+#endif  // CTPROJS
 
 from direct.ffi import DoGenPyCode
 from direct.ffi import FFIConstants
@@ -163,7 +163,7 @@ for package in packages:
                     if isModule:
                         if basename not in DoGenPyCode.codeLibs:
                             DoGenPyCode.codeLibs.append(basename)
-#endif
+#endif  // CTPROJS
 
 DoGenPyCode.run()
 
