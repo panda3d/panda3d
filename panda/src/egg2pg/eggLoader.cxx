@@ -52,6 +52,7 @@
 #include "eggBin.h"
 #include "eggTable.h"
 #include "eggBinner.h"
+#include "eggVertexPool.h"
 #include "characterMaker.h"
 #include "character.h"
 #include "animBundleMaker.h"
@@ -254,31 +255,38 @@ make_nonindexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
   EggPrimitive::const_iterator vi;
   for (vi = egg_prim->begin(); vi != egg_prim->end(); ++vi) {
     EggVertex *egg_vert = *vi;
-    BuilderVertex bvert(LCAST(float, egg_vert->get_pos3() * mat));
-
-    if (egg_vert->has_normal()) {
-      Normald norm = egg_vert->get_normal() * mat;
-      norm.normalize();
-      bvert.set_normal(LCAST(float, norm));
-    }
-    if (egg_vert->has_color() && !egg_false_color) {
-      bvert.set_color(egg_vert->get_color());
+    if (egg_vert->get_num_dimensions() != 3) {
+      egg2pg_cat.error()
+        << "Vertex " << egg_vert->get_pool()->get_name() 
+        << ":" << egg_vert->get_index() << " has dimension " 
+        << egg_vert->get_num_dimensions() << "\n";
     } else {
-      // If any vertex doesn't have a color, we can't use any of the
-      // vertex colors.
-      has_vert_color = false;
-    }
-    if (egg_vert->has_uv()) {
-      TexCoordd uv = egg_vert->get_uv();
-      if (egg_prim->has_texture() &&
-          egg_prim->get_texture()->has_transform()) {
-        // If we have a texture matrix, apply it.
-        uv = uv * egg_prim->get_texture()->get_transform();
-      }
-      bvert.set_texcoord(LCAST(float, uv));
-    }
+      BuilderVertex bvert(LCAST(float, egg_vert->get_pos3() * mat));
 
-    bprim.add_vertex(bvert);
+      if (egg_vert->has_normal()) {
+        Normald norm = egg_vert->get_normal() * mat;
+        norm.normalize();
+        bvert.set_normal(LCAST(float, norm));
+      }
+      if (egg_vert->has_color() && !egg_false_color) {
+        bvert.set_color(egg_vert->get_color());
+      } else {
+        // If any vertex doesn't have a color, we can't use any of the
+        // vertex colors.
+        has_vert_color = false;
+      }
+      if (egg_vert->has_uv()) {
+        TexCoordd uv = egg_vert->get_uv();
+        if (egg_prim->has_texture() &&
+            egg_prim->get_texture()->has_transform()) {
+          // If we have a texture matrix, apply it.
+          uv = uv * egg_prim->get_texture()->get_transform();
+        }
+        bvert.set_texcoord(LCAST(float, uv));
+      }
+    
+      bprim.add_vertex(bvert);
+    }
   }
 
   // Finally, if the primitive didn't have a color, and it didn't have
@@ -351,54 +359,61 @@ make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
   for (vi = egg_prim->begin(); vi != egg_prim->end(); ++vi) {
     EggVertex *egg_vert = *vi;
 
-    // Set up the ComputedVerticesMaker for the coordinate space of
-    // the vertex.
-    _comp_verts_maker.begin_new_space();
-    _comp_verts_maker.add_vertex_joints(egg_vert, egg_prim);
-    _comp_verts_maker.mark_space();
-
-    int vindex =
-      _comp_verts_maker.add_vertex(egg_vert->get_pos3(),
-                                   egg_vert->_dxyzs, mat);
-    BuilderVertexI bvert(vindex);
-
-    if (egg_vert->has_normal()) {
-      int nindex =
-        _comp_verts_maker.add_normal(egg_vert->get_normal(),
-                                     egg_vert->_dnormals,
-                                     mat);
-      bvert.set_normal(nindex);
-    }
-
-    if (egg_vert->has_color() && !egg_false_color) {
-      int cindex =
-        _comp_verts_maker.add_color(egg_vert->get_color(),
-                                    egg_vert->_drgbas);
-      bvert.set_color(cindex);
+    if (egg_vert->get_num_dimensions() != 3) {
+      egg2pg_cat.error()
+        << "Vertex " << egg_vert->get_pool()->get_name() 
+        << ":" << egg_vert->get_index() << " has dimension " 
+        << egg_vert->get_num_dimensions() << "\n";
     } else {
-      // If any vertex doesn't have a color, we can't use any of the
-      // vertex colors.
-      has_vert_color = false;
-    }
-
-    if (egg_vert->has_uv()) {
-      TexCoordd uv = egg_vert->get_uv();
-      LMatrix3d mat;
-
-      if (egg_prim->has_texture() &&
-          egg_prim->get_texture()->has_transform()) {
-        // If we have a texture matrix, apply it.
-        mat = egg_prim->get_texture()->get_transform();
+      // Set up the ComputedVerticesMaker for the coordinate space of
+      // the vertex.
+      _comp_verts_maker.begin_new_space();
+      _comp_verts_maker.add_vertex_joints(egg_vert, egg_prim);
+      _comp_verts_maker.mark_space();
+      
+      int vindex =
+        _comp_verts_maker.add_vertex(egg_vert->get_pos3(),
+                                     egg_vert->_dxyzs, mat);
+      BuilderVertexI bvert(vindex);
+      
+      if (egg_vert->has_normal()) {
+        int nindex =
+          _comp_verts_maker.add_normal(egg_vert->get_normal(),
+                                       egg_vert->_dnormals,
+                                       mat);
+        bvert.set_normal(nindex);
+      }
+      
+      if (egg_vert->has_color() && !egg_false_color) {
+        int cindex =
+          _comp_verts_maker.add_color(egg_vert->get_color(),
+                                      egg_vert->_drgbas);
+        bvert.set_color(cindex);
       } else {
-        mat = LMatrix3d::ident_mat();
+        // If any vertex doesn't have a color, we can't use any of the
+        // vertex colors.
+        has_vert_color = false;
       }
 
-      int tindex =
-        _comp_verts_maker.add_texcoord(uv, egg_vert->_duvs, mat);
-      bvert.set_texcoord(tindex);
+      if (egg_vert->has_uv()) {
+        TexCoordd uv = egg_vert->get_uv();
+        LMatrix3d mat;
+        
+        if (egg_prim->has_texture() &&
+            egg_prim->get_texture()->has_transform()) {
+          // If we have a texture matrix, apply it.
+          mat = egg_prim->get_texture()->get_transform();
+        } else {
+          mat = LMatrix3d::ident_mat();
+        }
+        
+        int tindex =
+          _comp_verts_maker.add_texcoord(uv, egg_vert->_duvs, mat);
+        bvert.set_texcoord(tindex);
+      }
+      
+      bprim.add_vertex(bvert);
     }
-
-    bprim.add_vertex(bvert);
   }
 
   // Finally, if the primitive didn't have a color, and it didn't have
