@@ -223,7 +223,7 @@ add_component(string str_component) {
 
     if (handle == TypeHandle::none()) {
       pgraph_cat.error()
-        << "Invalid type name: " + type_name;
+        << "Invalid type name: " << type_name << "\n";
       return false;
 
     } else {
@@ -242,7 +242,7 @@ add_component(string str_component) {
 
     if (handle == TypeHandle::none()) {
       pgraph_cat.error()
-        << "Invalid type name: " + type_name;
+        << "Invalid type name: " << type_name << "\n";
       return false;
 
     } else {
