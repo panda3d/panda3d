@@ -132,7 +132,7 @@ precompute_angular_matrices(Physical *physical,
 
     NodePath force_np(force_node);
     //_precomputed_angular_matrices.push_back(physical_np.get_mat(force_node));
-    _precomputed_linear_matrices.push_back(force_np.get_mat(global_physical_np));
+    _precomputed_angular_matrices.push_back(force_np.get_mat(global_physical_np));
   }
 
   // tally the local xforms
@@ -155,7 +155,7 @@ precompute_angular_matrices(Physical *physical,
 void BaseIntegrator::
 output(ostream &out) const {
   #ifndef NDEBUG //[
-  out<<"BaseIntegrator";
+  out<<"BaseIntegrator (id "<<this<<")";
   #endif //] NDEBUG
 }
 
