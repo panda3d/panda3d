@@ -165,8 +165,10 @@ class LerpAnimInterval(Interval.Interval):
         w = self.startWeight + t * self.deltaWeight
 
         # Apply that weight to the two anims.
-        self.actor.setControlEffect(self.endAnim, w)
-        self.actor.setControlEffect(self.startAnim, 1.0 - w)
+        if self.startAnim != None:
+            self.actor.setControlEffect(self.startAnim, 1.0 - w)
+        if self.endAnim != None:
+            self.actor.setControlEffect(self.endAnim, w)
 
 
     def getBlend(self, blendType):
