@@ -900,14 +900,12 @@
 
             
     def place(self):
-        base.startTk()
-        base.startDirect()
+        base.startDirect(fWantTk = 1)
         import Placer
         return Placer.place(self)
 
     def explore(self):
-        base.startTk()
-        base.startDirect()
+        base.startDirect(fWantTk = 1)
         import SceneGraphExplorer
         return SceneGraphExplorer.explore(self)
 
@@ -917,11 +915,11 @@
         return Slider.rgbPanel(self, cb)
 
     def select(self):
-        base.startDirect()
+        base.startDirect(fWantTk = 0)
         direct.select(self)
 
     def deselect(self):
-        base.startDirect()
+        base.startDirect(fWantTk = 0)
         direct.deselect(self)
 
     def showCS(self, mask = None):
