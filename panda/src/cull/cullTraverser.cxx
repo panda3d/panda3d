@@ -538,7 +538,11 @@ add_geom_node(GeomNode *node, const AllTransitionsWrapper &trans,
 void CullTraverser::
 add_direct_node(Node *node, const AllTransitionsWrapper &trans,
                 const CullLevelState &level_state) {
-  PStatTimer timer(_cull_direct_node_pcollector);
+  // This causes an internal compiler error with VC++.  Instead of
+  // using the timer, we'll work around this by explicitly starting
+  // and stopping the collector.
+  //  PStatTimer timer(_cull_direct_node_pcollector);
+  _cull_direct_node_pcollector.start();
 
   nassertv(node != (Node *)NULL);
   const ArcChain &arc_chain = get_arc_chain();
@@ -564,6 +568,7 @@ add_direct_node(Node *node, const AllTransitionsWrapper &trans,
   }
 
   cs->record_current_direct_node(arc_chain);
+  _cull_direct_node_pcollector.stop();
 }
 
 ////////////////////////////////////////////////////////////////////
