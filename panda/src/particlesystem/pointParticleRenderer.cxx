@@ -135,7 +135,7 @@ kill_particle(int) {
 Colorf PointParticleRenderer::
 create_color(const BaseParticle *p) {
   Colorf color;
-  float life_t, vel_t, alpha_linear_t;
+  float life_t, vel_t, parameterized_age;
   bool have_alpha_t = false;
 
   switch (_blend_type) {
@@ -149,8 +149,8 @@ create_color(const BaseParticle *p) {
     //// Blending colors based on life
 
   case PP_BLEND_LIFE:
-    life_t = p->get_parameterized_age();
-    alpha_linear_t = life_t;
+    parameterized_age = p->get_parameterized_age();
+	life_t = parameterized_age;
     have_alpha_t = true;
 
     if (_blend_method == PP_BLEND_CUBIC)
@@ -176,23 +176,17 @@ create_color(const BaseParticle *p) {
   // handle alpha channel
 
   if(_alpha_mode != PR_ALPHA_NONE) {
+	if(_alpha_mode == PR_ALPHA_USER) {
+		parameterized_age = get_user_alpha();
+	} else {
+		if(!have_alpha_t)
+			  parameterized_age = p->get_parameterized_age();
 
-    if (have_alpha_t == false)
-      alpha_linear_t = p->get_parameterized_age();
-
-	switch(_alpha_mode) {
-	    case PR_ALPHA_OUT:
-			color[3] = 1.0f - alpha_linear_t;        
-			break;
-
-	    case PR_ALPHA_IN:
-			color[3] = alpha_linear_t;        
-			break;
-
-	    case PR_ALPHA_USER:
-			color[3] = get_user_alpha();
-			break;
+		if(_alpha_mode==PR_ALPHA_OUT) {
+			parameterized_age=1.0f-parameterized_age;
+		}
 	}
+	color[3] = parameterized_age;
   }
 
   return color;
