@@ -72,7 +72,10 @@ class Frame(DirectObject):
     def removeItem(self, item):
         self.frame.removeItem(item.getGuiItem())
         self.items.remove(item)
-        
+
+    def getGuiItem(self):
+        return self.frame
+    
     def getItems(self):
         return self.items
 
