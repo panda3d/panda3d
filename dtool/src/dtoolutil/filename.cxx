@@ -155,25 +155,27 @@ convert_pathname(const string &unix_style_pathname, bool use_backslash) {
       windows_pathname = unix_style_pathname;
     }
 
-  } else if (unix_style_pathname.length() > 3 &&
+  } else if (unix_style_pathname.length() >= 2 &&
              isalpha(unix_style_pathname[1]) &&
-             unix_style_pathname[2] == '/') {
+             (unix_style_pathname.length() == 2 || unix_style_pathname[2] == '/')) {
     // This pathname begins with a slash and a single letter.  That
     // must be the drive letter.
+
+    string remainder = unix_style_pathname.substr(2);
+    if (remainder.empty()) {
+      // There's a difference between "C:" and "C:/".
+      remainder = "/";
+    }
+    if (use_backslash) {
+      remainder = front_to_back_slash(remainder);
+    }
 
     // We have to cast the result of toupper() to (char) to help some
     // compilers (e.g. Cygwin's gcc 2.95.3) happy; so that they do not
     // confuse this string constructor with one that takes two
     // iterators.
-    if (use_backslash) {
-      windows_pathname =
-        string(1, (char)toupper(unix_style_pathname[1])) + ":" +
-        front_to_back_slash(unix_style_pathname.substr(2));
-    } else {
-      windows_pathname =
-        string(1, (char)toupper(unix_style_pathname[1])) + ":" +
-        unix_style_pathname.substr(2);
-    }
+    windows_pathname =
+      string(1, (char)toupper(unix_style_pathname[1])) + ":" + remainder;
 
   } else {
     // It starts with a slash, but the first part is not a single
@@ -334,6 +336,12 @@ from_os_specific(const string &os_specific, Filename::Type type) {
       result[1] == ':' && result[2] == '/') {
     result[1] = tolower(result[0]);
     result[0] = '/';
+
+    // If there's *just* a slash following the drive letter, go ahead
+    // and trim it.
+    if (result.size() == 3) {
+      result = result.substr(0, 2);
+    }
   }
 
   Filename filename(result);
