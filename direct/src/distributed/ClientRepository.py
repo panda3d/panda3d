@@ -70,6 +70,7 @@ class ClientRepository(DirectObject.DirectObject):
         return Task.cont
 
     def readerPollOnce(self):
+        self.ensureValidConnection()
         availGetVal = self.qcr.dataAvailable()
         if availGetVal:
             #print "Client: Incoming message!"
@@ -80,6 +81,14 @@ class ClientRepository(DirectObject.DirectObject):
             else:
                 ClientRepository.notify.warning("getData returned false")
         return availGetVal
+
+    def ensureValidConnection(self):
+        # Was the connection reset?
+        if self.qcm.resetConnectionAvailable():
+            resetConnectionPointer = PointerToConnection()
+            if self.qcm.getResetConnection(resetConnectionPointer):
+                self.fsm.request("noConnection")
+        return None
 
     def handleDatagram(self, datagram):
         # This class is meant to be pure virtual, and any classes that
