@@ -23,6 +23,7 @@
 
 #include "collisionPlane.h"
 #include "clipPlaneAttrib.h"
+#include "look_at.h"
 
 #include "vector_LPoint2f.h"
 
@@ -78,18 +79,29 @@ protected:
   virtual void fill_viz_geom();
 
 private:
-  typedef vector_LPoint2f Points;
+  class PointDef {
+  public:
+    INLINE PointDef(const LPoint2f &p, const LVector2f &v);
+    INLINE PointDef(float x, float y);
+    INLINE PointDef(const PointDef &copy);
+    INLINE void operator = (const PointDef &copy);
 
+    LPoint2f _p;  // the point in 2-d space
+    LVector2f _v; // the normalized vector to the next point
+  };
+  typedef pvector<PointDef> Points;
+
+  static void compute_vectors(Points &points);
   void draw_polygon(GeomNode *geom_node, const Points &points) const;
 
   bool point_is_inside(const LPoint2f &p, const Points &points) const;
-  bool circle_is_inside(const LPoint2f &center, float radius,
-                        const CollisionPolygon::Points &points,
-                        const LPoint2f &median) const;
+  float dist_to_polygon(const LPoint2f &p, const Points &points) const;
 
   void setup_points(const LPoint3f *begin, const LPoint3f *end);
-  LPoint2f to_2d(const LVecBase3f &point3d) const;
-  LPoint3f to_3d(const LVecBase2f &point2d) const;
+  INLINE LPoint2f to_2d(const LVecBase3f &point3d) const;
+  INLINE void calc_to_3d_mat(LMatrix4f &to_3d_mat) const;
+  INLINE static LPoint3f to_3d(const LVecBase2f &point2d, const LMatrix4f &to_3d_mat);
+  LPoint3f legacy_to_3d(const LVecBase2f &point2d, int axis) const;
 
   bool clip_polygon(Points &new_points, const Points &source_points,
                     const Planef &plane) const;
@@ -98,13 +110,7 @@ private:
 
 private:
   Points _points;
-  LPoint2f _median;
-
-  enum AxisType {
-    AT_x, AT_y, AT_z
-  };
-  AxisType _axis;
-  bool _reversed;
+  LMatrix4f _to_2d_mat;
 
 public:
   static void register_with_read_factory(void);

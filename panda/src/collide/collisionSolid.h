@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 
+#include "config_collide.h"
 #include "typedWritableReferenceCount.h"
 #include "boundedObject.h"
 #include "luse.h"

@@ -88,7 +88,7 @@ clear_effective_normal() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionSolid::
 has_effective_normal() const {
-  return (_flags & F_effective_normal) != 0;
+  return respect_effective_normal && (_flags & F_effective_normal) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -53,6 +53,20 @@ is_right(const LVector2f &v1, const LVector2f &v2) {
   return (-v1[0] * v2[1] + v1[1] * v2[0]) > 0;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: dist_to_line
+//  Description: Returns the linear distance of p to the line defined
+//               by f and f+v, where v is a normalized vector.  The
+//               result is negative if p is left of the line, positive
+//               if it is right of the line.
+////////////////////////////////////////////////////////////////////
+INLINE float
+dist_to_line(const LPoint2f &p,
+             const LPoint2f &f, const LVector2f &v) {
+  LVector2f v1 = (p - f);
+  return (-v1[0] * v[1] + v1[1] * v[0]);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::Copy Constructor
@@ -63,9 +77,7 @@ CollisionPolygon::
 CollisionPolygon(const CollisionPolygon &copy) :
   CollisionPlane(copy),
   _points(copy._points),
-  _median(copy._median),
-  _axis(copy._axis),
-  _reversed(copy._reversed)
+  _to_2d_mat(copy._to_2d_mat)
 {
 }
 
@@ -161,12 +173,12 @@ is_concave() const {
     return true;
   }
 
-  LPoint2f p0 = _points[0];
-  LPoint2f p1 = _points[1];
+  LPoint2f p0 = _points[0]._p;
+  LPoint2f p1 = _points[1]._p;
   float dx1 = p1[0] - p0[0];
   float dy1 = p1[1] - p0[1];
   p0 = p1;
-  p1 = _points[2];
+  p1 = _points[2]._p;
 
   float dx2 = p1[0] - p0[0];
   float dy2 = p1[1] - p0[1];
@@ -174,7 +186,7 @@ is_concave() const {
 
   for (size_t i = 0; i < _points.size() - 1; i++) {
     p0 = p1;
-    p1 = _points[(i+3) % _points.size()];
+    p1 = _points[(i+3) % _points.size()]._p;
 
     dx1 = dx2;
     dy1 = dy2;
@@ -214,13 +226,13 @@ xform(const LMatrix4f &mat) {
   }
 
   if (!_points.empty()) {
+    LMatrix4f to_3d_mat;
+    calc_to_3d_mat(to_3d_mat);
+
     pvector<LPoint3f> verts;
     Points::const_iterator pi;
     for (pi = _points.begin(); pi != _points.end(); ++pi) {
-      verts.push_back(to_3d(*pi) * mat);
-    }
-    if (_reversed) {
-      reverse(verts.begin(), verts.end());
+      verts.push_back(to_3d((*pi)._p, to_3d_mat) * mat);
     }
 
     const LPoint3f *verts_begin = &verts[0];
@@ -241,7 +253,16 @@ xform(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 LPoint3f CollisionPolygon::
 get_collision_origin() const {
-  return to_3d(_median);
+  LMatrix4f to_3d_mat;
+  calc_to_3d_mat(to_3d_mat);
+
+  LPoint2f median = _points[0]._p;
+  for (int n = 1; n < (int)_points.size(); n++) {
+    median += _points[n]._p;
+  }
+  median /= _points.size();
+
+  return to_3d(median, to_3d_mat);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -301,25 +322,7 @@ get_viz(const CullTraverserData &data) const {
 void CollisionPolygon::
 output(ostream &out) const {
   out << "cpolygon, (" << get_plane()
-      << "), ";
-  switch (_axis) {
-  case AT_x:
-    out << "x-aligned, ";
-    break;
-
-  case AT_y:
-    out << "y-aligned, ";
-    break;
-
-  case AT_z:
-    out << "z-aligned, ";
-    break;
-  }
-
-  out << _points.size() << " vertices";
-  if (_reversed){
-    out << " (reversed)";
-  }
+      << "), " << _points.size() << " vertices";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -332,17 +335,17 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level) << (*this) << "\n";
   Points::const_iterator pi;
   for (pi = _points.begin(); pi != _points.end(); ++pi) {
-    indent(out, indent_level + 2) << (*pi) << "\n";
+    indent(out, indent_level + 2) << (*pi)._p << "\n";
   }
 
+  LMatrix4f to_3d_mat;
+  calc_to_3d_mat(to_3d_mat);
   out << "In 3-d space:\n";
   PTA_Vertexf verts;
   for (pi = _points.begin(); pi != _points.end(); ++pi) {
-    verts.push_back(to_3d(*pi));
+    verts.push_back(to_3d((*pi)._p, to_3d_mat));
   }
-  if (_reversed) {
-    reverse(verts.begin(), verts.end());
-  }
+
   PTA_Vertexf::const_iterator vi;
   for (vi = verts.begin(); vi != verts.end(); ++vi) {
     indent(out, indent_level + 2) << (*vi) << "\n";
@@ -364,10 +367,12 @@ recompute_bound() {
 
   // Now actually compute the bounding volume by putting it around all
   // of our vertices.
+  LMatrix4f to_3d_mat;
+  calc_to_3d_mat(to_3d_mat);
   pvector<LPoint3f> vertices;
   Points::const_iterator pi;
   for (pi = _points.begin(); pi != _points.end(); ++pi) {
-    vertices.push_back(to_3d(*pi));
+    vertices.push_back(to_3d((*pi)._p, to_3d_mat));
   }
 
   const LPoint3f *vertices_begin = &vertices[0];
@@ -443,7 +448,8 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 
   LVector3f from_radius_v =
     LVector3f(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
-  float from_radius = length(from_radius_v);
+  float from_radius_2 = from_radius_v.length_squared();
+  float from_radius = csqrt(from_radius_2);
 
   LVector3f normal = has_effective_normal() ? get_effective_normal() : get_normal();
 #ifndef NDEBUG
@@ -457,9 +463,9 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 #endif
 
   // The nearest point within the plane to our center is the
-  // intersection of the line (center, center+normal) with the plane.
+  // intersection of the line (center, center - normal) with the plane.
   float dist;
-  if (!get_plane().intersects_line(dist, from_center, -normal)) {
+  if (!get_plane().intersects_line(dist, from_center, -get_normal())) {
     // No intersection with plane?  This means the plane's effective
     // normal was within the plane itself.  A useless polygon.
     return NULL;
@@ -470,7 +476,8 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     return NULL;
   }
 
-  LPoint2f p = to_2d(from_center + dist * normal);
+  LPoint2f p = to_2d(from_center - dist * get_normal());
+  float edge_dist;
 
   const ClipPlaneAttrib *cpa = entry.get_into_clip_planes();
   if (cpa != (ClipPlaneAttrib *)NULL) {
@@ -479,9 +486,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     if (apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform())) {
       // All points are behind the clip plane; just do the default
       // test.
-      if (!circle_is_inside(p, from_radius, _points, _median)) {
-        return NULL;
-      }
+      edge_dist = dist_to_polygon(p, _points);
 
     } else if (new_points.empty()) {
       // The polygon is completely clipped.
@@ -489,21 +494,38 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 
     } else {
       // Test against the clipped polygon.
-      LPoint2f new_median = new_points[0];
-      for (int n = 1; n < (int)new_points.size(); n++) {
-        new_median += new_points[n];
-      }
-      new_median /= new_points.size();
-      if (!circle_is_inside(p, from_radius, new_points, new_median)) {
-        return NULL;
-      }
+      edge_dist = dist_to_polygon(p, new_points);
     }
 
   } else {
-    // No clip plane is in effect.  Do the default test.
-    if (!circle_is_inside(p, from_radius, _points, _median)) {
-      return NULL;
-    }
+    // No clip plane is in effect.  Do the default test. 
+    edge_dist = dist_to_polygon(p, _points);
+  }
+
+  // Now we have edge_dist, which is the distance from the sphere
+  // center to the nearest edge of the polygon, within the polygon's
+  // plane.
+
+  if (edge_dist > from_radius) {
+    // No intersection; the circle is outside the polygon.
+    return NULL;
+  }
+
+  // The sphere appears to intersect the polygon.  If the edge is less
+  // than from_radius away, the sphere may be resting on an edge of
+  // the polygon.  Determine how far the center of the sphere must
+  // remain from the plane, based on its distance from the nearest
+  // edge.
+
+  float max_dist = from_radius;
+  if (edge_dist >= 0.0f) {
+    float max_dist_2 = max(from_radius_2 - edge_dist * edge_dist, 0.0f);
+    max_dist = csqrt(max_dist_2);
+  }
+
+  if (dist > max_dist) {
+    // There's no intersection: the sphere is hanging off the edge.
+    return NULL;
   }
 
   if (collide_cat.is_debug()) {
@@ -513,14 +535,14 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  float into_depth = from_radius - dist;
+  float into_depth = max_dist - dist;
   if (moved_from_center) {
     // We have to base the depth of intersection on the sphere's final
     // resting point, not the point from which we tested the
     // intersection.
     float orig_dist;
     get_plane().intersects_line(orig_dist, orig_center, -normal);
-    into_depth = from_radius - orig_dist;
+    into_depth = max_dist - orig_dist;
   }
 
   new_entry->set_surface_normal(normal);
@@ -682,6 +704,22 @@ fill_viz_geom() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::compute_vectors
+//       Access: Private, Static
+//  Description: Now that the _p members of the given points array
+//               have been computed, go back and compute all of the _v
+//               members.
+////////////////////////////////////////////////////////////////////
+void CollisionPolygon::
+compute_vectors(Points &points) {
+  size_t num_points = points.size();
+  for (size_t i = 0; i < num_points; i++) {
+    points[i]._v = points[(i + 1) % num_points]._p - points[i]._p;
+    points[i]._v.normalize();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::draw_polygon
 //       Access: Private
 //  Description: Fills up the indicated GeomNode with the Geoms to
@@ -698,13 +736,12 @@ draw_polygon(GeomNode *geom_node, const CollisionPolygon::Points &points) const 
     return;
   }
 
+  LMatrix4f to_3d_mat;
+  calc_to_3d_mat(to_3d_mat);
   PTA_Vertexf verts;
   Points::const_iterator pi;
   for (pi = points.begin(); pi != points.end(); ++pi) {
-    verts.push_back(to_3d(*pi));
-  }
-  if (_reversed) {
-    reverse(verts.begin(), verts.end());
+    verts.push_back(to_3d((*pi)._p, to_3d_mat));
   }
 
   PTA_int lengths;
@@ -734,12 +771,12 @@ point_is_inside(const LPoint2f &p, const CollisionPolygon::Points &points) const
   // order, a point is interior to the polygon iff the point is not right of
   // each of the edges.
   for (int i = 0; i < (int)points.size() - 1; i++) {
-    if (is_right(p - points[i], points[i+1] - points[i])) {
+    if (is_right(p - points[i]._p, points[i+1]._p - points[i]._p)) {
       return false;
     }
   }
-  if (is_right(p - points[points.size() - 1],
-               points[0] - points[points.size() - 1])) {
+  if (is_right(p - points[points.size() - 1]._p,
+               points[0]._p - points[points.size() - 1]._p)) {
     return false;
   }
 
@@ -747,70 +784,30 @@ point_is_inside(const LPoint2f &p, const CollisionPolygon::Points &points) const
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::circle_is_inside
+//     Function: CollisionPolygon::dist_to_polygon
 //       Access: Private
-//  Description: Returns true if the circle with the indicated center
-//               and radius intersects the polygon in its 2-d space,
-//               false otherwise.
+//  Description: Returns the linear distance from the 2-d point to the
+//               nearest part of the polygon defined by the points
+//               vector.  The result is negative if the point is
+//               within the polygon.
 ////////////////////////////////////////////////////////////////////
-bool CollisionPolygon::
-circle_is_inside(const LPoint2f &center, float radius,
-                 const CollisionPolygon::Points &points,
-                 const LPoint2f &median) const {
-  // Now we have found a point on the polygon's plane that corresponds
-  // to the point tangent to our collision sphere where it first
-  // touches the plane.  We want to decide whether the sphere itself
-  // will intersect the polygon.  We can approximate this by testing
-  // whether a circle of the given radius centered around this tangent
-  // point, in the plane of the polygon, would intersect.
+float CollisionPolygon::
+dist_to_polygon(const LPoint2f &p, const CollisionPolygon::Points &points) const {
 
-  // But even this approximate test is too difficult.  To approximate
-  // the approximation, we'll test two points: (1) the center itself.
-  // If this is inside the polygon, then certainly the circle
-  // intersects the polygon, and the sphere collides.  (2) a point on
-  // the outside of the circle, nearest to the center of the polygon.
-  // If _this_ point is inside the polygon, then again the circle, and
-  // hence the sphere, intersects.  If neither point is inside the
-  // polygon, chances are reasonably good the sphere doesn't intersect
-  // the polygon after all.
+  // We know that that the polygon is convex and is defined with the
+  // points in counterclockwise order.  Therefore, we simply compare
+  // the signed distance to each line; the answer is the maximum of
+  // these.  (This doesn't quite get the right answer if the closest
+  // part of the polygon is one of the vertices, but it's close enough
+  // for these purposes.)
 
-  if (point_is_inside(center, points)) {
-    // The circle's center is inside the polygon; we have a collision!
+  float max_dist = dist_to_line(p, points.front()._p, points.front()._v);
 
-  } else {
-
-    if (radius > 0.0f) {
-      // Now find the point on the rim of the circle nearest the
-      // polygon's center.
-
-      // First, get a vector from the center of the circle to the center
-      // of the polygon.
-      LVector2f rim = median - center;
-      float rim_length = length(rim);
-
-      if (rim_length <= radius) {
-        // Here's a surprise: the center of the polygon is within the
-        // circle!  Since the center is guaranteed to be interior to the
-        // polygon (the polygon is convex), it follows that the circle
-        // intersects the polygon.
-
-      } else {
-        // Now scale this vector to length radius, and get the new point.
-        rim = (rim * radius / rim_length) + center;
-
-        // Is the new point within the polygon?
-        if (point_is_inside(rim, points)) {
-          // It sure is!  The circle intersects!
-
-        } else {
-          // No intersection.
-          return false;
-        }
-      }
-    }
+  for (size_t i = 1; i < points.size(); i++) {
+    max_dist = max(max_dist, dist_to_line(p, points[i]._p, points[i]._v));
   }
-  
-  return true;
+
+  return max_dist;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -875,54 +872,21 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
 
   set_plane(Planef(normal, begin[0]));
 
-  // Now determine the largest of |normal[0]|, |normal[1]|, and
-  // |normal[2]|.  This will tell us which axis-aligned plane the
-  // polygon is most nearly aligned with, and therefore which plane we
-  // should project onto for determining interiorness of the
-  // intersection point.
+  // Construct a matrix that rotates the points from the (X,0,Z) plane
+  // into the 3-d plane.
+  LMatrix4f to_3d_mat;
+  calc_to_3d_mat(to_3d_mat);
 
-  if (fabs(normal[0]) >= fabs(normal[1])) {
-    if (fabs(normal[0]) >= fabs(normal[2])) {
-      _reversed = (normal[0] > 0.0f);
-      _axis = AT_x;
-    } else {
-      _reversed = (normal[2] > 0.0f);
-      _axis = AT_z;
-    }
-  } else {
-    if (fabs(normal[1]) >= fabs(normal[2])) {
-      _reversed = (normal[1] < 0.0f);
-      _axis = AT_y;
-    } else {
-      _reversed = (normal[2] > 0.0f);
-      _axis = AT_z;
-    }
-  }
+  // And the inverse matrix rotates points from 3-d space into the 2-d
+  // plane.
+  _to_2d_mat.invert_from(to_3d_mat);
 
   // Now project all of the points onto the 2-d plane.
 
   const LPoint3f *pi;
-  switch (_axis) {
-  case AT_x:
-    for (pi = begin; pi != end; ++pi) {
-      const LPoint3f &point = (*pi);
-      _points.push_back(LPoint2f(point[1], point[2]));
-    }
-    break;
-
-  case AT_y:
-    for (pi = begin; pi != end; ++pi) {
-      const LPoint3f &point = (*pi);
-      _points.push_back(LPoint2f(point[0], point[2]));
-    }
-    break;
-
-  case AT_z:
-    for (pi = begin; pi != end; ++pi) {
-      const LPoint3f &point = (*pi);
-      _points.push_back(LPoint2f(point[0], point[1]));
-    }
-    break;
+  for (pi = begin; pi != end; ++pi) {
+    LPoint3f point = (*pi) * _to_2d_mat;
+    _points.push_back(PointDef(point[0], point[2]));
   }
 
   nassertv(_points.size() >= 3);
@@ -943,73 +907,18 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
   */
 #endif
 
-  // Now average up all the points to get the median.  This is the
-  // geometric center of the polygon, and (since the polygon must be
-  // convex) is also a point within the polygon.
-  _median = _points[0];
-  for (int n = 1; n < (int)_points.size(); n++) {
-    _median += _points[n];
-  }
-  _median /= _points.size();
-
-  // One final complication: In projecting the polygon onto the plane,
-  // we might have lost its counterclockwise-vertex orientation.  If
-  // this is the case, we must reverse the order of the vertices.
-  if (_reversed) {
-    reverse(_points.begin(), _points.end());
-  }
-
-  /*
-#ifndef NDEBUG
-  bool still_reversed = 
-    is_right(_points[2] - _points[0], _points[1] - _points[0]);
-  if (still_reversed) {
-    collide_cat.warning()
-      << "Invalid poly:\n";
-    write(collide_cat.warning(false), 2);
-  }
-  nassertv(!still_reversed);
-#endif
-  */
+  compute_vectors(_points);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::to_2d
+//     Function: CollisionPolygon::legacy_to_3d
 //       Access: Private
-//  Description: Assuming the indicated point in 3-d space lies within
-//               the polygon's plane, returns the corresponding point
-//               in the polygon's 2-d definition space.
-////////////////////////////////////////////////////////////////////
-LPoint2f CollisionPolygon::
-to_2d(const LVecBase3f &point3d) const {
-  nassertr(!point3d.is_nan(), LPoint2f(0.0f, 0.0f));
-
-  // Project the point of intersection with the plane onto the
-  // axis-aligned plane we projected the polygon onto, and see if the
-  // point is interior to the polygon.
-  switch (_axis) {
-  case AT_x:
-    return LPoint2f(point3d[1], point3d[2]);
-
-  case AT_y:
-    return LPoint2f(point3d[0], point3d[2]);
-
-  case AT_z:
-    return LPoint2f(point3d[0], point3d[1]);
-  }
-
-  nassertr(false, LPoint2f(0.0f, 0.0f));
-  return LPoint2f(0.0f, 0.0f);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::to_3d
-//       Access: Private
-//  Description: Extrude the indicated point in the polygon's 2-d
-//               definition space back into 3-d coordinates.
+//  Description: Converts the indicated point to 3-d space according
+//               to the way CollisionPolygons used to be stored in bam
+//               files prior to 4.9.
 ////////////////////////////////////////////////////////////////////
 LPoint3f CollisionPolygon::
-to_3d(const LVecBase2f &point2d) const {
+legacy_to_3d(const LVecBase2f &point2d, int axis) const {
   nassertr(!point2d.is_nan(), LPoint3f(0.0f, 0.0f, 0.0f));
 
   LVector3f normal = get_normal();
@@ -1018,17 +927,15 @@ to_3d(const LVecBase2f &point2d) const {
   nassertr(!normal.is_nan(), LPoint3f(0.0f, 0.0f, 0.0f));
   nassertr(!cnan(D), LPoint3f(0.0f, 0.0f, 0.0f));
 
-  switch (_axis) {
-  case AT_x:
-    return LPoint3f(-(normal[1]*point2d[0] + normal[2]*point2d[1] + D)/normal[0],
-                    point2d[0], point2d[1]);
+  switch (axis) {
+  case 0:  // AT_x:
+    return LPoint3f(-(normal[1]*point2d[0] + normal[2]*point2d[1] + D)/normal[0],                    point2d[0], point2d[1]);
 
-  case AT_y:
+  case 1:  // AT_y:
     return LPoint3f(point2d[0],
-                    -(normal[0]*point2d[0] + normal[2]*point2d[1] + D)/normal[1],
-                    point2d[1]);
+                    -(normal[0]*point2d[0] + normal[2]*point2d[1] + D)/normal[1],                    point2d[1]);
 
-  case AT_z:
+  case 2:  // AT_z:
     return LPoint3f(point2d[0], point2d[1],
                     -(normal[0]*point2d[0] + normal[1]*point2d[1] + D)/normal[2]);
   }
@@ -1042,7 +949,8 @@ to_3d(const LVecBase2f &point2d) const {
 //       Access: Private
 //  Description: Clips the source_points of the polygon by the
 //               indicated clipping plane, and modifies new_points to
-//               reflect the new set of clipped points.
+//               reflect the new set of clipped points (but does not
+//               compute the vectors in new_points).
 //
 //               The return value is true if the set of points is
 //               unmodified (all points are behind the clip plane), or
@@ -1075,9 +983,6 @@ clip_polygon(CollisionPolygon::Points &new_points,
   // a 2-d clipping line.
   LPoint2f from2d = to_2d(from3d);
   LVector2f delta2d = to_2d(delta3d);
-  if (_reversed) {
-    delta2d = -delta2d;
-  }
 
   float a = -delta2d[1];
   float b = delta2d[0];
@@ -1092,12 +997,12 @@ clip_polygon(CollisionPolygon::Points &new_points,
   // number of vertices, or keep them the same number.)
   new_points.reserve(source_points.size() + 1);
 
-  LPoint2f last_point = source_points.back();
+  LPoint2f last_point = source_points.back()._p;
   bool last_is_in = !is_right(last_point - from2d, delta2d);
   bool all_in = last_is_in;
   Points::const_iterator pi;
   for (pi = source_points.begin(); pi != source_points.end(); ++pi) {
-    const LPoint2f &this_point = (*pi);
+    const LPoint2f &this_point = (*pi)._p;
     bool this_is_in = !is_right(this_point - from2d, delta2d);
 
     if (this_is_in != last_is_in) {
@@ -1107,13 +1012,13 @@ clip_polygon(CollisionPolygon::Points &new_points,
       float t = -(a * last_point[0] + b * last_point[1] + c) / (a * d[0] + b * d[1]);
       LPoint2f p = last_point + t * d;
 
-      new_points.push_back(p);
+      new_points.push_back(PointDef(p[0], p[1]));
       last_is_in = this_is_in;
     } 
 
     if (this_is_in) {
       // We are behind the clipping line.  Keep the point.
-      new_points.push_back(this_point);
+      new_points.push_back(PointDef(this_point[0], this_point[1]));
     } else {
       all_in = false;
     }
@@ -1168,6 +1073,10 @@ apply_clip_plane(CollisionPolygon::Points &new_points,
     }
   }
 
+  if (!all_in) {
+    compute_vectors(new_points);
+  }
+
   return all_in;
 }
 
@@ -1178,19 +1087,14 @@ apply_clip_plane(CollisionPolygon::Points &new_points,
 //               the particular object to a Datagram
 ////////////////////////////////////////////////////////////////////
 void CollisionPolygon::
-write_datagram(BamWriter *manager, Datagram &me)
-{
-  int i;
-
+write_datagram(BamWriter *manager, Datagram &me) {
   CollisionPlane::write_datagram(manager, me);
   me.add_uint16(_points.size());
-  for(i = 0; i < (int)_points.size(); i++)
-  {
-    _points[i].write_datagram(me);
+  for (size_t i = 0; i < _points.size(); i++) {
+    _points[i]._p.write_datagram(me);
+    _points[i]._v.write_datagram(me);
   }
-  _median.write_datagram(me);
-  me.add_uint8(_axis);
-  me.add_uint8(_reversed);
+  _to_2d_mat.write_datagram(me);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1202,24 +1106,53 @@ write_datagram(BamWriter *manager, Datagram &me)
 //               place
 ////////////////////////////////////////////////////////////////////
 void CollisionPolygon::
-fillin(DatagramIterator& scan, BamReader* manager)
-{
-  int i;
-  LPoint2f temp;
+fillin(DatagramIterator &scan, BamReader *manager) {
   CollisionPlane::fillin(scan, manager);
-  int size = scan.get_uint16();
-  for(i = 0; i < size; i++)
-  {
-    temp.read_datagram(scan);
-    _points.push_back(temp);
-  }
-  _median.read_datagram(scan);
-  _axis = (enum AxisType)scan.get_uint8();
+  if (manager->get_file_minor_ver() < 9) {
+    // Decode old-style collision polygon.
 
-  // It seems that Windows wants this expression to prevent a
-  // 'performance warning'.  Whatever.
-  _reversed = (scan.get_uint8() != 0);
+    Points points;
+    size_t size = scan.get_uint16();
+    for (size_t i = 0; i < size; i++) {
+      LPoint2f p;
+      p.read_datagram(scan);
+      
+      points.push_back(PointDef(p[0], p[1]));
+    }
+    LPoint2f median;
+    median.read_datagram(scan);
+
+    int axis = scan.get_uint8();
+    bool reversed = (scan.get_uint8() != 0);
+
+    // Now convert the above points into 3-d by the old-style rules.
+    pvector<LPoint3f> verts;
+    Points::const_iterator pi;
+    for (pi = points.begin(); pi != points.end(); ++pi) {
+      verts.push_back(legacy_to_3d((*pi)._p, axis));
+    }
+    if (reversed) {
+      reverse(verts.begin(), verts.end());
+    }
+
+    const LPoint3f *verts_begin = &verts[0];
+    const LPoint3f *verts_end = verts_begin + verts.size();
+    setup_points(verts_begin, verts_end);
+
+  } else {
+    // Load new-style collision polygon.
+    size_t size = scan.get_uint16();
+    for (size_t i = 0; i < size; i++) {
+      LPoint2f p;
+      LVector2f v;
+      p.read_datagram(scan);
+      v.read_datagram(scan);
+      _points.push_back(PointDef(p, v));
+    }
+    _to_2d_mat.read_datagram(scan);
+  }
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::make_CollisionPolygon
@@ -1227,8 +1160,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //  Description: Factory method to generate a CollisionPolygon object
 ////////////////////////////////////////////////////////////////////
 TypedWritable* CollisionPolygon::
-make_CollisionPolygon(const FactoryParams &params)
-{
+make_CollisionPolygon(const FactoryParams &params) {
   CollisionPolygon *me = new CollisionPolygon;
   DatagramIterator scan;
   BamReader *manager;
@@ -1244,8 +1176,7 @@ make_CollisionPolygon(const FactoryParams &params)
 //  Description: Factory method to generate a CollisionPolygon object
 ////////////////////////////////////////////////////////////////////
 void CollisionPolygon::
-register_with_read_factory(void)
-{
+register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_CollisionPolygon);
 }
 

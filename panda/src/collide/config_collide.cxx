@@ -51,6 +51,12 @@ ConfigureFn(config_collide) {
 // case-by-case basis whether they really need this feature.
 const bool respect_prev_transform = config_collide.GetBool("respect-prev-transform", false);
 
+// This should be true to support the effective_normal interface of
+// polygons.  Set it false to disable this feature, so that all
+// collision solids (including polygons and planes) use their actual
+// normal for intersection and physics tests.
+const bool respect_effective_normal = config_collide.GetBool("respect-effective-normal", true);
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libcollide
 //  Description: Initializes the library.  This must be called at

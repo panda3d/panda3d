@@ -34,7 +34,7 @@ static const unsigned short _bam_major_ver = 4;
 // Bumped to major version 3 on 12/8/00 to change float64's to float32's.
 // Bumped to major version 4 on 4/10/02 to store new scene graph.
 
-static const unsigned short _bam_minor_ver = 8;
+static const unsigned short _bam_minor_ver = 9;
 // Bumped to minor version 1 on 4/10/03 to add CullFaceAttrib::reverse.
 // Bumped to minor version 2 on 4/12/03 to add num_components to texture.
 // Bumped to minor version 3 on 4/15/03 to add ImageBuffer::_alpha_file_channel
@@ -43,6 +43,7 @@ static const unsigned short _bam_minor_ver = 8;
 // Bumped to minor version 6 on 7/22/03 to add shear to scene graph and animation data.
 // Bumped to minor version 7 on 11/10/03 to add CollisionSolid::_effective_normal
 // Bumped to minor version 8 on 11/12/03 to add FFTCompressor::reject_compression
+// Bumped to minor version 9 on 12/02/03 to change CollisionPolygon internals.
 
 
 #endif

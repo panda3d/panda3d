@@ -102,3 +102,78 @@ verify_points(const LPoint3f &a, const LPoint3f &b,
   array[3] = d;
   return verify_points(array, array + 4);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::to_2d
+//       Access: Private
+//  Description: Assuming the indicated point in 3-d space lies within
+//               the polygon's plane, returns the corresponding point
+//               in the polygon's 2-d definition space.
+////////////////////////////////////////////////////////////////////
+INLINE LPoint2f CollisionPolygon::
+to_2d(const LVecBase3f &point3d) const {
+  LPoint3f point = LPoint3f(point3d) * _to_2d_mat;
+  return LPoint2f(point[0], point[2]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::calc_to_3d_mat
+//       Access: Private
+//  Description: Fills the indicated matrix with the appropriate
+//               rotation transform to move points from the 2-d plane
+//               into the 3-d (X, 0, Z) plane.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionPolygon::
+calc_to_3d_mat(LMatrix4f &to_3d_mat) const {
+  look_at(to_3d_mat, get_plane().get_normal());
+  to_3d_mat.set_row(3, get_plane().get_point());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::to_3d
+//       Access: Private, Static
+//  Description: Extrude the indicated point in the polygon's 2-d
+//               definition space back into 3-d coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE LPoint3f CollisionPolygon::
+to_3d(const LVecBase2f &point2d, const LMatrix4f &to_3d_mat) {
+  return LPoint3f(point2d[0], 0.0f, point2d[1]) * to_3d_mat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::PointDef::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE CollisionPolygon::PointDef::
+PointDef(const LPoint2f &p, const LVector2f &v) : _p(p), _v(v) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::PointDef::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE CollisionPolygon::PointDef::
+PointDef(float x, float y) : _p(x, y) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::PointDef::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE CollisionPolygon::PointDef::
+PointDef(const CollisionPolygon::PointDef &copy) : _p(copy._p), _v(copy._v) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::PointDef::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionPolygon::PointDef::
+operator = (const CollisionPolygon::PointDef &copy) {
+  _p = copy._p;
+  _v = copy._v;
+}

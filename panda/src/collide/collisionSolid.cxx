@@ -89,7 +89,7 @@ test_intersection(const CollisionEntry &) const {
 ////////////////////////////////////////////////////////////////////
 void CollisionSolid::
 xform(const LMatrix4f &mat) {
-  if (has_effective_normal()) {
+  if ((_flags & F_effective_normal) != 0) {
     _effective_normal = _effective_normal * mat;
     _effective_normal.normalize();
   }
