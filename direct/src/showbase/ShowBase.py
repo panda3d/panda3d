@@ -24,6 +24,8 @@ import FSM
 import State
 import DirectObject
 import SfxPlayer
+if __debug__:
+    import DeltaProfiler
 
 __builtins__["FADE_SORT_INDEX"] = 1000
 __builtins__["NO_FADE_SORT_INDEX"] = 2000
@@ -189,6 +191,8 @@ class ShowBase(DirectObject.DirectObject):
         __builtins__["directNotify"] = directNotify
         __builtins__["globalClock"] = ClockObject.getGlobalClock()
         __builtins__["vfs"] = vfs
+        if __debug__:
+            __builtins__["deltaProfiler"] = DeltaProfiler.DeltaProfiler("ShowBase")
 
         # Now hang a hook on the window-event from Panda.  This allows
         # us to detect when the user resizes, minimizes, or closes the
