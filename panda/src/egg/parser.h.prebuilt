@@ -1,212 +1,91 @@
-/* A Bison parser, made by GNU Bison 1.875.  */
+#ifndef BISON_Y_TAB_H
+# define BISON_Y_TAB_H
 
-/* Skeleton parser for Yacc-like parsing with Bison,
-   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002 Free Software Foundation, Inc.
+# define	NUMBER	257
+# define	ULONG	258
+# define	STRING	259
+# define	BEZIERCURVE	260
+# define	BFACE	261
+# define	BILLBOARD	262
+# define	BILLBOARDCENTER	263
+# define	BUNDLE	264
+# define	CLOSED	265
+# define	COLLIDE	266
+# define	COMMENT	267
+# define	COORDSYSTEM	268
+# define	CV	269
+# define	DART	270
+# define	DNORMAL	271
+# define	DRGBA	272
+# define	DUV	273
+# define	DXYZ	274
+# define	DCS	275
+# define	DISTANCE	276
+# define	DTREF	277
+# define	DYNAMICVERTEXPOOL	278
+# define	EXTERNAL_FILE	279
+# define	FLIGHT	280
+# define	GROUP	281
+# define	HIP	282
+# define	INTANGENT	283
+# define	JOINT	284
+# define	KNOTS	285
+# define	INCLUDE	286
+# define	INSTANCE	287
+# define	LINE	288
+# define	LOOP	289
+# define	MATERIAL	290
+# define	MATRIX3	291
+# define	MATRIX4	292
+# define	MODEL	293
+# define	MREF	294
+# define	NORMAL	295
+# define	NURBSCURVE	296
+# define	NURBSSURFACE	297
+# define	OBJECTTYPE	298
+# define	ORDER	299
+# define	OUTTANGENT	300
+# define	POINTLIGHT	301
+# define	POLYGON	302
+# define	REF	303
+# define	RGBA	304
+# define	ROTATE	305
+# define	ROTX	306
+# define	ROTY	307
+# define	ROTZ	308
+# define	SANIM	309
+# define	SCALAR	310
+# define	SCALE	311
+# define	SEQUENCE	312
+# define	SHADING	313
+# define	SWITCH	314
+# define	SWITCHCONDITION	315
+# define	TABLE	316
+# define	TABLE_V	317
+# define	TAG	318
+# define	TEXLIST	319
+# define	TEXTURE	320
+# define	TLENGTHS	321
+# define	TRANSFORM	322
+# define	TRANSLATE	323
+# define	TREF	324
+# define	TRIM	325
+# define	TXT	326
+# define	UKNOTS	327
+# define	UV	328
+# define	VKNOTS	329
+# define	VERTEX	330
+# define	VERTEXANIM	331
+# define	VERTEXPOOL	332
+# define	VERTEXREF	333
+# define	XFMANIM	334
+# define	XFMSANIM	335
+# define	START_EGG	336
+# define	START_GROUP_BODY	337
+# define	START_TEXTURE_BODY	338
+# define	START_PRIMITIVE_BODY	339
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  */
-
-/* As a special exception, when this file is copied by Bison into a
-   Bison output file, you may use that output file without restriction.
-   This special exception was added by the Free Software Foundation
-   in version 1.24 of Bison.  */
-
-/* Tokens.  */
-#ifndef YYTOKENTYPE
-# define YYTOKENTYPE
-   /* Put the tokens into the symbol table, so that GDB and other debuggers
-      know about them.  */
-   enum yytokentype {
-     NUMBER = 258,
-     ULONG = 259,
-     STRING = 260,
-     BEZIERCURVE = 261,
-     BFACE = 262,
-     BILLBOARD = 263,
-     BILLBOARDCENTER = 264,
-     BUNDLE = 265,
-     CLOSED = 266,
-     COLLIDE = 267,
-     COMMENT = 268,
-     COORDSYSTEM = 269,
-     CV = 270,
-     DART = 271,
-     DNORMAL = 272,
-     DRGBA = 273,
-     DUV = 274,
-     DXYZ = 275,
-     DCS = 276,
-     DISTANCE = 277,
-     DTREF = 278,
-     DYNAMICVERTEXPOOL = 279,
-     EXTERNAL_FILE = 280,
-     FLIGHT = 281,
-     GROUP = 282,
-     HIP = 283,
-     INTANGENT = 284,
-     JOINT = 285,
-     KNOTS = 286,
-     INCLUDE = 287,
-     INSTANCE = 288,
-     LOOP = 289,
-     MATERIAL = 290,
-     MATRIX3 = 291,
-     MATRIX4 = 292,
-     MODEL = 293,
-     MREF = 294,
-     NORMAL = 295,
-     NURBSCURVE = 296,
-     NURBSSURFACE = 297,
-     OBJECTTYPE = 298,
-     ORDER = 299,
-     OUTTANGENT = 300,
-     POINTLIGHT = 301,
-     POLYGON = 302,
-     REF = 303,
-     RGBA = 304,
-     ROTATE = 305,
-     ROTX = 306,
-     ROTY = 307,
-     ROTZ = 308,
-     SANIM = 309,
-     SCALAR = 310,
-     SCALE = 311,
-     SEQUENCE = 312,
-     SHADING = 313,
-     SWITCH = 314,
-     SWITCHCONDITION = 315,
-     TABLE = 316,
-     TABLE_V = 317,
-     TAG = 318,
-     TEXLIST = 319,
-     TEXTURE = 320,
-     TLENGTHS = 321,
-     TRANSFORM = 322,
-     TRANSLATE = 323,
-     TREF = 324,
-     TRIM = 325,
-     TXT = 326,
-     UKNOTS = 327,
-     UV = 328,
-     VKNOTS = 329,
-     VERTEX = 330,
-     VERTEXANIM = 331,
-     VERTEXPOOL = 332,
-     VERTEXREF = 333,
-     XFMANIM = 334,
-     XFMSANIM = 335,
-     START_EGG = 336,
-     START_GROUP_BODY = 337,
-     START_TEXTURE_BODY = 338,
-     START_PRIMITIVE_BODY = 339
-   };
-#endif
-#define NUMBER 258
-#define ULONG 259
-#define STRING 260
-#define BEZIERCURVE 261
-#define BFACE 262
-#define BILLBOARD 263
-#define BILLBOARDCENTER 264
-#define BUNDLE 265
-#define CLOSED 266
-#define COLLIDE 267
-#define COMMENT 268
-#define COORDSYSTEM 269
-#define CV 270
-#define DART 271
-#define DNORMAL 272
-#define DRGBA 273
-#define DUV 274
-#define DXYZ 275
-#define DCS 276
-#define DISTANCE 277
-#define DTREF 278
-#define DYNAMICVERTEXPOOL 279
-#define EXTERNAL_FILE 280
-#define FLIGHT 281
-#define GROUP 282
-#define HIP 283
-#define INTANGENT 284
-#define JOINT 285
-#define KNOTS 286
-#define INCLUDE 287
-#define INSTANCE 288
-#define LOOP 289
-#define MATERIAL 290
-#define MATRIX3 291
-#define MATRIX4 292
-#define MODEL 293
-#define MREF 294
-#define NORMAL 295
-#define NURBSCURVE 296
-#define NURBSSURFACE 297
-#define OBJECTTYPE 298
-#define ORDER 299
-#define OUTTANGENT 300
-#define POINTLIGHT 301
-#define POLYGON 302
-#define REF 303
-#define RGBA 304
-#define ROTATE 305
-#define ROTX 306
-#define ROTY 307
-#define ROTZ 308
-#define SANIM 309
-#define SCALAR 310
-#define SCALE 311
-#define SEQUENCE 312
-#define SHADING 313
-#define SWITCH 314
-#define SWITCHCONDITION 315
-#define TABLE 316
-#define TABLE_V 317
-#define TAG 318
-#define TEXLIST 319
-#define TEXTURE 320
-#define TLENGTHS 321
-#define TRANSFORM 322
-#define TRANSLATE 323
-#define TREF 324
-#define TRIM 325
-#define TXT 326
-#define UKNOTS 327
-#define UV 328
-#define VKNOTS 329
-#define VERTEX 330
-#define VERTEXANIM 331
-#define VERTEXPOOL 332
-#define VERTEXREF 333
-#define XFMANIM 334
-#define XFMSANIM 335
-#define START_EGG 336
-#define START_GROUP_BODY 337
-#define START_TEXTURE_BODY 338
-#define START_PRIMITIVE_BODY 339
-
-
-
-
-#if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-typedef int YYSTYPE;
-# define yystype YYSTYPE /* obsolescent; will be withdrawn */
-# define YYSTYPE_IS_DECLARED 1
-# define YYSTYPE_IS_TRIVIAL 1
-#endif
 
 extern YYSTYPE eggyylval;
 
-
-
+#endif /* not BISON_Y_TAB_H */
