@@ -64,7 +64,7 @@ PUBLISHED:
 
   INLINE void set_button_up_pattern(const string &pattern);
   INLINE const string &get_button_up_pattern() const;
-
+  
   INLINE void set_enter_pattern(const string &pattern);
   INLINE const string &get_enter_pattern() const;
 

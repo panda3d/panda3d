@@ -13,6 +13,7 @@
 #include <keyboardButton.h>
 #include <mouseButton.h>
 #include <throw_event.h>
+#include <eventParameter.h>
 #include <pruneTransition.h>
 #include <transformTransition.h>
 
@@ -204,7 +205,7 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
   }
 
   if (!event.empty()) {
-    throw_event(event);
+    throw_event(event, EventParameter(region), EventParameter(button_name));
   }
 }
 

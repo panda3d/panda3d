@@ -119,7 +119,7 @@ get_over_region(float x, float y) const {
 //               names are generated when a button is depressed.  This
 //               is a string that may contain any of the following:
 //
-//                  %n  - the name of the region the mouse is over
+//                  %r  - the name of the region the mouse is over
 //                  %b  - the name of the button pressed.
 //
 //               The event name will be based on the in_pattern
