@@ -29,6 +29,12 @@
 ////////////////////////////////////////////////////////////////////
 // Defines
 ////////////////////////////////////////////////////////////////////
+enum receive_status {
+  RS_error,
+  RS_timeout,
+  RS_success,
+  RS_eof,
+};
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DownloaderToken
@@ -394,14 +400,14 @@ safe_send(int socket, const char *data, int length, long timeout) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int Downloader::
-safe_receive(int socket, char *data, int length, long timeout) {
+safe_receive(int socket, char *data, int length, long timeout, int &bytes) {
   char *data_ptr = data;
   if (length == 0) {
     downloader_cat.error()
       << "Downloader::safe_receive() - requested 0 length receive!" << endl;
-    return 0;
+    return RS_error;
   }
-  int bytes = 0;
+  bytes = 0;
   struct timeval tv;
   tv.tv_sec = timeout;
   tv.tv_usec = 0;
@@ -411,14 +417,14 @@ safe_receive(int socket, char *data, int length, long timeout) {
     FD_SET(socket, &rset);
     int sret = select(socket + 1, &rset, NULL, NULL, &tv);
     if (sret == 0) {
-      downloader_cat.error()
+      downloader_cat.warning()
 	<< "Downloader::safe_receive() - select timed out after: "
 	<< timeout << " seconds" << endl;
-      return bytes;
+      return RS_timeout;
     } else if (sret == -1) {
       downloader_cat.error()
 	<< "Downloader::safe_receive() - error: " << strerror(errno) << endl;
-      return bytes;
+      return RS_error;
     }
     int ret = recv(socket, data_ptr, length - bytes, 0);
     if (ret > 0) {
@@ -432,14 +438,14 @@ safe_receive(int socket, char *data, int length, long timeout) {
       if (downloader_cat.is_debug())
         downloader_cat.debug()
 	  << "Downloader::safe_receive() - End of file" << endl;
-      return bytes;
+      return RS_eof;
     } else {
       downloader_cat.error()
 	<< "Downloader::safe_receive() - error: " << strerror(errno) << endl;
-      return bytes;
+      return RS_error;
     }
   }
-  return bytes;
+  return RS_success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -525,16 +531,43 @@ download(const string &file_name, Filename file_dest,
       }
 
       // Grab the next chunk
+      int bytes = 0;
       int ans = safe_receive(_socket, status._next_in, read_size,
-					(long)downloader_timeout); 
+					(long)downloader_timeout, bytes); 
 
-      if (ans < 0) {
+      // Handle receive timeouts by trying again
+      if (ans == RS_timeout) {
+	nassertr(bytes == 0, false);
+	for (int r = 0; r < downloader_timeout_retries; r++) {
+	    ans = safe_receive(_socket, status._next_in, read_size,
+					(long)downloader_timeout, bytes);
+	    if (ans != RS_timeout)
+	      break;
+	}
+	if (ans == RS_timeout) {
+	  // We've really timed out - throw an event
+	  downloader_cat.error()
+	    << "Downloader::download() - receive timed out after: " 
+	    << downloader_timeout_retries << " retries" << endl;
+          PT_Event timeout_event = new Event(status._event_name);
+          timeout_event->add_parameter(EventParameter((int)status._id));
+          timeout_event->add_parameter(
+				EventParameter(status._total_bytes_written));
+	  timeout_event->add_parameter(EventParameter(-1));
+          throw_event(timeout_event);
+	  return false;
+	}
+      }
+
+      // Handle receive errors
+      if (ans == RS_error) {
         downloader_cat.error()
           << "Downloader::download() - Error reading from socket: "
 	  << strerror(errno) << endl;
 	return false;
+      }
 
-      } else if (ans == 0) {
+      if (ans == RS_eof) {
 
 	if (got_any_data == true) {
 	  if (downloader_cat.is_debug())
@@ -554,12 +587,12 @@ download(const string &file_name, Filename file_dest,
 	  nap();
 	}
 
-      } else {
+      } else { // ans == RS_success
 	if (downloader_cat.is_debug())
 	  downloader_cat.debug()
-	    << "Downloader::download() - Got: " << ans << " bytes" << endl;
-	status._bytes_in_buffer += ans;
-   	status._next_in += ans;
+	    << "Downloader::download() - Got: " << bytes << " bytes" << endl;
+	status._bytes_in_buffer += bytes;
+   	status._next_in += bytes;
 	got_any_data = true;
 
 	// Sleep for the requested frequency

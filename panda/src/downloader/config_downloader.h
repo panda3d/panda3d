@@ -15,6 +15,7 @@ extern const int downloader_buffer_size;
 extern const float downloader_frequency;
 extern const float downloader_bandwidth;
 extern const int downloader_timeout;
+extern const int downloader_timeout_retries;
 
 extern const int decompressor_buffer_size;
 extern const float decompressor_frequency;
