@@ -54,6 +54,7 @@ class ClusterMsgHandler:
                 type = CLUSTER_NONE
                 self.notify.warning("getData returned false")
         else:
+            datagram = None
             dgi = None
             type = CLUSTER_NONE
         # Note, return datagram to keep a handle on the data
