@@ -489,7 +489,7 @@ class SelectionRay:
         # Determine ray direction based upon the mouse coordinates
         # Note! This has to be a cam object (of type LensNode)
         self.ray.setFromLens( base.camNode, mouseX, mouseY )
-        self.ct.traverse( targetNodePath.node() )
+        self.ct.traverse( targetNodePath )
         self.numEntries = self.cq.getNumEntries()
         self.cq.sortEntries()
         # Record cam's current position (used for cycling through
@@ -554,7 +554,7 @@ class SelectionRay:
         # Note! This has to be a cam object (of type ProjectionNode)
         self.ray.setOrigin( origin )
         self.ray.setDirection( dir )
-        self.ct.traverse( targetNodePath.node() )
+        self.ct.traverse( targetNodePath )
         self.numEntries = self.cq.getNumEntries()
         self.cq.sortEntries()
         return self.numEntries

@@ -904,8 +904,14 @@ class DirectSessionPanel(AppShell):
 
     def updateLightInfo(self, page = None):
         # Set main lighting button
-        self.enableLights.set(
-            render.arc().hasTransition(LightTransition.getClassType()))
+        try:
+            # Old scene graph interface
+            self.enableLights.set(
+                render.arc().hasTransition(LightTransition.getClassType()))
+        except:
+            # No new scene graph equivalent yet
+            self.enableLights.set(0)
+            
         # Set light specific info
         if self.activeLight:
             l = self.activeLight.getLight()
