@@ -162,7 +162,7 @@ public:
     return _v.almost_equal(other._v, nearly_zero);
   }
   bool operator != (const BuilderC &other) const {
-    return !(*this == other);
+    return !operator == (other);
   }
   bool operator < (const BuilderC &other) const {
     return (_v.compare_to(other._v) < 0);
