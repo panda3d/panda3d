@@ -39,6 +39,7 @@
 #endif
 
 #ifndef CPPPARSER
+PStatCollector GraphicsEngine::_show_code_pcollector("App:Show Code");
 PStatCollector GraphicsEngine::_cull_pcollector("Cull");
 PStatCollector GraphicsEngine::_draw_pcollector("Draw");
 PStatCollector GraphicsEngine::_sync_pcollector("Draw:Sync");
@@ -90,6 +91,10 @@ GraphicsEngine(Pipeline *pipeline) :
 ////////////////////////////////////////////////////////////////////
 GraphicsEngine::
 ~GraphicsEngine() {
+  if (_show_code_pcollector.is_active()) {
+    _show_code_pcollector.stop();
+  }
+
   remove_all_windows();
 }
 
@@ -341,6 +346,12 @@ is_empty() const {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 render_frame() {
+  // Anything that happens outside of GraphicsEngine::render_frame()
+  // is deemed to be show code.
+  if (_show_code_pcollector.is_active()) {
+    _show_code_pcollector.stop();
+  }
+
   // We hold the GraphicsEngine mutex while we wait for all of the
   // threads.  Doing this puts us at risk for deadlock if any of the
   // threads tries to call any methods on the GraphicsEngine.  So
@@ -403,6 +414,10 @@ render_frame() {
     tv.tv_usec = 0;
     select(0, NULL, NULL, NULL, &tv);
   }
+
+  // Anything that happens outside of GraphicsEngine::render_frame()
+  // is deemed to be show code.
+  _show_code_pcollector.start();
 }
 
 ////////////////////////////////////////////////////////////////////

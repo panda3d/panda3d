@@ -192,6 +192,7 @@ private:
   FlipState _flip_state;
   Mutex _lock;
 
+  static PStatCollector _show_code_pcollector;
   static PStatCollector _cull_pcollector;
   static PStatCollector _draw_pcollector;
   static PStatCollector _sync_pcollector;
