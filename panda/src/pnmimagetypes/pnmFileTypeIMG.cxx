@@ -6,6 +6,9 @@
 #include "pnmFileTypeIMG.h"
 #include "config_pnmimagetypes.h"
 
+#include <pnmFileTypeRegistry.h>
+#include <bamReader.h>
+
 // Since raw image files don't have a magic number, we'll make a little
 // sanity check on the size of the image.  If either the width or height is
 // larger than this, it must be bogus.
@@ -332,3 +335,32 @@ write_row(xel *row_data, xelval *) {
 }
 
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeIMG::register_with_read_factory
+//       Access: Public, Static
+//  Description: Registers the current object as something that can be
+//               read from a Bam file.
+////////////////////////////////////////////////////////////////////
+void PNMFileTypeIMG::
+register_with_read_factory() {
+  BamReader::get_factory()->
+    register_factory(get_class_type(), make_PNMFileTypeIMG);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeIMG::make_PNMFileTypeIMG
+//       Access: Protected, Static
+//  Description: This method is called by the BamReader when an object
+//               of this type is encountered in a Bam file; it should
+//               allocate and return a new object with all the data
+//               read.
+//
+//               In the case of the PNMFileType objects, since these
+//               objects are all shared, we just pull the object from
+//               the registry.
+////////////////////////////////////////////////////////////////////
+TypedWriteable *PNMFileTypeIMG::
+make_PNMFileTypeIMG(const FactoryParams &params) {
+  return PNMFileTypeRegistry::get_ptr()->get_type_by_handle(get_class_type());
+}

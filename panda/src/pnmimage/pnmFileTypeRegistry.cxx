@@ -67,7 +67,7 @@ get_num_types() const {
 ////////////////////////////////////////////////////////////////////
 PNMFileType *PNMFileTypeRegistry::
 get_type(int n) const {
-  nassertr(n >= 0 && n < _types.size(), NULL);
+  nassertr(n >= 0 && n < (int)_types.size(), NULL);
   return _types[n];
 }
 
@@ -144,6 +144,25 @@ get_type_from_magic_number(const string &magic_number) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeRegistry::get_type_by_handle
+//       Access: Public
+//  Description: Returns the PNMFileType instance stored in the
+//               registry for the given TypeHandle, e.g. as retrieved
+//               by a previous call to get_type() on the type
+//               instance.
+////////////////////////////////////////////////////////////////////
+PNMFileType *PNMFileTypeRegistry::
+get_type_by_handle(TypeHandle handle) const {
+  Handles::const_iterator hi;
+  hi = _handles.find(handle);
+  if (hi != _handles.end()) {
+    return (*hi).second;
+  }
+
+  return (PNMFileType *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeRegistry::write_types
 //       Access: Public
 //  Description: Writes a list of supported image file types to the
@@ -183,7 +202,8 @@ write_types(ostream &out, int indent_level) const {
 void PNMFileTypeRegistry::
 register_type(PNMFileType *type) {
   // Make sure we haven't already registered this type.
-  if (find(_types.begin(), _types.end(), type) != _types.end()) {
+  Handles::iterator hi = _handles.find(type->get_type());
+  if (hi != _handles.end()) {
     pnmimage_cat.warning()
       << "Attempt to register PNMFileType " << type->get_name() 
       << " (" << type->get_type() << ") more than once.\n";
@@ -191,6 +211,7 @@ register_type(PNMFileType *type) {
   }
 
   _types.push_back(type);
+  _handles.insert(Handles::value_type(type->get_type(), type));
 
   // Collect the unique extensions associated with the type.
   set<string> unique_extensions;

@@ -7,6 +7,9 @@
 #include "config_pnmimagetypes.h"
 #include "sgi.h"
 
+#include <pnmFileTypeRegistry.h>
+#include <bamReader.h>
+
 static const char * const extensions[] = {
   "rgb", "rgba", "sgi"
 };
@@ -122,3 +125,32 @@ make_writer(FILE *file, bool owns_file) {
   return new Writer(this, file, owns_file);
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeSGI::register_with_read_factory
+//       Access: Public, Static
+//  Description: Registers the current object as something that can be
+//               read from a Bam file.
+////////////////////////////////////////////////////////////////////
+void PNMFileTypeSGI::
+register_with_read_factory() {
+  BamReader::get_factory()->
+    register_factory(get_class_type(), make_PNMFileTypeSGI);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeSGI::make_PNMFileTypeSGI
+//       Access: Protected, Static
+//  Description: This method is called by the BamReader when an object
+//               of this type is encountered in a Bam file; it should
+//               allocate and return a new object with all the data
+//               read.
+//
+//               In the case of the PNMFileType objects, since these
+//               objects are all shared, we just pull the object from
+//               the registry.
+////////////////////////////////////////////////////////////////////
+TypedWriteable *PNMFileTypeSGI::
+make_PNMFileTypeSGI(const FactoryParams &params) {
+  return PNMFileTypeRegistry::get_ptr()->get_type_by_handle(get_class_type());
+}

@@ -7,6 +7,8 @@
 
 #include <string_utils.h>
 #include <executionEnvironment.h>
+#include <bamReader.h>
+#include <bamWriter.h>
 
 bool PNMFileType::_did_init_pnm = false;
 TypeHandle PNMFileType::_type_handle;
@@ -152,3 +154,17 @@ init_pnm() {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileType::write_datagram
+//       Access: Public, Virtual
+//  Description: Fills the indicated datagram up with a binary
+//               representation of the current object, in preparation
+//               for writing to a Bam file.
+//
+//               None of the particular PNMFileType objects store any
+//               extra data--at least, not yet--so we just define this
+//               up here to do nothing.
+////////////////////////////////////////////////////////////////////
+void PNMFileType::
+write_datagram(BamWriter *, Datagram &) {
+}

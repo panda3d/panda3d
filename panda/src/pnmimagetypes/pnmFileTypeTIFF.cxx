@@ -6,6 +6,13 @@
 #include "pnmFileTypeTIFF.h"
 #include "config_pnmimagetypes.h"
 
+#include <pnmFileTypeRegistry.h>
+#include <bamReader.h>
+
+// Tiff will want to re-typedef these things.
+#define int32 tiff_int32
+#define uint32 tiff_uint32
+
 extern "C" {
 #include "../pnm/ppmcmap.h"
 #include "../tiff/tiff.h"
@@ -776,4 +783,33 @@ write_data(xel *array, xelval *alpha) {
   TIFFClose( tif );
 
   return _y_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeTIFF::register_with_read_factory
+//       Access: Public, Static
+//  Description: Registers the current object as something that can be
+//               read from a Bam file.
+////////////////////////////////////////////////////////////////////
+void PNMFileTypeTIFF::
+register_with_read_factory() {
+  BamReader::get_factory()->
+    register_factory(get_class_type(), make_PNMFileTypeTIFF);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeTIFF::make_PNMFileTypeTIFF
+//       Access: Protected, Static
+//  Description: This method is called by the BamReader when an object
+//               of this type is encountered in a Bam file; it should
+//               allocate and return a new object with all the data
+//               read.
+//
+//               In the case of the PNMFileType objects, since these
+//               objects are all shared, we just pull the object from
+//               the registry.
+////////////////////////////////////////////////////////////////////
+TypedWriteable *PNMFileTypeTIFF::
+make_PNMFileTypeTIFF(const FactoryParams &params) {
+  return PNMFileTypeRegistry::get_ptr()->get_type_by_handle(get_class_type());
 }

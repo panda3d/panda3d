@@ -239,12 +239,23 @@ read_object(void)
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::read_pointer
 //       Access: Public
-//  Description: Utility function provided to correctly read in objects
-//               from the Datagram source, that any other object contains
-//               pointers to.  Will correctly handle all circular references
-//               Any caller of this function should pass a pointer to itself
-//               because the pointer request will be stored and completed
-//               at a later pointer when the object is actually generated
+//  Description: The interface for reading a pointer to another object
+//               from a Bam file.  Objects reading themselves from a
+//               Bam file should call this when they expect to read a
+//               pointer, passing in the datagram iterator and a
+//               pointer to their own object, i.e. 'this'.
+//
+//               Rather than returning a pointer immediately, this
+//               function reads the internal pointer information from
+//               the datagram and queues up the request.  The pointer
+//               itself may not be available until later (it may be a
+//               pointer to an object that appears later in the Bam
+//               file).  Later, when all pointers are available, the
+//               complete_pointers() callback function will be called
+//               with an array of actual pointers, one for time
+//               read_pointer() was called.  It is then the calling
+//               object's responsibilty to store these pointers in the
+//               object properly.
 ////////////////////////////////////////////////////////////////////
 void BamReader::
 read_pointer(DatagramIterator& scan, TypedWriteable* forWhom)
@@ -262,6 +273,20 @@ read_pointer(DatagramIterator& scan, TypedWriteable* forWhom)
   //or if the object has already been read
   if ((objId != 0) && (_created_objs.find(objId) == _created_objs.end()))
     queue(objId);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::read_pointers
+//       Access: Public
+//  Description: A convenience function to read a contiguous list of
+//               pointers.  This is equivalent to calling
+//               read_pointer() count times.
+////////////////////////////////////////////////////////////////////
+void BamReader::
+read_pointers(DatagramIterator &scan, TypedWriteable *forWhom, int count) {
+  for (int i = 0; i < count; i++) {
+    read_pointer(scan, forWhom);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

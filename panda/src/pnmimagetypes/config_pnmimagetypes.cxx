@@ -109,6 +109,7 @@ ConfigureFn(config_pnmimagetypes) {
       << "Invalid img-header-type: " << img_header_type_str << "\n";
   }
 
+  // Register each type with the PNMFileTypeRegistry.
   PNMFileTypeRegistry *tr = PNMFileTypeRegistry::get_ptr();
 
   tr->register_type(new PNMFileTypePNM);
@@ -122,5 +123,19 @@ ConfigureFn(config_pnmimagetypes) {
   tr->register_type(new PNMFileTypeBMP);
 #ifdef HAVE_JPEG
   tr->register_type(new PNMFileTypeJPG);
+#endif
+
+  // Also register with the Bam reader.
+  PNMFileTypePNM::register_with_read_factory();
+  PNMFileTypeSGI::register_with_read_factory();
+  PNMFileTypeAlias::register_with_read_factory();
+  PNMFileTypeRadiance::register_with_read_factory();
+  PNMFileTypeTIFF::register_with_read_factory();
+  PNMFileTypeYUV::register_with_read_factory();
+  PNMFileTypeIMG::register_with_read_factory();
+  PNMFileTypeSoftImage::register_with_read_factory();
+  PNMFileTypeBMP::register_with_read_factory();
+#ifdef HAVE_JPEG
+  PNMFileTypeJPG::register_with_read_factory();
 #endif
 }

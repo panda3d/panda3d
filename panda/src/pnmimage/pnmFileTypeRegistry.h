@@ -10,8 +10,6 @@
 
 #include <typeHandle.h>
 
-#include <stdio.h>
-
 class PNMFileType;
 
 ////////////////////////////////////////////////////////////////////
@@ -33,6 +31,7 @@ public:
 
   PNMFileType *get_type_from_extension(const string &filename) const;
   PNMFileType *get_type_from_magic_number(const string &magic_number) const;
+  PNMFileType *get_type_by_handle(TypeHandle handle) const;
 
   void write_types(ostream &out, int indent_level = 0) const;
 
@@ -46,6 +45,9 @@ private:
 
   typedef map<string, Types> Extensions;
   Extensions _extensions;
+
+  typedef map<TypeHandle, PNMFileType *> Handles;
+  Handles _handles;
 
   bool _requires_sort;
 

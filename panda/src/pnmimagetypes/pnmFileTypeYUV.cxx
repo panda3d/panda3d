@@ -51,6 +51,9 @@
 #include "pnmFileTypeYUV.h"
 #include "config_pnmimagetypes.h"
 
+#include <pnmFileTypeRegistry.h>
+#include <bamReader.h>
+
 /* x must be signed for the following to work correctly */
 #define limit(x) (xelval)(((x>0xffffff)?0xff0000:((x<=0xffff)?0:x&0xff0000))>>16)
 
@@ -381,3 +384,32 @@ write_row(xel *row_data, xelval *) {
 }
 
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeYUV::register_with_read_factory
+//       Access: Public, Static
+//  Description: Registers the current object as something that can be
+//               read from a Bam file.
+////////////////////////////////////////////////////////////////////
+void PNMFileTypeYUV::
+register_with_read_factory() {
+  BamReader::get_factory()->
+    register_factory(get_class_type(), make_PNMFileTypeYUV);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeYUV::make_PNMFileTypeYUV
+//       Access: Protected, Static
+//  Description: This method is called by the BamReader when an object
+//               of this type is encountered in a Bam file; it should
+//               allocate and return a new object with all the data
+//               read.
+//
+//               In the case of the PNMFileType objects, since these
+//               objects are all shared, we just pull the object from
+//               the registry.
+////////////////////////////////////////////////////////////////////
+TypedWriteable *PNMFileTypeYUV::
+make_PNMFileTypeYUV(const FactoryParams &params) {
+  return PNMFileTypeRegistry::get_ptr()->get_type_by_handle(get_class_type());
+}

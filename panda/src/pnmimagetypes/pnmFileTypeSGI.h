@@ -97,6 +97,13 @@ public:
   };
 
 
+  // The TypedWriteable interface follows.
+public:
+  static void register_with_read_factory();
+
+protected:
+  static TypedWriteable *make_PNMFileTypeSGI(const FactoryParams &params);
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
