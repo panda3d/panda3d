@@ -1,3 +1,188 @@
+------------------------  RELEASE 1.0.0  ------------------------
+
+Configuration, installation, and execution environments:
+
+  * This is the introduction of the new Panda version numbering
+    system.  The Panda version will be represented with three
+    dot-separated numbers.  The first number, the major version, will
+    change only very rarely.  The second number, the minor version,
+    will increment frequently, with each new feature release.  The
+    third number will increment as needed to indicate bugfix releases
+    on the minor version.
+
+  * Use PandaSystem::get_version_string() (or
+    PandaSystem.getVersionString() in Python) to return the version
+    number of the currently-running Panda.
+
+  * New runtime config system allows for dynamic loading of prc files
+    and supports querying of available variable names.  Use
+    ConfigVariableString, ConfigVariableBool, etc. to get a value from
+    the prc file(s); use the ConfigVariableManager and
+    ConfigPageManager classes (or the cvMgr and cpMgr global objects
+    in Python) to make general queries.
+
+  * The ppremake build system now properly detects intra-tree
+    dependencies, but only if each tree is fully built and installed
+    before ppremake is run within the next dependent tree.  Requires
+    using ppremake version 1.18 or higher.
+
+Miscellaneous:
+
+  * New support for encrypted streams, including encrypted subfiles
+    within a multifile, using the OpenSSL encryption library.  Adds
+    pencrypt and pdecrypt programs.
+
+  * The default port for PStats is now 5185, to avoid a conflict with
+    Instant Messenger.
+
+  * New "smooth" checkbox on PStats graphs provides a better sense of
+    overall trends when graphs are noisy.
+
+  * The meaning of the three components of HPR angles has been
+    officially changed, in particular the meaning of the R component.
+    This change was introduced to make the three components more
+    consistent with each other, and to make P and R work together in a
+    more sensible way.  Existing code which used hard-coded HPR angles
+    may be invalidated by this change.  To convert existing code, you
+    should use the global function old_to_new_hpr() to determine what
+    new HPR triple that corresponds to an old HPR triple.  As a
+    temporary stopgap, you may define temp-hpr-fix 0 in your prc file.
+
+  * Add support for weak reference counts using the WeakPointerTo
+    class.
+
+  * Add optional support for STL's semistandard hashing containers,
+    e.g. hash_map and hash_set.
+
+Rendering system:
+
+  * Multitexture support is now part of Panda.  This introduces the
+    TextureStage and TexCoordName classes, as well as new interfaces
+    like NodePath::add_texture().  As of the present release,
+    multitexture is only supported when using the OpenGL renderer.
+
+  * Support for programmable shaders is now possible using the Cg
+    shader language.  Assign a CgShaderAttrib to a node to apply a
+    programmable shader.
+
+  * New support for the Helix library allows playing of a streaming
+    movie in a Panda texture.  Presently only supported on Windows.
+
+  * Deprecated the old "win-origin-x" and "win-origin-y" prc variables
+    in favor of "win-origin", which takes two numbers separated by a
+    space.  Similarly with "win-width" and "win-height", in favor of
+    "win-size".
+
+  * Deprecated the old Camera::set_scene() interface; now a Camera
+    implicitly renders whatever scene graph it is parented to.
+
+  * Removed the old GraphicsLayer and GraphicsChannel classes.
+    Instead of using these interfaces, you can now create any number
+    of DisplayRegions directly on the window.
+
+  * Offscreen render-to-a-texture will now be properly oriented under
+    DirectX (previously, it would render the texture image upside-down
+    and backward).
+
+  * Support for automatic keystone correction caused by an off-axis
+    physical projector using Lens::set_keystone().
+
+  * New framebuffer-mode prc variable allows explicit control over the
+    default framebuffer properties requested by Panda, including
+    whether software or hardware rendering is required.
+
+  * Added "multisample" transparency mode (alpha keyword "ms" in an
+    egg file), which allows good-quality transparency (especially for
+    alpha cutouts) without requiring back-to-front sorting, and
+    without artifacts from improper sorting.  This does require
+    special multisample hardware capabilities, however.  Presently
+    supported in OpenGL mode only.  Automatic fallback to "binary"
+    transparency mode if multisample is not supported on a given
+    platform.
+
+  * New cursor-filename and icon-filename config variables replace the
+    old win32-mono-cursor and win32-window-icon variables.  Also,
+    runtime control over these properties is now provided by the
+    WindowProperties class.
+
+  * Better management of potential memory leaks due to cyclic
+    reference counts in the RenderState and TransformState caches.
+    Now cycles are automatically detected and broken.
+
+Scene graph:
+
+  * GeomNodes now have a CollideMask, just like CollisionNodes, which
+    deprecates the old set_collide_geom() interface to detect
+    collisions with visible geometry.  There is a new NodePath
+    interface for querying and setting the collide masks for single
+    nodes or for entire subgraphs.
+
+  * New NodePath interfaces to control lighting eliminate the need to
+    create an explicit LightAttrib.  The new lighting interfaces are
+    designed to be similar to the new multitexture interfaces.
+
+  * New NodePath interfaces to control the texture matrix, including a
+    new project_texture() method to enable hardware-assisted
+    projective texturing.
+
+  * New NodePath::flatten_multitex() interface to bake in certain
+    kinds of multitexture effects into a single texture, generated
+    on-the-fly.
+
+  * New options for ColorBlendAttrib and RenderModeAttrib.
+
+  * NodePath::set_transparancy() now accepts a
+    TransparencyAttrib::Mode parameter to specify exactly what kind of
+    transparency you'd like.
+
+  * New NodePath::set_render_mode() interface accepts a
+    RenderModeAttrib::Mode parameter, deprecating
+    set_render_mode_filled() and set_render_mode_wireframe().
+
+  * LerpQuatInterval can be used as a drop-in replacement for
+    LerpHprInterval; it performs spherical lerps in quaternion space,
+    rather than lerping each component of a HPR individually.
+    LerpHprInterval is not deprecated; it remains useful within its
+    limitations.
+
+  * New DirectSliderBar gui object implements a standard slider bar
+    with a thumb (like a window scroll bar).
+
+  * Lighting normals are now automatically counterscaled properly when
+    lighting is enabled in the presence of a scale, uniform or
+    nonuniform, in the scene graph.  You can also use
+    RescaleNormalAttrib for explicit control over this behavior.
+
+  * Improvements to RopeNode for rendering splines in various
+    representations.
+
+Collisions and physics systems:
+
+  * New CollisionSegment and CollisionInvSphere collision solids.
+
+  * The collision system now reports normals for intersections
+    detected from collision rays, segments, and lines.
+
+  * Several improvements to the physics system.
+
+Model converters:
+
+  * x2egg and egg2x added to converters, as well as to inline
+    conversion supported via ptloader.  This adds support for
+    DirectX's native so-called "retained-mode" file format.  This file
+    format supports animation and joint hierarchies as well as basic
+    polygonal models.
+
+  * vrml2egg added to converters, as well as to inline conversion
+    supported via ptloader.  This adds support for VRML 2.0 model
+    files only.
+
+  * Added -noabs option to many model converters, to help detect
+    problems with unintended absolute path references.
+
+  * Added egg2bam -flatten and -combine-geoms.
+
+
 ------------------------  RELEASE 2004-07-27  ------------------------
 
 Configuration, installation, and execution environments:
@@ -82,7 +267,7 @@ Text display:
 Model converters:
 
   * dxf2egg and egg2dxf added to converters, as well as to inline
-    conversion supported via ptloadeder.
+    conversion supported via ptloader.
 
 
 
