@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "mayaBlendDesc.h"
+#include "config_mayaegg.h"
 
 TypeHandle MayaBlendDesc::_type_handle;
 
@@ -55,7 +56,11 @@ MayaBlendDesc::
 ////////////////////////////////////////////////////////////////////
 void MayaBlendDesc::
 set_slider(float value) {
-  _deformer.setWeight(_weight_index, value);
+  MStatus status = _deformer.setWeight(_weight_index, value);
+  if (!status) {
+    mayaegg_cat.warning()
+      << "Unable to set slider " << get_name() << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
