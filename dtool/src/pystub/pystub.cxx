@@ -33,6 +33,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyString_FromStringAndSize(...);
   EXPCL_DTOOLCONFIG int Py_InitModule4(...);
   EXPCL_DTOOLCONFIG int PyObject_IsTrue(...);
+  EXPCL_DTOOLCONFIG int PyObject_IsInstance(...);
   EXPCL_DTOOLCONFIG int PyObject_Str(...);
   EXPCL_DTOOLCONFIG int PyErr_SetString(...);
   EXPCL_DTOOLCONFIG int PySequence_GetItem(...);
@@ -129,6 +130,11 @@ Py_InitModule4(...) {
 
 int
 PyObject_IsTrue(...) {
+  return 0;
+}
+
+int
+PyObject_IsInstance(...) {
   return 0;
 }
 
