@@ -22,6 +22,7 @@ string* audio_device;
 int audio_auto_update_delay = config_audio.GetInt("audio-auto-update-delay",
 						  1000000);
 bool audio_is_active = config_audio.GetBool("audio-is-active", true);
+int audio_thread_priority;
 
 ConfigureFn(config_audio) {
   AudioSound::init_type();
