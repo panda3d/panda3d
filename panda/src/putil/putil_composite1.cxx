@@ -16,7 +16,6 @@
 #include "factoryBase.cxx"
 #include "factoryParam.cxx"
 #include "factoryParams.cxx"
-#include "globPattern.cxx"
 #include "globalPointerRegistry.cxx"
 #include "ioPtaDatagramFloat.cxx"
 #include "ioPtaDatagramInt.cxx"

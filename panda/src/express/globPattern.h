@@ -38,7 +38,7 @@
 //               example, to scan a directory for all files matching a
 //               particular pattern.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GlobPattern {
+class EXPCL_PANDAEXPRESS GlobPattern {
 public:
   INLINE GlobPattern(const string &pattern = string());
   INLINE GlobPattern(const GlobPattern &copy);

@@ -28,7 +28,6 @@
     factoryParams.h \
     firstOfPairCompare.I firstOfPairCompare.h \
     firstOfPairLess.I firstOfPairLess.h \
-    globPattern.I globPattern.h \
     globalPointerRegistry.I globalPointerRegistry.h \
     indirectCompareNames.I indirectCompareNames.h \
     indirectCompareTo.I indirectCompareTo.h \
@@ -63,7 +62,7 @@
     cycleDataWriter.cxx \
     datagramInputFile.cxx datagramOutputFile.cxx \
     factoryBase.cxx \
-    factoryParam.cxx factoryParams.cxx globPattern.cxx \
+    factoryParam.cxx factoryParams.cxx \
     globalPointerRegistry.cxx ioPtaDatagramFloat.cxx \
     ioPtaDatagramInt.cxx ioPtaDatagramShort.cxx \
     keyboardButton.cxx lineStream.cxx lineStreamBuf.cxx \
@@ -101,7 +100,6 @@
     factoryParams.I factoryParams.h \
     firstOfPairCompare.I firstOfPairCompare.h \
     firstOfPairLess.I firstOfPairLess.h \
-    globPattern.I globPattern.h \
     globalPointerRegistry.I globalPointerRegistry.h \
     indirectCompareNames.I indirectCompareNames.h indirectCompareTo.I \
     indirectCompareTo.h \
