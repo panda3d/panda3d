@@ -97,17 +97,17 @@ class ShowBase(DirectObject.DirectObject):
         # base.win is the main, or only window; base.winList is a list of
         # *all* windows.  Similarly with base.pipeList and base.camList.
         self.win = None
-        self.mainWinMinimized = 0
         self.winList = []
+        self.mainWinMinimized = 0
         self.pipe = None
         self.pipeList = []
+        self.mak = None
         self.cam = None
         self.camList = []
         self.camNode = None
         self.camLens = None
-        self.camera = None
-        self.cameraList = []
         self.groupList = []
+        self.camera = self.render.attachNewNode('camera')
         self.camera2d = self.render2d.attachNewNode('camera2d')
 
         # Now that we've set up the window structures, assign an exitfunc.
@@ -116,9 +116,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # Open the default rendering window.
         if self.config.GetBool('open-default-window', 1):
-            self.openWindow()
-            self.setupMouse(self.win)
-            self.makeCamera2d(self.win, -1, 1, -1, 1)
+            self.openMainWindow()
 
         self.loader = Loader.Loader(self)
         self.eventMgr = eventMgr
@@ -207,10 +205,8 @@ class ShowBase(DirectObject.DirectObject):
 
     def openWindow(self):
         """openWindow(self)
-
         Invokes ChanConfig to create a window and adds it to the list
         of windows that are to be updated every frame.
-
         """
 
         if self.pipe == None:
@@ -233,6 +229,60 @@ class ShowBase(DirectObject.DirectObject):
         self.getCameras(chanConfig)
         return win
 
+    def closeWindow(self, win):
+        """closeWindow(self, win)
+        Closes the indicated window and removes it from the list of
+        windows.  If it is the main window, clears the main window
+        pointer to None.
+        """
+        # First, remove all of the cameras associated with display
+        # regions on the window.
+        numRegions = win.getNumDisplayRegions()
+        for i in range(numRegions):
+            dr = win.getDisplayRegion(i)
+            cam = NodePath(dr.getCamera())
+            dr.setCamera(NodePath())
+
+            if not cam.isEmpty() and cam.node().getNumDisplayRegions() == 0:
+                # If the camera is used by no other DisplayRegions,
+                # remove it.
+                if self.camList.count(cam) != 0:
+                    self.camList.remove(cam)
+                if not cam.isEmpty():
+                    if cam == self.cam:
+                        self.cam = None
+                    cam.removeNode()
+
+        # Now we can actually close the window.
+        self.graphicsEngine.removeWindow(win)
+        self.winList.remove(win)
+
+        if win == self.win:
+            self.win = None
+
+    def openMainWindow(self):
+        """openMainWindow(self)
+        Creates the initial, main window for the application, and sets
+        up the mouse and render2d structures appropriately for it.  If
+        this method is called a second time, it will close the
+        previous main window and open a new one, preserving the lens
+        properties in base.camLens.
+        """
+        oldLens = self.camLens
+        if self.win != None:
+            # Close the previous window.
+            oldLens = self.camLens
+            self.closeWindow(self.win)
+
+        # Open a new window.
+        self.openWindow()
+        self.setupMouse(self.win)
+        self.makeCamera2d(self.win, -1, 1, -1, 1)
+
+        if oldLens != None:
+            # Restore the previous lens properties.
+            self.camNode.setLens(oldLens)
+            self.camLens = oldLens
 
     def setupRender(self):
         """setupRender(self)
@@ -339,10 +389,25 @@ class ShowBase(DirectObject.DirectObject):
         """setupMouse(self, win)
 
         Creates the structures necessary to monitor the mouse input,
-        using the indicated window.  This should only be called once
-        per application.
+        using the indicated window.  If the mouse has already been set
+        up for a different window, this changes the mouse to reference
+        the new window.
         """
+        if self.mak != None:
+            # The mouse has already been set up; reappropriate it.
+            self.mak.node().setSource(win, 0)
 
+            # Reset the currently-held modifier button list for good
+            # measure.
+            bt = base.buttonThrower.node()
+            mb = ModifierButtons(bt.getModifierButtons())
+            mb.allButtonsUp()
+            bt.setModifierButtons(mb)
+            return
+
+        # The mouse has not yet been set up in this application;
+        # create the mouse structures now.
+        
         # We create both a MouseAndKeyboard object and a MouseWatcher object
         # for the window.  The MouseAndKeyboard generates mouse events and
         # mouse button/keyboard events; the MouseWatcher passes them through
@@ -411,22 +476,18 @@ class ShowBase(DirectObject.DirectObject):
         """
         getCameras(self, chanConfig)
         Extracts the camera(s) out of the ChanConfig record, parents
-        them all to base.camera, and adds them to base.cameraList.
+        them all to base.camera, and adds them to base.camList.
         """
 
-        # cameraList is a list of camera group nodes.  There may
-        # be more than one display region/camera node beneath each
-        # one.
         for i in range(chanConfig.getNumGroups()):
-            camera = self.render.attachNewNode(chanConfig.getGroupNode(i))
-            cam = camera.find('**/+Camera')
+            cam = NodePath(chanConfig.getGroupNode(i)).find('**/+Camera')
             lens = cam.node().getLens()
 
             # Enforce our expected aspect ratio, overriding whatever
             # nonsense ChanConfig put in there.
             lens.setAspectRatio(self.aspectRatio)
             
-            self.cameraList.append(camera)
+            cam.reparentTo(self.camera)
             self.camList.append(cam)
             
         # this is how we know which display region cameras belong to which
@@ -434,9 +495,6 @@ class ShowBase(DirectObject.DirectObject):
         for i in range(chanConfig.getNumDrs()):
             self.groupList.append(chanConfig.getGroupMembership(i))
 
-        # Set the default camera and cam
-        if self.camera == None:
-            self.camera = self.cameraList[0]
         if self.cam == None:
             self.cam = self.camList[0]
             # If you need to get a handle to the camera node itself,
