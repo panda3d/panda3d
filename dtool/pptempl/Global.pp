@@ -403,7 +403,7 @@
 #defun get_depends source
   #if $[$[source]_sources]
     #if $[ne $[$[source]_sources],none]
-      $[dependencies $[$[source]_sources]]
+      $[$[source]_sources] $[dependencies $[$[source]_sources]]
     #endif
   #else
     $[dependencies $[source]]
