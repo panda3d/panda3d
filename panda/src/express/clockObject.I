@@ -156,6 +156,9 @@ get_net_frame_rate() const {
 ////////////////////////////////////////////////////////////////////
 INLINE double ClockObject::
 get_dt() const {
+  if (_max_dt > 0.0) {
+    return min(_max_dt, _dt);
+  }
   return _dt;
 }
 

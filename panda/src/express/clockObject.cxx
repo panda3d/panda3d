@@ -139,9 +139,6 @@ tick() {
   case M_normal:
     // Time runs as it will; we simply report time elapsing.
     _dt = _actual_frame_time - old_time;
-    if (_max_dt > 0.0) {
-      _dt = min(_max_dt, _dt);
-    }
     _reported_frame_time = _actual_frame_time;
     break;
 
@@ -176,9 +173,6 @@ tick() {
       _reported_frame_time = _actual_frame_time;
     }
 
-    if (_max_dt > 0.0) {
-      _dt = min(_max_dt, _dt);
-    }
     break;
 
   }
