@@ -529,6 +529,15 @@ xform(const LMatrix4f &) {
 ////////////////////////////////////////////////////////////////////
 PandaNode *PandaNode::
 combine_with(PandaNode *other) {
+  // This is a little bit broken right now w.r.t. NodePaths, since any
+  // NodePaths attached to the lost node will simply be disconnected.
+  // This isn't the right thing to do; we should collapse those
+  // NodePaths with these NodePaths instead.  To do this properly, we
+  // will need to combine this functionality with that of stealing the
+  // other node's children into one method.  Not too difficult, but
+  // there are more pressing problems to work on right now.
+
+
   // An unadorned PandaNode always combines with any other PandaNodes by
   // yielding completely.  However, if we are actually some fancy PandaNode
   // type that derives from PandaNode but didn't redefine this function, we
