@@ -50,6 +50,8 @@ PUBLISHED:
   INLINE void input_dec(istream &in);
   void output_hex(ostream &out) const;
   void input_hex(istream &in);
+  void output_binary(ostream &out) const;
+  void input_binary(istream &in);
 
   INLINE void output(ostream &out) const;
 
