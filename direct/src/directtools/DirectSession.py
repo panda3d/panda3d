@@ -725,21 +725,15 @@ class DisplayRegionList(PandaObject):
 
     def setFov(self, hfov, vfov):
         for dr in self.displayRegionList:
-            if dr.isSideways:
-                dr.camNode.setFov(vfov, hfov)
-            else:
-                dr.camNode.setFov(hfov, vfov)
+            dr.setFov(hfov, vfov)
 
     def setHfov(self, fov):
         for dr in self.displayRegionList:
-            if dr.isSideways:
-                dr.camNode.setVfov(fov)
-            else:
-                dr.camNode.setHfov(fov)
+            dr.setHfov(fov)
 
     def setVfov(self, fov):
         for dr in self.displayRegionList:
-            dr.camNode.setVfov(fov)
+            dr.setVfov(fov)
 
     def camUpdate(self, camName):
         if self.displayRegionLookup.has_key(camName):
@@ -815,10 +809,10 @@ class DisplayRegionContext:
         return self.__dict__[key]
 
     def setOrientation(self):
-        hpr = self.cam.getHpr(base.camList[self.group])
+        hpr = self.cam.getHpr(base.cameraList[self.group])
         if hpr[2] < 135 and hpr[2]>45 or hpr[2]>225 and hpr[2]<315:
             self.isSideways = 1
-        elif hpr[2] > -135 and hpr[2] < -45 and hpr[2] < -225 and hpr[2] > -315:
+        elif hpr[2] > -135 and hpr[2] < -45 or hpr[2] < -225 and hpr[2] > -315:
             self.isSideways = 1
         else:
             self.isSideways = 0
@@ -836,6 +830,26 @@ class DisplayRegionContext:
         else:
             return self.camNode.getVfov()
 
+    def setHfov(self,hfov):
+        if self.isSideways:
+            self.camNode.setVfov(hfov)
+        else:
+            self.camNode.setHfov(hfov)
+
+    def setVfov(self,vfov):
+        if self.isSideways:
+            self.camNode.setHfov(vfov)
+        else:
+            self.camNode.setVfov(vfov)
+
+    def setFov(self,hfov,vfov):
+        if self.isSideways:
+            self.camNode.setVfov(hfov)
+            self.camNode.setHfov(vfov)
+        else:
+            self.camNode.setHfov(hfov)
+            self.camNode.setVfov(vfov)
+            
     def camUpdate(self):
         # Window Data
         self.width = self.win.getWidth()
