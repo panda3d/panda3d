@@ -385,6 +385,18 @@ is_surprise() const {
   return _is_surprise;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: TextureImage::is_used
+//       Access: Public
+//  Description: Returns true if this particular texture has been
+//               placed somewhere, anywhere, or false if it is not
+//               used.
+////////////////////////////////////////////////////////////////////
+bool TextureImage::
+is_used() const {
+  return !_placement.empty();
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureImage::get_source
@@ -638,16 +650,27 @@ write_source_pathnames(ostream &out, int indent_level) const {
     for (ei = _egg_files.begin(); ei != _egg_files.end(); ++ei) {
       EggFile *egg = (*ei);
       indent(out, indent_level + 2)
-	<< egg->get_name() << " (" 
-	<< egg->get_explicit_groups() << ")\n";
+	<< egg->get_name() << " (";
+      if (egg->get_explicit_groups().empty()) {
+        out << *egg->get_default_group();
+      } else {
+        out << egg->get_explicit_groups();
+      }
+      out << ")\n";
     }
   }
   if (!_explicitly_assigned_groups.empty()) {
     indent(out, indent_level)
       << "Explicitly assigned to " << _explicitly_assigned_groups << " in .txa\n";
   }
-  indent(out, indent_level)
-    << "Assigned to " << _actual_assigned_groups << "\n";
+
+  if (_placement.empty()) {
+    indent(out, indent_level)
+      << "Not used.\n";
+  } else {
+    indent(out, indent_level)
+      << "Assigned to " << _actual_assigned_groups << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

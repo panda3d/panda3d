@@ -48,6 +48,8 @@ public:
   bool write_eggs();
 
   EggFile *get_egg_file(const string &name);
+  bool remove_egg_file(const string &name);
+
   PaletteGroup *get_palette_group(const string &name);
   PaletteGroup *test_palette_group(const string &name) const;
   PaletteGroup *get_default_group();

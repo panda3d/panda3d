@@ -379,6 +379,22 @@ update_egg() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggFile::remove_egg
+//       Access: Public
+//  Description: Removes this egg file from all things that reference
+//               it, in preparation for removing it from the database.
+////////////////////////////////////////////////////////////////////
+void EggFile::
+remove_egg() {
+  Textures::iterator ti;
+  for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+    TextureReference *reference = (*ti);
+    TexturePlacement *placement = reference->get_placement();
+    placement->remove_egg(reference);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggFile::read_egg
 //       Access: Public
 //  Description: Reads in the egg file from its _source_filename.  It

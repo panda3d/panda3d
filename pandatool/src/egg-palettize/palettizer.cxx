@@ -162,8 +162,10 @@ report_pi() const {
   Textures::const_iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     TextureImage *texture = (*ti).second;
-    cout << "  " << texture->get_name() << ":\n";
-    texture->write_source_pathnames(cout, 4);
+    if (texture->is_used()) {
+      cout << "  " << texture->get_name() << ":\n";
+      texture->write_source_pathnames(cout, 4);
+    }
   }
 
   cout << "\negg files and textures referenced\n";
@@ -660,6 +662,26 @@ get_egg_file(const string &name) {
   file->set_name(name);
   _egg_files.insert(EggFiles::value_type(name, file));
   return file;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Palettizer::remove_egg_file
+//       Access: Public
+//  Description: Removes the named egg file from the database, if it
+//               exists.  Returns true if the egg file was found,
+//               false if it was not.
+////////////////////////////////////////////////////////////////////
+bool Palettizer::
+remove_egg_file(const string &name) {
+  EggFiles::iterator ei = _egg_files.find(name);
+  if (ei != _egg_files.end()) {
+    EggFile *file = (*ei).second;
+    file->remove_egg();
+    _egg_files.erase(ei);
+    return true;
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

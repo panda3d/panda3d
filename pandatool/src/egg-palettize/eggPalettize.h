@@ -28,6 +28,7 @@ public:
 
   // The following parameter values specifically relate to textures
   // and palettes.  These values are copied to the Palettizer.
+  bool _got_txa_filename;
   Filename _txa_filename;
   string _map_dirname;
   bool _got_map_dirname;
@@ -52,6 +53,8 @@ private:
   bool _dont_lock_txa;
 
   bool _describe_input_file;
+  bool _remove_eggs;
+  Args _remove_egg_list;
 };
 
 #endif

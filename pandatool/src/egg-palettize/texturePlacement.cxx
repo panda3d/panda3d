@@ -343,7 +343,6 @@ determine_size() {
 	    _position._max_uv[0] <= _placed._max_uv[0] &&
 	    _position._max_uv[1] <= _placed._max_uv[1]) {
 	  // No problem!  It fits here, so leave well enough alone.
-
 	} else {
 	  // That's not good enough either, so go back to rounding.
 	  compute_size_from_uvs(rounded_min_uv, rounded_max_uv);
@@ -682,7 +681,17 @@ write_placed(ostream &out, int indent_level) {
 	<< get_placed_x() << " " << get_placed_y() << " to "
 	<< get_placed_x() + get_placed_x_size() << " "
 	<< get_placed_y() + get_placed_y_size() << " (coverage "
-	<< get_placed_uv_area() << ")\n";
+	<< get_placed_uv_area() << ")";
+
+    if (_placed._wrap_u != EggTexture::WM_unspecified ||
+        _placed._wrap_v != EggTexture::WM_unspecified) {
+      if (_placed._wrap_u != _placed._wrap_v) {
+        out << " (" << _placed._wrap_u << ", " << _placed._wrap_v << ")";
+      } else {
+        out << " " << _placed._wrap_u;
+      }
+    }
+    out << "\n";
   } else {
     out << " not yet placed.\n";
   }

@@ -59,6 +59,7 @@ public:
   bool has_data() const;
   
   void update_egg();
+  void remove_egg();
   bool read_egg();
   bool write_egg();
 

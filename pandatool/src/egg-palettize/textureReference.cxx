@@ -355,6 +355,15 @@ write(ostream &out, int indent_level) const {
     out << " coverage " << area;
   }
 
+  if (_wrap_u != EggTexture::WM_unspecified ||
+      _wrap_v != EggTexture::WM_unspecified) {
+    if (_wrap_u != _wrap_v) {
+      out << " (" << _wrap_u << ", " << _wrap_v << ")";
+    } else {
+      out << " " << _wrap_u;
+    }
+  }
+
   if (_properties._format != EggTexture::F_unspecified) {
     out << " " << _properties._format;
   }

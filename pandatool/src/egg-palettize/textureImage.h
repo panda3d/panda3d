@@ -57,6 +57,7 @@ public:
   double get_coverage_threshold() const;
   int get_margin() const;
   bool is_surprise() const;
+  bool is_used() const;
 
   SourceTextureImage *get_source(const Filename &filename, 
 				 const Filename &alpha_filename);

@@ -57,7 +57,7 @@ EggPalettize() : EggMultiFilter(true) {
   add_option
     ("a", "filename", 0, 
      "Read the indicated file as the .txa file.  The default is textures.txa.",
-     &EggPalettize::dispatch_filename, NULL, &_txa_filename);
+     &EggPalettize::dispatch_filename, &_got_txa_filename, &_txa_filename);
 
   add_option
     ("pi", "", 0, 
@@ -70,6 +70,12 @@ EggPalettize() : EggMultiFilter(true) {
      "Do not process anything, but report statistics on palette "
      "and texture utilization.",
      &EggPalettize::dispatch_none, &_report_statistics);
+
+  add_option
+    ("R", "", 0, 
+     "Remove the named egg files from the previously-generated state data "
+     "in textures.boo.",
+     &EggPalettize::dispatch_none, &_remove_eggs);
 
   // We redefine -d using add_option() instead of redescribe_option()
   // so it gets listed along with these other options that relate.
@@ -140,6 +146,10 @@ EggPalettize() : EggMultiFilter(true) {
      "may invalidate other egg files which share this palette.",
      &EggPalettize::dispatch_none, &_optimal);
 
+  // This isn't even implement yet.  Presently, we never lock anyway.
+  // Dangerous, but hard to implement reliable file locking across
+  // NFS/Samba and between multiple OS's.
+  /*
   add_option
     ("nolock", "", 0, 
      "Don't attempt to grab a file lock on the .txa file.  Use "
@@ -147,6 +157,8 @@ EggPalettize() : EggMultiFilter(true) {
      ".txa file may overwrite each other.  Use this only if the lock "
      "cannot be achieved for some reason.",
      &EggPalettize::dispatch_none, &_dont_lock_txa);
+  */
+
   add_option
     ("H", "", 0, 
      "Describe the syntax of the attributes file.",
@@ -171,6 +183,14 @@ handle_args(ProgramBase::Args &args) {
     exit(1);
   }
 
+  if (_remove_eggs) {
+    // If we're removing these egg files from the database, we don't
+    // want to try to load them up.  Instead, just save the filenames.
+    _remove_egg_list = args;
+    return true;
+  }
+
+  // Otherwise, load the named egg files up normally.
   return EggMultiFilter::handle_args(args);
 }
 
@@ -457,6 +477,17 @@ run() {
     loader_cat->set_severity(NS_warning);
   }
 
+  if (!_txa_filename.exists() && !_got_txa_filename) {
+    // If we did not specify a filename, and the default filename of
+    // "textures.txa" doesn't exist, try looking in src/maps, as
+    // another likely possibility.
+    Filename maybe = _txa_filename;
+    maybe.set_dirname("src/maps");
+    if (maybe.exists()) {
+      _txa_filename = maybe;
+    }
+  }
+
   if (!_txa_filename.exists()) {
     nout << FilenameUnifier::make_user_filename(_txa_filename)
 	 << " does not exist; cannot run.\n";
@@ -553,6 +584,14 @@ run() {
 
   pal->all_params_set();
 
+  // Remove any files named for removal.
+  Args::const_iterator ai;
+  for (ai = _remove_egg_list.begin(); ai != _remove_egg_list.end(); ++ai) {
+    Filename filename = (*ai);
+    pal->remove_egg_file(filename.get_basename());
+  }
+
+  // And process the egg files named for addition.
   Eggs::const_iterator ei;
   for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
     EggData *egg_data = (*ei);
