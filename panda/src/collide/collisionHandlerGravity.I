@@ -49,6 +49,8 @@ get_offset() const {
 //               The object might not necessarily be at rest.  Use
 //               is_on_ground() if you want to know whether the
 //               object is on the ground and at rest.
+//
+//               See Also: is_in_outer_space()
 ////////////////////////////////////////////////////////////////////
 INLINE float CollisionHandlerGravity::
 get_airborne_height() const {
@@ -66,6 +68,18 @@ is_on_ground() const {
   // handle_entries() function will set these values to 0.0f if they
   // are within a threshold.
   return get_airborne_height() == 0.0f && _current_velocity == 0.0f;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerGravity::is_in_outer_space
+//       Access: Public
+//  Description: The object is in outer space if there is no
+//               ground/floor anywhere below it (I guess you could
+//               also say the height is infinite).
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionHandlerGravity::
+is_in_outer_space() const {
+  return _outer_space;
 }
 
 ////////////////////////////////////////////////////////////////////

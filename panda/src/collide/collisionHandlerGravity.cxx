@@ -38,6 +38,7 @@ CollisionHandlerGravity() {
   _gravity = 32.174f;
   _current_velocity = 0.0f;
   _max_velocity = 400.0f;
+  _outer_space = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -63,6 +64,7 @@ CollisionHandlerGravity::
 bool CollisionHandlerGravity::
 handle_entries() {
   bool okflag = true;
+  _outer_space = true;
 
   FromEntries::const_iterator fi;
   for (fi = _from_entries.begin(); fi != _from_entries.end(); ++fi) {
@@ -87,6 +89,9 @@ handle_entries() {
         float max_height = 0.0f;
         
         Entries::const_iterator ei;
+        if (ei != entries.end()) {
+          _outer_space = false;
+        }
         for (ei = entries.begin(); ei != entries.end(); ++ei) {
           CollisionEntry *entry = (*ei);
           nassertr(entry != (CollisionEntry *)NULL, false);
