@@ -12,4 +12,4 @@
         """
         Pretty print
         """
-        return "% 10.2f, % 10.4f, % 10.4f" % (self[0],self[1],self[2])
+        return "% 10.4f, % 10.4f, % 10.4f" % (self[0],self[1],self[2])
