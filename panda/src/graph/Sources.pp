@@ -6,7 +6,7 @@
   #define LOCAL_LIBS \
     pstatclient putil mathutil
 
-  #define COMBINED_SOURCES composite1.cxx composite2.cxx
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 
   #define SOURCES \  
      allAttributesWrapper.I allAttributesWrapper.T  \
@@ -44,7 +44,7 @@
      setTransitionHelpers.h transitionDirection.h  \
      traverserVisitor.T traverserVisitor.h vector_PT_Node.h  \
      vector_PT_NodeRelation.h vector_NodeRelation_star.h wrt.I \
-     wrt.h $[COMBINED_SOURCES]
+     wrt.h
 
    #define INCLUDED_SOURCES \
      allAttributesWrapper.cxx allTransitionsWrapper.cxx \
