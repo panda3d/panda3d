@@ -26,6 +26,19 @@
 #include "audioSound.h"
 #include "milesAudioManager.h"
 #include "mss.h"
+  
+class AutoAilLock {
+  // This will lock and unlock the Miles AIL timer based
+  // on the current code block.  (Auto in the class name
+  // is referring to "auto variable").
+public:
+  AutoAilLock() {
+    AIL_lock();
+  }
+  ~AutoAilLock() {
+    AIL_unlock();
+  }
+};
 
 class EXPCL_MILES_AUDIO MilesAudioSound : public AudioSound {
 public:
@@ -129,6 +142,24 @@ private:
       HAUDIO audio, string file_name, float length=0.0f);
 
   friend class MilesAudioManager;
+
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    AudioSound::init_type();
+    register_type(_type_handle, "MilesAudioSound",
+                  AudioSound::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
 };
 
 #include "milesAudioSound.I"

@@ -30,6 +30,9 @@
 
 #include <algorithm>
 
+
+TypeHandle MilesAudioManager::_type_handle;
+
 int MilesAudioManager::_active_managers = 0;
 HDLSFILEID MilesAudioManager::_dls_field = NULL;
 
@@ -84,7 +87,10 @@ void CustomMilesShutdown() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::MilesAudioManager
 //       Access: Public
-//  Description:
+//  Description: Create an audio manager.  This may open the Miles
+//               sound system if there were no other MilesAudioManager
+//               instances.  Subsequent managers may use the same
+//               Miles resources.
 ////////////////////////////////////////////////////////////////////
 MilesAudioManager::
 MilesAudioManager() {
@@ -165,6 +171,7 @@ MilesAudioManager() {
   // either way.
   ++_active_managers;
   audio_debug("  _active_managers="<<_active_managers);
+  nassertv(_active_managers>0);
 
   if (_is_valid)  {
     assert(is_valid());
@@ -180,7 +187,10 @@ MilesAudioManager() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::~MilesAudioManager
 //       Access: Public
-//  Description:
+//  Description: Clean up this audio manager and possibly release
+//               the Miles resources that are reserved by the 
+//               application (the later happens if this is the last
+//               active manager).
 ////////////////////////////////////////////////////////////////////
 MilesAudioManager::
 ~MilesAudioManager() {
@@ -188,6 +198,7 @@ MilesAudioManager::
   // Be sure to delete associated sounds before deleting the manager:
   nassertv(_sounds_on_loan.empty());
   clear_cache();
+  nassertv(_active_managers>0);
   --_active_managers;
   audio_debug("  _active_managers="<<_active_managers);
   if (_active_managers==0) {
@@ -209,20 +220,22 @@ MilesAudioManager::
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::is_valid
 //       Access:
-//  Description:
+//  Description: This is mostly for debugging, but it it could be
+//               used to detect errors in a release build if you
+//               don't mind the cpu cost.
 ////////////////////////////////////////////////////////////////////
 bool MilesAudioManager::
 is_valid() {
   bool check=true;
   if (_sounds.size() != _lru.size()) {
-    audio_debug("--sizes--");
+    audio_debug("-- Error _sounds.size() != _lru.size() --");
     check=false;
   } else {
     LRU::const_iterator i=_lru.begin();
     for (; i != _lru.end(); ++i) {
       SoundMap::const_iterator smi=_sounds.find(**i);
       if (smi == _sounds.end()) {
-        audio_debug("--"<<**i<<"--");
+        audio_debug("-- "<<**i<<" in _lru and not in _sounds --");
         check=false;
         break;
       }
@@ -559,14 +572,14 @@ starting_sound(MilesAudioSound* audio) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::stoping_sound
+//     Function: MilesAudioManager::stopping_sound
 //       Access: 
 //  Description: Inform the manager that a sound is finished or 
 //               someone called stop on the sound (this should not
 //               be called if a sound is only paused).
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
-stoping_sound(MilesAudioSound* audio) {
+stopping_sound(MilesAudioSound* audio) {
   _sounds_playing.erase(audio);
   if (_hasMidiSounds && _sounds_playing.size() == 0) {
     force_midi_reset();

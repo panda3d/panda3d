@@ -23,6 +23,10 @@
 #include "milesAudioSound.h"
 #include "milesAudioManager.h"
 
+
+TypeHandle MilesAudioSound::_type_handle;
+
+
 #define NEED_MILES_LENGTH_WORKAROUND
 
 #if (((MSS_MAJOR_VERSION == 6) && (MSS_MINOR_VERSION >= 5)) || (MSS_MAJOR_VERSION >= 7))
@@ -73,6 +77,7 @@ namespace {
   void AILCALLBACK
   pandaAudioAilCallback_Sequence(HSEQUENCE S) {
     assert(S);
+    AutoAilLock milesLock;
     audio_debug("pandaAudioAilCallback_Sequence(HSEQUENCE="<<((void*)S)<<")");
     MilesAudioSound* sound = (MilesAudioSound*)AIL_sequence_user_data(
         S, user_data_index);
@@ -92,6 +97,7 @@ namespace {
   void AILCALLBACK
   pandaAudioAilCallback_Sample(HSAMPLE S) {
     assert(S);
+    AutoAilLock milesLock;
     audio_debug("pandaAudioAilCallback_Sample(HSAMPLE="<<((void*)S)<<")");
     MilesAudioSound* sound = (MilesAudioSound*)AIL_sample_user_data(
         S, user_data_index);
@@ -118,7 +124,7 @@ namespace {
     if (!audio || !sound) {
       return;
     }
-    AIL_lock();
+    AutoAilLock milesLock;
     if (audio->handle != NULL) {
       switch (audio->type) {
       case AIL_QUICK_XMIDI_TYPE:
@@ -143,13 +149,12 @@ namespace {
         break;
       }
     }
-    AIL_unlock();
   }
 
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSound::
+//     Function: MilesAudioSound::MilesAudioSound
 //       Access: 
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -169,7 +174,7 @@ MilesAudioSound(MilesAudioManager* manager,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSound::
+//     Function: MilesAudioSound::~MilesAudioSound
 //       Access: 
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -182,7 +187,7 @@ MilesAudioSound::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSound::
+//     Function: MilesAudioSound::play
 //       Access: 
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -202,7 +207,7 @@ play() {
     _manager->starting_sound(this);
     // Start playing:
     if (AIL_quick_play(_audio, _loop_count)) {
-      panda_AIL_quick_set_finished_callback(_audio, this);
+      //#*#panda_AIL_quick_set_finished_callback(_audio, this);
       // assert(status()==PLAYING);
       audio_debug("  started sound " << _file_name );
     } else {
@@ -216,14 +221,14 @@ play() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSound::
+//     Function: MilesAudioSound::stop
 //       Access: 
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSound::
 stop() {
   miles_audio_debug("stop()");
-  _manager->stoping_sound(this);
+  _manager->stopping_sound(this);
   // The _paused flag should not be cleared here.  _paused is not like
   // the Pause button on a cd/dvd player.  It is used as a flag to say
   // that it was looping when it was set inactive.  There is no need to
@@ -235,21 +240,21 @@ stop() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSound::
+//     Function: MilesAudioSound::finished
 //       Access: 
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSound::
 finished() {
   miles_audio_debug("finished()");
-  _manager->stoping_sound(this);
+  _manager->stopping_sound(this);
   if (!_finished_event.empty()) {
     throw_event(_finished_event);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSound::
+//     Function: MilesAudioSound::set_loop
 //       Access: 
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -261,7 +266,7 @@ set_loop(bool loop) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSound::
+//     Function: MilesAudioSound::get_loop
 //       Access: 
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -394,7 +399,7 @@ set_volume(float volume) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSound::
+//     Function: MilesAudioSound::get_volume
 //       Access: 
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -405,7 +410,7 @@ get_volume() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSound::
+//     Function: MilesAudioSound::set_balance
 //       Access: 
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -418,7 +423,7 @@ set_balance(float balance_right) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSound::
+//     Function: MilesAudioSound::get_balance
 //       Access: 
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -429,7 +434,7 @@ get_balance() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSound::
+//     Function: MilesAudioSound::length
 //       Access: 
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -476,7 +481,7 @@ length() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSound::
+//     Function: MilesAudioSound::set_active
 //       Access: 
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -508,7 +513,7 @@ set_active(bool active) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSound::
+//     Function: MilesAudioSound::get_active
 //       Access: 
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -519,7 +524,7 @@ get_active() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSound::
+//     Function: MilesAudioSound::set_finished_event
 //       Access: 
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -530,7 +535,7 @@ set_finished_event(const string& event) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSound::
+//     Function: MilesAudioSound::get_finished_event
 //       Access: 
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -541,7 +546,7 @@ get_finished_event() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSound::
+//     Function: MilesAudioSound::get_name
 //       Access: 
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -552,7 +557,7 @@ get_name() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSound::
+//     Function: MilesAudioSound::status
 //       Access: 
 //  Description: 
 ////////////////////////////////////////////////////////////////////

@@ -98,7 +98,7 @@ private:
   void uncache_a_sound();
 
   void starting_sound(MilesAudioSound* audio);
-  void stoping_sound(MilesAudioSound* audio);
+  void stopping_sound(MilesAudioSound* audio);
 
   // utility function that should be moved to another class:
   bool get_registry_entry(HKEY base, 
@@ -118,6 +118,24 @@ private:
   static void AILCALLBACK vfs_close_callback(U32 file_handle);
   
   friend class MilesAudioSound;
+
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    AudioManager::init_type();
+    register_type(_type_handle, "MilesAudioManager",
+                  AudioManager::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
 };
 
 EXPCL_MILES_AUDIO PT(AudioManager) Create_AudioManager();

@@ -24,6 +24,10 @@
 
 #include "load_dso.h"
 
+
+TypeHandle AudioManager::_type_handle;
+
+
 namespace {
   PT(AudioManager) create_NullAudioManger() {
     audio_debug("create_NullAudioManger()");

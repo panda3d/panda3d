@@ -18,6 +18,7 @@
 
 #include "config_audio.h"
 #include "dconfig.h"
+#include "audioManager.h"
 #include "audioSound.h"
 
 Configure(config_audio);
@@ -67,6 +68,7 @@ ConfigureFn(config_audio) {
   audio_library_name = new string(
       config_audio.GetString("audio-library-name", "miles_audio"));
 
+  AudioManager::init_type();
   AudioSound::init_type();
 }
 

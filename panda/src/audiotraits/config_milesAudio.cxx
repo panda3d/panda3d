@@ -50,6 +50,9 @@ init_libMilesAudio() {
   initialized = true;
 
   AudioManager::register_AudioManager_creator(Create_AudioManager);
+
+  MilesAudioManager::init_type();
+  MilesAudioSound::init_type();
 }
 
 #endif //]
