@@ -54,8 +54,8 @@ export HOME
 
 if [ x"$1" = x"-d" ]; then
   shift 1
-  exec python_d $*
+  exec python_d ${1+"$@"}
 else
-  exec python $*
+  exec python ${1+"$@"}
 fi
 
