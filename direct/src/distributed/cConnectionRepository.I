@@ -92,6 +92,7 @@ INLINE ConnectionWriter &CConnectionRepository::
 get_cw() {
   return _cw;
 }
+  INLINE ConnectionWriter &get_cw();
 #endif  // HAVE_NSPR
 
 #ifdef HAVE_NSPR
@@ -105,10 +106,8 @@ INLINE QueuedConnectionReader &CConnectionRepository::
 get_qcr() {
   return _qcr;
 }
-#endif  // HAVE_NSPR
-
-  INLINE ConnectionWriter &get_cw();
   INLINE QueuedConnectionReader &get_qcr();
+#endif  // HAVE_NSPR
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::get_datagram
