@@ -13,7 +13,7 @@
   #defer DEBUGPDBFLAGS /Zi /Fd"$[osfilename $[patsubst %.obj,%.pdb,$[target]]]"
   #defer DEBUGFLAGS /MDd $[BROWSEINFO_FLAG] $[DEBUGINFOFLAGS] $[DEBUGPDBFLAGS]
   #define RELEASEFLAGS /MD
-  #define WARNING_LEVEL_FLAG /W3
+  #define WARNING_LEVEL_FLAG /Wall
 
   // NODEFAULTLIB ensures static libs linked in will connect to the correct msvcrt, so no debug/release mixing occurs
   #define LDFLAGS_OPT1 /NODEFAULTLIB:MSVCRT.LIB
@@ -95,8 +95,9 @@
   //  #define OPT1FLAGS /RTCsu /GS  removing /RTCu because it crashes in dxgsg with internal compiler bug
   #define OPT1FLAGS /RTCs /GS
 
-  //  #define WARNING_LEVEL_FLAG /Wall  //this is scary
   #define WARNING_LEVEL_FLAG /W3   // WL
+  //#define WARNING_LEVEL_FLAG /Wall
+  //#define WARNING_LEVEL_FLAG /W4 /WX
 
   // Note: Zi cannot be used on multiproc builds with precomp hdrs, Z7 must be used instead
   #defer DEBUGPDBFLAGS /Zi /Fd"$[osfilename $[patsubst %.obj,%.pdb, $[target]]]"

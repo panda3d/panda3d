@@ -25,22 +25,24 @@ class EXPCL_DTOOL IPipeStream : public istream {
 PUBLISHED:
   INLINE IPipeStream(const std::string);
 
-  INLINE void flush(void);
+  INLINE void flush();
+
 private:
   PipeStreamBuf _psb;
 
-  INLINE IPipeStream(void);
+  INLINE IPipeStream();
 };
 
 class EXPCL_DTOOL OPipeStream : public ostream {
 PUBLISHED:
   INLINE OPipeStream(const std::string);
 
-  INLINE void flush(void);
+  INLINE void flush();
+
 private:
   PipeStreamBuf _psb;
 
-  INLINE OPipeStream(void);
+  INLINE OPipeStream();
 };
 
 #include "pfstream.I"
