@@ -64,11 +64,6 @@ extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *p
 #define PRINTVIDMEM(pDD,pCaps,pMsg)
 #endif
 
-//const int VERT_BUFFER_SIZE = (8*1024L);
-// For sparkle particles, we can have 4 vertices per sparkle, and a 
-// particle pool size of 1024 particles
-const int VERT_BUFFER_SIZE = (32*4*1024L);
-
 ////////////////////////////////////////////////////////////////////
 // 	 Class : DXGraphicsStateGuardian
 // Description : A GraphicsStateGuardian specialized for rendering
@@ -187,21 +182,22 @@ protected:
   void set_read_buffer(const RenderBuffer &rb);
 
   void bind_texture(TextureContext *tc);
-  void specify_texture(Texture *tex);
-  void apply_texture_immediate(DXTextureContext *tc);
 
   // for storage of the flexible vertex format
-  void *_fvf_buf;
-  void *_sav_fvf;
+  char *_fvf_buf;   
+  char *_sav_fvf;    // base of malloced array
   INLINE void add_to_FVF(void *data,  size_t bytes) ;
+  WORD *_index_buf;  // base of malloced array
   
-  bool				_dx_ready;
+  bool				    _dx_ready;
+  bool                  _bIsTNLDevice;
   LPDIRECTDRAWSURFACE7  _back;
   LPDIRECTDRAWSURFACE7  _zbuf;
-  LPDIRECT3D7          _d3d;
-  LPDIRECT3DDEVICE7    _d3dDevice;
+  LPDIRECT3D7           _d3d;
+  LPDIRECT3DDEVICE7     _d3dDevice;
   LPDIRECTDRAWSURFACE7  _pri;
-  LPDIRECTDRAW7		_pDD;
+  LPDIRECTDRAW7		    _pDD;
+
   RECT				  _view_rect;
   RECT				  clip_rect;
   HDC				_hdc;
@@ -243,11 +239,11 @@ protected:
   INLINE void enable_stencil_test(bool val);
   bool enable_light(int light, bool val);
 
-  D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm);
-  D3DCMPFUNC get_depth_func_type(DepthTestProperty::Mode m) const;
-  D3DCMPFUNC get_stencil_func_type(StencilProperty::Mode m) const;
-  D3DSTENCILOP get_stencil_action_type(StencilProperty::Action a) const;
-  D3DFOGMODE get_fog_mode_type(Fog::Mode m) const;
+  INLINE D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm);
+  INLINE D3DCMPFUNC get_depth_func_type(DepthTestProperty::Mode m) const;
+  INLINE D3DCMPFUNC get_stencil_func_type(StencilProperty::Mode m) const;
+  INLINE D3DSTENCILOP get_stencil_action_type(StencilProperty::Action a) const;
+  INLINE D3DFOGMODE get_fog_mode_type(Fog::Mode m) const;
 
   void draw_prim_inner_loop(int loops, const Geom *geom);
   void draw_prim_inner_loop2(int loops, const Geom *geom, short& per);
@@ -303,8 +299,6 @@ protected:
   D3DBLEND _blend_source_func;
   D3DBLEND _blend_dest_func;
 
-  TextureApplyProperty::Mode _CurTexBlendMode;
-
   int _pack_alignment;
   int _unpack_alignment;
 
@@ -330,6 +324,12 @@ protected:
   bool _fog_enabled;
   bool _alpha_test_enabled;
   int _decal_level;
+
+  // Cur Texture State
+  TextureApplyProperty::Mode _CurTexBlendMode;
+  Texture::FilterType _CurTexMagFilter,_CurTexMinFilter;
+  DWORD _CurTexAnisoDegree;
+  Texture::WrapMode _CurTexWrapModeU,_CurTexWrapModeV;
 
   PTA(Light*) _available_light_ids;
   int _max_lights;
@@ -368,7 +368,7 @@ public:
   INLINE void  Set_HDC(HDC hdc)  {  _hdc = hdc;  }
   void adjust_view_rect(int x, int y);
   INLINE void SetDXStatus(bool stat)  {  _dx_ready = stat; }
-  void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode TexBlendMode);
+  void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode TexBlendMode,bool bJustEnable);
 
   void  dx_cleanup();
   void  dx_setup_after_resize(RECT viewrect,HWND mwindow) ;
@@ -381,7 +381,6 @@ public:
 		  LPDIRECT3DDEVICE7    d3dDevice,
 		  RECT  viewrect);
    friend HRESULT CALLBACK EnumTexFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param );
-
 private:
   static TypeHandle _type_handle;
 };

@@ -73,6 +73,14 @@
 
 //#define PRINT_TEXSTATS
 
+//const int VERT_BUFFER_SIZE = (8*1024L);
+// For sparkle particles, we can have 4 vertices per sparkle, and a 
+// particle pool size of 1024 particles
+
+const int VERT_BUFFER_SIZE = (32*6*1024L);
+
+// for sprites, 1000 prims, 6 verts/prim, 24 bytes/vert
+
 TypeHandle DXGraphicsStateGuardian::_type_handle;
 
 // bit masks used for drawing primitives
@@ -80,6 +88,8 @@ TypeHandle DXGraphicsStateGuardian::_type_handle;
 #define PerColor  4
 #define PerNormal 2
 #define PerCoord  1
+
+static D3DMATRIX matIdentity;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::Constructor
@@ -94,16 +104,20 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
   _cur_clip_plane_enabled = (bool *)NULL;
   _fvf_buf = NULL;
   _sav_fvf = new char[VERT_BUFFER_SIZE];  // allocate storage for vertex info.
+  _index_buf = new WORD[D3DMAXNUMVERTICES];  // allocate storage for vertex index info.
   _dx_ready = false;
 
   _pri = _zbuf = _back = NULL;
   _pDD = NULL;
   _d3dDevice = NULL;
 
+  ZeroMemory(&matIdentity,sizeof(D3DMATRIX));
+  matIdentity._11 = matIdentity._22 = matIdentity._33 = matIdentity._44 = 1.0f;
+
   _cNumTexPixFmts = 0;
   _pTexPixFmts = NULL;
   _pCurTexContext = NULL;
-  
+
   // Create a default RenderTraverser.
   if (dx_cull_traversal) {
     _render_traverser = 
@@ -136,6 +150,7 @@ DXGraphicsStateGuardian::
 
   free_pointers();
   delete [] _sav_fvf;
+  delete [] _index_buf;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -388,6 +403,8 @@ init_dx(  LPDIRECTDRAW7     context,
     exit(1);
   }
 
+  _bIsTNLDevice = (bool) IsEqualGUID(_D3DDevDesc.deviceGUID,IID_IDirect3DTnLHalDevice);
+
   if((dx_decal_type==GDT_offset) && !(_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ZBIAS)) {
 #ifdef _DEBUG
       // dx7 doesnt support PLANEMASK renderstate
@@ -519,8 +536,28 @@ init_dx(  LPDIRECTDRAW7     context,
   cfa->issue(this);
   la->issue(this);
 
+  // must do SetTSS here because redundant states are filtered out by our code based on current values above, so
+  // initial conditions must be correct
+
   _CurTexBlendMode = TextureApplyProperty::M_modulate;
+  SetTextureBlendMode(_CurTexBlendMode,FALSE);
   _d3dDevice->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_DISABLE);  // disables texturing
+
+  // Init more Texture State
+  _CurTexMagFilter=_CurTexMinFilter=Texture::FT_nearest;
+  _CurTexWrapModeU=_CurTexWrapModeV=Texture::WM_clamp;
+  _CurTexAnisoDegree=1;
+
+  // this code must match apply_texture() code for states above
+  // so DX TSS renderstate matches dxgsg state
+
+  _d3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_POINT);
+  _d3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFP_POINT);
+  _d3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTFP_NONE);
+  _d3dDevice->SetTextureStageState(0, D3DTSS_MAXANISOTROPY,_CurTexAnisoDegree);
+  _d3dDevice->SetTextureStageState(0,D3DTSS_ADDRESSU,get_texture_wrap_mode(_CurTexWrapModeU));
+  _d3dDevice->SetTextureStageState(0,D3DTSS_ADDRESSV,get_texture_wrap_mode(_CurTexWrapModeV));
+
   ta->issue(this); // no curtextcontext, this does nothing.  dx should already be properly inited above anyway
 
 #ifdef _DEBUG
@@ -714,15 +751,8 @@ render_frame(const AllAttributesWrapper &initial_state) {
   _win->begin_frame();
   _d3dDevice->BeginScene();
 
-/*    D3DMATRIX ident;
-    ident._11 = ident._32 = ident._44 = 1.0f;
-    ident._23 = -1.0f;
-    ident._12 = ident._13 = ident._14 = ident._41 = 0.0f;
-    ident._21 = ident._22 = ident._24 = ident._42 = 0.0f;
-    ident._31 = ident._33 = ident._34 = ident._43 = 0.0f;
+/* _d3dDevice->SetTransform(D3DTRANSFORMSTATE_VIEW, &matIdentity); */
 
-    _d3dDevice->SetTransform(D3DTRANSFORMSTATE_VIEW, &ident);
- */
 #ifdef GSG_VERBOSE
   dxgsg_cat.debug()
     << "begin frame --------------------------------------------" << endl;
@@ -908,7 +938,7 @@ render_subgraph(RenderTraverser *traverser,
         Node *subgraph, ProjectionNode *projnode,
         const AllAttributesWrapper &initial_state,
         const AllTransitionsWrapper &net_trans) {
-  activate();
+//  activate();  doesnt do anything right now
   ProjectionNode *old_projection_node = _current_projection_node;
   _current_projection_node = projnode;
   LMatrix4f old_projection_mat = _current_projection_mat;
@@ -1047,8 +1077,24 @@ draw_point(const GeomPoint *geom) {
 
   glEnd();
 #else         // The DX Way
+
   int nPrims = geom->get_num_prims();
 
+  if(nPrims==0) {
+	  dxgsg_cat.warning() << "draw_point() called with ZERO vertices!!" << endl;
+	  return;
+  }
+
+#ifdef _DEBUG
+  static BOOL bPrintedMsg=FALSE;
+
+  if(!bPrintedMsg && (geom->get_size()!=1.0f)) {
+	  bPrintedMsg=TRUE;
+         dxgsg_cat.warning() << "D3D does not support drawing points of non-unit size, setting point size to 1.0!\n";
+     }
+#endif
+
+#if 0
   perVertex = 0;
   if (geom->get_binding(G_COORD) == G_PER_VERTEX)  perVertex |= PerCoord;
   if (geom->get_binding(G_NORMAL) == G_PER_VERTEX) perVertex |= PerNormal;
@@ -1068,6 +1114,58 @@ draw_point(const GeomPoint *geom) {
   draw_prim_inner_loop2(nPrims, geom, perPrim);
 
   _d3dDevice->DrawPrimitive(D3DPT_POINTLIST, p_flags, _sav_fvf, nPrims, NULL);
+#else
+
+  size_t vertex_size = draw_prim_setup(geom);
+
+  PTA_Vertexf coords;
+  PTA_Normalf norms;
+  PTA_Colorf colors;
+  PTA_TexCoordf texcoords;
+  GeomBindType bind;
+  PTA_ushort vindex,nindex,tindex,cindex;
+
+  geom->get_coords(coords,bind,vindex);
+  geom->get_normals(norms,bind,nindex);
+  geom->get_colors(colors,bind,cindex);
+  geom->get_texcoords(texcoords,bind,tindex);
+
+
+  D3DDRAWPRIMITIVESTRIDEDDATA dps_data;
+  ZeroMemory(&dps_data,sizeof(D3DDRAWPRIMITIVESTRIDEDDATA));
+  
+  dps_data.position.lpvData = (VOID*)coords;
+  dps_data.position.dwStride = sizeof(D3DVECTOR);
+
+  if (p_flags & D3DFVF_NORMAL) {
+	  dps_data.normal.lpvData = (VOID*)norms;
+	  dps_data.normal.dwStride = sizeof(D3DVECTOR);
+  }
+
+  if (p_flags & D3DFVF_DIFFUSE) {
+	  // Geom nodes store floats for colors, drawprim requires ARGB dwords
+      // BUGBUG: eventually this hack conversion needs to be done only once as part of a vertex buffer
+	  _fvf_buf=_sav_fvf;
+
+	  for(int i=0;i<nPrims;i++) {
+		  Colorf colf=colors[i];
+		  D3DCOLOR d3dcolr;
+
+		  d3dcolr = D3DRGBA(colf[0], colf[1], colf[2], colf[3]);
+		  add_to_FVF((void *)&d3dcolr, sizeof(D3DCOLOR));
+	  }
+
+      dps_data.diffuse.lpvData = (VOID*)_sav_fvf;
+      dps_data.diffuse.dwStride = sizeof(D3DCOLOR);
+  }
+
+  if (p_flags & D3DFVF_TEXCOUNT_MASK) {
+	  dps_data.textureCoords[0].lpvData = (VOID*)texcoords;
+	  dps_data.textureCoords[0].dwStride = sizeof(TexCoordf);
+  }
+
+  _d3dDevice->DrawPrimitiveStrided(D3DPT_POINTLIST, p_flags, &dps_data, nPrims, NULL);
+#endif
 
   _fvf_buf = NULL;
 
@@ -1088,10 +1186,10 @@ draw_line(const GeomLine* geom) {
 #endif
 
 #ifdef _DEBUG
-     static BOOL bPrintedMsg=FALSE;
+  static BOOL bPrintedMsg=FALSE;
 
-     if(!bPrintedMsg && (geom->get_width()!=1.0f)) {
-         bPrintedMsg=TRUE;
+  if(!bPrintedMsg && (geom->get_width()!=1.0f)) {
+	  bPrintedMsg=TRUE;
          dxgsg_cat.warning() << "DX does not support drawing lines with a non-1.0 pixel width, setting width to 1.0!\n";
      }
 #endif
@@ -1136,6 +1234,11 @@ draw_line(const GeomLine* geom) {
 
   int nPrims = geom->get_num_prims();
 
+  if(nPrims==0) {
+	  dxgsg_cat.warning() << "draw_line() called with ZERO vertices!!" << endl;
+	  return;
+  }
+
   perVertex = 0;
   if (geom->get_binding(G_COORD) == G_PER_VERTEX)  perVertex |= PerCoord;
   if (geom->get_binding(G_NORMAL) == G_PER_VERTEX) perVertex |= PerNormal;
@@ -1147,7 +1250,7 @@ draw_line(const GeomLine* geom) {
 
   size_t vertex_size = draw_prim_setup(geom);
 
-  void *_tmp_fvf = NULL;
+  char *_tmp_fvf = NULL;
   nassertv(_fvf_buf == NULL);    // make sure the storage pointer is clean.
 //  nassertv(nPrims * 2 * vertex_size < VERT_BUFFER_SIZE);
   
@@ -1195,8 +1298,11 @@ draw_linestrip(const GeomLinestrip* geom) {
 #endif
 
 #ifdef _DEBUG
-     if(geom->get_width()!=1.0f) {
-         dxgsg_cat.error() << "DX does not support drawing lines with a non-1.0 pixel width!!\n";
+  static BOOL bPrintedMsg=FALSE;
+
+  if(!bPrintedMsg && (geom->get_width()!=1.0f)) {
+	  bPrintedMsg=TRUE;
+         dxgsg_cat.warning() << "DX does not support drawing lines with a non-1.0 pixel width, setting width to 1.0!\n";
      }
 #endif
 
@@ -1258,6 +1364,11 @@ draw_linestrip(const GeomLinestrip* geom) {
   int nPrims = geom->get_num_prims();
   const int *plen = geom->get_lengths();
 
+  if(nPrims==0) {
+	  dxgsg_cat.warning() << "draw_linestrip() called with ZERO vertices!!" << endl;
+	  return;
+  }
+
   perVertex = 0;
   if (geom->get_binding(G_COORD) == G_PER_VERTEX)  perVertex |= PerCoord;
   if (geom->get_binding(G_NORMAL) == G_PER_VERTEX) perVertex |= PerNormal;
@@ -1286,7 +1397,6 @@ draw_linestrip(const GeomLinestrip* geom) {
 
     nassertv(_fvf_buf == NULL);    // make sure the storage pointer is clean.
     nassertv(nVerts * vertex_size < VERT_BUFFER_SIZE);
-//  void *sav_fvf = new char[nVerts * vertex_size];  // allocate storage for vertex info.
     _fvf_buf = _sav_fvf;            // _fvf_buf changes,  sav_fvf doesn't
     
     draw_prim_inner_loop2(nVerts, geom, perComp);
@@ -1300,6 +1410,28 @@ draw_linestrip(const GeomLinestrip* geom) {
 #endif              // WBD_GL_MODE
 }
 
+
+// this class exists because an alpha sort is necessary for correct
+// sprite rendering, and we can't simply sort the vertex arrays as 
+// each vertex may or may not have corresponding information in the
+// x/y texel-world-ratio and rotation arrays.
+class WrappedSprite {
+public:
+  Vertexf _v;
+  D3DCOLOR _c;
+  float _x_ratio;
+  float _y_ratio;
+  float _theta;
+};
+
+// this struct exists because the STL can sort faster than i can.
+struct draw_sprite_vertex_less {
+  INLINE bool operator ()(const WrappedSprite& v0, 
+              const WrappedSprite& v1) const {
+    return v0._v[2] > v1._v[2]; // reversed from gl
+  }
+};
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_sprite
 //       Access: Public, Virtual
@@ -1307,14 +1439,295 @@ draw_linestrip(const GeomLinestrip* geom) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_sprite(const GeomSprite *geom) {
-#ifdef _DEBUG
-     static BOOL bPrintedMsg=FALSE;
 
-     if(!bPrintedMsg) {
-         bPrintedMsg=TRUE;
-         dxgsg_cat.error() << "dxgsg sprite drawing not implemented yet!\n";
-     }
+  // this is a little bit of a mess, but it's ok.  Here's the deal:
+  // we want to draw, and draw quickly, an arbitrarily large number
+  // of sprites all facing the screen.  Performing the billboard math
+  // for ~1000 sprites is way too slow.  Ideally, we want one
+  // matrix transformation that will handle everything, and this is
+  // just about what ends up happening. We're getting the front-facing 
+  // effect by setting up a new frustum (of the same z-depth as the
+  // current one) that is very small in x and y.  This way regularly
+  // rendered triangles that might not be EXACTLY facing the camera
+  // will certainly look close enough.  Then, we transform to camera-space
+  // by hand and apply the inverse frustum to the transformed point.  
+  // For some cracked out reason, this actually works.
+
+
+  // Note: for DX8, try to use the PointSprite primitive instead of doing all the stuff below
+
+#ifdef GSG_VERBOSE
+  dxgsg_cat.debug() << "draw_sprite()" << endl;
 #endif
+
+  Texture *tex = geom->get_texture();
+  nassertv(tex != (Texture *) NULL);
+
+  // get the array traversal set up.
+  int nprims = geom->get_num_prims();
+
+  if(nprims==0) {
+	  dxgsg_cat.warning() << "draw_sprite() called with ZERO vertices!!" << endl;
+	  return;
+  }
+
+  D3DMATRIX OldD3DWorldMatrix;
+  _d3dDevice->GetTransform(D3DTRANSFORMSTATE_WORLD, &OldD3DWorldMatrix);
+
+  Geom::VertexIterator vi = geom->make_vertex_iterator();
+  Geom::ColorIterator ci = geom->make_color_iterator();
+
+  // save the modelview matrix
+  LMatrix4f modelview_mat;
+
+  const TransformAttribute *ctatt;
+  if (!get_attribute_into(ctatt, _state, TransformTransition::get_class_type()))
+    modelview_mat = LMatrix4f::ident_mat();
+  else
+    modelview_mat = ctatt->get_matrix();
+
+  // get the camera information
+  float aspect_ratio;
+  aspect_ratio = _actual_display_region->get_camera()->get_aspect();
+
+  // null the world xform, so sprites are orthog to scrn  (but not necessarily camera pntm unless they lie along z-axis)
+  _d3dDevice->SetTransform(D3DTRANSFORMSTATE_WORLD, &matIdentity);
+  // only need to change _WORLD xform, _VIEW xform is Identity
+
+  // precomputation stuff
+  float half_width = 0.5f * (float) tex->_pbuffer->get_xsize() ;
+  float half_height = 0.5f * (float) tex->_pbuffer->get_ysize();
+  float scaled_width, scaled_height;
+  
+  // set up the texture-rendering state
+  NodeAttributes state;
+
+  // this sets up texturing.  Could just set the renderstates directly, but this is a little cleaner
+  TextureAttribute *ta = new TextureAttribute;
+  ta->set_on(tex);
+  state.set_attribute(TextureTransition::get_class_type(), ta);
+
+  TextureApplyAttribute *taa = new TextureApplyAttribute;
+  taa->set_mode(TextureApplyProperty::M_modulate);
+  state.set_attribute(TextureApplyTransition::get_class_type(), taa);
+
+  set_state(state, false);
+
+  // the user can override alpha sorting if they want
+  bool alpha = false;
+
+  if (geom->get_alpha_disable() == false) {
+    // figure out if alpha's enabled (if not, no reason to sort)
+    const TransparencyAttribute *ctratt;
+    if (get_attribute_into(ctratt, _state, TransparencyTransition::get_class_type()))
+      alpha = true;
+  }
+
+  // sort container and iterator
+  vector< WrappedSprite > cameraspace_vector;
+  vector< WrappedSprite >::iterator vec_iter;
+
+  // inner loop vars
+  int i;
+  Vertexf source_vert, cameraspace_vert;
+  float *x_walk, *y_walk, *theta_walk;
+  float theta;
+
+  nassertv(geom->get_x_bind_type() != G_PER_VERTEX);
+  nassertv(geom->get_y_bind_type() != G_PER_VERTEX);
+
+  // set up the non-built-in bindings
+  bool x_overall = (geom->get_x_bind_type() == G_OVERALL);
+  bool y_overall = (geom->get_y_bind_type() == G_OVERALL);
+  bool theta_overall = (geom->get_theta_bind_type() == G_OVERALL);
+  bool color_overall = (geom->get_binding(G_COLOR) == G_OVERALL);
+  bool theta_on = !(geom->get_theta_bind_type() == G_OFF);
+
+  // x direction
+  if (x_overall == true)
+    scaled_width = geom->_x_texel_ratio[0] * half_width;
+  else {
+    nassertv(((int)geom->_x_texel_ratio.size() >= geom->get_num_prims()));
+    x_walk = &geom->_x_texel_ratio[0];
+  }
+
+  // y direction
+  if (y_overall == true)
+    scaled_height = geom->_y_texel_ratio[0] * half_height * aspect_ratio;
+  else {
+    nassertv(((int)geom->_y_texel_ratio.size() >= geom->get_num_prims()));
+    y_walk = &geom->_y_texel_ratio[0];
+  }
+
+  // theta
+  if (theta_on) {
+    if (theta_overall == true)
+      theta = geom->_theta[0];
+    else {
+      nassertv(((int)geom->_theta.size() >= geom->get_num_prims()));
+      theta_walk = &geom->_theta[0];
+    }
+  }
+
+  /////////////////////////////////////////////////////////////////////
+  // INNER LOOP PART 1 STARTS HERE
+  // Here we transform each point to cameraspace and fill our sort
+  // vector with the final geometric information.
+  /////////////////////////////////////////////////////////////////////
+
+  Colorf v_color;
+
+  // the state is set, start running the prims
+
+  // we need to sort indexs, not structs.  no need to compile this info into a struct
+  // for sorting or ever.
+  for (i = 0; i < nprims; i++) {
+
+    source_vert = geom->get_next_vertex(vi);
+    cameraspace_vert = modelview_mat * source_vert;
+
+    WrappedSprite ws;
+    ws._v.set(cameraspace_vert[0],cameraspace_vert[1],cameraspace_vert[2]);
+
+    if (color_overall == false) {
+	  v_color = geom->get_next_color(ci);
+      ws._c = D3DRGBA(v_color[0], v_color[1], v_color[2], v_color[3]);
+	}
+    if (x_overall == false)
+      ws._x_ratio = *x_walk++;
+    if (y_overall == false)
+      ws._y_ratio = *y_walk++;    // go along array of ratio values stored in geom
+    if (theta_on && (theta_overall == false))
+	  ws._theta = *theta_walk++;
+
+    cameraspace_vector.push_back(ws);
+  }
+
+  // sort the verts properly by alpha (if necessary).  Of course,
+  // the sort is only local, not scene-global, so if you look closely you'll
+  // notice that alphas may be screwy.  It's ok though, because this is fast.
+  // if you want accuracy, use billboards and take the speed hit.
+
+
+  //////////// why is the sort not scene global???
+
+  if (alpha) {
+    sort(cameraspace_vector.begin(), cameraspace_vector.end(), draw_sprite_vertex_less());
+  }
+
+  Vertexf ul, ur, ll, lr;
+
+  ////////////////////////////////////////////////////////////////////////////
+  // INNER LOOP PART 2 STARTS HERE
+  // Now we run through the cameraspace vector and compute the geometry for each
+  // tristrip.  This includes scaling as per the ratio arrays, as well as
+  // rotating in the z.
+  ////////////////////////////////////////////////////////////////////////////
+
+  p_flags = D3DFVF_XYZ | (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0)) ;
+  DWORD vertex_size = sizeof(float) * 2 + sizeof(D3DVALUE) * 3;
+
+  D3DCOLOR CurColor;
+  bool bDoColor=TRUE;
+  if(color_overall == true) {
+	  v_color = geom->get_next_color(ci);
+      CurColor = D3DRGBA(v_color[0], v_color[1], v_color[2], v_color[3]);
+	  bDoColor = (CurColor != ~0); 
+  }
+
+  if(bDoColor) {
+	  p_flags |= D3DFVF_DIFFUSE;
+	  vertex_size+=sizeof(D3DCOLOR);
+  }
+  
+  nassertv(_fvf_buf == NULL);    // make sure the storage pointer is clean.
+  nassertv(nprims * 4 * vertex_size < VERT_BUFFER_SIZE);
+  nassertv(nprims * 6 < D3DMAXNUMVERTICES );
+
+  _fvf_buf = _sav_fvf;          // _fvf_buf changes,  sav_fvf doesn't
+  float TexCrdSets[4][2] = {{0.0,0.0},{1.0,0.0},{0.0,1.0},{1.0,1.0}};
+
+#define QUADVERTLISTLEN 6
+
+  DWORD QuadVertIndexList[QUADVERTLISTLEN] = { 0, 1, 2, 3, 2, 1 };
+  DWORD CurDPIndexArrLength=0,CurVertCount=0;
+
+  vec_iter = cameraspace_vector.begin();
+  for (; vec_iter != cameraspace_vector.end(); vec_iter++) {
+    WrappedSprite& cur_image = *vec_iter;
+
+    // if not G_OVERALL, calculate the scale factors    //huh??
+    if (x_overall == false)
+      scaled_width = cur_image._x_ratio * half_width;
+
+    if (y_overall == false)
+      scaled_height = cur_image._y_ratio * half_height * aspect_ratio;
+
+    // if not G_OVERALL, do some trig for this z rotate   //what is the theta angle??
+    if (theta_on) {
+  	  if(!theta_overall)
+			theta = cur_image._theta;
+
+	  // create the rotated points.  BUGBUG: this matmult will be slow if we dont get inlining
+	  // rotate_mat calls sin() on an unbounded val, possible to make it faster with lookup table (modulate to 0-360 range?)
+	  LMatrix3f xform_mat = LMatrix3f::rotate_mat(theta) *   
+		  LMatrix3f::scale_mat(scaled_width, scaled_height);
+
+      ur = (xform_mat * LVector3f(1, 1, 0)) + cur_image._v;
+      ul = (xform_mat * LVector3f(-1, 1, 0)) + cur_image._v;
+      lr = (xform_mat * LVector3f(1, -1, 0)) + cur_image._v;
+      ll = (xform_mat * LVector3f(-1, -1, 0)) + cur_image._v;
+    } else {
+      // create the normal points
+      ur.set(scaled_width, scaled_height, 0);
+      ul.set(-scaled_width, scaled_height, 0);
+      lr.set(scaled_width, -scaled_height, 0);
+      ll.set(-scaled_width, -scaled_height, 0);
+
+      ur += cur_image._v;
+      ul += cur_image._v;
+      lr += cur_image._v;
+      ll += cur_image._v;
+    }
+
+    add_to_FVF((void *)ll.get_data(), sizeof(D3DVECTOR));
+	if(bDoColor) {
+		if(!color_overall)  // otherwise its already been set globally
+			CurColor = cur_image._c;
+		add_to_FVF((void *)&CurColor, sizeof(D3DCOLOR)); // only need to cpy color on 1st vert, others are just empty ignored space
+	}
+	add_to_FVF((void *)TexCrdSets[0], sizeof(float)*2);
+
+    add_to_FVF((void *)lr.get_data(), sizeof(D3DVECTOR));
+	if(bDoColor)
+		_fvf_buf += sizeof(D3DCOLOR);   // dont need to write color, just incr ptr
+	add_to_FVF((void *)TexCrdSets[1], sizeof(float)*2);
+
+    add_to_FVF((void *)ul.get_data(), sizeof(D3DVECTOR));
+	if(bDoColor)
+		_fvf_buf += sizeof(D3DCOLOR);
+	add_to_FVF((void *)TexCrdSets[2], sizeof(float)*2);
+
+    add_to_FVF((void *)ur.get_data(), sizeof(D3DVECTOR));
+	if(bDoColor) 
+		add_to_FVF((void *)&CurColor, sizeof(D3DCOLOR));
+	add_to_FVF((void *)TexCrdSets[3], sizeof(float)*2);
+
+	for (int ii=0;ii<QUADVERTLISTLEN;ii++) {
+		_index_buf[CurDPIndexArrLength+ii]=QuadVertIndexList[ii]+CurVertCount;
+	}
+	CurDPIndexArrLength+=QUADVERTLISTLEN;
+	CurVertCount+=4;
+  }
+
+  // cant do tristrip/fan since want to make 1 call for multiple quads which arent connected
+  // best we can do is indexed primitive
+  _d3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, p_flags, _sav_fvf, 4*nprims, _index_buf,QUADVERTLISTLEN*nprims,NULL);
+
+  _fvf_buf = NULL;
+
+  // restore the matrices
+  _d3dDevice->SetTransform(D3DTRANSFORMSTATE_WORLD, &OldD3DWorldMatrix);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1731,6 +2144,23 @@ draw_tri(const GeomTri *geom) {
 
   _fvf_buf = NULL;
 
+///////////////////////////
+#if 0
+  // test triangle for me to dbg experiments only
+    float vert_buf[15] = {
+      0.0, 0.0, 0.0,  0.0, 0.0, 
+      33.0, 0.0, 0.0,  0.0, 2.0, 
+      0.0, 0.0, 33.0,  2.0, 0.0
+      };
+
+  _d3dDevice->SetTextureStageState(0,D3DTSS_ADDRESSU,D3DTADDRESS_BORDER);
+  _d3dDevice->SetTextureStageState(0,D3DTSS_ADDRESSV,D3DTADDRESS_BORDER);
+  _d3dDevice->SetTextureStageState(0,D3DTSS_BORDERCOLOR,D3DRGBA(0,0,0,0));
+
+  p_flags =  D3DFVF_XYZ | (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0)) ;
+  _d3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST,  p_flags, vert_buf, nPrims*3, NULL);
+#endif
+
 #endif              // WBD_GL_MODE
 }
 
@@ -1742,6 +2172,15 @@ draw_tri(const GeomTri *geom) {
 void DXGraphicsStateGuardian::
 draw_quad(const GeomQuad *geom) {
   activate();
+
+#if 1
+     static BOOL bPrintedMsg=FALSE;
+
+     if(!bPrintedMsg) {
+         bPrintedMsg=TRUE;
+         dxgsg_cat.error() << "dxgsg draw_quad drawing not implemented yet!\n";
+     }
+#endif
 
 #ifdef GSG_VERBOSE
   dxgsg_cat.debug() << "draw_quad()" << endl;
@@ -1981,6 +2420,11 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE tri_id)
   int nPrims = geom->get_num_prims();
   const int *plen = geom->get_lengths();
 
+  if(nPrims==0) {
+	  dxgsg_cat.warning() << "draw_multitri() called with ZERO vertices!!" << endl;
+	  return;
+  }
+
   perVertex = 0;
   if (geom->get_binding(G_COORD) == G_PER_VERTEX)  perVertex |= PerCoord;
   if (geom->get_binding(G_NORMAL) == G_PER_VERTEX) perVertex |= PerNormal;
@@ -2050,6 +2494,8 @@ draw_sphere(const GeomSphere *geom) {
 #ifdef _DEBUG
   dxgsg_cat.debug() << "draw_sphere() unimplemented in DX!!\n";
 #endif
+
+  // we can implement this either using a box placeholder, or by generating the sphere on the fly (probably would not be fast)
  
 #ifdef GSG_VERBOSE
   dxgsg_cat.debug() << "draw_sphere()" << endl;
@@ -2057,6 +2503,12 @@ draw_sphere(const GeomSphere *geom) {
  
 #ifdef WBD_GL_MODE
   int nprims = geom->get_num_prims();
+
+  if(nPrims==0) {
+	  dxgsg_cat.warning() << "draw_sphere() called with ZERO vertices!!" << endl;
+	  return;
+  }
+
   Geom::VertexIterator vi = geom->make_vertex_iterator();
   Geom::ColorIterator ci = geom->make_color_iterator();
 
@@ -2202,7 +2654,7 @@ prepare_texture(Texture *tex) {
 void DXGraphicsStateGuardian::
 apply_texture(TextureContext *tc) {
   if(tc==NULL) {
-     return;
+     return;  // use enable_texturing to disable/enable 
   }
 
 //  activate();  inactive
@@ -2210,8 +2662,100 @@ apply_texture(TextureContext *tc) {
 #ifdef WBD_GL_MODE
   bind_texture(tc);
 #else
-  specify_texture(tc->_texture);
-  apply_texture_immediate(DCAST(DXTextureContext, tc));
+//  specify_texture(tc->_texture);
+  // Note: if this code changes, make sure to change initialization SetTSS code in init_dx as well
+  // so DX TSS renderstate matches dxgsg state
+
+  Texture *tex = tc->_texture;
+  Texture::WrapMode wrapU,wrapV;
+  wrapU=tex->get_wrapu();
+  wrapV=tex->get_wrapu();
+
+  if(wrapU!=_CurTexWrapModeU)
+	 _d3dDevice->SetTextureStageState(0,D3DTSS_ADDRESSU,get_texture_wrap_mode(wrapU));
+  if(wrapV!=_CurTexWrapModeV)
+     _d3dDevice->SetTextureStageState(0,D3DTSS_ADDRESSV,get_texture_wrap_mode(wrapV));
+
+  int aniso_degree=tex->get_anisotropic_degree();
+  Texture::FilterType ft=tex->get_magfilter();
+
+  if(aniso_degree>1) {
+	  if(aniso_degree!=_CurTexAnisoDegree) {
+		  _d3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_ANISOTROPIC );
+		  _d3dDevice->SetTextureStageState(0, D3DTSS_MAXANISOTROPY,aniso_degree);
+	  }
+  } else {
+   if(_CurTexMagFilter!=ft)
+    switch(ft) {
+      case Texture::FT_nearest:
+          _d3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_POINT);
+          break;
+      case Texture::FT_linear:
+          _d3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
+          break;
+      default:
+          dxgsg_cat.error() << "MipMap filter type setting for texture magfilter makes no sense,  texture: " << tex->get_name() << "\n";       
+          break;
+    }
+  }
+  
+  ft=tex->get_minfilter();
+
+  if((ft!=_CurTexMinFilter)||(aniso_degree!=_CurTexAnisoDegree)) {
+	  D3DTEXTUREMIPFILTER mipfilter = D3DTFP_LINEAR;
+	  D3DTEXTUREMINFILTER minfilter = D3DTFN_LINEAR;
+	
+	  switch(ft) {
+		  case Texture::FT_nearest:
+			  minfilter = D3DTFN_POINT;
+			  mipfilter = D3DTFP_NONE;
+			  break;
+		  case Texture::FT_linear:
+			  minfilter = D3DTFN_LINEAR;
+			  mipfilter = D3DTFP_NONE;
+			  break;
+		  case Texture::FT_nearest_mipmap_nearest:
+			  minfilter = D3DTFN_POINT;
+			  mipfilter = D3DTFP_POINT;
+			  break;
+		  case Texture::FT_linear_mipmap_nearest:
+			  minfilter = D3DTFN_LINEAR;
+			  mipfilter = D3DTFP_POINT;
+			  break;
+		  case Texture::FT_nearest_mipmap_linear:
+			  minfilter = D3DTFN_POINT;
+			  mipfilter = D3DTFP_LINEAR;
+			  break;
+		  case Texture::FT_linear_mipmap_linear:
+			  minfilter = D3DTFN_LINEAR;
+			  mipfilter = D3DTFP_LINEAR;
+			  break;
+		  default:
+			 dxgsg_cat.error() << "Unknown tex filter type for tex: " << tex->get_name() << "  filter: "<<(DWORD)ft<<"\n";
+	  }
+	
+	  if(aniso_degree>1) {
+		  minfilter=D3DTFN_ANISOTROPIC;
+	  }
+	
+	  _d3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, minfilter);
+	  _d3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, mipfilter);
+  }
+
+  DXTextureContext *dtc = DCAST(DXTextureContext, tc);
+
+  // bugbug:  does this handle the case of untextured geometry? 
+  //          we dont see this bug cause we never mix textured/untextured
+
+  _d3dDevice->SetTexture(0, dtc->_surface );
+#if 0
+  if(dtc!=NULL) {
+	 dxgsg_cat.spam() << "Setting active DX texture: " << dtc->_tex->get_name() << "\n";
+  } 
+#endif
+
+  _pCurTexContext = dtc;   // enable_texturing needs this
+
 #endif
 }
 
@@ -3396,16 +3940,32 @@ issue_color_blend(const ColorBlendAttribute *attrib) {
     break;
   }
 }
-       
-void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode TexBlendMode) {
+
+void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode TexBlendMode,bool bCanJustEnable) {
+
+/*class EXPCL_PANDA TextureApplyProperty {
+  enum Mode {
+    M_modulate,M_decal,M_blend,M_replace,M_add};
+*/  
+   static D3DTEXTUREOP TexBlendColorOp1[/*TextureApplyProperty::Mode */ 10] = 
+	   {D3DTOP_MODULATE,D3DTOP_BLENDTEXTUREALPHA,D3DTOP_MODULATE,D3DTOP_SELECTARG1,D3DTOP_ADD};
+
+	//if bCanJustEnable, then we only need to make sure ColorOp is turned on and set properly
+   if(bCanJustEnable && (TexBlendMode==_CurTexBlendMode)) {
+	   // just reset COLOROP 0 to enable pipeline, rest is already set properly
+       _d3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, TexBlendColorOp1[TexBlendMode] );
+	   return;
+   }
+
+   _d3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, TexBlendColorOp1[TexBlendMode] );
+
    switch(TexBlendMode) {
+
        case TextureApplyProperty::M_modulate: 
            // emulates GL_MODULATE glTexEnv mode
            // want to multiply tex-color*pixel color to emulate GL modulate blend (see glTexEnv)
-           _d3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
            _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
            _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
-
            _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_MODULATE );
            _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
            _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE );
@@ -3413,7 +3973,6 @@ void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode Tex
            break;
        case TextureApplyProperty::M_decal:
            // emulates GL_DECAL glTexEnv mode
-           _d3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_BLENDTEXTUREALPHA );
            _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
            _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
 
@@ -3422,14 +3981,12 @@ void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode Tex
 
            break;           
        case TextureApplyProperty::M_replace: 
-           _d3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_SELECTARG1 );
            _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
 
            _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
            _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
            break;           
        case TextureApplyProperty::M_add: 
-           _d3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_ADD );
            _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
            _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
 
@@ -3490,7 +4047,7 @@ enable_texturing(bool val) {
   if((val == FALSE) || (_pCurTexContext==NULL)) {
       _d3dDevice->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_DISABLE);
   } else {
-       SetTextureBlendMode(_CurTexBlendMode);
+       SetTextureBlendMode(_CurTexBlendMode,TRUE);
   }
 }
 
@@ -3505,10 +4062,10 @@ issue_texture_apply(const TextureApplyAttribute *attrib) {
    _CurTexBlendMode = attrib->get_mode();
 
    if(!_texturing_enabled) {
-      return;
+	  return;
    }
 
-   SetTextureBlendMode(_CurTexBlendMode);
+   SetTextureBlendMode(_CurTexBlendMode,FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3930,11 +4487,11 @@ end_decal(GeomNode *base_geom) {
           if (was_blend)
                 call_dxBlendFunc(old_blend_source_func, old_blend_dest_func);
        } 
-  #if(DIRECT3D_VERSION < 0x700)           
+	   #if(DIRECT3D_VERSION < 0x700)           
          else {
-          _d3dDevice->SetRenderState(D3DRENDERSTATE_PLANEMASK,0xFFFFFFFF);
+          _d3dDevice->SetRenderState(D3DRENDERSTATE_PLANEMASK,0xFFFFFFFF);  // this is unlikely to work due to poor driver support
        }
-  #endif
+   	   #endif
 
        enable_texturing(was_textured);
       _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, _depth_write_enabled); 
@@ -4068,155 +4625,28 @@ set_read_buffer(const RenderBuffer &rb) {
 }
 
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::specify_texture
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-specify_texture(Texture *tex) {
-
-  _d3dDevice->SetTextureStageState(0,D3DTSS_ADDRESSU,
-                  get_texture_wrap_mode(tex->get_wrapu()));
-  _d3dDevice->SetTextureStageState(0,D3DTSS_ADDRESSV,
-                  get_texture_wrap_mode(tex->get_wrapv()));
-
-  int aniso_degree=tex->get_anisotropic_degree();
-
-  Texture::FilterType ft=tex->get_magfilter();
-
-  if(aniso_degree>1) {
-       _d3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_ANISOTROPIC );
-       _d3dDevice->SetTextureStageState(0, D3DTSS_MAXANISOTROPY,aniso_degree);
-  } else
-   switch(ft) {
-      case Texture::FT_nearest:
-          _d3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_POINT);
-          break;
-      case Texture::FT_linear:
-          _d3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
-          break;
-      default:
-          dxgsg_cat.error() << "MipMap filter type setting for texture magfilter makes no sense,  texture: " << tex->get_name() << "\n";       
-          break;
-   }
-  
-  ft=tex->get_minfilter();
-
-  D3DTEXTUREMIPFILTER mipfilter = D3DTFP_LINEAR;
-  D3DTEXTUREMINFILTER minfilter = D3DTFN_LINEAR;
-
-  switch(ft) {
-      case Texture::FT_nearest:
-          minfilter = D3DTFN_POINT;
-          mipfilter = D3DTFP_NONE;
-          break;
-      case Texture::FT_linear:
-          minfilter = D3DTFN_LINEAR;
-          mipfilter = D3DTFP_NONE;
-          break;
-      case Texture::FT_nearest_mipmap_nearest:
-          minfilter = D3DTFN_POINT;
-          mipfilter = D3DTFP_POINT;
-          break;
-      case Texture::FT_linear_mipmap_nearest:
-          minfilter = D3DTFN_LINEAR;
-          mipfilter = D3DTFP_POINT;
-          break;
-      case Texture::FT_nearest_mipmap_linear:
-          minfilter = D3DTFN_POINT;
-          mipfilter = D3DTFP_LINEAR;
-          break;
-      case Texture::FT_linear_mipmap_linear:
-          minfilter = D3DTFN_LINEAR;
-          mipfilter = D3DTFP_LINEAR;
-          break;
-      default:
-         dxgsg_cat.error() << "Unknown tex filter type for tex: " << tex->get_name() << "  filter: "<<(DWORD)ft<<"\n";
-  }
-
-  if(aniso_degree>1) {
-      minfilter=D3DTFN_ANISOTROPIC;
-  }
-
-  _d3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, minfilter);
-  _d3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, mipfilter);
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::apply_texture_immediate
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-apply_texture_immediate(DXTextureContext *tc) {
-
-    // bugbug:  does this handle the case of untextured geometry? 
-    //          we dont see this bug cause we never mix textured/untextured
-
-//    if(tc->_surface->IsLost(
-
-    _d3dDevice->SetTexture(0, tc->_surface );
-#if 0
-    if(tc!=NULL) {
-       dxgsg_cat.spam() << "Setting active DX texture: " << tc->_tex->get_name() << "\n";
-    } 
-#endif
-
-    _pCurTexContext = tc;   // enable_texturing needs this
-
-  /*   FOR REFERENCE>>>  PixelBuffer::Type and PixelBuffer::Format
-       use pb->get_format()  and pb->get_image_type()
-  enum Type {
-    T_unsigned_byte,
-    T_unsigned_short,
-    T_unsigned_byte_332,
-    T_float,
-  };
- 
-  enum Format {
-    F_color_index,
-    F_stencil_index,
-    F_depth_component,
-    F_red,
-    F_green,
-    F_blue,
-    F_alpha,
-    F_rgb,
-    F_rgb5,    // specifically, 5 bits per R,G,B channel
-    F_rgb8,    // 8 bits per R,G,B channel
-    F_rgb12,   // 12 bits per R,G,B channel
-    F_rgb332,  // 3 bits per R & G, 2 bits for B
-    F_rgba,
-    F_rgba4,   // 4 bits per R,G,B,A channel
-    F_rgba8,   // 8 bits per R,G,B,A channel
-    F_rgba12,  // 12 bits per R,G,B,A channel
-    F_luminance,
-    F_luminance_alpha,
-  };
-
-  */
-}
-
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::get_texture_wrap_mode
 //       Access: Protected
 //  Description: Maps from the Texture's internal wrap mode symbols to
 //               GL's.
 ////////////////////////////////////////////////////////////////////
-D3DTEXTUREADDRESS DXGraphicsStateGuardian::
+INLINE D3DTEXTUREADDRESS DXGraphicsStateGuardian::
 get_texture_wrap_mode(Texture::WrapMode wm) {
+/*
   switch (wm) {
   case Texture::WM_clamp:
     return D3DTADDRESS_CLAMP;
   case Texture::WM_repeat:
     return D3DTADDRESS_WRAP;
   }
-  dxgsg_cat.error() << "Invalid Texture::WrapMode value!\n";
+*/
+  if(wm == Texture::WM_clamp)
+    return D3DTADDRESS_CLAMP;
+  else if (wm != Texture::WM_repeat) {
+	  dxgsg_cat.error() << "Invalid Texture::WrapMode value!\n";
+  }
+
   return D3DTADDRESS_WRAP;
 }
 
@@ -4225,7 +4655,7 @@ get_texture_wrap_mode(Texture::WrapMode wm) {
 //       Access: Protected
 //  Description: Maps from the depth func modes to gl version 
 ////////////////////////////////////////////////////////////////////
-D3DCMPFUNC DXGraphicsStateGuardian::
+INLINE D3DCMPFUNC DXGraphicsStateGuardian::
 get_depth_func_type(DepthTestProperty::Mode m) const
 {
     switch(m)
@@ -4249,7 +4679,7 @@ get_depth_func_type(DepthTestProperty::Mode m) const
 //       Access: Protected
 //  Description: Maps from the stencil func modes to dx version
 ////////////////////////////////////////////////////////////////////
-D3DCMPFUNC DXGraphicsStateGuardian::
+INLINE D3DCMPFUNC DXGraphicsStateGuardian::
 get_stencil_func_type(StencilProperty::Mode m) const
 {
     switch(m) {
@@ -4273,7 +4703,7 @@ get_stencil_func_type(StencilProperty::Mode m) const
 //       Access: Protected
 //  Description: Maps from the stencil action modes to dx version
 ////////////////////////////////////////////////////////////////////
-D3DSTENCILOP DXGraphicsStateGuardian::
+INLINE D3DSTENCILOP DXGraphicsStateGuardian::
 get_stencil_action_type(StencilProperty::Action a) const
 {
     switch(a) {
@@ -4295,7 +4725,7 @@ get_stencil_action_type(StencilProperty::Action a) const
 //       Access: Protected
 //  Description: Maps from the fog types to gl version
 ////////////////////////////////////////////////////////////////////
-D3DFOGMODE DXGraphicsStateGuardian::
+INLINE D3DFOGMODE DXGraphicsStateGuardian::
 get_fog_mode_type(Fog::Mode m) const {
   switch(m) {
     case Fog::M_linear: return D3DFOG_LINEAR;
@@ -4655,4 +5085,68 @@ void DXGraphicsStateGuardian::adjust_view_rect(int x, int y)
     }
 }
 
+#if 0
+//-----------------------------------------------------------------------------
+// Name: SetViewMatrix()
+// Desc: Given an eye point, a lookat point, and an up vector, this
+//       function builds a 4x4 view matrix.
+//-----------------------------------------------------------------------------
+HRESULT SetViewMatrix( D3DMATRIX& mat, D3DVECTOR& vFrom, D3DVECTOR& vAt,
+                       D3DVECTOR& vWorldUp )
+{
+    // Get the z basis vector, which points straight ahead. This is the
+    // difference from the eyepoint to the lookat point.
+    D3DVECTOR vView = vAt - vFrom;
 
+    FLOAT fLength = Magnitude( vView );
+    if( fLength < 1e-6f )
+        return E_INVALIDARG;
+
+    // Normalize the z basis vector
+    vView /= fLength;
+
+    // Get the dot product, and calculate the projection of the z basis
+    // vector onto the up vector. The projection is the y basis vector.
+    FLOAT fDotProduct = DotProduct( vWorldUp, vView );
+
+    D3DVECTOR vUp = vWorldUp - fDotProduct * vView;
+
+    // If this vector has near-zero length because the input specified a
+    // bogus up vector, let's try a default up vector
+    if( 1e-6f > ( fLength = Magnitude( vUp ) ) )
+    {
+        vUp = D3DVECTOR( 0.0f, 1.0f, 0.0f ) - vView.y * vView;
+
+        // If we still have near-zero length, resort to a different axis.
+        if( 1e-6f > ( fLength = Magnitude( vUp ) ) )
+        {
+            vUp = D3DVECTOR( 0.0f, 0.0f, 1.0f ) - vView.z * vView;
+
+            if( 1e-6f > ( fLength = Magnitude( vUp ) ) )
+                return E_INVALIDARG;
+        }
+    }
+
+    // Normalize the y basis vector
+    vUp /= fLength;
+
+    // The x basis vector is found simply with the cross product of the y
+    // and z basis vectors
+    D3DVECTOR vRight = CrossProduct( vUp, vView );
+    
+    // Start building the matrix. The first three rows contains the basis
+    // vectors used to rotate the view to point at the lookat point
+    mat._11 = vRight.x;  mat._12 = vUp.x;  mat._13 = vView.x;  mat._14 = 0.0f;
+    mat._21 = vRight.y;  mat._22 = vUp.y;  mat._23 = vView.y;  mat._24 = 0.0f;
+    mat._31 = vRight.z;  mat._32 = vUp.z;  mat._33 = vView.z;  mat._34 = 0.0f;
+
+    // Do the translation values (rotations are still about the eyepoint)
+    mat._41 = - DotProduct( vFrom, vRight );
+    mat._42 = - DotProduct( vFrom, vUp );
+    mat._43 = - DotProduct( vFrom, vView );
+    mat._44 = 1.0f;
+
+    return S_OK;
+}
+
+#endif
