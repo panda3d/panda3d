@@ -12,7 +12,7 @@ class FSM(DirectObject):
     # special methods
     
     def __init__(self, name, states=[], initialStateName=None,
-                 finalStateName=None):
+                 finalStateName=None, easyDict = None):
         """__init__(self, string, State[], string, string)
 
         FSM constructor: takes name, list of states, initial state and

@@ -42,6 +42,7 @@ class ShowBase:
         self.sfxActive = self.config.GetBool('audio-sfx-active', 1)
         self.musicActive = self.config.GetBool('audio-music-active', 1)
         self.wantFog = self.config.GetBool('want-fog', 1)
+
         self.screenshotExtension = self.config.GetString('screenshot-extension', 'jpg')
         self.musicManager = None
         self.musicManagerIsValid = None
@@ -127,8 +128,8 @@ class ShowBase:
         # scales things back to the right aspect ratio.
 
         # For now, we assume that the window will have an aspect ratio
-        # matching that of a traditional PC screen.
-        self.aspectRatio = 4.0 / 3.0
+        # matching that of a traditional PC screen (w / h) = (4 / 3)
+        self.aspectRatio = self.config.GetFloat('aspect-ratio', (4.0 / 3.0))
         self.aspect2d = self.render2d.attachNewNode(PGTop("aspect2d"))
         self.aspect2d.setScale(1.0 / self.aspectRatio, 1.0, 1.0)
 
