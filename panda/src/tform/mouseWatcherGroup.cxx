@@ -41,14 +41,20 @@ bool MouseWatcherGroup::
 add_region(MouseWatcherRegion *region) {
   //return _regions.insert(region).second;
 
-  // See if the region is in the set/vector already
   PT(MouseWatcherRegion) pt = region;
+
+  // We will only bother to check for duplicates in the region list if
+  // we are building opt 1 or 2.  The overhead for doing this may be
+  // too high if we have many regions.
+#ifdef _DEBUG
+  // See if the region is in the set/vector already
   Regions::const_iterator ri = 
     find(_regions.begin(), _regions.end(), pt);
   if (ri != _regions.end()) {
     // Already in the set, return false
     return false;
   }
+#endif
 
   // Not in the set, add it and return true
   _regions.push_back(pt);
