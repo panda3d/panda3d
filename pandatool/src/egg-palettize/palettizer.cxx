@@ -206,10 +206,9 @@ report_pi() const {
     if (si != sorted_groups.begin()) {
       cout << "\n";
     }
-    cout << "  " << group->get_name() << " ("
-         << group->get_dirname_order() << ","
-         << group->get_dependency_order() << "): "
-         << group->get_groups() << "\n";
+    cout << "  " << group->get_name()
+      //         << " (" << group->get_dirname_order() << "," << group->get_dependency_order() << ")"
+         << ": " << group->get_groups() << "\n";
     group->write_image_info(cout, 4);
   }
 
@@ -455,6 +454,7 @@ process_command_line_eggs(bool force_texture_read) {
   Groups::iterator gi;
   for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
     PaletteGroup *group = (*gi).second;
+    group->update_unknown_textures(_txa_file);
     group->place_all();
   }
 }
@@ -539,6 +539,7 @@ process_all(bool force_texture_read) {
   Groups::iterator gi;
   for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
     PaletteGroup *group = (*gi).second;
+    group->update_unknown_textures(_txa_file);
     group->place_all();
   }
 }

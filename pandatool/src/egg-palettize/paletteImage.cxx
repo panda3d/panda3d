@@ -293,6 +293,8 @@ count_coverage() const {
 ////////////////////////////////////////////////////////////////////
 bool PaletteImage::
 place(TexturePlacement *placement) {
+  nassertr(placement->is_size_known(), true);
+
   int x, y;
   if (find_hole(x, y, placement->get_x_size(), placement->get_y_size())) {
     placement->place_at(this, x, y);

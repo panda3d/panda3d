@@ -21,6 +21,7 @@
 #include "texturePlacement.h"
 #include "textureImage.h"
 #include "palettizer.h"
+#include "paletteImage.h"
 
 #include <indent.h>
 #include <datagram.h>
@@ -430,6 +431,7 @@ place_all() {
   Placements::iterator pli;
   for (pli = _placements.begin(); pli != _placements.end(); ++pli) {
     TexturePlacement *placement = (*pli);
+      
     if (placement->get_omit_reason() == OR_working) {
       PalettePage *page = get_page(placement->get_properties());
       page->assign(placement);
@@ -441,6 +443,36 @@ place_all() {
   for (pai = _pages.begin(); pai != _pages.end(); ++pai) {
     PalettePage *page = (*pai).second;
     page->place_all();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::update_unknown_textures
+//       Access: Public
+//  Description: Checks for new information on any textures within the
+//               group for which some of the saved information is
+//               incomplete.  This may be necessary before we can
+//               properly place all of the textures.
+////////////////////////////////////////////////////////////////////
+void PaletteGroup::
+update_unknown_textures(const TxaFile &txa_file) {
+  Placements::iterator pli;
+  for (pli = _placements.begin(); pli != _placements.end(); ++pli) {
+    TexturePlacement *placement = (*pli);
+
+    if (!placement->is_size_known()) {
+      // This texture's size isn't known; we have to determine its
+      // size.
+      TextureImage *texture = placement->get_texture();
+      if (!texture->got_txa_file()) {
+        // But first, we need to look up the texture in the .txa file.
+        texture->pre_txa_file();
+        txa_file.match_texture(texture);
+        texture->post_txa_file();
+      }
+
+      placement->determine_size();
+    }
   }
 }
 

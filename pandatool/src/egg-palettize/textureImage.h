@@ -64,6 +64,7 @@ public:
 
   void pre_txa_file();
   void post_txa_file();
+  bool got_txa_file() const;
   void determine_placement_size();
 
   bool get_omit() const;
@@ -127,6 +128,7 @@ private:
 
   bool _read_source_image;
   PNMImage _source_image;
+  bool _got_txa_file;
 
 
   // The TypedWritable interface follows.

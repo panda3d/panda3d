@@ -34,6 +34,7 @@ class EggFile;
 class TexturePlacement;
 class PalettePage;
 class TextureImage;
+class TxaFile;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PaletteGroup
@@ -80,6 +81,7 @@ public:
   void unplace(TexturePlacement *placement);
 
   void place_all();
+  void update_unknown_textures(const TxaFile &txa_file);
 
   void write_image_info(ostream &out, int indent_level = 0) const;
   void optimal_resize();

@@ -47,6 +47,7 @@ TextureImage() {
   _ever_read_image = false;
   _forced_grayscale = false;
   _forced_unalpha = false;
+  _got_txa_file = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -260,6 +261,8 @@ pre_txa_file() {
 ////////////////////////////////////////////////////////////////////
 void TextureImage::
 post_txa_file() {
+  _got_txa_file = true;
+
   // First, get the actual size of the texture.
   SourceTextureImage *source = get_preferred_source();
   if (source != (SourceTextureImage *)NULL) {
@@ -321,6 +324,17 @@ post_txa_file() {
   if (_properties != _pre_txa_properties) {
     force_replace();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureImage::got_txa_file
+//       Access: Public
+//  Description: Returns true if this TextureImage has been looked up
+//               in the .txa file this session, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool TextureImage::
+got_txa_file() const {
+  return _got_txa_file;
 }
 
 ////////////////////////////////////////////////////////////////////

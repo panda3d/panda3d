@@ -66,6 +66,7 @@ public:
   DestTextureImage *get_dest() const;
 
   bool determine_size();
+  bool is_size_known() const;
   OmitReason get_omit_reason() const;
   int get_x_size() const;
   int get_y_size() const;

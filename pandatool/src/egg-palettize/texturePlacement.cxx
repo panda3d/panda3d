@@ -380,6 +380,21 @@ determine_size() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexturePlacement::is_size_known
+//       Access: Public
+//  Description: Returns true if the texture's size is known, false
+//               otherwise.  Usually this can only be false after
+//               determine_size() has been called there is something
+//               wrong with the texture (in which case the placement
+//               will automatically omit itself from the palette
+//               anyway).
+////////////////////////////////////////////////////////////////////
+bool TexturePlacement::
+is_size_known() const {
+  return _size_known;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexturePlacement::get_omit_reason
 //       Access: Public
 //  Description: Returns the reason the texture has been omitted from
