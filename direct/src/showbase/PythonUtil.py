@@ -21,8 +21,17 @@ def indent(stream, numIndents, str):
     indentString = '    '
     stream.write(indentString * numIndents + str)
 
+def pdir(obj, *args):
+    """
+    Print out a formatted list of members and methods of an instance or class
+    """
+    apply(apropos, (obj,) + args)
+    
 def apropos(obj, str = None, fOverloaded = 0, width = None,
             fTruncate = 1, lineWidth = 75):
+    """
+    Print out a formatted list of members and methods of an instance or class
+    """
     if type(obj) == types.InstanceType:
         print "***************************INSTANCE INFO*****************************"
     if type(obj) == types.DictionaryType:
@@ -81,8 +90,11 @@ def apropos(obj, str = None, fOverloaded = 0, width = None,
         apropos(obj.__class__, str = str )
 
 def aproposAll(obj):
+    """
+    Print out a list of all members and methods (including overloaded methods)
+    of an instance or class  
+    """
     apropos(obj, fOverloaded = 1, fTruncate = 0)
-    
 
 def doc(obj):
     if (isinstance(obj, types.MethodType)) or \
