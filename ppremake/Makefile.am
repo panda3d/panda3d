@@ -3,7 +3,7 @@ bin_PROGRAMS = ppremake
 ppremake_SOURCES =							\
     check_include.cxx check_include.h filename.cxx filename.h		\
     find_searchpath.cxx find_searchpath.h				\
-    gnu_getopt.c gnu_getopt.h						\
+    gnu_getopt.c gnu_getopt.h gnu_regex.c gnu_regex.h			\
     ppCommandFile.cxx ppCommandFile.h ppDependableFile.cxx		\
     ppDependableFile.h ppDirectory.cxx					\
     ppDirectory.h ppDirectoryTree.cxx ppDirectoryTree.h			\

@@ -35,7 +35,7 @@ AC_SUBST(libm)
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(malloc.h alloca.h unistd.h io.h minmax.h sys/types.h)
+AC_CHECK_HEADERS(malloc.h alloca.h unistd.h io.h minmax.h sys/types.h string.h regex.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 

@@ -9,7 +9,12 @@
 #include "ppremake.h"
 
 #include <sys/types.h>
+
+#ifdef HAVE_REGEX_H
 #include <regex.h>
+#else
+#include "gnu_regex.h"
+#endif
 
 class SedContext;
 

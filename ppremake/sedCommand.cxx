@@ -8,8 +8,6 @@
 #include "sedContext.h"
 #include "sedScript.h"
 
-#include <regex.h>
-
 ////////////////////////////////////////////////////////////////////
 //     Function: SedCommand::Constructor
 //       Access: Public
