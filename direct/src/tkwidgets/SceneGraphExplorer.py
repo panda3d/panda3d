@@ -12,7 +12,7 @@ DEFAULT_MENU_ITEMS = [
     'Separator',
     'Fit', 'Flash', 'Isolate', 'Toggle Vis', 'Show All',
     'Separator',
-    'Set Parent', 'Reparent', 'WRT Reparent',
+    'Set Reparent Target', 'Reparent', 'WRT Reparent',
     'Separator',
     'Place', 'Set Name', 'Set Color', 'Explore',
     'Separator']
