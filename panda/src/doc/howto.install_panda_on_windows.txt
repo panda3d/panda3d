@@ -576,10 +576,10 @@ of the world, see INSTALL.txt in this directory.
     B. ANONYMOUS CVS (READ-ONLY ACCESS) FROM SOURCEFORGE
 
     ---------------------------------------------------------------------
-     Note that, for the past six months or so, anonymous access from
-     SourceForge has been consistently in the poor-to-unusable
-     quality range.  You probably will be happier choosing option A,
-     above, until SourceForge gets these issues ironed out.
+     Anonymous access from SourceForge now appears to be reliable enough
+     for day-to-day use.  (In the past, this has been poor to intolerable,
+     but SourceForge has installed new hardware recently and claims to have
+     fixed their anonymous cvs access issues.  It appears to be true.)
     ---------------------------------------------------------------------
 
       1. Set handy environment variable to use in anonymous checkout
