@@ -47,7 +47,7 @@ PPScope::MapVariableDefinition PPScope::_null_map_def;
 
 PPScope::ScopeStack PPScope::_scope_stack;
 
-#ifdef __CYGWIN__
+#ifdef PLATFORM_CYGWIN
 extern "C" void cygwin_conv_to_win32_path(const char *path, char *win32);
 extern "C" void cygwin_conv_to_posix_path(const char *path, char *posix);
 #endif
@@ -1215,22 +1215,27 @@ expand_unixfilename(const string &params) {
 //               been compiled with Cygwin; it is thus equivalent to
 //               the result of the cygpath -w command.
 //
-//               When ppremake has not been compiled with Cygwin, this
-//               returns the same as the "osfilename" variable.
+//               When Cygwin is not available, this returns the same
+//               as the "osfilename" variable.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_cygpath_w(const string &params) {
   string filename = trim_blanks(expand_string(params));
 
-#ifdef __CYGWIN__
+#ifdef PLATFORM_CYGWIN
   char result[4096];
 
+  // In Win32, we're either running Cygwin, in which case this
+  // function is statically linked in and definitely non-NULL, or
+  // we're running native Win32, in which case this function may or
+  // may not have been dynamically linked in.  In either case, use it
+  // if we've got it.
   cygwin_conv_to_win32_path(filename.c_str(), result);
   filename = result;
 #else
   Filename fn(filename);
   filename = fn.to_os_specific();
-#endif
+#endif  // PLATFORM_CYGWIN
 
   return filename;
 }
@@ -1245,21 +1250,21 @@ expand_cygpath_w(const string &params) {
 //               been compiled with Cygwin; it is thus equivalent to
 //               the result of the cygpath -p command.
 //
-//               When ppremake has not been compiled with Cygwin, this
-//               returns the same as the "unixfilename" variable.
+//               When Cygwin is not available, this returns the same
+//               as the "unixfilename" variable.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_cygpath_p(const string &params) {
   string filename = trim_blanks(expand_string(params));
 
-#ifdef __CYGWIN__
+#ifdef PLATFORM_CYGWIN
   char result[4096];
 
   cygwin_conv_to_posix_path(filename.c_str(), result);
   filename = result;
 #else
   filename = Filename::from_os_specific(filename);
-#endif
+#endif  // PLATFORM_CYGWIN
 
   return filename;
 }
@@ -1365,13 +1370,19 @@ expand_libtest(const string &params) {
 #ifdef WIN32
   const char *windir = getenv("WINDIR");
   if (windir != (const char *)NULL) {
-    directories.append_directory(Filename(windir, "System"));
-    directories.append_directory(Filename(windir, "System32"));
+    Filename windir_filename = Filename::from_os_specific(windir);
+    directories.append_directory(Filename(windir_filename, "System"));
+    directories.append_directory(Filename(windir_filename, "System32"));
   }
 
   const char *lib = getenv("LIB");
   if (lib != (const char *)NULL) {
-    directories.append_path(lib, ";");
+    vector<string> lib_dirs;
+    tokenize(lib, lib_dirs, ";");
+    vector<string>::const_iterator li;
+    for (li = lib_dirs.begin(); li != lib_dirs.end(); ++li) {
+      directories.append_directory(Filename::from_os_specific(*li));
+    }
   }
 #endif
 
@@ -1468,8 +1479,14 @@ expand_bintest(const string &params) {
 #ifdef WIN32
   if (pathvar.find(';') != string::npos) {
     // If the path contains semicolons, it's a native Windows-style
-    // path: split it up based on semicolons.
-    directories.append_path(pathvar, ";");
+    // path: split it up based on semicolons, and convert each
+    // directory from windows form.
+    vector<string> path_dirs;
+    tokenize(path, path_dirs, ";");
+    vector<string>::const_iterator pi;
+    for (pi = path_dirs.begin(); pi != path_dirs.end(); ++pi) {
+      directories.append_directory(Filename::from_os_specific(*pi));
+    }
 
   } else {
     // Otherwise, assume it's a Cygwin-style path: split it up based
