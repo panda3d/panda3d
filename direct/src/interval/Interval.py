@@ -2,6 +2,10 @@
 
 from DirectObject import *
 
+PREVIOUS_END = 1
+PREVIOUS_START = 2
+TRACK_START = 3
+
 class Interval(DirectObject):
     """Interval class: Base class for timeline functionality"""
 
@@ -15,7 +19,7 @@ class Interval(DirectObject):
 
     # special methods
     
-    def __init__(self, name, duration, t0 = 0.0, type = PrevEndRelative):
+    def __init__(self, name, duration, t0=0.0, type=PREVIOUS_END):
         """__init__(name, duration, t0, type)
         """
 	self.name = name

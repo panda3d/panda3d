@@ -9,7 +9,7 @@ class MopathInterval(Interval.Interval):
     # special methods
     
     def __init__(self, name, mopath, node, t0=0.0, 
-				type=Interval.Interval.PrevEndRelative):
+				type=Interval.PREVIOUS_END):
         """__init__(name, mopath, node, t0, type)
         """
 	self.name = name

@@ -11,7 +11,7 @@ class Wait(Interval.Interval):
     # special methods
     
     def __init__(self, duration, name=None, t0=0.0,
-				type=Interval.Interval.PrevEndRelative):
+				type=Interval.PREVIOUS_END):
         """__init__(duration, name, t0, type)
         """
 	if (name == None):

@@ -20,7 +20,7 @@ class MultiTrack(Interval.Interval):
 	self.tlist = trackList
 	self.duration = self.getDuration()
 	self.startTime = 0.0
-	self.type = Interval.Interval.PrevEndRelative
+	self.type = Interval.PREVIOUS_END
 
     def getDuration(self):
 	""" getDuration()

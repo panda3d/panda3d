@@ -9,7 +9,7 @@ class PosHprInterval(Interval.Interval):
     # special methods
     
     def __init__(self, name, node, pos, hpr, duration, t0=0.0,
-				type=Interval.Interval.PrevEndRelative):
+				type=Interval.PREVIOUS_END):
         """__init__(name, node, pos, hpr, duration, t0, type)
         """
 	self.name = name

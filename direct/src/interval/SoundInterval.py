@@ -10,7 +10,7 @@ class SoundInterval(Interval.Interval):
     # special methods
     
     def __init__(self, name, sound, loop=0, t0=0.0, 
-				type=Interval.Interval.PrevEndRelative):
+				type=Interval.PREVIOUS_END):
         """__init__(name, sound, loop, t0, type)
         """
 	self.name = name

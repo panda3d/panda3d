@@ -21,7 +21,7 @@ class Track(Interval.Interval):
 	self.ilist = intervalList
 	self.duration = self.__computeDuration(len(self.ilist))
 	self.startTime = 0.0
-	self.type = Interval.Interval.PrevEndRelative
+	self.type = Interval.PREVIOUS_END
 
     def __computeDuration(self, length):
 	""" __computeDuration(length)
@@ -34,12 +34,12 @@ class Track(Interval.Interval):
 	    t0 = i.getStartTime()
 	    assert(t0 >= 0.0)
 	    fillTime = t0 
-	    if (type == Interval.Interval.PrevEndRelative):
+	    if (type == Interval.PREVIOUS_END):
 		pass
-	    elif (type == Interval.Interval.PrevStartRelative):
+	    elif (type == Interval.PREVIOUS_START):
 		if (prev != None):
 		    fillTime = t0 - prev.getDuration()
-	    elif (type == Interval.Interval.TrackStartRelative):
+	    elif (type == Interval.TRACK_START):
 		fillTime = t0 - duration
 	    else:
 		Interval.notify.error(
@@ -51,30 +51,30 @@ class Track(Interval.Interval):
 	    prev = i
 	return duration
 
-    def getTrackRelativeStartTime(self, name):
-	""" getTrackRelativeStartTime(name)
+    def getIntervalStartTime(self, name):
+	""" getIntervalStartTime(name)
 	"""
 	for i in range(len(self.ilist)):
 	    if (self.ilist[i].getName() == name):	
 		return self.__computeDuration(i+1) - self.ilist[i].getDuration()
 	Interval.notify.warning(
-		'Track.getRelativeStartTime(): no Interval named: %s' % name)
+		'Track.getIntervalStartTime(): no Interval named: %s' % name)
 	return 0.0
 
-    def __getTrackRelativeStartTime(self, interval):
-	""" __getTrackRelativeStartTime(interval)
+    def __getIntervalStartTime(self, interval):
+	""" __getIntervalStartTime(interval)
 	"""
 	return (self.__computeDuration(self.ilist.index(interval)+1) -
 			interval.getDuration())
 
-    def getTrackRelativeEndTime(self, name):
-	""" getTrackRelativeEndTime(name)
+    def getIntervalEndTime(self, name):
+	""" getIntervalEndTime(name)
 	"""
 	for i in range(len(self.ilist)):
 	    if (self.ilist[i].getName() == name):	
 		return self.__computeDuration(i+1)
 	Interval.notify.warning(
-		'Track.getRelativeEndTime(): no Interval named: %s' % name)
+		'Track.getIntervalEndTime(): no Interval named: %s' % name)
 	return 0.0
 
     def setT(self, t):
@@ -93,7 +93,7 @@ class Track(Interval.Interval):
 	    prev = None
 	    for i in self.ilist:
 		# Calculate the track relative start time for the interval
-		t0 = self.__getTrackRelativeStartTime(i)
+		t0 = self.__getIntervalStartTime(i)
 
 		# Determine if the Interval is applicable
 		if (t < t0):
