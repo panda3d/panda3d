@@ -12,7 +12,7 @@
 // in case we have mixed intel/msvc build
   #define EXTRA_LIBPATH /ia32/lib
   #define EXTRA_INCPATH /ia32/include    
-#elif $[eq $[USE_COMPILER], BOUNDS]
+#elif $[eq $[USE_COMPILER], BOUNDS] // NuMega BoundsChecker
   #define COMPILER nmcl
   #define LINKER nmlink
   #define LIBBER lib
@@ -23,6 +23,13 @@
   #define RELEASEFLAGS /MD
   #define EXTRA_LIBPATH
   #define EXTRA_INCPATH
+  #if $[BOUNDS_TRUETIME] // NuMega BoundsChecker TrueTime Profiler
+    // This may look like a bad thing (to extend the compiler 
+    // and linker with a switch), but I think it's the right 
+    // thing to do in this case -- skyler.
+    #define COMPILER $[COMPILER] /NMttOn
+    #define LINKER $[LINKER] /NMttOn
+  #endif 
 #elif $[eq $[USE_COMPILER], INTEL]
   #define COMPILER icl
   #define LINKER xilink
