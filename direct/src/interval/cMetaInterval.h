@@ -81,6 +81,7 @@ PUBLISHED:
   virtual void reverse_initialize(double t);
   virtual void reverse_instant();
   virtual void reverse_finalize();
+  virtual void interrupt();
 
   INLINE bool is_event_ready();
   INLINE int get_event_index() const;

@@ -291,6 +291,9 @@ class MetaInterval(CMetaInterval):
             elif eventType == CInterval.ETReverseInstant:
                 ival.setT(0, Interval.IVAL_INIT)
 
+            elif eventType == CInterval.ETInterrupt:
+                ival.interrupt()
+
             else:
                 self.notify.error("Unhandled event type %s" % (eventType))
 
@@ -309,8 +312,22 @@ class MetaInterval(CMetaInterval):
         CMetaInterval.setT(self, t, event)
         self.__doPythonCallbacks()
 
-    def setFinalT(self):
+    def interrupt(self):
         # This function overrides the C++ function to check for Python
+        # callbacks afterwards.
+        self.__updateIvals()
+        CMetaInterval.interrupt(self)
+        self.__doPythonCallbacks()
+
+    def stop(self):
+        # This function overrides from the parent level to check for Python
+        # callbacks afterwards.
+        self.__updateIvals()
+        CMetaInterval.stop(self)
+        self.__doPythonCallbacks()
+
+    def setFinalT(self):
+        # This function overrides from the parent level to check for Python
         # callbacks afterwards.
         self.__updateIvals()
         CMetaInterval.setFinalT(self)

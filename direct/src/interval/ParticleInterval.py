@@ -28,9 +28,6 @@ class ParticleInterval(Interval.Interval):
         assert(duration > 0.0 or loop == 1)
         # Initialize superclass
         Interval.Interval.__init__(self, name, duration)
-        # Update stopEvent
-        self.stopEvent = id + '_stopEvent'
-        self.stopEventList = [self.stopEvent]
         self.cleanedUp = 0
 
     def updateFunc(self, t, event=Interval.IVAL_NONE):
@@ -44,7 +41,6 @@ class ParticleInterval(Interval.Interval):
         if (t >= self.getDuration()):
             # If duration reached or stop event received, stop particle effect 
             self.particleEffect.cleanup()
-            self.ignore(self.stopEvent)
             self.cleanedUp = 1
         elif (event == Interval.IVAL_INIT):
             # IVAL_INIT event, start new particle effect
@@ -52,13 +48,12 @@ class ParticleInterval(Interval.Interval):
             if self.worldRelative:
                 renderParent = render
             self.particleEffect.start(self.parent, renderParent)
-            # Accept event to kill particle effect 
-            self.acceptOnce(self.stopEvent,
-                        lambda s = self: 
-                s.particleEffect.cleanup())
         # Print debug information
         assert(self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t)))
-            
+
+    def interrupt(self):
+        self.particleEffect.cleanup()
+        self.cleanedUp = 1
 
 
 

@@ -43,9 +43,6 @@ class SoundInterval(Interval.Interval):
             name = id
         # Initialize superclass
         Interval.Interval.__init__(self, name, duration)
-        # Update stopEvent
-        self.stopEvent = id + '_stopEvent'
-        self.stopEventList = [self.stopEvent]
 
     def updateFunc(self, t, event = Interval.IVAL_NONE):
         """ updateFunc(t, event)
@@ -53,10 +50,9 @@ class SoundInterval(Interval.Interval):
         """
         # Update sound based on current time
         if (t >= self.getDuration()):
-            # If end of sound reached or stop event received, stop sound
+            # If end of sound reached, stop sound
             if self.sound:
                 self.sound.stop()
-            self.ignore(self.stopEvent)
         elif (event == Interval.IVAL_INIT):
             # IVAL_INIT event, start new sound
             # If its within a 10th of a second of the start,
@@ -69,12 +65,10 @@ class SoundInterval(Interval.Interval):
                 self.sound.setLoop(self.loop)
                 self.sound.setVolume(self.volume)
                 self.sound.play()
-                # Accept event to kill sound
-                self.acceptOnce(self.stopEvent,
-                        lambda s = self: s.sound.stop())
+
         # Print debug information
         self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
             
-
-
-
+    def interrupt(self):
+        if self.sound:
+            self.sound.stop()

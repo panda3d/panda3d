@@ -52,7 +52,8 @@ PUBLISHED:
     ET_finalize,
     ET_reverse_initialize,
     ET_reverse_instant,
-    ET_reverse_finalize
+    ET_reverse_finalize,
+    ET_interrupt
   };
 
   INLINE void set_t(double t, EventType event = ET_step);
@@ -69,6 +70,7 @@ PUBLISHED:
   virtual void reverse_initialize(double t);
   virtual void reverse_instant();
   virtual void reverse_finalize();
+  virtual void interrupt();
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;

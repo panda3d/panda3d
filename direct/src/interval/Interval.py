@@ -25,7 +25,6 @@ class Interval(DirectObject):
         self.duration = duration
         self.curr_t = 0.0
         self.prev_t = -1
-        self.stopEventList = []
         self.setTHooks = []
         # Set true if interval responds to setT(t): t>duration
         self.openEnded = openEnded
@@ -68,14 +67,13 @@ class Interval(DirectObject):
         # Subclasses define this function
         pass
 
+    def interrupt(self):
+        # Subclasses define this function
+        pass
+
     def setTHook(self, t):
         # Used by control panel to update scale
         pass
-
-    def setFinalT(self):
-        """ setFinalT()
-        """
-        self.setT(self.getDuration(), IVAL_DONE)
 
     def play(self, t0=0.0, duration=0.0, scale=1.0):
         """ play(t0, duration)
@@ -85,7 +83,8 @@ class Interval(DirectObject):
             t0 = self.duration
 
         # Kill ongoing play task
-        taskMgr.remove(self.name + '-play')
+        if self.isPlaying():
+            self.stop()
         # Start new one
         self.offset = t0
         self.startT = globalClock.getFrameTime()
@@ -101,8 +100,7 @@ class Interval(DirectObject):
             self.endTime = min(self.duration, self.offset + duration)
         assert(t0 <= self.endTime)
 
-        # Spawn task
-        taskMgr.add(self.__playTask, self.name + '-play')
+        self.resume()
 
     def loop(self, t0=0.0, duration=0.0, scale=1.0):
         self.accept(self.name + '-loop', self.play,
@@ -110,17 +108,29 @@ class Interval(DirectObject):
         self.play(t0, duration, scale)
         return
 
-    def stop(self):
-        """ stop()
-        """
+    def pause(self):
         # First send event to stop freerunning (e.g. sound and anim) intervals
-        for stopEvent in self.stopEventList:
-            messenger.send(stopEvent)
+        self.interrupt()
         # Kill task
         taskMgr.remove(self.name + '-play')
         # No more looping.
         self.ignore(self.name + '-loop')
         return self.curr_t
+
+    def resume(self):
+        # Spawn task
+        taskMgr.add(self.__playTask, self.getName() + '-play')
+
+    def stop(self):
+        # Nowadays, stop() will implicitly set the interval to its
+        # terminal state, like setFinalT() used to.  Use pause()
+        # instead if you just want to leave the interval in its
+        # current state, whatever that may be.
+        self.pause()
+        self.setT(self.getDuration(), IVAL_DONE)
+
+    def setFinalT(self):
+        self.stop()
 
     def isPlaying(self):
         return taskMgr.hasTaskNamed(self.name + '-play')
@@ -179,30 +189,30 @@ class Interval(DirectObject):
         # So when you drag scale with mouse its like you started a playback
         def onPress(s=self,es=es):
             # Kill playback task
-            taskMgr.remove(s.name + '-play')
+            self.pause()
             # INIT interval
             s.setT(es.get(), IVAL_INIT)
         es.onPress = onPress
         # To make sure you stop free running intervals
-        es.onRelease = lambda s=self: s.stop()
+        es.onRelease = lambda s=self: s.pause()
         # To update scale and execute intervals with IVAL_INIT
         def onReturn(s = self, es = es):
             s.setT(es.get(), IVAL_INIT)
-            s.stop()
+            s.pause()
         es.onReturnRelease = onReturn
         es.pack(expand = 1, fill = X)
         bf = Frame(outerFrame)
         # Jump to start and end
         def toStart(s=self, es=es):
             s.setT(0.0, IVAL_INIT)
-            s.stop()
+            s.pause()
         def toEnd(s=self):
             s.setT(s.getDuration(), IVAL_INIT)
-            s.stop()
+            s.pause()
         jumpToStart = Button(bf, text = '<<', command = toStart)
         # Stop/play buttons
         stop = Button(bf, text = 'Stop',
-                      command = lambda s=self: s.stop())
+                      command = lambda s=self: s.pause())
         play = Button(
             bf, text = 'Play',
             command = lambda s=self, es=es: s.play(es.get()))

@@ -92,6 +92,10 @@ set_t(double t, CInterval::EventType event) {
   case ET_reverse_finalize:
     reverse_finalize();
     break;
+
+  case ET_interrupt:
+    interrupt();
+    break;
   }
 }
 

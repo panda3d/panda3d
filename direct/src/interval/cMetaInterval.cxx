@@ -537,6 +537,29 @@ reverse_finalize() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CMetaInterval::interrupt
+//       Access: Published, Virtual
+//  Description: This is called while the interval is playing to
+//               indicate that it is about to be interrupted; that is,
+//               step() will not be called for a length of time.  But
+//               the interval should remain in its current state in
+//               anticipation of being eventually restarted when the
+//               calls to step() eventually resume.
+//
+//               The purpose of this function is to allow self-running
+//               intervals like sound intervals to stop the actual
+//               sound playback during the pause.
+////////////////////////////////////////////////////////////////////
+void CMetaInterval::
+interrupt() {
+  ActiveEvents::iterator ai;
+  for (ai = _active.begin(); ai != _active.end(); ++ai) {
+    PlaybackEvent *event = (*ai);
+    enqueue_event(event->_n, ET_interrupt, false);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CMetaInterval::write
 //       Access: Published, Virtual
 //  Description: 

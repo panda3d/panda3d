@@ -7,26 +7,43 @@
     def play(self, t0 = 0.0, duration = None, scale = 1.0):
         """ play(t0, duration)
         """
-        self.stop()
+        if self.isPlaying():
+            self.stop()
         if duration:  # None or 0 implies full length
             self.setupPlay(t0, t0 + duration, scale)
         else:
             self.setupPlay(t0, -1, scale)
         self.__loop = 0
-        # Spawn task
-        taskMgr.add(self.__playTask, self.getName() + '-play')
+        self.resume()
 
     def loop(self, t0 = 0.0, duration = None, scale = 1.0):
         self.play(t0, duration, scale)
         self.__loop = 1
         return
 
-    def stop(self):
-        """ stop()
-        """
+    def pause(self):
+        self.interrupt()
         # Kill task
         taskMgr.remove(self.getName() + '-play')
         return self.getT()
+
+    def resume(self):
+        # Spawn task
+        taskMgr.add(self.__playTask, self.getName() + '-play')
+    
+    def stop(self):
+        # Nowadays, stop() will implicitly set the interval to its
+        # terminal state, like setFinalT() used to.  Use pause()
+        # instead if you just want to leave the interval in its
+        # current state, whatever that may be.
+        self.pause()
+        self.finalize()
+        if hasattr(self, "setTHooks"):
+            for func in self.setTHooks:
+                func(self.getT())
+
+    def setFinalT(self):
+        self.stop()
 
     def setT(self, t, event = ETStep):
         # Overridden from the C++ layer.  We rename the C++ function
@@ -35,15 +52,6 @@
         if hasattr(self, "setTHooks"):
             for func in self.setTHooks:
                 func(t)
-    
-    def setFinalT(self):
-        # We have to define this at the Python level so we can
-        # implicitly call stop().
-        self.stop()
-        self.finalize()
-        if hasattr(self, "setTHooks"):
-            for func in self.setTHooks:
-                func(self.getT())
 
     def isPlaying(self):
         return taskMgr.hasTaskNamed(self.getName() + '-play')
@@ -81,30 +89,30 @@
         # So when you drag scale with mouse its like you started a playback
         def onPress(s=self,es=es):
             # Kill playback task
-            s.stop()
+            s.pause()
             # INIT interval
             s.setT(es.get(), CInterval.ETInitialize)
         es.onPress = onPress
         # To make sure you stop free running intervals
-        es.onRelease = lambda s=self: s.stop()
+        es.onRelease = lambda s=self: s.pause()
         # To update scale and execute intervals with ETInitialize
         def onReturn(s = self, es = es):
             s.setT(es.get(), CInterval.ETInitialize)
-            s.stop()
+            s.pause()
         es.onReturnRelease = onReturn
         es.pack(expand = 1, fill = X)
         bf = Frame(outerFrame)
         # Jump to start and end
         def toStart(s=self, es=es):
             s.setT(0.0, CInterval.ETInitialize)
-            s.stop()
+            s.pause()
         def toEnd(s=self):
             s.setT(s.getDuration(), CInterval.ETInitialize)
-            s.stop()
+            s.pause()
         jumpToStart = Button(bf, text = '<<', command = toStart)
         # Stop/play buttons
         stop = Button(bf, text = 'Stop',
-                      command = lambda s=self: s.stop())
+                      command = lambda s=self: s.pause())
         play = Button(
             bf, text = 'Play',
             command = lambda s=self, es=es: s.play(es.get()))

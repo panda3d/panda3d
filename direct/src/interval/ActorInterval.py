@@ -61,10 +61,6 @@ class ActorInterval(Interval.Interval):
 
         # Initialize superclass
         Interval.Interval.__init__(self, name, duration)
-        # Update stopEvent
-        self.stopEvent = id + '_stopEvent'
-        if self.loopAnim:
-            self.stopEventList = [self.stopEvent]
 
     def calcFrame(self, t):
         segmentLength = abs(self.finishTime - self.startTime)
@@ -108,19 +104,20 @@ class ActorInterval(Interval.Interval):
         if (t >= self.duration):
             self.actor.stop(self.animName)
             frame = self.goToT(self.duration)
-            if self.loopAnim:
-                self.ignore(self.stopEvent)
         elif self.loopAnim == 1:
             if event == Interval.IVAL_INIT:
                 # Pose anim
                 self.goToT(t)
                 # And start loop, restart flag says continue from current frame
                 self.actor.loop(self.animName, restart=0)
-                self.acceptOnce(self.stopEvent, self.actor.stop)
         else:
             # Pose anim
             self.goToT(t)
 
+    def interrupt(self):
+        if self.loopAnim:
+            self.actor.stop
+        
 
 class LerpAnimInterval(CLerpAnimEffectInterval):
     # Blends between two anims.  Start both anims first (or use
