@@ -22,6 +22,7 @@
 #end bin_target
 
 #begin noinst_bin_target
+  #define LOCAL_LIBS eggcharbase $[LOCAL_LIBS]
   #define TARGET egg-topstrip
 
   #define SOURCES \

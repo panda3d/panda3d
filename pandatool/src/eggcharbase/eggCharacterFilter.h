@@ -11,6 +11,7 @@
 #include "eggMultiFilter.h"
 
 class EggCharacterData;
+class EggCharacterCollection;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : EggCharacterFilter
@@ -31,9 +32,9 @@ public:
 protected:
   virtual bool post_command_line();
 
-  virtual EggCharacterData *make_character_data();
+  virtual EggCharacterCollection *make_collection();
 
-  EggCharacterData *_character_data;
+  EggCharacterCollection *_collection;
 };
 
 #endif

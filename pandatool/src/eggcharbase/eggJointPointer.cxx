@@ -1,0 +1,19 @@
+// Filename: eggJointPointer.cxx
+// Created by:  drose (26Feb01)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "eggJointPointer.h"
+
+
+TypeHandle EggJointPointer::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointPointer::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+EggJointPointer::
+EggJointPointer(EggObject *object) {
+  _joint = DCAST(EggGroup, object);
+}

@@ -1,44 +1,51 @@
-// Filename: eggCharacterData.cxx
-// Created by:  drose (23Feb01)
+// Filename: eggCharacterCollection.cxx
+// Created by:  drose (26Feb01)
 // 
 ////////////////////////////////////////////////////////////////////
 
+#include "eggCharacterCollection.h"
 #include "eggCharacterData.h"
 #include "eggJointData.h"
-#include "eggGroup.h"
-#include "eggTable.h"
+#include "eggSliderData.h"
 
+#include <eggGroup.h>
+#include <eggTable.h>
+#include <eggPrimitive.h>
+#include <eggVertex.h>
+#include <eggMorphList.h>
+#include <eggSAnimData.h>
 #include <indirectCompareNames.h>
 #include <indent.h>
 
 #include <algorithm>
 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::Constructor
+//     Function: EggCharacterCollection::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-EggCharacterData::
-EggCharacterData() {
+EggCharacterCollection::
+EggCharacterCollection() {
+  _next_model_index = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::Destructor
+//     Function: EggCharacterCollection::Destructor
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-EggCharacterData::
-~EggCharacterData() {
+EggCharacterCollection::
+~EggCharacterCollection() {
   Characters::iterator ci;
 
   for (ci = _characters.begin(); ci != _characters.end(); ++ci) {
-    CharacterInfo &character_info = (*ci);
-    delete character_info._root_joint;
+    delete (*ci);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::add_egg
+//     Function: EggCharacterCollection::add_egg
 //       Access: Public
 //  Description: Adds a new egg file to the list of models and
 //               animation files for this particular character.
@@ -49,7 +56,7 @@ EggCharacterData::
 //               If the joint hierarchy does not match the existing
 //               joint hierarchy, a best match is attempted.
 ////////////////////////////////////////////////////////////////////
-bool EggCharacterData::
+bool EggCharacterCollection::
 add_egg(EggData *egg) {
   _top_egg_nodes.clear();
 
@@ -68,16 +75,21 @@ add_egg(EggData *egg) {
   for (tni = _top_egg_nodes.begin(); tni != _top_egg_nodes.end(); ++tni) {
     string character_name = (*tni).first;
     TopEggNodes &top_nodes = (*tni).second;
+    EggCharacterData *char_data = make_character(character_name);
+    EggJointData *root_joint = char_data->get_root_joint();
     
     TopEggNodes::iterator ti;
     for (ti = top_nodes.begin(); ti != top_nodes.end(); ++ti) {
-      EggNode *model = (*ti).first;
+      EggNode *model_root = (*ti).first;
       EggNodeList &egg_nodes = (*ti).second;
       
-      int model_index = egg_info._models.size();
-      egg_info._models.push_back(model);
-      match_egg_nodes(get_root_joint(character_name), 
-		      egg_nodes, egg_index, model_index);
+      int model_index = _next_model_index++;
+      egg_info._models.push_back(model_root);
+      match_egg_nodes(char_data, root_joint, egg_nodes,
+		      egg_index, model_index);
+
+      scan_for_morphs(model_root, model_index, char_data);
+      scan_for_sliders(model_root, model_index, char_data);
     }
   }
 
@@ -85,50 +97,95 @@ add_egg(EggData *egg) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::get_root_joint
-//       Access: Protected
-//  Description: Returns the root of the joint hierarchy for the named
-//               character.  This is actually a fictitious node that
-//               does not correspond to any particular nodes in the
-//               character hierarchy; it exists to hold all of the top
-//               joints (if any) read from the character hierarchy.
+//     Function: EggCharacterCollection::get_character_by_name
+//       Access: Public
+//  Description: Returns the Character with the indicated name, if it
+//               exists in the collection, or NULL if it does not.
 ////////////////////////////////////////////////////////////////////
-EggJointData *EggCharacterData::
-get_root_joint(const string &character_name) {
+EggCharacterData *EggCharacterCollection::
+get_character_by_name(const string &character_name) const {
+  Characters::const_iterator ci;
+  for (ci = _characters.begin(); ci != _characters.end(); ++ci) {
+    EggCharacterData *char_data = (*ci);
+    if (char_data->get_name() == character_name) {
+      return char_data;
+    }
+  }
+
+  return (EggCharacterData *)NULL;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterCollection::make_character_data
+//       Access: Public, Virtual
+//  Description: Allocates and returns a new EggCharacterData
+//               structure.  This is primarily intended as a hook so
+//               derived classes can customize the type of
+//               EggCharacterData nodes used to represent the
+//               characters in this collection.
+////////////////////////////////////////////////////////////////////
+EggCharacterData *EggCharacterCollection::
+make_character_data() {
+  return new EggCharacterData(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterCollection::make_joint_data
+//       Access: Public, Virtual
+//  Description: Allocates and returns a new EggJointData structure
+//               for the given character.  This is primarily intended
+//               as a hook so derived classes can customize the type
+//               of EggJointData nodes used to represent the joint
+//               hierarchy.
+////////////////////////////////////////////////////////////////////
+EggJointData *EggCharacterCollection::
+make_joint_data(EggCharacterData *char_data) {
+  return new EggJointData(this, char_data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterCollection::make_slider_data
+//       Access: Public, Virtual
+//  Description: Allocates and returns a new EggSliderData structure
+//               for the given character.  This is primarily intended
+//               as a hook so derived classes can customize the type
+//               of EggSliderData nodes used to represent the slider
+//               list.
+////////////////////////////////////////////////////////////////////
+EggSliderData *EggCharacterCollection::
+make_slider_data(EggCharacterData *char_data) {
+  return new EggSliderData(this, char_data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterCollection::make_character
+//       Access: Protected
+//  Description: Allocates and returns a new EggCharacterData object
+//               representing the named character, if there is not
+//               already a character by that name.
+////////////////////////////////////////////////////////////////////
+EggCharacterData *EggCharacterCollection::
+make_character(const string &character_name) {
   // Does the named character exist yet?
 
   Characters::iterator ci;
   for (ci = _characters.begin(); ci != _characters.end(); ++ci) {
-    CharacterInfo &character_info = (*ci);
-    if (character_info._name == character_name) {
-      return character_info._root_joint;
+    EggCharacterData *char_data = (*ci);
+    if (char_data->get_name() == character_name) {
+      return char_data;
     }
   }
 
   // Define a new character.
-  _characters.push_back(CharacterInfo());
-  CharacterInfo &character_info = _characters.back();
-  character_info._name = character_name;
-  character_info._root_joint = make_joint_data();
-  return character_info._root_joint;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::make_joint_data
-//       Access: Protected, Virtual
-//  Description: Allocates and returns a new EggJointData structure.
-//               This is primarily intended as a hook so derived
-//               classes can customize the type of EggJointData nodes
-//               used to represent the joint hierarchy.
-////////////////////////////////////////////////////////////////////
-EggJointData *EggCharacterData::
-make_joint_data() {
-  return new EggJointData;
+  EggCharacterData *char_data = make_character_data();
+  char_data->set_name(character_name);
+  _characters.push_back(char_data);
+  return char_data;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::scan_hierarchy
+//     Function: EggCharacterCollection::scan_hierarchy
 //       Access: Private
 //  Description: Walks the given egg data's hierarchy, looking for
 //               either the start of an animation channel or the start
@@ -139,7 +196,7 @@ make_joint_data() {
 //               Fills up the _top_egg_nodes according to the nodes
 //               found.
 ////////////////////////////////////////////////////////////////////
-bool EggCharacterData::
+bool EggCharacterCollection::
 scan_hierarchy(EggNode *egg_node) {
   if (egg_node->is_of_type(EggGroup::get_class_type())) {
     EggGroup *group = DCAST(EggGroup, egg_node);
@@ -173,13 +230,13 @@ scan_hierarchy(EggNode *egg_node) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::scan_for_top_joints
+//     Function: EggCharacterCollection::scan_for_top_joints
 //       Access: Private
 //  Description: Once a character model has been found, continue
 //               scanning the egg hierarchy to look for the topmost
 //               <Joint> nodes encountered.
 ////////////////////////////////////////////////////////////////////
-void EggCharacterData::
+void EggCharacterCollection::
 scan_for_top_joints(EggNode *egg_node, EggNode *model_root, 
 		    const string &character_name) {
   if (egg_node->is_of_type(EggGroup::get_class_type())) {
@@ -206,13 +263,13 @@ scan_for_top_joints(EggNode *egg_node, EggNode *model_root,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::scan_for_top_tables
+//     Function: EggCharacterCollection::scan_for_top_tables
 //       Access: Private
 //  Description: Once an animation has been found, continue scanning
 //               the egg hierarchy to look for the topmost <Table>
 //               nodes encountered.
 ////////////////////////////////////////////////////////////////////
-void EggCharacterData::
+void EggCharacterCollection::
 scan_for_top_tables(EggTable *bundle, EggNode *model_root,
 		    const string &character_name) {
   // We really only need to check the immediate children of the bundle
@@ -239,7 +296,121 @@ scan_for_top_tables(EggTable *bundle, EggNode *model_root,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::match_egg_nodes
+//     Function: EggCharacterCollection::scan_for_morphs
+//       Access: Private
+//  Description: Go back through a model's hierarchy and look for
+//               morph targets on the vertices and primitives.
+////////////////////////////////////////////////////////////////////
+void EggCharacterCollection::
+scan_for_morphs(EggNode *egg_node, int model_index,
+		EggCharacterData *char_data) {
+  if (egg_node->is_of_type(EggPrimitive::get_class_type())) {
+    EggPrimitive *prim = DCAST(EggPrimitive, egg_node);
+    // Check for morphs on the primitive.
+    add_morph_back_pointers(prim, prim, model_index, char_data);
+
+    // Also check for morphs on each of the prim's vertices.
+    EggPrimitive::const_iterator vi;
+    for (vi = prim->begin(); vi != prim->end(); ++vi) {
+      EggVertex *vertex = (*vi);
+
+      add_morph_back_pointers(vertex, vertex, model_index, char_data);
+
+      EggMorphVertexList::const_iterator mvi;
+      for (mvi = vertex->_dxyzs.begin(); 
+	   mvi != vertex->_dxyzs.end();
+	   ++mvi) {
+	const EggMorphVertex &morph = (*mvi);
+	char_data->make_slider(morph.get_name())->add_back_pointer(model_index, vertex);
+      }
+    }
+  }
+
+  if (egg_node->is_of_type(EggGroupNode::get_class_type())) {
+    EggGroupNode *group = DCAST(EggGroupNode, egg_node);
+    EggGroupNode::iterator gi;
+    for (gi = group->begin(); gi != group->end(); ++gi) {
+      scan_for_morphs(*gi, model_index, char_data);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterCollection::scan_for_sliders
+//       Access: Private
+//  Description: Go back to the animation tables and look for morph
+//               slider animation channels.
+////////////////////////////////////////////////////////////////////
+void EggCharacterCollection::
+scan_for_sliders(EggNode *egg_node, int model_index,
+		 EggCharacterData *char_data) {
+  if (egg_node->is_of_type(EggTable::get_class_type())) {
+    EggTable *bundle = DCAST(EggTable, egg_node);
+
+    // We really only need to check the immediate children of the
+    // bundle for a table node called "morph".  This is a sibling of
+    // "<skeleton>", which we found a minute ago, but we weren't ready
+    // to scan for the morph sliders at the time, so we have to look
+    // again now.
+
+    EggGroupNode::iterator gi;
+    for (gi = bundle->begin(); gi != bundle->end(); ++gi) {
+      EggNode *child = (*gi);
+      if (child->is_of_type(EggTable::get_class_type())) {
+	EggTable *table = DCAST(EggTable, child);
+	if (table->get_name() == "morph") {
+	  // Here it is!  Now the immediate children of this node are
+	  // all the slider channels.
+
+	  EggGroupNode::iterator cgi;
+	  for (cgi = table->begin(); cgi != table->end(); ++cgi) {
+	    EggNode *grandchild = (*cgi);
+	    if (grandchild->is_of_type(EggSAnimData::get_class_type())) {
+	      char_data->make_slider(grandchild->get_name())->add_back_pointer(model_index, grandchild);
+	    }
+	  }
+	}
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterCollection::add_morph_back_pointers
+//       Access: Private
+//  Description: Adds the back pointers for the kinds of morphs we
+//               might find in an EggAttributes object.
+////////////////////////////////////////////////////////////////////
+void EggCharacterCollection::
+add_morph_back_pointers(EggAttributes *attrib, EggObject *egg_object,
+			int model_index, EggCharacterData *char_data) {
+  EggMorphNormalList::const_iterator mni;
+  for (mni = attrib->_dnormals.begin(); 
+       mni != attrib->_dnormals.end();
+       ++mni) {
+    const EggMorphNormal &morph = (*mni);
+    char_data->make_slider(morph.get_name())->add_back_pointer(model_index, egg_object);
+  }
+  
+  EggMorphTexCoordList::const_iterator mti;
+  for (mti = attrib->_duvs.begin(); 
+       mti != attrib->_duvs.end(); 
+       ++mti) {
+    const EggMorphTexCoord &morph = (*mti);
+    char_data->make_slider(morph.get_name())->add_back_pointer(model_index, egg_object);
+  }
+
+  EggMorphColorList::const_iterator mci;
+  for (mci = attrib->_drgbas.begin(); 
+       mci != attrib->_drgbas.end();
+       ++mci) {
+    const EggMorphColor &morph = (*mci);
+    char_data->make_slider(morph.get_name())->add_back_pointer(model_index, egg_object);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterCollection::match_egg_nodes
 //       Access: Private
 //  Description: Attempts to match up the indicated list of egg_nodes
 //               with the children of the given joint_data, by name if
@@ -248,9 +419,9 @@ scan_for_top_tables(EggTable *bundle, EggNode *model_root,
 //               Also recurses on each matched joint to build up the
 //               entire joint hierarchy.
 ////////////////////////////////////////////////////////////////////
-void EggCharacterData::
-match_egg_nodes(EggJointData *joint_data, EggNodeList &egg_nodes,
-		int egg_index, int model_index) {
+void EggCharacterCollection::
+match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
+		EggNodeList &egg_nodes, int egg_index, int model_index) {
   // Sort the list of egg_nodes in order by name.  This will make the
   // matching up by names easier and more reliable.
   sort(egg_nodes.begin(), egg_nodes.end(), IndirectCompareNames<Namable>());
@@ -261,9 +432,9 @@ match_egg_nodes(EggJointData *joint_data, EggNodeList &egg_nodes,
     EggNodeList::iterator ei;
     for (ei = egg_nodes.begin(); ei != egg_nodes.end(); ++ei) {
       EggNode *egg_node = (*ei);
-      EggJointData *data = make_joint_data();
+      EggJointData *data = make_joint_data(char_data);
       joint_data->_children.push_back(data);
-      found_egg_node_match(data, egg_node, egg_index, model_index);
+      found_egg_match(char_data, data, egg_node, egg_index, model_index);
     }
 
   } else {
@@ -295,7 +466,7 @@ match_egg_nodes(EggJointData *joint_data, EggNodeList &egg_nodes,
 
       } else {
 	// Hey, these two match!  Hooray!
-	found_egg_node_match(data, egg_node, egg_index, model_index);
+	found_egg_match(char_data, data, egg_node, egg_index, model_index);
 	++ei;
 	++di;
       }	
@@ -335,7 +506,7 @@ match_egg_nodes(EggJointData *joint_data, EggNodeList &egg_nodes,
 	  EggJointData *data = (*di);
 	  if (data->matches_name(egg_node->get_name())) {
 	    matched = true;
-	    found_egg_node_match(data, egg_node, egg_index, model_index);
+	    found_egg_match(char_data, data, egg_node, egg_index, model_index);
 	    extra_data.erase(di);
 	  }
 	}
@@ -357,7 +528,7 @@ match_egg_nodes(EggJointData *joint_data, EggNodeList &egg_nodes,
 	for (i = 0; i < extra_egg_nodes.size(); i++) {
 	  EggNode *egg_node = extra_egg_nodes[i];
 	  EggJointData *data = extra_data[i];
-	  found_egg_node_match(data, egg_node, egg_index, model_index);
+	  found_egg_match(char_data, data, egg_node, egg_index, model_index);
 	}
 
       } else {
@@ -365,9 +536,9 @@ match_egg_nodes(EggJointData *joint_data, EggNodeList &egg_nodes,
 	EggNodeList::iterator ei;
 	for (ei = extra_egg_nodes.begin(); ei != extra_egg_nodes.end(); ++ei) {
 	  EggNode *egg_node = (*ei);
-	  EggJointData *data = make_joint_data();
+	  EggJointData *data = make_joint_data(char_data);
 	  joint_data->_children.push_back(data);
-	  found_egg_node_match(data, egg_node, egg_index, model_index);
+	  found_egg_match(char_data, data, egg_node, egg_index, model_index);
 	}
       }
     }
@@ -380,16 +551,19 @@ match_egg_nodes(EggJointData *joint_data, EggNodeList &egg_nodes,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::found_egg_node_match
+//     Function: EggCharacterCollection::found_egg_match
 //       Access: Private
 //  Description: Marks a one-to-one association between the indicated
 //               EggJointData and the indicated EggNode, and then
 //               recurses below.
 ////////////////////////////////////////////////////////////////////
-void EggCharacterData::
-found_egg_node_match(EggJointData *data, EggNode *egg_node,
-		     int egg_index, int model_index) {
-  data->add_egg_node(egg_index, model_index, egg_node);
+void EggCharacterCollection::
+found_egg_match(EggCharacterData *char_data, EggJointData *joint_data,
+		EggNode *egg_node, int egg_index, int model_index) {
+  if (egg_node->has_name()) {
+    joint_data->add_name(egg_node->get_name());
+  }
+  joint_data->add_back_pointer(model_index, egg_node);
 
   if (egg_node->is_of_type(EggGroupNode::get_class_type())) {
     EggGroupNode *group_node = DCAST(EggGroupNode, egg_node);
@@ -429,24 +603,23 @@ found_egg_node_match(EggJointData *data, EggNode *egg_node,
     }
 
     if (!egg_nodes.empty()) {
-      match_egg_nodes(data, egg_nodes, egg_index, model_index);
+      match_egg_nodes(char_data, joint_data, egg_nodes, 
+		      egg_index, model_index);
     }
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::write
+//     Function: EggCharacterCollection::write
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void EggCharacterData::
+void EggCharacterCollection::
 write(ostream &out, int indent_level) const {
   Characters::const_iterator ci;
 
   for (ci = _characters.begin(); ci != _characters.end(); ++ci) {
-    const CharacterInfo &character_info = (*ci);
-    indent(out, indent_level)
-      << "Character " << character_info._name << ":\n";
-    character_info._root_joint->write(out, indent_level + 2);
+    EggCharacterData *char_data = (*ci);
+    char_data->write(out, indent_level);
   }
 }

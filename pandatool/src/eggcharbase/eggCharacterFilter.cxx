@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "eggCharacterFilter.h"
-#include "eggCharacterData.h"
+#include "eggCharacterCollection.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -14,7 +14,7 @@
 ////////////////////////////////////////////////////////////////////
 EggCharacterFilter::
 EggCharacterFilter() : EggMultiFilter(false) {
-  _character_data = (EggCharacterData *)NULL;
+  _collection = (EggCharacterCollection *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@ EggCharacterFilter() : EggMultiFilter(false) {
 ////////////////////////////////////////////////////////////////////
 EggCharacterFilter::
 ~EggCharacterFilter() {
-  if (_character_data != (EggCharacterData *)NULL) {
-    delete _character_data;
+  if (_collection != (EggCharacterCollection *)NULL) {
+    delete _collection;
   }
 }
 
@@ -37,8 +37,8 @@ EggCharacterFilter::
 ////////////////////////////////////////////////////////////////////
 bool EggCharacterFilter::
 post_command_line() {
-  if (_character_data == (EggCharacterData *)NULL) {
-    _character_data = make_character_data();
+  if (_collection == (EggCharacterCollection *)NULL) {
+    _collection = make_collection();
   }
 
   if (!EggMultiFilter::post_command_line()) {
@@ -49,27 +49,28 @@ post_command_line() {
   for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
     EggData *data = (*ei);
     
-    if (!_character_data->add_egg(data)) {
+    if (!_collection->add_egg(data)) {
       nout << data->get_egg_filename().get_basename()
 	   << " does not contain a character model or animation channel.\n";
       return false;
     }
   }
 
-  _character_data->write(cerr);
+  _collection->write(cerr);
 
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterFilter::make_character_data
+//     Function: EggCharacterFilter::make_collection
 //       Access: Protected, Virtual
-//  Description: Allocates and returns a new EggCharacterData structure.
-//               This is primarily intended as a hook so derived
-//               classes can customize the type of EggCharacterData nodes
-//               used to represent the character information.
+//  Description: Allocates and returns a new EggCharacterCollection
+//               structure.  This is primarily intended as a hook so
+//               derived classes can customize the type of
+//               EggCharacterCollection object used to represent the
+//               character information.
 ////////////////////////////////////////////////////////////////////
-EggCharacterData *EggCharacterFilter::
-make_character_data() {
-  return new EggCharacterData;
+EggCharacterCollection *EggCharacterFilter::
+make_collection() {
+  return new EggCharacterCollection;
 }

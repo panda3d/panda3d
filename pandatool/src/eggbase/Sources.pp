@@ -7,24 +7,19 @@
 
   #define SOURCES \
     eggBase.cxx eggBase.h \
-    eggCharacterData.cxx eggCharacterData.h eggCharacterData.I \
-    eggCharacterFilter.cxx eggCharacterFilter.h \
-    eggConverter.cxx eggConverter.h eggFilter.cxx \
-    eggFilter.h eggJointData.cxx eggJointData.h eggJointData.I \
+    eggConverter.cxx eggConverter.h \
+    eggFilter.cxx eggFilter.h \
     eggMultiBase.cxx eggMultiBase.h \
     eggMultiFilter.cxx eggMultiFilter.h \
     eggReader.cxx eggReader.h \
-    eggToSomething.cxx \
-    eggToSomething.h eggWriter.cxx eggWriter.h somethingToEgg.cxx \
-    somethingToEgg.h
+    eggToSomething.cxx eggToSomething.h \
+    eggWriter.cxx eggWriter.h \
+    somethingToEgg.cxx somethingToEgg.h
 
   #define INSTALL_HEADERS \
-    eggBase.h eggCharacterData.h \
-    eggCharacterData.I eggCharacterFilter.h \
-    eggConverter.h eggFilter.h eggJointData.h eggJointData.I \
+    eggBase.h eggConverter.h eggFilter.h \
     eggMultiBase.h eggMultiFilter.h \
-    eggReader.h \
-    eggToSomething.h eggWriter.h somethingToEgg.h
+    eggReader.h eggToSomething.h eggWriter.h somethingToEgg.h
 
 #end ss_lib_target
 
