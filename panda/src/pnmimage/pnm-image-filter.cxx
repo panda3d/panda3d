@@ -489,8 +489,9 @@ box_filter_line(const PNMImage &image,
     }
 
     // Get the final (partial) xel
-    if (x1>x_last) {
-      box_filter_xel(image, x, y, x1-(double)x_last, y_contrib,
+    double x_contrib = x1 - (double)x_last;
+    if (x_contrib > 0.0001) {
+      box_filter_xel(image, x, y, x_contrib, y_contrib,
 		     red, grn, blu, alpha, pixel_count);
     }
   }
@@ -519,8 +520,9 @@ box_filter_region(const PNMImage &image,
     }
 
     // Get the final (partial) row
-    if (y1>y_last) {
-      box_filter_line(image, x0, y, x1, y1-(double)y_last,
+    double y_contrib = y1 - (double)y_last;
+    if (y_contrib > 0.0001) {
+      box_filter_line(image, x0, y, x1, y_contrib,
 		      red, grn, blu, alpha, pixel_count);
     }
   }
