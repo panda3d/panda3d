@@ -295,7 +295,7 @@ uninstall-lib$[TARGET] :
 $[install_lib_dir]/lib$[TARGET].so : $[so_dir]/lib$[TARGET].so
 #define local lib$[TARGET].so
 #define dest $[install_lib_dir]
-	cd ./$[so_dir]; $[INSTALL]
+	cd ./$[so_dir]; $[INSTALL_PROG]
 
 #if $[igatescan]
 // Now, some additional rules to generate and compile the interrogate
