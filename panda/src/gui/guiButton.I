@@ -157,3 +157,37 @@ INLINE const string& GuiButton::get_down_rollover_event(void) const {
 INLINE const string& GuiButton::get_inactive_event(void) const {
   return _inactive_event;
 }
+
+INLINE void GuiButton::set_scale(float f) {
+  _up->set_scale(f);
+  _down->set_scale(f);
+  if (_up_rollover != (GuiLabel*)0L)
+    _up_rollover->set_scale(f);
+  if (_down_rollover != (GuiLabel*)0L)
+    _down_rollover->set_scale(f);
+  if (_inactive != (GuiLabel*)0L)
+    _inactive->set_scale(f);
+  _scale = f;
+  recompute_frame();
+}
+
+INLINE void GuiButton::set_pos(const LVector3f& p) {
+  _up->set_pos(p);
+  _down->set_pos(p);
+  if (_up_rollover != (GuiLabel*)0L)
+    _up_rollover->set_pos(p);
+  if (_down_rollover != (GuiLabel*)0L)
+    _down_rollover->set_pos(p);
+  if (_inactive != (GuiLabel*)0L)
+    _inactive->set_pos(p);
+  _pos = p;
+  recompute_frame();
+}
+
+INLINE float GuiButton::get_scale(void) const {
+  return _scale;
+}
+
+INLINE LVector3f GuiButton::get_pos(void) const {
+  return _pos;
+}

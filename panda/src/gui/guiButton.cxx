@@ -155,6 +155,14 @@ void GuiButton::switch_state(GuiButton::States nstate) {
   }
 }
 
+void GuiButton::recompute_frame(void) {
+  float left, right, bottom, top;
+
+  GetExtents(_up, _down, _up_rollover, _down_rollover, _inactive, left, right,
+	     bottom, top);
+  _rgn->set_region(left, right, bottom, top);
+}
+
 GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* up_roll,
 		     GuiLabel* down, GuiLabel* down_roll, GuiLabel* inactive)
   : Namable(name), _up(up), _up_rollover(up_roll), _down(down),

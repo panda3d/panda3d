@@ -5,6 +5,24 @@
 
 #include "guiLabel.h"
 
+#include <textNode.h>
+
+void GuiLabel::recompute_transform(void) {
+  switch (_type) {
+  case SIMPLE_TEXT:
+    {
+      LMatrix4f mat = LMatrix4f::scale_mat(_scale) *
+	LMatrix4f::translate_mat(_pos);
+      TextNode* n = DCAST(TextNode, _geom);
+      n->set_transform(mat);
+    }
+    break;
+  default:
+    gui_cat->warning() << "recompute_transform on invalid label type ("
+		       << _type << ")" << endl;
+  }
+}
+
 GuiLabel::~GuiLabel(void) {
 }
 
@@ -12,17 +30,12 @@ GuiLabel* GuiLabel::make_simple_texture_label(void) {
   return new GuiLabel();
 }
 
-#include <textNode.h>
-
 GuiLabel* GuiLabel::make_simple_text_label(const string& text, Node* font) {
   GuiLabel* ret = new GuiLabel();
   ret->_type = SIMPLE_TEXT;
   TextNode* n = new TextNode("GUI label");
   ret->_geom = n;
-  LMatrix4f mat = LMatrix4f::scale_mat(0.1);
-  n->set_transform(mat);
   n->set_font(font);
-  // n->set_card_color(1., 1., 1., 0.);
   n->set_align(TM_ALIGN_CENTER);
   n->set_text_color(1., 1., 1., 1.);
   n->set_text(text);

@@ -24,11 +24,16 @@ private:
   PT_Node _geom;
   RenderRelation* _arc;
 
+  float _scale;
+  LVector3f _pos;
+
   INLINE Node* get_geometry(void) const;
   INLINE void set_arc(RenderRelation*);
   INLINE RenderRelation* get_arc(void) const;
 
   friend GuiManager;
+
+  void recompute_transform(void);
 public:
   INLINE GuiLabel(void);
   virtual ~GuiLabel(void);
@@ -37,6 +42,12 @@ public:
   static GuiLabel* make_simple_text_label(const string&, Node*);
 
   void get_extents(float&, float&, float&, float&);
+
+  INLINE void set_scale(float);
+  INLINE void set_pos(const LVector3f&);
+
+  INLINE float get_scale(void) const;
+  INLINE LVector3f get_pos(void) const;
 };
 
 #include "guiLabel.I"

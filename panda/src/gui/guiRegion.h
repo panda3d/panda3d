@@ -29,6 +29,8 @@ public:
   ~GuiRegion(void);
 
   INLINE void trap_clicks(bool);
+
+  INLINE void set_region(float, float, float, float);
 };
 
 #include "guiRegion.I"

@@ -60,6 +60,8 @@ static void setup_gui(void) {
   //  GuiLabel* l1 = GuiLabel::make_simple_text_label("off", font);
   //  GuiLabel* l2 = GuiLabel::make_simple_text_label("on", font);
   //  GuiRollover* r1 = new GuiRollover("test2", l1, l2);
+  //  r1->set_scale(0.1);
+  //  r1->set_pos(LVector3f::rfu(0.25, 0., 0.25));
   //  r1->manage(mgr, event_handler);
   // test 3
   GuiLabel* l1 = GuiLabel::make_simple_text_label("up", font);
@@ -68,6 +70,8 @@ static void setup_gui(void) {
   GuiLabel* l4 = GuiLabel::make_simple_text_label("downr", font);
   GuiLabel* l5 = GuiLabel::make_simple_text_label("none", font);
   GuiButton* b1 = new GuiButton("test3", l1, l2, l3, l4, l5);
+  b1->set_scale(0.1);
+  b1->set_pos(LVector3f::rfu(-0.25, 0., 0.25));
   b1->manage(mgr, event_handler);
 }
 

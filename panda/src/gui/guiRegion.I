@@ -21,3 +21,8 @@ INLINE MouseWatcherRegion* GuiRegion::get_region(void) const {
 INLINE void GuiRegion::trap_clicks(bool t) {
   _region->set_suppress_below(t);
 }
+
+INLINE void GuiRegion::set_region(float left, float right, float bottom,
+				  float top) {
+  _region->set_frame(left, right, bottom, top);
+}

@@ -17,3 +17,21 @@ INLINE void GuiLabel::set_arc(RenderRelation* r) {
 INLINE RenderRelation* GuiLabel::get_arc(void) const {
   return _arc;
 }
+
+INLINE void GuiLabel::set_scale(float f) {
+  _scale = f;
+  recompute_transform();
+}
+
+INLINE void GuiLabel::set_pos(const LVector3f& p) {
+  _pos = p;
+  recompute_transform();
+}
+
+INLINE float GuiLabel::get_scale(void) const {
+  return _scale;
+}
+
+INLINE LVector3f GuiLabel::get_pos(void) const {
+  return _pos;
+}

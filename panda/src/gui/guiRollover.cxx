@@ -32,6 +32,13 @@ static void exit_rollover(CPT_Event e) {
   val->exit();
 }
 
+void GuiRollover::recompute_frame(void) {
+  float left, right, bottom, top;
+
+  GetExtents(_off, _on, left, right, bottom, top);
+  _rgn->set_region(left, right, bottom, top);
+}
+
 GuiRollover::GuiRollover(const string& name, GuiLabel* off, GuiLabel* on)
   : Namable(name), _off(off), _on(on), _state(false), _added_hooks(false) {
   float left, right, bottom, top;

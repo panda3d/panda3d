@@ -22,7 +22,11 @@ private:
   bool _added_hooks;
   GuiManager* _mgr;
 
+  float _scale;
+  LVector3f _pos;
+
   INLINE GuiRollover(void);
+  void recompute_frame(void);
 public:
   GuiRollover(const string&, GuiLabel*, GuiLabel*);
   ~GuiRollover(void);
@@ -33,6 +37,12 @@ public:
   INLINE void exit(void);
 
   INLINE bool is_over(void) const;
+
+  INLINE void set_scale(float);
+  INLINE void set_pos(const LVector3f&);
+
+  INLINE float get_scale(void) const;
+  INLINE LVector3f get_pos(void) const;
 };
 
 #include "guiRollover.I"

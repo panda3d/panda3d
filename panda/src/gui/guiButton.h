@@ -27,10 +27,13 @@ private:
 		INACTIVE_ROLLOVER };
   States _state;
   bool _added_hooks;
+  float _scale;
+  LVector3f _pos;
   GuiManager* _mgr;
 
   INLINE GuiButton(void);
   void switch_state(States);
+  void recompute_frame(void);
 public:
   GuiButton(const string&, GuiLabel*, GuiLabel*, GuiLabel*, GuiLabel*,
 	    GuiLabel*);
@@ -60,6 +63,12 @@ public:
   INLINE const string& get_down_event(void) const;
   INLINE const string& get_down_rollover_event(void) const;
   INLINE const string& get_inactive_event(void) const;
+
+  INLINE void set_scale(float);
+  INLINE void set_pos(const LVector3f&);
+
+  INLINE float get_scale(void) const;
+  INLINE LVector3f get_pos(void) const;
 };
 
 #include "guiButton.I"
