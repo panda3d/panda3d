@@ -32,21 +32,20 @@ class FactoryParams;
 class EXPCL_PANDA RenderModeAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
+    M_unchanged,
     M_filled,
     M_wireframe,
-    // M_point
-
-    // Perhaps others to be added later.
+    M_point
   };
 
 private:
-  INLINE RenderModeAttrib(Mode mode, float line_width);
+  INLINE RenderModeAttrib(Mode mode, float thickness);
 
 PUBLISHED:
-  static CPT(RenderAttrib) make(Mode mode, float line_width = 1.0f);
+  static CPT(RenderAttrib) make(Mode mode, float thickness = 1.0f);
 
   INLINE Mode get_mode() const;
-  INLINE float get_line_width() const;
+  INLINE float get_thickness() const;
 
 public:
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
@@ -54,11 +53,12 @@ public:
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
+  virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
   virtual RenderAttrib *make_default_impl() const;
 
 private:
   Mode _mode;
-  float _line_width;
+  float _thickness;
 
 public:
   static void register_with_read_factory();

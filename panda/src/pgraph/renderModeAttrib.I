@@ -24,9 +24,9 @@
 //               RenderModeAttrib object.
 ////////////////////////////////////////////////////////////////////
 INLINE RenderModeAttrib::
-RenderModeAttrib(RenderModeAttrib::Mode mode, float line_width) :
+RenderModeAttrib(RenderModeAttrib::Mode mode, float thickness) :
   _mode(mode),
-  _line_width(line_width)
+  _thickness(thickness)
 {
 }
 
@@ -41,12 +41,12 @@ get_mode() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderModeAttrib::get_line_width
+//     Function: RenderModeAttrib::get_thickness
 //       Access: Published
 //  Description: Returns the line width.  This is only relevant when
 //               the mode is M_wireframe.
 ////////////////////////////////////////////////////////////////////
 INLINE float RenderModeAttrib::
-get_line_width() const {
-  return _line_width;
+get_thickness() const {
+  return _thickness;
 }

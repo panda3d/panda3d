@@ -42,6 +42,7 @@
 #include "geometricBoundingVolume.h"
 #include "accumulatedAttribs.h"
 #include "renderState.h"
+#include "renderModeAttrib.h"
 #include "dcast.h"
 #include "bamFile.h"
 #include "zStream.h"
@@ -606,20 +607,21 @@ make_frame() {
   verts.push_back(Vertexf(right, 0.0f, top));
   verts.push_back(Vertexf(left, 0.0f, top));
 
+  CPT(RenderAttrib) thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _frame_width);
+  CPT(RenderState) state = RenderState::make(thick);
+
   geoset->set_num_prims(1);
   geoset->set_lengths(lengths);
 
   geoset->set_coords(verts);
-  geoset->set_width(_frame_width);
-  frame_geode->add_geom(geoset);
+  frame_geode->add_geom(geoset, state);
 
   if (get_frame_corners()) {
     GeomPoint *geoset = new GeomPoint;
 
     geoset->set_num_prims(4);
     geoset->set_coords(verts);
-    geoset->set_size(_frame_width);
-    frame_geode->add_geom(geoset);
+    frame_geode->add_geom(geoset, state);
   }
 
   return frame_geode.p();

@@ -34,16 +34,15 @@ TypeHandle RenderModeAttrib::_type_handle;
 //               or wireframe mode, or in some other yet-to-be-defined
 //               mode.
 //
-//               The line_width is relevant only if mode is
-//               M_wireframe, and specifies the thickness of the
-//               lines, in pixels, to use for wireframe.
+//               The thickness parameter specifies the thickness to be
+//               used for wireframe lines, as well as for ordinary
+//               linestrip lines; it also specifies the diameter of
+//               points.  It is not supported in DirectX, which only
+//               supports pixel-based lines and points.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) RenderModeAttrib::
-make(RenderModeAttrib::Mode mode, float line_width) {
-  if (mode != M_wireframe) {
-    line_width = 0.0f;
-  }
-  RenderModeAttrib *attrib = new RenderModeAttrib(mode, line_width);
+make(RenderModeAttrib::Mode mode, float thickness) {
+  RenderModeAttrib *attrib = new RenderModeAttrib(mode, thickness);
   return return_new(attrib);
 }
 
@@ -70,12 +69,20 @@ void RenderModeAttrib::
 output(ostream &out) const {
   out << get_type() << ":";
   switch (get_mode()) {
+  case M_unchanged:
+    out << "unchanged(" << get_thickness() << ")";
+    break;
+
   case M_filled:
-    out << "filled";
+    out << "filled(" << get_thickness() << ")";
     break;
 
   case M_wireframe:
-    out << "wireframe(" << get_line_width() << ")";
+    out << "wireframe(" << get_thickness() << ")";
+    break;
+
+  case M_point:
+    out << "point(" << get_thickness() << ")";
     break;
   }
 }
@@ -102,10 +109,41 @@ compare_to_impl(const RenderAttrib *other) const {
   if (_mode != ta->_mode) {
     return (int)_mode - (int)ta->_mode;
   }
-  if (_line_width != ta->_line_width) {
-    return _line_width < ta->_line_width ? -1 : 1;
+  if (_thickness != ta->_thickness) {
+    return _thickness < ta->_thickness ? -1 : 1;
   }
   return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderModeAttrib::compose_impl
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by derived RenderAttrib
+//               types to specify how two consecutive RenderAttrib
+//               objects of the same type interact.
+//
+//               This should return the result of applying the other
+//               RenderAttrib to a node in the scene graph below this
+//               RenderAttrib, which was already applied.  In most
+//               cases, the result is the same as the other
+//               RenderAttrib (that is, a subsequent RenderAttrib
+//               completely replaces the preceding one).  On the other
+//               hand, some kinds of RenderAttrib (for instance,
+//               ColorTransformAttrib) might combine in meaningful
+//               ways.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) RenderModeAttrib::
+compose_impl(const RenderAttrib *other) const {
+  const RenderModeAttrib *ta;
+  DCAST_INTO_R(ta, other, 0);
+
+  // The special mode M_unchanged means to keep the current mode.
+  Mode mode = ta->get_mode();
+  if (mode == M_unchanged) {
+    mode = get_mode();
+  }
+
+  return make(mode, get_thickness());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -121,7 +159,7 @@ compare_to_impl(const RenderAttrib *other) const {
 ////////////////////////////////////////////////////////////////////
 RenderAttrib *RenderModeAttrib::
 make_default_impl() const {
-  return new RenderModeAttrib(M_filled, 0.0f);
+  return new RenderModeAttrib(M_filled, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -146,7 +184,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
 
   dg.add_int8(_mode);
-  dg.add_float32(_line_width);
+  dg.add_float32(_thickness);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -181,5 +219,5 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
   _mode = (Mode)scan.get_int8();
-  _line_width = scan.get_float32();
+  _thickness = scan.get_float32();
 }

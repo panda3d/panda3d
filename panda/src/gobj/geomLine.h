@@ -28,7 +28,7 @@
 class EXPCL_PANDA GeomLine : public Geom
 {
 public:
-  GeomLine( void ) : Geom() { _width = 1.0f; }
+  GeomLine( void ) : Geom() { }
   virtual Geom *make_copy() const;
   virtual void print_draw_immediate( void ) const { }
   virtual void draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc);
@@ -50,12 +50,6 @@ public:
   virtual Geom *explode() const {
     return new GeomLine(*this);
   }
-
-  INLINE void set_width(float width) { _width = width; }
-  INLINE float get_width(void) const { return _width; }
-
-protected:
-  float _width;
 
 public:
   static void register_with_read_factory(void);

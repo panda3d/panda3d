@@ -25,6 +25,7 @@
 #include "renderState.h"
 #include "transformState.h"
 #include "texGenAttrib.h"
+#include "renderModeAttrib.h"
 #include "transparencyAttrib.h"
 #include "nodePathComponent.h"
 
@@ -598,19 +599,17 @@ PUBLISHED:
 
   void set_render_mode_wireframe(int priority = 0);
   void set_render_mode_filled(int priority = 0);
+  void set_render_mode(RenderModeAttrib::Mode mode, float thickness, int priority = 0);
   void clear_render_mode();
   bool has_render_mode() const;
+  RenderModeAttrib::Mode get_render_mode() const;
+  float get_render_mode_thickness() const;
 
   void set_two_sided(bool two_sided, int priority = 0);
   void clear_two_sided();
   bool has_two_sided() const;
   bool get_two_sided() const;
-#if 0
-  void set_alpha_test(RenderAttrib::PandaCompareFunc alpha_test_mode,float reference_alpha,int priority = 0);
-  void clear_alpha_test();
-  bool has_alpha_test() const;
-  bool get_alpha_test() const;
-#endif
+
   void set_depth_test(bool depth_test, int priority = 0);
   void clear_depth_test();
   bool has_depth_test() const;

@@ -21,7 +21,7 @@
 
 #include "baseParticleRenderer.h"
 #include "baseParticle.h"
-
+#include "renderModeAttrib.h"
 #include "pointerTo.h"
 #include "pointerToArray.h"
 #include "luse.h"
@@ -74,6 +74,7 @@ private:
   Colorf _start_color;
   Colorf _end_color;
   float _point_size;
+  CPT(RenderAttrib) _thick;
 
   PT(GeomPoint) _point_primitive;
 

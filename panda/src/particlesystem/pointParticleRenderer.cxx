@@ -34,10 +34,10 @@ PointParticleRenderer(ParticleRendererAlphaMode am,
                       const Colorf& sc, const Colorf& ec) :
   BaseParticleRenderer(am),
   _start_color(sc), _end_color(ec),
-  _point_size(point_size),
   _blend_type(bt), _blend_method(bm)
 {
   _point_primitive = new GeomPoint;
+  set_point_size(point_size);
   init_geoms();
 }
 
@@ -56,6 +56,8 @@ PointParticleRenderer(const PointParticleRenderer& copy) :
   _blend_method = copy._blend_method;
   _start_color = copy._start_color;
   _end_color = copy._end_color;
+  _point_size = copy._point_size;
+  _thick = copy._thick;
   _point_primitive = new GeomPoint;
   init_geoms();
 }
@@ -114,11 +116,10 @@ void PointParticleRenderer::
 init_geoms(void) {
 
   _point_primitive->set_num_prims(0);
-  _point_primitive->set_size(_point_size);
   
   GeomNode *render_node = get_render_node();
   render_node->remove_all_geoms();
-  render_node->add_geom(_point_primitive, _render_state);
+  render_node->add_geom(_point_primitive, _render_state->add_attrib(_thick));
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -774,7 +774,6 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 #endif
 
-  GLP(PointSize)(geom->get_size());
   issue_scene_graph_color();
 
   int nprims = geom->get_num_prims();
@@ -845,7 +844,6 @@ draw_line(GeomLine *geom, GeomContext *gc) {
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 #endif
 
-  GLP(LineWidth)(geom->get_width());
   issue_scene_graph_color();
 
   int nprims = geom->get_num_prims();
@@ -929,7 +927,6 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *gc) {
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 #endif
 
-  GLP(LineWidth)(geom->get_width());
   issue_scene_graph_color();
 
   int nprims = geom->get_num_prims();
@@ -2542,19 +2539,28 @@ issue_render_mode(const RenderModeAttrib *attrib) {
   _render_mode = attrib->get_mode();
 
   switch (_render_mode) {
+  case RenderModeAttrib::M_unchanged:
   case RenderModeAttrib::M_filled:
     GLP(PolygonMode)(GL_FRONT_AND_BACK, GL_FILL);
     break;
 
   case RenderModeAttrib::M_wireframe:
-    GLP(LineWidth)(attrib->get_line_width());
     GLP(PolygonMode)(GL_FRONT_AND_BACK, GL_LINE);
+    break;
+
+  case RenderModeAttrib::M_point:
+    GLP(PolygonMode)(GL_FRONT_AND_BACK, GL_POINT);
     break;
 
   default:
     GLCAT.error()
       << "Unknown render mode " << (int)_render_mode << endl;
   }
+
+  // The thickness affects both the line width and the point size.
+  GLP(LineWidth)(attrib->get_thickness());
+  GLP(PointSize)(attrib->get_thickness());
+
   report_my_gl_errors();
 }
 

@@ -23,6 +23,8 @@
 #include "cullHandler.h"
 #include "geomLinestrip.h"
 #include "geomTristrip.h"
+#include "renderState.h"
+#include "renderModeAttrib.h"
 #include "bamWriter.h"
 #include "bamReader.h"
 #include "datagram.h"
@@ -322,7 +324,6 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
   }
   
   PT(GeomLinestrip) geom = new GeomLinestrip;
-  geom->set_width(get_thickness());
   geom->set_num_prims(num_prims);
   geom->set_coords(verts);
   if (get_uv_mode() != UV_none) {
@@ -335,8 +336,11 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
     geom->set_colors(colors, G_OVERALL);
   }
   geom->set_lengths(lengths);
+
+  CPT(RenderAttrib) thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, get_thickness());
+  CPT(RenderState) state = data._state->add_attrib(thick);
   
-  CullableObject *object = new CullableObject(geom, data._state,
+  CullableObject *object = new CullableObject(geom, state,
                                               data._render_transform);
   trav->get_cull_handler()->record_object(object);
 }

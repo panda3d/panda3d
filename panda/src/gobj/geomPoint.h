@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomPoint : public Geom {
 public:
-  GeomPoint() : Geom() { _size = 1.0f; }
+  GeomPoint() : Geom() { }
   virtual Geom *make_copy() const;
 
   virtual void print_draw_immediate() const;
@@ -50,12 +50,6 @@ public:
   virtual Geom *explode() const {
     return new GeomPoint(*this);
   }
-
-  INLINE void set_size(float size) { _size = size; }
-  INLINE float get_size(void) const { return _size; }
-
-protected:
-  float _size;
 
 public:
   static void register_with_read_factory(void);

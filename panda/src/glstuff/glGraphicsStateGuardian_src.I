@@ -196,12 +196,20 @@ setup_antialias_point() {
 INLINE void CLP(GraphicsStateGuardian)::
 setup_antialias_polygon() {
   if (_antialias_mode == (unsigned short)AntialiasAttrib::M_best) {
-    if (_render_mode == RenderModeAttrib::M_wireframe) {
+    switch (_render_mode) {
+    case RenderModeAttrib::M_wireframe:
       // In wireframe mode, we're really drawing lines.
       enable_multisample(false);
       enable_line_smooth(true);
+      break;
 
-    } else {
+    case RenderModeAttrib::M_point:
+      // In point mode, we're drawing points.
+      enable_multisample(false);
+      enable_point_smooth(true);
+      break;
+
+    default:
       // For polygons, multisample is best if it's available, otherwise
       // polygon smoothing will do.
       enable_multisample(true);

@@ -3653,6 +3653,20 @@ set_render_mode_filled(int priority) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_render_mode
+//       Access: Published
+//  Description: Sets up the geometry at this level and below (unless
+//               overridden) to render in the specified mode and with
+//               the indicated line and/or point thickness.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_render_mode(RenderModeAttrib::Mode mode, float thickness, int priority) {
+  nassertv_always(!is_empty());
+
+  node()->set_attrib(RenderModeAttrib::make(mode, thickness), priority);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_render_mode
 //       Access: Published
 //  Description: Completely removes any render mode adjustment that
@@ -3670,14 +3684,54 @@ clear_render_mode() {
 //     Function: NodePath::has_render_mode
 //       Access: Published
 //  Description: Returns true if a render mode has been explicitly set
-//               on this particular node via
+//               on this particular node via set_render_mode() (or
 //               set_render_mode_wireframe() or
-//               set_render_mode_filled(), false otherwise.
+//               set_render_mode_filled()), false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 has_render_mode() const {
   nassertr_always(!is_empty(), false);
   return node()->has_attrib(RenderModeAttrib::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_render_mode
+//       Access: Published
+//  Description: Returns the render mode that has been specifically
+//               set on this node via set_render_mode(), or
+//               M_unchanged if nothing has been set.
+////////////////////////////////////////////////////////////////////
+RenderModeAttrib::Mode NodePath::
+get_render_mode() const {
+  nassertr_always(!is_empty(), RenderModeAttrib::M_unchanged);
+  const RenderAttrib *attrib =
+    node()->get_attrib(RenderModeAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const RenderModeAttrib *ta = DCAST(RenderModeAttrib, attrib);
+    return ta->get_mode();
+  }
+
+  return RenderModeAttrib::M_unchanged;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_render_mode_thickness
+//       Access: Published
+//  Description: Returns the render mode thickness that has been
+//               specifically set on this node via set_render_mode(),
+//               or 0.0 if nothing has been set.
+////////////////////////////////////////////////////////////////////
+float NodePath::
+get_render_mode_thickness() const {
+  nassertr_always(!is_empty(), 0.0f);
+  const RenderAttrib *attrib =
+    node()->get_attrib(RenderModeAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const RenderModeAttrib *ta = DCAST(RenderModeAttrib, attrib);
+    return ta->get_thickness();
+  }
+
+  return 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3757,72 +3811,6 @@ get_two_sided() const {
   return false;
 }
 
-#if 0
-// programmers prolly wont need alpha-test control
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_alpha_test
-//       Access: Published
-//  Description: Specifically sets or disables the testing of the
-//               alpha buffer on this particular node.  This is
-//               normally on in the 3-d scene graph and off in the 2-d
-//               scene graph; it should be on for rendering most 3-d
-//               objects properly.
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_alpha_test(RenderAttrib::PandaCompareFunc alpha_test_mode,float reference_alpha, int priority) {
-  nassertv_always(!is_empty());
-  node()->set_attrib(AlphaTestAttrib::make(alpha_test_mode,reference_alpha), priority);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::clear_alpha_test
-//       Access: Published
-//  Description: Completely removes any alpha-test adjustment that
-//               may have been set on this node via set_alpha_test().
-////////////////////////////////////////////////////////////////////
-void NodePath::
-clear_alpha_test() {
-  nassertv_always(!is_empty());
-  node()->clear_attrib(AlphaTestAttrib::get_class_type());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::has_alpha_test
-//       Access: Published
-//  Description: Returns true if a alpha-test adjustment has been
-//               explicitly set on this particular node via
-//               set_alpha_test().  If this returns true, then
-//               get_alpha_test() may be called to determine which has
-//               been set.
-////////////////////////////////////////////////////////////////////
-bool NodePath::
-has_alpha_test() const {
-  nassertr_always(!is_empty(), false);
-  return node()->has_attrib(AlphaTestAttrib::get_class_type());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_alpha_test
-//       Access: Published
-//  Description: Returns true if alpha-test rendering has been
-//               specifically set on this node via set_alpha_test(), or
-//               false if alpha-test rendering has been specifically
-//               disabled, or if nothing has been specifically set.  See
-//               also has_alpha_test().
-////////////////////////////////////////////////////////////////////
-bool NodePath::
-get_alpha_test() const {
-  nassertr_always(!is_empty(), false);
-  const RenderAttrib *attrib =
-    node()->get_attrib(AlphaTestAttrib::get_class_type());
-  if (attrib != (const RenderAttrib *)NULL) {
-    const AlphaTestAttrib *dta = DCAST(AlphaTestAttrib, attrib);
-    return (dta->get_mode() != AlphaTestAttrib::M_none);
-  }
-
-  return false;
-}
-#endif
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_depth_test
 //       Access: Published

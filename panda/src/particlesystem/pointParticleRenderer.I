@@ -22,8 +22,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void PointParticleRenderer::
 set_point_size(float point_size) {
-  _point_primitive->set_size(point_size);
   _point_size = point_size;
+  _thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _point_size);
 }
 
 ////////////////////////////////////////////////////////////////////

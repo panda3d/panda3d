@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "lineSegs.h"
+#include "renderState.h"
+#include "renderModeAttrib.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LineSegs::Constructor
@@ -180,6 +182,9 @@ create(GeomNode *previous, bool) {
       }
     }
 
+    CPT(RenderAttrib) thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _thick);
+    CPT(RenderState) state = RenderState::make(thick);
+
     // Now create the lines.
     if (line_index.size() > 0) {
       // Create a new Geom and add the line segments.
@@ -188,7 +193,6 @@ create(GeomNode *previous, bool) {
         // Here's a special case: just one line segment.
         GeomLine *geom_line = new GeomLine;
         geom_line->set_num_prims(1);
-        geom_line->set_width(_thick);
         geom = geom_line;
 
       } else {
@@ -197,14 +201,13 @@ create(GeomNode *previous, bool) {
         GeomLinestrip *geom_linestrip = new GeomLinestrip;
         geom_linestrip->set_num_prims(lengths.size());
         geom_linestrip->set_lengths(lengths);
-        geom_linestrip->set_width(_thick);
         geom = geom_linestrip;
       }
 
       geom->set_colors(_created_colors, G_PER_VERTEX, line_index);
       geom->set_coords(_created_verts, line_index);
 
-      previous->add_geom(geom);
+      previous->add_geom(geom, state);
     }
 
     // And now create the points.
@@ -213,11 +216,10 @@ create(GeomNode *previous, bool) {
       GeomPoint *geom = new GeomPoint;
 
       geom->set_num_prims(point_index.size());
-      geom->set_size(_thick);
       geom->set_colors(_created_colors, G_PER_VERTEX, point_index);
       geom->set_coords(_created_verts, point_index);
 
-      previous->add_geom(geom);
+      previous->add_geom(geom, state);
     }
 
     // And reset for next time.
