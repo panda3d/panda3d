@@ -18,7 +18,7 @@
 import os
 import sys
 import string
-from Tkinter import *
+from TkGlobal import *
 from PandaObject import *
 
 # Initialize icon directory

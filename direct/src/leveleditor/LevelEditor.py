@@ -2,14 +2,13 @@ from ShowBaseGlobal import *
 from PandaObject import *
 from PieMenu import *
 from DirectGuiGlobals import *
-from Tkinter import *
+from TkGlobal import *
 from DirectUtil import *
 from DirectGeometry import *
 from SceneGraphExplorer import *
 from tkMessageBox import showinfo
 from tkFileDialog import *
 from whrandom import *
-import Pmw
 import Floater
 import VectorWidgets
 import string

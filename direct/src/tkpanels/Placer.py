@@ -2,9 +2,8 @@
 
 # Import Tkinter, Pmw, and the dial code from this directory tree.
 from PandaObject import *
-from Tkinter import *
+from TkGlobal import *
 from AppShell import *
-import Pmw
 import Dial
 import Floater
 

@@ -2,11 +2,10 @@
 
 # Import Tkinter, Pmw, and the floater code from this directory tree.
 from AppShell import *
-from Tkinter import *
+from TkGlobal import *
 from tkFileDialog import *
 from tkSimpleDialog import askstring
 import os
-import Pmw
 import Dial
 import Floater
 import Slider

@@ -1,5 +1,4 @@
-from Tkinter import *
-import Pmw
+from TkGlobal import *
 import Valuator
 import Floater
 import Slider

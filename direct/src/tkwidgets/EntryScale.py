@@ -2,8 +2,7 @@
 EntryScale Class: Scale with a label, and a linked and validated entry
 """
 from PandaObject import *
-from Tkinter import *
-import Pmw
+from TkGlobal import *
 import string
 import tkColorChooser
 from tkSimpleDialog import *

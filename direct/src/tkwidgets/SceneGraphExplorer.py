@@ -1,7 +1,6 @@
 from PandaObject import *
-from Tkinter import *
+from TkGlobal import *
 from Tree import *
-import Pmw
 
 # changing these strings requires changing DirectSession.py SGE_ strs too!
 DEFAULT_MENU_ITEMS = [

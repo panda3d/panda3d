@@ -7,10 +7,8 @@ from DirectSelection import *
 from DirectGrid import *
 from DirectGeometry import *
 from DirectLights import *
-from DirectSessionPanel import *
 from ClusterClient import *
 from ClusterServer import *
-from tkSimpleDialog import askstring
 import Placer
 import Slider
 import SceneGraphExplorer
@@ -169,8 +167,8 @@ class DirectSession(PandaObject):
 
         if base.wantTk:
             import TkGlobal
-            self.panel = DirectSessionPanel(parent = tkroot)
-
+            import DirectSessionPanel
+            self.panel = DirectSessionPanel.DirectSessionPanel(parent = tkroot)
         try:
             # Has the clusterMode been set externally (i.e. via the
             # bootstrap application?
@@ -646,6 +644,7 @@ class DirectSession(PandaObject):
 
     def getAndSetName(self, nodePath):
         """ Prompt user for new node path name """
+        from tkSimpleDialog import askstring
         newName = askstring('Node Path: ' + nodePath.getName(),
                             'Enter new name:')
         if newName:

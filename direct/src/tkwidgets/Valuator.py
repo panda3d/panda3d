@@ -1,6 +1,5 @@
 from PandaObject import *
-from Tkinter import *
-import Pmw
+from TkGlobal import *
 import tkColorChooser
 import WidgetPropertiesDialog
 import string

@@ -4,9 +4,8 @@
 
 # Import Tkinter, Pmw, and the floater code from this directory tree.
 from AppShell import *
-from Tkinter import *
+from TkGlobal import *
 from tkSimpleDialog import askfloat
-import Pmw
 import string
 import math
 import types

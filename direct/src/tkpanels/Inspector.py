@@ -4,9 +4,7 @@
 ### so that I can just type: inspect(anObject) any time.
 
 import string
-from Tkinter import *
 from TkGlobal import *
-import Pmw
 
 ### public API
 

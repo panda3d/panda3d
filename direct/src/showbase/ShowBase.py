@@ -1193,6 +1193,7 @@ class ShowBase(DirectObject.DirectObject):
         self.wantTk = fWantTk
         if self.wantTk:
             import TkGlobal
+            TkGlobal.spawnTkLoop()
 
     def startDirect(self, fWantDirect = 1):
         self.wantDirect = fWantDirect

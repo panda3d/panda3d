@@ -1,9 +1,8 @@
 """ Finite State Machine Inspector module """
 from PandaObject import *
 from AppShell import *
-from Tkinter import *
+from TkGlobal import *
 from tkSimpleDialog import askstring
-import Pmw
 import math
 import operator
 

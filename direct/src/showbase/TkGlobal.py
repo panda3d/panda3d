@@ -1,7 +1,6 @@
-
 from Tkinter import *
-import sys
 import Pmw
+import sys
 # This is required by the ihooks.py module used by Squeeze (used by
 # pandaSqueezer.py) so that Pmw initializes properly
 sys.modules['_Pmw'].__name__ = '_Pmw'
@@ -21,7 +20,8 @@ def tkloop(self):
 # Get the taskMgr
 from TaskManagerGlobal import *
 
-# Spawn this task
-taskMgr.add(tkloop, "tkloop")
+def spawnTkLoop():
+    # Spawn this task
+    taskMgr.add(tkloop, "tkloop")
 
 

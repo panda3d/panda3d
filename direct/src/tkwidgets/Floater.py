@@ -3,9 +3,8 @@ Floater Class: Velocity style controller for floating point values with
                 a label, entry (validated), and scale
 """
 from PandaObject import *
-from Tkinter import *
+from TkGlobal import *
 from Valuator import *
-import Pmw
 import Task
 import math
 import string
