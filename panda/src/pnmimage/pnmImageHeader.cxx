@@ -408,13 +408,14 @@ bool PNMImageHeader::
 compute_histogram(PNMImageHeader::Histogram &hist, 
                   xel *array, xelval *alpha, int max_colors) {
   int num_pixels = _x_size * _y_size;
+  int pi;
 
   switch (get_color_type()) {
   case CT_invalid:
     return false;
 
   case CT_grayscale:
-    for (int pi = 0; pi < num_pixels; pi++) {
+    for (pi = 0; pi < num_pixels; pi++) {
       record_color(hist, PixelSpec(PPM_GETB(array[pi])));
       if (max_colors > 0 && (int)hist.size() > max_colors) {
         return false;
@@ -423,7 +424,7 @@ compute_histogram(PNMImageHeader::Histogram &hist,
     return true;
 
   case CT_two_channel:
-    for (int pi = 0; pi < num_pixels; pi++) {
+    for (pi = 0; pi < num_pixels; pi++) {
       record_color(hist, PixelSpec(PPM_GETB(array[pi]), alpha[pi]));
       if (max_colors > 0 && (int)hist.size() > max_colors) {
         return false;
@@ -432,7 +433,7 @@ compute_histogram(PNMImageHeader::Histogram &hist,
     return true;
 
   case CT_color:
-    for (int pi = 0; pi < num_pixels; pi++) {
+    for (pi = 0; pi < num_pixels; pi++) {
       record_color(hist, PixelSpec(PPM_GETR(array[pi]), PPM_GETG(array[pi]), PPM_GETB(array[pi])));
       if (max_colors > 0 && (int)hist.size() > max_colors) {
         return false;
@@ -441,7 +442,7 @@ compute_histogram(PNMImageHeader::Histogram &hist,
     return true;
 
   case CT_four_channel:
-    for (int pi = 0; pi < num_pixels; pi++) {
+    for (pi = 0; pi < num_pixels; pi++) {
       record_color(hist, PixelSpec(PPM_GETR(array[pi]), PPM_GETG(array[pi]), PPM_GETB(array[pi]), alpha[pi]));
       if (max_colors > 0 && (int)hist.size() > max_colors) {
         return false;
