@@ -95,13 +95,9 @@ verify_points(const LPoint3f *begin, const LPoint3f *end) {
     return false;
   }
 
-  // Create a plane to determine the planarity of the first three
-  // points.
-  Planef plane(begin[0], begin[1], begin[2]);
-  LVector3f normal = plane.get_normal();
-  float normal_length = normal.length();
-  bool all_ok = IS_THRESHOLD_EQUAL(normal_length, 1.0f, 0.001f);
+  bool all_ok = true;
 
+  // First, check for repeated or invalid points.
   const LPoint3f *pi;
   for (pi = begin; pi != end && all_ok; ++pi) {
     if ((*pi).is_nan()) {
@@ -114,6 +110,23 @@ verify_points(const LPoint3f *begin, const LPoint3f *end) {
           all_ok = false;
         }
       }
+    }
+  }
+
+  if (all_ok) {
+    // Create a plane to determine the planarity of the first three
+    // points (or the first two points and the nth point thereafter, in
+    // case the first three points happen to be collinear).
+    bool got_normal = false;
+    for (int i = 2; i < num_points && !got_normal; i++) {
+      Planef plane(begin[0], begin[1], begin[i]);
+      LVector3f normal = plane.get_normal();
+      float normal_length = normal.length();
+      got_normal = IS_THRESHOLD_EQUAL(normal_length, 1.0f, 0.001f);
+    }
+
+    if (!got_normal) {
+      all_ok = false;
     }
   }
 
@@ -592,9 +605,16 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
   _points.clear();
 
   // Tell the base CollisionPlane class what its plane will be.  We
-  // can determine this from the first three 3-d points.
-  Planef plane(begin[0], begin[1], begin[2]);
-  set_plane(plane);
+  // can determine this from the first three 3-d points (unless these
+  // first three points happen to be collinear).
+  bool got_normal = false;
+  for (int i = 2; i < num_points && !got_normal; i++) {
+    Planef plane(begin[0], begin[1], begin[2]);
+    got_normal = (plane.get_normal().length_squared() > 0.1);
+    if (got_normal) {
+      set_plane(plane);
+    }
+  }
 
   LVector3f normal = get_normal();
 
