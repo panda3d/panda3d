@@ -1,7 +1,7 @@
 
 from PythonUtil import *
 from DirectNotifyGlobal import *
-
+import types
 
 class Messenger:
 
@@ -226,9 +226,11 @@ class Messenger:
         acceptorDict = self.dict[event]
         for object in acceptorDict.keys():
             method, extraArgs, persistent = acceptorDict[object]
-            className = object.__class__.__name__
-            methodName = method.__name__
-            str = str + className + '.' + methodName + ' '
+            if (type(method) == types.MethodType):
+                functionName = method.im_class.__name__ + '.' + method.im_func.__name__
+            else:
+                functionName = method.__name__
+            str = str + functionName + ' '
         str = str + '\n'
         return str
 
