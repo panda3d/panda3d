@@ -79,7 +79,7 @@
 // suite?  The default value for this variable is provided by
 // ppremake; on Unix machines it is the value of --prefix passed in to
 // the configure script, and on Windows machines the default is
-// hardcoded to C:\Panda3d.
+// hardcoded in config_msvc.h to C:\Panda3d.
 
 // You may also override this for a particular tree by defining a
 // variable name like DTOOL_INSTALL or PANDA_INSTALL.  This variable
@@ -98,7 +98,7 @@
 // PYTHON_IPATH variable, below.)
 
 // If you don't do this, you can still use Panda as a Python module,
-// but you must put /usr/local/python/lib (or $INSTALL_DIR/lib) on
+// but you must put /usr/local/panda/lib (or $INSTALL_DIR/lib) on
 // your PYTHONPATH.
 
 // #define INSTALL_LIB_DIR /usr/lib/python2.2/site-packages
