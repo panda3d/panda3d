@@ -21,7 +21,8 @@ handle_socket_error(void) {
 #ifndef WIN32
   return strerror(errno);
 #else
-  switch (WSAGetLastError()) {
+  int err = WSAGetLastError();
+  switch (err) {
     case 10022:
       return "An invalid argument was supplied";
     case 10036:
@@ -59,8 +60,7 @@ handle_socket_error(void) {
     default:
       if (express_cat.is_debug())
         express_cat.debug()
-	  << "handle_socket_error - unknown error: " << WSAGetLastError()
-	  << endl;
+	  << "handle_socket_error - unknown error: " << err << endl;
       return "Unknown WSA error";
   }
 #endif
@@ -149,7 +149,8 @@ get_network_error(void) {
 #ifndef WIN32
   return EU_error_abort;
 #else
-  switch (WSAGetLastError()) {
+  int err = WSAGetLastError();
+  switch (err) {
     case 10050:
       return EU_error_network_dead;
     case 10051:
@@ -177,11 +178,16 @@ get_network_error(void) {
       return EU_error_network_remote_host_not_found;
     case 11002:
       return EU_error_network_remote_host_no_response;
+    case 0:
+      if (express_cat.is_debug())
+	express_cat.debug()
+	  << "get_network_error() - WSA error = 0 - error : "
+	  << strerror(errno) << endl;
+      return EU_error_abort;
     default:
       if (express_cat.is_debug())
 	express_cat.debug()
-	  << "get_network_error() - unknown error: " << WSAGetLastError()
-	  << endl;
+	  << "get_network_error() - unknown error: " << err << endl;
       return EU_error_abort;
   }
 #endif
