@@ -68,14 +68,14 @@ class MopathRecorder(AppShell, PandaObject):
         self.tempCS = self.recorderNodePath.attachNewNode(
             'mopathRecorderTempCS')
         # Marker for use in playback
-        self.playbackMarker = loader.loadModel('models/directmodels/smiley')
+        self.playbackMarker = loader.loadModel('models/misc/smiley')
         self.playbackMarker.setName('Playback Marker')
         self.playbackMarker.reparentTo(self.recorderNodePath)
         self.playbackMarker.hide()
         # Tangent marker
         self.tangentGroup = self.playbackMarker.attachNewNode('Tangent Group')
         self.tangentGroup.hide()
-        self.tangentMarker = loader.loadModel('models/directmodels/sphere')
+        self.tangentMarker = loader.loadModel('models/misc/sphere')
         self.tangentMarker.reparentTo(self.tangentGroup)
         self.tangentMarker.setScale(0.5)
         self.tangentMarker.setColor(1,0,1,1)

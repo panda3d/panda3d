@@ -3,7 +3,7 @@ from whrandom import *
 
 # EXAMPLE CODE
 # Load a model
-smiley = loader.loadModel('models/directmodels/smiley')
+smiley = loader.loadModel('models/misc/smiley')
 
 # Here we specify the button's command
 def dummyCmd(index):

@@ -747,32 +747,32 @@ class DirectSessionPanel(AppShell):
         dr = self.activeDisplayRegion
         if dr:
             if self.lockedFov.get():
-                sf = hFov/dr.camNode.getHfov()
-                vFov = min(dr.camNode.getVfov() * sf, 170.0)
-                dr.camNode.setFov(hFov, vFov)
+                sf = hFov/dr.getHfov()
+                vFov = min(dr.getVfov() * sf, 170.0)
+                dr.setFov(hFov, vFov)
                 # Update scale
                 self.vFov.set(vFov, 0)
             else:
                 # Just set horizontal
-                dr.camNode.setHfov(hFov)
+                dr.setHfov(hFov)
 
     def setVFov(self, vFov):
         dr = self.activeDisplayRegion
         if dr:
             if self.lockedFov.get():
-                sf = vFov/dr.camNode.getVfov()
-                hFov = min(dr.camNode.getHfov() * sf, 170.0)
-                dr.camNode.setFov(hFov, vFov)
+                sf = vFov/dr.getVfov()
+                hFov = min(dr.getHfov() * sf, 170.0)
+                dr.setFov(hFov, vFov)
                 # Update scale
                 self.hFov.set(hFov, 0)
             else:
                 # Just set horizontal
-                dr.camNode.setVfov(vFov)
+                dr.setVfov(vFov)
 
     def resetFov(self):
         dr = self.activeDisplayRegion
         if dr:
-            dr.camNode.setFov(45.0, 33.75)
+            dr.setFov(45.0, 33.75)
             self.hFov.set(45.0, 0)
             self.vFov.set(33.75, 0)
             

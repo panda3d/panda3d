@@ -5,7 +5,7 @@ from Actor import *
 
 import Mopath
 
-boat = loader.loadModel('models/directmodels/smiley')
+boat = loader.loadModel('models/misc/smiley')
 boat.reparentTo(render)
 
 donald = Actor()
@@ -13,7 +13,7 @@ donald.loadModel("phase_6/models/char/donald-wheel-mod")
 donald.loadAnims({"steer":"phase_6/models/char/donald-wheel-chan"})
 donald.reparentTo(boat)
 
-dock = loader.loadModel('models/directmodels/smiley')
+dock = loader.loadModel('models/misc/smiley')
 dock.reparentTo(render)
 
 sound = loader.loadSound('phase_6/audio/sfx/SZ_DD_waterlap.mp3')
