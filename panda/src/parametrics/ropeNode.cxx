@@ -154,7 +154,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   if (get_num_subdiv() > 0) {
     NurbsCurveEvaluator *curve = get_curve();
     if (curve != (NurbsCurveEvaluator *)NULL) {
-      PT(NurbsCurveResult) result = curve->evaluate(data._node_path.get_node_path());
+      PT(NurbsCurveResult) result = 
+        curve->evaluate(data._node_path.get_node_path(), get_matrix());
 
       if (result->get_num_segments() > 0) {
         switch (get_render_mode()) {
@@ -555,12 +556,9 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
   CurveSegment *curve_segment = NULL;
   LPoint3f last_point;
 
-  const LMatrix4f &matrix = get_matrix();
-
   for (int segment = 0; segment < num_segments; ++segment) {
     LPoint3f point;
     result->eval_segment_point(segment, 0.0f, point);
-    point = point * matrix;
 
     if (curve_segment == (CurveSegment *)NULL || 
         !point.almost_equal(last_point)) {
@@ -586,7 +584,6 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
 
       CurveVertex vtx;
       result->eval_segment_point(segment, t, vtx._p);
-      vtx._p = vtx._p * matrix;
       vtx._t = result->get_segment_t(segment, t);
       if (use_vertex_color) {
         result->eval_segment_extended_points(segment, t, 0, &vtx._c[0], 4);

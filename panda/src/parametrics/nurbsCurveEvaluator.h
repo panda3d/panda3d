@@ -78,6 +78,8 @@ PUBLISHED:
   INLINE int get_num_segments() const;
 
   PT(NurbsCurveResult) evaluate(const NodePath &rel_to = NodePath()) const;
+  PT(NurbsCurveResult) evaluate(const NodePath &rel_to,
+                                const LMatrix4f &mat) const;
 
   void output(ostream &out) const;
 

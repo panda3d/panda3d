@@ -174,6 +174,37 @@ evaluate(const NodePath &rel_to) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveEvaluator::evaluate
+//       Access: Published
+//  Description: Returns a NurbsCurveResult object that represents the
+//               result of applying the knots to all of the current
+//               values of the vertices, transformed into the
+//               indicated coordinate space, and then further
+//               transformed by the indicated matrix.
+////////////////////////////////////////////////////////////////////
+PT(NurbsCurveResult) NurbsCurveEvaluator::
+evaluate(const NodePath &rel_to, const LMatrix4f &mat) const {
+  if (_basis_dirty) {
+    ((NurbsCurveEvaluator *)this)->recompute_basis();
+  }
+
+  // First, transform the vertices as appropriate.
+  pvector<LVecBase4f> vecs;
+  get_vertices(vecs, rel_to);
+
+  // And then apply the indicated matrix.
+  pvector<LVecBase4f>::iterator vi;
+  for (vi = vecs.begin(); vi != vecs.end(); ++vi) {
+    (*vi) = (*vi) * mat;
+  }
+
+  // And apply those transformed vertices to the basis matrices to
+  // derive the result.
+  return new NurbsCurveResult(_basis, &vecs[0], &_vertices[0],
+                              (int)_vertices.size());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveEvaluator::output
 //       Access: Published
 //  Description: 
