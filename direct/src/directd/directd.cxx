@@ -132,7 +132,7 @@ namespace {
 
 DirectD::DirectD() :
     _app_pid(0),
-    _reader(&_cm, 1), _writer(&_cm, 1), _listener(&_cm, 0),
+    _reader(&_cm, 1), _writer(&_cm, 0), _listener(&_cm, 0),
     _shutdown(false) {
 }
 
@@ -174,13 +174,12 @@ DirectD::wait_for_servers(int count, int timeout_ms) {
     while (_reader.data_available()) {
       NetDatagram datagram;
       if (_reader.get_data(datagram)) {
-        nout << "Got datagram " /*<< datagram <<*/ "from "
-             << datagram.get_address() << endl;
+        cout << count << ": Server at " << datagram.get_address()
+            << " is ready." << endl;
         datagram.dump_hex(nout);
         //handle_datagram(datagram);
         DatagramIterator di(datagram);
         string s=di.get_string();
-        nout<<"wait_for_servers() count="<<count<<", s="<<s<<endl;
         if (s=="r" && !--count) {
           return true;
         }
@@ -205,6 +204,7 @@ DirectD::server_ready(const string& client_host, int port) {
 void
 DirectD::start_app(const string& cmd) {
   nout<<"start_app(cmd="<<cmd<<")"<<endl;
+  kill_app();
   _app_pid=StartApp(cmd);
   nout<<"    _app_pid="<<_app_pid<<endl;
 }
@@ -268,6 +268,7 @@ DirectD::send_one_message(const string& host_name,
   _writer.send(datagram, c);
   
   //PR_Sleep(PR_MillisecondsToInterval(200));
+  //wait_for_servers(1, 10*1000);
   //_reader.remove_connection(c);
   _cm.close_connection(c);
 }

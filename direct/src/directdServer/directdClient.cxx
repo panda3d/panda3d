@@ -27,7 +27,7 @@ DirectDClient::~DirectDClient() {
 void
 DirectDClient::cli_command(const string& cmd) {
   cerr<<"command "<<cmd<<endl;
-  if (cmd[0]=='!') {
+  if (cmd[0]==':') {
     // ...connect to host.
     cerr<<"Local command "<<flush;
     string code;
