@@ -7,6 +7,7 @@ import DirectNotifyGlobal
 import EditMgr
 import LevelMgr
 import ZoneEntity
+import ModelEntity
 
 # some useful constructor functions
 # ctor functions must take (level, entId)
@@ -28,6 +29,7 @@ class EntityCreator(EntityCreatorBase.EntityCreatorBase):
             'editMgr': EditMgr.EditMgr,
             'levelMgr': LevelMgr.LevelMgr,
             'logicGate': nothing,
+            'modelMockup' : ModelEntity.ModelEntity,
             'nodepath': BasicEntities.NodePathEntity,
             'zone': ZoneEntity.ZoneEntity,
             })

@@ -188,6 +188,13 @@ class Lift(Nodepath):
         ('modelScale', Vec3(1), 'scale'),
         )
 
+class ModelMockup(Nodepath):
+    type = 'modelMockup'
+    attribs = (
+        ('modelPath', None, 'bamfilename'),
+        ('scale', 1, 'float'),
+        )
+    
 class Platform(Nodepath):
     type = 'platform'
     delAttribs = (
