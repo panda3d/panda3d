@@ -127,7 +127,7 @@ static void
 issue_texcoord_gl(const Geom *geom, Geom::TexCoordIterator &tciterator) {
   const TexCoordf &texcoord = geom->get_next_texcoord(tciterator);
   //  glgsg_cat.debug() << "Issuing texcoord " << texcoord << "\n";
-  glTexCoord3fv(texcoord.get_data());
+  glTexCoord2fv(texcoord.get_data());
 }
 
 static void
