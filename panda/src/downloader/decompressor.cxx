@@ -204,11 +204,6 @@ run(void) {
   int avail_out = dest_buffer_length;
   nassertr(avail_out > 0 && avail_in > 0, false);
   
-  if (downloader_cat.is_debug())
-    downloader_cat.debug()
-      << "Decompressor::run() - avail_in: " << avail_in << " avail_out: "
-      << avail_out << endl;
-
   while (avail_in > 0) {
     int ret = _decompressor->decompress_to_stream(next_in, avail_in,
 			next_out, avail_out, dest_buffer, 

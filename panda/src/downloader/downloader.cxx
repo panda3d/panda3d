@@ -395,6 +395,8 @@ run(void) {
     return DS_error;
   }
 
+  nassertr(_current_status != NULL, DS_error);
+
   if (connect_to_server() == false)
     return DS_error_connect;
 
