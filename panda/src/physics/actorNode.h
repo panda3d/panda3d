@@ -46,7 +46,6 @@ PUBLISHED:
   // i.e. copy from PhysicsObject to PandaNode
   void update_transform();
   
-  virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:

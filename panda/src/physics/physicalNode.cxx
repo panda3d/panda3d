@@ -109,19 +109,6 @@ remove_physical(int index) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
-void PhysicalNode::
-output(ostream &out) const {
-  #ifndef NDEBUG //[
-  out<<"PhysicalNode";
-  #endif //] NDEBUG
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function : write
 //       Access : Public
 //  Description : Write a string representation of this instance to

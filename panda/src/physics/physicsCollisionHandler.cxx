@@ -58,11 +58,7 @@ apply_friction(ColliderDef &def, LVector3f& vel, const LVector3f& force, float a
   if (vel!=LVector3f::zero()) {
     float friction_coefficient=0.0f;
     // Determine the friction:
-    if (fabs(force.dot(LVector3f::unit_z()))<0.5f) {
-      // ...The force is nearly horizontal, it is probably a wall.
-      physics_debug("  wall friction");
-      friction_coefficient=0.0f;
-    } else if (vel.length()<_almost_stationary_speed) {
+    if (vel.length()<_almost_stationary_speed) {
       physics_debug("  static friction");
       friction_coefficient=_static_friction_coef;
     } else {
@@ -149,13 +145,10 @@ apply_net_shove(ColliderDef &def, const LVector3f& net_shove, const LVector3f &f
     
     // This adjustment to our velocity will not reflect us off the surface,
     // but will deflect us parallel (or tangent) to the surface:
-    if (normalize(net_shove).dot(LVector3f::unit_z())>0.5) {
-        vel=LVector3f::zero();
-    }
-    //vel+=adjustment;
+    vel+=adjustment;
     physics_debug("  vel+adj "<<vel<<" len "<<vel.length());
     
-    //apply_friction(def, vel, force, angle);
+    apply_friction(def, vel, force, angle);
   } else if (adjustmentLength==0.0f) {
     physics_debug("  brushing contact");
   } else {

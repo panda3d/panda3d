@@ -116,10 +116,8 @@ remove_force(int index) {
 ////////////////////////////////////////////////////////////////////
 void ForceNode::
 output(ostream &out) const {
-  #ifndef NDEBUG //[
   PandaNode::output(out);
   out<<" ("<<_forces.size()<<" forces)";
-  #endif //] NDEBUG
 }
 
 ////////////////////////////////////////////////////////////////////

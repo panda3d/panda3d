@@ -109,19 +109,6 @@ transform_changed() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
-void ActorNode::
-output(ostream &out) const {
-  #ifndef NDEBUG //[
-  out<<"ActorNode";
-  #endif //] NDEBUG
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function : write
 //       Access : Public
 //  Description : Write a string representation of this instance to
