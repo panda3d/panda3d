@@ -772,12 +772,12 @@ $[TAB] $[COMPILE_C++]
 #define source $[file]
 #define ipath $[file_ipath]
 
+#define pdb_filename $[st_dir]/$[TARGET(lib_target)]
+
 #if $[DO_PCH]
 // best way to find out if file use pch (and needs /Yu) is to check dependencies
 // these must be defined before flags (or could defer them)
-
 #define target_pch $[subst /./,/,$[patsubst %.h,$[st_dir]/%.pch,$[filter %_headers.h, $[dependencies $[file]]]]]
-#define target_dirname $[patsubst %_headers.pch,%,$[target_pch]] 
 #endif
 
 #define flags $[c++flags] $[all_sources $[building_var:%=/D%],$[file]]
@@ -798,12 +798,13 @@ $[TAB] $[COMPILE_LINE]
 #foreach file $[pch_header_source]
 #define target_pch $[patsubst %.h,$[st_dir]/%.pch,$[file]]
 #define target_obj $[patsubst %.h,$[st_dir]/%.obj,$[file]]
-#define target_dirname $[patsubst %_headers.pch,%,$[target_pch]] 
+#define pdb_filename $[st_dir]/$[TARGET(lib_target)]
 
 #define target $[target_obj]
 #define source $[file]
 #define ipath $[file_ipath]
 #define flags $[c++flags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=/D%],$[file]]
+
 // Yacc must run before some files can be compiled, so all files
 // depend on yacc having run.
 $[target_obj] : $[source] $[dependencies $[file]] $[st_dir]/stamp

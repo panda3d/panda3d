@@ -87,7 +87,7 @@
 #defer DEBUG_TYPE_FLAGS /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"
 #else
 // for pch, .pdb file name must be the same for obj and pch header obj
-#defer DEBUG_TYPE_FLAGS /Zi /Fd"$[osfilename $[target_dirname].pdb]"
+#defer DEBUG_TYPE_FLAGS /Zi /Fd"$[osfilename $[pdb_filename].pdb]"
 #endif
 
 #include $[THISDIRPREFIX]compilerSettings.pp
