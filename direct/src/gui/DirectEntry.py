@@ -40,6 +40,7 @@ class DirectEntry(DirectFrame):
             ('extraArgs',      [],                None),
             # Sounds to be used for button events
             ('rolloverSound',   getDefaultRolloverSound(), self.setRolloverSound),
+            ('clickSound',    getDefaultClickSound(),    self.setClickSound),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -104,6 +105,14 @@ class DirectEntry(DirectFrame):
                 self.guiItem.setSound(ENTER + self.guiId, rolloverSound)
             else:
                 self.guiItem.clearSound(ENTER + self.guiId)
+
+    def setClickSound(self):
+        if base.wantSfx:
+            clickSound = self['clickSound']
+            if clickSound:
+                self.guiItem.setSound(ACCEPT + self.guiId, clickSound)
+            else:
+                self.guiItem.clearSound(ACCEPT + self.guiId)
 
     def commandFunc(self, event):
         if self['command']:
