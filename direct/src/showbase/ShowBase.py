@@ -177,9 +177,9 @@ class ShowBase(DirectObject.DirectObject):
 
         # This is a placeholder for a CollisionTraverser.  If someone
         # stores a CollisionTraverser pointer here, we'll traverse it
-        # in the collisionloop task.
+        # in the collisionLoop task.
         self.shadowTrav = 0
-        # in the collisionloop task.
+        # in the collisionLoop task.
         self.cTrav = 0
         # Ditto for an AppTraverser.
         self.appTrav = 0
@@ -730,10 +730,8 @@ class ShowBase(DirectObject.DirectObject):
                    scene = None,
                    displayRegion = (0, 1, 0, 1), aspectRatio = None):
         """
-
         Makes a new 3-d camera associated with the indicated window,
         and creates a display region in the indicated subrectangle.
-        
         """
         if chan == None:
             chan = win.getChannel(0)
@@ -1151,14 +1149,14 @@ class ShowBase(DirectObject.DirectObject):
             self.cTrav.resetPrevTransform(self.render)
         return Task.cont
 
-    def dataloop(self, state):
+    def dataLoop(self, state):
         # traverse the data graph.  This reads all the control
         # inputs (from the mouse and keyboard, for instance) and also
         # directly acts upon them (for instance, to move the avatar).
         self.dgTrav.traverse(self.dataRootNode)
         return Task.cont
 
-    def ivalloop(self, state):
+    def ivalLoop(self, state):
         # Execute all intervals in the global ivalMgr.
         ivalMgr.step()
         return Task.cont
@@ -1170,7 +1168,7 @@ class ShowBase(DirectObject.DirectObject):
             self.shadowTrav.traverse(self.render)
         return Task.cont
 
-    def collisionloop(self, state):
+    def collisionLoop(self, state):
         # run the collision traversal if we have a
         # CollisionTraverser set.
         if self.cTrav:
@@ -1179,7 +1177,7 @@ class ShowBase(DirectObject.DirectObject):
             self.appTrav.traverse(self.render)
         return Task.cont
 
-    def igloop(self, state):
+    def igLoop(self, state):
         if __debug__:
             # We render the watch variables for the onScreenDebug as soon
             # as we reasonably can before the renderFrame().
@@ -1203,7 +1201,7 @@ class ShowBase(DirectObject.DirectObject):
     
         if self.mainWinMinimized:
             # If the main window is minimized, slow down the app a bit
-            # by sleeping here in igloop so we don't use all available
+            # by sleeping here in igLoop so we don't use all available
             # CPU needlessly.
 
             # Note: this isn't quite right if multiple windows are
@@ -1227,31 +1225,31 @@ class ShowBase(DirectObject.DirectObject):
         self.shutdown()
         # resetPrevTransform goes at the very beginning of the frame.
         self.taskMgr.add(self.resetPrevTransform, 'resetPrevTransform', priority = -51)
-        # give the dataloop task a reasonably "early" priority,
+        # give the dataLoop task a reasonably "early" priority,
         # so that it will get run before most tasks
-        self.taskMgr.add(self.dataloop, 'dataloop', priority = -50)
-        # spawn the ivalloop with a later priority, so that it will
-        # run after most tasks, but before igloop.
-        self.taskMgr.add(self.ivalloop, 'ivalloop', priority = 20)
-        # make the collisionloop task run before igloop,
+        self.taskMgr.add(self.dataLoop, 'dataLoop', priority = -50)
+        # spawn the ivalLoop with a later priority, so that it will
+        # run after most tasks, but before igLoop.
+        self.taskMgr.add(self.ivalLoop, 'ivalLoop', priority = 20)
+        # make the collisionLoop task run before igLoop,
         # but leave enough room for the app to insert tasks
-        # between collisionloop and igloop
-        self.taskMgr.add(self.collisionloop, 'collisionloop', priority = 30)
-        # do the shadowCollisionLoop after the collisionloop and
-        # befor the igloop:
+        # between collisionLoop and igLoop
+        self.taskMgr.add(self.collisionLoop, 'collisionLoop', priority = 30)
+        # do the shadowCollisionLoop after the collisionLoop and
+        # befor the igLoop:
         self.taskMgr.add(self.shadowCollisionLoop, 'shadowCollisionLoop', priority = 34)
-        # give the igloop task a reasonably "late" priority,
+        # give the igLoop task a reasonably "late" priority,
         # so that it will get run after most tasks
-        self.taskMgr.add(self.igloop, 'igloop', priority = 50)
+        self.taskMgr.add(self.igLoop, 'igLoop', priority = 50)
         self.eventMgr.restart()
 
     def shutdown(self):
-        self.taskMgr.remove('igloop')
+        self.taskMgr.remove('igLoop')
         self.taskMgr.remove('shadowCollisionLoop')
-        self.taskMgr.remove('collisionloop')
-        self.taskMgr.remove('dataloop')
+        self.taskMgr.remove('collisionLoop')
+        self.taskMgr.remove('dataLoop')
         self.taskMgr.remove('resetPrevTransform')
-        self.taskMgr.remove('ivalloop')
+        self.taskMgr.remove('ivalLoop')
         self.eventMgr.shutdown()
 
     def getBackgroundColor(self, win = None):
@@ -1614,7 +1612,7 @@ class ShowBase(DirectObject.DirectObject):
         self.wantTk = fWantTk
         if self.wantTk:
             import TkGlobal
-            taskMgr.remove('tkloop')
+            taskMgr.remove('tkLoop')
             TkGlobal.spawnTkLoop()
 
     def startDirect(self, fWantDirect = 1, fWantTk = 1):

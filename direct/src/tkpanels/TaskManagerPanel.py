@@ -178,11 +178,11 @@ class TaskManagerWidget(PandaObject):
         if self.currentTask:
             name = self.currentTask.name
             ok = 1
-            if ((name == 'dataloop') or
+            if ((name == 'dataLoop') or
                 (name == 'resetPrevTransform') or
-                (name == 'tkloop') or
+                (name == 'tkLoop') or
                 (name == 'eventManager') or
-                (name == 'igloop')):
+                (name == 'igLoop')):
                 from tkMessageBox import askokcancel
                 ok = askokcancel('TaskManagerControls',
                                  'Remove: %s?' % name,
@@ -195,11 +195,11 @@ class TaskManagerWidget(PandaObject):
     def removeMatchingTasks(self):
         name = self.taskListBox.getcurselection()[0]
         ok = 1
-        if ((name == 'dataloop') or
+        if ((name == 'dataLoop') or
             (name == 'resetPrevTransform') or
-            (name == 'tkloop') or
+            (name == 'tkLoop') or
             (name == 'eventManager') or
-            (name == 'igloop')):
+            (name == 'igLoop')):
             from tkMessageBox import askokcancel
             ok = askokcancel('TaskManagerControls',
                              'Remove tasks named: %s?' % name,
