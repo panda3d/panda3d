@@ -25,6 +25,7 @@
 #include <maya/MFileIO.h>
 #include <maya/MLibrary.h>
 #include <maya/MStatus.h>
+#include <maya/MFnAnimCurve.h>
 #include "post_maya_include.h"
 
 #ifdef WIN32_VC
@@ -32,6 +33,11 @@
 #endif
 
 MayaApi *MayaApi::_global_api = (MayaApi *)NULL;
+
+// We need this bogus object just to force the application to link
+// with OpenMayaAnim.lib; otherwise, Maya will complain (when compiled
+// on Windows) that it is unable to find source plug 'ikRPsolver.msg'.
+static MFnAnimCurve force_link_with_OpenMayaAnim;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaApi::Constructor
