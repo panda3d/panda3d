@@ -45,6 +45,7 @@ MayaShader(MObject engine) {
 
   _has_texture = false;
   _projection_type = PT_off;
+  _map_uvs = NULL;
 
   _coverage.set(1.0, 1.0);
   _translate_frame.set(0.0, 0.0);
@@ -137,38 +138,9 @@ has_projection() const {
 //               quadrant as the indicated reference point.
 ////////////////////////////////////////////////////////////////////
 TexCoordd MayaShader::
-project_uv(const LPoint3d &point, const LPoint3d &ref_point) const {
-  LPoint3d p = point * _projection_matrix;
-
-  switch (_projection_type) {
-  case PT_planar:
-    return TexCoordd(p[0], p[1]);
-
-  case PT_cylindrical:
-    {
-      LPoint3d rp = ref_point * _projection_matrix;
-
-      TexCoordd uv
-        (// The u position is the angle about the Y axis, scaled to 0 .. 1.
-         catan2(p[0], p[2]) / (2.0 * MathNumbers::pi) + 0.5,
-         // The v position is the Y height.
-         p[1]);
-
-      // Also convert the reference point, so we can adjust the
-      // quadrant if necessary; each single polygon should only go the
-      // short way around the cylinder.
-      double ref_u = catan2(rp[0], rp[1]) / (2.0 * MathNumbers::pi) + 0.5;
-      if (uv[0] - ref_u > 0.5) {
-        uv[0] -= 1.0;
-      } else if (uv[0] - ref_u < -0.5) {
-        uv[0] += 1.0;
-      }
-      return uv;
-    }
-
-  default:
-    return TexCoordd(0.0, 0.0);
-  }
+project_uv(const LPoint3d &pos, const LPoint3d &centroid) const {
+  nassertr(_map_uvs != NULL, TexCoordd::zero());
+  return (this->*_map_uvs)(pos * _projection_matrix, centroid * _projection_matrix);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -334,6 +306,15 @@ read_surface_color(MObject color) {
       _projection_matrix = LMatrix4d::ident_mat();
     }
 
+    // The uAngle and vAngle might be used for certain kinds of
+    // projections.
+    if (!get_angle_attribute(color, "uAngle", _u_angle)) {
+      _u_angle = 360.0;
+    }
+    if (!get_angle_attribute(color, "vAngle", _v_angle)) {
+      _v_angle = 180.0;
+    }
+
     string type;
     if (get_enum_attribute(color, "projType", type)) {
       set_projection_type(type);
@@ -369,6 +350,7 @@ void MayaShader::
 set_projection_type(const string &type) {
   if (cmp_nocase(type, "planar") == 0) {
     _projection_type = PT_planar;
+    _map_uvs = &MayaShader::map_planar;
 
     // The Planar projection normally projects to a range (-1, 1) in
     // both axes.  Scale this into our UV range of (0, 1).
@@ -379,6 +361,12 @@ set_projection_type(const string &type) {
 
   } else if (cmp_nocase(type, "cylindrical") == 0) {
     _projection_type = PT_cylindrical;
+    _map_uvs = &MayaShader::map_cylindrical;
+
+    // We always want at least u wrapping with a cylindrical
+    // projection--this will help with the seams.  Plus, if the
+    // _u_wrap value is less than 360, we want wrapping anyway.
+    _wrap_u = true;
 
     // The cylindrical projection is orthographic in the Y axis; scale
     // the range (-1, 1) in this axis into our UV range (0, 1).
@@ -387,10 +375,124 @@ set_projection_type(const string &type) {
                                                         0.0, 0.0, 1.0, 0.0,
                                                         0.0, 0.5, 0.0, 1.0);
 
+  } else if (cmp_nocase(type, "spherical") == 0) {
+    _projection_type = PT_spherical;
+    _map_uvs = &MayaShader::map_spherical;
+
   } else {
     // Other projection types are currently unimplemented by the
     // converter.
     maya_cat.error()
       << "Don't know how to handle type " << type << " projections.\n";
+    _projection_type = PT_off;
+    _map_uvs = NULL;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::map_planar
+//       Access: Private
+//  Description: Computes a UV based on the given point in space,
+//               using a planar projection.
+////////////////////////////////////////////////////////////////////
+LPoint2d MayaShader::
+map_planar(const LPoint3d &pos, const LPoint3d &) const {
+  // A planar projection is about as easy as can be.  We ignore the Z
+  // axis, and project the point into the XY plane.  Done.
+  return LPoint2d(pos[0], pos[1]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::map_spherical
+//       Access: Private
+//  Description: Computes a UV based on the given point in space,
+//               using a spherical projection.
+////////////////////////////////////////////////////////////////////
+LPoint2d MayaShader::
+map_spherical(const LPoint3d &pos, const LPoint3d &centroid) const {
+  // To compute the x position on the frame, we only need to consider
+  // the angle of the vector about the Y axis.  Project the vector
+  // into the XZ plane to do this.
+
+  LVector2d xz(pos[0], pos[2]);
+  double xz_length = xz.length();
+
+  if (xz_length < 0.01) {
+    // If we have a point on or near either pole, we've got problems.
+    // This point maps to the entire bottom edge of the image, so
+    // which U value should we choose?  It does make a difference,
+    // especially if we have a number of polygons around the south
+    // pole that all share the common vertex.
+
+    // We choose the U value based on the polygon's centroid.
+    xz.set(centroid[0], centroid[2]);
+  }
+
+  // Now, if the polygon crosses the seam, we also have problems.
+  // Make sure that the u value is in the same half of the texture as
+  // the centroid's u value.
+  double u = rad_2_deg(atan2(xz[0], xz[1])) / (2.0 * _u_angle);
+  double c = rad_2_deg(atan2(centroid[0], centroid[2])) / (2.0 * _u_angle);
+
+  if (u - c > 0.5) {
+    u -= floor(u - c + 0.5);
+  } else if (u - c < -0.5) {
+    u += floor(c - u + 0.5);
+  }
+
+  // Now rotate the vector into the YZ plane, and the V value is based
+  // on the latitude: the angle about the X axis.
+  LVector2d yz(pos[1], xz_length);
+  double v = rad_2_deg(atan2(yz[0], yz[1])) / (2.0 * _v_angle);
+
+  LPoint2d uv(u - 0.5, v - 0.5);
+
+  nassertr(fabs(u - c) <= 0.5, uv);
+  return uv;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::map_cylindrical
+//       Access: Private
+//  Description: Computes a UV based on the given point in space,
+//               using a cylindrical projection.
+////////////////////////////////////////////////////////////////////
+LPoint2d MayaShader::
+map_cylindrical(const LPoint3d &pos, const LPoint3d &centroid) const {
+  // This is almost identical to the spherical projection, except for
+  // the computation of V.
+
+  LVector2d xz(pos[0], pos[2]);
+  double xz_length = xz.length();
+
+  if (xz_length < 0.01) {
+    // A cylindrical mapping has the same singularity problem at the
+    // pole as a spherical mapping does: points at the pole do not map
+    // to a single point on the texture.  (It's technically a slightly
+    // different problem: in a cylindrical mapping, points at the pole
+    // do not map to any point on the texture, while in a spherical
+    // mapping, points at the pole map to the top or bottom edge of
+    // the texture.  But this is a technicality that doesn't really
+    // apply to us.)  We still solve it the same way: if our point is
+    // at or near the pole, compute the angle based on the centroid of
+    // the polygon (which we assume is further from the pole).
+    xz.set(centroid[0], centroid[2]);
+  }
+
+  // And cylinders do still have a seam at the back.
+  double u = rad_2_deg(atan2(xz[0], xz[1])) / _u_angle;
+  double c = rad_2_deg(atan2(centroid[0], centroid[2])) / _u_angle;
+
+  if (u - c > 0.5) {
+    u -= floor(u - c + 0.5);
+  } else if (u - c < -0.5) {
+    u += floor(c - u + 0.5);
+  }
+
+  // For a cylindrical mapping, the V value comes directly from Y.
+  // Easy.
+  LPoint2d uv(u - 0.5, pos[1]);
+
+  nassertr(fabs(u - c) <= 0.5, uv);
+  return uv;
 }

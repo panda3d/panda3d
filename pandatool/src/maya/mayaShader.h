@@ -41,7 +41,7 @@ public:
 
   LMatrix3d compute_texture_matrix() const;
   bool has_projection() const;
-  TexCoordd project_uv(const LPoint3d &point, const LPoint3d &ref_point) const;
+  TexCoordd project_uv(const LPoint3d &pos, const LPoint3d &ref_point) const;
 
   void output(ostream &out) const;
   bool reset_maya_texture(const Filename &texture);
@@ -68,6 +68,8 @@ public:
   };
   ProjectionType _projection_type;
   LMatrix4d _projection_matrix;
+  double _u_angle;
+  double _v_angle;
 
   LVector2f _coverage;
   LVector2f _translate_frame;
@@ -88,6 +90,13 @@ private:
   bool read_surface_shader(MObject shader);
   void read_surface_color(MObject color);
   void set_projection_type(const string &type);
+
+  LPoint2d map_planar(const LPoint3d &pos, const LPoint3d &centroid) const;
+  LPoint2d map_spherical(const LPoint3d &pos, const LPoint3d &centroid) const;
+  LPoint2d map_cylindrical(const LPoint3d &pos, const LPoint3d &centroid) const;
+
+  // Define a pointer to one of the above member functions.
+  LPoint2d (MayaShader::*_map_uvs)(const LPoint3d &pos, const LPoint3d &centroid) const;
 };
 
 INLINE ostream &operator << (ostream &out, const MayaShader &shader) {
