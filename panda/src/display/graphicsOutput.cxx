@@ -891,6 +891,9 @@ end_frame() {
     // We have to be sure to clear the _texture pointer, though, or
     // we'll end up holding a reference to it forever.
     _texture = NULL;
+
+    // And we need to stop trying to copy to the texture.
+    _rtm_mode = RTM_none;
   }
 
   _cube_map_index = -1;
