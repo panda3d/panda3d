@@ -73,6 +73,7 @@ PUBLISHED:
   class EXPCL_PANDA Properties {
   PUBLISHED:
     Properties();
+    Properties(const Properties &);
     INLINE ~Properties();
 
     INLINE void set_origin(int xorg, int yorg);

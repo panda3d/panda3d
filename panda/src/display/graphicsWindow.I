@@ -28,6 +28,24 @@ INLINE GraphicsWindow::Properties::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::Properties::Destructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsWindow::Properties::Properties(const Properties &InitProp) {
+    _xorg=InitProp._xorg;
+    _yorg=InitProp._yorg;
+    _xsize=InitProp._xsize;
+    _ysize=InitProp._ysize;
+    _title=InitProp._title;
+    _border=InitProp._border;
+    _fullscreen=InitProp._fullscreen;
+    _mask=InitProp._mask;
+    _want_depth_bits=InitProp._want_depth_bits;
+    _want_color_bits=InitProp._want_color_bits;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::Properties::set_origin
 //       Access: Published
 //  Description: Specifies the origin on the screen (in pixels,
@@ -222,6 +240,7 @@ close_window() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsWindow::
 is_closed() const {
+
   return (_gsg == (GraphicsStateGuardian *)NULL);
 }
 
