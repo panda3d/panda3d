@@ -7,14 +7,14 @@ import GoonPathData
 class PathEntity(BasicEntities.NodePathEntity):
     def __init__(self, level, entId):
         BasicEntities.NodePathEntity.__init__(self, level, entId)
-        self.path = GoonPathData.Paths[self.level.factorySpecNum][self.pathIndex]
+        self.path = GoonPathData.Paths[self.level.factoryId][self.pathIndex]
             
     def destroy(self):
         BasicEntities.NodePathEntity.destroy(self)
 
     def setPathIndex(self, pathIndex):
         self.pathIndex = pathIndex
-        self.path = GoonPathData.Paths[self.level.factorySpecNum][self.pathIndex]
+        self.path = GoonPathData.Paths[self.level.factoryId][self.pathIndex]
     
     def makePathTrack(self, node, velocity, name, turnTime=1, lookAroundNode=None):
         track = Sequence(name = name)
