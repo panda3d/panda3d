@@ -362,7 +362,8 @@ void GuiButton::switch_state(GuiButton::States nstate) {
     gui_cat->warning() << "switched to invalid state (" << (int)_state << ")"
 		       << endl;
   }
-  _mgr->recompute_priorities();
+  if (_state != NONE)
+    _mgr->recompute_priorities();
 }
 
 void GuiButton::recompute_frame(void) {
@@ -539,8 +540,9 @@ GuiButton::~GuiButton(void) {
 
   // Remove the names from the buttons map, so we don't end up with
   // an invalid pointer.
-  string name = get_name();
   buttons.erase(this->_rgn.p());
+  if (gui_cat->is_debug())
+    gui_cat->debug() << "erased from button map" << endl;
   if ((buttons.size() == 0) && added_hooks) {
     /*
     _eh->remove_hook("gui-enter", enter_button);
@@ -553,8 +555,12 @@ GuiButton::~GuiButton(void) {
 
   if (_behavior_functor != (GuiBehavior::BehaviorFunctor*)0L)
     _behavior_functor.clear();
+  if (gui_cat->is_debug())
+    gui_cat->debug() << "cleared behavior functor" << endl;
   if (_rollover_functor != (GuiBehavior::BehaviorFunctor*)0L)
     _rollover_functor.clear();
+  if (gui_cat->is_debug())
+    gui_cat->debug() << "cleared rollover functor" << endl;
 }
 
 void GuiButton::manage(GuiManager* mgr, EventHandler& eh) {
@@ -598,13 +604,40 @@ void GuiButton::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
 }
 
 void GuiButton::unmanage(void) {
+  if (gui_cat->is_debug())
+    gui_cat->debug() << "in GuiButton::unmanage(0x" << (void*)this << ")"
+                     << endl;
   if (_mgr != (GuiManager*)0L)
-    if (_mgr->has_region(_rgn))
+    if (_mgr->has_region(_rgn)) {
       _mgr->remove_region(_rgn);
-  if (_behavior_running)
+      if (gui_cat->is_debug())
+	gui_cat->debug() << "removed region" << endl;
+    }
+  if (_behavior_running) {
     this->stop_behavior();
-  switch_state(NONE);
+    if (gui_cat->is_debug())
+      gui_cat->debug() << "behavior stopped" << endl;
+  }
+  if (gui_cat->is_debug())
+    gui_cat->debug() << "switching state to NONE" << endl;
+  _state = NONE;
+  if (_mgr != (GuiManager*)0L) {
+    if (_mgr->has_label(_up))
+      _mgr->remove_label(_up);
+    if (_mgr->has_label(_up_rollover))
+      _mgr->remove_label(_up_rollover);
+    if (_mgr->has_label(_down))
+      _mgr->remove_label(_down);
+    if (_mgr->has_label(_down_rollover))
+      _mgr->remove_label(_down_rollover);
+    if (_mgr->has_label(_inactive))
+      _mgr->remove_label(_inactive);
+  }
+  if (gui_cat->is_debug())
+    gui_cat->debug() << "back from switching state to NONE" << endl;
   GuiBehavior::unmanage();
+  if (gui_cat->is_debug())
+    gui_cat->debug() << "back from parent unmanage" << endl;
 }
 
 int GuiButton::freeze() {
