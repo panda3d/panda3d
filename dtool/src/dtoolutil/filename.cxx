@@ -62,7 +62,7 @@
 // The MSVC 6.0 Win32 SDK lacks the following definitions, so we define them
 // here for compatibility.
 #ifndef FILE_ATTRIBUTE_DEVICE
-#define FILE_ATTRIBUTE_DEVICE	0x00000040
+#define FILE_ATTRIBUTE_DEVICE 0x00000040
 #endif
 
 // We might have been linked with the Cygwin dll.  This is ideal if it
@@ -110,6 +110,9 @@ get_panda_root() {
     const char *envvar = getenv("PANDA_ROOT");
     if (envvar != (const char *)NULL) {
       panda_root = front_to_back_slash(envvar);
+    } else if (Filename("c:/cygwin").is_directory()) {
+      //setenv("PANDA_ROOT", "c:/cygwin", 1);
+      panda_root = "c:/cygwin";
     }
 
     if (panda_root.empty() || panda_root[panda_root.length() - 1] != '\\') {
@@ -164,12 +167,12 @@ convert_pathname(const string &unix_style_pathname, bool use_backslash) {
     // iterators.
     if (use_backslash) {
       windows_pathname =
-	string(1, (char)toupper(unix_style_pathname[1])) + ":" +
-	front_to_back_slash(unix_style_pathname.substr(2));
+        string(1, (char)toupper(unix_style_pathname[1])) + ":" +
+        front_to_back_slash(unix_style_pathname.substr(2));
     } else {
       windows_pathname =
-	string(1, (char)toupper(unix_style_pathname[1])) + ":" +
-	unix_style_pathname.substr(2);
+        string(1, (char)toupper(unix_style_pathname[1])) + ":" +
+        unix_style_pathname.substr(2);
     }
 
   } else {
@@ -303,7 +306,7 @@ from_os_specific(const string &os_specific, Filename::Type type) {
   if (!panda_root.empty() && panda_root.length() < result.length()) {
     bool matches = true;
     size_t p;
-    for (p = 0; p < panda_root.length() && matches; p++) {
+    for (p = 0; p < panda_root.length() && matches; ++p) {
       char c = tolower(panda_root[p]);
       if (c == '\\') {
         c = '/';
