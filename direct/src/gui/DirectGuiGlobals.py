@@ -78,7 +78,7 @@ panel = None
 def getDefaultRolloverSound():
     global defaultRolloverSound
     if defaultRolloverSound == None:
-        defaultRolloverSound = base.loadSfx("audio/sfx/GUI_rollover.mp3")
+        defaultRolloverSound = base.loadSfx("audio/sfx/GUI_rollover.wav")
     return defaultRolloverSound
 
 def setDefaultRolloverSound(newSound):
@@ -88,7 +88,7 @@ def setDefaultRolloverSound(newSound):
 def getDefaultClickSound():
     global defaultClickSound
     if defaultClickSound == None:
-        defaultClickSound = base.loadSfx("audio/sfx/GUI_click.mp3")
+        defaultClickSound = base.loadSfx("audio/sfx/GUI_click.wav")
     return defaultClickSound
 
 def setDefaultClickSound(newSound):
