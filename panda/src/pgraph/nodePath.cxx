@@ -4952,15 +4952,18 @@ r_force_recompute_bounds(PandaNode *node) {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 r_set_collide_mask(PandaNode *node, 
-                   CollideMask and_mask, CollideMask or_mask) {
-  CollideMask into_collide_mask = node->get_into_collide_mask();
-  into_collide_mask = (into_collide_mask & and_mask) | or_mask;
-  node->set_into_collide_mask(into_collide_mask);
+                   CollideMask and_mask, CollideMask or_mask,
+                   TypeHandle node_type) {
+  if (node->is_of_type(node_type)) {
+    CollideMask into_collide_mask = node->get_into_collide_mask();
+    into_collide_mask = (into_collide_mask & and_mask) | or_mask;
+    node->set_into_collide_mask(into_collide_mask);
+  }
 
   PandaNode::Children cr = node->get_children();
   int num_children = cr.get_num_children();
   for (int i = 0; i < num_children; i++) {
-    r_set_collide_mask(cr.get_child(i), and_mask, or_mask);
+    r_set_collide_mask(cr.get_child(i), and_mask, or_mask, node_type);
   }
 }
 

@@ -381,6 +381,47 @@ detach() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::get_collide_mask
+//       Access: Published
+//  Description: Returns the union of all of the into_collide_masks
+//               for nodes at this level and below.  This is the same
+//               thing as node()->get_net_collide_mask().
+//
+//               If you want to return what the into_collide_mask of
+//               this node itself is, without regard to its children,
+//               use node()->get_into_collide_mask().
+////////////////////////////////////////////////////////////////////
+CollideMask NodePathCollection::
+get_collide_mask() const {
+  CollideMask collide_mask;
+  for (int i = 0; i < get_num_paths(); i++) {
+    collide_mask |= get_path(i).get_collide_mask();
+  }
+  return collide_mask;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::set_collide_mask
+//       Access: Published
+//  Description: Recursively applies the indicated CollideMask to the
+//               into_collide_masks for all nodes at this level and
+//               below.  Only nodes 
+//
+//               The default is to change all bits, but if
+//               bits_to_change is not all bits on, then only the bits
+//               that are set in bits_to_change are modified, allowing
+//               this call to change only a subset of the bits in the
+//               subgraph.
+////////////////////////////////////////////////////////////////////
+void NodePathCollection::
+set_collide_mask(CollideMask new_mask, CollideMask bits_to_change,
+                 TypeHandle node_type) {
+  for (int i = 0; i < get_num_paths(); i++) {
+    get_path(i).set_collide_mask(new_mask, bits_to_change, node_type);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::set_color
 //       Access: Published
 //  Description: Colors all NodePaths in the collection

@@ -1475,7 +1475,7 @@ get_collide_mask() const {
 //       Access: Published
 //  Description: Recursively applies the indicated CollideMask to the
 //               into_collide_masks for all nodes at this level and
-//               below.
+//               below.  Only nodes 
 //
 //               The default is to change all bits, but if
 //               bits_to_change is not all bits on, then only the bits
@@ -1484,9 +1484,15 @@ get_collide_mask() const {
 //               subgraph.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_collide_mask(CollideMask new_mask, CollideMask bits_to_change) {
+set_collide_mask(CollideMask new_mask, CollideMask bits_to_change,
+                 TypeHandle node_type) {
   nassertv_always(!is_empty());
-  r_set_collide_mask(node(), ~bits_to_change, new_mask & bits_to_change);
+  if (node_type == TypeHandle::none()) {
+    node_type = PandaNode::get_class_type();
+  }
+
+  r_set_collide_mask(node(), ~bits_to_change, new_mask & bits_to_change,
+                     node_type);
 }
 
 ////////////////////////////////////////////////////////////////////

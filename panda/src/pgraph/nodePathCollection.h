@@ -64,6 +64,10 @@ PUBLISHED:
   void unstash();
   void detach();
 
+  CollideMask get_collide_mask() const;
+  void set_collide_mask(CollideMask new_mask, CollideMask bits_to_change = CollideMask::all_on(),
+                        TypeHandle node_type = TypeHandle::none());
+
   void set_color(float r, float g, float b, float a = 1.0,
                  int priority = 0);
   void set_color(const Colorf &color, int priority = 0);
