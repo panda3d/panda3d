@@ -24,6 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE EggData::
 EggData() {
+  _auto_resolve_externals = false;
   _coordsys = CS_default;
 }
 
@@ -36,6 +37,7 @@ EggData() {
 INLINE EggData::
 EggData(const EggData &copy) :
   EggGroupNode(copy),
+  _auto_resolve_externals(copy._auto_resolve_externals),
   _coordsys(copy._coordsys),
   _egg_filename(copy._egg_filename) {
 }
@@ -48,11 +50,35 @@ EggData(const EggData &copy) :
 INLINE EggData &EggData::
 operator = (const EggData &copy) {
   EggGroupNode::operator = (copy);
+  _auto_resolve_externals = copy._auto_resolve_externals;
   _coordsys = copy._coordsys;
   _egg_filename = copy._egg_filename;
   return *this;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggData::set_auto_resolve_externals
+//       Access: Public
+//  Description: Indicates whether the EggData object will
+//               automatically resolve any external references when
+//               read() is called.  The default is false.
+////////////////////////////////////////////////////////////////////
+INLINE void EggData::
+set_auto_resolve_externals(bool resolve) {
+  _auto_resolve_externals = resolve;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggData::get_auto_resolve_externals
+//       Access: Public
+//  Description: Indicates whether the EggData object will
+//               automatically resolve any external references when
+//               read() is called.  The default is false.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggData::
+get_auto_resolve_externals() const {
+  return _auto_resolve_externals;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggData::get_coordinate_system

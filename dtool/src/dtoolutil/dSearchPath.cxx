@@ -277,7 +277,16 @@ find_file(const Filename &filename) const {
     for (di = _directories.begin(); di != _directories.end(); ++di) {
       Filename match((*di), filename);
       if (match.exists()) {
-        return match;
+        if ((*di) == "." && filename.is_fully_qualified()) {
+          // A special case for the "." directory: to avoid prefixing
+          // an endless stream of ./ in front of files, if the
+          // filename already has a ./ prefixed
+          // (i.e. is_fully_fully_qualified() is true), we don't
+          // prefix another one.
+          return filename;
+        } else {
+          return match;
+        }
       }
     }
   }
@@ -307,7 +316,16 @@ find_all_files(const Filename &filename,
     for (di = _directories.begin(); di != _directories.end(); ++di) {
       Filename match((*di), filename);
       if (match.exists()) {
-        results.add_file(match);
+        if ((*di) == "." && filename.is_fully_qualified()) {
+          // A special case for the "." directory: to avoid prefixing
+          // an endless stream of ./ in front of files, if the
+          // filename already has a ./ prefixed
+          // (i.e. is_fully_fully_qualified() is true), we don't
+          // prefix another one.
+          results.add_file(filename);
+        } else {
+          results.add_file(match);
+        }
         num_added++;
       }
     }

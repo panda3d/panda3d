@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "eggData.h"
-#include <notify.h>
+#include "notify.h"
 
 
 int
@@ -32,7 +32,7 @@ main(int argc, char *argv[]) {
   data.set_coordinate_system(CS_default);
 
   if (data.read(egg_filename)) {
-    data.resolve_externals("");
+    data.load_externals("");
     data.write_egg(cout);
   } else {
     nout << "Errors.\n";

@@ -519,6 +519,39 @@ set_extension(const string &s) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::extract_components
+//       Access: Public
+//  Description: Extracts out the individual directory components of
+//               the path into a series of strings.  get_basename()
+//               will be the last component stored in the vector.
+//               Note that no distinction is made by this method
+//               between a leading slash and no leading slash, but you
+//               can call is_local() to differentiate the two cases.
+////////////////////////////////////////////////////////////////////
+void Filename::
+extract_components(vector_string &components) const {
+  components.clear();
+
+  size_t p = 0;
+  if (!_filename.empty() && _filename[0] == '/') {
+    // Skip the leading slash.
+    p = 1;
+  }
+  while (p < _filename.length()) {
+    size_t q = _filename.find('/', p);
+    if (q == string::npos) {
+      components.push_back(_filename.substr(p));
+      return;
+    }
+    components.push_back(_filename.substr(p, q - p));
+    p = q + 1;
+  }
+
+  // A trailing slash means we have an empty get_basename().
+  components.push_back(string());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Filename::standardize
 //       Access: Public
 //  Description: Converts the filename to standard form by replacing

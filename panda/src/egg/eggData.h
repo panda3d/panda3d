@@ -55,12 +55,15 @@ public:
   bool read(Filename filename);
   bool read(istream &in);
 
-  bool resolve_externals(const DSearchPath &searchpath = DSearchPath());
+  bool load_externals(const DSearchPath &searchpath = DSearchPath());
   int collapse_equivalent_textures();
   int collapse_equivalent_materials();
 
   bool write_egg(Filename filename);
   bool write_egg(ostream &out);
+
+  INLINE void set_auto_resolve_externals(bool resolve);
+  INLINE bool get_auto_resolve_externals() const;
 
   void set_coordinate_system(CoordinateSystem coordsys);
   INLINE CoordinateSystem get_coordinate_system() const;
@@ -79,6 +82,7 @@ private:
   void post_read();
   void pre_write();
 
+  bool _auto_resolve_externals;
   CoordinateSystem _coordsys;
   Filename _egg_filename;
 

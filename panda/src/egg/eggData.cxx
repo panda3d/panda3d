@@ -87,17 +87,11 @@ resolve_egg_filename(Filename &egg_filename, const DSearchPath &searchpath) {
 ////////////////////////////////////////////////////////////////////
 bool EggData::
 read(Filename filename) {
-  if (!resolve_egg_filename(filename)) {
-    egg_cat.error()
-      << "Could not find " << filename << "\n";
-    return false;
-  }
+  filename.set_text();
+  set_egg_filename(filename);
 
   if (use_vfs) {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    
-    filename.set_text();
-    set_egg_filename(filename);
     
     istream *file = vfs->open_read_file(filename);
     if (file == (istream *)NULL) {
@@ -113,15 +107,6 @@ read(Filename filename) {
     return read_ok;
 
   } else {
-    if (!resolve_egg_filename(filename)) {
-      egg_cat.error()
-        << "Could not find " << filename << "\n";
-      return false;
-    }
-    
-    filename.set_text();
-    set_egg_filename(filename);
-    
     ifstream file;
     if (!filename.open_read(file)) {
       egg_cat.error() << "Unable to open " << filename << "\n";
@@ -174,7 +159,7 @@ read(istream &in) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggData::resolve_externals
+//     Function: EggData::load_externals
 //       Access: Public
 //  Description: Loads up all the egg files referenced by <File>
 //               entries within the egg structure, and inserts their
@@ -185,9 +170,9 @@ read(istream &in) {
 //               successfully, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool EggData::
-resolve_externals(const DSearchPath &searchpath) {
+load_externals(const DSearchPath &searchpath) {
   return
-    r_resolve_externals(searchpath, get_coordinate_system());
+    r_load_externals(searchpath, get_coordinate_system());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -330,10 +315,12 @@ post_read() {
     set_coordinate_system(old_coordsys);
   }
 
-  // Resolve filenames that are relative to the egg file.
-  DSearchPath dir;
-  dir.append_directory(get_egg_filename().get_dirname());
-  resolve_filenames(dir);
+  if (get_auto_resolve_externals()) {
+    // Resolve filenames that are relative to the egg file.
+    DSearchPath dir;
+    dir.append_directory(get_egg_filename().get_dirname());
+    resolve_filenames(dir);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

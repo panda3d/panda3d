@@ -31,8 +31,8 @@
 #include "pt_EggMaterial.h"
 #include "config_egg.h"
 
-#include <dSearchPath.h>
-#include <deg_2_rad.h>
+#include "dSearchPath.h"
+#include "deg_2_rad.h"
 
 #include <algorithm>
 
@@ -903,17 +903,16 @@ find_materials(EggMaterialCollection *collection) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::r_resolve_externals
+//     Function: EggGroupNode::r_load_externals
 //       Access: Protected
 //  Description: Walks the tree and locates unloaded external
 //               reference nodes, which it attempts to locate and load
 //               in.  The reference node is replaced with the entire
 //               subtree loaded.  This is intended to be called from
-//               EggData::resolve_externals().
+//               EggData::load_externals().
 ////////////////////////////////////////////////////////////////////
 bool EggGroupNode::
-r_resolve_externals(const DSearchPath &searchpath,
-                    CoordinateSystem coordsys) {
+r_load_externals(const DSearchPath &searchpath, CoordinateSystem coordsys) {
   bool success = true;
 
   Children::iterator ci;
@@ -944,7 +943,7 @@ r_resolve_externals(const DSearchPath &searchpath,
           // The external file was read correctly.  Add its contents
           // into the tree at this point.
           success =
-            ext_data.resolve_externals(searchpath)
+            ext_data.load_externals(searchpath)
             && success;
           new_node->steal_children(ext_data);
         }
@@ -953,7 +952,7 @@ r_resolve_externals(const DSearchPath &searchpath,
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       EggGroupNode *group_child = DCAST(EggGroupNode, child);
       success =
-        group_child->r_resolve_externals(searchpath, coordsys)
+        group_child->r_load_externals(searchpath, coordsys)
         && success;
     }
   }

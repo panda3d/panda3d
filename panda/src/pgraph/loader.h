@@ -15,6 +15,7 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
 #ifndef LOADER_H
 #define LOADER_H
 
@@ -67,11 +68,12 @@ PUBLISHED:
   Loader();
   ~Loader();
 
-  int find_all_files(const Filename &filename, Results &results) const;
+  int find_all_files(const Filename &filename, const DSearchPath &search_path,
+                     Results &results) const;
 
-  INLINE PT(PandaNode) load_sync(const Filename &filename) const;
+  INLINE PT(PandaNode) load_sync(const Filename &filename, bool search = true) const;
 
-  uint request_load(const Filename &filename, const string &event_name);
+  uint request_load(const string &event_name, const Filename &filename, bool search = true);
   bool check_load(uint id);
   PT(PandaNode) fetch_load(uint id);
 
@@ -80,7 +82,7 @@ private:
   static bool _file_types_loaded;
 
   virtual bool process_request(void);
-  PT(PandaNode) load_file(const Filename &filename) const;
+  PT(PandaNode) load_file(const Filename &filename, bool search) const;
 
   typedef TokenBoard<LoaderToken> LoaderTokenBoard;
   LoaderTokenBoard *_token_board;

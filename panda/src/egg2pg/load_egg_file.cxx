@@ -26,7 +26,7 @@
 
 static PT(PandaNode)
 load_from_loader(EggLoader &loader) {
-  loader._data.resolve_externals();
+  loader._data.load_externals();
 
   loader.build_graph();
 
@@ -79,6 +79,7 @@ load_egg_file(const string &filename, CoordinateSystem cs) {
 
   EggLoader loader;
   loader._data.set_egg_filename(egg_filename);
+  loader._data.set_auto_resolve_externals(true);
   if (cs != CS_default) {
     loader._data.set_coordinate_system(cs);
   }

@@ -19,14 +19,14 @@
 #ifndef EGGGROUPNODE_H
 #define EGGGROUPNODE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggNode.h"
 
-#include <coordinateSystem.h>
-#include <typedObject.h>
-#include <pointerTo.h>
-#include <luse.h>
+#include "coordinateSystem.h"
+#include "typedObject.h"
+#include "pointerTo.h"
+#include "luse.h"
 
 #include "plist.h"
 
@@ -135,8 +135,8 @@ protected:
   CoordinateSystem find_coordsys_entry();
   int find_textures(EggTextureCollection *collection);
   int find_materials(EggMaterialCollection *collection);
-  bool r_resolve_externals(const DSearchPath &searchpath,
-                           CoordinateSystem coordsys);
+  bool r_load_externals(const DSearchPath &searchpath, 
+                        CoordinateSystem coordsys);
 
 private:
   Children _children;

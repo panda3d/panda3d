@@ -347,6 +347,15 @@ find_file(const Filename &filename, const DSearchPath &searchpath) const {
   int num_directories = searchpath.get_num_directories();
   for (int i = 0; i < num_directories; i++) {
     Filename match(searchpath.get_directory(i), filename);
+    if (searchpath.get_directory(i) == "." && 
+        filename.is_fully_qualified()) {
+      // A special case for the "." directory: to avoid prefixing
+      // an endless stream of ./ in front of files, if the
+      // filename already has a ./ prefixed
+      // (i.e. is_fully_fully_qualified() is true), we don't
+      // prefix another one.
+      match = filename;
+    }
     PT(VirtualFile) found_file = get_file(match);
     if (found_file != (VirtualFile *)NULL) {
       return found_file;
@@ -430,7 +439,17 @@ find_all_files(const Filename &filename, const DSearchPath &searchpath,
     for (int i = 0; i < num_directories; i++) {
       Filename match(searchpath.get_directory(i), filename);
       if (exists(match)) {
-        results.add_file(match);
+        if (searchpath.get_directory(i) == "." && 
+            filename.is_fully_qualified()) {
+          // A special case for the "." directory: to avoid prefixing
+          // an endless stream of ./ in front of files, if the
+          // filename already has a ./ prefixed
+          // (i.e. is_fully_fully_qualified() is true), we don't
+          // prefix another one.
+          results.add_file(filename);
+        } else {
+          results.add_file(match);
+        }
         num_added++;
       }
     }

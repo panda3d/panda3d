@@ -122,6 +122,7 @@ PUBLISHED:
   INLINE void set_type(Type type);
   INLINE Type get_type() const;
 
+  void extract_components(vector_string &components) const;
   void standardize();
 
   // The following functions deal with the outside world.

@@ -47,14 +47,18 @@ bool Loader::_file_types_loaded = false;
 ////////////////////////////////////////////////////////////////////
 class LoaderToken : public ReferenceCount {
 public:
-  INLINE LoaderToken(uint id, Filename path, const string &event_name,
-        PandaNode *node=NULL) : _id(id), _node(node) {
-    _path = path;
-    _event_name = event_name;
-  }
+  INLINE LoaderToken(uint id, const string &event_name, const Filename &path, 
+                     bool search, PandaNode *node=NULL) : 
+    _id(id), 
+    _event_name(event_name), 
+    _path(path),
+    _search(search),
+    _node(node) 
+  { }
   uint _id;
-  Filename _path;
   string _event_name;
+  Filename _path;
+  bool _search;
   PT(PandaNode) _node;
 };
 
@@ -82,12 +86,14 @@ Loader::
 ////////////////////////////////////////////////////////////////////
 //     Function: Loader::find_all_files
 //       Access: Published
-//  Description: Searches along the model path for the given file
-//               name, and fills up the results list with all possible
-//               matches and their associated types, in order.
+//  Description: Searches along the given search path for the given
+//               file name, and fills up the results list with all
+//               possible matches and their associated types, in
+//               order.
 ////////////////////////////////////////////////////////////////////
 int Loader::
-find_all_files(const Filename &filename, Loader::Results &results) const {
+find_all_files(const Filename &filename, const DSearchPath &search_path,
+               Loader::Results &results) const {
   if (!_file_types_loaded) {
     load_file_types();
   }
@@ -109,13 +115,12 @@ find_all_files(const Filename &filename, Loader::Results &results) const {
 
       } else {
         // Local filename, search along the path.
-        const DSearchPath &model_path = get_model_path();
         DSearchPath::Results files;
         if (use_vfs) {
           VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-          num_added = vfs->find_all_files(filename, model_path, files);
+          num_added = vfs->find_all_files(filename, search_path, files);
         } else {
-          num_added = model_path.find_all_files(filename, files);
+          num_added = search_path.find_all_files(filename, files);
         }
         
         for (int i = 0; i < num_added; i++) {
@@ -153,10 +158,9 @@ find_all_files(const Filename &filename, Loader::Results &results) const {
 
     } else {
       // Local filename, look it up on the model path.
-      const DSearchPath &model_path = get_model_path();
-      int num_dirs = model_path.get_num_directories();
+      int num_dirs = search_path.get_num_directories();
       for (int i = 0; i < num_dirs; i++) {
-        const Filename &directory = model_path.get_directory(i);
+        const Filename &directory = search_path.get_directory(i);
         
         for (int t = 0; t < num_types; t++) {
           LoaderFileType *type = reg->get_type(t);
@@ -195,9 +199,13 @@ find_all_files(const Filename &filename, Loader::Results &results) const {
 //               The return value is an integer which can be used to
 //               identify this particular request later to
 //               fetch_load(), or 0 if there has been an error.
+//
+//               If search is true, the file is searched for along the
+//               model path; otherwise, only the exact filename is
+//               loaded.
 ////////////////////////////////////////////////////////////////////
 uint Loader::
-request_load(const Filename &filename, const string &event_name) {
+request_load(const string &event_name, const Filename &filename, bool search) {
   if (!_file_types_loaded) {
     load_file_types();
   }
@@ -229,7 +237,7 @@ request_load(const Filename &filename, const string &event_name) {
           << "Load requested for file: " << filename << "\n";
       }
 
-      tok = new LoaderToken(_next_token++, filename, event_name);
+      tok = new LoaderToken(_next_token++, event_name, filename, search);
       _token_board->_waiting.push_back(tok);
 
 #ifdef OLD_HAVE_IPC
@@ -251,7 +259,7 @@ request_load(const Filename &filename, const string &event_name) {
         << "Load requested for file: " << filename << "\n";
     }
 
-    tok = new LoaderToken(_next_token++, filename, event_name);
+    tok = new LoaderToken(_next_token++, event_name, filename, search);
     _token_board->_waiting.push_back(tok);
     process_request();
   }
@@ -336,7 +344,7 @@ process_request() {
   while (!_token_board->_waiting.empty()) {
     PT(LoaderToken) tok = _token_board->_waiting.front();
     _token_board->_waiting.pop_front();
-    tok->_node = load_file(tok->_path);
+    tok->_node = load_file(tok->_path, tok->_search);
     if (tok->_node == (PandaNode *)NULL) {
       loader_cat.error()
         << "Loader::callback() - couldn't find file: "
@@ -367,12 +375,24 @@ process_request() {
 //  Description: Loads a single scene graph file, if possible.
 //               Returns the Node that is the root of the file, or
 //               NULL if the file cannot be loaded.
+//
+//               If search is true, the file is searched for along the
+//               model path; otherwise, only the exact filename is
+//               loaded.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) Loader::
-load_file(const Filename &filename) const {
-  // First, look for the file along the search path.
+load_file(const Filename &filename, bool search) const {
   Results results;
-  int num_files = find_all_files(filename, results);
+  int num_files;
+
+  if (search) {
+    // Look for the file along the model path.
+    num_files = find_all_files(filename, get_model_path(), results);
+  } else {
+    // Look for the file only where it is.
+    num_files = find_all_files(filename, DSearchPath("."), results);
+  }
+
   if (num_files == 0) {
     // Couldn't find the file.  Either it doesn't exist, or it's an
     // unknown file type.  Report a useful message either way.
@@ -391,8 +411,15 @@ load_file(const Filename &filename) const {
         return NULL;
       }
     }
-    loader_cat.error()
-      << "Couldn't load file " << filename << ": not found on model path.\n";
+
+    if (search) {
+      loader_cat.error()
+        << "Couldn't load file " << filename << ": not found on model path.\n";
+
+    } else {
+      loader_cat.error()
+        << "Couldn't load file " << filename << ": does not exist.\n";
+    }
     return NULL;
   }
 
@@ -406,8 +433,16 @@ load_file(const Filename &filename) const {
   }
 
   // None of the matching files could be loaded.  Oh well.
-  loader_cat.error()
-    << "Couldn't load file " << filename << ": all matching files on model path invalid.\n";
+  if (search) {
+    loader_cat.error()
+      << "Couldn't load file " << filename
+      << ": all matching files on model path invalid.\n";
+
+  } else {
+    loader_cat.error()
+      << "Couldn't load file " << filename
+      << ": invalid.\n";
+  }
   return NULL;
 }
 

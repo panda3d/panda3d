@@ -373,15 +373,13 @@ load_models(const NodePath &parent, const pvector<Filename> &files) {
 NodePath WindowFramework::
 load_model(const NodePath &parent, Filename filename) {
   nout << "Loading " << filename << "\n";
-  
-  // First, we always try to resolve a filename from the current
-  // directory.  This means a local filename will always be found
-  // before the model path is searched.
-  DSearchPath local_path(".");
-  filename.resolve_filename(local_path);
+
+  // If the filename already exists where it is, or if it is fully
+  // qualified, don't search along the model path for it.
+  bool search = !(filename.is_fully_qualified() || filename.exists());
   
   Loader loader;
-  PT(PandaNode) node = loader.load_sync(filename);
+  PT(PandaNode) node = loader.load_sync(filename, search);
   if (node == (PandaNode *)NULL) {
     nout << "Unable to load " << filename << "\n";
     return NodePath::not_found();

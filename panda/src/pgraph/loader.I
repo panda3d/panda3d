@@ -115,12 +115,17 @@ add_file(const Filename &file, LoaderFileType *type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Loader::load_sync
 //       Access: Published
-//  Description: Loads the file immediately, waiting for it to complete.
+//  Description: Loads the file immediately, waiting for it to
+//               complete.
+//
+//               If search is true, the file is searched for along the
+//               model path; otherwise, only the exact filename is
+//               loaded.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(PandaNode) Loader::
-load_sync(const Filename &filename) const {
+load_sync(const Filename &filename, bool search) const {
   if (!_file_types_loaded) {
     load_file_types();
   }
-  return load_file(filename);
+  return load_file(filename, search);
 }
