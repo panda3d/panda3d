@@ -1,7 +1,7 @@
 """DistributedObject module: contains the DistributedObject class"""
 
 from direct.showbase.PandaObject import *
-from direct.directnotify.DirectNotifyGlobal import *
+from direct.directnotify import DirectNotifyGlobal
 from PyDatagram import PyDatagram
 from PyDatagramIterator import PyDatagramIterator
 
@@ -20,7 +20,7 @@ class DistributedObject(PandaObject):
     (i.e. distributed) objects.  These will usually (always?) have a
     dclass entry in a *.dc file.
     """
-    notify = directNotify.newCategory("DistributedObject")
+    notify = DirectNotifyGlobal.directNotify.newCategory("DistributedObject")
 
     # A few objects will set neverDisable to 1... Examples are
     # localToon, and anything that lives in the UberZone. This
