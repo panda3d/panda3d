@@ -1077,6 +1077,8 @@ void wglGraphicsWindow::end_frame() {
     // double-buffered mode.  Instead we have to use glBitMap display
     // lists created by wglUseFontBitmaps
 
+    GLfloat saved_color[4];
+    glGetFloatv(GL_CURRENT_COLOR,saved_color);
     glColor3f(0.0f,1.0f,1.0f);
 
     GLboolean tex_was_on = glIsEnabled(GL_TEXTURE_2D);
@@ -1095,6 +1097,7 @@ void wglGraphicsWindow::end_frame() {
             0.0f,_props._ysize,
             -1.0f,1.0f);
 
+    // problem to not restore the rasterPos state?
     glRasterPos2f(_props._xsize-70,_props._ysize-20);  // these seem to be good for default font
 
     // set up for a string-drawing display list call
@@ -1104,10 +1107,11 @@ void wglGraphicsWindow::end_frame() {
     // corresponding displist name
     glCallLists(strlen(fps_msg), GL_UNSIGNED_BYTE, fps_msg);
 
+    // restore original gl state
     glPopMatrix();
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
-
+    glColor4fv(saved_color);
     if (tex_was_on)
       glEnable(GL_TEXTURE_2D);
 
