@@ -9,7 +9,7 @@
 
 #define COMPONENT_LIBS \
     physics particlesystem
-#define LOCAL_LIBS linmath putil
+#define LOCAL_LIBS linmath putil express
 #define OTHER_LIBS dtool
 
 #begin metalib_target

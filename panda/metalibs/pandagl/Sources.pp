@@ -11,7 +11,7 @@
 
 #define COMPONENT_LIBS \
     glgsg glxdisplay // sgiglxdisplay
-#define LOCAL_LIBS gsgbase display
+#define LOCAL_LIBS gsgbase display express
 #define OTHER_LIBS dtool
 
 #begin metalib_target

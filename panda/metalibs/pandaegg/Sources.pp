@@ -10,7 +10,7 @@
 #define COMPONENT_LIBS \
     egg2sg egg builder
 
-#define LOCAL_LIBS putil
+#define LOCAL_LIBS putil express
 #define OTHER_LIBS dtool
 
 #begin metalib_target
