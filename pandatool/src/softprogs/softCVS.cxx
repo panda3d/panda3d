@@ -456,10 +456,10 @@ scan_scene_file(istream &in) {
       SoftFilename v("", word);
 
       // Increment the use count on all matching elements of the multiset.
-      pair<set<SoftFilename>::iterator, set<SoftFilename>::iterator> range;
+      pair<ElementFiles::iterator, ElementFiles::iterator> range;
       range = _element_files.equal_range(v);
 
-      set<SoftFilename>::iterator ei;
+      ElementFiles::iterator ei;
       for (ei = range.first; ei != range.second; ++ei) {
 	// We cheat and get a non-const reference to the filename out
 	// of the set.  We can safely do this because incrementing the

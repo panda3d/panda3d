@@ -7,6 +7,7 @@
 #include "cvsSourceDirectory.h"
 
 #include <notify.h>
+#include <algorithm>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CVSCopy::Constructor
@@ -158,7 +159,7 @@ handle_args(Args &args) {
     return false;
   }
 
-  _source_files.insert(_source_files.end(), args.begin(), args.end());
+  copy(args.begin(), args.end(), back_inserter<vector_string>(_source_files));
   return true;
 }
 

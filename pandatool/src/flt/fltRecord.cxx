@@ -298,13 +298,13 @@ set_comment(const string &comment) {
 //               exactly the sort of thing we expect.
 ////////////////////////////////////////////////////////////////////
 void FltRecord::
-check_remaining_size(const DatagramIterator &iterator) const {
-  if (iterator.get_remaining_size() == 0) {
+check_remaining_size(const DatagramIterator &di) const {
+  if (di.get_remaining_size() == 0) {
     return;
   }
 
   if (_header->get_flt_version() <= _header->max_flt_version()) {
-    nout << "Warning!  Ignoring extra " << iterator.get_remaining_size()
+    nout << "Warning!  Ignoring extra " << di.get_remaining_size()
 	 << " bytes at the end of a " << get_type() << " record.\n";
   }
 }

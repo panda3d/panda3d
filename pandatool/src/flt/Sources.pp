@@ -2,7 +2,7 @@
   #define TARGET flt
   #define LOCAL_LIBS pandatoolbase
   #define OTHER_LIBS \
-    mathutil:c linmath:c putil:c express:c panda:m dtool
+    mathutil:c linmath:c putil:c express:c panda:m dtoolconfig dtool
   #define UNIX_SYS_LIBS \
     m
 
@@ -61,7 +61,7 @@
     flt
   #define OTHER_LIBS \
     express:c pandaexpress:m \
-    dtoolutil:c dconfig:c dtool:m pystub
+    dtoolutil:c dconfig:c dtoolconfig:m dtool:m pystub
 
   #define SOURCES \
     test_flt.cxx

@@ -11,6 +11,8 @@
 #include <eggTexture.h>
 #include <eggPolygon.h>
 
+#include <algorithm>
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTextureCards::Constructor
 //       Access: Public
@@ -68,7 +70,8 @@ handle_args(ProgramBase::Args &args) {
     return false;
   }
 
-  _texture_names.insert(_texture_names.end(), args.begin(), args.end());
+  copy(args.begin(), args.end(),
+       back_inserter<vector_string>(_texture_names));
 
   return true;
 }

@@ -5,7 +5,7 @@
   #define OTHER_LIBS \
     linmath:c panda:m \
     express:c pandaexpress:m \
-    dtoolutil:c dconfig:c dtool:m pystub
+    dtoolutil:c dconfig:c dtoolconfig:m dtool:m pystub
 
   #define SOURCES \
     softCVS.cxx softCVS.h softFilename.cxx softFilename.h

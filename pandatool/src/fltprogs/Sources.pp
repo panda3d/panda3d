@@ -5,7 +5,7 @@
   #define OTHER_LIBS \
     linmath:c panda:m \
     express:c pandaexpress:m \
-    dtoolutil:c dconfig:c dtool:m pystub
+    dtoolutil:c dconfig:c dtoolconfig:m dtool:m pystub
 
   #define SOURCES \
     fltCopy.cxx fltCopy.h

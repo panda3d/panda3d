@@ -816,7 +816,7 @@ do_pre() {
   int comment_len = fetch_byte();
 
   assert(_p + comment_len <= (int)_pk.size());
-  nout.write(&_pk[_p], comment_len);
+  nout.write((const char *)&_pk[_p], comment_len);
   nout << "\n";
   _p += comment_len;
 

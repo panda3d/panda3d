@@ -117,7 +117,7 @@ get_groups() const {
 ////////////////////////////////////////////////////////////////////
 void PaletteGroup::
 get_placements(vector<TexturePlacement *> &placements) const {
-  Placements::iterator pi;
+  Placements::const_iterator pi;
   for (pi = _placements.begin(); pi != _placements.end(); ++pi) {
     placements.push_back(*pi);
   }
@@ -388,7 +388,7 @@ write_image_info(ostream &out, int indent_level) const {
     page->write_image_info(out, indent_level);
   }
 
-  Placements::iterator pli;
+  Placements::const_iterator pli;
   for (pli = _placements.begin(); pli != _placements.end(); ++pli) {
     TexturePlacement *placement = (*pli);
     if (placement->get_omit_reason() != OR_none) {

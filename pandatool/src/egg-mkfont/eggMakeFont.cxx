@@ -748,21 +748,21 @@ run() {
 
   // All done!  Write everything out.
   nout << "Scale factor is " << _scale_factor << "\n";
-  PNMImage small(_output_xsize, _output_ysize, _output_zsize);
-  small.gaussian_filter_from(_gaussian_radius, _output_image);
+  PNMImage small_image(_output_xsize, _output_ysize, _output_zsize);
+  small_image.gaussian_filter_from(_gaussian_radius, _output_image);
   
   // Fix antialiasing, if required.
   if (_use_alpha && _bg[3] != 0.0 && _bg[3] != 1.0) {
     // If we have some non-transparent background, we need to
     // compensate for the antialiasing.
-    unsmooth_rgb(small);
+    unsmooth_rgb(small_image);
   }
 
 
   nout << "Generating " << _output_xsize << " by " << _output_ysize
        << " by " << _output_zsize << " image: "
        << _output_image_filename << "\n";  
-  small.write(_output_image_filename);
+  small_image.write(_output_image_filename);
 
   write_egg_file();
 }

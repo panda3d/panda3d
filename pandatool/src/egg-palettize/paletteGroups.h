@@ -25,8 +25,10 @@ private:
   typedef set<PaletteGroup *> Groups;
 
 public:
+#ifndef WIN32_VC
   typedef Groups::const_pointer pointer;
   typedef Groups::const_pointer const_pointer;
+#endif
   typedef Groups::const_reference reference;
   typedef Groups::const_reference const_reference;
   typedef Groups::const_iterator iterator;

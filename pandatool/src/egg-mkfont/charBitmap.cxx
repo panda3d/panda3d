@@ -5,6 +5,8 @@
 
 #include "charBitmap.h"
 
+#include <notify.h>
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CharBitmap::Constructor
@@ -40,7 +42,7 @@ bool CharBitmap::
 paint(bool black, int num_pixels, int &repeat) {
   if (_y < _block.size()) {
     while (num_pixels > 0 && _y < _block.size()) {
-      assert(_x < _block[_y].size());
+      nassertr(_x < _block[_y].size(), true);
       _block[_y][_x] = black;
       _x++;
       if (_x >= _block[_y].size()) {
