@@ -115,6 +115,11 @@ PUBLISHED:
     rotate_mat_normaxis(FLOATTYPE angle,
 			const FLOATNAME(LVecBase3) &axis,
 			CoordinateSystem cs = CS_default);
+  INLINE_LINMATH static void
+    rotate_mat_normaxis(FLOATTYPE angle,
+			const FLOATNAME(LVecBase3) &axis,
+			FLOATNAME(LMatrix4) &result_mat,
+			CoordinateSystem cs = CS_default);
   INLINE_LINMATH static FLOATNAME(LMatrix4)
     scale_mat(const FLOATNAME(LVecBase3) &scale);
   INLINE_LINMATH static FLOATNAME(LMatrix4)

@@ -1173,7 +1173,7 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
   return mat;
 }
 
-
+  
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix::rotate_mat_normaxis
 //       Access: Public, Static
@@ -1185,10 +1185,18 @@ INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
 	   CoordinateSystem cs) {
 
+  FLOATNAME(LMatrix4) mat;
+  rotate_mat_normaxis(angle,axis,mat,cs);
+  return mat;
+}
+
+INLINE_LINMATH void FLOATNAME(LMatrix4)::
+rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
+					FLOATNAME(LMatrix4) &result_mat, CoordinateSystem cs) {
+
   if (cs == CS_default) {
     cs = default_coordinate_system;
   }
-  FLOATNAME(LMatrix4) mat;
 
   if(IS_LEFT_HANDED_COORDSYSTEM(cs)) {
     // In a left-handed coordinate system, counterclockwise is the
@@ -1214,28 +1222,26 @@ rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
   s1 = s * axis_1;
   s2 = s * axis_2;
 
-  mat._m.m._00 = t0 * axis_0 + c;
-  mat._m.m._01 = t0 * axis_1 + s2;
-  mat._m.m._02 = t0 * axis_2 - s1;
+  result_mat._m.m._00 = t0 * axis_0 + c;
+  result_mat._m.m._01 = t0 * axis_1 + s2;
+  result_mat._m.m._02 = t0 * axis_2 - s1;
 
-  mat._m.m._10 = t1 * axis_0 - s2;
-  mat._m.m._11 = t1 * axis_1 + c;
-  mat._m.m._12 = t1 * axis_2 + s0;
+  result_mat._m.m._10 = t1 * axis_0 - s2;
+  result_mat._m.m._11 = t1 * axis_1 + c;
+  result_mat._m.m._12 = t1 * axis_2 + s0;
 
-  mat._m.m._20 = t2 * axis_0 + s1;
-  mat._m.m._21 = t2 * axis_1 - s0;
-  mat._m.m._22 = t2 * axis_2 + c;
+  result_mat._m.m._20 = t2 * axis_0 + s1;
+  result_mat._m.m._21 = t2 * axis_1 - s0;
+  result_mat._m.m._22 = t2 * axis_2 + c;
 
-  mat._m.m._03 = 0.0;
-  mat._m.m._13 = 0.0;
-  mat._m.m._23 = 0.0;
+  result_mat._m.m._03 = 0.0;
+  result_mat._m.m._13 = 0.0;
+  result_mat._m.m._23 = 0.0;
 
-  mat._m.m._30 = 0.0;
-  mat._m.m._31 = 0.0;
-  mat._m.m._32 = 0.0;
-  mat._m.m._33 = 1.0;
-
-  return mat;
+  result_mat._m.m._30 = 0.0;
+  result_mat._m.m._31 = 0.0;
+  result_mat._m.m._32 = 0.0;
+  result_mat._m.m._33 = 1.0;
 }
 
 ////////////////////////////////////////////////////////////////////
