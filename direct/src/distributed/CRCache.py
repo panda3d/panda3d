@@ -12,6 +12,17 @@ class CRCache:
         self.fifo = []
         return None
 
+    def flush(self):
+        """
+        Delete each item in the cache then clear all references to them
+        """
+        CRCache.notify.debug("Flushing the cache")
+        for distObj in self.dict.values():
+            distObj.delete()
+        # Null out all references to the objects so they will get gc'd
+        self.dict = {}
+        self.fifo = []
+
     def cache(self, distObj):
         # Only distributed objects are allowed in the cache
         assert(isinstance(distObj, DistributedObject.DistributedObject))

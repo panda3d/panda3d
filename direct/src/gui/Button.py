@@ -126,11 +126,11 @@ class Button(DirectObject):
     def cleanup(self):
         if (self.managed):
             self.unmanage()
-        self.lUp = None
-        self.lLit = None
-        self.lDown = None
-        self.lInactive = None
-        self.button = None
+        del self.lUp
+        del self.lLit
+        del self.lDown
+        del self.lInactive
+        del self.button
         return None
 
     def __str__(self):

@@ -73,11 +73,10 @@ class Actor(PandaObject, NodePath):
         """
 
         try:
-            self.__initialized
+            self.Actor_initialized
             return
-        
         except:
-            self.__initialized = 1
+            self.Actor_initialized = 1
 
         # initialize our NodePath essence
         NodePath.__init__(self)
@@ -190,6 +189,13 @@ class Actor(PandaObject, NodePath):
             # copy the anim dictionary from other
             self.__copyAnimControls(other)
             
+    def delete(self):
+        try:
+            self.Actor_deleted
+            return
+        except:
+            self.Actor_deleted = 1
+            self.cleanup()
  
     def __str__(self):
         """__str__(self)
@@ -252,7 +258,8 @@ class Actor(PandaObject, NodePath):
         self.__partBundleDict = None
         del(self.__animControlDict)
         self.__animControlDict = None
-        self.removeNode()
+        if not self.isEmpty():
+            self.removeNode()
         
     # accessing
 

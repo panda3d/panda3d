@@ -24,8 +24,13 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath.NodePath):
         DistributedObject.DistributedObject.disable(self)
 
     def delete(self):
-        self.removeNode()
-        DistributedObject.DistributedObject.delete(self)
+        try:
+            self.DistributedNode_deleted
+        except:
+            self.DistributedNode_deleted = 1
+            if not self.isEmpty():
+                self.removeNode()
+            DistributedObject.DistributedObject.delete(self)
 
     def generate(self):
         # Turn on dead reckoning

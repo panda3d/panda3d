@@ -208,15 +208,6 @@ class OnscreenText(PandaObject, NodePath):
 
         # Set ourselves up as the NodePath that points to this node.
         self.assign(parent.attachNewNode(self.textNode))
-
-    def __del__(self):
-        # Make sure the node is removed when we delete the
-        # OnscreenText object.  This means we don't have to explicitly
-        # remove an OnscreenText object; it can do it by itself.
-        # Maybe this will be too confusing because we *do* have to
-        # explicitly remove other kinds of onscreen objects.
-        self.cleanup()
-        NodePath.__del__(self) 
     
     def cleanup(self):
 	"""cleanup(self)

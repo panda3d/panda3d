@@ -21,5 +21,14 @@ class DistributedActor(DistributedNode.DistributedNode, Actor.Actor):
 
     def disable(self):
         # remove all anims, on all parts and all lods
-        Actor.Actor.unloadAnims(None, None, None)
+        Actor.Actor.unloadAnims(self, None, None, None)
         DistributedNode.DistributedNode.disable(self)
+
+    def delete(self):
+        try:
+            self.DistributedActor_deleted
+        except:
+            self.DistributedActor_deleted = 1
+            DistributedNode.DistributedNode.delete(self)
+            Actor.Actor.delete(self)
+
