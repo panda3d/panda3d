@@ -63,6 +63,8 @@
 
 #if $[eq $[NO_PCH],]
 #define DO_PCH 1
+#else
+#define EXTRA_CDEFS NO_PCH
 #endif
 
 #define CFLAGS_SHARED
@@ -99,9 +101,9 @@
 #if $[TEST_INLINING]
 // /W4 will make MSVC spit out if it inlined a fn or not, but also cause a lot of other spam warnings
 #define WARNING_LEVEL_FLAG /W4
-#define EXTRA_CDEFS $[EXTRA_CDEFS] FORCE_INLINING
+#define EXTRA_CDEFS $[EXTRA_CDEFS] FORCE_INLINING $[EXTRA_CDEFS]
 #elif $[or $[ne $[FORCE_INLINING],],$[>= $[OPTIMIZE],2]]
-#define EXTRA_CDEFS $[EXTRA_CDEFS] FORCE_INLINING
+#define EXTRA_CDEFS $[EXTRA_CDEFS] FORCE_INLINING $[EXTRA_CDEFS]
 #endif
 
 #defer CDEFINES_OPT1 _DEBUG $[dlink_all_static] $[EXTRA_CDEFS]
