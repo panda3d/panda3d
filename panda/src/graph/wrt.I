@@ -252,7 +252,7 @@ get_cached_net_transition(const Node *node,
     }
 
     if (parent_arc == (NodeRelation *)NULL) {
-#ifndef NOTIFY_DEBUG
+#ifdef NOTIFY_DEBUG
       // No, it wasn't mentioned.  Issue a warning and use the first
       // one.
       describe_ambiguous_wrt(node, arc_list_begin, arc_list_end, graph_type);
@@ -344,7 +344,7 @@ get_uncached_net_transition(const Node *node,
     }
 
     if (parent_arc == (NodeRelation *)NULL) {
-#ifndef NOTIFY_DEBUG
+#ifdef NOTIFY_DEBUG
       // No, it wasn't mentioned.  Issue a warning and use the first
       // one. 
       describe_ambiguous_wrt(node, arc_list_begin, arc_list_end, graph_type);
