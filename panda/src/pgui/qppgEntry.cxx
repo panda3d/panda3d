@@ -25,9 +25,9 @@
 #include "mouseWatcherParameter.h"
 #include "keyboardButton.h"
 #include "mouseButton.h"
-#include "lineSegs.h"
+#include "qplineSegs.h"
 
-#include "math.h"
+#include <math.h>
 
 TypeHandle qpPGEntry::_type_handle;
 
@@ -592,17 +592,17 @@ setup(float width, int num_lines) {
   // Set up a default cursor: a vertical bar.
   clear_cursor_def();
 
-  /*
-  LineSegs ls;
+  qpLineSegs ls;
   ls.set_color(0.0f, 0.0f, 0.0f, 1.0f);
   ls.move_to(0.0f, 0.0f, -0.15f * line_height);
   ls.draw_to(0.0f, 0.0f, 0.85f * line_height);
-  new RenderRelation(get_cursor_def(), ls.create());
-  */
-
+  get_cursor_def()->add_child(ls.create());
+  
+  /*
   // An underscore cursor would work too.
   text_node->set_text("_");
   get_cursor_def()->add_child(text_node->generate());
+  */
 }
 
 ////////////////////////////////////////////////////////////////////
