@@ -84,6 +84,10 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
         # fix up the floor collisions for walkable zones
         for zoneNum, zoneNode in self.zoneNum2Node.items():
+            # skip the UberZone
+            if zoneNum == 0:
+                continue
+
             # if this is a walkable zone, fix up the model
             floorColl = zoneNode.find('**/*FloorCollision*')
             if not floorColl.isEmpty():
@@ -208,6 +212,17 @@ class DistributedLevel(DistributedObject.DistributedObject,
             node = self.zoneNum2Node[zone]
         node.setAlphaScale(alpha)
 
+    def sendSetZone(self, curZone, vizList):
+        # convert the zone numbers into their actual zoneIds
+        # always include Toontown uberZone
+        visibleZoneIds = [ToontownGlobals.UberZone]
+        for vz in vizList:
+            visibleZoneIds.append(self.getZoneId(vz))
+        assert(uniqueElements(visibleZoneIds))
+        self.notify.debug('new viz list: %s' % visibleZoneIds)
+
+        toonbase.tcr.sendSetZoneMsg(self.getZoneId(curZone), visibleZoneIds)
+
     def initVisibility(self):
         # start out with every zone visible, since none of the zones have
         # been hidden
@@ -216,7 +231,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         self.curZoneNum = None
 
         # TODO: make this data-driven
-        firstZone = 16
+        firstZone = 1
         self.enterZone(firstZone)
 
         # if no viz, listen to all the zones
@@ -235,7 +250,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         print "enterZone %s" % zoneNum
         zoneSpec = self.spec['zones'][zoneNum]
         # use dicts to efficiently ensure that there are no duplicates
-        visibleZoneNums = list2dict([zoneNum])
+        visibleZoneNums = list2dict([0, zoneNum])
         visibleZoneNums.update(list2dict(zoneSpec['visibility']))
         
         if DistributedLevel.HideZones:
@@ -267,14 +282,3 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
         self.curZoneNum = zoneNum
         self.curVisibleZoneNums = visibleZoneNums
-
-    def sendSetZone(self, curZone, vizList):
-        # convert the zone numbers into their actual zoneIds
-        # always include Toontown and factory uberZones
-        visibleZoneIds = [ToontownGlobals.UberZone, self.getZoneId(0)]
-        for vz in vizList:
-            visibleZoneIds.append(self.getZoneId(vz))
-        assert(uniqueElements(visibleZoneIds))
-        self.notify.debug('new viz list: %s' % visibleZoneIds)
-
-        toonbase.tcr.sendSetZoneMsg(self.getZoneId(curZone), visibleZoneIds)
