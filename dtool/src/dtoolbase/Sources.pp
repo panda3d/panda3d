@@ -1,6 +1,3 @@
-#define INSTALL_CONFIG \
-  dtool.pth
-
 #begin lib_target
   #define TARGET dtoolbase
   
