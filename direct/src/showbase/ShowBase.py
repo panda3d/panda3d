@@ -86,6 +86,11 @@ class ShowBase:
                                         self.renderTop.node(),
                                         self.initialState)
         self.win = chanConfig.getWin()
+
+        # Now that we've assigned a window, assign an exitfunc.
+        self.oldexitfunc = getattr(sys, 'exitfunc', None)
+        sys.exitfunc = self.exitfunc
+
         self.cameraList = []
         for i in range(chanConfig.getNumGroups()):
             self.cameraList.append(self.render.attachNewNode(
@@ -226,6 +231,25 @@ class ShowBase:
             __builtin__.direct = self.direct = None
 
         self.restart()
+
+    def exitfunc(self):
+        """exitfunc(self)
+
+        This should be assigned to sys.exitfunc to be called just
+        before Python shutdown.  It guarantees that the Panda window
+        is closed cleanly, so that we free system resources, restore
+        the desktop and keyboard functionality, etc.
+        """
+
+        # temporary try..except for old pandas.
+        try:
+            self.win.closeWindow()
+        except:
+            pass
+
+        if self.oldexitfunc:
+            self.oldexitfunc()
+        
 
     def addAngularIntegrator(self):
         """addAngularIntegrator(self)"""
