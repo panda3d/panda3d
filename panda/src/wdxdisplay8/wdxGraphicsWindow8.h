@@ -90,7 +90,6 @@ public:
   virtual bool resize(unsigned int xsize,unsigned int ysize);
   virtual unsigned int verify_window_sizes(unsigned int numsizes,unsigned int *dimen);
   virtual int get_depth_bitwidth(void);
-  virtual void get_framebuffer_format(PixelBuffer::Type &fb_type, PixelBuffer::Format &fb_format);
 
 protected:
   ButtonHandle lookup_key(WPARAM wparam) const;

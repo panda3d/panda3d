@@ -3238,6 +3238,7 @@ release_texture(TextureContext *tc) {
 }
 
 // copies current display region in framebuffer to the texture
+// usually its more efficient to do SetRenderTgt
 void DXGraphicsStateGuardian::
 copy_texture(TextureContext *tc, const DisplayRegion *dr) {
 
@@ -3289,9 +3290,6 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 copy_texture(TextureContext *tc, const DisplayRegion *dr, const RenderBuffer &rb) {
-    dxgsg_cat.fatal() << "DX copy_texture unimplemented!!!";
-    return;
-
     set_read_buffer(rb);
     copy_texture(tc, dr);
 }

@@ -2960,19 +2960,6 @@ get_depth_bitwidth(void) {
 //  return ddsd.ddpfPixelFormat.dwRGBBitCount;
 }
 
-void wdxGraphicsWindow::
-get_framebuffer_format(PixelBuffer::Type &fb_type, PixelBuffer::Format &fb_format) {
-    assert(_dxgsg!=NULL);
-
-    fb_type = PixelBuffer::T_unsigned_byte; 
-    // this is sortof incorrect, since for F_rgb5 it's really 5 bits per channel
-    //would have to change a lot of texture stuff to make this correct though
-
-    if(IS_16BPP_DISPLAY_FORMAT(_dxgsg->scrn.PresParams.BackBufferFormat)) 
-        fb_format = PixelBuffer::F_rgb5; 
-     else fb_format = PixelBuffer::F_rgb; 
-}
-
 // Global system parameters we want to modify during our run
 static int iMouseTrails;
 static bool bCursorShadowOn,bMouseVanish;
