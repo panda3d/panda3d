@@ -5,6 +5,8 @@
   egg:c linmath:c putil:c express:c pandaegg:m panda:m pandaexpress:m \
   dtoolutil:c dconfig:c dtool:m pystub
 
+#define UNIX_SYS_LIBS m
+
 #begin bin_target
   #define TARGET egg-mkfont
 
