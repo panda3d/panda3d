@@ -106,7 +106,7 @@ class ClientRepository(DirectObject.DirectObject):
             distObj.updateRequiredFields(cdc, di)
         else:
             # Construct a new one
-            distObj = constructor()
+            distObj = constructor(self)
             # Assign it an Id
             distObj.doId = doId
             # Update the required fields
@@ -119,10 +119,10 @@ class ClientRepository(DirectObject.DirectObject):
 
     def handleUpdateField(self, di):
         # Get the DO Id
-        doId = di.getArg(ST_uint32)
+        doId = di.getArg(STUint32)
         # Find the DO
         assert(self.doId2do.has_key(doId))
-        do = self.doId2do(doId)
+        do = self.doId2do[doId]
         # Find the cdc
         assert(self.doId2cdc.has_key(doId))
         cdc = self.doId2cdc[doId]
@@ -136,5 +136,8 @@ class ClientRepository(DirectObject.DirectObject):
         assert(self.doId2cdc.has_key(doId))
         cdc = self.doId2cdc[doId]
         # Let the cdc finish the job
-        cdc.sendUpdate(do, fieldName, args)
-        
+        cdc.sendUpdate(self, do, fieldName, args)
+
+    def send(self, datagram):
+        self.cw.send(datagram, self.tcpConn)
+        return None

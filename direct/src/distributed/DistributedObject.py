@@ -1,14 +1,16 @@
 """DistributedObject module: contains the DistributedObject class"""
 
 from PandaObject import *
+from ToonBaseGlobal import *
 
 class DistributedObject(PandaObject):
     """Distributed Object class:"""
-    def __init__(self):
+    def __init__(self, cr):
         try:
             self.DistributedObject_initialized
         except:
             self.DistributedObject_initialized = 1
+            self.cr = cr
         return None
     
     def getDoId(self):
@@ -22,7 +24,7 @@ class DistributedObject(PandaObject):
             i.updateField(cdc, self, di)
 
     def sendUpdate(self, fieldName, args):
-        cr.sendupdate(self, fieldName, args)
+        self.cr.sendUpdate(self, fieldName, args)
 
     def taskName(self, taskString):
         return (taskString + "-" + str(self.getDoId))

@@ -3,6 +3,8 @@
 import DirectNotifyGlobal
 import Avatar
 import DistributedToon
+import Datagram
+from MsgTypes import *
 
 class ClientDistUpdate:
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientDistUpdate")
@@ -28,7 +30,7 @@ class ClientDistUpdate:
                 componentField = dcFieldMolecular.getAtomic(i)
                 for j in range(0, componentField.getNumElements()):
                     self.types.append(componentField.getElementType(j))
-                    self.types.append(componentField.getElementDivisor(j))
+                    self.divisors.append(componentField.getElementDivisor(j))
         else:
             ClientDistUpdate.notify.error("field is neither atom nor molecule")
         return None
@@ -57,17 +59,17 @@ class ClientDistUpdate:
         numElems = len(args)
         assert (numElems == len(self.types))
         for i in range(0, numElems):
-            datagram.addArg(args[i], self.types[i])
+            datagram.putArg(args[i], self.types[i])
     
-    def sendUpdate(self, do, args):
-        datagram = Datagram()
+    def sendUpdate(self, cr, do, args):
+        datagram = Datagram.Datagram()
         # Add message type
-        datagram.addUint16(ALL_OBJECT_UPDATE_FIELD)
+        datagram.addUint16(CLIENT_OBJECT_UPDATE_FIELD)
         # Add the DO id
         datagram.addUint32(do.doId)
         # Add the field id
-        datagram.addUint8(self.number)
+        datagram.addUint16(self.number)
         # Add the arguments
         self.addArgs(datagram, args)
         # send the datagram
-
+        cr.send(datagram)

@@ -51,20 +51,20 @@ class ClientDistClass:
 
     def updateField(self, do, di):
         # Get the update field id
-        fieldId = di.getArg(ST_uint8)
+        fieldId = di.getArg(STUint16)
         # look up the CDU
         assert(self.number2CDU.has_key(fieldId))
         cdu = self.number2CDU[fieldId]
         # Let the cdu finish the job
-        cdu.updateField(cdc, do, di)
+        cdu.updateField(self, do, di)
         return None
 
-    def sendUpdate(self, do, fieldName, args):
+    def sendUpdate(self, cr, do, fieldName, args):
         # Look up the cdu
         assert(self.name2CDU.has_key(fieldName))
         cdu = self.name2CDU[fieldName]
         # Let the cdu finish the job
-        cdu.sendUpdate(do, args)
+        cdu.sendUpdate(cr, do, args)
         
 
     

@@ -6,11 +6,12 @@ import DistributedObject
 class DistributedNode(DistributedObject.DistributedObject, NodePath.NodePath):
     """Distributed Node class:"""
 
-    def __init__(self):
+    def __init__(self, cr):
         try:
             self.DistributedNode_initialized
         except:
             self.DistributedNode_initialized = 1
+            DistributedObject.DistributedObject.__init__(self, cr)
         return None
 
     def generateInit(self, di):
@@ -22,10 +23,10 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath.NodePath):
     def d_setHpr(self, h, p, r):
         self.sendUpdate("setHpr", [h, p, r])
 
-    def d_setPosHpr(self):
+    def d_broadcastPosHpr(self):
         
-        self.d_setPos_Hpr(self.getX(), self.getY(), self.getZ(),
-                          self.getH(), self.getP(), self.getR())
+        self.d_setPosHpr(self.getX(), self.getY(), self.getZ(),
+                         self.getH(), self.getP(), self.getR())
 
     def d_setPosHpr(self, x, y, z, h, p, r):
         self.sendUpdate("setPosHpr", [x, y, z, h, p, r])
