@@ -65,7 +65,7 @@ public:
   WindowFramework *open_window(GraphicsPipe *pipe = NULL,
                                GraphicsStateGuardian *gsg = NULL);
   WindowFramework *open_window(const WindowProperties &props,
-			       GraphicsPipe *pipe = NULL,
+                               GraphicsPipe *pipe = NULL,
                                GraphicsStateGuardian *gsg = NULL);
 
   INLINE int get_num_windows() const;
