@@ -20,8 +20,8 @@ class DirectCameraControl(PandaObject):
         self.coaMarker.setPos(0,100,0)
         useDirectRenderStyle(self.coaMarker)
         self.coaMarkerPos = Point3(0)
-        self.fLockCOA = 1
-        self.nullHitPtCount = 0
+        self.fLockCOA = 0
+        self.nullHitPointCount = 0
         self.cqEntries = []
         self.coaMarkerRef = direct.group.attachNewNode('coaMarkerRef')
 	self.camManipRef = direct.group.attachNewNode('camManipRef')

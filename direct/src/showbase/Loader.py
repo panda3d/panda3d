@@ -91,7 +91,7 @@ class Loader:
 	ModelPool.releaseModel(modelPath)
 
     # font loading funcs
-    def loadFont(self, modelPath):
+    def loadFont(self, modelPath, priority = 0):
         """loadFont(self, string)
 
         This loads a special model that will be sent to a TextNode as
@@ -104,12 +104,13 @@ class Loader:
         if phaseChecker:
             phaseChecker(modelPath)
         node = ModelPool.loadModel(modelPath)
-
-        #*** Temporary try-except to support old pandas without TextFont.
-        try:
-            font = TextFont(node)
-        except:
-            font = node
+        # Create a temp node path so you can adjust priorities
+        nodePath = hidden.attachNewNode(node)
+        nodePath.adjustAllPriorities(priority)
+        # Now create text font from the node
+        font = TextFont(node)
+        # And remove node path
+        nodePath.removeNode()
         return font
 
     # texture loading funcs
