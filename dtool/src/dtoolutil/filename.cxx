@@ -969,9 +969,9 @@ touch() const {
   return true;
 #else
   // Other systems may not have an explicit control over the
-  // modification time.  For these systems, we'll just temporary open
-  // the file in append mode, then close it again (it gets closed when
-  // the ofstream goes out of scope).
+  // modification time.  For these systems, we'll just temporarily
+  // open the file in append mode, then close it again (it gets closed
+  // when the ofstream goes out of scope).
   ofstream file;
   return open_append(file);
 #endif
