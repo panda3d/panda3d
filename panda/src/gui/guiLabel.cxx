@@ -501,6 +501,8 @@ void GuiLabel::write(ostream& os) const {
   os << "  _tex = 0x" << (void*)(this->_tex.p()) << endl;
   os << "  _internal = 0x" << (void*)(this->_internal) << endl;
   os << "  _gset = 0x" << (void*)(this->_gset) << endl;
+  os << "  _model_width = " << this->_model_width << endl;
+  os << "  _model_height = " << this->model_height << endl;
   os << "  _scale = " << this->_scale << endl;
   os << "  _pos = " << this->_pos << endl;
   os << "  _foreground = " << this->_foreground << endl;
