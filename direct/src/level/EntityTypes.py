@@ -119,7 +119,7 @@ class VisibilityExtender(Entity):
         ('newZones', [], 'visZoneList'),
         )
 
-class AmbientSound(Entity):
+class AmbientSound(Nodepath):
     type = 'ambientSound'
     attribs = (
         ('soundPath', '', 'bamfilename'),
