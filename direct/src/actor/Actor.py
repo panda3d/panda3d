@@ -1086,11 +1086,19 @@ class Actor(PandaObject, NodePath):
         Actor.notify.debug("in loadModel: %s , part: %s, lod: %s, copy: %s" % \
             (modelPath, partName, lodName, copy))
 
-        # load the model and extract its part bundle
-        if (copy):
-            model = loader.loadModelCopy(modelPath)
+        if isinstance(modelPath, NodePath):
+            # If we got a NodePath instead of a string, use *that* as
+            # the model directly.
+            if (copy):
+                model = modelPath.copyTo(hidden)
+            else:
+                model = modelPath
         else:
-            model = loader.loadModelOnce(modelPath)
+            # otherwise, we got the name of the model to load.
+            if (copy):
+                model = loader.loadModelCopy(modelPath)
+            else:
+                model = loader.loadModelOnce(modelPath)
 
         if (model == None):
             print "model = None!!!"
