@@ -128,13 +128,16 @@ clear(DisplayRegion *dr) {
 //     Function: GraphicsStateGuardian::reset_if_new
 //       Access: Public
 //  Description: Calls reset() to initialize the GSG, but only if it
-//               hasn't been called yet.
+//               hasn't been called yet.  Returns true if the GSG was
+//               new, false otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE void GraphicsStateGuardian::
+INLINE bool GraphicsStateGuardian::
 reset_if_new() {
   if (_needs_reset) {
     reset();
+    return true;
   }
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

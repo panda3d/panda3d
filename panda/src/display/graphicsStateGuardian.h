@@ -126,7 +126,7 @@ public:
   virtual CPT(RenderState) begin_decal_base_second();
   virtual void finish_decal();
 
-  INLINE void reset_if_new();
+  INLINE bool reset_if_new();
   virtual void reset();
 
   INLINE void modify_state(const RenderState *state);
