@@ -46,6 +46,7 @@ class EntityCreatorAI(EntityCreatorBase.EntityCreatorBase):
         self.privRegisterTypes({
             'cutScene': nothing,
             'editMgr': Functor(cLE, EditMgrAI.EditMgrAI),
+            'entityGroup': nothing,
             'entrancePoint': nothing,
             'levelMgr': Functor(cLE, LevelMgrAI.LevelMgrAI),
             'logicGate': Functor(cLE, LogicGateAI.LogicGateAI),

@@ -34,6 +34,7 @@ class EntityCreator(EntityCreatorBase.EntityCreatorBase):
         self.privRegisterTypes({
             'cutScene': CutScene.CutScene,
             'editMgr': EditMgr.EditMgr,
+            'entityGroup': nothing,
             'entrancePoint': EntrancePoint.EntrancePoint,
             'levelMgr': LevelMgr.LevelMgr,
             'logicGate': LogicGate.LogicGate,

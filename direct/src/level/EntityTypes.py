@@ -121,3 +121,6 @@ class VisibilityExtender(Entity):
 
 class PropSpinner(Entity):
     type = 'propSpinner'
+
+class EntityGroup(Entity):
+    type = 'entityGroup'
