@@ -19,13 +19,11 @@
 
 #include "config_display.h"
 #include "graphicsStateGuardian.h"
-#include "savedFrameBuffer.h"
 #include "graphicsPipe.h"
 #include "graphicsOutput.h"
 #include "graphicsBuffer.h"
 #include "graphicsWindow.h"
 #include "parasiteBuffer.h"
-#include "textureContext.h"
 
 ConfigureDef(config_display);
 NotifyCategoryDef(display, "");
@@ -250,11 +248,9 @@ init_libdisplay() {
   initialized = true;
 
   GraphicsStateGuardian::init_type();
-  SavedFrameBuffer::init_type();
   GraphicsPipe::init_type();
   GraphicsOutput::init_type();
   GraphicsWindow::init_type();
   GraphicsBuffer::init_type();
   ParasiteBuffer::init_type();
-  TextureContext::init_type();
 }

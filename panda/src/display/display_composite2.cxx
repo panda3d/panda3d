@@ -3,7 +3,6 @@
 #include "graphicsPipeSelection.cxx"
 #include "graphicsThreadingModel.cxx"
 #include "graphicsDevice.cxx"
-#include "savedFrameBuffer.cxx"
 #include "windowProperties.cxx"
 #include "graphicsWindow.cxx"
 #include "graphicsBuffer.cxx"

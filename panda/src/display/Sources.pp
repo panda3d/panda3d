@@ -31,8 +31,7 @@
     graphicsDevice.h graphicsDevice.I \
     parasiteBuffer.I parasiteBuffer.h \
     windowProperties.I windowProperties.h \
-    lensStack.I lensStack.h \
-    savedFrameBuffer.I savedFrameBuffer.h
+    lensStack.I lensStack.h
     
  #define INCLUDED_SOURCES  \
     config_display.cxx \
@@ -49,8 +48,7 @@
     graphicsWindow.cxx graphicsWindowInputDevice.cxx  \
     graphicsDevice.cxx \
     parasiteBuffer.cxx \
-    windowProperties.cxx \
-    savedFrameBuffer.cxx
+    windowProperties.cxx
 
   #define INSTALL_HEADERS \
     config_display.h \
@@ -72,8 +70,7 @@
     parasiteBuffer.I parasiteBuffer.h \
     windowProperties.I windowProperties.h \
     lensStack.I lensStack.h \
-    renderBuffer.h \
-    savedFrameBuffer.I savedFrameBuffer.h
+    renderBuffer.h
 
   #define IGATESCAN all
 

@@ -21,7 +21,6 @@
 
 #include "pandabase.h"
 
-#include "savedFrameBuffer.h"
 #include "frameBufferProperties.h"
 #include "displayRegionStack.h"
 #include "lensStack.h"
