@@ -436,6 +436,12 @@ fix-pal :
 	egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -redo -all -egg
 
 #
+# redo-pal : blow away all the palettization information and start fresh.
+#
+redo-pal : clean-pal
+	rm -f $[texattrib_file:%.txa=%.boo]
+
+#
 # pi : report the palettization information to standard output for the
 # user's perusal.
 #
