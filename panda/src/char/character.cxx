@@ -16,8 +16,32 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32_VC
 #include "char_headers.h"
+#endif
+
 #pragma hdrstop
+
+#ifndef WIN32_VC
+#include "character.h"
+#include "characterJoint.h"
+#include "computedVertices.h"
+#include "config_char.h"
+
+#include <geomNode.h>
+#include <datagram.h>
+#include <datagramIterator.h>
+#include <bamReader.h>
+#include <bamWriter.h>
+#include <pStatTimer.h>
+#endif
+
+#include <geomNode.h>
+#include <animControl.h>
+#include <clockObject.h>
+#include <pStatTimer.h>
+
+
 
 TypeHandle Character::_type_handle;
 

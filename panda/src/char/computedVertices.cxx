@@ -16,15 +16,26 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32_VC
 #include "char_headers.h"
+#endif
+
 #pragma hdrstop
 
-#include <algorithm>
+#ifndef WIN32_VC
+#include "computedVertices.h"
+#include "characterJoint.h"
+#include "character.h"
+#include "config_char.h"
+
 #include <datagram.h>
 #include <datagramIterator.h>
 #include <bamReader.h>
 #include <bamWriter.h>
 #include <ioPtaDatagramLinMath.h>
+#endif
+
+#include <algorithm>
 
 TypeHandle ComputedVertices::_type_handle;
 

@@ -16,16 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <clockObject.h>
-#include <animControl.h>
-#include <geomNode.h>
 #include <datagram.h>
 #include <datagramIterator.h>
 #include <bamReader.h>
 #include <bamWriter.h>
-#include <pStatTimer.h>
-#include <dconfig.h>
-#include <luse.h>
 #include <compose_matrix.h>
 #include <transformTransition.h>
 #include <ioPtaDatagramLinMath.h>

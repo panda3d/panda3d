@@ -16,10 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32_VC
 #include "char_headers.h"
+#endif
+
 #pragma hdrstop
 
+#ifndef WIN32_VC
+#include "dynamicVertices.h"
+#include "config_char.h"
+#include <bamReader.h>
+#include <bamWriter.h>
+#include <datagram.h>
+#include <datagramIterator.h>
+#include <ioPtaDatagramLinMath.h>
+#endif
+
 TypeHandle DynamicVertices::_type_handle;
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DynamicVertices::Constructor

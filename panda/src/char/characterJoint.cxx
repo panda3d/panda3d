@@ -16,8 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32_VC
 #include "char_headers.h"
+#endif
+
 #pragma hdrstop
+
+#ifndef WIN32_VC
+#include "characterJoint.h"
+#include "config_char.h"
+
+#include <compose_matrix.h>
+#include <transformTransition.h>
+#include <datagram.h>
+#include <datagramIterator.h>
+#include <bamReader.h>
+#include <bamWriter.h>
+#endif
 
 TypeHandle CharacterJoint::_type_handle;
 

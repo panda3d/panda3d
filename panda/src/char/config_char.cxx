@@ -16,8 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32_VC
 #include "char_headers.h"
+#endif
+
 #pragma hdrstop
+
+#ifndef WIN32_VC
+#include "config_char.h"
+#include "character.h"
+#include "characterJoint.h"
+#include "characterJointBundle.h"
+#include "characterSlider.h"
+#include "computedVertices.h"
+#include "dynamicVertices.h"
+#endif
+
+#include <dconfig.h>
+#include <lmatrix4.h>
 
 Configure(config_char);
 NotifyCategoryDef(char, "");
