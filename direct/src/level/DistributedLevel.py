@@ -299,10 +299,10 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
         self.shutdownVisibility()
         self.destroyLevel()
-        DistributedObject.DistributedObject.disable(self)
         self.ignoreAll()
 
         # NOTE:  this should be moved to FactoryInterior
+        taskMgr.remove(self.uniqueName("titleText"))
         if self.smallTitleText:
             self.smallTitleText.cleanup()
             self.smallTitleText = None
@@ -310,6 +310,8 @@ class DistributedLevel(DistributedObject.DistributedObject,
             self.titleText.cleanup()
             self.titleText = None
         self.zonesEnteredList = []
+
+        DistributedObject.DistributedObject.disable(self)
 
     def delete(self):
         DistributedLevel.notify.debug('delete')
@@ -662,7 +664,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
         description = getDescription(self.lastCamZone)
         if description and description != '':
-            taskMgr.remove("titleText")
+            taskMgr.remove(self.uniqueName("titleText"))
             self.smallTitleText.setText(description)
             self.titleText.setText(description)
             self.titleText.setColor(Vec4(*self.titleColor))
@@ -690,13 +692,12 @@ class DistributedLevel(DistributedObject.DistributedObject,
                                              0.5),
                     )
             smallTitleSeq = Task.sequence(Task.Task(self.hideTitleTextTask),
-                                          Task.Task(self.showSmallTitleTask),
                                           Task.Task(self.showSmallTitleTask))
             if titleSeq:
                 seq = Task.sequence(titleSeq, smallTitleSeq)
             else:
                 seq = smallTitleSeq
-            taskMgr.add(seq, "titleText")
+            taskMgr.add(seq, self.uniqueName("titleText"))
         
     def showTitleTextTask(self, task):
         assert(DistributedLevel.notify.debug("hideTitleTextTask()"))
@@ -711,14 +712,16 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
     def showSmallTitleTask(self, task):
         # make sure large title is hidden
-        self.titleText.hide()
+        if self.titleText:
+            self.titleText.hide()
         # show the small title
         self.smallTitleText.show()
         return Task.done
     
     def hideSmallTitleTextTask(self, task):
         assert(DistributedLevel.notify.debug("hideTitleTextTask()"))
-        self.smallTitleText.hide()
+        if self.smallTitleText:
+            self.smallTitleText.hide()
         return Task.done
 
     # Ouch!
