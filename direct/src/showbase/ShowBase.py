@@ -84,7 +84,7 @@ class ShowBase(DirectObject.DirectObject):
             self.clusterSyncFlag = clusterSyncFlag
         except NameError:
             # Has the clusterSyncFlag been set via a config variable
-            self.clusterSyncFlag = base.config.GetBool('cluster-sync', 0)
+            self.clusterSyncFlag = self.config.GetBool('cluster-sync', 0)
 
         self.hidden = NodePath('hidden')
 
