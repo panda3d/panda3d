@@ -535,7 +535,7 @@ compose_impl(const RenderAttrib *other) const {
 
     } else {  // (*bi).first == (*ai).first
       // Here is a stage we have in both.
-      *result = *ai;
+      *result = *bi;
       new_attrib->_on_stages.push_back((*ai).first);
       ++ai;
       ++bi;
@@ -562,7 +562,7 @@ compose_impl(const RenderAttrib *other) const {
 
     } else {
       // Here is a stage we have in both.
-      *result = *ai;
+      *result = *bi;
       new_attrib->_on_stages.push_back((*ai).first);
       ++ai;
       ++bi;
