@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 #
 # SQUEEZE
-# $Id$
 #
 # squeeze a python program 
 #
