@@ -120,7 +120,7 @@ int DCClass::
 get_num_inherited_fields() {
   if (!_parents.empty()) {
     // This won't work for multiple dclass inheritance.
-    return _parents.front()->get_num_fields() + get_num_fields();
+    return _parents.front()->get_num_inherited_fields() + get_num_fields();
   }
   return get_num_fields();
 }
