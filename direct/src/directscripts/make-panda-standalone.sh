@@ -1,9 +1,6 @@
 #! /bin/sh
 
-if [ -e panda-standalone.zip ]; then
-  echo panda-standalone.zip already exists!
-  exit 1
-fi
+rm -f panda-standalone.zip
 
 for dir in $DTOOL $PANDA $DIRECT $PANDATOOL; do
   zip -j panda-standalone.zip $dir/lib/*.dll $dir/bin/*.exe || exit
@@ -12,6 +9,8 @@ zip -j panda-standalone.zip $WINTOOLS/lib/*.dll $WINTOOLS/sdk/python/Python-2.2.
 
 cp $DIRECT/src/directscripts/standalone-Configrc /tmp/Configrc || exit
 zip -j -m panda-standalone.zip /tmp/Configrc || exit
+cp $DIRECT/src/directscripts/standalone-setup.bat /tmp/setup.bat || exit
+zip -j -m panda-standalone.zip /tmp/setup.bat || exit
 
 echo Success!
 
