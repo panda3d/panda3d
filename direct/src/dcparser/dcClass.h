@@ -52,8 +52,10 @@ PUBLISHED:
   void receive_update_broadcast_required(PyObject *distobj, DatagramIterator &iterator) const;
   void receive_update_all_required(PyObject *distobj, DatagramIterator &iterator) const;
   void receive_update_other(PyObject *distobj, DatagramIterator &iterator) const;
-  void named_update(PyObject *distobj, const string &field_name, 
-                    const Datagram &datagram);
+  void direct_update(PyObject *distobj, const string &field_name, 
+                     const string &value_blob);
+  void direct_update(PyObject *distobj, const string &field_name, 
+                     const Datagram &datagram);
   void pack_required_field(Datagram &dg, PyObject *distobj, 
                            DCField *field) const;
 

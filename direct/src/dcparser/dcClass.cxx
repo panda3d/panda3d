@@ -276,13 +276,29 @@ receive_update_other(PyObject *distobj, DatagramIterator &iterator) const {
 
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
-//     Function: DCClass::named_update
+//     Function: DCClass::direct_update
 //       Access: Published
-//  Description: Processes an update for a named field.
+//  Description: Processes an update for a named field from a packed
+//               value blob.
 ////////////////////////////////////////////////////////////////////
 void DCClass::
-named_update(PyObject *distobj, const string &field_name, 
-             const Datagram &datagram) {
+direct_update(PyObject *distobj, const string &field_name, 
+              const string &value_blob) {
+  Datagram datagram(value_blob);
+  direct_update(distobj, field_name, datagram);
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::direct_update
+//       Access: Published
+//  Description: Processes an update for a named field from a packed
+//               datagram.
+////////////////////////////////////////////////////////////////////
+void DCClass::
+direct_update(PyObject *distobj, const string &field_name, 
+              const Datagram &datagram) {
   DCField *field = get_field_by_name(field_name);
   nassertv_always(field != NULL);
   DatagramIterator iterator(datagram);
