@@ -1088,7 +1088,7 @@ $[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]]
 #elif $[or $[eq $[DIR_TYPE], models],$[eq $[DIR_TYPE], models_toplevel],$[eq $[DIR_TYPE], models_group]]
 //////////////////////////////////////////////////////////////////////
 
-#include $[THISDIRPREFIX]Template.models.nmake.pp
+#include $[THISDIRPREFIX]Template.models.pp
 
 //////////////////////////////////////////////////////////////////////
 #endif // DIR_TYPE
