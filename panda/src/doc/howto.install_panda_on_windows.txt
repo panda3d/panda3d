@@ -59,7 +59,7 @@ Step 2:
     (which is a synonym for Visual C++ .NET)
   
   To Install VC++ 7.0
-    Run P:\msvc7\vc_setup\setup.exe, or install from the MSDN 
+    Run P:\msvc7\vc7_setup\SETUP.EXE, or install from the MSDN 
     'Visual Studio.NET' CD. Click on 'Windows Component Update' 
     (if it is highlighted, else click '2').  Click 'Continue' 
     (Selecting 'Do not use this machine to host web projects').  
@@ -118,18 +118,19 @@ Step 3: Install Cygwin (v1.3.5 or above should work)
   - Latest version currently is 1.5.7-1 (Jan 31 2004)
   - As of 1.3.11, cygwin seems stable enough to install from the internet, 
     go to http://cygwin.com and click on the "install cygwin now" link.  
-    The most reliable download server is http://mirrors.rcn.net. Another server is 
-    http://sigunix.cwrv.edu. Make sure that the following packages are selected 
-    for installation:
+    The most reliable download server is http://mirrors.rcn.net. Another
+    server is http://sigunix.cwrv.edu. Make sure that the following packages
+    are selected for installation:
   - Devel packages such as :  CVS, make, flex
   - under Interpreters : gawk, perl (see note below)
   - under Shells : ash, bash, sh-utils, tcsh
-  - under Text : more
+  - under Text : more (or less)
   - under Archive : zip, unzip
   - You can also install other programs (like vi for instance) if you want.  
     To rotate through the possible installation options, left-click on 
     the programs of your choice.
   - Keep in mind the following exceptions: 
+  - Do NOT install emacs/xemacs, we have our own emacs (see below under Step 10)
   - Do NOT install the Interpreter->python package (change the Setting 
     to "SKIP")
   - Do NOT install the Devel->bison package if the version is 1.30-1.34,  
@@ -141,6 +142,13 @@ Step 3: Install Cygwin (v1.3.5 or above should work)
   - Create a desktop shortcut or Start Menu item for c:\cygwin\bin\tcsh.exe 
     and use it in the future.
   - Remove X-windows packages to make download smaller.
+
+    ***note***
+    Known issues section pertains to older versions of Cygwin and versions
+    of software it installs by default.  If you installed Cygwin version 
+    1.5.10 (CYGWIN_NT-5.1) or newer you can probably ignore the following.
+    Type uname -a in your cygwin tcsh window to check version number.
+    **********
 
     Known Problems with tcsh:
       tcsh v6.09.00: (cygwin 1.0)   
@@ -159,8 +167,10 @@ Step 3: Install Cygwin (v1.3.5 or above should work)
     Known Problems with bash:
       - None :)
 
-    Known Problems with perl version 5.8.0-2 installed by default w/ Cygwin 5.2.0-2:
-      Is not compatible with the current $DTOOL startup script 
+    Known Problems with perl version 5.8.0-2 installed by default w/ older
+    Cygwin install, check perl version with "perl -V" in your cygwin shell:
+
+      This is not compatible with the current $DTOOL startup script 
       $DTOOL/etc/dtool.cshrc install: specifically the "source $SETUP_SCRIPT"
       because cygwin Perl 5.8.0 leaves a ^M newline in the variable, screwing
       up the later source $SETUP_SCRIPT resulting in startup errors.  Stay
@@ -170,7 +180,9 @@ Step 3: Install Cygwin (v1.3.5 or above should work)
     Next, you can run a bash shell by going to the "Start"
     button at the bottom left of your screen, selecting "Programs",
     "Cygwin" and "bash".  You can then run "tcsh" at the bash prompt to make 
-    things easier.  
+    things easier.  To make things really easy, edit C:\Cygwin\cygwin.bat,
+    change "bash --login -i" to "tcsh -i", this will cause tcsh to be the
+    default shell when you start Cygwin command prompt/shell.  
 
 Step 3.5: Set up the Cygwin environment:
   - All of the commands below have been collected in    
@@ -190,13 +202,16 @@ Step 3.5: Set up the Cygwin environment:
       > mkdir /c /f /g /h /i /j /p
       > mkdir /usr/local /usr/local/bin /usr/local/etc
       
-  - Rename any cygwin-installed python.exe (if it exists) to avoid 
+  - *** This is only necessary if you installed python while installing
+    *** Cygwin
+    Rename any cygwin-installed python.exe (if it exists) to avoid 
     conflicts with required VRSTUDIO-compiled python, which is custom-built 
     to load "sitecustomize.py" which sets up the PYTHONPATH env-var 
     for our panda environment:
       > mv /bin/python.exe /bin/python-cygwin.exe
 
-  - Create some links expected by the attach scripts, which look in std unix places:
+  - Create some links expected by the attach scripts, which look in standard
+    modern unix BSD-style places:
       > ln -s /bin/tcsh /bin/csh
       > ln -s /bin/perl /usr/local/bin/perl
       > ln -s /bin/bash /usr/local/bin/bash
@@ -264,24 +279,28 @@ Step 3.5: Set up the Cygwin environment:
       the same path from cygwin apps (e.g. C:\Cygwin\beta will be not 
       be accessible via /beta)
 
-Step 4: Create your home directory
-  - Create a HOME directory:
-      > mkdir /home/<yourname>
-    or
-      > mkdir /usr/<yourname>
+Step 4: Create your HOME directory
+- Create a HOME directory:
+      > mkdir /<home root>/<login>
 
-  - Set the $HOME environment variable in the Registry:
+    where <home root> can be either "usr" or "home", and <login> is
+    the name you use to login to your Windows machine.
+   
+    In Windows this directory will be the equivalent of:    
+      C:\cygwin\<home root>\<login>
+
+- Set the $HOME environment variable in the Registry:
   - You must be logged into your computer on an account with Administrator access
   - Select "Start Menu->Control Panel"
   - Select "System" icon.
   - Select "Advanced->Environment" button.
-  - Create the variable "HOME" with the value "c:\cygwin\<HOME directory>".
+  - Create the variable "HOME" with the value "c:\cygwin\<home root>\<login>".
   - click ok - ok - ok to exit (you must exit for the change to take effect)
   - Now open a new shell so the registry is read by the shell to get the changes.
-  Note: We've seen a problem where we can't source ~/.cshrc if the home 
-    directory "/usr/<yourname>" does not match the user name %USERNAME% 
-    windows env var. To be safe, be sure and name your home directory 
-    to be /usr/<yourname>.
+  Note: We've seen a problem where we can't source ~/.cshrc if the 
+    <login> in your HOME directory does not match the user name 
+    %USERNAME% windows env var. To be safe, be sure your <login>
+    matches your Windows login as part of your HOME directory name.
 
   - Add C:\Cygwin\bin to the $path environment variable in the registry 
     to avoid errors (sed: Command not found) when executing the file 
@@ -289,8 +308,9 @@ Step 4: Create your home directory
 
   Copy important startup files into your home directory:
     > cd /p/win/install/wintools/panda
-    > cp .cshrc .emacs Configrc Config.pp.sample /usr/<yourname>
-    > mv /usr/<yourname>/Config.pp.sample /usr/<yourname>/Config.pp
+    > cp .cshrc .emacs Configrc Config.pp.sample /<home root>/<login>
+    > cd /<home root>/<login>
+    > mv Config.pp.sample Config.pp
 
   Make sure the contents of .cshrc are correct for your setup.  In 
     particular, make sure the definition for PANDA_ROOT matches the 
@@ -350,17 +370,18 @@ Step 4.5:  Setup VC7 environment in shell (skip if you have VC6)
     > source ~/player/wintools/etc/setup_env.csh
   again to get it to do the cmd (ignore file-exists errors)
     > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio\ .NET /msvc7
-  This should create the softlink mount, or you can just run the cmd manually yourself.
+  This should create the softlink mount, or you can just run the cmd manually
+  yourself.
 
 Step 5: Copy files needed by attach scripts
   - Run script to copy vspec files from $WINTOOLS to /usr/local/etc
     > cd /p/win/install/wintools
     > ./cp_vspec 
   To setup a new user in panda environment files:
-  - If you are setting up a new user, edit the *.vspec files in 
-    /usr/local/etc to add the new username and path to the player
-    tree (starting with dtool.vspec, panda.vspec, direct.vspec, otp.vspec,
-    toontown.vspec)
+  - If you are setting up a new user, edit the *.vspec files in /usr/local/etc
+    to add the new username and path to the player tree (starting with
+    dtool.vspec, panda.vspec, direct.vspec, otp.vspec, toontown.vspec, and
+    ttpublish.vspec).
   - (Optional) Update default values in vspec files. Edit appropriate *.vspec 
     files to specify which trees you wish to use as a default (e.g. install, 
     personal, or release)
@@ -371,16 +392,28 @@ Step 6: Grab the cvs trees
     > mkdir ~/player
     > cd ~/player
   - Grab from local repository
+
+    Make sure your CVSROOT is set to the local repository, echo $CVSROOT
+    in your shell, it should return 
+
+      :pserver:$USERNAME@dimbo:/fit/cvs 
+
+    where $USERNAME is your login, check your .cshrc for the environment 
+    variable setting
+
     # Just hit return or type your unix password when prompted for a password
     > cvs login
-    > cvs co otp
+    > cvs co otp (only if local toontown will be built)
     > cvs co toontown (only if local toontown will be built)
 
   - Now choose either A (commit) or B (anonymous) access:
     A. SourceForge developer (with commit) access
       1. setup an account with SourceForge at 
         http://sourceforge.net/account/register.php
-        Try to use the same username used your cygwin setup.
+        Try to use the same username used your cygwin setup.  If you are
+        unable to do so just make sure you edit your .cshrc file to reflect
+        this for the SFROOT variable.
+
         Tell somebody like David Rose, Dave Schuyler, or Mark Mine to add your 
           new sourceforge username to the list of Panda3D developers.
       2. setup ssh and access through the corporate firewall to cvs.sourceforge.net
@@ -406,8 +439,7 @@ Step 6: Grab the cvs trees
       > cvs -d $SFROOT co dtool (only if local dtool will be built)
       > cvs -d $SFROOT co panda (only if local panda will be built)
       > cvs -d $SFROOT co direct (only if local direct will be built)
-      > cvs -d $SFROOT co otp (only if local otp will be built)
-
+      
     - Choose which optimize level you want. This is set in Config.pp in
       your $HOME directory.  Look for #define OPTIMIZE and follow
       instructions above that.  You can only choose an arbitrary
@@ -456,26 +488,27 @@ Step 9: Build $DIRECT
   > make install
 
 Step 10: Build $OTP
-  > cta dtool personal  
+  > cta dtool personal
   > cta panda personal
   > cta direct personal
   > cta otp personal
   > cd $OTP
   > ppremake
   > make install
+  Exit the shell and create a new one
 
 Step 11: Install Emacs   
-  We use GNU emacs (21.2 currently) by default, other versions of emacs 
+  We use GNU emacs (21.3 currently) by default, other versions of emacs 
     may also work.  Note: unlike xemacs.exe compiled for cygwin, this 
     emacs does not use Cygwin paths, so "/" represents the real root 
     (C:\, not "C:\Cygwin")).  
   Copy the tarball to your local machine
     > cp /p/emacs-21.2-fullbin-i386.tar /c
-  Untar and install (This will install emacs into C:/emacs-21.2, do 
+  Untar and install (This will install emacs into C:/emacs-21.3, do 
     not attempt to install it under a directory containing a space,
     like "Program Files".)
     > cd /c
-    > tar xvf emacs-21.2-fullbin-i386.tar
+    > tar xvf emacs-21.3-fullbin-i386.tar
   Copy lisp/script files
     > cp $DIRECT/src/directscripts/python-mode.el /c/emacs-21.2/lisp/progmodes
     > cp $DIRECT/src/directscripts/runPythonEmacs /usr/local/bin
@@ -486,7 +519,7 @@ Step 11: Install Emacs
   - Select "System" icon.
   - Select "Advanced->Environment" button.
   - double click on the "Path" variable in the bottom pane (system variables)
-  - add "C:\emacs-21.2\bin" to the end of the path (semicolon separated)
+  - add "C:\emacs-21.3\bin" to the end of the path (semicolon separated)
   - click ok - ok - ok to exit (you must exit for the change to take effect)
 
 Step 12: Build $TOONTOWN
@@ -504,14 +537,67 @@ Step 13: Generate Python Code
   > cd $DIRECT/bin
   > genPyCode win-debug (if you have built using OPTIMIZE = 1 or 2)
   > genPyCode win-release (if you have built using OPTIMIZE = 3 or 4)
-  > genPyCode win-publish (for publishes)
+  > genPyCode -n win-publish (for publishes)
 
 Step 14: set up a local server (optional)
   - mkdir /c/toonsrv
   - unzip /p/toontown_server/dev_NOTAG_*.zip to /c/toonsrv
-  - copy zlib1.dll if not there from /p/toontown_server
-  - chmod 777 everything in /c/toonsrv directory
-  - run /c/toonsrv/INSTALLALL.BAT to install toon servers as local NT-type services
-  - /c/toonsrv/STARTALL.BAT to start the servers and /c/toonsrv/STOPALL.BAT to stop them
+  - copy zlib1.dll and other newer .dlls if not there from /p/toontown_server
+    cp /p/toontown_server/*.dll /c/toonsrv/.
+  - cd /c/toonsrv
+  - Be sure to set the execute bit for all .dll, .exe, and .bat files
+    chmod +x *.dll *.exe *.bat
+  - Make sure your Windows account on your machine is an administrator type,
+    or else you would not be able to start/stop services.  To check:
+
+    Start -> Settings -> Control Panel -> User Accounts
+    If your account does not have "Administrators" under the "Group" column,
+    Pick your account from the list, then hit "Properties" button, then in
+    "Other" pick "Administrator" from the drop down list, then click Ok, Ok
+
+  - Copy the appropriate NameMaster text file into your local server, depending
+    on Language of the server being installed:
+
+    cp $TOONTOWN/src/configfiles/NameMaster<language>.txt /c/toonsrv/.
+
+    There are currently three different files, NameMasterEnglish.txt,
+    NameMasterCastillian.txt, and NameMasterJapanese.txt
+
+  - Check out dna files for server
+    Make sure $CVSROOT is pointed to local repository on dimbo
+    
+    cd ~/player
+    cvs co ttmodels/src/dna
+    cp ~/player/ttmodels/src/dna/*.dna /c/toonsrv
+
+    The dna files have names with language associated with them, but the server
+    expects file names without it.  Depending on the language of the server
+    you are running, rename the appropriate files so that the file names are
+    without the language designation.  For example, if you are running an
+    English server, you'd rename all .dna files with "_english" in them into
+    filenames without this, such as
+
+    toontown_central_2100_english.dna -> toontown_central_2100.dna
+    
+    You need to do this for every .dna file of the language you wish to use,
+    files for other languages can be ignored.
+
+    ** note **  Only remove the "_<language>" portion of the file name, 
+    all other strings in the file name need to stay intacted, even those 
+    that come after the language word in the file name 
+
+  - Copy clientagent.pem into local server
+
+    cp $TOONTOWN/src/secure/clientagent.pem /c/toonsrv/.
+
+  - Copy .dc files into local server
+
+    cp $TOONTOWN/src/configfiles/toon.dc /c/toonsrv/.
+    cp $OTP/src/configfiles/otp.dc /c/toonsrv/.
+
+  - run /c/toonsrv/INSTALLALL.BAT to install toon servers as local NT-type
+    services
+  - /c/toonsrv/STARTALL.BAT to start the servers and /c/toonsrv/STOPALL.BAT to
+    stop them
 
 When you get here, rejoice!
