@@ -20,7 +20,7 @@
 #define NURBSCURVEEVALUATOR_H
 
 #include "pandabase.h"
-#include "nurbsMatrixVector.h"
+#include "nurbsBasisVector.h"
 #include "nurbsCurveResult.h"
 #include "nurbsVertex.h"
 #include "pointerTo.h"
@@ -91,7 +91,7 @@ private:
   Knots _knots;
 
   bool _basis_dirty;
-  NurbsMatrixVector _basis;
+  NurbsBasisVector _basis;
 };
 
 #include "nurbsCurveEvaluator.I"

@@ -5,6 +5,6 @@
 #include "parametricCurveDrawer.cxx"
 #include "nurbsCurveEvaluator.cxx"
 #include "nurbsCurveResult.cxx"
-#include "nurbsMatrixVector.cxx"
+#include "nurbsBasisVector.cxx"
 #include "nurbsVertex.cxx"
 #include "ropeNode.cxx"

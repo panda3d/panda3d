@@ -27,7 +27,7 @@
 //               and the indicated table of control vertex positions.
 ////////////////////////////////////////////////////////////////////
 NurbsCurveResult::
-NurbsCurveResult(const NurbsMatrixVector &basis,
+NurbsCurveResult(const NurbsBasisVector &basis,
                  const LVecBase4f vecs[], const NurbsVertex *verts,
                  int num_vertices) :
   _basis(basis),

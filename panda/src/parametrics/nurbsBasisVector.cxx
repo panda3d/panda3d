@@ -1,4 +1,4 @@
-// Filename: nurbsMatrixVector.cxx
+// Filename: nurbsBasisVector.cxx
 // Created by:  drose (03Dec02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,26 +16,26 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "nurbsMatrixVector.h"
+#include "nurbsBasisVector.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NurbsMatrixVector::clear
+//     Function: NurbsBasisVector::clear
 //       Access: Public
 //  Description: Removes all the segments from the curve.
 ////////////////////////////////////////////////////////////////////
-void NurbsMatrixVector::
+void NurbsBasisVector::
 clear(int order) {
   _order = order;
   _segments.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NurbsMatrixVector::append_segment
+//     Function: NurbsBasisVector::append_segment
 //       Access: Public
 //  Description: Computes a NURBS basis for one segment of the curve
 //               and appends it to the set of basis matrices.
 ////////////////////////////////////////////////////////////////////
-void NurbsMatrixVector::
+void NurbsBasisVector::
 append_segment(int vertex_index, const float knots[]) {
   int i;
 
@@ -67,12 +67,12 @@ append_segment(int vertex_index, const float knots[]) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NurbsMatrixVector::nurbs_blending_function
+//     Function: NurbsBasisVector::nurbs_blending_function
 //       Access: Private, Static
 //  Description: Recursively computes the appropriate blending
 //               function for the indicated knot vector.
 ////////////////////////////////////////////////////////////////////
-LVecBase4f NurbsMatrixVector::
+LVecBase4f NurbsBasisVector::
 nurbs_blending_function(int order, int i, int j, const float knots[]) {
   // This is doubly recursive.  Ick.
   LVecBase4f r;

@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 #include "referenceCount.h"
-#include "nurbsMatrixVector.h"
+#include "nurbsBasisVector.h"
 
 class NurbsVertex;
 
@@ -41,7 +41,7 @@ class NurbsVertex;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NurbsCurveResult : public ReferenceCount {
 public:
-  NurbsCurveResult(const NurbsMatrixVector &basis, 
+  NurbsCurveResult(const NurbsBasisVector &basis, 
                    const LVecBase4f vecs[], const NurbsVertex *verts,
                    int num_vertices);
 
@@ -65,7 +65,7 @@ private:
   int find_segment(float t);
   int r_find_segment(float t, int top, int bot) const;
 
-  NurbsMatrixVector _basis;
+  NurbsBasisVector _basis;
   const NurbsVertex *_verts;
 
   // We pre-compose the basis matrix and the geometry vectors, so we

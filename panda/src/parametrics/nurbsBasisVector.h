@@ -1,4 +1,4 @@
-// Filename: nurbsMatrixVector.h
+// Filename: nurbsBasisVector.h
 // Created by:  drose (03Dec02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef NURBSMATRIXVECTOR_H
-#define NURBSMATRIXVECTOR_H
+#ifndef NURBSBASISVECTOR_H
+#define NURBSBASISVECTOR_H
 
 #include "pandabase.h"
 #include "luse.h"
@@ -27,7 +27,7 @@
 class NurbsVertex;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : NurbsMatrixVector
+//       Class : NurbsBasisVector
 // Description : This encapsulates a series of matrices that are used
 //               to represent the sequential segments of a
 //               NurbsCurveEvaluator.
@@ -39,10 +39,10 @@ class NurbsVertex;
 //               eventually replace the whole ParametricCurve class
 //               hierarchy.
 ////////////////////////////////////////////////////////////////////
-class NurbsMatrixVector {
+class EXPCL_PANDA NurbsBasisVector {
 public:
-  INLINE NurbsMatrixVector();
-  INLINE ~NurbsMatrixVector();
+  INLINE NurbsBasisVector();
+  INLINE ~NurbsBasisVector();
 
   INLINE int get_order() const;
 
@@ -78,7 +78,7 @@ private:
   Segments _segments;
 };
 
-#include "nurbsMatrixVector.I"
+#include "nurbsBasisVector.I"
 
 #endif
 
