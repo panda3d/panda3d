@@ -55,7 +55,10 @@ wglGraphicsWindow::~wglGraphicsWindow(void) {
 //  DestroyWindow(_mwindow);
   if(_visual!=NULL)
     free(_visual);
-  wglDeleteContext(_context);
+
+  // The GL context is already gone.  Don't try to destroy it again.
+  //  wglDeleteContext(_context);
+
   ReleaseDC(_mwindow,_hdc);
   DestroyWindow(_mwindow);
 }
