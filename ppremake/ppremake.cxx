@@ -477,7 +477,7 @@ main(int argc, char *argv[]) {
   }
 
   if (errors_occurred) {
-    cerr << "Errors occurred during processing.\n";
+    cerr << "Errors occurred during ppremake.\n";
     return (1);
 
   } else {
