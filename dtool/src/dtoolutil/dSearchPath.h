@@ -52,6 +52,8 @@ PUBLISHED:
   void prepend_directory(const Filename &directory);
   void append_path(const string &path,
 		   const string &delimiters = ": \t\n");
+  void append_path(const DSearchPath &path);
+  void prepend_path(const DSearchPath &path);
 
   bool is_empty() const;
   int get_num_directories() const;

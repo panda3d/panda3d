@@ -6,6 +6,8 @@
 #include "dSearchPath.h"
 #include "filename.h"
 
+#include <algorithm>
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DSearchPath::Results::Constructor
 //       Access: Public
@@ -174,6 +176,34 @@ append_path(const string &path, const string &delimiters) {
       _directories.push_back(path.substr(p, q - p));
     }
     p = q + 1;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::append_path
+//       Access: Public
+//  Description: Adds all of the directories listed in the search path
+//               to the end of the search list.
+////////////////////////////////////////////////////////////////////
+void DSearchPath::
+append_path(const DSearchPath &path) {
+  copy(path._directories.begin(), path._directories.end(),
+       back_inserter(_directories));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::prepend_path
+//       Access: Public
+//  Description: Adds all of the directories listed in the search path
+//               to the beginning of the search list.
+////////////////////////////////////////////////////////////////////
+void DSearchPath::
+prepend_path(const DSearchPath &path) {
+  if (!path._directories.empty()) {
+    Directories new_directories = path._directories;
+    copy(_directories.begin(), _directories.end(),
+	 back_inserter(new_directories));
+    _directories.swap(new_directories);
   }
 }
 
