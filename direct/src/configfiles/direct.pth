@@ -1,7 +1,7 @@
 lib
 lib/py
 src/actor
-src/directutil
+src/directtools
 src/directnotify
 src/distributed
 src/ffi
