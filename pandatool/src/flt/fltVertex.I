@@ -12,5 +12,5 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool FltVertex::
 has_color() const {
-  return (_flags & F_no_color) != 0;
+  return (_flags & F_no_color) == 0;
 }
