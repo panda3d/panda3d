@@ -239,12 +239,10 @@ do_sort_bins() {
 void CullBinManager::
 setup_initial_bins() {
   // First, add all of the bins specified in the Configrc file.
-  Config::ConfigTable::Symbol cull_bins;
-  config_pgraph.GetAll("cull-bin", cull_bins);
+  int num_bins = cull_bin.get_num_unique_values();
 
-  Config::ConfigTable::Symbol::iterator bi;
-  for (bi = cull_bins.begin(); bi != cull_bins.end(); ++bi) {
-    ConfigString def = (*bi).Val();
+  for (int bi = 0; bi < num_bins; bi++) {
+    string def = cull_bin.get_unique_value(bi);
 
     // This is a string in three tokens, separated by whitespace:
     //    bin_name sort type

@@ -499,44 +499,11 @@ dx_init( void) {
 //  shouldve already been set
 //    sc_bIsTNLDevice = (IsEqualGUID(_pScrn->D3DDevDesc.deviceGUID,IID_IDirect3DTnLHalDevice)!=0);
 
-    if ((dx_decal_type==GDT_offset) && !(_pScrn->D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ZBIAS)) {
-#ifdef _DEBUG
-        // dx7 doesnt support PLANEMASK renderstate
-#if(DIRECT3D_VERSION < 0x700)
-        dxgsg7_cat.debug() << "dx-decal-type 'offset' not supported by hardware, switching to decal masking\n";
-#else
-        dxgsg7_cat.debug() << "dx-decal-type 'offset' not supported by hardware, switching to decal double-draw blend-based masking\n";
-#endif
-#endif
-#if(DIRECT3D_VERSION < 0x700)
-        dx_decal_type = GDT_mask;
-#else
-        dx_decal_type = GDT_blend;
-#endif
-    }
-
 #ifdef DISABLE_POLYGON_OFFSET_DECALING
 #ifdef _DEBUG
     dxgsg7_cat.spam() << "polygon-offset decaling disabled in dxgsg7, switching to double-draw decaling\n";
 #endif
-
-#if(DIRECT3D_VERSION < 0x700)
-    dx_decal_type = GDT_mask;
-#else
-    dx_decal_type = GDT_blend;
 #endif
-#endif
-
-    if ((dx_decal_type==GDT_mask) && !(_pScrn->D3DDevDesc.dpcTriCaps.dwMiscCaps & D3DPMISCCAPS_MASKPLANES)) {
-#ifdef _DEBUG
-        dxgsg7_cat.debug() << "No hardware support for colorwrite disabling, switching to dx-decal-type 'mask' to 'blend'\n";
-#endif
-        dx_decal_type = GDT_blend;
-    }
-
-    if (((dx_decal_type==GDT_blend)||(dx_decal_type==GDT_mask)) && !(_pScrn->D3DDevDesc.dpcTriCaps.dwMiscCaps & D3DPMISCCAPS_MASKZ)) {
-        dxgsg7_cat.error() << "dx-decal-type mask impossible to implement, no hardware support for Z-masking, decals will not appear correctly!\n";
-    }
 
 //#define REQUIRED_BLENDCAPS (D3DPBLENDCAPS_ZERO|D3DPBLENDCAPS_ONE|D3DPBLENDCAPS_SRCCOLOR|D3DPBLENDCAPS_INVSRCCOLOR| \
 //                            D3DPBLENDCAPS_SRCALPHA|D3DPBLENDCAPS_INVSRCALPHA | D3DPBLENDCAPS_DESTALPHA|D3DPBLENDCAPS_INVDESTALPHA|D3DPBLENDCAPS_DESTCOLOR|D3DPBLENDCAPS_INVDESTCOLOR)

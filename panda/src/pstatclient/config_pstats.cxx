@@ -27,53 +27,21 @@ ConfigureFn(config_pstats) {
   init_libpstatclient();
 }
 
-string get_pstats_name() {
-  static ConfigVariableString *pstats_name = NULL;
+ConfigVariableString pstats_name
+("pstats-name", "Panda Stats");
 
-  if (pstats_name == (ConfigVariableString *)NULL) {
-    pstats_name = new ConfigVariableString
-      ("pstats-name", "Panda Stats");
-  }
+ConfigVariableDouble pstats_max_rate
+("pstats-max-rate", 30.0);
 
-  return pstats_name->get_value();
-}
+ConfigVariableBool pstats_threaded_write
+("pstats-threaded-write", false);
 
-float get_pstats_max_rate() {
-  static ConfigVariableDouble *pstats_max_rate = NULL;
-
-  if (pstats_max_rate == (ConfigVariableDouble *)NULL) {
-    pstats_max_rate = new ConfigVariableDouble
-      ("pstats-max-rate", 30.0);
-  }
-
-  return *pstats_max_rate;
-}
-
-bool get_pstats_threaded_write() {
-  static ConfigVariableBool *pstats_threaded_write = NULL;
-
-  if (pstats_threaded_write == (ConfigVariableBool *)NULL) {
-    pstats_threaded_write = new ConfigVariableBool
-      ("pstats-threaded-write", false);
-  }
-
-  return *pstats_threaded_write;
-}
-
-double get_pstats_tcp_ratio() {
-  static ConfigVariableDouble *pstats_tcp_ratio = NULL;
-
-  if (pstats_tcp_ratio == (ConfigVariableDouble *)NULL) {
-    pstats_tcp_ratio = new ConfigVariableDouble
-      ("pstats-tcp-ratio", 0.01,
-       PRC_DESC("This specifies the ratio of frame update messages that are eligible "
-                "for UDP that are sent via TCP instead.  It does not count messages "
-                "that are too large for UDP and must be sent via TCP anyway.  1.0 "
-                "means all messages are sent TCP; 0.0 means all are sent UDP."));
-  }
-
-  return *pstats_tcp_ratio;
-}
+ConfigVariableDouble pstats_tcp_ratio
+("pstats-tcp-ratio", 0.01,
+ PRC_DESC("This specifies the ratio of frame update messages that are eligible "
+          "for UDP that are sent via TCP instead.  It does not count messages "
+          "that are too large for UDP and must be sent via TCP anyway.  1.0 "
+          "means all messages are sent TCP; 0.0 means all are sent UDP."));
 
 ConfigVariableString pstats_host
 ("pstats-host", "localhost");

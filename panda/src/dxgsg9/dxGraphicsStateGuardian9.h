@@ -39,8 +39,6 @@
 #include "fog.h"
 #include "pointerToArray.h"
 
-//#define USE_VERTEX_SHADERS
-
 class Light;
 
 //#if defined(NOTIFY_DEBUG) || defined(DO_PSTATS)
@@ -343,16 +341,6 @@ public:
   INLINE void SetDXReady(bool status)  { _bDXisReady = status; }
   INLINE bool GetDXReady(void)  { return _bDXisReady;}
   void DXGraphicsStateGuardian9::SetTextureBlendMode(TextureApplyAttrib::Mode TexBlendMode,bool bJustEnable);
-
-  // Shader Stuff
-  IDirect3DVertexShader9* read_vertex_shader(string &filename);
-  IDirect3DPixelShader9* read_pixel_shader(string &filename);
-  void init_vertex_shader(IDirect3DVertexShader9* &hShader,string *pFname);
-  void init_pixel_shader(IDirect3DPixelShader9* &hShader,string *pFname);
-  IDirect3DTexture9 *_pGlobalTexture;  // used for FX
-  //DXShaderHandle _CurVertexShader,_CurPixelShader;
-  IDirect3DVertexShader9* _CurVertexShader;
-  IDirect3DPixelShader9* _CurPixelShader;
 
   void  dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled);
   void reset_panda_gsg(void);

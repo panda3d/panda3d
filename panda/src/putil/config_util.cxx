@@ -32,7 +32,6 @@
 #include "writableParam.h"
 #include "keyboardButton.h"
 #include "mouseButton.h"
-#include "get_config_path.h"
 
 #include "dconfig.h"
 
@@ -41,13 +40,20 @@ NotifyCategoryDef(util, "");
 NotifyCategoryDef(bam, util_cat);
 
 ConfigVariableSearchPath model_path
-("model-path", "The default directories to search for all models and general files loaded into Panda.");
+("model-path", 
+ PRC_DESC("The default directories to search for all models and general "
+          "files loaded into Panda."));
 
 ConfigVariableSearchPath texture_path
-("texture-path", "A special directory path to search for textures only.  Textures are also searched for along the model-path, so the use of texture-path is only useful if you have special directories that only contain textures.");
+("texture-path", 
+ PRC_DESC("A special directory path to search for textures only.  "
+          "Textures are also searched for along the model-path, so the "
+          "use of texture-path is only useful if you have special "
+          "directories that only contain textures."));
 
 ConfigVariableSearchPath sound_path
-("sound-path", "The directories to search for loaded sound and music files.");
+("sound-path", 
+ PRC_DESC("The directories to search for sound and music files to be loaded."));
 
 ConfigureFn(config_util) {
   BamReaderParam::init_type();
@@ -78,7 +84,7 @@ ConfigureFn(config_util) {
 // This variable is no longer defined here; instead, it's a member of
 // MemoryUsage.
 //
-//const bool track_memory_usage = config_util.GetBool("track-memory-usage", false);
+// ConfigVariableBool track_memory_usage("track-memory-usage", false);
 
 // There is no longer any need for C++ code to call these functions to
 // access the various path variables; instead, new C++ code should

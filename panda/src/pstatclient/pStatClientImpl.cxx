@@ -46,7 +46,7 @@ PStatClientImpl::
 PStatClientImpl(PStatClient *client) :
   _client(client),
   _reader(this, 0),
-  _writer(this, get_pstats_threaded_write() ? 1 : 0)
+  _writer(this, pstats_threaded_write ? 1 : 0)
 {
   _is_connected = false;
   _got_udp_port = false;
@@ -56,13 +56,11 @@ PStatClientImpl(PStatClient *client) :
   // Make sure our clock is in "normal" mode.
   _clock.set_mode(ClockObject::M_normal);
 
-  _client_name = get_pstats_name();
-  _max_rate = get_pstats_max_rate();
+  _client_name = pstats_name;
+  _max_rate = pstats_max_rate;
 
   _tcp_count = 1;
   _udp_count = 1;
-
-  double pstats_tcp_ratio = get_pstats_tcp_ratio();
 
   if (pstats_tcp_ratio >= 1.0f) {
     _tcp_count_factor = 0.0f;

@@ -21,13 +21,15 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableInt.h"
+#include "configVariableBool.h"
 
 NotifyCategoryDecl(wgldisplay, EXPCL_PANDAGL, EXPTP_PANDAGL);
 
-extern EXPCL_PANDAGL void init_libwgldisplay();
+extern ConfigVariableInt gl_force_pixfmt;
+extern ConfigVariableBool gl_force_invalid;
+extern ConfigVariableBool gl_do_vidmemsize_check;
 
-extern int gl_force_pixfmt;
-extern bool gl_force_invalid;
-extern bool gl_do_vidmemsize_check;
+extern EXPCL_PANDAGL void init_libwgldisplay();
 
 #endif

@@ -33,8 +33,6 @@
 #include "nurbsPPCurve.h"
 #endif
 
-#include "get_config_path.h"
-
 Configure(config_parametrics);
 NotifyCategoryDef(parametrics, "");
 
@@ -61,10 +59,4 @@ ConfigureFn(config_parametrics) {
   HermiteCurve::register_with_read_factory();
   RopeNode::register_with_read_factory();
   SheetNode::register_with_read_factory();
-}
-
-const DSearchPath &
-get_parametrics_path() {
-  static DSearchPath *parametrics_path = NULL;
-  return get_config_path("parametrics-path", parametrics_path);
 }

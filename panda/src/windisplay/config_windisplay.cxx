@@ -28,33 +28,63 @@ ConfigureFn(config_windisplay) {
   init_libwindisplay();
 }
 
-bool show_fps_meter = config_windisplay.GetBool("show-fps-meter", false);
-float fps_meter_update_interval = max(0.5,config_windisplay.GetFloat("fps-meter-update-interval", 1.7));
+ConfigVariableFilename icon_filename
+("win32-window-icon", "");
 
-bool responsive_minimized_fullscreen_window = config_windisplay.GetBool("responsive-minimized-fullscreen-window",false);
+ConfigVariableFilename color_cursor_filename
+("win32-color-cursor", "");
 
-// Set this true to remember the current state of the keyboard while
-// the window focus is lost, or false to pretend the user is not
-// holding down any keys while the window focus is lost.  In either
-// case it should accurately restore the correct keyboard state when
-// the window focus is regained.
-bool hold_keys_across_windows = config_windisplay.GetBool("hold-keys-across-windows", false);
+ConfigVariableFilename mono_cursor_filename
+("win32-mono-cursor", "");
 
-// if true, use ddraw's GetAvailVidMem to fail if driver says it has too little video mem
-bool do_vidmemsize_check = config_windisplay.GetBool("do-vidmemsize-check", true);
+ConfigVariableBool responsive_minimized_fullscreen_window
+("responsive-minimized-fullscreen-window",false);
 
-// For now, set this true to use the IME correctly on Win2000, or
-// false on Win98.  This is temporary; once we have been able to
-// verify that this distinction is actually necessary, we can replace
-// this config variable with an actual OS detection.
-bool ime_composition_w = config_windisplay.GetBool("ime-composition-w", true);
+ConfigVariableBool hold_keys_across_windows
+("hold-keys-across-windows", false,
+ PRC_DESC("Set this true to remember the current state of the keyboard while "
+          "the window focus is lost, or false to pretend the user is not "
+          "holding down any keys while the window focus is lost.  In either "
+          "case it should accurately restore the correct keyboard state when "
+          "the window focus is regained."));
 
-// Set this true to show ime texts on the chat panel and hide the 
-// IME default windows. This is a mechanism to work around DX8/9 interface
-bool ime_aware = config_windisplay.GetBool("ime-aware", false);
+ConfigVariableBool do_vidmemsize_check
+("do-vidmemsize-check", true,
+ PRC_DESC("if true, use ddraw's GetAvailVidMem to fail if driver says "
+          "it has too little video mem"));
 
-// Set this true to hide ime windows
-bool ime_hide = config_windisplay.GetBool("ime-hide", false);
+ConfigVariableBool ime_composition_w
+("ime-composition-w", true,
+ PRC_DESC("For now, set this true to use the IME correctly on Win2000, or "
+          "false on Win98.  This is temporary; once we have been able to "
+          "verify that this distinction is actually necessary, we can replace "
+          "this config variable with an actual OS detection."));
+
+ConfigVariableBool ime_aware
+("ime-aware", false,
+ PRC_DESC("Set this true to show ime texts on the chat panel and hide the "
+          "IME default windows. This is a mechanism to work around DX8/9 "
+          "interface."));
+
+ConfigVariableBool ime_hide
+("ime-hide", false,
+ PRC_DESC("Set this true to hide ime windows."));
+
+ConfigVariableBool sync_video
+("sync-video", true,
+ PRC_DESC("Configure this true to force the rendering to sync to the video "
+          "refresh, or false to let your frame rate go as high as it can, "
+          "irrespective of the video refresh (if this capability is "
+          "available in the ICD)."));
+
+ConfigVariableBool swapbuffer_framelock
+("swapbuffer-framelock", false,
+ PRC_DESC("Set this true to enable HW swapbuffer frame-lock on 3dlabs cards"));
+
+ConfigVariableBool force_software_renderer
+("force-software-renderer", false);
+ConfigVariableBool allow_software_renderer
+("allow-software-renderer", false);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libwindisplay
@@ -75,33 +105,3 @@ init_libwindisplay() {
   WinGraphicsPipe::init_type();
   WinGraphicsWindow::init_type();
 }
-
-// cant use global var cleanly because global var static init executed
-// after init_libwin(), incorrectly reiniting var
-Filename get_icon_filename() {
-  string iconname = config_windisplay.GetString("win32-window-icon","");
-  return ExecutionEnvironment::expand_string(iconname);
-}
-
-Filename get_color_cursor_filename() {
-  string cursorname = config_windisplay.GetString("win32-color-cursor","");
-  return ExecutionEnvironment::expand_string(cursorname);
-}
-
-Filename get_mono_cursor_filename() {
-  string cursorname = config_windisplay.GetString("win32-mono-cursor","");
-  return ExecutionEnvironment::expand_string(cursorname);
-}
-
-
-//  Configure this true to force the rendering to sync to the video
-//  refresh, or false to let your frame rate go as high as it can,
-//  irrespective of the video refresh.  (if this capability is
-//  available in the ICD)
-bool sync_video = config_windisplay.GetBool("sync-video", true);
-
-// Set this true to enable HW swapbuffer frame-lock on 3dlabs cards
-bool swapbuffer_framelock = config_windisplay.GetBool("swapbuffer-framelock", false);
-
-bool force_software_renderer = config_windisplay.GetBool("force-software-renderer", false);
-bool allow_software_renderer = config_windisplay.GetBool("allow-software-renderer", false);

@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dconfig.h"
-#include "get_config_path.h"
 #include "config_downloader.h"
 #include "httpChannel.h"
 

@@ -51,6 +51,7 @@ extern ConfigVariableBool m_dual_flash;
 extern ConfigVariableBool asynchronous_loads;
 
 extern ConfigVariableList load_file_type;
+extern ConfigVariableList cull_bin;
 
 extern EXPCL_PANDA void init_libpgraph();
 

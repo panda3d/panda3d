@@ -31,6 +31,21 @@ ConfigureFn(config_wgldisplay) {
   init_libwgldisplay();
 }
 
+ConfigVariableInt gl_force_pixfmt
+("gl-force-pixfmt", 0);
+
+ConfigVariableBool gl_force_invalid
+("gl-force-invalid", false,
+ PRC_DESC("Set this true to force all GL windows to fail to open "
+          "correctly (for debugging)."));
+
+ConfigVariableBool gl_do_vidmemsize_check
+("gl-do-vidmemsize-check", true,
+ PRC_DESC("This is true to insist that low-memory cards open only 640x480 "
+          "fullscreen windows, no matter what resolution of window was "
+          "requested.  It only affects fullscreen windows."));
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libwgldisplay
 //  Description: Initializes the library.  This must be called at
@@ -56,13 +71,3 @@ init_libwgldisplay() {
   selection->add_pipe_type(wglGraphicsPipe::get_class_type(),
                            wglGraphicsPipe::pipe_constructor);
 }
-
-int gl_force_pixfmt = config_wgldisplay.GetInt("gl-force-pixfmt", 0);
-
-// Set this true to force all GL windows to fail to open correctly.
-bool gl_force_invalid = config_wgldisplay.GetBool("gl-force-invalid", false);
-
-// This is true to insist that low-memory cards open only 640x480
-// fullscreen windows, no matter what resolution of window was
-// requested.  It only affects fullscreen windows.
-bool gl_do_vidmemsize_check = config_wgldisplay.GetBool("gl-do-vidmemsize-check", true);

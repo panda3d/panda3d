@@ -19,7 +19,6 @@
 #include "config_egg2pg.h"
 
 #include "dconfig.h"
-#include "get_config_path.h"
 #include "loaderFileTypeEgg.h"
 #include "loaderFileTypeRegistry.h"
 #include "configVariableManager.h"

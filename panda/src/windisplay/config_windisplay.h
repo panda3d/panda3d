@@ -22,26 +22,26 @@
 #include "pandabase.h"
 #include "filename.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableFilename.h"
+#include "configVariableBool.h"
 
 NotifyCategoryDecl(windisplay, EXPCL_PANDAWIN, EXPTP_PANDAWIN);
 
-extern Filename get_icon_filename();
-extern Filename get_color_cursor_filename();
-extern Filename get_mono_cursor_filename();
+extern ConfigVariableFilename icon_filename;
+extern ConfigVariableFilename color_cursor_filename;
+extern ConfigVariableFilename mono_cursor_filename;
 
-extern bool show_fps_meter;
-extern float fps_meter_update_interval;
-extern bool responsive_minimized_fullscreen_window;
-extern bool hold_keys_across_windows;
-extern bool do_vidmemsize_check;
-extern bool ime_composition_w;
-extern bool ime_aware;
-extern bool ime_hide;
+extern ConfigVariableBool responsive_minimized_fullscreen_window;
+extern ConfigVariableBool hold_keys_across_windows;
+extern ConfigVariableBool do_vidmemsize_check;
+extern ConfigVariableBool ime_composition_w;
+extern ConfigVariableBool ime_aware;
+extern ConfigVariableBool ime_hide;
 
-extern EXPCL_PANDAWIN bool sync_video;
-extern EXPCL_PANDAWIN bool swapbuffer_framelock;
-extern EXPCL_PANDAWIN bool force_software_renderer;
-extern EXPCL_PANDAWIN bool allow_software_renderer;
+extern EXPCL_PANDAWIN ConfigVariableBool sync_video;
+extern EXPCL_PANDAWIN ConfigVariableBool swapbuffer_framelock;
+extern EXPCL_PANDAWIN ConfigVariableBool force_software_renderer;
+extern EXPCL_PANDAWIN ConfigVariableBool allow_software_renderer;
 
 extern EXPCL_PANDAWIN void init_libwindisplay();
 

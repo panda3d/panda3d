@@ -1654,8 +1654,8 @@ register_window_class() {
 
   // Might be nice to move these properties into the WindowProperties
   // structure, so they don't have to be global for all windows.
-  string windows_icon_filename = get_icon_filename().to_os_specific();
-  string windows_mono_cursor_filename = get_mono_cursor_filename().to_os_specific();
+  string windows_icon_filename = icon_filename.get_value().to_os_specific();
+  string windows_mono_cursor_filename = mono_cursor_filename.get_value().to_os_specific();
 
   if (!windows_icon_filename.empty()) {
     // Note: LoadImage seems to cause win2k internal heap corruption

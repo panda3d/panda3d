@@ -28,6 +28,7 @@
 #include "pointerTo.h"
 #include "dconfig.h"
 #include "dSearchPath.h"
+#include "configVariableSearchPath.h"
 #include "nodePath.h"
 
 ConfigureDecl(config_showbase, EXPCL_DIRECT, EXPTP_DIRECT);
@@ -39,7 +40,7 @@ class GraphicsEngine;
 
 BEGIN_PUBLISH
 
-EXPCL_DIRECT DSearchPath &get_particle_path();
+EXPCL_DIRECT ConfigVariableSearchPath &get_particle_path();
 
 EXPCL_DIRECT void throw_new_frame();
 

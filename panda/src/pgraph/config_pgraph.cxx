@@ -87,7 +87,6 @@
 #include "transformState.h"
 #include "transparencyAttrib.h"
 #include "nodePathLerps.h"
-#include "get_config_path.h"
 
 #include "dconfig.h"
 
@@ -186,6 +185,12 @@ ConfigVariableList load_file_type
           "import when a new, unknown model type is loaded.  This may be "
           "either the name of a module, or a space-separate list of filename "
           "extensions, followed by the name of the module."));
+
+ConfigVariableList cull_bin
+("cull-bin", 
+ PRC_DESC("Creates a new cull bin by name, with the specified properties.  "
+          "This is a string in three tokens, separated by whitespace: "
+          "'bin_name sort type'."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpgraph

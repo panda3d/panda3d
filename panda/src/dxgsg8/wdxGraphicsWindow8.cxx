@@ -734,7 +734,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
   if (dx_multisample_antialiasing_level>1) {
     // need to check both rendertarget and zbuffer fmts
     hr = pD3D8->CheckDeviceMultiSampleType(Display.CardIDNum, D3DDEVTYPE_HAL, Display.DisplayMode.Format,
-                                           is_fullscreen(), D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level));
+                                           is_fullscreen(), D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level.get_value()));
     if (FAILED(hr)) {
       wdxdisplay8_cat.fatal() << "device #"<<Display.CardIDNum<< " doesnt support multisample level "<<dx_multisample_antialiasing_level <<"surface fmt "<< D3DFormatStr(Display.DisplayMode.Format) <<endl;
       //exit(1);
@@ -743,7 +743,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 
     if (Display.PresParams.EnableAutoDepthStencil) {
       hr = pD3D8->CheckDeviceMultiSampleType(Display.CardIDNum, D3DDEVTYPE_HAL, Display.PresParams.AutoDepthStencilFormat,
-                                             is_fullscreen(), D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level));
+                                             is_fullscreen(), D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level.get_value()));
       if (FAILED(hr)) {
         wdxdisplay8_cat.fatal() << "device #"<<Display.CardIDNum<< " doesnt support multisample level "<<dx_multisample_antialiasing_level <<"surface fmt "<< D3DFormatStr(Display.PresParams.AutoDepthStencilFormat) <<endl;
         //exit(1);
@@ -751,7 +751,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
       }
     }
 
-    pPresParams->MultiSampleType = D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level);
+    pPresParams->MultiSampleType = D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level.get_value());
 
     if (wdxdisplay8_cat.is_info())
       wdxdisplay8_cat.info() << "device #"<<Display.CardIDNum<< " using multisample antialiasing level "<<dx_multisample_antialiasing_level <<endl;
@@ -1194,9 +1194,6 @@ void wdxGraphicsWindow8Group::initWindowGroup(void) {
                       // but after we have all the monitor handles needed by CreateWindow()
 
 //    SetCoopLevelsAndDisplayModes();
-
-    if(dx_show_fps_meter)
-       _windows[0]->_dxgsg->_bShowFPSMeter = true;  // just show fps on 1st mon
 
     for(UINT i=0;i<num_windows;i++) {
         _windows[i]->CreateScreenBuffersAndDevice(_windows[i]->_wcontext);

@@ -33,10 +33,10 @@
 ConfigureDecl(config_pstats, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pstats, EXPCL_PANDA, EXPTP_PANDA);
 
-extern EXPCL_PANDA string get_pstats_name();
-extern EXPCL_PANDA float get_pstats_max_rate();
-extern EXPCL_PANDA bool get_pstats_threaded_write();
-extern EXPCL_PANDA double get_pstats_tcp_ratio();
+extern EXPCL_PANDA ConfigVariableString pstats_name;
+extern EXPCL_PANDA ConfigVariableDouble pstats_max_rate;
+extern EXPCL_PANDA ConfigVariableBool pstats_threaded_write;
+extern EXPCL_PANDA ConfigVariableDouble pstats_tcp_ratio;
 
 extern EXPCL_PANDA ConfigVariableString pstats_host;
 extern EXPCL_PANDA ConfigVariableInt pstats_port;

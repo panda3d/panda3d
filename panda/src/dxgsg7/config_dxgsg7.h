@@ -21,50 +21,43 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableBool.h"
+#include "configVariableInt.h"
+#include "configVariableDouble.h"
 
 NotifyCategoryDecl(dxgsg7, EXPCL_PANDADX, EXPTP_PANDADX);
 NotifyCategoryDecl(wdxdisplay7, EXPCL_PANDADX, EXPTP_PANDADX);
 
-extern bool dx_full_screen;
-extern bool dx_sync_video;
-extern bool dx_cull_traversal;
-extern bool dx_no_vertex_fog;
-extern bool dx_full_screen_antialiasing;
-extern bool dx_auto_normalize_lighting;
-extern bool dx_use_rangebased_fog;
-extern bool dx_allow_software_renderer;
-extern bool dx_force_software_renderer;
-extern const bool link_tristrips;
+extern ConfigVariableBool dx_full_screen;
+extern ConfigVariableBool dx_sync_video;
+extern ConfigVariableBool dx_no_vertex_fog;
+extern ConfigVariableBool dx_full_screen_antialiasing;
+extern ConfigVariableBool dx_auto_normalize_lighting;
+extern ConfigVariableBool dx_use_rangebased_fog;
+extern ConfigVariableBool dx_allow_software_renderer;
+extern ConfigVariableBool dx_force_software_renderer;
+extern ConfigVariableBool link_tristrips;
 
 // debug flags we might want to use in full optimized build
-extern bool dx_ignore_mipmaps;
-extern bool dx_mipmap_everything;
-extern bool dx_show_transforms;
-extern bool dx_force_16bpptextures;
-extern bool dx_no_dithering;
-extern bool dx_force_16bpp_zbuffer;
-extern bool dx_do_vidmemsize_check;
-extern bool dx_preserve_fpu_state;
+extern ConfigVariableBool dx_ignore_mipmaps;
+extern ConfigVariableBool dx_mipmap_everything;
+extern ConfigVariableBool dx_force_16bpptextures;
+extern ConfigVariableBool dx_no_dithering;
+extern ConfigVariableBool dx_force_16bpp_zbuffer;
+extern ConfigVariableBool dx_do_vidmemsize_check;
+extern ConfigVariableBool dx_preserve_fpu_state;
 
-extern bool dx_depth_offset_decals;
+extern ConfigVariableBool dx_depth_offset_decals;
 
 #ifndef NDEBUG
-extern int dx_force_backface_culling;
+extern ConfigVariableInt dx_force_backface_culling;
 #endif
 
 #ifdef _DEBUG
-extern float dx_global_miplevel_bias;
-extern bool dx_debug_view_mipmaps;
-extern bool dx_force_anisotropic_filtering;
+extern ConfigVariableDouble dx_global_miplevel_bias;
+extern ConfigVariableBool dx_debug_view_mipmaps;
+extern ConfigVariableBool dx_force_anisotropic_filtering;
 #endif
-
-// Ways to implement decals.
-enum DXDecalType {
-  GDT_mask,   // GL 1.0 style, involving three steps and double-draw of polygon
-  GDT_blend,  // As above, but slower; use blending to disable colorbuffer writes
-  GDT_offset  // The fastest, using GL 1.1 style glPolygonOffset
-};
-extern DXDecalType dx_decal_type;
 
 extern EXPCL_PANDADX void init_libdxgsg7();
 

@@ -25,7 +25,6 @@
     dcast.T dcast.h \
     encryptStreamBuf.h encryptStreamBuf.I encryptStream.h encryptStream.I \
     error_utils.h \
-    get_config_path.h \
     hashGeneratorBase.I hashGeneratorBase.h \
     hashVal.I hashVal.h indent.I indent.h \
     indirectLess.I indirectLess.h \
@@ -90,7 +89,6 @@
     datagramSink.cxx dcast.cxx \
     encryptStreamBuf.cxx encryptStream.cxx \
     error_utils.cxx \
-    get_config_path.cxx \
     hashGeneratorBase.cxx hashVal.cxx indent.cxx \
     memoryInfo.cxx memoryUsage.cxx memoryUsagePointerCounts.cxx \
     memoryUsagePointers.cxx multifile.cxx \
@@ -145,7 +143,7 @@
     datagramIterator.I datagramIterator.h \
     datagramSink.I datagramSink.h dcast.T dcast.h \
     encryptStreamBuf.h encryptStreamBuf.I encryptStream.h encryptStream.I \
-    error_utils.h get_config_path.h \
+    error_utils.h  \
     hashGeneratorBase.I \
     hashGeneratorBase.h hashVal.I hashVal.h \
     indent.I indent.h \
