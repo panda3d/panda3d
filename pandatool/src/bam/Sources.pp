@@ -21,7 +21,8 @@
   #define LOCAL_LIBS \
     eggbase progbase
   #define OTHER_LIBS \
-    loader:c egg2sg:c builder:c egg:c pnmimagetypes:c graph:c putil:c \
+    loader:c egg2sg:c builder:c egg:c pnmimagetypes:c gobj:c \
+    graph:c putil:c \
     express:c pandaegg:m panda:m pandaexpress:m \
     interrogatedb:c dtoolutil:c dconfig:c dtool:m pystub
   #define UNIX_SYS_LIBS \
