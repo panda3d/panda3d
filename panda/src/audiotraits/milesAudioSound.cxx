@@ -167,18 +167,18 @@ get_loop_count() const {
 }
 
 void MilesAudioSound::
-set_time(float start_time) {
-  miles_audio_debug("set_time(start_time="<<start_time<<")");
-  S32 milisecond_start_time=S32(1000*start_time);
-  AIL_quick_set_ms_position(_audio, milisecond_start_time);
+set_time(float time) {
+  miles_audio_debug("set_time(time="<<time<<")");
+  S32 milisecond_time=S32(1000*time);
+  AIL_quick_set_ms_position(_audio, milisecond_time);
 }
 
 float MilesAudioSound::
 get_time() const {
-  S32 milisecond_start_time=AIL_quick_ms_position(_audio);
-  float start_time=float(milisecond_start_time*.001);
-  miles_audio_debug("get_time() returning "<<start_time);
-  return start_time;
+  S32 milisecond_time=AIL_quick_ms_position(_audio);
+  float time=float(milisecond_time*.001);
+  miles_audio_debug("get_time() returning "<<time);
+  return time;
 }
 
 void MilesAudioSound::

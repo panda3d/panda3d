@@ -32,7 +32,7 @@ class EXPCL_PANDA AudioSound : public ReferenceCount {
 PUBLISHED:
   virtual ~AudioSound() {}
   
-  // For best compatability, set the loop_count, start_time,
+  // For best compatability, set the loop_count,
   // volume, and balance, prior to calling play().  You may
   // set them while they're playing, but it's implementation
   // specific whether you get the results.
@@ -52,7 +52,10 @@ PUBLISHED:
   virtual void set_loop_count(unsigned long loop_count=1) = 0;
   virtual unsigned long get_loop_count() const = 0;
   
-  // start_time in seconds: 0 = beginning; length() = end.
+  // Control time position within the sound.
+  // This is similar (in concept) to the seek position within
+  // a file.
+  // time in seconds: 0 = beginning; length() = end.
   // inits to 0.0.
   // - Unlike the other get_* and set_* calls for a sound, the
   //   current time position will change while the sound is playing.

@@ -31,7 +31,7 @@ class EXPCL_MILES_AUDIO MilesAudioSound : public AudioSound {
 public:
   ~MilesAudioSound();
   
-  // For best compatability, set the loop_count, start_time,
+  // For best compatability, set the loop_count,
   // volume, and balance, prior to calling play().  You may
   // set them while they're playing, but it's implementation
   // specific whether you get the results.
@@ -51,7 +51,10 @@ public:
   void set_loop_count(unsigned long loop_count=1);
   unsigned long get_loop_count() const;
   
-  // start_time in seconds: 0 = beginning; length() = end.
+  // Control time position within the sound.
+  // This is similar (in concept) to the seek position within
+  // a file.
+  // time in seconds: 0 = beginning; length() = end.
   // inits to 0.0.
   // - Unlike the other get_* and set_* calls for a sound, the
   //   current time position will change while the sound is playing.
@@ -62,7 +65,7 @@ public:
   // - If a sound is playing, calling get_time() repeatedly will
   //   return different results over time.  e.g.:
   //   float percent_complete = s.get_time() / s.length();
-  void set_time(float start_time=0.0f);
+  void set_time(float time=0.0f);
   float get_time() const;
   
   // 0 = minimum; 1.0 = maximum.
