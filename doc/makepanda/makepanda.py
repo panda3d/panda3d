@@ -1521,11 +1521,12 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
 def CompileBAM(preconv, bam, egg):
     dotexe = ".exe"
     if (sys.platform != "win32"): dotexe = ""
-    if (egg[-4:]==".flt"):
-        oscmd(PREFIX + "/bin/flt2egg" + dotexe + " -pr " + preconv + " -o " + PREFIX + "/tmp/tmp.egg" + " " + egg)
-        oscmd(PREFIX + "/bin/egg2bam" + dotexe + " -o " + bam + " " + PREFIX + "/tmp/tmp.egg")
-    else:
-        oscmd(PREFIX + "/bin/egg2bam" + dotexe + " -pr " + preconv + " -o " + bam + " " + egg)
+    if (older(bam, egg)):
+        if (egg[-4:]==".flt"):
+            oscmd(PREFIX + "/bin/flt2egg" + dotexe + " -pr " + preconv + " -o " + PREFIX + "/tmp/tmp.egg" + " " + egg)
+            oscmd(PREFIX + "/bin/egg2bam" + dotexe + " -o " + bam + " " + PREFIX + "/tmp/tmp.egg")
+        else:
+            oscmd(PREFIX + "/bin/egg2bam" + dotexe + " -pr " + preconv + " -o " + bam + " " + egg)
 
 ##########################################################################################
 #
