@@ -6,15 +6,20 @@
   #define LOCAL_LIBS \
     putil display graph sgraph gobj sgattrib pnmimage mathutil gsgbase \
     linmath
+    
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 
   #define SOURCES \
-    ambientLight.cxx ambientLight.h config_light.cxx config_light.h \
-    directionalLight.I directionalLight.cxx directionalLight.h \
-    light.cxx light.h lightAttribute.I lightAttribute.cxx \
-    lightAttribute.h lightTransition.I lightTransition.cxx \
-    lightTransition.h pointLight.I pointLight.cxx pointLight.h \
-    pt_Light.cxx pt_Light.h spotlight.I spotlight.cxx spotlight.h \
-    vector_PT_Light.cxx vector_PT_Light.h
+     ambientLight.h config_light.h directionalLight.I  \
+     directionalLight.h light.h lightAttribute.I lightAttribute.h  \
+     lightTransition.I lightTransition.h pointLight.I  \
+     pointLight.h pt_Light.h spotlight.I spotlight.h  \
+     vector_PT_Light.h 
+    
+  #define INCLUDED_SOURCES \
+     ambientLight.cxx config_light.cxx directionalLight.cxx light.cxx  \
+     lightAttribute.cxx lightTransition.cxx pointLight.cxx  \
+     pt_Light.cxx spotlight.cxx vector_PT_Light.cxx 
 
   #define INSTALL_HEADERS \
     ambientLight.h directionalLight.I directionalLight.h light.h \
