@@ -425,7 +425,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
     } else if ((_num_channels == 2 || _num_channels == 4) && num_extra_samples == 0) {
       // If we have a 2- or 4-channel image but the extra samples are
       // not declared, assume it was written out by a broken TIFF
-      // implementation and that the extra channel is really mean to
+      // implementation and that the extra channel is really meant to
       // be alpha.
       unassoc_alpha_sample = _num_channels - 1;
       if (pnmimage_tiff_cat.is_debug()) {
