@@ -20,10 +20,8 @@
 #define EVENT_H
 
 #include "pandabase.h"
-
 #include "eventParameter.h"
-
-#include <typedReferenceCount.h>
+#include "typedReferenceCount.h"
 
 class EventReceiver;
 
