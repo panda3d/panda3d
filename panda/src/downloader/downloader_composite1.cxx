@@ -3,4 +3,5 @@
 #include "extractor.cxx"
 #include "multiplexStream.cxx"
 #include "multiplexStreamBuf.cxx"
+#include "urlSpec.cxx"
 

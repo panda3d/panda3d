@@ -1,0 +1,111 @@
+// Filename: urlSpec.h
+// Created by:  drose (24Sep02)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef URLSPEC_H
+#define URLSPEC_H
+
+#include "pandabase.h"
+
+////////////////////////////////////////////////////////////////////
+//       Class : URLSpec
+// Description : A container for a URL, e.g. "http://server:port/path".
+//
+//               The URLSpec object is similar to a Filename in that
+//               it contains logic to identify the various parts of a
+//               URL and return (or modify) them separately.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDAEXPRESS URLSpec {
+PUBLISHED:
+  URLSpec();
+  INLINE URLSpec(const string &url);
+  INLINE URLSpec(const URLSpec &copy);
+  INLINE void operator = (const string &url);
+  void operator = (const URLSpec &copy);
+
+  INLINE bool has_scheme() const;
+  INLINE bool has_authority() const;
+  INLINE bool has_username() const;
+  INLINE bool has_server() const;
+  INLINE bool has_port() const;
+  INLINE bool has_path() const;
+  INLINE bool has_query() const;
+
+  string get_scheme() const;
+  INLINE string get_authority() const;
+  INLINE string get_username() const;
+  INLINE string get_server() const;
+  INLINE string get_port_str() const;
+  int get_port() const;
+  string get_path() const;
+  INLINE string get_query() const;
+
+  INLINE const string &get_url() const;
+
+  void set_scheme(const string &scheme);
+  void set_authority(const string &authority);
+  void set_username(const string &username);
+  void set_server(const string &server);
+  void set_port(const string &port);
+  void set_port(int port);
+  void set_path(const string &path);
+  void set_query(const string &query);
+
+  void set_url(const string &url);
+
+  void output(ostream &out) const;
+
+  static string quote(const string &source, const string &safe = "/");
+  static string quote_plus(const string &source, const string &safe = "/");
+  static string unquote(const string &source);
+  static string unquote_plus(const string &source);
+
+private:
+  void parse_authority();
+
+  enum Flags {
+    F_has_scheme     = 0x0001,
+    F_has_authority  = 0x0002,
+    F_has_username   = 0x0004,
+    F_has_server     = 0x0008,
+    F_has_port       = 0x0010,
+    F_has_path       = 0x0020,
+    F_has_query      = 0x0040,
+  };
+
+  string _url;
+  int _port;
+  int _flags;
+
+  size_t _scheme_end;
+  size_t _username_start;
+  size_t _username_end;
+  size_t _server_start;
+  size_t _server_end;
+  size_t _port_start;
+  size_t _port_end;
+  size_t _path_start;
+  size_t _path_end;
+  size_t _query_start;
+};
+
+INLINE ostream &operator << (ostream &out, const URLSpec &url);
+
+#include "urlSpec.I"
+
+#endif
+

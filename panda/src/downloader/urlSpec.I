@@ -1,0 +1,204 @@
+// Filename: urlSpec.I
+// Created by:  drose (24Sep02)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE URLSpec::
+URLSpec(const string &url) {
+  (*this) = url;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::Copy Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE URLSpec::
+URLSpec(const URLSpec &copy) {
+  (*this) = copy;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::Assignment Operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void URLSpec::
+operator = (const string &url) {
+  set_url(url);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::has_scheme
+//       Access: Published
+//  Description: Returns true if the URL specifies a scheme
+//               (e.g. "http:"), false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool URLSpec::
+has_scheme() const {
+  return (_flags & F_has_scheme) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::has_authority
+//       Access: Published
+//  Description: Returns true if the URL specifies an authority
+//               (this includes username, server, and/or port), false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool URLSpec::
+has_authority() const {
+  return (_flags & F_has_authority) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::has_username
+//       Access: Published
+//  Description: Returns true if the URL specifies a username
+//               (and/or password), false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool URLSpec::
+has_username() const {
+  return (_flags & F_has_username) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::has_server
+//       Access: Published
+//  Description: Returns true if the URL specifies a server name,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool URLSpec::
+has_server() const {
+  return (_flags & F_has_server) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::has_port
+//       Access: Published
+//  Description: Returns true if the URL specifies a port number,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool URLSpec::
+has_port() const {
+  return (_flags & F_has_port) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::has_path
+//       Access: Published
+//  Description: Returns true if the URL includes a path specification
+//               (that is, the particular filename on the server to
+//               retrieve), false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool URLSpec::
+has_path() const {
+  return (_flags & F_has_path) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::has_query
+//       Access: Published
+//  Description: Returns true if the URL includes a query
+//               specification, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool URLSpec::
+has_query() const {
+  return (_flags & F_has_query) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::get_authority
+//       Access: Published
+//  Description: Returns the authority specified by the URL (this
+//               includes username, server, and/or port), or empty
+//               string if no authority is specified.
+////////////////////////////////////////////////////////////////////
+INLINE string URLSpec::
+get_authority() const {
+  return _url.substr(_username_start, _port_end - _username_start);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::get_username
+//       Access: Published
+//  Description: Returns the username specified by the URL, if any.
+//               This might also include a password,
+//               e.g. "username:password", although putting a password
+//               on the URL is probably a bad idea.
+////////////////////////////////////////////////////////////////////
+INLINE string URLSpec::
+get_username() const {
+  return _url.substr(_username_start, _username_end - _username_start);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::get_server
+//       Access: Published
+//  Description: Returns the server name specified by the URL, if any.
+////////////////////////////////////////////////////////////////////
+INLINE string URLSpec::
+get_server() const {
+  return _url.substr(_server_start, _server_end - _server_start);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::get_port_str
+//       Access: Published
+//  Description: Returns the port specified by the URL as a string, or
+//               the empty string if no port is specified.  Compare
+//               this with get_port(), which returns a default port
+//               number if no port is specified.
+////////////////////////////////////////////////////////////////////
+INLINE string URLSpec::
+get_port_str() const {
+  return _url.substr(_port_start, _port_end - _port_start);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::get_query
+//       Access: Published
+//  Description: Returns the query specified by the URL, or empty
+//               string if no query is specified.
+////////////////////////////////////////////////////////////////////
+INLINE string URLSpec::
+get_query() const {
+  return _url.substr(_query_start);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::get_url
+//       Access: Published
+//  Description: Returns the complete URL specification.
+////////////////////////////////////////////////////////////////////
+INLINE const string &URLSpec::
+get_url() const {
+  return _url;
+}
+
+INLINE ostream &
+operator << (ostream &out, const URLSpec &url) {
+  url.output(out);
+  return out;
+}
+
+
