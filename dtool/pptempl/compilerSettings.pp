@@ -71,7 +71,7 @@
   #define LDFLAGS_OPT3 /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF
   #define LDFLAGS_OPT4 /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF $[LDFLAGS_OPT4]
 
-  #define COMMONFLAGS /DHAVE_DINKUM 
+  #define COMMONFLAGS /DHAVE_DINKUM /Zc:forScope
   
   #define OPTFLAGS /O2 /Ob2 /G6 /QIfist
 //  #define OPT1FLAGS /RTCsu /GS     removing /GS cause we really dont need it, /RTCu because it crashes in dxgsg with internal compiler bug
