@@ -17,6 +17,7 @@
 #include <filename.h>
 #include <list>
 #include <errno.h>
+#include <math.h>
 
 #if !defined(WIN32_VC)
 // #define errno wsaGetLastError()
@@ -650,7 +651,7 @@ download(const string &file_name, Filename file_dest,
     nassertr(_frequency > 0, D_error);
     // If byte rate has changed, recompute read size and write buffer size 
     if (_new_byte_rate > 0) {
-      _read_size = (int)(_new_byte_rate * _frequency);
+      _read_size = (int)ceil(_new_byte_rate * _frequency);
       _byte_rate = _new_byte_rate;
       _new_byte_rate = 0;
       resize_buffer = true;
@@ -664,7 +665,6 @@ download(const string &file_name, Filename file_dest,
     }
 
     if (resize_buffer == true) {
-
       // Flush the write buffer before resizing it
       if (status._bytes_in_buffer > 0) {
 	if (write_to_disk(status) == false) {
@@ -676,7 +676,7 @@ download(const string &file_name, Filename file_dest,
       }
 
       // Resize the buffer
-      _disk_buffer_size = (int)(_disk_write_frequency * _read_size);
+      _disk_buffer_size = (_disk_write_frequency * _read_size);
       
       if (downloader_cat.is_debug())
         downloader_cat.debug()
