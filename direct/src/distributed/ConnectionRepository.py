@@ -56,6 +56,20 @@ class ConnectionRepository(DoInterestManager, CConnectionRepository):
         # DC file.  The AIRepository will redefine this to 'AI'.
         self.dcSuffix = ''
 
+    if __debug__:
+        def printObjects(self):
+            format="%10s %10s %10s %30s %20s"
+            title=format%("parentId", "zoneId", "doId", "dclass", "name")
+            print title
+            print '-'*len(title)
+            for distObj in self.doId2do.values():
+                print format%(
+                    distObj.parentId,
+                    distObj.zoneId,
+                    distObj.doId,
+                    distObj.dclass.getName(),
+                    distObj.__dict__.get("name"))
+
     def readDCFile(self, dcFileNames = None):
         """
         Reads in the dc files listed in dcFileNames, or if
@@ -126,7 +140,7 @@ class ConnectionRepository(DoInterestManager, CConnectionRepository):
             if classDef == None:
                 className = dclass.getName()
                 classDef = dcImports.get(className)
-                
+
             if classDef is None:
                 self.notify.info("No class definition for %s." % (className))
             else:
