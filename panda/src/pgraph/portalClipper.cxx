@@ -261,8 +261,10 @@ prepare_portal(const NodePath &node_path)
   temp[3] = temp[3]*cmat;
 
   Planef portal_plane(temp[0], temp[1], temp[2]);
-  if (!is_facing_view(portal_plane))
+  if (!is_facing_view(portal_plane)) {
+    pgraph_cat.debug() << "portal failed 1st level test \n";
     return;
+  }
 
   pgraph_cat.spam() << "after transformation to camera space" << endl;
   pgraph_cat.spam() << temp[0] << endl;
@@ -305,8 +307,6 @@ prepare_portal(const NodePath &node_path)
 
   // check if portal is in view
   if (is_whole_portal_in_view(node_path)) {
-    pgraph_cat.debug() << "portal passed 1st level test \n";
-    
     // ok, now lets add the original portal
     _color = Colorf(0,1,1,1);
     move_to(temp[0]);
@@ -326,6 +326,8 @@ prepare_portal(const NodePath &node_path)
     pgraph_cat.spam() << "assembled " << _portal_node->get_name() << ": frustum points" << endl;
     _num_vert = _portal_node->get_num_vertices();
   }
+  else
+    pgraph_cat.debug() << "portal failed 2nd level test \n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -366,21 +368,23 @@ clip_portal(const NodePath &node_path)
   float t;
   Planef plane;
   bool is_intersect;
+  unsigned int xect=0;
   LPoint3f from_origin;
   LPoint3f cut_point;
   LVector3f from_direction;
 
-  // Look for intersection with the view frustum's bottom_plane to bottom_edge of portal
+  // Look for intersection with the view frustum's bottom_plane and portal edges
   plane = _view_frustum->get_plane(1);
   for (j=0; j<_num_vert; ++j) {
     from_origin = _coords[j];
     from_direction = _coords[(j+1)%_num_vert] - _coords[j];
     is_intersect = plane.intersects_line(t, from_origin, from_direction);
-    if (is_intersect && (t > 0.0 && t < 1.0)) {
+    if (is_intersect && (t >= 0.0 && t <= 1.0)) {
+      xect |= 1 << 0;
       pgraph_cat.debug() << "bottom plane intersected segment " << j << "->" 
                          << (j+1)%_num_vert << " at t=" << t << endl;
       cut_point = from_origin + t*from_direction;
-      pgraph_cat.debug() << "cut_point: " << cut_point << endl;
+      pgraph_cat.spam() << "cut_point: " << cut_point << endl;
       if (j == 1) {
         // means bottom should cut 1->2 by moving 1 to the intersection point
         _coords[1] = cut_point;
@@ -392,19 +396,22 @@ clip_portal(const NodePath &node_path)
       else
         pgraph_cat.debug() << "ignored for now for simplicity \n";
     }
+    else
+      pgraph_cat.debug() << "is_intersect: " << is_intersect << " at t = " << t << endl;
   }
 
-  // Look for intersection with the view frustum's top_plane to top_edge of portal
+  // Look for intersection with the view frustum's top_plane and portal edges
   plane = _view_frustum->get_plane(3);
   for (j=0; j<_num_vert; ++j) {
     from_origin = _coords[j];
     from_direction = _coords[(j+1)%_num_vert] - _coords[j];
     is_intersect = plane.intersects_line(t, from_origin, from_direction);
-    if (is_intersect && (t > 0.0 && t < 1.0)) {
+    if (is_intersect && (t >= 0.0 && t <= 1.0)) {
+      xect |= 1 << 1;
       pgraph_cat.debug() << "top plane intersected segment " << j << "->" 
                          << (j+1)%_num_vert << " at t=" << t << endl;
       cut_point = from_origin + t*from_direction;
-      pgraph_cat.debug() << "cut_point: " << cut_point << endl;
+      pgraph_cat.spam() << "cut_point: " << cut_point << endl;
       if (j == 1) {
         // means top should cut 1->2 by moving 2 to the intersection point
         _coords[2] = cut_point;
@@ -416,54 +423,62 @@ clip_portal(const NodePath &node_path)
       else
         pgraph_cat.debug() << "ignored for now for simplicity \n";
     }
+    else
+      pgraph_cat.debug() << "is_intersect: " << is_intersect << " at t = " << t << endl;
   }
 
-  // Look for intersection with the view frustum's right_plane to right_edge of portal
+  // Look for intersection with the view frustum's right_plane and portal edges
   plane = _view_frustum->get_plane(2);
   for (j=0; j<_num_vert; ++j) {
     from_origin = _coords[j];
     from_direction = _coords[(j+1)%_num_vert] - _coords[j];
     is_intersect = plane.intersects_line(t, from_origin, from_direction);
-    if (is_intersect && (t > 0.0 && t < 1.0)) {
+    if (is_intersect && (t >= 0.0 && t <= 1.0)) {
+      xect |= 1 << 2;
       pgraph_cat.debug() << "right plane intersected segment " << j << "->" 
                          << (j+1)%_num_vert << " at t=" << t << endl;
       cut_point = from_origin + t*from_direction;
-      pgraph_cat.debug() << "cut_point: " << cut_point << endl;
+      pgraph_cat.spam() << "cut_point: " << cut_point << endl;
       if (j == 0) {
         // means right should cut 0->1 by moving 1 to the intersection point
         _coords[1] = cut_point;
       }
       else if (j == 2) {
-        // means bottom should cut 2->3 by moving 2 to the intersection point
+        // means right should cut 2->3 by moving 2 to the intersection point
         _coords[2] = cut_point;
       }
       else
         pgraph_cat.debug() << "ignored for now for simplicity \n";
     }
+    else
+      pgraph_cat.debug() << "is_intersect: " << is_intersect << " at t = " << t << endl;
   }
 
-  // Look for intersection with the view frustum's left_plane to left_edge of portal
+  // Look for intersection with the view frustum's left_plane and portal edges
   plane = _view_frustum->get_plane(4);
   for (j=0; j<_num_vert; ++j) {
     from_origin = _coords[j];
     from_direction = _coords[(j+1)%_num_vert] - _coords[j];
     is_intersect = plane.intersects_line(t, from_origin, from_direction);
-    if (is_intersect && (t > 0.0 && t < 1.0)) {
+    if (is_intersect && (t >= 0.0 && t <= 1.0)) {
+      xect |= 1 << 3;
       pgraph_cat.debug() << "left plane intersected segment " << j << "->" 
                          << (j+1)%_num_vert << " at t=" << t << endl;
       cut_point = from_origin + t*from_direction;
-      pgraph_cat.debug() << "cut_point: " << cut_point << endl;
+      pgraph_cat.spam() << "cut_point: " << cut_point << endl;
       if (j == 0) {
         // means left should cut 0->1 by moving 0 to the intersection point
         _coords[0] = cut_point;
       }
       else if (j == 2) {
-        // means bottom should cut 2->3 by moving 3 to the intersection point
+        // means left should cut 2->3 by moving 3 to the intersection point
         _coords[3] = cut_point;
       }
       else
         pgraph_cat.debug() << "ignored for now for simplicity \n";
     }
+    else
+      pgraph_cat.debug() << "is_intersect: " << is_intersect << " at t = " << t << endl;
   }
   // ok, now lets add the clipped portal
   _color = Colorf(1,0,0,1);
@@ -473,9 +488,13 @@ clip_portal(const NodePath &node_path)
   draw_to(_coords[3]);
   draw_to(_coords[0]);
 
-  // 2nd level test, more accurate to determine if the portal is worth visiting
+  // 3rd level test, more accurate to determine if the portal is worth visiting
+  pgraph_cat.debug() << "portal clipper flag: " << xect << endl;
+  if (xect == 0xf) {  //if all four planes intersected the portal, it is visible
+    return;
+  }
   if (!is_partial_portal_in_view(node_path)) {
-    pgraph_cat.debug() << "portal failed 2nd level test \n";
+    pgraph_cat.debug() << "portal failed 3rd level test \n";
     _num_vert = 0;
   }
 }

@@ -123,9 +123,9 @@ is_facing_view(Planef portal_plane)
   Planef view_plane(_view_frustum->get_point(4), _view_frustum->get_point(5), _view_frustum->get_point(6));
 
   // use the view_frustum's near plane to calculate direction
-  pgraph_cat.debug() << portal_plane.get_normal() << "; " << -view_plane.get_normal() << endl;
+  pgraph_cat.spam() << portal_plane.get_normal() << "; " << -view_plane.get_normal() << endl;
   float direction = portal_plane.get_normal().dot(-view_plane.get_normal());
-  pgraph_cat.debug() << "Found direction of " << direction << endl;
+  pgraph_cat.spam() << "Found direction of " << direction << endl;
   return (direction < _FACING_THRESHOLD);
 }
 
@@ -151,7 +151,7 @@ is_whole_portal_in_view(const NodePath &node_path) {
 
   int result = _view_frustum->contains(gbv);
 
-  pgraph_cat.debug() << "1st level test if portal: " << *_view_frustum << " is in view " << result << endl;
+  pgraph_cat.spam() << "1st level test if portal: " << *_view_frustum << " is in view " << result << endl;
   return (result != 0);
 }
 
@@ -170,7 +170,7 @@ is_partial_portal_in_view(const NodePath &node_path) {
   for (int j=0; j<_num_vert; ++j) {
     result |= _view_frustum->contains(_coords[j]);
   }
-  pgraph_cat.debug() << "frustum: " << *_view_frustum << " contains(coord) result = " << result << endl;
+  pgraph_cat.spam() << "frustum: " << *_view_frustum << " contains(coord) result = " << result << endl;
 
   return (result != 0);
 }
