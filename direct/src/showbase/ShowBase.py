@@ -40,6 +40,9 @@ class ShowBase:
         self.wantMusic = self.config.GetBool('audio-music-active', 1)
         if not (self.wantSfx or self.wantMusic):
             self.wantAnySound = None
+        if not self.wantAnySound:
+            self.wantSfx = None
+            self.wantMusic = None
         self.wantDIRECT = self.config.GetBool('want-directtools', 0)
         self.wantStats = self.config.GetBool('want-stats', 0)
 
