@@ -49,7 +49,8 @@ waterEventTrack = Track([waterDone])
 waterEventTrack.setIntervalStartTime('water-is-done', eventTime)
 
 mtrack = MultiTrack([boatTrack, dockTrack, soundTrack, waterEventTrack])
-mtrack.printParams()
+# Print out MultiTrack parameters
+mtrack
 
 def handleWaterDone():
     print 'water is done'

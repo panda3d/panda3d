@@ -213,6 +213,7 @@ class PosHprScaleInterval(FunctionInterval):
 
 """
 SAMPLE CODE
+from IntervalGlobal import *
 
 ### Using lambdas and functions ###
 # Using a lambda
@@ -224,9 +225,9 @@ def printHello():
 
 i3 = FunctionInterval(printHello)
 # Create track
-t = Track([(0.0, i1), (2.0, i2), (4.0, i3)], name = 'demo')
+t1 = Track([(0.0, i1), (2.0, i2), (4.0, i3)], name = 'demo')
 # Play track
-t.play()
+t1.play()
 
 ### Specifying interval start times during track construction ###
 # Interval start time can be specified relative to three different points:
@@ -257,24 +258,25 @@ def printTrackStart():
 
 i1 = FunctionInterval(printStart)
 # Just to take time
-i2 = LerpPosInterval(camera, 2.0, Point3(0,10,0))
+i2 = LerpPosInterval(camera, 2.0, Point3(0,10,5))
 # This will be relative to end of camera move
 i3 = FunctionInterval(printPreviousEnd)
 # Just to take time
-i4 = LerpPosInterval(camera, 2.0, Point3(0,0,0))
+i4 = LerpPosInterval(camera, 2.0, Point3(0,0,5))
 # This will be relative to the start of the camera move
 i5 = FunctionInterval(printPreviousStart)
 # This will be relative to track start
 i6 = FunctionInterval(printTrackStart)
 # Create the track, if you don't specify offset type in tuple it defaults to
 # relative to TRACK_START (first entry below)
-t = Track([(0.0, i1),                 # i1 start at t = 0, duration = 0.0
+t2 = Track([(0.0, i1),                 # i1 start at t = 0, duration = 0.0
            (1.0, i2, TRACK_START),    # i2 start at t = 1, duration = 2.0
            (2.0, i3, PREVIOUS_END),   # i3 start at t = 5, duration = 0.0
            (1.0, i4, PREVIOUS_END),   # i4 start at t = 6, duration = 2.0
            (3.0, i5, PREVIOUS_START), # i5 start at t = 9, duration = 0.0
            (10.0, i6, TRACK_START)],  # i6 start at t = 10, duration = 0.0
           name = 'startTimeDemo')
-t.play()
+
+t2.play()
 
 """

@@ -21,6 +21,9 @@ class MultiTrack(Interval):
 	duration = self.__computeDuration()
 	Interval.__init__(self, n, duration)
 
+    def __getitem__(self, item):
+        return self.tlist[item]
+
     def __computeDuration(self):
 	""" __computeDuration()
 	    Returns the duration of the longest Track 
@@ -41,9 +44,10 @@ class MultiTrack(Interval):
 	for track in self.tlist:
 	    track.setT(t, entry)
 
-    def printParams(self, indent=0):
-	""" printParams(indent)
+    def __repr__(self, indent=0):
+	""" __repr__(indent)
 	"""
-	Interval.printParams(self, indent)
+	str = Interval.__repr__(self, indent)
 	for t in self.tlist:
-	    t.printParams(indent+1)
+	    str = str + t.__repr__(indent+1)
+        return str

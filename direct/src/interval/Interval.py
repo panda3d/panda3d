@@ -80,13 +80,13 @@ class Interval(DirectObject):
 	    self.setT(self.playDuration)
             return Task.done
 
-    def printParams(self, indent=0):
-	""" printParams(indent)
+    def __repr__(self, indent=0):
+	""" __repr__(indent)
 	"""
 	space = ''
 	for l in range(indent):
 	    space = space + ' '
-	print (space + self.name + ' dur: %.2f' % self.duration)
+	return (space + self.name + ' dur: %.2f\n' % self.duration)
 
     def popupControls(self):
         # I moved this here because Toontown does not ship Tk
