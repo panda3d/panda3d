@@ -22,6 +22,7 @@
 #include "config_pgraph.h"
 
 #include "config_express.h"
+#include "config_util.h"
 #include "virtualFileSystem.h"
 #include "event.h"
 #include "pt_Event.h"
