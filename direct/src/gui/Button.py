@@ -208,3 +208,15 @@ class Button(DirectObject):
 
     def setRolloverEvent(self, eventName):
         self.button.setUpRolloverEvent(eventName)
+
+    def setDownRolloverEvent(self, eventName):
+        self.button.setDownRolloverEvent(eventName)
+
+    def setUpRolloverEvent(self, eventName):
+        self.button.setUpRolloverEvent(eventName)
+
+    def setDownEvent(self, eventName):
+        self.button.setDownEvent(eventName)
+
+    def setUpEvent(self, eventName):
+        self.button.setUpEvent(eventName)
