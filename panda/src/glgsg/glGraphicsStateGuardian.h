@@ -50,7 +50,7 @@
 class PlaneNode;
 class Light;
 
-#ifdef GSG_VERBOSE
+#if !defined(WIN32) && defined(GSG_VERBOSE)
 ostream &output_gl_enum(ostream &out, GLenum v);
 INLINE ostream &operator << (ostream &out, GLenum v) {
   return output_gl_enum(out, v);
