@@ -16,11 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <bamWriter.h>
-#include <bamReader.h>
-#include <datagram.h>
-#include <datagramIterator.h>
 #include "namedNode.h"
+#include "config_graph.h"
+
+#include "bamWriter.h"
+#include "bamReader.h"
+#include "datagram.h"
+#include "datagramIterator.h"
 
 TypeHandle NamedNode::_type_handle;
 
@@ -31,6 +33,10 @@ TypeHandle NamedNode::_type_handle;
 ////////////////////////////////////////////////////////////////////
 NamedNode::
 ~NamedNode() {
+  if (graph_cat.is_debug()) {
+    graph_cat.debug()
+      << "Deleting node " << get_name() << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
