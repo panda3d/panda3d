@@ -27,6 +27,7 @@
 TransformState::States *TransformState::_states = NULL;
 CPT(TransformState) TransformState::_identity_state;
 TypeHandle TransformState::_type_handle;
+TypeHandle EventStoreTransform::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformState::Constructor
@@ -1290,4 +1291,14 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EventStoreTransform::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void EventStoreTransform::
+output(ostream &out) const {
+  out << *_value;
 }

@@ -226,8 +226,7 @@ init_libpgraph() {
   PosHprScaleLerpFunctor::init_type();
   ColorLerpFunctor::init_type();
   ColorScaleLerpFunctor::init_type();
-
-  EventStoreTransform::init_type("EventStoreTransform");
+  EventStoreTransform::init_type();
 
   AlphaTestAttrib::register_with_read_factory();
   AmbientLight::register_with_read_factory();

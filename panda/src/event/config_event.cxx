@@ -29,6 +29,7 @@ NotifyCategoryDef(event, "");
 ConfigureFn(config_event) {
   Event::init_type();
   EventHandler::init_type();
+  EventStoreValueBase::init_type();
   EventStoreInt::init_type("EventStoreInt");
   EventStoreDouble::init_type("EventStoreDouble");
   EventStoreString::init_type("EventStoreString");

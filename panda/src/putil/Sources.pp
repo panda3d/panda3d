@@ -1,6 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                   dtoolutil:c dtoolbase:c dtool:m
-#define LOCAL_LIBS express pandabase
+#define LOCAL_LIBS express event pandabase
 
 #begin lib_target
   #define TARGET putil

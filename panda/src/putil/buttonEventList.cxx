@@ -39,12 +39,24 @@ update_mods(ModifierButtons &mods) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEventList::output
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void ButtonEventList::
 output(ostream &out) const {
-  out << get_type() << " (" << get_num_events() << " events)";
+  if (_events.empty()) {
+    out << "(no buttons)";
+  } else {
+    Events::const_iterator ei;
+    ei = _events.begin();
+    out << "(" << (*ei);
+    ++ei;
+    while (ei != _events.end()) {
+      out << " " << (*ei);
+      ++ei;
+    }
+    out << ")";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,7 +66,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void ButtonEventList::
 write(ostream &out, int indent_level) const {
-  indent(out, indent_level) << *this << ":\n";
+  indent(out, indent_level) << _events.size() << " events:\n";
   Events::const_iterator ei;
   for (ei = _events.begin(); ei != _events.end(); ++ei) {
     indent(out, indent_level + 2) << (*ei) << "\n";

@@ -58,7 +58,49 @@ transmit_data(const DataNodeTransmit inputs[],
     new_input.set_data(connect._input_index, data);
   }
 
+#ifndef NDEBUG
+  if (dgraph_cat.is_spam()) {
+    bool any_data = false;
+    Wires::const_iterator wi;
+    for (wi = _input_wires.begin(); wi != _input_wires.end(); ++wi) {
+      const string &name = (*wi).first;
+      const WireDef &def = (*wi).second;
+      if (new_input.has_data(def._index)) {
+        if (!any_data) {
+          dgraph_cat.spam()
+            << *this << " receives:\n";
+          any_data = true;
+        }
+        dgraph_cat.spam(false) 
+          << "  " << name << " = " << new_input.get_data(def._index)
+          << "\n";
+      }
+    }
+  }
+#endif  // NDEBUG
+
   do_transmit_data(new_input, output);
+
+#ifndef NDEBUG
+  if (dgraph_cat.is_spam()) {
+    bool any_data = false;
+    Wires::const_iterator wi;
+    for (wi = _output_wires.begin(); wi != _output_wires.end(); ++wi) {
+      const string &name = (*wi).first;
+      const WireDef &def = (*wi).second;
+      if (output.has_data(def._index)) {
+        if (!any_data) {
+          dgraph_cat.spam()
+            << *this << " transmits:\n";
+          any_data = true;
+        }
+        dgraph_cat.spam(false) 
+          << "  " << name << " = " << output.get_data(def._index)
+          << "\n";
+      }
+    }
+  }
+#endif  // NDEBUG
 }
 
 ////////////////////////////////////////////////////////////////////

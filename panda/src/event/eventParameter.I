@@ -200,6 +200,12 @@ get_ptr() const {
   return _ptr;
 }
 
+INLINE ostream &
+operator << (ostream &out, const EventParameter &param) {
+  param.output(out);
+  return out;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventStoreValue::set_value
@@ -224,4 +230,15 @@ template<class Type>
 INLINE const Type &EventStoreValue<Type>::
 get_value() const {
   return _value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EventStoreValue::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class Type>
+void EventStoreValue<Type>::
+output(ostream &out) const {
+  out << _value;
 }

@@ -17,8 +17,31 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "eventParameter.h"
+#include "dcast.h"
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__
 #pragma implementation
 #endif
+
+TypeHandle EventStoreValueBase::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: EventParameter::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void EventParameter::
+output(ostream &out) const {
+  if (_ptr == (TypedReferenceCount *)NULL) {
+    out << "(empty)";
+
+  } else if (_ptr->is_of_type(EventStoreValueBase::get_class_type())) {
+    const EventStoreValueBase *sv_ptr;
+    DCAST_INTO_V(sv_ptr, _ptr);
+    sv_ptr->output(out);
+
+  } else {
+    out << _ptr->get_type();
+  }
+}

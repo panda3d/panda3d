@@ -62,10 +62,41 @@ PUBLISHED:
 
   INLINE const TypedReferenceCount *get_ptr() const;
 
+  void output(ostream &out) const;
+
 private:
   CPT(TypedReferenceCount) _ptr;
 };
 
+INLINE ostream &operator << (ostream &out, const EventParameter &param);
+
+////////////////////////////////////////////////////////////////////
+//       Class : EventStoreValueBase
+// Description : A non-template base class of EventStoreValue (below),
+//               which serves mainly to define the placeholder for the
+//               virtual output function.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDAEXPRESS EventStoreValueBase : public TypedReferenceCount {
+public:
+  virtual void output(ostream &out) const=0;
+
+public:
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TypedReferenceCount::init_type();
+    register_type(_type_handle, "EventStoreValueBase",
+                  TypedReferenceCount::get_class_type());
+  }
+
+private:
+  static TypeHandle _type_handle;
+};
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EventStoreValue
@@ -77,12 +108,14 @@ private:
 //               EventParameter.
 ////////////////////////////////////////////////////////////////////
 template<class Type>
-class EventStoreValue : public TypedReferenceCount {
+class EventStoreValue : public EventStoreValueBase {
 public:
   EventStoreValue(const Type &value) : _value(value) { }
 
   INLINE void set_value(const Type &value);
   INLINE const Type &get_value() const;
+
+  virtual void output(ostream &out) const;
 
   Type _value;
 
@@ -91,9 +124,9 @@ public:
     return _type_handle;
   }
   static void init_type(const string &type_name = "UndefinedEventStoreValue") {
-    TypedReferenceCount::init_type();
+    EventStoreValueBase::init_type();
     _type_handle = register_dynamic_type
-      (type_name, TypedReferenceCount::get_class_type());
+      (type_name, EventStoreValueBase::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -23,6 +23,7 @@
 
 #include "buttonEvent.h"
 #include "typedReferenceCount.h"
+#include "eventParameter.h"
 #include "pvector.h"
 
 class ModifierButtons;
@@ -35,7 +36,7 @@ class ModifierButtons;
 //               but it may be used anywhere a list of ButtonEvents
 //               is desired.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ButtonEventList : public TypedReferenceCount {
+class EXPCL_PANDA ButtonEventList : public EventStoreValueBase {
 public:
   INLINE ButtonEventList();
 
@@ -46,7 +47,7 @@ public:
 
   void update_mods(ModifierButtons &mods) const;
 
-  void output(ostream &out) const;
+  virtual void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
 private:
@@ -58,9 +59,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedReferenceCount::init_type();
+    EventStoreValueBase::init_type();
     register_type(_type_handle, "ButtonEventList",
-                  TypedReferenceCount::get_class_type());
+                  EventStoreValueBase::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
