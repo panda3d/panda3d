@@ -304,8 +304,13 @@ class DistributedObject(PandaObject):
         
     def doneBarrier(self):
         # Tells the AI we have finished handling our task.
-        assert(self.__barrierContext != None)
-        self.sendUpdate("doBarrierReady", [self.__barrierContext])
-        self.__barrierContext = None
+
+        # If this is None, it either means we have called
+        # doneBarrier() twice, or we have not received a barrier
+        # context from the AI.  I think in either case it's ok to
+        # silently ignore the error.
+        if self.__barrierContext != None:
+            self.sendUpdate("doBarrierReady", [self.__barrierContext])
+            self.__barrierContext = None
         
         
