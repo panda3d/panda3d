@@ -681,8 +681,8 @@
 // a running program without crashing the running instance.  However,
 // it doesn't understanding installing a program from a subdirectory,
 // so we have to cd into the source directory first.
-#defer INSTALL $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -Cm $[INSTALL_UMASK_DATA] $[notdir $[local]] $[dest]/
-#defer INSTALL_PROG $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -Cm $[INSTALL_UMASK_PROG] $[notdir $[local]] $[dest]/
+#defer INSTALL $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m $[INSTALL_UMASK_DATA] $[notdir $[local]] $[dest]/
+#defer INSTALL_PROG $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m $[INSTALL_UMASK_PROG] $[notdir $[local]] $[dest]/
 
 // Variable definitions for building with the Irix MIPSPro compiler.
 #if $[eq $[USE_COMPILER], MIPS]
