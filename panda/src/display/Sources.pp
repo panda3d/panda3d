@@ -1,5 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
+#define WIN_SYS_LIBS $[WIN_SYS_LIBS] Ws2_32.lib
                    
 #begin lib_target
   #define TARGET display
