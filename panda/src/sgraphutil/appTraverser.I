@@ -27,3 +27,12 @@ AppTraverser(TypeHandle graph_type) :
   _graph_type(graph_type)
 {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: AppTraverser::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE AppTraverser::
+~AppTraverser() {
+}

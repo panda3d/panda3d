@@ -386,6 +386,20 @@ get_button_event(int device) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::render_and_update
+//       Access: Published
+//  Description: Renders the scene associated with the window and
+//               updates the window.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindow::
+render_and_update() {
+  if (_gsg != (GraphicsStateGuardian *)NULL) {
+    _gsg->render_frame();
+  }
+  update();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::set_sync
 //       Access: Public
 //  Description: Sets flag for whether the buffer swap is done 

@@ -37,8 +37,9 @@ class Node;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA AppTraverser :
   public TraverserVisitor<NullTransitionWrapper, NullLevelState> {
-public:
+PUBLISHED:
   INLINE AppTraverser(TypeHandle graph_type);
+  INLINE ~AppTraverser();
 
   void traverse(Node *root);
 

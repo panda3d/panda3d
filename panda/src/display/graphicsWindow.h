@@ -193,6 +193,7 @@ PUBLISHED:
   virtual void main_loop();
   virtual bool supports_update() const;
   virtual void update();
+  INLINE void render_and_update();
 
 public:
   virtual void begin_frame();
