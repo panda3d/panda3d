@@ -25,9 +25,6 @@ class ShowBase:
         self.wantDIRECT = self.config.GetBool('want-directtools', 0)
         self.wantStats = self.config.GetBool('want-stats', 0)
 
-        # Set a maximum frame rate on the render loop (0 means do not limit)
-        Task.maxFps = self.config.GetInt('max-fps', 120)
-        
         import Loader
 
         self.initialState = NodeAttributes()

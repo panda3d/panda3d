@@ -8,10 +8,6 @@ exit = -1
 done = 0
 cont = 1
 
-# Note: this is dconfig'ed in ShowBase.py, but Tasks want to be independent
-# of ShowBase and panda, so we have to set an initial value here
-maxFps = 120
-
 # Store the global clock
 globalClock = ClockObject.getGlobalClock()
 
@@ -269,15 +265,7 @@ class TaskManager:
             self.running = 1
             while self.running:
                 try:
-                    startTime = globalClock.getRealTime()
                     self.step()
-                    finishTime = globalClock.getRealTime()
-                    # Max out the frame rate so we do not starve the cpu
-                    if (maxFps > 0):
-                        dt = finishTime - startTime
-                        length = (1.0/maxFps)-dt
-                        if (length > 0):
-                            time.sleep(length)
                 except KeyboardInterrupt:
                     self.stop()
                 except:
