@@ -69,7 +69,7 @@ class Floater(Pmw.MegaWidget):
                                           text = self['text'],
                                           width = 12,
                                           anchor = 'center',
-                                          font = "Arial 12 bold")
+                                          font = "Arial 10 bold")
         self.label.pack(side='left', expand = 1, fill = 'x')
 
         # Now pack the frame

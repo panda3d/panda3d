@@ -99,11 +99,11 @@ class ForceGroup(DirectObject):
 		    radius = f.getRadius()
 		    falloffType = f.getFalloffType()
 		    ftype = 'FTONEOVERR'
-		    if (falloffType == LinearDistanceForce.LinearDistanceForce.FTONEOVERR):
+		    if (falloffType == LinearDistanceForce.FTONEOVERR):
 		    	ftype = 'FTONEOVERR'
-		    elif (falloffType == LinearDistanceForce.LinearDistanceForce.FTONEOVERRSQUARED):
+		    elif (falloffType == LinearDistanceForce.FTONEOVERRSQUARED):
 		    	ftype = 'FTONEOVERRSQUARED'
-		    elif (falloffType == LinearDistanceForce.LinearDistanceForce.FTONEOVERRCUBED):
+		    elif (falloffType == LinearDistanceForce.FTONEOVERRCUBED):
 		    	ftype = 'FTONEOVERRCUBED'
 		    forceCenter = f.getForceCenter()
 		    if isinstance(f, LinearSinkForce):
@@ -117,7 +117,7 @@ class ForceGroup(DirectObject):
 		elif isinstance(f, LinearNoiseForce):
 		    file.write(fname + ' = LinearNoiseForce(%.4f, %d)\n' % (amplitude, massDependent))
 		elif isinstance(f, LinearVectorForce):
-		    vec = f.getLocalVector()
+		    vec = f.getVector()
 		    file.write(fname + ' = LinearVectorForce(Vec3(%.4f, %.4f, %.4f), %.4f, %d)\n' % (vec[0], vec[1], vec[2], amplitude, massDependent))
 	    elif isinstance(f, AngularForce):
 		if isinstance(f, AngularVectorForce):

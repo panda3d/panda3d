@@ -119,6 +119,20 @@ class ParticlePanel(AppShell):
                   'Select effect to configure or create new effect')
         self.effectsLabelMenu.add_command(label = 'Create New Effect',
                                           command = self.createNewEffect)
+        self.effectsLabelMenu.add_command(
+            label = 'Select Particle Effect',
+            command = lambda s = self: direct.select(s.particleEffect))
+        self.effectsLabelMenu.add_command(
+            label = 'Place Particle Effect',
+            command = lambda s = self: Placer.place(s.particleEffect))
+        def togglePEVis(s = self):
+            if s.particleEffect.isHidden():
+                s.particleEffect.show()
+            else:
+                s.particleEffect.hide()
+        self.effectsLabelMenu.add_command(
+            label = 'Toggle Effect Vis',
+            command = togglePEVis)
         self.effectsEnableMenu = Menu(self.effectsLabelMenu, tearoff = 0)
         self.effectsLabelMenu.add_cascade(label = 'Enable/Disable',
                                           menu = self.effectsEnableMenu)
@@ -242,7 +256,7 @@ class ParticlePanel(AppShell):
             ('Factory', 'Mass',
              'Average particle mass',
              self.setFactoryParticleMass,
-             0.0, None),
+             0.001, None),
             ('Factory', 'Mass Spread',
              'Variation in particle mass',
              self.setFactoryParticleMassSpread,
@@ -625,8 +639,12 @@ class ParticlePanel(AppShell):
 
         self.addForceButton.pack(expand = 0)
 
+        # Scrolled frame to hold force widgets
+        self.sf = Pmw.ScrolledFrame(forcePage, horizflex = 'elastic')
+        self.sf.pack(fill = 'both', expand = 1)
+        self.forceFrame = self.sf.interior()
         # Notebook to hold force widgets as the are added
-        self.forceGroupNotebook = Pmw.NoteBook(forcePage, tabpos = None)
+        self.forceGroupNotebook = Pmw.NoteBook(self.forceFrame, tabpos = None)
         self.forceGroupNotebook.pack(fill = X)
         
         self.factoryNotebook.setnaturalsize()
@@ -679,10 +697,6 @@ class ParticlePanel(AppShell):
                       maxVelocity = 10.0, **kw):
         kw['text'] = text
         kw['min'] = min
-        if min != None:
-            kw['initialValue'] = min
-        else:
-            kw['initialValue'] = 0.0
         kw['maxVelocity'] = maxVelocity
         kw['resolution'] = resolution
         widget = apply(Floater.Floater, (parent,), kw)
@@ -710,7 +724,6 @@ class ParticlePanel(AppShell):
         kw['text'] = text
         kw['min'] = min
         kw['max'] = max
-        kw['initialValue'] = min
         kw['resolution'] = resolution
         widget = apply(EntryScale.EntryScale, (parent,), kw)
         # Do this after the widget so command isn't called on creation
@@ -817,7 +830,7 @@ class ParticlePanel(AppShell):
     def updateEffectsMenus(self):
         # Get rid of old effects entries if any
         self.effectsEnableMenu.delete(0, 'end')
-        self.effectsLabelMenu.delete(2, 'end')
+        self.effectsLabelMenu.delete(5, 'end')
         self.effectsLabelMenu.add_separator()
         # Add in a checkbutton for each effect (to toggle on/off)
         keys = self.effectsDict.keys()
@@ -963,6 +976,7 @@ class ParticlePanel(AppShell):
             parent = self.parent)
         if particleFilename:
             self.particleEffect.loadConfig(Filename(particleFilename))
+            self.selectEffectNamed(self.particleEffect.getName())
 
     def saveParticleEffectToFile(self):
         # Find path to particle directory
@@ -1532,7 +1546,12 @@ class ParticlePanel(AppShell):
             self.forceGroupNotebook.pack(fill = X)
             self.forcePageName = (self.particleEffect.getName() + '-' +
                                   self.forceGroup.getName())
-            self.forcePage = self.forcePagesDict[self.forcePageName]
+            self.forcePage = self.forcePagesDict.get(
+                self.forcePageName, None)
+            # Page doesn't exist, add it
+            if self.forcePage == None:
+                self.addForceGroupNotebookPage(
+                    self.particleEffect, self.forceGroup)
             self.forceGroupNotebook.selectpage(self.forcePageName)
         else:
             self.forceGroupNotebook.pack_forget()
@@ -1635,6 +1654,23 @@ class ParticlePanel(AppShell):
             pass
         self.forceGroupNotebook.setnaturalsize()
 
+    def createForceFrame(self, forcePage, forceName, force):
+        frame = Frame(forcePage, relief = RAISED, borderwidth = 2)
+        lFrame = Frame(frame, relief = FLAT)
+        def removeForce(s = self, f = force, fr = frame):
+            s.forceGroup.removeForce(f)
+            fr.pack_forget()
+        b = Button(lFrame, text = 'X',
+                   command = removeForce)
+        b.pack(side = 'right', expand = 0)
+        Label(lFrame, text = forceName,
+              foreground = 'Blue',
+              font=('MSSansSerif', 12, 'bold'),
+              ).pack(expand = 1, fill = 'x')
+        lFrame.pack(fill = 'x', expand =1)
+        frame.pack(pady = 3, fill = 'x', expand =0)
+        return frame
+
     def createLinearForceWidgets(self, frame, pageName, forceName, force):
         def setAmplitude(amp, f = force):
             f.setAmplitude(amp)
@@ -1648,12 +1684,14 @@ class ParticlePanel(AppShell):
             f.setVectorMasks(xMask, yMask, zMask)
         self.createFloater(frame, pageName, forceName + ' Amplitude',
                            'Force amplitude multiplier',
-                           command = setAmplitude)
+                           command = setAmplitude,
+                           initialValue = force.getAmplitude())
         cbf = Frame(frame, relief = FLAT)
         self.createCheckbutton(cbf, pageName, forceName + ' Mass Dependent',
                                ('On: force depends on mass; ' +
                                 'Off: force does not depend on mass'),
-                               toggleMassDependent, 0)
+                               toggleMassDependent,
+                               force.getMassDependent())
         self.createCheckbutton(cbf, pageName, forceName + ' Mask X',
                                'On: enable force along X axis',
                                setVectorMasks, 1)
@@ -1678,34 +1716,34 @@ class ParticlePanel(AppShell):
         def setVec(vec, f = force):
             f.setVector(vec[0], vec[1], vec[2])
         forceName = 'Vector Force-' + `count`
-        frame = Frame(forcePage, relief = RAISED, borderwidth = 2)
+        frame = self.createForceFrame(forcePage, forceName, force)
         self.createLinearForceWidgets(frame, pageName, forceName, force)
+        vec = force.getVector()
         self.createVector3Entry(frame, pageName, forceName,
                                 'Set force direction and magnitude',
-                                command = setVec)
+                                command = setVec,
+                                initialValue = [vec[0], vec[1], vec[2]])
         self.createForceActiveWidget(frame, pageName, forceName, force)
-        frame.pack(fill = 'x', expand =0)
 
     def createLinearRandomForceWidget(self, forcePage, pageName, count,
                                 force, type):
         forceName = type + ' Force-' + `count`
-        frame = Frame(forcePage, relief = RAISED, borderwidth = 2)
+        frame = self.createForceFrame(forcePage, forceName, force)
         self.createLinearForceWidgets(frame, pageName, forceName, force)
         self.createForceActiveWidget(frame, pageName, forceName, force)
-        frame.pack(fill = 'x', expand =0)
 
     def createLinearFrictionForceWidget(self, forcePage, pageName,
                                         count, force):
         def setCoef(coef, f = force):
             f.setCoef(coef)
         forceName = 'Friction Force-' + `count`
-        frame = Frame(forcePage, relief = RAISED, borderwidth = 2)
+        frame = self.createForceFrame(forcePage, forceName, force)
         self.createLinearForceWidgets(frame, pageName, forceName, force)
-        self.createFloater(frame, pageName, forceName,
+        self.createFloater(frame, pageName, forceName + ' Coef',
                            'Set linear friction force',
-                           command = setCoef, min = None)
+                           command = setCoef, min = None,
+                           initialValue = force.getCoef())
         self.createForceActiveWidget(frame, pageName, forceName, force)
-        frame.pack(fill = 'x', expand =0)
 
     def createLinearCylinderVortexForceWidget(self, forcePage, pageName,
                                               count, force):
@@ -1716,19 +1754,21 @@ class ParticlePanel(AppShell):
             f.setLength(length)
         def setRadius(radius, f = force):
             f.setRadius(radius)
-        frame = Frame(forcePage, relief = RAISED, borderwidth = 2)
+        frame = self.createForceFrame(forcePage, forceName, force)
         self.createLinearForceWidgets(frame, pageName, forceName, force)
-        self.createFloater(frame, pageName, 'Coefficient',
+        self.createFloater(frame, pageName, forceName + ' Coef',
                            'Set linear cylinder vortex coefficient',
-                           command = setCoef)
-        self.createFloater(frame, pageName, 'Length',
+                           command = setCoef,
+                           initialValue = force.getCoef())
+        self.createFloater(frame, pageName, forceName + ' Length',
                            'Set linear cylinder vortex length',
-                           command = setLength)
-        self.createFloater(frame, pageName, 'Radius',
+                           command = setLength,
+                           initialValue = force.getLength())
+        self.createFloater(frame, pageName, forceName + ' Radius',
                            'Set linear cylinder vortex radius',
-                           command = setRadius)
+                           command = setRadius,
+                           initialValue = force.getRadius())
         self.createForceActiveWidget(frame, pageName, forceName, force)
-        frame.pack(fill = 'x', expand =0)
 
     def createLinearDistanceForceWidget(self, forcePage, pageName,
                                         count, force, type):
@@ -1747,22 +1787,36 @@ class ParticlePanel(AppShell):
         def setRadius(radius, f = force):
             f.setRadius(radius)
         forceName = type + ' Force-' + `count`
-        frame = Frame(forcePage, relief = RAISED, borderwidth = 2)
+        frame = self.createForceFrame(forcePage, forceName, force)
         self.createLinearForceWidgets(frame, pageName, forceName, force)
-        self.createOptionMenu(frame, pageName, forceName + ' Falloff Type',
-                              'Set force falloff type',
-                              ('FT_ONE_OVER_R',
-                               'FT_ONE_OVER_R_SQUARED',
-                               'FT_ONE_OVER_R_CUBED'),
-                              command = setFalloffType)
-        self.createVector3Entry(frame, pageName, forceName + ' Force Center',
+        var = self.createOptionMenu(
+            frame, pageName, forceName + ' Falloff',
+            'Set force falloff type',
+            ('FT_ONE_OVER_R',
+             'FT_ONE_OVER_R_SQUARED',
+             'FT_ONE_OVER_R_CUBED'),
+            command = setFalloffType)
+        self.getWidget(pageName, forceName + ' Falloff').configure(
+            label_width = 16)
+        falloff = force.getFalloffType()
+        if falloff == LinearDistanceForce.FTONEOVERR:
+            var.set('FT_ONE_OVER_R')
+        elif falloff == LinearDistanceForce.FTONEOVERRSQUARED:
+            var.set('FT_ONE_OVER_R_SQUARED')
+        elif falloff == LinearDistanceForce.FTONEOVERRCUBED:
+            var.set('FT_ONE_OVER_R_CUBED')
+        vec = force.getForceCenter()
+        self.createVector3Entry(frame, pageName, forceName + ' Center',
                                 'Set center of force',
-                                command = setForceCenter)
+                                command = setForceCenter,
+                                label_width = 16,
+                                initialValue = [vec[0], vec[1], vec[2]])
         self.createFloater(frame, pageName, forceName + ' Radius',
                            'Set falloff radius',
-                           command = setRadius)
+                           command = setRadius,
+                           min = 0.01,
+                           initialValue = force.getRadius())
         self.createForceActiveWidget(frame, pageName, forceName, force)
-        frame.pack(fill = 'x', expand =0)
 
 ######################################################################
 
