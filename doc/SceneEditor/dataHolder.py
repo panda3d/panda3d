@@ -1,13 +1,13 @@
 ###############################
 # TK and PMW INTERFACE MODULES#
 ###############################
-from TkGlobal import*
+from direct.showbase.TkGlobal import*
 from tkFileDialog import *
 import Pmw
 import tkFileDialog
 import tkMessageBox
-import Dial
-import Floater
+from direct.tkwidgets import Dial
+from direct.tkwidgets import Floater
 
 
 #############################
@@ -19,7 +19,7 @@ from seFileSaver import * # The actual File Saving Module which generates Python
 ################################
 #Panda Modules                 #
 ################################
-import Actor
+from direct.actor import Actor
 
 ###############################
 # Core Python Modules         #
@@ -588,7 +588,7 @@ class dataHolder:
             return True
 
         return False
-
+        
     def bindCurveToNode(self,node,curveCollection):
         ###########################################################################
         # bindCurveToNode(self,node,curveCollection)
@@ -713,7 +713,7 @@ class dataHolder:
         number = len(self.dummyDict)
         number += 1
         name = 'Dummy%d'%number
-        self.dummyModel = loader.loadModelCopy( "misc/sphere" )
+        self.dummyModel = loader.loadModelCopy( "models/misc/sphere" )
         self.dummyModel.reparentTo(nodePath)
         while self.isInScene(name):
             name = name + '_1'
@@ -936,7 +936,7 @@ class dataHolder:
 
         ### Ask for a filename  
         OpenFilename = tkFileDialog.askopenfilename(filetypes = [("PY","py")],title = "Load Scene")
-        if(not OpenFilename):
+        if(not OpenFilename):   
             return None
         f=Filename.fromOsSpecific(OpenFilename)
         fileName=f.getBasenameWoExtension()
@@ -989,7 +989,7 @@ class dataHolder:
         for light in self.Scene.LightDict:
             #print light
             alight=self.Scene.LightDict[light]
-            type=self.Scene.LightTypes[light]
+            type=self.Scene.LightTypes[light]   
             thenode=self.Scene.LightNodes[light]
             #print type
             if type == 'ambient':
@@ -1032,7 +1032,7 @@ class dataHolder:
                 nodeP.removeNode()
                 thenode=render.find("**/"+str(node))
                 self.bindCurveToNode(thenode,curveColl)
-
+        
         ############################################################################
         # Populate Particle related Dictionaries
         ############################################################################
@@ -1049,8 +1049,8 @@ class dataHolder:
             theeffect.enable()
             self.particleDict[effect]=theeffect
             self.particleNodes[effect]=emitter
-
-
+            
+        
  
         # Clean up things added to scene graph by saved file's code execution
         for light in self.Scene.LightDict:

@@ -135,7 +135,6 @@ check_datagram() {
   if (_simulated_disconnect) {
     return false;
   }
-
   while (do_check_datagram()) {
 #ifndef NDEBUG
     if (get_verbose()) {
@@ -164,7 +163,6 @@ check_datagram() {
     }
 
     _msg_type = _di.get_uint16();
-
     // Is this a message that we can process directly?
     switch (_msg_type) {
 #ifdef HAVE_PYTHON

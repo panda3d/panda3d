@@ -62,12 +62,8 @@ class DistributedObject(PandaObject):
             # This is used by doneBarrier().
             self.__barrierContext = None
 
-    #def __del__(self):
-    #    """
-    #    For debugging purposes, this just prints out what got deleted
-    #    """
-    #    print ("Destructing: " + self.__class__.__name__ + " id: " + str(self.doId))
-    #    PandaObject.__del__(self)
+            #zone of the distributed object, default to 0
+            self.zone = 0
 
     def setNeverDisable(self, bool):
         assert((bool == 1) or (bool == 0))
@@ -228,20 +224,17 @@ class DistributedObject(PandaObject):
         if self.cr:
             self.cr.sendUpdate(self, fieldName, args, sendToId)
 
+    def sendDisableMsg(self):
+        self.cr.sendDisableMsg(self.doId)
+
+    def sendDeleteMsg(self):
+        self.cr.sendDeleteMsg(self.doId)
+
     def taskName(self, taskString):
         return (taskString + "-" + str(self.getDoId()))
     
     def uniqueName(self, idString):
         return (idString + "-" + str(self.getDoId()))
-
-    def isLocal(self):
-        # This returns true if the distributed object is "local,"
-        # which means the client created it instead of the AI, and it
-        # gets some other special handling.  Normally, only the local
-        # avatar class overrides this to return true.
-        return 0
-    
-
 
     def getCallbackContext(self, callback, extraArgs = []):
         # Some objects implement a back-and-forth handshake operation
@@ -334,7 +327,7 @@ class DistributedObject(PandaObject):
         if self.__barrierContext != None:
             self.sendUpdate("setBarrierReady", [self.__barrierContext])
             self.__barrierContext = None
-
+    
     if wantOtpServer:
         def addInterest(self, zoneId, note=""):
             self.cr.addInterest(self.getDoId(), zoneId, note)
@@ -346,4 +339,14 @@ class DistributedObject(PandaObject):
 
         def getLocation(self):
             return self.__location
+
+    def isLocal(self):
+        # This returns true if the distributed object is "local,"
+        # which means the client created it instead of the AI, and it
+        # gets some other special handling.  Normally, only the local
+        # avatar class overrides this to return true.
+        return (self.cr.isLocalId(self.doId))
+
+    def updateZone(self, zoneId):
+        self.cr.sendUpdateZone(self, zoneId)
 

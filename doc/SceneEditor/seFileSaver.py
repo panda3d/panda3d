@@ -3,12 +3,11 @@
 # This code saves the scene out as python code... the scene is stored in the various dictionaries in "dataHolder.py" ...the class "AllScene"
 # 
 ####################################################################################################################################################
-from PandaModules import *
+from pandac.PandaModules import *
 
-from ShowBaseGlobal import *
+from direct.showbase.ShowBaseGlobal import *
 import os
 import shutil
-from EggData import *
 import string
 
 ####################################################################################################################################################
@@ -35,11 +34,11 @@ class FileSaver:
 
     def SaveFile(self,AllScene,filename,dirname,reSaveFlag=0):
 
-        ################################################################################################################################################
+      ################################################################################################################################################  
         # This function takes the "dataHolder" instance "AllScene" which has dictionaries containing scene information
         # The filename is where the scene will be written to
         ################################################################################################################################################
-
+        
         i1="    " # indentation
         i2=i1+i1  # double indentation
         out_file = open(filename,"w")
@@ -58,18 +57,18 @@ class FileSaver:
         out_file.write("# theScene=SavedScene() #instantiate the class\n")
         out_file.write("# IMPORTANT: All the documentation below refers to \"theScene\" as the instance of SavedScene()\n")
         out_file.write("##########################################################################################################\n\n")
-
+        
         out_file.write("##########################################################################################################\n")
         out_file.write("# Import Panda Modules\n")
         out_file.write("##########################################################################################################\n")
-        out_file.write("from ShowBaseGlobal import * # Core functionality for running the \"show\"\n")
-        out_file.write("import Actor # Importing models with animations\n")
-        out_file.write("import Mopath # Motion Paths\n")
-        out_file.write("import MopathInterval # Motion Paths\n")
-        out_file.write("from IntervalGlobal import * # Intervals for interpolation, sequencing and parallelization\n")
-        out_file.write("import ParticleEffect # Particle Systems\n")
-        out_file.write("import ForceGroup # Forces acting on Particles\n")
-        out_file.write("import Particles\n\n")
+        out_file.write("from direct.directbase.DirectStart import * # Core functionality for running the \"show\"\n")
+        out_file.write("from direct.actor import Actor # Importing models with animations\n")
+        out_file.write("from direct.directutil import Mopath # Motion Paths\n")
+        out_file.write("from direct.interval import MopathInterval # Motion Paths\n")
+        out_file.write("from direct.interval.IntervalGlobal import * # Intervals for interpolation, sequencing and parallelization\n")
+        out_file.write("from direct.particles import ParticleEffect # Particle Systems\n")
+        out_file.write("from direct.particles import ForceGroup # Forces acting on Particles\n")
+        out_file.write("from direct.particles import Particles\n\n")
         out_file.write("##########################################################################################################\n")
         out_file.write("# This class stores the entire scene\n")
         out_file.write("##########################################################################################################\n\n")
@@ -147,7 +146,7 @@ class FileSaver:
         for model in AllScene.ModelDic:
             out_file.write("\n")
             modelS=str(model)
-
+            
             if(1): # This is kept for now... perhaps later some sort of check might have to be enforced based on loadMode
                 #Loading Code
                 out_file.write(i2+"# Loading model's egg file\n")
@@ -172,27 +171,27 @@ class FileSaver:
                         if(texfilename.resolveFilename(getTexturePath(),"")):
                             oldFilename=texfilename
                     oldtexpath=oldFilename.toOsSpecific();
-
+                
                     newtexpath=dirname + "/" + texfilename.getBasename()
                     newtexpathF=Filename(newtexpath)
                     newtexpathSpecific=newtexpathF.toOsSpecific()
-
+                    
                     print "TEXTURE SAVER:: copying" + oldtexpath + " to " + newtexpathSpecific
                     if(oldtexpath != newtexpathSpecific):
                         shutil.copyfile(oldtexpath,newtexpathSpecific)
 
+                    
+                
+                    
 
-
-
-
-
+                
                 # Copy the file over to the relative directory
                 oldModelpath=AllScene.ModelRefDic[model].toOsSpecific()
                 print "FILESAVER:: copying from " + AllScene.ModelRefDic[model].toOsSpecific() + "to" + newpathSpecific 
                 if(oldModelpath!=newpathSpecific):
                     shutil.copyfile(oldModelpath,newpathSpecific)
 
-
+                
                 e=EggData()
                 e.read(AllScene.ModelRefDic[model])
                 etc=EggTextureCollection()
@@ -204,10 +203,10 @@ class FileSaver:
                     fn.setDirname("")
                     tex.setFilename(fn)
                     e.writeEgg(Filename.fromOsSpecific(newpathSpecific))
+                
 
 
-
-                out_file.write(i2+"if(self.loadmode==1):\n")
+                out_file.write(i2+"if(self.loadmode==1):\n")    
                 out_file.write(i2+i1+ "self."+ modelS + "=loader.loadModel(\'" + self.savepath + "/" +  AllScene.ModelRefDic[model].getBasename() + "')\n")#Relative Path
                 out_file.write(i2+"else:\n")
                 out_file.write(i2+i1+ "self."+ modelS + "=loader.loadModel(self.executionpath + \'/" +  AllScene.ModelRefDic[model].getBasename() + "')\n")#Relative Path with execution point specified by the invoking-level-editor
@@ -222,7 +221,7 @@ class FileSaver:
                     out_file.write(i2+"# Alpha\n")
                     out_file.write(i2+ "self."+ modelS + ".setTransparency(1)\n")
                     clr=AllScene.ModelDic[model].getColor()
-                    out_file.write(i2+ "self."+ modelS + ".setColor(%.4f,%.4f,%.4f,%.4f)\n"%(clr.getX(),clr.getY(),clr.getZ(),clr.getW()))
+                    out_file.write(i2+ "self."+ modelS + ".setColor(%.4f,%.4f,%.4f,%.4f)\n"%(clr.getX(),clr.getY(),clr.getZ(),clr.getW()))                  
 
                 out_file.write("\n")
                 out_file.write(i2+ "# Reparent To Render for now and later we update all the parentings\n")
@@ -235,7 +234,7 @@ class FileSaver:
                 out_file.write(i2+ "self.ModelDic[\'" + modelS + "\']=self." + AllScene.ModelDic[model].getName()+"\n")
                 #out_file.write(i2+ "self.ModelRefDic[\'" + modelS + "\']=Filename(\'"+ AllScene.ModelRefDic[model].getFullpath() +"\')\n")# The old Absolute Path way
                 out_file.write(i2+ "self.ModelRefDic[\'" + modelS + "\']=\'"+ AllScene.ModelRefDic[model].getBasename() +"\'\n")# Relative paths
-                out_file.write(i2+ "self.ModelDic[\'"+ modelS + "\'].setName(\'"+ modelS +"\')\n")
+                out_file.write(i2+ "self.ModelDic[\'"+ modelS + "\'].setName(\'"+ modelS +"\')\n")              
                 out_file.write("\n")
 
         ####################################################################################################################################################
@@ -249,9 +248,9 @@ class FileSaver:
         for dummy in AllScene.dummyDict:
             out_file.write("\n")
             dummyS=str(dummy)
-
+            
             if(1): # This is kept for now... perhaps later some sort of check might have to be enforced based on loadMode
-                out_file.write(i2+ "self."+ dummyS + "=loader.loadModelCopy(\"misc/sphere\")\n")
+                out_file.write(i2+ "self."+ dummyS + "=loader.loadModelCopy(\"models/misc/sphere\")\n")
                 #Transformation Code
                 out_file.write(i2+"# Transforming the Dummy\n")
                 out_file.write(i2+ "self."+ dummyS + ".setPosHprScale(%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f)\n"% (AllScene.dummyDict[dummy].getX(),AllScene.dummyDict[dummy].getY(),AllScene.dummyDict[dummy].getZ(),AllScene.dummyDict[dummy].getH(),AllScene.dummyDict[dummy].getP(),AllScene.dummyDict[dummy].getR(),AllScene.dummyDict[dummy].getSx(),AllScene.dummyDict[dummy].getSy(),AllScene.dummyDict[dummy].getSz()))
@@ -260,13 +259,13 @@ class FileSaver:
                 out_file.write(i2+ "self.dummyDict[\'" + dummyS + "\']=self." + AllScene.dummyDict[dummy].getName()+"\n")
                 out_file.write(i2+ "self.dummyDict[\'"+ dummyS + "\'].setName(\'"+ dummyS +"\')\n")
                 out_file.write("\n")
-                out_file.write(i2+ "# Save Metadata...can be retrieved by doing theScene.dummyDict[\"Dummy_Name\"].getTag(\"Metadata\")\n")
+                out_file.write(i2+ "# Save Metadata...can be retrieved by doing theScene.dummyDict[\"Dummy_Name\"].getTag(\"Metadata\")\n")             
                 out_file.write(i2+ "self."+ dummyS + ".setTag(\"Metadata\",\"" + AllScene.dummyDict[dummy].getTag("Metadata") + "\")\n")
                 out_file.write("\n")
 
         ####################################################################################################################################################
         # Saving Actors and their animations
-        ####################################################################################################################################################
+        ####################################################################################################################################################                    
         out_file.write(i2+"##########################################################################################################\n")
         out_file.write(i2+"# Code for all the Actors and animations\n")
         out_file.write(i2+"# To access the Actors\n")
@@ -316,7 +315,7 @@ class FileSaver:
                 print "FILESAVER:: copying from " + AllScene.ActorRefDic[actor].toOsSpecific() + "to" + newpathSpecific 
                 if(oldActorpath!=newpathSpecific):
                     shutil.copyfile(oldActorpath,newpathSpecific)
-
+                
 
                 e=EggData()
                 e.read(AllScene.ActorRefDic[actor])
@@ -329,10 +328,10 @@ class FileSaver:
                     fn.setDirname("")
                     tex.setFilename(fn)
                     e.writeEgg(Filename.fromOsSpecific(newpathSpecific))
+                
 
 
-
-                out_file.write(i2+"if(self.loadmode==1):\n")
+                out_file.write(i2+"if(self.loadmode==1):\n")    
                 out_file.write(i2+i1+ "self."+ actorS + "=Actor.Actor(\'" + self.savepath + "/" +  AllScene.ActorRefDic[actor].getBasename() + "')\n")#Relative Path
                 out_file.write(i2+"else:\n")
                 out_file.write(i2+i1+ "self."+ actorS + "=Actor.Actor(self.executionpath + \'/" +  AllScene.ActorRefDic[actor].getBasename() + "')\n")#Relative Path with execution point specified by the invoking-level-editor
@@ -361,7 +360,7 @@ class FileSaver:
                 if(ActorAnimations!={}):  #Check if a dictionary of animations exists for this actor
                     for animation in ActorAnimations:
                         #out_file.write(i2+ "self."+ actorS + ".loadAnims(" + str(ActorAnimations) +")\n") # Old way with absolute paths
-                        print "ACTOR ANIMATIONS" + ActorAnimations[animation]
+                        print "ACTOR ANIMATIONS" + ActorAnimations[animation]   
                         oldAnimPath=Filename(ActorAnimations[animation])
                         oldAnim=oldAnimPath.toOsSpecific()
                         dirOS=Filename(dirname)
@@ -379,24 +378,24 @@ class FileSaver:
                 out_file.write(i2+"else:\n")
                 theloadAnimString=str(ActorAnimationsInvoke)# We hack the "self.executionpath" part into the dictionary as a variable using string replace
                 print "LOAD ANIM STRING BEFORE" + theloadAnimString
-                theloadAnimString=theloadAnimString.replace('\'self.executionpath +','self.executionpath + \'')
+                theloadAnimString=theloadAnimString.replace('\'self.executionpath +','self.executionpath + \'')         
                 print "LOAD ANIM STRING AFTER" + theloadAnimString
                 out_file.write(i2+ i1+"self."+ actorS + ".loadAnims(" + theloadAnimString +")\n") # Now with new relative paths based on editor invocation
 
                 out_file.write(i2+ "self.ActorDic[\'" + actorS + "\']=self." + AllScene.ActorDic[actor].getName()+"\n")
                 #out_file.write(i2+ "self.ActorRefDic[\'" + actorS + "\']=Filename(\'"+AllScene.ActorRefDic[actor].getFullpath() +"\')\n") # Old way with absolute paths
                 out_file.write(i2+ "self.ActorRefDic[\'" + actorS + "\']=\'"+ AllScene.ActorRefDic[actor].getBasename() +"\'\n")# Relative paths
-                out_file.write(i2+ "self.ActorDic[\'"+ actorS + "\'].setName(\'"+ actorS +"\')\n")
+                out_file.write(i2+ "self.ActorDic[\'"+ actorS + "\'].setName(\'"+ actorS +"\')\n")              
                 if(AllScene.blendAnimDict.has_key(actor)): # Check if a dictionary of blended animations exists
                     out_file.write(i2+ "self.blendAnimDict[\"" + actorS +"\"]=" + str(AllScene.blendAnimDict[actor]) + "\n")
-
-
+                
+                
                 out_file.write("\n")
-
+        
         ####################################################################################################################################################
         # Collsion Node Saving
         ####################################################################################################################################################
-
+        
         out_file.write(i2+"##########################################################################################################\n")
         out_file.write(i2+"# Code for setting up Collision Nodes\n")
         out_file.write(i2+"# To use collision detection:\n")
@@ -409,7 +408,7 @@ class FileSaver:
             nodetype=solid.getType().getName()
 
             if(nodetype=="CollisionSphere"): #Save Collison Sphere
-                out_file.write(i2+"collSolid=CollisionSphere(%.3f,%.3f,%.3f,%.3f)\n"%(solid.getCenter().getX(),solid.getCenter().getY(),solid.getCenter().getZ(),solid.getRadius()))
+                out_file.write(i2+"collSolid=CollisionSphere(%.3f,%.3f,%.3f,%.3f)\n"%(solid.getCenter().getX(),solid.getCenter().getY(),solid.getCenter().getZ(),solid.getRadius()))            
                 pass
             elif(nodetype=="CollisionPolygon"): #Save Collison Polygon
 
@@ -429,13 +428,13 @@ class FileSaver:
                 out_file.write(i2+"pointB =  Point3(" + bx + "," + by + "," + bz + ")\n")
                 out_file.write(i2+"pointC =  Point3(" + cx + "," + cy + "," + cz + ")\n")
                 out_file.write(i2+"collSolid=CollisionPolygon(pointA, pointB, pointC)\n")
-
+                
                 pass
 
             elif(nodetype=="CollisionSegment"): #Save Collison Segment
                 A=AllScene.collisionDict[collnode].node().getSolid(0).getPointA()
                 B=AllScene.collisionDict[collnode].node().getSolid(0).getPointB()
-
+                
                 out_file.write(i2+"pointA =  Point3(%.3f,%.3f,%.3f)\n"%(A.getX(),A.getY(),A.getZ()))
                 out_file.write(i2+"pointB =  Point3(%.3f,%.3f,%.3f)\n"%(B.getX(),B.getY(),B.getZ()))
                 out_file.write(i2+"collSolid=CollisionSegment()\n")
@@ -465,7 +464,7 @@ class FileSaver:
             out_file.write(i2+"self." + collnodeS + "_Node" + ".addSolid(collSolid)\n")
             out_file.write(i2+"base.cTrav.addCollider(self." + collnodeS + "_Node,self.CollisionHandler)\n")
             out_file.write("\n")
-
+           
 
 
 
@@ -488,7 +487,7 @@ class FileSaver:
                      out_file.write (i2+ "alight.setColor(VBase4("+ str(light.getLightColor().getX())+ "," + str(light.getLightColor().getY())+ "," + str(light.getLightColor().getZ()) + "," + str(light.getLightColor().getW()) + "))\n")
                      out_file.write (i2+ "self.lightAttrib=self.lightAttrib.addLight(alight)\n")
                      out_file.write (i2+ "self."+light.getName()+"= render.attachNewNode(alight.upcastToPandaNode())\n") 
-                     out_file.write (i2+ "self."+light.getName()+".setTag(\"Metadata\",\"" + light.getTag("Metadata") + "\")\n")
+                     out_file.write (i2+ "self."+light.getName()+".setTag(\"Metadata\",\"" + light.getTag("Metadata") + "\")\n")        
                      out_file.write (i2+ "self.LightDict[\'" + light.getName() + "\']=alight\n")
                      out_file.write (i2+ "self.LightTypes[\'" + light.getName() + "\']=\'" + type + "\'\n")
                      out_file.write (i2+ "self.LightNodes[\'" + light.getName() + "\']=self." + light.getName() + "\n")
@@ -505,7 +504,7 @@ class FileSaver:
                      out_file.write (i2+ "self."+light.getName()+ "= render.attachNewNode(alight.upcastToPandaNode())\n") 
                      out_file.write (i2+ "self."+light.getName()+ ".setPos(Point3(" + str(light.getX()) + "," + str(light.getY()) + "," + str(light.getZ()) + "))\n")
                      out_file.write (i2+ "self."+light.getName()+ ".setHpr(Vec3("+ str(light.getH())+ "," + str(light.getP())+ "," + str(light.getR()) + "))\n")
-                     out_file.write (i2+ "self."+light.getName()+ ".setTag(\"Metadata\",\"" + light.getTag("Metadata") + "\")\n")
+                     out_file.write (i2+ "self."+light.getName()+ ".setTag(\"Metadata\",\"" + light.getTag("Metadata") + "\")\n")       
                      #out_file.write (i2+ "alight.setPos
                      out_file.write (i2+ "self.LightDict[\'" + light.getName() + "\']=alight\n")
                      out_file.write (i2+ "self.LightTypes[\'" + light.getName() + "\']=\'" + type + "\'\n")
@@ -521,7 +520,7 @@ class FileSaver:
                      out_file.write (i2+ "alight.setAttenuation(Vec3("+ str(light.getAttenuation().getX()) + "," + str(light.getAttenuation().getY()) + "," + str(light.getAttenuation().getZ()) + "))\n")
                      out_file.write (i2+ "self.lightAttrib=self.lightAttrib.addLight(alight)\n")
                      out_file.write (i2+ "self."+light.getName()+ "= render.attachNewNode(alight.upcastToPandaNode())\n") 
-                     out_file.write (i2+ "self."+light.getName()+ ".setTag(\"Metadata\",\"" + light.getTag("Metadata") + "\")\n")
+                     out_file.write (i2+ "self."+light.getName()+ ".setTag(\"Metadata\",\"" + light.getTag("Metadata") + "\")\n")       
                      out_file.write (i2+ "self."+light.getName()+ ".setPos(Point3(" + str(light.getX()) + "," + str(light.getY()) + "," + str(light.getZ()) + "))\n")
                      out_file.write (i2+ "self.LightDict[\'" + light.getName() + "\']=alight\n")
                      out_file.write (i2+ "self.LightTypes[\'" + light.getName() + "\']=\'" + type + "\'\n")
@@ -539,7 +538,7 @@ class FileSaver:
                      out_file.write (i2+ "alight.setExponent(" +str(light.getExponent()) +")\n")
                      out_file.write (i2+ "self.lightAttrib=self.lightAttrib.addLight(alight)\n")
                      out_file.write (i2+ "self."+light.getName()+ "= render.attachNewNode(alight.upcastToLensNode())\n") 
-                     out_file.write (i2+ "self."+light.getName()+ ".setTag(\"Metadata\",\"" + light.getTag("Metadata") + "\")\n")
+                     out_file.write (i2+ "self."+light.getName()+ ".setTag(\"Metadata\",\"" + light.getTag("Metadata") + "\")\n")       
                      out_file.write (i2+ "self."+light.getName()+ ".setPos(Point3(" + str(light.getX()) + "," + str(light.getY()) + "," + str(light.getZ()) + "))\n")
                      out_file.write (i2+ "self."+light.getName()+ ".setHpr(Vec3("+ str(light.getH())+ "," + str(light.getP())+ "," + str(light.getR()) + "))\n")
                      out_file.write (i2+ "self.LightDict[\'" + light.getName() + "\']=alight\n")
@@ -551,7 +550,7 @@ class FileSaver:
                      out_file.write (i2+ "return None")
                  out_file.write("\n")
 
-
+        
 
         ####################################################################################################################################################
         # Enable Lighting
@@ -570,18 +569,18 @@ class FileSaver:
         out_file.write(i2+"# Load Particle Effects. The parameters to this function are to allow us to use our modified versions of the Particle Effects modules when loading this file with the level editor\n")
         out_file.write(i2+"self.starteffects(self.loadmode,self.seParticleEffect,self.seParticles)\n")
         out_file.write("\n")
-
+                
         ####################################################################################################################################################
         # Save Camera Settings
         ####################################################################################################################################################
 
         out_file.write("\n")
         out_file.write(i2+ "# Save Camera Settings\n")
-        out_file.write(i2+ "camera.setX(" + str(camera.getX()) + ")\n") 
-        out_file.write(i2+ "camera.setY(" + str(camera.getY()) + ")\n") 
-        out_file.write(i2+ "camera.setZ(" + str(camera.getZ()) + ")\n") 
-        out_file.write(i2+ "camera.setH(" + str(camera.getH()) + ")\n") 
-        out_file.write(i2+ "camera.setP(" + str(camera.getP()) + ")\n") 
+        out_file.write(i2+ "camera.setX(" + str(camera.getX()) + ")\n")         
+        out_file.write(i2+ "camera.setY(" + str(camera.getY()) + ")\n")         
+        out_file.write(i2+ "camera.setZ(" + str(camera.getZ()) + ")\n")         
+        out_file.write(i2+ "camera.setH(" + str(camera.getH()) + ")\n")         
+        out_file.write(i2+ "camera.setP(" + str(camera.getP()) + ")\n")         
         out_file.write(i2+ "camera.setR(" + str(camera.getR()) + ")\n") 
         out_file.write(i2+ "camera.getChild(0).node().getLens().setNear(" + str(camera.getChild(0).node().getLens().getNear()) + ")\n") 
         out_file.write(i2+ "camera.getChild(0).node().getLens().setFar(" + str(camera.getChild(0).node().getLens().getFar()) + ")\n") 
@@ -589,13 +588,13 @@ class FileSaver:
         FilmSize=camera.getChild(0).node().getLens().getFilmSize()
         out_file.write(i2+ "camera.getChild(0).node().getLens().setFilmSize(%.3f,%.3f)\n"%(FilmSize.getX(),FilmSize.getY())) 
         out_file.write(i2+ "camera.getChild(0).node().getLens().setFocalLength(" + str(camera.getChild(0).node().getLens().getFocalLength()) + ")\n") 
-        out_file.write(i2+ "camera.setTag(\"Metadata\",\"" + camera.getTag("Metadata") + "\")\n")
+        out_file.write(i2+ "camera.setTag(\"Metadata\",\"" + camera.getTag("Metadata") + "\")\n")       
         out_file.write(i2+ "camera.reparentTo(render)\n")
         out_file.write(i2+ "base.disableMouse()\n")
         self.bgColor=base.getBackgroundColor()
         out_file.write(i2+ "base.setBackgroundColor(%.3f,%.3f,%.3f)\n"%(self.bgColor.getX(),self.bgColor.getY(),self.bgColor.getZ()))
         out_file.write("\n")
-
+        
 
         ####################################################################################################################################################
         # Mopath Saving
@@ -625,7 +624,7 @@ class FileSaver:
 
                 out_file.write(i2+"mp=MopathInterval(m,self." + str(node) + ")\n")
                 out_file.write(i2+"self.curveIntervals.append(mp)\n")
-
+                
                 out_file.write(i2+"if(self.loadmode==1):\n")
                 out_file.write(i2+i1+"self.curveRefColl.append(\"" + self.savepath +"/"+ filestring +"\")\n")
                 out_file.write(i2+"else:\n")
@@ -674,7 +673,7 @@ class FileSaver:
             out_file.write(i2+"\n")
 
         for actor in AllScene.ActorDic:
-            actorS=str(actor)
+            actorS=str(actor)   
             parent=AllScene.ActorDic[actor].getParent().getName()
             if(parent=="render" or parent=="camera"):
                 out_file.write(i2+ "self."+ actorS + ".reparentTo(" + parent + ")\n")
@@ -686,7 +685,7 @@ class FileSaver:
 
             out_file.write(i2+ "self.ActorDic[\'" + actorS + "\']=self." + AllScene.ActorDic[actor].getName()+"\n")
             out_file.write(i2+"\n")
-
+        
 
         for collnode in AllScene.collisionDict:
             collnodeS=str(collnode)
@@ -739,7 +738,7 @@ class FileSaver:
         for effect in AllScene.particleDict:
             parent=AllScene.particleNodes[effect].getParent().getName()
             if(parent=="render" or parent=="camera"):
-                out_file.write(i2+"self.particleDict[\""+ str(effect) +"\"].reparentTo("  + parent + ")\n")
+                out_file.write(i2+"self.particleDict[\""+ str(effect) +"\"].reparentTo("  + parent + ")\n")             
             else:
                 out_file.write(i2+"self.particleDict[\""+ str(effect) +"\"].reparentTo(self."  + parent + ")\n")
             out_file.write(i2+"\n")
@@ -807,11 +806,11 @@ class FileSaver:
         out_file.write(i2+"blendList=blendDicts[blendName]\n")
         out_file.write(i2+"actor.stop(blendList[0])\n")
         out_file.write(i2+"actor.stop(blendList[1])\n")
-        out_file.write("\n")
+        out_file.write("\n")    
 
         out_file.write(i1+"def changeBlending(self,actor,blendName,blending):\n")
         out_file.write(i2+"blendDicts=self.blendAnimDict[actor.getName()]\n")
-        out_file.write(i2+"blendList=blendDicts[blendName]\n")
+        out_file.write(i2+"blendList=blendDicts[blendName]\n")  
         out_file.write(i2+"blendList[2]=blending\n")
         out_file.write(i2+"self.blendAnimDict[actor.getName()]={blendName:[blendList[0],blendList[1],blending]}\n")
         out_file.write("\n")
@@ -834,7 +833,7 @@ class FileSaver:
         out_file.write("\n")
         out_file.write(i2+"for dummy in self.dummyDict:\n")
         out_file.write(i2+i1+"self.dummyDict[dummy].reparentTo(hidden)\n")
-
+        
        
         out_file.write("\n")
         out_file.write(i1+"def hideCollSolids(self):\n")
@@ -855,7 +854,7 @@ class FileSaver:
         out_file.write("\n")
         out_file.write(i2+"for dummy in self.dummyDict:\n")
         out_file.write(i2+i1+"self.dummyDict[dummy].reparentTo(hidden)\n")
-
+        
        
         out_file.write("\n")
         out_file.write(i1+"def showCollSolids(self):\n")
@@ -909,5 +908,5 @@ class FileSaver:
         #out_file.write("run()\n")
 
         out_file.close()
-
-
+                
+                

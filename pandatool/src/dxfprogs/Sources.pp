@@ -1,4 +1,5 @@
 #define UNIX_SYS_LIBS m
+#define USE_PACKAGES fftw
 
 #begin bin_target
   #define TARGET dxf-points

@@ -49,8 +49,8 @@ outputDir = ''
 extensionsDir = ''
 interrogateLib = ''
 codeLibs = []
-doSqueeze = 1
 etcPath = []
+doSqueeze = 1
 
 def doGetopts():
     global outputDir

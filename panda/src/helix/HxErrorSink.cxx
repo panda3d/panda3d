@@ -191,23 +191,23 @@ STDMETHODIMP HxErrorSink::ErrorOccurred(const UINT8 severity, const UINT32 hx_co
 }
 
 
-
-
-
-
-
-
-
-
-
-
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
 
 ////////////////////////////////////////////////////////////////////
 //  Member: HxErrorSink::ConvertErrorToText
 //  Access: Protected
 //  Purpose: Converts the Helix error code to text for the 
 //               client to display.
-////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////        
 //  Params: hx_code - the error code to be translated to text.
 //          buffer - Text buffer that holds the code.
 //          buffer_length - The length of the text buffer.

@@ -43,8 +43,8 @@ const int HelixClient::_guid_length = 64;
 // Return: None
 ////////////////////////////////////////////////////////////////////
 HelixClient::HelixClient() 
-: _engine(0),
-  _dll_access(0) {
+  : _engine(0),
+    _dll_access(0) {
   const char * envName = "PLAYER";
   char* envPath = getenv( envName );
   _dll_home = string(string(envPath) + "\\ExtLib\\HelixLib\\.");
@@ -63,7 +63,7 @@ HelixClient::HelixClient()
 // Return: None
 ////////////////////////////////////////////////////////////////////
 HelixClient::~HelixClient() {
- shutdown();
+  shutdown();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,7 +93,7 @@ void HelixClient::do_event() {
   // dirty so that it will be updated in memory.
   TEXTURES::iterator iter;
   for(iter = _textures.begin(); iter != _textures.end(); iter++) {
-      iter->second->mark_dirty(Texture::DF_image);
+    iter->second->mark_dirty(Texture::DF_image);
   }
 }
 
@@ -153,85 +153,85 @@ void HelixClient::create_player(const string &name, Texture* tex, bool sink_on) 
   // instantiated, otherwise, players cannot be created!
   if (_engine != 0) {
 
-      // For now, check if there is an actual Panda texture present. If not, 
-      // then this player should not be created.
+    // For now, check if there is an actual Panda texture present. If not, 
+    // then this player should not be created.
+    
+    // NOTE: This portion of the interface must be redesigned as the current
+    // design forces the user to specify a valid texture. A more suitable
+    // approach would be to automatically generate a panda texture and allow
+    // the user to retreive that texture and set it for any piece of geometry
+    // within the world.
+    if( tex == 0 ) {
+      STDOUT("ERROR: HelixClient::CreatePlayer, INVALID Texture Object!\n");
+      STDOUT("ERROR: NO PLAYER CREATED!!\n");
+      return;
+    }
+    
+    // Initialize necessary Helix pointers.
+    IHXPlayer* tmp_player = 0;
+    HxClientContext* context = 0;
+    IHXErrorSinkControl* controller = 0;
+    IHXErrorSink* error_sink = 0;
 
-      // NOTE: This portion of the interface must be redesigned as the current
-      // design forces the user to specify a valid texture. A more suitable
-      // approach would be to automatically generate a panda texture and allow
-      // the user to retreive that texture and set it for any piece of geometry
-      // within the world.
-      if( tex == 0 ) {
-          STDOUT("ERROR: HelixClient::CreatePlayer, INVALID Texture Object!\n");
-          STDOUT("ERROR: NO PLAYER CREATED!!\n");
-          return;
-      }
+    // Tell the texture object to keep the actual image buffer in memory. If
+    // the image buffer is deallocated, which is the default in panda, Helix
+    // and Panda because the engine will try to Blit to an invalid buffer.
+    tex->set_keep_ram_image(true);
 
-      // Initialize necessary Helix pointers.
-      IHXPlayer* tmp_player = 0;
-      HxClientContext* context = 0;
-      IHXErrorSinkControl* controller = 0;
-      IHXErrorSink* error_sink = 0;
+    // Try and create a valid helix player on the engine
+    if (HXR_OK != _engine->CreatePlayer(tmp_player)) {
+      STDOUT("ERROR: HelixClient::CreatePlayer, Failed Player Creation!\n");
+    }
+    else {
+      // Since a player has been successfully instantiated, a context
+      // for that player must be created.
+      context = new HxClientContext(_players.size());
+      if(context != 0) {
+        context->AddRef();
+      
+        // Specify a default GUID. Not really necessary, but here for
+        // convenience if needed later on.
+        char guid[_guid_length + 1];
+        IHXPreferences * pref = 0;
+        guid[0] = '\0';
 
-      // Tell the texture object to keep the actual image buffer in memory. If
-      // the image buffer is deallocated, which is the default in panda, Helix
-      // and Panda because the engine will try to Blit to an invalid buffer.
-      tex->set_keep_ram_image(true);
+        // Query the Preferences Interface for the player.
+        tmp_player->QueryInterface(IID_IHXPreferences, (void**)&pref);
+      
+        // Send the Texture buffer down into the Context. It will then
+        // ship the buffer to the site supplier, where the actual site
+        // and surface are generated.
+        context->init(tmp_player, pref, guid, sink_on, tex);
+        tmp_player->SetClientContext(context);
+        HX_RELEASE(pref);
 
-      // Try and create a valid helix player on the engine
-      if (HXR_OK != _engine->CreatePlayer(tmp_player)) {
-        STDOUT("ERROR: HelixClient::CreatePlayer, Failed Player Creation!\n");
-      }
-      else {
-        // Since a player has been successfully instantiated, a context
-        // for that player must be created.
-        context = new HxClientContext(_players.size());
-        if(context != 0) {
-          context->AddRef();
-
-          // Specify a default GUID. Not really necessary, but here for
-          // convenience if needed later on.
-          char guid[_guid_length + 1];
-          IHXPreferences * pref = 0;
-          guid[0] = '\0';
-
-          // Query the Preferences Interface for the player.
-          tmp_player->QueryInterface(IID_IHXPreferences, (void**)&pref);
-
-          // Send the Texture buffer down into the Context. It will then
-          // ship the buffer to the site supplier, where the actual site
-          // and surface are generated.
-          context->init(tmp_player, pref, guid, sink_on, tex);
-          tmp_player->SetClientContext(context);
-          HX_RELEASE(pref);
-
-          // Query the Error Sink Controller
-          tmp_player->QueryInterface(IID_IHXErrorSinkControl, (void**)&controller);
-          if(controller != 0) {
-            context->QueryInterface(IID_IHXErrorSink, (void**)&error_sink);
-            if(error_sink != 0) {
-                controller->AddErrorSink(error_sink, HXLOG_EMERG, HXLOG_INFO);
-            }
-            HX_RELEASE(error_sink);
-            error_sink = 0;
+        // Query the Error Sink Controller
+        tmp_player->QueryInterface(IID_IHXErrorSinkControl, (void**)&controller);
+        if(controller != 0) {
+          context->QueryInterface(IID_IHXErrorSink, (void**)&error_sink);
+          if(error_sink != 0) {
+            controller->AddErrorSink(error_sink, HXLOG_EMERG, HXLOG_INFO);
           }
-          HX_RELEASE(controller);
-          controller = 0;
-          context = 0;
+          HX_RELEASE(error_sink);
+          error_sink = 0;
         }
-
-        // Create a new map object for the player and its respective texture.
-        pair<string, IHXPlayer*> player(name, tmp_player);
-        pair<string, PT(Texture)> texture(name, tex);
-
-        // Now that the pair has been created, set the tmp_player
-        // address to 0 to protect against dangling references.
-        tmp_player = 0;
-
-        // Now, actually insert the pairs into their respective maps.
-        _players.insert(player);
-        _textures.insert(texture);
+        HX_RELEASE(controller);
+        controller = 0;
+        context = 0;
       }
+
+      // Create a new map object for the player and its respective texture.
+      pair<string, IHXPlayer*> player(name, tmp_player);
+      pair<string, PT(Texture)> texture(name, tex);
+    
+      // Now that the pair has been created, set the tmp_player
+      // address to 0 to protect against dangling references.
+      tmp_player = 0;
+
+      // Now, actually insert the pairs into their respective maps.
+      _players.insert(player);
+      _textures.insert(texture);
+    }
   }
   else {
     STDOUT("ERROR: In HelixClient::CreatePlayer, pEngine = NULL");
@@ -367,7 +367,7 @@ bool HelixClient::init() {
   // initialization of the engine.
   if((create_engine == 0) || (set_dll_access_path == 0)) {
     STDOUT("---{ERROR: HelixClient::Init, set_dll_access_path}---");
-
+    
     delete _dll_access;
     _dll_access = 0;
     return false;
@@ -390,11 +390,11 @@ bool HelixClient::init() {
   STDERR("Common DLL path %s\n", next_path );
   UINT32 bytes_to_copy = strlen(next_path) + 1;
   if (bytes_to_copy <= bytes_left)
-  {
-    memcpy(path_next_position, next_path, bytes_to_copy);
-    path_next_position += bytes_to_copy;
-    bytes_left -= bytes_to_copy;
-  }
+    {
+      memcpy(path_next_position, next_path, bytes_to_copy);
+      path_next_position += bytes_to_copy;
+      bytes_left -= bytes_to_copy;
+    }
 
   // Apply the Plug-in DLL Path to the paths string. For simplicity,
   // this is the same path as the clntcore.dll path.
@@ -403,25 +403,25 @@ bool HelixClient::init() {
   bytes_to_copy = strlen(next_path) + 1;
   
   if (bytes_to_copy <= bytes_left)
-  {
-    memcpy(path_next_position, next_path, bytes_to_copy); 
-    path_next_position += bytes_to_copy;
-    bytes_left -= bytes_to_copy;
-  }
+    {
+      memcpy(path_next_position, next_path, bytes_to_copy); 
+      path_next_position += bytes_to_copy;
+      bytes_left -= bytes_to_copy;
+    }
 
   // Apply the Codecs DLL Path to the paths string. For simplicity,
   // this is the same path as the clntcore.dll path.
   SafeSprintf(next_path, 256, "DT_Codecs=%s", _dll_home.c_str());
   bytes_to_copy = strlen(next_path) + 1;
   if (bytes_to_copy <= bytes_left)
-  {
-    memcpy(path_next_position, next_path, bytes_to_copy); 
-    path_next_position += bytes_to_copy;
-    bytes_left -= bytes_to_copy;
-    *path_next_position='\0';
-  }
-   STDOUT((char*)paths);
-   set_dll_access_path((char*)paths);
+    {
+      memcpy(path_next_position, next_path, bytes_to_copy); 
+      path_next_position += bytes_to_copy;
+      bytes_left -= bytes_to_copy;
+      *path_next_position='\0';
+    }
+  STDOUT((char*)paths);
+  set_dll_access_path((char*)paths);
   
   // The dll_access_path has been set, so the engine can now be initialized. If
   // this fails, then deallocate the DLLAccess object from memory and abort the
@@ -451,10 +451,10 @@ void HelixClient::shutdown() {
     // given Helix Engine.
     close_all_players();
     
-
+  
     // Retrieve the Function Pointer for closing the Helix engine.
     FPRMCLOSEENGINE close_engine = (FPRMCLOSEENGINE) _dll_access->getSymbol("CloseEngine");
-
+  
     // If the function pointer was successfully retrieved, close 
     // the helix engine.
     if (close_engine != 0) {
@@ -502,10 +502,10 @@ void HelixClient::begin(const string &name) {
     //UINT32 start_time = GetTickCount();
     //UINT32 end_time = start_time + _time_delta;
     //while(1) {
-     // do_events();
-      //curr_time = GetTickCount();
-      //if(curr_time >= end_time)
-       // break;
+    // do_events();
+    //curr_time = GetTickCount();
+    //if(curr_time >= end_time)
+    // break;
     //}
   }
 }
@@ -522,28 +522,28 @@ void HelixClient::begin(const string &name) {
 ////////////////////////////////////////////////////////////////////
 void HelixClient::begin_all() {
   if (_engine != 0) {
-
-      // Iterate through the _players map and call the Begin 
-      // routine to start playback of the media.
-      PLAYERS::iterator iter;
-      for(iter = _players.begin(); iter != _players.end(); iter++) {
-        iter->second->Begin();
-      } 
-
-      // This is legacy code from the test application, however, it
-      // was necessary for helix to function since do_events was called
-      // to give helix the necessary time-slice of the CPU. I think this
-      // most likely can be removed since Panda calls the necessary 
-      // Win32 API Message calls.
-//    UINT curr_time = 0;
-//    UINT32 start_time = GetTickCount();
-//      UINT32 end_time = start_time + _time_delta;
-//      while(1) {
-//        do_events();
-//        curr_time = GetTickCount();
-//        if (curr_time >= end_time)
- //         break;
-//      }
+    
+    // Iterate through the _players map and call the Begin 
+    // routine to start playback of the media.
+    PLAYERS::iterator iter;
+    for(iter = _players.begin(); iter != _players.end(); iter++) {
+      iter->second->Begin();
+    } 
+    
+    // This is legacy code from the test application, however, it
+    // was necessary for helix to function since do_events was called
+    // to give helix the necessary time-slice of the CPU. I think this
+    // most likely can be removed since Panda calls the necessary 
+    // Win32 API Message calls.
+    //    UINT curr_time = 0;
+    //    UINT32 start_time = GetTickCount();
+    //      UINT32 end_time = start_time + _time_delta;
+    //      while(1) {
+    //        do_events();
+    //        curr_time = GetTickCount();
+    //        if (curr_time >= end_time)
+    //         break;
+    //      }
   }
 }
 
@@ -581,12 +581,12 @@ void HelixClient::pause(const string &name) {
 ////////////////////////////////////////////////////////////////////
 void HelixClient::pause_all() {
   if (_engine != 0) {
-      // Iterate through the _players map and call the Pause 
-      // routine to start playback of the media.
-      PLAYERS::iterator iter;
-      for(iter = _players.begin(); iter != _players.end(); iter++) {
-        iter->second->Pause();
-      }
+    // Iterate through the _players map and call the Pause 
+    // routine to start playback of the media.
+    PLAYERS::iterator iter;
+    for(iter = _players.begin(); iter != _players.end(); iter++) {
+      iter->second->Pause();
+    }
   }
 }
 
@@ -650,12 +650,12 @@ void HelixClient::stop(const string &name) {
 ////////////////////////////////////////////////////////////////////
 void HelixClient::stop_all() {
   if (_engine != 0) {
-      // Iterate through the _players map and call the Pause 
-      // routine to stop playback of the media.
-      PLAYERS::iterator iter;
-      for(iter = _players.begin(); iter != _players.end(); iter++) {
-        iter->second->Stop();
-      }
+    // Iterate through the _players map and call the Pause 
+    // routine to stop playback of the media.
+    PLAYERS::iterator iter;
+    for(iter = _players.begin(); iter != _players.end(); iter++) {
+      iter->second->Stop();
+    }
   }
 }
 

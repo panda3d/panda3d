@@ -2,9 +2,9 @@
 # seLights.py
 # Written by Yi-Hong Lin, yihhongl@andrew.cmu.edu, 2004
 #################################################################
-from PandaObject import *
+from direct.showbase.PandaObject import *
 from string import lower
-import DirectUtil
+from direct.directtools import DirectUtil
 import string
 
 
@@ -74,10 +74,10 @@ class seLight(NodePath):
             self.LightNode.setHpr(self.orientation)
             self.LightNode.setPos(self.position)
         else:
-            self.LightNode.setHpr(self.orientation)
+            self.LightNode.setHpr(self.orientation)     
             self.LightNode.setPos(self.position)
-
-
+            
+        
         self.assign(self.LightNode)
         if(self.type=='spot'):
             self.helpModel = loader.loadModelCopy( "Spotlight" )
@@ -86,7 +86,7 @@ class seLight(NodePath):
         elif(self.type=='directional'):
             self.helpModel = loader.loadModelCopy( "Dirlight" )
         else:
-            self.helpModel = loader.loadModelCopy( "misc/Sphere" )
+            self.helpModel = loader.loadModelCopy( "models/misc/sphere" )
         self.helpModel.setColor(self.lightcolor)
         self.helpModel.reparentTo(self)
         DirectUtil.useDirectRenderStyle(self.helpModel)
@@ -202,7 +202,7 @@ class seLight(NodePath):
         #################################################################
         self.orientation = self.LightNode.getHpr()
         return self.orientation
-
+        
     def setOrientation(self,orient):
         #################################################################
         # setOrientation(self, orient)
@@ -303,7 +303,7 @@ class seLightManager(NodePath):
         # Originally, we don't do this load model thing.
         # But the problem is, if we don't, then it will cause some
         # Bounding calculation error...
-        self.helpModel = loader.loadModelCopy( "misc/sphere" )
+        self.helpModel = loader.loadModelCopy( "models/misc/sphere" )
         self.helpModel.reparentTo(self)
         self.helpModel.hide()
    

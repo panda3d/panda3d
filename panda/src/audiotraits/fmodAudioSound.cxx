@@ -40,7 +40,7 @@
 //  Description: What happens when a sound ends (not reaches the end
 //               of a loop, but really ends).
 ////////////////////////////////////////////////////////////////////
-signed char
+signed char F_CALLBACKAPI
 pandaFmodFinishedCallback_Stream( FSOUND_STREAM *audio, void *buff, int len, void *p_sound ) {
     FmodAudioSound* sound = (FmodAudioSound*)p_sound;
     assert(sound); //sanity test
@@ -70,6 +70,7 @@ panda_Fmod_finished_callback( FSOUND_STREAM *audio, FmodAudioSound* sound ) {
 //       Access: 
 //  Description: constructor
 ////////////////////////////////////////////////////////////////////
+
 FmodAudioSound::
 FmodAudioSound(FmodAudioManager* manager, FSOUND_STREAM *audio_data,
          string file_name, float length)
@@ -80,6 +81,7 @@ FmodAudioSound(FmodAudioManager* manager, FSOUND_STREAM *audio_data,
   _vel[0] = 0.0f; _vel[1] = 0.0f; _vel[2] = 0.0f;
   nassertv(!file_name.empty());
   nassertv(audio_data != NULL);
+
   fmod_audio_debug("FmodAudioSound(manager="<<(void*)&manager
         <<", file_name="<<file_name<<")");
 }
@@ -142,7 +144,6 @@ if (_bExclusive) {
           audio_error("Unable to set 3d attributes for "<<_file_name<<"!");
       }
   }
-  
   // Set looping -- unimplemented
   
   // Unpause and set status to playing

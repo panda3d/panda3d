@@ -178,7 +178,7 @@ STDMETHODIMP HxSiteSupplier::SitesNeeded(UINT32 request_id, IHXValues*  pProps) 
   if (HXR_OK != hres) {
     goto exit;
   }
-
+    
   // Figures out what type of site must be created.
   hres = pProps->GetPropertyCString("playto",pValue);
   if (HXR_OK == hres) {

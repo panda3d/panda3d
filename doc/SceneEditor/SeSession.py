@@ -8,21 +8,21 @@
 # Also, the way of selecting, renaming and some hot-key controls are changed.
 #
 #################################################################
-from PandaObject import *
-from DirectGlobals import *
-from DirectUtil import*
-from intervalGlobal import *
+from direct.showbase.PandaObject import *
+from direct.directtools.DirectGlobals import *
+from direct.directtools.DirectUtil import*
+from direct.interval.intervalGlobal import *
 from seCameraControl import *
 from seManipulation import *
 from seSelection import *
 from seGrid import *
 from seGeometry import *
-import Placer
-import Slider
-import OnscreenText
+from direct.tkpanels import Placer
+from direct.tkwidgets import Slider
+from direct.gui import OnscreenText
 import types
 import string
-import Loader
+from direct.showbase import Loader
 
 class SeSession(PandaObject):  ### Customized DirectSession
 

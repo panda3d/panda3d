@@ -2,8 +2,8 @@
 # duplicateWindow.py
 # Written by Yi-Hong Lin, yihhongl@andrew.cmu.edu, 2004
 #################################################################
-from AppShell import *
-from TkGlobal import *
+from direct.tkwidgets.AppShell import *
+from direct.showbase.TkGlobal import *
 
 import seSceneGraphExplorer
 

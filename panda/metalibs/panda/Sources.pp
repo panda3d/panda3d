@@ -43,3 +43,17 @@
   #define SOURCES panda.cxx panda.h
   #define INSTALL_HEADERS panda.h
 #end metalib_target
+
+
+
+
+
+
+
+
+
+
+
+
+
+

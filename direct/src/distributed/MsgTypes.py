@@ -23,13 +23,20 @@ CLIENT_LOGIN_2_RESP =                        17
 
 CLIENT_OBJECT_UPDATE_FIELD =                 24
 CLIENT_OBJECT_UPDATE_FIELD_RESP =            24
+CLIENT_OBJECT_DISABLE =                      25
 CLIENT_OBJECT_DISABLE_RESP =                 25
+CLIENT_OBJECT_DELETE =                       27
 CLIENT_OBJECT_DELETE_RESP =                  27
 CLIENT_SET_ZONE =                            29
+CLIENT_REMOVE_ZONE =                         30
 CLIENT_SET_SHARD =                           31
 CLIENT_SET_AVATAR =                          32
 CLIENT_CREATE_OBJECT_REQUIRED =              34
+CLIENT_CREATE_OBJECT_REQUIRED_RESP =         34
 CLIENT_CREATE_OBJECT_REQUIRED_OTHER =        35
+CLIENT_CREATE_OBJECT_REQUIRED_OTHER_RESP =   35
+
+CLIENT_REQUEST_GENERATES =                   36
 
 CLIENT_DISCONNECT =                          37
 
@@ -60,6 +67,8 @@ CLIENT_SET_WISHNAME =                        70
 CLIENT_SET_WISHNAME_RESP =                   71
 CLIENT_SET_WISHNAME_CLEAR =                  72
 CLIENT_SET_SECURITY =                        73
+
+CLIENT_SET_DOID_RANGE =                      74
 
 CLIENT_GET_AVATARS_RESP2 =                   75
 CLIENT_CREATE_AVATAR2 =                      76

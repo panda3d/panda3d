@@ -76,6 +76,9 @@ class ShowBase(DirectObject.DirectObject):
         # magic-word override
         self.mwClientSleep = 0.
 
+        # using 'sleep' once per frame to limit CPU usage.
+        self.sleepCycle = 0.0
+        
         # Fill this in with a function to invoke when the user "exits"
         # the program by closing the main window.
         self.exitFunc = None
@@ -108,10 +111,12 @@ class ShowBase(DirectObject.DirectObject):
         self.mainWinMinimized = 0
         self.pipe = None
         self.pipeList = []
-        self.mak = None
         self.mouse2cam = None
-        self.mouseInterface = None
+        self.buttonThrowers = None
+        self.mouseWatcher = None
         self.mouseWatcherNode = None
+        self.pointerWatcherNodes = None
+        self.mouseInterface = None
         self.drive = None
         self.trackball = None
         self.cam = None
@@ -547,6 +552,22 @@ class ShowBase(DirectObject.DirectObject):
 
         return success
 
+    def setSleep(self, amount):
+        """
+        Sets up a task that calls python 'sleep' every frame.  This is a simple
+        way to reduce the CPU usage (and frame rate) of a panda program.
+        """
+        if (self.sleepCycle == amount): return()
+        if (time == 0.0):
+          self.taskMgr.remove('sleep-cycle')
+        else:
+          self.sleepCycle = amount
+          self.taskMgr.add(self.sleepCycleTask, 'sleep-cycle')
+
+    def sleepCycleTask(self, state):
+        time.sleep(self.sleepCycle)
+        return Task.cont
+
     def setFrameRateMeter(self, flag):
         """
         Turns on or off (according to flag) a standard frame rate
@@ -829,51 +850,71 @@ class ShowBase(DirectObject.DirectObject):
         """
         Creates the structures necessary to monitor the mouse input,
         using the indicated window.  If the mouse has already been set
-        up for a different window, this changes the mouse to reference
-        the new window.
+        up for a different window, those structures are deleted first.
         """
-        if self.mak != None:
-            # The mouse has already been set up; reappropriate it.
-            self.mak.node().setSource(win, 0)
-
-            # Reset the currently-held modifier button list for good
-            # measure.
-            bt = self.buttonThrower.node()
-            mb = ModifierButtons(bt.getModifierButtons())
-            mb.allButtonsUp()
-            bt.setModifierButtons(mb)
-            return
-
-        # The mouse has not yet been set up in this application;
-        # create the mouse structures now.
         
-        # We create both a MouseAndKeyboard object and a MouseWatcher object
-        # for the window.  The MouseAndKeyboard generates mouse events and
-        # mouse button/keyboard events; the MouseWatcher passes them through
+        if self.buttonThrowers != None:
+          for bt in self.buttonThrowers:
+            mw = bt.getParent()
+            mk = mw.getParent()
+            bt.remove()
+            mw.remove()
+            mk.remove()
+        
+        # For each mouse/keyboard device, we create
+        #  - MouseAndKeyboard
+        #  - MouseWatcher
+        #  - ButtonThrower
+        # The ButtonThrowers are stored in a list, self.buttonThrowers.
+        # Given a ButtonThrower, one can access the MouseWatcher and
+        # MouseAndKeyboard using getParent.  
+        #
+        # The MouseAndKeyboard generates mouse events and mouse
+        # button/keyboard events; the MouseWatcher passes them through
         # unchanged when the mouse is not over a 2-d button, and passes
         # nothing through when the mouse *is* over a 2-d button.  Therefore,
         # objects that don't want to get events when the mouse is over a
         # button, like the driveInterface, should be parented to
-        # mouseWatcher, while objects that want events in all cases, like the
-        # chat interface, should be parented to mak.
-        self.mak = self.dataRoot.attachNewNode(MouseAndKeyboard(win, 0, 'mak'))
-        self.mouseWatcherNode = MouseWatcher('mouseWatcher')
-        self.mouseWatcher = self.mak.attachNewNode(self.mouseWatcherNode)
+        # MouseWatcher, while objects that want events in all cases, like the
+        # chat interface, should be parented to the MouseAndKeyboard.
+
+        self.buttonThrowers = []
+        self.pointerWatcherNodes = []
+        for i in range(win.getNumInputDevices()):
+            name = win.getInputDeviceName(i)
+            mk = self.dataRoot.attachNewNode(MouseAndKeyboard(win, i, name))
+            mw = mk.attachNewNode(MouseWatcher(name))
+            mb = mw.node().getModifierButtons()
+            mb.addButton(KeyboardButton.shift())
+            mb.addButton(KeyboardButton.control())
+            mb.addButton(KeyboardButton.alt())
+            mw.node().setModifierButtons(mb)
+            bt = mw.attachNewNode(ButtonThrower(name))
+            if (i != 0):
+                bt.node().setPrefix('mousedev'+str(i)+'-')
+            mods = ModifierButtons()
+            mods.addButton(KeyboardButton.shift())
+            mods.addButton(KeyboardButton.control())
+            mods.addButton(KeyboardButton.alt())
+            bt.node().setModifierButtons(mods)
+            self.buttonThrowers.append(bt)
+            if (win.hasPointer(i)):
+                self.pointerWatcherNodes.append(mw.node())
+
+        self.mouseWatcher = self.buttonThrowers[0].getParent()
+        self.mouseWatcherNode = self.mouseWatcher.node()
+        # print "ButtonThrowers = ",self.buttonThrowers
+        # print "PointerWatcherNodes = ",self.pointerWatcherNodes
 
         if self.recorder:
             # If we have a recorder, the mouseWatcher belongs under a
             # special MouseRecorder node, which may intercept the
             # mouse activity.
+            mw = self.buttonThrowers[0].getParent()
             mouseRecorder = MouseRecorder('mouse')
             self.recorder.addRecorder('mouse', mouseRecorder.upcastToRecorderBase())
-            np = self.mak.attachNewNode(mouseRecorder)
-            self.mouseWatcher.reparentTo(np)
-        
-        mb = self.mouseWatcherNode.getModifierButtons()
-        mb.addButton(KeyboardButton.shift())
-        mb.addButton(KeyboardButton.control())
-        mb.addButton(KeyboardButton.alt())
-        self.mouseWatcherNode.setModifierButtons(mb)
+            np = mw.getParent().attachNewNode(mouseRecorder)
+            mw.reparentTo(np)
 
         # Now we have the main trackball & drive interfaces.
         # useTrackball() and useDrive() switch these in and out; only
@@ -890,31 +931,20 @@ class ShowBase(DirectObject.DirectObject):
         self.mouseInterface = self.trackball
         self.useTrackball()
 
-        # A ButtonThrower to generate events from the mouse and
-        # keyboard buttons as they are pressed.
-        self.buttonThrower = self.mouseWatcher.attachNewNode(ButtonThrower('buttons'))
-
-        # Specialize the events based on whether the modifier keys are
-        # being held down.
-        mods = ModifierButtons()
-        mods.addButton(KeyboardButton.shift())
-        mods.addButton(KeyboardButton.control())
-        mods.addButton(KeyboardButton.alt())
-        self.buttonThrower.node().setModifierButtons(mods)
-
         # A special ButtonThrower to generate keyboard events and
         # include the time from the OS.  This is separate only to
         # support legacy code that did not expect a time parameter; it
         # will eventually be folded into the normal ButtonThrower,
         # above.
-        self.timeButtonThrower = self.mouseWatcher.attachNewNode(ButtonThrower('timeButtons'))
+        mw = self.buttonThrowers[0].getParent()
+        self.timeButtonThrower = mw.attachNewNode(ButtonThrower('timeButtons'))
         self.timeButtonThrower.node().setPrefix('time-')
         self.timeButtonThrower.node().setTimeFlag(1)
 
         # Tell the gui system about our new mouse watcher.
-        self.aspect2d.node().setMouseWatcher(self.mouseWatcherNode)
-        self.aspect2dp.node().setMouseWatcher(self.mouseWatcherNode)
-        self.mouseWatcherNode.addRegion(PGMouseWatcherBackground())
+        self.aspect2d.node().setMouseWatcher(mw.node())
+        self.aspect2dp.node().setMouseWatcher(mw.node())
+        mw.node().addRegion(PGMouseWatcherBackground())
 
     def enableSoftwareMousePointer(self):
         """enableSoftwareMousePointer(self)
@@ -1211,7 +1241,7 @@ class ShowBase(DirectObject.DirectObject):
 
         return VBase4(win.getClearColor())
 
-    def setBackgroundColor(self, r = None, g = None, b = None, win = None):
+    def setBackgroundColor(self, r = None, g = None, b = None, a = 1.0, win = None):
         """
         Sets the window background color to the indicated value.
         This assumes the window is set up to clear the color each
@@ -1221,10 +1251,13 @@ class ShowBase(DirectObject.DirectObject):
         tuple, or the individual r, g, b parameters.
         """
         if g != None:
-            color = VBase4(r, g, b, 1.0)
+            color = VBase4(r, g, b, a)
         else:
             arg = r
-            color = VBase4(arg[0], arg[1], arg[2], 1.0)
+            if isinstance(arg, VBase4):
+                color = arg
+            else:
+                color = VBase4(arg[0], arg[1], arg[2], a)
 
         if win == None:
             win = self.win

@@ -3,12 +3,12 @@
 # Written by Yi-Hong Lin, yihhongl@andrew.cmu.edu, 2004
 #################################################################
 # Import Tkinter, Pmw, and the floater code from this directory tree.
-from AppShell import *
-from TkGlobal import *
+from direct.tkwidgets.AppShell import *
+from direct.showbase.TkGlobal import *
 from seColorEntry import *
-import VectorWidgets
-import Floater
-import Slider
+from direct.tkwidgets import VectorWidgets
+from direct.tkwidgets import Floater
+from direct.tkwidgets import Slider
 import string
 import math
 import types

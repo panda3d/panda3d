@@ -11,11 +11,11 @@
 # (If we do change original directools, it will force user has to install the latest version of OUR Panda)
 #
 #################################################################
-from PandaObject import *
-from DirectUtil import *
+from direct.showbase.PandaObject import *
+from direct.directtools.DirectUtil import *
 from seGeometry import *
-from DirectGlobals import *
-import Task
+from direct.directtools.DirectGlobals import *
+from direct.task import Task
 
 CAM_MOVE_DURATION = 1.2
 COA_MARKER_SF = 0.0075
@@ -312,7 +312,7 @@ class DirectCameraControl(PandaObject):
             nodePath = entry.getIntoNodePath()
             if SEditor.camera not in nodePath.getAncestry():
                 # Compute new hit point
-                hitPt = entry.getFromIntersectionPoint()
+                hitPt = entry.getSurfacePoint(entry.getFromNodePath())
                 # Move coa marker to new point
                 self.updateCoa(hitPt, ref = self.coaMarkerRef)
             else:
@@ -332,7 +332,7 @@ class DirectCameraControl(PandaObject):
         elif entry:
             # Got a hit point (hit point is in camera coordinates)
             # Set center of action
-            hitPt = entry.getFromIntersectionPoint()
+            hitPt = entry.getSurfacePoint(entry.getFromNodePath())
             hitPtDist = Vec3(hitPt).length()
             coa.assign(hitPt)
             # Handle case of bad coa point (too close or too far)

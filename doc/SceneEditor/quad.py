@@ -6,11 +6,11 @@
 #########################################################################################################################################
 
 
-from ShowBaseGlobal import *
-from intervalGlobal import *
-import DirectObject
+from direct.showbase.ShowBaseGlobal import *
+from direct.interval.intervalGlobal import *
+from direct.showbase import DirectObject
 import math
-from MouseWatcher import *
+from pandac.MouseWatcher import *
 
 
 class ViewPort:
@@ -89,7 +89,7 @@ class ViewPort:
         self.cam.node().setLens(self.lens)
    
     def resize(self,x,y):
-
+        
         if(self.VPType=="left"):
             self.the_viewport.setDimensions(0,x,0,y)
             w=abs(x-self.VP_X1)
@@ -139,7 +139,7 @@ class ViewPort:
 
     def getCam(self):
         return self.cam
-
+        
 
 class QuadView(DirectObject.DirectObject):
 #########################################################################################################################################
@@ -155,7 +155,7 @@ class QuadView(DirectObject.DirectObject):
         self.AltPressed=0
         self.PanConstantX=50
         self.PanConstantY=50
-        self.ZoomConstant=1
+        self.ZoomConstant=1     
         self.FrontWidth=100
         self.FrontHeight=100
         self.TopWidth=100
@@ -186,7 +186,7 @@ class QuadView(DirectObject.DirectObject):
 
         # Keep track of the currently selected window... values are 1-4 for four quadrants of a standard 
         # Cartesian coordinate system
-
+        
         # These are the orthographic cameras
         # They will be restricted to panning and zooming i.e. no rotation
         # Top could be flipped to back, left to right and front to back
@@ -196,7 +196,7 @@ class QuadView(DirectObject.DirectObject):
 
         # This camera will have a trackball control since its perspective
         self.perspectiveCam = render.attachNewNode(Camera('perspectiveCam'))
-
+        
         #self.toplens=OrthographicLens()
         #self.leftLens=OrthographicLens()
         #self.frontLens=OrthographicLens()
@@ -208,7 +208,7 @@ class QuadView(DirectObject.DirectObject):
         #self.leftCamLens= base.cam.node().getLens()
         #self.perspectiveCamLens= base.cam.node().getLens()
 
-        # Manipulate lenses here if need be
+        # Manipulate lenses here if need be     
         #self.topCamLens.setFilmSize(250)
 
         # Set the Lenses
@@ -237,12 +237,12 @@ class QuadView(DirectObject.DirectObject):
         #self.FrontScene=render.copyTo(self.SceneParent)
         #self.TopScene=render.copyTo(self.SceneParent)
         #self.LeftScene=render.copyTo(self.SceneParent)
-
+                
         self.PerspectiveScene=render
         self.FrontScene=render
         self.TopScene=render
         self.LeftScene=render
-
+        
         #self.PerspectiveScene.reparentTo(self.SceneParent)
         #self.FrontScene.reparentTo(self.SceneParent)
         #self.TopScene.reparentTo(self.SceneParent)
@@ -261,7 +261,7 @@ class QuadView(DirectObject.DirectObject):
         #self.lastPickPoint = None
 
         #base.useTrackball()
-
+        
         #self.dataRoot = NodePath('dataRoot')
         # Cache the node so we do not ask for it every frame
         #self.dataRootNode = self.dataRoot.node()
@@ -270,7 +270,7 @@ class QuadView(DirectObject.DirectObject):
         #self.mak = self.dataRoot.attachNewNode(MouseAndKeyboard(base.win, 0, 'mak'))
         #self.mak.node().setSource(base.win, 0)
         self.mouseWatcherNode = MouseWatcher('mouseWatcher')
-
+        
         self.mouseWatcher = base.mak.attachNewNode(self.mouseWatcherNode)
         #self.Perspective.setDR(self.mouseWatcherNode)
 
@@ -300,7 +300,7 @@ class QuadView(DirectObject.DirectObject):
         self.accept("alt-mouse1-up",self.AltUp)
         self.accept("control-mouse1",self.CtlDown)
         self.accept("control-mouse1-up",self.CtlUp)
-
+        
     # Methods
 
     #def setLastPickPoint( self ):
@@ -435,10 +435,10 @@ class QuadView(DirectObject.DirectObject):
         if(self.oldY<-1 or self.oldY>1):
             return
         taskMgr.add(self.DragAction,'DragAction')
-
+            
     def AltUpHandler(self):
-        taskMgr.remove('DragAction')
-
+        taskMgr.remove('DragAction')    
+        
     def gridtoggle(self):
         #grid=DirectGrid()
         #grid.enable()
@@ -465,11 +465,11 @@ class QuadView(DirectObject.DirectObject):
                 self.setPerspective()
             else:
                 self.setFront()
-
+        
     def MouseTell(self,buttonCode):
         self.MouseButton=buttonCode
         self.setAppropriateViewPort(self.mouseWatcherNode.getMouseX(),self.mouseWatcherNode.getMouseY())
-
+        
         x=base.mouseWatcherNode.getMouseX()
         y=base.mouseWatcherNode.getMouseY()
 
@@ -509,10 +509,10 @@ class QuadView(DirectObject.DirectObject):
         SEditor.manipulationControl.manipulationStop(self.xy)
         #print "MouseX " + str(base.mouseWatcherNode.getMouseX()) + "MouseY " + str(base.mouseWatcherNode.getMouseY()) + "\n" 
         #print "MouseX " + str(self.mouseWatcherNode.getMouseX()) + "MouseY " + str(self.mouseWatcherNode.getMouseY()) + "\n" 
-
+        
 
         base.mouseWatcherNode=self.mouseWatcherNode
-
+        
         self.oldX=self.mouseWatcherNode.getMouseX()
         if(self.oldX<-1 or self.oldX>1):
             return
@@ -531,11 +531,11 @@ class QuadView(DirectObject.DirectObject):
         taskMgr.remove('DragAction')
         self.Mouse_Draggin=0
         #print "Mouse Up"
-
+        
 
     def Max_Style_Mouse_View(self,buttoncode):
         pass
-
+        
     def ChangeBaseDR(self):
         dr=base.win.getDisplayRegion(0)
         if(self.CurrentQuad==1): #Front
@@ -567,7 +567,7 @@ class QuadView(DirectObject.DirectObject):
         self.ChangeBaseDR()
         self.Perspective.setCam()
         #self.Perspective.setDR(self.mouseWatcherNode)
-
+        
     def setFront(self):
         print "FRONT"
         self.CurrentQuad=1
@@ -596,7 +596,7 @@ class QuadView(DirectObject.DirectObject):
              if(self.HorizontalAxis<-1 or self.HorizontalAxis>1 or self.VerticalAxis<-1 or self.VerticalAxis>1):
                  return
              self.resizedr(self.VerticalAxis,self.HorizontalAxis)
-
+        
         #if(self.AltPressed): # View Camera Transforms -> Maya style
         elif(1):
             #print "ALTPRESSED"
@@ -632,26 +632,26 @@ class QuadView(DirectObject.DirectObject):
                     if(self.FrontHeight<=0):
                         FrontHeight=1
                     self.frontCam.node().getLens().setFilmSize(self.FrontWidth,self.FrontHeight)
-                    self.resizedr(self.VerticalAxis,self.HorizontalAxis)
+                    self.resizedr(self.VerticalAxis,self.HorizontalAxis)        
                 elif(self.CurrentQuad==2):
                     self.TopWidth= self.TopWidth + self.diffX
                     self.TopHeight= self.TopHeight + self.diffX
                     self.TopWidth= self.TopWidth + self.diffY
                     self.TopHeight= self.TopHeight + self.diffY
                     self.topCam.node().getLens().setFilmSize(self.TopWidth,self.TopHeight)
-                    self.resizedr(self.VerticalAxis,self.HorizontalAxis)
+                    self.resizedr(self.VerticalAxis,self.HorizontalAxis)        
                 elif(self.CurrentQuad==3):
                     self.LeftWidth= self.LeftWidth + self.diffX
                     self.LeftHeight= self.LeftHeight + self.diffX
                     self.LeftWidth= self.LeftWidth + self.diffY
                     self.LeftHeight= self.LeftHeight + self.diffY
                     self.leftCam.node().getLens().setFilmSize(self.LeftWidth,self.LeftHeight)
-                    self.resizedr(self.VerticalAxis,self.HorizontalAxis)
+                    self.resizedr(self.VerticalAxis,self.HorizontalAxis)        
                 elif(self.CurrentQuad==4):
                     pass
         else:
              pass
-
+                
         self.oldX=self.currX
         self.oldY=self.currY
         return Task.cont
@@ -667,7 +667,7 @@ class QuadView(DirectObject.DirectObject):
             self.leftCam.setPos(self.leftCam.getX()+X_amt,self.leftCam.getY()+Y_amt,self.leftCam.getZ()+Z_amt)
         elif(quad==4):
             self.perspectiveCam.setPos(self.perspectiveCam.getX()+X_amt,self.perspectiveCam.getY()+Y_amt,self.perspectiveCam.getZ()+Z_amt)
-
+        
     
 
 #View=QuadView()

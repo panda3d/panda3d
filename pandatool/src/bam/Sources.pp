@@ -1,3 +1,5 @@
+#define USE_PACKAGES fftw
+
 #begin bin_target
   #define TARGET bam-info
   #define LOCAL_LIBS \

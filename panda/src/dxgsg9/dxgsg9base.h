@@ -41,7 +41,7 @@
 #include "pandabase.h"
 #include "graphicsWindow.h"
 
-#if D3D_SDK_VERSION != 31
+#if D3D_SDK_VERSION < 31
 #error you have DX 8.0/8.1 headers, not DX 9, you need to install DX 9 SDK!
 #endif
 

@@ -84,7 +84,8 @@ private:
   void adjust_z_order();
   void adjust_z_order(WindowProperties::ZOrder last_z_order,
                       WindowProperties::ZOrder this_z_order);
-
+  void initialize_input_devices();
+  void handle_raw_input(HRAWINPUT hraw);
   void track_mouse_leaving(HWND hwnd);
 
   static void process_1_event();
@@ -117,6 +118,8 @@ private:
   bool _ime_composition_w;
   bool _tracking_mouse_leaving;
   bool _maximized;
+  bool _bCursor_in_WindowClientArea;
+  HANDLE _input_device_handle[32];
   HCURSOR _cursor;
   DEVMODE _fullscreen_display_mode;
 

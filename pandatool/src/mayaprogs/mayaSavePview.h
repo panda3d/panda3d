@@ -31,7 +31,7 @@
 
 // This will ask Maya 5.0 or better to use the new <iostream> library
 // instead of the old <iostream.h> library.
-#define REQUIRE_IOSTREAM
+#define REQUIRE_IOSTREAM 1
 
 #include <maya/MArgList.h>
 #include <maya/MPxCommand.h>

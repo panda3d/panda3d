@@ -103,6 +103,7 @@ PUBLISHED:
   virtual void get_3d_attributes(float *px, float *py, float *pz,
                                  float *vx, float *vy, float *vz);
 
+
   enum SoundStatus { BAD, READY, PLAYING };
   virtual SoundStatus status() const = 0;
 

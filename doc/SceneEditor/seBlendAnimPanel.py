@@ -3,13 +3,13 @@
 # Written by Yi-Hong Lin, yihhongl@andrew.cmu.edu, 2004
 #################################################################
 # Import Tkinter, Pmw, and the floater code from this directory tree.
-from AppShell import *
-from TkGlobal import *
+from direct.tkwidgets.AppShell import *
+from direct.showbase.TkGlobal import *
 from tkSimpleDialog import askfloat
 import string
 import math
 import types
-import Task
+from direct.task import Task
 
 FRAMES = 0
 SECONDS = 1

@@ -3,10 +3,10 @@
 # Written by Yi-Hong Lin, yihhongl@andrew.cmu.edu, 2004
 #################################################################
 # Import Tkinter, Pmw, and the floater code from this directory tree.
-from AppShell import *
-from TkGlobal import *
-import VectorWidgets
-import Floater
+from direct.tkwidgets.AppShell import *
+from direct.showbase.TkGlobal import *
+from direct.tkwidgets import VectorWidgets
+from direct.tkwidgets import Floater
 import string
 
 # Define the Category

@@ -19,10 +19,12 @@
 
 #include "nullAudioManager.h"
 
+
 //namespace {
     //static const string blank="";
     //static float no_listener_attributes [] = {0.0f,0.0f,0.0f, 0.0f,0.0f,0.0f, 0.0f,0.0f,0.0f, 0.0f,0.0f,0.0f};
 //}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NullAudioManager::NullAudioManager
@@ -277,3 +279,4 @@ audio_3d_get_drop_off_factor() const {
     // intentionally blank.
     return 0.0f;
 }
+

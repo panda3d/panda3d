@@ -41,10 +41,13 @@ class SoundInterval(Interval.Interval):
             duration = max(self.soundDuration - self.startTime, 0)
             #if (duration == 0):
             #    self.notify.warning('zero length duration!')
+            
             # MPG - hack for Miles bug
             #duration += 1.5
+            
             # DCR - hack for Miles bug - adding 1.5 seconds caused
             # problems for MG_neg_buzzer.wav
+            
             # DCR - what this is all about: Miles is under-reporting the
             # length of MP3 files, and they're getting cut off too early.
             # This is a temporary hack. We could:

@@ -105,26 +105,27 @@ PUBLISHED:
   // this call may be for efficient on some implementations.
   virtual void stop_all_sounds() = 0;
 
+
   // Changes to the positions of 3D spacialized sounds and the listener
   // are all made at once when this method is called. It should be put
   // in the main program loop.
   virtual void audio_3d_update();
 
   // This controls the "set of ears" that listens to 3D spacialized sound
-  // px, py, pz are position coordinates.
-  // vx, vy, vz are a velocity vector in UNITS PER SECOND (default: meters).
+  // px, py, pz are position coordinates. 
+  // vx, vy, vz are a velocity vector in UNITS PER SECOND (default: meters). 
   // fx, fy and fz are the respective components of a unit forward-vector
   // ux, uy and uz are the respective components of a unit up-vector
   // These changes will NOT be invoked until audio_3d_update() is called.
   virtual void audio_3d_set_listener_attributes(float px, float py, float pz,
-                                                float vx, float vy, float vz, 
+                                                float vx, float vy, float vz,
                                                 float fx, float fy, float fz,
                                                 float ux, float uy, float uz);
   virtual void audio_3d_get_listener_attributes(float *px, float *py, float *pz,
                                                 float *vx, float *vy, float *vz,
                                                 float *fx, float *fy, float *fz,
                                                 float *ux, float *uy, float *uz);
-  
+ 
   // Control the "relative distance factor" for 3D spacialized audio. Default is 1.0
   // Fmod uses meters internally, so give a float in Units-per meter
   // Don't know what Miles uses.

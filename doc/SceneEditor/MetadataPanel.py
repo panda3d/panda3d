@@ -1,5 +1,5 @@
-from AppShell import *
-from TkGlobal import *
+from direct.tkwidgets.AppShell import *
+from direct.showbase.TkGlobal import *
 
 
 class MetadataPanel(AppShell,Pmw.MegaWidget):
@@ -55,5 +55,5 @@ class MetadataPanel(AppShell,Pmw.MegaWidget):
 
     def SetIt(self):
         self.Metanode.setTag("Metadata",self.tag_text.get())
-
-
+        
+        

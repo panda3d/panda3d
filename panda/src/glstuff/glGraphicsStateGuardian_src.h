@@ -35,7 +35,9 @@
 #include "graphicsWindow.h"
 #include "pset.h"
 #include "pmap.h"
+#ifdef HAVE_CGGL
 #include "cgShader.h"
+#endif
 class PlaneNode;
 class Light;
 
@@ -120,9 +122,10 @@ public:
   virtual void issue_fog(const FogAttrib *attrib);
   virtual void issue_depth_offset(const DepthOffsetAttrib *attrib);
   virtual void issue_tex_gen(const TexGenAttrib *attrib);
+#ifdef HAVE_CGGL
   virtual void issue_cg_shader_bind(const CgShaderAttrib *attrib);
-
   //  virtual void issue_stencil(const StencilAttrib *attrib);
+#endif
 
   virtual void bind_light(PointLight *light_obj, const NodePath &light, 
                           int light_id);
@@ -315,3 +318,5 @@ private:
 };
 
 #include "glGraphicsStateGuardian_src.I"
+
+

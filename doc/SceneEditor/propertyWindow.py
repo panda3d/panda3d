@@ -2,16 +2,16 @@
 # propertyWindow.py
 # Written by Yi-Hong Lin, yihhongl@andrew.cmu.edu, 2004
 #################################################################
-from AppShell import *
-from TkGlobal import *
+from direct.tkwidgets.AppShell import *
+from direct.showbase.TkGlobal import *
 
 from seColorEntry import *
 
-import Floater
-import Dial
-import Slider
-import VectorWidgets
-import Task
+from direct.tkwidgets import Floater
+from direct.tkwidgets import Dial
+from direct.tkwidgets import Slider
+from direct.tkwidgets import VectorWidgets
+from direct.task import Task
 
 class propertyWindow(AppShell,Pmw.MegaWidget):
     #################################################################

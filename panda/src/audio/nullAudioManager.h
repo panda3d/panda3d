@@ -72,6 +72,7 @@ public:
 
   virtual void audio_3d_set_drop_off_factor(float factor);
   virtual float audio_3d_get_drop_off_factor() const;
+
 };
 
 #endif /* __NULL_AUDIO_MANAGER_H__ */

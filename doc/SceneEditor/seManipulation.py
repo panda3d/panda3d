@@ -12,11 +12,11 @@
 #
 #################################################################
 
-from PandaObject import *
-from DirectGlobals import *
-from DirectUtil import *
+from direct.showbase.PandaObject import *
+from direct.directtools.DirectGlobals import *
+from direct.directtools.DirectUtil import *
 from seGeometry import *
-import Task
+from direct.task import Task
 
 class DirectManipulationControl(PandaObject):
     def __init__(self):
@@ -58,7 +58,7 @@ class DirectManipulationControl(PandaObject):
         # Did we hit a widget?
         if entry:
             # Yes!
-            self.hitPt.assign(entry.getFromIntersectionPoint())
+            self.hitPt.assign(entry.getSurfacePoint(entry.getFromNodePath()))
             self.hitPtDist = Vec3(self.hitPt).length()
             # Constraint determined by nodes name
             self.constraint = entry.getIntoNodePath().getName()
@@ -107,7 +107,7 @@ class DirectManipulationControl(PandaObject):
             entry = SEditor.iRay.pickGeom(skipFlags = skipFlags)
             if entry:
                 # Record hit point information
-                self.hitPt.assign(entry.getFromIntersectionPoint())
+                self.hitPt.assign(entry.getSurfacePoint(entry.getFromNodePath()))
                 self.hitPtDist = Vec3(self.hitPt).length()
                 # Select it
                 SEditor.select(entry.getIntoNodePath(), SEditor.fShift)
@@ -499,7 +499,7 @@ class DirectManipulationControl(PandaObject):
             SEditor.selected.getWrtAll()
             # Move selected
             SEditor.widget.setPos(
-                SEditor.camera,entry.getFromIntersectionPoint())
+                SEditor.camera,entry.getSurfacePoint(entry.getFromNodePath()))
             # Move all the selected objects with widget
             # Move the objects with the widget
             SEditor.selected.moveWrtWidgetAll()

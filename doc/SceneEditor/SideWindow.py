@@ -2,13 +2,13 @@
 # sideWindow.py
 # Written by Yi-Hong Lin, yihhongl@andrew.cmu.edu, 2004
 #################################################################
-from AppShell import *
-from TkGlobal import *
+from direct.tkwidgets.AppShell import *
+from direct.showbase.TkGlobal import *
 
 import seSceneGraphExplorer
-import Floater
-import Slider
-import VectorWidgets
+from direct.tkwidgets import Floater
+from direct.tkwidgets import Slider
+from direct.tkwidgets import VectorWidgets
 
 class sideWindow(AppShell):
     #################################################################

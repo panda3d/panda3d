@@ -97,6 +97,8 @@ PUBLISHED:
   Datagram ai_format_generate(PyObject *distobj, int do_id, int parent_id, int zone_id,
                               CHANNEL_TYPE district_channel_id, CHANNEL_TYPE from_channel_id,
                               PyObject *optional_fields) const;
+  Datagram client_format_generate(PyObject *distobj, int do_id, int zone_id,                              
+                                  PyObject *optional_fields) const;
 #endif 
 
 public:

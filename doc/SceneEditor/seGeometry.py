@@ -12,10 +12,10 @@
 #
 #################################################################
 
-from PandaModules import *
-from PandaObject import *
-from DirectGlobals import *
-from DirectUtil import *
+from pandac.PandaModules import *
+from direct.showbase.PandaObject import *
+from direct.directtools.DirectGlobals import *
+from direct.directtools.DirectUtil import *
 import math
 
 class LineNodePath(NodePath):

@@ -1,15 +1,15 @@
 """PANDA3D Particle Panel"""
 
 # Import Tkinter, Pmw, and the floater code from this directory tree.
-from AppShell import *
-from TkGlobal import *
+from direct.tkwidgets.AppShell import *
+from direct.showbase.TkGlobal import *
 from tkFileDialog import *
 from tkSimpleDialog import askstring
 import os
-import Dial
-import Floater
-import Slider
-import VectorWidgets
+from direct.tkwidgets import Dial
+from direct.tkwidgets import Floater
+from direct.tkwidgets import Slider
+from direct.tkwidgets import VectorWidgets
 import sePlacer
 import seForceGroup
 import seParticles
@@ -48,16 +48,16 @@ class ParticlePanel(AppShell):
             pe = seParticleEffect.ParticleEffect('effect1', particles)
             self.particleEffect = pe
             self.emitter=loader.loadModel("sphere")
-            pe.reparentTo(self.emitter)
+            pe.reparentTo(self.emitter) 
             self.emitter.setName("effect1")
             self.emitter.reparentTo(render)
             pe.enable()
             messenger.send('ParticlePanel_Added_Effect',['effect1',pe,self.emitter])
             self.effectsDict[self.particleEffect.getName()]=self.particleEffect
-
+        
 
         messenger.send('SGE_Update Explorer',[render])
-
+        
         # Initialize application specific info
         AppShell.__init__(self)
 

@@ -15,6 +15,13 @@ from PyDatagram import PyDatagram
 from PyDatagramIterator import PyDatagramIterator
 
 class ClientRepository(ConnectionRepository.ConnectionRepository):
+
+    """ This maintains a client-side connection with a Panda server.
+    It currently supports several different versions of the server:
+    within the VR Studio, we are currently in transition from the
+    Toontown server to the OTP server; people outside the VR studio
+    will use the Panda LAN server provided by CMU."""
+    
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientRepository")
 
     def __init__(self):
@@ -52,12 +59,26 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.heartbeatInterval = base.config.GetDouble('heartbeat-interval', 10)
         self.heartbeatStarted = 0
         self.lastHeartbeat = 0
+        
         if wantOtpServer:
             # Top level Interest Manager
             self._interestIdAssign = 1
             self._interests = {}
-        
-    
+
+        # By default, the ClientRepository is set up to respond to
+        # datagrams from the CMU Panda LAN server.  You can
+        # reassign this member to change the response behavior
+        # according to game context.
+        self.handler = self.publicServerDatagramHandler
+
+        # The DOID allocator.  The CMU LAN server may choose to
+        # send us a block of DOIDs.  If it chooses to do so, then we
+        # may create objects, using those DOIDs.  These structures are
+        # only used in conjunction with the CMU LAN server.
+        self.DOIDbase = 0
+        self.DOIDnext = 0
+        self.DOIDlast = 0
+
     def abruptCleanup(self):
         """
         Call this method to clean up any pending hooks or tasks on
@@ -509,7 +530,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         doId = di.getUint32()
         #print("Updating " + str(doId))
         # Find the DO
-            
+        
         do = self.doId2do.get(doId)
         if (do != None):
             # Let the dclass finish the job
@@ -543,6 +564,31 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         message = di.getString()
         self.notify.info('Message from server: %s' % (message))
         return message
+
+    def handleSetDOIDrange(self, di):
+        # This method is only used in conjunction with the CMU LAN
+        # server.
+        
+        self.DOIDbase = di.getUint32()
+        self.DOIDlast = self.DOIDbase + di.getUint32()
+        self.DOIDnext = self.DOIDbase
+        return None
+
+    def handleRequestGenerates(self, di):
+        # When new clients join the zone of an object, they need to hear
+        # about it, so we send out all of our information about objects in
+        # that particular zone.
+
+        # This method is only used in conjunction with the CMU LAN
+        # server.
+        
+        assert(self.DOIDnext < self.DOIDlast);
+        zone = di.getUint32()
+        for obj in self.doId2do.values():
+            if obj.zone == zone:
+                id = obj.doId
+                if (self.isLocalId(id)):
+                    self.send(obj.dclass.clientFormatGenerate(obj, id, zone, []))
 
     def handleUnexpectedMsgType(self, msgType, di):        
         if msgType == CLIENT_CREATE_OBJECT_REQUIRED:
@@ -587,6 +633,69 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
                 currentLoginStateName +
                 " game state: " +
                 currentGameStateName)
+
+
+    def createWithRequired(self, className, zoneId = 0, optionalFields=None):
+        # This method is only used in conjunction with the CMU LAN
+        # server.
+
+        if (self.DOIDnext >= self.DOIDlast):
+            self.notify.error("Cannot allocate a distributed object ID: all IDs used up.")
+            return None
+        id = self.DOIDnext
+        self.DOIDnext = self.DOIDnext + 1
+        dclass = self.dclassesByName[className]
+        classDef = dclass.getClassDef()
+        if classDef == None:
+            self.notify.error("Could not create an undefined %s object." % (dclass.getName()))
+        obj = classDef(self)
+        obj.dclass = dclass
+        obj.zone = zoneId
+        obj.doId = id
+        self.doId2do[id] = obj
+        obj.generateInit()
+        obj.generate()
+        obj.announceGenerate()
+        datagram = dclass.clientFormatGenerate(obj, id, zoneId, optionalFields)
+        self.send(datagram)
+        return obj
+
+    def sendDisableMsg(self, doId):
+        # This method is only used in conjunction with the CMU LAN
+        # server.
+
+        datagram = PyDatagram()
+        datagram.addUint16(CLIENT_OBJECT_DISABLE)
+        datagram.addUint32(doId)
+        self.send(datagram)
+
+    def sendDeleteMsg(self, doId):
+        # This method is only used in conjunction with the CMU LAN
+        # server.
+
+        datagram = PyDatagram()
+        datagram.addUint16(CLIENT_OBJECT_DELETE)
+        datagram.addUint32(doId)
+        self.send(datagram)
+
+    def sendRemoveZoneMsg(self, zoneId, visibleZoneList=None):
+        # This method is only used in conjunction with the CMU LAN
+        # server.
+
+        datagram = PyDatagram()
+        datagram.addUint16(CLIENT_REMOVE_ZONE)
+        datagram.addUint32(zoneId)
+
+        # if we have an explicit list of visible zones, add them
+        if visibleZoneList is not None:
+            vzl = list(visibleZoneList)
+            vzl.sort()
+            assert PythonUtil.uniqueElements(vzl)
+            for zone in vzl:
+                datagram.addUint32(zone)
+
+        # send the message
+        self.send(datagram)
 
     def sendSetShardMsg(self, shardId):
         datagram = PyDatagram()
@@ -656,6 +765,29 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         # If we're processing a lot of datagrams within one frame, we
         # may forget to send heartbeats.  Keep them coming!
         self.considerHeartbeat()
+
+    def publicServerDatagramHandler(self, msgType, di):
+
+        # These are the sort of messages we may expect from the public
+        # Panda server.
+        
+        if msgType == CLIENT_SET_DOID_RANGE:
+            self.handleSetDOIDrange(di)
+        elif msgType == CLIENT_CREATE_OBJECT_REQUIRED_RESP:
+            self.handleGenerateWithRequired(di)
+        elif msgType == CLIENT_CREATE_OBJECT_REQUIRED_OTHER_RESP:
+            self.handleGenerateWithRequiredOther(di)
+        elif msgType == CLIENT_OBJECT_UPDATE_FIELD_RESP:
+            self.handleUpdateField(di)
+        elif msgType == CLIENT_OBJECT_DELETE_RESP:
+            self.handleDelete(di)
+        elif msgType == CLIENT_OBJECT_DISABLE_RESP:
+            self.handleDisable(di)
+        elif msgType == CLIENT_REQUEST_GENERATES:
+            self.handleRequestGenerates(di)
+        else:
+            self.handleUnexpectedMsgType(msgType, di)
+
     
     if wantOtpServer:
         # interest managment 
@@ -756,7 +888,6 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             self.send(datagram)
 
 
-
     def sendHeartbeat(self):
         datagram = PyDatagram()
         # Add message type
@@ -799,10 +930,20 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
     def waitForNextHeartBeat(self):
         taskMgr.doMethodLater(self.heartbeatInterval, self.sendHeartbeatTask,
                               "heartBeat")        
-        
+
     def sendUpdate(self, do, fieldName, args, sendToId = None):
         dg = do.dclass.clientFormatUpdate(fieldName, sendToId or do.doId, args)
         self.send(dg)
+
+    def sendUpdateZone(self, obj, zoneId):
+        # This method is only used in conjunction with the CMU LAN
+        # server.
+        
+        id = obj.doId
+        assert(self.isLocalId(id))
+        self.sendDeleteMsg(id, 1)
+        obj.zone = zoneId
+        self.send(obj.dclass.clientFormatGenerate(obj, id, zoneId, []))
 
     def replaceMethod(self, oldMethod, newFunction):
         return 0
@@ -815,3 +956,16 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             if isinstance(obj, type):
                 result.append(obj)
         return result
+
+    def findAnyOfType(self, type):
+        # Searches the repository for any object of the given type.
+        for obj in self.doId2do.values():
+            if isinstance(obj, type):
+                return obj
+        return None
+
+    def isLocalId(self,id):
+        return ((id >= self.DOIDbase) and (id < self.DOIDlast))
+
+    def haveCreateAuthority(self):
+        return (self.DOIDlast > self.DOIDnext)

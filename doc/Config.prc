@@ -4,8 +4,8 @@
 # Uncomment one of the following lines to choose whether you should
 # run using OpenGL or DirectX rendering.
 
-#load-display pandagl
-load-display pandadx8
+load-display pandagl
+#load-display pandadx8
 
 
 # These control the placement and size of the default rendering window.
@@ -18,6 +18,8 @@ win-height 600
 # in a window.
 #fullscreen #t
 
+# This will be used for sample programs with networking
+dc-file sample.dc
 
 # Windows ships with a software OpenGL driver; if you have not
 # installed an OpenGL driver for your graphics card you may be able to
@@ -41,8 +43,12 @@ gl-allow-software-renderer #t
 # the Panda convention of forward slashes (instead of backslash)
 # separating directory names.  (You may also use Windows-native paths
 # here if you prefer.)
-model-path  /i/alpha/player/install/tagmodels
-sound-path  /c/ttmodels
+model-path  .
+model-path  $PRC_DIR
+model-path  $PRC_DIR/..
+sound-path  .
+sound-path  $PRC_DIR
+sound-path  $PRC_DIR/..
 
 # This makes the egg loader available to load egg files.
 load-file-type pandaegg
@@ -53,10 +59,8 @@ load-file-type pandaegg
 # Lightwave) directly into Panda.
 # load-file-type ptloader
 
-
 # Turn off audio:
 audio-library-name null
-
 
 # This enable the automatic creation of a TK window when running
 # Direct.

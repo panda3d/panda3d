@@ -9,13 +9,13 @@
 # So we make one from them.
 #
 #################################################################
-from TkGlobal import *
-import Valuator
-import Floater
-import Slider
+from direct.showbase.TkGlobal import *
+from direct.tkwidgets import Valuator
+from direct.tkwidgets import Floater
+from direct.tkwidgets import Slider
 import string
 import tkColorChooser
-from VectorWidgets import VectorEntry
+from direct.tkwidgets.VectorWidgets import VectorEntry
 
 class seColorEntry(VectorEntry):
     def __init__(self, parent = None, **kw):

@@ -176,7 +176,7 @@ STDMETHODIMP HxAuthenticationManager::HandleAuthenticationRequest(IHXAuthenticat
     char      username[1024] = ""; /* Flawfinder: ignore */
     char      password[1024] = ""; /* Flawfinder: ignore */
     HX_RESULT res = HXR_FAIL;
-
+        
     if( !_sent_password )
     {
         res = HXR_OK;

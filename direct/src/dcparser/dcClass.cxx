@@ -694,7 +694,7 @@ client_format_update(const string &field_name, int do_id,
 
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
-//     Function: DCClass::al_format_update
+//     Function: DCClass::ai_format_update
 //       Access: Published
 //  Description: Generates a datagram containing the message necessary
 //               to send an update for the indicated distributed
@@ -713,6 +713,81 @@ ai_format_update(const string &field_name, int do_id,
   }
 
   return field->ai_format_update(do_id, to_id, from_id, args);
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::client_format_generate
+//       Access: Published
+//  Description: Generates a datagram containing the message necessary
+//               to generate a new distributed object from the client.
+//               This requires querying the object for the initial
+//               value of its required fields.
+//
+//               optional_fields is a list of fieldNames to generate
+//               in addition to the normal required fields.
+////////////////////////////////////////////////////////////////////
+Datagram DCClass::
+client_format_generate(PyObject *distobj, int do_id, 
+                   int zone_id, PyObject *optional_fields) const {
+  DCPacker packer;
+
+  //packer.raw_pack_uint8('A');
+
+  bool has_optional_fields = (PyObject_IsTrue(optional_fields) != 0);
+
+  if (has_optional_fields) {
+    packer.raw_pack_uint16(CLIENT_CREATE_OBJECT_REQUIRED_OTHER);
+  } else {
+    packer.raw_pack_uint16(CLIENT_CREATE_OBJECT_REQUIRED);
+  }
+
+  packer.raw_pack_uint32(zone_id);
+  packer.raw_pack_uint16(_number);
+  packer.raw_pack_uint32(do_id);
+
+  // Specify all of the required fields.
+  int num_fields = get_num_inherited_fields();
+  for (int i = 0; i < num_fields; i++) {
+    DCField *field = get_inherited_field(i);
+    if (field->is_required() && field->as_molecular_field() == NULL) {
+      packer.begin_pack(field);
+      if (!pack_required_field(packer, distobj, field)) {
+        return Datagram();
+      }
+      packer.end_pack();
+    }
+  }
+
+  // Also specify the optional fields.
+  if (has_optional_fields) {
+    int num_optional_fields = PySequence_Size(optional_fields);
+    packer.raw_pack_uint16(num_optional_fields);
+
+    for (int i = 0; i < num_optional_fields; i++) {
+      PyObject *py_field_name = PySequence_GetItem(optional_fields, i);
+      string field_name = PyString_AsString(py_field_name);
+      Py_XDECREF(py_field_name);
+
+      DCField *field = get_field_by_name(field_name);
+      if (field == (DCField *)NULL) {
+        ostringstream strm;
+        strm << "No field named " << field_name << " in class " << get_name()
+             << "\n";
+        nassert_raise(strm.str());
+        return Datagram();
+      }
+      packer.raw_pack_uint16(field->get_number());
+      packer.begin_pack(field);
+      if (!pack_required_field(packer, distobj, field)) {
+        return Datagram();
+      }
+      packer.end_pack();
+    }
+  }
+
+  return Datagram(packer.get_data(), packer.get_length());
 }
 #endif  // HAVE_PYTHON
 

@@ -8,8 +8,8 @@
 # Do forget to check the seTree. 
 #
 #################################################################
-from PandaObject import *
-from TkGlobal import *
+from direct.showbase.PandaObject import *
+from direct.showbase.TkGlobal import *
 from seTree import *
 
 # changing these strings requires changing sceneEditor.py SGE_ strs too!

@@ -79,6 +79,7 @@ FmodAudioManager() {
         break;
       }
 
+
       // If the local system doesn't have enough hardware channels,
       // Don't even bother trying to use hardware effects. Play EVERYTHING in software.
       audio_debug("Setting minimum hardware channels(min="<<audio_min_hw_channels<<")");
@@ -222,6 +223,7 @@ get_sound(const string &file_name, bool positional) {
   // FMOD v4.0!
   FSOUND_STREAM *stream = NULL;
   int flags = FSOUND_LOADMEMORY | FSOUND_MPEGACCURATE;
+
   // 3D sounds have to be mono. Forcing stereo streams
   // to be mono will create a speed hit.
   if (positional) {
@@ -237,6 +239,7 @@ get_sound(const string &file_name, bool positional) {
   if (audio_output_channels == 1) {
       flags |= FSOUND_FORCEMONO;
   }
+
   string os_path = path.to_os_specific();
   string suffix = downcase(path.get_extension());
   
@@ -272,6 +275,7 @@ get_sound(const string &file_name, bool positional) {
   audio_debug("  returning 0x" << (void*)audioSound);
   nassertr(is_valid(), NULL);
   audio_debug("GOO!");
+
   return audioSound;
 }
 
@@ -726,6 +730,7 @@ float FmodAudioManager::
 audio_3d_get_drop_off_factor() const {
     audio_debug("FmodAudioManager::audio_3d_get_drop_off_factor()");
     return _drop_off_factor;
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -794,13 +799,15 @@ load(const Filename& filename, size_t &size) const {
   string suffix = downcase(filename.get_extension());
   bool bSupported = false;
   if (suffix == "wav" || suffix == "mp3" || suffix == "mid"
-      || suffix == "rmi" || suffix == "midi") {
+      || suffix == "rmi" || suffix == "midi"
+      || suffix == "mod" || suffix == "s3m" || suffix == "it"
+      || suffix == "ogg" || suffix == "aiff" || suffix == "wma") {
     bSupported = true;
   }
   if (!bSupported) {
     audio_error("FmodAudioManager::load: "<<filename
     <<" is not a supported file format.");
-    audio_error("Supported formats are: WAV, MP3, MIDI");
+    audio_error("Supported formats are: WAV, MP3, MIDI, OGG, AIFF, WMA, MODS");
     return NULL;
   }
 

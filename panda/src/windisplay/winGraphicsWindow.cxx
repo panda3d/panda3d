@@ -53,6 +53,27 @@ int WinGraphicsWindow::_window_class_index = 0;
 static const char * const errorbox_title = "Panda3D Error";
 
 ////////////////////////////////////////////////////////////////////
+//
+// These static variables contain pointers to the Raw Input
+// functions, which are dynamically extracted from USER32.DLL
+//
+////////////////////////////////////////////////////////////////////
+
+typedef WINUSERAPI UINT (WINAPI *tGetRawInputDeviceList)
+  (OUT PRAWINPUTDEVICELIST pRawInputDeviceList, IN OUT PUINT puiNumDevices, IN UINT cbSize);
+typedef WINUSERAPI UINT(WINAPI *tGetRawInputData)
+  (IN HRAWINPUT hRawInput, IN UINT uiCommand, OUT LPVOID pData, IN OUT PUINT pcbSize, IN UINT cbSizeHeader);
+typedef WINUSERAPI UINT(WINAPI *tGetRawInputDeviceInfoA)
+  (IN HANDLE hDevice, IN UINT uiCommand, OUT LPVOID pData, IN OUT PUINT pcbSize);
+typedef WINUSERAPI BOOL (WINAPI *tRegisterRawInputDevices)
+  (IN PCRAWINPUTDEVICE pRawInputDevices, IN UINT uiNumDevices, IN UINT cbSize);
+
+static tGetRawInputDeviceList    pGetRawInputDeviceList;
+static tGetRawInputData          pGetRawInputData;
+static tGetRawInputDeviceInfoA   pGetRawInputDeviceInfoA;
+static tRegisterRawInputDevices  pRegisterRawInputDevices;
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinGraphicsWindow::Constructor
 //       Access: Public
 //  Description:
@@ -62,9 +83,7 @@ WinGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
                   const string &name) :
   GraphicsWindow(pipe, gsg, name) 
 {
-  GraphicsWindowInputDevice device =
-  GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
-  _input_devices.push_back(device);
+  initialize_input_devices();
   _hWnd = (HWND)0;
   _ime_open = false;
   _ime_active = false;
@@ -391,7 +410,97 @@ open_window() {
   //     characters.  This is only available under Windows NT; it is
   //     stubbed out in Windows 95/98/Me.
 
+  // Registers to receive the WM_INPUT messages
+  if ((pRegisterRawInputDevices)&&(_input_devices.size() > 1)) {
+    RAWINPUTDEVICE Rid;
+    Rid.usUsagePage = 0x01; 
+    Rid.usUsage = 0x02; 
+    Rid.dwFlags = 0;// RIDEV_NOLEGACY;   // adds HID mouse and also ignores legacy mouse messages
+    Rid.hwndTarget = _hWnd;
+    pRegisterRawInputDevices(&Rid, 1, sizeof (Rid));
+  }
+  
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::initialize_input_devices
+//       Access: Private
+//  Description: Creates the array of input devices.  The first
+//               one is always the system mouse and keyboard.
+//               Each subsequent one is a raw mouse device. Also
+//               initializes a parallel array, _input_device_handle,
+//               with the win32 handle of each raw input device.
+////////////////////////////////////////////////////////////////////
+
+void WinGraphicsWindow::
+initialize_input_devices() {
+  UINT nInputDevices;
+  PRAWINPUTDEVICELIST pRawInputDeviceList;
+
+  nassertv(_input_devices.size() == 0);
+  
+  // Clear the handle array, and set up the system keyboard/mouse
+  memset(_input_device_handle, 0, sizeof(_input_device_handle));
+  GraphicsWindowInputDevice device =
+    GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
+  _input_devices.push_back(device);
+  
+  // Try initializing the Raw Input function pointers.
+  if (pRegisterRawInputDevices==0) {
+    HMODULE user32 = LoadLibrary("user32.dll");
+    if (user32) {
+      pRegisterRawInputDevices = (tRegisterRawInputDevices)GetProcAddress(user32,"RegisterRawInputDevices");
+      pGetRawInputDeviceList   = (tGetRawInputDeviceList)  GetProcAddress(user32,"GetRawInputDeviceList");
+      pGetRawInputDeviceInfoA  = (tGetRawInputDeviceInfoA) GetProcAddress(user32,"GetRawInputDeviceInfoA");
+      pGetRawInputData         = (tGetRawInputData)        GetProcAddress(user32,"GetRawInputData");
+    }
+  }
+  
+  if (pRegisterRawInputDevices==0) return;
+  if (pGetRawInputDeviceList==0) return;
+  if (pGetRawInputDeviceInfoA==0) return;
+  if (pGetRawInputData==0) return;
+
+  // Get the number of devices.
+  if (pGetRawInputDeviceList(NULL, &nInputDevices, sizeof(RAWINPUTDEVICELIST)) != 0)
+    return;
+  
+  // Allocate the array to hold the DeviceList
+  pRawInputDeviceList = (PRAWINPUTDEVICELIST)alloca(sizeof(RAWINPUTDEVICELIST) * nInputDevices);
+  if (pRawInputDeviceList==0) return;
+
+  // Fill the Array
+  if (pGetRawInputDeviceList(pRawInputDeviceList, &nInputDevices, sizeof(RAWINPUTDEVICELIST)) == -1)
+    return;
+  
+  // Loop through all raw devices and find the raw mice
+  for (int i = 0; i < (int)nInputDevices; i++) {
+    if (pRawInputDeviceList[i].dwType == RIM_TYPEMOUSE) {
+      // Fetch information about specified mouse device.
+      UINT nSize;
+      if (pGetRawInputDeviceInfoA(pRawInputDeviceList[i].hDevice, RIDI_DEVICENAME, (LPVOID)0, &nSize) != 0)
+        return;
+      char *psName = (char*)alloca(sizeof(TCHAR) * nSize);
+      if (psName == 0) return;
+      if (pGetRawInputDeviceInfoA(pRawInputDeviceList[i].hDevice, RIDI_DEVICENAME, (LPVOID)psName, &nSize) < 0)
+        return;
+
+      // If it's not an RDP mouse, add it to the list of raw mice.
+      if (strncmp(psName,"\\??\\Root#RDP_MOU#0000#",22)!=0) {
+        if (_input_devices.size() < 32) {
+          if (strncmp(psName,"\\??\\",4)==0) psName += 4;
+          char *pound1 = strchr(psName,'#');
+          char *pound2 = pound1 ? strchr(pound1+1,'#') : 0;
+          if (pound2) *pound2 = 0;
+          _input_device_handle[_input_devices.size()] = pRawInputDeviceList[i].hDevice;
+          GraphicsWindowInputDevice device = GraphicsWindowInputDevice::pointer_only(psName);
+          device.set_pointer_in_window(0,0);
+          _input_devices.push_back(device);
+        }
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -856,6 +965,10 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             return 0;
         break;
     
+      case WM_INPUT:
+        handle_raw_input((HRAWINPUT)lparam);
+        break;
+      
       case WM_MOUSELEAVE:
         _tracking_mouse_leaving = false;
         handle_mouse_exit();
@@ -949,43 +1062,54 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         break;
     
       case WM_LBUTTONDOWN:
-        button = 0;
-        // fall through
-      case WM_MBUTTONDOWN:
-        if (button < 0) {
-          button = 1;
+        if (_lost_keypresses) {
+          resend_lost_keypresses();
         }
-        // fall through
+        SetCapture(hwnd);
+        _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+        _input_devices[0].button_down(MouseButton::button(0), get_message_time());
+        break;
+        
+      case WM_MBUTTONDOWN:
+        if (_lost_keypresses) {
+          resend_lost_keypresses();
+        }
+        SetCapture(hwnd);
+        _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+        _input_devices[0].button_down(MouseButton::button(1), get_message_time());
+        break;
+
       case WM_RBUTTONDOWN:
         if (_lost_keypresses) {
           resend_lost_keypresses();
         }
-        if (button < 0) {
-          button = 2;
-        }
         SetCapture(hwnd);
-        handle_keypress(MouseButton::button(button), 
-                        translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)),
-                        get_message_time());
+        _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+        _input_devices[0].button_down(MouseButton::button(2), get_message_time());
         break;
     
       case WM_LBUTTONUP:
-        button = 0;
-        // fall through
-      case WM_MBUTTONUP:
-        if (button < 0) {
-          button = 1;
+        if (_lost_keypresses) {
+          resend_lost_keypresses();
         }
-        // fall through
+        ReleaseCapture();
+        _input_devices[0].button_up(MouseButton::button(0), get_message_time());
+        break;
+
+      case WM_MBUTTONUP:
+        if (_lost_keypresses) {
+          resend_lost_keypresses();
+        }
+        ReleaseCapture();
+        _input_devices[0].button_up(MouseButton::button(1), get_message_time());
+        break;
+
       case WM_RBUTTONUP:
         if (_lost_keypresses) {
           resend_lost_keypresses();
         }
-        if (button < 0) {
-          button = 2;
-        }
         ReleaseCapture();
-        handle_keyrelease(MouseButton::button(button), get_message_time());
+        _input_devices[0].button_up(MouseButton::button(2), get_message_time());
         break;
 
       case WM_MOUSEWHEEL:
@@ -1782,6 +1906,72 @@ lookup_key(WPARAM wparam) const {
     break;
   }
   return ButtonHandle::none();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::handle_raw_input
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+void WinGraphicsWindow::
+handle_raw_input(HRAWINPUT hraw) {
+  LPBYTE lpb;
+  UINT dwSize;
+
+  if (hraw == 0) {
+    return;
+  }
+  if (pGetRawInputData(hraw, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER)) == -1) {
+    return;
+  }
+  
+  lpb = (LPBYTE)alloca(sizeof(LPBYTE) * dwSize);
+  if (lpb == NULL) {
+    return;
+  }
+  
+  if (pGetRawInputData(hraw, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize) {
+    return;
+  }
+  
+  RAWINPUT *raw = (RAWINPUT *)lpb;
+  if (raw->header.hDevice == 0) {
+    return;
+  }
+  
+  for (int i = 1; i < (int)(_input_devices.size()); i++) {
+    if (_input_device_handle[i] == raw->header.hDevice) {
+      int adjx = raw->data.mouse.lLastX;
+      int adjy = raw->data.mouse.lLastY;
+      
+      if (raw->data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE) {
+        _input_devices[i].set_pointer_in_window(adjx, adjy);
+      } else {
+        int oldx = _input_devices[i].get_pointer().get_x();
+        int oldy = _input_devices[i].get_pointer().get_y();
+        _input_devices[i].set_pointer_in_window(oldx + adjx, oldy + adjy);
+      }
+      
+      if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_1_DOWN) {
+        _input_devices[i].button_down(MouseButton::button(0), get_message_time());
+      }
+      if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_1_UP) {
+        _input_devices[i].button_up(MouseButton::button(0), get_message_time());
+      }
+      if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_2_DOWN) {
+        _input_devices[i].button_down(MouseButton::button(2), get_message_time());
+      }
+      if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_2_UP) {
+        _input_devices[i].button_up(MouseButton::button(2), get_message_time());
+      }
+      if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_3_DOWN) {
+        _input_devices[i].button_down(MouseButton::button(1), get_message_time());
+      }
+      if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_3_UP) {
+        _input_devices[i].button_up(MouseButton::button(1), get_message_time());
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -11,9 +11,9 @@
 # (If we do change original directools, it will force user has to install the latest version of OUR Panda)
 #
 #################################################################
-from PandaObject import *
-from DirectGlobals import *
-from DirectUtil import *
+from direct.showbase.PandaObject import *
+from direct.directtools.DirectGlobals import *
+from direct.directtools.DirectUtil import *
 from seGeometry import *
 from quad import *
 COA_ORIGIN = 0
@@ -483,12 +483,13 @@ class SelectionQueue(CollisionHandlerQueue):
         # If dot product of collision point surface normal and
         # ray from camera to collision point is positive, we are
         # looking at the backface of the polygon
-        if not entry.hasFromSurfaceNormal():
+        if not entry.hasSurfaceNormal():
             # Well, no way to tell.  Assume we're not backfacing.
             return 0
-        
-        v = Vec3(entry.getFromIntersectionPoint())
-        n = entry.getFromSurfaceNormal()
+
+        fromNodePath = entry.getFromNodePath()
+        v = Vec3(entry.getSurfacePoint(fromNodePath))
+        n = entry.getSurfaceNormal(fromNodePath)
         # Convert to camera space for backfacing test
         if self.collisionNodePath.getParent() != base.cam:
             # Problem: assumes base.cam is the camera in question
@@ -687,9 +688,10 @@ class SelectionSphere(SelectionQueue):
         # If dot product of collision point surface normal and
         # ray from sphere origin to collision point is positive, 
         # center is on the backside of the polygon
-        v = Vec3(entry.getFromIntersectionPoint() -
+        fromNodePath = entry.getFromNodePath()
+        v = Vec3(entry.getSurfacePoint(fromNodePath) -
                  entry.getFrom().getCenter())
-        n = entry.getFromSurfaceNormal()
+        n = entry.getSurfaceNormal(fromNodePath)
         # If points almost on top of each other, reject face
         # (treat as backfacing)
         if v.length() < 0.05:
@@ -697,6 +699,7 @@ class SelectionSphere(SelectionQueue):
         # Normalize and check angle between to vectors
         v.normalize()
         return v.dot(n) >= 0
+
 
     def pick(self, targetNodePath, skipFlags):
         self.ct.traverse( targetNodePath )

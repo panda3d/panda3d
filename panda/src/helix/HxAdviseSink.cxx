@@ -337,7 +337,7 @@ void HxAdviseSink::get_all_statistics() {
           // Display source statistic
           get_statistics(RegistryName);
 
-
+          
           SafeSprintf(RegistryName, MAX_DISPLAY_NAME, "%s.Stream%ld", RegistryName, StreamIndex);
           while (PT_COMPOSITE == _registry->GetTypeByName(RegistryName)) {
             // Display stream statistic
@@ -397,7 +397,7 @@ STDMETHODIMP HxAdviseSink::OnStatisticsChanged() {
 //  Return: HX_RESULT - result varies.
 ////////////////////////////////////////////////////////////////////
 HX_RESULT HxAdviseSink::dump_reg_tree(const char* tree_name) {
-  //Initialize Local Variables related to the Registry Tree
+  //Initialize Local Variables related to the Registry Tree 
   const char* pszName = NULL;
   ULONG32     ulRegID   = 0;
   HX_RESULT   res     = HXR_OK;
