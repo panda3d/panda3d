@@ -116,11 +116,13 @@ class RelatedObjectMgr(DirectObject.DirectObject):
         from a previous call to requestObjects().  The pending request
         is removed from the queue and no further callbacks will be called.
         """
-        callback, timeoutCallback, doIdsPending, doIdList, doLaterName = tuple
-        assert(self.notify.debug("aborting request for %s (remaining: %s)" % (doIdList, doIdsPending)))
+        if tuple:
+            callback, timeoutCallback, doIdsPending, doIdList, doLaterName = tuple
+            assert(self.notify.debug("aborting request for %s (remaining: %s)" % (doIdList, doIdsPending)))
 
-        taskMgr.remove(doLaterName)
-        self.__removePending(tuple, doIdsPending)
+            if doLaterName:
+                taskMgr.remove(doLaterName)
+            self.__removePending(tuple, doIdsPending)
 
     def __timeoutExpired(self, tuple):
         callback, timeoutCallback, doIdsPending, doIdList, doLaterName = tuple
@@ -180,7 +182,8 @@ class RelatedObjectMgr(DirectObject.DirectObject):
                 # That was the last doId on the list.  Call the
                 # callback!
                 assert(self.notify.debug("All objects generated on list: %s" % (doIdList)))
-                taskMgr.remove(doLaterName)
+                if doLaterName:
+                    taskMgr.remove(doLaterName)
             
                 objects, doIdsPending = self.__generateObjectList(doIdList)
                 callback(objects)
