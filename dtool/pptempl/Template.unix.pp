@@ -262,9 +262,9 @@ $[directory] :
 // Now output the rule to actually link the library from all of its
 // various .o files.
 lib_$[TARGET]_so = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.o,%,,$[get_sources] $[igateoutput] $[igatemout]]]
-$[so_dir]/lib$[TARGET].so : $(lib_$[TARGET]_so)
-#define target $@
+#define target $[so_dir]/lib$[TARGET].so
 #define sources $(lib_$[TARGET]_so)
+$[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[SHARED_LIB_C++]
 #else
@@ -315,11 +315,11 @@ lib$[TARGET]_igatescan = $[igatescan]
 $[so_dir]/$[igatedb] $[so_dir]/$[igateoutput] : $[filter-out .c .cxx,$[igatescan]]
 	interrogate -od $[so_dir]/$[igatedb] -oc $[so_dir]/$[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
 
-$[igateoutput:%.cxx=$[so_dir]/%.o] : $[so_dir]/$[igateoutput]
-#define target $@
+#define target $[igateoutput:%.cxx=$[so_dir]/%.o]
 #define source $[so_dir]/$[igateoutput]
 #define ipath . $[target_ipath]
 #define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED]
+$[target] : $[source]
 	$[COMPILE_C++]
 #endif  // $[igatescan]
 
@@ -332,14 +332,16 @@ $[igateoutput:%.cxx=$[so_dir]/%.o] : $[so_dir]/$[igateoutput]
 #define igatemod $[TARGET]
 
 lib$[TARGET]_igatemscan = $[igatemscan]
-$[so_dir]/$[igatemout] : $(lib$[TARGET]_igatemscan)
-	interrogate_module -oc $@ -module "$[igatemod]" -library "$[igatelib]" -python $(lib$[TARGET]_igatemscan)
+#define target $[so_dir]/$[igatemout]
+#define sources $(lib$[TARGET]_igatemscan)
+$[target] : $[sources]
+	interrogate_module -oc $[target] -module "$[igatemod]" -library "$[igatelib]" -python $[sources]
 
-$[igatemout:%.cxx=$[so_dir]/%.o] : $[so_dir]/$[igatemout]
-#define target $@
+#define target $[igatemout:%.cxx=$[so_dir]/%.o]
 #define source $[so_dir]/$[igatemout]
 #define ipath . $[target_ipath]
 #define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED]
+$[target] : $[source]
 	$[COMPILE_C++]
 #endif  // $[igatescan]
 
@@ -358,9 +360,9 @@ $[igatemout:%.cxx=$[so_dir]/%.o] : $[so_dir]/$[igatemout]
 
 #forscopes noinst_lib_target
 lib_$[TARGET]_so = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.o,%,,$[get_sources]]]
-$[so_dir]/lib$[TARGET].so : $(lib_$[TARGET]_so)
-#define target $@
+#define target $[so_dir]/lib$[TARGET].so
 #define sources $(lib_$[TARGET]_so)
+$[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[SHARED_LIB_C++]
 #else
@@ -379,9 +381,9 @@ $[so_dir]/lib$[TARGET].so : $(lib_$[TARGET]_so)
 
 #forscopes static_lib_target
 lib_$[TARGET]_a = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.o,%,,$[get_sources]]]
-$[st_dir]/lib$[TARGET].a : $(lib_$[TARGET]_a)
-#define target $@
+#define target $[st_dir]/lib$[TARGET].a
 #define sources $(lib_$[TARGET]_a)
+$[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[STATIC_LIB_C++]
 #else
@@ -421,9 +423,11 @@ $[install_lib_dir]/lib$[TARGET].a : $[st_dir]/lib$[TARGET].a
 /////////////////////////////////////////////////////////////////////
 
 #forscopes sed_bin_target
-$[st_dir]/$[TARGET] : $[SOURCE]
-	$[SED] $[COMMAND] $[SOURCE] >$@
-	chmod +x $@
+#define target $[st_dir]/$[TARGET]
+#define source $[SOURCE]
+$[target] : $[source]
+	$[SED] $[COMMAND] $[source] >$[target]
+	chmod +x $[target]
 
 #define installed_files \
     $[install_bin_dir]/$[TARGET]
@@ -450,10 +454,10 @@ $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
 
 #forscopes bin_target
 bin_$[TARGET] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.o,%,,$[get_sources]]]
-$[st_dir]/$[TARGET] : $(bin_$[TARGET])
-#define target $@
+#define target $[st_dir]/$[TARGET]
 #define sources $(bin_$[TARGET])
 #define ld $[get_ld]
+$[target] : $[sources]
 #if $[ld]
   // If there's a custom linker defined for the target, we have to use it.
 	$[ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]	
@@ -496,9 +500,9 @@ $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
 
 #forscopes noinst_bin_target test_bin_target
 bin_$[TARGET] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.o,%,,$[get_sources]]]
-$[st_dir]/$[TARGET] : $(bin_$[TARGET])
-#define target $@
+#define target $[st_dir]/$[TARGET]
 #define sources $(bin_$[TARGET])
+$[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[LINK_BIN_C++]
 #else
@@ -517,29 +521,33 @@ $[st_dir]/$[TARGET] : $(bin_$[TARGET])
 
 // Rules to generate a C++ file from a Bison input file.
 #foreach file $[sort $[yxx_so_sources] $[yxx_st_sources]]
-$[patsubst %.yxx,%.cxx,$[file]] : $[file]
-	$[BISON] -y $[if $[YACC_PREFIX],-d --name-prefix=$[YACC_PREFIX]] $[file]
-	mv y.tab.c $@
-	mv y.tab.h $[patsubst %.yxx,%.h,$[file]]
+#define target $[patsubst %.yxx,%.cxx,$[file]]
+#define source $[file]
+$[target] : $[source]
+	$[BISON] -y $[if $[YACC_PREFIX],-d --name-prefix=$[YACC_PREFIX]] $[source]
+	mv y.tab.c $[target]
+	mv y.tab.h $[patsubst %.yxx,%.h,$[source]]
 
 #end file
 
 // Rules to generate a C++ file from a Flex input file.
 #foreach file $[sort $[lxx_so_sources] $[lxx_st_sources]]
-$[patsubst %.lxx,%.cxx,$[file]] : $[file]
-	$[FLEX] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[file]
-	$[SED] '/#include <unistd.h>/d' lex.yy.c > $@
+#define target $[patsubst %.lxx,%.cxx,$[file]]
+#define source $[file]
+$[target] : $[source]
+	$[FLEX] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[source]
+	$[SED] '/#include <unistd.h>/d' lex.yy.c > $[target]
 	rm lex.yy.c
 
 #end file
 
 // Rules to compile ordinary C files that appear on a shared library.
 #foreach file $[sort $[c_so_sources]]
-$[patsubst %.c,$[so_dir]/%.o,$[file]] : $[file] $[dependencies $[file]]
-#define target $@
+#define target $[patsubst %.c,$[so_dir]/%.o,$[file]]
 #define source $[file]
 #define ipath $[file_ipath]
 #define flags $[cflags] $[CFLAGS_SHARED]
+$[target] : $[source] $[dependencies $[source]]
 	$[COMPILE_C]
 
 #end file
@@ -547,22 +555,22 @@ $[patsubst %.c,$[so_dir]/%.o,$[file]] : $[file] $[dependencies $[file]]
 // Rules to compile ordinary C files that appear on a static library
 // or in an executable.
 #foreach file $[sort $[c_st_sources]]
-$[patsubst %.c,$[st_dir]/%.o,$[file]] : $[file] $[dependencies $[file]]
-#define target $@
+#define target $[patsubst %.c,$[st_dir]/%.o,$[file]]
 #define source $[file]
 #define ipath $[file_ipath]
 #define flags $[cflags]
+$[target] : $[source] $[dependencies $[source]]
 	$[COMPILE_C]
 
 #end file
 
 // Rules to compile C++ files that appear on a shared library.
 #foreach file $[sort $[cxx_so_sources] $[yxx_so_sources] $[lxx_so_sources]]
+#define target $[patsubst %.cxx %.lxx %.yxx,$[so_dir]/%.o,$[file]]
 #define source $[patsubst %.cxx %.lxx %.yxx,%.cxx,$[file]]
-$[patsubst %.cxx %.lxx %.yxx,$[so_dir]/%.o,$[file]] : $[source] $[dependencies $[file]]
-#define target $@
 #define ipath $[file_ipath]
 #define flags $[c++flags] $[CFLAGS_SHARED]
+$[target] : $[source] $[dependencies $[file]]
 	$[COMPILE_C++]
 
 #end file
@@ -570,11 +578,11 @@ $[patsubst %.cxx %.lxx %.yxx,$[so_dir]/%.o,$[file]] : $[source] $[dependencies $
 // Rules to compile C++ files that appear on a static library or in an
 // executable.
 #foreach file $[sort $[cxx_st_sources] $[yxx_st_sources] $[lxx_st_sources]]
+#define target $[patsubst %.cxx %.lxx %.yxx,$[st_dir]/%.o,$[file]]
 #define source $[patsubst %.cxx %.lxx %.yxx,%.cxx,$[file]]
-$[patsubst %.cxx %.lxx %.yxx,$[st_dir]/%.o,$[file]] : $[source] $[dependencies $[file]]
-#define target $@
 #define ipath $[file_ipath]
 #define flags $[c++flags]
+$[target] : $[source] $[dependencies $[file]]
 	$[COMPILE_C++]
 
 #end file
