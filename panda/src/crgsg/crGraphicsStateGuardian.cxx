@@ -2516,14 +2516,8 @@ apply_fog(qpFog *fog) {
   call_glFogMode(get_fog_mode_type((Fog::Mode)fmode));
 
   if (fmode == qpFog::M_linear) {
-    // Linear fog may be world-relative or camera-relative.  The fog
-    // object knows how to decode its parameters into camera-relative
-    // properties.
     float onset, opaque;
-    fog->compute_linear_range(onset, opaque, 
-                              qpNodePath(),
-                              // _current_camera,
-                              _coordinate_system);
+    fog->get_linear_range(onset, opaque);
     call_glFogStart(onset);
     call_glFogEnd(opaque);
 
