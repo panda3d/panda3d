@@ -88,7 +88,7 @@ get_current_root_node(void) const {
 //               region will be made active (if it is not already) by
 //               a call to prepare_display_region().
 ////////////////////////////////////////////////////////////////////
-INLINE CPT(DisplayRegion) GraphicsStateGuardian::
+INLINE const DisplayRegion *GraphicsStateGuardian::
 get_current_display_region(void) const {
   return _current_display_region;
 }
@@ -107,7 +107,7 @@ get_current_display_region(void) const {
 //               optimization.
 ////////////////////////////////////////////////////////////////////
 INLINE DisplayRegionStack GraphicsStateGuardian::
-push_display_region(CPT(DisplayRegion) dr) {
+push_display_region(const DisplayRegion *dr) {
   DisplayRegionStack old;
   old._display_region = _current_display_region;
   old._stack_level = _display_region_stack_level;
@@ -147,7 +147,7 @@ pop_display_region(DisplayRegionStack &node) {
 ////////////////////////////////////////////////////////////////////
 INLINE FrameBufferStack GraphicsStateGuardian::
 push_frame_buffer(const RenderBuffer &buffer,
-                  CPT(DisplayRegion) dr) {
+                  const DisplayRegion *dr) {
   FrameBufferStack old;
   old._frame_buffer = save_frame_buffer(buffer, dr);
   old._stack_level = _frame_buffer_stack_level;

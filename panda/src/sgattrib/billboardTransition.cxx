@@ -22,6 +22,7 @@
 #include "renderRelation.h"
 
 #include <graphicsStateGuardian.h>
+#include <displayRegion.h>
 #include <renderTraverser.h>
 #include <projectionNode.h>
 #include <look_at.h>
@@ -57,8 +58,12 @@ sub_render(NodeRelation *arc, const AllAttributesWrapper &,
   Node *node = arc->get_child();
   GraphicsStateGuardian *gsg = trav->get_gsg();
 
-  // Get the current camera from the gsg
-  const ProjectionNode *camera = gsg->get_current_projection_node();
+  // First, we have to get the current viewing frustum.  This is
+  // normally the same thing as the current camera, but the
+  // DisplayRegion may have some override in effect, so we ask the
+  // DisplayRegion instead of the GSG.
+  const DisplayRegion *dr = gsg->get_current_display_region();
+  ProjectionNode *camera = dr->get_cull_frustum();
   nassertr(camera != (ProjectionNode *)NULL, true);
 
   // And the relative coordinate space.

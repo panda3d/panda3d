@@ -49,9 +49,38 @@ get_layer() const {
 //  Description: Returns the camera associated with this
 //               DisplayRegion, or NULL if no camera is associated.
 ////////////////////////////////////////////////////////////////////
-INLINE PT(Camera) DisplayRegion::
+INLINE Camera *DisplayRegion::
 get_camera() const {
   return _camera;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_cull_frustum
+//       Access: Public
+//  Description: Sets the ProjectionNode that will be used to perform
+//               view-frustum culling for this particular
+//               DisplayRegion.  Normally, this is the same as the
+//               camera (and is implicitly set when set_camera() is
+//               called).  However, it may be useful to occasionally
+//               set it to a different node, particularly to enable a
+//               debugging mode where the culling effectiveness can be
+//               observed from a third-person perspective.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+set_cull_frustum(ProjectionNode *cull_frustum) {
+  _cull_frustum = cull_frustum;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_cull_frustum
+//       Access: Public
+//  Description: Returns the ProjectionNode that will be used to
+//               perform view-frustum culling for this particular
+//               DisplayRegion.  See set_cull_frustum().
+////////////////////////////////////////////////////////////////////
+INLINE ProjectionNode *DisplayRegion::
+get_cull_frustum() const {
+  return _cull_frustum;
 }
 
 ////////////////////////////////////////////////////////////////////

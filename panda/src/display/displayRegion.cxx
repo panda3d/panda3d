@@ -174,7 +174,7 @@ get_pipe() const {
 //               between multiple DisplayRegions.
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
-set_camera(const PT(Camera) &camera) {
+set_camera(Camera *camera) {
   if (camera != _camera) {
     if (_camera != (Camera *)NULL) {
       // We need to tell the old camera we're not using him anymore.
@@ -186,6 +186,7 @@ set_camera(const PT(Camera) &camera) {
       _camera->add_display_region(this);
     }
   }
+  set_cull_frustum(camera);
 }
 
 ////////////////////////////////////////////////////////////////////

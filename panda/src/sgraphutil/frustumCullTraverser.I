@@ -43,7 +43,12 @@ FrustumCullTraverser(ArcChain &arc_chain, Node *root,
     // If we're to be performing view-frustum culling, determine the
     // bounding volume associated with the current viewing frustum.
 
-    ProjectionNode *camera = _gsg->get_current_projection_node();
+    // First, we have to get the current viewing frustum.  This is
+    // normally the same thing as the current camera, but the
+    // DisplayRegion may have some override in effect, so we ask the
+    // DisplayRegion instead of the GSG.
+    const DisplayRegion *dr = _gsg->get_current_display_region();
+    ProjectionNode *camera = dr->get_cull_frustum();
     if (camera != (const ProjectionNode *)NULL) {
       const Projection *proj = camera->get_projection();
       nassertv(proj != (const Projection *)NULL);
@@ -188,7 +193,9 @@ traverse(NodeRelation *arc, AttributeWrapper render_state,
             DCAST(GeometricBoundingVolume, _view_frustum->make_copy());
 
           NodeTransitionWrapper ntw(TransformTransition::get_class_type());
-          wrt(_gsg->get_current_projection_node(),
+          const DisplayRegion *dr = _gsg->get_current_display_region();
+          ProjectionNode *camera = dr->get_cull_frustum();
+          wrt(camera,
               arc->get_child(), _arc_chain.begin(), _arc_chain.end(),
               ntw, _graph_type);
 

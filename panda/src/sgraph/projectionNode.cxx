@@ -69,8 +69,8 @@ share_projection(Projection *projection) {
 ////////////////////////////////////////////////////////////////////
 //     Function: get_projection
 //       Access: Public
-//  Description: Returns a pointer to particular Projection associated
-//               with this ProjectionNode.
+//  Description: Returns a pointer to the particular Projection
+//               associated with this ProjectionNode.
 ////////////////////////////////////////////////////////////////////
 Projection *ProjectionNode::
 get_projection() {

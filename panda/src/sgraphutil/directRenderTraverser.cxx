@@ -23,6 +23,7 @@
 #include <wrt.h>
 #include <geomNode.h>
 #include <graphicsStateGuardian.h>
+#include <displayRegion.h>
 #include <geometricBoundingVolume.h>
 #include <projectionNode.h>
 #include <projection.h>
@@ -103,8 +104,9 @@ traverse(Node *root,
   // culling.
   LMatrix4f rel_from_camera;
   NodeTransitionWrapper ntw(TransformTransition::get_class_type());
-  wrt(_gsg->get_current_projection_node(), root, begin(), end(),
-      ntw, get_graph_type());
+  const DisplayRegion *dr = _gsg->get_current_display_region();
+  ProjectionNode *camera = dr->get_cull_frustum();
+  wrt(camera, root, begin(), end(), ntw, get_graph_type());
   const TransformTransition *tt;
   if (get_transition_into(tt, ntw)) {
     rel_from_camera = tt->get_matrix();

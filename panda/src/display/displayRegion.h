@@ -58,8 +58,11 @@ PUBLISHED:
   GraphicsWindow *get_window() const;
   GraphicsPipe *get_pipe() const;
 
-  void set_camera(const PT(Camera) &camera);
-  INLINE PT(Camera) get_camera() const;
+  void set_camera(Camera *camera);
+  INLINE Camera *get_camera() const;
+
+  INLINE void set_cull_frustum(ProjectionNode *cull_frustum);
+  INLINE ProjectionNode *get_cull_frustum() const;
 
   INLINE void set_active(bool active);
   INLINE bool is_active() const;
@@ -87,6 +90,7 @@ protected:
 
   GraphicsLayer *_layer;
   PT(Camera) _camera;
+  PT(ProjectionNode) _cull_frustum;
 
   bool _active;
 

@@ -20,6 +20,7 @@
 #include "config_switchnode.h"
 
 #include <graphicsStateGuardian.h>
+#include <displayRegion.h>
 #include <get_rel_pos.h>
 #include <luse.h>
 #include <renderRelation.h>
@@ -85,26 +86,32 @@ void LODNode::
 compute_switch(RenderTraverser *trav) {
   GraphicsStateGuardian *gsg = trav->get_gsg();
 
-  // Get the current camera position from the gsg
-  const ProjectionNode* camera = gsg->get_current_projection_node();
-  LPoint3f camera_pos(0, 0, 0);
+  // First, we have to get the current viewing frustum.  This is
+  // normally the same thing as the current camera, but the
+  // DisplayRegion may have some override in effect, so we ask the
+  // DisplayRegion instead of the GSG.
+  const DisplayRegion *dr = gsg->get_current_display_region();
+  ProjectionNode *camera = dr->get_cull_frustum();
+  if (camera != (ProjectionNode *)NULL) {
+    LPoint3f camera_pos(0, 0, 0);
 
-  // Get the LOD center in camera space
-  LPoint3f LOD_pos;
+    // Get the LOD center in camera space
+    LPoint3f LOD_pos;
 
-  NodeTransitionWrapper ntw(TransformTransition::get_class_type());
-  wrt(this, trav->begin(), trav->end(),
-      camera, ntw, RenderRelation::get_class_type());
-  const TransformTransition *tt;
-  if (get_transition_into(tt, ntw)) {
-    LOD_pos = _lod._center * tt->get_matrix();
-  } else {
-    LOD_pos = _lod._center;
+    NodeTransitionWrapper ntw(TransformTransition::get_class_type());
+    wrt(this, trav->begin(), trav->end(),
+        camera, ntw, RenderRelation::get_class_type());
+    const TransformTransition *tt;
+    if (get_transition_into(tt, ntw)) {
+      LOD_pos = _lod._center * tt->get_matrix();
+    } else {
+      LOD_pos = _lod._center;
+    }
+    
+    // Determine which child to traverse
+    int index = _lod.compute_child(camera_pos, LOD_pos);
+    select_child(index);
   }
-
-  // Determine which child to traverse
-  int index = _lod.compute_child(camera_pos, LOD_pos);
-  select_child(index);
 }
 
 ////////////////////////////////////////////////////////////////////

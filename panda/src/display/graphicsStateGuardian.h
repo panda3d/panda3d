@@ -123,12 +123,12 @@ public:
   INLINE ProjectionNode *get_current_projection_node(void) const ;
   INLINE const Node* get_current_root_node(void) const;
 
-  INLINE CPT(DisplayRegion) get_current_display_region(void) const;
+  INLINE const DisplayRegion *get_current_display_region(void) const;
 
-  INLINE DisplayRegionStack push_display_region(CPT(DisplayRegion) dr);
+  INLINE DisplayRegionStack push_display_region(const DisplayRegion *dr);
   INLINE void pop_display_region(DisplayRegionStack &node);
   INLINE FrameBufferStack push_frame_buffer(const RenderBuffer &buffer,
-                                            CPT(DisplayRegion) dr);
+                                            const DisplayRegion *dr);
   INLINE void pop_frame_buffer(FrameBufferStack &node);
 
   INLINE void set_coordinate_system(CoordinateSystem cs);

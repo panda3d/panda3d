@@ -27,6 +27,7 @@
 #include <typedObject.h>
 #include <geometricBoundingVolume.h>
 #include <graphicsStateGuardian.h>
+#include <displayRegion.h>
 #include <arcChain.h>
 #include <nodeTransitionWrapper.h>
 #include <transformTransition.h>

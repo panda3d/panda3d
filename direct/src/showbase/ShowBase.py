@@ -450,6 +450,7 @@ class ShowBase:
             self.oobeButtonEventsType = TypeRegistry.ptr().findType('ButtonEvents_ButtonEventDataTransition')
 
             self.oobeVis = loader.loadModelOnce('models/misc/camera')
+            self.oobeCullFrustum = None
 
             # Make sure the MouseValve is monitoring the Control key.
             mods = ModifierButtons(self.mouseValve.node().getModifierButtons())
@@ -458,13 +459,18 @@ class ShowBase:
 
         if self.oobeMode:
             # Disable OOBE mode.
+
+            if self.oobeCullFrustum != None:
+                # First, disable OOBE cull mode.
+                self.oobeCull()
+            
             self.oobeControl.setOff()
             self.mouseControl.setOn()
             if self.oobeVis:
                 self.oobeVis.reparentTo(self.hidden)
             self.cam.reparentTo(self.camera)
             self.oobeCamera.reparentTo(self.hidden)
-            self.oobeMode = 0
+            self.oobeMode = 0            
         else:
             # Enable OOBE mode.
             mods = ModifierButtons(self.mouseValve.node().getModifierButtons())
@@ -488,7 +494,7 @@ class ShowBase:
             self.oobeCamera.clearMat()
 
             # Set our initial OOB position to be just behind the camera.
-            mat = Mat4.translateMat(0, -10, 3) * base.camera.getMat(cameraParent)
+            mat = Mat4.translateMat(0, -10, 3) * self.camera.getMat(cameraParent)
             mat.invertInPlace()
             self.oobeTrackball.node().setMat(mat)
 
@@ -496,6 +502,45 @@ class ShowBase:
             if self.oobeVis:
                 self.oobeVis.reparentTo(self.camera)
             self.oobeMode = 1
+
+    def oobeCull(self):
+        """
+        While in OOBE mode (see above), cull the viewing frustum as if
+        it were still attached to our original camera.  This allows us
+        to visualize the effectiveness of our bounding volumes.
+        """
+
+        # First, make sure OOBE mode is enabled.
+        try:
+            if not self.oobeMode:
+                self.oobe()
+        except:
+            self.oobe()
+
+        if self.oobeCullFrustum == None:
+            # Enable OOBE culling.
+            pnode = ProjectionNode('oobeCull')
+            pnode.setProjection(self.camNode.getProjection())
+            self.oobeCullFrustum = self.camera.attachNewNode(pnode)
+
+            # Assign each DisplayRegion shared by the camera to use
+            # this cull frustum.
+            numDrs = self.camNode.getNumDrs()
+            for d in range(0, numDrs):
+                dr = self.camNode.getDr(d)
+                dr.setCullFrustum(pnode)
+        else:
+            # Disable OOBE culling.
+
+            # Assign each DisplayRegion shared by the camera to use
+            # the default cull frustum, the camera itself.
+            numDrs = self.camNode.getNumDrs()
+            for d in range(0, numDrs):
+                dr = self.camNode.getDr(d)
+                dr.setCullFrustum(self.camNode)
+
+            self.oobeCullFrustum.removeNode()
+            self.oobeCullFrustum = None
 
     def screenshot(self, namePrefix='screenshot'):
         # Get the current date and time to uniquify the image (down to the second)
