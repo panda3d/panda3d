@@ -43,6 +43,7 @@ protected:
   Filename _input_filename;
   string _table_name;
   bool _static_table;
+  bool _for_string;
 };
 
 #endif
