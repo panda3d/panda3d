@@ -52,7 +52,6 @@ A Db is a Vector<MultifileRecord>
 MultifileRecord is a Vector<FileRecord>
 */
 
-typedef int Version;
 typedef float Phase;
 
 ////////////////////////////////////////////////////////////////////
@@ -202,21 +201,26 @@ PUBLISHED:
   bool write_db(Filename &file, Db db, bool want_server_info);
 
 public:
-  // The download db stores two databases, one that represents the client's state
-  // and one that represents the server state
+  // The download db stores two databases, one that represents the
+  // client's state and one that represents the server state.
   Db _client_db;
   Db _server_db;
 
   // Magic number for knowing this is a download Db
   static PN_uint32 _magic_number;
   static PN_uint32 _bogus_magic_number;
-  typedef pvector<HashVal> vectorHash;
-  typedef pmap<Filename, vectorHash> VersionMap;
+  typedef pvector<HashVal> VectorHash;
+  typedef pmap<Filename, VectorHash> VersionMap;
 
 PUBLISHED:
-  void add_version(const Filename &name, HashVal hash, Version version);
-  bool has_version(const Filename &name);
-  int get_version(const Filename &name, HashVal hash);
+  void add_version(const Filename &name, const HashVal &hash, int version);
+  void insert_new_version(const Filename &name, const HashVal &hash);
+  bool has_version(const Filename &name) const;
+  int get_num_versions(const Filename &name) const;
+  void set_num_versions(const Filename &name, int num_versions);
+
+  int get_version(const Filename &name, const HashVal &hash) const;
+  const HashVal &get_hash(const Filename &name, int version) const;
 
 protected:
   void write_version_map(ofstream &write_stream);

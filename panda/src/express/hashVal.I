@@ -19,18 +19,30 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HashVal::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE HashVal::
-HashVal(void) {
+HashVal() {
   hv[0] = hv[1] = hv[2] = hv[3] = 0;
-  _bUseBrackets = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HashVal::Copy Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE HashVal::
+HashVal(const HashVal &copy) {
+  hv[0] = copy.hv[0];
+  hv[1] = copy.hv[1];
+  hv[2] = copy.hv[2];
+  hv[3] = copy.hv[3];
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HashVal::operator ==
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool HashVal::
@@ -43,7 +55,7 @@ operator == (const HashVal &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HashVal::operator !=
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool HashVal::
@@ -53,7 +65,7 @@ operator != (const HashVal &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HashVal::get_value
-//       Access: Public
+//       Access: Published
 //  Description: Returns the integer value of the indicated component.
 ////////////////////////////////////////////////////////////////////
 INLINE uint HashVal::
@@ -65,7 +77,7 @@ get_value(int val) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HashVal::set_value
-//       Access: Public
+//       Access: Published
 //  Description: Sets the hash value at index val
 ////////////////////////////////////////////////////////////////////
 INLINE void HashVal::
@@ -77,21 +89,11 @@ set_value(int val, uint hashval) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HashVal::output
-//       Access: Public
-//  Description:
+//       Access: Published
+//  Description: The output method does not itself output enclosing
+//               brackets, but the ostream operator << does.
 ////////////////////////////////////////////////////////////////////
 INLINE void HashVal::
 output(ostream &out) const {
-  if(_bUseBrackets)
-      out << "[";
   out << hv[0] << " " << hv[1] << " " << hv[2] << " " << hv[3];
-  if(_bUseBrackets)
-      out << "]";
 }
-
-INLINE void HashVal::
-set_output_brackets(bool bUseBrackets) {
-  _bUseBrackets = bUseBrackets;
-}
-
-

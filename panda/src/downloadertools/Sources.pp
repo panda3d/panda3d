@@ -23,6 +23,15 @@
 #end bin_target
 
 #begin bin_target
+  #define TARGET show_ddb
+  #define BUILD_TARGET $[HAVE_CRYPTO]
+
+  #define SOURCES \
+    show_ddb.cxx
+
+#end bin_target
+
+#begin bin_target
   #define TARGET check_adler
   #define BUILD_TARGET $[HAVE_ZLIB]
   #define USE_PACKAGES $[USE_PACKAGES] zlib

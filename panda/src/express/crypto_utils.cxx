@@ -79,6 +79,8 @@ read32(istream& is) {
 
 void
 md5_a_file(const Filename &name, HashVal &ret) {
+  nassertv(name.exists());
+
   ostringstream os;
   MD5 md5;
 

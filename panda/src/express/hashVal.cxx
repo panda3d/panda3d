@@ -19,3 +19,14 @@
 
 #include "hashVal.h"
 
+////////////////////////////////////////////////////////////////////
+//     Function: HashVal::as_string
+//       Access: Published
+//  Description: Returns the HashVal as a string with four numbers.
+////////////////////////////////////////////////////////////////////
+string HashVal::
+as_string() const {
+  ostringstream strm;
+  output(strm);
+  return strm.str();
+}

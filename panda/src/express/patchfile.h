@@ -57,9 +57,10 @@ PUBLISHED:
   Patchfile(PT(Buffer) buffer);
   ~Patchfile(void);
 
-  bool build(Filename &file_orig, Filename &file_new);
+  bool build(Filename file_orig, Filename file_new, Filename patch_name);
+  int read_header(const Filename &patch_file);
 
-  int initiate(Filename &patch_file, Filename &file);
+  int initiate(const Filename &patch_file, const Filename &file);
   int run(void);
 
   bool apply(Filename &patch_file, Filename &file);
@@ -67,10 +68,15 @@ PUBLISHED:
   INLINE float get_progress(void) const;
 
   INLINE void set_footprint_length(int length);
-  INLINE int  get_footprint_length();
+  INLINE int get_footprint_length();
   INLINE void reset_footprint_length();
 
+  INLINE bool has_source_hash() const;
+  INLINE const HashVal &get_source_hash() const;
+  INLINE const HashVal &get_result_hash() const;
+
 private:
+  int internal_read_header(const Filename &patch_file);
   void init(PT(Buffer) buffer);
   void cleanup(void);
 
@@ -79,13 +85,16 @@ private:
   void build_hash_link_tables(const char *buffer_orig, PN_uint32 length_orig,
     PN_uint32 *hash_table, PN_uint32 *link_table);
   PN_uint16 calc_hash(const char *buffer);
-  void find_longest_match(PN_uint32 new_pos, PN_uint32 &copy_offset, PN_uint16 &copy_length,
+  void find_longest_match(PN_uint32 new_pos, PN_uint32 &copy_pos, PN_uint16 &copy_length,
     PN_uint32 *hash_table, PN_uint32 *link_table, const char* buffer_orig,
     PN_uint32 length_orig, const char* buffer_new, PN_uint32 length_new);
   PN_uint32 calc_match_length(const char* buf1, const char* buf2, PN_uint32 max_length);
 
-  void emit_ADD(ofstream &write_stream, PN_uint16 length, const char* buffer);
-  void emit_COPY(ofstream &write_stream, PN_uint16 length, PN_uint32 offset);
+  void emit_ADD(ofstream &write_stream, PN_uint16 length, const char* buffer,
+                PN_uint32 ADD_pos);
+  void emit_COPY(ofstream &write_stream, PN_uint16 length, 
+                 PN_uint32 COPY_pos, PN_uint32 last_copy_pos,
+                 PN_uint32 ADD_pos);
 
   static const PN_uint32 _HASHTABLESIZE;
   static const PN_uint32 _DEFAULT_FOOTPRINT_LENGTH;
@@ -100,8 +109,12 @@ protected:
   // async patch apply state variables
   bool _initiated;
 
-  HashVal _MD5_ofResult;
+  PN_uint16 _version_number;
 
+  HashVal _MD5_ofSource;  
+  PN_uint32 _source_file_length;
+
+  HashVal _MD5_ofResult;  
   PN_uint32 _result_file_length;
   int _total_bytes_processed;
 
@@ -113,7 +126,9 @@ protected:
   Filename _orig_file;
   Filename _temp_file;
 
+  static const PN_uint32 _v0_magic_number;
   static const PN_uint32 _magic_number;
+  static const PN_uint16 _current_version;
 };
 
 #include "patchfile.I"

@@ -30,19 +30,23 @@
 class EXPCL_PANDAEXPRESS HashVal {
 PUBLISHED:
   INLINE HashVal();
+  INLINE HashVal(const HashVal &copy);
+
   INLINE bool operator == (const HashVal &other) const;
   INLINE bool operator != (const HashVal &other) const;
   INLINE uint get_value(int val) const;
   INLINE void set_value(int val, uint hash);
   INLINE void output(ostream &out) const;
-  uint hv[4];
+  string as_string() const;
+
 public:
-  INLINE void set_output_brackets(bool bUseBrackets);
-  bool _bUseBrackets;
+  uint hv[4];
 };
 
 INLINE ostream &operator << (ostream &out, const HashVal &hv) {
+  out << "[";
   hv.output(out);
+  out << "]";
   return out;
 }
 

@@ -273,8 +273,8 @@ expand_client_multifile(string mfname) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::
-//       Access: Public
+//     Function: DownloadDb::read_db
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DownloadDb::Db DownloadDb::
@@ -310,8 +310,8 @@ read_db(Filename &file, bool want_server_info) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::
-//       Access: Public
+//     Function: DownloadDb::read_db
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DownloadDb::Db DownloadDb::
@@ -337,8 +337,8 @@ read_db(Ramfile &file, bool want_server_info) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::
-//       Access: Public
+//     Function: DownloadDb::write_db
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::
@@ -1075,73 +1075,144 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::add_version
-//       Access: Public
-//  Description: Note: version numbers start at 1
+//       Access: Published
+//  Description: Appends a new version of the file onto the end of the
+//               list, or changes the hash associated with a version
+//               previously added.
+//
+//               Note: version numbers start at 1
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
-add_version(const Filename &name, HashVal hash, Version version) {
+add_version(const Filename &name, const HashVal &hash, int version) {
   nassertv(version >= 1);
 
-  // Try to find this name in the map
-  VersionMap::iterator i = _versions.find(name);
+  VectorHash &vhash = _versions[name];
+  int size = vhash.size();
 
-  // If we did not find it, put a new vectorHash at this name_code
-  if (i == _versions.end()) {
-    vectorHash v;
-    nassertv(version == 1);
-    v.push_back(hash);
-    _versions[name] = v;
+  // We should not skip over versions as we add them.
+  nassertv(version <= size+1);
+
+  if (version-1 < size) {
+    // If you are overwriting an old hash value, just rewrite the value
+    vhash[version-1] = hash;
+
   } else {
-    int size = (*i).second.size();
-
-    // Assert that this version is less than or equal to next version in the list
-    nassertv(version<=size+1);
-
-    // If you are overwriting an old hash value, just insert the new value
-    if (version-1 < size) {
-      (*i).second[version-1] = hash;
-    } else {
-      //  add this hash at the end of the vector
-      (*i).second.push_back(hash);
-    }
+    // Otherwise, extend the vector.
+    vhash.push_back(hash);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::insert_new_version
+//       Access: Published
+//  Description: Inserts a new version 1 copy of the file, sliding all
+//               the other versions up by one.
+////////////////////////////////////////////////////////////////////
+void DownloadDb::
+insert_new_version(const Filename &name, const HashVal &hash) {
+  VectorHash &vhash = _versions[name];
+  vhash.insert(vhash.begin(), hash);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::has_version
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the indicated file has version
 //               information, false otherwise.  Some files recorded in
 //               the database may not bother to track versions.
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::
-has_version(const Filename &name) {
+has_version(const Filename &name) const {
   return (_versions.find(name) != _versions.end());
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::get_num_versions
+//       Access: Published
+//  Description: Returns the number of versions stored for the
+//               indicated file.
+////////////////////////////////////////////////////////////////////
+int DownloadDb::
+get_num_versions(const Filename &name) const {
+  VersionMap::const_iterator vmi = _versions.find(name);
+  if (vmi == _versions.end()) {
+    return 0;
+  }
+
+  return (int)(*vmi).second.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::set_num_versions
+//       Access: Published
+//  Description: Reduces the number of versions of a particular file
+//               stored in the ddb by throwing away all versions
+//               higher than the indicated index.
+////////////////////////////////////////////////////////////////////
+void DownloadDb::
+set_num_versions(const Filename &name, int num_versions) {
+  VersionMap::iterator vmi = _versions.find(name);
+  if (vmi == _versions.end()) {
+    nassertv(num_versions == 0);
+    return;
+  }
+
+  VectorHash &vhash = (*vmi).second;
+
+  nassertv(num_versions <= (int)vhash.size());
+  vhash.erase(vhash.begin() + num_versions, vhash.end());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::get_version
-//       Access: Public
+//       Access: Published
 //  Description: Returns the version number of this particular file,
 //               determined by looking up the hash generated from the
 //               file.  Returns -1 if the version number cannot be
 //               determined.
 ////////////////////////////////////////////////////////////////////
 int DownloadDb::
-get_version(const Filename &name, HashVal hash) {
+get_version(const Filename &name, const HashVal &hash) const {
   VersionMap::const_iterator vmi = _versions.find(name);
   if (vmi == _versions.end()) {
     downloader_cat.debug()
       << "DownloadDb::get_version() - can't find: " << name << endl;
     return -1;
   }
-  vectorHash ulvec = (*vmi).second;
-  vectorHash::iterator i = find(ulvec.begin(), ulvec.end(), hash);
-  if (i != ulvec.end())
-    return (i - ulvec.begin() + 1);
+  const VectorHash &vhash = (*vmi).second;
+  VectorHash::const_iterator i = find(vhash.begin(), vhash.end(), hash);
+  if (i != vhash.end())
+    return (i - vhash.begin() + 1);
   downloader_cat.debug()
     << "DownloadDb::get_version() - can't find hash: " << hash << endl;
   return -1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::get_hash
+//       Access: Published
+//  Description: Returns the MD5 hash associated with the indicated
+//               version of the indicated file.
+////////////////////////////////////////////////////////////////////
+const HashVal &DownloadDb::
+get_hash(const Filename &name, int version) const {
+  static HashVal bogus_hash;
+
+  VersionMap::const_iterator vmi = _versions.find(name);
+  if (vmi == _versions.end()) {
+    downloader_cat.error()
+      << "DownloadDb::get_hash() - can't find: " << name << endl;
+    return bogus_hash;
+  }
+
+  const VectorHash &vhash = (*vmi).second;
+  if (version < 1 || version > (int)vhash.size()) {
+    downloader_cat.error()
+      << "DownloadDb::get_hash() - no version " << version 
+      << " for " << name << endl;
+    return bogus_hash;
+  }
+  return vhash[version - 1];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1154,7 +1225,7 @@ write_version_map(ofstream &write_stream) {
   _master_datagram.clear();
 
   VersionMap::iterator vmi;
-  vectorHash::iterator i;
+  VectorHash::iterator i;
   string name;
   HashVal hash;
 
@@ -1259,18 +1330,14 @@ read_version_map(istream &read_stream) {
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
 output_version_map(ostream &out) const {
-  out << " Version Map: " << endl;
+  out << "Version Map: " << endl;
   VersionMap::const_iterator vmi;
-  vectorHash::const_iterator i;
+  VectorHash::const_iterator i;
   for (vmi = _versions.begin(); vmi != _versions.end(); ++vmi) {
-    out << "  Filename: " << (*vmi).first;
+    out << "  " << (*vmi).first << endl;
     for (i = (*vmi).second.begin(); i != (*vmi).second.end(); ++i) {
       HashVal hash = *i;
-      out << " [" << hash.get_value(0)
-          << " " << hash.get_value(1)
-          << " " << hash.get_value(2)
-          << " " << hash.get_value(3)
-          << "]" << endl;
+      out << "    " << hash << endl;
     }
   }
   out << endl;

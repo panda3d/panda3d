@@ -20,7 +20,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Patchfile::get_progress
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE float Patchfile::
@@ -36,7 +36,7 @@ get_progress(void) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Patchfile::set_footprint_length
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void Patchfile::
@@ -47,7 +47,7 @@ set_footprint_length(int length) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Patchfile::get_footprint_length
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int Patchfile::
@@ -57,10 +57,44 @@ get_footprint_length() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Patchfile::reset_footprint_length
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void Patchfile::
 reset_footprint_length() {
   _footprint_length = _DEFAULT_FOOTPRINT_LENGTH;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::has_source_hash
+//       Access: Published
+//  Description: Returns true if the MD5 hash for the source file is
+//               known.  (Some early versions of the patch file did
+//               not store this information.)
+////////////////////////////////////////////////////////////////////
+INLINE bool Patchfile::
+has_source_hash() const {
+  return (_version_number >= 1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::get_source_hash
+//       Access: Published
+//  Description: Returns the MD5 hash for the source file.
+////////////////////////////////////////////////////////////////////
+INLINE const HashVal &Patchfile::
+get_source_hash() const {
+  nassertr(has_source_hash(), _MD5_ofSource);
+  return _MD5_ofSource;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::get_result_hash
+//       Access: Published
+//  Description: Returns the MD5 hash for the file after the patch has
+//               been applied.
+////////////////////////////////////////////////////////////////////
+INLINE const HashVal &Patchfile::
+get_result_hash() const {
+  return _MD5_ofResult;
 }

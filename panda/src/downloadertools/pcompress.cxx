@@ -23,14 +23,20 @@
 int
 main(int argc, char *argv[]) {
   if (argc < 2) {
-    cerr << "Usage: pcompress <file>" << endl;
+    cerr << "Usage: pcompress <file> [<dest_file>]" << endl;
     return 1;
   }
 
-  Filename source_file = argv[1];
-  string dname = argv[1];
-  dname += ".pz";
-  Filename dest_file = dname;
+  bool implicit_dest_file;
+  Filename source_file = Filename::from_os_specific(argv[1]);
+  Filename dest_file;
+  if (argc < 3) {
+    dest_file = source_file.get_fullpath() + ".pz";
+    implicit_dest_file = true;
+  } else {
+    dest_file = Filename::from_os_specific(argv[2]);
+    implicit_dest_file = false;
+  }
 
   // Open source file
   ifstream read_stream;
@@ -53,7 +59,7 @@ main(int argc, char *argv[]) {
   // Open destination file
   ofstream write_stream;
   dest_file.set_binary();
-  if (!dest_file.open_write(write_stream)) {
+  if (!dest_file.open_write(write_stream, true)) {
     cerr << "failed to open: " << dest_file << endl;
     return 1;
   }
@@ -70,7 +76,10 @@ main(int argc, char *argv[]) {
 
   read_stream.close();
   write_stream.close();
-  source_file.unlink();
+
+  if (implicit_dest_file) {
+    source_file.unlink();
+  }
 
   return 0;
 }

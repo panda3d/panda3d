@@ -16,14 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
+#include "pandabase.h"
 #ifndef HAVE_GETOPT
-  #include <gnu_getopt.h>
+  #include "gnu_getopt.h"
 #else
   #include <getopt.h>
 #endif
-#include <patchfile.h>
-#include <filename.h>
+#include "patchfile.h"
+#include "filename.h"
 
 int
 main(int argc, char *argv[]) {
@@ -32,17 +32,18 @@ main(int argc, char *argv[]) {
     return 1;
   }
 
-  Filename src_file = argv[1];
+  Filename src_file = Filename::from_os_specific(argv[1]);
   src_file.set_binary();
 
-  Filename dest_file = argv[2];
+  Filename dest_file = Filename::from_os_specific(argv[2]);
   dest_file.set_binary();
 
+  Filename patch_file = dest_file.get_fullpath() + ".pch";
   Patchfile pfile;
 
   cerr << "Building patch file to convert " << src_file << " to "
-    << dest_file << endl;
-  if (pfile.build(src_file, dest_file) == false) {
+       << dest_file << endl;
+  if (pfile.build(src_file, dest_file, patch_file) == false) {
     cerr << "build patch failed" << endl;
     return 1;
   }
