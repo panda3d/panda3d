@@ -85,6 +85,7 @@ class Notifier:
             string = (self.getTime() + self.__name + '(warning): ' + warningString)
             self.__log(string)
             print(string)
+        return 1 # to allow assert(myNotify.warning("blah"))
 
     def setWarning(self, bool):
         """setWarning(self, int)
@@ -104,6 +105,7 @@ class Notifier:
             string = (self.getTime() + self.__name + '(debug): ' + debugString)
             self.__log(string)
             print(string)
+        return 1 # to allow assert(myNotify.debug("blah"))
 
     def setDebug(self, bool):
         """setDebug(self, int)
@@ -123,6 +125,7 @@ class Notifier:
             string = (self.getTime() + self.__name + '(info): ' + infoString)
             self.__log(string)
             print(string)
+        return 1 # to allow assert(myNotify.info("blah"))
 
     def getInfo(self):
         """getInfo(self)
