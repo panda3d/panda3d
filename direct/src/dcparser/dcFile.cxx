@@ -77,8 +77,9 @@ read_all() {
   Config::ConfigTable::Symbol::iterator si;
   for (si = dc_files.begin(); si != dc_files.end(); ++si) {
     string dc_file = ExecutionEnvironment::expand_string((*si).Val());
-    if (already_read.insert(dc_file).second) {
-      if (!read(dc_file)) {
+    Filename filename = Filename::from_os_specific(dc_file);
+    if (already_read.insert(filename).second) {
+      if (!read(filename)) {
         return false;
       }
     }
