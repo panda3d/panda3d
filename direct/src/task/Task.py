@@ -547,3 +547,4 @@ class TaskManager:
         # you must manually tick the clock        
         # Ask for the time last frame
         return globalClock.getFrameTime(), globalClock.getFrameCount()
+

@@ -1,4 +1,7 @@
 from DirectGuiGlobals import *
+from OnscreenText import *
+from OnscreenGeom import *
+from OnscreenImage import *
 
 # Set up default font
 PGItem.getTextNode().setFont(getDefaultFont())

@@ -68,6 +68,7 @@ MIDGROUND_SORT_INDEX = 0
 FOREGROUND_SORT_INDEX = 100
 
 defaultFont = None
+defaultFontName = "models/fonts/Comic"
 defaultClickSound = None
 defaultRolloverSound = None
 defaultDialogGeom = None
@@ -97,12 +98,16 @@ def setDefaultClickSound(newSound):
 def getDefaultFont():
     global defaultFont
     if defaultFont == None:
-        defaultFont = loader.loadFont("models/fonts/Comic")
+        defaultFont = loader.loadFont(defaultFontName)
     return defaultFont
 
 def setDefaultFont(newFont):
     global defaultFont
     defaultFont = newFont
+
+def setDefaultFontName(newFontName):
+    global defaultFontName
+    defaultFontName = newFontName
 
 def getDefaultDialogGeom():
     global defaultDialogGeom
@@ -128,6 +133,6 @@ def setDefaultPanel(newPanel):
     global panel
     panel = newPanel
 
-from OnscreenText import *
-from OnscreenGeom import *
-from OnscreenImage import *
+#from OnscreenText import *
+#from OnscreenGeom import *
+#from OnscreenImage import *

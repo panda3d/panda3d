@@ -219,6 +219,7 @@ class FFIMethodArgumentTreeCollection:
         else:
             indent(file, nesting+1, 'def ' +
                    self.methodSpecList[0].name + '(self, *_args):\n')
+        self.methodSpecList[0].outputCFunctionComment(file, nesting+2)
         indent(file, nesting+2, 'numArgs = len(_args)\n')
         
     def outputOverloadedMethodFooter(self, file, nesting):
@@ -251,7 +252,7 @@ class FFIMethodArgumentTreeCollection:
             tree = FFIMethodArgumentTree(self.classTypeDesc, methodList)
             treeList = ifAbsentPut(self.treeDict, numArgs, [])
             treeList.append(tree)
-        
+
     def generateCode(self, file, nesting):
         self.setup()
         self.outputOverloadedMethodHeader(file, nesting)

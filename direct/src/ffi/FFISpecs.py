@@ -89,7 +89,7 @@ class FunctionSpecification:
         So "getChild(int)" becomes "overloaded_getChild_int(int)"
         """
         if self.overloaded:
-            name = 'overloaded_' + self.name
+            name = '__overloaded_' + self.name
             for methodArgSpec in self.typeDescriptor.argumentTypes:
                 name = name + '_' + methodArgSpec.typeDescriptor.foreignTypeName
             return name

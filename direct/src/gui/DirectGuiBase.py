@@ -1,4 +1,7 @@
 from DirectGuiGlobals import *
+from OnscreenText import *
+from OnscreenGeom import *
+from OnscreenImage import *
 from DirectUtil import ROUND_TO
 import PandaObject
 import Task
