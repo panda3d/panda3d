@@ -29,7 +29,7 @@ int
 main(int argc, char *argv[]) {
   if (argc < 3) {
     cerr << "Usage: apply_patch <patch> <file>" << endl;
-    return 0;
+    return 1;
   }
 
   Filename patch = argv[1];
@@ -41,8 +41,10 @@ main(int argc, char *argv[]) {
   Patchfile pfile;
 
   cerr << "Applying patch file " << patch << " to " << file << endl;
-  if (pfile.apply(patch, file) == false)
+  if (pfile.apply(patch, file) == false) {
     cerr << "apply patch failed" << endl;
+    return 1;
+  }
 
-  return 1;
+  return 0;
 }

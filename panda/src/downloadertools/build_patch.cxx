@@ -29,7 +29,7 @@ int
 main(int argc, char *argv[]) {
   if (argc < 3) {
     cerr << "Usage: build_patch <src_file> <dest_file>" << endl;
-    return 0;
+    return 1;
   }
 
   Filename src_file = argv[1];
@@ -42,8 +42,10 @@ main(int argc, char *argv[]) {
 
   cerr << "Building patch file to convert " << src_file << " to "
     << dest_file << endl;
-  if (pfile.build(src_file, dest_file) == false)
+  if (pfile.build(src_file, dest_file) == false) {
     cerr << "build patch failed" << endl;
+    return 1;
+  }
 
-  return 1;
+  return 0;
 }

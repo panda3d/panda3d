@@ -26,7 +26,7 @@ main(int argc, char *argv[]) {
   const char *usagestr="Usage: check_md5 [-dbfmt_output] <file>";
   if (argc < 2) {
     cerr << usagestr << endl;
-    return 0;
+    return 1;
   }
 
   bool bRemoveBrackets = (strcmp("-dbfmt_output",argv[1])==0);
@@ -36,7 +36,7 @@ main(int argc, char *argv[]) {
   if(bRemoveBrackets) {
     if(argc<3) {
         cerr << usagestr << endl;
-        return 0;
+        return 1;
     }
     source_file =  Filename::from_os_specific(argv[2]);
   } else {
@@ -46,7 +46,7 @@ main(int argc, char *argv[]) {
   if(!source_file.exists()) {
        cerr << usagestr << endl;
        cerr << source_file << " not found!\n";
-       return -1;
+       return 2;
   }
 
   HashVal hash;
@@ -60,5 +60,5 @@ main(int argc, char *argv[]) {
 
   cout << hash << endl;
 
-  return 1;
+  return 0;
 }
