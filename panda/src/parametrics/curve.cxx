@@ -17,17 +17,10 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "curve.h"
-#include "parametrics.h"
-#include "typedWriteableReferenceCount.h"
-#include "namable.h"
+#include "config_parametrics.h"
 #include "hermiteCurve.h"
 #include "nurbsCurve.h"
 #include "curveDrawer.h"
-
-#include <DConfig.h>
-
-#include <math.h>
-#include <fstream>
 
 
 ////////////////////////////////////////////////////////////////////
@@ -521,9 +514,8 @@ r_calc_length(double t1, double t2, const LVector3f &p1, const LVector3f &p2,
       return seglength;
     } else {
       // Yes.  Keep going.
-      return
-	r_calc_length(t1, tmid, p1, pmid, left) +
-	r_calc_length(tmid, t2, pmid, p2, right);
+      return r_calc_length(t1, tmid, p1, pmid, left) +
+             r_calc_length(tmid, t2, pmid, p2, right);
     }
   }
 }

@@ -17,12 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "nurbsCurveDrawer.h"
-#include "luse.h"
-#include "parametrics.h"
-#include "typedWriteableReferenceCount.h"
-#include "namable.h"
-
-#include <math.h>
 
 
 TypeHandle NurbsCurveDrawer::_type_handle;

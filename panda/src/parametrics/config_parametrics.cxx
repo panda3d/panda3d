@@ -4,15 +4,11 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_parametrics.h"
-#include "luse.h"
-#include "typedWriteableReferenceCount.h"
-#include "namable.h"
 #include "curve.h"
 #include "curveDrawer.h"
 #include "nurbsCurve.h"
 #include "nurbsCurveDrawer.h"
 
-#include <dconfig.h>
 #include <get_config_path.h>
 
 Configure(config_parametrics);
