@@ -83,6 +83,8 @@ clear_recorder() {
   set_recorder((CollisionRecorder *)NULL);
 }
 
+#endif  // DO_COLLISION_RECORDING
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::ls
 //       Access: Published
@@ -93,5 +95,3 @@ INLINE void CollisionTraverser::
 ls() const {
   write(nout, 0);
 }
-
-#endif  // DO_COLLISION_RECORDING
