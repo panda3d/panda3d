@@ -948,18 +948,24 @@ class ShowBase(DirectObject.DirectObject):
     def setMouseOnNode(self, newNode):
         self.mouse2cam.node().setNode(newNode)
 
-    def useDrive(self):
+    def changeMouseInterface(self, changeTo):
         """
-        Switch mouse action to drive mode
+        Switch mouse action
         """
-        # Get rid of the trackball
+        # Get rid of the prior interface:
         self.mouseInterface.reparentTo(self.dataUnused)
         # Update the mouseInterface to point to the drive
-        self.mouseInterface = self.drive
+        self.mouseInterface = changeTo
         self.mouseInterfaceNode = self.mouseInterface.node()
         # Hookup the drive to the camera.
         self.mouseInterface.reparentTo(self.mouseWatcher)
         self.mouse2cam.reparentTo(self.mouseInterface)
+
+    def useDrive(self):
+        """
+        Switch mouse action to drive mode
+        """
+        self.changeMouseInterface(self.drive)
         # Set the height to a good eyeheight
         self.mouseInterfaceNode.reset()
         self.mouseInterfaceNode.setZ(4.0)
@@ -968,14 +974,7 @@ class ShowBase(DirectObject.DirectObject):
         """
         Switch mouse action to trackball mode
         """
-        # Get rid of the drive
-        self.mouseInterface.reparentTo(self.dataUnused)
-        # Update the mouseInterface to point to the trackball
-        self.mouseInterface = self.trackball
-        self.mouseInterfaceNode = self.mouseInterface.node()
-        # Hookup the trackball to the camera.
-        self.mouseInterface.reparentTo(self.mouseWatcher)
-        self.mouse2cam.reparentTo(self.mouseInterface)
+        self.changeMouseInterface(self.trackball)
 
     def oobe(self):
         """
