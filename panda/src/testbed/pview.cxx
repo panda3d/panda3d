@@ -108,14 +108,24 @@ event_2(CPT_Event event, void *) {
 void
 event_0(CPT_Event event, void *) {
   // 0: run hacky test.
-  MultitexReducer mr;
-  mr.set_use_geom(true);
+  static bool first = true;
 
-  mr.scan(framework.get_models());
+  if (first) {
+    cerr << "applying scale\n";
+    framework.get_models().set_color_scale(0.7, 0.7, 0.1, 1.0);
+    first = false;
 
-  WindowFramework *wf = framework.get_window(0);
-  GraphicsWindow *win = wf->get_graphics_window();
-  mr.flatten(win);
+  } else {
+    cerr << "flattening\n";
+    MultitexReducer mr;
+    mr.set_use_geom(true);
+    
+    mr.scan(framework.get_models());
+    
+    WindowFramework *wf = framework.get_window(0);
+    GraphicsWindow *win = wf->get_graphics_window();
+    mr.flatten(win);
+  }
 }
 
 void 

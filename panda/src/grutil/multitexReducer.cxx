@@ -30,6 +30,7 @@
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
 #include "colorBlendAttrib.h"
+#include "textureAttrib.h"
 #include "config_grutil.h"
 #include "config_gobj.h"
 #include "dcast.h"
@@ -83,8 +84,19 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 void MultitexReducer::
 scan(PandaNode *node, const RenderState *state, const TransformState *transform) {
+  if (grutil_cat.is_debug()) {
+    grutil_cat.debug()
+      << "scan(" << *node << ", " << *state << ", " << *transform << ")\n";
+  }
+
   CPT(RenderState) next_state = state->compose(node->get_state());
   CPT(TransformState) next_transform = transform->compose(node->get_transform());
+
+  // We must turn off any textures we come across in the scan()
+  // operation, since the flattened texture will be applied to the
+  // Geoms after the flatten() operation, and we don't want to still
+  // have a multitexture specified.
+  node->set_state(node->get_state()->remove_attrib(TextureAttrib::get_class_type()));
 
   if (node->is_geom_node()) {
     scan_geom_node(DCAST(GeomNode, node), next_state, next_transform);
@@ -271,6 +283,7 @@ flatten(GraphicsOutput *window) {
     render.set_bin("unsorted", 0);
     render.set_depth_test(false);
     render.set_depth_write(false);
+    render.set_two_sided(1);
 
     NodePath cam = render.attach_new_node(cam_node);
     dr->set_camera(cam);
@@ -317,7 +330,18 @@ flatten(GraphicsOutput *window) {
         // disable coloring on the new fragment (the color has been
         // baked into the texture).
         geom_state = geom_state->add_attrib(ColorAttrib::make_flat(Colorf(1.0f, 1.0f, 1.0f, 1.0f)));
-        geom_state = geom_state->add_attrib(ColorScaleAttrib::make_off());
+
+        // And we invent a ColorScaleAttrib to undo the effect of any
+        // color scale we're getting from above.  This is not the same
+        // thing as a ColorScaleAttrib::make_off(), since that would
+        // prohibit any future changes to the color scale.
+        const RenderAttrib *attrib = 
+          geom_info._geom_net_state->get_attrib(ColorScaleAttrib::get_class_type());
+
+        if (attrib != (const RenderAttrib *)NULL) {
+          geom_state = geom_state->add_attrib
+            (attrib->invert_compose(ColorScaleAttrib::make_identity()));
+        }
       }
 
       // Determine what tex matrix should be on the Geom.
@@ -739,11 +763,11 @@ transfer_geom(GeomNode *geom_node, const TexCoordName *texcoord_name,
         // Be sure to preserve whatever colors are on the geom.
         const RenderAttrib *ca = geom_info._geom_net_state->get_attrib(ColorAttrib::get_class_type());
         if (ca != (const RenderAttrib *)NULL) {
-          geom_state->add_attrib(ca);
+          geom_state = geom_state->add_attrib(ca);
         }
         const RenderAttrib *csa = geom_info._geom_net_state->get_attrib(ColorScaleAttrib::get_class_type());
         if (csa != (const RenderAttrib *)NULL) {
-          geom_state->add_attrib(csa);
+          geom_state = geom_state->add_attrib(csa);
         }
       }
       

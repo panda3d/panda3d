@@ -59,7 +59,8 @@ PUBLISHED:
   ~MultitexReducer();
 
   void clear();
-  INLINE void scan(const NodePath &node, const NodePath &state_from = NodePath());
+  INLINE void scan(const NodePath &node);
+  INLINE void scan(const NodePath &node, const NodePath &state_from);
   void scan(PandaNode *node, const RenderState *state, 
             const TransformState *transform);
 

@@ -26,6 +26,24 @@
 #include "config_pgraph.h"
 
 TypeHandle ColorScaleAttrib::_type_handle;
+CPT(RenderAttrib) ColorScaleAttrib::_identity_attrib;
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorScaleAttrib::make_identity
+//       Access: Published, Static
+//  Description: Constructs an identity scale attrib.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) ColorScaleAttrib::
+make_identity() {
+  // We make identity a special case and store a pointer forever once
+  // we find it the first time.
+  if (_identity_attrib == (ColorScaleAttrib *)NULL) {
+    ColorScaleAttrib *attrib = new ColorScaleAttrib(false, LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));;
+    _identity_attrib = return_new(attrib);
+  }
+
+  return _identity_attrib;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ColorScaleAttrib::make
@@ -95,6 +113,9 @@ output(ostream &out) const {
   }
   if (has_scale()) {
     out << "(" << get_scale() << ")";
+
+  } else if (!is_off()) {
+    out << "identity";
   }
 }
 

@@ -37,10 +37,12 @@ protected:
   INLINE ColorScaleAttrib(const ColorScaleAttrib &copy);
 
 PUBLISHED:
+  static CPT(RenderAttrib) make_identity();
   static CPT(RenderAttrib) make(const LVecBase4f &scale);
   static CPT(RenderAttrib) make_off();
 
   INLINE bool is_off() const;
+  INLINE bool is_identity() const;
   INLINE bool has_scale() const;
   INLINE const LVecBase4f &get_scale() const;
   CPT(RenderAttrib) set_scale(const LVecBase4f &scale) const;
@@ -59,6 +61,7 @@ private:
   bool _off;
   bool _has_scale;
   LVecBase4f _scale;
+  static CPT(RenderAttrib) _identity_attrib;
 
 public:
   static void register_with_read_factory();

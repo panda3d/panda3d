@@ -60,10 +60,23 @@ is_off() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ColorScaleAttrib::is_identity
+//       Access: Published
+//  Description: Returns true if the ColorScaleAttrib is an identity
+//               attrib, false if it is either an off attrib or it has
+//               a scale.
+////////////////////////////////////////////////////////////////////
+INLINE bool ColorScaleAttrib::
+is_identity() const {
+  return !_off && !_has_scale;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ColorScaleAttrib::has_scale
 //       Access: Published
 //  Description: Returns true if the ColorScaleAttrib has a
-//               non-identity scale, false otherwise.
+//               non-identity scale, false otherwise (in which case it
+//               might be an off attrib or an identity attrib).
 ////////////////////////////////////////////////////////////////////
 INLINE bool ColorScaleAttrib::
 has_scale() const {
