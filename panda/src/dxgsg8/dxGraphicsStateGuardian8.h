@@ -41,6 +41,8 @@
 #include "dxgsg8base.h"
 #include "dxGeomNodeContext8.h"
 #include "dxTextureContext8.h"
+#include "d3dfont8.h"
+
 #include <vector>
 
 class PlaneNode;
@@ -370,14 +372,17 @@ protected:
   DWORD _start_frame_count;
   DWORD _cur_frame_count;
   float _current_fps;
-  DWORD *_fpsmeter_verts;
-  DWORD _fpsmeter_fvfflags;
+//  DWORD *_fpsmeter_verts;
+//  DWORD _fpsmeter_fvfflags;
 //  LPDIRECTDRAWSURFACE7 _fpsmeter_font_surf;
-  void *_fpsmeter_font_surf;
-  float _fps_u_usedwidth,_fps_v_usedheight;  // fraction of fps font texture actually used
-  DWORD _fps_vertexsize;   // size of verts used to render fps meter
+//  void *_fpsmeter_font_surf;
+//  float _fps_u_usedwidth,_fps_v_usedheight;  // fraction of fps font texture actually used
+//  DWORD _fps_vertexsize;   // size of verts used to render fps meter
+//  void  FillFPSMeterTexture(void);
+  ::CD3DFont *_pFPSFont;
+
   void  SetFPSMeterPosition(void);
-  void  FillFPSMeterTexture(void);
+
 
 public:
   static GraphicsStateGuardian*
@@ -393,6 +398,7 @@ public:
 
   void  dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled);
   void reset_panda_gsg(void);
+  HRESULT reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams);
 
   #define DO_REACTIVATE_WINDOW true
   bool CheckCooperativeLevel(bool bDoReactivateWindow = false);

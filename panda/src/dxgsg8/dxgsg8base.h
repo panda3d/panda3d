@@ -72,6 +72,9 @@
 #define SAFE_DELETE(p)       { if(p) { assert(IS_VALID_PTR(p));   delete (p);     (p)=NULL; } }
 #define SAFE_DELETE_ARRAY(p) { if(p) { assert(IS_VALID_PTR(p));   delete[] (p);   (p)=NULL; } }
 
+// for stuff outside a panda class
+#define SAFE_RELEASE(p)      { if(p) { assert(IS_VALID_PTR(p)); (p)->Release(); (p)=NULL; } }
+
 // this is bDoDownToZero argument to RELEASE()
 #define RELEASE_DOWN_TO_ZERO true
 #define RELEASE_ONCE false

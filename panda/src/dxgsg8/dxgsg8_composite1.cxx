@@ -2,3 +2,4 @@
 #include "dxSavedFrameBuffer8.cxx"
 #include "dxTextureContext8.cxx"
 #include "dxGeomNodeContext8.cxx"
+#include "d3dfont8.cxx"

@@ -272,6 +272,7 @@ set_color_clear_value(const Colorf& value) {
   _d3dcolor_clear_value =  Colorf_to_D3DCOLOR(value);
 }
 
+#if 0
 void DXGraphicsStateGuardian::SetFPSMeterPosition(void) {
     if(_fpsmeter_verts==NULL)
       return;
@@ -339,7 +340,6 @@ void DXGraphicsStateGuardian::SetFPSMeterPosition(void) {
 }
 
 void DXGraphicsStateGuardian::FillFPSMeterTexture(void) {
-/*
     assert(_fpsmeter_font_surf!=NULL);
     HRESULT hr;
 
@@ -412,8 +412,9 @@ void DXGraphicsStateGuardian::FillFPSMeterTexture(void) {
         }
     #endif
     _fpsmeter_font_surf->Unlock(NULL);
-*/
 }
+#endif
+
 
 void DXGraphicsStateGuardian::
 reset_panda_gsg(void) {
@@ -455,18 +456,19 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
     // allocate local buffers used during rendering
 
     ZeroMemory(&scrn,sizeof(DXScreenData));
-    _bShowFPSMeter = false;
     _bDXisReady = false;
 
     _pFvfBufBasePtr = NULL;
     _index_buf=NULL;
-    _fpsmeter_verts=NULL;
     _light_enabled = NULL;
     _cur_light_enabled = NULL;
     _clip_plane_enabled = (bool *)NULL;
     _cur_clip_plane_enabled = (bool *)NULL;
 
-    _fpsmeter_font_surf=NULL;
+//    _fpsmeter_verts=NULL;
+//    _fpsmeter_font_surf=NULL;
+    _pFPSFont=NULL;
+    _bShowFPSMeter = false;
 
     _max_light_range = __D3DLIGHT_RANGE_MAX;
 
@@ -873,6 +875,16 @@ dx_init(HCURSOR hMouseCursor) {
     hr = CreateDX8Cursor(scrn.pD3DDevice,hMouseCursor,dx_show_cursor_watermark);
     if(FAILED(hr))
         dxgsg_cat.error() << "CreateDX8Cursor failed!\n";
+
+    if(_bShowFPSMeter) {
+        assert(_pFPSFont == NULL);
+        _pFPSFont = new CD3DFont(_T("Arial"),12,0x0);
+        assert(IS_VALID_PTR(_pFPSFont));
+        hr=_pFPSFont->InitDeviceObjects(scrn.pD3DDevice);
+        if(FAILED(hr)) {
+            _bShowFPSMeter=false;
+        }
+    }
 
     // comment out FPS meter stuff for the moment
     #if 0
@@ -5583,7 +5595,7 @@ void DXGraphicsStateGuardian::
 free_pointers() {
     SAFE_DELETE_ARRAY(_index_buf);
     SAFE_DELETE_ARRAY(_pFvfBufBasePtr);
-    SAFE_DELETE_ARRAY(_fpsmeter_verts);
+//    SAFE_DELETE_ARRAY(_fpsmeter_verts);
     SAFE_DELETE_ARRAY(_cur_clip_plane_enabled);
     SAFE_DELETE_ARRAY(_clip_plane_enabled);
     SAFE_DELETE_ARRAY(_cur_light_enabled);
@@ -5794,26 +5806,27 @@ bool recreate_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
 
 // release all textures and vertex/index buffers
 HRESULT DXGraphicsStateGuardian::DeleteAllDeviceObjects(void) {
-  // BUGBUG: need to handle vertexbuffer handling here
+  // BUGBUG: need to release any vertexbuffers here
 
   // cant access template in libpanda.dll directly due to vc++ limitations, use traverser to get around it
   traverse_prepared_textures(delete_tex_callback,this);
 
-#if 0
-  ULONG refcnt;
-
-  if(_bShowFPSMeter)
-     RELEASE(_fpsmeter_font_surf,dxgsg,"fpsmeter fontsurf",false);
-#endif
-
   if(dxgsg_cat.is_debug())
       dxgsg_cat.debug() << "release of all textures complete\n";
+
+  if(IS_VALID_PTR(_pFPSFont)) {
+       _pFPSFont->DeleteDeviceObjects();
+  }
   return S_OK;
 }
 
 // recreate all textures and vertex/index buffers
 HRESULT DXGraphicsStateGuardian::RecreateAllDeviceObjects(void) {
   // BUGBUG: need to handle vertexbuffer handling here
+
+    if(IS_VALID_PTR(_pFPSFont)) {
+       _pFPSFont->RestoreDeviceObjects();
+    }
 
   // cant access template in libpanda.dll directly due to vc++ limitations, use traverser to get around it
   traverse_prepared_textures(recreate_tex_callback,this);
@@ -5824,7 +5837,11 @@ HRESULT DXGraphicsStateGuardian::RecreateAllDeviceObjects(void) {
 }
 
 HRESULT DXGraphicsStateGuardian::ReleaseAllDeviceObjects(void) {
-    // release any D3DPOOL_DEFAULT objects
+    // release any D3DPOOL_DEFAULT objects here (currently none)
+
+    if(IS_VALID_PTR(_pFPSFont)) {
+       _pFPSFont->InvalidateDeviceObjects();
+    }
     return S_OK;
 }
 
@@ -5848,7 +5865,8 @@ HRESULT DXGraphicsStateGuardian::RestoreAllDeviceObjects(void) {
   // cant access template in libpanda.dll directly due to vc++ limitations, use traverser to get around it
 //  traverse_prepared_textures(refill_tex_callback,this);
 
-//  if(_bShowFPSMeter)
+  if(IS_VALID_PTR(_pFPSFont))
+    _pFPSFont->RestoreDeviceObjects();
 //      FillFPSMeterTexture();
 
   if(dxgsg_cat.is_debug())
@@ -5966,6 +5984,19 @@ void DXGraphicsStateGuardian::show_windowed_frame(void) {
 }
 */
 
+HRESULT DXGraphicsStateGuardian::reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams) {
+  HRESULT hr;
+
+  ReleaseAllDeviceObjects();
+
+  hr=scrn.pD3DDevice->Reset(pPresParams);
+  if(SUCCEEDED(hr)) {
+     if(pPresParams!=&scrn.PresParams)
+         memcpy(&scrn.PresParams,pPresParams,sizeof(D3DPRESENT_PARAMETERS));
+  }
+  return hr;
+}
+
 bool DXGraphicsStateGuardian::CheckCooperativeLevel(bool bDoReactivateWindow) {
 
     HRESULT hr = scrn.pD3DDevice->TestCooperativeLevel();
@@ -5977,13 +6008,23 @@ bool DXGraphicsStateGuardian::CheckCooperativeLevel(bool bDoReactivateWindow) {
     switch(hr) {
         case D3DERR_DEVICENOTRESET:
              _bDXisReady = false;
-             ReleaseAllDeviceObjects();
-             hr=scrn.pD3DDevice->Reset(&scrn.PresParams);
+             hr=reset_d3d_device(&scrn.PresParams);
+             if(FAILED(hr)) {
+                // I think this shouldnt fail unless I've screwed up the PresParams from the original working ones somehow
+                dxgsg_cat.error() << "CheckCooperativeLevel Reset() failed, hr = " << D3DERRORSTRING(hr);
+                exit(1);
+             }
+
              if(bDoReactivateWindow)
                  _win->reactivate_window();  //must reactivate window before you can restore surfaces (otherwise you are in WRONGVIDEOMODE, and DDraw RestoreAllSurfaces fails)
              RestoreAllDeviceObjects();  
              hr = scrn.pD3DDevice->TestCooperativeLevel();
-             assert(SUCCEEDED(hr));
+             if(FAILED(hr)) {
+                // internal chk, shouldnt fail 
+                dxgsg_cat.error() << "TestCooperativeLevel following Reset() failed, hr = " << D3DERRORSTRING(hr);
+                exit(1);
+             }
+
             break;
 
         case D3DERR_DEVICELOST:
