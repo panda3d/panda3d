@@ -27,7 +27,7 @@ class Interval(DirectObject):
         self.name = name
         self.duration = duration
         self.curr_t = 0.0
-        self.prev_t = 0.0
+        self.prev_t = -1
         self.stopEventList = []
         self.setTHooks = []
         # Set true if interval responds to setT(t): t>duration
