@@ -286,13 +286,15 @@ usage() {
     "       Specifies the name and location of the public key output file\n"
     "       to generate.  This file must then be named by the Config.pp\n"
     "       variable PRC_PUBLIC_KEYS_FILENAME so that it will be compiled\n"
-    "       in with libdtool and available to verify signatures.\n\n"
+    "       in with libdtool and available to verify signatures.  If this\n"
+    "       option is omitted, the previously-compiled value is used.\n\n"
 
     "   -b priv_outfile#.cxx\n"
     "       Specifies the name and location of the private key output file(s)\n"
     "       to generate.  A different output file will be generated for each\n"
     "       different trust level; the hash mark '#' appearing in the file\n"
     "       name will be filled in with the corresponding numeric trust level.\n"
+    "       The hash mark may be omitted if you only require one trust level.\n"
     "       When compiled against dtool, each of these files will generate\n"
     "       a program that can be used to sign a prc file with the corresponding\n"
     "       trust level.\n\n"
@@ -394,8 +396,6 @@ main(int argc, char *argv[]) {
     cerr << "You must use the -b option to specify the private key output filenames.\n";
     exit(1);
   }
-
-  int max_key_number = 0;
 
   vector_int key_numbers;
   for (int i = 1; i < argc; i++) {
