@@ -151,13 +151,26 @@ before it.  The packages are, in order:
     utilities.  You must build and install dtool and panda before you
     can build pandatool, although it does not depend on direct.
 
-In graphical form, here are packages along with a few extras:
+  pandaapp - this holds a few sample applications that link with panda
+    (and pandatool), but are not generally useful enough to justify
+    putting them in pandatool.  Most of these are not actually
+    graphical applications; they just take advantage of the various
+    support libraries (like HTTPClient) that Panda provides.  At the
+    moment, most people probably won't find anything useful here, but
+    you're welcome to browse; and we will probably add more
+    applications later.
+
+In graphical form, here are the packages along with a few extras:
 
   +------------------------------+
   | Your Python Application Here |
   +------------------------------+
       |
-      V
+      |       +-----------+
+      |       | pandaapp  |
+      |       +-----------+
+      |             |           
+      V             V
   +--------+  +-----------+  +---------------------------+
   | direct |  | pandatool |  | Your C++ Application Here |
   +--------+  +-----------+  +---------------------------+
