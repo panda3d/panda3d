@@ -261,7 +261,7 @@ class DirectOptionMenu(DirectButton):
         Make sure you clean up popup menu
         """
         self.reparentFrame.reparentTo(self)
-        DirectGuiBase.destroy(self)
+        DirectButton.destroy(self)
 
 
 
