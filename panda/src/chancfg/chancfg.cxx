@@ -247,6 +247,12 @@ void ChanConfig::chan_eval(GraphicsWindow* win, WindowItem& W, LayoutItem& L,
      dr->set_camera(cam);
      _display_region.push_back(dr);
      SetupFOV fov = (*k).getFOV();
+     // The distinction between ConsoleSize and DisplaySize
+     // is to handle display regions with orientations that
+     // are rotated 90 degrees left or right.  For example,
+     // the model shop cave (LAIR) uses projectors on their
+     // sides, so that what's horizontal on the console is 
+     // vertical in the cave (Display).
      float xConsoleSize = xsize*(v2.right()-v2.left());
      float yConsoleSize = ysize*(v2.top()-v2.bottom());
      float xDisplaySize, yDisplaySize;
