@@ -56,8 +56,9 @@ static const char * const errorbox_title = "Panda3D Error";
 //  Description:
 ////////////////////////////////////////////////////////////////////
 WinGraphicsWindow::
-WinGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) :
-  GraphicsWindow(pipe, gsg) 
+WinGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+                  const string &name) :
+  GraphicsWindow(pipe, gsg, name) 
 {
   GraphicsWindowInputDevice device =
   GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");

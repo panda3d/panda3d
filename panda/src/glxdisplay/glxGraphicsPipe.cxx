@@ -194,12 +194,12 @@ make_gsg(const FrameBufferProperties &properties) {
 //  Description: Creates a new window on the pipe, if possible.
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsWindow) glxGraphicsPipe::
-make_window(GraphicsStateGuardian *gsg) {
+make_window(GraphicsStateGuardian *gsg, const string &name) {
   if (!_is_valid) {
     return NULL;
   }
 
-  return new glxGraphicsWindow(this, gsg);
+  return new glxGraphicsWindow(this, gsg, name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -208,12 +208,13 @@ make_window(GraphicsStateGuardian *gsg) {
 //  Description: Creates a new offscreen buffer on the pipe, if possible.
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsBuffer) glxGraphicsPipe::
-make_buffer(GraphicsStateGuardian *gsg, int x_size, int y_size, bool want_texture) {
+make_buffer(GraphicsStateGuardian *gsg, const string &name,
+            int x_size, int y_size, bool want_texture) {
   if (!_is_valid) {
     return NULL;
   }
 
-  return new glxGraphicsBuffer(this, gsg, x_size, y_size, want_texture);
+  return new glxGraphicsBuffer(this, gsg, name, x_size, y_size, want_texture);
 }
 
 ////////////////////////////////////////////////////////////////////

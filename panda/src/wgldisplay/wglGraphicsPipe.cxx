@@ -120,8 +120,8 @@ make_gsg(const FrameBufferProperties &properties) {
 //  Description: Creates a new window on the pipe, if possible.
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsWindow) wglGraphicsPipe::
-make_window(GraphicsStateGuardian *gsg) {
-  return new wglGraphicsWindow(this, gsg);
+make_window(GraphicsStateGuardian *gsg, const string &name) {
+  return new wglGraphicsWindow(this, gsg, name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,9 +130,9 @@ make_window(GraphicsStateGuardian *gsg) {
 //  Description: Creates a new offscreen buffer on the pipe, if possible.
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsBuffer) wglGraphicsPipe::
-make_buffer(GraphicsStateGuardian *gsg, int x_size, int y_size, 
-            bool want_texture) {
-  return new wglGraphicsBuffer(this, gsg, x_size, y_size, want_texture);
+make_buffer(GraphicsStateGuardian *gsg, const string &name,
+            int x_size, int y_size, bool want_texture) {
+  return new wglGraphicsBuffer(this, gsg, name, x_size, y_size, want_texture);
 }
 
 ////////////////////////////////////////////////////////////////////

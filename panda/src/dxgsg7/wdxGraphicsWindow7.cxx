@@ -116,8 +116,9 @@ TypeHandle wdxGraphicsWindow7::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wdxGraphicsWindow7::
-wdxGraphicsWindow7(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) :
-  WinGraphicsWindow(pipe, gsg) 
+wdxGraphicsWindow7(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+                   const string &name) :
+  WinGraphicsWindow(pipe, gsg, name) 
 {
   _dxgsg = DCAST(DXGraphicsStateGuardian7, gsg);
   ZeroMemory(&_wcontext,sizeof(_wcontext));

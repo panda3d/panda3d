@@ -74,8 +74,9 @@ unsigned int hardcoded_modifier_buttons[NUM_MODIFIER_KEYS]={VK_SHIFT,VK_MENU,VK_
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wdxGraphicsWindow9::
-wdxGraphicsWindow9(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) :
-  WinGraphicsWindow(pipe, gsg) 
+wdxGraphicsWindow9(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+                   const string &name) :
+  WinGraphicsWindow(pipe, gsg, name) 
 {
   // dont actually create the window in the constructor.  reason: multi-threading requires
   // panda C++ window object to exist in separate thread from actual API window

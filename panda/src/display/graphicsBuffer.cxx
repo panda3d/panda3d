@@ -29,8 +29,8 @@ TypeHandle GraphicsBuffer::_type_handle;
 ////////////////////////////////////////////////////////////////////
 GraphicsBuffer::
 GraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-               int x_size, int y_size, bool want_texture) :
-  GraphicsOutput(pipe, gsg)
+               const string &name, int x_size, int y_size, bool want_texture) :
+  GraphicsOutput(pipe, gsg, name)
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
@@ -43,6 +43,8 @@ GraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
 
   if (want_texture) {
     _texture = new Texture();
+    _texture->set_name(_name);
+    _copy_texture = true;
   }
 
   _x_size = x_size;

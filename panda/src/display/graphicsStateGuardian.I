@@ -41,51 +41,6 @@ ClipPlaneInfo() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_properties
-//       Access: Public
-//  Description: Returns the frame buffer properties requested for
-//               this GSG.  All windows created for this GSG must be
-//               created with the same properties.
-////////////////////////////////////////////////////////////////////
-INLINE const FrameBufferProperties &GraphicsStateGuardian::
-get_properties() const {
-  return _properties;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_pipe
-//       Access: Public
-//  Description: Returns the graphics pipe on which this GSG was
-//               created.
-////////////////////////////////////////////////////////////////////
-INLINE GraphicsPipe *GraphicsStateGuardian::
-get_pipe() const {
-  return _pipe;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_engine
-//       Access: Public
-//  Description: Returns the graphics engine that created this GSG.
-////////////////////////////////////////////////////////////////////
-INLINE GraphicsEngine *GraphicsStateGuardian::
-get_engine() const {
-  return _engine;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_threading_model
-//       Access: Public
-//  Description: Returns the threading model that was used to create
-//               this GSG.
-////////////////////////////////////////////////////////////////////
-INLINE const GraphicsThreadingModel &GraphicsStateGuardian::
-get_threading_model() const {
-  return _threading_model;
-}
-
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_active
 //       Access: Published
 //  Description: Sets the active flag associated with the
@@ -109,6 +64,51 @@ INLINE bool GraphicsStateGuardian::
 is_active() const {
   return _active;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_properties
+//       Access: Published
+//  Description: Returns the frame buffer properties requested for
+//               this GSG.  All windows created for this GSG must be
+//               created with the same properties.
+////////////////////////////////////////////////////////////////////
+INLINE const FrameBufferProperties &GraphicsStateGuardian::
+get_properties() const {
+  return _properties;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_pipe
+//       Access: Published
+//  Description: Returns the graphics pipe on which this GSG was
+//               created.
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsPipe *GraphicsStateGuardian::
+get_pipe() const {
+  return _pipe;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_engine
+//       Access: Published
+//  Description: Returns the graphics engine that created this GSG.
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsEngine *GraphicsStateGuardian::
+get_engine() const {
+  return _engine;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_threading_model
+//       Access: Published
+//  Description: Returns the threading model that was used to create
+//               this GSG.
+////////////////////////////////////////////////////////////////////
+INLINE const GraphicsThreadingModel &GraphicsStateGuardian::
+get_threading_model() const {
+  return _threading_model;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_scene

@@ -29,7 +29,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAGL wglGraphicsWindow : public WinGraphicsWindow {
 public:
-  wglGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
+  wglGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+                    const string &name);
   virtual ~wglGraphicsWindow();
 
   virtual void make_current();

@@ -50,6 +50,54 @@ get_pipe() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_name
+//       Access: Published
+//  Description: Returns the name that was passed to the
+//               GraphicsOutput constructor.
+////////////////////////////////////////////////////////////////////
+INLINE const string &GraphicsOutput::
+get_name() const {
+  return _name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::has_texture
+//       Access: Published
+//  Description: Returns true if the GraphicsOutput is set to render
+//               into a texture, or false otherwise.
+//
+//               Normally, this will only be true for a GraphicsBuffer
+//               object, and only when want_texture is passed in as
+//               true to the GraphicsBuffer constructor.  If
+//               show-buffers is true, this may also be set for a
+//               GraphicsWindow, which is in this case serving in the
+//               place of a GraphicsBuffer.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsOutput::
+has_texture() const {
+  return !(_texture.is_null());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_texture
+//       Access: Published
+//  Description: Returns the texture into which the GraphicsOutput
+//               renders, if has_texture() is true, or NULL if
+//               has_texture() is false.
+//
+//               If the texture is non-NULL, it may be applied to
+//               geometry to be rendered for any other windows or
+//               outputs that share the same GSG as this
+//               GraphicsOutput.  The effect is undefined for windows
+//               that share a different GSG; usually in these cases
+//               the texture will be invalid.
+////////////////////////////////////////////////////////////////////
+INLINE Texture *GraphicsOutput::
+get_texture() const {
+  return _texture;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::get_x_size
 //       Access: Published
 //  Description: Returns the width of the graphics frame buffer, if it

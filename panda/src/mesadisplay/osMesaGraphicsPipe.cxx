@@ -90,6 +90,7 @@ make_gsg(const FrameBufferProperties &properties) {
 //  Description: Creates a new offscreen buffer on the pipe, if possible.
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsBuffer) OsMesaGraphicsPipe::
-make_buffer(GraphicsStateGuardian *gsg, int x_size, int y_size, bool want_texture) {
-  return new OsMesaGraphicsBuffer(this, gsg, x_size, y_size, want_texture);
+make_buffer(GraphicsStateGuardian *gsg, const string &name,
+            int x_size, int y_size, bool want_texture) {
+  return new OsMesaGraphicsBuffer(this, gsg, name, x_size, y_size, want_texture);
 }

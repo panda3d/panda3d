@@ -39,7 +39,8 @@ static const int WDXWIN_EVENT = 8;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX wdxGraphicsWindow9 : public WinGraphicsWindow {
 public:
-  wdxGraphicsWindow9(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
+  wdxGraphicsWindow9(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+                     const string &name);
   virtual ~wdxGraphicsWindow9();
   virtual bool open_window(void);
   virtual void reset_window(bool swapchain);

@@ -72,18 +72,11 @@ PUBLISHED:
                                      const FrameBufferProperties &properties,
                                      const GraphicsThreadingModel &threading_model);
 
-  INLINE GraphicsWindow *make_window(GraphicsPipe *pipe,
-                                     GraphicsStateGuardian *gsg);
-  GraphicsWindow *make_window(GraphicsPipe *pipe,
-                              GraphicsStateGuardian *gsg,
-                              const GraphicsThreadingModel &threading_model);
-  INLINE GraphicsBuffer *make_buffer(GraphicsPipe *pipe,
-                                     GraphicsStateGuardian *gsg,
-                                     int x_size, int y_size, bool want_texture);
-  GraphicsBuffer *make_buffer(GraphicsPipe *pipe,
-                              GraphicsStateGuardian *gsg,
-                              int x_size, int y_size, bool want_texture,
-                              const GraphicsThreadingModel &threading_model);
+  GraphicsWindow *make_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+                              const string &name);
+  GraphicsOutput *make_buffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+                              const string &name,
+                              int x_size, int y_size, bool want_texture);
 
   bool remove_window(GraphicsOutput *window);
   void remove_all_windows();

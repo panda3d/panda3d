@@ -22,11 +22,7 @@
 #include "pandabase.h"
 #include "graphicsWindow.h"
 
-// Jesse thinks that this is supposed to say WIN32_LEAN_AND_MEAN, but he
-// doesn't want to fix what isn't broken.
-#define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
-#undef WINDOWS_LEAN_AND_MEAN
 
 class WinGraphicsPipe;
 
@@ -45,7 +41,8 @@ class WinGraphicsPipe;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAWIN WinGraphicsWindow : public GraphicsWindow {
 public:
-  WinGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
+  WinGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+                    const string &name);
   virtual ~WinGraphicsWindow();
 
   virtual void begin_flip();

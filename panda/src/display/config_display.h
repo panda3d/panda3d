@@ -40,6 +40,8 @@ extern const bool yield_timeslice;
 extern const string screenshot_filename;
 extern const string screenshot_extension;
 
+extern const bool show_buffers;
+
 extern EXPCL_PANDA const bool multiple_windows;
 
 extern EXPCL_PANDA void init_libdisplay();

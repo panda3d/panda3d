@@ -37,7 +37,7 @@ public:
   virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties);
 
 protected:
-  virtual PT(GraphicsWindow) make_window(GraphicsStateGuardian *gsg);
+  virtual PT(GraphicsWindow) make_window(GraphicsStateGuardian *gsg, const string &name);
 
 private:
   bool init();

@@ -72,15 +72,15 @@ PUBLISHED:
   void release_all_textures();
   void release_all_geoms();
 
-public:
+  INLINE void set_active(bool active);
+  INLINE bool is_active() const;
+
   INLINE const FrameBufferProperties &get_properties() const;
   INLINE GraphicsPipe *get_pipe() const;
   INLINE GraphicsEngine *get_engine() const;
   INLINE const GraphicsThreadingModel &get_threading_model() const;
 
-  INLINE void set_active(bool active);
-  INLINE bool is_active() const;
-
+public:
   INLINE void set_scene(SceneSetup *scene_setup);
   INLINE SceneSetup *get_scene() const;
 

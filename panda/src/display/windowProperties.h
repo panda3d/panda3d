@@ -63,6 +63,11 @@ PUBLISHED:
   INLINE bool has_undecorated() const;
   INLINE void clear_undecorated();
 
+  INLINE void set_fixed_size(bool fixed_size);
+  INLINE bool get_fixed_size() const;
+  INLINE bool has_fixed_size() const;
+  INLINE void clear_fixed_size();
+
   INLINE void set_fullscreen(bool fullscreen);
   INLINE bool get_fullscreen() const;
   INLINE bool has_fullscreen() const;
@@ -106,6 +111,7 @@ private:
     S_minimized        = 0x0040,
     S_open             = 0x0080,
     S_cursor_hidden    = 0x0100,
+    S_fixed_size       = 0x0200,
   };
 
   // This bitmask represents the true/false settings for various
@@ -118,6 +124,7 @@ private:
     F_minimized      = S_minimized,
     F_open           = S_open,
     F_cursor_hidden  = S_cursor_hidden,
+    F_fixed_size     = S_fixed_size,
   };
 
   int _specified;

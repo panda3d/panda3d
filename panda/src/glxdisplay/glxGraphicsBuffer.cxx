@@ -34,8 +34,9 @@ TypeHandle glxGraphicsBuffer::_type_handle;
 ////////////////////////////////////////////////////////////////////
 glxGraphicsBuffer::
 glxGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+                  const string &name,
                   int x_size, int y_size, bool want_texture) :
-  GraphicsBuffer(pipe, gsg, x_size, y_size, want_texture) 
+  GraphicsBuffer(pipe, gsg, name, x_size, y_size, want_texture) 
 {
   glxGraphicsPipe *glx_pipe;
   DCAST_INTO_V(glx_pipe, _pipe);
@@ -88,25 +89,6 @@ void glxGraphicsBuffer::
 release_gsg() {
   glXMakeCurrent(_display, None, NULL);
   GraphicsBuffer::release_gsg();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsBuffer::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
-void glxGraphicsBuffer::
-end_frame() {
-  if (has_texture()) {
-    // Use glCopyTexImage2D to copy the framebuffer to the texture.
-    // This appears to be the only way to "render to a texture" in
-    // OpenGL; there's no interface to make the offscreen buffer
-    // itself be a texture.
-    DisplayRegion dr(_x_size, _y_size);
-    get_texture()->copy(_gsg, &dr, _gsg->get_render_buffer(RenderBuffer::T_back));
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -41,8 +41,9 @@ TypeHandle glxGraphicsWindow::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 glxGraphicsWindow::
-glxGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) :
-  GraphicsWindow(pipe, gsg) 
+glxGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+                  const string &name) :
+  GraphicsWindow(pipe, gsg, name) 
 {
   glxGraphicsPipe *glx_pipe;
   DCAST_INTO_V(glx_pipe, _pipe);
@@ -209,8 +210,28 @@ process_events() {
 
     case ConfigureNotify:
       _awaiting_configure = false;
-      properties.set_size(event.xconfigure.width, event.xconfigure.height);
-      system_changed_properties(properties);
+      if (_properties.get_fixed_size()) {
+        // If the window properties indicate a fixed size only, undo
+        // any attempt by the user to change them.  In X, there
+        // doesn't appear to be a way to universally disallow this
+        // directly (although we do set the min_size and max_size to
+        // the same value, which seems to work for most window
+        // managers.)
+        WindowProperties current_props = get_properties();
+        if (event.xconfigure.width != current_props.get_x_size() ||
+            event.xconfigure.height != current_props.get_y_size()) {
+          XWindowChanges changes;
+          changes.width = current_props.get_x_size();
+          changes.height = current_props.get_y_size();
+          int value_mask = (CWWidth | CWHeight);
+          XConfigureWindow(_display, _xwindow, value_mask, &changes);
+        }
+
+      } else {
+        // A normal window may be resized by the user at will.
+        properties.set_size(event.xconfigure.width, event.xconfigure.height);
+        system_changed_properties(properties);
+      }
       break;
 
     case ButtonPress:
@@ -524,6 +545,14 @@ set_wm_properties(const WindowProperties &properties) {
         size_hints_p->width = properties.get_x_size();
         size_hints_p->height = properties.get_y_size();
         size_hints_p->flags |= USSize;
+
+        if (properties.has_fixed_size()) {
+          size_hints_p->min_width = properties.get_x_size();
+          size_hints_p->min_height = properties.get_y_size();
+          size_hints_p->max_width = properties.get_x_size();
+          size_hints_p->max_height = properties.get_y_size();
+          size_hints_p->flags |= (PMinSize | PMaxSize);
+        }
       }
     }
   }

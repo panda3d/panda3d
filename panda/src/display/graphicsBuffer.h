@@ -41,13 +41,11 @@
 class EXPCL_PANDA GraphicsBuffer : public GraphicsOutput {
 protected:
   GraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+                 const string &name,
                  int x_size, int y_size, bool want_texture);
 
 PUBLISHED:
   virtual ~GraphicsBuffer();
-
-  INLINE bool has_texture() const;  
-  INLINE Texture *get_texture() const;  
 
 public:
   virtual void request_open();
@@ -64,8 +62,6 @@ protected:
   virtual bool open_buffer();
 
 protected:
-  PT(Texture) _texture;
-
   enum OpenRequest {
     OR_none,
     OR_open,

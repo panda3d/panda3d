@@ -111,7 +111,13 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
     }
   }
 
-  _window = engine->make_window(pipe, ptgsg);
+  static int next_window_index = 1;
+  ostringstream stream;
+  stream << "window" << next_window_index;
+  next_window_index++;
+  string name = stream.str();
+
+  _window = engine->make_window(pipe, ptgsg, name);
   if (_window != (GraphicsWindow *)NULL) {
     _window->request_properties(props);
     set_background_type(_background_type);

@@ -32,7 +32,8 @@
 ////////////////////////////////////////////////////////////////////
 class glxGraphicsWindow : public GraphicsWindow {
 public:
-  glxGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
+  glxGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+                    const string &name);
   virtual ~glxGraphicsWindow();
 
   virtual void make_current();

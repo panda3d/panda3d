@@ -81,36 +81,6 @@ make_gsg(GraphicsPipe *pipe) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::make_window
-//       Access: Published
-//  Description: Creates a new window using the indicated
-//               GraphicsStateGuardian and returns it.  The
-//               GraphicsEngine becomes the owner of the window; it
-//               will persist at least until remove_window() is called
-//               later.
-////////////////////////////////////////////////////////////////////
-INLINE GraphicsWindow *GraphicsEngine::
-make_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
-  return make_window(pipe, gsg, get_threading_model());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::make_buffer
-//       Access: Published
-//  Description: Creates a new offscreen buffer using the indicated
-//               GraphicsStateGuardian and returns it.  The
-//               GraphicsEngine becomes the owner of the buffer; it
-//               will persist at least until remove_buffer() is called
-//               later.
-////////////////////////////////////////////////////////////////////
-INLINE GraphicsBuffer *GraphicsEngine::
-make_buffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-            int x_size, int y_size, bool want_texture) {
-  return make_buffer(pipe, gsg, x_size, y_size, want_texture, 
-                     get_threading_model());
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::close_gsg
 //       Access: Published
 //  Description: Calls GraphicsPipe::close_gsg() on the indicated pipe

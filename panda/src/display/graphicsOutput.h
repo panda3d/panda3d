@@ -43,10 +43,8 @@ class PNMImage;
 //               classes that represent the result of a frame of
 //               rendering.  The most common kind of GraphicsOutput is
 //               a GraphicsWindow, which is a real-time window on the
-//               desktop, but other examples are GraphicsBuffer, which
-//               is an offscreen buffer, and GraphicsTexture, which is
-//               an offscreen texture that may be rendered into and
-//               then applied to geometry.
+//               desktop, but another example is GraphicsBuffer, which
+//               is an offscreen buffer.
 //
 //               The actual rendering, and anything associated with
 //               the graphics context itself, is managed by the
@@ -61,7 +59,8 @@ class PNMImage;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GraphicsOutput : public TypedWritableReferenceCount, public ClearableRegion {
 protected:
-  GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
+  GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+                 const string &name);
 
 private:
   GraphicsOutput(const GraphicsOutput &copy);
@@ -72,6 +71,10 @@ PUBLISHED:
 
   INLINE GraphicsStateGuardian *get_gsg() const;
   INLINE GraphicsPipe *get_pipe() const;
+  INLINE const string &get_name() const;
+
+  INLINE bool has_texture() const;  
+  INLINE Texture *get_texture() const;  
 
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
@@ -135,6 +138,9 @@ protected:
 protected:
   PT(GraphicsStateGuardian) _gsg;
   PT(GraphicsPipe) _pipe;
+  string _name;
+  PT(Texture) _texture;
+  bool _copy_texture;
 
 private:
   INLINE void determine_display_regions() const;

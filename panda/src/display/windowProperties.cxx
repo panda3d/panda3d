@@ -100,6 +100,9 @@ add_properties(const WindowProperties &other) {
   if (other.has_undecorated()) {
     set_undecorated(other.get_undecorated());
   }
+  if (other.has_fixed_size()) {
+    set_fixed_size(other.get_fixed_size());
+  }
   if (other.has_fullscreen()) {
     set_fullscreen(other.get_fullscreen());
   }
@@ -137,6 +140,9 @@ output(ostream &out) const {
   }
   if (has_undecorated()) {
     out << (get_undecorated() ? "undecorated " : "!undecorated ");
+  }
+  if (has_fixed_size()) {
+    out << (get_fixed_size() ? "fixed_size " : "!fixed_size ");
   }
   if (has_fullscreen()) {
     out << (get_fullscreen() ? "fullscreen " : "!fullscreen ");

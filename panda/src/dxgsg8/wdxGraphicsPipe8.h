@@ -67,7 +67,7 @@ public:
    bool special_check_fullscreen_resolution(DXScreenData &scrn, UINT x_size,UINT y_size);
 
 protected:
-  virtual PT(GraphicsWindow) make_window(GraphicsStateGuardian *gsg);
+  virtual PT(GraphicsWindow) make_window(GraphicsStateGuardian *gsg, const string &name);
 
 private:
   bool init();

@@ -205,16 +205,17 @@ make_gsg(GraphicsPipe *pipe, const FrameBufferProperties &properties,
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow *GraphicsEngine::
 make_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-            const GraphicsThreadingModel &threading_model) {
-  if (gsg != (GraphicsStateGuardian *)NULL) {
-    nassertr(pipe == gsg->get_pipe(), NULL);
-    nassertr(this == gsg->get_engine(), NULL);
-    nassertr(threading_model.get_draw_name() ==
-             gsg->get_threading_model().get_draw_name(), NULL);
-  }
+            const string &name) {
+  GraphicsThreadingModel threading_model = get_threading_model();
+
+  nassertr(gsg != (GraphicsStateGuardian *)NULL, NULL);
+  nassertr(pipe == gsg->get_pipe(), NULL);
+  nassertr(this == gsg->get_engine(), NULL);
+  nassertr(threading_model.get_draw_name() ==
+           gsg->get_threading_model().get_draw_name(), NULL);
 
   // TODO: ask the window thread to make the window.
-  PT(GraphicsWindow) window = pipe->make_window(gsg);
+  PT(GraphicsWindow) window = pipe->make_window(gsg, name);
   do_add_window(window, gsg, threading_model);
   return window;
 }
@@ -227,21 +228,43 @@ make_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
 //               GraphicsEngine becomes the owner of the buffer; it
 //               will persist at least until remove_window() is called
 //               later.
+
+//               This usually returns a GraphicsBuffer object, but it
+//               may actually return a GraphicsWindow if show-buffers
+//               is configured true.
 ////////////////////////////////////////////////////////////////////
-GraphicsBuffer *GraphicsEngine::
+GraphicsOutput *GraphicsEngine::
 make_buffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-            int x_size, int y_size, bool want_texture,
-            const GraphicsThreadingModel &threading_model) {
-  if (gsg != (GraphicsStateGuardian *)NULL) {
-    nassertr(pipe == gsg->get_pipe(), NULL);
-    nassertr(this == gsg->get_engine(), NULL);
-    nassertr(threading_model.get_draw_name() ==
-             gsg->get_threading_model().get_draw_name(), NULL);
+            const string &name, int x_size, int y_size, bool want_texture) {
+  if (show_buffers) {
+    GraphicsWindow *window = make_window(pipe, gsg, name);
+    if (window != (GraphicsWindow *)NULL) {
+      WindowProperties props;
+      props.set_size(x_size, y_size);
+      props.set_fixed_size(true);
+      props.set_title(name);
+      window->request_properties(props);
+
+      if (want_texture) {
+        window->_texture = new Texture();
+        window->_texture->set_name(name);
+        window->_copy_texture = true;
+      }
+
+      return window;
+    }
   }
+
+  GraphicsThreadingModel threading_model = get_threading_model();
+  nassertr(gsg != (GraphicsStateGuardian *)NULL, NULL);
+  nassertr(pipe == gsg->get_pipe(), NULL);
+  nassertr(this == gsg->get_engine(), NULL);
+  nassertr(threading_model.get_draw_name() ==
+           gsg->get_threading_model().get_draw_name(), NULL);
 
   // TODO: ask the window thread to make the buffer.
   PT(GraphicsBuffer) buffer = 
-    pipe->make_buffer(gsg, x_size, y_size, want_texture);
+    pipe->make_buffer(gsg, name, x_size, y_size, want_texture);
   do_add_window(buffer, gsg, threading_model);
   return buffer;
 }
@@ -553,7 +576,7 @@ cull_bin_draw(const GraphicsEngine::Windows &wlist) {
   Windows::const_iterator wi;
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
-    if (win->is_active()) {
+    if (win->is_active() && win->get_gsg()->is_active()) {
       // This should be done in the draw thread, not here.
       if (win->begin_frame()) {
         win->clear();

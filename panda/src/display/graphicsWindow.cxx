@@ -35,8 +35,9 @@ TypeHandle GraphicsWindow::_type_handle;
 //               GraphicsEngine::make_window() function.
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow::
-GraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) :
-  GraphicsOutput(pipe, gsg)
+GraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg, 
+               const string &name) :
+  GraphicsOutput(pipe, gsg, name)
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);

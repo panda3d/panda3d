@@ -48,6 +48,7 @@ public:
 protected:
   virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties);
   virtual PT(GraphicsBuffer) make_buffer(GraphicsStateGuardian *gsg, 
+                                         const string &name,
                                          int x_size, int y_size, bool want_texture);
 
 private:

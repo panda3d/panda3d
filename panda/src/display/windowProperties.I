@@ -277,6 +277,54 @@ clear_undecorated() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::set_fixed_size
+//       Access: Published
+//  Description: Specifies whether the window should be resizable by
+//               the user.
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+set_fixed_size(bool fixed_size) {
+  if (fixed_size) {
+    _flags |= F_fixed_size;
+  } else {
+    _flags &= ~F_fixed_size;
+  }
+  _specified |= S_fixed_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::get_fixed_size
+//       Access: Published
+//  Description: Returns true if the window cannot be resized by the
+//               user, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool WindowProperties::
+get_fixed_size() const {
+  return (_flags & F_fixed_size) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::has_fixed_size
+//       Access: Published
+//  Description: Returns true if set_fixed_size() has been specified.
+////////////////////////////////////////////////////////////////////
+INLINE bool WindowProperties::
+has_fixed_size() const {
+  return ((_specified & S_fixed_size) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::clear_fixed_size
+//       Access: Published
+//  Description: Removes the fixed_size specification from the properties.
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+clear_fixed_size() {
+  _specified &= ~S_fixed_size;
+  _flags &= ~F_fixed_size;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WindowProperties::set_fullscreen
 //       Access: Published
 //  Description: Specifies whether the window should be opened in

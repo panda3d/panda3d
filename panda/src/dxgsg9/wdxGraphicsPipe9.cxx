@@ -87,14 +87,14 @@ pipe_constructor() {
 //  Description: Creates a new window on the pipe, if possible.
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsWindow) wdxGraphicsPipe9::
-make_window(GraphicsStateGuardian *gsg) {
+make_window(GraphicsStateGuardian *gsg, const string &name) {
   if (!_is_valid) {
     return NULL;
   }
 
   // thanks to the dumb threading requirements this constructor actually does nothing but create an empty c++ object
   // no windows are really opened until wdxGraphicsWindow9->open_window() is called
-  return new wdxGraphicsWindow9(this, gsg);
+  return new wdxGraphicsWindow9(this, gsg, name);
 }
 
 ////////////////////////////////////////////////////////////////////

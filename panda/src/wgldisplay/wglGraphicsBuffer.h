@@ -42,6 +42,7 @@
 class EXPCL_PANDAGL wglGraphicsBuffer : public GraphicsBuffer {
 public:
   wglGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+                    const string &name,
                     int x_size, int y_size, bool want_texture);
   virtual ~wglGraphicsBuffer();
 

@@ -42,7 +42,8 @@ typedef HRESULT (WINAPI * LPDIRECTDRAWCREATEEX)(GUID FAR * lpGuid, LPVOID  *lplp
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX wdxGraphicsWindow7 : public WinGraphicsWindow {
 public:
-  wdxGraphicsWindow7(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
+  wdxGraphicsWindow7(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+                     const string &name);
   virtual ~wdxGraphicsWindow7();
   virtual void end_flip();
   //virtual bool begin_frame();

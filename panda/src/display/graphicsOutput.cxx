@@ -36,16 +36,19 @@ PStatCollector GraphicsOutput::_make_current_pcollector("Draw:Make current");
 //               GraphicsEngine::make_window() function.
 ////////////////////////////////////////////////////////////////////
 GraphicsOutput::
-GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
+GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg, 
+               const string &name) {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
 #endif
   _pipe = pipe;
   _gsg = gsg;
+  _name = name;
   _x_size = 0;
   _y_size = 0;
   _has_size = false;
   _is_valid = false;
+  _copy_texture = false;
 
   _display_regions_stale = false;
 
@@ -533,6 +536,16 @@ void GraphicsOutput::
 end_frame() {
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
   _gsg->end_frame();
+
+  // By default, we copy the framebuffer to the texture at the end of
+  // the frame.  GraphicsBuffer objects that are set up to render
+  // directly into texture memory don't need to do this; they will set
+  // _copy_texture to false.
+  if (_copy_texture) {
+    nassertv(has_texture());
+    DisplayRegion dr(_x_size, _y_size);
+    get_texture()->copy(_gsg, &dr, _gsg->get_render_buffer(RenderBuffer::T_back));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -72,7 +72,15 @@ const bool multiple_windows = config_display.GetBool("multiple-windows", false);
 // more polite to other applications that are trying to run.
 const bool yield_timeslice = config_display.GetBool("yield-timeslice", false);
 
-// Use the variable load-display to specifiy the name of the default
+const string screenshot_filename = config_display.GetString("screenshot-filename", "%~p-%a-%b-%d-%H-%M-%S-%Y-%~f.%~e");
+const string screenshot_extension = config_display.GetString("screenshot-extension", "jpg");
+
+// Set this true to cause offscreen GraphicsBuffers to be created as
+// GraphicsWindows, if possible, so that their contents may be viewed
+// interactively.  Handy during development of multipass algorithms.
+const bool show_buffers = config_display.GetBool("show-buffers", false);
+
+// Use the variable load-display to specify the name of the default
 // graphics display library or GraphicsPipe to load.  It is the name
 // of a shared library (or * for all libraries named in aux-display),
 // optionally followed by the name of the particular GraphicsPipe
@@ -82,9 +90,6 @@ const bool yield_timeslice = config_display.GetBool("yield-timeslice", false);
 // display libraries that are available on a particular platform.
 // This variable may be repeated several times.
 
-
-const string screenshot_filename = config_display.GetString("screenshot-filename", "%~p-%a-%b-%d-%H-%M-%S-%Y-%~f.%~e");
-const string screenshot_extension = config_display.GetString("screenshot-extension", "jpg");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libdisplay

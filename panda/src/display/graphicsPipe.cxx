@@ -154,7 +154,7 @@ close_gsg(GraphicsStateGuardian *gsg) {
 //  Description: Creates a new window on the pipe, if possible.
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsWindow) GraphicsPipe::
-make_window(GraphicsStateGuardian *) {
+make_window(GraphicsStateGuardian *, const string &) {
   display_cat.error()
     << get_type() << " cannot create onscreen windows.\n";
   return NULL;
@@ -166,7 +166,7 @@ make_window(GraphicsStateGuardian *) {
 //  Description: Creates a new offscreen buffer on the pipe, if possible.
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsBuffer) GraphicsPipe::
-make_buffer(GraphicsStateGuardian *, int, int, bool) {
+make_buffer(GraphicsStateGuardian *, const string &, int, int, bool) {
   display_cat.error()
     << get_type() << " cannot create offscreen buffers.\n";
   return NULL;

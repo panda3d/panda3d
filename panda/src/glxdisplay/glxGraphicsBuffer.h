@@ -32,14 +32,13 @@
 class glxGraphicsBuffer : public GraphicsBuffer {
 public:
   glxGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+                    const string &name,
                     int x_size, int y_size, bool want_texture);
 
   virtual ~glxGraphicsBuffer();
 
   virtual void make_current();
   virtual void release_gsg();
-
-  virtual void end_frame();
 
 protected:
   virtual void close_buffer();

@@ -95,8 +95,10 @@ protected:
   // the interface on GraphicsEngine to make a new window or gsg.
   virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties);
   virtual void close_gsg(GraphicsStateGuardian *gsg);
-  virtual PT(GraphicsWindow) make_window(GraphicsStateGuardian *gsg);
+  virtual PT(GraphicsWindow) make_window(GraphicsStateGuardian *gsg, 
+                                         const string &name);
   virtual PT(GraphicsBuffer) make_buffer(GraphicsStateGuardian *gsg, 
+                                         const string &name,
                                          int x_size, int y_size, bool want_texture);
 
   Mutex _lock;

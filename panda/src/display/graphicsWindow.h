@@ -39,7 +39,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GraphicsWindow : public GraphicsOutput {
 protected:
-  GraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
+  GraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg, 
+                 const string &name);
 
 PUBLISHED:
   virtual ~GraphicsWindow();
@@ -127,6 +128,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class GraphicsEngine;
 };
 
 #include "graphicsWindow.I"
