@@ -636,7 +636,7 @@ $[TAB] cp -f $[ODIR]/$[local] $[dest]
 
 $[output_exe] : $[input_exe]
 $[TAB] rm -f $[output_exe]
-$[TAB] $[bin_postprocess_cmd] $[input_exe] $[bin_postprocess_arg1] $[output_exe]
+$[TAB] $[bin_postprocess_cmd] $[bin_postprocess_arg1] $[input_exe] $[bin_postprocess_arg2] $[output_exe]
 
 $[install_bin_dir]/$[bin_postprocess_target].exe : $[output_exe]
 $[TAB] cp -f $[output_exe] $[install_bin_dir]
