@@ -81,7 +81,7 @@ class ClientRepository(DirectObject.DirectObject):
         self.ensureValidConnection()
         availGetVal = self.qcr.dataAvailable()
         if availGetVal:
-            #print "Client: Incoming message!"
+            # print "Client: Incoming message!"
             datagram = NetDatagram()
             readRetVal = self.qcr.getData(datagram)
             if readRetVal:
