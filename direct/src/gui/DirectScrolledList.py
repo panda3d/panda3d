@@ -68,7 +68,8 @@ class DirectScrolledList(DirectFrame):
         optiondefs = (
             # Define type of DirectGuiWidget
             ('items',              [],        None),
-            ('items_align', TextNode.ACenter, INITOPT),
+            ('itemsAlign',  TextNode.ACenter, INITOPT),
+            ('itemsWordwrap',      None,      INITOPT),
             ('command',            None,      None),
             ('extraArgs',          [],        None),
             ('itemMakeFunction',   None,      None),
@@ -229,7 +230,10 @@ class DirectScrolledList(DirectFrame):
                     # If there is a function to create the item
                     item = apply(self['itemMakeFunction'], (item, i, self['itemMakeExtraArgs']))
                 else:
-                    item = DirectFrame(text = item, relief = None)
+                    item = DirectFrame(text = item,
+                                       text_align = self['itemsAlign'],
+                                       text_wordwrap = self['itemsWordwrap'],
+                                       relief = None)
                 #print "str stacking buttontext[",i,"]",self["items"][i]["text"]
                 # Then add the newly formed item back into the normal item list
                 self["items"][i] = item
@@ -251,6 +255,7 @@ class DirectScrolledList(DirectFrame):
             # If the item is a 'str', then it has not been created
             # Therefore, use the the function given to make it or
             # just make it a frame
+            print "Making " + str(item)
             if item.__class__.__name__ == 'str':
                 if self['itemMakeFunction']:
                     # If there is a function to create the item
@@ -258,7 +263,8 @@ class DirectScrolledList(DirectFrame):
                                  (item, i, self['itemMakeExtraArgs']))
                 else:
                     item = DirectFrame(text = item,
-                                       text_align = self['items_align'],
+                                       text_align = self['itemsAlign'],
+                                       text_wordwrap = self['itemsWordwrap'],
                                        relief = None)
                 # Then add the newly formed item back into the normal item list
                 self["items"][i] = item
