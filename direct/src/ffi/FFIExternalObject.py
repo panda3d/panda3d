@@ -174,14 +174,13 @@ class FFIExternalObject:
         # Lots of Panda classes have an output function defined that takes an Ostream
         # We create a LineStream for the output function to write to, then we extract
         # the string out of it and return it as our str
-        baseRepr = ''
-        import LineStream
-        lineStream = LineStream.LineStream()
         try:
+            import LineStream
+            lineStream = LineStream.LineStream()
             self.output(lineStream)
-            baseRepr = baseRepr + lineStream.getLine()
+            baseRepr = lineStream.getLine()
         except:
-            pass
+            baseRepr = ('[' + self.__class__.__name__ + ' at: ' + `self.this` + ']')
         # In any case, return the baseRepr
         return baseRepr
 
