@@ -67,7 +67,9 @@ get_synthetic_group(const string &name,
                     FltGeometry::BillboardType type) {
 
   bool is_identity = transform.almost_equal(LMatrix4d::ident_mat());
-  if (is_identity && type == FltGeometry::BT_none) {
+  if (is_identity && 
+      (type != FltGeometry::BT_axial &&
+       type != FltGeometry::BT_point)) {
     // Trivial case: the primitive belongs directly in its parent
     // group node.
     return _egg_parent;
@@ -110,7 +112,8 @@ get_synthetic_group(const string &name,
     }
     return nodes->_point_billboard;
 
-  default:
+  default: // Normally, BT_none, although we've occasionally seen a
+           // value of 3 come in here, whatever that's supposed to mean.
     if (nodes->_plain == (EggGroupNode *)NULL) {
       nodes->_plain = new EggGroup(name);
       _egg_parent->add_child(nodes->_plain);
