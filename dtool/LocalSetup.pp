@@ -195,6 +195,9 @@ $[cdefine HAVE_MINMAX_H]
 /* Define if you have the <sstream> header file.  */
 $[cdefine HAVE_SSTREAM]
 
+/* Define if you have the <new> header file.  */
+$[cdefine HAVE_NEW]
+
 /* Define if you have the <sys/types.h> header file.  */
 $[cdefine HAVE_SYS_TYPES]
 

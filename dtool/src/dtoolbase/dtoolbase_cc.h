@@ -58,6 +58,10 @@ using namespace std;
 #include "fakestringstream.h"
 #endif
 
+#ifdef HAVE_NEW
+#include <new>
+#endif
+
 #include <string>
 
 #ifdef HAVE_NAMESPACE
