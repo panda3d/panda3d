@@ -16,6 +16,7 @@
 #include "config_dxgsg.h"
 #include "dxGraphicsStateGuardian.h"
 #include <assert.h>
+#include "pnmImage.h"
 
 //#define FORCE_USE_OF_16BIT_TEXFMTS
 
@@ -137,7 +138,7 @@ CreateTexture( HDC hdc, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPI
     HRESULT hr;
   
 	PixelBuffer *pbuf = _texture->_pbuffer;
-    BOOL bSizeExpanded = FALSE;
+    PNMImage *pnmi=NULL;
     int cNumAlphaBits;     //  number of alpha bits in texture pixfmt
 
     DDPIXELFORMAT *pDesiredPixFmt;
@@ -260,37 +261,68 @@ CreateTexture( HDC hdc, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPI
     ddsd.dwWidth         = dwOrigWidth;
     ddsd.dwHeight        = dwOrigHeight;
 
-#define ISPOW2(X) (((X) & ((X)-1))==0)
+    if((dwOrigWidth>ddDesc.dwMaxTextureWidth)||(dwOrigHeight>ddDesc.dwMaxTextureHeight)) {
+        #ifdef _DEBUG
+         dxgsg_cat.error() << "WARNING: " <<_tex->get_name() << ": Image size exceeds max texture dimensions of (" << ddDesc.dwMaxTextureWidth << "," << ddDesc.dwMaxTextureHeight << ") !!\n" 
+                           << "Scaling "<< _tex->get_name() << " ("<< dwOrigWidth<<"," <<dwOrigHeight << ") => ("<< ddsd.dwWidth<<"," << ddsd.dwHeight << ")\n";
+        #endif
+        
+         if(dwOrigWidth>ddDesc.dwMaxTextureWidth) 
+             ddsd.dwWidth=ddDesc.dwMaxTextureWidth;
+         if(dwOrigHeight>ddDesc.dwMaxTextureHeight)
+             ddsd.dwHeight=ddDesc.dwMaxTextureHeight;        
+
+         PNMImage pnmi_src;
+         pnmi = new PNMImage(ddsd.dwWidth, ddsd.dwHeight, cNumColorChannels);
+         pbuf->store(pnmi_src);  // check for ret errors?
+         pnmi->quick_filter_from(pnmi_src,0,0);
+
+         pbuf->load(*pnmi);
+
+         dwOrigWidth  = (DWORD)pbuf->get_xsize();
+         dwOrigHeight = (DWORD)pbuf->get_ysize();
+         delete pnmi;
+         pnmi=NULL;
+    }
+
+    #define ISPOW2(X) (((X) & ((X)-1))==0)
 
     if(!ISPOW2(ddsd.dwWidth) || !ISPOW2(ddsd.dwHeight)) {
-        dxgsg_cat.error() << "ERROR: Image size is not a power of 2 for " << _tex->get_name() << "!!!!! \n";
-#define EXPAND_TEXSIZE_TO_POW2
-#ifndef EXPAND_TEXSIZE_TO_POW2
-#ifdef _DEBUG
-        exit(1);  // want to catch badtexsize errors
-#else
-       goto error_exit;
-#endif
-#else
-        // Expand width and height, if the driver requires it
-        if( ddDesc.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_POW2 ) {
-            // round up to next pow of 2
-            for( ddsd.dwWidth=1;  dwOrigWidth>ddsd.dwWidth;   ddsd.dwWidth<<=1 );
-            for( ddsd.dwHeight=1; dwOrigHeight>ddsd.dwHeight; ddsd.dwHeight<<=1 );
-            bSizeExpanded = TRUE;
-            dxgsg_cat.debug() << "Expanding texture to power of 2 size (extra space will be black)\n";
-        }
-#endif
+        dxgsg_cat.error() << "ERROR: Image dimensions are not a power of 2 for " << _tex->get_name() << "!!!!! \n";
+        #ifdef _DEBUG
+          exit(1);  // want to catch badtexsize errors
+        #else
+          goto error_exit;
+        #endif
     }
 
-    if( ddDesc.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_SQUAREONLY ) {
-        // expand smaller dimension to equal the larger
-        if( ddsd.dwWidth > ddsd.dwHeight ) ddsd.dwHeight = ddsd.dwWidth;
-        else                               ddsd.dwWidth  = ddsd.dwHeight;
-        bSizeExpanded = (ddsd.dwWidth!=ddsd.dwHeight);
-        if(bSizeExpanded)
-            dxgsg_cat.debug() << "Forcing texture to square size (extra space will be black)\n";
+#if 0   //riva128 seems to handle non-sq fine.  is it wasting mem to do this?  do I care or should 
+        // I scale to save mem?  what about other cards (v-1?)
+    if( (ddsd.dwWidth != ddsd.dwHeight) && (ddDesc.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_SQUAREONLY )) {
+
+        // assume pow2 textures.   sum exponents, divide by 2 rounding down to get sq size
+
+        int i,width_exp,height_exp;
+        for(i=ddsd.dwWidth,width_exp=0;i>1;width_exp++,i>>=1);
+        for(i=ddsd.dwHeight,height_exp=0;i>1;height_exp++,i>>=1);
+        ddsd.dwHeight = ddsd.dwWidth = 1<<((width_exp+height_exp)>>1);
+
+        #ifdef _DEBUG
+          dxgsg_cat.debug() << "Scaling "<< _tex->get_name() << " ("<< dwOrigWidth<<"," <<dwOrigHeight << ") => ("<< ddsd.dwWidth<<"," << ddsd.dwHeight << ") to meet HW square texture reqmt\n";
+        #endif
+
+        // check for errors
+          PNMImage pnmi_src;
+          pnmi = new PNMImage(ddsd.dwWidth, ddsd.dwHeight, cNumColorChannels);
+          pbuf->store(pnmi_src);
+          pnmi->quick_filter_from(pnmi_src,0,0);
+
+          pbuf->load(*pnmi);
+
+          dwOrigWidth  = (DWORD)pbuf->get_xsize();
+          dwOrigHeight = (DWORD)pbuf->get_ysize();
     }
+#endif
 
     int i;
 
@@ -310,7 +342,7 @@ CreateTexture( HDC hdc, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPI
     LPDDPIXELFORMAT pCurPixFmt;
     char *szErrorMsg;
 
-    szErrorMsg = "CreateTexture failed: couldn't find compatible Tex DDPIXELFORMAT!  \n";
+    szErrorMsg = "CreateTexture failed: couldn't find compatible Tex DDPIXELFORMAT!\n";
 
     dxgsg_cat.spam() << "CreateTexture handling bitdepth: " << bpp << " alphabits: " << cNumAlphaBits << "\n";
 
@@ -516,19 +548,7 @@ CreateTexture( HDC hdc, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPI
         goto error_exit;
     }
 
-    if(bSizeExpanded) {
-       // init to black
-       DDBLTFX bltfx;
-       ZeroMemory(&bltfx,sizeof(bltfx));
-       bltfx.dwSize = sizeof(bltfx);
-       bltfx.dwFillColor=0;
-       if( FAILED( hr = _surface->Blt(NULL,NULL,NULL,DDBLT_COLORFILL | DDBLT_WAIT,&bltfx))) {
-           dxgsg_cat.error() << "CreateTexture failed: _surface->Blt() failed! hr = " << ConvD3DErrorToString(hr) << "\n";
-       }
-    }
-
-    // Create a new surface for the texture
-    if( FAILED( hr = _surface->Lock( NULL, &ddsd, DDLOCK_WAIT, NULL ))) {
+    if( FAILED( hr = _surface->Lock( NULL, &ddsd, DDLOCK_WAIT, NULL )))  {
         dxgsg_cat.error() << "CreateTexture failed: _surface->Lock() failed! hr = " << ConvD3DErrorToString(hr) << "\n";
         goto error_exit;
     }
@@ -541,7 +561,7 @@ CreateTexture( HDC hdc, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPI
         DWORD x,y,dwPixel;
 
 #ifdef _DEBUG
-        dxgsg_cat.debug() << "CreateTexture executing conversion " << ConvNameStrs[ConvNeeded] << "\n";    
+        dxgsg_cat.debug() << "CreateTexture: "<< _tex->get_name() <<" converted " << ConvNameStrs[ConvNeeded] << " \n";    
 #endif
 
         switch(ConvNeeded) {
@@ -814,6 +834,8 @@ CreateTexture( HDC hdc, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPI
 
     // Done with DDraw
     pDD->Release();
+    if(pnmi!=NULL) 
+        delete pnmi;
 
     // Return the newly created texture
     return _surface;
@@ -826,6 +848,9 @@ CreateTexture( HDC hdc, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPI
       _surface->Release();
       _surface = NULL;
     }
+
+    if(pnmi!=NULL) 
+        delete pnmi;
 
     return NULL;
 }
