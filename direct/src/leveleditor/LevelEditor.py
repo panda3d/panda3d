@@ -154,6 +154,8 @@ OBJECT_SNAP_POINTS = {
                               (Vec3(0), Vec3(0))],
     'street_keyboard_40x40': [(Vec3(40.0,0,0), Vec3(0)),
                               (Vec3(0), Vec3(0))],
+    'street_sunken_40x40': [(Vec3(40.0,0,0), Vec3(0)),
+                            (Vec3(0), Vec3(0))],
     }
 
 # NEIGHBORHOOD DATA

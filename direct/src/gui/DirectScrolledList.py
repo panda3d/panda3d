@@ -80,32 +80,33 @@ class DirectScrolledList(DirectFrame):
             self.decButton['state'] = DISABLED
             # Hmm.. just reset self.index to 0 and bail out
             self.index = 0
-            return 0
-        
-        if (self.index <= 0):
-            self.index = 0
-            self.decButton['state'] = DISABLED
-            self.incButton['state'] = NORMAL
-            ret = 0
-        elif (self.index >= ( len(self["items"]) - self["numItemsVisible"])):
-            self.index = len(self["items"]) - self["numItemsVisible"]
-            self.incButton['state'] = DISABLED
-            self.decButton['state'] = NORMAL
             ret = 0
         else:
-            self.incButton['state'] = NORMAL
-            self.decButton['state'] = NORMAL
-            ret = 1
+            if (self.index <= 0):
+                self.index = 0
+                self.decButton['state'] = DISABLED
+                self.incButton['state'] = NORMAL
+                ret = 0
+            elif (self.index >= ( len(self["items"]) - self["numItemsVisible"])):
+                self.index = len(self["items"]) - self["numItemsVisible"]
+                self.incButton['state'] = DISABLED
+                self.decButton['state'] = NORMAL
+                ret = 0
+            else:
+                self.incButton['state'] = NORMAL
+                self.decButton['state'] = NORMAL
+                ret = 1
 
         # Hide them all
         for item in self["items"]:
             item.hide()
-        # Then show the ones in range
+        # Then show the ones in range, and stack their positions 
         upperRange = min(len(self["items"]), self["numItemsVisible"])
         for i in range(self.index, self.index + upperRange):
             item = self["items"][i]
             item.show()
             item.setPos(0,0, - (i - self.index) * self.maxHeight)
+        print 'joe'
         return ret
 
     def __scrollByTask(self, task):
