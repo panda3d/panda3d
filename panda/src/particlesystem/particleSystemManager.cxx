@@ -100,7 +100,7 @@ do_particles(float dt) {
       //      cout << "  count is: " << cur_ps->get_render_parent()->get_ref_count() << endl;
       cur_ps->update(dt);
 
-      // handle age
+      // Handle age:
       if (cur_ps->get_system_grows_older_flag() == true) {
         float age = cur_ps->get_system_age() + dt;
         cur_ps->set_system_age(age);
@@ -108,7 +108,7 @@ do_particles(float dt) {
         // handle death
         if (age >= cur_ps->get_system_lifespan()) {
           plist< PT(ParticleSystem) >::iterator kill = cur;
-          cur++;
+          ++cur;
 
           _ps_list.erase(kill);
           render_due = false;
@@ -121,7 +121,7 @@ do_particles(float dt) {
       }
     }
 
-    cur++;
+    ++cur;
   }
   //  cout << "PSM::do_particles finished." << endl;
   //  cout << "ParticleSystemManager::doparticles exiting." << endl;
