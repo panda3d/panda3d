@@ -56,7 +56,7 @@ paragraphs describe the Windows version.
 
 When you run pstats.exe, it adds a program to the taskbar but does not
 immediately open a window.  The program name is typically "PStats
-5180", showing the default PStats TCP port number of 5180; see "HOW IT
+5185", showing the default PStats TCP port number of 5185; see "HOW IT
 WORKS" below for more details about the TCP communication system.  For
 the most part you don't need to worry about the port number, as long
 as server and client agree.
@@ -322,7 +322,7 @@ to start() and stop() simply return immediately.
 When you call PStatClient.connect(), the client attempts to contact
 the PStatServer via a TCP connection to the hostname and port named in
 the pstats-host and pstats-port Configrc variables, respectively.
-(The default hostname and port are localhost and 5180.)  You can also
+(The default hostname and port are localhost and 5185.)  You can also
 pass in a specific hostname and/or port to the connect() call.  Upon
 successful connection and handshake with the server, the PStatClient
 sends a list of the available collectors, along with their names,
@@ -371,7 +371,7 @@ NSPR library to communicate with the clients.  It listens on the
 specified port for new connections, using the pstats-port Configrc
 variable to determine the port number (this is the same variable that
 specifies the port to the client).  Usually you can leave this at its
-default value of 5180, but there may be some cases in which that port
+default value of 5185, but there may be some cases in which that port
 is already in use on a particular machine (for instance, maybe someone
 else is running another PStats server on another display of the same
 machine).
