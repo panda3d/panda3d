@@ -250,6 +250,11 @@ get_viz(const CullTraverserData &data) const {
     return CollisionSolid::get_viz(data);
   }
 
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "drawing polygon with clip plane " << *cpa_attrib << "\n";
+  }
+
   // The polygon is clipped.  We need to render it clipped.  We could
   // just turn on the ClipPlaneAttrib state and render the full
   // polygon, letting the hardware do the clipping, but we get fancy
@@ -316,6 +321,19 @@ write(ostream &out, int indent_level) const {
   Points::const_iterator pi;
   for (pi = _points.begin(); pi != _points.end(); ++pi) {
     indent(out, indent_level + 2) << (*pi) << "\n";
+  }
+
+  out << "In 3-d space:\n";
+  PTA_Vertexf verts;
+  for (pi = _points.begin(); pi != _points.end(); ++pi) {
+    verts.push_back(to_3d(*pi));
+  }
+  if (_reversed) {
+    reverse(verts.begin(), verts.end());
+  }
+  PTA_Vertexf::const_iterator vi;
+  for (vi = verts.begin(); vi != verts.end(); ++vi) {
+    indent(out, indent_level + 2) << (*vi) << "\n";
   }
 }
 
@@ -842,10 +860,10 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
 
   if (fabs(normal[0]) >= fabs(normal[1])) {
     if (fabs(normal[0]) >= fabs(normal[2])) {
-      _reversed = (normal[0] < 0.0f);
+      _reversed = (normal[0] > 0.0f);
       _axis = AT_x;
     } else {
-      _reversed = (normal[2] < 0.0f);
+      _reversed = (normal[2] > 0.0f);
       _axis = AT_z;
     }
   } else {
@@ -853,7 +871,7 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
       _reversed = (normal[1] < 0.0f);
       _axis = AT_y;
     } else {
-      _reversed = (normal[2] < 0.0f);
+      _reversed = (normal[2] > 0.0f);
       _axis = AT_z;
     }
   }
@@ -917,6 +935,19 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
   if (_reversed) {
     reverse(_points.begin(), _points.end());
   }
+
+  /*
+#ifndef NDEBUG
+  bool still_reversed = 
+    is_right(_points[2] - _points[0], _points[1] - _points[0]);
+  if (still_reversed) {
+    collide_cat.warning()
+      << "Invalid poly:\n";
+    write(collide_cat.warning(false), 2);
+  }
+  nassertv(!still_reversed);
+#endif
+  */
 }
 
 ////////////////////////////////////////////////////////////////////
